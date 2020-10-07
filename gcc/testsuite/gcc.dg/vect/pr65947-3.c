@@ -51,6 +51,9 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" } } */
+/* XFAILed because of the fix for PR97307 which sinks the load of a[i], preventing
+   if-conversion to happen.  */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 2 "vect" { target vect_fold_extract_last } } } */
 /* { dg-final { scan-tree-dump-not "condition expression based on integer induction." "vect" } } */

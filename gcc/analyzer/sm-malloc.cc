@@ -562,15 +562,40 @@ public:
 
 };
 
+/* Return true if FNDECL is a C++ method.  */
+
+static bool
+method_p (tree fndecl)
+{
+  return TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE;
+}
+
+/* Return a 1-based description of ARG_IDX (0-based) of FNDECL.
+   Compare with %P in the C++ FE  (implemented in cp/error.c: parm_to_string
+   as called from cp_printer).  */
+
+static label_text
+describe_argument_index (tree fndecl, int arg_idx)
+{
+  if (method_p (fndecl))
+    if (arg_idx == 0)
+      return label_text::borrow ("'this'");
+  pretty_printer pp;
+  pp_printf (&pp, "%u", arg_idx + 1 - method_p (fndecl));
+  return label_text::take (xstrdup (pp_formatted_text (&pp)));
+}
+
 /* Subroutine for use by possible_null_arg::emit and null_arg::emit.
    Issue a note informing that the pertinent argument must be non-NULL.  */
 
 static void
 inform_nonnull_attribute (tree fndecl, int arg_idx)
 {
+  label_text arg_desc = describe_argument_index (fndecl, arg_idx);
   inform (DECL_SOURCE_LOCATION (fndecl),
-	  "argument %u of %qD must be non-null",
-	  arg_idx + 1, fndecl);
+	  "argument %s of %qD must be non-null",
+	  arg_desc.m_buffer, fndecl);
+  arg_desc.maybe_free ();
   /* Ideally we would use the location of the parm and underline the
      attribute also - but we don't have the location_t values at this point
      in the middle-end.
@@ -618,15 +643,19 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
+    label_text arg_desc = describe_argument_index (m_fndecl, m_arg_idx);
+    label_text result;
     if (m_origin_of_unchecked_event.known_p ())
-      return ev.formatted_print ("argument %u (%qE) from %@ could be NULL"
-				 " where non-null expected",
-				 m_arg_idx + 1, ev.m_expr,
-				 &m_origin_of_unchecked_event);
+      result = ev.formatted_print ("argument %s (%qE) from %@ could be NULL"
+				   " where non-null expected",
+				   arg_desc.m_buffer, ev.m_expr,
+				   &m_origin_of_unchecked_event);
     else
-      return ev.formatted_print ("argument %u (%qE) could be NULL"
-				 " where non-null expected",
-				 m_arg_idx + 1, ev.m_expr);
+      result = ev.formatted_print ("argument %s (%qE) could be NULL"
+				   " where non-null expected",
+				   arg_desc.m_buffer, ev.m_expr);
+    arg_desc.maybe_free ();
+    return result;
   }
 
 private:
@@ -714,13 +743,17 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
+    label_text arg_desc = describe_argument_index (m_fndecl, m_arg_idx);
+    label_text result;
     if (zerop (ev.m_expr))
-      return ev.formatted_print ("argument %u NULL where non-null expected",
-				 m_arg_idx + 1);
+      result = ev.formatted_print ("argument %s NULL where non-null expected",
+				   arg_desc.m_buffer);
     else
-      return ev.formatted_print ("argument %u (%qE) NULL"
-				 " where non-null expected",
-				 m_arg_idx + 1, ev.m_expr);
+      result = ev.formatted_print ("argument %s (%qE) NULL"
+				   " where non-null expected",
+				   arg_desc.m_buffer, ev.m_expr);
+    arg_desc.maybe_free ();
+    return result;
   }
 
 private:

@@ -1,3 +1,58 @@
+2020-10-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97297
+	* g++.dg/cpp2a/typename18.C: New test.
+
+2020-10-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/90861
+	* c-c++-common/goacc/declare-pr90861.c: Remove xfail.
+
+2020-10-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr81192.c: Disable EVRP pass.
+	* gcc.dg/tree-ssa/pr77445-2.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Ditto.
+
+2020-10-06  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_f16.c: Use additional
+	option -fno-ipa-icf and change the instruction count from 8 to 16.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vreinterpretq_u8.c: Likewise.
+
+2020-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97282
+	* gcc.target/i386/pr97282.c: New test.
+
+2020-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97289
+	* c-c++-common/gomp/pr97289.c: New test.
+
+2020-10-06  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	* gcc.target/arm/cortex-m55-nodsp-flag-hard.c: New test.
+	* gcc.target/arm/cortex-m55-nodsp-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nodsp-nofp-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nofp-flag-hard.c: New test.
+	* gcc.target/arm/cortex-m55-nofp-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nofp-nomve-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nomve-flag-hard.c: New test.
+	* gcc.target/arm/cortex-m55-nomve-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-hard.c: New test.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-softfp.c: New test.
+	* gcc.target/arm/multilib.exp: Add tests for -mcpu=cortex-m55.
+
 2020-10-05  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/vreinterpretq_f16.c: Use additional

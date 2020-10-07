@@ -9810,12 +9810,8 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
     return true;
 
   /* Functions returning pointers or allocatables need temporaries.  */
-  c = expr2->value.function.esym
-      ? (expr2->value.function.esym->attr.pointer
-	 || expr2->value.function.esym->attr.allocatable)
-      : (expr2->symtree->n.sym->attr.pointer
-	 || expr2->symtree->n.sym->attr.allocatable);
-  if (c)
+  if (gfc_expr_attr (expr2).pointer
+      || gfc_expr_attr (expr2).allocatable)
     return true;
 
   /* Character array functions need temporaries unless the

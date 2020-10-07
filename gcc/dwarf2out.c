@@ -3347,6 +3347,8 @@ output_asm_line_debug_info (void)
 	      || !debug_variable_location_views));
 }
 
+static bool asm_outputs_debug_line_str (void);
+
 /* Minimum line offset in a special line info. opcode.
    This value was chosen to give a reasonable range of values.  */
 #define DWARF_LINE_BASE  -10
@@ -4729,6 +4731,35 @@ reset_indirect_string (indirect_string_node **h, void *)
       node->index = 0;
     }
   return 1;
+}
+
+/* Add a string representing a file or filepath attribute value to a DIE.  */
+
+static inline void
+add_filepath_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind,
+			const char *str)
+{
+  if (! asm_outputs_debug_line_str ())
+    add_AT_string (die, attr_kind, str);
+  else
+    {
+      dw_attr_node attr;
+      struct indirect_string_node *node;
+
+      if (!debug_line_str_hash)
+	debug_line_str_hash
+	  = hash_table<indirect_string_hasher>::create_ggc (10);
+
+      node = find_AT_string_in_table (str, debug_line_str_hash);
+      set_indirect_string (node);
+      node->form = DW_FORM_line_strp;
+
+      attr.dw_attr = attr_kind;
+      attr.dw_attr_val.val_class = dw_val_class_str;
+      attr.dw_attr_val.val_entry = NULL;
+      attr.dw_attr_val.v.val_str = node;
+      add_dwarf_attr (die, &attr);
+    }
 }
 
 /* Find out whether a string should be output inline in DIE
@@ -11838,6 +11869,29 @@ output_ranges (void)
    /* FIXME: there is no .debug_line_str.dwo section,		\
       for -gsplit-dwarf we should use DW_FORM_strx instead.  */	\
    && !dwarf_split_debug_info)
+
+
+/* Returns TRUE if we are outputting DWARF5 and the assembler supports
+   DWARF5 .debug_line tables using .debug_line_str or we generate
+   it ourselves, except for split-dwarf which doesn't have a
+   .debug_line_str.  */
+static bool
+asm_outputs_debug_line_str (void)
+{
+  if (dwarf_version >= 5
+      && ! output_asm_line_debug_info ()
+      && DWARF5_USE_DEBUG_LINE_STR)
+    return true;
+  else
+    {
+#if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+      return !dwarf_split_debug_info && dwarf_version >= 5;
+#else
+      return false;
+#endif
+    }
+}
+
 
 /* Assign .debug_rnglists indexes.  */
 
@@ -20514,6 +20568,15 @@ add_name_attribute (dw_die_ref die, const char *name_string)
     }
 }
 
+/* Generate a DW_AT_name attribute given some string value representing a
+   file or filepath to be included as value of the attribute.  */
+static void
+add_filename_attribute (dw_die_ref die, const char *name_string)
+{
+  if (name_string != NULL && *name_string != 0)
+    add_filepath_AT_string (die, DW_AT_name, name_string);
+}
+
 /* Generate a DW_AT_description attribute given some string value to be included
    as the value of the attribute.  */
 
@@ -20640,7 +20703,7 @@ add_comp_dir_attribute (dw_die_ref die)
 {
   const char * wd = comp_dir_string ();
   if (wd != NULL)
-    add_AT_string (die, DW_AT_comp_dir, wd);
+    add_filepath_AT_string (die, DW_AT_comp_dir, wd);
 }
 
 /* Given a tree node VALUE describing a scalar attribute ATTR (i.e. a bound, a
@@ -24482,7 +24545,7 @@ gen_compile_unit_die (const char *filename)
 
   if (filename)
     {
-      add_name_attribute (die, filename);
+      add_filename_attribute (die, filename);
       /* Don't add cwd for <built-in>.  */
       if (filename[0] != '<')
 	add_comp_dir_attribute (die);
@@ -28733,7 +28796,8 @@ init_sections_and_labels (bool early_lto_debug)
 					    SECTION_DEBUG, NULL);
       debug_str_section = get_section (DEBUG_STR_SECTION,
 				       DEBUG_STR_SECTION_FLAGS, NULL);
-      if (!dwarf_split_debug_info && !output_asm_line_debug_info ())
+      if ((!dwarf_split_debug_info && !output_asm_line_debug_info ())
+	  || asm_outputs_debug_line_str ())
 	debug_line_str_section = get_section (DEBUG_LINE_STR_SECTION,
 					      DEBUG_STR_SECTION_FLAGS, NULL);
 
@@ -32020,36 +32084,8 @@ dwarf2out_early_finish (const char *filename)
 
   /* Add the name for the main input file now.  We delayed this from
      dwarf2out_init to avoid complications with PCH.  */
-  add_name_attribute (comp_unit_die (), remap_debug_filename (filename));
+  add_filename_attribute (comp_unit_die (), remap_debug_filename (filename));
   add_comp_dir_attribute (comp_unit_die ());
-
-  /* When emitting DWARF5 .debug_line_str, move DW_AT_name and
-     DW_AT_comp_dir into .debug_line_str section.  */
-  if (!output_asm_line_debug_info ()
-      && dwarf_version >= 5
-      && DWARF5_USE_DEBUG_LINE_STR)
-    {
-      for (int i = 0; i < 2; i++)
-	{
-	  dw_attr_node *a = get_AT (comp_unit_die (),
-				    i ? DW_AT_comp_dir : DW_AT_name);
-	  if (a == NULL
-	      || AT_class (a) != dw_val_class_str
-	      || strlen (AT_string (a)) + 1 <= DWARF_OFFSET_SIZE)
-	    continue;
-
-	  if (! debug_line_str_hash)
-	    debug_line_str_hash
-	      = hash_table<indirect_string_hasher>::create_ggc (10);
-
-	  struct indirect_string_node *node
-	    = find_AT_string_in_table (AT_string (a), debug_line_str_hash);
-	  set_indirect_string (node);
-	  node->form = DW_FORM_line_strp;
-	  a->dw_attr_val.v.val_str->refcount--;
-	  a->dw_attr_val.v.val_str = node;
-	}
-    }
 
   /* With LTO early dwarf was really finished at compile-time, so make
      sure to adjust the phase after annotating the LTRANS CU DIE.  */

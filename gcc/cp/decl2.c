@@ -5567,6 +5567,22 @@ mark_used (tree decl, tsubst_flags_t complain)
       return false;
     }
 
+  if (VAR_OR_FUNCTION_DECL_P (decl) && DECL_LOCAL_DECL_P (decl))
+    {
+      if (!DECL_LANG_SPECIFIC (decl))
+	/* An unresolved dependent local extern.  */
+	return true;
+
+      DECL_ODR_USED (decl) = 1;
+      auto alias = DECL_LOCAL_DECL_ALIAS (decl);
+      if (!alias || alias == error_mark_node)
+	return true;
+
+      /* Process the underlying decl.  */
+      decl = alias;
+      TREE_USED (decl) = true;
+    }
+
   cp_warn_deprecated_use (decl, complain);
 
   /* We can only check DECL_ODR_USED on variables or functions with
@@ -5650,14 +5666,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       && !DECL_ARTIFICIAL (decl)
       && !decl_defined_p (decl)
       && no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false))
-    {
-      if (is_local_extern (decl))
-	/* There's no way to define a local extern, and adding it to
-	   the vector interferes with GC, so give an error now.  */
-	no_linkage_error (decl);
-      else
-	vec_safe_push (no_linkage_decls, decl);
-    }
+    vec_safe_push (no_linkage_decls, decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)

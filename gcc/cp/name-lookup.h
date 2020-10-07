@@ -342,7 +342,6 @@ extern tree lookup_qualified_name (tree scope, tree name,
 extern tree lookup_qualified_name (tree scope, const char *name,
 				   LOOK_want = LOOK_want::NORMAL,
 				   bool = true);
-extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool hiding = false);
 extern bool push_class_level_binding (tree, tree);

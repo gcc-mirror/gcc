@@ -394,6 +394,12 @@
 #endif
 
 
+/* Define if your assembler supports the --gdwarf-5 option. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_GDWARF_5_DEBUG_FLAG
+#endif
+
+
 /* Define if your assembler supports .gnu_attribute. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_GNU_ATTRIBUTE
@@ -710,6 +716,13 @@
 /* Define if your assembler supports VSX instructions. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_VSX
+#endif
+
+
+/* Define if your assembler supports --gdwarf-4 even with compiler generated
+   .debug_line */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_WORKING_DWARF_4_FLAG
 #endif
 
 

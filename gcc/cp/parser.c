@@ -21788,8 +21788,14 @@ cp_parser_direct_declarator (cp_parser* parser,
 		       templates, assume S::p to name a type.  Otherwise,
 		       don't.  */
 		    tree decl
-		      = cp_parser_lookup_name_simple (parser, unqualified_name,
-						      token->location);
+		      = cp_parser_lookup_name (parser, unqualified_name,
+					       none_type,
+					       /*is_template=*/false,
+					       /*is_namespace=*/false,
+					       /*check_dependency=*/false,
+					       /*ambiguous_decls=*/NULL,
+					       token->location);
+
 		    if (!is_overloaded_fn (decl)
 			/* Allow
 			   template<typename T>
@@ -41170,6 +41176,10 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	}
 
       if (!found_in_scope)
+	/* This seems to ignore the existence of cleanup scopes?
+	   What is the meaning for local extern decls?  The local
+	   extern is in this scope, but it is referring to a decl that
+	   is namespace scope.  */
 	for (tree d = current_binding_level->names; d; d = TREE_CHAIN (d))
 	  if (d == decl)
 	    {
@@ -41198,6 +41208,16 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
       if (!error)
 	{
 	  tree id;
+
+	  if (DECL_LOCAL_DECL_P (decl))
+	    /* We need to mark the aliased decl, as that is the entity
+	       that is being referred to.  This won't work for
+	       dependent variables, but it didn't work for them before
+	       DECL_LOCAL_DECL_P was a thing either.  But then
+	       dependent local extern variable decls are as rare as
+	       hen's teeth.  */
+	    if (auto alias = DECL_LOCAL_DECL_ALIAS (decl))
+	      decl = alias;
 
 	  if (OMP_CLAUSE_MAP_KIND (t) == GOMP_MAP_LINK)
 	    id = get_identifier ("omp declare target link");

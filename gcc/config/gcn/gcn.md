@@ -67,6 +67,7 @@
   UNSPECV_ICACHE_INV])
 
 (define_c_enum "unspec" [
+  UNSPEC_ADDPTR
   UNSPEC_VECTOR
   UNSPEC_BPERMUTE
   UNSPEC_SGPRBASE
@@ -1219,29 +1220,47 @@
 
 ; "addptr" is the same as "add" except that it must not write to VCC or SCC
 ; as a side-effect.  Unfortunately GCN does not have a suitable instruction
-; for this, so we use a custom VOP3 add with CC_SAVE_REG as a temp.
-; Note that it is not safe to save/clobber/restore SCC because doing so will
-; break data-flow analysis, so this must use vector registers.
+; for this, so we use CC_SAVE_REG as a temp.
+; Note that it is not safe to save/clobber/restore as separate insns because
+; doing so will break data-flow analysis, so this must use multiple
+; instructions in one insn.
 ;
 ; The "v0" should be just "v", but somehow the "0" helps LRA not loop forever
 ; on testcase pr54713-2.c with -O0. It's only an optimization hint anyway.
+;
+; The SGPR alternative is preferred as it is typically used with mov_sgprbase.
 
 (define_insn "addptrdi3"
-  [(set (match_operand:DI 0 "register_operand"		 "= v")
-	(plus:DI (match_operand:DI 1 "register_operand"	 " v0")
-		 (match_operand:DI 2 "nonmemory_operand" "vDA")))]
+  [(set (match_operand:DI 0 "register_operand"		 "= v, Sg")
+    (unspec:DI [
+	(plus:DI (match_operand:DI 1 "register_operand"	 "^v0,Sg0")
+		 (match_operand:DI 2 "nonmemory_operand" "vDA,SgDB"))]
+	UNSPEC_ADDPTR))]
   ""
   {
-    rtx new_operands[4] = { operands[0], operands[1], operands[2],
-			    gen_rtx_REG (DImode, CC_SAVE_REG) };
+    if (which_alternative == 0)
+      {
+	rtx new_operands[4] = { operands[0], operands[1], operands[2],
+				gen_rtx_REG (DImode, CC_SAVE_REG) };
 
-    output_asm_insn ("v_add%^_u32 %L0, %3, %L2, %L1", new_operands);
-    output_asm_insn ("v_addc%^_u32 %H0, %3, %H2, %H1, %3", new_operands);
+	output_asm_insn ("v_add%^_u32\t%L0, %3, %L2, %L1", new_operands);
+	output_asm_insn ("v_addc%^_u32\t%H0, %3, %H2, %H1, %3", new_operands);
+      }
+    else
+      {
+	rtx new_operands[4] = { operands[0], operands[1], operands[2],
+				gen_rtx_REG (BImode, CC_SAVE_REG) };
+
+	output_asm_insn ("s_mov_b32\t%3, scc", new_operands);
+	output_asm_insn ("s_add_u32\t%L0, %L1, %L2", new_operands);
+	output_asm_insn ("s_addc_u32\t%H0, %H1, %H2", new_operands);
+	output_asm_insn ("s_cmpk_lg_u32\t%3, 0", new_operands);
+      }
 
     return "";
   }
-  [(set_attr "type" "vmult")
-   (set_attr "length" "16")])
+  [(set_attr "type" "vmult,mult")
+   (set_attr "length" "16,24")])
 
 ;; }}}
 ;; {{{ ALU special cases: Minus
