@@ -28475,6 +28475,316 @@ $as_echo "#define HAVE_AS_GDWARF2_DEBUG_FLAG 1" >>confdefs.h
 fi
 
 
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gdwarf-5 option" >&5
+$as_echo_n "checking assembler for --gdwarf-5 option... " >&6; }
+if ${gcc_cv_as_gdwarf_5_flag+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_gdwarf_5_flag=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
+  then gcc_cv_as_gdwarf_5_flag=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo "$insn" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gdwarf-5 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_gdwarf_5_flag=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gdwarf_5_flag" >&5
+$as_echo "$gcc_cv_as_gdwarf_5_flag" >&6; }
+if test $gcc_cv_as_gdwarf_5_flag = yes; then
+
+$as_echo "#define HAVE_AS_GDWARF_5_DEBUG_FLAG 1" >>confdefs.h
+
+fi
+
+
+ dwarf4_debug_info_size=0x46
+ dwarf4_high_pc_form=7
+ dwarf4_debug_aranges_size=0x2c
+ dwarf4_line_sz=9
+ for dwarf4_addr_size in 8 4; do
+   conftest_s="\
+	.file	\"a.c\"
+	.text
+.Ltext0:
+	.p2align 4
+	.globl	foo
+	.type	foo, %function
+foo:
+.LFB0:
+.LM1:
+	$insn
+.LM2:
+.LFE0:
+	.size	foo, .-foo
+.Letext0:
+	.section	.debug_info,\"\",%progbits
+.Ldebug_info0:
+	.4byte	$dwarf4_debug_info_size
+	.2byte	0x4
+	.4byte	.Ldebug_abbrev0
+	.byte	0x$dwarf4_addr_size
+	.byte	0x1
+	.ascii \"GNU C17\\0\"
+	.byte	0xc
+	.ascii \"a.c\\0\"
+	.ascii \"/\\0\"
+	.${dwarf4_addr_size}byte	.Ltext0
+	.${dwarf4_addr_size}byte	.Letext0-.Ltext0
+	.4byte	.Ldebug_line0
+	.byte	0x2
+	.ascii \"foo\\0\"
+	.byte	0x1
+	.byte	0x2
+	.byte	0x1
+	.${dwarf4_addr_size}byte	.LFB0
+	.${dwarf4_addr_size}byte	.LFE0-.LFB0
+	.byte	0x1
+	.byte	0x9c
+	.byte	0
+	.section	.debug_abbrev,\"\",%progbits
+.Ldebug_abbrev0:
+	.byte	0x1
+	.byte	0x11
+	.byte	0x1
+	.byte	0x25
+	.byte	0x8
+	.byte	0x13
+	.byte	0xb
+	.byte	0x3
+	.byte	0x8
+	.byte	0x1b
+	.byte	0x8
+	.byte	0x11
+	.byte	0x1
+	.byte	0x12
+	.byte	0x$dwarf4_high_pc_form
+	.byte	0x10
+	.byte	0x17
+	.byte	0
+	.byte	0
+	.byte	0x2
+	.byte	0x2e
+	.byte	0
+	.byte	0x3f
+	.byte	0x19
+	.byte	0x3
+	.byte	0x8
+	.byte	0x3a
+	.byte	0xb
+	.byte	0x3b
+	.byte	0xb
+	.byte	0x39
+	.byte	0xb
+	.byte	0x11
+	.byte	0x1
+	.byte	0x12
+	.byte	0x$dwarf4_high_pc_form
+	.byte	0x40
+	.byte	0x18
+	.byte	0
+	.byte	0
+	.byte	0
+	.section	.debug_aranges,\"\",%progbits
+	.4byte	$dwarf4_debug_aranges_size
+	.2byte	0x2
+	.4byte	.Ldebug_info0
+	.byte	0x8
+	.byte	0
+	.2byte	0
+	.2byte	0
+	.${dwarf4_addr_size}byte	.Ltext0
+	.${dwarf4_addr_size}byte	.Letext0-.Ltext0
+	.${dwarf4_addr_size}byte	0
+	.${dwarf4_addr_size}byte	0
+	.section	.debug_line,\"\",%progbits
+.Ldebug_line0:
+	.4byte	.LELT0-.LSLT0
+.LSLT0:
+	.2byte	0x4
+	.4byte	.LELTP0-.LASLTP0
+.LASLTP0:
+	.byte	0x1
+	.byte	0x1
+	.byte	0x1
+	.byte	0xf6
+	.byte	0xf2
+	.byte	0xd
+	.byte	0
+	.byte	0x1
+	.byte	0x1
+	.byte	0x1
+	.byte	0x1
+	.byte	0
+	.byte	0
+	.byte	0
+	.byte	0x1
+	.byte	0
+	.byte	0
+	.byte	0x1
+	.byte	0
+	.ascii \"a.c\\0\"
+	.byte	0
+	.byte	0
+	.byte	0
+	.byte	0
+.LELTP0:
+	.byte	0
+	.byte	0x$dwarf4_line_sz
+	.byte	0x2
+	.${dwarf4_addr_size}byte	.LM1
+	.byte	0x18
+	.byte	0x5
+	.byte	0x1
+	.byte	0
+	.byte	0x$dwarf4_line_sz
+	.byte	0x2
+	.${dwarf4_addr_size}byte	.LM2
+	.byte	0x1
+	.byte	0x5
+	.byte	0x1
+	.byte	0
+	.byte	0x$dwarf4_line_sz
+	.byte	0x2
+	.${dwarf4_addr_size}byte	.Letext0
+	.byte	0
+	.byte	0x1
+	.byte	0x1
+.LELT0:
+	.section	.debug_str,\"\",%progbits
+	.ident	\"GCC\"
+"
+   dwarf4_success=no
+   if test $dwarf4_addr_size = 4; then
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembly of compiler generated 32-bit .debug_line" >&5
+$as_echo_n "checking assembler for assembly of compiler generated 32-bit .debug_line... " >&6; }
+if ${gcc_cv_as_debug_line_32_flag+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_debug_line_32_flag=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
+  then gcc_cv_as_debug_line_32_flag=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_debug_line_32_flag=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_debug_line_32_flag" >&5
+$as_echo "$gcc_cv_as_debug_line_32_flag" >&6; }
+if test $gcc_cv_as_debug_line_32_flag = yes; then
+  success=yes
+fi
+
+   else
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembly of compiler generated 64-bit .debug_line" >&5
+$as_echo_n "checking assembler for assembly of compiler generated 64-bit .debug_line... " >&6; }
+if ${gcc_cv_as_debug_line_64_flag+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_debug_line_64_flag=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
+  then gcc_cv_as_debug_line_64_flag=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_debug_line_64_flag=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_debug_line_64_flag" >&5
+$as_echo "$gcc_cv_as_debug_line_64_flag" >&6; }
+if test $gcc_cv_as_debug_line_64_flag = yes; then
+  dwarf4_success=yes
+fi
+
+   fi
+   if test $dwarf4_success = yes; then
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gdwarf-4 not refusing compiler generated .debug_line" >&5
+$as_echo_n "checking assembler for --gdwarf-4 not refusing compiler generated .debug_line... " >&6; }
+if ${gcc_cv_as_dwarf_4_debug_line_flag+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_dwarf_4_debug_line_flag=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
+  then gcc_cv_as_dwarf_4_debug_line_flag=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gdwarf-4 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_dwarf_4_debug_line_flag=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_dwarf_4_debug_line_flag" >&5
+$as_echo "$gcc_cv_as_dwarf_4_debug_line_flag" >&6; }
+if test $gcc_cv_as_dwarf_4_debug_line_flag = yes; then
+
+$as_echo "#define HAVE_AS_WORKING_DWARF_4_FLAG 1" >>confdefs.h
+
+fi
+
+     break
+   fi
+   dwarf4_debug_info_size=0x36
+   dwarf4_high_pc_form=6
+   dwarf4_debug_aranges_size=0x1c
+   dwarf4_line_sz=5
+ done
+
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gstabs option" >&5
 $as_echo_n "checking assembler for --gstabs option... " >&6; }
 if ${gcc_cv_as_gstabs_flag+:} false; then :

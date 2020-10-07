@@ -41,6 +41,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef  ASM_DEBUG_SPEC
 #define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{gstabs:--gstabs}}}"
 
+#undef  ASM_DEBUG_OPTION_SPEC
+#define ASM_DEBUG_OPTION_SPEC	""
+
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
   do {									\

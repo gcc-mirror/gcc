@@ -5197,6 +5197,194 @@ if test x"$insn" != x; then
   [AC_DEFINE(HAVE_AS_GDWARF2_DEBUG_FLAG, 1,
 [Define if your assembler supports the --gdwarf2 option.])])
 
+ gcc_GAS_CHECK_FEATURE([--gdwarf-5 option],
+  gcc_cv_as_gdwarf_5_flag,
+  [elf,2,36,0], [--gdwarf-5], [$insn],,
+  [AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
+[Define if your assembler supports the --gdwarf-5 option.])])
+
+ dwarf4_debug_info_size=0x46
+ dwarf4_high_pc_form=7
+ dwarf4_debug_aranges_size=0x2c
+ dwarf4_line_sz=9
+ for dwarf4_addr_size in 8 4; do
+   conftest_s="\
+	.file	\"a.c\"
+	.text
+.Ltext0:
+	.p2align 4
+	.globl	foo
+	.type	foo, %function
+foo:
+.LFB0:
+.LM1:
+	$insn
+.LM2:
+.LFE0:
+	.size	foo, .-foo
+.Letext0:
+	.section	.debug_info,\"\",%progbits
+.Ldebug_info0:
+	.4byte	$dwarf4_debug_info_size
+	.2byte	0x4
+	.4byte	.Ldebug_abbrev0
+	.byte	0x$dwarf4_addr_size
+	.byte	0x1
+	.ascii \"GNU C17\\0\"
+	.byte	0xc
+	.ascii \"a.c\\0\"
+	.ascii \"/\\0\"
+	.${dwarf4_addr_size}byte	.Ltext0
+	.${dwarf4_addr_size}byte	.Letext0-.Ltext0
+	.4byte	.Ldebug_line0
+	.byte	0x2
+	.ascii \"foo\\0\"
+	.byte	0x1
+	.byte	0x2
+	.byte	0x1
+	.${dwarf4_addr_size}byte	.LFB0
+	.${dwarf4_addr_size}byte	.LFE0-.LFB0
+	.byte	0x1
+	.byte	0x9c
+	.byte	0
+	.section	.debug_abbrev,\"\",%progbits
+.Ldebug_abbrev0:
+	.byte	0x1
+	.byte	0x11
+	.byte	0x1
+	.byte	0x25
+	.byte	0x8
+	.byte	0x13
+	.byte	0xb
+	.byte	0x3
+	.byte	0x8
+	.byte	0x1b
+	.byte	0x8
+	.byte	0x11
+	.byte	0x1
+	.byte	0x12
+	.byte	0x$dwarf4_high_pc_form
+	.byte	0x10
+	.byte	0x17
+	.byte	0
+	.byte	0
+	.byte	0x2
+	.byte	0x2e
+	.byte	0
+	.byte	0x3f
+	.byte	0x19
+	.byte	0x3
+	.byte	0x8
+	.byte	0x3a
+	.byte	0xb
+	.byte	0x3b
+	.byte	0xb
+	.byte	0x39
+	.byte	0xb
+	.byte	0x11
+	.byte	0x1
+	.byte	0x12
+	.byte	0x$dwarf4_high_pc_form
+	.byte	0x40
+	.byte	0x18
+	.byte	0
+	.byte	0
+	.byte	0
+	.section	.debug_aranges,\"\",%progbits
+	.4byte	$dwarf4_debug_aranges_size
+	.2byte	0x2
+	.4byte	.Ldebug_info0
+	.byte	0x8
+	.byte	0
+	.2byte	0
+	.2byte	0
+	.${dwarf4_addr_size}byte	.Ltext0
+	.${dwarf4_addr_size}byte	.Letext0-.Ltext0
+	.${dwarf4_addr_size}byte	0
+	.${dwarf4_addr_size}byte	0
+	.section	.debug_line,\"\",%progbits
+.Ldebug_line0:
+	.4byte	.LELT0-.LSLT0
+.LSLT0:
+	.2byte	0x4
+	.4byte	.LELTP0-.LASLTP0
+.LASLTP0:
+	.byte	0x1
+	.byte	0x1
+	.byte	0x1
+	.byte	0xf6
+	.byte	0xf2
+	.byte	0xd
+	.byte	0
+	.byte	0x1
+	.byte	0x1
+	.byte	0x1
+	.byte	0x1
+	.byte	0
+	.byte	0
+	.byte	0
+	.byte	0x1
+	.byte	0
+	.byte	0
+	.byte	0x1
+	.byte	0
+	.ascii \"a.c\\0\"
+	.byte	0
+	.byte	0
+	.byte	0
+	.byte	0
+.LELTP0:
+	.byte	0
+	.byte	0x$dwarf4_line_sz
+	.byte	0x2
+	.${dwarf4_addr_size}byte	.LM1
+	.byte	0x18
+	.byte	0x5
+	.byte	0x1
+	.byte	0
+	.byte	0x$dwarf4_line_sz
+	.byte	0x2
+	.${dwarf4_addr_size}byte	.LM2
+	.byte	0x1
+	.byte	0x5
+	.byte	0x1
+	.byte	0
+	.byte	0x$dwarf4_line_sz
+	.byte	0x2
+	.${dwarf4_addr_size}byte	.Letext0
+	.byte	0
+	.byte	0x1
+	.byte	0x1
+.LELT0:
+	.section	.debug_str,\"\",%progbits
+	.ident	\"GCC\"
+"
+   dwarf4_success=no
+   if test $dwarf4_addr_size = 4; then
+     gcc_GAS_CHECK_FEATURE([assembly of compiler generated 32-bit .debug_line],
+      gcc_cv_as_debug_line_32_flag,
+      [elf,2,36,0], [], [$conftest_s],,
+      [success=yes])
+   else
+     gcc_GAS_CHECK_FEATURE([assembly of compiler generated 64-bit .debug_line],
+      gcc_cv_as_debug_line_64_flag,
+      [elf,2,36,0], [], [$conftest_s],,
+      [dwarf4_success=yes])
+   fi
+   if test $dwarf4_success = yes; then
+     gcc_GAS_CHECK_FEATURE([--gdwarf-4 not refusing compiler generated .debug_line],
+      gcc_cv_as_dwarf_4_debug_line_flag,
+      [elf,2,36,0], [--gdwarf-4], [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_WORKING_DWARF_4_FLAG, 1,
+[Define if your assembler supports --gdwarf-4 even with compiler generated .debug_line])])
+     break
+   fi
+   dwarf4_debug_info_size=0x36
+   dwarf4_high_pc_form=6
+   dwarf4_debug_aranges_size=0x1c
+   dwarf4_line_sz=5
+ done
+
  gcc_GAS_CHECK_FEATURE([--gstabs option],
   gcc_cv_as_gstabs_flag,
   [elf,2,11,0], [--gstabs], [$insn],,
