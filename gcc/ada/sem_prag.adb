@@ -6194,17 +6194,15 @@ package body Sem_Prag is
          --------------------
 
          function Is_Loop_Pragma (Stmt : Node_Id) return Boolean is
+            Original_Stmt : constant Node_Id := Original_Node (Stmt);
+
          begin
             --  Inspect the original node as Loop_Invariant and Loop_Variant
             --  pragmas are rewritten to null when assertions are disabled.
 
-            if Nkind (Original_Node (Stmt)) = N_Pragma then
-               return
-                 Pragma_Name_Unmapped (Original_Node (Stmt))
+            return Nkind (Original_Stmt) = N_Pragma
+             and then Pragma_Name_Unmapped (Original_Stmt)
                    in Name_Loop_Invariant | Name_Loop_Variant;
-            else
-               return False;
-            end if;
          end Is_Loop_Pragma;
 
          ---------------------
