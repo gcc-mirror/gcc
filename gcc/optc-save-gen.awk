@@ -597,11 +597,13 @@ for (i = 0; i < n_target_string; i++) {
 }
 
 print "";
-print "  unsigned HOST_WIDE_INT mask = 0;";
 
 j = 0;
 k = 0;
 for (i = 0; i < n_extra_target_vars; i++) {
+	if (j == 0 && k == 0) {
+		print "  unsigned HOST_WIDE_INT mask = 0;";
+	}
 	print "  if (opts_set->x_" extra_target_vars[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -617,6 +619,9 @@ for (i = 0; i < n_target_other; i++) {
 		print "  ptr->explicit_mask_" var_target_other[i] " = opts_set->x_" var_target_other[i] ";";
 		continue;
 	}
+	if (j == 0 && k == 0) {
+		print "  unsigned HOST_WIDE_INT mask = 0;";
+	}
 	print "  if (opts_set->x_" var_target_other[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -628,6 +633,9 @@ for (i = 0; i < n_target_other; i++) {
 }
 
 for (i = 0; i < n_target_enum; i++) {
+	if (j == 0 && k == 0) {
+		print "  unsigned HOST_WIDE_INT mask = 0;";
+	}
 	print "  if (opts_set->x_" var_target_enum[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -643,6 +651,9 @@ for (i = 0; i < n_target_int; i++) {
 		print "  ptr->explicit_mask_" var_target_int[i] " = opts_set->x_" var_target_int[i] ";";
 		continue;
 	}
+	if (j == 0 && k == 0) {
+		print "  unsigned HOST_WIDE_INT mask = 0;";
+	}
 	print "  if (opts_set->x_" var_target_int[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -654,6 +665,9 @@ for (i = 0; i < n_target_int; i++) {
 }
 
 for (i = 0; i < n_target_short; i++) {
+	if (j == 0 && k == 0) {
+		print "  unsigned HOST_WIDE_INT mask = 0;";
+	}
 	print "  if (opts_set->x_" var_target_short[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -665,6 +679,9 @@ for (i = 0; i < n_target_short; i++) {
 }
 
 for (i = 0; i < n_target_char; i++) {
+	if (j == 0 && k == 0) {
+		print "  unsigned HOST_WIDE_INT mask = 0;";
+	}
 	print "  if (opts_set->x_" var_target_char[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -676,6 +693,9 @@ for (i = 0; i < n_target_char; i++) {
 }
 
 for (i = 0; i < n_target_string; i++) {
+	if (j == 0 && k == 0) {
+		print "  unsigned HOST_WIDE_INT mask = 0;";
+	}
 	print "  if (opts_set->x_" var_target_string[i] ") mask |= HOST_WIDE_INT_1U << " j ";";
 	j++;
 	if (j == 64) {
@@ -732,7 +752,9 @@ for (i = 0; i < n_target_string; i++) {
 }
 
 print "";
-print "  unsigned HOST_WIDE_INT mask;";
+if (has_target_explicit_mask) {
+	print "  unsigned HOST_WIDE_INT mask;";
+}
 
 j = 64;
 k = 0;
