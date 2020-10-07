@@ -429,6 +429,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-use-after-free @gol
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wno-analyzer-use-of-uninitialized-value @gol
+-Wno-analyzer-write-to-const @gol
+-Wno-analyzer-write-to-string-literal @gol
 }
 
 @item C and Objective-C-only Warning Options
@@ -8801,6 +8803,8 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
+-Wanalyzer-write-to-const @gol
+-Wanalyzer-write-to-string-literal @gol
 }
 
 This option is only available if GCC was configured with analyzer
@@ -8982,6 +8986,30 @@ to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
+
+@item -Wno-analyzer-write-to-const
+@opindex Wanalyzer-write-to-const
+@opindex Wno-analyzer-write-to-const
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-write-to-const}
+to disable it.
+
+This diagnostic warns for paths through the code in which the analyzer
+detects an attempt to write through a pointer to a @code{const} object.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
+
+@item -Wno-analyzer-write-to-string-literal
+@opindex Wanalyzer-write-to-string-literal
+@opindex Wno-analyzer-write-to-string-literal
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-write-to-string-literal}
+to disable it.
+
+This diagnostic warns for paths through the code in which the analyzer
+detects an attempt to write through a pointer to a string literal.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
 
 @end table
 

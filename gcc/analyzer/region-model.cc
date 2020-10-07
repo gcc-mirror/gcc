@@ -1532,15 +1532,130 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
   return m_mgr->get_symbolic_region (ptr_sval);
 }
 
+/* A subclass of pending_diagnostic for complaining about writes to
+   constant regions of memory.  */
+
+class write_to_const_diagnostic
+: public pending_diagnostic_subclass<write_to_const_diagnostic>
+{
+public:
+  write_to_const_diagnostic (const region *reg, tree decl)
+  : m_reg (reg), m_decl (decl)
+  {}
+
+  const char *get_kind () const FINAL OVERRIDE
+  {
+    return "write_to_const_diagnostic";
+  }
+
+  bool operator== (const write_to_const_diagnostic &other) const
+  {
+    return (m_reg == other.m_reg
+	    && m_decl == other.m_decl);
+  }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    bool warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			      "write to %<const%> object %qE", m_decl);
+    if (warned)
+      inform (DECL_SOURCE_LOCATION (m_decl), "declared here");
+    return warned;
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  {
+    return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+  }
+
+private:
+  const region *m_reg;
+  tree m_decl;
+};
+
+/* A subclass of pending_diagnostic for complaining about writes to
+   string literals.  */
+
+class write_to_string_literal_diagnostic
+: public pending_diagnostic_subclass<write_to_string_literal_diagnostic>
+{
+public:
+  write_to_string_literal_diagnostic (const region *reg)
+  : m_reg (reg)
+  {}
+
+  const char *get_kind () const FINAL OVERRIDE
+  {
+    return "write_to_string_literal_diagnostic";
+  }
+
+  bool operator== (const write_to_string_literal_diagnostic &other) const
+  {
+    return m_reg == other.m_reg;
+  }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    return warning_at (rich_loc, OPT_Wanalyzer_write_to_string_literal,
+		       "write to string literal");
+    /* Ideally we would show the location of the STRING_CST as well,
+       but it is not available at this point.  */
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  {
+    return ev.formatted_print ("write to string literal here");
+  }
+
+private:
+  const region *m_reg;
+};
+
+/* Use CTXT to warn If DEST_REG is a region that shouldn't be written to.  */
+
+void
+region_model::check_for_writable_region (const region* dest_reg,
+					 region_model_context *ctxt) const
+{
+  /* Fail gracefully if CTXT is NULL.  */
+  if (!ctxt)
+    return;
+
+  const region *base_reg = dest_reg->get_base_region ();
+  switch (base_reg->get_kind ())
+    {
+    default:
+      break;
+    case RK_DECL:
+      {
+	const decl_region *decl_reg = as_a <const decl_region *> (base_reg);
+	tree decl = decl_reg->get_decl ();
+	/* Warn about writes to const globals.
+	   Don't warn for writes to const locals, and params in particular,
+	   since we would warn in push_frame when setting them up (e.g the
+	   "this" param is "T* const").  */
+	if (TREE_READONLY (decl)
+	    && is_global_var (decl))
+	  ctxt->warn (new write_to_const_diagnostic (dest_reg, decl));
+      }
+      break;
+    case RK_STRING:
+      ctxt->warn (new write_to_string_literal_diagnostic (dest_reg));
+      break;
+    }
+}
+
 /* Set the value of the region given by LHS_REG to the value given
    by RHS_SVAL.  */
 
 void
 region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
-			 region_model_context */*ctxt*/)
+			 region_model_context *ctxt)
 {
   gcc_assert (lhs_reg);
   gcc_assert (rhs_sval);
+
+  check_for_writable_region (lhs_reg, ctxt);
 
   m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
 		     BK_direct);
