@@ -8802,7 +8802,7 @@ package body Sem_Ch12 is
 
       while not Is_List_Member (P1)
         or else not Is_List_Member (P2)
-        or else List_Containing (P1) /= List_Containing (P2)
+        or else not In_Same_List (P1, P2)
       loop
          P1 := True_Parent (P1);
          P2 := True_Parent (P2);
@@ -9092,8 +9092,7 @@ package body Sem_Ch12 is
          --  after that of Parent_Inst. This relation is established by
          --  comparing the Slocs of Parent_Inst freeze node and Inst.
 
-         elsif List_Containing (Get_Unit_Instantiation_Node (Par)) =
-               List_Containing (Inst_Node)
+         elsif In_Same_List (Get_Unit_Instantiation_Node (Par), Inst_Node)
            and then Sloc (Freeze_Node (Par)) <= Sloc (Inst_Node)
          then
             Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
@@ -9989,8 +9988,7 @@ package body Sem_Ch12 is
                      --  the enclosing package, insert the freeze node after
                      --  the body.
 
-                     elsif List_Containing (Freeze_Node (Par)) =
-                           List_Containing (Parent (N))
+                     elsif In_Same_List (Freeze_Node (Par), Parent (N))
                        and then Sloc (Freeze_Node (Par)) < Sloc (Parent (N))
                      then
                         Insert_Freeze_Node_For_Instance

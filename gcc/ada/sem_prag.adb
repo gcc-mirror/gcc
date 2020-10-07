@@ -6090,7 +6090,7 @@ package body Sem_Prag is
                      --  The group and the current pragma are not in the same
                      --  declarative or statement list.
 
-                     if List_Containing (Stmt) /= List_Containing (N) then
+                     if not In_Same_List (Stmt, N) then
                         Grouping_Error (Stmt);
 
                      --  Try to reach the current pragma from the first pragma
@@ -9885,7 +9885,7 @@ package body Sem_Prag is
                   --  the test will have been applied to the original generic.
 
                   elsif Nkind (Decl) in N_Formal_Subprogram_Declaration
-                    and then List_Containing (Decl) = List_Containing (N)
+                    and then In_Same_List (Decl, N)
                     and then not In_Instance
                   then
                      Error_Msg_N

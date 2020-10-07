@@ -2559,8 +2559,7 @@ package body Contracts is
               Was_Expression_Function (Body_Decl)
                 and then Sloc (Body_Id) /= Sloc (Subp_Id)
                 and then In_Same_Source_Unit (Body_Id, Subp_Id)
-                and then List_Containing (Body_Decl) /=
-                         List_Containing (Subp_Decl);
+                and then not In_Same_List (Body_Decl, Subp_Decl);
 
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
