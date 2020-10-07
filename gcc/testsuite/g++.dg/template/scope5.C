@@ -57,10 +57,12 @@ enum { a = b::e<0>::f };
 template <typename> class au;
 template <typename av> struct ac : ao<av> { typedef c::e<am::an> aq; };
 template <typename aw, typename i, typename ax> void ay(aw, i, ax) {
-  au<c::e<ap<typename ak<i>::o>::f> > az();
+  // Not sure if this has been creduced from an initialization of a
+  // variable to a block-scope extern function decl
+  au<c::e<ap<typename ak<i>::o>::f> > az2();
 }
 void v() {
   ad a;
-  void az();
-  ay(az, a, v);
+  void az1();
+  ay(az1, a, v);
 }

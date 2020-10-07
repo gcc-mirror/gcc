@@ -18104,13 +18104,15 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		  }
 		else if (DECL_IMPLICIT_TYPEDEF_P (t))
 		  /* We already did a pushtag.  */;
-		else if (TREE_CODE (decl) == FUNCTION_DECL
-			 && DECL_LOCAL_DECL_P (decl)
-			 && DECL_OMP_DECLARE_REDUCTION_P (decl))
+		else if (VAR_OR_FUNCTION_DECL_P (decl)
+			 && DECL_LOCAL_DECL_P (decl))
 		  {
-		    DECL_CONTEXT (decl) = current_function_decl;
-		    pushdecl (decl);
-		    if (cp_check_omp_declare_reduction (decl))
+		    if (TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
+		      DECL_CONTEXT (decl) = NULL_TREE;
+		    decl = pushdecl (decl);
+		    if (TREE_CODE (decl) == FUNCTION_DECL
+			&& DECL_OMP_DECLARE_REDUCTION_P (decl)
+			&& cp_check_omp_declare_reduction (decl))
 		      instantiate_body (pattern_decl, args, decl, true);
 		  }
 		else

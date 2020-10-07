@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
+static tree do_pushdecl_with_scope (tree x, cp_binding_level *, bool hiding);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
 static name_hint maybe_suggest_missing_std_header (location_t location,
@@ -2921,108 +2922,66 @@ set_decl_context_in_fn (tree ctx, tree decl)
     DECL_CONTEXT (decl) = ctx;
 }
 
-/* DECL is a local-scope decl with linkage.  SHADOWED is true if the
-   name is already bound at the current level.
-
-   [basic.link] If there is a visible declaration of an entity with
-   linkage having the same name and type, ignoring entities declared
-   outside the innermost enclosing namespace scope, the block scope
-   declaration declares that same entity and receives the linkage of
-   the previous declaration.
-
-   Also, make sure that this decl matches any existing external decl
-   in the enclosing namespace.  */
+/* DECL is a local extern decl.  Find or create the namespace-scope
+   decl that it aliases.  Also, determines the linkage of DECL.  */
 
 static void
-set_local_extern_decl_linkage (tree decl, bool shadowed)
+push_local_extern_decl_alias (tree decl)
 {
-  tree ns_value = decl; /* Unique marker.  */
+  if (dependent_type_p (TREE_TYPE (decl)))
+    return;
+  /* EH specs were not part of the function type prior to c++17, but
+     we still can't go pushing dependent eh specs into the namespace.  */
+  if (cxx_dialect < cxx17
+      && TREE_CODE (decl) == FUNCTION_DECL
+      && (value_dependent_expression_p
+	  (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)))))
+    return;
 
-  if (!shadowed)
+  gcc_checking_assert (!DECL_LANG_SPECIFIC (decl)
+		       || !DECL_TEMPLATE_INFO (decl));
+  if (DECL_LANG_SPECIFIC (decl) && DECL_LOCAL_DECL_ALIAS (decl))
+    /* We're instantiating a non-dependent local decl, it already
+       knows the alias.  */
+    return;
+
+  tree alias = NULL_TREE;
+
+  if (DECL_SIZE (decl) && !TREE_CONSTANT (DECL_SIZE (decl)))
+    /* Do not let a VLA creep into a namespace.  Diagnostic will be
+       emitted in layout_var_decl later.  */
+    alias = error_mark_node;
+  else
     {
-      tree loc_value = innermost_non_namespace_value (DECL_NAME (decl));
-      if (!loc_value)
-	{
-	  ns_value
-	    = find_namespace_value (current_namespace, DECL_NAME (decl));
-	  loc_value = ns_value;
-	}
-      if (loc_value == error_mark_node
-	  /* An ambiguous lookup.  */
-	  || (loc_value && TREE_CODE (loc_value) == TREE_LIST))
-	loc_value = NULL_TREE;
+      /* First look for a decl that matches.  */
+      tree ns = CP_DECL_CONTEXT (decl);
+      tree binding = find_namespace_value (ns, DECL_NAME (decl));
 
-      for (ovl_iterator iter (loc_value); iter; ++iter)
-	if (!iter.hidden_p ()
-	    && (TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
-	    && decls_match (*iter, decl))
-	  {
-	    /* The standard only says that the local extern inherits
-	       linkage from the previous decl; in particular, default
-	       args are not shared.  Add the decl into a hash table to
-	       make sure only the previous decl in this case is seen
-	       by the middle end.  */
-	    struct cxx_int_tree_map *h;
-
-	    /* We inherit the outer decl's linkage.  But we're a
-	       different decl.  */
-	    TREE_PUBLIC (decl) = TREE_PUBLIC (*iter);
-
-	    if (cp_function_chain->extern_decl_map == NULL)
-	      cp_function_chain->extern_decl_map
-		= hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
-
-	    h = ggc_alloc<cxx_int_tree_map> ();
-	    h->uid = DECL_UID (decl);
-	    h->to = *iter;
-	    cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
-	      ->find_slot (h, INSERT);
-	    *loc = h;
-	    break;
-	  }
-    }
-
-  if (TREE_PUBLIC (decl))
-    {
-      /* DECL is externally visible.  Make sure it matches a matching
-	 decl in the namespace scope.  We only really need to check
-	 this when inserting the decl, not when we find an existing
-	 match in the current scope.  However, in practice we're
-	 going to be inserting a new decl in the majority of cases --
-	 who writes multiple extern decls for the same thing in the
-	 same local scope?  Doing it here often avoids a duplicate
-	 namespace lookup.  */
-
-      /* Avoid repeating a lookup.  */
-      if (ns_value == decl)
-	ns_value = find_namespace_value (current_namespace, DECL_NAME (decl));
-
-      if (ns_value == error_mark_node
-	  || (ns_value && TREE_CODE (ns_value) == TREE_LIST))
-	ns_value = NULL_TREE;
-
-      for (ovl_iterator iter (ns_value); iter; ++iter)
-	{
-	  tree other = *iter;
-
-	  if (!(TREE_PUBLIC (other) || DECL_EXTERNAL (other)))
-	    ; /* Not externally visible.   */
-	  else if (DECL_EXTERN_C_P (decl) && DECL_EXTERN_C_P (other))
-	    ; /* Both are extern "C", we'll check via that mechanism.  */
-	  else if (TREE_CODE (other) != TREE_CODE (decl)
-		   || ((VAR_P (decl) || matching_fn_p (other, decl))
-		       && !comptypes (TREE_TYPE (decl), TREE_TYPE (other),
-				      COMPARE_REDECLARATION)))
+      if (binding && TREE_CODE (binding) != TREE_LIST)
+	for (ovl_iterator iter (binding); iter; ++iter)
+	  if (decls_match (*iter, decl))
 	    {
-	      auto_diagnostic_group d;
-	      if (permerror (DECL_SOURCE_LOCATION (decl),
-			     "local external declaration %q#D", decl))
-		inform (DECL_SOURCE_LOCATION (other),
-			"does not match previous declaration %q#D", other);
+	      alias = *iter;
 	      break;
 	    }
+
+      if (!alias)
+	{
+	  /* No existing namespace-scope decl.  Make one.  */
+	  alias = copy_decl (decl);
+
+	  /* This is the real thing.  */
+	  DECL_LOCAL_DECL_P (alias) = false;
+
+	  /* Expected default linkage is from the namespace.  */
+	  TREE_PUBLIC (alias) = TREE_PUBLIC (ns);
+	  alias = do_pushdecl_with_scope (alias, NAMESPACE_LEVEL (ns),
+					  /* hiding= */true);
 	}
     }
+
+  retrofit_lang_decl (decl);
+  DECL_LOCAL_DECL_ALIAS (decl) = alias;
 }
 
 /* Record DECL as belonging to the current lexical scope.  Check for
@@ -3080,10 +3039,6 @@ do_pushdecl (tree decl, bool hiding)
 	    old = binding->value;
 	}
 
-      if (current_function_decl && VAR_OR_FUNCTION_DECL_P (decl)
-	  && DECL_EXTERNAL (decl))
-	set_local_extern_decl_linkage (decl, old != NULL_TREE);
-
       if (old == error_mark_node)
 	old = NULL_TREE;
 
@@ -3114,6 +3069,16 @@ do_pushdecl (tree decl, bool hiding)
 		if (DECL_EXTERN_C_P (match))
 		  /* We need to check and register the decl now.  */
 		  check_extern_c_conflict (match);
+	      }
+	    else if (slot && !hiding
+		     && STAT_HACK_P (*slot) && STAT_DECL_HIDDEN_P (*slot))
+	      {
+		/* Unhide the non-function.  */
+		gcc_checking_assert (old == match);
+		if (!STAT_TYPE (*slot))
+		  *slot = match;
+		else
+		  STAT_DECL (*slot) = match;
 	      }
 	    return match;
 	  }
@@ -3190,12 +3155,21 @@ do_pushdecl (tree decl, bool hiding)
 	  if (!instantiating_current_function_p ())
 	    record_locally_defined_typedef (decl);
 	}
-      else if (VAR_P (decl))
-	maybe_register_incomplete_var (decl);
+      else
+	{
+	  if (VAR_P (decl) && !DECL_LOCAL_DECL_P (decl))
+	    maybe_register_incomplete_var (decl);
 
-      if ((VAR_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
-	  && DECL_EXTERN_C_P (decl))
-	check_extern_c_conflict (decl);
+	  if (VAR_OR_FUNCTION_DECL_P (decl))
+	    {
+	      if (DECL_LOCAL_DECL_P (decl)
+		  && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+		push_local_extern_decl_alias (decl);
+
+	      if (DECL_EXTERN_C_P (decl))
+		check_extern_c_conflict (decl);
+	    }
+	}
     }
   else
     add_decl_to_level (level, decl);
@@ -6869,20 +6843,6 @@ lookup_elaborated_type (tree name, TAG_how how)
   tree ret = lookup_elaborated_type_1 (name, how);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
-}
-
-/* Returns true iff DECL is a block-scope extern declaration of a function
-   or variable.  We will already have determined validity of the decl
-   when pushing it.  So we do not have to redo that lookup.  */
-
-bool
-is_local_extern (tree decl)
-{
-  if ((TREE_CODE (decl) == FUNCTION_DECL
-       || TREE_CODE (decl) == VAR_DECL))
-    return DECL_LOCAL_DECL_P (decl);
-
-  return false;
 }
 
 /* The type TYPE is being declared.  If it is a class template, or a
