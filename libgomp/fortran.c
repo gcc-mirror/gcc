@@ -63,6 +63,7 @@ ialias_redirect (omp_get_schedule)
 ialias_redirect (omp_get_thread_limit)
 ialias_redirect (omp_set_max_active_levels)
 ialias_redirect (omp_get_max_active_levels)
+ialias_redirect (omp_get_supported_active_levels)
 ialias_redirect (omp_get_level)
 ialias_redirect (omp_get_ancestor_thread_num)
 ialias_redirect (omp_get_team_size)
@@ -415,6 +416,12 @@ int32_t
 omp_get_max_active_levels_ (void)
 {
   return omp_get_max_active_levels ();
+}
+
+int32_t
+omp_get_supported_active_levels_ (void)
+{
+  return omp_get_supported_active_levels ();
 }
 
 int32_t
