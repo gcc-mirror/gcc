@@ -225,6 +225,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("CXXABI_1.3.10");
       known_versions.push_back("CXXABI_1.3.11");
       known_versions.push_back("CXXABI_1.3.12");
+      known_versions.push_back("CXXABI_1.3.13");
       known_versions.push_back("CXXABI_TM_1");
       known_versions.push_back("CXXABI_FLOAT128");
     }
@@ -246,7 +247,7 @@ check_version(symbol& test, bool added)
 	  // XXX remove next line when GLIBCXX_3.4.30 is added and baselines
 	  // have been regenerated to include GLIBCXX_LDBL_3.4.29 symbols:
 		     || test.version_name == "GLIBCXX_LDBL_3.4.29"
-		     || test.version_name == "CXXABI_1.3.12"
+		     || test.version_name == "CXXABI_1.3.13"
 		     || test.version_name == "CXXABI_FLOAT128"
 		     || test.version_name == "CXXABI_TM_1");
       if (added && !latestp)

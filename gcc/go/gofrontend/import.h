@@ -240,10 +240,10 @@ class Import : public Import_expression
   get_char()
   { return this->stream_->get_char(); }
 
-  // Read LENGTH characters into a string and advance past them.  On
-  // EOF reports an error and returns an empty string.
-  std::string
-  read(size_t length);
+  // Read LENGTH characters into *OUT and advance past them.  On
+  // EOF reports an error and sets *OUT to an empty string.
+  void
+  read(size_t length, std::string* out);
 
   // Return true at the end of the stream.
   bool

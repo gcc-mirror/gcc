@@ -2369,17 +2369,14 @@ namespace views
   template<typename _Range>
     explicit join_view(_Range&&) -> join_view<views::all_t<_Range>>;
 
-    // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // 3474. Nesting join_views is broken because of CTAD
-  template<typename _View>
-    explicit join_view(join_view<_View>) -> join_view<join_view<_View>>;
-
   namespace views
   {
     inline constexpr __adaptor::_RangeAdaptorClosure join
       = [] <viewable_range _Range> (_Range&& __r)
       {
-	return join_view{std::forward<_Range>(__r)};
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3474. Nesting join_views is broken because of CTAD
+	return join_view<views::all_t<_Range>>{std::forward<_Range>(__r)};
       };
   } // namespace views
 

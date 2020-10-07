@@ -203,7 +203,8 @@ omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
       symtab_node *node = symtab_node::get (*tp);
       if (node != NULL)
 	{
-	  while (node->alias_target)
+	  while (node->alias_target
+		 && TREE_CODE (node->alias_target) == FUNCTION_DECL)
 	    {
 	      if (!omp_declare_target_fn_p (node->decl)
 		  && !lookup_attribute ("omp declare target host",

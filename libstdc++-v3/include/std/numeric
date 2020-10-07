@@ -60,10 +60,22 @@
 #include <bits/c++config.h>
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_numeric.h>
-#include <ext/numeric_traits.h>
 
 #ifdef _GLIBCXX_PARALLEL
 # include <parallel/numeric>
+#endif
+
+#if __cplusplus >= 201402L
+# include <type_traits>
+# include <bit>
+#endif
+
+#if __cplusplus >= 201703L
+# include <bits/stl_function.h>
+#endif
+
+#if __cplusplus > 201703L
+# include <limits>
 #endif
 
 /**
@@ -74,14 +86,11 @@
  * arrays, generalized numeric algorithms, and mathematical special functions.
  */
 
-#if __cplusplus >= 201402L
-#include <type_traits>
-#include <bit>
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __cplusplus >= 201402L
 namespace __detail
 {
   // std::abs is not constexpr, doesn't support unsigned integers,
@@ -181,18 +190,10 @@ namespace __detail
     }
 
 #endif // C++17
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
-
 #endif // C++14
 
 #if __cplusplus > 201703L
-#include <limits>
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // midpoint
 # define __cpp_lib_interpolate 201902L
 
@@ -241,17 +242,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert( sizeof(_Tp) != 0, "type must be complete" );
       return __a  + (__b - __a) / 2;
     }
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
-
 #endif // C++20
 
-#if __cplusplus > 201402L
-#include <bits/stl_function.h>
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+#if __cplusplus >= 201703L
 
 #if __cplusplus > 201703L
 #define __cpp_lib_constexpr_numeric 201911L
@@ -720,10 +713,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // @} group numeric_ops
+#endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
+#if __cplusplus >= 201703L
 // Parallel STL algorithms
 # if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations

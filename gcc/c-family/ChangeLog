@@ -1,3 +1,14 @@
+2020-10-05  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97197
+	* c-pretty-print.c: Include langhooks.h.
+	(c_pretty_printer::postfix_expression): Handle TARGET_MEM_REF as
+	expression.
+	(c_pretty_printer::expression): Handle TARGET_MEM_REF as
+	unary_expression.
+	(c_pretty_printer::unary_expression): Handle TARGET_MEM_REF.
+
 2020-09-30  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/97189

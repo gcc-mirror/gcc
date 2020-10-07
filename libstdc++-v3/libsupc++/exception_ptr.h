@@ -100,12 +100,12 @@ namespace std
 
 #if __cplusplus >= 201103L
       exception_ptr(nullptr_t) noexcept
-      : _M_exception_object(0)
+      : _M_exception_object(nullptr)
       { }
 
       exception_ptr(exception_ptr&& __o) noexcept
       : _M_exception_object(__o._M_exception_object)
-      { __o._M_exception_object = 0; }
+      { __o._M_exception_object = nullptr; }
 #endif
 
 #if (__cplusplus < 201103L) || defined (_GLIBCXX_EH_PTR_COMPAT)
@@ -142,21 +142,82 @@ namespace std
 #endif
 
 #if __cplusplus >= 201103L
-      explicit operator bool() const
+      explicit operator bool() const noexcept
       { return _M_exception_object; }
 #endif
 
-      friend bool 
+#ifdef _GLIBCXX_EH_PTR_COMPAT
+      friend bool
       operator==(const exception_ptr&, const exception_ptr&)
 	_GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
+#elif __cpp_impl_three_way_comparison >= 201907L
+      friend bool
+      operator==(const exception_ptr&, const exception_ptr&) noexcept = default;
+#else
+      friend bool
+      operator==(const exception_ptr& __x, const exception_ptr& __y)
+      _GLIBCXX_USE_NOEXCEPT
+      { return __x._M_exception_object == __y._M_exception_object; }
+
+      friend bool
+      operator!=(const exception_ptr& __x, const exception_ptr& __y)
+      _GLIBCXX_USE_NOEXCEPT
+      { return __x._M_exception_object != __y._M_exception_object; }
+#endif
 
       const class std::type_info*
       __cxa_exception_type() const _GLIBCXX_USE_NOEXCEPT
 	__attribute__ ((__pure__));
     };
 
-    /// @relates exception_ptr @{
+#ifndef _GLIBCXX_EH_PTR_COMPAT
+    inline
+#endif
+    exception_ptr::exception_ptr() _GLIBCXX_NOEXCEPT
+    : _M_exception_object(0)
+    { }
 
+#ifndef _GLIBCXX_EH_PTR_COMPAT
+    inline
+#endif
+    exception_ptr::exception_ptr(const exception_ptr& other) _GLIBCXX_NOEXCEPT
+    : _M_exception_object(other._M_exception_object)
+    {
+      if (_M_exception_object)
+	_M_addref();
+    }
+
+#ifndef _GLIBCXX_EH_PTR_COMPAT
+    inline
+#endif
+    exception_ptr::~exception_ptr() _GLIBCXX_USE_NOEXCEPT
+    {
+      if (_M_exception_object)
+	_M_release();
+    }
+
+#ifndef _GLIBCXX_EH_PTR_COMPAT
+    inline
+#endif
+    exception_ptr&
+    exception_ptr::operator=(const exception_ptr& other) _GLIBCXX_USE_NOEXCEPT
+    {
+      exception_ptr(other).swap(*this);
+      return *this;
+    }
+
+#ifndef _GLIBCXX_EH_PTR_COMPAT
+    inline
+#endif
+    void
+    exception_ptr::swap(exception_ptr &other) _GLIBCXX_USE_NOEXCEPT
+    {
+      void *tmp = _M_exception_object;
+      _M_exception_object = other._M_exception_object;
+      other._M_exception_object = tmp;
+    }
+
+#ifdef _GLIBCXX_EH_PTR_COMPAT
     bool 
     operator==(const exception_ptr&, const exception_ptr&)
       _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
@@ -164,12 +225,12 @@ namespace std
     bool 
     operator!=(const exception_ptr&, const exception_ptr&)
       _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
+#endif
 
+    /// @relates exception_ptr
     inline void
     swap(exception_ptr& __lhs, exception_ptr& __rhs)
     { __lhs.swap(__rhs); }
-
-    // @}
 
     /// @cond undocumented
     template<typename _Ex>

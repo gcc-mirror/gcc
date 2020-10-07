@@ -2625,6 +2625,15 @@ CXXABI_1.3.12 {
 
 } CXXABI_1.3.11;
 
+CXXABI_1.3.13 {
+
+    # std::exception_ptr::_M_addref()
+    _ZNSt15__exception_ptr13exception_ptr9_M_addrefEv;
+    # std::exception_ptr::_M_release()
+    _ZNSt15__exception_ptr13exception_ptr10_M_releaseEv;
+
+} CXXABI_1.3.12;
+
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {
 
