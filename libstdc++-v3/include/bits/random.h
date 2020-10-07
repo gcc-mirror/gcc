@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp, _Tp __m, _Tp __a, _Tp __c,
 	     bool __big_enough = (!(__m & (__m - 1))
 				  || (_Tp(-1) - __c) / __a >= __m - 1),
-             bool __schrage_ok = __m % __a < __m / __a>
+             bool __schrage_ok = __a != 0 && __m % __a < __m / __a>
       struct _Mod
       {
 	typedef typename _Select_uint_least_t<std::__lg(__a)
