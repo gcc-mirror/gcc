@@ -45,6 +45,11 @@ __attribute__((objc_root_class))
 + (Class) superclass;
 + (const char *)name;
 - (const char *)name;
+
+/* For try-catch impl that retains and releases thrown objects.  */
+- (id) retain;
+- (void) release;
+
 @end
 
 #endif /* _TESTSUITE_OBJECT_H_ */
