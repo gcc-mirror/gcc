@@ -84,65 +84,6 @@ bb_seen_p (basic_block bb)
   return bitmap_bit_p (bb_seen, bb->index);
 }
 
-/* Return true if gimple stmt G can be duplicated.  */
-static bool
-can_duplicate_insn_p (gimple *g)
-{
-  /* An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
-     duplicated as part of its group, or not at all.
-     The IFN_GOMP_SIMT_VOTE_ANY and IFN_GOMP_SIMT_XCHG_* are part of such a
-     group, so the same holds there.  */
-  if (is_gimple_call (g)
-      && (gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
-	  || gimple_call_internal_p (g, IFN_GOMP_SIMT_EXIT)
-	  || gimple_call_internal_p (g, IFN_GOMP_SIMT_VOTE_ANY)
-	  || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_BFLY)
-	  || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_IDX)))
-    return false;
-
-  return true;
-}
-
-/* Return true if BB can be duplicated.  Avoid iterating over the insns.  */
-static bool
-can_duplicate_bb_no_insn_iter_p (const_basic_block bb)
-{
-  if (bb->index < NUM_FIXED_BLOCKS)
-    return false;
-
-  if (gimple *g = last_stmt (CONST_CAST_BB (bb)))
-    {
-      /* A transaction is a single entry multiple exit region.  It
-	 must be duplicated in its entirety or not at all.  */
-      if (gimple_code (g) == GIMPLE_TRANSACTION)
-	return false;
-
-      /* An IFN_UNIQUE call must be duplicated as part of its group,
-	 or not at all.  */
-      if (is_gimple_call (g)
-	  && gimple_call_internal_p (g)
-	  && gimple_call_internal_unique_p (g))
-	return false;
-    }
-
-  return true;
-}
-
-/* Return true if BB can be duplicated.  */
-static bool
-can_duplicate_bb_p (const_basic_block bb)
-{
-  if (!can_duplicate_bb_no_insn_iter_p (bb))
-    return false;
-
-  for (gimple_stmt_iterator gsi = gsi_start_bb (CONST_CAST_BB (bb));
-       !gsi_end_p (gsi); gsi_next (&gsi))
-    if (!can_duplicate_insn_p (gsi_stmt (gsi)))
-      return false;
-
-  return true;
-}
-
 static sbitmap can_duplicate_bb;
 
 /* Cache VAL as value of can_duplicate_bb_p for BB.  */
@@ -167,7 +108,7 @@ cached_can_duplicate_bb_p (const_basic_block bb)
       return false;
     }
 
-  return can_duplicate_bb_p (bb);
+  return can_duplicate_block_p (bb);
 }
 
 /* Return true if we should ignore the basic block for purposes of tracing.  */
@@ -190,16 +131,15 @@ analyze_bb (basic_block bb, int *count)
   gimple_stmt_iterator gsi;
   gimple *stmt;
   int n = 0;
-  bool can_duplicate = can_duplicate_bb_no_insn_iter_p (bb);
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);
       n += estimate_num_insns (stmt, &eni_size_weights);
-      can_duplicate = can_duplicate && can_duplicate_insn_p (stmt);
     }
   *count = n;
-  cache_can_duplicate_bb_p (bb, can_duplicate);
+
+  cache_can_duplicate_bb_p (bb, can_duplicate_block_p (CONST_CAST_BB (bb)));
 }
 
 /* Return true if E1 is more frequent than E2.  */
