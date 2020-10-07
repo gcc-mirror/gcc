@@ -9,7 +9,7 @@ struct AddRvalueReferenceImpl { typedef T type; };
 template <typename T>
 struct AddRvalueReferenceImpl<T, typename BoolSink<false &&
       [] {			// { dg-error "lambda" "" { target c++17_down } }
-         extern T &&tref;
+	extern void tref(T&&);
       }>::type> {
    typedef T &&type;
 };

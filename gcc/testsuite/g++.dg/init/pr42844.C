@@ -49,7 +49,7 @@ template <class T>
 void g ()
 {
   T const t; // { dg-error "uninitialized 'const" }
-  extern T const text;
+  extern T const text; // { dg-error "conflicting declaration" }
 }
 
 template void g<H> ();

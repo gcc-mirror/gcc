@@ -1,5 +1,8 @@
 2020-10-07  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 4e62aca0e05
+	c++: block-scope externs get an alias [PR95677,PR31775,PR95677]
+
 	Merge trunk e089e43365f
 
 	Merge trunk 255aa06d40d
