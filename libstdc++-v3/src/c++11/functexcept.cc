@@ -54,6 +54,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { _GLIBCXX_THROW_OR_ABORT(bad_alloc()); }
 
   void
+  __throw_bad_array_new_length()
+  { _GLIBCXX_THROW_OR_ABORT(bad_array_new_length()); }
+
+  void
   __throw_bad_cast()
   { _GLIBCXX_THROW_OR_ABORT(bad_cast()); }
 

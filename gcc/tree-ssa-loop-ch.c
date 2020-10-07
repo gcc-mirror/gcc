@@ -425,7 +425,8 @@ ch_base::copy_headers (function *fun)
       if (!gimple_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs,
 					 true))
 	{
-	  fprintf (dump_file, "Duplication failed.\n");
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Duplication failed.\n");
 	  continue;
 	}
       copied.safe_push (std::make_pair (entry, loop));

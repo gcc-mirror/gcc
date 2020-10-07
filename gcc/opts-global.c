@@ -378,10 +378,6 @@ handle_common_deferred_options (void)
 	  dbg_cnt_process_opt (opt->arg);
 	  break;
 
-	case OPT_fdbg_cnt_list:
-	  dbg_cnt_list_all_counters ();
-	  break;
-
 	case OPT_fdebug_prefix_map_:
 	  add_debug_prefix_map (opt->arg);
 	  break;

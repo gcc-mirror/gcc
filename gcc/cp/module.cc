@@ -10907,7 +10907,7 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	}
     }
 
-  if (DECL_BUILTIN_P (existing))
+  if (DECL_UNDECLARED_BUILTIN_P (existing))
     {
       // FIXME: Take the type from decl, see duplicate decls.  FIXME: Our
       // DECL_ANTICIPATED_P machinery is broken for modules --

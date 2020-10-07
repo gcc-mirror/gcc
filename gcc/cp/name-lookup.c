@@ -2751,7 +2751,7 @@ anticipated_builtin_p (tree ovl)
 {
   return (TREE_CODE (ovl) == OVERLOAD
 	  && OVL_HIDDEN_P (ovl)
-	  && DECL_BUILTIN_P (OVL_FUNCTION (ovl)));
+	  && DECL_UNDECLARED_BUILTIN_P (OVL_FUNCTION (ovl)));
 }
 
 /* BINDING records an existing declaration for a name in the current scope.
@@ -4131,7 +4131,7 @@ walk_module_binding (tree binding, bitmap partitions,
     {
       if (iter.hidden_p ())
 	decl_hidden = true;
-      if (!(decl_hidden && DECL_BUILTIN_P (*iter)))
+      if (!(decl_hidden && DECL_UNDECLARED_BUILTIN_P (*iter)))
 	count += callback (*iter, false, decl_hidden,
 			   !iter.using_p () ? 0
 			   : iter.exporting_p () ? -1 : +1,
@@ -4183,8 +4183,8 @@ walk_module_binding (tree binding, bitmap partitions,
 		      {
 			if (iter.hidden_p ())
 			  hidden = true;
-			gcc_checking_assert (!(hidden
-					       && DECL_BUILTIN_P (*iter)));
+			gcc_checking_assert
+			  (!(hidden && DECL_UNDECLARED_BUILTIN_P (*iter)));
 			count += callback (*iter, maybe_dups, hidden,
 					   !iter.using_p () ? 0
 					   : iter.exporting_p () ? -1 : +1,
@@ -5183,7 +5183,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		}
 	      else if (old.using_p ())
 		continue; /* This is a using decl. */
-	      else if (old.hidden_p () && DECL_BUILTIN_P (old_fn))
+	      else if (old.hidden_p () && DECL_UNDECLARED_BUILTIN_P (old_fn))
 		continue; /* This is an anticipated builtin.  */
 	      else if (!matching_fn_p (new_fn, old_fn))
 		continue; /* Parameters do not match.  */

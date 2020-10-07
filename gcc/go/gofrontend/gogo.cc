@@ -6212,7 +6212,7 @@ Function::import_func(Import* imp, std::string* pname,
 	  return false;
 	}
 
-      *body = imp->read(static_cast<size_t>(llen));
+      imp->read(static_cast<size_t>(llen), body);
     }
 
   return true;

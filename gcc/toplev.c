@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optinfo-emit-json.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
+#include "dbgcnt.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -2212,6 +2213,9 @@ finalize (bool no_backend)
 
   if (profile_report)
     dump_profile_report ();
+
+  if (flag_dbg_cnt_list)
+    dbg_cnt_list_all_counters ();
 
   /* Language-specific end of compilation actions.  */
   lang_hooks.finish ();

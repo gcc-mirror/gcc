@@ -3567,8 +3567,23 @@ divmod_candidate_p (gassign *stmt)
 
   /* Disable the transform if either is a constant, since division-by-constant
      may have specialized expansion.  */
-  if (CONSTANT_CLASS_P (op1) || CONSTANT_CLASS_P (op2))
+  if (CONSTANT_CLASS_P (op1))
     return false;
+
+  if (CONSTANT_CLASS_P (op2))
+    {
+      if (integer_pow2p (op2))
+	return false;
+
+      if (TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT
+	  && TYPE_PRECISION (type) <= BITS_PER_WORD)
+	return false;
+
+      /* If the divisor is not power of 2 and the precision wider than
+	 HWI, expand_divmod punts on that, so in that case it is better
+	 to use divmod optab or libfunc.  Similarly if choose_multiplier
+	 might need pre/post shifts of BITS_PER_WORD or more.  */
+    }
 
   /* Exclude the case where TYPE_OVERFLOW_TRAPS (type) as that should
      expand using the [su]divv optabs.  */

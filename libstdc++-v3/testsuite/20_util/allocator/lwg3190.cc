@@ -15,23 +15,39 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-do run { target c++11 } }
 
-#include <ranges>
-#include <vector>
+#include <memory>
+#include <new>
+#include <limits>
+#include <testsuite_hooks.h>
+
+// LWG 3190. std::allocator::allocate sometimes returns too little storage
 
 void
 test01()
 {
-  // LWG 3474. Nesting join_views is broken because of CTAD
-  std::vector<std::vector<std::vector<int>>> nested_vectors = {
-    {{1, 2, 3}, {4, 5}, {6}},
-    {{7},       {8, 9}, {10, 11, 12}},
-    {{13}}
-  };
-  auto joined = nested_vectors | std::views::join | std::views::join;
+  struct A { char biiiiig[1 << 16]; };
+  std::allocator<A> a;
+  try
+  {
+    std::size_t max = std::numeric_limits<std::size_t>::max() / sizeof(A);
+    A* p = a.allocate(max + 1);
+    throw p;
+  }
+#if __cplusplus >= 201103L
+  catch (const std::bad_array_new_length&)
+  {
+  }
+#endif
+  catch (const std::bad_alloc&)
+  {
+    VERIFY( __cplusplus < 201103L );
+  }
+}
 
-  using V = decltype(joined);
-  static_assert( std::same_as<std::ranges::range_value_t<V>, int> );
+int
+main()
+{
+  test01();
 }

@@ -476,6 +476,7 @@ extern GTY(()) int darwin_ms_struct;
    debugging data.  */
 
 #define ASM_DEBUG_SPEC  "%{g*:%{%:debug-level-gt(0):%{!gdwarf*:--gstabs}}}"
+#define ASM_DEBUG_OPTION_SPEC ""
 #define ASM_FINAL_SPEC \
   "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} %<gsplit-dwarf"
 

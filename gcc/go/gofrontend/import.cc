@@ -1375,8 +1375,8 @@ Import::read_name()
 
 // Read LENGTH bytes from the stream.
 
-std::string
-Import::read(size_t length)
+void
+Import::read(size_t length, std::string* out)
 {
   const char* data;
   if (!this->stream_->peek(length, &data))
@@ -1385,10 +1385,11 @@ Import::read(size_t length)
 	go_error_at(this->location_, "import error at %d: expected %d bytes",
 		    this->stream_->pos(), static_cast<int>(length));
       this->stream_->set_saw_error();
-      return "";
+      *out = std::string("");
+      return;
     }
+  *out = std::string(data, length);
   this->advance(length);
-  return std::string(data, length);
 }
 
 // Turn a string into a integer with appropriate error handling.
@@ -1487,7 +1488,7 @@ Stream_from_file::~Stream_from_file()
 bool
 Stream_from_file::do_peek(size_t length, const char** bytes)
 {
-  if (this->data_.length() <= length)
+  if (this->data_.length() >= length)
     {
       *bytes = this->data_.data();
       return true;
@@ -1504,7 +1505,7 @@ Stream_from_file::do_peek(size_t length, const char** bytes)
       return false;
     }
 
-  if (lseek(this->fd_, - got, SEEK_CUR) != 0)
+  if (lseek(this->fd_, - got, SEEK_CUR) < 0)
     {
       if (!this->saw_error())
 	go_fatal_error(Linemap::unknown_location(), "lseek failed: %m");
@@ -1524,7 +1525,7 @@ Stream_from_file::do_peek(size_t length, const char** bytes)
 void
 Stream_from_file::do_advance(size_t skip)
 {
-  if (lseek(this->fd_, skip, SEEK_CUR) != 0)
+  if (lseek(this->fd_, skip, SEEK_CUR) < 0)
     {
       if (!this->saw_error())
 	go_fatal_error(Linemap::unknown_location(), "lseek failed: %m");
@@ -1532,7 +1533,7 @@ Stream_from_file::do_advance(size_t skip)
     }
   if (!this->data_.empty())
     {
-      if (this->data_.length() < skip)
+      if (this->data_.length() > skip)
 	this->data_.erase(0, skip);
       else
 	this->data_.clear();

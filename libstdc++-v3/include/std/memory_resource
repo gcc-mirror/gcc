@@ -168,8 +168,8 @@ namespace pmr
       allocate(size_t __n)
       __attribute__((__returns_nonnull__))
       {
-	if (__n > (__gnu_cxx::__int_traits<size_t>::__max / sizeof(_Tp)))
-	  _GLIBCXX_THROW_OR_ABORT(bad_array_new_length());
+	if ((__gnu_cxx::__int_traits<size_t>::__max / sizeof(_Tp)) < __n)
+	  std::__throw_bad_array_new_length();
 	return static_cast<_Tp*>(_M_resource->allocate(__n * sizeof(_Tp),
 						       alignof(_Tp)));
       }
@@ -195,7 +195,7 @@ namespace pmr
 	allocate_object(size_t __n = 1)
 	{
 	  if ((__gnu_cxx::__int_traits<size_t>::__max / sizeof(_Up)) < __n)
-	    _GLIBCXX_THROW_OR_ABORT(bad_array_new_length());
+	    std::__throw_bad_array_new_length();
 	  return static_cast<_Up*>(allocate_bytes(__n * sizeof(_Up),
 						  alignof(_Up)));
 	}

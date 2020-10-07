@@ -3787,11 +3787,13 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
-      cgraph_node *spec_target = NULL;
 
-      /* FIXME: This may need updating for multiple calls.  */
+      auto_vec<cgraph_node *, 4> spec_targets;
       if (ie->speculative)
-	spec_target = ie->first_speculative_call_target ()->callee;
+	for (cgraph_edge *direct = ie->first_speculative_call_target ();
+	     direct;
+	     direct = direct->next_speculative_call_target ())
+	  spec_targets.safe_push (direct->callee);
 
       if (!opt_for_fn (node->decl, flag_indirect_inlining))
 	new_direct_edge = NULL;
@@ -3814,7 +3816,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       /* If speculation was removed, then we need to do nothing.  */
       if (new_direct_edge && new_direct_edge != ie
-	  && new_direct_edge->callee == spec_target)
+	  && spec_targets.contains (new_direct_edge->callee))
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
 	  top = IPA_EDGE_REF (cs);

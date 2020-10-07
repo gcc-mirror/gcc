@@ -53,6 +53,7 @@
 #include <cstring>
 
 #include <ext/aligned_buffer.h>
+#include <ext/numeric_traits.h>
 #include <bits/std_function.h>
 #include <bits/regex_constants.h>
 #include <bits/regex_error.h>
