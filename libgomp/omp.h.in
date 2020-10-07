@@ -211,6 +211,7 @@ extern void omp_get_schedule (omp_sched_t *, int *) __GOMP_NOTHROW;
 extern int omp_get_thread_limit (void) __GOMP_NOTHROW;
 extern void omp_set_max_active_levels (int) __GOMP_NOTHROW;
 extern int omp_get_max_active_levels (void) __GOMP_NOTHROW;
+extern int omp_get_supported_active_levels (void) __GOMP_NOTHROW;
 extern int omp_get_level (void) __GOMP_NOTHROW;
 extern int omp_get_ancestor_thread_num (int) __GOMP_NOTHROW;
 extern int omp_get_team_size (int) __GOMP_NOTHROW;

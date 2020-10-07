@@ -177,6 +177,7 @@ linkage, and do not throw exceptions.
 * omp_get_num_threads::         Size of the active team
 * omp_get_proc_bind::           Whether theads may be moved between CPUs
 * omp_get_schedule::            Obtain the runtime scheduling method
+* omp_get_supported_active_levels:: Maxiumum number of active levels supported
 * omp_get_team_num::            Get team number
 * omp_get_team_size::           Number of threads in a team
 * omp_get_thread_limit::        Maximum number of threads
@@ -638,6 +639,31 @@ set to the value @code{omp_sched_static}, @code{omp_sched_dynamic},
 @end table
 
 
+@node omp_get_supported_active_levels
+@section @code{omp_get_supported_active_levels} -- Maximum number of active regions supported
+@table @asis
+@item @emph{Description}:
+This function returns the maximum number of nested, active parallel regions
+supported by this implementation.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_supported_active_levels(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_supported_active_levels()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_max_active_levels}, @ref{omp_set_max_active_levels}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.15.
+@end table
+
+
 
 @node omp_get_team_num
 @section @code{omp_get_team_num} -- Get team number
@@ -877,7 +903,8 @@ adjustment of team sizes and @code{false} disables it.
 @table @asis
 @item @emph{Description}:
 This function limits the maximum allowed number of nested, active
-parallel regions.
+parallel regions.  @var{max_levels} must be less or equal to
+the value returned by @code{omp_get_supported_active_levels}.
 
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
@@ -891,7 +918,8 @@ parallel regions.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_max_active_levels}, @ref{omp_get_active_level}
+@ref{omp_get_max_active_levels}, @ref{omp_get_active_level},
+@ref{omp_get_supported_active_levels}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.15.

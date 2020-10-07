@@ -193,6 +193,8 @@ OMP_5.0.1 {
 	omp_destroy_allocator_;
 	omp_alloc;
 	omp_free;
+	omp_get_supported_active_levels;
+	omp_get_supported_active_levels_;
 } OMP_5.0;
 
 GOMP_1.0 {
