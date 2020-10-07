@@ -121,6 +121,7 @@ extern void s390_expand_vec_compare_cc (rtx, enum rtx_code, rtx, rtx, bool);
 extern enum rtx_code s390_reverse_condition (machine_mode, enum rtx_code);
 extern void s390_expand_vcond (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
 extern void s390_expand_vec_init (rtx, rtx);
+extern rtx s390_build_signbit_mask (machine_mode);
 extern rtx s390_return_addr_rtx (int, rtx);
 extern rtx s390_back_chain_rtx (void);
 extern rtx_insn *s390_emit_call (rtx, rtx, rtx, rtx);
