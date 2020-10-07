@@ -6347,6 +6347,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   tree n2var = NULL_TREE;
   tree n2v = NULL_TREE;
   tree *nonrect_bounds = NULL;
+  tree min_arg1 = NULL_TREE, min_arg2 = NULL_TREE;
   if (fd->collapse > 1)
     {
       if (broken_loop || gimple_omp_for_combined_into_p (fd->for_stmt))
@@ -6406,9 +6407,10 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 			     fold_convert (itype, fd->loops[i].step));
 	  t = fold_convert (type, t);
 	  tree t2 = fold_build2 (MINUS_EXPR, type, n2, n1);
-	  t = fold_build2 (MIN_EXPR, type, t2, t);
-	  t = fold_build2 (PLUS_EXPR, type, fd->loop.v, t);
-	  expand_omp_build_assign (&gsi, n2var, t);
+	  min_arg1 = create_tmp_var (type);
+	  expand_omp_build_assign (&gsi, min_arg1, t2);
+	  min_arg2 = create_tmp_var (type);
+	  expand_omp_build_assign (&gsi, min_arg2, t);
 	}
       else
 	{
@@ -6815,7 +6817,16 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 		}
 	      else
 		t = counts[i + 1];
-	      t = fold_build2 (MIN_EXPR, type, t2, t);
+	      expand_omp_build_assign (&gsi, min_arg1, t2);
+	      expand_omp_build_assign (&gsi, min_arg2, t);
+	      e = split_block (init_bb, last_stmt (init_bb));
+	      gsi = gsi_after_labels (e->dest);
+	      init_bb = e->dest;
+	      remove_edge (FALLTHRU_EDGE (entry_bb));
+	      make_edge (entry_bb, init_bb, EDGE_FALLTHRU);
+	      set_immediate_dominator (CDI_DOMINATORS, init_bb, entry_bb);
+	      set_immediate_dominator (CDI_DOMINATORS, l1_bb, init_bb);
+	      t = fold_build2 (MIN_EXPR, type, min_arg1, min_arg2);
 	      t = fold_build2 (PLUS_EXPR, type, fd->loop.v, t);
 	      expand_omp_build_assign (&gsi, n2var, t);
 	    }
