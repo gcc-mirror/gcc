@@ -13397,7 +13397,8 @@ tsubst_aggr_type (tree t,
 					 complain, in_decl);
 	  if (argvec == error_mark_node)
 	    r = error_mark_node;
-	  else if (cxx_dialect >= cxx2a && dependent_scope_p (context))
+	  else if (!entering_scope
+		   && cxx_dialect >= cxx2a && dependent_scope_p (context))
 	    {
 	      /* See maybe_dependent_member_ref.  */
 	      tree name = TYPE_IDENTIFIER (t);
@@ -14082,7 +14083,11 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
     {
       tree new_type;
       ++processing_template_decl;
-      new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+      if (CLASS_TYPE_P (TREE_TYPE (t)))
+	new_type = tsubst_aggr_type (TREE_TYPE (t), args, complain,
+				     in_decl, /*entering*/1);
+      else
+	new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
       --processing_template_decl;
       if (new_type == error_mark_node)
 	return error_mark_node;
