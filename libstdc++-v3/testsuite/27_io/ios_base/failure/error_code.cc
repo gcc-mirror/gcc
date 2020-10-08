@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,35 +20,29 @@
 #include <ios>
 #include <testsuite_hooks.h>
 
-using test_type = std::ios_base::failure;
-
-#if _GLIBCXX_USE_CXX11_ABI
-static_assert( std::is_base_of<std::system_error, test_type>::value, "base" );
-#endif
-
 void
 test01()
 {
-  test_type e("io error");
-  VERIFY(std::string(e.what()).find("io error") != std::string::npos);
-  e = test_type("", make_error_code(std::io_errc::stream));
-}
-
-struct E : test_type
-{
-  E(const char* s) : test_type(s, make_error_code(std::io_errc::stream)) { }
-};
-
-void
-test02()
-{
-  E e("io error");
-  VERIFY(std::string(e.what()).find("io error") != std::string::npos);
+  std::error_code ec, def_ec;
+#if _GLIBCXX_USE_CXX11_ABI
+  // For the new ABI code() should return the constructor argument.
+  ec = std::make_error_code(std::errc::executable_format_error);
+  def_ec = std::io_errc::stream;
+#else
+  // For the old ABI code() always returns a default-constructed error_code.
+#endif
+  std::ios_base::failure e1("string literal");
+  VERIFY( e1.code() == def_ec );
+  std::ios_base::failure e2(std::string("std::string"));
+  VERIFY( e2.code() == def_ec );
+  std::ios_base::failure e3("string literal", ec);
+  VERIFY( e3.code() == ec );
+  std::ios_base::failure e4(std::string("std::string"), ec);
+  VERIFY( e4.code() == ec );
 }
 
 int
 main()
 {
   test01();
-  test02();
 }
