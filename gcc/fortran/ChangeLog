@@ -1,3 +1,9 @@
+2020-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47469
+	* trans-expr.c (arrayfunc_assign_needs_temporary): Tidy detection
+	of pointer and allocatable functions.
+
 2020-10-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/97272

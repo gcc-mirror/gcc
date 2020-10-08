@@ -1,3 +1,93 @@
+2020-10-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* common.opt (-fevrp-mode): Rename and move...
+	* params.opt (--param=evrp-mode): ...here.
+	* gimple-range.h (DEBUG_RANGE_CACHE): Use param_evrp_mode instead
+	of flag_evrp_mode.
+	* gimple-ssa-evrp.c (rvrp_folder): Same.
+	(hybrid_folder): Same.
+	(execute_early_vrp): Same.
+
+2020-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97307
+	* tree-ssa-sink.c (statement_sink_location): Change heuristic
+	for not skipping stores to look for virtual definitions
+	rather than uses.
+
+2020-10-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.h (irange_allocator::allocate): Allocate in two hunks
+	instead of using the variably-sized trailing array approach.
+
+2020-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdiagnostics-plain-output): Add
+	-fdiagnostics-path-format=separate-events to list of
+	options injected by -fdiagnostics-plain-output.
+	* opts-common.c (decode_cmdline_options_to_array): Likewise.
+
+2020-10-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96394
+	* ipa-prop.c (update_indirect_edges_after_inlining): Do not add
+	resolved speculation edges to vector of new direct edges even in
+	presence of multiple speculative direct edges for a single call.
+
+2020-10-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (unspec): Add UNSPEC_ADDPTR.
+	(addptrdi3): Add SGPR alternative.
+
+2020-10-07  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (add_filepath_AT_string): New function.
+	(asm_outputs_debug_line_str): Likewise.
+	(add_filename_attribute): Likewise.
+	(add_comp_dir_attribute): Call add_filepath_AT_string.
+	(gen_compile_unit_die): Call add_filename_attribute for name.
+	(init_sections_and_labels): Init debug_line_str_section when
+	asm_outputs_debug_line_str return true.
+	(dwarf2out_early_finish): Remove DW_AT_name and DW_AT_comp_dir
+	hack and call add_filename_attribute for the remap_debug_filename.
+
+2020-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_AS_GDWARF_5_DEBUG_FLAG,
+	HAVE_AS_WORKING_DWARF_4_FLAG): New tests.
+	* gcc.c (ASM_DEBUG_DWARF_OPTION): Define.
+	(ASM_DEBUG_SPEC): Use ASM_DEBUG_DWARF_OPTION instead of
+	"--gdwarf2".  Use %{cond:opt1;:opt2} style.
+	(ASM_DEBUG_OPTION_DWARF_OPT): Define.
+	(ASM_DEBUG_OPTION_SPEC): Define.
+	(asm_debug_option): New variable.
+	(asm_options): Add "%(asm_debug_option)".
+	(static_specs): Add asm_debug_option entry.
+	(static_spec_functions): Add dwarf-version-gt.
+	(debug_level_greater_than_spec_func): New function.
+	* config/darwin.h (ASM_DEBUG_OPTION_SPEC): Define.
+	* config/darwin9.h (ASM_DEBUG_OPTION_SPEC): Redefine.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
+2020-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/97305
+	* optc-save-gen.awk: Don't declare mask variable if explicit_mask
+	array is not present.
+
+2020-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_simd): Don't emit MIN_EXPR and PLUS_EXPR
+	at the end of entry_bb and innermost init_bb, instead force arguments
+	for MIN_EXPR into temporaries in both cases and jump to a new bb that
+	performs MIN_EXPR and PLUS_EXPR.
+
+2020-10-07  Tom de Vries  <tdevries@suse.de>
+
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Add missing NULL test
+	for dump_file.
+
 2020-10-06  Andrew MacLeod  <amacleod@redhat.com>
 
 	* flag-types.h (enum evrp_mode): New enumerated type EVRP_MODE_*.
