@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref.h"
 #include "attr-fnspec.h"
 #include "errors.h"
+#include "dbgcnt.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -2468,6 +2469,9 @@ modref_may_conflict (const gimple *stmt,
   size_t i, j, k;
 
   if (tt->every_base)
+    return true;
+
+  if (!dbg_cnt (ipa_mod_ref))
     return true;
 
   base_set = ao_ref_base_alias_set (ref);
