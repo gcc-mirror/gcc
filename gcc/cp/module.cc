@@ -6458,6 +6458,9 @@ trees_in::core_vals (tree t)
     case PARM_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
 	{
+	  /* The DECL_VALUE hash table is a cache, thus if we're
+	     reading a duplicate (which we end up discarding), the
+	     value expr will also be cleaned up at the next gc.  */
 	  tree val = tree_node ();
 	  SET_DECL_VALUE_EXPR (t, val);
 	}
@@ -15563,7 +15566,13 @@ module_state::read_prepare_maps (const module_state_config *cfg)
   ordinary_locs.first = ordinary_locs.second = 0;
   macro_locs.first = macro_locs.second = 0;
 
-  inform (loc, "unable to represent source locations in this module");
+  static bool informed = false;
+  if (!informed)
+    {
+      /* Just give the notice once.  */
+      informed = true;
+      inform (loc, "unable to represent further imported source locations");
+    }
 
   return false;
 }

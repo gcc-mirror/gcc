@@ -1,5 +1,9 @@
 2020-10-07  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_state::read_prepare_maps): Only inform of
+	location shortage once.
+
 	Fix -save-temps & header units
 	gcc/cp/
 	* module.cc (loc_spans::maybe_init): New.
