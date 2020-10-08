@@ -391,8 +391,10 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 	      if (gimple_code (use_stmt) == GIMPLE_PHI)
 		{
 		  /* In case the PHI node post-dominates the current insert location
-		     we can disregard it.  */
+		     we can disregard it.  But make sure it is not dominating
+		     it as well as can happen in a CFG cycle.  */
 		  if (commondom != bb
+		      && !dominated_by_p (CDI_DOMINATORS, commondom, bb)
 		      && dominated_by_p (CDI_POST_DOMINATORS, commondom, bb))
 		    continue;
 		  bb = EDGE_PRED (bb, PHI_ARG_INDEX_FROM_USE (use_p))->src;
