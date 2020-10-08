@@ -2546,16 +2546,22 @@ modref_may_conflict (const gimple *stmt,
 	      else
 		{
 		  ao_ref ref2;
-
-		  ao_ref_init_from_ptr_and_range
-			 (&ref2, arg, true,
-			  access_node->offset
-			  + (access_node->parm_offset
-			     << LOG2_BITS_PER_UNIT), access_node->size,
-			  access_node->max_size);
-		  ref2.ref_alias_set = ref_set;
-		  ref2.base_alias_set = base_set;
-		  if (refs_may_alias_p_1 (&ref2, ref, tbaa_p))
+		  poly_offset_int off = (poly_offset_int)access_node->offset
+			+ ((poly_offset_int)access_node->parm_offset
+			   << LOG2_BITS_PER_UNIT);
+		  poly_int64 off2;
+		  if (off.to_shwi (&off2))
+		    {
+		      ao_ref_init_from_ptr_and_range
+			     (&ref2, arg, true, off2,
+			      access_node->size,
+			      access_node->max_size);
+		      ref2.ref_alias_set = ref_set;
+		      ref2.base_alias_set = base_set;
+		      if (refs_may_alias_p_1 (&ref2, ref, tbaa_p))
+			return true;
+		    }
+		  else if (ptr_deref_may_alias_ref_p_1 (arg, ref))
 		    return true;
 		}
 	      num_tests++;
