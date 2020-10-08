@@ -1,3 +1,12 @@
+2020-10-07  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-10-06  Martin Liska  <mliska@suse.cz>
+
+	PR lto/97290
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Use sh_link of a .symtab_shndx section.
+
 2020-09-11  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
