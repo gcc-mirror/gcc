@@ -6031,8 +6031,8 @@ trees_out::core_vals (tree t)
       state->write_location (*this, t->block.locus);
       state->write_location (*this, t->block.end_locus);
       
-      // FIXME:This contains VAR_DECLS and FN_DECLS with extern. Those
-      // should be first met here and walked by value
+      /* DECL_LOCAL_DECL_P decls are first encountered here and
+         streamed by value.  */
       chained_decls (t->block.vars);
       /* nonlocalized_vars is a middle-end thing.  */
       WT (t->block.subblocks);
@@ -7463,8 +7463,15 @@ trees_in::install_entity (tree decl)
 void
 trees_out::decl_value (tree decl, depset *dep)
 {
-  gcc_checking_assert (DECL_P (decl) && !DECL_CLONED_FUNCTION_P (decl)
+  /* We should not be writing clones or template parms.  */
+  gcc_checking_assert (DECL_P (decl)
+		       && !DECL_CLONED_FUNCTION_P (decl)
 		       && !DECL_TEMPLATE_PARM_P (decl));
+
+  /* We should never be writing non-typedef ptrmemfuncs by value.  */
+  gcc_checking_assert (TREE_CODE (decl) != TYPE_DECL
+		       || DECL_ORIGINAL_TYPE (decl)
+		       || !TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)));
 
   merge_kind mk = get_merge_kind (decl, dep);
 
@@ -7856,6 +7863,17 @@ trees_in::decl_value ()
       if (existing == error_mark_node)
 	goto bail;
 
+      if (TREE_CODE (STRIP_TEMPLATE (existing)) == TYPE_DECL)
+	{
+	  tree etype = TREE_TYPE (existing);
+	  if (TYPE_LANG_SPECIFIC (etype)
+	      && COMPLETE_TYPE_P (etype)
+	      && !CLASSTYPE_MEMBER_VEC (etype))
+	    /* Give it a member vec, we're likely gonna be looking
+	       inside it.  */
+	    set_class_bindings (etype, -1);
+	}
+
       /* Install the existing decl into the back ref array.  */
       register_duplicate (decl, existing);
       back_refs[~tag] = existing;
@@ -8122,7 +8140,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	      // was instantiated from.  For instance deferred
 	      // noexcept and (probably?) default parms.  We need to
 	      // refer to that specific node in some way.  For now
-	      // just clone it.  We should preemptively puth those
+	      // just clone it.  We should preemptively put those
 	      // things in the map when we reference their template by
 	      // name.  See add_indirects.
 	      return true;
@@ -8329,7 +8347,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
      TEMPLATE_DECL.  Note TI_TEMPLATE is not a TEMPLATE_DECL for
      (some) friends, so we need to check that.  */
   // FIXME: should local friend template specializations be by value?
-  // They don't get idents so we'll never know they;re imported, but I
+  // They don't get idents so we'll never know they're imported, but I
   // think we can only reach them from the TU that defines the
   // befriending class?
   if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
@@ -9896,7 +9914,7 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 
       if (TREE_CODE (decl) == TEMPLATE_DECL
 	  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
-	// FIXME:Discover whether these friends are also on the
+	// FIXME: Discover whether these friends are also on the
 	// DECL_FRIENDLIST, like the below friends.
 	return MK_local_friend;
 
@@ -10138,7 +10156,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       if (streaming_p ())
 	u (get_mergeable_specialization_flags (entry->tmpl, decl));
 
-      // FIXME:variable templates with concepts need constraints from
+      // FIXME: Variable templates with concepts need constraints from
       // the specialization -- see spec_hasher::equal
       if (CHECKING_P)
 	{
@@ -10903,7 +10921,7 @@ trees_in::is_matching_decl (tree existing, tree decl)
       // necessarily global module
     mismatch:
       if (DECL_IS_BUILTIN (existing))
-	// FIXME: it'd be nice if we had a way of determining
+	// FIXME: It'd be nice if we had a way of determining
 	// whether this builtin had already met a proper decl.  For
 	// now just copy the type.  Perhaps we should update
 	// SOURCE_LOCATION in those cases?
@@ -11041,7 +11059,7 @@ has_definition (tree decl)
 	{
 	  int use_tpl = DECL_USE_TEMPLATE (decl);
 
-	  // FIXME: partial specializations have definitions too.
+	  // FIXME: Partial specializations have definitions too.
 	  if (use_tpl < 2)
 	    return true;
 	}
@@ -11321,7 +11339,7 @@ member_owned_by_class (tree member)
   int use_tpl = -1;
   if (tree ti = node_template_info (member, use_tpl))
     {
-      // FIXME: don't bail on things that CANNOT have their own
+      // FIXME: Don't bail on things that CANNOT have their own
       // template header.  No, make sure they're in the same cluster.
       if (use_tpl > 0)
 	return NULL_TREE;
@@ -11352,11 +11370,22 @@ trees_out::write_class_def (tree defn)
 
   vec_chained_decls (TYPE_FIELDS (type));
 
+  /* Every class but __as_base has a type-specific.  */
+  gcc_checking_assert (!TYPE_LANG_SPECIFIC (type) == IS_FAKE_BASE_TYPE (type));
+
   if (TYPE_LANG_SPECIFIC (type))
     {
       {
 	vec<tree, va_gc> *v = CLASSTYPE_MEMBER_VEC (type);
-	unsigned len = vec_safe_length (v);
+	if (!v)
+	  {
+	    gcc_checking_assert (!streaming_p ());
+	    /* Force a class vector.  */
+	    v = set_class_bindings (type, -1);
+	    gcc_checking_assert (v);
+	  }
+
+	unsigned len = v->length ();
 	if (streaming_p ())
 	  u (len);
 	for (unsigned ix = 0; ix != len; ix++)
@@ -15595,7 +15624,7 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
   filenames.create (20);
 
   /* Determine the unique filenames.  */
-  // FIXME: should be found by the prepare fn as part of the
+  // FIXME: Should be found by the prepare fn as part of the
   // unreachable pruning
   for (unsigned ix = loc_spans::SPAN_FIRST; ix != spans.length (); ix++)
     {

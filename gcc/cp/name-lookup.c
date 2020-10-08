@@ -1956,14 +1956,11 @@ find_member_slot (tree klass, tree name)
       vec_alloc (member_vec, 8);
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
       if (complete_p)
-	{
-	  /* If the class is complete but had no member_vec, we need
-	     to add the TYPE_FIELDS into it.  We're also most likely
-	     to be adding ctors & dtors, so ask for 6 spare slots (the
-	     abstract cdtors and their clones).  */
-	  set_class_bindings (klass, 6);
-	  member_vec = CLASSTYPE_MEMBER_VEC (klass);
-	}
+	/* If the class is complete but had no member_vec, we need to
+	   add the TYPE_FIELDS into it.  We're also most likely to be
+	   adding ctors & dtors, so ask for 6 spare slots (the
+	   abstract cdtors and their clones).  */
+	member_vec = set_class_bindings (klass, 6);
     }
 
   if (IDENTIFIER_CONV_OP_P (name))
@@ -2309,18 +2306,18 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
    no existing MEMBER_VEC and fewer than 8 fields, do nothing.  We
    know there must be at least 1 field -- the self-reference
    TYPE_DECL, except for anon aggregates, which will have at least
-   one field anyway.  */
+   one field anyway.  If EXTRA < 0, always create the vector.  */
 
-void 
-set_class_bindings (tree klass, unsigned extra)
+vec<tree, va_gc> *
+set_class_bindings (tree klass, int extra)
 {
   unsigned n_fields = count_class_fields (klass);
   vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
 
-  if (member_vec || n_fields >= 8)
+  if (member_vec || n_fields >= 8 || extra < 0)
     {
       /* Append the new fields.  */
-      vec_safe_reserve_exact (member_vec, extra + n_fields);
+      vec_safe_reserve_exact (member_vec, n_fields + (extra >= 0 ? extra : 0));
       member_vec_append_class_fields (member_vec, klass);
     }
 
@@ -2330,6 +2327,8 @@ set_class_bindings (tree klass, unsigned extra)
       member_vec->qsort (member_name_cmp);
       member_vec_dedup (member_vec);
     }
+
+  return member_vec;
 }
 
 /* Insert lately defined enum ENUMTYPE into KLASS for the sorted case.  */
@@ -4038,22 +4037,20 @@ add_mergeable_namespace_entity (tree *gslot, tree decl)
 }
 
 /* A mergeable entity of KLASS called NAME is being loaded.  Return
-   the set of things it could be.  */
-// FIXME: As mentioned elsewhere, we should force a member vector In
-// this case that could mean lazily creating it for an in-TU class
-// that is being merged.  Plus what if we have stat struc going on?
+   the set of things it could be.  All such non-as_base classes have
+   been given a member vec.  */
 
 tree
 mergeable_class_entities (tree klass, tree name)
 {
   tree found = NULL_TREE;
-  vec<tree, va_gc> *member_vec = NULL;
 
-  if (TYPE_LANG_SPECIFIC (klass))
-    member_vec = CLASSTYPE_MEMBER_VEC (klass);
-
-  if (member_vec)
+  if (!COMPLETE_TYPE_P (klass))
+    ;
+  else if (TYPE_LANG_SPECIFIC (klass))
     {
+      vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
+
       found = member_vec_binary_search (member_vec, name);
       if (IDENTIFIER_CONV_OP_P (name))
 	{
@@ -4064,11 +4061,8 @@ mergeable_class_entities (tree klass, tree name)
     }
   else
     {
+      gcc_checking_assert (IS_FAKE_BASE_TYPE (klass));
       found = fields_linear_search (klass, name, false);
-      if (found && !DECL_DECLARES_TYPE_P (found))
-	if  (tree type = fields_linear_search (klass, name, true))
-	  if (type != found)
-	    found = ovl_make (type, found);
     }
 
   return found;
@@ -4294,8 +4288,8 @@ add_module_decl (tree ns, tree name, tree decl)
   newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
 }
 
-// FIXME: this looks like the same problem as mergeable_class_member's
-// handling of anonymous fields?
+/* DECL is an unnameable member of CTX.  Return a suitable identifying
+   index.  */
 
 unsigned
 get_field_ident (tree ctx, tree decl)
@@ -4327,6 +4321,7 @@ lookup_field_ident (tree ctx, tree name, unsigned ix)
 {
   if (!name)
     {
+      /* It is unnameable, get_field_ident provided IX.  */
       for (tree fields = TYPE_FIELDS (ctx);
 	   fields; fields = DECL_CHAIN (fields))
 	if (DECL_CONTEXT (fields) == ctx
@@ -4341,17 +4336,18 @@ lookup_field_ident (tree ctx, tree name, unsigned ix)
     }
 
   tree val = NULL_TREE;
-  vec<tree, va_gc> *member_vec = NULL;
   if (TYPE_LANG_SPECIFIC (ctx))
-    member_vec = CLASSTYPE_MEMBER_VEC (ctx);
+    {
+      vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx);
 
-  if (member_vec)
-    val = member_vec_binary_search (member_vec, name);
+      val = member_vec_binary_search (member_vec, name);
+    }
   else
-    // FIXME: Force streamed structs to have a member vec?
-    // Doesn't help for ptr-to-member-fn classes.  But we know what
-    // they smell like
-    val = fields_linear_search (ctx, name, false);
+    {
+      gcc_checking_assert (IS_FAKE_BASE_TYPE (ctx)
+			   || TYPE_PTRMEMFUNC_P (ctx));
+      val = fields_linear_search (ctx, name, false);
+    }
 
   if (!val)
     ;
@@ -8449,7 +8445,6 @@ do_pushtag (tree name, tree type, TAG_how how)
       bool is_friend = how == TAG_how::HIDDEN_FRIEND;
       if (is_friend)
 	{
-	  // FIXME: can go away
 	  /* This is a friend.  Make this TYPE_DECL node hidden from
 	     ordinary name lookup.  Its corresponding TEMPLATE_DECL
 	     will be marked in push_template_decl.  */

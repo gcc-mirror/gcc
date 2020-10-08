@@ -1,5 +1,16 @@
 2020-10-07  Nathan Sidwell  <nathan@acm.org>
 
+	Streamed classes always have a member vector.
+	gcc/cp/
+	* module.cc (trees_out::decl_value): Assert no pmfs.
+	(trees_in::decl_value): Ensure existing duplicate class has member
+	vector.
+	(tree_out::write_class_def): Ensure there's a method vector.
+	* name-lookup.c (set_class_bindings): Extra can be negative,
+	meaning always.  Return the member vector.
+	(mergeable_class_entities): Simplify.
+	(lookup_field_ident): Simplify.
+
 	gcc/cp/
 	* module.cc (module_state::read_prepare_maps): Only inform of
 	location shortage once.

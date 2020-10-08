@@ -25633,9 +25633,6 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
 
   if (VAR_P (d))
     {
-      tree init;
-      bool const_init = false;
-
       /* Clear out DECL_RTL; whatever was there before may not be right
 	 since we've reset the type of the declaration.  */
       SET_DECL_RTL (d, NULL);
@@ -25645,7 +25642,8 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
 	 regenerate_decl_from_template so we don't need to
 	 push/pop_access_scope again here.  Pull it out so that
 	 cp_finish_decl can process it.  */
-      init = DECL_INITIAL (d);
+      bool const_init = false;
+      tree init = DECL_INITIAL (d);
       DECL_INITIAL (d) = NULL_TREE;
       DECL_INITIALIZED_P (d) = 0;
 
