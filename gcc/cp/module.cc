@@ -10936,17 +10936,20 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	}
     }
 
-  if (DECL_UNDECLARED_BUILTIN_P (existing))
+  if (DECL_UNDECLARED_BUILTIN_P (existing)
+      && !DECL_UNDECLARED_BUILTIN_P (decl))
     {
-      // FIXME: Take the type from decl, see duplicate decls.  FIXME: Our
-      // DECL_ANTICIPATED_P machinery is broken for modules --
-      // HIDDENness is a property of the symbol table, distinct.  from
-      // DECL_ANTICIPATED_P which should just be for expected builtins
-      // I think I can fix that up when we convert the single
-      // symbol-table slot to a module-vector: Wrap the anticipated
-      // decl left behind in a hidden overload.  Then the decl itself
-      // need not be noted as anticipated, kind of.  Hm, not sure if
-      // that works right.
+      /* We're matching a builtin that the user has yet to declare.
+	 We are the one! */
+      DECL_SOURCE_LOCATION (existing) = DECL_SOURCE_LOCATION (decl);
+      if (TREE_CODE (decl) != TYPE_DECL)
+	{
+	  /* Propagate exceptions etc.  */
+	  TREE_TYPE (existing) = TREE_TYPE (decl);
+	  TREE_NOTHROW (existing) = TREE_NOTHROW (decl);
+	}
+      /* This is actually an import! */
+      DECL_MODULE_IMPORT_P (existing) = true;
     }
 
   if (VAR_OR_FUNCTION_DECL_P (decl)

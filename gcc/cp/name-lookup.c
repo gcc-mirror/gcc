@@ -3706,7 +3706,7 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
    global/partition decl.  */
 
 static tree
-check_module_override (tree decl, tree mvec, bool is_friend,
+check_module_override (tree decl, tree mvec, bool hiding,
 		       tree scope, tree name)
 {
   bitmap imports = get_import_bitmap ();
@@ -3749,7 +3749,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	for (ovl_iterator iter (bind); iter; ++iter)
 	  if (iter.using_p ())
 	    ;
-	  else if (tree match = duplicate_decls (decl, *iter, is_friend))
+	  else if (tree match = duplicate_decls (decl, *iter, hiding))
 	    {
 	      if (TREE_CODE (match) == TYPE_DECL)
 		/* The IDENTIFIER will have the type referring to the
@@ -3778,7 +3778,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	{
 	  tree match = *iter;
 	  
-	  if (duplicate_decls (decl, match, is_friend))
+	  if (duplicate_decls (decl, match, hiding))
 	    {
 	      if (TREE_CODE (match) == TYPE_DECL)
 		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (match));
@@ -3856,6 +3856,10 @@ do_pushdecl (tree decl, bool hiding)
       for (ovl_iterator iter (old); iter; ++iter)
 	if (iter.using_p ())
 	  ; /* Ignore using decls here.  */
+	else if (iter.hidden_p ()
+		 && DECL_LANG_SPECIFIC (*iter)
+		 && DECL_MODULE_IMPORT_P (*iter))
+	  ; /* An undeclared builtin imported from elsewhere.  */
 	else if (tree match
 		 = duplicate_decls (decl, *iter, hiding, iter.hidden_p ()))
 	  {
