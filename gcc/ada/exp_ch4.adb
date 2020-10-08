@@ -1268,9 +1268,8 @@ package body Exp_Ch4 is
          --  expression with a constrained subtype in order to compute the
          --  proper size for the allocator.
 
-         if Is_Array_Type (T)
+         if Is_Packed_Array (T)
            and then not Is_Constrained (T)
-           and then Is_Packed (T)
          then
             declare
                ConstrT      : constant Entity_Id := Make_Temporary (Loc, 'A');

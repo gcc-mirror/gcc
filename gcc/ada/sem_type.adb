@@ -1167,16 +1167,14 @@ package body Sem_Type is
       --  useless unchecked conversions, and since this can only arise in
       --  (known correct) expanded code, no harm is done.
 
-      elsif Is_Array_Type (T2)
-        and then Is_Packed (T2)
+      elsif Is_Packed_Array (T2)
         and then T1 = Packed_Array_Impl_Type (T2)
       then
          return True;
 
       --  Similarly an array type covers its corresponding packed array type
 
-      elsif Is_Array_Type (T1)
-        and then Is_Packed (T1)
+      elsif Is_Packed_Array (T1)
         and then T2 = Packed_Array_Impl_Type (T1)
       then
          return True;

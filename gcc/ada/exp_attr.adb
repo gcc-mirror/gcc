@@ -4235,7 +4235,7 @@ package body Exp_Attr is
       begin
          --  Processing for packed array types
 
-         if Is_Array_Type (Ptyp) and then Is_Packed (Ptyp) then
+         if Is_Packed_Array (Ptyp) then
             Ityp := Get_Index_Subtype (N);
 
             --  If the index type, Ityp, is an enumeration type with holes,
@@ -4333,7 +4333,7 @@ package body Exp_Attr is
                Xtyp : Entity_Id;
 
             begin
-               if Is_Array_Type (Dtyp) and then Is_Packed (Dtyp) then
+               if Is_Packed_Array (Dtyp) then
                   Xtyp := Get_Index_Subtype (N);
 
                   Rewrite (N,
@@ -7869,8 +7869,7 @@ package body Exp_Attr is
 
          if Is_Entity_Name (Pref)
            and then Is_Formal (Entity (Pref))
-           and then Is_Array_Type (Ptyp)
-           and then Is_Packed (Ptyp)
+           and then Is_Packed_Array (Ptyp)
          then
             Rewrite (N,
               Make_Attribute_Reference (Loc,
@@ -7884,9 +7883,8 @@ package body Exp_Attr is
          --  type, but also a hint to the actual constrained type.
 
          elsif Nkind (Pref) = N_Explicit_Dereference
-           and then Is_Array_Type (Ptyp)
+           and then Is_Packed_Array (Ptyp)
            and then not Is_Constrained (Ptyp)
-           and then Is_Packed (Ptyp)
          then
             Set_Actual_Designated_Subtype (Pref, Get_Actual_Subtype (Pref));
 

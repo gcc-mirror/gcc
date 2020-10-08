@@ -20450,8 +20450,7 @@ package body Sem_Util is
 
          elsif Nkind (P) = N_Type_Conversion
            and then not Comes_From_Source (P)
-           and then Is_Array_Type (Etype (P))
-           and then Is_Packed (Etype (P))
+           and then Is_Packed_Array (Etype (P))
          then
             return Is_Variable (Expression (P));
 
