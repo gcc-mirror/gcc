@@ -4087,6 +4087,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  atmp = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
 		  stmt = gimple_build_call (atmp, 2, x,
 					    size_int (DECL_ALIGN (var)));
+		  cfun->calls_alloca = 1;
 		  tmp = create_tmp_var_raw (ptr_type_node);
 		  gimple_add_tmp_var (tmp);
 		  gimple_call_set_lhs (stmt, tmp);
