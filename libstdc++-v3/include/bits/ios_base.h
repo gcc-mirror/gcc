@@ -289,6 +289,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual const char*
       what() const throw();
 
+#if __cplusplus >= 201103L
+      // Define the new members required by C++11,
+      // even though the error_code cannot be stored.
+
+      explicit
+      failure(const string& __s, const error_code&) noexcept
+      : failure(__s)
+      { }
+
+      explicit
+      failure(const char* __s, const error_code& = error_code{})
+      : failure(string(__s))
+      { }
+
+      // Stand-in for system_error::code() but returning by value.
+      error_code code() const noexcept { return error_code{}; }
+#endif
+
     private:
       string _M_msg;
     };
