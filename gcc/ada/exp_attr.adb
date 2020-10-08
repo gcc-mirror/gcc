@@ -6224,7 +6224,7 @@ package body Exp_Attr is
                   then
                      Set_Attribute_Name (N, Name_Object_Size);
 
-                  --  In all other cases, Size and VADS_Size are the sane
+                  --  In all other cases, Size and VADS_Size are the same
 
                   else
                      Set_Attribute_Name (N, Name_Size);

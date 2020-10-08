@@ -535,7 +535,7 @@ package body Checks is
       --  We do not need checks if we are not generating code (i.e. the
       --  expander is not active). This is not just an optimization, there
       --  are cases (e.g. with pragma Debug) where generating the checks
-      --  can cause real trouble).
+      --  can cause real trouble.
 
       if not Expander_Active then
          return;
