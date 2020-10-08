@@ -11622,7 +11622,18 @@ Do not remove unused C++ allocations in dead code elimination.
 
 @item -fallow-store-data-races
 @opindex fallow-store-data-races
-Allow the compiler to introduce new data races on stores.
+Allow the compiler to perform optimizations that may introduce new data races
+on stores, without proving that the variable cannot be concurrently accessed
+by other threads.  Does not affect optimization of local data.  It is safe to
+use this option if it is known that global data will not be accessed by
+multiple threads.
+
+Examples of optimizations enabled by @option{-fallow-store-data-races} include
+hoisting or if-conversions that may cause a value that was already in memory
+to be re-written with that same value.  Such re-writing is safe in a single
+threaded context but may be unsafe in a multi-threaded context.  Note that on
+some processors, if-conversions may be required in order to enable
+vectorization.
 
 Enabled at level @option{-Ofast}.
 

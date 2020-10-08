@@ -22,6 +22,6 @@ void foo ()
    but we do want to vectorize the other two store groups.  But we may
    end up using scalar loads to vectorize the last group.  */
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 3 "slp2" } } */
 /* { dg-final { scan-tree-dump-times "BB vectorization with gaps at the end of a load is not supported" 1 "slp2" } } */
 /* { dg-final { scan-tree-dump-times " = c\\\[4\\\];" 1 "optimized" } } */

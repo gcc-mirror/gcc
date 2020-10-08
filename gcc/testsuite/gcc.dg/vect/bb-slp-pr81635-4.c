@@ -44,4 +44,4 @@ f3 (double *p, double *q, unsigned int start, unsigned int n)
     }
 }
 
-/* { dg-final { scan-tree-dump-not "basic block vectorized" "slp1" } } */
+/* { dg-final { scan-tree-dump-not "optimized: basic block" "slp1" } } */

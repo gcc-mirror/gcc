@@ -620,6 +620,8 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       // If some high bits are known to be zero, decrease the maximum.
       if (!r.undefined_p ())
 	{
+	  if (TYPE_SIGN (r.type ()) == SIGNED)
+	    range_cast (r, unsigned_type_for (r.type ()));
 	  wide_int max = r.upper_bound ();
 	  maxi = wi::floor_log2 (max) + 1;
 	}

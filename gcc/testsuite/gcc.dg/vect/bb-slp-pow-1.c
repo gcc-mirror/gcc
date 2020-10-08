@@ -29,4 +29,4 @@ main (void)
    -mno-allow-movmisalign prevents vectorization.  On POWER8 and later,
    when vect_hw_misalign is true, vectorization occurs.  */
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" { target {{ ! powerpc*-*-* } || { powerpc*-*-* && vect_hw_misalign }} } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" { target {{ ! powerpc*-*-* } || { powerpc*-*-* && vect_hw_misalign }} } } } */

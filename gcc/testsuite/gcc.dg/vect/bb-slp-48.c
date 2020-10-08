@@ -49,7 +49,7 @@ bar (double x)
   return;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block part vectorized" 2 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 2 "slp2" } } */
 /* We want to vectorize as { a[0], a[1] } + { x*3, x+1 } and thus
    elide one add in each function.  */
 /* { dg-final { scan-tree-dump-times " \\+ " 4 "optimized" } } */

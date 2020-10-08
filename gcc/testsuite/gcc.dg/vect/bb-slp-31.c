@@ -9,4 +9,4 @@ void f(){
   a[1]=1+2*a[1]*a[1];
 }
 
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" } } */

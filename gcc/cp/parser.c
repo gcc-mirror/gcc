@@ -24044,10 +24044,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
     = parser->in_unbraced_linkage_specification_p;
   parser->in_unbraced_linkage_specification_p = false;
 
-  // Associate constraints with the type.
-  if (flag_concepts)
-    type = associate_classtype_constraints (type);
-
   /* Start the class.  */
   if (nested_name_specifier_p)
     {
@@ -24814,6 +24810,10 @@ cp_parser_class_head (cp_parser* parser,
       cplus_decl_attributes (&type, attributes, (int)ATTR_FLAG_TYPE_IN_PLACE);
       fixup_attribute_variants (type);
     }
+
+  /* Associate constraints with the type.  */
+  if (flag_concepts)
+    type = associate_classtype_constraints (type);
 
   /* We will have entered the scope containing the class; the names of
      base classes should be looked up in that context.  For example:

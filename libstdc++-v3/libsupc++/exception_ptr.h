@@ -180,8 +180,9 @@ namespace std
 #ifndef _GLIBCXX_EH_PTR_COMPAT
     inline
 #endif
-    exception_ptr::exception_ptr(const exception_ptr& other) _GLIBCXX_NOEXCEPT
-    : _M_exception_object(other._M_exception_object)
+    exception_ptr::exception_ptr(const exception_ptr& __other)
+      _GLIBCXX_NOEXCEPT
+    : _M_exception_object(__other._M_exception_object)
     {
       if (_M_exception_object)
 	_M_addref();
@@ -200,9 +201,9 @@ namespace std
     inline
 #endif
     exception_ptr&
-    exception_ptr::operator=(const exception_ptr& other) _GLIBCXX_USE_NOEXCEPT
+    exception_ptr::operator=(const exception_ptr& __other) _GLIBCXX_USE_NOEXCEPT
     {
-      exception_ptr(other).swap(*this);
+      exception_ptr(__other).swap(*this);
       return *this;
     }
 
@@ -210,11 +211,11 @@ namespace std
     inline
 #endif
     void
-    exception_ptr::swap(exception_ptr &other) _GLIBCXX_USE_NOEXCEPT
+    exception_ptr::swap(exception_ptr &__other) _GLIBCXX_USE_NOEXCEPT
     {
-      void *tmp = _M_exception_object;
-      _M_exception_object = other._M_exception_object;
-      other._M_exception_object = tmp;
+      void *__tmp = _M_exception_object;
+      _M_exception_object = __other._M_exception_object;
+      __other._M_exception_object = __tmp;
     }
 
 #ifdef _GLIBCXX_EH_PTR_COMPAT

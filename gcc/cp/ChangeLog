@@ -1,3 +1,49 @@
+2020-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97010
+	* pt.c (tsubst_copy_and_build) <case TEMPLATE_ID_EXPR>: Call
+	tsubst_copy_and_build explicitly instead of using the RECUR macro.
+	Handle a TEMPLATE_ID_EXPR with an IDENTIFIER_NODE as its operand.
+	<case CALL_EXPR>: Perform ADL for a TEMPLATE_ID_EXPR with an
+	IDENTIFIER_NODE as its operand.
+
+2020-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	PR libstdc++/97273
+	* tree.c (cp_tree_equal) <case ALIGNOF_EXPR>: Return false if
+	ALIGNOF_EXPR_STD_P differ.
+
+2020-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct language_function): Delete extern_decl_map.
+	(DECL_LOCAL_DECL_ALIAS): New.
+	* name-lookup.h (is_local_extern): Delete.
+	* name-lookup.c (set_local_extern_decl_linkage): Replace with ...
+	(push_local_extern_decl): ... this new function.
+	(do_pushdecl): Call new function after pushing new decl.  Unhide
+	hidden non-functions.
+	(is_local_extern): Delete.
+	* decl.c (layout_var_decl): Do not allow VLA local externs.
+	* decl2.c (mark_used): Also mark DECL_LOCAL_DECL_ALIAS. Drop old
+	local-extern treatment.
+	* parser.c (cp_parser_oacc_declare): Deal with local extern aliases.
+	* pt.c (tsubst_expr): Adjust local extern instantiation.
+	* cp-gimplify.c (cp_genericize_r): Remap DECL_LOCAL_DECLs.
+
+2020-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_BUILTIN_P): Rename to ...
+	(DECL_UNDECLARED_BUILTIN_P): ... here.
+	* decl.c (duplicate_decls): Adjust.
+	* name-lookup.c (anticipated_builtin_p): Adjust.
+	(do_nonmember_using_decl): Likewise.
+
+2020-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.c (build_cp_fntype_variant): Clear
+	TYPE_DEPENDENT_P_VALID if necessary.
+
 2020-10-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97297

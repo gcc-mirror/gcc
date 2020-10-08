@@ -1,3 +1,8 @@
+2020-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (supplement_binding): Rename
+	DECL_BUILTIN_P.
+
 2020-10-02  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (libcp1plugin.cc): Drop DECL_ANTICIPATED test.

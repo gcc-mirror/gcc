@@ -287,6 +287,15 @@ value_range_with_overflow (irange &r, tree type,
     }
   else
     {
+      // If both bounds either underflowed or overflowed, then the result
+      // is undefined.
+      if ((min_ovf == wi::OVF_OVERFLOW && max_ovf == wi::OVF_OVERFLOW)
+	  || (min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_UNDERFLOW))
+	{
+	  r.set_undefined ();
+	  return;
+	}
+
       // If overflow does not wrap, saturate to [MIN, MAX].
       wide_int new_lb, new_ub;
       if (min_ovf == wi::OVF_UNDERFLOW)

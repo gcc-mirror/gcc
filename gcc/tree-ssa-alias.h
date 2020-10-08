@@ -128,7 +128,7 @@ extern bool ref_maybe_used_by_stmt_p (gimple *, ao_ref *, bool = true);
 extern bool stmt_may_clobber_global_p (gimple *);
 extern bool stmt_may_clobber_ref_p (gimple *, tree, bool = true);
 extern bool stmt_may_clobber_ref_p_1 (gimple *, ao_ref *, bool = true);
-extern bool call_may_clobber_ref_p (gcall *, tree);
+extern bool call_may_clobber_ref_p (gcall *, tree, bool = true);
 extern bool call_may_clobber_ref_p_1 (gcall *, ao_ref *, bool = true);
 extern bool stmt_kills_ref_p (gimple *, tree);
 extern bool stmt_kills_ref_p (gimple *, ao_ref *);

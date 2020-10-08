@@ -2630,6 +2630,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       const double __sum = std::accumulate(_M_prob.begin(),
 					   _M_prob.end(), 0.0);
+      __glibcxx_assert(__sum > 0);
       // Now normalize the probabilites.
       __detail::__normalize(_M_prob.begin(), _M_prob.end(), _M_prob.begin(),
 			    __sum);
@@ -2794,6 +2795,7 @@ namespace __detail
 
       const double __sum = std::accumulate(_M_den.begin(),
 					   _M_den.end(), 0.0);
+      __glibcxx_assert(__sum > 0);
 
       __detail::__normalize(_M_den.begin(), _M_den.end(), _M_den.begin(),
 			    __sum);
@@ -3016,6 +3018,7 @@ namespace __detail
 	  _M_cp.push_back(__sum);
 	  _M_m.push_back((_M_den[__k + 1] - _M_den[__k]) / __delta);
 	}
+      __glibcxx_assert(__sum > 0);
 
       //  Now normalize the densities...
       __detail::__normalize(_M_den.begin(), _M_den.end(), _M_den.begin(),
