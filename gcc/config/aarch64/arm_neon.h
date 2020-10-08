@@ -10926,8 +10926,7 @@ __ST2_LANE_FUNC (uint32x2x2_t, uint32x4x2_t, uint32_t, v2si, v4si, si, u32,
 __ST2_LANE_FUNC (uint64x1x2_t, uint64x2x2_t, uint64_t, di, v2di, di, u64,
 		 int64x2_t)
 
-#undef __ST2_LANE_FUNC
-#define __ST2_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
+#define __ST2Q_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
 __extension__ extern __inline void					    \
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__)) \
 vst2q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
@@ -10939,20 +10938,20 @@ vst2q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
 				    __ptr, __temp.__o, __c);		    \
 }
 
-__ST2_LANE_FUNC (float16x8x2_t, float16_t, v8hf, hf, f16)
-__ST2_LANE_FUNC (float32x4x2_t, float32_t, v4sf, sf, f32)
-__ST2_LANE_FUNC (float64x2x2_t, float64_t, v2df, df, f64)
-__ST2_LANE_FUNC (poly8x16x2_t, poly8_t, v16qi, qi, p8)
-__ST2_LANE_FUNC (poly16x8x2_t, poly16_t, v8hi, hi, p16)
-__ST2_LANE_FUNC (poly64x2x2_t, poly64_t, v2di, di, p64)
-__ST2_LANE_FUNC (int8x16x2_t, int8_t, v16qi, qi, s8)
-__ST2_LANE_FUNC (int16x8x2_t, int16_t, v8hi, hi, s16)
-__ST2_LANE_FUNC (int32x4x2_t, int32_t, v4si, si, s32)
-__ST2_LANE_FUNC (int64x2x2_t, int64_t, v2di, di, s64)
-__ST2_LANE_FUNC (uint8x16x2_t, uint8_t, v16qi, qi, u8)
-__ST2_LANE_FUNC (uint16x8x2_t, uint16_t, v8hi, hi, u16)
-__ST2_LANE_FUNC (uint32x4x2_t, uint32_t, v4si, si, u32)
-__ST2_LANE_FUNC (uint64x2x2_t, uint64_t, v2di, di, u64)
+__ST2Q_LANE_FUNC (float16x8x2_t, float16_t, v8hf, hf, f16)
+__ST2Q_LANE_FUNC (float32x4x2_t, float32_t, v4sf, sf, f32)
+__ST2Q_LANE_FUNC (float64x2x2_t, float64_t, v2df, df, f64)
+__ST2Q_LANE_FUNC (poly8x16x2_t, poly8_t, v16qi, qi, p8)
+__ST2Q_LANE_FUNC (poly16x8x2_t, poly16_t, v8hi, hi, p16)
+__ST2Q_LANE_FUNC (poly64x2x2_t, poly64_t, v2di, di, p64)
+__ST2Q_LANE_FUNC (int8x16x2_t, int8_t, v16qi, qi, s8)
+__ST2Q_LANE_FUNC (int16x8x2_t, int16_t, v8hi, hi, s16)
+__ST2Q_LANE_FUNC (int32x4x2_t, int32_t, v4si, si, s32)
+__ST2Q_LANE_FUNC (int64x2x2_t, int64_t, v2di, di, s64)
+__ST2Q_LANE_FUNC (uint8x16x2_t, uint8_t, v16qi, qi, u8)
+__ST2Q_LANE_FUNC (uint16x8x2_t, uint16_t, v8hi, hi, u16)
+__ST2Q_LANE_FUNC (uint32x4x2_t, uint32_t, v4si, si, u32)
+__ST2Q_LANE_FUNC (uint64x2x2_t, uint64_t, v2di, di, u64)
 
 #define __ST3_LANE_FUNC(intype, largetype, ptrtype, mode,		     \
 			qmode, ptr_mode, funcsuffix, signedtype)	     \
@@ -11011,8 +11010,7 @@ __ST3_LANE_FUNC (uint32x2x3_t, uint32x4x3_t, uint32_t, v2si, v4si, si, u32,
 __ST3_LANE_FUNC (uint64x1x3_t, uint64x2x3_t, uint64_t, di, v2di, di, u64,
 		 int64x2_t)
 
-#undef __ST3_LANE_FUNC
-#define __ST3_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
+#define __ST3Q_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
 __extension__ extern __inline void					    \
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__)) \
 vst3q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
@@ -11024,20 +11022,20 @@ vst3q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
 				    __ptr, __temp.__o, __c);		    \
 }
 
-__ST3_LANE_FUNC (float16x8x3_t, float16_t, v8hf, hf, f16)
-__ST3_LANE_FUNC (float32x4x3_t, float32_t, v4sf, sf, f32)
-__ST3_LANE_FUNC (float64x2x3_t, float64_t, v2df, df, f64)
-__ST3_LANE_FUNC (poly8x16x3_t, poly8_t, v16qi, qi, p8)
-__ST3_LANE_FUNC (poly16x8x3_t, poly16_t, v8hi, hi, p16)
-__ST3_LANE_FUNC (poly64x2x3_t, poly64_t, v2di, di, p64)
-__ST3_LANE_FUNC (int8x16x3_t, int8_t, v16qi, qi, s8)
-__ST3_LANE_FUNC (int16x8x3_t, int16_t, v8hi, hi, s16)
-__ST3_LANE_FUNC (int32x4x3_t, int32_t, v4si, si, s32)
-__ST3_LANE_FUNC (int64x2x3_t, int64_t, v2di, di, s64)
-__ST3_LANE_FUNC (uint8x16x3_t, uint8_t, v16qi, qi, u8)
-__ST3_LANE_FUNC (uint16x8x3_t, uint16_t, v8hi, hi, u16)
-__ST3_LANE_FUNC (uint32x4x3_t, uint32_t, v4si, si, u32)
-__ST3_LANE_FUNC (uint64x2x3_t, uint64_t, v2di, di, u64)
+__ST3Q_LANE_FUNC (float16x8x3_t, float16_t, v8hf, hf, f16)
+__ST3Q_LANE_FUNC (float32x4x3_t, float32_t, v4sf, sf, f32)
+__ST3Q_LANE_FUNC (float64x2x3_t, float64_t, v2df, df, f64)
+__ST3Q_LANE_FUNC (poly8x16x3_t, poly8_t, v16qi, qi, p8)
+__ST3Q_LANE_FUNC (poly16x8x3_t, poly16_t, v8hi, hi, p16)
+__ST3Q_LANE_FUNC (poly64x2x3_t, poly64_t, v2di, di, p64)
+__ST3Q_LANE_FUNC (int8x16x3_t, int8_t, v16qi, qi, s8)
+__ST3Q_LANE_FUNC (int16x8x3_t, int16_t, v8hi, hi, s16)
+__ST3Q_LANE_FUNC (int32x4x3_t, int32_t, v4si, si, s32)
+__ST3Q_LANE_FUNC (int64x2x3_t, int64_t, v2di, di, s64)
+__ST3Q_LANE_FUNC (uint8x16x3_t, uint8_t, v16qi, qi, u8)
+__ST3Q_LANE_FUNC (uint16x8x3_t, uint16_t, v8hi, hi, u16)
+__ST3Q_LANE_FUNC (uint32x4x3_t, uint32_t, v4si, si, u32)
+__ST3Q_LANE_FUNC (uint64x2x3_t, uint64_t, v2di, di, u64)
 
 #define __ST4_LANE_FUNC(intype, largetype, ptrtype, mode,		     \
 			qmode, ptr_mode, funcsuffix, signedtype)	     \
@@ -11101,8 +11099,7 @@ __ST4_LANE_FUNC (uint32x2x4_t, uint32x4x4_t, uint32_t, v2si, v4si, si, u32,
 __ST4_LANE_FUNC (uint64x1x4_t, uint64x2x4_t, uint64_t, di, v2di, di, u64,
 		 int64x2_t)
 
-#undef __ST4_LANE_FUNC
-#define __ST4_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
+#define __ST4Q_LANE_FUNC(intype, ptrtype, mode, ptr_mode, funcsuffix)	    \
 __extension__ extern __inline void					    \
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__)) \
 vst4q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
@@ -11114,20 +11111,20 @@ vst4q_lane_ ## funcsuffix (ptrtype *__ptr,				    \
 				    __ptr, __temp.__o, __c);		    \
 }
 
-__ST4_LANE_FUNC (float16x8x4_t, float16_t, v8hf, hf, f16)
-__ST4_LANE_FUNC (float32x4x4_t, float32_t, v4sf, sf, f32)
-__ST4_LANE_FUNC (float64x2x4_t, float64_t, v2df, df, f64)
-__ST4_LANE_FUNC (poly8x16x4_t, poly8_t, v16qi, qi, p8)
-__ST4_LANE_FUNC (poly16x8x4_t, poly16_t, v8hi, hi, p16)
-__ST4_LANE_FUNC (poly64x2x4_t, poly64_t, v2di, di, p64)
-__ST4_LANE_FUNC (int8x16x4_t, int8_t, v16qi, qi, s8)
-__ST4_LANE_FUNC (int16x8x4_t, int16_t, v8hi, hi, s16)
-__ST4_LANE_FUNC (int32x4x4_t, int32_t, v4si, si, s32)
-__ST4_LANE_FUNC (int64x2x4_t, int64_t, v2di, di, s64)
-__ST4_LANE_FUNC (uint8x16x4_t, uint8_t, v16qi, qi, u8)
-__ST4_LANE_FUNC (uint16x8x4_t, uint16_t, v8hi, hi, u16)
-__ST4_LANE_FUNC (uint32x4x4_t, uint32_t, v4si, si, u32)
-__ST4_LANE_FUNC (uint64x2x4_t, uint64_t, v2di, di, u64)
+__ST4Q_LANE_FUNC (float16x8x4_t, float16_t, v8hf, hf, f16)
+__ST4Q_LANE_FUNC (float32x4x4_t, float32_t, v4sf, sf, f32)
+__ST4Q_LANE_FUNC (float64x2x4_t, float64_t, v2df, df, f64)
+__ST4Q_LANE_FUNC (poly8x16x4_t, poly8_t, v16qi, qi, p8)
+__ST4Q_LANE_FUNC (poly16x8x4_t, poly16_t, v8hi, hi, p16)
+__ST4Q_LANE_FUNC (poly64x2x4_t, poly64_t, v2di, di, p64)
+__ST4Q_LANE_FUNC (int8x16x4_t, int8_t, v16qi, qi, s8)
+__ST4Q_LANE_FUNC (int16x8x4_t, int16_t, v8hi, hi, s16)
+__ST4Q_LANE_FUNC (int32x4x4_t, int32_t, v4si, si, s32)
+__ST4Q_LANE_FUNC (int64x2x4_t, int64_t, v2di, di, s64)
+__ST4Q_LANE_FUNC (uint8x16x4_t, uint8_t, v16qi, qi, u8)
+__ST4Q_LANE_FUNC (uint16x8x4_t, uint16_t, v8hi, hi, u16)
+__ST4Q_LANE_FUNC (uint32x4x4_t, uint32_t, v4si, si, u32)
+__ST4Q_LANE_FUNC (uint64x2x4_t, uint64_t, v2di, di, u64)
 
 __extension__ extern __inline int64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -35749,6 +35746,17 @@ __LD3Q_LANE_FUNC (bfloat16x8x3_t, bfloat16x8_t, bfloat16_t, v8bf, bf, bf16)
 __LD4_LANE_FUNC (bfloat16x4x4_t, bfloat16x4_t, bfloat16x8x4_t, bfloat16_t, v4bf,
 		 v8bf, bf, bf16, bfloat16x8_t)
 __LD4Q_LANE_FUNC (bfloat16x8x4_t, bfloat16x8_t, bfloat16_t, v8bf, bf, bf16)
+
+__ST2_LANE_FUNC (bfloat16x4x2_t, bfloat16x8x2_t, bfloat16_t, v4bf, v8bf, bf,
+		 bf16, bfloat16x8_t)
+__ST2Q_LANE_FUNC (bfloat16x8x2_t, bfloat16_t, v8bf, bf, bf16)
+__ST3_LANE_FUNC (bfloat16x4x3_t, bfloat16x8x3_t, bfloat16_t, v4bf, v8bf, bf,
+		 bf16, bfloat16x8_t)
+__ST3Q_LANE_FUNC (bfloat16x8x3_t, bfloat16_t, v8bf, bf, bf16)
+__ST4_LANE_FUNC (bfloat16x4x4_t, bfloat16x8x4_t, bfloat16_t, v4bf, v8bf, bf,
+		 bf16, bfloat16x8_t)
+__ST4Q_LANE_FUNC (bfloat16x8x4_t, bfloat16_t, v8bf, bf, bf16)
+
 #pragma GCC pop_options
 
 /* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */
@@ -35968,5 +35976,11 @@ vaddq_p128 (poly128_t __a, poly128_t __b)
 #undef __LD3Q_LANE_FUNC
 #undef __LD4_LANE_FUNC
 #undef __LD4Q_LANE_FUNC
+#undef __ST2_LANE_FUNC
+#undef __ST2Q_LANE_FUNC
+#undef __ST3_LANE_FUNC
+#undef __ST3Q_LANE_FUNC
+#undef __ST4_LANE_FUNC
+#undef __ST4Q_LANE_FUNC
 
 #endif
