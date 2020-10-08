@@ -3320,12 +3320,12 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
    return true, otherwise return false.  */
 
 bool
-call_may_clobber_ref_p (gcall *call, tree ref)
+call_may_clobber_ref_p (gcall *call, tree ref, bool tbaa_p)
 {
   bool res;
   ao_ref r;
   ao_ref_init (&r, ref);
-  res = call_may_clobber_ref_p_1 (call, &r, true);
+  res = call_may_clobber_ref_p_1 (call, &r, tbaa_p);
   if (res)
     ++alias_stats.call_may_clobber_ref_p_may_alias;
   else

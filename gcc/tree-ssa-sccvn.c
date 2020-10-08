@@ -2586,7 +2586,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       if (valueized_anything)
 	{
 	  bool res = call_may_clobber_ref_p_1 (as_a <gcall *> (def_stmt),
-					       ref);
+					       ref, data->tbaa_p);
 	  for (unsigned i = 0; i < gimple_call_num_args (def_stmt); ++i)
 	    gimple_call_set_arg (def_stmt, i, oldargs[i]);
 	  if (!res)
