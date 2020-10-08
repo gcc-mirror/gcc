@@ -3283,6 +3283,14 @@ public:
   /* Initializer.  */
   void init (const line_maps *lmaps, const line_map_ordinary *map);
 
+  /* Slightly skewed preprocessed files can cause us to miss an
+     initialization in some places.  Fallback initializer.  */
+  void maybe_init ()
+  {
+    if (!init_p ())
+      init (line_table, nullptr);
+  }
+
 public:
   enum {
     SPAN_RESERVED = 0,	/* Reserved (fixed) locations.  */
@@ -13355,8 +13363,11 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
   /* A span for command line & forced headers.  */
   interval.ordinary.first = interval.ordinary.second;
   interval.macro.second = interval.macro.first;
-  interval.ordinary.second = map->start_location;
-  interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (lmaps);
+  if (map)
+    {
+      interval.ordinary.second = map->start_location;
+      interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (lmaps);
+    }
   dump (dumper::LOCATION)
     && dump ("Pre span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
 	     interval.ordinary.first, interval.ordinary.second,
@@ -18900,6 +18911,7 @@ preprocess_module (module_state *module, location_t from_loc,
 	     needs to be smarter -- and this isn't much state.
 	     Remember, we've not parsed anything at this point, so
 	     our module state flags are inadequate.  */
+	  spans.maybe_init ();
 	  spans.close ();
 
 	  if (!module->filename)
@@ -18934,6 +18946,7 @@ preprocessed_module (cpp_reader *reader)
 {
   auto *mapper = get_mapper (cpp_main_loc (reader));
 
+  spans.maybe_init ();
   spans.close ();
 
   /* Stupid GTY doesn't grok a typedef here.  And using type = is, too

@@ -1,5 +1,20 @@
 2020-10-07  Nathan Sidwell  <nathan@acm.org>
 
+	Fix -save-temps & header units
+	gcc/cp/
+	* module.cc (loc_spans::maybe_init): New.
+	(loc_spans::init): Allow NULL map.
+	(preprocess_module, preprocessed_module): Call maybe_init.
+	gcc/libcpp/
+	* internal.h (enum include_type): Rename IT_MAIN_INJECT to IT_PRE_MAIN.
+	* init.c (cpp_read_main): Adjust _cpp_stack_file call.  Adjust
+	first line marker if no preprocessed marker found.
+	(read_original_filename): Peek characters in buffer, not token.
+	(read_original_directory): Likewise.
+	* files.c (_cpp_stack_file): Adjst.
+	gcc/testsuite/
+	* g++.dg/modules/preproc-2_[ab].[HC]: New.
+
 	Merge trunk 4e62aca0e05
 	c++: block-scope externs get an alias [PR95677,PR31775,PR95677]
 
