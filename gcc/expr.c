@@ -11729,7 +11729,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       while (TREE_CODE (chartype) == ARRAY_TYPE)
 	chartype = TREE_TYPE (chartype);
       /* Convert a char array to an empty STRING_CST having an array
-	 of the expected type.  */
+	 of the expected type and size.  */
       if (INTEGRAL_TYPE_P (chartype)
 	  && TYPE_PRECISION (chartype) == TYPE_PRECISION (char_type_node))
 	{
@@ -11737,7 +11737,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	    initsize = integer_zero_node;
 
 	  unsigned HOST_WIDE_INT size = tree_to_uhwi (initsize);
-	  init = build_string_literal (size ? 1 : 0, "", chartype, size);
+	  init = build_string_literal (size, NULL, chartype, size);
 	  init = TREE_OPERAND (init, 0);
 	  init = TREE_OPERAND (init, 0);
 

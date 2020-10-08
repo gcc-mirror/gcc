@@ -119,7 +119,7 @@ static rtx expand_builtin_next_arg (void);
 static rtx expand_builtin_va_start (tree);
 static rtx expand_builtin_va_end (tree);
 static rtx expand_builtin_va_copy (tree);
-static rtx inline_expand_builtin_string_cmp (tree, rtx);
+static rtx inline_expand_builtin_bytecmp (tree, rtx);
 static rtx expand_builtin_strcmp (tree, rtx);
 static rtx expand_builtin_strncmp (tree, rtx, machine_mode);
 static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
@@ -3227,20 +3227,18 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 }
 
 /* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
-   bytes from constant string DATA + OFFSET and return it as target
-   constant.  */
+   bytes from bytes at DATA + OFFSET and return it reinterpreted as
+   a target constant.  */
 
 static rtx
 builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
 			 scalar_int_mode mode)
 {
-  const char *str = (const char *) data;
+  /* The REPresentation pointed to by DATA need not be a nul-terminated
+     string but the caller guarantees it's large enough for MODE.  */
+  const char *rep = (const char *) data;
 
-  gcc_assert (offset >= 0
-	      && ((unsigned HOST_WIDE_INT) offset + GET_MODE_SIZE (mode)
-		  <= strlen (str) + 1));
-
-  return c_readstr (str + offset, mode);
+  return c_readstr (rep + offset, mode, /*nul_terminated=*/false);
 }
 
 /* LEN specify length of the block of memcpy/memset operation.
@@ -4265,7 +4263,6 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 				 rtx target, tree exp, memop_ret retmode,
 				 bool might_overlap)
 {
-  const char *src_str;
   unsigned int src_align = get_pointer_alignment (src);
   unsigned int dest_align = get_pointer_alignment (dest);
   rtx dest_mem, src_mem, dest_addr, len_rtx;
@@ -4297,24 +4294,29 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   len_rtx = expand_normal (len);
   determine_block_size (len, len_rtx, &min_size, &max_size,
 			&probable_max_size);
-  src_str = c_getstr (src);
 
-  /* If SRC is a string constant and block move would be done by
-     pieces, we can avoid loading the string from memory and only
-     stored the computed constants.  This works in the overlap
-     (memmove) case as well because store_by_pieces just generates a
-     series of stores of constants from the string constant returned
-     by c_getstr().  */
-  if (src_str
+  /* Try to get the byte representation of the constant SRC points to,
+     with its byte size in NBYTES.  */
+  unsigned HOST_WIDE_INT nbytes;
+  const char *rep = c_getstr (src, &nbytes);
+
+  /* If the function's constant bound LEN_RTX is less than or equal
+     to the byte size of the representation of the constant argument,
+     and if block move would be done by pieces, we can avoid loading
+     the bytes from memory and only store the computed constant.
+     This works in the overlap (memmove) case as well because
+     store_by_pieces just generates a series of stores of constants
+     from the representation returned by c_getstr().  */
+  if (rep
       && CONST_INT_P (len_rtx)
-      && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
+      && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= nbytes
       && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-			      CONST_CAST (char *, src_str),
+			      CONST_CAST (char *, rep),
 			      dest_align, false))
     {
       dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				  builtin_memcpy_read_str,
-				  CONST_CAST (char *, src_str),
+				  CONST_CAST (char *, rep),
 				  dest_align, false, retmode);
       dest_mem = force_operand (XEXP (dest_mem, 0), target);
       dest_mem = convert_memory_address (ptr_mode, dest_mem);
@@ -4338,7 +4340,8 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx, method,
 				     expected_align, expected_size,
 				     min_size, max_size, probable_max_size,
-				     use_mempcpy_call, &is_move_done, might_overlap);
+				     use_mempcpy_call, &is_move_done,
+				     might_overlap);
 
   /* Bail out when a mempcpy call would be expanded as libcall and when
      we have a target that provides a fast implementation
@@ -5161,7 +5164,7 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 
   if (!result_eq && fcode != BUILT_IN_BCMP)
     {
-      result = inline_expand_builtin_string_cmp (exp, target);
+      result = inline_expand_builtin_bytecmp (exp, target);
       if (result)
 	return result;
     }
@@ -5189,26 +5192,32 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
 
   by_pieces_constfn constfn = NULL;
 
-  const char *src_str = c_getstr (arg2);
-  if (result_eq && src_str == NULL)
+  /* Try to get the byte representation of the constant ARG2 (or, only
+     when the function's result is used for equality to zero, ARG1)
+     points to, with its byte size in NBYTES.  */
+  unsigned HOST_WIDE_INT nbytes;
+  const char *rep = c_getstr (arg2, &nbytes);
+  if (result_eq && rep == NULL)
     {
-      src_str = c_getstr (arg1);
-      if (src_str != NULL)
+      /* For equality to zero the arguments are interchangeable.  */
+      rep = c_getstr (arg1, &nbytes);
+      if (rep != NULL)
 	std::swap (arg1_rtx, arg2_rtx);
     }
 
-  /* If SRC is a string constant and block move would be done
-     by pieces, we can avoid loading the string from memory
-     and only stored the computed constants.  */
-  if (src_str
+  /* If the function's constant bound LEN_RTX is less than or equal
+     to the byte size of the representation of the constant argument,
+     and if block move would be done by pieces, we can avoid loading
+     the bytes from memory and only store the computed constant result.  */
+  if (rep
       && CONST_INT_P (len_rtx)
-      && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1)
+      && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= nbytes)
     constfn = builtin_memcpy_read_str;
 
   result = emit_block_cmp_hints (arg1_rtx, arg2_rtx, len_rtx,
 				 TREE_TYPE (len), target,
 				 result_eq, constfn,
-				 CONST_CAST (char *, src_str));
+				 CONST_CAST (char *, rep));
 
   if (result)
     {
@@ -5247,7 +5256,7 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
 
   /* Due to the performance benefit, always inline the calls first.  */
   rtx result = NULL_RTX;
-  result = inline_expand_builtin_string_cmp (exp, target);
+  result = inline_expand_builtin_bytecmp (exp, target);
   if (result)
     return result;
 
@@ -5371,7 +5380,7 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 
   /* Due to the performance benefit, always inline the calls first.  */
   rtx result = NULL_RTX;
-  result = inline_expand_builtin_string_cmp (exp, target);
+  result = inline_expand_builtin_bytecmp (exp, target);
   if (result)
     return result;
 
@@ -7583,18 +7592,18 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
   return result;
 }
 
-/* Inline expansion a call to str(n)cmp, with result going to
-   TARGET if that's convenient.
+/* Inline expansion of a call to str(n)cmp and memcmp, with result going
+   to TARGET if that's convenient.
    If the call is not been inlined, return NULL_RTX.  */
+
 static rtx
-inline_expand_builtin_string_cmp (tree exp, rtx target)
+inline_expand_builtin_bytecmp (tree exp, rtx target)
 {
   tree fndecl = get_callee_fndecl (exp);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-  unsigned HOST_WIDE_INT length = 0;
   bool is_ncmp = (fcode == BUILT_IN_STRNCMP || fcode == BUILT_IN_MEMCMP);
 
-  /* Do NOT apply this inlining expansion when optimizing for size or 
+  /* Do NOT apply this inlining expansion when optimizing for size or
      optimization level below 2.  */
   if (optimize < 2 || optimize_insn_for_size_p ())
     return NULL_RTX;
@@ -7617,29 +7626,47 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
   unsigned HOST_WIDE_INT len2 = 0;
   unsigned HOST_WIDE_INT len3 = 0;
 
-  const char *src_str1 = c_getstr (arg1, &len1);
-  const char *src_str2 = c_getstr (arg2, &len2);
+  /* Get the object representation of the initializers of ARG1 and ARG2
+     as strings, provided they refer to constant objects, with their byte
+     sizes in LEN1 and LEN2, respectively.  */
+  const char *bytes1 = c_getstr (arg1, &len1);
+  const char *bytes2 = c_getstr (arg2, &len2);
 
-  /* If neither strings is constant string, the call is not qualify.  */
-  if (!src_str1 && !src_str2)
+  /* Fail if neither argument refers to an initialized constant.  */
+  if (!bytes1 && !bytes2)
     return NULL_RTX;
 
-  /* For strncmp, if the length is not a const, not qualify.  */
   if (is_ncmp)
     {
+      /* Fail if the memcmp/strncmp bound is not a constant.  */
       if (!tree_fits_uhwi_p (len3_tree))
 	return NULL_RTX;
-      else
-	len3 = tree_to_uhwi (len3_tree);
+
+      len3 = tree_to_uhwi (len3_tree);
+
+      if (fcode == BUILT_IN_MEMCMP)
+	{
+	  /* Fail if the memcmp bound is greater than the size of either
+	     of the two constant objects.  */
+	  if ((bytes1 && len1 < len3)
+	      || (bytes2 && len2 < len3))
+	    return NULL_RTX;
+	}
     }
 
-  if (src_str1 != NULL)
-    len1 = strnlen (src_str1, len1) + 1;
+  if (fcode != BUILT_IN_MEMCMP)
+    {
+      /* For string functions (i.e., strcmp and strncmp) reduce LEN1
+	 and LEN2 to the length of the nul-terminated string stored
+	 in each.  */
+      if (bytes1 != NULL)
+	len1 = strnlen (bytes1, len1) + 1;
+      if (bytes2 != NULL)
+	len2 = strnlen (bytes2, len2) + 1;
+    }
 
-  if (src_str2 != NULL)
-    len2 = strnlen (src_str2, len2) + 1;
-
-  int const_str_n = 0;
+  /* See inline_string_cmp.  */
+  int const_str_n;
   if (!len1)
     const_str_n = 2;
   else if (!len2)
@@ -7649,23 +7676,23 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
   else
     const_str_n = 2;
 
-  gcc_checking_assert (const_str_n > 0);
-  length = (const_str_n == 1) ? len1 : len2;
+  /* For strncmp only, compute the new bound as the smallest of
+     the lengths of the two strings (plus 1) and the bound provided
+     to the function.  */
+  unsigned HOST_WIDE_INT bound = (const_str_n == 1) ? len1 : len2;
+  if (is_ncmp && len3 < bound)
+    bound = len3;
 
-  if (is_ncmp && len3 < length)
-    length = len3;
-
-  /* If the length of the comparision is larger than the threshold,
+  /* If the bound of the comparison is larger than the threshold,
      do nothing.  */
-  if (length > (unsigned HOST_WIDE_INT)
-	       param_builtin_string_cmp_inline_length)
+  if (bound > (unsigned HOST_WIDE_INT) param_builtin_string_cmp_inline_length)
     return NULL_RTX;
 
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
 
   /* Now, start inline expansion the call.  */
   return inline_string_cmp (target, (const_str_n == 1) ? arg2 : arg1,
-			    (const_str_n == 1) ? src_str1 : src_str2, length,
+			    (const_str_n == 1) ? bytes1 : bytes2, bound,
 			    const_str_n, mode);
 }
 

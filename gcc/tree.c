@@ -2204,29 +2204,29 @@ build_real_from_int_cst (tree type, const_tree i)
   return v;
 }
 
-/* Return a newly constructed STRING_CST node whose value is
-   the LEN characters at STR.
+/* Return a newly constructed STRING_CST node whose value is the LEN
+   characters at STR when STR is nonnull, or all zeros otherwise.
    Note that for a C string literal, LEN should include the trailing NUL.
    The TREE_TYPE is not initialized.  */
 
 tree
-build_string (int len, const char *str)
+build_string (unsigned len, const char *str /*= NULL */)
 {
-  tree s;
-  size_t length;
-
   /* Do not waste bytes provided by padding of struct tree_string.  */
-  length = len + offsetof (struct tree_string, str) + 1;
+  unsigned size = len + offsetof (struct tree_string, str) + 1;
 
-  record_node_allocation_statistics (STRING_CST, length);
+  record_node_allocation_statistics (STRING_CST, size);
 
-  s = (tree) ggc_internal_alloc (length);
+  tree s = (tree) ggc_internal_alloc (size);
 
   memset (s, 0, sizeof (struct tree_typed));
   TREE_SET_CODE (s, STRING_CST);
   TREE_CONSTANT (s) = 1;
   TREE_STRING_LENGTH (s) = len;
-  memcpy (s->string.str, str, len);
+  if (str)
+    memcpy (s->string.str, str, len);
+  else
+    memset (s->string.str, 0, len);
   s->string.str[len] = '\0';
 
   return s;
@@ -11613,12 +11613,12 @@ build_alloca_call_expr (tree size, unsigned int align, HOST_WIDE_INT max_size)
 
 /* Create a new constant string literal of type ELTYPE[SIZE] (or LEN
    if SIZE == -1) and return a tree node representing char* pointer to
-   it as an ADDR_EXPR (ARRAY_REF (ELTYPE, ...)).  The STRING_CST value
-   is the LEN bytes at STR (the representation of the string, which may
-   be wide).  */
+   it as an ADDR_EXPR (ARRAY_REF (ELTYPE, ...)).  When STR is nonnull
+   the STRING_CST value is the LEN bytes at STR (the representation
+   of the string, which may be wide).  Otherwise it's all zeros.  */
 
 tree
-build_string_literal (int len, const char *str,
+build_string_literal (unsigned len, const char *str /* = NULL */,
 		      tree eltype /* = char_type_node */,
 		      unsigned HOST_WIDE_INT size /* = -1 */)
 {

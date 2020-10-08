@@ -15440,24 +15440,29 @@ fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE_INT off)
 			  ptr, size_int (off));
 }
 
-/* Return a pointer P to a NUL-terminated string representing the sequence
-   of constant characters referred to by SRC (or a subsequence of such
-   characters within it if SRC is a reference to a string plus some
-   constant offset).  If STRLEN is non-null, store the number of bytes
-   in the string constant including the terminating NUL char.  *STRLEN is
-   typically strlen(P) + 1 in the absence of embedded NUL characters.  */
+/* Return a pointer P to a NUL-terminated string containing the sequence
+   of bytes corresponding to the representation of the object referred to
+   by SRC (or a subsequence of such bytes within it if SRC is a reference
+   to an initialized constant array plus some constant offset).
+   If STRSIZE is non-null, store the number of bytes in the constant
+   sequence including the terminating NUL byte.  *STRSIZE is equal to
+   sizeof(A) - OFFSET where A is the array that stores the constant
+   sequence that SRC points to and OFFSET is the byte offset of SRC from
+   the beginning of A.  SRC need not point to a string or even an array
+   of characters but may point to an object of any type.  */
 
 const char *
-c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */)
+c_getstr (tree src, unsigned HOST_WIDE_INT *strsize /* = NULL */)
 {
+  /* The offset into the array A storing the string, and A's byte size.  */
   tree offset_node;
   tree mem_size;
 
-  if (strlen)
-    *strlen = 0;
+  if (strsize)
+    *strsize = 0;
 
   src = string_constant (src, &offset_node, &mem_size, NULL);
-  if (src == 0)
+  if (!src)
     return NULL;
 
   unsigned HOST_WIDE_INT offset = 0;
@@ -15472,34 +15477,44 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */)
   if (!tree_fits_uhwi_p (mem_size))
     return NULL;
 
-  /* STRING_LENGTH is the size of the string literal, including any
-     embedded NULs.  STRING_SIZE is the size of the array the string
-     literal is stored in.  */
-  unsigned HOST_WIDE_INT string_length = TREE_STRING_LENGTH (src);
-  unsigned HOST_WIDE_INT string_size = tree_to_uhwi (mem_size);
+  /* ARRAY_SIZE is the byte size of the array the constant sequence
+     is stored in and equal to sizeof A.  INIT_BYTES is the number
+     of bytes in the constant sequence used to initialize the array,
+     including any embedded NULs as well as the terminating NUL (for
+     strings), but not including any trailing zeros/NULs past
+     the terminating one appended implicitly to a string literal to
+     zero out the remainder of the array it's stored in.  For example,
+     given:
+       const char a[7] = "abc\0d";
+       n = strlen (a + 1);
+     ARRAY_SIZE is 7, INIT_BYTES is 6, and OFFSET is 1.  For a valid
+     (i.e., nul-terminated) string with no embedded nuls, INIT_BYTES
+     is equal to strlen (A) + 1.  */
+  const unsigned HOST_WIDE_INT array_size = tree_to_uhwi (mem_size);
+  unsigned HOST_WIDE_INT init_bytes = TREE_STRING_LENGTH (src);
 
   /* Ideally this would turn into a gcc_checking_assert over time.  */
-  if (string_length > string_size)
-    string_length = string_size;
+  if (init_bytes > array_size)
+    init_bytes = array_size;
 
   const char *string = TREE_STRING_POINTER (src);
 
   /* Ideally this would turn into a gcc_checking_assert over time.  */
-  if (string_length > string_size)
-    string_length = string_size;
+  if (init_bytes > array_size)
+    init_bytes = array_size;
 
-  if (string_length == 0
-      || offset >= string_size)
+  if (init_bytes == 0 || offset >= array_size)
     return NULL;
 
-  if (strlen)
+  if (strsize)
     {
-      /* Compute and store the length of the substring at OFFSET.
-	 All offsets past the initial length refer to null strings.  */
-      if (offset < string_length)
-	*strlen = string_length - offset;
+      /* Compute and store the number of characters from the beginning
+	 of the substring at OFFSET to the end, including the terminating
+	 nul.  Offsets past the initial length refer to null strings.  */
+      if (offset < init_bytes)
+	*strsize = init_bytes - offset;
       else
-	*strlen = 1;
+	*strsize = 1;
     }
   else
     {
@@ -15507,11 +15522,11 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */)
       /* Support only properly NUL-terminated single byte strings.  */
       if (tree_to_uhwi (TYPE_SIZE_UNIT (eltype)) != 1)
 	return NULL;
-      if (string[string_length - 1] != '\0')
+      if (string[init_bytes - 1] != '\0')
 	return NULL;
     }
 
-  return offset < string_length ? string + offset : "";
+  return offset < init_bytes ? string + offset : "";
 }
 
 /* Given a tree T, compute which bits in T may be nonzero.  */
