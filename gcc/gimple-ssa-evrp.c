@@ -258,37 +258,43 @@ hybrid_folder::value_of_stmt (gimple *stmt, tree op)
 tree
 hybrid_folder::choose_value (tree evrp_val, tree ranger_val)
 {
-  if (!ranger_val)
-    {
-      // If neither returned a value, return NULL_TREE.
-      if (!evrp_val)
-	return NULL_TREE;
+  // If both found the same value, just return it.
+  if (evrp_val && ranger_val && !compare_values (evrp_val, ranger_val))
+    return evrp_val;
 
-      // Otherwise EVRP found something.
-      if (dump_file)
+  // If neither returned a value, return NULL_TREE.
+  if (!ranger_val && !evrp_val)
+    return NULL_TREE;
+
+  // Otherwise there is a discrepancy to flag.
+  if (dump_file)
+    {
+      if (evrp_val && ranger_val)
+	fprintf (dump_file, "EVRP:hybrid: Disagreement\n");
+      if (evrp_val)
 	{
 	  fprintf (dump_file, "EVRP:hybrid: EVRP found singleton ");
 	  print_generic_expr (dump_file, evrp_val);
 	  fprintf (dump_file, "\n");
 	}
-      return evrp_val;
+      if (ranger_val)
+	{
+	  fprintf (dump_file, "EVRP:hybrid: RVRP found singleton ");
+	  print_generic_expr (dump_file, ranger_val);
+	  fprintf (dump_file, "\n");
+	}
     }
 
-  // Otherwise ranger found a value, if they match we're good.
-  if (evrp_val && !compare_values (evrp_val, ranger_val))
+  // If one value was found, return it.
+  if (!evrp_val)
+    return ranger_val;
+  if (!ranger_val)
     return evrp_val;
 
-  // We should never get different singletons.
-  gcc_checking_assert (!evrp_val);
-
-  // Now ranger has found a value, but EVRP did not.
-  if (dump_file)
-    {
-      fprintf (dump_file, "EVRP:hybrid: RVRP found singleton ");
-      print_generic_expr (dump_file, ranger_val);
-      fprintf (dump_file, "\n");
-    }
-  return ranger_val;
+  // If values are different, return the first calculated value.
+  if ((param_evrp_mode & EVRP_MODE_RVRP_FIRST) == EVRP_MODE_RVRP_FIRST)
+    return ranger_val;
+  return evrp_val;
 }
 
 /* Main entry point for the early vrp pass which is a simplified non-iterative
