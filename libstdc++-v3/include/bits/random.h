@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp, _Tp __m, _Tp __a, _Tp __c,
 	     bool __big_enough = (!(__m & (__m - 1))
 				  || (_Tp(-1) - __c) / __a >= __m - 1),
-             bool __schrage_ok = __a != 0 && __m % __a < __m / __a>
+             bool __schrage_ok = __m % __a < __m / __a>
       struct _Mod
       {
 	typedef typename _Select_uint_least_t<std::__lg(__a)
@@ -146,7 +146,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp, _Tp __m, _Tp __a = 1, _Tp __c = 0>
       inline _Tp
       __mod(_Tp __x)
-      { return _Mod<_Tp, __m, __a, __c>::__calc(__x); }
+      {
+	if _GLIBCXX17_CONSTEXPR (__a == 0)
+	  return __c;
+	else
+	  {
+	    // _Mod must not be instantiated with a == 0
+	    constexpr _Tp __a1 = __a ? __a : 1;
+	    return _Mod<_Tp, __m, __a1, __c>::__calc(__x);
+	  }
+      }
 
     /*
      * An adaptor class for converting the output of any Generator into
