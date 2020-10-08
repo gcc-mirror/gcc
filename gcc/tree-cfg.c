@@ -7235,6 +7235,8 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
       free_stmt_operands (cfun, stmt);
       push_cfun (dest_cfun);
       update_stmt (stmt);
+      if (is_gimple_call (stmt))
+	notice_special_calls (as_a <gcall *> (stmt));
       pop_cfun ();
     }
 
