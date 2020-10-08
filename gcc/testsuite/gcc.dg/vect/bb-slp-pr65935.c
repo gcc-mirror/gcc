@@ -59,4 +59,4 @@ int main()
 
 /* We should also be able to use 2-lane SLP to initialize the real and
    imaginary components in the first loop of main.  */
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 2 "slp1" } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 10 "slp1" } } */

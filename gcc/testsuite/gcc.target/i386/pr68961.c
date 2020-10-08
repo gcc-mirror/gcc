@@ -15,5 +15,5 @@ pack (double a, double aa)
 /* The function should be optimized to just return as arguments and
    result exactly overlap even when previously vectorized.  */
 
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" } } */
 /* { dg-final { scan-assembler-not "mov" } } */

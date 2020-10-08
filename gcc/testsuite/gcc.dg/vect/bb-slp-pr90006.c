@@ -28,4 +28,4 @@ int e()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target { { x86_64-*-* i?86-*-* } && ilp32 } } } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" { target { { x86_64-*-* i?86-*-* } && ilp32 } } } } */

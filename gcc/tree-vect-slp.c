@@ -2407,14 +2407,15 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	  bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
 						max_tree_size);
 	  /* If the first non-match was in the middle of a vector,
-	     skip the rest of that vector.  */
+	     skip the rest of that vector.  Do not bother to re-analyze
+	     single stmt groups.  */
 	  if (group1_size < i)
 	    {
 	      i = group1_size + const_nunits;
-	      if (i < group_size)
+	      if (i + 1 < group_size)
 		rest = vect_split_slp_store_group (rest, const_nunits);
 	    }
-	  if (i < group_size)
+	  if (i + 1 < group_size)
 	    res |= vect_analyze_slp_instance (vinfo, bst_map,
 					      rest, max_tree_size);
 	  return res;

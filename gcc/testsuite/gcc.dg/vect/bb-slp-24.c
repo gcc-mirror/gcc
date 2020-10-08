@@ -55,5 +55,5 @@ int main (void)
 
 /* Exclude POWER8 (only POWER cpu for which vect_element_align is true)
    because loops have vectorized before SLP gets a shot.  */
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" { target { vect_element_align && { ! powerpc*-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" { target { vect_element_align && { ! powerpc*-*-* } } } } } */
 

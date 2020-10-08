@@ -1052,9 +1052,6 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	    }
 	  if (!require_loop_vectorize && vect_slp_bb (bb))
 	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "basic block vectorized\n");
 	      fold_loop_internal_call (loop_vectorized_call,
 				       boolean_true_node);
 	      loop_vectorized_call = NULL;
@@ -1429,11 +1426,7 @@ pass_slp_vectorize::execute (function *fun)
     }
 
   FOR_EACH_BB_FN (bb, fun)
-    {
-      if (vect_slp_bb (bb))
-	if (dump_enabled_p ())
-	  dump_printf_loc (MSG_NOTE, vect_location, "basic block vectorized\n");
-    }
+    vect_slp_bb (bb);
 
   if (!in_loop_pipeline)
     {
