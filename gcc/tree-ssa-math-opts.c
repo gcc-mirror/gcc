@@ -1139,7 +1139,7 @@ execute_cse_sincos_1 (tree name)
 {
   gimple_stmt_iterator gsi;
   imm_use_iterator use_iter;
-  tree fndecl, res, type;
+  tree fndecl, res, type = NULL_TREE;
   gimple *def_stmt, *use_stmt, *stmt;
   int seen_cos = 0, seen_sin = 0, seen_cexpi = 0;
   auto_vec<gimple *> stmts;
@@ -1147,7 +1147,6 @@ execute_cse_sincos_1 (tree name)
   int i;
   bool cfg_changed = false;
 
-  type = TREE_TYPE (name);
   FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, name)
     {
       if (gimple_code (use_stmt) != GIMPLE_CALL
@@ -1169,9 +1168,21 @@ execute_cse_sincos_1 (tree name)
 	  break;
 
 	default:;
+	  continue;
 	}
-    }
 
+      tree t = mathfn_built_in_type (gimple_call_combined_fn (use_stmt));
+      if (!type)
+	{
+	  type = t;
+	  t = TREE_TYPE (name);
+	}
+      /* This checks that NAME has the right type in the first round,
+	 and, in subsequent rounds, that the built_in type is the same
+	 type, or a compatible type.  */
+      if (type != t && !types_compatible_p (type, t))
+	return false;
+    }
   if (seen_cos + seen_sin + seen_cexpi <= 1)
     return false;
 

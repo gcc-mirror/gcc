@@ -2160,94 +2160,97 @@ mathfn_built_in_2 (tree type, combined_fn fn)
 
   switch (fn)
     {
-    CASE_MATHFN (ACOS)
-    CASE_MATHFN (ACOSH)
-    CASE_MATHFN (ASIN)
-    CASE_MATHFN (ASINH)
-    CASE_MATHFN (ATAN)
-    CASE_MATHFN (ATAN2)
-    CASE_MATHFN (ATANH)
-    CASE_MATHFN (CBRT)
-    CASE_MATHFN_FLOATN (CEIL)
-    CASE_MATHFN (CEXPI)
-    CASE_MATHFN_FLOATN (COPYSIGN)
-    CASE_MATHFN (COS)
-    CASE_MATHFN (COSH)
-    CASE_MATHFN (DREM)
-    CASE_MATHFN (ERF)
-    CASE_MATHFN (ERFC)
-    CASE_MATHFN (EXP)
-    CASE_MATHFN (EXP10)
-    CASE_MATHFN (EXP2)
-    CASE_MATHFN (EXPM1)
-    CASE_MATHFN (FABS)
-    CASE_MATHFN (FDIM)
-    CASE_MATHFN_FLOATN (FLOOR)
-    CASE_MATHFN_FLOATN (FMA)
-    CASE_MATHFN_FLOATN (FMAX)
-    CASE_MATHFN_FLOATN (FMIN)
-    CASE_MATHFN (FMOD)
-    CASE_MATHFN (FREXP)
-    CASE_MATHFN (GAMMA)
-    CASE_MATHFN_REENT (GAMMA) /* GAMMA_R */
-    CASE_MATHFN (HUGE_VAL)
-    CASE_MATHFN (HYPOT)
-    CASE_MATHFN (ILOGB)
-    CASE_MATHFN (ICEIL)
-    CASE_MATHFN (IFLOOR)
-    CASE_MATHFN (INF)
-    CASE_MATHFN (IRINT)
-    CASE_MATHFN (IROUND)
-    CASE_MATHFN (ISINF)
-    CASE_MATHFN (J0)
-    CASE_MATHFN (J1)
-    CASE_MATHFN (JN)
-    CASE_MATHFN (LCEIL)
-    CASE_MATHFN (LDEXP)
-    CASE_MATHFN (LFLOOR)
-    CASE_MATHFN (LGAMMA)
-    CASE_MATHFN_REENT (LGAMMA) /* LGAMMA_R */
-    CASE_MATHFN (LLCEIL)
-    CASE_MATHFN (LLFLOOR)
-    CASE_MATHFN (LLRINT)
-    CASE_MATHFN (LLROUND)
-    CASE_MATHFN (LOG)
-    CASE_MATHFN (LOG10)
-    CASE_MATHFN (LOG1P)
-    CASE_MATHFN (LOG2)
-    CASE_MATHFN (LOGB)
-    CASE_MATHFN (LRINT)
-    CASE_MATHFN (LROUND)
-    CASE_MATHFN (MODF)
-    CASE_MATHFN (NAN)
-    CASE_MATHFN (NANS)
-    CASE_MATHFN_FLOATN (NEARBYINT)
-    CASE_MATHFN (NEXTAFTER)
-    CASE_MATHFN (NEXTTOWARD)
-    CASE_MATHFN (POW)
-    CASE_MATHFN (POWI)
-    CASE_MATHFN (POW10)
-    CASE_MATHFN (REMAINDER)
-    CASE_MATHFN (REMQUO)
-    CASE_MATHFN_FLOATN (RINT)
-    CASE_MATHFN_FLOATN (ROUND)
-    CASE_MATHFN_FLOATN (ROUNDEVEN)
-    CASE_MATHFN (SCALB)
-    CASE_MATHFN (SCALBLN)
-    CASE_MATHFN (SCALBN)
-    CASE_MATHFN (SIGNBIT)
-    CASE_MATHFN (SIGNIFICAND)
-    CASE_MATHFN (SIN)
-    CASE_MATHFN (SINCOS)
-    CASE_MATHFN (SINH)
-    CASE_MATHFN_FLOATN (SQRT)
-    CASE_MATHFN (TAN)
-    CASE_MATHFN (TANH)
-    CASE_MATHFN (TGAMMA)
-    CASE_MATHFN_FLOATN (TRUNC)
-    CASE_MATHFN (Y0)
-    CASE_MATHFN (Y1)
+#define SEQ_OF_CASE_MATHFN			\
+    CASE_MATHFN (ACOS)				\
+    CASE_MATHFN (ACOSH)				\
+    CASE_MATHFN (ASIN)				\
+    CASE_MATHFN (ASINH)				\
+    CASE_MATHFN (ATAN)				\
+    CASE_MATHFN (ATAN2)				\
+    CASE_MATHFN (ATANH)				\
+    CASE_MATHFN (CBRT)				\
+    CASE_MATHFN_FLOATN (CEIL)			\
+    CASE_MATHFN (CEXPI)				\
+    CASE_MATHFN_FLOATN (COPYSIGN)		\
+    CASE_MATHFN (COS)				\
+    CASE_MATHFN (COSH)				\
+    CASE_MATHFN (DREM)				\
+    CASE_MATHFN (ERF)				\
+    CASE_MATHFN (ERFC)				\
+    CASE_MATHFN (EXP)				\
+    CASE_MATHFN (EXP10)				\
+    CASE_MATHFN (EXP2)				\
+    CASE_MATHFN (EXPM1)				\
+    CASE_MATHFN (FABS)				\
+    CASE_MATHFN (FDIM)				\
+    CASE_MATHFN_FLOATN (FLOOR)			\
+    CASE_MATHFN_FLOATN (FMA)			\
+    CASE_MATHFN_FLOATN (FMAX)			\
+    CASE_MATHFN_FLOATN (FMIN)			\
+    CASE_MATHFN (FMOD)				\
+    CASE_MATHFN (FREXP)				\
+    CASE_MATHFN (GAMMA)				\
+    CASE_MATHFN_REENT (GAMMA) /* GAMMA_R */	\
+    CASE_MATHFN (HUGE_VAL)			\
+    CASE_MATHFN (HYPOT)				\
+    CASE_MATHFN (ILOGB)				\
+    CASE_MATHFN (ICEIL)				\
+    CASE_MATHFN (IFLOOR)			\
+    CASE_MATHFN (INF)				\
+    CASE_MATHFN (IRINT)				\
+    CASE_MATHFN (IROUND)			\
+    CASE_MATHFN (ISINF)				\
+    CASE_MATHFN (J0)				\
+    CASE_MATHFN (J1)				\
+    CASE_MATHFN (JN)				\
+    CASE_MATHFN (LCEIL)				\
+    CASE_MATHFN (LDEXP)				\
+    CASE_MATHFN (LFLOOR)			\
+    CASE_MATHFN (LGAMMA)			\
+    CASE_MATHFN_REENT (LGAMMA) /* LGAMMA_R */	\
+    CASE_MATHFN (LLCEIL)			\
+    CASE_MATHFN (LLFLOOR)			\
+    CASE_MATHFN (LLRINT)			\
+    CASE_MATHFN (LLROUND)			\
+    CASE_MATHFN (LOG)				\
+    CASE_MATHFN (LOG10)				\
+    CASE_MATHFN (LOG1P)				\
+    CASE_MATHFN (LOG2)				\
+    CASE_MATHFN (LOGB)				\
+    CASE_MATHFN (LRINT)				\
+    CASE_MATHFN (LROUND)			\
+    CASE_MATHFN (MODF)				\
+    CASE_MATHFN (NAN)				\
+    CASE_MATHFN (NANS)				\
+    CASE_MATHFN_FLOATN (NEARBYINT)		\
+    CASE_MATHFN (NEXTAFTER)			\
+    CASE_MATHFN (NEXTTOWARD)			\
+    CASE_MATHFN (POW)				\
+    CASE_MATHFN (POWI)				\
+    CASE_MATHFN (POW10)				\
+    CASE_MATHFN (REMAINDER)			\
+    CASE_MATHFN (REMQUO)			\
+    CASE_MATHFN_FLOATN (RINT)			\
+    CASE_MATHFN_FLOATN (ROUND)			\
+    CASE_MATHFN_FLOATN (ROUNDEVEN)		\
+    CASE_MATHFN (SCALB)				\
+    CASE_MATHFN (SCALBLN)			\
+    CASE_MATHFN (SCALBN)			\
+    CASE_MATHFN (SIGNBIT)			\
+    CASE_MATHFN (SIGNIFICAND)			\
+    CASE_MATHFN (SIN)				\
+    CASE_MATHFN (SINCOS)			\
+    CASE_MATHFN (SINH)				\
+    CASE_MATHFN_FLOATN (SQRT)			\
+    CASE_MATHFN (TAN)				\
+    CASE_MATHFN (TANH)				\
+    CASE_MATHFN (TGAMMA)			\
+    CASE_MATHFN_FLOATN (TRUNC)			\
+    CASE_MATHFN (Y0)				\
+    CASE_MATHFN (Y1)				\
     CASE_MATHFN (YN)
+
+    SEQ_OF_CASE_MATHFN
 
     default:
       return END_BUILTINS;
@@ -2277,6 +2280,10 @@ mathfn_built_in_2 (tree type, combined_fn fn)
   else
     return END_BUILTINS;
 }
+
+#undef CASE_MATHFN
+#undef CASE_MATHFN_FLOATN
+#undef CASE_MATHFN_REENT
 
 /* Return mathematic function equivalent to FN but operating directly on TYPE,
    if available.  If IMPLICIT_P is true use the implicit builtin declaration,
@@ -2311,6 +2318,61 @@ tree
 mathfn_built_in (tree type, enum built_in_function fn)
 {
   return mathfn_built_in_1 (type, as_combined_fn (fn), /*implicit=*/ 1);
+}
+
+/* Return the type associated with a built in function, i.e., the one
+   to be passed to mathfn_built_in to get the type-specific
+   function.  */
+
+tree
+mathfn_built_in_type (combined_fn fn)
+{
+#define CASE_MATHFN(MATHFN)			\
+  case BUILT_IN_##MATHFN:			\
+    return double_type_node;			\
+  case BUILT_IN_##MATHFN##F:			\
+    return float_type_node;			\
+  case BUILT_IN_##MATHFN##L:			\
+    return long_double_type_node;
+
+#define CASE_MATHFN_FLOATN(MATHFN)		\
+  CASE_MATHFN(MATHFN)				\
+  case BUILT_IN_##MATHFN##F16:			\
+    return float16_type_node;			\
+  case BUILT_IN_##MATHFN##F32:			\
+    return float32_type_node;			\
+  case BUILT_IN_##MATHFN##F64:			\
+    return float64_type_node;			\
+  case BUILT_IN_##MATHFN##F128:			\
+    return float128_type_node;			\
+  case BUILT_IN_##MATHFN##F32X:			\
+    return float32x_type_node;			\
+  case BUILT_IN_##MATHFN##F64X:			\
+    return float64x_type_node;			\
+  case BUILT_IN_##MATHFN##F128X:		\
+    return float128x_type_node;
+
+/* Similar to above, but appends _R after any F/L suffix.  */
+#define CASE_MATHFN_REENT(MATHFN) \
+  case BUILT_IN_##MATHFN##_R:			\
+    return double_type_node;			\
+  case BUILT_IN_##MATHFN##F_R:			\
+    return float_type_node;			\
+  case BUILT_IN_##MATHFN##L_R:			\
+    return long_double_type_node;
+
+  switch (fn)
+    {
+    SEQ_OF_CASE_MATHFN
+
+    default:
+      return NULL_TREE;
+    }
+
+#undef CASE_MATHFN
+#undef CASE_MATHFN_FLOATN
+#undef CASE_MATHFN_REENT
+#undef SEQ_OF_CASE_MATHFN
 }
 
 /* If BUILT_IN_NORMAL function FNDECL has an associated internal function,
