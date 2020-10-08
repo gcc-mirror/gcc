@@ -948,10 +948,12 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 
   /* Add line map and do callbacks.  */
   _cpp_do_file_change (pfile, LC_ENTER, file->path,
-		       /* With preamble injection, start on line zero, so
-			  the preamble doesn't appear to have been
-			  included from line 1.  */
-		       type == IT_MAIN_INJECT ? 0 : 1, sysp);
+		       /* With preamble injection, start on line zero,
+			  so the preamble doesn't appear to have been
+			  included from line 1.  Likewise when
+			  starting preprocessed, we expect an initial
+			  locating line.  */
+		       type == IT_PRE_MAIN ? 0 : 1, sysp);
 
   return true;
 }
