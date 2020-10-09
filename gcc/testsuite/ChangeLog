@@ -1,3 +1,151 @@
+2020-10-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96805
+	* g++.dg/cpp0x/alias-decl-pr96805.C: New test.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vcvtnq_u32_f32.c: New test.
+
+2020-10-08  Martin Liska  <mliska@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-22.c: Adjust.
+	* gfortran.dg/pr68627.f: Likewise.
+
+2020-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97330
+	* gcc.dg/torture/pr97330-1.c: New testcase.
+	* gcc.dg/torture/pr97330-2.c: Likewise.
+
+2020-10-08  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/slp-pr50819.cc: Adjust.
+	* gcc.dg/vect/bb-slp-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-10.c: Adjust.
+	* gcc.dg/vect/bb-slp-11.c: Adjust.
+	* gcc.dg/vect/bb-slp-13.c: Adjust.
+	* gcc.dg/vect/bb-slp-14.c: Adjust.
+	* gcc.dg/vect/bb-slp-15.c: Adjust.
+	* gcc.dg/vect/bb-slp-16.c: Adjust.
+	* gcc.dg/vect/bb-slp-17.c: Adjust.
+	* gcc.dg/vect/bb-slp-18.c: Adjust.
+	* gcc.dg/vect/bb-slp-19.c: Adjust.
+	* gcc.dg/vect/bb-slp-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-20.c: Adjust.
+	* gcc.dg/vect/bb-slp-21.c: Adjust.
+	* gcc.dg/vect/bb-slp-22.c: Adjust.
+	* gcc.dg/vect/bb-slp-23.c: Adjust.
+	* gcc.dg/vect/bb-slp-24.c: Adjust.
+	* gcc.dg/vect/bb-slp-25.c: Adjust.
+	* gcc.dg/vect/bb-slp-26.c: Adjust.
+	* gcc.dg/vect/bb-slp-27.c: Adjust.
+	* gcc.dg/vect/bb-slp-28.c: Adjust.
+	* gcc.dg/vect/bb-slp-29.c: Adjust.
+	* gcc.dg/vect/bb-slp-3.c: Adjust.
+	* gcc.dg/vect/bb-slp-30.c: Adjust.
+	* gcc.dg/vect/bb-slp-31.c: Adjust.
+	* gcc.dg/vect/bb-slp-34.c: Adjust.
+	* gcc.dg/vect/bb-slp-35.c: Adjust.
+	* gcc.dg/vect/bb-slp-36.c: Adjust.
+	* gcc.dg/vect/bb-slp-38.c: Adjust.
+	* gcc.dg/vect/bb-slp-4.c: Adjust.
+	* gcc.dg/vect/bb-slp-45.c: Adjust.
+	* gcc.dg/vect/bb-slp-46.c: Adjust.
+	* gcc.dg/vect/bb-slp-48.c: Adjust.
+	* gcc.dg/vect/bb-slp-5.c: Adjust.
+	* gcc.dg/vect/bb-slp-6.c: Adjust.
+	* gcc.dg/vect/bb-slp-7.c: Adjust.
+	* gcc.dg/vect/bb-slp-8.c: Adjust.
+	* gcc.dg/vect/bb-slp-8a.c: Adjust.
+	* gcc.dg/vect/bb-slp-8b.c: Adjust.
+	* gcc.dg/vect/bb-slp-9.c: Adjust.
+	* gcc.dg/vect/bb-slp-div-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-over-widen-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-pattern-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-pow-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr58135.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr65935.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr78205.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr81635-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr81635-3.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr95839-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr95839.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr95866.c: Adjust.
+	* gcc.dg/vect/bb-slp-subgroups-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-subgroups-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Adjust.
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: Adjust.
+	* gcc.dg/vect/no-tree-reassoc-bb-slp-12.c: Adjust.
+	* gcc.dg/vect/no-tree-sra-bb-slp-pr50730.c: Adjust.
+	* gfortran.dg/vect/pr62283-2.f: Adjust.
+	* gcc.target/i386/pr68961.c: Adjust.
+	* gcc.target/i386/pr84101.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr81635-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr81635-4.c: Adjust.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Adjust.
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c: Adjust.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-slp.c: Adjust.
+	* gcc.dg/vect/bb-slp-div-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr90006.c: Adjust.
+	* g++.dg/vect/slp-pr50413.cc: Adjust.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vmlaldavaxq_p_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vmlaldavaxq_p_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u8.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u8.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u8.c: Remove.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s32.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s8.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s32.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s8.c: New test.
+
+2020-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97322
+	* gcc.dg/pr97322.c: New test.
+
+2020-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97315-2.c: New test.
+
+2020-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97315-1.c: New test.
+
+2020-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/97294
+	* gcc.dg/asan/pr97294.c: New test.
+
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97052
+	* g++.dg/cpp2a/concepts-defarg2.C: New test.
+
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96229
+	* g++.dg/cpp2a/concepts-class2.C: New test.
+
 2020-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97010

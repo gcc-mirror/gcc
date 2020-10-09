@@ -1,3 +1,27 @@
+2020-10-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96805
+	PR c++/96199
+	* pt.c (tsubst_aggr_type): Don't build a TYPENAME_TYPE when
+	entering_scope.
+	(tsubst_template_decl): Use tsubst_aggr_type.
+
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97052
+	* constraint.cc (build_type_constraint): Temporarily increment
+	processing_template_decl before calling build_concept_check.
+	* pt.c (make_constrained_placeholder_type): Likewise.
+
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96229
+	* parser.c (cp_parser_class_specifier_1): Move call to
+	associate_classtype_constraints from here to ...
+	(cp_parser_class_head): ... here.
+	* pt.c (is_compatible_template_arg): Correct documentation to
+	say "argument is _no_ more constrained than the parameter".
+
 2020-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97010

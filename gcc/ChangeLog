@@ -1,3 +1,172 @@
+2020-10-08  Alexandre Oliva  <oliva@adacore.com>
+
+	* builtins.c (mathfn_built_in_type): New.
+	* builtins.h (mathfn_built_in_type): Declare.
+	* tree-ssa-math-opts.c (execute_cse_sincos_1): Use it to
+	obtain the type expected by the intrinsic.
+
+2020-10-08  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_P10_MISC_2): Rename
+	to BU_P10_POWERPC64_MISC_2.
+	CFUGED, CNTLZDM, CNTTZDM, PDEPD, PEXTD): Call renamed macro.
+
+2020-10-08  Jan Hubicka  <jh@suse.cz>
+
+	* tree-nrv.c (dest_safe_for_nrv_p): Disable tbaa in
+	call_may_clobber_ref_p and ref_maybe_used_by_stmt_p.
+	* tree-tailcall.c (find_tail_calls): Likewise.
+	* tree-ssa-alias.c (call_may_clobber_ref_p): Add tbaa_p parameter.
+	* tree-ssa-alias.h (call_may_clobber_ref_p): Update prototype.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Pass data->tbaa_p
+	to call_may_clobber_ref_p_1.
+
+2020-10-08  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2out.c (dwarf2out_finish): Emit .file 0 entry when
+	generating DWARF5 .debug_line table through gas.
+
+2020-10-08  John Henning  <john.henning@oracle.com>
+
+	PR other/97309
+	* doc/invoke.texi: Improve documentation of
+	-fallow-store-data-races.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* config/arm/arm_mve.h (__arm_vcvtnq_u32_f32): New.
+
+2020-10-08  Martin Liska  <mliska@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_bb_vec_info::const_iterator): Remove.
+	(_bb_vec_info::const_reverse_iterator): Likewise.
+	(_bb_vec_info::region_stmts): Likewise.
+	(_bb_vec_info::reverse_region_stmts): Likewise.
+	(_bb_vec_info::_bb_vec_info): Adjust.
+	(_bb_vec_info::bb): Remove.
+	(_bb_vec_info::region_begin): Remove.
+	(_bb_vec_info::region_end): Remove.
+	(_bb_vec_info::bbs): New vector of BBs.
+	(vect_slp_function): Declare.
+	* tree-vect-patterns.c (vect_determine_precisions): Use
+	regular stmt iteration.
+	(vect_pattern_recog): Likewise.
+	* tree-vect-slp.c: Include cfganal.h, tree-eh.h and tree-cfg.h.
+	(vect_build_slp_tree_1): Properly refuse to vectorize
+	volatile and throwing stmts.
+	(vect_build_slp_tree_2): Pass group-size down to
+	get_vectype_for_scalar_type.
+	(_bb_vec_info::_bb_vec_info): Use regular stmt iteration,
+	adjust for changed region specification.
+	(_bb_vec_info::~_bb_vec_info): Likewise.
+	(vect_slp_check_for_constructors): Likewise.
+	(vect_slp_region): Likewise.
+	(vect_slp_bbs): New worker operating on a vector of BBs.
+	(vect_slp_bb): Wrap it.
+	(vect_slp_function): New function splitting the function
+	into multi-BB regions.
+	(vect_create_constant_vectors): Handle the case of inserting
+	after a throwing def.
+	(vect_schedule_slp_instance): Adjust.
+	* tree-vectorizer.c (vec_info::remove_stmt): Simplify again.
+	(vec_info::insert_seq_on_entry): Adjust.
+	(pass_slp_vectorize::execute): Also init PHIs.  Call
+	vect_slp_function.
+
+2020-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97330
+	* tree-ssa-sink.c (statement_sink_location): Avoid skipping
+	PHIs when they dominate the insert location.
+
+2020-10-08  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (get_access): Fix handling of offsets.
+	* tree-ssa-alias.c (modref_may_conflict): Watch for overflows.
+
+2020-10-08  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.def (DEBUG_COUNTER): Add ipa_mod_ref debug counter.
+	* tree-ssa-alias.c (modref_may_conflict): Handle the counter.
+
+2020-10-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.c (try_vectorize_loop_1): Do not dump
+	"basic block vectorized".
+	(pass_slp_vectorize::execute): Likewise.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Avoid
+	re-analyzing split single stmts.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* config/arm/arm_mve.h (vqrdmlashq_n_u8, vqrdmlashq_n_u16)
+	(vqrdmlashq_n_u32, vqrdmlahq_n_u8, vqrdmlahq_n_u16)
+	(vqrdmlahq_n_u32, vqdmlahq_n_u8, vqdmlahq_n_u16, vqdmlahq_n_u32)
+	(vmlaldavaxq_p_u16, vmlaldavaxq_p_u32): Remove.
+	* config/arm/arm_mve_builtins.def (vqrdmlashq_n_u, vqrdmlahq_n_u)
+	(vqdmlahq_n_u, vmlaldavaxq_p_u): Remove.
+	* config/arm/unspecs.md (VQDMLAHQ_N_U, VQRDMLAHQ_N_U)
+	(VQRDMLASHQ_N_U)
+	(VMLALDAVAXQ_P_U): Remove unspecs.
+	* config/arm/iterators.md (VQDMLAHQ_N_U, VQRDMLAHQ_N_U)
+	(VQRDMLASHQ_N_U, VMLALDAVAXQ_P_U): Remove attributes.
+	(VQDMLAHQ_N, VQRDMLAHQ_N, VQRDMLASHQ_N, VMLALDAVAXQ_P): Remove
+	unsigned variants from iterators.
+	* config/arm/mve.md (mve_vqdmlahq_n_<supf><mode>)
+	(mve_vqrdmlahq_n_<supf><mode>)
+	(mve_vqrdmlashq_n_<supf><mode>, mve_vmlaldavaxq_p_<supf><mode>):
+	Update comment.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* config/arm/arm_mve.h (vqdmlashq, vqdmlashq_m): Define.
+	* config/arm/arm_mve_builtins.def (vqdmlashq_n_s)
+	(vqdmlashq_m_n_s,): New.
+	* config/arm/unspecs.md (VQDMLASHQ_N_S, VQDMLASHQ_M_N_S): New
+	unspecs.
+	* config/arm/iterators.md (VQDMLASHQ_N_S, VQDMLASHQ_M_N_S): New
+	attributes.
+	(VQDMLASHQ_N): New iterator.
+	* config/arm/mve.md (mve_vqdmlashq_n_, mve_vqdmlashq_m_n_s): New
+	patterns.
+
+2020-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97322
+	* config/arm/arm.c (arm_expand_divmod_libfunc): Pass mode instead of
+	GET_MODE (op0) or GET_MODE (op1) to emit_library_call_value.
+
+2020-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97325
+	* gimple-range.cc (gimple_ranger::range_of_builtin_call): Handle
+	negative numbers in __builtin_ffs and __builtin_popcount.
+
+2020-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97315
+	* range-op.cc (value_range_with_overflow): Change any
+	non-overflow calculation in which both bounds are
+	overflow/underflow to be undefined.
+
+2020-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97315
+	* gimple-ssa-evrp.c (hybrid_folder::choose_value): Removes the
+	trap and instead annotates the listing.
+
+2020-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/97294
+	* tree-cfg.c (move_block_to_fn): Call notice_special_calls on
+	call stmts being moved into dest_cfun.
+	* omp-low.c (lower_rec_input_clauses): Set cfun->calls_alloca when
+	adding __builtin_alloca_with_align call without gimplification.
+
 2020-10-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* common.opt (-fevrp-mode): Rename and move...

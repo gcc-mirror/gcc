@@ -1,3 +1,42 @@
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95788
+	* include/bits/ranges_uninitialized.h:
+	(__construct_at_fn::operator()): Rewrite in terms of
+	std::construct_at.  Declare it conditionally noexcept.  Qualify
+	calls to declval in its requires-clause.
+	* testsuite/20_util/specialized_algorithms/construct_at/95788.cc:
+	New test.
+
+2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82584
+	* include/bits/random.tcc
+	(discrete_distribution::param_type::_M_initialize)
+	(piecewise_constant_distribution::param_type::_M_initialize)
+	(piecewise_linear_distribution::param_type::_M_initialize):
+	Add assertions for positive sums..
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line.
+
+2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ios_base.h (ios_base::failure): Add constructors
+	takeing error_code argument. Add code() member function.
+	* testsuite/27_io/ios_base/failure/cxx11.cc: Allow test to
+	run for the old ABI but do not check for derivation from
+	std::system_error.
+	* testsuite/27_io/ios_base/failure/error_code.cc: New test.
+
+2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (__detail::_Mod): Revert last change.
+	(__detail::__mod): Do not use _Mod for a==0 case.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/call.cc:
+	Check other cases with a==0. Also check runtime results.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line.
+
 2020-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.h (__detail::_Mod): Avoid divide by zero.
