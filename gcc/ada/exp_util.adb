@@ -6567,7 +6567,7 @@ package body Exp_Util is
       if Has_Stream_Size_Clause (E) then
          return Static_Integer (Expression (Stream_Size_Clause (E)));
 
-      --  Otherwise the Stream_Size if the size of the type
+      --  Otherwise the Stream_Size is the size of the type
 
       else
          return Esize (E);

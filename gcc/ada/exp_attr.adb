@@ -1209,7 +1209,7 @@ package body Exp_Attr is
    --  by Expand_Fpt_Attribute
 
    procedure Expand_Fpt_Attribute_R (N : Node_Id) is
-      E1  : constant Node_Id    := First (Expressions (N));
+      E1  : constant Node_Id := First (Expressions (N));
       Ftp : Entity_Id;
       Pkg : RE_Id;
    begin
@@ -1229,10 +1229,10 @@ package body Exp_Attr is
    --  by Expand_Fpt_Attribute
 
    procedure Expand_Fpt_Attribute_RI (N : Node_Id) is
-      E1  : constant Node_Id   := First (Expressions (N));
+      E1  : constant Node_Id := First (Expressions (N));
+      E2  : constant Node_Id := Next (E1);
       Ftp : Entity_Id;
       Pkg : RE_Id;
-      E2  : constant Node_Id   := Next (E1);
    begin
       Find_Fat_Info (Etype (E1), Ftp, Pkg);
       Expand_Fpt_Attribute
@@ -2985,7 +2985,7 @@ package body Exp_Attr is
       ---------------
 
       --  Transforms 'Copy_Sign into a call to the floating-point attribute
-      --  function Copy_Sign in Fat_xxx (where xxx is the root type)
+      --  function Copy_Sign in Fat_xxx (where xxx is the root type).
 
       when Attribute_Copy_Sign =>
          Expand_Fpt_Attribute_RR (N);
@@ -3384,7 +3384,7 @@ package body Exp_Attr is
 
          Size : Entity_Id;
 
-      --  Start of Finalization_Size
+      --  Start of processing for Finalization_Size
 
       begin
          --  An object of a class-wide type first requires a runtime check to
@@ -5712,14 +5712,14 @@ package body Exp_Attr is
 
       when Attribute_Reduce =>
          declare
-            Loc     : constant Source_Ptr := Sloc (N);
-            E1      : constant Node_Id := First (Expressions (N));
-            E2      : constant Node_Id := Next (E1);
-            Bnn     : constant Entity_Id := Make_Temporary (Loc, 'B', N);
-            Typ     : constant Entity_Id := Etype (N);
+            Loc : constant Source_Ptr := Sloc (N);
+            E1  : constant Node_Id := First (Expressions (N));
+            E2  : constant Node_Id := Next (E1);
+            Bnn : constant Entity_Id := Make_Temporary (Loc, 'B', N);
+            Typ : constant Entity_Id := Etype (N);
 
             New_Loop : Node_Id;
-            Stat    : Node_Id;
+            Stat     : Node_Id;
 
             function Build_Stat (Comp : Node_Id) return Node_Id;
             --  The reducer can be a function, a procedure whose first
@@ -5734,14 +5734,14 @@ package body Exp_Attr is
             function Build_Stat (Comp : Node_Id) return Node_Id is
             begin
                if Nkind (E1) = N_Attribute_Reference then
-                  Stat :=  Make_Assignment_Statement (Loc,
-                             Name => New_Occurrence_Of (Bnn, Loc),
-                             Expression => Make_Attribute_Reference (Loc,
-                               Attribute_Name => Attribute_Name (E1),
-                               Prefix => New_Copy (Prefix (E1)),
-                               Expressions => New_List (
-                                 New_Occurrence_Of (Bnn, Loc),
-                                 Comp)));
+                  Stat := Make_Assignment_Statement (Loc,
+                            Name => New_Occurrence_Of (Bnn, Loc),
+                            Expression => Make_Attribute_Reference (Loc,
+                              Attribute_Name => Attribute_Name (E1),
+                              Prefix => New_Copy (Prefix (E1)),
+                              Expressions => New_List (
+                                New_Occurrence_Of (Bnn, Loc),
+                                Comp)));
 
                elsif Ekind (Entity (E1)) = E_Procedure then
                   Stat := Make_Procedure_Call_Statement (Loc,
@@ -5750,13 +5750,13 @@ package body Exp_Attr is
                                  New_Occurrence_Of (Bnn, Loc),
                                  Comp));
                else
-                  Stat :=  Make_Assignment_Statement (Loc,
-                             Name => New_Occurrence_Of (Bnn, Loc),
-                             Expression => Make_Function_Call (Loc,
-                               Name => New_Occurrence_Of (Entity (E1), Loc),
-                               Parameter_Associations => New_List (
-                                 New_Occurrence_Of (Bnn, Loc),
-                                 Comp)));
+                  Stat := Make_Assignment_Statement (Loc,
+                            Name => New_Occurrence_Of (Bnn, Loc),
+                            Expression => Make_Function_Call (Loc,
+                              Name => New_Occurrence_Of (Entity (E1), Loc),
+                              Parameter_Associations => New_List (
+                                New_Occurrence_Of (Bnn, Loc),
+                                Comp)));
                end if;
 
                return Stat;
@@ -5764,9 +5764,8 @@ package body Exp_Attr is
 
          --  If the prefix is an aggregate, its unique component is an
          --  Iterated_Element, and we create a loop out of its iterator.
-         --  The iterated_component_Association is parsed as a loop
-         --  parameter specification with "in" or as a container
-         --  iterator with "of".
+         --  The iterated_component_association is parsed as a loop parameter
+         --  specification with "in" or as a container iterator with "of".
 
          begin
             if Nkind (Prefix (N)) = N_Aggregate then
@@ -6288,7 +6287,7 @@ package body Exp_Attr is
       ------------------
 
       when Attribute_Storage_Size => Storage_Size : declare
-         Alloc_Op  : Entity_Id := Empty;
+         Alloc_Op : Entity_Id := Empty;
 
       begin
 
@@ -6709,7 +6708,7 @@ package body Exp_Attr is
       ------------
 
       when Attribute_To_Any => To_Any : declare
-         Decls  : constant List_Id   := New_List;
+         Decls : constant List_Id := New_List;
       begin
          Rewrite (N,
            Build_To_Any_Call
@@ -6738,7 +6737,7 @@ package body Exp_Attr is
       --------------
 
       when Attribute_TypeCode => TypeCode : declare
-         Decls  : constant List_Id   := New_List;
+         Decls : constant List_Id := New_List;
       begin
          Rewrite (N, Build_TypeCode_Call (Loc, Ptyp, Decls));
          Insert_Actions (N, Decls);
@@ -7666,7 +7665,7 @@ package body Exp_Attr is
 
       --  The following attributes should not appear at this stage, since they
       --  have already been handled by the analyzer (and properly rewritten
-      --  with corresponding values or entities to represent the right values)
+      --  with corresponding values or entities to represent the right values).
 
       when Attribute_Abort_Signal
          | Attribute_Address_Size
