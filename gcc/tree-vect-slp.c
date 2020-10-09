@@ -4145,9 +4145,17 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
 		    {
 		      gimple_stmt_iterator gsi;
 		      if (gimple_code (insert_after->stmt) == GIMPLE_PHI)
-			gsi = gsi_after_labels (gimple_bb (insert_after->stmt));
+			{
+			  gsi = gsi_after_labels (gimple_bb (insert_after->stmt));
+			  gsi_insert_seq_before (&gsi, ctor_seq,
+						 GSI_CONTINUE_LINKING);
+			}
 		      else if (!stmt_ends_bb_p (insert_after->stmt))
-			gsi = gsi_for_stmt (insert_after->stmt);
+			{
+			  gsi = gsi_for_stmt (insert_after->stmt);
+			  gsi_insert_seq_after (&gsi, ctor_seq,
+						GSI_CONTINUE_LINKING);
+			}
 		      else
 			{
 			  /* When we want to insert after a def where the
@@ -4155,11 +4163,10 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
 			     edge.  */
 			  edge e = find_fallthru_edge
 				     (gimple_bb (insert_after->stmt)->succs);
-			  gcc_assert (single_pred_p (e->dest));
-			  gsi = gsi_after_labels (e->dest);
+			  basic_block new_bb
+			    = gsi_insert_seq_on_edge_immediate (e, ctor_seq);
+			  gcc_assert (!new_bb);
 			}
-		      gsi_insert_seq_after (&gsi, ctor_seq,
-					    GSI_CONTINUE_LINKING);
 		    }
 		  else
 		    vinfo->insert_seq_on_entry (NULL, ctor_seq);
