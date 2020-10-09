@@ -17410,12 +17410,11 @@ grokmethod (cp_decl_specifier_seq *declspecs,
      definitions in named module purview.  If the user explicitly
      made it inline, grokdeclarator will already have done the right
      things.  */
-  // FIXME: Should the override flag be born deprecated?
   if ((!named_module_purview_p ()
        || flag_module_implicit_inline
       /* Lambda's operator function remains inline.  */
        || LAMBDA_TYPE_P (DECL_CONTEXT (fndecl)))
-      /* If the User explicitly asked for this to be inline, we don't
+      /* If the user explicitly asked for this to be inline, we don't
 	 need to do more, but more importantly we want to warn if we
 	 can't inline it.  */
       && !DECL_DECLARED_INLINE_P (fndecl))

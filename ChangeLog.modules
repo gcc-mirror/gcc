@@ -1,5 +1,8 @@
 2020-10-09  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* decl.c (grokmethod): Remove comment about -fmodule-implicit-inline.
+
 	Block-scope externs disallowed
 	gcc/cp/
 	* decl.c (start_decl): Reject block-scope extern in module
