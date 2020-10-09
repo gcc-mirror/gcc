@@ -21,8 +21,8 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#if !defined _IMMINTRIN_H_INCLUDED
-# error "Never use <pkuintrin.h> directly; include <immintrin.h> instead."
+#ifndef _X86GPRINTRIN_H_INCLUDED
+# error "Never use <pkuintrin.h> directly; include <x86gprintrin.h> instead."
 #endif
 
 #ifndef _PKUINTRIN_H_INCLUDED

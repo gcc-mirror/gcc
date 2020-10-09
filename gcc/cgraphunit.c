@@ -2494,6 +2494,7 @@ expand_all_functions (void)
   delete ipa_saved_clone_sources;
   ipa_saved_clone_sources = NULL;
   free (order);
+  free (tp_first_run_order);
 }
 
 /* This is used to sort the node types by the cgraph order number.  */

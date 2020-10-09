@@ -234,6 +234,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			const param_type& __p);
 
       param_type _M_param;
+
+      // Lemire's nearly divisionless algorithm.
+      // Returns an unbiased random number from __g downscaled to [0,__range)
+      // using an unsigned type _Wp twice as wide as unsigned type _Up.
+      template<typename _Wp, typename _Urbg, typename _Up>
+	static _Up
+	_S_nd(_Urbg& __g, _Up __range)
+	{
+	  using __gnu_cxx::__int_traits;
+	  static_assert(!__int_traits<_Up>::__is_signed, "U must be unsigned");
+	  static_assert(!__int_traits<_Wp>::__is_signed, "W must be unsigned");
+
+	  // reference: Fast Random Integer Generation in an Interval
+	  // ACM Transactions on Modeling and Computer Simulation 29 (1), 2019
+	  // https://arxiv.org/abs/1805.10941
+	  _Wp __product = _Wp(__g()) * _Wp(__range);
+	  _Up __low = _Up(__product);
+	  if (__low < __range)
+	    {
+	      _Up __threshold = -__range % __range;
+	      while (__low < __threshold)
+		{
+		  __product = _Wp(__g()) * _Wp(__range);
+		  __low = _Up(__product);
+		}
+	    }
+	  return __product >> __gnu_cxx::__int_traits<_Up>::__digits;
+	}
     };
 
   template<typename _IntType>
@@ -256,17 +284,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = __uctype(__param.b()) - __uctype(__param.a());
 
 	__uctype __ret;
-
 	if (__urngrange > __urange)
 	  {
 	    // downscaling
+
 	    const __uctype __uerange = __urange + 1; // __urange can be zero
-	    const __uctype __scaling = __urngrange / __uerange;
-	    const __uctype __past = __uerange * __scaling;
-	    do
-	      __ret = __uctype(__urng()) - __urngmin;
-	    while (__ret >= __past);
-	    __ret /= __scaling;
+
+	    using __gnu_cxx::__int_traits;
+#if __SIZEOF_INT128__
+	    if (__int_traits<__uctype>::__digits == 64
+		&& __urngrange == __int_traits<__uctype>::__max)
+	      {
+		__ret = _S_nd<unsigned __int128>(__urng, __uerange);
+	      }
+	    else
+#endif
+	    if (__int_traits<__uctype>::__digits == 32
+		&& __urngrange == __int_traits<__uctype>::__max)
+	      {
+		__ret = _S_nd<__UINT64_TYPE__>(__urng, __uerange);
+	      }
+	    else
+	      {
+		// fallback case (2 divisions)
+		const __uctype __scaling = __urngrange / __uerange;
+		const __uctype __past = __uerange * __scaling;
+		do
+		  __ret = __uctype(__urng()) - __urngmin;
+		while (__ret >= __past);
+		__ret /= __scaling;
+	      }
 	  }
 	else if (__urngrange < __urange)
 	  {

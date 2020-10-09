@@ -4045,29 +4045,42 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
     return opt_result::success ();
 
   if (refs.length () > 1)
-    return opt_result::failure_at (stmt,
-				   "not vectorized:"
-				   " more than one data ref in stmt: %G", stmt);
+    {
+      while (!refs.is_empty ())
+	free_data_ref (refs.pop ());
+      return opt_result::failure_at (stmt,
+				     "not vectorized: more than one "
+				     "data ref in stmt: %G", stmt);
+    }
 
+  data_reference_p dr = refs.pop ();
   if (gcall *call = dyn_cast <gcall *> (stmt))
     if (!gimple_call_internal_p (call)
 	|| (gimple_call_internal_fn (call) != IFN_MASK_LOAD
 	    && gimple_call_internal_fn (call) != IFN_MASK_STORE))
-      return opt_result::failure_at (stmt,
-				     "not vectorized: dr in a call %G", stmt);
+      {
+	free_data_ref (dr);
+	return opt_result::failure_at (stmt,
+				       "not vectorized: dr in a call %G", stmt);
+      }
 
-  data_reference_p dr = refs.pop ();
   if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
-    return opt_result::failure_at (stmt,
-				   "not vectorized:"
-				   " statement is bitfield access %G", stmt);
+    {
+      free_data_ref (dr);
+      return opt_result::failure_at (stmt,
+				     "not vectorized:"
+				     " statement is bitfield access %G", stmt);
+    }
 
   if (DR_BASE_ADDRESS (dr)
       && TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
-    return opt_result::failure_at (stmt,
-				   "not vectorized:"
-				   " base addr of dr is a constant\n");
+    {
+      free_data_ref (dr);
+      return opt_result::failure_at (stmt,
+				     "not vectorized:"
+				     " base addr of dr is a constant\n");
+    }
 
   /* Check whether this may be a SIMD lane access and adjust the
      DR to make it easier for us to handle it.  */

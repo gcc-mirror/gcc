@@ -1748,6 +1748,7 @@ pass_ipa_modref::execute (function *)
     }
   ((modref_summaries *)summaries)->ipa = false;
   ipa_free_postorder_info ();
+  free (order);
   return 0;
 }
 
