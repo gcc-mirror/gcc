@@ -703,6 +703,7 @@ check-compile: testsuite_files ${compile_script}
 	  ${compile_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 check-performance: testsuite_files_performance ${performance_script}
 	-@(chmod + ${check_performance_script}; \
+	  export CXXFLAGS="$(CXXFLAGS)"; \
 	  ${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
 check-debug: site.exp
