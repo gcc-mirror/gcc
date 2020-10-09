@@ -719,6 +719,10 @@ package Opt is
    --  the name is of the form .xxx, then to name.xxx where name is the source
    --  file name with extension stripped.
 
+   Generate_Asm : Boolean := False;
+   --  GNAT
+   --  True if generating assembly instead of an object file, via the -S switch
+
    Generate_C_Code : Boolean := False;
    --  GNAT, GNATBIND
    --  If True, the Cprint circuitry to generate C code output is activated.

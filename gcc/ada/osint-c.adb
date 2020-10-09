@@ -480,6 +480,7 @@ package body Osint.C is
          or else
           (Name (NL - EL + Name'First .. Name'Last) /= Ext
              and then Name (NL - 2 + Name'First .. Name'Last) /= ".o"
+             and then not Generate_Asm
              and then
                (not Generate_C_Code
                   or else Name (NL - 2 + Name'First .. Name'Last) /= ".c"))
