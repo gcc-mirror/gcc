@@ -1,3 +1,69 @@
+2020-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97010
+	* g++.dg/cpp2a/fn-template21.C: New test.
+	* g++.dg/cpp2a/fn-template22.C: New test.
+
+2020-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97307
+	* gcc.dg/tree-ssa/ssa-sink-17.c: New testcase.
+	* gcc.dg/vect/pr65947-3.c: XFAIL.
+
+2020-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	PR libstdc++/97273
+	* g++.dg/template/alignof3.C: New test.
+
+2020-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97116
+	* g++.dg/analyzer/pr97116.C: New test.
+
+2020-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/analyzer/analyzer.exp (DEFAULT_CXXFLAGS): Remove
+	-fdiagnostics-path-format=separate-events.
+	* gcc.dg/analyzer/analyzer.exp (DEFAULT_CFLAGS): Likewise.
+	* gcc.dg/plugin/diagnostic-path-format-default.c: Rename to...
+	* gcc.dg/plugin/diagnostic-path-format-plain.c: ...this.  Remove
+	dg-options directive.  Copy remainder of test from
+	diagnostic-path-format-separate-events.c.
+	* gcc.dg/plugin/diagnostic-test-paths-2.c: Add
+	-fdiagnostics-path-format=inline-events to options.
+	Fix expected output for location of conditional within "for" loop.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Update for
+	renaming.
+	* gfortran.dg/analyzer/analyzer.exp (DEFAULT_FFLAGS): Remove
+	-fdiagnostics-path-format=separate-events.
+
+2020-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/lambda/lambda-sfinae1.C: Avoid ill-formed local extern
+	* g++.dg/init/pr42844.C: Add expected error.
+	* g++.dg/lookup/extern-redecl1.C: Likewise.
+	* g++.dg/lookup/koenig15.C: Avoid ill-formed.
+	* g++.dg/lto/pr95677.C: New.
+	* g++.dg/other/nested-extern-1.C: Correct expected behabviour.
+	* g++.dg/other/nested-extern-2.C: Likewise.
+	* g++.dg/other/nested-extern.cc: Split ...
+	* g++.dg/other/nested-extern-1.cc: ... here ...
+	* g++.dg/other/nested-extern-2.cc: ... here.
+	* g++.dg/template/scope5.C: Avoid ill-formed
+	* g++.old-deja/g++.law/missed-error2.C: Allow extension.
+	* g++.old-deja/g++.pt/crash3.C: Add expected error.
+
+2020-10-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96394
+	* gcc.dg/tree-prof/pr96394.c: New test.
+
+2020-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/simd-2.c: New test.
+	* gcc.dg/gomp/simd-3.c: New test.
+
 2020-10-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97297

@@ -38,4 +38,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" } } */

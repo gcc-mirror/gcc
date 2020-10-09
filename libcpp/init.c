@@ -717,7 +717,7 @@ cpp_main_loc (const cpp_reader *pfile)
 }
 
 /* For preprocessed files, if the very first characters are
-   '#[SPACE]0[SPACE]', then handle a line directive so we know the
+   '#<SPACE>[01]<SPACE>', then handle a line directive so we know the
    original file name.  This will generate file_change callbacks,
    which the front ends must handle appropriately given their state of
    initialization.  We peek directly into the character buffer, so

@@ -63,4 +63,4 @@ main ()
   return main1 ();
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 2 "slp2" { target vect_call_lrint } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 2 "slp2" { target vect_call_lrint } } } */

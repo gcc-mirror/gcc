@@ -1111,7 +1111,7 @@
 		     | RS6000_BTC_UNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
-#define BU_P10_MISC_2(ENUM, NAME, ATTR, ICODE)				\
+#define BU_P10_POWERPC64_MISC_2(ENUM, NAME, ATTR, ICODE)		\
   RS6000_BUILTIN_2 (P10_BUILTIN_ ## ENUM,		/* ENUM */	\
 		    "__builtin_" NAME,			/* NAME */	\
 		    RS6000_BTM_P10					\
@@ -2727,11 +2727,11 @@ BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
 /* Builtins for scalar instructions added in ISA 3.1 (power10).  */
-BU_P10_MISC_2 (CFUGED, "cfuged", CONST, cfuged)
-BU_P10_MISC_2 (CNTLZDM, "cntlzdm", CONST, cntlzdm)
-BU_P10_MISC_2 (CNTTZDM, "cnttzdm", CONST, cnttzdm)
-BU_P10_MISC_2 (PDEPD, "pdepd", CONST, pdepd)
-BU_P10_MISC_2 (PEXTD, "pextd", CONST, pextd)
+BU_P10_POWERPC64_MISC_2 (CFUGED, "cfuged", CONST, cfuged)
+BU_P10_POWERPC64_MISC_2 (CNTLZDM, "cntlzdm", CONST, cntlzdm)
+BU_P10_POWERPC64_MISC_2 (CNTTZDM, "cnttzdm", CONST, cnttzdm)
+BU_P10_POWERPC64_MISC_2 (PDEPD, "pdepd", CONST, pdepd)
+BU_P10_POWERPC64_MISC_2 (PEXTD, "pextd", CONST, pextd)
 
 /* Builtins for vector instructions added in ISA 3.1 (power10).  */
 BU_P10V_AV_2 (VCLRLB, "vclrlb", CONST, vclrlb)

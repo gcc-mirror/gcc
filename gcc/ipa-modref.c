@@ -318,8 +318,7 @@ get_access (ao_ref *ref)
 			  0, -1, false};
   if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
     {
-      tree offset = TREE_CODE (base) == MEM_REF
-		    ? TREE_OPERAND (base, 1) : NULL_TREE;
+      tree memref = base;
       base = TREE_OPERAND (base, 0);
       if (TREE_CODE (base) == SSA_NAME
 	  && SSA_NAME_IS_DEFAULT_DEF (base)
@@ -336,8 +335,14 @@ get_access (ao_ref *ref)
 		}
 	      a.parm_index++;
 	    }
-	  a.parm_offset_known
-	    = offset && wi::to_poly_offset (offset).to_shwi (&a.parm_offset);
+	  if (TREE_CODE (memref) == MEM_REF)
+	    {
+	      a.parm_offset_known
+		 = wi::to_poly_wide (TREE_OPERAND
+					 (memref, 1)).to_shwi (&a.parm_offset);
+	    }
+	  else
+	    a.parm_offset_known = false;
 	}
       else
 	a.parm_index = -1;

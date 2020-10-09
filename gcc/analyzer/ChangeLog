@@ -1,3 +1,12 @@
+2020-10-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97116
+	* sm-malloc.cc (method_p): New.
+	(describe_argument_index): New.
+	(inform_nonnull_attribute): Use describe_argument_index.
+	(possible_null_arg::describe_final_event): Likewise.
+	(null_arg::describe_final_event): Likewise.
+
 2020-09-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/95188

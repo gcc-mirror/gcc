@@ -59,4 +59,4 @@ f4 (double *p, double *q, unsigned int start, unsigned int n)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 4 "slp1" } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 4 "slp1" } } */

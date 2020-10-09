@@ -668,13 +668,12 @@ irange_allocator::allocate (unsigned num_pairs)
   if (num_pairs < 2)
     num_pairs = 2;
 
-  struct newir {
-    irange range;
-    tree mem[2];
-  };
-  size_t nbytes = (sizeof (newir) + sizeof (tree) * 2 * (num_pairs - 1));
-  struct newir *r = (newir *) obstack_alloc (&m_obstack, nbytes);
-  return new (r) irange (r->mem, num_pairs);
+  size_t nbytes = sizeof (tree) * 2 * num_pairs;
+
+  // Allocate the irange and required memory for the vector.
+  void *r = obstack_alloc (&m_obstack, sizeof (irange));
+  tree *mem = (tree *) obstack_alloc (&m_obstack, nbytes);
+  return new (r) irange (mem, num_pairs);
 }
 
 inline irange *

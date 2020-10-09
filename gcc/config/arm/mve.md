@@ -3662,7 +3662,7 @@
    (set_attr "length""8")])
 
 ;;
-;; [vqdmlahq_n_s, vqdmlahq_n_u])
+;; [vqdmlahq_n_s])
 ;;
 (define_insn "mve_vqdmlahq_n_<supf><mode>"
   [
@@ -3674,6 +3674,22 @@
   ]
   "TARGET_HAVE_MVE"
   "vqdmlah.s%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+])
+
+;;
+;; [vqdmlashq_n_s])
+;;
+(define_insn "mve_vqdmlashq_n_<supf><mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")]
+	 VQDMLASHQ_N))
+  ]
+  "TARGET_HAVE_MVE"
+  "vqdmlash.s%#<V_sz_elem>\t%q0, %q2, %3"
   [(set_attr "type" "mve_move")
 ])
 
@@ -3726,7 +3742,7 @@
 ])
 
 ;;
-;; [vqrdmlahq_n_s, vqrdmlahq_n_u])
+;; [vqrdmlahq_n_s])
 ;;
 (define_insn "mve_vqrdmlahq_n_<supf><mode>"
   [
@@ -3742,7 +3758,7 @@
 ])
 
 ;;
-;; [vqrdmlashq_n_s, vqrdmlashq_n_u])
+;; [vqrdmlashq_n_s])
 ;;
 (define_insn "mve_vqrdmlashq_n_<supf><mode>"
   [
@@ -5904,6 +5920,23 @@
    (set_attr "length""8")])
 
 ;;
+;; [vqdmlashq_m_n_s])
+;;
+(define_insn "mve_vqdmlashq_m_n_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "0")
+		       (match_operand:MVE_2 2 "s_register_operand" "w")
+		       (match_operand:<V_elem> 3 "s_register_operand" "r")
+		       (match_operand:HI 4 "vpr_register_operand" "Up")]
+	 VQDMLASHQ_M_N_S))
+  ]
+  "TARGET_HAVE_MVE"
+  "vpst\;vqdmlasht.s%#<V_sz_elem>\t%q0, %q2, %3"
+  [(set_attr "type" "mve_move")
+   (set_attr "length""8")])
+
+;;
 ;; [vqrdmlahq_m_n_s])
 ;;
 (define_insn "mve_vqrdmlahq_m_n_s<mode>"
@@ -6465,7 +6498,7 @@
    (set_attr "length""8")])
 
 ;;
-;; [vmlaldavaxq_p_u, vmlaldavaxq_p_s])
+;; [vmlaldavaxq_p_s])
 ;;
 (define_insn "mve_vmlaldavaxq_p_<supf><mode>"
   [

@@ -1,5 +1,7 @@
 2020-10-08  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk d1c566d72d9
+
 	Undeclared builtin merging
 	gcc/cp/
 	* module.cc (trees_in::is_matching_decl): Merge into undeclared

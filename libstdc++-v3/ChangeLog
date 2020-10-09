@@ -1,3 +1,20 @@
+2020-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (__detail::_Mod): Avoid divide by zero.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/call.cc:
+	New test.
+
+2020-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (seed_seq(initializer_list<T>)): Rename
+	parameter to use reserved name.
+	* include/bits/ranges_algo.h (shift_left, shift_right): Rename
+	template parameters to use reserved name.
+	* libsupc++/exception_ptr.h (exception_ptr): Likewise for
+	parameters and local variables.
+	* testsuite/17_intro/names.cc: Check "il". Do not check "d" and
+	"y" in C++20 mode.
+
 2020-10-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90295

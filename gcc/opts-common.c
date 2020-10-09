@@ -1000,6 +1000,7 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	    "-fno-diagnostics-show-line-numbers",
 	    "-fdiagnostics-color=never",
 	    "-fdiagnostics-urls=never",
+	    "-fdiagnostics-path-format=separate-events",
 	  };
 	  const int num_expanded = ARRAY_SIZE (expanded_args);
 	  opt_array_len += num_expanded - 1;

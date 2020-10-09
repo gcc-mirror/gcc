@@ -165,6 +165,6 @@ private:
 };
 
 // Flag to enable debugging the various internal Caches.
-#define DEBUG_RANGE_CACHE (dump_file && (flag_evrp_mode & EVRP_MODE_DEBUG))
+#define DEBUG_RANGE_CACHE (dump_file && (param_evrp_mode & EVRP_MODE_DEBUG))
 
 #endif // GCC_GIMPLE_RANGE_STMT_H

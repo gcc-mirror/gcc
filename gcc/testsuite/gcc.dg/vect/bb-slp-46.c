@@ -21,7 +21,7 @@ int foo ()
 /* We should extract the live lane from the vectorized add rather than
    keeping the original scalar add.
    ???  Because of a too conservative check we fail for temx here.  */
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" } } */
 /* { dg-final { scan-tree-dump "extracting lane for live stmt" "slp2" } } */
 /* { dg-final { scan-tree-dump-times "extracting lane for live stmt" 2 "slp2" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times " \\+ " 3 "optimized" } } */

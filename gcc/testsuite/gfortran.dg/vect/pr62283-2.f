@@ -8,4 +8,4 @@
       y(3)=y(3)+alpha*x(3)
       y(4)=y(4)+alpha*x(4)
       end
-! { dg-final { scan-tree-dump "basic block vectorized" "slp2" } }
+! { dg-final { scan-tree-dump "optimized: basic block" "slp2" } }

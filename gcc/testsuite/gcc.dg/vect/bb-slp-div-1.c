@@ -16,4 +16,4 @@ f (void)
   x[7] /= 9;
 }
 
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" { xfail *-*-* } } } */

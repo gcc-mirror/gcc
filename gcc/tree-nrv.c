@@ -315,8 +315,8 @@ dest_safe_for_nrv_p (gcall *call)
   if (TREE_CODE (dest) == SSA_NAME)
     return true;
 
-  if (call_may_clobber_ref_p (call, dest)
-      || ref_maybe_used_by_stmt_p (call, dest))
+  if (call_may_clobber_ref_p (call, dest, false)
+      || ref_maybe_used_by_stmt_p (call, dest, false))
     return false;
 
   return true;

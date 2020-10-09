@@ -45,4 +45,4 @@ main ()
   return main1 ();
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" { target { vect_call_copysignf && vect_call_sqrtf } } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" { target { vect_call_copysignf && vect_call_sqrtf } } } } */
