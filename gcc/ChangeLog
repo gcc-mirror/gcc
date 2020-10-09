@@ -1,3 +1,63 @@
+2020-10-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95189
+	PR middle-end/95886
+	* builtins.c (inline_expand_builtin_string_cmp): Rename...
+	(inline_expand_builtin_bytecmp): ...to this.
+	(builtin_memcpy_read_str): Don't expect data to be nul-terminated.
+	(expand_builtin_memory_copy_args): Handle object representations
+	with embedded nul bytes.
+	(expand_builtin_memcmp): Same.
+	(expand_builtin_strcmp): Adjust call to naming change.
+	(expand_builtin_strncmp): Same.
+	* expr.c (string_constant): Create empty strings with nonzero size.
+	* fold-const.c (c_getstr): Rename locals and update comments.
+	* tree.c (build_string): Accept null pointer argument.
+	(build_string_literal): Same.
+	* tree.h (build_string): Provide a default.
+	(build_string_literal): Same.
+
+2020-10-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/97150
+	* config/aarch64/arm_neon.h (vqrshlb_u8): Make second argument
+	signed.
+	(vqrshlh_u16): Likewise.
+	(vqrshls_u32): Likewise.
+	(vqrshld_u64): Likewise.
+	(vqshlb_u8): Likewise.
+	(vqshlh_u16): Likewise.
+	(vqshls_u32): Likewise.
+	(vqshld_u64): Likewise.
+	(vshld_u64): Likewise.
+
+2020-10-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/96313
+	* config/aarch64/aarch64-simd-builtins.def (sqmovun): Use UNOPUS
+	qualifiers.
+	* config/aarch64/arm_neon.h (vqmovun_s16): Adjust builtin call.
+	Remove unnecessary result cast.
+	(vqmovun_s32): Likewise.
+	(vqmovun_s64): Likewise.
+	(vqmovunh_s16): Likewise.  Fix return type.
+	(vqmovuns_s32): Likewise.
+	(vqmovund_s64): Likewise.
+
+2020-10-08  Alan Modra  <amodra@gmail.com>
+
+	Backported from master:
+	2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Use
+	gen_int_mode for high part of address constant.
+
 2020-10-06  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	Backported from master:

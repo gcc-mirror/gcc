@@ -1,3 +1,48 @@
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	PR libstdc++/97273
+	* g++.dg/template/alignof3.C: New test.
+
+2020-10-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95189
+	PR middle-end/95886
+	* gcc.dg/memcmp-pr95189.c: New test.
+	* gcc.dg/strncmp-3.c: New test.
+	* gcc.target/i386/memcpy-pr95886.c: New test.
+
+2020-10-08  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-10-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97272
+	* gfortran.dg/pr97272.f90: New test.
+
+2020-10-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/97150
+	* gcc.target/aarch64/pr97150.c: New test.
+
+2020-10-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-09-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/96313
+	* gcc.target/aarch64/pr96313.c: New test.
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vqmovunh_s16):
+	Adjust return type.
+	(test_vqmovuns_s32): Likewise.
+	(test_vqmovund_s64): Likewise.
+
 2020-10-06  Joe Ramsay  <Joe.Ramsay@arm.com>
 
 	Backported from master:
