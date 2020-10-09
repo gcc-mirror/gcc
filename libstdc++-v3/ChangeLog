@@ -1,3 +1,12 @@
+2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (seed_seq(initializer_list<T>)): Rename
+	parameter to use reserved name.
+	* testsuite/17_intro/names.cc: Check "il".
+
 2020-09-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
