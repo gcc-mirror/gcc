@@ -3267,7 +3267,22 @@ __gnat_copy_attribs (char *from ATTRIBUTE_UNUSED, char *to ATTRIBUTE_UNUSED,
      return -1;
   }
 
-#if _POSIX_C_SOURCE >= 200809L
+#if (defined (__vxworks) && _WRS_VXWORKS_MAJOR < 7)
+
+  /* VxWorks prior to 7 only has utime.  */
+
+  /* Do we need to copy the timestamp ?  */
+  if (mode != 2) {
+    struct utimbuf tbuf;
+
+    tbuf.actime = fbuf.st_atime;
+    tbuf.modtime = fbuf.st_mtime;
+
+    if (utime (to, &tbuf) == -1)
+      return -1;
+  }
+
+#elif _POSIX_C_SOURCE >= 200809L
   struct timespec tbuf[2];
 
   if (mode != 2) {
