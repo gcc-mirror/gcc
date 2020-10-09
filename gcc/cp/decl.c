@@ -5445,9 +5445,14 @@ start_decl (const cp_declarator *declarator,
 
   if ((DECL_EXTERNAL (decl) || TREE_CODE (decl) == FUNCTION_DECL)
       && current_function_decl)
-    /* A function-scope decl of some namespace-scope decl.  */
-    // FIXME: This is ill-formed in a named module
-    DECL_LOCAL_DECL_P (decl) = true;
+    {
+      /* A function-scope decl of some namespace-scope decl.  */
+      DECL_LOCAL_DECL_P (decl) = true;
+      if (named_module_purview_p ())
+	error_at (declarator->id_loc,
+		  "block-scope extern declaration %q#D not permitted"
+		  " in module purview", decl);
+    }
 
   /* Enter this declaration into the symbol table.  Don't push the plain
      VAR_DECL for a variable template.  */

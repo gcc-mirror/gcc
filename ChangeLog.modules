@@ -1,5 +1,12 @@
 2020-10-09  Nathan Sidwell  <nathan@acm.org>
 
+	Block-scope externs disallowed
+	gcc/cp/
+	* decl.c (start_decl): Reject block-scope extern in module
+	purview.
+	gcc/testsuite/
+	* g++.dg/modules/local-extern-1.C: New.
+
 	Remove unused code
 	gcc/cp/
 	* friend.c (add_friend): Remove #if'd out code
