@@ -424,12 +424,6 @@ extern void maybe_save_operator_binding (tree);
 extern void push_operator_bindings (void);
 extern void discard_operator_bindings (tree);
 
-// FIXME: class symbol handling.  In transition
-extern tree lookup_class_member (tree, tree, bool);
-extern void set_class_bindings (tree, tree);
-extern void insert_late_enum_def_bindings (tree, tree);
-extern tree lookup_all_conversions (tree);
-
 /* Lower level interface for modules. */
 extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
 					tree *mvec);

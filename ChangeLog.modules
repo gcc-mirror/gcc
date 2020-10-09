@@ -1,5 +1,11 @@
 2020-10-09  Nathan Sidwell  <nathan@acm.org>
 
+	Remove unneeded decls
+	gcc/cp/
+	* name-lookup.c (lookup_class_member, void set_class_bindings)
+	(tree lookup_all_conversions): Delete unused decls.
+	(insert_late_enum_def_bindings): Delete duplicate decl.
+
 	Clean up mangling documentation
 	gcc/cp/
 	* mangle.c (write_module): Update grammar description.
