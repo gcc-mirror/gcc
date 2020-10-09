@@ -183,8 +183,6 @@ static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
 static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
-static bool get_range (tree, gimple *, signop, offset_int[2],
-		       range_query * = NULL);
 static bool check_read_access (tree, tree, tree = NULL_TREE, int = 1);
 
 unsigned HOST_WIDE_INT target_newline;
@@ -200,7 +198,7 @@ static void expand_builtin_sync_synchronize (void);
 
 access_ref::access_ref (tree bound /* = NULL_TREE */,
 			bool minaccess /* = false */)
-: ref (), eval ([](tree x){ return x; }), trail1special (true)
+: ref (), eval ([](tree x){ return x; }), trail1special (true), base0 (true)
 {
   /* Set to valid.  */
   offrng[0] = offrng[1] = 0;
@@ -215,11 +213,136 @@ access_ref::access_ref (tree bound /* = NULL_TREE */,
      set the bounds of the access to reflect both it and MINACCESS.
      BNDRNG[0] is the size of the minimum access.  */
   tree rng[2];
-  if (bound && get_size_range (bound, rng, true))
+  if (bound && get_size_range (bound, rng, SR_ALLOW_ZERO))
     {
       bndrng[0] = wi::to_offset (rng[0]);
       bndrng[1] = wi::to_offset (rng[1]);
       bndrng[0] = bndrng[0] > 0 && minaccess ? 1 : 0;
+    }
+}
+
+/* Return the maximum amount of space remaining and if non-null, set
+   argument to the minimum.  */
+
+offset_int
+access_ref::size_remaining (offset_int *pmin /* = NULL */) const
+{
+  offset_int minbuf;
+  if (!pmin)
+    pmin = &minbuf;
+
+  /* add_offset() ensures the offset range isn't inverted.  */
+  gcc_checking_assert (offrng[0] <= offrng[1]);
+
+  if (base0)
+    {
+      /* The offset into referenced object is zero-based (i.e., it's
+	 not referenced by a pointer into middle of some unknown object).  */
+      if (offrng[0] < 0 && offrng[1] < 0)
+	{
+	  /* If the offset is negative the remaining size is zero.  */
+	  *pmin = 0;
+	  return 0;
+	}
+
+      if (sizrng[1] <= offrng[0])
+	{
+	  /* If the starting offset is greater than or equal to the upper
+	     bound on the size of the object, the space remaining is zero.
+	     As a special case, if it's equal, set *PMIN to -1 to let
+	     the caller know the offset is valid and just past the end.  */
+	  *pmin = sizrng[1] == offrng[0] ? -1 : 0;
+	  return 0;
+	}
+
+      /* Otherwise return the size minus the lower bound of the offset.  */
+      offset_int or0 = offrng[0] < 0 ? 0 : offrng[0];
+
+      *pmin = sizrng[0] - or0;
+      return sizrng[1] - or0;
+    }
+
+  /* The offset to the referenced object isn't zero-based (i.e., it may
+     refer to a byte other than the first.  The size of such an object
+     is constrained only by the size of the address space (the result
+     of max_object_size()).  */
+  if (sizrng[1] <= offrng[0])
+    {
+      *pmin = 0;
+      return 0;
+    }
+
+  offset_int or0 = offrng[0] < 0 ? 0 : offrng[0];
+
+  *pmin = sizrng[0] - or0;
+  return sizrng[1] - or0;
+}
+
+/* Add the range [MIN, MAX] to the offset range.  For known objects (with
+   zero-based offsets) at least one of whose offset's bounds is in range,
+   constrain the other (or both) to the bounds of the object (i.e., zero
+   and the upper bound of its size).  This improves the quality of
+   diagnostics.  */
+
+void access_ref::add_offset (const offset_int &min, const offset_int &max)
+{
+  if (min <= max)
+    {
+      /* To add an ordinary range just add it to the bounds.  */
+      offrng[0] += min;
+      offrng[1] += max;
+    }
+  else if (!base0)
+    {
+      /* To add an inverted range to an offset to an unknown object
+	 expand it to the maximum.  */
+      add_max_offset ();
+      return;
+    }
+  else
+    {
+      /* To add an inverted range to an offset to an known object set
+	 the upper bound to the maximum representable offset value
+	 (which may be greater than MAX_OBJECT_SIZE).
+	 The lower bound is either the sum of the current offset and
+	 MIN when abs(MAX) is greater than the former, or zero otherwise.
+	 Zero because then then inverted range includes the negative of
+	 the lower bound.  */
+      offset_int maxoff = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+      offrng[1] = maxoff;
+
+      if (max >= 0)
+	{
+	  offrng[0] = 0;
+	  return;
+	}
+
+      offrng[1] = maxoff;
+      offset_int absmax = wi::abs (max);
+      if (offrng[0] < absmax)
+	offrng[0] += min;
+      else
+	offrng[0] = 0;
+    }
+
+  if (!base0)
+    return;
+
+  /* When referencing a known object check to see if the offset computed
+     so far is in bounds... */
+  offset_int remrng[2];
+  remrng[1] = size_remaining (remrng);
+  if (remrng[1] > 0 || remrng[0] < 0)
+    {
+      /* ...if so, constrain it so that neither bound exceeds the size of
+	 the object.  Out of bounds offsets are left unchanged, and, for
+	 better or worse, become in bounds later.  They should be detected
+	 and diagnosed at the point they first become invalid by
+	 -Warray-bounds.  */
+      if (offrng[0] < 0)
+	offrng[0] = 0;
+      if (offrng[1] > sizrng[1])
+	offrng[1] = sizrng[1];
     }
 }
 
@@ -3757,15 +3880,24 @@ inform_access (const access_ref &ref, access_mode mode)
   if (!ref.ref)
     return;
 
-  /* Convert offset range and avoid including a zero range since it isn't
-     necessarily meaningful.  */
-  long long minoff = 0, maxoff = 0;
-  if (wi::fits_shwi_p (ref.offrng[0])
-      && wi::fits_shwi_p (ref.offrng[1]))
-    {
-      minoff = ref.offrng[0].to_shwi ();
-      maxoff = ref.offrng[1].to_shwi ();
-    }
+  /* Convert offset range and avoid including a zero range since it
+     isn't necessarily meaningful.  */
+  HOST_WIDE_INT diff_min = tree_to_shwi (TYPE_MIN_VALUE (ptrdiff_type_node));
+  HOST_WIDE_INT diff_max = tree_to_shwi (TYPE_MAX_VALUE (ptrdiff_type_node));
+  HOST_WIDE_INT minoff;
+  HOST_WIDE_INT maxoff = diff_max;
+  if (wi::fits_shwi_p (ref.offrng[0]))
+    minoff = ref.offrng[0].to_shwi ();
+  else
+    minoff = ref.offrng[0] < 0 ? diff_min : diff_max;
+
+  if (wi::fits_shwi_p (ref.offrng[1]))
+    maxoff = ref.offrng[1].to_shwi ();
+
+  if (maxoff <= diff_min || maxoff >= diff_max)
+    /* Avoid mentioning an upper bound that's equal to or in excess
+       of the maximum of ptrdiff_t.  */
+    maxoff = minoff;
 
   /* Convert size range and always include it since all sizes are
      meaningful. */
@@ -3799,23 +3931,27 @@ inform_access (const access_ref &ref, access_mode mode)
 	sprintf (sizestr, "[%llu, %llu]", minsize, maxsize);
 
     }
-  else
+  else if (DECL_P (ref.ref))
     loc = DECL_SOURCE_LOCATION (ref.ref);
+  else if (EXPR_P (ref.ref) && EXPR_HAS_LOCATION (ref.ref))
+    loc = EXPR_LOCATION (ref.ref);
+  else
+    return;
 
   if (mode == access_read_write || mode == access_write_only)
     {
-      if (DECL_P (ref.ref))
+      if (allocfn == NULL_TREE)
 	{
 	  if (minoff == maxoff)
 	    {
 	      if (minoff == 0)
-		inform (loc, "destination object %qD", ref.ref);
+		inform (loc, "destination object %qE", ref.ref);
 	      else
-		inform (loc, "at offset %lli into destination object %qD",
+		inform (loc, "at offset %wi into destination object %qE",
 			minoff, ref.ref);
 	    }
 	  else
-	    inform (loc, "at offset [%lli, %lli] into destination object %qD",
+	    inform (loc, "at offset [%wi, %wi] into destination object %qE",
 		    minoff, maxoff, ref.ref);
 	  return;
 	}
@@ -3827,12 +3963,12 @@ inform_access (const access_ref &ref, access_mode mode)
 		    sizestr, allocfn);
 	  else
 	    inform (loc,
-		    "at offset %lli into destination object of size %s "
+		    "at offset %wi into destination object of size %s "
 		    "allocated by %qE", minoff, sizestr, allocfn);
 	}
       else
 	inform (loc,
-		"at offset [%lli, %lli] into destination object of size %s "
+		"at offset [%wi, %wi] into destination object of size %s "
 		"allocated by %qE",
 		minoff, maxoff, sizestr, allocfn);
 
@@ -3846,11 +3982,11 @@ inform_access (const access_ref &ref, access_mode mode)
 	  if (minoff == 0)
 	    inform (loc, "source object %qD", ref.ref);
 	  else
-	    inform (loc, "at offset %lli into source object %qD",
+	    inform (loc, "at offset %wi into source object %qD",
 		    minoff, ref.ref);
 	}
       else
-	inform (loc, "at offset [%lli, %lli] into source object %qD",
+	inform (loc, "at offset [%wi, %wi] into source object %qD",
 		minoff, maxoff, ref.ref);
       return;
     }
@@ -3862,12 +3998,12 @@ inform_access (const access_ref &ref, access_mode mode)
 		sizestr, allocfn);
       else
 	inform (loc,
-		"at offset %lli into source object of size %s "
+		"at offset %wi into source object of size %s "
 		"allocated by %qE", minoff, sizestr, allocfn);
     }
   else
     inform (loc,
-	    "at offset [%lli, %lli] into source object of size %s "
+	    "at offset [%wi, %wi] into source object of size %s "
 	    "allocated by %qE",
 	    minoff, maxoff, sizestr, allocfn);
 }
@@ -4152,8 +4288,14 @@ check_access (tree exp, tree dstwrite,
 		   && range[0]
 		   && TREE_CODE (slen) == INTEGER_CST
 		   && tree_int_cst_lt (slen, range[0]));
-
-  if (!overread && pad && pad->src.sizrng[1] >= 0 && pad->src.offrng[0] >= 0)
+  /* If none is determined try to get a better answer based on the details
+     in PAD.  */
+  if (!overread
+      && pad
+      && pad->src.sizrng[1] >= 0
+      && pad->src.offrng[0] >= 0
+      && (pad->src.offrng[1] < 0
+	  || pad->src.offrng[0] <= pad->src.offrng[1]))
     {
       /* Set RANGE to that of MAXREAD, bounded by PAD->SRC.BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
@@ -4215,7 +4357,7 @@ check_read_access (tree exp, tree src, tree bound /* = NULL_TREE */,
 
 tree
 gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
-			range_query *rvals /* = NULL */)
+			range_query * /* = NULL */)
 {
   if (!stmt)
     return NULL_TREE;
@@ -4267,14 +4409,17 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
   if (!rng1)
     rng1 = rng1_buf;
 
+  /* Use maximum precision to avoid overflow below.  */
   const int prec = ADDR_MAX_PRECISION;
-  const tree size_max = TYPE_MAX_VALUE (sizetype);
-  if (!get_range (size, stmt, rng1, rvals))
-    {
-      /* Use the full non-negative range on failure.  */
-      rng1[0] = wi::zero (prec);
-      rng1[1] = wi::to_wide (size_max, prec);
-    }
+
+  {
+    tree r[2];
+    /* Determine the largest valid range size, including zero.  */
+    if (!get_size_range (size, r, SR_ALLOW_ZERO | SR_USE_LARGEST))
+      return NULL_TREE;
+    rng1[0] = wi::to_wide (r[0], prec);
+    rng1[1] = wi::to_wide (r[1], prec);
+  }
 
   if (argidx2 > nargs && TREE_CODE (size) == INTEGER_CST)
     return fold_convert (sizetype, size);
@@ -4283,26 +4428,24 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
      of the upper bounds as a constant.  Ignore anti-ranges.  */
   tree n = argidx2 < nargs ? gimple_call_arg (stmt, argidx2) : integer_one_node;
   wide_int rng2[2];
-	  if (!get_range (n, stmt, rng2, rvals))
-    {
+  {
+    tree r[2];
       /* As above, use the full non-negative range on failure.  */
-      rng2[0] = wi::zero (prec);
-      rng2[1] = wi::to_wide (size_max, prec);
-    }
-
-  /* Extend to the maximum precision to avoid overflow.  */
-  rng1[0] = wide_int::from (rng1[0], prec, UNSIGNED);
-  rng1[1] = wide_int::from (rng1[1], prec, UNSIGNED);
-  rng2[0] = wide_int::from (rng2[0], prec, UNSIGNED);
-  rng2[1] = wide_int::from (rng2[1], prec, UNSIGNED);
+    if (!get_size_range (n, r, SR_ALLOW_ZERO | SR_USE_LARGEST))
+      return NULL_TREE;
+    rng2[0] = wi::to_wide (r[0], prec);
+    rng2[1] = wi::to_wide (r[1], prec);
+  }
 
   /* Compute products of both bounds for the caller but return the lesser
      of SIZE_MAX and the product of the upper bounds as a constant.  */
   rng1[0] = rng1[0] * rng2[0];
   rng1[1] = rng1[1] * rng2[1];
+
+  const tree size_max = TYPE_MAX_VALUE (sizetype);
   if (wi::gtu_p (rng1[1], wi::to_wide (size_max, prec)))
     {
-      rng1[1] = wi::to_wide (size_max);
+      rng1[1] = wi::to_wide (size_max, prec);
       return size_max;
     }
 
@@ -4315,7 +4458,8 @@ gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
    Return the function parameter on success and null otherwise.  */
 
 tree
-gimple_parm_array_size (tree ptr, wide_int rng[2], range_query * /* = NULL */)
+gimple_parm_array_size (tree ptr, wide_int rng[2],
+			range_query * /* = NULL */)
 {
   /* For a function argument try to determine the byte size of the array
      from the current function declaratation (e.g., attribute access or
@@ -4363,27 +4507,43 @@ gimple_parm_array_size (tree ptr, wide_int rng[2], range_query * /* = NULL */)
   return var;
 }
 
-/* Wrapper around the wide_int overload of get_range.  Returns the same
-   result but accepts offset_int instead.  */
+/* Wrapper around the wide_int overload of get_range that accepts
+   offset_int instead.  For middle end expressions returns the same
+   result.  For a subset of nonconstamt expressions emitted by the front
+   end determines a more precise range than would be possible otherwise.  */
 
 static bool
-get_range (tree x, gimple *stmt, signop sgn, offset_int r[2],
-	   range_query *rvals /* = NULL */)
+get_offset_range (tree x, gimple *stmt, offset_int r[2], range_query *rvals)
 {
+  offset_int add = 0;
+  if (TREE_CODE (x) == PLUS_EXPR)
+    {
+      /* Handle constant offsets in pointer addition expressions seen
+	 n the front end IL.  */
+      tree op = TREE_OPERAND (x, 1);
+      if (TREE_CODE (op) == INTEGER_CST)
+	{
+	  op = fold_convert (signed_type_for (TREE_TYPE (op)), op);
+	  add = wi::to_offset (op);
+	  x = TREE_OPERAND (x, 0);
+	}
+    }
+
+  if (TREE_CODE (x) == NOP_EXPR)
+    /* Also handle conversions to sizetype seen in the front end IL.  */
+    x = TREE_OPERAND (x, 0);
+
   tree type = TREE_TYPE (x);
-  if (TREE_CODE (x) != INTEGER_CST
+
+   if (TREE_CODE (x) != INTEGER_CST
       && TREE_CODE (x) != SSA_NAME)
     {
-      if (TYPE_UNSIGNED (type))
-	{
-	  if (sgn == SIGNED)
-	    type = signed_type_for (type);
-	}
-      else if (sgn == UNSIGNED)
-	type = unsigned_type_for (type);
+      if (TYPE_UNSIGNED (type)
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (sizetype))
+	type = signed_type_for (type);
 
-      r[0] = wi::to_offset (TYPE_MIN_VALUE (type));
-      r[1] = wi::to_offset (TYPE_MAX_VALUE (type));
+      r[0] = wi::to_offset (TYPE_MIN_VALUE (type)) + add;
+      r[1] = wi::to_offset (TYPE_MAX_VALUE (type)) + add;
       return x;
     }
 
@@ -4391,6 +4551,7 @@ get_range (tree x, gimple *stmt, signop sgn, offset_int r[2],
   if (!get_range (x, stmt, wr, rvals))
     return false;
 
+  signop sgn = SIGNED;
   /* Only convert signed integers or unsigned sizetype to a signed
      offset and avoid converting large positive values in narrower
      types to negative offsets.  */
@@ -4403,6 +4564,83 @@ get_range (tree x, gimple *stmt, signop sgn, offset_int r[2],
   return true;
 }
 
+/* Return the argument that the call STMT to a built-in function returns
+   or null if it doesn't.  On success, set OFFRNG[] to the range of offsets
+   from the argument reflected in the value returned by the built-in if it
+   can be determined, otherwise to 0 and HWI_M1U respectively.  */
+
+static tree
+gimple_call_return_array (gimple *stmt, offset_int offrng[2],
+			  range_query *rvals)
+{
+  if (!gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
+      || gimple_call_num_args (stmt) < 1)
+    return NULL_TREE;
+
+  tree fn = gimple_call_fndecl (stmt);
+  switch (DECL_FUNCTION_CODE (fn))
+    {
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMCPY_CHK:
+    case BUILT_IN_MEMMOVE:
+    case BUILT_IN_MEMMOVE_CHK:
+    case BUILT_IN_MEMSET:
+    case BUILT_IN_STPCPY:
+    case BUILT_IN_STPCPY_CHK:
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STPNCPY_CHK:
+    case BUILT_IN_STRCAT:
+    case BUILT_IN_STRCAT_CHK:
+    case BUILT_IN_STRCPY:
+    case BUILT_IN_STRCPY_CHK:
+    case BUILT_IN_STRNCAT:
+    case BUILT_IN_STRNCAT_CHK:
+    case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
+      offrng[0] = offrng[1] = 0;
+      return gimple_call_arg (stmt, 0);
+
+    case BUILT_IN_MEMPCPY:
+    case BUILT_IN_MEMPCPY_CHK:
+      {
+	tree off = gimple_call_arg (stmt, 2);
+	if (!get_offset_range (off, stmt, offrng, rvals))
+	  {
+	    offrng[0] = 0;
+	    offrng[1] = HOST_WIDE_INT_M1U;
+	  }
+	return gimple_call_arg (stmt, 0);
+      }
+
+    case BUILT_IN_MEMCHR:
+      {
+	tree off = gimple_call_arg (stmt, 2);
+	if (get_offset_range (off, stmt, offrng, rvals))
+	  offrng[0] = 0;
+	else
+	  {
+	    offrng[0] = 0;
+	    offrng[1] = HOST_WIDE_INT_M1U;
+	  }
+	return gimple_call_arg (stmt, 0);
+      }
+
+    case BUILT_IN_STRCHR:
+    case BUILT_IN_STRRCHR:
+    case BUILT_IN_STRSTR:
+      {
+	offrng[0] = 0;
+	offrng[1] = HOST_WIDE_INT_M1U;
+      }
+      return gimple_call_arg (stmt, 0);
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
 /* Helper to compute the size of the object referenced by the PTR
    expression which must have pointer type, using Object Size type
    OSTYPE (only the least significant 2 bits are used).
@@ -4412,7 +4650,8 @@ get_range (tree x, gimple *stmt, signop sgn, offset_int r[2],
    the object(s).
    VISITED is used to avoid visiting the same PHI operand multiple
    times, and, when nonnull, RVALS to determine range information.
-   Returns true on success, false when the size cannot be determined.
+   Returns true on success, false when a meaningful size (or range)
+   cannot be determined.
 
    The function is intended for diagnostics and should not be used
    to influence code generation or optimization.  */
@@ -4429,24 +4668,39 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 
   if (DECL_P (ptr))
     {
-      /* Bail if the reference is to the pointer itself (as opposed
-	 to what it points to).  */
-      if (!addr && POINTER_TYPE_P (TREE_TYPE (ptr)))
-	return false;
-
       pref->ref = ptr;
+
+      if (!addr && POINTER_TYPE_P (TREE_TYPE (ptr)))
+	{
+	  /* Set the maximum size if the reference is to the pointer
+	     itself (as opposed to what it points to).  */
+	  pref->set_max_size_range ();
+	  return true;
+	}
+
       if (tree size = decl_init_size (ptr, false))
 	if (TREE_CODE (size) == INTEGER_CST)
 	  {
 	    pref->sizrng[0] = pref->sizrng[1] = wi::to_offset (size);
 	    return true;
 	  }
-      pref->sizrng[0] = 0;
-      pref->sizrng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+
+      pref->set_max_size_range ();
       return true;
     }
 
   const tree_code code = TREE_CODE (ptr);
+
+  if (code == BIT_FIELD_REF)
+    {
+      tree ref = TREE_OPERAND (ptr, 0);
+      if (!compute_objsize (ref, ostype, pref, visited, rvals))
+	return false;
+
+      offset_int off = wi::to_offset (pref->eval (TREE_OPERAND (ptr, 2)));
+      pref->add_offset (off / BITS_PER_UNIT);
+      return true;
+    }
 
   if (code == COMPONENT_REF)
     {
@@ -4455,27 +4709,29 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 
       if (ostype == 0)
 	{
-	  /* For raw memory functions like memcpy bail if the size
-	     of the enclosing object cannot be determined.  */
-	  if (!compute_objsize (ref, ostype, pref, visited, rvals)
-	      || !pref->ref)
+	  /* In OSTYPE zero (for raw memory functions like memcpy), use
+	     the maximum size instead if the identity of the enclosing
+	     object cannot be determined.  */
+	  if (!compute_objsize (ref, ostype, pref, visited, rvals))
 	    return false;
 
 	  /* Otherwise, use the size of the enclosing object and add
 	     the offset of the member to the offset computed so far.  */
 	  tree offset = byte_position (field);
-	  if (TREE_CODE (offset) != INTEGER_CST)
-	    return false;
-	  offset_int off = wi::to_offset (offset);
-	  pref->offrng[0] += off;
-	  pref->offrng[1] += off;
+	  if (TREE_CODE (offset) == INTEGER_CST)
+	    pref->add_offset (wi::to_offset (offset));
+	  else
+	    pref->add_max_offset ();
 	  return true;
 	}
 
-      /* Bail if the reference is to the pointer itself (as opposed
-	 to what it points to).  */
       if (!addr && POINTER_TYPE_P (TREE_TYPE (field)))
-	return false;
+	{
+	  /* Set maximum size if the reference is to the pointer member
+	     itself (as opposed to what it points to).  */
+	  pref->set_max_size_range ();
+	  return true;
+	}
 
       pref->ref = field;
 
@@ -4530,9 +4786,12 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
-      if (!get_range (off, NULL, SIGNED, orng, rvals))
-	/* Fail unless the size of the object is zero.  */
-	return pref->sizrng[0] == 0 && pref->sizrng[0] == pref->sizrng[1];
+      if (!get_offset_range (off, NULL, orng, rvals))
+	{
+	  /* Set ORNG to the maximum offset representable in ptrdiff_t.  */
+	  orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+	  orng[0] = -orng[1] - 1;
+	}
 
       if (TREE_CODE (ptr) == ARRAY_REF)
 	{
@@ -4551,7 +4810,10 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	  tree eltype = TREE_TYPE (ptr);
 	  tree tpsize = TYPE_SIZE_UNIT (eltype);
 	  if (!tpsize || TREE_CODE (tpsize) != INTEGER_CST)
-	    return false;
+	    {
+	      pref->add_max_offset ();
+	      return true;
+	    }
 
 	  offset_int sz = wi::to_offset (tpsize);
 	  orng[0] *= sz;
@@ -4578,12 +4840,44 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	    }
 	}
 
-      pref->offrng[0] += orng[0];
-      pref->offrng[1] += orng[1];
+      pref->add_offset (orng[0], orng[1]);
+      return true;
+    }
+
+  if (code == TARGET_MEM_REF)
+    {
+      tree ref = TREE_OPERAND (ptr, 0);
+      if (!compute_objsize (ref, ostype, pref, visited, rvals))
+	return false;
+
+      /* TODO: Handle remaining operands.  Until then, add maximum offset.  */
+      pref->ref = ptr;
+      pref->add_max_offset ();
+      return true;
+    }
+
+  if (code == INTEGER_CST)
+    {
+      /* Pointer constants other than null are most likely the result
+	 of erroneous null pointer addition/subtraction.  Set size to
+	 zero.  For null pointers, set size to the maximum for now
+	 since those may be the result of jump threading.  */
+      if (integer_zerop (ptr))
+	pref->set_max_size_range ();
+      else
+	pref->sizrng[0] = pref->sizrng[1] = 0;
+      pref->ref = ptr;
 
       return true;
     }
-  else if (code == POINTER_PLUS_EXPR)
+
+  if (code == STRING_CST)
+    {
+      pref->sizrng[0] = pref->sizrng[1] = TREE_STRING_LENGTH (ptr);
+      return true;
+    }
+
+  if (code == POINTER_PLUS_EXPR)
     {
       tree ref = TREE_OPERAND (ptr, 0);
       if (!compute_objsize (ref, ostype, pref, visited, rvals))
@@ -4591,16 +4885,14 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
-      if (!get_range (off, NULL, SIGNED, orng, rvals))
-	/* Fail unless the size of the object is zero.  */
-	return pref->sizrng[0] == 0 && pref->sizrng[0] == pref->sizrng[1];
-
-      pref->offrng[0] += orng[0];
-      pref->offrng[1] += orng[1];
-
+      if (get_offset_range (off, NULL, orng, rvals))
+	pref->add_offset (orng[0], orng[1]);
+      else
+	pref->add_max_offset ();
       return true;
     }
-  else if (code == VIEW_CONVERT_EXPR)
+
+  if (code == VIEW_CONVERT_EXPR)
     {
       ptr = TREE_OPERAND (ptr, 0);
       return compute_objsize (ptr, ostype, pref, visited, rvals);
@@ -4612,17 +4904,53 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
       if (is_gimple_call (stmt))
 	{
 	  /* If STMT is a call to an allocation function get the size
-	     from its argument(s).  If successful, also set *PDECL to
-	     PTR for the caller to include in diagnostics.  */
+	     from its argument(s).  If successful, also set *PREF->REF
+	     to PTR for the caller to include in diagnostics.  */
 	  wide_int wr[2];
 	  if (gimple_call_alloc_size (stmt, wr, rvals))
 	    {
 	      pref->ref = ptr;
 	      pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
 	      pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
-	      return true;
+	      /* Constrain both bounds to a valid size.  */
+	      offset_int maxsize = wi::to_offset (max_object_size ());
+	      if (pref->sizrng[0] > maxsize)
+		pref->sizrng[0] = maxsize;
+	      if (pref->sizrng[1] > maxsize)
+		pref->sizrng[1] = maxsize;
 	    }
-	  return false;
+	  else
+	    {
+	      /* For functions known to return one of their pointer arguments
+		 try to determine what the returned pointer points to, and on
+		 success add OFFRNG which was set to the offset added by
+		 the function (e.g., memchr) to the overall offset.  */
+	      offset_int offrng[2];
+	      if (tree ret = gimple_call_return_array (stmt, offrng, rvals))
+		{
+		  if (!compute_objsize (ret, ostype, pref, visited, rvals))
+		    return false;
+
+		  /* Cap OFFRNG[1] to at most the remaining size of
+		     the object.  */
+		  offset_int remrng[2];
+		  remrng[1] = pref->size_remaining (remrng);
+		  if (remrng[1] < offrng[1])
+		    offrng[1] = remrng[1];
+		  pref->add_offset (offrng[0], offrng[1]);
+		}
+	      else
+		{
+		  /* For other calls that might return arbitrary pointers
+		     including into the middle of objects set the size
+		     range to maximum, clear PREF->BASE0, and also set
+		     PREF->REF to include in diagnostics.  */
+		  pref->set_max_size_range ();
+		  pref->base0 = false;
+		  pref->ref = ptr;
+		}
+	    }
+	  return true;
 	}
 
       if (gimple_nop_p (stmt))
@@ -4631,62 +4959,74 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, bitmap *visited,
 	     of the array from the current function declaratation
 	     (e.g., attribute access or related).  */
 	  wide_int wr[2];
-	  tree ref = gimple_parm_array_size (ptr, wr, rvals);
-	  if (!ref)
-	    return NULL_TREE;
-	  pref->ref = ref;
-	  pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
-	  pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
+	  if (tree ref = gimple_parm_array_size (ptr, wr, rvals))
+	    {
+	      pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
+	      pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
+	      pref->ref = ref;
+	      return true;
+	    }
+
+	  pref->set_max_size_range ();
+	  pref->base0 = false;
+	  pref->ref = ptr;
+	  if (tree var = SSA_NAME_VAR (ptr))
+	    if (TREE_CODE (var) == PARM_DECL)
+	      pref->ref = var;
+
 	  return true;
 	}
 
       /* TODO: Handle PHI.  */
 
       if (!is_gimple_assign (stmt))
-	return false;
+	{
+	  /* Clear BASE0 since the assigned pointer might point into
+	     the middle of the object, set the maximum size range and,
+	     if the SSA_NAME refers to a function argumnent, set
+	     PREF->REF to it.  */
+	  pref->base0 = false;
+	  pref->set_max_size_range ();
+	  if (tree var = SSA_NAME_VAR (ptr))
+	    if (TREE_CODE (var) == PARM_DECL)
+	      pref->ref = var;
+	  return true;
+	}
 
       ptr = gimple_assign_rhs1 (stmt);
 
       tree_code code = gimple_assign_rhs_code (stmt);
-      if (TREE_CODE (TREE_TYPE (ptr)) != POINTER_TYPE)
-	/* Avoid conversions from non-pointers.  */
-	return false;
 
-      if (code == POINTER_PLUS_EXPR)
+      if (code == POINTER_PLUS_EXPR
+	  && TREE_CODE (TREE_TYPE (ptr)) == POINTER_TYPE)
 	{
-	  /* If the the offset in the expression can be determined use
-	     it to adjust the overall offset.  Otherwise, set the overall
-	     offset to the maximum.  */
+	  /* Compute the size of the object first. */
+	  if (!compute_objsize (ptr, ostype, pref, visited, rvals))
+	    return false;
+
 	  offset_int orng[2];
 	  tree off = gimple_assign_rhs2 (stmt);
-	  if (!get_range (off, stmt, SIGNED, orng, rvals))
-	    {
-	      orng[0] = wi::to_offset (TYPE_MIN_VALUE (ptrdiff_type_node));
-	      orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
-	    }
-
-	  pref->offrng[0] += orng[0];
-	  pref->offrng[1] += orng[1];
+	  if (get_offset_range (off, stmt, orng, rvals))
+	    pref->add_offset (orng[0], orng[1]);
+	  else
+	    pref->add_max_offset ();
+	  return true;
 	}
-      else if (code != ADDR_EXPR)
-	return false;
 
-      return compute_objsize (ptr, ostype, pref, visited, rvals);
+      if (code == ADDR_EXPR)
+	return compute_objsize (ptr, ostype, pref, visited, rvals);
+
+      /* This could be an assignment from a nonlocal pointer.  Save PTR
+	 to mention in diagnostics but otherwise treat it as a pointer
+	 to an unknown object.  */
+      pref->ref = ptr;
     }
 
-  tree type = TREE_TYPE (ptr);
-  type = TYPE_MAIN_VARIANT (type);
-  if (TREE_CODE (ptr) == ADDR_EXPR)
-    ptr = TREE_OPERAND (ptr, 0);
-
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && !array_at_struct_end_p (ptr))
-    {
-      if (tree size = TYPE_SIZE_UNIT (type))
-	return get_range (size, NULL, UNSIGNED, pref->sizrng, rvals);
-    }
-
-  return false;
+  /* Assume all other expressions point into an unknown object
+     of the maximum valid size.  */
+  pref->base0 = false;
+  pref->set_max_size_range ();
+  return true;
 }
 
 /* A "public" wrapper around the above.  Clients should use this overload
@@ -4707,27 +5047,10 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   if (!success)
     return NULL_TREE;
 
-  if (pref->offrng[1] < pref->offrng[0])
-    {
-      if (pref->offrng[1] < 0
-	  && pref->sizrng[1] <= pref->offrng[0])
-	return size_zero_node;
-
-      return wide_int_to_tree (sizetype, pref->sizrng[1]);
-    }
-
-  if (pref->offrng[0] < 0)
-    {
-      if (pref->offrng[1] < 0)
-	return size_zero_node;
-
-      pref->offrng[0] = 0;
-    }
-
-  if (pref->sizrng[1] <= pref->offrng[0])
-    return size_zero_node;
-
-  return wide_int_to_tree (sizetype, pref->sizrng[1] - pref->offrng[0]);
+  offset_int maxsize = pref->size_remaining ();
+  if (pref->base0 && pref->offrng[0] < 0 && pref->offrng[1] >= 0)
+    pref->offrng[0] = 0;
+  return wide_int_to_tree (sizetype, maxsize);
 }
 
 /* Transitional wrapper around the above.  The function should be removed
@@ -4735,13 +5058,13 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 
 tree
 compute_objsize (tree ptr, int ostype, tree *pdecl /* = NULL */,
-		 tree *poff /* = NULL */, class range_query *rvals /* = NULL */)
+		 tree *poff /* = NULL */, range_query *rvals /* = NULL */)
 {
   /* Set the initial offsets to zero and size to negative to indicate
      none has been computed yet.  */
   access_ref ref;
   tree size = compute_objsize (ptr, ostype, &ref, rvals);
-  if (!size)
+  if (!size || !ref.base0)
     return NULL_TREE;
 
   if (pdecl)
@@ -6020,13 +6343,21 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
 	  tree size2 = compute_objsize (arg2, 1, &ref2);
 	  tree func = get_callee_fndecl (exp);
 
-	  if (size1 && size2)
+	  if (size1 && size2 && bndrng[0] && !integer_zerop (bndrng[0]))
 	    {
-	      tree maxsize = tree_int_cst_le (size1, size2) ? size2 : size1;
-
-	      if (tree_int_cst_lt (maxsize, bndrng[0]))
+	      offset_int rem1 = ref1.size_remaining ();
+	      offset_int rem2 = ref2.size_remaining ();
+	      if (rem1 == 0 || rem2 == 0)
 		maybe_warn_for_bound (OPT_Wstringop_overread, loc, exp, func,
-				      bndrng, maxsize);
+				      bndrng, integer_zero_node);
+	      else
+		{
+		  offset_int maxrem = wi::max (rem1, rem2, UNSIGNED);
+		  if (maxrem < wi::to_offset (bndrng[0]))
+		    maybe_warn_for_bound (OPT_Wstringop_overread, loc, exp,
+					  func, bndrng,
+					  wide_int_to_tree (sizetype, maxrem));
+		}
 	    }
 	  else if (bndrng[0]
 		   && !integer_zerop (bndrng[0])

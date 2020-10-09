@@ -264,7 +264,7 @@ builtin_memref::builtin_memref (tree expr, tree size)
       tree range[2];
       /* Determine the size range, allowing for the result to be [0, 0]
 	 for SIZE in the anti-range ~[0, N] where N >= PTRDIFF_MAX.  */
-      get_size_range (size, range, true);
+      get_size_range (size, range, SR_ALLOW_ZERO);
       sizrange[0] = wi::to_offset (range[0]);
       sizrange[1] = wi::to_offset (range[1]);
       /* get_size_range returns SIZE_MAX for the maximum size.

@@ -228,7 +228,19 @@ get_range (tree val, gimple *stmt, wide_int minmax[2],
 
   value_range_kind rng = get_range_info (val, minmax, minmax + 1);
   if (rng == VR_RANGE)
+    /* This may be an inverted range whose MINMAX[1] < MINMAX[0].  */
     return val;
+
+  if (rng == VR_ANTI_RANGE)
+    {
+      /* An anti-range is the same as an ordinary range with inverted
+	 bounds (where MINMAX[1] < MINMAX[0] is true) that may result
+	 from the conversion of a signed anti-range to unsigned.  */
+      wide_int tmp = minmax[0];
+      minmax[0] = minmax[1] + 1;
+      minmax[1] = wi::sub (tmp, 1);
+      return val;
+    }
 
   /* Do not handle anti-ranges and instead make use of the on-demand
      VRP if/when it becomes available (hopefully in GCC 11).  */
@@ -2243,7 +2255,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
     sprintf (offstr, "[%lli, %lli]",
 	     (long long) offrng[0].to_shwi (), (long long) offrng[1].to_shwi ());
 
-  if (destdecl)
+  if (destdecl && DECL_P (destdecl))
     {
       if (tree size = DECL_SIZE_UNIT (destdecl))
 	inform (DECL_SOURCE_LOCATION (destdecl),
