@@ -2822,7 +2822,7 @@ package body Exp_Attr is
          Id_Kind    : constant Entity_Id := RTE (RO_AT_Task_Id);
          Ent        : constant Entity_Id := Entity (Pref);
          Conctype   : constant Entity_Id := Scope (Ent);
-         Nest_Depth : Integer := 0;
+         Nest_Depth : Nat := 0;
          Name       : Node_Id;
          S          : Entity_Id;
 
@@ -2885,7 +2885,7 @@ package body Exp_Attr is
                     New_Occurrence_Of (RTE (RE_Task_Entry_Caller), Loc),
                   Parameter_Associations => New_List (
                     Make_Integer_Literal (Loc,
-                      Intval => Int (Nest_Depth))))));
+                      Intval => Nest_Depth)))));
          end if;
 
          Analyze_And_Resolve (N, Id_Kind);
