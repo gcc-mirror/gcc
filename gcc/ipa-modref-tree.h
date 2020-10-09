@@ -496,7 +496,8 @@ struct GTY((user)) modref_tree
   /* Copy OTHER to THIS.  */
   void copy_from (modref_tree <T> *other)
   {
-    merge (other, NULL);
+    auto_vec <modref_parm_map, 32> parm_map;
+    merge (other, &parm_map);
   }
 
   /* Search BASE in tree; return NULL if failed.  */
