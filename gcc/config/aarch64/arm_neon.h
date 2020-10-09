@@ -15746,7 +15746,7 @@ vdupq_n_f64 (float64_t __a)
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdupq_n_p8 (uint32_t __a)
+vdupq_n_p8 (poly8_t __a)
 {
   return (poly8x16_t) {__a, __a, __a, __a, __a, __a, __a, __a,
 		       __a, __a, __a, __a, __a, __a, __a, __a};
@@ -15754,21 +15754,21 @@ vdupq_n_p8 (uint32_t __a)
 
 __extension__ extern __inline poly16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdupq_n_p16 (uint32_t __a)
+vdupq_n_p16 (poly16_t __a)
 {
   return (poly16x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
 }
 
 __extension__ extern __inline poly64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdupq_n_p64 (uint64_t __a)
+vdupq_n_p64 (poly64_t __a)
 {
   return (poly64x2_t) {__a, __a};
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdupq_n_s8 (int32_t __a)
+vdupq_n_s8 (int8_t __a)
 {
   return (int8x16_t) {__a, __a, __a, __a, __a, __a, __a, __a,
 		      __a, __a, __a, __a, __a, __a, __a, __a};
@@ -15776,7 +15776,7 @@ vdupq_n_s8 (int32_t __a)
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdupq_n_s16 (int32_t __a)
+vdupq_n_s16 (int16_t __a)
 {
   return (int16x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
 }
@@ -15797,7 +15797,7 @@ vdupq_n_s64 (int64_t __a)
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdupq_n_u8 (uint32_t __a)
+vdupq_n_u8 (uint8_t __a)
 {
   return (uint8x16_t) {__a, __a, __a, __a, __a, __a, __a, __a,
 		       __a, __a, __a, __a, __a, __a, __a, __a};
@@ -15805,7 +15805,7 @@ vdupq_n_u8 (uint32_t __a)
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdupq_n_u16 (uint32_t __a)
+vdupq_n_u16 (uint16_t __a)
 {
   return (uint16x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
 }
