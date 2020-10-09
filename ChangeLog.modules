@@ -1,5 +1,9 @@
 2020-10-09  Nathan Sidwell  <nathan@acm.org>
 
+	Remove unused code
+	gcc/cp/
+	* friend.c (add_friend): Remove #if'd out code
+
 	Cleanup name-lookup interface
 	gcc/cp/
 	* name-lookup.h (get_field_ident, lookup_field_ident): Don't
