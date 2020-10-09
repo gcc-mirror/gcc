@@ -1,5 +1,19 @@
 2020-10-09  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanup name-lookup interface
+	gcc/cp/
+	* name-lookup.h (get_field_ident, lookup_field_ident): Don't
+	declare.
+	(mergeable_class_entities): Rename to ...
+	(lookup_class_binding): ... here.
+	* name-lookup.c (mergeable_class_entities): Rename to ...
+	(lookup_class_binding): ... here.
+	(get_field_ident, lookup_field_ident): Move to module.cc
+	* module.cc (get_field_ident, lookup_field_ident): Moved here.
+	Only deal with anon fields.
+	(trees_{in,out}::tree_node): Adjust.
+	(trees_in::key_mergeable): Adjust.
+
 	Remove unneeded decls
 	gcc/cp/
 	* name-lookup.c (lookup_class_member, void set_class_bindings)

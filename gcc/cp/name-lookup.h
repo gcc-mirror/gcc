@@ -428,7 +428,7 @@ extern void discard_operator_bindings (tree);
 extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
 					tree *mvec);
 extern void add_mergeable_namespace_entity (tree *slot, tree decl);
-extern tree mergeable_class_entities (tree ctx, tree name);
+extern tree lookup_class_binding (tree ctx, tree name);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod,
@@ -441,9 +441,6 @@ extern unsigned walk_module_binding (tree binding, bitmap partitions,
 					      bool hiddenness,
 					      int usingness, void *data),
 				     void *data);
-// FIXME: These two should be local to module.cc
-extern unsigned get_field_ident (tree ctx, tree decl);
-extern tree lookup_field_ident (tree ctx, tree name, unsigned ix);
 extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
 				    location_t, bool visible_p, bool inline_p,
 				    tree anon_name);

@@ -4045,7 +4045,7 @@ add_mergeable_namespace_entity (tree *gslot, tree decl)
    been given a member vec.  */
 
 tree
-mergeable_class_entities (tree klass, tree name)
+lookup_class_binding (tree klass, tree name)
 {
   tree found = NULL_TREE;
 
@@ -4065,7 +4065,8 @@ mergeable_class_entities (tree klass, tree name)
     }
   else
     {
-      gcc_checking_assert (IS_FAKE_BASE_TYPE (klass));
+      gcc_checking_assert (IS_FAKE_BASE_TYPE (klass)
+			   || TYPE_PTRMEMFUNC_P (klass));
       found = fields_linear_search (klass, name, false);
     }
 
@@ -4290,77 +4291,6 @@ add_module_decl (tree ns, tree name, tree decl)
   gcc_assert (!DECL_CHAIN (decl));
   add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
   newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
-}
-
-/* DECL is an unnameable member of CTX.  Return a suitable identifying
-   index.  */
-
-unsigned
-get_field_ident (tree ctx, tree decl)
-{
-  gcc_checking_assert (TREE_CODE (decl) == USING_DECL
-		       || !DECL_NAME (decl)
-		       || IDENTIFIER_ANON_P (DECL_NAME (decl)));
-
-  unsigned ix = 0;
-  for (tree fields = TYPE_FIELDS (ctx);
-       fields; fields = DECL_CHAIN (fields))
-    {
-      if (fields == decl)
-	return ix;
-
-      if (DECL_CONTEXT (fields) == ctx
-	  && (TREE_CODE (fields) == USING_DECL
-	      || (TREE_CODE (fields) == FIELD_DECL
-		  && (!DECL_NAME (fields)
-		      || IDENTIFIER_ANON_P (DECL_NAME (fields))))))
-	/* Count this field.  */
-	ix++;
-    }
-  gcc_unreachable ();
-}
-
-tree
-lookup_field_ident (tree ctx, tree name, unsigned ix)
-{
-  if (!name)
-    {
-      /* It is unnameable, get_field_ident provided IX.  */
-      for (tree fields = TYPE_FIELDS (ctx);
-	   fields; fields = DECL_CHAIN (fields))
-	if (DECL_CONTEXT (fields) == ctx
-	    && (TREE_CODE (fields) == USING_DECL
-		|| (TREE_CODE (fields) == FIELD_DECL
-		    && (!DECL_NAME (fields)
-			|| IDENTIFIER_ANON_P (DECL_NAME (fields))))))
-	  if (!ix--)
-	    return fields;
-
-      return NULL_TREE;
-    }
-
-  tree val = NULL_TREE;
-  if (TYPE_LANG_SPECIFIC (ctx))
-    {
-      vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx);
-
-      val = member_vec_binary_search (member_vec, name);
-    }
-  else
-    {
-      gcc_checking_assert (IS_FAKE_BASE_TYPE (ctx)
-			   || TYPE_PTRMEMFUNC_P (ctx));
-      val = fields_linear_search (ctx, name, false);
-    }
-
-  if (!val)
-    ;
-  else if (TREE_CODE (val) != FIELD_DECL)
-    val = NULL_TREE;
-  else if (DECL_CONTEXT (val) != ctx)
-    val = NULL_TREE;
-
-  return val;
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns

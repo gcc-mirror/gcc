@@ -8097,6 +8097,50 @@ trees_in::decl_value ()
   return decl;
 }
 
+/* DECL is an unnameable member of CTX.  Return a suitable identifying
+   index.  */
+
+static unsigned
+get_field_ident (tree ctx, tree decl)
+{
+  gcc_checking_assert (TREE_CODE (decl) == USING_DECL
+		       || !DECL_NAME (decl)
+		       || IDENTIFIER_ANON_P (DECL_NAME (decl)));
+
+  unsigned ix = 0;
+  for (tree fields = TYPE_FIELDS (ctx);
+       fields; fields = DECL_CHAIN (fields))
+    {
+      if (fields == decl)
+	return ix;
+
+      if (DECL_CONTEXT (fields) == ctx
+	  && (TREE_CODE (fields) == USING_DECL
+	      || (TREE_CODE (fields) == FIELD_DECL
+		  && (!DECL_NAME (fields)
+		      || IDENTIFIER_ANON_P (DECL_NAME (fields))))))
+	/* Count this field.  */
+	ix++;
+    }
+  gcc_unreachable ();
+}
+
+static tree
+lookup_field_ident (tree ctx, unsigned ix)
+{
+  for (tree fields = TYPE_FIELDS (ctx);
+       fields; fields = DECL_CHAIN (fields))
+    if (DECL_CONTEXT (fields) == ctx
+	&& (TREE_CODE (fields) == USING_DECL
+	    || (TREE_CODE (fields) == FIELD_DECL
+		&& (!DECL_NAME (fields)
+		    || IDENTIFIER_ANON_P (DECL_NAME (fields))))))
+      if (!ix--)
+	return fields;
+
+  return NULL_TREE;
+}
+
 /* Reference DECL.  REF indicates the walk kind we are performing.
    Return true if we should write this decl by value.  */
 
@@ -9387,8 +9431,15 @@ trees_in::tree_node (bool is_use)
 	if (!get_overrun ()
 	    && RECORD_OR_UNION_TYPE_P (ctx))
 	  {
-	    unsigned ix = name ? 0 : u ();
-	    res = lookup_field_ident (ctx, name, ix);
+	    if (name)
+	      res = lookup_class_binding (ctx, name);
+	    else
+	      res = lookup_field_ident (ctx, u ());
+
+	    if (!res
+		|| TREE_CODE (res) != FIELD_DECL
+		|| DECL_CONTEXT (res) != ctx)
+	      res = NULL_TREE;
 	  }
 
 	if (!res)
@@ -10694,7 +10745,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 			gcc_unreachable ();
 
 		      case MK_named:
-			existing = mergeable_class_entities (ctx, name);
+			existing = lookup_class_binding (ctx, name);
 			if (existing)
 			  {
 			    tree inner = decl;
