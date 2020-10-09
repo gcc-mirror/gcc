@@ -6196,7 +6196,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
       && direct_internal_fn_supported_p (IFN_CTZ, TREE_TYPE (@0),
 					 OPTIMIZE_FOR_SPEED))
-  (plus (CTZ:type @0) { build_one_cst (type); })))
+  (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+   (plus (CTZ:type (convert:utype @0)) { build_one_cst (type); }))))
 #endif
 
 (for ffs (BUILT_IN_FFS BUILT_IN_FFSL BUILT_IN_FFSLL
