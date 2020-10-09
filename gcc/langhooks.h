@@ -360,9 +360,8 @@ struct lang_hooks
   void (*preprocess_main_file) (cpp_reader *, line_maps *,
 				const line_map_ordinary *);
 
-  /* Translate include hook hook.  */
-  char *(*preprocess_translate_include)
-    (cpp_reader *, line_maps *, location_t, const char *path);
+  /* Adjust libcpp options and callbacks.  */
+  void (*preprocess_options) (cpp_reader *);
 
   /* Undefining a macro.  */
   void (*preprocess_undef) (cpp_reader *, location_t, cpp_hashnode *);

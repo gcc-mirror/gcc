@@ -1,3 +1,24 @@
+2020-10-09  Nathan Sidwell  <nathan@acm.org>
+
+	Clean up some c-family pieces
+	gcc/
+	* langhooks.h (struct lang_hooks): Replace
+	preprocess_translate_include with preprocess_options.
+	* langhooks-def.h: Replace LANG_HOOKS_PREPROCESS_INCLUDE_TRANSLATE
+	with LANG_HOOKS_PREPROCESS_OPTIONS.
+	gcc/c-family/
+	* c-cppbuiltins.c (c_cpp_builtins): Comment __cpp_modules.
+	* c-opts.c (c_common_post_options): Replace include_translate hook
+	with more general preprocess_options hook.
+	gcc/cp/
+	* cp-lang.c: Replace LANG_HOOKS_PREPROCESS_TRANSLATE_INCLUDE with
+	LANG_HOOKS_PREPROCESS_OPTIONS.
+	* cp-tree.h (module_translate_include): Don't declare.
+	(module_preprocess_options): Declare.
+	* module.cc (module_translate_include): Rename to ..
+	(maybe_translate_include): ... here.  Make static.
+	(module_preprocess_options): New.
+
 2020-10-08  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk d1c566d72d9

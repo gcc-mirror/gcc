@@ -18751,9 +18751,9 @@ void module_state::set_filename (const Cody::Packet &packet)
 
 /* Figure out whether to treat HEADER as an include or an import.  */
 
-char *
-module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
-			  const char *path)
+static char *
+maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
+			 const char *path)
 {
   if (!modules_p ())
     {
@@ -19536,6 +19536,18 @@ handle_module_option (unsigned code, const char *str, int)
 
     default:
       return false;
+    }
+}
+
+/* Set preprocessor callbacks and options for modules.  */
+
+void
+module_preprocess_options (cpp_reader *reader)
+{
+  if (flag_modules)
+    {
+      cpp_get_callbacks (reader)->translate_include = maybe_translate_include;
+      cpp_get_options (reader)->module_directives = true;
     }
 }
 

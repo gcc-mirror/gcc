@@ -765,8 +765,6 @@ default_handle_c_option (size_t code ATTRIBUTE_UNUSED,
 bool
 c_common_post_options (const char **pfilename)
 {
-  struct cpp_callbacks *cb;
-
   /* Canonicalize the input and output filenames.  */
   if (in_fnames == NULL)
     {
@@ -1108,15 +1106,11 @@ c_common_post_options (const char **pfilename)
       input_location = UNKNOWN_LOCATION;
     }
 
-  cb = cpp_get_callbacks (parse_in);
+  struct cpp_callbacks *cb = cpp_get_callbacks (parse_in);
   cb->file_change = cb_file_change;
   cb->dir_change = cb_dir_change;
-  // FIXME: Add a lang_hook to dink options.  That can do both the
-  // preprocess_translate_include hook, and setting the module-pragma
-  cb->translate_include = lang_hooks.preprocess_translate_include;
-  if (flag_modules)
-    cpp_opts->module_directives = true;
-    
+  if (lang_hooks.preprocess_options)
+    lang_hooks.preprocess_options (parse_in);
   cpp_post_options (parse_in);
   init_global_opts_from_cpp (&global_options, cpp_get_options (parse_in));
 

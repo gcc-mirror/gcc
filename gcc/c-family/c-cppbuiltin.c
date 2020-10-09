@@ -1014,11 +1014,9 @@ c_cpp_builtins (cpp_reader *pfile)
             cpp_define (pfile, "__cpp_concepts=201507L");
         }
       if (flag_modules)
-	{
-	  /* FIXME: get clarification about such a define.  */
-	  /* 201810 - p1103 merging modules */
-	  cpp_define (pfile, "__cpp_modules=201810");
-	}
+	/* The std-defined value is 201907L, but I don't think we can
+	   claim victory yet.  201810 is the p1103 date. */
+	cpp_define (pfile, "__cpp_modules=201810L");
       if (flag_coroutines)
 	cpp_define (pfile, "__cpp_impl_coroutine=201902L"); /* n4861, DIS */
       if (flag_tm)

@@ -79,8 +79,8 @@ static tree cxx_enum_underlying_base_type (const_tree);
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
 #undef LANG_HOOKS_PREPROCESS_MAIN_FILE
 #define LANG_HOOKS_PREPROCESS_MAIN_FILE module_begin_main_file
-#undef LANG_HOOKS_PREPROCESS_TRANSLATE_INCLUDE
-#define LANG_HOOKS_PREPROCESS_TRANSLATE_INCLUDE module_translate_include
+#undef LANG_HOOKS_PREPROCESS_OPTIONS
+#define LANG_HOOKS_PREPROCESS_OPTIONS module_preprocess_options
 #undef LANG_HOOKS_PREPROCESS_UNDEF
 #define LANG_HOOKS_PREPROCESS_UNDEF module_cpp_undef
 #undef LANG_HOOKS_PREPROCESS_DEFERRED_MACRO
