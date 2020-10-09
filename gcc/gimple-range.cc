@@ -636,28 +636,38 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       // __builtin_c[lt]z* return [0, prec-1], except when the
       // argument is 0, but that is undefined behavior.
       //
-      // On many targets where the CLZ RTL or optab value is defined
-      // for 0, the value is prec, so include that in the range by
-      // default.
+      // For __builtin_c[lt]z* consider argument of 0 always undefined
+      // behavior, for internal fns depending on C?Z_DEFINED_VALUE_AT_ZERO.
       arg = gimple_call_arg (call, 0);
       prec = TYPE_PRECISION (TREE_TYPE (arg));
       mini = 0;
-      maxi = prec;
+      maxi = prec - 1;
       mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-      if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
-	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov)
-	  // Only handle the single common value.
-	  && zerov != prec)
-	// Magic value to give up, unless we can prove arg is non-zero.
-	mini = -2;
+      if (gimple_call_internal_p (call))
+	{
+	  if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
+	      && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
+	    {
+	      // Only handle the single common value.
+	      if (zerov == prec)
+		maxi = prec;
+	      else
+		// Magic value to give up, unless we can prove arg is non-zero.
+		mini = -2;
+	    }
+	}
 
       gcc_assert (range_of_expr (r, arg, call));
       // From clz of minimum we can compute result maximum.
       if (r.constant_p ())
 	{
-	  maxi = prec - 1 - wi::floor_log2 (r.lower_bound ());
-	  if (maxi != prec)
-	    mini = 0;
+	  int newmaxi = prec - 1 - wi::floor_log2 (r.lower_bound ());
+	  // Argument is unsigned, so do nothing if it is [0, ...] range.
+	  if (newmaxi != prec)
+	    {
+	      mini = 0;
+	      maxi = newmaxi;
+	    }
 	}
       else if (!range_includes_zero_p (&r))
 	{
@@ -669,9 +679,17 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       // From clz of maximum we can compute result minimum.
       if (r.constant_p ())
 	{
-	  mini = prec - 1 - wi::floor_log2 (r.upper_bound ());
-	  if (mini == prec)
-	    break;
+	  int newmini = prec - 1 - wi::floor_log2 (r.upper_bound ());
+	  if (newmini == prec)
+	    {
+	      // Argument range is [0, 0].  If CLZ_DEFINED_VALUE_AT_ZERO
+	      // is 2 with VALUE of prec, return [prec, prec], otherwise
+	      // ignore the range.
+	      if (maxi == prec)
+		mini = prec;
+	    }
+	  else
+	    mini = newmini;
 	}
       if (mini == -2)
 	break;
@@ -682,25 +700,27 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       // __builtin_ctz* return [0, prec-1], except for when the
       // argument is 0, but that is undefined behavior.
       //
-      // If there is a ctz optab for this mode and
-      // CTZ_DEFINED_VALUE_AT_ZERO, include that in the range,
-      // otherwise just assume 0 won't be seen.
+      // For __builtin_ctz* consider argument of 0 always undefined
+      // behavior, for internal fns depending on CTZ_DEFINED_VALUE_AT_ZERO.
       arg = gimple_call_arg (call, 0);
       prec = TYPE_PRECISION (TREE_TYPE (arg));
       mini = 0;
       maxi = prec - 1;
       mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-      if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
-	  && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov))
+      if (gimple_call_internal_p (call))
 	{
-	  // Handle only the two common values.
-	  if (zerov == -1)
-	    mini = -1;
-	  else if (zerov == prec)
-	    maxi = prec;
-	  else
-	    // Magic value to give up, unless we can prove arg is non-zero.
-	    mini = -2;
+	  if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
+	      && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
+	    {
+	      // Handle only the two common values.
+	      if (zerov == -1)
+		mini = -1;
+	      else if (zerov == prec)
+		maxi = prec;
+	      else
+		// Magic value to give up, unless we can prove arg is non-zero.
+		mini = -2;
+	    }
 	}
       gcc_assert (range_of_expr (r, arg, call));
       if (!r.undefined_p ())
@@ -714,8 +734,20 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 	  // the maximum.
 	  wide_int max = r.upper_bound ();
 	  if (max == 0)
-	    break;
-	  maxi = wi::floor_log2 (max);
+	    {
+	      // Argument is [0, 0].  If CTZ_DEFINED_VALUE_AT_ZERO
+	      // is 2 with value -1 or prec, return [-1, -1] or [prec, prec].
+	      // Otherwise ignore the range.
+	      if (mini == -1)
+		maxi = -1;
+	      else if (maxi == prec)
+		mini = prec;
+	    }
+	  // If value at zero is prec and 0 is in the range, we can't lower
+	  // the upper bound.  We could create two separate ranges though,
+	  // [0,floor_log2(max)][prec,prec] though.
+	  else if (maxi != prec)
+	    maxi = wi::floor_log2 (max);
 	}
       if (mini == -2)
 	break;
