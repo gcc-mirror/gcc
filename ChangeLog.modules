@@ -1,5 +1,8 @@
 2020-10-09  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* lex.c (do_peek_module): Update plan for unicode.
+
 	gcc/cp/
 	* decl.c (grokmethod): Remove comment about -fmodule-implicit-inline.
 

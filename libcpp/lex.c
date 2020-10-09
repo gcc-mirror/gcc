@@ -4192,7 +4192,6 @@ do_peek_module (cpp_reader *pfile, unsigned char c,
   /* ... import followed by identifier, ':', '<' or header-name
      preprocessing tokens, or module followed by identifier, ':' or
      ';' preprocessing tokens.  */
-  // FIXME: Not sure what to do about unicode here
   unsigned char p = *peek++;
       
   /* A character literal is ... single quotes, ... optionally preceded
@@ -4236,7 +4235,7 @@ do_peek_module (cpp_reader *pfile, unsigned char c,
 	   ? ((p >= 'A' && p <= 'Z') || (p >= 'a' && p <= 'z') || p == '_')
 	   : ISIDST (p))
     {
-      /* IDENTIFIER.  Ok. */
+      /* Identifier.  Ok. */
     }
   else if (p == '<')
     {
@@ -4269,6 +4268,11 @@ do_peek_module (cpp_reader *pfile, unsigned char c,
 	return false;
     }
   else
+    /* FIXME: Detect a unicode character, excluding those not
+       permitted as the initial character. [lex.name]/1.  I presume
+       we need to check the \[uU] spellings, and directly using
+       Unicode in say UTF8 form?  Or perhaps we do the phase-1
+       conversion of UTF8 to universal-character-names?  */
     return false;
 
   return true;
