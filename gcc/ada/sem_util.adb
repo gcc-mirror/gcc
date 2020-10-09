@@ -7859,6 +7859,8 @@ package body Sem_Util is
                         or else
                       Nkind (Decl) in N_Later_Decl_Item
                         or else
+                      Nkind (Decl) in N_Renaming_Declaration
+                        or else
                       Nkind (Decl) = N_Number_Declaration)
       loop
          Decl := Parent (Decl);

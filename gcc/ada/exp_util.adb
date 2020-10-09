@@ -11124,6 +11124,12 @@ package body Exp_Util is
       --  otherwise it generates an internal temporary. The created temporary
       --  entity is marked as internal.
 
+      function Possible_Side_Effect_In_SPARK (Exp : Node_Id) return Boolean;
+      --  Computes whether a side-effect is possible in SPARK, which should
+      --  be handled by removing it from the expression for GNATprove. Note
+      --  that other side-effects related to volatile variables are handled
+      --  separately.
+
       ---------------------
       -- Build_Temporary --
       ---------------------
@@ -11159,6 +11165,26 @@ package body Exp_Util is
          return Temp_Id;
       end Build_Temporary;
 
+      -----------------------------------
+      -- Possible_Side_Effect_In_SPARK --
+      -----------------------------------
+
+      function Possible_Side_Effect_In_SPARK (Exp : Node_Id) return Boolean is
+      begin
+        --  Side-effect removal in SPARK should only occur when not inside a
+        --  generic and not doing a preanalysis, inside an object renaming or
+        --  a type declaration or a for-loop iteration scheme.
+
+         return not Inside_A_Generic
+           and then Full_Analysis
+           and then Nkind (Enclosing_Declaration (Exp)) in
+                      N_Full_Type_Declaration
+                    | N_Iterator_Specification
+                    | N_Loop_Parameter_Specification
+                    | N_Object_Renaming_Declaration
+                    | N_Subtype_Declaration;
+      end Possible_Side_Effect_In_SPARK;
+
       --  Local variables
 
       Loc          : constant Source_Ptr      := Sloc (Exp);
@@ -11176,11 +11202,11 @@ package body Exp_Util is
    begin
       --  Handle cases in which there is nothing to do. In GNATprove mode,
       --  removal of side effects is useful for the light expansion of
-      --  renamings. This removal should only occur when not inside a
-      --  generic and not doing a preanalysis.
+      --  renamings.
 
       if not Expander_Active
-        and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
+        and then not
+          (GNATprove_Mode and then Possible_Side_Effect_In_SPARK (Exp))
       then
          return;
 
@@ -11216,14 +11242,6 @@ package body Exp_Util is
       elsif Modify_Tree_For_C
         and then Nkind (Exp) = N_Function_Call
         and then Is_Class_Wide_Type (Etype (Exp))
-      then
-         return;
-
-      --  An expression which is in SPARK mode is considered side effect free
-      --  if the resulting value is captured by a variable or a constant.
-
-      elsif GNATprove_Mode
-        and then Nkind (Parent (Exp)) = N_Object_Declaration
       then
          return;
       end if;
