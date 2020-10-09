@@ -188,7 +188,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   tree decl = NULL_TREE;
 
   /* Set for accesses to interior zero-length arrays.  */
-  bool interior_zero_len = false;
+  special_array_member sam{ };
 
   tree up_bound_p1;
 
@@ -220,7 +220,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 	    {
 	      /* Try to determine the size of the trailing array from
 		 its initializer (if it has one).  */
-	      if (tree refsize = component_ref_size (arg, &interior_zero_len))
+	      if (tree refsize = component_ref_size (arg, &sam))
 		if (TREE_CODE (refsize) == INTEGER_CST)
 		  maxbound = refsize;
 	    }
@@ -325,7 +325,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 			 "array subscript %E is below array bounds of %qT",
 			 low_sub, artype);
 
-  if (!warned && interior_zero_len)
+  if (!warned && sam == special_array_member::int_0)
     warned = warning_at (location, OPT_Wzero_length_bounds,
 			 (TREE_CODE (low_sub) == INTEGER_CST
 			  ? G_("array subscript %E is outside the bounds "

@@ -173,6 +173,22 @@ struct access_ref
      For string functions the size of the actual access is
      further constrained by the length of the string.  */
   offset_int bndrng[2];
+
+  /* Return true if OFFRNG is the constant zero.  */
+  bool offset_zero () const
+  {
+    return offrng[0] == 0 && offrng[1] == 0;
+  }
+
+  /* Return true if OFFRNG is bounded to a subrange of possible offset
+     values.  */
+  bool offset_bounded () const;
+
+  /* Used to fold integer expressions when called from front ends.  */
+  tree (*eval)(tree);
+  /* Set if trailing one-element arrays should be treated as flexible
+     array members.  */
+  bool trail1special;
 };
 
 /* Describes a pair of references used in an access by built-in

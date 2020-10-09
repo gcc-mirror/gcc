@@ -5292,12 +5292,22 @@ extern bool array_at_struct_end_p (tree);
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
 extern tree component_ref_field_offset (tree);
 
+/* Describes a "special" array member due to which component_ref_size
+   returns null.  */
+enum struct special_array_member
+  {
+   none,      /* Not a special array member.  */
+   int_0,     /* Interior array member with size zero.  */
+   trail_0,   /* Trailing array member with size zero.  */
+   trail_1    /* Trailing array member with one element.  */
+  };
+
 /* Return the size of the member referenced by the COMPONENT_REF, using
    its initializer expression if necessary in order to determine the size
    of an initialized flexible array member.  The size might be zero for
    an object with an uninitialized flexible array member or null if it
    cannot be determined.  */
-extern tree component_ref_size (tree, bool * = NULL);
+extern tree component_ref_size (tree, special_array_member * = NULL);
 
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);

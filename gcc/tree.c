@@ -13640,20 +13640,21 @@ get_initializer_for (tree init, tree decl)
 /* Determines the size of the member referenced by the COMPONENT_REF
    REF, using its initializer expression if necessary in order to
    determine the size of an initialized flexible array member.
-   If non-null, *INTERIOR_ZERO_LENGTH is set when REF refers to
-   an interior zero-length array.
+   If non-null, set *ARK when REF refers to an interior zero-length
+   array or a trailing one-element array.
    Returns the size as sizetype (which might be zero for an object
    with an uninitialized flexible array member) or null if the size
    cannot be determined.  */
 
 tree
-component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
+component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 {
   gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
 
-  bool int_0_len = false;
-  if (!interior_zero_length)
-    interior_zero_length = &int_0_len;
+  special_array_member arkbuf;
+  if (!sam)
+    sam = &arkbuf;
+  *sam = special_array_member::none;
 
   /* The object/argument referenced by the COMPONENT_REF and its type.  */
   tree arg = TREE_OPERAND (ref, 0);
@@ -13675,9 +13676,16 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	   more than one element.  */
 	return memsize;
 
-      *interior_zero_length = zero_length && !trailing;
-      if (*interior_zero_length)
-	memsize = NULL_TREE;
+      if (zero_length)
+	{
+	  if (trailing)
+	    *sam = special_array_member::trail_0;
+	  else
+	    {
+	      *sam = special_array_member::int_0;
+	      memsize = NULL_TREE;
+	    }
+	}
 
       if (!zero_length)
 	if (tree dom = TYPE_DOMAIN (memtype))
@@ -13688,9 +13696,13 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 		{
 		  offset_int minidx = wi::to_offset (min);
 		  offset_int maxidx = wi::to_offset (max);
-		  if (maxidx - minidx > 0)
+		  offset_int neltsm1 = maxidx - minidx;
+		  if (neltsm1 > 0)
 		    /* MEMBER is an array with more than one element.  */
 		    return memsize;
+
+		  if (neltsm1 == 0)
+		    *sam = special_array_member::trail_1;
 		}
 
       /* For a refernce to a zero- or one-element array member of a union
@@ -13708,7 +13720,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
   tree base = get_addr_base_and_unit_offset (ref, &baseoff);
   if (!base || !VAR_P (base))
     {
-      if (!*interior_zero_length)
+      if (*sam != special_array_member::int_0)
 	return NULL_TREE;
 
       if (TREE_CODE (arg) != COMPONENT_REF)
@@ -13728,7 +13740,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
   /* Determine the base type of the referenced object.  If it's
      the same as ARGTYPE and MEMBER has a known size, return it.  */
   tree bt = basetype;
-  if (!*interior_zero_length)
+  if (*sam != special_array_member::int_0)
     while (TREE_CODE (bt) == ARRAY_TYPE)
       bt = TREE_TYPE (bt);
   bool typematch = useless_type_conversion_p (argtype, bt);
@@ -13768,7 +13780,7 @@ component_ref_size (tree ref, bool *interior_zero_length /* = NULL */)
 	  if (DECL_P (base)
 	      && DECL_EXTERNAL (base)
 	      && bt == basetype
-	      && !*interior_zero_length)
+	      && *sam != special_array_member::int_0)
 	    /* The size of a flexible array member of an extern struct
 	       with no initializer cannot be determined (it's defined
 	       in another translation unit and can have an initializer
