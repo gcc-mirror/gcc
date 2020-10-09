@@ -1132,8 +1132,13 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   narrow_reload_pseudo_class (out_rtx, goal_class);
   if (find_reg_note (curr_insn, REG_UNUSED, out_rtx) == NULL_RTX)
     {
+      reg = SUBREG_P (out_rtx) ? SUBREG_REG (out_rtx) : out_rtx;
       start_sequence ();
-      if (out >= 0 && curr_static_id->operand[out].strict_low)
+      /* If we had strict_low_part, use it also in reload to keep other
+	 parts unchanged but do it only for regs as strict_low_part
+	 has no sense for memory and probably there is no insn pattern
+	 to match the reload insn in memory case.  */
+      if (out >= 0 && curr_static_id->operand[out].strict_low && REG_P (reg))
 	out_rtx = gen_rtx_STRICT_LOW_PART (VOIDmode, out_rtx);
       lra_emit_move (out_rtx, copy_rtx (new_out_reg));
       emit_insn (*after);
