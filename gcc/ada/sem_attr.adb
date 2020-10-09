@@ -6636,7 +6636,7 @@ package body Sem_Attr is
          Check_E0;
 
          if not Is_Entity_Name (P)
-           or else Ekind (Entity (P)) not in Named_Kind
+           or else not Is_Named_Number (Entity (P))
          then
             Error_Attr_P ("prefix for % attribute must be named number");
 
