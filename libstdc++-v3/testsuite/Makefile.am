@@ -182,7 +182,7 @@ check-compile: testsuite_files ${compile_script}
 check_performance_script=${glibcxx_srcdir}/scripts/check_performance
 check-performance: testsuite_files_performance ${performance_script}
 	-@(chmod + ${check_performance_script}; \
-	  export CXXFLAGS="$(CXXFLAGS)"; \
+	  CXXFLAGS='$(CXXFLAGS)'; export CXXFLAGS; \
 	  ${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
 # Runs the testsuite in debug mode.
