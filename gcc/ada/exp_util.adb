@@ -471,9 +471,9 @@ package body Exp_Util is
       end if;
    end Append_Freeze_Actions;
 
-   --------------------------------------
-   -- Attr_Constrained_Statically_True --
-   --------------------------------------
+   ----------------------------------------
+   -- Attribute_Constrained_Static_Value --
+   ----------------------------------------
 
    function Attribute_Constrained_Static_Value (Pref : Node_Id) return Boolean
    is
@@ -535,7 +535,7 @@ package body Exp_Util is
 
       if Is_Entity_Name (Pref) then
          declare
-            Ent : constant Entity_Id   := Entity (Pref);
+            Ent : constant Entity_Id := Entity (Pref);
             Res : Boolean;
 
          begin

@@ -7793,7 +7793,7 @@ package body Sem_Attr is
       --  we will do the folding right here (things get confused if we let this
       --  case go through the normal circuitry).
 
-      if Attribute_Name (N) = Name_Img
+      if Id = Attribute_Img
         and then Is_Entity_Name (P)
         and then Is_Enumeration_Type (Etype (Entity (P)))
         and then Is_OK_Static_Expression (P)
@@ -8127,7 +8127,7 @@ package body Sem_Attr is
       --  T'Descriptor_Size is never static, even if T is static.
 
       if Is_Scalar_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Is_Static_Subtype (P_Entity)
         and then Is_Scalar_Type (Etype (N))
         and then
@@ -8151,7 +8151,7 @@ package body Sem_Attr is
 
       if Is_Type (P_Entity)
         and then (Is_Scalar_Type (P_Entity) or Is_Array_Type (P_Entity))
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
       then
          P_Type := P_Entity;
 
@@ -8159,7 +8159,7 @@ package body Sem_Attr is
 
       elsif Ekind (P_Entity) in E_Variable | E_Constant
         and then Is_Array_Type (Etype (P_Entity))
-        and then (not Is_Generic_Type (Etype (P_Entity)))
+        and then not Is_Generic_Type (Etype (P_Entity))
       then
          P_Type := Etype (P_Entity);
 
@@ -8208,7 +8208,7 @@ package body Sem_Attr is
       elsif (Id = Attribute_Size or
              Id = Attribute_Max_Size_In_Storage_Elements)
         and then Is_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Known_Static_RM_Size (P_Entity)
       then
          declare
@@ -8230,7 +8230,7 @@ package body Sem_Attr is
 
       elsif Id = Attribute_Alignment
         and then Is_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Known_Alignment (P_Entity)
       then
          Compile_Time_Known_Attribute (N, Alignment (P_Entity));
@@ -8239,7 +8239,7 @@ package body Sem_Attr is
       --  If this is an access attribute that is known to fail accessibility
       --  check, rewrite accordingly.
 
-      elsif Attribute_Name (N) = Name_Access
+      elsif Id = Attribute_Address
         and then Raises_Constraint_Error (N)
       then
          Rewrite (N,
