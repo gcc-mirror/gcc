@@ -773,6 +773,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "Build SLP failed: unvectorizable statement %G",
 			     stmt);
+	  /* ???  For BB vectorization we want to commutate operands in a way
+	     to shuffle all unvectorizable defs into one operand and have
+	     the other still vectorized.  The following doesn't reliably
+	     work for this though but it's the easiest we can do here.  */
+	  if (is_a <bb_vec_info> (vinfo) && i != 0)
+	    continue;
 	  /* Fatal mismatch.  */
 	  matches[0] = false;
           return false;
@@ -785,6 +791,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "Build SLP failed: not GIMPLE_ASSIGN nor "
 			     "GIMPLE_CALL %G", stmt);
+	  if (is_a <bb_vec_info> (vinfo) && i != 0)
+	    continue;
 	  /* Fatal mismatch.  */
 	  matches[0] = false;
 	  return false;
@@ -797,6 +805,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      && !vect_record_max_nunits (vinfo, stmt_info, group_size,
 					  nunits_vectype, max_nunits)))
 	{
+	  if (is_a <bb_vec_info> (vinfo) && i != 0)
+	    continue;
 	  /* Fatal mismatch.  */
 	  matches[0] = false;
 	  return false;
@@ -823,6 +833,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: unsupported call type %G",
 				 call_stmt);
+	      if (is_a <bb_vec_info> (vinfo) && i != 0)
+		continue;
 	      /* Fatal mismatch.  */
 	      matches[0] = false;
 	      return false;
@@ -865,6 +877,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		      if (dump_enabled_p ())
 			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 					 "Build SLP failed: no optab.\n");
+		      if (is_a <bb_vec_info> (vinfo) && i != 0)
+			continue;
 		      /* Fatal mismatch.  */
 		      matches[0] = false;
 		      return false;
@@ -876,6 +890,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 					 "Build SLP failed: "
 					 "op not supported by target.\n");
+		      if (is_a <bb_vec_info> (vinfo) && i != 0)
+			continue;
 		      /* Fatal mismatch.  */
 		      matches[0] = false;
 		      return false;
@@ -900,6 +916,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      if (TREE_CODE (vec) != SSA_NAME
 		  || !types_compatible_p (vectype, TREE_TYPE (vec)))
 		{
+		  if (is_a <bb_vec_info> (vinfo) && i != 0)
+		    continue;
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "Build SLP failed: "
@@ -1048,6 +1066,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 				 "Build SLP failed: not grouped load %G", stmt);
 
 	      /* FORNOW: Not grouped loads are not supported.  */
+	      if (is_a <bb_vec_info> (vinfo) && i != 0)
+		continue;
 	      /* Fatal mismatch.  */
 	      matches[0] = false;
 	      return false;
@@ -1066,6 +1086,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: operation unsupported %G",
 				 stmt);
+	      if (is_a <bb_vec_info> (vinfo) && i != 0)
+		continue;
 	      /* Fatal mismatch.  */
 	      matches[0] = false;
 	      return false;
