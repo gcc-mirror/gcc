@@ -8817,6 +8817,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
   basic_block *epilogue_bbs = get_loop_body (epilogue);
   unsigned i;
 
+  free (LOOP_VINFO_BBS (epilogue_vinfo));
   LOOP_VINFO_BBS (epilogue_vinfo) = epilogue_bbs;
 
   /* Advance data_reference's with the number of iterations of the previous

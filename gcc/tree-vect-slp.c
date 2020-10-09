@@ -3783,7 +3783,7 @@ static bool
 vect_slp_bbs (vec<basic_block> bbs)
 {
   vec<data_reference_p> datarefs = vNULL;
-  vec<int> dataref_groups = vNULL;
+  auto_vec<int> dataref_groups;
   int insns = 0;
   int current_group = 0;
 
