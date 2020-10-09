@@ -552,10 +552,13 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
   return true;
 }
 
+// Return the range of a __builtin_ubsan* in CALL and set it in R.
+// CODE is the type of ubsan call (PLUS_EXPR, MINUS_EXPR or
+// MULT_EXPR).
 
-void
-gimple_ranger::range_of_builtin_ubsan_call (irange &r, gcall *call,
-					    tree_code code)
+static void
+range_of_builtin_ubsan_call (range_query &query, irange &r, gcall *call,
+			     tree_code code)
 {
   gcc_checking_assert (code == PLUS_EXPR || code == MINUS_EXPR
 		       || code == MULT_EXPR);
@@ -565,8 +568,8 @@ gimple_ranger::range_of_builtin_ubsan_call (irange &r, gcall *call,
   int_range_max ir0, ir1;
   tree arg0 = gimple_call_arg (call, 0);
   tree arg1 = gimple_call_arg (call, 1);
-  gcc_assert (range_of_expr (ir0, arg0, call));
-  gcc_assert (range_of_expr (ir1, arg1, call));
+  gcc_assert (query.range_of_expr (ir0, arg0, call));
+  gcc_assert (query.range_of_expr (ir1, arg1, call));
 
   bool saved_flag_wrapv = flag_wrapv;
   // Pretend the arithmetic is wrapping.  If there is any overflow,
@@ -582,9 +585,11 @@ gimple_ranger::range_of_builtin_ubsan_call (irange &r, gcall *call,
     r.set_varying (type);
 }
 
+// For a builtin in CALL, return a range in R if known and return
+// TRUE.  Otherwise return FALSE.
 
 bool
-gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
+range_of_builtin_call (range_query &query, irange &r, gcall *call)
 {
   combined_fn func = gimple_call_combined_fn (call);
   if (func == CFN_LAST)
@@ -605,7 +610,7 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 	  return true;
 	}
       arg = gimple_call_arg (call, 0);
-      if (range_of_expr (r, arg, call) && r.singleton_p ())
+      if (query.range_of_expr (r, arg, call) && r.singleton_p ())
 	{
 	  r.set (build_one_cst (type), build_one_cst (type));
 	  return true;
@@ -619,7 +624,7 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       prec = TYPE_PRECISION (TREE_TYPE (arg));
       mini = 0;
       maxi = prec;
-      gcc_assert (range_of_expr (r, arg, call));
+      gcc_assert (query.range_of_expr (r, arg, call));
       // If arg is non-zero, then ffs or popcount are non-zero.
       if (!range_includes_zero_p (&r))
 	mini = 1;
@@ -663,7 +668,7 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 	    }
 	}
 
-      gcc_assert (range_of_expr (r, arg, call));
+      gcc_assert (query.range_of_expr (r, arg, call));
       // From clz of minimum we can compute result maximum.
       if (r.constant_p ())
 	{
@@ -728,7 +733,7 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 		mini = -2;
 	    }
 	}
-      gcc_assert (range_of_expr (r, arg, call));
+      gcc_assert (query.range_of_expr (r, arg, call));
       if (!r.undefined_p ())
 	{
 	  if (r.lower_bound () != 0)
@@ -766,13 +771,13 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
       r.set (build_int_cst (type, 0), build_int_cst (type, prec - 1));
       return true;
     case CFN_UBSAN_CHECK_ADD:
-      range_of_builtin_ubsan_call (r, call, PLUS_EXPR);
+      range_of_builtin_ubsan_call (query, r, call, PLUS_EXPR);
       return true;
     case CFN_UBSAN_CHECK_SUB:
-      range_of_builtin_ubsan_call (r, call, MINUS_EXPR);
+      range_of_builtin_ubsan_call (query, r, call, MINUS_EXPR);
       return true;
     case CFN_UBSAN_CHECK_MUL:
-      range_of_builtin_ubsan_call (r, call, MULT_EXPR);
+      range_of_builtin_ubsan_call (query, r, call, MULT_EXPR);
       return true;
 
     case CFN_GOACC_DIM_SIZE:
@@ -822,6 +827,11 @@ gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
 }
 
 
+bool
+gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
+{
+  return ::range_of_builtin_call (*this, r, call);
+}
 
 // Calculate a range for COND_EXPR statement S and return it in R.
 // If a range cannot be calculated, return false.
