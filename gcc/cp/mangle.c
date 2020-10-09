@@ -862,15 +862,15 @@ mangle_identifier (char c, tree id)
   write_source_name (id);
 }
 
-/* If the outermost non-namespace context (including DECL itself) is a
-   non-exported module decl, mangle the module information.
+/* If the outermost non-namespace context (including DECL itself) is
+   a module-linkage decl, mangle the module information.  For module
+   global initializers we need to include the partition part.
 
-   <module-name> ::= W <unqualified-name>+ E
-
-   FIXME: Module mangling is not fully baked.  How moduleness sticks
-   to regular back-references is tricky.  Namespaces cannot have
-   moduleness, but classes can.  However, both are mangled the same,
-   so the demangler doesn't have a clue. 
+   <module-name> ::= W <module-id>+ E
+   <module-id> :: <unqualified-name>
+               || _ <digit>  ;; short backref
+	       || W <number> _  ;; long backref
+               || P <module-id> ;; partition introducer
 */
 
 static void

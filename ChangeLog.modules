@@ -1,5 +1,11 @@
 2020-10-09  Nathan Sidwell  <nathan@acm.org>
 
+	Clean up mangling documentation
+	gcc/cp/
+	* mangle.c (write_module): Update grammar description.
+	* module.cc (module_state::mangle): Clarify why partitions might
+	be significant.
+
 	Clean up some c-family pieces
 	gcc/
 	* langhooks.h (struct lang_hooks): Replace

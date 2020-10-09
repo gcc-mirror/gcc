@@ -13682,7 +13682,8 @@ module_state::mangle (bool include_partition)
       if (include_partition || !is_partition ())
 	{
 	  char p = 0;
-	  if (is_partition () && !(parent && parent->is_partition ()))
+	  // Partitions are significant for global initializer functions
+	  if (is_partition () && !parent->is_partition ())
 	    p = 'P';
 	  substs.safe_push (this);
 	  subst = substs.length ();
