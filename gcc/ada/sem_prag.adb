@@ -21494,7 +21494,11 @@ package body Sem_Prag is
                Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
 
             begin
-               if Chars (Argx) = Name_Ravenscar then
+               if Nkind (Argx) /= N_Identifier then
+                  Error_Msg_N
+                    ("argument of pragma Profile must be an identifier", N);
+
+               elsif Chars (Argx) = Name_Ravenscar then
                   Set_Ravenscar_Profile (Ravenscar, N);
 
                elsif Chars (Argx) = Name_Jorvik then
