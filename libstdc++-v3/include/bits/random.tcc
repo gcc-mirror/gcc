@@ -3237,42 +3237,70 @@ namespace __detail
       const size_t __q = __p + __t;
       const size_t __m = std::max(size_t(__s + 1), __n);
 
-      for (size_t __k = 0; __k < __m; ++__k)
+#ifndef __UINT32_TYPE__
+      struct _Up
+      {
+	_Up(uint_least32_t v) : _M_v(v & 0xffffffffu) { }
+
+	operator uint_least32_t() const { return _M_v; }
+
+	uint_least32_t _M_v;
+      };
+      using uint32_t = _Up;
+#endif
+
+      // k == 0, every element in [begin,end) equals 0x8b8b8b8bu
 	{
-	  _Type __arg = (__begin[__k % __n]
-			 ^ __begin[(__k + __p) % __n]
-			 ^ __begin[(__k - 1) % __n]);
-	  _Type __r1 = __arg ^ (__arg >> 27);
-	  __r1 = __detail::__mod<_Type,
-		    __detail::_Shift<_Type, 32>::__value>(1664525u * __r1);
-	  _Type __r2 = __r1;
-	  if (__k == 0)
-	    __r2 += __s;
-	  else if (__k <= __s)
-	    __r2 += __k % __n + _M_v[__k - 1];
-	  else
-	    __r2 += __k % __n;
-	  __r2 = __detail::__mod<_Type,
-	           __detail::_Shift<_Type, 32>::__value>(__r2);
-	  __begin[(__k + __p) % __n] += __r1;
-	  __begin[(__k + __q) % __n] += __r2;
-	  __begin[__k % __n] = __r2;
+	  uint32_t __r1 = 1371501266u;
+	  uint32_t __r2 = __r1 + __s;
+	  __begin[__p] += __r1;
+	  __begin[__q] = (uint32_t)__begin[__q] + __r2;
+	  __begin[0] = __r2;
+	}
+
+      for (size_t __k = 1; __k <= __s; ++__k)
+	{
+	  const size_t __kn = __k % __n;
+	  const size_t __kpn = (__k + __p) % __n;
+	  const size_t __kqn = (__k + __q) % __n;
+	  uint32_t __arg = (__begin[__kn]
+			    ^ __begin[__kpn]
+			    ^ __begin[(__k - 1) % __n]);
+	  uint32_t __r1 = 1664525u * (__arg ^ (__arg >> 27));
+	  uint32_t __r2 = __r1 + (uint32_t)__kn + _M_v[__k - 1];
+	  __begin[__kpn] = (uint32_t)__begin[__kpn] + __r1;
+	  __begin[__kqn] = (uint32_t)__begin[__kqn] + __r2;
+	  __begin[__kn] = __r2;
+	}
+
+      for (size_t __k = __s + 1; __k < __m; ++__k)
+	{
+	  const size_t __kn = __k % __n;
+	  const size_t __kpn = (__k + __p) % __n;
+	  const size_t __kqn = (__k + __q) % __n;
+	  uint32_t __arg = (__begin[__kn]
+				 ^ __begin[__kpn]
+				 ^ __begin[(__k - 1) % __n]);
+	  uint32_t __r1 = 1664525u * (__arg ^ (__arg >> 27));
+	  uint32_t __r2 = __r1 + (uint32_t)__kn;
+	  __begin[__kpn] = (uint32_t)__begin[__kpn] + __r1;
+	  __begin[__kqn] = (uint32_t)__begin[__kqn] + __r2;
+	  __begin[__kn] = __r2;
 	}
 
       for (size_t __k = __m; __k < __m + __n; ++__k)
 	{
-	  _Type __arg = (__begin[__k % __n]
-			 + __begin[(__k + __p) % __n]
-			 + __begin[(__k - 1) % __n]);
-	  _Type __r3 = __arg ^ (__arg >> 27);
-	  __r3 = __detail::__mod<_Type,
-		   __detail::_Shift<_Type, 32>::__value>(1566083941u * __r3);
-	  _Type __r4 = __r3 - __k % __n;
-	  __r4 = __detail::__mod<_Type,
-	           __detail::_Shift<_Type, 32>::__value>(__r4);
-	  __begin[(__k + __p) % __n] ^= __r3;
-	  __begin[(__k + __q) % __n] ^= __r4;
-	  __begin[__k % __n] = __r4;
+	  const size_t __kn = __k % __n;
+	  const size_t __kpn = (__k + __p) % __n;
+	  const size_t __kqn = (__k + __q) % __n;
+	  uint32_t __arg = (__begin[__kn]
+			    + __begin[__kpn]
+			    + __begin[(__k - 1) % __n]);
+	  uint32_t __r3 = 1566083941u * (__arg ^ (__arg >> 27));
+	  uint32_t __r4 = __r3 - __kn;
+	  __begin[__kpn] ^= __r3;
+	  __begin[__kqn] ^= __r4;
+	  __begin[__kn] = __r4;
 	}
     }
 
