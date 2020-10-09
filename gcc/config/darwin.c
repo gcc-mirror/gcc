@@ -1439,7 +1439,7 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   gcc_assert (TREE_CODE (ident) == IDENTIFIER_NODE);
   p = IDENTIFIER_POINTER (ident);
 
-  gcc_checking_assert (flag_next_runtime == 1 && flag_objc_abi == 2);
+  gcc_checking_assert (flag_next_runtime >= 1 && flag_objc_abi == 2);
 
   objc_metadata_seen = 1;
 
@@ -1515,7 +1515,7 @@ darwin_objc1_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   gcc_assert (TREE_CODE (ident) == IDENTIFIER_NODE);
   p = IDENTIFIER_POINTER (ident);
 
-  gcc_checking_assert (flag_next_runtime == 1 && flag_objc_abi < 2);
+  gcc_checking_assert (flag_next_runtime >= 1 && flag_objc_abi < 2);
 
   objc_metadata_seen = 1;
 
