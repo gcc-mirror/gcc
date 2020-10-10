@@ -1333,7 +1333,12 @@ remap_arguments (vec <int> *map, modref_records *tt)
 	  modref_access_node *access_node;
 	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
 	    if (access_node->parm_index > 0)
-	      access_node->parm_index = (*map)[access_node->parm_index];
+	      {
+		if (access_node->parm_index < (int)map->length ())
+		  access_node->parm_index = (*map)[access_node->parm_index];
+		else
+		  access_node->parm_index = -1;
+	      }
 	}
     }
 }
