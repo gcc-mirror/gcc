@@ -757,7 +757,14 @@ analyze_function (function *f, bool ipa)
   if (!summaries)
     summaries = modref_summaries::create_ggc (symtab);
   else /* Remove existing summary if we are re-running the pass.  */
-    summaries->remove (cgraph_node::get (f->decl));
+    {
+      if (dump_file && summaries->get (cgraph_node::get (f->decl)))
+	{
+	  fprintf (dump_file, "Past summary:\n");
+	  summaries->get (cgraph_node::get (f->decl))->dump (dump_file);
+	}
+      summaries->remove (cgraph_node::get (f->decl));
+    }
 
   ((modref_summaries *)summaries)->ipa = ipa;
 
@@ -1290,7 +1297,7 @@ modref_read (void)
 
   if (!summaries)
     summaries = modref_summaries::create_ggc (symtab);
-  ((modref_summaries *)summaries)->ipa = true;
+  ((modref_summaries *)summaries)->ipa = !flag_ltrans;
 
   while ((file_data = file_data_vec[j++]))
     {
@@ -1307,6 +1314,76 @@ modref_read (void)
 	fatal_error (input_location,
 		     "IPA modref summary is missing in input file");
     }
+}
+
+/* Update parameter indexes in TT according to MAP.  */
+
+void
+remap_arguments (vec <int> *map, modref_records *tt)
+{
+  size_t i;
+  modref_base_node <alias_set_type> *base_node;
+  FOR_EACH_VEC_SAFE_ELT (tt->bases, i, base_node)
+    {
+      size_t j;
+      modref_ref_node <alias_set_type> *ref_node;
+      FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+	{
+	  size_t k;
+	  modref_access_node *access_node;
+	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	    if (access_node->parm_index > 0)
+	      access_node->parm_index = (*map)[access_node->parm_index];
+	}
+    }
+}
+
+/* If signature changed, update the summary.  */
+
+static unsigned int
+modref_transform (struct cgraph_node *node)
+{
+  if (!node->clone.param_adjustments)
+    return 0;
+  modref_summary *r = summaries->get (node);
+  if (!r)
+    return 0;
+  if (dump_file)
+    {
+      fprintf (dump_file, "Updating summary for %s from:\n",
+	       node->dump_name ());
+      r->dump (dump_file);
+    }
+
+  size_t i, max = 0;
+  ipa_adjusted_param *p;
+
+  FOR_EACH_VEC_SAFE_ELT (node->clone.param_adjustments->m_adj_params, i, p)
+    {
+      int idx = node->clone.param_adjustments->get_original_index (i);
+      if (idx > (int)max)
+	max = idx;
+    }
+
+  auto_vec <int, 32> map;
+
+  map.safe_grow (max + 1);
+  for (i = 0; i <= max; i++)
+    map.quick_push (-1);
+  FOR_EACH_VEC_SAFE_ELT (node->clone.param_adjustments->m_adj_params, i, p)
+    {
+      int idx = node->clone.param_adjustments->get_original_index (i);
+      if (idx >= 0)
+	map[i] = idx;
+    }
+  remap_arguments (&map, r->loads);
+  remap_arguments (&map, r->stores);
+  if (dump_file)
+    {
+      fprintf (dump_file, "to:\n");
+      r->dump (dump_file);
+    }
+  return 0;
 }
 
 /* Definition of the modref IPA pass.  */
@@ -1335,7 +1412,7 @@ public:
 		      modref_read,     /* read_optimization_summary */
 		      NULL,            /* stmt_fixup */
 		      0,               /* function_transform_todo_flags_start */
-		      NULL,            /* function_transform */
+		      modref_transform,/* function_transform */
 		      NULL)            /* variable_transform */
   {}
 
@@ -1448,7 +1525,10 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 	    {
 	      (*parm_map)[i].parm_index = ipa_get_jf_ancestor_formal_id (jf);
 	      (*parm_map)[i].parm_offset_known = true;
-	      (*parm_map)[i].parm_offset = ipa_get_jf_ancestor_offset (jf);
+	      gcc_checking_assert
+		(!(ipa_get_jf_ancestor_offset (jf) & (BITS_PER_UNIT - 1)));
+	      (*parm_map)[i].parm_offset
+		 = ipa_get_jf_ancestor_offset (jf) >> LOG2_BITS_PER_UNIT;
  	    }
 	  else
 	    (*parm_map)[i].parm_index = -1;
@@ -1503,10 +1583,13 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 
       compute_parm_map (edge, &parm_map);
 
-      if (to_info->loads)
-	to_info->loads->merge (callee_info->loads, &parm_map);
-      if (to_info->stores)
-	to_info->stores->merge (callee_info->stores, &parm_map);
+      if (!ignore_stores_p (edge->callee->decl, flags))
+	{
+	  if (to_info->loads)
+	    to_info->loads->merge (callee_info->loads, &parm_map);
+	  if (to_info->stores)
+	    to_info->stores->merge (callee_info->stores, &parm_map);
+	}
       if (to_info->loads_lto)
 	to_info->loads_lto->merge (callee_info->loads_lto, &parm_map);
       if (to_info->stores_lto)
