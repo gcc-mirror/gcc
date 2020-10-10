@@ -1343,7 +1343,7 @@ remap_arguments (vec <int> *map, modref_records *tt)
 static unsigned int
 modref_transform (struct cgraph_node *node)
 {
-  if (!node->clone.param_adjustments)
+  if (!node->clone.param_adjustments || !summaries)
     return 0;
   modref_summary *r = summaries->get (node);
   if (!r)
