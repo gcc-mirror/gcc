@@ -827,26 +827,12 @@ write_var_marker (FILE *file, bool is_defn, bool globalize, const char *name)
   fputs ("\n", file);
 }
 
-/* Write a .func or .kernel declaration or definition along with
-   a helper comment for use by ld.  S is the stream to write to, DECL
-   the decl for the function with name NAME.   For definitions, emit
-   a declaration too.  */
+/* Helper function for write_fn_proto.  */
 
-static const char *
-write_fn_proto (std::stringstream &s, bool is_defn,
-		const char *name, const_tree decl)
+static void
+write_fn_proto_1 (std::stringstream &s, bool is_defn,
+		  const char *name, const_tree decl)
 {
-  if (is_defn)
-    /* Emit a declaration. The PTX assembler gets upset without it.   */
-    name = write_fn_proto (s, false, name, decl);
-  else
-    {
-      /* Avoid repeating the name replacement.  */
-      name = nvptx_name_replacement (name);
-      if (name[0] == '*')
-	name++;
-    }
-
   write_fn_marker (s, is_defn, TREE_PUBLIC (decl), name);
 
   /* PTX declaration.  */
@@ -929,8 +915,26 @@ write_fn_proto (std::stringstream &s, bool is_defn,
     s << ")";
 
   s << (is_defn ? "\n" : ";\n");
+}
 
-  return name;
+/* Write a .func or .kernel declaration or definition along with
+   a helper comment for use by ld.  S is the stream to write to, DECL
+   the decl for the function with name NAME.  For definitions, emit
+   a declaration too.  */
+
+static void
+write_fn_proto (std::stringstream &s, bool is_defn,
+		const char *name, const_tree decl)
+{
+  name = nvptx_name_replacement (name);
+  if (name[0] == '*')
+    name++;
+
+  if (is_defn)
+    /* Emit a declaration.  The PTX assembler gets upset without it.  */
+    write_fn_proto_1 (s, false, name, decl);
+
+  write_fn_proto_1 (s, is_defn, name, decl);
 }
 
 /* Construct a function declaration from a call insn.  This can be
