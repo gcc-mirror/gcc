@@ -980,9 +980,9 @@ next_runtime_abi_02_category_decl (tree klass)
 {
   tree decl;
   char buf[BUFSIZE];
-  snprintf (buf, BUFSIZE, "_OBJC_Category_%s_on_%s",
-	    IDENTIFIER_POINTER (CLASS_SUPER_NAME (klass)),
-	    IDENTIFIER_POINTER (CLASS_NAME (klass)));
+  snprintf (buf, BUFSIZE, "_OBJC_Category_%s_%s",
+	    IDENTIFIER_POINTER (CLASS_NAME (klass)),
+	    IDENTIFIER_POINTER (CLASS_SUPER_NAME (klass)));
   decl = start_var_decl (objc_v2_category_template, buf);
   OBJCMETA (decl, objc_meta, meta_category);
   return decl;
