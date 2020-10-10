@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attr-fnspec.h"
 #include "errors.h"
 #include "dbgcnt.h"
+#include "gimple-pretty-print.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -2610,13 +2611,23 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 		  alias_stats.modref_use_no_alias++;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
-		      fprintf (dump_file, "ipa-modref: in %s,"
-			       " call to %s does not use ",
-			       cgraph_node::get
-				   (current_function_decl)->dump_name (),
+		      fprintf (dump_file,
+			       "ipa-modref: call stmt ");
+		      print_gimple_stmt (dump_file, call, 0);
+		      fprintf (dump_file,
+			       "ipa-modref: call to %s does not use ",
 			       node->dump_name ());
-		      print_generic_expr (dump_file, ref->ref);
-		      fprintf (dump_file, " %i->%i\n",
+		      if (!ref->ref && ref->base)
+			{
+			  fprintf (dump_file, "base: ");
+			  print_generic_expr (dump_file, ref->base);
+			}
+		      else if (ref->ref)
+			{
+			  fprintf (dump_file, "ref: ");
+			  print_generic_expr (dump_file, ref->ref);
+			}
+		      fprintf (dump_file, " alias sets: %i->%i\n",
 			       ao_ref_base_alias_set (ref),
 			       ao_ref_alias_set (ref));
 		    }
@@ -3035,13 +3046,22 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file,
-			       "ipa-modref: in %s, "
-			       "call to %s does not clobber ",
-			       cgraph_node::get
-				  (current_function_decl)->dump_name (),
+			       "ipa-modref: call stmt ");
+		      print_gimple_stmt (dump_file, call, 0);
+		      fprintf (dump_file,
+			       "ipa-modref: call to %s does not clobber ",
 			       node->dump_name ());
-		      print_generic_expr (dump_file, ref->ref);
-		      fprintf (dump_file, " %i->%i\n",
+		      if (!ref->ref && ref->base)
+			{
+			  fprintf (dump_file, "base: ");
+			  print_generic_expr (dump_file, ref->base);
+			}
+		      else if (ref->ref)
+			{
+			  fprintf (dump_file, "ref: ");
+			  print_generic_expr (dump_file, ref->ref);
+			}
+		      fprintf (dump_file, " alias sets: %i->%i\n",
 			       ao_ref_base_alias_set (ref),
 			       ao_ref_alias_set (ref));
 		    }
