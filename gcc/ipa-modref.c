@@ -1379,7 +1379,7 @@ modref_transform (struct cgraph_node *node)
     {
       int idx = node->clone.param_adjustments->get_original_index (i);
       if (idx >= 0)
-	map[i] = idx;
+	map[idx] = i;
     }
   remap_arguments (&map, r->loads);
   remap_arguments (&map, r->stores);
