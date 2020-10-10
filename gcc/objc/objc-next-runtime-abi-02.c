@@ -1407,12 +1407,7 @@ objc_v2_build_ivar_ref (tree datum, tree component)
     return NULL_TREE;
 
   /* This routine only handles non-bitfield fields */
-  /* DECL_INITIAL macro is set to width of bitfield and can be relied
-     on to check for bitfield ivars.  Note that I cannot rely on
-     DECL_BIT_FIELD macro because it is only set when the whole struct
-     is seen (at finish_struct) and not when the ivar chain is
-     built.  */
-  if (DECL_INITIAL (field))
+  if (DECL_C_BIT_FIELD (field))
     return NULL_TREE;
 
   create_ivar_offset_name (var_offset_name, CLASS_NAME (class_name),  field);
