@@ -1,3 +1,55 @@
+2020-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/95904
+	* include/std/variant (__deduce_visit_result): Add a nested ::type.
+	(__gen_vtable_impl</*base case*/>::_S_apply):
+	Check the visitor return type.
+	(__same_types): New.
+	(__check_visitor_result): Likewise.
+	(__check_visitor_results): Likewise.
+	(visit(_Visitor&&, _Variants&&...)): Use __check_visitor_results
+	in case we're visiting just one variant.
+	* testsuite/20_util/variant/visit_neg.cc: Adjust.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97311
+	* include/bits/random.tcc (seed_seq::generate): Use uint32_t for
+	calculations. Also split the first loop into three loops to
+	avoid branching on k on every iteration, resolving PR 94823.
+	* testsuite/26_numerics/random/seed_seq/97311.cc: New test.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-erro
+	line number.
+
+2020-10-09  Daniel Lemire  <lemire@gmail.com>
+
+	* include/bits/uniform_int_dist.h (uniform_int_distribution::_S_nd):
+	New member function implementing Lemire's "nearly divisionless"
+	algorithm.
+	(uniform_int_distribution::operator()): Use _S_nd when the range
+	of the URBG is the full width of the result type.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/Makefile.am: Set and export variable separately.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/check_performance: Use gnu++11 instead of gnu++0x.
+	* testsuite/Makefile.am (check-performance): Export CXXFLAGS to
+	child process.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/performance/26_numerics/random_dist.cc: New test.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h (report_header): Remove
+	unused variable.
+
 2020-10-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/95788

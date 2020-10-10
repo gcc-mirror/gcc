@@ -1,3 +1,69 @@
+2020-10-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/97313
+	* gcc.target/i386/pr97313.c: New.
+
+2020-10-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/avx-1.c (__builtin_ia32_lwpval32): New to
+	support <lwpintrin.h> included in <x86gprintrin.h>.
+	(__builtin_ia32_lwpval64): Likewise.
+	(__builtin_ia32_lwpins32): Likewise.
+	(__builtin_ia32_lwpins64): Likewise.
+	(__builtin_ia32_bextri_u32): New to support <tbmintrin.h>
+	included in <x86gprintrin.h>.
+	(__builtin_ia32_bextri_u64): Likewise.
+	* gcc.target/i386/x86gprintrin-1.c: New test.
+	* gcc.target/i386/x86gprintrin-2.c: Likewise.
+	* gcc.target/i386/x86gprintrin-3.c: Likewise.
+	* gcc.target/i386/x86gprintrin-4.c: Likewise.
+	* gcc.target/i386/x86gprintrin-4a.c: Likewise.
+	* gcc.target/i386/x86gprintrin-5.c: Likewise.
+	* gcc.target/i386/x86gprintrin-5a.c: Likewise.
+	* gcc.target/i386/x86gprintrin-5b.c: Likewise.
+	* gcc.target/i386/x86gprintrin-6.c: Likewise.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	* lib/target-supports.exp (check_effective_target_vect_masked_load):
+	New effective target.
+	* gcc.dg/vect/pr65947-3.c: Update.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97334
+	* gcc.dg/vect/bb-slp-pr65935.c: Amend.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97347
+	* g++.dg/vect/pr97347.cc: New testcase.
+
+2020-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97317.c: New test.
+
+2020-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94801
+	PR target/97312
+	* gcc.dg/tree-ssa/pr94801.c: New test.
+
+2020-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97325
+	* gcc.c-torture/execute/pr97325.c: New test.
+
+2020-10-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR testsuite/97337
+	* gcc.dg/pr97315-1.c: Moved to...
+	* g++.dg/opt/pr97315-1.C: ...here.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-phis-1.c: New testcase.
+
 2020-10-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96805

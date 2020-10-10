@@ -1,3 +1,9 @@
+2020-10-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97148
+	* config/i386/shadow-stack-unwind.h: Include <x86gprintrin.h>
+	instead of <cetintrin.h>.
+
 2020-10-01  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/morestack.S,

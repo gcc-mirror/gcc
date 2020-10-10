@@ -1,3 +1,144 @@
+2020-10-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/97313
+	* lra-constraints.c (match_reload): Don't keep strict_low_part in
+	reloads for non-registers.
+
+2020-10-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97148
+	* config.gcc (extra_headers): Add x86gprintrin.h.
+	* config/i386/adxintrin.h: Check _X86GPRINTRIN_H_INCLUDED for
+	<x86gprintrin.h>.
+	* config/i386/bmi2intrin.h: Likewise.
+	* config/i386/bmiintrin.h: Likewise.
+	* config/i386/cetintrin.h: Likewise.
+	* config/i386/cldemoteintrin.h: Likewise.
+	* config/i386/clflushoptintrin.h: Likewise.
+	* config/i386/clwbintrin.h: Likewise.
+	* config/i386/enqcmdintrin.h: Likewise.
+	* config/i386/fxsrintrin.h: Likewise.
+	* config/i386/ia32intrin.h: Likewise.
+	* config/i386/lwpintrin.h: Likewise.
+	* config/i386/lzcntintrin.h: Likewise.
+	* config/i386/movdirintrin.h: Likewise.
+	* config/i386/pconfigintrin.h: Likewise.
+	* config/i386/pkuintrin.h: Likewise.
+	* config/i386/rdseedintrin.h: Likewise.
+	* config/i386/rtmintrin.h: Likewise.
+	* config/i386/serializeintrin.h: Likewise.
+	* config/i386/tbmintrin.h: Likewise.
+	* config/i386/tsxldtrkintrin.h: Likewise.
+	* config/i386/waitpkgintrin.h: Likewise.
+	* config/i386/wbnoinvdintrin.h: Likewise.
+	* config/i386/xsavecintrin.h: Likewise.
+	* config/i386/xsaveintrin.h: Likewise.
+	* config/i386/xsaveoptintrin.h: Likewise.
+	* config/i386/xsavesintrin.h: Likewise.
+	* config/i386/xtestintrin.h: Likewise.
+	* config/i386/immintrin.h: Include <x86gprintrin.h> instead of
+	<fxsrintrin.h>, <xsaveintrin.h>, <xsaveoptintrin.h>,
+	<xsavesintrin.h>, <xsavecintrin.h>, <lzcntintrin.h>,
+	<bmiintrin.h>, <bmi2intrin.h>, <xtestintrin.h>, <cetintrin.h>,
+	<movdirintrin.h>, <sgxintrin.h, <pconfigintrin.h>,
+	<waitpkgintrin.h>, <cldemoteintrin.h>, <enqcmdintrin.h>,
+	<serializeintrin.h>, <tsxldtrkintrin.h>, <adxintrin.h>,
+	<clwbintrin.h>, <clflushoptintrin.h>, <wbnoinvdintrin.h> and
+	<pkuintrin.h>.
+	(_wbinvd): Moved to config/i386/x86gprintrin.h.
+	(_rdrand16_step): Likewise.
+	(_rdrand32_step): Likewise.
+	(_rdpid_u32): Likewise.
+	(_readfsbase_u32): Likewise.
+	(_readfsbase_u64): Likewise.
+	(_readgsbase_u32): Likewise.
+	(_readgsbase_u64): Likewise.
+	(_writefsbase_u32): Likewise.
+	(_writefsbase_u64): Likewise.
+	(_writegsbase_u32): Likewise.
+	(_writegsbase_u64): Likewise.
+	(_rdrand64_step): Likewise.
+	(_ptwrite64): Likewise.
+	(_ptwrite32): Likewise.
+	* config/i386/x86gprintrin.h: New file.
+	* config/i386/x86intrin.h: Include <x86gprintrin.h>.  Don't
+	include <ia32intrin.h>, <lwpintrin.h>, <tbmintrin.h>,
+	<popcntintrin.h>, <mwaitxintrin.h> and <clzerointrin.h>.
+
+2020-10-09  Tom de Vries  <tdevries@suse.de>
+
+	PR target/97348
+	* config/nvptx/nvptx.h (ASM_SPEC): Also pass -m to nvptx-as if
+	default is used.
+	* config/nvptx/nvptx.opt (misa): Init with PTX_ISA_SM35.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	* doc/sourcebuild.texi (vect_masked_load): Document.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97334
+	* tree-vect-slp.c (vect_build_slp_tree_1): Do not fatally
+	fail lanes other than zero when BB vectorizing.
+
+2020-10-09  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/97292
+	PR ipa/97335
+	* ipa-modref-tree.h (copy_from): Drop summary in a
+	clone.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97347
+	* tree-vect-slp.c (vect_create_constant_vectors): Use
+	edge insertion when inserting on the fallthru edge,
+	appropriately insert at the start of BBs when inserting
+	after PHIs.
+
+2020-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97317
+	* range-op.cc (operator_cast::op1_range): Handle casts where the precision
+	of the RHS is only 1 greater than the precision of the LHS.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	* cgraphunit.c (expand_all_functions): Free tp_first_run_order.
+	* ipa-modref.c (pass_ipa_modref::execute): Free order.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations): Free
+	loop body.
+	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Free
+	data references upon failure.
+	* tree-vect-loop.c (update_epilogue_loop_vinfo): Free BBs
+	array of the original loop.
+	* tree-vect-slp.c (vect_slp_bbs): Use an auto_vec for
+	dataref_groups to release its memory.
+
+2020-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94801
+	PR target/97312
+	* vr-values.c (vr_values::extract_range_basic) <CASE_CFN_CLZ,
+	CASE_CFN_CTZ>: When stmt is not an internal-fn call or
+	C?Z_DEFINED_VALUE_AT_ZERO is not 2, assume argument is not zero
+	and thus use [0, prec-1] range unless it can be further improved.
+	For CTZ, don't update maxi from upper bound if it was previously prec.
+	* gimple-range.cc (gimple_ranger::range_of_builtin_call) <CASE_CFN_CLZ,
+	CASE_CFN_CTZ>: Likewise.
+
+2020-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97325
+	* match.pd (FFS(nonzero) -> CTZ(nonzero) + 1): Cast argument to
+	corresponding unsigned type.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_create_constant_vectors): Properly insert
+	after PHIs.
+
 2020-10-08  Alexandre Oliva  <oliva@adacore.com>
 
 	* builtins.c (mathfn_built_in_type): New.
