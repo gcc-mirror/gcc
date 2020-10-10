@@ -1161,12 +1161,6 @@ logical_stmt_cache::cacheable_p (gimple *stmt, const irange *lhs_range) const
     {
       switch (gimple_expr_code (stmt))
 	{
-	case LT_EXPR:
-	case LE_EXPR:
-	case GT_EXPR:
-	case GE_EXPR:
-	case EQ_EXPR:
-	case NE_EXPR:
 	case TRUTH_AND_EXPR:
 	case BIT_AND_EXPR:
 	case TRUTH_OR_EXPR:
@@ -1294,7 +1288,7 @@ gori_compute_cache::cache_stmt (gimple *stmt)
   tree op2 = gimple_range_operand2 (stmt);
   int_range_max r_true_side, r_false_side;
 
-  // LHS = s_5 > 999.
+  // LHS = s_5 && 999.
   if (TREE_CODE (op2) == INTEGER_CST)
     {
       range_operator *handler = range_op_handler (code, TREE_TYPE (lhs));
@@ -1305,7 +1299,7 @@ gori_compute_cache::cache_stmt (gimple *stmt)
       handler->op1_range (r_false_side, type, m_bool_zero, op2_range);
       m_cache->set_range (lhs, op1, tf_range (r_true_side, r_false_side));
     }
-  // LHS = s_5 > b_8.
+  // LHS = s_5 && b_8.
   else if (tree cached_name = m_cache->same_cached_name (op1, op2))
     {
       tf_range op1_range, op2_range;
