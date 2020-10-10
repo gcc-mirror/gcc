@@ -1367,7 +1367,7 @@ modref_transform (struct cgraph_node *node)
 
   auto_vec <int, 32> map;
 
-  map.safe_grow (max + 1);
+  map.reserve (max + 1);
   for (i = 0; i <= max; i++)
     map.quick_push (-1);
   FOR_EACH_VEC_SAFE_ELT (node->clone.param_adjustments->m_adj_params, i, p)
