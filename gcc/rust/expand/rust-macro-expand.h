@@ -41,7 +41,7 @@ struct MacroExpander
   void expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc);
 
   void expand_cfg_attrs(std::vector<AST::Attribute>& attrs);
-  bool check_cfg(AST::Attribute& attr);
+  bool fails_cfg(std::vector<AST::Attribute>& attr);
 
   /* TODO: make it extend ASTVisitor so that individual items can be accessed
    * properly? */

@@ -715,7 +715,7 @@ Session::expansion (AST::Crate &crate)
   // create extctxt? from parse session, cfg, and resolver?
   /* expand by calling cxtctxt object's monotonic_expander's expand_crate
    * method. */
-  MacroExpander expander (crate, cfg);
+  MacroExpander expander (crate, cfg, *this);
   expander.expand_crate ();
 
   // error reporting - check unused macros, get missing fragment specifiers

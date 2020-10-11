@@ -62,34 +62,6 @@ Location?
 };*/
 // decided to not have node as a "node" would never need to be stored
 
-// Attribute body - abstract base class
-class AttrInput
-{
-public:
-  virtual ~AttrInput () {}
-
-  // Unique pointer custom clone function
-  std::unique_ptr<AttrInput> clone_attr_input () const
-  {
-    return std::unique_ptr<AttrInput> (clone_attr_input_impl ());
-  }
-
-  virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (ASTVisitor &vis) = 0;
-
-  virtual bool check_cfg_predicate (const Session &session) const = 0;
-
-  // Parse attribute input to meta item, if possible
-  virtual AttrInput *parse_to_meta_item () const { return nullptr; }
-
-  virtual std::vector<Attribute> separate_cfg_attrs () const { return {}; }
-
-protected:
-  // pure virtual clone implementation
-  virtual AttrInput *clone_attr_input_impl () const = 0;
-};
-
 // forward decl for use in token tree method
 class Token;
 
@@ -281,95 +253,6 @@ public:
   bool is_error () const { return value_as_string == ""; }
 };
 
-// A token tree with delimiters
-class DelimTokenTree : public TokenTree, public AttrInput
-{
-  DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree>> token_trees;
-  Location locus;
-
-protected:
-  DelimTokenTree *clone_delim_tok_tree_impl () const
-  {
-    return new DelimTokenTree (*this);
-  }
-
-  /* Use covariance to implement clone function as returning a DelimTokenTree
-   * object */
-  DelimTokenTree *clone_attr_input_impl () const override
-  {
-    return clone_delim_tok_tree_impl ();
-  }
-
-  /* Use covariance to implement clone function as returning a DelimTokenTree
-   * object */
-  DelimTokenTree *clone_token_tree_impl () const override
-  {
-    return clone_delim_tok_tree_impl ();
-  }
-
-public:
-  DelimTokenTree (DelimType delim_type,
-		  std::vector<std::unique_ptr<TokenTree>> token_trees
-		  = std::vector<std::unique_ptr<TokenTree>> (),
-		  Location locus = Location ())
-    : delim_type (delim_type), token_trees (std::move (token_trees)),
-      locus (locus)
-  {}
-
-  // Copy constructor with vector clone
-  DelimTokenTree (DelimTokenTree const &other)
-    : delim_type (other.delim_type), locus (other.locus)
-  {
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-  }
-
-  // overloaded assignment operator with vector clone
-  DelimTokenTree &operator= (DelimTokenTree const &other)
-  {
-    delim_type = other.delim_type;
-    locus = other.locus;
-
-    token_trees.reserve (other.token_trees.size ());
-    for (const auto &e : other.token_trees)
-      token_trees.push_back (e->clone_token_tree ());
-
-    return *this;
-  }
-
-  // move constructors
-  DelimTokenTree (DelimTokenTree &&other) = default;
-  DelimTokenTree &operator= (DelimTokenTree &&other) = default;
-
-  static DelimTokenTree create_empty () { return DelimTokenTree (PARENS); }
-
-  std::string as_string () const override;
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  bool
-  check_cfg_predicate (const Session &session ATTRIBUTE_UNUSED) const override
-  {
-    // this should never be called - should be converted first
-    return false;
-  }
-
-  AttrInput *parse_to_meta_item () const override;
-
-  std::vector<std::unique_ptr<Token>> to_token_stream () const override;
-
-  std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
-  {
-    return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
-  }
-};
-
-/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
- * be defined */
-class AttrInputLiteral;
-
 /* TODO: move applicable stuff into here or just don't include it because
  * nothing uses it A segment of a path (maybe) */
 class PathSegment
@@ -462,6 +345,9 @@ public:
   }
 };
 
+// forward decl for Attribute
+class AttrInput;
+
 // aka Attr
 // Attribute AST representation
 struct Attribute
@@ -490,15 +376,17 @@ public:
   ~Attribute () = default;
 
   // Copy constructor must deep copy attr_input as unique pointer
-  Attribute (Attribute const &other) : path (other.path), locus (other.locus)
+  /*Attribute (Attribute const &other) : path (other.path), locus (other.locus)
   {
     // guard to protect from null pointer dereference
     if (other.attr_input != nullptr)
       attr_input = other.attr_input->clone_attr_input ();
-  }
+  }*/
+  // no point in being defined inline as requires virtual call anyway
+  Attribute (const Attribute &other);
 
   // overload assignment operator to use custom clone method
-  Attribute &operator= (Attribute const &other)
+  /*Attribute &operator= (Attribute const &other)
   {
     path = other.path;
     locus = other.locus;
@@ -507,7 +395,9 @@ public:
       attr_input = other.attr_input->clone_attr_input ();
 
     return *this;
-  }
+  }*/
+  // no point in being defined inline as requires virtual call anyway
+  Attribute &operator= (const Attribute &other);
 
   // default move semantics
   Attribute (Attribute &&other) = default;
@@ -603,6 +493,123 @@ protected:
     return new Attribute (*this);
   }
 };
+
+// Attribute body - abstract base class
+class AttrInput
+{
+public:
+  virtual ~AttrInput () {}
+
+  // Unique pointer custom clone function
+  std::unique_ptr<AttrInput> clone_attr_input () const
+  {
+    return std::unique_ptr<AttrInput> (clone_attr_input_impl ());
+  }
+
+  virtual std::string as_string () const = 0;
+
+  virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual bool check_cfg_predicate (const Session &session) const = 0;
+
+  // Parse attribute input to meta item, if possible
+  virtual AttrInput *parse_to_meta_item () const { return nullptr; }
+
+  virtual std::vector<Attribute> separate_cfg_attrs () const { return {}; }
+
+protected:
+  // pure virtual clone implementation
+  virtual AttrInput *clone_attr_input_impl () const = 0;
+};
+
+// A token tree with delimiters
+class DelimTokenTree : public TokenTree, public AttrInput
+{
+  DelimType delim_type;
+  std::vector<std::unique_ptr<TokenTree>> token_trees;
+  Location locus;
+
+protected:
+  DelimTokenTree *clone_delim_tok_tree_impl () const
+  {
+    return new DelimTokenTree (*this);
+  }
+
+  /* Use covariance to implement clone function as returning a DelimTokenTree
+   * object */
+  DelimTokenTree *clone_attr_input_impl () const override
+  {
+    return clone_delim_tok_tree_impl ();
+  }
+
+  /* Use covariance to implement clone function as returning a DelimTokenTree
+   * object */
+  DelimTokenTree *clone_token_tree_impl () const override
+  {
+    return clone_delim_tok_tree_impl ();
+  }
+
+public:
+  DelimTokenTree (DelimType delim_type,
+		  std::vector<std::unique_ptr<TokenTree>> token_trees
+		  = std::vector<std::unique_ptr<TokenTree>> (),
+		  Location locus = Location ())
+    : delim_type (delim_type), token_trees (std::move (token_trees)),
+      locus (locus)
+  {}
+
+  // Copy constructor with vector clone
+  DelimTokenTree (DelimTokenTree const &other)
+    : delim_type (other.delim_type), locus (other.locus)
+  {
+    token_trees.reserve (other.token_trees.size ());
+    for (const auto &e : other.token_trees)
+      token_trees.push_back (e->clone_token_tree ());
+  }
+
+  // overloaded assignment operator with vector clone
+  DelimTokenTree &operator= (DelimTokenTree const &other)
+  {
+    delim_type = other.delim_type;
+    locus = other.locus;
+
+    token_trees.reserve (other.token_trees.size ());
+    for (const auto &e : other.token_trees)
+      token_trees.push_back (e->clone_token_tree ());
+
+    return *this;
+  }
+
+  // move constructors
+  DelimTokenTree (DelimTokenTree &&other) = default;
+  DelimTokenTree &operator= (DelimTokenTree &&other) = default;
+
+  static DelimTokenTree create_empty () { return DelimTokenTree (PARENS); }
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  bool
+  check_cfg_predicate (const Session &session ATTRIBUTE_UNUSED) const override
+  {
+    // this should never be called - should be converted first
+    return false;
+  }
+
+  AttrInput *parse_to_meta_item () const override;
+
+  std::vector<std::unique_ptr<Token>> to_token_stream () const override;
+
+  std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
+  {
+    return std::unique_ptr<DelimTokenTree> (clone_delim_tok_tree_impl ());
+  }
+};
+
+/* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
+ * be defined */
+class AttrInputLiteral;
 
 // Forward decl - defined in rust-macro.h
 class MetaNameValueStr;
@@ -1452,6 +1459,16 @@ public:
 
   // Get crate representation as string (e.g. for debugging).
   std::string as_string () const;
+
+  // Delete all crate information, e.g. if fails cfg.
+  void strip_crate () {
+    inner_attrs.clear ();
+    inner_attrs.shrink_to_fit ();
+
+    items.clear ();
+    items.shrink_to_fit ();
+    // TODO: is this the best way to do this? 
+  }
 };
 
 // Base path expression AST node - abstract

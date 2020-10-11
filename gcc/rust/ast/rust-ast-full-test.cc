@@ -171,13 +171,29 @@ Attribute::as_string () const
 {
   std::string path_str = path.as_string ();
   if (attr_input == nullptr)
-    {
       return path_str;
-    }
   else
-    {
       return path_str + attr_input->as_string ();
-    }
+}
+
+// Copy constructor must deep copy attr_input as unique pointer
+Attribute::Attribute (Attribute const &other) : path (other.path), locus (other.locus)
+{
+  // guard to protect from null pointer dereference
+  if (other.attr_input != nullptr)
+    attr_input = other.attr_input->clone_attr_input ();
+}
+
+// overload assignment operator to use custom clone method
+Attribute &Attribute::operator= (Attribute const &other)
+{
+  path = other.path;
+  locus = other.locus;
+  // guard to protect from null pointer dereference
+  if (other.attr_input != nullptr)
+    attr_input = other.attr_input->clone_attr_input ();
+
+  return *this;
 }
 
 std::string
