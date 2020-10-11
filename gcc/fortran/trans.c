@@ -1352,7 +1352,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
   tree cond, tmp, error;
   tree status_type = NULL_TREE;
   tree token = NULL_TREE;
-  tree orig_desc;
+  tree orig_desc = NULL_TREE;
   gfc_coarray_deregtype caf_dereg_type = GFC_CAF_COARRAY_DEREGISTER;
 
   if (coarray_dealloc_mode >= GFC_CAF_COARRAY_ANALYZE )
