@@ -5502,7 +5502,8 @@ gfc_create_module_variable (gfc_symbol * sym)
   DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
   rest_of_decl_compilation (decl, 1, 0);
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && sym->attr.codimension)
+  if (flag_coarray == GFC_FCOARRAY_NATIVE && sym->attr.codimension
+      && !sym->attr.allocatable)
     gfc_trans_native_coarray_static (sym);
 
   gfc_module_add_decl (cur_module, decl);

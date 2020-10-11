@@ -30,6 +30,6 @@ require much explanation.
 
 
 To compile a program to run with native coarrays, compile with
--fcoarray=native -lgfor_nca -lrt (I've not yet figured out how to
+-fcoarray=shared -lcaf_shared -lrt (I've not yet figured out how to
 automagically link against the library).
 

@@ -77,18 +77,18 @@ i_nca_minmax_s_c = \
 
 if LIBGFOR_NATIVE_COARRAY
 
-mylib_LTLIBRARIES = libnca.la
+mylib_LTLIBRARIES = libcaf_shared.la
 mylibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
-libnca_la_SOURCES = nca/alloc.c nca/allocator.c nca/coarraynative.c \
+libcaf_shared_la_SOURCES = nca/alloc.c nca/allocator.c nca/coarraynative.c \
 	nca/hashmap.c  \
 	nca/sync.c nca/util.c nca/wrapper.c nca/collective_subroutine.c \
 	nca/shared_memory.c \
 	$(i_nca_minmax_c) $(i_nca_minmax_s_c)
-libnca_la_DEPENDENCIES = nca/alloc.h nca/allocator.h nca/hashmap.h
+libcaf_shared_la_DEPENDENCIES = nca/alloc.h nca/allocator.h nca/hashmap.h
 	nca/libcoarraynative.h nca/sync.h shared_memory.h \
 	nca/util.h nca/lock.h nca/collective_subroutine.h\
 	nca/collective_inline.h
-libnca_la_LINK = $(LINK) $(libnca_la_LDFLAGS)
+libcaf_shared_la_LINK = $(LINK) $(libcaf_shared_la_LDFLAGS)
 endif
 
 if IEEE_SUPPORT
