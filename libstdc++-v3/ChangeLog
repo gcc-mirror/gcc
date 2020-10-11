@@ -1,3 +1,19 @@
+2020-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97362
+	* doc/html/manual/source_code_style.html: Regenerate.
+	* doc/xml/manual/appendix_contributing.xml: Add __deref to
+	BADNAMES.
+	* include/debug/functions.h (_Irreflexive_checker::__deref):
+	Rename to __ref.
+	* testsuite/17_intro/badnames.cc: Check __deref.
+
+2020-10-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* include/std/variant (__check_visitor_result):
+	Use size_t for indexes.
+	(__check_visitor_results): Likewise.
+
 2020-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/95904

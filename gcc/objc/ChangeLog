@@ -1,3 +1,31 @@
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c
+	(objc_get_superclass_ref_decl): Split this code out.
+	(next_runtime_abi_02_get_class_super_ref): Compute
+	super refs using the objc_get_superclass_ref_decl().
+	(next_runtime_abi_02_get_category_super_ref): Likewise.
+
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c
+	(next_runtime_abi_02_init_metadata_attributes): Make protocol
+	refs a distinct section.
+
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c
+	(next_runtime_abi_02_init_metadata_attributes): Attach metadata
+	for the special string sections to class, method and method type
+	string sections.
+
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-gnu-runtime-abi-01.c
+	(build_shared_structure_initializer): Remove references to
+	the NeXT runtime.
+	(generate_static_references): Likewise.
+
 2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* objc-act.c (objc_start_method_definition): Update to reflect

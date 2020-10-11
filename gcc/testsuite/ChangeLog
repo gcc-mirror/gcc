@@ -1,3 +1,20 @@
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-sections.c: Adjust test for renamed BSS and common
+	sections.  Cater for 64 and 128 bit long doubles.
+
+2020-10-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97250
+	* gcc.target/i386/x86-64-v2.c: Verify that
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 is defined.
+	* gcc.target/i386/x86-64-v3.c: Likewise.
+	* gcc.target/i386/x86-64-v4.c: Likewise.
+
+2020-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97359.c: New test.
+
 2020-10-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/97313

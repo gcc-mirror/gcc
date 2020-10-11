@@ -1,3 +1,81 @@
+2020-10-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_transform): Fix parameter map computation.
+
+2020-10-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/97318
+	* config/nvptx/nvptx.c (nvptx_replace_dot): New function.
+	(write_fn_proto, write_fn_proto_from_insn, nvptx_output_call_insn):
+	Use nvptx_replace_dot.
+
+2020-10-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.c (write_fn_proto_1): New function, factored out
+	of ...
+	(write_fn_proto): ... here.  Return void.
+
+2020-10-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (remap_arguments): Check range in map access.
+
+2020-10-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_transform): Use reserve instead of safe_grow.
+
+2020-10-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_transform): Check that summaries are allocated.
+
+2020-10-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref-tree.h (struct modref_tree): Revert prevoius change.
+	* ipa-modref.c (analyze_function): Dump original summary.
+	(modref_read): Only set IPA if streaming summary (not optimization
+	summary).
+	(remap_arguments): New function.
+	(modref_transform): New function.
+	(compute_parm_map): Fix offset calculation.
+	(ipa_merge_modref_summary_after_inlining): Do not merge stores when
+	they can be ignored.
+
+2020-10-10  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Improve debug dumps.
+	(call_may_clobber_ref_p_1): Improve debug dumps.
+
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (output_objc_section_asm_op): Avoid extra
+	objective-c section switches unless the linker needs them.
+
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (objc2_data_section): New.
+	(objc2_ivar_section): New.
+	* config/darwin.c (darwin_objc2_section): Act on Protocol and
+	ivar refs.
+
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (objc2_class_names_section,
+	objc2_method_names_section, objc2_method_types_section): New
+	* config/darwin.c (output_objc_section_asm_op): Output new
+	sections.  (darwin_objc2_section): Select new sections where
+	used.
+
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_emit_local_bss): Amend section names to
+	match system tools. (darwin_output_aligned_bss): Likewise.
+
+2020-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97359
+	* gimple-range-gori.cc (logical_stmt_cache::cacheable_p): Only
+	handle ANDs and ORs.
+	(gori_compute_cache::cache_stmt): Adjust comment.
+
 2020-10-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/97313
