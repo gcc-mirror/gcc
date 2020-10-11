@@ -4106,15 +4106,19 @@ gfc_build_builtin_function_decls (void)
 	pvoid_type_node, integer_type_node, integer_type_node, integer_type_node,
 	NULL_TREE);
       gfor_fndecl_nca_coarray_free = gfc_build_library_function_decl_with_spec (
-	 get_identifier (PREFIX("nca_coarray_free")), "..RR", integer_type_node, 3,
-	pvoid_type_node, integer_type_node, integer_type_node, NULL_TREE);
+	 get_identifier (PREFIX("nca_coarray_free")), "..R", integer_type_node, 2,
+	 pvoid_type_node, /* Pointer to the descriptor to be deallocated.  */
+	 integer_type_node, /* Type of allocation (normal, event, lock).  */
+	NULL_TREE);
       gfor_fndecl_nca_this_image = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("nca_coarray_this_image")), ".X", integer_type_node, 1,
-	integer_type_node, NULL_TREE);
+	integer_type_node, /* This is the team number.  Currently ignored.  */
+	NULL_TREE);
       DECL_PURE_P (gfor_fndecl_nca_this_image) = 1;
       gfor_fndecl_nca_num_images = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("nca_coarray_num_images")), ".X", integer_type_node, 1,
-	integer_type_node, NULL_TREE);
+	integer_type_node, /* See above.  */
+	NULL_TREE);
       DECL_PURE_P (gfor_fndecl_nca_num_images) = 1;
       gfor_fndecl_nca_sync_all = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("nca_coarray_sync_all")), ".X", void_type_node, 1,
@@ -4663,9 +4667,7 @@ gfc_trans_native_coarray (stmtblock_t * init, stmtblock_t *cleanup, gfc_symbol *
     {
       tmp = build_call_expr_loc (input_location, gfor_fndecl_nca_coarray_free,
 				2, gfc_build_addr_expr (pvoid_type_node, decl),
-				build_int_cst (integer_type_node, alloc_type),
-				build_int_cst (integer_type_node,
-				sym->as->corank));
+				build_int_cst (integer_type_node, alloc_type));
       gfc_add_expr_to_block (cleanup, tmp);
     }
 }

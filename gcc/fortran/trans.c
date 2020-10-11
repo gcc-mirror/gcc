@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "trans-types.h"
 #include "trans-const.h"
+#include "diagnostic-core.h"
 
 /* Naming convention for backend interface code:
 
@@ -1351,9 +1352,10 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
   tree cond, tmp, error;
   tree status_type = NULL_TREE;
   tree token = NULL_TREE;
+  tree orig_desc;
   gfc_coarray_deregtype caf_dereg_type = GFC_CAF_COARRAY_DEREGISTER;
 
-  if (coarray_dealloc_mode >= GFC_CAF_COARRAY_ANALYZE)
+  if (coarray_dealloc_mode >= GFC_CAF_COARRAY_ANALYZE )
     {
       if (flag_coarray == GFC_FCOARRAY_LIB)
 	{
@@ -1374,7 +1376,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 		{
 		  gcc_assert (GFC_ARRAY_TYPE_P (caf_type)
 			      && GFC_TYPE_ARRAY_CAF_TOKEN (caf_type)
-				 != NULL_TREE);
+			      != NULL_TREE);
 		  token = GFC_TYPE_ARRAY_CAF_TOKEN (caf_type);
 		}
 	    }
@@ -1389,6 +1391,11 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 	    }
 	  else
 	    caf_dereg_type = (enum gfc_coarray_deregtype) coarray_dealloc_mode;
+	}
+      else if (flag_coarray == GFC_FCOARRAY_NATIVE)
+	{
+	  orig_desc = pointer;
+	  pointer = gfc_conv_descriptor_data_get (pointer);
 	}
       else if (flag_coarray == GFC_FCOARRAY_SINGLE)
 	pointer = gfc_conv_descriptor_data_get (pointer);
@@ -1441,7 +1448,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
     gfc_add_expr_to_block (&non_null, add_when_allocated);
   gfc_add_finalizer_call (&non_null, expr);
   if (coarray_dealloc_mode == GFC_CAF_COARRAY_NOCOARRAY
-      || flag_coarray != GFC_FCOARRAY_LIB)
+      || (flag_coarray != GFC_FCOARRAY_LIB && flag_coarray != GFC_FCOARRAY_NATIVE))
     {
       tmp = build_call_expr_loc (input_location,
 				 builtin_decl_explicit (BUILT_IN_FREE), 1,
@@ -1468,6 +1475,19 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 				 tmp, build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&non_null, tmp);
 	}
+    }
+  else if (flag_coarray == GFC_FCOARRAY_NATIVE
+	   && coarray_dealloc_mode >= GFC_CAF_COARRAY_ANALYZE)
+    {
+      tmp = build_call_expr_loc(input_location, gfor_fndecl_nca_coarray_free,
+				2, gfc_build_addr_expr (pvoid_type_node, orig_desc),
+				build_int_cst(integer_type_node, GFC_NCA_NORMAL_COARRAY));
+      gfc_add_expr_to_block (&non_null, tmp);
+      gfc_add_modify (&non_null, pointer, build_int_cst (TREE_TYPE (pointer),
+							 0));
+
+      if (status != NULL_TREE && !integer_zerop(status))
+	sorry("Status not yet implemented");
     }
   else
     {
