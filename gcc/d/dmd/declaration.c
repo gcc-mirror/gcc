@@ -340,6 +340,13 @@ void AliasDeclaration::semantic(Scope *sc)
 void AliasDeclaration::aliasSemantic(Scope *sc)
 {
     //printf("AliasDeclaration::semantic() %s\n", toChars());
+
+    // as AliasDeclaration::semantic, in case we're called first.
+    // see https://issues.dlang.org/show_bug.cgi?id=21001
+    storage_class |= sc->stc & STCdeprecated;
+    protection = sc->protection;
+    userAttribDecl = sc->userAttribDecl;
+
     if (aliassym)
     {
         FuncDeclaration *fd = aliassym->isFuncLiteralDeclaration();
