@@ -543,7 +543,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  @param  __first  An input iterator.
    *  @param  __last   An input iterator.
    *  @param  __result An output iterator.
-   *  @return   result + (first - last)
+   *  @return   result + (last - first)
    *
    *  This inline function will boil down to a call to @c memmove whenever
    *  possible.  Failing that, if random access iterators are passed, then the
@@ -576,7 +576,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  @param  __first  An input iterator.
    *  @param  __last   An input iterator.
    *  @param  __result An output iterator.
-   *  @return   result + (first - last)
+   *  @return   result + (last - first)
    *
    *  This inline function will boil down to a call to @c memmove whenever
    *  possible.  Failing that, if random access iterators are passed, then the
@@ -779,7 +779,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  @param  __first  A bidirectional iterator.
    *  @param  __last   A bidirectional iterator.
    *  @param  __result A bidirectional iterator.
-   *  @return   result - (first - last)
+   *  @return   result - (last - first)
    *
    *  The function has the same effect as copy, but starts at the end of the
    *  range and works its way to the start, returning the start of the result.
@@ -815,7 +815,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  @param  __first  A bidirectional iterator.
    *  @param  __last   A bidirectional iterator.
    *  @param  __result A bidirectional iterator.
-   *  @return   result - (first - last)
+   *  @return   result - (last - first)
    *
    *  The function has the same effect as move, but starts at the end of the
    *  range and works its way to the start, returning the start of the result.
