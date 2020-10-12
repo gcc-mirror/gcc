@@ -1,3 +1,7 @@
+2021-02-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (nvptx's -misa): Update default to sm_35.
+
 2021-02-16  Tom de Vries  <tdevries@suse.de>
 
 	PR target/97348

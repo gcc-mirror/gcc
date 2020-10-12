@@ -25008,7 +25008,7 @@ Generate code for 32-bit or 64-bit ABI.
 @opindex march
 Generate code for given the specified PTX ISA (e.g.@: @samp{sm_35}).  ISA
 strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
-@samp{sm_35}.  The default ISA is sm_30.
+@samp{sm_35}.  The default ISA is sm_35.
 
 @item -mmainkernel
 @opindex mmainkernel
