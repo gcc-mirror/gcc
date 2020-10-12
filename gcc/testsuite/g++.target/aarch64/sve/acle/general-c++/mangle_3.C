@@ -13,6 +13,6 @@ void f2(t2) {}
 void f3(t3) {}
 void f4(t1 &a, t2 &b, t3 &c) { a = b = c; }
 
-/* { dg-final { scan-assembler "_Z2f110__SVInt8_t:" } } */
-/* { dg-final { scan-assembler "_Z2f210__SVInt8_t:" } } */
+/* { dg-final { scan-assembler "_Z2f1u10__SVInt8_t:" } } */
+/* { dg-final { scan-assembler "_Z2f2u10__SVInt8_t:" } } */
 /* { dg-final { scan-assembler "_Z2f3Dv32_a:" } } */

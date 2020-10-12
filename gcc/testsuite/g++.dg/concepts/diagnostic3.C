@@ -24,6 +24,6 @@ baz() // { dg-message "with Is = .2, 3, 4... evaluated to .false." }
 void
 baz()
 {
-  bar<int, char>(); // { dg-error "unsatisfied constraints" }
-  baz<2,3,4>(); // { dg-error "unsatisfied constraints" }
+  bar<int, char>(); // { dg-error "no match" }
+  baz<2,3,4>(); // { dg-error "no match" }
 }

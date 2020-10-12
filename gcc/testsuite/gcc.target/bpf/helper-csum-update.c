@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *skb;
   int csum;
 
-  ret = __builtin_bpf_helper_csum_update (skb, csum);
+  ret = bpf_csum_update (skb, csum);
 }
 
 /* { dg-final { scan-assembler "call\t40" } } */

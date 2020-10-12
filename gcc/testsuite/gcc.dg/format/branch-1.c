@@ -10,7 +10,7 @@ foo (long l, int nfoo)
 {
   printf ((nfoo > 1) ? "%d foos" : "%d foo", nfoo);
   printf ((l > 1) ? "%d foos" /* { dg-warning "23:int" "wrong type in conditional expr" } */
-	          : "%d foo", l); /* { dg-warning "16:int" "wrong type in conditional expr" } */
+	          : "%d foo", l); /* { dg-warning "23:int" "wrong type in conditional expr" } */
   printf ((l > 1) ? "%ld foos" : "%d foo", l); /* { dg-warning "36:int" "wrong type in conditional expr" } */
   printf ((l > 1) ? "%d foos" : "%ld foo", l); /* { dg-warning "23:int" "wrong type in conditional expr" } */
   /* Should allow one case to have extra arguments.  */

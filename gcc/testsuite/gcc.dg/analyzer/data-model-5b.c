@@ -86,8 +86,10 @@ void test_1 (const char *str)
   //__analyzer_dump();
   if (obj)
     unref (obj);
-} /* { dg-bogus "leak of 'obj'" "" { xfail *-*-* } } */
-/* TODO(xfail): the false leak report involves the base_obj.ob_refcnt
-   being 1, but the string_obj.str_base.ob_refcnt being unknown (when
-   they ought to be the same region), thus allowing for a path in which
-   the object is allocated but not freed.  */
+} /* { dg-bogus "leak" "" { xfail *-*-* } } */
+/* XFAIL (false leak):
+   Given that we only know "len" symbolically, this line:
+     str_obj->str_buf[len] = '\0';
+   is a symbolic write which could clobber the ob_type or ob_refcnt.
+   It reports a leak when following the path where the refcount is clobbered
+   to be a value that leads to the deallocator not being called.  */

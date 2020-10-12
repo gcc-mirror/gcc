@@ -668,9 +668,23 @@ build_address (tree exp)
   /* Some expression lowering may request an address of a compile-time constant,
      or other non-lvalue expression.  Make sure it is assigned to a location we
      can reference.  */
-  if ((CONSTANT_CLASS_P (exp) && TREE_CODE (exp) != STRING_CST)
-      || TREE_CODE (exp) == CALL_EXPR)
+  if (CONSTANT_CLASS_P (exp) && TREE_CODE (exp) != STRING_CST)
     exp = force_target_expr (exp);
+  else if (TREE_CODE (exp) == CALL_EXPR)
+    {
+      /* When a struct or array is returned in registers, we need to again fill
+	 in all alignment holes.  */
+      if (AGGREGATE_TYPE_P (TREE_TYPE (exp))
+	  && !aggregate_value_p (TREE_TYPE (exp), exp))
+	{
+	  tree tmp = build_local_temp (TREE_TYPE (exp));
+	  init = compound_expr (init, build_memset_call (tmp));
+	  init = compound_expr (init, modify_expr (tmp, exp));
+	  exp = tmp;
+	}
+      else
+	exp = force_target_expr (exp);
+    }
 
   d_mark_addressable (exp);
   exp = build_fold_addr_expr_with_type_loc (input_location, exp, ptrtype);
@@ -794,6 +808,54 @@ d_mark_read (tree exp)
   return exp;
 }
 
+/* Build a call to memcmp(), compares the first NUM bytes of PTR1 with PTR2.  */
+
+tree
+build_memcmp_call (tree ptr1, tree ptr2, tree num)
+{
+  return build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCMP), 3,
+			  ptr1, ptr2, num);
+}
+
+/* Build a call to memcpy(), copies the first NUM bytes of SRC into DST.  */
+
+tree
+build_memcpy_call (tree dst, tree src, tree num)
+{
+  return build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
+			  dst, src, num);
+}
+
+/* Build a call to memset(), fills the first NUM bytes of PTR with zeros.
+   If NUM is NULL, then we expect PTR to be object that requires filling.  */
+
+tree
+build_memset_call (tree ptr, tree num)
+{
+  if (num == NULL_TREE)
+    {
+      gcc_assert (TREE_CODE (ptr) != ADDR_EXPR);
+      num = TYPE_SIZE_UNIT (TREE_TYPE (ptr));
+      ptr = build_address (ptr);
+    }
+
+  /* Use a zero constant to fill the destination if setting the entire object.
+     For CONSTRUCTORs, the memcpy() is lowered to a ref-all pointer assignment,
+     which can then be merged with other stores to the object.  */
+  tree valtype = TREE_TYPE (TREE_TYPE (ptr));
+  if (tree_int_cst_equal (TYPE_SIZE_UNIT (valtype), num))
+    {
+      tree cst = build_zero_cst (valtype);
+      if (TREE_CODE (cst) == CONSTRUCTOR)
+	return build_memcpy_call (ptr, build_address (cst), num);
+
+      return modify_expr (build_deref (ptr), cst);
+    }
+
+  return build_call_expr (builtin_decl_explicit (BUILT_IN_MEMSET), 3,
+			  ptr, integer_zero_node, num);
+}
+
 /* Return TRUE if the struct SD is suitable for comparison using memcmp.
    This is because we don't guarantee that padding is zero-initialized for
    a stack variable, so we can't use memcmp to compare struct values.  */
@@ -846,11 +908,9 @@ identity_compare_p (StructDeclaration *sd)
 tree
 build_float_identity (tree_code code, tree t1, tree t2)
 {
-  tree tmemcmp = builtin_decl_explicit (BUILT_IN_MEMCMP);
   tree size = size_int (TYPE_PRECISION (TREE_TYPE (t1)) / BITS_PER_UNIT);
-
-  tree result = build_call_expr (tmemcmp, 3, build_address (t1),
-				 build_address (t2), size);
+  tree result = build_memcmp_call (build_address (t1),
+				   build_address (t2), size);
   return build_boolop (code, result, integer_zero_node);
 }
 
@@ -879,10 +939,8 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
   /* Let back-end take care of union comparisons.  */
   if (sd->isUnionDeclaration ())
     {
-      tmemcmp = build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCMP), 3,
-				 build_address (t1), build_address (t2),
-				 size_int (sd->structsize));
-
+      tmemcmp = build_memcmp_call (build_address (t1), build_address (t2),
+				   size_int (sd->structsize));
       return build_boolop (code, tmemcmp, integer_zero_node);
     }
 
@@ -943,11 +1001,9 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
 	  else
 	    {
 	      /* Simple memcmp between types.  */
-	      tcmp = build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCMP),
-				      3, build_address (t1ref),
-				      build_address (t2ref),
-				      TYPE_SIZE_UNIT (stype));
-
+	      tcmp = build_memcmp_call (build_address (t1ref),
+					build_address (t2ref),
+					TYPE_SIZE_UNIT (stype));
 	      tcmp = build_boolop (code, tcmp, integer_zero_node);
 	    }
 	}
@@ -995,11 +1051,8 @@ build_struct_comparison (tree_code code, StructDeclaration *sd,
   else
     {
       /* Do bit compare of structs.  */
-      tree size = size_int (sd->structsize);
-      tree tmemcmp = build_call_expr (builtin_decl_explicit (BUILT_IN_MEMCMP),
-				      3, build_address (t1),
-				      build_address (t2), size);
-
+      tree tmemcmp = build_memcmp_call (build_address (t1), build_address (t2),
+					size_int (sd->structsize));
       result = build_boolop (code, tmemcmp, integer_zero_node);
     }
 
@@ -1696,6 +1749,42 @@ build_array_from_val (Type *type, tree val)
   return build_constructor (build_ctype (type), elms);
 }
 
+/* Build a static array of type TYPE from an array of EXPS.
+   If CONST_P is true, then all elements in EXPS are constants.  */
+
+tree
+build_array_from_exprs (Type *type, Expressions *exps, bool const_p)
+{
+  /* Build a CONSTRUCTOR from all expressions.  */
+  vec <constructor_elt, va_gc> *elms = NULL;
+  vec_safe_reserve (elms, exps->length);
+
+  Type *etype = type->nextOf ();
+  tree satype = make_array_type (etype, exps->length);
+
+  for (size_t i = 0; i < exps->length; i++)
+    {
+      Expression *expr = (*exps)[i];
+      tree t = build_expr (expr, const_p);
+      CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
+			      convert_expr (t, expr->type, etype));
+    }
+
+  /* Create a new temporary to store the array.  */
+  tree var = build_local_temp (satype);
+
+  /* Fill any alignment holes with zeroes.  */
+  TypeStruct *ts = etype->baseElemOf ()->isTypeStruct ();
+  tree init = NULL;
+  if (ts && (!identity_compare_p (ts->sym) || ts->sym->isUnionDeclaration ()))
+    init = build_memset_call (var);
+
+  /* Initialize the temporary.  */
+  tree assign = modify_expr (var, build_constructor (satype, elms));
+  return compound_expr (compound_expr (init, assign), var);
+}
+
+
 /* Implicitly converts void* T to byte* as D allows { void[] a; &a[3]; }  */
 
 tree
@@ -1925,11 +2014,11 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	      targ = build2 (COMPOUND_EXPR, TREE_TYPE (t), targ, t);
 	    }
 
-	  /* Parameter is a struct passed by invisible reference.  */
+	  /* Parameter is a struct or array passed by invisible reference.  */
 	  if (TREE_ADDRESSABLE (TREE_TYPE (targ)))
 	    {
 	      Type *t = arg->type->toBasetype ();
-	      StructDeclaration *sd = t->isTypeStruct ()->sym;
+	      StructDeclaration *sd = t->baseElemOf ()->isTypeStruct ()->sym;
 
 	      /* Nested structs also have ADDRESSABLE set, but if the type has
 		 neither a copy constructor nor a destructor available, then we
@@ -1953,6 +2042,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
     }
 
   tree result = build_call_vec (TREE_TYPE (ctype), callee, args);
+  SET_EXPR_LOCATION (result, input_location);
 
   /* Enforce left to right evaluation.  */
   if (tf->linkage == LINKd)
@@ -2065,6 +2155,17 @@ build_vthis_function (tree basetype, tree type)
   return fntype;
 }
 
+/* Raise an error at that the context pointer of the function or object SYM is
+   not accessible from the current scope.  */
+
+tree
+error_no_frame_access (Dsymbol *sym)
+{
+  error_at (input_location, "cannot get frame pointer to %qs",
+	    sym->toPrettyChars ());
+  return null_pointer_node;
+}
+
 /* If SYM is a nested function, return the static chain to be
    used when calling that function from the current function.
 
@@ -2129,7 +2230,7 @@ get_frame_for_symbol (Dsymbol *sym)
 	{
 	  error_at (make_location_t (sym->loc),
 		    "%qs is a nested function and cannot be accessed from %qs",
-		    fd->toPrettyChars (), thisfd->toPrettyChars ());
+		    fdparent->toPrettyChars (), thisfd->toPrettyChars ());
 	  return null_pointer_node;
 	}
 
@@ -2140,39 +2241,35 @@ get_frame_for_symbol (Dsymbol *sym)
       while (fd != dsym)
 	{
 	  /* Check if enclosing function is a function.  */
-	  FuncDeclaration *fd = dsym->isFuncDeclaration ();
+	  FuncDeclaration *fdp = dsym->isFuncDeclaration ();
+	  Dsymbol *parent = dsym->toParent2 ();
 
-	  if (fd != NULL)
+	  if (fdp != NULL)
 	    {
-	      if (fdparent == fd->toParent2 ())
+	      if (fdparent == parent)
 		break;
 
-	      gcc_assert (fd->isNested () || fd->vthis);
-	      dsym = dsym->toParent2 ();
+	      gcc_assert (fdp->isNested () || fdp->vthis);
+	      dsym = parent;
 	      continue;
 	    }
 
 	  /* Check if enclosed by an aggregate.  That means the current
 	     function must be a member function of that aggregate.  */
-	  AggregateDeclaration *ad = dsym->isAggregateDeclaration ();
+	  AggregateDeclaration *adp = dsym->isAggregateDeclaration ();
 
-	  if (ad == NULL)
-	    goto Lnoframe;
-	  if (ad->isClassDeclaration () && fdparent == ad->toParent2 ())
-	    break;
-	  if (ad->isStructDeclaration () && fdparent == ad->toParent2 ())
-	    break;
-
-	  if (!ad->isNested () || !ad->vthis)
+	  if (adp != NULL)
 	    {
-	    Lnoframe:
-	      error_at (make_location_t (thisfd->loc),
-			"cannot get frame pointer to %qs",
-			sym->toPrettyChars ());
-	      return null_pointer_node;
+	      if ((adp->isClassDeclaration () || adp->isStructDeclaration ())
+		  && fdparent == parent)
+		break;
 	    }
 
-	  dsym = dsym->toParent2 ();
+	  /* No frame to outer function found.  */
+	  if (!adp || !adp->isNested () || !adp->vthis)
+	    return error_no_frame_access (sym);
+
+	  dsym = parent;
 	}
     }
 
@@ -2662,8 +2759,10 @@ get_framedecl (FuncDeclaration *inner, FuncDeclaration *outer)
 	break;
     }
 
+  if (fd != outer)
+    return error_no_frame_access (outer);
+
   /* Go get our frame record.  */
-  gcc_assert (fd == outer);
   tree frame_type = FRAMEINFO_TYPE (get_frameinfo (outer));
 
   if (frame_type != NULL_TREE)

@@ -306,6 +306,9 @@ get_default_value (tree var)
 		{
 		  val.lattice_val = CONSTANT;
 		  val.value = value;
+		  widest_int ipa_value = wi::to_widest (value);
+		  /* Unknown bits from IPA CP must be equal to zero.  */
+		  gcc_assert (wi::bit_and (ipa_value, mask) == 0);
 		  val.mask = mask;
 		  if (nonzero_bits != -1)
 		    val.mask &= extend_mask (nonzero_bits,
@@ -943,7 +946,7 @@ do_dbg_cnt (void)
 class ccp_folder : public substitute_and_fold_engine
 {
  public:
-  tree get_value (tree, gimple *) FINAL OVERRIDE;
+  tree value_of_expr (tree, gimple *) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
 };
 
@@ -952,7 +955,7 @@ class ccp_folder : public substitute_and_fold_engine
    of calling member functions.  */
 
 tree
-ccp_folder::get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED)
+ccp_folder::value_of_expr (tree op, gimple *)
 {
   return get_constant_value (op);
 }

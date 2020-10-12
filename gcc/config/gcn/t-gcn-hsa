@@ -45,7 +45,6 @@ gcn-run$(exeext): gcn-run.o
 MULTILIB_OPTIONS = march=gfx900/march=gfx906
 MULTILIB_DIRNAMES = gfx900 gfx906
 
-PASSES_EXTRA += $(srcdir)/config/gcn/gcn-passes.def
 gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)

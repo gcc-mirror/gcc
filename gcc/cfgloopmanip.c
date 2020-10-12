@@ -126,7 +126,7 @@ fix_loop_placement (class loop *loop, bool *irred_invalidated)
 {
   unsigned i;
   edge e;
-  vec<edge> exits = get_loop_exit_edges (loop);
+  auto_vec<edge> exits = get_loop_exit_edges (loop);
   class loop *father = current_loops->tree_root, *act;
   bool ret = false;
 
@@ -157,7 +157,6 @@ fix_loop_placement (class loop *loop, bool *irred_invalidated)
       ret = true;
     }
 
-  exits.release ();
   return ret;
 }
 

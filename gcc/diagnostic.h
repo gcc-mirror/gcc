@@ -24,6 +24,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "diagnostic-core.h"
 
+/* An enum for controlling what units to use for the column number
+   when diagnostics are output, used by the -fdiagnostics-column-unit option.
+   Tabs will be expanded or not according to the value of -ftabstop.  The origin
+   (default 1) is controlled by -fdiagnostics-column-origin.  */
+
+enum diagnostics_column_unit
+{
+  /* The default from GCC 11 onwards: display columns.  */
+  DIAGNOSTICS_COLUMN_UNIT_DISPLAY,
+
+  /* The behavior in GCC 10 and earlier: simple bytes.  */
+  DIAGNOSTICS_COLUMN_UNIT_BYTE
+};
+
 /* Enum for overriding the standard output format.  */
 
 enum diagnostics_output_format
@@ -280,6 +294,15 @@ struct diagnostic_context
      rest of the diagnostic.  */
   bool parseable_fixits_p;
 
+  /* What units to use when outputting the column number.  */
+  enum diagnostics_column_unit column_unit;
+
+  /* The origin for the column number (1-based or 0-based typically).  */
+  int column_origin;
+
+  /* The size of the tabstop for tab expansion.  */
+  int tabstop;
+
   /* If non-NULL, an edit_context to which fix-it hints should be
      applied, for generating patches.  */
   edit_context *edit_context_ptr;
@@ -458,6 +481,8 @@ diagnostic_same_line (const diagnostic_context *context,
 }
 
 extern const char *diagnostic_get_color_for_kind (diagnostic_t kind);
+extern int diagnostic_converted_column (diagnostic_context *context,
+					expanded_location s);
 
 /* Pure text formatting support functions.  */
 extern char *file_name_as_prefix (diagnostic_context *, const char *);
@@ -470,6 +495,7 @@ extern void diagnostic_output_format_init (diagnostic_context *,
 /* Compute the number of digits in the decimal representation of an integer.  */
 extern int num_digits (int);
 
-extern json::value *json_from_expanded_location (location_t loc);
+extern json::value *json_from_expanded_location (diagnostic_context *context,
+						 location_t loc);
 
 #endif /* ! GCC_DIAGNOSTIC_H */

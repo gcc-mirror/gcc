@@ -45,7 +45,7 @@ bar (struct S *s, int rec)
 volatile int g;
 
 int
-main (int argc, char *argv[])
+main (int argc, char **argv)
 {
   struct S s;
 

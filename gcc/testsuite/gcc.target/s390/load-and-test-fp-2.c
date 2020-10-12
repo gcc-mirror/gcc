@@ -1,16 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -mzarch -ffast-math" } */
 
-/* a is not used after the comparison.  So we should use load and test
-   here.  */
+/* Fast-math implies -fno-trapping-math -fno-signaling-nans which imply
+   that no user visible trap will happen.  */
 
-double gl;
+#include "load-and-test-fp.h"
 
-void
-bar (double a)
-{
-  if (a == 0.0)
-    gl = 1;
-}
-
-/* { dg-final { scan-assembler "ltdbr\t" } } */
+/* { dg-final { scan-assembler-times "ltdbr\t" 12 } } */

@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,8 +12,8 @@ foo ()
   int32_t len_diff;
   uint32_t mode;
   uint64_t flags;
-  
-  ret = __builtin_bpf_helper_skb_adjust_room (skb, len_diff, mode, flags);
+
+  ret = bpf_skb_adjust_room (skb, len_diff, mode, flags);
 }
 
 /* { dg-final { scan-assembler "call\t50" } } */

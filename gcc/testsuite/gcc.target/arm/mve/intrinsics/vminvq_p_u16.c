@@ -10,7 +10,6 @@ foo (uint16_t a, uint16x8_t b, mve_pred16_t p)
   return vminvq_p_u16 (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vminvt.u16"  }  } */
 
 uint16_t
 foo1 (uint16_t a, uint16x8_t b, mve_pred16_t p)
@@ -18,4 +17,12 @@ foo1 (uint16_t a, uint16x8_t b, mve_pred16_t p)
   return vminvq_p (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vminvt.u16"  }  } */
+
+uint16_t
+foo2 (uint32_t a, uint16x8_t b, mve_pred16_t p)
+{
+  return vminvq_p (a, b, p);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
+/* { dg-final { scan-assembler-times "vminvt.u16" 3 } } */

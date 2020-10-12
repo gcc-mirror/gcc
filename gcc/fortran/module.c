@@ -1234,6 +1234,13 @@ get_module_locus (module_locus *m)
   m->pos = module_pos;
 }
 
+/* Peek at the next character in the module.  */
+
+static int
+module_peek_char (void)
+{
+  return module_content[module_pos];
+}
 
 /* Get the next character in the module, updating our reckoning of
    where we are.  */
@@ -1314,7 +1321,19 @@ parse_string (void)
 static void
 parse_integer (int c)
 {
-  atom_int = c - '0';
+  int sign = 1;
+
+  atom_int = 0;
+  switch (c)
+    {
+    case ('-'):
+      sign = -1;
+    case ('+'):
+      break;
+    default:
+      atom_int = c - '0';
+      break;
+    }
 
   for (;;)
     {
@@ -1328,6 +1347,7 @@ parse_integer (int c)
       atom_int = 10 * atom_int + c - '0';
     }
 
+  atom_int *= sign; 
 }
 
 
@@ -1400,6 +1420,16 @@ parse_atom (void)
     case '9':
       parse_integer (c);
       return ATOM_INTEGER;
+
+    case '+':
+    case '-':
+      if (ISDIGIT (module_peek_char ()))
+	{
+	  parse_integer (c);
+	  return ATOM_INTEGER;
+	}
+      else
+	bad_module ("Bad name");
 
     case 'a':
     case 'b':
@@ -1503,6 +1533,16 @@ peek_atom (void)
     case '9':
       module_unget_char ();
       return ATOM_INTEGER;
+
+    case '+':
+    case '-':
+      if (ISDIGIT (module_peek_char ()))
+	{
+	  module_unget_char ();
+	  return ATOM_INTEGER;
+	}
+      else
+	bad_module ("Bad name");
 
     case 'a':
     case 'b':
@@ -2047,7 +2087,12 @@ enum ab_attribute
   AB_OMP_DECLARE_TARGET_LINK, AB_PDT_KIND, AB_PDT_LEN, AB_PDT_TYPE,
   AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
   AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
-  AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ
+  AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ,
+  AB_OMP_REQ_REVERSE_OFFLOAD, AB_OMP_REQ_UNIFIED_ADDRESS,
+  AB_OMP_REQ_UNIFIED_SHARED_MEMORY, AB_OMP_REQ_DYNAMIC_ALLOCATORS,
+  AB_OMP_REQ_MEM_ORDER_SEQ_CST, AB_OMP_REQ_MEM_ORDER_ACQ_REL,
+  AB_OMP_REQ_MEM_ORDER_RELAXED, AB_OMP_DEVICE_TYPE_NOHOST,
+  AB_OMP_DEVICE_TYPE_HOST, AB_OMP_DEVICE_TYPE_ANY
 };
 
 static const mstring attr_bits[] =
@@ -2121,6 +2166,16 @@ static const mstring attr_bits[] =
     minit ("OACC_ROUTINE_LOP_WORKER", AB_OACC_ROUTINE_LOP_WORKER),
     minit ("OACC_ROUTINE_LOP_VECTOR", AB_OACC_ROUTINE_LOP_VECTOR),
     minit ("OACC_ROUTINE_LOP_SEQ", AB_OACC_ROUTINE_LOP_SEQ),
+    minit ("OMP_REQ_REVERSE_OFFLOAD", AB_OMP_REQ_REVERSE_OFFLOAD),
+    minit ("OMP_REQ_UNIFIED_ADDRESS", AB_OMP_REQ_UNIFIED_ADDRESS),
+    minit ("OMP_REQ_UNIFIED_SHARED_MEMORY", AB_OMP_REQ_UNIFIED_SHARED_MEMORY),
+    minit ("OMP_REQ_DYNAMIC_ALLOCATORS", AB_OMP_REQ_DYNAMIC_ALLOCATORS),
+    minit ("OMP_REQ_MEM_ORDER_SEQ_CST", AB_OMP_REQ_MEM_ORDER_SEQ_CST),
+    minit ("OMP_REQ_MEM_ORDER_ACQ_REL", AB_OMP_REQ_MEM_ORDER_ACQ_REL),
+    minit ("OMP_REQ_MEM_ORDER_RELAXED", AB_OMP_REQ_MEM_ORDER_RELAXED),
+    minit ("OMP_DEVICE_TYPE_HOST", AB_OMP_DEVICE_TYPE_HOST),
+    minit ("OMP_DEVICE_TYPE_NOHOST", AB_OMP_DEVICE_TYPE_NOHOST),
+    minit ("OMP_DEVICE_TYPE_ANYHOST", AB_OMP_DEVICE_TYPE_ANY),
     minit (NULL, -1)
 };
 
@@ -2366,8 +2421,43 @@ mio_symbol_attribute (symbol_attribute *attr)
 	  gcc_unreachable ();
 	}
 
+      if (attr->flavor == FL_MODULE && gfc_current_ns->omp_requires)
+	{
+	  if (gfc_current_ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_REVERSE_OFFLOAD, attr_bits);
+	  if (gfc_current_ns->omp_requires & OMP_REQ_UNIFIED_ADDRESS)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_UNIFIED_ADDRESS, attr_bits);
+	  if (gfc_current_ns->omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_UNIFIED_SHARED_MEMORY, attr_bits);
+	  if (gfc_current_ns->omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_DYNAMIC_ALLOCATORS, attr_bits);
+	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	      == OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_SEQ_CST, attr_bits);
+	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	      == OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_ACQ_REL, attr_bits);
+	  if ((gfc_current_ns->omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+	      == OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
+	    MIO_NAME (ab_attribute) (AB_OMP_REQ_MEM_ORDER_RELAXED, attr_bits);
+	}
+      switch (attr->omp_device_type)
+	{
+	case OMP_DEVICE_TYPE_UNSET:
+	  break;
+	case OMP_DEVICE_TYPE_HOST:
+	  MIO_NAME (ab_attribute) (AB_OMP_DEVICE_TYPE_HOST, attr_bits);
+	  break;
+	case OMP_DEVICE_TYPE_NOHOST:
+	  MIO_NAME (ab_attribute) (AB_OMP_DEVICE_TYPE_NOHOST, attr_bits);
+	  break;
+	case OMP_DEVICE_TYPE_ANY:
+	  MIO_NAME (ab_attribute) (AB_OMP_DEVICE_TYPE_ANY, attr_bits);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
       mio_rparen ();
-
     }
   else
     {
@@ -2591,6 +2681,54 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    case AB_OACC_ROUTINE_LOP_SEQ:
 	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
 	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_SEQ;
+	      break;
+	    case AB_OMP_REQ_REVERSE_OFFLOAD:
+	      gfc_omp_requires_add_clause (OMP_REQ_REVERSE_OFFLOAD,
+					   "reverse_offload",
+					   &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_UNIFIED_ADDRESS:
+	      gfc_omp_requires_add_clause (OMP_REQ_UNIFIED_ADDRESS,
+					   "unified_address",
+					   &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_UNIFIED_SHARED_MEMORY:
+	      gfc_omp_requires_add_clause (OMP_REQ_UNIFIED_SHARED_MEMORY,
+					   "unified_shared_memory",
+					   &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_DYNAMIC_ALLOCATORS:
+	      gfc_omp_requires_add_clause (OMP_REQ_DYNAMIC_ALLOCATORS,
+					   "dynamic_allocators",
+					   &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_MEM_ORDER_SEQ_CST:
+	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST,
+					   "seq_cst", &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_MEM_ORDER_ACQ_REL:
+	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL,
+					   "acq_rel", &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_REQ_MEM_ORDER_RELAXED:
+	      gfc_omp_requires_add_clause (OMP_REQ_ATOMIC_MEM_ORDER_RELAXED,
+					   "relaxed", &gfc_current_locus,
+					   module_name);
+	      break;
+	    case AB_OMP_DEVICE_TYPE_HOST:
+	      attr->omp_device_type = OMP_DEVICE_TYPE_HOST;
+	      break;
+	    case AB_OMP_DEVICE_TYPE_NOHOST:
+	      attr->omp_device_type = OMP_DEVICE_TYPE_NOHOST;
+	      break;
+	    case AB_OMP_DEVICE_TYPE_ANY:
+	      attr->omp_device_type = OMP_DEVICE_TYPE_ANY;
 	      break;
 	    }
 	}
@@ -4780,6 +4918,7 @@ load_commons (void)
 	p->saved = 1;
       if (flags & 2)
 	p->threadprivate = 1;
+      p->omp_device_type = (gfc_omp_device_type) ((flags >> 2) & 3);
       p->use_assoc = 1;
 
       /* Get whether this was a bind(c) common or not.  */
@@ -5644,6 +5783,7 @@ write_common_0 (gfc_symtree *st, bool this_module)
       flags = p->saved ? 1 : 0;
       if (p->threadprivate)
 	flags |= 2;
+      flags |= p->omp_device_type << 2;
       mio_integer (&flags);
 
       /* Write out whether the common block is bind(c) or not.  */

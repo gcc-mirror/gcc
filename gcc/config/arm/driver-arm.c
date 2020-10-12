@@ -61,6 +61,7 @@ host_detect_local_cpu (int argc, const char **argv)
   FILE *f = NULL;
   bool arch;
   const struct vendor_cpu *cpu_table = NULL;
+  char *fcpu_info = NULL;
 
   if (argc < 1)
     goto not_found;
@@ -69,7 +70,12 @@ host_detect_local_cpu (int argc, const char **argv)
   if (!arch && strcmp (argv[0], "cpu") != 0 && strcmp (argv[0], "tune"))
     goto not_found;
 
-  f = fopen ("/proc/cpuinfo", "r");
+  fcpu_info = getenv ("GCC_CPUINFO");
+  if (fcpu_info)
+    f = fopen (fcpu_info, "r");
+  else
+    f = fopen ("/proc/cpuinfo", "r");
+
   if (f == NULL)
     goto not_found;
 

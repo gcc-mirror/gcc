@@ -585,6 +585,9 @@ package body Rtsfind is
      range Ada_Wide_Wide_Text_IO_Decimal_IO ..
            Ada_Wide_Wide_Text_IO_Modular_IO;
 
+   subtype CUDA_Descendant is RTU_Id
+     range CUDA_Driver_Types .. CUDA_Vector_Types;
+
    subtype Interfaces_Descendant is RTU_Id
      range Interfaces_Packed_Decimal .. Interfaces_Packed_Decimal;
 
@@ -664,6 +667,9 @@ package body Rtsfind is
          elsif U_Id in Ada_Wide_Wide_Text_IO_Descendant then
             Name_Buffer (22) := '.';
          end if;
+
+      elsif U_Id in CUDA_Descendant then
+         Name_Buffer (5) := '.';
 
       elsif U_Id in Interfaces_Descendant then
          Name_Buffer (11) := '.';
@@ -898,9 +904,9 @@ package body Rtsfind is
       return
         Nkind (Prf) = N_Identifier
           and then
-            Nam_In (Chars (Prf), Name_Text_IO,
-                                 Name_Wide_Text_IO,
-                                 Name_Wide_Wide_Text_IO)
+            Chars (Prf) in Name_Text_IO
+                         | Name_Wide_Text_IO
+                         | Name_Wide_Wide_Text_IO
           and then Nkind (Sel) = N_Identifier
           and then Chars (Sel) in Text_IO_Package_Name;
    end Is_Text_IO_Special_Unit;

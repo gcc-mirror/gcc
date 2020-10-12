@@ -471,21 +471,23 @@ package body Exp_Unst is
             Callee : Entity_Id;
 
             procedure Check_Static_Type
-              (T                : Entity_Id;
+              (In_T             : Entity_Id;
                N                : Node_Id;
                DT               : in out Boolean;
                Check_Designated : Boolean := False);
-            --  Given a type T, checks if it is a static type defined as a type
-            --  with no dynamic bounds in sight. If so, the only action is to
-            --  set Is_Static_Type True for T. If T is not a static type, then
-            --  all types with dynamic bounds associated with T are detected,
-            --  and their bounds are marked as uplevel referenced if not at the
-            --  library level, and DT is set True. If N is specified, it's the
-            --  node that will need to be replaced. If not specified, it means
-            --  we can't do a replacement because the bound is implicit.
+            --  Given a type In_T, checks if it is a static type defined as
+            --  a type with no dynamic bounds in sight. If so, the only
+            --  action is to set Is_Static_Type True for In_T. If In_T is
+            --  not a static type, then all types with dynamic bounds
+            --  associated with In_T are detected, and their bounds are
+            --  marked as uplevel referenced if not at the library level,
+            --  and DT is set True. If N is specified, it's the node that
+            --  will need to be replaced. If not specified, it means we
+            --  can't do a replacement because the bound is implicit.
 
-            --  If Check_Designated is True and T or its full view is an access
-            --  type, check whether the designated type has dynamic bounds.
+            --  If Check_Designated is True and In_T or its full view
+            --  is an access type, check whether the designated type
+            --  has dynamic bounds.
 
             procedure Note_Uplevel_Ref
               (E      : Entity_Id;
@@ -505,11 +507,13 @@ package body Exp_Unst is
             -----------------------
 
             procedure Check_Static_Type
-              (T                : Entity_Id;
+              (In_T             : Entity_Id;
                N                : Node_Id;
                DT               : in out Boolean;
                Check_Designated : Boolean := False)
             is
+               T : constant Entity_Id := Get_Fullest_View (In_T);
+
                procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id);
                --  N is the bound of a dynamic type. This procedure notes that
                --  this bound is uplevel referenced, it can handle references
@@ -546,8 +550,8 @@ package body Exp_Unst is
 
                   --  Attribute or indexed component case
 
-                  elsif Nkind_In (N, N_Attribute_Reference,
-                                     N_Indexed_Component)
+                  elsif Nkind (N) in
+                          N_Attribute_Reference | N_Indexed_Component
                   then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 
@@ -601,8 +605,8 @@ package body Exp_Unst is
 
                   --  Explicit dereference and selected component case
 
-                  elsif Nkind_In (N, N_Explicit_Dereference,
-                                     N_Selected_Component)
+                  elsif Nkind (N) in
+                          N_Explicit_Dereference | N_Selected_Component
                   then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 
@@ -786,7 +790,7 @@ package body Exp_Unst is
                then
                   return;
 
-               elsif Ekind_In (Callee, E_Entry, E_Entry_Family) then
+               elsif Ekind (Callee) in E_Entry | E_Entry_Family then
                   return;
                end if;
 
@@ -1271,9 +1275,9 @@ package body Exp_Unst is
                         --  references to global declarations.
 
                        and then
-                         (Ekind_In (Ent, E_Constant,
-                                         E_Loop_Parameter,
-                                         E_Variable)
+                         (Ekind (Ent) in E_Constant
+                                       | E_Loop_Parameter
+                                       | E_Variable
 
                            --  Formals are interesting, but not if being used
                            --  as mere names of parameters for name notation
@@ -2131,9 +2135,9 @@ package body Exp_Unst is
                                  --  N_Loop_Parameter_Specification or to
                                  --  an N_Iterator_Specification.
 
-                                 if Nkind_In
-                                      (Ins, N_Iterator_Specification,
-                                            N_Loop_Parameter_Specification)
+                                 if Nkind (Ins) in
+                                      N_Iterator_Specification |
+                                      N_Loop_Parameter_Specification
                                  then
                                     --  Quantified expression are rewritten as
                                     --  loops during expansion.
@@ -2366,9 +2370,8 @@ package body Exp_Unst is
                --  processing this dereference
 
                if Opt.Modify_Tree_For_C
-                 and then Nkind_In (Parent (UPJ.Ref),
-                            N_Type_Conversion,
-                            N_Unchecked_Type_Conversion)
+                 and then Nkind (Parent (UPJ.Ref)) in
+                            N_Type_Conversion | N_Unchecked_Type_Conversion
                then
                   Force_Evaluation (UPJ.Ref, Mode => Strict);
                end if;
@@ -2554,7 +2557,7 @@ package body Exp_Unst is
 
       function Search_Subprograms (N : Node_Id) return Traverse_Result is
       begin
-         if Nkind_In (N, N_Subprogram_Body, N_Subprogram_Body_Stub) then
+         if Nkind (N) in N_Subprogram_Body | N_Subprogram_Body_Stub then
             declare
                Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
 

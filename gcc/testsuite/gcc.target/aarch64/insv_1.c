@@ -32,7 +32,7 @@ bfi2 (bitfield a)
 bitfield
 movk (bitfield a)
 {
-  /* { dg-final { scan-assembler "movk\tx\[0-9\]+, 0x1d6b, lsl 32" } } */
+  /* { dg-final { scan-assembler "movk\tx\[0-9\]+, #0x1d6b, lsl 32" } } */
   a.sixteen = 7531;
   return a;
 }

@@ -101,6 +101,12 @@ package Ada.Wide_Characters.Handling is
    --  Returns True if the Wide_Character designated by Item is categorized as
    --  separator_space, otherwise returns False.
 
+   function Is_NFKC (Item : Wide_Character) return Boolean;
+   pragma Inline (Is_NFKC);
+   --  Returns True if the Wide_Character designated by Item could be present
+   --  in a string normalized to Normalization Form KC (as defined by Clause
+   --  21 of ISO/IEC 10646:2017), otherwise returns False.
+
    function Is_Graphic (Item : Wide_Character) return Boolean;
    pragma Inline (Is_Graphic);
    --  Returns True if the Wide_Character designated by Item is categorized as

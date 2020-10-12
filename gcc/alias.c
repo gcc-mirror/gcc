@@ -737,7 +737,7 @@ get_deref_alias_set (tree t)
    adjusted to point to the outermost component reference that
    can be used for assigning an alias set.  */
  
-static tree
+tree
 reference_alias_ptr_type_1 (tree *t)
 {
   tree inner;
@@ -2142,10 +2142,10 @@ compare_base_decls (tree base1, tree base2)
 
   /* If we have two register decls with register specification we
      cannot decide unless their assembler names are the same.  */
-  if (DECL_REGISTER (base1)
-      && DECL_REGISTER (base2)
-      && HAS_DECL_ASSEMBLER_NAME_P (base1)
-      && HAS_DECL_ASSEMBLER_NAME_P (base2)
+  if (VAR_P (base1)
+      && VAR_P (base2)
+      && DECL_HARD_REGISTER (base1)
+      && DECL_HARD_REGISTER (base2)
       && DECL_ASSEMBLER_NAME_SET_P (base1)
       && DECL_ASSEMBLER_NAME_SET_P (base2))
     {
@@ -3349,7 +3349,8 @@ init_alias_analysis (void)
 
   timevar_push (TV_ALIAS_ANALYSIS);
 
-  vec_safe_grow_cleared (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
+  vec_safe_grow_cleared (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER,
+			 true);
   reg_known_equiv_p = sbitmap_alloc (maxreg - FIRST_PSEUDO_REGISTER);
   bitmap_clear (reg_known_equiv_p);
 
@@ -3360,7 +3361,7 @@ init_alias_analysis (void)
   if (reg_base_value)
     reg_base_value->truncate (0);
 
-  vec_safe_grow_cleared (reg_base_value, maxreg);
+  vec_safe_grow_cleared (reg_base_value, maxreg, true);
 
   new_reg_base_value = XNEWVEC (rtx, maxreg);
   reg_seen = sbitmap_alloc (maxreg);

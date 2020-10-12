@@ -87,6 +87,7 @@ var (
 	asmArchMips64LE = asmArch{name: "mips64le", bigEndian: false, stack: "R29", lr: true}
 	asmArchPpc64    = asmArch{name: "ppc64", bigEndian: true, stack: "R1", lr: true}
 	asmArchPpc64LE  = asmArch{name: "ppc64le", bigEndian: false, stack: "R1", lr: true}
+	asmArchRISCV    = asmArch{name: "riscv", bigEndian: false, stack: "SP", lr: true}
 	asmArchRISCV64  = asmArch{name: "riscv64", bigEndian: false, stack: "SP", lr: true}
 	asmArchS390X    = asmArch{name: "s390x", bigEndian: true, stack: "R15", lr: true}
 	asmArchWasm     = asmArch{name: "wasm", bigEndian: false, stack: "SP", lr: false}
@@ -102,6 +103,7 @@ var (
 		&asmArchMips64LE,
 		&asmArchPpc64,
 		&asmArchPpc64LE,
+		&asmArchRISCV,
 		&asmArchRISCV64,
 		&asmArchS390X,
 		&asmArchWasm,

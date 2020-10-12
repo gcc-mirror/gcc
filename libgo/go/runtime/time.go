@@ -215,11 +215,18 @@ func stopTimer(t *timer) bool {
 
 // resetTimer resets an inactive timer, adding it to the heap.
 //go:linkname resetTimer time.resetTimer
-func resetTimer(t *timer, when int64) {
+// Reports whether the timer was modified before it was run.
+func resetTimer(t *timer, when int64) bool {
 	if raceenabled {
 		racerelease(unsafe.Pointer(t))
 	}
-	resettimer(t, when)
+	return resettimer(t, when)
+}
+
+// modTimer modifies an existing timer.
+//go:linkname modTimer time.modTimer
+func modTimer(t *timer, when, period int64, f func(interface{}, uintptr), arg interface{}, seq uintptr) {
+	modtimer(t, when, period, f, arg, seq)
 }
 
 // Go runtime.
@@ -395,14 +402,16 @@ func dodeltimer0(pp *p) {
 }
 
 // modtimer modifies an existing timer.
-// This is called by the netpoll code.
-func modtimer(t *timer, when, period int64, f func(interface{}, uintptr), arg interface{}, seq uintptr) {
+// This is called by the netpoll code or time.Ticker.Reset.
+// Reports whether the timer was modified before it was run.
+func modtimer(t *timer, when, period int64, f func(interface{}, uintptr), arg interface{}, seq uintptr) bool {
 	if when < 0 {
 		when = maxWhen
 	}
 
 	status := uint32(timerNoStatus)
 	wasRemoved := false
+	var pending bool
 	var mp *m
 loop:
 	for {
@@ -412,6 +421,7 @@ loop:
 			// This could lead to a self-deadlock. See #38070.
 			mp = acquirem()
 			if atomic.Cas(&t.status, status, timerModifying) {
+				pending = true // timer not yet run
 				break loop
 			}
 			releasem(mp)
@@ -424,6 +434,7 @@ loop:
 			// Act like addtimer.
 			if atomic.Cas(&t.status, status, timerModifying) {
 				wasRemoved = true
+				pending = false // timer already run or stopped
 				break loop
 			}
 			releasem(mp)
@@ -433,6 +444,7 @@ loop:
 			mp = acquirem()
 			if atomic.Cas(&t.status, status, timerModifying) {
 				atomic.Xadd(&t.pp.ptr().deletedTimers, -1)
+				pending = false // timer already stopped
 				break loop
 			}
 			releasem(mp)
@@ -503,14 +515,17 @@ loop:
 			wakeNetPoller(when)
 		}
 	}
+
+	return pending
 }
 
 // resettimer resets the time when a timer should fire.
 // If used for an inactive timer, the timer will become active.
 // This should be called instead of addtimer if the timer value has been,
 // or may have been, used previously.
-func resettimer(t *timer, when int64) {
-	modtimer(t, when, t.period, t.f, t.arg, t.seq)
+// Reports whether the timer was modified before it was run.
+func resettimer(t *timer, when int64) bool {
+	return modtimer(t, when, t.period, t.f, t.arg, t.seq)
 }
 
 // cleantimers cleans up the head of the timer queue. This speeds up
@@ -518,10 +533,20 @@ func resettimer(t *timer, when int64) {
 // slows down addtimer. Reports whether no timer problems were found.
 // The caller must have locked the timers for pp.
 func cleantimers(pp *p) {
+	gp := getg()
 	for {
 		if len(pp.timers) == 0 {
 			return
 		}
+
+		// This loop can theoretically run for a while, and because
+		// it is holding timersLock it cannot be preempted.
+		// If someone is trying to preempt us, just return.
+		// We can clean the timers later.
+		if gp.preemptStop {
+			return
+		}
+
 		t := pp.timers[0]
 		if t.pp.ptr() != pp {
 			throw("cleantimers: bad p")

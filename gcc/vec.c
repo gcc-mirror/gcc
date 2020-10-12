@@ -338,7 +338,7 @@ test_safe_grow_cleared ()
 {
   auto_vec <int> v;
   ASSERT_EQ (0, v.length ());
-  v.safe_grow_cleared (50);
+  v.safe_grow_cleared (50, true);
   ASSERT_EQ (50, v.length ());
   ASSERT_EQ (0, v[0]);
   ASSERT_EQ (0, v[49]);

@@ -198,3 +198,18 @@ DEF_SECTION (objc2_image_info_section, 0,
 	     ".section __DATA, __objc_imageinfo, regular, no_dead_strip", 1)
 DEF_SECTION (objc2_constant_string_object_section, 0,
 	     ".section __DATA, __objc_stringobj, regular, no_dead_strip", 1)
+
+/* Additions for compatibility with later runtime conventions especially for
+   sections containing strings.  */
+DEF_SECTION (objc2_data_section, 0, ".section __DATA, __data", 1)
+
+DEF_SECTION (objc2_ivar_section, 0, ".section __DATA, __objc_ivar", 1)
+
+DEF_SECTION (objc2_class_names_section, 0,
+	     ".section __TEXT, __objc_classname, cstring_literals", 1)
+
+DEF_SECTION (objc2_method_names_section, 0,
+	     ".section __TEXT, __objc_methname, cstring_literals", 1)
+
+DEF_SECTION (objc2_method_types_section, 0,
+	     ".section __TEXT, __objc_methtype, cstring_literals", 1)

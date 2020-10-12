@@ -173,7 +173,7 @@ template<typename T> void g(T x) { }
 void driver_3 () 
 {
   g(&ok<int>);
-  g(&err<int>); // { dg-error "no matches" }
+  g(&err<int>); // { dg-error "no match" }
 }
 
 

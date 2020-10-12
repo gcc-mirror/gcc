@@ -128,15 +128,6 @@ if test "x$HSA_RUNTIME_LIB" != x; then
   HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
 fi
 
-PLUGIN_HSA=0
-PLUGIN_HSA_CPPFLAGS=
-PLUGIN_HSA_LDFLAGS=
-PLUGIN_HSA_LIBS=
-AC_SUBST(PLUGIN_HSA)
-AC_SUBST(PLUGIN_HSA_CPPFLAGS)
-AC_SUBST(PLUGIN_HSA_LDFLAGS)
-AC_SUBST(PLUGIN_HSA_LIBS)
-
 PLUGIN_GCN=0
 PLUGIN_GCN_CPPFLAGS=
 PLUGIN_GCN_LDFLAGS=
@@ -207,45 +198,6 @@ if test x"$enable_offload_targets" != x; then
 	  ;;
 	esac
 	;;
-      hsa*)
-	case "${target}" in
-	  x86_64-*-*)
-	    case " ${CC} ${CFLAGS} " in
-	      *" -m32 "*|*" -mx32 "*)
-	        PLUGIN_HSA=0
-		;;
-	      *)
-		tgt_plugin=hsa
-	        PLUGIN_HSA=$tgt
-	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
-	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
-	        PLUGIN_HSA_LIBS="-ldl"
-
-	        PLUGIN_HSA_save_CPPFLAGS=$CPPFLAGS
-	        CPPFLAGS="$PLUGIN_HSA_CPPFLAGS $CPPFLAGS"
-	        PLUGIN_HSA_save_LDFLAGS=$LDFLAGS
-	        LDFLAGS="$PLUGIN_HSA_LDFLAGS $LDFLAGS"
-	        PLUGIN_HSA_save_LIBS=$LIBS
-	        LIBS="$PLUGIN_HSA_LIBS $LIBS"
-
-	        PLUGIN_HSA=1
-	        CPPFLAGS=$PLUGIN_HSA_save_CPPFLAGS
-	        LDFLAGS=$PLUGIN_HSA_save_LDFLAGS
-	        LIBS=$PLUGIN_HSA_save_LIBS
-	        case $PLUGIN_HSA in
-		  hsa*)
-	            HSA_PLUGIN=0
-	            AC_MSG_ERROR([HSA run-time package required for HSA support])
-	            ;;
-	        esac
-		;;
-	      esac
-    	    ;;
-	  *-*-*)
-	    PLUGIN_HSA=0
-            ;;
-        esac
-        ;;
 
       amdgcn*)
 	case "${target}" in
@@ -285,10 +237,7 @@ if test x"$enable_offload_targets" != x; then
       offload_targets=$offload_targets,$tgt
     fi
     # Configure additional search paths.
-    if test "$tgt_plugin" = hsa; then
-      # Offloading compilation is all handled by the target compiler.
-      :
-    elif test x"$tgt_dir" != x; then
+    if test x"$tgt_dir" != x; then
       offload_additional_options="$offload_additional_options -B$tgt_dir/libexec/gcc/\$(target_alias)/\$(gcc_version) -B$tgt_dir/bin"
       offload_additional_lib_paths="$offload_additional_lib_paths:$tgt_dir/lib64:$tgt_dir/lib:$tgt_dir/lib32"
     else
@@ -304,9 +253,6 @@ AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
   [Define to 1 if the NVIDIA plugin is built, 0 if not.])
 AC_DEFINE_UNQUOTED([PLUGIN_NVPTX_DYNAMIC], [$PLUGIN_NVPTX_DYNAMIC],
   [Define to 1 if the NVIDIA plugin should dlopen libcuda.so.1, 0 if it should be linked against it.])
-AM_CONDITIONAL([PLUGIN_HSA], [test $PLUGIN_HSA = 1])
-AC_DEFINE_UNQUOTED([PLUGIN_HSA], [$PLUGIN_HSA],
-  [Define to 1 if the HSA plugin is built, 0 if not.])
 AM_CONDITIONAL([PLUGIN_GCN], [test $PLUGIN_GCN = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_GCN], [$PLUGIN_GCN],
   [Define to 1 if the GCN plugin is built, 0 if not.])

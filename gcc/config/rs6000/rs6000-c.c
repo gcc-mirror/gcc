@@ -597,6 +597,9 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
   /* Tell the user if we support the MMA instructions.  */
   if ((flags & OPTION_MASK_MMA) != 0)
     rs6000_define_or_undefine_macro (define_p, "__MMA__");
+  /* Whether pc-relative code is being generated.  */
+  if ((flags & OPTION_MASK_PCREL) != 0)
+    rs6000_define_or_undefine_macro (define_p, "__PCREL__");
 }
 
 void
@@ -1800,22 +1803,34 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	      unsupported_builtin = true;
 	  }
       }
-    else if (fcode == P10_BUILTIN_VEC_XXEVAL)
+    else if ((fcode == P10_BUILTIN_VEC_XXEVAL)
+	    || (fcode == P10V_BUILTIN_VXXPERMX))
       {
-	/* Need to special case __builtin_vec_xxeval because this takes
-	   4 arguments, and the existing infrastructure handles no
-	   more than three.  */
+	signed char op3_type;
+
+	/* Need to special case P10_BUILTIN_VEC_XXEVAL and
+	   P10V_BUILTIN_VXXPERMX because they take 4 arguments and the
+	   existing infrastructure only handles three.  */
 	if (nargs != 4)
 	  {
-	    error ("builtin %qs requires 4 arguments",
-		   "__builtin_vec_xxeval");
+	    const char *name = fcode == P10_BUILTIN_VEC_XXEVAL ?
+	      "__builtin_vec_xxeval":"__builtin_vec_xxpermx";
+
+	    error ("builtin %qs requires 4 arguments", name);
 	    return error_mark_node;
 	  }
+
 	for ( ; desc->code == fcode; desc++)
 	  {
+	    if (fcode == P10_BUILTIN_VEC_XXEVAL)
+	      op3_type = desc->op3;
+	    else  /* P10V_BUILTIN_VXXPERMX */
+	      op3_type = RS6000_BTI_V16QI;
+
 	    if (rs6000_builtin_type_compatible (types[0], desc->op1)
 		&& rs6000_builtin_type_compatible (types[1], desc->op2)
 		&& rs6000_builtin_type_compatible (types[2], desc->op3)
+		&& rs6000_builtin_type_compatible (types[2], op3_type)
 		&& rs6000_builtin_type_compatible (types[3],
 						   RS6000_BTI_UINTSI))
 	      {

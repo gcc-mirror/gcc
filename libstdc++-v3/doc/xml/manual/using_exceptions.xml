@@ -512,7 +512,7 @@ is called.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.stroustrup.com/3rd_safe.pdf">
+	      xlink:href="https://www.stroustrup.com/3rd_safe.pdf">
 	Appendix E: Standard-Library Exception Safety
 	</link>
       </title>

@@ -76,10 +76,10 @@ void test_4a (void)
   node_b.ptr = malloc (sizeof (int));
   global_ptr = &node_a;
   *node_b.ptr = 42; /* { dg-warning "possibly-NULL" "possibly-NULL" } */
-  /* { dg-warning "leak" "leak" { target *-*-* } .-1 } */
-  /* FIXME: the above leak report is correct, but is reported at the wrong
-     location.  */
-} /* { dg-warning "leak" } */
+  /* Although there's a chain of pointers to the allocation, pointed to
+     by global_ptr, the chain goes through the stack frame and thus
+     there's a leak when it is popped.  */
+} /* { dg-warning "leak of 'node_b.ptr'" } */
 
 /* With a call to an unknown function.  */
 

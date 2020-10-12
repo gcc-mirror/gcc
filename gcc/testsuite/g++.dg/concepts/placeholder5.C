@@ -14,5 +14,5 @@ concept bool C =
 template <C c>
 constexpr bool f() { return true; }
 
-static_assert(f<double>(), "");	// { dg-error "unsatisfied|as type" }
-static_assert(f<int>(), ""); // { dg-error "unsatisfied|as type" }
+static_assert(f<double>(), "");	// { dg-error "no match" }
+static_assert(f<int>(), ""); // { dg-error "no match" }

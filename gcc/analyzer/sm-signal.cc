@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -41,6 +42,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tristate.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/program-state.h"
 #include "analyzer/checker-path.h"
@@ -49,8 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "cgraph.h"
 #include "analyzer/supergraph.h"
-#include "analyzer/call-string.h"
-#include "analyzer/program-point.h"
 #include "alloc-pool.h"
 #include "fibonacci_heap.h"
 #include "analyzer/diagnostic-manager.h"
@@ -89,9 +91,6 @@ public:
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
 
   /* These states are "global", rather than per-expression.  */
-
-  /* Start state.  */
-  state_t m_start;
 
   /* State for when we're in a signal handler.  */
   state_t m_in_signal_handler;
@@ -157,8 +156,7 @@ public:
     if (change.is_global_p ()
 	&& change.m_new_state == m_sm.m_in_signal_handler)
       {
-	function *handler
-	  = change.m_event.m_dst_state.m_region_model->get_current_function ();
+	function *handler = change.m_event.get_dest_function ();
 	return change.formatted_print ("registering %qD as signal handler",
 				       handler->decl);
       }
@@ -196,7 +194,6 @@ private:
 signal_state_machine::signal_state_machine (logger *logger)
 : state_machine ("signal", logger)
 {
-  m_start = add_state ("start");
   m_in_signal_handler = add_state ("in_signal_handler");
   m_stop = add_state ("stop");
 }
@@ -208,8 +205,9 @@ static void
 update_model_for_signal_handler (region_model *model,
 				 function *handler_fun)
 {
+  gcc_assert (model);
   /* Purge all state within MODEL.  */
-  *model = region_model ();
+  *model = region_model (model->get_manager ());
   model->push_frame (handler_fun, NULL, NULL);
 }
 
@@ -221,6 +219,12 @@ public:
   void print (pretty_printer *pp) FINAL OVERRIDE
   {
     pp_string (pp, "signal delivered");
+  }
+
+  json::object *to_json () const
+  {
+    json::object *custom_obj = new json::object ();
+    return custom_obj;
   }
 
   void update_model (region_model *model,
@@ -273,9 +277,9 @@ public:
 
     exploded_node *dst_enode = eg->get_or_create_node (entering_handler,
 						       state_entering_handler,
-						       NULL);
+						       src_enode);
     if (dst_enode)
-      eg->add_edge (src_enode, dst_enode, NULL, state_change (),
+      eg->add_edge (src_enode, dst_enode, NULL, /*state_change (),*/
 		    new signal_delivery_edge_info_t ());
   }
 
@@ -349,9 +353,10 @@ signal_state_machine::on_stmt (sm_context *sm_ctxt,
       if (const gcall *call = dyn_cast <const gcall *> (stmt))
 	if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
 	  if (signal_unsafe_p (callee_fndecl))
-	    sm_ctxt->warn_for_state (node, stmt, NULL_TREE, m_in_signal_handler,
-				     new signal_unsafe_call (*this, call,
-							     callee_fndecl));
+	    if (sm_ctxt->get_global_state () == m_in_signal_handler)
+	      sm_ctxt->warn (node, stmt, NULL_TREE,
+			     new signal_unsafe_call (*this, call,
+						     callee_fndecl));
     }
 
   return false;

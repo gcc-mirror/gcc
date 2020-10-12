@@ -55,6 +55,8 @@ class tristate {
     return m_value != other.m_value;
   }
 
+  enum value get_value () const { return m_value; }
+
  private:
   enum value m_value;
 };

@@ -238,8 +238,8 @@ procedure Gnatbind is
       ------------------------------
 
       function Restriction_Could_Be_Set (R : Restriction_Id) return Boolean is
-         CR : Restrictions_Info renames Cumulative_Restrictions;
-
+         CR     : Restrictions_Info renames Cumulative_Restrictions;
+         Result : Boolean;
       begin
          case R is
 
@@ -247,11 +247,19 @@ procedure Gnatbind is
 
             when All_Boolean_Restrictions =>
 
-               --  The condition for listing a boolean restriction as an
-               --  additional restriction that could be set is that it is
-               --  not violated by any unit, and not already set.
+               --  Print it if not violated by any unit, and not already set...
 
-               return CR.Violated (R) = False and then CR.Set (R) = False;
+               Result := not CR.Violated (R) and then not CR.Set (R);
+
+               --  ...except that for No_Tasks_Unassigned_To_CPU, we don't want
+               --  to print it if it would violate the restriction post
+               --  compilation.
+
+               if R = No_Tasks_Unassigned_To_CPU
+                 and then ALIs.Table (ALIs.First).Main_CPU = No_Main_CPU
+               then
+                  Result := False;
+               end if;
 
             --  Parameter restriction
 
@@ -261,18 +269,18 @@ procedure Gnatbind is
                --  unknown, the restriction can definitely not be listed.
 
                if CR.Violated (R) and then CR.Unknown (R) then
-                  return False;
+                  Result := False;
 
                --  We can list the restriction if it is not set
 
                elsif not CR.Set (R) then
-                  return True;
+                  Result := True;
 
                --  We can list the restriction if is set to a greater value
                --  than the maximum value known for the violation.
 
                else
-                  return CR.Value (R) > CR.Count (R);
+                  Result := CR.Value (R) > CR.Count (R);
                end if;
 
             --  No other values for R possible
@@ -280,6 +288,8 @@ procedure Gnatbind is
             when others =>
                raise Program_Error;
          end case;
+
+         return Result;
       end Restriction_Could_Be_Set;
 
    --  Start of processing for List_Applicable_Restrictions
@@ -881,6 +891,17 @@ begin
       --  mode where we want to be more flexible.
 
       if not CodePeer_Mode then
+         --  AI12-0117-1, "Restriction No_Tasks_Unassigned_To_CPU":
+         --  If the restriction No_Tasks_Unassigned_To_CPU applies, then
+         --  check that the main subprogram has a CPU assigned.
+
+         if Cumulative_Restrictions.Set (No_Tasks_Unassigned_To_CPU)
+           and then ALIs.Table (ALIs.First).Main_CPU = No_Main_CPU
+         then
+            Error_Msg ("No_Tasks_Unassigned_To_CPU restriction requires CPU" &
+                         " aspect to be specified for main procedure");
+         end if;
+
          Check_Duplicated_Subunits;
          Check_Versions;
          Check_Consistency;

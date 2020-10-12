@@ -58,6 +58,7 @@ run_analyzer_selftests ()
   analyzer_region_model_cc_tests ();
   analyzer_sm_file_cc_tests ();
   analyzer_sm_signal_cc_tests ();
+  analyzer_store_cc_tests ();
 #endif /* #if ENABLE_ANALYZER */
 }
 

@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *skb;
   uint32_t type;
 
-  ret = __builtin_bpf_helper_skb_change_type (skb, type);
+  ret = bpf_skb_change_type (skb, type);
 }
 
 /* { dg-final { scan-assembler "call\t32" } } */

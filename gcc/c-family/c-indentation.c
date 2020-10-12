@@ -24,8 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "c-indentation.h"
 #include "selftest.h"
-
-extern cpp_options *cpp_opts;
+#include "diagnostic.h"
 
 /* Round up VIS_COLUMN to nearest tab stop. */
 
@@ -214,19 +213,6 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 					const token_indent_info &body_tinfo,
 					const token_indent_info &next_tinfo)
 {
-  location_t guard_loc = guard_tinfo.location;
-  location_t body_loc = body_tinfo.location;
-  location_t next_stmt_loc = next_tinfo.location;
-
-  enum cpp_ttype body_type = body_tinfo.type;
-  enum cpp_ttype next_tok_type = next_tinfo.type;
-
-  /* Don't attempt to compare the indentation of BODY_LOC and NEXT_STMT_LOC
-     if either are within macros.  */
-  if (linemap_location_from_macro_expansion_p (line_table, body_loc)
-      || linemap_location_from_macro_expansion_p (line_table, next_stmt_loc))
-    return false;
-
   /* Don't attempt to compare indentation if #line or # 44 "file"-style
      directives are present, suggesting generated code.
 
@@ -267,6 +253,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
      }            <- NEXT
      baz ();
   */
+  enum cpp_ttype next_tok_type = next_tinfo.type;
   if (next_tok_type == CPP_CLOSE_BRACE
       || next_tinfo.keyword == RID_ELSE)
     return false;
@@ -288,6 +275,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
       bar (); <- BODY
       baz (); <- NEXT
   */
+  enum cpp_ttype body_type = body_tinfo.type;
   if (body_type == CPP_OPEN_BRACE)
     return false;
 
@@ -295,11 +283,57 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
   if (next_tok_type == CPP_SEMICOLON)
     return false;
 
+  location_t guard_loc = guard_tinfo.location;
+  location_t body_loc = body_tinfo.location;
+  location_t next_stmt_loc = next_tinfo.location;
+
+  /* Resolve each token location to the respective macro expansion
+     point that produced the token.  */
+  if (linemap_location_from_macro_expansion_p (line_table, guard_loc))
+    guard_loc = linemap_resolve_location (line_table, guard_loc,
+					  LRK_MACRO_EXPANSION_POINT, NULL);
+  if (linemap_location_from_macro_expansion_p (line_table, body_loc))
+    body_loc = linemap_resolve_location (line_table, body_loc,
+					 LRK_MACRO_EXPANSION_POINT, NULL);
+  if (linemap_location_from_macro_expansion_p (line_table, next_stmt_loc))
+    next_stmt_loc = linemap_resolve_location (line_table, next_stmt_loc,
+					      LRK_MACRO_EXPANSION_POINT, NULL);
+
+  /* When all three tokens are produced from a single macro expansion, we
+     instead consider their loci inside that macro's definition.  */
+  if (guard_loc == body_loc && body_loc == next_stmt_loc)
+    {
+      const line_map *guard_body_common_map
+	= first_map_in_common (line_table,
+			       guard_tinfo.location, body_tinfo.location,
+			       &guard_loc, &body_loc);
+      const line_map *body_next_common_map
+	= first_map_in_common (line_table,
+			       body_tinfo.location, next_tinfo.location,
+			       &body_loc, &next_stmt_loc);
+
+      /* Punt on complicated nesting of macros.  */
+      if (guard_body_common_map != body_next_common_map)
+	return false;
+
+      guard_loc = linemap_resolve_location (line_table, guard_loc,
+					    LRK_MACRO_DEFINITION_LOCATION, NULL);
+      body_loc = linemap_resolve_location (line_table, body_loc,
+					   LRK_MACRO_DEFINITION_LOCATION, NULL);
+      next_stmt_loc = linemap_resolve_location (line_table, next_stmt_loc,
+						LRK_MACRO_DEFINITION_LOCATION,
+						NULL);
+    }
+
+  /* Give up if the loci are not all distinct.  */
+  if (guard_loc == body_loc || body_loc == next_stmt_loc)
+    return false;
+
   expanded_location body_exploc = expand_location (body_loc);
   expanded_location next_stmt_exploc = expand_location (next_stmt_loc);
   expanded_location guard_exploc = expand_location (guard_loc);
 
-  const unsigned int tab_width = cpp_opts->tabstop;
+  const unsigned int tab_width = global_dc->tabstop;
 
   /* They must be in the same file.  */
   if (next_stmt_exploc.file != body_exploc.file)

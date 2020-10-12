@@ -52,14 +52,15 @@ f5 ()
 int
 main ()
 {
+  int return_lval = __cplusplus > 201703L ? -1 : 2;
   Y y1 = f (A());
-  if (y1.y != 2)
+  if (y1.y != return_lval)
     __builtin_abort ();
   Y y2 = f2 (A());
   if (y2.y != -1)
     __builtin_abort ();
   Y y3 = f3 ();
-  if (y3.y != 2)
+  if (y3.y != return_lval)
     __builtin_abort ();
   Y y4 = f4 ();
   if (y4.y != -1)

@@ -23,6 +23,7 @@
 // all of the string_view class.
 
 // { dg-options "-std=gnu++17" }
+// { dg-do run { target c++17 } }
 // { dg-require-fileio "" }
 
 #include <string_view>

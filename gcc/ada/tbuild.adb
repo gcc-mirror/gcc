@@ -175,8 +175,8 @@ package body Tbuild is
               Attribute_Name => Attribute_Name);
 
    begin
-      pragma Assert (Nam_In (Attribute_Name, Name_Address,
-                                             Name_Unrestricted_Access));
+      pragma Assert
+        (Attribute_Name in Name_Address | Name_Unrestricted_Access);
       Set_Must_Be_Byte_Aligned (N, True);
       return N;
    end Make_Byte_Aligned_Attribute_Reference;
@@ -352,6 +352,7 @@ package body Tbuild is
       Check_Restriction (No_Implicit_Loops, Node);
 
       if Present (Iteration_Scheme)
+        and then Nkind (Iteration_Scheme) /= N_Iterator_Specification
         and then Present (Condition (Iteration_Scheme))
       then
          Check_Restriction (No_Implicit_Conditionals, Node);
@@ -795,6 +796,23 @@ package body Tbuild is
       Set_Etype (Result, Typ);
       return Result;
    end OK_Convert_To;
+
+   --------------
+   -- Sel_Comp --
+   --------------
+
+   function Sel_Comp (Pre : Node_Id; Sel : String) return Node_Id is
+   begin
+      return Make_Selected_Component
+        (Sloc          => Sloc (Pre),
+         Prefix        => Pre,
+         Selector_Name => Make_Identifier (Sloc (Pre), Name_Find (Sel)));
+   end Sel_Comp;
+
+   function Sel_Comp (Pre, Sel : String; Loc : Source_Ptr) return Node_Id is
+   begin
+      return Sel_Comp (Make_Identifier (Loc, Name_Find (Pre)), Sel);
+   end Sel_Comp;
 
    -------------
    -- Set_NOD --

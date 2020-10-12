@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "tree-pretty-print.h"
 #include "selftest.h"
+#include "langhooks.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -248,9 +249,12 @@ pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
   if (!TYPE_P (t))
     t = TREE_TYPE (t);
 
-  qualifiers = TYPE_QUALS (t);
-  pp_c_cv_qualifiers (pp, qualifiers,
-		      TREE_CODE (t) == FUNCTION_TYPE);
+  if (TREE_CODE (t) != ARRAY_TYPE)
+    {
+      qualifiers = TYPE_QUALS (t);
+      pp_c_cv_qualifiers (pp, qualifiers,
+			  TREE_CODE (t) == FUNCTION_TYPE);
+    }
 
   if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (t)))
     {
@@ -572,6 +576,8 @@ c_pretty_printer::abstract_declarator (tree t)
 void
 c_pretty_printer::direct_abstract_declarator (tree t)
 {
+  bool add_space = false;
+
   switch (TREE_CODE (t))
     {
     case POINTER_TYPE:
@@ -585,17 +591,65 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 
     case ARRAY_TYPE:
       pp_c_left_bracket (this);
+
+      if (int quals = TYPE_QUALS (t))
+	{
+	  /* Print the array qualifiers such as in "T[const restrict 3]".  */
+	  pp_c_cv_qualifiers (this, quals, false);
+	  add_space = true;
+	}
+
+      if (tree arr = lookup_attribute ("array", TYPE_ATTRIBUTES (t)))
+	{
+	  if (TREE_VALUE (arr))
+	    {
+	      /* Print the specifier as in "T[static 3]" that's not actually
+		 part of the type but may be added by the front end.  */
+	      pp_c_ws_string (this, "static");
+	      add_space = true;
+	    }
+	  else if (!TYPE_DOMAIN (t))
+	    /* For arrays of unspecified bound using the [*] notation. */
+	    pp_character (this, '*');
+	}
+
       if (tree dom = TYPE_DOMAIN (t))
 	{
 	  if (tree maxval = TYPE_MAX_VALUE (dom))
 	    {
+	      if (add_space)
+		pp_space (this);
+
 	      tree type = TREE_TYPE (maxval);
 
 	      if (tree_fits_shwi_p (maxval))
 		pp_wide_integer (this, tree_to_shwi (maxval) + 1);
-	      else
+	      else if (TREE_CODE (maxval) == INTEGER_CST)
 		expression (fold_build2 (PLUS_EXPR, type, maxval,
 					 build_int_cst (type, 1)));
+	      else
+		{
+		  /* Strip the expressions from around a VLA bound added
+		     internally to make it fit the domain mold, including
+		     any casts.  */
+		  if (TREE_CODE (maxval) == NOP_EXPR)
+		    maxval = TREE_OPERAND (maxval, 0);
+		  if (TREE_CODE (maxval) == PLUS_EXPR
+		      && integer_all_onesp (TREE_OPERAND (maxval, 1)))
+		    {
+		      maxval = TREE_OPERAND (maxval, 0);
+		      if (TREE_CODE (maxval) == NOP_EXPR)
+			maxval = TREE_OPERAND (maxval, 0);
+		    }
+		  if (TREE_CODE (maxval) == SAVE_EXPR)
+		    {
+		      maxval = TREE_OPERAND (maxval, 0);
+		      if (TREE_CODE (maxval) == NOP_EXPR)
+			maxval = TREE_OPERAND (maxval, 0);
+		    }
+
+		  expression (maxval);
+		}
 	    }
 	  else if (TYPE_SIZE (t))
 	    /* Print zero for zero-length arrays but not for flexible
@@ -1640,6 +1694,7 @@ c_pretty_printer::postfix_expression (tree e)
       break;
 
     case MEM_REF:
+    case TARGET_MEM_REF:
       expression (e);
       break;
 
@@ -1804,6 +1859,62 @@ c_pretty_printer::unary_expression (tree e)
 	      pp_c_right_paren (this);
 	    }
 	}
+      break;
+
+    case TARGET_MEM_REF:
+      /* TARGET_MEM_REF can't appear directly from source, but can appear
+	 during late GIMPLE optimizations and through late diagnostic we might
+	 need to support it.  Print it as dereferencing of a pointer after
+	 cast to the TARGET_MEM_REF type, with pointer arithmetics on some
+	 pointer to single byte types, so
+	 *(type *)((char *) ptr + step * index + index2) if all the operands
+	 are present and the casts are needed.  */
+      pp_c_star (this);
+      if (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (TMR_BASE (e)))) == NULL_TREE
+	  || !integer_onep (TYPE_SIZE_UNIT
+				(TREE_TYPE (TREE_TYPE (TMR_BASE (e))))))
+	{
+	  if (TYPE_SIZE_UNIT (TREE_TYPE (e))
+	      && integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (e))))
+	    {
+	      pp_c_left_paren (this);
+	      pp_c_type_cast (this, build_pointer_type (TREE_TYPE (e)));
+	    }
+	  else
+	    {
+	      pp_c_type_cast (this, build_pointer_type (TREE_TYPE (e)));
+	      pp_c_left_paren (this);
+	      pp_c_type_cast (this, build_pointer_type (char_type_node));
+	    }
+	}
+      else if (!lang_hooks.types_compatible_p
+		  (TREE_TYPE (e), TREE_TYPE (TREE_TYPE (TMR_BASE (e)))))
+	{
+	  pp_c_type_cast (this, build_pointer_type (TREE_TYPE (e)));
+	  pp_c_left_paren (this);
+	}
+      else
+	pp_c_left_paren (this);
+      pp_c_cast_expression (this, TMR_BASE (e));
+      if (TMR_STEP (e) && TMR_INDEX (e))
+	{
+	  pp_plus (this);
+	  pp_c_cast_expression (this, TMR_INDEX (e));
+	  pp_c_star (this);
+	  pp_c_cast_expression (this, TMR_STEP (e));
+	}
+      if (TMR_INDEX2 (e))
+	{
+	  pp_plus (this);
+	  pp_c_cast_expression (this, TMR_INDEX2 (e));
+	}
+      if (!integer_zerop (TMR_OFFSET (e)))
+	{
+	  pp_plus (this);
+	  pp_c_integer_constant (this,
+				 fold_convert (ssizetype, TMR_OFFSET (e)));
+	}
+      pp_c_right_paren (this);
       break;
 
     case REALPART_EXPR:
@@ -2242,6 +2353,7 @@ c_pretty_printer::expression (tree e)
     case ADDR_EXPR:
     case INDIRECT_REF:
     case MEM_REF:
+    case TARGET_MEM_REF:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
@@ -2364,15 +2476,97 @@ c_pretty_printer::expression (tree e)
 /* Statements.  */
 
 void
-c_pretty_printer::statement (tree stmt)
+c_pretty_printer::statement (tree t)
 {
-  if (stmt == NULL)
+  if (t == NULL)
     return;
 
-  if (pp_needs_newline (this))
-    pp_newline_and_indent (this, 0);
+  switch (TREE_CODE (t))
+    {
 
-  dump_generic_node (this, stmt, pp_indentation (this), TDF_NONE, true);
+    case SWITCH_STMT:
+      pp_c_ws_string (this, "switch");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (SWITCH_STMT_COND (t));
+      pp_c_right_paren (this);
+      pp_indentation (this) += 3;
+      pp_needs_newline (this) = true;
+      statement (SWITCH_STMT_BODY (t));
+      pp_newline_and_indent (this, -3);
+      break;
+
+      /* iteration-statement:
+	    while ( expression ) statement
+	    do statement while ( expression ) ;
+	    for ( expression(opt) ; expression(opt) ; expression(opt) ) statement
+	    for ( declaration expression(opt) ; expression(opt) ) statement  */
+    case WHILE_STMT:
+      pp_c_ws_string (this, "while");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (WHILE_COND (t));
+      pp_c_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (WHILE_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
+      break;
+
+    case DO_STMT:
+      pp_c_ws_string (this, "do");
+      pp_newline_and_indent (this, 3);
+      statement (DO_BODY (t));
+      pp_newline_and_indent (this, -3);
+      pp_c_ws_string (this, "while");
+      pp_space (this);
+      pp_c_left_paren (this);
+      expression (DO_COND (t));
+      pp_c_right_paren (this);
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = true;
+      break;
+
+    case FOR_STMT:
+      pp_c_ws_string (this, "for");
+      pp_space (this);
+      pp_c_left_paren (this);
+      if (FOR_INIT_STMT (t))
+	statement (FOR_INIT_STMT (t));
+      else
+	pp_c_semicolon (this);
+      pp_needs_newline (this) = false;
+      pp_c_whitespace (this);
+      if (FOR_COND (t))
+	expression (FOR_COND (t));
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = false;
+      pp_c_whitespace (this);
+      if (FOR_EXPR (t))
+	expression (FOR_EXPR (t));
+      pp_c_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (FOR_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
+      break;
+
+      /* jump-statement:
+	    goto identifier;
+	    continue ;
+	    return expression(opt) ;  */
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      pp_string (this, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = true;
+      break;
+
+    default:
+      if (pp_needs_newline (this))
+	pp_newline_and_indent (this, 0);
+      dump_generic_node (this, t, pp_indentation (this), TDF_NONE, true);
+    }
 }
 
 

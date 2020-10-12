@@ -485,6 +485,18 @@
   (and (match_operand 0 "expandable_comparison_operator")
        (match_test "maybe_get_arm_condition_code (op) != ARM_NV")))
 
+(define_special_predicate "arm_comparison_operation"
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
+         ordered,unlt,unle,unge,ungt")
+{
+  if (XEXP (op, 1) != const0_rtx)
+    return false;
+  rtx op0 = XEXP (op, 0);
+  if (!REG_P (op0) || REGNO (op0) != CC_REGNUM)
+    return false;
+  return maybe_get_arm_condition_code (op) != ARM_NV;
+})
+
 (define_special_predicate "lt_ge_comparison_operator"
   (match_code "lt,ge"))
 

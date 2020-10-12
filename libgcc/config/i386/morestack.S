@@ -79,7 +79,7 @@
 #ifndef __x86_64__
 #define BACKOFF (1024)
 #else
-#define BACKOFF (1536)
+#define BACKOFF (3584)
 #endif
 
 

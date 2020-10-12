@@ -7,5 +7,5 @@ struct S2 : S1 {};
 S1
 f (S2 s)
 {
-  return s; // { dg-error "use of deleted function" }
+  return s; // { dg-error "use of deleted function" "" { target c++17_down } }
 }

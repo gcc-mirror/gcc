@@ -16,6 +16,12 @@
 
 # GCC testsuite for ARM's -mpure-code option, using the `dg.exp' driver.
 
+# Exit immediately if this is an ARM FDPIC target (it uses PIC code,
+# which is incompatible with -mpure-code).
+if [istarget arm*-*-uclinuxfdpiceabi] then {
+  return
+}
+
 # Load support procs.
 load_lib gcc-dg.exp
 
@@ -53,4 +59,4 @@ set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
 
 # All done.
 dg-finish
-#}
+}

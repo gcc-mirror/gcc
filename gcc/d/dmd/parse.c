@@ -7531,6 +7531,7 @@ Expression *Parser::parseUnaryExp()
                                 return NULL;
                             }
                             e = new TypeExp(loc, t);
+                            e->parens = 1;
                             e = parsePostExp(e);
                         }
                         else

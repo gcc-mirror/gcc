@@ -294,7 +294,7 @@ struct lang_hooks_for_decls
   tree (*omp_clause_dtor) (tree clause, tree decl);
 
   /* Do language specific checking on an implicitly determined clause.  */
-  void (*omp_finish_clause) (tree clause, gimple_seq *pre_p);
+  void (*omp_finish_clause) (tree clause, gimple_seq *pre_p, bool);
 
   /* Return true if DECL is a scalar variable (for the purpose of
      implicit firstprivatization).  */
@@ -579,6 +579,9 @@ struct lang_hooks
      for GCC developers (to help debugging) rather than for end-users.  */
   const char *(*get_substring_location) (const substring_loc &,
 					 location_t *out_loc);
+
+  /* Invoked before the early_finish debug hook is invoked.  */
+  void (*finalize_early_debug) (void);
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */

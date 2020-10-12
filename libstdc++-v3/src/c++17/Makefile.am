@@ -50,6 +50,7 @@ inst_sources =
 endif
 
 sources = \
+	floating_from_chars.cc \
 	fs_dir.cc \
 	fs_ops.cc \
 	fs_path.cc \

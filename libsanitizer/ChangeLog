@@ -1,3 +1,15 @@
+2020-09-21  Ian Lance Taylor  <iant@golang.org>
+
+	* libbacktrace/backtrace-rename.h (backtrace_uncompress_lzma):
+	Define.
+	(backtrace_syminfo_to_full_callback): Define.
+	(backtrace_syminfo_to_full_error_callback): Define.
+
+2020-07-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sanitizer_common/sanitizer_linux.cpp: Cherry-pick llvm-project
+	revision f0e9b76c3500496f8f3ea7abe6f4bf801e3b41e7.
+
 2020-06-09  Martin Liska  <mliska@suse.cz>
 
 	* asan/Makefile.am: Replace gnu++11 with gnu++14.

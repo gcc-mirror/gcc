@@ -7,4 +7,4 @@ int *f( int a)
 {
   return bar(&a);
 }
-/* { dg-warning ".'-fsanitize=address' and '-fsanitize=kernel-address' are not supported for this target" "" { target *-*-* } 0 } */
+/* { dg-warning ".'-fsanitize=kernel-address' with stack protection is not supported without '-fasan-shadow-offset=' for this target" "" { target *-*-* } 0 } */

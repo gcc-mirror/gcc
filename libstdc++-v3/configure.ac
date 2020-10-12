@@ -256,6 +256,8 @@ AC_CHECK_HEADERS([linux/random.h], [], [],
 #endif
 ]])
 
+AC_CHECK_HEADERS([xlocale.h])
+
 # Only do link tests if native. Else, hardcode.
 if $GLIBCXX_IS_NATIVE; then
 
@@ -281,6 +283,9 @@ if $GLIBCXX_IS_NATIVE; then
 
   # For Networking TS.
   AC_CHECK_FUNCS(sockatmark)
+
+  # Non-standard functions used by C++17 std::from_chars
+  AC_CHECK_FUNCS(uselocale)
 
   # For iconv support.
   AM_ICONV

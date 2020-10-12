@@ -12,12 +12,12 @@ long *
 foo1 (void)
 {
   return (long *) p;
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }
 
 long *
 foo2 (void)
 {
   return (long *) bar ();
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }

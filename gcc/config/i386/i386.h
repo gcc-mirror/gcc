@@ -203,6 +203,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SERIALIZE_P(x) TARGET_ISA2_SERIALIZE_P(x)
 #define TARGET_TSXLDTRK	TARGET_ISA2_TSXLDTRK
 #define TARGET_TSXLDTRK_P(x) TARGET_ISA2_TSXLDTRK_P(x)
+#define TARGET_AMX_TILE TARGET_ISA2_AMX_TILE
+#define TARGET_AMX_TILE_P(x) TARGET_ISA2_AMX_TILE(x)
+#define TARGET_AMX_INT8 TARGET_ISA2_AMX_INT8
+#define TARGET_AMX_INT8_P(x) TARGET_ISA2_AMX_INT8(x)
+#define TARGET_AMX_BF16 TARGET_ISA2_AMX_BF16
+#define TARGET_AMX_BF16_P(x) TARGET_ISA2_AMX_BF16(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -279,6 +285,13 @@ struct processor_costs {
 				   in SImode, DImode and TImode.  */
       const int sse_to_integer;	/* cost of moving SSE register to integer.  */
       const int integer_to_sse;	/* cost of moving integer register to SSE. */
+      const int mask_to_integer; /* cost of moving mask register to integer.  */
+      const int integer_to_mask; /* cost of moving integer register to mask.  */
+      const int mask_load[3]; /* cost of loading mask registers
+				 in QImode, HImode and SImode.  */
+      const int mask_store[3]; /* cost of storing mask register
+				  in QImode, HImode and SImode.  */
+      const int mask_move; /* cost of moving mask register.  */
     } hard_register;
 
   const int add;		/* cost of an add instruction */
@@ -598,8 +611,7 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_FALSE_DEP_FOR_BMI]
 #define TARGET_ONE_IF_CONV_INSN \
 	ix86_tune_features[X86_TUNE_ONE_IF_CONV_INSN]
-#define TARGET_USE_XCHG_FOR_ATOMIC_STORE \
-	ix86_tune_features[X86_TUNE_USE_XCHG_FOR_ATOMIC_STORE]
+#define TARGET_AVOID_MFENCE ix86_tune_features[X86_TUNE_AVOID_MFENCE]
 #define TARGET_EMIT_VZEROUPPER \
 	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 #define TARGET_EXPAND_ABS \
@@ -1412,6 +1424,7 @@ enum reg_class
   FLOAT_INT_SSE_REGS,
   MASK_REGS,
   ALL_MASK_REGS,
+  INT_MASK_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -1471,6 +1484,7 @@ enum reg_class
    "FLOAT_INT_SSE_REGS",		\
    "MASK_REGS",				\
    "ALL_MASK_REGS",			\
+   "INT_MASK_REGS",			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
@@ -1509,6 +1523,7 @@ enum reg_class
  { 0xff9ffff, 0xfffffff0,   0xf },	/* FLOAT_INT_SSE_REGS */	\
        { 0x0,        0x0, 0xfe0 },	/* MASK_REGS */			\
        { 0x0,        0x0, 0xff0 },	/* ALL_MASK_REGS */		\
+   { 0x900ff,      0xff0, 0xff0 },	/* INT_MASK_REGS */	\
 { 0xffffffff, 0xffffffff, 0xfff }	/* ALL_REGS  */			\
 }
 
@@ -2418,7 +2433,7 @@ const wide_int_bitmask PTA_AVX512F (HOST_WIDE_INT_1U << 40);
 const wide_int_bitmask PTA_AVX512ER (HOST_WIDE_INT_1U << 41);
 const wide_int_bitmask PTA_AVX512PF (HOST_WIDE_INT_1U << 42);
 const wide_int_bitmask PTA_AVX512CD (HOST_WIDE_INT_1U << 43);
-/* Hole after PTA_MPX was removed.  */
+const wide_int_bitmask PTA_NO_TUNE (HOST_WIDE_INT_1U << 44);
 const wide_int_bitmask PTA_SHA (HOST_WIDE_INT_1U << 45);
 const wide_int_bitmask PTA_PREFETCHWT1 (HOST_WIDE_INT_1U << 46);
 const wide_int_bitmask PTA_CLFLUSHOPT (HOST_WIDE_INT_1U << 47);
@@ -2457,7 +2472,19 @@ const wide_int_bitmask PTA_ENQCMD (0, HOST_WIDE_INT_1U << 15);
 const wide_int_bitmask PTA_CLDEMOTE (0, HOST_WIDE_INT_1U << 16);
 const wide_int_bitmask PTA_SERIALIZE (0, HOST_WIDE_INT_1U << 17);
 const wide_int_bitmask PTA_TSXLDTRK (0, HOST_WIDE_INT_1U << 18);
+const wide_int_bitmask PTA_AMX_TILE(0, HOST_WIDE_INT_1U << 19);
+const wide_int_bitmask PTA_AMX_INT8(0, HOST_WIDE_INT_1U << 20);
+const wide_int_bitmask PTA_AMX_BF16(0, HOST_WIDE_INT_1U << 21);
 
+const wide_int_bitmask PTA_X86_64_BASELINE = PTA_64BIT | PTA_MMX | PTA_SSE
+  | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR;
+const wide_int_bitmask PTA_X86_64_V2 = (PTA_X86_64_BASELINE & (~PTA_NO_SAHF))
+  | PTA_CX16 | PTA_POPCNT | PTA_SSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_SSSE3;
+const wide_int_bitmask PTA_X86_64_V3 = PTA_X86_64_V2
+  | PTA_AVX | PTA_AVX2 | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_LZCNT
+  | PTA_MOVBE | PTA_XSAVE;
+const wide_int_bitmask PTA_X86_64_V4 = PTA_X86_64_V3
+  | PTA_AVX512F | PTA_AVX512BW | PTA_AVX512CD | PTA_AVX512DQ | PTA_AVX512VL;
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
 const wide_int_bitmask PTA_NEHALEM = PTA_CORE2 | PTA_SSE4_1 | PTA_SSE4_2
@@ -2490,7 +2517,8 @@ const wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_CLWB | PTA_AVX512VP2INTERSECT;
 const wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_COOPERLAKE | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_ENQCMD | PTA_CLDEMOTE
-  | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK;
+  | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK | PTA_AMX_TILE
+  | PTA_AMX_INT8 | PTA_AMX_BF16;
 const wide_int_bitmask PTA_ALDERLAKE = PTA_SKYLAKE | PTA_CLDEMOTE | PTA_PTWRITE
   | PTA_WAITPKG | PTA_SERIALIZE;
 const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
@@ -2946,9 +2974,9 @@ extern void debug_dispatch_window (int);
 /* The value at zero is only defined for the BMI instructions
    LZCNT and TZCNT, not the BSR/BSF insns in the original isa.  */
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI ? 1 : 0)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_BMI ? 2 : 0)
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT ? 1 : 0)
+	((VALUE) = GET_MODE_BITSIZE (MODE), TARGET_LZCNT ? 2 : 0)
 
 
 /* Flags returned by ix86_get_callcvt ().  */

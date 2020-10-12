@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -8,8 +10,8 @@ foo ()
   int ret;
   void *msg;
   uint32_t bytes;
-  
-  ret = __builtin_bpf_helper_msg_cork_bytes (msg, bytes);
+
+  ret = bpf_msg_cork_bytes (msg, bytes);
 }
 
 /* { dg-final { scan-assembler "call\t62" } } */

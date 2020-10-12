@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -Wno-attributes -mfpmath=sse -mfma -mtune=generic -mno-fma4" } */
+/* { dg-options "-O3 -Wno-attributes -mfpmath=sse -mfma -mtune=generic -mno-fma4 -mno-avx512f" } */
 /* Disabling epilogues until we find a better way to deal with scans.  */
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 

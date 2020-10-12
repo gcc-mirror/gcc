@@ -1,6 +1,6 @@
 /* Example of a multilevel wrapper around malloc/free, with a double-'free'.  */
 
-/* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fanalyzer-checker=malloc -fanalyzer-verbose-state-changes -fdiagnostics-show-caret" } */
+/* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fanalyzer-checker=malloc -fdiagnostics-show-caret" } */
 /* { dg-enable-nn-line-numbers "" } */
 
 #include <stdlib.h>
@@ -61,111 +61,133 @@ void test (int i)
     |      |                    |
     |      |                    (2) calling 'make_boxed_int' from 'test'
     |
-    +--> 'make_boxed_int': events 3-6
+    +--> 'make_boxed_int': events 3-4
            |
            |   NN | make_boxed_int (int i)
            |      | ^~~~~~~~~~~~~~
            |      | |
            |      | (3) entry to 'make_boxed_int'
-           |......
+           |   NN | {
+           |   NN |   boxed_int *result = (boxed_int *)wrapped_malloc (sizeof (boxed_int));
+           |      |                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |                                    |
+           |      |                                    (4) calling 'wrapped_malloc' from 'make_boxed_int'
+           |
+           +--> 'wrapped_malloc': events 5-6
+                  |
+                  |   NN | void *wrapped_malloc (size_t size)
+                  |      |       ^~~~~~~~~~~~~~
+                  |      |       |
+                  |      |       (5) entry to 'wrapped_malloc'
+                  |   NN | {
+                  |   NN |   return malloc (size);
+                  |      |          ~~~~~~~~~~~~~
+                  |      |          |
+                  |      |          (6) allocated here
+                  |
+           <------+
+           |
+         'make_boxed_int': events 7-10
+           |
+           |   NN |   boxed_int *result = (boxed_int *)wrapped_malloc (sizeof (boxed_int));
+           |      |                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |                                    |
+           |      |                                    (7) returning to 'make_boxed_int' from 'wrapped_malloc'
            |   NN |   if (!result)
-           |      |      ~
+           |      |      ~                              
            |      |      |
-           |      |      (4) following 'false' branch (when 'result' is non-NULL)...
+           |      |      (8) assuming 'result' is non-NULL
+           |      |      (9) following 'false' branch (when 'result' is non-NULL)...
            |   NN |     abort ();
            |   NN |   result->i = i;
-           |      |   ~~~~~~~~~~~~~
+           |      |   ~~~~~~~~~~~~~                     
            |      |             |
-           |      |             (5) ...to here
-           |   NN |   return result;
-           |      |          ~~~~~~
-           |      |          |
-           |      |          (6) state of '<return-value>': 'start' -> 'nonnull' (origin: NULL)
+           |      |             (10) ...to here
            |
     <------+
     |
-  'test': events 7-8
+  'test': events 11-12
     |
     |   NN |   boxed_int *obj = make_boxed_int (i);
     |      |                    ^~~~~~~~~~~~~~~~~~
     |      |                    |
-    |      |                    (7) returning to 'test' from 'make_boxed_int'
+    |      |                    (11) returning to 'test' from 'make_boxed_int'
     |   NN | 
     |   NN |   free_boxed_int (obj);
     |      |   ~~~~~~~~~~~~~~~~~~~~
     |      |   |
-    |      |   (8) calling 'free_boxed_int' from 'test'
+    |      |   (12) calling 'free_boxed_int' from 'test'
     |
-    +--> 'free_boxed_int': events 9-10
+    +--> 'free_boxed_int': events 13-14
            |
            |   NN | free_boxed_int (boxed_int *bi)
            |      | ^~~~~~~~~~~~~~
            |      | |
-           |      | (9) entry to 'free_boxed_int'
+           |      | (13) entry to 'free_boxed_int'
            |   NN | {
            |   NN |   wrapped_free (bi);
            |      |   ~~~~~~~~~~~~~~~~~
            |      |   |
-           |      |   (10) calling 'wrapped_free' from 'free_boxed_int'
+           |      |   (14) calling 'wrapped_free' from 'free_boxed_int'
            |
-           +--> 'wrapped_free': events 11-12
+           +--> 'wrapped_free': events 15-16
                   |
                   |   NN | void wrapped_free (void *ptr)
                   |      |      ^~~~~~~~~~~~
                   |      |      |
-                  |      |      (11) entry to 'wrapped_free'
+                  |      |      (15) entry to 'wrapped_free'
                   |   NN | {
                   |   NN |   free (ptr);
                   |      |   ~~~~~~~~~~
                   |      |   |
-                  |      |   (12) first 'free' here (state of 'ptr': 'nonnull' -> 'freed', origin: NULL)
+                  |      |   (16) first 'free' here
                   |
            <------+
            |
-         'free_boxed_int': event 13
+         'free_boxed_int': event 17
            |
            |   NN |   wrapped_free (bi);
            |      |   ^~~~~~~~~~~~~~~~~
            |      |   |
-           |      |   (13) returning to 'free_boxed_int' from 'wrapped_free'
+           |      |   (17) returning to 'free_boxed_int' from 'wrapped_free'
            |
     <------+
     |
-  'test': events 14-15
+  'test': events 18-19
     |
     |   NN |   free_boxed_int (obj);
     |      |   ^~~~~~~~~~~~~~~~~~~~
     |      |   |
-    |      |   (14) returning to 'test' from 'free_boxed_int'
+    |      |   (18) returning to 'test' from 'free_boxed_int'
     |   NN | 
     |   NN |   free_boxed_int (obj);
     |      |   ~~~~~~~~~~~~~~~~~~~~
     |      |   |
-    |      |   (15) passing freed pointer 'obj' in call to 'free_boxed_int' from 'test'
+    |      |   (19) passing freed pointer 'obj' in call to 'free_boxed_int' from 'test'
     |
-    +--> 'free_boxed_int': events 16-17
+    +--> 'free_boxed_int': events 20-21
            |
            |   NN | free_boxed_int (boxed_int *bi)
            |      | ^~~~~~~~~~~~~~
            |      | |
-           |      | (16) entry to 'free_boxed_int'
+           |      | (20) entry to 'free_boxed_int'
            |   NN | {
            |   NN |   wrapped_free (bi);
            |      |   ~~~~~~~~~~~~~~~~~
            |      |   |
-           |      |   (17) passing freed pointer 'bi' in call to 'wrapped_free' from 'free_boxed_int'
+           |      |   (21) passing freed pointer 'bi' in call to 'wrapped_free' from 'free_boxed_int'
            |
-           +--> 'wrapped_free': events 18-19
+           +--> 'wrapped_free': events 22-23
                   |
                   |   NN | void wrapped_free (void *ptr)
                   |      |      ^~~~~~~~~~~~
                   |      |      |
-                  |      |      (18) entry to 'wrapped_free'
+                  |      |      (22) entry to 'wrapped_free'
                   |   NN | {
                   |   NN |   free (ptr);
                   |      |   ~~~~~~~~~~
                   |      |   |
-                  |      |   (19) second 'free' here; first 'free' was at (12) ('ptr' is in state 'freed')
+                  |      |   (23) second 'free' here; first 'free' was at (16)
                   |
    { dg-end-multiline-output "" } */
 

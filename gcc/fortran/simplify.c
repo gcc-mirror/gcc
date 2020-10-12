@@ -4080,7 +4080,7 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
       || (coarray && d == as->rank + as->corank
 	  && (!upper || flag_coarray == GFC_FCOARRAY_SINGLE)))
     {
-      if (as->lower[d-1]->expr_type == EXPR_CONSTANT)
+      if (as->lower[d-1] && as->lower[d-1]->expr_type == EXPR_CONSTANT)
 	{
 	  gfc_free_expr (result);
 	  return gfc_copy_expr (as->lower[d-1]);
@@ -4924,6 +4924,8 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign, bool back_val)
   switch (arg->ts.type)
     {
       case BT_INTEGER:
+	if (extremum->ts.kind < arg->ts.kind)
+	  extremum->ts.kind = arg->ts.kind;
 	ret = mpz_cmp (arg->value.integer,
 		       extremum->value.integer) * sign;
 	if (ret > 0)
@@ -4931,6 +4933,8 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign, bool back_val)
 	break;
 
       case BT_REAL:
+	if (extremum->ts.kind < arg->ts.kind)
+	  extremum->ts.kind = arg->ts.kind;
 	if (mpfr_nan_p (extremum->value.real))
 	  {
 	    ret = 1;
@@ -6394,7 +6398,7 @@ gfc_simplify_is_contiguous (gfc_expr *array)
 
   if (gfc_is_not_contiguous (array))
     return gfc_get_logical_expr (gfc_default_logical_kind, &array->where, 0);
-    
+
   return NULL;
 }
 
@@ -6721,6 +6725,7 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   unsigned long j;
   size_t nsource;
   gfc_expr *e, *result;
+  bool zerosize = false;
 
   /* Check that argument expression types are OK.  */
   if (!is_constant_array_expr (source)
@@ -6843,7 +6848,14 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   result->rank = rank;
   result->shape = gfc_get_shape (rank);
   for (i = 0; i < rank; i++)
-    mpz_init_set_ui (result->shape[i], shape[i]);
+    {
+      mpz_init_set_ui (result->shape[i], shape[i]);
+      if (shape[i] == 0)
+	zerosize = true;
+    }
+
+  if (zerosize)
+    goto sizezero;
 
   while (nsource > 0 || npad > 0)
     {
@@ -6892,6 +6904,8 @@ inc:
 
       break;
     }
+
+sizezero:
 
   mpz_clear (index);
 

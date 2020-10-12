@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *ctx, *addr;
   int addr_len;
 
-  ret = __builtin_bpf_helper_bind (ctx, addr, addr_len);
+  ret = bpf_bind (ctx, addr, addr_len);
 }
 
 /* { dg-final { scan-assembler "call\t64" } } */

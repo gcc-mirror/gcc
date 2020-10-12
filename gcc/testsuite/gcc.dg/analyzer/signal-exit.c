@@ -1,6 +1,7 @@
 /* Example of a bad call within a signal handler with replacement
    alternative.  'handler' calls 'exit', and 'exit' is not allowed
    from a signal handler.  But '_exit' is allowed.  */
+/* { dg-require-effective-target signal } */
 
 #include <signal.h>
 #include <stdlib.h>

@@ -2276,49 +2276,90 @@ cpp_string_location_reader::get_next ()
   return result;
 }
 
-/* Helper for cpp_byte_column_to_display_column and its inverse.  Given a
-   pointer to a UTF-8-encoded character, compute its display width.  *INBUFP
-   points on entry to the start of the UTF-8 encoding of the character, and
-   is updated to point just after the last byte of the encoding.  *INBYTESLEFTP
-   contains on entry the remaining size of the buffer into which *INBUFP
-   points, and this is also updated accordingly.  If *INBUFP does not
-   point to a valid UTF-8-encoded sequence, then it will be treated as a single
-   byte with display width 1.  */
+cpp_display_width_computation::
+cpp_display_width_computation (const char *data, int data_length, int tabstop) :
+  m_begin (data),
+  m_next (m_begin),
+  m_bytes_left (data_length),
+  m_tabstop (tabstop),
+  m_display_cols (0)
+{
+  gcc_assert (m_tabstop > 0);
+}
 
-static inline int
-compute_next_display_width (const uchar **inbufp, size_t *inbytesleftp)
+
+/* The main implementation function for class cpp_display_width_computation.
+   m_next points on entry to the start of the UTF-8 encoding of the next
+   character, and is updated to point just after the last byte of the encoding.
+   m_bytes_left contains on entry the remaining size of the buffer into which
+   m_next points, and this is also updated accordingly.  If m_next does not
+   point to a valid UTF-8-encoded sequence, then it will be treated as a single
+   byte with display width 1.  m_cur_display_col is the current display column,
+   relative to which tab stops should be expanded.  Returns the display width of
+   the codepoint just processed.  */
+
+int
+cpp_display_width_computation::process_next_codepoint ()
 {
   cppchar_t c;
-  if (one_utf8_to_cppchar (inbufp, inbytesleftp, &c) != 0)
+  int next_width;
+
+  if (*m_next == '\t')
+    {
+      ++m_next;
+      --m_bytes_left;
+      next_width = m_tabstop - (m_display_cols % m_tabstop);
+    }
+  else if (one_utf8_to_cppchar ((const uchar **) &m_next, &m_bytes_left, &c)
+	   != 0)
     {
       /* Input is not convertible to UTF-8.  This could be fine, e.g. in a
 	 string literal, so don't complain.  Just treat it as if it has a width
 	 of one.  */
-      ++*inbufp;
-      --*inbytesleftp;
-      return 1;
+      ++m_next;
+      --m_bytes_left;
+      next_width = 1;
+    }
+  else
+    {
+      /*  one_utf8_to_cppchar() has updated m_next and m_bytes_left for us.  */
+      next_width = cpp_wcwidth (c);
     }
 
-  /*  one_utf8_to_cppchar() has updated inbufp and inbytesleftp for us.  */
-  return cpp_wcwidth (c);
+  m_display_cols += next_width;
+  return next_width;
+}
+
+/*  Utility to advance the byte stream by the minimum amount needed to consume
+    N display columns.  Returns the number of display columns that were
+    actually skipped.  This could be less than N, if there was not enough data,
+    or more than N, if the last character to be skipped had a sufficiently large
+    display width.  */
+int
+cpp_display_width_computation::advance_display_cols (int n)
+{
+  const int start = m_display_cols;
+  const int target = start + n;
+  while (m_display_cols < target && !done ())
+    process_next_codepoint ();
+  return m_display_cols - start;
 }
 
 /*  For the string of length DATA_LENGTH bytes that begins at DATA, compute
     how many display columns are occupied by the first COLUMN bytes.  COLUMN
     may exceed DATA_LENGTH, in which case the phantom bytes at the end are
-    treated as if they have display width 1.  */
+    treated as if they have display width 1.  Tabs are expanded to the next tab
+    stop, relative to the start of DATA.  */
 
 int
 cpp_byte_column_to_display_column (const char *data, int data_length,
-				   int column)
+				   int column, int tabstop)
 {
-  int display_col = 0;
-  const uchar *udata = (const uchar *) data;
   const int offset = MAX (0, column - data_length);
-  size_t inbytesleft = column - offset;
-  while (inbytesleft)
-    display_col += compute_next_display_width (&udata, &inbytesleft);
-  return display_col + offset;
+  cpp_display_width_computation dw (data, column - offset, tabstop);
+  while (!dw.done ())
+    dw.process_next_codepoint ();
+  return dw.display_cols_processed () + offset;
 }
 
 /*  For the string of length DATA_LENGTH bytes that begins at DATA, compute
@@ -2328,14 +2369,11 @@ cpp_byte_column_to_display_column (const char *data, int data_length,
 
 int
 cpp_display_column_to_byte_column (const char *data, int data_length,
-				   int display_col)
+				   int display_col, int tabstop)
 {
-  int column = 0;
-  const uchar *udata = (const uchar *) data;
-  size_t inbytesleft = data_length;
-  while (column < display_col && inbytesleft)
-      column += compute_next_display_width (&udata, &inbytesleft);
-  return data_length - inbytesleft + MAX (0, display_col - column);
+  cpp_display_width_computation dw (data, data_length, tabstop);
+  const int avail_display = dw.advance_display_cols (display_col);
+  return dw.bytes_processed () + MAX (0, display_col - avail_display);
 }
 
 /* Our own version of wcwidth().  We don't use the actual wcwidth() in glibc,

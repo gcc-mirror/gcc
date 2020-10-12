@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512dq -O2" } */
+/* { dg-options "-mavx512dq -mno-avx512bw -O2" } */
 /* { dg-final { scan-assembler-times "kmovb\[ \\t\]+\[^\{\n\]*%k\[0-7\](?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>

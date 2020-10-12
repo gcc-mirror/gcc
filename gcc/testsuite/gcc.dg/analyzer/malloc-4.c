@@ -10,11 +10,11 @@ void *hv (struct foo **tm)
   *tm = p;
   if (!p)
     abort ();
-  return p; /* { dg-warning "leak of 'tm'" } */
+  return p;
 }
 
 void a5 (void)
 {
   struct bar *qb = NULL;
   hv (&qb);
-} /* { dg-warning "leak of '\\(struct foo \\*\\)qb'" } */
+} /* { dg-warning "leak of 'qb'" } */

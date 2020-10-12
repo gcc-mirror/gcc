@@ -50,7 +50,7 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
     bar (e);
   #pragma omp target map(to: f[1:10]) /* { dg-error "high bound \[^\n\r]* above array section size" } */
     bar (f);
-  #pragma omp target map(from: g[:][0:10]) /* { dg-error "for pointer type length expression must be specified" } */
+  #pragma omp target map(from: g[:][0:10]) /* { dg-error "for array function parameter length expression must be specified" } */
     bar (&g[0][0]);
   #pragma omp target map(from: h[2:1][-1:]) /* { dg-error "negative low bound in array section" } */
     bar (&h[0][0]);

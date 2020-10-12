@@ -350,6 +350,19 @@ static const struct attribute_spec gcn_attribute_table[] = {
 /* }}}  */
 /* {{{ Registers and modes.  */
 
+/* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
+
+bool
+gcn_scalar_mode_supported_p (scalar_mode mode)
+{
+  return (mode == BImode
+	  || mode == QImode
+	  || mode == HImode /* || mode == HFmode  */
+	  || mode == SImode || mode == SFmode
+	  || mode == DImode || mode == DFmode
+	  || mode == TImode);
+}
+
 /* Implement TARGET_CLASS_MAX_NREGS.
  
    Return the number of hard registers needed to hold a value of MODE in
@@ -462,7 +475,8 @@ gcn_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return (vgpr_1reg_mode_p (mode)
 	    || (!((regno - FIRST_VGPR_REG) & 1) && vgpr_2reg_mode_p (mode))
 	    /* TImode is used by DImode compare_and_swap.  */
-	    || mode == TImode);
+	    || (mode == TImode
+		&& !((regno - FIRST_VGPR_REG) & 3)));
   return false;
 }
 
@@ -4961,26 +4975,28 @@ gcn_fixup_accel_lto_options (tree fndecl)
   if (!func_optimize)
     return;
 
-  tree old_optimize = build_optimization_node (&global_options);
+  tree old_optimize
+    = build_optimization_node (&global_options, &global_options_set);
   tree new_optimize;
 
   /* If the function changed the optimization levels as well as
      setting target options, start with the optimizations
      specified.  */
   if (func_optimize != old_optimize)
-    cl_optimization_restore (&global_options,
+    cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (func_optimize));
 
   gcn_option_override ();
 
   /* The target attributes may also change some optimization flags,
      so update the optimization options if necessary.  */
-  new_optimize = build_optimization_node (&global_options);
+  new_optimize = build_optimization_node (&global_options,
+					  &global_options_set);
 
   if (old_optimize != new_optimize)
     {
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
-      cl_optimization_restore (&global_options,
+      cl_optimization_restore (&global_options, &global_options_set,
 			       TREE_OPTIMIZATION (old_optimize));
     }
 }
@@ -6331,6 +6347,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_SECONDARY_RELOAD gcn_secondary_reload
 #undef  TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS gcn_section_type_flags
+#undef  TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P gcn_scalar_mode_supported_p
 #undef  TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   gcn_small_register_classes_for_mode_p

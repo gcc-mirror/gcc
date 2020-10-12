@@ -1,3 +1,115 @@
+2020-09-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/50584
+	* c-decl.c (lookup_last_decl): Define new function.
+	(c_decl_attributes): Call it.
+	(start_decl): Add argument and use it.
+	(finish_decl): Call build_attr_access_from_parms and decl_attributes.
+	(get_parm_array_spec): Define new function.
+	(push_parm_decl): Call get_parm_array_spec.
+	(start_function): Call warn_parm_array_mismatch.  Build attribute
+	access and add it to current function.
+	* c-parser.c (c_parser_declaration_or_fndef): Diagnose mismatches
+	in forms of array parameters.
+	* c-tree.h (start_decl): Add argument.
+
+2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-decl.c (c_break_label, c_cont_label): Delete, and replace
+	with...
+	(in_statement): New.
+	(start_function): Adjust for above change.
+	(c_push_function_context, c_pop_function_context): Likewise.
+	* c-lang.h (struct language_function): Likewise.
+	* c-objc-common.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Define.
+	* c-parser.c (objc_foreach_break_label, objc_foreach_continue_label):
+	New.
+	(c_parser_statement_after_labels): Adjust calls to c_finish_bc_stmt.
+	(c_parser_switch_statement): Adjust break/switch context handling
+	and calls to renamed functions.
+	(c_parser_while_statement): Adjust break/switch context handling and
+	build a WHILE_STMT.
+	(c_parser_do_statement): Ditto, with DO_STMT respectively.
+	(c_parser_for_statement): Ditto, with FOR_STMT respectively.
+	(c_parser_omp_for_loop): Adjust break/switch context handling.
+	* c-tree.h (c_break_label, c_cont_label): Delete.
+	(IN_SWITCH_STMT, IN_ITERATION_STMT): Define.
+	(IN_OMP_BLOCK, IN_OMP_FOR, IN_OBJC_FOREACH): Define.
+	(in_statement, switch_statement_break_seen_p): Declare.
+	(c_start_case, c_finish_case): Renamed to...
+	(c_start_switch, c_finish_switch).
+	(c_finish_bc_stmt): Adjust arguments.
+	* c-typeck.c (build_function_call_vec): Don't try to print
+	statements with %qE format.
+	(struct c_switch):  Rename switch_expr field to switch_stmt.
+	Add break_stmt_seen_p field.
+	(c_start_case): Rename to c_start_switch.  Build a SWITCH_STMT
+	instead of a SWITCH_EXPR.  Update for changes to struct c_switch.
+	(do_case): Update for changes to struct c_switch.
+	(c_finish_case): Rename to c_finish_switch.  Update for changes to
+	struct c_switch and change of representation from SWITCH_EXPR to
+	SWITCH_STMT.
+	(c_finish_loop): Delete.
+	(c_finish_bc_stmt): Update to reflect changes to break/continue
+	state representation.  Build a BREAK_STMT or CONTINUE_STMT instead
+	of a GOTO_EXPR except for objc foreach loops.
+
+2020-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96867
+	* c-typeck.c (handle_omp_array_sections_1): Test C_ARRAY_PARAMETER
+	only on PARM_DECLs.
+
+2020-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/96596
+	* c-decl.c (match_builtin_function_types): Avoid dealing with erroneous
+	argument type.
+
+2020-08-27  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (c_parser_gimple_compound_statement): Set exact argument of a vector
+	growth function to true.
+
+2020-08-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/96678
+	* c-typeck.c (handle_omp_array_sections_1): Talk about
+	array function parameter in the error message.
+
+2020-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/96571
+	* c-parser.c (c_parser_generic_selection): Change match_found from bool
+	to int, holding index of the match.  Call mark_exp_read on the selector
+	expression and on expressions other than the selected one.
+
+2020-08-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/96377
+	* c-typeck.c (process_init_element): Split test for whether to
+	recurse into a record, union or array into...
+	(initialize_elementwise_p): ...this new function.  Don't recurse
+	into a vector type if the initialization value is also a vector.
+
+2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/96383
+	* c-objc-common.h (LANG_HOOKS_FINALIZE_EARLY_DEBUG):
+	Define to c_common_finalize_early_debug.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_hint): Require nonnegative hint clause.
+	(c_parser_omp_critical): Permit hint(0) clause without named critical.
+	(c_parser_omp_construct): Don't assert if error_mark_node is returned.
+
+2020-07-21  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/95237
+	* c-decl.c (finish_decl): Call target hook
+	lower_local_decl_alignment to lower local decl alignment.
+
 2020-07-09  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 
@@ -5,7 +117,7 @@
 	* c-typeck.c (c_finish_omp_clauses): Set OMP_CLAUSE_SIZE (bias) to zero
 	for standalone attach/detach clauses.
 
-2020-07-08  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+2020-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-typeck.c (convert_for_assignment): If -Wscalar-storage-order is
 	set, warn for conversion between pointers that point to incompatible

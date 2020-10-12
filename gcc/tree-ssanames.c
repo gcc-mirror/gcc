@@ -287,7 +287,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
       t = make_node (SSA_NAME);
       SSA_NAME_VERSION (t) = version;
       if (version >= SSANAMES (fn)->length ())
-	vec_safe_grow_cleared (SSANAMES (fn), version + 1);
+	vec_safe_grow_cleared (SSANAMES (fn), version + 1, true);
       gcc_assert ((*SSANAMES (fn))[version] == NULL);
       (*SSANAMES (fn))[version] = t;
       ssa_name_nodes_created++;
@@ -441,7 +441,7 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
    in a value_range VR.  Returns the value_range_kind.  */
 
 enum value_range_kind
-get_range_info (const_tree name, value_range &vr)
+get_range_info (const_tree name, irange &vr)
 {
   tree min, max;
   wide_int wmin, wmax;

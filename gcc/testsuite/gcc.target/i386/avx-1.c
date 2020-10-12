@@ -680,6 +680,16 @@
 #define __builtin_ia32_vpclmulqdq_v2di(A, B, C)  __builtin_ia32_vpclmulqdq_v2di(A, B, 1) 
 #define __builtin_ia32_vpclmulqdq_v8di(A, B, C)  __builtin_ia32_vpclmulqdq_v8di(A, B, 1) 
 
+/* lwpintrin.h */
+#define __builtin_ia32_lwpval32(D2, D1, F) __builtin_ia32_lwpval32 (D2, D1, 1)
+#define __builtin_ia32_lwpval64(D2, D1, F) __builtin_ia32_lwpval64 (D2, D1, 1)
+#define __builtin_ia32_lwpins32(D2, D1, F) __builtin_ia32_lwpins32 (D2, D1, 1)
+#define __builtin_ia32_lwpins64(D2, D1, F) __builtin_ia32_lwpins64 (D2, D1, 1)
+
+/* tbmintrin.h */
+#define __builtin_ia32_bextri_u32(X, Y) __builtin_ia32_bextri_u32 (X, 1)
+#define __builtin_ia32_bextri_u64(X, Y) __builtin_ia32_bextri_u64 (X, 1)
+
 #include <wmmintrin.h>
 #include <immintrin.h>
 #include <mm3dnow.h>

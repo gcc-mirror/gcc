@@ -39,7 +39,7 @@ void test02()
   sstr >> str;
 
   // 2
-  pod_char*  chr = 0;
+  pod_char  chr[1];
   sstr >> chr;
 
   // 3

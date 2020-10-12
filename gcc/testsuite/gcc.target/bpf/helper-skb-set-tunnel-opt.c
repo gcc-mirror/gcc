@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,7 +12,7 @@ foo ()
   uint8_t *opt;
   uint32_t size;
 
-  ret = __builtin_bpf_helper_skb_set_tunnel_opt (skb, opt, size);
+  ret = bpf_skb_set_tunnel_opt (skb, opt, size);
 }
 
 /* { dg-final { scan-assembler "call\t30" } } */

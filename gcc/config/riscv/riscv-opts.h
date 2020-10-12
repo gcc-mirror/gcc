@@ -51,4 +51,10 @@ enum riscv_align_data {
   riscv_align_data_type_natural
 };
 
+/* Where to get the canary for the stack protector.  */
+enum stack_protector_guard {
+  SSP_TLS,			/* per-thread canary in TLS block */
+  SSP_GLOBAL			/* global canary */
+};
+
 #endif /* ! GCC_RISCV_OPTS_H */

@@ -1,4 +1,7 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
+
+#include <bpf-helpers.h>
 
 char *map () { return 0; }
 
@@ -7,7 +10,7 @@ foo ()
 {
   int ret;
 
-  ret = __builtin_bpf_helper_trace_printk ("foo %d %d", sizeof ("foo %d %d"), 10, 20);
+  ret = bpf_trace_printk ("foo %d %d", sizeof ("foo %d %d"), 10, 20);
 }
 
 /* { dg-final { scan-assembler "call\t6" } } */

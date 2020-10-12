@@ -98,6 +98,7 @@ package body System.Generic_Bignums is
    --  Given a digit vector and sign, allocate and construct a big integer
    --  value. Note that X may have leading zeroes which must be removed, and if
    --  the result is zero, the sign is forced positive.
+   --  If X is too big, Storage_Error is raised.
 
    function "**" (X : Bignum; Y : SD) return Big_Integer;
    --  Exponentiation routine where we know right operand is one word
@@ -274,32 +275,18 @@ package body System.Generic_Bignums is
                XY2  : aliased Big_Integer := X ** (Y / 2);
                XY2S : aliased Big_Integer :=
                  Big_Mul (To_Bignum (XY2), To_Bignum (XY2));
-               Res  : Big_Integer;
 
             begin
                Free_Big_Integer (XY2);
 
-               --  Raise storage error if intermediate value is getting too
-               --  large, which we arbitrarily define as 200 words for now.
-               --  ??? Consider putting a limit instead in a wrapper of
-               --  Allocate_Big_Integer and update all calls to
-               --  Allocate_Big_Integer to call this wrapper, to catch all such
-               --  cases.
-
-               if To_Bignum (XY2S).Len > 200 then
-                  Free_Big_Integer (XY2S);
-                  raise Storage_Error with
-                    "exponentiation result is too large";
-               end if;
-
-               --  Otherwise take care of even/odd cases
-
                if (Y and 1) = 0 then
                   return XY2S;
                else
-                  Res := Big_Mul (To_Bignum (XY2S), X);
-                  Free_Big_Integer (XY2S);
-                  return Res;
+                  return Res : constant Big_Integer :=
+                    Big_Mul (To_Bignum (XY2S), X)
+                  do
+                     Free_Big_Integer (XY2S);
+                  end return;
                end if;
             end;
       end case;
@@ -1108,6 +1095,8 @@ package body System.Generic_Bignums is
    -- Normalize --
    ---------------
 
+   Bignum_Limit : constant := 200;
+
    function Normalize
      (X   : Digit_Vector;
       Neg : Boolean := False) return Big_Integer
@@ -1119,6 +1108,10 @@ package body System.Generic_Bignums is
       while J <= X'Last and then X (J) = 0 loop
          J := J + 1;
       end loop;
+
+      if X'Last - J > Bignum_Limit then
+         raise Storage_Error with "big integer limit exceeded";
+      end if;
 
       return Allocate_Big_Integer (X (J .. X'Last), J <= X'Last and then Neg);
    end Normalize;

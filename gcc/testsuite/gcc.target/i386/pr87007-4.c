@@ -15,4 +15,4 @@ foo (int n, int k)
       d1 = ceil (d3);
 }
 
-/* { dg-final { scan-assembler-times "vxorps\[^\n\r\]*xmm\[0-9\]" 1 } } */
+/* { dg-final { scan-assembler-times "vxorps\[^\n\r\]*xmm\[0-9\]" 0 } } */

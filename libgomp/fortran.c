@@ -86,6 +86,10 @@ ialias_redirect (omp_get_initial_device)
 ialias_redirect (omp_get_max_task_priority)
 ialias_redirect (omp_pause_resource)
 ialias_redirect (omp_pause_resource_all)
+ialias_redirect (omp_init_allocator)
+ialias_redirect (omp_destroy_allocator)
+ialias_redirect (omp_set_default_allocator)
+ialias_redirect (omp_get_default_allocator)
 #endif
 
 #ifndef LIBGOMP_GNU_SYMBOL_VERSIONING
@@ -675,4 +679,38 @@ int32_t
 omp_pause_resource_all_ (const int32_t *kind)
 {
   return omp_pause_resource_all (*kind);
+}
+
+intptr_t
+omp_init_allocator_ (const intptr_t *memspace, const int32_t *ntraits,
+		    const omp_alloctrait_t *traits)
+{
+  return (intptr_t) omp_init_allocator ((omp_memspace_handle_t) *memspace,
+					(int) *ntraits, traits);
+}
+
+intptr_t
+omp_init_allocator_8_ (const intptr_t *memspace, const int64_t *ntraits,
+		    const omp_alloctrait_t *traits)
+{
+  return (intptr_t) omp_init_allocator ((omp_memspace_handle_t) *memspace,
+					(int) *ntraits, traits);
+}
+
+void
+omp_destroy_allocator_ (const intptr_t *allocator)
+{
+  omp_destroy_allocator ((omp_allocator_handle_t) *allocator);
+}
+
+void
+omp_set_default_allocator_ (const intptr_t *allocator)
+{
+  omp_set_default_allocator ((omp_allocator_handle_t) *allocator);
+}
+
+intptr_t
+omp_get_default_allocator_ ()
+{
+  return (intptr_t) omp_get_default_allocator ();
 }

@@ -1,11 +1,18 @@
 #!/bin/sh
 
-compile="$1"
+if test "$#" -ne 2; then
+  echo "Usage $0 int_kinds compile"
+  exit 1
+fi
+
+# Possible kinds must be listed in ascending order
+possible_integer_kinds="$1"
+compile="$2"
+
 kinds=""
-possible_kinds="1 2 4 8 16"
 c=0
 
-for k in $possible_kinds; do
+for k in $possible_integer_kinds; do
   echo "  integer (kind=$k) :: x" > tmp$$.f90
   echo "  x = 1_$k" >> tmp$$.f90
   echo "  end" >> tmp$$.f90

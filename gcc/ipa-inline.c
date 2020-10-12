@@ -2770,9 +2770,6 @@ ipa_inline (void)
 	}
     }
 
-  /* Free ipa-prop structures if they are no longer needed.  */
-  ipa_free_all_structures_after_iinln ();
-
   if (dump_enabled_p ())
     dump_printf (MSG_NOTE,
 		 "\nInlined %i calls, eliminated %i functions\n\n",

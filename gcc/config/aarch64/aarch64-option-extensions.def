@@ -155,7 +155,7 @@ AARCH64_OPT_EXTENSION("sve", AARCH64_FL_SVE, AARCH64_FL_FP | AARCH64_FL_SIMD | \
 AARCH64_OPT_EXTENSION("profile", AARCH64_FL_PROFILE, 0, 0, false, "")
 
 /* Enabling/Disabling "rng" only changes "rng".  */
-AARCH64_OPT_EXTENSION("rng", AARCH64_FL_RNG, 0, 0, false, "")
+AARCH64_OPT_EXTENSION("rng", AARCH64_FL_RNG, 0, 0, false, "rng")
 
 /* Enabling/Disabling "memtag" only changes "memtag".  */
 AARCH64_OPT_EXTENSION("memtag", AARCH64_FL_MEMTAG, 0, 0, false, "")

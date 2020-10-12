@@ -1448,7 +1448,7 @@ nios2_option_override (void)
   /* Save the initial options in case the user does function specific
      options.  */
   target_option_default_node = target_option_current_node
-    = build_target_option_node (&global_options);
+    = build_target_option_node (&global_options, &global_options_set);
 }
 
 
@@ -4137,7 +4137,8 @@ nios2_deregister_custom_code (unsigned int N)
 
 static void
 nios2_option_save (struct cl_target_option *ptr,
-		   struct gcc_options *opts ATTRIBUTE_UNUSED)
+		   struct gcc_options *opts ATTRIBUTE_UNUSED,
+		   struct gcc_options *opts_set ATTRIBUTE_UNUSED)
 {
   unsigned int i;
   for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
@@ -4150,6 +4151,7 @@ nios2_option_save (struct cl_target_option *ptr,
 
 static void
 nios2_option_restore (struct gcc_options *opts ATTRIBUTE_UNUSED,
+		      struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		      struct cl_target_option *ptr)
 {
   unsigned int i;
@@ -4310,7 +4312,7 @@ nios2_valid_target_attribute_tree (tree args)
   if (!nios2_valid_target_attribute_rec (args))
     return NULL_TREE;
   nios2_custom_check_insns ();
-  return build_target_option_node (&global_options);
+  return build_target_option_node (&global_options, &global_options_set);
 }
 
 /* Hook to validate attribute((target("string"))).  */
@@ -4321,21 +4323,22 @@ nios2_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
 {
   struct cl_target_option cur_target;
   bool ret = true;
-  tree old_optimize = build_optimization_node (&global_options);
+  tree old_optimize
+    = build_optimization_node (&global_options, &global_options_set);
   tree new_target, new_optimize;
   tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
 
   /* If the function changed the optimization levels as well as setting target
      options, start with the optimizations specified.  */
   if (func_optimize && func_optimize != old_optimize)
-    cl_optimization_restore (&global_options,
+    cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (func_optimize));
 
   /* The target attributes may also change some optimization flags, so update
      the optimization options if necessary.  */
-  cl_target_option_save (&cur_target, &global_options);
+  cl_target_option_save (&cur_target, &global_options, &global_options_set);
   new_target = nios2_valid_target_attribute_tree (args);
-  new_optimize = build_optimization_node (&global_options);
+  new_optimize = build_optimization_node (&global_options, &global_options_set);
 
   if (!new_target)
     ret = false;
@@ -4348,10 +4351,10 @@ nios2_valid_target_attribute_p (tree fndecl, tree ARG_UNUSED (name),
 	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
     }
 
-  cl_target_option_restore (&global_options, &cur_target);
+  cl_target_option_restore (&global_options, &global_options_set, &cur_target);
 
   if (old_optimize != new_optimize)
-    cl_optimization_restore (&global_options,
+    cl_optimization_restore (&global_options, &global_options_set,
 			     TREE_OPTIMIZATION (old_optimize));
   return ret;
 }
@@ -4381,7 +4384,7 @@ nios2_set_current_function (tree fndecl)
 
       else if (new_tree)
 	{
-	  cl_target_option_restore (&global_options,
+	  cl_target_option_restore (&global_options, &global_options_set,
 				    TREE_TARGET_OPTION (new_tree));
 	  target_reinit ();
 	}
@@ -4391,7 +4394,7 @@ nios2_set_current_function (tree fndecl)
 	  struct cl_target_option *def
 	    = TREE_TARGET_OPTION (target_option_current_node);
 
-	  cl_target_option_restore (&global_options, def);
+	  cl_target_option_restore (&global_options, &global_options_set, def);
 	  target_reinit ();
 	}
     }
@@ -4409,7 +4412,7 @@ nios2_pragma_target_parse (tree args, tree pop_target)
       cur_tree = ((pop_target)
 		  ? pop_target
 		  : target_option_default_node);
-      cl_target_option_restore (&global_options,
+      cl_target_option_restore (&global_options, &global_options_set,
 				TREE_TARGET_OPTION (cur_tree));
     }
   else

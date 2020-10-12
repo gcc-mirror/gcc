@@ -36,20 +36,20 @@ int fn_6 (int a, int b, int c)
 	/* ... */
 	if ((err = foo (a)) != 0)
 		goto fail;
-	if ((err = foo (b)) != 0) /* { dg-message "2: this 'if' clause does not guard..." } */
+	if ((err = foo (b)) != 0) /* { dg-message "9: this 'if' clause does not guard..." } */
 		goto fail;
-		goto fail; /* { dg-message "3: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
+		goto fail; /* { dg-message "17: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 	if ((err = foo (c)) != 0)
 		goto fail;
 	/* ... */
 
 /* { dg-begin-multiline-output "" }
-  if ((err = foo (b)) != 0)
-  ^~
+         if ((err = foo (b)) != 0)
+         ^~
    { dg-end-multiline-output "" } */
 /* { dg-begin-multiline-output "" }
-   goto fail;
-   ^~~~
+                 goto fail;
+                 ^~~~
    { dg-end-multiline-output "" } */
 
 fail:

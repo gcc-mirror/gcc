@@ -774,7 +774,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	     strlenopt tests that rely on it for passing are adjusted, this
 	     hack can be removed.  */
 	  && !c_strlen (src, 1)
-	  && !((tmp_str = c_getstr (src, &tmp_len)) != NULL
+	  && !((tmp_str = getbyterep (src, &tmp_len)) != NULL
 	       && memchr (tmp_str, 0, tmp_len) == NULL)
 	  && !(srctype
 	       && AGGREGATE_TYPE_P (srctype)
@@ -1875,7 +1875,7 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
     {
       /* Avoid folding calls with unterminated arrays.  */
       if (!gimple_no_warning_p (stmt))
-	warn_string_no_nul (loc, "strcpy", src, nonstr);
+	warn_string_no_nul (loc, NULL_TREE, "strcpy", src, nonstr);
       gimple_set_no_warning (stmt, true);
       return false;
     }
@@ -2464,8 +2464,8 @@ gimple_fold_builtin_string_compare (gimple_stmt_iterator *gsi)
      For nul-terminated strings then adjusted to their length so that
      LENx == NULPOSx holds.  */
   unsigned HOST_WIDE_INT len1 = HOST_WIDE_INT_MAX, len2 = len1;
-  const char *p1 = c_getstr (str1, &len1);
-  const char *p2 = c_getstr (str2, &len2);
+  const char *p1 = getbyterep (str1, &len1);
+  const char *p2 = getbyterep (str2, &len2);
 
   /* The position of the terminating nul character if one exists, otherwise
      a value greater than LENx.  */
@@ -2662,7 +2662,7 @@ gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
 
   unsigned HOST_WIDE_INT length = tree_to_uhwi (len);
   unsigned HOST_WIDE_INT string_length;
-  const char *p1 = c_getstr (arg1, &string_length);
+  const char *p1 = getbyterep (arg1, &string_length);
 
   if (p1)
     {
@@ -2670,7 +2670,7 @@ gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
       if (r == NULL)
 	{
 	  tree mem_size, offset_node;
-	  string_constant (arg1, &offset_node, &mem_size, NULL);
+	  byte_representation (arg1, &offset_node, &mem_size, NULL);
 	  unsigned HOST_WIDE_INT offset = (offset_node == NULL_TREE)
 					  ? 0 : tree_to_uhwi (offset_node);
 	  /* MEM_SIZE is the size of the array the string literal
@@ -3074,11 +3074,16 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
 
   /* Set to non-null if ARG refers to an unterminated array.  */
   c_strlen_data data = { };
+  /* The size of the unterminated array if SRC referes to one.  */
+  tree size;
+  /* True if the size is exact/constant, false if it's the lower bound
+     of a range.  */
+  bool exact;
   tree len = c_strlen (src, 1, &data, 1);
   if (!len
       || TREE_CODE (len) != INTEGER_CST)
     {
-      data.decl = unterminated_array (src);
+      data.decl = unterminated_array (src, &size, &exact);
       if (!data.decl)
 	return false;
     }
@@ -3087,7 +3092,8 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
     {
       /* Avoid folding calls with unterminated arrays.  */
       if (!gimple_no_warning_p (stmt))
-	warn_string_no_nul (loc, "stpcpy", src, data.decl);
+	warn_string_no_nul (loc, NULL_TREE, "stpcpy", src, data.decl, size,
+			    exact);
       gimple_set_no_warning (stmt, true);
       return false;
     }
@@ -4875,7 +4881,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 /* Canonicalize MEM_REFs invariant address operand after propagation.  */
 
 static bool
-maybe_canonicalize_mem_ref_addr (tree *t)
+maybe_canonicalize_mem_ref_addr (tree *t, bool is_debug = false)
 {
   bool res = false;
   tree *orig_t = t;
@@ -4939,7 +4945,11 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 	  base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
 						&coffset);
 	  if (!base)
-	    gcc_unreachable ();
+	    {
+	      if (is_debug)
+		return false;
+	      gcc_unreachable ();
+	    }
 
 	  TREE_OPERAND (*t, 0) = build_fold_addr_expr (base);
 	  TREE_OPERAND (*t, 1) = int_const_binop (PLUS_EXPR,
@@ -5119,7 +5129,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  if (*val
 	      && (REFERENCE_CLASS_P (*val)
 		  || TREE_CODE (*val) == ADDR_EXPR)
-	      && maybe_canonicalize_mem_ref_addr (val))
+	      && maybe_canonicalize_mem_ref_addr (val, true))
 	    changed = true;
 	}
       break;
@@ -7189,8 +7199,64 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       if (maybe_lt (offset, 0))
 	return NULL_TREE;
 
-      return fold_ctor_reference (TREE_TYPE (t), ctor, offset, size,
-				  base);
+      tem = fold_ctor_reference (TREE_TYPE (t), ctor, offset, size, base);
+      if (tem)
+	return tem;
+
+      /* For bit field reads try to read the representative and
+	 adjust.  */
+      if (TREE_CODE (t) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (t, 1))
+	  && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1)))
+	{
+	  HOST_WIDE_INT csize, coffset;
+	  tree field = TREE_OPERAND (t, 1);
+	  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (field);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (repr))
+	      && size.is_constant (&csize)
+	      && offset.is_constant (&coffset)
+	      && (coffset % BITS_PER_UNIT != 0
+		  || csize % BITS_PER_UNIT != 0)
+	      && !reverse
+	      && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN)
+	    {
+	      poly_int64 bitoffset;
+	      poly_uint64 field_offset, repr_offset;
+	      if (poly_int_tree_p (DECL_FIELD_OFFSET (field), &field_offset)
+		  && poly_int_tree_p (DECL_FIELD_OFFSET (repr), &repr_offset))
+		bitoffset = (field_offset - repr_offset) * BITS_PER_UNIT;
+	      else
+		bitoffset = 0;
+	      bitoffset += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
+			    - tree_to_uhwi (DECL_FIELD_BIT_OFFSET (repr)));
+	      HOST_WIDE_INT bitoff;
+	      int diff = (TYPE_PRECISION (TREE_TYPE (repr))
+			  - TYPE_PRECISION (TREE_TYPE (field)));
+	      if (bitoffset.is_constant (&bitoff)
+		  && bitoff >= 0
+		  && bitoff <= diff)
+		{
+		  offset -= bitoff;
+		  size = tree_to_uhwi (DECL_SIZE (repr));
+
+		  tem = fold_ctor_reference (TREE_TYPE (repr), ctor, offset,
+					     size, base);
+		  if (tem && TREE_CODE (tem) == INTEGER_CST)
+		    {
+		      if (!BYTES_BIG_ENDIAN)
+			tem = wide_int_to_tree (TREE_TYPE (field),
+						wi::lrshift (wi::to_wide (tem),
+							     bitoff));
+		      else
+			tem = wide_int_to_tree (TREE_TYPE (field),
+						wi::lrshift (wi::to_wide (tem),
+							     diff - bitoff));
+		      return tem;
+		    }
+		}
+	    }
+	}
+      break;
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:

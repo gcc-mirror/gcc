@@ -9,9 +9,9 @@ baz (int x, struct S *p)
 {
   return (x
 	  ? &p->a 
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 	  : &p->b);
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }
 
 short *
@@ -19,7 +19,7 @@ qux (int x, struct S *p)
 {
   return (short *) (x
 		    ?  &p->a
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 		    : &p->b);
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }

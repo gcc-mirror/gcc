@@ -2436,12 +2436,14 @@ get_mem_type_for_internal_fn (gcall *call, tree *op_p)
     {
     case IFN_MASK_LOAD:
     case IFN_MASK_LOAD_LANES:
+    case IFN_LEN_LOAD:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_lhs (call));
       return NULL_TREE;
 
     case IFN_MASK_STORE:
     case IFN_MASK_STORE_LANES:
+    case IFN_LEN_STORE:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_arg (call, 3));
       return NULL_TREE;
@@ -2599,7 +2601,7 @@ addr_offset_valid_p (struct iv_use *use, poly_int64 offset)
 
   list_index = (unsigned) as * MAX_MACHINE_MODE + (unsigned) mem_mode;
   if (list_index >= vec_safe_length (addr_list))
-    vec_safe_grow_cleared (addr_list, list_index + MAX_MACHINE_MODE);
+    vec_safe_grow_cleared (addr_list, list_index + MAX_MACHINE_MODE, true);
 
   addr = (*addr_list)[list_index];
   if (!addr)
@@ -4567,7 +4569,7 @@ get_address_cost_ainc (poly_int64 ainc_step, poly_int64 ainc_offset,
       unsigned nsize = ((unsigned) as + 1) *MAX_MACHINE_MODE;
 
       gcc_assert (nsize > idx);
-      ainc_cost_data_list.safe_grow_cleared (nsize);
+      ainc_cost_data_list.safe_grow_cleared (nsize, true);
     }
 
   ainc_cost_data *data = ainc_cost_data_list[idx];
@@ -7415,6 +7417,8 @@ get_alias_ptr_type_for_ptr_address (iv_use *use)
     case IFN_MASK_STORE:
     case IFN_MASK_LOAD_LANES:
     case IFN_MASK_STORE_LANES:
+    case IFN_LEN_LOAD:
+    case IFN_LEN_STORE:
       /* The second argument contains the correct alias type.  */
       gcc_assert (use->op_p = gimple_call_arg_ptr (call, 0));
       return TREE_TYPE (gimple_call_arg (call, 1));

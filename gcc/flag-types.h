@@ -368,7 +368,8 @@ enum cf_protection_level
   CF_BRANCH = 1 << 0,
   CF_RETURN = 1 << 1,
   CF_FULL = CF_BRANCH | CF_RETURN,
-  CF_SET = 1 << 2
+  CF_SET = 1 << 2,
+  CF_CHECK = 1 << 3
 };
 
 /* Parloops schedule type.  */
@@ -379,6 +380,19 @@ enum parloops_schedule_type
   PARLOOPS_SCHEDULE_GUIDED,
   PARLOOPS_SCHEDULE_AUTO,
   PARLOOPS_SCHEDULE_RUNTIME
+};
+
+/* EVRP mode.  */
+enum evrp_mode
+{
+  EVRP_MODE_EVRP_FIRST = 0,
+  EVRP_MODE_EVRP_ONLY = 1,
+  EVRP_MODE_RVRP_ONLY = 2,
+  EVRP_MODE_RVRP_FIRST = 3,
+  EVRP_MODE_TRACE = 4,
+  EVRP_MODE_DEBUG = 8 | EVRP_MODE_TRACE,
+  EVRP_MODE_RVRP_TRACE = EVRP_MODE_RVRP_ONLY | EVRP_MODE_TRACE,
+  EVRP_MODE_RVRP_DEBUG = EVRP_MODE_RVRP_ONLY | EVRP_MODE_DEBUG
 };
 
 #endif /* ! GCC_FLAG_TYPES_H */

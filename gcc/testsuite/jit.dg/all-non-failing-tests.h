@@ -174,6 +174,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-global-set-initializer.c */
+#define create_code create_code_global_set_initializer
+#define verify_code verify_code_global_set_initializer
+#include "test-global-set-initializer.c"
+#undef create_code
+#undef verify_code
+
 /* test-hello-world.c */
 #define create_code create_code_hello_world
 #define verify_code verify_code_hello_world

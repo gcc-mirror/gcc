@@ -7,7 +7,7 @@ unsigned int
 subreg_highpart_offset (outermode, innermode)
      int outermode, innermode;
 {
-  unsigned int offset = 0;
+  unsigned int offset = 1;
   int difference = (mode_size[innermode] - mode_size[outermode]);
   if (difference > 0)
     {

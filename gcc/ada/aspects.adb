@@ -142,12 +142,9 @@ package body Aspects is
       --  The routine should be invoked on a body [stub] with aspects
 
       pragma Assert (Has_Aspects (N));
-      pragma Assert (Nkind (N) in N_Body_Stub
-                       or else Nkind_In (N, N_Entry_Body,
-                                            N_Package_Body,
-                                            N_Protected_Body,
-                                            N_Subprogram_Body,
-                                            N_Task_Body));
+      pragma Assert
+        (Nkind (N) in N_Body_Stub      | N_Entry_Body      | N_Package_Body |
+                      N_Protected_Body | N_Subprogram_Body | N_Task_Body);
 
       --  Look through all aspects and see whether they can be applied to a
       --  body [stub].
@@ -401,9 +398,8 @@ package body Aspects is
             --  Note: It is better to use Is_Single_Concurrent_Type_Declaration
             --  here, but Aspects and Sem_Util have incompatible licenses.
 
-            elsif Nkind_In
-                    (Original_Node (From), N_Single_Protected_Declaration,
-                                           N_Single_Task_Declaration)
+            elsif Nkind (Original_Node (From)) in
+                    N_Single_Protected_Declaration | N_Single_Task_Declaration
             then
                Asp_Id := Get_Aspect_Id (Asp);
 

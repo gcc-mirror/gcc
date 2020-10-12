@@ -2961,7 +2961,8 @@ _gfortran_caf_event_query (caf_token_t token, size_t index,
 void
 _gfortran_caf_lock (caf_token_t token, size_t index,
 		    int image_index __attribute__ ((unused)),
-		    int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)
+		    int *acquired_lock, int *stat, char *errmsg,
+		    size_t errmsg_len)
 {
   const char *msg = "Already locked";
   bool *lock = &((bool *) MEMTOK (token))[index];
@@ -2969,16 +2970,16 @@ _gfortran_caf_lock (caf_token_t token, size_t index,
   if (!*lock)
     {
       *lock = true;
-      if (aquired_lock)
-	*aquired_lock = (int) true;
+      if (acquired_lock)
+	*acquired_lock = (int) true;
       if (stat)
 	*stat = 0;
       return;
     }
 
-  if (aquired_lock)
+  if (acquired_lock)
     {
-      *aquired_lock = (int) false;
+      *acquired_lock = (int) false;
       if (stat)
 	*stat = 0;
     return;

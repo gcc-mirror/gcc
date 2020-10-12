@@ -2485,10 +2485,17 @@ package body Scng is
                           ("wide character not allowed in identifier", Wptr);
                      end if;
 
+                     --  AI12-0004: An identifier shall only contain characters
+                     --  that may be present in Normalization Form KC.
+
+                     if not Is_UTF_32_NFKC (UTF_32 (Code)) then
+                        Error_Msg
+                          ("invalid wide character in identifier", Wptr);
+
                      --  If OK letter, store it folding to upper case. Note
                      --  that we include the folded letter in the checksum.
 
-                     if Is_UTF_32_Letter (Cat) then
+                     elsif Is_UTF_32_Letter (Cat) then
                         Code :=
                           Char_Code (UTF_32_To_Upper_Case (UTF_32 (Code)));
                         Accumulate_Checksum (Code);

@@ -1228,6 +1228,12 @@ package Sem_Util is
    --    UFull_Typ - the underlying full view, if the full view is private
    --    CRec_Typ  - the corresponding record type of the full views
 
+   function Get_Fullest_View
+     (E : Entity_Id; Include_PAT : Boolean := True) return Entity_Id;
+   --  Get the fullest possible view of E, looking through private,
+   --  limited, packed array and other implementation types.  If Include_PAT
+   --  is False, don't look inside packed array types.
+
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if type or subtype T is an access type, or has a component
    --  (at any recursive level) that is an access type. This is a conservative
@@ -1589,6 +1595,10 @@ package Sem_Util is
    --  True if E is the constructed wrapper for an access_to_subprogram
    --  type with Pre/Postconditions.
 
+   function Is_Actual_In_Out_Parameter (N : Node_Id) return Boolean;
+   --  Determines if N is an actual parameter of in-out mode in a subprogram
+   --  call
+
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
 
@@ -1639,6 +1649,10 @@ package Sem_Util is
    function Is_Bounded_String (T : Entity_Id) return Boolean;
    --  True if T is a bounded string type. Used to make sure "=" composes
    --  properly for bounded string types.
+
+   function Is_By_Protected_Procedure (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id denotes a procedure with synchronization
+   --  kind By_Protected_Procedure.
 
    function Is_Constant_Bound (Exp : Node_Id) return Boolean;
    --  Exp is the expression for an array bound. Determines whether the
@@ -2081,13 +2095,13 @@ package Sem_Util is
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
 
-   function Is_Static_Expression_Function (Subp : Entity_Id) return Boolean;
-   --  Determine whether subprogram Subp denotes a static expression function,
-   --  which is an expression function with the aspect Static with value True.
+   function Is_Static_Function (Subp : Entity_Id) return Boolean;
+   --  Determine whether subprogram Subp denotes a static function,
+   --  which is a function with the aspect Static with value True.
 
-   function Is_Static_Expression_Function_Call (Call : Node_Id) return Boolean;
-   --  Determine whether Call is a static call to a static expression function,
-   --  meaning that the name of the call denotes a static expression function
+   function Is_Static_Function_Call (Call : Node_Id) return Boolean;
+   --  Determine whether Call is a static call to a static function,
+   --  meaning that the name of the call denotes a static function
    --  and all of the call's actual parameters are given by static expressions.
 
    function Is_Subcomponent_Of_Atomic_Object (N : Node_Id) return Boolean;
@@ -2183,6 +2197,12 @@ package Sem_Util is
    --  Use_Original_Node is used to perform the test on Original_Node (N). By
    --  default is True since this routine is commonly invoked as part of the
    --  semantic analysis and it must not be disturbed by the rewriten nodes.
+
+   function Is_View_Conversion (N : Node_Id) return Boolean;
+   --  Returns True if N is a type_conversion whose operand is the name of an
+   --  object and both its target type and operand type are tagged, or it
+   --  appears in a call as an actual parameter of mode out or in out
+   --  (RM 4.6(5/2)).
 
    function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
    --  Check whether T is derived from a visibly controlled type. This is true

@@ -9,6 +9,6 @@ template <typename> struct S {
 enum S<char>::E;
 template <typename T> enum S<T>::E : int { b };
 template <typename T>
-constexpr int S<T>::g() const { b; } // { dg-error "not declared" }
+constexpr int S<T>::g() const { b; if (false) return 0; } // { dg-error "not declared" }
 static_assert(S<char>().g() == 1, ""); // { dg-error "" }
 // { dg-message "in .constexpr. expansion of" "" { target *-*-* } .-1 }

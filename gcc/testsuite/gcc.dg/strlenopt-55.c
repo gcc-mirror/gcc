@@ -3,7 +3,8 @@
 
    Verify that strlen() of braced initialized array is folded
    { dg-do compile }
-   { dg-options "-O1 -Wall -fdump-tree-gimple -fdump-tree-optimized" } */
+   { dg-options "-O1 -Wall -fdump-tree-gimple -fdump-tree-optimized" }
+   { dg-require-effective-target large_initializer } */
 
 #include "strlenopt.h"
 

@@ -45,12 +45,14 @@ try_allocation()
 extern "C" void
 try_throw_exception()
 {
+#if __cpp_exceptions
   try
     {
       std::__throw_bad_exception();
     }
   catch (const std::exception& e)
     { }
+#endif
 }
 
 extern "C" void
@@ -75,8 +77,9 @@ try_function_random_fail()
   std::__throw_bad_exception();
 }
 
-#if __cplusplus < 201103L
-// "must be compiled with C++98"
+#if __cplusplus >= 201103L
+# error "must be compiled with C++98"
+#else
   void
   erase_external(std::set<int>& s)
   { s.erase(s.begin()); }

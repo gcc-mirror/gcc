@@ -1,4 +1,4 @@
-/* { dg-do compile { target { lp64 && p9+ } } } */
+/* { dg-do compile { target { lp64 && has_arch_pwr9 } } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx" } */
 

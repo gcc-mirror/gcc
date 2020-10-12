@@ -1158,6 +1158,16 @@ canonicalize_math_after_vectorization_p ()
   return !cfun || (cfun->curr_properties & PROP_gimple_lvec) != 0;
 }
 
+/* Return true if we can still perform transformations that may introduce
+   vector operations that are not supported by the target. Vector lowering
+   normally handles those, but after that pass, it becomes unsafe.  */
+
+static inline bool
+optimize_vectors_before_lowering_p ()
+{
+  return !cfun || (cfun->curr_properties & PROP_gimple_lvec) == 0;
+}
+
 /* Return true if pow(cst, x) should be optimized into exp(log(cst) * x).
    As a workaround for SPEC CPU2017 628.pop2_s, don't do it if arg0
    is an exact integer, arg1 = phi_res +/- cst1 and phi_res = PHI <cst2, ...>

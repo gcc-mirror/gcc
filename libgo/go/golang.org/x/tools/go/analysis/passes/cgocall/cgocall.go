@@ -41,7 +41,7 @@ var Analyzer = &analysis.Analyzer{
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
-	if runtime.Compiler != "gccgo" && imports(pass.Pkg, "runtime/cgo") == nil {
+	if runtime.Compiler != "gccgo" && !analysisutil.Imports(pass.Pkg, "runtime/cgo") {
 		return nil, nil // doesn't use cgo
 	}
 
@@ -374,16 +374,4 @@ func imported(info *types.Info, spec *ast.ImportSpec) *types.Package {
 		obj = info.Defs[spec.Name] // renaming import
 	}
 	return obj.(*types.PkgName).Imported()
-}
-
-// imports reports whether pkg has path among its direct imports.
-// It returns the imported package if so, or nil if not.
-// TODO(adonovan): move to analysisutil.
-func imports(pkg *types.Package, path string) *types.Package {
-	for _, imp := range pkg.Imports() {
-		if imp.Path() == path {
-			return imp
-		}
-	}
-	return nil
 }

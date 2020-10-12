@@ -31,8 +31,6 @@
 
 --  This is the default version of this package, based on Big_Integers only.
 
-pragma Ada_2020;
-
 with Ada.Strings.Text_Output.Utils;
 
 package body Ada.Numerics.Big_Numbers.Big_Reals is

@@ -22,6 +22,7 @@ main1 (unsigned int x, unsigned int y)
   a2 = *pin++ + 2;
   a3 = *pin++ * 31;
 
+  /* But we can still vectorize the multiplication or the store.  */
   *pout++ = a0 * x;
   *pout++ = a1 * y;
   *pout++ = a2 * x;
@@ -46,5 +47,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 0 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" } } */
 

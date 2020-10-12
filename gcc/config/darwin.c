@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define IN_TARGET_CODE 1
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -138,7 +136,7 @@ output_objc_section_asm_op (const void *directive)
      order in the object.  The code below implements this by emitting
      a section header for each ObjC section the first time that an ObjC
      section is requested.  */
-  if (! been_here)
+  if (darwin_symbol_stubs && ! been_here)
     {
       section *saved_in_section = in_section;
       static const enum darwin_section_enum tomark[] =
@@ -176,20 +174,23 @@ output_objc_section_asm_op (const void *directive)
       /* ABI=2 */
       static const enum darwin_section_enum tomarkv2[] =
 	{
+	  objc2_method_names_section,
 	  objc2_message_refs_section,
+	  objc2_selector_refs_section,
+	  objc2_ivar_section,
 	  objc2_classdefs_section,
 	  objc2_metadata_section,
 	  objc2_classrefs_section,
+	  objc2_class_names_section,
 	  objc2_classlist_section,
 	  objc2_categorylist_section,
-	  objc2_selector_refs_section,
 	  objc2_nonlazy_class_section,
 	  objc2_nonlazy_category_section,
 	  objc2_protocollist_section,
 	  objc2_protocolrefs_section,
 	  objc2_super_classrefs_section,
+	  objc2_constant_string_object_section,
 	  objc2_image_info_section,
-	  objc2_constant_string_object_section
 	} ;
       size_t i;
 
@@ -1351,34 +1352,40 @@ darwin_mergeable_constant_section (tree exp,
 				   unsigned HOST_WIDE_INT align,
 				   bool zsize)
 {
-  machine_mode mode = DECL_MODE (exp);
-  unsigned int modesize = GET_MODE_BITSIZE (mode);
-
   if (zsize)
     return darwin_sections[zobj_const_section];
 
-  if (flag_merge_constants
-      && mode != VOIDmode
-      && mode != BLKmode
-      && modesize <= align
-      && align >= 8
-      && align <= 256
-      && (align & (align -1)) == 0)
-    {
-      tree size = TYPE_SIZE_UNIT (TREE_TYPE (exp));
+  machine_mode mode = DECL_MODE (exp);
+  if (!flag_merge_constants
+      || mode == VOIDmode
+      || mode == BLKmode
+      || align < 8
+      || align > 256
+      || (align & (align -1)) != 0)
+    return readonly_data_section;
 
-      if (TREE_CODE (size) == INTEGER_CST)
-	{
-	  if (wi::to_wide (size) == 4)
-	    return darwin_sections[literal4_section];
-	  else if (wi::to_wide (size) == 8)
-	    return darwin_sections[literal8_section];
-	  else if (HAVE_GAS_LITERAL16
-		   && TARGET_64BIT
-		   && wi::to_wide (size) == 16)
-	    return darwin_sections[literal16_section];
-	}
-    }
+  /* This will ICE if the mode is not a constant size, but that is reasonable,
+     since one cannot put a variable-sized thing into a constant section, we
+     shouldn't be trying.  */
+  const unsigned int modesize = GET_MODE_BITSIZE (mode).to_constant ();
+
+  if (modesize > align)
+    return readonly_data_section;
+
+  tree size = TYPE_SIZE_UNIT (TREE_TYPE (exp));
+
+  if (TREE_CODE (size) != INTEGER_CST)
+    return readonly_data_section;
+
+  unsigned isize = TREE_INT_CST_LOW (size);
+  if (isize == 4)
+    return darwin_sections[literal4_section];
+  else if (isize == 8)
+    return darwin_sections[literal8_section];
+  else if (HAVE_GAS_LITERAL16
+	   && TARGET_64BIT
+	   && isize == 16)
+    return darwin_sections[literal16_section];
 
   return readonly_data_section;
 }
@@ -1432,7 +1439,7 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   gcc_assert (TREE_CODE (ident) == IDENTIFIER_NODE);
   p = IDENTIFIER_POINTER (ident);
 
-  gcc_checking_assert (flag_next_runtime == 1 && flag_objc_abi == 2);
+  gcc_checking_assert (flag_next_runtime >= 1 && flag_objc_abi == 2);
 
   objc_metadata_seen = 1;
 
@@ -1443,11 +1450,20 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
      first.  */
   if      (!strncmp (p, "V2_BASE", 7))
     return base;
+  else if (!strncmp (p, "V2_CNAM", 7))
+    return darwin_sections[objc2_class_names_section];
+  else if (!strncmp (p, "V2_MNAM", 7))
+    return darwin_sections[objc2_method_names_section];
+  else if (!strncmp (p, "V2_MTYP", 7))
+    return darwin_sections[objc2_method_types_section];
   else if (!strncmp (p, "V2_STRG", 7))
     return darwin_sections[cstring_section];
 
   else if (!strncmp (p, "G2_META", 7) || !strncmp (p, "G2_CLAS", 7))
     return darwin_sections[objc2_classdefs_section];
+  else if (!strncmp (p, "V2_PCOL", 7))
+    return ld_uses_coal_sects ? darwin_sections[data_coal_section]
+			      : darwin_sections[objc2_data_section];
   else if (!strncmp (p, "V2_MREF", 7))
     return darwin_sections[objc2_message_refs_section];
   else if (!strncmp (p, "V2_CLRF", 7))
@@ -1483,6 +1499,9 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   else if (!strncmp (p, "V2_CSTR", 7))
     return darwin_sections[objc2_constant_string_object_section];
 
+  else if (!strncmp (p, "V2_IVRF", 7))
+    return darwin_sections[objc2_ivar_section];
+
   /* Not recognized, default.  */
   return base;
 }
@@ -1496,7 +1515,7 @@ darwin_objc1_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   gcc_assert (TREE_CODE (ident) == IDENTIFIER_NODE);
   p = IDENTIFIER_POINTER (ident);
 
-  gcc_checking_assert (flag_next_runtime == 1 && flag_objc_abi < 2);
+  gcc_checking_assert (flag_next_runtime >= 1 && flag_objc_abi < 2);
 
   objc_metadata_seen = 1;
 
@@ -1747,19 +1766,19 @@ section *
 machopic_select_rtx_section (machine_mode mode, rtx x,
 			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  if (GET_MODE_SIZE (mode) == 8
+  if (known_eq (GET_MODE_SIZE (mode), 8)
       && (GET_CODE (x) == CONST_INT
 	  || GET_CODE (x) == CONST_WIDE_INT
 	  || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal8_section];
-  else if (GET_MODE_SIZE (mode) == 4
+  else if (known_eq (GET_MODE_SIZE (mode), 4)
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_WIDE_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal4_section];
   else if (HAVE_GAS_LITERAL16
 	   && TARGET_64BIT
-	   && GET_MODE_SIZE (mode) == 16
+	   && known_eq (GET_MODE_SIZE (mode), 16)
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_WIDE_INT
 	       || GET_CODE (x) == CONST_DOUBLE
@@ -1857,6 +1876,14 @@ darwin_globalize_label (FILE *stream, const char *name)
 {
   if (!!strncmp (name, "_OBJC_", 6))
     default_globalize_label (stream, name);
+  /* We have some Objective C cases that need to be global, but only on newer
+     OS versions.  */
+  if (flag_objc_abi < 2 || flag_next_runtime < 100700)
+    return;
+  if (!strncmp (name+6, "LabelPro", 8))
+    default_globalize_label (stream, name);
+  if (!strncmp (name+6, "Protocol_", 9))
+    default_globalize_label (stream, name);
 }
 
 /* This routine returns non-zero if 'name' starts with the special objective-c
@@ -1875,7 +1902,49 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
     while (*p >= '0' && *p <= '9')
       p++;
   }
-  return (!strncmp ((const char *)p, "_OBJC_", 6));
+  if (strncmp ((const char *)p, "_OBJC_", 6) != 0)
+    return false;
+
+  /* We need some of the objective c meta-data symbols to be visible to the
+     linker (when the target OS version is newer).  FIXME: this is horrible,
+     we need a better mechanism.  */
+
+  if (flag_objc_abi < 2 || flag_next_runtime < 100700)
+    return true;
+
+  p += 6;
+  if (!strncmp ((const char *)p, "ClassRef", 8))
+    return false;
+  else if (!strncmp ((const char *)p, "SelRef", 6))
+    return false;
+  else if (!strncmp ((const char *)p, "Category", 8))
+    {
+      if (p[8] == '_' || p[8] == 'I' || p[8] == 'P' || p[8] == 'C' )
+	return false;
+      return true;
+    }
+  else if (!strncmp ((const char *)p, "ClassMethods", 12))
+    return false;
+  else if (!strncmp ((const char *)p, "Instance", 8))
+    {
+      if (p[8] == 'I' || p[8] == 'M')
+	return false;
+      return true;
+    }
+  else if (!strncmp ((const char *)p, "CLASS_RO", 8))
+    return false;
+  else if (!strncmp ((const char *)p, "METACLASS_RO", 12))
+    return false;
+  else if (!strncmp ((const char *)p, "Protocol", 8))
+    {
+      if (p[8] == '_' || p[8] == 'I' || p[8] == 'P'
+	  || p[8] == 'M' || p[8] == 'C' || p[8] == 'O')
+	return false;
+      return true;
+    }
+  else if (!strncmp ((const char *)p, "LabelPro", 8))
+    return false;
+  return true;
 }
 
 /* LTO support for Mach-O.
@@ -2380,11 +2449,7 @@ darwin_emit_local_bss (FILE *fp, tree decl, const char *name,
 			unsigned HOST_WIDE_INT size,
 			unsigned int l2align)
 {
-   /* FIXME: We have a fudge to make this work with Java even when the target does
-   not use sections anchors -- Java seems to need at least one small item in a
-   non-zerofill segment.   */
-   if ((DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
-       || (size && size <= 2))
+   if (DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
     {
       /* Put smaller objects in _static_data, where the section anchors system
 	 can get them.
@@ -2410,16 +2475,13 @@ darwin_emit_local_bss (FILE *fp, tree decl, const char *name,
     }
   else
     {
-      /* When we are on a non-section anchor target, we can get zero-sized
-	 items here.  However, all we need to do is to bump them to one byte
-	 and the section alignment will take care of the rest.  */
+      /* When we are on a non-section anchor target (or not using section
+	 anchors, we can get zero-sized items here.  However, all we need to
+	 do is to bump them to one byte and the section alignment will take
+	 care of the rest.  */
       char secnam[64];
-      unsigned int flags ;
-      snprintf (secnam, 64, "__DATA,__%sbss%u", ((size)?"":"zo_"),
-						(unsigned) l2align);
-      /* We can't anchor (yet, if ever) in zerofill sections, because we can't
-	 switch to them and emit a label.  */
-      flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
+      snprintf (secnam, 64, "__DATA,__bss");
+      unsigned int flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
       in_section = get_section (secnam, flags, NULL);
       fprintf (fp, "\t.zerofill %s,", secnam);
       assemble_name (fp, name);
@@ -2430,7 +2492,7 @@ darwin_emit_local_bss (FILE *fp, tree decl, const char *name,
 	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
 		 size, (unsigned) l2align);
       else
-	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",0\n", size);
     }
 
   (*targetm.encode_section_info) (decl, DECL_RTL (decl), false);
@@ -2555,9 +2617,8 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
       return;
     }
 
-  /* So we have a public symbol (small item fudge for Java, see above).  */
-  if ((DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
-       || (size && size <= 2))
+  /* So we have a public symbol.  */
+  if (DARWIN_SECTION_ANCHORS && flag_section_anchors && size < BYTES_ZFILL)
     {
       /* Put smaller objects in data, where the section anchors system can get
 	 them.  However, if they are zero-sized punt them to yet a different
@@ -2582,16 +2643,10 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
     }
   else
     {
+      /* Section anchors not in use.  */
+      unsigned int flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
       char secnam[64];
-      unsigned int flags ;
-      /* When we are on a non-section anchor target, we can get zero-sized
-	 items here.  However, all we need to do is to bump them to one byte
-	 and the section alignment will take care of the rest.  */
-      snprintf (secnam, 64, "__DATA,__%spu_bss%u", ((size)?"":"zo_"), l2align);
-
-      /* We can't anchor in zerofill sections, because we can't switch
-	 to them and emit a label.  */
-      flags = SECTION_BSS|SECTION_WRITE|SECTION_NO_ANCHOR;
+      snprintf (secnam, 64, "__DATA,__common");
       in_section = get_section (secnam, flags, NULL);
       fprintf (fp, "\t.zerofill %s,", secnam);
       assemble_name (fp, name);
@@ -2601,7 +2656,7 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
       if (l2align)
 	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", size, l2align);
       else
-	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",0\n", size);
     }
   (* targetm.encode_section_info) (decl, DECL_RTL (decl), false);
 }
@@ -3137,10 +3192,14 @@ darwin_override_options (void)
   /* Keep track of which (major) version we're generating code for.  */
   if (darwin_macosx_version_min)
     {
-      if (strverscmp (darwin_macosx_version_min, "10.6") >= 0)
+      if (strverscmp (darwin_macosx_version_min, "10.7") >= 0)
+	generating_for_darwin_version = 11;
+      else if (strverscmp (darwin_macosx_version_min, "10.6") >= 0)
 	generating_for_darwin_version = 10;
       else if (strverscmp (darwin_macosx_version_min, "10.5") >= 0)
 	generating_for_darwin_version = 9;
+      else if (strverscmp (darwin_macosx_version_min, "10.4") >= 0)
+	generating_for_darwin_version = 8;
 
       /* Earlier versions are not specifically accounted, until required.  */
     }
@@ -3155,6 +3214,20 @@ darwin_override_options (void)
      set sensible defaults for LTO as well, since the section selection stuff
      should check for correctness re. the ABI.  TODO: check and provide the
      flags (runtime & ABI) from the lto wrapper).  */
+
+  /* At present, make a hard update to the runtime version based on the target
+     OS version.  */
+  if (flag_next_runtime)
+    {
+      if (generating_for_darwin_version > 10)
+	flag_next_runtime = 100705;
+      else if (generating_for_darwin_version > 9)
+	flag_next_runtime = 100608;
+      else if (generating_for_darwin_version > 8)
+	flag_next_runtime = 100508;
+      else
+	flag_next_runtime = 100000;
+    }
 
   /* Unless set, force ABI=2 for NeXT and m64, 0 otherwise.  */
   if (!global_options_set.x_flag_objc_abi)
@@ -3538,10 +3611,12 @@ darwin_rename_builtins (void)
 }
 
 bool
-darwin_libc_has_function (enum function_class fn_class)
+darwin_libc_has_function (enum function_class fn_class,
+			  tree type ATTRIBUTE_UNUSED)
 {
   if (fn_class == function_sincos)
-    return false;
+    return (strverscmp (darwin_macosx_version_min, "10.9") >= 0);
+
   if (fn_class == function_c99_math_complex
       || fn_class == function_c99_misc)
     return (TARGET_64BIT

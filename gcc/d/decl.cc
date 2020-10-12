@@ -618,12 +618,12 @@ public:
 	  d_linkonce_linkage (d->sinit);
 
 	d_finish_decl (d->sinit);
-
-	/* Add this decl to the current binding level.  */
-	tree ctype = build_ctype (d->type);
-	if (TREE_CODE (ctype) == ENUMERAL_TYPE && TYPE_NAME (ctype))
-	  d_pushdecl (TYPE_NAME (ctype));
       }
+
+    /* Add this decl to the current binding level.  */
+    tree ctype = build_ctype (d->type);
+    if (TYPE_NAME (ctype))
+      d_pushdecl (TYPE_NAME (ctype));
 
     d->semanticRun = PASSobj;
   }
@@ -734,33 +734,24 @@ public:
 	   a check for isVarDeclaration() in DeclarationExp codegen.  */
 	declare_local_var (d);
 
-	if (d->_init)
+	if (d->_init && !d->_init->isVoidInitializer ())
 	  {
 	    tree decl = get_symbol_decl (d);
 
-	    if (!d->_init->isVoidInitializer ())
-	      {
-		ExpInitializer *vinit = d->_init->isExpInitializer ();
-		Expression *ie = initializerToExpression (vinit);
-		tree exp = build_expr (ie);
+	    ExpInitializer *vinit = d->_init->isExpInitializer ();
+	    Expression *ie = initializerToExpression (vinit);
+	    tree exp = build_expr (ie);
 
-		/* Maybe put variable on list of things needing destruction.  */
-		if (d->needsScopeDtor ())
-		  {
-		    vec_safe_push (d_function_chain->vars_in_scope, decl);
-		    /* Force a TARGET_EXPR to add the corresponding cleanup.  */
-		    exp = force_target_expr (compound_expr (exp, decl));
-		    TARGET_EXPR_CLEANUP (exp) = build_expr (d->edtor);
-		  }
-
-		add_stmt (exp);
-	      }
-	    else if (d->size (d->loc) != 0)
+	    /* Maybe put variable on list of things needing destruction.  */
+	    if (d->needsScopeDtor ())
 	      {
-		/* Zero-length arrays do not have an initializer.  */
-		warning (OPT_Wuninitialized, "uninitialized variable '%s'",
-			 d->ident ? d->ident->toChars () : "(no name)");
+		vec_safe_push (d_function_chain->vars_in_scope, decl);
+		/* Force a TARGET_EXPR to add the corresponding cleanup.  */
+		exp = force_target_expr (compound_expr (exp, decl));
+		TARGET_EXPR_CLEANUP (exp) = build_expr (d->edtor);
 	      }
+
+	    add_stmt (exp);
 	  }
       }
 
@@ -944,27 +935,24 @@ public:
        Implemented by overriding all the RETURN_EXPRs and replacing all
        occurrences of VAR with the RESULT_DECL for the function.
        This is only worth doing for functions that can return in memory.  */
-    if (d->nrvo_can)
-      {
-	tree restype = TREE_TYPE (DECL_RESULT (fndecl));
+    tree resdecl = DECL_RESULT (fndecl);
 
-	if (!AGGREGATE_TYPE_P (restype))
-	  d->nrvo_can = 0;
+    if (TREE_ADDRESSABLE (TREE_TYPE (resdecl))
+	|| aggregate_value_p (TREE_TYPE (resdecl), fndecl))
+      {
+	/* Return non-trivial structs by invisible reference.  */
+	if (TREE_ADDRESSABLE (TREE_TYPE (resdecl)))
+	  {
+	    TREE_TYPE (resdecl) = build_reference_type (TREE_TYPE (resdecl));
+	    DECL_BY_REFERENCE (resdecl) = 1;
+	    TREE_ADDRESSABLE (resdecl) = 0;
+	    relayout_decl (resdecl);
+	    d->shidden = build_deref (resdecl);
+	  }
 	else
-	  d->nrvo_can = aggregate_value_p (restype, fndecl);
-      }
+	  d->shidden = resdecl;
 
-    if (d->nrvo_can)
-      {
-	tree resdecl = DECL_RESULT (fndecl);
-
-	TREE_TYPE (resdecl)
-	  = build_reference_type (TREE_TYPE (resdecl));
-	DECL_BY_REFERENCE (resdecl) = 1;
-	TREE_ADDRESSABLE (resdecl) = 0;
-	relayout_decl (resdecl);
-
-	if (d->nrvo_var)
+	if (d->nrvo_can && d->nrvo_var)
 	  {
 	    tree var = get_symbol_decl (d->nrvo_var);
 
@@ -972,11 +960,10 @@ public:
 	    DECL_NAME (resdecl) = DECL_NAME (var);
 	    /* Don't forget that we take its address.  */
 	    TREE_ADDRESSABLE (var) = 1;
-	    resdecl = build_deref (resdecl);
 
 	    SET_DECL_VALUE_EXPR (var, resdecl);
 	    DECL_HAS_VALUE_EXPR_P (var) = 1;
-	    SET_DECL_LANG_NRVO (var, resdecl);
+	    SET_DECL_LANG_NRVO (var, d->shidden);
 	  }
       }
 
@@ -1479,6 +1466,11 @@ get_decl_tree (Declaration *decl)
 
       AggregateDeclaration *ad = fd->isThis ();
       gcc_assert (ad != NULL);
+
+      /* The parent function is for the same `this' declaration we are
+	 building a chain to.  Non-local declaration is inaccessible.  */
+      if (fd->vthis == vd)
+	return error_no_frame_access (fd);
 
       t = get_decl_tree (fd->vthis);
       Dsymbol *outer = fd;
@@ -1990,42 +1982,6 @@ mark_needed (tree decl)
     }
 }
 
-/* Get the offset to the BC's vtbl[] initializer from the start of CD.
-   Returns "~0u" if the base class is not found in any vtable interfaces.  */
-
-unsigned
-base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
-{
-  unsigned csymoffset = target.classinfosize;
-  unsigned interfacesize = int_size_in_bytes (vtbl_interface_type_node);
-  csymoffset += cd->vtblInterfaces->length * interfacesize;
-
-  for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
-    {
-      BaseClass *b = (*cd->vtblInterfaces)[i];
-      if (b == bc)
-	return csymoffset;
-      csymoffset += b->sym->vtbl.length * target.ptrsize;
-    }
-
-  /* Check all overriding interface vtbl[]s.  */
-  for (ClassDeclaration *cd2 = cd->baseClass; cd2; cd2 = cd2->baseClass)
-    {
-      for (size_t k = 0; k < cd2->vtblInterfaces->length; k++)
-	{
-	  BaseClass *bs = (*cd2->vtblInterfaces)[k];
-	  if (bs->fillVtbl (cd, NULL, 0))
-	    {
-	      if (bc == bs)
-		return csymoffset;
-	      csymoffset += bs->sym->vtbl.length * target.ptrsize;
-	    }
-	}
-    }
-
-  return ~0u;
-}
-
 /* Get the VAR_DECL of the vtable symbol for DECL.  If this does not yet exist,
    create it.  The vtable is accessible via ClassInfo, but since it is needed
    frequently (like for rtti comparisons), make it directly accessible.  */
@@ -2314,8 +2270,6 @@ build_type_decl (tree type, Dsymbol *dsym)
   if (TYPE_STUB_DECL (type))
     return;
 
-  gcc_assert (!POINTER_TYPE_P (type));
-
   /* If a templated type, use the template instance name, as that includes all
      template parameters.  */
   const char *name = dsym->parent->isTemplateInstance ()
@@ -2325,7 +2279,6 @@ build_type_decl (tree type, Dsymbol *dsym)
 			  get_identifier (name), type);
   SET_DECL_ASSEMBLER_NAME (decl, get_identifier (d_mangle_decl (dsym)));
   TREE_PUBLIC (decl) = 1;
-  DECL_ARTIFICIAL (decl) = 1;
   DECL_CONTEXT (decl) = d_decl_context (dsym);
 
   TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
@@ -2334,9 +2287,14 @@ build_type_decl (tree type, Dsymbol *dsym)
   /* Not sure if there is a need for separate TYPE_DECLs in
      TYPE_NAME and TYPE_STUB_DECL.  */
   if (TREE_CODE (type) == ENUMERAL_TYPE || RECORD_OR_UNION_TYPE_P (type))
-    TYPE_STUB_DECL (type) = decl;
+    {
+      DECL_ARTIFICIAL (decl) = 1;
+      TYPE_STUB_DECL (type) = decl;
+    }
+  else if (type != TYPE_MAIN_VARIANT (type))
+    DECL_ORIGINAL_TYPE (decl) = TYPE_MAIN_VARIANT (type);
 
-  rest_of_decl_compilation (decl, SCOPE_FILE_SCOPE_P (decl), 0);
+  rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl), 0);
 }
 
 /* Create a declaration for field NAME of a given TYPE, setting the flags

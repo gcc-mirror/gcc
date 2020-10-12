@@ -50,6 +50,7 @@ struct go_create_gogo_args
   const char* debug_escape_hash;
   int64_t nil_check_size_threshold;
   bool debug_optimization;
+  bool need_eqtype;
 };
 
 extern void go_create_gogo (const struct go_create_gogo_args*);

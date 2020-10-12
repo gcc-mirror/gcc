@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 with Ada.Strings.Text_Output.Utils; use Ada.Strings.Text_Output.Utils;
 package body Ada.Strings.Text_Output.Basic_Files is
    use type OS.File_Descriptor;

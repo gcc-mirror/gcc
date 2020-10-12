@@ -51,11 +51,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   (__glibcxx_signed(_Tp) ? \
    (((((_Tp)1 << (__glibcxx_digits(_Tp) - 1)) - 1) << 1) + 1) : ~(_Tp)0)
 
+  template<typename _Tp>
+    struct __is_integer_nonstrict
+    : public std::__is_integer<_Tp>
+    { };
+
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+  // __is_integer<__int128> is false, but we still want to allow it here.
+  template<> struct __is_integer_nonstrict<__int128>
+  { enum { __value = 1 }; typedef std::__true_type __type; };
+
+  template<> struct __is_integer_nonstrict<unsigned __int128>
+  { enum { __value = 1 }; typedef std::__true_type __type; };
+#endif
+
   template<typename _Value>
     struct __numeric_traits_integer
     {
 #if __cplusplus >= 201103L
-      static_assert(std::__is_integer<_Value>::__value,
+      static_assert(__is_integer_nonstrict<_Value>::__value,
 		    "invalid specialization");
 #endif
 
@@ -132,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Value>
     struct __numeric_traits
-    : public __conditional_type<std::__is_integer<_Value>::__value,
+    : public __conditional_type<__is_integer_nonstrict<_Value>::__value,
 				__numeric_traits_integer<_Value>,
 				__numeric_traits_floating<_Value> >::__type
     { };

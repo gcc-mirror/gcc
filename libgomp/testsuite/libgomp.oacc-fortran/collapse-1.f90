@@ -14,6 +14,9 @@ program collapse1
         end do
       end do
     end do
+  !$acc end parallel
+
+  !$acc parallel
   !$acc loop collapse(2) reduction(.or.:l)
     do i = 1, 3
       do j = 4, 6

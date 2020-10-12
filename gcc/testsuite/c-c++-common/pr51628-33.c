@@ -15,5 +15,5 @@ void
 foo (struct pair_t *p)
 {
   bar (p ? p->i : (int *) 0);
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }

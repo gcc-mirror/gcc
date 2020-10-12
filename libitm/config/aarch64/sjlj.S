@@ -25,6 +25,35 @@
 #include "asmcfi.h"
 
 #define BTI_C	hint	34
+#define PACIASP	hint	25
+#define AUTIASP	hint	29
+#define PACIBSP	hint	27
+#define AUTIBSP	hint	31
+
+#if defined(HAVE_AS_CFI_PSEUDO_OP) && defined(__GCC_HAVE_DWARF2_CFI_ASM)
+# define cfi_window_save .cfi_window_save
+# define cfi_b_key_frame .cfi_b_key_frame
+#else
+# define cfi_window_save
+# define cfi_b_key_frame
+#endif
+
+#if __ARM_FEATURE_PAC_DEFAULT & 1
+# define CFI_PAC_TOGGLE	cfi_window_save
+# define CFI_PAC_KEY
+# define PAC_AND_BTI	PACIASP
+# define AUT	AUTIASP
+#elif __ARM_FEATURE_PAC_DEFAULT & 2
+# define CFI_PAC_TOGGLE	cfi_window_save
+# define CFI_PAC_KEY	cfi_b_key_frame
+# define PAC_AND_BTI	PACIBSP
+# define AUT	AUTIBSP
+#else
+# define CFI_PAC_TOGGLE
+# define CFI_PAC_KEY
+# define PAC_AND_BTI	BTI_C
+# define AUT
+#endif
 
 	.text
 	.align	2
@@ -33,7 +62,9 @@
 
 _ITM_beginTransaction:
 	cfi_startproc
-	BTI_C
+	CFI_PAC_KEY
+	PAC_AND_BTI
+	CFI_PAC_TOGGLE
 	mov	x1, sp
 	stp	x29, x30, [sp, -11*16]!
 	cfi_adjust_cfa_offset(11*16)
@@ -60,6 +91,8 @@ _ITM_beginTransaction:
 	cfi_adjust_cfa_offset(-11*16)
 	cfi_restore(x29)
 	cfi_restore(x30)
+	AUT
+	CFI_PAC_TOGGLE
 	ret
 	cfi_endproc
 	.size	_ITM_beginTransaction, . - _ITM_beginTransaction
@@ -73,6 +106,7 @@ GTM_longjmp:
 	/* The first parameter becomes the return value (x0).
 	   The third parameter is ignored for now.  */
 	cfi_startproc
+	CFI_PAC_KEY
 	BTI_C
 	ldp	x19, x20, [x1, 1*16]
 	ldp	x21, x22, [x1, 2*16]
@@ -86,7 +120,10 @@ GTM_longjmp:
 	ldr	x3, [x1, 10*16]
 	ldp	x29, x30, [x1]
 	cfi_def_cfa(x1, 0)
+	CFI_PAC_TOGGLE
 	mov	sp, x3
+	AUT
+	CFI_PAC_TOGGLE
 	br	x30
 	cfi_endproc
 	.size	GTM_longjmp, . - GTM_longjmp
@@ -95,6 +132,19 @@ GTM_longjmp:
 #define FEATURE_1_AND 0xc0000000
 #define FEATURE_1_BTI 1
 #define FEATURE_1_PAC 2
+
+/* Supported features based on the code generation options.  */
+#if defined(__ARM_FEATURE_BTI_DEFAULT)
+# define BTI_FLAG FEATURE_1_BTI
+#else
+# define BTI_FLAG 0
+#endif
+
+#if __ARM_FEATURE_PAC_DEFAULT & 3
+# define PAC_FLAG FEATURE_1_PAC
+#else
+# define PAC_FLAG 0
+#endif
 
 /* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
 #define GNU_PROPERTY(type, value)	\
@@ -113,7 +163,7 @@ GTM_longjmp:
 .section .note.GNU-stack, "", %progbits
 
 /* Add GNU property note if built with branch protection.  */
-# ifdef __ARM_FEATURE_BTI_DEFAULT
-GNU_PROPERTY (FEATURE_1_AND, FEATURE_1_BTI)
+# if (BTI_FLAG|PAC_FLAG) != 0
+GNU_PROPERTY (FEATURE_1_AND, BTI_FLAG|PAC_FLAG)
 # endif
 #endif

@@ -58,55 +58,55 @@ package Ada.Numerics.Aux is
    --  all as pure functions, because indeed all of them are in fact pure.
 
    function Sin (X : Double) return Double;
-   pragma Import (C, Sin, "sin");
+   pragma Import (Intrinsic, Sin, "sin");
    pragma Pure_Function (Sin);
 
    function Cos (X : Double) return Double;
-   pragma Import (C, Cos, "cos");
+   pragma Import (Intrinsic, Cos, "cos");
    pragma Pure_Function (Cos);
 
    function Tan (X : Double) return Double;
-   pragma Import (C, Tan, "tan");
+   pragma Import (Intrinsic, Tan, "tan");
    pragma Pure_Function (Tan);
 
    function Exp (X : Double) return Double;
-   pragma Import (C, Exp, "exp");
+   pragma Import (Intrinsic, Exp, "exp");
    pragma Pure_Function (Exp);
 
    function Sqrt (X : Double) return Double;
-   pragma Import (C, Sqrt, "sqrt");
+   pragma Import (Intrinsic, Sqrt, "sqrt");
    pragma Pure_Function (Sqrt);
 
    function Log (X : Double) return Double;
-   pragma Import (C, Log, "log");
+   pragma Import (Intrinsic, Log, "log");
    pragma Pure_Function (Log);
 
    function Acos (X : Double) return Double;
-   pragma Import (C, Acos, "acos");
+   pragma Import (Intrinsic, Acos, "acos");
    pragma Pure_Function (Acos);
 
    function Asin (X : Double) return Double;
-   pragma Import (C, Asin, "asin");
+   pragma Import (Intrinsic, Asin, "asin");
    pragma Pure_Function (Asin);
 
    function Atan (X : Double) return Double;
-   pragma Import (C, Atan, "atan");
+   pragma Import (Intrinsic, Atan, "atan");
    pragma Pure_Function (Atan);
 
    function Sinh (X : Double) return Double;
-   pragma Import (C, Sinh, "sinh");
+   pragma Import (Intrinsic, Sinh, "sinh");
    pragma Pure_Function (Sinh);
 
    function Cosh (X : Double) return Double;
-   pragma Import (C, Cosh, "cosh");
+   pragma Import (Intrinsic, Cosh, "cosh");
    pragma Pure_Function (Cosh);
 
    function Tanh (X : Double) return Double;
-   pragma Import (C, Tanh, "tanh");
+   pragma Import (Intrinsic, Tanh, "tanh");
    pragma Pure_Function (Tanh);
 
    function Pow (X, Y : Double) return Double;
-   pragma Import (C, Pow, "pow");
+   pragma Import (Intrinsic, Pow, "pow");
    pragma Pure_Function (Pow);
 
 end Ada.Numerics.Aux;

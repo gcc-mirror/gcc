@@ -109,6 +109,7 @@ extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
 extern tree mathfn_built_in (tree, combined_fn);
+extern tree mathfn_built_in_type (combined_fn);
 extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 extern rtx expand_builtin_saveregs (void);
@@ -133,13 +134,6 @@ extern tree fold_call_stmt (gcall *, bool);
 extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
 extern bool is_simple_builtin (tree);
 extern bool is_inexpensive_builtin (tree);
-
-class vr_values;
-tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
-			     const vr_values * = NULL);
-extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
-			     const vr_values * = NULL);
-
 extern bool readonly_data_expr (tree exp);
 extern bool init_target_chars (void);
 extern unsigned HOST_WIDE_INT target_newline;
@@ -153,38 +147,109 @@ extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
 extern bool check_nul_terminated_array (tree, tree, tree = NULL_TREE);
-extern void warn_string_no_nul (location_t, const char *, tree, tree);
+extern void warn_string_no_nul (location_t, tree, const char *, tree,
+				tree, tree = NULL_TREE, bool = false,
+				const wide_int[2] = NULL);
 extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
 extern bool builtin_with_linkage_p (tree);
 
 /* Describes a reference to an object used in an access.  */
 struct access_ref
 {
-  access_ref (): ref ()
-  {
-    /* Set to valid.  */
-    offrng[0] = offrng[1] = 0;
-    /* Invalidate.   */
-    sizrng[0] = sizrng[1] = -1;
-  }
+  /* Set the bounds of the reference to at most as many bytes
+     as the first argument or unknown when null, and at least
+     one when the second argument is true unless the first one
+     is a constant zero.  */
+  access_ref (tree = NULL_TREE, bool = false);
 
-  /* Reference to the object.  */
+  /* Reference to the accessed object(s).  */
   tree ref;
 
-  /* Range of offsets into and sizes of the object(s).  */
+  /* Range of byte offsets into and sizes of the object(s).  */
   offset_int offrng[2];
   offset_int sizrng[2];
+  /* Range of the bound of the access: denotes that the access
+     is at least BNDRNG[0] bytes but no more than BNDRNG[1].
+     For string functions the size of the actual access is
+     further constrained by the length of the string.  */
+  offset_int bndrng[2];
+
+  /* Return true if OFFRNG is the constant zero.  */
+  bool offset_zero () const
+  {
+    return offrng[0] == 0 && offrng[1] == 0;
+  }
+
+  /* Return true if OFFRNG is bounded to a subrange of offset values
+     valid for the largest possible object.  */
+  bool offset_bounded () const;
+
+  /* Return the maximum amount of space remaining and if non-null, set
+     argument to the minimum.  */
+  offset_int size_remaining (offset_int * = NULL) const;
+
+  /* Set the size range to the maximum.  */
+  void set_max_size_range ()
+  {
+    sizrng[0] = 0;
+    sizrng[1] = wi::to_offset (max_object_size ());
+  }
+
+  /* Add OFF to the offset range.  */
+  void add_offset (const offset_int &off)
+  {
+    add_offset (off, off);
+  }
+
+  /* Add the range [MIN, MAX] to the offset range.  */
+  void add_offset (const offset_int &, const offset_int &);
+
+  /* Add the maximum representable offset to the offset range.  */
+  void add_max_offset ()
+  {
+    offset_int maxoff = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+    add_offset (-maxoff - 1, maxoff);
+  }
+
+  /* Used to fold integer expressions when called from front ends.  */
+  tree (*eval)(tree);
+  /* Set if trailing one-element arrays should be treated as flexible
+     array members.  */
+  bool trail1special;
+  /* Set if valid offsets must start at zero (for declared and allocated
+     objects but not for others referenced by pointers).  */
+  bool base0;
 };
 
 /* Describes a pair of references used in an access by built-in
    functions like memcpy.  */
 struct access_data
 {
+  /* Set the access to at most MAXWRITE and MAXREAD bytes, and
+     at least 1 when MINWRITE or MINREAD, respectively, is set.  */
+  access_data (tree expr, access_mode mode,
+	       tree maxwrite = NULL_TREE, bool minwrite = false,
+	       tree maxread = NULL_TREE, bool minread = false)
+    : call (expr),
+      dst (maxwrite, minwrite), src (maxread, minread), mode (mode) { }
+
+  /* Built-in function call.  */
+  tree call;
   /* Destination and source of the access.  */
   access_ref dst, src;
+  /* Read-only for functions like memcmp or strlen, write-only
+     for memset, read-write for memcpy or strcat.  */
+  access_mode mode;
 };
 
-extern bool check_access (tree, tree, tree, tree, tree, tree, tree,
-			  bool = true, const access_data * = NULL);
+class range_query;
+extern tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
+				    range_query * = NULL);
+extern tree gimple_parm_array_size (tree, wide_int[2], range_query * = NULL);
+extern tree compute_objsize (tree, int, access_ref *, range_query * = NULL);
+extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
+			     range_query * = NULL);
+extern bool check_access (tree, tree, tree, tree, tree,
+			  access_mode, const access_data * = NULL);
 
 #endif /* GCC_BUILTINS_H */

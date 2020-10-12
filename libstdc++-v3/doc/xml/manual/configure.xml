@@ -204,7 +204,8 @@
 
  <varlistentry><term><code>--enable-libstdcxx-debug-flags=FLAGS</code></term>
 
- <listitem><para>This option is only valid when <code> --enable-debug </code>
+ <listitem><para>This option is only valid when
+	<code>--enable-libstdcxx-debug</code>
 	is also specified, and applies to the debug builds only. With
 	this option, you can pass a specific string of flags to the
 	compiler to use when building the debug versions of libstdc++.

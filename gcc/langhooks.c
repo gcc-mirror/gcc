@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "timevar.h"
 #include "stor-layout.h"
+#include "cgraph.h"
+#include "debug.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -608,7 +610,7 @@ lhd_omp_assignment (tree clause ATTRIBUTE_UNUSED, tree dst, tree src)
 /* Finalize clause C.  */
 
 void
-lhd_omp_finish_clause (tree, gimple_seq *)
+lhd_omp_finish_clause (tree, gimple_seq *, bool)
 {
 }
 
@@ -864,6 +866,18 @@ tree
 lhd_unit_size_without_reusable_padding (tree t)
 {
   return TYPE_SIZE_UNIT (t);
+}
+
+/* Default implementation for the finalize_early_debug hook.  */
+
+void
+lhd_finalize_early_debug (void)
+{
+  /* Emit early debug for reachable functions, and by consequence,
+     locally scoped symbols.  */
+  struct cgraph_node *cnode;
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cnode)
+    (*debug_hooks->early_global_decl) (cnode->decl);
 }
 
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */

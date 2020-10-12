@@ -34,3 +34,15 @@ test()
 }
 
 static_assert(test());
+
+constexpr bool
+test_n()
+{
+  int tot = 0;
+  auto sum = [&total = tot](int i){ total += i; };
+  auto sum2 = std::for_each_n(ca0.begin(), std::size(ca0)-1, sum);
+
+  return tot == 55;
+}
+
+static_assert(test_n());

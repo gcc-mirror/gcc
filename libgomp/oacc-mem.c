@@ -667,6 +667,9 @@ static void
 goacc_exit_datum_1 (struct gomp_device_descr *acc_dev, void *h, size_t s,
 		    unsigned short kind, splay_tree_key n, goacc_aq aq)
 {
+  assert (kind != GOMP_MAP_DETACH
+	  && kind != GOMP_MAP_FORCE_DETACH);
+
   if ((uintptr_t) h < n->host_start || (uintptr_t) h + s > n->host_end)
     {
       size_t host_size = n->host_end - n->host_start;
@@ -676,8 +679,7 @@ goacc_exit_datum_1 (struct gomp_device_descr *acc_dev, void *h, size_t s,
     }
 
   bool finalize = (kind == GOMP_MAP_FORCE_FROM
-		   || kind == GOMP_MAP_DELETE
-		   || kind == GOMP_MAP_FORCE_DETACH);
+		   || kind == GOMP_MAP_DELETE);
 
   assert (n->refcount != REFCOUNT_LINK);
   if (n->refcount != REFCOUNT_INFINITY
@@ -725,7 +727,8 @@ goacc_exit_datum_1 (struct gomp_device_descr *acc_dev, void *h, size_t s,
 	     zero.  Otherwise (e.g. for a 'GOMP_MAP_STRUCT' mapping with
 	     multiple members), fall back to skipping the test.  */
 	  for (size_t l_i = 0; l_i < n->tgt->list_count; ++l_i)
-	    if (n->tgt->list[l_i].key)
+	    if (n->tgt->list[l_i].key
+		&& !n->tgt->list[l_i].is_attach)
 	      ++num_mappings;
 	  bool is_tgt_unmapped = gomp_remove_var (acc_dev, n);
 	  assert (is_tgt_unmapped || num_mappings > 1);
@@ -1135,12 +1138,15 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	  void *h = hostaddrs[i];
 	  size_t s = sizes[i];
 
-	  /* A standalone attach clause.  */
 	  if ((kinds[i] & 0xff) == GOMP_MAP_ATTACH)
-	    gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n,
-				 (uintptr_t) h, s, NULL);
-
-	  goacc_map_var_existing (acc_dev, h, s, n);
+	    {
+	      gomp_attach_pointer (acc_dev, aq, &acc_dev->mem_map, n,
+				   (uintptr_t) h, s, NULL);
+	      /* OpenACC 'attach'/'detach' doesn't affect structured/dynamic
+		 reference counts ('n->refcount', 'n->dynamic_refcount').  */
+	    }
+	  else
+	    goacc_map_var_existing (acc_dev, h, s, n);
 	}
       else if (n && groupnum > 1)
 	{
@@ -1168,7 +1174,9 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 		   list, and increment the refcounts for each item in that
 		   group.  */
 		for (size_t k = 0; k < groupnum; k++)
-		  if (j + k < tgt->list_count && tgt->list[j + k].key)
+		  if (j + k < tgt->list_count
+		      && tgt->list[j + k].key
+		      && !tgt->list[j + k].is_attach)
 		    {
 		      tgt->list[j + k].key->refcount++;
 		      tgt->list[j + k].key->dynamic_refcount++;
@@ -1202,7 +1210,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	  for (size_t j = 0; j < tgt->list_count; j++)
 	    {
 	      n = tgt->list[j].key;
-	      if (n)
+	      if (n && !tgt->list[j].is_attach)
 		n->dynamic_refcount++;
 	    }
 	}
@@ -1268,14 +1276,10 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	case GOMP_MAP_POINTER:
 	case GOMP_MAP_DELETE:
 	case GOMP_MAP_RELEASE:
-	case GOMP_MAP_DETACH:
-	case GOMP_MAP_FORCE_DETACH:
 	  {
 	    struct splay_tree_key_s cur_node;
 	    size_t size;
-	    if (kind == GOMP_MAP_POINTER
-		|| kind == GOMP_MAP_DETACH
-		|| kind == GOMP_MAP_FORCE_DETACH)
+	    if (kind == GOMP_MAP_POINTER)
 	      size = sizeof (void *);
 	    else
 	      size = sizes[i];
@@ -1296,6 +1300,12 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	     for all its entries.  This special handling exists for GCC 10.1
 	     compatibility; afterwards, we're not generating these no-op
 	     'GOMP_MAP_STRUCT's anymore.  */
+	  break;
+
+	case GOMP_MAP_DETACH:
+	case GOMP_MAP_FORCE_DETACH:
+	  /* OpenACC 'attach'/'detach' doesn't affect structured/dynamic
+	     reference counts ('n->refcount', 'n->dynamic_refcount').  */
 	  break;
 
 	default:

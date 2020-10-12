@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 with Ada.Strings.Text_Output;
 with System.Unsigned_Types;
+
 package System.Put_Images is
 
    --  This package contains subprograms that are called by the generated code
@@ -46,6 +46,8 @@ package System.Put_Images is
    --  the components of a composite type, between pairs of components, and
    --  after them. See Exp_Put_Image in the compiler for details of these
    --  calls.
+
+   pragma Preelaborate;
 
    subtype Sink is Ada.Strings.Text_Output.Sink;
 

@@ -14,8 +14,5 @@ void test_1 (void)
 void test_2 (void)
 {
   global_union.ptr_val = malloc (1024); /* { dg-message "allocated here" } */
-  global_union.int_val = 0;
-} /* { dg-warning "leak of '<unknown>' " } */
-/* TODO: something better than "<unknown>".  */
-/* TODO: better location for the leak.  */
-
+  global_union.int_val = 0; /* { dg-warning "leak of 'global_union.ptr_val' " } */
+} 

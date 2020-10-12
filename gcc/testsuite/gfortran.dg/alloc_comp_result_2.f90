@@ -1,9 +1,8 @@
-! { dg-do run }
 ! Tests the fix for PR40440, in which gfortran tried to deallocate
 ! the allocatable components of the actual argument of CALL SUB
 !
 ! Contributed by Juergen Reuter <juergen.reuter@desy.de>
-! Reduced testcase from Tobias Burnus  <burnus@gcc.gnu.org> 
+! Reduced testcase from Tobias Burnus  <burnus@gcc.gnu.org>
 !
   implicit none
   type t

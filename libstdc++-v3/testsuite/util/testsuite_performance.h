@@ -249,7 +249,6 @@ namespace __gnu_test
   void
   report_header(const std::string file, const std::string header)
   {
-    const char space = ' ';
     const char tab = '\t';
     const char* name = "libstdc++-performance.sum";
     std::string::const_iterator i = file.begin() + file.find_last_of('/') + 1;

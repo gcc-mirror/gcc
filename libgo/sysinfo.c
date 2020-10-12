@@ -281,6 +281,14 @@ enum {
 #endif
 };
 
+// SIOCGIFMTU can't be added in the above enum as it might
+// be signed in some OSes.
+#ifdef SIOCGIFMTU
+enum {
+  SIOCGIFMTU_val = SIOCGIFMTU,
+};
+#endif
+
 #if defined(HAVE_SYS_EPOLL_H)
 enum {
   epoll_data_offset = offsetof(struct epoll_event, data)
@@ -316,6 +324,7 @@ enum {
 SREF(dirent);
 SREF(dirent64);
 OTREF(DIR);
+EREF(DT_UNKNOWN);
 
 // From fcntl.h
 SREF(flock);
@@ -437,6 +446,7 @@ SREF(rusage);
 SREF(rlimit64);
 EREF(RLIMIT_NOFILE);
 EREF(PRIO_USER);
+EREF(RUSAGE_SELF);
 
 // From sys/select.h
 TREF(fd_set);

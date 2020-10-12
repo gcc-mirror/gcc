@@ -20,7 +20,7 @@
 
 #include <string_view>
 
-// { dg-do compile }
 // { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
 template class std::basic_string_view<int, std::char_traits<int>>;

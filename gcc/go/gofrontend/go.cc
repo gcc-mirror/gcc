@@ -46,6 +46,8 @@ go_create_gogo(const struct go_create_gogo_args* args)
   ::gogo->set_nil_check_size_threshold(args->nil_check_size_threshold);
   if (args->debug_optimization)
     ::gogo->set_debug_optimization(args->debug_optimization);
+  if (args->need_eqtype)
+    ::gogo->set_need_eqtype(args->need_eqtype);
 }
 
 // Parse the input files.

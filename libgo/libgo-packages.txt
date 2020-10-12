@@ -120,6 +120,7 @@ internal/nettrace
 internal/obscuretestdata
 internal/oserror
 internal/poll
+internal/profile
 internal/race
 internal/reflectlite
 internal/singleflight
@@ -128,6 +129,7 @@ internal/syscall/unix
 internal/testenv
 internal/testlog
 internal/trace
+internal/unsafeheader
 internal/xcoff
 io
 io/ioutil
@@ -174,7 +176,6 @@ runtime/internal/atomic
 runtime/internal/math
 runtime/internal/sys
 runtime/pprof
-runtime/pprof/internal/profile
 runtime/trace
 sort
 strconv
@@ -191,6 +192,7 @@ text/tabwriter
 text/template
 text/template/parse
 time
+time/tzdata
 unicode
 unicode/utf16
 unicode/utf8

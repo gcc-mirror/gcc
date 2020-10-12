@@ -1883,10 +1883,11 @@ add_type_duplicate (odr_type val, tree type)
   return build_bases;
 }
 
-/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.  */
+/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.
+   FOR_DUMP_P is true when being called from the dump routines.  */
 
 tree
-obj_type_ref_class (const_tree ref)
+obj_type_ref_class (const_tree ref, bool for_dump_p)
 {
   gcc_checking_assert (TREE_CODE (ref) == OBJ_TYPE_REF);
   ref = TREE_TYPE (ref);
@@ -1902,8 +1903,10 @@ obj_type_ref_class (const_tree ref)
   tree ret = TREE_TYPE (ref);
   if (!in_lto_p && !TYPE_STRUCTURAL_EQUALITY_P (ret))
     ret = TYPE_CANONICAL (ret);
+  else if (odr_type ot = get_odr_type (ret, !for_dump_p))
+    ret = ot->type;
   else
-    ret = get_odr_type (ret)->type;
+    gcc_assert (for_dump_p);
   return ret;
 }
 
@@ -2984,7 +2987,7 @@ final_warning_record::grow_type_warnings (unsigned newlen)
   unsigned len = type_warnings.length ();
   if (newlen > len)
     {
-      type_warnings.safe_grow_cleared (newlen);
+      type_warnings.safe_grow_cleared (newlen, true);
       for (unsigned i = len; i < newlen; i++)
 	type_warnings[i].dyn_count = profile_count::zero ();
     }
@@ -4143,7 +4146,7 @@ ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
       /* If this is first time we see the enum, remember its definition.  */
       if (!existed_p)
 	{
-	  this_enum.vals.safe_grow_cleared (nvals);
+	  this_enum.vals.safe_grow_cleared (nvals, true);
 	  this_enum.warned = false;
 	  if (dump_file)
 	    fprintf (dump_file, "enum %s\n{\n", name);

@@ -1,7 +1,8 @@
 /* PR tree-optimization/91567 - Spurious -Wformat-overflow warnings building
    glibc (32-bit only)
    { dg-do compile }
-   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 

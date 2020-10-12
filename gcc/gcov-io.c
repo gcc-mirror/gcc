@@ -144,7 +144,7 @@ gcov_open (const char *name, int mode)
   gcov_var.offset = gcov_var.length = 0;
   gcov_var.overread = -1u;
   gcov_var.error = 0;
-#if !IN_LIBGCOV
+#if !IN_LIBGCOV || defined (IN_GCOV_TOOL)
   gcov_var.endian = 0;
 #endif
 #if GCOV_LOCKED

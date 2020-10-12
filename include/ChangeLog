@@ -1,3 +1,36 @@
+2020-09-24  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf2.def: Add DWARF5 Unit type header encoding macros
+	DW_UT_FIRST, DW_UT and DW_UT_END.
+	* dwarf2.h (enum dwarf_unit_type): Removed and define using
+	DW_UT_FIRST, DW_UT and DW_UT_END macros.
+	(DW_CIE_VERSION): Removed.
+	(get_DW_UT_name): New function declaration.
+
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* gomp-constants.h (GOMP_MAP_ALWAYS_POINTER_P): Define.
+
+2020-09-09  Caroline Tice  <cmtice@google.com>
+
+	* dwarf2.h (enum dwarf_sect_v5): A new enum section for the
+	sections in a DWARF 5 DWP file (DWP version 5).
+
+2020-09-09  Caroline Tice  <cmtice@google.com>
+
+	* dwarf2.h (enum dwarf_sect_v5): A new enum section for the
+	sections in a DWARF 5 DWP file (DWP version 5).
+
+2020-09-08  Felix Willgerodt  <felix.willgerodt@intel.com>
+
+	* floatformat.h (floatformat_bfloat16_big): New.
+	(floatformat_bfloat16_little): New.
+
+2020-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	* gomp-constants.h (GOMP_VERSION_HSA): Remove.
+
 2020-07-09  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

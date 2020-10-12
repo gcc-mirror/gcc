@@ -1,6 +1,6 @@
-/* Test exercising -Wstringop-overflow warnings for reading past the end.  */
+/* Test exercising -Wstringop-overread warnings for reading past the end.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wstringop-overflow=1 -ftrack-macro-expansion=0" } */
+/* { dg-options "-O2 -Wstringop-overread -ftrack-macro-expansion=0" } */
 
 #define PTRDIFF_MAX   __PTRDIFF_MAX__
 #define SIZE_MAX      __SIZE_MAX__
@@ -73,22 +73,22 @@ void test_memop_warn_local (void *p, const void *q)
 
   /* Verify memchr/memcmp.  */
   int i = R (0, 255);
-  memchr ("", i, 2);   /* { dg-warning "reading 2 bytes from a region of size 1" } */
-  memchr ("", i, 2);   /* { dg-warning "reading 2 bytes from a region of size 1" } */
-  memchr ("123", i, 5);   /* { dg-warning "reading 5 bytes from a region of size 4" } */
-  memchr (a, i, sizeof a + 1);   /* { dg-warning "reading 5 bytes from a region of size 4" } */
+  memchr ("", i, 2);   /* { dg-warning "specified bound 2 exceeds source size 1" "memchr" } */
+  memchr ("", i, 2);   /* { dg-warning "specified bound 2 exceeds source size 1" "memchr" } */
+  memchr ("123", i, 5);   /* { dg-warning "specified bound 5 exceeds source size 4" "memchr" } */
+  memchr (a, i, sizeof a + 1);   /* { dg-warning "specified bound 5 exceeds source size 4" "memchr" } */
 
-  memcmp (p, "", 2);   /* { dg-warning "reading 2 bytes from a region of size 1" } */
-  memcmp (p, "123", 5);   /* { dg-warning "reading 5 bytes from a region of size 4" } */
-  memcmp (p, a, sizeof a + 1);   /* { dg-warning "reading 5 bytes from a region of size 4" } */
+  memcmp (p, "", 2);   /* { dg-warning "specified bound 2 exceeds source size 1" "memcmp" } */
+  memcmp (p, "123", 5);   /* { dg-warning "specified bound 5 exceeds source size 4" "memcmp" } */
+  memcmp (p, a, sizeof a + 1);   /* { dg-warning "specified bound 5 exceeds source size 4" "memcmp" } */
 
   size_t n = PTRDIFF_MAX + (size_t)1;
-  memchr (p, 1, n);   /* { dg-warning "exceeds maximum object size" } */
-  memcmp (p, q, n);   /* { dg-warning "exceeds maximum object size" } */
+  memchr (p, 1, n);   /* { dg-warning "exceeds maximum object size" "memchr" } */
+  memcmp (p, q, n);   /* { dg-warning "exceeds maximum object size" "memcmp" } */
 
   n = SIZE_MAX;
-  memchr (p, 1, n);   /* { dg-warning "exceeds maximum object size" } */
-  memcmp (p, q, n);   /* { dg-warning "exceeds maximum object size" } */
+  memchr (p, 1, n);   /* { dg-warning "exceeds maximum object size" "memchr" } */
+  memcmp (p, q, n);   /* { dg-warning "exceeds maximum object size" "memcmp" } */
 }
 
 /* Verify that reading beyond the end of a dynamically allocated array
@@ -117,8 +117,8 @@ void test_memop_warn_alloc (void *p)
   /* Verify memchr/memcmp.  */
   n = sizeof *b * 2 + 1;
 
-  memchr (b, 1, n);   /* { dg-warning "reading 9 bytes from a region of size 8" "memcmp from allocated" } */
-  memcmp (p, b, n);   /* { dg-warning "reading 9 bytes from a region of size 8" "memcmp from allocated" } */
+  memchr (b, 1, n);   /* { dg-warning "specified bound 9 exceeds source size 8" "memchr from allocated" } */
+  memcmp (p, b, n);   /* { dg-warning "specified bound 9 exceeds source size 8" "memcmp from allocated" } */
 }
 
 

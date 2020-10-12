@@ -50,9 +50,9 @@ class range_operator
 {
 public:
   // Perform an operation between 2 ranges and return it.
-  virtual bool fold_range (value_range &r, tree type,
-			   const value_range &lh,
-			   const value_range &rh) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &lh,
+			   const irange &rh) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -65,16 +65,16 @@ public:
   //
   // i.e.  [LHS] = ??? + OP2
   // is re-formed as R = [LHS] - OP2.
-  virtual bool op1_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op2) const;
-  virtual bool op2_range (value_range &r, tree type,
-			  const value_range &lhs,
-			  const value_range &op1) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 
 protected:
   // Perform an integral operation between 2 sub-ranges and return it.
-  virtual void wi_fold (value_range &r, tree type,
+  virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
@@ -82,7 +82,7 @@ protected:
 };
 
 extern range_operator *range_op_handler (enum tree_code code, tree type);
-extern void range_cast (value_range &, tree type);
+extern void range_cast (irange &, tree type);
 extern void wi_set_zero_nonzero_bits (tree type,
 				      const wide_int &, const wide_int &,
 				      wide_int &maybe_nonzero,

@@ -1,4 +1,4 @@
-// PERMUTE_ARGS: -unittest -O -release -inline -g
+// PERMUTE_ARGS: -unittest -O -release -inline -fPIC -g
 
 import core.vararg;
 
@@ -2827,6 +2827,7 @@ struct S17457 {
     this(int seconds) {
         dg17457 = &mfunc;
     }
+    @disable this(this);
     void mfunc() {}
 }
 
@@ -4612,7 +4613,7 @@ int main()
     test9899();
     test9907();
     test9985();
-    //test17457();    // XBUG: NRVO implementation differs
+    test17457();
     test9994();
     test10094();
     test10244();

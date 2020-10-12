@@ -29,10 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 with Ada.Strings.UTF_Encoding;
 with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
+
 package Ada.Strings.Text_Output with Preelaborate is
 
    --  This package provides a "Sink" abstraction, to which characters of type

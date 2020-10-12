@@ -5993,6 +5993,16 @@ check_host_association (gfc_expr *e)
 		if (ref->type == REF_ARRAY && ref->next == NULL)
 		  break;
 
+	      if ((ref == NULL || ref->type != REF_ARRAY)
+		  && sym->attr.proc == PROC_INTERNAL)
+		{
+		  gfc_error ("%qs at %L is host associated at %L into "
+			     "a contained procedure with an internal "
+			     "procedure of the same name", sym->name,
+			      &old_sym->declared_at, &e->where);
+		  return false;
+		}
+
 	      gcc_assert (ref->type == REF_ARRAY);
 
 	      /* Grab the start expressions from the array ref and
@@ -9249,7 +9259,9 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	    ? CLASS_DATA (code->expr2)->ts.u.derived : code->expr2->ts.u.derived;
 	}
 
-      if (code->expr2->rank && CLASS_DATA (code->expr1)->as)
+      if (code->expr2->rank
+	  && code->expr1->ts.type == BT_CLASS
+	  && CLASS_DATA (code->expr1)->as)
 	CLASS_DATA (code->expr1)->as->rank = code->expr2->rank;
 
       /* F2008: C803 The selector expression must not be coindexed.  */
@@ -9625,6 +9637,12 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  new_st->expr1->value.function.actual->next = gfc_get_actual_arglist ();
 	  new_st->expr1->value.function.actual->next->expr = gfc_get_variable_expr (st);
 	  new_st->expr1->value.function.actual->next->expr->where = code->loc;
+	  /* Set up types in formal arg list.  */
+	  new_st->expr1->value.function.isym->formal = XCNEW (gfc_intrinsic_arg);
+	  new_st->expr1->value.function.isym->formal->ts = new_st->expr1->value.function.actual->expr->ts;
+	  new_st->expr1->value.function.isym->formal->next = XCNEW (gfc_intrinsic_arg);
+	  new_st->expr1->value.function.isym->formal->next->ts = new_st->expr1->value.function.actual->next->expr->ts;
+
 	  new_st->next = body->next;
 	}
 	if (default_case->next)
@@ -11161,9 +11179,11 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
   /* Add the attributes and the arrayspec to the temporary.  */
   tmp->n.sym->attr = gfc_expr_attr (e);
   tmp->n.sym->attr.function = 0;
+  tmp->n.sym->attr.proc_pointer = 0;
   tmp->n.sym->attr.result = 0;
   tmp->n.sym->attr.flavor = FL_VARIABLE;
   tmp->n.sym->attr.dummy = 0;
+  tmp->n.sym->attr.use_assoc = 0;
   tmp->n.sym->attr.intent = INTENT_UNKNOWN;
 
   if (as)
@@ -11583,7 +11603,7 @@ resolve_ptr_fcn_assign (gfc_code **code, gfc_namespace *ns)
       return false;
     }
 
-  tmp_ptr_expr = get_temp_from_expr ((*code)->expr2, ns);
+  tmp_ptr_expr = get_temp_from_expr ((*code)->expr1, ns);
 
   /* get_temp_from_expression is set up for ordinary assignments. To that
      end, where array bounds are not known, arrays are made allocatable.
@@ -11702,6 +11722,8 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      omp_workshare_flag = 1;
 	      gfc_resolve_omp_parallel_blocks (code, ns);
 	      break;
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
@@ -12927,8 +12949,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       else if (sym->attr.external)
 	gfc_error ("External %qs at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
-      else if (sym->attr.dummy
-	&& !(sym->ts.type == BT_DERIVED && sym->attr.intent == INTENT_OUT))
+      else if (sym->attr.dummy)
 	gfc_error ("Dummy %qs at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
       else if (sym->attr.intrinsic)

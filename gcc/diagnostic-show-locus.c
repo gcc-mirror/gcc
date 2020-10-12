@@ -175,9 +175,10 @@ enum column_unit {
 class exploc_with_display_col : public expanded_location
 {
  public:
-  exploc_with_display_col (const expanded_location &exploc)
+  exploc_with_display_col (const expanded_location &exploc, int tabstop)
     : expanded_location (exploc),
-      m_display_col (location_compute_display_column (exploc)) {}
+      m_display_col (location_compute_display_column (exploc, tabstop))
+  {}
 
   int m_display_col;
 };
@@ -189,11 +190,11 @@ class exploc_with_display_col : public expanded_location
 class layout_point
 {
  public:
-  layout_point (const expanded_location &exploc)
+  layout_point (const exploc_with_display_col &exploc)
     : m_line (exploc.line)
   {
     m_columns[CU_BYTES] = exploc.column;
-    m_columns[CU_DISPLAY_COLS] = location_compute_display_column (exploc);
+    m_columns[CU_DISPLAY_COLS] = exploc.m_display_col;
   }
 
   linenum_type m_line;
@@ -205,10 +206,10 @@ class layout_point
 class layout_range
 {
  public:
-  layout_range (const expanded_location *start_exploc,
-		const expanded_location *finish_exploc,
+  layout_range (const exploc_with_display_col &start_exploc,
+		const exploc_with_display_col &finish_exploc,
 		enum range_display_kind range_display_kind,
-		const expanded_location *caret_exploc,
+		const exploc_with_display_col &caret_exploc,
 		unsigned original_idx,
 		const range_label *label);
 
@@ -226,22 +227,18 @@ class layout_range
 
 /* A struct for use by layout::print_source_line for telling
    layout::print_annotation_line the extents of the source line that
-   it printed, so that underlines can be clipped appropriately.  */
+   it printed, so that underlines can be clipped appropriately.  Units
+   are 1-based display columns.  */
 
 struct line_bounds
 {
-  int m_first_non_ws;
-  int m_last_non_ws;
+  int m_first_non_ws_disp_col;
+  int m_last_non_ws_disp_col;
 
-  void convert_to_display_cols (char_span line)
+  line_bounds ()
   {
-    m_first_non_ws = cpp_byte_column_to_display_column (line.get_buffer (),
-							line.length (),
-							m_first_non_ws);
-
-    m_last_non_ws = cpp_byte_column_to_display_column (line.get_buffer (),
-						       line.length (),
-						       m_last_non_ws);
+    m_first_non_ws_disp_col = INT_MAX;
+    m_last_non_ws_disp_col = 0;
   }
 };
 
@@ -351,8 +348,8 @@ class layout
  private:
   bool will_show_line_p (linenum_type row) const;
   void print_leading_fixits (linenum_type row);
-  void print_source_line (linenum_type row, const char *line, int line_bytes,
-			  line_bounds *lbounds_out);
+  line_bounds print_source_line (linenum_type row, const char *line,
+				 int line_bytes);
   bool should_print_annotation_line_p (linenum_type row) const;
   void start_annotation_line (char margin_char = ' ') const;
   void print_annotation_line (linenum_type row, const line_bounds lbounds);
@@ -513,16 +510,16 @@ colorizer::get_color_by_name (const char *name)
    Initialize various layout_point fields from expanded_location
    equivalents; we've already filtered on file.  */
 
-layout_range::layout_range (const expanded_location *start_exploc,
-			    const expanded_location *finish_exploc,
+layout_range::layout_range (const exploc_with_display_col &start_exploc,
+			    const exploc_with_display_col &finish_exploc,
 			    enum range_display_kind range_display_kind,
-			    const expanded_location *caret_exploc,
+			    const exploc_with_display_col &caret_exploc,
 			    unsigned original_idx,
 			    const range_label *label)
-: m_start (*start_exploc),
-  m_finish (*finish_exploc),
+: m_start (start_exploc),
+  m_finish (finish_exploc),
   m_range_display_kind (range_display_kind),
-  m_caret (*caret_exploc),
+  m_caret (caret_exploc),
   m_original_idx (original_idx),
   m_label (label)
 {
@@ -646,6 +643,9 @@ layout_range::intersects_line_p (linenum_type row) const
 
 #if CHECKING_P
 
+/* Default for when we don't care what the tab expansion is set to.  */
+static const int def_tabstop = 8;
+
 /* Create some expanded locations for testing layout_range.  The filename
    member of the explocs is set to the empty string.  This member will only be
    inspected by the calls to location_compute_display_column() made from the
@@ -662,8 +662,11 @@ make_range (int start_line, int start_col, int end_line, int end_col)
     = {"", start_line, start_col, NULL, false};
   const expanded_location finish_exploc
     = {"", end_line, end_col, NULL, false};
-  return layout_range (&start_exploc, &finish_exploc, SHOW_RANGE_WITHOUT_CARET,
-		       &start_exploc, 0, NULL);
+  return layout_range (exploc_with_display_col (start_exploc, def_tabstop),
+		       exploc_with_display_col (finish_exploc, def_tabstop),
+		       SHOW_RANGE_WITHOUT_CARET,
+		       exploc_with_display_col (start_exploc, def_tabstop),
+		       0, NULL);
 }
 
 /* Selftests for layout_range::contains_point and
@@ -964,7 +967,7 @@ layout::layout (diagnostic_context * context,
 : m_context (context),
   m_pp (context->printer),
   m_primary_loc (richloc->get_range (0)->m_loc),
-  m_exploc (richloc->get_expanded_location (0)),
+  m_exploc (richloc->get_expanded_location (0), context->tabstop),
   m_colorizer (context, diagnostic_kind),
   m_colorize_source_p (context->colorize_source_p),
   m_show_labels_p (context->show_labels_p),
@@ -1060,7 +1063,10 @@ layout::maybe_add_location_range (const location_range *loc_range,
 
   /* Everything is now known to be in the correct source file,
      but it may require further sanitization.  */
-  layout_range ri (&start, &finish, loc_range->m_range_display_kind, &caret,
+  layout_range ri (exploc_with_display_col (start, m_context->tabstop),
+		   exploc_with_display_col (finish, m_context->tabstop),
+		   loc_range->m_range_display_kind,
+		   exploc_with_display_col (caret, m_context->tabstop),
 		   original_idx, loc_range->m_label);
 
   /* If we have a range that finishes before it starts (perhaps
@@ -1394,7 +1400,7 @@ layout::calculate_x_offset_display ()
     = get_line_bytes_without_trailing_whitespace (line.get_buffer (),
 						  line.length ());
   int eol_display_column
-    = cpp_display_width (line.get_buffer (), line_bytes);
+    = cpp_display_width (line.get_buffer (), line_bytes, m_context->tabstop);
   if (caret_display_column > eol_display_column
       || !caret_display_column)
     {
@@ -1445,16 +1451,13 @@ layout::calculate_x_offset_display ()
 }
 
 /* Print line ROW of source code, potentially colorized at any ranges, and
-   populate *LBOUNDS_OUT.
-   LINE is the source line (not necessarily 0-terminated) and LINE_BYTES
-   is its length in bytes.
-   This function deals only with byte offsets, not display columns, so
-   m_x_offset_display must be converted from display to byte units.  In
-   particular, LINE_BYTES and LBOUNDS_OUT are in bytes.  */
+   return the line bounds.  LINE is the source line (not necessarily
+   0-terminated) and LINE_BYTES is its length in bytes.  In order to handle both
+   colorization and tab expansion, this function tracks the line position in
+   both byte and display column units.  */
 
-void
-layout::print_source_line (linenum_type row, const char *line, int line_bytes,
-			   line_bounds *lbounds_out)
+line_bounds
+layout::print_source_line (linenum_type row, const char *line, int line_bytes)
 {
   m_colorizer.set_normal_text ();
 
@@ -1469,30 +1472,29 @@ layout::print_source_line (linenum_type row, const char *line, int line_bytes,
   else
     pp_space (m_pp);
 
-  /* We will stop printing the source line at any trailing whitespace, and start
-     printing it as per m_x_offset_display.  */
+  /* We will stop printing the source line at any trailing whitespace.  */
   line_bytes = get_line_bytes_without_trailing_whitespace (line,
 							   line_bytes);
-  int x_offset_bytes = 0;
-  if (m_x_offset_display)
-    {
-      x_offset_bytes = cpp_display_column_to_byte_column (line, line_bytes,
-							  m_x_offset_display);
-      /* In case the leading portion of the line that will be skipped over ends
-	 with a character with wcwidth > 1, then it is possible we skipped too
-	 much, so account for that by padding with spaces.  */
-      const int overage
-	= cpp_byte_column_to_display_column (line, line_bytes, x_offset_bytes)
-	- m_x_offset_display;
-      for (int column = 0; column < overage; ++column)
-	pp_space (m_pp);
-      line += x_offset_bytes;
-    }
 
-  /* Print the line.  */
-  int first_non_ws = INT_MAX;
-  int last_non_ws = 0;
-  for (int col_byte = 1 + x_offset_bytes; col_byte <= line_bytes; col_byte++)
+  /* This object helps to keep track of which display column we are at, which is
+     necessary for computing the line bounds in display units, for doing
+     tab expansion, and for implementing m_x_offset_display.  */
+  cpp_display_width_computation dw (line, line_bytes, m_context->tabstop);
+
+  /* Skip the first m_x_offset_display display columns.  In case the leading
+     portion that will be skipped ends with a character with wcwidth > 1, then
+     it is possible we skipped too much, so account for that by padding with
+     spaces.  Note that this does the right thing too in case a tab was the last
+     character to be skipped over; the tab is effectively replaced by the
+     correct number of trailing spaces needed to offset by the desired number of
+     display columns.  */
+  for (int skipped_display_cols = dw.advance_display_cols (m_x_offset_display);
+       skipped_display_cols > m_x_offset_display; --skipped_display_cols)
+    pp_space (m_pp);
+
+  /* Print the line and compute the line_bounds.  */
+  line_bounds lbounds;
+  while (!dw.done ())
     {
       /* Assuming colorization is enabled for the caret and underline
 	 characters, we may also colorize the associated characters
@@ -1510,7 +1512,8 @@ layout::print_source_line (linenum_type row, const char *line, int line_bytes,
 	{
 	  bool in_range_p;
 	  point_state state;
-	  in_range_p = get_state_at_point (row, col_byte,
+	  const int start_byte_col = dw.bytes_processed () + 1;
+	  in_range_p = get_state_at_point (row, start_byte_col,
 					   0, INT_MAX,
 					   CU_BYTES,
 					   &state);
@@ -1519,22 +1522,44 @@ layout::print_source_line (linenum_type row, const char *line, int line_bytes,
 	  else
 	    m_colorizer.set_normal_text ();
 	}
-      char c = *line;
-      if (c == '\0' || c == '\t' || c == '\r')
-	c = ' ';
-      if (c != ' ')
+
+      /* Get the display width of the next character to be output, expanding
+	 tabs and replacing some control bytes with spaces as necessary.  */
+      const char *c = dw.next_byte ();
+      const int start_disp_col = dw.display_cols_processed () + 1;
+      const int this_display_width = dw.process_next_codepoint ();
+      if (*c == '\t')
 	{
-	  last_non_ws = col_byte;
-	  if (first_non_ws == INT_MAX)
-	    first_non_ws = col_byte;
+	  /* The returned display width is the number of spaces into which the
+	     tab should be expanded.  */
+	  for (int i = 0; i != this_display_width; ++i)
+	    pp_space (m_pp);
+	  continue;
 	}
-      pp_character (m_pp, c);
-      line++;
+      if (*c == '\0' || *c == '\r')
+	{
+	  /* cpp_wcwidth() promises to return 1 for all control bytes, and we
+	     want to output these as a single space too, so this case is
+	     actually the same as the '\t' case.  */
+	  gcc_assert (this_display_width == 1);
+	  pp_space (m_pp);
+	  continue;
+	}
+
+      /* We have a (possibly multibyte) character to output; update the line
+	 bounds if it is not whitespace.  */
+      if (*c != ' ')
+	{
+	  lbounds.m_last_non_ws_disp_col = dw.display_cols_processed ();
+	  if (lbounds.m_first_non_ws_disp_col == INT_MAX)
+	    lbounds.m_first_non_ws_disp_col = start_disp_col;
+	}
+
+      /* Output the character.  */
+      while (c != dw.next_byte ()) pp_character (m_pp, *c++);
     }
   print_newline ();
-
-  lbounds_out->m_first_non_ws = first_non_ws;
-  lbounds_out->m_last_non_ws = last_non_ws;
+  return lbounds;
 }
 
 /* Determine if we should print an annotation line for ROW.
@@ -1576,14 +1601,13 @@ layout::start_annotation_line (char margin_char) const
 }
 
 /* Print a line consisting of the caret/underlines for the given
-   source line.  This function works with display columns, rather than byte
-   counts; in particular, LBOUNDS should be in display column units.  */
+   source line.  */
 
 void
 layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
 {
   int x_bound = get_x_bound_for_row (row, m_exploc.m_display_col,
-				     lbounds.m_last_non_ws);
+				     lbounds.m_last_non_ws_disp_col);
 
   start_annotation_line ();
   pp_space (m_pp);
@@ -1593,8 +1617,8 @@ layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
       bool in_range_p;
       point_state state;
       in_range_p = get_state_at_point (row, column,
-				       lbounds.m_first_non_ws,
-				       lbounds.m_last_non_ws,
+				       lbounds.m_first_non_ws_disp_col,
+				       lbounds.m_last_non_ws_disp_col,
 				       CU_DISPLAY_COLS,
 				       &state);
       if (in_range_p)
@@ -1631,12 +1655,14 @@ layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
 class line_label
 {
 public:
-  line_label (int state_idx, int column, label_text text)
+  line_label (diagnostic_context *context, int state_idx, int column,
+	      label_text text)
   : m_state_idx (state_idx), m_column (column),
     m_text (text), m_label_line (0), m_has_vbar (true)
   {
     const int bytes = strlen (text.m_buffer);
-    m_display_width = cpp_display_width (text.m_buffer, bytes);
+    m_display_width
+      = cpp_display_width (text.m_buffer, bytes, context->tabstop);
   }
 
   /* Sorting is primarily by column, then by state index.  */
@@ -1696,7 +1722,7 @@ layout::print_any_labels (linenum_type row)
 	if (text.m_buffer == NULL)
 	  continue;
 
-	labels.safe_push (line_label (i, disp_col, text));
+	labels.safe_push (line_label (m_context, i, disp_col, text));
       }
   }
 
@@ -1976,7 +2002,8 @@ public:
 
 /* Get the range of bytes or display columns that HINT would affect.  */
 static column_range
-get_affected_range (const fixit_hint *hint, enum column_unit col_unit)
+get_affected_range (diagnostic_context *context,
+		    const fixit_hint *hint, enum column_unit col_unit)
 {
   expanded_location exploc_start = expand_location (hint->get_start_loc ());
   expanded_location exploc_finish = expand_location (hint->get_next_loc ());
@@ -1986,11 +2013,13 @@ get_affected_range (const fixit_hint *hint, enum column_unit col_unit)
   int finish_column;
   if (col_unit == CU_DISPLAY_COLS)
     {
-      start_column = location_compute_display_column (exploc_start);
+      start_column
+	= location_compute_display_column (exploc_start, context->tabstop);
       if (hint->insertion_p ())
 	finish_column = start_column - 1;
       else
-	finish_column = location_compute_display_column (exploc_finish);
+	finish_column
+	  = location_compute_display_column (exploc_finish, context->tabstop);
     }
   else
     {
@@ -2003,12 +2032,12 @@ get_affected_range (const fixit_hint *hint, enum column_unit col_unit)
 /* Get the range of display columns that would be printed for HINT.  */
 
 static column_range
-get_printed_columns (const fixit_hint *hint)
+get_printed_columns (diagnostic_context *context, const fixit_hint *hint)
 {
   expanded_location exploc = expand_location (hint->get_start_loc ());
-  int start_column = location_compute_display_column (exploc);
-  int hint_width = cpp_display_width (hint->get_string (),
-				      hint->get_length ());
+  int start_column = location_compute_display_column (exploc, context->tabstop);
+  int hint_width = cpp_display_width (hint->get_string (), hint->get_length (),
+				      context->tabstop);
   int final_hint_column = start_column + hint_width - 1;
   if (hint->insertion_p ())
     {
@@ -2018,7 +2047,8 @@ get_printed_columns (const fixit_hint *hint)
     {
       exploc = expand_location (hint->get_next_loc ());
       --exploc.column;
-      int finish_column = location_compute_display_column (exploc);
+      int finish_column
+	= location_compute_display_column (exploc, context->tabstop);
       return column_range (start_column,
 			   MAX (finish_column, final_hint_column));
     }
@@ -2035,12 +2065,14 @@ public:
   correction (column_range affected_bytes,
 	      column_range affected_columns,
 	      column_range printed_columns,
-	      const char *new_text, size_t new_text_len)
+	      const char *new_text, size_t new_text_len,
+	      int tabstop)
   : m_affected_bytes (affected_bytes),
     m_affected_columns (affected_columns),
     m_printed_columns (printed_columns),
     m_text (xstrdup (new_text)),
     m_byte_length (new_text_len),
+    m_tabstop (tabstop),
     m_alloc_sz (new_text_len + 1)
   {
     compute_display_cols ();
@@ -2058,7 +2090,7 @@ public:
 
   void compute_display_cols ()
   {
-    m_display_cols = cpp_display_width (m_text, m_byte_length);
+    m_display_cols = cpp_display_width (m_text, m_byte_length, m_tabstop);
   }
 
   void overwrite (int dst_offset, const char_span &src_span)
@@ -2086,6 +2118,7 @@ public:
   char *m_text;
   size_t m_byte_length; /* Not including null-terminator.  */
   int m_display_cols;
+  int m_tabstop;
   size_t m_alloc_sz;
 };
 
@@ -2121,13 +2154,15 @@ correction::ensure_terminated ()
 class line_corrections
 {
 public:
-  line_corrections (const char *filename, linenum_type row)
-  : m_filename (filename), m_row (row)
+  line_corrections (diagnostic_context *context, const char *filename,
+		    linenum_type row)
+    : m_context (context), m_filename (filename), m_row (row)
   {}
   ~line_corrections ();
 
   void add_hint (const fixit_hint *hint);
 
+  diagnostic_context *m_context;
   const char *m_filename;
   linenum_type m_row;
   auto_vec <correction *> m_corrections;
@@ -2173,9 +2208,10 @@ source_line::source_line (const char *filename, int line)
 void
 line_corrections::add_hint (const fixit_hint *hint)
 {
-  column_range affected_bytes = get_affected_range (hint, CU_BYTES);
-  column_range affected_columns = get_affected_range (hint, CU_DISPLAY_COLS);
-  column_range printed_columns = get_printed_columns (hint);
+  column_range affected_bytes = get_affected_range (m_context, hint, CU_BYTES);
+  column_range affected_columns = get_affected_range (m_context, hint,
+						      CU_DISPLAY_COLS);
+  column_range printed_columns = get_printed_columns (m_context, hint);
 
   /* Potentially consolidate.  */
   if (!m_corrections.is_empty ())
@@ -2243,7 +2279,8 @@ line_corrections::add_hint (const fixit_hint *hint)
 					   affected_columns,
 					   printed_columns,
 					   hint->get_string (),
-					   hint->get_length ()));
+					   hint->get_length (),
+					   m_context->tabstop));
 }
 
 /* If there are any fixit hints on source line ROW, print them.
@@ -2257,7 +2294,7 @@ layout::print_trailing_fixits (linenum_type row)
 {
   /* Build a list of correction instances for the line,
      potentially consolidating hints (for the sake of readability).  */
-  line_corrections corrections (m_exploc.file, row);
+  line_corrections corrections (m_context, m_exploc.file, row);
   for (unsigned int i = 0; i < m_fixit_hints.length (); i++)
     {
       const fixit_hint *hint = m_fixit_hints[i];
@@ -2499,15 +2536,11 @@ layout::print_line (linenum_type row)
   if (!line)
     return;
 
-  line_bounds lbounds;
   print_leading_fixits (row);
-  print_source_line (row, line.get_buffer (), line.length (), &lbounds);
+  const line_bounds lbounds
+    = print_source_line (row, line.get_buffer (), line.length ());
   if (should_print_annotation_line_p (row))
-    {
-      if (lbounds.m_first_non_ws != INT_MAX)
-	lbounds.convert_to_display_cols (line);
-      print_annotation_line (row, lbounds);
-    }
+    print_annotation_line (row, lbounds);
   if (m_show_labels_p)
     print_any_labels (row);
   print_trailing_fixits (row);
@@ -2670,9 +2703,11 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 
   char_span lspan = location_get_source_line (tmp.get_filename (), 1);
   ASSERT_EQ (line_display_cols,
-	     cpp_display_width (lspan.get_buffer (), lspan.length ()));
+	     cpp_display_width (lspan.get_buffer (), lspan.length (),
+				def_tabstop));
   ASSERT_EQ (line_display_cols,
-	     location_compute_display_column (expand_location (line_end)));
+	     location_compute_display_column (expand_location (line_end),
+					      def_tabstop));
   ASSERT_EQ (0, memcmp (lspan.get_buffer () + (emoji_col - 1),
 			"\xf0\x9f\x98\x82\xf0\x9f\x98\x82", 8));
 
@@ -2773,6 +2808,111 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
   }
 
 }
+
+static void
+test_layout_x_offset_display_tab (const line_table_case &case_)
+{
+  const char *content
+    = "This line is very long, so that we can use it to test the logic for "
+      "clipping long lines.  Also this: `\t' is a tab that occupies 1 byte and "
+      "a variable number of display columns, starting at column #103.\n";
+
+  /* Number of bytes in the line, subtracting one to remove the newline.  */
+  const int line_bytes = strlen (content) - 1;
+
+ /* The column where the tab begins.  Byte or display is the same as there are
+    no multibyte characters earlier on the line.  */
+  const int tab_col = 103;
+
+  /* Effective extra size of the tab beyond what a single space would have taken
+     up, indexed by tabstop.  */
+  static const int num_tabstops = 11;
+  int extra_width[num_tabstops];
+  for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
+    {
+      const int this_tab_size = tabstop - (tab_col - 1) % tabstop;
+      extra_width[tabstop] = this_tab_size - 1;
+    }
+  /* Example of this calculation: if tabstop is 10, the tab starting at column
+     #103 has to expand into 8 spaces, covering columns 103-110, so that the
+     next character is at column #111.  So it takes up 7 more columns than
+     a space would have taken up.  */
+  ASSERT_EQ (7, extra_width[10]);
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  line_table_test ltt (case_);
+
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
+
+  location_t line_end = linemap_position_for_column (line_table, line_bytes);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  if (line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* Check that cpp_display_width handles the tabs as expected.  */
+  char_span lspan = location_get_source_line (tmp.get_filename (), 1);
+  ASSERT_EQ ('\t', *(lspan.get_buffer () + (tab_col - 1)));
+  for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
+    {
+      ASSERT_EQ (line_bytes + extra_width[tabstop],
+		 cpp_display_width (lspan.get_buffer (), lspan.length (),
+				    tabstop));
+      ASSERT_EQ (line_bytes + extra_width[tabstop],
+		 location_compute_display_column (expand_location (line_end),
+						  tabstop));
+    }
+
+  /* Check that the tab is expanded to the expected number of spaces.  */
+  rich_location richloc (line_table,
+			 linemap_position_for_column (line_table,
+						      tab_col + 1));
+  for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
+    {
+      test_diagnostic_context dc;
+      dc.tabstop = tabstop;
+      layout test_layout (&dc, &richloc, DK_ERROR);
+      test_layout.print_line (1);
+      const char *out = pp_formatted_text (dc.printer);
+      ASSERT_EQ (NULL, strchr (out, '\t'));
+      const char *left_quote = strchr (out, '`');
+      const char *right_quote = strchr (out, '\'');
+      ASSERT_NE (NULL, left_quote);
+      ASSERT_NE (NULL, right_quote);
+      ASSERT_EQ (right_quote - left_quote, extra_width[tabstop] + 2);
+    }
+
+  /* Check that the line is offset properly and that the tab is broken up
+     into the expected number of spaces when it is the last character skipped
+     over.  */
+  for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
+    {
+      test_diagnostic_context dc;
+      dc.tabstop = tabstop;
+      static const int small_width = 24;
+      dc.caret_max_width = small_width - 4;
+      dc.min_margin_width = test_left_margin - test_linenum_sep + 1;
+      dc.show_line_numbers_p = true;
+      layout test_layout (&dc, &richloc, DK_ERROR);
+      test_layout.print_line (1);
+
+      /* We have arranged things so that two columns will be printed before
+	 the caret.  If the tab results in more than one space, this should
+	 produce two spaces in the output; otherwise, it will be a single space
+	 preceded by the opening quote before the tab character.  */
+      const char *output1
+	= "   1 |   ' is a tab that occupies 1 byte and a variable number of "
+	  "display columns, starting at column #103.\n"
+	  "     |   ^\n\n";
+      const char *output2
+	= "   1 | ` ' is a tab that occupies 1 byte and a variable number of "
+	  "display columns, starting at column #103.\n"
+	  "     |   ^\n\n";
+      const char *expected_output = (extra_width[tabstop] ? output1 : output2);
+      ASSERT_STREQ (expected_output, pp_formatted_text (dc.printer));
+    }
+}
+
 
 /* Verify that diagnostic_show_locus works sanely on UNKNOWN_LOCATION.  */
 
@@ -3854,6 +3994,27 @@ test_one_liner_labels_utf8 ()
   }
 }
 
+/* Make sure that colorization codes don't interrupt a multibyte
+   sequence, which would corrupt it.  */
+static void
+test_one_liner_colorized_utf8 ()
+{
+  test_diagnostic_context dc;
+  dc.colorize_source_p = true;
+  diagnostic_color_init (&dc, DIAGNOSTICS_COLOR_YES);
+  const location_t pi = linemap_position_for_column (line_table, 12);
+  rich_location richloc (line_table, pi);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+
+  /* In order to avoid having the test depend on exactly how the colorization
+     was effected, just confirm there are two pi characters in the output.  */
+  const char *result = pp_formatted_text (dc.printer);
+  const char *null_term = result + strlen (result);
+  const char *first_pi = strstr (result, "\xcf\x80");
+  ASSERT_TRUE (first_pi && first_pi <= null_term - 2);
+  ASSERT_STR_CONTAINS (first_pi + 2, "\xcf\x80");
+}
+
 /* Run the various one-liner tests.  */
 
 static void
@@ -3884,8 +4045,10 @@ test_diagnostic_show_locus_one_liner_utf8 (const line_table_case &case_)
   ASSERT_EQ (31, LOCATION_COLUMN (line_end));
 
   char_span lspan = location_get_source_line (tmp.get_filename (), 1);
-  ASSERT_EQ (25, cpp_display_width (lspan.get_buffer (), lspan.length ()));
-  ASSERT_EQ (25, location_compute_display_column (expand_location (line_end)));
+  ASSERT_EQ (25, cpp_display_width (lspan.get_buffer (), lspan.length (),
+				    def_tabstop));
+  ASSERT_EQ (25, location_compute_display_column (expand_location (line_end),
+						  def_tabstop));
 
   test_one_liner_simple_caret_utf8 ();
   test_one_liner_caret_and_range_utf8 ();
@@ -3900,6 +4063,7 @@ test_diagnostic_show_locus_one_liner_utf8 (const line_table_case &case_)
   test_one_liner_many_fixits_1_utf8 ();
   test_one_liner_many_fixits_2_utf8 ();
   test_one_liner_labels_utf8 ();
+  test_one_liner_colorized_utf8 ();
 }
 
 /* Verify that gcc_rich_location::add_location_if_nearby works.  */
@@ -4272,25 +4436,28 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     /* Unit-test the line_corrections machinery.  */
     ASSERT_EQ (3, richloc.get_num_fixit_hints ());
     const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
-    ASSERT_EQ (column_range (12, 12), get_affected_range (hint_0, CU_BYTES));
     ASSERT_EQ (column_range (12, 12),
-			   get_affected_range (hint_0, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (12, 22), get_printed_columns (hint_0));
+	       get_affected_range (&dc, hint_0, CU_BYTES));
+    ASSERT_EQ (column_range (12, 12),
+	       get_affected_range (&dc, hint_0, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (12, 22), get_printed_columns (&dc, hint_0));
     const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
-    ASSERT_EQ (column_range (18, 18), get_affected_range (hint_1, CU_BYTES));
     ASSERT_EQ (column_range (18, 18),
-			   get_affected_range (hint_1, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (18, 20), get_printed_columns (hint_1));
+	       get_affected_range (&dc, hint_1, CU_BYTES));
+    ASSERT_EQ (column_range (18, 18),
+	       get_affected_range (&dc, hint_1, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (18, 20), get_printed_columns (&dc, hint_1));
     const fixit_hint *hint_2 = richloc.get_fixit_hint (2);
-    ASSERT_EQ (column_range (29, 28), get_affected_range (hint_2, CU_BYTES));
     ASSERT_EQ (column_range (29, 28),
-			   get_affected_range (hint_2, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (29, 29), get_printed_columns (hint_2));
+	       get_affected_range (&dc, hint_2, CU_BYTES));
+    ASSERT_EQ (column_range (29, 28),
+	       get_affected_range (&dc, hint_2, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (29, 29), get_printed_columns (&dc, hint_2));
 
     /* Add each hint in turn to a line_corrections instance,
        and verify that they are consolidated into one correction instance
        as expected.  */
-    line_corrections lc (tmp.get_filename (), 1);
+    line_corrections lc (&dc, tmp.get_filename (), 1);
 
     /* The first replace hint by itself.  */
     lc.add_hint (hint_0);
@@ -4484,25 +4651,28 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     /* Unit-test the line_corrections machinery.  */
     ASSERT_EQ (3, richloc.get_num_fixit_hints ());
     const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
-    ASSERT_EQ (column_range (14, 14), get_affected_range (hint_0, CU_BYTES));
+    ASSERT_EQ (column_range (14, 14),
+	       get_affected_range (&dc, hint_0, CU_BYTES));
     ASSERT_EQ (column_range (12, 12),
-			   get_affected_range (hint_0, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (12, 22), get_printed_columns (hint_0));
+	       get_affected_range (&dc, hint_0, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (12, 22), get_printed_columns (&dc, hint_0));
     const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
-    ASSERT_EQ (column_range (22, 22), get_affected_range (hint_1, CU_BYTES));
+    ASSERT_EQ (column_range (22, 22),
+	       get_affected_range (&dc, hint_1, CU_BYTES));
     ASSERT_EQ (column_range (18, 18),
-			   get_affected_range (hint_1, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (18, 20), get_printed_columns (hint_1));
+	       get_affected_range (&dc, hint_1, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (18, 20), get_printed_columns (&dc, hint_1));
     const fixit_hint *hint_2 = richloc.get_fixit_hint (2);
-    ASSERT_EQ (column_range (35, 34), get_affected_range (hint_2, CU_BYTES));
+    ASSERT_EQ (column_range (35, 34),
+	       get_affected_range (&dc, hint_2, CU_BYTES));
     ASSERT_EQ (column_range (30, 29),
-			   get_affected_range (hint_2, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (30, 30), get_printed_columns (hint_2));
+	       get_affected_range (&dc, hint_2, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (30, 30), get_printed_columns (&dc, hint_2));
 
     /* Add each hint in turn to a line_corrections instance,
        and verify that they are consolidated into one correction instance
        as expected.  */
-    line_corrections lc (tmp.get_filename (), 1);
+    line_corrections lc (&dc, tmp.get_filename (), 1);
 
     /* The first replace hint by itself.  */
     lc.add_hint (hint_0);
@@ -4689,6 +4859,8 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
 
   /* Two insertions, in the wrong order.  */
   {
+    test_diagnostic_context dc;
+
     rich_location richloc (line_table, col_20);
     richloc.add_fixit_insert_before (col_23, "{");
     richloc.add_fixit_insert_before (col_21, "}");
@@ -4696,14 +4868,15 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
     /* These fixits should be accepted; they can't be consolidated.  */
     ASSERT_EQ (2, richloc.get_num_fixit_hints ());
     const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
-    ASSERT_EQ (column_range (23, 22), get_affected_range (hint_0, CU_BYTES));
-    ASSERT_EQ (column_range (23, 23), get_printed_columns (hint_0));
+    ASSERT_EQ (column_range (23, 22),
+	       get_affected_range (&dc, hint_0, CU_BYTES));
+    ASSERT_EQ (column_range (23, 23), get_printed_columns (&dc, hint_0));
     const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
-    ASSERT_EQ (column_range (21, 20), get_affected_range (hint_1, CU_BYTES));
-    ASSERT_EQ (column_range (21, 21), get_printed_columns (hint_1));
+    ASSERT_EQ (column_range (21, 20),
+	       get_affected_range (&dc, hint_1, CU_BYTES));
+    ASSERT_EQ (column_range (21, 21), get_printed_columns (&dc, hint_1));
 
     /* Verify that they're printed correctly.  */
-    test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" int a5[][0][0] = { 1, 2 };\n"
 		  "                    ^\n"
@@ -4955,6 +5128,65 @@ test_fixit_deletion_affecting_newline (const line_table_case &case_)
 		pp_formatted_text (dc.printer));
 }
 
+static void
+test_tab_expansion (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.  This example uses a tabstop
+     of 8, as the column numbers attempt to indicate:
+
+    .....................000.01111111111.22222333333  display
+    .....................123.90123456789.56789012345  columns  */
+  const char *content = "  \t   This: `\t' is a tab.\n";
+  /* ....................000 00000011111 11111222222  byte
+     ....................123 45678901234 56789012345  columns  */
+
+  const int tabstop = 8;
+  const int first_non_ws_byte_col = 7;
+  const int right_quote_byte_col = 15;
+  const int last_byte_col = 25;
+  ASSERT_EQ (35, cpp_display_width (content, last_byte_col, tabstop));
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  line_table_test ltt (case_);
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
+
+  /* Don't attempt to run the tests if column data might be unavailable.  */
+  location_t line_end = linemap_position_for_column (line_table, last_byte_col);
+  if (line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* Check that the leading whitespace with mixed tabs and spaces is expanded
+     into 11 spaces.  Recall that print_line() also puts one space before
+     everything too.  */
+  {
+    test_diagnostic_context dc;
+    dc.tabstop = tabstop;
+    rich_location richloc (line_table,
+			   linemap_position_for_column (line_table,
+							first_non_ws_byte_col));
+    layout test_layout (&dc, &richloc, DK_ERROR);
+    test_layout.print_line (1);
+    ASSERT_STREQ ("            This: `      ' is a tab.\n"
+		  "            ^\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Confirm the display width was tracked correctly across the internal tab
+     as well.  */
+  {
+    test_diagnostic_context dc;
+    dc.tabstop = tabstop;
+    rich_location richloc (line_table,
+			   linemap_position_for_column (line_table,
+							right_quote_byte_col));
+    layout test_layout (&dc, &richloc, DK_ERROR);
+    test_layout.print_line (1);
+    ASSERT_STREQ ("            This: `      ' is a tab.\n"
+		  "                         ^\n",
+		  pp_formatted_text (dc.printer));
+  }
+}
+
 /* Verify that line numbers are correctly printed for the case of
    a multiline range in which the width of the line numbers changes
    (e.g. from "9" to "10").  */
@@ -5012,6 +5244,7 @@ diagnostic_show_locus_c_tests ()
   test_layout_range_for_multiple_lines ();
 
   for_each_line_table_case (test_layout_x_offset_display_utf8);
+  for_each_line_table_case (test_layout_x_offset_display_tab);
 
   test_get_line_bytes_without_trailing_whitespace ();
 
@@ -5029,6 +5262,7 @@ diagnostic_show_locus_c_tests ()
   for_each_line_table_case (test_fixit_insert_containing_newline_2);
   for_each_line_table_case (test_fixit_replace_containing_newline);
   for_each_line_table_case (test_fixit_deletion_affecting_newline);
+  for_each_line_table_case (test_tab_expansion);
 
   test_line_numbers_multiline_range ();
 }

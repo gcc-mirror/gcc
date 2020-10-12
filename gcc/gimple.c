@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "langhooks.h"
+#include "attr-fnspec.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -387,6 +388,10 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
       && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
       && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (fndecl)))
     gimple_call_set_alloca_for_var (call, CALL_ALLOCA_FOR_VAR_P (t));
+  else if (fndecl
+	   && (DECL_IS_OPERATOR_NEW_P (fndecl)
+	       || DECL_IS_OPERATOR_DELETE_P (fndecl)))
+    gimple_call_set_from_new_or_delete (call, CALL_FROM_NEW_OR_DELETE_P (t));
   else
     gimple_call_set_from_thunk (call, CALL_FROM_THUNK_P (t));
   gimple_call_set_va_arg_pack (call, CALL_EXPR_VA_ARG_PACK (t));
@@ -1035,20 +1040,6 @@ gimple_build_omp_master (gimple_seq body)
   return p;
 }
 
-/* Build a GIMPLE_OMP_GRID_BODY statement.
-
-   BODY is the sequence of statements to be executed by the kernel.  */
-
-gimple *
-gimple_build_omp_grid_body (gimple_seq body)
-{
-  gimple *p = gimple_alloc (GIMPLE_OMP_GRID_BODY, 0);
-  if (body)
-    gimple_omp_set_body (p, body);
-
-  return p;
-}
-
 /* Build a GIMPLE_OMP_TASKGROUP statement.
 
    BODY is the sequence of statements to be executed by the taskgroup
@@ -1522,31 +1513,26 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 {
   const_tree attr = gimple_call_fnspec (stmt);
 
-  if (!attr || 1 + arg >= (unsigned) TREE_STRING_LENGTH (attr))
+  if (!attr)
     return 0;
 
-  switch (TREE_STRING_POINTER (attr)[1 + arg])
+  int flags = 0;
+  attr_fnspec fnspec (attr);
+
+  if (!fnspec.arg_specified_p (arg))
+    ;
+  else if (!fnspec.arg_used_p (arg))
+    flags = EAF_UNUSED;
+  else
     {
-    case 'x':
-    case 'X':
-      return EAF_UNUSED;
-
-    case 'R':
-      return EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE;
-
-    case 'r':
-      return EAF_NOCLOBBER | EAF_NOESCAPE;
-
-    case 'W':
-      return EAF_DIRECT | EAF_NOESCAPE;
-
-    case 'w':
-      return EAF_NOESCAPE;
-
-    case '.':
-    default:
-      return 0;
+      if (fnspec.arg_direct_p (arg))
+	flags |= EAF_DIRECT;
+      if (fnspec.arg_noescape_p (arg))
+	flags |= EAF_NOESCAPE;
+      if (fnspec.arg_readonly_p (arg))
+	flags |= EAF_NOCLOBBER;
     }
+  return flags;
 }
 
 /* Detects return flags for the call STMT.  */
@@ -1560,24 +1546,17 @@ gimple_call_return_flags (const gcall *stmt)
     return ERF_NOALIAS;
 
   attr = gimple_call_fnspec (stmt);
-  if (!attr || TREE_STRING_LENGTH (attr) < 1)
+  if (!attr)
     return 0;
+  attr_fnspec fnspec (attr);
 
-  switch (TREE_STRING_POINTER (attr)[0])
-    {
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-      return ERF_RETURNS_ARG | (TREE_STRING_POINTER (attr)[0] - '1');
+  unsigned int arg_no;
+  if (fnspec.returns_arg (&arg_no))
+    return ERF_RETURNS_ARG | arg_no;
 
-    case 'm':
-      return ERF_NOALIAS;
-
-    case '.':
-    default:
-      return 0;
-    }
+  if (fnspec.returns_noalias_p ())
+    return ERF_NOALIAS;
+  return 0;
 }
 
 
@@ -1703,12 +1682,7 @@ gimple_set_bb (gimple *stmt, basic_block bb)
 	    vec_safe_length (label_to_block_map_for_fn (cfun));
 	  LABEL_DECL_UID (t) = uid = cfun->cfg->last_label_uid++;
 	  if (old_len <= (unsigned) uid)
-	    {
-	      unsigned new_len = 3 * uid / 2 + 1;
-
-	      vec_safe_grow_cleared (label_to_block_map_for_fn (cfun),
-				     new_len);
-	    }
+	    vec_safe_grow_cleared (label_to_block_map_for_fn (cfun), uid + 1);
 	}
 
       (*label_to_block_map_for_fn (cfun))[uid] = bb;
@@ -2018,7 +1992,6 @@ gimple_copy (gimple *stmt)
 
 	case GIMPLE_OMP_SECTION:
 	case GIMPLE_OMP_MASTER:
-	case GIMPLE_OMP_GRID_BODY:
 	copy_omp_body:
 	  new_seq = gimple_seq_copy (gimple_omp_body (stmt));
 	  gimple_omp_set_body (copy, new_seq);
@@ -2733,12 +2706,12 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
 /* Return true when STMT is operator a replaceable delete call.  */
 
 bool
-gimple_call_replaceable_operator_delete_p (const gcall *stmt)
+gimple_call_operator_delete_p (const gcall *stmt)
 {
   tree fndecl;
 
   if ((fndecl = gimple_call_fndecl (stmt)) != NULL_TREE)
-    return DECL_IS_REPLACEABLE_OPERATOR_DELETE_P (fndecl);
+    return DECL_IS_OPERATOR_DELETE_P (fndecl);
   return false;
 }
 
@@ -2932,8 +2905,8 @@ check_loadstore (gimple *, tree op, tree, void *data)
 bool
 infer_nonnull_range (gimple *stmt, tree op)
 {
-  return infer_nonnull_range_by_dereference (stmt, op)
-    || infer_nonnull_range_by_attribute (stmt, op);
+  return (infer_nonnull_range_by_dereference (stmt, op)
+	  || infer_nonnull_range_by_attribute (stmt, op));
 }
 
 /* Return true if OP can be inferred to be non-NULL after STMT
@@ -2945,7 +2918,8 @@ infer_nonnull_range_by_dereference (gimple *stmt, tree op)
      non-NULL if -fdelete-null-pointer-checks is enabled.  */
   if (!flag_delete_null_pointer_checks
       || !POINTER_TYPE_P (TREE_TYPE (op))
-      || gimple_code (stmt) == GIMPLE_ASM)
+      || gimple_code (stmt) == GIMPLE_ASM
+      || gimple_clobber_p (stmt))
     return false;
 
   if (walk_stmt_load_store_ops (stmt, (void *)op,

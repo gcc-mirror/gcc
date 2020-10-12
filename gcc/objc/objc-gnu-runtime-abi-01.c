@@ -821,7 +821,7 @@ gnu_runtime_abi_01_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
 	ucls_super_ref =
 		objc_build_component_ref (imp->class_decl,
 					  get_identifier ("super_class"));
-	return ucls_super_ref;
+      return ucls_super_ref;
     }
   else
     {
@@ -829,7 +829,7 @@ gnu_runtime_abi_01_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
 	uucls_super_ref =
 		objc_build_component_ref (imp->meta_decl,
 					  get_identifier ("super_class"));
-	return uucls_super_ref;
+      return uucls_super_ref;
     }
 }
 
@@ -1540,25 +1540,14 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
     }
 
-  /* FIXME: Remove NeXT runtime code.  */
-  if (flag_next_runtime)
-    {
-      ltyp = build_pointer_type (xref_tag (RECORD_TYPE,
-					   get_identifier ("objc_cache")));
-      /* method_cache = */
-      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, convert (ltyp, null_pointer_node));
-    }
-  else
-    {
-      /* dtable = */
-      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
+  /* dtable = */
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
 
-      /* subclass_list = */
-      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
+  /* subclass_list = */
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
 
-      /* sibling_class = */
-      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
-    }
+  /* sibling_class = */
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
 
   /* protocol_list = */
   ltyp = build_pointer_type (build_pointer_type (objc_protocol_template));
@@ -1571,11 +1560,6 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
 				      protocol_list, 0));
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
     }
-
-  /* FIXME: Remove NeXT runtime code.  */
-  if (flag_next_runtime)
-    /* sel_id = NULL */
-    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
 
   /* gc_object_type = NULL */
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
@@ -1863,10 +1847,6 @@ generate_static_references (void)
   int num_inst, num_class;
   char buf[BUFSIZE];
   vec<constructor_elt, va_gc> *decls = NULL;
-
-  /* FIXME: Remove NeXT runtime code.  */
-  if (flag_next_runtime)
-    gcc_unreachable ();
 
   for (cl_chain = objc_static_instances, num_class = 0;
        cl_chain; cl_chain = TREE_CHAIN (cl_chain), num_class++)

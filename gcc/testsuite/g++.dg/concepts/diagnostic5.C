@@ -39,5 +39,5 @@ template<typename T>
 void
 bar()
 {
-  foo<char>(); // { dg-error "use of" }
+  foo<char>(); // { dg-error "no match" }
 }

@@ -6,4 +6,4 @@ struct B { int i; };
 struct C { struct B b; } __attribute__ ((packed));
 
 long* g8 (struct C *p) { return p; }
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */

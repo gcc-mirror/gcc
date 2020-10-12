@@ -16,11 +16,10 @@ struct S2 {
   struct S0 f3;
 };
 
-void fn1 () {
-  struct S2 b = {0, 1, 7, 4073709551611, 4, 8, 7};
+void fn1 (struct S2 b) {
   a = b.f3;
 }
 
-/* { dg-final { scan-assembler-times {ldp\s+x[0-9]+} 2 } } */
-/* { dg-final { scan-assembler-times {stp\s+x[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {ldp\s+q[0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {stp\s+q[0-9]+} 1 } } */
 /* { dg-final { scan-assembler-not {ld[1-3]} } } */

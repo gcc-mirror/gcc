@@ -5,3 +5,5 @@
 // +build riscv64
 
 package cpu
+
+// const cacheLineSize = 32

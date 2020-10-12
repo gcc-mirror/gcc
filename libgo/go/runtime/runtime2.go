@@ -164,7 +164,10 @@ const (
 // as fast as spin locks (just a few user-level instructions),
 // but on the contention path they sleep in the kernel.
 // A zeroed Mutex is unlocked (no need to initialize each lock).
+// Initialization is helpful for static lock ranking, but not required.
 type mutex struct {
+	// Empty struct if lock ranking is disabled, otherwise includes the lock rank
+	lockRankStruct
 	// Futex-based impl treats it as uint32 key,
 	// while sema-based impl as M* waitm.
 	// Used to be a union, but unions break precise GC.
@@ -334,12 +337,9 @@ type sudog struct {
 
 	g *g
 
-	// isSelect indicates g is participating in a select, so
-	// g.selectDone must be CAS'd to win the wake-up race.
-	isSelect bool
-	next     *sudog
-	prev     *sudog
-	elem     unsafe.Pointer // data element (may point to stack)
+	next *sudog
+	prev *sudog
+	elem unsafe.Pointer // data element (may point to stack)
 
 	// The following fields are never accessed concurrently.
 	// For channels, waitlink is only accessed by g.
@@ -349,10 +349,15 @@ type sudog struct {
 	acquiretime int64
 	releasetime int64
 	ticket      uint32
-	parent      *sudog // semaRoot binary tree
-	waitlink    *sudog // g.waiting list or semaRoot
-	waittail    *sudog // semaRoot
-	c           *hchan // channel
+
+	// isSelect indicates g is participating in a select, so
+	// g.selectDone must be CAS'd to win the wake-up race.
+	isSelect bool
+
+	parent   *sudog // semaRoot binary tree
+	waitlink *sudog // g.waiting list or semaRoot
+	waittail *sudog // semaRoot
+	c        *hchan // channel
 }
 
 /*
@@ -392,6 +397,12 @@ type stack struct {
 	hi uintptr
 }
 */
+
+// heldLockInfo gives info on a held lock and the rank of that lock
+type heldLockInfo struct {
+	lockAddr uintptr
+	rank     lockRank
+}
 
 type g struct {
 	// Stack parameters.
@@ -566,7 +577,6 @@ type m struct {
 	park          note
 	alllink       *m // on allm
 	schedlink     muintptr
-	mcache        *mcache
 	lockedg       guintptr
 	createstack   [32]location // stack that created this thread.
 	lockedExt     uint32       // tracking for external LockOSThread
@@ -600,6 +610,10 @@ type m struct {
 	dlogPerM
 
 	mOS
+
+	// Up to 10 locks held by this m, maintained by the lock ranking code.
+	locksHeldLen int
+	locksHeld    [10]heldLockInfo
 
 	// Remaining fields are specific to gccgo.
 
@@ -817,6 +831,12 @@ type schedt struct {
 
 	procresizetime int64 // nanotime() of last change to gomaxprocs
 	totaltime      int64 // ∫gomaxprocs dt up to procresizetime
+
+	// sysmonlock protects sysmon's actions on the runtime.
+	//
+	// Acquire and hold this mutex to block sysmon from interacting
+	// with the rest of the runtime.
+	sysmonlock mutex
 }
 
 // Values for the flags field of a sigTabT.
@@ -985,7 +1005,7 @@ const (
 	waitReasonChanReceive                             // "chan receive"
 	waitReasonChanSend                                // "chan send"
 	waitReasonFinalizerWait                           // "finalizer wait"
-	waitReasonForceGGIdle                             // "force gc (idle)"
+	waitReasonForceGCIdle                             // "force gc (idle)"
 	waitReasonSemacquire                              // "semacquire"
 	waitReasonSleep                                   // "sleep"
 	waitReasonSyncCondWait                            // "sync.Cond.Wait"
@@ -994,6 +1014,7 @@ const (
 	waitReasonWaitForGCCycle                          // "wait for GC cycle"
 	waitReasonGCWorkerIdle                            // "GC worker (idle)"
 	waitReasonPreempted                               // "preempted"
+	waitReasonDebugCall                               // "debug call"
 )
 
 var waitReasonStrings = [...]string{
@@ -1014,7 +1035,7 @@ var waitReasonStrings = [...]string{
 	waitReasonChanReceive:           "chan receive",
 	waitReasonChanSend:              "chan send",
 	waitReasonFinalizerWait:         "finalizer wait",
-	waitReasonForceGGIdle:           "force gc (idle)",
+	waitReasonForceGCIdle:           "force gc (idle)",
 	waitReasonSemacquire:            "semacquire",
 	waitReasonSleep:                 "sleep",
 	waitReasonSyncCondWait:          "sync.Cond.Wait",
@@ -1023,6 +1044,7 @@ var waitReasonStrings = [...]string{
 	waitReasonWaitForGCCycle:        "wait for GC cycle",
 	waitReasonGCWorkerIdle:          "GC worker (idle)",
 	waitReasonPreempted:             "preempted",
+	waitReasonDebugCall:             "debug call",
 }
 
 func (w waitReason) String() string {

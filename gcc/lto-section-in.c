@@ -53,10 +53,10 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "icf",
   "offload_table",
   "mode_table",
-  "hsa",
   "lto",
   "ipa_sra",
   "odr_types",
+  "ipa_modref",
 };
 
 /* Hooks so that the ipa passes can call into the lto front end to get

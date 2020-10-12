@@ -39,7 +39,7 @@ def prepend_to_changelog_files(repo, folder, git_commit, add_to_git):
         raise AssertionError()
     for entry, output in git_commit.to_changelog_entries(use_commit_ts=True):
         full_path = os.path.join(folder, entry, 'ChangeLog')
-        print('writting to %s' % full_path)
+        print('writing to %s' % full_path)
         if os.path.exists(full_path):
             with open(full_path) as f:
                 content = f.read()

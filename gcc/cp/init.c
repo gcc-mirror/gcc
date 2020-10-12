@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "stor-layout.h"
+#include "builtins.h"
 
 static bool begin_init_stmts (tree *, tree *);
 static tree finish_init_stmts (bool, tree, tree);
@@ -809,13 +810,25 @@ perform_member_init (tree member, tree init)
       return;
     }
 
-  if (init && TREE_CODE (init) == TREE_LIST
-      && (DIRECT_LIST_INIT_P (TREE_VALUE (init))
-	  /* FIXME C++20 parenthesized aggregate init (PR 92812).  */
-	  || !(/* cxx_dialect >= cxx20 ? CP_AGGREGATE_TYPE_P (type) */
-	       /* :  */CLASS_TYPE_P (type))))
-    init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
-					    tf_warning_or_error);
+  if (init && TREE_CODE (init) == TREE_LIST)
+    {
+      /* A(): a{e} */
+      if (DIRECT_LIST_INIT_P (TREE_VALUE (init)))
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+						tf_warning_or_error);
+      /* We are trying to initialize an array from a ()-list.  If we
+	 should attempt to do so, conjure up a CONSTRUCTOR.  */
+      else if (TREE_CODE (type) == ARRAY_TYPE
+	       /* P0960 is a C++20 feature.  */
+	       && cxx_dialect >= cxx20)
+	init = do_aggregate_paren_init (init, type);
+      else if (!CLASS_TYPE_P (type))
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
+						tf_warning_or_error);
+      /* If we're initializing a class from a ()-list, leave the TREE_LIST
+	 alone: we might call an appropriate constructor, or (in C++20)
+	 do aggregate-initialization.  */
+    }
 
   if (init == void_type_node)
     {
@@ -1151,6 +1164,8 @@ sort_mem_initializers (tree t, tree mem_inits)
 
       /* Record the initialization.  */
       TREE_VALUE (subobject_init) = TREE_VALUE (init);
+      /* Carry over the dummy TREE_TYPE node containing the source location.  */
+      TREE_TYPE (subobject_init) = TREE_TYPE (init);
       next_subobject = subobject_init;
     }
 
@@ -1367,6 +1382,10 @@ emit_mem_initializers (tree mem_inits)
   /* Initialize the data members.  */
   while (mem_inits)
     {
+      /* If this initializer was explicitly provided, then the dummy TREE_TYPE
+	 node contains the source location.  */
+      iloc_sentinel ils (EXPR_LOCATION (TREE_TYPE (mem_inits)));
+
       perform_member_init (TREE_PURPOSE (mem_inits),
 			   TREE_VALUE (mem_inits));
       mem_inits = TREE_CHAIN (mem_inits);
@@ -1889,7 +1908,8 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
     }
 
   if (init && TREE_CODE (init) != TREE_LIST
-      && (flags & LOOKUP_ONLYCONVERTING))
+      && (flags & LOOKUP_ONLYCONVERTING)
+      && !unsafe_return_slot_p (exp))
     {
       /* Base subobjects should only get direct-initialization.  */
       gcc_assert (true_exp == exp);
@@ -2272,10 +2292,12 @@ build_offset_ref (tree type, tree member, bool address_p,
    recursively); otherwise, return DECL.  If STRICT_P, the
    initializer is only returned if DECL is a
    constant-expression.  If RETURN_AGGREGATE_CST_OK_P, it is ok to
-   return an aggregate constant.  */
+   return an aggregate constant.  If UNSHARE_P, return an unshared
+   copy of the initializer.  */
 
 static tree
-constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
+constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p,
+		  bool unshare_p)
 {
   while (TREE_CODE (decl) == CONST_DECL
 	 || decl_constant_var_p (decl)
@@ -2343,9 +2365,9 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
 	  && DECL_NONTRIVIALLY_INITIALIZED_P (decl))
 	break;
-      decl = unshare_expr (init);
+      decl = init;
     }
-  return decl;
+  return unshare_p ? unshare_expr (decl) : decl;
 }
 
 /* If DECL is a CONST_DECL, or a constant VAR_DECL initialized by constant
@@ -2357,26 +2379,36 @@ tree
 scalar_constant_value (tree decl)
 {
   return constant_value_1 (decl, /*strict_p=*/true,
-			   /*return_aggregate_cst_ok_p=*/false);
+			   /*return_aggregate_cst_ok_p=*/false,
+			   /*unshare_p=*/true);
 }
 
-/* Like scalar_constant_value, but can also return aggregate initializers.  */
+/* Like scalar_constant_value, but can also return aggregate initializers.
+   If UNSHARE_P, return an unshared copy of the initializer.  */
 
 tree
-decl_really_constant_value (tree decl)
+decl_really_constant_value (tree decl, bool unshare_p /*= true*/)
 {
   return constant_value_1 (decl, /*strict_p=*/true,
-			   /*return_aggregate_cst_ok_p=*/true);
+			   /*return_aggregate_cst_ok_p=*/true,
+			   /*unshare_p=*/unshare_p);
 }
 
-/* A more relaxed version of scalar_constant_value, used by the
+/* A more relaxed version of decl_really_constant_value, used by the
    common C/C++ code.  */
+
+tree
+decl_constant_value (tree decl, bool unshare_p)
+{
+  return constant_value_1 (decl, /*strict_p=*/processing_template_decl,
+			   /*return_aggregate_cst_ok_p=*/true,
+			   /*unshare_p=*/unshare_p);
+}
 
 tree
 decl_constant_value (tree decl)
 {
-  return constant_value_1 (decl, /*strict_p=*/processing_template_decl,
-			   /*return_aggregate_cst_ok_p=*/true);
+  return decl_constant_value (decl, /*unshare_p=*/true);
 }
 
 /* Common subroutines of build_new and build_vec_delete.  */
@@ -2533,27 +2565,6 @@ throw_bad_array_new_length (void)
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
 
-/* Attempt to find the initializer for flexible array field T in the
-   initializer INIT, when non-null.  Returns the initializer when
-   successful and NULL otherwise.  */
-static tree
-find_flexarray_init (tree t, tree init)
-{
-  if (!init || init == error_mark_node)
-    return NULL_TREE;
-
-  unsigned HOST_WIDE_INT idx;
-  tree field, elt;
-
-  /* Iterate over all top-level initializer elements.  */
-  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx, field, elt)
-    /* If the member T is found, return it.  */
-    if (field == t)
-      return elt;
-
-  return NULL_TREE;
-}
-
 /* Attempt to verify that the argument, OPER, of a placement new expression
    refers to an object sufficiently large for an object of TYPE or an array
    of NELTS of such objects when NELTS is non-null, and issue a warning when
@@ -2570,17 +2581,6 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 {
   location_t loc = cp_expr_loc_or_input_loc (oper);
 
-  /* The number of bytes to add to or subtract from the size of the provided
-     buffer based on an offset into an array or an array element reference.
-     Although intermediate results may be negative (as in a[3] - 2) a valid
-     final result cannot be.  */
-  offset_int adjust = 0;
-  /* True when the size of the entire destination object should be used
-     to compute the possibly optimistic estimate of the available space.  */
-  bool use_obj_size = false;
-  /* True when the reference to the destination buffer is an ADDR_EXPR.  */
-  bool addr_expr = false;
-
   STRIP_NOPS (oper);
 
   /* Using a function argument or a (non-array) variable as an argument
@@ -2594,231 +2594,96 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
   /* Evaluate any constant expressions.  */
   size = fold_non_dependent_expr (size);
 
-  /* Handle the common case of array + offset expression when the offset
-     is a constant.  */
-  if (TREE_CODE (oper) == POINTER_PLUS_EXPR)
+  access_ref ref;
+  ref.eval = [](tree x){ return fold_non_dependent_expr (x); };
+  ref.trail1special = warn_placement_new < 2;
+  tree objsize =  compute_objsize (oper, 1, &ref);
+  if (!objsize)
+    return;
+
+  offset_int bytes_avail = wi::to_offset (objsize);
+  offset_int bytes_need;
+
+  if (CONSTANT_CLASS_P (size))
+    bytes_need = wi::to_offset (size);
+  else if (nelts && CONSTANT_CLASS_P (nelts))
+    bytes_need = (wi::to_offset (nelts)
+		  * wi::to_offset (TYPE_SIZE_UNIT (type)));
+  else if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+    bytes_need = wi::to_offset (TYPE_SIZE_UNIT (type));
+  else
     {
-      /* If the offset is compile-time constant, use it to compute a more
-	 accurate estimate of the size of the buffer.  Since the operand
-	 of POINTER_PLUS_EXPR is represented as an unsigned type, convert
-	 it to signed first.
-	 Otherwise, use the size of the entire array as an optimistic
-	 estimate (this may lead to false negatives).  */
-      tree adj = TREE_OPERAND (oper, 1);
-      adj = fold_for_warn (adj);
-      if (CONSTANT_CLASS_P (adj))
-	adjust += wi::to_offset (convert (ssizetype, adj));
-      else
-	use_obj_size = true;
-
-      oper = TREE_OPERAND (oper, 0);
-
-      STRIP_NOPS (oper);
+      /* The type is a VLA.  */
+      return;
     }
 
-  if (TREE_CODE (oper) == TARGET_EXPR)
-    oper = TREE_OPERAND (oper, 1);
-  else if (TREE_CODE (oper) == ADDR_EXPR)
-    {
-      addr_expr = true;
-      oper = TREE_OPERAND (oper, 0);
-    }
+  if (bytes_avail >= bytes_need)
+    return;
 
-  STRIP_NOPS (oper);
+  /* True when the size to mention in the warning is exact as opposed
+     to "at least N".  */
+  const bool exact_size = (ref.offrng[0] == ref.offrng[1]
+			   || ref.sizrng[1] - ref.offrng[0] == 0);
 
-  if (TREE_CODE (oper) == ARRAY_REF
-      && (addr_expr || TREE_CODE (TREE_TYPE (oper)) == ARRAY_TYPE))
-    {
-      /* Similar to the offset computed above, see if the array index
-	 is a compile-time constant.  If so, and unless the offset was
-	 not a compile-time constant, use the index to determine the
-	 size of the buffer.  Otherwise, use the entire array as
-	 an optimistic estimate of the size.  */
-      const_tree adj = fold_non_dependent_expr (TREE_OPERAND (oper, 1));
-      if (!use_obj_size && CONSTANT_CLASS_P (adj))
-	adjust += wi::to_offset (adj);
-      else
-	{
-	  use_obj_size = true;
-	  adjust = 0;
-	}
+  tree opertype = ref.ref ? TREE_TYPE (ref.ref) : TREE_TYPE (oper);
+  bool warned = false;
+  if (nelts)
+    nelts = fold_for_warn (nelts);
+  if (nelts)
+    if (CONSTANT_CLASS_P (nelts))
+      warned = warning_at (loc, OPT_Wplacement_new_,
+			   (exact_size
+			    ? G_("placement new constructing an object "
+				 "of type %<%T [%wu]%> and size %qwu "
+				 "in a region of type %qT and size %qwi")
+			    : G_("placement new constructing an object "
+				 "of type %<%T [%wu]%> and size %qwu "
+				 "in a region of type %qT and size "
+				 "at most %qwu")),
+			   type, tree_to_uhwi (nelts),
+			   bytes_need.to_uhwi (),
+			   opertype, bytes_avail.to_uhwi ());
+    else
+      warned = warning_at (loc, OPT_Wplacement_new_,
+			   (exact_size
+			    ? G_("placement new constructing an array "
+				 "of objects of type %qT and size %qwu "
+				 "in a region of type %qT and size %qwi")
+			    : G_("placement new constructing an array "
+				 "of objects of type %qT and size %qwu "
+				 "in a region of type %qT and size "
+				 "at most %qwu")),
+			   type, bytes_need.to_uhwi (), opertype,
+			   bytes_avail.to_uhwi ());
+  else
+    warned = warning_at (loc, OPT_Wplacement_new_,
+			 (exact_size
+			  ? G_("placement new constructing an object "
+			       "of type %qT and size %qwu in a region "
+			       "of type %qT and size %qwi")
+			  : G_("placement new constructing an object "
+			       "of type %qT "
+			       "and size %qwu in a region of type %qT "
+			       "and size at most %qwu")),
+			       type, bytes_need.to_uhwi (), opertype,
+			 bytes_avail.to_uhwi ());
 
-      oper = TREE_OPERAND (oper, 0);
-    }
+  if (!warned || !ref.ref)
+    return;
 
-  /* Refers to the declared object that constains the subobject referenced
-     by OPER.  When the object is initialized, makes it possible to determine
-     the actual size of a flexible array member used as the buffer passed
-     as OPER to placement new.  */
-  tree var_decl = NULL_TREE;
-  /* True when operand is a COMPONENT_REF, to distinguish flexible array
-     members from arrays of unspecified size.  */
-  bool compref = TREE_CODE (oper) == COMPONENT_REF;
-
-  /* For COMPONENT_REF (i.e., a struct member) the size of the entire
-     enclosing struct.  Used to validate the adjustment (offset) into
-     an array at the end of a struct.  */
-  offset_int compsize = 0;
-
-  /* Descend into a struct or union to find the member whose address
-     is being used as the argument.  */
-  if (TREE_CODE (oper) == COMPONENT_REF)
-    {
-      tree comptype = TREE_TYPE (TREE_OPERAND (oper, 0));
-      compsize = wi::to_offset (TYPE_SIZE_UNIT (comptype));
-
-      tree op0 = oper;
-      while (TREE_CODE (op0 = TREE_OPERAND (op0, 0)) == COMPONENT_REF);
-      STRIP_ANY_LOCATION_WRAPPER (op0);
-      if (VAR_P (op0))
-	var_decl = op0;
-      oper = TREE_OPERAND (oper, 1);
-    }
-
-  STRIP_ANY_LOCATION_WRAPPER (oper);
-  tree opertype = TREE_TYPE (oper);
-  if ((addr_expr || !INDIRECT_TYPE_P (opertype))
-      && (VAR_P (oper)
-	  || TREE_CODE (oper) == FIELD_DECL
-	  || TREE_CODE (oper) == PARM_DECL))
-    {
-      /* A possibly optimistic estimate of the number of bytes available
-	 in the destination buffer.  */
-      offset_int bytes_avail = 0;
-      /* True when the estimate above is in fact the exact size
-	 of the destination buffer rather than an estimate.  */
-      bool exact_size = true;
-
-      /* Treat members of unions and members of structs uniformly, even
-	 though the size of a member of a union may be viewed as extending
-	 to the end of the union itself (it is by __builtin_object_size).  */
-      if ((VAR_P (oper) || use_obj_size)
-	  && DECL_SIZE_UNIT (oper)
-	  && tree_fits_uhwi_p (DECL_SIZE_UNIT (oper)))
-	{
-	  /* Use the size of the entire array object when the expression
-	     refers to a variable or its size depends on an expression
-	     that's not a compile-time constant.  */
-	  bytes_avail = wi::to_offset (DECL_SIZE_UNIT (oper));
-	  exact_size = !use_obj_size;
-	}
-      else if (tree opersize = TYPE_SIZE_UNIT (opertype))
-	{
-	  /* Use the size of the type of the destination buffer object
-	     as the optimistic estimate of the available space in it.
-	     Use the maximum possible size for zero-size arrays and
-	     flexible array members (except of initialized objects
-	     thereof).  */
-	  if (TREE_CODE (opersize) == INTEGER_CST)
-	    bytes_avail = wi::to_offset (opersize);
-	}
-
-      if (bytes_avail == 0)
-	{
-	  if (var_decl)
-	    {
-	      /* Constructing into a buffer provided by the flexible array
-		 member of a declared object (which is permitted as a G++
-		 extension).  If the array member has been initialized,
-		 determine its size from the initializer.  Otherwise,
-		 the array size is zero.  */
-	      if (tree init = find_flexarray_init (oper,
-						   DECL_INITIAL (var_decl)))
-		bytes_avail = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (init)));
-	    }
-	  else
-	    bytes_avail = (wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node))
-			   - compsize);
-	}
-
-      tree_code oper_code = TREE_CODE (opertype);
-
-      if (compref && oper_code == ARRAY_TYPE)
-	{
-	  tree nelts = array_type_nelts_top (opertype);
-	  tree nelts_cst = maybe_constant_value (nelts);
-	  if (TREE_CODE (nelts_cst) == INTEGER_CST
-	      && integer_onep (nelts_cst)
-	      && !var_decl
-	      && warn_placement_new < 2)
-	    return;
-	}
-
-      /* Reduce the size of the buffer by the adjustment computed above
-	 from the offset and/or the index into the array.  */
-      if (bytes_avail < adjust || adjust < 0)
-	bytes_avail = 0;
-      else
-	{
-	  tree elttype = (TREE_CODE (opertype) == ARRAY_TYPE
-			  ? TREE_TYPE (opertype) : opertype);
-	  if (tree eltsize = TYPE_SIZE_UNIT (elttype))
-	    {
-	      bytes_avail -= adjust * wi::to_offset (eltsize);
-	      if (bytes_avail < 0)
-		bytes_avail = 0;
-	    }
-	}
-
-      /* The minimum amount of space needed for the allocation.  This
-	 is an optimistic estimate that makes it possible to detect
-	 placement new invocation for some undersize buffers but not
-	 others.  */
-      offset_int bytes_need;
-
-      if (nelts)
-	nelts = fold_for_warn (nelts);
-
-      if (CONSTANT_CLASS_P (size))
-	bytes_need = wi::to_offset (size);
-      else if (nelts && CONSTANT_CLASS_P (nelts))
-	bytes_need = (wi::to_offset (nelts)
-		      * wi::to_offset (TYPE_SIZE_UNIT (type)));
-      else if (tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
-	bytes_need = wi::to_offset (TYPE_SIZE_UNIT (type));
-      else
-	{
-	  /* The type is a VLA.  */
-	  return;
-	}
-
-      if (bytes_avail < bytes_need)
-	{
-	  if (nelts)
-	    if (CONSTANT_CLASS_P (nelts))
-	      warning_at (loc, OPT_Wplacement_new_,
-			  exact_size ?
-			  "placement new constructing an object of type "
-			  "%<%T [%wu]%> and size %qwu in a region of type %qT "
-			  "and size %qwi"
-			  : "placement new constructing an object of type "
-			  "%<%T [%wu]%> and size %qwu in a region of type %qT "
-			  "and size at most %qwu",
-			  type, tree_to_uhwi (nelts), bytes_need.to_uhwi (),
-			  opertype, bytes_avail.to_uhwi ());
-	    else
-	      warning_at (loc, OPT_Wplacement_new_,
-			  exact_size ?
-			  "placement new constructing an array of objects "
-			  "of type %qT and size %qwu in a region of type %qT "
-			  "and size %qwi"
-			  : "placement new constructing an array of objects "
-			  "of type %qT and size %qwu in a region of type %qT "
-			  "and size at most %qwu",
-			  type, bytes_need.to_uhwi (), opertype,
-			  bytes_avail.to_uhwi ());
-	  else
-	    warning_at (loc, OPT_Wplacement_new_,
-			exact_size ?
-			"placement new constructing an object of type %qT "
-			"and size %qwu in a region of type %qT and size %qwi"
-			: "placement new constructing an object of type %qT "
-			"and size %qwu in a region of type %qT and size "
-			"at most %qwu",
-			type, bytes_need.to_uhwi (), opertype,
-			bytes_avail.to_uhwi ());
-	}
-    }
+  if (ref.offrng[0] == 0 || !ref.offset_bounded ())
+    /* Avoid mentioning the offset when its lower bound is zero
+       or when it's impossibly large.  */
+    inform (DECL_SOURCE_LOCATION (ref.ref),
+	    "%qD declared here", ref.ref);
+  else if (ref.offrng[0] == ref.offrng[1])
+    inform (DECL_SOURCE_LOCATION (ref.ref),
+	    "at offset %wi from %qD declared here",
+	    ref.offrng[0].to_shwi (), ref.ref);
+  else
+    inform (DECL_SOURCE_LOCATION (ref.ref),
+	    "at offset [%wi, %wi] from %qD declared here",
+	    ref.offrng[0].to_shwi (), ref.offrng[1].to_shwi (), ref.ref);
 }
 
 /* True if alignof(T) > __STDCPP_DEFAULT_NEW_ALIGNMENT__.  */
@@ -3402,10 +3267,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	}
     }
 
-  tree alloc_call_expr = extract_call_expr (alloc_call);
-  if (TREE_CODE (alloc_call_expr) == CALL_EXPR)
-    CALL_FROM_NEW_OR_DELETE_P (alloc_call_expr) = 1;
-
   if (cookie_size)
     alloc_call = maybe_wrap_new_for_constexpr (alloc_call, elt_type,
 					       cookie_size);
@@ -3540,8 +3401,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       else if (array_p)
 	{
 	  tree vecinit = NULL_TREE;
-	  if (vec_safe_length (*init) == 1
-	      && DIRECT_LIST_INIT_P ((**init)[0]))
+	  const size_t len = vec_safe_length (*init);
+	  if (len == 1 && DIRECT_LIST_INIT_P ((**init)[0]))
 	    {
 	      vecinit = (**init)[0];
 	      if (CONSTRUCTOR_NELTS (vecinit) == 0)
@@ -3556,6 +3417,12 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		    /* We'll check the length at runtime.  */
 		    domain = NULL_TREE;
 		  arraytype = build_cplus_array_type (type, domain);
+		  /* If we have new char[4]{"foo"}, we have to reshape
+		     so that the STRING_CST isn't wrapped in { }.  */
+		  vecinit = reshape_init (arraytype, vecinit, complain);
+		  /* The middle end doesn't cope with the location wrapper
+		     around a STRING_CST.  */
+		  STRIP_ANY_LOCATION_WRAPPER (vecinit);
 		  vecinit = digest_init (arraytype, vecinit, complain);
 		}
 	    }
@@ -3615,8 +3482,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		  && AGGREGATE_TYPE_P (type)
 		  && (*init)->length () > 1)
 		{
-		  ie = build_tree_list_vec (*init);
-		  ie = build_constructor_from_list (init_list_type_node, ie);
+		  ie = build_constructor_from_vec (init_list_type_node, *init);
 		  CONSTRUCTOR_IS_DIRECT_INIT (ie) = true;
 		  CONSTRUCTOR_IS_PAREN_INIT (ie) = true;
 		  ie = digest_init (type, ie, complain);
@@ -3898,6 +3764,46 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
       return error_mark_node;
     }
 
+  /* P1009: Array size deduction in new-expressions.  */
+  const bool array_p = TREE_CODE (type) == ARRAY_TYPE;
+  if (*init && (array_p || (nelts && cxx_dialect >= cxx20)))
+    {
+      /* This means we have 'new T[]()'.  */
+      if ((*init)->is_empty ())
+	{
+	  tree ctor = build_constructor (init_list_type_node, NULL);
+	  CONSTRUCTOR_IS_DIRECT_INIT (ctor) = true;
+	  vec_safe_push (*init, ctor);
+	}
+      tree &elt = (**init)[0];
+      /* The C++20 'new T[](e_0, ..., e_k)' case allowed by P0960.  */
+      if (!DIRECT_LIST_INIT_P (elt) && cxx_dialect >= cxx20)
+	{
+	  tree ctor = build_constructor_from_vec (init_list_type_node, *init);
+	  CONSTRUCTOR_IS_DIRECT_INIT (ctor) = true;
+	  CONSTRUCTOR_IS_PAREN_INIT (ctor) = true;
+	  elt = ctor;
+	  /* We've squashed all the vector elements into the first one;
+	     truncate the rest.  */
+	  (*init)->truncate (1);
+	}
+      /* Otherwise we should have 'new T[]{e_0, ..., e_k}'.  */
+      if (array_p && !TYPE_DOMAIN (type))
+	{
+	  /* We need to reshape before deducing the bounds to handle code like
+
+	       struct S { int x, y; };
+	       new S[]{1, 2, 3, 4};
+
+	     which should deduce S[2].	But don't change ELT itself: we want to
+	     pass a list-initializer to build_new_1, even for STRING_CSTs.  */
+	  tree e = elt;
+	  if (BRACE_ENCLOSED_INITIALIZER_P (e))
+	    e = reshape_init (type, e, complain);
+	  cp_complete_array_type (&type, e, /*do_default*/false);
+	}
+    }
+
   /* The type allocated must be complete.  If the new-type-id was
      "T[N]" then we are just checking that "T" is complete here, but
      that is equivalent, since the value of "N" doesn't matter.  */
@@ -4069,10 +3975,6 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 					      /*placement=*/NULL_TREE,
 					      /*alloc_fn=*/NULL_TREE,
 					      complain);
-
-      tree deallocate_call_expr = extract_call_expr (deallocate_expr);
-      if (TREE_CODE (deallocate_call_expr) == CALL_EXPR)
-	CALL_FROM_NEW_OR_DELETE_P (deallocate_call_expr) = 1;
     }
 
   body = loop;
@@ -4997,12 +4899,6 @@ build_delete (location_t loc, tree otype, tree addr,
 
   if (do_delete == error_mark_node)
     return error_mark_node;
-  else if (do_delete)
-    {
-      tree do_delete_call_expr = extract_call_expr (do_delete);
-      if (TREE_CODE (do_delete_call_expr) == CALL_EXPR)
-	CALL_FROM_NEW_OR_DELETE_P (do_delete_call_expr) = 1;
-    }
 
   if (do_delete && !TREE_SIDE_EFFECTS (expr))
     expr = do_delete;

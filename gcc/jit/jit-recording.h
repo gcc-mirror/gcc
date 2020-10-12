@@ -502,6 +502,12 @@ public:
      This will return NULL if it's not valid to dereference this type.
      The caller is responsible for setting an error.  */
   virtual type *dereference () = 0;
+  /* Get the type size in bytes.
+
+     This is implemented only for memento_of_get_type and
+     memento_of_get_pointer as it is used for initializing globals of
+     these types.  */
+  virtual size_t get_size () { gcc_unreachable (); }
 
   /* Dynamic casts.  */
   virtual function_type *dyn_cast_function_type () { return NULL; }
@@ -569,6 +575,8 @@ public:
 
   type *dereference () FINAL OVERRIDE;
 
+  size_t get_size () FINAL OVERRIDE;
+
   bool accepts_writes_from (type *rtype) FINAL OVERRIDE
   {
     if (m_kind == GCC_JIT_TYPE_VOID_PTR)
@@ -609,6 +617,8 @@ public:
     m_other_type (other_type) {}
 
   type *dereference () FINAL OVERRIDE { return m_other_type; }
+
+  size_t get_size () FINAL OVERRIDE;
 
   bool accepts_writes_from (type *rtype) FINAL OVERRIDE;
 
@@ -755,6 +765,7 @@ class array_type : public type
   bool is_bool () const FINAL OVERRIDE { return false; }
   type *is_pointer () FINAL OVERRIDE { return NULL; }
   type *is_array () FINAL OVERRIDE { return m_element_type; }
+  int num_elements () { return m_num_elements; }
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
@@ -1107,6 +1118,7 @@ public:
 
   const char *access_as_rvalue (reproducer &r) OVERRIDE;
   virtual const char *access_as_lvalue (reproducer &r);
+  virtual bool is_global () const { return false; }
 };
 
 class param : public lvalue
@@ -1327,7 +1339,14 @@ public:
   : lvalue (ctxt, loc, type),
     m_kind (kind),
     m_name (name)
-  {}
+  {
+    m_initializer = NULL;
+    m_initializer_num_bytes = 0;
+  }
+  ~global ()
+  {
+    free (m_initializer);
+  }
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
@@ -1335,8 +1354,23 @@ public:
 
   void write_to_dump (dump &d) FINAL OVERRIDE;
 
+  bool is_global () const FINAL OVERRIDE { return true; }
+
+  void
+  set_initializer (const void *initializer,
+                   size_t num_bytes)
+  {
+    if (m_initializer)
+      free (m_initializer);
+    m_initializer = xmalloc (num_bytes);
+    memcpy (m_initializer, initializer, num_bytes);
+    m_initializer_num_bytes = num_bytes;
+  }
+
 private:
   string * make_debug_string () FINAL OVERRIDE { return m_name; }
+  template <typename T>
+  void write_initializer_reproducer (const char *id, reproducer &r);
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
   enum precedence get_precedence () const FINAL OVERRIDE
   {
@@ -1346,6 +1380,8 @@ private:
 private:
   enum gcc_jit_global_kind m_kind;
   string *m_name;
+  void *m_initializer;
+  size_t m_initializer_num_bytes;
 };
 
 template <typename HOST_TYPE>

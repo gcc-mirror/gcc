@@ -335,10 +335,13 @@ func sigpipe() {
 func doSigPreempt(gp *g, ctxt *sigctxt, sigpc uintptr) {
 	// Check if this G wants to be preempted and is safe to
 	// preempt.
-	if wantAsyncPreempt(gp) && isAsyncSafePoint(gp, sigpc) {
-		// Inject a call to asyncPreempt.
-		// ctxt.pushCall(funcPC(asyncPreempt))
-		throw("pushCall not implemented")
+	if wantAsyncPreempt(gp) {
+		if ok, newpc := isAsyncSafePoint(gp, sigpc); ok {
+			// Adjust the PC and inject a call to asyncPreempt.
+			// ctxt.pushCall(funcPC(asyncPreempt), newpc)
+			throw("pushCall not implemented")
+			_ = newpc
+		}
 	}
 
 	// Acknowledge the preemption.
@@ -346,10 +349,8 @@ func doSigPreempt(gp *g, ctxt *sigctxt, sigpc uintptr) {
 	atomic.Store(&gp.m.signalPending, 0)
 }
 
-// gccgo-specific definition.
-const pushCallSupported = false
-
-const preemptMSupported = pushCallSupported
+// This is false for gccgo.
+const preemptMSupported = false
 
 // preemptM sends a preemption request to mp. This request may be
 // handled asynchronously and may be coalesced with other requests to
@@ -358,13 +359,8 @@ const preemptMSupported = pushCallSupported
 // safe-point, it will preempt the goroutine. It always atomically
 // increments mp.preemptGen after handling a preemption request.
 func preemptM(mp *m) {
-	if !pushCallSupported {
-		// This architecture doesn't support ctxt.pushCall
-		// yet, so doSigPreempt won't work.
-		return
-	}
-	if GOOS == "darwin" && (GOARCH == "arm" || GOARCH == "arm64") && !iscgo {
-		// On darwin, we use libc calls, and cgo is required on ARM and ARM64
+	if GOOS == "darwin" && GOARCH == "arm64" && !iscgo {
+		// On darwin, we use libc calls, and cgo is required on ARM64
 		// so we have TLS set up to save/restore G during C calls. If cgo is
 		// absent, we cannot save/restore G in TLS, and if a signal is
 		// received during C execution we cannot get the G. Therefore don't
@@ -480,7 +476,7 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 		return
 	}
 
-	if sig == sigPreempt {
+	if sig == sigPreempt && debug.asyncpreemptoff == 0 {
 		// Might be a preemption signal.
 		doSigPreempt(gp, c, sigpc)
 		// Even if this was definitely a preemption signal, it
@@ -492,10 +488,10 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 	if sig < uint32(len(sigtable)) {
 		flags = sigtable[sig].flags
 	}
-	if flags&_SigPanic != 0 && gp.throwsplit {
+	if c.sigcode() != _SI_USER && flags&_SigPanic != 0 && gp.throwsplit {
 		// We can't safely sigpanic because it may grow the
 		// stack. Abort in the signal handler instead.
-		flags = (flags &^ _SigPanic) | _SigThrow
+		flags = _SigThrow
 	}
 	if isAbortPC(sigpc) {
 		// On many architectures, the abort function just
@@ -536,7 +532,11 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 		dieFromSignal(sig)
 	}
 
-	if flags&_SigThrow == 0 {
+	// _SigThrow means that we should exit now.
+	// If we get here with _SigPanic, it means that the signal
+	// was sent to us by a program (c.sigcode() == _SI_USER);
+	// in that case, if we didn't handle it in sigsend, we exit now.
+	if flags&(_SigThrow|_SigPanic) == 0 {
 		return
 	}
 
@@ -557,6 +557,30 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 	if _g_.m.lockedg != 0 && _g_.m.ncgo > 0 && gp == _g_.m.g0 {
 		print("signal arrived during cgo execution\n")
 		gp = _g_.m.lockedg.ptr()
+	}
+	if sig == _SIGILL {
+		// It would be nice to know how long the instruction is.
+		// Unfortunately, that's complicated to do in general (mostly for x86
+		// and s930x, but other archs have non-standard instruction lengths also).
+		// Opt to print 16 bytes, which covers most instructions.
+		const maxN = 16
+		n := uintptr(maxN)
+		// We have to be careful, though. If we're near the end of
+		// a page and the following page isn't mapped, we could
+		// segfault. So make sure we don't straddle a page (even though
+		// that could lead to printing an incomplete instruction).
+		// We're assuming here we can read at least the page containing the PC.
+		// I suppose it is possible that the page is mapped executable but not readable?
+		pc := sigpc
+		if n > physPageSize-pc%physPageSize {
+			n = physPageSize - pc%physPageSize
+		}
+		print("instruction bytes:")
+		b := (*[maxN]byte)(unsafe.Pointer(pc))
+		for i := uintptr(0); i < n; i++ {
+			print(" ", hex(b[i]))
+		}
+		println()
 	}
 	print("\n")
 

@@ -77,6 +77,9 @@ test04()
   VERIFY( it == v.end() );
 }
 
+// Verify we optimize away the 'bound' data member of an unbounded iota_view.
+static_assert(sizeof(std::ranges::iota_view<char>) == 1);
+
 int
 main()
 {

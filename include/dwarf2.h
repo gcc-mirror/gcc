@@ -55,6 +55,7 @@
 #define DW_CFA_DUP(name, value) , name = value
 #define DW_IDX(name, value) , name = value
 #define DW_IDX_DUP(name, value) , name = value
+#define DW_UT(name, value) , name = value
 
 #define DW_FIRST_TAG(name, value) enum dwarf_tag { \
   name = value
@@ -77,6 +78,9 @@
 #define DW_FIRST_IDX(name, value) enum dwarf_name_index_attribute { \
   name = value
 #define DW_END_IDX };
+#define DW_FIRST_UT(name, value) enum dwarf_unit_type { \
+  name = value
+#define DW_END_UT };
 
 #include "dwarf2.def"
 
@@ -94,6 +98,8 @@
 #undef DW_END_CFA
 #undef DW_FIRST_IDX
 #undef DW_END_IDX
+#undef DW_FIRST_UT
+#undef DW_END_UT
 
 #undef DW_TAG
 #undef DW_TAG_DUP
@@ -108,6 +114,7 @@
 #undef DW_CFA_DUP
 #undef DW_IDX
 #undef DW_IDX_DUP
+#undef DW_UT
 
 /* Flag that tells whether entry has a child or not.  */
 #define DW_children_no   0
@@ -316,7 +323,6 @@ enum dwarf_location_list_entry_type
 
 #define DW_CIE_ID	  0xffffffff
 #define DW64_CIE_ID	  0xffffffffffffffffULL
-#define DW_CIE_VERSION	  1
 
 #define DW_CFA_extended   0
 
@@ -451,19 +457,6 @@ enum dwarf_range_list_entry
     DW_RLE_start_end = 0x06,
     DW_RLE_start_length = 0x07
   };
-
-/* Unit types in unit_type unit header field.  */
-enum dwarf_unit_type
-  {
-    DW_UT_compile = 0x01,
-    DW_UT_type = 0x02,
-    DW_UT_partial = 0x03,
-    DW_UT_skeleton = 0x04,
-    DW_UT_split_compile = 0x05,
-    DW_UT_split_type = 0x06,
-    DW_UT_lo_user = 0x80,
-    DW_UT_hi_user = 0xff
-  };
 
 /* @@@ For use with GNU frame unwind information.  */
 
@@ -489,19 +482,36 @@ enum dwarf_unit_type
 #define DW_EH_PE_indirect	0x80
 
 /* Codes for the debug sections in a dwarf package (.dwp) file.
-   Extensions for Fission.  See http://gcc.gnu.org/wiki/DebugFissionDWP.  */
+   (From the pre-standard formats Extensions for Fission.
+   See http://gcc.gnu.org/wiki/DebugFissionDWP).  */
 enum dwarf_sect
-  {
-    DW_SECT_INFO = 1,
-    DW_SECT_TYPES = 2,
-    DW_SECT_ABBREV = 3,
-    DW_SECT_LINE = 4,
-    DW_SECT_LOC = 5,
-    DW_SECT_STR_OFFSETS = 6,
-    DW_SECT_MACINFO = 7,
-    DW_SECT_MACRO = 8,
-    DW_SECT_MAX = 8
-  };
+{
+  DW_SECT_INFO = 1,
+  DW_SECT_TYPES = 2,
+  DW_SECT_ABBREV = 3,
+  DW_SECT_LINE = 4,
+  DW_SECT_LOC = 5,
+  DW_SECT_STR_OFFSETS = 6,
+  DW_SECT_MACINFO = 7,
+  DW_SECT_MACRO = 8,
+  DW_SECT_MAX = 8
+};
+
+/* Codes for the debug sections in a dwarf package (.dwp) file.
+   (From the official DWARF v5 spec.
+   See http://dwarfstd.org/doc/DWARF5.pdf, section 7.3.5).  */
+enum dwarf_sect_v5
+{
+  DW_SECT_INFO_V5 = 1,
+  DW_SECT_RESERVED_V5 = 2,
+  DW_SECT_ABBREV_V5 = 3,
+  DW_SECT_LINE_V5 = 4,
+  DW_SECT_LOCLISTS_V5 = 5,
+  DW_SECT_STR_OFFSETS_V5 = 6,
+  DW_SECT_MACRO_V5 = 7,
+  DW_SECT_RNGLISTS_V5 = 8,
+  DW_SECT_MAX_V5 = 8
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -534,6 +544,10 @@ extern const char *get_DW_CFA_name (unsigned int opc);
 /* Return the name of a DW_IDX_ constant, or NULL if the value is not
    recognized.  */
 extern const char *get_DW_IDX_name (unsigned int idx);
+
+/* Return the name of a DW_UT_ constant, or NULL if the value is not
+   recognized.  */
+extern const char *get_DW_UT_name (unsigned int ut);
 
 #ifdef __cplusplus
 }

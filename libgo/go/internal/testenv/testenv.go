@@ -53,7 +53,7 @@ func HasGoBuild() bool {
 	case "android", "js":
 		return false
 	case "darwin":
-		if strings.HasPrefix(runtime.GOARCH, "arm") {
+		if runtime.GOARCH == "arm64" {
 			return false
 		}
 	}
@@ -139,7 +139,7 @@ func HasExec() bool {
 	case "js":
 		return false
 	case "darwin":
-		if strings.HasPrefix(runtime.GOARCH, "arm") {
+		if runtime.GOARCH == "arm64" {
 			return false
 		}
 	}
@@ -150,7 +150,7 @@ func HasExec() bool {
 func HasSrc() bool {
 	switch runtime.GOOS {
 	case "darwin":
-		if strings.HasPrefix(runtime.GOARCH, "arm") {
+		if runtime.GOARCH == "arm64" {
 			return false
 		}
 	}

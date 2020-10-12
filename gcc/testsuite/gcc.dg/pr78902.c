@@ -12,4 +12,5 @@ void foo(void)
  __builtin_aligned_alloc (10, 16); /* { dg-warning "ignoring return value of '__builtin_aligned_alloc' declared with attribute 'warn_unused_result'" } */
  __builtin_strdup ("pes"); /* { dg-warning "ignoring return value of '__builtin_strdup' declared with attribute 'warn_unused_result'" } */
  __builtin_strndup ("pes", 10); /* { dg-warning "ignoring return value of '__builtin_strndup' declared with attribute 'warn_unused_result'" } */
+ /* { dg-warning "\\\[-Wstringop-overread" "strndup excessive bound" { target *-*-* } .-1 } */
 }

@@ -4337,6 +4337,13 @@ MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *par
 
         void visit(ArrayLiteralExp *e)
         {
+            // https://issues.dlang.org/show_bug.cgi?id=20092
+            if (e->elements && e->elements->length &&
+                e->type->toBasetype()->nextOf()->ty == Tvoid)
+            {
+                result = deduceEmptyArrayElement();
+                return;
+            }
             if ((!e->elements || !e->elements->length) &&
                 e->type->toBasetype()->nextOf()->ty == Tvoid &&
                 tparam->ty == Tarray)
@@ -5932,10 +5939,10 @@ void TemplateInstance::tryExpandMembers(Scope *sc2)
     static int nest;
     // extracted to a function to allow windows SEH to work without destructors in the same function
     //printf("%d\n", nest);
-    if (++nest > 500)
+    if (++nest > global.recursionLimit)
     {
         global.gag = 0;                 // ensure error message gets printed
-        error("recursive expansion");
+        error("recursive expansion exceeded allowed nesting limit");
         fatal();
     }
 
@@ -5949,10 +5956,10 @@ void TemplateInstance::trySemantic3(Scope *sc2)
     // extracted to a function to allow windows SEH to work without destructors in the same function
     static int nest;
     //printf("%d\n", nest);
-    if (++nest > 300)
+    if (++nest > global.recursionLimit)
     {
         global.gag = 0;            // ensure error message gets printed
-        error("recursive expansion");
+        error("recursive expansion exceeded allowed nesting limit");
         fatal();
     }
     semantic3(sc2);
@@ -6353,7 +6360,7 @@ Lerror:
         while (ti && !ti->deferred && ti->tinst)
         {
             ti = ti->tinst;
-            if (++nest > 500)
+            if (++nest > global.recursionLimit)
             {
                 global.gag = 0;            // ensure error message gets printed
                 error("recursive expansion");
@@ -8440,7 +8447,7 @@ void TemplateMixin::semantic(Scope *sc)
 
     static int nest;
     //printf("%d\n", nest);
-    if (++nest > 500)
+    if (++nest > global.recursionLimit)
     {
         global.gag = 0;                 // ensure error message gets printed
         error("recursive expansion");

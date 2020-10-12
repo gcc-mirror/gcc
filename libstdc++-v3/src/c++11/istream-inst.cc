@@ -38,9 +38,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template istream& operator>>(istream&, char&);
   template istream& operator>>(istream&, unsigned char&);
   template istream& operator>>(istream&, signed char&);
+
+#if ! _GLIBCXX_INLINE_VERSION
+  // XXX GLIBCXX_ABI Deprecated
   template istream& operator>>(istream&, char*);
   template istream& operator>>(istream&, unsigned char*);
   template istream& operator>>(istream&, signed char*);
+#endif
 
   template istream& operator>>(istream&, _Setfill<char>);
   template istream& operator>>(istream&, _Setiosflags);
@@ -67,7 +71,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template class basic_istream<wchar_t>;
   template wistream& ws(wistream&);
   template wistream& operator>>(wistream&, wchar_t&);
+  template void __istream_extract(wistream&, wchar_t*, streamsize);
+
+#if ! _GLIBCXX_INLINE_VERSION
+  // XXX GLIBCXX_ABI Deprecated
   template wistream& operator>>(wistream&, wchar_t*);
+#endif
 
   template wistream& operator>>(wistream&, _Setfill<wchar_t>);
   template wistream& operator>>(wistream&, _Setiosflags);

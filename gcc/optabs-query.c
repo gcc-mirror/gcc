@@ -606,6 +606,33 @@ can_vec_mask_load_store_p (machine_mode mode,
   return false;
 }
 
+/* If target supports vector load/store with length for vector mode MODE,
+   return the corresponding vector mode, otherwise return opt_machine_mode ().
+   There are two flavors for vector load/store with length, one is to measure
+   length with bytes, the other is to measure length with lanes.
+   As len_{load,store} optabs point out, for the flavor with bytes, we use
+   VnQI to wrap the other supportable same size vector modes.  */
+
+opt_machine_mode
+get_len_load_store_mode (machine_mode mode, bool is_load)
+{
+  optab op = is_load ? len_load_optab : len_store_optab;
+  gcc_assert (VECTOR_MODE_P (mode));
+
+  /* Check if length in lanes supported for this mode directly.  */
+  if (direct_optab_handler (op, mode))
+    return mode;
+
+  /* Check if length in bytes supported for same vector size VnQI.  */
+  machine_mode vmode;
+  poly_uint64 nunits = GET_MODE_SIZE (mode);
+  if (related_vector_mode (mode, QImode, nunits).exists (&vmode)
+      && direct_optab_handler (op, vmode))
+    return vmode;
+
+  return opt_machine_mode ();
+}
+
 /* Return true if there is a compare_and_swap pattern.  */
 
 bool

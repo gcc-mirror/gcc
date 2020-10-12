@@ -3,7 +3,8 @@
    Verify that stores that overwrite an interior nul are correctly
    reflected in strlen results.
    { dg-do run }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall" }
+   { dg-require-effective-target alloca } */
 
 #define false (0 == 1)
 #define true (0 == 0)

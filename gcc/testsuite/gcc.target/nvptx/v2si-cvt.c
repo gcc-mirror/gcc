@@ -3,37 +3,25 @@
 
 typedef int __v2si __attribute__((__vector_size__(8)));
 
-int __attribute__((unused))
+__v2si __attribute__((unused))
 vector_cvt (__v2si arg)
 {
-  __v2si val4 = arg;
-  char *p = (char*)&val4;
+  unsigned short *p = (unsigned short*)&arg;
 
-  if (p[0] != 1)
-    return 1;
-  if (p[1] != 2)
-    return 1;
-  if (p[2] != 3)
-    return 1;
+  volatile unsigned short s = p[0];
 
-  return 0;
+  return arg;
 }
 
-int
-vector_cvt_2 (__v2si val, __v2si val2)
+__v2si __attribute__((unused))
+vector_cvt_2 (__v2si arg)
 {
-  char *p = (char*)&val;
-  char *p2 = (char*)&val2;
+  unsigned char *p = (unsigned char*)&arg;
 
-  if (p[0] != p2[0])
-    return 1;
-  if (p[4] != p2[4])
-    return 1;
+  volatile unsigned char s = p[0];
 
-  return 0;
+  return arg;
 }
 
-/* We want to test for 'mov.t' here, but given PR80845 we test for cvt.t.t
-   instead.
-   { dg-final { scan-assembler "(?n)cvt\\.u32\\.u32.*\\.x" } } */
-/* { dg-final { scan-assembler "(?n)cvt\\.u16\\.u32.*\\.x" } } */
+/* Todo: We'd like to generate insns with .x operands to access the v2si
+   operands, but that's currently not done, see PR96403.  */

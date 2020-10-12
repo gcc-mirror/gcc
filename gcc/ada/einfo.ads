@@ -266,28 +266,29 @@ package Einfo is
 --  The flag Has_Delayed_Freeze indicates that an entity carries an explicit
 --  freeze node, which appears later in the expanded tree.
 
---  a) The flag is used by the front-end to trigger expansion actions which
+--  a) The flag is used by the front end to trigger expansion activities which
 --  include the generation of that freeze node. Typically this happens at the
 --  end of the current compilation unit, or before the first subprogram body is
---  encountered in the current unit. See files freeze and exp_ch13 for details
+--  encountered in the current unit. See units Freeze and Exp_Ch13 for details
 --  on the actions triggered by a freeze node, which include the construction
 --  of initialization procedures and dispatch tables.
 
---  b) The presence of a freeze node on an entity is used by the backend to
+--  b) The presence of a freeze node on an entity is used by the back end to
 --  defer elaboration of the entity until its freeze node is seen. In the
 --  absence of an explicit freeze node, an entity is frozen (and elaborated)
 --  at the point of declaration.
 
 --  For object declarations, the flag is set when an address clause for the
 --  object is encountered. Legality checks on the address expression only take
---  place at the freeze point of the object.
+--  place at the freeze point of the object. In Ada 2012, the flag is also set
+--  when an address aspect for the object is encountered.
 
 --  Most types have an explicit freeze node, because they cannot be elaborated
 --  until all representation and operational items that apply to them have been
 --  analyzed. Private types and incomplete types have the flag set as well, as
 --  do task and protected types.
 
---  Implicit base types created for type derivations, as well as classwide
+--  Implicit base types created for type derivations, as well as class-wide
 --  types created for all tagged types, have the flag set.
 
 --  If a subprogram has an access parameter whose designated type is incomplete
@@ -2506,6 +2507,10 @@ package Einfo is
 --    Is_CPP_Class (Flag74)
 --       Defined in all type entities, set only for tagged types to which a
 --       valid pragma Import (CPP, ...) or pragma CPP_Class has been applied.
+
+--    Is_CUDA_Kernel (Flag118)
+--       Defined in function and procedure entities. Set if the subprogram is a
+--       CUDA kernel.
 
 --    Is_Decimal_Fixed_Point_Type (synthesized)
 --       Applies to all type entities, true for decimal fixed point
@@ -6238,6 +6243,7 @@ package Einfo is
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
+   --    Is_CUDA_Kernel                      (Flag118)  (non-generic case only)
    --    Is_DIC_Procedure                    (Flag132)  (non-generic case only)
    --    Is_Discrim_SO_Function              (Flag176)
    --    Is_Discriminant_Check_Function      (Flag264)
@@ -6565,6 +6571,7 @@ package Einfo is
    --    Is_Asynchronous                     (Flag81)
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
+   --    Is_CUDA_Kernel                      (Flag118)
    --    Is_DIC_Procedure                    (Flag132)  (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id         (Flag148)
    --    Is_Elaboration_Warnings_OK_Id       (Flag304)
@@ -7344,6 +7351,7 @@ package Einfo is
    function Is_Controlled_Active                (Id : E) return B;
    function Is_Controlling_Formal               (Id : E) return B;
    function Is_CPP_Class                        (Id : E) return B;
+   function Is_CUDA_Kernel                      (Id : E) return B;
    function Is_Descendant_Of_Address            (Id : E) return B;
    function Is_DIC_Procedure                    (Id : E) return B;
    function Is_Discrim_SO_Function              (Id : E) return B;
@@ -7623,6 +7631,7 @@ package Einfo is
    function Is_Integer_Type                     (Id : E) return B;
    function Is_Limited_Record                   (Id : E) return B;
    function Is_Modular_Integer_Type             (Id : E) return B;
+   function Is_Named_Access_Type                (Id : E) return B;
    function Is_Named_Number                     (Id : E) return B;
    function Is_Numeric_Type                     (Id : E) return B;
    function Is_Object                           (Id : E) return B;
@@ -8058,6 +8067,7 @@ package Einfo is
    procedure Set_Is_Controlled_Active            (Id : E; V : B := True);
    procedure Set_Is_Controlling_Formal           (Id : E; V : B := True);
    procedure Set_Is_CPP_Class                    (Id : E; V : B := True);
+   procedure Set_Is_CUDA_Kernel                  (Id : E; V : B := True);
    procedure Set_Is_Descendant_Of_Address        (Id : E; V : B := True);
    procedure Set_Is_DIC_Procedure                (Id : E; V : B := True);
    procedure Set_Is_Discrim_SO_Function          (Id : E; V : B := True);
@@ -8902,6 +8912,7 @@ package Einfo is
    pragma Inline (Is_Controlled_Active);
    pragma Inline (Is_Controlling_Formal);
    pragma Inline (Is_CPP_Class);
+   pragma Inline (Is_CUDA_Kernel);
    pragma Inline (Is_Decimal_Fixed_Point_Type);
    pragma Inline (Is_Descendant_Of_Address);
    pragma Inline (Is_DIC_Procedure);
@@ -9504,6 +9515,7 @@ package Einfo is
    pragma Inline (Set_Is_Controlled_Active);
    pragma Inline (Set_Is_Controlling_Formal);
    pragma Inline (Set_Is_CPP_Class);
+   pragma Inline (Set_Is_CUDA_Kernel);
    pragma Inline (Set_Is_Descendant_Of_Address);
    pragma Inline (Set_Is_DIC_Procedure);
    pragma Inline (Set_Is_Discrim_SO_Function);

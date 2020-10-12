@@ -29,52 +29,52 @@ void sink (unsigned);
 
 void test_zero_length_array (void)
 {
-  T (a0.a);                   // { dg-warning "\\\[-Warray-bounds" }
-  T (a0.a - 1);               // { dg-warning "\\\[-Warray-bounds" }
-  T (a0.a + 1);               // { dg-warning "\\\[-Warray-bounds" }
-  T (a0.a + 9);               // { dg-warning "\\\[-Warray-bounds" }
-  T (a0.a + INT_MAX);         // { dg-warning "\\\[-Warray-bounds" }
-  T (a0.a + PTRDIFF_MAX);     // { dg-warning "\\\[-Warray-bounds" }
+  T (a0.a);                   // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0.a - 1);               // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0.a + 1);               // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0.a + 9);               // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0.a + INT_MAX);         // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0.a + PTRDIFF_MAX);     // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (a0.a + SIZE_MAX);        // { dg-warning "\\\[-Warray-bounds" }
 
   T (a0_0.a);                 // { dg-warning "\\\[-Warray-bounds" }
   T (a0_0.a - 1);             // { dg-warning "\\\[-Warray-bounds" }
-  T (a0_0.a + 1);             // { dg-warning "\\\[-Warray-bounds" }
-  T (a0_0.a + 9);             // { dg-warning "\\\[-Warray-bounds" }
-  T (a0_0.a + INT_MAX);       // { dg-warning "\\\[-Warray-bounds" }
-  T (a0_0.a + PTRDIFF_MAX);   // { dg-warning "\\\[-Warray-bounds" }
+  T (a0_0.a + 1);             // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0_0.a + 9);             // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0_0.a + INT_MAX);       // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0_0.a + PTRDIFF_MAX);   // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (a0_0.a + SIZE_MAX);      // { dg-warning "\\\[-Warray-bounds" }
 
   T (a0_0_.a);                // { dg-warning "\\\[-Warray-bounds" }
   T (a0_0_.a - 1);            // { dg-warning "\\\[-Warray-bounds" }
-  T (a0_0_.a + 1);            // { dg-warning "\\\[-Warray-bounds" }
-  T (a0_0_.a + 9);            // { dg-warning "\\\[-Warray-bounds" }
-  T (a0_0_.a + INT_MAX);      // { dg-warning "\\\[-Warray-bounds" }
-  T (a0_0_.a + PTRDIFF_MAX);  // { dg-warning "\\\[-Warray-bounds" }
+  T (a0_0_.a + 1);            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0_0_.a + 9);            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0_0_.a + INT_MAX);      // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a0_0_.a + PTRDIFF_MAX);  // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (a0_0_.a + SIZE_MAX);     // { dg-warning "\\\[-Warray-bounds" }
 }
 
 void test_one_element_array (void)
 {
   T (a1.a - 1);               // { dg-warning "\\\[-Warray-bounds" }
-  T (a1.a + 1);               // { dg-warning "\\\[-Warray-bounds" }
-  T (a1.a + 9);               // { dg-warning "\\\[-Warray-bounds" }
-  T (a1.a + INT_MAX);         // { dg-warning "\\\[-Warray-bounds" }
-  T (a1.a + PTRDIFF_MAX);     // { dg-warning "\\\[-Warray-bounds" }
+  T (a1.a + 1);               // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1.a + 9);               // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1.a + INT_MAX);         // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1.a + PTRDIFF_MAX);     // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (a1.a + SIZE_MAX);        // { dg-warning "\\\[-Warray-bounds" }
 
   T (a1_0.a - 1);             // { dg-warning "\\\[-Warray-bounds" }
-  T (a1_0.a + 1);             // { dg-warning "\\\[-Warray-bounds" }
-  T (a1_0.a + 9);             // { dg-warning "\\\[-Warray-bounds" }
-  T (a1_0.a + INT_MAX);       // { dg-warning "\\\[-Warray-bounds" }
-  T (a1_0.a + PTRDIFF_MAX);   // { dg-warning "\\\[-Warray-bounds" }
+  T (a1_0.a + 1);             // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1_0.a + 9);             // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1_0.a + INT_MAX);       // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1_0.a + PTRDIFF_MAX);   // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (a1_0.a + SIZE_MAX);      // { dg-warning "\\\[-Warray-bounds" }
 
   T (a1_0_.a - 1);            // { dg-warning "\\\[-Warray-bounds" }
-  T (a1_0_.a + 1);            // { dg-warning "\\\[-Warray-bounds" }
-  T (a1_0_.a + 9);            // { dg-warning "\\\[-Warray-bounds" }
-  T (a1_0_.a + INT_MAX);      // { dg-warning "\\\[-Warray-bounds" }
-  T (a1_0_.a + PTRDIFF_MAX);  // { dg-warning "\\\[-Warray-bounds" }
+  T (a1_0_.a + 1);            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1_0_.a + 9);            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1_0_.a + INT_MAX);      // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (a1_0_.a + PTRDIFF_MAX);  // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (a1_0_.a + SIZE_MAX);     // { dg-warning "\\\[-Warray-bounds" }
 }
 
@@ -82,26 +82,25 @@ void test_flexible_array_member (void)
 {
   T (ax.a);                   // { dg-warning "\\\[-Warray-bounds" }
   T (ax.a - 1);               // { dg-warning "\\\[-Warray-bounds" }
-  T (ax.a + 1);               // { dg-warning "\\\[-Warray-bounds" }
-  T (ax.a + 9);               // { dg-warning "\\\[-Warray-bounds" }
-  T (ax.a + INT_MAX);         // { dg-warning "\\\[-Warray-bounds" }
-  T (ax.a + PTRDIFF_MAX);     // { dg-warning "\\\[-Warray-bounds" }
+  T (ax.a + 1);               // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax.a + 9);               // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax.a + INT_MAX);         // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax.a + PTRDIFF_MAX);     // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (ax.a + SIZE_MAX);        // { dg-warning "\\\[-Warray-bounds" }
 
   T (ax_0.a);                 // { dg-warning "\\\[-Warray-bounds" }
   T (ax_0.a - 1);             // { dg-warning "\\\[-Warray-bounds" }
-  T (ax_0.a + 1);             // { dg-warning "\\\[-Warray-bounds" }
-  T (ax_0.a + 9);             // { dg-warning "\\\[-Warray-bounds" }
-  T (ax_0.a + INT_MAX);       // { dg-warning "\\\[-Warray-bounds" }
-  T (ax_0.a + PTRDIFF_MAX);   // { dg-warning "\\\[-Warray-bounds" }
+  T (ax_0.a + 1);             // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax_0.a + 9);             // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax_0.a + INT_MAX);       // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax_0.a + PTRDIFF_MAX);   // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (ax_0.a + SIZE_MAX);      // { dg-warning "\\\[-Warray-bounds" }
 
   T (ax_0_.a);                // { dg-warning "\\\[-Warray-bounds" }
   T (ax_0_.a - 1);            // { dg-warning "\\\[-Warray-bounds" }
-  T (ax_0_.a + 1);            // { dg-warning "\\\[-Warray-bounds" }
-  T (ax_0_.a + 9);            // { dg-warning "\\\[-Warray-bounds" }
-  T (ax_0_.a + INT_MAX);      // { dg-warning "\\\[-Warray-bounds" }
-  T (ax_0_.a + PTRDIFF_MAX);  // { dg-warning "\\\[-Warray-bounds" }
+  T (ax_0_.a + 1);            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax_0_.a + 9);            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax_0_.a + INT_MAX);      // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
+  T (ax_0_.a + PTRDIFF_MAX);  // { dg-warning "\\\[-Warray-bounds|-Wstringop-overread" }
   T (ax_0_.a + SIZE_MAX);     // { dg-warning "\\\[-Warray-bounds" }
 }
-

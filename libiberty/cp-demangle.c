@@ -3776,9 +3776,6 @@ d_lambda (struct d_info *di)
       ret->u.s_unary_num.num = num;
     }
 
-  if (! d_add_substitution (di, ret))
-    return NULL;
-
   return ret;
 }
 

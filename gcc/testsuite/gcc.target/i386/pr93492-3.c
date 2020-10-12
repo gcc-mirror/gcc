@@ -1,4 +1,4 @@
-/* { dg-do "compile" } */
+/* { dg-do "compile" { target *-*-linux* } } */
 /* { dg-require-effective-target mfentry } */
 /* { dg-options "-O1 -fcf-protection -mmanual-endbr -mfentry -pg -fasynchronous-unwind-tables" } */
 

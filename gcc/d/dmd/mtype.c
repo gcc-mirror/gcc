@@ -2189,7 +2189,7 @@ Expression *Type::noMember(Scope *sc, Expression *e, Identifier *ident, int flag
 
     static int nest;      // https://issues.dlang.org/show_bug.cgi?id=17380
 
-    if (++nest > 500)
+    if (++nest > global.recursionLimit)
     {
       ::error(e->loc, "cannot resolve identifier `%s`", ident->toChars());
       --nest;
@@ -3824,11 +3824,11 @@ Type *TypeVector::semantic(Loc loc, Scope *sc)
     case 1: // no support at all
         error(loc, "SIMD vector types not supported on this platform");
         return terror;
-    case 2: // invalid size
-        error(loc, "%d byte vector type %s is not supported on this platform", sz, toChars());
-        return terror;
-    case 3: // invalid base type
+    case 2: // invalid base type
         error(loc, "vector type %s is not supported on this platform", toChars());
+        return terror;
+    case 3: // invalid size
+        error(loc, "%d byte vector type %s is not supported on this platform", sz, toChars());
         return terror;
     default:
         assert(0);
@@ -5536,7 +5536,7 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
 
     bool errors = false;
 
-    if (inuse > 500)
+    if (inuse > global.recursionLimit)
     {
         inuse = 0;
         ::error(loc, "recursive type");

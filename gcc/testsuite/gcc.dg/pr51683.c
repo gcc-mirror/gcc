@@ -12,6 +12,9 @@ void *
 foo (void *p)
 {
   return bar ((void *) 0x12345000, p, 256);
+  /* Integers converted to pointers are assumed to be the result of
+     (invalid) arithmetic on null pointers.
+     { dg-prune-output "writing 256 bytes into a region of size 0" } */
 }
 
 /* { dg-final { scan-tree-dump "memcpy" "optimized" } } */

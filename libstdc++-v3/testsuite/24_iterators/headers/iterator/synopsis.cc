@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++98" }
-// { dg-do compile }
+// { dg-do compile { target { ! c++17 } } }
 // { dg-require-normal-namespace "" }
 
 // Copyright (C) 2007-2020 Free Software Foundation, Inc.

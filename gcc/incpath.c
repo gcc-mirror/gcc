@@ -52,8 +52,8 @@ static void free_path (struct cpp_dir *, int);
 static void merge_include_chains (const char *, cpp_reader *, int);
 static void add_sysroot_to_chain (const char *, int);
 static struct cpp_dir *remove_duplicates (cpp_reader *, struct cpp_dir *,
-					   struct cpp_dir *,
-					   struct cpp_dir *, int);
+					  struct cpp_dir *, struct cpp_dir *,
+					  int);
 
 /* Include chains heads and tails.  */
 static struct cpp_dir *heads[INC_MAX];
@@ -432,6 +432,7 @@ void
 add_path (char *path, incpath_kind chain, int cxx_aware, bool user_supplied_p)
 {
   cpp_dir *p;
+  size_t pathlen = strlen (path);
 
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
   /* Remove unnecessary trailing slashes.  On some versions of MS
@@ -439,18 +440,19 @@ add_path (char *path, incpath_kind chain, int cxx_aware, bool user_supplied_p)
      On newer versions, stat() does not recognize a directory that ends
      in a '\\' or '/', unless it is a drive root dir, such as "c:/",
      where it is obligatory.  */
-  int pathlen = strlen (path);
   char* end = path + pathlen - 1;
   /* Preserve the lead '/' or lead "c:/".  */
   char* start = path + (pathlen > 2 && path[1] == ':' ? 3 : 1);
 
   for (; end > start && IS_DIR_SEPARATOR (*end); end--)
     *end = 0;
+  pathlen = end - path;
 #endif
 
   p = XNEW (cpp_dir);
   p->next = NULL;
   p->name = path;
+  p->len = pathlen;
 #ifndef INO_T_EQ
   p->canonical_name = lrealpath (path);
 #endif

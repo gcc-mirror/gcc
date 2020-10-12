@@ -149,8 +149,8 @@ enum gf_mask {
     GF_CALL_MUST_TAIL_CALL	= 1 << 9,
     GF_CALL_BY_DESCRIPTOR	= 1 << 10,
     GF_CALL_NOCF_CHECK		= 1 << 11,
+    GF_CALL_FROM_NEW_OR_DELETE	= 1 << 12,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
-    GF_OMP_PARALLEL_GRID_PHONY = 1 << 1,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
     GF_OMP_TASK_TASKWAIT	= 1 << 1,
     GF_OMP_FOR_KIND_MASK	= (1 << 3) - 1,
@@ -158,17 +158,9 @@ enum gf_mask {
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
     GF_OMP_FOR_KIND_TASKLOOP	= 2,
     GF_OMP_FOR_KIND_OACC_LOOP	= 4,
-    GF_OMP_FOR_KIND_GRID_LOOP	= 5,
-    GF_OMP_FOR_KIND_SIMD	= 6,
+    GF_OMP_FOR_KIND_SIMD	= 5,
     GF_OMP_FOR_COMBINED		= 1 << 3,
     GF_OMP_FOR_COMBINED_INTO	= 1 << 4,
-    /* The following flag must not be used on GF_OMP_FOR_KIND_GRID_LOOP loop
-       statements.  */
-    GF_OMP_FOR_GRID_PHONY	= 1 << 5,
-    /* The following two flags should only be set on GF_OMP_FOR_KIND_GRID_LOOP
-       loop statements.  */
-    GF_OMP_FOR_GRID_INTRA_GROUP	= 1 << 5,
-    GF_OMP_FOR_GRID_GROUP_ITER  = 1 << 6,
     GF_OMP_TARGET_KIND_MASK	= (1 << 4) - 1,
     GF_OMP_TARGET_KIND_REGION	= 0,
     GF_OMP_TARGET_KIND_DATA	= 1,
@@ -183,8 +175,7 @@ enum gf_mask {
     GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA = 10,
     GF_OMP_TARGET_KIND_OACC_DECLARE = 11,
     GF_OMP_TARGET_KIND_OACC_HOST_DATA = 12,
-    GF_OMP_TEAMS_GRID_PHONY	= 1 << 0,
-    GF_OMP_TEAMS_HOST		= 1 << 1,
+    GF_OMP_TEAMS_HOST		= 1 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
        a thread synchronization via some sort of barrier.  The exact barrier
@@ -1559,7 +1550,6 @@ gomp_task *gimple_build_omp_task (gimple_seq, tree, tree, tree, tree,
 				       tree, tree);
 gimple *gimple_build_omp_section (gimple_seq);
 gimple *gimple_build_omp_master (gimple_seq);
-gimple *gimple_build_omp_grid_body (gimple_seq);
 gimple *gimple_build_omp_taskgroup (gimple_seq, tree);
 gomp_continue *gimple_build_omp_continue (tree, tree);
 gomp_ordered *gimple_build_omp_ordered (gimple_seq, tree);
@@ -1615,7 +1605,7 @@ extern alias_set_type gimple_get_alias_set (tree);
 extern bool gimple_ior_addresses_taken (bitmap, gimple *);
 extern bool gimple_builtin_call_types_compatible_p (const gimple *, tree);
 extern combined_fn gimple_call_combined_fn (const gimple *);
-extern bool gimple_call_replaceable_operator_delete_p (const gcall *);
+extern bool gimple_call_operator_delete_p (const gcall *);
 extern bool gimple_call_builtin_p (const gimple *);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_class);
 extern bool gimple_call_builtin_p (const gimple *, enum built_in_function);
@@ -1830,7 +1820,6 @@ gimple_has_substatements (gimple *g)
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_WITH_CLEANUP_EXPR:
     case GIMPLE_TRANSACTION:
-    case GIMPLE_OMP_GRID_BODY:
       return true;
 
     default:
@@ -1889,6 +1878,14 @@ static inline void
 gimple_set_location (gimple *g, location_t location)
 {
   g->location = location;
+}
+
+/* Return address of the location information for statement G.  */
+
+static inline location_t *
+gimple_location_ptr (gimple *g)
+{
+  return &g->location;
 }
 
 
@@ -3391,6 +3388,29 @@ gimple_call_from_thunk_p (gcall *s)
 }
 
 
+/* If FROM_NEW_OR_DELETE_P is true, mark GIMPLE_CALL S as being a call
+   to operator new or delete created from a new or delete expression.  */
+
+static inline void
+gimple_call_set_from_new_or_delete (gcall *s, bool from_new_or_delete_p)
+{
+  if (from_new_or_delete_p)
+    s->subcode |= GF_CALL_FROM_NEW_OR_DELETE;
+  else
+    s->subcode &= ~GF_CALL_FROM_NEW_OR_DELETE;
+}
+
+
+/* Return true if GIMPLE_CALL S is a call to operator new or delete from
+   from a new or delete expression.  */
+
+static inline bool
+gimple_call_from_new_or_delete (gcall *s)
+{
+  return (s->subcode & GF_CALL_FROM_NEW_OR_DELETE) != 0;
+}
+
+
 /* If PASS_ARG_PACK_P is true, GIMPLE_CALL S is a stdarg call that needs the
    argument pack in its argument list.  */
 
@@ -4593,6 +4613,14 @@ gimple_phi_arg_set_location (gphi *phi, size_t i, location_t loc)
   gimple_phi_arg (phi, i)->locus = loc;
 }
 
+/* Return address of source location of gimple argument I of phi node PHI.  */
+
+static inline location_t *
+gimple_phi_arg_location_ptr (gphi *phi, size_t i)
+{
+  return &gimple_phi_arg (phi, i)->locus;
+}
+
 /* Return TRUE if argument I of phi node PHI has a location record.  */
 
 static inline bool
@@ -5440,76 +5468,6 @@ gimple_omp_for_set_pre_body (gimple *gs, gimple_seq pre_body)
   omp_for_stmt->pre_body = pre_body;
 }
 
-/* Return the kernel_phony of OMP_FOR statement.  */
-
-static inline bool
-gimple_omp_for_grid_phony (const gomp_for *omp_for)
-{
-  gcc_checking_assert (gimple_omp_for_kind (omp_for)
-		       != GF_OMP_FOR_KIND_GRID_LOOP);
-  return (gimple_omp_subcode (omp_for) & GF_OMP_FOR_GRID_PHONY) != 0;
-}
-
-/* Set kernel_phony flag of OMP_FOR to VALUE.  */
-
-static inline void
-gimple_omp_for_set_grid_phony (gomp_for *omp_for, bool value)
-{
-  gcc_checking_assert (gimple_omp_for_kind (omp_for)
-		       != GF_OMP_FOR_KIND_GRID_LOOP);
-  if (value)
-    omp_for->subcode |= GF_OMP_FOR_GRID_PHONY;
-  else
-    omp_for->subcode &= ~GF_OMP_FOR_GRID_PHONY;
-}
-
-/* Return the kernel_intra_group of a GRID_LOOP OMP_FOR statement.  */
-
-static inline bool
-gimple_omp_for_grid_intra_group (const gomp_for *omp_for)
-{
-  gcc_checking_assert (gimple_omp_for_kind (omp_for)
-		       == GF_OMP_FOR_KIND_GRID_LOOP);
-  return (gimple_omp_subcode (omp_for) & GF_OMP_FOR_GRID_INTRA_GROUP) != 0;
-}
-
-/* Set kernel_intra_group flag of OMP_FOR to VALUE.  */
-
-static inline void
-gimple_omp_for_set_grid_intra_group (gomp_for *omp_for, bool value)
-{
-  gcc_checking_assert (gimple_omp_for_kind (omp_for)
-		       == GF_OMP_FOR_KIND_GRID_LOOP);
-  if (value)
-    omp_for->subcode |= GF_OMP_FOR_GRID_INTRA_GROUP;
-  else
-    omp_for->subcode &= ~GF_OMP_FOR_GRID_INTRA_GROUP;
-}
-
-/* Return true if iterations of a grid OMP_FOR statement correspond to HSA
-   groups.  */
-
-static inline bool
-gimple_omp_for_grid_group_iter (const gomp_for *omp_for)
-{
-  gcc_checking_assert (gimple_omp_for_kind (omp_for)
-		       == GF_OMP_FOR_KIND_GRID_LOOP);
-  return (gimple_omp_subcode (omp_for) & GF_OMP_FOR_GRID_GROUP_ITER) != 0;
-}
-
-/* Set group_iter flag of OMP_FOR to VALUE.  */
-
-static inline void
-gimple_omp_for_set_grid_group_iter (gomp_for *omp_for, bool value)
-{
-  gcc_checking_assert (gimple_omp_for_kind (omp_for)
-		       == GF_OMP_FOR_KIND_GRID_LOOP);
-  if (value)
-    omp_for->subcode |= GF_OMP_FOR_GRID_GROUP_ITER;
-  else
-    omp_for->subcode &= ~GF_OMP_FOR_GRID_GROUP_ITER;
-}
-
 /* Return the clauses associated with OMP_PARALLEL GS.  */
 
 static inline tree
@@ -5593,25 +5551,6 @@ gimple_omp_parallel_set_data_arg (gomp_parallel *omp_parallel_stmt,
 				  tree data_arg)
 {
   omp_parallel_stmt->data_arg = data_arg;
-}
-
-/* Return the kernel_phony flag of OMP_PARALLEL_STMT.  */
-
-static inline bool
-gimple_omp_parallel_grid_phony (const gomp_parallel *stmt)
-{
-  return (gimple_omp_subcode (stmt) & GF_OMP_PARALLEL_GRID_PHONY) != 0;
-}
-
-/* Set kernel_phony flag of OMP_PARALLEL_STMT to VALUE.  */
-
-static inline void
-gimple_omp_parallel_set_grid_phony (gomp_parallel *stmt, bool value)
-{
-  if (value)
-    stmt->subcode |= GF_OMP_PARALLEL_GRID_PHONY;
-  else
-    stmt->subcode &= ~GF_OMP_PARALLEL_GRID_PHONY;
 }
 
 /* Return the clauses associated with OMP_TASK GS.  */
@@ -6165,25 +6104,6 @@ gimple_omp_teams_set_data_arg (gomp_teams *omp_teams_stmt, tree data_arg)
   omp_teams_stmt->data_arg = data_arg;
 }
 
-/* Return the kernel_phony flag of an OMP_TEAMS_STMT.  */
-
-static inline bool
-gimple_omp_teams_grid_phony (const gomp_teams *omp_teams_stmt)
-{
-  return (gimple_omp_subcode (omp_teams_stmt) & GF_OMP_TEAMS_GRID_PHONY) != 0;
-}
-
-/* Set kernel_phony flag of an OMP_TEAMS_STMT to VALUE.  */
-
-static inline void
-gimple_omp_teams_set_grid_phony (gomp_teams *omp_teams_stmt, bool value)
-{
-  if (value)
-    omp_teams_stmt->subcode |= GF_OMP_TEAMS_GRID_PHONY;
-  else
-    omp_teams_stmt->subcode &= ~GF_OMP_TEAMS_GRID_PHONY;
-}
-
 /* Return the host flag of an OMP_TEAMS_STMT.  */
 
 static inline bool
@@ -6547,8 +6467,7 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_RETURN:			\
     case GIMPLE_OMP_ATOMIC_LOAD:		\
     case GIMPLE_OMP_ATOMIC_STORE:		\
-    case GIMPLE_OMP_CONTINUE:			\
-    case GIMPLE_OMP_GRID_BODY
+    case GIMPLE_OMP_CONTINUE
 
 static inline bool
 is_gimple_omp (const gimple *stmt)

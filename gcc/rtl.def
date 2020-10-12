@@ -380,7 +380,7 @@ DEF_RTL_EXPR(PC, "pc", "", RTX_OBJ)
 
 /* A register.  The "operand" is the register number, accessed with
    the REGNO macro.  If this number is less than FIRST_PSEUDO_REGISTER
-   than a hardware register is being referred to.  The second operand
+   then a hardware register is being referred to.  The second operand
    points to a reg_attrs structure.
    This rtx needs to have as many (or more) fields as a MEM, since we
    can change REG rtx's into MEMs during reload.  */

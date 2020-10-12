@@ -30,17 +30,132 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
+#include "tristate.h"
+#include "selftest.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
+#include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
 namespace ana {
 
 namespace {
+
+class api;
+class malloc_state_machine;
+
+/* An enum for discriminating between different kinds of allocation_state.  */
+
+enum resource_state
+{
+  /* States that are independent of api.  */
+
+  /* The start state.  */
+  RS_START,
+
+  /* State for a pointer that's known to be NULL.  */
+  RS_NULL,
+
+  /* State for a pointer that's known to not be on the heap (e.g. to a local
+     or global).  */
+  RS_NON_HEAP,
+
+  /* Stop state, for pointers we don't want to track any more.  */
+  RS_STOP,
+
+  /* States that relate to a specific api.  */
+
+  /* State for a pointer returned from the api's allocator that hasn't
+     been checked for NULL.
+     It could be a pointer to heap-allocated memory, or could be NULL.  */
+  RS_UNCHECKED,
+
+  /* State for a pointer returned from the api's allocator,
+     known to be non-NULL.  */
+  RS_NONNULL,
+
+  /* State for a pointer passed to the api's deallocator.  */
+  RS_FREED
+};
+
+/* Custom state subclass, which can optionally refer to an an api.  */
+
+struct allocation_state : public state_machine::state
+{
+  allocation_state (const char *name, unsigned id,
+		    enum resource_state rs, const api *a)
+  : state (name, id), m_rs (rs), m_api (a)
+  {}
+
+  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+
+  const allocation_state *get_nonnull () const;
+
+  enum resource_state m_rs;
+  const api *m_api;
+};
+
+/* An enum for choosing which wording to use in various diagnostics
+   when describing deallocations.  */
+
+enum wording
+{
+  WORDING_FREED,
+  WORDING_DELETED
+};
+
+/* Represents a particular family of API calls for allocating/deallocating
+   heap memory that should be matched e.g.
+   - malloc/free
+   - scalar new/delete
+   - vector new[]/delete[]
+   etc.
+
+   We track the expected deallocation function, but not the allocation
+   function - there could be more than one allocator per deallocator.  For
+   example, there could be dozens of allocators for "free" beyond just
+   malloc e.g. calloc, xstrdup, etc.  We don't want to explode the number
+   of states by tracking individual allocators in the exploded graph;
+   we merely want to track "this value expects to have 'free' called on it".
+   Perhaps we can reconstruct which allocator was used later, when emitting
+   the path, if it's necessary for precision of wording of diagnostics.  */
+
+struct api
+{
+  api (malloc_state_machine *sm,
+       const char *name,
+       const char *dealloc_funcname,
+       enum wording wording);
+
+  /* An internal name for identifying this API in dumps.  */
+  const char *m_name;
+
+  /* The name of the deallocation function, for use in diagnostics.  */
+  const char *m_dealloc_funcname;
+
+  /* Which wording to use in diagnostics.  */
+  enum wording m_wording;
+
+  /* Pointers to api-specific states.
+     These states are owned by the state_machine base class.  */
+
+  /* State for an unchecked result from this api's allocator.  */
+  state_machine::state_t m_unchecked;
+
+  /* State for a known non-NULL result from this apis's allocator.  */
+  state_machine::state_t m_nonnull;
+
+  /* State for a value passed to this api's deallocator.  */
+  state_machine::state_t m_freed;
+};
 
 /* A state machine for detecting misuses of the malloc/free API.
 
@@ -49,9 +164,33 @@ namespace {
 class malloc_state_machine : public state_machine
 {
 public:
+  typedef allocation_state custom_data_t;
+
   malloc_state_machine (logger *logger);
 
+  state_t
+  add_state (const char *name, enum resource_state rs, const api *a);
+
   bool inherited_state_p () const FINAL OVERRIDE { return false; }
+
+  state_machine::state_t
+  get_default_state (const svalue *sval) const FINAL OVERRIDE
+  {
+    if (tree cst = sval->maybe_get_constant ())
+      {
+	if (zerop (cst))
+	  return m_null;
+      }
+    if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
+      {
+	const region *reg = ptr->get_pointee ();
+	const region *base_reg = reg->get_base_region ();
+	if (base_reg->get_kind () == RK_DECL
+	    || base_reg->get_kind () == RK_STRING)
+	  return m_non_heap;
+      }
+    return m_start;
+  }
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
@@ -72,22 +211,17 @@ public:
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
   pending_diagnostic *on_leak (tree var) const FINAL OVERRIDE;
 
-  /* Start state.  */
-  state_t m_start;
+  bool reset_when_passed_to_unknown_fn_p (state_t s,
+					  bool is_mutable) const FINAL OVERRIDE;
 
-  /* State for a pointer returned from malloc that hasn't been checked for
-     NULL.
-     It could be a pointer to heap-allocated memory, or could be NULL.  */
-  state_t m_unchecked;
+  api m_malloc;
+  api m_scalar_new;
+  api m_vector_new;
+
+  /* States that are independent of api.  */
 
   /* State for a pointer that's known to be NULL.  */
   state_t m_null;
-
-  /* State for a pointer to heap-allocated memory, known to be non-NULL.  */
-  state_t m_nonnull;
-
-  /* State for a pointer to freed memory.  */
-  state_t m_freed;
 
   /* State for a pointer that's known to not be on the heap (e.g. to a local
      or global).  */
@@ -98,11 +232,88 @@ public:
   state_t m_stop;
 
 private:
+  void on_allocator_call (sm_context *sm_ctxt,
+			  const gcall *call,
+			  const api &ap) const;
+  void on_deallocator_call (sm_context *sm_ctxt,
+			    const supernode *node,
+			    const gcall *call,
+			    const api &ap) const;
   void on_zero_assignment (sm_context *sm_ctxt,
-			   const supernode *node,
 			   const gimple *stmt,
 			   tree lhs) const;
 };
+
+/* struct api.  */
+
+api::api (malloc_state_machine *sm,
+	  const char *name,
+	  const char *dealloc_funcname,
+	  enum wording wording)
+: m_name (name),
+  m_dealloc_funcname (dealloc_funcname),
+  m_wording (wording),
+  m_unchecked (sm->add_state ("unchecked", RS_UNCHECKED, this)),
+  m_nonnull (sm->add_state ("nonnull", RS_NONNULL, this)),
+  m_freed (sm->add_state ("freed", RS_FREED, this))
+{
+}
+
+/* Return STATE cast to the custom state subclass, or NULL for the start state.
+   Everything should be an allocation_state apart from the start state.  */
+
+static const allocation_state *
+dyn_cast_allocation_state (state_machine::state_t state)
+{
+  if (state->get_id () == 0)
+    return NULL;
+  return static_cast <const allocation_state *> (state);
+}
+
+/* Return STATE cast to the custom state subclass, for a state that is
+   already known to not be the start state .  */
+
+static const allocation_state *
+as_a_allocation_state (state_machine::state_t state)
+{
+  gcc_assert (state->get_id () != 0);
+  return static_cast <const allocation_state *> (state);
+}
+
+/* Get the resource_state for STATE.  */
+
+static enum resource_state
+get_rs (state_machine::state_t state)
+{
+  if (const allocation_state *astate = dyn_cast_allocation_state (state))
+    return astate->m_rs;
+  else
+    return RS_START;
+}
+
+/* Return true if STATE is an unchecked result from an allocator.  */
+
+static bool
+unchecked_p (state_machine::state_t state)
+{
+  return get_rs (state) == RS_UNCHECKED;
+}
+
+/* Return true if STATE is a non-null result from an allocator.  */
+
+static bool
+nonnull_p (state_machine::state_t state)
+{
+  return get_rs (state) == RS_NONNULL;
+}
+
+/* Return true if STATE is a value that has been passed to a deallocator.  */
+
+static bool
+freed_p (state_machine::state_t state)
+{
+  return get_rs (state) == RS_FREED;
+}
 
 /* Class for diagnostics relating to malloc_state_machine.  */
 
@@ -121,22 +332,40 @@ public:
   label_text describe_state_change (const evdesc::state_change &change)
     OVERRIDE
   {
-    if (change.m_old_state == m_sm.m_start
-	&& change.m_new_state == m_sm.m_unchecked)
+    if (change.m_old_state == m_sm.get_start_state ()
+	&& unchecked_p (change.m_new_state))
       // TODO: verify that it's the allocation stmt, not a copy
       return label_text::borrow ("allocated here");
-    if (change.m_old_state == m_sm.m_unchecked
-	&& change.m_new_state == m_sm.m_nonnull)
-      return change.formatted_print ("assuming %qE is non-NULL",
-				     change.m_expr);
-    if (change.m_new_state == m_sm.m_null)
+    if (unchecked_p (change.m_old_state)
+	&& nonnull_p (change.m_new_state))
       {
-	if (change.m_old_state == m_sm.m_unchecked)
-	  return change.formatted_print ("assuming %qE is NULL",
+	if (change.m_expr)
+	  return change.formatted_print ("assuming %qE is non-NULL",
 					 change.m_expr);
 	else
-	  return change.formatted_print ("%qE is NULL",
-					 change.m_expr);
+	  return change.formatted_print ("assuming %qs is non-NULL",
+					 "<unknown>");
+      }
+    if (change.m_new_state == m_sm.m_null)
+      {
+	if (unchecked_p (change.m_old_state))
+	  {
+	    if (change.m_expr)
+	      return change.formatted_print ("assuming %qE is NULL",
+					     change.m_expr);
+	    else
+	      return change.formatted_print ("assuming %qs is NULL",
+					     "<unknown>");
+	  }
+	else
+	  {
+	    if (change.m_expr)
+	      return change.formatted_print ("%qE is NULL",
+					     change.m_expr);
+	    else
+	      return change.formatted_print ("%qs is NULL",
+					     "<unknown>");
+	  }
       }
 
     return label_text ();
@@ -147,13 +376,75 @@ protected:
   tree m_arg;
 };
 
+/* Concrete subclass for reporting mismatching allocator/deallocator
+   diagnostics.  */
+
+class mismatching_deallocation : public malloc_diagnostic
+{
+public:
+  mismatching_deallocation (const malloc_state_machine &sm, tree arg,
+			    const api *expected_dealloc,
+			    const api *actual_dealloc)
+  : malloc_diagnostic (sm, arg),
+    m_expected_dealloc (expected_dealloc),
+    m_actual_dealloc (actual_dealloc)
+  {}
+
+  const char *get_kind () const FINAL OVERRIDE
+  {
+    return "mismatching_deallocation";
+  }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    auto_diagnostic_group d;
+    diagnostic_metadata m;
+    m.add_cwe (762); /* CWE-762: Mismatched Memory Management Routines.  */
+    return warning_meta (rich_loc, m, OPT_Wanalyzer_mismatching_deallocation,
+			 "%qE should have been deallocated with %qs"
+			 " but was deallocated with %qs",
+			 m_arg, m_expected_dealloc->m_dealloc_funcname,
+			 m_actual_dealloc->m_dealloc_funcname);
+  }
+
+  label_text describe_state_change (const evdesc::state_change &change)
+    FINAL OVERRIDE
+  {
+    if (unchecked_p (change.m_new_state))
+      {
+	m_alloc_event = change.m_event_id;
+	return change.formatted_print ("allocated here"
+				       " (expects deallocation with %qs)",
+				       m_expected_dealloc->m_dealloc_funcname);
+      }
+    return malloc_diagnostic::describe_state_change (change);
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  {
+    if (m_alloc_event.known_p ())
+      return ev.formatted_print
+	("deallocated with %qs here;"
+	 " allocation at %@ expects deallocation with %qs",
+	 m_actual_dealloc->m_dealloc_funcname, &m_alloc_event,
+	 m_expected_dealloc->m_dealloc_funcname);
+    return ev.formatted_print ("deallocated with %qs here",
+			       m_actual_dealloc->m_dealloc_funcname);
+  }
+
+private:
+  diagnostic_event_id_t m_alloc_event;
+  const api *m_expected_dealloc;
+  const api *m_actual_dealloc;
+};
+
 /* Concrete subclass for reporting double-free diagnostics.  */
 
 class double_free : public malloc_diagnostic
 {
 public:
-  double_free (const malloc_state_machine &sm, tree arg)
-  : malloc_diagnostic (sm, arg)
+  double_free (const malloc_state_machine &sm, tree arg, const char *funcname)
+  : malloc_diagnostic (sm, arg), m_funcname (funcname)
   {}
 
   const char *get_kind () const FINAL OVERRIDE { return "double_free"; }
@@ -164,16 +455,16 @@ public:
     diagnostic_metadata m;
     m.add_cwe (415); /* CWE-415: Double Free.  */
     return warning_meta (rich_loc, m, OPT_Wanalyzer_double_free,
-			 "double-%<free%> of %qE", m_arg);
+			 "double-%<%s%> of %qE", m_funcname, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
     FINAL OVERRIDE
   {
-    if (change.m_new_state == m_sm.m_freed)
+    if (freed_p (change.m_new_state))
       {
 	m_first_free_event = change.m_event_id;
-	return change.formatted_print ("first %qs here", "free");
+	return change.formatted_print ("first %qs here", m_funcname);
       }
     return malloc_diagnostic::describe_state_change (change);
   }
@@ -181,7 +472,7 @@ public:
   label_text describe_call_with_state (const evdesc::call_with_state &info)
     FINAL OVERRIDE
   {
-    if (info.m_state == m_sm.m_freed)
+    if (freed_p (info.m_state))
       return info.formatted_print
 	("passing freed pointer %qE in call to %qE from %qE",
 	 info.m_expr, info.m_callee_fndecl, info.m_caller_fndecl);
@@ -192,13 +483,14 @@ public:
   {
     if (m_first_free_event.known_p ())
       return ev.formatted_print ("second %qs here; first %qs was at %@",
-				 "free", "free",
+				 m_funcname, m_funcname,
 				 &m_first_free_event);
-    return ev.formatted_print ("second %qs here", "free");
+    return ev.formatted_print ("second %qs here", m_funcname);
   }
 
 private:
   diagnostic_event_id_t m_first_free_event;
+  const char *m_funcname;
 };
 
 /* Abstract subclass for describing possible bad uses of NULL.
@@ -214,8 +506,8 @@ public:
   label_text describe_state_change (const evdesc::state_change &change)
     FINAL OVERRIDE
   {
-    if (change.m_old_state == m_sm.m_start
-	&& change.m_new_state == m_sm.m_unchecked)
+    if (change.m_old_state == m_sm.get_start_state ()
+	&& unchecked_p (change.m_new_state))
       {
 	m_origin_of_unchecked_event = change.m_event_id;
 	return label_text::borrow ("this call could return NULL");
@@ -226,7 +518,7 @@ public:
   label_text describe_return_of_state (const evdesc::return_of_state &info)
     FINAL OVERRIDE
   {
-    if (info.m_state == m_sm.m_unchecked)
+    if (unchecked_p (info.m_state))
       return info.formatted_print ("possible return of NULL to %qE from %qE",
 				   info.m_caller_fndecl, info.m_callee_fndecl);
     return label_text ();
@@ -270,15 +562,40 @@ public:
 
 };
 
+/* Return true if FNDECL is a C++ method.  */
+
+static bool
+method_p (tree fndecl)
+{
+  return TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE;
+}
+
+/* Return a 1-based description of ARG_IDX (0-based) of FNDECL.
+   Compare with %P in the C++ FE  (implemented in cp/error.c: parm_to_string
+   as called from cp_printer).  */
+
+static label_text
+describe_argument_index (tree fndecl, int arg_idx)
+{
+  if (method_p (fndecl))
+    if (arg_idx == 0)
+      return label_text::borrow ("'this'");
+  pretty_printer pp;
+  pp_printf (&pp, "%u", arg_idx + 1 - method_p (fndecl));
+  return label_text::take (xstrdup (pp_formatted_text (&pp)));
+}
+
 /* Subroutine for use by possible_null_arg::emit and null_arg::emit.
    Issue a note informing that the pertinent argument must be non-NULL.  */
 
 static void
 inform_nonnull_attribute (tree fndecl, int arg_idx)
 {
+  label_text arg_desc = describe_argument_index (fndecl, arg_idx);
   inform (DECL_SOURCE_LOCATION (fndecl),
-	  "argument %u of %qD must be non-null",
-	  arg_idx + 1, fndecl);
+	  "argument %s of %qD must be non-null",
+	  arg_desc.m_buffer, fndecl);
+  arg_desc.maybe_free ();
   /* Ideally we would use the location of the parm and underline the
      attribute also - but we don't have the location_t values at this point
      in the middle-end.
@@ -326,15 +643,19 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
+    label_text arg_desc = describe_argument_index (m_fndecl, m_arg_idx);
+    label_text result;
     if (m_origin_of_unchecked_event.known_p ())
-      return ev.formatted_print ("argument %u (%qE) from %@ could be NULL"
-				 " where non-null expected",
-				 m_arg_idx + 1, ev.m_expr,
-				 &m_origin_of_unchecked_event);
+      result = ev.formatted_print ("argument %s (%qE) from %@ could be NULL"
+				   " where non-null expected",
+				   arg_desc.m_buffer, ev.m_expr,
+				   &m_origin_of_unchecked_event);
     else
-      return ev.formatted_print ("argument %u (%qE) could be NULL"
-				 " where non-null expected",
-				 m_arg_idx + 1, ev.m_expr);
+      result = ev.formatted_print ("argument %s (%qE) could be NULL"
+				   " where non-null expected",
+				   arg_desc.m_buffer, ev.m_expr);
+    arg_desc.maybe_free ();
+    return result;
   }
 
 private:
@@ -406,9 +727,15 @@ public:
     auto_diagnostic_group d;
     diagnostic_metadata m;
     m.add_cwe (690);
-    bool warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
-				"use of NULL %qE where non-null expected",
-				m_arg);
+
+    bool warned;
+    if (zerop (m_arg))
+      warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
+			     "use of NULL where non-null expected");
+    else
+      warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
+			     "use of NULL %qE where non-null expected",
+			     m_arg);
     if (warned)
       inform_nonnull_attribute (m_fndecl, m_arg_idx);
     return warned;
@@ -416,9 +743,17 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    return ev.formatted_print ("argument %u (%qE) NULL"
-			       " where non-null expected",
-			       m_arg_idx + 1, ev.m_expr);
+    label_text arg_desc = describe_argument_index (m_fndecl, m_arg_idx);
+    label_text result;
+    if (zerop (ev.m_expr))
+      result = ev.formatted_print ("argument %s NULL where non-null expected",
+				   arg_desc.m_buffer);
+    else
+      result = ev.formatted_print ("argument %s (%qE) NULL"
+				   " where non-null expected",
+				   arg_desc.m_buffer, ev.m_expr);
+    arg_desc.maybe_free ();
+    return result;
   }
 
 private:
@@ -429,8 +764,9 @@ private:
 class use_after_free : public malloc_diagnostic
 {
 public:
-  use_after_free (const malloc_state_machine &sm, tree arg)
-  : malloc_diagnostic (sm, arg)
+  use_after_free (const malloc_state_machine &sm, tree arg,
+		  const api *a)
+  : malloc_diagnostic (sm, arg), m_api (a)
   {}
 
   const char *get_kind () const FINAL OVERRIDE { return "use_after_free"; }
@@ -441,31 +777,52 @@ public:
     diagnostic_metadata m;
     m.add_cwe (416);
     return warning_meta (rich_loc, m, OPT_Wanalyzer_use_after_free,
-			 "use after %<free%> of %qE", m_arg);
+			 "use after %<%s%> of %qE",
+			 m_api->m_dealloc_funcname, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
     FINAL OVERRIDE
   {
-    if (change.m_new_state == m_sm.m_freed)
+    if (freed_p (change.m_new_state))
       {
 	m_free_event = change.m_event_id;
-	return label_text::borrow ("freed here");
+	switch (m_api->m_wording)
+	  {
+	  default:
+	    gcc_unreachable ();
+	  case WORDING_FREED:
+	    return label_text::borrow ("freed here");
+	  case WORDING_DELETED:
+	    return label_text::borrow ("deleted here");
+	  }
       }
     return malloc_diagnostic::describe_state_change (change);
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
+    const char *funcname = m_api->m_dealloc_funcname;
     if (m_free_event.known_p ())
-      return ev.formatted_print ("use after %<free%> of %qE; freed at %@",
-				 ev.m_expr, &m_free_event);
+      switch (m_api->m_wording)
+	{
+	default:
+	  gcc_unreachable ();
+	case WORDING_FREED:
+	  return ev.formatted_print ("use after %<%s%> of %qE; freed at %@",
+				     funcname, ev.m_expr, &m_free_event);
+	case WORDING_DELETED:
+	  return ev.formatted_print ("use after %<%s%> of %qE; deleted at %@",
+				     funcname, ev.m_expr, &m_free_event);
+	}
     else
-      return ev.formatted_print ("use after %<free%> of %qE", ev.m_expr);
+      return ev.formatted_print ("use after %<%s%> of %qE",
+				 funcname, ev.m_expr);
   }
 
 private:
   diagnostic_event_id_t m_free_event;
+  const api *m_api;
 };
 
 class malloc_leak : public malloc_diagnostic
@@ -480,16 +837,20 @@ public:
   {
     diagnostic_metadata m;
     m.add_cwe (401);
-    return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
-			 "leak of %qE", m_arg);
+    if (m_arg)
+      return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
+			   "leak of %qE", m_arg);
+    else
+      return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
+			   "leak of %qs", "<unknown>");
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
     FINAL OVERRIDE
   {
-    if (change.m_new_state == m_sm.m_unchecked)
+    if (unchecked_p (change.m_new_state))
       {
-	m_malloc_event = change.m_event_id;
+	m_alloc_event = change.m_event_id;
 	return label_text::borrow ("allocated here");
       }
     return malloc_diagnostic::describe_state_change (change);
@@ -497,22 +858,34 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    if (m_malloc_event.known_p ())
-      return ev.formatted_print ("%qE leaks here; was allocated at %@",
-				 ev.m_expr, &m_malloc_event);
+    if (ev.m_expr)
+      {
+	if (m_alloc_event.known_p ())
+	  return ev.formatted_print ("%qE leaks here; was allocated at %@",
+				     ev.m_expr, &m_alloc_event);
+	else
+	  return ev.formatted_print ("%qE leaks here", ev.m_expr);
+      }
     else
-      return ev.formatted_print ("%qE leaks here", ev.m_expr);
+      {
+	if (m_alloc_event.known_p ())
+	  return ev.formatted_print ("%qs leaks here; was allocated at %@",
+				     "<unknown>", &m_alloc_event);
+	else
+	  return ev.formatted_print ("%qs leaks here", "<unknown>");
+      }
   }
 
 private:
-  diagnostic_event_id_t m_malloc_event;
+  diagnostic_event_id_t m_alloc_event;
 };
 
 class free_of_non_heap : public malloc_diagnostic
 {
 public:
-  free_of_non_heap (const malloc_state_machine &sm, tree arg)
-  : malloc_diagnostic (sm, arg), m_kind (KIND_UNKNOWN)
+  free_of_non_heap (const malloc_state_machine &sm, tree arg,
+		    const char *funcname)
+  : malloc_diagnostic (sm, arg), m_funcname (funcname), m_kind (KIND_UNKNOWN)
   {
   }
 
@@ -536,15 +909,15 @@ public:
 	gcc_unreachable ();
       case KIND_UNKNOWN:
 	return warning_meta (rich_loc, m, OPT_Wanalyzer_free_of_non_heap,
-			     "%<free%> of %qE which points to memory"
+			     "%<%s%> of %qE which points to memory"
 			     " not on the heap",
-			     m_arg);
+			     m_funcname, m_arg);
 	break;
       case KIND_ALLOCA:
 	return warning_meta (rich_loc, m, OPT_Wanalyzer_free_of_non_heap,
-			     "%<free%> of memory allocated on the stack by"
+			     "%<%s%> of memory allocated on the stack by"
 			     " %qs (%qE) will corrupt the heap",
-			     "alloca", m_arg);
+			     m_funcname, "alloca", m_arg);
 	break;
       }
   }
@@ -573,7 +946,7 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    return ev.formatted_print ("call to %qs here", "free");
+    return ev.formatted_print ("call to %qs here", m_funcname);
   }
 
 private:
@@ -582,21 +955,54 @@ private:
     KIND_UNKNOWN,
     KIND_ALLOCA
   };
+  const char *m_funcname;
   enum kind m_kind;
 };
+
+/* struct allocation_state : public state_machine::state.  */
+
+/* Implementation of state_machine::state::dump_to_pp vfunc
+   for allocation_state: append the API that this allocation is
+   associated with.  */
+
+void
+allocation_state::dump_to_pp (pretty_printer *pp) const
+{
+  state_machine::state::dump_to_pp (pp);
+  if (m_api)
+    pp_printf (pp, " (%s)", m_api->m_name);
+}
+
+/* Given a allocation_state for an api, get the "nonnull" state
+   for the corresponding allocator.  */
+
+const allocation_state *
+allocation_state::get_nonnull () const
+{
+  gcc_assert (m_api);
+  return as_a_allocation_state (m_api->m_nonnull);
+}
 
 /* malloc_state_machine's ctor.  */
 
 malloc_state_machine::malloc_state_machine (logger *logger)
-: state_machine ("malloc", logger)
+: state_machine ("malloc", logger),
+  m_malloc (this, "malloc", "free", WORDING_FREED),
+  m_scalar_new (this, "new", "delete", WORDING_DELETED),
+  m_vector_new (this, "new[]", "delete[]", WORDING_DELETED)
 {
-  m_start = add_state ("start");
-  m_unchecked = add_state ("unchecked");
-  m_null = add_state ("null");
-  m_nonnull = add_state ("nonnull");
-  m_freed = add_state ("freed");
-  m_non_heap = add_state ("non-heap");
-  m_stop = add_state ("stop");
+  gcc_assert (m_start->get_id () == 0);
+  m_null = add_state ("null", RS_FREED, NULL);
+  m_non_heap = add_state ("non-heap", RS_NON_HEAP, NULL);
+  m_stop = add_state ("stop", RS_STOP, NULL);
+}
+
+state_machine::state_t
+malloc_state_machine::add_state (const char *name, enum resource_state rs,
+				 const api *a)
+{
+  return add_custom_state (new allocation_state (name, alloc_state_id (),
+						 rs, a));
 }
 
 /* Implementation of state_machine::on_stmt vfunc for malloc_state_machine.  */
@@ -614,18 +1020,27 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    || is_std_named_call_p (callee_fndecl, "malloc", call, 1)
 	    || is_std_named_call_p (callee_fndecl, "calloc", call, 2)
 	    || is_named_call_p (callee_fndecl, "__builtin_malloc", call, 1)
-	    || is_named_call_p (callee_fndecl, "__builtin_calloc", call, 2))
+	    || is_named_call_p (callee_fndecl, "__builtin_calloc", call, 2)
+	    || is_named_call_p (callee_fndecl, "strdup", call, 1)
+	    || is_named_call_p (callee_fndecl, "strndup", call, 2))
 	  {
-	    tree lhs = gimple_call_lhs (call);
-	    if (lhs)
-	      {
-		lhs = sm_ctxt->get_readable_tree (lhs);
-		sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked);
-	      }
-	    else
-	      {
-		/* TODO: report leak.  */
-	      }
+	    on_allocator_call (sm_ctxt, call, m_malloc);
+	    return true;
+	  }
+
+	if (is_named_call_p (callee_fndecl, "operator new", call, 1))
+	  on_allocator_call (sm_ctxt, call, m_scalar_new);
+	else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
+	  on_allocator_call (sm_ctxt, call, m_vector_new);
+	else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
+		 || is_named_call_p (callee_fndecl, "operator delete", call, 2))
+	  {
+	    on_deallocator_call (sm_ctxt, node, call, m_scalar_new);
+	    return true;
+	  }
+	else if (is_named_call_p (callee_fndecl, "operator delete []", call, 1))
+	  {
+	    on_deallocator_call (sm_ctxt, node, call, m_vector_new);
 	    return true;
 	  }
 
@@ -634,10 +1049,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
-	      {
-		lhs = sm_ctxt->get_readable_tree (lhs);
-		sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
-	      }
+	      sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
 	    return true;
 	  }
 
@@ -645,27 +1057,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    || is_std_named_call_p (callee_fndecl, "free", call, 1)
 	    || is_named_call_p (callee_fndecl, "__builtin_free", call, 1))
 	  {
-	    tree arg = gimple_call_arg (call, 0);
-
-	    arg = sm_ctxt->get_readable_tree (arg);
-
-	    /* start/unchecked/nonnull -> freed.  */
-	    sm_ctxt->on_transition (node, stmt, arg, m_start, m_freed);
-	    sm_ctxt->on_transition (node, stmt, arg, m_unchecked, m_freed);
-	    sm_ctxt->on_transition (node, stmt, arg, m_nonnull, m_freed);
-
-	    /* Keep state "null" as-is, rather than transitioning to "free";
-	       we don't want to complain about double-free of NULL.  */
-
-	    /* freed -> stop, with warning.  */
-	    sm_ctxt->warn_for_state (node, stmt, arg, m_freed,
-				     new double_free (*this, arg));
-	    sm_ctxt->on_transition (node, stmt, arg, m_freed, m_stop);
-
-	    /* non-heap -> stop, with warning.  */
-	    sm_ctxt->warn_for_state (node, stmt, arg, m_non_heap,
-				     new free_of_non_heap (*this, arg));
-	    sm_ctxt->on_transition (node, stmt, arg, m_non_heap, m_stop);
+	    on_deallocator_call (sm_ctxt, node, call, m_malloc);
 	    return true;
 	  }
 
@@ -685,16 +1077,27 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 		  if (bitmap_empty_p (nonnull_args)
 		      || bitmap_bit_p (nonnull_args, i))
 		    {
-		      sm_ctxt->warn_for_state
-			(node, stmt, arg, m_unchecked,
-			 new possible_null_arg (*this, arg, callee_fndecl, i));
-		      sm_ctxt->on_transition (node, stmt, arg, m_unchecked,
-					      m_nonnull);
-
-		      sm_ctxt->warn_for_state
-			(node, stmt, arg, m_null,
-			 new null_arg (*this, arg, callee_fndecl, i));
-		      sm_ctxt->on_transition (node, stmt, arg, m_null, m_stop);
+		      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
+		      state_t state = sm_ctxt->get_state (stmt, arg);
+		      /* Can't use a switch as the states are non-const.  */
+		      if (unchecked_p (state))
+			{
+			  sm_ctxt->warn (node, stmt, arg,
+					 new possible_null_arg (*this, diag_arg,
+								callee_fndecl,
+								i));
+			  const allocation_state *astate
+			    = as_a_allocation_state (state);
+			  sm_ctxt->set_next_state (stmt, arg,
+						   astate->get_nonnull ());
+			}
+		      else if (state == m_null)
+			{
+			  sm_ctxt->warn (node, stmt, arg,
+					 new null_arg (*this, diag_arg,
+						       callee_fndecl, i));
+			  sm_ctxt->set_next_state (stmt, arg, m_stop);
+			}
 		    }
 		}
 	      BITMAP_FREE (nonnull_args);
@@ -702,10 +1105,15 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	}
       }
 
-  if (tree lhs = is_zero_assignment (stmt))
+  if (tree lhs = sm_ctxt->is_zero_assignment (stmt))
     if (any_pointer_p (lhs))
-      on_zero_assignment (sm_ctxt, node, stmt,lhs);
+      on_zero_assignment (sm_ctxt, stmt,lhs);
 
+  /* If we have "LHS = &EXPR;" and EXPR is something other than a MEM_REF,
+     transition LHS from start to non_heap.
+     Doing it for ADDR_EXPR(MEM_REF()) is likely wrong, and can lead to
+     unbounded chains of unmergeable sm-state on pointer arithmetic in loops
+     when optimization is enabled.  */
   if (const gassign *assign_stmt = dyn_cast <const gassign *> (stmt))
     {
       enum tree_code op = gimple_assign_rhs_code (assign_stmt);
@@ -714,8 +1122,9 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	  tree lhs = gimple_assign_lhs (assign_stmt);
 	  if (lhs)
 	    {
-	      lhs = sm_ctxt->get_readable_tree (lhs);
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
+	      tree addr_expr = gimple_assign_rhs1 (assign_stmt);
+	      if (TREE_CODE (TREE_OPERAND (addr_expr, 0)) != MEM_REF)
+		sm_ctxt->on_transition (node, stmt, lhs, m_start, m_non_heap);
 	    }
 	}
     }
@@ -732,36 +1141,116 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
       if (TREE_CODE (op) == MEM_REF)
 	{
 	  tree arg = TREE_OPERAND (op, 0);
-	  arg = sm_ctxt->get_readable_tree (arg);
+	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
-	  sm_ctxt->warn_for_state (node, stmt, arg, m_unchecked,
-				   new possible_null_deref (*this, arg));
-	  sm_ctxt->on_transition (node, stmt, arg, m_unchecked, m_nonnull);
-
-	  sm_ctxt->warn_for_state (node, stmt, arg, m_null,
-				   new null_deref (*this, arg));
-	  sm_ctxt->on_transition (node, stmt, arg, m_null, m_stop);
-
-	  sm_ctxt->warn_for_state (node, stmt, arg, m_freed,
-				   new use_after_free (*this, arg));
-	  sm_ctxt->on_transition (node, stmt, arg, m_freed, m_stop);
+	  state_t state = sm_ctxt->get_state (stmt, arg);
+	  if (unchecked_p (state))
+	    {
+	      sm_ctxt->warn (node, stmt, arg,
+			     new possible_null_deref (*this, diag_arg));
+	      const allocation_state *astate = as_a_allocation_state (state);
+	      sm_ctxt->set_next_state (stmt, arg, astate->get_nonnull ());
+	    }
+	  else if (state == m_null)
+	    {
+	      sm_ctxt->warn (node, stmt, arg,
+			     new null_deref (*this, diag_arg));
+	      sm_ctxt->set_next_state (stmt, arg, m_stop);
+	    }
+	  else if (freed_p (state))
+	    {
+	      const allocation_state *astate = as_a_allocation_state (state);
+	      sm_ctxt->warn (node, stmt, arg,
+			     new use_after_free (*this, diag_arg,
+						 astate->m_api));
+	      sm_ctxt->set_next_state (stmt, arg, m_stop);
+	    }
 	}
     }
   return false;
+}
+
+/* Handle a call to an allocator.  */
+
+void
+malloc_state_machine::on_allocator_call (sm_context *sm_ctxt,
+					 const gcall *call,
+					 const api &ap) const
+{
+  tree lhs = gimple_call_lhs (call);
+  if (lhs)
+    {
+      if (sm_ctxt->get_state (call, lhs) == m_start)
+	sm_ctxt->set_next_state (call, lhs, ap.m_unchecked);
+    }
+  else
+    {
+      /* TODO: report leak.  */
+    }
+}
+
+void
+malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
+					   const supernode *node,
+					   const gcall *call,
+					   const api &ap) const
+{
+  tree arg = gimple_call_arg (call, 0);
+  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
+
+  state_t state = sm_ctxt->get_state (call, arg);
+
+  /* start/unchecked/nonnull -> freed.  */
+  if (state == m_start)
+    sm_ctxt->set_next_state (call, arg, ap.m_freed);
+  else if (unchecked_p (state) || nonnull_p (state))
+    {
+      const allocation_state *astate = as_a_allocation_state (state);
+
+      if (astate->m_api != &ap)
+	{
+	  /* Wrong allocator.  */
+	  pending_diagnostic *d
+	    = new mismatching_deallocation (*this, diag_arg,
+					    astate->m_api, &ap);
+	  sm_ctxt->warn (node, call, arg, d);
+	}
+      sm_ctxt->set_next_state (call, arg, ap.m_freed);
+    }
+
+  /* Keep state "null" as-is, rather than transitioning to "freed";
+     we don't want to complain about double-free of NULL.  */
+
+  else if (state == ap.m_freed)
+    {
+      /* freed -> stop, with warning.  */
+      sm_ctxt->warn (node, call, arg,
+		     new double_free (*this, diag_arg,
+				      ap.m_dealloc_funcname));
+      sm_ctxt->set_next_state (call, arg, m_stop);
+    }
+  else if (state == m_non_heap)
+    {
+      /* non-heap -> stop, with warning.  */
+      sm_ctxt->warn (node, call, arg,
+		     new free_of_non_heap (*this, diag_arg,
+					   ap.m_dealloc_funcname));
+      sm_ctxt->set_next_state (call, arg, m_stop);
+    }
 }
 
 /* Implementation of state_machine::on_phi vfunc for malloc_state_machine.  */
 
 void
 malloc_state_machine::on_phi (sm_context *sm_ctxt,
-			      const supernode *node,
+			      const supernode *node ATTRIBUTE_UNUSED,
 			      const gphi *phi,
 			      tree rhs) const
 {
   if (zerop (rhs))
     {
       tree lhs = gimple_phi_result (phi);
-      on_zero_assignment (sm_ctxt, node, phi, lhs);
+      on_zero_assignment (sm_ctxt, phi, lhs);
     }
 }
 
@@ -770,7 +1259,7 @@ malloc_state_machine::on_phi (sm_context *sm_ctxt,
 
 void
 malloc_state_machine::on_condition (sm_context *sm_ctxt,
-				    const supernode *node,
+				    const supernode *node ATTRIBUTE_UNUSED,
 				    const gimple *stmt,
 				    tree lhs,
 				    enum tree_code op,
@@ -787,14 +1276,19 @@ malloc_state_machine::on_condition (sm_context *sm_ctxt,
   if (op == NE_EXPR)
     {
       log ("got 'ARG != 0' match");
-      sm_ctxt->on_transition (node, stmt,
-			      lhs, m_unchecked, m_nonnull);
+      state_t s = sm_ctxt->get_state (stmt, lhs);
+      if (unchecked_p (s))
+	{
+	  const allocation_state *astate = as_a_allocation_state (s);
+	  sm_ctxt->set_next_state (stmt, lhs, astate->get_nonnull ());
+	}
     }
   else if (op == EQ_EXPR)
     {
       log ("got 'ARG == 0' match");
-      sm_ctxt->on_transition (node, stmt,
-			      lhs, m_unchecked, m_null);
+      state_t s = sm_ctxt->get_state (stmt, lhs);
+      if (unchecked_p (s))
+	sm_ctxt->set_next_state (stmt, lhs, m_null);
     }
 }
 
@@ -805,7 +1299,8 @@ malloc_state_machine::on_condition (sm_context *sm_ctxt,
 bool
 malloc_state_machine::can_purge_p (state_t s) const
 {
-  return s != m_unchecked && s != m_nonnull;
+  enum resource_state rs = get_rs (s);
+  return rs != RS_UNCHECKED && rs != RS_NONNULL;
 }
 
 /* Implementation of state_machine::on_leak vfunc for malloc_state_machine
@@ -818,19 +1313,37 @@ malloc_state_machine::on_leak (tree var) const
   return new malloc_leak (*this, var);
 }
 
+/* Implementation of state_machine::reset_when_passed_to_unknown_fn_p vfunc
+   for malloc_state_machine.  */
+
+bool
+malloc_state_machine::reset_when_passed_to_unknown_fn_p (state_t s,
+							 bool is_mutable) const
+{
+  /* An on-stack ptr doesn't stop being stack-allocated when passed to an
+     unknown fn.  */
+  if (s == m_non_heap)
+    return false;
+
+  /* Otherwise, pointers passed as non-const can be freed.  */
+  return is_mutable;
+}
+
 /* Shared logic for handling GIMPLE_ASSIGNs and GIMPLE_PHIs that
    assign zero to LHS.  */
 
 void
 malloc_state_machine::on_zero_assignment (sm_context *sm_ctxt,
-					  const supernode *node,
 					  const gimple *stmt,
 					  tree lhs) const
 {
-  sm_ctxt->on_transition (node, stmt, lhs, m_start, m_null);
-  sm_ctxt->on_transition (node, stmt, lhs, m_unchecked, m_null);
-  sm_ctxt->on_transition (node, stmt, lhs, m_nonnull, m_null);
-  sm_ctxt->on_transition (node, stmt, lhs, m_freed, m_null);
+  state_t s = sm_ctxt->get_state (stmt, lhs);
+  enum resource_state rs = get_rs (s);
+  if (rs == RS_START
+      || rs == RS_UNCHECKED
+      || rs == RS_NONNULL
+      || rs == RS_FREED)
+    sm_ctxt->set_next_state (stmt, lhs, m_null);
 }
 
 } // anonymous namespace

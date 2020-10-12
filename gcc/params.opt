@@ -102,6 +102,37 @@ Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
 Common Joined UInteger Var(param_early_inlining_insns) Init(6) Optimization Param
 Maximal estimated growth of function body caused by early inlining of single call.
 
+-param=evrp-mode=
+Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_EVRP_FIRST) Param Optimization
+--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in.
+
+Enum
+Name(evrp_mode) Type(enum evrp_mode) UnknownError(unknown evrp mode %qs)
+
+EnumValue
+Enum(evrp_mode) String(legacy) Value(EVRP_MODE_EVRP_ONLY)
+
+EnumValue
+Enum(evrp_mode) String(ranger) Value(EVRP_MODE_RVRP_ONLY)
+
+EnumValue
+Enum(evrp_mode) String(legacy-first) Value(EVRP_MODE_EVRP_FIRST)
+
+EnumValue
+Enum(evrp_mode) String(ranger-first) Value(EVRP_MODE_RVRP_FIRST)
+
+EnumValue
+Enum(evrp_mode) String(ranger-trace) Value(EVRP_MODE_RVRP_TRACE)
+
+EnumValue
+Enum(evrp_mode) String(ranger-debug) Value(EVRP_MODE_RVRP_DEBUG)
+
+EnumValue
+Enum(evrp_mode) String(trace) Value(EVRP_MODE_TRACE)
+
+EnumValue
+Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)
+
 -param=fsm-maximum-phi-arguments=
 Common Joined UInteger Var(param_fsm_maximum_phi_arguments) Init(100) IntegerRange(1, 999999) Param Optimization
 Maximum number of arguments a PHI may have before the FSM threader will not try to thread through its block.
@@ -170,10 +201,6 @@ The number of most executed permilles of the profiled execution of the entire pr
 Common Joined UInteger Var(param_hot_bb_frequency_fraction) Init(1000) Param
 The denominator n of fraction 1/n of the execution frequency of the entry block of a function that a basic block of this function needs to at least have in order to be considered hot.
 
--param=hsa-gen-debug-stores=
-Common Joined UInteger Var(param_hsa_gen_debug_stores) IntegerRange(0, 1) Param
-Level of hsa debug stores verbosity.
-
 -param=inline-heuristics-hint-percent=
 Common Joined UInteger Var(param_inline_heuristics_hint_percent) Init(200) Optimization IntegerRange(100, 1000000) Param
 The scale (in percents) applied to inline-insns-single and auto limits when heuristics hints that inlining is very profitable.
@@ -218,6 +245,10 @@ Percentage penalty functions containing a single call to another function will r
 Common Joined UInteger Var(param_ipa_cp_unit_growth) Init(10) Param Optimization
 How much can given compilation unit grow because of the interprocedural constant propagation (in percent).
 
+-param=ipa-cp-large-unit-insns=
+Common Joined UInteger Var(param_ipa_cp_large_unit_insns) Optimization Init(16000) Param
+The size of translation unit that IPA-CP pass considers large.
+
 -param=ipa-cp-value-list-size=
 Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param Optimization
 Maximum size of a list of values associated with each parameter for interprocedural constant propagation.
@@ -233,6 +264,10 @@ Maximum number of aggregate content items for a parameter in jump functions and 
 -param=ipa-max-param-expr-ops=
 Common Joined UInteger Var(param_ipa_max_param_expr_ops) Init(10) Param Optimization
 Maximum number of operations in a parameter expression that can be handled by IPA analysis.
+
+-param=ipa-max-loop-predicates=
+Common Joined UInteger Var(param_ipa_max_loop_predicates) Init(16) Param Optimization
+Maximum number of different predicates used to track properties of loops in IPA analysis.
 
 -param=ipa-max-switch-predicate-bounds=
 Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param Optimization
@@ -876,6 +911,22 @@ Maximum size of a single store merging region in bytes.
 Common Joined UInteger Var(param_switch_conversion_branch_ratio) Init(8) IntegerRange(1, 65536) Param Optimization
 The maximum ratio between array size and switch branches for a switch conversion to take place.
 
+-param=modref-max-bases=
+Common Joined UInteger Var(param_modref_max_bases) Init(32)
+Maximum number of bases stored in each modref tree.
+
+-param=modref-max-refs=
+Common Joined UInteger Var(param_modref_max_refs) Init(16)
+Maximum number of references stored in each modref base.
+
+-param=modref-max-accesses=
+Common Joined UInteger Var(param_modref_max_accesses) Init(16)
+Maximum number of accesse stored in each modref reference.
+
+-param=modref-max-tests=
+Common Joined UInteger Var(param_modref_max_tests) Init(64)
+Maximum number of tests performed by modref query.
+
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
 Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs.
@@ -971,5 +1022,9 @@ Bound on number of runtime checks inserted by the vectorizer's loop versioning f
 -param=vect-max-version-for-alignment-checks=
 Common Joined UInteger Var(param_vect_max_version_for_alignment_checks) Init(6) Param Optimization
 Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check.
+
+-param=vect-partial-vector-usage=
+Common Joined UInteger Var(param_vect_partial_vector_usage) Init(2) IntegerRange(0, 2) Param Optimization
+Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only for loops whose need to iterate can be removed, 2 means for all loops.  The default value is 2.
 
 ; This comment is to ensure we retain the blank line above.

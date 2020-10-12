@@ -612,7 +612,7 @@ compute_builtin_object_size (tree ptr, int object_size_type,
       unsigned int i;
 
       if (num_ssa_names > object_sizes[object_size_type].length ())
-	object_sizes[object_size_type].safe_grow (num_ssa_names);
+	object_sizes[object_size_type].safe_grow (num_ssa_names, true);
       if (dump_file)
 	{
 	  fprintf (dump_file, "Computing %s %sobject size for ",
@@ -1282,7 +1282,7 @@ init_object_sizes (void)
 
   for (object_size_type = 0; object_size_type <= 3; object_size_type++)
     {
-      object_sizes[object_size_type].safe_grow (num_ssa_names);
+      object_sizes[object_size_type].safe_grow (num_ssa_names, true);
       computed[object_size_type] = BITMAP_ALLOC (NULL);
     }
 

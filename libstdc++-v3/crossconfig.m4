@@ -63,6 +63,8 @@ case "${host}" in
     # We don't yet support AIX's TLS ABI.
     #GCC_CHECK_TLS
     AM_ICONV
+
+    AC_DEFINE(HAVE_USELOCALE)
     ;;
 
   *-darwin*)
@@ -73,6 +75,8 @@ case "${host}" in
     # Don't call GLIBCXX_CHECK_LINKER_FEATURES, Darwin doesn't have a GNU ld
     GLIBCXX_CHECK_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
+
+    AC_CHECK_FUNCS(uselocale)
     ;;
 
   *djgpp)
@@ -129,6 +133,7 @@ case "${host}" in
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     AC_CHECK_FUNCS(timespec_get)
     AC_CHECK_FUNCS(sockatmark)
+    AC_CHECK_FUNCS(uselocale)
     ;;
 
   *-fuchsia*)
@@ -190,6 +195,7 @@ case "${host}" in
     AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     AC_CHECK_FUNCS(timespec_get)
     AC_CHECK_FUNCS(sockatmark)
+    AC_CHECK_FUNCS(uselocale)
     AM_ICONV
     ;;
   *-mingw32*)

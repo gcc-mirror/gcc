@@ -224,10 +224,10 @@ enum lto_section_type
   LTO_section_ipa_icf,
   LTO_section_offload_table,
   LTO_section_mode_table,
-  LTO_section_ipa_hsa,
   LTO_section_lto,
   LTO_section_ipa_sra,
   LTO_section_odr_types,
+  LTO_section_ipa_modref,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
 
@@ -263,7 +263,7 @@ typedef void (lto_free_section_data_f) (struct lto_file_decl_data *,
 
 /* The location cache holds expanded locations for streamed in trees.
    This is done to reduce memory usage of libcpp linemap that strongly prefers
-   locations to be inserted in the soruce order.  */
+   locations to be inserted in the source order.  */
 
 class lto_location_cache
 {
@@ -277,9 +277,13 @@ public:
   void revert_location_cache ();
   void input_location (location_t *loc, struct bitpack_d *bp,
 		       class data_in *data_in);
+  void input_location_and_block (location_t *loc, struct bitpack_d *bp,
+				 class lto_input_block *ib,
+				 class data_in *data_in);
   lto_location_cache ()
      : loc_cache (), accepted_length (0), current_file (NULL), current_line (0),
-       current_col (0), current_sysp (false), current_loc (UNKNOWN_LOCATION)
+       current_col (0), current_sysp (false), current_loc (UNKNOWN_LOCATION),
+       current_block (NULL_TREE)
   {
     gcc_assert (!current_cache);
     current_cache = this;
@@ -305,6 +309,7 @@ private:
     location_t *loc;
     int line, col;
     bool sysp;
+    tree block;
   };
 
   /* The location cache.  */
@@ -326,6 +331,7 @@ private:
   int current_col;
   bool current_sysp;
   location_t current_loc;
+  tree current_block;
 };
 
 /* Structure used as buffer for reading an LTO file.  */
@@ -712,6 +718,9 @@ struct output_block
   int current_line;
   int current_col;
   bool current_sysp;
+  bool reset_locus;
+  bool emit_pwd;
+  tree current_block;
 
   /* Cache of nodes written in this section.  */
   struct streamer_tree_cache_d *writer_cache;
@@ -847,8 +856,6 @@ extern class data_in *lto_data_in_create (struct lto_file_decl_data *,
 extern void lto_data_in_delete (class data_in *);
 extern void lto_input_data_block (class lto_input_block *, void *, size_t);
 void lto_input_location (location_t *, struct bitpack_d *, class data_in *);
-location_t stream_input_location_now (struct bitpack_d *bp,
-				      class data_in *data);
 tree lto_input_tree_ref (class lto_input_block *, class data_in *,
 			 struct function *, enum LTO_tags);
 void lto_tag_check_set (enum LTO_tags, int, ...);
@@ -882,7 +889,10 @@ void lto_output_decl_state_streams (struct output_block *,
 void lto_output_decl_state_refs (struct output_block *,
 			         struct lto_output_stream *,
 			         struct lto_out_decl_state *);
-void lto_output_location (struct output_block *, struct bitpack_d *, location_t);
+void lto_output_location (struct output_block *, struct bitpack_d *,
+			  location_t);
+void lto_output_location_and_block (struct output_block *, struct bitpack_d *,
+				    location_t);
 void lto_output_init_mode_table (void);
 void lto_prepare_function_for_streaming (cgraph_node *);
 

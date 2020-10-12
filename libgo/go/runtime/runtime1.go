@@ -475,8 +475,3 @@ func releasem(mp *m) {
 	//	_g_.stackguard0 = stackPreempt
 	// }
 }
-
-//go:nosplit
-func gomcache() *mcache {
-	return getg().m.mcache
-}

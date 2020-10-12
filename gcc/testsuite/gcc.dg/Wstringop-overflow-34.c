@@ -112,7 +112,7 @@ void s2_warn_cstoff_cstidx (struct S2 *p)
 void s2_warn_varoff_cstdix (struct S2 *p, int i)
 {
   char *q = p->a + i;
-  q[2] = __LINE__;            // { dg-warning "\\\[-Wstringop-overflow" "pr?????" { xfail *-*-* }  }
+  q[2] = __LINE__;            // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
 void s2_warn_cstoff_varidx (struct S2 *p, int i)

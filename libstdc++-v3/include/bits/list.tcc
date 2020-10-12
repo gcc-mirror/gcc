@@ -331,10 +331,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     list<_Tp, _Alloc>::
     remove(const value_type& __value)
     {
+#if !_GLIBCXX_USE_CXX11_ABI
       size_type __removed __attribute__((__unused__)) = 0;
+#endif
+      list __to_destroy(get_allocator());
       iterator __first = begin();
       iterator __last = end();
-      iterator __extra = __last;
       while (__first != __last)
 	{
 	  iterator __next = __first;
@@ -344,22 +346,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 526. Is it undefined if a function in the standard changes
 	      // in parameters?
-	      if (std::__addressof(*__first) != std::__addressof(__value))
-		{
-		  _M_erase(__first);
-		  _GLIBCXX20_ONLY( __removed++ );
-		}
-	      else
-		__extra = __first;
+	      __to_destroy.splice(__to_destroy.begin(), *this, __first);
+#if !_GLIBCXX_USE_CXX11_ABI
+	      _GLIBCXX20_ONLY( __removed++ );
+#endif
 	    }
+
 	  __first = __next;
 	}
-      if (__extra != __last)
-	{
-	  _M_erase(__extra);
-	  _GLIBCXX20_ONLY( __removed++ );
-	}
-      return _GLIBCXX20_ONLY( __removed );
+
+#if !_GLIBCXX_USE_CXX11_ABI
+	return _GLIBCXX20_ONLY( __removed );
+#else
+	return _GLIBCXX20_ONLY( __to_destroy.size() );
+#endif
     }
 
   template<typename _Tp, typename _Alloc>
@@ -371,20 +371,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator __last = end();
       if (__first == __last)
 	return _GLIBCXX20_ONLY( 0 );
+#if !_GLIBCXX_USE_CXX11_ABI
       size_type __removed __attribute__((__unused__)) = 0;
+#endif
+      list __to_destroy(get_allocator());
       iterator __next = __first;
       while (++__next != __last)
 	{
 	  if (*__first == *__next)
 	    {
-	      _M_erase(__next);
+	      __to_destroy.splice(__to_destroy.begin(), *this, __next);
+#if !_GLIBCXX_USE_CXX11_ABI
 	      _GLIBCXX20_ONLY( __removed++ );
+#endif
 	    }
 	  else
 	    __first = __next;
 	  __next = __first;
 	}
+
+#if !_GLIBCXX_USE_CXX11_ABI
       return _GLIBCXX20_ONLY( __removed );
+#else
+      return _GLIBCXX20_ONLY( __to_destroy.size() );
+#endif
     }
 
   template<typename _Tp, typename _Alloc>
@@ -533,21 +543,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       list<_Tp, _Alloc>::
       remove_if(_Predicate __pred)
       {
+#if !_GLIBCXX_USE_CXX11_ABI
 	size_type __removed __attribute__((__unused__)) = 0;
-        iterator __first = begin();
-        iterator __last = end();
-        while (__first != __last)
+#endif
+	list __to_destroy(get_allocator());
+	iterator __first = begin();
+	iterator __last = end();
+	while (__first != __last)
 	  {
 	    iterator __next = __first;
 	    ++__next;
 	    if (__pred(*__first))
 	      {
-		_M_erase(__first);
+		__to_destroy.splice(__to_destroy.begin(), *this, __first);
+#if !_GLIBCXX_USE_CXX11_ABI
 		_GLIBCXX20_ONLY( __removed++ );
+#endif
 	      }
 	    __first = __next;
 	  }
+
+#if !_GLIBCXX_USE_CXX11_ABI
 	return _GLIBCXX20_ONLY( __removed );
+#else
+	return _GLIBCXX20_ONLY( __to_destroy.size() );
+#endif
       }
 
   template<typename _Tp, typename _Alloc>
@@ -560,20 +580,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         iterator __last = end();
         if (__first == __last)
 	  return _GLIBCXX20_ONLY(0);
+#if !_GLIBCXX_USE_CXX11_ABI
         size_type __removed __attribute__((__unused__)) = 0;
+#endif
+	list __to_destroy(get_allocator());
         iterator __next = __first;
         while (++__next != __last)
 	  {
 	    if (__binary_pred(*__first, *__next))
 	      {
-		_M_erase(__next);
+		__to_destroy.splice(__to_destroy.begin(), *this, __next);
+#if !_GLIBCXX_USE_CXX11_ABI
 		_GLIBCXX20_ONLY( __removed++ );
+#endif
 	      }
 	    else
 	      __first = __next;
 	    __next = __first;
 	  }
+
+#if !_GLIBCXX_USE_CXX11_ABI
 	return _GLIBCXX20_ONLY( __removed );
+#else
+	return _GLIBCXX20_ONLY( __to_destroy.size() );
+#endif
       }
 
 #undef _GLIBCXX20_ONLY

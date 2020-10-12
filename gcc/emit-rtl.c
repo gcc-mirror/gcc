@@ -3822,10 +3822,6 @@ try_split (rtx pat, rtx_insn *trial, int last)
   int njumps = 0;
   rtx_insn *call_insn = NULL;
 
-  /* We're not good at redistributing frame information.  */
-  if (RTX_FRAME_RELATED_P (trial))
-    return trial;
-
   if (any_condjump_p (trial)
       && (note = find_reg_note (trial, REG_BR_PROB, 0)))
     split_branch_probability
@@ -3842,6 +3838,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
   if (!seq)
     return trial;
 
+  int split_insn_count = 0;
   /* Avoid infinite loop if any insn of the result matches
      the original pattern.  */
   insn_last = seq;
@@ -3850,9 +3847,23 @@ try_split (rtx pat, rtx_insn *trial, int last)
       if (INSN_P (insn_last)
 	  && rtx_equal_p (PATTERN (insn_last), pat))
 	return trial;
+      split_insn_count++;
       if (!NEXT_INSN (insn_last))
 	break;
       insn_last = NEXT_INSN (insn_last);
+    }
+
+  /* We're not good at redistributing frame information if
+     the split occurs before reload or if it results in more
+     than one insn.  */
+  if (RTX_FRAME_RELATED_P (trial))
+    {
+      if (!reload_completed || split_insn_count != 1)
+        return trial;
+
+      rtx_insn *new_insn = seq;
+      rtx_insn *old_insn = trial;
+      copy_frame_info_to_split_insn (old_insn, new_insn);
     }
 
   /* We will be adding the new sequence to the function.  The splitters

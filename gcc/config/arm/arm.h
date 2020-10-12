@@ -177,6 +177,10 @@ emission of floating point pcs attributes.  */
 
 #define TARGET_CRC32			(arm_arch_crc)
 
+/* Thumb-2 but also has some conditional arithmetic instructions like csinc,
+   csinv, etc. */
+#define TARGET_COND_ARITH		(arm_arch8_1m_main)
+
 /* The following two macros concern the ability to execute coprocessor
    instructions for VFPv3 or NEON.  TARGET_VFP3/TARGET_VFPD32 are currently
    only ever tested when we know we are generating for VFP hardware; we need
@@ -1105,6 +1109,47 @@ extern const int arm_arch_cde_coproc_bits[];
 
 #define VALID_MVE_STRUCT_MODE(MODE) \
   ((MODE) == TImode || (MODE) == OImode || (MODE) == XImode)
+
+/* The conditions under which vector modes are supported for general
+   arithmetic using Neon.  */
+
+#define ARM_HAVE_NEON_V8QI_ARITH TARGET_NEON
+#define ARM_HAVE_NEON_V4HI_ARITH TARGET_NEON
+#define ARM_HAVE_NEON_V2SI_ARITH TARGET_NEON
+
+#define ARM_HAVE_NEON_V16QI_ARITH TARGET_NEON
+#define ARM_HAVE_NEON_V8HI_ARITH TARGET_NEON
+#define ARM_HAVE_NEON_V4SI_ARITH TARGET_NEON
+#define ARM_HAVE_NEON_V2DI_ARITH TARGET_NEON
+
+/* HF operations have their own flush-to-zero control (FPSCR.FZ16).  */
+#define ARM_HAVE_NEON_V4HF_ARITH TARGET_NEON_FP16INST
+#define ARM_HAVE_NEON_V8HF_ARITH TARGET_NEON_FP16INST
+
+/* SF operations always flush to zero, regardless of FPSCR.FZ, so we can
+   only use them for general arithmetic when -funsafe-math-optimizations
+   is in effect.  */
+#define ARM_HAVE_NEON_V2SF_ARITH \
+  (TARGET_NEON && flag_unsafe_math_optimizations)
+#define ARM_HAVE_NEON_V4SF_ARITH ARM_HAVE_NEON_V2SF_ARITH
+
+/* The conditions under which vector modes are supported for general
+   arithmetic by any vector extension.  */
+
+#define ARM_HAVE_V8QI_ARITH (ARM_HAVE_NEON_V8QI_ARITH || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V4HI_ARITH (ARM_HAVE_NEON_V4HI_ARITH || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V2SI_ARITH (ARM_HAVE_NEON_V2SI_ARITH || TARGET_REALLY_IWMMXT)
+
+#define ARM_HAVE_V16QI_ARITH (ARM_HAVE_NEON_V16QI_ARITH || TARGET_HAVE_MVE)
+#define ARM_HAVE_V8HI_ARITH (ARM_HAVE_NEON_V8HI_ARITH || TARGET_HAVE_MVE)
+#define ARM_HAVE_V4SI_ARITH (ARM_HAVE_NEON_V4SI_ARITH || TARGET_HAVE_MVE)
+#define ARM_HAVE_V2DI_ARITH ARM_HAVE_NEON_V2DI_ARITH
+
+#define ARM_HAVE_V4HF_ARITH ARM_HAVE_NEON_V4HF_ARITH
+#define ARM_HAVE_V2SF_ARITH ARM_HAVE_NEON_V2SF_ARITH
+
+#define ARM_HAVE_V8HF_ARITH (ARM_HAVE_NEON_V8HF_ARITH || TARGET_HAVE_MVE_FLOAT)
+#define ARM_HAVE_V4SF_ARITH (ARM_HAVE_NEON_V4SF_ARITH || TARGET_HAVE_MVE_FLOAT)
 
 /* The register numbers in sequence, for passing to arm_gen_load_multiple.  */
 extern int arm_regs_in_sequence[];

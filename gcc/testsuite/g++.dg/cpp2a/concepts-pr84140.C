@@ -34,4 +34,3 @@ int main()
 {
   return distance(I<int>{}, I<void>{});
 }
-

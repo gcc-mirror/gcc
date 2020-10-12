@@ -428,7 +428,7 @@ package body Sem_Elim is
 
             --  Check for case of subprogram
 
-            elsif Ekind_In (E, E_Function, E_Procedure) then
+            elsif Ekind (E) in E_Function | E_Procedure then
 
                --  If Source_Location present, then see if it matches
 

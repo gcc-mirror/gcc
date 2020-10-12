@@ -141,6 +141,7 @@ D_OBJS = \
 	d/d-ctfloat.o \
 	d/d-diagnostic.o \
 	d/d-frontend.o \
+	d/d-gimplify.o \
 	d/d-incpath.o \
 	d/d-lang.o \
 	d/d-longdouble.o \

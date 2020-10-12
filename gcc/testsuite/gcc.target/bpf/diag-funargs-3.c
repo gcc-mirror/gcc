@@ -23,4 +23,3 @@ int foo ()
   jorl (je, 1, 2, 3, 4); /* { dg-error "too many function arguments" } */
   return 2L /1;
 }
-

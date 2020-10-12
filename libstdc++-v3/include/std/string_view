@@ -41,6 +41,7 @@
 #include <bits/char_traits.h>
 #include <bits/functional_hash.h>
 #include <bits/range_access.h>
+#include <bits/ranges_base.h>
 #include <bits/ostream_insert.h>
 #include <ext/numeric_traits.h>
 
@@ -207,8 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const_reference
       operator[](size_type __pos) const noexcept
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(__pos < this->_M_len);
+	__glibcxx_assert(__pos < this->_M_len);
 	return *(this->_M_str + __pos);
       }
 
@@ -225,16 +225,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const_reference
       front() const noexcept
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(this->_M_len > 0);
+	__glibcxx_assert(this->_M_len > 0);
 	return *this->_M_str;
       }
 
       constexpr const_reference
       back() const noexcept
       {
-	// TODO: Assert to restore in a way compatible with the constexpr.
-	// __glibcxx_assert(this->_M_len > 0);
+	__glibcxx_assert(this->_M_len > 0);
 	return *(this->_M_str + this->_M_len - 1);
       }
 
@@ -461,11 +459,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
+	using __limits = __gnu_cxx::__int_traits<int>;
 	const difference_type __diff = __n1 - __n2;
-	if (__diff > __gnu_cxx::__int_traits<int>::__max)
-	  return __gnu_cxx::__int_traits<int>::__max;
-	if (__diff < __gnu_cxx::__int_traits<int>::__min)
-	  return __gnu_cxx::__int_traits<int>::__min;
+	if (__diff > __limits::__max)
+	  return __limits::__max;
+	if (__diff < __limits::__min)
+	  return __limits::__min;
 	return static_cast<int>(__diff);
       }
 

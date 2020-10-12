@@ -241,7 +241,7 @@ package Sem_Ch3 is
    --  Default and per object expressions do not freeze their components, and
    --  must be analyzed and resolved accordingly. The analysis is done by
    --  calling the Preanalyze_And_Resolve routine and setting the global
-   --  In_Default_Expression flag. See the documentation section entitled
+   --  In_Spec_Expression flag. See the documentation section entitled
    --  "Handling of Default and Per-Object Expressions" in sem.ads for full
    --  details. N is the expression to be analyzed, T is the expected type.
    --  This mechanism is also used for aspect specifications that have an

@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "opts.h"
+#include "cpplib.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -219,6 +220,9 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->min_margin_width = 0;
   context->show_ruler_p = false;
   context->parseable_fixits_p = false;
+  context->column_unit = DIAGNOSTICS_COLUMN_UNIT_DISPLAY;
+  context->column_origin = 1;
+  context->tabstop = 8;
   context->edit_context_ptr = NULL;
   context->diagnostic_group_nesting_depth = 0;
   context->diagnostic_group_emission_count = 0;
@@ -353,8 +357,37 @@ diagnostic_get_color_for_kind (diagnostic_t kind)
   return diagnostic_kind_color[kind];
 }
 
+/* Given an expanded_location, convert the column (which is in 1-based bytes)
+   to the requested units and origin.  Return -1 if the column is
+   invalid (<= 0).  */
+int
+diagnostic_converted_column (diagnostic_context *context, expanded_location s)
+{
+  if (s.column <= 0)
+    return -1;
+
+  int one_based_col;
+  switch (context->column_unit)
+    {
+    case DIAGNOSTICS_COLUMN_UNIT_DISPLAY:
+      one_based_col = location_compute_display_column (s, context->tabstop);
+      break;
+
+    case DIAGNOSTICS_COLUMN_UNIT_BYTE:
+      one_based_col = s.column;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return one_based_col + (context->column_origin - 1);
+}
+
 /* Return a formatted line and column ':%line:%column'.  Elided if
-   zero.  The result is a statically allocated buffer.  */
+   line == 0 or col < 0.  (A column of 0 may be valid due to the
+   -fdiagnostics-column-origin option.)
+   The result is a statically allocated buffer.  */
 
 static const char *
 maybe_line_and_column (int line, int col)
@@ -363,8 +396,9 @@ maybe_line_and_column (int line, int col)
 
   if (line)
     {
-      size_t l = snprintf (result, sizeof (result),
-			   col ? ":%d:%d" : ":%d", line, col);
+      size_t l
+	= snprintf (result, sizeof (result),
+		    col >= 0 ? ":%d:%d" : ":%d", line, col);
       gcc_checking_assert (l < sizeof (result));
     }
   else
@@ -383,8 +417,14 @@ diagnostic_get_location_text (diagnostic_context *context,
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
   const char *file = s.file ? s.file : progname;
-  int line = strcmp (file, N_("<built-in>")) ? s.line : 0;
-  int col = context->show_column ? s.column : 0;
+  int line = 0;
+  int col = -1;
+  if (strcmp (file, N_("<built-in>")))
+    {
+      line = s.line;
+      if (context->show_column)
+	col = diagnostic_converted_column (context, s);
+    }
 
   const char *line_col = maybe_line_and_column (line, col);
   return build_message_string ("%s%s%s:%s", locus_cs, file,
@@ -650,14 +690,20 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
       if (! MAIN_FILE_P (map))
 	{
 	  bool first = true;
+	  expanded_location s = {};
 	  do
 	    {
 	      where = linemap_included_from (map);
 	      map = linemap_included_from_linemap (line_table, map);
-	      const char *line_col
-		= maybe_line_and_column (SOURCE_LINE (map, where),
-					 first && context->show_column
-					 ? SOURCE_COLUMN (map, where) : 0);
+	      s.file = LINEMAP_FILE (map);
+	      s.line = SOURCE_LINE (map, where);
+	      int col = -1;
+	      if (first && context->show_column)
+		{
+		  s.column = SOURCE_COLUMN (map, where);
+		  col = diagnostic_converted_column (context, s);
+		}
+	      const char *line_col = maybe_line_and_column (s.line, col);
 	      static const char *const msgs[] =
 		{
 		 N_("In file included from"),
@@ -666,7 +712,7 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 	      unsigned index = !first;
 	      pp_verbatim (context->printer, "%s%s %r%s%s%R",
 			   first ? "" : ",\n", _(msgs[index]),
-			   "locus", LINEMAP_FILE (map), line_col);
+			   "locus", s.file, line_col);
 	      first = false;
 	    }
 	  while (! MAIN_FILE_P (map));
@@ -2042,10 +2088,15 @@ test_print_parseable_fixits_replace ()
 static void
 assert_location_text (const char *expected_loc_text,
 		      const char *filename, int line, int column,
-		      bool show_column)
+		      bool show_column,
+		      int origin = 1,
+		      enum diagnostics_column_unit column_unit
+			= DIAGNOSTICS_COLUMN_UNIT_BYTE)
 {
   test_diagnostic_context dc;
   dc.show_column = show_column;
+  dc.column_unit = column_unit;
+  dc.column_origin = origin;
 
   expanded_location xloc;
   xloc.file = filename;
@@ -2069,13 +2120,51 @@ test_diagnostic_get_location_text ()
   assert_location_text ("PROGNAME:", NULL, 0, 0, true);
   assert_location_text ("<built-in>:", "<built-in>", 42, 10, true);
   assert_location_text ("foo.c:42:10:", "foo.c", 42, 10, true);
-  assert_location_text ("foo.c:42:", "foo.c", 42, 0, true);
+  assert_location_text ("foo.c:42:9:", "foo.c", 42, 10, true, 0);
+  assert_location_text ("foo.c:42:1010:", "foo.c", 42, 10, true, 1001);
+  for (int origin = 0; origin != 2; ++origin)
+    assert_location_text ("foo.c:42:", "foo.c", 42, 0, true, origin);
   assert_location_text ("foo.c:", "foo.c", 0, 10, true);
   assert_location_text ("foo.c:42:", "foo.c", 42, 10, false);
   assert_location_text ("foo.c:", "foo.c", 0, 10, false);
 
   maybe_line_and_column (INT_MAX, INT_MAX);
   maybe_line_and_column (INT_MIN, INT_MIN);
+
+  {
+    /* In order to test display columns vs byte columns, we need to create a
+       file for location_get_source_line() to read.  */
+
+    const char *const content = "smile \xf0\x9f\x98\x82\n";
+    const int line_bytes = strlen (content) - 1;
+    const int def_tabstop = 8;
+    const int display_width = cpp_display_width (content, line_bytes,
+						 def_tabstop);
+    ASSERT_EQ (line_bytes - 2, display_width);
+    temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+    const char *const fname = tmp.get_filename ();
+    const int buf_len = strlen (fname) + 16;
+    char *const expected = XNEWVEC (char, buf_len);
+
+    snprintf (expected, buf_len, "%s:1:%d:", fname, line_bytes);
+    assert_location_text (expected, fname, 1, line_bytes, true,
+			  1, DIAGNOSTICS_COLUMN_UNIT_BYTE);
+
+    snprintf (expected, buf_len, "%s:1:%d:", fname, line_bytes - 1);
+    assert_location_text (expected, fname, 1, line_bytes, true,
+			  0, DIAGNOSTICS_COLUMN_UNIT_BYTE);
+
+    snprintf (expected, buf_len, "%s:1:%d:", fname, display_width);
+    assert_location_text (expected, fname, 1, line_bytes, true,
+			  1, DIAGNOSTICS_COLUMN_UNIT_DISPLAY);
+
+    snprintf (expected, buf_len, "%s:1:%d:", fname, display_width - 1);
+    assert_location_text (expected, fname, 1, line_bytes, true,
+			  0, DIAGNOSTICS_COLUMN_UNIT_DISPLAY);
+
+    XDELETEVEC (expected);
+  }
+
 
   progname = old_progname;
 }

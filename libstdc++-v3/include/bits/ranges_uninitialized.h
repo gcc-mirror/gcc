@@ -493,12 +493,16 @@ namespace ranges
   struct __construct_at_fn
   {
     template<typename _Tp, typename... _Args>
-      requires requires { ::new (declval<void*>()) _Tp(declval<_Args>()...); }
+      requires requires {
+	::new (std::declval<void*>()) _Tp(std::declval<_Args>()...);
+      }
       constexpr _Tp*
       operator()(_Tp* __location, _Args&&... __args) const
+      noexcept(noexcept(std::construct_at(__location,
+					  std::forward<_Args>(__args)...)))
       {
-	return ::new (__detail::__voidify(*__location))
-		     _Tp(std::forward<_Args>(__args)...);
+	return std::construct_at(__location,
+				 std::forward<_Args>(__args)...);
       }
   };
 

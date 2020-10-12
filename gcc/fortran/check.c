@@ -67,7 +67,7 @@ gfc_invalid_boz (const char *msg, locus *loc)
       return false;
     }
 
-  const char *hint = " [see %<-fno-allow-invalid-boz%>]";
+  const char *hint = _(" [see %<-fno-allow-invalid-boz%>]");
   size_t len = strlen (msg) + strlen (hint) + 1;
   char *msg2 = (char *) alloca (len);
   strcpy (msg2, msg);
@@ -340,9 +340,9 @@ gfc_boz2real (gfc_expr *x, int kind)
       /* Clear first two bits.  */
       else
 	{
-	  if (buf[0] == '4' || buf[0] == '6')
+	  if (buf[0] == '2' || buf[0] == '4' || buf[0] == '6')
 	    buf[0] = '0';
-	  else if (buf[0] == '5' || buf[0] == '7')
+	  else if (buf[0] == '3' || buf[0] == '5' || buf[0] == '7')
 	    buf[0] = '1';
 	}
     }
@@ -429,9 +429,9 @@ gfc_boz2int (gfc_expr *x, int kind)
       /* Clear first two bits.  */
       else
 	{
-	  if (buf[0] == '4' || buf[0] == '6')
+	  if (buf[0] == '2' || buf[0] == '4' || buf[0] == '6')
 	    buf[0] = '0';
-	  else if (buf[0] == '5' || buf[0] == '7')
+	  else if (buf[0] == '3' || buf[0] == '5' || buf[0] == '7')
 	    buf[0] = '1';
 	}
     }
@@ -1142,7 +1142,9 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
 
   if (array->expr_type == EXPR_VARIABLE)
     {
-      ar = gfc_find_array_ref (array);
+      ar = gfc_find_array_ref (array, true);
+      if (!ar)
+	return false;
       if (ar->as->type == AS_ASSUMED_SIZE
 	  && !allow_assumed
 	  && ar->type != AR_ELEMENT
@@ -3691,6 +3693,11 @@ check_rest (bt type, int kind, gfc_actual_arglist *arglist)
 	{
 	  if (x->ts.type == type)
 	    {
+	      if (x->ts.type == BT_CHARACTER)
+		{
+		  gfc_error ("Different character kinds at %L", &x->where);
+		  return false;
+		}
 	      if (!gfc_notify_std (GFC_STD_GNU, "Different type "
 				   "kinds at %L", &x->where))
 		return false;

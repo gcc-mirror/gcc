@@ -124,8 +124,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__17convenience_la_LIBADD =
 @ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-fs_dir.lo cow-fs_ops.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-fs_path.lo
-am__objects_2 = fs_dir.lo fs_ops.lo fs_path.lo memory_resource.lo \
-	$(am__objects_1)
+am__objects_2 = floating_from_chars.lo fs_dir.lo fs_ops.lo fs_path.lo \
+	memory_resource.lo $(am__objects_1)
 @ENABLE_DUAL_ABI_TRUE@am__objects_3 = cow-string-inst.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = ostream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.lo $(am__objects_3)
@@ -435,6 +435,7 @@ headers =
 @ENABLE_EXTERN_TEMPLATE_TRUE@	$(extra_string_inst_sources)
 
 sources = \
+	floating_from_chars.cc \
 	fs_dir.cc \
 	fs_ops.cc \
 	fs_path.cc \

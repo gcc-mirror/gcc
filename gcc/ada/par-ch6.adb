@@ -883,9 +883,9 @@ package body Ch6 is
                      --  with syntactic parentheses.
 
                      if not (Paren_Count (Expr) /= 0
-                              or else Nkind_In (Expr, N_Aggregate,
-                                                      N_Extension_Aggregate,
-                                                      N_Quantified_Expression))
+                              or else Nkind (Expr) in N_Aggregate
+                                                    | N_Extension_Aggregate
+                                                    | N_Quantified_Expression)
                      then
                         Error_Msg
                           ("expression function must be enclosed in "

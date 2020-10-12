@@ -133,8 +133,8 @@ package body Sem_Ch9 is
       --  when Lock_Free_Given is True.
 
    begin
-      pragma Assert (Nkind_In (N, N_Protected_Type_Declaration,
-                                  N_Protected_Body));
+      pragma Assert
+        (Nkind (N) in N_Protected_Type_Declaration | N_Protected_Body);
 
       --  The lock-free implementation is currently enabled through a debug
       --  flag. When Lock_Free_Given is True, an aspect Lock_Free forces the
@@ -569,7 +569,7 @@ package body Sem_Ch9 is
                         if Ekind (Id) = E_Component then
                            Comp_Id := Id;
 
-                        elsif Ekind_In (Id, E_Constant, E_Variable)
+                        elsif Ekind (Id) in E_Constant | E_Variable
                           and then Present (Prival_Link (Id))
                         then
                            Comp_Id := Prival_Link (Id);
@@ -1113,7 +1113,7 @@ package body Sem_Ch9 is
          Analyze_List (Pragmas_Before (N));
       end if;
 
-      if Nkind_In (Parent (N), N_Selective_Accept, N_Timed_Entry_Call) then
+      if Nkind (Parent (N)) in N_Selective_Accept | N_Timed_Entry_Call then
          Expr := Expression (Delay_Statement (N));
 
          --  Defer full analysis until the statement is expanded, to insure
@@ -1966,7 +1966,7 @@ package body Sem_Ch9 is
 
       Item_Id := First_Entity (Prot_Typ);
       while Present (Item_Id) loop
-         if Ekind_In (Item_Id, E_Function, E_Procedure) then
+         if Ekind (Item_Id) in E_Function | E_Procedure then
             Set_Convention (Item_Id, Convention_Protected);
          else
             Propagate_Concurrent_Flags (Prot_Typ, Etype (Item_Id));
@@ -2317,7 +2317,7 @@ package body Sem_Ch9 is
          Enclosing := Scope_Stack.Table (J).Entity;
          exit when Is_Entry (Enclosing);
 
-         if not Ekind_In (Enclosing, E_Block, E_Loop) then
+         if Ekind (Enclosing) not in E_Block | E_Loop then
             Error_Msg_N ("requeue must appear within accept or entry body", N);
             return;
          end if;
@@ -2550,7 +2550,7 @@ package body Sem_Ch9 is
                   --  perform an unconditional goto so that any further
                   --  references will not occur anyway.
 
-                  if Ekind_In (Ent, E_Out_Parameter, E_In_Out_Parameter) then
+                  if Ekind (Ent) in E_Out_Parameter | E_In_Out_Parameter then
                      Set_Never_Set_In_Source (Ent, False);
                      Set_Is_True_Constant    (Ent, False);
                   end if;
@@ -3470,7 +3470,7 @@ package body Sem_Ch9 is
 
    begin
       pragma Assert
-        (Nkind_In (N, N_Protected_Type_Declaration, N_Task_Type_Declaration));
+        (Nkind (N) in N_Protected_Type_Declaration | N_Task_Type_Declaration);
 
       if Present (Interface_List (N)) then
          Set_Is_Tagged_Type (T);

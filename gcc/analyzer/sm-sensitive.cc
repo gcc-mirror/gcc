@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -65,9 +66,6 @@ public:
 		     tree rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
-
-  /* Start state.  */
-  state_t m_start;
 
   /* State for "sensitive" data, such as a password.  */
   state_t m_sensitive;
@@ -163,7 +161,6 @@ private:
 sensitive_state_machine::sensitive_state_machine (logger *logger)
 : state_machine ("sensitive", logger)
 {
-  m_start = add_state ("start");
   m_sensitive = add_state ("sensitive");
   m_stop = add_state ("stop");
 }
@@ -177,8 +174,10 @@ sensitive_state_machine::warn_for_any_exposure (sm_context *sm_ctxt,
 						const gimple *stmt,
 						tree arg) const
 {
-  sm_ctxt->warn_for_state (node, stmt, arg, m_sensitive,
-			   new exposure_through_output_file (*this, arg));
+  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
+  if (sm_ctxt->get_state (stmt, arg) == m_sensitive)
+    sm_ctxt->warn (node, stmt, arg,
+		   new exposure_through_output_file (*this, diag_arg));
 }
 
 /* Implementation of state_machine::on_stmt vfunc for

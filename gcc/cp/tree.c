@@ -73,7 +73,12 @@ lvalue_kind (const_tree ref)
 	  && TREE_CODE (ref) != COMPONENT_REF
 	  /* Functions are always lvalues.  */
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (ref))) != FUNCTION_TYPE)
-	return clk_rvalueref;
+	{
+	  op1_lvalue_kind = clk_rvalueref;
+	  if (implicit_rvalue_p (ref))
+	    op1_lvalue_kind |= clk_implicit_rval;
+	  return op1_lvalue_kind;
+	}
 
       /* lvalue references and named rvalue references are lvalues.  */
       return clk_ordinary;
@@ -2232,13 +2237,13 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
-/* Add FN to the (potentially NULL) overload set OVL.  USING_P is
-   true, if FN is via a using declaration.  We also pay attention to
-   DECL_HIDDEN.  We keep the hidden decls first, but remaining ones
-   are unordered.  */
+/* Add FN to the (potentially NULL) overload set OVL.  USING_OR_HIDDEN
+   is > 0, if FN is via a using declaration.  USING_OR_HIDDEN is < 0,
+   if FN is hidden.  (A decl cannot be both using and hidden.)  We
+   keep the hidden decls first, but remaining ones are unordered.  */
 
 tree
-ovl_insert (tree fn, tree maybe_ovl, bool using_p)
+ovl_insert (tree fn, tree maybe_ovl, int using_or_hidden)
 {
   tree result = maybe_ovl;
   tree insert_after = NULL_TREE;
@@ -2252,13 +2257,13 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
       insert_after = maybe_ovl;
     }
 
-  bool hidden_p = DECL_HIDDEN_P (fn);
-  if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
+  if (maybe_ovl || using_or_hidden || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       maybe_ovl = ovl_make (fn, maybe_ovl);
-      if (hidden_p)
+
+      if (using_or_hidden < 0)
 	OVL_HIDDEN_P (maybe_ovl) = true;
-      if (using_p)
+      if (using_or_hidden > 0)
 	OVL_DEDUP_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
     }
   else
@@ -2280,23 +2285,13 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 tree
 ovl_skip_hidden (tree ovl)
 {
-  for (;
-       ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
-       ovl = OVL_CHAIN (ovl))
-    gcc_checking_assert (DECL_HIDDEN_P (OVL_FUNCTION (ovl)));
-
-  if (ovl && TREE_CODE (ovl) != OVERLOAD && DECL_HIDDEN_P (ovl))
-    {
-      /* Any hidden functions should have been wrapped in an
-	 overload, but injected friend classes will not.  */
-      gcc_checking_assert (!DECL_DECLARES_FUNCTION_P (ovl));
-      ovl = NULL_TREE;
-    }
+  while (ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl))
+    ovl = OVL_CHAIN (ovl);
 
   return ovl;
 }
 
-/* NODE is an OVL_HIDDEN_P node which is now revealed.  */
+/* NODE is an OVL_HIDDEN_P node that is now revealed.  */
 
 tree
 ovl_iterator::reveal_node (tree overload, tree node)
@@ -2643,6 +2638,9 @@ build_cp_fntype_variant (tree type, cp_ref_qualifier rqual,
 
   /* Need to build a new variant.  */
   v = build_variant_type_copy (type);
+  if (!TYPE_DEPENDENT_P (v))
+    /* We no longer know that it's not type-dependent.  */
+    TYPE_DEPENDENT_P_VALID (v) = false;
   TYPE_RAISES_EXCEPTIONS (v) = raises;
   TYPE_HAS_LATE_RETURN_TYPE (v) = late;
   switch (rqual)
@@ -3805,6 +3803,8 @@ cp_tree_equal (tree t1, tree t2)
 	    if (SIZEOF_EXPR_TYPE_P (t2))
 	      o2 = TREE_TYPE (o2);
 	  }
+	else if (ALIGNOF_EXPR_STD_P (t1) != ALIGNOF_EXPR_STD_P (t2))
+	  return false;
 
 	if (TREE_CODE (o1) != TREE_CODE (o2))
 	  return false;

@@ -642,7 +642,7 @@ compute_alignments (void)
 
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
-  label_align.safe_grow_cleared (max_labelno - min_labelno + 1);
+  label_align.safe_grow_cleared (max_labelno - min_labelno + 1, true);
 
   /* If not optimizing or optimizing for size, don't assign any alignments.  */
   if (! optimize || optimize_function_for_size_p (cfun))
@@ -771,7 +771,7 @@ grow_label_align (void)
   n_labels = max_labelno - min_labelno + 1;
   n_old_labels = old - min_labelno + 1;
 
-  label_align.safe_grow_cleared (n_labels);
+  label_align.safe_grow_cleared (n_labels, true);
 
   /* Range of labels grows monotonically in the function.  Failing here
      means that the initialization of array got lost.  */

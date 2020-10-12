@@ -10,5 +10,5 @@ int*
 f (struct A *p, int *q)
 {
   return q ? q : &p->i;
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */
 }

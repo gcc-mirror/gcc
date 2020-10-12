@@ -514,6 +514,8 @@ package Snames is
    Name_CPP_Constructor                : constant Name_Id := N + $; -- GNAT
    Name_CPP_Virtual                    : constant Name_Id := N + $; -- GNAT
    Name_CPP_Vtable                     : constant Name_Id := N + $; -- GNAT
+   Name_CUDA_Execute                   : constant Name_Id := N + $; -- GNAT
+   Name_CUDA_Global                    : constant Name_Id := N + $; -- GNAT
 
    --  Note: CPU is not in this list because its name matches the name of
    --  the corresponding attribute. However, it is included in the definition
@@ -1998,6 +2000,8 @@ package Snames is
       Pragma_CPP_Constructor,
       Pragma_CPP_Virtual,
       Pragma_CPP_Vtable,
+      Pragma_CUDA_Execute,
+      Pragma_CUDA_Global,
       Pragma_Deadline_Floor,
       Pragma_Debug,
       Pragma_Default_Initial_Condition,

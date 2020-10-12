@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "diagnostic-metadata.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -65,9 +66,6 @@ public:
 		     tree rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
-
-private:
-  state_t m_start;
 };
 
 class pattern_match : public pending_diagnostic_subclass<pattern_match>
@@ -100,7 +98,6 @@ private:
 pattern_test_state_machine::pattern_test_state_machine (logger *logger)
 : state_machine ("pattern-test", logger)
 {
-  m_start = add_state ("start");
 }
 
 bool
@@ -132,7 +129,7 @@ pattern_test_state_machine::on_condition (sm_context *sm_ctxt,
     return;
 
   pending_diagnostic *diag = new pattern_match (lhs, op, rhs);
-  sm_ctxt->warn_for_state (node, stmt, lhs, m_start, diag);
+  sm_ctxt->warn (node, stmt, lhs, diag);
 }
 
 bool

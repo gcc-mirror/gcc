@@ -13,5 +13,5 @@ public:
 main() {
         A* a;
 
-        a = new A[2](1,false); // { dg-error "parenthesized" }
+        a = new A[2](1,false); // { dg-error "parenthesized" "" { target c++17_down } }
 }

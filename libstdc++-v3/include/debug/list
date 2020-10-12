@@ -681,36 +681,36 @@ namespace __debug
 	if (!this->_M_iterators && !this->_M_const_iterators)
 	  return _Base::remove(__value);
 
+#if !_GLIBCXX_USE_CXX11_ABI
 	size_type __removed __attribute__((__unused__)) = 0;
+#endif
+	_Base __to_destroy(get_allocator());
 	_Base_iterator __first = _Base::begin();
 	_Base_iterator __last = _Base::end();
-	_Base_iterator __extra = __last;
 	while (__first != __last)
 	  {
+	    _Base_iterator __next = __first;
+	    ++__next;
 	    if (*__first == __value)
-	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 526. Is it undefined if a function in the standard changes
-	      // in parameters?
-	      if (std::__addressof(*__first) != std::__addressof(__value))
-		{
-		  __first = _M_erase(__first);
-		  _GLIBCXX20_ONLY( __removed++ );
-		}
-	      else
-		{
-		  __extra = __first;
-		  ++__first;
-		}
-	    else
-	      ++__first;
+	      {
+		// _GLIBCXX_RESOLVE_LIB_DEFECTS
+		// 526. Is it undefined if a function in the standard changes
+		// in parameters?
+		this->_M_invalidate_if(_Equal(__first));
+		__to_destroy.splice(__to_destroy.begin(), _M_base(), __first);
+#if !_GLIBCXX_USE_CXX11_ABI
+		_GLIBCXX20_ONLY( __removed++ );
+#endif
+	      }
+
+	    __first = __next;
 	  }
 
-	if (__extra != __last)
-	  {
-	    _M_erase(__extra);
-	    _GLIBCXX20_ONLY( __removed++ );
-	  }
+#if !_GLIBCXX_USE_CXX11_ABI
 	return _GLIBCXX20_ONLY( __removed );
+#else
+	return _GLIBCXX20_ONLY( __to_destroy.size() );
+#endif
       }
 
       template<class _Predicate>
@@ -720,17 +720,31 @@ namespace __debug
 	  if (!this->_M_iterators && !this->_M_const_iterators)
 	    return _Base::remove_if(__pred);
 
+#if !_GLIBCXX_USE_CXX11_ABI
 	  size_type __removed __attribute__((__unused__)) = 0;
+#endif
+	  _Base __to_destroy(get_allocator());
 	  for (_Base_iterator __x = _Base::begin(); __x != _Base::end(); )
+	  {
+	    _Base_iterator __next = __x;
+	    ++__next;
 	    if (__pred(*__x))
 	      {
-		__x = _M_erase(__x);
+		this->_M_invalidate_if(_Equal(__x));
+		__to_destroy.splice(__to_destroy.begin(), _M_base(), __x);
+#if !_GLIBCXX_USE_CXX11_ABI
 		_GLIBCXX20_ONLY( __removed++ );
+#endif
 	      }
-	    else
-	      ++__x;
 
+	    __x = __next;
+	  }
+
+#if !_GLIBCXX_USE_CXX11_ABI
 	  return _GLIBCXX20_ONLY( __removed );
+#else
+	  return _GLIBCXX20_ONLY( __to_destroy.size() );
+#endif
 	}
 
       _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG
@@ -743,21 +757,31 @@ namespace __debug
 	if (empty())
 	  return _GLIBCXX20_ONLY(0);
 
+#if !_GLIBCXX_USE_CXX11_ABI
         size_type __removed __attribute__((__unused__)) = 0;
+#endif
+	_Base __to_destroy(get_allocator());
 	_Base_iterator __first = _Base::begin();
 	_Base_iterator __last = _Base::end();
 	_Base_iterator __next = __first;
 	while (++__next != __last)
 	  if (*__first == *__next)
 	    {
-	      _M_erase(__next);
+	      this->_M_invalidate_if(_Equal(__next));
+	      __to_destroy.splice(__to_destroy.begin(), _M_base(), __next);
 	      __next = __first;
+#if !_GLIBCXX_USE_CXX11_ABI
 	      _GLIBCXX20_ONLY( __removed++ );
+#endif
 	    }
 	  else
 	    __first = __next;
 
+#if !_GLIBCXX_USE_CXX11_ABI
 	return _GLIBCXX20_ONLY( __removed );
+#else
+	return _GLIBCXX20_ONLY( __to_destroy.size() );
+#endif
       }
 
       template<class _BinaryPredicate>
@@ -770,21 +794,32 @@ namespace __debug
 	  if (empty())
 	    return _GLIBCXX20_ONLY(0);
 
+
+#if !_GLIBCXX_USE_CXX11_ABI
 	  size_type __removed __attribute__((__unused__)) = 0;
+#endif
+	  _Base __to_destroy(get_allocator());
 	  _Base_iterator __first = _Base::begin();
 	  _Base_iterator __last = _Base::end();
-	  _Base_iterator __next = __first;;
+	  _Base_iterator __next = __first;
 	  while (++__next != __last)
 	    if (__binary_pred(*__first, *__next))
 	      {
-		_M_erase(__next);
+		this->_M_invalidate_if(_Equal(__next));
+		__to_destroy.splice(__to_destroy.begin(), _M_base(), __next);
 		__next = __first;
+#if !_GLIBCXX_USE_CXX11_ABI
 		_GLIBCXX20_ONLY( __removed++ );
+#endif
 	      }
 	    else
 	      __first = __next;
 
-	  return _GLIBCXX20_ONLY( __removed );
+#if !_GLIBCXX_USE_CXX11_ABI
+	return _GLIBCXX20_ONLY( __removed );
+#else
+	return _GLIBCXX20_ONLY( __to_destroy.size() );
+#endif
 	}
 
 #undef _GLIBCXX_LIST_REMOVE_RETURN_TYPE_TAG

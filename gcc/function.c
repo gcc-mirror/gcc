@@ -637,7 +637,7 @@ static class temp_slot **
 temp_slots_at_level (int level)
 {
   if (level >= (int) vec_safe_length (used_temp_slots))
-    vec_safe_grow_cleared (used_temp_slots, level + 1);
+    vec_safe_grow_cleared (used_temp_slots, level + 1, true);
 
   return &(*used_temp_slots)[level];
 }
@@ -2237,6 +2237,11 @@ use_register_for_decl (const_tree decl)
   if (optimize)
     return true;
 
+  /* Thunks force a tail call even at -O0 so we need to avoid creating a
+     dangling reference in case the parameter is passed by reference.  */
+  if (TREE_CODE (decl) == PARM_DECL && cfun->tail_call_marked)
+    return true;
+
   if (!DECL_REGISTER (decl))
     return false;
 
@@ -3013,8 +3018,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 		 to the value directly in mode MODE, otherwise we must
 		 start with the register in word_mode and explicitly
 		 convert it.  */
-	      if (targetm.truly_noop_truncation (size * BITS_PER_UNIT,
-						 BITS_PER_WORD))
+	      if (mode == word_mode
+		  || TRULY_NOOP_TRUNCATION_MODES_P (mode, word_mode))
 		reg = gen_rtx_REG (mode, REGNO (entry_parm));
 	      else
 		{
@@ -3322,12 +3327,13 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
   else
     emit_move_insn (parmreg, validated_mem);
 
-  /* If we were passed a pointer but the actual value can safely live
-     in a register, retrieve it and use it directly.  */
+  /* If we were passed a pointer but the actual value can live in a register,
+     retrieve it and use it directly.  Note that we cannot use nominal_mode,
+     because it will have been set to Pmode above, we must use the actual mode
+     of the parameter instead.  */
   if (data->arg.pass_by_reference && TYPE_MODE (TREE_TYPE (parm)) != BLKmode)
     {
-      /* We can't use nominal_mode, because it will have been set to
-	 Pmode above.  We must use the actual mode of the parm.  */
+      /* Use a stack slot for debugging purposes if possible.  */
       if (use_register_for_decl (parm))
 	{
 	  parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
@@ -4664,7 +4670,8 @@ invoke_set_current_function_hook (tree fndecl)
       if (optimization_current_node != opts)
 	{
 	  optimization_current_node = opts;
-	  cl_optimization_restore (&global_options, TREE_OPTIMIZATION (opts));
+	  cl_optimization_restore (&global_options, &global_options_set,
+				   TREE_OPTIMIZATION (opts));
 	}
 
       targetm.set_current_function (fndecl);

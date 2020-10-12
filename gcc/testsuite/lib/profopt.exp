@@ -289,8 +289,8 @@ proc auto-profopt-execute { src } {
         return
     }
     set profile_wrapper [profopt-perf-wrapper]
-    set profile_option "-g"
-    set feedback_option "-fauto-profile"
+    set profile_option "-g -DFOR_AUTOFDO_TESTING"
+    set feedback_option "-fauto-profile -DFOR_AUTOFDO_TESTING"
     set run_autofdo 1
     profopt-execute $src
     unset profile_wrapper

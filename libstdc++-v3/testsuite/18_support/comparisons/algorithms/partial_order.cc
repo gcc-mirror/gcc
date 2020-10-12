@@ -28,11 +28,11 @@ using std::partial_ordering;
 void
 test01()
 {
-  int one = 1, two = 2;
+  const int one = 1, two = 2;
 
-  VERIFY( partial_order(one, two) == partial_ordering::less );
-  VERIFY( partial_order(one, one) == partial_ordering::equivalent );
-  VERIFY( partial_order(two, one) == partial_ordering::greater );
+  static_assert( partial_order(one, two) == partial_ordering::less );
+  static_assert( partial_order(one, one) == partial_ordering::equivalent );
+  static_assert( partial_order(two, one) == partial_ordering::greater );
   static_assert( noexcept(partial_order(1, 1)) );
 }
 
@@ -44,44 +44,45 @@ constexpr partial_ordering different_cv_quals(int i, const int j)
 void
 test02()
 {
-  int fortytwo = 42, nines = 999, lots = 1000;
-  VERIFY( different_cv_quals(fortytwo, nines) == partial_ordering::less );
-  VERIFY( different_cv_quals(-nines, -nines) == partial_ordering::equivalent );
-  VERIFY( different_cv_quals(-nines, -lots) == partial_ordering::greater );
+  const int fortytwo = 42, nines = 999, lots = 1000;
+  static_assert( different_cv_quals(fortytwo, nines) == partial_ordering::less );
+  static_assert( different_cv_quals(-nines, -nines) == partial_ordering::equivalent );
+  static_assert( different_cv_quals(-nines, -lots) == partial_ordering::greater );
 }
 
 void
 test03()
 {
-  double zero = 0.0;
-  VERIFY( partial_order(zero, zero) == partial_ordering::equivalent );
-  VERIFY( partial_order(-zero, -zero) == partial_ordering::equivalent );
-  VERIFY( partial_order(-zero, zero) == partial_ordering::equivalent );
-  VERIFY( partial_order(zero, -zero) == partial_ordering::equivalent );
+  constexpr double zero = 0.0;
+  static_assert( partial_order(zero, zero) == partial_ordering::equivalent );
+  static_assert( partial_order(-zero, -zero) == partial_ordering::equivalent );
+  static_assert( partial_order(-zero, zero) == partial_ordering::equivalent );
+  static_assert( partial_order(zero, -zero) == partial_ordering::equivalent );
   static_assert( noexcept(partial_order(zero, 1.0)) );
   static_assert( partial_order(0.0, 1.0) == std::partial_ordering::less );
 
-  double min = std::numeric_limits<double>::lowest();
-  double max = std::numeric_limits<double>::max();
-  double nan = std::numeric_limits<double>::quiet_NaN();
-  double inf = std::numeric_limits<double>::infinity();
-  double denorm = std::numeric_limits<double>::denorm_min();
-  double smallest = std::numeric_limits<double>::min();
-  double epsilon = std::numeric_limits<double>::epsilon();
-  VERIFY( partial_order(denorm, smallest) == partial_ordering::less );
-  VERIFY( partial_order(denorm, 0.0) == partial_ordering::greater );
+  constexpr double min = std::numeric_limits<double>::lowest();
+  constexpr double max = std::numeric_limits<double>::max();
+  constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+  constexpr double inf = std::numeric_limits<double>::infinity();
+  constexpr double denorm = std::numeric_limits<double>::denorm_min();
+  constexpr double smallest = std::numeric_limits<double>::min();
+  constexpr double epsilon = std::numeric_limits<double>::epsilon();
+  static_assert( partial_order(denorm, smallest) == partial_ordering::less );
+  static_assert( partial_order(denorm, 0.0) == partial_ordering::greater );
+  // FIXME: these should all use static_assert
   VERIFY( partial_order(0.0, nan) == partial_ordering::unordered );
   VERIFY( partial_order(nan, nan) == partial_ordering::unordered );
   VERIFY( partial_order(nan, 0.0) == partial_ordering::unordered );
   VERIFY( partial_order(-nan, 0.0) == partial_ordering::unordered );
   VERIFY( partial_order(-nan, min) == partial_ordering::unordered );
-  VERIFY( partial_order(-inf, min) == partial_ordering::less );
+  static_assert( partial_order(-inf, min) == partial_ordering::less );
   VERIFY( partial_order(-nan, -inf) == partial_ordering::unordered );
   VERIFY( partial_order(-inf, -nan) == partial_ordering::unordered );
-  VERIFY( partial_order(max, inf) == partial_ordering::less );
-  VERIFY( partial_order(inf, max) == partial_ordering::greater );
-  VERIFY( partial_order(inf, nan) == partial_ordering::unordered );
-  VERIFY( partial_order(1.0, 1.0+epsilon) == partial_ordering::less );
+  static_assert( partial_order(max, inf) == partial_ordering::less );
+  static_assert( partial_order(inf, max) == partial_ordering::greater );
+  static_assert( partial_order(inf, nan) == partial_ordering::unordered );
+  static_assert( partial_order(1.0, 1.0+epsilon) == partial_ordering::less );
 }
 
 namespace N
@@ -107,6 +108,7 @@ test04()
   X one{1};
   X negone{-1};
 
+  // FIXME: these should all use static_assert
   VERIFY( partial_order(one, X{1}) == partial_ordering::equivalent );
   VERIFY( partial_order(negone, X{-2}) == partial_ordering::equivalent );
   VERIFY( partial_order(one, X{2}) == partial_ordering::greater );

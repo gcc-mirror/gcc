@@ -20,8 +20,7 @@ void xxx(void)
 /* Access to arr_base[iter].y should not be strength reduced, since
    we have a memory mode including multiplication by 4.  */
 
-/* { dg-final { scan-tree-dump-times "MEM" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "step:" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "MEM\[^;\]* \* 4" 1 "optimized" } } */
 
 /* And original induction variable should be preserved.  */
 

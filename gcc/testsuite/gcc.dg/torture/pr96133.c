@@ -1,7 +1,7 @@
 /* { dg-do run } */
 
 typedef int T;
-static const T a[2][3] = { { 1, 2, 3 }, { 4, 5, 6 } };
+static const T a[2][3] __attribute__((aligned(2*sizeof(T)))) = { { 1, 2, 3 }, { 4, 5, 6 } };
 typedef T v2 __attribute__((vector_size(2*sizeof(T))));
 
 int

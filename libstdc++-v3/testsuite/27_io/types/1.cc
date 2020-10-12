@@ -15,6 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-Wdeprecated" }
 // { dg-do compile { target c++14_down } }
 
 // 27.4.2.1 - Types [lib.ios.types]
@@ -26,6 +27,14 @@
 // Annex D, deprecated.
 void test01()
 {
-  typedef std::ios_base::streampos streampos_type;
-  typedef std::ios_base::streamoff streamoff_type;
+  typedef std::ios_base::streampos streampos_type; // { dg-warning "is deprecated: use 'std::streampos' instead" }
+  typedef std::ios_base::streamoff streamoff_type; // { dg-warning "is deprecated: use 'std::streamoff' instead" }
+}
+
+// Annex D, deprecated.
+void test02()
+{
+  typedef std::ios_base::io_state iostate_type; // { dg-warning "is deprecated: use 'std::iostate' instead" }
+  typedef std::ios_base::open_mode openmode_type; // { dg-warning "is deprecated: use 'std::openmode' instead" }
+  typedef std::ios_base::seek_dir seekdir_type; // { dg-warning "is deprecated: use 'std::seekdir' instead" }
 }

@@ -1368,9 +1368,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
       typedef typename iterator_traits<_II2>::value_type _ValueType2;
       const bool __simple =
-	(__is_byte<_ValueType1>::__value && __is_byte<_ValueType2>::__value
-	 && !__gnu_cxx::__numeric_traits<_ValueType1>::__is_signed
-	 && !__gnu_cxx::__numeric_traits<_ValueType2>::__is_signed
+	(__is_memcmp_ordered_with<_ValueType1, _ValueType2>::__value
 	 && __is_pointer<_II1>::__value
 	 && __is_pointer<_II2>::__value
 #if __cplusplus > 201703L && __cpp_lib_concepts
@@ -1785,8 +1783,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   // or std::byte, suitable for comparison by memcmp.
   template<typename _Iter>
     concept __is_byte_iter = contiguous_iterator<_Iter>
-      && __is_byte<iter_value_t<_Iter>>::__value != 0
-      && !__gnu_cxx::__numeric_traits<iter_value_t<_Iter>>::__is_signed;
+      && __is_memcmp_ordered<iter_value_t<_Iter>>::__value;
 
   // Return a struct with two members, initialized to the smaller of x and y
   // (or x if they compare equal) and the result of the comparison x <=> y.

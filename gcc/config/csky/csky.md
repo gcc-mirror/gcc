@@ -50,6 +50,7 @@
    (CSKY_LAST_EH_RETDATA_REGNUM		1)
    (CSKY_EH_STACKADJ_REGNUM		2)
    (CSKY_STACKADJUST_REGNUM		4)
+   (CSKY_NPARM_FREGS 4)
 ])
 
 ;; Supported TLS relocations.
@@ -100,6 +101,7 @@
 
    ; Support for the eh_return pattern.
    VUNSPEC_EH_RETURN
+   VUNSPEC_BLOCKAGE
   ])
 
 
@@ -3310,6 +3312,88 @@
 				 force_reg (Pmode, XEXP (operands[1], 0)));
   }")
 
+;; Call subroutine returning any type.
+
+(define_expand "untyped_call"
+  [(parallel [(call (match_operand 0 "" "")
+        (const_int 0))
+        (match_operand 1 "" "")
+        (match_operand 2 "" "")])]
+  ""
+{
+  int i;
+
+  emit_call_insn (gen_call (operands[0], const0_rtx));
+
+  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+    {
+      rtx set = XVECEXP (operands[2], 0, i);
+      emit_move_insn (SET_DEST (set), SET_SRC (set));
+    }
+
+  /* The optimizer does not know that the call sets the function value
+     registers we stored in the result block.  We avoid problems by
+     claiming that all hard registers are used and clobbered at this
+     point.  */
+  emit_insn (gen_blockage ());
+
+  DONE;
+})
+
+;; UNSPEC_VOLATILE is considered to use and clobber all hard registers and
+;; all of memory.  This blocks insns from being moved across this point.
+
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_BLOCKAGE)]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
+(define_insn "*call_value_internal_vs"
+  [(set (match_operand:SF               0 "register_operand"          "=v,v,v")
+        (call (mem:SI (match_operand:SI 1 "csky_call_address_operand" "b, r,S"))
+              (match_operand 2 "" "")))
+   (clobber (reg:SI CSKY_LR_REGNUM))]
+  "TARGET_HARD_FLOAT_ABI"
+  "@
+    jsr\t%1
+    jsr\t%1
+    jbsr\t%1"
+  [(set_attr "length" "2,4,4")
+   (set_attr "type"   "call_jsr,call_jsr,call")]
+)
+
+(define_insn "*call_value_internal_vd"
+  [(set (match_operand:DF               0 "register_operand"          "=v,v,v")
+        (call (mem:SI (match_operand:SI 1 "csky_call_address_operand" "b, r,S"))
+              (match_operand 2 "" "")))
+   (clobber (reg:SI CSKY_LR_REGNUM))]
+  "TARGET_HARD_FLOAT_ABI && TARGET_DOUBLE_FPU"
+  "@
+    jsr\t%1
+    jsr\t%1
+    jbsr\t%1"
+  [(set_attr "length" "2,4,4")
+   (set_attr "type"   "call_jsr,call_jsr,call")]
+)
+
+(define_insn "*call_value_internal_pic_vs"
+  [(set (match_operand:SF               0 "register_operand"    "=v")
+        (call (mem:SI (match_operand:SI 1 "csky_unspec_operand" "X"))
+                      (match_operand    2 "" "")))
+   (clobber (reg:SI CSKY_LR_REGNUM))]
+  "flag_pic && TARGET_HARD_FLOAT_ABI"
+  "* return csky_output_call (operands, 1);"
+)
+
+(define_insn "*call_value_internal_pic_vd"
+  [(set (match_operand:DF               0 "register_operand"    "=v")
+        (call (mem:SI (match_operand:SI 1 "csky_unspec_operand" "X"))
+                      (match_operand    2 "" "")))
+   (clobber (reg:SI CSKY_LR_REGNUM))]
+  "flag_pic && TARGET_HARD_FLOAT_ABI && TARGET_DOUBLE_FPU"
+  "* return csky_output_call (operands, 1);"
+)
 
 (define_insn "*call_value_internal"
   [(set (match_operand			0 "register_operand"	      "=r,r,r")

@@ -9,9 +9,7 @@ struct d
   };
   void h (e * i)
   {
-    void *j = nullptr; // { dg-bogus "NULL" "" { xfail *-*-* } }
-    // TODO(xfail): we report "'i' is NULL" above, which is the wrong location
-    
+    void *j = nullptr; // { dg-bogus "NULL" }
     i->f = *i->g; // { dg-warning "dereference of NULL 'i'" }
   }
   virtual void c (int, int)

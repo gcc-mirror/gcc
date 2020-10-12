@@ -155,6 +155,19 @@
   [(set_attr "type" "dfp")
    (set_attr "length" "8")])
 
+(define_insn "trunctdsd2"
+  [(set (match_operand:SD 0 "gpc_reg_operand" "=d,d")
+	(float_truncate:SD (match_operand:TD 1 "gpc_reg_operand" "d,d")))
+   (clobber (match_scratch:TD 2 "=&d,&d"))
+   (clobber (match_scratch:DF 3 "=&d,&d"))]
+  "TARGET_DFP"
+  "@
+   mffscdrni %3,7\;drdpq %2,%1\;mffscdrn %3,%3\;drsp %0,%2
+   mffs %3\;mtfsfi 7,7,1\;drdpq %2,%1\;mtfsf 0xff,%3,1,0\;drsp %0,%2"
+  [(set_attr "type" "dfp")
+   (set_attr "isa" "p9,*")
+   (set_attr "length" "16,20")])
+
 (define_insn "add<mode>3"
   [(set (match_operand:DDTD 0 "gpc_reg_operand" "=d")
 	(plus:DDTD (match_operand:DDTD 1 "gpc_reg_operand" "%d")

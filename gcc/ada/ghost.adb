@@ -370,12 +370,12 @@ package body Ghost is
                --  treated as Ghost when they contain a reference to a Ghost
                --  entity (SPARK RM 6.9(11)).
 
-               elsif Nam_In (Prag_Nam, Name_Global,
-                                       Name_Depends,
-                                       Name_Initializes,
-                                       Name_Refined_Global,
-                                       Name_Refined_Depends,
-                                       Name_Refined_State)
+               elsif Prag_Nam in Name_Global
+                               | Name_Depends
+                               | Name_Initializes
+                               | Name_Refined_Global
+                               | Name_Refined_Depends
+                               | Name_Refined_State
                then
                   return True;
                end if;
@@ -1124,15 +1124,14 @@ package body Ghost is
       --  When the context is a [generic] package declaration, pragma Ghost
       --  resides in the visible declarations.
 
-      if Nkind_In (N, N_Generic_Package_Declaration,
-                      N_Package_Declaration)
+      if Nkind (N) in N_Generic_Package_Declaration | N_Package_Declaration
       then
          Decl := First (Visible_Declarations (Specification (N)));
 
       --  When the context is a package or a subprogram body, pragma Ghost
       --  resides in the declarative part.
 
-      elsif Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
+      elsif Nkind (N) in N_Package_Body | N_Subprogram_Body then
          Decl := First (Declarations (N));
 
       --  Otherwise pragma Ghost appears in the declarations following N
@@ -1363,15 +1362,15 @@ package body Ghost is
       --  A child package or subprogram declaration becomes Ghost when its
       --  parent is Ghost (SPARK RM 6.9(2)).
 
-      elsif Nkind_In (N, N_Generic_Function_Renaming_Declaration,
-                         N_Generic_Package_Declaration,
-                         N_Generic_Package_Renaming_Declaration,
-                         N_Generic_Procedure_Renaming_Declaration,
-                         N_Generic_Subprogram_Declaration,
-                         N_Package_Declaration,
-                         N_Package_Renaming_Declaration,
-                         N_Subprogram_Declaration,
-                         N_Subprogram_Renaming_Declaration)
+      elsif Nkind (N) in N_Generic_Function_Renaming_Declaration
+                       | N_Generic_Package_Declaration
+                       | N_Generic_Package_Renaming_Declaration
+                       | N_Generic_Procedure_Renaming_Declaration
+                       | N_Generic_Subprogram_Declaration
+                       | N_Package_Declaration
+                       | N_Package_Renaming_Declaration
+                       | N_Subprogram_Declaration
+                       | N_Subprogram_Renaming_Declaration
         and then Present (Parent_Spec (N))
       then
          Par_Id := Defining_Entity (Unit (Parent_Spec (N)));
@@ -1569,14 +1568,14 @@ package body Ghost is
       --  ??? could extra formal parameters cause a Ghost leak?
 
       if Mark_Formals
-        and then Nkind_In (N, N_Abstract_Subprogram_Declaration,
-                              N_Formal_Abstract_Subprogram_Declaration,
-                              N_Formal_Concrete_Subprogram_Declaration,
-                              N_Generic_Subprogram_Declaration,
-                              N_Subprogram_Body,
-                              N_Subprogram_Body_Stub,
-                              N_Subprogram_Declaration,
-                              N_Subprogram_Renaming_Declaration)
+        and then Nkind (N) in N_Abstract_Subprogram_Declaration
+                            | N_Formal_Abstract_Subprogram_Declaration
+                            | N_Formal_Concrete_Subprogram_Declaration
+                            | N_Generic_Subprogram_Declaration
+                            | N_Subprogram_Body
+                            | N_Subprogram_Body_Stub
+                            | N_Subprogram_Declaration
+                            | N_Subprogram_Renaming_Declaration
       then
          Param := First (Parameter_Specifications (Specification (N)));
          while Present (Param) loop
@@ -1659,7 +1658,7 @@ package body Ghost is
       --      subject to any Ghost annotation.
 
       else
-         pragma Assert (Nam_In (Mode, Name_Disable, Name_None, No_Name));
+         pragma Assert (Mode in Name_Disable | Name_None | No_Name);
          return None;
       end if;
    end Name_To_Ghost_Mode;
@@ -1678,20 +1677,20 @@ package body Ghost is
       if Is_Body (N)
         or else Is_Declaration (N)
         or else Nkind (N) in N_Generic_Instantiation
-        or else Nkind (N) in N_Push_Pop_xxx_Label
-        or else Nkind (N) in N_Raise_xxx_Error
-        or else Nkind (N) in N_Representation_Clause
-        or else Nkind (N) in N_Statement_Other_Than_Procedure_Call
-        or else Nkind_In (N, N_Call_Marker,
-                             N_Freeze_Entity,
-                             N_Freeze_Generic_Entity,
-                             N_Itype_Reference,
-                             N_Pragma,
-                             N_Procedure_Call_Statement,
-                             N_Use_Package_Clause,
-                             N_Use_Type_Clause,
-                             N_Variable_Reference_Marker,
-                             N_With_Clause)
+                           | N_Push_Pop_xxx_Label
+                           | N_Raise_xxx_Error
+                           | N_Representation_Clause
+                           | N_Statement_Other_Than_Procedure_Call
+                           | N_Call_Marker
+                           | N_Freeze_Entity
+                           | N_Freeze_Generic_Entity
+                           | N_Itype_Reference
+                           | N_Pragma
+                           | N_Procedure_Call_Statement
+                           | N_Use_Package_Clause
+                           | N_Use_Type_Clause
+                           | N_Variable_Reference_Marker
+                           | N_With_Clause
       then
          --  Only ignored Ghost nodes must be recorded in the table
 
@@ -1815,7 +1814,7 @@ package body Ghost is
       --  The Ghost mode of a [generic] freeze node depends on the Ghost mode
       --  of the entity being frozen.
 
-      elsif Nkind_In (N, N_Freeze_Entity, N_Freeze_Generic_Entity) then
+      elsif Nkind (N) in N_Freeze_Entity | N_Freeze_Generic_Entity then
          Set_Ghost_Mode_From_Entity (Entity (N));
 
       --  The Ghost mode of a pragma depends on the associated entity. The

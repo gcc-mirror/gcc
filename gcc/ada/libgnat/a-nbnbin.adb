@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Text_Output.Utils;
 

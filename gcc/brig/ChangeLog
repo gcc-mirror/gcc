@@ -1,3 +1,10 @@
+2020-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	* brigfrontend/brig-util.h (hsa_type_packed_p): Declared.
+	* brigfrontend/brig-util.cc (hsa_type_packed_p): Moved here from
+	removed gcc/hsa-common.c.
+	* brigfrontend/hsa-brig-format.h: New file.
+
 2020-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

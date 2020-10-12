@@ -1,6 +1,6 @@
-// { dg-do run }
-// { dg-options "-std=gnu++17 -pthread" }
-// { dg-require-effective-target pthread }
+// { dg-options "-std=gnu++17" }
+// { dg-do run { target c++17 } }
+// { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }
 
 // Copyright (C) 2015-2020 Free Software Foundation, Inc.

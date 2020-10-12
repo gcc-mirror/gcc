@@ -90,6 +90,7 @@ selftest::run_tests ()
   read_rtl_function_c_tests ();
   digraph_cc_tests ();
   tristate_cc_tests ();
+  ipa_modref_tree_c_tests ();
 
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */

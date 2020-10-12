@@ -49,7 +49,8 @@ extern bool purge_all_dead_edges (void);
 extern bool fixup_abnormal_edges (void);
 extern rtx_insn *unlink_insn_chain (rtx_insn *, rtx_insn *);
 extern void relink_block_chain (bool);
-extern rtx_insn *duplicate_insn_chain (rtx_insn *, rtx_insn *);
+extern rtx_insn *duplicate_insn_chain (rtx_insn *, rtx_insn *,
+				       class loop *, class copy_bb_data *);
 extern void cfg_layout_initialize (int);
 extern void cfg_layout_finalize (void);
 extern void break_superblocks (void);

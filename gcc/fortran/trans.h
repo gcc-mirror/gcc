@@ -810,13 +810,17 @@ tree gfc_omp_clause_copy_ctor (tree, tree, tree);
 tree gfc_omp_clause_assign_op (tree, tree, tree);
 tree gfc_omp_clause_linear_ctor (tree, tree, tree, tree);
 tree gfc_omp_clause_dtor (tree, tree);
-void gfc_omp_finish_clause (tree, gimple_seq *);
+void gfc_omp_finish_clause (tree, gimple_seq *, bool);
 bool gfc_omp_scalar_p (tree);
 bool gfc_omp_disregard_value_expr (tree, bool);
 bool gfc_omp_private_debug_clause (tree, bool);
 bool gfc_omp_private_outer_ref (tree);
 struct gimplify_omp_ctx;
 void gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *, tree);
+
+/* In trans-intrinsic.c.  */
+void gfc_conv_intrinsic_mvbits (gfc_se *, gfc_actual_arglist *,
+				gfc_loopinfo *);
 
 /* Runtime library function decls.  */
 extern GTY(()) tree gfor_fndecl_pause_numeric;

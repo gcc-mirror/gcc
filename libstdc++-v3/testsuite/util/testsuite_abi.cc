@@ -209,6 +209,8 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.26");
       known_versions.push_back("GLIBCXX_3.4.27");
       known_versions.push_back("GLIBCXX_3.4.28");
+      known_versions.push_back("GLIBCXX_3.4.29");
+      known_versions.push_back("GLIBCXX_LDBL_3.4.29");
       known_versions.push_back("CXXABI_1.3");
       known_versions.push_back("CXXABI_LDBL_1.3");
       known_versions.push_back("CXXABI_1.3.1");
@@ -223,6 +225,7 @@ check_version(symbol& test, bool added)
       known_versions.push_back("CXXABI_1.3.10");
       known_versions.push_back("CXXABI_1.3.11");
       known_versions.push_back("CXXABI_1.3.12");
+      known_versions.push_back("CXXABI_1.3.13");
       known_versions.push_back("CXXABI_TM_1");
       known_versions.push_back("CXXABI_FLOAT128");
     }
@@ -240,8 +243,11 @@ check_version(symbol& test, bool added)
 	test.version_status = symbol::incompatible;
 
       // Check that added symbols are added in the latest pre-release version.
-      bool latestp = (test.version_name == "GLIBCXX_3.4.28"
-		     || test.version_name == "CXXABI_1.3.12"
+      bool latestp = (test.version_name == "GLIBCXX_3.4.29"
+	  // XXX remove next line when GLIBCXX_3.4.30 is added and baselines
+	  // have been regenerated to include GLIBCXX_LDBL_3.4.29 symbols:
+		     || test.version_name == "GLIBCXX_LDBL_3.4.29"
+		     || test.version_name == "CXXABI_1.3.13"
 		     || test.version_name == "CXXABI_FLOAT128"
 		     || test.version_name == "CXXABI_TM_1");
       if (added && !latestp)
@@ -357,14 +363,9 @@ get_symbol(const string& name, const symbols& s)
 void
 examine_symbol(const char* name, const char* file)
 {
-  try
-    {
-      symbols s = create_symbols(file);
-      const symbol& sym = get_symbol(name, s);
-      sym.print();
-    }
-  catch(...)
-    { __throw_exception_again; }
+    symbols s = create_symbols(file);
+    const symbol& sym = get_symbol(name, s);
+    sym.print();
 }
 
 int

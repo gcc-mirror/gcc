@@ -33,7 +33,7 @@ bar (struct S *s)
 }
 
 int
-main (int argc, char *argv[])
+main (int argc, char **argv)
 {
   struct S s;
 

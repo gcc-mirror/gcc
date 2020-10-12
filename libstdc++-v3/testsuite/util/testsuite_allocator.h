@@ -257,6 +257,7 @@ namespace __gnu_test
       return true;
     }
 
+#if __cpp_exceptions
   template<typename Alloc>
     bool
     check_allocate_max_size()
@@ -276,6 +277,7 @@ namespace __gnu_test
 	}
       throw;
     }
+#endif
 
   // A simple allocator which can be constructed endowed of a given
   // "personality" (an integer), queried in operator== to simulate the
@@ -761,7 +763,7 @@ namespace __gnu_test
 #endif // C++11
 
 #if __cplusplus >= 201703L
-#if __cpp_aligned_new && __cpp_rtti
+#if __cpp_aligned_new && __cpp_rtti && __cpp_exceptions
   // A concrete memory_resource, with error checking.
   class memory_resource : public std::pmr::memory_resource
   {

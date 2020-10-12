@@ -116,6 +116,15 @@ package body Ada.Wide_Characters.Unicode is
       return G.Is_UTF_32_Non_Graphic (G.Category (C));
    end Is_Non_Graphic;
 
+   -------------
+   -- Is_NFKC --
+   -------------
+
+   function Is_NFKC (U : Wide_Character) return Boolean is
+   begin
+      return G.Is_UTF_32_NFKC (Wide_Character'Pos (U));
+   end Is_NFKC;
+
    --------------
    -- Is_Other --
    --------------

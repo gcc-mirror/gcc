@@ -40,7 +40,9 @@ pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Set_Operations);
 
 with System; use type System.Address;
 
-package body Ada.Containers.Ordered_Multisets is
+package body Ada.Containers.Ordered_Multisets with
+  SPARK_Mode => Off
+is
 
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");
    pragma Warnings (Off, "variable ""Lock*"" is not referenced");

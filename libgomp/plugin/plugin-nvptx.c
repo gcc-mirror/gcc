@@ -701,6 +701,7 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 
   if (r != CUDA_SUCCESS)
     {
+      GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
       GOMP_PLUGIN_error ("cuLinkComplete error: %s", cuda_error (r));
       return false;
     }
@@ -1040,9 +1041,17 @@ goacc_profiling_acc_ev_free (struct goacc_thread *thr, void *p)
 static bool
 nvptx_free (void *p, struct ptx_device *ptx_dev)
 {
-  /* Assume callback context if this is null.  */
-  if (GOMP_PLUGIN_acc_thread () == NULL)
+  CUdeviceptr pb;
+  size_t ps;
+
+  CUresult r = CUDA_CALL_NOCHECK (cuMemGetAddressRange, &pb, &ps,
+				  (CUdeviceptr) p);
+  if (r == CUDA_ERROR_NOT_PERMITTED)
     {
+      /* We assume that this error indicates we are in a CUDA callback context,
+	 where all CUDA calls are not allowed (see cuStreamAddCallback
+	 documentation for description). Arrange to free this piece of device
+	 memory later.  */
       struct ptx_free_block *n
 	= GOMP_PLUGIN_malloc (sizeof (struct ptx_free_block));
       n->ptr = p;
@@ -1052,11 +1061,11 @@ nvptx_free (void *p, struct ptx_device *ptx_dev)
       pthread_mutex_unlock (&ptx_dev->free_blocks_lock);
       return true;
     }
-
-  CUdeviceptr pb;
-  size_t ps;
-
-  CUDA_CALL (cuMemGetAddressRange, &pb, &ps, (CUdeviceptr) p);
+  else if (r != CUDA_SUCCESS)
+    {
+      GOMP_PLUGIN_error ("cuMemGetAddressRange error: %s", cuda_error (r));
+      return false;
+    }
   if ((CUdeviceptr) p != pb)
     {
       GOMP_PLUGIN_error ("invalid device address");
@@ -1882,7 +1891,11 @@ nvptx_stacks_free (void *p, int num)
 void
 GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 {
-  CUfunction function = ((struct targ_fn_descriptor *) tgt_fn)->fn;
+  struct targ_fn_descriptor *tgt_fn_desc
+    = (struct targ_fn_descriptor *) tgt_fn;
+  CUfunction function = tgt_fn_desc->fn;
+  const struct targ_fn_launch *launch = tgt_fn_desc->launch;
+  const char *fn_name = launch->fn;
   CUresult r;
   struct ptx_device *ptx_dev = ptx_devices[ord];
   const char *maybe_abort_msg = "(perhaps abort was called)";
@@ -1917,6 +1930,9 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
     CU_LAUNCH_PARAM_BUFFER_SIZE, &fn_args_size,
     CU_LAUNCH_PARAM_END
   };
+  GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch"
+		     " [(teams: %u), 1, 1] [(lanes: 32), (threads: %u), 1]\n",
+		     __FUNCTION__, fn_name, teams, threads);
   r = CUDA_CALL_NOCHECK (cuLaunchKernel, function, teams, 1, 1,
 			 32, threads, 1, 0, NULL, NULL, config);
   if (r != CUDA_SUCCESS)

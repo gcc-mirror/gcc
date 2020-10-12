@@ -31,8 +31,6 @@
 
 --  This is the GMP version of this package
 
-pragma Ada_2020;
-
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Interfaces.C;               use Interfaces.C;

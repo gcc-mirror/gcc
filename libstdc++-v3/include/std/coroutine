@@ -273,20 +273,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// [coroutine.trivial.awaitables]
   struct suspend_always
   {
-    bool await_ready() { return false; }
+    constexpr bool await_ready() const noexcept { return false; }
 
-    void await_suspend(coroutine_handle<>) {}
+    constexpr void await_suspend(coroutine_handle<>) const noexcept {}
 
-    void await_resume() {}
+    constexpr void await_resume() const noexcept {}
   };
 
   struct suspend_never
   {
-    bool await_ready() { return true; }
+    constexpr bool await_ready() const noexcept { return true; }
 
-    void await_suspend(coroutine_handle<>) {}
+    constexpr void await_suspend(coroutine_handle<>) const noexcept {}
 
-    void await_resume() {}
+    constexpr void await_resume() const noexcept {}
   };
 
   } // namespace __n4861

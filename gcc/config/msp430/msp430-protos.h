@@ -21,7 +21,6 @@
 #ifndef GCC_MSP430_PROTOS_H
 #define GCC_MSP430_PROTOS_H
 
-bool	msp430_do_not_relax_short_jumps (void);
 rtx	msp430_eh_return_stackadj_rtx (void);
 void	msp430_expand_eh_return (rtx);
 void	msp430_expand_epilogue (int);
@@ -36,7 +35,6 @@ rtx	msp430_incoming_return_addr_rtx (void);
 void	msp430_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 int	msp430_initial_elimination_offset (int, int);
 bool    msp430_is_interrupt_func (void);
-const char * msp430x_logical_shift_right (rtx);
 const char * msp430_mcu_name (void);
 void    msp430_output_aligned_decl_common (FILE *, const tree, const char *,
 					   unsigned HOST_WIDE_INT, unsigned,
@@ -51,5 +49,10 @@ rtx	msp430_subreg (machine_mode, rtx, machine_mode, int);
 bool    msp430_use_f5_series_hwmult (void);
 bool	msp430_has_hwmult (void);
 bool msp430_op_not_in_high_mem (rtx op);
+
+#ifdef RTX_CODE
+int msp430_expand_shift (enum rtx_code code, machine_mode mode, rtx *operands);
+const char * msp430_output_asm_shift_insns (enum rtx_code code, machine_mode mode, rtx *operands);
+#endif
 
 #endif /* GCC_MSP430_PROTOS_H */

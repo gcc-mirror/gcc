@@ -122,6 +122,29 @@ test05()
   b = ranges::end(v);
 }
 
+struct Y
+{
+  using Iter = __gnu_test::forward_iterator_wrapper<Y>;
+
+  friend auto operator-(Iter l, Iter r) { return l.ptr - r.ptr; }
+};
+
+void
+test06()
+{
+  // LWG 3483
+  Y y[3];
+  __gnu_test::test_forward_range<Y> r(y);
+  auto v = views::transform(r, std::identity{});
+  auto b = begin(v);
+  static_assert( !ranges::random_access_range<decltype(r)> );
+  static_assert( std::sized_sentinel_for<decltype(b), decltype(b)> );
+  VERIFY( (next(b, 1) - b) == 1 );
+  const auto v_const = v;
+  auto b_const = begin(v_const);
+  VERIFY( (next(b_const, 2) - b_const) == 2 );
+}
+
 int
 main()
 {
@@ -130,4 +153,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

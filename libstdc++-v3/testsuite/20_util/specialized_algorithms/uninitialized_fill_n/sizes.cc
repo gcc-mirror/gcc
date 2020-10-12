@@ -31,19 +31,19 @@ test01()
   VERIFY( i[3] == 0 );
 }
 
+// The standard only requires that n>0 and --n are valid expressions.
+struct Size
+{
+  int value;
+
+  void operator--() { --value; }
+
+  int operator>(void*) { return value != 0; }
+};
+
 void
 test02()
 {
-  // The standard only requires that n>0 and --n are valid expressions.
-  struct Size
-  {
-    int value;
-
-    void operator--() { --value; }
-
-    int operator>(void*) { return value != 0; }
-  };
-
   int i[5] = { };
   Size n = {4};
   std::uninitialized_fill_n(i, n, 0xdcba);

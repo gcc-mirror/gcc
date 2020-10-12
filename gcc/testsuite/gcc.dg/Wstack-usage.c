@@ -1,6 +1,7 @@
 /* PR 90983/manual documents `-Wno-stack-usage` flag, but it is unrecognized
    { dg-do compile }
-   { dg-options "-Wall -Wstack-usage=123 -Wno-stack-usage" } */
+   { dg-options "-Wall -Wstack-usage=123 -Wno-stack-usage" }
+   { dg-require-effective-target alloca } */
 
 void f (void*);
 

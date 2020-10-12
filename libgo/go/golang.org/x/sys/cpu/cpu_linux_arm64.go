@@ -33,6 +33,12 @@ const (
 )
 
 func doinit() {
+	if err := readHWCAP(); err != nil {
+		// failed to read /proc/self/auxv, try reading registers directly
+		readARM64Registers()
+		return
+	}
+
 	// HWCAP feature bits
 	ARM64.HasFP = isSet(hwCap, hwcap_FP)
 	ARM64.HasASIMD = isSet(hwCap, hwcap_ASIMD)

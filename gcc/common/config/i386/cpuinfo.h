@@ -387,6 +387,8 @@ get_intel_cpu (struct __processor_model *cpu_model,
     case 0xa5:
     case 0xa6:
       /* Comet Lake.  */
+    case 0xa7:
+      /* Rocket Lake.  */
       cpu = "skylake";
       CHECK___builtin_cpu_is ("corei7");
       CHECK___builtin_cpu_is ("skylake");
@@ -456,6 +458,14 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_type = INTEL_COREI7;
       cpu_model->__cpu_subtype = INTEL_COREI7_TIGERLAKE;
       break;
+    case 0x97:
+      /* Alder Lake.  */
+      cpu = "alderlake";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("alderlake");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_ALDERLAKE;
+      break;
     case 0x8f:
       /* Sapphire Rapids.  */
       cpu = "sapphirerapids";
@@ -499,15 +509,20 @@ get_available_features (struct __processor_model *cpu_model,
 #define XSTATE_OPMASK			0x20
 #define XSTATE_ZMM			0x40
 #define XSTATE_HI_ZMM			0x80
+#define XSTATE_TILECFG			0x20000
+#define XSTATE_TILEDATA		0x40000
 
 #define XCR_AVX_ENABLED_MASK \
   (XSTATE_SSE | XSTATE_YMM)
 #define XCR_AVX512F_ENABLED_MASK \
   (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM)
+#define XCR_AMX_ENABLED_MASK \
+  (XSTATE_TILECFG | XSTATE_TILEDATA)
 
   /* Check if AVX and AVX512 are usable.  */
   int avx_usable = 0;
   int avx512_usable = 0;
+  int amx_usable = 0;
   if ((ecx & bit_OSXSAVE))
     {
       /* Check if XMM, YMM, OPMASK, upper 256 bits of ZMM0-ZMM15 and
@@ -523,6 +538,8 @@ get_available_features (struct __processor_model *cpu_model,
 	  avx512_usable = ((xcrlow & XCR_AVX512F_ENABLED_MASK)
 			   == XCR_AVX512F_ENABLED_MASK);
 	}
+      amx_usable = ((xcrlow & XCR_AMX_ENABLED_MASK)
+		    == XCR_AMX_ENABLED_MASK);
     }
 
 #define set_feature(f) \
@@ -641,6 +658,15 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_PCONFIG);
       if (edx & bit_IBT)
 	set_feature (FEATURE_IBT);
+      if (amx_usable)
+	{
+	  if (edx & bit_AMX_TILE)
+	    set_feature (FEATURE_AMX_TILE);
+	  if (edx & bit_AMX_INT8)
+	    set_feature (FEATURE_AMX_INT8);
+	  if (edx & bit_AMX_BF16)
+	    set_feature (FEATURE_AMX_BF16);
+	}
       if (avx512_usable)
 	{
 	  if (ebx & bit_AVX512F)

@@ -320,14 +320,17 @@ void test_memcpy_anti_range (char *d, const char *s)
 
   T (d, d + SAR (0, 3), UR (DIFF_MAX - 2, DIFF_MAX));               /* { dg-warning "accessing \[0-9\]+ or more bytes at offsets 0 and \\\[-?\[0-9\]+, -?\[0-9\]+] overlaps \[0-9\]+ bytes at offset 2" "memcpy" } */
 
-  /* Verify that a size in an anti-range ~[0, N] where N >= PTRDIFF_MAX
-     doesn't trigger a warning.  */
+  /* Verify that a size in an anti-range ~[1, N] where N >= PTRDIFF_MAX - 2
+     doesn't trigger a warning.
+     With ~[1, PTRDIFF_MAX - 1] the difference between the just-past-the-end
+     pointer to A and A for char A[PTRDIFF_MAX] wouldn't be representable in
+     ptrdiff_t.  Since such a large object cannot exist, so the size of
+     the region must be zero.  */
+  T (d, s, UAR (1, DIFF_MAX / 2 - 1));
   T (d, s, UAR (1, DIFF_MAX - 1));
   T (d, s, UAR (1, DIFF_MAX));
   T (d, s, UAR (1, SIZE_MAX - 1));
-
-  /* This causes the last dg-warning test to fail for some reason.
-     T (d, s, UAR (1, SIZE_MAX)); */
+  T (d, s, UAR (1, SIZE_MAX));
 }
 
 /* Verify calls to memcpy() where the combination of offsets in some
@@ -637,9 +640,7 @@ void test_strcpy_cst (ptrdiff_t i)
   T ("012", a, a + 1);            /* { dg-warning "accessing 3 bytes at offsets 0 and 1 overlaps 2 bytes at offset 1" "strcpy" } */
   T ("012", a, a + 2);
   T ("012", a, a + 3);
-  /* The following doesn't overlap but it should trigger -Wstringop-overflow
-     for reading past the end.  */
-  T ("012", a, a + sizeof a);     /* { dg-warning "\\\[-Wstringop-overflow" "pr81437" { xfail *-*-* } } */
+  T ("012", a, a + sizeof a);     /* { dg-warning "\\\[-Wstringop-overread" "pr81437" } */
 
   /* The terminating nul written to d[2] overwrites s[0].  */
   T ("0123", a, a + 2);           /* { dg-warning "accessing 3 bytes at offsets 0 and 2 overlaps 1 byte at offset 2" } */

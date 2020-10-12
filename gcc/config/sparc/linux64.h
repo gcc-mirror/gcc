@@ -44,16 +44,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_CPU64_DEFAULT_SPEC
 #define ASM_CPU64_DEFAULT_SPEC "-Av9a"
 
-/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
-   the GNU/Linux magical crtend.o file (see crtstuff.c) which
-   provides part of the support for getting C++ file-scope static
-   object constructed before entering `main', followed by a normal
-   GNU/Linux "finalizer" file, `crtn.o'.  */
-
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s\
-   %{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+  GNU_USER_TARGET_ENDFILE_SPEC \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
 
 /* The default code model.  */
 #undef SPARC_DEFAULT_CMODEL

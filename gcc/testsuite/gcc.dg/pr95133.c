@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
+/* { dg-require-effective-target label_values } */
 
 extern int a[16];
 void f (int *ip, int x)

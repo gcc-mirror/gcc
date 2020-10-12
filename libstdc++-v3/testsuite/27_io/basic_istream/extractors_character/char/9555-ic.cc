@@ -60,9 +60,11 @@ int main()
   testthrow(c);
   testthrow(uc);
   testthrow(sc);
+#if __cplusplus <= 201703L
   testthrow(cp);
   testthrow(scp);
   testthrow(ucp);
+#endif
 
   return 0;
 }

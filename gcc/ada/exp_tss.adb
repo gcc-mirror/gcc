@@ -291,12 +291,12 @@ package body Exp_Tss is
                   then
                      exit;
 
-                  elsif Ekind_In (Etype (E1),
-                          E_Anonymous_Access_Subprogram_Type,
-                          E_Anonymous_Access_Protected_Subprogram_Type)
-                    and then Ekind_In (Etype (E2),
-                               E_Anonymous_Access_Subprogram_Type,
-                               E_Anonymous_Access_Protected_Subprogram_Type)
+                  elsif Ekind (Etype (E1)) in
+                          E_Anonymous_Access_Subprogram_Type |
+                          E_Anonymous_Access_Protected_Subprogram_Type
+                    and then Ekind (Etype (E2)) in
+                               E_Anonymous_Access_Subprogram_Type |
+                               E_Anonymous_Access_Protected_Subprogram_Type
                     and then not Conforming_Types
                                    (Etype (E1), Etype (E2), Fully_Conformant)
                   then

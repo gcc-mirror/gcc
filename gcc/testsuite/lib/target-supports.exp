@@ -698,7 +698,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget avr-*-*]
 	     || [istarget bfin-*-*]
 	     || [istarget cris-*-*]
-	     || [istarget csky-*-elf]
+	     || [istarget csky-*-elf*]
 	     || [istarget fido-*-elf]
 	     || [istarget h8300-*-*]
 	     || [istarget lm32-*-*]
@@ -2234,6 +2234,31 @@ proc check_power10_hw_available { } {
     }]
 }
 
+# Return 1 if the target supports executing MMA instructions, 0 otherwise.
+# Cache the result.  It is assumed that if a simulator does not support the
+# MMA instructions, that it will generate an error and this test will fail.
+
+proc check_ppc_mma_hw_available { } {
+    return [check_cached_effective_target ppc_mma_hw_available {
+	check_runtime_nocache ppc_mma_hw_available {
+	    #include <altivec.h>
+	    typedef double v4sf_t __attribute__ ((vector_size (16)));
+
+	    int main()
+	    {
+		__vector_quad acc0;
+		v4sf_t result[4];
+		result[0][0] = 1.0;
+		__builtin_mma_xxsetaccz (&acc0);
+		__builtin_mma_disassemble_acc (result, &acc0);
+		if (result[0][0] != 0.0)
+		   return 1;
+		return 0;
+	    }
+	} "-mcpu=power10"
+    }]
+}
+
 # Return 1 if the target supports executing __float128 on PowerPC via software
 # emulation, 0 otherwise.  Cache the result.
 
@@ -2660,26 +2685,6 @@ proc check_effective_target_le { } {
     return [check_no_compiler_messages le object {
 	int dummy[__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ? 1 : -1];
     }]
-}
-
-# Return 1 if we're generating code for only power8 platforms.
-
-proc check_effective_target_p8 {  } {
-  return [check_no_compiler_messages_nocache p8 assembly {
-	#if !(!defined(_ARCH_PWR9) && defined(_ARCH_PWR8))
-	#error NO
-	#endif
-  } ""]
-}
-
-# Return 1 if we're generating code for power9 or later platforms.
-
-proc check_effective_target_p9+ {  } {
-  return [check_no_compiler_messages_nocache p9+ assembly {
-	#if !(defined(_ARCH_PWR9))
-	#error NO
-	#endif
-  } ""]
 }
 
 # Return 1 if we're generating 32-bit code using default options, 0
@@ -3614,13 +3619,11 @@ proc check_effective_target_arm_vect_no_misalign { } {
 # multilibs may be incompatible with this option.
 
 proc check_effective_target_arm_soft_ok { } {
-    if { [check_effective_target_arm32] } {
-	return [check_no_compiler_messages arm_soft_ok executable {
-	    int main() { return 0;}
+    return [check_no_compiler_messages arm_soft_ok object {
+	#include <stdint.h>
+	int dummy;
+	int main (void) { return 0; }
 	} "-mfloat-abi=soft"]
-    } else {
-	return 0
-    }
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=vfp with an
@@ -4821,6 +4824,27 @@ proc check_effective_target_aarch64_bti_hw { } {
 	  return !((a & 0xf) == 1);
 	}
     } "-O2" ]
+}
+
+# Return 1 if the target supports executing the armv8.3-a FJCVTZS
+# instruction.
+proc check_effective_target_aarch64_fjcvtzs_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_fjcvtzs_hw_available {
+	int
+	main (void)
+	{
+	  double in = 25.1;
+	  int out;
+	  asm volatile ("fjcvtzs %w0, %d1"
+			: "=r" (out)
+			: "w" (in)
+			: /* No clobbers.  */);
+	  return out != 25;
+	}
+    } "-march=armv8.3-a" ]
 }
 
 # Return 1 if GCC was configured with --enable-standard-branch-protection
@@ -7037,6 +7061,67 @@ proc check_effective_target_vect_fully_masked { } {
 	           || [istarget amdgcn*-*-*] }]
 }
 
+# Return true if the target supports the @code{len_load} and
+# @code{len_store} optabs.
+
+proc check_effective_target_vect_len_load_store { } {
+    return [check_effective_target_has_arch_pwr9]
+}
+
+# Return the value of parameter vect-partial-vector-usage specified for
+# target by checking the output of "-Q --help=params".  Return zero if
+# the desirable pattern isn't found.
+
+proc check_vect_partial_vector_usage { } {
+    global tool
+
+    return [check_cached_effective_target vect_partial_vector_usage {
+      set result [check_compile vect_partial_vector_usage assembly {
+	  int i;
+      } "-Q --help=params" ]
+
+      # Get compiler emitted messages and delete generated file.
+      set lines [lindex $result 0]
+      set output [lindex $result 1]
+      remote_file build delete $output
+
+      set pattern {=vect-partial-vector-usage=<0,2>\s+([0-2])}
+      # Capture the usage value to val, set it to zero if not found.
+      if { ![regexp $pattern $lines whole val] } then {
+	  set val 0
+      }
+
+      return $val
+    }]
+}
+
+# Return true if the target supports loop vectorization with partial vectors
+# and @code{vect-partial-vector-usage} is set to 1.
+
+proc check_effective_target_vect_partial_vectors_usage_1 { } {
+    return [expr { ([check_effective_target_vect_fully_masked]
+		    || [check_effective_target_vect_len_load_store])
+		   && [check_vect_partial_vector_usage] == 1 }]
+}
+
+# Return true if the target supports loop vectorization with partial vectors
+# and @code{vect-partial-vector-usage} is set to 2.
+
+proc check_effective_target_vect_partial_vectors_usage_2 { } {
+    return [expr { ([check_effective_target_vect_fully_masked]
+		    || [check_effective_target_vect_len_load_store])
+		   && [check_vect_partial_vector_usage] == 2 }]
+}
+
+# Return true if the target supports loop vectorization with partial vectors
+# and @code{vect-partial-vector-usage} is nonzero.
+
+proc check_effective_target_vect_partial_vectors { } {
+    return [expr { ([check_effective_target_vect_fully_masked]
+		    || [check_effective_target_vect_len_load_store])
+		   && [check_vect_partial_vector_usage] != 0 }]
+}
+
 # Return 1 if the target doesn't prefer any alignment beyond element
 # alignment during vectorization.
 
@@ -7109,6 +7194,14 @@ proc check_effective_target_vect_load_lanes { } {
 	     || [istarget aarch64*-*-*] }}]
 }
 
+# Return 1 if the target supports vector masked loads.
+
+proc check_effective_target_vect_masked_load { } {
+    return [expr { [check_avx_available]
+		   || [check_effective_target_aarch64_sve]
+		   || [istarget amdgcn*-*-*] } ]
+}
+
 # Return 1 if the target supports vector masked stores.
 
 proc check_effective_target_vect_masked_store { } {
@@ -7148,6 +7241,8 @@ proc check_effective_target_vect_cond_mixed { } {
       expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*] 
+	     || ([istarget arm*-*-*]
+		 && [check_effective_target_arm_neon_ok])
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
@@ -7658,7 +7753,19 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
-	     || [check_effective_target_mips_llsc] }}]
+	     || [check_effective_target_mips_llsc]
+	     || [istarget nvptx*-*-*]
+	 }}]
+}
+
+# Return 1 if the target supports atomic operations on "int" and "long" on
+# stack addresses.
+
+proc check_effective_target_sync_int_long_stack { } {
+    return [check_cached_effective_target sync_int_long_stack {
+      expr { ![istarget nvptx*-*-*]
+	     && [check_effective_target_sync_int_long]	     
+	 }}]
 }
 
 # Return 1 if the target supports atomic operations on "char" and "short".
@@ -7826,16 +7933,17 @@ proc is-effective-target { arg } {
 	  "p8vector_hw"    { set selected [check_p8vector_hw_available] }
 	  "p9vector_hw"    { set selected [check_p9vector_hw_available] }
 	  "p9modulo_hw"    { set selected [check_p9modulo_hw_available] }
+	  "power10_hw"     { set selected [check_power10_hw_available] }
 	  "ppc_float128_sw" { set selected [check_ppc_float128_sw_available] }
 	  "ppc_float128_hw" { set selected [check_ppc_float128_hw_available] }
 	  "ppc_recip_hw"   { set selected [check_ppc_recip_hw_available] }
 	  "ppc_cpu_supports_hw" { set selected [check_ppc_cpu_supports_hw_available] }
+	  "ppc_mma_hw"     { set selected [check_ppc_mma_hw_available] }
 	  "dfp_hw"         { set selected [check_dfp_hw_available] }
 	  "htm_hw"         { set selected [check_htm_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
-	  "power10_hw" { set selected [check_power10_hw_available] }
 	  default          { error "unknown effective target keyword `$arg'" }
 	}
     }
@@ -7857,9 +7965,11 @@ proc is-effective-target-keyword { arg } {
 	  "p8vector_hw"    { return 1 }
 	  "p9vector_hw"    { return 1 }
 	  "p9modulo_hw"    { return 1 }
+	  "power10_hw"     { return 1 }
 	  "ppc_float128_sw" { return 1 }
 	  "ppc_float128_hw" { return 1 }
 	  "ppc_recip_hw"   { return 1 }
+	  "ppc_mma_hw"     { return 1 }
 	  "dfp_hw"         { return 1 }
 	  "htm_hw"         { return 1 }
 	  "named_sections" { return 1 }
@@ -8856,6 +8966,39 @@ proc check_effective_target_avx512vaes { } {
     } "-mvaes" ]
 }
 
+# Return 1 if amx-tile instructions can be compiled.
+proc check_effective_target_amx_tile { } {
+    return [check_no_compiler_messages amx_tile object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tilerelease" ::);
+	}
+    } "-mamx-tile" ]
+}
+
+# Return 1 if amx-int8 instructions can be compiled.
+proc check_effective_target_amx_int8 { } {
+    return [check_no_compiler_messages amx_int8 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpbssd\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-int8" ]
+}
+
+# Return 1 if amx-bf16 instructions can be compiled.
+proc check_effective_target_amx_bf16 { } {
+    return [check_no_compiler_messages amx_bf16 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpbf16ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-bf16" ]
+}
+
 # Return 1 if vpclmulqdq instructions can be compiled.
 proc check_effective_target_vpclmulqdq { } {
     return [check_no_compiler_messages vpclmulqdq object {
@@ -9830,14 +9973,6 @@ proc check_effective_target_offload_nvptx { } {
     } "-foffload=nvptx-none" ]
 }
 
-# Return 1 if the compiler has been configured with hsa offloading.
-
-proc check_effective_target_offload_hsa { } {
-    return [check_no_compiler_messages offload_hsa assembly {
-	int main () {return 0;}
-    } "-foffload=hsa" ]
-}
-
 # Return 1 if the compiler has been configured with gcn offloading.
 
 proc check_effective_target_offload_gcn { } {
@@ -10255,7 +10390,7 @@ proc check_effective_target_arm_v8_3a_bkey_directive { } {
 # Overhead Loop, 0 otherwise.  The test is valid for ARM.
 
 proc check_effective_target_arm_v8_1_lob_ok { } {
-    if { ![istarget arm*-*-*] } {
+    if { ![check_effective_target_arm_cortex_m] } {
         return 0;
     } else {
 	return [check_runtime arm_v8_1_lob_hw_available {
@@ -10269,7 +10404,7 @@ proc check_effective_target_arm_v8_1_lob_ok { } {
 		  asm goto ("le lr, %l0" : : : "lr" : loop);
 		  return i != 10;
 		}
-	} "-march=armv8.1-m.main" ]
+	} "-march=armv8.1-m.main -mthumb" ]
     }
 }
 
@@ -10382,4 +10517,65 @@ proc check_effective_target_msp430_large {} {
 	#error __MSP430X_LARGE__
 	#endif
     } ""]
+}
+
+# Return 1 if the target has an efficient means to encode large initializers
+# in the assembly.
+
+proc check_effective_target_large_initializer { } {
+    if { [istarget nvptx*-*-*] } {
+	return 0
+    }
+
+    return 1
+}
+
+# Return 1 if the target allows function prototype mismatches
+# in the assembly.
+
+proc check_effective_target_non_strict_prototype { } {
+    if { [istarget nvptx*-*-*] } {
+	return 0
+    }
+
+    return 1
+}
+
+# Returns 1 if the target toolchain supports extended
+# syntax of .symver directive, 0 otherwise.
+
+proc check_symver_available { } {
+    return [check_no_compiler_messages symver_available object {
+	    int foo(void) { return 0; }
+	    int main (void) {
+		asm volatile (".symver foo,foo@VER_1, local");
+		return 0;
+	    }
+	}]
+}
+
+# Return 1 if emitted assembly contains .ident directive.
+
+proc check_effective_target_ident_directive {} {
+    return [check_no_messages_and_pattern ident_directive \
+		"(?n)^\[\t\]+\\.ident" assembly {
+	int i;
+    }]
+}
+
+# Return 1 if we're able to assemble movdiri and movdir64b
+
+proc check_effective_target_movdir { } {
+    return [check_no_compiler_messages movdir object {
+	void
+	foo (unsigned int *d, unsigned int s)
+	{
+	  __builtin_ia32_directstoreu_u32 (d, s);
+	}
+	void
+	bar (void *d, const void *s)
+	{
+	  __builtin_ia32_movdir64b (d, s);
+	}
+    } "-mmovdiri -mmovdir64b" ]
 }

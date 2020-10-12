@@ -64,20 +64,6 @@
    (set_attr "conds" "clob")]
 )
 
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_operand:SI 1 "immediate_operand" ""))]
-  "TARGET_THUMB1
-   && arm_disable_literal_pool
-   && GET_CODE (operands[1]) == CONST_INT
-   && !satisfies_constraint_I (operands[1])"
-  [(clobber (const_int 0))]
-  "
-    thumb1_gen_const_int (operands[0], INTVAL (operands[1]));
-    DONE;
-  "
-)
-
 (define_insn "*thumb1_adddi3"
   [(set (match_operand:DI          0 "register_operand" "=l")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0")
@@ -696,18 +682,59 @@
   "TARGET_THUMB1
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
-  "@
-   movs	%0, %1
-   movs	%0, %1
-   movw	%0, %1
-   #
-   #
-   ldmia\\t%1, {%0}
-   stmia\\t%0, {%1}
-   movs\\t%0, #:upper8_15:%1; lsls\\t%0, #8; adds\\t%0, #:upper0_7:%1; lsls\\t%0, #8; adds\\t%0, #:lower8_15:%1; lsls\\t%0, #8; adds\\t%0, #:lower0_7:%1
-   ldr\\t%0, %1
-   str\\t%1, %0
-   mov\\t%0, %1"
+{
+  switch (which_alternative)
+    {
+      default:
+      case 0: return "movs\t%0, %1";
+      case 1: return "movs\t%0, %1";
+      case 2: return "movw\t%0, %1";
+      case 3: return "#";
+      case 4: return "#";
+      case 5: return "ldmia\t%1, {%0}";
+      case 6: return "stmia\t%0, {%1}";
+      case 7:
+      /* pure-code alternative: build the constant byte by byte,
+	 instead of loading it from a constant pool.  */
+	{
+	  int i;
+	  HOST_WIDE_INT op1 = INTVAL (operands[1]);
+	  bool mov_done_p = false;
+	  rtx ops[2];
+	  ops[0] = operands[0];
+
+	  /* Emit upper 3 bytes if needed.  */
+	  for (i = 0; i < 3; i++)
+	    {
+	       int byte = (op1 >> (8 * (3 - i))) & 0xff;
+
+	      if (byte)
+		{
+		  ops[1] = GEN_INT (byte);
+		  if (mov_done_p)
+		    output_asm_insn ("adds\t%0, %1", ops);
+		  else
+		    output_asm_insn ("movs\t%0, %1", ops);
+		  mov_done_p = true;
+		}
+
+	      if (mov_done_p)
+		output_asm_insn ("lsls\t%0, #8", ops);
+	    }
+
+	  /* Emit lower byte if needed.  */
+	  ops[1] = GEN_INT (op1 & 0xff);
+	  if (!mov_done_p)
+	    output_asm_insn ("movs\t%0, %1", ops);
+	  else if (op1 & 0xff)
+	    output_asm_insn ("adds\t%0, %1", ops);
+	  return "";
+	}
+      case 8: return "ldr\t%0, %1";
+      case 9: return "str\t%1, %0";
+      case 10: return "mov\t%0, %1";
+    }
+}
   [(set_attr "length" "2,2,4,4,4,2,2,14,2,2,2")
    (set_attr "type" "mov_reg,mov_imm,mov_imm,multiple,multiple,load_4,store_4,alu_sreg,load_4,store_4,mov_reg")
    (set_attr "pool_range" "*,*,*,*,*,*,*, *,1018,*,*")
@@ -788,6 +815,21 @@
     operands[2] = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
     operands[3] = GEN_INT (255);
   }"
+)
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "const_int_operand" ""))]
+  "TARGET_THUMB1
+   && arm_disable_literal_pool
+   && GET_CODE (operands[1]) == CONST_INT
+   && !TARGET_HAVE_MOVT
+   && !satisfies_constraint_K (operands[1])"
+  [(clobber (const_int 0))]
+  "
+    thumb1_gen_const_int (operands[0], INTVAL (operands[1]));
+    DONE;
+  "
 )
 
 (define_insn "*thumb1_movhi_insn"
@@ -2020,6 +2062,8 @@
   [(set_attr "type" "mov_reg")]
 )
 
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the end of this sequence.
 (define_insn "thumb1_stack_protect_test_insn"
   [(set (match_operand:SI 0 "register_operand" "=&l")
 	(unspec:SI [(match_operand:SI 1 "memory_operand" "m")
@@ -2027,9 +2071,9 @@
 	 UNSPEC_SP_TEST))
    (clobber (match_dup 2))]
   "TARGET_THUMB1"
-  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0"
-  [(set_attr "length" "8")
-   (set_attr "conds" "set")
+  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0\;movs\t%2, #0"
+  [(set_attr "length" "10")
+   (set_attr "conds" "clob")
    (set_attr "type" "multiple")]
 )
 

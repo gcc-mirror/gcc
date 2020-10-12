@@ -15,4 +15,4 @@ template<typename T>
   // { dg-message "typename remove_reference<T>::type" "" { target *-*-* } .-1 }
   void foo() { }
 
-void bar() { foo<int> (); } // { dg-error "use of" }
+void bar() { foo<int> (); } // { dg-error "no match" }

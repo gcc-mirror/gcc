@@ -588,6 +588,17 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__ENQCMD__");
   if (isa_flag2 & OPTION_MASK_ISA2_TSXLDTRK)
     def_or_undef (parse_in, "__TSXLDTRK__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AMX_TILE)
+    def_or_undef (parse_in, "__AMX_TILE__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AMX_INT8)
+    def_or_undef (parse_in, "__AMX_INT8__");
+  if (isa_flag2 & OPTION_MASK_ISA2_AMX_BF16)
+    def_or_undef (parse_in, "__AMX_BF16__");
+  if (isa_flag & OPTION_MASK_ISA_SAHF)
+    def_or_undef (parse_in, "__LAHF_SAHF__");
+  if (isa_flag2 & OPTION_MASK_ISA2_MOVBE)
+    def_or_undef (parse_in, "__MOVBE__");
+
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
@@ -603,7 +614,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
 static bool
 ix86_pragma_target_parse (tree args, tree pop_target)
 {
-  tree prev_tree = build_target_option_node (&global_options);
+  tree prev_tree
+    = build_target_option_node (&global_options, &global_options_set);
   tree cur_tree;
   struct cl_target_option *prev_opt;
   struct cl_target_option *cur_opt;
@@ -621,7 +633,7 @@ ix86_pragma_target_parse (tree args, tree pop_target)
   if (! args)
     {
       cur_tree = (pop_target ? pop_target : target_option_default_node);
-      cl_target_option_restore (&global_options,
+      cl_target_option_restore (&global_options, &global_options_set,
 				TREE_TARGET_OPTION (cur_tree));
     }
   else
@@ -631,7 +643,7 @@ ix86_pragma_target_parse (tree args, tree pop_target)
 						   &global_options_set, 0);
       if (!cur_tree || cur_tree == error_mark_node)
        {
-         cl_target_option_restore (&global_options,
+         cl_target_option_restore (&global_options, &global_options_set,
                                    TREE_TARGET_OPTION (prev_tree));
          return false;
        }

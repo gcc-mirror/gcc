@@ -32,4 +32,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target vect_perm } } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" { target vect_perm } } } */

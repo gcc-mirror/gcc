@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 with Unchecked_Conversion;
 with Ada.Strings.Text_Output.Utils;
 use Ada.Strings.Text_Output;
@@ -46,13 +45,14 @@ package body System.Put_Images is
       pragma Assert (Base in 2 .. 36);
       procedure Put_Image (S : in out Sink'Class; X : Integer_Type);
       procedure Put_Image (S : in out Sink'Class; X : Unsigned_Type);
+   private
+      subtype Digit is Unsigned_Type range 0 .. Base - 1;
    end Generic_Integer_Images;
 
    package body Generic_Integer_Images is
 
       A : constant := Character'Pos ('a');
       Z : constant := Character'Pos ('0');
-      subtype Digit is Unsigned_Type range 0 .. Base - 1;
       function Digit_To_Character (X : Digit) return Character is
         (Character'Val (if X < 10 then X + Z else X + A - 10));
 

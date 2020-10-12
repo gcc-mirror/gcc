@@ -24,5 +24,5 @@ template<typename T>
   void g(T x) { }
 
 int main () {
-  g(&f<int>); // { dg-error "no matches" }
+  g(&f<int>); // { dg-error "no match" }
 }

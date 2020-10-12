@@ -16,6 +16,7 @@ cmd/go/internal/modload
 cmd/go/internal/mvs
 cmd/go/internal/par
 cmd/go/internal/search
+cmd/go/internal/test
 cmd/go/internal/txtar
 cmd/go/internal/work
 cmd/internal/buildid
@@ -104,9 +105,11 @@ index/suffixarray
 internal/cpu
 internal/fmtsort
 internal/poll
+internal/profile
 internal/reflectlite
 internal/singleflight
 internal/trace
+internal/unsafeheader
 internal/xcoff
 io
 io/ioutil
@@ -152,7 +155,6 @@ runtime/internal/atomic
 runtime/internal/math
 runtime/internal/sys
 runtime/pprof
-runtime/pprof/internal/profile
 runtime/trace
 sort
 strconv

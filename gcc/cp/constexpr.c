@@ -1203,7 +1203,7 @@ maybe_initialize_constexpr_call_table (void)
 
    This is not GC-deletable to avoid GC affecting UID generation.  */
 
-static GTY(()) hash_map<tree, tree> *fundef_copies_table;
+static GTY(()) decl_tree_map *fundef_copies_table;
 
 /* Reuse a copy or create a new unshared copy of the function FUN.
    Return this copy.  We use a TREE_LIST whose PURPOSE is body, VALUE
@@ -1355,6 +1355,12 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
       case BUILT_IN_STRSTR:
 	strops = 2;
 	strret = 1;
+	break;
+      case BUILT_IN_ASAN_POINTER_COMPARE:
+      case BUILT_IN_ASAN_POINTER_SUBTRACT:
+	/* These builtins shall be ignored during constant expression
+	   evaluation.  */
+	return void_node;
       default:
 	break;
       }
@@ -2336,9 +2342,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      tree arg = CALL_EXPR_ARG (t, i);
 	      arg = cxx_eval_constant_expression (ctx, arg, false,
 						  non_constant_p, overflow_p);
-	      VERIFY_CONSTANT (arg);
 	      if (i == 1)
 		arg1 = arg;
+	      else
+		VERIFY_CONSTANT (arg);
 	    }
 	  gcc_assert (arg1);
 	  return arg1;
@@ -3085,8 +3092,8 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   else if (code == SPACESHIP_EXPR)
     {
       r = genericize_spaceship (type, lhs, rhs);
-      r = cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
-					overflow_p);
+      return cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
+					   overflow_p);
     }
 
   if (r == NULL_TREE)
@@ -4171,6 +4178,18 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       pre_init = true;
     }
 
+  bool zeroed_out = false;
+  if (!CONSTRUCTOR_NO_CLEARING (ctx->ctor))
+    {
+      /* We're initializing an array object that had been zero-initialized
+	 earlier.  Truncate ctx->ctor, and propagate its zeroed state by
+	 clearing CONSTRUCTOR_NO_CLEARING on each of the aggregate element
+	 initializers we append to it.  */
+      gcc_checking_assert (initializer_zerop (ctx->ctor));
+      zeroed_out = true;
+      vec_safe_truncate (*p, 0);
+    }
+
   tree nelts = get_array_or_vector_nelts (ctx, atype, non_constant_p,
 					  overflow_p);
   unsigned HOST_WIDE_INT max = tree_to_uhwi (nelts);
@@ -4182,7 +4201,11 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       constexpr_ctx new_ctx;
       init_subob_ctx (ctx, new_ctx, idx, pre_init ? init : elttype);
       if (new_ctx.ctor != ctx->ctor)
-	CONSTRUCTOR_APPEND_ELT (*p, idx, new_ctx.ctor);
+	{
+	  if (zeroed_out)
+	    CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = false;
+	  CONSTRUCTOR_APPEND_ELT (*p, idx, new_ctx.ctor);
+	}
       if (TREE_CODE (elttype) == ARRAY_TYPE)
 	{
 	  /* A multidimensional array; recurse.  */
@@ -5695,9 +5718,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  TREE_CONSTANT (r) = true;
 	}
       else if (ctx->strict)
-	r = decl_really_constant_value (t);
+	r = decl_really_constant_value (t, /*unshare_p=*/false);
       else
-	r = decl_constant_value (t);
+	r = decl_constant_value (t, /*unshare_p=*/false);
       if (TREE_CODE (r) == TARGET_EXPR
 	  && TREE_CODE (TARGET_EXPR_INITIAL (r)) == CONSTRUCTOR)
 	r = TARGET_EXPR_INITIAL (r);
@@ -6664,6 +6687,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 			allow_non_constant, strict,
 			manifestly_const_eval || !allow_non_constant };
 
+  /* Turn off -frounding-math for manifestly constant evaluation.  */
+  warning_sentinel rm (flag_rounding_math, ctx.manifestly_const_eval);
   tree type = initialized_type (t);
   tree r = t;
   bool is_consteval = false;

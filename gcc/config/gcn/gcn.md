@@ -67,6 +67,7 @@
   UNSPECV_ICACHE_INV])
 
 (define_c_enum "unspec" [
+  UNSPEC_ADDPTR
   UNSPEC_VECTOR
   UNSPEC_BPERMUTE
   UNSPEC_SGPRBASE
@@ -554,7 +555,7 @@
   flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
   flat_store_dword\t%A0, %1%O0%g0
   v_mov_b32\t%0, %1
-  ds_write_b32\t%A0, %1%O0
+  ds_write_b32\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   s_mov_b32\t%0, %1
   global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
@@ -582,7 +583,7 @@
   flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
   flat_store%s0\t%A0, %1%O0%g0
   v_mov_b32\t%0, %1
-  ds_write%b0\t%A0, %1%O0
+  ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
   global_store%s0\t%A0, %1%O0%g0"
@@ -611,7 +612,7 @@
   #
   flat_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\t0
   flat_store_dwordx2\t%A0, %1%O0%g0
-  ds_write_b64\t%A0, %1%O0
+  ds_write_b64\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
   global_load_dwordx2\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
   global_store_dwordx2\t%A0, %1%O0%g0"
@@ -667,7 +668,7 @@
   #
   global_store_dwordx4\t%A0, %1%O0%g0
   global_load_dwordx4\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  ds_write_b128\t%A0, %1%O0
+  ds_write_b128\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   ds_read_b128\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)"
   "reload_completed
    && REG_P (operands[0])
@@ -677,6 +678,8 @@
    (set (match_dup 4) (match_dup 5))
    (set (match_dup 6) (match_dup 7))]
   {
+    gcc_assert (rtx_equal_p (operands[0], operands[1])
+		|| !reg_overlap_mentioned_p (operands[0], operands[1]));
     operands[6] = gcn_operand_part (TImode, operands[0], 3);
     operands[7] = gcn_operand_part (TImode, operands[1], 3);
     operands[4] = gcn_operand_part (TImode, operands[0], 2);
@@ -1217,29 +1220,47 @@
 
 ; "addptr" is the same as "add" except that it must not write to VCC or SCC
 ; as a side-effect.  Unfortunately GCN does not have a suitable instruction
-; for this, so we use a custom VOP3 add with CC_SAVE_REG as a temp.
-; Note that it is not safe to save/clobber/restore SCC because doing so will
-; break data-flow analysis, so this must use vector registers.
+; for this, so we use CC_SAVE_REG as a temp.
+; Note that it is not safe to save/clobber/restore as separate insns because
+; doing so will break data-flow analysis, so this must use multiple
+; instructions in one insn.
 ;
 ; The "v0" should be just "v", but somehow the "0" helps LRA not loop forever
 ; on testcase pr54713-2.c with -O0. It's only an optimization hint anyway.
+;
+; The SGPR alternative is preferred as it is typically used with mov_sgprbase.
 
 (define_insn "addptrdi3"
-  [(set (match_operand:DI 0 "register_operand"		 "= v")
-	(plus:DI (match_operand:DI 1 "register_operand"	 " v0")
-		 (match_operand:DI 2 "nonmemory_operand" "vDA")))]
+  [(set (match_operand:DI 0 "register_operand"		 "= v, Sg")
+    (unspec:DI [
+	(plus:DI (match_operand:DI 1 "register_operand"	 "^v0,Sg0")
+		 (match_operand:DI 2 "nonmemory_operand" "vDA,SgDB"))]
+	UNSPEC_ADDPTR))]
   ""
   {
-    rtx new_operands[4] = { operands[0], operands[1], operands[2],
-			    gen_rtx_REG (DImode, CC_SAVE_REG) };
+    if (which_alternative == 0)
+      {
+	rtx new_operands[4] = { operands[0], operands[1], operands[2],
+				gen_rtx_REG (DImode, CC_SAVE_REG) };
 
-    output_asm_insn ("v_add%^_u32 %L0, %3, %L2, %L1", new_operands);
-    output_asm_insn ("v_addc%^_u32 %H0, %3, %H2, %H1, %3", new_operands);
+	output_asm_insn ("v_add%^_u32\t%L0, %3, %L2, %L1", new_operands);
+	output_asm_insn ("v_addc%^_u32\t%H0, %3, %H2, %H1, %3", new_operands);
+      }
+    else
+      {
+	rtx new_operands[4] = { operands[0], operands[1], operands[2],
+				gen_rtx_REG (BImode, CC_SAVE_REG) };
+
+	output_asm_insn ("s_mov_b32\t%3, scc", new_operands);
+	output_asm_insn ("s_add_u32\t%L0, %L1, %L2", new_operands);
+	output_asm_insn ("s_addc_u32\t%H0, %H1, %H2", new_operands);
+	output_asm_insn ("s_cmpk_lg_u32\t%3, 0", new_operands);
+      }
 
     return "";
   }
-  [(set_attr "type" "vmult")
-   (set_attr "length" "16")])
+  [(set_attr "type" "vmult,mult")
+   (set_attr "length" "16,24")])
 
 ;; }}}
 ;; {{{ ALU special cases: Minus
@@ -1537,6 +1558,111 @@
    v_<revmnemonic>0\t%0, %2, %1"
   [(set_attr "type" "sop2,sop2,vop2")
    (set_attr "length" "8")])
+
+;; }}}
+;; {{{ ALU: generic 128-bit binop
+
+; TImode shifts can't be synthesized by the middle-end
+(define_expand "<expander>ti3"
+  [(set (match_operand:TI 0 "register_operand")
+	(vec_and_scalar_nocom:TI
+	  (match_operand:TI 1 "gcn_alu_operand")
+	  (match_operand:SI 2 "gcn_alu_operand")))]
+  ""
+  {
+    rtx dest = operands[0];
+    rtx src = operands[1];
+    rtx shift = operands[2];
+
+    enum {ashr, lshr, ashl} shiftop = <expander>;
+    rtx (*inverse_shift_fn) (rtx, rtx, rtx)
+      = (shiftop == ashl ? gen_lshrdi3 : gen_ashldi3);
+    rtx (*logical_shift_fn) (rtx, rtx, rtx)
+      = (shiftop == ashl ? gen_ashldi3 : gen_lshrdi3);
+
+    /* We shift "from" one subreg "to" the other, according to shiftop.  */
+    int from = (shiftop == ashl ? 0 : 8);
+    int to = (shiftop == ashl ? 8 : 0);
+    rtx destfrom = simplify_gen_subreg (DImode, dest, TImode, from);
+    rtx destto = simplify_gen_subreg (DImode, dest, TImode, to);
+    rtx srcfrom = simplify_gen_subreg (DImode, src, TImode, from);
+    rtx srcto = simplify_gen_subreg (DImode, src, TImode, to);
+
+    int shiftval = (CONST_INT_P (shift) ? INTVAL (shift) : -1);
+    enum {RUNTIME, ZERO, SMALL, LARGE} shiftcomparison
+     = (!CONST_INT_P (shift) ? RUNTIME
+        : shiftval == 0 ? ZERO
+        : shiftval < 64 ? SMALL
+        : LARGE);
+
+    rtx large_label, zero_label, exit_label;
+
+    if (shiftcomparison == RUNTIME)
+      {
+        zero_label = gen_label_rtx ();
+        large_label = gen_label_rtx ();
+        exit_label = gen_label_rtx ();
+
+        rtx cond = gen_rtx_EQ (VOIDmode, shift, const0_rtx);
+        emit_insn (gen_cbranchsi4 (cond, shift, const0_rtx, zero_label));
+
+        rtx sixtyfour = GEN_INT (64);
+        cond = gen_rtx_GE (VOIDmode, shift, sixtyfour);
+        emit_insn (gen_cbranchsi4 (cond, shift, sixtyfour, large_label));
+      }
+
+    if (shiftcomparison == SMALL || shiftcomparison == RUNTIME)
+      {
+        /* Shift both parts by the same amount, then patch in the bits that
+           cross the boundary.
+           This does *not* work for zero-length shifts.  */
+        rtx tmpto1 = gen_reg_rtx (DImode);
+        rtx tmpto2 = gen_reg_rtx (DImode);
+        emit_insn (gen_<expander>di3 (destfrom, srcfrom, shift));
+        emit_insn (logical_shift_fn (tmpto1, srcto, shift));
+        rtx lessershiftval = gen_reg_rtx (SImode);
+        emit_insn (gen_subsi3 (lessershiftval, GEN_INT (64), shift));
+        emit_insn (inverse_shift_fn (tmpto2, srcfrom, lessershiftval));
+        emit_insn (gen_iordi3 (destto, tmpto1, tmpto2));
+      }
+
+    if (shiftcomparison == RUNTIME)
+      {
+        emit_jump_insn (gen_jump (exit_label));
+        emit_barrier ();
+
+        emit_label (zero_label);
+      }
+
+    if (shiftcomparison == ZERO || shiftcomparison == RUNTIME)
+      emit_move_insn (dest, src);
+
+    if (shiftcomparison == RUNTIME)
+      {
+        emit_jump_insn (gen_jump (exit_label));
+        emit_barrier ();
+
+        emit_label (large_label);
+      }
+
+    if (shiftcomparison == LARGE || shiftcomparison == RUNTIME)
+      {
+        /* Do the shift within one part, and set the other part appropriately.
+           Shifts of 128+ bits are an error.  */
+        rtx lessershiftval = gen_reg_rtx (SImode);
+        emit_insn (gen_subsi3 (lessershiftval, shift, GEN_INT (64)));
+        emit_insn (gen_<expander>di3 (destto, srcfrom, lessershiftval));
+        if (shiftop == ashr)
+          emit_insn (gen_ashrdi3 (destfrom, srcfrom, GEN_INT (63)));
+        else
+          emit_move_insn (destfrom, const0_rtx);
+      }
+
+    if (shiftcomparison == RUNTIME)
+      emit_label (exit_label);
+
+    DONE;
+  })
 
 ;; }}}
 ;; {{{ Atomics

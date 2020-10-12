@@ -65,6 +65,21 @@ __mspabi_slli:
 	RET
 #endif
 
+#ifdef __MSP430X__
+	.section	.text.__gnu_mspabi_sllp
+1:	ADDA	#-1,R13
+	ADDA	R12,R12
+	.global	__gnu_mspabi_sllp
+__gnu_mspabi_sllp:
+	CMP	#0,R13
+	JNZ	1b
+#ifdef __MSP430X_LARGE__
+	RETA
+#else
+	RET
+#endif /* __MSP430X_LARGE__ */
+#endif /* __MSP430X__ */
+
 /* Logical Left Shift - R12:R13 -> R12:R13.  */
 
 	.section	.text.__mspabi_slll_n

@@ -21,6 +21,9 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _CPUID_H_INCLUDED
+#define _CPUID_H_INCLUDED
+
 /* %eax */
 #define bit_AVX512BF16	(1 << 5)
 
@@ -124,6 +127,9 @@
 #define bit_PCONFIG	(1 << 18)
 #define bit_SERIALIZE	(1 << 14)
 #define bit_TSXLDTRK    (1 << 16)
+#define bit_AMX_BF16    (1 << 22)
+#define bit_AMX_TILE    (1 << 24)
+#define bit_AMX_INT8    (1 << 25)
 
 /* XFEATURE_ENABLED_MASK register bits (%eax == 0xd, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)
@@ -313,3 +319,12 @@ __get_cpuid_count (unsigned int __leaf, unsigned int __subleaf,
   __cpuid_count (__leaf, __subleaf, *__eax, *__ebx, *__ecx, *__edx);
   return 1;
 }
+
+static __inline void
+__cpuidex (int __cpuid_info[4], int __leaf, int __subleaf)
+{
+  __cpuid_count (__leaf, __subleaf, __cpuid_info[0], __cpuid_info[1],
+		 __cpuid_info[2], __cpuid_info[3]);
+}
+
+#endif /* _CPUID_H_INCLUDED */

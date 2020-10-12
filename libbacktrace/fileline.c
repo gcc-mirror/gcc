@@ -43,6 +43,10 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <sys/sysctl.h>
 #endif
 
+#ifdef HAVE_MACH_O_DYLD_H
+#include <mach-o/dyld.h>
+#endif
+
 #include "backtrace.h"
 #include "internal.h"
 
@@ -122,6 +126,35 @@ sysctl_exec_name2 (struct backtrace_state *state,
 
 #endif /* defined (HAVE_KERN_PROC_ARGS) || |defined (HAVE_KERN_PROC) */
 
+#ifdef HAVE_MACH_O_DYLD_H
+
+static char *
+macho_get_executable_path (struct backtrace_state *state,
+			   backtrace_error_callback error_callback, void *data)
+{
+  uint32_t len;
+  char *name;
+
+  len = 0;
+  if (_NSGetExecutablePath (NULL, &len) == 0)
+    return NULL;
+  name = (char *) backtrace_alloc (state, len, error_callback, data);
+  if (name == NULL)
+    return NULL;
+  if (_NSGetExecutablePath (name, &len) != 0)
+    {
+      backtrace_free (state, name, len, error_callback, data);
+      return NULL;
+    }
+  return name;
+}
+
+#else /* !defined (HAVE_MACH_O_DYLD_H) */
+
+#define macho_get_executable_path(state, error_callback, data) NULL
+
+#endif /* !defined (HAVE_MACH_O_DYLD_H) */
+
 /* Initialize the fileline information from the executable.  Returns 1
    on success, 0 on failure.  */
 
@@ -159,7 +192,7 @@ fileline_initialize (struct backtrace_state *state,
 
   descriptor = -1;
   called_error_callback = 0;
-  for (pass = 0; pass < 7; ++pass)
+  for (pass = 0; pass < 8; ++pass)
     {
       int does_not_exist;
 
@@ -187,6 +220,9 @@ fileline_initialize (struct backtrace_state *state,
 	  break;
 	case 6:
 	  filename = sysctl_exec_name2 (state, error_callback, data);
+	  break;
+	case 7:
+	  filename = macho_get_executable_path (state, error_callback, data);
 	  break;
 	default:
 	  abort ();
@@ -280,4 +316,31 @@ backtrace_syminfo (struct backtrace_state *state, uintptr_t pc,
 
   state->syminfo_fn (state, pc, callback, error_callback, data);
   return 1;
+}
+
+/* A backtrace_syminfo_callback that can call into a
+   backtrace_full_callback, used when we have a symbol table but no
+   debug info.  */
+
+void
+backtrace_syminfo_to_full_callback (void *data, uintptr_t pc,
+				    const char *symname,
+				    uintptr_t symval ATTRIBUTE_UNUSED,
+				    uintptr_t symsize ATTRIBUTE_UNUSED)
+{
+  struct backtrace_call_full *bdata = (struct backtrace_call_full *) data;
+
+  bdata->ret = bdata->full_callback (bdata->full_data, pc, NULL, 0, symname);
+}
+
+/* An error callback that corresponds to
+   backtrace_syminfo_to_full_callback.  */
+
+void
+backtrace_syminfo_to_full_error_callback (void *data, const char *msg,
+					  int errnum)
+{
+  struct backtrace_call_full *bdata = (struct backtrace_call_full *) data;
+
+  bdata->full_error_callback (bdata->full_data, msg, errnum);
 }

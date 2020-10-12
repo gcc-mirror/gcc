@@ -19,31 +19,31 @@ void test (void)
 	{
 	default:
 	case 0:
-	  p0 = malloc (16);
+	  p0 = malloc (16); /* { dg-warning "leak" } */
 	  break;
 	case 1:
-	  free (p0); /* { dg-warning "double-'free' of 'p0'" } */
+	  free (p0); /* { dg-warning "double-'free' of 'p0'" "" { xfail *-*-* } } */
 	  break;
 
 	case 2:
-	  p1 = malloc (16);
+	  p1 = malloc (16); /* { dg-warning "leak" } */
 	  break;
 	case 3:
-	  free (p1); /* { dg-warning "double-'free' of 'p1'" } */
+	  free (p1); /* { dg-warning "double-'free' of 'p1'" "" { xfail *-*-* } } */
 	  break;
 
 	case 4:
-	  p2 = malloc (16);
+	  p2 = malloc (16); /* { dg-warning "leak" } */
 	  break;
 	case 5:
-	  free (p2); /* { dg-warning "double-'free' of 'p2'" } */
+	  free (p2); /* { dg-warning "double-'free' of 'p2'" "" { xfail *-*-* } } */
 	  break;
 
 	case 6:
-	  p3 = malloc (16);
+	  p3 = malloc (16); /* { dg-warning "leak" } */
 	  break;
 	case 7:
-	  free (p3); /* { dg-warning "double-'free' of 'p3'" } */
+	  free (p3); /* { dg-warning "double-'free' of 'p3'" "" { xfail *-*-* } } */
 	  break;
 	}
     }

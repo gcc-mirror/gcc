@@ -3,6 +3,12 @@
 /* { dg-require-profiling "-fprofile-generate" } */
 /* { dg-options "-O2 -flto -DDOJOB=1 -fdump-ipa-profile_estimate" } */
 
+#ifdef FOR_AUTOFDO_TESTING
+#define MAXITER 350000000
+#else
+#define MAXITER 3500000
+#endif
+
 #include <stdio.h>
 
 typedef int (*fptr) (int);
@@ -21,7 +27,7 @@ int foo ()
 
   x = one (3);
 
-  for (i = 0; i < 350000000; i++)
+  for (i = 0; i < MAXITER; i++)
     {
       x = (*p) (3);
       p = table[x];

@@ -7,6 +7,11 @@
 /* Trigger a breakpoint in the analyzer when reached.  */
 extern void __analyzer_break (void);
 
+/* Emit a warning describing the 2nd argument (which can be of any
+   type), at the given verbosity level.  This is for use when
+   debugging, and may be of use in DejaGnu tests.  */
+extern void __analyzer_describe (int verbosity, ...);
+
 /* Dump copious information about the analyzer’s state when reached.  */
 extern void __analyzer_dump (void);
 
@@ -19,8 +24,6 @@ extern void __analyzer_dump (void);
    __analyzer_dump_exploded_nodes (1);
    will also dump all of the states within those nodes.  */
 extern void __analyzer_dump_exploded_nodes (int);
-
-extern void __analyzer_dump_num_heap_regions (void);
 
 /* Emit a placeholder "note" diagnostic with a path to this call site,
    if the analyzer finds a feasible path to it.  */

@@ -1632,22 +1632,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::lexicographical_compare(__x.begin(), __x.end(),
 					    __y.begin(), __y.end());
       }
-
-      friend bool _GLIBCXX_DEPRECATED
-      operator!=(const _Rb_tree& __x, const _Rb_tree& __y)
-      { return !(__x == __y); }
-
-      friend bool _GLIBCXX_DEPRECATED
-      operator>(const _Rb_tree& __x, const _Rb_tree& __y)
-      { return __y < __x; }
-
-      friend bool _GLIBCXX_DEPRECATED
-      operator<=(const _Rb_tree& __x, const _Rb_tree& __y)
-      { return !(__y < __x); }
-
-      friend bool _GLIBCXX_DEPRECATED
-      operator>=(const _Rb_tree& __x, const _Rb_tree& __y)
-      { return !(__x < __y); }
 #endif
     };
 

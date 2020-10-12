@@ -160,11 +160,9 @@ package body Exp_Ch2 is
 
          and then not (Nkind (Parent (N)) = N_Attribute_Reference
                         and then
-                          (Nam_In (Attribute_Name (Parent (N)),
-                                   Name_Asm_Input,
-                                   Name_Asm_Output)
+                          (Attribute_Name (Parent (N)) in Name_Asm_Input
+                                                        | Name_Asm_Output
                             or else Prefix (Parent (N)) = N))
-
       then
          --  Case of Current_Value is a compile time known value
 
@@ -406,7 +404,7 @@ package body Exp_Ch2 is
       --  Set Atomic_Sync_Required if necessary for atomic variable. Note that
       --  this processing does NOT apply to Volatile_Full_Access variables.
 
-      if Nkind_In (N, N_Identifier, N_Expanded_Name)
+      if Nkind (N) in N_Identifier | N_Expanded_Name
         and then Ekind (E) = E_Variable
         and then (Is_Atomic (E) or else Is_Atomic (Etype (E)))
       then
@@ -512,8 +510,8 @@ package body Exp_Ch2 is
          --  ??? passing a formal as actual for a mode IN formal is
          --  considered as an assignment?
 
-         if Nkind_In (Parent (N), N_Procedure_Call_Statement,
-                                  N_Entry_Call_Statement)
+         if Nkind (Parent (N)) in
+              N_Procedure_Call_Statement | N_Entry_Call_Statement
            or else (Nkind (Parent (N)) = N_Assignment_Statement
                       and then N = Name (Parent (N)))
          then
@@ -529,9 +527,8 @@ package body Exp_Ch2 is
          --  which case there is an implicit dereference, and the formal itself
          --  is not being assigned to).
 
-         elsif Nkind_In (Parent (N), N_Selected_Component,
-                                     N_Indexed_Component,
-                                     N_Slice)
+         elsif Nkind (Parent (N)) in
+                 N_Selected_Component | N_Indexed_Component | N_Slice
            and then N = Prefix (Parent (N))
            and then not Is_Access_Type (Etype (N))
            and then In_Assignment_Context (Parent (N))
@@ -748,7 +745,7 @@ package body Exp_Ch2 is
    begin
       --  Simple reference case
 
-      if Nkind_In (N, N_Identifier, N_Expanded_Name) then
+      if Nkind (N) in N_Identifier | N_Expanded_Name then
          if Is_Formal (Entity (N)) then
             return Entity (N);
 

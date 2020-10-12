@@ -59,5 +59,12 @@ enum csky_fpu_type
 };
 #define CSKY_TARGET_FPU_GET(name) TARGET_FPU_ ## name
 
+enum float_abi_type
+{
+  CSKY_FLOAT_ABI_SOFT,
+  CSKY_FLOAT_ABI_SOFTFP,
+  CSKY_FLOAT_ABI_HARD
+};
+
 
 #endif /* CSKY_OPTS_H */

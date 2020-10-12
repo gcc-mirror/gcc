@@ -87,9 +87,11 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	When set to 0 memory profiling is disabled.  Refer to the description of
 	MemProfileRate for the default value.
 
-	memprofilerate:  setting memprofilerate=X changes the setting for
-	runtime.MemProfileRate.  Refer to the description of this variable for how
-	it is used and its default value.
+	invalidptr: invalidptr=1 (the default) causes the garbage collector and stack
+	copier to crash the program if an invalid pointer value (for example, 1)
+	is found in a pointer-typed location. Setting invalidptr=0 disables this check.
+	This should only be used as a temporary workaround to diagnose buggy code.
+	The real fix is to not store integers in pointer-typed locations.
 
 	sbrk: setting sbrk=1 replaces the memory allocator and garbage collector
 	with a trivial allocator that obtains memory from the operating system and
@@ -102,10 +104,11 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	scavenger as well as the total amount of memory returned to the operating system
 	and an estimate of physical memory utilization. The format of this line is subject
 	to change, but currently it is:
-		scav # KiB work, # KiB total, #% util
+		scav # # KiB work, # KiB total, #% util
 	where the fields are as follows:
-		# KiB work   the amount of memory returned to the OS since the last scav line
-		# KiB total  how much of the heap at this point in time has been released to the OS
+		scav #       the scavenge cycle number
+		# KiB work   the amount of memory returned to the OS since the last line
+		# KiB total  the total amount of memory returned to the OS
 		#% util      the fraction of all unscavenged memory which is in-use
 	If the line ends with "(forced)", then scavenging was forced by a
 	debug.FreeOSMemory() call.

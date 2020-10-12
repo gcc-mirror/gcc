@@ -115,9 +115,6 @@ Target::_init (const Param &)
 		   (TYPE_PRECISION (long_double_type_node) / BITS_PER_UNIT));
   this->realalignsize = TYPE_ALIGN_UNIT (long_double_type_node);
 
-  /* Size of run-time TypeInfo object.  */
-  this->classinfosize = 19 * this->ptrsize;
-
   /* Much of the dmd front-end uses ints for sizes and offsets, and cannot
      handle any larger data type without some pervasive rework.  */
   this->maxStaticDataSize = tree_to_shwi (TYPE_MAX_VALUE (integer_type_node));
@@ -244,23 +241,24 @@ Target::isVectorTypeSupported (int sz, Type *type)
 {
   /* Size must be greater than zero, and a power of two.  */
   if (sz <= 0 || sz & (sz - 1))
-    return 2;
+    return 3;
 
   /* __vector(void[]) is treated same as __vector(ubyte[])  */
   if (type == Type::tvoid)
     type = Type::tuns8;
 
-  /* No support for non-trivial types.  */
-  if (!type->isTypeBasic ())
-    return 3;
+  /* No support for non-trivial types, complex types, or booleans.  */
+  if (!type->isTypeBasic () || type->iscomplex () || type->ty == Tbool)
+    return 2;
 
-  /* If there is no hardware support, check if we can safely emulate it.  */
-  tree ctype = build_ctype (type);
-  machine_mode mode = TYPE_MODE (ctype);
+  /* In [simd/vector extensions], which vector types are supported depends on
+     the target.  The implementation is expected to only support the vector
+     types that are implemented in the target's hardware.  */
+  unsigned HOST_WIDE_INT nunits = sz / type->size ();
+  tree ctype = build_vector_type (build_ctype (type), nunits);
 
-  if (!targetm.vector_mode_supported_p (mode)
-      && !targetm.scalar_mode_supported_p (as_a <scalar_mode> (mode)))
-    return 3;
+  if (!targetm.vector_mode_supported_p (TYPE_MODE (ctype)))
+    return 2;
 
   return 0;
 }

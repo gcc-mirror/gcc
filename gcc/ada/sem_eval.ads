@@ -427,8 +427,6 @@ package Sem_Eval is
    --  for compile time evaluation purposes. Use Compile_Time_Known_Value
    --  instead (see section on "Compile-Time Known Values" above).
 
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
-
    function Is_OK_Static_Range (N : Node_Id) return Boolean;
    --  Determines if range is static, as defined in RM 4.9(26), and also checks
    --  that neither bound of the range raises constraint error, thus ensuring

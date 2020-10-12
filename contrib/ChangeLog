@@ -1,3 +1,36 @@
+2020-09-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* mklog.py: Parse first 10 lines for PR/DR number
+	not only the first line.
+
+2020-09-17  Dimitrij Mojoski  <dmjpp@hotmail.com>
+
+	* clang-format: Autodetect C++ standard in use rather than
+	forcing C++03.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk (LIST): Add OPT-enable-obsolete to tilegx-linux-gnu,
+	tilegxbe-linux-gnu, and tilepro-linux-gnu.
+
+2020-07-29  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: fix how are ChangeLog paths combined.
+
+2020-07-23  Patrick Palka  <ppalka@redhat.com>
+
+	* vimrc (SetStyle): Also inspect &filetype to determine whether
+	a file is C-like.
+
+2020-07-23  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: When reverting a backport,
+	we should print only Revert header.
+
+2020-07-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Fix typo.
+
 2020-07-10  Mike Nolta  <mike@nolta.net>
 
 	* download_prerequisites: Don't pass wget options to curl.

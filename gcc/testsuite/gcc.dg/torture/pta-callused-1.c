@@ -21,4 +21,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "p.._. = { i j }" "alias" } } */
+/* { dg-final { scan-tree-dump "p.\?.._. = { i j }" "alias" } } */

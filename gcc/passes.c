@@ -892,7 +892,7 @@ pass_manager::create_pass_tab (void) const
   if (!flag_dump_passes)
     return;
 
-  pass_tab.safe_grow_cleared (passes_by_id_size + 1);
+  pass_tab.safe_grow_cleared (passes_by_id_size + 1, true);
   m_name_to_pass_map->traverse <void *, passes_pass_traverse> (NULL);
 }
 
@@ -1046,7 +1046,7 @@ enable_disable_pass (const char *arg, bool is_enable)
     tab = &disabled_pass_uid_range_tab;
 
   if ((unsigned) pass->static_pass_number >= tab->length ())
-    tab->safe_grow_cleared (pass->static_pass_number + 1);
+    tab->safe_grow_cleared (pass->static_pass_number + 1, true);
 
   if (!range_str)
     {

@@ -189,6 +189,12 @@ package System.UTF_32 is
    --  letters to upper case using this routine. A corresponding routine to
    --  fold to lower case is also provided.
 
+   function Is_UTF_32_NFKC (U : UTF_32) return Boolean;
+   pragma Inline (Is_UTF_32_NFKC);
+   --  Return True if U could be present in a string normalized to
+   --  Normalization Form KC (as defined by Clause 21 of ISO/IEC 10646:2017),
+   --  otherwise returns False.
+
    function Is_UTF_32_Basic (U : UTF_32) return Boolean;
    pragma Inline (Is_UTF_32_Basic);
    --  Return True if U has no Decomposition Mapping in the code charts of

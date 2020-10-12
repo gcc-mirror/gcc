@@ -48,6 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfg.h"
 #include "basic-block.h"
 #include "ipa-utils.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -380,14 +382,15 @@ inline_call (struct cgraph_edge *e, bool update_original,
       && opt_for_fn (to->decl, flag_strict_aliasing))
     {
       struct gcc_options opts = global_options;
+      struct gcc_options opts_set = global_options_set;
 
-      cl_optimization_restore (&opts, opts_for_fn (to->decl));
+      cl_optimization_restore (&opts, &opts_set, opts_for_fn (to->decl));
       opts.x_flag_strict_aliasing = false;
       if (dump_file)
 	fprintf (dump_file, "Dropping flag_strict_aliasing on %s\n",
 		 to->dump_name ());
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
-	 = build_optimization_node (&opts);
+	 = build_optimization_node (&opts, &opts_set);
       reload_optimization_node = true;
     }
 
@@ -420,8 +423,9 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	     != opt_for_fn (to->decl, flag_errno_math))
 	{
 	  struct gcc_options opts = global_options;
+	  struct gcc_options opts_set = global_options_set;
 
-	  cl_optimization_restore (&opts, opts_for_fn (to->decl));
+	  cl_optimization_restore (&opts, &opts_set, opts_for_fn (to->decl));
 	  opts.x_flag_rounding_math
 	    = opt_for_fn (callee->decl, flag_rounding_math);
 	  opts.x_flag_trapping_math
@@ -448,7 +452,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	    fprintf (dump_file, "Copying FP flags from %s to %s\n",
 		     callee->dump_name (), to->dump_name ());
 	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
-	     = build_optimization_node (&opts);
+	     = build_optimization_node (&opts, &opts_set);
 	  reload_optimization_node = true;
 	}
     }
@@ -485,6 +489,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   gcc_assert (curr->callee->inlined_to == to);
 
   old_size = ipa_size_summaries->get (to)->size;
+  ipa_merge_modref_summary_after_inlining (e);
   ipa_merge_fn_summary_after_inlining (e);
   if (e->in_polymorphic_cdtor)
     mark_all_inlined_calls_cdtor (e->callee);

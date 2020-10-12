@@ -54,7 +54,9 @@ int main()
   wchar_t* cp = &c;
 
   testthrow(c);
+#if __cplusplus <= 201703L
   testthrow(cp);
+#endif
 
   return 0;
 }

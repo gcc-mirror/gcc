@@ -21,7 +21,8 @@ pl (void)
   for (sc = 0; sc < 1; ++sc)
     {
       th.gk.hk = 0;
-      th.gk.bg[sc] = 0; /* { dg-warning "uninitialized" "uninit-warning-removed" { xfail *-*-* } } */
+      th.gk.bg[sc] = 0; /* { dg-warning "dereference of NULL '0'" } */
+      // TODO: above message could be improved
       l3 (&th);
     }
 }

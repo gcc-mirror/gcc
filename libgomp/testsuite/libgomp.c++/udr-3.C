@@ -86,6 +86,7 @@ struct W
 {
   int v;
   W () : v (6) {}
+  W (int i) : v (i) {}
   ~W () {}
 };
 

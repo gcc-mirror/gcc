@@ -24,6 +24,7 @@
 #ifndef __APPLE__
 // darwin headers use these, see PR 64883
 # define always_inline 1
+# define cold 1
 # define deprecated 1
 # define noreturn 1
 # define visibility 1
@@ -36,6 +37,7 @@
 #endif
 
 #include <bits/extc++.h>
+#include <cxxabi.h>
 
 int
 main()

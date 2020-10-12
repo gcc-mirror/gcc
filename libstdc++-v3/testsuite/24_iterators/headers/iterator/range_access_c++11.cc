@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11_only } }
 
 // Copyright (C) 2010-2020 Free Software Foundation, Inc.
 //

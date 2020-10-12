@@ -44,7 +44,9 @@ generic
    with function "<" (Left, Right : Key_Type) return Boolean is <>;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Indefinite_Ordered_Maps is
+package Ada.Containers.Indefinite_Ordered_Maps with
+  SPARK_Mode => Off
+is
    pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;

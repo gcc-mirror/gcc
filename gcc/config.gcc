@@ -412,7 +412,8 @@ i[34567]86-*-*)
 		       waitpkgintrin.h cldemoteintrin.h avx512bf16vlintrin.h
 		       avx512bf16intrin.h enqcmdintrin.h serializeintrin.h
 		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
-		       tsxldtrkintrin.h"
+		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
+		       amxbf16intrin.h x86gprintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -447,7 +448,8 @@ x86_64-*-*)
 		       waitpkgintrin.h cldemoteintrin.h avx512bf16vlintrin.h
 		       avx512bf16intrin.h enqcmdintrin.h serializeintrin.h
 		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
-		       tsxldtrkintrin.h"
+		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
+		       amxbf16intrin.h x86gprintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -1491,6 +1493,7 @@ bfin*-*)
 	use_gcc_stdint=wrap
 	;;
 bpf-*-*)
+        tm_file="elfos.h ${tm_file}"
         tmake_file="${tmake_file} bpf/t-bpf"
         use_collect2=no
         extra_headers="bpf-helpers.h"
@@ -1542,6 +1545,7 @@ csky-*-*)
 		tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} csky/csky-elf.h"
 		tmake_file="csky/t-csky csky/t-csky-elf"
 		default_use_cxa_atexit=no
+		use_gcc_stdint=wrap
 		;;
 	    csky-*-linux*)
 		tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} csky/csky-linux-elf.h"
@@ -3031,8 +3035,12 @@ rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	default_use_cxa_atexit=yes
 	;;
 rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix71.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	tmake_file="rs6000/t-aix52 t-slibgcc"
+	if test x$cpu_is_64bit = xyes; then
+	    tm_file="${tm_file} rs6000/biarch64.h"
+	    tmake_file="rs6000/t-aix64 t-slibgcc"
+	fi
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix71.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
 	thread_file='aix'
@@ -3042,7 +3050,7 @@ rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
 rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	tmake_file="rs6000/t-aix52 t-slibgcc"
 	if test x$cpu_is_64bit = xyes; then
-	    tm_file="${tm_file} rs6000/biarch64.h rs6000/defaultaix64.h"
+	    tm_file="${tm_file} rs6000/biarch64.h"
 	    tmake_file="rs6000/t-aix64 t-slibgcc"
 	fi
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix72.h rs6000/xcoff.h rs6000/aix-stdint.h"

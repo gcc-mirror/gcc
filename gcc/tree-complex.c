@@ -1776,7 +1776,7 @@ tree_lower_complex (void)
     return 0;
 
   complex_lattice_values.create (num_ssa_names);
-  complex_lattice_values.safe_grow_cleared (num_ssa_names);
+  complex_lattice_values.safe_grow_cleared (num_ssa_names, true);
 
   init_parameter_lattice_values ();
   class complex_propagate complex_propagate;
@@ -1787,7 +1787,7 @@ tree_lower_complex (void)
   complex_variable_components = new int_tree_htab_type (10);
 
   complex_ssa_name_components.create (2 * num_ssa_names);
-  complex_ssa_name_components.safe_grow_cleared (2 * num_ssa_names);
+  complex_ssa_name_components.safe_grow_cleared (2 * num_ssa_names, true);
 
   update_parameter_components ();
 

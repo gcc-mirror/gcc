@@ -723,11 +723,12 @@ vec_free (vec<T, A, vl_embed> *&v)
 /* Grow V to length LEN.  Allocate it, if necessary.  */
 template<typename T, typename A>
 inline void
-vec_safe_grow (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
+vec_safe_grow (vec<T, A, vl_embed> *&v, unsigned len,
+	       bool exact = false CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
   gcc_checking_assert (len >= oldlen);
-  vec_safe_reserve_exact (v, len - oldlen PASS_MEM_STAT);
+  vec_safe_reserve (v, len - oldlen, exact PASS_MEM_STAT);
   v->quick_grow (len);
 }
 
@@ -735,10 +736,11 @@ vec_safe_grow (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
 /* If V is NULL, allocate it.  Call V->safe_grow_cleared(LEN).  */
 template<typename T, typename A>
 inline void
-vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
+vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len,
+		       bool exact = false CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
-  vec_safe_grow (v, len PASS_MEM_STAT);
+  vec_safe_grow (v, len, exact PASS_MEM_STAT);
   vec_default_construct (v->address () + oldlen, len - oldlen);
 }
 
@@ -748,9 +750,20 @@ vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
 template<typename T>
 inline void
 vec_safe_grow_cleared (vec<T, va_heap, vl_ptr> *&v,
-		       unsigned len CXX_MEM_STAT_INFO)
+		       unsigned len, bool exact = false CXX_MEM_STAT_INFO)
 {
-  v->safe_grow_cleared (len PASS_MEM_STAT);
+  v->safe_grow_cleared (len, exact PASS_MEM_STAT);
+}
+
+/* If V does not have space for NELEMS elements, call
+   V->reserve(NELEMS, EXACT).  */
+
+template<typename T>
+inline bool
+vec_safe_reserve (vec<T, va_heap, vl_ptr> *&v, unsigned nelems, bool exact = false
+		  CXX_MEM_STAT_INFO)
+{
+  return v->reserve (nelems, exact);
 }
 
 
@@ -1270,8 +1283,13 @@ template<typename T, typename A>
 inline size_t
 vec<T, A, vl_embed>::embedded_size (unsigned alloc)
 {
-  typedef vec<T, A, vl_embed> vec_embedded;
-  return offsetof (vec_embedded, m_vecdata) + alloc * sizeof (T);
+  struct alignas (T) U { char data[sizeof (T)]; };
+  typedef vec<U, A, vl_embed> vec_embedded;
+  typedef typename std::conditional<std::is_standard_layout<T>::value,
+				    vec, vec_embedded>::type vec_stdlayout;
+  static_assert (sizeof (vec_stdlayout) == sizeof (vec), "");
+  static_assert (alignof (vec_stdlayout) == alignof (vec), "");
+  return offsetof (vec_stdlayout, m_vecdata) + alloc * sizeof (T);
 }
 
 
@@ -1449,8 +1467,8 @@ public:
   T *safe_push (const T &CXX_MEM_STAT_INFO);
   T &pop (void);
   void truncate (unsigned);
-  void safe_grow (unsigned CXX_MEM_STAT_INFO);
-  void safe_grow_cleared (unsigned CXX_MEM_STAT_INFO);
+  void safe_grow (unsigned, bool = false CXX_MEM_STAT_INFO);
+  void safe_grow_cleared (unsigned, bool = false CXX_MEM_STAT_INFO);
   void quick_grow (unsigned);
   void quick_grow_cleared (unsigned);
   void quick_insert (unsigned, const T &);
@@ -1522,6 +1540,19 @@ public:
   auto_vec () { this->m_vec = NULL; }
   auto_vec (size_t n) { this->create (n); }
   ~auto_vec () { this->release (); }
+
+  auto_vec (auto_vec&& r)
+    {
+      this->m_vec = r.m_vec;
+      r.m_vec = NULL;
+    }
+  auto_vec& operator= (auto_vec&& r)
+    {
+      this->release ();
+      this->m_vec = r.m_vec;
+      r.m_vec = NULL;
+      return *this;
+    }
 };
 
 
@@ -1876,11 +1907,11 @@ vec<T, va_heap, vl_ptr>::truncate (unsigned size)
 
 template<typename T>
 inline void
-vec<T, va_heap, vl_ptr>::safe_grow (unsigned len MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::safe_grow (unsigned len, bool exact MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
   gcc_checking_assert (oldlen <= len);
-  reserve_exact (len - oldlen PASS_MEM_STAT);
+  reserve (len - oldlen, exact PASS_MEM_STAT);
   if (m_vec)
     m_vec->quick_grow (len);
   else
@@ -1894,11 +1925,12 @@ vec<T, va_heap, vl_ptr>::safe_grow (unsigned len MEM_STAT_DECL)
 
 template<typename T>
 inline void
-vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len, bool exact
+					    MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
   size_t growby = len - oldlen;
-  safe_grow (len PASS_MEM_STAT);
+  safe_grow (len, exact PASS_MEM_STAT);
   if (growby != 0)
     vec_default_construct (address () + oldlen, growby);
 }

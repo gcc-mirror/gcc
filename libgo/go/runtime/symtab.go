@@ -155,8 +155,8 @@ type Func struct {
 // given program counter address, or else nil.
 //
 // If pc represents multiple functions because of inlining, it returns
-// the a *Func describing the innermost function, but with an entry
-// of the outermost function.
+// the *Func describing the innermost function, but with an entry of
+// the outermost function.
 func FuncForPC(pc uintptr) *Func {
 	name, _, _, _ := funcfileline(pc, -1, false)
 	if name == "" {

@@ -2618,8 +2618,11 @@ set via @code{__attribute__}.",
 DEFHOOK
 (libc_has_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} is present in the target C library.",
- bool, (enum function_class fn_class),
+@var{fn_class} is present in the target C library.  If @var{type} is NULL,\n\
+the caller asks for support for all standard (float, double, long double)\n\
+types.  If @var{type} is non-NULL, the caller asks for support for a\n\
+specific type.",
+ bool, (enum function_class fn_class, tree type),
  default_libc_has_function)
 
 DEFHOOK
@@ -3148,7 +3151,9 @@ DEFHOOK
 @var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is\n\
 smaller than @var{inprec}) by merely operating on it as if it had only\n\
 @var{outprec} bits.  The default returns true unconditionally, which\n\
-is correct for most machines.\n\
+is correct for most machines.  When @code{TARGET_TRULY_NOOP_TRUNCATION}\n\
+returns false, the machine description should provide a @code{trunc}\n\
+optab to specify the RTL that performs the required truncation.\n\
 \n\
 If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,\n\
 suboptimal code can result if this hook returns true for the corresponding\n\
@@ -3347,6 +3352,13 @@ HOOK_VECTOR_END (addr_space)
 
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"
+
+DEFHOOK
+(lower_local_decl_alignment,
+ "Define this hook to lower alignment of local, parm or result\n\
+decl @samp{(@var{decl})}.",
+ void, (tree decl),
+ hook_void_tree)
 
 DEFHOOK
 (static_rtx_alignment,
@@ -6367,7 +6379,8 @@ DEFHOOK
 in the @code{struct cl_target_option} structure for function-specific\n\
 options from the @code{struct gcc_options} structure.\n\
 @xref{Option file format}.",
- void, (struct cl_target_option *ptr, struct gcc_options *opts), NULL)
+ void, (struct cl_target_option *ptr, struct gcc_options *opts,
+	struct gcc_options *opts_set), NULL)
 
 /* Function to restore any extra target state from the target options
    structure.  */
@@ -6376,7 +6389,8 @@ DEFHOOK
  "This hook is called to restore any additional target-specific\n\
 information in the @code{struct cl_target_option} structure for\n\
 function-specific options to the @code{struct gcc_options} structure.",
- void, (struct gcc_options *opts, struct cl_target_option *ptr), NULL)
+ void, (struct gcc_options *opts, struct gcc_options *opts_set,
+	struct cl_target_option *ptr), NULL)
 
 /* Function to update target-specific option information after being
    streamed in.  */

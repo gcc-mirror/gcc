@@ -263,7 +263,7 @@ enum gfc_statement
   ST_OMP_TARGET_SIMD, ST_OMP_END_TARGET_SIMD,
   ST_OMP_TASKLOOP, ST_OMP_END_TASKLOOP,
   ST_OMP_TASKLOOP_SIMD, ST_OMP_END_TASKLOOP_SIMD, ST_OMP_ORDERED_DEPEND,
-  ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
+  ST_OMP_REQUIRES, ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
   ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_EVENT_POST,
   ST_EVENT_WAIT, ST_FAIL_IMAGE, ST_FORM_TEAM, ST_CHANGE_TEAM,
   ST_END_TEAM, ST_SYNC_TEAM, ST_NONE
@@ -753,6 +753,13 @@ CInteropKind_t;
    that the list is initialized.  */
 extern CInteropKind_t c_interop_kinds_table[];
 
+enum gfc_omp_device_type
+{
+  OMP_DEVICE_TYPE_UNSET,
+  OMP_DEVICE_TYPE_HOST,
+  OMP_DEVICE_TYPE_NOHOST,
+  OMP_DEVICE_TYPE_ANY
+};
 
 /* Structure and list of supported extension attributes.  */
 typedef enum
@@ -919,6 +926,7 @@ typedef struct
   /* Mentioned in OMP DECLARE TARGET.  */
   unsigned omp_declare_target:1;
   unsigned omp_declare_target_link:1;
+  ENUM_BITFIELD (gfc_omp_device_type) omp_device_type:2;
 
   /* Mentioned in OACC DECLARE.  */
   unsigned oacc_declare_create:1;
@@ -1242,6 +1250,7 @@ typedef struct gfc_omp_namelist
       gfc_omp_map_op map_op;
       gfc_omp_linear_op linear_op;
       struct gfc_common_head *common;
+      bool lastprivate_conditional;
     } u;
   struct gfc_omp_namelist_udr *udr;
   struct gfc_omp_namelist *next;
@@ -1275,6 +1284,7 @@ enum
   OMP_LIST_IS_DEVICE_PTR,
   OMP_LIST_USE_DEVICE_PTR,
   OMP_LIST_USE_DEVICE_ADDR,
+  OMP_LIST_NONTEMPORAL,
   OMP_LIST_NUM
 };
 
@@ -1320,7 +1330,9 @@ enum gfc_omp_cancel_kind
 
 enum gfc_omp_if_kind
 {
+  OMP_IF_CANCEL,
   OMP_IF_PARALLEL,
+  OMP_IF_SIMD,
   OMP_IF_TASK,
   OMP_IF_TASKLOOP,
   OMP_IF_TARGET,
@@ -1331,6 +1343,24 @@ enum gfc_omp_if_kind
   OMP_IF_LAST
 };
 
+enum gfc_omp_requires_kind
+{
+  /* Keep in sync with gfc_namespace, esp. with omp_req_mem_order.  */
+  OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST = 1,  /* 01 */
+  OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL = 2,  /* 10 */
+  OMP_REQ_ATOMIC_MEM_ORDER_RELAXED = 3,  /* 11 */
+  OMP_REQ_REVERSE_OFFLOAD = (1 << 2),
+  OMP_REQ_UNIFIED_ADDRESS = (1 << 3),
+  OMP_REQ_UNIFIED_SHARED_MEMORY = (1 << 4),
+  OMP_REQ_DYNAMIC_ALLOCATORS = (1 << 5),
+  OMP_REQ_TARGET_MASK = (OMP_REQ_REVERSE_OFFLOAD
+			 | OMP_REQ_UNIFIED_ADDRESS
+			 | OMP_REQ_UNIFIED_SHARED_MEMORY),
+  OMP_REQ_ATOMIC_MEM_ORDER_MASK = (OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST
+				   | OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL
+				   | OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
+};
+
 typedef struct gfc_omp_clauses
 {
   struct gfc_expr *if_expr;
@@ -1338,13 +1368,14 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *num_threads;
   gfc_omp_namelist *lists[OMP_LIST_NUM];
   enum gfc_omp_sched_kind sched_kind;
+  enum gfc_omp_device_type device_type;
   struct gfc_expr *chunk_size;
   enum gfc_omp_default_sharing default_sharing;
   int collapse, orderedc;
   bool nowait, ordered, untied, mergeable;
   bool inbranch, notinbranch, defaultmap, nogroup;
   bool sched_simd, sched_monotonic, sched_nonmonotonic;
-  bool simd, threads, depend_source;
+  bool simd, threads, depend_source, order_concurrent;
   enum gfc_omp_cancel_kind cancel;
   enum gfc_omp_proc_bind_kind proc_bind;
   struct gfc_expr *safelen_expr;
@@ -1677,6 +1708,7 @@ typedef struct gfc_common_head
   char use_assoc, saved, threadprivate;
   unsigned char omp_declare_target : 1;
   unsigned char omp_declare_target_link : 1;
+  ENUM_BITFIELD (gfc_omp_device_type) omp_device_type:2;
   /* Provide sufficient space to hold "symbol.symbol.eq.1234567890".  */
   char name[2*GFC_MAX_SYMBOL_LEN + 1 + 14 + 1];
   struct gfc_symbol *head;
@@ -1912,6 +1944,10 @@ typedef struct gfc_namespace
 
   /* Set to 1 if there are any calls to procedures with implicit interface.  */
   unsigned implicit_interface_calls:1;
+
+  /* OpenMP requires. */
+  unsigned omp_requires:6;
+  unsigned omp_target_seen:1;
 }
 gfc_namespace;
 
@@ -2642,7 +2678,8 @@ enum gfc_omp_atomic_op
   GFC_OMP_ATOMIC_CAPTURE = 3,
   GFC_OMP_ATOMIC_MASK = 3,
   GFC_OMP_ATOMIC_SEQ_CST = 4,
-  GFC_OMP_ATOMIC_SWAP = 8
+  GFC_OMP_ATOMIC_ACQ_REL = 8,
+  GFC_OMP_ATOMIC_SWAP = 16
 };
 
 typedef struct gfc_code
@@ -3267,6 +3304,9 @@ gfc_expr *gfc_get_parentheses (gfc_expr *);
 
 /* openmp.c */
 struct gfc_omp_saved_state { void *ptrs[2]; int ints[1]; };
+bool gfc_omp_requires_add_clause (gfc_omp_requires_kind, const char *,
+				  locus *, const char *);
+void gfc_check_omp_requires (gfc_namespace *, int);
 void gfc_free_omp_clauses (gfc_omp_clauses *);
 void gfc_free_oacc_declare_clauses (struct gfc_oacc_declare *);
 void gfc_free_omp_declare_simd (gfc_omp_declare_simd *);
@@ -3623,6 +3663,7 @@ int gfc_expr_walker (gfc_expr **, walk_expr_fn_t, void *);
 int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
 bool gfc_has_dimen_vector_ref (gfc_expr *e);
 void gfc_check_externals (gfc_namespace *);
+bool gfc_fix_implicit_pure (gfc_namespace *);
 
 /* simplify.c */
 

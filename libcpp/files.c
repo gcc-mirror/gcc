@@ -948,10 +948,12 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 
   /* Add line map and do callbacks.  */
   _cpp_do_file_change (pfile, LC_ENTER, file->path,
-		       /* With preamble injection, start on line zero, so
-			  the preamble doesn't appear to have been
-			  included from line 1.  */
-		       type == IT_MAIN_INJECT ? 0 : 1, sysp);
+		       /* With preamble injection, start on line zero,
+			  so the preamble doesn't appear to have been
+			  included from line 1.  Likewise when
+			  starting preprocessed, we expect an initial
+			  locating line.  */
+		       type == IT_PRE_MAIN ? 0 : 1, sysp);
 
   return true;
 }
@@ -1693,7 +1695,7 @@ remap_filename (cpp_reader *pfile, _cpp_file *file)
       p = strchr (fname, '/');
 #ifdef HAVE_DOS_BASED_FILE_SYSTEM
       {
-	char *p2 = strchr (fname, '\\');
+	const char *p2 = strchr (fname, '\\');
 	if (!p || (p > p2))
 	  p = p2;
       }

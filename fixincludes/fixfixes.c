@@ -738,8 +738,10 @@ main( int argc, char** argv )
 {
   tFixDesc* pFix;
   char* pz_tmptmp;
+#ifdef _PC_NAME_MAX
   char* pz_tmp_base;
   char* pz_tmp_dot;
+#endif
 
   if (argc != 5)
     {
@@ -772,12 +774,12 @@ main( int argc, char** argv )
   pz_tmptmp = XNEWVEC (char, strlen (argv[4]) + 5);
   strcpy( pz_tmptmp, argv[4] );
 
+#ifdef _PC_NAME_MAX
   /* Don't lose because "12345678" and "12345678X" map to the same
      file under DOS restricted 8+3 file namespace.  Note that DOS
      doesn't allow more than one dot in the trunk of a file name.  */
   pz_tmp_base = basename( pz_tmptmp );
   pz_tmp_dot = strchr( pz_tmp_base, '.' );
-#ifdef _PC_NAME_MAX
   if (pathconf( pz_tmptmp, _PC_NAME_MAX ) <= 12	/* is this DOS or Windows9X? */
       && pz_tmp_dot != (char*)NULL)
     strcpy (pz_tmp_dot+1, "X"); /* nuke the original extension */

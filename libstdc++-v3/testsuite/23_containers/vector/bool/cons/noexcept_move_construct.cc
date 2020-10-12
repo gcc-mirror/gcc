@@ -23,4 +23,34 @@
 
 typedef std::vector<bool> vbtype;
 
-static_assert(std::is_nothrow_move_constructible<vbtype>::value, "Error");
+static_assert( std::is_nothrow_move_constructible<vbtype>::value,
+	       "noexcept move constructor" );
+static_assert( std::is_nothrow_constructible<vbtype,
+	       vbtype&&, const typename vbtype::allocator_type&>::value,
+	       "noexcept move constructor with allocator" );
+
+template<typename Type>
+  class not_noexcept_move_constructor_alloc : public std::allocator<Type>
+  {
+  public:
+    not_noexcept_move_constructor_alloc() noexcept { }
+
+    not_noexcept_move_constructor_alloc(
+	const not_noexcept_move_constructor_alloc& x) noexcept
+    : std::allocator<Type>(x)
+    { }
+
+    not_noexcept_move_constructor_alloc(
+	not_noexcept_move_constructor_alloc&& x) noexcept(false)
+    : std::allocator<Type>(std::move(x))
+    { }
+
+    template<typename _Tp1>
+      struct rebind
+      { typedef not_noexcept_move_constructor_alloc<_Tp1> other; };
+  };
+
+typedef std::vector<bool, not_noexcept_move_constructor_alloc<bool>> vbtype2;
+
+static_assert( std::is_nothrow_move_constructible<vbtype2>::value,
+	       "noexcept move constructor with not noexcept alloc" );

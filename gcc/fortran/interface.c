@@ -1466,6 +1466,19 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
       int i, compval;
       gfc_expr *shape1, *shape2;
 
+      /* Sometimes the ambiguity between deferred shape and assumed shape
+	 does not get resolved in module procedures, where the only explicit
+	 declaration of the dummy is in the interface.  */
+      if (s1->ns->proc_name && s1->ns->proc_name->attr.module_procedure
+	  && s1->as->type == AS_ASSUMED_SHAPE
+	  && s2->as->type == AS_DEFERRED)
+	{
+	  s2->as->type = AS_ASSUMED_SHAPE;
+	  for (i = 0; i < s2->as->rank; i++)
+	    if (s1->as->lower[i] != NULL)
+	      s2->as->lower[i] = gfc_copy_expr (s1->as->lower[i]);
+	}
+
       if (s1->as->type != s2->as->type)
 	{
 	  snprintf (errmsg, err_len, "Shape mismatch in argument '%s'",
@@ -2617,7 +2630,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       || (actual->rank == 0 && formal->attr.dimension
 	  && gfc_is_coindexed (actual)))
     {
-      if (where 
+      if (where
 	  && (!formal->attr.artificial || (!formal->maybe_array
 					   && !maybe_dummy_array_arg (actual))))
 	{
@@ -2708,7 +2721,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
-      if (where 
+      if (where
 	  && (!formal->attr.artificial || (!formal->maybe_array
 					   && !maybe_dummy_array_arg (actual))))
 	{
@@ -3290,7 +3303,10 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return false;
 	}
 
-      if (f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE
+      if (f->sym->as
+	  && (f->sym->as->type == AS_ASSUMED_SHAPE
+	      || f->sym->as->type == AS_DEFERRED
+	      || (f->sym->as->type == AS_ASSUMED_RANK && f->sym->attr.pointer))
 	  && a->expr->expr_type == EXPR_VARIABLE
 	  && a->expr->symtree->n.sym->as
 	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SIZE
@@ -3513,6 +3529,10 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return false;
 	}
     }
+
+  /* We should have handled the cases where the formal arglist is null
+     already.  */
+  gcc_assert (n > 0);
 
   /* The argument lists are compatible.  We now relink a new actual
      argument list with null arguments in the right places.  The head
@@ -3965,7 +3985,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
   if (!gfc_compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental,
 				  sym->attr.proc == PROC_ST_FUNCTION, where))
     return false;
- 
+
   if (!check_intents (dummy_args, *ap))
     return false;
 

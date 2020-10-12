@@ -1,3 +1,265 @@
+2020-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97002
+	* d-codegen.cc (d_build_call): Set input_location on CALL_EXPR.
+	* d-lang.cc: Include function.h.
+	(d_type_promotes_to): Do default conversions for C and C++ functions.
+	* intrinsics.cc (expand_intrinsic_vaarg): Use build1_loc to build
+	VA_ARG_EXPR.
+
+2020-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_build_d_type_nodes): Call build_ctype() on all
+	basic front-end types.
+	* decl.cc (DeclVisitor::visit (EnumDeclaration *)): Always add decl to
+	current binding level.
+	(build_type_decl): Build TYPE_DECL as a typedef if not for an enum or
+	record type.
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Set underlying type for
+	ENUMERAL_TYPEs.  Build TYPE_DECL for non-numeric enums.
+
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lang.opt (Waddress): Enable warning by -Wextra.
+	(Wcast-result): Likewise.
+	(Wunknown-pragmas): Likewise.
+
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Don't warn about
+	variables initialized with 'void'.
+
+2020-09-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-convert.cc (convert_expr): Warn when casting from a D class to a
+	C++ class.
+
+2020-09-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96924
+	* expr.cc (ExprVisitor::visit (CatAssignExp *)): Don't force
+	temporaries needlessly.
+
+2020-09-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96869
+	* d-builtins.cc (build_frontend_type): Don't expose intrinsics that
+	use unsupported vector types.
+	* d-target.cc (Target::isVectorTypeSupported): Restrict to supporting
+	only if TARGET_VECTOR_MODE_SUPPORTED_P is true.  Don't allow complex
+	or boolean vector types.
+
+2020-08-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::_init): Don't set classinfosize.
+	* d-tree.h (base_vtable_offset): Move under typeinfo.cc section.
+	* decl.cc (base_vtable_offset): Move to...
+	* typeinfo.cc (base_vtable_offset): ...here.  Get base offset from
+	internal TypeInfo_Class type.
+	* intrinsics.cc (expand_intrinsic_bt): Use pointer TYPE_SIZE for
+	setting bitsize value.  Build integer constants of correct type.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd e49192807
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96156
+	* d-frontend.cc (retStyle): Only return RETstack for struct and static
+	array types.
+	* decl.cc (DeclVisitor::visit (FuncDeclaration *)): Use NRVO return
+	for all TREE_ADDRESSABLE types.  Set shidden to the RESULT_DECL.
+	* expr.cc (ExprVisitor::visit (CallExp *)): Force TARGET_EXPR if the
+	'this' pointer reference is a CONSTRUCTOR.
+	(ExprVisitor::visit (StructLiteralExp *)): Generate assignment to the
+	symbol to initialize with literal.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Detect returning
+	struct literals and write directly into the RESULT_DECL.
+	* dmd/MERGE: Merge upstream dmd fe5f388d8.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd cb4a96fae
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_parse_file): Use read() to load contents from stdin,
+	allow the front-end to free the memory after parsing.
+	* dmd/MERGE: Merge upstream dmd 2cc25c219.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96153
+	* d-codegen.cc (build_address): Create a temporary for CALL_EXPRs
+	returning trivial aggregates, pre-filling it with zeroes.
+	(build_memset_call): Use build_zero_cst if setting the entire object.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96157
+	* d-codegen.cc (d_build_call): Handle TREE_ADDRESSABLE static arrays.
+	* types.cc (make_array_type): Propagate TREE_ADDRESSABLE from base
+	type to static array.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-gimplify.cc (d_gimplify_expr): Move lowering of each tree node to
+	separate functions.
+	(d_gimplify_modify_expr): New function.
+	(d_gimplify_addr_expr): New function.
+	(d_gimplify_call_expr): New function.
+	(d_gimplify_unsigned_rshift_expr): New function.
+
+2020-08-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_OBJS): Add d-gimplify.o.
+	* d-lang.cc (empty_modify_p): Move to d-gimplify.cc.
+	(d_gimplify_expr): Likewise.
+	* d-tree.h (d_gimplify_expr): Declare.
+	* d-gimplify.cc: New file.
+
+2020-08-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 1b5a53d01.
+
+2020-08-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96301
+	* decl.cc (DeclVisitor::visit (FuncDeclaration *)): Only return
+	non-trivial structs by invisible reference.
+
+2020-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96153
+	* d-tree.h (build_expr): Add literalp argument.
+	* expr.cc (ExprVisitor): Add literalp_ field.
+	(ExprVisitor::ExprVisitor): Initialize literalp_.
+	(ExprVisitor::visit (AssignExp *)): Call memset() on blits where RHS
+	is a struct literal.  Elide assignment if initializer is all zeroes.
+	(ExprVisitor::visit (CastExp *)): Forward literalp_ to generation of
+	subexpression.
+	(ExprVisitor::visit (AddrExp *)): Likewise.
+	(ExprVisitor::visit (ArrayLiteralExp *)): Use memset() to pre-fill
+	object with zeroes.  Set literalp in subexpressions.
+	(ExprVisitor::visit (StructLiteralExp *)): Likewise.
+	(ExprVisitor::visit (TupleExp *)): Set literalp in subexpressions.
+	(ExprVisitor::visit (VectorExp *)): Likewise.
+	(ExprVisitor::visit (VectorArrayExp *)): Likewise.
+	(build_expr): Forward literal_p to ExprVisitor.
+
+2020-08-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96429
+	* expr.cc (ExprVisitor::visit (BinExp*)): Use EXACT_DIV_EXPR for
+	pointer diff expressions.
+
+2020-08-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96254
+	* d-codegen.cc (error_no_frame_access): New.
+	(get_frame_for_symbol): Use fdparent name in error message.
+	(get_framedecl): Replace call to assert with error.
+	* d-tree.h (error_no_frame_access): Declare.
+	* decl.cc (get_decl_tree): Detect recursion and error.
+
+2020-08-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96250
+	* dmd/MERGE: Merge upstream dmd c2274e56a.
+
+2020-07-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96393
+	* intrinsics.cc (expand_intrinsic_bt): Don't generate BIT_NOT_EXPR for
+	btr32 intrinsic.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96152
+	* d-codegen.cc (build_array_from_exprs): New function.
+	* d-tree.h (build_array_from_exprs): Declare.
+	* expr.cc (ExprVisitor::visit (AssocArrayLiteralExp *)): Use
+	build_array_from_exprs to generate key and value arrays.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96154
+	* gdc.texi (Warnings): Document -Wvarargs.
+	* lang.opt: Add -Wvarargs
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96140
+	* intrinsics.cc (expand_intrinsic_vaarg): Handle ref parameters as
+	arguments to va_arg().
+	(expand_intrinsic_vastart): Handle ref parameters as arguments to
+	va_start().
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Inline bounds checking
+	for simple array assignments.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_memcmp_call): New function.
+	(build_memcpy_call): New function.
+	(build_memset_call): New function.
+	(build_float_identity): Call build_memcmp_call.
+	(lower_struct_comparison): Likewise.
+	(build_struct_comparison): Likewise.
+	* d-tree.h (build_memcmp_call): Declare.
+	(build_memcpy_call): Declare.
+	(build_memset_call): Declare.
+	* expr.cc (ExprVisitor::visit (EqualExp *)): Call build_memcmp_call.
+	(ExprVisitor::visit (AssignExp *)): Call build_memset_call.
+	(ExprVisitor::visit (ArrayLiteralExp *)): Call build_memcpy_call.
+	(ExprVisitor::visit (StructLiteralExp *)): Call build_memset_call.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (needs_postblit): Move out of ExprVisitor as a static
+	function.  Update all callers.
+	(needs_dtor): Likewise.
+	(lvalue_p): Likewise.
+	(binary_op): Likewise.
+	(binop_assignment): Likewise.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (expand_intrinsic_rotate): Add function.
+	(maybe_expand_intrinsic): Handle rol and ror intrinsics.
+	* intrinsics.def (ROL): Add intrinsic.
+	(ROL_TIARG): Add intrinsic.
+	(ROR): Add intrinsic.
+	(ROR_TIARG): Add intrinsic.
+
+2020-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (DEF_D_INTRINSIC): Rename second argument from A to B.
+	* intrinsics.cc (intrinsic_decl): Add built_in field.
+	(DEF_D_INTRINSIC): Rename second argument from ALIAS to BUILTIN.
+	(maybe_set_intrinsic): Handle new intrinsic codes.
+	(expand_intrinsic_bt): Likewise.
+	(expand_intrinsic_checkedint): Likewise.
+	(expand_intrinsic_bswap): Remove.
+	(expand_intrinsic_sqrt): Remove.
+	(maybe_expand_intrinsic): Group together intrinsic cases that map
+	directly to gcc built-ins.
+	* intrinsics.def (DEF_D_BUILTIN): Rename second argument from A to B.
+	Update all callers to pass equivalent DECL_FUNCTION_CODE.
+	(DEF_CTFE_BUILTIN): Likewise.
+	(STD_COS): Remove intrinsic.
+	(STD_FABS): Remove intrinsic.
+	(STD_LDEXP): Remove intrinsic.
+	(STD_RINT): Remove intrinsic.
+	(STD_RNDTOL): Remove intrinsic.
+	(STD_SIN): Remove intrinsic.
+	(STD_SQRTF): Remove intrinsic.
+	(STD_SQRT): Remove intrinsic.
+	(STD_SQRTL): Remove intrinsic.
+
 2020-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 8508c4e68.

@@ -62,7 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Auxiliary data we hold for each type_info derived object we need.  */
 struct GTY (()) tinfo_s {
-  tree type;  /* The RECORD_TYPE for this type_info object */
+  tree type;  /* The (const-qualified) RECORD_TYPE for this type_info object */
 
   tree vtable; /* The VAR_DECL of the vtable.  Only filled at end of
 		  translation.  */
@@ -169,8 +169,7 @@ init_rtti_processing (void)
   tree type_info_type;
 
   push_nested_namespace (std_node);
-  type_info_type = xref_tag (class_type, get_identifier ("type_info"),
-			     /*tag_scope=*/ts_current, false);
+  type_info_type = xref_tag (class_type, get_identifier ("type_info"));
   pop_nested_namespace (std_node);
   const_type_info_type_node
     = cp_build_qualified_type (type_info_type, TYPE_QUAL_CONST);
@@ -458,6 +457,7 @@ get_tinfo_decl (tree type)
       DECL_IGNORED_P (d) = 1;
       TREE_READONLY (d) = 1;
       TREE_STATIC (d) = 1;
+
       /* Mark the variable as undefined -- but remember that we can
 	 define it later if we need to do so.  */
       DECL_EXTERNAL (d) = 1;
@@ -760,9 +760,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 
 	      push_abi_namespace ();
 	      tinfo_ptr = xref_tag (class_type,
-				    get_identifier ("__class_type_info"),
-				    /*tag_scope=*/ts_current, false);
-
+				    get_identifier ("__class_type_info"));
 	      tinfo_ptr = build_pointer_type
 		(cp_build_qualified_type
 		 (tinfo_ptr, TYPE_QUAL_CONST));
@@ -947,10 +945,8 @@ tinfo_base_init (tinfo_s *ti, tree target)
   vtable_ptr = ti->vtable;
   if (!vtable_ptr)
     {
-      tree real_type;
       push_abi_namespace ();
-      real_type = xref_tag (class_type, ti->name,
-			    /*tag_scope=*/ts_current, false);
+      tree real_type = xref_tag (class_type, ti->name);
       pop_abi_namespace ();
 
       if (!COMPLETE_TYPE_P (real_type))
@@ -1176,7 +1172,7 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 
 	gcc_assert (tk_index - TK_VMI_CLASS_TYPES + 1 == nbases);
 
-	vec_safe_grow (init_vec, nbases);
+	vec_safe_grow (init_vec, nbases, true);
 	/* Generate the base information initializer.  */
 	for (unsigned ix = nbases; ix--;)
 	  {
@@ -1563,7 +1559,7 @@ emit_support_tinfos (void)
 
   /* Look for a defined class.  */
   tree bltn_type = lookup_qualified_name
-    (abi_node, "__fundamental_type_info", true, false);
+    (abi_node, "__fundamental_type_info", LOOK_want::TYPE, false);
   if (TREE_CODE (bltn_type) != TYPE_DECL)
     return;
 

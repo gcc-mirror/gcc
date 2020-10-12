@@ -2,7 +2,7 @@
    large index
    { dg-do compile }
    { dg-require-effective-target alloca }
-   { dg-options "-O2 -Warray-bounds -ftrack-macro-expansion=0" }  */
+   { dg-options "-O2 -Warray-bounds -Wno-stringop-overread -ftrack-macro-expansion=0" }  */
 
 #include "../gcc.dg/range.h"
 

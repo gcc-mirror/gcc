@@ -3347,6 +3347,8 @@ output_asm_line_debug_info (void)
 	      || !debug_variable_location_views));
 }
 
+static bool asm_outputs_debug_line_str (void);
+
 /* Minimum line offset in a special line info. opcode.
    This value was chosen to give a reasonable range of values.  */
 #define DWARF_LINE_BASE  -10
@@ -4729,6 +4731,35 @@ reset_indirect_string (indirect_string_node **h, void *)
       node->index = 0;
     }
   return 1;
+}
+
+/* Add a string representing a file or filepath attribute value to a DIE.  */
+
+static inline void
+add_filepath_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind,
+			const char *str)
+{
+  if (! asm_outputs_debug_line_str ())
+    add_AT_string (die, attr_kind, str);
+  else
+    {
+      dw_attr_node attr;
+      struct indirect_string_node *node;
+
+      if (!debug_line_str_hash)
+	debug_line_str_hash
+	  = hash_table<indirect_string_hasher>::create_ggc (10);
+
+      node = find_AT_string_in_table (str, debug_line_str_hash);
+      set_indirect_string (node);
+      node->form = DW_FORM_line_strp;
+
+      attr.dw_attr = attr_kind;
+      attr.dw_attr_val.val_class = dw_val_class_str;
+      attr.dw_attr_val.val_entry = NULL;
+      attr.dw_attr_val.v.val_str = node;
+      add_dwarf_attr (die, &attr);
+    }
 }
 
 /* Find out whether a string should be output inline in DIE
@@ -11839,6 +11870,29 @@ output_ranges (void)
       for -gsplit-dwarf we should use DW_FORM_strx instead.  */	\
    && !dwarf_split_debug_info)
 
+
+/* Returns TRUE if we are outputting DWARF5 and the assembler supports
+   DWARF5 .debug_line tables using .debug_line_str or we generate
+   it ourselves, except for split-dwarf which doesn't have a
+   .debug_line_str.  */
+static bool
+asm_outputs_debug_line_str (void)
+{
+  if (dwarf_version >= 5
+      && ! output_asm_line_debug_info ()
+      && DWARF5_USE_DEBUG_LINE_STR)
+    return true;
+  else
+    {
+#if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+      return !dwarf_split_debug_info && dwarf_version >= 5;
+#else
+      return false;
+#endif
+    }
+}
+
+
 /* Assign .debug_rnglists indexes.  */
 
 static void
@@ -12118,7 +12172,7 @@ file_name_acquire (dwarf_file_data **slot, file_name_acquire_data *fnad)
   f = strrchr (f, DIR_SEPARATOR);
 #if defined (DIR_SEPARATOR_2)
   {
-    char *g = strrchr (fi->path, DIR_SEPARATOR_2);
+    const char *g = strrchr (fi->path, DIR_SEPARATOR_2);
 
     if (g != NULL)
       {
@@ -19756,7 +19810,7 @@ reference_to_unused (tree * tp, int * walk_subtrees,
   /* ???  The C++ FE emits debug information for using decls, so
      putting gcc_unreachable here falls over.  See PR31899.  For now
      be conservative.  */
-  else if (!symtab->global_info_ready && VAR_OR_FUNCTION_DECL_P (*tp))
+  else if (!symtab->global_info_ready && VAR_P (*tp))
     return *tp;
   else if (VAR_P (*tp))
     {
@@ -19771,7 +19825,7 @@ reference_to_unused (tree * tp, int * walk_subtrees,
          optimizing and gimplifying the CU by now.
 	 So if *TP has no call graph node associated
 	 to it, it means *TP will not be emitted.  */
-      if (!cgraph_node::get (*tp))
+      if (!symtab->global_info_ready || !cgraph_node::get (*tp))
 	return *tp;
     }
   else if (TREE_CODE (*tp) == STRING_CST && !TREE_ASM_WRITTEN (*tp))
@@ -20295,12 +20349,11 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 	  return true;
 	}
     }
-  if (! early_dwarf)
-    {
-      rtl = rtl_for_decl_init (init, type);
-      if (rtl)
-	return add_const_value_attribute (die, rtl);
-    }
+  /* Generate the RTL even if early_dwarf to force mangling of all refered to
+     symbols.  */
+  rtl = rtl_for_decl_init (init, type);
+  if (rtl && !early_dwarf)
+    return add_const_value_attribute (die, rtl);
   /* If the host and target are sane, try harder.  */
   if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
       && initializer_constant_valid_p (init, type))
@@ -20515,6 +20568,15 @@ add_name_attribute (dw_die_ref die, const char *name_string)
     }
 }
 
+/* Generate a DW_AT_name attribute given some string value representing a
+   file or filepath to be included as value of the attribute.  */
+static void
+add_filename_attribute (dw_die_ref die, const char *name_string)
+{
+  if (name_string != NULL && *name_string != 0)
+    add_filepath_AT_string (die, DW_AT_name, name_string);
+}
+
 /* Generate a DW_AT_description attribute given some string value to be included
    as the value of the attribute.  */
 
@@ -20641,7 +20703,7 @@ add_comp_dir_attribute (dw_die_ref die)
 {
   const char * wd = comp_dir_string ();
   if (wd != NULL)
-    add_AT_string (die, DW_AT_comp_dir, wd);
+    add_filepath_AT_string (die, DW_AT_comp_dir, wd);
 }
 
 /* Given a tree node VALUE describing a scalar attribute ATTR (i.e. a bound, a
@@ -24483,7 +24545,7 @@ gen_compile_unit_die (const char *filename)
 
   if (filename)
     {
-      add_name_attribute (die, filename);
+      add_filename_attribute (die, filename);
       /* Don't add cwd for <built-in>.  */
       if (filename[0] != '<')
 	add_comp_dir_attribute (die);
@@ -27205,7 +27267,7 @@ static bool maybe_at_text_label_p = true;
 /* One above highest N where .LVLN label might be equal to .Ltext0 label.  */
 static unsigned int first_loclabel_num_not_at_text_label;
 
-/* Look ahead for a real insn, or for a begin stmt marker.  */
+/* Look ahead for a real insn.  */
 
 static rtx_insn *
 dwarf2out_next_real_insn (rtx_insn *loc_note)
@@ -27230,7 +27292,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
 {
   char loclabel[MAX_ARTIFICIAL_LABEL_BYTES + 2];
   struct var_loc_node *newloc;
-  rtx_insn *next_real, *next_note;
+  rtx_insn *next_real;
   rtx_insn *call_insn = NULL;
   static const char *last_label;
   static const char *last_postcall_label;
@@ -27255,7 +27317,6 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	      var_loc_p = false;
 
 	      next_real = dwarf2out_next_real_insn (call_insn);
-	      next_note = NULL;
 	      cached_next_real_insn = NULL;
 	      goto create_label;
 	    }
@@ -27283,7 +27344,6 @@ dwarf2out_var_location (rtx_insn *loc_note)
 		  var_loc_p = false;
 
 		  next_real = dwarf2out_next_real_insn (call_insn);
-		  next_note = NULL;
 		  cached_next_real_insn = NULL;
 		  goto create_label;
 		}
@@ -27312,22 +27372,28 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	next_real = NULL;
     }
 
-  next_note = NEXT_INSN (loc_note);
-  if (! next_note
-      || next_note->deleted ()
-      || ! NOTE_P (next_note)
-      || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
-	  && NOTE_KIND (next_note) != NOTE_INSN_BEGIN_STMT
-	  && NOTE_KIND (next_note) != NOTE_INSN_INLINE_ENTRY))
-    next_note = NULL;
-
   if (! next_real)
     next_real = dwarf2out_next_real_insn (loc_note);
 
-  if (next_note)
+  if (next_real)
     {
-      expected_next_loc_note = next_note;
-      cached_next_real_insn = next_real;
+      rtx_insn *next_note = NEXT_INSN (loc_note);
+      while (next_note != next_real)
+	{
+	  if (! next_note->deleted ()
+	      && NOTE_P (next_note)
+	      && NOTE_KIND (next_note) == NOTE_INSN_VAR_LOCATION)
+	    break;
+	  next_note = NEXT_INSN (next_note);
+	}
+
+      if (next_note == next_real)
+	cached_next_real_insn = NULL;
+      else
+	{
+	  expected_next_loc_note = next_note;
+	  cached_next_real_insn = next_real;
+	}
     }
   else
     cached_next_real_insn = NULL;
@@ -28730,7 +28796,8 @@ init_sections_and_labels (bool early_lto_debug)
 					    SECTION_DEBUG, NULL);
       debug_str_section = get_section (DEBUG_STR_SECTION,
 				       DEBUG_STR_SECTION_FLAGS, NULL);
-      if (!dwarf_split_debug_info && !output_asm_line_debug_info ())
+      if ((!dwarf_split_debug_info && !output_asm_line_debug_info ())
+	  || asm_outputs_debug_line_str ())
 	debug_line_str_section = get_section (DEBUG_LINE_STR_SECTION,
 					      DEBUG_STR_SECTION_FLAGS, NULL);
 
@@ -31701,6 +31768,27 @@ dwarf2out_finish (const char *filename)
   ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
   if (! output_asm_line_debug_info ())
     output_line_info (false);
+  else if (asm_outputs_debug_line_str ())
+    {
+      /* When gas outputs DWARF5 .debug_line[_str] then we have to
+	 tell it the comp_dir and main file name for the zero entry
+	 line table.  */
+      const char *comp_dir, *filename0;
+
+      comp_dir = comp_dir_string ();
+      if (comp_dir == NULL)
+	comp_dir = "";
+
+      filename0 = get_AT_string (comp_unit_die (), DW_AT_name);
+      if (filename0 == NULL)
+	filename0 = "";
+
+      fprintf (asm_out_file, "\t.file 0 ");
+      output_quoted_string (asm_out_file, remap_debug_filename (comp_dir));
+      fputc (' ', asm_out_file);
+      output_quoted_string (asm_out_file, remap_debug_filename (filename0));
+      fputc ('\n', asm_out_file);
+    }
 
   if (dwarf_split_debug_info && info_section_emitted)
     {
@@ -32017,36 +32105,8 @@ dwarf2out_early_finish (const char *filename)
 
   /* Add the name for the main input file now.  We delayed this from
      dwarf2out_init to avoid complications with PCH.  */
-  add_name_attribute (comp_unit_die (), remap_debug_filename (filename));
+  add_filename_attribute (comp_unit_die (), remap_debug_filename (filename));
   add_comp_dir_attribute (comp_unit_die ());
-
-  /* When emitting DWARF5 .debug_line_str, move DW_AT_name and
-     DW_AT_comp_dir into .debug_line_str section.  */
-  if (!output_asm_line_debug_info ()
-      && dwarf_version >= 5
-      && DWARF5_USE_DEBUG_LINE_STR)
-    {
-      for (int i = 0; i < 2; i++)
-	{
-	  dw_attr_node *a = get_AT (comp_unit_die (),
-				    i ? DW_AT_comp_dir : DW_AT_name);
-	  if (a == NULL
-	      || AT_class (a) != dw_val_class_str
-	      || strlen (AT_string (a)) + 1 <= DWARF_OFFSET_SIZE)
-	    continue;
-
-	  if (! debug_line_str_hash)
-	    debug_line_str_hash
-	      = hash_table<indirect_string_hasher>::create_ggc (10);
-
-	  struct indirect_string_node *node
-	    = find_AT_string_in_table (AT_string (a), debug_line_str_hash);
-	  set_indirect_string (node);
-	  node->form = DW_FORM_line_strp;
-	  a->dw_attr_val.v.val_str->refcount--;
-	  a->dw_attr_val.v.val_str = node;
-	}
-    }
 
   /* With LTO early dwarf was really finished at compile-time, so make
      sure to adjust the phase after annotating the LTRANS CU DIE.  */

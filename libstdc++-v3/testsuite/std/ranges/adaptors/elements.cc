@@ -45,8 +45,54 @@ test01()
   VERIFY( ranges::equal(v1, x | views::values) );
 }
 
+struct S
+{
+  friend bool
+  operator==(std::input_iterator auto const& i, S)
+  { return std::get<1>(*i) == 0; }
+};
+
+void
+test02()
+{
+  // This verifies that P1994R1 (and LWG3406) is implemented.
+  std::pair<std::pair<char, int>, long> x[]
+    = {{{1,2},3l}, {{1,0},2l}, {{1,2},0l}};
+  ranges::subrange r{ranges::begin(x), S{}};
+
+  auto v = r | views::keys;
+  VERIFY( ranges::equal(v, (std::pair<char, int>[]){{1,2},{1,0}}) );
+  ranges::subrange v2{ranges::begin(v), S{}};
+  VERIFY( ranges::equal(v2, (std::pair<char, int>[]){{1,2}}) );
+}
+
+struct X
+{
+  using Iter = __gnu_test::forward_iterator_wrapper<std::pair<int, X>>;
+
+  friend auto operator-(Iter l, Iter r) { return l.ptr - r.ptr; }
+};
+
+void
+test03()
+{
+  // LWG 3483
+  std::pair<int, X> x[3];
+  __gnu_test::test_forward_range<std::pair<int, X>> r(x);
+  auto v = views::elements<1>(r);
+  auto b = begin(v);
+  static_assert( !ranges::random_access_range<decltype(r)> );
+  static_assert( std::sized_sentinel_for<decltype(b), decltype(b)> );
+  VERIFY( (next(b, 1) - b) == 1 );
+  const auto v_const = v;
+  auto b_const = begin(v_const);
+  VERIFY( (next(b_const, 2) - b_const) == 2 );
+}
+
 int
 main()
 {
   test01();
+  test02();
+  test03();
 }

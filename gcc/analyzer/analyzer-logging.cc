@@ -30,6 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #if ENABLE_ANALYZER
 
+#if __GNUC__ >= 10
+#pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 namespace ana {
 
 /* Implementation of class logger.  */
@@ -164,7 +168,7 @@ void
 logger::enter_scope (const char *scope_name)
 {
   log ("entering: %s", scope_name);
-  m_indent_level += 1;
+  inc_indent ();
 }
 
 void
@@ -175,7 +179,7 @@ logger::enter_scope (const char *scope_name, const char *fmt, va_list *ap)
   log_va_partial (fmt, ap);
   end_log_line ();
 
-  m_indent_level += 1;
+  inc_indent ();
 }
 
 
@@ -186,7 +190,7 @@ void
 logger::exit_scope (const char *scope_name)
 {
   if (m_indent_level)
-    m_indent_level -= 1;
+    dec_indent ();
   else
     log ("(mismatching indentation)");
   log ("exiting: %s", scope_name);

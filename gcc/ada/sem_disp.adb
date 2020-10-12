@@ -293,7 +293,7 @@ package body Sem_Disp is
          Next_Formal (Formal);
       end loop;
 
-      if Ekind_In (Subp, E_Function, E_Generic_Function) then
+      if Ekind (Subp) in E_Function | E_Generic_Function then
          Ctrl_Type := Check_Controlling_Type (Etype (Subp), Subp);
 
          if Present (Ctrl_Type) then
@@ -621,7 +621,7 @@ package body Sem_Disp is
                   Par := Parent (Par);
                end if;
 
-               if Nkind_In (Par, N_Function_Call, N_Procedure_Call_Statement)
+               if Nkind (Par) in N_Function_Call | N_Procedure_Call_Statement
                  and then Is_Entity_Name (Name (Par))
                then
                   declare
@@ -684,7 +684,7 @@ package body Sem_Disp is
                --  For equality operators, one of the operands must be
                --  statically or dynamically tagged.
 
-               elsif Nkind_In (Par, N_Op_Eq, N_Op_Ne) then
+               elsif Nkind (Par) in N_Op_Eq | N_Op_Ne then
                   if N = Right_Opnd (Par)
                     and then Is_Tag_Indeterminate (Left_Opnd (Par))
                   then
@@ -993,7 +993,7 @@ package body Sem_Disp is
    --  Start of processing for Check_Dispatching_Operation
 
    begin
-      if not Ekind_In (Subp, E_Function, E_Procedure) then
+      if Ekind (Subp) not in E_Function | E_Procedure then
          return;
 
       --  The Default_Initial_Condition procedure is not a primitive subprogram
@@ -1409,7 +1409,7 @@ package body Sem_Disp is
          --  visible operation that may be declared in a partial view when
          --  the full view is controlled.
 
-         if Nam_In (Chars (Subp), Name_Initialize, Name_Adjust, Name_Finalize)
+         if Chars (Subp) in Name_Initialize | Name_Adjust | Name_Finalize
            and then Is_Controlled (Tagged_Type)
            and then not Is_Visibly_Controlled (Tagged_Type)
            and then not Is_Inherited_Public_Operation (Ovr_Subp)
@@ -1569,10 +1569,10 @@ package body Sem_Disp is
          Set_DT_Position_Value (Subp, No_Uint);
 
       elsif Has_Controlled_Component (Tagged_Type)
-        and then Nam_In (Chars (Subp), Name_Initialize,
-                                       Name_Adjust,
-                                       Name_Finalize,
-                                       Name_Finalize_Address)
+        and then Chars (Subp) in Name_Initialize
+                               | Name_Adjust
+                               | Name_Finalize
+                               | Name_Finalize_Address
       then
          declare
             F_Node   : constant Node_Id := Freeze_Node (Tagged_Type);
@@ -2010,7 +2010,7 @@ package body Sem_Disp is
       Ctrl_Type : Entity_Id;
 
    begin
-      if Ekind_In (Subp, E_Function, E_Procedure)
+      if Ekind (Subp) in E_Function | E_Procedure
         and then Present (DTC_Entity (Subp))
       then
          return Scope (DTC_Entity (Subp));

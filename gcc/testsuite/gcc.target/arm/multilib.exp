@@ -40,7 +40,7 @@ proc multilib_config {profile} {
 proc check_multi_dir { gcc_opts multi_dir } {
     global tool
 
-    set options [list "additional_flags=[concat "--print-multi-directory" [gcc_opts]]"]
+    set options [list "additional_flags=[concat "--print-multi-directory" $gcc_opts]"]
     set gcc_output [${tool}_target_compile "" "" "none" $options]
     if { [string match "$multi_dir\n" $gcc_output] } {
 	pass "multilibdir $gcc_opts $multi_dir"
@@ -824,6 +824,22 @@ if {[multilib_config "rmprofile"] } {
 	{-march=armv8.1-m.main+mve.fp+fp.dp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+dp/softfp"
 	{-march=armv8.1-m.main+mve+fp.dp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+dp/hard"
 	{-march=armv8.1-m.main+mve.fp+fp.dp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+dp/hard"
+	{-mcpu=cortex-m55+nomve -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-mcpu=cortex-m55+nomve -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+dp/softfp"
+	{-mcpu=cortex-m55+nomve -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+dp/hard"
+	{-mcpu=cortex-m55+nomve.fp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-mcpu=cortex-m55+nomve.fp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+dp/softfp"
+	{-mcpu=cortex-m55+nomve.fp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+dp/hard"
+	{-mcpu=cortex-m55+nofp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-mcpu=cortex-m55+nofp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main/nofp"
+	{-mcpu=cortex-m55+nofp -mfpu=auto -mfloat-abi=hard} "thumb/v8.1-m.main+mve/hard"
+	{-mcpu=cortex-m55+nodsp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-mcpu=cortex-m55+nodsp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main+dp/softfp"
+	{-mcpu=cortex-m55+nodsp -mfpu=auto -mfloat-abi=hard} "thumb/v8-m.main+dp/hard"
+	{-mcpu=cortex-m55+nomve+nofp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-mcpu=cortex-m55+nomve+nofp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main/nofp"
+	{-mcpu=cortex-m55+nodsp+nofp -mfpu=auto -mfloat-abi=soft} "thumb/v8-m.main/nofp"
+	{-mcpu=cortex-m55+nodsp+nofp -mfpu=auto -mfloat-abi=softfp} "thumb/v8-m.main/nofp"
     } {
 	check_multi_dir $opts $dir
     }

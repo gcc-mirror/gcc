@@ -1273,7 +1273,7 @@ class Expression
   }
 
   static Expression*
-  convert_interface_to_type(Type*, Expression*, Location);
+  convert_interface_to_type(Gogo*, Type*, Expression*, Location);
 
   static Expression*
   import_identifier(Import_function_body*, Location);

@@ -3698,7 +3698,7 @@ insn_set_clock (rtx insn, int cycle)
   unsigned uid = INSN_UID (insn);
 
   if (uid >= INSN_INFO_LENGTH)
-    insn_info.safe_grow (uid * 5 / 4 + 10);
+    insn_info.safe_grow (uid * 5 / 4 + 10, true);
 
   INSN_INFO_ENTRY (uid).clock = cycle;
   INSN_INFO_ENTRY (uid).new_cond = NULL;
@@ -5600,7 +5600,8 @@ hwloop_optimize (hwloop_info loop)
       int j;
       rtx_insn *this_iter;
 
-      this_iter = duplicate_insn_chain (head_insn, tail_insn);
+      copy_bb_data id;
+      this_iter = duplicate_insn_chain (head_insn, tail_insn, NULL, &id);
       j = 0;
       while (this_iter)
 	{

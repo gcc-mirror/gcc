@@ -116,6 +116,8 @@ extern enum reg_class coproc_secondary_reload_class (machine_mode, rtx,
 extern bool arm_tls_referenced_p (rtx);
 
 extern int arm_coproc_mem_operand (rtx, bool);
+extern int arm_coproc_mem_operand_no_writeback (rtx);
+extern int arm_coproc_mem_operand_wb (rtx, int);
 extern int neon_vector_mem_operand (rtx, int, bool);
 extern int mve_vector_mem_operand (machine_mode, rtx, bool);
 extern int neon_struct_mem_operand (rtx);
@@ -370,9 +372,11 @@ extern void arm_emit_coreregs_64bit_shift (enum rtx_code, rtx, rtx, rtx, rtx,
 extern bool arm_fusion_enabled_p (tune_params::fuse_ops);
 extern bool arm_valid_symbolic_address_p (rtx);
 extern bool arm_validize_comparison (rtx *, rtx *, rtx *);
+extern bool arm_expand_vector_compare (rtx, rtx_code, rtx, rtx, bool);
 #endif /* RTX_CODE */
 
 extern bool arm_gen_setmem (rtx *);
+extern void arm_expand_vcond (rtx *, machine_mode);
 extern void arm_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 
 extern bool arm_autoinc_modes_ok_p (machine_mode, enum arm_auto_incmodes);

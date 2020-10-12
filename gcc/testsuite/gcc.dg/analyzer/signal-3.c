@@ -1,3 +1,4 @@
+/* { dg-require-effective-target signal } */
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>

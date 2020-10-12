@@ -30,6 +30,7 @@
 #define __BPF_HELPERS_H
 
 #define SEC(NAME) __attribute__((section(NAME), used))
+#define KERNEL_HELPER(NUM) __attribute__((kernel_helper(NUM)))
 
 /* Flags used in some kernel helpers.  */
 
@@ -41,277 +42,376 @@
 #define BPF_F_NO_COMMON_LRU (1U << 1)
 #define BPF_F_NUMA_NODE (1U << 2)
 
-/* Functions to call kernel helpers.  We provide the "standard" bpf_*
-   names as synonyms of the corresponding GCC builtins.  In some
-   cases, where non-void pointers are passed to the helper, inline
-   functions are used to achieve proper type checking.  */
+/* Prototypes of functions to call kernel helpers.
+   Please keep these protoypes sorted by helper number.  */
 
-#ifndef KERNEL_VERSION
-# define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-#endif
+void *bpf_map_lookup_elem (void *map, const void *key)
+  KERNEL_HELPER (1);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,0,0)
+int bpf_map_update_elem (void *map, const void *key, const void *value,
+			 unsigned long long flags)
+  KERNEL_HELPER (2);
 
-#define bpf_map_lookup_elem	__builtin_bpf_helper_map_lookup_elem
-#define bpf_map_update_elem	__builtin_bpf_helper_map_update_elem
-#define bpf_map_delete_elem	__builtin_bpf_helper_map_delete_elem
+int bpf_map_delete_elem (void *map, const void *key)
+  KERNEL_HELPER (3);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,1,0)
+int bpf_probe_read (void *dst, int size, const void *unsafe_ptr)
+  KERNEL_HELPER (4);
 
-#define bpf_probe_read		__builtin_bpf_helper_probe_read
-#define bpf_ktime_get_ns	__builtin_bpf_helper_ktime_get_ns
-#define bpf_trace_printk	__builtin_bpf_helper_trace_printk
-#define bpf_get_prandom_u32	__builtin_bpf_helper_get_prandom_u32
-#define bpf_get_smp_processor_id __builtin_bpf_helper_get_smp_processor_id
-#define bpf_skb_store_bytes	__builtin_bpf_helper_skb_store_bytes
-#define bpf_l3_csum_replace	__builtin_bpf_helper_l3_csum_replace
-#define bpf_l4_csum_replace	__builtin_bpf_helper_l4_csum_replace
+unsigned long long bpf_ktime_get_ns (void)
+  KERNEL_HELPER (5);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,2,0)
+int bpf_trace_printk (const char *fmt, int fmt_size, ...)
+  KERNEL_HELPER (6);
 
-#define bpf_tail_call		__builtin_bpf_helper_tail_call
-#define bpf_clone_redirect	__builtin_bpf_helper_clone_redirect
-#define bpf_get_current_pid_tgid __builtin_bpf_helper_get_current_pid_tgid
-#define bpf_get_current_uid_gid  __builtin_bpf_helper_get_current_uid_gid
-#define bpf_get_current_comm	__builtin_bpf_helper_get_current_comm
+unsigned long long bpf_get_prandom_u32 (void)
+  KERNEL_HELPER (7);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,3,0)
+unsigned long long bpf_get_smp_processor_id (void)
+  KERNEL_HELPER (8);
 
-#define bpf_get_cgroup_classid	__builtin_bpf_helper_get_cgroup_classid
-#define bpf_skb_vlan_push	__builtin_bpf_helper_skb_vlan_push
-#define bpf_skb_vlan_pop	__builtin_bpf_helper_skb_vlan_pop
-#define bpf_skb_get_tunnel_key	__builtin_bpf_helper_skb_get_tunnel_key
-#define bpf_skb_set_tunnel_key	__builtin_bpf_helper_skb_set_tunnel_key
-#define bpf_perf_event_read	__builtin_bpf_helper_perf_event_read
+int bpf_skb_store_bytes (void *ctx, int off, void *from, int len,
+			 unsigned int start_header)
+  KERNEL_HELPER (9);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,4,0)
+int bpf_l3_csum_replace (void *ctx, int off, int from, int to, int flags)
+  KERNEL_HELPER (10);
 
-#define bpf_redirect		__builtin_bpf_helper_redirect
-#define bpf_get_route_realm	__builtin_bpf_helper_get_route_realm
-#define bpf_perf_event_output	__builtin_bpf_helper_perf_event_output
+int bpf_l4_csum_replace (void *ctx, int off, int from, int to, int flags)
+  KERNEL_HELPER (11);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,5,0)
+int bpf_tail_call (void *ctx, void *map, unsigned int index)
+  KERNEL_HELPER (12);
 
-#define bpf_skb_load_bytes	__builtin_bpf_helper_skb_load_bytes
+int bpf_clone_redirect (void *ctx, int ifindex, int flags)
+  KERNEL_HELPER (13);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,6,0)
+unsigned long long bpf_get_current_pid_tgid (void)
+  KERNEL_HELPER (14);
 
-#define bpf_get_stackid		__builtin_bpf_helper_get_stackid
-#define bpf_csum_diff		__builtin_bpf_helper_csum_diff
-#define bpf_skb_get_tunnel_opt	__builtin_bpf_helper_skb_get_tunnel_opt
-#define bpf_skb_set_tunnel_opt	__builtin_bpf_helper_skb_set_tunnel_opt
+unsigned long long bpf_get_current_uid_gid (void)
+  KERNEL_HELPER (15);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,8,0)
+int bpf_get_current_comm (void *buf, int buf_size)
+  KERNEL_HELPER (16);
 
-#define bpf_skb_change_proto	__builtin_bpf_helper_skb_change_proto
-#define bpf_skb_change_type	__builtin_bpf_helper_skb_change_type
-#define bpf_skb_under_cgroup	__builtin_bpf_helper_skb_under_cgroup
-#define bpf_get_hash_recalc	__builtin_bpf_helper_get_hash_recalc
-#define bpf_get_current_task	__builtin_bpf_helper_get_current_task
-#define bpf_probe_write_user	__builtin_bpf_helper_probe_write_user
+unsigned int bpf_get_cgroup_classid (void *ctx)
+  KERNEL_HELPER (17);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,9,0)
+int bpf_skb_vlan_push (void *ctx, short vlan_proto,
+		       unsigned short vlan_tci)
+  KERNEL_HELPER (18);
 
-#define bpf_current_task_under_cgroup __builtin_bpf_helper_current_task_under_cgroup
-#define bpf_skb_change_tail	__builtin_bpf_helper_skb_change_tail
-#define bpf_skb_pull_data	__builtin_bpf_helper_skb_pull_data
-#define bpf_csum_update		__builtin_bpf_helper_csum_update
-#define bpf_set_hash_invalid	__builtin_bpf_helper_set_hash_invalid
+int bpf_skb_vlan_pop (void *ctx)
+  KERNEL_HELPER (19);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,10,0)
+int bpf_skb_get_tunnel_key (void *ctx, void *key, int size, int flags)
+  KERNEL_HELPER (20);
 
-#define bpf_get_numa_node_id	__builtin_bpf_helper_get_numa_node_id
-#define bpf_skb_change_head	__builtin_bpf_helper_skb_change_head
-#define bpf_xdp_adjust_head	__builtin_bpf_helper_xdp_adjust_head
+int bpf_skb_set_tunnel_key (void *ctx, void *key, int size, int flags)
+  KERNEL_HELPER (21);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,11,0)
+unsigned long long bpf_perf_event_read (void *map, unsigned long long flags)
+  KERNEL_HELPER (22);
 
-#define bpf_probe_read_str	__builtin_bpf_helper_probe_read_str
+int bpf_redirect (int ifindex, int flags)
+  KERNEL_HELPER (23);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,12,0)
+unsigned int bpf_get_route_realm (void *ctx)
+  KERNEL_HELPER (24);
 
-#define bpf_get_socket_cookie	__builtin_bpf_helper_get_socket_cookie
-#define bpf_get_socket_uid	__builtin_bpf_helper_get_socket_uid
+int bpf_perf_event_output (void *ctx, void *map, unsigned long long flags,
+			   void *data, int size)
+  KERNEL_HELPER (25);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,13,0)
+int bpf_skb_load_bytes (void *ctx, int off, void *to, int len)
+  KERNEL_HELPER (26);
 
-#define bpf_set_hash		__builtin_bpf_helper_set_hash
-#define bpf_setsockopt		__builtin_bpf_helper_setsockopt
-#define bpf_skb_adjust_room	__builtin_bpf_helper_skb_adjust_room
+int bpf_get_stackid (void *ctx, void *map, int flags)
+  KERNEL_HELPER (27);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,14,0)
+int bpf_csum_diff (void *from, int from_size, void *to, int to_size, int seed)
+  KERNEL_HELPER (28);
 
-#define bpf_redirect_map	__builtin_bpf_helper_redirect_map
-#define bpf_sk_redirect_map	__builtin_bpf_helper_sk_redirect_map
-#define bpf_sock_map_update	__builtin_bpf_helper_sock_map_update
+int bpf_skb_get_tunnel_opt (void *ctx, void *md, int size)
+  KERNEL_HELPER (29);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,15,0)
+int bpf_skb_set_tunnel_opt (void *ctx, void *md, int size)
+  KERNEL_HELPER (30);
 
-#define bpf_perf_event_read_value __builtin_bpf_helper_perf_event_read_value
-#define bpf_perf_prog_read_value  __builtin_bpf_helper_perf_prog_read_value
-#define bpf_getsockopt		  __builtin_bpf_helper_getsockopt
-#define bpf_xdp_adjust_meta	__builtin_bpf_helper_xdp_adjust_meta
+int bpf_skb_change_proto (void *ctx, short proto, unsigned long flags)
+  KERNEL_HELPER (31);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,16,0)
+int bpf_skb_change_type (void *ctx, unsigned int type)
+  KERNEL_HELPER (32);
 
-#define bpf_override_return	__builtin_bpf_helper_override_return
-#define bpf_sock_ops_cb_flags_set __builtin_bpf_helper_sock_ops_cb_flags_set
+int bpf_skb_under_cgroup (void *ctx, void *map, int index)
+  KERNEL_HELPER (33);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,17,0)
+unsigned int bpf_get_hash_recalc (void *ctx)
+  KERNEL_HELPER (34);
 
-#define bpf_msg_redirect_map	__builtin_bpf_helper_msg_redirect_map
-#define bpf_msg_apply_bytes	__builtin_bpf_helper_msg_apply_bytes
-#define bpf_msg_cork_bytes	__builtin_bpf_helper_msg_cork_bytes
-#define bpf_pull_data		__builtin_bpf_helper_pull_data
-#define bpf_bind		__builtin_bpf_helper_bpf_bind
+unsigned long long bpf_get_current_task (void)
+  KERNEL_HELPER (35);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,18,0)
+int bpf_probe_write_user (void *dst, const void *src, int size)
+  KERNEL_HELPER (36);
 
-#define bpf_xdp_adjust_tail	__builtin_bpf_helper_xdp_adjust_tail
-#define bpf_skb_get_xfrm_state	__builtin_bpf_helper_skb_get_xfrm_state
-#define bpf_get_stack		__builtin_bpf_helper_get_stack
-#define bpf_skb_load_bytes_relative __builtin_bpf_helper_skb_load_bytes_relative
-#define bpf_sock_hash_update	__builtin_bpf_helper_sock_hash_update
-#define bpf_msg_redirect_hash	__builtin_bpf_helper_msg_redirect_hash
-#define bpf_sk_redirect_hash	__builtin_bpf_helper_sk_redirect_hash
-#define bpf_lwt_push_encap		__builtin_bpf_helper_lwt_push_encap
-#define bpf_lwt_seg6_store_bytes	__builtin_bpf_helper_lwt_seg6_store_bytes
-#define bpf_lwt_seg6_adjust_srh		__builtin_bpf_helper_lwt_seg6_adjust_srh
-#define bpf_lwt_seg6_action		__builtin_bpf_helper_lwt_seg6_action
-#define bpf_rc_repeat			__builtin_bpf_helper_rc_repeat
-#define bpf_rc_keydown			__builtin_bpf_helper_rc_keydown
-#define bpf_skb_cgroup_id		__builtin_bpf_helper_skb_cgroup_id
-#define bpf_get_current_cgroup_id	__builtin_bpf_helper_get_current_cgroup_id
+int bpf_current_task_under_cgroup (void *map, int index)
+  KERNEL_HELPER (37);
 
-static inline int
-bpf_fib_lookup (void *ctx, struct bpf_fib_lookup *param, int plen,
-		unsigned int flags)
-{
-  return __builtin_bpf_helper_fib_lookup (ctx, (void *) param, plen, flags);
-}
+int bpf_skb_change_tail (void *ctx, unsigned int len, unsigned long flags)
+  KERNEL_HELPER (38);
 
+int bpf_skb_pull_data (void *, int len)
+  KERNEL_HELPER (39);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,19,0)
+long long bpf_csum_update (void *ctx, unsigned int csum)
+  KERNEL_HELPER (40);
 
-#define bpf_get_local_storage	__builtin_bpf_helper_get_local_storage
-#define bpf_sk_select_reuseport	__builtin_bpf_helper_sk_select_reuseport
-#define bpf_skb_ancestor_cgroup_id	__builtin_bpf_helper_skb_ancestor_cgroup_id
+void bpf_set_hash_invalid (void *ctx)
+  KERNEL_HELPER (41);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (4,20,0)
+int bpf_get_numa_node_id (void)
+  KERNEL_HELPER (42);
 
-#define bpf_sk_release		__builtin_bpf_helper_sk_release
-#define bpf_map_push_elem	__builtin_bpf_helper_map_push_elem
-#define bpf_map_pop_elem	__builtin_bpf_helper_map_pop_elem
-#define bpf_map_peek_elem	__builtin_bpf_helper_map_peek_elem
-#define bpf_msg_push_data	__builtin_bpf_helper_msg_push_data
+int bpf_skb_change_head (void *, int len, int flags)
+  KERNEL_HELPER (43);
 
-static inline struct bpf_sock *
-bpf_sk_lookup_tcp (void *ctx, struct bpf_sock_tuple *tuple,
-		   int size, unsigned long long netns_id,
-		   unsigned long long flags)
-{
-  return
-    (struct bpf_sock *) __builtin_bpf_helper_sk_lookup_tcp (ctx,
-							    (void *) tuple,
-							    size,
-							    netns_id, flags);
-}
+int bpf_xdp_adjust_head (void *ctx, int offset)
+  KERNEL_HELPER (44);
 
-static inline struct bpf_sock *
-bpf_sk_lookup_udp (void *ctx, struct bpf_sock_tuple *tuple,
-		   int size, unsigned long long netns_id,
-		   unsigned long long flags)
-{
-  return
-    (struct bpf_sock *) __builtin_bpf_helper_sk_lookup_udp (ctx,
-							    (void *) tuple,
-							    size,
-							    netns_id, flags);
-}
+int bpf_probe_read_str (void *ctx, unsigned int size, const void *unsafe_ptr)
+  KERNEL_HELPER (45);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (5,0,0)
+int bpf_get_socket_cookie (void *ctx)
+  KERNEL_HELPER (46);
 
-#define bpf_msg_pop_data	__builtin_bpf_helper_pop_data
-#define bpf_rc_pointer_rel	__builtin_bpf_helper_rc_pointer_rel
+unsigned int bpf_get_socket_uid (void *ctx)
+  KERNEL_HELPER (47);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (5,1,0)
+unsigned int bpf_set_hash (void *ctx, unsigned int hash)
+  KERNEL_HELPER (48);
 
-#define bpf_spin_lock		__builtin_bpf_helper_spin_lock
-#define bpf_spin_unlock		__builtin_bpf_helper_spin_unlock
-#define bpf_skb_ecn_set_ce	__builtin_bpf_helper_skb_ecn_set_ce
+int bpf_setsockopt (void *ctx, int level, int optname, void *optval, int optlen)
+  KERNEL_HELPER (49);
 
-static inline struct bpf_sock *
-bpf_sk_fullsock (struct bpf_sock *sk)
-{
-  return
-    (struct bpf_sock *) __builtin_bpf_helper_sk_fullsock ((void *) sk);
-}
+int bpf_skb_adjust_room (void *ctx, int len_diff, unsigned int mode,
+			 unsigned long long flags)
+  KERNEL_HELPER (50);
 
-static inline struct bpf_sock *
-bpf_tcp_sock (struct bpf_sock *sk)
-{
-  return
-    (struct bpf_sock *) __builtin_bpf_helper_tcp_sock ((void *) sk);
-}
+int bpf_redirect_map (void *map, int key, int flags)
+  KERNEL_HELPER (51);
 
-static inline struct bpf_sock *
-bpf_get_listener_sock (struct bpf_sock *sk)
-{
-  return
-    (struct bpf_sock *) __builtin_bpf_helper_get_listener_sock ((void *) sk);
-}
+int bpf_sk_redirect_map (void *ctx, void *map, int key, int flags)
+  KERNEL_HELPER (52);
 
-#if __BPF_KERNEL_VERSION_CODE__ >= KERNEL_VERSION (5,2,0)
+int bpf_sock_map_update (void *map, void *key, void *value,
+			 unsigned long long flags)
+  KERNEL_HELPER (53);
 
+int bpf_xdp_adjust_meta (void *ctx, int offset)
+  KERNEL_HELPER (54);
 
-#endif /* 5.2 */
-#endif /* 5.1 */
-#endif /* 5.0 */
-#endif /* 4.20 */
-#endif /* 4.19 */
-#endif /* 4.18 */
-#endif /* 4.17 */
-#endif /* 4.16 */
-#endif /* 4.15 */
-#endif /* 4.14 */
-#endif /* 4.13 */
-#endif /* 4.12 */
-#endif /* 4.11 */
-#endif /* 4.10 */
-#endif /* 4.9 */
-#endif /* 4.8 */
-#endif /* 4.6 */
-#endif /* 4.5 */
-#endif /* 4.4 */
-#endif /* 4.3 */
-#endif /* 4.2 */
-#endif /* 4.1 */
-#endif /* 4.0 */
+int bpf_perf_event_read_value (void *map, unsigned long long flags,
+			       void *buf, unsigned int buf_size)
+  KERNEL_HELPER (55);
+
+int bpf_perf_prog_read_value (void *ctx, void *buf, unsigned int buf_size)
+  KERNEL_HELPER (56);
+
+int bpf_getsockopt (void *ctx, int level, int optname, void *optval,
+		    int optlen)
+  KERNEL_HELPER (57);
+
+int bpf_override_return (void *ctx, unsigned long rc)
+  KERNEL_HELPER (58);
+
+int bpf_sock_ops_cb_flags_set (void *ctx, int flags)
+  KERNEL_HELPER (59);
+
+int bpf_msg_redirect_map (void *ctx, void *map, int key, int flags)
+  KERNEL_HELPER (60);
+
+int bpf_msg_apply_bytes (void *ctx, int len)
+  KERNEL_HELPER (61);
+
+int bpf_msg_cork_bytes (void *ctx, int len)
+  KERNEL_HELPER (62);
+
+int bpf_msg_pull_data (void *, int len)
+  KERNEL_HELPER (63);
+
+int bpf_bind (void *ctx, void *addr, int addr_len)
+  KERNEL_HELPER (64);
+
+int bpf_xdp_adjust_tail (struct xdp_md *xdp_md, int delta)
+  KERNEL_HELPER (65);
+
+int bpf_skb_get_xfrm_state (void *ctx, int index, void *state,
+			    int size, int flags)
+  KERNEL_HELPER (66);
+
+int bpf_get_stack (void *ctx, void *buf, int size, int flags)
+  KERNEL_HELPER (67);
+
+int bpf_skb_load_bytes_relative (void *ctx, int off, void *to, int len,
+				 unsigned int start_header)
+  KERNEL_HELPER (68);
+
+int bpf_fib_lookup (void *ctx, struct bpf_fib_lookup *params,
+		    int plen, unsigned int flags)
+  KERNEL_HELPER (69);
+
+int bpf_sock_hash_update (void *map, void *key, void *value,
+			  unsigned long long flags)
+  KERNEL_HELPER (70);
+
+int bpf_msg_redirect_hash (void *ctx, void *map, void *key, int flags)
+  KERNEL_HELPER (71);
+
+int bpf_sk_redirect_hash (void *ctx, void *map, void *key, int flags)
+  KERNEL_HELPER (72);
+
+int bpf_lwt_push_encap (void *ctx, unsigned int type, void *hdr,
+			unsigned int len)
+  KERNEL_HELPER (73);
+
+int bpf_lwt_seg6_store_bytes (void *ctx, unsigned int offset,
+			      void *from, unsigned int len)
+  KERNEL_HELPER (74);
+
+int bpf_lwt_seg6_adjust_srh (void *ctx, unsigned int offset,
+			     unsigned int len)
+  KERNEL_HELPER (75);
+
+int bpf_lwt_seg6_action (void *ctx, unsigned int action, void *param,
+			 unsigned int param_len)
+  KERNEL_HELPER (76);
+
+int bpf_rc_repeat (void *ctx)
+  KERNEL_HELPER (77);
+
+int bpf_rc_keydown (void *ctx, unsigned int protocol,
+		    unsigned long long scancode, unsigned int toggle)
+  KERNEL_HELPER (78);
+
+unsigned bpf_skb_cgroup_id (void *ctx)
+  KERNEL_HELPER (79);
+
+unsigned long long bpf_get_current_cgroup_id (void)
+  KERNEL_HELPER (80);
+
+void *bpf_get_local_storage (void *map, unsigned long long flags)
+  KERNEL_HELPER (81);
+
+int bpf_sk_select_reuseport (void *ctx, void *map, void *key, unsigned int flags)
+  KERNEL_HELPER (82);
+
+unsigned long long bpf_skb_ancestor_cgroup_id (void *ctx, int level)
+  KERNEL_HELPER (83);
+
+struct bpf_sock *bpf_sk_lookup_tcp (void *ctx, struct bpf_sock_tuple *tuple,
+				    int size, unsigned long long netns_id,
+				    unsigned long long flags)
+  KERNEL_HELPER (84);
+
+struct bpf_sock *bpf_sk_lookup_udp (void *ctx, struct bpf_sock_tuple *tuple,
+				    int size, unsigned long long netns_id,
+				    unsigned long long flags)
+  KERNEL_HELPER (85);
+
+int bpf_sk_release (struct bpf_sock *sk)
+  KERNEL_HELPER (86);
+
+int bpf_map_push_elem (void *map, const void *value, unsigned long long flags)
+  KERNEL_HELPER (87);
+
+int bpf_map_pop_elem (void *map, void *value)
+  KERNEL_HELPER (88);
+
+int bpf_map_peek_elem (void *map, void *value)
+  KERNEL_HELPER (89);
+
+int bpf_msg_push_data (void *ctx, int start, int cut, int flags)
+  KERNEL_HELPER (90);
+
+int bpf_msg_pop_data (void *ctx, int start, int cut, int flags)
+  KERNEL_HELPER (91);
+
+int bpf_rc_pointer_rel (void *ctx, int rel_x, int rel_y)
+  KERNEL_HELPER (92);
+
+void bpf_spin_lock (struct bpf_spin_lock *lock)
+  KERNEL_HELPER (93);
+
+void bpf_spin_unlock (struct bpf_spin_lock *lock)
+  KERNEL_HELPER (94);
+
+struct bpf_sock *bpf_sk_fullsock (struct bpf_sock *sk)
+  KERNEL_HELPER (95);
+
+struct bpf_sock *bpf_tcp_sock (struct bpf_sock *sk)
+  KERNEL_HELPER (96);
+
+int bpf_skb_ecn_set_ce (void *ctx)
+  KERNEL_HELPER (97);
+
+struct bpf_sock *bpf_get_listener_sock (struct bpf_sock *sk)
+  KERNEL_HELPER (98);
+
+struct bpf_sock *bpf_skc_lookup_tcp (void *ctx,
+				     struct bpf_sock_tuple *tuple,
+				     unsigned int tuple_size,
+				     unsigned long netns,
+				     unsigned long flags)
+  KERNEL_HELPER (99);
+
+int bpf_tcp_check_syncookie (struct bpf_sock *sk, void *iph,
+			     unsigned int iph_len,
+			     struct tcp_hdr *th,
+			     unsigned int th_len)
+  KERNEL_HELPER (100);
+
+int bpf_sysctl_get_name (struct bpf_sysctl *ctx,
+			 char *buf, unsigned long buf_len,
+			 unsigned long flags)
+  KERNEL_HELPER (101);
+
+int bpf_sysctl_get_current_value (struct bpf_sysctl *ctx,
+				  char *buf, unsigned long buf_len)
+  KERNEL_HELPER (102);
+
+int bpf_sysctl_get_new_value (struct bpf_sysctl *ctx, char *buf,
+			      unsigned long buf_len)
+  KERNEL_HELPER (103);
+
+int bpf_sysctl_set_new_value (struct bpf_sysctl *ctx, const char *buf,
+			      unsigned long buf_len)
+  KERNEL_HELPER (104);
+
+int bpf_strtol (const char *buf, unsigned long buf_len,
+		unsigned long flags, long *res)
+  KERNEL_HELPER (105);
+
+int bpf_strtoul (const char *buf, unsigned long buf_len,
+		 unsigned long flags, unsigned long *res)
+  KERNEL_HELPER (106);
+
+void *bpf_sk_storage_get (void *map, struct bpf_sock *sk,
+			  void *value, long flags)
+  KERNEL_HELPER (107);
+
+int bpf_sk_storage_delete (void *map, struct bpf_sock *sk)
+  KERNEL_HELPER (108);
 
 /* Functions to emit BPF_LD_ABS and BPF_LD_IND instructions.  We
    provide the "standard" names as synonyms of the corresponding GCC
    builtins.  Note how the SKB argument is ignored.  */
 
-static inline long long
-load_byte (void *skb __attribute__ ((unused)),
-	   unsigned long long off)
-{
-  return __builtin_bpf_load_byte (off);
-}
-
-static inline long long
-load_half (void *skb __attribute__ ((unused)),
-	   unsigned long long off)
-{
-  return __builtin_bpf_load_half (off);
-}
-
-static inline long long
-load_word (void *skb __attribute__ ((unused)),
-	   unsigned long long off)
-{
-  return __builtin_bpf_load_word (off);
-}
+#define load_byte(SKB,OFF) __builtin_bpf_load_byte ((OFF))
+#define load_half(SKB,OFF) __builtin_bpf_load_half ((OFF))
+#define load_word(SKB,OFF) __builtin_bpf_load_word ((OFF))
 
 struct bpf_map_def
 {

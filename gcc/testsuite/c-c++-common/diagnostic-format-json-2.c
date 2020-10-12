@@ -8,6 +8,7 @@
    We can't rely on any ordering of the keys.  */
 
 /* { dg-regexp "\"kind\": \"warning\"" } */
+/* { dg-regexp "\"column-origin\": 1" } */
 /* { dg-regexp "\"message\": \"#warning message\"" } */
 /* { dg-regexp "\"option\": \"-Wcpp\"" } */
 /* { dg-regexp "\"option_url\": \"https:\[^\n\r\"\]*#index-Wcpp\"" } */
@@ -16,11 +17,15 @@
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-2.c\"" } */
 /* { dg-regexp "\"line\": 4" } */
 /* { dg-regexp "\"column\": 2" } */
+/* { dg-regexp "\"display-column\": 2" } */
+/* { dg-regexp "\"byte-column\": 2" } */
 
 /* { dg-regexp "\"finish\": \{" } */
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-2.c\"" } */
 /* { dg-regexp "\"line\": 4" } */
 /* { dg-regexp "\"column\": 8" } */
+/* { dg-regexp "\"display-column\": 8" } */
+/* { dg-regexp "\"byte-column\": 8" } */
 
 /* { dg-regexp "\"locations\": \[\[\{\}, \]*\]" } */
 /* { dg-regexp "\"children\": \[\[\]\[\]\]" } */

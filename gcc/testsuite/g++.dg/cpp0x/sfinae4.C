@@ -19,5 +19,11 @@ template<typename _Tp, typename... _Args>
     static const bool value = sizeof(__test<_Tp, _Args...>(0)) == 1;
   };
 
-static_assert( !is_constructible_mini<int[], int>::value, "");
+// int[](...) will work with P0960 and P1009.
+#if __cpp_aggregate_paren_init
+constexpr bool r = true;
+#else
+constexpr bool r = false;
+#endif
+static_assert( is_constructible_mini<int[], int>::value == r, "");
 static_assert( !is_constructible_mini<void, int>::value, "");

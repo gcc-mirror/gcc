@@ -42,7 +42,9 @@ generic
 
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Multiway_Trees is
+package Ada.Containers.Multiway_Trees with
+  SPARK_Mode => Off
+is
    pragma Annotate (CodePeer, Skip_Analysis);
    pragma Preelaborate;
    pragma Remote_Types;

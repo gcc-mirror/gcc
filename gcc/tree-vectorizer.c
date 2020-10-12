@@ -473,7 +473,7 @@ vec_info::~vec_info ()
   unsigned int i;
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
-    vect_free_slp_instance (instance, true);
+    vect_free_slp_instance (instance);
 
   destroy_cost_data (target_cost_data);
   free_stmt_vec_infos ();
@@ -603,8 +603,8 @@ vec_info::remove_stmt (stmt_vec_info stmt_info)
 {
   gcc_assert (!stmt_info->pattern_stmt_p);
   set_vinfo_for_stmt (stmt_info->stmt, NULL);
-  gimple_stmt_iterator si = gsi_for_stmt (stmt_info->stmt);
   unlink_stmt_vdef (stmt_info->stmt);
+  gimple_stmt_iterator si = gsi_for_stmt (stmt_info->stmt);
   gsi_remove (&si, true);
   release_defs (stmt_info->stmt);
   free_stmt_vec_info (stmt_info);
@@ -649,7 +649,8 @@ vec_info::insert_seq_on_entry (stmt_vec_info context, gimple_seq seq)
   else
     {
       bb_vec_info bb_vinfo = as_a <bb_vec_info> (this);
-      gimple_stmt_iterator gsi_region_begin = bb_vinfo->region_begin;
+      gimple_stmt_iterator gsi_region_begin
+	= gsi_after_labels (bb_vinfo->bbs[0]);
       gsi_insert_seq_before (&gsi_region_begin, seq, GSI_SAME_STMT);
     }
 }
@@ -1048,9 +1049,6 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	    }
 	  if (!require_loop_vectorize && vect_slp_bb (bb))
 	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "basic block vectorized\n");
 	      fold_loop_internal_call (loop_vectorized_call,
 				       boolean_true_node);
 	      loop_vectorized_call = NULL;
@@ -1066,7 +1064,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
       return ret;
     }
 
-  if (!dbg_cnt (vect_loop))
+  /* Only count the original scalar loops.  */
+  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo) && !dbg_cnt (vect_loop))
     {
       /* Free existing information if loop is analyzed with some
 	 assumptions.  */
@@ -1283,7 +1282,11 @@ vectorize_loops (void)
 
   /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE,ORDERED_{START,END}} builtins.  */
   if (cfun->has_simduid_loops)
-    adjust_simduid_builtins (simduid_to_vf_htab);
+    {
+      adjust_simduid_builtins (simduid_to_vf_htab);
+      /* Avoid stale SCEV cache entries for the SIMD_LANE defs.  */
+      scev_reset ();
+    }
 
   /* Shrink any "omp array simd" temporary arrays to the
      actual vectorization factors.  */
@@ -1410,6 +1413,13 @@ pass_slp_vectorize::execute (function *fun)
   /* Mark all stmts as not belonging to the current region and unvisited.  */
   FOR_EACH_BB_FN (bb, fun)
     {
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *stmt = gsi.phi ();
+	  gimple_set_uid (stmt, -1);
+	  gimple_set_visited (stmt, false);
+	}
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
@@ -1419,12 +1429,7 @@ pass_slp_vectorize::execute (function *fun)
 	}
     }
 
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      if (vect_slp_bb (bb))
-	if (dump_enabled_p ())
-	  dump_printf_loc (MSG_NOTE, vect_location, "basic block vectorized\n");
-    }
+  vect_slp_function (fun);
 
   if (!in_loop_pipeline)
     {

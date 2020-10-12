@@ -1233,8 +1233,9 @@ default_vector_alignment (const_tree type)
   tree size = TYPE_SIZE (type);
   if (tree_fits_uhwi_p (size))
     align = tree_to_uhwi (size);
-
-  return align < MAX_OFILE_ALIGNMENT ? align : MAX_OFILE_ALIGNMENT;
+  if (align >= MAX_OFILE_ALIGNMENT)
+    return MAX_OFILE_ALIGNMENT;
+  return MAX (align, GET_MODE_ALIGNMENT (TYPE_MODE (type)));
 }
 
 /* The default implementation of
@@ -1640,7 +1641,8 @@ default_have_conditional_execution (void)
 /* By default we assume that c99 functions are present at the runtime,
    but sincos is not.  */
 bool
-default_libc_has_function (enum function_class fn_class)
+default_libc_has_function (enum function_class fn_class,
+			   tree type ATTRIBUTE_UNUSED)
 {
   if (fn_class == function_c94
       || fn_class == function_c99_misc
@@ -1659,13 +1661,15 @@ default_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 }
 
 bool
-gnu_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
+gnu_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED,
+		       tree type ATTRIBUTE_UNUSED)
 {
   return true;
 }
 
 bool
-no_c99_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
+no_c99_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED,
+			  tree type ATTRIBUTE_UNUSED)
 {
   return false;
 }

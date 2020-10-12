@@ -1,6 +1,7 @@
 /* PR tree-optimization/95857 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target label_values } */
 
 struct E { int e; };
 int bar (void), baz (void);

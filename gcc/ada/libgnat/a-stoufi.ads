@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 private with GNAT.OS_Lib;
 private with Ada.Finalization;
 package Ada.Strings.Text_Output.Files is

@@ -17,17 +17,18 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
+// { dg-add-options libatomic }
 
 #include <atomic>
 #include <testsuite_hooks.h>
 
-constexpr std::atomic<double> a;
+constexpr std::atomic<float> a;
 
 void
 test01()
 {
   VERIFY(a.load() == 0);
-  static_assert(std::is_nothrow_default_constructible_v<std::atomic<double>>);
+  static_assert(std::is_nothrow_default_constructible_v<std::atomic<float>>);
 }
 
 int

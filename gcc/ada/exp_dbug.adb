@@ -424,7 +424,7 @@ package body Exp_Dbug is
                   --  anyway, so the renaming entity will be available in
                   --  debuggers.
 
-                  exit when not Ekind_In (Sel_Id, E_Component, E_Discriminant);
+                  exit when Ekind (Sel_Id) not in E_Component | E_Discriminant;
 
                   First_Bit := Normalized_First_Bit (Sel_Id);
                   Enable :=
@@ -839,11 +839,11 @@ package body Exp_Dbug is
 
       --  Case of interface name being used
 
-      if Ekind_In (E, E_Constant,
-                      E_Exception,
-                      E_Function,
-                      E_Procedure,
-                      E_Variable)
+      if Ekind (E) in E_Constant
+                    | E_Exception
+                    | E_Function
+                    | E_Procedure
+                    | E_Variable
         and then Present (Interface_Name (E))
         and then No (Address_Clause (E))
         and then not Has_Suffix
@@ -874,7 +874,7 @@ package body Exp_Dbug is
          if Is_Generic_Instance (E)
            and then Is_Subprogram (E)
            and then not Is_Compilation_Unit (Scope (E))
-           and then Ekind_In (Scope (E), E_Package, E_Package_Body)
+           and then Ekind (Scope (E)) in E_Package | E_Package_Body
            and then Present (Related_Instance (Scope (E)))
          then
             E := Related_Instance (Scope (E));

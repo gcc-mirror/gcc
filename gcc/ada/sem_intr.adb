@@ -76,7 +76,7 @@ package body Sem_Intr is
 
    procedure Check_Exception_Function (E : Entity_Id; N : Node_Id) is
    begin
-      if not Ekind_In (E, E_Function, E_Generic_Function) then
+      if Ekind (E) not in E_Function | E_Generic_Function then
          Errint
            ("intrinsic exception subprogram must be a function", E, N);
 
@@ -129,9 +129,9 @@ package body Sem_Intr is
       --  literal is legal even in Ada 83 mode, where such literals are
       --  not static.
 
-      if Nam_In (Cnam, Name_Import_Address,
-                       Name_Import_Largest_Value,
-                       Name_Import_Value)
+      if Cnam in Name_Import_Address
+               | Name_Import_Largest_Value
+               | Name_Import_Value
       then
          if Etype (Arg1) = Any_Type
            or else Raises_Constraint_Error (Arg1)
@@ -190,13 +190,14 @@ package body Sem_Intr is
    begin
       --  Arithmetic operators
 
-      if Nam_In (Nam, Name_Op_Add, Name_Op_Subtract, Name_Op_Multiply,
-                      Name_Op_Divide, Name_Op_Rem, Name_Op_Mod, Name_Op_Abs)
+      if Nam in Name_Op_Add    | Name_Op_Subtract | Name_Op_Multiply |
+                Name_Op_Divide | Name_Op_Rem      | Name_Op_Mod      |
+                Name_Op_Abs
       then
          T1 := Etype (First_Formal (E));
 
          if No (Next_Formal (First_Formal (E))) then
-            if Nam_In (Nam, Name_Op_Add, Name_Op_Subtract, Name_Op_Abs) then
+            if Nam in Name_Op_Add | Name_Op_Subtract | Name_Op_Abs then
                T2 := T1;
 
             --  Previous error in declaration
@@ -231,8 +232,8 @@ package body Sem_Intr is
 
       --  Comparison operators
 
-      elsif Nam_In (Nam, Name_Op_Eq, Name_Op_Ge, Name_Op_Gt, Name_Op_Le,
-                         Name_Op_Lt, Name_Op_Ne)
+      elsif Nam in Name_Op_Eq | Name_Op_Ge | Name_Op_Gt | Name_Op_Le |
+                   Name_Op_Lt | Name_Op_Ne
       then
          T1 := Etype (First_Formal (E));
 
@@ -327,8 +328,8 @@ package body Sem_Intr is
       --  Shift cases. We allow user specification of intrinsic shift operators
       --  for any numeric types.
 
-      elsif Nam_In (Nam, Name_Rotate_Left, Name_Rotate_Right, Name_Shift_Left,
-                         Name_Shift_Right, Name_Shift_Right_Arithmetic)
+      elsif Nam in Name_Rotate_Left | Name_Rotate_Right | Name_Shift_Left |
+                   Name_Shift_Right | Name_Shift_Right_Arithmetic
       then
          Check_Shift (E, N);
 
@@ -344,9 +345,9 @@ package body Sem_Intr is
 
       --  Exception functions
 
-      elsif Nam_In (Nam, Name_Exception_Information,
-                         Name_Exception_Message,
-                         Name_Exception_Name)
+      elsif Nam in Name_Exception_Information
+                 | Name_Exception_Message
+                 | Name_Exception_Name
       then
          Check_Exception_Function (E, N);
 
@@ -357,13 +358,13 @@ package body Sem_Intr is
 
       --  Source_Location and navigation functions
 
-      elsif Nam_In (Nam, Name_File,
-                         Name_Line,
-                         Name_Source_Location,
-                         Name_Enclosing_Entity,
-                         Name_Compilation_ISO_Date,
-                         Name_Compilation_Date,
-                         Name_Compilation_Time)
+      elsif Nam in Name_File
+                 | Name_Line
+                 | Name_Source_Location
+                 | Name_Enclosing_Entity
+                 | Name_Compilation_ISO_Date
+                 | Name_Compilation_Date
+                 | Name_Compilation_Time
       then
          null;
 
@@ -388,7 +389,7 @@ package body Sem_Intr is
       Ptyp2 : Node_Id;
 
    begin
-      if not Ekind_In (E, E_Function, E_Generic_Function) then
+      if Ekind (E) not in E_Function | E_Generic_Function then
          Errint ("intrinsic shift subprogram must be a function", E, N);
          return;
       end if;

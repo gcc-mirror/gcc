@@ -851,7 +851,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	    char buf[10];
 	    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
 	      {
-		snprintf (buf, sizeof (buf), "elt%u: ", i);
+		snprintf (buf, sizeof (buf), "elt%u:", i);
 		print_node (file, buf, POLY_INT_CST_COEFF (node, i),
 			    indent + 4);
 	      }

@@ -1,3 +1,88 @@
+2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* m4/unpack.m4 (unpack0_'rtype_code`,
+	unpack1_'rtype_code`): Move 'rstride[0]' initialization outside
+	conditional branch to silence -Wmaybe-uninitialized.
+	* generated/unpack_c10.c: Regenerate.
+	* generated/unpack_c16.c: Regenerate.
+	* generated/unpack_c4.c: Regenerate.
+	* generated/unpack_c8.c: Regenerate.
+	* generated/unpack_i1.c: Regenerate.
+	* generated/unpack_i16.c: Regenerate.
+	* generated/unpack_i2.c: Regenerate.
+	* generated/unpack_i4.c: Regenerate.
+	* generated/unpack_i8.c: Regenerate.
+	* generated/unpack_r10.c: Regenerate.
+	* generated/unpack_r16.c: Regenerate.
+	* generated/unpack_r4.c: Regenerate.
+	* generated/unpack_r8.c: Regenerate.
+
+2020-09-27  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/t-aix: Use $(AR) without -X32_64.
+
+2020-09-03  Harald Anlauf  <anlauf@gmx.de>
+
+	* m4/iall.m4: Initial value for result should be -1.
+	* generated/iall_i1.c (miall_i1): Generated.
+	* generated/iall_i16.c (miall_i16): Likewise.
+	* generated/iall_i2.c (miall_i2): Likewise.
+	* generated/iall_i4.c (miall_i4): Likewise.
+	* generated/iall_i8.c (miall_i8): Likewise.
+
+2020-08-24  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96486
+	* intrinsics/env.c: If value_len is > 0 blank the string.
+	Copy the result only if its length is > 0.
+
+2020-08-20  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96436
+	* io/format.c (parse_format_list):  Add new local variable
+	"standard" to hold the required standard to check. If the
+	format width is zero select standard depending on descriptor.
+	Call notification_std using the new standard variable.
+
+2020-08-17  David Edelsohn  <dje.gcc@gmail.com>
+	    Clement Chigot  <clement.chigot@atos.net>
+
+	* config/t-aix: Add complementary mode object file to libcaf_single.a.
+
+2020-08-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* caf/single.c (_gfortran_caf_lock): Fix typo.
+
+2020-07-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/96306
+	* configure.ac: Add LIBGOMP_CHECKED_INT_KINDS and
+	LIBGOMP_CHECKED_REAL_KINDS and use it for to skip
+	integer kind=16 checks for amdgcn.
+	* Makefile.am (kinds.h, selected_int_kind.inc,
+	selected_real_kind.inc): Pass them on.
+	* mk-kinds-h.sh: Takes to-be-check kinds as argument.
+	* mk-sik-inc.sh: Likewise.
+	* mk-srk-inc.sh: Likewise.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93567
+	* io/write_float.def (determine_en_precision): Fix switch between
+	FMT_E and FMT_F.
+
+2020-07-24  Dominique d'Humieres  <dhumieres.dominique@free.fr>
+
+	PR fortran/93592
+	* io/write_float.def (build_float_string): Do not reset
+	  nbefore for FMT_F and FMT_EN.
+
+2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/t-aix: Set BITS from compiler cpp macro.
+
 2020-06-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	* Makefile.am: Use -include.

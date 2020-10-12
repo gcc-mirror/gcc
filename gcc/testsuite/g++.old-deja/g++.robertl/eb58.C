@@ -11,5 +11,5 @@ private:
 
 main()
 {
-  A *list = new A[10](4); // { dg-error "parenthesized" }
+  A *list = new A[10](4); // { dg-error "parenthesized|could not convert" }
 }

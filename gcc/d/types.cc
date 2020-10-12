@@ -186,8 +186,11 @@ make_array_type (Type *type, unsigned HOST_WIDE_INT size)
       return t;
     }
 
-  return build_array_type (build_ctype (type),
-			   build_index_type (size_int (size - 1)));
+  tree t = build_array_type (build_ctype (type),
+			     build_index_type (size_int (size - 1)));
+  /* Propagate TREE_ADDRESSABLE to the static array type.  */
+  TREE_ADDRESSABLE (t) = TREE_ADDRESSABLE (TREE_TYPE (t));
+  return t;
 }
 
 /* Builds a record type whose name is NAME.  NFIELDS is the number of fields,
@@ -856,13 +859,16 @@ public:
 	   For these, we simplify this a little by using the base type directly
 	   instead of building an ENUMERAL_TYPE.  */
 	t->ctype = build_variant_type_copy (basetype);
+	build_type_decl (t->ctype, t->sym);
       }
     else
       {
 	t->ctype = make_node (ENUMERAL_TYPE);
-	ENUM_IS_SCOPED (t->ctype) = 1;
 	TYPE_LANG_SPECIFIC (t->ctype) = build_lang_type (t);
 	d_keep (t->ctype);
+
+	ENUM_IS_SCOPED (t->ctype) = 1;
+	TREE_TYPE (t->ctype) = basetype;
 
 	if (flag_short_enums)
 	  TYPE_PACKED (t->ctype) = 1;

@@ -129,6 +129,8 @@ asan_var_and_redzone_size (unsigned HOST_WIDE_INT size)
 
 extern bool set_asan_shadow_offset (const char *);
 
+extern bool asan_shadow_offset_set_p ();
+
 extern void set_sanitized_sections (const char *);
 
 extern bool asan_sanitize_stack_p (void);

@@ -65,8 +65,6 @@ extern bool msp430x;
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
   /* Tell the assembler if we are building for the LARGE pointer model.  */ \
   "%{mlarge:-ml} " \
-  /* Copy data from ROM to RAM if necessary.  */ \
-  "%{!msim:-md} %{msim:%{mlarge:-md}} " \
   "%{msilicon-errata=*:-msilicon-errata=%*} " \
   "%{msilicon-errata-warn=*:-msilicon-errata-warn=%*} " \
   /* Create DWARF line number sections for -ffunction-sections.  */ \
@@ -257,6 +255,11 @@ extern const char *msp430_get_linker_devices_include_path (int, const char **);
   msp430_return_addr_rtx (COUNT)
 
 #define SLOW_BYTE_ACCESS		0
+
+/* Calling a constant function address costs the same number of clock
+   cycles as calling an address stored in a register. However, in terms of
+   instruction length, calling a constant address is more expensive.  */
+#define NO_FUNCTION_CSE (optimize >= 2 && !optimize_size)
 
 
 /* Register Usage */

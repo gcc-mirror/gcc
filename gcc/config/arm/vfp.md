@@ -391,11 +391,11 @@
 
 (define_insn "*mov<mode>_vfp_<mode>16"
   [(set (match_operand:HFBF 0 "nonimmediate_operand"
-			  "= ?r,?m,t,r,t,r,t, t, Um,r")
+			  "= ?r,?m,t,r,t,r,t, t, Uj,r")
 	(match_operand:HFBF 1 "general_operand"
-			  "  m,r,t,r,r,t,Dv,Um,t, F"))]
+			  "  m,r,t,r,r,t,Dv,Uj,t, F"))]
   "TARGET_32BIT
-   && TARGET_VFP_FP16INST
+   && (TARGET_VFP_FP16INST || TARGET_HAVE_MVE)
    && (s_register_operand (operands[0], <MODE>mode)
        || s_register_operand (operands[1], <MODE>mode))"
  {
@@ -415,12 +415,12 @@
       return \"vmov.f16\\t%0, %1\t%@ __<fporbf>\";
     case 7: /* S register from memory.  */
       if (TARGET_HAVE_MVE)
-	return \"vldr.16\\t%0, %A1\";
+	return \"vldr.16\\t%0, %1\";
       else
 	return \"vld1.16\\t{%z0}, %A1\";
     case 8: /* Memory from S register.  */
       if (TARGET_HAVE_MVE)
-	return \"vstr.16\\t%1, %A0\";
+	return \"vstr.16\\t%1, %0\";
       else
 	return \"vst1.16\\t{%z1}, %A0\";
     case 9: /* ARM register from constant.  */
@@ -2125,7 +2125,7 @@
 	(match_operand:DF 1 "const_double_operand" "F"))
    (clobber (match_operand:DF 2 "s_register_operand" "=r"))]
   "arm_disable_literal_pool
-   && TARGET_HARD_FLOAT
+   && TARGET_VFP_BASE
    && !arm_const_double_rtx (operands[1])
    && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1]))"
   "#"
@@ -2151,7 +2151,7 @@
 	(match_operand:SF 1 "const_double_operand" "E"))
    (clobber (match_operand:SF 2 "s_register_operand" "=r"))]
   "arm_disable_literal_pool
-   && TARGET_HARD_FLOAT
+   && TARGET_VFP_BASE
    && !vfp3_const_double_rtx (operands[1])"
   "#"
   ""

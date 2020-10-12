@@ -32,7 +32,9 @@ with Ada.Unchecked_Deallocation;
 
 with System; use type System.Address;
 
-package body Ada.Containers.Multiway_Trees is
+package body Ada.Containers.Multiway_Trees with
+  SPARK_Mode => Off
+is
 
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");
    pragma Warnings (Off, "variable ""Lock*"" is not referenced");

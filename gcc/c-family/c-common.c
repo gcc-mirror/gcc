@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck.h"
 #include "c-spellcheck.h"
 #include "selftest.h"
+#include "debug.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -5006,6 +5007,24 @@ c_switch_covers_all_cases_p (splay_tree cases, tree type)
   return true;
 }
 
+/* Return true if stmt can fall through.  Used by block_may_fallthru
+   default case.  */
+
+bool
+c_block_may_fallthru (const_tree stmt)
+{
+  switch (TREE_CODE (stmt))
+    {
+    case SWITCH_STMT:
+      return (!SWITCH_STMT_ALL_CASES_P (stmt)
+	      || !SWITCH_STMT_NO_BREAK_P (stmt)
+	      || block_may_fallthru (SWITCH_STMT_BODY (stmt)));
+
+    default:
+      return true;
+    }
+}
+
 /* Finish an expression taking the address of LABEL (an
    IDENTIFIER_NODE).  Returns an expression for the address.
 
@@ -5538,7 +5557,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
     {
       warned = warning_at (loc, OPT_Wnonnull,
 			   "%qs pointer null", "this");
-      if (pctx->fndecl)
+      if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to non-static member function %qD",
 		pctx->fndecl);
@@ -5548,7 +5567,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
       warned = warning_at (loc, OPT_Wnonnull,
 			   "argument %u null where non-null expected",
 			   (unsigned) param_num);
-      if (pctx->fndecl)
+      if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to function %qD declared %qs",
 		pctx->fndecl, "nonnull");
@@ -5821,6 +5840,9 @@ check_function_arguments_recurse (void (*callback)
 				  void *ctx, tree param,
 				  unsigned HOST_WIDE_INT param_num)
 {
+  if (TREE_NO_WARNING (param))
+    return;
+
   if (CONVERT_EXPR_P (param)
       && (TYPE_PRECISION (TREE_TYPE (param))
 	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (param, 0)))))
@@ -7013,8 +7035,15 @@ get_atomic_generic_size (location_t loc, tree function,
       return 0;
     }
 
+  if (!COMPLETE_TYPE_P (TREE_TYPE (type_0)))
+    {
+      error_at (loc, "argument 1 of %qE must be a pointer to a complete type",
+		function);
+      return 0;
+    }
+
   /* Types must be compile time constant sizes. */
-  if (TREE_CODE ((TYPE_SIZE_UNIT (TREE_TYPE (type_0)))) != INTEGER_CST)
+  if (!tree_fits_uhwi_p ((TYPE_SIZE_UNIT (TREE_TYPE (type_0)))))
     {
       error_at (loc, 
 		"argument 1 of %qE must be a pointer to a constant size type",
@@ -8115,6 +8144,12 @@ c_common_init_ts (void)
   MARK_TS_EXP (SIZEOF_EXPR);
   MARK_TS_EXP (C_MAYBE_CONST_EXPR);
   MARK_TS_EXP (EXCESS_PRECISION_EXPR);
+  MARK_TS_EXP (BREAK_STMT);
+  MARK_TS_EXP (CONTINUE_STMT);
+  MARK_TS_EXP (DO_STMT);
+  MARK_TS_EXP (FOR_STMT);
+  MARK_TS_EXP (SWITCH_STMT);
+  MARK_TS_EXP (WHILE_STMT);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE
@@ -8764,8 +8799,7 @@ c_family_tests (void)
 #endif /* #if CHECKING_P */
 
 /* Attempt to locate a suitable location within FILE for a
-   #include directive to be inserted before.  FILE should
-   be a string from libcpp (pointer equality is used).
+   #include directive to be inserted before.  
    LOC is the location of the relevant diagnostic.
 
    Attempt to return the location within FILE immediately
@@ -8800,13 +8834,17 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
 
       if (const line_map_ordinary *from
 	  = linemap_included_from_linemap (line_table, ord_map))
-	if (from->to_file == file)
+	/* We cannot use pointer equality, because with preprocessed
+	   input all filename strings are unique.  */
+	if (0 == strcmp (from->to_file, file))
 	  {
 	    last_include_ord_map = from;
 	    last_ord_map_after_include = NULL;
 	  }
 
-      if (ord_map->to_file == file)
+      /* Likewise, use strcmp, and reject any line-zero introductory
+	 map.  */
+      if (ord_map->to_line && 0 == strcmp (ord_map->to_file, file))
 	{
 	  if (!first_ord_map_in_file)
 	    first_ord_map_in_file = ord_map;
@@ -9081,6 +9119,22 @@ tree
 braced_lists_to_strings (tree type, tree ctor)
 {
   return braced_lists_to_strings (type, ctor, false);
+}
+
+
+/* Emit debug for functions before finalizing early debug.  */
+
+void
+c_common_finalize_early_debug (void)
+{
+  /* Emit early debug for reachable functions, and by consequence,
+     locally scoped symbols.  Also emit debug for extern declared
+     functions that are still reachable at this point.  */
+  struct cgraph_node *cnode;
+  FOR_EACH_FUNCTION (cnode)
+    if (!cnode->alias && !cnode->thunk.thunk_p
+	&& (cnode->has_gimple_body_p () || !DECL_IS_BUILTIN (cnode->decl)))
+      (*debug_hooks->early_global_decl) (cnode->decl);
 }
 
 #include "gt-c-family-c-common.h"

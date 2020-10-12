@@ -3,7 +3,7 @@
    when the pointer pointed to by the enclosing object references an object
    sufficiently large to store a string of equal length.
   { dg-do compile }
-  { dg-options "-O2 -Wall -Wextra -fdump-tree-optimized" } */
+  { dg-options "-O2 -Wall -Wextra -Wno-stringop-overread -fdump-tree-optimized" } */
 
 void init (void*);
 

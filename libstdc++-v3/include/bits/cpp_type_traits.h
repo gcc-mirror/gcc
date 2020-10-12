@@ -482,6 +482,66 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
     : __is_nonvolatile_trivially_copyable<_Tp>
     { };
 
+  // Whether memcmp can be used to determine ordering for a type
+  // e.g. in std::lexicographical_compare or three-way comparisons.
+  // True for unsigned integer-like types where comparing each byte in turn
+  // as an unsigned char yields the right result. This is true for all
+  // unsigned integers on big endian targets, but only unsigned narrow
+  // character types (and std::byte) on little endian targets.
+  template<typename _Tp, bool _TreatAsBytes =
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	__is_integer<_Tp>::__value
+#else
+	__is_byte<_Tp>::__value
+#endif
+    >
+    struct __is_memcmp_ordered
+    {
+      static const bool __value = _Tp(-1) > _Tp(1); // is unsigned
+    };
+
+  template<typename _Tp>
+    struct __is_memcmp_ordered<_Tp, false>
+    {
+      static const bool __value = false;
+    };
+
+  // Whether two types can be compared using memcmp.
+  template<typename _Tp, typename _Up, bool = sizeof(_Tp) == sizeof(_Up)>
+    struct __is_memcmp_ordered_with
+    {
+      static const bool __value = __is_memcmp_ordered<_Tp>::__value
+	&& __is_memcmp_ordered<_Up>::__value;
+    };
+
+  template<typename _Tp, typename _Up>
+    struct __is_memcmp_ordered_with<_Tp, _Up, false>
+    {
+      static const bool __value = false;
+    };
+
+#if __cplusplus >= 201703L
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  // std::byte is not an integer, but it can be compared using memcmp.
+  template<>
+    struct __is_memcmp_ordered<std::byte, false>
+    { static constexpr bool __value = true; };
+#endif
+
+  // std::byte can only be compared to itself, not to other types.
+  template<>
+    struct __is_memcmp_ordered_with<std::byte, std::byte, true>
+    { static constexpr bool __value = true; };
+
+  template<typename _Tp, bool _SameSize>
+    struct __is_memcmp_ordered_with<_Tp, std::byte, _SameSize>
+    { static constexpr bool __value = false; };
+
+  template<typename _Up, bool _SameSize>
+    struct __is_memcmp_ordered_with<std::byte, _Up, _SameSize>
+    { static constexpr bool __value = false; };
+#endif
+
   //
   // Move iterator type
   //

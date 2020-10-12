@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *map;
   uint64_t flags;
 
-  ret = __builtin_bpf_helper_perf_event_read (map, flags);
+  ret = bpf_perf_event_read (map, flags);
 }
 
 /* { dg-final { scan-assembler "call\t22" } } */

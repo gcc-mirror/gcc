@@ -714,7 +714,7 @@ rs6000_stack_info (void)
   info->altivec_size = 16 * (LAST_ALTIVEC_REGNO + 1
 				 - info->first_altivec_reg_save);
 
-  /* Does this function call anything?  */
+  /* Does this function call anything (apart from sibling calls)?  */
   info->calls_p = (!crtl->is_leaf || cfun->machine->ra_needs_full_frame);
 
   /* Determine if we need to save the condition code registers.  */
@@ -1080,28 +1080,28 @@ rs6000_decl_ok_for_sibcall (tree decl)
 
   if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
     {
-      /* Under the AIX or ELFv2 ABIs we can't allow calls to non-local
-	 functions, because the callee may have a different TOC pointer to
-	 the caller and there's no way to ensure we restore the TOC when
+      /* A function compiled using the PC-relative addressing model does not
+	 use a TOC pointer; nor is it guaranteed to preserve the value of
+	 r2 for its caller's TOC.  Such a function may make sibcalls to any
+	 function, whether local or external, without restriction based on
+	 TOC-save/restore rules.  */
+      if (rs6000_pcrel_p ())
+	return true;
+
+      /* Otherwise, under the AIX or ELFv2 ABIs we can't allow sibcalls
+	 to non-local functions, because the callee may not preserve the
+	 TOC pointer, and there's no way to ensure we restore the TOC when
 	 we return.  */
       if (!decl || DECL_EXTERNAL (decl) || DECL_WEAK (decl)
 	  || !(*targetm.binds_local_p) (decl))
 	return false;
 
-      /* Similarly, if the caller preserves the TOC pointer and the callee
-	 doesn't (or vice versa), proper TOC setup or restoration will be
-	 missed.  For example, suppose A, B, and C are in the same binary
-	 and A -> B -> C.  A and B preserve the TOC pointer but C does not,
-	 and B -> C is eligible as a sibcall.  A will call B through its
-	 local entry point, so A will not restore its TOC itself.  B calls
-	 C with a sibcall, so it will not restore the TOC.  C does not
-	 preserve the TOC, so it may clobber r2 with impunity.  Returning
-	 from C will result in a corrupted TOC for A.  */
-      else if (rs6000_fndecl_pcrel_p (decl) != rs6000_pcrel_p (cfun))
+      /* A local sibcall from a function that preserves the TOC pointer
+	 to a function that does not is invalid for the same reason.  */
+      if (rs6000_fndecl_pcrel_p (decl))
 	return false;
 
-      else
-	return true;
+      return true;
     }
 
   /*  With the secure-plt SYSV ABI we can't make non-local calls when
@@ -2562,7 +2562,7 @@ rs6000_global_entry_point_prologue_needed_p (void)
     return false;
 
   /* PC-relative functions never generate a global entry point prologue.  */
-  if (rs6000_pcrel_p (cfun))
+  if (rs6000_pcrel_p ())
     return false;
 
   /* Ensure we have a global entry point for thunks.   ??? We could
@@ -3978,7 +3978,7 @@ rs6000_output_function_prologue (FILE *file)
       fputs ("\n", file);
     }
 
-  else if (rs6000_pcrel_p (cfun))
+  else if (rs6000_pcrel_p ())
     {
       const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
       /* All functions compiled to use PC-relative addressing will
@@ -5479,7 +5479,18 @@ rs6000_expand_split_stack_prologue (void)
   gcc_assert (flag_split_stack && reload_completed);
 
   if (!info->push_p)
-    return;
+    {
+      /* We need the -fsplit-stack prologue for functions that make
+	 tail calls.  Tail calls don't count against crtl->is_leaf.
+	 Note that we are called inside a sequence.  get_insns will
+	 just return that (as yet empty) sequence, so instead we
+	 access the function rtl with get_topmost_sequence.  */
+      for (insn = get_topmost_sequence ()->first; insn; insn = NEXT_INSN (insn))
+	if (CALL_P (insn))
+	  break;
+      if (!insn)
+	return;
+    }
 
   if (global_regs[29])
     {

@@ -1,6 +1,7 @@
 /* PR c/71924 - missing -Wreturn-local-addr returning alloca result
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 

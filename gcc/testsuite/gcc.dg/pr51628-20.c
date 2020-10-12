@@ -8,4 +8,4 @@ struct C { struct B b; } __attribute__ ((packed));
 extern struct C *p;
 
 long* g8 (void) { return p; }
-/* { dg-warning "may result in an unaligned pointer value" "" { target *-*-* } .-1 } */
+/* { dg-warning "may result in an unaligned pointer value" "" { target { ! default_packed } } .-1 } */

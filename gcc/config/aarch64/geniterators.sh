@@ -70,8 +70,8 @@ iterdef {
 	sub(/ *\]/, "", s)
 
 	n = split(s, a)
-	printf "#define BUILTIN_" a[1] "(T, N, MAP) \\\n"
-	printf "  VAR" (n-1) " (T, N, MAP"
+	printf "#define BUILTIN_" a[1] "(T, N, MAP, FLAG) \\\n"
+	printf "  VAR" (n-1) " (T, N, MAP, FLAG"
 	for (i = 2; i <= n; i++)
 		printf ", "  tolower(a[i])
 	printf ")\n"

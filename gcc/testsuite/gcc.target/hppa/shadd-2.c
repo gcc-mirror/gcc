@@ -1,6 +1,6 @@
 /* { dg-do compile }  */
 /* { dg-options "-O2" }  */
-/* { dg-final { scan-assembler-times "sh.add" 2 } }  */
+/* { dg-final { scan-assembler-times "sh.add" 4 } }  */
 
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;

@@ -39,7 +39,9 @@ with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
 with System; use type System.Address;
 
-package body Ada.Containers.Bounded_Hashed_Sets is
+package body Ada.Containers.Bounded_Hashed_Sets with
+  SPARK_Mode => Off
+is
 
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");
    pragma Warnings (Off, "variable ""Lock*"" is not referenced");

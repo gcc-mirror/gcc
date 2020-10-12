@@ -89,4 +89,4 @@ f6 (int n)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 6 "slp1" } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 6 "slp1" } } */

@@ -8,5 +8,5 @@ void foo(T t) { }
 
 void test()
 {
-  foo(0); // { dg-error "unsatisfied constraints" }
+  foo(0); // { dg-error "no match" }
 }

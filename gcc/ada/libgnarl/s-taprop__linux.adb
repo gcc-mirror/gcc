@@ -243,9 +243,9 @@ package body System.Task_Primitives.Operations is
       return Ceiling_Support;
    end Get_Ceiling_Support;
 
-   pragma Warnings (Off, "non-static call not allowed in preelaborated unit");
+   pragma Warnings (Off, "non-preelaborable call not allowed*");
    Ceiling_Support : constant Boolean := Get_Ceiling_Support;
-   pragma Warnings (On, "non-static call not allowed in preelaborated unit");
+   pragma Warnings (On, "non-preelaborable call not allowed*");
    --  True if the locking policy is Ceiling_Locking, and the current process
    --  has permission to use this policy. The process has permission if it is
    --  running as 'root', or if the capability was set by the setcap command,

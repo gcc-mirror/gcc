@@ -183,9 +183,14 @@ OMP_5.0 {
 OMP_5.0.1 {
   global:
 	omp_set_default_allocator;
+	omp_set_default_allocator_;
 	omp_get_default_allocator;
+	omp_get_default_allocator_;
 	omp_init_allocator;
+	omp_init_allocator_;
+	omp_init_allocator_8_;
 	omp_destroy_allocator;
+	omp_destroy_allocator_;
 	omp_alloc;
 	omp_free;
 } OMP_5.0;

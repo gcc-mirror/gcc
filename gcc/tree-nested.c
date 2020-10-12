@@ -305,13 +305,14 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
 	}
       else
 	{
-          TREE_TYPE (field) = TREE_TYPE (decl);
-          DECL_SOURCE_LOCATION (field) = DECL_SOURCE_LOCATION (decl);
-          SET_DECL_ALIGN (field, DECL_ALIGN (decl));
-          DECL_USER_ALIGN (field) = DECL_USER_ALIGN (decl);
-          TREE_ADDRESSABLE (field) = TREE_ADDRESSABLE (decl);
-          DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (decl);
-          TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (decl);
+	  TREE_TYPE (field) = TREE_TYPE (decl);
+	  DECL_SOURCE_LOCATION (field) = DECL_SOURCE_LOCATION (decl);
+	  SET_DECL_ALIGN (field, DECL_ALIGN (decl));
+	  DECL_USER_ALIGN (field) = DECL_USER_ALIGN (decl);
+	  DECL_IGNORED_P (field) = DECL_IGNORED_P (decl);
+	  DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (decl);
+	  TREE_NO_WARNING (field) = TREE_NO_WARNING (decl);
+	  TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (decl);
 
 	  /* Declare the transformation and adjust the original DECL.  For a
 	     variable or for a parameter when not optimizing, we make it point
@@ -1393,7 +1394,6 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
-	case OMP_CLAUSE__GRIDDIM_:
 	case OMP_CLAUSE__SIMT_:
 	  /* Anything else.  */
 	default:
@@ -1419,12 +1419,22 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      if (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clause))
 		DECL_CONTEXT (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clause))
 		  = info->context;
+	      tree save_local_var_chain = info->new_local_var_chain;
+	      info->new_local_var_chain = NULL;
+	      gimple_seq *seq = &OMP_CLAUSE_REDUCTION_GIMPLE_INIT (clause);
 	      walk_body (convert_nonlocal_reference_stmt,
-			 convert_nonlocal_reference_op, info,
-			 &OMP_CLAUSE_REDUCTION_GIMPLE_INIT (clause));
+			 convert_nonlocal_reference_op, info, seq);
+	      if (info->new_local_var_chain)
+		declare_vars (info->new_local_var_chain,
+			      gimple_seq_first_stmt (*seq), false);
+	      info->new_local_var_chain = NULL;
+	      seq = &OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (clause);
 	      walk_body (convert_nonlocal_reference_stmt,
-			 convert_nonlocal_reference_op, info,
-			 &OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (clause));
+			 convert_nonlocal_reference_op, info, seq);
+	      if (info->new_local_var_chain)
+		declare_vars (info->new_local_var_chain,
+			      gimple_seq_first_stmt (*seq), false);
+	      info->new_local_var_chain = save_local_var_chain;
 	      DECL_CONTEXT (OMP_CLAUSE_REDUCTION_PLACEHOLDER (clause))
 		= old_context;
 	      if (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clause))
@@ -1434,15 +1444,31 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  break;
 
 	case OMP_CLAUSE_LASTPRIVATE:
-	  walk_body (convert_nonlocal_reference_stmt,
-		     convert_nonlocal_reference_op, info,
-		     &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause));
+	  {
+	    tree save_local_var_chain = info->new_local_var_chain;
+	    info->new_local_var_chain = NULL;
+	    gimple_seq *seq = &OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (clause);
+	    walk_body (convert_nonlocal_reference_stmt,
+		       convert_nonlocal_reference_op, info, seq);
+	    if (info->new_local_var_chain)
+	      declare_vars (info->new_local_var_chain,
+			    gimple_seq_first_stmt (*seq), false);
+	    info->new_local_var_chain = save_local_var_chain;
+	  }
 	  break;
 
 	case OMP_CLAUSE_LINEAR:
-	  walk_body (convert_nonlocal_reference_stmt,
-		     convert_nonlocal_reference_op, info,
-		     &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause));
+	  {
+	    tree save_local_var_chain = info->new_local_var_chain;
+	    info->new_local_var_chain = NULL;
+	    gimple_seq *seq = &OMP_CLAUSE_LINEAR_GIMPLE_SEQ (clause);
+	    walk_body (convert_nonlocal_reference_stmt,
+		       convert_nonlocal_reference_op, info, seq);
+	    if (info->new_local_var_chain)
+	      declare_vars (info->new_local_var_chain,
+			    gimple_seq_first_stmt (*seq), false);
+	    info->new_local_var_chain = save_local_var_chain;
+	  }
 	  break;
 
 	default:
@@ -2136,7 +2162,6 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
-	case OMP_CLAUSE__GRIDDIM_:
 	case OMP_CLAUSE__SIMT_:
 	  /* Anything else.  */
 	default:

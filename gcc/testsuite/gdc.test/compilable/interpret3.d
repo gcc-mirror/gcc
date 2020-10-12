@@ -3235,6 +3235,44 @@ int ctfeSort6250()
 
 static assert(ctfeSort6250() == 57);
 
+/**************************************************/
+
+long[]* simple6250b(long[]* x) { return x; }
+
+void swap6250b(long[]* lhs, long[]* rhs)
+{
+    long[] kk = *lhs;
+    assert(simple6250b(lhs) == lhs);
+    lhs = simple6250b(lhs);
+    assert(kk[0] == 18);
+    assert((*lhs)[0] == 18);
+    assert((*rhs)[0] == 19);
+    *lhs = *rhs;
+    assert((*lhs)[0] == 19);
+    *rhs = kk;
+    assert(*rhs == kk);
+    assert(kk[0] == 18);
+    assert((*rhs)[0] == 18);
+}
+
+long ctfeSort6250b()
+{
+     long[][2] x;
+     long[3] a = [17, 18, 19];
+     x[0] = a[1 .. 2];
+     x[1] = a[2 .. $];
+     assert(x[0][0] == 18);
+     assert(x[0][1] == 19);
+     swap6250b(&x[0], &x[1]);
+     assert(x[0][0] == 19);
+     assert(x[1][0] == 18);
+     a[1] = 57;
+     assert(x[0][0] == 19);
+     return x[1][0];
+}
+
+static assert(ctfeSort6250b() == 57);
+
 /**************************************************
     6672 circular references in array
 **************************************************/

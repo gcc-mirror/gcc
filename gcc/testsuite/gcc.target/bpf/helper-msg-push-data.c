@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -10,7 +12,7 @@ foo ()
   uint32_t start, len;
   uint64_t flags;
 
-  ret = __builtin_bpf_helper_msg_push_data (skb, start, len, flags);
+  ret = bpf_msg_push_data (skb, start, len, flags);
 }
 
 /* { dg-final { scan-assembler "call\t90" } } */

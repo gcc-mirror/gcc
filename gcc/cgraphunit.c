@@ -720,80 +720,84 @@ process_symver_attribute (symtab_node *n)
 {
   tree value = lookup_attribute ("symver", DECL_ATTRIBUTES (n->decl));
 
-  if (!value)
-    return;
-  if (lookup_attribute ("symver", TREE_CHAIN (value)))
+  for (; value != NULL; value = TREE_CHAIN (value))
     {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"multiple versions for one symbol");
-      return;
-    }
-  tree symver = get_identifier_with_length
-		  (TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (value))),
-		   TREE_STRING_LENGTH (TREE_VALUE (TREE_VALUE (value))));
-  symtab_node *def = symtab_node::get_for_asmname (symver);
+      /* Starting from bintuils 2.35 gas supports:
+	  # Assign foo to bar@V1 and baz@V2.
+	  .symver foo, bar@V1
+	  .symver foo, baz@V2
+      */
+      const char *purpose = IDENTIFIER_POINTER (TREE_PURPOSE (value));
+      if (strcmp (purpose, "symver") != 0)
+	continue;
 
-  if (def)
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"duplicate definition of a symbol version");
-      inform (DECL_SOURCE_LOCATION (def->decl),
-	      "same version was previously defined here");
-      return;
-    }
-  if (!n->definition)
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"symbol needs to be defined to have a version");
-      return;
-    }
-  if (DECL_COMMON (n->decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"common symbol cannot be versioned");
-      return;
-    }
-  if (DECL_COMDAT (n->decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"comdat symbol cannot be versioned");
-      return;
-    }
-  if (n->weakref)
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"%<weakref%> cannot be versioned");
-      return;
-    }
-  if (!TREE_PUBLIC (n->decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"versioned symbol must be public");
-      return;
-    }
-  if (DECL_VISIBILITY (n->decl) != VISIBILITY_DEFAULT)
-    {
-      error_at (DECL_SOURCE_LOCATION (n->decl),
-		"versioned symbol must have default visibility");
-      return;
-    }
+      tree symver = get_identifier_with_length
+	(TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (value))),
+	 TREE_STRING_LENGTH (TREE_VALUE (TREE_VALUE (value))));
+      symtab_node *def = symtab_node::get_for_asmname (symver);
 
-  /* Create new symbol table entry representing the version.  */
-  tree new_decl = copy_node (n->decl);
+      if (def)
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "duplicate definition of a symbol version");
+	  inform (DECL_SOURCE_LOCATION (def->decl),
+		  "same version was previously defined here");
+	  return;
+	}
+      if (!n->definition)
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "symbol needs to be defined to have a version");
+	  return;
+	}
+      if (DECL_COMMON (n->decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "common symbol cannot be versioned");
+	  return;
+	}
+      if (DECL_COMDAT (n->decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "comdat symbol cannot be versioned");
+	  return;
+	}
+      if (n->weakref)
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "%<weakref%> cannot be versioned");
+	  return;
+	}
+      if (!TREE_PUBLIC (n->decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "versioned symbol must be public");
+	  return;
+	}
+      if (DECL_VISIBILITY (n->decl) != VISIBILITY_DEFAULT)
+	{
+	  error_at (DECL_SOURCE_LOCATION (n->decl),
+		    "versioned symbol must have default visibility");
+	  return;
+	}
 
-  DECL_INITIAL (new_decl) = NULL_TREE;
-  if (TREE_CODE (new_decl) == FUNCTION_DECL)
-    DECL_STRUCT_FUNCTION (new_decl) = NULL;
-  SET_DECL_ASSEMBLER_NAME (new_decl, symver);
-  TREE_PUBLIC (new_decl) = 1;
-  DECL_ATTRIBUTES (new_decl) = NULL;
+      /* Create new symbol table entry representing the version.  */
+      tree new_decl = copy_node (n->decl);
 
-  symtab_node *symver_node = symtab_node::get_create (new_decl);
-  symver_node->alias = true;
-  symver_node->definition = true;
-  symver_node->symver = true;
-  symver_node->create_reference (n, IPA_REF_ALIAS, NULL);
-  symver_node->analyzed = true;
+      DECL_INITIAL (new_decl) = NULL_TREE;
+      if (TREE_CODE (new_decl) == FUNCTION_DECL)
+	DECL_STRUCT_FUNCTION (new_decl) = NULL;
+      SET_DECL_ASSEMBLER_NAME (new_decl, symver);
+      TREE_PUBLIC (new_decl) = 1;
+      DECL_ATTRIBUTES (new_decl) = NULL;
+
+      symtab_node *symver_node = symtab_node::get_create (new_decl);
+      symver_node->alias = true;
+      symver_node->definition = true;
+      symver_node->symver = true;
+      symver_node->create_reference (n, IPA_REF_ALIAS, NULL);
+      symver_node->analyzed = true;
+    }
 }
 
 /* Process attributes common for vars and functions.  */
@@ -2167,7 +2171,10 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		}
 	    }
 	  else
-	    gimple_call_set_tail (call, true);
+	    {
+	      gimple_call_set_tail (call, true);
+	      cfun->tail_call_marked = true;
+	    }
 
 	  /* Build return value.  */
 	  if (!DECL_BY_REFERENCE (resdecl))
@@ -2180,6 +2187,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       else
 	{
 	  gimple_call_set_tail (call, true);
+	  cfun->tail_call_marked = true;
 	  remove_edge (single_succ_edge (bb));
 	}
 
@@ -2486,13 +2494,13 @@ expand_all_functions (void)
   delete ipa_saved_clone_sources;
   ipa_saved_clone_sources = NULL;
   free (order);
+  free (tp_first_run_order);
 }
 
 /* This is used to sort the node types by the cgraph order number.  */
 
 enum cgraph_order_sort_kind
 {
-  ORDER_UNDEFINED = 0,
   ORDER_FUNCTION,
   ORDER_VAR,
   ORDER_VAR_UNDEF,
@@ -2501,6 +2509,30 @@ enum cgraph_order_sort_kind
 
 struct cgraph_order_sort
 {
+  /* Construct from a cgraph_node.  */
+  cgraph_order_sort (cgraph_node *node)
+  : kind (ORDER_FUNCTION), order (node->order)
+  {
+    u.f = node;
+  }
+
+  /* Construct from a varpool_node.  */
+  cgraph_order_sort (varpool_node *node)
+  : kind (node->definition ? ORDER_VAR : ORDER_VAR_UNDEF), order (node->order)
+  {
+    u.v = node;
+  }
+
+  /* Construct from a asm_node.  */
+  cgraph_order_sort (asm_node *node)
+  : kind (ORDER_ASM), order (node->order)
+  {
+    u.a = node;
+  }
+
+  /* Assembly cgraph_order_sort based on its type.  */
+  void process ();
+
   enum cgraph_order_sort_kind kind;
   union
   {
@@ -2508,7 +2540,44 @@ struct cgraph_order_sort
     varpool_node *v;
     asm_node *a;
   } u;
+  int order;
 };
+
+/* Assembly cgraph_order_sort based on its type.  */
+
+void
+cgraph_order_sort::process ()
+{
+  switch (kind)
+    {
+    case ORDER_FUNCTION:
+      u.f->process = 0;
+      u.f->expand ();
+      break;
+    case ORDER_VAR:
+      u.v->assemble_decl ();
+      break;
+    case ORDER_VAR_UNDEF:
+      assemble_undefined_decl (u.v->decl);
+      break;
+    case ORDER_ASM:
+      assemble_asm (u.a->asm_str);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Compare cgraph_order_sort by order.  */
+
+static int
+cgraph_order_cmp (const void *a_p, const void *b_p)
+{
+  const cgraph_order_sort *nodea = (const cgraph_order_sort *)a_p;
+  const cgraph_order_sort *nodeb = (const cgraph_order_sort *)b_p;
+
+  return nodea->order - nodeb->order;
+}
 
 /* Output all functions, variables, and asm statements in the order
    according to their order fields, which is the order in which they
@@ -2519,89 +2588,41 @@ struct cgraph_order_sort
 static void
 output_in_order (void)
 {
-  int max;
-  cgraph_order_sort *nodes;
   int i;
-  cgraph_node *pf;
-  varpool_node *pv;
-  asm_node *pa;
-  max = symtab->order;
-  nodes = XCNEWVEC (cgraph_order_sort, max);
+  cgraph_node *cnode;
+  varpool_node *vnode;
+  asm_node *anode;
+  auto_vec<cgraph_order_sort> nodes;
+  cgraph_order_sort *node;
 
-  FOR_EACH_DEFINED_FUNCTION (pf)
-    {
-      if (pf->process && !pf->thunk.thunk_p && !pf->alias)
-	{
-	  if (!pf->no_reorder)
-	    continue;
-	  i = pf->order;
-	  gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-	  nodes[i].kind = ORDER_FUNCTION;
-	  nodes[i].u.f = pf;
-	}
-    }
+  FOR_EACH_DEFINED_FUNCTION (cnode)
+    if (cnode->process && !cnode->thunk.thunk_p
+	&& !cnode->alias && cnode->no_reorder)
+      nodes.safe_push (cgraph_order_sort (cnode));
 
   /* There is a similar loop in symbol_table::output_variables.
      Please keep them in sync.  */
-  FOR_EACH_VARIABLE (pv)
-    {
-      if (!pv->no_reorder)
-	continue;
-      if (DECL_HARD_REGISTER (pv->decl)
-	  || DECL_HAS_VALUE_EXPR_P (pv->decl))
-	continue;
-      i = pv->order;
-      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-      nodes[i].kind = pv->definition ? ORDER_VAR : ORDER_VAR_UNDEF;
-      nodes[i].u.v = pv;
-    }
+  FOR_EACH_VARIABLE (vnode)
+    if (vnode->no_reorder
+	&& !DECL_HARD_REGISTER (vnode->decl)
+	&& !DECL_HAS_VALUE_EXPR_P (vnode->decl))
+      nodes.safe_push (cgraph_order_sort (vnode));
 
-  for (pa = symtab->first_asm_symbol (); pa; pa = pa->next)
-    {
-      i = pa->order;
-      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
-      nodes[i].kind = ORDER_ASM;
-      nodes[i].u.a = pa;
-    }
+  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+    nodes.safe_push (cgraph_order_sort (anode));
+
+  /* Sort nodes by order.  */
+  nodes.qsort (cgraph_order_cmp);
 
   /* In toplevel reorder mode we output all statics; mark them as needed.  */
+  FOR_EACH_VEC_ELT (nodes, i, node)
+    if (node->kind == ORDER_VAR)
+      node->u.v->finalize_named_section_flags ();
 
-  for (i = 0; i < max; ++i)
-    if (nodes[i].kind == ORDER_VAR)
-      nodes[i].u.v->finalize_named_section_flags ();
-
-  for (i = 0; i < max; ++i)
-    {
-      switch (nodes[i].kind)
-	{
-	case ORDER_FUNCTION:
-	  nodes[i].u.f->process = 0;
-	  nodes[i].u.f->expand ();
-	  break;
-
-	case ORDER_VAR:
-	  nodes[i].u.v->assemble_decl ();
-	  break;
-
-	case ORDER_VAR_UNDEF:
-	  assemble_undefined_decl (nodes[i].u.v->decl);
-	  break;
-
-	case ORDER_ASM:
-	  assemble_asm (nodes[i].u.a->asm_str);
-	  break;
-
-	case ORDER_UNDEFINED:
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
+  FOR_EACH_VEC_ELT (nodes, i, node)
+    node->process ();
 
   symtab->clear_asm_symbols ();
-
-  free (nodes);
 }
 
 static void
@@ -2986,11 +3007,9 @@ symbol_table::finalize_compilation_unit (void)
 
   if (!seen_error ())
     {
-      /* Emit early debug for reachable functions, and by consequence,
-	 locally scoped symbols.  */
-      struct cgraph_node *cnode;
-      FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cnode)
-	(*debug_hooks->early_global_decl) (cnode->decl);
+      /* Give the frontends the chance to emit early debug based on
+	 what is still reachable in the TU.  */
+      (*lang_hooks.finalize_early_debug) ();
 
       /* Clean up anything that needs cleaning up after initial debug
 	 generation.  */

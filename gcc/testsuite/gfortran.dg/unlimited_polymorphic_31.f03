@@ -27,7 +27,7 @@
       call write_row ('[iarr(::1)]            ', [iarr(::1)])             ! pass in compound constructor, NOT OK
       call write_row ('[(i*10,i=1,size(iarr))]', [(i*10,i=1,size(iarr))]) ! pass in constructor, OK
       call write_row ('10*[(i,i=1,size(iarr))]', 10*[(i,i=1,size(iarr))]) ! pass in constructor, OK
-      if (ibad .gt. 0) stop 'FAILED'
+      if (ibad .gt. 0) stop 1
    contains
       subroutine write_scalar (g1)
          class(*) :: g1

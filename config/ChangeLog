@@ -1,3 +1,26 @@
+2020-09-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Sync from binutils-gdb.
+	2020-07-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* largefile.m4 (ACX_LARGEFILE) <sparc-*-solaris*|i?86-*-solaris*>:
+	Check for <sys/procfs.h> incompatilibity with large-file support
+	on Solaris.
+	Only disable large-file support and perhaps plugins if needed.
+	Set, substitute LARGEFILE_CPPFLAGS if so.
+
+2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR bootstrap/96612
+	* ax_cxx_compile_stdcxx.m4: Add fourth argument to check also
+	the CXX_FOR_BUILD compiler.
+
+2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/96202
+	* cet.m4 (GCC_CET_HOST_FLAGS): Don't enable CET without CET
+	support in stage1 nor for build support.
+
 2020-05-29  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/95413

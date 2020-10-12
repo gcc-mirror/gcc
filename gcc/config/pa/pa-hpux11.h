@@ -154,11 +154,6 @@ along with GCC; see the file COPYING3.  If not see
        %{!mt:%{!pthread:-a shared -lc -a archive}}}}\
    %{shared:%{mt|pthread:-lpthread}}"
 
-/* The libgcc_stub.a library needs to come last.  */
-#undef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC \
-  "%G %{!nolibc:%L} %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}}}"
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{!shared:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}} \

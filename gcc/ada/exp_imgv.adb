@@ -483,7 +483,7 @@ package body Exp_Imgv is
       --  underlying type.
 
       if Ada_Version >= Ada_2020 then
-         Rtyp := Underlying_Type (Ptyp);
+         Rtyp := Underlying_Type (Root_Type (Ptyp));
       else
          Rtyp := Root_Type (Ptyp);
       end if;

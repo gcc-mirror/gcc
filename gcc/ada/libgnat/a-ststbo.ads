@@ -30,7 +30,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 package Ada.Streams.Storage.Bounded with Pure is
 
    type Stream_Type (Max_Elements : Stream_Element_Count) is

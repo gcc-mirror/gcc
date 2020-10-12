@@ -841,7 +841,7 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
 
   /* The stores of this instance are at the root of the SLP tree.  */
   slp_tree store = SLP_INSTANCE_TREE (instance);
-  if (! STMT_VINFO_DATA_REF (SLP_TREE_SCALAR_STMTS (store)[0]))
+  if (! STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (store)))
     store = NULL;
 
   /* Verify we can sink stores to the vectorized stmt insert location.  */
@@ -1779,7 +1779,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                 {
                   vect_peeling_hash_insert (&peeling_htab, loop_vinfo,
 					    dr_info, npeel_tmp);
-		  npeel_tmp += target_align / dr_size;
+		  npeel_tmp += MAX (1, target_align / dr_size);
                 }
 
 	      one_misalignment_known = true;
@@ -2380,6 +2380,11 @@ vect_slp_analyze_node_alignment (vec_info *vinfo, slp_tree node)
   if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
     first_stmt_info = DR_GROUP_FIRST_ELEMENT (first_stmt_info);
 
+  /* We need to commit to a vector type for the group now.  */
+  if (is_a <bb_vec_info> (vinfo)
+      && !vect_update_shared_vectype (first_stmt_info, SLP_TREE_VECTYPE (node)))
+    return false;
+
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
   vect_compute_data_ref_alignment (vinfo, dr_info);
   /* In several places we need alignment of the first element anyway.  */
@@ -2757,25 +2762,33 @@ vect_analyze_data_ref_access (vec_info *vinfo, dr_vec_info *dr_info)
   return vect_analyze_group_access (vinfo, dr_info);
 }
 
+typedef std::pair<data_reference_p, int> data_ref_pair;
+
 /* Compare two data-references DRA and DRB to group them into chunks
    suitable for grouping.  */
 
 static int
 dr_group_sort_cmp (const void *dra_, const void *drb_)
 {
-  data_reference_p dra = *(data_reference_p *)const_cast<void *>(dra_);
-  data_reference_p drb = *(data_reference_p *)const_cast<void *>(drb_);
+  data_ref_pair dra_pair = *(data_ref_pair *)const_cast<void *>(dra_);
+  data_ref_pair drb_pair = *(data_ref_pair *)const_cast<void *>(drb_);
+  data_reference_p dra = dra_pair.first;
+  data_reference_p drb = drb_pair.first;
   int cmp;
 
   /* Stabilize sort.  */
   if (dra == drb)
     return 0;
 
-  /* DRs in different loops never belong to the same group.  */
-  loop_p loopa = gimple_bb (DR_STMT (dra))->loop_father;
-  loop_p loopb = gimple_bb (DR_STMT (drb))->loop_father;
-  if (loopa != loopb)
-    return loopa->num < loopb->num ? -1 : 1;
+  /* DRs in different basic-blocks never belong to the same group.  */
+  int bb_index1 = gimple_bb (DR_STMT (dra))->index;
+  int bb_index2 = gimple_bb (DR_STMT (drb))->index;
+  if (bb_index1 != bb_index2)
+    return bb_index1 < bb_index2 ? -1 : 1;
+
+  /* Different group IDs lead never belong to the same group.  */
+  if (dra_pair.second != drb_pair.second)
+    return dra_pair.second < drb_pair.second ? -1 : 1;
 
   /* Ordering of DRs according to base.  */
   cmp = data_ref_compare_tree (DR_BASE_ADDRESS (dra),
@@ -2881,11 +2894,11 @@ can_group_stmts_p (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info,
    FORNOW: handle only arrays and pointer accesses.  */
 
 opt_result
-vect_analyze_data_ref_accesses (vec_info *vinfo)
+vect_analyze_data_ref_accesses (vec_info *vinfo,
+				vec<int> *dataref_groups)
 {
   unsigned int i;
   vec<data_reference_p> datarefs = vinfo->shared->datarefs;
-  struct data_reference *dr;
 
   DUMP_VECT_SCOPE ("vect_analyze_data_ref_accesses");
 
@@ -2895,14 +2908,21 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
   /* Sort the array of datarefs to make building the interleaving chains
      linear.  Don't modify the original vector's order, it is needed for
      determining what dependencies are reversed.  */
-  vec<data_reference_p> datarefs_copy = datarefs.copy ();
+  vec<data_ref_pair> datarefs_copy;
+  datarefs_copy.create (datarefs.length ());
+  for (unsigned i = 0; i < datarefs.length (); i++)
+    {
+      int group_id = dataref_groups ? (*dataref_groups)[i] : 0;
+      datarefs_copy.quick_push (data_ref_pair (datarefs[i], group_id));
+    }
   datarefs_copy.qsort (dr_group_sort_cmp);
   hash_set<stmt_vec_info> to_fixup;
 
   /* Build the interleaving chains.  */
   for (i = 0; i < datarefs_copy.length () - 1;)
     {
-      data_reference_p dra = datarefs_copy[i];
+      data_reference_p dra = datarefs_copy[i].first;
+      int dra_group_id = datarefs_copy[i].second;
       dr_vec_info *dr_info_a = vinfo->lookup_dr (dra);
       stmt_vec_info stmtinfo_a = dr_info_a->stmt;
       stmt_vec_info lastinfo = NULL;
@@ -2914,7 +2934,8 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	}
       for (i = i + 1; i < datarefs_copy.length (); ++i)
 	{
-	  data_reference_p drb = datarefs_copy[i];
+	  data_reference_p drb = datarefs_copy[i].first;
+	  int drb_group_id = datarefs_copy[i].second;
 	  dr_vec_info *dr_info_b = vinfo->lookup_dr (drb);
 	  stmt_vec_info stmtinfo_b = dr_info_b->stmt;
 	  if (!STMT_VINFO_VECTORIZABLE (stmtinfo_b)
@@ -2927,10 +2948,14 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	     matters we can push those to a worklist and re-iterate
 	     over them.  The we can just skip ahead to the next DR here.  */
 
-	  /* DRs in a different loop should not be put into the same
+	  /* DRs in a different BBs should not be put into the same
 	     interleaving group.  */
-	  if (gimple_bb (DR_STMT (dra))->loop_father
-	      != gimple_bb (DR_STMT (drb))->loop_father)
+	  int bb_index1 = gimple_bb (DR_STMT (dra))->index;
+	  int bb_index2 = gimple_bb (DR_STMT (drb))->index;
+	  if (bb_index1 != bb_index2)
+	    break;
+
+	  if (dra_group_id != drb_group_id)
 	    break;
 
 	  /* Check that the data-refs have same first location (except init)
@@ -2977,7 +3002,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  HOST_WIDE_INT init_a = TREE_INT_CST_LOW (DR_INIT (dra));
 	  HOST_WIDE_INT init_b = TREE_INT_CST_LOW (DR_INIT (drb));
 	  HOST_WIDE_INT init_prev
-	    = TREE_INT_CST_LOW (DR_INIT (datarefs_copy[i-1]));
+	    = TREE_INT_CST_LOW (DR_INIT (datarefs_copy[i-1].first));
 	  gcc_assert (init_a <= init_b
 		      && init_a <= init_prev
 		      && init_prev <= init_b);
@@ -2985,7 +3010,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  /* Do not place the same access in the interleaving chain twice.  */
 	  if (init_b == init_prev)
 	    {
-	      gcc_assert (gimple_uid (DR_STMT (datarefs_copy[i-1]))
+	      gcc_assert (gimple_uid (DR_STMT (datarefs_copy[i-1].first))
 			  < gimple_uid (DR_STMT (drb)));
 	      /* Simply link in duplicates and fix up the chain below.  */
 	    }
@@ -3098,9 +3123,10 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
       to_fixup.add (newgroup);
     }
 
-  FOR_EACH_VEC_ELT (datarefs_copy, i, dr)
+  data_ref_pair *dr_pair;
+  FOR_EACH_VEC_ELT (datarefs_copy, i, dr_pair)
     {
-      dr_vec_info *dr_info = vinfo->lookup_dr (dr);
+      dr_vec_info *dr_info = vinfo->lookup_dr (dr_pair->first);
       if (STMT_VINFO_VECTORIZABLE (dr_info->stmt)
 	  && !vect_analyze_data_ref_access (vinfo, dr_info))
 	{
@@ -3991,7 +4017,8 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 
 opt_result
 vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
-			       vec<data_reference_p> *datarefs)
+			       vec<data_reference_p> *datarefs,
+			       vec<int> *dataref_groups, int group_id)
 {
   /* We can ignore clobbers for dataref analysis - they are removed during
      loop vectorization and BB vectorization checks dependences with a
@@ -4018,29 +4045,42 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
     return opt_result::success ();
 
   if (refs.length () > 1)
-    return opt_result::failure_at (stmt,
-				   "not vectorized:"
-				   " more than one data ref in stmt: %G", stmt);
+    {
+      while (!refs.is_empty ())
+	free_data_ref (refs.pop ());
+      return opt_result::failure_at (stmt,
+				     "not vectorized: more than one "
+				     "data ref in stmt: %G", stmt);
+    }
 
+  data_reference_p dr = refs.pop ();
   if (gcall *call = dyn_cast <gcall *> (stmt))
     if (!gimple_call_internal_p (call)
 	|| (gimple_call_internal_fn (call) != IFN_MASK_LOAD
 	    && gimple_call_internal_fn (call) != IFN_MASK_STORE))
-      return opt_result::failure_at (stmt,
-				     "not vectorized: dr in a call %G", stmt);
+      {
+	free_data_ref (dr);
+	return opt_result::failure_at (stmt,
+				       "not vectorized: dr in a call %G", stmt);
+      }
 
-  data_reference_p dr = refs.pop ();
   if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
-    return opt_result::failure_at (stmt,
-				   "not vectorized:"
-				   " statement is bitfield access %G", stmt);
+    {
+      free_data_ref (dr);
+      return opt_result::failure_at (stmt,
+				     "not vectorized:"
+				     " statement is bitfield access %G", stmt);
+    }
 
   if (DR_BASE_ADDRESS (dr)
       && TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
-    return opt_result::failure_at (stmt,
-				   "not vectorized:"
-				   " base addr of dr is a constant\n");
+    {
+      free_data_ref (dr);
+      return opt_result::failure_at (stmt,
+				     "not vectorized:"
+				     " base addr of dr is a constant\n");
+    }
 
   /* Check whether this may be a SIMD lane access and adjust the
      DR to make it easier for us to handle it.  */
@@ -4118,6 +4158,8 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 		      newdr->aux = (void *) (-1 - tree_to_uhwi (arg2));
 		      free_data_ref (dr);
 		      datarefs->safe_push (newdr);
+		      if (dataref_groups)
+			dataref_groups->safe_push (group_id);
 		      return opt_result::success ();
 		    }
 		}
@@ -4127,6 +4169,8 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
     }
 
   datarefs->safe_push (dr);
+  if (dataref_groups)
+    dataref_groups->safe_push (group_id);
   return opt_result::success ();
 }
 

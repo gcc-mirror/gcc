@@ -1146,6 +1146,9 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
       gfc_free_expr (e);
     }
 
+  if (gfc_seen_div0)
+    m = MATCH_ERROR;
+
   return m;
 
 syntax:
@@ -1889,13 +1892,16 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 
   /* If this symbol is confirming an implicit parameter type,
      then an initialization expression is not allowed.  */
-  if (attr.flavor == FL_PARAMETER
-      && sym->value != NULL
-      && *initp != NULL)
+  if (attr.flavor == FL_PARAMETER && sym->value != NULL)
     {
-      gfc_error ("Initializer not allowed for PARAMETER %qs at %C",
-		 sym->name);
-      return false;
+      if (*initp != NULL)
+	{
+	  gfc_error ("Initializer not allowed for PARAMETER %qs at %C",
+		     sym->name);
+	  return false;
+	}
+      else
+	return true;
     }
 
   if (init == NULL)
@@ -4829,7 +4835,7 @@ gfc_match_implicit (void)
       /* Last chance -- check <TYPE> <SELECTOR> (<RANGE>).  */
       if (ts.type == BT_CHARACTER)
 	m = gfc_match_char_spec (&ts);
-      else if (ts.type != BT_DERIVED)
+      else if (gfc_numeric_ts(&ts) || ts.type == BT_LOGICAL)
 	{
 	  m = gfc_match_kind_spec (&ts, false);
 	  if (m == MATCH_NO)
@@ -9813,6 +9819,15 @@ gfc_match_submod_proc (void)
 
   if (gfc_match_eos () != MATCH_YES)
     {
+      /* Unset st->n.sym. Note: in reject_statement (), the symbol changes are
+	 undone, such that the st->n.sym->formal points to the original symbol;
+	 if now this namespace is finalized, the formal namespace is freed,
+	 but it might be still needed in the parent namespace.  */
+      gfc_symtree *st = gfc_find_symtree (gfc_current_ns->sym_root, sym->name);
+      st->n.sym = NULL;
+      gfc_free_symbol (sym->tlink);
+      sym->tlink = NULL;
+      sym->refs--;
       gfc_syntax_error (ST_MODULE_PROC);
       return MATCH_ERROR;
     }

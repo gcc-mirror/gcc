@@ -26,8 +26,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
 with Ada.Unchecked_Deallocation;
+
 package body Ada.Streams.Storage.Unbounded is
 
    procedure Free is new Ada.Unchecked_Deallocation

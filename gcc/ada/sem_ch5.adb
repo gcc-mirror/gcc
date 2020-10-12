@@ -305,9 +305,8 @@ package body Sem_Ch5 is
 
          if Is_Entity_Name (Opnd)
            and then (Ekind (Entity (Opnd)) = E_Out_Parameter
-                      or else Ekind_In (Entity (Opnd),
-                                        E_In_Out_Parameter,
-                                        E_Generic_In_Out_Parameter)
+                      or else Ekind (Entity (Opnd)) in
+                                E_In_Out_Parameter | E_Generic_In_Out_Parameter
                       or else
                         (Ekind (Entity (Opnd)) = E_Variable
                           and then Nkind (Parent (Entity (Opnd))) =
@@ -320,7 +319,7 @@ package body Sem_Ch5 is
          --  If assignment operand is a component reference, then we get the
          --  actual subtype of the component for the unconstrained case.
 
-         elsif Nkind_In (Opnd, N_Selected_Component, N_Explicit_Dereference)
+         elsif Nkind (Opnd) in N_Selected_Component | N_Explicit_Dereference
            and then not Is_Unchecked_Union (Opnd_Type)
          then
             Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
@@ -825,7 +824,7 @@ package body Sem_Ch5 is
         and then Is_Assignable (Entity (Lhs))
         and then Is_Composite_Type (T1)
         and then not Is_Constrained (Etype (Entity (Lhs)))
-        and then Nkind_In (Rhs, N_If_Expression, N_Case_Expression)
+        and then Nkind (Rhs) in N_If_Expression | N_Case_Expression
       then
          Resolve (Rhs, Base_Type (T1));
 
@@ -1239,7 +1238,7 @@ package body Sem_Ch5 is
 
             --  Do not install the return object
 
-            if not Ekind_In (Id, E_Constant, E_Variable)
+            if Ekind (Id) not in E_Constant | E_Variable
               or else not Is_Return_Object (Id)
             then
                Install_Entity (Id);
@@ -1473,9 +1472,7 @@ package body Sem_Ch5 is
          if Is_Entity_Name (Exp) then
             Ent := Entity (Exp);
 
-            if Ekind_In (Ent, E_Variable,
-                              E_In_Out_Parameter,
-                              E_Out_Parameter)
+            if Ekind (Ent) in E_Variable | E_In_Out_Parameter | E_Out_Parameter
             then
                if List_Length (Choices) = 1
                  and then Nkind (First (Choices)) in N_Subexpr
@@ -1752,7 +1749,8 @@ package body Sem_Ch5 is
          Scope_Id := Scope_Stack.Table (J).Entity;
 
          if Label_Scope = Scope_Id
-           or else not Ekind_In (Scope_Id, E_Block, E_Loop, E_Return_Statement)
+           or else Ekind (Scope_Id) not in
+                     E_Block | E_Loop | E_Return_Statement
          then
             if Scope_Id /= Label_Scope then
                Error_Msg_N
@@ -2522,10 +2520,9 @@ package body Sem_Ch5 is
                      if Nkind (Orig_Iter_Name) = N_Selected_Component
                        and then
                          Present (Entity (Selector_Name (Orig_Iter_Name)))
-                       and then Ekind_In
-                                  (Entity (Selector_Name (Orig_Iter_Name)),
-                                   E_Component,
-                                   E_Discriminant)
+                       and then
+                         Ekind (Entity (Selector_Name (Orig_Iter_Name))) in
+                           E_Component | E_Discriminant
                        and then Is_Dependent_Component_Of_Mutable_Object
                                   (Orig_Iter_Name)
                      then
@@ -2803,8 +2800,8 @@ package body Sem_Ch5 is
             if Analyzed (Original_Bound) then
                return Original_Bound;
 
-            elsif Nkind_In (Analyzed_Bound, N_Integer_Literal,
-                                            N_Character_Literal)
+            elsif Nkind (Analyzed_Bound) in
+                    N_Integer_Literal | N_Character_Literal
               or else Is_Entity_Name (Analyzed_Bound)
             then
                Analyze_And_Resolve (Original_Bound, Typ);
@@ -3002,8 +2999,8 @@ package body Sem_Ch5 is
                      and then not Is_Type (Entity (DS_Copy)))
 
            or else (Nkind (DS_Copy) = N_Attribute_Reference
-                     and then Nam_In (Attribute_Name (DS_Copy),
-                                      Name_Loop_Entry, Name_Old))
+                     and then Attribute_Name (DS_Copy) in
+                                Name_Loop_Entry | Name_Old)
 
            or else Has_Aspect (Etype (DS_Copy), Aspect_Iterable)
 
@@ -3143,7 +3140,7 @@ package body Sem_Ch5 is
 
       --  Case where we have a range or a subtype, get type bounds
 
-      if Nkind_In (DS, N_Range, N_Subtype_Indication)
+      if Nkind (DS) in N_Range | N_Subtype_Indication
         and then not Error_Posted (DS)
         and then Etype (DS) /= Any_Type
         and then Is_Discrete_Type (Etype (DS))

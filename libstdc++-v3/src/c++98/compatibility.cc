@@ -107,11 +107,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    break;
 		}
 
-	      if (__large_ignore)
-		_M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
+	      if (__n == __gnu_cxx::__numeric_traits<streamsize>::__max)
+		{
+		  if (__large_ignore)
+		    _M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
 
-	      if (traits_type::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
+		  if (traits_type::eq_int_type(__c, __eof))
+		    __err |= ios_base::eofbit;
+		}
+	      else if (_M_gcount < __n)
+		{
+		  if (traits_type::eq_int_type(__c, __eof))
+		    __err |= ios_base::eofbit;
+		}
 	    }
 	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
@@ -178,11 +186,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    break;
 		}
 
-	      if (__large_ignore)
-		_M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
+	      if (__n == __gnu_cxx::__numeric_traits<streamsize>::__max)
+		{
+		  if (__large_ignore)
+		    _M_gcount = __gnu_cxx::__numeric_traits<streamsize>::__max;
 
-	      if (traits_type::eq_int_type(__c, __eof))
-		__err |= ios_base::eofbit;
+		  if (traits_type::eq_int_type(__c, __eof))
+		    __err |= ios_base::eofbit;
+		}
+	      else if (_M_gcount < __n)
+		{
+		  if (traits_type::eq_int_type(__c, __eof))
+		    __err |= ios_base::eofbit;
+		}
 	    }
 	  __catch(__cxxabiv1::__forced_unwind&)
 	    {

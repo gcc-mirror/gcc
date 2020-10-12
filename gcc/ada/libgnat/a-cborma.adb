@@ -39,7 +39,9 @@ pragma Elaborate_All
 
 with System; use type System.Address;
 
-package body Ada.Containers.Bounded_Ordered_Maps is
+package body Ada.Containers.Bounded_Ordered_Maps with
+  SPARK_Mode => Off
+is
 
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");
    pragma Warnings (Off, "variable ""Lock*"" is not referenced");

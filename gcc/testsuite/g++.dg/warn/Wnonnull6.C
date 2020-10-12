@@ -1,7 +1,7 @@
 /* PR c++/95984 - Internal compiler error: Error reporting routines re-entered
-   in -Wnonnull on a variadic lamnda
+   in -Wnonnull on a variadic lambda
    PR c++/missing -Wnonnull passing nullptr to a nonnull variadic lambda
-   { dg-do compile { target c++11 } }
+   { dg-do compile { target c++14 } }
    { dg-options "-Wall" } */
 
 typedef int F (int);

@@ -97,7 +97,7 @@ generic_subrtx_iterator <T>::add_single_to_queue (array_type &array,
       /* A previous iteration might also have moved from the stack to the
 	 heap, in which case the heap array will already be big enough.  */
       if (vec_safe_length (array.heap) <= i)
-	vec_safe_grow (array.heap, i + 1);
+	vec_safe_grow (array.heap, i + 1, true);
       base = array.heap->address ();
       memcpy (base, array.stack, sizeof (array.stack));
       base[LOCAL_ELEMS] = x;
@@ -1619,6 +1619,10 @@ set_noop_p (const_rtx set)
 	return 0;
       src = SUBREG_REG (src);
       dst = SUBREG_REG (dst);
+      if (GET_MODE (src) != GET_MODE (dst))
+	/* It is hard to tell whether subregs refer to the same bits, so act
+	   conservatively and return 0.  */
+	return 0;
     }
 
   /* It is a NOOP if destination overlaps with selected src vector

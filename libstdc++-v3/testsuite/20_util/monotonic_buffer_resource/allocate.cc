@@ -210,6 +210,51 @@ test06()
   }
 }
 
+void
+test07()
+{
+  // Custom exception thrown on expected allocation failure.
+  struct very_bad_alloc : std::bad_alloc { };
+
+  struct careful_resource : __gnu_test::memory_resource
+  {
+    void* do_allocate(std::size_t bytes, std::size_t alignment)
+    {
+      // pmr::monotonic_buffer_resource::do_allocate is not allowed to
+      // throw an exception when asked for an allocation it can't satisfy.
+      // The libstdc++ implementation will ask upstream to allocate
+      // bytes=SIZE_MAX and alignment=bit_floor(SIZE_MAX) instead of throwing.
+      // Verify that we got those values:
+      if (bytes != std::numeric_limits<std::size_t>::max())
+	VERIFY( !"upstream allocation should request maximum number of bytes" );
+      if (alignment != (1 + std::numeric_limits<std::size_t>::max() / 2))
+	VERIFY( !"upstream allocation should request maximum alignment" );
+
+      // A successful failure:
+      throw very_bad_alloc();
+    }
+  };
+
+  careful_resource cr;
+  std::pmr::monotonic_buffer_resource mbr(&cr);
+  try
+  {
+    // Try to allocate a ridiculous size:
+    void* p = mbr.allocate(std::size_t(-2), 1);
+    // Should not reach here!
+    VERIFY( !"attempt to allocate SIZE_MAX-1 should not have succeeded" );
+    throw p;
+  }
+  catch (const very_bad_alloc&)
+  {
+    // Should catch this exception from careful_resource::do_allocate
+  }
+  catch (const std::bad_alloc&)
+  {
+    VERIFY( !"monotonic_buffer_resource::do_allocate is not allowed to throw" );
+  }
+}
+
 int
 main()
 {
@@ -219,4 +264,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }

@@ -95,6 +95,15 @@ package Output is
    --  output will appear on the given file descriptor only after special
    --  output has been cancelled.
 
+   procedure Push_Output;
+   --  Saves the current output destination on a stack, but leaves it
+   --  unchanged. This subprogram only supports a small stack and is normally
+   --  used with a depth of one.
+
+   procedure Pop_Output;
+   --  Changes the current output destination to be the last output destination
+   --  popped using Push_Output.
+
    procedure Indent;
    --  Increases the current indentation level. Whenever a line is written
    --  (triggered by Eol), an appropriate amount of whitespace is added to the

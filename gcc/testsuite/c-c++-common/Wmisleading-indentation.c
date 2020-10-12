@@ -65,9 +65,9 @@ int fn_6 (int a, int b, int c)
 	/* ... */
 	if ((err = foo (a)) != 0)
 		goto fail;
-	if ((err = foo (b)) != 0) /* { dg-message "2: this 'if' clause does not guard..." } */
+	if ((err = foo (b)) != 0) /* { dg-message "9: this 'if' clause does not guard..." } */
 		goto fail;
-		goto fail; /* { dg-message "3: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
+		goto fail; /* { dg-message "17: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 	if ((err = foo (c)) != 0)
 		goto fail;
 	/* ... */
@@ -178,7 +178,7 @@ void fn_16_tabs (void)
     while (flagA)
       if (flagB) /* { dg-message "7: this 'if' clause does not guard..." } */
 	foo (0);
-	foo (1);/* { dg-message "2: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
+	foo (1);/* { dg-message "9: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 }
 
 void fn_17_spaces (void)

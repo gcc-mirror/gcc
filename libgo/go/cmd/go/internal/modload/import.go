@@ -62,9 +62,13 @@ func (e *ImportMissingError) ImportPath() string {
 // modules in the build list, or found in both the main module and its vendor
 // directory.
 type AmbiguousImportError struct {
-	ImportPath string
+	importPath string
 	Dirs       []string
 	Modules    []module.Version // Either empty or 1:1 with Dirs.
+}
+
+func (e *AmbiguousImportError) ImportPath() string {
+	return e.importPath
 }
 
 func (e *AmbiguousImportError) Error() string {
@@ -74,7 +78,7 @@ func (e *AmbiguousImportError) Error() string {
 	}
 
 	var buf strings.Builder
-	fmt.Fprintf(&buf, "ambiguous import: found package %s in multiple %s:", e.ImportPath, locType)
+	fmt.Fprintf(&buf, "ambiguous import: found package %s in multiple %s:", e.importPath, locType)
 
 	for i, dir := range e.Dirs {
 		buf.WriteString("\n\t")
@@ -92,6 +96,8 @@ func (e *AmbiguousImportError) Error() string {
 
 	return buf.String()
 }
+
+var _ load.ImportPathError = &AmbiguousImportError{}
 
 // Import finds the module and directory in the build list
 // containing the package with the given import path.
@@ -120,7 +126,9 @@ func Import(path string) (m module.Version, dir string, err error) {
 	pathIsStd := search.IsStandardImportPath(path)
 	if pathIsStd && goroot.IsStandardPackage(cfg.GOROOT, cfg.BuildContext.Compiler, path) {
 		if targetInGorootSrc {
-			if dir, ok := dirInModule(path, targetPrefix, ModRoot(), true); ok {
+			if dir, ok, err := dirInModule(path, targetPrefix, ModRoot(), true); err != nil {
+				return module.Version{}, dir, err
+			} else if ok {
 				return Target, dir, nil
 			}
 		}
@@ -131,16 +139,19 @@ func Import(path string) (m module.Version, dir string, err error) {
 	// -mod=vendor is special.
 	// Everything must be in the main module or the main module's vendor directory.
 	if cfg.BuildMod == "vendor" {
-		mainDir, mainOK := dirInModule(path, targetPrefix, ModRoot(), true)
-		vendorDir, vendorOK := dirInModule(path, "", filepath.Join(ModRoot(), "vendor"), false)
+		mainDir, mainOK, mainErr := dirInModule(path, targetPrefix, ModRoot(), true)
+		vendorDir, vendorOK, _ := dirInModule(path, "", filepath.Join(ModRoot(), "vendor"), false)
 		if mainOK && vendorOK {
-			return module.Version{}, "", &AmbiguousImportError{ImportPath: path, Dirs: []string{mainDir, vendorDir}}
+			return module.Version{}, "", &AmbiguousImportError{importPath: path, Dirs: []string{mainDir, vendorDir}}
 		}
 		// Prefer to return main directory if there is one,
 		// Note that we're not checking that the package exists.
 		// We'll leave that for load.
 		if !vendorOK && mainDir != "" {
 			return Target, mainDir, nil
+		}
+		if mainErr != nil {
+			return module.Version{}, "", mainErr
 		}
 		readVendorList()
 		return vendorPkgModule[path], vendorDir, nil
@@ -164,8 +175,9 @@ func Import(path string) (m module.Version, dir string, err error) {
 			// not ambiguous.
 			return module.Version{}, "", err
 		}
-		dir, ok := dirInModule(path, m.Path, root, isLocal)
-		if ok {
+		if dir, ok, err := dirInModule(path, m.Path, root, isLocal); err != nil {
+			return module.Version{}, "", err
+		} else if ok {
 			mods = append(mods, m)
 			dirs = append(dirs, dir)
 		}
@@ -174,7 +186,7 @@ func Import(path string) (m module.Version, dir string, err error) {
 		return mods[0], dirs[0], nil
 	}
 	if len(mods) > 0 {
-		return module.Version{}, "", &AmbiguousImportError{ImportPath: path, Dirs: dirs, Modules: mods}
+		return module.Version{}, "", &AmbiguousImportError{importPath: path, Dirs: dirs, Modules: mods}
 	}
 
 	// Look up module containing the package, for addition to the build list.
@@ -241,8 +253,9 @@ func Import(path string) (m module.Version, dir string, err error) {
 				// Report fetch error as above.
 				return module.Version{}, "", err
 			}
-			_, ok := dirInModule(path, m.Path, root, isLocal)
-			if ok {
+			if _, ok, err := dirInModule(path, m.Path, root, isLocal); err != nil {
+				return m, "", err
+			} else if ok {
 				return m, "", &ImportMissingError{Path: path, Module: m}
 			}
 		}
@@ -313,19 +326,29 @@ func maybeInModule(path, mpath string) bool {
 		len(path) > len(mpath) && path[len(mpath)] == '/' && path[:len(mpath)] == mpath
 }
 
-var haveGoModCache, haveGoFilesCache par.Cache
+var (
+	haveGoModCache   par.Cache // dir → bool
+	haveGoFilesCache par.Cache // dir → goFilesEntry
+)
+
+type goFilesEntry struct {
+	haveGoFiles bool
+	err         error
+}
 
 // dirInModule locates the directory that would hold the package named by the given path,
 // if it were in the module with module path mpath and root mdir.
 // If path is syntactically not within mpath,
 // or if mdir is a local file tree (isLocal == true) and the directory
 // that would hold path is in a sub-module (covered by a go.mod below mdir),
-// dirInModule returns "", false.
+// dirInModule returns "", false, nil.
 //
 // Otherwise, dirInModule returns the name of the directory where
 // Go source files would be expected, along with a boolean indicating
 // whether there are in fact Go source files in that directory.
-func dirInModule(path, mpath, mdir string, isLocal bool) (dir string, haveGoFiles bool) {
+// A non-nil error indicates that the existence of the directory and/or
+// source files could not be determined, for example due to a permission error.
+func dirInModule(path, mpath, mdir string, isLocal bool) (dir string, haveGoFiles bool, err error) {
 	// Determine where to expect the package.
 	if path == mpath {
 		dir = mdir
@@ -334,7 +357,7 @@ func dirInModule(path, mpath, mdir string, isLocal bool) (dir string, haveGoFile
 	} else if len(path) > len(mpath) && path[len(mpath)] == '/' && path[:len(mpath)] == mpath {
 		dir = filepath.Join(mdir, path[len(mpath)+1:])
 	} else {
-		return "", false
+		return "", false, nil
 	}
 
 	// Check that there aren't other modules in the way.
@@ -351,7 +374,7 @@ func dirInModule(path, mpath, mdir string, isLocal bool) (dir string, haveGoFile
 			}).(bool)
 
 			if haveGoMod {
-				return "", false
+				return "", false, nil
 			}
 			parent := filepath.Dir(d)
 			if parent == d {
@@ -368,23 +391,58 @@ func dirInModule(path, mpath, mdir string, isLocal bool) (dir string, haveGoFile
 	// Are there Go source files in the directory?
 	// We don't care about build tags, not even "+build ignore".
 	// We're just looking for a plausible directory.
-	haveGoFiles = haveGoFilesCache.Do(dir, func() interface{} {
-		f, err := os.Open(dir)
-		if err != nil {
-			return false
+	res := haveGoFilesCache.Do(dir, func() interface{} {
+		ok, err := isDirWithGoFiles(dir)
+		return goFilesEntry{haveGoFiles: ok, err: err}
+	}).(goFilesEntry)
+
+	return dir, res.haveGoFiles, res.err
+}
+
+func isDirWithGoFiles(dir string) (bool, error) {
+	f, err := os.Open(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
 		}
-		defer f.Close()
-		names, _ := f.Readdirnames(-1)
-		for _, name := range names {
-			if strings.HasSuffix(name, ".go") {
-				info, err := os.Stat(filepath.Join(dir, name))
-				if err == nil && info.Mode().IsRegular() {
-					return true
+		return false, err
+	}
+	defer f.Close()
+
+	names, firstErr := f.Readdirnames(-1)
+	if firstErr != nil {
+		if fi, err := f.Stat(); err == nil && !fi.IsDir() {
+			return false, nil
+		}
+
+		// Rewrite the error from ReadDirNames to include the path if not present.
+		// See https://golang.org/issue/38923.
+		var pe *os.PathError
+		if !errors.As(firstErr, &pe) {
+			firstErr = &os.PathError{Op: "readdir", Path: dir, Err: firstErr}
+		}
+	}
+
+	for _, name := range names {
+		if strings.HasSuffix(name, ".go") {
+			info, err := os.Stat(filepath.Join(dir, name))
+			if err == nil && info.Mode().IsRegular() {
+				// If any .go source file exists, the package exists regardless of
+				// errors for other source files. Leave further error reporting for
+				// later.
+				return true, nil
+			}
+			if firstErr == nil {
+				if os.IsNotExist(err) {
+					// If the file was concurrently deleted, or was a broken symlink,
+					// convert the error to an opaque error instead of one matching
+					// os.IsNotExist.
+					err = errors.New(err.Error())
 				}
+				firstErr = err
 			}
 		}
-		return false
-	}).(bool)
+	}
 
-	return dir, haveGoFiles
+	return false, firstErr
 }

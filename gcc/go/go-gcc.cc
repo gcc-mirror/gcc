@@ -3281,13 +3281,15 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
       if (pos == name.length())
 	{
 	  struct cl_optimization cur_opts;
-	  cl_optimization_save(&cur_opts, &global_options);
+	  cl_optimization_save(&cur_opts, &global_options,
+			       &global_options_set);
 	  global_options.x_optimize_size = 1;
 	  global_options.x_optimize_fast = 0;
 	  global_options.x_optimize_debug = 0;
 	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION(decl) =
-	    build_optimization_node(&global_options);
-	  cl_optimization_restore(&global_options, &cur_opts);
+	    build_optimization_node(&global_options, &global_options_set);
+	  cl_optimization_restore(&global_options, &global_options_set,
+				  &cur_opts);
 	}
     }
 

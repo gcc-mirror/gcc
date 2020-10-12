@@ -252,7 +252,24 @@ namespace __cxxabiv1
 # ifdef _GLIBCXX_USE_FUTEX
     // If __atomic_* and futex syscall are supported, don't use any global
     // mutex.
-    if (__gthread_active_p ())
+
+    // Use the same bits in the guard variable whether single-threaded or not,
+    // so that __cxa_guard_release and __cxa_guard_abort match the logic here
+    // even if __libc_single_threaded becomes false between now and then.
+
+    if (__gnu_cxx::__is_single_threaded())
+      {
+	// No need to use atomics, and no need to wait for other threads.
+	int *gi = (int *) (void *) g;
+	if (*gi == 0)
+	  {
+	    *gi = _GLIBCXX_GUARD_PENDING_BIT;
+	    return 1;
+	  }
+	else
+	  throw_recursive_init_exception();
+      }
+    else
       {
 	int *gi = (int *) (void *) g;
 	const int guard_bit = _GLIBCXX_GUARD_BIT;
@@ -302,7 +319,7 @@ namespace __cxxabiv1
 	    syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAIT, expected, 0);
 	  }
       }
-# else
+# else // ! _GLIBCXX_USE_FUTEX
     if (__gthread_active_p ())
       {
 	mutex_wrapper mw;
@@ -340,18 +357,26 @@ namespace __cxxabiv1
 	  }
       }
 # endif
-#endif
+#endif // ! __GTHREADS
 
     return acquire (g);
   }
 
   extern "C"
-  void __cxa_guard_abort (__guard *g) throw ()
+  void __cxa_guard_abort (__guard *g) noexcept
   {
 #ifdef _GLIBCXX_USE_FUTEX
     // If __atomic_* and futex syscall are supported, don't use any global
     // mutex.
-    if (__gthread_active_p ())
+
+    if (__gnu_cxx::__is_single_threaded())
+      {
+	// No need to use atomics, and no other threads to wake.
+	int *gi = (int *) (void *) g;
+	*gi = 0;
+	return;
+      }
+    else
       {
 	int *gi = (int *) (void *) g;
 	const int waiting_bit = _GLIBCXX_GUARD_WAITING_BIT;
@@ -385,12 +410,19 @@ namespace __cxxabiv1
   }
 
   extern "C"
-  void __cxa_guard_release (__guard *g) throw ()
+  void __cxa_guard_release (__guard *g) noexcept
   {
 #ifdef _GLIBCXX_USE_FUTEX
     // If __atomic_* and futex syscall are supported, don't use any global
     // mutex.
-    if (__gthread_active_p ())
+
+    if (__gnu_cxx::__is_single_threaded())
+      {
+	int *gi = (int *) (void *) g;
+	*gi = _GLIBCXX_GUARD_BIT;
+	return;
+      }
+    else
       {
 	int *gi = (int *) (void *) g;
 	const int guard_bit = _GLIBCXX_GUARD_BIT;
@@ -401,6 +433,7 @@ namespace __cxxabiv1
 	  syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAKE, INT_MAX);
 	return;
       }
+
 #elif defined(__GTHREAD_HAS_COND)
     if (__gthread_active_p())
       {

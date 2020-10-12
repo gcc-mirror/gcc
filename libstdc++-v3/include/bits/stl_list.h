@@ -1947,7 +1947,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_move_assign(list&& __x, true_type) noexcept
       {
-	this->_M_clear();
+	this->clear();
 	this->_M_move_nodes(std::move(__x));
 	std::__alloc_on_move(this->_M_get_Node_allocator(),
 			     __x._M_get_Node_allocator());

@@ -1173,6 +1173,42 @@ layout_classinfo (ClassDeclaration *cd)
   return v.result ();
 }
 
+/* Get the offset to the BC's vtbl[] initializer from the start of CD.
+   Returns "~0u" if the base class is not found in any vtable interfaces.  */
+
+unsigned
+base_vtable_offset (ClassDeclaration *cd, BaseClass *bc)
+{
+  unsigned csymoffset = int_size_in_bytes (tinfo_types[TK_CLASSINFO_TYPE]);
+  unsigned interfacesize = int_size_in_bytes (vtbl_interface_type_node);
+  csymoffset += cd->vtblInterfaces->length * interfacesize;
+
+  for (size_t i = 0; i < cd->vtblInterfaces->length; i++)
+    {
+      BaseClass *b = (*cd->vtblInterfaces)[i];
+      if (b == bc)
+	return csymoffset;
+      csymoffset += b->sym->vtbl.length * target.ptrsize;
+    }
+
+  /* Check all overriding interface vtbl[]s.  */
+  for (ClassDeclaration *cd2 = cd->baseClass; cd2; cd2 = cd2->baseClass)
+    {
+      for (size_t k = 0; k < cd2->vtblInterfaces->length; k++)
+	{
+	  BaseClass *bs = (*cd2->vtblInterfaces)[k];
+	  if (bs->fillVtbl (cd, NULL, 0))
+	    {
+	      if (bc == bs)
+		return csymoffset;
+	      csymoffset += bs->sym->vtbl.length * target.ptrsize;
+	    }
+	}
+    }
+
+  return ~0u;
+}
+
 /* Layout fields that immediately come after the classinfo type for DECL if
    there's any interfaces or interface vtables to be added.
    This must be mirrored with base_vtable_offset().  */

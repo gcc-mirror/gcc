@@ -4,7 +4,8 @@
    warnings are issued for calls to user-defined functions with attribute
    access and with non-constant out-of-bounds arguments.
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall" }
+   { dg-require-effective-target alloca } */
 
 #include "range.h"
 
@@ -20,7 +21,7 @@ typedef __INT32_TYPE__ int32_t;
 /* Exercise null pointer detection.  */
 
 RDONLY (2, 1) void
-rd2_1 (int, const void*);       // { dg-message "in a call to function 'rd2_1' declared with attribute 'read_only \\\(2, 1\\\)" }
+rd2_1 (int, const void*);       // { dg-message "in a call to function 'rd2_1' declared with attribute 'access \\\(read_only, 2, 1\\\)" "note" }
 
 void test_rd2_1 (void)
 {
@@ -39,12 +40,16 @@ void test_rd2_1 (void)
 
   {
     void *null = 0;
-    rd2_1 (SR (1, 2), null);    // { dg-warning "argument 2 is null but the corresponding size argument 1 range is \\\[1, 2]" }
+    /* Ideally the message would say "range" for a range and "value"
+       for a singular value but using the same reduces the complexity
+       of the code and keeps down the number of messages that need to
+       be translated, withot sacrificing (too much) clarity.  */
+    rd2_1 (SR (1, 2), null);    // { dg-warning "argument 2 is null but the corresponding size argument 1 range|value is \\\[1, 2]" }
   }
 }
 
 WRONLY (3, 1) void
-wr3_1 (int, int, void*);        // { dg-message "in a call to function 'wr3_1' declared with attribute 'write_only \\\(3, 1\\\)" }
+wr3_1 (int, int, void*);        // { dg-message "in a call to function 'wr3_1' declared with attribute 'access \\\(write_only, 3, 1\\\)" }
 
 void test_wr3_1 (void)
 {
@@ -58,7 +63,7 @@ void test_wr3_1 (void)
 
   void *null = 0;
 
-  wr3_1 (SR (1, 2), 1, null);   // { dg-warning "argument 3 is null but the corresponding size argument 1 range is \\\[1, 2]" }
+  wr3_1 (SR (1, 2), 1, null);   // { dg-warning "argument 3 is null but the corresponding size argument 1 range|value is \\\[1, 2]" }
 }
 
 
@@ -70,7 +75,7 @@ void test_wrd2_1 (int n)
   wr2_1 (0, 0);
   wr2_1 (SR (-1, 1), 0);
   wr2_1 (SR (0, 1), 0);
-  wr2_1 (SR (1, 2), 0);         // { dg-warning "argument 2 is null but the corresponding size argument 1 range is \\\[1, 2]" }
+  wr2_1 (SR (1, 2), 0);         // { dg-warning "argument 2 is null but the corresponding size argument 1 range|value is \\\[1, 2]" }
 
   /* This should probably be diagnosed but to avoid false positives
      caused by jump threading and such it would have to be done
@@ -126,7 +131,7 @@ void test_rd1_3_wr2_4 (const void *s, void *d, int n1, int n2)
   rd1_3_wr2_4 (s, d, -1, 2);    // { dg-warning "argument 3 value -1 is negative" }
 
   const int ir_min_m1 = SR (INT_MIN, -1);
-  rd1_3_wr2_4 (s, d, ir_min_m1, 2);   // { dg-warning "argument 3 range \\\[-\[0-9\]+, -1] is negative" }
+  rd1_3_wr2_4 (s, d, ir_min_m1, 2);   // { dg-warning "argument 3 range|value \\\[-\[0-9\]+, -1] is negative" }
 
   rd1_3_wr2_4 (s, d, SR (-1, 0), 2);
   rd1_3_wr2_4 (s, d, SR (INT_MIN, INT_MAX), 2);

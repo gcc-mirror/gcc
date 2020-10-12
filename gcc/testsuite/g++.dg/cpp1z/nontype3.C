@@ -1,4 +1,4 @@
-// { dg-do compile { target c++17 } }
+// { dg-do compile { target c++17_only } }
 
 #ifndef __cpp_nontype_template_args
 #error __cpp_nontype_template_args not defined

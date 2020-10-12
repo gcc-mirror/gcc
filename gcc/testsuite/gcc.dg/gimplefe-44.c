@@ -1,5 +1,7 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target exceptions } */
 /* { dg-options "-fexceptions -fgimple -fdump-tree-eh-eh" } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 void __GIMPLE foo()
 {

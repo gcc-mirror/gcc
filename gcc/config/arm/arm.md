@@ -7289,7 +7289,9 @@
 (define_insn "*arm32_mov<mode>"
   [(set (match_operand:HFBF 0 "nonimmediate_operand" "=r,m,r,r")
 	(match_operand:HFBF 1 "general_operand"	   " m,r,r,F"))]
-  "TARGET_32BIT && !TARGET_HARD_FLOAT
+  "TARGET_32BIT
+   && !TARGET_HARD_FLOAT
+   && !TARGET_HAVE_MVE
    && (	  s_register_operand (operands[0], <MODE>mode)
        || s_register_operand (operands[1], <MODE>mode))"
   "*
@@ -7355,7 +7357,7 @@
   if (arm_disable_literal_pool
       && (REG_P (operands[0]) || SUBREG_P (operands[0]))
       && CONST_DOUBLE_P (operands[1])
-      && TARGET_HARD_FLOAT
+      && TARGET_VFP_BASE
       && !vfp3_const_double_rtx (operands[1]))
     {
       rtx clobreg = gen_reg_rtx (SFmode);
@@ -7452,7 +7454,7 @@
   if (arm_disable_literal_pool
       && (REG_P (operands[0]) || SUBREG_P (operands[0]))
       && CONSTANT_P (operands[1])
-      && TARGET_HARD_FLOAT
+      && TARGET_VFP_BASE
       && !arm_const_double_rtx (operands[1])
       && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1])))
     {
@@ -9212,7 +9214,7 @@
 	operands[2] = operands[1];
       else
 	{
-	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  rtx mem = force_const_mem (SImode, operands[1]);
 	  emit_move_insn (operands[2], mem);
 	}
     }
@@ -9295,7 +9297,7 @@
 	operands[3] = operands[1];
       else
 	{
-	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  rtx mem = force_const_mem (SImode, operands[1]);
 	  emit_move_insn (operands[3], mem);
 	}
     }
@@ -9320,6 +9322,8 @@
   [(set_attr "arch" "t1,32")]
 )
 
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the end of this sequence.
 (define_insn "arm_stack_protect_test_insn"
   [(set (reg:CC_Z CC_REGNUM)
 	(compare:CC_Z (unspec:SI [(match_operand:SI 1 "memory_operand" "m,m")
@@ -9329,8 +9333,8 @@
    (clobber (match_operand:SI 0 "register_operand" "=&l,&r"))
    (clobber (match_dup 2))]
   "TARGET_32BIT"
-  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0"
-  [(set_attr "length" "8,12")
+  "ldr\t%0, [%2]\;ldr\t%2, %1\;eors\t%0, %2, %0\;mov\t%2, #0"
+  [(set_attr "length" "12,16")
    (set_attr "conds" "set")
    (set_attr "type" "multiple")
    (set_attr "arch" "t,32")]
@@ -11211,7 +11215,7 @@
 	  [(match_operand 3 "cc_register" "") (const_int 0)])
 	 (neg:SI (match_operand:SI 2 "s_register_operand" "l,r"))
 	 (match_operand:SI 1 "s_register_operand" "0,0")))]
-  "TARGET_32BIT"
+  "TARGET_32BIT && !TARGET_COND_ARITH"
   "#"
   "&& reload_completed"
   [(cond_exec (match_op_dup 4 [(match_dup 3) (const_int 0)])

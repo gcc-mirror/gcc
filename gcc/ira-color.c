@@ -2539,7 +2539,6 @@ ira_loop_edge_freq (ira_loop_tree_node_t loop_node, int regno, bool exit_p)
   int freq, i;
   edge_iterator ei;
   edge e;
-  vec<edge> edges;
 
   ira_assert (current_loops != NULL && loop_node->loop != NULL
 	      && (regno < 0 || regno >= FIRST_PSEUDO_REGISTER));
@@ -2555,13 +2554,12 @@ ira_loop_edge_freq (ira_loop_tree_node_t loop_node, int regno, bool exit_p)
     }
   else
     {
-      edges = get_loop_exit_edges (loop_node->loop);
+      auto_vec<edge> edges = get_loop_exit_edges (loop_node->loop);
       FOR_EACH_VEC_ELT (edges, i, e)
 	if (regno < 0
 	    || (bitmap_bit_p (df_get_live_out (e->src), regno)
 		&& bitmap_bit_p (df_get_live_in (e->dest), regno)))
 	  freq += EDGE_FREQUENCY (e);
-      edges.release ();
     }
 
   return REG_FREQ_FROM_EDGE_FREQ (freq);

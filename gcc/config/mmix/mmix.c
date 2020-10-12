@@ -220,6 +220,9 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #undef TARGET_ASM_OUTPUT_SOURCE_FILENAME
 #define TARGET_ASM_OUTPUT_SOURCE_FILENAME mmix_asm_output_source_filename
 
+#undef TARGET_ASM_OUTPUT_IDENT
+#define TARGET_ASM_OUTPUT_IDENT default_asm_output_ident_directive
+
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS mmix_init_libfuncs
 
@@ -317,6 +320,32 @@ mmix_option_override (void)
       warning (0, "%<-f%s%> not supported: ignored",
 	       (flag_pic > 1) ? "PIC" : "pic");
       flag_pic = 0;
+    }
+
+  /* Don't bother with mmixal-compatible syntax if it's likely that a
+     certain format of the assembly is expected, like no new-line
+     after the .byte (or BYTE) parameter, when scanning debug-info
+     output, as happens in many places in the gcc testsuite.  The
+     dwarf2 output code (maybe others) takes a shortcut based on the
+     presence of certain assembler directives, instead of calling
+     assemble_integer.  Not worthwhile editing the test-cases:
+     mixed-syntax assembly output already looks too ugly for the
+     intent of being readable, and the resulting mix certainly fails
+     the intent of being compatible with mmixal.  See
+     varasm.c:default_file_start for this triple.  See also
+     mmix_assemble_integer.  */
+  if (flag_verbose_asm || flag_debug_asm || flag_dump_rtl_in_asm)
+    {
+      /* "Reinstate" the defaults from target-def.h that we
+	 overrode.  */
+      targetm.asm_out.byte_op = "\t.byte\t";
+      targetm.asm_out.aligned_op.hi = "\t.short\t";
+      targetm.asm_out.aligned_op.si = "\t.long\t";
+
+      /* Note that TARGET_ASM_ALIGNED_DI_OP is default NULL, so
+	 there's nothing to "reinstate".  Still, we add the universal
+	 default (with "recent" gas) for an address.  */
+      targetm.asm_out.aligned_op.di = "\t.dc.a\t";
     }
 }
 
@@ -1379,10 +1408,11 @@ mmix_assemble_integer (rtx x, unsigned int size, int aligned_p)
 	   that's ok, because we can punt to generic functions.  We then
 	   pretend that aligned data isn't needed, so the usual .<pseudo>
 	   syntax is used (which works for aligned data too).  We actually
-	   *must* do that, since we say we don't have simple aligned
-	   pseudos, causing this function to be called.  We just try and
-	   keep as much compatibility as possible with mmixal syntax for
-	   normal cases (i.e. without GNU extensions and C only).  */
+	   *must* do that, since we (usually) say we don't have simple aligned
+	   pseudos, causing this function to be called.  See
+	   mmix_option_override for an exception.  We just try and keep as
+	   much compatibility as possible with mmixal syntax for normal
+	   cases (i.e. without GNU extensions and C only).  */
       case 1:
 	if (GET_CODE (x) != CONST_INT)
 	  {
@@ -1987,6 +2017,7 @@ mmix_expand_prologue (void)
        + crtl->args.pretend_args_size
        + locals_size + 7) & ~7;
   HOST_WIDE_INT offset = -8;
+  HOST_WIDE_INT total_allocated_stack_space = 0;
 
   /* Add room needed to save global non-register-stack registers.  */
   for (regno = 255;
@@ -2036,6 +2067,8 @@ mmix_expand_prologue (void)
 		? (256 - 8) : stack_space_to_allocate;
 
 	      mmix_emit_sp_add (-stack_chunk);
+	      total_allocated_stack_space += stack_chunk;
+
 	      offset += stack_chunk;
 	      stack_space_to_allocate -= stack_chunk;
 	    }
@@ -2064,6 +2097,7 @@ mmix_expand_prologue (void)
 	    ? (256 - 8 - 8) : stack_space_to_allocate;
 
 	  mmix_emit_sp_add (-stack_chunk);
+	  total_allocated_stack_space += stack_chunk;
 
 	  offset += stack_chunk;
 	  stack_space_to_allocate -= stack_chunk;
@@ -2099,6 +2133,7 @@ mmix_expand_prologue (void)
 	    ? (256 - 8 - 8) : stack_space_to_allocate;
 
 	  mmix_emit_sp_add (-stack_chunk);
+	  total_allocated_stack_space += stack_chunk;
 
 	  offset += stack_chunk;
 	  stack_space_to_allocate -= stack_chunk;
@@ -2143,6 +2178,7 @@ mmix_expand_prologue (void)
 	    ? (256 - 8 - 8) : stack_space_to_allocate;
 
 	  mmix_emit_sp_add (-stack_chunk);
+	  total_allocated_stack_space += stack_chunk;
 
 	  offset += stack_chunk;
 	  stack_space_to_allocate -= stack_chunk;
@@ -2193,6 +2229,8 @@ mmix_expand_prologue (void)
 		 ? (256 - offset - 8) : stack_space_to_allocate);
 
 	    mmix_emit_sp_add (-stack_chunk);
+	    total_allocated_stack_space += stack_chunk;
+
 	    offset += stack_chunk;
 	    stack_space_to_allocate -= stack_chunk;
 	  }
@@ -2210,6 +2248,14 @@ mmix_expand_prologue (void)
      wasn't allocated above.  */
   if (stack_space_to_allocate)
     mmix_emit_sp_add (-stack_space_to_allocate);
+  total_allocated_stack_space += stack_space_to_allocate;
+
+  /* Let's assume that reporting the usage of the regular stack on its
+     own, is more useful than either not supporting -fstack-usage or
+     reporting the sum of the usages of the regular stack and the
+     register stack.  */
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = total_allocated_stack_space;
 }
 
 /* Expands the function epilogue into RTX.  */

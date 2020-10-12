@@ -360,6 +360,17 @@ class Gogo
   set_nil_check_size_threshold(int64_t bytes)
   { this->nil_check_size_threshold_ = bytes; }
 
+  // Return whether runtime.eqtype calls are needed when comparing
+  // type descriptors.
+  bool
+  need_eqtype() const
+  { return this->need_eqtype_; }
+
+  // Set if calls to runtime.eqtype are needed.
+  void
+  set_need_eqtype(bool b)
+  { this->need_eqtype_ = b; }
+
   // Import a package.  FILENAME is the file name argument, LOCAL_NAME
   // is the local name to give to the package.  If LOCAL_NAME is empty
   // the declarations are added to the global scope.
@@ -1161,6 +1172,9 @@ class Gogo
   bool debug_optimization_;
   // Nil-check size threshhold.
   int64_t nil_check_size_threshold_;
+  // Whether runtime.eqtype calls are needed when comparing type
+  // descriptors.
+  bool need_eqtype_;
   // A list of types to verify.
   std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.

@@ -592,7 +592,8 @@ symtab_node::create_reference (symtab_node *referred_node,
 
   list = &ref_list;
   old_references = vec_safe_address (list->references);
-  vec_safe_grow (list->references, vec_safe_length (list->references) + 1);
+  vec_safe_grow (list->references, vec_safe_length (list->references) + 1,
+		 true);
   ref = &list->references->last ();
 
   list2 = &referred_node->ref_list;
@@ -1085,6 +1086,11 @@ symtab_node::verify_base (void)
       error ("node has unknown type");
       error_found = true;
     }
+  if (order < 0 || order >= symtab->order)
+    {
+      error ("node has invalid order %i", order);
+      error_found = true;
+    }
    
   if (symtab->state != LTO_STREAMING)
     {
@@ -1326,6 +1332,14 @@ symtab_node::verify_symtab_nodes (void)
 {
   symtab_node *node;
   hash_map<tree, symtab_node *> comdat_head_map (251);
+  asm_node *anode;
+
+  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+    if (anode->order < 0 || anode->order >= symtab->order)
+       {
+	  error ("invalid order in asm node %i", anode->order);
+	  internal_error ("symtab_node::verify failed");
+       }
 
   FOR_EACH_SYMBOL (node)
     {

@@ -25,4 +25,4 @@ foo ()
 }
 
 /* { dg-final { scan-tree-dump-not "vectorization is not profitable" "slp2" } } */
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" } } */

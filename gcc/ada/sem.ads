@@ -138,7 +138,7 @@
 --  this is the one case where this model falls down. Here is how we patch
 --  it up without causing too much distortion to our basic model.
 
---  A switch (In_Spec_Expression) is set to show that we are in the initial
+--  A flag (In_Spec_Expression) is set to show that we are in the initial
 --  occurrence of a default expression. The analyzer is then called on this
 --  expression with the switch set true. Analysis and resolution proceed almost
 --  as usual, except that Freeze_Expression will not freeze non-static

@@ -119,8 +119,8 @@ extern char * output_cbranch (rtx, const char *, int, rtx_insn *);
 extern const char * output_probe_stack_range (rtx, rtx, rtx);
 extern void rs6000_emit_dot_insn (rtx dst, rtx src, int dot, rtx ccreg);
 extern bool rs6000_emit_set_const (rtx, rtx);
-extern int rs6000_emit_cmove (rtx, rtx, rtx, rtx);
-extern int rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
+extern bool rs6000_emit_cmove (rtx, rtx, rtx, rtx);
+extern bool rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
 extern int rs6000_emit_vector_cond_expr (rtx, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_minmax (rtx, enum rtx_code, rtx, rtx);
 extern void rs6000_expand_atomic_compare_and_swap (rtx op[]);
@@ -152,7 +152,8 @@ extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
 extern align_flags rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
-extern bool rs6000_pcrel_p (struct function *);
+extern bool rs6000_function_pcrel_p (struct function *);
+extern bool rs6000_pcrel_p (void);
 extern bool rs6000_fndecl_pcrel_p (const_tree);
 
 /* Different PowerPC instruction formats that are used by GCC.  There are
@@ -274,6 +275,7 @@ extern void rs6000_asm_output_dwarf_pcrel (FILE *file, int size,
 					   const char *label);
 extern void rs6000_asm_output_dwarf_datarel (FILE *file, int size,
 					     const char *label);
+extern long long rs6000_const_f32_to_i32 (rtx operand);
 
 /* Declare functions in rs6000-c.c */
 
@@ -309,4 +311,5 @@ extern bool rs6000_quadword_masked_address_p (const_rtx exp);
 extern rtx rs6000_gen_lvx (enum machine_mode, rtx, rtx);
 extern rtx rs6000_gen_stvx (enum machine_mode, rtx, rtx);
 
+extern void rs6000_emit_xxspltidp_v2df (rtx, long value);
 #endif  /* rs6000-protos.h */

@@ -2310,8 +2310,12 @@ ira_setup_eliminable_regset (void)
   if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
     {
       for (i = 0; i < fp_reg_count; i++)
-	if (!TEST_HARD_REG_BIT (crtl->asm_clobbers,
-				HARD_FRAME_POINTER_REGNUM + i))
+	if (global_regs[HARD_FRAME_POINTER_REGNUM + i])
+	  /* Nothing to do: the register is already treated as live
+	     where appropriate, and cannot be eliminated.  */
+	  ;
+	else if (!TEST_HARD_REG_BIT (crtl->asm_clobbers,
+				     HARD_FRAME_POINTER_REGNUM + i))
 	  {
 	    SET_HARD_REG_BIT (eliminable_regset,
 			      HARD_FRAME_POINTER_REGNUM + i);
@@ -4564,7 +4568,7 @@ find_moveable_pseudos (void)
 
   first_moveable_pseudo = max_regs;
   pseudo_replaced_reg.release ();
-  pseudo_replaced_reg.safe_grow_cleared (max_regs);
+  pseudo_replaced_reg.safe_grow_cleared (max_regs, true);
 
   df_analyze ();
   calculate_dominance_info (CDI_DOMINATORS);

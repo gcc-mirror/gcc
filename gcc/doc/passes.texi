@@ -360,13 +360,6 @@ target doesn't support constructors and destructors natively.  The
 pass is located in @file{ipa.c} and is described by
 @code{pass_ipa_cdtor_merge}.
 
-@item IPA HSA
-
-This pass is part of the GCC support for HSA (Heterogeneous System
-Architecture) accelerators.  It is responsible for creation of HSA
-clones and emitting HSAIL instructions for them.  It is located in
-@file{ipa-hsa.c} and is described by @code{pass_ipa_hsa}.
-
 @item IPA function summary
 
 This pass provides function analysis for inter-procedural passes.

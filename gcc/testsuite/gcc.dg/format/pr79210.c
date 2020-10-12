@@ -20,4 +20,4 @@ LPFC_VPORT_ATTR_R(peer_port_login,
 		  "Allow peer ports on the same physical port to login to each "
 		  "other.");
 
-/* { dg-warning "6: format .%d. expects argument of type .int., but argument 4 has type .unsigned int. " "" { target *-*-* } .-12 } */
+/* { dg-warning "20: format .%d. expects argument of type .int., but argument 4 has type .unsigned int. " "" { target *-*-* } .-12 } */

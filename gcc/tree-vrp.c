@@ -1151,25 +1151,29 @@ static bool
 range_fold_binary_symbolics_p (value_range *vr,
 			       tree_code code,
 			       tree expr_type,
-			       const value_range *vr0, const value_range *vr1)
+			       const value_range *vr0_,
+			       const value_range *vr1_)
 {
-  if (vr0->symbolic_p () || vr1->symbolic_p ())
+  if (vr0_->symbolic_p () || vr1_->symbolic_p ())
     {
+      value_range vr0 = drop_undefines_to_varying (vr0_, expr_type);
+      value_range vr1 = drop_undefines_to_varying (vr1_, expr_type);
       if ((code == PLUS_EXPR || code == MINUS_EXPR))
 	{
-	  extract_range_from_plus_minus_expr (vr, code, expr_type, vr0, vr1);
+	  extract_range_from_plus_minus_expr (vr, code, expr_type,
+					      &vr0, &vr1);
 	  return true;
 	}
       if (POINTER_TYPE_P (expr_type) && code == POINTER_PLUS_EXPR)
 	{
-	  extract_range_from_pointer_plus_expr (vr, code, expr_type, vr0, vr1);
+	  extract_range_from_pointer_plus_expr (vr, code, expr_type,
+						&vr0, &vr1);
 	  return true;
 	}
       const range_operator *op = get_range_op_handler (vr, code, expr_type);
-      value_range vr0_cst (*vr0), vr1_cst (*vr1);
-      vr0_cst.normalize_symbolics ();
-      vr1_cst.normalize_symbolics ();
-      return op->fold_range (*vr, expr_type, vr0_cst, vr1_cst);
+      vr0.normalize_symbolics ();
+      vr1.normalize_symbolics ();
+      return op->fold_range (*vr, expr_type, vr0, vr1);
     }
   return false;
 }
@@ -1225,11 +1229,15 @@ range_fold_binary_expr (value_range *vr,
   if (!op)
     return;
 
-  value_range vr0 = drop_undefines_to_varying (vr0_, expr_type);
-  value_range vr1 = drop_undefines_to_varying (vr1_, expr_type);
-  if (range_fold_binary_symbolics_p (vr, code, expr_type, &vr0, &vr1))
+  if (range_fold_binary_symbolics_p (vr, code, expr_type, vr0_, vr1_))
     return;
 
+  value_range vr0 (*vr0_);
+  value_range vr1 (*vr1_);
+  if (vr0.undefined_p ())
+    vr0.set_varying (expr_type);
+  if (vr1.undefined_p ())
+    vr1.set_varying (expr_type);
   vr0.normalize_addresses ();
   vr1.normalize_addresses ();
   op->fold_range (*vr, expr_type, vr0, vr1);
@@ -1637,7 +1645,7 @@ extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
    (to transform signed values into unsigned) and at the end xor
    SGNBIT back.  */
 
-static wide_int
+wide_int
 masked_increment (const wide_int &val_in, const wide_int &mask,
 		  const wide_int &sgnbit, unsigned int prec)
 {
@@ -3794,6 +3802,65 @@ find_case_label_range (gswitch *stmt, tree min, tree max, size_t *min_idx,
     }
 }
 
+/* Given a SWITCH_STMT, return the case label that encompasses the
+   known possible values for the switch operand.  RANGE_OF_OP is a
+   range for the known values of the switch operand.  */
+
+tree
+find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
+{
+  if (range_of_op->undefined_p ()
+      || range_of_op->varying_p ()
+      || range_of_op->symbolic_p ())
+    return NULL_TREE;
+
+  size_t i, j;
+  tree op = gimple_switch_index (switch_stmt);
+  tree type = TREE_TYPE (op);
+  tree tmin = wide_int_to_tree (type, range_of_op->lower_bound ());
+  tree tmax = wide_int_to_tree (type, range_of_op->upper_bound ());
+  find_case_label_range (switch_stmt, tmin, tmax, &i, &j);
+  if (i == j)
+    {
+      /* Look for exactly one label that encompasses the range of
+	 the operand.  */
+      tree label = gimple_switch_label (switch_stmt, i);
+      tree case_high
+	= CASE_HIGH (label) ? CASE_HIGH (label) : CASE_LOW (label);
+      int_range_max label_range (CASE_LOW (label), case_high);
+      if (!types_compatible_p (label_range.type (), range_of_op->type ()))
+	range_cast (label_range, range_of_op->type ());
+      label_range.intersect (range_of_op);
+      if (label_range == *range_of_op)
+	return label;
+    }
+  else if (i > j)
+    {
+      /* If there are no labels at all, take the default.  */
+      return gimple_switch_label (switch_stmt, 0);
+    }
+  else
+    {
+      /* Otherwise, there are various labels that can encompass
+	 the range of operand.  In which case, see if the range of
+	 the operand is entirely *outside* the bounds of all the
+	 (non-default) case labels.  If so, take the default.  */
+      unsigned n = gimple_switch_num_labels (switch_stmt);
+      tree min_label = gimple_switch_label (switch_stmt, 1);
+      tree max_label = gimple_switch_label (switch_stmt, n - 1);
+      tree case_high = CASE_HIGH (max_label);
+      if (!case_high)
+	case_high = CASE_LOW (max_label);
+      int_range_max label_range (CASE_LOW (min_label), case_high);
+      if (!types_compatible_p (label_range.type (), range_of_op->type ()))
+	range_cast (label_range, range_of_op->type ());
+      label_range.intersect (range_of_op);
+      if (label_range.undefined_p ())
+	return gimple_switch_label (switch_stmt, 0);
+    }
+  return NULL_TREE;
+}
+
 /* Evaluate statement STMT.  If the statement produces a useful range,
    return SSA_PROP_INTERESTING and record the SSA name with the
    interesting range into *OUTPUT_P.
@@ -3943,9 +4010,12 @@ class vrp_folder : public substitute_and_fold_engine
     : substitute_and_fold_engine (/* Fold all stmts.  */ true),
       m_vr_values (v), simplifier (v)
     {  }
-  tree get_value (tree, gimple *stmt) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
 
+  tree value_of_expr (tree name, gimple *stmt) OVERRIDE
+    {
+      return m_vr_values->value_of_expr (name, stmt);
+    }
   class vr_values *m_vr_values;
 
 private:
@@ -3956,8 +4026,6 @@ private:
     { return simplifier.vrp_evaluate_conditional (code, op0, op1, stmt); }
   bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
     { return simplifier.simplify (gsi); }
- tree op_with_constant_singleton_value_range (tree op)
-    { return m_vr_values->op_with_constant_singleton_value_range (op); }
 
   simplify_using_ranges simplifier;
 };
@@ -4035,18 +4103,6 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
   return simplify_stmt_using_ranges (si);
 }
 
-/* If OP has a value range with a single constant value return that,
-   otherwise return NULL_TREE.  This returns OP itself if OP is a
-   constant.
-
-   Implemented as a pure wrapper right now, but this will change.  */
-
-tree
-vrp_folder::get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED)
-{
-  return op_with_constant_singleton_value_range (op);
-}
-
 /* Return the LHS of any ASSERT_EXPR where OP appears as the first
    argument to the ASSERT_EXPR and in which the ASSERT_EXPR dominates
    BB.  If no such ASSERT_EXPR is found, return OP.  */
@@ -4080,7 +4136,10 @@ static class vr_values *x_vr_values;
 /* A trivial wrapper so that we can present the generic jump threading
    code with a simple API for simplifying statements.  STMT is the
    statement we want to simplify, WITHIN_STMT provides the location
-   for any overflow warnings.  */
+   for any overflow warnings.
+
+   ?? This should be cleaned up.  There's a virtually identical copy
+   of this function in tree-ssa-dom.c.  */
 
 static tree
 simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
@@ -4106,9 +4165,6 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
 						  op0, op1, within_stmt);
     }
 
-  /* We simplify a switch statement by trying to determine which case label
-     will be taken.  If we are successful then we return the corresponding
-     CASE_LABEL_EXPR.  */
   if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
     {
       tree op = gimple_switch_index (switch_stmt);
@@ -4118,59 +4174,7 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
       op = lhs_of_dominating_assert (op, bb, stmt);
 
       const value_range_equiv *vr = vr_values->get_value_range (op);
-      if (vr->undefined_p ()
-	  || vr->varying_p ()
-	  || vr->symbolic_p ())
-	return NULL_TREE;
-
-      if (vr->kind () == VR_RANGE)
-	{
-	  size_t i, j;
-	  /* Get the range of labels that contain a part of the operand's
-	     value range.  */
-	  find_case_label_range (switch_stmt, vr->min (), vr->max (), &i, &j);
-
-	  /* Is there only one such label?  */
-	  if (i == j)
-	    {
-	      tree label = gimple_switch_label (switch_stmt, i);
-
-	      /* The i'th label will be taken only if the value range of the
-		 operand is entirely within the bounds of this label.  */
-	      if (CASE_HIGH (label) != NULL_TREE
-		  ? (tree_int_cst_compare (CASE_LOW (label), vr->min ()) <= 0
-		     && tree_int_cst_compare (CASE_HIGH (label),
-					      vr->max ()) >= 0)
-		  : (tree_int_cst_equal (CASE_LOW (label), vr->min ())
-		     && tree_int_cst_equal (vr->min (), vr->max ())))
-		return label;
-	    }
-
-	  /* If there are no such labels then the default label will be
-	     taken.  */
-	  if (i > j)
-	    return gimple_switch_label (switch_stmt, 0);
-	}
-
-      if (vr->kind () == VR_ANTI_RANGE)
-	{
-	  unsigned n = gimple_switch_num_labels (switch_stmt);
-	  tree min_label = gimple_switch_label (switch_stmt, 1);
-	  tree max_label = gimple_switch_label (switch_stmt, n - 1);
-
-	  /* The default label will be taken only if the anti-range of the
-	     operand is entirely outside the bounds of all the (non-default)
-	     case labels.  */
-	  if (tree_int_cst_compare (vr->min (), CASE_LOW (min_label)) <= 0
-	      && (CASE_HIGH (max_label) != NULL_TREE
-		  ? tree_int_cst_compare (vr->max (),
-					  CASE_HIGH (max_label)) >= 0
-		  : tree_int_cst_compare (vr->max (),
-					  CASE_LOW (max_label)) >= 0))
-	  return gimple_switch_label (switch_stmt, 0);
-	}
-
-      return NULL_TREE;
+      return find_case_label_range (switch_stmt, vr);
     }
 
   if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))

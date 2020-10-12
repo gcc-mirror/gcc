@@ -125,7 +125,7 @@ package body Exp_Ch8 is
          if Modify_Tree_For_C then
             return True;
 
-         elsif Nkind_In (Nam, N_Indexed_Component, N_Slice) then
+         elsif Nkind (Nam) in N_Indexed_Component | N_Slice then
             if Is_Packed (Etype (Prefix (Nam))) then
                return True;
 

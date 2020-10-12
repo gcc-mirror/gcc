@@ -1,6 +1,6 @@
 ! { dg-do compile { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } }
 
-! { dg-options "-Ofast -mavx512f -ffixed-xmm1 -ffixed-xmm2 -ffixed-xmm3 -ffixed-xmm4 -ffixed-xmm5 -ffixed-xmm6 -ffixed-xmm7 -ffixed-xmm8 -ffixed-xmm9 -ffixed-xmm10 -ffixed-xmm11 -ffixed-xmm12 -ffixed-xmm13 -ffixed-xmm14 -ffixed-xmm15" }
+! { dg-options "-Ofast -fno-tree-slp-vectorize -mavx512f -ffixed-xmm1 -ffixed-xmm2 -ffixed-xmm3 -ffixed-xmm4 -ffixed-xmm5 -ffixed-xmm6 -ffixed-xmm7 -ffixed-xmm8 -ffixed-xmm9 -ffixed-xmm10 -ffixed-xmm11 -ffixed-xmm12 -ffixed-xmm13 -ffixed-xmm14 -ffixed-xmm15" }
 
       IMPLICIT REAL*8(A-H,O-Z)
       ALLOCATABLE DD1(:), DD2(:), WY(:,:)

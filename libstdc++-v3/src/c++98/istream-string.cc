@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    }
 		}
 
-	      if (__traits_type::eq_int_type(__c, __eof))
+	      if (__extracted < __n && __traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	      __in.width(0);
 	    }

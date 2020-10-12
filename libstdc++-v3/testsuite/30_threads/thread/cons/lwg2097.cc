@@ -20,9 +20,12 @@
 
 #include <thread>
 
+namespace __gnu_test
+{
 using std::thread;
 using std::is_constructible;
 
 static_assert( !is_constructible<thread, thread&>::value, "" );
 static_assert( !is_constructible<thread, const thread&>::value, "" );
 static_assert( !is_constructible<thread, const thread>::value, "" );
+}

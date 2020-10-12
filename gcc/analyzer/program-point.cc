@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple-pretty-print.h"
 #include "gcc-rich-location.h"
+#include "json.h"
 #include "analyzer/call-string.h"
 #include "ordered-hash-map.h"
 #include "options.h"
@@ -42,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "tristate.h"
 #include "selftest.h"
+#include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/sm.h"
 #include "analyzer/program-state.h"
@@ -83,6 +85,22 @@ point_kind_to_string (enum point_kind pk)
 }
 
 /* class function_point.  */
+
+function_point::function_point (const supernode *supernode,
+				const superedge *from_edge,
+				unsigned stmt_idx,
+				enum point_kind kind)
+: m_supernode (supernode), m_from_edge (from_edge),
+  m_stmt_idx (stmt_idx), m_kind (kind)
+{
+  if (from_edge)
+    {
+      gcc_checking_assert (m_kind == PK_BEFORE_SUPERNODE);
+      gcc_checking_assert (from_edge->get_kind () == SUPEREDGE_CFG_EDGE);
+    }
+  if (stmt_idx)
+    gcc_checking_assert (m_kind == PK_BEFORE_STMT);
+}
 
 /* Print this function_point to PP.  */
 
@@ -149,6 +167,17 @@ function_point::hash () const
   return hstate.end ();
 }
 
+/* Get the function at this point, if any.  */
+
+function *
+function_point::get_function () const
+{
+  if (m_supernode)
+    return m_supernode->m_fun;
+  else
+    return NULL;
+}
+
 /* Get the gimple stmt for this function_point, if any.  */
 
 const gimple *
@@ -170,8 +199,32 @@ function_point::get_location () const
   const gimple *stmt = get_stmt ();
   if (stmt)
     return stmt->location;
+  if (m_kind == PK_BEFORE_SUPERNODE)
+    return m_supernode->get_start_location ();
+  else if (m_kind == PK_AFTER_SUPERNODE)
+    return m_supernode->get_end_location ();
+  else
+    return UNKNOWN_LOCATION;
+}
 
-  return UNKNOWN_LOCATION;
+/* Create a function_point representing the entrypoint of function FUN.  */
+
+function_point
+function_point::from_function_entry (const supergraph &sg, function *fun)
+{
+  return before_supernode (sg.get_node_for_function_entry (fun), NULL);
+}
+
+/* Create a function_point representing entering supernode SUPERNODE,
+   having reached it via FROM_EDGE (which could be NULL).  */
+
+function_point
+function_point::before_supernode (const supernode *supernode,
+				  const superedge *from_edge)
+{
+  if (from_edge && from_edge->get_kind () != SUPEREDGE_CFG_EDGE)
+    from_edge = NULL;
+  return function_point (supernode, from_edge, 0, PK_BEFORE_SUPERNODE);
 }
 
 /* A subclass of diagnostic_context for use by
@@ -231,6 +284,43 @@ program_point::dump () const
   pp.buffer->stream = stderr;
   print (&pp, format (true));
   pp_flush (&pp);
+}
+
+/* Return a new json::object of the form
+   {"kind"  : str,
+    "snode_idx" : int (optional), the index of the supernode,
+    "from_edge_snode_idx" : int (only for kind=='PK_BEFORE_SUPERNODE'),
+    "stmt_idx": int (only for kind=='PK_BEFORE_STMT',
+    "call_string": object for the call_string}.  */
+
+json::object *
+program_point::to_json () const
+{
+  json::object *point_obj = new json::object ();
+
+  point_obj->set ("kind",
+		  new json::string (point_kind_to_string (get_kind ())));
+
+  if (get_supernode ())
+    point_obj->set ("snode_idx",
+		    new json::integer_number (get_supernode ()->m_index));
+
+  switch (get_kind ())
+    {
+    default: break;
+    case PK_BEFORE_SUPERNODE:
+      if (const superedge *sedge = get_from_edge ())
+	point_obj->set ("from_edge_snode_idx",
+			new json::integer_number (sedge->m_src->m_index));
+      break;
+    case PK_BEFORE_STMT:
+      point_obj->set ("stmt_idx", new json::integer_number (get_stmt_idx ()));
+      break;
+    }
+
+  point_obj->set ("call_string", m_call_string.to_json ());
+
+  return point_obj;
 }
 
 /* Generate a hash value for this program_point.  */
@@ -466,6 +556,48 @@ function_point::cmp_within_supernode (const function_point &point_a,
 #endif
 
   return result;
+}
+
+/* For PK_BEFORE_STMT, go to next stmt (or to PK_AFTER_SUPERNODE).  */
+
+void
+function_point::next_stmt ()
+{
+  gcc_assert (m_kind == PK_BEFORE_STMT);
+  if (++m_stmt_idx == m_supernode->m_stmts.length ())
+    {
+      m_kind = PK_AFTER_SUPERNODE;
+      m_stmt_idx = 0;
+    }
+}
+
+/* For those program points for which there is a uniquely-defined
+   successor, return it.  */
+
+program_point
+program_point::get_next () const
+{
+  switch (m_function_point.get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case PK_ORIGIN:
+    case PK_AFTER_SUPERNODE:
+      gcc_unreachable (); /* Not uniquely defined.  */
+    case PK_BEFORE_SUPERNODE:
+      if (get_supernode ()->m_stmts.length () > 0)
+	return before_stmt (get_supernode (), 0, get_call_string ());
+      else
+	return after_supernode (get_supernode (), get_call_string ());
+    case PK_BEFORE_STMT:
+      {
+	unsigned next_idx = get_stmt_idx ();
+	if (next_idx < get_supernode ()->m_stmts.length ())
+	  return before_stmt (get_supernode (), next_idx, get_call_string ());
+	else
+	  return after_supernode (get_supernode (), get_call_string ());
+      }
+    }
 }
 
 #if CHECKING_P

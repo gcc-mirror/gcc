@@ -101,6 +101,19 @@ public:
   }
 };
 
+/* Structure to capture how frequently some interesting events occur given a
+   particular predicate.  The structure is used to estimate how often we
+   encounter loops with known iteration count or stride in various
+   contexts.  */
+
+struct GTY(()) ipa_freqcounting_predicate
+{
+  /* The described event happens with this frequency... */
+  sreal freq;
+  /* ...when this predicate evaluates to false. */
+  class predicate * GTY((skip)) predicate;
+};
+
 /* Function inlining information.  */
 class GTY(()) ipa_fn_summary
 {
@@ -112,8 +125,9 @@ public:
       inlinable (false), single_caller (false),
       fp_expressions (false), estimated_stack_size (false),
       time (0), conds (NULL),
-      size_time_table (NULL), call_size_time_table (NULL), loop_iterations (NULL),
-      loop_stride (NULL), growth (0), scc_no (0)
+      size_time_table (NULL), call_size_time_table (NULL),
+      loop_iterations (NULL), loop_strides (NULL),
+      growth (0), scc_no (0)
   {
   }
 
@@ -125,7 +139,7 @@ public:
     estimated_stack_size (s.estimated_stack_size),
     time (s.time), conds (s.conds), size_time_table (s.size_time_table),
     call_size_time_table (NULL),
-    loop_iterations (s.loop_iterations), loop_stride (s.loop_stride),
+    loop_iterations (s.loop_iterations), loop_strides (s.loop_strides),
     growth (s.growth), scc_no (s.scc_no)
   {}
 
@@ -164,12 +178,10 @@ public:
   vec<size_time_entry, va_gc> *size_time_table;
   vec<size_time_entry, va_gc> *call_size_time_table;
 
-  /* Predicate on when some loop in the function becomes to have known
-     bounds.   */
-  predicate * GTY((skip)) loop_iterations;
-  /* Predicate on when some loop in the function becomes to have known
-     stride.   */
-  predicate * GTY((skip)) loop_stride;
+  /* Predicates on when some loops in the function can have known bounds.  */
+  vec<ipa_freqcounting_predicate, va_gc> *loop_iterations;
+  /* Predicates on when some loops in the function can have known strides.  */
+  vec<ipa_freqcounting_predicate, va_gc> *loop_strides;
   /* Estimated growth for inlining all copies of the function before start
      of small functions inlining.
      This value will get out of date as the callers are duplicated, but
@@ -287,6 +299,39 @@ public:
 			  ipa_call_summary *dst_data);
 };
 
+/* Estimated execution times, code sizes and other information about the
+   code executing a call described by ipa_call_context.  */
+
+struct ipa_call_estimates
+{
+  /* Estimated size needed to execute call in the given context. */
+  int size;
+
+  /* Minimal size needed for the call that is + independent on the call context
+     and can be used for fast estimates.  */
+  int min_size;
+
+  /* Estimated time needed to execute call in the given context. */
+  sreal time;
+
+  /* Estimated time needed to execute the function when not ignoring
+     computations known to be constant in this context.  */
+  sreal nonspecialized_time;
+
+  /* Further discovered reasons why to inline or specialize the give calls.  */
+  ipa_hints hints;
+
+  /* Frequency how often a loop with known number of iterations is encountered.
+     Calculated with hints.  */
+  sreal loops_with_known_iterations;
+
+  /* Frequency how often a loop with known strides is encountered.  Calculated
+     with hints.  */
+  sreal loops_with_known_strides;
+};
+
+class ipa_cached_call_context;
+
 /* This object describe a context of call.  That is a summary of known
    information about its parameters.  Main purpose of this context is
    to give more realistic estimations of function runtime, size and
@@ -297,20 +342,14 @@ public:
   ipa_call_context (cgraph_node *node,
       		    clause_t possible_truths,
 		    clause_t nonspec_possible_truths,
-		    vec<tree> known_vals,
-		    vec<ipa_polymorphic_call_context> known_contexts,
-		    vec<ipa_agg_value_set> known_aggs,
-		    vec<inline_param_summary> m_inline_param_summary);
+		    vec<inline_param_summary> inline_param_summary,
+		    ipa_auto_call_arg_values *arg_values);
   ipa_call_context ()
   : m_node(NULL)
   {
   }
-  void estimate_size_and_time (int *ret_size, int *ret_min_size,
-			       sreal *ret_time,
-			       sreal *ret_nonspecialized_time,
-			       ipa_hints *ret_hints);
-  void duplicate_from (const ipa_call_context &ctx);
-  void release (bool all = false);
+  void estimate_size_and_time (ipa_call_estimates *estimates,
+			       bool est_times = true, bool est_hints = true);
   bool equal_to (const ipa_call_context &);
   bool exists_p ()
   {
@@ -328,14 +367,21 @@ private:
   /* Inline summary maintains info about change probabilities.  */
   vec<inline_param_summary> m_inline_param_summary;
 
-  /* The following is used only to resolve indirect calls.  */
+  /* Even after having calculated clauses, the information about argument
+     values is used to resolve indirect calls.  */
+  ipa_call_arg_values m_avals;
 
-  /* Vector describing known values of parameters.  */
-  vec<tree> m_known_vals;
-  /* Vector describing known polymorphic call contexts.  */
-  vec<ipa_polymorphic_call_context> m_known_contexts;
-  /* Vector describing known aggregate values.  */
-  vec<ipa_agg_value_set> m_known_aggs;
+  friend ipa_cached_call_context;
+};
+
+/* Variant of ipa_call_context that is stored in a cache over a longer period
+   of time.  */
+
+class ipa_cached_call_context : public ipa_call_context
+{
+public:
+  void duplicate_from (const ipa_call_context &ctx);
+  void release ();
 };
 
 extern fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
@@ -348,25 +394,22 @@ void ipa_dump_hints (FILE *f, ipa_hints);
 void ipa_free_fn_summary (void);
 void ipa_free_size_summary (void);
 void inline_analyze_function (struct cgraph_node *node);
-void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
-					vec<tree>,
-					vec<ipa_polymorphic_call_context>,
-					vec<ipa_agg_value_set>,
-					int *, sreal *, sreal *,
-				        ipa_hints *);
+void estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
+					ipa_auto_call_arg_values *avals,
+					ipa_call_estimates *estimates);
 void ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge);
 void ipa_update_overall_fn_summary (struct cgraph_node *node, bool reset = true);
 void compute_fn_summary (struct cgraph_node *, bool);
+bool refs_local_or_readonly_memory_p (tree);
+bool points_to_local_or_readonly_memory_p (tree);
 
 
 void evaluate_properties_for_edge (struct cgraph_edge *e,
 	       		           bool inline_p,
 				   clause_t *clause_ptr,
 				   clause_t *nonspec_clause_ptr,
-				   vec<tree> *known_vals_ptr,
-				   vec<ipa_polymorphic_call_context>
-				   *known_contexts_ptr,
-				   vec<ipa_agg_value_set> *);
+				   ipa_auto_call_arg_values *avals,
+				   bool compute_contexts);
 
 void ipa_fnsummary_c_finalize (void);
 HOST_WIDE_INT ipa_get_stack_frame_offset (struct cgraph_node *node);

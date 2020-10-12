@@ -219,7 +219,6 @@ package body Impunit is
     ("a-tifiio", F),  -- Ada.Text_IO.Fixed_IO
     ("a-tiflio", F),  -- Ada.Text_IO.Float_IO
     ("a-tiinio", F),  -- Ada.Text_IO.Integer_IO
-    ("a-tiinio", F),  -- Ada.Text_IO.Integer_IO
     ("a-timoio", F),  -- Ada.Text_IO.Modular_IO
     ("a-wtdeio", F),  -- Ada.Wide_Text_IO.Decimal_IO
     ("a-wtenio", F),  -- Ada.Wide_Text_IO.Enumeration_IO

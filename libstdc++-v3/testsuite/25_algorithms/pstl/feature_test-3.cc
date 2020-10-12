@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do preprocess { target c++17 } }
+// { dg-require-effective-target tbb-backend }
 
 #include <execution>
 

@@ -11,7 +11,7 @@ do_stuff (int *p, int n)
   int sum = 0;
   int i;
   for (i = 0; i < n; i++)
-    p[i] = i;
+    p[i] = i; /* { dg-warning "dereference of possibly-NULL 'p'" } */
   for (i = 0; i < n; i++)
     sum += foo (p[i]); /* { dg-bogus "uninitialized" } */
   return sum;
@@ -48,10 +48,10 @@ int test_repeated_predicate_1 (int n)
 
   result = do_stuff (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
-  // FIXME: why 3 here?
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
-  // FIXME: why 3 here?
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
+
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
+
 
   if (n > 10)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -105,8 +105,8 @@ int test_explicit_flag (int n)
 
   result = do_stuff (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
-  // FIXME: why 3 here?
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
+
 
   if (need_to_free)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -131,8 +131,8 @@ int test_pointer_comparison (int n)
 
   result = do_stuff (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
-  // FIXME: why 3 here?
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
+
 
   if (ptr != buf)
     free (ptr); /* { dg-bogus "not on the heap" } */
@@ -169,8 +169,8 @@ int test_initial_flag (int n)
 
   result = do_stuff (ptr, n);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "5 processed enodes" } */
-  // FIXME: why 5 here?
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
+  // FIXME: why 3 here?
 
   if (n > 10)
     free (ptr); /* { dg-bogus "not on the heap" } */

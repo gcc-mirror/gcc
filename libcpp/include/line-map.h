@@ -1225,6 +1225,12 @@ LINEMAP_SYSP (const line_map_ordinary *ord_map)
   return ord_map->sysp;
 }
 
+const struct line_map *first_map_in_common (line_maps *set,
+					    location_t loc0,
+					    location_t loc1,
+					    location_t *res_loc0,
+					    location_t *res_loc1);
+
 /* Return a positive value if PRE denotes the location of a token that
    comes before the token of POST, 0 if PRE denotes the location of
    the same token as the token for POST, and a negative value

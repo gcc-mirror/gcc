@@ -430,6 +430,7 @@ static const char *pass_through_libs_spec_func (int, const char **);
 static const char *dumps_spec_func (int, const char **);
 static const char *greater_than_spec_func (int, const char **);
 static const char *debug_level_greater_than_spec_func (int, const char **);
+static const char *dwarf_version_greater_than_spec_func (int, const char **);
 static const char *find_fortran_preinclude_file (int, const char **);
 static char *convert_white_space (char *);
 static char *quote_spec (char *);
@@ -876,27 +877,70 @@ proper position among the other output files.  */
 #endif /* HAVE_LD_COMPRESS_DEBUG >= 2 */
 
 /* Define ASM_DEBUG_SPEC to be a spec suitable for translating '-g'
-   to the assembler.  */
+   to the assembler, when compiling assembly sources only.  */
 #ifndef ASM_DEBUG_SPEC
+# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+/* If --gdwarf-N is supported and as can handle even compiler generated
+   .debug_line with it, supply --gdwarf-N in ASM_DEBUG_OPTION_SPEC rather
+   than in ASM_DEBUG_SPEC, so that it applies to both .s and .c etc.
+   compilations.  */
+#  define ASM_DEBUG_DWARF_OPTION ""
+# elif defined(HAVE_AS_GDWARF_5_DEBUG_FLAG)
+#  define ASM_DEBUG_DWARF_OPTION "%{%:dwarf-version-gt(4):--gdwarf-5;" \
+	"%:dwarf-version-gt(3):--gdwarf-4;"				\
+	"%:dwarf-version-gt(2):--gdwarf-3;"				\
+	":--gdwarf2}"
+# else
+#  define ASM_DEBUG_DWARF_OPTION "--gdwarf2"
+# endif
 # if defined(DBX_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO) \
      && defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
 #  define ASM_DEBUG_SPEC						\
       (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG				\
        ? "%{%:debug-level-gt(0):"					\
-	 "%{gdwarf*:--gdwarf2}%{!gdwarf*:%{g*:--gstabs}}}" ASM_MAP	\
+	 "%{gdwarf*:" ASM_DEBUG_DWARF_OPTION "};"			\
+	 ":%{g*:--gstabs}}" ASM_MAP					\
        : "%{%:debug-level-gt(0):"					\
-	 "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}}" ASM_MAP)
+	 "%{gstabs*:--gstabs;"						\
+	 ":%{g*:" ASM_DEBUG_DWARF_OPTION "}}}" ASM_MAP)
 # else
 #  if defined(DBX_DEBUGGING_INFO) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
 #   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):--gstabs}}" ASM_MAP
 #  endif
 #  if defined(DWARF2_DEBUGGING_INFO) && defined(HAVE_AS_GDWARF2_DEBUG_FLAG)
-#   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):--gdwarf2}}" ASM_MAP
+#   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):" \
+	ASM_DEBUG_DWARF_OPTION "}}" ASM_MAP
 #  endif
 # endif
 #endif
 #ifndef ASM_DEBUG_SPEC
 # define ASM_DEBUG_SPEC ""
+#endif
+
+/* Define ASM_DEBUG_OPTION_SPEC to be a spec suitable for translating '-g'
+   to the assembler when compiling all sources.  */
+#ifndef ASM_DEBUG_OPTION_SPEC
+# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+#  define ASM_DEBUG_OPTION_DWARF_OPT					\
+	"%{%:dwarf-version-gt(4):--gdwarf-5 ;"				\
+	"%:dwarf-version-gt(3):--gdwarf-4 ;"				\
+	"%:dwarf-version-gt(2):--gdwarf-3 ;"				\
+	":--gdwarf2 }"
+#  if defined(DBX_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO)
+#  define ASM_DEBUG_OPTION_SPEC						\
+      (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG				\
+       ? "%{%:debug-level-gt(0):"					\
+	 "%{gdwarf*:" ASM_DEBUG_OPTION_DWARF_OPT "}}" 			\
+       : "%{%:debug-level-gt(0):"					\
+	 "%{!gstabs*:%{g*:" ASM_DEBUG_OPTION_DWARF_OPT "}}}")
+# elif defined(DWARF2_DEBUGGING_INFO)
+#   define ASM_DEBUG_OPTION_SPEC "%{g*:%{%:debug-level-gt(0):" \
+	ASM_DEBUG_OPTION_DWARF_OPT "}}"
+#  endif
+# endif
+#endif
+#ifndef ASM_DEBUG_OPTION_SPEC
+# define ASM_DEBUG_OPTION_SPEC ""
 #endif
 
 /* Here is the spec for running the linker, after compiling all files.  */
@@ -1113,6 +1157,7 @@ proper position among the other output files.  */
 #endif
 
 static const char *asm_debug = ASM_DEBUG_SPEC;
+static const char *asm_debug_option = ASM_DEBUG_OPTION_SPEC;
 static const char *cpp_spec = CPP_SPEC;
 static const char *cc1_spec = CC1_SPEC;
 static const char *cc1plus_spec = CC1PLUS_SPEC;
@@ -1212,6 +1257,7 @@ static const char *asm_options =
    to the assembler equivalents.  */
 "%{v} %{w:-W} %{I*} "
 #endif
+"%(asm_debug_option)"
 ASM_COMPRESS_DEBUG_SPEC
 "%a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}";
 
@@ -1608,6 +1654,7 @@ static struct spec_list static_specs[] =
 {
   INIT_STATIC_SPEC ("asm",			&asm_spec),
   INIT_STATIC_SPEC ("asm_debug",		&asm_debug),
+  INIT_STATIC_SPEC ("asm_debug_option",		&asm_debug_option),
   INIT_STATIC_SPEC ("asm_final",		&asm_final_spec),
   INIT_STATIC_SPEC ("asm_options",		&asm_options),
   INIT_STATIC_SPEC ("invoke_as",		&invoke_as),
@@ -1690,6 +1737,7 @@ static const struct spec_function static_spec_functions[] =
   { "dumps",                    dumps_spec_func },
   { "gt",			greater_than_spec_func },
   { "debug-level-gt",		debug_level_greater_than_spec_func },
+  { "dwarf-version-gt",		dwarf_version_greater_than_spec_func },
   { "fortran-preinclude-file",	find_fortran_preinclude_file},
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
@@ -1908,6 +1956,51 @@ init_spec (void)
 
   specs = sl;
 }
+
+/* Update the entry for SPEC in the static_specs table to point to VALUE,
+   ensuring that we free the previous value if necessary.  Set alloc_p for the
+   entry to ALLOC_P: this determines whether we take ownership of VALUE (i.e.
+   whether we need to free it later on).  */
+static void
+set_static_spec (const char **spec, const char *value, bool alloc_p)
+{
+  struct spec_list *sl = NULL;
+
+  for (unsigned i = 0; i < ARRAY_SIZE (static_specs); i++)
+    {
+      if (static_specs[i].ptr_spec == spec)
+	{
+	  sl = static_specs + i;
+	  break;
+	}
+    }
+
+  gcc_assert (sl);
+
+  if (sl->alloc_p)
+    {
+      const char *old = *spec;
+      free (const_cast <char *> (old));
+    }
+
+  *spec = value;
+  sl->alloc_p = alloc_p;
+}
+
+/* Update a static spec to a new string, taking ownership of that
+   string's memory.  */
+static void set_static_spec_owned (const char **spec, const char *val)
+{
+  return set_static_spec (spec, val, true);
+}
+
+/* Update a static spec to point to a new value, but don't take
+   ownership of (i.e. don't free) that string.  */
+static void set_static_spec_shared (const char **spec, const char *val)
+{
+  return set_static_spec (spec, val, false);
+}
+
 
 /* Change the value of spec NAME to SPEC.  If SPEC is empty, then the spec is
    removed; If the spec starts with a + then SPEC is added to the end of the
@@ -4907,6 +5000,9 @@ process_command (unsigned int decoded_options_count,
       int lendb = strlen (dumpbase);
       int lendbx = strlen (dumpbase_ext);
 
+      /* -dumpbase-ext must be a suffix proper; discard it if it
+	  matches all of -dumpbase, as that would make for an empty
+	  basename.  */
       if (lendbx >= lendb
 	  || strcmp (dumpbase + lendb - lendbx, dumpbase_ext) != 0)
 	{
@@ -5083,10 +5179,18 @@ process_command (unsigned int decoded_options_count,
   /* Check that dumpbase_ext, if still present, still matches the end
      of dumpbase, if present, and drop it otherwise.  We only retained
      it above when dumpbase was absent to maybe use it to drop the
-     extension from output_name before combining it with dumpdir.  */
+     extension from output_name before combining it with dumpdir.  We
+     won't deal with -dumpbase-ext when -dumpbase is not explicitly
+     given, even if just to activate backward-compatible dumpbase:
+     dropping it on the floor is correct, expected and documented
+     behavior.  Attempting to deal with a -dumpbase-ext that might
+     match the end of some input filename, or of the combination of
+     the output basename with the suffix of the input filename,
+     possible with an intermediate .gk extension for -fcompare-debug,
+     is just calling for trouble.  */
   if (dumpbase_ext)
     {
-      if (!dumpbase)
+      if (!dumpbase || !*dumpbase)
 	{
 	  free (dumpbase_ext);
 	  dumpbase_ext = NULL;
@@ -5426,7 +5530,7 @@ insert_wrapper (const char *wrapper)
     }
   while ((p = strchr (p, ',')) != NULL);
 
-  argbuf.safe_grow (old_length + n);
+  argbuf.safe_grow (old_length + n, true);
   memmove (argbuf.address () + n,
 	   argbuf.address (),
 	   old_length * sizeof (const_char_p));
@@ -8333,7 +8437,7 @@ driver::maybe_putenv_COLLECT_LTO_WRAPPER () const
   if (lto_wrapper_file)
     {
       lto_wrapper_file = convert_white_space (lto_wrapper_file);
-      lto_wrapper_spec = lto_wrapper_file;
+      set_static_spec_owned (&lto_wrapper_spec, lto_wrapper_file);
       obstack_init (&collect_obstack);
       obstack_grow (&collect_obstack, "COLLECT_LTO_WRAPPER=",
 		    sizeof ("COLLECT_LTO_WRAPPER=") - 1);
@@ -8840,7 +8944,7 @@ driver::maybe_run_linker (const char *argv0) const
 	    {
 	      char *s = find_a_file (&exec_prefixes, "collect2", X_OK, false);
 	      if (s == NULL)
-		linker_name_spec = "ld";
+		set_static_spec_shared (&linker_name_spec, "ld");
 	    }
 
 #if HAVE_LTO_PLUGIN > 0
@@ -8864,7 +8968,7 @@ driver::maybe_run_linker (const char *argv0) const
 	      linker_plugin_file_spec = convert_white_space (temp_spec);
 	    }
 #endif
-	  lto_gcc_spec = argv0;
+	  set_static_spec_shared (&lto_gcc_spec, argv0);
 	}
 
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
@@ -10558,6 +10662,27 @@ debug_level_greater_than_spec_func (int argc, const char **argv)
   return NULL;
 }
 
+/* Returns "" if dwarf_version is greater than ARGV[ARGC-1].
+   Otherwise, return NULL.  */
+
+static const char *
+dwarf_version_greater_than_spec_func (int argc, const char **argv)
+{
+  char *converted;
+
+  if (argc != 1)
+    fatal_error (input_location,
+		 "wrong number of arguments to %%:dwarf-version-gt");
+
+  long arg = strtol (argv[0], &converted, 10);
+  gcc_assert (converted != argv[0]);
+
+  if (dwarf_version > arg)
+    return "";
+
+  return NULL;
+}
+
 static void
 path_prefix_reset (path_prefix *prefix)
 {
@@ -10806,9 +10931,9 @@ driver::finalize ()
   just_machine_suffix = 0;
   gcc_exec_prefix = 0;
   gcc_libexec_prefix = 0;
-  md_exec_prefix = MD_EXEC_PREFIX;
-  md_startfile_prefix = MD_STARTFILE_PREFIX;
-  md_startfile_prefix_1 = MD_STARTFILE_PREFIX_1;
+  set_static_spec_shared (&md_exec_prefix, MD_EXEC_PREFIX);
+  set_static_spec_shared (&md_startfile_prefix, MD_STARTFILE_PREFIX);
+  set_static_spec_shared (&md_startfile_prefix_1, MD_STARTFILE_PREFIX_1);
   multilib_dir = 0;
   multilib_os_dir = 0;
   multiarch_dir = 0;
@@ -10832,8 +10957,7 @@ driver::finalize ()
       spec_list *sl = &static_specs[i];
       if (sl->alloc_p)
 	{
-	  if (0)
-	    free (const_cast <char *> (*(sl->ptr_spec)));
+	  free (const_cast <char *> (*(sl->ptr_spec)));
 	  sl->alloc_p = false;
 	}
       *(sl->ptr_spec) = sl->default_ptr;

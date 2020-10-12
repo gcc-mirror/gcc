@@ -3,8 +3,12 @@
   This is test 'objc', covering all functions starting with 'objc'.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "No API#2 pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
-/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* Although this works with the NeXT runtime in a sub-set of cases, some
+   versions of the runtime header pulls in a number of system protocols,
+   which causes the objc_copyProtocolList test to fail (in addition to those
+   systems that don't have the V2 APis).  XFAILing the run is not useful
+   since it will XPASS on the sub-set that works.  */
+/* { dg-skip-if "Incompatible" { *-*-darwin* } { "-fnext-runtime" } { "" } } */
 
 /* To get the modern GNU Objective-C Runtime API, you include
    objc/runtime.h.  */

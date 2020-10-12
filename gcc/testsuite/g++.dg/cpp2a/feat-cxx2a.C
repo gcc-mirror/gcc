@@ -334,8 +334,8 @@
 
 #ifndef __cpp_nontype_template_args
 #  error "__cpp_nontype_template_args"
-#elif __cpp_nontype_template_args != 201411
-#  error "__cpp_nontype_template_args != 201411"
+#elif __cpp_nontype_template_args != 201911
+#  error "__cpp_nontype_template_args != 201911"
 #endif
 
 #ifndef __cpp_hex_float

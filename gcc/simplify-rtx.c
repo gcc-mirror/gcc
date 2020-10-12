@@ -1527,6 +1527,38 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && XEXP (op, 1) != const0_rtx)
 	return simplify_gen_unary (ZERO_EXTEND, mode, op, GET_MODE (op));
 
+      /* (sign_extend:M (truncate:N (lshiftrt:O <X> (const_int I)))) where
+	 I is GET_MODE_PRECISION(O) - GET_MODE_PRECISION(N), simplifies to
+	 (ashiftrt:M <X> (const_int I)) if modes M and O are the same, and
+	 (truncate:M (ashiftrt:O <X> (const_int I))) if M is narrower than
+	 O, and (sign_extend:M (ashiftrt:O <X> (const_int I))) if M is
+	 wider than O.  */
+      if (GET_CODE (op) == TRUNCATE
+	  && GET_CODE (XEXP (op, 0)) == LSHIFTRT
+	  && CONST_INT_P (XEXP (XEXP (op, 0), 1)))
+	{
+	  scalar_int_mode m_mode, n_mode, o_mode;
+	  rtx old_shift = XEXP (op, 0);
+	  if (is_a <scalar_int_mode> (mode, &m_mode)
+	      && is_a <scalar_int_mode> (GET_MODE (op), &n_mode)
+	      && is_a <scalar_int_mode> (GET_MODE (old_shift), &o_mode)
+	      && GET_MODE_PRECISION (o_mode) - GET_MODE_PRECISION (n_mode)
+		 == INTVAL (XEXP (old_shift, 1)))
+	    {
+	      rtx new_shift = simplify_gen_binary (ASHIFTRT,
+						   GET_MODE (old_shift),
+						   XEXP (old_shift, 0),
+						   XEXP (old_shift, 1));
+	      if (GET_MODE_PRECISION (m_mode) > GET_MODE_PRECISION (o_mode))
+		return simplify_gen_unary (SIGN_EXTEND, mode, new_shift,
+					   GET_MODE (new_shift));
+	      if (mode != GET_MODE (new_shift))
+		return simplify_gen_unary (TRUNCATE, mode, new_shift,
+					   GET_MODE (new_shift));
+	      return new_shift;
+	    }
+	}
+
 #if defined(POINTERS_EXTEND_UNSIGNED)
       /* As we do not know which address space the pointer is referring to,
 	 we can do this only if the target does not support different pointer
@@ -2678,11 +2710,12 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && !contains_symbolic_reference_p (op1))
 	return simplify_gen_unary (NOT, mode, op1, mode);
 
-      /* Subtracting 0 has no effect unless the mode has signed zeros
-	 and supports rounding towards -infinity.  In such a case,
-	 0 - 0 is -0.  */
+      /* Subtracting 0 has no effect unless the mode has signalling NaNs,
+	 or has signed zeros and supports rounding towards -infinity.
+	 In such a case, 0 - 0 is -0.  */
       if (!(HONOR_SIGNED_ZEROS (mode)
 	    && HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	  && !HONOR_SNANS (mode)
 	  && trueop1 == CONST0_RTX (mode))
 	return op0;
 
@@ -3372,7 +3405,6 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       /* Convert (xor (and A C) (and B C)) into (and (xor A B) C).  */
       if (GET_CODE (op0) == GET_CODE (op1)
 	  && (GET_CODE (op0) == AND
-	      || GET_CODE (op0) == XOR
 	      || GET_CODE (op0) == LSHIFTRT
 	      || GET_CODE (op0) == ASHIFTRT
 	      || GET_CODE (op0) == ASHIFT

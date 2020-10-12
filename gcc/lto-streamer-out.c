@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "file-prefix-map.h" /* remap_debug_filename()  */
 #include "output.h"
 #include "ipa-utils.h"
+#include "toplev.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -60,6 +61,12 @@ clear_line_info (struct output_block *ob)
   ob->current_line = 0;
   ob->current_col = 0;
   ob->current_sysp = false;
+  ob->reset_locus = true;
+  ob->emit_pwd = true;
+  /* Initialize to something that will never appear as block,
+     so that the first location with block in a function etc.
+     always streams a change_block bit and the first block.  */
+  ob->current_block = void_node;
 }
 
 
@@ -178,40 +185,99 @@ tree_is_indexable (tree t)
    After outputting bitpack, lto_output_location_data has
    to be done to output actual data.  */
 
+static void
+lto_output_location_1 (struct output_block *ob, struct bitpack_d *bp,
+		       location_t orig_loc, bool block_p)
+{
+  location_t loc = LOCATION_LOCUS (orig_loc);
+
+  if (loc >= RESERVED_LOCATION_COUNT)
+    {
+      expanded_location xloc = expand_location (loc);
+
+      if (ob->reset_locus)
+	{
+	  if (xloc.file == NULL)
+	    ob->current_file = "";
+	  if (xloc.line == 0)
+	    ob->current_line = 1;
+	  if (xloc.column == 0)
+	    ob->current_col = 1;
+	  ob->reset_locus = false;
+	}
+
+      /* As RESERVED_LOCATION_COUNT is 2, we can use the spare value of
+	 3 without wasting additional bits to signalize file change.
+	 If RESERVED_LOCATION_COUNT changes, reconsider this.  */
+      gcc_checking_assert (RESERVED_LOCATION_COUNT == 2);
+      bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT + 1,
+			    RESERVED_LOCATION_COUNT
+			    + (ob->current_file != xloc.file));
+
+      bp_pack_value (bp, ob->current_line != xloc.line, 1);
+      bp_pack_value (bp, ob->current_col != xloc.column, 1);
+
+      if (ob->current_file != xloc.file)
+	{
+	  bool stream_pwd = false;
+	  const char *remapped = remap_debug_filename (xloc.file);
+	  if (ob->emit_pwd && remapped && !IS_ABSOLUTE_PATH (remapped))
+	    {
+	      stream_pwd = true;
+	      ob->emit_pwd = false;
+	    }
+	  bp_pack_value (bp, stream_pwd, 1);
+	  if (stream_pwd)
+	    bp_pack_string (ob, bp, get_src_pwd (), true);
+	  bp_pack_string (ob, bp, remapped, true);
+	  bp_pack_value (bp, xloc.sysp, 1);
+	}
+      ob->current_file = xloc.file;
+      ob->current_sysp = xloc.sysp;
+
+      if (ob->current_line != xloc.line)
+	bp_pack_var_len_unsigned (bp, xloc.line);
+      ob->current_line = xloc.line;
+
+      if (ob->current_col != xloc.column)
+	bp_pack_var_len_unsigned (bp, xloc.column);
+      ob->current_col = xloc.column;
+    }
+  else
+    bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT + 1, loc);
+
+  if (block_p)
+    {
+      tree block = LOCATION_BLOCK (orig_loc);
+      bp_pack_value (bp, ob->current_block != block, 1);
+      streamer_write_bitpack (bp);
+      if (ob->current_block != block)
+	lto_output_tree (ob, block, true, true);
+      ob->current_block = block;
+    }
+}
+
+/* Output info about new location into bitpack BP.
+   After outputting bitpack, lto_output_location_data has
+   to be done to output actual data.  */
+
 void
 lto_output_location (struct output_block *ob, struct bitpack_d *bp,
 		     location_t loc)
 {
-  expanded_location xloc;
+  lto_output_location_1 (ob, bp, loc, false);
+}
 
-  loc = LOCATION_LOCUS (loc);
-  bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT,
-		        loc < RESERVED_LOCATION_COUNT
-			? loc : RESERVED_LOCATION_COUNT);
-  if (loc < RESERVED_LOCATION_COUNT)
-    return;
+/* Output info about new location into bitpack BP.
+   After outputting bitpack, lto_output_location_data has
+   to be done to output actual data.  Like lto_output_location, but
+   additionally output LOCATION_BLOCK info too and write the BP bitpack.  */
 
-  xloc = expand_location (loc);
-
-  bp_pack_value (bp, ob->current_file != xloc.file, 1);
-  bp_pack_value (bp, ob->current_line != xloc.line, 1);
-  bp_pack_value (bp, ob->current_col != xloc.column, 1);
-
-  if (ob->current_file != xloc.file)
-    {
-      bp_pack_string (ob, bp, remap_debug_filename (xloc.file), true);
-      bp_pack_value (bp, xloc.sysp, 1);
-    }
-  ob->current_file = xloc.file;
-  ob->current_sysp = xloc.sysp;
-
-  if (ob->current_line != xloc.line)
-    bp_pack_var_len_unsigned (bp, xloc.line);
-  ob->current_line = xloc.line;
-
-  if (ob->current_col != xloc.column)
-    bp_pack_var_len_unsigned (bp, xloc.column);
-  ob->current_col = xloc.column;
+void
+lto_output_location_and_block (struct output_block *ob, struct bitpack_d *bp,
+			       location_t loc)
+{
+  lto_output_location_1 (ob, bp, loc, true);
 }
 
 
@@ -2052,9 +2118,11 @@ output_cfg (struct output_block *ob, struct function *fn)
       streamer_write_uhwi (ob, EDGE_COUNT (bb->succs));
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  streamer_write_uhwi (ob, e->dest->index);
+	  bitpack_d bp = bitpack_create (ob->main_stream);
+	  bp_pack_var_len_unsigned (&bp, e->dest->index);
+	  bp_pack_var_len_unsigned (&bp, e->flags);
+	  stream_output_location_and_block (ob, &bp, e->goto_locus);
 	  e->probability.stream_out (ob);
-	  streamer_write_uhwi (ob, e->flags);
 	}
     }
 
@@ -2226,7 +2294,7 @@ collect_block_tree_leafs (tree root, vec<tree> &leafs)
     if (! BLOCK_SUBBLOCKS (root))
       leafs.safe_push (root);
     else
-      collect_block_tree_leafs (BLOCK_SUBBLOCKS (root), leafs);
+      collect_block_tree_leafs (root, leafs);
 }
 
 /* This performs function body modifications that are needed for streaming
@@ -2326,7 +2394,6 @@ output_function (struct cgraph_node *node)
   fn = DECL_STRUCT_FUNCTION (function);
   ob = create_output_block (LTO_section_function_body);
 
-  clear_line_info (ob);
   ob->symbol = node;
 
   gcc_assert (current_function_decl == NULL_TREE && cfun == NULL);
@@ -2370,6 +2437,8 @@ output_function (struct cgraph_node *node)
       streamer_write_uhwi (ob, 1);
       output_struct_function_base (ob, fn);
 
+      output_cfg (ob, fn);
+
       /* Output all the SSA names used in the function.  */
       output_ssa_names (ob, fn);
 
@@ -2382,8 +2451,6 @@ output_function (struct cgraph_node *node)
 
       /* The terminator for this function.  */
       streamer_write_record_start (ob, LTO_null);
-
-      output_cfg (ob, fn);
    }
   else
     streamer_write_uhwi (ob, 0);
@@ -2412,7 +2479,6 @@ output_constructor (struct varpool_node *node)
   timevar_push (TV_IPA_LTO_CTORS_OUT);
   ob = create_output_block (LTO_section_function_body);
 
-  clear_line_info (ob);
   ob->symbol = node;
 
   /* Make string 0 be a NULL string.  */

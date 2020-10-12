@@ -1586,7 +1586,7 @@ sem_function::bb_dict_test (vec<int> *bb_dict, int source, int target)
   target++;
 
   if (bb_dict->length () <= (unsigned)source)
-    bb_dict->safe_grow_cleared (source + 1);
+    bb_dict->safe_grow_cleared (source + 1, true);
 
   if ((*bb_dict)[source] == 0)
     {

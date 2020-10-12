@@ -131,6 +131,8 @@ target_triplet = @target@
 subdir = libdruntime
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/cet.m4 \
+	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -565,6 +567,8 @@ CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 CC_FOR_BUILD = @CC_FOR_BUILD@
+CET_DFLAGS = @CET_DFLAGS@
+CET_FLAGS = @CET_FLAGS@
 CFLAGS = @CFLAGS@
 CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 CHECKING_DFLAGS = @CHECKING_DFLAGS@
@@ -715,8 +719,12 @@ D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) -I .
 # D flags for compilation
 AM_DFLAGS = \
 	$(phobos_compiler_pic_flag) \
-	$(WARN_DFLAGS) $(CHECKING_DFLAGS)
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(CET_DFLAGS)
 
+
+# Flags for other kinds of sources
+AM_CFLAGS = $(CET_FLAGS)
+AM_CCASFLAGS = $(CET_FLAGS)
 
 # Install all D and DI files
 ALL_DRUNTIME_INSTALL_DSOURCES = $(DRUNTIME_DSOURCES) \

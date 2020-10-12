@@ -230,8 +230,8 @@ package body Sem_Mech is
                      --  OUT and IN OUT parameters of record types are passed
                      --  by reference regardless of pragmas (RM B.3 (69/2)).
 
-                     elsif Ekind_In (Formal, E_Out_Parameter,
-                                             E_In_Out_Parameter)
+                     elsif Ekind (Formal) in
+                             E_Out_Parameter | E_In_Out_Parameter
                      then
                         Set_Mechanism (Formal, By_Reference);
 

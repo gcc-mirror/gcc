@@ -22,12 +22,12 @@ int RW (1) grdwr1_wr1 (void*, void*);           // { dg-message "previous declar
 int WO (1) grdwr1_wr1 (void*, void*);         // { dg-warning "attribute 'access\\(write_only, 1\\)' mismatch with mode 'read_write'" }
 
 
-int RW (1) RW (1, 2) frdwr1_rdwr1_1 (void*, int);   // { dg-warning "attribute 'access\\(read_write, 1, 2\\)' positional argument 2 conflicts with previous designation" }
+int RW (1) RW (1, 2) frdwr1_rdwr1_1 (void*, int);   // { dg-warning "attribute 'access\\(read_write, 1, 2\\)' positional argument 2 missing in previous designation" }
 
 int RW (1, 2) RW (1) frdwr1_1_rdwr1 (void*, int);   // { dg-warning "attribute 'access\\(read_write, 1\\)' missing positional argument 2 provided in previous designation" }
 
 int RW (1)    grdwr1_rdwr1_1 (void*, int);   // { dg-message "previous declaration here" }
-int RW (1, 2) grdwr1_rdwr1_1 (void*, int);   // { dg-warning "attribute 'access\\(read_write, 1, 2\\)' positional argument 2 conflicts with previous designation" }
+int RW (1, 2) grdwr1_rdwr1_1 (void*, int);   // { dg-warning "attribute 'access\\(read_write, 1, 2\\)' positional argument 2 missing in previous designation" }
 
 
 typedef int *P;

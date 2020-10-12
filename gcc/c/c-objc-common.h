@@ -56,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #define LANG_HOOKS_TYPES_COMPATIBLE_P c_types_compatible_p
 #undef LANG_HOOKS_MISSING_NORETURN_OK_P
 #define LANG_HOOKS_MISSING_NORETURN_OK_P c_missing_noreturn_ok_p
+#undef LANG_HOOKS_BLOCK_MAY_FALLTHRU
+#define LANG_HOOKS_BLOCK_MAY_FALLTHRU c_block_may_fallthru
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION c_builtin_function
 #undef  LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE
@@ -65,6 +67,8 @@ along with GCC; see the file COPYING3.  If not see
   c_simulate_builtin_function_decl
 #undef LANG_HOOKS_EMITS_BEGIN_STMT
 #define LANG_HOOKS_EMITS_BEGIN_STMT true
+#undef LANG_HOOKS_FINALIZE_EARLY_DEBUG
+#define LANG_HOOKS_FINALIZE_EARLY_DEBUG c_common_finalize_early_debug
 
 /* Attribute hooks.  */
 #undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE

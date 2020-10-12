@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
-// { dg-do compile }
+// { dg-do compile { target c++17 } }
 
 #undef __STDCPP_WANT_MATH_SPEC_FUNCS__
 #define __STDCPP_WANT_MATH_SPEC_FUNCS__ 0

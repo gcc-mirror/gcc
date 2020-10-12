@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers" } */
+/* { dg-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events" } */
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -43,9 +43,9 @@ make_a_list_of_random_ints_badly(PyObject *self,
     |      |          (1) when 'PyList_New' fails, returning NULL
     |   26 | 
     |   27 |   for (i = 0; i < count; i++) {
-    |      |   ~~~     
-    |      |   |
-    |      |   (2) when 'i < count'
+    |      |               ~~~~~~~~~
+    |      |                 |
+    |      |                 (2) when 'i < count'
     |   28 |     item = PyLong_FromLong(random());
     |   29 |     PyList_Append(list, item);
     |      |     ~~~~~~~~~~~~~~~~~~~~~~~~~

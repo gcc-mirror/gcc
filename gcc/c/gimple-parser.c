@@ -590,7 +590,7 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 			       : ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	      if (basic_block_info_for_fn (cfun)->length () <= (size_t)index)
 		vec_safe_grow_cleared (basic_block_info_for_fn (cfun),
-				       index + 1);
+				       index + 1, true);
 	      SET_BASIC_BLOCK_FOR_FN (cfun, index, bb);
 	      if (last_basic_block_for_fn (cfun) <= index)
 		last_basic_block_for_fn (cfun) = index + 1;
@@ -617,7 +617,7 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 		      loop->num = is_loop_header_of;
 		      loop->header = bb;
 		      vec_safe_grow_cleared (loops_for_fn (cfun)->larray,
-					     is_loop_header_of + 1);
+					     is_loop_header_of + 1, true);
 		      (*loops_for_fn (cfun)->larray)[is_loop_header_of] = loop;
 		      flow_loop_tree_node_add (loops_for_fn (cfun)->tree_root,
 					       loop);

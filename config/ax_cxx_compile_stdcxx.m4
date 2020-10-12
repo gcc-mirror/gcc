@@ -25,6 +25,10 @@
 #   regardless, after defining HAVE_CXX${VERSION} if and only if a
 #   supporting mode is found.
 #
+#   If the fourth argument is an optional CXX/CXXFLAG/CPPFLAG suffix, e.g.
+#   "_FOR_BUILD" or "_FOR_TARGET".
+#
+#
 # LICENSE
 #
 #   Copyright (c) 2008 Benjamin Kosnik <bkoz@redhat.com>
@@ -62,14 +66,20 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
         [m4_fatal([invalid third argument `$3' to AX_CXX_COMPILE_STDCXX])])
   AC_LANG_PUSH([C++])dnl
   ac_success=no
-
+  m4_ifnblank([$4], [dnl
+    ax_cv_cxx_compile_cxx$1_orig_cxx="$CXX"
+    ax_cv_cxx_compile_cxx$1_orig_cxxflags="$CXXFLAGS"
+    ax_cv_cxx_compile_cxx$1_orig_cppflags="$CPPFLAGS"
+    CXX="$CXX$4"
+    CXXFLAGS="$CXXFLAGS$4"
+    CPPFLAGS="$CPPFLAGS$4"])
   m4_if([$2], [], [dnl
     AC_CACHE_CHECK(whether $CXX supports C++$1 features by default,
-		   ax_cv_cxx_compile_cxx$1,
+		   ax_cv_cxx_compile_cxx$1$4,
       [AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_testbody_$1])],
-        [ax_cv_cxx_compile_cxx$1=yes],
-        [ax_cv_cxx_compile_cxx$1=no])])
-    if test x$ax_cv_cxx_compile_cxx$1 = xyes; then
+        [ax_cv_cxx_compile_cxx$1$4=yes],
+        [ax_cv_cxx_compile_cxx$1$4=no])])
+    if test x$ax_cv_cxx_compile_cxx$1$4 = xyes; then
       ac_success=yes
     fi])
 
@@ -77,7 +87,7 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
   if test x$ac_success = xno; then
     for alternative in ${ax_cxx_compile_alternatives}; do
       switch="-std=gnu++${alternative}"
-      cachevar=AS_TR_SH([ax_cv_cxx_compile_cxx$1_$switch])
+      cachevar=AS_TR_SH([ax_cv_cxx_compile_cxx$1$4_$switch])
       AC_CACHE_CHECK(whether $CXX supports C++$1 features with $switch,
                      $cachevar,
         [ac_save_CXX="$CXX"
@@ -104,7 +114,7 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
     dnl Cray's crayCC needs "-h std=c++11"
     for alternative in ${ax_cxx_compile_alternatives}; do
       for switch in -std=c++${alternative} +std=c++${alternative} "-h std=c++${alternative}"; do
-        cachevar=AS_TR_SH([ax_cv_cxx_compile_cxx$1_$switch])
+        cachevar=AS_TR_SH([ax_cv_cxx_compile_cxx$1$4_$switch])
         AC_CACHE_CHECK(whether $CXX supports C++$1 features with $switch,
                        $cachevar,
           [ac_save_CXX="$CXX"
@@ -127,6 +137,13 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
       fi
     done
   fi])
+  m4_ifnblank([$4], [dnl
+    CXX$4="$CXX"
+    CXXFLAGS$4="$CXXFLAGS"
+    CPPFLAGS$4="$CPPFLAGS"
+    CXX="$ax_cv_cxx_compile_cxx$1_orig_cxx"
+    CXXFLAGS="$ax_cv_cxx_compile_cxx$1_orig_cxxflags"
+    CPPFLAGS="$ax_cv_cxx_compile_cxx$1_orig_cppflags"])
   AC_LANG_POP([C++])
   if test x$ax_cxx_compile_cxx$1_required = xtrue; then
     if test x$ac_success = xno; then
@@ -134,14 +151,14 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX], [dnl
     fi
   fi
   if test x$ac_success = xno; then
-    HAVE_CXX$1=0
+    HAVE_CXX$1$4=0
     AC_MSG_NOTICE([No compiler with C++$1 support was found])
   else
-    HAVE_CXX$1=1
-    AC_DEFINE(HAVE_CXX$1,1,
+    HAVE_CXX$1$4=1
+    AC_DEFINE(HAVE_CXX$1$4,1,
               [define if the compiler supports basic C++$1 syntax])
   fi
-  AC_SUBST(HAVE_CXX$1)
+  AC_SUBST(HAVE_CXX$1$4)
 ])
 
 

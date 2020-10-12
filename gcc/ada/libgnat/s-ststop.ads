@@ -53,7 +53,7 @@
 --       or
 --     String_Output_Blk_IO (Some_Stream, Some_String);
 
---  String_Output form is used if pragma Restrictions (No_String_Optimziations)
+--  String_Output form is used if pragma Restrictions (No_String_Optimizations)
 --  is active, which requires element by element operations. The BLK_IO form
 --  is used if this restriction is not set, allowing block optimization.
 

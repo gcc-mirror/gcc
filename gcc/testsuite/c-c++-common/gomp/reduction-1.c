@@ -44,7 +44,7 @@ foo (int a[10][10][10], int **b, int x)
     bar (a);
   #pragma omp parallel reduction(+: f[:][0:2])		/* { dg-error "for unknown bound array type length expression must be specified" } */
     bar (a);
-  #pragma omp parallel reduction(+: a[:][0:10])		/* { dg-error "for pointer type length expression must be specified" } */
+  #pragma omp parallel reduction(+: a[:][0:10])		/* { dg-error "for array function parameter length expression must be specified" } */
     bar (a);
   #pragma omp parallel reduction(+: a[:10][0:12])	/* { dg-error "above array section size" } */
     bar (a);

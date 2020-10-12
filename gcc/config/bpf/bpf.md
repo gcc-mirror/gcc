@@ -82,10 +82,15 @@
 
 ;;;; NOPs
 
+;; The Linux kernel verifier performs some optimizations that rely on
+;; nop instructions to be encoded as `ja 0', i.e. a jump to offset 0,
+;; which actually means to jump to the next instruction, since in BPF
+;; offsets are expressed in 64-bit words _minus one_.
+
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "mov\t%%r0,%%r0"
+  "ja\t0"
   [(set_attr "type" "alu")])
 
 ;;;; Arithmetic/Logical
@@ -160,6 +165,16 @@
   "div<msuffix>\t%0,%2"
   [(set_attr "type" "<mtype>")])
 
+;; However, xBPF does provide a signed division operator, sdiv.
+
+(define_insn "div<AM:mode>3"
+  [(set (match_operand:AM 0 "register_operand" "=r,r")
+        (div:AM (match_operand:AM 1 "register_operand" " 0,0")
+                (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
+  "TARGET_XBPF"
+  "sdiv<msuffix>\t%0,%2"
+  [(set_attr "type" "<mtype>")])
+
 ;;; Modulus
 
 ;; Note that eBPF doesn't provide instructions for signed integer
@@ -171,6 +186,16 @@
                  (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
   ""
   "mod<msuffix>\t%0,%2"
+  [(set_attr "type" "<mtype>")])
+
+;; Again, xBPF provides a signed version, smod.
+
+(define_insn "mod<AM:mode>3"
+  [(set (match_operand:AM 0 "register_operand" "=r,r")
+        (mod:AM (match_operand:AM 1 "register_operand" " 0,0")
+                (match_operand:AM 2 "reg_or_imm_operand" "r,I")))]
+  "TARGET_XBPF"
+  "smod<msuffix>\t%0,%2"
   [(set_attr "type" "<mtype>")])
 
 ;;; Logical AND
@@ -271,7 +296,7 @@
 {
   if (!register_operand(operands[0], <MM:MODE>mode)
       && !register_operand(operands[1], <MM:MODE>mode))
-    operands[1] = force_reg (<MM:MODE>mode, operands[1]); 
+    operands[1] = force_reg (<MM:MODE>mode, operands[1]);
 }")
 
 (define_insn "*mov<MM:mode>"

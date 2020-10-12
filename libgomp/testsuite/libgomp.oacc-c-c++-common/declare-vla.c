@@ -59,8 +59,3 @@ main ()
 
   return 0;
 }
-
-
-/* { dg-xfail-run-if "TODO PR90861" { *-*-* } { "-DACC_MEM_SHARED=0" } }
-   This might XPASS if the compiler happens to put the two 'A' VLAs at the same
-   address.  */

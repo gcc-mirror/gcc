@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -9,7 +11,7 @@ foo ()
   void *dst, *src;
   uint32_t len;
 
-  ret = __builtin_bpf_helper_probe_write_user (dst, src, len);
+  ret = bpf_probe_write_user (dst, src, len);
 }
 
 /* { dg-final { scan-assembler "call\t36" } } */

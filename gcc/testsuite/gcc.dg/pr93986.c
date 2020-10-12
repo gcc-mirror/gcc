@@ -1,6 +1,7 @@
 /* PR tree-optimization/93986 - ICE in decompose, at wide-int.h:984
    { dg-do compile }
-   { dg-options "-O1 -foptimize-strlen -ftree-slp-vectorize" } */
+   { dg-options "-O1 -foptimize-strlen -ftree-slp-vectorize" }
+   { dg-require-effective-target alloca } */
 
 int dd (void);
 

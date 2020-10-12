@@ -881,7 +881,7 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_POWIF, "powif", ATTR_CONST_NOTHROW_LEAF_LIST);
 
 
-  if (targetm.libc_has_function (function_c99_math_complex))
+  if (targetm.libc_has_function (function_c99_math_complex, NULL_TREE))
     {
       gfc_define_builtin ("__builtin_cbrtl", mfunc_longdouble[0],
 			  BUILT_IN_CBRTL, "cbrtl",
@@ -903,7 +903,7 @@ gfc_init_builtin_functions (void)
 			  ATTR_CONST_NOTHROW_LEAF_LIST);
     }
 
-  if (targetm.libc_has_function (function_sincos))
+  if (targetm.libc_has_function (function_sincos, NULL_TREE))
     {
       gfc_define_builtin ("__builtin_sincosl",
 			  func_longdouble_longdoublep_longdoublep,
@@ -1237,17 +1237,6 @@ gfc_init_builtin_functions (void)
 #undef DEF_GOACC_BUILTIN_COMPILER
 #undef DEF_GOMP_BUILTIN
     }
-
-#ifdef ENABLE_HSA
-  if (!flag_disable_hsa)
-    {
-#undef DEF_HSA_BUILTIN
-#define DEF_HSA_BUILTIN(code, name, type, attr) \
-      gfc_define_builtin ("__builtin_" name, builtin_types[type], \
-			  code, name, attr);
-#include "../hsa-builtins.def"
-    }
-#endif
 
   gfc_define_builtin ("__builtin_trap", builtin_types[BT_FN_VOID],
 		      BUILT_IN_TRAP, NULL, ATTR_NOTHROW_LEAF_LIST);

@@ -35,6 +35,7 @@ struct coro1 {
   coro::suspend_always final_suspend () const {  return {}; }
 
   void return_value(T&& v) noexcept { value = std::move(v); }
+  void return_value(const T&) noexcept = delete;
   
   T get_value (void) { return value; }
   void unhandled_exception() { }
@@ -59,9 +60,16 @@ struct MoveOnlyType
   ~MoveOnlyType() { value_ = -2; }
 };
 
+bool b1, b2;
+
 coro1<MoveOnlyType> 
-my_coro ()
+my_coro (MoveOnlyType p, MoveOnlyType &&r)
 {
   MoveOnlyType x{10};
-  co_return x;
+  if (b1)
+    co_return p;
+  else if (b2)
+    co_return r;
+  else
+    co_return x;
 }

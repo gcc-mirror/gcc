@@ -22,6 +22,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-time "" }
+// { dg-require-sleep "" }
 
 #include <thread>
 #include <chrono>

@@ -26,5 +26,6 @@ constexpr auto make_array()
     -> array<conditional_t<is_void_v<_Dest>, common_type_t<>, _Dest>,
              sizeof...(_Types)> {
   static_assert(__or_<__not_<is_void<_Dest>>, __and_<>>::value, ""); // { dg-error "static assert" }
+  throw 1;
 }
 auto d = make_array();

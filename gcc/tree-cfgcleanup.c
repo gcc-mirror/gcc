@@ -209,10 +209,14 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
    to updated gimple_call_flags.  */
 
 static void
-cleanup_call_ctrl_altering_flag (gimple *bb_end)
+cleanup_call_ctrl_altering_flag (basic_block bb, gimple *bb_end)
 {
   if (!is_gimple_call (bb_end)
-      || !gimple_call_ctrl_altering_p (bb_end))
+      || !gimple_call_ctrl_altering_p (bb_end)
+      || (/* IFN_UNIQUE should be the last insn, to make checking for it
+	     as cheap as possible.  */
+	  gimple_call_internal_p (bb_end)
+	  && gimple_call_internal_unique_p (bb_end)))
     return;
 
   int flags = gimple_call_flags (bb_end);
@@ -220,6 +224,24 @@ cleanup_call_ctrl_altering_flag (gimple *bb_end)
        && !(flags & ECF_LOOPING_CONST_OR_PURE))
       || (flags & ECF_LEAF))
     gimple_call_set_ctrl_altering (bb_end, false);
+  else
+    {
+      edge_iterator ei;
+      edge e;
+      bool found = false;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->flags & EDGE_FALLTHRU)
+	  found = true;
+	else if (e->flags & EDGE_ABNORMAL)
+	  {
+	    found = false;
+	    break;
+	  }
+      /* If there's no abnormal edge and a fallthru edge the call
+	 isn't control-altering anymore.  */
+      if (found)
+	gimple_call_set_ctrl_altering (bb_end, false);
+    }
 }
 
 /* Try to remove superfluous control structures in basic block BB.  Returns
@@ -243,7 +265,7 @@ cleanup_control_flow_bb (basic_block bb)
   stmt = gsi_stmt (gsi);
 
   /* Try to cleanup ctrl altering flag for call which ends bb.  */
-  cleanup_call_ctrl_altering_flag (stmt);
+  cleanup_call_ctrl_altering_flag (bb, stmt);
 
   if (gimple_code (stmt) == GIMPLE_COND
       || gimple_code (stmt) == GIMPLE_SWITCH)

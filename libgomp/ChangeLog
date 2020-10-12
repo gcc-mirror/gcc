@@ -1,3 +1,371 @@
+2020-10-11  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/t-aix: Delete and recreate libgomp before creating
+	FAT library.
+
+2020-10-08  Tom de Vries  <tdevries@suse.de>
+
+	PR libgomp/81802
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_run): Report launch
+	dimensions.
+
+2020-10-06  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-fortran/declare-5.f90: Add xfail for PR92790.
+
+2020-10-06  Tom de Vries  <tdevries@suse.de>
+
+	PR middle-end/90861
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Remove xfail.
+
+2020-10-05  Tom de Vries  <tdevries@suse.de>
+
+	PR fortran/95654
+	* testsuite/libgomp.fortran/pr95654.f90: New test.
+
+2020-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* Makefile.in: Regenerate with automake 1.15.1.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2020-09-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* parallel.c (gomp_resolve_num_threads): Ignore nest_var on nvptx
+	and amdgcn targets.
+
+2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/declare-target-3.f90: New test.
+
+2020-09-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/bar.c (gomp_barrier_wait_end): Skip the barrier if the
+	total number of threads is one.
+	(gomp_team_barrier_wake): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* config/nvptx/bar.c (gomp_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wake): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* testsuite/libgomp.c-c++-common/nested-parallel-unbalanced.c: New test.
+
+2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/96390
+	* testsuite/libgomp.c++/pr96390.C: New test.
+	* testsuite/libgomp.c-c++-common/pr96390.c: New test.
+
+2020-09-27  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/t-aix: Use $(AR) without -X32_64.
+
+2020-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-25.c: New test.
+
+2020-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95654
+	* testsuite/libgomp.fortran/pr66199-5.f90: Make stop codes unique.
+
+2020-09-22  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (link_ptx): Print elog if cuLinkComplete call
+	fails.
+
+2020-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	* testsuite/libgomp.c++/udr-3.C: Add missing ctor.
+
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* target.c (gomp_map_vars_internal): Initialize has_nullptr.
+
+2020-09-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96668
+	* libgomp.h (struct target_var_desc): Add has_null_ptr_assoc member.
+	* target.c (gomp_map_vars_existing): Add always_to_flag flag.
+	(gomp_map_vars_existing): Update call to it.
+	(gomp_map_fields_existing): Likewise
+	(gomp_map_vars_internal): Update PSET handling such that if a nullptr is
+	now allocated or if GOMP_MAP_POINTER is used PSET is updated and pointer
+	remapped.
+	(GOMP_target_enter_exit_data): Hanlde GOMP_MAP_ALWAYS_POINTER like
+	GOMP_MAP_POINTER.
+	* testsuite/libgomp.fortran/map-alloc-ptr-1.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-ptr-2.f90: New test.
+
+2020-09-14  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/atomic.c: New file.  Add
+	__sync_val_compare_and_swap_16.
+	* testsuite/libgomp.c-c++-common/reduction-16.c: Add -latomic for
+	target offload_target_nvptx.
+
+2020-09-08  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-2.c: Remove
+	iteration-ordering assumptions.
+
+2020-09-08  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/collapse-1.f90: Fix race condition.
+	* testsuite/libgomp.oacc-fortran/collapse-2.f90: Likewise.
+
+2020-08-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_free):
+	Change "GOMP_PLUGIN_acc_thread () == NULL" test into check of
+	CUDA_ERROR_NOT_PERMITTED status for cuMemGetAddressRange. Adjust
+	comments.
+
+2020-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/lastprivate-conditional-10.f90: New test.
+
+2020-08-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/reduction-16.c: New.
+
+2020-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-22.c (main): Add some further tests.
+	* testsuite/libgomp.c/loop-23.c (main): Likewise.
+	* testsuite/libgomp.c/loop-24.c: New test.
+
+2020-08-08  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93553
+	* testsuite/libgomp.fortran/pr93553.f90: New test.
+
+2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-22.c: New test.
+	* testsuite/libgomp.c/loop-23.c: New test.
+
+2020-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/96459
+	* testsuite/libgomp.c/teams-3.c: New test.
+	* testsuite/libgomp.c-c++-common/for-2.h (OMPTEAMS): Define to nothing
+	if not defined yet.
+	(N(test)): Use it before all N(f*) calls.
+	* testsuite/libgomp.c-c++-common/for-14.c (DO_PRAGMA, OMPTEAMS): Define.
+	(main): Don't call all test_* functions from within
+	#pragma omp teams reduction(|:err), call them directly.
+
+2020-08-04  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96428
+	* testsuite/libgomp.oacc-fortran/pr96628-part1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/pr96628-part2.f90: New test.
+
+2020-08-03  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-1.f90: Don't run for
+	shared-memory devices.  Extend with further checking.
+
+2020-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	* plugin/Makefrag.am: Remove configuration of HSA plugin.
+	* aclocal.m4: Regenerated.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* plugin/configfrag.ac: Likewise.
+	* plugin/hsa_ext_finalize.h: Removed.
+	* plugin/plugin-hsa.c: Likewise.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/lib/libgomp.exp
+	(offload_target_to_openacc_device_type): Remove hsa case.
+	(check_effective_target_hsa_offloading_selected_nocache): Removed
+	(check_effective_target_hsa_offloading_selected): Likewise.
+	(libgomp_init): Do not add -Wno-hsa to additional_flags.
+	* testsuite/libgomp.hsa.c/alloca-1.c: Removed test.
+	* testsuite/libgomp.hsa.c/bitfield-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/bits-insns.c: Likewise.
+	* testsuite/libgomp.hsa.c/builtins-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/c.exp: Likewise.
+	* testsuite/libgomp.hsa.c/complex-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/complex-align-2.c: Likewise.
+	* testsuite/libgomp.hsa.c/formal-actual-args-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/function-call-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/get-level-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-2.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-3.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-4.c: Likewise.
+	* testsuite/libgomp.hsa.c/memory-operations-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/pr69568.c: Likewise.
+	* testsuite/libgomp.hsa.c/pr82416.c: Likewise.
+	* testsuite/libgomp.hsa.c/rotate-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/staticvar.c: Likewise.
+	* testsuite/libgomp.hsa.c/switch-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/switch-branch-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/switch-sbr-2.c: Likewise.
+	* testsuite/libgomp.hsa.c/tiling-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/tiling-2.c: Likewise.
+
+2020-07-27  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.h (struct target_var_desc): Rename do_detach field to
+	is_attach.
+	* oacc-mem.c (goacc_exit_datum_1): Add assert.  Don't set finalize for
+	GOMP_MAP_FORCE_DETACH. Update checking to use is_attach field.
+	(goacc_enter_data_internal): Don't affect reference counts
+	for attach mappings.
+	(goacc_exit_data_internal): Don't affect reference counts for detach
+	mappings.
+	* target.c (gomp_map_vars_existing): Don't affect reference counts for
+	attach mappings.
+	(gomp_map_vars_internal): Set renamed is_attach flag unconditionally to
+	mark attach mappings.
+	(gomp_unmap_vars_internal): Use is_attach flag to prevent affecting
+	reference count for attach mappings.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-2.c: New test.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6-no_finalize.F90: Mark
+	test as shouldfail.
+	* testsuite/libgomp.oacc-fortran/deep-copy-6.f90: Adjust to fail
+	gracefully in no-finalize mode.
+	* testsuite/libgomp.oacc-c-c++-common/mdc-refcount-3.c: New file.
+
+2020-07-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/c++.exp: Unset 'offload_target' after
+	use.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
+2020-07-23  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_unmap_vars_internal): Remove unnecessary forcing of
+	finalization for detach operation.
+	* testsuite/libgomp.oacc-c-c++-common/structured-detach-underflow.c:
+	New test.
+
+2020-07-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac: Add OMP_DEPEND_KIND and OMP_INT128_SIZE.
+	* libgomp_f.h.in (omp_check_defines): Check whether
+	sizeof of determined Fortran kind and C typedef match.
+	* omp_lib.f90.in: Add omp_depened_kind.
+	* omp_lib.h.in: Likewise; fix omp_alloctrait_key_kind.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/critical-hint-1.c: New; moved from
+	gcc/testsuite/c-c++-common/gomp/.
+	* testsuite/libgomp.c-c++-common/critical-hint-2.c: Likewise.
+	* testsuite/libgomp.fortran/critical-hint-1.f90: New; moved
+	from gcc/testsuite/gfortran.dg/gomp/.
+	* testsuite/libgomp.fortran/critical-hint-2.f90: Likewise.
+
+2020-07-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp_lib.f90.in: Add omp_sync_hint_* and omp_sync_hint_kind.
+	* omp_lib.h.in: Likewise.
+
+2020-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95620
+	* testsuite/libgomp.c/pr95620.c: New test.
+
+2020-07-16  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-2.f90: New test.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/alloc-1.F90: Use c_size_t to
+	avoid conversion on 32bit systems from 32bit to 64bit due
+	to -fdefault-integer-8.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: Remove unused
+	variables; add character(kind=4) tests; update TODO comment.
+
+2020-07-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* allocator.c: Add ialias for omp_init_allocator and
+	omp_destroy_allocator.
+	* configure.ac: Set INTPTR_T_KIND.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* fortran.c (omp_init_allocator_, omp_destroy_allocator_,
+	omp_set_default_allocator_, omp_get_default_allocator_): New
+	functions and ialias_redirect.
+	* icv.c: Add ialias for omp_set_default_allocator and
+	omp_get_default_allocator.
+	* libgomp.map (OMP_5.0.1): Add omp_init_allocator_,
+	omp_destroy_allocator_, omp_set_default_allocator_ and
+	omp_get_default_allocator_.
+	* omp_lib.f90.in: Add allocator traits parameters, declare
+	allocator routines and add related kind parameters.
+	* omp_lib.h.in: Likewise.
+	* testsuite/libgomp.c-c++-common/alloc-2.c: Fix sizeof.
+	* testsuite/libgomp.fortran/alloc-1.F90: New test.
+	* testsuite/libgomp.fortran/alloc-2.F90: New test.
+	* testsuite/libgomp.fortran/alloc-3.F: New test.
+	* testsuite/libgomp.fortran/alloc-4.f90: New test.
+	* testsuite/libgomp.fortran/alloc-5.f90: New test.
+
+2020-07-14  Tom de Vries  <tom@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* oacc-init.c (acc_init_state_lock, acc_init_state, acc_init_thread):
+	New variable.
+	(acc_init_1): Set acc_init_thread to pthread_self ().  Set
+	acc_init_state to initializing at the start, and to initialized at the
+	end.
+	(self_initializing_p): New function.
+	(acc_get_device_type): Return acc_device_none if called by thread that
+	is currently executing acc_init_1.
+	* libgomp.texi (acc_get_device_type): Update documentation.
+	(Implementation Status and Implementation-Defined Behavior): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-2.c: New.
+
+2020-07-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/t-aix: Set BITS from compiler cpp macro.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/struct-elem-map-1.f90: New test.
+
+2020-07-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/67311
+	* testsuite/libgomp.fortran/target-map-1.f90: New test.
+
+2020-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-21.c: New test.
+
+2020-07-13  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/dynamic-pointer-1.f90: New test.
+
 2020-07-10  Julian Brown  <julian@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

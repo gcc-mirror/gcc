@@ -31,12 +31,14 @@ constraint_equal (struct constraint a, struct constraint b)
 }
 
 /* Most targets should be using this test.  */
-/* { dg-final { scan-tree-dump-times "Deleted dead store: x = " 1 "dse1" { target { ! tic6x-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "Deleted dead store: y = " 1 "dse1" { target { ! tic6x-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: x = " 1 "dse1" { target { ! { tic6x-*-* mmix-knuth-mmixware } } } } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: y = " 1 "dse1" { target { ! { tic6x-*-* mmix-knuth-mmixware } } } } } */
 
 /* The c6x port generates significantly different gimple which
    changes the SRA and DSE decisions.   Verify we remove all
-   dead stores.  */
+   dead stores.  Similarly for mmix.  */
 /* { dg-final { scan-tree-dump-times "Deleted dead store: \[ax\].. = " 2 "dse1" { target tic6x-*-* } } } */
 /* { dg-final { scan-tree-dump-times "Deleted dead store: \[by\].. = " 2 "dse1" { target tic6x-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: x::. = " 1 "dse1" { target mmix-knuth-mmixware } } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: y::. = " 1 "dse1" { target mmix-knuth-mmixware } } } */
 

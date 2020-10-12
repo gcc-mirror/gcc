@@ -5245,8 +5245,10 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag,
 	{
 	  /* Larger kinds can hold values of smaller kinds without problems.
 	     Hence, only warn if target kind is smaller than the source
-	     kind - or if -Wconversion-extra is specified.  */
-	  if (expr->expr_type != EXPR_CONSTANT)
+	     kind - or if -Wconversion-extra is specified.  LOGICAL values
+	     will always fit regardless of kind so ignore conversion.  */
+	  if (expr->expr_type != EXPR_CONSTANT
+	      && ts->type != BT_LOGICAL)
 	    {
 	      if (warn_conversion && from_ts.kind > ts->kind)
 		gfc_warning_now (OPT_Wconversion, "Possible change of value in "

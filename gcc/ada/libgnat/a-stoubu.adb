@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 with Unchecked_Deallocation;
 with Ada.Strings.UTF_Encoding.Strings;
 with Ada.Strings.UTF_Encoding.Wide_Strings;

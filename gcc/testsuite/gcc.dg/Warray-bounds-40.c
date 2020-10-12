@@ -3,7 +3,7 @@
    functions when -Wstringop-overflow is disabled is -Warray-bounds
    with the right wording.
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-stringop-overflow" } */
+   { dg-options "-O2 -Wall -Wno-stringop-overflow -Wno-stringop-overread" } */
 
 #define PTRDIFF_MAX   __PTRDIFF_MAX__
 #define SIZE_MAX      __SIZE_MAX__

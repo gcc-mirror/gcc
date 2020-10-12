@@ -19,6 +19,6 @@ int main() {
   S1<char> s1;      // { dg-error "constraint|invalid" }
   S2<int, char> s2; // { dg-error "constraint|invalid" }
 
-  f('a');    // { dg-error "unsatisfied" }
-  g(0, 'a'); // { dg-error "unsatisfied" }
+  f('a');    // { dg-error "no match" }
+  g(0, 'a'); // { dg-error "no match" }
 }

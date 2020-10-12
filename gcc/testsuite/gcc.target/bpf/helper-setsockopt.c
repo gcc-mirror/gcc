@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -11,9 +13,8 @@ foo ()
   int optname;
   void *optval;
   int optlen;
-  
-  ret = __builtin_bpf_helper_setsockopt (bpf_socket, level, optname,
-					 optval, optlen);
+
+  ret = bpf_setsockopt (bpf_socket, level, optname, optval, optlen);
 }
 
 /* { dg-final { scan-assembler "call\t49" } } */

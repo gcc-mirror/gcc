@@ -122,12 +122,16 @@
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_any 201606L
 #define __cpp_lib_apply 201603
-#define __cpp_lib_array_constexpr 201803L
+#if __cplusplus == 201703L // N.B. updated value in C++20
+# define __cpp_lib_array_constexpr 201803L
+#endif
 #define __cpp_lib_as_const 201510
 #define __cpp_lib_boyer_moore_searcher 201603
 #define __cpp_lib_chrono 201611
 #define __cpp_lib_clamp 201603
-#define __cpp_lib_constexpr_char_traits 201611L
+#if __cplusplus == 201703L // N.B. updated value in C++20
+# define __cpp_lib_constexpr_char_traits 201611L
+#endif
 #define __cpp_lib_enable_shared_from_this 201603
 #define __cpp_lib_execution 201902L // FIXME: should be 201603L
 #define __cpp_lib_filesystem 201703
@@ -191,8 +195,6 @@
 #define __cpp_lib_unwrap_ref 201811L
 
 #if _GLIBCXX_HOSTED
-#undef __cpp_lib_array_constexpr
-#undef __cpp_lib_constexpr_char_traits
 #define __cpp_lib_array_constexpr 201811L
 #define __cpp_lib_assume_aligned 201811L
 #define __cpp_lib_bind_front 201907L

@@ -4,6 +4,7 @@
 /* { dg-require-effective-target int128 } */
 /* { dg-require-effective-target fenv } */
 /* { dg-options "-frounding-math" } */
+/* { dg-xfail-run-if "see PR80556 c63" { x86_64-*-darwin* i68?-*-darwin* } { "*" } { "" } } */
 
 #include <fenv.h>
 #include <stdlib.h>

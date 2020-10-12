@@ -4241,6 +4241,26 @@ package Sinfo is
       --  Component_Associations (List2)
       --  Etype (Node5-Sem)
 
+      ---------------------------------
+      --  3.4.5 Comtainer_Aggregates --
+      ---------------------------------
+
+      --  N_Iterated_Element_Association
+      --  Key_Expression (Node1)
+      --  Iterator_Specification (Node2)
+      --  Expression (Node3)
+      --  Loop_Parameter_Specification (Node4)
+      --  Loop_Actions (List5-Sem)
+
+      --  Exactly one of Iterator_Specification or Loop_Parameter_
+      --  specification is present. If the Key_Expression is absent,
+      --  the construct is parsed as an Iterated_Component_Association,
+      --  and legality checks are performed during semantic analysis.
+
+      --  Both iterated associations are Ada2020 features that are
+      --  expanded during aggregate construction, and do not appear in
+      --  expanded code.
+
       --------------------------------------------------
       -- 4.4  Expression/Relation/Term/Factor/Primary --
       --------------------------------------------------
@@ -8917,6 +8937,7 @@ package Sinfo is
       N_Handled_Sequence_Of_Statements,
       N_Index_Or_Discriminant_Constraint,
       N_Iterated_Component_Association,
+      N_Iterated_Element_Association,
       N_Itype_Reference,
       N_Label,
       N_Modular_Type_Definition,
@@ -9841,6 +9862,9 @@ package Sinfo is
 
    function Itype
      (N : Node_Id) return Entity_Id;  -- Node1
+
+   function Key_Expression
+     (N : Node_Id) return Node_Id;    -- Node1
 
    function Kill_Range_Check
      (N : Node_Id) return Boolean;    -- Flag11
@@ -10951,6 +10975,9 @@ package Sinfo is
    procedure Set_Itype
      (N : Node_Id; Val : Entity_Id);          -- Node1
 
+   procedure Set_Key_Expression
+     (N : Node_Id; Val : Node_Id);            -- Node1
+
    procedure Set_Kill_Range_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag11
 
@@ -11383,136 +11410,6 @@ package Sinfo is
    --  for the argument. This is Arg itself, or, in the case where Arg is a
    --  pragma argument association node, the expression from this node.
 
-   --------------------------------
-   -- Node_Kind Membership Tests --
-   --------------------------------
-
-   --  The following functions allow a convenient notation for testing whether
-   --  a Node_Kind value matches any one of a list of possible values. In each
-   --  case True is returned if the given T argument is equal to any of the V
-   --  arguments. Note that there is a similar set of functions defined in
-   --  Atree where the first argument is a Node_Id whose Nkind field is tested.
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind;
-      V6 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind;
-      V6 : Node_Kind;
-      V7 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind;
-      V6 : Node_Kind;
-      V7 : Node_Kind;
-      V8 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T  : Node_Kind;
-      V1 : Node_Kind;
-      V2 : Node_Kind;
-      V3 : Node_Kind;
-      V4 : Node_Kind;
-      V5 : Node_Kind;
-      V6 : Node_Kind;
-      V7 : Node_Kind;
-      V8 : Node_Kind;
-      V9 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T   : Node_Kind;
-      V1  : Node_Kind;
-      V2  : Node_Kind;
-      V3  : Node_Kind;
-      V4  : Node_Kind;
-      V5  : Node_Kind;
-      V6  : Node_Kind;
-      V7  : Node_Kind;
-      V8  : Node_Kind;
-      V9  : Node_Kind;
-      V10 : Node_Kind) return Boolean;
-
-   function Nkind_In
-     (T   : Node_Kind;
-      V1  : Node_Kind;
-      V2  : Node_Kind;
-      V3  : Node_Kind;
-      V4  : Node_Kind;
-      V5  : Node_Kind;
-      V6  : Node_Kind;
-      V7  : Node_Kind;
-      V8  : Node_Kind;
-      V9  : Node_Kind;
-      V10 : Node_Kind;
-      V11 : Node_Kind) return Boolean;
-
-   --  12..16-parameter versions are not yet needed
-
-   function Nkind_In
-     (T   : Node_Kind;
-      V1  : Node_Kind;
-      V2  : Node_Kind;
-      V3  : Node_Kind;
-      V4  : Node_Kind;
-      V5  : Node_Kind;
-      V6  : Node_Kind;
-      V7  : Node_Kind;
-      V8  : Node_Kind;
-      V9  : Node_Kind;
-      V10 : Node_Kind;
-      V11 : Node_Kind;
-      V12 : Node_Kind;
-      V13 : Node_Kind;
-      V14 : Node_Kind;
-      V15 : Node_Kind;
-      V16 : Node_Kind;
-      V17 : Node_Kind) return Boolean;
-
-   pragma Inline (Nkind_In);
-   --  Inline all above functions
-
    -----------------------
    -- Utility Functions --
    -----------------------
@@ -11899,6 +11796,13 @@ package Sinfo is
         2 => True,    --  Iterator_Specification
         3 => True,    --  Expression (Node3)
         4 => True,    --  Discrete_Choices (List4)
+        5 => True),   --  Loop_Actions (List5-Sem);
+
+     N_Iterated_Element_Association =>
+       (1 => True,    --  Key_expression
+        2 => True,    --  Iterator_Specification
+        3 => True,    --  Expression (Node3)
+        4 => True,    --  Loop_Parameter_Specification
         5 => True),   --  Loop_Actions (List5-Sem);
 
      N_Delta_Aggregate =>
@@ -13446,6 +13350,7 @@ package Sinfo is
    pragma Inline (Iterator_Filter);
    pragma Inline (Iteration_Scheme);
    pragma Inline (Itype);
+   pragma Inline (Key_Expression);
    pragma Inline (Kill_Range_Check);
    pragma Inline (Last_Bit);
    pragma Inline (Last_Name);
@@ -13812,6 +13717,7 @@ package Sinfo is
    pragma Inline (Set_Iteration_Scheme);
    pragma Inline (Set_Iterator_Specification);
    pragma Inline (Set_Itype);
+   pragma Inline (Set_Key_Expression);
    pragma Inline (Set_Kill_Range_Check);
    pragma Inline (Set_Label_Construct);
    pragma Inline (Set_Last_Bit);

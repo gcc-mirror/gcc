@@ -268,7 +268,7 @@ package body Exp_CG is
             return True;
 
          elsif not Has_Fully_Qualified_Name (E) then
-            if Nam_In (Chars (E), Name_uSize, Name_uAlignment, Name_uAssign)
+            if Chars (E) in Name_uSize | Name_uAlignment | Name_uAssign
               or else
                 (Chars (E) = Name_Op_Eq
                   and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))

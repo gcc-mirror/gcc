@@ -1967,6 +1967,12 @@ in @var{devicetype}, to use when executing a parallel or kernels region.
 This function returns what device type will be used when executing a
 parallel or kernels region.
 
+This function returns @code{acc_device_none} if
+@code{acc_get_device_type} is called from
+@code{acc_ev_device_init_start}, @code{acc_ev_device_init_end}
+callbacks of the OpenACC Profiling Interface (@ref{OpenACC Profiling
+Interface}), that is, if the device is currently being initialized.
+
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{acc_device_t acc_get_device_type(void);}
@@ -3382,6 +3388,11 @@ every event that has been registered.
 
 We're not yet accounting for the fact that @cite{OpenACC events may
 occur during event processing}.
+We just handle one case specially, as required by CUDA 9.0
+@command{nvprof}, that @code{acc_get_device_type}
+(@ref{acc_get_device_type})) may be called from
+@code{acc_ev_device_init_start}, @code{acc_ev_device_init_end}
+callbacks.
 
 We're not yet implementing initialization via a
 @code{acc_register_library} function that is either statically linked

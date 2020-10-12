@@ -4,10 +4,12 @@
 namespace N {
   struct S { };
   void f(S);
+  void g(S);
 }
 
 namespace M {
   void f(int);
+  void g(int);
 }
 
 void
@@ -40,6 +42,6 @@ void
 fn3 ()
 {
   N::S s;
-  extern void (*f)(char);
-  f (s); // { dg-error "cannot convert" }
+  extern void (*g)(char);
+  g (s); // { dg-error "cannot convert" }
 }

@@ -1,7 +1,8 @@
 /* PR tree-optimization/92412 - excessive errno aliasing assumption defeats
    optimization
    { dg-do compile }
-   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
+   { dg-options "-O2 -Wall -fdump-tree-optimized" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 

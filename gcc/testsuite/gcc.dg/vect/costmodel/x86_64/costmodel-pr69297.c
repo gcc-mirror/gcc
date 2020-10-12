@@ -74,10 +74,28 @@ foo (int* diff)
     d[13] = m[12] - m[13];
     d[14] = m[14] + m[15];
     d[15] = m[15] - m[14];
+    /* The following obviously profitable part should not make
+       the former unprofitable one profitable.  */
+    diff[16 + 16] = diff[16];
+    diff[17 + 16] = diff[17];
+    diff[18 + 16] = diff[18];
+    diff[19 + 16] = diff[19];
+    diff[20 + 16] = diff[20];
+    diff[21 + 16] = diff[21];
+    diff[22 + 16] = diff[22];
+    diff[23 + 16] = diff[23];
+    diff[24 + 16] = diff[24];
+    diff[25 + 16] = diff[25];
+    diff[26 + 16] = diff[26];
+    diff[27 + 16] = diff[27];
+    diff[28 + 16] = diff[28];
+    diff[29 + 16] = diff[29];
+    diff[30 + 16] = diff[30];
+    diff[31 + 16] = diff[31];
     for (k=0; k<16; k++)
       satd += abs(d[k]);
   return satd;
 }
 
 /* { dg-final { scan-tree-dump "vectorization is not profitable" "slp1" } } */
-/* { dg-final { scan-tree-dump-not "basic block vectorized" "slp1" } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing SLP tree" 1 "slp1" } } */

@@ -89,7 +89,7 @@ void test_3 (int i)
       break;
     }
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
   __analyzer_eval (f == 3); /* { dg-warning "TRUE" } */
   __analyzer_eval (g == 4); /* { dg-warning "TRUE" } */
   __analyzer_eval (h == 5); /* { dg-warning "TRUE" } */
@@ -108,7 +108,7 @@ void test_4 (int flag)
       q = malloc (256);
       p = malloc (256);
     }
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
   free (p);
   free (q);
 }

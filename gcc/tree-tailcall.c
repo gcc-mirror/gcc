@@ -523,7 +523,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   tree result_decl = DECL_RESULT (cfun->decl);
   if (result_decl
       && may_be_aliased (result_decl)
-      && ref_maybe_used_by_stmt_p (call, result_decl))
+      && ref_maybe_used_by_stmt_p (call, result_decl, false))
     return;
 
   /* We found the call, check whether it is suitable.  */
@@ -597,8 +597,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (TREE_CODE (var) != PARM_DECL
 	  && auto_var_in_fn_p (var, cfun->decl)
 	  && may_be_aliased (var)
-	  && (ref_maybe_used_by_stmt_p (call, var)
-	      || call_may_clobber_ref_p (call, var)))
+	  && (ref_maybe_used_by_stmt_p (call, var, false)
+	      || call_may_clobber_ref_p (call, var, false)))
 	{
 	  if (!VAR_P (var))
 	    {

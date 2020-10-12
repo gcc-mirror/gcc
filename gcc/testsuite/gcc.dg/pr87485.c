@@ -2,6 +2,7 @@
 /* { dg-do compile { target int128 } } */
 /* { dg-options "-O2 -fschedule-insns -fno-guess-branch-probability -fno-isolate-erroneous-paths-dereference -fno-omit-frame-pointer -fno-split-wide-types -fno-tree-ccp -fno-tree-sra" } */
 /* { dg-additional-options "-fstack-protector-strong" { target fstack_protector } } */
+/* { dg-require-effective-target scheduling } */
 
 int *a;
 

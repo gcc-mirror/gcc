@@ -116,6 +116,12 @@ split_double_mode (machine_mode mode, rtx operands[],
     case E_DImode:
       half_mode = SImode;
       break;
+    case E_P2HImode:
+      half_mode = HImode;
+      break;
+    case E_P2QImode:
+      half_mode = QImode;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -3305,7 +3311,17 @@ ix86_expand_int_movcc (rtx operands[])
 	{
 	  var = operands[2];
 	  if (INTVAL (operands[3]) == 0 && operands[2] != constm1_rtx)
-	    operands[2] = constm1_rtx, op = and_optab;
+	    {
+	      /* For smin (x, 0), expand as "x < 0 ? x : 0" instead of
+		 "x <= 0 ? x : 0" to enable sign_bit_compare_p.  */
+	      if (code == LE && op1 == const0_rtx && rtx_equal_p (op0, var))
+		operands[1] = simplify_gen_relational (LT, VOIDmode,
+						       GET_MODE (op0),
+						       op0, const0_rtx);
+
+	      operands[2] = constm1_rtx;
+	      op = and_optab;
+	    }
 	  else if (INTVAL (operands[3]) == -1 && operands[3] != const0_rtx)
 	    operands[2] = const0_rtx, op = ior_optab;
 	  else
@@ -3479,6 +3495,13 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
       || (op_true && reg_overlap_mentioned_p (dest, op_true))
       || (op_false && reg_overlap_mentioned_p (dest, op_false)))
     dest = gen_reg_rtx (maskcmp ? cmp_mode : mode);
+
+  if (maskcmp)
+    {
+      bool ok = ix86_expand_mask_vec_cmp (dest, code, cmp_op0, cmp_op1);
+      gcc_assert (ok);
+      return dest;
+    }
 
   x = gen_rtx_fmt_ee (code, cmp_mode, cmp_op0, cmp_op1);
 
@@ -3915,11 +3938,10 @@ ix86_cmp_code_to_pcmp_immediate (enum rtx_code code, machine_mode mode)
 /* Expand AVX-512 vector comparison.  */
 
 bool
-ix86_expand_mask_vec_cmp (rtx operands[])
+ix86_expand_mask_vec_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1)
 {
-  machine_mode mask_mode = GET_MODE (operands[0]);
-  machine_mode cmp_mode = GET_MODE (operands[2]);
-  enum rtx_code code = GET_CODE (operands[1]);
+  machine_mode mask_mode = GET_MODE (dest);
+  machine_mode cmp_mode = GET_MODE (cmp_op0);
   rtx imm = GEN_INT (ix86_cmp_code_to_pcmp_immediate (code, cmp_mode));
   int unspec_code;
   rtx unspec;
@@ -3937,10 +3959,9 @@ ix86_expand_mask_vec_cmp (rtx operands[])
       unspec_code = UNSPEC_PCMP;
     }
 
-  unspec = gen_rtx_UNSPEC (mask_mode, gen_rtvec (3, operands[2],
-						 operands[3], imm),
+  unspec = gen_rtx_UNSPEC (mask_mode, gen_rtvec (3, cmp_op0, cmp_op1, imm),
 			   unspec_code);
-  emit_insn (gen_rtx_SET (operands[0], unspec));
+  emit_insn (gen_rtx_SET (dest, unspec));
 
   return true;
 }
@@ -10650,15 +10671,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
-    case VOID_FTYPE_UINT_UINT_UINT:
-    case VOID_FTYPE_UINT64_UINT_UINT:
-    case UCHAR_FTYPE_UINT_UINT_UINT:
-    case UCHAR_FTYPE_UINT64_UINT_UINT:
-      nargs = 3;
-      klass = load;
-      memory = ARRAY_SIZE (args);
-      last_arg_constant = true;
-      break;
     default:
       gcc_unreachable ();
     }
@@ -10713,13 +10725,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	{
 	  if (!match)
 	    {
-	      if (icode == CODE_FOR_lwp_lwpvalsi3
-		  || icode == CODE_FOR_lwp_lwpinssi3
-		  || icode == CODE_FOR_lwp_lwpvaldi3
-		  || icode == CODE_FOR_lwp_lwpinsdi3)
-		error ("the last argument must be a 32-bit immediate");
-	      else
-		error ("the last argument must be an 8-bit immediate");
+	      error ("the last argument must be an 8-bit immediate");
 	      return const0_rtx;
 	    }
 	}
@@ -11433,24 +11439,24 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	}
       else
 	{
-	  rtx pat;
+	  if (target == 0
+	      || !register_operand (target, SImode))
+	    target = gen_reg_rtx (SImode);
 
-	  target = gen_reg_rtx (SImode);
 	  emit_move_insn (target, const0_rtx);
 	  target = gen_rtx_SUBREG (QImode, target, 0);
 
-	  if (fcode == IX86_BUILTIN_ENQCMD)
-	    pat = gen_enqcmd (UNSPECV_ENQCMD, Pmode, op0, op1);
-	  else
-	    pat = gen_enqcmd (UNSPECV_ENQCMDS, Pmode, op0, op1);
+	  int unspecv = (fcode == IX86_BUILTIN_ENQCMD
+			 ? UNSPECV_ENQCMD
+			 : UNSPECV_ENQCMDS);
+	  icode = code_for_enqcmd (unspecv, Pmode);
+	  emit_insn (GEN_FCN (icode) (op0, op1));
 
-	  emit_insn (pat);
-
-	  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
-				  gen_rtx_fmt_ee (EQ, QImode,
-						  SET_DEST (pat),
-						  const0_rtx)));
-
+	  emit_insn
+	    (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+			  gen_rtx_fmt_ee (EQ, QImode,
+					  gen_rtx_REG (CCZmode, FLAGS_REG),
+					  const0_rtx)));
 	  return SUBREG_REG (target);
 	}
 
@@ -11643,40 +11649,92 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_LLWPCB:
       arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = expand_normal (arg0);
-      icode = CODE_FOR_lwp_llwpcb;
-      if (!insn_data[icode].operand[0].predicate (op0, Pmode))
+
+      if (!register_operand (op0, Pmode))
 	op0 = ix86_zero_extend_to_Pmode (op0);
-      emit_insn (gen_lwp_llwpcb (op0));
+      emit_insn (gen_lwp_llwpcb (Pmode, op0));
       return 0;
 
     case IX86_BUILTIN_SLWPCB:
-      icode = CODE_FOR_lwp_slwpcb;
       if (!target
-	  || !insn_data[icode].operand[0].predicate (target, Pmode))
+	  || !register_operand (target, Pmode))
 	target = gen_reg_rtx (Pmode);
-      emit_insn (gen_lwp_slwpcb (target));
+      emit_insn (gen_lwp_slwpcb (Pmode, target));
       return target;
+
+    case IX86_BUILTIN_LWPVAL32:
+    case IX86_BUILTIN_LWPVAL64:
+    case IX86_BUILTIN_LWPINS32:
+    case IX86_BUILTIN_LWPINS64:
+      mode = ((fcode == IX86_BUILTIN_LWPVAL32
+	       || fcode == IX86_BUILTIN_LWPINS32)
+	      ? SImode : DImode);
+
+      if (fcode == IX86_BUILTIN_LWPVAL32
+	  || fcode == IX86_BUILTIN_LWPVAL64)
+	icode = code_for_lwp_lwpval (mode);
+      else
+	icode = code_for_lwp_lwpins (mode);
+
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+      mode0 = insn_data[icode].operand[0].mode;
+
+      if (!insn_data[icode].operand[0].predicate (op0, mode0))
+	op0 = copy_to_mode_reg (mode0, op0);
+      if (!insn_data[icode].operand[1].predicate (op1, SImode))
+	op1 = copy_to_mode_reg (SImode, op1);
+
+      if (!CONST_INT_P (op2))
+	{
+	  error ("the last argument must be a 32-bit immediate");
+	  return const0_rtx;
+	}
+
+      emit_insn (GEN_FCN (icode) (op0, op1, op2));
+
+      if (fcode == IX86_BUILTIN_LWPINS32
+	  || fcode == IX86_BUILTIN_LWPINS64)
+	{
+	  if (target == 0
+	      || !nonimmediate_operand (target, QImode))
+	    target = gen_reg_rtx (QImode);
+
+	  pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCCmode, FLAGS_REG),
+			    const0_rtx);
+	  emit_insn (gen_rtx_SET (target, pat));
+
+	  return target;
+	}
+      else
+	return 0;
 
     case IX86_BUILTIN_BEXTRI32:
     case IX86_BUILTIN_BEXTRI64:
+      mode = (fcode == IX86_BUILTIN_BEXTRI32 ? SImode : DImode);
+
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
-      icode = (fcode == IX86_BUILTIN_BEXTRI32
-	  ? CODE_FOR_tbm_bextri_si
-	  : CODE_FOR_tbm_bextri_di);
+
       if (!CONST_INT_P (op1))
-        {
-          error ("last argument must be an immediate");
-          return const0_rtx;
-        }
+	{
+	  error ("last argument must be an immediate");
+	  return const0_rtx;
+	}
       else
-        {
-          unsigned char length = (INTVAL (op1) >> 8) & 0xFF;
-          unsigned char lsb_index = INTVAL (op1) & 0xFF;
-          op1 = GEN_INT (length);
-          op2 = GEN_INT (lsb_index);
+	{
+	  unsigned char lsb_index = UINTVAL (op1);
+	  unsigned char length = UINTVAL (op1) >> 8;
+
+	  unsigned char bitsize = GET_MODE_BITSIZE (mode);
+
+	  icode = code_for_tbm_bextri (mode);
 
 	  mode1 = insn_data[icode].operand[1].mode;
 	  if (!insn_data[icode].operand[1].predicate (op0, mode1))
@@ -11687,25 +11745,32 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	      || !register_operand (target, mode0))
 	    target = gen_reg_rtx (mode0);
 
-          pat = GEN_FCN (icode) (target, op0, op1, op2);
-          if (pat)
-            emit_insn (pat);
-          return target;
-        }
+	  if (length == 0 || lsb_index >= bitsize)
+	    {
+	      emit_move_insn (target, const0_rtx);
+	      return target;
+	    }
+
+	  if (length + lsb_index > bitsize)
+	    length = bitsize - lsb_index;
+
+	  op1 = GEN_INT (length);
+	  op2 = GEN_INT (lsb_index);
+
+	  emit_insn (GEN_FCN (icode) (target, op0, op1, op2));
+	  return target;
+	}
 
     case IX86_BUILTIN_RDRAND16_STEP:
-      icode = CODE_FOR_rdrandhi_1;
-      mode0 = HImode;
+      mode = HImode;
       goto rdrand_step;
 
     case IX86_BUILTIN_RDRAND32_STEP:
-      icode = CODE_FOR_rdrandsi_1;
-      mode0 = SImode;
+      mode = SImode;
       goto rdrand_step;
 
     case IX86_BUILTIN_RDRAND64_STEP:
-      icode = CODE_FOR_rdranddi_1;
-      mode0 = DImode;
+      mode = DImode;
 
 rdrand_step:
       arg0 = CALL_EXPR_ARG (exp, 0);
@@ -11716,16 +11781,15 @@ rdrand_step:
 	  op1 = copy_addr_to_reg (op1);
 	}
 
-      op0 = gen_reg_rtx (mode0);
-      emit_insn (GEN_FCN (icode) (op0));
+      op0 = gen_reg_rtx (mode);
+      emit_insn (gen_rdrand (mode, op0));
 
-      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
+      emit_move_insn (gen_rtx_MEM (mode, op1), op0);
 
-      op1 = gen_reg_rtx (SImode);
-      emit_move_insn (op1, CONST1_RTX (SImode));
+      op1 = force_reg (SImode, const1_rtx);
 
       /* Emit SImode conditional move.  */
-      if (mode0 == HImode)
+      if (mode == HImode)
 	{
 	  if (TARGET_ZERO_EXTEND_WITH_AND
 	      && optimize_function_for_speed_p (cfun))
@@ -11742,7 +11806,7 @@ rdrand_step:
 	      emit_insn (gen_zero_extendhisi2 (op2, op0));
 	    }
 	}
-      else if (mode0 == SImode)
+      else if (mode == SImode)
 	op2 = op0;
       else
 	op2 = gen_rtx_SUBREG (SImode, op0, 0);
@@ -11758,18 +11822,15 @@ rdrand_step:
       return target;
 
     case IX86_BUILTIN_RDSEED16_STEP:
-      icode = CODE_FOR_rdseedhi_1;
-      mode0 = HImode;
+      mode = HImode;
       goto rdseed_step;
 
     case IX86_BUILTIN_RDSEED32_STEP:
-      icode = CODE_FOR_rdseedsi_1;
-      mode0 = SImode;
+      mode = SImode;
       goto rdseed_step;
 
     case IX86_BUILTIN_RDSEED64_STEP:
-      icode = CODE_FOR_rdseeddi_1;
-      mode0 = DImode;
+      mode = DImode;
 
 rdseed_step:
       arg0 = CALL_EXPR_ARG (exp, 0);
@@ -11780,10 +11841,10 @@ rdseed_step:
 	  op1 = copy_addr_to_reg (op1);
 	}
 
-      op0 = gen_reg_rtx (mode0);
-      emit_insn (GEN_FCN (icode) (op0));
+      op0 = gen_reg_rtx (mode);
+      emit_insn (gen_rdseed (mode, op0));
 
-      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
+      emit_move_insn (gen_rtx_MEM (mode, op1), op0);
 
       op2 = gen_reg_rtx (QImode);
 
@@ -12721,55 +12782,75 @@ rdseed_step:
       emit_insn (gen_xabort (op0));
       return 0;
 
+    case IX86_BUILTIN_RDSSPD:
+    case IX86_BUILTIN_RDSSPQ:
+      mode = (fcode == IX86_BUILTIN_RDSSPD ? SImode : DImode);
+
+      if (target == 0
+	  || !register_operand (target, mode))
+	target = gen_reg_rtx (mode);
+
+      op0 = force_reg (mode, const0_rtx);
+
+      emit_insn (gen_rdssp (mode, target, op0));
+      return target;
+
+    case IX86_BUILTIN_INCSSPD:
+    case IX86_BUILTIN_INCSSPQ:
+      mode = (fcode == IX86_BUILTIN_INCSSPD ? SImode : DImode);
+
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+
+      op0 = force_reg (mode, op0);
+
+      emit_insn (gen_incssp (mode, op0));
+      return 0;
+
     case IX86_BUILTIN_RSTORSSP:
     case IX86_BUILTIN_CLRSSBSY:
       arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = expand_normal (arg0);
       icode = (fcode == IX86_BUILTIN_RSTORSSP
-	  ? CODE_FOR_rstorssp
-	  : CODE_FOR_clrssbsy);
+	       ? CODE_FOR_rstorssp
+	       : CODE_FOR_clrssbsy);
+
       if (!address_operand (op0, VOIDmode))
 	{
-	  op1 = convert_memory_address (Pmode, op0);
-	  op0 = copy_addr_to_reg (op1);
+	  op0 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op0);
 	}
-      emit_insn (GEN_FCN (icode) (gen_rtx_MEM (Pmode, op0)));
+      emit_insn (GEN_FCN (icode) (gen_rtx_MEM (DImode, op0)));
       return 0;
 
     case IX86_BUILTIN_WRSSD:
     case IX86_BUILTIN_WRSSQ:
     case IX86_BUILTIN_WRUSSD:
     case IX86_BUILTIN_WRUSSQ:
+      mode = ((fcode == IX86_BUILTIN_WRSSD
+	       || fcode == IX86_BUILTIN_WRUSSD)
+	      ? SImode : DImode);
+
       arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = expand_normal (arg0);
       arg1 = CALL_EXPR_ARG (exp, 1);
       op1 = expand_normal (arg1);
-      switch (fcode)
-	{
-	case IX86_BUILTIN_WRSSD:
-	  icode = CODE_FOR_wrsssi;
-	  mode = SImode;
-	  break;
-	case IX86_BUILTIN_WRSSQ:
-	  icode = CODE_FOR_wrssdi;
-	  mode = DImode;
-	  break;
-	case IX86_BUILTIN_WRUSSD:
-	  icode = CODE_FOR_wrusssi;
-	  mode = SImode;
-	  break;
-	case IX86_BUILTIN_WRUSSQ:
-	  icode = CODE_FOR_wrussdi;
-	  mode = DImode;
-	  break;
-	}
+
       op0 = force_reg (mode, op0);
+
       if (!address_operand (op1, VOIDmode))
 	{
-	  op2 = convert_memory_address (Pmode, op1);
-	  op1 = copy_addr_to_reg (op2);
+	  op1 = convert_memory_address (Pmode, op1);
+	  op1 = copy_addr_to_reg (op1);
 	}
-      emit_insn (GEN_FCN (icode) (op0, gen_rtx_MEM (mode, op1)));
+      op1 = gen_rtx_MEM (mode, op1);
+
+      icode = ((fcode == IX86_BUILTIN_WRSSD
+		|| fcode == IX86_BUILTIN_WRSSQ)
+	       ? code_for_wrss (mode)
+	       : code_for_wruss (mode));
+      emit_insn (GEN_FCN (icode) (op0, op1));
+
       return 0;
 
     default:
@@ -13069,14 +13150,6 @@ s4fma_expand:
       i = fcode - IX86_BUILTIN__BDESC_CET_FIRST;
       return ix86_expand_special_args_builtin (bdesc_cet + i, exp,
 					       target);
-    }
-
-  if (fcode >= IX86_BUILTIN__BDESC_CET_NORMAL_FIRST
-      && fcode <= IX86_BUILTIN__BDESC_CET_NORMAL_LAST)
-    {
-      i = fcode - IX86_BUILTIN__BDESC_CET_NORMAL_FIRST;
-      return ix86_expand_special_args_builtin (bdesc_cet_rdssp + i, exp,
-				       target);
     }
 
   gcc_unreachable ();
@@ -19537,7 +19610,7 @@ bool
 ix86_expand_vec_shift_qihi_constant (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 {
   machine_mode qimode, himode;
-  unsigned int and_constant, xor_constant;
+  HOST_WIDE_INT and_constant, xor_constant;
   HOST_WIDE_INT shift_amount;
   rtx vec_const_and, vec_const_xor;
   rtx tmp, op1_subreg;
@@ -19612,7 +19685,7 @@ ix86_expand_vec_shift_qihi_constant (enum rtx_code code, rtx dest, rtx op1, rtx 
   emit_move_insn (dest, simplify_gen_subreg (qimode, tmp, himode, 0));
   emit_move_insn (vec_const_and,
 		  ix86_build_const_vector (qimode, true,
-					   GEN_INT (and_constant)));
+					   gen_int_mode (and_constant, QImode)));
   emit_insn (gen_and (dest, dest, vec_const_and));
 
   /* For ASHIFTRT, perform extra operation like
@@ -19623,7 +19696,7 @@ ix86_expand_vec_shift_qihi_constant (enum rtx_code code, rtx dest, rtx op1, rtx 
       vec_const_xor = gen_reg_rtx (qimode);
       emit_move_insn (vec_const_xor,
 		      ix86_build_const_vector (qimode, true,
-					       GEN_INT (xor_constant)));
+					       gen_int_mode (xor_constant, QImode)));
       emit_insn (gen_xor (dest, dest, vec_const_xor));
       emit_insn (gen_sub (dest, dest, vec_const_xor));
     }
@@ -20237,7 +20310,6 @@ ix86_expand_pextr (rtx *operands)
     case E_V4SImode:
     case E_V2DImode:
     case E_V1TImode:
-    case E_TImode:
       {
 	machine_mode srcmode, dstmode;
 	rtx d, pat;
@@ -20333,7 +20405,6 @@ ix86_expand_pinsr (rtx *operands)
     case E_V4SImode:
     case E_V2DImode:
     case E_V1TImode:
-    case E_TImode:
       {
 	machine_mode srcmode, dstmode;
 	rtx (*pinsr)(rtx, rtx, rtx, rtx);

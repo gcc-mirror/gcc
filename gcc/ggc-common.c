@@ -506,7 +506,7 @@ gt_pch_save (FILE *f)
       if (__builtin_expect (RUNNING_ON_VALGRIND, 0))
 	{
 	  if (vbits.length () < valid_size)
-	    vbits.safe_grow (valid_size);
+	    vbits.safe_grow (valid_size, true);
 	  get_vbits = VALGRIND_GET_VBITS (state.ptrs[i]->obj,
 					  vbits.address (), valid_size);
 	  if (get_vbits == 3)
@@ -742,7 +742,7 @@ ggc_rlimit_bound (double limit)
 	 appears to be ignored.  Ignore such silliness.  If a limit
 	 this small was actually effective for mmap, GCC wouldn't even
 	 start up.  */
-      && rlim.rlim_cur >= 8 * 1024 * 1024)
+      && rlim.rlim_cur >= 8 * ONE_M)
     limit = rlim.rlim_cur;
 # endif /* RLIMIT_AS or RLIMIT_DATA */
 #endif /* HAVE_GETRLIMIT */
@@ -761,7 +761,7 @@ ggc_min_expand_heuristic (void)
 
   /* The heuristic is a percentage equal to 30% + 70%*(RAM/1GB), yielding
      a lower bound of 30% and an upper bound of 100% (when RAM >= 1GB).  */
-  min_expand /= 1024*1024*1024;
+  min_expand /= ONE_G;
   min_expand *= 70;
   min_expand = MIN (min_expand, 70);
   min_expand += 30;
@@ -776,8 +776,8 @@ ggc_min_heapsize_heuristic (void)
   double phys_kbytes = physmem_total ();
   double limit_kbytes = ggc_rlimit_bound (phys_kbytes * 2);
 
-  phys_kbytes /= 1024; /* Convert to Kbytes.  */
-  limit_kbytes /= 1024;
+  phys_kbytes /= ONE_K; /* Convert to Kbytes.  */
+  limit_kbytes /= ONE_K;
 
   /* The heuristic is RAM/8, with a lower bound of 4M and an upper
      bound of 128M (when RAM >= 1GB).  */
@@ -790,7 +790,7 @@ ggc_min_heapsize_heuristic (void)
    struct rlimit rlim;
    if (getrlimit (RLIMIT_RSS, &rlim) == 0
        && rlim.rlim_cur != (rlim_t) RLIM_INFINITY)
-     phys_kbytes = MIN (phys_kbytes, rlim.rlim_cur / 1024);
+     phys_kbytes = MIN (phys_kbytes, rlim.rlim_cur / ONE_K);
  }
 # endif
 
@@ -798,12 +798,12 @@ ggc_min_heapsize_heuristic (void)
      *next* GC would be within 20Mb of the limit or within a quarter of
      the limit, whichever is larger.  If GCC does hit the data limit,
      compilation will fail, so this tries to be conservative.  */
-  limit_kbytes = MAX (0, limit_kbytes - MAX (limit_kbytes / 4, 20 * 1024));
+  limit_kbytes = MAX (0, limit_kbytes - MAX (limit_kbytes / 4, 20 * ONE_K));
   limit_kbytes = (limit_kbytes * 100) / (110 + ggc_min_expand_heuristic ());
   phys_kbytes = MIN (phys_kbytes, limit_kbytes);
 
-  phys_kbytes = MAX (phys_kbytes, 4 * 1024);
-  phys_kbytes = MIN (phys_kbytes, 128 * 1024);
+  phys_kbytes = MAX (phys_kbytes, 4 * ONE_K);
+  phys_kbytes = MIN (phys_kbytes, 128 * ONE_K);
 
   return phys_kbytes;
 }
@@ -1008,13 +1008,19 @@ ggc_prune_overhead_list (void)
       }
 }
 
-/* Return memory used by heap in kb, 0 if this info is not available.  */
+/* Print memory used by heap if this info is available.  */
 
 void
 report_heap_memory_use ()
 {
-#ifdef HAVE_MALLINFO
+#if defined(HAVE_MALLINFO) || defined(HAVE_MALLINFO2)
+#ifdef HAVE_MALLINFO2
+  #define MALLINFO_FN mallinfo2
+#else
+  #define MALLINFO_FN mallinfo
+#endif
   if (!quiet_flag)
-    fprintf (stderr," {heap %luk}", (unsigned long)(mallinfo().arena / 1024));
+    fprintf (stderr, " {heap " PRsa (0) "}",
+	     SIZE_AMOUNT (MALLINFO_FN ().arena));
 #endif
 }

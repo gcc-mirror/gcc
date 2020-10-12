@@ -1,4 +1,4 @@
-/* { dg-do "compile" } */
+/* { dg-do "compile" { target *-*-linux* } } */
 /* { dg-options "-O1 -fcf-protection -mmanual-endbr" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

@@ -1014,8 +1014,8 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
   vec<int> last_change_age = vNULL;
   int prev_age;
 
-  last_visit_age.safe_grow_cleared (n_blocks);
-  last_change_age.safe_grow_cleared (n_blocks);
+  last_visit_age.safe_grow_cleared (n_blocks, true);
+  last_change_age.safe_grow_cleared (n_blocks, true);
 
   /* Double-queueing. Worklist is for the current iteration,
      and pending is for the next. */

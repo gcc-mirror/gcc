@@ -33,8 +33,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Ada_2020;
-
 generic
    type Atomic_Type is mod <> with Atomic;
 package System.Atomic_Operations.Modular_Arithmetic

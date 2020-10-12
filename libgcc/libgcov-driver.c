@@ -424,7 +424,7 @@ write_one_data (const struct gcov_info *gi_ptr,
 
 	  n_counts = ci_ptr->num;
 
-	  if (gi_ptr->merge[t_ix] == __gcov_merge_topn)
+	  if (t_ix == GCOV_COUNTER_V_TOPN || t_ix == GCOV_COUNTER_V_INDIR)
 	    write_top_counters (ci_ptr, t_ix, n_counts);
 	  else
 	    {
@@ -587,6 +587,12 @@ struct gcov_root __gcov_root;
 /* Exactly one of these will be live in the process image.  */
 struct gcov_master __gcov_master = 
   {GCOV_VERSION, 0};
+
+/* Pool of pre-allocated gcov_kvp strutures.  */
+struct gcov_kvp __gcov_kvp_pool[GCOV_PREALLOCATED_KVP];
+
+/* Index to first free gcov_kvp in the pool.  */
+unsigned __gcov_kvp_pool_index;
 
 void
 __gcov_exit (void)

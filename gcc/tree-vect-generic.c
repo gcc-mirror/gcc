@@ -136,19 +136,7 @@ tree_vec_extract (gimple_stmt_iterator *gsi, tree type,
 	t = gimple_assign_rhs1 (def_stmt);
     }
   if (bitpos)
-    {
-      if (TREE_CODE (type) == BOOLEAN_TYPE)
-	{
-	  tree itype
-	    = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 0);
-	  tree field = gimplify_build3 (gsi, BIT_FIELD_REF, itype, t,
-					bitsize, bitpos);
-	  return gimplify_build2 (gsi, NE_EXPR, type, field,
-				  build_zero_cst (itype));
-	}
-      else
-	return gimplify_build3 (gsi, BIT_FIELD_REF, type, t, bitsize, bitpos);
-    }
+    return gimplify_build3 (gsi, BIT_FIELD_REF, type, t, bitsize, bitpos);
   else
     return gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, t);
 }
@@ -419,8 +407,7 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
     return NULL_TREE;
 
   tree t;
-  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type, code)
-      && !expand_vec_cond_expr_p (type, TREE_TYPE (op0), code))
+  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type, code))
     {
       if (VECTOR_BOOLEAN_TYPE_P (type)
 	  && SCALAR_INT_MODE_P (TYPE_MODE (type))
@@ -1776,6 +1763,12 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   gimple *g;
   tree lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    {
+      g = gimple_build_nop ();
+      gsi_replace (gsi, g, false);
+      return;
+    }
   tree arg = gimple_call_arg (stmt, 0);
   tree ret_type = TREE_TYPE (lhs);
   tree arg_type = TREE_TYPE (arg);

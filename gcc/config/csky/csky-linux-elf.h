@@ -47,6 +47,8 @@
   %{mcpu=*:-mcpu=%*}		\
   %{march=*:-march=%*}		\
   %{mhard-float:-mhard-float}	\
+  %{mfloat-abi=softfp:-mhard-float} \
+  %{mfloat-abi=hard:-mhard-float}   \
   %{melrw:-melrw}		\
   %{mno-elrw:-mno-elrw}		\
   %{mistack:-mistack}		\
@@ -61,7 +63,7 @@
   %{mvdsp:-mvdsp}		\
   "
 
-#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-cskyv2%{mhard-float:-hf}%{mbig-endian:-be}.so.1"
+#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-cskyv2%{mfloat-abi=hard:-hf}%{mbig-endian:-be}.so.1"
 
 #define LINUX_TARGET_LINK_SPEC	"%{h*} %{version:-v}		\
    %{b}								\

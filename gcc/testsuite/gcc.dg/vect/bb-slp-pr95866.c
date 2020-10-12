@@ -14,4 +14,4 @@ void foo()
 
 /* The scalar shift argument should be extracted from the available vector.  */
 /* { dg-final { scan-tree-dump "BIT_FIELD_REF" "slp2" } } */
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" } } */

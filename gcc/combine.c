@@ -544,7 +544,7 @@ combine_split_insns (rtx pattern, rtx_insn *insn)
   ret = split_insns (pattern, insn);
   nregs = max_reg_num ();
   if (nregs > reg_stat.length ())
-    reg_stat.safe_grow_cleared (nregs);
+    reg_stat.safe_grow_cleared (nregs, true);
   return ret;
 }
 
@@ -1172,7 +1172,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 
   rtl_hooks = combine_rtl_hooks;
 
-  reg_stat.safe_grow_cleared (nregs);
+  reg_stat.safe_grow_cleared (nregs, true);
 
   init_recog_no_volatile ();
 
@@ -2624,15 +2624,16 @@ can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
   return true;
 }
 
-/* Return whether X is just a single set, with the source
+/* Return whether X is just a single_set, with the source
    a general_operand.  */
 static bool
-is_just_move (rtx x)
+is_just_move (rtx_insn *x)
 {
-  if (INSN_P (x))
-    x = PATTERN (x);
+  rtx set = single_set (x);
+  if (!set)
+    return false;
 
-  return (GET_CODE (x) == SET && general_operand (SET_SRC (x), VOIDmode));
+  return general_operand (SET_SRC (set), VOIDmode);
 }
 
 /* Callback function to count autoincs.  */

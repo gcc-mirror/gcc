@@ -116,10 +116,8 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
 	       IX86_BUILTIN__BDESC_ROUND_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_FIRST,
 	       IX86_BUILTIN__BDESC_MULTI_ARG_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_NORMAL_FIRST,
-	       IX86_BUILTIN__BDESC_CET_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN_MAX,
-	       IX86_BUILTIN__BDESC_CET_NORMAL_LAST, 1);
+	       IX86_BUILTIN__BDESC_CET_LAST, 1);
 
 
 /* Table for the ix86 builtin non-function types.  */
@@ -1227,21 +1225,6 @@ ix86_init_mmx_sse_builtins (void)
   BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_LAST,
 		 IX86_BUILTIN__BDESC_CET_FIRST,
 		 ARRAY_SIZE (bdesc_cet) - 1);
-
-  for (i = 0, d = bdesc_cet_rdssp;
-       i < ARRAY_SIZE (bdesc_cet_rdssp);
-       i++, d++)
-    {
-      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_CET_NORMAL_FIRST, i);
-      if (d->name == 0)
-	continue;
-
-      ftype = (enum ix86_builtin_func_type) d->flag;
-      def_builtin (d->mask, d->mask2, d->name, ftype, d->code);
-    }
-  BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_NORMAL_LAST,
-		 IX86_BUILTIN__BDESC_CET_NORMAL_FIRST,
-		 ARRAY_SIZE (bdesc_cet_rdssp) - 1);
 }
 
 #undef BDESC_VERIFY
@@ -1883,7 +1866,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
      before the ssse3 version. */
   if (strstr (attrs_str, "arch=") != NULL)
     {
-      cl_target_option_save (&cur_target, &global_options);
+      cl_target_option_save (&cur_target, &global_options,
+			     &global_options_set);
       target_node
 	= ix86_valid_target_attribute_tree (decl, attrs, &global_options,
 					    &global_options_set, 0);
@@ -1952,7 +1936,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    }
 
-      cl_target_option_restore (&global_options, &cur_target);
+      cl_target_option_restore (&global_options, &global_options_set,
+				&cur_target);
 	
       if (predicate_list && arg_str == NULL)
 	{

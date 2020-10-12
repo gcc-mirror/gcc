@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
 #include "explow.h"
+#include "rtl-iter.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -93,7 +94,7 @@ init_internal_fns ()
 {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
   if (FNSPEC) internal_fn_fnspec_array[IFN_##CODE] = \
-    build_string ((int) sizeof (FNSPEC), FNSPEC ? FNSPEC : "");
+    build_string ((int) sizeof (FNSPEC) - 1, FNSPEC ? FNSPEC : "");
 #include "internal-fn.def"
   internal_fn_fnspec_array[IFN_LAST] = 0;
 }
@@ -115,6 +116,7 @@ init_internal_fns ()
 #define vec_condeq_direct { 0, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define len_store_direct { 3, 3, false }
+#define vec_set_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
 #define ternary_direct { 0, 0, true }
@@ -2644,7 +2646,7 @@ expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   rtx_op2 = expand_normal (op2);
 
   mask = force_reg (mask_mode, mask);
-  rtx_op1 = force_reg (GET_MODE (rtx_op1), rtx_op1);
+  rtx_op1 = force_reg (mode, rtx_op1);
 
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   create_output_operand (&ops[0], target, mode);
@@ -2657,6 +2659,45 @@ expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 }
 
 #define expand_vec_cond_mask_optab_fn expand_vect_cond_mask_optab_fn
+
+/* Expand VEC_SET internal functions.  */
+
+static void
+expand_vec_set_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree op0 = gimple_call_arg (stmt, 0);
+  tree op1 = gimple_call_arg (stmt, 1);
+  tree op2 = gimple_call_arg (stmt, 2);
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx src = expand_normal (op0);
+
+  machine_mode outermode = TYPE_MODE (TREE_TYPE (op0));
+  scalar_mode innermode = GET_MODE_INNER (outermode);
+
+  rtx value = expand_normal (op1);
+  rtx pos = expand_normal (op2);
+
+  class expand_operand ops[3];
+  enum insn_code icode = optab_handler (optab, outermode);
+
+  if (icode != CODE_FOR_nothing)
+    {
+      rtx temp = gen_reg_rtx (outermode);
+      emit_move_insn (temp, src);
+
+      create_fixed_operand (&ops[0], temp);
+      create_input_operand (&ops[1], value, innermode);
+      create_convert_operand_from (&ops[2], pos, TYPE_MODE (TREE_TYPE (op2)),
+				   true);
+      if (maybe_expand_insn (icode, 3, ops))
+	{
+	  emit_move_insn (target, temp);
+	  return;
+	}
+    }
+  gcc_unreachable ();
+}
 
 static void
 expand_ABNORMAL_DISPATCHER (internal_fn, gcall *)
@@ -2945,6 +2986,32 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
     emit_move_insn (lhs_rtx, ops[0].value);
 }
 
+/* Helper for expand_DIVMOD.  Return true if the sequence starting with
+   INSN contains any call insns or insns with {,U}{DIV,MOD} rtxes.  */
+
+static bool
+contains_call_div_mod (rtx_insn *insn)
+{
+  subrtx_iterator::array_type array;
+  for (; insn; insn = NEXT_INSN (insn))
+    if (CALL_P (insn))
+      return true;
+    else if (INSN_P (insn))
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	switch (GET_CODE (*iter))
+	  {
+	  case CALL:
+	  case DIV:
+	  case UDIV:
+	  case MOD:
+	  case UMOD:
+	    return true;
+	  default:
+	    break;
+	  }
+  return false;
+ }
+
 /* Expand DIVMOD() using:
  a) optab handler for udivmod/sdivmod if it is available.
  b) If optab_handler doesn't exist, generate call to
@@ -2967,10 +3034,44 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
   rtx op1 = expand_normal (arg1);
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
-  rtx quotient, remainder, libfunc;
+  rtx quotient = NULL_RTX, remainder = NULL_RTX;
+  rtx_insn *insns = NULL;
+
+  if (TREE_CODE (arg1) == INTEGER_CST)
+    {
+      /* For DIVMOD by integral constants, there could be efficient code
+	 expanded inline e.g. using shifts and plus/minus.  Try to expand
+	 the division and modulo and if it emits any library calls or any
+	 {,U}{DIV,MOD} rtxes throw it away and use a divmod optab or
+	 divmod libcall.  */
+      struct separate_ops ops;
+      ops.code = TRUNC_DIV_EXPR;
+      ops.type = type;
+      ops.op0 = make_tree (ops.type, op0);
+      ops.op1 = arg1;
+      ops.op2 = NULL_TREE;
+      ops.location = gimple_location (call_stmt);
+      start_sequence ();
+      quotient = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+      if (contains_call_div_mod (get_insns ()))
+	quotient = NULL_RTX;
+      else
+	{
+	  ops.code = TRUNC_MOD_EXPR;
+	  remainder = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  if (contains_call_div_mod (get_insns ()))
+	    remainder = NULL_RTX;
+	}
+      if (remainder)
+	insns = get_insns ();
+      end_sequence ();
+    }
+
+  if (remainder)
+    emit_insn (insns);
 
   /* Check if optab_handler exists for divmod_optab for given mode.  */
-  if (optab_handler (tab, mode) != CODE_FOR_nothing)
+  else if (optab_handler (tab, mode) != CODE_FOR_nothing)
     {
       quotient = gen_reg_rtx (mode);
       remainder = gen_reg_rtx (mode);
@@ -2978,7 +3079,7 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
     }
 
   /* Generate call to divmod libfunc if it exists.  */
-  else if ((libfunc = optab_libfunc (tab, mode)) != NULL_RTX)
+  else if (rtx libfunc = optab_libfunc (tab, mode))
     targetm.expand_divmod_libfunc (libfunc, mode, op0, op1,
 				   &quotient, &remainder);
 
@@ -3253,6 +3354,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
 #define direct_check_ptrs_optab_supported_p direct_optab_supported_p
+#define direct_vec_set_optab_supported_p direct_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 
@@ -3693,6 +3795,7 @@ internal_fn_stored_value_index (internal_fn fn)
   switch (fn)
     {
     case IFN_MASK_STORE:
+    case IFN_MASK_STORE_LANES:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
     case IFN_LEN_STORE:

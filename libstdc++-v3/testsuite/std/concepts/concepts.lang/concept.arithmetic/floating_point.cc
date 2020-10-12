@@ -23,7 +23,7 @@
 static_assert( std::floating_point<float> );
 static_assert( std::floating_point<double> );
 static_assert( std::floating_point<long double> );
-#ifdef _GLIBCXX_USE_FLOAT128
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
 static_assert( std::floating_point<__float128> );
 #endif
 

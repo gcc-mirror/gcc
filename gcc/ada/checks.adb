@@ -433,7 +433,7 @@ package body Checks is
          --  Nothing to do for Rem/Mod/Plus (overflow not possible, the check
          --  for zero-divide is a divide check, not an overflow check).
 
-         if Nkind_In (N, N_Op_Rem, N_Op_Mod, N_Op_Plus) then
+         if Nkind (N) in N_Op_Rem | N_Op_Mod | N_Op_Plus then
             return;
          end if;
       end if;
@@ -585,7 +585,7 @@ package body Checks is
       if Ada_Version >= Ada_2012
          and then not Present (Param_Ent)
          and then Is_Entity_Name (N)
-         and then Ekind_In (Entity (N), E_Constant, E_Variable)
+         and then Ekind (Entity (N)) in E_Constant | E_Variable
          and then Present (Effective_Extra_Accessibility (Entity (N)))
       then
          Param_Ent := Entity (N);
@@ -621,9 +621,8 @@ package body Checks is
          --  deepest type level so as to appropriatly handle the rules for
          --  RM 3.10.2 (10.1/3).
 
-         if Ekind_In (Scope (Param_Ent), E_Function,
-                                         E_Operator,
-                                         E_Subprogram_Type)
+         if Ekind (Scope (Param_Ent))
+              in E_Function | E_Operator | E_Subprogram_Type
            and then Present (Extra_Accessibility_Of_Result (Scope (Param_Ent)))
          then
             Type_Level :=
@@ -1204,7 +1203,7 @@ package body Checks is
          --  there is no overflow check that starts from that parent node,
          --  so apply check now.
 
-         if Nkind_In (P, N_If_Expression, N_Case_Expression)
+         if Nkind (P) in N_If_Expression | N_Case_Expression
            and then not Is_Signed_Integer_Arithmetic_Op (Parent (P))
          then
             null;
@@ -2713,11 +2712,11 @@ package body Checks is
          --    mode IN OUT - Pre, Post => Formal'Valid[_Scalars]
          --    mode    OUT -      Post => Formal'Valid[_Scalars]
 
-         if Ekind_In (Formal, E_In_Parameter, E_In_Out_Parameter) then
+         if Ekind (Formal) in E_In_Parameter | E_In_Out_Parameter then
             Add_Validity_Check (Formal, Name_Precondition, False);
          end if;
 
-         if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
+         if Ekind (Formal) in E_In_Out_Parameter | E_Out_Parameter then
             Add_Validity_Check (Formal, Name_Postcondition, False);
          end if;
 
@@ -2850,7 +2849,7 @@ package body Checks is
              (Typ, New_Occurrence_Of (Entity (N), Sloc (N))));
          return;
 
-      elsif Nkind_In (N, N_Aggregate, N_Extension_Aggregate) then
+      elsif Nkind (N) in N_Aggregate | N_Extension_Aggregate then
 
          --  If the expression is an aggregate in an assignment, apply the
          --  check to the LHS after the assignment, rather than create a
@@ -4037,9 +4036,9 @@ package body Checks is
       function Left_Expression (Op : Node_Id) return Node_Id is
          LE : Node_Id := Left_Opnd (Op);
       begin
-         while Nkind_In (LE, N_Qualified_Expression,
-                             N_Type_Conversion,
-                             N_Expression_With_Actions)
+         while Nkind (LE) in N_Qualified_Expression
+                           | N_Type_Conversion
+                           | N_Expression_With_Actions
          loop
             LE := Expression (LE);
          end loop;
@@ -4249,11 +4248,11 @@ package body Checks is
 
    begin
       pragma Assert
-        (Nkind_In (Kind, N_Component_Declaration,
-                         N_Discriminant_Specification,
-                         N_Function_Specification,
-                         N_Object_Declaration,
-                         N_Parameter_Specification));
+        (Kind in N_Component_Declaration
+               | N_Discriminant_Specification
+               | N_Function_Specification
+               | N_Object_Declaration
+               | N_Parameter_Specification);
 
       if Kind = N_Function_Specification then
          Typ := Etype (Defining_Entity (N));
@@ -6078,7 +6077,7 @@ package body Checks is
             --  Likewise for Abs/Minus, the only case where the operation can
             --  overflow is when the operand is the largest negative number.
 
-            elsif Nkind_In (N, N_Op_Abs, N_Op_Minus) then
+            elsif Nkind (N) in N_Op_Abs | N_Op_Minus then
                Determine_Range
                  (Right_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
 
@@ -6220,7 +6219,7 @@ package body Checks is
       --  Do not set range check flag if parent is assignment statement or
       --  object declaration with Suppress_Assignment_Checks flag set
 
-      if Nkind_In (Parent (N), N_Assignment_Statement, N_Object_Declaration)
+      if Nkind (Parent (N)) in N_Assignment_Statement | N_Object_Declaration
         and then Suppress_Assignment_Checks (Parent (N))
       then
          return;
@@ -6581,9 +6580,9 @@ package body Checks is
                --  If this is an indirect or dispatching call, get signature
                --  from the subprogram type.
 
-               if Nkind_In (P, N_Entry_Call_Statement,
-                               N_Function_Call,
-                               N_Procedure_Call_Statement)
+               if Nkind (P) in N_Entry_Call_Statement
+                             | N_Function_Call
+                             | N_Procedure_Call_Statement
                then
                   E := Get_Called_Entity (P);
                   L := Parameter_Associations (P);
@@ -6714,13 +6713,13 @@ package body Checks is
       --  Integer and character literals always have valid values, where
       --  appropriate these will be range checked in any case.
 
-      elsif Nkind_In (Expr, N_Integer_Literal, N_Character_Literal) then
+      elsif Nkind (Expr) in N_Integer_Literal | N_Character_Literal then
          return True;
 
       --  If we have a type conversion or a qualification of a known valid
       --  value, then the result will always be valid.
 
-      elsif Nkind_In (Expr, N_Type_Conversion, N_Qualified_Expression) then
+      elsif Nkind (Expr) in N_Type_Conversion | N_Qualified_Expression then
          return Expr_Known_Valid (Expression (Expr));
 
       --  Case of expression is a non-floating-point operator. In this case we
@@ -7059,9 +7058,7 @@ package body Checks is
       begin
          P := Prefix (N);
          while not Is_Entity_Name (P) loop
-            if not Nkind_In (P, N_Selected_Component,
-                                N_Indexed_Component)
-            then
+            if Nkind (P) not in N_Selected_Component | N_Indexed_Component then
                return Empty;
             end if;
 
@@ -7174,7 +7171,7 @@ package body Checks is
                   if Nkind (A_Idx) = N_Range then
                      A_Range := A_Idx;
 
-                  elsif Nkind_In (A_Idx, N_Identifier, N_Expanded_Name) then
+                  elsif Nkind (A_Idx) in N_Identifier | N_Expanded_Name then
                      A_Range := Scalar_Range (Entity (A_Idx));
 
                      if Nkind (A_Range) = N_Subtype_Indication then
@@ -7362,7 +7359,8 @@ package body Checks is
         --  the target.
 
         and then not
-          (Nkind_In (N, N_Integer_Literal, N_Real_Literal, N_Character_Literal)
+          (Nkind (N) in
+               N_Integer_Literal | N_Real_Literal | N_Character_Literal
              or else
                (Is_Entity_Name (N)
                  and then Ekind (Entity (N)) = E_Enumeration_Literal))
@@ -8533,9 +8531,8 @@ package body Checks is
       --  need to be called while elaboration is taking place.
 
       elsif Is_Controlled (Tag_Typ)
-        and then Nam_In (Chars (Subp_Id), Name_Adjust,
-                                          Name_Finalize,
-                                          Name_Initialize)
+        and then
+          Chars (Subp_Id) in Name_Adjust | Name_Finalize | Name_Initialize
       then
          return;
       end if;

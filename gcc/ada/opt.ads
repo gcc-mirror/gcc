@@ -114,7 +114,7 @@ package Opt is
    --  remains set to Ada_Version_Default). This is used in the rare cases
    --  (notably pragma Obsolescent) where we want the explicit version set.
 
-   Ada_Version_Runtime : Ada_Version_Type := Ada_2012;
+   Ada_Version_Runtime : Ada_Version_Type := Ada_2020;
    --  GNAT
    --  Ada version used to compile the runtime. Used to set Ada_Version (but
    --  not Ada_Version_Explicit) when compiling predefined or internal units.
@@ -525,6 +525,13 @@ package Opt is
    --  dataflow analysis, which is not available. This behavior parallels that
    --  of the old ABE mechanism.
 
+   Enable_128bit_Types : Boolean := False;
+   --  GNAT
+   --  Set to True to enable the support for 128-bit types in the compiler.
+   --  The prerequisite is a 64-bit target that supports 128-bit computation.
+
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
    --  Records the error message line length limit. If this is set to zero,
@@ -620,7 +627,7 @@ package Opt is
    Extensions_Allowed : Boolean := False;
    --  GNAT
    --  Set to True by switch -gnatX if GNAT specific language extensions
-   --  are allowed. Currently there are no such defined extensions.
+   --  are allowed. See GNAT RM for details.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source

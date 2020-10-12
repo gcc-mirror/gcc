@@ -10,7 +10,6 @@ foo (uint16_t a, int16x8_t b)
   return vminavq_s16 (a, b);
 }
 
-/* { dg-final { scan-assembler "vminav.s16"  }  } */
 
 uint16_t
 foo1 (uint16_t a, int16x8_t b)
@@ -18,4 +17,12 @@ foo1 (uint16_t a, int16x8_t b)
   return vminavq (a, b);
 }
 
-/* { dg-final { scan-assembler "vminav.s16"  }  } */
+
+int16_t
+foo2 (uint8_t a, int16x8_t b)
+{
+  return vminavq (a, b);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
+/* { dg-final { scan-assembler-times "vminav.s16" 3 } } */

@@ -1426,9 +1426,9 @@ package body Exp_Ch11 is
       --  objects of controlled types, for example. We do not want to clean up
       --  the return object.
 
-      if not Nkind_In (Parent (N), N_Accept_Statement,
-                                   N_Extended_Return_Statement,
-                                   N_Package_Body)
+      if Nkind (Parent (N)) not in N_Accept_Statement
+                                 | N_Extended_Return_Statement
+                                 | N_Package_Body
         and then not Delay_Cleanups (Current_Scope)
         and then not Is_Thunk (Current_Scope)
       then

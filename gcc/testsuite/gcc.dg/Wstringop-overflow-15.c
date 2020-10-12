@@ -4,7 +4,8 @@
    for either kind of VLAs (member and non-member).
    Diagnosing the accesses is the subject of pr82608.
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-array-bounds" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" }
+   { dg-require-effective-target alloca } */
 
 void sink (void*);
 

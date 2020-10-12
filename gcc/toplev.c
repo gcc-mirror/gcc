@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "gcse.h"
 #include "omp-offload.h"
-#include "hsa-common.h"
 #include "edit-context.h"
 #include "tree-pass.h"
 #include "dumpfile.h"
@@ -85,6 +84,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "dump-context.h"
 #include "print-tree.h"
 #include "optinfo-emit-json.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
+#include "dbgcnt.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -511,8 +513,6 @@ compile_file (void)
 	tsan_finish_file ();
 
       omp_finish_file ();
-
-      hsa_output_brig ();
 
       output_shared_constant_pool ();
       output_object_blocks ();
@@ -1477,16 +1477,6 @@ process_options (void)
       flag_abi_version = 2;
     }
 
-  /* Unrolling all loops implies that standard loop unrolling must also
-     be done.  */
-  if (flag_unroll_all_loops)
-    flag_unroll_loops = 1;
-
-  /* Allow cunroll to grow size accordingly.  */
-  if (flag_cunroll_grow_size == AUTODETECT_VALUE)
-    flag_cunroll_grow_size
-      = flag_unroll_loops || flag_peel_loops || optimize >= 3;
-
   /* web and rename-registers help when run after loop unrolling.  */
   if (flag_web == AUTODETECT_VALUE)
     flag_web = flag_unroll_loops;
@@ -1835,11 +1825,31 @@ process_options (void)
   /* Address Sanitizer needs porting to each target architecture.  */
 
   if ((flag_sanitize & SANITIZE_ADDRESS)
-      && (!FRAME_GROWS_DOWNWARD || targetm.asan_shadow_offset == NULL))
+      && !FRAME_GROWS_DOWNWARD)
     {
       warning_at (UNKNOWN_LOCATION, 0,
 		  "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> "
 		  "are not supported for this target");
+      flag_sanitize &= ~SANITIZE_ADDRESS;
+    }
+
+  if ((flag_sanitize & SANITIZE_USER_ADDRESS)
+      && targetm.asan_shadow_offset == NULL)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fsanitize=address%> not supported for this target");
+      flag_sanitize &= ~SANITIZE_ADDRESS;
+    }
+
+  if ((flag_sanitize & SANITIZE_KERNEL_ADDRESS)
+      && (targetm.asan_shadow_offset == NULL
+	  && param_asan_stack
+	  && !asan_shadow_offset_set_p ()))
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "%<-fsanitize=kernel-address%> with stack protection "
+		  "is not supported without %<-fasan-shadow-offset=%> "
+		  "for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
@@ -1860,7 +1870,8 @@ process_options (void)
                                     DK_ERROR, UNKNOWN_LOCATION);
 
   /* Save the current optimization options.  */
-  optimization_default_node = build_optimization_node (&global_options);
+  optimization_default_node
+    = build_optimization_node (&global_options, &global_options_set);
   optimization_current_node = optimization_default_node;
 
   if (flag_checking >= 2)
@@ -2068,7 +2079,7 @@ target_reinit (void)
     {
       optimization_current_node = optimization_default_node;
       cl_optimization_restore
-	(&global_options,
+	(&global_options, &global_options_set,
 	 TREE_OPTIMIZATION (optimization_default_node));
     }
   this_fn_optabs = this_target_optabs;
@@ -2100,7 +2111,7 @@ target_reinit (void)
   if (saved_optimization_current_node != optimization_default_node)
     {
       optimization_current_node = saved_optimization_current_node;
-      cl_optimization_restore (&global_options,
+      cl_optimization_restore (&global_options, &global_options_set,
 			       TREE_OPTIMIZATION (optimization_current_node));
     }
   this_fn_optabs = saved_this_fn_optabs;
@@ -2202,6 +2213,9 @@ finalize (bool no_backend)
 
   if (profile_report)
     dump_profile_report ();
+
+  if (flag_dbg_cnt_list)
+    dbg_cnt_list_all_counters ();
 
   /* Language-specific end of compilation actions.  */
   lang_hooks.finish ();
@@ -2489,6 +2503,7 @@ toplev::finalize (void)
   /* Needs to be called before cgraph_c_finalize since it uses symtab.  */
   ipa_reference_c_finalize ();
   ipa_fnsummary_c_finalize ();
+  ipa_modref_c_finalize ();
 
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();

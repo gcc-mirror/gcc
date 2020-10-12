@@ -21,7 +21,7 @@ PackedAligned { int i; };
 struct ATTR ((aligned (2)))
 AlignedMemberPacked
 {
-  int ATTR ((packed)) i;
+  int ATTR ((packed)) i; // { dg-warning "attribute ignored" "" { target default_packed } }
 };
 
 struct ATTR ((packed))

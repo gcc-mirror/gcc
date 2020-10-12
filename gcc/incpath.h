@@ -22,8 +22,8 @@
 enum incpath_kind {
   INC_QUOTE = 0, /* include "foo" */
   INC_BRACKET,   /* include <foo> */
-  INC_SYSTEM,    /* sysinclude */
-  INC_AFTER,	/* post-sysinclude.  */
+  INC_SYSTEM,    /* sys-include */
+  INC_AFTER,	 /* post-sysinclude  */
   INC_MAX
 };
 

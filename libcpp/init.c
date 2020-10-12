@@ -36,7 +36,7 @@ along with this program; see the file COPYING3.  If not see
 
 static void init_library (void);
 static void mark_named_operators (cpp_reader *, int);
-static void read_original_filename (cpp_reader *);
+static bool read_original_filename (cpp_reader *);
 static void read_original_directory (cpp_reader *);
 static void post_options (cpp_reader *);
 
@@ -190,7 +190,6 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, discard_comments_in_macro_exp) = 1;
   CPP_OPTION (pfile, max_include_depth) = 200;
-  CPP_OPTION (pfile, tabstop) = 8;
   CPP_OPTION (pfile, operator_names) = 1;
   CPP_OPTION (pfile, warn_trigraphs) = 2;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
@@ -401,6 +400,9 @@ static const struct builtin_macro builtin_array[] =
   B("__LINE__",		 BT_SPECLINE,      true),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL, true),
   B("__COUNTER__",	 BT_COUNTER,       true),
+  /* Make sure to update the list of built-in
+     function-like macros in traditional.c:
+     fun_like_macro() when adding more following */
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
   B("__has_builtin",	 BT_HAS_BUILTIN,   true),
@@ -679,97 +681,114 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
     return NULL;
 
   _cpp_stack_file (pfile, pfile->main_file,
-		   injecting ? IT_MAIN_INJECT : IT_MAIN, 0);
+		   injecting || CPP_OPTION (pfile, preprocessed)
+		   ? IT_PRE_MAIN : IT_MAIN, 0);
 
   /* For foo.i, read the original filename foo.c now, for the benefit
      of the front ends.  */
   if (CPP_OPTION (pfile, preprocessed))
-    {
-      read_original_filename (pfile);
-      fname = (ORDINARY_MAP_FILE_NAME
-	       ((LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table))));
-    }
-  return fname;
+    if (!read_original_filename (pfile))
+      {
+	/* We're on line 1 after all.  */
+	auto *last = linemap_check_ordinary
+	  (LINEMAPS_LAST_MAP (pfile->line_table, false));
+	last->to_line = 1;
+	/* Inform of as-if a file change.  */
+	_cpp_do_file_change (pfile, LC_RENAME_VERBATIM, LINEMAP_FILE (last),
+			     LINEMAP_LINE (last), LINEMAP_SYSP (last));
+      }
+
+  return ORDINARY_MAP_FILE_NAME (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table));
 }
 
-/* For preprocessed files, if the first tokens are of the form # NUM.
-   handle the directive so we know the original file name.  This will
-   generate file_change callbacks, which the front ends must handle
-   appropriately given their state of initialization.  */
-static void
+/* For preprocessed files, if the very first characters are
+   '#<SPACE>[01]<SPACE>', then handle a line directive so we know the
+   original file name.  This will generate file_change callbacks,
+   which the front ends must handle appropriately given their state of
+   initialization.  We peek directly into the character buffer, so
+   that we're not confused by otherwise-skipped white space &
+   comments.  We can be very picky, because this should have been
+   machine-generated text (by us, no less).  This way we do not
+   interfere with the module directive state machine.  */
+
+static bool
 read_original_filename (cpp_reader *pfile)
 {
-  const cpp_token *token, *token1;
+  auto *buf = pfile->buffer->next_line;
 
-  /* Lex ahead; if the first tokens are of the form # NUM, then
-     process the directive, otherwise back up.  */
-  token = _cpp_lex_direct (pfile);
-  if (token->type == CPP_HASH)
+  if (pfile->buffer->rlimit - buf > 4
+      && buf[0] == '#'
+      && buf[1] == ' '
+      // Also permit '1', as that's what used to be here
+      && (buf[2] == '0' || buf[2] == '1')
+      && buf[3] == ' ')
     {
-      pfile->state.in_directive = 1;
-      token1 = _cpp_lex_direct (pfile);
-      _cpp_backup_tokens (pfile, 1);
-      pfile->state.in_directive = 0;
-
-      /* If it's a #line directive, handle it.  */
-      if (token1->type == CPP_NUMBER
-	  && _cpp_handle_directive (pfile, token->flags & PREV_WHITE))
+      const cpp_token *token = _cpp_lex_direct (pfile);
+      gcc_checking_assert (token->type == CPP_HASH);
+      if (_cpp_handle_directive (pfile, token->flags & PREV_WHITE))
 	{
 	  read_original_directory (pfile);
-	  return;
+	  return true;
 	}
     }
 
-  /* Backup as if nothing happened.  */
-  _cpp_backup_tokens (pfile, 1);
+  return false;
 }
 
 /* For preprocessed files, if the tokens following the first filename
    line is of the form # <line> "/path/name//", handle the
-   directive so we know the original current directory.  */
+   directive so we know the original current directory.
+
+   As with the first line peeking, we can do this without lexing by
+   being picky.  */
 static void
 read_original_directory (cpp_reader *pfile)
 {
-  const cpp_token *hash, *token;
+  auto *buf = pfile->buffer->next_line;
 
-  /* Lex ahead; if the first tokens are of the form # NUM, then
-     process the directive, otherwise back up.  */
-  hash = _cpp_lex_direct (pfile);
-  if (hash->type != CPP_HASH)
+  if (pfile->buffer->rlimit - buf > 4
+      && buf[0] == '#'
+      && buf[1] == ' '
+      // Also permit '1', as that's what used to be here
+      && (buf[2] == '0' || buf[2] == '1')
+      && buf[3] == ' ')
     {
-      _cpp_backup_tokens (pfile, 1);
-      return;
+      const cpp_token *hash = _cpp_lex_direct (pfile);
+      gcc_checking_assert (hash->type == CPP_HASH);
+      pfile->state.in_directive = 1;
+      const cpp_token *number = _cpp_lex_direct (pfile);
+      gcc_checking_assert (number->type == CPP_NUMBER);
+      const cpp_token *string = _cpp_lex_direct (pfile);
+      pfile->state.in_directive = 0;
+
+      const unsigned char *text = nullptr;
+      size_t len = 0;
+      if (string->type == CPP_STRING)
+	{
+	  /* The string value includes the quotes.  */
+	  text = string->val.str.text;
+	  len = string->val.str.len;
+	}
+      if (len < 5
+	  || !IS_DIR_SEPARATOR (text[len - 2])
+	  || !IS_DIR_SEPARATOR (text[len - 3]))
+	{
+	  /* That didn't work out, back out.   */
+	  _cpp_backup_tokens (pfile, 3);
+	  return;
+	}
+
+      if (pfile->cb.dir_change)
+	{
+	  /* Smash the string directly, it's dead at this point  */
+	  char *smashy = (char *)text;
+	  smashy[len - 3] = 0;
+	  
+	  pfile->cb.dir_change (pfile, smashy + 1);
+	}
+
+      /* We should be at EOL.  */
     }
-
-  token = _cpp_lex_direct (pfile);
-
-  if (token->type != CPP_NUMBER)
-    {
-      _cpp_backup_tokens (pfile, 2);
-      return;
-    }
-
-  token = _cpp_lex_direct (pfile);
-
-  if (token->type != CPP_STRING
-      || ! (token->val.str.len >= 5
-	    && IS_DIR_SEPARATOR (token->val.str.text[token->val.str.len-2])
-	    && IS_DIR_SEPARATOR (token->val.str.text[token->val.str.len-3])))
-    {
-      _cpp_backup_tokens (pfile, 3);
-      return;
-    }
-
-  if (pfile->cb.dir_change)
-    {
-      char *debugdir = (char *) alloca (token->val.str.len - 3);
-
-      memcpy (debugdir, (const char *) token->val.str.text + 1,
-	      token->val.str.len - 4);
-      debugdir[token->val.str.len - 4] = '\0';
-
-      pfile->cb.dir_change (pfile, debugdir);
-    }      
 }
 
 /* This is called at the end of preprocessing.  It pops the last

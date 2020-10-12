@@ -2518,7 +2518,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	{
 	  tree ifn = get_first_fn (fn);
 	  if (TREE_CODE (ifn) == FUNCTION_DECL
-	      && DECL_LOCAL_FUNCTION_P (ifn))
+	      && DECL_LOCAL_DECL_P (ifn))
 	    orig_fn = DECL_NAME (ifn);
 	}
 
@@ -2707,12 +2707,16 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
     {
       if (!vec_safe_is_empty (*args))
 	error ("arguments to destructor are not allowed");
-      /* Mark the pseudo-destructor call as having side-effects so
-	 that we do not issue warnings about its use.  */
-      result = build1 (NOP_EXPR,
-		       void_type_node,
-		       TREE_OPERAND (fn, 0));
-      TREE_SIDE_EFFECTS (result) = 1;
+      /* C++20/DR: If the postfix-expression names a pseudo-destructor (in
+	 which case the postfix-expression is a possibly-parenthesized class
+	 member access), the function call destroys the object of scalar type
+	 denoted by the object expression of the class member access.  */
+      tree ob = TREE_OPERAND (fn, 0);
+      if (obvalue_p (ob))
+	result = build_trivial_dtor_call (ob, true);
+      else
+	/* No location to clobber.  */
+	result = convert_to_void (ob, ICV_STATEMENT, complain);
     }
   else if (CLASS_TYPE_P (TREE_TYPE (fn)))
     /* If the "function" is really an object of class type, it might
@@ -2845,7 +2849,10 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor,
 	}
     }
 
-  return build3_loc (loc, PSEUDO_DTOR_EXPR, void_type_node, object,
+  tree type = (type_dependent_expression_p (object)
+	       ? NULL_TREE : void_type_node);
+
+  return build3_loc (loc, PSEUDO_DTOR_EXPR, type, object,
 		     scope, destructor);
 }
 
@@ -3023,6 +3030,7 @@ finish_compound_literal (tree type, tree compound_literal,
       && initializer_constant_valid_p (compound_literal, type))
     {
       tree decl = create_temporary_var (type);
+      DECL_CONTEXT (decl) = NULL_TREE;
       DECL_INITIAL (decl) = compound_literal;
       TREE_STATIC (decl) = 1;
       if (literal_type_p (type) && CP_TYPE_CONST_NON_VOLATILE_P (type))
@@ -3209,13 +3217,13 @@ begin_class_definition (tree t)
   if (t == error_mark_node || ! MAYBE_CLASS_TYPE_P (t))
     {
       t = make_class_type (RECORD_TYPE);
-      pushtag (make_anon_name (), t, /*tag_scope=*/ts_current);
+      pushtag (make_anon_name (), t);
     }
 
   if (TYPE_BEING_DEFINED (t))
     {
       t = make_class_type (TREE_CODE (t));
-      pushtag (TYPE_IDENTIFIER (t), t, /*tag_scope=*/ts_current);
+      pushtag (TYPE_IDENTIFIER (t), t);
     }
   maybe_process_partial_specialization (t);
   pushclass (t);
@@ -5076,8 +5084,13 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     {
       if (length == NULL_TREE)
 	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "for pointer type length expression must be specified");
+	  if (TREE_CODE (ret) == PARM_DECL && DECL_ARRAY_PARAMETER_P (ret))
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "for array function parameter length expression "
+		      "must be specified");
+	  else
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "for pointer type length expression must be specified");
 	  return error_mark_node;
 	}
       if (length != NULL_TREE
@@ -5515,7 +5528,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 				omp_reduction_id (ERROR_MARK,
 						  TREE_OPERAND (id, 1),
 						  type),
-				false, false);
+				LOOK_want::NORMAL, false);
   tree fns = id;
   id = NULL_TREE;
   if (fns && is_overloaded_fn (fns))
@@ -5667,7 +5680,7 @@ cp_check_omp_declare_reduction_r (tree *tp, int *, void *data)
 
 /* Diagnose violation of OpenMP #pragma omp declare reduction restrictions.  */
 
-void
+bool
 cp_check_omp_declare_reduction (tree udr)
 {
   tree type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (udr)));
@@ -5677,7 +5690,7 @@ cp_check_omp_declare_reduction (tree udr)
   location_t loc = DECL_SOURCE_LOCATION (udr);
 
   if (type == error_mark_node)
-    return;
+    return false;
   if (ARITHMETIC_TYPE_P (type))
     {
       static enum tree_code predef_codes[]
@@ -5711,7 +5724,7 @@ cp_check_omp_declare_reduction (tree udr)
 	{
 	  error_at (loc, "predeclared arithmetic type %qT in "
 			 "%<#pragma omp declare reduction%>", type);
-	  return;
+	  return false;
 	}
     }
   else if (FUNC_OR_METHOD_TYPE_P (type)
@@ -5719,24 +5732,24 @@ cp_check_omp_declare_reduction (tree udr)
     {
       error_at (loc, "function or array type %qT in "
 		     "%<#pragma omp declare reduction%>", type);
-      return;
+      return false;
     }
   else if (TYPE_REF_P (type))
     {
       error_at (loc, "reference type %qT in %<#pragma omp declare reduction%>",
 		type);
-      return;
+      return false;
     }
   else if (TYPE_QUALS_NO_ADDR_SPACE (type))
     {
       error_at (loc, "%<const%>, %<volatile%> or %<__restrict%>-qualified "
 		"type %qT in %<#pragma omp declare reduction%>", type);
-      return;
+      return false;
     }
 
   tree body = DECL_SAVED_TREE (udr);
   if (body == NULL_TREE || TREE_CODE (body) != STATEMENT_LIST)
-    return;
+    return true;
 
   tree_stmt_iterator tsi;
   struct cp_check_omp_declare_reduction_data data;
@@ -5752,7 +5765,7 @@ cp_check_omp_declare_reduction (tree udr)
       gcc_assert (TREE_CODE (data.stmts[0]) == DECL_EXPR
 		  && TREE_CODE (data.stmts[1]) == DECL_EXPR);
       if (TREE_NO_WARNING (DECL_EXPR_DECL (data.stmts[0])))
-	return;
+	return true;
       data.combiner_p = true;
       if (cp_walk_tree (&data.stmts[2], cp_check_omp_declare_reduction_r,
 			&data, NULL))
@@ -5771,6 +5784,7 @@ cp_check_omp_declare_reduction (tree udr)
       if (i == 7)
 	gcc_assert (TREE_CODE (data.stmts[6]) == DECL_EXPR);
     }
+  return true;
 }
 
 /* Helper function of finish_omp_clauses.  Clone STMT as if we were making
@@ -8758,7 +8772,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 	{
 	  tree ivc = build_omp_clause (locus, OMP_CLAUSE_FIRSTPRIVATE);
 	  OMP_CLAUSE_DECL (ivc) = iter;
-	  cxx_omp_finish_clause (ivc, NULL);
+	  cxx_omp_finish_clause (ivc, NULL, false);
 	  OMP_CLAUSE_CHAIN (ivc) = clauses;
 	  clauses = ivc;
 	}
@@ -8790,7 +8804,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 	  OMP_CLAUSE_CODE (loop_iv_seen) = OMP_CLAUSE_FIRSTPRIVATE;
 	}
       if (OMP_CLAUSE_CODE (loop_iv_seen) == OMP_CLAUSE_FIRSTPRIVATE)
-	cxx_omp_finish_clause (loop_iv_seen, NULL);
+	cxx_omp_finish_clause (loop_iv_seen, NULL, false);
     }
 
   orig_pre_body = *pre_body;
@@ -10315,8 +10329,8 @@ static tree
 capture_decltype (tree decl)
 {
   tree lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
-  tree cap = lookup_name_real (DECL_NAME (decl), /*type*/0, /*nonclass*/1,
-			       /*block_p=*/true, /*ns*/0, LOOKUP_HIDDEN);
+  tree cap = lookup_name (DECL_NAME (decl), LOOK_where::BLOCK,
+			  LOOK_want::HIDDEN_LAMBDA);
   tree type;
 
   if (cap && is_capture_proxy (cap))

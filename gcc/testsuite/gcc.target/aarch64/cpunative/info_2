@@ -1,0 +1,8 @@
+processor	: 0
+BogoMIPS	: 100.00
+Features	: asimd
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd08
+CPU revision	: 2

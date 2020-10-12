@@ -24,15 +24,20 @@ int test (void)
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-4.c\"" } */
 /* { dg-regexp "\"line\": 8" } */
 /* { dg-regexp "\"column\": 5" } */
+/* { dg-regexp "\"display-column\": 5" } */
+/* { dg-regexp "\"byte-column\": 5" } */
 
 /* { dg-regexp "\"finish\": \{" } */
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-4.c\"" } */
 /* { dg-regexp "\"line\": 8" } */
 /* { dg-regexp "\"column\": 10" } */
+/* { dg-regexp "\"display-column\": 10" } */
+/* { dg-regexp "\"byte-column\": 10" } */
 
 /* The outer diagnostic.  */
 
 /* { dg-regexp "\"kind\": \"warning\"" } */
+/* { dg-regexp "\"column-origin\": 1" } */
 /* { dg-regexp "\"message\": \"this 'if' clause does not guard...\"" } */
 /* { dg-regexp "\"option\": \"-Wmisleading-indentation\"" } */
 /* { dg-regexp "\"option_url\": \"https:\[^\n\r\"\]*#index-Wmisleading-indentation\"" } */
@@ -41,11 +46,15 @@ int test (void)
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-4.c\"" } */
 /* { dg-regexp "\"line\": 6" } */
 /* { dg-regexp "\"column\": 3" } */
+/* { dg-regexp "\"display-column\": 3" } */
+/* { dg-regexp "\"byte-column\": 3" } */
 
 /* { dg-regexp "\"finish\": \{" } */
 /* { dg-regexp "\"file\": \"\[^\n\r\"\]*diagnostic-format-json-4.c\"" } */
 /* { dg-regexp "\"line\": 6" } */
 /* { dg-regexp "\"column\": 4" } */
+/* { dg-regexp "\"display-column\": 4" } */
+/* { dg-regexp "\"byte-column\": 4" } */
 
 /* More from the nested diagnostic (we can't guarantee what order the
    "file" keys are consumed).  */

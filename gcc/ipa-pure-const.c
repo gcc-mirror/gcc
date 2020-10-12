@@ -381,13 +381,11 @@ check_op (funct_state local, tree t, bool checking_write)
 	fprintf (dump_file, "    Volatile indirect ref is not const/pure\n");
       return;
     }
-  else if (t
-  	   && (INDIRECT_REF_P (t) || TREE_CODE (t) == MEM_REF)
-	   && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
-	   && !ptr_deref_may_alias_global_p (TREE_OPERAND (t, 0)))
+  else if (refs_local_or_readonly_memory_p (t))
     {
       if (dump_file)
-	fprintf (dump_file, "    Indirect ref to local memory is OK\n");
+	fprintf (dump_file, "    Indirect ref to local or readonly "
+		 "memory is OK\n");
       return;
     }
   else if (checking_write)
@@ -743,6 +741,8 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 
   /* Do consider clobber as side effects before IPA, so we rather inline
      C++ destructors and keep clobber semantics than eliminate them.
+
+     Similar logic is in ipa-modref.
 
      TODO: We may get smarter during early optimizations on these and let
      functions containing only clobbers to be optimized more.  This is a common

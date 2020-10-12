@@ -701,7 +701,6 @@ class_key_or_enum_as_string (tree t)
 static void
 dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 {
-  tree name;
   const char *variety = class_key_or_enum_as_string (t);
   int typdef = 0;
   int tmplate = 0;
@@ -711,23 +710,23 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
   if (flags & TFF_CLASS_KEY_OR_ENUM)
     pp_cxx_ws_string (pp, variety);
 
-  name = TYPE_NAME (t);
+  tree decl = TYPE_NAME (t);
 
-  if (name)
+  if (decl)
     {
-      typdef = (!DECL_ARTIFICIAL (name)
+      typdef = (!DECL_ARTIFICIAL (decl)
 		/* An alias specialization is not considered to be a
 		   typedef.  */
 		&& !alias_template_specialization_p (t, nt_opaque));
 
       if ((typdef
 	   && ((flags & TFF_CHASE_TYPEDEF)
-	       || (!flag_pretty_templates && DECL_LANG_SPECIFIC (name)
-		   && DECL_TEMPLATE_INFO (name))))
-	  || DECL_SELF_REFERENCE_P (name))
+	       || (!flag_pretty_templates && DECL_LANG_SPECIFIC (decl)
+		   && DECL_TEMPLATE_INFO (decl))))
+	  || DECL_SELF_REFERENCE_P (decl))
 	{
 	  t = TYPE_MAIN_VARIANT (t);
-	  name = TYPE_NAME (t);
+	  decl = TYPE_NAME (t);
 	  typdef = 0;
 	}
 
@@ -737,7 +736,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 		    || PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)));
       
       if (! (flags & TFF_UNQUALIFIED_NAME))
-	dump_scope (pp, CP_DECL_CONTEXT (name), flags | TFF_SCOPE);
+	dump_scope (pp, CP_DECL_CONTEXT (decl), flags | TFF_SCOPE);
       flags &= ~TFF_UNQUALIFIED_NAME;
       if (tmplate)
 	{
@@ -747,9 +746,8 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 
 	  while (DECL_TEMPLATE_INFO (tpl))
 	    tpl = DECL_TI_TEMPLATE (tpl);
-	  name = tpl;
+	  decl = tpl;
 	}
-      name = DECL_NAME (name);
     }
 
   if (LAMBDA_TYPE_P (t))
@@ -762,7 +760,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 			 flags);
       pp_greater (pp);
     }
-  else if (!name || IDENTIFIER_ANON_P (name))
+  else if (!decl || IDENTIFIER_ANON_P (DECL_NAME (decl)))
     {
       if (flags & TFF_CLASS_KEY_OR_ENUM)
 	pp_string (pp, M_("<unnamed>"));
@@ -770,7 +768,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 	pp_printf (pp, M_("<unnamed %s>"), variety);
     }
   else
-    pp_cxx_tree_identifier (pp, name);
+    pp_cxx_tree_identifier (pp, DECL_NAME (decl));
 
   if (tmplate)
     dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
@@ -953,8 +951,11 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
       if (tree dtype = TYPE_DOMAIN (t))
 	{
 	  tree max = TYPE_MAX_VALUE (dtype);
-	  /* Zero-length arrays have an upper bound of SIZE_MAX.  */
-	  if (integer_all_onesp (max))
+	  /* Zero-length arrays have a null upper bound in C and SIZE_MAX
+	     in C++.  Handle both since the type might be constructed by
+	     the middle end and end up here as a result of a warning (see
+	     PR c++/97201).  */
+	  if (!max || integer_all_onesp (max))
 	    pp_character (pp, '0');
 	  else if (tree_fits_shwi_p (max))
 	    pp_wide_integer (pp, tree_to_shwi (max) + 1);
@@ -2400,6 +2401,64 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	      pp_cxx_right_paren (pp);
 	    }
 	}
+      break;
+
+    case TARGET_MEM_REF:
+      /* TARGET_MEM_REF can't appear directly from source, but can appear
+	 during late GIMPLE optimizations and through late diagnostic we might
+	 need to support it.  Print it as dereferencing of a pointer after
+	 cast to the TARGET_MEM_REF type, with pointer arithmetics on some
+	 pointer to single byte types, so
+	 *(type *)((char *) ptr + step * index + index2) if all the operands
+	 are present and the casts are needed.  */
+      pp_cxx_star (pp);
+      pp_cxx_left_paren (pp);
+      if (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (TMR_BASE (t)))) == NULL_TREE
+	  || !integer_onep (TYPE_SIZE_UNIT
+				(TREE_TYPE (TREE_TYPE (TMR_BASE (t))))))
+	{
+	  if (TYPE_SIZE_UNIT (TREE_TYPE (t))
+	      && integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (t))))
+	    {
+	      pp_cxx_left_paren (pp);
+	      dump_type (pp, build_pointer_type (TREE_TYPE (t)), flags);
+	    }
+	  else
+	    {
+	      dump_type (pp, build_pointer_type (TREE_TYPE (t)), flags);
+	      pp_cxx_right_paren (pp);
+	      pp_cxx_left_paren (pp);
+	      pp_cxx_left_paren (pp);
+	      dump_type (pp, build_pointer_type (char_type_node), flags);
+	    }
+	  pp_cxx_right_paren (pp);
+	}
+      else if (!same_type_p (TREE_TYPE (t),
+			     TREE_TYPE (TREE_TYPE (TMR_BASE (t)))))
+	{
+	  dump_type (pp, build_pointer_type (TREE_TYPE (t)), flags);
+	  pp_cxx_right_paren (pp);
+	  pp_cxx_left_paren (pp);
+	}
+      dump_expr (pp, TMR_BASE (t), flags);
+      if (TMR_STEP (t) && TMR_INDEX (t))
+	{
+	  pp_cxx_ws_string (pp, "+");
+	  dump_expr (pp, TMR_INDEX (t), flags);
+	  pp_cxx_ws_string (pp, "*");
+	  dump_expr (pp, TMR_STEP (t), flags);
+	}
+      if (TMR_INDEX2 (t))
+	{
+	  pp_cxx_ws_string (pp, "+");
+	  dump_expr (pp, TMR_INDEX2 (t), flags);
+	}
+      if (!integer_zerop (TMR_OFFSET (t)))
+	{
+	  pp_cxx_ws_string (pp, "+");
+	  dump_expr (pp, fold_convert (ssizetype, TMR_OFFSET (t)), flags);
+	}
+      pp_cxx_right_paren (pp);
       break;
 
     case NEGATE_EXPR:

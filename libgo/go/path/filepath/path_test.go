@@ -434,12 +434,9 @@ func chtmpdir(t *testing.T) (restore func()) {
 }
 
 func TestWalk(t *testing.T) {
-	if runtime.GOOS == "darwin" {
-		switch runtime.GOARCH {
-		case "arm", "arm64":
-			restore := chtmpdir(t)
-			defer restore()
-		}
+	if runtime.GOOS == "darwin" && runtime.GOARCH == "arm64" {
+		restore := chtmpdir(t)
+		defer restore()
 	}
 
 	tmpDir, err := ioutil.TempDir("", "TestWalk")
@@ -1285,11 +1282,8 @@ func TestDriveLetterInEvalSymlinks(t *testing.T) {
 
 func TestBug3486(t *testing.T) { // https://golang.org/issue/3486
 	t.Skip("skipping test because gccgo sources are arranged differently.")
-	if runtime.GOOS == "darwin" {
-		switch runtime.GOARCH {
-		case "arm", "arm64":
-			t.Skipf("skipping on %s/%s", runtime.GOOS, runtime.GOARCH)
-		}
+	if runtime.GOOS == "darwin" && runtime.GOARCH == "arm64" {
+		t.Skipf("skipping on %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
 	root, err := filepath.EvalSymlinks(runtime.GOROOT() + "/test")
 	if err != nil {

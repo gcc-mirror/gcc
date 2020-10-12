@@ -21,6 +21,7 @@ struct C
 {
   char c;
   ATTR (copy ((bar (), ((struct A *)(0))[0]))) int i;
+  /* { dg-warning "attribute ignored" "" { target default_packed } .-1 } */
 };
 
 /* Verify the attribute has been copied.  */

@@ -2467,6 +2467,9 @@ s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
   rtx elt;
   bool b;
 
+  /* Handle floats by bitcasting them to ints.  */
+  op = gen_lowpart (related_int_vector_mode (GET_MODE (op)).require (), op);
+
   gcc_assert (!!start == !!end);
   if (!const_vec_duplicate_p (op, &elt)
       || !CONST_INT_P (elt))
@@ -4106,6 +4109,18 @@ s390_cannot_force_const_mem (machine_mode mode, rtx x)
       /* Accept all non-symbolic constants.  */
       return false;
 
+    case NEG:
+      /* Accept an unary '-' only on scalar numeric constants.  */
+      switch (GET_CODE (XEXP (x, 0)))
+	{
+	case CONST_INT:
+	case CONST_DOUBLE:
+	case CONST_WIDE_INT:
+	  return false;
+	default:
+	  return true;
+	}
+
     case LABEL_REF:
       /* Labels are OK iff we are non-PIC.  */
       return flag_pic != 0;
@@ -5268,6 +5283,7 @@ legitimize_tls_address (rtx addr, rtx reg)
     {
       switch (XINT (XEXP (addr, 0), 1))
 	{
+	case UNSPEC_NTPOFF:
 	case UNSPEC_INDNTPOFF:
 	  new_rtx = addr;
 	  break;
@@ -5287,6 +5303,18 @@ legitimize_tls_address (rtx addr, rtx reg)
       new_rtx = legitimize_tls_address (new_rtx, reg);
       new_rtx = plus_constant (Pmode, new_rtx,
 			       INTVAL (XEXP (XEXP (addr, 0), 1)));
+      new_rtx = force_operand (new_rtx, 0);
+    }
+
+  /* (const (neg (unspec (symbol_ref)))) -> (neg (const (unspec (symbol_ref)))) */
+  else if (GET_CODE (addr) == CONST && GET_CODE (XEXP (addr, 0)) == NEG)
+    {
+      new_rtx = XEXP (XEXP (addr, 0), 0);
+      if (GET_CODE (new_rtx) != SYMBOL_REF)
+	new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+
+      new_rtx = legitimize_tls_address (new_rtx, reg);
+      new_rtx = gen_rtx_NEG (Pmode, new_rtx);
       new_rtx = force_operand (new_rtx, 0);
     }
 
@@ -6436,11 +6464,16 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
       /* Emit a strict_low_part pattern if possible.  */
       if (smode_bsize == bitsize && bitpos == mode_bsize - smode_bsize)
 	{
-	  op = gen_rtx_STRICT_LOW_PART (VOIDmode, gen_lowpart (smode, dest));
-	  op = gen_rtx_SET (op, gen_lowpart (smode, src));
-	  clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
-	  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber)));
-	  return true;
+	  rtx low_dest = gen_lowpart (smode, dest);
+	  rtx low_src = gen_lowpart (smode, src);
+
+	  switch (smode)
+	    {
+	    case E_QImode: emit_insn (gen_movstrictqi (low_dest, low_src)); return true;
+	    case E_HImode: emit_insn (gen_movstricthi (low_dest, low_src)); return true;
+	    case E_SImode: emit_insn (gen_movstrictsi (low_dest, low_src)); return true;
+	    default: break;
+	    }
 	}
 
       /* ??? There are more powerful versions of ICM that are not
@@ -6833,15 +6866,16 @@ s390_expand_vec_init (rtx target, rtx vals)
     }
 
   /* Use vector gen mask or vector gen byte mask if possible.  */
-  if (all_same && all_const_int
-      && (XVECEXP (vals, 0, 0) == const0_rtx
-	  || s390_contiguous_bitmask_vector_p (XVECEXP (vals, 0, 0),
-					       NULL, NULL)
-	  || s390_bytemask_vector_p (XVECEXP (vals, 0, 0), NULL)))
+  if (all_same && all_const_int)
     {
-      emit_insn (gen_rtx_SET (target,
-			      gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0))));
-      return;
+      rtx vec = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      if (XVECEXP (vals, 0, 0) == const0_rtx
+	  || s390_contiguous_bitmask_vector_p (vec, NULL, NULL)
+	  || s390_bytemask_vector_p (vec, NULL))
+	{
+	  emit_insn (gen_rtx_SET (target, vec));
+	  return;
+	}
     }
 
   /* Use vector replicate instructions.  vlrep/vrepi/vrep  */
@@ -6917,6 +6951,30 @@ s390_expand_vec_init (rtx target, rtx vals)
 							 GEN_INT (i), target),
 					      UNSPEC_VEC_SET)));
     }
+}
+
+/* Emit a vector constant that contains 1s in each element's sign bit position
+   and 0s in other positions.  MODE is the desired constant's mode.  */
+extern rtx
+s390_build_signbit_mask (machine_mode mode)
+{
+  /* Generate the integral element mask value.  */
+  machine_mode inner_mode = GET_MODE_INNER (mode);
+  int inner_bitsize = GET_MODE_BITSIZE (inner_mode);
+  wide_int mask_val = wi::set_bit_in_zero (inner_bitsize - 1, inner_bitsize);
+
+  /* Emit the element mask rtx.  Use gen_lowpart in order to cast the integral
+     value to the desired mode.  */
+  machine_mode int_mode = related_int_vector_mode (mode).require ();
+  rtx mask = immed_wide_int_const (mask_val, GET_MODE_INNER (int_mode));
+  mask = gen_lowpart (inner_mode, mask);
+
+  /* Emit the vector mask rtx by mode the element mask rtx.  */
+  int nunits = GET_MODE_NUNITS (mode);
+  rtvec v = rtvec_alloc (nunits);
+  for (int i = 0; i < nunits; i++)
+    RTVEC_ELT (v, i) = mask;
+  return gen_rtx_CONST_VECTOR (mode, v);
 }
 
 /* Structure to hold the initial parameters for a compare_and_swap operation
@@ -15177,6 +15235,7 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 static void
 s390_function_specific_restore (struct gcc_options *opts,
+				struct gcc_options */* opts_set */,
 				struct cl_target_option *ptr ATTRIBUTE_UNUSED)
 {
   opts->x_s390_cost_pointer = (long)processor_table[opts->x_s390_tune].cost;
@@ -15200,7 +15259,7 @@ s390_override_options_after_change (void)
 
 static void
 s390_option_override_internal (struct gcc_options *opts,
-			       const struct gcc_options *opts_set)
+			       struct gcc_options *opts_set)
 {
   /* Architecture mode defaults according to ABI.  */
   if (!(opts_set->x_target_flags & MASK_ZARCH))
@@ -15414,7 +15473,7 @@ s390_option_override_internal (struct gcc_options *opts,
 
   /* Call target specific restore function to do post-init work.  At the moment,
      this just sets opts->x_s390_cost_pointer.  */
-  s390_function_specific_restore (opts, NULL);
+  s390_function_specific_restore (opts, opts_set, NULL);
 
   /* Check whether -mfentry is supported. It cannot be used in 31-bit mode,
      because 31-bit PLT stubs assume that %r12 contains GOT address, which is
@@ -15483,7 +15542,8 @@ s390_option_override (void)
 
   /* Save the initial options in case the user does function specific
      options.  */
-  target_option_default_node = build_target_option_node (&global_options);
+  target_option_default_node
+    = build_target_option_node (&global_options, &global_options_set);
   target_option_current_node = target_option_default_node;
 
   /* This cannot reside in s390_option_optimization_table since HAVE_prefetch
@@ -15773,7 +15833,7 @@ s390_valid_target_attribute_tree (tree args,
       s390_option_override_internal (opts, &new_opts_set);
       /* Save the current options unless we are validating options for
 	 #pragma.  */
-      t = build_target_option_node (opts);
+      t = build_target_option_node (opts, &new_opts_set);
     }
   return t;
 }
@@ -15786,7 +15846,7 @@ s390_valid_target_attribute_p (tree fndecl,
 			       tree args,
 			       int ARG_UNUSED (flags))
 {
-  struct gcc_options func_options;
+  struct gcc_options func_options, func_options_set;
   tree new_target, new_optimize;
   bool ret = true;
 
@@ -15798,7 +15858,8 @@ s390_valid_target_attribute_p (tree fndecl,
       && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "default") == 0)
     return true;
 
-  tree old_optimize = build_optimization_node (&global_options);
+  tree old_optimize
+    = build_optimization_node (&global_options, &global_options_set);
 
   /* Get the optimization options of the current function.  */
   tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
@@ -15810,19 +15871,21 @@ s390_valid_target_attribute_p (tree fndecl,
   memset (&func_options, 0, sizeof (func_options));
   init_options_struct (&func_options, NULL);
   lang_hooks.init_options_struct (&func_options);
+  memset (&func_options_set, 0, sizeof (func_options_set));
 
-  cl_optimization_restore (&func_options, TREE_OPTIMIZATION (func_optimize));
+  cl_optimization_restore (&func_options, &func_options_set,
+			   TREE_OPTIMIZATION (func_optimize));
 
   /* Initialize func_options to the default before its target options can
      be set.  */
-  cl_target_option_restore (&func_options,
+  cl_target_option_restore (&func_options, &func_options_set,
 			    TREE_TARGET_OPTION (target_option_default_node));
 
   new_target = s390_valid_target_attribute_tree (args, &func_options,
 						 &global_options_set,
 						 (args ==
 						  current_target_pragma));
-  new_optimize = build_optimization_node (&func_options);
+  new_optimize = build_optimization_node (&func_options, &func_options_set);
   if (new_target == error_mark_node)
     ret = false;
   else if (fndecl && new_target)
@@ -15960,7 +16023,8 @@ s390_indirect_branch_settings (tree fndecl)
 void
 s390_activate_target_options (tree new_tree)
 {
-  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (new_tree));
   if (TREE_TARGET_GLOBALS (new_tree))
     restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
   else if (new_tree == target_option_default_node)
@@ -16046,12 +16110,13 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
      fenv_var = __builtin_s390_efpc ();
      __builtin_s390_sfpc (fenv_var & mask) */
-  tree old_fpc = build2 (MODIFY_EXPR, unsigned_type_node, fenv_var, call_efpc);
-  tree new_fpc =
-    build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
-	    build_int_cst (unsigned_type_node,
-			   ~(FPC_DXC_MASK | FPC_FLAGS_MASK |
-			     FPC_EXCEPTION_MASK)));
+  tree old_fpc = build4 (TARGET_EXPR, unsigned_type_node, fenv_var, call_efpc,
+			 NULL_TREE, NULL_TREE);
+  tree new_fpc
+    = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
+	      build_int_cst (unsigned_type_node,
+			     ~(FPC_DXC_MASK | FPC_FLAGS_MASK
+			       | FPC_EXCEPTION_MASK)));
   tree set_new_fpc = build_call_expr (sfpc, 1, new_fpc);
   *hold = build2 (COMPOUND_EXPR, void_type_node, old_fpc, set_new_fpc);
 
@@ -16070,8 +16135,8 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   __atomic_feraiseexcept ((old_fpc & FPC_FLAGS_MASK) >> FPC_FLAGS_SHIFT);  */
 
   old_fpc = create_tmp_var_raw (unsigned_type_node);
-  tree store_old_fpc = build2 (MODIFY_EXPR, void_type_node,
-			       old_fpc, call_efpc);
+  tree store_old_fpc = build4 (TARGET_EXPR, void_type_node, old_fpc, call_efpc,
+			       NULL_TREE, NULL_TREE);
 
   set_new_fpc = build_call_expr (sfpc, 1, fenv_var);
 

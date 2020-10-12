@@ -452,21 +452,15 @@ namespace __debug
 	return { _Base::insert_after(__pos.base(), __il), this };
       }
 
-    private:
-      _Base_iterator
-      _M_erase_after(_Base_const_iterator __pos)
-      {
-	_Base_const_iterator __next = std::next(__pos);
-	this->_M_invalidate_if([__next](_Base_const_iterator __it)
-	  { return __it == __next; });
-	return _Base::erase_after(__pos);
-      }
-    public:
       iterator
       erase_after(const_iterator __pos)
       {
 	__glibcxx_check_erase_after(__pos);
-	return { _M_erase_after(__pos.base()), this };
+
+	_Base_const_iterator __next = std::next(__pos.base());
+	this->_M_invalidate_if([__next](_Base_const_iterator __it)
+			       { return __it == __next; });
+	return { _Base::erase_after(__pos.base()), this };
       }
 
       iterator
@@ -691,29 +685,23 @@ namespace __debug
 	  return _Base::remove(__val);
 
 	size_type __removed __attribute__((__unused__)) = 0;
-	_Base_iterator __x = _Base::before_begin();
-	_Base_iterator __old = __x++;
-	_Base_iterator __extra = _Base::end();
-	while (__x != _Base::end())
+	_Base __to_destroy(get_allocator());
+	_Base_const_iterator __x = _Base::cbefore_begin();
+	_Base_const_iterator __old = __x++;
+	while (__x != _Base::cend())
 	  {
 	    if (*__x == __val)
 	      {
-		if (std::__addressof(*__x) != std::__addressof(__val))
-		  {
-		    __x = _M_erase_after(__old);
-		    _GLIBCXX20_ONLY( __removed++ );
-		    continue;
-		  }
-		else
-		  __extra = __old;
+		_Base_const_iterator __next = std::next(__old);
+		this->_M_invalidate_if([__next](_Base_const_iterator __it)
+				       { return __it == __next; });
+		__to_destroy.splice_after(__to_destroy.cbefore_begin(),
+					  _M_base(), __old);
+		__x = __old;
+		_GLIBCXX20_ONLY( __removed++ );
 	      }
-	    __old = __x++;
-	  }
 
-	if (__extra != _Base::end())
-	  {
-	    this->_M_erase_after(__extra);
-	    _GLIBCXX20_ONLY( __removed++ );
+	    __old = __x++;
 	  }
 
 	return _GLIBCXX20_ONLY( __removed );
@@ -727,16 +715,23 @@ namespace __debug
 	    return _Base::remove_if(__pred);
 
 	  size_type __removed __attribute__((__unused__)) = 0;
+	  _Base __to_destroy(get_allocator());
 	  _Base_iterator __x = _Base::before_begin();
 	  _Base_iterator __old = __x++;
 	  while (__x != _Base::end())
-	    if (__pred(*__x))
-	      {
-		__x = _M_erase_after(__old);
-		_GLIBCXX20_ONLY( __removed++ );
-	      }
-	    else
+	    {
+	      if (__pred(*__x))
+		{
+		  this->_M_invalidate_if([__x](_Base_const_iterator __it)
+					 { return __it == __x; });
+		  __to_destroy.splice_after(__to_destroy.cbefore_begin(),
+					    _M_base(), __old);
+		  __x = __old;
+		  _GLIBCXX20_ONLY( __removed++ );
+		}
+
 	      __old = __x++;
+	    }
 
 	  return _GLIBCXX20_ONLY( __removed );
 	}
@@ -753,22 +748,27 @@ namespace __debug
 	  if (!this->_M_iterators && !this->_M_const_iterators)
 	    return _Base::unique(__binary_pred);
 
-	  _Base_iterator __first = _Base::begin();
-	  _Base_iterator __last = _Base::end();
+	  _Base_const_iterator __first = _Base::cbegin();
+	  _Base_const_iterator __last = _Base::cend();
 	  if (__first == __last)
 	    return _GLIBCXX20_ONLY(0);
 
 	  size_type __removed __attribute__((__unused__)) = 0;
-	  _Base_iterator __next = std::next(__first);
+	  _Base __to_destroy(get_allocator());
+	  _Base_const_iterator __next = std::next(__first);
 	  while (__next != __last)
 	    {
 	      if (__binary_pred(*__first, *__next))
 		{
-		  __next = _M_erase_after(__first);
+		  this->_M_invalidate_if([__next](_Base_const_iterator __it)
+					 { return __it == __next; });
+		  __to_destroy.splice_after(__to_destroy.cbefore_begin(),
+					    _M_base(), __first);
+		  __next = __first;
 		  _GLIBCXX20_ONLY( __removed++ );
 		}
-	      else
-		__first = __next++;
+
+	      __first = __next++;
 	    }
 
 	  return _GLIBCXX20_ONLY( __removed );

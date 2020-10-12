@@ -1293,9 +1293,9 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
 
 /* Return the number of bytes to "protect" on the stack for -fstack-check.
 
-   "protect" in the context of -fstack-check means how many bytes we
-   should always ensure are available on the stack.  More importantly
-   this is how many bytes are skipped when probing the stack.
+   "protect" in the context of -fstack-check means how many bytes we need
+   to always ensure are available on the stack; as a consequence, this is
+   also how many bytes are first skipped when probing the stack.
 
    On some targets we want to reuse the -fstack-check prologue support
    to give a degree of protection against stack clashing style attacks.
@@ -1303,14 +1303,16 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
    In that scenario we do not want to skip bytes before probing as that
    would render the stack clash protections useless.
 
-   So we never use STACK_CHECK_PROTECT directly.  Instead we indirect though
-   this helper which allows us to provide different values for
-   -fstack-check and -fstack-clash-protection.  */
+   So we never use STACK_CHECK_PROTECT directly.  Instead we indirectly
+   use it through this helper, which allows to provide different values
+   for -fstack-check and -fstack-clash-protection.  */
+
 HOST_WIDE_INT
 get_stack_check_protect (void)
 {
   if (flag_stack_clash_protection)
     return 0;
+
  return STACK_CHECK_PROTECT;
 }
 
@@ -1532,6 +1534,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
       saved_stack_pointer_delta = stack_pointer_delta;
 
+      /* If stack checking or stack clash protection is requested,
+	 then probe the stack while allocating space from it.  */
       if (flag_stack_check && STACK_CHECK_MOVING_SP)
 	anti_adjust_stack_and_probe (size, false);
       else if (flag_stack_clash_protection)
@@ -1940,8 +1944,8 @@ emit_stack_clash_protection_probe_loop_end (rtx loop_lab, rtx end_loop,
 	probes were not emitted.
 
      2. It never skips probes, whereas anti_adjust_stack_and_probe will
-	skip probes on the first couple PROBE_INTERVALs on the assumption
-	they're done elsewhere.
+	skip the probe on the first PROBE_INTERVAL on the assumption it
+	was already done in the prologue and in previous allocations.
 
      3. It only allocates and probes SIZE bytes, it does not need to
 	allocate/probe beyond that because this probing style does not

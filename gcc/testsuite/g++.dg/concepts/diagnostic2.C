@@ -22,7 +22,7 @@ template<typename T>
 void
 baz()
 {
-  bar<int>(); // { dg-error "unsatisfied constraints" }
+  bar<int>(); // { dg-error "no match" }
 /* { dg-begin-multiline-output "" }
    bar<int>();
             ^

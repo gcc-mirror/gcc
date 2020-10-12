@@ -142,18 +142,22 @@ Node::ast_format(Gogo* gogo) const
   else if (this->expr() != NULL)
     {
       Expression* e = this->expr();
+
       bool is_call = e->call_expression() != NULL;
       if (is_call)
-	e->call_expression()->fn();
+	e = e->call_expression()->fn();
       Func_expression* fe = e->func_expression();;
-
-      bool is_closure = fe != NULL && fe->closure() != NULL;
-      if (is_closure)
+      if (fe != NULL)
 	{
-	  if (is_call)
-	    return "(func literal)()";
-	  return "func literal";
+	  Named_object* no = fe->named_object();
+	  if (no->is_function() && no->func_value()->enclosing() != NULL)
+	    {
+	      if (is_call)
+		return "(func literal)()";
+	      return "func literal";
+	    }
 	}
+
       Ast_dump_context::dump_to_stream(this->expr(), &ss);
     }
   else if (this->statement() != NULL)
@@ -1172,11 +1176,14 @@ Escape_discover_expr::expression(Expression** pexpr)
       // Method call or function call.
       fn = e->call_expression()->fn()->func_expression()->named_object();
     }
-  else if (e->func_expression() != NULL
-           && e->func_expression()->closure() != NULL)
+  else if (e->func_expression() != NULL)
     {
-      // Closure.
-      fn = e->func_expression()->named_object();
+      Named_object* no = e->func_expression()->named_object();
+      if (no->is_function() && no->func_value()->enclosing() != NULL)
+	{
+	  // Nested function.
+	  fn = no;
+	}
     }
 
   if (fn != NULL)

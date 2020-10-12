@@ -48,11 +48,18 @@ T (rindex, b + 4, '4');     // { dg-warning "missing terminating nul" "rindex" }
 T (stpcpy, d, a);           // { dg-warning "missing terminating nul" "stpcpy" }
 
 T (stpncpy, d, a, 4);
-T (stpncpy, d, a, 5);       // { dg-warning "missing terminating nul" "stpncpy" }
+T (stpncpy, d, a, 5);       // { dg-warning "specified bound 5 exceeds the size 4 of unterminated array" "stpncpy" }
 T (stpncpy, d, a, n);
 
-T (stpncpy, d, a + n, 4);
-T (stpncpy, d, a + n, 5);   // { dg-warning "missing terminating nul" "stpncpy" }
+/* When the offset into an unterminated array isn't known and the bound
+   is less than the size of the array it suggests the access may be
+   constrained just right.  When the bound is exactly equal to the size
+   of the array, then the offset would have to be zero for the access to
+   be safe, so a warning is justified.  Otherwise, the bound is too small
+   and the access is definitely unsafe.  */
+T (stpncpy, d, a + n, 3);
+T (stpncpy, d, a + n, 4);   // { dg-warning "specified bound 4 may exceed the size of at most 4 of unterminated array" "stpncpy" }
+T (stpncpy, d, a + n, 5);   // { dg-warning "specified bound 5 exceeds the size of at most 4 of unterminated array" "stpncpy" }
 
 T (stpncpy, d, b, 4);
 T (stpncpy, d, b, 5);
@@ -67,7 +74,7 @@ T (stpncpy, d, b + 3, 5);
 T (stpncpy, d, b + 3, n);
 
 T (stpncpy, d, b + 4, 1);
-T (stpncpy, d, b + 4, 2);   // { dg-warning "missing terminating nul" "stpncpy" }
+T (stpncpy, d, b + 4, 2);   // { dg-warning "specified bound 2 exceeds the size 1 of unterminated array" "stpncpy" }
 T (stpncpy, d, b + 4, n);
 /* The following might be worth warning about since it's only safe with
    n < 4.  */
@@ -84,7 +91,7 @@ T (strcasecmp, b, b + 4);   // { dg-warning "missing terminating nul" "strcasecm
 T (strcat, d, a);           // { dg-warning "missing terminating nul" "strcat" }
 
 T (strncat, d, a, 4);
-T (strncat, d, a, 5);       // { dg-warning "missing terminating nul" "strncat" }
+T (strncat, d, a, 5);       // { dg-warning "specified bound 5 exceeds the size 4 of unterminated array" "strncat" }
 T (strncat, d, a, n);
 
 T (strncat, d, b, n);
@@ -93,7 +100,7 @@ T (strncat, d, b + 2, n);
 T (strncat, d, b + 3, n);
 T (strncat, d, b + 4, 0);
 T (strncat, d, b + 4, 1);
-T (strncat, d, b + 4, 2);   // { dg-warning "missing terminating nul" "strncat" }
+T (strncat, d, b + 4, 2);   // { dg-warning "specified bound 2 exceeds the size 1 of unterminated array" "strncat" }
 /* The following should probably trigger a warning since it's only safe
    when n < 2, makes little sense with n == 0, and not much more with
    n == 1.  */
@@ -122,8 +129,8 @@ T (strncmp, s, a, 4);
 /* The warning below is not issued because GCC folds strncmp calls with
    the same arguments to zero before it checks for the missing nul.  */
 T (strncmp, a, a, 5);       // { dg-warning "missing terminating nul" "pr92624" { xfail *-*-*} }
-T (strncmp, a, s, 5);       // { dg-warning "missing terminating nul" "strcmp" }
-T (strncmp, s, a, 5);       // { dg-warning "missing terminating nul" "strcmp" }
+T (strncmp, a, s, 5);       // { dg-warning "specified bound 5 exceeds the size 4 of unterminated array" "strcmp" }
+T (strncmp, s, a, 5);       // { dg-warning "specified bound 5 exceeds the size 4 of unterminated array" "strcmp" }
 
 T (strcpy, d, a);           // { dg-warning "missing terminating nul" "strcpy" }
 
@@ -136,10 +143,10 @@ T (strspn, s, a);           // { dg-warning "missing terminating nul" "strcspn" 
 T (strdup, a);              // { dg-warning "missing terminating nul" "strdup" }
 
 T (strndup, a, 4);
-T (strndup, a, 5);          // { dg-warning "missing terminating nul" "strndup" }
+T (strndup, a, 5);          // { dg-warning "specified bound 5 exceeds the size 4 of unterminated array" "strndup" }
 T (strndup, b + 3, 2);
 T (strndup, b + 4, 1);
-T (strndup, b + 4, 2);      // { dg-warning "missing terminating nul" "strndup" }
+T (strndup, b + 4, 2);      // { dg-warning "specified bound 2 exceeds the size 1 of unterminated array" "strndup" }
 
 T (strlen, a);              // { dg-warning "missing terminating nul" "strlen" }
 
@@ -161,11 +168,12 @@ T (__stpcpy_chk, d, a, -1);           // { dg-warning "missing terminating nul" 
 
 
 T (__stpncpy_chk, d, a, 4, -1);
-T (__stpncpy_chk, d, a, 5, -1);       // { dg-warning "missing terminating nul" "stpncpy_chk" }
+T (__stpncpy_chk, d, a, 5, -1);       // { dg-warning "specified bound 5 exceeds the size 4 of unterminated array" "stpncpy_chk" }
 T (__stpncpy_chk, d, a, n, -1);
 
-T (__stpncpy_chk, d, a + n, 4, -1);
-T (__stpncpy_chk, d, a + n, 5, -1);   // { dg-warning "missing terminating nul" "stpncpy_chk" }
+T (__stpncpy_chk, d, a + n, 3, -1);
+T (__stpncpy_chk, d, a + n, 4, -1);   // { dg-warning "specified bound 4 may exceed the size of at most 4 of unterminated array" "stpncpy_chk" }
+T (__stpncpy_chk, d, a + n, 5, -1);   // { dg-warning "specified bound 5 exceeds the size of at most 4 of unterminated array" "stpncpy_chk" }
 
 T (__stpncpy_chk, d, b, 4, -1);
 T (__stpncpy_chk, d, b, 5, -1);
@@ -180,16 +188,17 @@ T (__stpncpy_chk, d, b + 3, 5, -1);
 T (__stpncpy_chk, d, b + 3, n, -1);
 
 T (__stpncpy_chk, d, b + 4, 1, -1);
-T (__stpncpy_chk, d, b + 4, 2, -1);   // { dg-warning "missing terminating nul" "stpncpy_chk" }
+T (__stpncpy_chk, d, b + 4, 2, -1);   // { dg-warning "specified bound 2 exceeds the size 1 of unterminated array" "stpncpy_chk" }
 T (__stpncpy_chk, d, b + 4, n, -1);
 
 
 T (__strncat_chk, d, a, 4, -1);
-T (__strncat_chk, d, a, 5, -1);       // { dg-warning "missing terminating nul" "strncat_chk" }
+T (__strncat_chk, d, a, 5, -1);       // { dg-warning "specified bound 5 exceeds the size 4 of unterminated array" "strncat_chk" }
 T (__strncat_chk, d, a, n, -1);
 
-T (__strncat_chk, d, a + n, 4, -1);
-T (__strncat_chk, d, a + n, 5, -1);   // { dg-warning "missing terminating nul" "strncat_chk" }
+T (__strncat_chk, d, a + n, 3, -1);
+T (__strncat_chk, d, a + n, 4, -1);   // { dg-warning "specified bound 4 may exceed the size of at most 4 of unterminated array" "strncat_chk" }
+T (__strncat_chk, d, a + n, 5, -1);   // { dg-warning "specified bound 5 exceeds the size of at most 4 of unterminated array" "strncat_chk" }
 
 T (__strncat_chk, d, b, 4, -1);
 T (__strncat_chk, d, b, 5, -1);
@@ -204,16 +213,17 @@ T (__strncat_chk, d, b + 3, 5, -1);
 T (__strncat_chk, d, b + 3, n, -1);
 
 T (__strncat_chk, d, b + 4, 1, -1);
-T (__strncat_chk, d, b + 4, 2, -1);   // { dg-warning "missing terminating nul" "strncat_chk" }
+T (__strncat_chk, d, b + 4, 2, -1);   // { dg-warning "specified bound 2 exceeds the size 1 of unterminated array" "strncat_chk" }
 T (__strncat_chk, d, b + 4, n, -1);
 
 
 T (__strncpy_chk, d, a, 4, -1);
-T (__strncpy_chk, d, a, 5, -1);       // { dg-warning "missing terminating nul" "strncpy_chk" }
+T (__strncpy_chk, d, a, 5, -1);       // { dg-warning "specified bound 5 exceeds the size 4 of unterminated array" "strncpy_chk" }
 T (__strncpy_chk, d, a, n, -1);
 
-T (__strncpy_chk, d, a + n, 4, -1);
-T (__strncpy_chk, d, a + n, 5, -1);   // { dg-warning "missing terminating nul" "strncpy_chk" }
+T (__strncpy_chk, d, a + n, 3, -1);
+T (__strncpy_chk, d, a + n, 4, -1);   // { dg-warning "specified bound 4 may exceed the size of at most 4 of unterminated array" "strncpy_chk" }
+T (__strncpy_chk, d, a + n, 5, -1);   // { dg-warning "specified bound 5 exceeds the size of at most 4 of unterminated array" "strncpy_chk" }
 
 T (__strncpy_chk, d, b, 4, -1);
 T (__strncpy_chk, d, b, 5, -1);
@@ -228,7 +238,7 @@ T (__strncpy_chk, d, b + 3, 5, -1);
 T (__strncpy_chk, d, b + 3, n, -1);
 
 T (__strncpy_chk, d, b + 4, 1, -1);
-T (__strncpy_chk, d, b + 4, 2, -1);   // { dg-warning "missing terminating nul" "strncpy" }
+T (__strncpy_chk, d, b + 4, 2, -1);   // { dg-warning "specified bound 2 exceeds the size 1 of unterminated array" "strncpy" }
 T (__strncpy_chk, d, b + 4, n, -1);
 
 

@@ -80,7 +80,7 @@ enum level_kind
 
 enum intrinsic_code
 {
-#define DEF_D_INTRINSIC(CODE, A, N, M, D, C) INTRINSIC_ ## CODE,
+#define DEF_D_INTRINSIC(CODE, B, N, M, D, C) INTRINSIC_ ## CODE,
 
 #include "intrinsics.def"
 
@@ -530,6 +530,9 @@ extern tree build_address (tree);
 extern tree d_mark_addressable (tree);
 extern tree d_mark_used (tree);
 extern tree d_mark_read (tree);
+extern tree build_memcmp_call (tree, tree, tree);
+extern tree build_memcpy_call (tree, tree, tree);
+extern tree build_memset_call (tree, tree = NULL_TREE);
 extern bool identity_compare_p (StructDeclaration *);
 extern tree build_float_identity (tree_code, tree, tree);
 extern tree build_struct_comparison (tree_code, StructDeclaration *,
@@ -559,6 +562,7 @@ extern tree build_offset (tree, tree);
 extern tree build_memref (tree, tree, tree);
 extern tree build_array_set (tree, tree, tree);
 extern tree build_array_from_val (Type *, tree);
+extern tree build_array_from_exprs (Type *, Expressions *, bool);
 extern tree void_okay_p (tree);
 extern tree build_array_bounds_call (const Loc &);
 extern tree build_bounds_condition (const Loc &, tree, tree, bool);
@@ -571,6 +575,7 @@ extern tree d_build_call (TypeFunction *, tree, tree, Expressions *);
 extern tree d_assert_call (const Loc &, libcall_fn, tree = NULL_TREE);
 extern tree build_float_modulus (tree, tree, tree);
 extern tree build_vthis_function (tree, tree);
+extern tree error_no_frame_access (Dsymbol *);
 extern tree get_frame_for_symbol (Dsymbol *);
 extern tree build_vthis (AggregateDeclaration *);
 extern void build_closure (FuncDeclaration *);
@@ -587,6 +592,9 @@ extern tree convert_for_argument (tree, Parameter *);
 extern tree convert_for_condition (tree, Type *);
 extern tree d_array_convert (Expression *);
 extern tree d_array_convert (Type *, Expression *);
+
+/* In d-gimplify.cc.  */
+extern int d_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 
 /* In d-incpath.cc.  */
 extern void add_import_paths (const char *, const char *, bool);
@@ -614,7 +622,6 @@ extern tree make_thunk (FuncDeclaration *, int);
 extern tree start_function (FuncDeclaration *);
 extern void finish_function (tree);
 extern void mark_needed (tree);
-extern unsigned base_vtable_offset (ClassDeclaration *, BaseClass *);
 extern tree get_vtable_decl (ClassDeclaration *);
 extern tree build_new_class_expr (ClassReferenceExp *);
 extern tree aggregate_initializer_decl (AggregateDeclaration *);
@@ -628,7 +635,7 @@ extern void d_comdat_linkage (tree);
 extern void d_linkonce_linkage (tree);
 
 /* In expr.cc.  */
-extern tree build_expr (Expression *, bool = false);
+extern tree build_expr (Expression *, bool = false, bool = false);
 extern tree build_expr_dtor (Expression *);
 extern tree build_return_dtor (Expression *, Type *, TypeFunction *);
 
@@ -652,6 +659,7 @@ extern tree build_libcall (libcall_fn, Type *, int ...);
 extern bool have_typeinfo_p (ClassDeclaration *);
 extern tree layout_typeinfo (TypeInfoDeclaration *);
 extern tree layout_classinfo (ClassDeclaration *);
+extern unsigned base_vtable_offset (ClassDeclaration *, BaseClass *);
 extern tree get_typeinfo_decl (TypeInfoDeclaration *);
 extern tree get_classinfo_decl (ClassDeclaration *);
 extern tree build_typeinfo (const Loc &, Type *);

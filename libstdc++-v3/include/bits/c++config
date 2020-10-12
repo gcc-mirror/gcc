@@ -77,28 +77,48 @@
 // Macros for deprecated attributes.
 //   _GLIBCXX_USE_DEPRECATED
 //   _GLIBCXX_DEPRECATED
+//   _GLIBCXX_DEPRECATED_SUGGEST( string-literal )
+//   _GLIBCXX11_DEPRECATED
+//   _GLIBCXX11_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX17_DEPRECATED
+//   _GLIBCXX17_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX20_DEPRECATED( string-literal )
+//   _GLIBCXX20_DEPRECATED_SUGGEST( string-literal )
 #ifndef _GLIBCXX_USE_DEPRECATED
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
 
-#if defined(__DEPRECATED) && (__cplusplus >= 201103L)
+#if defined(__DEPRECATED)
 # define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
+# define _GLIBCXX_DEPRECATED_SUGGEST(ALT) \
+  __attribute__ ((__deprecated__ ("use '" ALT "' instead")))
 #else
 # define _GLIBCXX_DEPRECATED
+# define _GLIBCXX_DEPRECATED_SUGGEST(ALT)
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus >= 201103L)
+# define _GLIBCXX11_DEPRECATED _GLIBCXX_DEPRECATED
+# define _GLIBCXX11_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
+#else
+# define _GLIBCXX11_DEPRECATED
+# define _GLIBCXX11_DEPRECATED_SUGGEST(ALT)
 #endif
 
 #if defined(__DEPRECATED) && (__cplusplus >= 201703L)
 # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+# define _GLIBCXX17_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
 #else
 # define _GLIBCXX17_DEPRECATED
+# define _GLIBCXX17_DEPRECATED_SUGGEST(ALT)
 #endif
 
 #if defined(__DEPRECATED) && (__cplusplus > 201703L)
 # define _GLIBCXX20_DEPRECATED(MSG) [[deprecated(MSG)]]
+# define _GLIBCXX20_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
 #else
 # define _GLIBCXX20_DEPRECATED(MSG)
+# define _GLIBCXX20_DEPRECATED_SUGGEST(ALT)
 #endif
 
 // Macros for ABI tag attributes.
@@ -448,7 +468,8 @@ namespace std
 {
   // Avoid the use of assert, because we're trying to keep the <cassert>
   // include out of the mix.
-  extern "C++" inline void
+  extern "C++" _GLIBCXX_NORETURN
+  inline void
   __replacement_assert(const char* __file, int __line,
 		       const char* __function, const char* __condition)
   {
@@ -457,19 +478,16 @@ namespace std
     __builtin_abort();
   }
 }
-#define __glibcxx_assert_impl(_Condition)				 \
-  do 									 \
-  {							      		 \
-    if (! (_Condition))                                                  \
-      std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
-				#_Condition);				 \
-  } while (false)
+#define __glibcxx_assert_impl(_Condition)			       \
+  if (__builtin_expect(!bool(_Condition), false))		       \
+    std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
+			      #_Condition)
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)
-# define __glibcxx_assert(_Condition) __glibcxx_assert_impl(_Condition)
+# define __glibcxx_assert_2(_Condition) __glibcxx_assert_impl(_Condition)
 #else
-# define __glibcxx_assert(_Condition)
+# define __glibcxx_assert_2(_Condition)
 #endif
 
 // Macros for race detectors.
@@ -640,9 +658,11 @@ namespace std
 # define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-# define _GLIBCXX_BUILTIN_IS_SAME_AS(T, U) __is_same_as(T, U)
 # if __GNUC__ >= 9
 #  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+# endif
+# if __GNUC__ >= 11
+#  define _GLIBCXX_HAVE_BUILTIN_IS_SAME 1
 # endif
 #elif defined(__is_identifier) && defined(__has_builtin)
 // For non-GNU compilers:
@@ -659,9 +679,29 @@ namespace std
 #  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
 # endif
 # if ! __is_identifier(__is_same)
-#  define _GLIBCXX_BUILTIN_IS_SAME_AS(T, U) __is_same(T, U)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_SAME 1
 # endif
 #endif // GCC
+
+#if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+# define __glibcxx_assert_1(_Condition)		\
+    if (__builtin_is_constant_evaluated())	\
+     {						\
+       void __failed_assertion();	\
+       if (!bool(_Condition))			\
+	 __failed_assertion();	\
+     }						\
+    else
+#else
+# define __glibcxx_assert_1(_Condition)
+#endif
+
+# define __glibcxx_assert(_Condition)	  \
+  do {					  \
+    __glibcxx_assert_1(_Condition)	  \
+    { __glibcxx_assert_2(_Condition); }   \
+  } while (false)
+
 
 // PSTL configuration
 

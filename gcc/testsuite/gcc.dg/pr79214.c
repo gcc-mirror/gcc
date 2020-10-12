@@ -84,5 +84,5 @@ char* test_strncat (int i)
 {
   const char *s = i < 0 ? "123" : "4567";
 
-  return strncat (d, s, range ());   /* { dg-warning ".__builtin_strncat. specified bound between 4 and \[0-9\]+" } */
+  return strncat (d, s, range ());   /* { dg-warning ".__builtin_strncat. specified bound \\\[4, \[0-9\]+] exceeds destination size 3" } */
 }

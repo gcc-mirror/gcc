@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-std=gnu99" } */
 
 #include <stdint.h>
+#include <bpf-helpers.h>
 
 void
 foo ()
@@ -8,7 +10,7 @@ foo ()
   uint32_t ret;
   void *skb;
 
-  ret = __builtin_bpf_helper_get_cgroup_classid (skb);
+  ret = bpf_get_cgroup_classid (skb);
 }
 
 /* { dg-final { scan-assembler "call\t17" } } */

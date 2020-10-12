@@ -35,7 +35,7 @@ T (&a[1], asz - 1);
 T (&a[v0], asz);               /* { dg-warning "specified bound 5 may exceed the size of at most 5 of unterminated array" } */
 T (&a[v0] + 1, asz);           /* { dg-warning "specified bound 5 may exceed the size of at most 5 of unterminated array" } */
 
-T (a, asz + 1);                /* { dg-warning "specified bound 6 exceeds the size 5 " } */
+T (a, asz + 1);                /* { dg-warning "specified bound 6 exceeds the size 5 of unterminated array" } */
 T (&a[0], asz + 1);            /* { dg-warning "unterminated" } */
 T (&a[0] + 1, asz - 1);
 T (&a[0] + 1, asz + 1);        /* { dg-warning "unterminated" } */
@@ -110,7 +110,7 @@ T (&b[3][1] + i1, bsz);           /* { dg-warning "unterminated" } */
 T (&b[3][1] + i1, bsz - i1);      /* { dg-warning "unterminated" } */
 T (&b[3][1] + i1, bsz - i2);
 T (&b[3][v0], bsz);
-T (&b[3][1] + v0, bsz);           /* { dg-warning "specified bound 5 may exceed the size of at most 4 of unterminated array" } */
+T (&b[3][1] + v0, bsz);           /* { dg-warning "specified bound 5 exceeds the size of at most 4 of unterminated array" } */
 T (&b[3][v0] + v1, bsz);          /* { dg-warning "specified bound 5 may exceed the size of at most 4 of unterminated array" "pr?????" { xfail *-*-* } } */
 
 T (&b[3][1], bsz + 1);            /* { dg-warning "unterminated" } */
@@ -124,7 +124,7 @@ T (&b[i3][i1], bsz);              /* { dg-warning "unterminated" } */
 T (&b[i3][i1] + 1, bsz);          /* { dg-warning "unterminated" } */
 T (&b[i3][i1] + i1, bsz);         /* { dg-warning "specified bound 5 exceeds the size 3 of unterminated array" } */
 T (&b[i3][v0], bsz);
-T (&b[i3][i1] + v0, bsz);         /* { dg-warning "specified bound 5 may exceed the size of at most 4 of unterminated array" } */
+T (&b[i3][i1] + v0, bsz);         /* { dg-warning "specified bound 5 exceeds the size of at most 4 of unterminated array" } */
 T (&b[i3][v0] + v1, bsz);
 
 T (&b[i3][i1], bsz + 1);          /* { dg-warning "unterminated" } */
@@ -212,10 +212,10 @@ T (&s.a[i1] + v0, asz);
 T (s.a, asz + 1);
 T (&s.a[0], asz + 1);
 T (&s.a[0] + 1, asz + 1);
-T (&s.a[0] + v0, asz + 1);
+T (&s.a[0] + v0, asz + 1);        /* { dg-warning "specified bound 6 exceeds source size 5 " } */
 T (&s.a[1], asz + 1);
 T (&s.a[1] + 1, asz + 1);
-T (&s.a[1] + v0, asz + 1);
+T (&s.a[1] + v0, asz + 1);        /* { dg-bogus "specified bound 6 exceeds source size 5" "pr95794" { xfail *-*-* } } */
 
 T (&s.a[i0], asz + 1);
 T (&s.a[i0] + i1, asz + 1);
@@ -266,10 +266,10 @@ const struct B ba[] = {
 T (ba[0].a[0].a, asz + 1);
 T (&ba[0].a[0].a[0], asz + 1);
 T (&ba[0].a[0].a[0] + 1, asz + 1);
-T (&ba[0].a[0].a[0] + v0, asz + 1);
+T (&ba[0].a[0].a[0] + v0, asz + 1);   /* { dg-bogus "specified bound 6 exceeds source size 5" pr95794" { xfail *-*-* } } */
 T (&ba[0].a[0].a[1], asz + 1);
 T (&ba[0].a[0].a[1] + 1, asz + 1);
-T (&ba[0].a[0].a[1] + v0, asz + 1);
+T (&ba[0].a[0].a[1] + v0, asz + 1);   /* { dg-bogus "specified bound 6 exceeds source size 5" pr95794" { xfail *-*-* } } */
 
 T (ba[0].a[0].b, bsz);
 T (&ba[0].a[0].b[0], bsz);
@@ -302,10 +302,10 @@ T (&ba[0].a[1].a[1] + v0, asz + 1);   /* { dg-warning "unterminated" } */
 T (ba[0].a[1].b, bsz + 1);
 T (&ba[0].a[1].b[0], bsz + 1);
 T (&ba[0].a[1].b[0] + 1, bsz + 1);
-T (&ba[0].a[1].b[0] + v0, bsz + 1);
+T (&ba[0].a[1].b[0] + v0, bsz + 1);   /* { dg-bogus "specified bound 6 exceeds source size 5" pr95794" { xfail *-*-* } } */
 T (&ba[0].a[1].b[1], bsz + 1);
 T (&ba[0].a[1].b[1] + 1, bsz + 1);
-T (&ba[0].a[1].b[1] + v0, bsz + 1);
+T (&ba[0].a[1].b[1] + v0, bsz + 1);   /* { dg-bogus "specified bound 6 exceeds source size 5" pr95794" { xfail *-*-* } } */
 
 T (ba[1].a[0].a, asz);
 T (&ba[1].a[0].a[0], asz);

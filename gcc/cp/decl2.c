@@ -81,7 +81,6 @@ static void import_export_class (tree);
 static tree get_guard_bits (tree);
 static void determine_visibility_from_class (tree, tree);
 static bool determine_hidden_inline (tree);
-static void maybe_instantiate_decl (tree);
 
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
@@ -994,9 +993,6 @@ grokfield (const cp_declarator *declarator,
     flags = LOOKUP_NORMAL;
   else
     flags = LOOKUP_IMPLICIT;
-
-  if (decl_spec_seq_has_spec_p (declspecs, ds_constinit))
-    flags |= LOOKUP_CONSTINIT;
 
   switch (TREE_CODE (value))
     {
@@ -2215,6 +2211,7 @@ decl_needed_p (tree decl)
      emitted; they may be referred to from other object files.  */
   if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_REALLY_EXTERN (decl))
     return true;
+
   /* Functions marked "dllexport" must be emitted so that they are
      visible to other DLLs.  */
   if (flag_keep_inline_dllexport
@@ -2725,8 +2722,7 @@ determine_visibility (tree decl)
     determine_visibility_from_class (decl, class_type);
 
   if (decl_anon_ns_mem_p (decl))
-    /* Names in an anonymous namespace get internal linkage.
-       This might change once we implement export.  */
+    /* Names in an anonymous namespace get internal linkage.  */
     constrain_visibility (decl, VISIBILITY_ANON, false);
   else if (TREE_CODE (decl) != TYPE_DECL)
     {
@@ -3294,11 +3290,8 @@ copy_linkage (tree guard, tree decl)
 tree
 get_guard (tree decl)
 {
-  tree sname;
-  tree guard;
-
-  sname = mangle_guard_variable (decl);
-  guard = get_global_binding (sname);
+  tree sname = mangle_guard_variable (decl);
+  tree guard = get_global_binding (sname);
   if (! guard)
     {
       tree guard_type;
@@ -4492,11 +4485,13 @@ no_linkage_error (tree decl)
 	      && TREE_NO_WARNING (decl))))
     /* In C++11 it's ok if the decl is defined.  */
     return;
+
   tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
   if (t == NULL_TREE)
     /* The type that got us on no_linkage_decls must have gotten a name for
        linkage purposes.  */;
   else if (CLASS_TYPE_P (t) && TYPE_BEING_DEFINED (t))
+    // FIXME: This is now invalid, as a DR to c++98
     /* The type might end up having a typedef name for linkage purposes.  */
     vec_safe_push (no_linkage_decls, decl);
   else if (TYPE_UNNAMED_P (t))
@@ -5387,7 +5382,7 @@ possibly_inlined_p (tree decl)
    them instantiated for reduction clauses which inline them by hand
    directly.  */
 
-static void
+void
 maybe_instantiate_decl (tree decl)
 {
   if (DECL_LANG_SPECIFIC (decl)
@@ -5534,10 +5529,11 @@ mark_used (tree decl, tsubst_flags_t complain)
     return true;
 
   /* Set TREE_USED for the benefit of -Wunused.  */
-  TREE_USED (decl) = 1;
+  TREE_USED (decl) = true;
+
   /* And for structured bindings also the underlying decl.  */
   if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_BASE (decl))
-    TREE_USED (DECL_DECOMP_BASE (decl)) = 1;
+    TREE_USED (DECL_DECOMP_BASE (decl)) = true;
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     return true;
@@ -5569,6 +5565,22 @@ mark_used (tree decl, tsubst_flags_t complain)
 	    inform (DECL_SOURCE_LOCATION (decl), "declared here");
 	}
       return false;
+    }
+
+  if (VAR_OR_FUNCTION_DECL_P (decl) && DECL_LOCAL_DECL_P (decl))
+    {
+      if (!DECL_LANG_SPECIFIC (decl))
+	/* An unresolved dependent local extern.  */
+	return true;
+
+      DECL_ODR_USED (decl) = 1;
+      auto alias = DECL_LOCAL_DECL_ALIAS (decl);
+      if (!alias || alias == error_mark_node)
+	return true;
+
+      /* Process the underlying decl.  */
+      decl = alias;
+      TREE_USED (decl) = true;
     }
 
   cp_warn_deprecated_use (decl, complain);
@@ -5654,14 +5666,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       && !DECL_ARTIFICIAL (decl)
       && !decl_defined_p (decl)
       && no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false))
-    {
-      if (is_local_extern (decl))
-	/* There's no way to define a local extern, and adding it to
-	   the vector interferes with GC, so give an error now.  */
-	no_linkage_error (decl);
-      else
-	vec_safe_push (no_linkage_decls, decl);
-    }
+    vec_safe_push (no_linkage_decls, decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)

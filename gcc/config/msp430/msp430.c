@@ -160,15 +160,7 @@ msp430_option_override (void)
 
   init_machine_status = msp430_init_machine_status;
 
-  if (target_cpu)
-    {
-      /* gcc/common/config/msp430-common.c will have
-	 already canonicalised the string in target_cpu.  */
-      if (strcasecmp (target_cpu, "msp430x") == 0)
-	msp430x = true;
-      else /* target_cpu == "msp430" - already handled by the front end.  */
-	msp430x = false;
-    }
+  msp430x = target_cpu >= MSP430_CPU_MSP430X_DEFAULT;
 
   if (target_mcu)
     {
@@ -180,7 +172,7 @@ msp430_option_override (void)
 
 	  if (msp430_warn_mcu)
 	    {
-	      if (target_cpu && msp430x != xisa)
+	      if (target_cpu != MSP430_CPU_MSP430X_DEFAULT && msp430x != xisa)
 		warning (0, "MCU %qs supports %s ISA but %<-mcpu%> option "
 			 "is set to %s",
 			 target_mcu, xisa ? "430X" : "430",
@@ -212,7 +204,10 @@ msp430_option_override (void)
 			 "but %<-mhwmult%> is set to f5series",
 			 target_mcu, hwmult_name (extracted_mcu_data.hwmpy));
 	    }
-	  msp430x = xisa;
+	  /* Only override the default setting with the extracted ISA value if
+	     the user has not passed -mcpu=.  */
+	  if (target_cpu == MSP430_CPU_MSP430X_DEFAULT)
+	    msp430x = xisa;
 	}
       else
 	{
@@ -220,10 +215,10 @@ msp430_option_override (void)
 	    {
 	      if (msp430_warn_mcu)
 		{
-		  if (target_cpu == NULL)
+		  if (target_cpu == MSP430_CPU_MSP430X_DEFAULT)
 		    warning (0,
 			     "Unrecognized MCU name %qs, assuming that it is "
-			     "just a MSP430 with no hardware multiply.\n"
+			     "just a MSP430X with no hardware multiply.\n"
 			     "Use the %<-mcpu%> and %<-mhwmult%> options to "
 			     "set these explicitly.",
 			     target_mcu);
@@ -237,26 +232,19 @@ msp430_option_override (void)
 
 	      msp430_hwmult_type = MSP430_HWMULT_NONE;
 	    }
-	  else if (target_cpu == NULL)
+	  else if (target_cpu == MSP430_CPU_MSP430X_DEFAULT)
 	    {
 	      if (msp430_warn_mcu)
 		warning (0,
 			 "Unrecognized MCU name %qs, assuming that it just "
-			 "supports the MSP430 ISA.\nUse the %<-mcpu%> option "
+			 "supports the MSP430X ISA.\nUse the %<-mcpu%> option "
 			 "to set the ISA explicitly.",
 			 target_mcu);
-
-	      msp430x = false;
 	    }
 	  else if (msp430_warn_mcu)
 	    warning (0, "Unrecognized MCU name %qs.", target_mcu);
 	}
     }
-
-  /* The F5 series are all able to support the 430X ISA.  */
-  if (target_cpu == NULL && target_mcu == NULL
-      && msp430_hwmult_type == MSP430_HWMULT_F5SERIES)
-    msp430x = true;
 
   if (TARGET_LARGE && !msp430x)
     error ("%<-mlarge%> requires a 430X-compatible %<-mmcu=%>");
@@ -1064,15 +1052,6 @@ static bool msp430_rtx_costs (rtx	   x ATTRIBUTE_UNUSED,
 	  return true;
 	}
       break;
-    case ASHIFT:
-    case ASHIFTRT:
-    case LSHIFTRT:
-      if (!msp430x)
-	{
-	  *total = COSTS_N_INSNS (100);
-	  return true;
-	}
-      break;
     }
   return false;
 }
@@ -1716,9 +1695,9 @@ increment_stack (HOST_WIDE_INT amount)
     {
       inc = GEN_INT (amount);
       if (TARGET_LARGE)
-	emit_insn (gen_addpsi3 (sp, sp, inc));
+	F (emit_insn (gen_addpsi3 (sp, sp, inc)));
       else
-	emit_insn (gen_addhi3 (sp, sp, inc));
+	F (emit_insn (gen_addhi3 (sp, sp, inc)));
     }
 }
 
@@ -2112,7 +2091,7 @@ msp430_output_aligned_decl_common (FILE *		  stream,
 static void
 msp430_file_end (void)
 {
-#ifdef HAVE_AS_GNU_ATTRIBUTE
+#ifdef HAVE_AS_MSPABI_ATTRIBUTE
   /* Enum for tag names.  */
   enum
     {
@@ -2151,7 +2130,7 @@ msp430_file_end (void)
 	   OFBA_MSPABI_Tag_Data_Model,
 	   TARGET_LARGE ? OFBA_MSPABI_Val_Model_Large
 	   : OFBA_MSPABI_Val_Model_Small);
-#ifdef HAVE_AS_MSPABI_ATTRIBUTE
+#ifdef HAVE_AS_GNU_ATTRIBUTE
   /* Emit .gnu_attribute directive for Tag_GNU_MSP430_Data_Region.  */
   fprintf (asm_out_file, "\t%s %d, %d\n", gnu_attr, Tag_GNU_MSP430_Data_Region,
 	   msp430_data_region == MSP430_REGION_LOWER
@@ -2159,19 +2138,6 @@ msp430_file_end (void)
 	   : Tag_GNU_MSP430_Data_Region_Any);
 #endif
 #endif
-}
-
-bool
-msp430_do_not_relax_short_jumps (void)
-{
-  /* When placing code into "either" low or high memory we do not want the
-     linker to grow the size of sections, which it can do if it is encounters a
-     branch to a label that is too far away.  So we tell the cbranch patterns to
-     avoid using short jumps when there is a chance that the instructions will
-     end up in a low section.  */
-  return
-    msp430_code_region == MSP430_REGION_EITHER
-    || has_attr (ATTR_EITHER, current_function_decl);
 }
 
 enum msp430_builtin
@@ -2442,6 +2408,8 @@ msp430_expand_prologue (void)
   for (i = 15; i >= 4; i--)
     if (cfun->machine->need_to_save[i])
       {
+	/* We need to save COUNT sequential registers starting from regnum
+	   I.  */
 	int seq, count;
 	rtx note;
 
@@ -2456,6 +2424,7 @@ msp430_expand_prologue (void)
 	    p = F (emit_insn (gen_pushm (gen_rtx_REG (Pmode, i),
 					 GEN_INT (count))));
 
+	    /* Document the stack decrement as a result of PUSHM.  */
 	    note = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (count + 1));
 
 	    XVECEXP (note, 0, 0)
@@ -2504,8 +2473,10 @@ msp430_expand_prologue (void)
 void
 msp430_expand_epilogue (int is_eh)
 {
-  int i;
+  int i, j;
   int fs;
+  rtx sp = stack_pointer_rtx;
+  rtx p;
   int helper_n = 0;
 
   if (is_naked_func ())
@@ -2574,19 +2545,27 @@ msp430_expand_epilogue (int is_eh)
   for (i = 4; i <= 15; i++)
     if (cfun->machine->need_to_save[i])
       {
-	int seq, count;
+	/* We need to restore COUNT sequential registers starting from regnum
+	   I.  */
+	int seq;
+	int count = 1;
+	int helper_used = 0;
+	rtx note, addr;
 
-	for (seq = i + 1; seq <= 15 && cfun->machine->need_to_save[seq]; seq ++)
-	  ;
-	count = seq - i;
+	if (msp430x)
+	  {
+	    for (seq = i + 1; seq <= 15 && cfun->machine->need_to_save[seq];
+		 seq++)
+	      ;
+	    count = seq - i;
+	  }
 
 	if (msp430x)
 	  {
 	    /* Note: With TARGET_LARGE we still use
 	       POPM as POPX.A is two bytes bigger.  */
-	    emit_insn (gen_popm (stack_pointer_rtx, GEN_INT (seq - 1),
-				 GEN_INT (count)));
-	    i += count - 1;
+	    p = F (emit_insn (gen_popm (stack_pointer_rtx, GEN_INT (seq - 1),
+					GEN_INT (count))));
 	  }
 	else if (i == 11 - helper_n
 		 && ! msp430_is_interrupt_func ()
@@ -2598,11 +2577,44 @@ msp430_expand_epilogue (int is_eh)
 		 && helper_n > 1
 		 && !is_eh)
 	  {
-	    emit_jump_insn (gen_epilogue_helper (GEN_INT (helper_n)));
-	    return;
+	    p = F (emit_jump_insn (gen_epilogue_helper (GEN_INT (helper_n))));
+	    count = helper_n;
+	    helper_used = 1;
 	  }
 	else
-	  emit_insn (gen_pop (gen_rtx_REG (Pmode, i)));
+	  p = F (emit_insn (gen_pop (gen_rtx_REG (Pmode, i))));
+
+	/* Document the stack increment as a result of POPM.  */
+	note = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (count + 1));
+
+	addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+			     GEN_INT (count * (TARGET_LARGE ? 4 : 2)));
+
+	XVECEXP (note, 0, 0) = F (gen_rtx_SET (stack_pointer_rtx, addr));
+
+
+	/* *sp++ = R[i+j] */
+	/* sp	R4
+	   ...
+	   sp+N	R10.  */
+	for (j = 0; j < count; j++)
+	  {
+	    int ofs = j * (TARGET_LARGE ? 4 : 2);
+
+	    if (ofs)
+	      addr = gen_rtx_PLUS (Pmode, sp, GEN_INT (ofs));
+	    else
+	      addr = stack_pointer_rtx;
+
+	    XVECEXP (note, 0, j + 1)
+	      = F (gen_rtx_SET (gen_rtx_MEM (Pmode, addr),
+				gen_rtx_REG (Pmode, i + j)));
+	  }
+	add_reg_note (p, REG_FRAME_RELATED_EXPR, note);
+	i += count - 1;
+
+	if (helper_used)
+	  return;
       }
 
   if (is_eh)
@@ -2687,32 +2699,6 @@ msp430_init_dwarf_reg_sizes_extra (tree address)
     }
 }
 
-/* This is a list of MD patterns that implement fixed-count shifts.  */
-static struct
-{
-  const char *name;
-  int count;
-  int need_430x;
-  rtx (*genfunc)(rtx,rtx);
-}
-const_shift_helpers[] =
-{
-#define CSH(N,C,X,G) { "__mspabi_" N, C, X, gen_##G }
-
-  CSH ("slli", 1, 1, slli_1),
-  CSH ("slll", 1, 1, slll_1),
-  CSH ("slll", 2, 1, slll_2),
-
-  CSH ("srai", 1, 0, srai_1),
-  CSH ("sral", 1, 0, sral_1),
-  CSH ("sral", 2, 0, sral_2),
-
-  CSH ("srll", 1, 0, srll_1),
-  CSH ("srll", 2, 1, srll_2x),
-  { 0, 0, 0, 0 }
-#undef CSH
-};
-
 /* The MSP430 ABI defines a number of helper functions that should be
    used for, for example, 32-bit shifts.  This function is called to
    emit such a function, using the table above to optimize some
@@ -2729,30 +2715,11 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
   machine_mode arg0mode = GET_MODE (operands[0]);
   machine_mode arg1mode = GET_MODE (operands[1]);
   machine_mode arg2mode = GET_MODE (operands[2]);
-  int have_430x = msp430x ? 1 : 0;
   int expand_mpy = strncmp (helper_name, "__mspabi_mpy",
 			    sizeof ("__mspabi_mpy") - 1) == 0;
   /* This function has been used incorrectly if CONST_VARIANTS is TRUE for a
      hwmpy function.  */
   gcc_assert (!(expand_mpy && const_variants));
-
-  /* Emit size-optimal insns for small shifts we can easily do inline.  */
-  if (CONST_INT_P (operands[2]) && !expand_mpy)
-    {
-      int i;
-
-      for (i=0; const_shift_helpers[i].name; i++)
-	{
-	  if (const_shift_helpers[i].need_430x <= have_430x
-	      && strcmp (helper_name, const_shift_helpers[i].name) == 0
-	      && INTVAL (operands[2]) == const_shift_helpers[i].count)
-	    {
-	      emit_insn (const_shift_helpers[i].genfunc (operands[0],
-							 operands[1]));
-	      return;
-	    }
-	}
-    }
 
   if (arg1mode != VOIDmode && arg2mode != VOIDmode)
     /* Modes of arguments must be equal if not constants.  */
@@ -2846,6 +2813,190 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
   emit_move_insn (operands[0],
 		  /* Return value will always start in R12.  */
 		  gen_rtx_REG (arg0mode, 12));
+}
+
+/* Return TRUE if the helper function should be used and FALSE if the shifts
+   insns should be emitted inline.  */
+static bool
+use_helper_for_const_shift (enum rtx_code code, machine_mode mode,
+			    HOST_WIDE_INT amt)
+{
+  const int default_inline_shift = 4;
+  /* We initialize the option to 65 so we know if the user set it or not.  */
+  int user_set_max_inline = (msp430_max_inline_shift == 65 ? 0 : 1);
+  int max_inline = (user_set_max_inline ? msp430_max_inline_shift
+		    : default_inline_shift);
+  /* 32-bit shifts are roughly twice as costly as 16-bit shifts so we adjust
+     the heuristic accordingly.  */
+  int max_inline_32 = max_inline / 2;
+
+  /* Don't use helpers for these modes on 430X, when optimizing for speed, or
+     when emitting a small number of insns.  */
+  if ((mode == E_QImode || mode == E_HImode || mode == E_PSImode)
+      && (msp430x
+	  /* If the user set max_inline then we always obey that number.
+	     Otherwise we always emit the shifts inline at -O2 and above.  */
+	  || amt <= max_inline
+	  || (!user_set_max_inline
+	      && (optimize >= 2 && !optimize_size))))
+    return false;
+
+  /* 430 and 430X codegen for SImode shifts is the same.
+     Set a hard limit of 15 for the number of shifts that will be emitted
+     inline by default, even at -O2 and above, to prevent code size
+     explosion.  */
+  if (mode == E_SImode
+      && (amt <= max_inline_32
+	  || (!user_set_max_inline
+	      && (optimize >= 2 && !optimize_size)
+	      && amt <= 15)))
+    return false;
+
+  return true;
+}
+
+/* For shift operations which will use an mspabi helper function, setup the
+   call to msp430_expand helper.  Return 1 to indicate we have finished with
+   this insn and invoke "DONE".
+   Otherwise return 0 to indicate the insn should fallthrough.
+   Never FAIL.  */
+int
+msp430_expand_shift (enum rtx_code code, machine_mode mode, rtx *operands)
+{
+  /* Always use the helper function when the shift amount is not a
+     constant.  */
+  if (!CONST_INT_P (operands[2])
+      || mode == E_DImode
+      || use_helper_for_const_shift (code, mode, INTVAL (operands[2])))
+    {
+      const char *helper_name = NULL;
+      /* The const variants of mspabi shifts have significantly larger code
+	 size than the generic version, so use the generic version if
+	 optimizing for size.  */
+      bool const_variant = !optimize_size;
+      switch (mode)
+	{
+	case E_HImode:
+	  helper_name = (code == ASHIFT ? "__mspabi_slli" :
+			 (code == ASHIFTRT ? "__mspabi_srai" :
+			  (code == LSHIFTRT ? "__mspabi_srli" :
+			   NULL)));
+	  break;
+	case E_PSImode:
+	  helper_name = (code == ASHIFT ? "__gnu_mspabi_sllp" :
+			 (code == ASHIFTRT ? "__gnu_mspabi_srap" :
+			  (code == LSHIFTRT ? "__gnu_mspabi_srlp" :
+			   NULL)));
+	  /* No const variant for PSImode shifts FIXME.  */
+	  const_variant = false;
+	  break;
+	case E_SImode:
+	  helper_name = (code == ASHIFT ? "__mspabi_slll" :
+			 (code == ASHIFTRT ? "__mspabi_sral" :
+			  (code == LSHIFTRT ? "__mspabi_srll" :
+			   NULL)));
+	  break;
+	case E_DImode:
+	  helper_name = (code == ASHIFT ? "__mspabi_sllll" :
+			 (code == ASHIFTRT ? "__mspabi_srall" :
+			  (code == LSHIFTRT ? "__mspabi_srlll" :
+			   NULL)));
+	  /* No const variant for DImode shifts.  */
+	  const_variant = false;
+	  break;
+	default:
+	  gcc_unreachable ();
+	  break;
+	}
+      gcc_assert (helper_name);
+      msp430_expand_helper (operands, helper_name, const_variant);
+      return 1;
+    }
+  /* When returning 0, there must be an insn to match the RTL pattern
+     otherwise there will be an unrecognizeable insn.  */
+  return 0;
+}
+
+/* Helper function to emit a sequence of shift instructions.  The amount of
+   shift instructions to emit is in OPERANDS[2].
+   For 430 we output copies of identical inline shifts for all modes.
+   For 430X it is inneficient to do so for any modes except SI and DI, since we
+   can make use of R*M insns or RPT with 430X insns, so this function is only
+   used for SImode in that case.  */
+const char *
+msp430_output_asm_shift_insns (enum rtx_code code, machine_mode mode,
+			       rtx *operands)
+{
+  int i;
+  int amt;
+  int max_shift = GET_MODE_BITSIZE (mode) - 1;
+  gcc_assert (CONST_INT_P (operands[2]));
+  amt = INTVAL (operands[2]);
+
+  if (amt == 0 || amt > max_shift)
+    {
+      switch (code)
+	{
+	case ASHIFT:
+	  output_asm_insn ("# ignored undefined behaviour left shift "
+			   "of %1 by %2", operands);
+	  break;
+	case ASHIFTRT:
+	  output_asm_insn ("# ignored undefined behaviour arithmetic right "
+			   "shift of %1 by %2", operands);
+	  break;
+	case LSHIFTRT:
+	  output_asm_insn ("# ignored undefined behaviour logical right shift "
+			   "of %1 by %2", operands);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      return "";
+    }
+
+  if (code == ASHIFT)
+    {
+      if (!msp430x && mode == HImode)
+	for (i = 0; i < amt; i++)
+	  output_asm_insn ("RLA.W\t%0", operands);
+      else if (mode == SImode)
+	for (i = 0; i < amt; i++)
+	  output_asm_insn ("RLA%X0.W\t%L0 { RLC%X0.W\t%H0", operands);
+      else
+	/* Catch unhandled cases.  */
+	gcc_unreachable ();
+    }
+  else if (code == ASHIFTRT)
+    {
+      if (!msp430x && mode == HImode)
+	for (i = 0; i < amt; i++)
+	  output_asm_insn ("RRA.W\t%0", operands);
+      else if (mode == SImode)
+	for (i = 0; i < amt; i++)
+	  output_asm_insn ("RRA%X0.W\t%H0 { RRC%X0.W\t%L0", operands);
+      else
+	gcc_unreachable ();
+    }
+  else if (code == LSHIFTRT)
+    {
+      if (!msp430x && mode == HImode)
+	for (i = 0; i < amt; i++)
+	  output_asm_insn ("CLRC { RRC.W\t%0", operands);
+      else if (mode == SImode)
+	for (i = 0; i < amt; i++)
+	  output_asm_insn ("CLRC { RRC%X0.W\t%H0 { RRC%X0.W\t%L0", operands);
+      /* FIXME: Why doesn't "RRUX.W\t%H0 { RRC%X0.W\t%L0" work for msp430x?
+	 It causes execution timeouts e.g. pr41963.c.  */
+#if 0
+      else if (msp430x && mode == SImode)
+	for (i = 0; i < amt; i++)
+	  output_asm_insn ("RRUX.W\t%H0 { RRC%X0.W\t%L0", operands);
+#endif
+      else
+	gcc_unreachable ();
+    }
+  return "";
 }
 
 /* Called by cbranch<mode>4 to coerce operands into usable forms.  */
@@ -3370,29 +3521,43 @@ msp430_op_not_in_high_mem (rtx op)
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND		msp430_print_operand
 
-/* A   low 16-bits of int/lower of register pair
-   B   high 16-bits of int/higher of register pair
-   C   bits 32-47 of a 64-bit value/reg 3 of a DImode value
-   D   bits 48-63 of a 64-bit value/reg 4 of a DImode value
-   H   like %B (for backwards compatibility)
-   I   inverse of value
-   J   an integer without a # prefix
-   L   like %A (for backwards compatibility)
-   O   offset of the top of the stack
-   Q   like X but generates an A postfix
-   R   inverse of condition code, unsigned.
-   X   X instruction postfix in large mode
-   Y   value - 4
-   Z   value - 1
-   b   .B or .W or .A, depending upon the mode
-   p   bit position
-   r   inverse of condition code
-   x   like X but only for pointers.  */
+/* A   Select low 16-bits of the constant/register/memory operand.
+   B   Select high 16-bits of the constant/register/memory
+       operand.
+   C   Select bits 32-47 of the constant/register/memory operand.
+   D   Select bits 48-63 of the constant/register/memory operand.
+   H   Equivalent to @code{B} (for backwards compatibility).
+   I   Print the inverse (logical @code{NOT}) of the constant
+       value.
+   J   Print an integer without a @code{#} prefix.
+   L   Equivalent to @code{A} (for backwards compatibility).
+   O   Offset of the current frame from the top of the stack.
+   Q   Use the @code{A} instruction postfix.
+   R   Inverse of condition code, for unsigned comparisons.
+   W   Subtract 16 from the constant value.
+   X   Use the @code{X} instruction postfix.
+   Y   Subtract 4 from the constant value.
+   Z   Subtract 1 from the constant value.
+   b   Append @code{.B}, @code{.W} or @code{.A} to the
+       instruction, depending on the mode.
+   d   Offset 1 byte of a memory reference or constant value.
+   e   Offset 3 bytes of a memory reference or constant value.
+   f   Offset 5 bytes of a memory reference or constant value.
+   g   Offset 7 bytes of a memory reference or constant value.
+   p   Print the value of 2, raised to the power of the given
+       constant.  Used to select the specified bit position.
+   r   Inverse of condition code, for signed comparisons.
+   x   Equivialent to @code{X}, but only for pointers.  */
 
 static void
 msp430_print_operand (FILE * file, rtx op, int letter)
 {
   rtx addr;
+  /* These are used by the 'A', 'B', 'C', 'D', 'd', 'e', 'f' and 'g' modifiers
+     to describe how to process the operand to get the requested value.  */
+  int mem_off = 0;
+  int reg_off = 0;
+  int const_shift = 0;
 
   /* We can't use c, n, a, or l.  */
   switch (letter)
@@ -3400,12 +3565,17 @@ msp430_print_operand (FILE * file, rtx op, int letter)
     case 'Z':
       gcc_assert (CONST_INT_P (op));
       /* Print the constant value, less one.  */
-      fprintf (file, "#%ld", INTVAL (op) - 1);
+      fprintf (file, "#%ld", (long) (INTVAL (op) - 1));
       return;
     case 'Y':
       gcc_assert (CONST_INT_P (op));
       /* Print the constant value, less four.  */
-      fprintf (file, "#%ld", INTVAL (op) - 4);
+      fprintf (file, "#%ld", (long) (INTVAL (op) - 4));
+      return;
+    case 'W':
+      gcc_assert (CONST_INT_P (op));
+      /* Print the constant value, less 16.  */
+      fprintf (file, "#%ld", (long) (INTVAL (op) - 16));
       return;
     case 'I':
       if (GET_CODE (op) == CONST_INT)
@@ -3462,76 +3632,71 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 	default:
 	  return;
 	}
-    case 'A':
-    case 'L': /* Low half.  */
-      switch (GET_CODE (op))
+    case 'd': case 'e': case 'f': case 'g':
+      if (REG_P (op))
 	{
-	case MEM:
-	  op = adjust_address (op, Pmode, 0);
+	  output_operand_lossage ("%%d, %%e, %%f, %%g operand modifiers are "
+				  "for memory references or constant values "
+				  "only");
+	  return;
+	}
+      /* fallthru */
+    case 'B': case 'H': /* high half */
+    case 'C':
+    case 'D':
+      switch (letter)
+	{
+	case 'd':
+	  mem_off = 1;
+	  const_shift = 8;
 	  break;
-	case REG:
+	case 'B':
+	case 'H':
+	  mem_off = 2;
+	  reg_off = 1;
+	  const_shift = 16;
 	  break;
-	case CONST_INT:
-	  op = GEN_INT (INTVAL (op) & 0xffff);
-	  letter = 0;
+	case 'e':
+	  mem_off = 3;
+	  const_shift = 24;
+	  break;
+	case 'C':
+	  mem_off = 4;
+	  reg_off = 2;
+	  const_shift = 32;
+	  break;
+	case 'f':
+	  mem_off = 5;
+	  const_shift = 40;
+	  break;
+	case 'D':
+	  mem_off = 6;
+	  reg_off = 3;
+	  const_shift = 48;
+	  break;
+	case 'g':
+	  mem_off = 7;
+	  const_shift = 56;
 	  break;
 	default:
-	  /* If you get here, figure out a test case :-) */
 	  gcc_unreachable ();
+	  break;
 	}
-      break;
-    case 'B':
-    case 'H': /* high half */
+      /* fallthru */
+    case 'A': case 'L': /* Low half.  */
       switch (GET_CODE (op))
 	{
 	case MEM:
 	  /* We don't need to adjust the address for post_inc.  */
 	  op = adjust_address (op, Pmode,
-			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 2);
+			       (GET_CODE (XEXP (op, 0)) == POST_INC)
+			       ? 0 : mem_off);
 	  break;
 	case REG:
-	  op = gen_rtx_REG (Pmode, REGNO (op) + 1);
+	  op = gen_rtx_REG (Pmode, REGNO (op) + reg_off);
 	  break;
 	case CONST_INT:
-	  op = GEN_INT (INTVAL (op) >> 16);
-	  letter = 0;
-	  break;
-	default:
-	  /* If you get here, figure out a test case :-) */
-	  gcc_unreachable ();
-	}
-      break;
-    case 'C':
-      switch (GET_CODE (op))
-	{
-	case MEM:
-	  op = adjust_address (op, Pmode,
-			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 4);
-	  break;
-	case REG:
-	  op = gen_rtx_REG (Pmode, REGNO (op) + 2);
-	  break;
-	case CONST_INT:
-	  op = GEN_INT ((long long) INTVAL (op) >> 32);
-	  letter = 0;
-	  break;
-	default:
-	  /* If you get here, figure out a test case :-) */
-	  gcc_unreachable ();
-	}
-      break;
-    case 'D':
-      switch (GET_CODE (op))
-	{
-	case MEM:
-	  op = adjust_address (op, Pmode,
-			       (GET_CODE (XEXP (op, 0)) == POST_INC) ? 0 : 6);
-	  break;
-	case REG:
-	  op = gen_rtx_REG (Pmode, REGNO (op) + 3);
-	  break;
-	case CONST_INT:
-	  op = GEN_INT ((long long) INTVAL (op) >> 48);
+	  op = GEN_INT (((long long) INTVAL (op) >> const_shift) & 0xffff);
 	  letter = 0;
 	  break;
 	default:
@@ -3722,34 +3887,6 @@ msp430x_extendhisi (rtx * operands)
 
   /* No overlap between dest and source.  8-byte sequence.  */
   return "MOV.W\t%1, %L0 { MOV.W\t%1, %H0 { RPT\t#15 { RRAX.W\t%H0";
-}
-
-/* Likewise for logical right shifts.  */
-const char *
-msp430x_logical_shift_right (rtx amount)
-{
-  /* The MSP430X's logical right shift instruction - RRUM - does
-     not use an extension word, so we cannot encode a repeat count.
-     Try various alternatives to work around this.  If the count
-     is in a register we are stuck, hence the assert.  */
-  gcc_assert (CONST_INT_P (amount));
-
-  if (INTVAL (amount) <= 0
-      || INTVAL (amount) >= 16)
-    return "# nop logical shift.";
-
-  if (INTVAL (amount) > 0
-      && INTVAL (amount) < 5)
-    return "rrum.w\t%2, %0"; /* Two bytes.  */
-
-  if (INTVAL (amount) > 4
-      && INTVAL (amount) < 9)
-    return "rrum.w\t#4, %0 { rrum.w\t%Y2, %0 "; /* Four bytes.  */
-
-  /* First we logically shift right by one.  Now we know
-     that the top bit is zero and we can use the arithmetic
-     right shift instruction to perform the rest of the shift.  */
-  return "rrum.w\t#1, %0 { rpt\t%Z2 { rrax.w\t%0"; /* Six bytes.  */
 }
 
 /* Stop GCC from thinking that it can eliminate (SUBREG:PSI (SI)).  */

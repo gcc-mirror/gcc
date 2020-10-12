@@ -433,7 +433,7 @@ package body Sem_Ch11 is
 
       if ((Is_Subprogram (Current_Scope) or else Is_Entry (Current_Scope))
            and then Chars (Current_Scope) /= Name_uPostconditions)
-         or else Ekind_In (Current_Scope, E_Block, E_Task_Type)
+         or else Ekind (Current_Scope) in E_Block | E_Task_Type
       then
          Warn_On_Useless_Assignments (Current_Scope);
       end if;
@@ -537,7 +537,7 @@ package body Sem_Ch11 is
             --  Skip past null statements and pragmas
 
             while Present (P)
-              and then Nkind_In (P, N_Null_Statement, N_Pragma)
+              and then Nkind (P) in N_Null_Statement | N_Pragma
             loop
                P := Prev (P);
             end loop;
@@ -594,11 +594,9 @@ package body Sem_Ch11 is
 
       if No (Exception_Id) then
          P := Parent (N);
-         while not Nkind_In (P, N_Exception_Handler,
-                                N_Subprogram_Body,
-                                N_Package_Body,
-                                N_Task_Body,
-                                N_Entry_Body)
+         while Nkind (P) not in
+                 N_Exception_Handler | N_Subprogram_Body | N_Package_Body |
+                 N_Task_Body         | N_Entry_Body
          loop
             P := Parent (P);
          end loop;

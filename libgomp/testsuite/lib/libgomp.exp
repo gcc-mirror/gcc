@@ -233,9 +233,6 @@ proc libgomp_init { args } {
     # Disable caret
     lappend ALWAYS_CFLAGS "additional_flags=-fno-diagnostics-show-caret"
 
-    # Disable HSA warnings by default.
-    lappend ALWAYS_CFLAGS "additional_flags=-Wno-hsa"
-
     # Disable color diagnostics
     lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-color=never"
 
@@ -324,9 +321,6 @@ proc offload_target_to_openacc_device_type { offload_target } {
 	}
 	disable {
 	    return "host"
-	}
-	hsa* {
-	    return ""
 	}
 	*-intelmic* {
 	    return ""
@@ -428,60 +422,6 @@ proc check_effective_target_openacc_nvidia_accel_selected { } {
 proc check_effective_target_openacc_host_selected { } {
     global openacc_device_type
     return [string match "host" $openacc_device_type]
-}
-
-# Return 1 if the selected OMP device is actually a HSA device
-
-proc check_effective_target_hsa_offloading_selected_nocache {} {
-    global tool
-
-    set src {
-	int main () {
-	    int v = 1;
-	    #pragma omp target map(from:v)
-	    v = 0;
-	    return v;
-	}
-    }
-    
-    set result [check_compile hsa_offloading_src executable $src]
-    set lines [lindex $result 0]
-    set exe [lindex $result 1]
-
-    set ok 0
-    if { [string match "" $lines] } {
-	# No error messages, let us switch on HSA debugging output and run it
-	set prev_HSA_DEBUG [getenv HSA_DEBUG]
-	setenv HSA_DEBUG "1"
-	set result [remote_load target "./$exe"]
-	if { [string match "" $prev_HSA_DEBUG] } {
-	    unsetenv HSA_DEBUG
-	} else {
-	    setenv HSA_DEBUG $prev_HSA_DEBUG
-	}
-	set status [lindex $result 0]
-	if { $status != "pass" } {
-	    remote_file build delete $exe
-	    verbose "HSA availability test failed"
-	    return 0
-	}
-	set output [lindex $result 1]
-	if { [string match "*HSA debug: Going to dispatch kernel*" $output] } {
-	    verbose "HSA availability detected"
-	    set ok 1
-	}
-    }
-    remote_file build delete $exe
-    return $ok
-}
-
-# Return 1 if the selected OMP device is actually a HSA device and
-# cache the result
-
-proc check_effective_target_hsa_offloading_selected {} {
-    return [check_cached_effective_target hsa_offloading_selected {
-	check_effective_target_hsa_offloading_selected_nocache
-    }]
 }
 
 # Return 1 if at least one AMD GPU is accessible.

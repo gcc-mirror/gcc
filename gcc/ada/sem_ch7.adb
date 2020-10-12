@@ -464,9 +464,9 @@ package body Sem_Ch7 is
                --  if they are not followed by a construct which can reference
                --  and export them.
 
-               elsif Nkind_In (Decl, N_Exception_Declaration,
-                                     N_Object_Declaration,
-                                     N_Object_Renaming_Declaration)
+               elsif Nkind (Decl) in N_Exception_Declaration
+                                   | N_Object_Declaration
+                                   | N_Object_Renaming_Declaration
                then
                   Decl_Id := Defining_Entity (Decl);
 
@@ -483,8 +483,8 @@ package body Sem_Ch7 is
                --  for them to see whether they are referenced on an individual
                --  basis by looking into the table of referenced subprograms.
 
-               elsif Nkind_In (Decl, N_Subprogram_Declaration,
-                                     N_Subprogram_Renaming_Declaration)
+               elsif Nkind (Decl) in N_Subprogram_Declaration
+                                   | N_Subprogram_Renaming_Declaration
                then
                   Decl_Id := Defining_Entity (Decl);
 
@@ -1370,8 +1370,8 @@ package body Sem_Ch7 is
          then
             Generate_Reference (Id, Scope (Id), 'k', False);
 
-         elsif not Nkind_In (Unit (Cunit (Main_Unit)), N_Subprogram_Body,
-                                                       N_Subunit)
+         elsif Nkind (Unit (Cunit (Main_Unit))) not in
+                 N_Subprogram_Body | N_Subunit
          then
             --  If current unit is an ancestor of main unit, generate a
             --  reference to its own parent.
@@ -1437,8 +1437,8 @@ package body Sem_Ch7 is
             --  prevents cascaded errors when routines defined only for type
             --  entities are called with non-type entities.
 
-            if Nkind_In (Decl, N_Incomplete_Type_Declaration,
-                               N_Private_Type_Declaration)
+            if Nkind (Decl) in N_Incomplete_Type_Declaration
+                             | N_Private_Type_Declaration
               and then Is_Type (Defining_Identifier (Decl))
               and then Has_Discriminants (Defining_Identifier (Decl))
               and then Present (Full_View (Defining_Identifier (Decl)))
@@ -1472,8 +1472,8 @@ package body Sem_Ch7 is
          while Present (Gen_Par) and then Is_Child_Unit (Gen_Par) loop
             Inst_Node := Get_Unit_Instantiation_Node (Inst_Par);
 
-            if Nkind_In (Inst_Node, N_Package_Instantiation,
-                                    N_Formal_Package_Declaration)
+            if Nkind (Inst_Node) in
+                 N_Package_Instantiation | N_Formal_Package_Declaration
               and then Nkind (Name (Inst_Node)) = N_Expanded_Name
             then
                Inst_Par := Entity (Prefix (Name (Inst_Node)));
@@ -2640,7 +2640,7 @@ package body Sem_Ch7 is
       --  implicit completion at some point.
 
       elsif (Is_Overloadable (Id)
-              and then not Ekind_In (Id, E_Enumeration_Literal, E_Operator)
+              and then Ekind (Id) not in E_Enumeration_Literal | E_Operator
               and then not Is_Abstract_Subprogram (Id)
               and then not Has_Completion (Id)
               and then Comes_From_Source (Parent (Id)))
@@ -2657,7 +2657,7 @@ package body Sem_Ch7 is
             and then not Is_Generic_Type (Id))
 
         or else
-          (Ekind_In (Id, E_Task_Type, E_Protected_Type)
+          (Ekind (Id) in E_Task_Type | E_Protected_Type
             and then not Has_Completion (Id))
 
         or else
@@ -2959,7 +2959,7 @@ package body Sem_Ch7 is
             Check_Conventions (Id);
          end if;
 
-         if Ekind_In (Id, E_Private_Type, E_Limited_Private_Type)
+         if Ekind (Id) in E_Private_Type | E_Limited_Private_Type
            and then No (Full_View (Id))
            and then not Is_Generic_Type (Id)
            and then not Is_Derived_Type (Id)

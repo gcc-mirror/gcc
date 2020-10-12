@@ -124,6 +124,13 @@ package body Ada.Wide_Characters.Handling is
    function Is_Mark (Item : Wide_Character) return Boolean
      renames Ada.Wide_Characters.Unicode.Is_Mark;
 
+   -------------
+   -- Is_NFKC --
+   -------------
+
+   function Is_NFKC (Item : Wide_Character) return Boolean
+     renames Ada.Wide_Characters.Unicode.Is_NFKC;
+
    ---------------------
    -- Is_Other_Format --
    ---------------------

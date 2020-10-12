@@ -28,7 +28,7 @@ extern int insn_current_address;
   do							\
     {							\
       insn_addresses_.create (size);			\
-      insn_addresses_.safe_grow_cleared (size);		\
+      insn_addresses_.safe_grow_cleared (size, true);	\
       memset (insn_addresses_.address (),		\
 	      0, sizeof (int) * size);			\
     }							\
@@ -48,7 +48,7 @@ insn_addresses_new (rtx_insn *insn, int insn_addr)
       if (size <= insn_uid)
 	{
 	  int *p;
-	  insn_addresses_.safe_grow (insn_uid + 1);
+	  insn_addresses_.safe_grow (insn_uid + 1, true);
 	  p = insn_addresses_.address ();
 	  memset (&p[size],
 		  0, sizeof (int) * (insn_uid + 1 - size));

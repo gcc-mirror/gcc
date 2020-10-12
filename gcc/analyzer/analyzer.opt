@@ -30,13 +30,25 @@ The maximum number of 'after supernode' exploded nodes within the analyzer per s
 Common Joined UInteger Var(param_analyzer_max_enodes_per_program_point) Init(8) Param
 The maximum number of exploded nodes per program point within the analyzer, before terminating analysis of that point.
 
+-param=analyzer-max-constraints=
+Common Joined UInteger Var(param_analyzer_max_constraints) Init(20) Param
+The maximum number of constraints per state.
+
 -param=analyzer-max-recursion-depth=
 Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
 
+-param=analyzer-max-svalue-depth=
+Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(13) Param
+The maximum depth of a symbolic value, before approximating the value as unknown.
+
 -param=analyzer-min-snodes-for-call-summary=
 Common Joined UInteger Var(param_analyzer_min_snodes_for_call_summary) Init(10) Param
 The minimum number of supernodes within a function for the analyzer to consider summarizing its effects at call sites.
+
+-param=analyzer-max-enodes-for-full-dump=
+Common Joined UInteger Var(param_analyzer_max_enodes_for_full_dump) Init(200) Param
+The maximum depth of exploded nodes that should appear in a dot dump before switching to a less verbose format.
 
 Wanalyzer-double-fclose
 Common Var(warn_analyzer_double_fclose) Init(1) Warning
@@ -61,6 +73,10 @@ Warn about code paths in which a non-heap pointer is freed.
 Wanalyzer-malloc-leak
 Common Var(warn_analyzer_malloc_leak) Init(1) Warning
 Warn about code paths in which a heap-allocated pointer leaks.
+
+Wanalyzer-mismatching-deallocation
+Common Var(warn_analyzer_mismatching_deallocation) Init(1) Warning
+Warn about code paths in which the wrong deallocation function is called.
 
 Wanalyzer-possible-null-argument
 Common Var(warn_analyzer_possible_null_argument) Init(1) Warning
@@ -98,6 +114,14 @@ Wanalyzer-use-of-pointer-in-stale-stack-frame
 Common Var(warn_analyzer_use_of_pointer_in_stale_stack_frame) Init(1) Warning
 Warn about code paths in which a pointer to a stale stack frame is used.
 
+Wanalyzer-write-to-const
+Common Var(warn_analyzer_write_to_const) Init(1) Warning
+Warn about code paths which attempt to write to a const object.
+
+Wanalyzer-write-to-string-literal
+Common Var(warn_analyzer_write_to_string_literal) Init(1) Warning
+Warn about code paths which attempt to write to a string literal.
+
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
 Warn if the code is too complicated for the analyzer to fully explore.
@@ -109,6 +133,10 @@ Restrict the analyzer to run just the named checker.
 fanalyzer-fine-grained
 Common Var(flag_analyzer_fine_grained) Init(0)
 Avoid combining multiple statements into one exploded edge.
+
+fanalyzer-feasibility
+Common Var(flag_analyzer_feasibility) Init(1)
+Verify that paths are feasible when emitting diagnostics.
 
 fanalyzer-show-duplicate-count
 Common Var(flag_analyzer_show_duplicate_count) Init(0)
@@ -169,6 +197,10 @@ Dump a textual representation of the exploded graph to SRCFILE.eg.txt.
 fdump-analyzer-exploded-nodes-3
 Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_3)
 Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
+
+fdump-analyzer-json
+Common RejectNegative Var(flag_dump_analyzer_json)
+Dump analyzer-specific data to a SRCFILE.analyzer.json.gz file.
 
 fdump-analyzer-state-purge
 Common RejectNegative Var(flag_dump_analyzer_state_purge)

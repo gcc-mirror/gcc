@@ -55,6 +55,12 @@ test01()
   VERIFY( r.ptr == s.data() );
   VERIFY( i == 999 );
 
+  s = "+1";
+  r = std::from_chars(s.data(), s.data() + s.length(), i);
+  VERIFY( r.ec == std::errc::invalid_argument );
+  VERIFY( r.ptr == s.data() );
+  VERIFY( i == 999 );
+
   unsigned u = 888;
   s = "-1";
   r = std::from_chars(s.data(), s.data() + s.length(), u);
@@ -65,6 +71,11 @@ test01()
   VERIFY( r.ec == std::errc::invalid_argument );
   VERIFY( r.ptr == s.data() );
   s = "-";
+  r = std::from_chars(s.data(), s.data() + s.length(), u);
+  VERIFY( r.ec == std::errc::invalid_argument );
+  VERIFY( r.ptr == s.data() );
+  VERIFY( u == 888 );
+  s = "+1";
   r = std::from_chars(s.data(), s.data() + s.length(), u);
   VERIFY( r.ec == std::errc::invalid_argument );
   VERIFY( r.ptr == s.data() );

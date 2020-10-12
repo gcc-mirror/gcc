@@ -1,11 +1,18 @@
 #!/bin/sh
 
-compile="$1"
+if test "$#" -ne 2; then
+  echo "Usage $0 real_kinds compile"
+  exit 1
+fi
+
+# Possible kinds must be listed in ascending order
+possible_real_kinds="$1"
+compile="$2"
+
 kinds=""
-possible_kinds="4 8 10 16"
 c=0
 
-for k in $possible_kinds; do
+for k in $possible_real_kinds; do
   echo "  real (kind=$k) :: x" > tmp$$.f90
   echo "  x = 1.0_$k" >> tmp$$.f90
   echo "  end" >> tmp$$.f90

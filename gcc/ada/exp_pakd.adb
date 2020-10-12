@@ -469,7 +469,7 @@ package body Exp_Pakd is
         or else
            (Nkind (Aexp) = N_Indexed_Component
              and then Is_Entity_Name (Prefix (Aexp)))
-        or else Nkind_In (Aexp, N_Explicit_Dereference, N_Function_Call)
+        or else Nkind (Aexp) in N_Explicit_Dereference | N_Function_Call
       then
          Set_Analyzed (Aexp);
       end if;

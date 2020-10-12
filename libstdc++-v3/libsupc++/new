@@ -38,7 +38,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <exception>
+#include <bits/exception.h>
 
 #pragma GCC visibility push(default)
 
@@ -52,7 +52,7 @@ namespace std
    *
    *  @c bad_alloc (or classes derived from it) is used to report allocation
    *  errors from the throwing forms of @c new.  */
-  class bad_alloc : public exception 
+  class bad_alloc : public exception
   {
   public:
     bad_alloc() throw() { }
@@ -138,26 +138,26 @@ void operator delete[](void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #endif
 _GLIBCXX_NODISCARD void* operator new(std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
-  __attribute__((__externally_visible__, __malloc__));
+  __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
 _GLIBCXX_NODISCARD void* operator new[](std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
-  __attribute__((__externally_visible__, __malloc__));
+  __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
 void operator delete(void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #if __cpp_aligned_new
 _GLIBCXX_NODISCARD void* operator new(std::size_t, std::align_val_t)
-  __attribute__((__externally_visible__));
+  __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
 _GLIBCXX_NODISCARD void* operator new(std::size_t, std::align_val_t, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __malloc__));
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
 void operator delete(void*, std::align_val_t)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete(void*, std::align_val_t, const std::nothrow_t&)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 _GLIBCXX_NODISCARD void* operator new[](std::size_t, std::align_val_t)
-  __attribute__((__externally_visible__));
+  __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
 _GLIBCXX_NODISCARD void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __malloc__));
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
 void operator delete[](void*, std::align_val_t)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete[](void*, std::align_val_t, const std::nothrow_t&)

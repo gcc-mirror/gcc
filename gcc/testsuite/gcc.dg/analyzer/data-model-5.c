@@ -90,11 +90,20 @@ void unref (base_obj *obj)
 {
   if (--obj->ob_refcnt == 0) /* { dg-bogus "dereference of uninitialized pointer 'obj'" } */
     obj->ob_type->tp_dealloc (obj);
+  /* { dg-warning "dereference of NULL 'obj'" "deref of NULL" { target *-*-* } .-2 } */
+  /* FIXME: ideally we wouldn't issue this, as we've already issued a
+     warning about str_obj which is now in the "stop" state; the cast
+     confuses things.  */
 }
 
 void test_1 (const char *str)
 {
   base_obj *obj = new_string_obj (str);
-  //__analyzer_dump();
   unref (obj);
-} /* { dg-bogus "leak" } */
+} /* { dg-bogus "leak" "" { xfail *-*-* } } */
+/* XFAIL (false leak):
+   Given that we only know "len" symbolically, this line:
+     str_obj->str_buf[len] = '\0';
+   is a symbolic write which could clobber the ob_type or ob_refcnt.
+   It reports a leak when following the path where the refcount is clobbered
+   to be a value that leads to the deallocator not being called.  */

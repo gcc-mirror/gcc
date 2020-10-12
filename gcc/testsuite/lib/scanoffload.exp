@@ -22,6 +22,19 @@ proc scoff-format { offtgt suffix } {
     return ".x$offtgt.mkoffload$suffix"
 }
 
+# Adjust an offload dump TESTNAME for offload TARGET.
+proc scoff-testname { target testname } {
+    return "$target-$testname"
+}
+
+# Adjust the arglist ARGS, so that argument IDX gets scoff-formatted,
+# and argument 0 (the test name) gets scoff-testnamed.
+proc scoff-adjust { args idx target } {
+    lset args $idx "[scoff-format $target [lindex $args $idx]]"
+    lset args 0 "[scoff-testname $target [lindex $args 0]]"
+    return $args
+}
+
 # Wrapper for scan procs.
 # Argument 0 is the index of the argument to replace when calling
 # argument 1 with the remaining arguments.  Use end-1 or end or so.
@@ -34,7 +47,7 @@ proc scoff { args } {
     if [info exists offload_target] {
 	set target $offload_target
 	if { "$target" != "disable" } {
-	    eval $prc [lreplace $args $idx $idx "[scoff-format $target [lindex $args $idx]]"]
+	    eval $prc [scoff-adjust $args $idx $target]
 	}
     } else {
 	global offload_targets
@@ -42,7 +55,7 @@ proc scoff { args } {
 	    # HSA offloading is doing things differently, doesn't use 'mkoffload'.
 	    if { "$target" == "hsa" } continue
 
-	    eval $prc [lreplace $args $idx $idx "[scoff-format $target [lindex $args $idx]]"]
+	    eval $prc [scoff-adjust $args $idx $target]
 	}
     }
 }

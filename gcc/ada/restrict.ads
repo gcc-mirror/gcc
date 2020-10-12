@@ -452,6 +452,20 @@ package Restrict is
    --  Similar to the above, except that this is used for the case of a
    --  parameter restriction, and the corresponding value V is given.
 
+   procedure Set_Restriction
+     (R    : All_Restrictions;
+      N    : Node_Id;
+      Warn : Boolean;
+      V    : Integer := Integer'First);
+   --  Same as above two, except also takes care of setting the
+   --  Restriction_Warnings flag. V is ignored for Boolean
+   --  restrictions.
+   --
+   --  If this is the first time we've seen this restriction, the warning flag
+   --  is set to Warn. If this is a second or subsequent time, Warn = False
+   --  wins; that is, errors always trump warnings. In that case, the warning
+   --  flag can be set to False, but never to True.
+
    procedure Set_Restriction_No_Dependence
      (Unit    : Node_Id;
       Warn    : Boolean;
@@ -463,8 +477,8 @@ package Restrict is
    --  No_Dependence restriction comes from a Profile pragma.
 
    procedure Set_Restriction_No_Specification_Of_Aspect
-     (N       : Node_Id;
-      Warning : Boolean);
+     (N    : Node_Id;
+      Warn : Boolean);
    --  N is the node id for an identifier from a pragma Restrictions for the
    --  No_Specification_Of_Aspect pragma. An error message will be issued if
    --  the identifier is not a valid aspect name. Warning is set True for the
@@ -475,8 +489,8 @@ package Restrict is
    --  Version used by Get_Target_Parameters (via Tbuild)
 
    procedure Set_Restriction_No_Use_Of_Attribute
-     (N       : Node_Id;
-      Warning : Boolean);
+     (N    : Node_Id;
+      Warn : Boolean);
    --  N is the node id for the identifier in a pragma Restrictions for
    --  No_Use_Of_Attribute. Caller has verified that this is a valid attribute
    --  designator.
@@ -486,7 +500,7 @@ package Restrict is
 
    procedure Set_Restriction_No_Use_Of_Entity
      (Entity  : Node_Id;
-      Warning : Boolean;
+      Warn    : Boolean;
       Profile : Profile_Name := No_Profile);
    --  Sets given No_Use_Of_Entity restriction in table if not there already.
    --  Warn is True if from Restriction_Warnings, or for Restrictions if the
@@ -497,8 +511,8 @@ package Restrict is
    --  the entity (to optimize table searches).
 
    procedure Set_Restriction_No_Use_Of_Pragma
-     (N       : Node_Id;
-      Warning : Boolean);
+     (N    : Node_Id;
+      Warn : Boolean);
    --  N is the node id for the identifier in a pragma Restrictions for
    --  No_Use_Of_Pragma. Caller has verified that this is a valid pragma id.
 

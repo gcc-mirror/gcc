@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { xfail { mmix-*-* } } } */
 /* We don't (and don't want to) perform this optimisation on soft-float targets,
    where each addition is a library call.  /
 /* { dg-require-effective-target hard_float } */
@@ -33,4 +33,4 @@ main ()
   exit (0);
 }
 
-/* { dg-final { scan-rtl-dump "Expanding Accumulator" "loop2_unroll" } } */
+/* { dg-final { scan-rtl-dump "Expanding Accumulator" "loop2_unroll" { xfail mmix-*-* } } } */

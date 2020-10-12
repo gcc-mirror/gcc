@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
+// { dg-do run { target c++17 } }
 
 #include <functional>
 #include <testsuite_hooks.h>

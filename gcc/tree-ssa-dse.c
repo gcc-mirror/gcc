@@ -898,6 +898,17 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 		*by_clobber_p = false;
 	      defs.unordered_remove (i);
 	    }
+	  /* If the path ends here we do not need to process it further.
+	     This for example happens with calls to noreturn functions.  */
+	  else if (gimple_code (def) != GIMPLE_PHI
+		   && has_zero_uses (gimple_vdef (def)))
+	    {
+	      /* But if the store is to global memory it is definitely
+		 not dead.  */
+	      if (ref_may_alias_global_p (ref))
+		return DSE_STORE_LIVE;
+	      defs.unordered_remove (i);
+	    }
 	  /* In addition to kills we can remove defs whose only use
 	     is another def in defs.  That can only ever be PHIs of which
 	     we track a single for simplicity reasons (we fail for multiple

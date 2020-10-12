@@ -18,8 +18,7 @@ int *test (int *buf, int n, int *out)
   
   /* A loop, to ensure we have phi nodes.  */
   for (i = 0; i < n; i++)
-    result[i] = buf[i] + i; /* { dg-warning "possibly-NULL" "" { xfail *-*-* } } */
-  /* TODO(xfail): why isn't the warning appearing? */
+    result[i] = buf[i] + i; /* { dg-warning "possibly-NULL" } */
 
   /* Example of a "'" (to test quoting).  */
   *out = some_call (i, 'a');

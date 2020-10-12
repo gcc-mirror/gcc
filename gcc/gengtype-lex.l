@@ -125,7 +125,10 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static|m
 "ptr_alias"/{EOID}	  	{ return PTR_ALIAS; }
 "nested_ptr"/{EOID}		{ return NESTED_PTR; }
 "user"/{EOID}			{ return USER_GTY; }
-[0-9]+				{ return NUM; }
+[0-9]+				{
+  *yylval = XDUPVAR (const char, yytext, yyleng, yyleng+1);
+  return NUM;
+}
 
 {IWORD}({WS}{IWORD})*/{EOID}		|
 "ENUM_BITFIELD"{WS}?"("{WS}?{ID}{WS}?")"	{

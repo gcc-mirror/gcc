@@ -2435,7 +2435,9 @@ gfc_get_ppc_type (gfc_component* c)
   else
     t = void_type_node;
 
-  return build_pointer_type (build_function_type_list (t, NULL_TREE));
+  /* FIXME: it would be better to provide explicit interfaces in all
+     cases, since they should be known by the compiler.  */
+  return build_pointer_type (build_function_type (t, NULL_TREE));
 }
 
 
@@ -2559,14 +2561,16 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 
   /* If use associated, use the module type for this one.  */
   if (derived->backend_decl == NULL
-      && derived->attr.use_assoc
+      && (derived->attr.use_assoc || derived->attr.used_in_submodule)
       && derived->module
       && gfc_get_module_backend_decl (derived))
     goto copy_derived_types;
 
   /* The derived types from an earlier namespace can be used as the
      canonical type.  */
-  if (derived->backend_decl == NULL && !derived->attr.use_assoc
+  if (derived->backend_decl == NULL
+      && !derived->attr.use_assoc
+      && !derived->attr.used_in_submodule
       && gfc_global_ns_list)
     {
       for (ns = gfc_global_ns_list;
@@ -2712,7 +2716,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	field_type = gfc_get_ppc_type (c);
       else if (c->attr.proc_pointer && derived->backend_decl)
 	{
-	  tmp = build_function_type_list (derived->backend_decl, NULL_TREE);
+	  tmp = build_function_type (derived->backend_decl, NULL_TREE);
 	  field_type = build_pointer_type (tmp);
 	}
       else if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
@@ -2936,20 +2940,33 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
 
   memset (&spec, 0, sizeof (spec));
   spec[0] = '.';
-  spec_len = 1;
+  spec[1] = ' ';
+  spec_len = 2;
 
   if (sym->attr.entry_master)
-    spec[spec_len++] = 'R';
+    {
+      spec[spec_len++] = 'R';
+      spec[spec_len++] = ' ';
+    }
   if (gfc_return_by_reference (sym))
     {
       gfc_symbol *result = sym->result ? sym->result : sym;
 
       if (result->attr.pointer || sym->attr.proc_pointer)
-	spec[spec_len++] = '.';
+	{
+	  spec[spec_len++] = '.';
+	  spec[spec_len++] = ' ';
+	}
       else
-	spec[spec_len++] = 'w';
+	{
+	  spec[spec_len++] = 'w';
+	  spec[spec_len++] = ' ';
+	}
       if (sym->ts.type == BT_CHARACTER)
-	spec[spec_len++] = 'R';
+	{
+	  spec[spec_len++] = 'R';
+	  spec[spec_len++] = ' ';
+	}
     }
 
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
@@ -2964,11 +2981,20 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
 		&& (CLASS_DATA (f->sym)->ts.u.derived->attr.proc_pointer_comp
 		    || CLASS_DATA (f->sym)->ts.u.derived->attr.pointer_comp))
 	    || (f->sym->ts.type == BT_INTEGER && f->sym->ts.is_c_interop))
-	  spec[spec_len++] = '.';
+	  {
+	    spec[spec_len++] = '.';
+	    spec[spec_len++] = ' ';
+	  }
 	else if (f->sym->attr.intent == INTENT_IN)
-	  spec[spec_len++] = 'r';
+	  {
+	    spec[spec_len++] = 'r';
+	    spec[spec_len++] = ' ';
+	  }
 	else if (f->sym)
-	  spec[spec_len++] = 'w';
+	  {
+	    spec[spec_len++] = 'w';
+	    spec[spec_len++] = ' ';
+	  }
       }
 
   tmp = build_tree_list (NULL_TREE, build_string (spec_len, spec));

@@ -1246,17 +1246,6 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
-    case OMP_CLAUSE__GRIDDIM_:
-      pp_string (pp, "_griddim_(");
-      pp_unsigned_wide_integer (pp, OMP_CLAUSE__GRIDDIM__DIMENSION (clause));
-      pp_colon (pp);
-      dump_generic_node (pp, OMP_CLAUSE__GRIDDIM__SIZE (clause), spc, flags,
-			 false);
-      pp_comma (pp);
-      dump_generic_node (pp, OMP_CLAUSE__GRIDDIM__GROUP (clause), spc, flags,
-			 false);
-      pp_right_paren (pp);
-      break;
     case OMP_CLAUSE_IF_PRESENT:
       pp_string (pp, "if_present");
       break;
@@ -1452,7 +1441,7 @@ dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
 static void
 dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
 {
-  if (flags & TDF_GIMPLE)
+  if (TREE_CODE (node) == MEM_REF && (flags & TDF_GIMPLE))
     {
       pp_string (pp, "__MEM <");
       dump_generic_node (pp, TREE_TYPE (node),
@@ -1483,7 +1472,8 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
 	}
       pp_right_paren (pp);
     }
-  else if (integer_zerop (TREE_OPERAND (node, 1))
+  else if (TREE_CODE (node) == MEM_REF
+	   && integer_zerop (TREE_OPERAND (node, 1))
 	   /* Dump the types of INTEGER_CSTs explicitly, for we can't
 	      infer them and MEM_ATTR caching will share MEM_REFs
 	      with differently-typed op0s.  */
@@ -1552,11 +1542,32 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
       dump_generic_node (pp, op1type, spc, flags | TDF_SLIM, false);
       pp_right_paren (pp);
       dump_generic_node (pp, op0, spc, flags, false);
-      if (!integer_zerop (op1))
-      if (!integer_zerop (TREE_OPERAND (node, 1)))
+      if (TREE_CODE (node) == MEM_REF
+	  && !integer_zerop (op1))
 	{
 	  pp_string (pp, " + ");
 	  dump_generic_node (pp, op1, spc, flags, false);
+	}
+      if (TREE_CODE (node) == TARGET_MEM_REF)
+	{
+	  tree tmp = TMR_INDEX2 (node);
+	  if (tmp)
+	    {
+	      pp_string (pp, " + ");
+	      dump_generic_node (pp, tmp, spc, flags, false);
+	    }
+	  tmp = TMR_INDEX (node);
+	  if (tmp)
+	    {
+	      pp_string (pp, " + ");
+	      dump_generic_node (pp, tmp, spc, flags, false);
+	      tmp = TMR_STEP (node);
+	      pp_string (pp, " * ");
+	      if (tmp)
+		dump_generic_node (pp, tmp, spc, flags, false);
+	      else
+		pp_string (pp, "1");
+	    }
 	}
       if ((flags & TDF_ALIAS)
 	  && MR_DEPENDENCE_CLIQUE (node) != 0)
@@ -1693,9 +1704,9 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  pp_string (pp, "atomic ");
 	if (quals & TYPE_QUAL_CONST)
 	  pp_string (pp, "const ");
-	else if (quals & TYPE_QUAL_VOLATILE)
+	if (quals & TYPE_QUAL_VOLATILE)
 	  pp_string (pp, "volatile ");
-	else if (quals & TYPE_QUAL_RESTRICT)
+	if (quals & TYPE_QUAL_RESTRICT)
 	  pp_string (pp, "restrict ");
 
 	if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (node)))
@@ -1865,65 +1876,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case MEM_REF:
-      dump_mem_ref (pp, node, spc, flags);
-      break;
-
     case TARGET_MEM_REF:
-      {
-	const char *sep = "";
-	tree tmp;
-
-	pp_string (pp, "MEM[");
-
-	if (TREE_CODE (TMR_BASE (node)) == ADDR_EXPR)
-	  {
-	    pp_string (pp, sep);
-	    sep = ", ";
-	    pp_string (pp, "symbol: ");
-	    dump_generic_node (pp, TREE_OPERAND (TMR_BASE (node), 0),
-			       spc, flags, false);
-	  }
-	else
-	  {
-	    pp_string (pp, sep);
-	    sep = ", ";
-	    pp_string (pp, "base: ");
-	    dump_generic_node (pp, TMR_BASE (node), spc, flags, false);
-	  }
-	tmp = TMR_INDEX2 (node);
-	if (tmp)
-	  {
-	    pp_string (pp, sep);
-	    sep = ", ";
-	    pp_string (pp, "base: ");
-	    dump_generic_node (pp, tmp, spc, flags, false);
-	  }
-	tmp = TMR_INDEX (node);
-	if (tmp)
-	  {
-	    pp_string (pp, sep);
-	    sep = ", ";
-	    pp_string (pp, "index: ");
-	    dump_generic_node (pp, tmp, spc, flags, false);
-	  }
-	tmp = TMR_STEP (node);
-	if (tmp)
-	  {
-	    pp_string (pp, sep);
-	    sep = ", ";
-	    pp_string (pp, "step: ");
-	    dump_generic_node (pp, tmp, spc, flags, false);
-	  }
-	tmp = TMR_OFFSET (node);
-	if (tmp)
-	  {
-	    pp_string (pp, sep);
-	    sep = ", ";
-	    pp_string (pp, "offset: ");
-	    dump_generic_node (pp, tmp, spc, flags, false);
-	  }
-	pp_right_bracket (pp);
-      }
+      dump_mem_ref (pp, node, spc, flags);
       break;
 
     case ARRAY_TYPE:
@@ -3167,10 +3121,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	 libstdc++-prettyprinters/shared_ptr.cc with and without -g,
 	 for example, at occurrences of OBJ_TYPE_REF.  */
       if (!(flags & (TDF_SLIM | TDF_COMPARE_DEBUG))
-	  && virtual_method_call_p (node))
+	  && virtual_method_call_p (node, true))
 	{
 	  pp_string (pp, "(");
-	  dump_generic_node (pp, obj_type_ref_class (node), spc, flags, false);
+	  dump_generic_node (pp, obj_type_ref_class (node, true),
+			     spc, flags, false);
 	  pp_string (pp, ")");
 	}
       dump_generic_node (pp, OBJ_TYPE_REF_OBJECT (node), spc, flags, false);

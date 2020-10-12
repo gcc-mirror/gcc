@@ -209,6 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_map(unordered_map&& __umap,
 		    const allocator_type& __a)
+	noexcept( noexcept(_Hashtable(std::move(__umap._M_h), __a)) )
       : _M_h(std::move(__umap._M_h), __a)
       { }
 
@@ -1303,6 +1304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       unordered_multimap(unordered_multimap&& __ummap,
 			 const allocator_type& __a)
+	noexcept( noexcept(_Hashtable(std::move(__ummap._M_h), __a)) )
       : _M_h(std::move(__ummap._M_h), __a)
       { }
 

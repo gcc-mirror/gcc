@@ -2062,8 +2062,11 @@ package body GNAT.Sockets is
          Close_Selector (S.all);
          Unchecked_Free (Local_S);
       end if;
+
    exception
       when others =>
+         Status := Completed;
+
          if Selector = null then
             Close_Selector (S.all);
             Unchecked_Free (Local_S);

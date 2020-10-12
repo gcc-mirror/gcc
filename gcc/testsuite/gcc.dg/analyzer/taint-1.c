@@ -14,14 +14,14 @@ char test_1(FILE *f)
 {
   struct foo tmp;
 
-  if (1 == fread(&tmp, sizeof(tmp), 1, f)) { /* { dg-message "\\(1\\) 'tmp' gets an unchecked value here" "event 1" } */
-                                             /* { dg-message "\\(2\\) following 'true' branch\\.\\.\\." "event 2" { target *-*-* } .-1 } */
+  if (1 == fread(&tmp, sizeof(tmp), 1, f)) { /* { dg-message "\\(\[0-9\]+\\) 'tmp' gets an unchecked value here" "event: tmp gets unchecked value" { xfail *-*-* } } */
+                                             /* { dg-message "\\(\[0-9\]+\\) following 'true' branch\\.\\.\\." "event: following true branch" { target *-*-* } .-1 } */
     /* BUG: the following array lookup trusts that the input data's index is
        in the range 0 <= i < 256; otherwise it's accessing the stack */
     return tmp.buf[tmp.i]; // { dg-warning "use of tainted value 'tmp.i' in array lookup without bounds checking" "warning" } */
-    /* { dg-message "23: \\(3\\) \\.\\.\\.to here" "event 3" { target *-*-* } .-1 } */
-    /* { dg-message "23: \\(4\\) 'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event 4" { target *-*-* } .-2 } */
-    /* { dg-message "\\(5\\) use of tainted value 'tmp.i' in array lookup without bounds checking" "event 5" { target *-*-* } .-3 } */
+    /* { dg-message "23: \\(\[0-9\]+\\) \\.\\.\\.to here" "event: to here" { target *-*-* } .-1 } */
+    /* { dg-message "23: \\(\[0-9\]+\\) 'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event: tmp.i has an unchecked value" { xfail *-*-* } .-2 } */
+    /* { dg-message "\\(\[0-9\]+\\) use of tainted value 'tmp.i' in array lookup without bounds checking" "final event" { target *-*-* } .-3 } */
     
     // TOOD: better messages for state changes
   }
@@ -52,9 +52,9 @@ char test_4(FILE *f)
   struct foo tmp;
 
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
-    if (tmp.i >= 0) { /* { dg-message "'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "warning" } */
-      /* { dg-message "'tmp.i' has its lower bound checked here" "event" { target *-*-* } .-1 } */
-      return tmp.buf[tmp.i]; /* { dg-warning "use of tainted value 'tmp.i' in array lookup without upper-bounds checking" } */
+    if (tmp.i >= 0) { /* { dg-message "'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event: tmp.i has an unchecked value" { xfail *-*-* } } */
+      /* { dg-message "'tmp.i' has its lower bound checked here" "event: lower bound checked" { target *-*-* } .-1 } */
+      return tmp.buf[tmp.i]; /* { dg-warning "use of tainted value 'tmp.i' in array lookup without upper-bounds checking" "warning" } */
     }
   }
   return 0;
@@ -65,9 +65,9 @@ char test_5(FILE *f)
   struct foo tmp;
 
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
-    if (tmp.i < 256) { /* { dg-message "'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "warning" } */
-      /* { dg-message "'tmp.i' has its upper bound checked here" "event" { target *-*-* } .-1 } */
-      return tmp.buf[tmp.i]; /* { dg-warning "use of tainted value 'tmp.i' in array lookup without lower-bounds checking" } */
+    if (tmp.i < 256) { /* { dg-message "'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event: tmp.i has an unchecked value" { xfail *-*-* } } */
+      /* { dg-message "'tmp.i' has its upper bound checked here" "event: upper bound checked" { target *-*-* } .-1 } */
+      return tmp.buf[tmp.i]; /* { dg-warning "use of tainted value 'tmp.i' in array lookup without lower-bounds checking" "warning" } */
     }
   }
   return 0;

@@ -567,7 +567,7 @@
 ; single vector register.
 (define_insn "*vec_tf_to_v1tf"
   [(set (match_operand:V1TF                   0 "nonimmediate_operand" "=v,v,R,v,v")
-	(vec_duplicate:V1TF (match_operand:TF 1 "general_operand"       "v,R,v,G,d")))]
+	(vec_duplicate:V1TF (match_operand:TF 1 "general_operand"       "f,R,f,G,d")))]
   "TARGET_VX"
   "@
    vmrhg\t%v0,%1,%N1
@@ -622,7 +622,7 @@
     case GT:
     case LTGT:
       /* Signaling vector comparisons are supported only on z14+.  */
-      return TARGET_Z14;
+      return TARGET_VXE || TARGET_NONSIGNALING_VECTOR_COMPARE_OK;
     default:
       return true;
     }
@@ -1425,28 +1425,16 @@
 
 ; Vector copysign, implement using vector select
 (define_expand "copysign<mode>3"
-  [(set (match_operand:VFT 0 "register_operand" "")
-	(if_then_else:VFT
-	 (eq (match_dup 3)
-	     (match_dup 4))
-	 (match_operand:VFT 1 "register_operand"  "")
-	 (match_operand:VFT 2 "register_operand"  "")))]
+  [(set (match_operand:VFT            0 "register_operand" "")
+	(ior:VFT
+	 (and:VFT (match_operand:VFT  2 "register_operand" "")
+		  (match_dup 3))
+	 (and:VFT (not:VFT (match_dup 3))
+		  (match_operand:VFT  1 "register_operand" ""))))]
   "TARGET_VX"
 {
-  int sz = GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode));
-  int prec = GET_MODE_PRECISION (GET_MODE_INNER (<tointvec>mode));
-  wide_int mask_val = wi::shwi (1l << (sz - 1), prec);
-
-  rtx mask = gen_reg_rtx (<tointvec>mode);
-
-  int nunits = GET_MODE_NUNITS (<tointvec>mode);
-  rtvec v = rtvec_alloc (nunits);
-  for (int i = 0; i < nunits; i++)
-    RTVEC_ELT (v, i) = GEN_INT (mask_val.to_shwi ());
-
-  mask = gen_rtx_CONST_VECTOR (<tointvec>mode, v);
-  operands[3] = force_reg (<tointvec>mode, mask);
-  operands[4] = CONST0_RTX (<tointvec>mode);
+  rtx mask = s390_build_signbit_mask (<MODE>mode);
+  operands[3] = force_reg (<MODE>mode, mask);
 })
 
 ;;
@@ -1534,7 +1522,7 @@
   [(set (match_operand:<tointvec>         0 "register_operand" "=v")
 	(gt:<tointvec> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
-  "TARGET_VX && !TARGET_VXE && flag_finite_math_only"
+  "TARGET_NONSIGNALING_VECTOR_COMPARE_OK"
   "<vw>fch<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
@@ -1551,7 +1539,7 @@
   [(set (match_operand:<tointvec>         0 "register_operand" "=v")
 	(ge:<tointvec> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
-  "TARGET_VX && !TARGET_VXE && flag_finite_math_only"
+  "TARGET_NONSIGNALING_VECTOR_COMPARE_OK"
   "<vw>fche<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 

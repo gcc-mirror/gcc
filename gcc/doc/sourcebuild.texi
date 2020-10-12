@@ -1172,6 +1172,16 @@ Expect the execute step of a test to fail if the conditions (which are
 the same as for @code{dg-skip-if}) are met.
 @end table
 
+@subsubsection Expect the compiler to crash
+
+@table @code
+@item  @{ dg-ice @var{comment} [@{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]]] @}
+Expect the compiler to crash with an internal compiler error and return
+a nonzero exit status if the conditions (which are the same as for
+@code{dg-skip-if}) are met.  Used for tests that test bugs that have not been
+fixed yet.
+@end table
+
 @subsubsection Expect the test executable to fail
 
 @table @code
@@ -1242,6 +1252,18 @@ Prune messages matching @var{regexp} from the test output.
 @item @{ dg-output @var{regexp} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive compares @var{regexp} to the combined output
 that the test executable writes to @file{stdout} and @file{stderr}.
+@end table
+
+@subsubsection Specify environment variables for a test
+
+@table @code
+@item @{ dg-set-compiler-env-var @var{var_name} "@var{var_value}" @}
+Specify that the environment variable @var{var_name} needs to be set
+to @var{var_value} before invoking the compiler on the test file.
+
+@item @{ dg-set-target-env-var @var{var_name} "@var{var_value}" @}
+Specify that the environment variable @var{var_name} needs to be set
+to @var{var_value} before execution of the program created by the test.
 @end table
 
 @subsubsection Specify additional files for a test
@@ -1505,6 +1527,9 @@ optabs on vectors.
 Target supports fully-masked (also known as fully-predicated) loops,
 so that vector loops can handle partial as well as full vectors.
 
+@item vect_masked_load
+Target supports vector masked loads.
+
 @item vect_masked_store
 Target supports vector masked stores.
 
@@ -1689,6 +1714,21 @@ Target supports AND, IOR and XOR reduction on vectors.
 
 @item vect_fold_extract_last
 Target supports the @code{fold_extract_last} optab.
+
+@item vect_len_load_store
+Target supports the @code{len_load} and @code{len_store} optabs.
+
+@item vect_partial_vectors_usage_1
+Target supports loop vectorization with partial vectors and
+@code{vect-partial-vector-usage} is set to 1.
+
+@item vect_partial_vectors_usage_2
+Target supports loop vectorization with partial vectors and
+@code{vect-partial-vector-usage} is set to 2.
+
+@item vect_partial_vectors
+Target supports loop vectorization with partial vectors and
+@code{vect-partial-vector-usage} is nonzero.
 @end table
 
 @subsubsection Thread Local Storage attributes
@@ -2051,6 +2091,9 @@ whether it does so by default).
 @itemx aarch64_sve2048_hw
 Like @code{aarch64_sve_hw}, but also test for an exact hardware vector length.
 
+@item aarch64_fjcvtzs_hw
+AArch64 target that is able to generate and execute armv8.3-a FJCVTZS
+instruction.
 @end table
 
 @subsubsection MIPS-specific attributes
@@ -2159,6 +2202,26 @@ PowerPC target supports executing AltiVec instructions.
 
 @item vsx_hw
 PowerPC target supports executing VSX instructions (ISA 2.06).
+
+@item has_arch_pwr5
+PowerPC target pre-defines macro _ARCH_PWR5 which means the @code{-mcpu}
+setting is Power5 or later.
+
+@item has_arch_pwr6
+PowerPC target pre-defines macro _ARCH_PWR6 which means the @code{-mcpu}
+setting is Power6 or later.
+
+@item has_arch_pwr7
+PowerPC target pre-defines macro _ARCH_PWR7 which means the @code{-mcpu}
+setting is Power7 or later.
+
+@item has_arch_pwr8
+PowerPC target pre-defines macro _ARCH_PWR8 which means the @code{-mcpu}
+setting is Power8 or later.
+
+@item has_arch_pwr9
+PowerPC target pre-defines macro _ARCH_PWR9 which means the @code{-mcpu}
+setting is Power9 or later.
 @end table
 
 @subsubsection Other hardware attributes
@@ -2188,6 +2251,15 @@ Target supports the execution of @code{avx512f} instructions.
 
 @item avx512vp2intersect
 Target supports the execution of @code{avx512vp2intersect} instructions.
+
+@item amx_tile
+Target supports the execution of @code{amx-tile} instructions.
+
+@item amx_int8
+Target supports the execution of @code{amx-int8} instructions.
+
+@item amx_bf16
+Target supports the execution of @code{amx-bf16} instructions.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.

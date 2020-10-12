@@ -29,7 +29,11 @@ void test02()
   std::string str01 = "twelve chars";
   // str01 becomes shared
   std::string str02 = str01;
-  str01.reserve(1);
+#if __cplusplus <= 201703L
+  str01.reserve();
+#else
+  str01.shrink_to_fit(); // reserve is deprecated in C++20
+#endif
   VERIFY( str01.capacity() >= 12 );
 }
 

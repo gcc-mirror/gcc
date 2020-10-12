@@ -23,27 +23,42 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Utility functions for use by state machines.  */
 
-extern tree is_zero_assignment (const gimple *stmt);
-extern bool any_pointer_p (tree var);
-
 namespace ana {
 
 class state_machine;
 class sm_context;
 class pending_diagnostic;
 
+extern bool any_pointer_p (tree var);
+
 /* An abstract base class for a state machine describing an API.
-   A mapping from state IDs to names, and various virtual functions
+   Manages a set of state objects, and has various virtual functions
    for pattern-matching on statements.  */
 
 class state_machine : public log_user
 {
 public:
-  typedef unsigned state_t;
+  /* States are represented by immutable objects, owned by the state
+     machine.  */
+  class state
+  {
+  public:
+    state (const char *name, unsigned id) : m_name (name), m_id (id) {}
+    virtual ~state () {}
 
-  state_machine (const char *name, logger *logger)
-  : log_user (logger), m_name (name) {}
+    const char *get_name () const { return m_name; }
+    virtual void dump_to_pp (pretty_printer *pp) const;
+    virtual json::value *to_json () const;
 
+    unsigned get_id () const { return m_id; }
+
+  private:
+    const char *m_name;
+    unsigned m_id;
+  };
+  typedef const state_machine::state *state_t;
+
+  state_machine (const char *name, logger *logger);
   virtual ~state_machine () {}
 
   /* Should states be inherited from a parent region to a child region,
@@ -53,11 +68,14 @@ public:
      within a heap-allocated struct.  */
   virtual bool inherited_state_p () const = 0;
 
+  virtual state_machine::state_t get_default_state (const svalue *) const
+  {
+    return m_start;
+  }
+
   const char *get_name () const { return m_name; }
 
-  const char *get_state_name (state_t s) const;
-
-  state_t get_state_by_name (const char *name);
+  state_t get_state_by_name (const char *name) const;
 
   /* Return true if STMT is a function call recognized by this sm.  */
   virtual bool on_stmt (sm_context *sm_ctxt,
@@ -87,27 +105,51 @@ public:
     return NULL;
   }
 
+  /* Return true if S should be reset to "start" for values passed (or reachable
+     from) calls to unknown functions.  IS_MUTABLE is true for pointers as
+     non-const, false if only passed as const-pointers.
+
+     For example, in sm-malloc.cc, an on-stack ptr doesn't stop being
+     stack-allocated when passed to an unknown fn, but a malloc-ed pointer
+     could be freed when passed to an unknown fn (unless passed as "const").  */
+  virtual bool reset_when_passed_to_unknown_fn_p (state_t s ATTRIBUTE_UNUSED,
+						  bool is_mutable) const
+  {
+    return is_mutable;
+  }
+
   void validate (state_t s) const;
 
   void dump_to_pp (pretty_printer *pp) const;
 
+  json::object *to_json () const;
+
+  state_t get_start_state () const { return m_start; }
+
 protected:
   state_t add_state (const char *name);
+  state_t add_custom_state (state *s)
+  {
+    m_states.safe_push (s);
+    return s;
+  }
+
+  unsigned alloc_state_id () { return m_next_state_id++; }
 
 private:
   DISABLE_COPY_AND_ASSIGN (state_machine);
 
   const char *m_name;
-  auto_vec<const char *> m_state_names;
+
+  /* States are owned by the state_machine.  */
+  auto_delete_vec<state> m_states;
+
+  unsigned m_next_state_id;
+
+protected:
+  /* Must be inited after m_next_state_id.  */
+  state_t m_start;
 };
-
-/* Is STATE the start state?  (zero is hardcoded as the start state).  */
-
-static inline bool
-start_start_p (state_machine::state_t state)
-{
-  return state == 0;
-}
 
 /* Abstract base class for state machines to pass to
    sm_context::on_custom_transition for handling non-standard transitions
@@ -137,24 +179,44 @@ public:
      other callback handling.  */
   virtual tree get_fndecl_for_call (const gcall *call) = 0;
 
+  /* Get the old state of VAR at STMT.  */
+  virtual state_machine::state_t get_state (const gimple *stmt,
+					    tree var) = 0;
+  /* Set the next state of VAR to be TO, recording the "origin" of the
+     state as ORIGIN.
+     Use STMT for location information.  */
+  virtual void set_next_state (const gimple *stmt,
+			       tree var,
+			       state_machine::state_t to,
+			       tree origin = NULL_TREE) = 0;
+
   /* Called by state_machine in response to pattern matches:
      if VAR is in state FROM, transition it to state TO, potentially
      recording the "origin" of the state as ORIGIN.
      Use NODE and STMT for location information.  */
-   virtual void on_transition (const supernode *node, const gimple *stmt,
-			      tree var,
-			      state_machine::state_t from,
-			      state_machine::state_t to,
-			      tree origin = NULL_TREE) = 0;
+  void on_transition (const supernode *node ATTRIBUTE_UNUSED,
+		      const gimple *stmt,
+		      tree var,
+		      state_machine::state_t from,
+		      state_machine::state_t to,
+		      tree origin = NULL_TREE)
+  {
+    state_machine::state_t current = get_state (stmt, var);
+    if (current == from)
+      set_next_state (stmt, var, to, origin);
+  }
 
   /* Called by state_machine in response to pattern matches:
-     issue a diagnostic D if VAR is in state STATE, using NODE and STMT
-     for location information.  */
-  virtual void warn_for_state (const supernode *node, const gimple *stmt,
-			       tree var, state_machine::state_t state,
-			       pending_diagnostic *d) = 0;
+     issue a diagnostic D using NODE and STMT for location information.  */
+  virtual void warn (const supernode *node, const gimple *stmt,
+		     tree var, pending_diagnostic *d) = 0;
 
-  virtual tree get_readable_tree (tree expr)
+  /* For use when generating trees when creating pending_diagnostics, so that
+     rather than e.g.
+       "double-free of '<unknown>'"
+     we can print:
+       "double-free of 'inbuf.data'".  */
+  virtual tree get_diagnostic_tree (tree expr)
   {
     return expr;
   }
@@ -165,6 +227,11 @@ public:
   /* A vfunc for handling custom transitions, such as when registering
      a signal handler.  */
   virtual void on_custom_transition (custom_transition *transition) = 0;
+
+  /* If STMT is an assignment known to assign zero to its LHS, return
+     the LHS.
+     Otherwise return NULL_TREE.  */
+  virtual tree is_zero_assignment (const gimple *stmt) = 0;
 
 protected:
   sm_context (int sm_idx, const state_machine &sm)

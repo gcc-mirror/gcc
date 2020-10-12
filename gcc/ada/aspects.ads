@@ -189,6 +189,7 @@ package Aspects is
       Aspect_Atomic_Components,
       Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
+      Aspect_CUDA_Global,                   -- GNAT
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Independent,
@@ -458,6 +459,7 @@ package Aspects is
       Aspect_Contract_Cases               => False,
       Aspect_Convention                   => True,
       Aspect_CPU                          => False,
+      Aspect_CUDA_Global                  => False,
       Aspect_Default_Component_Value      => True,
       Aspect_Default_Initial_Condition    => False,
       Aspect_Default_Iterator             => False,
@@ -601,6 +603,7 @@ package Aspects is
       Aspect_Contract_Cases               => Name_Contract_Cases,
       Aspect_Convention                   => Name_Convention,
       Aspect_CPU                          => Name_CPU,
+      Aspect_CUDA_Global                  => Name_CUDA_Global,
       Aspect_Default_Component_Value      => Name_Default_Component_Value,
       Aspect_Default_Initial_Condition    => Name_Default_Initial_Condition,
       Aspect_Default_Iterator             => Name_Default_Iterator,
@@ -839,6 +842,7 @@ package Aspects is
       Aspect_Attach_Handler               => Always_Delay,
       Aspect_Constant_Indexing            => Always_Delay,
       Aspect_CPU                          => Always_Delay,
+      Aspect_CUDA_Global                  => Always_Delay,
       Aspect_Default_Iterator             => Always_Delay,
       Aspect_Default_Storage_Pool         => Always_Delay,
       Aspect_Default_Value                => Always_Delay,

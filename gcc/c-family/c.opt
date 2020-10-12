@@ -338,6 +338,14 @@ Warray-bounds=
 LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
 
+Warray-parameter
+C ObjC C++ ObjC++ Warning Alias(Warray-parameter=, 2, 0)
+Warn about mismatched declarations of array parameters and unsafe accesses to them.
+
+Warray-parameter=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_array_parameter) IntegerRange(0, 2) LangEnabledBy(C ObjC C++ ObjC++,Wall, 2, 0) Warning
+Warn about mismatched declarations of array parameters and unsafe accesses to them.
+
 Wzero-length-bounds
 C ObjC C++ ObjC++ Var(warn_zero_length_bounds) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about accesses to interior zero-length array members.
@@ -363,7 +371,7 @@ C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC+
 Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
 
 Wbuiltin-declaration-mismatch
-C ObjC C++ ObjC++ Var(warn_builtin_declaraion_mismatch) Init(1) Warning
+C ObjC C++ ObjC++ Var(warn_builtin_declaration_mismatch) Init(1) Warning
 Warn when a built-in function is declared with the wrong signature.
 
 Wbuiltin-macro-redefined
@@ -466,6 +474,11 @@ Warn for converting NULL from/to a non-pointer type.
 Wcpp
 C ObjC C++ ObjC++ CppReason(CPP_W_WARNING_DIRECTIVE)
 ; Documented in common.opt
+
+Wctad-maybe-unsupported
+C++ ObjC++ Var(warn_ctad_maybe_unsupported) Warning
+Warn when performing class template argument deduction on a type with no
+deduction guides.
 
 Wctor-dtor-privacy
 C++ ObjC++ Var(warn_ctor_dtor_privacy) Warning
@@ -787,6 +800,10 @@ Wpacked-not-aligned
 C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when fields in a struct with the packed attribute are misaligned.
 
+Wrange-loop-construct
+C++ ObjC++ Var(warn_range_loop_construct) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn when a range-based for-loop is creating unnecessary copies.
+
 Wredundant-tags
 C++ ObjC++ Var(warn_redundant_tags) Warning
 Warn when a class or enumerated type is referenced using a redundant class-key.
@@ -822,6 +839,10 @@ Wstringop-overflow=
 C ObjC C++ LTO ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall, 2, 0) IntegerRange(0, 4)
 Under the control of Object Size type, warn about buffer overflow in string
 manipulation functions like memcpy and strcpy.
+
+Wstringop-overread
+C ObjC C++ LTO ObjC++ Var(warn_stringop_overread) Init(1) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
+Warn about reading past the end of a source array in string manipulation functions like memchr and memcpy.
 
 Wstringop-truncation
 C ObjC C++ LTO ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
@@ -1248,11 +1269,14 @@ C ObjC C++ LTO ObjC++ Var(warn_vla_limit) Warning Joined Host_Wide_Int ByteSize 
 -Wvla-larger-than=<number>	Warn on unbounded uses of variable-length
 arrays, and on bounded uses of variable-length arrays whose bound can be
 larger than <number> bytes.
-<number> bytes.
 
 Wno-vla-larger-than
 C ObjC C++ LTO ObjC++ Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning
 Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger.
+
+Wvla-parameter
+C ObjC C++ ObjC++ Var(warn_vla_parameter) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about mismatched declarations of VLA parameters.
 
 Wvolatile
 C++ ObjC++ Var(warn_volatile) Warning
@@ -1875,10 +1899,6 @@ Enum(strong_eval_order) String(some) Value(1)
 
 EnumValue
 Enum(strong_eval_order) String(all) Value(2)
-
-ftabstop=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger
--ftabstop=<number>	Distance between tab stops for column reporting.
 
 ftemplate-backtrace-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(template_backtrace_limit) Init(10)

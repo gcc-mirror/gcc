@@ -33,7 +33,7 @@ if [info exists DEFAULT_FFLAGS] then {
 }
 
 # If a testcase doesn't have special options, use these.
-set DEFAULT_FFLAGS "-fanalyzer -fdiagnostics-path-format=separate-events -Wanalyzer-too-complex -fanalyzer-call-summaries"
+set DEFAULT_FFLAGS "-fanalyzer -Wanalyzer-too-complex -fanalyzer-call-summaries"
 
 # Initialize `dg'.
 dg-init

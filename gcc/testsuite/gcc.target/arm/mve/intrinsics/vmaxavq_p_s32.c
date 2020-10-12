@@ -10,7 +10,6 @@ foo (uint32_t a, int32x4_t b, mve_pred16_t p)
   return vmaxavq_p_s32 (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vmaxavt.s32"  }  } */
 
 uint32_t
 foo1 (uint32_t a, int32x4_t b, mve_pred16_t p)
@@ -18,4 +17,12 @@ foo1 (uint32_t a, int32x4_t b, mve_pred16_t p)
   return vmaxavq_p (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vmaxavt.s32"  }  } */
+
+int32_t
+foo2 (uint16_t a, int32x4_t b, mve_pred16_t p)
+{
+  return vmaxavq_p (a, b, p);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
+/* { dg-final { scan-assembler-times "vmaxavt.s32" 3 } } */

@@ -46,8 +46,6 @@ void test01()
   static_assert(test_category<is_aggregate,
 		SLType>(true), "");
   static_assert(test_category<is_aggregate,
-		NoexceptMoveAssignClass>(true), "");
-  static_assert(test_category<is_aggregate,
 		unsigned[3]>(true), "");
   static_assert(test_category<is_aggregate,
 		unsigned[3][2]>(true), "");
@@ -63,8 +61,13 @@ void test01()
 		EnumType[]>(true), "");
   static_assert(test_category<is_aggregate,
 		EnumType[][2]>(true), "");
-  pos<ClassType, UnionType, SLType, NoexceptMoveAssignClass,
+  pos<ClassType, UnionType, SLType,
       unsigned[3], unsigned[3][2], unsigned[], unsigned[][3]>();
+#if __cplusplus == 201703L
+  static_assert(test_category<is_aggregate,
+		NoexceptMoveAssignClass>(true), "");
+  pos<NoexceptMoveAssignClass>();
+#endif
 
   // Negative tests.
   static_assert(test_category<is_aggregate,
@@ -93,4 +96,10 @@ void test01()
 		void>(false), "");
   neg<AbstractClass, PolymorphicClass, ExplicitClass, char, unsigned,
       bool, float, double, void>();
+#if __cplusplus > 201703L
+  // In C++20 aggregates cannot have user-declared constructors.
+  static_assert(test_category<is_aggregate,
+		NoexceptMoveAssignClass>(false), "");
+  neg<NoexceptMoveAssignClass>();
+#endif
 }
