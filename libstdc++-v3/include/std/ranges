@@ -1663,12 +1663,14 @@ namespace views
     {
     private:
       template<bool _Const>
+	using _CI = counted_iterator<
+	  iterator_t<__detail::__maybe_const_t<_Const, _Vp>>>;
+
+      template<bool _Const>
 	struct _Sentinel
 	{
 	private:
 	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
-	  using _CI = counted_iterator<iterator_t<_Base>>;
-
 	  sentinel_t<_Base> _M_end = sentinel_t<_Base>();
 
 	public:
@@ -1689,7 +1691,15 @@ namespace views
 	  base() const
 	  { return _M_end; }
 
-	  friend constexpr bool operator==(const _CI& __y, const _Sentinel& __x)
+	  friend constexpr bool
+	  operator==(const _CI<_Const>& __y, const _Sentinel& __x)
+	  { return __y.count() == 0 || __y.base() == __x._M_end; }
+
+	  template<bool _OtherConst = !_Const,
+		   typename _Base2 = __detail::__maybe_const_t<_OtherConst, _Vp>>
+	    requires sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
+	  friend constexpr bool
+	  operator==(const _CI<_OtherConst>& __y, const _Sentinel& __x)
 	  { return __y.count() == 0 || __y.base() == __x._M_end; }
 
 	  friend _Sentinel<!_Const>;
@@ -1837,6 +1847,13 @@ namespace views
 
 	  friend constexpr bool
 	  operator==(const iterator_t<_Base>& __x, const _Sentinel& __y)
+	  { return __y._M_end == __x || !std::__invoke(*__y._M_pred, *__x); }
+
+	  template<bool _OtherConst = !_Const,
+		   typename _Base2 = __detail::__maybe_const_t<_OtherConst, _Vp>>
+	    requires sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
+	  friend constexpr bool
+	  operator==(const iterator_t<_Base2>& __x, const _Sentinel& __y)
 	  { return __y._M_end == __x || !std::__invoke(*__y._M_pred, *__x); }
 
 	  friend _Sentinel<!_Const>;
