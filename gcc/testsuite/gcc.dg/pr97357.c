@@ -22,7 +22,7 @@ void bytelocks(glk *rethead, jmp_buf jb)
 {
   glk *cur, *cur_lk;
 
-  if (( _setjmp (jb)) == 0)
+  if (( setjmp (jb)) == 0)
     for (cur = &l->ByteLock; cur != ((glk *)0) ; cur = (cur)->nxt)
         for (cur_lk = &lk->ByteLock; cur_lk != ((glk *)0); cur_lk = cur_lk->nxt)
           {
