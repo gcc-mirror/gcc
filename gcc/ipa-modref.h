@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #define IPA_MODREF_H
 
 typedef modref_tree <alias_set_type> modref_records;
-typedef modref_tree <tree> modref_records_lto;
 
 /* Single function summary.  */
 
@@ -31,18 +30,10 @@ struct GTY(()) modref_summary
   modref_records *loads;
   modref_records *stores;
 
-  /* The same but using tree types rather than alias sets.  This is necessary
-     to make the information streamable for LTO but is also more verbose
-     and thus more likely to hit the limits.  */
-  modref_records_lto *loads_lto;
-  modref_records_lto *stores_lto;
-  bool finished;
-
   modref_summary ();
   ~modref_summary ();
   void dump (FILE *);
   bool useful_p (int ecf_flags);
-  bool lto_useful_p (int ecf_flags);
 };
 
 modref_summary *get_modref_function_summary (cgraph_node *func);
