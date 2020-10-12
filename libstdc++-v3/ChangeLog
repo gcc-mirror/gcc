@@ -1,3 +1,8 @@
+2020-10-11  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/os/aix/t-aix: Add complementary mode object file to
+	libstdc++fs.a
+
 2020-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/97362

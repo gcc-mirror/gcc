@@ -1,3 +1,69 @@
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c
+	(create_global_decl): Update to allow the caller to
+	specify declaration or definition.
+	(create_hidden_decl): Likewise.
+	(next_runtime_abi_02_protocol_decl): Make the symbol
+	weak and hidden for later OS runtime versions.
+	(build_v2_protocol_list_address_table): Likewise.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c (objc_v2_build_ivar_ref): Test
+	DECL_C_BIT_FIELD to detect that an ivar is a bitfield.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c (FIXUP_NEEDED): Rename ...
+	(USE_FIXUP_BEFORE): ... to this.
+	(next_runtime_02_initialize): Likewise.
+	(next_runtime_abi_02_get_arg_type_list_base): Likewise.
+	(next_runtime_abi_02_build_objc_method_call): Likewise.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c (TAG_MSGSENDSUPER): Revised
+	spelling.
+	(TAG_MSGSENDID): Likewise.
+	(TAG_MSGSENDSUPER_STRET): Likewise.
+	(TAG_MSGSENDID_STRET): Likewise.
+	(FIXUP_NEEDED): Likewise.
+	(TAG_FIXUP): New.
+	(next_runtime_02_initialize): Adjust message calls to use
+	fixup variants only when required.
+	(next_runtime_abi_02_get_arg_type_list_base): Correct
+	indent.
+	(build_v2_build_objc_method_call): New.
+	(build_v2_objc_method_fixup_call): Split out from ...
+	(next_runtime_abi_02_build_objc_method_call): ... here.
+	Arrange to adjust the call on the basis of the target
+	runtime.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-runtime-shared-support.c (start_var_decl): Make the
+	decl_assembler_name follow the metadata name for C++ on NeXT
+	runtime platforms.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c
+	(next_runtime_abi_02_category_decl): Adjust category
+	superclass name ordering.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c (build_v2_super_template): Add new
+	fields to the template.
+	(build_v2_protocol_template): Build new field entries.
+	(generate_v2_meth_descriptor_table): Adjust to allow recording all
+	method types.
+	(generate_v2_meth_type_list): New.
+	(build_v2_protocol_initializer): Initialize the additional fields.
+	(generate_v2_protocols): Record method types for all entries and
+	generate the additional method type table.
+
 2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-runtime-abi-02.c

@@ -1,3 +1,10 @@
+2020-10-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* libgnat/a-numaux.ads: Make all imports Intrinsic.
+	* libgnat/a-numaux__darwin.ads: Likewise.
+	* libgnat/a-numaux__libc-x86.ads: Likewise.
+	* libgnat/a-numaux__vxworks.ads: Likewise.
+
 2020-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Set the end locus

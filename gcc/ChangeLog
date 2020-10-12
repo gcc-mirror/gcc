@@ -1,3 +1,28 @@
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_globalize_label): Make a subset of
+	metadate symbols global.
+	(darwin_label_is_anonymous_local_objc_name): Make a subset of
+	metadata symbols linker-visible.
+	(darwin_override_options): Track more target OS versions, make
+	the next_runtime version track this (unless it's set to 0 for
+	GNU runtime).
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_globalize_label): Add protocol
+	meta-data labels to the set that are global.
+	(darwin_label_is_anonymous_local_objc_name): Arrange for meta-
+	data start labels to be linker-visible.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_objc2_section): Allow for
+	values > 1 to represent the next runtime.
+	(darwin_objc1_section): Likewise.
+	* config/darwin.h (NEXT_OBJC_RUNTIME): Set the default
+	next runtime value to be 10.5.8.
+
 2020-10-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-modref.c (modref_transform): Fix parameter map computation.
