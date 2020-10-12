@@ -951,8 +951,11 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
       if (tree dtype = TYPE_DOMAIN (t))
 	{
 	  tree max = TYPE_MAX_VALUE (dtype);
-	  /* Zero-length arrays have an upper bound of SIZE_MAX.  */
-	  if (integer_all_onesp (max))
+	  /* Zero-length arrays have a null upper bound in C and SIZE_MAX
+	     in C++.  Handle both since the type might be constructed by
+	     the middle end and end up here as a result of a warning (see
+	     PR c++/97201).  */
+	  if (!max || integer_all_onesp (max))
 	    pp_character (pp, '0');
 	  else if (tree_fits_shwi_p (max))
 	    pp_wide_integer (pp, tree_to_shwi (max) + 1);

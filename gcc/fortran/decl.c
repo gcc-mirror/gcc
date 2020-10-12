@@ -4835,7 +4835,7 @@ gfc_match_implicit (void)
       /* Last chance -- check <TYPE> <SELECTOR> (<RANGE>).  */
       if (ts.type == BT_CHARACTER)
 	m = gfc_match_char_spec (&ts);
-      else if (ts.type != BT_DERIVED)
+      else if (gfc_numeric_ts(&ts) || ts.type == BT_LOGICAL)
 	{
 	  m = gfc_match_kind_spec (&ts, false);
 	  if (m == MATCH_NO)

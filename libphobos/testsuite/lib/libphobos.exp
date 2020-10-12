@@ -105,6 +105,7 @@ proc libphobos_init { args } {
     global gdcpaths gdcldflags
     global gluefile wrap_flags
     global ld_library_path
+    global tool_timeout
     global DEFAULT_DFLAGS
 
     # If a testcase doesn't have special options, use these.
@@ -184,6 +185,9 @@ proc libphobos_init { args } {
 	  }
 	}
     }
+
+    # Set the default timeout for phobos tests.
+    set tool_timeout 600
 
     set_ld_library_path_env_vars
 

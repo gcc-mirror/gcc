@@ -2736,6 +2736,9 @@ class region_model
   bool called_from_main_p () const;
   const svalue *get_initial_value_for_global (const region *reg) const;
 
+  void check_for_writable_region (const region* dest_reg,
+				  region_model_context *ctxt) const;
+
   /* Storing this here to avoid passing it around everywhere.  */
   region_model_manager *const m_mgr;
 

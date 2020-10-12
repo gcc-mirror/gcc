@@ -37,7 +37,7 @@ msoft-stack
 Target Report Mask(SOFT_STACK)
 Use custom stacks instead of local memory for automatic storage.
 
-msoft-stack-reserve-local
+msoft-stack-reserve-local=
 Target Report Joined RejectNegative UInteger Var(nvptx_softstack_size) Init(128)
 Specify size of .local memory used for stack when the exact amount is not known.
 

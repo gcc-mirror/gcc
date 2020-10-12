@@ -11,3 +11,6 @@ foo (void)
   __builtin_memcpy (buf, (void *) 0x8000, 4096);
   bar (buf);
 }
+
+/* Reading from a constant address might triggers:
+   { dg-prune-output "\\\[-Wstringop-overread" } */

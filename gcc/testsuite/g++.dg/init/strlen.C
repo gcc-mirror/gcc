@@ -29,7 +29,7 @@ test_dynamic_type (S *p)
   // distinguish invalid cases from ones like it that might be valid.
   // If/when GIMPLE changes to make this possible this test can be
   // removed.
-  char *q = new (p->a) char [16];
+  char *q = new (p->a) char [16];   // { dg-warning "\\\[-Wplacement-new" }
 
   init (q);
 

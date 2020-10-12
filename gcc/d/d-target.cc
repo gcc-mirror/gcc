@@ -241,7 +241,7 @@ Target::isVectorTypeSupported (int sz, Type *type)
 {
   /* Size must be greater than zero, and a power of two.  */
   if (sz <= 0 || sz & (sz - 1))
-    return 2;
+    return 3;
 
   /* __vector(void[]) is treated same as __vector(ubyte[])  */
   if (type == Type::tvoid)
@@ -249,7 +249,7 @@ Target::isVectorTypeSupported (int sz, Type *type)
 
   /* No support for non-trivial types, complex types, or booleans.  */
   if (!type->isTypeBasic () || type->iscomplex () || type->ty == Tbool)
-    return 3;
+    return 2;
 
   /* In [simd/vector extensions], which vector types are supported depends on
      the target.  The implementation is expected to only support the vector
@@ -258,7 +258,7 @@ Target::isVectorTypeSupported (int sz, Type *type)
   tree ctype = build_vector_type (build_ctype (type), nunits);
 
   if (!targetm.vector_mode_supported_p (TYPE_MODE (ctype)))
-    return 3;
+    return 2;
 
   return 0;
 }

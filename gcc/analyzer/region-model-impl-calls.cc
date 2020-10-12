@@ -305,6 +305,8 @@ region_model::impl_call_memcpy (const call_details &cd)
 	return;
     }
 
+  check_for_writable_region (dest_reg, cd.get_ctxt ());
+
   /* Otherwise, mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg);
 }
@@ -345,6 +347,8 @@ region_model::impl_call_memset (const call_details &cd)
 	    }
 	}
     }
+
+  check_for_writable_region (dest_reg, cd.get_ctxt ());
 
   /* Otherwise, mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg);
@@ -396,6 +400,8 @@ region_model::impl_call_strcpy (const call_details &cd)
 					 cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_sval);
+
+  check_for_writable_region (dest_reg, cd.get_ctxt ());
 
   /* For now, just mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg);

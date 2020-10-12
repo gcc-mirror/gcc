@@ -1359,7 +1359,7 @@ operator_div::wi_fold (irange &r, tree type,
   // If we're definitely dividing by zero, there's nothing to do.
   if (wi_zero_p (type, divisor_min, divisor_max))
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 
@@ -1626,6 +1626,13 @@ operator_rshift::op1_range (irange &r,
   tree shift;
   if (op2.singleton_p (&shift))
     {
+      // Ignore nonsensical shifts.
+      unsigned prec = TYPE_PRECISION (type);
+      if (wi::ge_p (wi::to_wide (shift),
+		    wi::uhwi (prec, TYPE_PRECISION (TREE_TYPE (shift))),
+		    UNSIGNED))
+	return false;
+
       // Folding the original operation may discard some impossible
       // ranges from the LHS.
       int_range_max lhs_refined;
@@ -2617,10 +2624,10 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
 
-  // Mod 0 is undefined.  Return undefined.
+  // Mod 0 is undefined.
   if (wi_zero_p (type, rh_lb, rh_ub))
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 

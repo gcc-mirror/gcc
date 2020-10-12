@@ -412,8 +412,9 @@ indicate a place that may require attention for multi-thread safety.
   
   <para>
   </para>
-  <section xml:id="coding_style.bad_identifiers"><info><title>Bad Identifiers</title></info>
-    
+
+  <section xml:id="coding_style.bad_identifiers"><info><title>Bad Identifiers</title></info> <!-- BADNAMES -->
+
     <para>
       Identifiers that conflict and should be avoided.
     </para>
@@ -445,6 +446,7 @@ indicate a place that may require attention for multi-thread safety.
 
       MS adds:
       _T
+			__deref
 
       BSD adds:
       __used

@@ -421,10 +421,10 @@ namespace __gnu_debug
   {
     template<typename _It>
       static typename std::iterator_traits<_It>::reference
-      __deref();
+      __ref();
 
     template<typename _It,
-	     typename = decltype(__deref<_It>() < __deref<_It>())>
+	     typename = decltype(__ref<_It>() < __ref<_It>())>
       _GLIBCXX20_CONSTEXPR
       static bool
       _S_is_valid(_It __it)
@@ -438,7 +438,7 @@ namespace __gnu_debug
       { return true; }
 
     template<typename _It, typename _Pred, typename
-	= decltype(std::declval<_Pred>()(__deref<_It>(), __deref<_It>()))>
+	= decltype(std::declval<_Pred>()(__ref<_It>(), __ref<_It>()))>
       _GLIBCXX20_CONSTEXPR
       static bool
       _S_is_valid_pred(_It __it, _Pred __pred)

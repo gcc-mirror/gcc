@@ -28967,11 +28967,11 @@ arm_preferred_simd_mode (scalar_mode mode)
   if (TARGET_HAVE_MVE)
     switch (mode)
       {
-      case QImode:
+      case E_QImode:
 	return V16QImode;
-      case HImode:
+      case E_HImode:
 	return V8HImode;
-      case SImode:
+      case E_SImode:
 	return V4SImode;
 
       default:;
@@ -28980,9 +28980,9 @@ arm_preferred_simd_mode (scalar_mode mode)
   if (TARGET_HAVE_MVE_FLOAT)
     switch (mode)
       {
-      case HFmode:
+      case E_HFmode:
 	return V8HFmode;
-      case SFmode:
+      case E_SFmode:
 	return V4SFmode;
 
       default:;

@@ -1,3 +1,8 @@
+2020-10-11  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/t-aix: Delete and recreate libatomic before creating
+	FAT library.
+
 2020-09-27  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/t-aix: Use $(AR) without -X32_64.

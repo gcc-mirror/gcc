@@ -62,6 +62,7 @@
 
 // MS adds:
 #define _T		_T is a BADNAME
+#define __deref		__deref is a BADNAME
 
 // BSD adds:
 #define __used		__used is a BADNAME
