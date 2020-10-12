@@ -58,6 +58,8 @@ is
      new Ada.Unchecked_Conversion (Unsigned_32, Integer_32);
    function To_Signed is
      new Ada.Unchecked_Conversion (Unsigned_64, Integer_64);
+   function To_Signed is
+     new Ada.Unchecked_Conversion (Unsigned_128, Integer_128);
 
    ------------------
    -- Insert_Image --
@@ -147,14 +149,24 @@ is
       return Random (Gen.Rep);
    end Random;
 
-   function Random (Gen : Generator) return Integer_64 is
+   function Random (Gen : Generator) return Interfaces.Unsigned_128 is
    begin
-      return To_Signed (Unsigned_64'(Random (Gen)));
+      return Random (Gen.Rep);
    end Random;
 
    function Random (Gen : Generator) return Integer_32 is
    begin
       return To_Signed (Unsigned_32'(Random (Gen)));
+   end Random;
+
+   function Random (Gen : Generator) return Integer_64 is
+   begin
+      return To_Signed (Unsigned_64'(Random (Gen)));
+   end Random;
+
+   function Random (Gen : Generator) return Integer_128 is
+   begin
+      return To_Signed (Unsigned_128'(Random (Gen)));
    end Random;
 
    function Random (Gen : Generator) return Long_Integer is
