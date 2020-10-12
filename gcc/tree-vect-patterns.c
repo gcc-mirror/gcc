@@ -1638,6 +1638,8 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
 	      single_use_p |= op_single_use_p;
 	    }
 	}
+      else
+	return NULL;
     }
 
   /* Although the operation could be done in operation_precision, we have
