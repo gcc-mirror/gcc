@@ -1120,6 +1120,7 @@ static unsigned int
 sparc_do_work_around_errata (void)
 {
   rtx_insn *insn, *next;
+  bool find_first_useful = true;
 
   /* Force all instructions to be split into their final form.  */
   split_all_insns_noflow ();
@@ -1143,6 +1144,16 @@ sparc_do_work_around_errata (void)
 	jump = insn;
       else
 	jump = NULL;
+
+      /* Do not begin function with atomic instruction.  */
+      if (sparc_fix_ut700
+	  && find_first_useful
+	  && USEFUL_INSN_P (insn))
+	{
+	  find_first_useful = false;
+	  if (atomic_insn_for_leon3_p (insn))
+	    emit_insn_before (gen_nop (), insn);
+	}
 
       /* Place a NOP at the branch target of an integer branch if it is a
 	 floating-point operation or a floating-point branch.  */
