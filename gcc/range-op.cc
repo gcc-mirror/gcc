@@ -1359,7 +1359,7 @@ operator_div::wi_fold (irange &r, tree type,
   // If we're definitely dividing by zero, there's nothing to do.
   if (wi_zero_p (type, divisor_min, divisor_max))
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 
@@ -2624,10 +2624,10 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
 
-  // Mod 0 is undefined.  Return undefined.
+  // Mod 0 is undefined.
   if (wi_zero_p (type, rh_lb, rh_ub))
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 
