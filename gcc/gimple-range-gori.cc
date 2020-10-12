@@ -920,8 +920,9 @@ gori_compute::compute_operand2_range (irange &r, gimple *stmt,
   expr_range_in_bb (op2_range, op2, gimple_bb (stmt));
 
   // Intersect with range for op2 based on lhs and op1.
-  if (gimple_range_calc_op2 (r, stmt, lhs, op1_range))
-    op2_range.intersect (r);
+  if (!gimple_range_calc_op2 (r, stmt, lhs, op1_range))
+    return false;
+  op2_range.intersect (r);
 
   gimple *src_stmt = SSA_NAME_DEF_STMT (op2);
   // If def stmt is outside of this BB, then name must be an import.
