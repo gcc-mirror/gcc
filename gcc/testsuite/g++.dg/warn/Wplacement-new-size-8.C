@@ -138,7 +138,7 @@ void test_var_off_schar (signed char i)
   }
 
   {
-    char a[65281];              // { dg-message "at offset \\\[65153, 65408] from 'a'" }
+    char a[65281];              // { dg-message "at offset \\\[65153, 65281] from 'a'" "note" }
     new (a + i + 65280) S<1>;
     new (a + i + 65281) S<1>;
     new (a + i + 65281) S<128>;
