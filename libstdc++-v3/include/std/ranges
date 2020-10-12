@@ -2202,6 +2202,7 @@ namespace views
 
       constexpr auto
       begin() const requires range<const _Vp>
+	&& indirect_unary_predicate<const _Pred, iterator_t<const _Vp>>
       { return ranges::begin(_M_base); }
 
       constexpr auto
@@ -2211,6 +2212,7 @@ namespace views
 
       constexpr auto
       end() const requires range<const _Vp>
+	&& indirect_unary_predicate<const _Pred, iterator_t<const _Vp>>
       { return _Sentinel<true>(ranges::end(_M_base),
 			       std::__addressof(*_M_pred)); }
     };
