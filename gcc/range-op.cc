@@ -1626,6 +1626,13 @@ operator_rshift::op1_range (irange &r,
   tree shift;
   if (op2.singleton_p (&shift))
     {
+      // Ignore nonsensical shifts.
+      unsigned prec = TYPE_PRECISION (type);
+      if (wi::ge_p (wi::to_wide (shift),
+		    wi::uhwi (prec, TYPE_PRECISION (TREE_TYPE (shift))),
+		    UNSIGNED))
+	return false;
+
       // Folding the original operation may discard some impossible
       // ranges from the LHS.
       int_range_max lhs_refined;
