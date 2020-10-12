@@ -4815,13 +4815,23 @@ package body Sem_Eval is
          if Op = N_Op_Shift_Left then
             Check_Elab_Call;
 
-            --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+            declare
+               Modulus : Uint;
+            begin
+               if Is_Modular_Integer_Type (Typ) then
+                  Modulus := Einfo.Modulus (Typ);
+               else
+                  Modulus := Uint_2 ** RM_Size (Typ);
+               end if;
 
-            Fold_Uint
-              (N,
-               (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
-                 rem Modulus (Typ),
-               Static => Static);
+               --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+
+               Fold_Uint
+                 (N,
+                  (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
+                    rem Modulus,
+                  Static => Static);
+            end;
 
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
