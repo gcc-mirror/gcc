@@ -2283,7 +2283,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "SLP discovery succeeded but node needs "
 			     "splitting\n");
-	  matches[0] = true;
+	  memset (matches, true, group_size);
 	  matches[group_size / const_max_nunits * const_max_nunits] = false;
 	  vect_free_slp_tree (node);
 	}
