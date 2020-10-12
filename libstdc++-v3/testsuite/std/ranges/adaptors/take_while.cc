@@ -70,10 +70,20 @@ test03()
   b = ranges::end(v);
 }
 
+void
+test04()
+{
+  // LWG 3450
+  auto v = views::single(1) | views::take_while([](int& x) { return true;});
+  static_assert(ranges::range<decltype(v)>);
+  static_assert(!ranges::range<decltype(v) const>);
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }
