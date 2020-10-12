@@ -476,7 +476,7 @@ merge_call_side_effects (modref_summary *cur_summary,
   auto_vec <modref_parm_map, 32> parm_map;
   bool changed = false;
 
-  parm_map.safe_grow (gimple_call_num_args (stmt));
+  parm_map.safe_grow_cleared (gimple_call_num_args (stmt));
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
       tree op = gimple_call_arg (stmt, i);
