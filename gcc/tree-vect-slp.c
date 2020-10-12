@@ -3254,18 +3254,19 @@ static void
 vect_bb_partition_graph_r (bb_vec_info bb_vinfo,
 			   slp_instance instance, slp_tree node,
 			   hash_map<stmt_vec_info, slp_instance> &stmt_to_instance,
-			   hash_map<slp_instance, slp_instance> &instance_leader)
+			   hash_map<slp_instance, slp_instance> &instance_leader,
+			   hash_set<slp_tree> &visited)
 {
   stmt_vec_info stmt_info;
   unsigned i;
-  bool all = true;
+
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
       bool existed_p;
       slp_instance &stmt_instance
 	= stmt_to_instance.get_or_insert (stmt_info, &existed_p);
       if (!existed_p)
-	all = false;
+	;
       else if (stmt_instance != instance)
 	{
 	  /* If we're running into a previously marked stmt make us the
@@ -3279,15 +3280,15 @@ vect_bb_partition_graph_r (bb_vec_info bb_vinfo,
 	}
       stmt_instance = instance;
     }
-  /* If not all stmts had been visited we have to recurse on children.  */
-  if (all)
+
+  if (visited.add (node))
     return;
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
       vect_bb_partition_graph_r (bb_vinfo, instance, child, stmt_to_instance,
-				 instance_leader);
+				 instance_leader, visited);
 }
 
 /* Partition the SLP graph into pieces that can be costed independently.  */
@@ -3302,13 +3303,15 @@ vect_bb_partition_graph (bb_vec_info bb_vinfo)
      marked stmt, make the stmts leader the current SLP graph entry.  */
   hash_map<stmt_vec_info, slp_instance> stmt_to_instance;
   hash_map<slp_instance, slp_instance> instance_leader;
+  hash_set<slp_tree> visited;
   slp_instance instance;
   for (unsigned i = 0; bb_vinfo->slp_instances.iterate (i, &instance); ++i)
     {
       instance_leader.put (instance, instance);
       vect_bb_partition_graph_r (bb_vinfo,
 				 instance, SLP_INSTANCE_TREE (instance),
-				 stmt_to_instance, instance_leader);
+				 stmt_to_instance, instance_leader,
+				 visited);
     }
 
   /* Then collect entries to each independent subgraph.  */
