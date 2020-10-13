@@ -1,3 +1,16 @@
+2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/fail_compilation/fail21001.d: New test.
+	* gdc.test/fail_compilation/imports/fail21001b.d: New test.
+	* gdc.test/fail_compilation/imports/issue21295ast_node.d: New test.
+	* gdc.test/fail_compilation/imports/issue21295astcodegen.d: New test.
+	* gdc.test/fail_compilation/imports/issue21295dtemplate.d: New test.
+	* gdc.test/fail_compilation/imports/issue21295visitor.d: New test.
+	* gdc.test/fail_compilation/issue21295.d: New test.
+
 2020-10-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
