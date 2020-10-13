@@ -338,7 +338,42 @@ package body Exp_Ch2 is
    -----------------------------
 
    procedure Expand_Entity_Reference (N : Node_Id) is
+
+      function Is_Object_Renaming_Name (N : Node_Id) return Boolean;
+      --  Indicates that N occurs (after accounting for qualified expressions
+      --  and type conversions) as the name of an object renaming declaration.
+      --  We don't want to fold values in that case.
+
+      -----------------------------
+      -- Is_Object_Renaming_Name --
+      -----------------------------
+
+      function Is_Object_Renaming_Name (N : Node_Id) return Boolean is
+         Trailer : Node_Id := N;
+         Rover   : Node_Id;
+      begin
+         loop
+            Rover := Parent (Trailer);
+            case Nkind (Rover) is
+               when N_Qualified_Expression | N_Type_Conversion =>
+                  --  Conservative for type conversions; only necessary if
+                  --  conversion does not introduce a new object (as opposed
+                  --  to a new view of an existing object).
+                  null;
+               when N_Object_Renaming_Declaration =>
+                  return Trailer = Name (Rover);
+               when others =>
+                  return False; -- the usual case
+            end case;
+            Trailer := Rover;
+         end loop;
+      end Is_Object_Renaming_Name;
+
+      --  Local variables
+
       E : constant Entity_Id := Entity (N);
+
+   --  Start of processing for Expand_Entity_Reference
 
    begin
       --  Defend against errors
@@ -441,10 +476,17 @@ package body Exp_Ch2 is
          end;
       end if;
 
-      --  Interpret possible Current_Value for variable case
+      --  Interpret possible Current_Value for variable case. The
+      --  Is_Object_Renaming_Name test is needed for cases such as
+      --    X : Integer := 1;
+      --    Y : Integer renames Integer'(X);
+      --  where the value of Y is changed by any subsequent assignments to X.
+      --  In cases like this, we do not want to use Current_Value even though
+      --  it is available.
 
       if Is_Assignable (E)
         and then Present (Current_Value (E))
+        and then not Is_Object_Renaming_Name (N)
       then
          Expand_Current_Value (N);
 
