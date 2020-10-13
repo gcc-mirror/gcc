@@ -1,6 +1,6 @@
 /* { dg-require-effective-target sigsetjmp } */
 
-#include <setjmp.h>
+#include "test-setjmp.h"
 #include <stddef.h>
 #include "analyzer-decls.h"
 
