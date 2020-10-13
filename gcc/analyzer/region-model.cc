@@ -836,7 +836,7 @@ region_model::handle_unrecognized_call (const gcall *call,
 {
   tree fndecl = get_fndecl_for_call (call, ctxt);
 
-  reachable_regions reachable_regs (&m_store, m_mgr);
+  reachable_regions reachable_regs (this, m_mgr);
 
   /* Determine the reachable regions and their mutability.  */
   {
@@ -884,7 +884,7 @@ region_model::handle_unrecognized_call (const gcall *call,
     }
 
   /* Mark any clusters that have escaped.  */
-  reachable_regs.mark_escaped_clusters ();
+  reachable_regs.mark_escaped_clusters (ctxt);
 
   /* Update bindings for all clusters that have escaped, whether above,
      or previously.  */
@@ -904,7 +904,7 @@ void
 region_model::get_reachable_svalues (svalue_set *out,
 				     const svalue *extra_sval)
 {
-  reachable_regions reachable_regs (&m_store, m_mgr);
+  reachable_regions reachable_regs (this, m_mgr);
 
   /* Add globals and regions that already escaped in previous
      unknown calls.  */
@@ -1333,14 +1333,17 @@ region_model::get_initial_value_for_global (const region *reg) const
      an unknown value if an unknown call has occurred, unless this is
      static to-this-TU and hasn't escaped.  Globals that have escaped
      are explicitly tracked, so we shouldn't hit this case for them.  */
-  if (m_store.called_unknown_fn_p () && TREE_PUBLIC (decl))
+  if (m_store.called_unknown_fn_p ()
+      && TREE_PUBLIC (decl)
+      && !TREE_READONLY (decl))
     return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
 
   /* If we are on a path from the entrypoint from "main" and we have a
      global decl defined in this TU that hasn't been touched yet, then
      the initial value of REG can be taken from the initialization value
      of the decl.  */
-  if (called_from_main_p () && !DECL_EXTERNAL (decl))
+  if ((called_from_main_p () && !DECL_EXTERNAL (decl))
+      || TREE_READONLY (decl))
     {
       /* Get the initializer value for base_reg.  */
       const svalue *base_reg_init

@@ -2451,37 +2451,37 @@ tree
 mathfn_built_in_type (combined_fn fn)
 {
 #define CASE_MATHFN(MATHFN)			\
-  case BUILT_IN_##MATHFN:			\
+  case CFN_BUILT_IN_##MATHFN:			\
     return double_type_node;			\
-  case BUILT_IN_##MATHFN##F:			\
+  case CFN_BUILT_IN_##MATHFN##F:		\
     return float_type_node;			\
-  case BUILT_IN_##MATHFN##L:			\
+  case CFN_BUILT_IN_##MATHFN##L:		\
     return long_double_type_node;
 
 #define CASE_MATHFN_FLOATN(MATHFN)		\
   CASE_MATHFN(MATHFN)				\
-  case BUILT_IN_##MATHFN##F16:			\
+  case CFN_BUILT_IN_##MATHFN##F16:		\
     return float16_type_node;			\
-  case BUILT_IN_##MATHFN##F32:			\
+  case CFN_BUILT_IN_##MATHFN##F32:		\
     return float32_type_node;			\
-  case BUILT_IN_##MATHFN##F64:			\
+  case CFN_BUILT_IN_##MATHFN##F64:		\
     return float64_type_node;			\
-  case BUILT_IN_##MATHFN##F128:			\
+  case CFN_BUILT_IN_##MATHFN##F128:		\
     return float128_type_node;			\
-  case BUILT_IN_##MATHFN##F32X:			\
+  case CFN_BUILT_IN_##MATHFN##F32X:		\
     return float32x_type_node;			\
-  case BUILT_IN_##MATHFN##F64X:			\
+  case CFN_BUILT_IN_##MATHFN##F64X:		\
     return float64x_type_node;			\
-  case BUILT_IN_##MATHFN##F128X:		\
+  case CFN_BUILT_IN_##MATHFN##F128X:		\
     return float128x_type_node;
 
 /* Similar to above, but appends _R after any F/L suffix.  */
 #define CASE_MATHFN_REENT(MATHFN) \
-  case BUILT_IN_##MATHFN##_R:			\
+  case CFN_BUILT_IN_##MATHFN##_R:		\
     return double_type_node;			\
-  case BUILT_IN_##MATHFN##F_R:			\
+  case CFN_BUILT_IN_##MATHFN##F_R:		\
     return float_type_node;			\
-  case BUILT_IN_##MATHFN##L_R:			\
+  case CFN_BUILT_IN_##MATHFN##L_R:		\
     return long_double_type_node;
 
   switch (fn)

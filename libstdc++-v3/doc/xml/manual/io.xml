@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.io" xreflabel="Input and Output">
 <?dbhtml filename="io.html"?>
 
@@ -17,7 +17,7 @@
 <!-- Sect1 01 : Iostream Objects -->
 <section xml:id="std.io.objects" xreflabel="IO Objects"><info><title>Iostream Objects</title></info>
 <?dbhtml filename="iostream_objects.html"?>
-  
+
 
    <para>To minimize the time you have to wait on the compiler, it's good to
       only include the headers you really need.  Many people simply include
@@ -180,10 +180,10 @@
 <!-- Sect1 02 : Stream Buffers -->
 <section xml:id="std.io.streambufs" xreflabel="Stream Buffers"><info><title>Stream Buffers</title></info>
 <?dbhtml filename="streambufs.html"?>
-  
+
 
   <section xml:id="io.streambuf.derived" xreflabel="Derived streambuf Classes"><info><title>Derived streambuf Classes</title></info>
-    
+
     <para>
     </para>
 
@@ -249,7 +249,7 @@
   </section>
 
   <section xml:id="io.streambuf.buffering" xreflabel="Buffering"><info><title>Buffering</title></info>
-    
+
    <para>First, are you sure that you understand buffering?  Particularly
       the fact that C++ may not, in fact, have anything to do with it?
    </para>
@@ -345,9 +345,9 @@
 <!-- Sect1 03 : Memory-based Streams -->
 <section xml:id="std.io.memstreams" xreflabel="Memory Streams"><info><title>Memory Based Streams</title></info>
 <?dbhtml filename="stringstreams.html"?>
-  
+
   <section xml:id="std.io.memstreams.compat" xreflabel="Compatibility strstream"><info><title>Compatibility With strstream</title></info>
-    
+
     <para>
     </para>
    <para>Stringstreams (defined in the header <code>&lt;sstream&gt;</code>)
@@ -392,10 +392,10 @@
 <!-- Sect1 04 : File-based Streams -->
 <section xml:id="std.io.filestreams" xreflabel="File Streams"><info><title>File Based Streams</title></info>
 <?dbhtml filename="fstreams.html"?>
-  
+
 
   <section xml:id="std.io.filestreams.copying_a_file" xreflabel="Copying a File"><info><title>Copying a File</title></info>
-  
+
   <para>
   </para>
 
@@ -461,7 +461,7 @@
   </section>
 
   <section xml:id="std.io.filestreams.binary" xreflabel="Binary Input and Output"><info><title>Binary Input and Output</title></info>
-    
+
     <para>
     </para>
    <para>The first and most important thing to remember about binary I/O is
@@ -595,11 +595,11 @@
 <!-- Sect1 03 : Interacting with C -->
 <section xml:id="std.io.c" xreflabel="Interacting with C"><info><title>Interacting with C</title></info>
 <?dbhtml filename="io_and_c.html"?>
-  
+
 
 
   <section xml:id="std.io.c.FILE" xreflabel="Using FILE* and file descriptors"><info><title>Using FILE* and file descriptors</title></info>
-    
+
     <para>
       See the <link linkend="manual.ext.io">extensions</link> for using
       <type>FILE</type> and <type>file descriptors</type> with
@@ -609,7 +609,7 @@
   </section>
 
   <section xml:id="std.io.c.sync" xreflabel="Performance Issues"><info><title>Performance</title></info>
-    
+
     <para>
       Pathetic Performance? Ditch C.
     </para>

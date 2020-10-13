@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="appendix.porting.doc" xreflabel="Documentation Hacking">
 <?dbhtml filename="documentation_hacking.html"?>
 
@@ -43,7 +43,7 @@
       reference. Although divergent, this conforms to the GNU Project
       recommendations as long as the output is of sufficient quality,
       as per
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" 
+      <link xmlns:xlink="http://www.w3.org/1999/xlink"
       xlink:href="http://www.gnu.org/prep/standards/standards.html#Documentation">
       GNU Manuals</link>.
     </para>
@@ -53,7 +53,7 @@
     <info>
     <title>Generating Documentation</title>
     </info>
-    
+
     <para>
       Certain Makefile rules are required by the GNU Coding
       Standards. These standard rules generate HTML, PDF, XML, or man
@@ -130,7 +130,7 @@
 	  </para>
 	</listitem>
       </varlistentry>
-      
+
       <varlistentry>
 	<term>
 	  <emphasis>make man</emphasis>
@@ -170,7 +170,7 @@
 	    <filename>doc/libstdc++/libstdc++-manual.epub</filename>
 	  </para>
 	</listitem>
-      </varlistentry>      
+      </varlistentry>
 
       <varlistentry>
 	<term>
@@ -203,9 +203,9 @@
   </section>
 
   <section xml:id="doc.doxygen"><info><title>Doxygen</title></info>
-    
+
     <section xml:id="doxygen.prereq"><info><title>Prerequisites</title></info>
-      
+
  <table frame="all" xml:id="table.doxygen_prereq">
 <title>Doxygen Prerequisites</title>
 
@@ -265,7 +265,7 @@
 	the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/software/coreutils/">GNU
 	coreutils</link>. (GNU versions of find, xargs, and possibly
 	sed and grep are used, just because the GNU versions make
-	things very easy.) 
+	things very easy.)
       </para>
 
       <para>
@@ -291,7 +291,7 @@
     </section>
 
     <section xml:id="doxygen.rules"><info><title>Generating the Doxygen Files</title></info>
-      
+
       <para>
 	The following Makefile rules run Doxygen to generate HTML
 	docs, XML docs, XML docs as a single file, PDF docs, and the
@@ -346,7 +346,7 @@
 
  <section xml:id="doxygen.debug">
    <info><title>Debugging Generation</title></info>
-   
+
 	<para>
 	  Sometimes, mis-configuration of the pre-requisite tools can
 	  lead to errors when attempting to build the
@@ -433,7 +433,7 @@
  </section>
 
     <section xml:id="doxygen.markup"><info><title>Markup</title></info>
-      
+
 
       <para>
 	In general, libstdc++ files should be formatted according to
@@ -446,7 +446,7 @@
       <para>
 	Adding Doxygen markup to a file (informally called
 	<quote>doxygenating</quote>) is very simple. See the
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" 
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
          xlink:href="http://www.doxygen.nl/download.html#latestman">Doxygen
          manual</link> for details.
 	We try to use a very-recent version of Doxygen.
@@ -649,11 +649,11 @@
   </section>
 
   <section xml:id="doc.docbook"><info><title>Docbook</title></info>
-    
+
 
     <section xml:id="docbook.prereq"><info><title>Prerequisites</title></info>
-      
-      
+
+
  <table frame="all" xml:id="table.docbook_prereq">
 <title>Docbook Prerequisites</title>
 
@@ -784,7 +784,7 @@
     </section>
 
     <section xml:id="docbook.rules"><info><title>Generating the DocBook Files</title></info>
-      
+
 
       <para>
 	The following Makefile rules generate (in order): an HTML
@@ -939,7 +939,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
       <para>
 	This is equivalent to doing:
       </para>
-      
+
       <screen>
 	<userinput>
 	  xmllint --noout --valid <filename>xml/index.xml</filename>
@@ -961,7 +961,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
     </section>
 
     <section xml:id="docbook.examples"><info><title>File Organization and Basics</title></info>
-      
+
 
     <literallayout class="normal">
       <emphasis>Which files are important</emphasis>
@@ -1027,7 +1027,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
     </section>
 
     <section xml:id="docbook.markup"><info><title>Markup By Example</title></info>
-      
+
 
       <para>
 	Complete details on Docbook markup can be found in the

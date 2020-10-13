@@ -1,3 +1,13 @@
+2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 70aabfb51
+
+2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 3a9790525
+	* d-target.cc (Target::isVectorTypeSupported): Adjust return codes for
+	invalid size and invalid base type.
+
 2020-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/97002

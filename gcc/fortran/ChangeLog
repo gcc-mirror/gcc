@@ -1,3 +1,9 @@
+2020-10-12  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96099
+	* decl.c (gfc_match_implicit): Check for numeric and logical
+	types.
+
 2020-10-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/47469

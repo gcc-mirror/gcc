@@ -1,3 +1,42 @@
+2020-10-12  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (take_while_view::begin): Constrain the
+	const overload further as per LWG 3450.
+	(take_while_view::end): Likewise.
+	* testsuite/std/ranges/adaptors/take_while.cc: Add test for LWG
+	3450.
+
+2020-10-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95322
+	* include/std/ranges (take_view::_CI): Define this alias
+	template as per LWG 3449 and remove ...
+	(take_view::_Sentinel::_CI): ... this type alias.
+	(take_view::_Sentinel::operator==): Adjust use of _CI
+	accordingly.  Define a second overload that accepts an iterator
+	of the opposite constness as per LWG 3449.
+	(take_while_view::_Sentinel::operator==): Likewise.
+	* testsuite/std/ranges/adaptors/95322.cc: Add tests for LWG 3449.
+
+2020-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.8.20 format.
+
+2020-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Use __cplusplus=201703L
+	so that C++17 features are documented.
+
+2020-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (copy, move, copy_backward)
+	(move_backward): Fix documentation for returned iterator.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/97201
+	* libsupc++/new (operator new): Add attribute alloc_size and malloc.
+
 2020-10-11  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/os/aix/t-aix: Add complementary mode object file to

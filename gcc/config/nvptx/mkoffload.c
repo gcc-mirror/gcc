@@ -594,6 +594,7 @@ main (int argc, char **argv)
 	fatal_error (input_location, "cannot open intermediate ptx file");
 
       process (in, out);
+      fclose (in);
     }
 
   fclose (out);

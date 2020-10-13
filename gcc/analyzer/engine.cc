@@ -143,6 +143,12 @@ impl_region_model_context::on_unknown_change (const svalue *sval,
     smap->on_unknown_change (sval, is_mutable, m_ext_state);
 }
 
+void
+impl_region_model_context::on_escaped_function (tree fndecl)
+{
+  m_eg->on_escaped_function (fndecl);
+}
+
 /* class setjmp_svalue : public svalue.  */
 
 /* Implementation of svalue::accept vfunc for setjmp_svalue.  */
@@ -1931,6 +1937,15 @@ exploded_graph::~exploded_graph ()
 exploded_node *
 exploded_graph::add_function_entry (function *fun)
 {
+  /* Be idempotent.  */
+  if (m_functions_with_enodes.contains (fun))
+    {
+      logger * const logger = get_logger ();
+       if (logger)
+	logger->log ("entrypoint for %qE already exists", fun->decl);
+      return NULL;
+    }
+
   program_point point = program_point::from_function_entry (m_sg, fun);
   program_state state (m_ext_state);
   state.push_frame (m_ext_state, fun);
@@ -1942,6 +1957,9 @@ exploded_graph::add_function_entry (function *fun)
   /* We should never fail to add such a node.  */
   gcc_assert (enode);
   add_edge (m_origin, enode, NULL);
+
+  m_functions_with_enodes.add (fun);
+
   return enode;
 }
 
@@ -2261,6 +2279,18 @@ toplevel_function_p (cgraph_node *node, function *fun, logger *logger)
   return true;
 }
 
+/* Callback for walk_tree for finding callbacks within initializers;
+   ensure they are treated as possible entrypoints to the analysis.  */
+
+static tree
+add_any_callbacks (tree *tp, int *, void *data)
+{
+  exploded_graph *eg = (exploded_graph *)data;
+  if (TREE_CODE (*tp) == FUNCTION_DECL)
+    eg->on_escaped_function (*tp);
+  return NULL_TREE;
+}
+
 /* Add initial nodes to EG, with entrypoints for externally-callable
    functions.  */
 
@@ -2286,6 +2316,19 @@ exploded_graph::build_initial_worklist ()
 	  logger->log ("did not create enode for %qE entrypoint", fun->decl);
       }
   }
+
+  /* Find callbacks that are reachable from global initializers.  */
+  varpool_node *vpnode;
+  FOR_EACH_VARIABLE (vpnode)
+    {
+      tree decl = vpnode->decl;
+      if (!TREE_PUBLIC (decl))
+	continue;
+      tree init = DECL_INITIAL (decl);
+      if (!init)
+	continue;
+      walk_tree (&init, add_any_callbacks, this, NULL);
+    }
 }
 
 /* The main loop of the analysis.
@@ -3921,6 +3964,33 @@ exploded_graph::get_node_by_index (int idx) const
   exploded_node *enode = m_nodes[idx];
   gcc_assert (enode->m_index == idx);
   return enode;
+}
+
+/* Ensure that there is an exploded_node for a top-level call to FNDECL.  */
+
+void
+exploded_graph::on_escaped_function (tree fndecl)
+{
+  logger * const logger = get_logger ();
+  LOG_FUNC_1 (logger, "%qE", fndecl);
+
+  cgraph_node *cgnode = cgraph_node::get (fndecl);
+  if (!cgnode)
+    return;
+
+  function *fun = cgnode->get_fun ();
+  if (!fun)
+    return;
+
+  exploded_node *enode = add_function_entry (fun);
+  if (logger)
+    {
+      if (enode)
+	logger->log ("created EN %i for %qE entrypoint",
+		     enode->m_index, fun->decl);
+      else
+	logger->log ("did not create enode for %qE entrypoint", fun->decl);
+    }
 }
 
 /* A collection of classes for visualizing the callgraph in .dot form

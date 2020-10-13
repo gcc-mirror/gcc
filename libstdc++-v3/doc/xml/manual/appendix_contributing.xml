@@ -1,4 +1,4 @@
-<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0"
 	  xml:id="appendix.contrib" xreflabel="Contributing">
 <?dbhtml filename="appendix_contributing.html"?>
 
@@ -28,10 +28,10 @@
 </para>
 
 <section xml:id="contrib.list" xreflabel="Contributor Checklist"><info><title>Contributor Checklist</title></info>
-  
+
 
   <section xml:id="list.reading"><info><title>Reading</title></info>
-    
+
 
     <itemizedlist>
       <listitem>
@@ -89,7 +89,7 @@
 
   </section>
   <section xml:id="list.copyright"><info><title>Assignment</title></info>
-    
+
     <para>
       See the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/contribute.html#legal">legal prerequisites</link> for all GCC contributions.
     </para>
@@ -124,7 +124,7 @@
   </section>
 
   <section xml:id="list.getting"><info><title>Getting Sources</title></info>
-    
+
     <para>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/gitwrite.html">Getting write access
 	(look for "Write after approval")</link>
@@ -132,7 +132,7 @@
   </section>
 
   <section xml:id="list.patches"><info><title>Submitting Patches</title></info>
-    
+
 
     <para>
       Every patch must have several pieces of information before it can be
@@ -196,7 +196,7 @@
 
 <section xml:id="contrib.organization" xreflabel="Source Organization"><info><title>Directory Layout and Source Conventions</title></info>
   <?dbhtml filename="source_organization.html"?>
-  
+
 
   <para>
     The <filename class="directory">libstdc++-v3</filename> directory in the
@@ -409,7 +409,7 @@ indicate a place that may require attention for multi-thread safety.
 
 <section xml:id="contrib.coding_style" xreflabel="Coding Style"><info><title>Coding Style</title></info>
   <?dbhtml filename="source_code_style.html"?>
-  
+
   <para>
   </para>
 
@@ -610,7 +610,7 @@ indicate a place that may require attention for multi-thread safety.
   </section>
 
   <section xml:id="coding_style.example"><info><title>By Example</title></info>
-    
+
     <literallayout class="normal">
       This library is written to appropriate C++ coding standards. As such,
       it is intended to precede the recommendations of the GNU Coding
@@ -1042,7 +1042,7 @@ indicate a place that may require attention for multi-thread safety.
 
 <section xml:id="contrib.design_notes" xreflabel="Design Notes"><info><title>Design Notes</title></info>
   <?dbhtml filename="source_design_notes.html"?>
-  
+
   <para>
   </para>
 

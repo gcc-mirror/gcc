@@ -1,3 +1,58 @@
+2020-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97258
+	* engine.cc (impl_region_model_context::on_escaped_function): New
+	vfunc.
+	(exploded_graph::add_function_entry): Use m_functions_with_enodes
+	to implement idempotency.
+	(add_any_callbacks): New.
+	(exploded_graph::build_initial_worklist): Use the above to find
+	callbacks that are reachable from global initializers.
+	(exploded_graph::on_escaped_function): New.
+	* exploded-graph.h
+	(impl_region_model_context::on_escaped_function): New decl.
+	(exploded_graph::on_escaped_function): New decl.
+	(exploded_graph::m_functions_with_enodes): New field.
+	* region-model-reachability.cc
+	(reachable_regions::reachable_regions): Replace "store" param with
+	"model" param; use it to initialize m_model.
+	(reachable_regions::add): When getting the svalue for the region,
+	call get_store_value on the model rather than using an initial
+	value.
+	(reachable_regions::mark_escaped_clusters): Add ctxt param and
+	use it to call on_escaped_function when a function_region escapes.
+	* region-model-reachability.h
+	(reachable_regions::reachable_regions): Replace "store" param with
+	"model" param.
+	(reachable_regions::mark_escaped_clusters): Add ctxt param.
+	(reachable_regions::m_model): New field.
+	* region-model.cc (region_model::handle_unrecognized_call): Update
+	for change in reachable_regions ctor.
+	(region_model::handle_unrecognized_call): Pass ctxt to
+	mark_escaped_clusters.
+	(region_model::get_reachable_svalues): Update for change in
+	reachable_regions ctor.
+	(region_model::get_initial_value_for_global): Read-only variables
+	keep their initial values.
+	* region-model.h (region_model_context::on_escaped_function): New
+	vfunc.
+	(noop_region_model_context::on_escaped_function): New.
+
+2020-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (Wanalyzer-write-to-const): New.
+	(Wanalyzer-write-to-string-literal): New.
+	* region-model-impl-calls.cc (region_model::impl_call_memcpy):
+	Call check_for_writable_region.
+	(region_model::impl_call_memset): Likewise.
+	(region_model::impl_call_strcpy): Likewise.
+	* region-model.cc (class write_to_const_diagnostic): New.
+	(class write_to_string_literal_diagnostic): New.
+	(region_model::check_for_writable_region): New.
+	(region_model::set_value): Call check_for_writable_region.
+	* region-model.h (region_model::check_for_writable_region): New
+	decl.
+
 2020-10-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97116

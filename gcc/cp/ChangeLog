@@ -1,3 +1,16 @@
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/97201
+	* error.c (dump_type_suffix): Handle both the C and C++ forms of
+	zero-length arrays.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96511
+	PR middle-end/96384
+	* init.c (warn_placement_new_too_small): Call builtin_objsize instead
+	of duplicating what it does.
+
 2020-10-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96805

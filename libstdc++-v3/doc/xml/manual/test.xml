@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.intro.setup.test" xreflabel="Testing">
 <?dbhtml filename="test.html"?>
 
@@ -235,7 +235,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
 
 
   <section xml:id="test.run.basic"><info><title>Basic</title></info>
-    
+
 
     <para>
       You can check the status of the build without installing it
@@ -275,7 +275,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
   </section>
 
   <section xml:id="test.run.variations"><info><title>Variations</title></info>
-    
+
     <para>
       There are several options for running tests, including testing
       the regression tests, testing a subset of the regression tests,
@@ -552,7 +552,7 @@ cat 27_io/objects/char/3_xin.in | a.out</programlisting>
   </section>
 
   <section xml:id="test.run.permutations"><info><title>Permutations</title></info>
-    
+
     <para>
       The tests will be compiled with a set of default compiler flags defined
       by the

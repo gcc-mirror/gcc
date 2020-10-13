@@ -1,4 +1,4 @@
-<book xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<book xmlns="http://docbook.org/ns/docbook" version="5.0"
  xml:id="manual" xreflabel="Manual">
 <?dbhtml dir="manual"?>
 <?dbhtml filename="index.html"?>
