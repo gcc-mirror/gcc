@@ -409,6 +409,41 @@ is
       elsif Max < Min then
          raise Constraint_Error;
 
+      --  In the 128-bit case, we have to be careful since not all 128-bit
+      --  unsigned values are representable in GNAT's universal integer.
+
+      elsif Result_Subtype'Base'Size > 64 then
+         declare
+            --  Ignore unequal-size warnings since GNAT's handling is correct.
+
+            pragma Warnings ("Z");
+            function Conv_To_Unsigned is
+               new Unchecked_Conversion (Result_Subtype'Base, Unsigned_128);
+            function Conv_To_Result is
+               new Unchecked_Conversion (Unsigned_128, Result_Subtype'Base);
+            pragma Warnings ("z");
+
+            N : constant Unsigned_128 :=
+                  Conv_To_Unsigned (Max) - Conv_To_Unsigned (Min) + 1;
+
+            X, Slop : Unsigned_128;
+
+         begin
+            if N = 0 then
+               return Conv_To_Result (Conv_To_Unsigned (Min) + Random (Gen));
+
+            else
+               Slop := Unsigned_128'Last rem N + 1;
+
+               loop
+                  X := Random (Gen);
+                  exit when Slop = N or else X <= Unsigned_128'Last - Slop;
+               end loop;
+
+               return Conv_To_Result (Conv_To_Unsigned (Min) + X rem N);
+            end if;
+         end;
+
       --  In the 64-bit case, we have to be careful since not all 64-bit
       --  unsigned values are representable in GNAT's universal integer.
 
