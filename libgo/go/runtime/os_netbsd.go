@@ -14,12 +14,19 @@ type mOS struct {
 	waitsemacount uint32
 }
 
+func getProcID() uint64 {
+	return uint64(lwp_self())
+}
+
+//extern _lwp_self
+func lwp_self() int32
+
 //go:noescape
-//extern lwp_park
+//extern _lwp_park
 func lwp_park(ts int32, rel int32, abstime *timespec, unpark int32, hint, unparkhint unsafe.Pointer) int32
 
 //go:noescape
-//extern lwp_unpark
+//extern _lwp_unpark
 func lwp_unpark(lwp int32, hint unsafe.Pointer) int32
 
 //go:noescape
@@ -88,7 +95,7 @@ func semasleep(ns int64) int32 {
 			tsp = &ts
 		}
 		ret := lwp_park(_CLOCK_MONOTONIC, _TIMER_RELTIME, tsp, 0, unsafe.Pointer(&_g_.m.waitsemacount), nil)
-		if ret == _ETIMEDOUT {
+		if ret != 0 && errno() == _ETIMEDOUT {
 			return -1
 		}
 	}
@@ -101,10 +108,10 @@ func semawakeup(mp *m) {
 	// "If the target LWP is not currently waiting, it will return
 	// immediately upon the next call to _lwp_park()."
 	ret := lwp_unpark(int32(mp.procid), unsafe.Pointer(&mp.waitsemacount))
-	if ret != 0 && ret != _ESRCH {
+	if ret != 0 && errno() != _ESRCH {
 		// semawakeup can be called on signal stack.
 		systemstack(func() {
-			print("thrwakeup addr=", &mp.waitsemacount, " sem=", mp.waitsemacount, " ret=", ret, "\n")
+			print("thrwakeup addr=", &mp.waitsemacount, " sem=", mp.waitsemacount, " errno=", errno(), "\n")
 		})
 	}
 }
