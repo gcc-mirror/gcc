@@ -128,7 +128,8 @@ extern size_t reg_info_p_size;
    or profile driven feedback is available and the function is never executed,
    frequency is always equivalent.  Otherwise rescale the basic block
    frequency.  */
-#define REG_FREQ_FROM_BB(bb) (optimize_function_for_size_p (cfun)	      \
+#define REG_FREQ_FROM_BB(bb) ((optimize_function_for_size_p (cfun)	      \
+			       || !cfun->cfg->count_max.initialized_p ())     \
 			      ? REG_FREQ_MAX				      \
 			      : ((bb)->count.to_frequency (cfun)	      \
 				* REG_FREQ_MAX / BB_FREQ_MAX)		      \
