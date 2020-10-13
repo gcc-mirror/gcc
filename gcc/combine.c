@@ -11002,8 +11002,11 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 		break;
 	      /* For ((int) (cstLL >> count)) >> cst2 just give up.  Queuing
 		 up outer sign extension (often left and right shift) is
-		 hardly more efficient than the original.  See PR70429.  */
-	      if (code == ASHIFTRT && int_mode != int_result_mode)
+		 hardly more efficient than the original.  See PR70429.
+		 Similarly punt for rotates with different modes.
+		 See PR97386.  */
+	      if ((code == ASHIFTRT || code == ROTATE)
+		  && int_mode != int_result_mode)
 		break;
 
 	      rtx count_rtx = gen_int_shift_amount (int_result_mode, count);
