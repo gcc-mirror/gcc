@@ -1086,7 +1086,6 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Add <code>shift</code> to <code>&lt;algorithm&gt;</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0769r2.pdf">
@@ -1168,13 +1167,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Fixing <code>operator&gt;&gt;(basic_istream&amp;, CharT*)</code> (LWG 2499) </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0487r1.html">
         P0487R1 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 11.1 </entry>
       <entry />
     </row>
 

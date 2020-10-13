@@ -1140,6 +1140,14 @@ requirements of the license of GCC.
     ill-formed.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2499"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2499">2499</link>:
+       <emphasis><code>operator>>(basic_istream&amp;, CharT*)</code> makes it hard to avoid buffer overflows
+       </emphasis>
+    </term>
+    <listitem><para>Replace <code>operator>>(basic_istream&amp;, CharT*)</code>
+     and other overloads writing through pointers.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2537"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2537">2537</link>:
        <emphasis>Constructors for <code>priority_queue</code> taking allocators
 	 should call <code>make_heap</code>

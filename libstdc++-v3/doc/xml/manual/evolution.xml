@@ -972,6 +972,42 @@ now defaults to zero.
   be used instead.
 </para>
 
+<para>
+  Experimental C++2a support improved, with new headers
+  <filename class="headerfile">&lt;concepts&gt;</filename>,
+  <filename class="headerfile">&lt;ranges&gt;</filename>,
+  <filename class="headerfile">&lt;compare&gt;</filename>,
+  <filename class="headerfile">&lt;coroutine&gt;</filename>,
+  <filename class="headerfile">&lt;numbers&gt;</filename>,
+  <filename class="headerfile">&lt;span&gt;</filename>,
+  and
+  <filename class="headerfile">&lt;stop_token&gt;</filename>
+  added.
+</para>
+
+</section>
+
+<section xml:id="api.rel_111"><info><title><constant>11</constant></title></info>
+
+<para>
+  The <option>--enable-cheaders=c_std</option> configuration
+  was deprecated.
+</para>
+
+<para>
+  When compiling as C++20, the <function>operator&gt;&gt;</function> overloads
+  for extracting strings into character buffers only work with arrays,
+  not raw pointers.
+</para>
+
+<para>
+  <code>std::string::reserve(n)</code> will no longer reduce
+  the string's capacity.
+  Calling <function>reserve()</function> with no arguments is equivalent
+  to <function>shrink_to_fit()</function>, but is deprecated.
+  <function>shrink_to_fit()</function> should be used instead.
+</para>
+
 </section>
 
 </section>
