@@ -209,7 +209,7 @@ struct riscv_integer_op {
 
 /* Costs of various operations on the different architectures.  */
 
-struct riscv_tune_info
+struct riscv_tune_param
 {
   unsigned short fp_add[2];
   unsigned short fp_mul[2];
@@ -222,16 +222,16 @@ struct riscv_tune_info
   bool slow_unaligned_access;
 };
 
-/* Information about one CPU we know about.  */
-struct riscv_cpu_info {
-  /* This CPU's canonical name.  */
+/* Information about one micro-arch we know about.  */
+struct riscv_tune_info {
+  /* This micro-arch canonical name.  */
   const char *name;
 
   /* Which automaton to use for tuning.  */
   enum riscv_microarchitecture_type microarchitecture;
 
-  /* Tuning parameters for this CPU.  */
-  const struct riscv_tune_info *tune_info;
+  /* Tuning parameters for this micro-arch.  */
+  const struct riscv_tune_param *tune_param;
 };
 
 /* Global variables for machine-dependent things.  */
@@ -248,7 +248,7 @@ unsigned riscv_stack_boundary;
 static int epilogue_cfa_sp_offset;
 
 /* Which tuning parameters to use.  */
-static const struct riscv_tune_info *tune_info;
+static const struct riscv_tune_param *tune_param;
 
 /* Which automaton to use for tuning.  */
 enum riscv_microarchitecture_type riscv_microarchitecture;
@@ -275,7 +275,7 @@ const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
 };
 
 /* Costs to use when optimizing for rocket.  */
-static const struct riscv_tune_info rocket_tune_info = {
+static const struct riscv_tune_param rocket_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
   {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
@@ -288,7 +288,7 @@ static const struct riscv_tune_info rocket_tune_info = {
 };
 
 /* Costs to use when optimizing for Sifive 7 Series.  */
-static const struct riscv_tune_info sifive_7_tune_info = {
+static const struct riscv_tune_param sifive_7_tune_info = {
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
   {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
   {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},	/* fp_div */
@@ -301,7 +301,7 @@ static const struct riscv_tune_info sifive_7_tune_info = {
 };
 
 /* Costs to use when optimizing for size.  */
-static const struct riscv_tune_info optimize_size_tune_info = {
+static const struct riscv_tune_param optimize_size_tune_info = {
   {COSTS_N_INSNS (1), COSTS_N_INSNS (1)},	/* fp_add */
   {COSTS_N_INSNS (1), COSTS_N_INSNS (1)},	/* fp_mul */
   {COSTS_N_INSNS (1), COSTS_N_INSNS (1)},	/* fp_div */
@@ -343,7 +343,7 @@ static const unsigned gpr_save_reg_order[] = {
 };
 
 /* A table describing all the processors GCC knows about.  */
-static const struct riscv_cpu_info riscv_cpu_info_table[] = {
+static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "rocket", generic, &rocket_tune_info },
   { "sifive-3-series", generic, &rocket_tune_info },
   { "sifive-5-series", generic, &rocket_tune_info },
@@ -351,17 +351,22 @@ static const struct riscv_cpu_info riscv_cpu_info_table[] = {
   { "size", generic, &optimize_size_tune_info },
 };
 
-/* Return the riscv_cpu_info entry for the given name string.  */
+/* Return the riscv_tune_info entry for the given name string.  */
 
-static const struct riscv_cpu_info *
-riscv_parse_cpu (const char *cpu_string)
+static const struct riscv_tune_info *
+riscv_parse_tune (const char *tune_string)
 {
-  for (unsigned i = 0; i < ARRAY_SIZE (riscv_cpu_info_table); i++)
-    if (strcmp (riscv_cpu_info_table[i].name, cpu_string) == 0)
-      return riscv_cpu_info_table + i;
+  const riscv_cpu_info *cpu = riscv_find_cpu (tune_string);
 
-  error ("unknown cpu %qs for %<-mtune%>", cpu_string);
-  return riscv_cpu_info_table;
+  if (cpu)
+    tune_string = cpu->tune;
+
+  for (unsigned i = 0; i < ARRAY_SIZE (riscv_tune_info_table); i++)
+    if (strcmp (riscv_tune_info_table[i].name, tune_string) == 0)
+      return riscv_tune_info_table + i;
+
+  error ("unknown cpu %qs for %<-mtune%>", tune_string);
+  return riscv_tune_info_table;
 }
 
 /* Helper function for riscv_build_integer; arguments are as for
@@ -1703,7 +1708,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	 instructions it needs.  */
       if ((cost = riscv_address_insns (XEXP (x, 0), mode, true)) > 0)
 	{
-	  *total = COSTS_N_INSNS (cost + tune_info->memory_cost);
+	  *total = COSTS_N_INSNS (cost + tune_param->memory_cost);
 	  return true;
 	}
       /* Otherwise use the default handling.  */
@@ -1770,7 +1775,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	 mode instead.  */
       mode = GET_MODE (XEXP (x, 0));
       if (float_mode_p)
-	*total = tune_info->fp_add[mode == DFmode];
+	*total = tune_param->fp_add[mode == DFmode];
       else
 	*total = riscv_binary_cost (x, 1, 3);
       return false;
@@ -1779,19 +1784,19 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case ORDERED:
       /* (FEQ(A, A) & FEQ(B, B)) compared against 0.  */
       mode = GET_MODE (XEXP (x, 0));
-      *total = tune_info->fp_add[mode == DFmode] + COSTS_N_INSNS (2);
+      *total = tune_param->fp_add[mode == DFmode] + COSTS_N_INSNS (2);
       return false;
 
     case UNEQ:
       /* (FEQ(A, A) & FEQ(B, B)) compared against FEQ(A, B).  */
       mode = GET_MODE (XEXP (x, 0));
-      *total = tune_info->fp_add[mode == DFmode] + COSTS_N_INSNS (3);
+      *total = tune_param->fp_add[mode == DFmode] + COSTS_N_INSNS (3);
       return false;
 
     case LTGT:
       /* (FLT(A, A) || FGT(B, B)).  */
       mode = GET_MODE (XEXP (x, 0));
-      *total = tune_info->fp_add[mode == DFmode] + COSTS_N_INSNS (2);
+      *total = tune_param->fp_add[mode == DFmode] + COSTS_N_INSNS (2);
       return false;
 
     case UNGE:
@@ -1800,13 +1805,13 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case UNLT:
       /* FLT or FLE, but guarded by an FFLAGS read and write.  */
       mode = GET_MODE (XEXP (x, 0));
-      *total = tune_info->fp_add[mode == DFmode] + COSTS_N_INSNS (4);
+      *total = tune_param->fp_add[mode == DFmode] + COSTS_N_INSNS (4);
       return false;
 
     case MINUS:
     case PLUS:
       if (float_mode_p)
-	*total = tune_info->fp_add[mode == DFmode];
+	*total = tune_param->fp_add[mode == DFmode];
       else
 	*total = riscv_binary_cost (x, 1, 4);
       return false;
@@ -1816,7 +1821,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	rtx op = XEXP (x, 0);
 	if (GET_CODE (op) == FMA && !HONOR_SIGNED_ZEROS (mode))
 	  {
-	    *total = (tune_info->fp_mul[mode == DFmode]
+	    *total = (tune_param->fp_mul[mode == DFmode]
 		      + set_src_cost (XEXP (op, 0), mode, speed)
 		      + set_src_cost (XEXP (op, 1), mode, speed)
 		      + set_src_cost (XEXP (op, 2), mode, speed));
@@ -1825,23 +1830,23 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       }
 
       if (float_mode_p)
-	*total = tune_info->fp_add[mode == DFmode];
+	*total = tune_param->fp_add[mode == DFmode];
       else
 	*total = COSTS_N_INSNS (GET_MODE_SIZE (mode) > UNITS_PER_WORD ? 4 : 1);
       return false;
 
     case MULT:
       if (float_mode_p)
-	*total = tune_info->fp_mul[mode == DFmode];
+	*total = tune_param->fp_mul[mode == DFmode];
       else if (!TARGET_MUL)
 	/* Estimate the cost of a library call.  */
 	*total = COSTS_N_INSNS (speed ? 32 : 6);
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-	*total = 3 * tune_info->int_mul[0] + COSTS_N_INSNS (2);
+	*total = 3 * tune_param->int_mul[0] + COSTS_N_INSNS (2);
       else if (!speed)
 	*total = COSTS_N_INSNS (1);
       else
-	*total = tune_info->int_mul[mode == DImode];
+	*total = tune_param->int_mul[mode == DImode];
       return false;
 
     case DIV:
@@ -1849,7 +1854,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case MOD:
       if (float_mode_p)
 	{
-	  *total = tune_info->fp_div[mode == DFmode];
+	  *total = tune_param->fp_div[mode == DFmode];
 	  return false;
 	}
       /* Fall through.  */
@@ -1860,7 +1865,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	/* Estimate the cost of a library call.  */
 	*total = COSTS_N_INSNS (speed ? 32 : 6);
       else if (speed)
-	*total = tune_info->int_div[mode == DImode];
+	*total = tune_param->int_div[mode == DImode];
       else
 	*total = COSTS_N_INSNS (1);
       return false;
@@ -1882,11 +1887,11 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case FIX:
     case FLOAT_EXTEND:
     case FLOAT_TRUNCATE:
-      *total = tune_info->fp_add[mode == DFmode];
+      *total = tune_param->fp_add[mode == DFmode];
       return false;
 
     case FMA:
-      *total = (tune_info->fp_mul[mode == DFmode]
+      *total = (tune_param->fp_mul[mode == DFmode]
 		+ set_src_cost (XEXP (x, 0), mode, speed)
 		+ set_src_cost (XEXP (x, 1), mode, speed)
 		+ set_src_cost (XEXP (x, 2), mode, speed));
@@ -4546,7 +4551,7 @@ riscv_class_max_nregs (reg_class_t rclass, machine_mode mode)
 static int
 riscv_memory_move_cost (machine_mode mode, reg_class_t rclass, bool in)
 {
-  return (tune_info->memory_cost
+  return (tune_param->memory_cost
 	  + memory_move_secondary_cost (mode, rclass, in));
 }
 
@@ -4555,7 +4560,7 @@ riscv_memory_move_cost (machine_mode mode, reg_class_t rclass, bool in)
 static int
 riscv_issue_rate (void)
 {
-  return tune_info->issue_rate;
+  return tune_param->issue_rate;
 }
 
 /* Auxiliary function to emit RISC-V ELF attribute. */
@@ -4683,7 +4688,7 @@ riscv_init_machine_status (void)
 static void
 riscv_option_override (void)
 {
-  const struct riscv_cpu_info *cpu;
+  const struct riscv_tune_info *cpu;
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -4705,26 +4710,28 @@ riscv_option_override (void)
   if (TARGET_HARD_FLOAT && (target_flags_explicit & MASK_FDIV) == 0)
     target_flags |= MASK_FDIV;
 
-  /* Handle -mtune.  */
-  cpu = riscv_parse_cpu (riscv_tune_string ? riscv_tune_string :
-			 RISCV_TUNE_STRING_DEFAULT);
+  /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
+     if -mtune and -mcpu both not not given.  */
+  cpu = riscv_parse_tune (riscv_tune_string ? riscv_tune_string :
+			  (riscv_cpu_string ? riscv_cpu_string :
+			   RISCV_TUNE_STRING_DEFAULT));
   riscv_microarchitecture = cpu->microarchitecture;
-  tune_info = optimize_size ? &optimize_size_tune_info : cpu->tune_info;
+  tune_param = optimize_size ? &optimize_size_tune_info : cpu->tune_param;
 
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
      for size.  For architectures that trap and emulate unaligned accesses,
      the performance cost is too great, even for -Os.  Similarly, if
      -m[no-]strict-align is left unspecified, heed -mtune's advice.  */
-  riscv_slow_unaligned_access_p = (cpu->tune_info->slow_unaligned_access
+  riscv_slow_unaligned_access_p = (cpu->tune_param->slow_unaligned_access
 				   || TARGET_STRICT_ALIGN);
   if ((target_flags_explicit & MASK_STRICT_ALIGN) == 0
-      && cpu->tune_info->slow_unaligned_access)
+      && cpu->tune_param->slow_unaligned_access)
     target_flags |= MASK_STRICT_ALIGN;
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
   if (riscv_branch_cost == 0)
-    riscv_branch_cost = tune_info->branch_cost;
+    riscv_branch_cost = tune_param->branch_cost;
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &riscv_init_machine_status;
