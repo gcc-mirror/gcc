@@ -33,13 +33,6 @@ func lwp_unpark(lwp int32, hint unsafe.Pointer) int32
 //extern sysctl
 func sysctl(*uint32, uint32, *byte, *uintptr, *byte, uintptr) int32
 
-// From NetBSD's <sys/sysctl.h>
-const (
-	_CTL_HW      = 6
-	_HW_NCPU     = 3
-	_HW_PAGESIZE = 7
-)
-
 func getncpu() int32 {
 	mib := [2]uint32{_CTL_HW, _HW_NCPU}
 	out := uint32(0)

@@ -47,6 +47,9 @@
 #if defined(HAVE_SYS_SYSCALL_H)
 #include <sys/syscall.h>
 #endif
+#if defined(HAVE_SYS_SYSCTL_H)
+#include <sys/sysctl.h>
+#endif
 #if defined(HAVE_SYS_EPOLL_H)
 #include <sys/epoll.h>
 #endif
@@ -116,6 +119,9 @@
 #endif
 #if defined(HAVE_LINUX_RTNETLINK_H)
 #include <linux/rtnetlink.h>
+#endif
+#if defined(HAVE_NET_BPF_H)
+#include <net/bpf.h>
 #endif
 #if defined(HAVE_NET_IF_H)
 #include <net/if.h>
@@ -278,6 +284,54 @@ enum {
 #endif
 #ifdef NLA_HDRLEN
   NLA_HDRLEN_val = NLA_HDRLEN,
+#endif
+#ifdef BIOCFLUSH
+  BIOCFLUSH_val = BIOCFLUSH,
+#endif
+#ifdef BIOCGBLEN
+  BIOCGBLEN_val = BIOCGBLEN,
+#endif
+#ifdef BIOCGDLT
+  BIOCGDLT_val = BIOCGDLT,
+#endif
+#ifdef BIOCGETIF
+  BIOCGETIF_val = BIOCGETIF,
+#endif
+#ifdef BIOCGHDRCMPLT
+  BIOCGHDRCMPLT_val = BIOCGHDRCMPLT,
+#endif
+#ifdef BIOCGRTIMEOUT
+  BIOCGRTIMEOUT_val = BIOCGRTIMEOUT,
+#endif
+#ifdef BIOCGSTATS
+  BIOCGSTATS_val = BIOCGSTATS,
+#endif
+#ifdef BIOCIMMEDIATE
+  BIOCIMMEDIATE_val = BIOCIMMEDIATE,
+#endif
+#ifdef BIOCPROMISC
+  BIOCPROMISC_val = BIOCPROMISC,
+#endif
+#ifdef BIOCSBLEN
+  BIOCSBLEN_val = BIOCSBLEN,
+#endif
+#ifdef BIOCSDLT
+  BIOCSDLT_val = BIOCSDLT,
+#endif
+#ifdef BIOCSETF
+  BIOCSETF_val = BIOCSETF,
+#endif
+#ifdef BIOCSETIF
+  BIOCSETIF_val = BIOCSETIF,
+#endif
+#ifdef BIOCSHDRCMPLT
+  BIOCSHDRCMPLT_val = BIOCSHDRCMPLT,
+#endif
+#ifdef BIOCSRTIMEOUT
+  BIOCSRTIMEOUT_val = BIOCSRTIMEOUT,
+#endif
+#ifdef BIOCVERSION
+  BIOCVERSION_val = BIOCVERSION,
 #endif
 };
 
