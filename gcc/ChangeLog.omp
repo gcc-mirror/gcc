@@ -1,6 +1,29 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (add_taskreg_looptemp_clauses): For triangular loops
+	with non-constant number of iterations add another 4 _looptemp_
+	clauses before the (optional) one for lastprivate.
+	(lower_omp_for_lastprivate): Skip those clauses when looking for
+	the lastprivate clause.
+	(lower_omp_for): For triangular loops with non-constant number of
+	iterations add another 4 _looptemp_ clauses.
+	* omp-expand.c (expand_omp_for_init_counts): For triangular loops
+	with non-constant number of iterations set counts[0],
+	fd->first_inner_iterations, fd->factor and fd->adjn1 from the newly
+	added _looptemp_ clauses.
+	(expand_omp_for_init_vars): Initialize the newly added _looptemp_
+	clauses.
+	(find_lastprivate_looptemp): New function.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk,
+	expand_omp_taskloop_for_outer): Use it instead of manually skipping
+	_looptemp_ clauses.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-08-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_omp_taskloop_expr): New function.

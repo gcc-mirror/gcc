@@ -2258,12 +2258,38 @@ add_taskreg_looptemp_clauses (enum gf_mask msk, gimple *stmt,
 	     GIMPLE_OMP_FOR, add one more temporaries for the total number
 	     of iterations (product of count1 ... countN-1).  */
 	  if (omp_find_clause (gimple_omp_for_clauses (for_stmt),
-			       OMP_CLAUSE_LASTPRIVATE))
-	    count++;
-	  else if (msk == GF_OMP_FOR_KIND_FOR
-		   && omp_find_clause (gimple_omp_parallel_clauses (stmt),
-				       OMP_CLAUSE_LASTPRIVATE))
-	    count++;
+			       OMP_CLAUSE_LASTPRIVATE)
+	      || (msk == GF_OMP_FOR_KIND_FOR
+		  && omp_find_clause (gimple_omp_parallel_clauses (stmt),
+				      OMP_CLAUSE_LASTPRIVATE)))
+	    {
+	      tree temp = create_tmp_var (type);
+	      tree c = build_omp_clause (UNKNOWN_LOCATION,
+					 OMP_CLAUSE__LOOPTEMP_);
+	      insert_decl_map (&outer_ctx->cb, temp, temp);
+	      OMP_CLAUSE_DECL (c) = temp;
+	      OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
+	      gimple_omp_taskreg_set_clauses (stmt, c);
+	    }
+	  if (fd.non_rect
+	      && fd.last_nonrect == fd.first_nonrect + 1)
+	    if (tree v = gimple_omp_for_index (for_stmt, fd.last_nonrect))
+	      if (!TYPE_UNSIGNED (TREE_TYPE (v)))
+		{
+		  v = gimple_omp_for_index (for_stmt, fd.first_nonrect);
+		  tree type2 = TREE_TYPE (v);
+		  count++;
+		  for (i = 0; i < 3; i++)
+		    {
+		      tree temp = create_tmp_var (type2);
+		      tree c = build_omp_clause (UNKNOWN_LOCATION,
+						 OMP_CLAUSE__LOOPTEMP_);
+		      insert_decl_map (&outer_ctx->cb, temp, temp);
+		      OMP_CLAUSE_DECL (c) = temp;
+		      OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
+		      gimple_omp_taskreg_set_clauses (stmt, c);
+		    }
+		}
 	}
       for (i = 0; i < count; i++)
 	{
@@ -10155,7 +10181,13 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
 	      tree innerc = omp_find_clause (taskreg_clauses,
 					     OMP_CLAUSE__LOOPTEMP_);
 	      gcc_assert (innerc);
-	      for (i = 0; i < fd->collapse; i++)
+	      int count = fd->collapse;
+	      if (fd->non_rect
+		  && fd->last_nonrect == fd->first_nonrect + 1)
+		if (tree v = gimple_omp_for_index (fd->for_stmt, fd->last_nonrect))
+		  if (!TYPE_UNSIGNED (TREE_TYPE (v)))
+		    count += 4;
+	      for (i = 0; i < count; i++)
 		{
 		  innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
 					    OMP_CLAUSE__LOOPTEMP_);
@@ -11136,12 +11168,26 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       if (fd.collapse > 1
 	  && TREE_CODE (fd.loop.n2) != INTEGER_CST)
 	count += fd.collapse - 1;
+      size_t count2 = 0;
+      tree type2 = NULL_TREE;
       bool taskreg_for
 	= (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_FOR
 	   || gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_TASKLOOP);
       tree outerc = NULL, *pc = gimple_omp_for_clauses_ptr (stmt);
       tree simtc = NULL;
       tree clauses = *pc;
+      if (fd.collapse > 1
+	  && fd.non_rect
+	  && fd.last_nonrect == fd.first_nonrect + 1
+	  && TREE_CODE (fd.loop.n2) != INTEGER_CST)
+	if (tree v = gimple_omp_for_index (stmt, fd.last_nonrect))
+	  if (!TYPE_UNSIGNED (TREE_TYPE (v)))
+	    {
+	      v = gimple_omp_for_index (stmt, fd.first_nonrect);
+	      type2 = TREE_TYPE (v);
+	      count++;
+	      count2 = 3;
+	    }
       if (taskreg_for)
 	outerc
 	  = omp_find_clause (gimple_omp_taskreg_clauses (ctx->outer->stmt),
@@ -11149,7 +11195,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       if (ctx->simt_stmt)
 	simtc = omp_find_clause (gimple_omp_for_clauses (ctx->simt_stmt),
 				 OMP_CLAUSE__LOOPTEMP_);
-      for (i = 0; i < count; i++)
+      for (i = 0; i < count + count2; i++)
 	{
 	  tree temp;
 	  if (taskreg_for)
@@ -11168,7 +11214,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      if (ctx->simt_stmt)
 		temp = OMP_CLAUSE_DECL (simtc);
 	      else
-		temp = create_tmp_var (type);
+		temp = create_tmp_var (i >= count ? type2 : type);
 	      insert_decl_map (&ctx->outer->cb, temp, temp);
 	    }
 	  *pc = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__LOOPTEMP_);

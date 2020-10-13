@@ -1842,6 +1842,23 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  else
 	    counts[0] = NULL_TREE;
 	}
+      if (fd->non_rect
+	  && fd->last_nonrect == fd->first_nonrect + 1
+	  && !TYPE_UNSIGNED (TREE_TYPE (fd->loops[fd->last_nonrect].v)))
+	{
+	  tree c[4];
+	  for (i = 0; i < 4; i++)
+	    {
+	      innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
+					OMP_CLAUSE__LOOPTEMP_);
+	      gcc_assert (innerc);
+	      c[i] = OMP_CLAUSE_DECL (innerc);
+	    }
+	  counts[0] = c[0];
+	  fd->first_inner_iterations = c[1];
+	  fd->factor = c[2];
+	  fd->adjn1 = c[3];
+	}
       return;
     }
 
@@ -2486,7 +2503,12 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	 use it.  */
       tree innerc = omp_find_clause (clauses, OMP_CLAUSE__LOOPTEMP_);
       gcc_assert (innerc);
-      for (i = 0; i < fd->collapse; i++)
+      int count = 0;
+      if (fd->non_rect
+	  && fd->last_nonrect == fd->first_nonrect + 1
+	  && !TYPE_UNSIGNED (TREE_TYPE (fd->loops[fd->last_nonrect].v)))
+	count = 4;
+      for (i = 0; i < fd->collapse + count; i++)
 	{
 	  innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
 				    OMP_CLAUSE__LOOPTEMP_);
@@ -2494,7 +2516,19 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  if (i)
 	    {
 	      tree tem = OMP_CLAUSE_DECL (innerc);
-	      tree t = fold_convert (TREE_TYPE (tem), counts[i]);
+	      tree t;
+	      if (i < fd->collapse)
+		t = counts[i];
+	      else
+		switch (i - fd->collapse)
+		  {
+		  case 0: t = counts[0]; break;
+		  case 1: t = fd->first_inner_iterations; break;
+		  case 2: t = fd->factor; break;
+		  case 3: t = fd->adjn1; break;
+		  default: gcc_unreachable ();
+		  }
+	      t = fold_convert (TREE_TYPE (tem), t);
 	      t = force_gimple_operand_gsi (gsi, t, false, NULL_TREE,
 					    false, GSI_CONTINUE_LINKING);
 	      gassign *stmt = gimple_build_assign (tem, t);
@@ -2530,10 +2564,7 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  basic_block bb_triang = NULL, bb_triang_dom = NULL;
 	  if (fd->first_nonrect + 1 == fd->last_nonrect
 	      && (TREE_CODE (fd->loop.n2) == INTEGER_CST
-		  || (fd->first_inner_iterations
-		      /* For now.  Later add clauses to propagate the
-			 values.  */
-		      && !gimple_omp_for_combined_into_p (fd->for_stmt)))
+		  || fd->first_inner_iterations)
 	      && (optab_handler (sqrt_optab, TYPE_MODE (double_type_node))
 		  != CODE_FOR_nothing))
 	    {
@@ -4718,6 +4749,35 @@ expand_omp_scantemp_alloc (tree clauses, tree ptr, unsigned HOST_WIDE_INT sz,
     return ptr;
 }
 
+/* Return the last _looptemp_ clause if one has been created for
+   lastprivate on distribute parallel for{, simd} or taskloop.
+   FD is the loop data and INNERC should be the second _looptemp_
+   clause (the one holding the end of the range).
+   This is followed by collapse - 1 _looptemp_ clauses for the
+   counts[1] and up, and for triangular loops followed by 4
+   further _looptemp_ clauses (one for counts[0], one first_inner_iterations,
+   one factor and one adjn1).  After this there is optionally one
+   _looptemp_ clause that this function returns.  */
+
+static tree
+find_lastprivate_looptemp (struct omp_for_data *fd, tree innerc)
+{
+  gcc_assert (innerc);
+  int count = fd->collapse - 1;
+  if (fd->non_rect
+      && fd->last_nonrect == fd->first_nonrect + 1
+      && !TYPE_UNSIGNED (TREE_TYPE (fd->loops[fd->last_nonrect].v)))
+    count += 4;
+  for (int i = 0; i < count; i++)
+    {
+      innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
+				OMP_CLAUSE__LOOPTEMP_);
+      gcc_assert (innerc);
+    }
+  return omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
+			  OMP_CLAUSE__LOOPTEMP_);
+}
+
 /* A subroutine of expand_omp_for.  Generate code for a parallel
    loop with static schedule and no specified chunk size.  Given
    parameters:
@@ -5142,15 +5202,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       if (fd->collapse > 1 && TREE_CODE (fd->loop.n2) != INTEGER_CST
 	  && gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
 	{
-	  int i;
-	  for (i = 1; i < fd->collapse; i++)
-	    {
-	      innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
-					OMP_CLAUSE__LOOPTEMP_);
-	      gcc_assert (innerc);
-	    }
-	  innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
-				    OMP_CLAUSE__LOOPTEMP_);
+	  innerc = find_lastprivate_looptemp (fd, innerc);
 	  if (innerc)
 	    {
 	      /* If needed (distribute parallel for with lastprivate),
@@ -5867,15 +5919,7 @@ expand_omp_for_static_chunk (struct omp_region *region,
       if (fd->collapse > 1 && TREE_CODE (fd->loop.n2) != INTEGER_CST
 	  && gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
 	{
-	  int i;
-	  for (i = 1; i < fd->collapse; i++)
-	    {
-	      innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
-					OMP_CLAUSE__LOOPTEMP_);
-	      gcc_assert (innerc);
-	    }
-	  innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
-				    OMP_CLAUSE__LOOPTEMP_);
+	  innerc = find_lastprivate_looptemp (fd, innerc);
 	  if (innerc)
 	    {
 	      /* If needed (distribute parallel for with lastprivate),
@@ -6808,15 +6852,7 @@ expand_omp_taskloop_for_outer (struct omp_region *region,
   tree endvar = OMP_CLAUSE_DECL (innerc);
   if (fd->collapse > 1 && TREE_CODE (fd->loop.n2) != INTEGER_CST)
     {
-      gcc_assert (innerc);
-      for (i = 1; i < fd->collapse; i++)
-	{
-	  innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
-				    OMP_CLAUSE__LOOPTEMP_);
-	  gcc_assert (innerc);
-	}
-      innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
-				OMP_CLAUSE__LOOPTEMP_);
+      innerc = find_lastprivate_looptemp (fd, innerc);
       if (innerc)
 	{
 	  /* If needed (inner taskloop has lastprivate clause), propagate
