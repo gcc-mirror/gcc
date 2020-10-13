@@ -589,12 +589,11 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
       LOOP_VINFO_DDRS (loop_vinfo)
 	.create (LOOP_VINFO_DATAREFS (loop_vinfo).length ()
 		 * LOOP_VINFO_DATAREFS (loop_vinfo).length ());
-      /* We need read-read dependences to compute
-	 STMT_VINFO_SAME_ALIGN_REFS.  */
+      /* We do not need read-read dependences.  */
       bool res = compute_all_dependences (LOOP_VINFO_DATAREFS (loop_vinfo),
 					  &LOOP_VINFO_DDRS (loop_vinfo),
 					  LOOP_VINFO_LOOP_NEST (loop_vinfo),
-					  true);
+					  false);
       gcc_assert (res);
     }
 
@@ -1130,6 +1129,45 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info)
   return;
 }
 
+/* Return whether DR_INFO, which is related to DR_PEEL_INFO in
+   that it only differs in DR_INIT, is aligned if DR_PEEL_INFO
+   is made aligned via peeling.  */
+
+static bool
+vect_dr_aligned_if_related_peeled_dr_is (dr_vec_info *dr_info,
+					 dr_vec_info *dr_peel_info)
+{
+  if (multiple_p (DR_TARGET_ALIGNMENT (dr_peel_info),
+		  DR_TARGET_ALIGNMENT (dr_info)))
+    {
+      poly_offset_int diff
+	= (wi::to_poly_offset (DR_INIT (dr_peel_info->dr))
+	   - wi::to_poly_offset (DR_INIT (dr_info->dr)));
+      if (known_eq (diff, 0)
+	  || multiple_p (diff, DR_TARGET_ALIGNMENT (dr_info)))
+	return true;
+    }
+  return false;
+}
+
+/* Return whether DR_INFO is aligned if DR_PEEL_INFO is made
+   aligned via peeling.  */
+
+static bool
+vect_dr_aligned_if_peeled_dr_is (dr_vec_info *dr_info,
+				 dr_vec_info *dr_peel_info)
+{
+  if (!operand_equal_p (DR_BASE_ADDRESS (dr_info->dr),
+			DR_BASE_ADDRESS (dr_peel_info->dr), 0)
+      || !operand_equal_p (DR_OFFSET (dr_info->dr),
+			   DR_OFFSET (dr_peel_info->dr), 0)
+      || !operand_equal_p (DR_STEP (dr_info->dr),
+			   DR_STEP (dr_peel_info->dr), 0))
+    return false;
+
+  return vect_dr_aligned_if_related_peeled_dr_is (dr_info, dr_peel_info);
+}
+
 /* Function vect_update_misalignment_for_peel.
    Sets DR_INFO's misalignment
    - to 0 if it has the same alignment as DR_PEEL_INFO,
@@ -1146,18 +1184,10 @@ static void
 vect_update_misalignment_for_peel (dr_vec_info *dr_info,
 				   dr_vec_info *dr_peel_info, int npeel)
 {
-  unsigned int i;
-  vec<dr_p> same_aligned_drs;
-  struct data_reference *current_dr;
-  stmt_vec_info peel_stmt_info = dr_peel_info->stmt;
-
   /* It can be assumed that if dr_info has the same alignment as dr_peel,
      it is aligned in the vector loop.  */
-  same_aligned_drs = STMT_VINFO_SAME_ALIGN_REFS (peel_stmt_info);
-  FOR_EACH_VEC_ELT (same_aligned_drs, i, current_dr)
+  if (vect_dr_aligned_if_peeled_dr_is (dr_info, dr_peel_info))
     {
-      if (current_dr != dr_info->dr)
-        continue;
       gcc_assert (!known_alignment_for_access_p (dr_info)
 		  || !known_alignment_for_access_p (dr_peel_info)
 		  || (DR_MISALIGNMENT (dr_info)
@@ -1572,6 +1602,43 @@ vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
   return true;
 }
 
+/* Compare two data-references DRA and DRB to group them into chunks
+   with related alignment.  */
+
+static int
+dr_align_group_sort_cmp (const void *dra_, const void *drb_)
+{
+  data_reference_p dra = *(data_reference_p *)const_cast<void *>(dra_);
+  data_reference_p drb = *(data_reference_p *)const_cast<void *>(drb_);
+  int cmp;
+
+  /* Stabilize sort.  */
+  if (dra == drb)
+    return 0;
+
+  /* Ordering of DRs according to base.  */
+  cmp = data_ref_compare_tree (DR_BASE_ADDRESS (dra),
+			       DR_BASE_ADDRESS (drb));
+  if (cmp != 0)
+    return cmp;
+
+  /* And according to DR_OFFSET.  */
+  cmp = data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb));
+  if (cmp != 0)
+    return cmp;
+
+  /* And after step.  */
+  cmp = data_ref_compare_tree (DR_STEP (dra), DR_STEP (drb));
+  if (cmp != 0)
+    return cmp;
+
+  /* Then sort after DR_INIT.  In case of identical DRs sort after stmt UID.  */
+  cmp = data_ref_compare_tree (DR_INIT (dra), DR_INIT (drb));
+  if (cmp == 0)
+    return gimple_uid (DR_STMT (dra)) < gimple_uid (DR_STMT (drb)) ? -1 : 1;
+  return cmp;
+}
+
 /* Function vect_enhance_data_refs_alignment
 
    This pass will use loop versioning and loop peeling in order to enhance
@@ -1666,7 +1733,6 @@ vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
 opt_result
 vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 {
-  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum dr_alignment_support supportable_dr_alignment;
   dr_vec_info *first_store = NULL;
@@ -1680,7 +1746,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   bool one_misalignment_unknown = false;
   bool one_dr_unsupportable = false;
   dr_vec_info *unsupportable_dr_info = NULL;
-  unsigned int mis, same_align_drs_max = 0;
+  unsigned int mis, dr0_same_align_drs = 0, first_store_same_align_drs = 0;
   hash_table<peel_info_hasher> peeling_htab (1);
 
   DUMP_VECT_SCOPE ("vect_enhance_data_refs_alignment");
@@ -1688,6 +1754,54 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   /* Reset data so we can safely be called multiple times.  */
   LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).truncate (0);
   LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = 0;
+
+  if (LOOP_VINFO_DATAREFS (loop_vinfo).is_empty ())
+    return opt_result::success ();
+
+  /* Sort the vector of datarefs so DRs that have the same or dependent
+     alignment are next to each other.  */
+  auto_vec<data_reference_p> datarefs
+    = LOOP_VINFO_DATAREFS (loop_vinfo).copy ();
+  datarefs.qsort (dr_align_group_sort_cmp);
+
+  /* Compute the number of DRs that become aligned when we peel
+     a dataref so it becomes aligned.  */
+  auto_vec<unsigned> n_same_align_refs (datarefs.length ());
+  n_same_align_refs.quick_grow_cleared (datarefs.length ());
+  unsigned i0;
+  for (i0 = 0; i0 < datarefs.length (); ++i0)
+    if (DR_BASE_ADDRESS (datarefs[i0]))
+      break;
+  for (i = i0 + 1; i <= datarefs.length (); ++i)
+    {
+      if (i == datarefs.length ()
+	  || !operand_equal_p (DR_BASE_ADDRESS (datarefs[i0]),
+			       DR_BASE_ADDRESS (datarefs[i]), 0)
+	  || !operand_equal_p (DR_OFFSET (datarefs[i0]),
+			       DR_OFFSET (datarefs[i]), 0)
+	  || !operand_equal_p (DR_STEP (datarefs[i0]),
+			       DR_STEP (datarefs[i]), 0))
+	{
+	  /* The subgroup [i0, i-1] now only differs in DR_INIT and
+	     possibly DR_TARGET_ALIGNMENT.  Still the whole subgroup
+	     will get known misalignment if we align one of the refs
+	     with the largest DR_TARGET_ALIGNMENT.  */
+	  for (unsigned j = i0; j < i; ++j)
+	    {
+	      dr_vec_info *dr_infoj = loop_vinfo->lookup_dr (datarefs[j]);
+	      for (unsigned k = i0; k < i; ++k)
+		{
+		  if (k == j)
+		    continue;
+		  dr_vec_info *dr_infok = loop_vinfo->lookup_dr (datarefs[k]);
+		  if (vect_dr_aligned_if_related_peeled_dr_is (dr_infok,
+							       dr_infoj))
+		    n_same_align_refs[j]++;
+		}
+	    }
+	  i0 = i;
+	}
+    }
 
   /* While cost model enhancements are expected in the future, the high level
      view of the code at this time is as follows:
@@ -1790,18 +1904,17 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  peeling for data-ref that has the maximum number of data-refs
                  with the same alignment, unless the target prefers to align
                  stores over load.  */
-	      unsigned same_align_drs
-		= STMT_VINFO_SAME_ALIGN_REFS (stmt_info).length ();
+	      unsigned same_align_drs = n_same_align_refs[i];
 	      if (!dr0_info
-		  || same_align_drs_max < same_align_drs)
+		  || dr0_same_align_drs < same_align_drs)
 		{
-		  same_align_drs_max = same_align_drs;
+		  dr0_same_align_drs = same_align_drs;
 		  dr0_info = dr_info;
 		}
 	      /* For data-refs with the same number of related
 		 accesses prefer the one where the misalign
 		 computation will be invariant in the outermost loop.  */
-	      else if (same_align_drs_max == same_align_drs)
+	      else if (dr0_same_align_drs == same_align_drs)
 		{
 		  class loop *ivloop0, *ivloop;
 		  ivloop0 = outermost_invariant_loop_for_expr
@@ -1825,7 +1938,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      }
 
 	      if (!first_store && DR_IS_WRITE (dr))
-		first_store = dr_info;
+		{
+		  first_store = dr_info;
+		  first_store_same_align_drs = same_align_drs;
+		}
             }
         }
       else
@@ -1895,6 +2011,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      && load_outside_cost > store_outside_cost))
 	{
 	  dr0_info = first_store;
+	  dr0_same_align_drs = first_store_same_align_drs;
 	  peel_for_unknown_alignment.inside_cost = store_inside_cost;
 	  peel_for_unknown_alignment.outside_cost = store_outside_cost;
 	}
@@ -1917,8 +2034,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       prologue_cost_vec.release ();
       epilogue_cost_vec.release ();
 
-      peel_for_unknown_alignment.peel_info.count = 1
-	+ STMT_VINFO_SAME_ALIGN_REFS (dr0_info->stmt).length ();
+      peel_for_unknown_alignment.peel_info.count = dr0_same_align_drs + 1;
     }
 
   peel_for_unknown_alignment.peel_info.npeel = 0;
@@ -2270,69 +2386,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 }
 
 
-/* Function vect_find_same_alignment_drs.
-
-   Update group and alignment relations in VINFO according to the chosen
-   vectorization factor.  */
-
-static void
-vect_find_same_alignment_drs (vec_info *vinfo, data_dependence_relation *ddr)
-{
-  struct data_reference *dra = DDR_A (ddr);
-  struct data_reference *drb = DDR_B (ddr);
-  dr_vec_info *dr_info_a = vinfo->lookup_dr (dra);
-  dr_vec_info *dr_info_b = vinfo->lookup_dr (drb);
-  stmt_vec_info stmtinfo_a = dr_info_a->stmt;
-  stmt_vec_info stmtinfo_b = dr_info_b->stmt;
-
-  if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
-    return;
-
-  if (dra == drb)
-    return;
-
-  if (STMT_VINFO_GATHER_SCATTER_P (stmtinfo_a)
-      || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
-    return;
-
-  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0)
-      || !operand_equal_p (DR_OFFSET (dra), DR_OFFSET (drb), 0)
-      || !operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
-    return;
-
-  /* Two references with distance zero have the same alignment.  */
-  poly_offset_int diff = (wi::to_poly_offset (DR_INIT (dra))
-			  - wi::to_poly_offset (DR_INIT (drb)));
-  if (maybe_ne (diff, 0))
-    {
-      /* Get the wider of the two alignments.  */
-      poly_uint64 align_a =
-	exact_div (vect_calculate_target_alignment (dr_info_a),
-		   BITS_PER_UNIT);
-      poly_uint64 align_b =
-	exact_div (vect_calculate_target_alignment (dr_info_b),
-		   BITS_PER_UNIT);
-      unsigned HOST_WIDE_INT align_a_c, align_b_c;
-      if (!align_a.is_constant (&align_a_c)
-	  || !align_b.is_constant (&align_b_c))
-	return;
-
-      unsigned HOST_WIDE_INT max_align = MAX (align_a_c, align_b_c);
-
-      /* Require the gap to be a multiple of the larger vector alignment.  */
-      if (!multiple_p (diff, max_align))
-	return;
-    }
-
-  STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a).safe_push (drb);
-  STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b).safe_push (dra);
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "accesses have the same alignment: %T and %T\n",
-		     DR_REF (dra), DR_REF (drb));
-}
-
-
 /* Function vect_analyze_data_refs_alignment
 
    Analyze the alignment of the data-references in the loop.
@@ -2343,17 +2396,9 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   DUMP_VECT_SCOPE ("vect_analyze_data_refs_alignment");
 
-  /* Mark groups of data references with same alignment using
-     data dependence information.  */
-  vec<ddr_p> ddrs = LOOP_VINFO_DDRS (loop_vinfo);
-  struct data_dependence_relation *ddr;
-  unsigned int i;
-
-  FOR_EACH_VEC_ELT (ddrs, i, ddr)
-    vect_find_same_alignment_drs (loop_vinfo, ddr);
-
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
+  unsigned int i;
 
   vect_record_base_alignments (loop_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
