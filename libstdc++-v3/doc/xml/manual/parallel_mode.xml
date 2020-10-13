@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.ext.parallel_mode" xreflabel="Parallel Mode">
 <?dbhtml filename="parallel_mode.html"?>
 
@@ -40,7 +40,7 @@ specific compiler flag.
 </note>
 
 <section xml:id="manual.ext.parallel_mode.intro" xreflabel="Intro"><info><title>Intro</title></info>
-  
+
 
 <para>The following library components in the include
 <filename class="headerfile">numeric</filename> are included in the parallel mode:</para>
@@ -91,7 +91,7 @@ specific compiler flag.
 
 <section xml:id="manual.ext.parallel_mode.semantics" xreflabel="Semantics"><info><title>Semantics</title></info>
 <?dbhtml filename="parallel_mode_semantics.html"?>
-  
+
 
 <para> The parallel mode STL algorithms are currently not exception-safe,
 i.e. user-defined functors must not throw exceptions.
@@ -109,10 +109,10 @@ It might work with other compilers, though.</para>
 
 <section xml:id="manual.ext.parallel_mode.using" xreflabel="Using"><info><title>Using</title></info>
 <?dbhtml filename="parallel_mode_using.html"?>
-  
+
 
 <section xml:id="parallel_mode.using.prereq_flags"><info><title>Prerequisite Compiler Flags</title></info>
-  
+
 
 <para>
   Any use of parallel functionality requires additional compiler
@@ -140,7 +140,7 @@ In addition, hardware that supports atomic operations and a compiler
 </section>
 
 <section xml:id="parallel_mode.using.parallel_mode"><info><title>Using Parallel Mode</title></info>
-  
+
 
 <para>
   To use the libstdc++ parallel mode, compile your application with
@@ -165,7 +165,7 @@ In addition, hardware that supports atomic operations and a compiler
 </section>
 
 <section xml:id="parallel_mode.using.specific"><info><title>Using Specific Parallel Components</title></info>
-  
+
 
 <para>When it is not feasible to recompile your entire application, or
   only specific algorithms need to be parallel-aware, individual
@@ -476,11 +476,11 @@ flags for atomic operations.)
 
 <section xml:id="manual.ext.parallel_mode.design" xreflabel="Design"><info><title>Design</title></info>
 <?dbhtml filename="parallel_mode_design.html"?>
-  
+
   <para>
   </para>
 <section xml:id="parallel_mode.design.intro" xreflabel="Intro"><info><title>Interface Basics</title></info>
-  
+
 
 <para>
 All parallel algorithms are intended to have signatures that are
@@ -549,11 +549,11 @@ overload is therefore missing.
 </section>
 
 <section xml:id="parallel_mode.design.tuning" xreflabel="Tuning"><info><title>Configuration and Tuning</title></info>
-  
+
 
 
 <section xml:id="parallel_mode.design.tuning.omp" xreflabel="OpenMP Environment"><info><title>Setting up the OpenMP Environment</title></info>
-  
+
 
 <para>
 Several aspects of the overall runtime environment can be manipulated
@@ -598,7 +598,7 @@ documentation for more information.
 </section>
 
 <section xml:id="parallel_mode.design.tuning.compile" xreflabel="Compile Switches"><info><title>Compile Time Switches</title></info>
-  
+
 
 <para>
 To force an algorithm to execute sequentially, even though parallelism
@@ -675,7 +675,7 @@ merging. The quicksort options cannot be used for <code>stable_sort</code>.
 </section>
 
 <section xml:id="parallel_mode.design.tuning.settings" xreflabel="_Settings"><info><title>Run Time Settings and Defaults</title></info>
-  
+
 
 <para>
 The default parallelization strategy, the choice of specific algorithm
@@ -769,7 +769,7 @@ int main()
 </section>
 
 <section xml:id="parallel_mode.design.impl" xreflabel="Impl"><info><title>Implementation Namespaces</title></info>
-  
+
 
 <para> One namespace contain versions of code that are always
 explicitly sequential:
@@ -803,7 +803,7 @@ the generated source documentation.
 
 <section xml:id="manual.ext.parallel_mode.test" xreflabel="Testing"><info><title>Testing</title></info>
 <?dbhtml filename="parallel_mode_test.html"?>
-  
+
 
   <para>
     Both the normal conformance and regression tests and the

@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.util.memory.allocator" xreflabel="Allocator">
 <?dbhtml filename="allocator.html"?>
 

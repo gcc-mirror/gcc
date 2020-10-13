@@ -1,10 +1,10 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.intro.using" xreflabel="Using">
   <info><title>Using</title></info>
   <?dbhtml filename="using.html"?>
 
   <section xml:id="manual.intro.using.flags" xreflabel="Flags"><info><title>Command Options</title></info>
-    
+
     <para>
       The set of features available in the GNU C++ library is shaped by
       several <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc-4.3.2/gcc/Invoking-GCC.html">GCC
@@ -107,7 +107,7 @@
       <entry><literal>-fopenmp</literal></entry>
       <entry>For <link linkend="manual.ext.parallel_mode">parallel</link> mode.</entry>
     </row>
-    
+
     <row>
       <entry><literal>-ltbb</literal></entry>
       <entry>Linking to tbb (Thread Building Blocks) is required for use of the
@@ -115,7 +115,7 @@
         <filename class="headerfile">&lt;execution&gt;</filename>.
       </entry>
     </row>
-    
+
   </tbody>
 
 </tgroup>
@@ -125,10 +125,10 @@
 
   <section xml:id="manual.intro.using.headers" xreflabel="Headers"><info><title>Headers</title></info>
     <?dbhtml filename="using_headers.html"?>
-    
+
 
     <section xml:id="manual.intro.using.headers.all" xreflabel="Header Files"><info><title>Header Files</title></info>
-      
+
 
    <para>
      The C++ standard specifies the entire set of header files that
@@ -523,7 +523,7 @@ compilation errors, but will not define anything.
 
 <para>
 <xref linkend="table.libfundts_headers"/>,
-shows the additional include files define by the C++ Extensions for 
+shows the additional include files define by the C++ Extensions for
 Library Fundamentals Technical Specification, ISO/IEC TS 19568.
 These are available in C++14 and later compilation modes.
 Including these headers in earlier modes will not result in
@@ -822,7 +822,7 @@ compiler supports scalar decimal floating-point types defined via
     </section>
 
     <section xml:id="manual.intro.using.headers.mixing" xreflabel="Mixing Headers"><info><title>Mixing Headers</title></info>
-      
+
 
 <para> A few simple rules.
 </para>
@@ -865,7 +865,7 @@ same translation unit:
     </section>
 
     <section xml:id="manual.intro.using.headers.cheaders" xreflabel="C Headers and"><info><title>The C Headers and <code>namespace std</code></title></info>
-      
+
 
 <para>
 	The standard specifies that if one includes the C-style header
@@ -892,7 +892,7 @@ and <code>std::sinl</code>.
     </section>
 
     <section xml:id="manual.intro.using.headers.pre" xreflabel="Precompiled Headers"><info><title>Precompiled Headers</title></info>
-      
+
 
 
 <para>There are three base header files that are provided. They can be
@@ -973,7 +973,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 
   <section xml:id="manual.intro.using.macros" xreflabel="Macros"><info><title>Macros</title></info>
     <?dbhtml filename="using_macros.html"?>
-    
+
 
    <para>
      All library macros begin with <code>_GLIBCXX_</code>.
@@ -1290,10 +1290,10 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 
   <section xml:id="manual.intro.using.namespaces" xreflabel="Namespaces"><info><title>Namespaces</title></info>
     <?dbhtml filename="using_namespaces.html"?>
-    
+
 
     <section xml:id="manual.intro.using.namespaces.all" xreflabel="Available Namespaces"><info><title>Available Namespaces</title></info>
-      
+
 
 
 
@@ -1334,7 +1334,7 @@ details that are not intended for users to refer to directly, these include
     </section>
 
     <section xml:id="manual.intro.using.namespaces.std" xreflabel="namespace std"><info><title>namespace std</title></info>
-      
+
 
 
 <para>
@@ -1360,7 +1360,7 @@ cases where the qualified verbiage becomes unwieldy.)
     </section>
 
     <section xml:id="manual.intro.using.namespaces.comp" xreflabel="Using Namespace Composition"><info><title>Using Namespace Composition</title></info>
-      
+
 
 <para>
 Best practice in programming suggests sequestering new data or
@@ -1407,10 +1407,10 @@ namespace gtk
 
   <section xml:id="manual.intro.using.linkage" xreflabel="Linkage"><info><title>Linking</title></info>
     <?dbhtml filename="using_dynamic_or_shared.html"?>
-    
+
 
     <section xml:id="manual.intro.using.linkage.freestanding" xreflabel="Freestanding"><info><title>Almost Nothing</title></info>
-      
+
       <para>
 	Or as close as it gets: freestanding. This is a minimal
 	configuration, with only partial support for the standard
@@ -1514,7 +1514,7 @@ namespace gtk
     </section>
 
     <section xml:id="manual.intro.using.linkage.dynamic" xreflabel="Dynamic and Shared"><info><title>Finding Dynamic or Shared Libraries</title></info>
-      
+
 
     <para>
       If the only library built is the static library
@@ -1638,7 +1638,7 @@ A quick read of the relevant part of the GCC
 
   <section xml:id="manual.intro.using.concurrency" xreflabel="Concurrency"><info><title>Concurrency</title></info>
     <?dbhtml filename="using_concurrency.html"?>
-    
+
 
    <para>This section discusses issues surrounding the proper compilation
       of multithreaded applications which use the Standard C++
@@ -1647,7 +1647,7 @@ A quick read of the relevant part of the GCC
    </para>
 
     <section xml:id="manual.intro.using.concurrency.prereq" xreflabel="Thread Prereq"><info><title>Prerequisites</title></info>
-      
+
 
    <para>All normal disclaimers aside, multithreaded C++ application are
       only supported when libstdc++ and all user code was built with
@@ -1686,7 +1686,7 @@ A quick read of the relevant part of the GCC
     </section>
 
     <section xml:id="manual.intro.using.concurrency.thread_safety" xreflabel="Thread Safety"><info><title>Thread Safety</title></info>
-      
+
 
 <para>
 In the terms of the 2011 C++ standard a thread-safe program is one which
@@ -1803,7 +1803,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
          <code>begin</code>, <code>end</code>, <code>rbegin</code>, <code>rend</code>,
          <code>front</code>, <code>back</code>, <code>data</code>,
          <code>find</code>, <code>lower_bound</code>, <code>upper_bound</code>,
-         <code>equal_range</code>, <code>at</code> 
+         <code>equal_range</code>, <code>at</code>
          and, except in associative or unordered associative containers,
          <code>operator[]</code>. In other words, although they are non-const
          so that they can return mutable iterators, those member functions
@@ -1831,8 +1831,8 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       int i = *global_sp;         // OK, operator* is const
       int j = *local_sp;          // OK, does not operate on global_sp
 
-      // *global_sp = 2;          // NOT OK, modifies int visible to other threads      
-      // *local_sp = 2;           // NOT OK, modifies int visible to other threads      
+      // *global_sp = 2;          // NOT OK, modifies int visible to other threads
+      // *local_sp = 2;           // NOT OK, modifies int visible to other threads
 
       // global_sp.reset();       // NOT OK, reset is non-const
       local_sp.reset();           // OK, does not operate on global_sp
@@ -1849,24 +1849,24 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 
       <para>For further details of the C++11 memory model see Hans-J. Boehm's
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/">Threads
-      and memory model for C++</link> pages, particularly the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/threadsintro.html">introduction</link> 
+      and memory model for C++</link> pages, particularly the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/threadsintro.html">introduction</link>
       and <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/user-faq.html">FAQ</link>.
       </para>
 
   </section>
   <section xml:id="manual.intro.using.concurrency.atomics" xreflabel="Atomics"><info><title>Atomics</title></info>
-    
+
     <para>
     </para>
   </section>
 
     <section xml:id="manual.intro.using.concurrency.io" xreflabel="IO"><info><title>IO</title></info>
-      
+
      <para>This gets a bit tricky.  Please read carefully, and bear with me.
    </para>
 
     <section xml:id="concurrency.io.structure" xreflabel="Structure"><info><title>Structure</title></info>
-      
+
    <para>A wrapper
       type called <code>__basic_file</code> provides our abstraction layer
       for the <code>std::filebuf</code> classes.  Nearly all decisions dealing
@@ -1880,7 +1880,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
     </section>
 
     <section xml:id="concurrency.io.defaults" xreflabel="Defaults"><info><title>Defaults</title></info>
-      
+
    <para>The __basic_file type is simply a collection of small wrappers around
       the C stdio layer (again, see the link under Structure).  We do no
       locking ourselves, but simply pass through to calls to <code>fopen</code>,
@@ -1911,7 +1911,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
     </section>
 
     <section xml:id="concurrency.io.future" xreflabel="Future"><info><title>Future</title></info>
-      
+
    <para> A
       second choice may be available for I/O implementations:  libio.  This is
       disabled by default, and in fact will not currently work due to other
@@ -1944,7 +1944,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
     </section>
 
     <section xml:id="concurrency.io.alt" xreflabel="Alt"><info><title>Alternatives</title></info>
-      
+
    <para>Don't forget that other cstdio implementations are possible.  You could
       easily write one to perform your own forms of locking, to solve your
       "interesting" problems.
@@ -1954,7 +1954,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
     </section>
 
     <section xml:id="manual.intro.using.concurrency.containers" xreflabel="Containers"><info><title>Containers</title></info>
-      
+
 
    <para>This section discusses issues surrounding the design of
       multithreaded applications which use Standard C++ containers.

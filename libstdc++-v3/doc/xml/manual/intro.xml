@@ -21,11 +21,11 @@
 <!-- Chapter 01 : Status -->
 <chapter xml:id="manual.intro.status" xreflabel="Status"><info><title>Status</title></info>
   <?dbhtml filename="status.html"?>
-  
+
 
   <!-- Section 01 : Implementation Status -->
   <section xml:id="manual.intro.status.iso" xreflabel="Status"><info><title>Implementation Status</title></info>
-    
+
 
     <!-- Section 01.1 : Status C++ 1998 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx1998.xml">
@@ -63,7 +63,7 @@
   <!-- Section 02 : License -->
   <section xml:id="manual.intro.status.license" xreflabel="License"><info><title>License</title></info>
     <?dbhtml filename="license.html"?>
-    
+
     <para>
     There are two licenses affecting GNU libstdc++: one for the code,
     and one for the documentation.
@@ -75,7 +75,7 @@
     </para>
 
     <section xml:id="manual.intro.status.license.gpl" xreflabel="License GPL"><info><title>The Code: GPL</title></info>
-    
+
 
     <para>
       The source code is distributed under the <link linkend="appendix.gpl-3.0">GNU General Public License version 3</link>,
@@ -166,7 +166,7 @@ requirements of the license of GCC.
     </section>
 
     <section xml:id="manual.intro.status.license.fdl" xreflabel="License FDL"><info><title>The Documentation: GPL, FDL</title></info>
-    
+
 
     <para>
       The documentation shipped with the library and made available over
@@ -195,10 +195,10 @@ requirements of the license of GCC.
   <!-- Section 03 : Known Bugs -->
   <section xml:id="manual.intro.status.bugs" xreflabel="Bugs"><info><title>Bugs</title></info>
     <?dbhtml filename="bugs.html"?>
-    
+
 
     <section xml:id="manual.intro.status.bugs.impl" xreflabel="Bugs impl"><info><title>Implementation Bugs</title></info>
-      
+
     <para>
       Information on known bugs, details on efforts to fix them, and
       fixed bugs are all available as part of the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/bugs/">GCC bug tracking system</link>,
@@ -207,7 +207,7 @@ requirements of the license of GCC.
     </section>
 
     <section xml:id="manual.intro.status.bugs.iso" xreflabel="Bugs iso"><info><title>Standard Bugs</title></info>
-      
+
       <para>
 	Everybody's got issues.  Even the C++ Standard Library.
       </para>
@@ -1285,7 +1285,7 @@ requirements of the license of GCC.
 <!-- Chapter 02 : Setup -->
 <chapter xml:id="manual.intro.setup" xreflabel="Setup"><info><title>Setup</title></info>
   <?dbhtml filename="setup.html"?>
-  
+
 
    <para>To transform libstdc++ sources into installed include files
    and properly built binaries useful for linking to other software is

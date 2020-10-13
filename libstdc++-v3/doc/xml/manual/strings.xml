@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.strings" xreflabel="Strings">
 <?dbhtml filename="strings.html"?>
 
@@ -16,10 +16,10 @@
 
 <!-- Sect1 02 : String Classes -->
 <section xml:id="std.strings.string" xreflabel="string"><info><title>String Classes</title></info>
-  
+
 
   <section xml:id="strings.string.simple" xreflabel="Simple Transformations"><info><title>Simple Transformations</title></info>
-    
+
     <para>
       Here are Standard, simple, and portable ways to perform common
       transformations on a <code>string</code> instance, such as
@@ -115,7 +115,7 @@
 
   </section>
   <section xml:id="strings.string.case" xreflabel="Case Sensitivity"><info><title>Case Sensitivity</title></info>
-    
+
     <para>
     </para>
 
@@ -166,7 +166,7 @@
 
   </section>
   <section xml:id="strings.string.character_types" xreflabel="Arbitrary Characters"><info><title>Arbitrary Character Types</title></info>
-    
+
     <para>
     </para>
 
@@ -238,7 +238,7 @@
   </section>
 
   <section xml:id="strings.string.token" xreflabel="Tokenizing"><info><title>Tokenizing</title></info>
-    
+
     <para>
     </para>
    <para>The Standard C (and C++) function <code>strtok()</code> leaves a lot to
@@ -337,7 +337,7 @@ stringtok(Container &amp;container, string const &amp;in,
 
   </section>
   <section xml:id="strings.string.shrink" xreflabel="Shrink to Fit"><info><title>Shrink to Fit</title></info>
-    
+
     <para>
     </para>
    <para>From GCC 3.4 calling <code>s.reserve(res)</code> on a
@@ -365,7 +365,7 @@ stringtok(Container &amp;container, string const &amp;in,
   </section>
 
   <section xml:id="strings.string.Cstring" xreflabel="CString (MFC)"><info><title>CString (MFC)</title></info>
-    
+
     <para>
     </para>
 

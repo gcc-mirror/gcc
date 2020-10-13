@@ -135,7 +135,7 @@
   All synchronization primitives used in the library internals need to be
   understood by race detectors so that they do not produce false reports.
 </p><p>
-  Two annotation macros are used to explain low-level synchronization 
+  Two annotation macros are used to explain low-level synchronization
   to race detectors:
   <code class="code">_GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE()</code> and
   <code class="code"> _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER()</code>.
@@ -157,8 +157,8 @@
   that are affected by the annotation macros, which can be done by
   recompiling individual files.
   Annotating <code class="code">std::string</code> and <code class="code">std::wstring</code>
-  reference counting can be done by disabling extern templates (by defining 
-  <code class="code">_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or by rebuilding the 
+  reference counting can be done by disabling extern templates (by defining
+  <code class="code">_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or by rebuilding the
   <code class="filename">src/string-inst.cc</code> file.
   Annotating the remaining atomic operations (at the time of writing these
   are in <code class="code">ios_base::Init::~Init</code>, <code class="code">locale::_Impl</code>,
@@ -169,9 +169,9 @@
   detection tools:
   <a class="link" href="http://valgrind.org/docs/manual/drd-manual.html" target="_top">
   DRD</a>,
-  <a class="link" href="http://valgrind.org/docs/manual/hg-manual.html" target="_top"> 
+  <a class="link" href="http://valgrind.org/docs/manual/hg-manual.html" target="_top">
   Helgrind</a>, and
-  <a class="link" href="https://github.com/google/sanitizers" target="_top"> 
+  <a class="link" href="https://github.com/google/sanitizers" target="_top">
   ThreadSanitizer</a> (this refers to ThreadSanitizer v1, not the
   new "tsan" feature built-in to GCC itself).
 </p><p>

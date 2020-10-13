@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.ext.concurrency" xreflabel="Concurrency Extensions">
 <?dbhtml filename="ext_concurrency.html"?>
 
@@ -12,10 +12,10 @@
 
 
 <section xml:id="manual.ext.concurrency.design" xreflabel="Design"><info><title>Design</title></info>
-  
+
 
   <section xml:id="manual.ext.concurrency.design.threads" xreflabel="Threads API"><info><title>Interface to Locks and Mutexes</title></info>
-    
+
 
 <para>The file <filename class="headerfile">&lt;ext/concurrence.h&gt;</filename>
 contains all the higher-level
@@ -74,7 +74,7 @@ mutex and lock types defined in the header
   </section>
 
   <section xml:id="manual.ext.concurrency.design.atomics" xreflabel="Atomic API"><info><title>Interface to Atomic Functions</title></info>
-    
+
 
 
 <para>
@@ -186,9 +186,9 @@ host hardware and operating system.
 
 <section xml:id="manual.ext.concurrency.impl" xreflabel="Implementation"><info><title>Implementation</title></info>
   <?dbhtml filename="ext_concurrency_impl.html"?>
-  
+
   <section xml:id="manual.ext.concurrency.impl.atomic_fallbacks" xreflabel="Atomic F"><info><title>Using Built-in Atomic Functions</title></info>
-    
+
 
 <para>The functions for atomic operations described above are either
 implemented via compiler intrinsics (if the underlying host is
@@ -276,7 +276,7 @@ hardware, hand-crafted assembly is selected. This is the case for the following 
 
   </section>
   <section xml:id="manual.ext.concurrency.impl.thread" xreflabel="Pthread"><info><title>Thread Abstraction</title></info>
-    
+
 
 <para>A thin layer above IEEE 1003.1 (i.e. pthreads) is used to abstract
 the thread interface for GCC. This layer is called "gthread," and is

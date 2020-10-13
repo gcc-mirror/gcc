@@ -1,7 +1,7 @@
 <!-- Converted by db4-upgrade version 1.0 -->
 
 <chapter xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="manual.intro" xreflabel="Introduction">
- 
+
 <info><title>Introduction</title>
   <keywordset>
     <keyword>ISO C++</keyword>
@@ -12,33 +12,33 @@
 
 
 <section xml:id="manual.intro.status" xreflabel="Status"><info><title>Status</title></info>
-  
+
   <para>
     The GNU C++ ...
   </para>
 </section>
 
 <section xml:id="manual.intro.setup" xreflabel="Setup"><info><title>Setup</title></info>
-  
+
   <para>
     The GNU C++ ...
   </para>
   <section xml:id="manual.intro.setup.next1" xreflabel="Next1"><info><title>Next1</title></info>
-    
+
     <para>
       The GNU C++ ...
     </para>
   </section>
   <section xml:id="manual.intro.setup.next2" xreflabel="Next2"><info><title>Next2</title></info>
-    
+
     <para>
       The GNU C++ ...
     </para>
-  </section>  
+  </section>
 </section>
 
 <section xml:id="manual.intro.using" xreflabel="Using"><info><title>Using</title></info>
-  
+
   <para>
     The GNU C++ ...
   </para>

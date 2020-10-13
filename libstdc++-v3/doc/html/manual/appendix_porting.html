@@ -52,7 +52,7 @@ The <code class="filename">configure</code> file is a script generated (via
 <span class="command"><strong>autoconf</strong></span>) from the file
 <code class="filename">configure.ac</code>.
 </p><p>
-  After the configure process is complete, 
+  After the configure process is complete,
 </p><pre class="screen">
 <code class="computeroutput">
 make all
@@ -62,7 +62,7 @@ in the build directory starts the build process. The <code class="literal">all</
 <span class="command"><strong>automake</strong></span>) from the file
 <code class="filename">Makefile.am</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.overview.map"></a>What Comes from Where</h4></div></div></div><div class="figure"><a id="fig.build_hacking.deps"></a><p class="title"><strong>Figure B.1. Configure and Build File Dependencies</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/confdeps.png" align="middle" alt="Dependency Graph for Configure and Build Files" /></div></div></div><br class="figure-break" /><p>
-    Regenerate all generated files by using the command 
+    Regenerate all generated files by using the command
     <span class="command"><strong>autoreconf</strong></span> at the top level of the libstdc++ source
     directory.
   </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.configure"></a>Configure</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.configure.scripts"></a>Storing Information in non-AC files (like configure.host)</h4></div></div></div><p>
