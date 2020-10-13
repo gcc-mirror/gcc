@@ -1,3 +1,112 @@
+2020-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97258
+	* gcc.dg/analyzer/callbacks-1.c: New test.
+	* gcc.dg/analyzer/callbacks-2.c: New test.
+	* gcc.dg/analyzer/callbacks-3.c: New test.
+
+2020-10-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97381.c: New test.
+
+2020-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97378.c: New test.
+
+2020-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83347
+	PR middle-end/90404
+	PR analyzer/95007
+	* gcc.dg/analyzer/write-to-const-1.c: New test.
+	* gcc.dg/analyzer/write-to-string-literal-1.c: New test.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/97201
+	* g++.dg/warn/Wplacement-new-size-8.C: Adjust expected message.
+	* g++.dg/warn/Warray-bounds-10.C: New test.
+	* g++.dg/warn/Warray-bounds-11.C: New test.
+	* g++.dg/warn/Warray-bounds-12.C: New test.
+	* g++.dg/warn/Warray-bounds-13.C: New test.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97342
+	PR middle-end/97023
+	PR middle-end/96384
+	* c-c++-common/Wrestrict.c: Adjust comment.
+	* gcc.dg/Wstringop-overflow-34.c: Remove xfail.
+	* gcc.dg/Wstringop-overflow-43.c: Remove xfails.  Adjust regex patterns.
+	* gcc.dg/pr51683.c: Prune out expected warning.
+	* gcc.target/i386/pr60693.c: Same.
+	* g++.dg/warn/Wplacement-new-size-8.C: New test.
+	* gcc.dg/Wstringop-overflow-41.c: New test.
+	* gcc.dg/Wstringop-overflow-44.s: New test.
+	* gcc.dg/Wstringop-overflow-45.c: New test.
+	* gcc.dg/Wstringop-overflow-46.c: New test.
+	* gcc.dg/Wstringop-overflow-47.c: New test.
+	* gcc.dg/Wstringop-overflow-49.c: New test.
+	* gcc.dg/Wstringop-overflow-50.c: New test.
+	* gcc.dg/Wstringop-overflow-51.c: New test.
+	* gcc.dg/Wstringop-overflow-52.c: New test.
+	* gcc.dg/Wstringop-overflow-53.c: New test.
+	* gcc.dg/Wstringop-overflow-54.c: New test.
+	* gcc.dg/Wstringop-overflow-55.c: New test.
+	* gcc.dg/Wstringop-overread-5.c: New test.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96511
+	PR middle-end/96384
+	* g++.dg/init/strlen.C: Add expected warning.
+	* g++.dg/warn/Wplacement-new-size-1.C: Relax warnings.
+	* g++.dg/warn/Wplacement-new-size-2.C: Same.
+	* g++.dg/warn/Wplacement-new-size-6.C: Same.
+	* gcc.dg/Warray-bounds-58.c: Adjust
+	* gcc.dg/Wstringop-overflow-37.c: Same.
+	* g++.dg/warn/Wplacement-new-size-7.C: New test.
+
+2020-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR tree-optimization/97357
+	* gcc.dg/pr97357.c: Call setjmp instead of _setjmp.
+
+2020-10-12  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-50.c: New testcase.
+	* gcc.dg/vect/bb-slp-51.c: Likewise.
+
+2020-10-12  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/97079
+	* gcc.target/aarch64/sve/pr97079.c: New test.
+
+2020-10-12  Duan bo  <duanbo3@huawei.com>
+
+	PR target/96757
+	* gcc.target/aarch64/pr96757.c: New test.
+
+2020-10-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/97349
+	* gcc.target/aarch64/simd/pr97349.c: New test.
+
+2020-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97371.c: New test.
+
+2020-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97357
+	* gcc.dg/pr97357.c: New testcase.
+
+2020-10-12  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96099
+	* gfortran.dg/pr96099_1.f90: New test.
+	* gfortran.dg/pr96099_2.f90: New test.
+
 2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* obj-c++.dg/plugin/diagnostic-test-expressions-1.mm:

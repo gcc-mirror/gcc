@@ -1,3 +1,8 @@
+2020-10-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* libgnat/a-ngelfu.ads (Sin, Cos): Make the single-argument
+	functions inline.
+
 2020-10-11  Alexandre Oliva  <oliva@adacore.com>
 
 	* libgnat/a-numaux.ads: Make all imports Intrinsic.
