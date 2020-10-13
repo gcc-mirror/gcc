@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ L L D                        --
+--              S Y S T E M . F O R E _ D E C I M A L _ 1 2 8               --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,54 +29,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Img_Dec; use System.Img_Dec;
+--  This package contains the routine used for the 'Fore attribute for decimal
+--  fixed point types up to 128-bit mantissa.
 
-package body System.Img_LLD is
+with Interfaces;
+with System.Fore_D;
 
-   -----------------------------
-   -- Image_Long_Long_Decimal --
-   ----------------------------
+package System.Fore_Decimal_128 is
+   pragma Pure;
 
-   procedure Image_Long_Long_Decimal
-     (V     : Long_Long_Integer;
-      S     : in out String;
-      P     : out Natural;
-      Scale : Integer)
-   is
-      pragma Assert (S'First = 1);
+   subtype Int128 is Interfaces.Integer_128;
 
-   begin
-      --  Add space at start for non-negative numbers
+   package Impl is new Fore_D (Int128);
 
-      if V >= 0 then
-         S (1) := ' ';
-         P := 1;
-      else
-         P := 0;
-      end if;
+   function Fore_Decimal128 (Lo, Hi : Int128; Scale : Integer) return Natural
+     renames Impl.Fore_Decimal;
 
-      Set_Image_Long_Long_Decimal
-        (V, S, P, Scale, 1, Integer'Max (1, Scale), 0);
-   end Image_Long_Long_Decimal;
-
-   ---------------------------------
-   -- Set_Image_Long_Long_Decimal --
-   ---------------------------------
-
-   procedure Set_Image_Long_Long_Decimal
-     (V     : Long_Long_Integer;
-      S     : in out String;
-      P     : in out Natural;
-      Scale : Integer;
-      Fore  : Natural;
-      Aft   : Natural;
-      Exp   : Natural)
-   is
-      Digs : String := Long_Long_Integer'Image (V);
-      --  Sign and digits of decimal value
-
-   begin
-      Set_Decimal_Digits (Digs, Digs'Length, S, P, Scale, Fore, Aft, Exp);
-   end Set_Image_Long_Long_Decimal;
-
-end System.Img_LLD;
+end System.Fore_Decimal_128;

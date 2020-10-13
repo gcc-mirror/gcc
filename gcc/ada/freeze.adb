@@ -6339,35 +6339,6 @@ package body Freeze is
          if Is_Fixed_Point_Type (E) then
             Freeze_Fixed_Point_Type (E);
 
-            --  Some error checks required for ordinary fixed-point type. Defer
-            --  these till the freeze-point since we need the small and range
-            --  values. We only do these checks for base types
-
-            if Is_Ordinary_Fixed_Point_Type (E) and then Is_Base_Type (E) then
-               if Small_Value (E) < Ureal_2_M_80 then
-                  Error_Msg_Name_1 := Name_Small;
-                  Error_Msg_N
-                    ("`&''%` too small, minimum allowed is 2.0'*'*(-80)", E);
-
-               elsif Small_Value (E) > Ureal_2_80 then
-                  Error_Msg_Name_1 := Name_Small;
-                  Error_Msg_N
-                    ("`&''%` too large, maximum allowed is 2.0'*'*80", E);
-               end if;
-
-               if Expr_Value_R (Type_Low_Bound (E)) < Ureal_M_10_36 then
-                  Error_Msg_Name_1 := Name_First;
-                  Error_Msg_N
-                    ("`&''%` too small, minimum allowed is -10.0'*'*36", E);
-               end if;
-
-               if Expr_Value_R (Type_High_Bound (E)) > Ureal_10_36 then
-                  Error_Msg_Name_1 := Name_Last;
-                  Error_Msg_N
-                    ("`&''%` too large, maximum allowed is 10.0'*'*36", E);
-               end if;
-            end if;
-
          elsif Is_Enumeration_Type (E) then
             Freeze_Enumeration_Type (E);
 
@@ -8123,6 +8094,12 @@ package body Freeze is
       --  Returns size of type with given bounds. Also leaves these
       --  bounds set as the current bounds of the Typ.
 
+      function Larger (A, B : Ureal) return Boolean;
+      --  Returns true if A > B with a margin of Typ'Small
+
+      function Smaller (A, B : Ureal) return Boolean;
+      --  Returns true if A < B with a margin of Typ'Small
+
       -----------
       -- Fsize --
       -----------
@@ -8133,6 +8110,24 @@ package body Freeze is
          Set_Realval (Hi, Hiv);
          return Minimum_Size (Typ);
       end Fsize;
+
+      ------------
+      -- Larger --
+      ------------
+
+      function Larger (A, B : Ureal) return Boolean is
+      begin
+         return A > B and then A - Small > B;
+      end Larger;
+
+      -------------
+      -- Smaller --
+      -------------
+
+      function Smaller (A, B : Ureal) return Boolean is
+      begin
+         return A < B and then A + Small < B;
+      end Smaller;
 
    --  Start of processing for Freeze_Fixed_Point_Type
 
@@ -8155,7 +8150,7 @@ package body Freeze is
          if Present (Atype) then
             Set_Esize (Typ, Esize (Atype));
          else
-            Set_Esize (Typ, Esize (Base_Type (Typ)));
+            Set_Esize (Typ, Esize (Btyp));
          end if;
       end if;
 
@@ -8435,6 +8430,110 @@ package body Freeze is
             Set_Realval (Hi, Actual_Hi);
          end Fudge;
 
+         --  Enforce some limitations for ordinary fixed-point types. They come
+         --  from an exact algorithm used to implement Text_IO.Fixed_IO and the
+         --  Fore, Image and Value attributes. The requirement on the Small is
+         --  to lie in the range 2**(-(Siz - 1)) .. 2**(Siz - 1) for a type of
+         --  Siz bits (Siz=32,64,128) and the requirement on the bounds is to
+         --  be smaller in magnitude than 10.0**N * 2**(Siz - 1), where N is
+         --  given by the formula N = floor ((Siz - 1) * log 2 / log 10).
+
+         --  If the bounds of a 32-bit type are too large, force 64-bit type
+
+         if Actual_Size <= 32
+           and then Small <= Ureal_2_31
+           and then (Smaller (Expr_Value_R (Lo), Ureal_M_2_10_18)
+                      or else Larger (Expr_Value_R (Hi), Ureal_2_10_18))
+         then
+            Actual_Size := 33;
+         end if;
+
+         --  If the bounds of a 64-bit type are too large, force 128-bit type
+
+         if System_Max_Integer_Size = 128
+           and then Actual_Size <= 64
+           and then Small <= Ureal_2_63
+           and then (Smaller (Expr_Value_R (Lo), Ureal_M_9_10_36)
+                      or else Larger (Expr_Value_R (Hi), Ureal_9_10_36))
+         then
+            Actual_Size := 65;
+         end if;
+
+         --  Give error messages for first subtypes and not base types, as the
+         --  bounds of base types are always maximum for their size, see below.
+
+         if System_Max_Integer_Size < 128 and then Typ /= Btyp then
+
+            --  See the 128-bit case below for the reason why we cannot test
+            --  against the 2**(-63) .. 2**63 range. This quirk should have
+            --  been kludged around as in the 128-bit case below, but it was
+            --  not and we end up with a ludicrous range as a result???
+
+            if Small < Ureal_2_M_80 then
+               Error_Msg_Name_1 := Name_Small;
+               Error_Msg_N
+                 ("`&''%` too small, minimum allowed is 2.0'*'*(-80)", Typ);
+
+            elsif Small > Ureal_2_80 then
+               Error_Msg_Name_1 := Name_Small;
+               Error_Msg_N
+                 ("`&''%` too large, maximum allowed is 2.0'*'*80", Typ);
+            end if;
+
+            if Smaller (Expr_Value_R (Lo), Ureal_M_9_10_36) then
+               Error_Msg_Name_1 := Name_First;
+               Error_Msg_N
+                 ("`&''%` too small, minimum allowed is -9.0E+36", Typ);
+            end if;
+
+            if Larger (Expr_Value_R (Hi), Ureal_9_10_36) then
+               Error_Msg_Name_1 := Name_Last;
+               Error_Msg_N
+                 ("`&''%` too large, maximum allowed is 9.0E+36", Typ);
+            end if;
+
+         elsif System_Max_Integer_Size = 128 and then Typ /= Btyp then
+
+            --  ACATS c35902d tests a delta equal to 2**(-(Max_Mantissa + 1))
+            --  but we cannot really support anything smaller than Fine_Delta
+            --  because of the way we implement I/O for fixed point types???
+
+            if Small = Ureal_2_M_128 then
+               null;
+
+            elsif Small < Ureal_2_M_127 then
+               Error_Msg_Name_1 := Name_Small;
+               Error_Msg_N
+                 ("`&''%` too small, minimum allowed is 2.0'*'*(-127)", Typ);
+
+            elsif Small > Ureal_2_127 then
+               Error_Msg_Name_1 := Name_Small;
+               Error_Msg_N
+                 ("`&''%` too large, maximum allowed is 2.0'*'*127", Typ);
+            end if;
+
+            if Actual_Size > 64
+              and then Norm_Num (Small) /= Uint_1
+              and then Norm_Den (Small) /= Uint_1
+            then
+               Error_Msg_Name_1 := Name_Small;
+               Error_Msg_N
+                 ("`&''%` not an integer or reciprocal of an integer", Typ);
+            end if;
+
+            if Smaller (Expr_Value_R (Lo), Ureal_M_10_76) then
+               Error_Msg_Name_1 := Name_First;
+               Error_Msg_N
+                 ("`&''%` too small, minimum allowed is -1.0E+76", Typ);
+            end if;
+
+            if Larger (Expr_Value_R (Hi), Ureal_10_76) then
+               Error_Msg_Name_1 := Name_Last;
+               Error_Msg_N
+                 ("`&''%` too large, maximum allowed is 1.0E+76", Typ);
+            end if;
+         end if;
+
       --  For the decimal case, none of this fudging is required, since there
       --  are no end-point problems in the decimal case (the end-points are
       --  always included).
@@ -8446,12 +8545,13 @@ package body Freeze is
       --  At this stage, the actual size has been calculated and the proper
       --  required bounds are stored in the low and high bounds.
 
-      if Actual_Size > 64 then
+      if Actual_Size > System_Max_Integer_Size then
          Error_Msg_Uint_1 := UI_From_Int (Actual_Size);
+         Error_Msg_Uint_2 := UI_From_Int (System_Max_Integer_Size);
          Error_Msg_N
-           ("size required (^) for type& too large, maximum allowed is 64",
+           ("size required (^) for type& too large, maximum allowed is ^",
             Typ);
-         Actual_Size := 64;
+         Actual_Size := System_Max_Integer_Size;
       end if;
 
       --  Check size against explicit given size
@@ -8477,8 +8577,10 @@ package body Freeze is
             Actual_Size := 16;
          elsif Actual_Size <= 32 then
             Actual_Size := 32;
-         else
+         elsif Actual_Size <= 64 then
             Actual_Size := 64;
+         else
+            Actual_Size := 128;
          end if;
 
          Init_Esize (Typ, Actual_Size);
@@ -8489,7 +8591,7 @@ package body Freeze is
       --  the full width of the allocated size in bits, to avoid junk range
       --  checks on intermediate computations.
 
-      if Base_Type (Typ) = Typ then
+      if Typ = Btyp then
          Set_Realval (Lo, -(Small * (Uint_2 ** (Actual_Size - 1))));
          Set_Realval (Hi,  (Small * (Uint_2 ** (Actual_Size - 1) - 1)));
       end if;

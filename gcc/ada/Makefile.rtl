@@ -344,6 +344,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-tideio$(objext) \
   a-tienau$(objext) \
   a-tienio$(objext) \
+  a-tifiau$(objext) \
   a-tifiio$(objext) \
   a-tiflau$(objext) \
   a-tiflio$(objext) \
@@ -371,6 +372,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-wtedit$(objext) \
   a-wtenau$(objext) \
   a-wtenio$(objext) \
+  a-wtfiau$(objext) \
   a-wtfiio$(objext) \
   a-wtflau$(objext) \
   a-wtflio$(objext) \
@@ -394,6 +396,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-ztenau$(objext) \
   a-ztenio$(objext) \
   a-ztexio$(objext) \
+  a-ztfiau$(objext) \
   a-ztfiio$(objext) \
   a-ztflau$(objext) \
   a-ztflio$(objext) \
@@ -520,6 +523,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-aomoar$(objext) \
   s-aotase$(objext) \
   s-aridou$(objext) \
+  s-arit32$(objext) \
   s-arit64$(objext) \
   s-assert$(objext) \
   s-atacco$(objext) \
@@ -599,30 +603,41 @@ GNATRTL_NONTASKING_OBJS= \
   s-finmas$(objext) \
   s-finroo$(objext) \
   s-flocon$(objext) \
-  s-fore$(objext)   \
+  s-fode32$(objext) \
+  s-fode64$(objext) \
+  s-fofi32$(objext) \
+  s-fofi64$(objext) \
+  s-fore_d$(objext) \
+  s-fore_f$(objext) \
+  s-forrea$(objext) \
   s-gearop$(objext) \
   s-genbig$(objext) \
   s-geveop$(objext) \
   s-gloloc$(objext) \
   s-htable$(objext) \
   s-imageb$(objext) \
+  s-imaged$(objext) \
+  s-imagef$(objext) \
   s-imagei$(objext) \
   s-imageu$(objext) \
   s-imagew$(objext) \
+  s-imde32$(objext) \
+  s-imde64$(objext) \
   s-imenne$(objext) \
+  s-imfi32$(objext) \
+  s-imfi64$(objext) \
   s-imgbiu$(objext) \
   s-imgboo$(objext) \
   s-imgcha$(objext) \
-  s-imgdec$(objext) \
   s-imgenu$(objext) \
   s-imgint$(objext) \
   s-imgllb$(objext) \
-  s-imglld$(objext) \
   s-imglli$(objext) \
   s-imgllu$(objext) \
   s-imgllw$(objext) \
   s-imgrea$(objext) \
   s-imguns$(objext) \
+  s-imguti$(objext) \
   s-imgwch$(objext) \
   s-imgwiu$(objext) \
   s-io$(objext)     \
@@ -736,14 +751,19 @@ GNATRTL_NONTASKING_OBJS= \
   s-utf_32$(objext) \
   s-valboo$(objext) \
   s-valcha$(objext) \
-  s-valdec$(objext) \
+  s-vade32$(objext) \
+  s-vade64$(objext) \
+  s-vafi32$(objext) \
+  s-vafi64$(objext) \
   s-valenu$(objext) \
   s-valint$(objext) \
-  s-vallld$(objext) \
   s-vallli$(objext) \
   s-valllu$(objext) \
   s-valrea$(objext) \
+  s-valued$(objext) \
+  s-valuef$(objext) \
   s-valuei$(objext) \
+  s-valuer$(objext) \
   s-valueu$(objext) \
   s-valuns$(objext) \
   s-valuti$(objext) \
@@ -885,10 +905,17 @@ TRASYM_DWARF_UNIX_OBJS = $(TRASYM_DWARF_COMMON_OBJS) s-mmauni$(objext)
 TRASYM_DWARF_MINGW_OBJS = $(TRASYM_DWARF_COMMON_OBJS)
 
 GNATRTL_128BIT_PAIRS = \
+  a-decima.ads<libgnat/a-decima__128.ads \
+  a-tideio.adb<libgnat/a-tideio__128.adb \
+  a-tifiio.adb<libgnat/a-tifiio__128.adb \
   a-tiinio.adb<libgnat/a-tiinio__128.adb \
   a-timoio.adb<libgnat/a-timoio__128.adb \
+  a-wtdeio.adb<libgnat/a-wtdeio__128.adb \
+  a-wtfiio.adb<libgnat/a-wtfiio__128.adb \
   a-wtinio.adb<libgnat/a-wtinio__128.adb \
   a-wtmoio.adb<libgnat/a-wtmoio__128.adb \
+  a-ztdeio.adb<libgnat/a-ztdeio__128.adb \
+  a-ztfiio.adb<libgnat/a-ztfiio__128.adb \
   a-ztinio.adb<libgnat/a-ztinio__128.adb \
   a-ztmoio.adb<libgnat/a-ztmoio__128.adb \
   i-cexten.ads<libgnat/i-cexten__128.ads \
@@ -903,6 +930,10 @@ GNATRTL_128BIT_OBJS = \
   s-exnllli$(objext) \
   s-expllli$(objext) \
   s-explllu$(objext) \
+  s-fode128$(objext) \
+  s-fofi128$(objext) \
+  s-imde128$(objext) \
+  s-imfi128$(objext) \
   s-imglllb$(objext) \
   s-imgllli$(objext) \
   s-imglllu$(objext) \
@@ -970,6 +1001,8 @@ GNATRTL_128BIT_OBJS = \
   s-pack125$(objext) \
   s-pack126$(objext) \
   s-pack127$(objext) \
+  s-vade128$(objext) \
+  s-vafi128$(objext) \
   s-valllli$(objext) \
   s-vallllu$(objext) \
   s-widllli$(objext) \

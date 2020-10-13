@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . V A L _ L L D                        --
+--                        S Y S T E M . F O R E _ D                         --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,42 +29,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Val_Real; use System.Val_Real;
+package body System.Fore_D is
 
-package body System.Val_LLD is
+   ------------------
+   -- Fore_Decimal --
+   ------------------
 
-   ----------------------------
-   -- Scan_Long_Long_Decimal --
-   ----------------------------
+   function Fore_Decimal (Lo, Hi : Int; Scale : Integer) return Natural is
 
-   --  We use the floating-point circuit for now, this will be OK on a PC,
-   --  but definitely does NOT have the required precision if the longest
-   --  float type is IEEE double. This must be fixed in the future ???
+      function Negative_Abs (Val : Int) return Int is
+        (if Val <= 0 then Val else -Val);
+      --  Return the opposite of the absolute value of Val
 
-   function Scan_Long_Long_Decimal
-     (Str   : String;
-      Ptr   : not null access Integer;
-      Max   : Integer;
-      Scale : Integer) return Long_Long_Integer
-   is
-      Val : Long_Long_Float;
+      T : Int := Int'Min (Negative_Abs (Lo), Negative_Abs (Hi));
+      F : Natural;
+
    begin
-      Val := Scan_Real (Str, Ptr, Max);
-      return Long_Long_Integer (Val * 10.0 ** Scale);
-   end Scan_Long_Long_Decimal;
+      --  Initial value of 2 allows for sign and mandatory single digit
 
-   -----------------------------
-   -- Value_Long_Long_Decimal --
-   -----------------------------
+      F := 2;
 
-   --  Again we cheat and use floating-point ???
+      --  Loop to increase Fore as needed to include full range of values
 
-   function Value_Long_Long_Decimal
-     (Str   : String;
-      Scale : Integer) return Long_Long_Integer
-   is
-   begin
-      return Long_Long_Integer (Value_Real (Str) * 10.0 ** Scale);
-   end Value_Long_Long_Decimal;
+      while T <= -10 loop
+         T := T / 10;
+         F := F + 1;
+      end loop;
 
-end System.Val_LLD;
+      return Natural'Max (F - Scale, 2);
+   end Fore_Decimal;
+
+end System.Fore_D;

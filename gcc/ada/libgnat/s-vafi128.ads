@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                          S Y S T E M . F O R E                           --
+--                 S Y S T E M . V A L _ F I X E D _ 1 2 8                  --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,28 +29,32 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Fore is
+--  This package contains routines for scanning values for ordinary fixed point
+--  types up to 128-bit small and mantissa, for use in Text_IO.Decimal_IO, and
+--  the Value attribute for such decimal types.
 
-   ----------
-   -- Fore --
-   ----------
+with Interfaces;
+with System.Arith_128;
+with System.Value_F;
 
-   function Fore (Lo, Hi : Long_Long_Float) return Natural is
-      T : Long_Long_Float := Long_Long_Float'Max (abs Lo, abs Hi);
-      R : Natural;
+package System.Val_Fixed_128 is
+   pragma Preelaborate;
 
-   begin
-      --  Initial value of 2 allows for sign and mandatory single digit
+   subtype Int128 is Interfaces.Integer_128;
+   subtype Uns128 is Interfaces.Unsigned_128;
 
-      R := 2;
+   package Impl is new Value_F (Int128, Uns128, Arith_128.Scaled_Divide128);
 
-      --  Loop to increase Fore as needed to include full range of values
+   function Scan_Fixed128
+     (Str : String;
+      Ptr : not null access Integer;
+      Max : Integer;
+      Num : Int128;
+      Den : Int128) return Int128
+     renames Impl.Scan_Fixed;
 
-      while T >= 10.0 loop
-         T := T / 10.0;
-         R := R + 1;
-      end loop;
+   function Value_Fixed128
+     (Str : String; Num : Int128; Den : Int128) return Int128
+     renames Impl.Value_Fixed;
 
-      return R;
-   end Fore;
-end System.Fore;
+end System.Val_Fixed_128;

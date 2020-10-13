@@ -1326,6 +1326,12 @@ package body CStand is
       Set_Scope (Standard_Integer_64, Standard_Standard);
       Build_Signed_Integer_Type (Standard_Integer_64, 64);
 
+      Standard_Integer_128 := New_Standard_Entity ("integer_128");
+      Decl := New_Node (N_Full_Type_Declaration, Stloc);
+      Set_Defining_Identifier (Decl, Standard_Integer_128);
+      Set_Scope (Standard_Integer_128, Standard_Standard);
+      Build_Signed_Integer_Type (Standard_Integer_128, 128);
+
       --  Standard_*_Unsigned subtypes are not user visible, but they are
       --  used internally. They are unsigned types with the same length as
       --  the correspondingly named signed integer types.

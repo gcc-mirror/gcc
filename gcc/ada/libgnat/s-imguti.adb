@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                        S Y S T E M . I M G _ D E C                       --
+--                      S Y S T E M . I M G _ U T I L                       --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,34 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Img_Int; use System.Img_Int;
+with System.Img_Uns; use System.Img_Uns;
 
-package body System.Img_Dec is
-
-   -------------------
-   -- Image_Decimal --
-   -------------------
-
-   procedure Image_Decimal
-     (V     : Integer;
-      S     : in out String;
-      P     : out Natural;
-      Scale : Integer)
-   is
-      pragma Assert (S'First = 1);
-
-   begin
-      --  Add space at start for non-negative numbers
-
-      if V >= 0 then
-         S (1) := ' ';
-         P := 1;
-      else
-         P := 0;
-      end if;
-
-      Set_Image_Decimal (V, S, P, Scale, 1, Integer'Max (1, Scale), 0);
-   end Image_Decimal;
+package body System.Img_Util is
 
    ------------------------
    -- Set_Decimal_Digits --
@@ -121,8 +96,8 @@ package body System.Img_Dec is
       procedure Set_Blanks_And_Sign (N : Integer);
       --  Sets leading blanks and minus sign if needed. N is the number of
       --  positions to be filled (a minus sign is output even if N is zero
-      --  or negative, For a positive value, if N is non-positive, then
-      --  a leading blank is filled.
+      --  or negative, but for a positive value, if N is non-positive, then
+      --  the call has no effect).
 
       procedure Set_Digits (S, E : Natural);
       pragma Inline (Set_Digits);
@@ -219,9 +194,6 @@ package body System.Img_Dec is
          --  Constraint_Error will not necessarily be raised if this
          --  requirement is violated, since it is perfectly valid to compile
          --  this unit with checks off.
-         --
-         --  Due to codepeer limitation, codepeer should be used with switch:
-         --   -no-propagation system.img_dec.set_decimal_digits.set
          P := P + 1;
          S (P) := C;
       end Set;
@@ -231,20 +203,16 @@ package body System.Img_Dec is
       -------------------------
 
       procedure Set_Blanks_And_Sign (N : Integer) is
-         W : Integer := N;
-
       begin
          if Minus then
-            W := W - 1;
-
-            for J in 1 .. W loop
+            for J in 1 .. N - 1 loop
                Set (' ');
             end loop;
 
             Set ('-');
 
          else
-            for J in 1 .. W loop
+            for J in 1 .. N loop
                Set (' ');
             end loop;
          end if;
@@ -305,15 +273,16 @@ package body System.Img_Dec is
          --  exponent of +0.
 
          Expon := (if Zero then 0 else Digits_Before_Point - 1);
+
          Set ('E');
          ND := 0;
 
          if Expon >= 0 then
             Set ('+');
-            Set_Image_Integer (Expon, Digs, ND);
+            Set_Image_Unsigned (Unsigned (Expon), Digs, ND);
          else
             Set ('-');
-            Set_Image_Integer (-Expon, Digs, ND);
+            Set_Image_Unsigned (Unsigned (-Expon), Digs, ND);
          end if;
 
          Set_Zeroes (Exp - ND - 1);
@@ -431,24 +400,4 @@ package body System.Img_Dec is
       end if;
    end Set_Decimal_Digits;
 
-   -----------------------
-   -- Set_Image_Decimal --
-   -----------------------
-
-   procedure Set_Image_Decimal
-     (V     : Integer;
-      S     : in out String;
-      P     : in out Natural;
-      Scale : Integer;
-      Fore  : Natural;
-      Aft   : Natural;
-      Exp   : Natural)
-   is
-      Digs : String := Integer'Image (V);
-      --  Sign and digits of decimal value
-
-   begin
-      Set_Decimal_Digits (Digs, Digs'Length, S, P, Scale, Fore, Aft, Exp);
-   end Set_Image_Decimal;
-
-end System.Img_Dec;
+end System.Img_Util;

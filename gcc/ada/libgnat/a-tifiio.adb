@@ -140,168 +140,70 @@
 --  solution. The downside however may be a too limited set of acceptable
 --  fixed point types.
 
-with Interfaces;                        use Interfaces;
-with System.Arith_64;                   use System.Arith_64;
-with System.Img_Real;                   use System.Img_Real;
-with Ada.Text_IO;                       use Ada.Text_IO;
+with Interfaces;
+with Ada.Text_IO.Fixed_Aux;
 with Ada.Text_IO.Float_Aux;
-with Ada.Text_IO.Generic_Aux;
+with System.Img_Fixed_32; use System.Img_Fixed_32;
+with System.Img_Fixed_64; use System.Img_Fixed_64;
+with System.Val_Fixed_32; use System.Val_Fixed_32;
+with System.Val_Fixed_64; use System.Val_Fixed_64;
 
 package body Ada.Text_IO.Fixed_IO is
 
-   --  Note: we still use the floating-point I/O routines for input of
-   --  ordinary fixed-point and output using exponent format. This will
-   --  result in inaccuracies for fixed point types with a small that is
-   --  not a power of two, and for types that require more precision than
-   --  is available in Long_Long_Float.
+   --  Note: we still use the floating-point I/O routines for types whose small
+   --  is not a sufficiently small integer or the reciprocal thereof. This will
+   --  result in inaccuracies for fixed point types that require more precision
+   --  than is available in Long_Long_Float.
 
-   package Aux renames Ada.Text_IO.Float_Aux;
+   subtype Int32 is Interfaces.Integer_32;
+   subtype Int64 is Interfaces.Integer_64;
 
-   Extra_Layout_Space : constant Field := 5 + Num'Fore;
-   --  Extra space that may be needed for output of sign, decimal point,
-   --  exponent indication and mandatory decimals after and before the
-   --  decimal point. A string with length
+   package Aux32 is new
+     Ada.Text_IO.Fixed_Aux (Int32, Scan_Fixed32, Set_Image_Fixed32);
 
-   --    Fore + Aft + Exp + Extra_Layout_Space
-
-   --  is always long enough for formatting any fixed point number.
-
-   --  Implementation of Put routines
-
-   --  The following section describes a specific implementation choice for
-   --  performing base conversions needed for output of values of a fixed
-   --  point type T with small T'Small. The goal is to be able to output
-   --  all values of types with a precision of 64 bits and a delta of at
-   --  least 2.0**(-63), as these are current GNAT limitations already.
-
-   --  The chosen algorithm uses fixed precision integer arithmetic for
-   --  reasons of simplicity and efficiency. It is important to understand
-   --  in what ways the most simple and accurate approach to fixed point I/O
-   --  is limiting, before considering more complicated schemes.
-
-   --  Without loss of generality assume T has a range (-2.0**63) * T'Small
-   --  .. (2.0**63 - 1) * T'Small, and is output with Aft digits after the
-   --  decimal point and T'Fore - 1 before. If T'Small is integer, or
-   --  1.0 / T'Small is integer, let S = T'Small and E = 0. For other T'Small,
-   --  let S and E be integers such that S / 10**E best approximates T'Small
-   --  and S is in the range 10**17 .. 10**18 - 1. The extra decimal scaling
-   --  factor 10**E can be trivially handled during final output, by adjusting
-   --  the decimal point or exponent.
-
-   --  The idea is to convert a value X * S of type T to a 64-bit integer value
-   --  Q equal to 10.0**D * (X * S) rounded to the nearest integer, using only
-   --  a scaled integer divide of the form
-
-   --     Q := (X * Y) / Z,
-
-   --  where the variables X, Y, Z are 64-bit integers, and both multiplication
-   --  and division are done using full intermediate precision. Then the final
-   --  decimal value to be output is
-
-   --     Q * 10**(E-D)
-
-   --  This value can be written to the output file or to the result string
-   --  according to the format described in RM A.3.10. The details of this
-   --  operation are omitted here.
-
-   --  A 64-bit value can represent all integers with 18 decimal digits, but
-   --  not all with 19 decimal digits. If the total number of requested ouput
-   --  digits (Fore - 1) + Aft is greater than 18 then, for purposes of the
-   --  conversion, Aft is adjusted to 18 - (Fore - 1). In that case, trailing
-   --  zeros can complete the output after writing the first 18 significant
-   --  digits, or the technique described in the next section can be used.
-
-   --  The final expression for D is
-
-   --     D := Integer'Max (-18, Integer'Min (Aft, 18 - (Fore - 1)));
-
-   --  For Y and Z the following expressions can be derived:
-
-   --     Q = X * S * (10.0**D) = (X * Y) / Z
-
-   --     S * 10.0**D = Y / Z;
-
-   --  If S is an integer greater than or equal to one, then Fore must be at
-   --  least 20 in order to print T'First, which is at most -2.0**63. This
-   --  means that D < 0, so use
-
-   --    (1)   Y = -S and Z = -10**(-D)
-
-   --  If 1.0 / S is an integer greater than one, use
-
-   --    (2)   Y = -10**D and Z = -(1.0 / S), for D >= 0
-
-   --  or
-
-   --    (3)   Y = -1 and Z = -(1.0 / S) * 10**(-D), for D < 0
-
-   --  Negative values are used for nominator Y and denominator Z, so that S
-   --  can have a maximum value of 2.0**63 and a minimum of 2.0**(-63).
-   --  For Z in -1 .. -9, Fore will still be 20, and D will be negative, as
-   --  (-2.0**63) / -9 is greater than 10**18. In these cases there is room
-   --  in the denominator for the extra decimal scaling required, so case (3)
-   --  will not overflow.
-
-   --  Extra Precision
-
-   --  Using a scaled divide which truncates and returns a remainder R,
-   --  another K trailing digits can be calculated by computing the value
-   --  (R * (10.0**K)) / Z using another scaled divide. This procedure
-   --  can be repeated to compute an arbitrary number of digits in linear
-   --  time and storage. The last scaled divide should be rounded, with
-   --  a possible carry propagating to the more significant digits, to
-   --  ensure correct rounding of the unit in the last place.
-
-   --  A variant of this technique is to limit the value of Q to 9 decimal
-   --  digits, since 32-bit integers can be much more efficient than 64-bit
-   --  integers to output.
-
-   pragma Assert (System.Fine_Delta >= 2.0**(-63));
-   pragma Assert (Num'Small in 2.0**(-80) .. 2.0**80);
-   pragma Assert (Num'Fore <= 37);
-
-   Max_Digits : constant := 18;
-   --  Maximum number of decimal digits that can be represented in a
-   --  64-bit signed number, see above
-
-   --  The constants E0 .. E5 implement a binary search for the appropriate
-   --  power of ten to scale the small so that it has one digit before the
-   --  decimal point.
-
-   subtype Int is Integer;
-   E0 : constant Int := -(25 * Boolean'Pos (Num'Small >= 1.0E1));
-   E1 : constant Int := E0 + 13 * Boolean'Pos (Num'Small * 10.0**E0 < 1.0E-13);
-   E2 : constant Int := E1 +  6 * Boolean'Pos (Num'Small * 10.0**E1 < 1.0E-6);
-   E3 : constant Int := E2 +  3 * Boolean'Pos (Num'Small * 10.0**E2 < 1.0E-3);
-   E4 : constant Int := E3 +  2 * Boolean'Pos (Num'Small * 10.0**E3 < 1.0E-1);
-   E5 : constant Int := E4 +  1 * Boolean'Pos (Num'Small * 10.0**E4 < 1.0E-0);
-
-   Scale : constant Integer := E5;
-
-   pragma Assert (Num'Small * 10.0**Scale >= 1.0
-                   and then Num'Small * 10.0**Scale < 10.0);
+   package Aux64 is new
+     Ada.Text_IO.Fixed_Aux (Int64, Scan_Fixed64, Set_Image_Fixed64);
 
    Exact : constant Boolean :=
      (Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
-        or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
-        or else Num'Small >= 10.0**Max_Digits)
+       or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small))
      and then Num'Small >= 2.0**(-63)
      and then Num'Small <= 2.0**63;
-   --  True iff a 64-bit numerator and denominator can be calculated such that
-   --  their ratio exactly represents the small of Num.
+   --  True if the exact algorithm implemented in Fixed_Aux can be used. The
+   --  condition is a Small which is either an integer or the reciprocal of an
+   --  integer with the appropriate magnitude.
 
-   procedure Put
-     (To   : out String;
-      Last : out Natural;
-      Item : Num;
-      Fore : Integer;
-      Aft  : Field;
-      Exp  : Field);
-   --  Actual output function, used internally by all other Put routines.
-   --  The formal Fore is an Integer, not a Field, because the routine is
-   --  also called from the version of Put that performs I/O to a string,
-   --  where the starting position depends on the size of the String, and
-   --  bears no relation to the bounds of Field.
+   Need_64 : constant Boolean :=
+     Num'Object_Size > 32
+       or else Num'Small > 2.0**31
+       or else Num'Small < 2.0**(-31);
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Int32 is acceptable and where type Int64 is needed. This Boolean is used
+   --  to test for these cases and since it is a constant, only code for the
+   --  relevant case will be included in the instance.
+
+   E : constant Natural := 31 + 32 * Boolean'Pos (Need_64);
+   --  T'Size - 1 for the selected Int{32,64}
+
+   F0 : constant Natural := 0;
+   F1 : constant Natural :=
+          F0 + 18 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F0) >= 1.0E+18);
+   F2 : constant Natural :=
+          F1 +  9 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F1) >= 1.0E+9);
+   F3 : constant Natural :=
+          F2 +  5 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F2) >= 1.0E+5);
+   F4 : constant Natural :=
+          F3 +  3 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F3) >= 1.0E+3);
+   F5 : constant Natural :=
+          F4 +  2 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F4) >= 1.0E+2);
+   F6 : constant Natural :=
+          F5 +  1 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F5) >= 1.0E+1);
+   --  Binary search for the number of digits - 1 before the decimal point of
+   --  the product 2.0**E * Num'Small.
+
+   For0 : constant Natural := 2 + F6;
+   --  Fore value for the fixed point type whose mantissa is Int{32,64} and
+   --  whose small is Num'Small.
 
    ---------
    -- Get --
@@ -313,8 +215,22 @@ package body Ada.Text_IO.Fixed_IO is
       Width : Field := 0)
    is
       pragma Unsuppress (Range_Check);
+
    begin
-      Aux.Get (File, Long_Long_Float (Item), Width);
+      if not Exact then
+         Float_Aux.Get (File, Long_Long_Float (Item), Width);
+      elsif Need_64 then
+         Item := Num'Fixed_Value
+                   (Aux64.Get (File, Width,
+                               Int64 (-Float'Ceiling (Num'Small)),
+                               Int64 (-Float'Ceiling (1.0 / Num'Small))));
+      else
+         Item := Num'Fixed_Value
+                   (Aux32.Get (File, Width,
+                               Int32 (-Float'Ceiling (Num'Small)),
+                               Int32 (-Float'Ceiling (1.0 / Num'Small))));
+      end if;
+
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -323,11 +239,8 @@ package body Ada.Text_IO.Fixed_IO is
      (Item  : out Num;
       Width : Field := 0)
    is
-      pragma Unsuppress (Range_Check);
    begin
-      Aux.Get (Current_In, Long_Long_Float (Item), Width);
-   exception
-      when Constraint_Error => raise Data_Error;
+      Get (Current_Input, Item, Width);
    end Get;
 
    procedure Get
@@ -336,8 +249,22 @@ package body Ada.Text_IO.Fixed_IO is
       Last : out Positive)
    is
       pragma Unsuppress (Range_Check);
+
    begin
-      Aux.Gets (From, Long_Long_Float (Item), Last);
+      if not Exact then
+         Float_Aux.Gets (From, Long_Long_Float (Item), Last);
+      elsif Need_64 then
+         Item := Num'Fixed_Value
+                   (Aux64.Gets (From, Last,
+                                Int64 (-Float'Ceiling (Num'Small)),
+                                Int64 (-Float'Ceiling (1.0 / Num'Small))));
+      else
+         Item := Num'Fixed_Value
+                   (Aux32.Gets (From, Last,
+                                Int32 (-Float'Ceiling (Num'Small)),
+                                Int32 (-Float'Ceiling (1.0 / Num'Small))));
+      end if;
+
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -353,11 +280,20 @@ package body Ada.Text_IO.Fixed_IO is
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    is
-      S    : String (1 .. Fore + Aft + Exp + Extra_Layout_Space);
-      Last : Natural;
    begin
-      Put (S, Last, Item, Fore, Aft, Exp);
-      Generic_Aux.Put_Item (File, S (1 .. Last));
+      if not Exact then
+         Float_Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
+      elsif Need_64 then
+         Aux64.Put (File, Int64'Integer_Value (Item), Fore, Aft, Exp,
+                    Int64 (-Float'Ceiling (Num'Small)),
+                    Int64 (-Float'Ceiling (1.0 / Num'Small)),
+                    For0, Num'Aft);
+      else
+         Aux32.Put (File, Int32'Integer_Value (Item), Fore, Aft, Exp,
+                    Int32 (-Float'Ceiling (Num'Small)),
+                    Int32 (-Float'Ceiling (1.0 / Num'Small)),
+                    For0, Num'Aft);
+      end if;
    end Put;
 
    procedure Put
@@ -366,11 +302,8 @@ package body Ada.Text_IO.Fixed_IO is
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    is
-      S    : String (1 .. Fore + Aft + Exp + Extra_Layout_Space);
-      Last : Natural;
    begin
-      Put (S, Last, Item, Fore, Aft, Exp);
-      Generic_Aux.Put_Item (Text_IO.Current_Out, S (1 .. Last));
+      Put (Current_Out, Item, Fore, Aft, Exp);
    end Put;
 
    procedure Put
@@ -379,332 +312,20 @@ package body Ada.Text_IO.Fixed_IO is
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    is
-      Fore : constant Integer :=
-        To'Length
-          - 1                      -- Decimal point
-          - Field'Max (1, Aft)     -- Decimal part
-          - Boolean'Pos (Exp /= 0) -- Exponent indicator
-          - Exp;                   -- Exponent
-
-      Last : Natural;
-
    begin
-      if Fore - Boolean'Pos (Item < 0.0) < 1 then
-         raise Layout_Error;
+      if not Exact then
+         Float_Aux.Puts (To, Long_Long_Float (Item), Aft, Exp);
+      elsif Need_64 then
+         Aux64.Puts (To, Int64'Integer_Value (Item), Aft, Exp,
+                     Int64 (-Float'Ceiling (Num'Small)),
+                     Int64 (-Float'Ceiling (1.0 / Num'Small)),
+                     For0, Num'Aft);
+      else
+         Aux32.Puts (To, Int32'Integer_Value (Item), Aft, Exp,
+                     Int32 (-Float'Ceiling (Num'Small)),
+                     Int32 (-Float'Ceiling (1.0 / Num'Small)),
+                     For0, Num'Aft);
       end if;
-
-      Put (To, Last, Item, Fore, Aft, Exp);
-
-      if Last /= To'Last then
-         raise Layout_Error;
-      end if;
-   end Put;
-
-   procedure Put
-     (To   : out String;
-      Last : out Natural;
-      Item : Num;
-      Fore : Integer;
-      Aft  : Field;
-      Exp  : Field)
-   is
-      subtype Digit is Int64 range 0 .. 9;
-
-      X   : constant Int64   := Int64'Integer_Value (Item);
-      A   : constant Field   := Field'Max (Aft, 1);
-      Neg : constant Boolean := (Item < 0.0);
-      Pos : Integer := 0;  -- Next digit X has value X * 10.0**Pos;
-
-      procedure Put_Character (C : Character);
-      pragma Inline (Put_Character);
-      --  Add C to the output string To, updating Last
-
-      procedure Put_Digit (X : Digit);
-      --  Add digit X to the output string (going from left to right), updating
-      --  Last and Pos, and inserting the sign, leading zeros or a decimal
-      --  point when necessary. After outputting the first digit, Pos must not
-      --  be changed outside Put_Digit anymore.
-
-      procedure Put_Int64 (X : Int64; Scale : Integer);
-      --  Output the decimal number abs X * 10**Scale
-
-      procedure Put_Scaled
-        (X, Y, Z : Int64;
-         A       : Field;
-         E       : Integer);
-      --  Output the decimal number (X * Y / Z) * 10**E, producing A digits
-      --  after the decimal point and rounding the final digit. The value
-      --  X * Y / Z is computed with full precision, but must be in the
-      --  range of Int64.
-
-      -------------------
-      -- Put_Character --
-      -------------------
-
-      procedure Put_Character (C : Character) is
-      begin
-         Last := Last + 1;
-
-         --  Never put a character outside of string To. Exception Layout_Error
-         --  will be raised later if Last is greater than To'Last.
-
-         if Last <= To'Last then
-            To (Last) := C;
-         end if;
-      end Put_Character;
-
-      ---------------
-      -- Put_Digit --
-      ---------------
-
-      procedure Put_Digit (X : Digit) is
-         Digs : constant array (Digit) of Character := "0123456789";
-
-      begin
-         if Last = To'First - 1 then
-            if X /= 0 or else Pos <= 0 then
-
-               --  Before outputting first digit, include leading space,
-               --  possible minus sign and, if the first digit is fractional,
-               --  decimal seperator and leading zeros.
-
-               --  The Fore part has Pos + 1 + Boolean'Pos (Neg) characters,
-               --  if Pos >= 0 and otherwise has a single zero digit plus minus
-               --  sign if negative. Add leading space if necessary.
-
-               for J in Integer'Max (0, Pos) + 2 + Boolean'Pos (Neg) .. Fore
-               loop
-                  Put_Character (' ');
-               end loop;
-
-               --  Output minus sign, if number is negative
-
-               if Neg then
-                  Put_Character ('-');
-               end if;
-
-               --  If starting with fractional digit, output leading zeros
-
-               if Pos < 0 then
-                  Put_Character ('0');
-                  Put_Character ('.');
-
-                  for J in Pos .. -2 loop
-                     Put_Character ('0');
-                  end loop;
-               end if;
-
-               Put_Character (Digs (X));
-            end if;
-
-         else
-            --  This is not the first digit to be output, so the only
-            --  special handling is that for the decimal point
-
-            if Pos = -1 then
-               Put_Character ('.');
-            end if;
-
-            Put_Character (Digs (X));
-         end if;
-
-         Pos := Pos - 1;
-      end Put_Digit;
-
-      ---------------
-      -- Put_Int64 --
-      ---------------
-
-      procedure Put_Int64 (X : Int64; Scale : Integer) is
-      begin
-         if X = 0 then
-            return;
-         end if;
-
-         if X not in -9 .. 9 then
-            Put_Int64 (X / 10, Scale + 1);
-         end if;
-
-         --  Use Put_Digit to advance Pos. This fixes a case where the second
-         --  or later Scaled_Divide would omit leading zeroes, resulting in
-         --  too few digits produced and a Layout_Error as result.
-
-         while Pos > Scale loop
-            Put_Digit (0);
-         end loop;
-
-         --  If and only if more than one digit is output before the decimal
-         --  point, pos will be unequal to scale when outputting the first
-         --  digit.
-
-         pragma Assert (Pos = Scale or else Last = To'First - 1);
-
-         Pos := Scale;
-
-         Put_Digit (abs (X rem 10));
-      end Put_Int64;
-
-      ----------------
-      -- Put_Scaled --
-      ----------------
-
-      procedure Put_Scaled
-        (X, Y, Z : Int64;
-         A       : Field;
-         E       : Integer)
-      is
-         pragma Assert (E >= -Max_Digits);
-         AA : constant Field := Integer'Max (E + A, 0);
-         N  : constant Natural := (AA + Max_Digits - 1) / Max_Digits + 1;
-
-         Q  : array (0 .. N - 1) of Int64 := (others => 0);
-         --  Each element of Q has Max_Digits decimal digits, except the
-         --  last, which has AA rem Max_Digits. Only Q (Q'First) may have an
-         --  absolute value equal to or larger than 10**Max_Digits. Only the
-         --  absolute value of the elements is significant, not the sign.
-
-         XX : Int64 := X;
-         YY : Int64 := Y;
-
-      begin
-         for J in Q'Range loop
-            exit when XX = 0;
-
-            if J > 0 then
-               YY := 10**(Integer'Min (Max_Digits, AA - (J - 1) * Max_Digits));
-            end if;
-
-            Scaled_Divide64 (XX, YY, Z, Q (J), R => XX, Round => False);
-         end loop;
-
-         if -E > A then
-            pragma Assert (N = 1);
-
-            Discard_Extra_Digits : declare
-               Factor : constant Int64 := 10**(-E - A);
-
-            begin
-               --  The scaling factors were such that the first division
-               --  produced more digits than requested. So divide away extra
-               --  digits and compute new remainder for later rounding.
-
-               if abs (Q (0) rem Factor) >= Factor / 2 then
-                  Q (0) := abs (Q (0) / Factor) + 1;
-               else
-                  Q (0) := Q (0) / Factor;
-               end if;
-
-               XX := 0;
-            end Discard_Extra_Digits;
-         end if;
-
-         --  At this point XX is a remainder and we need to determine if the
-         --  quotient in Q must be rounded away from zero.
-
-         --  As XX is less than the divisor, it is safe to take its absolute
-         --  without chance of overflow. The check to see if XX is at least
-         --  half the absolute value of the divisor must be done carefully to
-         --  avoid overflow or lose precision.
-
-         XX := abs XX;
-
-         if XX >= 2**62
-            or else (Z < 0 and then (-XX) * 2 <= Z)
-            or else (Z >= 0 and then XX * 2 >= Z)
-         then
-            --  OK, rounding is necessary. As the sign is not significant,
-            --  take advantage of the fact that an extra negative value will
-            --  always be available when propagating the carry.
-
-            Q (Q'Last) := -abs Q (Q'Last) - 1;
-
-            Propagate_Carry :
-            for J in reverse 1 .. Q'Last loop
-               if Q (J) = YY or else Q (J) = -YY then
-                  Q (J) := 0;
-                  Q (J - 1) := -abs Q (J - 1) - 1;
-
-               else
-                  exit Propagate_Carry;
-               end if;
-            end loop Propagate_Carry;
-         end if;
-
-         for J in Q'First .. Q'Last - 1 loop
-            Put_Int64 (Q (J), E - J * Max_Digits);
-         end loop;
-
-         Put_Int64 (Q (Q'Last), -A);
-      end Put_Scaled;
-
-   --  Start of processing for Put
-
-   begin
-      Last := To'First - 1;
-
-      if Exp /= 0 then
-
-         --  With the Exp format, it is not known how many output digits to
-         --  generate, as leading zeros must be ignored. Computing too many
-         --  digits and then truncating the output will not give the closest
-         --  output, it is necessary to round at the correct digit.
-
-         --  The general approach is as follows: as long as no digits have
-         --  been generated, compute the Aft next digits (without rounding).
-         --  Once a non-zero digit is generated, determine the exact number
-         --  of digits remaining and compute them with rounding.
-
-         --  Since a large number of iterations might be necessary in case
-         --  of Aft = 1, the following optimization would be desirable.
-
-         --  Count the number Z of leading zero bits in the integer
-         --  representation of X, and start with producing Aft + Z * 1000 /
-         --  3322 digits in the first scaled division.
-
-         --  However, the floating-point routines are still used now ???
-
-         System.Img_Real.Set_Image_Real (Long_Long_Float (Item), To, Last,
-            Fore, Aft, Exp);
-         return;
-      end if;
-
-      if Exact then
-         declare
-            D : constant Integer := Integer'Min (A, Max_Digits
-                                                            - (Num'Fore - 1));
-            Y : constant Int64   := Int64'Min (Int64 (-Num'Small), -1)
-                                     * 10**Integer'Max (0, D);
-            Z : constant Int64   := Int64'Min (Int64 (-(1.0 / Num'Small)), -1)
-                                     * 10**Integer'Max (0, -D);
-         begin
-            Put_Scaled (X, Y, Z, A, -D);
-         end;
-
-      else -- not Exact
-         declare
-            E : constant Integer := Max_Digits - 1 + Scale;
-            D : constant Integer := Scale - 1;
-            Y : constant Int64   := Int64 (-Num'Small * 10.0**E);
-            Z : constant Int64   := -10**Max_Digits;
-         begin
-            Put_Scaled (X, Y, Z, A, -D);
-         end;
-      end if;
-
-      --  If only zero digits encountered, unit digit has not been output yet
-
-      if Last < To'First then
-         Pos := 0;
-
-      elsif Last > To'Last then
-         raise Layout_Error; -- Not enough room in the output variable
-      end if;
-
-      --  Always output digits up to the first one after the decimal point
-
-      while Pos >= -A loop
-         Put_Digit (0);
-      end loop;
    end Put;
 
 end Ada.Text_IO.Fixed_IO;

@@ -14945,6 +14945,10 @@ package body Sem_Ch3 is
       Loc           : constant Source_Ptr := Sloc (Def);
       Digs_Expr     : constant Node_Id    := Digits_Expression (Def);
       Delta_Expr    : constant Node_Id    := Delta_Expression (Def);
+      Max_Digits    : constant Nat        :=
+                        (if System_Max_Integer_Size = 128 then 38 else 18);
+      --  Maximum number of digits that can be represented in an integer
+
       Implicit_Base : Entity_Id;
       Digs_Val      : Uint;
       Delta_Val     : Ureal;
@@ -14982,9 +14986,10 @@ package body Sem_Ch3 is
                Scale_Val := Scale_Val + 1;
             end loop;
 
-            if Scale_Val > 18 then
-               Error_Msg_N ("scale exceeds maximum value of 18", Def);
-               Scale_Val := UI_From_Int (+18);
+            if Scale_Val > Max_Digits then
+               Error_Msg_Uint_1 := UI_From_Int (Max_Digits);
+               Error_Msg_N ("scale exceeds maximum value of ^", Def);
+               Scale_Val := UI_From_Int (Max_Digits);
             end if;
 
          else
@@ -14993,9 +14998,10 @@ package body Sem_Ch3 is
                Scale_Val := Scale_Val - 1;
             end loop;
 
-            if Scale_Val < -18 then
-               Error_Msg_N ("scale is less than minimum value of -18", Def);
-               Scale_Val := UI_From_Int (-18);
+            if Scale_Val < -Max_Digits then
+               Error_Msg_Uint_1 := UI_From_Int (-Max_Digits);
+               Error_Msg_N ("scale is less than minimum value of ^", Def);
+               Scale_Val := UI_From_Int (-Max_Digits);
             end if;
          end if;
 
@@ -15017,9 +15023,10 @@ package body Sem_Ch3 is
       Check_Digits_Expression (Digs_Expr);
       Digs_Val := Expr_Value (Digs_Expr);
 
-      if Digs_Val > 18 then
-         Digs_Val := UI_From_Int (+18);
-         Error_Msg_N ("digits value out of range, maximum is 18", Digs_Expr);
+      if Digs_Val > Max_Digits then
+         Error_Msg_Uint_1 := UI_From_Int (Max_Digits);
+         Error_Msg_N ("digits value out of range, maximum is ^", Digs_Expr);
+         Digs_Val := UI_From_Int (Max_Digits);
       end if;
 
       Set_Digits_Value (Implicit_Base, Digs_Val);

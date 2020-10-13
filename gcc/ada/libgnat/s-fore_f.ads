@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . V A L _ D E C                        --
+--                        S Y S T E M . F O R E _ F                         --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,40 +29,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Val_Real; use System.Val_Real;
+--  This package contains the routine used for the Fore attribute of ordinary
+--  fixed point types whose Small is an integer or its reciprocal.
 
-package body System.Val_Dec is
+generic
 
-   ------------------
-   -- Scan_Decimal --
-   ------------------
+   type Int is range <>;
 
-   --  For decimal types where Size < Integer'Size, it is fine to use
-   --  the floating-point circuit, since it certainly has sufficient
-   --  precision for any reasonable hardware, and we just don't support
-   --  things on junk hardware.
+   with procedure Scaled_Divide
+          (X, Y, Z : Int;
+           Q, R : out Int;
+           Round : Boolean);
 
-   function Scan_Decimal
-     (Str   : String;
-      Ptr   : not null access Integer;
-      Max   : Integer;
-      Scale : Integer) return Integer
-   is
-      Val : Long_Long_Float;
-   begin
-      Val := Scan_Real (Str, Ptr, Max);
-      return Integer (Val * 10.0 ** Scale);
-   end Scan_Decimal;
+package System.Fore_F is
+   pragma Pure;
 
-   -------------------
-   -- Value_Decimal --
-   -------------------
+   function Fore_Fixed (Lo, Hi, Num, Den : Int) return Natural;
+   --  Compute Fore attribute value for an ordinary fixed point type with small
+   --  Num/Den. The parameters are the low and high bounds (in units of small).
 
-   --  Again, we use the real circuit for this purpose
-
-   function Value_Decimal (Str : String; Scale : Integer) return Integer is
-   begin
-      return Integer (Value_Real (Str) * 10.0 ** Scale);
-   end Value_Decimal;
-
-end System.Val_Dec;
+end System.Fore_F;

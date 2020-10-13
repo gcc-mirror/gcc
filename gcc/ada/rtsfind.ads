@@ -249,14 +249,24 @@ package Rtsfind is
       System_Fat_VAX_G_Float,
       System_Finalization_Masters,
       System_Finalization_Root,
-      System_Fore,
+      System_Fore_Decimal_32,
+      System_Fore_Decimal_64,
+      System_Fore_Decimal_128,
+      System_Fore_Fixed_32,
+      System_Fore_Fixed_64,
+      System_Fore_Fixed_128,
+      System_Fore_Real,
       System_Img_Bool,
       System_Img_Char,
-      System_Img_Dec,
+      System_Img_Decimal_32,
+      System_Img_Decimal_64,
+      System_Img_Decimal_128,
       System_Img_Enum,
       System_Img_Enum_New,
+      System_Img_Fixed_32,
+      System_Img_Fixed_64,
+      System_Img_Fixed_128,
       System_Img_Int,
-      System_Img_LLD,
       System_Img_LLI,
       System_Img_LLLI,
       System_Img_LLU,
@@ -417,10 +427,14 @@ package Rtsfind is
       System_Unsigned_Types,
       System_Val_Bool,
       System_Val_Char,
-      System_Val_Dec,
+      System_Val_Decimal_32,
+      System_Val_Decimal_64,
+      System_Val_Decimal_128,
       System_Val_Enum,
+      System_Val_Fixed_32,
+      System_Val_Fixed_64,
+      System_Val_Fixed_128,
       System_Val_Int,
-      System_Val_LLD,
       System_Val_LLI,
       System_Val_LLLI,
       System_Val_LLU,
@@ -756,8 +770,10 @@ package Rtsfind is
      RE_Subtract_With_Ovflo_Check64,     -- System.Arith_64
 
      RE_Add_With_Ovflo_Check128,         -- System.Arith_128
+     RE_Double_Divide128,                -- System.Arith_128
      RE_Multiply_With_Ovflo_Check128,    -- System.Arith_128
      RE_Subtract_With_Ovflo_Check128,    -- System.Arith_128
+     RE_Scaled_Divide128,                -- System.Arith_128
 
      RE_Create_AST_Handler,              -- System.AST_Handling
 
@@ -943,22 +959,36 @@ package Rtsfind is
      RE_Root_Controlled,                 -- System.Finalization_Root
      RE_Root_Controlled_Ptr,             -- System.Finalization_Root
 
-     RE_Fore,                            -- System.Fore
+     RE_Fore_Decimal32,                  -- System.Fore_Decimal_32
+
+     RE_Fore_Decimal64,                  -- System.Fore_Decimal_64
+
+     RE_Fore_Decimal128,                 -- System.Fore_Decimal_128
+
+     RE_Fore_Fixed32,                    -- System.Fore_Fixed_32
+
+     RE_Fore_Fixed64,                    -- System.Fore_Fixed_64
+
+     RE_Fore_Fixed128,                   -- System.Fore_Fixed_128
+
+     RE_Fore_Real,                       -- System.Fore_Real
 
      RE_Image_Boolean,                   -- System.Img_Bool
 
      RE_Image_Character,                 -- System.Img_Char
      RE_Image_Character_05,              -- System.Img_Char
 
-     RE_Image_Decimal,                   -- System.Img_Dec
+     RE_Image_Decimal32,                 -- System.Img_Decimal_32
+
+     RE_Image_Decimal64,                 -- System.Img_Decimal_64
+
+     RE_Image_Decimal128,                -- System.Img_Decimal_128
 
      RE_Image_Enumeration_8,             -- System.Img_Enum_New
      RE_Image_Enumeration_16,            -- System.Img_Enum_New
      RE_Image_Enumeration_32,            -- System.Img_Enum_New
 
      RE_Image_Integer,                   -- System.Img_Int
-
-     RE_Image_Long_Long_Decimal,         -- System.Img_LLD
 
      RE_Image_Long_Long_Integer,         -- System.Img_LLI
 
@@ -967,6 +997,10 @@ package Rtsfind is
      RE_Image_Long_Long_Unsigned,        -- System.Img_LLU
 
      RE_Image_Long_Long_Long_Unsigned,   -- System.Img_LLLU
+
+     RE_Image_Fixed32,                   -- System.Img_Fixed_32
+     RE_Image_Fixed64,                   -- System.Img_Fixed_64
+     RE_Image_Fixed128,                  -- System.Img_Fixed_128
 
      RE_Image_Ordinary_Fixed_Point,      -- System.Img_Real
      RE_Image_Floating_Point,            -- System.Img_Real
@@ -1991,15 +2025,23 @@ package Rtsfind is
 
      RE_Value_Character,                 -- System.Val_Char
 
-     RE_Value_Decimal,                   -- System.Val_Dec
+     RE_Value_Decimal32,                 -- System_Val_Decimal_32
+
+     RE_Value_Decimal64,                 -- System_Val_Decimal_64
+
+     RE_Value_Decimal128,                -- System_Val_Decimal_128
 
      RE_Value_Enumeration_8,             -- System.Val_Enum
      RE_Value_Enumeration_16,            -- System.Val_Enum
      RE_Value_Enumeration_32,            -- System.Val_Enum
 
-     RE_Value_Integer,                   -- System.Val_Int
+     RE_Value_Fixed32,                   -- System_Val_Fixed_32
 
-     RE_Value_Long_Long_Decimal,         -- System.Val_LLD
+     RE_Value_Fixed64,                   -- System_Val_Fixed_64
+
+     RE_Value_Fixed128,                  -- System_Val_Fixed_128
+
+     RE_Value_Integer,                   -- System.Val_Int
 
      RE_Value_Long_Long_Integer,         -- System.Val_LLI
 
@@ -2403,8 +2445,10 @@ package Rtsfind is
      RE_Subtract_With_Ovflo_Check64      => System_Arith_64,
 
      RE_Add_With_Ovflo_Check128          => System_Arith_128,
+     RE_Double_Divide128                 => System_Arith_128,
      RE_Multiply_With_Ovflo_Check128     => System_Arith_128,
      RE_Subtract_With_Ovflo_Check128     => System_Arith_128,
+     RE_Scaled_Divide128                 => System_Arith_128,
 
      RE_Create_AST_Handler               => System_AST_Handling,
 
@@ -2596,22 +2640,36 @@ package Rtsfind is
      RE_Root_Controlled                  => System_Finalization_Root,
      RE_Root_Controlled_Ptr              => System_Finalization_Root,
 
-     RE_Fore                             => System_Fore,
+     RE_Fore_Decimal32                   => System_Fore_Decimal_32,
+
+     RE_Fore_Decimal64                   => System_Fore_Decimal_64,
+
+     RE_Fore_Decimal128                  => System_Fore_Decimal_128,
+
+     RE_Fore_Fixed32                     => System_Fore_Fixed_32,
+
+     RE_Fore_Fixed64                     => System_Fore_Fixed_64,
+
+     RE_Fore_Fixed128                    => System_Fore_Fixed_128,
+
+     RE_Fore_Real                        => System_Fore_Real,
 
      RE_Image_Boolean                    => System_Img_Bool,
 
      RE_Image_Character                  => System_Img_Char,
      RE_Image_Character_05               => System_Img_Char,
 
-     RE_Image_Decimal                    => System_Img_Dec,
+     RE_Image_Decimal32                  => System_Img_Decimal_32,
+
+     RE_Image_Decimal64                  => System_Img_Decimal_64,
+
+     RE_Image_Decimal128                 => System_Img_Decimal_128,
 
      RE_Image_Enumeration_8              => System_Img_Enum_New,
      RE_Image_Enumeration_16             => System_Img_Enum_New,
      RE_Image_Enumeration_32             => System_Img_Enum_New,
 
      RE_Image_Integer                    => System_Img_Int,
-
-     RE_Image_Long_Long_Decimal          => System_Img_LLD,
 
      RE_Image_Long_Long_Integer          => System_Img_LLI,
 
@@ -2620,6 +2678,10 @@ package Rtsfind is
      RE_Image_Long_Long_Unsigned         => System_Img_LLU,
 
      RE_Image_Long_Long_Long_Unsigned    => System_Img_LLLU,
+
+     RE_Image_Fixed32                    => System_Img_Fixed_32,
+     RE_Image_Fixed64                    => System_Img_Fixed_64,
+     RE_Image_Fixed128                   => System_Img_Fixed_128,
 
      RE_Image_Ordinary_Fixed_Point       => System_Img_Real,
      RE_Image_Floating_Point             => System_Img_Real,
@@ -3644,15 +3706,23 @@ package Rtsfind is
 
      RE_Value_Character                  => System_Val_Char,
 
-     RE_Value_Decimal                    => System_Val_Dec,
+     RE_Value_Decimal32                  => System_Val_Decimal_32,
+
+     RE_Value_Decimal64                  => System_Val_Decimal_64,
+
+     RE_Value_Decimal128                 => System_Val_Decimal_128,
 
      RE_Value_Enumeration_8              => System_Val_Enum,
      RE_Value_Enumeration_16             => System_Val_Enum,
      RE_Value_Enumeration_32             => System_Val_Enum,
 
-     RE_Value_Integer                    => System_Val_Int,
+     RE_Value_Fixed32                    => System_Val_Fixed_32,
 
-     RE_Value_Long_Long_Decimal          => System_Val_LLD,
+     RE_Value_Fixed64                    => System_Val_Fixed_64,
+
+     RE_Value_Fixed128                   => System_Val_Fixed_128,
+
+     RE_Value_Integer                    => System_Val_Int,
 
      RE_Value_Long_Long_Integer          => System_Val_LLI,
 
