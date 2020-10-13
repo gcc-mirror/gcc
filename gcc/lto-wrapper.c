@@ -1043,7 +1043,7 @@ find_crtoffloadtable (int save_temps, const char *dumppfx)
 	if (!save_temps)
 	  crtoffloadtable = make_temp_file (".crtoffloadtable.o");
 	else
-	  crtoffloadtable = concat (dumppfx, "crtoffloadtable.o");
+	  crtoffloadtable = concat (dumppfx, "crtoffloadtable.o", NULL);
 	copy_file (crtoffloadtable, paths[i]);
 	printf ("%s\n", crtoffloadtable);
 	XDELETEVEC (crtoffloadtable);
