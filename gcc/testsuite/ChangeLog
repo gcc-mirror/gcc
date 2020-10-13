@@ -1,3 +1,42 @@
+2020-10-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-10-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/97349
+	* gcc.target/aarch64/simd/pr97349.c: New test.
+
+2020-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR tree-optimization/97357
+	* gcc.dg/pr97357.c: Call setjmp instead of _setjmp.
+
+2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/fail_compilation/fail21001.d: New test.
+	* gdc.test/fail_compilation/imports/fail21001b.d: New test.
+	* gdc.test/fail_compilation/imports/issue21295ast_node.d: New test.
+	* gdc.test/fail_compilation/imports/issue21295astcodegen.d: New test.
+	* gdc.test/fail_compilation/imports/issue21295dtemplate.d: New test.
+	* gdc.test/fail_compilation/imports/issue21295visitor.d: New test.
+	* gdc.test/fail_compilation/issue21295.d: New test.
+
+2020-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97357
+	* gcc.dg/pr97357.c: New testcase.
+
+2020-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97255
+	* g++.dg/vect/pr97255.cc: New testcase.
+
 2020-10-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/97313
