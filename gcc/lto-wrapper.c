@@ -1026,7 +1026,7 @@ copy_file (const char *dest, const char *src)
    the copy to the linker.  */
 
 static void
-find_crtoffloadtable (void)
+find_crtoffloadtable (int save_temps, const char *dumppfx)
 {
   char **paths = NULL;
   const char *library_path = getenv ("LIBRARY_PATH");
@@ -1039,7 +1039,11 @@ find_crtoffloadtable (void)
     if (access_check (paths[i], R_OK) == 0)
       {
 	/* The linker will delete the filename we give it, so make a copy.  */
-	char *crtoffloadtable = make_temp_file (".crtoffloadtable.o");
+	char *crtoffloadtable;
+	if (!save_temps)
+	  crtoffloadtable = make_temp_file (".crtoffloadtable.o");
+	else
+	  crtoffloadtable = concat (dumppfx, "crtoffloadtable.o");
 	copy_file (crtoffloadtable, paths[i]);
 	printf ("%s\n", crtoffloadtable);
 	XDELETEVEC (crtoffloadtable);
@@ -1698,7 +1702,7 @@ cont1:
 
       if (offload_names)
 	{
-	  find_crtoffloadtable ();
+	  find_crtoffloadtable (save_temps, dumppfx);
 	  for (i = 0; offload_names[i]; i++)
 	    printf ("%s\n", offload_names[i]);
 	  free_array_of_ptrs ((void **) offload_names, i);
