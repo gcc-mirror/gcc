@@ -1,5 +1,9 @@
 2020-10-14  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (depset::hash::finalize_dependencies): Remove
+	pre-p2003 kludge.
+
 	p2003 internal linkage & header units
 	gcc/cp/
 	* name-lookup.c (get_fixed_binding_slot): Promote internal GM

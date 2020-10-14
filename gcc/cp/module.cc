@@ -13096,30 +13096,21 @@ depset::hash::finalize_dependencies ()
 	}
       else if (dep->refs_internal ())
 	{
+	  for (unsigned ix = dep->deps.length (); ix--;)
+	    {
+	      depset *rdep = dep->deps[ix];
+	      if (rdep->is_internal ())
+		{
+		  // FIXME: Better location information?  We're
+		  // losing, so it doesn't matter about efficiency
+		  tree decl = dep->get_entity ();
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "%q#D references internal linkage entity %q#D",
+			    decl, rdep->get_entity ());
+		  break;
+		}
+	    }
 	  ok = false;
-	  tree decl = dep->get_entity ();
-#if 1
-	  // FIXME: __thread_active_p is borked, so allow it.
-	  if (CP_DECL_CONTEXT (decl) == global_namespace
-	      && DECL_NAME (decl)
-	      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
-			  "__gthread_active_p"))
-	    ok = true;
-#endif
-	  if (!ok)
-	    for (unsigned ix = dep->deps.length (); ix--;)
-	      {
-		depset *rdep = dep->deps[ix];
-		if (rdep->is_internal ())
-		  {
-		    // FIXME: Better location information?  We're
-		    // losing, so it doesn't matter about efficiency
-		    error_at (DECL_SOURCE_LOCATION (decl),
-			      "%q#D references internal linkage entity %q#D",
-			      decl, rdep->get_entity ());
-		    break;
-		  }
-	      }
 	}
     }
 
