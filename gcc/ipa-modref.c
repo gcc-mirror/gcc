@@ -531,6 +531,10 @@ merge_call_side_effects (modref_summary *cur_summary,
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
       tree op = gimple_call_arg (stmt, i);
+      bool offset_known;
+      poly_int64 offset;
+
+      offset_known = unadjusted_ptr_and_unit_offset (op, &op, &offset);
       if (TREE_CODE (op) == SSA_NAME
 	  && SSA_NAME_IS_DEFAULT_DEF (op)
 	  && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
@@ -547,15 +551,23 @@ merge_call_side_effects (modref_summary *cur_summary,
 	      index++;
 	    }
 	  parm_map[i].parm_index = index;
-	  parm_map[i].parm_offset_known = true;
-	  parm_map[i].parm_offset = 0;
+	  parm_map[i].parm_offset_known = offset_known;
+	  parm_map[i].parm_offset = offset;
 	}
       else if (points_to_local_or_readonly_memory_p (op))
 	parm_map[i].parm_index = -2;
       else
 	parm_map[i].parm_index = -1;
       if (dump_file)
-	fprintf (dump_file, " %i", parm_map[i].parm_index);
+	{
+	  fprintf (dump_file, " %i", parm_map[i].parm_index);
+	  if (parm_map[i].parm_offset_known)
+	    {
+	      fprintf (dump_file, " offset:");
+	      print_dec ((poly_int64_pod)parm_map[i].parm_offset,
+			 dump_file, SIGNED);
+	    }
+	}
     }
   if (dump_file)
     fprintf (dump_file, "\n");
