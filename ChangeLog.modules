@@ -1,5 +1,11 @@
 2020-10-14  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* pt.c (lookup_template_class_1): Delete erroneous fixme.
+	(tsubst_template_decl): Delete questioning fixme, problem, if any,
+	is on trunk.
+	(get_mergeable_specialization_flags): Optimize specialization scan.
+
 	Merge trunk 068644a1497
 	c++: DECL_FRIEND_P cleanup
 

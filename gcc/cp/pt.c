@@ -9772,9 +9772,6 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       gen_tmpl = most_general_template (templ);
       if (flag_modules)
 	{
-	  // FIXME: I think we can optimize this by checking where
-	  // gen_tmpl comes from -- if it's not a header or partition,
-	  // it can't be affected by this.
 	  tree origin = get_originating_module_decl (gen_tmpl);
 	  load_pending_specializations (CP_DECL_CONTEXT (origin),
 					DECL_NAME (origin));
@@ -14266,10 +14263,6 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
 
   if (TREE_CODE (decl) == FUNCTION_DECL && !lambda_fntype)
     /* Record this non-type partial instantiation.  */
-    // FIXME: Should we be registering this if this is a constrained
-    // template?  DECL_TEMPLATE_RESULT (r) might be the unconstrained
-    // template's result we found in the above instantiations.  And
-    // that smells wrong.
     register_specialization (r, t,
 			     DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),
 			     false, hash);
@@ -29752,14 +29745,18 @@ get_mergeable_specialization_flags (tree tmpl, tree decl)
 	flags |= 1;
 	break;
       }
-  // FIXME: Only need to search if DECL is a partial specialization
-  for (tree part = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
-       part; part = TREE_CHAIN (part))
-    if (TREE_VALUE (part) == decl)
-      {
-	flags |= 2;
-	break;
-      }
+
+  if (CLASS_TYPE_P (TREE_TYPE (decl))
+      && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl))
+      && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)) == 2)
+    /* Only need to search if DECL is a partial specialization.  */
+    for (tree part = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
+	 part; part = TREE_CHAIN (part))
+      if (TREE_VALUE (part) == decl)
+	{
+	  flags |= 2;
+	  break;
+	}
 
   return flags;
 }
