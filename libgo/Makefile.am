@@ -1096,7 +1096,7 @@ if LIBGO_IS_BSD
 $(eval $(call PACKAGE_template,golang.org/x/net/route))
 
 golangorg_x_net_route_lo = \
-	golang.org/net/route.lo
+	golang.org/x/net/route.lo
 
 endif
 
