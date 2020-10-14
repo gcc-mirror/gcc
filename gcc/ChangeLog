@@ -1,3 +1,38 @@
+2020-10-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (neoversen2_tunings): Define.
+	* config/aarch64/aarch64-cores.def (neoverse-n2): Use it.
+
+2020-10-13  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2020-09-30  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/97251
+	* config/arm/arm.md (movsf): Relax TARGET_HARD_FLOAT to
+	TARGET_VFP_BASE.
+	(movdf): Likewise.
+	* config/arm/vfp.md (no_literal_pool_df_immediate): Likewise.
+	(no_literal_pool_sf_immediate): Likewise.
+
+2020-10-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-09-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm-protos.h (arm_mve_mode_and_operands_type_check):
+	Delete.
+	* config/arm/arm.c (arm_coproc_mem_operand_wb): Use a scale factor
+	of 2 rather than 4 for 16-bit modes.
+	(arm_mve_mode_and_operands_type_check): Delete.
+	* config/arm/constraints.md (Uj): Allow writeback for Neon,
+	but continue to disallow it for MVE.
+	* config/arm/arm.md (*arm32_mov<HFBF:mode>): Add !TARGET_HAVE_MVE.
+	* config/arm/vfp.md (*mov_load_vfp_hf16, *mov_store_vfp_hf16): Fold
+	back into...
+	(*mov<mode>_vfp_<mode>16): ...here but use Uj for the FPR memory
+	constraints.  Use for base MVE too.
+
 2020-10-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:

@@ -1,3 +1,15 @@
+2020-10-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96229
+	* parser.c (cp_parser_class_specifier_1): Move call to
+	associate_classtype_constraints from here to ...
+	(cp_parser_class_head): ... here.
+	* pt.c (is_compatible_template_arg): Correct documentation to
+	say "argument is _no_ more constrained than the parameter".
+
 2020-10-08  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

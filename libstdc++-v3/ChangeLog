@@ -1,3 +1,16 @@
+2020-10-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95788
+	* include/bits/ranges_uninitialized.h:
+	(__construct_at_fn::operator()): Rewrite in terms of
+	std::construct_at.  Declare it conditionally noexcept.  Qualify
+	calls to declval in its requires-clause.
+	* testsuite/20_util/specialized_algorithms/construct_at/95788.cc:
+	New test.
+
 2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
