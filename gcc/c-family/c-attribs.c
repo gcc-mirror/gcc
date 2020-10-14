@@ -4547,10 +4547,11 @@ handle_access_attribute (tree node[3], tree name, tree args,
    result in the following attribute access:
 
      value: "+^2[*],$0$1^3[*],$1$1"
-     chain: <0, x> <1, y>
+     list:  < <0, x> <1, y> >
 
-   where each <node> on the chain corresponds to one VLA bound for each
-   of the two parameters.  */
+   where the list has a single value which itself is is a list each
+   of whose <node>s corresponds to one VLA bound for each of the two
+   parameters.  */
 
 tree
 build_attr_access_from_parms (tree parms, bool skip_voidptr)
@@ -4654,13 +4655,17 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
   if (!spec.length ())
     return NULL_TREE;
 
+  /* Attribute access takes a two or three arguments.  Wrap VBLIST in
+     another list in case it has more nodes than would otherwise fit.  */
+    vblist = build_tree_list (NULL_TREE, vblist);
+
   /* Build a single attribute access with the string describing all
      array arguments and an optional list of any non-parameter VLA
      bounds in order.  */
   tree str = build_string (spec.length (), spec.c_str ());
   tree attrargs = tree_cons (NULL_TREE, str, vblist);
   tree name = get_identifier ("access");
-  return tree_cons (name, attrargs, NULL_TREE);
+  return build_tree_list (name, attrargs);
 }
 
 /* Handle a "nothrow" attribute; arguments as in
