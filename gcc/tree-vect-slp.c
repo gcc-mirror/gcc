@@ -564,8 +564,15 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 		      != (oprnd_info->first_dt != vect_reduction_def))))
 	    {
 	      /* Try swapping operands if we got a mismatch.  For BB
-		 vectorization only in case that will improve things.  */
-	      if (i == commutative_op && !swapped)
+		 vectorization only in case it will clearly improve things.  */
+	      if (i == commutative_op && !swapped
+		  && (!is_a <bb_vec_info> (vinfo)
+		      || (!vect_def_types_match ((*oprnds_info)[i+1]->first_dt,
+						 dts[i+1])
+			  && (vect_def_types_match (oprnd_info->first_dt,
+						    dts[i+1])
+			      || vect_def_types_match
+				   ((*oprnds_info)[i+1]->first_dt, dts[i])))))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_NOTE, vect_location,
@@ -579,10 +586,22 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 		  continue;
 		}
 
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: different types\n");
-	      return 1;
+	      if (is_a <bb_vec_info> (vinfo))
+		{
+		  /* Now for commutative ops we should see whether we can
+		     make the other operand matching.  */
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "treating operand as external\n");
+		  oprnd_info->first_dt = dt = vect_external_def;
+		}
+	      else
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: different types\n");
+		  return 1;
+		}
 	    }
 
       /* Make sure to demote the overall operand to external.  */
