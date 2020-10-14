@@ -8309,21 +8309,10 @@ package body Einfo is
 
    function Is_Standard_Character_Type (Id : E) return B is
    begin
-      if Is_Type (Id) then
-         declare
-            R : constant Entity_Id := Root_Type (Id);
-         begin
-            return
-              R = Standard_Character
-                or else
-              R = Standard_Wide_Character
-                or else
-              R = Standard_Wide_Wide_Character;
-         end;
-
-      else
-         return False;
-      end if;
+      return Is_Type (Id)
+        and then Root_Type (Id) in Standard_Character
+                                 | Standard_Wide_Character
+                                 | Standard_Wide_Wide_Character;
    end Is_Standard_Character_Type;
 
    -----------------------------
@@ -8332,21 +8321,10 @@ package body Einfo is
 
    function Is_Standard_String_Type (Id : E) return B is
    begin
-      if Is_Type (Id) then
-         declare
-            R : constant Entity_Id := Root_Type (Id);
-         begin
-            return
-              R = Standard_String
-                or else
-              R = Standard_Wide_String
-                or else
-              R = Standard_Wide_Wide_String;
-         end;
-
-      else
-         return False;
-      end if;
+      return Is_Type (Id)
+        and then Root_Type (Id) in Standard_String
+                                 | Standard_Wide_String
+                                 | Standard_Wide_Wide_String;
    end Is_Standard_String_Type;
 
    --------------------
@@ -8454,7 +8432,7 @@ package body Einfo is
 
          if Present (Formal) then
             while Present (Next_Formal (Formal)) loop
-               Formal := Next_Formal (Formal);
+               Next_Formal (Formal);
             end loop;
          end if;
 
