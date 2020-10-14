@@ -1,3 +1,70 @@
+2020-10-13  Nuno Lopes  <nuno.lopes@ist.utl.pt>
+
+	* include/bits/stl_algo.h (any_of): Fix incorrect description
+	in comment.
+
+2020-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document some API changes
+	and deprecations.
+	* doc/xml/manual/intro.xml: Document LWG 2499.
+	* doc/xml/manual/status_cxx2020.xml: Update status.
+	* doc/html/*: Regenerate.
+
+2020-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/book.txml: Remove trailing whitespace.
+	* doc/xml/chapter.txml: Likewise.
+	* doc/xml/class.txml: Likewise.
+	* doc/xml/gnu/fdl-1.3.xml: Likewise.
+	* doc/xml/gnu/gpl-3.0.xml: Likewise.
+	* doc/xml/manual/abi.xml: Likewise.
+	* doc/xml/manual/algorithms.xml: Likewise.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/appendix_contributing.xml: Likewise.
+	* doc/xml/manual/appendix_free.xml: Likewise.
+	* doc/xml/manual/appendix_porting.xml: Likewise.
+	* doc/xml/manual/atomics.xml: Likewise.
+	* doc/xml/manual/auto_ptr.xml: Likewise.
+	* doc/xml/manual/backwards_compatibility.xml: Likewise.
+	* doc/xml/manual/bitmap_allocator.xml: Likewise.
+	* doc/xml/manual/build_hacking.xml: Likewise.
+	* doc/xml/manual/codecvt.xml: Likewise.
+	* doc/xml/manual/concurrency.xml: Likewise.
+	* doc/xml/manual/concurrency_extensions.xml: Likewise.
+	* doc/xml/manual/configure.xml: Likewise.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/ctype.xml: Likewise.
+	* doc/xml/manual/debug.xml: Likewise.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/diagnostics.xml: Likewise.
+	* doc/xml/manual/documentation_hacking.xml: Likewise.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/xml/manual/internals.xml: Likewise.
+	* doc/xml/manual/intro.xml: Likewise.
+	* doc/xml/manual/io.xml: Likewise.
+	* doc/xml/manual/iterators.xml: Likewise.
+	* doc/xml/manual/locale.xml: Likewise.
+	* doc/xml/manual/localization.xml: Likewise.
+	* doc/xml/manual/messages.xml: Likewise.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/xml/manual/numerics.xml: Likewise.
+	* doc/xml/manual/parallel_mode.xml: Likewise.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+	* doc/xml/manual/prerequisites.xml: Likewise.
+	* doc/xml/manual/shared_ptr.xml: Likewise.
+	* doc/xml/manual/spine.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+	* doc/xml/manual/strings.xml: Likewise.
+	* doc/xml/manual/support.xml: Likewise.
+	* doc/xml/manual/test.xml: Likewise.
+	* doc/xml/manual/test_policy_data_structures.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/using_exceptions.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2020-10-12  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (take_while_view::begin): Constrain the
