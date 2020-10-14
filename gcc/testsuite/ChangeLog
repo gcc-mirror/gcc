@@ -1,3 +1,11 @@
+2020-10-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-10-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/97349
+	* gcc.target/aarch64/simd/pr97349.c: New test.
+
 2020-10-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
