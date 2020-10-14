@@ -3612,12 +3612,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
        */
       basic_string(const _CharT* __s, size_type __n,
 		   const _Alloc& __a = _Alloc());
+
       /**
        *  @brief  Construct string as copy of a C string.
        *  @param  __s  Source C string.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+#if __cpp_deduction_guides && ! defined _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3076. basic_string CTAD ambiguity
+      template<typename = _RequireAllocator<_Alloc>>
+#endif
       basic_string(const _CharT* __s, const _Alloc& __a = _Alloc());
+
       /**
        *  @brief  Construct string as multiple characters.
        *  @param  __n  Number of characters.
