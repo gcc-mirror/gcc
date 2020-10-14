@@ -29,17 +29,60 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-      builtin_define ("__ppc");			\
-      builtin_define ("__PPC__");		\
-      builtin_define ("__EABI__");		\
       builtin_define ("__ELF__");		\
-      if (!TARGET_SOFT_FLOAT)			\
-	builtin_define ("__hardfp");		\
+      if (!TARGET_VXWORKS7)			\
+	builtin_define ("__EABI__");		\
 						\
-      /* C89 namespace violation! */		\
-      builtin_define ("CPU_FAMILY=PPC");	\
-        					\
+      /* CPU macros, based on what the system compilers do.  */	\
+      if (!TARGET_VXWORKS7)			\
+	{					\
+	  builtin_define ("__ppc");		\
+	  /* Namespace violation below, but the system headers \
+	     really depend heavily on this.  */	\
+	  builtin_define ("CPU_FAMILY=PPC");	\
+						\
+	  /* __PPC__ isn't actually emitted by the system compiler \
+	     prior to vx7 but has been advertised by us for ages.  */	\
+	  builtin_define ("__PPC__");		\
+	}					\
+      else					\
+	{					\
+	  builtin_define ("__PPC__");		\
+	  builtin_define ("__powerpc__");	\
+	  if (TARGET_64BIT)			\
+	    {					\
+	      builtin_define ("__PPC64__");	\
+	      builtin_define ("__powerpc64__");	\
+	    }					\
+	  else					\
+	    {					\
+	      builtin_define ("__PPC");		\
+	      builtin_define ("__powerpc");	\
+	    }					\
+	}					\
+						\
+      /* Asserts for #cpu and #machine.  */	\
+      if (TARGET_64BIT)				\
+	{					\
+	  builtin_assert ("cpu=powerpc64");     \
+	  builtin_assert ("machine=powerpc64"); \
+	}					\
+      else 					\
+	{					\
+	  builtin_assert ("cpu=powerpc");	\
+	  builtin_assert ("machine=powerpc");   \
+	}					\
+						\
+      /* PowerPC VxWorks specificities.  */	\
+      if (!TARGET_SOFT_FLOAT)			\
+	{					\
+	  builtin_define ("__hardfp");		\
+	  builtin_define ("_WRS_HARDWARE_FP");  \
+	}                                       \
+						\
+      /* Common VxWorks and port items.  */	\
       VXWORKS_OS_CPP_BUILTINS ();		\
+      TARGET_OS_SYSV_CPP_BUILTINS ();		\
     }		\
   while (0)
 

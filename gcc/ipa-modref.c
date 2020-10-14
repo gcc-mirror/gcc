@@ -531,6 +531,10 @@ merge_call_side_effects (modref_summary *cur_summary,
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
       tree op = gimple_call_arg (stmt, i);
+      bool offset_known;
+      poly_int64 offset;
+
+      offset_known = unadjusted_ptr_and_unit_offset (op, &op, &offset);
       if (TREE_CODE (op) == SSA_NAME
 	  && SSA_NAME_IS_DEFAULT_DEF (op)
 	  && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
@@ -547,15 +551,23 @@ merge_call_side_effects (modref_summary *cur_summary,
 	      index++;
 	    }
 	  parm_map[i].parm_index = index;
-	  parm_map[i].parm_offset_known = true;
-	  parm_map[i].parm_offset = 0;
+	  parm_map[i].parm_offset_known = offset_known;
+	  parm_map[i].parm_offset = offset;
 	}
       else if (points_to_local_or_readonly_memory_p (op))
 	parm_map[i].parm_index = -2;
       else
 	parm_map[i].parm_index = -1;
       if (dump_file)
-	fprintf (dump_file, " %i", parm_map[i].parm_index);
+	{
+	  fprintf (dump_file, " %i", parm_map[i].parm_index);
+	  if (parm_map[i].parm_offset_known)
+	    {
+	      fprintf (dump_file, " offset:");
+	      print_dec ((poly_int64_pod)parm_map[i].parm_offset,
+			 dump_file, SIGNED);
+	    }
+	}
     }
   if (dump_file)
     fprintf (dump_file, "\n");
@@ -1603,6 +1615,11 @@ make_pass_ipa_modref (gcc::context *ctxt)
 static bool
 ignore_edge (struct cgraph_edge *e)
 {
+  /* We merge summaries of inline clones into summaries of functions they
+     are inlined to.  For that reason the complete function bodies must
+     act as unit.  */
+  if (!e->inline_failed)
+    return false;
   enum availability avail;
   cgraph_node *callee = e->callee->function_or_virtual_thunk_symbol
 			  (&avail, e->caller);
@@ -1665,9 +1682,18 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 	    {
 	      (*parm_map)[i].parm_index
 		= ipa_get_jf_pass_through_formal_id (jf);
-	      (*parm_map)[i].parm_offset_known
-		= ipa_get_jf_pass_through_operation (jf) == NOP_EXPR;
-	      (*parm_map)[i].parm_offset = 0;
+	      if (ipa_get_jf_pass_through_operation (jf) == NOP_EXPR)
+		{
+		  (*parm_map)[i].parm_offset_known = true;
+		  (*parm_map)[i].parm_offset = 0;
+		}
+	      else if (ipa_get_jf_pass_through_operation (jf)
+		       == POINTER_PLUS_EXPR
+		       && ptrdiff_tree_p (ipa_get_jf_pass_through_operand (jf),
+					  &(*parm_map)[i].parm_offset))
+		(*parm_map)[i].parm_offset_known = true;
+	      else
+		(*parm_map)[i].parm_offset_known = false;
 	      continue;
 	    }
 	  if (jf && jf->type == IPA_JF_ANCESTOR)
@@ -1723,7 +1749,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 
   if (!callee_info && to_info)
     {
-      if (ignore_stores_p (edge->callee->decl, flags))
+      if (ignore_stores_p (edge->caller->decl, flags))
 	to_info->loads->collapse ();
       else
 	{
@@ -1733,7 +1759,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     }
   if (!callee_info_lto && to_info_lto)
     {
-      if (ignore_stores_p (edge->callee->decl, flags))
+      if (ignore_stores_p (edge->caller->decl, flags))
 	to_info_lto->loads->collapse ();
       else
 	{
@@ -1747,7 +1773,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 
       compute_parm_map (edge, &parm_map);
 
-      if (!ignore_stores_p (edge->callee->decl, flags))
+      if (!ignore_stores_p (edge->caller->decl, flags))
 	{
 	  if (to_info && callee_info)
 	    to_info->stores->merge (callee_info->stores, &parm_map);
@@ -1762,14 +1788,38 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
   if (summaries)
     {
       if (to_info && !to_info->useful_p (flags))
-	summaries->remove (to);
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
+		     to->dump_name ());
+	  summaries->remove (to);
+	}
+      else if (to_info && dump_file)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
+		     to->dump_name ());
+	  to_info->dump (dump_file);
+	}
       if (callee_info)
 	summaries->remove (edge->callee);
     }
   if (summaries_lto)
     {
       if (to_info_lto && !to_info_lto->useful_p (flags))
-	summaries_lto->remove (to);
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
+		     to->dump_name ());
+	  summaries_lto->remove (to);
+	}
+      else if (to_info_lto && dump_file)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
+		     to->dump_name ());
+	  to_info_lto->dump (dump_file);
+	}
       if (callee_info_lto)
 	summaries_lto->remove (edge->callee);
     }

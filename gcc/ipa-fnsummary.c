@@ -3896,7 +3896,7 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 		      class ipa_node_params *params_summary,
 		      class ipa_fn_summary *callee_info,
 		      vec<int> operand_map,
-		      vec<int> offset_map,
+		      vec<HOST_WIDE_INT> offset_map,
 		      clause_t possible_truths,
 		      predicate *toplev_predicate)
 {
@@ -3957,7 +3957,7 @@ remap_freqcounting_predicate (class ipa_fn_summary *info,
 			      class ipa_fn_summary *callee_info,
 			      vec<ipa_freqcounting_predicate, va_gc> *v,
 			      vec<int> operand_map,
-			      vec<int> offset_map,
+			      vec<HOST_WIDE_INT> offset_map,
 			      clause_t possible_truths,
 			      predicate *toplev_predicate)
 
@@ -3987,7 +3987,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   clause_t clause = 0;	/* not_inline is known to be false.  */
   size_time_entry *e;
   auto_vec<int, 8> operand_map;
-  auto_vec<int, 8> offset_map;
+  auto_vec<HOST_WIDE_INT, 8> offset_map;
   int i;
   predicate toplev_predicate;
   class ipa_call_summary *es = ipa_call_summaries->get (edge);

@@ -1021,7 +1021,7 @@ grokfield (const cp_declarator *declarator,
 		      asmspec_tree, flags);
 
       /* Pass friends back this way.  */
-      if (DECL_FRIEND_P (value))
+      if (DECL_UNIQUE_FRIEND_P (value))
 	return void_type_node;
 
       DECL_IN_AGGR_P (value) = 1;

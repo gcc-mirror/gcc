@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-O1" }
+// { dg-options "-O1 -g0" }
 // { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler-not "__throw_length_error" } }
 // { dg-final { scan-assembler-not "__throw_bad_alloc" } }

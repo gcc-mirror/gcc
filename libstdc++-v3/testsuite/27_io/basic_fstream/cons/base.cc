@@ -17,7 +17,6 @@
 
 // { dg-options "-O0" }
 // { dg-do link { target c++11 } }
-// { dg-require-effective-target cxx11-abi }
 
 #include <fstream>
 #include <string>

@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "builtins.h"
 #include "tree-cfgcleanup.h"
+#include "options.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -1220,6 +1221,73 @@ load_from_unmodified_param_or_agg (struct ipa_func_body_info *fbi,
     return -1;
 
   return index;
+}
+
+/* Walk pointer adjustemnts from OP (such as POINTER_PLUS and ADDR_EXPR)
+   to find original pointer.  Initialize RET to the pointer which results from
+   the walk.
+   If offset is known return true and initialize OFFSET_RET.  */
+
+bool
+unadjusted_ptr_and_unit_offset (tree op, tree *ret, poly_int64 *offset_ret)
+{
+  poly_int64 offset = 0;
+  bool offset_known = true;
+  int i;
+
+  for (i = 0; i < param_ipa_jump_function_lookups; i++)
+    {
+      if (TREE_CODE (op) == ADDR_EXPR)
+	{
+	  poly_int64 extra_offset = 0;
+	  tree base = get_addr_base_and_unit_offset (TREE_OPERAND (op, 0),
+						     &offset);
+	  if (!base)
+	    {
+	      base = get_base_address (TREE_OPERAND (op, 0));
+	      if (TREE_CODE (base) != MEM_REF)
+		break;
+	      offset_known = false;
+	    }
+	  else
+	    {
+	      if (TREE_CODE (base) != MEM_REF)
+		break;
+	      offset += extra_offset;
+	    }
+	  op = TREE_OPERAND (base, 0);
+	  if (mem_ref_offset (base).to_shwi (&extra_offset))
+	    offset += extra_offset;
+	  else
+	    offset_known = false;
+	}
+      else if (TREE_CODE (op) == SSA_NAME
+	       && !SSA_NAME_IS_DEFAULT_DEF (op))
+	{
+	  gimple *pstmt = SSA_NAME_DEF_STMT (op);
+
+	  if (gimple_assign_single_p (pstmt))
+	    op = gimple_assign_rhs1 (pstmt);
+	  else if (is_gimple_assign (pstmt)
+		   && gimple_assign_rhs_code (pstmt) == POINTER_PLUS_EXPR)
+	    {
+	      poly_int64 extra_offset = 0;
+	      if (ptrdiff_tree_p (gimple_assign_rhs2 (pstmt),
+		  &extra_offset))
+		offset += extra_offset;
+	      else
+		offset_known = false;
+	      op = gimple_assign_rhs1 (pstmt);
+	    }
+	  else
+	    break;
+	}
+      else
+	break;
+    }
+  *ret = op;
+  *offset_ret = offset;
+  return offset_known;
 }
 
 /* Given that an actual argument is an SSA_NAME (given in NAME) and is a result

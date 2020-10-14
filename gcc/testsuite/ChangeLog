@@ -1,3 +1,29 @@
+2020-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97386
+	* gcc.c-torture/execute/pr97386-1.c: New test.
+	* gcc.c-torture/execute/pr97386-2.c: New test.
+
+2020-10-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/stack-protector-5.c: Use -Os rather than -O2.
+	* gcc.target/arm/stack-protector-6.c: Likewise.
+
+2020-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97382
+	* gcc.dg/vect/no-vfa-vect-dv-2.c: Remove same align dump
+	scanning.
+	* gcc.dg/vect/vect-103.c: Likewise.
+	* gcc.dg/vect/vect-91.c: Likewise.
+	* gfortran.dg/vect/vect-4.f90: Likewise.
+
+2020-10-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/97392
+	* g++.dg/asan/asan_test.C: Disable -Wstringop-overflow.
+	* gcc.dg/asan/pr80166.c: Likewise.
+
 2020-10-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97258

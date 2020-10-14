@@ -1785,7 +1785,7 @@ type SliceHeader struct {
 }
 
 func typesMustMatch(what string, t1, t2 Type) {
-	if t1 != t2 {
+	if !typeEqual(t1, t2) {
 		panic(what + ": " + t1.String() + " != " + t2.String())
 	}
 }

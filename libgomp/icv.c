@@ -116,13 +116,24 @@ void
 omp_set_max_active_levels (int max_levels)
 {
   if (max_levels >= 0)
-    gomp_max_active_levels_var = max_levels;
+    {
+      if (max_levels <= gomp_supported_active_levels)
+	gomp_max_active_levels_var = max_levels;
+      else
+	gomp_max_active_levels_var = gomp_supported_active_levels;
+    }
 }
 
 int
 omp_get_max_active_levels (void)
 {
   return gomp_max_active_levels_var;
+}
+
+int
+omp_get_supported_active_levels (void)
+{
+  return gomp_supported_active_levels;
 }
 
 int
@@ -227,6 +238,7 @@ ialias (omp_get_max_threads)
 ialias (omp_get_thread_limit)
 ialias (omp_set_max_active_levels)
 ialias (omp_get_max_active_levels)
+ialias (omp_get_supported_active_levels)
 ialias (omp_get_cancellation)
 ialias (omp_get_proc_bind)
 ialias (omp_get_initial_device)

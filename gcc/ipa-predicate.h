@@ -243,7 +243,8 @@ public:
   predicate remap_after_inlining (class ipa_fn_summary *,
 		  		  class ipa_node_params *params_summary,
 			          class ipa_fn_summary *,
-			          vec<int>, vec<int>, clause_t, const predicate &);
+				  vec<int>, vec<HOST_WIDE_INT>,
+				  clause_t, const predicate &);
 
   void stream_in (class lto_input_block *);
   void stream_out (struct output_block *);

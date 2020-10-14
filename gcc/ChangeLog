@@ -1,3 +1,109 @@
+2020-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97386
+	* combine.c (simplify_shift_const_1): Don't optimize nested ROTATEs if
+	they have different modes.
+
+2020-10-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97379
+	* gimple-range-edge.cc (outgoing_range::calc_switch_ranges): Do
+	not save hash slot across calls to hash_table<>::get_or_insert.
+
+2020-10-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto-wrapper.c (find_crtoffloadtable): Fix last commit
+	by adding NULL as last argument to concat.
+
+2020-10-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (neoversen2_tunings): Define.
+	* config/aarch64/aarch64-cores.def (neoverse-n2): Use it.
+
+2020-10-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto-wrapper.c (find_crtoffloadtable): With -save-temps,
+	use non-temp file name utilizing the dump prefix.
+	(run_gcc): Update call.
+
+2020-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97382
+	* tree-vectorizer.h (_stmt_vec_info::same_align_refs): Remove.
+	(STMT_VINFO_SAME_ALIGN_REFS): Likewise.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Do not
+	allocate STMT_VINFO_SAME_ALIGN_REFS.
+	(vec_info::free_stmt_vec_info): Do not release
+	STMT_VINFO_SAME_ALIGN_REFS.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences):
+	Do not compute self and read-read dependences.
+	(vect_dr_aligned_if_related_peeled_dr_is): New helper.
+	(vect_dr_aligned_if_peeled_dr_is): Likewise.
+	(vect_update_misalignment_for_peel): Use it instead of
+	iterating over STMT_VINFO_SAME_ALIGN_REFS.
+	(dr_align_group_sort_cmp): New function.
+	(vect_enhance_data_refs_alignment): Count the number of
+	same aligned refs here and elide uses of STMT_VINFO_SAME_ALIGN_REFS.
+	(vect_find_same_alignment_drs): Remove.
+	(vect_analyze_data_refs_alignment): Do not call it.
+	* vec.h (auto_vec<T, 0>::auto_vec): Adjust CTOR to take
+	a vec<>&&, assert it isn't using auto storage.
+	(auto_vec& operator=): Apply a similar change.
+
+2020-10-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (main): Add missing fclose (in).
+
+2020-10-13  Zhiheng Xie  <xiezhiheng@huawei.com>
+	    Nannan Zheng  <zhengnannan@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for mul/mla/mls intrinsics.
+
+2020-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (add_taskreg_looptemp_clauses): For triangular loops
+	with non-constant number of iterations add another 4 _looptemp_
+	clauses before the (optional) one for lastprivate.
+	(lower_omp_for_lastprivate): Skip those clauses when looking for
+	the lastprivate clause.
+	(lower_omp_for): For triangular loops with non-constant number of
+	iterations add another 4 _looptemp_ clauses.
+	* omp-expand.c (expand_omp_for_init_counts): For triangular loops
+	with non-constant number of iterations set counts[0],
+	fd->first_inner_iterations, fd->factor and fd->adjn1 from the newly
+	added _looptemp_ clauses.
+	(expand_omp_for_init_vars): Initialize the newly added _looptemp_
+	clauses.
+	(find_lastprivate_looptemp): New function.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk,
+	expand_omp_taskloop_for_outer): Use it instead of manually skipping
+	_looptemp_ clauses.
+
+2020-10-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/97389
+	* ipa-modref.c (dump_lto_records): Fix formating of dump file.
+	(modref_summary::dump): Do not check loads to be non-null.
+	(modref_summary_lto::dump): Do not check loads to be non-null.
+	(merge_call_side_effects): Improve debug output.
+	(analyze_call): Crash when cur_summary->loads is NULL.
+	(analyze_function): Update.
+	(modref_summaries::insert): Insert only into summaries, not
+	optimization_summaries.
+	(modref_summaries::duplicate): Likewise; crash when load or sotres
+	are NULL.
+	(modref_summaries_lto::duplicate): Crash when loads or stores are NULL.
+	(write_modref_records): param_index is signed.
+	(read_modref_records): param_index is signed.
+	(modref_write): Crash when loads or stores are NULL.
+	(read_section): Compensate previous change.
+	(pass_modref::execute): Do not check optimization_summaries t be
+	non-NULL.
+	(ignore_edge): Fix.
+	(compute_parm_map): Fix formating.
+	(modref_propagate_in_scc): Do not expect loads/stores to be NULL.
+
 2020-10-12  Alexandre Oliva  <oliva@adacore.com>
 
 	* builtins.c (mathfn_built_in_type): Use CFN_ enumerators.

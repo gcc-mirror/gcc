@@ -13456,6 +13456,9 @@ loop in the loop nest by a given number of iterations.  The strip
 length can be changed using the @option{loop-block-tile-size}
 parameter.
 
+@item ipa-jump-function-lookups
+Specifies number of statements visited during jump function offset discovery.
+
 @item ipa-cp-value-list-size
 IPA-CP attempts to track all possible values and types passed to a function's
 parameter in order to propagate them and perform devirtualization.

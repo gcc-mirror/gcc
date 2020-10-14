@@ -1,3 +1,27 @@
+2020-10-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* env.c (gomp_max_active_levels_var): Initialize to
+	gomp_supported_active_levels.
+	(initialize_env): Limit gomp_max_active_levels_var to be at most
+	equal to gomp_supported_active_levels.
+	* fortran.c (omp_get_supported_active_levels): Add ialias_redirect.
+	(omp_get_supported_active_levels_): New.
+	* icv.c (omp_set_max_active_levels): Limit gomp_max_active_levels_var
+	to at most equal to gomp_supported_active_levels.
+	(omp_get_supported_active_levels): New.
+	* libgomp.h (gomp_supported_active_levels): New.
+	* libgomp.map (OMP_5.0.1): Add omp_get_supported_active_levels and
+	omp_get_supported_active_levels_.
+	* libgomp.texi (omp_get_supported_active_levels): New.
+	(omp_set_max_active_levels): Update.  Add reference to
+	omp_get_supported_active_levels.
+	* omp.h.in (omp_get_supported_active_levels): New.
+	* omp_lib.f90.in (omp_get_supported_active_levels): New.
+	* omp_lib.h.in (omp_get_supported_active_levels): New.
+	* testsuite/libgomp.c/lib-2.c (main): Check omp_get_max_active_levels
+	against omp_get_supported_active_levels.
+	* testsuite/libgomp.fortran/lib4.f90 (lib4): Likewise.
+
 2020-10-11  Clement Chigot  <clement.chigot@atos.net>
 
 	* config/t-aix: Delete and recreate libgomp before creating

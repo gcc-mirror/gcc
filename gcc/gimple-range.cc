@@ -490,7 +490,7 @@ gimple_ranger::range_of_phi (irange &r, gphi *phi)
     {
       value_range loop_range;
       class loop *l = loop_containing_stmt (phi);
-      if (l)
+      if (l && loop_outer (l))
         {
 	  range_of_ssa_name_with_loop_info (loop_range, phi_def, l, phi);
 	  if (!loop_range.varying_p ())

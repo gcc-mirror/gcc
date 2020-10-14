@@ -634,20 +634,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(const basic_string& __str)
-    : _M_dataplus(__str._M_rep()->_M_grab(_Alloc(__str.get_allocator()),
-					  __str.get_allocator()),
-		  __str.get_allocator())
-    { }
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(const _Alloc& __a)
-    : _M_dataplus(_S_construct(size_type(), _CharT(), __a), __a)
-    { }
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const basic_string& __str, size_type __pos, const _Alloc& __a)
     : _M_dataplus(_S_construct(__str._M_data()
 			       + __str._M_check(__pos,
@@ -676,43 +662,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       __str._M_data() + __str._M_limit(__pos, __n)
 			       + __pos, __a), __a)
     { }
-
-  // TBD: DPG annotate
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(const _CharT* __s, size_type __n, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__s, __s + __n, __a), __a)
-    { }
-
-  // TBD: DPG annotate
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(const _CharT* __s, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__s, __s ? __s + traits_type::length(__s) :
-			       __s + npos, __a), __a)
-    { }
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(size_type __n, _CharT __c, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__n, __c, __a), __a)
-    { }
-
-  // TBD: DPG annotate
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    template<typename _InputIterator>
-    basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(_InputIterator __beg, _InputIterator __end, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__beg, __end, __a), __a)
-    { }
-
-#if __cplusplus >= 201103L
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(initializer_list<_CharT> __l, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__l.begin(), __l.end(), __a), __a)
-    { }
-#endif
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&

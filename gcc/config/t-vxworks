@@ -59,7 +59,7 @@ stmp-int-hdrs: subst-glimits.h
 subst-%.h:
 	cp -p $(srcdir)/$*.h orig-$*.h
 	ID=$$(echo $(BASEVER_c) | sed -e 's/\./_/g'); \
-	sed -e "s/_LIMITS_H__/_LIMITS_H_$${ID}_/" < $(srcdir)/$*.h > $@
+	sed -e "s/_LIMITS_H__/_LIMITS_H__$${ID}_/" < $(srcdir)/$*.h > $@
 	cp $@ $(srcdir)/$*.h
 
 # Then arrange to restore the original versions after the standard
