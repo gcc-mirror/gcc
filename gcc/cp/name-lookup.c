@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
-static tree do_pushdecl_with_scope (tree x, cp_binding_level *, bool hiding);
+static tree do_pushdecl (tree decl, bool hiding);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
 static name_hint maybe_suggest_missing_std_header (location_t location,
@@ -2975,8 +2975,9 @@ push_local_extern_decl_alias (tree decl)
 
 	  /* Expected default linkage is from the namespace.  */
 	  TREE_PUBLIC (alias) = TREE_PUBLIC (ns);
-	  alias = do_pushdecl_with_scope (alias, NAMESPACE_LEVEL (ns),
-					  /* hiding= */true);
+	  push_nested_namespace (ns);
+	  alias = do_pushdecl (alias, /* hiding= */true);
+	  pop_nested_namespace (ns);
 	}
     }
 
@@ -3848,10 +3849,17 @@ constructor_name_p (tree name, tree type)
 /* Same as pushdecl, but define X in binding-level LEVEL.  We rely on the
    caller to set DECL_CONTEXT properly.
 
-   Note that this must only be used when X will be the new innermost
-   binding for its name, as we tack it onto the front of IDENTIFIER_BINDING
-   without checking to see if the current IDENTIFIER_BINDING comes from a
-   closer binding level than LEVEL.  */
+   Warning: For class and block-scope this must only be used when X
+   will be the new innermost binding for its name, as we tack it onto
+   the front of IDENTIFIER_BINDING without checking to see if the
+   current IDENTIFIER_BINDING comes from a closer binding level than
+   LEVEL.
+
+   Warning: For namespace scope, this will look in LEVEL for an
+   existing binding to match, but if not found will push the decl into
+   CURRENT_NAMESPACE.  Use push_nested_namespace/pushdecl/
+   pop_nested_namespace if you really need to push it into a foreign
+   namespace.  */
 
 static tree
 do_pushdecl_with_scope (tree x, cp_binding_level *level, bool hiding = false)
