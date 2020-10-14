@@ -457,8 +457,23 @@ again:
       if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
 	oprnd_info->any_pattern = true;
 
+      tree type = TREE_TYPE (oprnd);
       if (first)
 	{
+	  if ((dt == vect_constant_def
+	       || dt == vect_external_def)
+	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
+	      && (TREE_CODE (type) == BOOLEAN_TYPE
+		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
+						      type)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: invalid type of def "
+				 "for variable-length SLP %T\n", oprnd);
+	      return -1;
+	    }
+
 	  /* For the swapping logic below force vect_reduction_def
 	     for the reduction op in a SLP reduction group.  */
 	  if (!STMT_VINFO_DATA_REF (stmt_info)
@@ -467,7 +482,7 @@ again:
 	      && def_stmt_info)
 	    dt = vect_reduction_def;
 	  oprnd_info->first_dt = dt;
-	  oprnd_info->first_op_type = TREE_TYPE (oprnd);
+	  oprnd_info->first_op_type = type;
 	}
       else
 	{
@@ -476,7 +491,6 @@ again:
 	     types for reduction chains: the first stmt must be a
 	     vect_reduction_def (a phi node), and the rest
 	     end in the reduction chain.  */
-	  tree type = TREE_TYPE (oprnd);
 	  if ((oprnd_info->first_dt != dt
 	       && !(oprnd_info->first_dt == vect_reduction_def
 		    && !STMT_VINFO_DATA_REF (stmt_info)
@@ -513,19 +527,6 @@ again:
 				 "Build SLP failed: different types\n");
 
 	      return 1;
-	    }
-	  if ((dt == vect_constant_def
-	       || dt == vect_external_def)
-	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
-	      && (TREE_CODE (type) == BOOLEAN_TYPE
-		  || !can_duplicate_and_interleave_p (vinfo, stmts.length (),
-						      type)))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: invalid type of def "
-				 "for variable-length SLP %T\n", oprnd);
-	      return -1;
 	    }
 	}
 
@@ -1568,7 +1569,8 @@ fail:
   vect_free_oprnd_info (oprnds_info);
 
   /* If we have all children of a child built up from uniform scalars
-     then just throw that away, causing it built up from scalars.
+     or does more than one possibly expensive vector construction then
+     just throw that away, causing it built up from scalars.
      The exception is the SLP node for the vector store.  */
   if (is_a <bb_vec_info> (vinfo)
       && !STMT_VINFO_GROUPED_ACCESS (stmt_info)
@@ -1579,11 +1581,20 @@ fail:
     {
       slp_tree child;
       unsigned j;
+      bool all_uniform_p = true;
+      unsigned n_vector_builds = 0;
       FOR_EACH_VEC_ELT (children, j, child)
-	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def
-	    || !vect_slp_tree_uniform_p (child))
-	  break;
-      if (!child)
+	{
+	  if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+	    all_uniform_p = false;
+	  else if (!vect_slp_tree_uniform_p (child))
+	    {
+	      all_uniform_p = false;
+	      if (SLP_TREE_DEF_TYPE (child) == vect_external_def)
+		n_vector_builds++;
+	    }
+	}
+      if (all_uniform_p || n_vector_builds > 1)
 	{
 	  /* Roll back.  */
 	  matches[0] = false;
