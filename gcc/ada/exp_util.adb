@@ -11125,9 +11125,9 @@ package body Exp_Util is
       --  entity is marked as internal.
 
       function Possible_Side_Effect_In_SPARK (Exp : Node_Id) return Boolean;
-      --  Computes whether a side-effect is possible in SPARK, which should
+      --  Computes whether a side effect is possible in SPARK, which should
       --  be handled by removing it from the expression for GNATprove. Note
-      --  that other side-effects related to volatile variables are handled
+      --  that other side effects related to volatile variables are handled
       --  separately.
 
       ---------------------
