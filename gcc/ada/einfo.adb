@@ -7360,7 +7360,7 @@ package body Einfo is
    ---------------------
 
    function Designated_Type (Id : E) return E is
-      Desig_Type : E;
+      Desig_Type : Entity_Id;
 
    begin
       Desig_Type := Directly_Designated_Type (Id);
@@ -7427,7 +7427,7 @@ package body Einfo is
    ---------------------
 
    function First_Component (Id : E) return E is
-      Comp_Id : E;
+      Comp_Id : Entity_Id;
 
    begin
       pragma Assert
@@ -7449,7 +7449,7 @@ package body Einfo is
    -------------------------------------
 
    function First_Component_Or_Discriminant (Id : E) return E is
-      Comp_Id : E;
+      Comp_Id : Entity_Id;
 
    begin
       pragma Assert
@@ -7472,7 +7472,7 @@ package body Einfo is
    ------------------
 
    function First_Formal (Id : E) return E is
-      Formal : E;
+      Formal : Entity_Id;
 
    begin
       pragma Assert
@@ -7513,7 +7513,7 @@ package body Einfo is
    ------------------------------
 
    function First_Formal_With_Extras (Id : E) return E is
-      Formal : E;
+      Formal : Entity_Id;
 
    begin
       pragma Assert
@@ -8437,7 +8437,7 @@ package body Einfo is
    -----------------
 
    function Last_Formal (Id : E) return E is
-      Formal : E;
+      Formal : Entity_Id;
 
    begin
       pragma Assert
@@ -8593,7 +8593,7 @@ package body Einfo is
    --------------------
 
    function Next_Component (Id : E) return E is
-      Comp_Id : E;
+      Comp_Id : Entity_Id;
 
    begin
       Comp_Id := Next_Entity (Id);
@@ -8610,7 +8610,7 @@ package body Einfo is
    ------------------------------------
 
    function Next_Component_Or_Discriminant (Id : E) return E is
-      Comp_Id : E;
+      Comp_Id : Entity_Id;
 
    begin
       Comp_Id := Next_Entity (Id);
@@ -8669,7 +8669,7 @@ package body Einfo is
    -----------------
 
    function Next_Formal (Id : E) return E is
-      P : E;
+      P : Entity_Id;
 
    begin
       --  Follow the chain of declared entities as long as the kind of the
@@ -9133,7 +9133,7 @@ package body Einfo is
    ---------------
 
    function Root_Type (Id : E) return E is
-      T, Etyp : E;
+      T, Etyp : Entity_Id;
 
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -10124,7 +10124,7 @@ package body Einfo is
 
          when Array_Kind =>
             declare
-               Index : E;
+               Index : Entity_Id;
 
             begin
                Write_Attribute
