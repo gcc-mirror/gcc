@@ -1682,9 +1682,18 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 	    {
 	      (*parm_map)[i].parm_index
 		= ipa_get_jf_pass_through_formal_id (jf);
-	      (*parm_map)[i].parm_offset_known
-		= ipa_get_jf_pass_through_operation (jf) == NOP_EXPR;
-	      (*parm_map)[i].parm_offset = 0;
+	      if (ipa_get_jf_pass_through_operation (jf) == NOP_EXPR)
+		{
+		  (*parm_map)[i].parm_offset_known = true;
+		  (*parm_map)[i].parm_offset = 0;
+		}
+	      else if (ipa_get_jf_pass_through_operation (jf)
+		       == POINTER_PLUS_EXPR
+		       && ptrdiff_tree_p (ipa_get_jf_pass_through_operand (jf),
+					  &(*parm_map)[i].parm_offset))
+		(*parm_map)[i].parm_offset_known = true;
+	      else
+		(*parm_map)[i].parm_offset_known = false;
 	      continue;
 	    }
 	  if (jf && jf->type == IPA_JF_ANCESTOR)
