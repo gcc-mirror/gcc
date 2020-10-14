@@ -7796,17 +7796,17 @@ package body Exp_Attr is
    ---------------------------
 
    procedure Expand_Size_Attribute (N : Node_Id) is
-      Loc   : constant Source_Ptr   := Sloc (N);
-      Typ   : constant Entity_Id    := Etype (N);
-      Pref  : constant Node_Id      := Prefix (N);
-      Ptyp  : constant Entity_Id    := Etype (Pref);
-      Id    : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
-      Siz   : Uint;
+      Loc  : constant Source_Ptr   := Sloc (N);
+      Typ  : constant Entity_Id    := Etype (N);
+      Pref : constant Node_Id      := Prefix (N);
+      Ptyp : constant Entity_Id    := Etype (Pref);
+      Id   : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
+      Siz  : Uint;
 
    begin
       --  Case of known RM_Size of a type
 
-      if (Id = Attribute_Size or else Id = Attribute_Value_Size)
+      if Id in Attribute_Size | Attribute_Value_Size
         and then Is_Entity_Name (Pref)
         and then Is_Type (Entity (Pref))
         and then Known_Static_RM_Size (Entity (Pref))
