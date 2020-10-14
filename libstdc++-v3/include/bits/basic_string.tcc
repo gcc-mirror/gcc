@@ -659,14 +659,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _M_dataplus(_S_construct(__s, __s + __n, __a), __a)
     { }
 
-  // TBD: DPG annotate
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(const _CharT* __s, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__s, __s ? __s + traits_type::length(__s) :
-			       __s + npos, __a), __a)
-    { }
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(size_type __n, _CharT __c, const _Alloc& __a)
