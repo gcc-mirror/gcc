@@ -86,7 +86,10 @@ proc check_compile {basename type contents args} {
     set f [open $src "w"]
     puts $f $contents
     close $f
+    global compiler_flags
+    set save_compiler_flags $compiler_flags
     set lines [${tool}_target_compile $src $output $compile_type "$options"]
+    set compiler_flags $save_compiler_flags 
     file delete $src
 
     set scan_output $output
