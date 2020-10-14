@@ -114,6 +114,14 @@ Wanalyzer-use-of-pointer-in-stale-stack-frame
 Common Var(warn_analyzer_use_of_pointer_in_stale_stack_frame) Init(1) Warning
 Warn about code paths in which a pointer to a stale stack frame is used.
 
+Wanalyzer-write-to-const
+Common Var(warn_analyzer_write_to_const) Init(1) Warning
+Warn about code paths which attempt to write to a const object.
+
+Wanalyzer-write-to-string-literal
+Common Var(warn_analyzer_write_to_string_literal) Init(1) Warning
+Warn about code paths which attempt to write to a string literal.
+
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
 Warn if the code is too complicated for the analyzer to fully explore.

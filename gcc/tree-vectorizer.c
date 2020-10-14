@@ -690,7 +690,6 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   else
     STMT_VINFO_DEF_TYPE (res) = vect_internal_def;
 
-  STMT_VINFO_SAME_ALIGN_REFS (res).create (0);
   STMT_SLP_TYPE (res) = loop_vect;
 
   /* This is really "uninitialized" until vect_compute_data_ref_alignment.  */
@@ -746,7 +745,6 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 	release_ssa_name (lhs);
     }
 
-  STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
   STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
   STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);

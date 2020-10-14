@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.util.memory.shared_ptr" xreflabel="shared_ptr">
 <?dbhtml filename="shared_ptr.html"?>
 
@@ -60,7 +60,7 @@ technique known as type erasure.
 
 
   <section xml:id="shared_ptr.hier"><info><title>Class Hierarchy</title></info>
-    
+
 
     <para>
 A <classname>shared_ptr&lt;T&gt;</classname> contains a pointer of
@@ -156,7 +156,7 @@ deprecated in C++11 mode.
   </section>
 
   <section xml:id="shared_ptr.thread"><info><title>Thread Safety</title></info>
-    
+
 <para>
 The
 <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/libs/smart_ptr/shared_ptr.htm#ThreadSafety">Thread
@@ -214,7 +214,7 @@ Policy below for details.
   </section>
 
   <section xml:id="shared_ptr.policy"><info><title>Selecting Lock Policy</title></info>
-    
+
 
     <para>
     </para>
@@ -351,7 +351,7 @@ be private.
 
 
   <section xml:id="shared_ptr.examples"><info><title>Examples</title></info>
-    
+
     <para>
       Examples of use can be found in the testsuite, under
       <filename class="directory">testsuite/tr1/2_general_utilities/shared_ptr</filename>,
@@ -362,7 +362,7 @@ be private.
   </section>
 
   <section xml:id="shared_ptr.issues"><info><title>Unresolved Issues</title></info>
-    
+
     <para>
       The <emphasis><classname>shared_ptr</classname> atomic access</emphasis>
       clause in the C++11 standard is not implemented in GCC.

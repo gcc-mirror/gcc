@@ -3,10 +3,15 @@ BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then
     echo '64'; else echo '32'; fi)
 MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
 ARX=$(shell echo $(AR) | sed -e 's/-X[^ ]*//g')
-STOBJS=$(shell $(ARX) -X$(BITS) t ../ppc$(BITS)/$(PACKAGE)-v3/libsupc++/.libs/libsupc++.a)
+SUPOBJS=$(shell $(ARX) -X$(BITS) t ../ppc$(BITS)/$(PACKAGE)-v3/libsupc++/.libs/libsupc++.a)
+FSOBJS=$(shell $(ARX) -X$(BITS) t ../ppc$(BITS)/$(PACKAGE)-v3/src/filesystem/.libs/libstdc++fs.a 2>/dev/null)
 all-local:
 	$(ARX) -X$(BITS) rc src/.libs/$(PACKAGE).a ../ppc$(BITS)/$(PACKAGE)-v3/src/.libs/$(PACKAGE).so.$(MAJOR)
 	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)-v3/src/.libs/$(PACKAGE).a ../pthread/ppc$(BITS)/$(PACKAGE)-v3/src/.libs/$(PACKAGE).so.$(MAJOR)
-	$(ARX) -X$(BITS) rc libsupc++/.libs/libsupc++.a ${addprefix ../ppc$(BITS)/$(PACKAGE)-v3/libsupc++/,$(STOBJS)}
-	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)-v3/libsupc++/.libs/libsupc++.a ${addprefix ../pthread/ppc$(BITS)/$(PACKAGE)-v3/libsupc++/,$(STOBJS)}
+	$(ARX) -X$(BITS) rc libsupc++/.libs/libsupc++.a ${addprefix ../ppc$(BITS)/$(PACKAGE)-v3/libsupc++/,$(SUPOBJS)}
+	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)-v3/libsupc++/.libs/libsupc++.a ${addprefix ../pthread/ppc$(BITS)/$(PACKAGE)-v3/libsupc++/,$(SUPOBJS)}
+	if test -n "$(FSOBJS)"; then \
+		$(ARX) -X$(BITS) rc src/filesystem/.libs/libstdc++fs.a ${addprefix ../ppc$(BITS)/$(PACKAGE)-v3/src/filesystem/,$(FSOBJS)}; \
+		$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)-v3/src/filesystem/.libs/libstdc++fs.a ${addprefix ../pthread/ppc$(BITS)/$(PACKAGE)-v3/src/filesystem/,$(FSOBJS)}; \
+	fi
 endif

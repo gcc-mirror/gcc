@@ -1359,7 +1359,7 @@ operator_div::wi_fold (irange &r, tree type,
   // If we're definitely dividing by zero, there's nothing to do.
   if (wi_zero_p (type, divisor_min, divisor_max))
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 
@@ -1626,6 +1626,13 @@ operator_rshift::op1_range (irange &r,
   tree shift;
   if (op2.singleton_p (&shift))
     {
+      // Ignore nonsensical shifts.
+      unsigned prec = TYPE_PRECISION (type);
+      if (wi::ge_p (wi::to_wide (shift),
+		    wi::uhwi (prec, TYPE_PRECISION (TREE_TYPE (shift))),
+		    UNSIGNED))
+	return false;
+
       // Folding the original operation may discard some impossible
       // ranges from the LHS.
       int_range_max lhs_refined;
@@ -1849,14 +1856,25 @@ operator_cast::op1_range (irange &r, tree type,
 							  type,
 							  converted_lhs,
 							  lim_range);
-	  // And union this with the entire outer types negative range.
-	  int_range_max neg (type,
-			     wi::min_value (TYPE_PRECISION (type),
-					    SIGNED),
-			     lim - 1);
-	  neg.union_ (lhs_neg);
+	  // lhs_neg now has all the negative versions of the LHS.
+	  // Now union in all the values from SIGNED MIN (0x80000) to
+	  // lim-1 in order to fill in all the ranges with the upper
+	  // bits set.
+
+	  // PR 97317.  If the lhs has only 1 bit less precision than the rhs,
+	  // we don't need to create a range from min to lim-1
+	  // calculate neg range traps trying to create [lim, lim - 1].
+	  wide_int min_val = wi::min_value (TYPE_PRECISION (type), SIGNED);
+	  if (lim != min_val)
+	    {
+	      int_range_max neg (type,
+				 wi::min_value (TYPE_PRECISION (type),
+						SIGNED),
+				 lim - 1);
+	      lhs_neg.union_ (neg);
+	    }
 	  // And finally, munge the signed and unsigned portions.
-	  r.union_ (neg);
+	  r.union_ (lhs_neg);
 	}
       // And intersect with any known value passed in the extra operand.
       r.intersect (op2);
@@ -2606,10 +2624,10 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
 
-  // Mod 0 is undefined.  Return undefined.
+  // Mod 0 is undefined.
   if (wi_zero_p (type, rh_lb, rh_ub))
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 

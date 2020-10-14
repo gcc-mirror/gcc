@@ -1,5 +1,7 @@
 2020-10-14  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 06bec55e80d
+
 	gcc/cp/
 	* decl.c (duplicate_decls): Remove obsolete FIXME.
 	* pt.c (push_template_decl): Remove about-to-be obsolete FIXME.

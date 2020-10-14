@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.ext.debug_mode" xreflabel="Debug Mode">
 <?dbhtml filename="debug_mode.html"?>
 
@@ -13,7 +13,7 @@
 
 
 <section xml:id="manual.ext.debug_mode.intro" xreflabel="Intro"><info><title>Intro</title></info>
-  
+
   <para>
     By default, libstdc++ is built with efficiency in mind, and
     therefore performs little or no error checking that is not
@@ -59,7 +59,7 @@
 
 <section xml:id="manual.ext.debug_mode.semantics" xreflabel="Semantics"><info><title>Semantics</title></info>
   <?dbhtml filename="debug_mode_semantics.html"?>
-  
+
   <para>
   </para>
 
@@ -141,11 +141,11 @@ which always works correctly.
 
 <section xml:id="manual.ext.debug_mode.using" xreflabel="Using"><info><title>Using</title></info>
   <?dbhtml filename="debug_mode_using.html"?>
-  
+
   <para>
   </para>
 <section xml:id="debug_mode.using.mode" xreflabel="Using Mode"><info><title>Using the Debug Mode</title></info>
-  
+
 
 <para>To use the libstdc++ debug mode, compile your application with the
   compiler flag <code>-D_GLIBCXX_DEBUG</code>. Note that this flag
@@ -163,7 +163,7 @@ which always works correctly.
 </section>
 
 <section xml:id="debug_mode.using.specific" xreflabel="Using Specific"><info><title>Using a Specific Debug Container</title></info>
-  
+
 <para>When it is not feasible to recompile your entire application, or
   only specific containers need checking, debugging containers are
   available as GNU extensions. These debugging containers are
@@ -329,11 +329,11 @@ containers have additional debug capability.
 
 <section xml:id="manual.ext.debug_mode.design" xreflabel="Design"><info><title>Design</title></info>
   <?dbhtml filename="debug_mode_design.html"?>
-  
+
   <para>
   </para>
   <section xml:id="debug_mode.design.goals" xreflabel="Goals"><info><title>Goals</title></info>
-    
+
     <para>
     </para>
 <para> The libstdc++ debug mode replaces unsafe (but efficient) standard
@@ -448,7 +448,7 @@ containers have additional debug capability.
   </section>
 
   <section xml:id="debug_mode.design.methods" xreflabel="Methods"><info><title>Methods</title></info>
-    
+
     <para>
     </para>
 <para>This section provides an overall view of the design of the
@@ -456,7 +456,7 @@ containers have additional debug capability.
   decisions and the stated design goals.</para>
 
   <section xml:id="debug_mode.design.methods.wrappers" xreflabel="Method Wrapper"><info><title>The Wrapper Model</title></info>
-    
+
 <para>The libstdc++ debug mode uses a wrapper model where the
   debugging versions of library components (e.g., iterators and
   containers) form a layer on top of the release versions of the
@@ -479,7 +479,7 @@ containers have additional debug capability.
   iterator from a different container.</para>
 
   <section xml:id="debug_mode.design.methods.safe_iter" xreflabel="Method Safe Iter"><info><title>Safe Iterators</title></info>
-    
+
 <para>Iterator wrappers provide a debugging layer over any iterator that
   is attached to a particular container, and will manage the
   information detailing the iterator's state (singular,
@@ -502,7 +502,7 @@ containers have additional debug capability.
   </section>
 
   <section xml:id="debug_mode.design.methods.safe_seq" xreflabel="Method Safe Seq"><info><title>Safe Sequences (Containers)</title></info>
-    
+
 
 <para>Container wrappers provide a debugging layer over a particular
   container type. Because containers vary greatly in the member
@@ -551,7 +551,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   </section>
 
   <section xml:id="debug_mode.design.methods.precond" xreflabel="Precondition check"><info><title>Precondition Checking</title></info>
-    
+
 <para>The debug mode operates primarily by checking the preconditions of
   all standard library operations that it supports. Preconditions that
   are always checked (regardless of whether or not we are in debug
@@ -585,7 +585,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   </section>
 
   <section xml:id="debug_mode.design.methods.coexistence" xreflabel="Coexistence"><info><title>Release- and debug-mode coexistence</title></info>
-    
+
 <para>The libstdc++ debug mode is the first debug mode we know of that
   is able to provide the "Per-use recompilation" (4) guarantee, that
   allows release-compiled and debug-compiled code to be linked and
@@ -603,7 +603,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   (namely, safe iterators).</para>
 
  <section xml:id="methods.coexistence.compile" xreflabel="Compile"><info><title>Compile-time coexistence of release- and debug-mode components</title></info>
-   
+
 
 <para>Both the release-mode components and the debug-mode
   components need to exist within a single translation unit so that
@@ -671,7 +671,7 @@ namespace std
 
  <section xml:id="methods.coexistence.link" xreflabel="Link"><info><title>Link- and run-time coexistence of release- and
     debug-mode components</title></info>
-   
+
 
 <para>Because each component has a distinct and separate release and
 debug implementation, there is no issue with link-time
@@ -854,7 +854,7 @@ test02()
   </section>
 
   <section xml:id="debug_mode.design.other" xreflabel="Other"><info><title>Other Implementations</title></info>
-    
+
     <para>
     </para>
 <para> There are several existing implementations of debug modes for C++

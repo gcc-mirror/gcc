@@ -1,8 +1,8 @@
-<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0"
 	  xml:id="appendix.gfdl-1.3">
 <info><title>GNU Free Documentation License</title></info>
   <?dbhtml filename="appendix_gfdl.html"?>
-  
+
   <simpara>Version 1.3, 3 November 2008</simpara>
   <simpara>
     Copyright © 2000, 2001, 2002, 2007, 2008

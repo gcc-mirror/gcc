@@ -1,3 +1,221 @@
+2020-10-13  Nuno Lopes  <nuno.lopes@ist.utl.pt>
+
+	* include/bits/stl_algo.h (any_of): Fix incorrect description
+	in comment.
+
+2020-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document some API changes
+	and deprecations.
+	* doc/xml/manual/intro.xml: Document LWG 2499.
+	* doc/xml/manual/status_cxx2020.xml: Update status.
+	* doc/html/*: Regenerate.
+
+2020-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/book.txml: Remove trailing whitespace.
+	* doc/xml/chapter.txml: Likewise.
+	* doc/xml/class.txml: Likewise.
+	* doc/xml/gnu/fdl-1.3.xml: Likewise.
+	* doc/xml/gnu/gpl-3.0.xml: Likewise.
+	* doc/xml/manual/abi.xml: Likewise.
+	* doc/xml/manual/algorithms.xml: Likewise.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/appendix_contributing.xml: Likewise.
+	* doc/xml/manual/appendix_free.xml: Likewise.
+	* doc/xml/manual/appendix_porting.xml: Likewise.
+	* doc/xml/manual/atomics.xml: Likewise.
+	* doc/xml/manual/auto_ptr.xml: Likewise.
+	* doc/xml/manual/backwards_compatibility.xml: Likewise.
+	* doc/xml/manual/bitmap_allocator.xml: Likewise.
+	* doc/xml/manual/build_hacking.xml: Likewise.
+	* doc/xml/manual/codecvt.xml: Likewise.
+	* doc/xml/manual/concurrency.xml: Likewise.
+	* doc/xml/manual/concurrency_extensions.xml: Likewise.
+	* doc/xml/manual/configure.xml: Likewise.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/ctype.xml: Likewise.
+	* doc/xml/manual/debug.xml: Likewise.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/diagnostics.xml: Likewise.
+	* doc/xml/manual/documentation_hacking.xml: Likewise.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/xml/manual/internals.xml: Likewise.
+	* doc/xml/manual/intro.xml: Likewise.
+	* doc/xml/manual/io.xml: Likewise.
+	* doc/xml/manual/iterators.xml: Likewise.
+	* doc/xml/manual/locale.xml: Likewise.
+	* doc/xml/manual/localization.xml: Likewise.
+	* doc/xml/manual/messages.xml: Likewise.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/xml/manual/numerics.xml: Likewise.
+	* doc/xml/manual/parallel_mode.xml: Likewise.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+	* doc/xml/manual/prerequisites.xml: Likewise.
+	* doc/xml/manual/shared_ptr.xml: Likewise.
+	* doc/xml/manual/spine.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+	* doc/xml/manual/strings.xml: Likewise.
+	* doc/xml/manual/support.xml: Likewise.
+	* doc/xml/manual/test.xml: Likewise.
+	* doc/xml/manual/test_policy_data_structures.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/using_exceptions.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+2020-10-12  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (take_while_view::begin): Constrain the
+	const overload further as per LWG 3450.
+	(take_while_view::end): Likewise.
+	* testsuite/std/ranges/adaptors/take_while.cc: Add test for LWG
+	3450.
+
+2020-10-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95322
+	* include/std/ranges (take_view::_CI): Define this alias
+	template as per LWG 3449 and remove ...
+	(take_view::_Sentinel::_CI): ... this type alias.
+	(take_view::_Sentinel::operator==): Adjust use of _CI
+	accordingly.  Define a second overload that accepts an iterator
+	of the opposite constness as per LWG 3449.
+	(take_while_view::_Sentinel::operator==): Likewise.
+	* testsuite/std/ranges/adaptors/95322.cc: Add tests for LWG 3449.
+
+2020-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.8.20 format.
+
+2020-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Use __cplusplus=201703L
+	so that C++17 features are documented.
+
+2020-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (copy, move, copy_backward)
+	(move_backward): Fix documentation for returned iterator.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/97201
+	* libsupc++/new (operator new): Add attribute alloc_size and malloc.
+
+2020-10-11  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/os/aix/t-aix: Add complementary mode object file to
+	libstdc++fs.a
+
+2020-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97362
+	* doc/html/manual/source_code_style.html: Regenerate.
+	* doc/xml/manual/appendix_contributing.xml: Add __deref to
+	BADNAMES.
+	* include/debug/functions.h (_Irreflexive_checker::__deref):
+	Rename to __ref.
+	* testsuite/17_intro/badnames.cc: Check __deref.
+
+2020-10-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* include/std/variant (__check_visitor_result):
+	Use size_t for indexes.
+	(__check_visitor_results): Likewise.
+
+2020-10-09  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/95904
+	* include/std/variant (__deduce_visit_result): Add a nested ::type.
+	(__gen_vtable_impl</*base case*/>::_S_apply):
+	Check the visitor return type.
+	(__same_types): New.
+	(__check_visitor_result): Likewise.
+	(__check_visitor_results): Likewise.
+	(visit(_Visitor&&, _Variants&&...)): Use __check_visitor_results
+	in case we're visiting just one variant.
+	* testsuite/20_util/variant/visit_neg.cc: Adjust.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97311
+	* include/bits/random.tcc (seed_seq::generate): Use uint32_t for
+	calculations. Also split the first loop into three loops to
+	avoid branching on k on every iteration, resolving PR 94823.
+	* testsuite/26_numerics/random/seed_seq/97311.cc: New test.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-erro
+	line number.
+
+2020-10-09  Daniel Lemire  <lemire@gmail.com>
+
+	* include/bits/uniform_int_dist.h (uniform_int_distribution::_S_nd):
+	New member function implementing Lemire's "nearly divisionless"
+	algorithm.
+	(uniform_int_distribution::operator()): Use _S_nd when the range
+	of the URBG is the full width of the result type.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/Makefile.am: Set and export variable separately.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/check_performance: Use gnu++11 instead of gnu++0x.
+	* testsuite/Makefile.am (check-performance): Export CXXFLAGS to
+	child process.
+	* testsuite/Makefile.in: Regenerate.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/performance/26_numerics/random_dist.cc: New test.
+
+2020-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h (report_header): Remove
+	unused variable.
+
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95788
+	* include/bits/ranges_uninitialized.h:
+	(__construct_at_fn::operator()): Rewrite in terms of
+	std::construct_at.  Declare it conditionally noexcept.  Qualify
+	calls to declval in its requires-clause.
+	* testsuite/20_util/specialized_algorithms/construct_at/95788.cc:
+	New test.
+
+2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82584
+	* include/bits/random.tcc
+	(discrete_distribution::param_type::_M_initialize)
+	(piecewise_constant_distribution::param_type::_M_initialize)
+	(piecewise_linear_distribution::param_type::_M_initialize):
+	Add assertions for positive sums..
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line.
+
+2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ios_base.h (ios_base::failure): Add constructors
+	takeing error_code argument. Add code() member function.
+	* testsuite/27_io/ios_base/failure/cxx11.cc: Allow test to
+	run for the old ABI but do not check for derivation from
+	std::system_error.
+	* testsuite/27_io/ios_base/failure/error_code.cc: New test.
+
+2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (__detail::_Mod): Revert last change.
+	(__detail::__mod): Do not use _Mod for a==0 case.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/call.cc:
+	Check other cases with a==0. Also check runtime results.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line.
+
 2020-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.h (__detail::_Mod): Avoid divide by zero.

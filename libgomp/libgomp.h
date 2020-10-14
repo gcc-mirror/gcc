@@ -434,6 +434,8 @@ struct gomp_task_icv
   struct target_mem_desc *target_data;
 };
 
+#define gomp_supported_active_levels INT_MAX
+
 extern struct gomp_task_icv gomp_global_icv;
 #ifndef HAVE_SYNC_BUILTINS
 extern gomp_mutex_t gomp_managed_threads_lock;

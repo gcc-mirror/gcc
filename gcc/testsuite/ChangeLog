@@ -1,3 +1,444 @@
+2020-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97386
+	* gcc.c-torture/execute/pr97386-1.c: New test.
+	* gcc.c-torture/execute/pr97386-2.c: New test.
+
+2020-10-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/arm/stack-protector-5.c: Use -Os rather than -O2.
+	* gcc.target/arm/stack-protector-6.c: Likewise.
+
+2020-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97382
+	* gcc.dg/vect/no-vfa-vect-dv-2.c: Remove same align dump
+	scanning.
+	* gcc.dg/vect/vect-103.c: Likewise.
+	* gcc.dg/vect/vect-91.c: Likewise.
+	* gfortran.dg/vect/vect-4.f90: Likewise.
+
+2020-10-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/97392
+	* g++.dg/asan/asan_test.C: Disable -Wstringop-overflow.
+	* gcc.dg/asan/pr80166.c: Likewise.
+
+2020-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97258
+	* gcc.dg/analyzer/callbacks-1.c: New test.
+	* gcc.dg/analyzer/callbacks-2.c: New test.
+	* gcc.dg/analyzer/callbacks-3.c: New test.
+
+2020-10-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97381.c: New test.
+
+2020-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97378.c: New test.
+
+2020-10-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83347
+	PR middle-end/90404
+	PR analyzer/95007
+	* gcc.dg/analyzer/write-to-const-1.c: New test.
+	* gcc.dg/analyzer/write-to-string-literal-1.c: New test.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/97201
+	* g++.dg/warn/Wplacement-new-size-8.C: Adjust expected message.
+	* g++.dg/warn/Warray-bounds-10.C: New test.
+	* g++.dg/warn/Warray-bounds-11.C: New test.
+	* g++.dg/warn/Warray-bounds-12.C: New test.
+	* g++.dg/warn/Warray-bounds-13.C: New test.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97342
+	PR middle-end/97023
+	PR middle-end/96384
+	* c-c++-common/Wrestrict.c: Adjust comment.
+	* gcc.dg/Wstringop-overflow-34.c: Remove xfail.
+	* gcc.dg/Wstringop-overflow-43.c: Remove xfails.  Adjust regex patterns.
+	* gcc.dg/pr51683.c: Prune out expected warning.
+	* gcc.target/i386/pr60693.c: Same.
+	* g++.dg/warn/Wplacement-new-size-8.C: New test.
+	* gcc.dg/Wstringop-overflow-41.c: New test.
+	* gcc.dg/Wstringop-overflow-44.s: New test.
+	* gcc.dg/Wstringop-overflow-45.c: New test.
+	* gcc.dg/Wstringop-overflow-46.c: New test.
+	* gcc.dg/Wstringop-overflow-47.c: New test.
+	* gcc.dg/Wstringop-overflow-49.c: New test.
+	* gcc.dg/Wstringop-overflow-50.c: New test.
+	* gcc.dg/Wstringop-overflow-51.c: New test.
+	* gcc.dg/Wstringop-overflow-52.c: New test.
+	* gcc.dg/Wstringop-overflow-53.c: New test.
+	* gcc.dg/Wstringop-overflow-54.c: New test.
+	* gcc.dg/Wstringop-overflow-55.c: New test.
+	* gcc.dg/Wstringop-overread-5.c: New test.
+
+2020-10-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96511
+	PR middle-end/96384
+	* g++.dg/init/strlen.C: Add expected warning.
+	* g++.dg/warn/Wplacement-new-size-1.C: Relax warnings.
+	* g++.dg/warn/Wplacement-new-size-2.C: Same.
+	* g++.dg/warn/Wplacement-new-size-6.C: Same.
+	* gcc.dg/Warray-bounds-58.c: Adjust
+	* gcc.dg/Wstringop-overflow-37.c: Same.
+	* g++.dg/warn/Wplacement-new-size-7.C: New test.
+
+2020-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR tree-optimization/97357
+	* gcc.dg/pr97357.c: Call setjmp instead of _setjmp.
+
+2020-10-12  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-50.c: New testcase.
+	* gcc.dg/vect/bb-slp-51.c: Likewise.
+
+2020-10-12  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/97079
+	* gcc.target/aarch64/sve/pr97079.c: New test.
+
+2020-10-12  Duan bo  <duanbo3@huawei.com>
+
+	PR target/96757
+	* gcc.target/aarch64/pr96757.c: New test.
+
+2020-10-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/97349
+	* gcc.target/aarch64/simd/pr97349.c: New test.
+
+2020-10-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97371.c: New test.
+
+2020-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97357
+	* gcc.dg/pr97357.c: New testcase.
+
+2020-10-12  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96099
+	* gfortran.dg/pr96099_1.f90: New test.
+	* gfortran.dg/pr96099_2.f90: New test.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/plugin/diagnostic-test-expressions-1.mm:
+	Adjust testcase to include expressions for @selector and
+	@protocol. XFAIL where this is still not sufficient to obtain
+	a disgnostic range.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-obj-c++-shared/TestsuiteObject.h: Add dummy retain and
+	release method declarations.
+	* objc-obj-c++-shared/TestsuiteObject.m: Add dummy retain and
+	release implementations.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/objc-gc-3.mm:i Skip for Darwin >= 16.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/cxx-ivars-3.mm: Skip for macOS >= 10.7.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/gnu-api-2-class-meta.mm: Add a flag to cause NeXT
+	headers to expose prototypes for messaging.
+	* obj-c++.dg/gnu-api-2-class.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-objc.mm: Skip this because of the extra
+	protocols pulled in by system headers.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/plugin/diagnostic-test-expressions-1.m: Use assignment
+	expressions for @selector and @protocol to obtain a useful
+	diagnostic range.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/call-super-2.m: Remove inclusion of runtime.h.
+	Add a FIXME about the test portability.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/torture/forward-1.m: Implement forwarding using the
+	native NeXT (NSInvocation) method for Darwin.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/ivar-scope-4.m: Add inititialize method to the
+	root class.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/gnu-api-2-class-meta.m: Add a flag to cause NeXT
+	headers to expose prototypes for messaging. Mark the root
+	class if the objc_root_class attribute is available. Use
+	char ** as the second arg to main.
+	* objc.dg/gnu-api-2-class.m: Use dispatch prototype.
+	* objc.dg/gnu-api-2-objc.m: Skip on NeXT because of extra
+	prototypes pulled in by headers.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/objc-gc-4.m: Disable for macOS 10.15 and 11.x.
+
+2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-obj-c++-shared/TestsuiteObject.h: If the compiler
+	supports objc_root_object attributes, then mark the testsuite
+	object accordingly.
+	* objc-obj-c++-shared/TestsuiteObject.m: Avoid direct access
+	to isa, which is an error for modern Objective-C.
+	* objc/execute/class-tests-1.h: Declare a string function we
+	use locally (avoid pulling in the whole of string.h).
+
+2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-sections.c: Adjust test for renamed BSS and common
+	sections.  Cater for 64 and 128 bit long doubles.
+
+2020-10-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97250
+	* gcc.target/i386/x86-64-v2.c: Verify that
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_16 is defined.
+	* gcc.target/i386/x86-64-v3.c: Likewise.
+	* gcc.target/i386/x86-64-v4.c: Likewise.
+
+2020-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97359.c: New test.
+
+2020-10-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/97313
+	* gcc.target/i386/pr97313.c: New.
+
+2020-10-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/avx-1.c (__builtin_ia32_lwpval32): New to
+	support <lwpintrin.h> included in <x86gprintrin.h>.
+	(__builtin_ia32_lwpval64): Likewise.
+	(__builtin_ia32_lwpins32): Likewise.
+	(__builtin_ia32_lwpins64): Likewise.
+	(__builtin_ia32_bextri_u32): New to support <tbmintrin.h>
+	included in <x86gprintrin.h>.
+	(__builtin_ia32_bextri_u64): Likewise.
+	* gcc.target/i386/x86gprintrin-1.c: New test.
+	* gcc.target/i386/x86gprintrin-2.c: Likewise.
+	* gcc.target/i386/x86gprintrin-3.c: Likewise.
+	* gcc.target/i386/x86gprintrin-4.c: Likewise.
+	* gcc.target/i386/x86gprintrin-4a.c: Likewise.
+	* gcc.target/i386/x86gprintrin-5.c: Likewise.
+	* gcc.target/i386/x86gprintrin-5a.c: Likewise.
+	* gcc.target/i386/x86gprintrin-5b.c: Likewise.
+	* gcc.target/i386/x86gprintrin-6.c: Likewise.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	* lib/target-supports.exp (check_effective_target_vect_masked_load):
+	New effective target.
+	* gcc.dg/vect/pr65947-3.c: Update.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97334
+	* gcc.dg/vect/bb-slp-pr65935.c: Amend.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97347
+	* g++.dg/vect/pr97347.cc: New testcase.
+
+2020-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97317.c: New test.
+
+2020-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94801
+	PR target/97312
+	* gcc.dg/tree-ssa/pr94801.c: New test.
+
+2020-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97325
+	* gcc.c-torture/execute/pr97325.c: New test.
+
+2020-10-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR testsuite/97337
+	* gcc.dg/pr97315-1.c: Moved to...
+	* g++.dg/opt/pr97315-1.C: ...here.
+
+2020-10-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-phis-1.c: New testcase.
+
+2020-10-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96805
+	* g++.dg/cpp0x/alias-decl-pr96805.C: New test.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vcvtnq_u32_f32.c: New test.
+
+2020-10-08  Martin Liska  <mliska@suse.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-22.c: Adjust.
+	* gfortran.dg/pr68627.f: Likewise.
+
+2020-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97330
+	* gcc.dg/torture/pr97330-1.c: New testcase.
+	* gcc.dg/torture/pr97330-2.c: Likewise.
+
+2020-10-08  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/slp-pr50819.cc: Adjust.
+	* gcc.dg/vect/bb-slp-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-10.c: Adjust.
+	* gcc.dg/vect/bb-slp-11.c: Adjust.
+	* gcc.dg/vect/bb-slp-13.c: Adjust.
+	* gcc.dg/vect/bb-slp-14.c: Adjust.
+	* gcc.dg/vect/bb-slp-15.c: Adjust.
+	* gcc.dg/vect/bb-slp-16.c: Adjust.
+	* gcc.dg/vect/bb-slp-17.c: Adjust.
+	* gcc.dg/vect/bb-slp-18.c: Adjust.
+	* gcc.dg/vect/bb-slp-19.c: Adjust.
+	* gcc.dg/vect/bb-slp-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-20.c: Adjust.
+	* gcc.dg/vect/bb-slp-21.c: Adjust.
+	* gcc.dg/vect/bb-slp-22.c: Adjust.
+	* gcc.dg/vect/bb-slp-23.c: Adjust.
+	* gcc.dg/vect/bb-slp-24.c: Adjust.
+	* gcc.dg/vect/bb-slp-25.c: Adjust.
+	* gcc.dg/vect/bb-slp-26.c: Adjust.
+	* gcc.dg/vect/bb-slp-27.c: Adjust.
+	* gcc.dg/vect/bb-slp-28.c: Adjust.
+	* gcc.dg/vect/bb-slp-29.c: Adjust.
+	* gcc.dg/vect/bb-slp-3.c: Adjust.
+	* gcc.dg/vect/bb-slp-30.c: Adjust.
+	* gcc.dg/vect/bb-slp-31.c: Adjust.
+	* gcc.dg/vect/bb-slp-34.c: Adjust.
+	* gcc.dg/vect/bb-slp-35.c: Adjust.
+	* gcc.dg/vect/bb-slp-36.c: Adjust.
+	* gcc.dg/vect/bb-slp-38.c: Adjust.
+	* gcc.dg/vect/bb-slp-4.c: Adjust.
+	* gcc.dg/vect/bb-slp-45.c: Adjust.
+	* gcc.dg/vect/bb-slp-46.c: Adjust.
+	* gcc.dg/vect/bb-slp-48.c: Adjust.
+	* gcc.dg/vect/bb-slp-5.c: Adjust.
+	* gcc.dg/vect/bb-slp-6.c: Adjust.
+	* gcc.dg/vect/bb-slp-7.c: Adjust.
+	* gcc.dg/vect/bb-slp-8.c: Adjust.
+	* gcc.dg/vect/bb-slp-8a.c: Adjust.
+	* gcc.dg/vect/bb-slp-8b.c: Adjust.
+	* gcc.dg/vect/bb-slp-9.c: Adjust.
+	* gcc.dg/vect/bb-slp-div-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-over-widen-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-over-widen-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-pattern-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-pow-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr58135.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr65935.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr78205.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr81635-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr81635-3.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr95839-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr95839.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr95866.c: Adjust.
+	* gcc.dg/vect/bb-slp-subgroups-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-subgroups-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Adjust.
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: Adjust.
+	* gcc.dg/vect/no-tree-reassoc-bb-slp-12.c: Adjust.
+	* gcc.dg/vect/no-tree-sra-bb-slp-pr50730.c: Adjust.
+	* gfortran.dg/vect/pr62283-2.f: Adjust.
+	* gcc.target/i386/pr68961.c: Adjust.
+	* gcc.target/i386/pr84101.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr81635-2.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr81635-4.c: Adjust.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Adjust.
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c: Adjust.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-slp.c: Adjust.
+	* gcc.dg/vect/bb-slp-div-1.c: Adjust.
+	* gcc.dg/vect/bb-slp-pr90006.c: Adjust.
+	* g++.dg/vect/slp-pr50413.cc: Adjust.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vmlaldavaxq_p_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vmlaldavaxq_p_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u8.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u8.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u8.c: Remove.
+
+2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s32.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s8.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s32.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s8.c: New test.
+
+2020-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97322
+	* gcc.dg/pr97322.c: New test.
+
+2020-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97315-2.c: New test.
+
+2020-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97315-1.c: New test.
+
+2020-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/97294
+	* gcc.dg/asan/pr97294.c: New test.
+
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97052
+	* g++.dg/cpp2a/concepts-defarg2.C: New test.
+
+2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96229
+	* g++.dg/cpp2a/concepts-class2.C: New test.
+
 2020-10-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97010

@@ -1527,6 +1527,9 @@ optabs on vectors.
 Target supports fully-masked (also known as fully-predicated) loops,
 so that vector loops can handle partial as well as full vectors.
 
+@item vect_masked_load
+Target supports vector masked loads.
+
 @item vect_masked_store
 Target supports vector masked stores.
 

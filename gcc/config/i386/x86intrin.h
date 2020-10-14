@@ -24,7 +24,7 @@
 #ifndef _X86INTRIN_H_INCLUDED
 #define _X86INTRIN_H_INCLUDED
 
-#include <ia32intrin.h>
+#include <x86gprintrin.h>
 
 #ifndef __iamcu__
 
@@ -36,16 +36,6 @@
 #include <fma4intrin.h>
 
 #include <xopintrin.h>
-
-#include <lwpintrin.h>
-
-#include <tbmintrin.h>
-
-#include <popcntintrin.h>
-
-#include <mwaitxintrin.h>
-
-#include <clzerointrin.h>
 
 #endif /* __iamcu__ */
 

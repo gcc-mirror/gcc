@@ -2,7 +2,7 @@
 
 <book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="api" xreflabel="Source Level Documentation">
 
- 
+
 <info>
   <copyright>
     <year>2007</year>
@@ -13,7 +13,7 @@
   </copyright>
   <legalnotice>
     <para>
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="17_intro/license.html">License 
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="17_intro/license.html">License
       </link>
     </para>
   </legalnotice>
@@ -22,7 +22,7 @@
 <part><info><title/></info>
 
   <chapter><info><title/></info>
-    
+
     <para/>
   </chapter>
 </part>

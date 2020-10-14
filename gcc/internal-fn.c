@@ -3795,6 +3795,7 @@ internal_fn_stored_value_index (internal_fn fn)
   switch (fn)
     {
     case IFN_MASK_STORE:
+    case IFN_MASK_STORE_LANES:
     case IFN_SCATTER_STORE:
     case IFN_MASK_SCATTER_STORE:
     case IFN_LEN_STORE:

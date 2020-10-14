@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.util" xreflabel="Utilities">
 <?dbhtml filename="utilities.html"?>
 
@@ -17,7 +17,7 @@
 <!-- Section 01 : Functors -->
 <section xml:id="std.util.functors" xreflabel="Functors"><info><title>Functors</title></info>
 <?dbhtml filename="functors.html"?>
-  
+
    <para>If you don't know what functors are, you're not alone.  Many people
       get slightly the wrong idea.  In the interest of not reinventing
       the wheel, we will refer you to the introduction to the functor
@@ -30,7 +30,7 @@
 <!-- Section 02 : Pairs -->
 <section xml:id="std.util.pairs" xreflabel="Pairs"><info><title>Pairs</title></info>
 <?dbhtml filename="pairs.html"?>
-  
+
    <para>The <code>pair&lt;T1,T2&gt;</code> is a simple and handy way to
       carry around a pair of objects.  One is of type T1, and another of
       type T2; they may be the same type, but you don't get anything
@@ -85,7 +85,7 @@
 <!-- Section 03 : Memory -->
 <section xml:id="std.util.memory" xreflabel="Memory"><info><title>Memory</title></info>
 <?dbhtml filename="memory.html"?>
-  
+
   <para>
     Memory contains three general areas. First, function and operator
     calls via <function>new</function> and <function>delete</function>
@@ -111,7 +111,7 @@
 <!-- Section 04 : Traits -->
 <section xml:id="std.util.traits" xreflabel="Traits"><info><title>Traits</title></info>
 <?dbhtml filename="traits.html"?>
-  
+
   <para>
   </para>
 </section>

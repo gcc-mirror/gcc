@@ -205,9 +205,11 @@
       external omp_get_max_active_levels, omp_get_level
       external omp_get_ancestor_thread_num, omp_get_team_size
       external omp_get_active_level
+      external omp_get_supported_active_levels
       integer(4) omp_get_thread_limit, omp_get_max_active_levels
       integer(4) omp_get_level, omp_get_ancestor_thread_num
       integer(4) omp_get_team_size, omp_get_active_level
+      integer(4) omp_get_supported_active_levels
 
       external omp_in_final
       logical(4) omp_in_final

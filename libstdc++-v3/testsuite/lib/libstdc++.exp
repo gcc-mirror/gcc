@@ -1524,6 +1524,8 @@ proc check_v3_target_filesystem_ts { } {
 }
 
 # Return 1 if the "cxx11" ABI is in use using the current flags, 0 otherwise.
+# Any flags provided by RUNTESTFLAGS or a target board will be used here.
+# Flags added in the test by dg-options or dg-add-options will not be used.
 proc check_effective_target_cxx11-abi { } {
     global cxxflags
 

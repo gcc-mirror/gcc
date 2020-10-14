@@ -1208,34 +1208,42 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	  mini = 0;
 	  maxi = 1;
 	  goto bitop_builtin;
-	  /* __builtin_c[lt]z* return [0, prec-1], except for
+	  /* __builtin_clz* return [0, prec-1], except for
 	     when the argument is 0, but that is undefined behavior.
-	     On many targets where the CLZ RTL or optab value is defined
-	     for 0 the value is prec, so include that in the range
-	     by default.  */
+	     Always handle __builtin_clz* which can be only written
+	     by user as UB on 0 and so [0, prec-1] range, and the internal-fn
+	     calls depending on how CLZ_DEFINED_VALUE_AT_ZERO is defined.  */
 	CASE_CFN_CLZ:
 	  arg = gimple_call_arg (stmt, 0);
 	  prec = TYPE_PRECISION (TREE_TYPE (arg));
 	  mini = 0;
-	  maxi = prec;
+	  maxi = prec - 1;
 	  mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-	  if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
-	      && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov)
-	      /* Handle only the single common value.  */
-	      && zerov != prec)
-	    /* Magic value to give up, unless vr0 proves
-	       arg is non-zero.  */
-	    mini = -2;
+	  if (gimple_call_internal_p (stmt))
+	    {
+	      if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
+		  && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
+		{
+		  /* Handle only the single common value.  */
+		  if (zerov == prec)
+		    maxi = prec;
+		  /* Magic value to give up, unless vr0 proves
+		     arg is non-zero.  */
+		  else
+		    mini = -2;
+		}
+	    }
 	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
 	      const value_range_equiv *vr0 = get_value_range (arg);
 	      /* From clz of VR_RANGE minimum we can compute
 		 result maximum.  */
 	      if (vr0->kind () == VR_RANGE
-		  && TREE_CODE (vr0->min ()) == INTEGER_CST)
+		  && TREE_CODE (vr0->min ()) == INTEGER_CST
+		  && integer_nonzerop (vr0->min ()))
 		{
 		  maxi = prec - 1 - tree_floor_log2 (vr0->min ());
-		  if (maxi != prec)
+		  if (mini == -2)
 		    mini = 0;
 		}
 	      else if (vr0->kind () == VR_ANTI_RANGE
@@ -1251,9 +1259,14 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	      if (vr0->kind () == VR_RANGE
 		  && TREE_CODE (vr0->max ()) == INTEGER_CST)
 		{
-		  mini = prec - 1 - tree_floor_log2 (vr0->max ());
-		  if (mini == prec)
-		    break;
+		  int newmini = prec - 1 - tree_floor_log2 (vr0->max ());
+		  if (newmini == prec)
+		    {
+		      if (maxi == prec)
+			mini = prec;
+		    }
+		  else
+		    mini = newmini;
 		}
 	    }
 	  if (mini == -2)
@@ -1261,27 +1274,30 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	  goto bitop_builtin;
 	  /* __builtin_ctz* return [0, prec-1], except for
 	     when the argument is 0, but that is undefined behavior.
-	     If there is a ctz optab for this mode and
-	     CTZ_DEFINED_VALUE_AT_ZERO, include that in the range,
-	     otherwise just assume 0 won't be seen.  */
+	     Always handle __builtin_ctz* which can be only written
+	     by user as UB on 0 and so [0, prec-1] range, and the internal-fn
+	     calls depending on how CTZ_DEFINED_VALUE_AT_ZERO is defined.  */
 	CASE_CFN_CTZ:
 	  arg = gimple_call_arg (stmt, 0);
 	  prec = TYPE_PRECISION (TREE_TYPE (arg));
 	  mini = 0;
 	  maxi = prec - 1;
 	  mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-	  if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
-	      && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov))
+	  if (gimple_call_internal_p (stmt))
 	    {
-	      /* Handle only the two common values.  */
-	      if (zerov == -1)
-		mini = -1;
-	      else if (zerov == prec)
-		maxi = prec;
-	      else
-		/* Magic value to give up, unless vr0 proves
-		   arg is non-zero.  */
-		mini = -2;
+	      if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
+		  && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov) == 2)
+		{
+		  /* Handle only the two common values.  */
+		  if (zerov == -1)
+		    mini = -1;
+		  else if (zerov == prec)
+		    maxi = prec;
+		  else
+		    /* Magic value to give up, unless vr0 proves
+		       arg is non-zero.  */
+		    mini = -2;
+		}
 	    }
 	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
@@ -1300,10 +1316,16 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	      if (vr0->kind () == VR_RANGE
 		  && TREE_CODE (vr0->max ()) == INTEGER_CST)
 		{
-		  maxi = tree_floor_log2 (vr0->max ());
-		  /* For vr0 [0, 0] give up.  */
-		  if (maxi == -1)
-		    break;
+		  int newmaxi = tree_floor_log2 (vr0->max ());
+		  if (newmaxi == -1)
+		    {
+		      if (mini == -1)
+			maxi = -1;
+		      else if (maxi == prec)
+			mini = prec;
+		    }
+		  else if (maxi != prec)
+		    maxi = newmaxi;
 		}
 	    }
 	  if (mini == -2)

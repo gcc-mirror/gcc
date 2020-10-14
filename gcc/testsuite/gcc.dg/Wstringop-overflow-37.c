@@ -185,6 +185,18 @@ void test_note (const char *s)
   }
 
   {
+    char a[1][1][2];                    // { dg-message "at offset 2 into " }
+    strncpy (a[0][1], s, 3);            // { dg-warning "writing 3 bytes into a region of size 0 " }
+    sink (a);
+  }
+
+  {
+    char a[1][2][2];                    // { dg-message "destination object" }
+    strncpy (a[0][0], s, 3);            // { dg-warning "writing 3 bytes into a region of size 2 " }
+    sink (a);
+  }
+
+  {
     char a[1][2][2];                    // { dg-message "at offset 2 into " }
     strncpy (a[0][1], s, 3);            // { dg-warning "writing 3 bytes into a region of size 2 " }
     sink (a);
@@ -192,7 +204,13 @@ void test_note (const char *s)
 
   {
     char a[1][2][2];                    // { dg-message "at offset 4 into " }
-    strncpy (a[1][0], s, 3);            // { dg-warning "writing 3 bytes into a region of size 2 " }
+    strncpy (a[1][0], s, 3);            // { dg-warning "writing 3 bytes into a region of size 0 " }
+    sink (a);
+  }
+
+  {
+    char a[2][1][2];                    // { dg-message "at offset 2 into " }
+    strncpy (a[0][1], s, 3);            // { dg-warning "writing 3 bytes into a region of size 0 " }
     sink (a);
   }
 

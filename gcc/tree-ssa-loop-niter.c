@@ -4305,6 +4305,7 @@ estimate_numbers_of_iterations (class loop *loop)
 
   if (flag_aggressive_loop_optimizations)
     infer_loop_bounds_from_undefined (loop, body);
+  free (body);
 
   discover_iteration_bound_by_body_walk (loop);
 

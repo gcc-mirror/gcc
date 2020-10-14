@@ -1876,13 +1876,13 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	  if (((*pbuf)[comment_ix+1] == 'g' || (*pbuf)[comment_ix+1] == 'G')
 	      && ((*pbuf)[comment_ix+2] == 'c' || (*pbuf)[comment_ix+2] == 'C')
 	      && ((*pbuf)[comment_ix+3] == 'c' || (*pbuf)[comment_ix+3] == 'C')
-	      && (*pbuf)[comment_ix+4] == '$')
+	      && c == '$')
 	    first_comment = seen_comment = false;
 	  if (flag_openacc
 	      && (*pbuf)[comment_ix+1] == '$'
 	      && ((*pbuf)[comment_ix+2] == 'a' || (*pbuf)[comment_ix+2] == 'A')
 	      && ((*pbuf)[comment_ix+3] == 'c' || (*pbuf)[comment_ix+3] == 'C')
-	      && ((*pbuf)[comment_ix+4] == 'c' || (*pbuf)[comment_ix+4] == 'C'))
+	      && (c == 'c' || c == 'C'))
 	    first_comment = seen_comment = false;
 	}
 

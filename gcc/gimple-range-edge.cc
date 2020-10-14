@@ -106,19 +106,14 @@ outgoing_range::calc_switch_ranges (gswitch *sw)
   unsigned x, lim;
   lim = gimple_switch_num_labels (sw);
   tree type = TREE_TYPE (gimple_switch_index (sw));
-  
   edge default_edge = gimple_switch_default_edge (cfun, sw);
-  irange *&default_slot = m_edge_table->get_or_insert (default_edge, &existed);
 
-  // This should be the first call into this switch.  For the default
-  // range case, start with varying and intersect each other case from
-  // it.
-
-  gcc_checking_assert (!existed);
-
-  // Allocate an int_range_max for default case.
-  default_slot = m_range_allocator.allocate (255);
-  default_slot->set_varying (type);
+  // This should be the first call into this switch.
+  //
+  // Allocate an int_range_max for the default range case, start with
+  // varying and intersect each other case from it.
+  irange *default_range = m_range_allocator.allocate (255);
+  default_range->set_varying (type);
 
   for (x = 1; x < lim; x++)
     {
@@ -137,7 +132,7 @@ outgoing_range::calc_switch_ranges (gswitch *sw)
       int_range_max def_range (low, high);
       range_cast (def_range, type);
       def_range.invert ();
-      default_slot->intersect (def_range);
+      default_range->intersect (def_range);
 
       // Create/union this case with anything on else on the edge.
       int_range_max case_range (low, high);
@@ -157,6 +152,11 @@ outgoing_range::calc_switch_ranges (gswitch *sw)
       // intrusive than allocating max ranges for each case.
       slot = m_range_allocator.allocate (case_range);
     }
+
+  irange *&slot = m_edge_table->get_or_insert (default_edge, &existed);
+  // This should be the first call into this switch.
+  gcc_checking_assert (!existed);
+  slot = default_range;
 }
 
 

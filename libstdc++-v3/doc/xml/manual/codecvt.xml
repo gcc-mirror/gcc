@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.localization.facet.codecvt" xreflabel="codecvt">
 <?dbhtml filename="codecvt.html"?>
 
@@ -114,7 +114,7 @@ particular.</para>
 
 
 <section xml:id="codecvt.design.wchar_t_size"><info><title><type>wchar_t</type> Size</title></info>
-    
+
 
     <para>
       The simple implementation detail of <type>wchar_t</type>'s size seems to
@@ -134,7 +134,7 @@ particular.</para>
   </section>
 
 <section xml:id="codecvt.design.unicode"><info><title>Support for Unicode</title></info>
-  
+
   <para>
     Probably the most frequently asked question about code conversion
     is: "So dudes, what's the deal with Unicode strings?"
@@ -242,7 +242,7 @@ mechanism may be required.
 </section>
 
 <section xml:id="codecvt.design.issues"><info><title>Other Issues</title></info>
-  
+
 <para>
 In addition, multi-threaded and multi-locale environments also impact
 the design and requirements for code conversions. In particular, they

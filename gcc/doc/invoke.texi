@@ -430,6 +430,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-use-after-free @gol
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wno-analyzer-use-of-uninitialized-value @gol
+-Wno-analyzer-write-to-const @gol
+-Wno-analyzer-write-to-string-literal @gol
 }
 
 @item C and Objective-C-only Warning Options
@@ -8859,6 +8861,8 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
+-Wanalyzer-write-to-const @gol
+-Wanalyzer-write-to-string-literal @gol
 }
 
 This option is only available if GCC was configured with analyzer
@@ -9040,6 +9044,30 @@ to disable it.
 
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
+
+@item -Wno-analyzer-write-to-const
+@opindex Wanalyzer-write-to-const
+@opindex Wno-analyzer-write-to-const
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-write-to-const}
+to disable it.
+
+This diagnostic warns for paths through the code in which the analyzer
+detects an attempt to write through a pointer to a @code{const} object.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
+
+@item -Wno-analyzer-write-to-string-literal
+@opindex Wanalyzer-write-to-string-literal
+@opindex Wno-analyzer-write-to-string-literal
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-write-to-string-literal}
+to disable it.
+
+This diagnostic warns for paths through the code in which the analyzer
+detects an attempt to write through a pointer to a string literal.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
 
 @end table
 
@@ -13485,6 +13513,9 @@ Loop blocking or strip mining transforms, enabled with
 loop in the loop nest by a given number of iterations.  The strip
 length can be changed using the @option{loop-block-tile-size}
 parameter.
+
+@item ipa-jump-function-lookups
+Specifies number of statements visited during jump function offset discovery.
 
 @item ipa-cp-value-list-size
 IPA-CP attempts to track all possible values and types passed to a function's
@@ -25664,7 +25695,7 @@ Generate code for 32-bit or 64-bit ABI.
 @opindex march
 Generate code for given the specified PTX ISA (e.g.@: @samp{sm_35}).  ISA
 strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
-@samp{sm_35}.  The default ISA is sm_30.
+@samp{sm_35}.  The default ISA is sm_35.
 
 @item -mmainkernel
 @opindex mmainkernel

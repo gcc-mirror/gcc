@@ -471,7 +471,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __last == _GLIBCXX_STD_A::find_if(__first, __last, __pred); }
 
   /**
-   *  @brief  Checks that a predicate is false for at least an element
+   *  @brief  Checks that a predicate is true for at least one element
    *          of a sequence.
    *  @ingroup non_mutating_algorithms
    *  @param  __first   An input iterator.

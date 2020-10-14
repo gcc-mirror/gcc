@@ -66,8 +66,9 @@ struct BA2 { int i; A2 a2; };
 void fBx (BAx *pbx, BAx &rbx)
 {
   BAx bax;
-  new (bax.ax.a) char;     // { dg-warning "placement" }
-  new (bax.ax.a) Int16;    // { dg-warning "placement" }
+  // The uninitialized flexible array takes up the bytes of padding.
+  new (bax.ax.a) char;
+  new (bax.ax.a) Int16;
   new (bax.ax.a) Int32;    // { dg-warning "placement" }
 
   new (pbx->ax.a) char;
@@ -84,9 +85,12 @@ void fBx1 ()
 {
   static BAx bax1 = { 1, /* Ax = */ { 2, /* a[] = */ {} } };
 
-  new (bax1.ax.a) char;	    // { dg-warning "placement" }
-  new (bax1.ax.a) char[2];  // { dg-warning "placement" }
-  new (bax1.ax.a) Int16;    // { dg-warning "placement" }
+  // The empty flexible array takes up the bytes of padding.
+  new (bax1.ax.a) char;
+  new (bax1.ax.a) char[2];
+  new (bax1.ax.a) Int16;
+  new (bax1.ax.a) char[3];
+  new (bax1.ax.a) char[4];  // { dg-warning "placement" }
   new (bax1.ax.a) Int32;    // { dg-warning "placement" }
 }
 

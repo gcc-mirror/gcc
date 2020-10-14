@@ -73,7 +73,7 @@ struct gomp_task_icv gomp_global_icv = {
   .target_data = NULL
 };
 
-unsigned long gomp_max_active_levels_var = INT_MAX;
+unsigned long gomp_max_active_levels_var = gomp_supported_active_levels;
 bool gomp_cancel_var = false;
 int gomp_max_task_priority_var = 0;
 #ifndef HAVE_SYNC_BUILTINS
@@ -1369,6 +1369,8 @@ initialize_env (void)
   parse_int ("OMP_MAX_TASK_PRIORITY", &gomp_max_task_priority_var, true);
   parse_unsigned_long ("OMP_MAX_ACTIVE_LEVELS", &gomp_max_active_levels_var,
 		       true);
+  if (gomp_max_active_levels_var > gomp_supported_active_levels)
+    gomp_max_active_levels_var = gomp_supported_active_levels;
   gomp_def_allocator = parse_allocator ();
   if (parse_unsigned_long ("OMP_THREAD_LIMIT", &thread_limit_var, false))
     {

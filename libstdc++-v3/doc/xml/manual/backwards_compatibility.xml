@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.appendix.porting.backwards" xreflabel="backwards">
 <?dbhtml filename="backwards.html"?>
 
@@ -39,7 +39,7 @@ Committee couldn't include everything, and so a lot of those
 <para>Portability notes and known implementation limitations are as follows.</para>
 
 <section xml:id="backwards.first.ios_base"><info><title>No <code>ios_base</code></title></info>
-  
+
 
 <para> At least some older implementations don't have <code>std::ios_base</code>, so you should use <code>std::ios::badbit</code>, <code>std::ios::failbit</code> and <code>std::ios::eofbit</code> and <code>std::ios::goodbit</code>.
 </para>
@@ -93,7 +93,7 @@ considered replaced and rewritten.
 </para>
 
 <section xml:id="backwards.second.std"><info><title>Namespace <code>std::</code> not supported</title></info>
-  
+
 
   <para>
     Some care is required to support C++ compiler and or library
@@ -210,7 +210,7 @@ AC_DEFUN([AC_CXX_NAMESPACE_STD], [
 
 <section xml:id="backwards.second.isspace"><info><title><code>isspace</code> from <filename class="headerfile">&lt;cctype&gt;</filename> is a macro
   </title></info>
-  
+
 
   <para>
     Glibc 2.0.x and 2.1.x define <filename class="headerfile">&lt;ctype.h&gt;</filename> functionality as macros
@@ -488,7 +488,7 @@ particular <quote>info iostream</quote>.
 </section>
 
 <section xml:id="backwards.second.wchar"><info><title>Little or no wide character support</title></info>
-  
+
   <para>
     Classes <classname>wstring</classname> and
     <classname>char_traits&lt;wchar_t&gt;</classname> are
@@ -497,7 +497,7 @@ particular <quote>info iostream</quote>.
 </section>
 
 <section xml:id="backwards.second.iostream_templates"><info><title>No templatized iostreams</title></info>
-  
+
   <para>
     Classes <classname>wfilebuf</classname> and
     <classname>wstringstream</classname> are not supported.

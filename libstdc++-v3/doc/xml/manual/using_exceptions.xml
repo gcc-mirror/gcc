@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.intro.using.exceptions" xreflabel="Using Exceptions">
 <?dbhtml filename="using_exceptions.html"?>
 
@@ -451,7 +451,7 @@ is called.
 	Error and Exception Handling
 	</link>
       </title>
-      
+
     <author><personname><firstname>David</firstname><surname>Abrahams </surname></personname></author>
     <publisher>
       <publishername>
@@ -468,7 +468,7 @@ is called.
 	Exception-Safety in Generic Components
 	</link>
       </title>
-      
+
     <author><personname><firstname>David</firstname><surname>Abrahams</surname></personname></author>
     <publisher>
       <publishername>

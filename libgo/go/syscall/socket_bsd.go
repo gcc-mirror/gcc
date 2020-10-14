@@ -52,13 +52,19 @@ func (sa *RawSockaddrUnix) setLen(n int) {
 }
 
 func (sa *RawSockaddrUnix) getLen() (int, error) {
-	if sa.Len < 3 || sa.Len > SizeofSockaddrUnix {
+	if sa.Len < 2 || sa.Len > SizeofSockaddrUnix {
 		return 0, EINVAL
 	}
-	n := int(sa.Len) - 3 // subtract leading Family, Len, terminating NUL.
+
+	// Some BSDs include the trailing NUL in the length, whereas
+	// others do not. Work around this by subtracting the leading
+	// family and len. The path is then scanned to see if a NUL
+	// terminator still exists within the length.
+	n := int(sa.Len) - 2 // subtract leading Family, Len
 	for i := 0; i < n; i++ {
 		if sa.Path[i] == 0 {
-			// found early NUL; assume Len is overestimating.
+			// found early NUL; assume Len included the NUL
+			// or was overestimating.
 			n = i
 			break
 		}

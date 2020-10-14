@@ -21,7 +21,7 @@
 #include <variant>
 #include <testsuite_hooks.h>
 
-// { dg-error "invalid conversion" "" { target *-*-* } 0 }
+// { dg-error "same return type for all alternatives" "" { target *-*-* } 0 }
 // { dg-prune-output "in 'constexpr' expansion" }
 
 void

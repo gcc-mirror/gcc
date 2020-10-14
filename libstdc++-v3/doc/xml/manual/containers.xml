@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.containers" xreflabel="Containers">
 <?dbhtml filename="containers.html"?>
 
@@ -17,13 +17,13 @@
 <!-- Sect1 01 : Sequences -->
 <section xml:id="std.containers.sequences" xreflabel="Sequences"><info><title>Sequences</title></info>
 <?dbhtml filename="sequences.html"?>
-  
+
 
 <section xml:id="containers.sequences.list" xreflabel="list"><info><title>list</title></info>
 <?dbhtml filename="list.html"?>
-  
+
   <section xml:id="sequences.list.size" xreflabel="list::size() is O(n)"><info><title>list::size() is O(n)</title></info>
-    
+
    <para>
      Yes it is, at least using the <link linkend="manual.intro.using.abi">old
      ABI</link>, and that's okay.  This is a decision that we preserved
@@ -78,10 +78,10 @@
 <!-- Sect1 02 : Associative -->
 <section xml:id="std.containers.associative" xreflabel="Associative"><info><title>Associative</title></info>
 <?dbhtml filename="associative.html"?>
-  
+
 
   <section xml:id="containers.associative.insert_hints" xreflabel="Insertion Hints"><info><title>Insertion Hints</title></info>
-    
+
    <para>
      Section [23.1.2], Table 69, of the C++ standard lists this
      function for all of the associative containers (map, set, etc):
@@ -189,9 +189,9 @@
 
   <section xml:id="containers.associative.bitset" xreflabel="bitset"><info><title>bitset</title></info>
     <?dbhtml filename="bitset.html"?>
-    
+
     <section xml:id="associative.bitset.size_variable" xreflabel="Variable"><info><title>Size Variable</title></info>
-      
+
       <para>
 	No, you cannot write code of the form
       </para>
@@ -299,7 +299,7 @@
 
     </section>
     <section xml:id="associative.bitset.type_string" xreflabel="Type String"><info><title>Type String</title></info>
-      
+
       <para>
       </para>
    <para>
@@ -452,10 +452,10 @@
 <!-- Sect1 04 : Interacting with C -->
 <section xml:id="std.containers.c" xreflabel="Interacting with C"><info><title>Interacting with C</title></info>
 <?dbhtml filename="containers_and_c.html"?>
-  
+
 
   <section xml:id="containers.c.vs_array" xreflabel="Containers vs. Arrays"><info><title>Containers vs. Arrays</title></info>
-    
+
    <para>
      You're writing some code and can't decide whether to use builtin
      arrays or some kind of container.  There are compelling reasons

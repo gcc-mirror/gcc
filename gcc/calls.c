@@ -1235,14 +1235,16 @@ alloc_max_size (void)
    after adjusting it if necessary to make EXP a represents a valid size
    of object, or a valid size argument to an allocation function declared
    with attribute alloc_size (whose argument may be signed), or to a string
-   manipulation function like memset.  When ALLOW_ZERO is true, allow
-   returning a range of [0, 0] for a size in an anti-range [1, N] where
-   N > PTRDIFF_MAX.  A zero range is a (nearly) invalid argument to
-   allocation functions like malloc but it is a valid argument to
-   functions like memset.  */
+   manipulation function like memset.
+   When ALLOW_ZERO is set in FLAGS, allow returning a range of [0, 0] for
+   a size in an anti-range [1, N] where N > PTRDIFF_MAX.  A zero range is
+   a (nearly) invalid argument to allocation functions like malloc but it
+   is a valid argument to functions like memset.
+   When USE_LARGEST is set in FLAGS set RANGE to the largest valid subrange
+   in a multi-range, otherwise to the smallest valid subrange.  */
 
 bool
-get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
+get_size_range (tree exp, tree range[2], int flags /* = 0 */)
 {
   if (!exp)
     return false;
@@ -1314,25 +1316,50 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
 	      min = wi::zero (expprec);
 	    }
 	}
-      else if (wi::eq_p (0, min - 1))
-	{
-	  /* EXP is unsigned and not in the range [1, MAX].  That means
-	     it's either zero or greater than MAX.  Even though 0 would
-	     normally be detected by -Walloc-zero, unless ALLOW_ZERO
-	     is true, set the range to [MAX, TYPE_MAX] so that when MAX
-	     is greater than the limit the whole range is diagnosed.  */
-	  if (allow_zero)
-	    min = max = wi::zero (expprec);
-	  else
-	    {
-	      min = max + 1;
-	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
-	    }
-	}
       else
 	{
-	  max = min - 1;
-	  min = wi::zero (expprec);
+	  wide_int maxsize = wi::to_wide (max_object_size ());
+	  min = wide_int::from (min, maxsize.get_precision (), UNSIGNED);
+	  max = wide_int::from (max, maxsize.get_precision (), UNSIGNED);
+	  if (wi::eq_p (0, min - 1))
+	    {
+	      /* EXP is unsigned and not in the range [1, MAX].  That means
+		 it's either zero or greater than MAX.  Even though 0 would
+		 normally be detected by -Walloc-zero, unless ALLOW_ZERO
+		 is set, set the range to [MAX, TYPE_MAX] so that when MAX
+		 is greater than the limit the whole range is diagnosed.  */
+	      wide_int maxsize = wi::to_wide (max_object_size ());
+	      if (flags & SR_ALLOW_ZERO)
+		{
+		  if (wi::leu_p (maxsize, max + 1)
+		      || !(flags & SR_USE_LARGEST))
+		    min = max = wi::zero (expprec);
+		  else
+		    {
+		      min = max + 1;
+		      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+		    }
+		}
+	      else
+		{
+		  min = max + 1;
+		  max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+		}
+	    }
+	  else if ((flags & SR_USE_LARGEST)
+		   && wi::ltu_p (max + 1, maxsize))
+	    {
+	      /* When USE_LARGEST is set and the larger of the two subranges
+		 is a valid size, use it...  */
+	      min = max + 1;
+	      max = maxsize;
+	    }
+	  else
+	    {
+	      /* ...otherwise use the smaller subrange.  */
+	      max = min - 1;
+	      min = wi::zero (expprec);
+	    }
 	}
     }
 

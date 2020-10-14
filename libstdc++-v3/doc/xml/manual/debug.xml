@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.intro.using.debug" xreflabel="Debugging Support">
 <?dbhtml filename="debug.html"?>
 
@@ -210,7 +210,7 @@
 </para>
 
 <para>
-  Two annotation macros are used to explain low-level synchronization 
+  Two annotation macros are used to explain low-level synchronization
   to race detectors:
   <code>_GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE()</code> and
   <code> _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER()</code>.
@@ -232,8 +232,8 @@
   that are affected by the annotation macros, which can be done by
   recompiling individual files.
   Annotating <code>std::string</code> and <code>std::wstring</code>
-  reference counting can be done by disabling extern templates (by defining 
-  <code>_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or by rebuilding the 
+  reference counting can be done by disabling extern templates (by defining
+  <code>_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or by rebuilding the
   <filename>src/string-inst.cc</filename> file.
   Annotating the remaining atomic operations (at the time of writing these
   are in <code>ios_base::Init::~Init</code>, <code>locale::_Impl</code>,
@@ -244,14 +244,14 @@
 <para>
   The approach described above is known to work with the following race
   detection tools:
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" 
+  <link xmlns:xlink="http://www.w3.org/1999/xlink"
   xlink:href="http://valgrind.org/docs/manual/drd-manual.html">
   DRD</link>,
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" 
-  xlink:href="http://valgrind.org/docs/manual/hg-manual.html"> 
+  <link xmlns:xlink="http://www.w3.org/1999/xlink"
+  xlink:href="http://valgrind.org/docs/manual/hg-manual.html">
   Helgrind</link>, and
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" 
-  xlink:href="https://github.com/google/sanitizers"> 
+  <link xmlns:xlink="http://www.w3.org/1999/xlink"
+  xlink:href="https://github.com/google/sanitizers">
   ThreadSanitizer</link> (this refers to ThreadSanitizer v1, not the
   new "tsan" feature built-in to GCC itself).
 </para>

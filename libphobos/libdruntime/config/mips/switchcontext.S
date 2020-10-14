@@ -47,12 +47,12 @@ fiber_switchContext:
 #ifdef __mips_hard_float
 #define ALIGN8(val) (val + (-val & 7))
 #define BELOW (ALIGN8(6 * 8 + 4))
-    sdc1 $f20, (0 * 8 - BELOW)($sp)
-    sdc1 $f22, (1 * 8 - BELOW)($sp)
-    sdc1 $f24, (2 * 8 - BELOW)($sp)
-    sdc1 $f26, (3 * 8 - BELOW)($sp)
-    sdc1 $f28, (4 * 8 - BELOW)($sp)
-    sdc1 $f30, (5 * 8 - BELOW)($sp)
+    s.d $f20, (0 * 8 - BELOW)($sp)
+    s.d $f22, (1 * 8 - BELOW)($sp)
+    s.d $f24, (2 * 8 - BELOW)($sp)
+    s.d $f26, (3 * 8 - BELOW)($sp)
+    s.d $f28, (4 * 8 - BELOW)($sp)
+    s.d $f30, (5 * 8 - BELOW)($sp)
 #endif
     sw $ra, -4($sp)
 
@@ -72,12 +72,12 @@ fiber_switchContext:
     move $sp, $a1
 
 #ifdef __mips_hard_float
-    ldc1 $f20, (0 * 8 - BELOW)($sp)
-    ldc1 $f22, (1 * 8 - BELOW)($sp)
-    ldc1 $f24, (2 * 8 - BELOW)($sp)
-    ldc1 $f26, (3 * 8 - BELOW)($sp)
-    ldc1 $f28, (4 * 8 - BELOW)($sp)
-    ldc1 $f30, (5 * 8 - BELOW)($sp)
+    l.d $f20, (0 * 8 - BELOW)($sp)
+    l.d $f22, (1 * 8 - BELOW)($sp)
+    l.d $f24, (2 * 8 - BELOW)($sp)
+    l.d $f26, (3 * 8 - BELOW)($sp)
+    l.d $f28, (4 * 8 - BELOW)($sp)
+    l.d $f30, (5 * 8 - BELOW)($sp)
 #endif
     lw $ra, -4($sp)
 

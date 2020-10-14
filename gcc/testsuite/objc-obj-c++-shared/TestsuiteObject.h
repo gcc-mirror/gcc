@@ -24,6 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 /* We use this root class instead of Object to keep the tests
    independent of the runtime being used.  Keep it simple.  */
 
+#if defined(__has_attribute) && __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface TestsuiteObject
 {
   Class isa;
@@ -42,6 +45,11 @@ along with GCC; see the file COPYING3.  If not see
 + (Class) superclass;
 + (const char *)name;
 - (const char *)name;
+
+/* For try-catch impl that retains and releases thrown objects.  */
+- (id) retain;
+- (void) release;
+
 @end
 
 #endif /* _TESTSUITE_OBJECT_H_ */

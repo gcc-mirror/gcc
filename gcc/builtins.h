@@ -109,6 +109,7 @@ extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
 extern tree mathfn_built_in (tree, combined_fn);
+extern tree mathfn_built_in_type (combined_fn);
 extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 extern rtx expand_builtin_saveregs (void);
@@ -172,6 +173,52 @@ struct access_ref
      For string functions the size of the actual access is
      further constrained by the length of the string.  */
   offset_int bndrng[2];
+
+  /* Return true if OFFRNG is the constant zero.  */
+  bool offset_zero () const
+  {
+    return offrng[0] == 0 && offrng[1] == 0;
+  }
+
+  /* Return true if OFFRNG is bounded to a subrange of offset values
+     valid for the largest possible object.  */
+  bool offset_bounded () const;
+
+  /* Return the maximum amount of space remaining and if non-null, set
+     argument to the minimum.  */
+  offset_int size_remaining (offset_int * = NULL) const;
+
+  /* Set the size range to the maximum.  */
+  void set_max_size_range ()
+  {
+    sizrng[0] = 0;
+    sizrng[1] = wi::to_offset (max_object_size ());
+  }
+
+  /* Add OFF to the offset range.  */
+  void add_offset (const offset_int &off)
+  {
+    add_offset (off, off);
+  }
+
+  /* Add the range [MIN, MAX] to the offset range.  */
+  void add_offset (const offset_int &, const offset_int &);
+
+  /* Add the maximum representable offset to the offset range.  */
+  void add_max_offset ()
+  {
+    offset_int maxoff = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+    add_offset (-maxoff - 1, maxoff);
+  }
+
+  /* Used to fold integer expressions when called from front ends.  */
+  tree (*eval)(tree);
+  /* Set if trailing one-element arrays should be treated as flexible
+     array members.  */
+  bool trail1special;
+  /* Set if valid offsets must start at zero (for declared and allocated
+     objects but not for others referenced by pointers).  */
+  bool base0;
 };
 
 /* Describes a pair of references used in an access by built-in
@@ -199,11 +246,10 @@ class range_query;
 extern tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
 				    range_query * = NULL);
 extern tree gimple_parm_array_size (tree, wide_int[2], range_query * = NULL);
+extern tree compute_objsize (tree, int, access_ref *, range_query * = NULL);
 extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
 			     range_query * = NULL);
-extern tree compute_objsize (tree, int, access_ref *, range_query * = NULL);
-
-extern bool check_access (tree, tree, tree, tree, tree, access_mode,
-			  const access_data * = NULL);
+extern bool check_access (tree, tree, tree, tree, tree,
+			  access_mode, const access_data * = NULL);
 
 #endif /* GCC_BUILTINS_H */
