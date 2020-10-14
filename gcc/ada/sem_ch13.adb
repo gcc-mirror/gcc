@@ -3067,7 +3067,7 @@ package body Sem_Ch13 is
                   Aitem :=
                     Make_Attribute_Definition_Clause (Loc,
                       Name       => Ent,
-                      Chars      => Chars (Id),
+                      Chars      => Nam,
                       Expression => Relocate_Node (Expr));
 
                   --  If the address is specified, then we treat the entity as
@@ -3096,7 +3096,7 @@ package body Sem_Ch13 is
                          Expression => New_Occurrence_Of (E, Loc)),
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
-                     Pragma_Name                  => Chars (Id));
+                     Pragma_Name                  => Name_Linker_Section);
 
                   --  Linker_Section does not need delaying, as its argument
                   --  must be a static string. Furthermore, if applied to
@@ -3406,7 +3406,7 @@ package body Sem_Ch13 is
                      Aitem :=
                        Make_Attribute_Definition_Clause (Loc,
                          Name       => Ent,
-                         Chars      => Chars (Id),
+                         Chars      => Nam,
                          Expression => Relocate_Node (Expr));
                   end if;
 
@@ -3421,7 +3421,7 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr)),
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => New_Occurrence_Of (E, Loc))),
-                     Pragma_Name                  => Chars (Id));
+                     Pragma_Name                  => Nam);
 
                   Delay_Required := False;
 
@@ -3434,7 +3434,7 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr)),
                        Make_Pragma_Argument_Association (Loc,
                          Expression => New_Occurrence_Of (E, Loc))),
-                     Pragma_Name                  => Chars (Id));
+                     Pragma_Name                  => Name_Warnings);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -3876,7 +3876,7 @@ package body Sem_Ch13 is
 
                   Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => Args,
-                     Pragma_Name                  => Chars (Id));
+                     Pragma_Name                  => Name_Obsolescent);
                end;
 
                --  Part_Of
@@ -4162,7 +4162,7 @@ package body Sem_Ch13 is
                --  pragmas/attributes but do require delayed analysis.
 
                when Aspect_Default_Value | Aspect_Default_Component_Value =>
-                  Error_Msg_Name_1 := Chars (Id);
+                  Error_Msg_Name_1 := Nam;
 
                   if not Is_Type (E) then
                      Error_Msg_N ("aspect% can only apply to a type", Id);
@@ -4437,7 +4437,7 @@ package body Sem_Ch13 is
 
                   Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => Args,
-                     Pragma_Name                  => Nam);
+                     Pragma_Name                  => Name_Test_Case);
                end Test_Case;
 
                --  Contract_Cases
@@ -4447,7 +4447,7 @@ package body Sem_Ch13 is
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
-                     Pragma_Name                  => Nam);
+                     Pragma_Name                  => Name_Contract_Cases);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -4460,7 +4460,7 @@ package body Sem_Ch13 is
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
-                     Pragma_Name                  => Nam);
+                     Pragma_Name                  => Name_Subprogram_Variant);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -4583,7 +4583,7 @@ package body Sem_Ch13 is
                           (Pragma_Argument_Associations => New_List (
                              Make_Pragma_Argument_Association (Sloc (Ent),
                                Expression => Ent)),
-                           Pragma_Name                  => Chars (Id));
+                           Pragma_Name                  => Nam);
                      end if;
 
                   --  In general cases, the corresponding pragma/attribute
@@ -4646,7 +4646,7 @@ package body Sem_Ch13 is
                      Aitem :=
                        Make_Attribute_Definition_Clause (Loc,
                          Name       => Ent,
-                         Chars      => Chars (Id),
+                         Chars      => Name_Storage_Size,
                          Expression => Relocate_Node (Expr));
                   end if;
             end case;
@@ -4693,7 +4693,7 @@ package body Sem_Ch13 is
                           (Pragma_Argument_Associations => New_List (
                              Make_Pragma_Argument_Association (Sloc (Ent),
                                Expression => Ent)),
-                           Pragma_Name                  => Chars (Id));
+                           Pragma_Name                  => Nam);
 
                         Set_From_Aspect_Specification (Aitem, True);
                         Set_Corresponding_Aspect (Aitem, Aspect);
