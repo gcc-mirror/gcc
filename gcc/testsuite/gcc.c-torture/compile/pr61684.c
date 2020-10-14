@@ -1,5 +1,4 @@
 /* PR tree-optimization/61684 */
-/* { dg-xfail-if "ptxas crashes" { nvptx-*-* } { "*" } { "-O0" "-O1" "-Os" } } */
 
 int a, c;
 static int *b = 0;
