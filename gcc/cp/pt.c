@@ -1181,7 +1181,7 @@ optimize_specialization_lookup_p (tree tmpl)
 	     not have template information.  The optimized lookup relies
 	     on having ARGS be the template arguments for both the class
 	     and the function template.  */
-	  && !DECL_FRIEND_P (DECL_TEMPLATE_RESULT (tmpl)));
+	  && !DECL_UNIQUE_FRIEND_P (DECL_TEMPLATE_RESULT (tmpl)));
 }
 
 /* Make sure ARGS doesn't use any inappropriate typedefs; we should have
@@ -5701,7 +5701,7 @@ push_template_decl (tree decl, bool is_friend)
   /* No surprising friend functions.  */
   gcc_checking_assert (is_friend
 		       || !(TREE_CODE (decl) == FUNCTION_DECL
-			    && DECL_FRIEND_P (decl)));
+			    && DECL_UNIQUE_FRIEND_P (decl)));
 
   if (is_friend)
     /* For a friend, we want the context of the friend, not
@@ -6022,10 +6022,6 @@ push_template_decl (tree decl, bool is_friend)
       if (!ctx
 	  && !(is_friend && template_class_depth (current_class_type) > 0))
 	{
-	  /* Hide template friend classes that haven't been declared yet.  */
-	  if (is_friend && TREE_CODE (decl) == TYPE_DECL)
-	    DECL_FRIEND_P (tmpl) = 1;
-
 	  tmpl = pushdecl_namespace_level (tmpl, /*hiding=*/is_friend);
 	  if (tmpl == error_mark_node)
 	    return error_mark_node;
@@ -13960,7 +13956,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
     if (!lambda_fntype)
       set_constraints (r, ci);
 
-  if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
+  if (DECL_FRIEND_CONTEXT (t))
     SET_DECL_FRIEND_CONTEXT (r,
 			     tsubst (DECL_FRIEND_CONTEXT (t),
 				     args, complain, in_decl));
@@ -27049,7 +27045,7 @@ type_dependent_expression_p (tree expression)
       && !(DECL_CLASS_SCOPE_P (expression)
 	   && dependent_type_p (DECL_CONTEXT (expression)))
       && !(DECL_LANG_SPECIFIC (expression)
-	   && DECL_FRIEND_P (expression)
+	   && DECL_UNIQUE_FRIEND_P (expression)
 	   && (!DECL_FRIEND_CONTEXT (expression)
 	       || dependent_type_p (DECL_FRIEND_CONTEXT (expression))))
       && !DECL_LOCAL_DECL_P (expression))

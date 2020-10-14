@@ -1649,7 +1649,7 @@ plugin_add_friend (cc1_plugin::connection * /* self */,
     make_friend_class (type, TREE_TYPE (decl), true);
   else
     {
-      DECL_FRIEND_P (decl) = true;
+      DECL_UNIQUE_FRIEND_P (decl) = true;
       add_friend (type, decl, true);
     }
 
