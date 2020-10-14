@@ -2254,7 +2254,8 @@ private:
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
     DB_IS_MEMBER_BIT,		/* Is an out-of-class member.  */
-    DB_IS_INTERNAL_BIT,		/* It is an internal-linkage entity.  */
+    DB_IS_INTERNAL_BIT,		/* It is an (erroneous)
+				   internal-linkage entity.  */
     DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage
 				   entity. */
     DB_IMPORTED_BIT,		/* An imported entity.  */
@@ -11109,6 +11110,12 @@ has_definition (tree decl)
       if (DECL_DECLARED_INLINE_P (decl))
 	return true;
 
+      if (DECL_THIS_STATIC (decl)
+	  && (header_module_p ()
+	      || (!DECL_LANG_SPECIFIC (decl) || !DECL_MODULE_PURVIEW_P (decl))))
+	/* GM static function.  */
+	return true;
+
       if (DECL_TEMPLATE_INFO (decl))
 	{
 	  int use_tpl = DECL_USE_TEMPLATE (decl);
@@ -11131,6 +11138,13 @@ has_definition (tree decl)
       break;
 
     case VAR_DECL:
+      if (DECL_THIS_STATIC (decl)
+	  && (header_module_p ()
+	      || (!DECL_LANG_SPECIFIC (decl) || !DECL_MODULE_PURVIEW_P (decl))))
+	/* GM static variable.  */
+	return true;
+
+
       if (!TREE_CONSTANT (decl))
 	return false;
       /* Fallthrough.  */
@@ -12313,19 +12327,10 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	  else if (VAR_OR_FUNCTION_DECL_P (not_tmpl)
 		   && DECL_THIS_STATIC (not_tmpl))
 	    {
-	      /* An internal decl.  In global module permit
-		 extern "C" static inline functions
-		 ... because.  */
+	      /* An internal decl.  This is ok in a GM entity.  */
 	      if (!(header_module_p ()
-		    || (TREE_CODE (not_tmpl) == FUNCTION_DECL
-			&& DECL_DECLARED_INLINE_P (not_tmpl)
-#if 0
-			// FIXME: Disregard language linkage, because our
-			// std lib is borked.  Templates cannot
-			// have "C" linkage!
-			&& DECL_EXTERN_C_P (not_tmpl)
-#endif
-			&& true)))
+		    || !DECL_LANG_SPECIFIC (not_tmpl)
+		    || !DECL_MODULE_PURVIEW_P (not_tmpl)))
 		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 	    }
 

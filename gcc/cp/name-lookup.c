@@ -274,15 +274,7 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	    {
 	      tree decl = *iter;
 
-	      tree not_tmpl = STRIP_TEMPLATE (decl);
-	      if ((TREE_CODE (not_tmpl) == FUNCTION_DECL
-		   || TREE_CODE (not_tmpl) == VAR_DECL)
-		  && DECL_THIS_STATIC (not_tmpl))
-		/* Internal linkage.  */
-		// FIXME: Is this right given the new header-unit
-		// meaning?
-		continue;
-
+	      /* Internal linkage entities are in deduplicateable.  */
 	      init_global_partition (cluster, decl);
 	    }
 

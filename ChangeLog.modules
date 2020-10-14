@@ -1,5 +1,12 @@
 2020-10-14  Nathan Sidwell  <nathan@acm.org>
 
+	p2003 internal linkage & header units
+	gcc/cp/
+	* name-lookup.c (get_fixed_binding_slot): Promote internal GM
+	entities to global slot.
+	* module.cc (has_definition): Add internal linkage fns/vars in GM.
+	(depset::hash::make_dependency): Internal linkage in GM is ok.
+
 	gcc/cp/
 	* pt.c (lookup_template_class_1): Delete erroneous fixme.
 	(tsubst_template_decl): Delete questioning fixme, problem, if any,
