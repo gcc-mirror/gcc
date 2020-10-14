@@ -486,6 +486,14 @@ again:
 	}
       else
 	{
+	  if (!types_compatible_p (oprnd_info->first_op_type, type))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: different operand types\n");
+	      return 1;
+	    }
+
 	  /* Not first stmt of the group, check that the def-stmt/s match
 	     the def-stmt/s of the first stmt.  Allow different definition
 	     types for reduction chains: the first stmt must be a
@@ -503,7 +511,6 @@ again:
 		     || oprnd_info->first_dt == vect_constant_def)
 		    && (dt == vect_external_def
 			|| dt == vect_constant_def)))
-	      || !types_compatible_p (oprnd_info->first_op_type, type)
 	      || (!STMT_VINFO_DATA_REF (stmt_info)
 		  && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
 		  && ((!def_stmt_info
