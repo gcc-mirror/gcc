@@ -4493,12 +4493,9 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
 
   rng[0] = wi::zero (prec);
   rng[1] = wi::uhwi (access->minsize, prec);
-  /* If the PTR argument points to an array multiply MINSIZE by the size
-     of array element type.  Otherwise, multiply it by the size of what
-     the pointer points to.  */
+  /* Multiply the array bound encoded in the attribute by the size
+     of what the pointer argument to which it decays points to.  */
   tree eltype = TREE_TYPE (TREE_TYPE (ptr));
-  if (TREE_CODE (eltype) == ARRAY_TYPE)
-    eltype = TREE_TYPE (eltype);
   tree size = TYPE_SIZE_UNIT (eltype);
   if (!size || TREE_CODE (size) != INTEGER_CST)
     return NULL_TREE;
