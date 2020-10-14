@@ -1420,6 +1420,16 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
 	}
       /* fall through */
 
+    case OFFSET_TYPE:
+      if (TYPE_PTRDATAMEM_P (t))
+	{
+	  pp_cxx_type_specifier_seq (pp, TREE_TYPE (t));
+	  pp_cxx_whitespace (pp);
+	  pp_cxx_ptr_operator (pp, t);
+	  break;
+	}
+      /* fall through */
+
     default:
       if (!(TREE_CODE (t) == FUNCTION_DECL && DECL_CONSTRUCTOR_P (t)))
 	pp_c_specifier_qualifier_list (pp, t);
@@ -1753,7 +1763,20 @@ pp_cxx_function_definition (cxx_pretty_printer *pp, tree t)
 void
 cxx_pretty_printer::abstract_declarator (tree t)
 {
-  if (TYPE_PTRMEM_P (t))
+  /* pp_cxx_ptr_operator prints '(' for a pointer-to-member function,
+     or a pointer-to-data-member of array type:
+
+       void (X::*)()
+       int (X::*)[5]
+
+     but not for a pointer-to-data-member of non-array type:
+
+       int X::*
+
+     so be mindful of that.  */
+  if (TYPE_PTRMEMFUNC_P (t)
+      || (TYPE_PTRDATAMEM_P (t)
+	  && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE))
     pp_cxx_right_paren (this);
   else if (INDIRECT_TYPE_P (t))
     {
@@ -1783,6 +1806,11 @@ cxx_pretty_printer::direct_abstract_declarator (tree t)
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	direct_abstract_declarator (TYPE_PTRMEMFUNC_FN_TYPE (t));
+      break;
+
+    case OFFSET_TYPE:
+      if (TYPE_PTRDATAMEM_P (t))
+	direct_abstract_declarator (TREE_TYPE (t));
       break;
 
     case METHOD_TYPE:
@@ -1837,7 +1865,10 @@ cxx_pretty_printer::type_id (tree t)
     case UNDERLYING_TYPE:
     case DECLTYPE_TYPE:
     case TEMPLATE_ID_EXPR:
+    case OFFSET_TYPE:
       pp_cxx_type_specifier_seq (this, t);
+      if (TYPE_PTRMEM_P (t))
+	abstract_declarator (t);
       break;
 
     case TYPE_PACK_EXPANSION:
