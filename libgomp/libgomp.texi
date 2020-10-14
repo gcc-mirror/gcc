@@ -177,7 +177,7 @@ linkage, and do not throw exceptions.
 * omp_get_num_threads::         Size of the active team
 * omp_get_proc_bind::           Whether theads may be moved between CPUs
 * omp_get_schedule::            Obtain the runtime scheduling method
-* omp_get_supported_active_levels:: Maxiumum number of active levels supported
+* omp_get_supported_active_levels:: Maximum number of active levels supported
 * omp_get_team_num::            Get team number
 * omp_get_team_size::           Number of threads in a team
 * omp_get_thread_limit::        Maximum number of threads
