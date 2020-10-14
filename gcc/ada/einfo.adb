@@ -3040,7 +3040,7 @@ package body Einfo is
 
    function Overridden_Operation (Id : E) return E is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      pragma Assert (Is_Subprogram_Or_Generic_Subprogram (Id));
       return Node26 (Id);
    end Overridden_Operation;
 
@@ -3133,7 +3133,7 @@ package body Einfo is
 
    function Protected_Body_Subprogram (Id : E) return E is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Entry (Id));
+      pragma Assert (Is_Subprogram_Or_Entry (Id));
       return Node11 (Id);
    end Protected_Body_Subprogram;
 
@@ -4915,7 +4915,7 @@ package body Einfo is
    procedure Set_Has_Out_Or_In_Out_Parameter (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind (Id) in E_Entry | E_Entry_Family
+        (Is_Entry (Id)
           or else Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Flag110 (Id, V);
    end Set_Has_Out_Or_In_Out_Parameter;
@@ -6202,7 +6202,7 @@ package body Einfo is
 
    procedure Set_No_Return (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      pragma Assert (Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Flag113 (Id, V);
    end Set_No_Return;
 
@@ -6309,7 +6309,7 @@ package body Einfo is
 
    procedure Set_Overridden_Operation (Id : E; V : E) is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      pragma Assert (Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Node26 (Id, V);
    end Set_Overridden_Operation;
 
@@ -6407,7 +6407,7 @@ package body Einfo is
 
    procedure Set_Protected_Body_Subprogram (Id : E; V : E) is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Entry (Id));
+      pragma Assert (Is_Subprogram_Or_Entry (Id));
       Set_Node11 (Id, V);
    end Set_Protected_Body_Subprogram;
 
@@ -8154,9 +8154,7 @@ package body Einfo is
    begin
       --  Identifiers, operator symbols, expanded names are entity names
 
-      return Kind = N_Identifier
-        or else Kind = N_Operator_Symbol
-        or else Kind = N_Expanded_Name
+      return Kind in N_Identifier | N_Operator_Symbol | N_Expanded_Name
 
       --  Attribute references are entity names if they refer to an entity.
       --  Note that we don't do this by testing for the presence of the
@@ -8175,10 +8173,9 @@ package body Einfo is
    begin
       return
         Ekind (Id) in E_Constant | E_Package | E_Variable
-          or else Is_Entry        (Id)
-          or else Is_Generic_Unit (Id)
-          or else Is_Subprogram   (Id)
-          or else Is_Task_Type    (Id);
+          or else Is_Generic_Unit        (Id)
+          or else Is_Subprogram_Or_Entry (Id)
+          or else Is_Task_Type           (Id);
    end Is_Elaboration_Target;
 
    -----------------------
