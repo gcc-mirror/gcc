@@ -8169,9 +8169,6 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		  /* Load errors could mean there's nothing here.  */
 		  continue;
 
-		// FIXME: if HOW is !GLOBAL, don't we need to inject
-		// this into the current tu's slot?
-		
 		/* Extract what we can see from here.  If there's no
 		   stat_hack, then everything was exported.  */
 		tree type = NULL_TREE;

@@ -18104,6 +18104,7 @@ set_instantiating_module (tree decl)
 	      || TREE_CODE (decl) == VAR_DECL
 	      || TREE_CODE (decl) == TYPE_DECL
 	      || TREE_CODE (decl) == CONCEPT_DECL
+	      || TREE_CODE (decl) == TEMPLATE_DECL
 	      || (TREE_CODE (decl) == NAMESPACE_DECL
 		  && DECL_NAMESPACE_ALIAS (decl)));
 
@@ -18117,6 +18118,13 @@ set_instantiating_module (tree decl)
       DECL_MODULE_PURVIEW_P (decl) = module_purview_p ();
       /* If this was imported, we'll still be in the entity_hash.  */
       DECL_MODULE_IMPORT_P (decl) = false;
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	{
+	  tree res = DECL_TEMPLATE_RESULT (decl);
+	  retrofit_lang_decl (res);
+	  DECL_MODULE_PURVIEW_P (res) = DECL_MODULE_PURVIEW_P (decl);
+	  DECL_MODULE_IMPORT_P (res) = false;
+	}
     }
 }
 

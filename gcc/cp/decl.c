@@ -15122,18 +15122,40 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 	  return error_mark_node;
 	}
 
-      if (how == TAG_how::CURRENT_ONLY
-	  && flag_modules
-	  && !module_may_redeclare (TYPE_NAME (t)))
+      if (modules_p ()
+	  && how == TAG_how::CURRENT_ONLY)
 	{
-	  error ("cannot declare %qD in a different module", TYPE_NAME (t));
-	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "declared here");
-	  return error_mark_node;
-	}
+	  tree decl = TYPE_NAME (t);
+	  if (!module_may_redeclare (decl))
+	    {
+	      error ("cannot declare %qD in a different module", decl);
+	      inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	      return error_mark_node;
+	    }
 
-      // FIXME: Do we need to push into current TU's slot?
-      if (how == TAG_how::CURRENT_ONLY)
-	set_instantiating_module (TYPE_NAME (t));
+	  tree maybe_tmpl = decl;
+	  if (CLASS_TYPE_P (t) && CLASSTYPE_IS_TEMPLATE (t))
+	    maybe_tmpl = CLASSTYPE_TI_TEMPLATE (t);
+
+	  if (DECL_LANG_SPECIFIC (decl)
+	      && DECL_MODULE_IMPORT_P (decl)
+	      && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+	    {
+	      /* Push it into this TU's symbol slot.  */
+	      gcc_checking_assert (current_namespace == CP_DECL_CONTEXT (decl));
+	      if (maybe_tmpl != decl)
+		/* We're in the template parm binding level.
+		   Pushtag has logic to slide under that, but we're
+		   not pushing a *new* type.  */
+		push_nested_namespace (CP_DECL_CONTEXT (decl));
+
+	      pushdecl (maybe_tmpl);
+	      if (maybe_tmpl != decl)
+		pop_nested_namespace (CP_DECL_CONTEXT (decl));
+	    }
+
+	  set_instantiating_module (maybe_tmpl);
+	}
     }
 
   return t;
