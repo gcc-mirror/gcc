@@ -2024,10 +2024,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	}
       else
 	{
-	  // FIXME: push specialization declaration checking elsewhere
-	  // We want to allow specializations when we've not seen one
-	  // from elsewhare, and we want to allow explicit
-	  // instantiations whatever.
 	  if (!module_may_redeclare (olddecl))
 	    {
 	      error ("declaration %qD conflicts with import", newdecl);

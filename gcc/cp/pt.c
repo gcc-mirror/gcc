@@ -6037,7 +6037,6 @@ push_template_decl (tree decl, bool is_friend)
 	  && !(is_friend && template_class_depth (current_class_type) > 0))
 	{
 	  /* Hide template friend classes that haven't been declared yet.  */
-	  // FIXME: See pushtag, can we copy from the TYPE_DECL?
 	  if (is_friend && TREE_CODE (decl) == TYPE_DECL)
 	    DECL_FRIEND_P (tmpl) = 1;
 
