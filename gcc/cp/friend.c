@@ -481,8 +481,8 @@ do_friend (tree ctype, tree declarator, tree decl,
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   gcc_assert (!ctype || MAYBE_CLASS_TYPE_P (ctype));
 
-  /* Every decl that gets here is a friend of something.  */
-  DECL_FRIEND_P (decl) = 1;
+  /* Friend functions are unique, until proved otherwise.  */
+  DECL_UNIQUE_FRIEND_P (decl) = 1;
 
   if (DECL_OVERRIDE_P (decl) || DECL_FINAL_P (decl))
     error ("friend declaration %qD may not have virt-specifiers",
@@ -581,17 +581,11 @@ do_friend (tree ctype, tree declarator, tree decl,
 	error ("member %qD declared as friend before type %qT defined",
 		  decl, ctype);
     }
-  /* A global friend.
-     @@ or possibly a friend from a base class ?!?  */
-  else if (TREE_CODE (decl) == FUNCTION_DECL)
+  else
     {
+      /* Namespace-scope friend function.  */
       int is_friend_template = PROCESSING_REAL_TEMPLATE_DECL_P ();
 
-      /* Friends must all go through the overload machinery,
-	 even though they may not technically be overloaded.
-
-	 Note that because classes all wind up being top-level
-	 in their scope, their friend wind up in top-level scope as well.  */
       if (funcdef_flag)
 	SET_DECL_FRIEND_CONTEXT (decl, current_class_type);
 
@@ -653,7 +647,6 @@ do_friend (tree ctype, tree declarator, tree decl,
       add_friend (current_class_type,
 		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl,
 		  /*complain=*/true);
-      DECL_FRIEND_P (decl) = 1;
     }
 
   return decl;

@@ -8003,8 +8003,6 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 	     typedef struct C {} C;
 	   correctly.  */
 
-	tree found = NULL_TREE;
-	bool reveal = false;
 	if (tree type = iter->type)
 	  {
 	    if (qualify_lookup (type, LOOK_want::TYPE)
@@ -8012,9 +8010,11 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		    || LOCAL_BINDING_P (iter)
 		    || DECL_CONTEXT (type) == iter->scope->this_entity))
 	      {
-		found = type;
 		if (how != TAG_how::HIDDEN_FRIEND)
-		  reveal = HIDDEN_TYPE_BINDING_P (iter);
+		  /* It is no longer a hidden binding.  */
+		  HIDDEN_TYPE_BINDING_P (iter) = false;
+
+		return type;
 	      }
 	  }
 	else
@@ -8023,32 +8023,12 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		&& (how != TAG_how::CURRENT_ONLY
 		    || !INHERITED_VALUE_BINDING_P (iter)))
 	      {
-		found = iter->value;
-		if (how != TAG_how::HIDDEN_FRIEND)
-		  reveal = !iter->type && HIDDEN_TYPE_BINDING_P (iter);
+		if (how != TAG_how::HIDDEN_FRIEND && !iter->type)
+		  /* It is no longer a hidden binding.  */
+		  HIDDEN_TYPE_BINDING_P (iter) = false;
+
+		return iter->value;
 	      }
-	  }
-
-	if (found)
-	  {
-	    if (reveal)
-	      {
-		/* It is no longer a hidden binding.  */
-		HIDDEN_TYPE_BINDING_P (iter) = false;
-
-		/* Unanticipate the decl itself.  */
-		DECL_FRIEND_P (found) = false;
-
-		gcc_checking_assert (TREE_CODE (found) != TEMPLATE_DECL);
-
-		if (tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found)))
-		  {
-		    tree tmpl = TI_TEMPLATE (ti);
-		    DECL_FRIEND_P (tmpl) = false;
-		  }
-	      }
-
-	    return found;
 	  }
       }
 
@@ -8064,9 +8044,6 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
   tree ns = b->this_entity;
   if (tree *slot = find_namespace_slot (ns, name))
     {
-      tree found = NULL_TREE;
-      bool reveal = false;
-
       tree bind = *slot;
       if (TREE_CODE (bind) == MODULE_VECTOR)
 	bind = MODULE_VECTOR_CLUSTER (bind, 0).slots[MODULE_SLOT_CURRENT];
@@ -8076,61 +8053,34 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 	  /* If this is the kind of thing we're looking for, we're done.  */
 	  if (tree type = MAYBE_STAT_TYPE (bind))
 	    {
-	      found = type;
 	      if (how != TAG_how::HIDDEN_FRIEND)
-		{
-		  reveal = STAT_TYPE_HIDDEN_P (bind);
-		  STAT_TYPE_HIDDEN_P (bind) = false;
-		}
+		/* No longer hidden.  */
+		STAT_TYPE_HIDDEN_P (*slot) = false;
+	      
+	      return type;
 	    }
 	  else if (tree decl = MAYBE_STAT_DECL (bind))
 	    {
 	      if (qualify_lookup (decl, LOOK_want::TYPE))
 		{
-		  found = decl;
-
-		  if (how != TAG_how::HIDDEN_FRIEND  && STAT_HACK_P (bind))
+		  if (how != TAG_how::HIDDEN_FRIEND && STAT_HACK_P (bind)
+		      && STAT_DECL_HIDDEN_P (bind))
 		    {
-		      reveal = STAT_DECL_HIDDEN_P (bind);
-		      if (reveal)
+		      if (STAT_TYPE (bind))
+			STAT_DECL_HIDDEN_P (bind) = false;
+		      else
 			{
-			  if (STAT_TYPE (bind))
-			    STAT_DECL_HIDDEN_P (bind) = false;
+			  /* There is no type, just remove the stat
+			     hack.  */
+			  if (*slot == bind)
+			    *slot = decl;
 			  else
-			    {
-			      /* There is no type, just remove the stat
-				 hack.  */
-			      if (*slot == bind)
-				*slot = decl;
-			      else
-				MODULE_VECTOR_CLUSTER (bind, 0)
-				  .slots[MODULE_SLOT_CURRENT] = decl;
-			    }
+			    MODULE_VECTOR_CLUSTER (bind, 0)
+			      .slots[MODULE_SLOT_CURRENT] = decl;
 			}
 		    }
+		  return decl;
 		}
-	    }
-
-	  if (found)
-	    {
-	      if (reveal)
-		{
-		  /* Reveal the previously hidden thing.  */
-		  DECL_FRIEND_P (found) = false;
-
-		  if (TREE_CODE (found) == TEMPLATE_DECL)
-		    {
-		      tree res = DECL_TEMPLATE_RESULT (found);
-		      if (DECL_LANG_SPECIFIC (res))
-			DECL_FRIEND_P (res) = false;
-		    }
-		  else if (tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found)))
-		    {
-		      tree tmpl = TI_TEMPLATE (ti);
-		      DECL_FRIEND_P (tmpl) = false;
-		    }
-		}
-	      return found;
 	    }
 	}
 
@@ -8381,17 +8331,8 @@ do_pushtag (tree name, tree type, TAG_how how)
       DECL_CONTEXT (tdef) = FROB_CONTEXT (context);
       set_originating_module (tdef);
 
-      bool is_friend = how == TAG_how::HIDDEN_FRIEND;
-      if (is_friend)
-	{
-	  /* This is a friend.  Make this TYPE_DECL node hidden from
-	     ordinary name lookup.  Its corresponding TEMPLATE_DECL
-	     will be marked in push_template_decl.  */
-	  retrofit_lang_decl (tdef);
-	  DECL_FRIEND_P (tdef) = 1;
-	}
-
-      decl = maybe_process_template_type_declaration (type, is_friend, b);
+      decl = maybe_process_template_type_declaration
+	(type, how == TAG_how::HIDDEN_FRIEND, b);
       if (decl == error_mark_node)
 	return decl;
 

@@ -3283,7 +3283,8 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       {
 	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
 					 NULL_TREE);
-	if (DECL_FRIEND_P (space))
+	bool is_friend = DECL_CONTEXT (space) != t;
+	if (is_friend)
 	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
 		     NULL_TREE, NO_SPECIAL, true);
 	else
@@ -3292,7 +3293,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	    DECL_CHAIN (eq) = TYPE_FIELDS (t);
 	    TYPE_FIELDS (t) = eq;
 	  }
-	maybe_add_class_template_decl_list (t, eq, DECL_FRIEND_P (space));
+	maybe_add_class_template_decl_list (t, eq, is_friend);
       }
 
   while (*access_decls)
