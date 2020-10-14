@@ -2849,7 +2849,7 @@ package body Sem_Ch13 is
               or else A_Id = Aspect_Async_Readers
               or else A_Id = Aspect_Async_Writers
               or else A_Id = Aspect_Effective_Reads
-              or else A_Id = Aspect_Effective_Reads
+              or else A_Id = Aspect_Effective_Writes
             then
                Error_Msg_Name_1 := Nam;
 
@@ -2882,7 +2882,7 @@ package body Sem_Ch13 is
                      and then A_Id /= Aspect_Async_Readers
                      and then A_Id /= Aspect_Async_Writers
                      and then A_Id /= Aspect_Effective_Reads
-                     and then A_Id /= Aspect_Effective_Reads
+                     and then A_Id /= Aspect_Effective_Writes
                   then
                      Error_Msg_N
                        ("aspect % not allowed for formal type declaration",
