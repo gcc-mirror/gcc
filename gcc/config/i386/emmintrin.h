@@ -715,6 +715,19 @@ _mm_loadu_si64 (void const *__P)
   return _mm_loadl_epi64 ((__m128i_u *)__P);
 }
 
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_loadu_si32 (void const *__P)
+{
+  return _mm_set_epi32 (*(int *)__P, (int)0, (int)0, (int)0);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_loadu_si16 (void const *__P)
+{
+  return _mm_set_epi16 (*(short *)__P, (short)0, (short)0, (short)0,
+			(short)0, (short)0, (short)0, (short)0);
+}
+
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_store_si128 (__m128i *__P, __m128i __B)
 {
@@ -737,6 +750,18 @@ extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artific
 _mm_storeu_si64 (void *__P, __m128i __B)
 {
   _mm_storel_epi64 ((__m128i_u *)__P, __B);
+}
+
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_storeu_si32 (void *__P, __m128i __B)
+{
+  *(__m32_u *)__P = (__m32) ((__v4si)__B)[0];
+}
+
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_storeu_si16 (void *__P, __m128i __B)
+{
+  *(__m16_u *)__P = (__m16) ((__v8hi)__B)[0];
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

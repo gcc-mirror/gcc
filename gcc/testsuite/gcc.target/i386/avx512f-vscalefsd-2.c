@@ -18,7 +18,7 @@ compute_scalefsd (double *s1, double *s2, double *r)
 void static
 avx512f_test (void)
 {
-  union128d res1, res2, res3, res4;
+  union128d res1, res2, res3, res4, res5, res6;
   union128d s1, s2;
   double res_ref[SIZE];
   MASK_TYPE mask = MASK_VALUE;
@@ -33,6 +33,8 @@ avx512f_test (void)
       res2.a[i] = DEFAULT_VALUE;
       res3.a[i] = DEFAULT_VALUE;
       res4.a[i] = DEFAULT_VALUE;
+      res5.a[i] = DEFAULT_VALUE;
+      res6.a[i] = DEFAULT_VALUE;
     }
 
   res1.x = _mm_scalef_sd (s1.x, s2.x);
@@ -42,6 +44,8 @@ avx512f_test (void)
               _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
   res4.x = _mm_maskz_scalef_round_sd (mask, s1.x, s2.x,
               _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+  res5.x = _mm_mask_scalef_sd (s1.x, mask, s1.x, s2.x);
+  res6.x = _mm_maskz_scalef_sd (mask, s1.x, s2.x);
 
   compute_scalefsd (s1.a, s2.a, res_ref);
 
@@ -55,8 +59,14 @@ avx512f_test (void)
   if (check_union128d (res3, res_ref))
     abort ();
 
+  if (check_union128d (res5, res_ref))
+    abort ();
+
   MASK_ZERO (d) (res_ref, mask, 1);
 
   if (check_union128d (res4, res_ref))
+    abort ();
+
+  if (check_union128d (res6, res_ref))
     abort ();
 }

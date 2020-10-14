@@ -9,7 +9,7 @@ void static
 avx2_test (void)
 {
   union128i_q s1;
-  union256i_q res;
+  union256i_q res, res1;
   long long int res_ref[4];
   int i, j;
   int fail = 0;
@@ -20,11 +20,13 @@ avx2_test (void)
 	s1.a[j] = j * i;
 
       res.x = _mm256_broadcastsi128_si256 (s1.x);
+      res1.x = _mm_broadcastsi128_si256 (s1.x);
 
       memcpy (res_ref, s1.a, 16);
       memcpy (res_ref + 2, s1.a, 16);
 
       fail += check_union256i_q (res, res_ref);
+      fail += check_union256i_q (res1, res_ref);
     }
 
   if (fail != 0)

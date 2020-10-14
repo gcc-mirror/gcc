@@ -36,7 +36,11 @@
 
 /* Internal data types for implementing the intrinsics.  */
 typedef short __v32hi __attribute__ ((__vector_size__ (64)));
+typedef short __v32hi_u __attribute__ ((__vector_size__ (64),	\
+					__may_alias__, __aligned__ (1)));
 typedef char __v64qi __attribute__ ((__vector_size__ (64)));
+typedef char __v64qi_u __attribute__ ((__vector_size__ (64),	\
+				       __may_alias__, __aligned__ (1)));
 
 typedef unsigned long long __mmask64;
 
@@ -303,6 +307,13 @@ _mm512_maskz_mov_epi16 (__mmask32 __U, __m512i __A)
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_loadu_epi16 (void const *__P)
+{
+  return (__m512i) (*(__v32hi_u *) __P);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_loadu_epi16 (__m512i __W, __mmask32 __U, void const *__P)
 {
   return (__m512i) __builtin_ia32_loaddquhi512_mask ((const short *) __P,
@@ -318,6 +329,13 @@ _mm512_maskz_loadu_epi16 (__mmask32 __U, void const *__P)
 						     (__v32hi)
 						     _mm512_setzero_si512 (),
 						     (__mmask32) __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_storeu_epi16 (void *__P, __m512i __A)
+{
+  *(__v32hi_u *) __P = (__v32hi_u) __A;
 }
 
 extern __inline void
@@ -382,6 +400,13 @@ _kunpackd_mask64 (__mmask32 __A, __mmask32 __B)
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_loadu_epi8 (void const *__P)
+{
+  return (__m512i) (*(__v64qi_u *) __P);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_loadu_epi8 (__m512i __W, __mmask64 __U, void const *__P)
 {
   return (__m512i) __builtin_ia32_loaddquqi512_mask ((const char *) __P,
@@ -397,6 +422,13 @@ _mm512_maskz_loadu_epi8 (__mmask64 __U, void const *__P)
 						     (__v64qi)
 						     _mm512_setzero_si512 (),
 						     (__mmask64) __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_storeu_epi8 (void *__P, __m512i __A)
+{
+  *(__v64qi_u *) __P = (__v64qi_u) __A;
 }
 
 extern __inline void

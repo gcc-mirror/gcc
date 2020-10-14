@@ -2124,6 +2124,18 @@ _mm_maskz_sqrt_round_ss (__mmask8 __U, __m128 __A, __m128 __B, const int __R)
 	(__v4sf) _mm_setzero_ps (), U, C)
 #endif
 
+#define _mm_mask_sqrt_sd(W, U, A, B) \
+    _mm_mask_sqrt_round_sd ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_sqrt_sd(U, A, B) \
+    _mm_maskz_sqrt_round_sd ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_mask_sqrt_ss(W, U, A, B) \
+    _mm_mask_sqrt_round_ss ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_sqrt_ss(U, A, B) \
+    _mm_maskz_sqrt_round_ss ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_cvtepi8_epi32 (__m128i __A)
@@ -3258,6 +3270,18 @@ _mm_maskz_scalef_round_ss (__mmask8 __U, __m128 __A, __m128 __B, const int __R)
     (__m128)__builtin_ia32_scalefss_mask_round (A, B, \
 	(__v4sf)_mm_setzero_ps (), -1, C)
 #endif
+
+#define _mm_mask_scalef_sd(W, U, A, B) \
+    _mm_mask_scalef_round_sd ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_scalef_sd(U, A, B) \
+    _mm_maskz_scalef_round_sd ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_mask_scalef_ss(W, U, A, B) \
+    _mm_mask_scalef_round_ss ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_scalef_ss(U, A, B) \
+    _mm_maskz_scalef_round_ss ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
 
 #ifdef __OPTIMIZE__
 extern __inline __m512d
@@ -8621,6 +8645,30 @@ _mm_cvt_roundsd_ss (__m128 __A, __m128d __B, const int __R)
 						 __R);
 }
 
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvt_roundsd_ss (__m128 __W, __mmask8 __U, __m128 __A,
+			 __m128d __B, const int __R)
+{
+  return (__m128) __builtin_ia32_cvtsd2ss_mask_round ((__v4sf) __A,
+						      (__v2df) __B,
+						      (__v4sf) __W,
+						      __U,
+						      __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvt_roundsd_ss (__mmask8 __U, __m128 __A,
+			 __m128d __B, const int __R)
+{
+  return (__m128) __builtin_ia32_cvtsd2ss_mask_round ((__v4sf) __A,
+						      (__v2df) __B,
+						      _mm_setzero_ps (),
+						      __U,
+						      __R);
+}
+
 extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvt_roundss_sd (__m128d __A, __m128 __B, const int __R)
@@ -8628,6 +8676,30 @@ _mm_cvt_roundss_sd (__m128d __A, __m128 __B, const int __R)
   return (__m128d) __builtin_ia32_cvtss2sd_round ((__v2df) __A,
 						  (__v4sf) __B,
 						  __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvt_roundss_sd (__m128d __W, __mmask8 __U, __m128d __A,
+			 __m128 __B, const int __R)
+{
+  return (__m128d) __builtin_ia32_cvtss2sd_mask_round ((__v2df) __A,
+						       (__v4sf) __B,
+						       (__v2df) __W,
+						       __U,
+						       __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvt_roundss_sd (__mmask8 __U, __m128d __A,
+			  __m128 __B, const int __R)
+{
+  return (__m128d) __builtin_ia32_cvtss2sd_mask_round ((__v2df) __A,
+						       (__v4sf) __B,
+						       _mm_setzero_pd (),
+						       __U,
+						       __R);
 }
 #else
 #define _mm512_cvt_roundpd_ps(A, B)		 \
@@ -8642,9 +8714,36 @@ _mm_cvt_roundss_sd (__m128d __A, __m128 __B, const int __R)
 #define _mm_cvt_roundsd_ss(A, B, C)		 \
     (__m128)__builtin_ia32_cvtsd2ss_round(A, B, C)
 
+#define _mm_mask_cvt_roundsd_ss(W, U, A, B, C)	\
+    (__m128)__builtin_ia32_cvtsd2ss_mask_round ((A), (B), (W), (U), (C))
+
+#define _mm_maskz_cvt_roundsd_ss(U, A, B, C)	\
+    (__m128)__builtin_ia32_cvtsd2ss_mask_round ((A), (B), _mm_setzero_ps (), \
+						(U), (C))
+
 #define _mm_cvt_roundss_sd(A, B, C)		 \
     (__m128d)__builtin_ia32_cvtss2sd_round(A, B, C)
+
+#define _mm_mask_cvt_roundss_sd(W, U, A, B, C)	\
+    (__m128d)__builtin_ia32_cvtss2sd_mask_round ((A), (B), (W), (U), (C))
+
+#define _mm_maskz_cvt_roundss_sd(U, A, B, C)	\
+    (__m128d)__builtin_ia32_cvtss2sd_mask_round ((A), (B), _mm_setzero_pd (), \
+						 (U), (C))
+
 #endif
+
+#define _mm_mask_cvtss_sd(W, U, A, B) \
+    _mm_mask_cvt_roundss_sd ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_cvtss_sd(U, A, B) \
+    _mm_maskz_cvt_roundss_sd ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_mask_cvtsd_ss(W, U, A, B) \
+    _mm_mask_cvt_roundsd_ss ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_cvtsd_ss(U, A, B) \
+    _mm_maskz_cvt_roundsd_ss ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -14265,6 +14364,14 @@ _mm_cvttss_i64 (__m128 __A)
 }
 #endif /* __x86_64__ */
 
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtsi512_si32 (__m512i __A)
+{
+  __v16si __B = (__v16si) __A;
+  return __B[0];
+}
+
 extern __inline unsigned
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtss_u32 (__m128 __A)
@@ -14287,6 +14394,34 @@ _mm_cvttss_i32 (__m128 __A)
 {
   return (int) __builtin_ia32_vcvttss2si32 ((__v4sf) __A,
 					    _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsd_i32 (__m128d __A)
+{
+  return (int) __builtin_ia32_cvtsd2si ((__v2df) __A);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtss_i32 (__m128 __A)
+{
+  return (int) __builtin_ia32_cvtss2si ((__v4sf) __A);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvti32_sd (__m128d __A, int __B)
+{
+  return (__m128d) __builtin_ia32_cvtsi2sd ((__v2df) __A, __B);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvti32_ss (__m128 __A, int __B)
+{
+  return (__m128) __builtin_ia32_cvtsi2ss ((__v4sf) __A, __B);
 }
 
 #ifdef __x86_64__
@@ -14314,6 +14449,34 @@ _mm_cvttsd_i64 (__m128d __A)
 {
   return (long long) __builtin_ia32_vcvttsd2si64 ((__v2df) __A,
 						  _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtsd_i64 (__m128d __A)
+{
+  return (long long) __builtin_ia32_cvtsd2si64 ((__v2df) __A);
+}
+
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtss_i64 (__m128 __A)
+{
+  return (long long) __builtin_ia32_cvtss2si64 ((__v4sf) __A);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvti64_sd (__m128d __A, long long __B)
+{
+  return (__m128d) __builtin_ia32_cvtsi642sd ((__v2df) __A, __B);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvti64_ss (__m128 __A, long long __B)
+{
+  return (__m128) __builtin_ia32_cvtsi642ss ((__v4sf) __A, __B);
 }
 #endif /* __x86_64__ */
 
