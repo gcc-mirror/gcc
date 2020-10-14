@@ -11396,7 +11396,7 @@ package body Sem_Util is
             Comp : Entity_Id;
 
          begin
-            --  Loop to Check components
+            --  Loop to check components
 
             Comp := First_Component_Or_Discriminant (Typ);
             while Present (Comp) loop

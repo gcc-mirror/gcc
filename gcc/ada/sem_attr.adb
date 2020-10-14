@@ -3868,7 +3868,7 @@ package body Sem_Attr is
       -- Elab_Spec --
       ---------------
 
-      --  Shares processing with Elab_Body
+      --  Shares processing with Elab_Body attribute
 
       ----------------
       -- Elaborated --
@@ -4118,7 +4118,9 @@ package body Sem_Attr is
       -- Has_Access_Values --
       -----------------------
 
-      when Attribute_Has_Access_Values =>
+      when Attribute_Has_Access_Values
+         | Attribute_Has_Tagged_Values
+      =>
          Check_Type;
          Check_E0;
          Set_Etype (N, Standard_Boolean);
@@ -4142,10 +4144,7 @@ package body Sem_Attr is
       -- Has_Tagged_Values --
       -----------------------
 
-      when Attribute_Has_Tagged_Values =>
-         Check_Type;
-         Check_E0;
-         Set_Etype (N, Standard_Boolean);
+      --  Shares processing with Has_Access_Values attribute
 
       -----------------------
       -- Has_Discriminants --

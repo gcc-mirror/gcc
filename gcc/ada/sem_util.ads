@@ -1503,9 +1503,7 @@ package Sem_Util is
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
    --  Returns True if Typ is a composite type (array or record) that is either
    --  a tagged type or has a subcomponent that is tagged. Returns False for a
-   --  noncomposite type, or if no tagged subcomponents are present. This
-   --  function is used to check if "=" has to be expanded into a bunch
-   --  component comparisons.
+   --  noncomposite type, or if no tagged subcomponents are present.
 
    function Has_Unconstrained_Access_Discriminants
      (Subtyp : Entity_Id) return Boolean;
