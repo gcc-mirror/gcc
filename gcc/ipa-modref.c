@@ -1603,6 +1603,11 @@ make_pass_ipa_modref (gcc::context *ctxt)
 static bool
 ignore_edge (struct cgraph_edge *e)
 {
+  /* We merge summaries of inline clones into summaries of functions they
+     are inlined to.  For that reason the complete function bodies must
+     act as unit.  */
+  if (!e->inline_failed)
+    return false;
   enum availability avail;
   cgraph_node *callee = e->callee->function_or_virtual_thunk_symbol
 			  (&avail, e->caller);
@@ -1723,7 +1728,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 
   if (!callee_info && to_info)
     {
-      if (ignore_stores_p (edge->callee->decl, flags))
+      if (ignore_stores_p (edge->caller->decl, flags))
 	to_info->loads->collapse ();
       else
 	{
@@ -1733,7 +1738,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     }
   if (!callee_info_lto && to_info_lto)
     {
-      if (ignore_stores_p (edge->callee->decl, flags))
+      if (ignore_stores_p (edge->caller->decl, flags))
 	to_info_lto->loads->collapse ();
       else
 	{
@@ -1747,7 +1752,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 
       compute_parm_map (edge, &parm_map);
 
-      if (!ignore_stores_p (edge->callee->decl, flags))
+      if (!ignore_stores_p (edge->caller->decl, flags))
 	{
 	  if (to_info && callee_info)
 	    to_info->stores->merge (callee_info->stores, &parm_map);
@@ -1762,14 +1767,38 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
   if (summaries)
     {
       if (to_info && !to_info->useful_p (flags))
-	summaries->remove (to);
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
+		     to->dump_name ());
+	  summaries->remove (to);
+	}
+      else if (to_info && dump_file)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
+		     to->dump_name ());
+	  to_info->dump (dump_file);
+	}
       if (callee_info)
 	summaries->remove (edge->callee);
     }
   if (summaries_lto)
     {
       if (to_info_lto && !to_info_lto->useful_p (flags))
-	summaries_lto->remove (to);
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
+		     to->dump_name ());
+	  summaries_lto->remove (to);
+	}
+      else if (to_info_lto && dump_file)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
+		     to->dump_name ());
+	  to_info_lto->dump (dump_file);
+	}
       if (callee_info_lto)
 	summaries_lto->remove (edge->callee);
     }
