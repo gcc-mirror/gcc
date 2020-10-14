@@ -11120,9 +11120,7 @@ package body Sem_Ch13 is
 
                --  Otherwise look at the identifier and see if it is OK
 
-               if Ekind (Ent) in E_Named_Integer | E_Named_Real
-                 or else Is_Type (Ent)
-               then
+               if Is_Named_Number (Ent) or else Is_Type (Ent) then
                   return;
 
                elsif Ekind (Ent) in E_Constant | E_In_Parameter then

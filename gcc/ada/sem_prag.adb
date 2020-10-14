@@ -8119,7 +8119,7 @@ package body Sem_Prag is
 
          --  Check that we are not applying this to a named constant
 
-         if Ekind (E) in E_Named_Integer | E_Named_Real then
+         if Is_Named_Number (E) then
             Error_Msg_Name_1 := Pname;
             Error_Msg_N
               ("cannot apply pragma% to named constant!",
