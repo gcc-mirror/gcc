@@ -3657,15 +3657,22 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
      initializer, it's initialized from {}.  But use build_value_init
      directly for non-aggregates to avoid creating a garbage CONSTRUCTOR.  */
   tree val;
+  constexpr_ctx new_ctx;
   if (CP_AGGREGATE_TYPE_P (elem_type))
     {
       tree empty_ctor = build_constructor (init_list_type_node, NULL);
       val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
+      new_ctx = *ctx;
+      new_ctx.ctor = build_constructor (elem_type, NULL);
+      ctx = &new_ctx;
     }
   else
     val = build_value_init (elem_type, tf_warning_or_error);
-  return cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
-				       overflow_p);
+  t = cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
+				    overflow_p);
+  if (CP_AGGREGATE_TYPE_P (elem_type) && t != ctx->ctor)
+    free_constructor (ctx->ctor);
+  return t;
 }
 
 /* Subroutine of cxx_eval_constant_expression.
