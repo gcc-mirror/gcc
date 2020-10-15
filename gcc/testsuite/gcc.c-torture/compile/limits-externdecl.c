@@ -1,4 +1,3 @@
-/* { dg-skip-if "ptxas runs out of memory" { nvptx-*-* } } */
 /* { dg-skip-if "Array too big" { "pdp11-*-*" } { "-mint32" } } */
 
 /* { dg-require-effective-target int32plus } */
