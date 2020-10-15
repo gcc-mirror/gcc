@@ -436,10 +436,17 @@ extern bool set_module_binding (tree ctx, tree name, unsigned mod,
 				tree value, tree type, tree visible);
 extern void add_module_decl (tree ctx, tree name, tree decl);
 
+enum WMB_Flags
+{
+  WMB_None = 0,
+  WMB_Dups = 1 << 0,
+  WMB_Export = 1 << 1,
+  WMB_Using = 1 << 2,
+  WMB_Hidden = 1 << 3,
+};
+
 extern unsigned walk_module_binding (tree binding, bitmap partitions,
-				     bool (*)(tree decl, bool maybe_dups,
-					      bool hiddenness,
-					      int usingness, void *data),
+				     bool (*)(tree decl, WMB_Flags, void *data),
 				     void *data);
 extern tree add_imported_namespace (tree ctx, tree name, unsigned module,
 				    location_t, bool visible_p, bool inline_p,

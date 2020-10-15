@@ -2523,7 +2523,7 @@ public:
 
   private:
     depset *add_partial_redirect (depset *partial, depset **slot = nullptr);
-    static bool add_binding_entity (tree, bool, bool, int, void *);
+    static bool add_binding_entity (tree, WMB_Flags, void *);
 
   public:
     bool add_namespace_entities (tree ns, bitmap partitions);
@@ -12496,11 +12496,7 @@ struct add_binding_data
 };
 
 bool
-depset::hash::add_binding_entity (tree decl, bool maybe_dups,
-				  bool hiddenness, int usingness,
-				  // FIXME: Make this API match the
-				  // new ovl_insert's
-				  void *data_)
+depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 {
   auto data = static_cast <add_binding_data *> (data_);
 
@@ -12533,17 +12529,20 @@ depset::hash::add_binding_entity (tree decl, bool maybe_dups,
 	/* Ignore TINFO things.  */
 	return false;
 
-      if (!usingness && CP_DECL_CONTEXT (decl) != data->ns)
-	/* A using that lost its wrapper or an unscoped enum
-	   constant.  */
-	usingness = (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
-					   ? TYPE_NAME (TREE_TYPE (decl))
-					   : STRIP_TEMPLATE (decl))
-		     ? -1 : +1);
+      if (!(flags & WMB_Using) && CP_DECL_CONTEXT (decl) != data->ns)
+	{
+	  /* A using that lost its wrapper or an unscoped enum
+	     constant.  */
+	  flags = WMB_Flags (flags | WMB_Using);
+	  if (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
+				    ? TYPE_NAME (TREE_TYPE (decl))
+				    : STRIP_TEMPLATE (decl)))
+	    flags = WMB_Flags (flags | WMB_Export);
+	}
 
       if (!data->binding)
 	/* No binding to check.  */;
-      else if (usingness)
+      else if (flags & WMB_Using)
 	{
 	  /* Look in the binding to see if we already have this
 	     using.  */
@@ -12553,15 +12552,15 @@ depset::hash::add_binding_entity (tree decl, bool maybe_dups,
 	      if (d->get_entity_kind () == EK_USING
 		  && OVL_FUNCTION (d->get_entity ()) == decl)
 		{
-		  if (!hiddenness)
+		  if (!(flags & WMB_Hidden))
 		    d->clear_hidden_binding ();
-		  if (usingness < 0)
+		  if (flags & WMB_Export)
 		    OVL_EXPORT_P (d->get_entity ()) = true;
 		  return false;
 		}
 	    }
 	}
-      else if (maybe_dups)
+      else if (flags & WMB_Dups)
 	{
 	  /* Look in the binding to see if we already have this decl.  */
 	  for (unsigned ix = data->binding->deps.length (); --ix;)
@@ -12569,7 +12568,7 @@ depset::hash::add_binding_entity (tree decl, bool maybe_dups,
 	      depset *d = data->binding->deps[ix];
 	      if (d->get_entity () == decl)
 		{
-		  if (!hiddenness)
+		  if (!(flags & WMB_Hidden))
 		    d->clear_hidden_binding ();
 		  return false;
 		}
@@ -12588,16 +12587,16 @@ depset::hash::add_binding_entity (tree decl, bool maybe_dups,
 	  *slot = data->binding;
 	}
 
-      if (usingness)
+      if (flags & WMB_Using)
 	{
 	  decl = ovl_make (decl, NULL_TREE);
-	  if (usingness < 0)
+	  if (flags & WMB_Export)
 	    OVL_EXPORT_P (decl) = true;
 	}
 
       depset *dep = data->hash->make_dependency
-	(decl, usingness ? EK_USING : EK_FOR_BINDING);
-      if (hiddenness)
+	(decl, flags & WMB_Using ? EK_USING : EK_FOR_BINDING);
+      if (flags & WMB_Hidden)
 	dep->set_hidden_binding ();
       data->binding->deps.safe_push (dep);
       /* Binding and contents are mutually dependent.  */

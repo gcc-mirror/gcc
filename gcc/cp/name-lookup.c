@@ -4072,9 +4072,7 @@ lookup_class_binding (tree klass, tree name)
 
 unsigned
 walk_module_binding (tree binding, bitmap partitions,
-		     bool (*callback) (tree decl, bool maybe_dup,
-				       bool hiddenness, int usingness,
-				       void *data),
+		     bool (*callback) (tree decl, WMB_Flags, void *data),
 		     void *data)
 {
   // FIXME: We don't quite deal with using decls naming stat hack
@@ -4089,7 +4087,10 @@ walk_module_binding (tree binding, bitmap partitions,
   bool decl_hidden = false;
   if (tree type = MAYBE_STAT_TYPE (current))
     {
-      count += callback (type, false, STAT_TYPE_HIDDEN_P (current), 0, data);
+      WMB_Flags flags = WMB_None;
+      if (STAT_TYPE_HIDDEN_P (current))
+	flags = WMB_Flags (flags | WMB_Hidden);
+      count += callback (type, flags, data);
       decl_hidden = STAT_DECL_HIDDEN_P (current);
     }
 
@@ -4098,10 +4099,18 @@ walk_module_binding (tree binding, bitmap partitions,
       if (iter.hidden_p ())
 	decl_hidden = true;
       if (!(decl_hidden && DECL_UNDECLARED_BUILTIN_P (*iter)))
-	count += callback (*iter, false, decl_hidden,
-			   !iter.using_p () ? 0
-			   : iter.exporting_p () ? -1 : +1,
-			   data);
+	{
+	  WMB_Flags flags = WMB_None;
+	  if (decl_hidden)
+	    flags = WMB_Flags (flags | WMB_Hidden);
+	  if (iter.using_p ())
+	    {
+	      flags = WMB_Flags (flags | WMB_Using);
+	      if (iter.exporting_p ())
+		flags = WMB_Flags (flags | WMB_Export);
+	    }
+	  count += callback (*iter, flags, data);
+	}
       decl_hidden = false;
     }
 
@@ -4135,14 +4144,24 @@ walk_module_binding (tree binding, bitmap partitions,
 		    /* Not a partition's namespace.  */
 		    continue;
 		  found:
-		    count += callback (bind, maybe_dups, false, 0, data);
+
+		    WMB_Flags flags = WMB_None;
+		    if (maybe_dups)
+		      flags = WMB_Flags (flags | WMB_Dups);
+		    count += callback (bind, flags, data);
 		  }
 		else if (STAT_HACK_P (bind) && MODULE_BINDING_PARTITION_P (bind))
 		  {
 		    if (tree btype = STAT_TYPE (bind))
-		      count += callback (btype, maybe_dups,
-					 STAT_TYPE_HIDDEN_P (bind),
-					 0, data);
+		      {
+			WMB_Flags flags = WMB_None;
+			if (maybe_dups)
+			  flags = WMB_Flags (flags | WMB_Dups);
+			if (STAT_TYPE_HIDDEN_P (bind))
+			  flags = WMB_Flags (flags | WMB_Hidden);
+
+			count += callback (btype, flags, data);
+		      }
 		    bool hidden = STAT_DECL_HIDDEN_P (bind);
 		    for (ovl_iterator iter (MAYBE_STAT_DECL (STAT_DECL (bind)));
 			 iter; ++iter)
@@ -4151,10 +4170,19 @@ walk_module_binding (tree binding, bitmap partitions,
 			  hidden = true;
 			gcc_checking_assert
 			  (!(hidden && DECL_UNDECLARED_BUILTIN_P (*iter)));
-			count += callback (*iter, maybe_dups, hidden,
-					   !iter.using_p () ? 0
-					   : iter.exporting_p () ? -1 : +1,
-					   data);
+
+			WMB_Flags flags = WMB_None;
+			if (maybe_dups)
+			  flags = WMB_Flags (flags | WMB_Dups);
+			if (decl_hidden)
+			  flags = WMB_Flags (flags | WMB_Hidden);
+			if (iter.using_p ())
+			  {
+			    flags = WMB_Flags (flags | WMB_Using);
+			    if (iter.exporting_p ())
+			      flags = WMB_Flags (flags | WMB_Export);
+			  }
+			count += callback (*iter, flags, data);
 			hidden = false;
 		      }
 		  }

@@ -2262,7 +2262,7 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
-/* Add FN to the (potentially NULL) overload set OVL.  USINGNESS is >
+/* Add FN to the (potentially NULL) overload set OVL.  USING_OR_HIDDEN is >
    zero if this is a using-decl.  It is > 1 if we're exporting the
    using decl.  USING_OR_HIDDEN is < 0, if FN is hidden.  (A decl
    cannot be both using and hidden.)  We keep the hidden decls first,
