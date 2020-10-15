@@ -2244,20 +2244,20 @@ vect_analyze_slp_instance (vec_info *vinfo,
       scalar_stmts.release ();
     }
 
-  /* For basic block SLP, try to break the group up into multiples of the
-     vector size.  */
+  /* Try to break the group up into pieces.  */
   unsigned HOST_WIDE_INT const_nunits;
-  if (is_a <bb_vec_info> (vinfo)
-      && STMT_VINFO_GROUPED_ACCESS (stmt_info)
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
       && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info))
       && nunits.is_constant (&const_nunits))
     {
-      /* We consider breaking the group only on VF boundaries from the existing
-	 start.  */
       for (i = 0; i < group_size; i++)
-	if (!matches[i]) break;
+	if (!matches[i])
+	  break;
 
-      if (i >= const_nunits && i < group_size)
+      /* For basic block SLP, try to break the group up into multiples of the
+	 vector size.  */
+      if (is_a <bb_vec_info> (vinfo)
+	  && (i >= const_nunits && i < group_size))
 	{
 	  /* Split into two groups at the first vector boundary before i.  */
 	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
@@ -2284,6 +2284,36 @@ vect_analyze_slp_instance (vec_info *vinfo,
 					      rest, max_tree_size);
 	  return res;
 	}
+
+      /* For loop vectorization split into arbitrary pieces of size > 1.  */
+      if (is_a <loop_vec_info> (vinfo)
+	  && (i > 1 && i < group_size))
+	{
+	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
+	  unsigned group1_size = i;
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Splitting SLP group at stmt %u\n", i);
+
+	  stmt_vec_info rest = vect_split_slp_store_group (stmt_info,
+							   group1_size);
+	  /* Loop vectorization cannot handle gaps in stores, make sure
+	     the split group appears as strided.  */
+	  STMT_VINFO_STRIDED_P (rest) = 1;
+	  DR_GROUP_GAP (rest) = 0;
+	  STMT_VINFO_STRIDED_P (stmt_info) = 1;
+	  DR_GROUP_GAP (stmt_info) = 0;
+
+	  bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
+						max_tree_size);
+	  if (i + 1 < group_size)
+	    res |= vect_analyze_slp_instance (vinfo, bst_map,
+					      rest, max_tree_size);
+
+	  return res;
+	}
+
       /* Even though the first vector did not all match, we might be able to SLP
 	 (some) of the remainder.  FORNOW ignore this possibility.  */
     }
