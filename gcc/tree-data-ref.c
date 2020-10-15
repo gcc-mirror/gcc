@@ -754,7 +754,9 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	    && TYPE_PRECISION (type) >= TYPE_PRECISION (itype)
 	    && (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type)))
 	  {
-	    if (INTEGRAL_TYPE_P (itype) && TYPE_OVERFLOW_WRAPS (itype))
+	    if (INTEGRAL_TYPE_P (itype) && TYPE_OVERFLOW_WRAPS (itype)
+		&& (TYPE_PRECISION (type) > TYPE_PRECISION (itype)
+		    || TYPE_UNSIGNED (itype) != TYPE_UNSIGNED (type)))
 	      {
 		/* Split the unconverted operand and try to prove that
 		   wrapping isn't a problem.  */
