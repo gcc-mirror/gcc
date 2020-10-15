@@ -138,7 +138,7 @@ static location_t smallest_type_location (const cp_decl_specifier_seq*);
 tree cp_global_trees[CPTI_MAX];
 
 /* A list of objects which have constructors or destructors
-   which reside in the global scope.  The decl is stored in
+   which reside in namespace scope.  The decl is stored in
    the TREE_VALUE slot and the initializer is stored
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;

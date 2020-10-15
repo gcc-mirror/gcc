@@ -1,6 +1,15 @@
 2020-10-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::core_bools): Adjust initialized var
+	handling.
+	(has_definition): Likewise.
+	(trees_{in,out}::{read,write}_var_def): Likewise.
+	(module_state::{read,write}_inits): Just stream the decls.
+	gcc/testsuite/
+	* g++.dg/modules/hdr-init-1_[abc].[HC]: New.
+
+	gcc/cp/
 	* module.cc (depset::hash::finalize_dependencies): Remove
 	pre-p2003 kludge.
 

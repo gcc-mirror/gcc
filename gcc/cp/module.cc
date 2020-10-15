@@ -5218,9 +5218,19 @@ trees_out::core_bools (tree t)
     default:
       WB (t->base.u.bits.lang_flag_0);
       bool flag_1 = t->base.u.bits.lang_flag_1;
-      if (code == TEMPLATE_INFO)
+      if (!flag_1)
+	;
+      else if (code == TEMPLATE_INFO)
 	/* This is TI_PENDING_TEMPLATE_FLAG, not relevant to reader.  */
 	flag_1 = false;
+      else if (code == VAR_DECL)
+	{
+	  /* This is DECL_INITIALIZED_P.  */
+	  if (DECL_CONTEXT (t)
+	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	    /* We'll set this when reading the definition.  */
+	    flag_1 = false;
+	}
       WB (flag_1);
       WB (t->base.u.bits.lang_flag_2);
       WB (t->base.u.bits.lang_flag_3);
@@ -5274,6 +5284,11 @@ trees_out::core_bools (tree t)
       WB (t->decl_common.decl_flag_0);
 
       {
+	/* DECL_EXTERNAL -> decl_flag_1
+	     == it is defined elsewhere
+	   DECL_NOT_REALLY_EXTERN -> base.not_really_extern
+	     == that was a lie, it is here  */
+
 	bool is_external = t->decl_common.decl_flag_1;
 	if (!is_external)
 	  /* decl_flag_1 is DECL_EXTERNAL. Things we emit here, might
@@ -5287,14 +5302,14 @@ trees_out::core_bools (tree t)
 	      break;
 
 	    case VAR_DECL:
-	      if (TREE_STATIC (t)
-		  && !header_module_p ()
+	      if (TREE_PUBLIC (t)
 		  && !DECL_VAR_DECLARED_INLINE_P (t))
 		is_external = true;
 	      break;
 
 	    case FUNCTION_DECL:
-	      if (!DECL_DECLARED_INLINE_P (t))
+	      if (TREE_PUBLIC (t)
+		  && !DECL_DECLARED_INLINE_P (t))
 		is_external = true;
 	      break;
 	    }
@@ -11095,7 +11110,9 @@ trees_in::install_implicit_member (tree fn)
 static bool
 has_definition (tree decl)
 {
-  decl = STRIP_TEMPLATE (decl);
+  bool is_tmpl = TREE_CODE (decl) == TEMPLATE_DECL;
+  if (is_tmpl)
+    decl = DECL_TEMPLATE_RESULT (decl);
 
   switch (TREE_CODE (decl))
     {
@@ -11138,16 +11155,25 @@ has_definition (tree decl)
       break;
 
     case VAR_DECL:
-      if (DECL_THIS_STATIC (decl)
-	  && (header_module_p ()
-	      || (!DECL_LANG_SPECIFIC (decl) || !DECL_MODULE_PURVIEW_P (decl))))
-	/* GM static variable.  */
-	return true;
+      if (DECL_TEMPLATE_INFO (decl)
+	  && DECL_USE_TEMPLATE (decl) < 2)
+	return DECL_INITIAL (decl);
+      else
+	{
+	  if (!DECL_INITIALIZED_P (decl))
+	    return false;
 
+	  if (header_module_p ()
+	      || (!DECL_LANG_SPECIFIC (decl) || !DECL_MODULE_PURVIEW_P (decl)))
+	    /* GM static variable.  */
+	    return true;
 
-      if (!TREE_CONSTANT (decl))
-	return false;
-      /* Fallthrough.  */
+	  if (!TREE_CONSTANT (decl))
+	    return false;
+
+	  return true;
+	}
+      break;
 
     case CONCEPT_DECL:
       if (DECL_INITIAL (decl))
@@ -11345,12 +11371,29 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   return true;
 }
 
-// Also for CONCEPT_DECLs
+/* Also for CONCEPT_DECLs.  */
 
 void
 trees_out::write_var_def (tree decl)
 {
-  tree_node (DECL_INITIAL (decl));
+  tree init = DECL_INITIAL (decl);
+  tree_node (init);
+  if (!init)
+    {
+      tree dyn_init = NULL_TREE;
+
+      if (DECL_NONTRIVIALLY_INITIALIZED_P (decl))
+	{
+	  dyn_init = value_member (decl,
+				   CP_DECL_THREAD_LOCAL_P (decl)
+				   ? tls_aggregates : static_aggregates);
+	  gcc_checking_assert (dyn_init);
+	  /* Mark it so write_inits knows this is needed.  */
+	  TREE_LANG_FLAG_0 (dyn_init) = true;
+	  dyn_init = TREE_PURPOSE (dyn_init);
+	}
+      tree_node (dyn_init);
+    }
 }
 
 void
@@ -11365,18 +11408,29 @@ trees_in::read_var_def (tree decl, tree maybe_template)
   bool vtable = TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl);
   unused += vtable;
   tree init = tree_node ();
+  tree dyn_init = init ? NULL_TREE : tree_node ();
   unused -= vtable;
 
   if (get_overrun ())
     return false;
 
-  tree maybe_dup = odr_duplicate (maybe_template, DECL_INITIAL (decl));
-  bool installing = maybe_dup && !DECL_INITIAL (decl);
+  bool initialized = (VAR_P (decl) ? bool (DECL_INITIALIZED_P (decl))
+		      : bool (DECL_INITIAL (decl)));
+  tree maybe_dup = odr_duplicate (maybe_template, initialized);
+  bool installing = maybe_dup && !initialized;
   if (installing)
     {
       if (DECL_EXTERNAL (decl))
 	DECL_NOT_REALLY_EXTERN (decl) = true;
+      if (VAR_P (decl))
+	DECL_INITIALIZED_P (decl) = true;
       DECL_INITIAL (decl) = init;
+      if (!dyn_init)
+	;
+      else if (CP_DECL_THREAD_LOCAL_P (decl))
+	tls_aggregates = tree_cons (dyn_init, decl, tls_aggregates);
+      else
+	static_aggregates = tree_cons (dyn_init, decl, static_aggregates);
     }
   else if (maybe_dup)
     {
@@ -16858,31 +16912,37 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 /* Stream the static aggregates.  Sadly some headers (ahem:
    iostream) contain static vars, and rely on them to run global
    ctors.  */
-// FIXME: What about tls inits?
-// FIXME: Do I need to walk to add to dependency table?
 unsigned
 module_state::write_inits (elf_out *to, depset::hash &table, unsigned *crc_ptr)
 {
-  if (!static_aggregates)
+  if (!static_aggregates && !tls_aggregates)
     return 0;
 
   dump () && dump ("Writing initializers");
   dump.indent ();
 
   static_aggregates = nreverse (static_aggregates);
+  tls_aggregates = nreverse (tls_aggregates);
 
   unsigned count = 0;
   trees_out sec (to, this, table, ~0u);
   sec.begin ();
-  for (tree init = static_aggregates; init; init = TREE_CHAIN (init), count++)
+
+  tree list = static_aggregates;
+  for (int passes = 0; passes != 2; passes++)
     {
-      tree decl = TREE_VALUE (init);
+      for (tree init = list; init; init = TREE_CHAIN (init), count++)
+	if (TREE_LANG_FLAG_0 (init))
+	  {
+	    tree decl = TREE_VALUE (init);
 
-      dump ("Initializer:%u for %N", count, decl);
-      sec.tree_node (decl);
-      sec.tree_node (TREE_PURPOSE (init));
+	    dump ("Initializer:%u for %N", count, decl);
+	    sec.tree_node (decl);
+	  }
+
+      list = tls_aggregates;
     }
-
+  
   sec.end (to, to->name (MOD_SNAME_PFX ".ini"), crc_ptr);
   dump.outdent ();
 
@@ -16897,15 +16957,17 @@ module_state::read_inits (unsigned count)
     return false;
   dump () && dump ("Reading %u initializers", count);
   dump.indent ();
+
   for (unsigned ix = 0; ix != count; ix++)
     {
+      /* Merely referencing the decl causes its initializer to be read
+	 and added to the correct list.  */
       tree decl = sec.tree_node ();
-      tree init = sec.tree_node ();
 
       if (sec.get_overrun ())
 	break;
-      dump ("Initializer:%u for %N", count, decl);
-      static_aggregates = tree_cons (init, decl, static_aggregates);
+      if (decl)
+	dump ("Initializer:%u for %N", count, decl);
     }
   dump.outdent ();
   if (!sec.end (from ()))
