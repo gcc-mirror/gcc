@@ -1,4 +1,6 @@
-/* { dg-do run { target { p9vector_hw } } } */
+/* { dg-do run } */
+/* { dg-require-effective-target p9vector_hw } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2" } */
 
 #include <altivec.h>
