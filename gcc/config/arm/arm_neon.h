@@ -16912,6 +16912,37 @@ vceq_p64 (poly64x1_t __a, poly64x1_t __b)
   return vreinterpret_u64_u32 (__m);
 }
 
+__extension__ extern __inline uint64x1_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vceqz_p64 (poly64x1_t __a)
+{
+  poly64x1_t __b = vreinterpret_p64_u32 (vdup_n_u32 (0));
+  return vceq_p64 (__a, __b);
+}
+
+/* For vceqq_p64, we rely on vceq_p64 for each of the two elements.  */
+__extension__ extern __inline uint64x2_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vceqq_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+  poly64_t __high_a = vget_high_p64 (__a);
+  poly64_t __high_b = vget_high_p64 (__b);
+  uint64x1_t __high = vceq_p64 (__high_a, __high_b);
+
+  poly64_t __low_a = vget_low_p64 (__a);
+  poly64_t __low_b = vget_low_p64 (__b);
+  uint64x1_t __low = vceq_p64 (__low_a, __low_b);
+  return vcombine_u64 (__low, __high);
+}
+
+__extension__ extern __inline uint64x2_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vceqzq_p64 (poly64x2_t __a)
+{
+  poly64x2_t __b = vreinterpretq_p64_u32 (vdupq_n_u32 (0));
+  return vceqq_p64 (__a, __b);
+}
+
 /* The vtst_p64 intrinsic does not map to a single instruction.
    We emulate it in way similar to vceq_p64 above but here we do
    a reduction with max since if any two corresponding bits
