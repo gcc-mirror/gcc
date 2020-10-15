@@ -1,3 +1,43 @@
+2020-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97358
+	* pt.c (check_for_bare_parameter_packs): Diagnose use of
+	capture pack.
+
+2020-10-14  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct lang_decl_fn): Adjust context comment.
+	(DECL_FRIEND_P): Replace with ...
+	(DECL_UNIQUE_FRIEND_P): ... this.  Only for FUNCTION_DECLs.
+	(DECL_FRIEND_CONTEXT): Adjust.
+	* class.c (add_implicitly_declared_members): Detect friendly
+	spaceship from context.
+	* constraint.cc (remove_constraints): Use a checking assert.
+	(maybe_substitute_reqs_for): Use DECL_UNIQUE_FRIEND_P.
+	* decl.c (check_no_redeclaration_friend_default_args):
+	DECL_UNIQUE_FRIEND_P is signficant, not hiddenness.
+	(duplicate_decls): Adjust DECL_UNIQUE_FRIEND_P clearing.
+	(redeclaration_error_message): Use DECL_UNIQUE_FRIEND_P.
+	(start_preparsed_function): Correct in-class friend processing.
+	Refactor some initializers.
+	(grokmethod): Directly check friend decl-spec.
+	* decl2.c (grokfield): Check DECL_UNIQUE_FRIEND_P.
+	* friend.c (do_friend): Set DECL_UNIQUE_FRIEND_P first, remove
+	extraneous conditions.  Don't re set it afterwards.
+	* name-lookup.c (lookup_elaborated_type_1): Simplify revealing
+	code.
+	(do_pushtag): Likewise.
+	* pt.c (optimize_specialization_lookup_p): Check
+	DECL_UNIQUE_FRIEND_P.
+	(push_template_decl): Likewise.  Drop unneeded friend setting.
+	(type_dependent_expression_p): Check DECL_UNIQUE_FRIEND_P.
+
+2020-10-14  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (push_local_extern_decl_alias): Push into alias's
+	namespace and use pushdecl.
+	(do_pushdecl_with_scope): Clarify behaviour.
+
 2020-10-12  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/97201

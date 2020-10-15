@@ -1,3 +1,19 @@
+2020-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93388
+	* region-model.cc (region_model::get_initial_value_for_global):
+	Fall back to returning an initial_svalue if
+	decl_region::get_svalue_for_initializer fails.
+	* region.cc (decl_region::get_svalue_for_initializer): Don't
+	attempt to create a compound_svalue if the region has an unknown
+	size.
+
+2020-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93723
+	* store.cc (binding_map::apply_ctor_to_region): Remove redundant
+	assertion.
+
 2020-10-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97258

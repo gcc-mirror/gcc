@@ -1,3 +1,7 @@
+2020-10-14  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_add_friend): Set DECL_UNIQUE_FRIEND_P.
+
 2020-10-07  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (supplement_binding): Rename
