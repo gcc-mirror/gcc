@@ -57,7 +57,9 @@ is
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
-      Iterator_Element  => Element_Type;
+      Iterator_Element  => Element_Type,
+      Aggregate         => (Empty     => Empty_Map,
+                            Add_Named => Insert);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);

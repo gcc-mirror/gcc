@@ -55,7 +55,9 @@ is
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
-      Iterator_Element  => Element_Type;
+      Iterator_Element  => Element_Type,
+      Aggregate         => (Empty       => Empty_List,
+                            Add_Unnamed => Append_One);
 
    pragma Preelaborable_Initialization (List);
 
@@ -151,6 +153,10 @@ is
      (Container : in out List;
       New_Item  : Element_Type;
       Count     : Count_Type := 1);
+
+   procedure Append_One
+     (Container : in out List;
+      New_Item  : Element_Type);
 
    procedure Delete
      (Container : in out List;

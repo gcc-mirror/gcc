@@ -1,3 +1,89 @@
+2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97415
+	* include/std/sstream (basic_stringbuf::str()): Check for
+	null egptr() before comparing to non-null pptr().
+
+2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/modifiers/assign/char/move_assign_optim.cc:
+	Do not generate debug info.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/move_assign_optim.cc:
+	Likewise.
+
+2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string(const Alloc&))
+	(basic_string(const basic_string&)
+	(basic_string(const CharT*, size_type, const Alloc&))
+	(basic_string(const CharT*, const Alloc&))
+	(basic_string(size_type, CharT, const Alloc&))
+	(basic_string(initializer_list<CharT>, const Alloc&))
+	(basic_string(InputIterator, InputIterator, const Alloc&)):
+	Define inline in class body.
+	* include/bits/basic_string.tcc (basic_string(const Alloc&))
+	(basic_string(const basic_string&)
+	(basic_string(const CharT*, size_type, const Alloc&))
+	(basic_string(const CharT*, const Alloc&))
+	(basic_string(size_type, CharT, const Alloc&))
+	(basic_string(initializer_list<CharT>, const Alloc&))
+	(basic_string(InputIterator, InputIterator, const Alloc&)):
+	Move definitions into class body.
+
+2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (check_effective_target_cxx11-abi):
+	Add comments about which test flags get used by the check.
+
+2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/allocator/char/copy.cc: Make
+	comment more precise about what isn't supported by COW strings.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/move.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/move_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/noexcept.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/operator_plus.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/char/swap.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/move.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/move_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/noexcept.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/operator_plus.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/swap.cc:
+	Likewise.
+
+2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/allocator/char/minimal.cc:
+	Do not require cxx11-abi effective target.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/minimal.cc:
+	Likewise.
+	* testsuite/27_io/basic_fstream/cons/base.cc: Likewise.
+
+2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string(const _CharT*, const _Alloc&)): Constrain to
+	require an allocator-like type to fix CTAD ambiguity (LWG 3706).
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc:
+	Remove dg-skip-if.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+
 2020-10-13  Nuno Lopes  <nuno.lopes@ist.utl.pt>
 
 	* include/bits/stl_algo.h (any_of): Fix incorrect description

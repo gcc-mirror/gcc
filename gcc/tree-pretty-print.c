@@ -1542,8 +1542,7 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
       dump_generic_node (pp, op1type, spc, flags | TDF_SLIM, false);
       pp_right_paren (pp);
       dump_generic_node (pp, op0, spc, flags, false);
-      if (TREE_CODE (node) == MEM_REF
-	  && !integer_zerop (op1))
+      if (!integer_zerop (op1))
 	{
 	  pp_string (pp, " + ");
 	  dump_generic_node (pp, op1, spc, flags, false);

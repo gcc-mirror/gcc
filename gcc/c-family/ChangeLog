@@ -1,3 +1,9 @@
+2020-10-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97413
+	* c-attribs.c (build_attr_access_from_parms): Wrap chain of VLA
+	bounds in an extra list.
+
 2020-10-05  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -3311,6 +3311,13 @@ package body Einfo is
 
    function Scope_Depth_Value (Id : E) return U is
    begin
+      pragma Assert
+        (Ekind (Id) in
+           Concurrent_Kind | Entry_Kind        | Generic_Unit_Kind |
+           E_Package       | E_Package_Body    | Subprogram_Kind   |
+           E_Block         | E_Subprogram_Body |
+           E_Private_Type .. E_Limited_Private_Subtype             |
+           E_Void          | E_Loop            | E_Return_Statement);
       return Uint22 (Id);
    end Scope_Depth_Value;
 
@@ -6582,7 +6589,13 @@ package body Einfo is
 
    procedure Set_Scope_Depth_Value (Id : E; V : U) is
    begin
-      pragma Assert (not Is_Record_Type (Id));
+      pragma Assert
+        (Ekind (Id) in
+           Concurrent_Kind | Entry_Kind        | Generic_Unit_Kind |
+           E_Package       | E_Package_Body    | Subprogram_Kind   |
+           E_Block         | E_Subprogram_Body |
+           E_Private_Type .. E_Limited_Private_Subtype             |
+           E_Void          | E_Loop            | E_Return_Statement);
       Set_Uint22 (Id, V);
    end Set_Scope_Depth_Value;
 
@@ -10873,21 +10886,18 @@ package body Einfo is
          when Formal_Kind =>
             Write_Str ("Protected_Formal");
 
-         when E_Block
-            | E_Entry
-            | E_Entry_Family
-            | E_Function
-            | E_Generic_Function
-            | E_Generic_Package
-            | E_Generic_Procedure
-            | E_Loop
+         when Concurrent_Kind
+            | Entry_Kind
+            | Generic_Unit_Kind
             | E_Package
             | E_Package_Body
-            | E_Procedure
-            | E_Protected_Type
-            | E_Return_Statement
+            | Subprogram_Kind
+            | E_Block
             | E_Subprogram_Body
-            | E_Task_Type
+            | E_Private_Type .. E_Limited_Private_Subtype
+            | E_Void
+            | E_Loop
+            | E_Return_Statement
          =>
             Write_Str ("Scope_Depth_Value");
 

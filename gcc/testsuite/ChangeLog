@@ -1,3 +1,132 @@
+2020-10-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97391
+	* gcc.dg/Warray-bounds-68.c: New test.
+
+2020-10-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97413
+	* gcc.dg/Wvla-parameter-8.c: New test.
+
+2020-10-14  Tom de Vries  <tdevries@suse.de>
+
+	* lib/target-supports.exp (check_compile): Save and restore
+	$compiler_flags when calling ${tool}_target_compile.
+
+2020-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93388
+	* gcc.dg/analyzer/data-model-21.c: New test.
+
+2020-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97394
+	* gcc.dg/analyzer/setjmp-pr93378.c: Use test-setjmp.h rather than
+	<setjmp.h>.
+	* gcc.dg/analyzer/sigsetjmp-5.c: Likewise.
+	* gcc.dg/analyzer/sigsetjmp-6.c: Likewise.
+	* gcc.dg/analyzer/test-setjmp.h: Don't include <setjmp.h>.
+	Provide decls of jmp_buf, sigjmp_buf, setjmp, sigsetjmp,
+	longjmp, and siglongjmp.
+
+2020-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97358
+	* g++.dg/cpp0x/lambda/lambda-variadic11.C: New test.
+
+2020-10-14  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/95483
+	* gcc.target/i386/avx-1.c: Add test.
+	* gcc.target/i386/avx2-vbroadcastsi128-1.c: Ditto.
+	* gcc.target/i386/avx2-vbroadcastsi128-2.c: Ditto.
+	* gcc.target/i386/avx512bw-vmovdqu16-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vmovdqu8-1.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducesd-1.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducesd-2.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducess-1.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducess-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2si64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2sd64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2ss64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2si64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtss-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovdqa32-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducepd-3.c: New test.
+	* gcc.target/i386/avx512dq-vreducepd-4.c: New test.
+	* gcc.target/i386/avx512dq-vreduceps-3.c: New test.
+	* gcc.target/i386/avx512dq-vreduceps-4.c: New test.
+	* gcc.target/i386/avx512f-vcvtsi2sd-1.c: New test.
+	* gcc.target/i386/pr95483-1.c: New test.
+	* gcc.target/i386/pr95483-2.c: New test.
+	* gcc.target/i386/pr95483-3.c: New test.
+	* gcc.target/i386/pr95483-4.c: New test.
+	* gcc.target/i386/pr95483-5.c: New test.
+	* gcc.target/i386/pr95483-6.c: New test.
+	* gcc.target/i386/pr95483-7.c: New test.
+
+2020-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97387
+	* gcc.target/i386/pr97387-1.c: New test.
+	* gcc.target/i386/pr97387-2.c: New test.
+
+2020-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97396.c: New test.
+
+2020-10-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/modref-1.c: New test.
+	* gcc.dg/tree-ssa/modref-4.c: New test.
+
+2020-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97390
+	* gfortran.dg/goacc/warn_truncated.f90: New test.
+
+2020-10-14  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/extern-redecl2.C: New.
+
+2020-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* gfortran.dg/pr95614_1.f90: New test.
+	* gfortran.dg/pr95614_2.f90: New test.
+	* gfortran.dg/pr95614_3.f90: New test.
+	* gfortran.dg/pr95614_4.f90: New test.
+
+2020-10-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96759
+	* g++.target/riscv/pr96759.C: New.
+	* gcc.target/riscv/pr96759.c: New.
+
 2020-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/97386

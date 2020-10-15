@@ -168,6 +168,30 @@ _mm_rcp28_round_sd (__m128d __A, __m128d __B, int __R)
 						 __R);
 }
 
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_rcp28_round_sd (__m128d __W, __mmask8 __U, __m128d __A,
+			 __m128d __B, int __R)
+{
+  return (__m128d) __builtin_ia32_rcp28sd_mask_round ((__v2df) __B,
+						      (__v2df) __A,
+						      (__v2df) __W,
+						      __U,
+						      __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_rcp28_round_sd (__mmask8 __U, __m128d __A, __m128d __B, int __R)
+{
+  return (__m128d) __builtin_ia32_rcp28sd_mask_round ((__v2df) __B,
+						      (__v2df) __A,
+						      (__v2df)
+						      _mm_setzero_pd (),
+						      __U,
+						      __R);
+}
+
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rcp28_round_ss (__m128 __A, __m128 __B, int __R)
@@ -175,6 +199,30 @@ _mm_rcp28_round_ss (__m128 __A, __m128 __B, int __R)
   return (__m128) __builtin_ia32_rcp28ss_round ((__v4sf) __B,
 						(__v4sf) __A,
 						__R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_rcp28_round_ss (__m128 __W, __mmask8 __U, __m128 __A,
+			 __m128 __B, int __R)
+{
+  return (__m128) __builtin_ia32_rcp28ss_mask_round ((__v4sf) __B,
+						     (__v4sf) __A,
+						     (__v4sf) __W,
+						     __U,
+						     __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_rcp28_round_ss (__mmask8 __U, __m128 __A, __m128 __B, int __R)
+{
+  return (__m128) __builtin_ia32_rcp28ss_mask_round ((__v4sf) __B,
+						     (__v4sf) __A,
+						     (__v4sf)
+						     _mm_setzero_ps (),
+						     __U,
+						     __R);
 }
 
 extern __inline __m512d
@@ -242,6 +290,30 @@ _mm_rsqrt28_round_sd (__m128d __A, __m128d __B, int __R)
 						   __R);
 }
 
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_rsqrt28_round_sd (__m128d __W, __mmask8 __U, __m128d __A,
+			   __m128d __B, int __R)
+{
+  return (__m128d) __builtin_ia32_rsqrt28sd_mask_round ((__v2df) __B,
+							(__v2df) __A,
+							(__v2df) __W,
+							__U,
+							__R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_rsqrt28_round_sd (__mmask8 __U, __m128d __A, __m128d __B, int __R)
+{
+  return (__m128d) __builtin_ia32_rsqrt28sd_mask_round ((__v2df) __B,
+							(__v2df) __A,
+							(__v2df)
+							_mm_setzero_pd (),
+							__U,
+							__R);
+}
+
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt28_round_ss (__m128 __A, __m128 __B, int __R)
@@ -249,6 +321,30 @@ _mm_rsqrt28_round_ss (__m128 __A, __m128 __B, int __R)
   return (__m128) __builtin_ia32_rsqrt28ss_round ((__v4sf) __B,
 						  (__v4sf) __A,
 						  __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_rsqrt28_round_ss (__m128 __W, __mmask8 __U, __m128 __A,
+			   __m128 __B, int __R)
+{
+  return (__m128) __builtin_ia32_rsqrt28ss_mask_round ((__v4sf) __B,
+						       (__v4sf) __A,
+						       (__v4sf) __W,
+						       __U,
+						       __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_rsqrt28_round_ss (__mmask8 __U, __m128 __A, __m128 __B, int __R)
+{
+  return (__m128) __builtin_ia32_rsqrt28ss_mask_round ((__v4sf) __B,
+						       (__v4sf) __A,
+						       (__v4sf)
+						       _mm_setzero_ps (),
+						       __U,
+						       __R);
 }
 
 #else
@@ -309,16 +405,68 @@ _mm_rsqrt28_round_ss (__m128 __A, __m128 __B, int __R)
 #define _mm_rcp28_round_sd(A, B, R)	\
     __builtin_ia32_rcp28sd_round(A, B, R)
 
+#define _mm_mask_rcp28_round_sd(W, U, A, B, R)	\
+    __builtin_ia32_rcp28sd_mask_round ((A), (B), (W), (U), (R))
+
+#define _mm_maskz_rcp28_round_sd(U, A, B, R)	\
+    __builtin_ia32_rcp28sd_mask_round ((A), (B), (__v2df) _mm_setzero_pd (), \
+				       (U), (R))
+
 #define _mm_rcp28_round_ss(A, B, R)	\
     __builtin_ia32_rcp28ss_round(A, B, R)
+
+#define _mm_mask_rcp28_round_ss(W, U, A, B, R)	\
+    __builtin_ia32_rcp28ss_mask_round ((A), (B), (W), (U), (R))
+
+#define _mm_maskz_rcp28_round_ss(U, A, B, R)	\
+    __builtin_ia32_rcp28ss_mask_round ((A), (B), (__v4sf) _mm_setzero_ps (), \
+				       (U), (R))
 
 #define _mm_rsqrt28_round_sd(A, B, R)	\
     __builtin_ia32_rsqrt28sd_round(A, B, R)
 
+#define _mm_mask_rsqrt28_round_sd(W, U, A, B, R)	\
+    __builtin_ia32_rsqrt28sd_mask_round ((A), (B), (W), (U), (R))
+
+#define _mm_maskz_rsqrt28_round_sd(U, A, B, R)	\
+    __builtin_ia32_rsqrt28sd_mask_round ((A), (B), (__v2df) _mm_setzero_pd (),\
+					 (U), (R))
+
 #define _mm_rsqrt28_round_ss(A, B, R)	\
     __builtin_ia32_rsqrt28ss_round(A, B, R)
 
+#define _mm_mask_rsqrt28_round_ss(W, U, A, B, R)	\
+    __builtin_ia32_rsqrt28ss_mask_round ((A), (B), (W), (U), (R))
+
+#define _mm_maskz_rsqrt28_round_ss(U, A, B, R)	\
+    __builtin_ia32_rsqrt28ss_mask_round ((A), (B), (__v4sf) _mm_setzero_ps (),\
+					 (U), (R))
+
 #endif
+
+#define _mm_mask_rcp28_sd(W, U, A, B)\
+    _mm_mask_rcp28_round_sd ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_rcp28_sd(U, A, B)\
+    _mm_maskz_rcp28_round_sd ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_mask_rcp28_ss(W, U, A, B)\
+    _mm_mask_rcp28_round_ss ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_rcp28_ss(U, A, B)\
+    _mm_maskz_rcp28_round_ss ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_mask_rsqrt28_sd(W, U, A, B)\
+    _mm_mask_rsqrt28_round_sd ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_rsqrt28_sd(U, A, B)\
+    _mm_maskz_rsqrt28_round_sd ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_mask_rsqrt28_ss(W, U, A, B)\
+    _mm_mask_rsqrt28_round_ss ((W), (U), (A), (B), _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_maskz_rsqrt28_ss(U, A, B)\
+    _mm_maskz_rsqrt28_round_ss ((U), (A), (B), _MM_FROUND_CUR_DIRECTION)
 
 #define _mm512_exp2a23_pd(A)                    \
     _mm512_exp2a23_round_pd(A, _MM_FROUND_CUR_DIRECTION)

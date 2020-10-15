@@ -30,12 +30,14 @@
 
    character 2+2i specifies properties of argument number i as follows:
      'x' or 'X' specifies that parameter is unused.
-     'r' or 'R' specifies that parameter is only read and memory pointed to is
-		never dereferenced.
-     'w' or 'W' specifies that parameter is only written to.
+     'r' or 'R' specifies that the memory pointed to by the parameter is only
+		read and does not escape
+     'w' or 'W' specifies that the memory pointed to by the parameter does not
+		escape
      '.'	specifies that nothing is known.
-   The uppercase letter in addition specifies that parameter
-   is non-escaping. 
+   The uppercase letter in addition specifies that the memory pointed to
+   by the parameter is not dereferenced.  For 'r' only read applies
+   transitively to pointers read from the pointed-to memory.
 
    character 3+2i specifies additional properties of argument number i
    as follows:

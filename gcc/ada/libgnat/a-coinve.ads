@@ -61,7 +61,11 @@ is
      Constant_Indexing => Constant_Reference,
      Variable_Indexing => Reference,
      Default_Iterator  => Iterate,
-     Iterator_Element  => Element_Type;
+     Iterator_Element  => Element_Type,
+     Aggregate         => (Empty          => Empty_Vector,
+                           Add_Unnamed    => Append_One,
+                           New_Indexed    => New_Vector,
+                           Assign_Indexed => Replace_Element);
 
    pragma Preelaborable_Initialization (Vector);
 
@@ -78,6 +82,9 @@ is
      Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    overriding function "=" (Left, Right : Vector) return Boolean;
+
+   function New_Vector (First, Last : Index_Type) return Vector
+     with Pre => First = Index_Type'First;
 
    function To_Vector (Length : Count_Type) return Vector;
 
@@ -237,6 +244,9 @@ is
      (Container : in out Vector;
       New_Item  : Element_Type;
       Count     : Count_Type := 1);
+
+   procedure Append_One (Container : in out Vector;
+                        New_Item  :        Element_Type);
 
    procedure Insert_Space
      (Container : in out Vector;

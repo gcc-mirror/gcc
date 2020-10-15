@@ -4280,14 +4280,16 @@ package Einfo is
 --       the Scope will be Standard.
 
 --    Scope_Depth (synthesized)
---       Applies to program units, blocks, concurrent types and entries, and
---       also to record types, i.e. to any entity that can appear on the scope
---       stack. Yields the scope depth value, which for those entities other
---       than records is simply the scope depth value, for record entities, it
---       is the Scope_Depth of the record scope.
+--       Applies to program units, blocks, loops, return statements,
+--       concurrent types, private types and entries, and also to record types,
+--       i.e. to any entity that can appear on the scope stack. Yields the
+--       scope depth value, which for those entities other than records is
+--       simply the scope depth value, for record entities, it is the
+--       Scope_Depth of the record scope.
 
 --    Scope_Depth_Value (Uint22)
---       Defined in program units, blocks, concurrent types, and entries.
+--       Defined in program units, blocks, loops, return statements,
+--       concurrent types, private types and entries.
 --       Indicates the number of scopes that statically enclose the declaration
 --       of the unit or type. Library units have a depth of zero. Note that
 --       record types can act as scopes but do NOT have this field set (see

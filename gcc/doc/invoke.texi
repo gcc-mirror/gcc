@@ -1109,7 +1109,7 @@ Objective-C and Objective-C++ Dialects}.
 -march=@var{arch}  -mbmx  -mno-bmx  -mcdx  -mno-cdx}
 
 @emph{Nvidia PTX Options}
-@gccoptlist{-m32  -m64  -mmainkernel  -moptimize}
+@gccoptlist{-m64  -mmainkernel  -moptimize}
 
 @emph{OpenRISC Options}
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div @gol
@@ -1364,7 +1364,7 @@ See RS/6000 and PowerPC Options.
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
--mamx-tile  -mamx-int8  -mamx-bf16@gol
+-mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -25614,11 +25614,10 @@ These options are defined for Nvidia PTX:
 
 @table @gcctabopt
 
-@item -m32
 @itemx -m64
-@opindex m32
 @opindex m64
-Generate code for 32-bit or 64-bit ABI.
+Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
+supported.
 
 @item -misa=@var{ISA-string}
 @opindex march
@@ -26001,14 +26000,30 @@ Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
 lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
 @samp{rv32imaf}.
 
+When @option{-march=} is not specified, use the setting from @option{-mcpu}.
+
+If both @option{-march} and @option{-mcpu=} are not specified, the default for
+this argument is system dependent, users who want a specific architecture
+extensions should specify one explicitly.
+
+@item -mcpu=@var{processor-string}
+@opindex mcpu
+Use architecture of and optimize the output for the given processor, specified
+by particular CPU name.
+Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
+@samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
+@samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
+@samp{sifive-u54}, and @samp{sifive-u74}.
+
 @item -mtune=@var{processor-string}
 @opindex mtune
-Optimize the output for the given processor, specified by microarchitecture
-name.  Permissible values for this option are: @samp{rocket},
+Optimize the output for the given processor, specified by microarchitecture or
+particular CPU name.  Permissible values for this option are: @samp{rocket},
 @samp{sifive-3-series}, @samp{sifive-5-series}, @samp{sifive-7-series},
-and @samp{size}.
+@samp{size}, and all valid options for @option{-mcpu=}.
 
-When @option{-mtune=} is not specified, the default is @samp{rocket}.
+When @option{-mtune=} is not specified, use the setting from @option{-mcpu},
+the default is @samp{rocket} if both are not specified.
 
 The @samp{size} choice is not intended for use by end-users.  This is used
 when @option{-Os} is specified.  It overrides the instruction cost info
@@ -30259,6 +30274,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -menqcmd
 @opindex menqcmd
+@itemx -muintr
+@opindex muintr
 @need 200
 @itemx -mtsxldtrk
 @opindex mtsxldtrk
@@ -30292,6 +30309,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mamx-bf16
 @opindex mamx-bf16
+@need 200
+@itemx -mhreset
+@opindex mhreset
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
@@ -30300,8 +30320,8 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
-ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE
-or CLDEMOTE extended instruction sets.  Each has a corresponding
+ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
+UINTR, HRESET or CLDEMOTE extended instruction sets.  Each has a corresponding
 @option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see

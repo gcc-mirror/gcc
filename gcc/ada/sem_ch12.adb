@@ -8005,9 +8005,7 @@ package body Sem_Ch12 is
                end if;
 
             elsif No (Ent)
-              or else Nkind (Ent) not in N_Defining_Identifier
-                                       | N_Defining_Character_Literal
-                                       | N_Defining_Operator_Symbol
+              or else Nkind (Ent) not in N_Entity
               or else No (Scope (Ent))
               or else
                 (Scope (Ent) = Current_Instantiated_Parent.Gen_Id
@@ -8174,9 +8172,7 @@ package body Sem_Ch12 is
                   then
                      Set_Entity (New_N, Entity (Name (Assoc)));
 
-                  elsif Nkind (Assoc) in N_Defining_Identifier
-                                       | N_Defining_Character_Literal
-                                       | N_Defining_Operator_Symbol
+                  elsif Nkind (Assoc) in N_Entity
                     and then Expander_Active
                   then
                      --  Inlining case: we are copying a tree that contains
@@ -15656,10 +15652,7 @@ package body Sem_Ch12 is
             --  preserve in this case, since the expansion will be redone in
             --  the instance.
 
-            if Nkind (E) not in N_Defining_Character_Literal
-                              | N_Defining_Identifier
-                              | N_Defining_Operator_Symbol
-            then
+            if Nkind (E) not in N_Entity then
                Set_Associated_Node (N, Empty);
                Set_Etype (N, Empty);
                return;
@@ -15708,7 +15701,12 @@ package body Sem_Ch12 is
          elsif Nkind (Parent (N)) = N_Selected_Component
            and then Nkind (Parent (N2)) = N_Expanded_Name
          then
-            if Is_Global (Entity (Parent (N2))) then
+            --  In case of previous errors, the tree might be malformed
+
+            if No (Entity (Parent (N2))) then
+               null;
+
+            elsif Is_Global (Entity (Parent (N2))) then
                Change_Selected_Component_To_Expanded_Name (Parent (N));
                Set_Associated_Node (Parent (N), Parent (N2));
                Set_Global_Type     (Parent (N), Parent (N2));

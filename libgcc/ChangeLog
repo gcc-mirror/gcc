@@ -1,3 +1,28 @@
+2020-10-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/gthr-vxworks-thread.c: Include stdlib.h.
+	(tls_delete_hook): Prototype it.
+	(__gthread_cond_signal): Return early if no waiters.  Consume
+	signal in case the semaphore got full.  Use semInfoGet instead
+	of kernel-mode-only semInfo.
+	(__gthread_cond_timedwait): Use semExchange.  Always take the
+	mutex again before returning.
+	* config/gthr-vxworks-cond.c (__ghtread_cond_wait): Likewise.
+
+2020-10-14  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Append
+	$(MULTISUBDIR) to the -I path for fixed headers, as we
+	arrange to have different sets of such headers for different
+	multilibs when they are activated.
+	* config/t-vxworks7: Likewise.
+
+2020-10-14  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Add include-fixed to include search
+	paths for libgcc on VxWorks.
+	* config/t-vxworks7: Likewise.
+
 2020-10-09  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/97148

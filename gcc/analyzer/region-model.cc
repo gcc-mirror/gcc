@@ -1345,26 +1345,27 @@ region_model::get_initial_value_for_global (const region *reg) const
   if ((called_from_main_p () && !DECL_EXTERNAL (decl))
       || TREE_READONLY (decl))
     {
-      /* Get the initializer value for base_reg.  */
-      const svalue *base_reg_init
-	= base_reg->get_svalue_for_initializer (m_mgr);
-      gcc_assert (base_reg_init);
-      if (reg == base_reg)
-	return base_reg_init;
-      else
+      /* Attempt to get the initializer value for base_reg.  */
+      if (const svalue *base_reg_init
+	    = base_reg->get_svalue_for_initializer (m_mgr))
 	{
-	  /* Get the value for REG within base_reg_init.  */
-	  binding_cluster c (base_reg);
-	  c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init,
-		  BK_direct);
-	  const svalue *sval
-	    = c.get_any_binding (m_mgr->get_store_manager (), reg);
-	  if (sval)
+	  if (reg == base_reg)
+	    return base_reg_init;
+	  else
 	    {
-	      if (reg->get_type ())
-		sval = m_mgr->get_or_create_cast (reg->get_type (),
-						  sval);
-	      return sval;
+	      /* Get the value for REG within base_reg_init.  */
+	      binding_cluster c (base_reg);
+	      c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init,
+		      BK_direct);
+	      const svalue *sval
+		= c.get_any_binding (m_mgr->get_store_manager (), reg);
+	      if (sval)
+		{
+		  if (reg->get_type ())
+		    sval = m_mgr->get_or_create_cast (reg->get_type (),
+						      sval);
+		  return sval;
+		}
 	    }
 	}
     }

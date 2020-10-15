@@ -225,6 +225,22 @@ if ! grep '^const _AT_FDCWD = ' ${OUT} >/dev/null 2>&1; then
   echo "const _AT_FDCWD = -100" >> ${OUT}
 fi
 
+# sysctl constants.
+grep '^const _CTL' gen-sysinfo.go |
+  sed -e 's/^\(const \)_\(CTL[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+  grep '^const _SYSCTL' gen-sysinfo.go |
+  sed -e 's/^\(const \)_\(SYSCTL[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+  grep '^const _NET_RT' gen-sysinfo.go |
+  sed -e 's/^\(const \)_\(NET_RT[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The sysctlnode struct.
+grep '^type _sysctlnode ' gen-sysinfo.go | \
+    sed -e 's/_sysctlnode/Sysctlnode/' \
+		-e 's/sysctl_flags/Flags/' \
+    -e 's/sysctl_name/Name/' \
+    -e 's/sysctl_num/Num/' \
+		>> ${OUT}
+
 # sysconf constants.
 grep '^const __SC' gen-sysinfo.go |
   sed -e 's/^\(const \)__\(SC[^= ]*\)\(.*\)$/\1\2 = __\2/' >> ${OUT}
@@ -533,6 +549,7 @@ fi | sed -e 's/type _dirent64/type Dirent/' \
          -e 's/d_name \[0+1\]/d_name [0+256]/' \
          -e 's/d_name/Name/' \
          -e 's/]int8/]byte/' \
+         -e 's/d_fileno/Fileno/' \
          -e 's/d_ino/Ino/' \
          -e 's/d_namlen/Namlen/' \
          -e 's/d_off/Off/' \
@@ -994,6 +1011,39 @@ grep '^type _rtgenmsg ' gen-sysinfo.go | \
       -e 's/rtgen_family/Family/' \
     >> ${OUT}
 
+# The rt_msghdr struct.
+grep '^type _rt_msghdr ' gen-sysinfo.go | \
+    sed -e 's/_rt_msghdr/RtMsghdr/g' \
+        -e 's/rtm_msglen/Msglen/' \
+        -e 's/rtm_version/Version/' \
+        -e 's/rtm_type/Type/' \
+        -e 's/rtm_index/Index/' \
+        -e 's/rtm_flags/Flags/' \
+        -e 's/rtm_addrs/Addrs/' \
+        -e 's/rtm_pid/Pid/' \
+        -e 's/rtm_seq/Seq/' \
+        -e 's/rtm_errno/Errno/' \
+        -e 's/rtm_use/Use/' \
+        -e 's/rtm_inits/Inits/' \
+        -e 's/rtm_rmx/Rmx/' \
+        -e 's/_rt_metrics/RtMetrics/' \
+      >> ${OUT}
+
+# The rt_metrics struct.
+grep '^type _rt_metrics ' gen-sysinfo.go | \
+    sed -e 's/_rt_metrics/RtMetrics/g' \
+        -e 's/rmx_locks/Locks/' \
+        -e 's/rmx_mtu/Mtu/' \
+        -e 's/rmx_hopcount/Hopcount/' \
+        -e 's/rmx_recvpipe/Recvpipe/' \
+        -e 's/rmx_sendpipe/Sendpipe/' \
+        -e 's/rmx_ssthresh/Ssthresh/' \
+        -e 's/rmx_rtt/Rtt/' \
+        -e 's/rmx_rttvar/Rttvar/' \
+        -e 's/rmx_expire/Expire/' \
+        -e 's/rmx_pksent/Pksent/' \
+      >> ${OUT}
+
 # The routing message flags.
 grep '^const _RT_' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
@@ -1020,9 +1070,14 @@ grep '^type _ifinfomsg ' gen-sysinfo.go | \
       -e 's/ifi_change/Change/' \
     >> ${OUT}
 
-# The if_msghdr struct.
+# The if_msghdr struct. Upstream uses inconsistent capitalization for this type
+# on AIX, so we do too.
+ifmsghdr_name=IfMsghdr
+if test "${GOOS}" = "aix"; then
+    ifmsghdr_name=IfMsgHdr
+fi
 grep '^type _if_msghdr ' gen-sysinfo.go | \
-    sed -e 's/_if_msghdr/IfMsgHdr/' \
+    sed -e "s/_if_msghdr/${ifmsghdr_name}/" \
 		-e 's/ifm_msglen/Msglen/' \
 		-e 's/ifm_version/Version/' \
 		-e 's/ifm_type/Type/' \
@@ -1031,6 +1086,17 @@ grep '^type _if_msghdr ' gen-sysinfo.go | \
 		-e 's/ifm_index/Index/' \
 		-e 's/ifm_addrlen/Addrlen/' \
 		>> ${OUT}
+
+# The if_announcemsghdr struct.
+grep '^type _if_announcemsghdr ' gen-sysinfo.go | \
+    sed -e 's/_if_announcemsghdr/IfAnnounceMsghdr/g' \
+        -e 's/ifan_msglen/Msglen/' \
+        -e 's/ifan_version/Version/' \
+        -e 's/ifan_type/Type/' \
+        -e 's/ifan_index/Index/' \
+        -e 's/ifan_name/Name/' \
+        -e 's/ifan_what/What/' \
+      >> ${OUT}
 
 # The interface information types and flags.
 grep '^const _IFA' gen-sysinfo.go | \
@@ -1061,12 +1127,72 @@ grep '^type _ifaddrmsg ' gen-sysinfo.go | \
       -e 's/ifa_index/Index/' \
     >> ${OUT}
 
+# The ifa_msghdr struct.
+grep '^type _ifa_msghdr ' gen-sysinfo.go | \
+    sed -e 's/_ifa_msghdr/IfaMsghdr/g' \
+        -e 's/ifam_msglen/Msglen/' \
+        -e 's/ifam_version/Version/' \
+        -e 's/ifam_type/Type/' \
+        -e 's/ifam_addrs/Addrs/' \
+        -e 's/ifam_flags/Flags/' \
+        -e 's/ifam_metric/Metric/' \
+        -e 's/ifam_index/Index/' \
+      >> ${OUT}
+
 # The rtattr struct.
 grep '^type _rtattr ' gen-sysinfo.go | \
     sed -e 's/_rtattr/RtAttr/' \
       -e 's/rta_len/Len/' \
       -e 's/rta_type/Type/' \
     >> ${OUT}
+
+# The bpf_version struct.
+grep '^type _bpf_version ' gen-sysinfo.go | \
+    sed -e 's/_bpf_version/BpfVersion/g' \
+        -e 's/bv_major/Major/' \
+        -e 's/bv_minor/Minor/' \
+      >> ${OUT}
+
+# The bpf_stat struct.
+grep '^type _bpf_stat ' gen-sysinfo.go | \
+    sed -e 's/_bpf_stat/BpfStat/g' \
+        -e 's/bs_recv/Recv/' \
+        -e 's/bs_drop/Drop/' \
+        -e 's/bs_capt/Capt/' \
+        -e 's/bs_padding/Padding/' \
+      >> ${OUT}
+
+# The bpf_insn struct.
+grep '^type _bpf_insn ' gen-sysinfo.go | \
+    sed -e 's/_bpf_insn/BpfInsn/g' \
+        -e 's/code/Code/' \
+        -e 's/jt/Jt/' \
+        -e 's/jf/Jf/' \
+        -e 's/k/K/' \
+      >> ${OUT}
+
+# The bpf_program struct.
+grep '^type _bpf_program ' gen-sysinfo.go | \
+    sed -e 's/_bpf_program/BpfProgram/g' \
+        -e 's/bf_len/Len/' \
+        -e 's/bf_insns/Insns/' \
+        -e 's/_bpf_insn/BpfInsn/' \
+      >> ${OUT}
+
+# The BPF ioctl constants.
+grep '^const _BIOC' gen-sysinfo.go | \
+    grep -v '_val =' | \
+    sed -e 's/^\(const \)_\(BIOC[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+for c in BIOCFLUSH BIOCGBLEN BIOCGDLT BIOCGETIF BIOCGHDRCMPLT BIOCGRTIMEOUT \
+         BIOCGSTATS BIOCIMMEDIATE BIOCPROMISC BIOCSBLEN BIOCSDLT BIOCSETF \
+         BIOCSETIF BIOCSHDRCMPLT BIOCSRTIMEOUT BIOCVERSION
+do
+  if ! grep "^const ${c}" ${OUT} >/dev/null 2>&1; then
+    if grep "^const _${c}_val" ${OUT} >/dev/null 2>&1; then
+      echo "const ${c} = _${c}_val" >> ${OUT}
+    fi
+  fi
+done
 
 # The in_pktinfo struct.
 grep '^type _in_pktinfo ' gen-sysinfo.go | \
@@ -1344,10 +1470,11 @@ fi
 
 # Struct sizes.
 set cmsghdr Cmsghdr ip_mreq IPMreq ip_mreqn IPMreqn ipv6_mreq IPv6Mreq \
-    ifaddrmsg IfAddrmsg ifinfomsg IfInfomsg in_pktinfo Inet4Pktinfo \
-    in6_pktinfo Inet6Pktinfo inotify_event InotifyEvent linger Linger \
-    msghdr Msghdr nlattr NlAttr nlmsgerr NlMsgerr nlmsghdr NlMsghdr \
-    rtattr RtAttr rtgenmsg RtGenmsg rtmsg RtMsg rtnexthop RtNexthop \
+    ifaddrmsg IfAddrmsg ifa_msghdr IfaMsghdr ifinfomsg IfInfomsg \
+    if_msghdr IfMsghdr in_pktinfo Inet4Pktinfo in6_pktinfo Inet6Pktinfo \
+    inotify_event InotifyEvent linger Linger msghdr Msghdr nlattr NlAttr \
+    nlmsgerr NlMsgerr nlmsghdr NlMsghdr rtattr RtAttr rt_msghdr RtMsghdr \
+    rtgenmsg RtGenmsg rtmsg RtMsg rtnexthop RtNexthop \
     sock_filter SockFilter sock_fprog SockFprog ucred Ucred \
     icmp6_filter ICMPv6Filter ip6_mtuinfo IPv6MTUInfo
 while test $# != 0; do

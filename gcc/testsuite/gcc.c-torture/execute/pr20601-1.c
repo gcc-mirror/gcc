@@ -1,5 +1,4 @@
 /* PR tree-optimization/20601 */
-/* { dg-xfail-if "ptxas crashes" { nvptx-*-* } { "-O1" } { "" } } */
 extern void abort (void);
 extern void exit (int);
 

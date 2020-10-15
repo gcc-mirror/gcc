@@ -2618,6 +2618,9 @@ ifeq ($(strip $(filter-out linux%,$(target_os))),)
     g-sercom.adb<libgnat/g-sercom__linux.adb
 endif
 
+LIBGNAT_TARGET_PAIRS += \
+  interfac.ads<libgnat/interfac__2020.ads
+
 # LIBGNAT_SRCS is the list of all C files (including headers) of the runtime
 # library.  LIBGNAT_OBJS is the list of object files for libgnat.
 # thread.c is special as put into GNATRTL_TASKING_OBJS

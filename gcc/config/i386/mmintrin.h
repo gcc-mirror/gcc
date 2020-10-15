@@ -42,9 +42,15 @@
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
 typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
+typedef int __m32 __attribute__ ((__vector_size__ (4), __may_alias__));
+typedef short __m16 __attribute__ ((__vector_size__ (2), __may_alias__));
 
 /* Unaligned version of the same type  */
 typedef int __m64_u __attribute__ ((__vector_size__ (8), __may_alias__, __aligned__ (1)));
+typedef int __m32_u __attribute__ ((__vector_size__ (4), \
+				    __may_alias__, __aligned__ (1)));
+typedef short __m16_u __attribute__ ((__vector_size__ (2), \
+				      __may_alias__, __aligned__ (1)));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef int __v2si __attribute__ ((__vector_size__ (8)));

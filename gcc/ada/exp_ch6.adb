@@ -7318,6 +7318,13 @@ package body Exp_Ch6 is
       Exp : Node_Id := Expression (N);
       pragma Assert (Present (Exp));
 
+      Exp_Is_Function_Call : constant Boolean :=
+        Nkind (Exp) = N_Function_Call
+          or else (Nkind (Exp) = N_Explicit_Dereference
+                   and then Is_Entity_Name (Prefix (Exp))
+                   and then Ekind (Entity (Prefix (Exp))) = E_Constant
+                   and then Is_Related_To_Func_Return (Entity (Prefix (Exp))));
+
       Exp_Typ : constant Entity_Id := Etype (Exp);
       --  The type of the expression (not necessarily the same as R_Type)
 
@@ -7533,7 +7540,7 @@ package body Exp_Ch6 is
             Decl : Node_Id;
             Ent  : Entity_Id;
          begin
-            if Nkind (Exp) /= N_Function_Call
+            if not Exp_Is_Function_Call
               and then Has_Discriminants (Ubt)
               and then not Is_Constrained (Ubt)
               and then not Has_Unchecked_Union (Ubt)
@@ -7556,22 +7563,21 @@ package body Exp_Ch6 is
          Set_Enclosing_Sec_Stack_Return (N);
 
          --  Optimize the case where the result is a function call. In this
-         --  case either the result is already on the secondary stack, or is
-         --  already being returned with the stack pointer depressed and no
-         --  further processing is required except to set the By_Ref flag
-         --  to ensure that gigi does not attempt an extra unnecessary copy.
-         --  (actually not just unnecessary but harmfully wrong in the case
-         --  of a controlled type, where gigi does not know how to do a copy).
-         --  To make up for a gcc 2.8.1 deficiency (???), we perform the copy
-         --  for array types if the constrained status of the target type is
-         --  different from that of the expression.
+         --  case the result is already on the secondary stack and no further
+         --  processing is required except to set the By_Ref flag to ensure
+         --  that gigi does not attempt an extra unnecessary copy. (Actually
+         --  not just unnecessary but wrong in the case of a controlled type,
+         --  where gigi does not know how to do a copy.) To make up for a gcc
+         --  2.8.1 deficiency (???), we perform the copy for array types if the
+         --  constrained status of the target type is different from that of
+         --  the expression.
 
          if Requires_Transient_Scope (Exp_Typ)
            and then
               (not Is_Array_Type (Exp_Typ)
                 or else Is_Constrained (Exp_Typ) = Is_Constrained (R_Type)
                 or else CW_Or_Has_Controlled_Part (Utyp))
-           and then Nkind (Exp) = N_Function_Call
+           and then Exp_Is_Function_Call
          then
             Set_By_Ref (N);
 
@@ -8906,7 +8912,7 @@ package body Exp_Ch6 is
          --  rather than some outer chain.
 
       begin
-         if Has_Task (Result_Subt) or else Might_Have_Tasks (Result_Subt) then
+         if Might_Have_Tasks (Result_Subt) then
             Actions := New_List;
             Build_Task_Allocate_Block_With_Init_Stmts
               (Actions, Allocator, Init_Stmts => New_List (Assign));
@@ -9948,8 +9954,9 @@ package body Exp_Ch6 is
    begin
       return not Global_No_Tasking
         and then not No_Run_Time_Mode
-        and then Is_Class_Wide_Type (Typ)
-        and then Is_Limited_Record (Typ);
+        and then (Has_Task (Typ)
+                    or else (Is_Class_Wide_Type (Typ)
+                               and then Is_Limited_Record (Typ)));
    end Might_Have_Tasks;
 
    ----------------------------

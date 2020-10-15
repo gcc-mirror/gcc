@@ -444,6 +444,13 @@ _mm_cmp_ss (__m128 __X, __m128 __Y, const int __P)
 				  (__v4sf)(__m128)(Y), (int)(P)))
 #endif
 
+extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtsi256_si32 (__m256i __A)
+{
+  __v8si __B = (__v8si) __A;
+  return __B[0];
+}
+
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cvtepi32_pd (__m128i __A)
 {

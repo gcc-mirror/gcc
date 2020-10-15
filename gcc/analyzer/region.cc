@@ -927,7 +927,9 @@ decl_region::get_svalue_for_constructor (tree ctor,
 
    Get an svalue for the initial value of this region at entry to
    "main" (either based on DECL_INITIAL, or implicit initialization to
-   zero.  */
+   zero.
+
+   Return NULL if there is a problem.  */
 
 const svalue *
 decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
@@ -935,12 +937,20 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
   tree init = DECL_INITIAL (m_decl);
   if (!init)
     {
-      /* Implicit initialization to zero; use a compound_svalue for it.  */
+      /* Implicit initialization to zero; use a compound_svalue for it.
+	 Doing so requires that we have a concrete binding for this region,
+	 which can fail if we have a region with unknown size
+	 (e.g. "extern const char arr[];").  */
+      const binding_key *binding
+	= binding_key::make (mgr->get_store_manager (), this, BK_direct);
+      if (binding->symbolic_p ())
+	return NULL;
+
       binding_cluster c (this);
       c.zero_fill_region (mgr->get_store_manager (), this);
       return mgr->get_or_create_compound_svalue (TREE_TYPE (m_decl),
 						 c.get_map ());
-     }
+    }
 
   if (TREE_CODE (init) == CONSTRUCTOR)
     return get_svalue_for_constructor (init, mgr);

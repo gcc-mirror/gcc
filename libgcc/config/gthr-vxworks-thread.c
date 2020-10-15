@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "gthr.h"
 #include <taskLib.h>
+#include <stdlib.h>
 
 #define __TIMESPEC_TO_NSEC(timespec) \
   ((long long)timespec.tv_sec * 1000000000 + (long long)timespec.tv_nsec)
@@ -38,7 +39,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     / 1000000000)
 
 #ifdef __RTP__
-  void tls_delete_hook ();
+  void tls_delete_hook (void);
   #define __CALL_DELETE_HOOK(tcb) tls_delete_hook()
 #else
   /* In kernel mode, we need to pass the TCB to task_delete_hook. The TCB is
@@ -47,16 +48,54 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   #define __CALL_DELETE_HOOK(tcb) tls_delete_hook((WIND_TCB *) ((tcb)->task_id))
 #endif
 
-/* -------------------- Timed Condition Variables --------------------- */
-
 int
 __gthread_cond_signal (__gthread_cond_t *cond)
 {
   if (!cond)
     return ERROR;
 
-  return __CHECK_RESULT (semGive (*cond));
+  /* If nobody is waiting, skip the semGive altogether: no one can get
+     in line while we hold the mutex associated with *COND.  We could
+     skip this test altogether, but it's presumed cheaper than going
+     through the give and take below, and that a signal without a
+     waiter occurs often enough for the test to be worth it.  */
+  SEM_INFO info;
+  memset (&info, 0, sizeof (info));
+  __RETURN_ERRNO_IF_NOT_OK (semInfoGet (*cond, &info));
+  if (info.numTasks == 0)
+    return OK;
+
+  int ret = __CHECK_RESULT (semGive (*cond));
+
+  /* It might be the case, however, that when we called semInfo, there
+     was a waiter just about to timeout, and by the time we called
+     semGive, it had already timed out, so our semGive would leave the
+     *cond semaphore full, so the next caller of wait would pass
+     through.  We don't want that.  So, make sure we leave the
+     semaphore empty.  Despite the window in which the semaphore will
+     be full, this works because:
+
+     - we're holding the mutex, so nobody else can semGive, and any
+       pending semTakes are actually within semExchange.  there might
+       be others blocked to acquire the mutex, but those are not
+       relevant for the analysis.
+
+     - if there was another non-timed out waiter, semGive will wake it
+       up immediately instead of leaving the semaphore full, so the
+       semTake below will time out, and the semantics are as expected
+
+     - otherwise, if all waiters timed out before the semGive (or if
+       there weren't any to begin with), our semGive completed leaving
+       the semaphore full, and our semTake below will consume it
+       before any other waiter has a change to reach the semExchange,
+       because we're holding the mutex.  */
+  if (ret == OK)
+    semTake (*cond, NO_WAIT);
+
+  return ret;
 }
+
+/* -------------------- Timed Condition Variables --------------------- */
 
 int
 __gthread_cond_timedwait (__gthread_cond_t *cond,
@@ -93,13 +132,11 @@ __gthread_cond_timedwait (__gthread_cond_t *cond,
   if (waiting_ticks > INT_MAX)
     waiting_ticks = INT_MAX;
 
-  __RETURN_ERRNO_IF_NOT_OK (semGive (*mutex));
-
-  __RETURN_ERRNO_IF_NOT_OK (semTake (*cond, waiting_ticks));
+  int ret = __CHECK_RESULT (semExchange (*mutex, *cond, waiting_ticks));
 
   __RETURN_ERRNO_IF_NOT_OK (semTake (*mutex, WAIT_FOREVER));
 
-  return OK;
+  return ret;
 }
 
 /* --------------------------- Timed Mutexes ------------------------------ */

@@ -3826,6 +3826,14 @@ package body Exp_Attr is
       --  the latter.
 
       when Attribute_Initialized =>
+
+         --  Do not expand 'Initialized in CodePeer mode, it will be handled
+         --  by the back-end directly.
+
+         if CodePeer_Mode then
+            return;
+         end if;
+
          Rewrite
            (N,
             Make_Attribute_Reference

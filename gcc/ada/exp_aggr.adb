@@ -6758,7 +6758,9 @@ package body Exp_Aggr is
    begin
       --  Record aggregate case
 
-      if Is_Record_Type (Etype (N)) then
+      if Is_Record_Type (Etype (N))
+        and then not Is_Private_Type (Etype (N))
+      then
          Expand_Record_Aggregate (N);
 
       elsif Has_Aspect (Etype (N), Aspect_Aggregate) then

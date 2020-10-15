@@ -58,7 +58,11 @@ package Ada.Containers.Bounded_Vectors is
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
-      Iterator_Element  => Element_Type;
+      Iterator_Element  => Element_Type,
+      Aggregate         => (Empty          => Empty_Vector,
+                            Add_Unnamed    => Append_One,
+                            New_Indexed    => New_Vector,
+                            Assign_Indexed => Replace_Element);
 
    pragma Preelaborable_Initialization (Vector);
 
@@ -75,6 +79,10 @@ package Ada.Containers.Bounded_Vectors is
       Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    overriding function "=" (Left, Right : Vector) return Boolean;
+
+   function New_Vector (First, Last : Index_Type) return Vector
+     with Pre => First = Index_Type'First;
+   --  Ada_2020 aggregate operation.
 
    function To_Vector (Length : Count_Type) return Vector;
 
@@ -242,6 +250,10 @@ package Ada.Containers.Bounded_Vectors is
      (Container : in out Vector;
       New_Item  : Element_Type;
       Count     : Count_Type := 1);
+
+   procedure Append_One (Container : in out Vector;
+                         New_Item  :        Element_Type);
+   --  Ada_2020 aggregate operation.
 
    procedure Insert_Space
      (Container : in out Vector;

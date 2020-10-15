@@ -33,7 +33,7 @@ package body Ada.Containers.Formal_Vectors with
   SPARK_Mode => Off
 is
 
-   type Int is range System.Min_Int .. System.Max_Int;
+   subtype Int is Long_Long_Integer;
 
    function To_Array_Index (Index : Index_Type'Base) return Count_Type'Base;
 

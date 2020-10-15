@@ -14774,16 +14774,17 @@ package body Sem_Prag is
 
             function Is_Acceptable_Dim3 (N : Node_Id) return Boolean;
             --  Returns True if N is an acceptable argument for CUDA_Execute,
-            --  false otherwise.
+            --  False otherwise.
 
             ------------------------
             -- Is_Acceptable_Dim3 --
             ------------------------
 
             function Is_Acceptable_Dim3 (N : Node_Id) return Boolean is
-               Tmp : Node_Id;
+               Expr : Node_Id;
             begin
-               if Etype (N) = RTE (RE_Dim3) or else Is_Integer_Type (Etype (N))
+               if Is_RTE (Etype (N), RE_Dim3)
+                 or else Is_Integer_Type (Etype (N))
                then
                   return True;
                end if;
@@ -14791,10 +14792,10 @@ package body Sem_Prag is
                if Nkind (N) = N_Aggregate
                  and then List_Length (Expressions (N)) = 3
                then
-                  Tmp := First (Expressions (N));
-                  while Present (Tmp) loop
-                     Analyze_And_Resolve (Tmp, Any_Integer);
-                     Tmp := Next (Tmp);
+                  Expr := First (Expressions (N));
+                  while Present (Expr) loop
+                     Analyze_And_Resolve (Expr, Any_Integer);
+                     Next (Expr);
                   end loop;
                   return True;
                end if;
@@ -14813,7 +14814,6 @@ package body Sem_Prag is
             --  Start of processing for CUDA_Execute
 
          begin
-
             GNAT_Pragma;
             Check_At_Least_N_Arguments (3);
             Check_At_Most_N_Arguments (5);
@@ -15314,7 +15314,7 @@ package body Sem_Prag is
          -- Default_Storage_Pool --
          --------------------------
 
-         --  pragma Default_Storage_Pool (storage_pool_NAME | null);
+         --  pragma Default_Storage_Pool (storage_pool_NAME | null | Standard);
 
          when Pragma_Default_Storage_Pool => Default_Storage_Pool : declare
             Pool : Node_Id;
@@ -15355,6 +15355,18 @@ package body Sem_Prag is
 
                   Set_Etype (Pool, Empty);
 
+               --  Case of Default_Storage_Pool (Standard);
+
+               elsif Nkind (Pool) = N_Identifier
+                 and then Chars (Pool) = Name_Standard
+               then
+                  Analyze (Pool);
+
+                  if Entity (Pool) /= Standard_Standard then
+                     Error_Pragma_Arg
+                       ("package Standard is not directly visible", Arg1);
+                  end if;
+
                --  Case of Default_Storage_Pool (storage_pool_NAME);
 
                else
@@ -15362,7 +15374,7 @@ package body Sem_Prag is
                   --  argument is "null".
 
                   if Is_Configuration_Pragma then
-                     Error_Pragma_Arg ("NULL expected", Arg1);
+                     Error_Pragma_Arg ("NULL or Standard expected", Arg1);
                   end if;
 
                   --  The expected type for a non-"null" argument is
@@ -21201,9 +21213,7 @@ package body Sem_Prag is
             Set_Has_Delayed_Freeze (Typ);
 
             Set_Predicates_Ignored (Typ,
-              Present (Check_Policy_List)
-                and then
-                  Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
+              Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
          end Predicate;
 

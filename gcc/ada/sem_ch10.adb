@@ -5303,8 +5303,9 @@ package body Sem_Ch10 is
       --  analyzing the private part of the package).
 
       if Private_Present (With_Clause)
-        and then Nkind (Unit (Parent (With_Clause))) = N_Package_Declaration
-        and then not (Private_With_OK)
+        and then Nkind (Unit (Parent (With_Clause)))
+                   in N_Package_Declaration | N_Generic_Package_Declaration
+        and then not Private_With_OK
       then
          return;
       end if;
@@ -5371,7 +5372,7 @@ package body Sem_Ch10 is
             Set_Is_Visible_Lib_Unit (Uname);
 
             --  If the unit is a wrapper package for a compilation unit that is
-            --  a subprogrm instance, indicate that the instance itself is a
+            --  a subprogram instance, indicate that the instance itself is a
             --  visible unit. This is necessary if the instance is inlined.
 
             if Is_Wrapper_Package (Uname) then
@@ -6464,7 +6465,7 @@ package body Sem_Ch10 is
             null;
 
          elsif Nkind (Item) = N_With_Clause
-            and then Context_Installed (Item)
+           and then Context_Installed (Item)
          then
             --  Remove items from one with'ed unit
 
@@ -6818,12 +6819,12 @@ package body Sem_Ch10 is
       -- In_Regular_With_Clause --
       ----------------------------
 
-      function In_Regular_With_Clause (E : Entity_Id) return Boolean
-      is
+      function In_Regular_With_Clause (E : Entity_Id) return Boolean is
          Item : Node_Id;
 
       begin
          Item := First (Context_Items (Comp_Unit));
+
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
 
@@ -6836,6 +6837,7 @@ package body Sem_Ch10 is
             then
                return True;
             end if;
+
             Next (Item);
          end loop;
 
