@@ -1109,7 +1109,7 @@ Objective-C and Objective-C++ Dialects}.
 -march=@var{arch}  -mbmx  -mno-bmx  -mcdx  -mno-cdx}
 
 @emph{Nvidia PTX Options}
-@gccoptlist{-m32  -m64  -mmainkernel  -moptimize}
+@gccoptlist{-m64  -mmainkernel  -moptimize}
 
 @emph{OpenRISC Options}
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div @gol
@@ -25614,11 +25614,10 @@ These options are defined for Nvidia PTX:
 
 @table @gcctabopt
 
-@item -m32
 @itemx -m64
-@opindex m32
 @opindex m64
-Generate code for 32-bit or 64-bit ABI.
+Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
+supported.
 
 @item -misa=@var{ISA-string}
 @opindex march
