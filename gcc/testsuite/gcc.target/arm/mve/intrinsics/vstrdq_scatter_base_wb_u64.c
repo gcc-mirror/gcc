@@ -10,12 +10,10 @@ foo (uint64x2_t * addr, const int offset, uint64x2_t value)
   vstrdq_scatter_base_wb_u64 (addr, 8, value);
 }
 
-/* { dg-final { scan-assembler "vstrd.u64"  }  } */
-
 void
 foo1 (uint64x2_t * addr, const int offset, uint64x2_t value)
 {
   vstrdq_scatter_base_wb (addr, 8, value);
 }
 
-/* { dg-final { scan-assembler "vstrd.u64"  }  } */
+/* { dg-final { scan-assembler-times "vstrd.u64\tq\[0-9\]+, \\\[q\[0-9\]+, #\[0-9\]+\\\]!" 2 } } */

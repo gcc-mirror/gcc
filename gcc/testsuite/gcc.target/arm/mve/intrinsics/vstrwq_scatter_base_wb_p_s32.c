@@ -10,12 +10,10 @@ foo (uint32x4_t * addr, const int offset, int32x4_t value, mve_pred16_t p)
   vstrwq_scatter_base_wb_p_s32 (addr, 8, value, p);
 }
 
-/* { dg-final { scan-assembler "vstrwt.u32"  }  } */
-
 void
 foo1 (uint32x4_t * addr, const int offset, int32x4_t value, mve_pred16_t p)
 {
   vstrwq_scatter_base_wb_p (addr, 8, value, p);
 }
 
-/* { dg-final { scan-assembler "vstrwt.u32"  }  } */
+/* { dg-final { scan-assembler-times "vstrwt.u32\tq\[0-9\]+, \\\[q\[0-9\]+, #\[0-9\]+\\\]!" 2 } } */
