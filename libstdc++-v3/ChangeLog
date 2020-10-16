@@ -1,3 +1,17 @@
+2020-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/concepts: Fix typos in copyright notice.
+	* include/std/ranges: Likewise.
+
+2020-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Remove red background for
+	completed feature.
+	* doc/html/manual/status.html: Regenerate.
+
 2020-10-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

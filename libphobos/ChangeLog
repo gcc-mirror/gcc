@@ -1,3 +1,12 @@
+2020-10-15  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	Backported from master:
+	2020-10-12  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* libdruntime/config/mips/switchcontext.S [__mips_hard_float]:
+	Use L.D and S.D generic assembly instructions rather than LDC1
+	and SDC1 MIPS II hardware instructions.
+
 2020-07-23  Release Manager
 
 	* GCC 10.2.0 released.

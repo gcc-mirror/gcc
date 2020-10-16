@@ -1,3 +1,14 @@
+2020-10-15  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-10-15  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97295
+	* profile-count.c (profile_count::to_frequency): Move part of
+	gcc_assert to STATIC_ASSERT.
+	* regs.h (REG_FREQ_FROM_BB): Do not use count.to_frequency for
+	a function that does not have count_max initialized.
+
 2020-10-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (neoversen2_tunings): Define.
