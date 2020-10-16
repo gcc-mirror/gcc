@@ -8418,6 +8418,11 @@ package body Sem_Res is
       --  This is semantically dubious, and of no interest to any real code,
       --  but c48008a makes it all worthwhile.
 
+      function Suspicious_Prio_For_Equality return Boolean;
+      --  Returns True iff the parent node is a and/or/xor operation that
+      --  could be the cause of confused priorities. Note that if the not is
+      --  in parens, then False is returned.
+
       -------------------------
       -- Check_If_Expression --
       -------------------------
@@ -8547,6 +8552,47 @@ package body Sem_Res is
          return Empty;
       end Find_Unique_Access_Type;
 
+      ----------------------------------
+      -- Suspicious_Prio_For_Equality --
+      ----------------------------------
+
+      function Suspicious_Prio_For_Equality return Boolean is
+         Par : constant Node_Id := Parent (N);
+
+      begin
+         --  Check if parent node is one of and/or/xor, not parenthesized
+         --  explicitly, and its own parent is not of this kind. Otherwise,
+         --  it's a case of chained Boolean conditions which is likely well
+         --  parenthesized.
+
+         if Nkind (Par) in N_Op_And | N_Op_Or | N_Op_Xor
+           and then Paren_Count (N) = 0
+           and then Nkind (Parent (Par)) not in N_Op_And | N_Op_Or | N_Op_Xor
+         then
+            declare
+               Compar : Node_Id :=
+                 (if Left_Opnd (Par) = N then
+                     Right_Opnd (Par)
+                  else
+                     Left_Opnd (Par));
+            begin
+               --  Compar may have been rewritten, for example from (a /= b)
+               --  into not (a = b). Use the Original_Node instead.
+
+               Compar := Original_Node (Compar);
+
+               --  If the other argument of the and/or/xor is also a
+               --  comparison, or another and/or/xor then most likely
+               --  the priorities are correctly set.
+
+               return Nkind (Compar) not in N_Op_Boolean;
+            end;
+
+         else
+            return False;
+         end if;
+      end Suspicious_Prio_For_Equality;
+
    --  Start of processing for Resolve_Equality_Op
 
    begin
@@ -8625,6 +8671,24 @@ package body Sem_Res is
             Error_Msg_N -- CODEFIX
               ("?r?comparison with True is redundant!", N);
             Explain_Redundancy (Original_Node (R));
+         end if;
+
+         --  Warn on a (in)equality between boolean values which is not
+         --  parenthesized when the parent expression is one of and/or/xor, as
+         --  this is interpreted as (a = b) op c where most likely a = (b op c)
+         --  was intended. Do not generate a warning in generic instances, as
+         --  the problematic expression may be implicitly parenthesized in
+         --  the generic itself if one of the operators is a generic formal.
+         --  Also do not generate a warning for generated equality, for
+         --  example from rewritting a membership test.
+
+         if Warn_On_Questionable_Missing_Parens
+           and then not In_Instance
+           and then Comes_From_Source (N)
+           and then Is_Boolean_Type (T)
+           and then Suspicious_Prio_For_Equality
+         then
+            Error_Msg_N ("?q?equality should be parenthesized here!", N);
          end if;
 
          --  If the equality is overloaded and the operands have resolved
