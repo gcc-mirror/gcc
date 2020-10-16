@@ -1577,7 +1577,8 @@ operator_lshift::op1_range (irange &r,
   if (op2.singleton_p (&shift_amount))
     {
       wide_int shift = wi::to_wide (shift_amount);
-      gcc_checking_assert (wi::gt_p (shift, 0, SIGNED));
+      if (wi::lt_p (shift, 0, SIGNED))
+	return false;
 
       // Work completely in unsigned mode to start.
       tree utype = type;
