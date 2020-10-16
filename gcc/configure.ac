@@ -5364,7 +5364,7 @@ foo:
      gcc_GAS_CHECK_FEATURE([assembly of compiler generated 32-bit .debug_line],
       gcc_cv_as_debug_line_32_flag,
       [elf,2,36,0], [], [$conftest_s],,
-      [success=yes])
+      [dwarf4_success=yes])
    else
      gcc_GAS_CHECK_FEATURE([assembly of compiler generated 64-bit .debug_line],
       gcc_cv_as_debug_line_64_flag,
@@ -5372,11 +5372,11 @@ foo:
       [dwarf4_success=yes])
    fi
    if test $dwarf4_success = yes; then
+     dwarf4_success=no
      gcc_GAS_CHECK_FEATURE([--gdwarf-4 not refusing compiler generated .debug_line],
       gcc_cv_as_dwarf_4_debug_line_flag,
       [elf,2,36,0], [--gdwarf-4], [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_WORKING_DWARF_4_FLAG, 1,
-[Define if your assembler supports --gdwarf-4 even with compiler generated .debug_line])])
+      [dwarf4_success=yes])
      break
    fi
    dwarf4_debug_info_size=0x36
@@ -5384,6 +5384,59 @@ foo:
    dwarf4_debug_aranges_size=0x1c
    dwarf4_line_sz=5
  done
+
+ if test $dwarf4_success = yes; then
+   conftest_s="\
+	.file	\"foo.c\"
+	.text
+bar:
+#APP
+# 82 \"xxx.h\" 1
+	$insn
+# 0 \"\" 2
+#NO_APP
+	$insn
+foo:
+	.file 1 \"foo.c\"
+	$insn
+	.file 2 \"foo.h\"
+	ret
+"
+   dwarf4_success=no
+   gcc_GAS_CHECK_FEATURE([--gdwarf-4 with the APP marker],
+     gcc_cv_as_dwarf_4_app_flag,,
+     [--gdwarf-4], [$conftest_s],, [dwarf4_success=yes])
+ fi
+
+ if test $dwarf4_success = yes; then
+   conftest_s="\
+	.text
+	.globl	foo
+	.type	foo, %function
+foo:
+	$insn
+	.size	foo, .-foo
+	.file	1 \"foo.c\"
+"
+   gcc_GAS_CHECK_FEATURE([working --gdwarf-4/--gdwarf-5 for all sources],
+     gcc_cv_as_working_gdwarf_n_flag,,
+     [--gdwarf-4],
+     [$conftest_s],
+     [changequote(,)dnl
+      if test x$gcc_cv_readelf != x \
+	 && $gcc_cv_readelf -w conftest.o 2>&1 \
+		| grep conftest.s > /dev/null 2>&1; then
+	gcc_cv_as_working_gdwarf_n_flag=no
+      else
+	gcc_cv_as_working_gdwarf_n_flag=yes
+      fi
+      changequote([,])dnl])
+   if test $gcc_cv_as_working_gdwarf_n_flag = yes; then
+     AC_DEFINE(HAVE_AS_WORKING_DWARF_N_FLAG, 1,
+[Define if your assembler supports --gdwarf-4/--gdwarf-5 even with
+ compiler generated .debug_line.])
+   fi
+ fi
 
  gcc_GAS_CHECK_FEATURE([--gstabs option],
   gcc_cv_as_gstabs_flag,

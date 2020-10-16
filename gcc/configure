@@ -28701,7 +28701,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_debug_line_32_flag" >&5
 $as_echo "$gcc_cv_as_debug_line_32_flag" >&6; }
 if test $gcc_cv_as_debug_line_32_flag = yes; then
-  success=yes
+  dwarf4_success=yes
 fi
 
    else
@@ -28741,6 +28741,7 @@ fi
 
    fi
    if test $dwarf4_success = yes; then
+     dwarf4_success=no
      { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gdwarf-4 not refusing compiler generated .debug_line" >&5
 $as_echo_n "checking assembler for --gdwarf-4 not refusing compiler generated .debug_line... " >&6; }
 if ${gcc_cv_as_dwarf_4_debug_line_flag+:} false; then :
@@ -28772,9 +28773,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_dwarf_4_debug_line_flag" >&5
 $as_echo "$gcc_cv_as_dwarf_4_debug_line_flag" >&6; }
 if test $gcc_cv_as_dwarf_4_debug_line_flag = yes; then
-
-$as_echo "#define HAVE_AS_WORKING_DWARF_4_FLAG 1" >>confdefs.h
-
+  dwarf4_success=yes
 fi
 
      break
@@ -28784,6 +28783,105 @@ fi
    dwarf4_debug_aranges_size=0x1c
    dwarf4_line_sz=5
  done
+
+ if test $dwarf4_success = yes; then
+   conftest_s="\
+	.file	\"foo.c\"
+	.text
+bar:
+#APP
+# 82 \"xxx.h\" 1
+	$insn
+# 0 \"\" 2
+#NO_APP
+	$insn
+foo:
+	.file 1 \"foo.c\"
+	$insn
+	.file 2 \"foo.h\"
+	ret
+"
+   dwarf4_success=no
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gdwarf-4 with the APP marker" >&5
+$as_echo_n "checking assembler for --gdwarf-4 with the APP marker... " >&6; }
+if ${gcc_cv_as_dwarf_4_app_flag+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_dwarf_4_app_flag=no
+  if test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gdwarf-4 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_dwarf_4_app_flag=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_dwarf_4_app_flag" >&5
+$as_echo "$gcc_cv_as_dwarf_4_app_flag" >&6; }
+if test $gcc_cv_as_dwarf_4_app_flag = yes; then
+  dwarf4_success=yes
+fi
+
+ fi
+
+ if test $dwarf4_success = yes; then
+   conftest_s="\
+	.text
+	.globl	foo
+	.type	foo, %function
+foo:
+	$insn
+	.size	foo, .-foo
+	.file	1 \"foo.c\"
+"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for working --gdwarf-4/--gdwarf-5 for all sources" >&5
+$as_echo_n "checking assembler for working --gdwarf-4/--gdwarf-5 for all sources... " >&6; }
+if ${gcc_cv_as_working_gdwarf_n_flag+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_working_gdwarf_n_flag=no
+  if test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gdwarf-4 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	      if test x$gcc_cv_readelf != x \
+	 && $gcc_cv_readelf -w conftest.o 2>&1 \
+		| grep conftest.s > /dev/null 2>&1; then
+	gcc_cv_as_working_gdwarf_n_flag=no
+      else
+	gcc_cv_as_working_gdwarf_n_flag=yes
+      fi
+          else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_working_gdwarf_n_flag" >&5
+$as_echo "$gcc_cv_as_working_gdwarf_n_flag" >&6; }
+
+
+   if test $gcc_cv_as_working_gdwarf_n_flag = yes; then
+
+$as_echo "#define HAVE_AS_WORKING_DWARF_N_FLAG 1" >>confdefs.h
+
+   fi
+ fi
 
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gstabs option" >&5
 $as_echo_n "checking assembler for --gstabs option... " >&6; }
