@@ -1102,6 +1102,24 @@ load_insn_p (rtx_insn *insn)
    && GET_CODE (PATTERN (INSN)) != USE					\
    && GET_CODE (PATTERN (INSN)) != CLOBBER)
 
+rtx_insn *
+next_active_non_empty_insn (rtx_insn *insn)
+{
+  insn = next_active_insn (insn);
+
+  while (insn
+	 && (GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	     || GET_CODE (PATTERN (insn)) == ASM_INPUT
+	     || (USEFUL_INSN_P (insn)
+		 && (asm_noperands (PATTERN (insn)) >= 0)
+		 && !strcmp (decode_asm_operands (PATTERN (insn),
+						  NULL, NULL, NULL,
+						  NULL, NULL), ""))))
+    insn = next_active_insn (insn);
+
+  return insn;
+}
+
 static unsigned int
 sparc_do_work_around_errata (void)
 {
@@ -1159,7 +1177,7 @@ sparc_do_work_around_errata (void)
 		emit_insn_before (gen_nop (), target);
 	    }
 
-	  next = next_active_insn (insn);
+	  next = next_active_non_empty_insn (insn);
 	  if (!next)
 	    break;
 
@@ -1262,23 +1280,12 @@ sparc_do_work_around_errata (void)
 	  rtx_insn *after;
 	  int i;
 
-	  next = next_active_insn (insn);
+	  next = next_active_non_empty_insn (insn);
 	  if (!next)
 	    break;
 
 	  for (after = next, i = 0; i < 2; i++)
 	    {
-	      /* Skip empty assembly statements.  */
-	      if ((GET_CODE (PATTERN (after)) == UNSPEC_VOLATILE)
-		  || (USEFUL_INSN_P (after)
-		      && (asm_noperands (PATTERN (after))>=0)
-		      && !strcmp (decode_asm_operands (PATTERN (after),
-						       NULL, NULL, NULL,
-						       NULL, NULL), "")))
-		after = next_active_insn (after);
-	      if (!after)
-		break;
-
 	      /* If the insn is a branch, then it cannot be problematic.  */
 	      if (!NONJUMP_INSN_P (after)
 		  || GET_CODE (PATTERN (after)) == SEQUENCE)
@@ -1303,7 +1310,7 @@ sparc_do_work_around_errata (void)
 		      && (MEM_P (SET_DEST (set)) || mem_ref (SET_SRC (set))))
 		    break;
 
-		  after = next_active_insn (after);
+		  after = next_active_non_empty_insn (after);
 		  if (!after)
 		    break;
 		}
