@@ -32,10 +32,6 @@
 
 --  This is LynxOS Family version of this package.
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during tasking
---  operations. It causes infinite loops and other problems.
-
 with System.OS_Interface;
 
 package System.Task_Primitives is

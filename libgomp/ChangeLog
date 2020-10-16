@@ -1,3 +1,8 @@
+2020-10-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* libgomp.texi (omp_get_max_active_levels): Modify description.
+	(omp_get_supported_active_levels): Make descriptions consistent.
+
 2020-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (omp_get_supported_active_levels): Fix a typo.

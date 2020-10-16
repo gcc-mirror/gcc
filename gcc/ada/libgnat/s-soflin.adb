@@ -31,10 +31,6 @@
 
 pragma Compiler_Unit_Warning;
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we get an
---  infinite loop from the code within the Poll routine itself.
-
 pragma Warnings (Off);
 --  Disable warnings as System.Soft_Links.Initialize is not Preelaborate. It is
 --  safe to with this unit as its elaboration routine will only be initializing

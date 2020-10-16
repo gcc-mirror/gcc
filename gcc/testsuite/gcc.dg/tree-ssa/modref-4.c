@@ -15,9 +15,9 @@ void b(char *ptr)
 
 int main()
 {
-  char c[3]={0,1,0};
+  char c[4]={0,1,2,0};
   b(c);
-  return c[0]+c[2];
+  return c[0]+c[3];
 }
 /* Check that both param offsets are determined correctly and the computation
    is optimized out.  */

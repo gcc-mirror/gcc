@@ -154,6 +154,8 @@ namespace __sanitizer {
 
 #if SANITIZER_LINUX && defined(__x86_64__)
 #include "sanitizer_syscall_linux_x86_64.inc"
+#elif SANITIZER_LINUX && SANITIZER_RISCV64
+#include "sanitizer_syscall_linux_riscv64.inc"
 #elif SANITIZER_LINUX && defined(__aarch64__)
 #include "sanitizer_syscall_linux_aarch64.inc"
 #elif SANITIZER_LINUX && defined(__arm__)
@@ -186,6 +188,10 @@ uptr internal_munmap(void *addr, uptr length) {
 
 int internal_mprotect(void *addr, uptr length, int prot) {
   return internal_syscall(SYSCALL(mprotect), (uptr)addr, length, prot);
+}
+
+int internal_madvise(uptr addr, uptr length, int advice) {
+  return internal_syscall(SYSCALL(madvise), addr, length, advice);
 }
 #endif
 
@@ -422,15 +428,6 @@ uptr internal_sched_yield() {
   return internal_syscall(SYSCALL(sched_yield));
 }
 
-void internal__exit(int exitcode) {
-#if SANITIZER_FREEBSD || SANITIZER_OPENBSD
-  internal_syscall(SYSCALL(exit), exitcode);
-#else
-  internal_syscall(SYSCALL(exit_group), exitcode);
-#endif
-  Die();  // Unreachable.
-}
-
 unsigned int internal_sleep(unsigned int seconds) {
   struct timespec ts;
   ts.tv_sec = seconds;
@@ -446,6 +443,17 @@ uptr internal_execve(const char *filename, char *const argv[],
                           (uptr)envp);
 }
 #endif  // !SANITIZER_SOLARIS && !SANITIZER_NETBSD
+
+#if !SANITIZER_NETBSD
+void internal__exit(int exitcode) {
+#if SANITIZER_FREEBSD || SANITIZER_OPENBSD || SANITIZER_SOLARIS
+  internal_syscall(SYSCALL(exit), exitcode);
+#else
+  internal_syscall(SYSCALL(exit_group), exitcode);
+#endif
+  Die();  // Unreachable.
+}
+#endif  // !SANITIZER_NETBSD
 
 // ----------------- sanitizer_common.h
 bool FileExists(const char *filename) {
@@ -706,7 +714,7 @@ struct linux_dirent {
 };
 #else
 struct linux_dirent {
-#if SANITIZER_X32 || defined(__aarch64__)
+#if SANITIZER_X32 || defined(__aarch64__) || SANITIZER_RISCV64
   u64 d_ino;
   u64 d_off;
 #else
@@ -714,7 +722,7 @@ struct linux_dirent {
   unsigned long      d_off;
 #endif
   unsigned short     d_reclen;
-#ifdef __aarch64__
+#if defined(__aarch64__) || SANITIZER_RISCV64
   unsigned char      d_type;
 #endif
   char               d_name[256];
@@ -796,11 +804,29 @@ int internal_sysctl(const int *name, unsigned int namelen, void *oldp,
 #if SANITIZER_FREEBSD
 int internal_sysctlbyname(const char *sname, void *oldp, uptr *oldlenp,
                           const void *newp, uptr newlen) {
-  static decltype(sysctlbyname) *real = nullptr;
-  if (!real)
-    real = (decltype(sysctlbyname) *)dlsym(RTLD_NEXT, "sysctlbyname");
-  CHECK(real);
-  return real(sname, oldp, (size_t *)oldlenp, newp, (size_t)newlen);
+  // Note: this function can be called during startup, so we need to avoid
+  // calling any interceptable functions. On FreeBSD >= 1300045 sysctlbyname()
+  // is a real syscall, but for older versions it calls sysctlnametomib()
+  // followed by sysctl(). To avoid calling the intercepted version and
+  // asserting if this happens during startup, call the real sysctlnametomib()
+  // followed by internal_sysctl() if the syscall is not available.
+#ifdef SYS___sysctlbyname
+  return internal_syscall(SYSCALL(__sysctlbyname), sname,
+                          internal_strlen(sname), oldp, (size_t *)oldlenp, newp,
+                          (size_t)newlen);
+#else
+  static decltype(sysctlnametomib) *real_sysctlnametomib = nullptr;
+  if (!real_sysctlnametomib)
+    real_sysctlnametomib =
+        (decltype(sysctlnametomib) *)dlsym(RTLD_NEXT, "sysctlnametomib");
+  CHECK(real_sysctlnametomib);
+
+  int oid[CTL_MAXNAME];
+  size_t len = CTL_MAXNAME;
+  if (real_sysctlnametomib(sname, oid, &len) == -1)
+    return (-1);
+  return internal_sysctl(oid, len, oldp, oldlenp, newp, newlen);
+#endif
 }
 #endif
 #endif
@@ -861,9 +887,8 @@ uptr internal_sigprocmask(int how, __sanitizer_sigset_t *set,
 #else
   __sanitizer_kernel_sigset_t *k_set = (__sanitizer_kernel_sigset_t *)set;
   __sanitizer_kernel_sigset_t *k_oldset = (__sanitizer_kernel_sigset_t *)oldset;
-  return internal_syscall(SYSCALL(rt_sigprocmask), (uptr)how,
-                          (uptr)&k_set->sig[0], (uptr)&k_oldset->sig[0],
-                          sizeof(__sanitizer_kernel_sigset_t));
+  return internal_syscall(SYSCALL(rt_sigprocmask), (uptr)how, (uptr)k_set,
+                          (uptr)k_oldset, sizeof(__sanitizer_kernel_sigset_t));
 #endif
 }
 
@@ -1046,6 +1071,8 @@ uptr GetMaxVirtualAddress() {
   // This should (does) work for both PowerPC64 Endian modes.
   // Similarly, aarch64 has multiple address space layouts: 39, 42 and 47-bit.
   return (1ULL << (MostSignificantSetBitIndex(GET_CURRENT_FRAME()) + 1)) - 1;
+#elif SANITIZER_RISCV64
+  return (1ULL << 38) - 1;
 # elif defined(__mips64)
   return (1ULL << 40) - 1;  // 0x000000ffffffffffUL;
 # elif defined(__s390x__)
@@ -1338,6 +1365,55 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
                          "i"(__NR_clone),
                          "i"(__NR_exit)
                        : "memory", "$29" );
+  return res;
+}
+#elif SANITIZER_RISCV64
+uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
+                    int *parent_tidptr, void *newtls, int *child_tidptr) {
+  long long res;
+  if (!fn || !child_stack)
+    return -EINVAL;
+  CHECK_EQ(0, (uptr)child_stack % 16);
+  child_stack = (char *)child_stack - 2 * sizeof(unsigned long long);
+  ((unsigned long long *)child_stack)[0] = (uptr)fn;
+  ((unsigned long long *)child_stack)[1] = (uptr)arg;
+
+  register int (*__fn)(void *) __asm__("a0") = fn;
+  register void *__stack __asm__("a1") = child_stack;
+  register int __flags __asm__("a2") = flags;
+  register void *__arg __asm__("a3") = arg;
+  register int *__ptid __asm__("a4") = parent_tidptr;
+  register void *__tls __asm__("a5") = newtls;
+  register int *__ctid __asm__("a6") = child_tidptr;
+
+  __asm__ __volatile__(
+      "mv a0,a2\n"          /* flags  */
+      "mv a2,a4\n"          /* ptid  */
+      "mv a3,a5\n"          /* tls  */
+      "mv a4,a6\n"          /* ctid  */
+      "addi a7, zero, %9\n" /* clone  */
+
+      "ecall\n"
+
+      /* if (%r0 != 0)
+       *   return %r0;
+       */
+      "bnez a0, 1f\n"
+
+      /* In the child, now. Call "fn(arg)". */
+      "ld  a0,  8(sp)\n"
+      "ld  a1, 16(sp)\n"
+      "jalr a1\n"
+
+      /* Call _exit(%r0).  */
+      "addi  a7, zero, %10\n"
+      "ecall\n"
+      "1:\n"
+
+      : "=r"(res)
+      : "i"(-EINVAL), "r"(__fn), "r"(__stack), "r"(__flags), "r"(__arg),
+        "r"(__ptid), "r"(__tls), "r"(__ctid), "i"(__NR_clone), "i"(__NR_exit)
+      : "ra", "memory");
   return res;
 }
 #elif defined(__aarch64__)
@@ -2211,7 +2287,7 @@ void CheckNoDeepBind(const char *filename, int flag) {
   if (flag & RTLD_DEEPBIND) {
     Report(
         "You are trying to dlopen a %s shared library with RTLD_DEEPBIND flag"
-        " which is incompatibe with sanitizer runtime "
+        " which is incompatible with sanitizer runtime "
         "(see https://github.com/google/sanitizers/issues/611 for details"
         "). If you want to run %s library under sanitizers please remove "
         "RTLD_DEEPBIND from dlopen flags.\n",

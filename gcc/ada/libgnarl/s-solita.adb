@@ -33,11 +33,6 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram alpha ordering check, since we group soft link bodies
 --  and dummy soft link bodies together separately in this unit.
 
-pragma Polling (Off);
---  Turn polling off for this package. We don't need polling during any of the
---  routines in this package, and more to the point, if we try to poll it can
---  cause infinite loops.
-
 with Ada.Exceptions;
 with Ada.Exceptions.Is_Null_Occurrence;
 

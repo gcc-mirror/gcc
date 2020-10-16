@@ -71,10 +71,6 @@
 --  executable. You should consider using gdb to obtain symbolic traceback in
 --  such cases.
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we can get
---  elaboration circularities when polling is turned on.
-
 with Ada.Exceptions;
 
 package System.Traceback.Symbolic is

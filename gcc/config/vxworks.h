@@ -158,8 +158,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Setup the crtstuff begin/end we might need for dwarf EH registration.  */
 
 #if !defined(CONFIG_SJLJ_EXCEPTIONS) && DWARF2_UNWIND_INFO
-#define VX_CRTBEGIN_SPEC \
- "%{!mrtp:vx_crtbegin-kernel.o%s} %{mrtp:vx_crtbegin-rtp.o%s}"
+#define VX_CRTBEGIN_SPEC "vx_crtbegin.o%s"
 #define VX_CRTEND_SPEC "-l:vx_crtend.o"
 #else
 #define VX_CRTBEGIN_SPEC ""

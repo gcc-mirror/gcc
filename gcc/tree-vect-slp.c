@@ -356,6 +356,16 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
     }
 }
 
+/* Return true if DTA and DTB match.  */
+
+static bool
+vect_def_types_match (enum vect_def_type dta, enum vect_def_type dtb)
+{
+  return (dta == dtb
+	  || ((dta == vect_external_def || dta == vect_constant_def)
+	      && (dtb == vect_external_def || dtb == vect_constant_def)));
+}
+
 /* Get the defs for the rhs of STMT (collect them in OPRNDS_INFO), check that
    they are of a valid type and that they match the defs of the first stmt of
    the SLP group (stored in OPRNDS_INFO).  This function tries to match stmts
@@ -421,9 +431,9 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 
   bool swapped = (swap != 0);
   gcc_assert (!swapped || first_op_cond);
+  enum vect_def_type *dts = XALLOCAVEC (enum vect_def_type, number_of_oprnds);
   for (i = 0; i < number_of_oprnds; i++)
     {
-again:
       if (first_op_cond)
 	{
 	  /* Map indicating how operands of cond_expr should be swapped.  */
@@ -444,7 +454,7 @@ again:
       oprnd_info = (*oprnds_info)[i];
 
       stmt_vec_info def_stmt_info;
-      if (!vect_is_simple_use (oprnd, vinfo, &dt, &def_stmt_info))
+      if (!vect_is_simple_use (oprnd, vinfo, &dts[i], &def_stmt_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -457,9 +467,13 @@ again:
       if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
 	oprnd_info->any_pattern = true;
 
-      tree type = TREE_TYPE (oprnd);
+      oprnd_info->def_stmts.quick_push (def_stmt_info);
+      oprnd_info->ops.quick_push (oprnd);
+
       if (first)
 	{
+	  tree type = TREE_TYPE (oprnd);
+	  dt = dts[i];
 	  if ((dt == vect_constant_def
 	       || dt == vect_external_def)
 	      && !GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
@@ -480,14 +494,48 @@ again:
 	      && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
 	      && (int)i == STMT_VINFO_REDUC_IDX (stmt_info)
 	      && def_stmt_info)
-	    dt = vect_reduction_def;
+	    dts[i] = dt = vect_reduction_def;
+
+	  /* Check the types of the definition.  */
+	  switch (dt)
+	    {
+	    case vect_external_def:
+	    case vect_constant_def:
+	    case vect_internal_def:
+	    case vect_reduction_def:
+	    case vect_induction_def:
+	      break;
+
+	    default:
+	      /* FORNOW: Not supported.  */
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: illegal type of def %T\n",
+				 oprnd);
+	      return -1;
+	    }
+
 	  oprnd_info->first_dt = dt;
 	  oprnd_info->first_op_type = type;
 	}
-      else
-	{
+    }
+  if (first)
+    return 0;
+
+  /* Now match the operand definition types to that of the first stmt.  */
+  for (i = 0; i < number_of_oprnds;)
+    {
+      oprnd_info = (*oprnds_info)[i];
+      dt = dts[i];
+      stmt_vec_info def_stmt_info = oprnd_info->def_stmts[stmt_num];
+      oprnd = oprnd_info->ops[stmt_num];
+      tree type = TREE_TYPE (oprnd);
+
 	  if (!types_compatible_p (oprnd_info->first_op_type, type))
 	    {
+	      gcc_assert ((i != commutative_op
+			   && (commutative_op == -1U
+			       || i != commutative_op + 1)));
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: different operand types\n");
@@ -499,18 +547,14 @@ again:
 	     types for reduction chains: the first stmt must be a
 	     vect_reduction_def (a phi node), and the rest
 	     end in the reduction chain.  */
-	  if ((oprnd_info->first_dt != dt
+	  if ((!vect_def_types_match (oprnd_info->first_dt, dt)
 	       && !(oprnd_info->first_dt == vect_reduction_def
 		    && !STMT_VINFO_DATA_REF (stmt_info)
 		    && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
 		    && def_stmt_info
 		    && !STMT_VINFO_DATA_REF (def_stmt_info)
 		    && (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
-			== REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
-	       && !((oprnd_info->first_dt == vect_external_def
-		     || oprnd_info->first_dt == vect_constant_def)
-		    && (dt == vect_external_def
-			|| dt == vect_constant_def)))
+			== REDUC_GROUP_FIRST_ELEMENT (stmt_info))))
 	      || (!STMT_VINFO_DATA_REF (stmt_info)
 		  && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
 		  && ((!def_stmt_info
@@ -519,69 +563,67 @@ again:
 			   != REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
 		      != (oprnd_info->first_dt != vect_reduction_def))))
 	    {
-	      /* Try swapping operands if we got a mismatch.  */
-	      if (i == commutative_op && !swapped)
+	      /* Try swapping operands if we got a mismatch.  For BB
+		 vectorization only in case it will clearly improve things.  */
+	      if (i == commutative_op && !swapped
+		  && (!is_a <bb_vec_info> (vinfo)
+		      || (!vect_def_types_match ((*oprnds_info)[i+1]->first_dt,
+						 dts[i+1])
+			  && (vect_def_types_match (oprnd_info->first_dt,
+						    dts[i+1])
+			      || vect_def_types_match
+				   ((*oprnds_info)[i+1]->first_dt, dts[i])))))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "trying swapped operands\n");
+		  std::swap (dts[i], dts[i+1]);
+		  std::swap ((*oprnds_info)[i]->def_stmts[stmt_num],
+			     (*oprnds_info)[i+1]->def_stmts[stmt_num]);
+		  std::swap ((*oprnds_info)[i]->ops[stmt_num],
+			     (*oprnds_info)[i+1]->ops[stmt_num]);
 		  swapped = true;
-		  goto again;
+		  continue;
 		}
 
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: different types\n");
-
-	      return 1;
+	      if (is_a <bb_vec_info> (vinfo))
+		{
+		  /* Now for commutative ops we should see whether we can
+		     make the other operand matching.  */
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "treating operand as external\n");
+		  oprnd_info->first_dt = dt = vect_external_def;
+		}
+	      else
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: different types\n");
+		  return 1;
+		}
 	    }
-	}
 
-      /* Check the types of the definitions.  */
-      switch (dt)
+      /* Make sure to demote the overall operand to external.  */
+      if (dt == vect_external_def)
+	oprnd_info->first_dt = vect_external_def;
+      /* For a SLP reduction chain we want to duplicate the reduction to
+	 each of the chain members.  That gets us a sane SLP graph (still
+	 the stmts are not 100% correct wrt the initial values).  */
+      else if ((dt == vect_internal_def
+		|| dt == vect_reduction_def)
+	       && oprnd_info->first_dt == vect_reduction_def
+	       && !STMT_VINFO_DATA_REF (stmt_info)
+	       && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	       && !STMT_VINFO_DATA_REF (def_stmt_info)
+	       && (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
+		   == REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
 	{
-	case vect_external_def:
-	  /* Make sure to demote the overall operand to external.  */
-	  oprnd_info->first_dt = vect_external_def;
-	  /* Fallthru.  */
-	case vect_constant_def:
-	  oprnd_info->def_stmts.quick_push (NULL);
-	  oprnd_info->ops.quick_push (oprnd);
-	  break;
-
-	case vect_internal_def:
-	case vect_reduction_def:
-	  if (oprnd_info->first_dt == vect_reduction_def
-	      && !STMT_VINFO_DATA_REF (stmt_info)
-	      && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
-	      && !STMT_VINFO_DATA_REF (def_stmt_info)
-	      && (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
-		  == REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
-	    {
-	      /* For a SLP reduction chain we want to duplicate the
-	         reduction to each of the chain members.  That gets
-		 us a sane SLP graph (still the stmts are not 100%
-		 correct wrt the initial values).  */
-	      gcc_assert (!first);
-	      oprnd_info->def_stmts.quick_push (oprnd_info->def_stmts[0]);
-	      oprnd_info->ops.quick_push (oprnd_info->ops[0]);
-	      break;
-	    }
-	  /* Fallthru.  */
-	case vect_induction_def:
-	  oprnd_info->def_stmts.quick_push (def_stmt_info);
-	  oprnd_info->ops.quick_push (oprnd);
-	  break;
-
-	default:
-	  /* FORNOW: Not supported.  */
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Build SLP failed: illegal type of def %T\n",
-			     oprnd);
-
-	  return -1;
+	  oprnd_info->def_stmts[stmt_num] = oprnd_info->def_stmts[0];
+	  oprnd_info->ops[stmt_num] = oprnd_info->ops[0];
 	}
+
+      ++i;
     }
 
   /* Swap operands.  */
@@ -2244,20 +2286,20 @@ vect_analyze_slp_instance (vec_info *vinfo,
       scalar_stmts.release ();
     }
 
-  /* For basic block SLP, try to break the group up into multiples of the
-     vector size.  */
+  /* Try to break the group up into pieces.  */
   unsigned HOST_WIDE_INT const_nunits;
-  if (is_a <bb_vec_info> (vinfo)
-      && STMT_VINFO_GROUPED_ACCESS (stmt_info)
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
       && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info))
       && nunits.is_constant (&const_nunits))
     {
-      /* We consider breaking the group only on VF boundaries from the existing
-	 start.  */
       for (i = 0; i < group_size; i++)
-	if (!matches[i]) break;
+	if (!matches[i])
+	  break;
 
-      if (i >= const_nunits && i < group_size)
+      /* For basic block SLP, try to break the group up into multiples of the
+	 vector size.  */
+      if (is_a <bb_vec_info> (vinfo)
+	  && (i >= const_nunits && i < group_size))
 	{
 	  /* Split into two groups at the first vector boundary before i.  */
 	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
@@ -2284,6 +2326,36 @@ vect_analyze_slp_instance (vec_info *vinfo,
 					      rest, max_tree_size);
 	  return res;
 	}
+
+      /* For loop vectorization split into arbitrary pieces of size > 1.  */
+      if (is_a <loop_vec_info> (vinfo)
+	  && (i > 1 && i < group_size))
+	{
+	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
+	  unsigned group1_size = i;
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Splitting SLP group at stmt %u\n", i);
+
+	  stmt_vec_info rest = vect_split_slp_store_group (stmt_info,
+							   group1_size);
+	  /* Loop vectorization cannot handle gaps in stores, make sure
+	     the split group appears as strided.  */
+	  STMT_VINFO_STRIDED_P (rest) = 1;
+	  DR_GROUP_GAP (rest) = 0;
+	  STMT_VINFO_STRIDED_P (stmt_info) = 1;
+	  DR_GROUP_GAP (stmt_info) = 0;
+
+	  bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
+						max_tree_size);
+	  if (i + 1 < group_size)
+	    res |= vect_analyze_slp_instance (vinfo, bst_map,
+					      rest, max_tree_size);
+
+	  return res;
+	}
+
       /* Even though the first vector did not all match, we might be able to SLP
 	 (some) of the remainder.  FORNOW ignore this possibility.  */
     }

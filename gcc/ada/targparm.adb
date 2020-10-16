@@ -655,12 +655,6 @@ package body Targparm is
             Opt.Partition_Elaboration_Policy_Sloc := System_Location;
             goto Line_Loop_Continue;
 
-         --  Polling (On)
-
-         elsif Looking_At_Skip ("pragma Polling (On);") then
-            Opt.Polling_Required := True;
-            goto Line_Loop_Continue;
-
          --  Queuing Policy
 
          elsif Looking_At_Skip ("pragma Queuing_Policy (") then

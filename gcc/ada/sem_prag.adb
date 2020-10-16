@@ -2467,10 +2467,11 @@ package body Sem_Prag is
 
                elsif SPARK_Mode = On
                  and then Ekind (Item_Id) = E_Variable
-                 and then Is_Effectively_Volatile (Item_Id)
+                 and then Is_Effectively_Volatile_For_Reading (Item_Id)
                then
-                  --  An effectively volatile object cannot appear as a global
-                  --  item of a nonvolatile function (SPARK RM 7.1.3(8)).
+                  --  An effectively volatile object for reading cannot appear
+                  --  as a global item of a nonvolatile function (SPARK RM
+                  --  7.1.3(8)).
 
                   if Ekind (Spec_Id) in E_Function | E_Generic_Function
                     and then not Is_Volatile_Function (Spec_Id)
@@ -21053,19 +21054,6 @@ package body Sem_Prag is
             Map_Pragma_Name (From => Chars (New_Name), To => Chars (Old_Name));
          end Rename_Pragma;
 
-         -------------
-         -- Polling --
-         -------------
-
-         --  pragma Polling (ON | OFF);
-
-         when Pragma_Polling =>
-            GNAT_Pragma;
-            Check_Arg_Count (1);
-            Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
-            Polling_Required := (Chars (Get_Pragma_Arg (Arg1)) = Name_On);
-
          -----------------------------------
          -- Post/Post_Class/Postcondition --
          -----------------------------------
@@ -23719,6 +23707,9 @@ package body Sem_Prag is
                   Error_Pragma_Arg
                     ("argument for pragma% must be function of one argument",
                      Arg);
+               elsif Is_Abstract_Subprogram (Ent) then
+                  Error_Pragma_Arg
+                    ("argument for pragma% cannot be abstract", Arg);
                end if;
             end Check_OK_Stream_Convert_Function;
 
@@ -30938,7 +30929,6 @@ package body Sem_Prag is
       Pragma_Partition_Elaboration_Policy   =>  0,
       Pragma_Passive                        =>  0,
       Pragma_Persistent_BSS                 =>  0,
-      Pragma_Polling                        =>  0,
       Pragma_Post                           => -1,
       Pragma_Postcondition                  => -1,
       Pragma_Post_Class                     => -1,

@@ -408,7 +408,7 @@ package Sem_Util is
 
    procedure Check_Nonvolatile_Function_Profile (Func_Id : Entity_Id);
    --  Verify that the profile of nonvolatile function Func_Id does not contain
-   --  effectively volatile parameters or return type.
+   --  effectively volatile parameters or return type for reading.
 
    procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id);
    --  Verify the legality of reference Ref to variable Var_Id when the
@@ -1289,7 +1289,8 @@ package Sem_Util is
    function Has_Effectively_Volatile_Profile
      (Subp_Id : Entity_Id) return Boolean;
    --  Determine whether subprogram Subp_Id has an effectively volatile formal
-   --  parameter or returns an effectively volatile value.
+   --  parameter for reading or returns an effectively volatile value for
+   --  reading.
 
    function Has_Full_Default_Initialization (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ defines "full default initialization" as
@@ -1595,9 +1596,12 @@ package Sem_Util is
    --  True if E is the constructed wrapper for an access_to_subprogram
    --  type with Pre/Postconditions.
 
+   function Is_Access_Variable (E : Entity_Id) return Boolean;
+   --  Determines if type E is an access-to-variable
+
    function Is_Actual_In_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of in-out mode in a subprogram
-   --  call
+   --  call.
 
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
@@ -1797,9 +1801,29 @@ package Sem_Util is
    --    * A protected type
    --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
 
-   function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean;
+   function Is_Effectively_Volatile_For_Reading
+     (Id : Entity_Id) return Boolean;
+   --  Determine whether a type or object denoted by entity Id is effectively
+   --  volatile for reading (SPARK RM 7.1.2). To qualify as such, the entity
+   --  must be either
+   --    * Volatile without No_Caching and have Async_Writers or
+   --      Effective_Reads set to True
+   --    * An array type subject to aspect Volatile_Components, unless it has
+   --      Async_Writers and Effective_Reads set to False
+   --    * An array type whose component type is effectively volatile for
+   --      reading
+   --    * A protected type
+   --    * Descendant of type Ada.Synchronous_Task_Control.Suspension_Object
+
+   function Is_Effectively_Volatile_Object
+     (N : Node_Id) return Boolean;
    --  Determine whether an arbitrary node denotes an effectively volatile
    --  object (SPARK RM 7.1.2).
+
+   function Is_Effectively_Volatile_Object_For_Reading
+     (N : Node_Id) return Boolean;
+   --  Determine whether an arbitrary node denotes an effectively volatile
+   --  object for reading (SPARK RM 7.1.2).
 
    function Is_Entry_Body (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id is the body entity of an entry [family]
@@ -2145,7 +2169,7 @@ package Sem_Util is
    --  such, the object must be
    --    * Of a type that yields a synchronized object
    --    * An atomic object with enabled Async_Writers
-   --    * A constant
+   --    * A constant not of access-to-variable type
    --    * A variable subject to pragma Constant_After_Elaboration
 
    function Is_Synchronized_Tagged_Type (E : Entity_Id) return Boolean;

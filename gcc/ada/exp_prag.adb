@@ -28,6 +28,7 @@ with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Util; use Exp_Util;
@@ -67,6 +68,7 @@ package body Exp_Prag is
    procedure Expand_Pragma_Abort_Defer             (N : Node_Id);
    procedure Expand_Pragma_Check                   (N : Node_Id);
    procedure Expand_Pragma_Common_Object           (N : Node_Id);
+   procedure Expand_Pragma_CUDA_Execute            (N : Node_Id);
    procedure Expand_Pragma_Import_Or_Interface     (N : Node_Id);
    procedure Expand_Pragma_Inspection_Point        (N : Node_Id);
    procedure Expand_Pragma_Interrupt_Priority      (N : Node_Id);
@@ -155,6 +157,9 @@ package body Exp_Prag is
 
          when Pragma_Common_Object =>
             Expand_Pragma_Common_Object (N);
+
+         when Pragma_CUDA_Execute =>
+            Expand_Pragma_CUDA_Execute (N);
 
          when Pragma_Import =>
             Expand_Pragma_Import_Or_Interface (N);
@@ -613,6 +618,474 @@ package body Exp_Prag is
             Make_Pragma_Argument_Association (Ploc,
               Expression => New_Copy_Tree (Psect)))));
    end Expand_Pragma_Common_Object;
+
+   --------------------------------
+   -- Expand_Pragma_CUDA_Execute --
+   --------------------------------
+
+   --  Pragma CUDA_Execute is expanded in the following manner:
+
+   --  Original Code
+
+   --    pragma CUDA_Execute (My_Proc (X, Y), Blocks, Grids, Mem, Stream)
+
+   --  Expanded Code
+
+   --    declare
+   --      Blocks_Id : CUDA.Vector_Types.Dim3 := Blocks;
+   --      Grids_Id  : CUDA.Vector_Types.Dim3 := Grids;
+   --      Mem_Id    : Integer := <Mem or 0>;
+   --      Stream_Id : CUDA.Driver_Types.Stream_T := <Stream or null>;
+   --      X_Id      : <Type of X> := X;
+   --      Y_Id      : <Type of Y> := Y;
+   --      Arg_Id    : Array (1..2) of System.Address :=
+   --        (X'Address,_Id Y'Address);_Id
+   --    begin
+   --      CUDA.Internal.Push_Call_Configuration (
+   --        Grids_Id,
+   --        Blocks_Id,
+   --        Mem_Id,
+   --        Stream_Id);
+   --      CUDA.Internal.Pop_Call_Configuration (
+   --        Grids_Id'address,
+   --        Blocks_Id'address,
+   --        Mem_Id'address,
+   --        Stream_Id'address),
+   --      CUDA.Runtime_Api.Launch_Kernel (
+   --        My_Proc'Address,
+   --        Blocks_Id,
+   --        Grids_Id,
+   --        Arg_Id'Address,
+   --        Mem_Id,
+   --        Stream_Id);
+   --    end;
+
+   procedure Expand_Pragma_CUDA_Execute (N : Node_Id) is
+
+      Loc : constant Source_Ptr := Sloc (N);
+
+      procedure Append_Copies
+        (Params : List_Id;
+         Decls  : List_Id;
+         Copies : Elist_Id);
+      --  For each parameter in list Params, create an object declaration of
+      --  the followinng form:
+      --
+      --    Copy_Id : Param_Typ := Param_Val;
+      --
+      --  Param_Typ is the type of the parameter. Param_Val is the initial
+      --  value of the parameter. The declarations are stored in Decls, the
+      --  entities of the new objects are collected in list Copies.
+
+      function Build_Dim3_Declaration
+        (Decl_Id  : Entity_Id;
+         Init_Val : Node_Id) return Node_Id;
+      --  Build an object declaration of the form
+      --
+      --    Decl_Id : CUDA.Vectory_Types.Dim3 := Val;
+      --
+      --  Val depends on the nature of Init_Val, as follows:
+      --
+      --    * If Init_Val is already of type CUDA.Vector_Types.Dim3, then
+      --      Init_Val is used.
+      --
+      --    * If Init_Val is a single Integer, Val has the following form:
+      --
+      --        (Interfaces.C.Unsigned (Init_Val),
+      --         Interfaces.C.Unsigned (1),
+      --         Interfaces.C.Unsigned (1))
+      --
+      --    * If Init_Val is an aggregate of three values, Val has the
+      --      following form:
+      --
+      --        (Interfaces.C.Unsigned (Val_1),
+      --         Interfaces.C.Unsigned (Val_2),
+      --         Interfaces.C.Unsigned (Val_3))
+
+      function Build_Kernel_Args_Declaration
+        (Kernel_Arg : Entity_Id;
+         Var_Ids    : Elist_Id) return Node_Id;
+      --  Given a list of variables, return an object declaration of the
+      --  following form:
+      --
+      --    Kernel_Arg : ... := (Var_1'Address, ..., Var_N'Address);
+
+      function Build_Launch_Kernel_Call
+        (Proc       : Entity_Id;
+         Grid_Dims  : Entity_Id;
+         Block_Dims : Entity_Id;
+         Kernel_Arg : Entity_Id;
+         Memory     : Entity_Id;
+         Stream     : Entity_Id) return Node_Id;
+      --  Builds and returns a call to CUDA.Launch_Kernel using the given
+      --  arguments. Proc is the entity of the procedure passed to the
+      --  CUDA_Execute pragma. Grid_Dims and Block_Dims are entities of the
+      --  generated declarations that hold the kernel's dimensions. Args is the
+      --  entity of the temporary array that holds the arguments of the kernel.
+      --  Memory and Stream are the entities of the temporaries that hold the
+      --  fourth and fith arguments of CUDA_Execute or their default values.
+
+      function Build_Shared_Memory_Declaration
+        (Decl_Id  : Entity_Id;
+         Init_Val : Node_Id) return Node_Id;
+      --  Builds a declaration the Defining_Identifier of which is Decl_Id, the
+      --  type of which is CUDA.Driver_Types.Stream_T and the value of which is
+      --  Init_Val if present or null if not.
+
+      function Build_Simple_Declaration_With_Default
+         (Decl_Id     : Entity_Id;
+          Init_Val    : Entity_Id;
+          Typ         : Entity_Id;
+          Default_Val : Entity_Id) return Node_Id;
+      --  Build a declaration the Defining_Identifier of which is Decl_Id, the
+      --  Object_Definition of which is Typ, the value of which is Init_Val if
+      --  present or Default otherwise.
+
+      function Build_Stream_Declaration
+        (Decl_Id  : Entity_Id;
+         Init_Val : Node_Id) return Node_Id;
+      --  Build a declaration the Defining_Identifier of which is Decl_Id, the
+      --  type of which is Integer, the value of which is Init_Val if present
+      --  and 0 otherwise.
+
+      function To_Addresses (Elmts : Elist_Id) return List_Id;
+      --  Returns a new list containing each element of Elmts wrapped in an
+      --  'address attribute reference. When passed No_Elist, returns an empty
+      --  list.
+
+      -------------------
+      -- Append_Copies --
+      -------------------
+
+      procedure Append_Copies
+        (Params : List_Id;
+         Decls  : List_Id;
+         Copies : Elist_Id)
+      is
+         Copy  : Entity_Id;
+         Param : Node_Id;
+      begin
+         Param := First (Params);
+         while Present (Param) loop
+            Copy := Make_Temporary (Loc, 'C');
+
+            Append_To (Decls,
+               Make_Object_Declaration (Loc,
+                 Defining_Identifier => Copy,
+                 Object_Definition   => New_Occurrence_Of (Etype (Param), Loc),
+                 Expression          => New_Copy_Tree (Param)));
+
+            Append_Elmt (Copy, Copies);
+            Next (Param);
+         end loop;
+      end Append_Copies;
+
+      ----------------------------
+      -- Build_Dim3_Declaration --
+      ----------------------------
+
+      function Build_Dim3_Declaration
+        (Decl_Id  : Entity_Id;
+         Init_Val : Node_Id) return Node_Id
+      is
+         Grid_Dim_X : Node_Id;
+         Grid_Dim_Y : Node_Id;
+         Grid_Dim_Z : Node_Id;
+         Init_Value : Node_Id;
+      begin
+         if Etype (Init_Val) = RTE (RE_Dim3) then
+            Init_Value := Init_Val;
+         else
+            --  If Init_Val is an aggregate, use each of its arguments
+
+            if Nkind (Init_Val) = N_Aggregate then
+               Grid_Dim_X := First (Expressions (Init_Val));
+               Grid_Dim_Y := Next (Grid_Dim_X);
+               Grid_Dim_Z := Next (Grid_Dim_Y);
+
+            --  Otherwise, we know it is an integer and the rest defaults to 1.
+
+            else
+               Grid_Dim_X := Init_Val;
+               Grid_Dim_Y := Make_Integer_Literal (Loc, 1);
+               Grid_Dim_Z := Make_Integer_Literal (Loc, 1);
+            end if;
+
+            --  Then cast every value to Interfaces.C.Unsigned and build an
+            --  aggregate we can use to initialize the Dim3.
+
+            Init_Value :=
+              Make_Aggregate (Loc,
+                Expressions => New_List (
+                  Make_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (RTE (RO_IC_Unsigned), Loc),
+                    Expression   => New_Copy_Tree (Grid_Dim_X)),
+
+                  Make_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (RTE (RO_IC_Unsigned), Loc),
+                    Expression   => New_Copy_Tree (Grid_Dim_Y)),
+
+                  Make_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (RTE (RO_IC_Unsigned), Loc),
+                    Expression   => New_Copy_Tree (Grid_Dim_Z))));
+         end if;
+
+         --  Finally return the declaration
+
+         return Make_Object_Declaration (Loc,
+            Defining_Identifier => Decl_Id,
+            Object_Definition   => New_Occurrence_Of (RTE (RE_Dim3), Loc),
+            Expression          => Init_Value);
+      end Build_Dim3_Declaration;
+
+      -----------------------------------
+      -- Build_Kernel_Args_Declaration --
+      -----------------------------------
+
+      function Build_Kernel_Args_Declaration
+        (Kernel_Arg : Entity_Id;
+         Var_Ids    : Elist_Id) return Node_Id
+      is
+         Vals : constant List_Id := To_Addresses (Var_Ids);
+      begin
+         return
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Kernel_Arg,
+             Object_Definition   =>
+               Make_Constrained_Array_Definition (Loc,
+                 Discrete_Subtype_Definitions => New_List (
+                   Make_Range (Loc,
+                     Low_Bound  => Make_Integer_Literal (Loc, 1),
+                     High_Bound =>
+                       Make_Integer_Literal (Loc, List_Length (Vals)))),
+                 Component_Definition         =>
+                   Make_Component_Definition (Loc,
+                     Subtype_Indication =>
+                       New_Occurrence_Of (Etype (RTE (RE_Address)), Loc))),
+             Expression          => Make_Aggregate (Loc, Vals));
+      end Build_Kernel_Args_Declaration;
+
+      -------------------------------
+      --  Build_Launch_Kernel_Call --
+      -------------------------------
+
+      function Build_Launch_Kernel_Call
+        (Proc       : Entity_Id;
+         Grid_Dims  : Entity_Id;
+         Block_Dims : Entity_Id;
+         Kernel_Arg : Entity_Id;
+         Memory     : Entity_Id;
+         Stream     : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of (RTE (RE_Launch_Kernel), Loc),
+             Parameter_Associations => New_List (
+               Make_Attribute_Reference (Loc,
+                 Prefix         => New_Occurrence_Of (Proc, Loc),
+                 Attribute_Name => Name_Address),
+               New_Occurrence_Of (Grid_Dims, Loc),
+               New_Occurrence_Of (Block_Dims, Loc),
+               Make_Attribute_Reference (Loc,
+                 Prefix         => New_Occurrence_Of (Kernel_Arg, Loc),
+                 Attribute_Name => Name_Address),
+               New_Occurrence_Of (Memory, Loc),
+               New_Occurrence_Of (Stream, Loc)));
+      end Build_Launch_Kernel_Call;
+
+      -------------------------------------
+      -- Build_Shared_Memory_Declaration --
+      -------------------------------------
+
+      function Build_Shared_Memory_Declaration
+        (Decl_Id  : Entity_Id;
+         Init_Val : Node_Id) return Node_Id
+      is
+      begin
+         return Build_Simple_Declaration_With_Default
+           (Decl_Id     => Decl_Id,
+            Init_Val    => Init_Val,
+            Typ         =>
+              New_Occurrence_Of (RTE (RO_IC_Unsigned_Long_Long), Loc),
+            Default_Val => Make_Integer_Literal (Loc, 0));
+      end Build_Shared_Memory_Declaration;
+
+      -------------------------------------------
+      -- Build_Simple_Declaration_With_Default --
+      -------------------------------------------
+
+      function Build_Simple_Declaration_With_Default
+        (Decl_Id     : Entity_Id;
+         Init_Val    : Node_Id;
+         Typ         : Entity_Id;
+         Default_Val : Node_Id) return Node_Id
+      is
+         Value : Node_Id := Init_Val;
+      begin
+         if No (Value) then
+            Value := Default_Val;
+         end if;
+
+         return Make_Object_Declaration (Loc,
+           Defining_Identifier => Decl_Id,
+           Object_Definition   => Typ,
+           Expression          => Value);
+      end Build_Simple_Declaration_With_Default;
+
+      ------------------------------
+      -- Build_Stream_Declaration --
+      ------------------------------
+
+      function Build_Stream_Declaration
+        (Decl_Id  : Entity_Id;
+         Init_Val : Node_Id) return Node_Id
+      is
+      begin
+         return Build_Simple_Declaration_With_Default
+           (Decl_Id     => Decl_Id,
+            Init_Val    => Init_Val,
+            Typ         => New_Occurrence_Of (RTE (RE_Stream_T), Loc),
+            Default_Val => Make_Null (Loc));
+      end Build_Stream_Declaration;
+
+      ------------------
+      -- To_Addresses --
+      ------------------
+
+      function To_Addresses (Elmts : Elist_Id) return List_Id is
+         Result : constant List_Id := New_List;
+         Elmt   : Elmt_Id;
+      begin
+         if Elmts = No_Elist then
+            return Result;
+         end if;
+
+         Elmt := First_Elmt (Elmts);
+         while Present (Elmt) loop
+            Append_To (Result,
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of (Node (Elmt), Loc),
+                Attribute_Name => Name_Address));
+            Next_Elmt (Elmt);
+         end loop;
+
+         return Result;
+      end To_Addresses;
+
+      --  Local variables
+
+      --  Pragma arguments
+
+      Procedure_Call   : constant Node_Id := Get_Pragma_Arg (Arg_N (N, 1));
+      Grid_Dimensions  : constant Node_Id := Get_Pragma_Arg (Arg_N (N, 2));
+      Block_Dimensions : constant Node_Id := Get_Pragma_Arg (Arg_N (N, 3));
+      Shared_Memory    : constant Node_Id := Get_Pragma_Arg (Arg_N (N, 4));
+      CUDA_Stream      : constant Node_Id := Get_Pragma_Arg (Arg_N (N, 5));
+
+      --  Entities of objects that capture the value of pragma arguments
+
+      Grids_Id  : constant Entity_Id := Make_Temporary (Loc, 'C');
+      Blocks_Id : constant Entity_Id := Make_Temporary (Loc, 'C');
+      Memory_Id : constant Entity_Id := Make_Temporary (Loc, 'C');
+      Stream_Id : constant Entity_Id := Make_Temporary (Loc, 'C');
+
+      --  List holding the entities of the copies of Procedure_Call's
+      --  arguments.
+
+      Kernel_Arg_Copies : constant Elist_Id := New_Elmt_List;
+
+      --  Entity of the array that contains the address of each of the kernel's
+      --  arguments.
+
+      Kernel_Args_Id : constant Entity_Id := Make_Temporary (Loc, 'C');
+
+      --  Calls to the CUDA runtime API.
+
+      Launch_Kernel_Call : Node_Id;
+      Pop_Call           : Node_Id;
+      Push_Call          : Node_Id;
+
+      --  Declaration of all temporaries required for CUDA API Calls.
+
+      Blk_Decls  : constant List_Id := New_List;
+
+   --  Start of processing for CUDA_Execute
+
+   begin
+      --  Build parameter declarations for CUDA API calls
+
+      Append_To
+        (Blk_Decls, Build_Dim3_Declaration (Grids_Id, Grid_Dimensions));
+
+      Append_To
+        (Blk_Decls,
+         Build_Dim3_Declaration (Blocks_Id, Block_Dimensions));
+
+      Append_To
+        (Blk_Decls,
+         Build_Shared_Memory_Declaration (Memory_Id, Shared_Memory));
+
+      Append_To
+        (Blk_Decls, Build_Stream_Declaration (Stream_Id, CUDA_Stream));
+
+      Append_Copies
+        (Parameter_Associations (Procedure_Call),
+         Blk_Decls,
+         Kernel_Arg_Copies);
+
+      Append_To
+        (Blk_Decls,
+         Build_Kernel_Args_Declaration
+           (Kernel_Args_Id, Kernel_Arg_Copies));
+
+      --  Build calls to the CUDA API
+
+      Push_Call :=
+         Make_Procedure_Call_Statement (Loc,
+           Name                   =>
+             New_Occurrence_Of (RTE (RE_Push_Call_Configuration), Loc),
+           Parameter_Associations => New_List (
+             New_Occurrence_Of (Grids_Id, Loc),
+             New_Occurrence_Of (Blocks_Id, Loc),
+             New_Occurrence_Of (Memory_Id, Loc),
+             New_Occurrence_Of (Stream_Id, Loc)));
+
+      Pop_Call :=
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_Pop_Call_Configuration), Loc),
+          Parameter_Associations => To_Addresses
+            (New_Elmt_List
+              (Grids_Id,
+               Blocks_Id,
+               Memory_Id,
+               Stream_Id)));
+
+      Launch_Kernel_Call := Build_Launch_Kernel_Call
+        (Proc       => Entity (Name (Procedure_Call)),
+         Grid_Dims  => Grids_Id,
+         Block_Dims => Blocks_Id,
+         Kernel_Arg => Kernel_Args_Id,
+         Memory     => Memory_Id,
+         Stream     => Stream_Id);
+
+      --  Finally make the block that holds declarations and calls
+
+      Rewrite (N,
+        Make_Block_Statement (Loc,
+          Declarations               => Blk_Decls,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+             Statements => New_List (
+               Push_Call,
+               Pop_Call,
+               Launch_Kernel_Call))));
+      Analyze (N);
+   end Expand_Pragma_CUDA_Execute;
 
    ----------------------------------
    -- Expand_Pragma_Contract_Cases --

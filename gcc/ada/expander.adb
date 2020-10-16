@@ -273,9 +273,6 @@ package body Expander is
                when N_Generic_Instantiation =>
                   Expand_N_Generic_Instantiation (N);
 
-               when N_Goto_Statement =>
-                  Expand_N_Goto_Statement (N);
-
                when N_Handled_Sequence_Of_Statements =>
                   Expand_N_Handled_Sequence_Of_Statements (N);
 

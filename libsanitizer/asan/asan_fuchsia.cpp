@@ -62,6 +62,8 @@ void AsanOnDeadlySignal(int signo, void *siginfo, void *context) {
   UNIMPLEMENTED();
 }
 
+bool PlatformUnpoisonStacks() { return false; }
+
 // We can use a plain thread_local variable for TSD.
 static thread_local void *per_thread;
 
@@ -194,6 +196,10 @@ bool HandleDlopenInit() {
   static_assert(!SANITIZER_SUPPORTS_INIT_FOR_DLOPEN,
                 "Expected SANITIZER_SUPPORTS_INIT_FOR_DLOPEN to be false");
   return false;
+}
+
+void FlushUnneededASanShadowMemory(uptr p, uptr size) {
+  __sanitizer_fill_shadow(p, size, 0, 0);
 }
 
 }  // namespace __asan

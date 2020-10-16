@@ -1823,6 +1823,31 @@ Expression::make_unknown_reference(Named_object* no, Location location)
   return new Unknown_expression(no, location);
 }
 
+// Start exporting a type conversion for a constant, if needed.  This
+// returns whether we need to export a closing parenthesis.
+
+bool
+Expression::export_constant_type(Export_function_body* efb, Type* type)
+{
+  if (type == NULL
+      || type->is_abstract()
+      || type == efb->type_context())
+    return false;
+  efb->write_c_string("$convert(");
+  efb->write_type(type);
+  efb->write_c_string(", ");
+  return true;
+}
+
+// Finish a type conversion for a constant.
+
+void
+Expression::finish_export_constant_type(Export_function_body* efb, bool needed)
+{
+  if (needed)
+    efb->write_c_string(")");
+}
+
 // A boolean expression.
 
 class Boolean_expression : public Expression
@@ -1878,8 +1903,7 @@ class Boolean_expression : public Expression
   { return 1; }
 
   void
-  do_export(Export_function_body* efb) const
-  { efb->write_c_string(this->val_ ? "$true" : "$false"); }
+  do_export(Export_function_body* efb) const;
 
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
@@ -1924,6 +1948,16 @@ Boolean_expression::do_determine_type(const Type_context* context)
     this->type_ = context->type;
   else if (!context->may_be_abstract)
     this->type_ = Type::lookup_bool_type();
+}
+
+// Export a boolean constant.
+
+void
+Boolean_expression::do_export(Export_function_body* efb) const
+{
+  bool exported_type = Expression::export_constant_type(efb, this->type_);
+  efb->write_c_string(this->val_ ? "$true" : "$false");
+  Expression::finish_export_constant_type(efb, exported_type);
 }
 
 // Import a boolean constant.
@@ -2055,7 +2089,9 @@ String_expression::export_string(String_dump* exp,
 void
 String_expression::do_export(Export_function_body* efb) const
 {
+  bool exported_type = Expression::export_constant_type(efb, this->type_);
   String_expression::export_string(efb, this);
+  Expression::finish_export_constant_type(efb, exported_type);
 }
 
 // Import a string expression.
@@ -2547,16 +2583,7 @@ Integer_expression::export_integer(String_dump* exp, const mpz_t val)
 void
 Integer_expression::do_export(Export_function_body* efb) const
 {
-  bool added_type = false;
-  if (this->type_ != NULL
-      && !this->type_->is_abstract()
-      && this->type_ != efb->type_context())
-    {
-      efb->write_c_string("$convert(");
-      efb->write_type(this->type_);
-      efb->write_c_string(", ");
-      added_type = true;
-    }
+  bool exported_type = Expression::export_constant_type(efb, this->type_);
 
   Integer_expression::export_integer(efb, this->val_);
   if (this->is_character_constant_)
@@ -2564,8 +2591,7 @@ Integer_expression::do_export(Export_function_body* efb) const
   // A trailing space lets us reliably identify the end of the number.
   efb->write_c_string(" ");
 
-  if (added_type)
-    efb->write_c_string(")");
+  Expression::finish_export_constant_type(efb, exported_type);
 }
 
 // Import an integer, floating point, or complex value.  This handles
@@ -2953,23 +2979,13 @@ Float_expression::export_float(String_dump *exp, const mpfr_t val)
 void
 Float_expression::do_export(Export_function_body* efb) const
 {
-  bool added_type = false;
-  if (this->type_ != NULL
-      && !this->type_->is_abstract()
-      && this->type_ != efb->type_context())
-    {
-      efb->write_c_string("$convert(");
-      efb->write_type(this->type_);
-      efb->write_c_string(", ");
-      added_type = true;
-    }
+  bool exported_type = Expression::export_constant_type(efb, this->type_);
 
   Float_expression::export_float(efb, this->val_);
   // A trailing space lets us reliably identify the end of the number.
   efb->write_c_string(" ");
 
-  if (added_type)
-    efb->write_c_string(")");
+  Expression::finish_export_constant_type(efb, exported_type);
 }
 
 // Dump a floating point number to the dump file.
@@ -3184,23 +3200,13 @@ Complex_expression::export_complex(String_dump* exp, const mpc_t val)
 void
 Complex_expression::do_export(Export_function_body* efb) const
 {
-  bool added_type = false;
-  if (this->type_ != NULL
-      && !this->type_->is_abstract()
-      && this->type_ != efb->type_context())
-    {
-      efb->write_c_string("$convert(");
-      efb->write_type(this->type_);
-      efb->write_c_string(", ");
-      added_type = true;
-    }
+  bool exported_type = Expression::export_constant_type(efb, this->type_);
 
   Complex_expression::export_complex(efb, this->val_);
   // A trailing space lets us reliably identify the end of the number.
   efb->write_c_string(" ");
 
-  if (added_type)
-    efb->write_c_string(")");
+  Expression::finish_export_constant_type(efb, exported_type);
 }
 
 // Dump a complex expression to the dump file.

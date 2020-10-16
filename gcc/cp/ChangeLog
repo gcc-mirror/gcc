@@ -1,3 +1,20 @@
+2020-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95844
+	* decl.c (copy_fn_p): Return false for a function that is neither a
+	constructor nor an assignment operator.
+	(move_signature_fn_p): Likewise.
+
+2020-10-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97406
+	PR c++/85901
+	* cxx-pretty-print.c (pp_cxx_type_specifier_seq): Handle OFFSET_TYPE.
+	(cxx_pretty_printer::abstract_declarator): Fix the printing of ')'.
+	(cxx_pretty_printer::direct_abstract_declarator): Handle OFFSET_TYPE.
+	(cxx_pretty_printer::type_id): Likewise.  Print the abstract declarator
+	for pointers-to-members.
+
 2020-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97358

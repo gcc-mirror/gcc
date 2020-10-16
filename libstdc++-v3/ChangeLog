@@ -1,3 +1,8 @@
+2020-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/concepts: Fix typos in copyright notice.
+	* include/std/ranges: Likewise.
+
 2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/97415

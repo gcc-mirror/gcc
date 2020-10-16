@@ -281,9 +281,10 @@ package body Ch4 is
          goto Scan_Name_Extension;
       end if;
 
-      --  We have scanned out a qualified simple name, check for name extension
-      --  Note that we know there is no dot here at this stage, so the only
-      --  possible cases of name extension are apostrophe and left paren.
+      --  We have scanned out a qualified simple name, check for name
+      --  extension.  Note that we know there is no dot here at this stage,
+      --  so the only possible cases of name extension are apostrophe followed
+      --  by '(' or '['.
 
       if Token = Tok_Apostrophe then
          Save_Scan_State (Scan_State); -- at apostrophe
@@ -291,7 +292,9 @@ package body Ch4 is
 
          --  Qualified expression in Ada 2012 mode (treated as a name)
 
-         if Ada_Version >= Ada_2012 and then Token = Tok_Left_Paren then
+         if Ada_Version >= Ada_2012
+           and then Token in Tok_Left_Paren | Tok_Left_Bracket
+         then
             goto Scan_Name_Extension_Apostrophe;
 
          --  If left paren not in Ada 2012, then it is not part of the name,
@@ -445,7 +448,9 @@ package body Ch4 is
          begin
             --  Check for qualified expression case in Ada 2012 mode
 
-            if Ada_Version >= Ada_2012 and then Token = Tok_Left_Paren then
+            if Ada_Version >= Ada_2012
+              and then Token in Tok_Left_Paren | Tok_Left_Bracket
+            then
                Name_Node := P_Qualified_Expression (Name_Node);
                goto Scan_Name_Extension;
 

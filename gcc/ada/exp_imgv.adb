@@ -479,13 +479,16 @@ package body Exp_Imgv is
 
       Ptyp := Entity (Pref);
 
-      --  Ada 2020 allows 'Image on private types, so we need to fetch the
-      --  underlying type.
+      --  Ada 2020 allows 'Image on private types, so fetch the underlying
+      --  type to obtain the structure of the type. We use the base type,
+      --  not the root type, to handle properly derived types, but we use
+      --  the root type for enumeration types, because the literal map is
+      --  attached to the root. Should be inherited ???
 
-      if Ada_Version >= Ada_2020 then
+      if Is_Enumeration_Type (Ptyp) then
          Rtyp := Underlying_Type (Root_Type (Ptyp));
       else
-         Rtyp := Root_Type (Ptyp);
+         Rtyp := Underlying_Type (Base_Type (Ptyp));
       end if;
 
       --  Enable speed-optimized expansion of user-defined enumeration types
@@ -657,9 +660,10 @@ package body Exp_Imgv is
             T : Entity_Id;
          begin
             --  In Ada 2020 we need the underlying type here, because 'Image is
-            --  allowed on private types.
+            --  allowed on private types. We have already checked the version
+            --  when resolving the attribute.
 
-            if Ada_Version >= Ada_2020 then
+            if Is_Private_Type (Ptyp) then
                T := Rtyp;
             else
                T := Ptyp;
@@ -683,9 +687,7 @@ package body Exp_Imgv is
          declare
             Conv : Node_Id;
          begin
-            if Ada_Version >= Ada_2020
-              and then Is_Private_Type (Etype (Expr))
-            then
+            if Is_Private_Type (Etype (Expr)) then
                if Is_Fixed_Point_Type (Rtyp) then
                   Conv := Convert_To (Tent, OK_Convert_To (Rtyp, Expr));
                else

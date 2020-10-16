@@ -390,8 +390,7 @@ package body Sem_Ch13 is
 
    procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id) is
       Max_Machine_Scalar_Size : constant Uint :=
-                                  UI_From_Int
-                                    (Standard_Long_Long_Integer_Size);
+                                  UI_From_Int (System_Max_Integer_Size);
       --  We use this as the maximum machine scalar size
 
       SSU : constant Uint := UI_From_Int (System_Storage_Unit);
@@ -4398,14 +4397,16 @@ package body Sem_Ch13 is
                      if Ekind (E) /= E_Protected_Type then
                         Error_Msg_Name_1 := Nam;
                         Error_Msg_N
-                          ("aspect % only applies to a protected object",
+                          ("aspect % only applies to a protected type " &
+                           "or object",
                            Aspect);
 
                      else
                         --  Set the Uses_Lock_Free flag to True if there is no
                         --  expression or if the expression is True. The
                         --  evaluation of this aspect should be delayed to the
-                        --  freeze point (why???)
+                        --  freeze point if we wanted to handle the corner case
+                        --  of "true" or "false" being redefined.
 
                         if No (Expr)
                           or else Is_True (Static_Boolean (Expr))
@@ -4425,6 +4426,19 @@ package body Sem_Ch13 is
 
                   elsif A_Id = Aspect_Disable_Controlled then
                      Analyze_Aspect_Disable_Controlled;
+                     goto Continue;
+
+                  --  Ada 202x (AI12-0129): Exclusive_Functions
+
+                  elsif A_Id = Aspect_Exclusive_Functions then
+                     if Ekind (E) /= E_Protected_Type then
+                        Error_Msg_Name_1 := Nam;
+                        Error_Msg_N
+                          ("aspect % only applies to a protected type " &
+                           "or object",
+                           Aspect);
+                     end if;
+
                      goto Continue;
 
                   --  Ada 202x (AI12-0075): static expression functions
@@ -10016,7 +10030,7 @@ package body Sem_Ch13 is
                end if;
             end;
 
-            --  within a generic unit, prevent a double analysis of the body
+            --  Within a generic unit, prevent a double analysis of the body
             --  which will not be marked analyzed yet. This will happen when
             --  the freeze node is created during the preanalysis of an
             --  expression function.
@@ -15693,12 +15707,12 @@ package body Sem_Ch13 is
             return;
          end if;
 
-         --  Case of component size is greater than or equal to 64 and the
-         --  alignment of the array is at least as large as the alignment
-         --  of the component. We are definitely OK in this situation.
+         --  Case where component size is greater than or equal to the maximum
+         --  integer size and the alignment of the array is at least as large
+         --  as the alignment of the component. We are OK in this situation.
 
          if Known_Component_Size (Atyp)
-           and then Component_Size (Atyp) >= 64
+           and then Component_Size (Atyp) >= System_Max_Integer_Size
            and then Known_Alignment (Atyp)
            and then Known_Alignment (Ctyp)
            and then Alignment (Atyp) >= Alignment (Ctyp)
@@ -15709,8 +15723,7 @@ package body Sem_Ch13 is
          --  Check actual component size
 
          if not Known_Component_Size (Atyp)
-           or else not (Addressable (Component_Size (Atyp))
-                         and then Component_Size (Atyp) < 64)
+           or else not Addressable (Component_Size (Atyp))
            or else Component_Size (Atyp) mod Esize (Ctyp) /= 0
          then
             No_Independence;
@@ -15796,10 +15809,12 @@ package body Sem_Ch13 is
             return False;
          end if;
 
-         --  Size of component must be addressable or greater than 64 bits
-         --  and a multiple of bytes.
+         --  Size of component must be addressable or greater than the maximum
+         --  integer size and a multiple of bytes.
 
-         if not Addressable (Esize (C)) and then Esize (C) < Uint_64 then
+         if not Addressable (Esize (C))
+           and then Esize (C) < System_Max_Integer_Size
+         then
             return False;
          end if;
 

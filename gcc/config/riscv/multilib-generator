@@ -38,8 +38,14 @@ reuse = []
 
 canonical_order = "mafdgqlcbjtpvn"
 
+#
+# IMPLIED_EXT(ext) -> implied extension list.
+#
+IMPLIED_EXT = {
+  "d" : ["f"],
+}
+
 def arch_canonicalize(arch):
-  # TODO: Support implied extensions, e.g. D implied F in latest spec.
   # TODO: Support extension version.
   new_arch = ""
   if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64i', 'rv64g']:
@@ -57,14 +63,24 @@ def arch_canonicalize(arch):
   if long_ext_prefixes_idx:
     first_long_ext_idx = min(long_ext_prefixes_idx)
     long_exts = arch[first_long_ext_idx:].split("_")
-    std_exts = arch[5:first_long_ext_idx]
+    std_exts = list(arch[5:first_long_ext_idx])
   else:
     long_exts = []
-    std_exts = arch[5:]
+    std_exts = list(arch[5:])
+
+  #
+  # Handle implied extensions.
+  #
+  for ext in std_exts + long_exts:
+    if ext in IMPLIED_EXT:
+      implied_exts = IMPLIED_EXT[ext]
+      for implied_ext in implied_exts:
+        if implied_ext not in std_exts + long_exts:
+          long_exts.append(implied_ext)
 
   # Single letter extension might appear in the long_exts list,
   # becasue we just append extensions list to the arch string.
-  std_exts += "".join(filter(lambda x:len(x) == 1, long_exts))
+  std_exts += list(filter(lambda x:len(x) == 1, long_exts))
 
   # Multi-letter extension must be in lexicographic order.
   long_exts = sorted(filter(lambda x:len(x) != 1, long_exts))

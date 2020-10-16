@@ -159,13 +159,15 @@ package Rtsfind is
       Ada_Wide_Wide_Text_IO_Integer_IO,
       Ada_Wide_Wide_Text_IO_Modular_IO,
 
-      --  CUDA
+      --  Package CUDA
 
       CUDA,
 
       --  Children of CUDA
 
       CUDA_Driver_Types,
+      CUDA_Internal,
+      CUDA_Runtime_Api,
       CUDA_Vector_Types,
 
       --  Interfaces
@@ -174,6 +176,7 @@ package Rtsfind is
 
       --  Children of Interfaces
 
+      Interfaces_C,
       Interfaces_Packed_Decimal,
 
       --  Package System
@@ -625,6 +628,11 @@ package Rtsfind is
 
      RE_Stream_T,                        -- CUDA.Driver_Types
 
+     RE_Push_Call_Configuration,         -- CUDA.Internal
+     RE_Pop_Call_Configuration,          -- CUDA.Internal
+
+     RE_Launch_Kernel,                   -- CUDA.Runtime_Api
+
      RE_Dim3,                            -- CUDA.Vector_Types
 
      RE_Integer_8,                       -- Interfaces
@@ -635,6 +643,9 @@ package Rtsfind is
      RE_Unsigned_16,                     -- Interfaces
      RE_Unsigned_32,                     -- Interfaces
      RE_Unsigned_64,                     -- Interfaces
+
+     RO_IC_Unsigned,                     -- Interfaces.C
+     RO_IC_Unsigned_Long_Long,           -- Interfaces.C
 
      RE_Address,                         -- System
      RE_Any_Priority,                    -- System
@@ -1916,6 +1927,11 @@ package Rtsfind is
 
      RE_Stream_T                         => CUDA_Driver_Types,
 
+     RE_Push_Call_Configuration          => CUDA_Internal,
+     RE_Pop_Call_Configuration           => CUDA_Internal,
+
+     RE_Launch_Kernel                    => CUDA_Runtime_Api,
+
      RE_Dim3                             => CUDA_Vector_Types,
 
      RE_Integer_8                        => Interfaces,
@@ -1926,6 +1942,9 @@ package Rtsfind is
      RE_Unsigned_16                      => Interfaces,
      RE_Unsigned_32                      => Interfaces,
      RE_Unsigned_64                      => Interfaces,
+
+     RO_IC_Unsigned                      => Interfaces_C,
+     RO_IC_Unsigned_Long_Long            => Interfaces_C,
 
      RE_Address                          => System,
      RE_Any_Priority                     => System,

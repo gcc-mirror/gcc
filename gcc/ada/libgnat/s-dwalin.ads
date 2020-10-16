@@ -38,10 +38,6 @@
 --  size is a consideration it's possible to strip all other .debug sections,
 --  which will decrease the size of the object significantly.
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we can get
---  elaboration circularities when polling is turned on
-
 with Ada.Exceptions.Traceback;
 
 with System.Object_Reader;

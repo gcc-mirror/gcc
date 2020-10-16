@@ -2058,15 +2058,6 @@ Alphabetical List of All Switches
   Cancel effect of previous :switch:`-gnatp` switch.
 
 
-.. index:: -gnatP  (gcc)
-
-:switch:`-gnatP`
-  Enable polling. This is required on some systems (notably Windows NT) to
-  obtain asynchronous abort and asynchronous transfer of control capability.
-  See ``Pragma_Polling`` in the :title:`GNAT_Reference_Manual` for full
-  details.
-
-
 .. index:: -gnatq  (gcc)
 
 :switch:`-gnatq`

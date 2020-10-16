@@ -29,10 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we can get
---  elaboration circularities when polling is turned on
-
 with Ada.Characters.Handling;
 with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;
 with Ada.Unchecked_Deallocation;

@@ -98,7 +98,6 @@ package body Opt is
       No_Component_Reordering_Config        := No_Component_Reordering;
       Optimize_Alignment_Config             := Optimize_Alignment;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
-      Polling_Required_Config               := Polling_Required;
       Prefix_Exception_Messages_Config      := Prefix_Exception_Messages;
       SPARK_Mode_Config                     := SPARK_Mode;
       SPARK_Mode_Pragma_Config              := SPARK_Mode_Pragma;
@@ -139,7 +138,6 @@ package body Opt is
       Optimize_Alignment             := Save.Optimize_Alignment;
       Optimize_Alignment_Local       := Save.Optimize_Alignment_Local;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
-      Polling_Required               := Save.Polling_Required;
       Prefix_Exception_Messages      := Save.Prefix_Exception_Messages;
       SPARK_Mode                     := Save.SPARK_Mode;
       SPARK_Mode_Pragma              := Save.SPARK_Mode_Pragma;
@@ -183,7 +181,6 @@ package body Opt is
          Optimize_Alignment             => Optimize_Alignment,
          Optimize_Alignment_Local       => Optimize_Alignment_Local,
          Persistent_BSS_Mode            => Persistent_BSS_Mode,
-         Polling_Required               => Polling_Required,
          Prefix_Exception_Messages      => Prefix_Exception_Messages,
          SPARK_Mode                     => SPARK_Mode,
          SPARK_Mode_Pragma              => SPARK_Mode_Pragma,
@@ -302,7 +299,6 @@ package body Opt is
       Default_Pool                   := Default_Pool_Config;
       Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;
       Fast_Math                      := Fast_Math_Config;
-      Polling_Required               := Polling_Required_Config;
    end Set_Config_Switches;
 
 end Opt;

@@ -378,12 +378,12 @@ package body Layout is
                         Init_Esize (E, S);
                         exit;
 
-                     --  If the RM_Size is greater than 64 (happens only when
-                     --  strange values are specified by the user, then Esize
-                     --  is simply a copy of RM_Size, it will be further
-                     --  refined later on)
+                     --  If the RM_Size is greater than System_Max_Integer_Size
+                     --  (happens only when strange values are specified by the
+                     --  user), then Esize is simply a copy of RM_Size, it will
+                     --  be further refined later on).
 
-                     elsif S = 64 then
+                     elsif S = System_Max_Integer_Size then
                         Set_Esize (E, RM_Size (E));
                         exit;
 

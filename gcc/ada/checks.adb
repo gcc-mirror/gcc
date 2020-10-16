@@ -3590,7 +3590,7 @@ package body Checks is
 
       elsif Is_Scalar_Type (Target_Type) then
          declare
-            Conv_OK  : constant Boolean := Conversion_OK (N);
+            Conv_OK : constant Boolean := Conversion_OK (N);
             --  If the Conversion_OK flag on the type conversion is set and no
             --  floating-point type is involved in the type conversion then
             --  fixed-point values must be read as integral values.

@@ -342,10 +342,6 @@ procedure Gnat1drv is
 
          Xref_Active := True;
 
-         --  Polling mode forced off, since it generates confusing junk
-
-         Polling_Required := False;
-
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).
 
@@ -530,10 +526,6 @@ procedure Gnat1drv is
          --  verification backend.
 
          Xref_Active := True;
-
-         --  Polling mode forced off, since it generates confusing junk
-
-         Polling_Required := False;
 
          --  Set operating mode to Check_Semantics, but a light front-end
          --  expansion is still performed.

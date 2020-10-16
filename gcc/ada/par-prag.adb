@@ -1449,7 +1449,6 @@ begin
          | Pragma_Partition_Elaboration_Policy
          | Pragma_Passive
          | Pragma_Persistent_BSS
-         | Pragma_Polling
          | Pragma_Post
          | Pragma_Post_Class
          | Pragma_Postcondition
