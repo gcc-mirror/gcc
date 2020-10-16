@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -m64 -mvsx" } */
+/* { dg-options "-O2 -Wall -mvsx" } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 
