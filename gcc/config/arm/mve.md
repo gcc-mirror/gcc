@@ -9700,38 +9700,10 @@
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
-(define_expand "mve_vstrwq_scatter_base_wb_<supf>v4si"
-  [(match_operand:V4SI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V4SI 2 "s_register_operand" "w")
-   (unspec:V4SI [(const_int 0)] VSTRWSBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vstrwq_scatter_base_wb_<supf>v4si_insn (ignore_wb, operands[0],
-						  operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "mve_vstrwq_scatter_base_wb_add_<supf>v4si"
-  [(match_operand:V4SI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V4SI 2 "s_register_operand" "0")
-   (unspec:V4SI [(const_int 0)] VSTRWSBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_vec = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vstrwq_scatter_base_wb_<supf>v4si_insn (operands[0], operands[2],
-						  operands[1], ignore_vec));
-  DONE;
-})
-
 ;;
-;; [vstrwq_scatter_base_wb_s vstrdq_scatter_base_wb_u]
+;; [vstrwq_scatter_base_wb_s vstrwq_scatter_base_wb_u]
 ;;
-(define_insn "mve_vstrwq_scatter_base_wb_<supf>v4si_insn"
+(define_insn "mve_vstrwq_scatter_base_wb_<supf>v4si"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 		[(match_operand:V4SI 1 "s_register_operand" "0")
@@ -9753,42 +9725,10 @@
 }
   [(set_attr "length" "4")])
 
-(define_expand "mve_vstrwq_scatter_base_wb_p_<supf>v4si"
-  [(match_operand:V4SI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V4SI 2 "s_register_operand" "w")
-   (match_operand:HI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRWSBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vstrwq_scatter_base_wb_p_<supf>v4si_insn (ignore_wb, operands[0],
-						    operands[1], operands[2],
-						    operands[3]));
-  DONE;
-})
-
-(define_expand "mve_vstrwq_scatter_base_wb_p_add_<supf>v4si"
-  [(match_operand:V4SI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V4SI 2 "s_register_operand" "0")
-   (match_operand:HI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRWSBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_vec = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vstrwq_scatter_base_wb_p_<supf>v4si_insn (operands[0], operands[2],
-						    operands[1], ignore_vec,
-						    operands[3]));
-  DONE;
-})
-
 ;;
 ;; [vstrwq_scatter_base_wb_p_s vstrwq_scatter_base_wb_p_u]
 ;;
-(define_insn "mve_vstrwq_scatter_base_wb_p_<supf>v4si_insn"
+(define_insn "mve_vstrwq_scatter_base_wb_p_<supf>v4si"
  [(set (mem:BLK (scratch))
        (unspec:BLK
 		[(match_operand:V4SI 1 "s_register_operand" "0")
@@ -9811,38 +9751,10 @@
 }
   [(set_attr "length" "8")])
 
-(define_expand "mve_vstrwq_scatter_base_wb_fv4sf"
-  [(match_operand:V4SI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V4SF 2 "s_register_operand" "w")
-   (unspec:V4SI [(const_int 0)] VSTRWQSBWB_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ignore_wb = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vstrwq_scatter_base_wb_fv4sf_insn (ignore_wb,operands[0],
-					     operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "mve_vstrwq_scatter_base_wb_add_fv4sf"
-  [(match_operand:V4SI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V4SI 2 "s_register_operand" "0")
-   (unspec:V4SI [(const_int 0)] VSTRWQSBWB_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ignore_vec = gen_reg_rtx (V4SFmode);
-  emit_insn (
-  gen_mve_vstrwq_scatter_base_wb_fv4sf_insn (operands[0], operands[2],
-					     operands[1], ignore_vec));
-  DONE;
-})
-
 ;;
 ;; [vstrwq_scatter_base_wb_f]
 ;;
-(define_insn "mve_vstrwq_scatter_base_wb_fv4sf_insn"
+(define_insn "mve_vstrwq_scatter_base_wb_fv4sf"
  [(set (mem:BLK (scratch))
        (unspec:BLK
 		[(match_operand:V4SI 1 "s_register_operand" "0")
@@ -9864,42 +9776,10 @@
 }
   [(set_attr "length" "4")])
 
-(define_expand "mve_vstrwq_scatter_base_wb_p_fv4sf"
-  [(match_operand:V4SI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V4SF 2 "s_register_operand" "w")
-   (match_operand:HI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRWQSBWB_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ignore_wb = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vstrwq_scatter_base_wb_p_fv4sf_insn (ignore_wb, operands[0],
-					       operands[1], operands[2],
-					       operands[3]));
-  DONE;
-})
-
-(define_expand "mve_vstrwq_scatter_base_wb_p_add_fv4sf"
-  [(match_operand:V4SI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V4SI 2 "s_register_operand" "0")
-   (match_operand:HI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRWQSBWB_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ignore_vec = gen_reg_rtx (V4SFmode);
-  emit_insn (
-  gen_mve_vstrwq_scatter_base_wb_p_fv4sf_insn (operands[0], operands[2],
-					       operands[1], ignore_vec,
-					       operands[3]));
-  DONE;
-})
-
 ;;
 ;; [vstrwq_scatter_base_wb_p_f]
 ;;
-(define_insn "mve_vstrwq_scatter_base_wb_p_fv4sf_insn"
+(define_insn "mve_vstrwq_scatter_base_wb_p_fv4sf"
  [(set (mem:BLK (scratch))
        (unspec:BLK
 		[(match_operand:V4SI 1 "s_register_operand" "0")
@@ -9922,38 +9802,10 @@
 }
   [(set_attr "length" "8")])
 
-(define_expand "mve_vstrdq_scatter_base_wb_<supf>v2di"
-  [(match_operand:V2DI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V2DI 2 "s_register_operand" "w")
-   (unspec:V2DI [(const_int 0)] VSTRDSBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (V2DImode);
-  emit_insn (
-  gen_mve_vstrdq_scatter_base_wb_<supf>v2di_insn (ignore_wb, operands[0],
-						  operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "mve_vstrdq_scatter_base_wb_add_<supf>v2di"
-  [(match_operand:V2DI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V2DI 2 "s_register_operand" "0")
-   (unspec:V2DI [(const_int 0)] VSTRDSBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_vec = gen_reg_rtx (V2DImode);
-  emit_insn (
-  gen_mve_vstrdq_scatter_base_wb_<supf>v2di_insn (operands[0], operands[2],
-						  operands[1], ignore_vec));
-  DONE;
-})
-
 ;;
 ;; [vstrdq_scatter_base_wb_s vstrdq_scatter_base_wb_u]
 ;;
-(define_insn "mve_vstrdq_scatter_base_wb_<supf>v2di_insn"
+(define_insn "mve_vstrdq_scatter_base_wb_<supf>v2di"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 		[(match_operand:V2DI 1 "s_register_operand" "0")
@@ -9975,42 +9827,10 @@
 }
   [(set_attr "length" "4")])
 
-(define_expand "mve_vstrdq_scatter_base_wb_p_<supf>v2di"
-  [(match_operand:V2DI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V2DI 2 "s_register_operand" "w")
-   (match_operand:HI 3 "vpr_register_operand")
-   (unspec:V2DI [(const_int 0)] VSTRDSBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (V2DImode);
-  emit_insn (
-  gen_mve_vstrdq_scatter_base_wb_p_<supf>v2di_insn (ignore_wb, operands[0],
-						    operands[1], operands[2],
-						    operands[3]));
-  DONE;
-})
-
-(define_expand "mve_vstrdq_scatter_base_wb_p_add_<supf>v2di"
-  [(match_operand:V2DI 0 "s_register_operand" "=w")
-   (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-   (match_operand:V2DI 2 "s_register_operand" "0")
-   (match_operand:HI 3 "vpr_register_operand")
-   (unspec:V2DI [(const_int 0)] VSTRDSBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_vec = gen_reg_rtx (V2DImode);
-  emit_insn (
-  gen_mve_vstrdq_scatter_base_wb_p_<supf>v2di_insn (operands[0], operands[2],
-						    operands[1], ignore_vec,
-						    operands[3]));
-  DONE;
-})
-
 ;;
 ;; [vstrdq_scatter_base_wb_p_s vstrdq_scatter_base_wb_p_u]
 ;;
-(define_insn "mve_vstrdq_scatter_base_wb_p_<supf>v2di_insn"
+(define_insn "mve_vstrdq_scatter_base_wb_p_<supf>v2di"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 		[(match_operand:V2DI 1 "s_register_operand" "0")
@@ -10028,7 +9848,7 @@
    ops[0] = operands[1];
    ops[1] = operands[2];
    ops[2] = operands[3];
-   output_asm_insn ("vpst\;\tvstrdt.u64\t%q2, [%q0, %1]!",ops);
+   output_asm_insn ("vpst;vstrdt.u64\t%q2, [%q0, %1]!",ops);
    return "";
 }
   [(set_attr "length" "8")])

@@ -13956,64 +13956,56 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrdq_scatter_base_wb_s64 (uint64x2_t * __addr, const int __offset, int64x2_t __value)
 {
-  __builtin_mve_vstrdq_scatter_base_wb_sv2di (*__addr, __offset, __value);
-  __builtin_mve_vstrdq_scatter_base_wb_add_sv2di (*__addr, __offset, *__addr);
+  *__addr = __builtin_mve_vstrdq_scatter_base_wb_sv2di (*__addr, __offset, __value);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrdq_scatter_base_wb_u64 (uint64x2_t * __addr, const int __offset, uint64x2_t __value)
 {
-  __builtin_mve_vstrdq_scatter_base_wb_uv2di (*__addr, __offset, __value);
-  __builtin_mve_vstrdq_scatter_base_wb_add_uv2di (*__addr, __offset, *__addr);
+  *__addr = __builtin_mve_vstrdq_scatter_base_wb_uv2di (*__addr, __offset, __value);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrdq_scatter_base_wb_p_s64 (uint64x2_t * __addr, const int __offset, int64x2_t __value, mve_pred16_t __p)
 {
-  __builtin_mve_vstrdq_scatter_base_wb_p_sv2di (*__addr, __offset, __value, __p);
-  __builtin_mve_vstrdq_scatter_base_wb_p_add_sv2di (*__addr, __offset, *__addr, __p);
+ *__addr =  __builtin_mve_vstrdq_scatter_base_wb_p_sv2di (*__addr, __offset, __value, __p);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrdq_scatter_base_wb_p_u64 (uint64x2_t * __addr, const int __offset, uint64x2_t __value, mve_pred16_t __p)
 {
-  __builtin_mve_vstrdq_scatter_base_wb_p_uv2di (*__addr, __offset, __value, __p);
-  __builtin_mve_vstrdq_scatter_base_wb_p_add_uv2di (*__addr, __offset, *__addr, __p);
+  *__addr = __builtin_mve_vstrdq_scatter_base_wb_p_uv2di (*__addr, __offset, __value, __p);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base_wb_p_s32 (uint32x4_t * __addr, const int __offset, int32x4_t __value, mve_pred16_t __p)
 {
-  __builtin_mve_vstrwq_scatter_base_wb_p_sv4si (*__addr, __offset, __value, __p);
-  __builtin_mve_vstrwq_scatter_base_wb_p_add_sv4si (*__addr, __offset, *__addr, __p);
+  *__addr = __builtin_mve_vstrwq_scatter_base_wb_p_sv4si (*__addr, __offset, __value, __p);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base_wb_p_u32 (uint32x4_t * __addr, const int __offset, uint32x4_t __value, mve_pred16_t __p)
 {
-  __builtin_mve_vstrwq_scatter_base_wb_p_uv4si (*__addr, __offset, __value, __p);
-  __builtin_mve_vstrwq_scatter_base_wb_p_add_uv4si (*__addr, __offset, *__addr, __p);
+  *__addr = __builtin_mve_vstrwq_scatter_base_wb_p_uv4si (*__addr, __offset, __value, __p);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base_wb_s32 (uint32x4_t * __addr, const int __offset, int32x4_t __value)
 {
-  __builtin_mve_vstrwq_scatter_base_wb_sv4si (*__addr, __offset, __value);
-  __builtin_mve_vstrwq_scatter_base_wb_add_sv4si (*__addr, __offset, *__addr);
+  *__addr = __builtin_mve_vstrwq_scatter_base_wb_sv4si (*__addr, __offset, __value);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base_wb_u32 (uint32x4_t * __addr, const int __offset, uint32x4_t __value)
 {
-  __builtin_mve_vstrwq_scatter_base_wb_uv4si (*__addr, __offset, __value);
-  __builtin_mve_vstrwq_scatter_base_wb_add_uv4si (*__addr, __offset, *__addr);
+  *__addr = __builtin_mve_vstrwq_scatter_base_wb_uv4si (*__addr, __offset, __value);
 }
 
 __extension__ extern __inline uint8x16_t
@@ -19128,16 +19120,14 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base_wb_f32 (uint32x4_t * __addr, const int __offset, float32x4_t __value)
 {
-  __builtin_mve_vstrwq_scatter_base_wb_fv4sf (*__addr, __offset, __value);
-  __builtin_mve_vstrwq_scatter_base_wb_add_fv4sf (*__addr, __offset, *__addr);
+  *__addr = __builtin_mve_vstrwq_scatter_base_wb_fv4sf (*__addr, __offset, __value);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vstrwq_scatter_base_wb_p_f32 (uint32x4_t * __addr, const int __offset, float32x4_t __value, mve_pred16_t __p)
 {
-  __builtin_mve_vstrwq_scatter_base_wb_p_fv4sf (*__addr, __offset, __value, __p);
-  __builtin_mve_vstrwq_scatter_base_wb_p_add_fv4sf (*__addr, __offset, *__addr, __p);
+  *__addr = __builtin_mve_vstrwq_scatter_base_wb_p_fv4sf (*__addr, __offset, __value, __p);
 }
 
 __extension__ extern __inline float16x8_t
