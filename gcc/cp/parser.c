@@ -13497,10 +13497,8 @@ cp_parser_declaration (cp_parser* parser)
 
   /* Try to figure out what kind of declaration is present.  */
   cp_token *token1 = cp_lexer_peek_token (parser->lexer);
-  cp_token *token2 = NULL;
-
-  if (token1->type != CPP_EOF)
-    token2 = cp_lexer_peek_nth_token (parser->lexer, 2);
+  cp_token *token2 = (token1->type == CPP_EOF
+		      ? token1 : cp_lexer_peek_nth_token (parser->lexer, 2));
 
   /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
   void *p = obstack_alloc (&declarator_obstack, 0);
