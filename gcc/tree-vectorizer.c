@@ -684,7 +684,8 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
   STMT_VINFO_VEC_STMTS (res) = vNULL;
 
-  if (gimple_code (stmt) == GIMPLE_PHI
+  if (is_a <loop_vec_info> (this)
+      && gimple_code (stmt) == GIMPLE_PHI
       && is_loop_header_bb_p (gimple_bb (stmt)))
     STMT_VINFO_DEF_TYPE (res) = vect_unknown_def_type;
   else

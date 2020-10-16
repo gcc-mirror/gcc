@@ -115,7 +115,8 @@ vect_free_slp_tree (slp_tree node)
     return;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_free_slp_tree (child);
+    if (child)
+      vect_free_slp_tree (child);
 
   delete node;
 }
@@ -148,9 +149,9 @@ vect_free_slp_instance (slp_instance instance)
 /* Create an SLP node for SCALAR_STMTS.  */
 
 static slp_tree
-vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts, unsigned nops)
+vect_create_new_slp_node (slp_tree node,
+			  vec<stmt_vec_info> scalar_stmts, unsigned nops)
 {
-  slp_tree node = new _slp_tree;
   SLP_TREE_SCALAR_STMTS (node) = scalar_stmts;
   SLP_TREE_CHILDREN (node).create (nops);
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
@@ -159,16 +160,31 @@ vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts, unsigned nops)
   return node;
 }
 
+/* Create an SLP node for SCALAR_STMTS.  */
+
+static slp_tree
+vect_create_new_slp_node (vec<stmt_vec_info> scalar_stmts, unsigned nops)
+{
+  return vect_create_new_slp_node (new _slp_tree, scalar_stmts, nops);
+}
+
+/* Create an SLP node for OPS.  */
+
+static slp_tree
+vect_create_new_slp_node (slp_tree node, vec<tree> ops)
+{
+  SLP_TREE_SCALAR_OPS (node) = ops;
+  SLP_TREE_DEF_TYPE (node) = vect_external_def;
+  SLP_TREE_LANES (node) = ops.length ();
+  return node;
+}
+
 /* Create an SLP node for OPS.  */
 
 static slp_tree
 vect_create_new_slp_node (vec<tree> ops)
 {
-  slp_tree node = new _slp_tree;
-  SLP_TREE_SCALAR_OPS (node) = ops;
-  SLP_TREE_DEF_TYPE (node) = vect_external_def;
-  SLP_TREE_LANES (node) = ops.length ();
-  return node;
+  return vect_create_new_slp_node (new _slp_tree, ops);
 }
 
 
@@ -443,10 +459,13 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
       else
 	commutative_op = commutative_tree_code (code) ? 0U : -1U;
     }
+  else if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
+    number_of_oprnds = gimple_phi_num_args (stmt);
   else
     return -1;
 
   bool swapped = (swap != 0);
+  bool backedge = false;
   gcc_assert (!swapped || first_op_cond);
   enum vect_def_type *dts = XALLOCAVEC (enum vect_def_type, number_of_oprnds);
   for (i = 0; i < number_of_oprnds; i++)
@@ -462,6 +481,13 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 					     first_op_idx), map[i]);
 	  else
 	    oprnd = gimple_op (stmt_info->stmt, map[i]);
+	}
+      else if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
+	{
+	  oprnd = gimple_phi_arg_def (stmt, i);
+	  backedge = dominated_by_p (CDI_DOMINATORS,
+				     gimple_phi_arg_edge (stmt, i)->src,
+				     gimple_bb (stmt_info->stmt));
 	}
       else
 	oprnd = gimple_op (stmt_info->stmt, first_op_idx + (swapped ? !i : i));
@@ -486,6 +512,26 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 
       oprnd_info->def_stmts.quick_push (def_stmt_info);
       oprnd_info->ops.quick_push (oprnd);
+
+      /* If there's a extern def on a backedge make sure we can
+	 code-generate at the region start.
+	 ???  This is another case that could be fixed by adjusting
+	 how we split the function but at the moment we'd have conflicting
+	 goals there.  */
+      if (backedge
+	  && dts[i] == vect_external_def
+	  && is_a <bb_vec_info> (vinfo)
+	  && !SSA_NAME_IS_DEFAULT_DEF (oprnd)
+	  && !dominated_by_p (CDI_DOMINATORS,
+			      as_a <bb_vec_info> (vinfo)->bbs[0],
+			      gimple_bb (SSA_NAME_DEF_STMT (oprnd))))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Build SLP failed: extern def %T only defined "
+			     "on backedge\n", oprnd);
+	  return -1;
+	}
 
       if (first)
 	{
@@ -521,6 +567,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	    case vect_internal_def:
 	    case vect_reduction_def:
 	    case vect_induction_def:
+	    case vect_nested_cycle:
 	      break;
 
 	    default:
@@ -815,6 +862,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   machine_mode vec_mode;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
   bool first_stmt_load_p = false, load_p = false;
+  bool first_stmt_phi_p = false, phi_p = false;
 
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
@@ -904,6 +952,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      return false;
 	    }
 	}
+      else if (gimple_code (stmt) == GIMPLE_PHI)
+	{
+	  rhs_code = ERROR_MARK;
+	  phi_p = true;
+	}
       else
 	{
 	  rhs_code = gimple_assign_rhs_code (stmt);
@@ -916,6 +969,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  *node_vectype = vectype;
 	  first_stmt_code = rhs_code;
 	  first_stmt_load_p = load_p;
+	  first_stmt_phi_p = phi_p;
 
 	  /* Shift arguments should be equal in all the packed stmts for a
 	     vector shift with scalar shift operand.  */
@@ -1021,7 +1075,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			|| first_stmt_code == INDIRECT_REF
 			|| first_stmt_code == COMPONENT_REF
 			|| first_stmt_code == MEM_REF)))
-	      || first_stmt_load_p != load_p)
+	      || first_stmt_load_p != load_p
+	      || first_stmt_phi_p != phi_p)
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -1075,6 +1130,18 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		  /* Mismatch.  */
 		  continue;
 		}
+	    }
+
+	  if (phi_p
+	      && (gimple_bb (first_stmt_info->stmt)
+		  != gimple_bb (stmt_info->stmt)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: different BB for PHI "
+				 "in %G", stmt);
+	      /* Mismatch.  */
+	      continue;
 	    }
 
 	  if (!types_compatible_p (vectype, *node_vectype))
@@ -1138,7 +1205,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    }
 
 	  /* Not memory operation.  */
-	  if (TREE_CODE_CLASS (rhs_code) != tcc_binary
+	  if (!phi_p
+	      && TREE_CODE_CLASS (rhs_code) != tcc_binary
 	      && TREE_CODE_CLASS (rhs_code) != tcc_unary
 	      && TREE_CODE_CLASS (rhs_code) != tcc_expression
 	      && TREE_CODE_CLASS (rhs_code) != tcc_comparison
@@ -1251,7 +1319,7 @@ typedef hash_map <vec <gimple *>, slp_tree,
   scalar_stmts_to_slp_tree_map_t;
 
 static slp_tree
-vect_build_slp_tree_2 (vec_info *vinfo,
+vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		       vec<stmt_vec_info> stmts, unsigned int group_size,
 		       poly_uint64 *max_nunits,
 		       bool *matches, unsigned *npermutes, unsigned *tree_size,
@@ -1276,19 +1344,37 @@ vect_build_slp_tree (vec_info *vinfo,
 	}
       return *leader;
     }
+
+  /* Seed the bst_map with a stub node to be filled by vect_build_slp_tree_2
+     so we can pick up backedge destinations during discovery.  */
+  slp_tree res = new _slp_tree;
+  SLP_TREE_DEF_TYPE (res) = vect_internal_def;
+  SLP_TREE_SCALAR_STMTS (res) = stmts;
+  bst_map->put (stmts.copy (), res);
+
   poly_uint64 this_max_nunits = 1;
-  slp_tree res = vect_build_slp_tree_2 (vinfo, stmts, group_size,
+  slp_tree res_ = vect_build_slp_tree_2 (vinfo, res, stmts, group_size,
 					&this_max_nunits,
 					matches, npermutes, tree_size, bst_map);
-  if (res)
+  if (!res_)
     {
+      bool existed_p = bst_map->put (stmts, NULL);
+      gcc_assert (existed_p);
+      /* Mark the node invalid so we can detect those when still in use
+	 as backedge destinations.  */
+      SLP_TREE_SCALAR_STMTS (res) = vNULL;
+      SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
+      vect_free_slp_tree (res);
+    }
+  else
+    {
+      gcc_assert (res_ == res);
       res->max_nunits = this_max_nunits;
       vect_update_max_nunits (max_nunits, this_max_nunits);
       /* Keep a reference for the bst_map use.  */
       SLP_TREE_REF_COUNT (res)++;
     }
-  bst_map->put (stmts.copy (), res);
-  return res;
+  return res_;
 }
 
 /* Recursively build an SLP tree starting from NODE.
@@ -1299,7 +1385,7 @@ vect_build_slp_tree (vec_info *vinfo,
    was found.  */
 
 static slp_tree
-vect_build_slp_tree_2 (vec_info *vinfo,
+vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		       vec<stmt_vec_info> stmts, unsigned int group_size,
 		       poly_uint64 *max_nunits,
 		       bool *matches, unsigned *npermutes, unsigned *tree_size,
@@ -1307,7 +1393,6 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 {
   unsigned nops, i, this_tree_size = 0;
   poly_uint64 this_max_nunits = *max_nunits;
-  slp_tree node;
 
   matches[0] = false;
 
@@ -1327,41 +1412,60 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 
   /* If the SLP node is a PHI (induction or reduction), terminate
      the recursion.  */
-  if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
-    {
-      tree scalar_type = TREE_TYPE (PHI_RESULT (stmt));
-      tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
-						  group_size);
-      if (!vect_record_max_nunits (vinfo, stmt_info, group_size, vectype,
-				   max_nunits))
-	return NULL;
+  bool skip_args[2] = { false, false };
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+    if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
+      {
+	tree scalar_type = TREE_TYPE (PHI_RESULT (stmt));
+	tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
+						    group_size);
+	if (!vect_record_max_nunits (vinfo, stmt_info, group_size, vectype,
+				     max_nunits))
+	  return NULL;
 
-      vect_def_type def_type = STMT_VINFO_DEF_TYPE (stmt_info);
-      /* Induction from different IVs is not supported.  */
-      if (def_type == vect_induction_def)
-	{
-	  stmt_vec_info other_info;
-	  FOR_EACH_VEC_ELT (stmts, i, other_info)
-	    if (stmt_info != other_info)
-	      return NULL;
-	}
-      else if (def_type == vect_reduction_def
-	       || def_type == vect_double_reduction_def
-	       || def_type == vect_nested_cycle)
-	{
-	  /* Else def types have to match.  */
-	  stmt_vec_info other_info;
-	  FOR_EACH_VEC_ELT (stmts, i, other_info)
-	    if (STMT_VINFO_DEF_TYPE (other_info) != def_type)
-	      return NULL;
-	}
-      else
-	return NULL;
-      (*tree_size)++;
-      node = vect_create_new_slp_node (stmts, nops);
-      SLP_TREE_VECTYPE (node) = vectype;
-      return node;
-    }
+	vect_def_type def_type = STMT_VINFO_DEF_TYPE (stmt_info);
+	/* Induction from different IVs is not supported.  */
+	if (def_type == vect_induction_def)
+	  {
+	    stmt_vec_info other_info;
+	    FOR_EACH_VEC_ELT (stmts, i, other_info)
+	      if (stmt_info != other_info)
+		return NULL;
+
+	    /* Induction PHIs are leafs.  */
+	    (*tree_size)++;
+	    node = vect_create_new_slp_node (node, stmts, nops);
+	    SLP_TREE_VECTYPE (node) = vectype;
+	    SLP_TREE_CHILDREN (node).quick_grow_cleared (nops);
+	    return node;
+	  }
+	else if (def_type == vect_reduction_def
+		 || def_type == vect_double_reduction_def
+		 || def_type == vect_nested_cycle)
+	  {
+	    /* Else def types have to match.  */
+	    stmt_vec_info other_info;
+	    bool all_same = true;
+	    FOR_EACH_VEC_ELT (stmts, i, other_info)
+	      {
+		if (STMT_VINFO_DEF_TYPE (other_info) != def_type)
+		  return NULL;
+		if (other_info != stmt_info)
+		  all_same = false;
+	      }
+	    class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+	    /* Reduction initial values are not explicitely represented.  */
+	    if (!nested_in_vect_loop_p (loop, stmt_info))
+	      skip_args[loop_preheader_edge (loop)->dest_idx] = true;
+	    /* Reduction chain backedge defs are filled manually.
+	       ???  Need a better way to identify a SLP reduction chain PHI.
+	       Or a better overall way to SLP match those.  */
+	    if (all_same && def_type == vect_reduction_def)
+	      skip_args[loop_latch_edge (loop)->dest_idx] = true;
+	  }
+	else if (def_type != vect_internal_def)
+	  return NULL;
+      }
 
 
   bool two_operators = false;
@@ -1386,7 +1490,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	{
 	  *max_nunits = this_max_nunits;
 	  (*tree_size)++;
-	  node = vect_create_new_slp_node (stmts, 0);
+	  node = vect_create_new_slp_node (node, stmts, 0);
 	  SLP_TREE_VECTYPE (node) = vectype;
 	  /* And compute the load permutation.  Whether it is actually
 	     a permutation depends on the unrolling factor which is
@@ -1440,7 +1544,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	 representing an actual vector without any scalar ops.
 	 ???  We could hide it completely with making the permute node
 	 external?  */
-      node = vect_create_new_slp_node (stmts, 1);
+      node = vect_create_new_slp_node (node, stmts, 1);
       SLP_TREE_CODE (node) = VEC_PERM_EXPR;
       SLP_TREE_LANE_PERMUTATION (node) = lperm;
       SLP_TREE_VECTYPE (node) = vectype;
@@ -1486,6 +1590,14 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  continue;
 	}
 
+      /* We're skipping certain operands from processing, for example
+	 outer loop reduction initial defs.  */
+      if (i <= 1 && skip_args[i])
+	{
+	  children.safe_push (NULL);
+	  continue;
+	}
+
       if (is_a <bb_vec_info> (vinfo)
 	  && oprnd_info->first_dt == vect_internal_def)
 	{
@@ -1508,9 +1620,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	    }
 	}
 
-      if (oprnd_info->first_dt != vect_internal_def
-	  && oprnd_info->first_dt != vect_reduction_def
-	  && oprnd_info->first_dt != vect_induction_def)
+      if (oprnd_info->first_dt == vect_external_def
+	  || oprnd_info->first_dt == vect_constant_def)
 	{
 	  slp_tree invnode = vect_create_new_slp_node (oprnd_info->ops);
 	  SLP_TREE_DEF_TYPE (invnode) = oprnd_info->first_dt;
@@ -1639,14 +1750,14 @@ fail:
 	      child = vect_create_new_slp_node (oprnd_info->ops);
 	      children.safe_push (child);
 	      oprnd_info->ops = vNULL;
-	      oprnd_info->def_stmts = vNULL;
 	      continue;
 	    }
 	}
 
       gcc_assert (child == NULL);
       FOR_EACH_VEC_ELT (children, j, child)
-	vect_free_slp_tree (child);
+	if (child)
+	  vect_free_slp_tree (child);
       vect_free_oprnd_info (oprnds_info);
       return NULL;
     }
@@ -1670,7 +1781,9 @@ fail:
       unsigned n_vector_builds = 0;
       FOR_EACH_VEC_ELT (children, j, child)
 	{
-	  if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+	  if (!child)
+	    ;
+	  else if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	    all_uniform_p = false;
 	  else if (!vect_slp_tree_uniform_p (child))
 	    {
@@ -1684,7 +1797,8 @@ fail:
 	  /* Roll back.  */
 	  matches[0] = false;
 	  FOR_EACH_VEC_ELT (children, j, child)
-	    vect_free_slp_tree (child);
+	    if (child)
+	      vect_free_slp_tree (child);
 
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -1718,7 +1832,7 @@ fail:
 
       /* Here we record the original defs since this
 	 node represents the final lane configuration.  */
-      node = vect_create_new_slp_node (stmts, 2);
+      node = vect_create_new_slp_node (node, stmts, 2);
       SLP_TREE_VECTYPE (node) = vectype;
       SLP_TREE_CODE (node) = VEC_PERM_EXPR;
       SLP_TREE_CHILDREN (node).quick_push (one);
@@ -1749,7 +1863,7 @@ fail:
       return node;
     }
 
-  node = vect_create_new_slp_node (stmts, nops);
+  node = vect_create_new_slp_node (node, stmts, nops);
   SLP_TREE_VECTYPE (node) = vectype;
   SLP_TREE_CHILDREN (node).splice (children);
   return node;
@@ -1835,7 +1949,8 @@ vect_print_slp_graph (dump_flags_t dump_kind, dump_location_t loc,
   vect_print_slp_tree (dump_kind, loc, node);
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_print_slp_graph (dump_kind, loc, child, visited);
+    if (child)
+      vect_print_slp_graph (dump_kind, loc, child, visited);
 }
 
 static void
@@ -1865,7 +1980,8 @@ vect_mark_slp_stmts (slp_tree node, hash_set<slp_tree> &visited)
     STMT_SLP_TYPE (stmt_info) = pure_slp;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_mark_slp_stmts (child, visited);
+    if (child)
+      vect_mark_slp_stmts (child, visited);
 }
 
 static void
@@ -1898,7 +2014,8 @@ vect_mark_slp_stmts_relevant (slp_tree node, hash_set<slp_tree> &visited)
     }
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_mark_slp_stmts_relevant (child, visited);
+    if (child)
+      vect_mark_slp_stmts_relevant (child, visited);
 }
 
 static void
@@ -1915,7 +2032,7 @@ static void
 vect_gather_slp_loads (vec<slp_tree> &loads, slp_tree node,
 		       hash_set<slp_tree> &visited)
 {
-  if (visited.add (node))
+  if (!node || visited.add (node))
     return;
 
   if (SLP_TREE_CHILDREN (node).length () == 0)
@@ -2176,34 +2293,62 @@ vect_build_slp_instance (vec_info *vinfo,
 		}
 	    }
 
-	  /* If this is a reduction chain with a conversion in front
-	     amend the SLP tree with a node for that.  */
-	  if (kind == slp_inst_kind_reduc_chain
-	      && STMT_VINFO_DEF_TYPE (scalar_stmts[0]) != vect_reduction_def)
+	  /* Fixup SLP reduction chains.  */
+	  if (kind == slp_inst_kind_reduc_chain)
 	    {
-	      /* Get at the conversion stmt - we know it's the single use
-		 of the last stmt of the reduction chain.  */
-	      gimple *tem = vect_orig_stmt (scalar_stmts[group_size - 1])->stmt;
+	      /* If this is a reduction chain with a conversion in front
+		 amend the SLP tree with a node for that.  */
+	      gimple *scalar_def
+		= vect_orig_stmt (scalar_stmts[group_size - 1])->stmt;
+	      if (STMT_VINFO_DEF_TYPE (scalar_stmts[0]) != vect_reduction_def)
+		{
+		  /* Get at the conversion stmt - we know it's the single use
+		     of the last stmt of the reduction chain.  */
+		  use_operand_p use_p;
+		  bool r = single_imm_use (gimple_assign_lhs (scalar_def),
+					   &use_p, &scalar_def);
+		  gcc_assert (r);
+		  stmt_vec_info next_info = vinfo->lookup_stmt (scalar_def);
+		  next_info = vect_stmt_to_vectorize (next_info);
+		  scalar_stmts = vNULL;
+		  scalar_stmts.create (group_size);
+		  for (unsigned i = 0; i < group_size; ++i)
+		    scalar_stmts.quick_push (next_info);
+		  slp_tree conv = vect_create_new_slp_node (scalar_stmts, 1);
+		  SLP_TREE_VECTYPE (conv) = STMT_VINFO_VECTYPE (next_info);
+		  SLP_TREE_CHILDREN (conv).quick_push (node);
+		  SLP_INSTANCE_TREE (new_instance) = conv;
+		  /* We also have to fake this conversion stmt as SLP reduction
+		     group so we don't have to mess with too much code
+		     elsewhere.  */
+		  REDUC_GROUP_FIRST_ELEMENT (next_info) = next_info;
+		  REDUC_GROUP_NEXT_ELEMENT (next_info) = NULL;
+		}
+	      /* Fill the backedge child of the PHI SLP node.  The
+		 general matching code cannot find it because the
+		 scalar code does not reflect how we vectorize the
+		 reduction.  */
 	      use_operand_p use_p;
-	      gimple *use_stmt;
-	      bool r = single_imm_use (gimple_assign_lhs (tem),
-				       &use_p, &use_stmt);
-	      gcc_assert (r);
-	      stmt_vec_info next_info = vinfo->lookup_stmt (use_stmt);
-	      next_info = vect_stmt_to_vectorize (next_info);
-	      scalar_stmts = vNULL;
-	      scalar_stmts.create (group_size);
-	      for (unsigned i = 0; i < group_size; ++i)
-		scalar_stmts.quick_push (next_info);
-	      slp_tree conv = vect_create_new_slp_node (scalar_stmts, 1);
-	      SLP_TREE_VECTYPE (conv) = STMT_VINFO_VECTYPE (next_info);
-	      SLP_TREE_CHILDREN (conv).quick_push (node);
-	      SLP_INSTANCE_TREE (new_instance) = conv;
-	      /* We also have to fake this conversion stmt as SLP reduction
-		 group so we don't have to mess with too much code
-		 elsewhere.  */
-	      REDUC_GROUP_FIRST_ELEMENT (next_info) = next_info;
-	      REDUC_GROUP_NEXT_ELEMENT (next_info) = NULL;
+	      imm_use_iterator imm_iter;
+	      class loop *loop = LOOP_VINFO_LOOP (as_a <loop_vec_info> (vinfo));
+	      FOR_EACH_IMM_USE_FAST (use_p, imm_iter,
+				     gimple_get_lhs (scalar_def))
+		/* There are exactly two non-debug uses, the reduction
+		   PHI and the loop-closed PHI node.  */
+		if (!is_gimple_debug (USE_STMT (use_p))
+		    && gimple_bb (USE_STMT (use_p)) == loop->header)
+		  {
+		    auto_vec<stmt_vec_info, 64> phis (group_size);
+		    stmt_vec_info phi_info
+		      = vinfo->lookup_stmt (USE_STMT (use_p));
+		    for (unsigned i = 0; i < group_size; ++i)
+		      phis.quick_push (phi_info);
+		    slp_tree *phi_node = bst_map->get (phis);
+		    unsigned dest_idx = loop_latch_edge (loop)->dest_idx;
+		    SLP_TREE_CHILDREN (*phi_node)[dest_idx]
+		      = SLP_INSTANCE_TREE (new_instance);
+		    SLP_INSTANCE_TREE (new_instance)->refcnt++;
+		  }
 	    }
 
 	  vinfo->slp_instances.safe_push (new_instance);
@@ -2437,60 +2582,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
   return res;
 }
 
-/* Fill in backedge SLP children in the SLP graph.  */
-
-static void
-vect_analyze_slp_backedges (vec_info *vinfo, slp_tree node,
-			    scalar_stmts_to_slp_tree_map_t *bst_map,
-			    hash_set<slp_tree> &visited)
-{
-  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def
-      || visited.add (node))
-    return;
-
-  slp_tree child;
-  unsigned i;
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (child)
-      vect_analyze_slp_backedges (vinfo, child, bst_map, visited);
-
-  /* Inductions are not vectorized by vectorizing their defining cycle
-     but by materializing the values from SCEV data.  */
-  if (STMT_VINFO_DEF_TYPE (SLP_TREE_REPRESENTATIVE (node))
-      == vect_induction_def)
-    return;
-
-  if (gphi *phi = dyn_cast <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
-    for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
-      {
-	auto_vec<stmt_vec_info, 64> stmts;
-	unsigned j;
-	stmt_vec_info phi_info;
-	FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, phi_info)
-	  {
-	    tree def = gimple_phi_arg_def (as_a <gphi *>(phi_info->stmt), i);
-	    stmt_vec_info def_info = vinfo->lookup_def (def);
-	    if (!def_info)
-	      break;
-	    stmts.safe_push (vect_stmt_to_vectorize (def_info));
-	  }
-	if (j != SLP_TREE_LANES (node))
-	  continue;
-	slp_tree *edge_def = bst_map->get (stmts);
-	if (edge_def)
-	  {
-	    /* ???  We're currently not recording non-backedge children
-	       of PHIs like external reduction initial values.  Avoid
-	       NULL entries in SLP_TREE_CHILDREN for those and thus
-	       for now simply only record backedge defs at a
-	       SLP_TREE_CHILDREN index possibly not matching that of
-	       the corresponding PHI argument index.  */
-	    SLP_TREE_CHILDREN (node).quick_push (*edge_def);
-	    (*edge_def)->refcnt++;
-	  }
-      }
-}
-
 /* Check if there are stmts in the loop can be vectorized using SLP.  Build SLP
    trees of packed scalar stmts if SLP is possible.  */
 
@@ -2541,13 +2632,6 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 				   max_tree_size);
     }
 
-  /* Fill in backedges.  */
-  slp_instance instance;
-  hash_set<slp_tree> visited;
-  FOR_EACH_VEC_ELT (vinfo->slp_instances, i, instance)
-    vect_analyze_slp_backedges (vinfo, SLP_INSTANCE_TREE (instance),
-				bst_map, visited);
-
   /* The map keeps a reference on SLP nodes built, release that.  */
   for (scalar_stmts_to_slp_tree_map_t::iterator it = bst_map->begin ();
        it != bst_map->end (); ++it)
@@ -2572,11 +2656,16 @@ vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
 
   node->vertex = vertices.length ();
   vertices.safe_push (node);
-  if (SLP_TREE_CHILDREN (node).is_empty ())
+
+  bool leaf = true;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    if (child)
+      {
+	leaf = false;
+	vect_slp_build_vertices (visited, child, vertices, leafs);
+      }
+  if (leaf)
     leafs.safe_push (node->vertex);
-  else
-    FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-      vect_slp_build_vertices (visited, child, vertices, leafs);
 }
 
 /* Fill the vertices and leafs vector with all nodes in the SLP graph.  */
@@ -2654,7 +2743,8 @@ vect_optimize_slp (vec_info *vinfo)
       unsigned j;
       slp_tree child;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
-	add_edge (slpg, i, child->vertex);
+	if (child)
+	  add_edge (slpg, i, child->vertex);
     }
 
   /* Compute (reverse) postorder on the inverted graph.  */
@@ -2853,7 +2943,7 @@ vect_optimize_slp (vec_info *vinfo)
       slp_tree child;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
 	{
-	  if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+	  if (!child || SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	    continue;
 
 	  /* If the vector is uniform there's nothing to do.  */
@@ -3291,6 +3381,7 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
   unsigned int group_size = SLP_TREE_LANES (node);
   SLP_TREE_DEF_TYPE (node) = vect_external_def;
   SLP_TREE_SCALAR_OPS (node).safe_grow (group_size, true);
+  SLP_TREE_LOAD_PERMUTATION (node).release ();
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
       tree lhs = gimple_get_lhs (vect_orig_stmt (stmt_info)->stmt);
@@ -3373,8 +3464,19 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   slp_tree child;
 
   /* Assume we can code-generate all invariants.  */
-  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
+  if (!node
+      || SLP_TREE_DEF_TYPE (node) == vect_constant_def
+      || SLP_TREE_DEF_TYPE (node) == vect_external_def)
     return true;
+
+  if (SLP_TREE_DEF_TYPE (node) == vect_uninitialized_def)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Failed cyclic SLP reference in %p", node);
+      return false;
+    }
+  gcc_assert (SLP_TREE_DEF_TYPE (node) == vect_internal_def);
 
   /* If we already analyzed the exact same set of scalar stmts we're done.
      We share the generated vector stmts for those.  */
@@ -3404,8 +3506,9 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
      other referrers.  */
   if (res)
     FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
-      if ((SLP_TREE_DEF_TYPE (child) == vect_constant_def
-	   || SLP_TREE_DEF_TYPE (child) == vect_external_def)
+      if (child
+	  && (SLP_TREE_DEF_TYPE (child) == vect_constant_def
+	      || SLP_TREE_DEF_TYPE (child) == vect_external_def)
 	  /* Perform usual caching, note code-generation still
 	     code-gens these nodes multiple times but we expect
 	     to CSE them later.  */
@@ -3459,8 +3562,12 @@ static void
 vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
 			     slp_instance instance,
 			     stmt_vector_for_cost *cost_vec,
-			     hash_set<stmt_vec_info> &svisited)
+			     hash_set<stmt_vec_info> &svisited,
+			     hash_set<slp_tree> &visited)
 {
+  if (visited.add (node))
+    return;
+
   unsigned i;
   stmt_vec_info stmt_info;
   stmt_vec_info last_stmt = vect_find_last_scalar_stmt_in_slp (node);
@@ -3479,7 +3586,7 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
       gimple *orig_stmt = orig_stmt_info->stmt;
       ssa_op_iter op_iter;
       def_operand_p def_p;
-      FOR_EACH_SSA_DEF_OPERAND (def_p, orig_stmt, op_iter, SSA_OP_DEF)
+      FOR_EACH_PHI_OR_STMT_DEF (def_p, orig_stmt, op_iter, SSA_OP_DEF)
 	{
 	  imm_use_iterator use_iter;
 	  gimple *use_stmt;
@@ -3548,9 +3655,9 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+    if (child && SLP_TREE_DEF_TYPE (child) == vect_internal_def)
       vect_bb_slp_mark_live_stmts (bb_vinfo, child, instance,
-				   cost_vec, svisited);
+				   cost_vec, svisited, visited);
 }
 
 /* Analyze statements in SLP instances of VINFO.  Return true if the
@@ -3615,11 +3722,13 @@ vect_slp_analyze_operations (vec_info *vinfo)
   if (bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo))
     {
       hash_set<stmt_vec_info> svisited;
+      hash_set<slp_tree> visited;
       for (i = 0; vinfo->slp_instances.iterate (i, &instance); ++i)
 	{
 	  vect_location = instance->location ();
 	  vect_bb_slp_mark_live_stmts (bb_vinfo, SLP_INSTANCE_TREE (instance),
-				       instance, &instance->cost_vec, svisited);
+				       instance, &instance->cost_vec, svisited,
+				       visited);
 	}
     }
 
@@ -3683,7 +3792,7 @@ vect_bb_partition_graph_r (bb_vec_info bb_vinfo,
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+    if (child && SLP_TREE_DEF_TYPE (child) == vect_internal_def)
       vect_bb_partition_graph_r (bb_vinfo, instance, child, stmt_to_instance,
 				 instance_leader, visited);
 }
@@ -3759,7 +3868,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	 the scalar cost.  */
       if (!STMT_VINFO_LIVE_P (stmt_info))
 	{
-	  FOR_EACH_SSA_DEF_OPERAND (def_p, orig_stmt, op_iter, SSA_OP_DEF)
+	  FOR_EACH_PHI_OR_STMT_DEF (def_p, orig_stmt, op_iter, SSA_OP_DEF)
 	    {
 	      imm_use_iterator use_iter;
 	      gimple *use_stmt;
@@ -3803,7 +3912,7 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
   auto_vec<bool, 20> subtree_life;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     {
-      if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+      if (child && SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	{
 	  /* Do not directly pass LIFE to the recursive call, copy it to
 	     confine changes in the callee to the current child/subtree.  */
@@ -4272,19 +4381,18 @@ vect_slp_function (function *fun)
   for (unsigned i = 0; i < n; i++)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
-
-      /* Split when a basic block has multiple predecessors or when the
-	 edge into it exits a loop (because of implementation issues with
-	 respect to placement of CTORs for externals).  */
       bool split = false;
-      edge e;
-      if (!single_pred_p (bb)
-	  || ((e = single_pred_edge (bb)),
-	      loop_exit_edge_p (e->src->loop_father, e)))
-	split = true;
+
       /* Split when a BB is not dominated by the first block.  */
+      if (!bbs.is_empty ()
+	  && !dominated_by_p (CDI_DOMINATORS, bb, bbs[0]))
+	split = true;
+      /* Split when the loop determined by the first block
+	 is exited.  This is because we eventually insert
+	 invariants at region begin.  */
       else if (!bbs.is_empty ()
-	       && !dominated_by_p (CDI_DOMINATORS, bb, bbs[0]))
+	       && bbs[0]->loop_father != bb->loop_father
+	       && !flow_loop_nested_p (bbs[0]->loop_father, bb->loop_father))
 	split = true;
 
       if (split && !bbs.is_empty ())
@@ -5087,23 +5195,21 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   return true;
 }
 
-/* Vectorize SLP instance tree in postorder.  */
+/* Vectorize SLP NODE.  */
 
 static void
-vect_schedule_slp_instance (vec_info *vinfo,
-			    slp_tree node, slp_instance instance,
-			    hash_set<slp_tree> &visited)
+vect_schedule_slp_node (vec_info *vinfo,
+			slp_tree node, slp_instance instance)
 {
   gimple_stmt_iterator si;
   int i;
   slp_tree child;
 
-  /* See if we have already vectorized the node in the graph of the
-     SLP instance.  */
-  if ((SLP_TREE_DEF_TYPE (node) == vect_internal_def
-       && SLP_TREE_VEC_STMTS (node).exists ())
-      || SLP_TREE_VEC_DEFS (node).exists ())
+  /* For existing vectors there's nothing to do.  */
+  if (SLP_TREE_VEC_DEFS (node).exists ())
     return;
+
+  gcc_assert (SLP_TREE_VEC_STMTS (node).is_empty ());
 
   /* Vectorize externals and constants.  */
   if (SLP_TREE_DEF_TYPE (node) == vect_constant_def
@@ -5119,17 +5225,11 @@ vect_schedule_slp_instance (vec_info *vinfo,
       return;
     }
 
-  /* ???  If we'd have a way to mark backedges that would be cheaper.  */
-  if (visited.add (node))
-    return;
-
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_schedule_slp_instance (vinfo, child, instance, visited);
+  stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 
   gcc_assert (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
   SLP_TREE_VEC_STMTS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
 
-  stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "------>vectorizing SLP node starting from: %G",
@@ -5148,13 +5248,12 @@ vect_schedule_slp_instance (vec_info *vinfo,
 	last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
       si = gsi_for_stmt (last_stmt_info->stmt);
     }
-  else if ((STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (node))
-	    == cycle_phi_info_type)
-	   || (STMT_VINFO_TYPE (SLP_TREE_REPRESENTATIVE (node))
-	       == induc_vec_info_type))
+  else if ((STMT_VINFO_TYPE (stmt_info) == cycle_phi_info_type
+	    || STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type
+	    || STMT_VINFO_TYPE (stmt_info) == phi_info_type)
+	   && SLP_TREE_CODE (node) != VEC_PERM_EXPR)
     {
-      /* For reduction and induction PHIs we do not use the
-	 insertion iterator.  */
+      /* For PHI node vectorization we do not use the insertion iterator.  */
       si = gsi_none ();
     }
   else
@@ -5277,7 +5376,7 @@ vect_remove_slp_scalar_calls (vec_info *vinfo,
   tree lhs;
   stmt_vec_info stmt_info;
 
-  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
+  if (!node || SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     return;
 
   if (visited.add (node))
@@ -5359,6 +5458,142 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
     gsi_replace (&rgsi, rstmt, true);
 }
 
+struct slp_scc_info
+{
+  bool on_stack;
+  int dfs;
+  int lowlink;
+};
+
+/* Schedule the SLP INSTANCE doing a DFS walk and collecting SCCs.  */
+
+static void
+vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
+		   hash_map<slp_tree, slp_scc_info> &scc_info,
+		   int &maxdfs, vec<slp_tree> &stack)
+{
+  bool existed_p;
+  slp_scc_info *info = &scc_info.get_or_insert (node, &existed_p);
+  gcc_assert (!existed_p);
+  info->dfs = maxdfs;
+  info->lowlink = maxdfs;
+  info->on_stack = true;
+  maxdfs++;
+  stack.safe_push (node);
+  unsigned i;
+  slp_tree child;
+
+  /* ???  We're keeping SLP_TREE_CHILDREN of externalized nodes.  */
+  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
+    FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+      {
+	if (!child)
+	  continue;
+	slp_scc_info *child_info = scc_info.get (child);
+	if (!child_info)
+	  {
+	    vect_schedule_scc (vinfo, child, instance, scc_info, maxdfs, stack);
+	    /* Recursion might have re-allocated the node.  */
+	    info = scc_info.get (node);
+	    child_info = scc_info.get (child);
+	    info->lowlink = MIN (info->lowlink, child_info->lowlink);
+	  }
+	else if (child_info->on_stack)
+	  info->lowlink = MIN (info->lowlink, child_info->dfs);
+      }
+  if (info->lowlink != info->dfs)
+    return;
+
+  /* Singleton.  */
+  if (stack.last () == node)
+    {
+      stack.pop ();
+      info->on_stack = false;
+      vect_schedule_slp_node (vinfo, node, instance);
+      return;
+    }
+  /* SCC.  */
+  int last_idx = stack.length () - 1;
+  while (stack[last_idx] != node)
+    last_idx--;
+  /* We can break the cycle at PHIs who have at least one child
+     code generated.  Then we could re-start the DFS walk until
+     all nodes in the SCC are covered (we might have new entries
+     for only back-reachable nodes).  But it's simpler to just
+     iterate and schedule those that are ready.  */
+  auto_vec<slp_tree, 4> phis_to_fixup;
+  unsigned todo = stack.length () - last_idx;
+  do
+    {
+      for (int idx = stack.length () - 1; idx >= last_idx; --idx)
+	{
+	  slp_tree entry = stack[idx];
+	  if (!entry)
+	    continue;
+	  bool phi = (SLP_TREE_CODE (entry) != VEC_PERM_EXPR
+		      && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (entry)->stmt));
+	  bool ready = !phi;
+	  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (entry), i, child)
+	    if (!child)
+	      {
+		gcc_assert (phi);
+		ready = true;
+		break;
+	      }
+	    else if (scc_info.get (child)->on_stack)
+	      {
+		if (!phi)
+		  {
+		    ready = false;
+		    break;
+		  }
+	      }
+	    else
+	      {
+		if (phi)
+		  {
+		    ready = true;
+		    break;
+		  }
+	      }
+	  if (ready)
+	    {
+	      vect_schedule_slp_node (vinfo, entry, instance);
+	      scc_info.get (entry)->on_stack = false;
+	      stack[idx] = NULL;
+	      todo--;
+	      if (phi)
+		phis_to_fixup.safe_push (entry);
+	    }
+	}
+    }
+  while (todo != 0);
+
+  /* Now fixup the backedge def of the vectorized PHIs in this SCC.  */
+  slp_tree phi_node;
+  FOR_EACH_VEC_ELT (phis_to_fixup, i, phi_node)
+    {
+      gphi *phi = as_a <gphi *> (SLP_TREE_REPRESENTATIVE (phi_node)->stmt);
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
+	{
+	  unsigned dest_idx = e->dest_idx;
+	  child = SLP_TREE_CHILDREN (phi_node)[dest_idx];
+	  if (!child || SLP_TREE_DEF_TYPE (child) != vect_internal_def)
+	    continue;
+	  /* Simply fill all args.  */
+	  for (unsigned i = 0; i < SLP_TREE_VEC_STMTS (phi_node).length (); ++i)
+	    add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[i]),
+			 vect_get_slp_vect_def (child, i),
+			 e, gimple_phi_arg_location (phi, dest_idx));
+	}
+    }
+
+  /* Pop the SCC.  */
+  stack.truncate (last_idx);
+}
+
 /* Generate vector code for SLP_INSTANCES in the loop/basic block.  */
 
 void
@@ -5367,7 +5602,8 @@ vect_schedule_slp (vec_info *vinfo, vec<slp_instance> slp_instances)
   slp_instance instance;
   unsigned int i;
 
-  hash_set<slp_tree> visited;
+  hash_map<slp_tree, slp_scc_info> scc_info;
+  int maxdfs = 0;
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       slp_tree node = SLP_INSTANCE_TREE (instance);
@@ -5381,8 +5617,11 @@ vect_schedule_slp (vec_info *vinfo, vec<slp_instance> slp_instances)
 	  vect_print_slp_graph (MSG_NOTE, vect_location,
 				SLP_INSTANCE_TREE (instance));
 	}
-      /* Schedule the tree of INSTANCE.  */
-      vect_schedule_slp_instance (vinfo, node, instance, visited);
+      /* Schedule the tree of INSTANCE, scheduling SCCs in a way to
+	 have a PHI be the node breaking the cycle.  */
+      auto_vec<slp_tree> stack;
+      if (!scc_info.get (node))
+	vect_schedule_scc (vinfo, node, instance, scc_info, maxdfs, stack);
 
       if (SLP_INSTANCE_ROOT_STMT (instance))
 	vectorize_slp_instance_root_stmt (node, instance);
@@ -5397,25 +5636,6 @@ vect_schedule_slp (vec_info *vinfo, vec<slp_instance> slp_instances)
       slp_tree root = SLP_INSTANCE_TREE (instance);
       stmt_vec_info store_info;
       unsigned int j;
-
-      /* For reductions set the latch values of the vectorized PHIs.  */
-      if (instance->reduc_phis
-	  && STMT_VINFO_REDUC_TYPE (SLP_TREE_REPRESENTATIVE
-			(instance->reduc_phis)) != FOLD_LEFT_REDUCTION
-	  && STMT_VINFO_REDUC_TYPE (SLP_TREE_REPRESENTATIVE
-			(instance->reduc_phis)) != EXTRACT_LAST_REDUCTION)
-	{
-	  slp_tree slp_node = root;
-	  slp_tree phi_node = instance->reduc_phis;
-	  gphi *phi = as_a <gphi *> (SLP_TREE_SCALAR_STMTS (phi_node)[0]->stmt);
-	  edge e = loop_latch_edge (gimple_bb (phi)->loop_father);
-	  gcc_assert (SLP_TREE_VEC_STMTS (phi_node).length ()
-		      == SLP_TREE_VEC_STMTS (slp_node).length ());
-	  for (unsigned j = 0; j < SLP_TREE_VEC_STMTS (phi_node).length (); ++j)
-	    add_phi_arg (as_a <gphi *> (SLP_TREE_VEC_STMTS (phi_node)[j]),
-			 vect_get_slp_vect_def (slp_node, j),
-			 e, gimple_phi_arg_location (phi, e->dest_idx));
-	}
 
       /* Remove scalar call stmts.  Do not do this for basic-block
 	 vectorization as not all uses may be vectorized.

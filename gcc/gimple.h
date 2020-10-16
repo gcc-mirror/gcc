@@ -6598,6 +6598,8 @@ gimple_expr_type (const gimple *stmt)
     }
   else if (code == GIMPLE_COND)
     return boolean_type_node;
+  else if (code == GIMPLE_PHI)
+    return TREE_TYPE (gimple_phi_result (stmt));
   else
     return void_type_node;
 }
