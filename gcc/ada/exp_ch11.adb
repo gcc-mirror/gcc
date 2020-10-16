@@ -1553,7 +1553,7 @@ package body Exp_Ch11 is
    begin
       --  Processing for locally handled exception (exclude reraise case)
 
-      if Present (Name (N)) and then Nkind (Name (N)) = N_Identifier then
+      if Present (Name (N)) and then Is_Entity_Name (Name (N)) then
          if Debug_Flag_Dot_G
            or else Restriction_Active (No_Exception_Propagation)
          then
@@ -1657,7 +1657,7 @@ package body Exp_Ch11 is
       --  but this is also faster in all modes). Propagate Comes_From_Source
       --  flag to the new node.
 
-      if Present (Name (N)) and then Nkind (Name (N)) = N_Identifier then
+      if Present (Name (N)) and then Is_Entity_Name (Name (N)) then
          Src := Comes_From_Source (N);
 
          if Entity (Name (N)) = Standard_Constraint_Error then
@@ -1689,7 +1689,7 @@ package body Exp_Ch11 is
 
       --  where location_string identifies the file/line of the raise
 
-      if Present (Name (N)) then
+      if Present (Name (N)) and then Is_Entity_Name (Name (N)) then
          declare
             Id : Entity_Id := Entity (Name (N));
             Buf : Bounded_String;
