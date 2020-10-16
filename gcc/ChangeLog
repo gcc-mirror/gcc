@@ -1,3 +1,166 @@
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	PR target/97436
+	* config/nvptx/nvptx.opt (m32): Comment out.
+	* doc/invoke.texi (NVPTX options): Remove -m32.
+
+2020-10-15  Jan Hubicka  <hubicka@ucw.cz>
+	    Richard Biener  <rguenther@suse.de>
+
+	* attr-fnspec.h: Fix toplevel comment.
+
+2020-10-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_mem_ref): Print constant offset
+	also for TARGET_MEM_REF.
+
+2020-10-15  Jan Hubicka  <jh@suse.cz>
+
+	* symtab.c (symtab_node::binds_to_current_def_p): Also accept symbols
+	defined in other partition.
+
+2020-10-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_live_operation): Adjust
+	dominance query.
+
+2020-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97482
+	* tree-data-ref.c (split_constant_offset_1): Handle
+	trivial conversions better.
+	* fold-const.c (convert_to_ptrofftype_loc): Elide conversion
+	if the offset is already ptrofftype_p.
+
+2020-10-15  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97295
+	* profile-count.c (profile_count::to_frequency): Move part of
+	gcc_assert to STATIC_ASSERT.
+	* regs.h (REG_FREQ_FROM_BB): Do not use count.to_frequency for
+	a function that does not have count_max initialized.
+
+2020-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* params.opt (-param-ipa-jump-function-lookups=): Add full stop at
+	the end of the parameter description.
+
+2020-10-15  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_cpu_tables): New.
+	(riscv_arch_str): Return empty string if current_subset_list
+	is NULL.
+	(riscv_find_cpu): New.
+	(riscv_handle_option): Verify option value of -mcpu.
+	(riscv_expand_arch): Using std::string.
+	(riscv_default_mtune): New.
+	(riscv_expand_arch_from_cpu): Ditto.
+	* config/riscv/riscv-cores.def: New.
+	* config/riscv/riscv-protos.h (riscv_find_cpu): New.
+	(riscv_cpu_info): New.
+	* config/riscv/riscv.c (riscv_tune_info): Rename ...
+	(riscv_tune_param): ... to this.
+	(riscv_cpu_info): Rename ...
+	(riscv_tune_info): ... to this.
+	(tune_info): Rename ...
+	(tune_param): ... to this.
+	(rocket_tune_info): Update data type name.
+	(sifive_7_tune_info): Ditto.
+	(optimize_size_tune_info): Ditto.
+	(riscv_cpu_info_table): Rename ...
+	(riscv_tune_info_table): ... to this.
+	(riscv_parse_cpu): Rename ...
+	(riscv_parse_tune): ... to this, and translate valid -mcpu option to
+	-mtune option.
+	(riscv_rtx_costs): Rename tune_info to tune_param.
+	(riscv_class_max_nregs): Ditto.
+	(riscv_memory_move_cost): Ditto.
+	(riscv_init_machine_status): Use value of -mcpu if -mtune is not
+	given, and rename tune_info to tune_param.
+	* config/riscv/riscv.h (riscv_expand_arch_from_cpu): New.
+	(riscv_default_mtune): Ditto.
+	(EXTRA_SPEC_FUNCTIONS): Add riscv_expand_arch_from_cpu and
+	riscv_default_mtune.
+	(OPTION_DEFAULT_SPECS): Handle default value of -march/-mabi.
+	(DRIVER_SELF_SPECS): Expand -march from -mcpu if -march is not
+	given.
+	* config/riscv/riscv.opt (-mcpu): New option.
+	* config/riscv/t-riscv ($(common_out_file)): Add
+	riscv-cores.def to dependency.
+	* doc/invoke.texi (RISC-V Option): Add -mcpu, and update the
+	description of default value for -mtune and -march.
+
+2020-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect HRESET.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_HRESET_SET,
+	OPTION_MASK_ISA2_HRESET_UNSET): New macros.
+	(ix86_handle_option): Handle -mhreset.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_HRESET.
+	* common/config/i386/i386-isas.h: Add ISA_NAMES_TABLE_ENTRY
+	for hreset.
+	* config.gcc: Add hresetintrin.h
+	* config/i386/hresetintrin.h: New header file.
+	* config/i386/x86gprintrin.h: Include hresetintrin.h.
+	* config/i386/cpuid.h (bit_HRESET): New.
+	* config/i386/i386-builtin.def: Add new builtin.
+	* config/i386/i386-expand.c (ix86_expand_builtin):
+	Handle new builtin.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__HRESET__.
+	* config/i386/i386-options.c (isa2_opts): Add -mhreset.
+	(ix86_valid_target_attribute_inner_p): Handle hreset.
+	* config/i386/i386.h (TARGET_HRESET, TARGET_HRESET_P,
+	PTA_HRESET): New.
+	(PTA_ALDERLAKE): Add PTA_HRESET.
+	* config/i386/i386.opt: Add option -mhreset.
+	* config/i386/i386.md (UNSPECV_HRESET): New unspec.
+	(hreset): New define_insn.
+	* doc/invoke.texi: Document -mhreset.
+	* doc/extend.texi: Document hreset.
+
+2020-10-15  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect UINTR.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_UINTR_SET
+	OPTION_MASK_ISA2_UINTR_UNSET): New.
+	(ix86_handle_option): Handle -muintr.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_UINTR.
+	* common/config/i386/i386-isas.h: Add ISA_NAMES_TABLE_ENTRY
+	for uintr.
+	* config.gcc: Add uintrintrin.h to extra_headers.
+	* config/i386/uintrintrin.h: New.
+	* config/i386/cpuid.h (bit_UINTR): New.
+	* config/i386/i386-builtin-types.def: Add new types.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-builtins.c (ix86_init_mmx_sse_builtins): Add
+	__builtin_ia32_testui.
+	* config/i386/i386-builtins.h (ix86_builtins): Add
+	IX86_BUILTIN_TESTUI.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__UINTR__.
+	* config/i386/i386-expand.c (ix86_expand_special_args_builtin):
+	Handle UINT8_FTYPE_VOID.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_TESTUI.
+	* config/i386/i386-options.c (isa2_opts): Add -muintr.
+	(ix86_valid_target_attribute_inner_p): Handle UINTR.
+	(ix86_option_override_internal): Add TARGET_64BIT check for UINTR.
+	* config/i386/i386.h (TARGET_UINTR, TARGET_UINTR_P, PTA_UINTR): New.
+	(PTA_SAPPHIRRAPIDS): Add PTA_UINTR.
+	* config/i386/i386.opt: Add -muintr.
+	* config/i386/i386.md
+	(define_int_iterator UINTR_UNSPECV): New.
+	(define_int_attr uintr_unspecv): New.
+	(uintr_<uintr_unspecv>, uintr_senduipi, testui):
+	New define_insn patterns.
+	* config/i386/x86gprintrin.h: Include uintrintrin.h
+	* doc/invoke.texi: Document -muintr.
+	* doc/extend.texi: Document uintr.
+
 2020-10-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/97391
