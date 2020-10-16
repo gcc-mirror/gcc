@@ -1153,7 +1153,7 @@ extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 @HAVE_STAT_TIMESPEC_TRUE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = --tag=solaristag
 @LIBGO_IS_SOLARIS_FALSE@matchargs_os = 
 @LIBGO_IS_BSD_TRUE@golangorg_x_net_route_lo = \
-@LIBGO_IS_BSD_TRUE@	golang.org/net/route.lo
+@LIBGO_IS_BSD_TRUE@	golang.org/x/net/route.lo
 
 @LIBGO_IS_SOLARIS_TRUE@golangorg_x_net_lif_lo = \
 @LIBGO_IS_SOLARIS_TRUE@	golang.org/x/net/lif.lo

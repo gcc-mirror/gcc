@@ -2049,6 +2049,8 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree attrs)
 
       /* The (optional) list of VLA bounds.  */
       tree vblist = TREE_CHAIN (mode);
+      if (vblist)
+       vblist = TREE_VALUE (vblist);
 
       mode = TREE_VALUE (mode);
       if (TREE_CODE (mode) != STRING_CST)

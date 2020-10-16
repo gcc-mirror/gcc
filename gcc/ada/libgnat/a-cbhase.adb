@@ -42,6 +42,7 @@ with System; use type System.Address;
 package body Ada.Containers.Bounded_Hashed_Sets with
   SPARK_Mode => Off
 is
+   use Ada.Finalization;
 
    pragma Warnings (Off, "variable ""Busy*"" is not referenced");
    pragma Warnings (Off, "variable ""Lock*"" is not referenced");

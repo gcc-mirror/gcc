@@ -5752,7 +5752,7 @@ package body Sem_Ch8 is
                --  outside the instance.
 
                if From_Actual_Package (E)
-                 and then Scope_Depth (E2) < Scope_Depth (Inst)
+                 and then Scope_Depth (Scope (E2)) < Scope_Depth (Inst)
                then
                   goto Found;
                else

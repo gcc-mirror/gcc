@@ -122,7 +122,7 @@ __go_syscall6(uintptr_t flag, uintptr_t a1, uintptr_t a2, uintptr_t a3,
 // a variadic function within glibc.
 
 long
-__go_ptrace(int request, pid_t pid, uintptr_t addr, uintptr_t data)
+__go_ptrace(int request, pid_t pid, void *addr, void *data)
 {
   return ptrace (request, pid, addr, data);
 }

@@ -1306,11 +1306,6 @@ package Opt is
    --  GNATBIND
    --  True if pessimistic elaboration order is to be chosen (-p switch set)
 
-   Polling_Required : Boolean := False;
-   --  GNAT
-   --  Set to True if polling for asynchronous abort is enabled by using
-   --  the -gnatP option for GNAT.
-
    Prefix_Exception_Messages : Boolean := False;
    --  GNAT
    --  Set True to prefix exception messages with entity-name:
@@ -2103,14 +2098,6 @@ package Opt is
    --  at the start of each compilation unit, except that it is always
    --  set False for predefined units.
 
-   Polling_Required_Config : Boolean;
-   --  GNAT
-   --  This is the value of the configuration switch that controls polling
-   --  mode. It can be set True by the command line switch -gnatP, and then
-   --  further modified by the use of pragma Polling in the gnat.adc file. This
-   --  flag is used to set the initial value for Polling_Required at the start
-   --  of analyzing each unit.
-
    Prefix_Exception_Messages_Config : Boolean;
    --  The setting of Prefix_Exception_Messages from configuration pragmas
 
@@ -2338,7 +2325,6 @@ private
       Optimize_Alignment             : Character;
       Optimize_Alignment_Local       : Boolean;
       Persistent_BSS_Mode            : Boolean;
-      Polling_Required               : Boolean;
       Prefix_Exception_Messages      : Boolean;
       SPARK_Mode                     : SPARK_Mode_Type;
       SPARK_Mode_Pragma              : Node_Id;

@@ -41,17 +41,27 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 extern const char *riscv_expand_arch (int argc, const char **argv);
+extern const char *riscv_expand_arch_from_cpu (int argc, const char **argv);
+extern const char *riscv_default_mtune (int argc, const char **argv);
 
 # define EXTRA_SPEC_FUNCTIONS						\
-  { "riscv_expand_arch", riscv_expand_arch },
+  { "riscv_expand_arch", riscv_expand_arch },				\
+  { "riscv_expand_arch_from_cpu", riscv_expand_arch_from_cpu },		\
+  { "riscv_default_mtune", riscv_default_mtune },
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
-   --with-arch is ignored if -march is specified.
+   --with-arch is ignored if -march or -mcpu is specified.
    --with-abi is ignored if -mabi is specified.
-   --with-tune is ignored if -mtune is specified.  */
+   --with-tune is ignored if -mtune or -mcpu is specified.
+
+   But using default -march/-mtune value if -mcpu don't have valid option.  */
 #define OPTION_DEFAULT_SPECS \
-  {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"arch", "%{!march=*:-march=%(VALUE)}" }, \
+  {"tune", "%{!mtune=*:"						\
+	   "  %{!mcpu=*:-mtune=%(VALUE)}"				\
+	   "  %{mcpu=*:-mtune=%:riscv_default_mtune(%* %(VALUE))}}" },	\
+  {"arch", "%{!march=*:"						\
+	   "  %{!mcpu=*:-march=%(VALUE)}"				\
+	   "  %{mcpu=*:%:riscv_expand_arch_from_cpu(%* %(VALUE))}}" },	\
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
 
 #ifdef IN_LIBGCC2
@@ -69,8 +79,9 @@ extern const char *riscv_expand_arch (int argc, const char **argv);
 %(subtarget_asm_spec)"
 
 #undef DRIVER_SELF_SPECS
-#define DRIVER_SELF_SPECS \
-"%{march=*:-march=%:riscv_expand_arch(%*)}"
+#define DRIVER_SELF_SPECS					\
+"%{march=*:%:riscv_expand_arch(%*)} "				\
+"%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
 
 #define TARGET_DEFAULT_CMODEL CM_MEDLOW
 

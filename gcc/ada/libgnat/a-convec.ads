@@ -93,7 +93,12 @@ is
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
-      Iterator_Element  => Element_Type;
+      Iterator_Element  => Element_Type,
+      Aggregate         => (Empty          => Empty_Vector,
+                            Add_Unnamed    => Append_One,
+                            New_Indexed    => New_Vector,
+                            Assign_Indexed => Replace_Element);
+
    pragma Preelaborable_Initialization (Vector);
    --  Vector type, to be instantiated by users of this package. If an object
    --  of type Vector is not otherwise initialized, it is initialized to
@@ -323,6 +328,10 @@ is
    --  Source is removed from Source and inserted into Target in the original
    --  order. The length of Source is 0 after a successful call to Move.
 
+   function New_Vector (First, Last : Index_Type) return Vector
+     with Pre => First = Index_Type'First;
+   --  Ada_2020 aggregate operation.
+
    procedure Insert
      (Container : in out Vector;
       Before    : Extended_Index;
@@ -437,6 +446,10 @@ is
       Count     : Count_Type := 1);
    --  Equivalent to Insert (Container, Last_Index (Container) + 1, New_Item,
    --  Count).
+
+   procedure Append_One (Container : in out Vector;
+                         New_Item  :        Element_Type);
+   --  Ada_2020 aggregate operation.
 
    procedure Insert_Space
      (Container : in out Vector;

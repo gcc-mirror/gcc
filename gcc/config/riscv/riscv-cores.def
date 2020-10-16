@@ -1,0 +1,49 @@
+/* List of supported core and tune info for RISC-V.
+   Copyright (C) 2020 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This is a list of cores that implement RISC-V.
+
+   Before using #include to read this file, define a macro:
+
+      RISCV_CORE(CORE_NAME, ARCH, MICRO_ARCH, TUNE_INFO)
+
+   The CORE_NAME is the name of the core, represented as a string.
+   The ARCH is the default arch of the core, represented as a string,
+   can be NULL if no default arch.
+   The MICRO_ARCH is the name of the core for which scheduling decisions
+   will be made, represented as an identifier.
+   The TUNE_INFO is the detail cost model for this core, represented as an
+   identifier, reference to riscv-tunes.def.  */
+
+RISCV_CORE("sifive-e20",      "rv32imc",    "rocket")
+RISCV_CORE("sifive-e21",      "rv32imac",   "rocket")
+RISCV_CORE("sifive-e24",      "rv32imafc",  "rocket")
+RISCV_CORE("sifive-e31",      "rv32imac",   "sifive-3-series")
+RISCV_CORE("sifive-e34",      "rv32imafc",  "sifive-3-series")
+RISCV_CORE("sifive-e76",      "rv32imafc",  "sifive-7-series")
+
+RISCV_CORE("sifive-s21",      "rv64imac",   "rocket")
+RISCV_CORE("sifive-s51",      "rv64imac",   "sifive-5-series")
+RISCV_CORE("sifive-s54",      "rv64imafdc", "sifive-5-series")
+RISCV_CORE("sifive-s76",      "rv64imafdc", "sifive-7-series")
+
+RISCV_CORE("sifive-u54",      "rv64imafdc", "sifive-5-series")
+RISCV_CORE("sifive-u74",      "rv64imafdc", "sifive-7-series")
+
+#undef RISCV_CORE

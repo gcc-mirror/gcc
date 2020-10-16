@@ -350,6 +350,17 @@ package body Ada.Containers.Bounded_Vectors is
       Container.Insert (Container.Last + 1, New_Item, Count);
    end Append;
 
+   ----------------
+   -- Append_One --
+   ----------------
+
+   procedure Append_One (Container : in out Vector;
+                         New_Item  :        Element_Type)
+   is
+   begin
+      Insert (Container, Last_Index (Container) + 1, New_Item, 1);
+   end Append_One;
+
    --------------
    -- Capacity --
    --------------
@@ -823,6 +834,16 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       return Index_Type'First;
    end First_Index;
+
+   -----------------
+   -- New_Vector --
+   -----------------
+
+   function New_Vector (First, Last : Index_Type) return Vector
+   is
+   begin
+      return (To_Vector (Count_Type (Last - First + 1)));
+   end New_Vector;
 
    ---------------------
    -- Generic_Sorting --

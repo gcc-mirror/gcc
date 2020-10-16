@@ -255,7 +255,7 @@ Maximum size of a list of values associated with each parameter for interprocedu
 
 -param-ipa-jump-function-lookups=
 Common Joined UInteger Var(param_ipa_jump_function_lookups) Init(8) Param Optimization
-Maximum number of statements visited during jump function offset discovery
+Maximum number of statements visited during jump function offset discovery.
 
 -param=ipa-max-aa-steps=
 Common Joined UInteger Var(param_ipa_max_aa_steps) Init(25000) Param Optimization

@@ -1,3 +1,256 @@
+2020-10-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/builtins-1-p9-runnable.c: Adjust for big endian.
+	* gcc.target/powerpc/builtins-7-p9-runnable.c: Same.
+
+2020-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95844
+	* g++.dg/cpp2a/spaceship-eq10.C: New test.
+
+2020-10-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/builtins-5-p9-runnable.c: Require lp64.
+	* gcc.target/powerpc/builtins-msum-runnable.c: Require int128.
+	* gcc.target/powerpc/float128-cmp2-runnable.c: Require float128.
+	* gcc.target/powerpc/fold-vec-extract-double.p9.c: Require lp64.
+
+2020-10-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97406
+	PR c++/85901
+	* g++.dg/diagnostic/ptrtomem1.C: New test.
+	* g++.dg/diagnostic/ptrtomem2.C: New test.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/atomic/c11-atomic-exec-6.c: Xfail execution for nvptx.
+	* gcc.dg/atomic/c11-atomic-exec-7.c: Same.
+	* gcc.dg/atomic/stdatomic-op-5.c: Same.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	PR target/97436
+	* gcc.target/nvptx/atomic_fetch-3.c: Remove.
+
+2020-10-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-52.c: New testcase.
+
+2020-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97482
+	* gcc.dg/vect/pr97428.c: New testcase.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/tree-ssa/pr84512.c: Remove xfail for nvptx.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	* c-c++-common/ident-0b.c: Require effective target ident_directive.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/compile/limits-externdecl.c: Remove dg-skip-if for
+	nvptx.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/attr-alloc_size-11.c: Don't xfail for nvptx.
+	* gcc.dg/tree-ssa/20040204-1.c: Same.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/execute/pr68185.c: Remove dg-skip-if for nvptx.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/execute/981019-1.c: Remove dg-skip-if for nvptx.
+
+2020-10-15  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/compile/pr42717.c: Remove nvptx xfail.
+	* gcc.c-torture/compile/pr61684.c: Same.
+	* gcc.c-torture/execute/pr20601-1.c: Same.
+	* gcc.c-torture/execute/pr52129.c: Same.
+	* gcc.c-torture/execute/pr59221.c: Same.
+	* gcc.dg/pr68671.c: Same.
+
+2020-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/ipa/modref-1.c: Remove space between param offset: and number
+	in scan-ipa-dump.
+	(b): Declare return type to void.
+	(main): Declare return type to int.  Change c to array of 3 chars.
+	* gcc.dg/tree-ssa/modref-4.c: Remove space between param offset: and
+	number in scan-ipa-dump.  Use modref1 instead of modref2.
+	(b): Declare return type to void.
+	(main): Declare return type to int.  Change c to array of 3 chars.
+
+2020-10-15  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/mcpu-1.c: New.
+	* gcc.target/riscv/mcpu-2.c: Ditto.
+	* gcc.target/riscv/mcpu-3.c: Ditto.
+	* gcc.target/riscv/mcpu-4.c: Ditto.
+	* gcc.target/riscv/mcpu-5.c: Ditto.
+	* gcc.target/riscv/mcpu-6.c: Ditto.
+	* gcc.target/riscv/mcpu-7.c: Ditto.
+
+2020-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/hreset-1.c: New test.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/x86gprintrin-1.c: Add -mhreset.
+	* gcc.target/i386/x86gprintrin-2.c: Ditto.
+	* gcc.target/i386/x86gprintrin-3.c: Ditto.
+	* gcc.target/i386/x86gprintrin-4.c: Add mhreset.
+	* gcc.target/i386/x86gprintrin-5.c: Ditto.
+
+2020-10-15  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/uintr-1.c: New test.
+	* gcc.target/i386/uintr-2.c: Ditto.
+	* gcc.target/i386/uintr-3.c: Ditto.
+	* gcc.target/i386/uintr-4.c: Ditto.
+	* gcc.target/i386/uintr-5.c: Ditto.
+	* gcc.target/i386/x86gprintrin-1.c: Add -muintr for 64bit target.
+	* gcc.target/i386/x86gprintrin-2.c: Ditto.
+	* gcc.target/i386/x86gprintrin-3.c: Ditto.
+	* gcc.target/i386/x86gprintrin-4.c: Add muintr for 64bit target.
+	* gcc.target/i386/x86gprintrin-5.c: Ditto.
+
+2020-10-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97391
+	* gcc.dg/Warray-bounds-68.c: New test.
+
+2020-10-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97413
+	* gcc.dg/Wvla-parameter-8.c: New test.
+
+2020-10-14  Tom de Vries  <tdevries@suse.de>
+
+	* lib/target-supports.exp (check_compile): Save and restore
+	$compiler_flags when calling ${tool}_target_compile.
+
+2020-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93388
+	* gcc.dg/analyzer/data-model-21.c: New test.
+
+2020-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97394
+	* gcc.dg/analyzer/setjmp-pr93378.c: Use test-setjmp.h rather than
+	<setjmp.h>.
+	* gcc.dg/analyzer/sigsetjmp-5.c: Likewise.
+	* gcc.dg/analyzer/sigsetjmp-6.c: Likewise.
+	* gcc.dg/analyzer/test-setjmp.h: Don't include <setjmp.h>.
+	Provide decls of jmp_buf, sigjmp_buf, setjmp, sigsetjmp,
+	longjmp, and siglongjmp.
+
+2020-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97358
+	* g++.dg/cpp0x/lambda/lambda-variadic11.C: New test.
+
+2020-10-14  Sunil K Pandey  <skpgkp2@gmail.com>
+
+	PR target/95483
+	* gcc.target/i386/avx-1.c: Add test.
+	* gcc.target/i386/avx2-vbroadcastsi128-1.c: Ditto.
+	* gcc.target/i386/avx2-vbroadcastsi128-2.c: Ditto.
+	* gcc.target/i386/avx512bw-vmovdqu16-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vmovdqu8-1.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducesd-1.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducesd-2.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducess-1.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducess-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2si64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2sd64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2ss64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2si64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtss-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovdqa32-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vmovdqa64-1.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx512dq-vreducepd-3.c: New test.
+	* gcc.target/i386/avx512dq-vreducepd-4.c: New test.
+	* gcc.target/i386/avx512dq-vreduceps-3.c: New test.
+	* gcc.target/i386/avx512dq-vreduceps-4.c: New test.
+	* gcc.target/i386/avx512f-vcvtsi2sd-1.c: New test.
+	* gcc.target/i386/pr95483-1.c: New test.
+	* gcc.target/i386/pr95483-2.c: New test.
+	* gcc.target/i386/pr95483-3.c: New test.
+	* gcc.target/i386/pr95483-4.c: New test.
+	* gcc.target/i386/pr95483-5.c: New test.
+	* gcc.target/i386/pr95483-6.c: New test.
+	* gcc.target/i386/pr95483-7.c: New test.
+
+2020-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97387
+	* gcc.target/i386/pr97387-1.c: New test.
+	* gcc.target/i386/pr97387-2.c: New test.
+
+2020-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97396.c: New test.
+
+2020-10-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/modref-1.c: New test.
+	* gcc.dg/tree-ssa/modref-4.c: New test.
+
+2020-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97390
+	* gfortran.dg/goacc/warn_truncated.f90: New test.
+
+2020-10-14  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/extern-redecl2.C: New.
+
+2020-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* gfortran.dg/pr95614_1.f90: New test.
+	* gfortran.dg/pr95614_2.f90: New test.
+	* gfortran.dg/pr95614_3.f90: New test.
+	* gfortran.dg/pr95614_4.f90: New test.
+
+2020-10-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96759
+	* g++.target/riscv/pr96759.C: New.
+	* gcc.target/riscv/pr96759.c: New.
+
 2020-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/97386

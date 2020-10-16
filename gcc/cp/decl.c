@@ -14234,6 +14234,10 @@ copy_fn_p (const_tree d)
        accept those as copy functions.  */
     return 0;
 
+  if (!DECL_CONSTRUCTOR_P (d)
+      && DECL_NAME (d) != assign_op_identifier)
+    return 0;
+
   args = FUNCTION_FIRST_USER_PARMTYPE (d);
   if (!args)
     return 0;
@@ -14306,6 +14310,10 @@ move_signature_fn_p (const_tree d)
   tree args;
   tree arg_type;
   bool result = false;
+
+  if (!DECL_CONSTRUCTOR_P (d)
+      && DECL_NAME (d) != assign_op_identifier)
+    return 0;
 
   args = FUNCTION_FIRST_USER_PARMTYPE (d);
   if (!args)

@@ -34,6 +34,7 @@ BlockingMutex global_mutex(LINKER_INITIALIZED);
 
 Flags lsan_flags;
 
+
 void DisableCounterUnderflow() {
   if (common_flags()->detect_leaks) {
     Report("Unmatched call to __lsan_enable().\n");
@@ -105,10 +106,6 @@ void InitializeRootRegions() {
   CHECK(!root_regions);
   ALIGNED(64) static char placeholder[sizeof(InternalMmapVector<RootRegion>)];
   root_regions = new (placeholder) InternalMmapVector<RootRegion>();
-}
-
-const char *MaybeCallLsanDefaultOptions() {
-  return (&__lsan_default_options) ? __lsan_default_options() : "";
 }
 
 void InitCommonLsan() {
@@ -221,10 +218,7 @@ static void ProcessThreads(SuspendedThreadsList const &, Frontier *) {}
 // Scans thread data (stacks and TLS) for heap pointers.
 static void ProcessThreads(SuspendedThreadsList const &suspended_threads,
                            Frontier *frontier) {
-  InternalMmapVector<uptr> registers(suspended_threads.RegisterCount());
-  uptr registers_begin = reinterpret_cast<uptr>(registers.data());
-  uptr registers_end =
-      reinterpret_cast<uptr>(registers.data() + registers.size());
+  InternalMmapVector<uptr> registers;
   for (uptr i = 0; i < suspended_threads.ThreadCount(); i++) {
     tid_t os_id = static_cast<tid_t>(suspended_threads.GetThreadID(i));
     LOG_THREADS("Processing thread %d.\n", os_id);
@@ -241,7 +235,7 @@ static void ProcessThreads(SuspendedThreadsList const &suspended_threads,
     }
     uptr sp;
     PtraceRegistersStatus have_registers =
-        suspended_threads.GetRegistersAndSP(i, registers.data(), &sp);
+        suspended_threads.GetRegistersAndSP(i, &registers, &sp);
     if (have_registers != REGISTERS_AVAILABLE) {
       Report("Unable to get registers from thread %d.\n", os_id);
       // If unable to get SP, consider the entire stack to be reachable unless
@@ -250,9 +244,13 @@ static void ProcessThreads(SuspendedThreadsList const &suspended_threads,
       sp = stack_begin;
     }
 
-    if (flags()->use_registers && have_registers)
+    if (flags()->use_registers && have_registers) {
+      uptr registers_begin = reinterpret_cast<uptr>(registers.data());
+      uptr registers_end =
+          reinterpret_cast<uptr>(registers.data() + registers.size());
       ScanRangeForPointers(registers_begin, registers_end, frontier,
                            "REGISTERS", kReachable);
+    }
 
     if (flags()->use_stacks) {
       LOG_THREADS("Stack at %p-%p (SP = %p).\n", stack_begin, stack_end, sp);
@@ -892,12 +890,11 @@ int __lsan_do_recoverable_leak_check() {
   return 0;
 }
 
-#if !SANITIZER_SUPPORTS_WEAK_HOOKS
-SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
-const char * __lsan_default_options() {
+SANITIZER_INTERFACE_WEAK_DEF(const char *, __lsan_default_options, void) {
   return "";
 }
 
+#if !SANITIZER_SUPPORTS_WEAK_HOOKS
 SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
 int __lsan_is_turned_off() {
   return 0;

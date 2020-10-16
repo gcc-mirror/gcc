@@ -950,6 +950,9 @@ _mm256_broadcastsi128_si256 (__m128i __X)
   return (__m256i) __builtin_ia32_vbroadcastsi256 ((__v2di)__X);
 }
 
+#define _mm_broadcastsi128_si256(X) _mm256_broadcastsi128_si256(X)
+#define _mm_broadcastsd_pd(X) _mm_movedup_pd(X)
+
 #ifdef __OPTIMIZE__
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))

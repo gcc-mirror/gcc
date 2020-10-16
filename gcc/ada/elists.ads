@@ -90,6 +90,21 @@ package Elists is
    --  a field in some other node which points to an element list where the
    --  list is then subsequently filled in using Append calls.
 
+   function New_Elmt_List (Elmt1 : Node_Or_Entity_Id) return Elist_Id;
+   function New_Elmt_List
+     (Elmt1 : Node_Or_Entity_Id;
+      Elmt2 : Node_Or_Entity_Id) return Elist_Id;
+   function New_Elmt_List
+     (Elmt1 : Node_Or_Entity_Id;
+      Elmt2 : Node_Or_Entity_Id;
+      Elmt3 : Node_Or_Entity_Id) return Elist_Id;
+   function New_Elmt_List
+     (Elmt1 : Node_Or_Entity_Id;
+      Elmt2 : Node_Or_Entity_Id;
+      Elmt3 : Node_Or_Entity_Id;
+      Elmt4 : Node_Or_Entity_Id) return Elist_Id;
+   --  Create a new element list containing the given arguments.
+
    function First_Elmt (List : Elist_Id) return Elmt_Id;
    pragma Inline (First_Elmt);
    --  Obtains the first element of the given element list or, if the list has

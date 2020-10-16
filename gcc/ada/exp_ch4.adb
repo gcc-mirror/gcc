@@ -2963,12 +2963,13 @@ package body Exp_Ch4 is
 
       --  Local Declarations
 
-      Opnd_Typ : Entity_Id;
-      Ent      : Entity_Id;
-      Len      : Uint;
-      J        : Nat;
-      Clen     : Node_Id;
-      Set      : Boolean;
+      Opnd_Typ   : Entity_Id;
+      Subtyp_Ind : Entity_Id;
+      Ent        : Entity_Id;
+      Len        : Uint;
+      J          : Nat;
+      Clen       : Node_Id;
+      Set        : Boolean;
 
    --  Start of processing for Expand_Concatenate
 
@@ -3441,28 +3442,95 @@ package body Exp_Ch4 is
       --  Initialize_Scalars is enabled. Also since this is the actual result
       --  entity, we make sure we have debug information for the result.
 
+      Subtyp_Ind :=
+        Make_Subtype_Indication (Loc,
+          Subtype_Mark => New_Occurrence_Of (Atyp, Loc),
+          Constraint   =>
+            Make_Index_Or_Discriminant_Constraint (Loc,
+              Constraints => New_List (
+                Make_Range (Loc,
+                  Low_Bound  => Low_Bound,
+                  High_Bound => High_Bound))));
+
       Ent := Make_Temporary (Loc, 'S');
       Set_Is_Internal       (Ent);
       Set_Debug_Info_Needed (Ent);
 
-      --  If the bound is statically known to be out of range, we do not want
-      --  to abort, we want a warning and a runtime constraint error. Note that
-      --  we have arranged that the result will not be treated as a static
-      --  constant, so we won't get an illegality during this insertion.
+      --  If we are concatenating strings and the current scope already uses
+      --  the secondary stack, allocate the resulting string also on the
+      --  secondary stack to avoid putting too much pressure on the primary
+      --  stack.
+      --  Don't do this if -gnatd.h is set, as this will break the wrapping of
+      --  Cnode in an Expression_With_Actions, see Expand_N_Op_Concat.
 
-      Insert_Action (Cnode,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Ent,
-          Object_Definition   =>
-            Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Occurrence_Of (Atyp, Loc),
-              Constraint   =>
-                Make_Index_Or_Discriminant_Constraint (Loc,
-                  Constraints => New_List (
-                    Make_Range (Loc,
-                      Low_Bound  => Low_Bound,
-                      High_Bound => High_Bound))))),
-        Suppress => All_Checks);
+      if Atyp = Standard_String
+        and then Uses_Sec_Stack (Current_Scope)
+        and then RTE_Available (RE_SS_Pool)
+        and then not Debug_Flag_Dot_H
+      then
+         --  Generate:
+         --     subtype Axx is ...;
+         --     type Ayy is access Axx;
+         --     Rxx : Ayy := new <subtype> [storage_pool = ss_pool];
+         --     Sxx : <subtype> renames Rxx.all;
+
+         declare
+            Alloc   : Node_Id;
+            ConstrT : constant Entity_Id := Make_Temporary (Loc, 'A');
+            Acc_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+            Temp    : Entity_Id;
+
+         begin
+            Insert_Action (Cnode,
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier => ConstrT,
+                Subtype_Indication  => Subtyp_Ind),
+              Suppress => All_Checks);
+            Freeze_Itype (ConstrT, Cnode);
+
+            Insert_Action (Cnode,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Acc_Typ,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    Subtype_Indication => New_Occurrence_Of (ConstrT, Loc))),
+              Suppress => All_Checks);
+            Alloc :=
+              Make_Allocator (Loc,
+                Expression => New_Occurrence_Of (ConstrT, Loc));
+            Set_Storage_Pool (Alloc, RTE (RE_SS_Pool));
+            Set_Procedure_To_Call (Alloc, RTE (RE_SS_Allocate));
+
+            Temp := Make_Temporary (Loc, 'R', Alloc);
+            Insert_Action (Cnode,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Object_Definition   => New_Occurrence_Of (Acc_Typ, Loc),
+                Expression          => Alloc),
+              Suppress => All_Checks);
+
+            Insert_Action (Cnode,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Ent,
+                Subtype_Mark        => New_Occurrence_Of (ConstrT, Loc),
+                Name                =>
+                  Make_Explicit_Dereference (Loc,
+                    Prefix => New_Occurrence_Of (Temp, Loc))),
+              Suppress => All_Checks);
+         end;
+      else
+         --  If the bound is statically known to be out of range, we do not
+         --  want to abort, we want a warning and a runtime constraint error.
+         --  Note that we have arranged that the result will not be treated as
+         --  a static constant, so we won't get an illegality during this
+         --  insertion.
+
+         Insert_Action (Cnode,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Ent,
+             Object_Definition   => Subtyp_Ind),
+           Suppress => All_Checks);
+      end if;
 
       --  If the result of the concatenation appears as the initializing
       --  expression of an object declaration, we can just rename the
@@ -10265,15 +10333,17 @@ package body Exp_Ch4 is
       --  where Bits is the shift count mod Esize (the mod operation here
       --  deals with ludicrous large shift counts, which are apparently OK).
 
-      --  What about nonbinary modulus ???
+      if Modify_Tree_For_C then
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+            Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
+            Typ : constant Entity_Id  := Etype (N);
 
-      declare
-         Loc : constant Source_Ptr := Sloc (N);
-         Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
-         Typ : constant Entity_Id  := Etype (N);
+         begin
+            --  Sem_Intr should prevent getting there with a non binary modulus
 
-      begin
-         if Modify_Tree_For_C then
+            pragma Assert (not Non_Binary_Modulus (Typ));
+
             Rewrite (Right_Opnd (N),
               Make_Op_Rem (Loc,
                 Left_Opnd  => Relocate_Node (Right_Opnd (N)),
@@ -10298,8 +10368,8 @@ package body Exp_Ch4 is
                           Duplicate_Subexpr_No_Checks (Right_Opnd (N))))));
 
             Analyze_And_Resolve (N, Typ);
-         end if;
-      end;
+         end;
+      end if;
    end Expand_N_Op_Rotate_Left;
 
    ------------------------------
@@ -10318,22 +10388,24 @@ package body Exp_Ch4 is
       --  where Bits is the shift count mod Esize (the mod operation here
       --  deals with ludicrous large shift counts, which are apparently OK).
 
-      --  What about nonbinary modulus ???
+      if Modify_Tree_For_C then
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+            Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
+            Typ : constant Entity_Id  := Etype (N);
 
-      declare
-         Loc : constant Source_Ptr := Sloc (N);
-         Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
-         Typ : constant Entity_Id  := Etype (N);
+         begin
+            --  Sem_Intr should prevent getting there with a non binary modulus
 
-      begin
-         Rewrite (Right_Opnd (N),
-           Make_Op_Rem (Loc,
-             Left_Opnd  => Relocate_Node (Right_Opnd (N)),
-             Right_Opnd => Make_Integer_Literal (Loc, Esize (Typ))));
+            pragma Assert (not Non_Binary_Modulus (Typ));
 
-         Analyze_And_Resolve (Right_Opnd (N), Rtp);
+            Rewrite (Right_Opnd (N),
+              Make_Op_Rem (Loc,
+                Left_Opnd  => Relocate_Node (Right_Opnd (N)),
+                Right_Opnd => Make_Integer_Literal (Loc, Esize (Typ))));
 
-         if Modify_Tree_For_C then
+            Analyze_And_Resolve (Right_Opnd (N), Rtp);
+
             Rewrite (N,
               Make_Op_Or (Loc,
                 Left_Opnd =>
@@ -10351,8 +10423,8 @@ package body Exp_Ch4 is
                           Duplicate_Subexpr_No_Checks (Right_Opnd (N))))));
 
             Analyze_And_Resolve (N, Typ);
-         end if;
-      end;
+         end;
+      end if;
    end Expand_N_Op_Rotate_Right;
 
    ----------------------------
@@ -10382,6 +10454,10 @@ package body Exp_Ch4 is
             Hi    : Uint;
 
          begin
+            --  Sem_Intr should prevent getting there with a non binary modulus
+
+            pragma Assert (not Non_Binary_Modulus (Typ));
+
             if Compile_Time_Known_Value (Right) then
                if Expr_Value (Right) >= Siz then
                   Rewrite (N, Make_Integer_Literal (Loc, 0));
@@ -10439,7 +10515,14 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  If we are in Modify_Tree_For_C mode, there is no shift right
-      --  arithmetic in C, so we rewrite in terms of logical shifts.
+      --  arithmetic in C, so we rewrite in terms of logical shifts for
+      --  modular integers, and keep the Shift_Right intrinsic for signed
+      --  integers: even though doing a shift on a signed integer is not
+      --  fully guaranteed by the C standard, this is what C compilers
+      --  implement in practice.
+      --  Consider also taking advantage of this for modular integers by first
+      --  performing an unchecked conversion of the modular integer to a signed
+      --  integer of the same sign, and then convert back.
 
       --    Shift_Right (Num, Bits) or
       --      (if Num >= Sign
@@ -10448,26 +10531,24 @@ package body Exp_Ch4 is
 
       --  Here Mask is all 1 bits (2**size - 1), and Sign is 2**(size - 1)
 
-      --  Note: in almost all C compilers it would work to just shift a
-      --  signed integer right, but it's undefined and we cannot rely on it.
-
       --  Note: the above works fine for shift counts greater than or equal
       --  to the word size, since in this case (not (Shift_Right (Mask, bits)))
       --  generates all 1'bits.
 
-      --  What about nonbinary modulus ???
+      if Modify_Tree_For_C and then Is_Modular_Integer_Type (Etype (N)) then
+         declare
+            Loc   : constant Source_Ptr := Sloc (N);
+            Typ   : constant Entity_Id  := Etype (N);
+            Sign  : constant Uint       := 2 ** (Esize (Typ) - 1);
+            Mask  : constant Uint       := (2 ** Esize (Typ)) - 1;
+            Left  : constant Node_Id    := Left_Opnd (N);
+            Right : constant Node_Id    := Right_Opnd (N);
+            Maskx : Node_Id;
 
-      declare
-         Loc   : constant Source_Ptr := Sloc (N);
-         Typ   : constant Entity_Id  := Etype (N);
-         Sign  : constant Uint       := 2 ** (Esize (Typ) - 1);
-         Mask  : constant Uint       := (2 ** Esize (Typ)) - 1;
-         Left  : constant Node_Id    := Left_Opnd (N);
-         Right : constant Node_Id    := Right_Opnd (N);
-         Maskx : Node_Id;
+         begin
+            --  Sem_Intr should prevent getting there with a non binary modulus
 
-      begin
-         if Modify_Tree_For_C then
+            pragma Assert (not Non_Binary_Modulus (Typ));
 
             --  Here if not (Shift_Right (Mask, bits)) can be computed at
             --  compile time as a single constant.
@@ -10513,8 +10594,8 @@ package body Exp_Ch4 is
                       Maskx,
                       Make_Integer_Literal (Loc, 0)))));
             Analyze_And_Resolve (N, Typ);
-         end if;
-      end;
+         end;
+      end if;
    end Expand_N_Op_Shift_Right_Arithmetic;
 
    --------------------------

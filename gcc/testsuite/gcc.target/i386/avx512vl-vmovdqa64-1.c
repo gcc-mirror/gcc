@@ -4,8 +4,8 @@
 /* { dg-final { scan-assembler-times "(?:vmovdqa64|vpblendmq)\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\\(\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { target nonpic } } } */
-/* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\\(\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { target nonpic } } } */
+/* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\\(\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 2 { target nonpic } } } */
+/* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\\(\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 2 { target nonpic } } } */
 /* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*\\)\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*\\)\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*\\)\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
@@ -34,6 +34,9 @@ avx512vl_test (void)
 
   yy = _mm256_load_si256 (p1);
   xx = _mm_load_si128 (p2);
+
+  yy = _mm256_load_epi64 (p);
+  xx = _mm_load_epi64 (p);
 
   yy = _mm256_mask_load_epi64 (yy, m, p);
   xx = _mm_mask_load_epi64 (xx, m, p);

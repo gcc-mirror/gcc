@@ -70,6 +70,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #endif
 
+/* Our ports rely on gnu-user.h, which #defines _POSIX_SOURCE for
+   C++ by default.  VxWorks doesn't provide 100% of what this implies
+   (e.g. ::mkstemp), so, arrange to prevent that by falling back to
+   the default CPP spec for C++ as well.  */
+#undef CPLUSPLUS_CPP_SPEC
+
 /* For VxWorks static rtps, the system provides libc_internal.a, a superset of
    libgcc.a that we need to use e.g. to satisfy references to __init and
    __fini.  We still want our libgcc to prevail for symbols it would provide
@@ -152,8 +158,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Setup the crtstuff begin/end we might need for dwarf EH registration.  */
 
 #if !defined(CONFIG_SJLJ_EXCEPTIONS) && DWARF2_UNWIND_INFO
-#define VX_CRTBEGIN_SPEC \
- "%{!mrtp:vx_crtbegin-kernel.o%s} %{mrtp:vx_crtbegin-rtp.o%s}"
+#define VX_CRTBEGIN_SPEC "vx_crtbegin.o%s"
 #define VX_CRTEND_SPEC "-l:vx_crtend.o"
 #else
 #define VX_CRTBEGIN_SPEC ""

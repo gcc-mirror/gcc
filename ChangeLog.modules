@@ -1,5 +1,7 @@
 2020-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk ccb4f20cbee
+
 	gcc/cp/
 	* name-lookup.c (do_nonmember_using_decl): Fix duplication case.
 

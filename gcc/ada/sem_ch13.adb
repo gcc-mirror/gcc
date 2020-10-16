@@ -390,8 +390,7 @@ package body Sem_Ch13 is
 
    procedure Adjust_Record_For_Reverse_Bit_Order (R : Entity_Id) is
       Max_Machine_Scalar_Size : constant Uint :=
-                                  UI_From_Int
-                                    (Standard_Long_Long_Integer_Size);
+                                  UI_From_Int (System_Max_Integer_Size);
       --  We use this as the maximum machine scalar size
 
       SSU : constant Uint := UI_From_Int (System_Storage_Unit);
@@ -4398,14 +4397,16 @@ package body Sem_Ch13 is
                      if Ekind (E) /= E_Protected_Type then
                         Error_Msg_Name_1 := Nam;
                         Error_Msg_N
-                          ("aspect % only applies to a protected object",
+                          ("aspect % only applies to a protected type " &
+                           "or object",
                            Aspect);
 
                      else
                         --  Set the Uses_Lock_Free flag to True if there is no
                         --  expression or if the expression is True. The
                         --  evaluation of this aspect should be delayed to the
-                        --  freeze point (why???)
+                        --  freeze point if we wanted to handle the corner case
+                        --  of "true" or "false" being redefined.
 
                         if No (Expr)
                           or else Is_True (Static_Boolean (Expr))
@@ -4425,6 +4426,19 @@ package body Sem_Ch13 is
 
                   elsif A_Id = Aspect_Disable_Controlled then
                      Analyze_Aspect_Disable_Controlled;
+                     goto Continue;
+
+                  --  Ada 202x (AI12-0129): Exclusive_Functions
+
+                  elsif A_Id = Aspect_Exclusive_Functions then
+                     if Ekind (E) /= E_Protected_Type then
+                        Error_Msg_Name_1 := Nam;
+                        Error_Msg_N
+                          ("aspect % only applies to a protected type " &
+                           "or object",
+                           Aspect);
+                     end if;
+
                      goto Continue;
 
                   --  Ada 202x (AI12-0075): static expression functions
@@ -9746,7 +9760,7 @@ package body Sem_Ch13 is
 
             elsif Nkind (Ritem) = N_Aspect_Specification
               and then Present (Aspect_Rep_Item (Ritem))
-              and then Scope (Typ) /= Current_Scope
+              and then Scope_Depth (Scope (Typ)) > Scope_Depth (Current_Scope)
             then
                declare
                   Prag : constant Node_Id := Aspect_Rep_Item (Ritem);
@@ -10016,7 +10030,7 @@ package body Sem_Ch13 is
                end if;
             end;
 
-            --  within a generic unit, prevent a double analysis of the body
+            --  Within a generic unit, prevent a double analysis of the body
             --  which will not be marked analyzed yet. This will happen when
             --  the freeze node is created during the preanalysis of an
             --  expression function.
@@ -14498,11 +14512,9 @@ package body Sem_Ch13 is
 
       function Visible_Component (Comp : Name_Id) return Entity_Id;
       --  Given an identifier in the expression, check whether there is a
-      --  discriminant or component of the type that is directy visible, and
-      --  rewrite it as the corresponding selected component of the formal of
-      --  the subprogram. The entity is located by a sequential search, which
-      --  seems acceptable given the typical size of component lists and check
-      --  expressions. Possible optimization ???
+      --  discriminant, component, protected procedure, or entry of the type
+      --  that is directy visible, and rewrite it as the corresponding selected
+      --  component of the formal of the subprogram.
 
       ----------------------
       -- Replace_Type_Ref --
@@ -14677,14 +14689,20 @@ package body Sem_Ch13 is
 
       function Visible_Component (Comp : Name_Id) return Entity_Id is
          E : Entity_Id;
-
       begin
-         --  Types with nameable components are records and discriminated
-         --  private types.
+         --  Types with nameable components are record, task, and protected
+         --  types, and discriminated private types.
 
-         if Ekind (T) = E_Record_Type
+         if Ekind (T) in E_Record_Type
+                       | E_Task_Type
+                       | E_Protected_Type
            or else (Is_Private_Type (T) and then Has_Discriminants (T))
          then
+            --  This is a sequential search, which seems acceptable
+            --  efficiency-wise, given the typical size of component
+            --  lists, protected operation lists, task item lists, and
+            --  check expressions.
+
             E := First_Entity (T);
             while Present (E) loop
                if Comes_From_Source (E) and then Chars (E) = Comp then
@@ -14695,7 +14713,7 @@ package body Sem_Ch13 is
             end loop;
          end if;
 
-         --  Nothing by that name, or the type has no components
+         --  Nothing by that name
 
          return Empty;
       end Visible_Component;
@@ -15142,18 +15160,32 @@ package body Sem_Ch13 is
       --  Predicates that establish the legality of each possible operation in
       --  an Aggregate aspect.
 
-      function Valid_Empty          (E : Entity_Id) return Boolean;
-      function Valid_Add_Named      (E : Entity_Id) return Boolean;
-      function Valid_Add_Unnamed    (E : Entity_Id) return Boolean;
-      function Valid_New_Indexed    (E : Entity_Id) return Boolean;
-
-      --  Note: The legality rules for Assign_Indexed are the same as for
-      --  Add_Named.
+      function Valid_Empty             (E : Entity_Id) return Boolean;
+      function Valid_Add_Named         (E : Entity_Id) return Boolean;
+      function Valid_Add_Unnamed       (E : Entity_Id) return Boolean;
+      function Valid_New_Indexed       (E : Entity_Id) return Boolean;
+      function Valid_Assign_Indexed    (E : Entity_Id) return Boolean;
 
       generic
         with function Pred (Id : Node_Id) return Boolean;
       procedure Resolve_Operation (Subp_Id : Node_Id);
       --  Common processing to resolve each aggregate operation.
+
+      ------------------------
+      -- Valid_Assign_Index --
+      ------------------------
+
+      function Valid_Assign_Indexed (E : Entity_Id) return Boolean is
+      begin
+         --  The profile must be the same as for Add_Named, with the added
+         --  requirement that the key_type be a discrete type.
+
+         if Valid_Add_Named (E) then
+            return Is_Discrete_Type (Etype (Next_Formal (First_Formal (E))));
+         else
+            return False;
+         end if;
+      end Valid_Assign_Indexed;
 
       -----------------
       -- Valid_Emoty --
@@ -15278,7 +15310,8 @@ package body Sem_Ch13 is
       procedure Resolve_Named   is new Resolve_Operation (Valid_Add_Named);
       procedure Resolve_Indexed is new Resolve_Operation (Valid_New_Indexed);
       procedure Resolve_Assign_Indexed
-                                is new Resolve_Operation (Valid_Add_Named);
+                                is new Resolve_Operation
+                                                      (Valid_Assign_Indexed);
    begin
       Assoc := First (Component_Associations (Expr));
 
@@ -15674,12 +15707,12 @@ package body Sem_Ch13 is
             return;
          end if;
 
-         --  Case of component size is greater than or equal to 64 and the
-         --  alignment of the array is at least as large as the alignment
-         --  of the component. We are definitely OK in this situation.
+         --  Case where component size is greater than or equal to the maximum
+         --  integer size and the alignment of the array is at least as large
+         --  as the alignment of the component. We are OK in this situation.
 
          if Known_Component_Size (Atyp)
-           and then Component_Size (Atyp) >= 64
+           and then Component_Size (Atyp) >= System_Max_Integer_Size
            and then Known_Alignment (Atyp)
            and then Known_Alignment (Ctyp)
            and then Alignment (Atyp) >= Alignment (Ctyp)
@@ -15690,8 +15723,7 @@ package body Sem_Ch13 is
          --  Check actual component size
 
          if not Known_Component_Size (Atyp)
-           or else not (Addressable (Component_Size (Atyp))
-                         and then Component_Size (Atyp) < 64)
+           or else not Addressable (Component_Size (Atyp))
            or else Component_Size (Atyp) mod Esize (Ctyp) /= 0
          then
             No_Independence;
@@ -15777,10 +15809,12 @@ package body Sem_Ch13 is
             return False;
          end if;
 
-         --  Size of component must be addressable or greater than 64 bits
-         --  and a multiple of bytes.
+         --  Size of component must be addressable or greater than the maximum
+         --  integer size and a multiple of bytes.
 
-         if not Addressable (Esize (C)) and then Esize (C) < Uint_64 then
+         if not Addressable (Esize (C))
+           and then Esize (C) < System_Max_Integer_Size
+         then
             return False;
          end if;
 

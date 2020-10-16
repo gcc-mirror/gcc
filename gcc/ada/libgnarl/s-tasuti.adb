@@ -33,10 +33,6 @@
 
 --  These declarations are not part of the GNARLI
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during tasking
---  operations. It causes infinite loops and other problems.
-
 with System.Tasking.Debug;
 with System.Task_Primitives.Operations;
 with System.Tasking.Initialization;

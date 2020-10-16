@@ -2748,6 +2748,16 @@ package body Sem_Attr is
 
       procedure Min_Max is
       begin
+         --  Attribute can appear as function name in a reduction.
+         --  Semantic checks are performed later.
+
+         if Nkind (Parent (N)) = N_Attribute_Reference
+           and then Attribute_Name (Parent (N)) = Name_Reduce
+         then
+            Set_Etype (N, P_Base_Type);
+            return;
+         end if;
+
          Check_E2;
          Check_Scalar_Type;
          Resolve (E1, P_Base_Type);
@@ -4754,6 +4764,13 @@ package body Sem_Attr is
 
       when Attribute_Max_Size_In_Storage_Elements =>
          Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements;
+
+      ----------------------
+      -- Max_Integer_Size --
+      ----------------------
+
+      when Attribute_Max_Integer_Size =>
+         Standard_Attribute (System_Max_Integer_Size);
 
       ----------------------------------
       -- Max_Size_In_Storage_Elements --
@@ -6854,7 +6871,7 @@ package body Sem_Attr is
             end if;
 
             --  Verify the consistency of types when the current component is
-            --  part of a miltiple component update.
+            --  part of a multiple component update.
 
             --    Comp_1 | ... | Comp_N => <value>
 
@@ -7298,7 +7315,7 @@ package body Sem_Attr is
    --------------------
 
    procedure Eval_Attribute (N : Node_Id) is
-      Loc   : constant Source_Ptr   := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
       C_Type : constant Entity_Id := Etype (N);
       --  The type imposed by the context
@@ -10431,6 +10448,7 @@ package body Sem_Attr is
          | Attribute_Initialized
          | Attribute_Last_Bit
          | Attribute_Library_Level
+         | Attribute_Max_Integer_Size
          | Attribute_Maximum_Alignment
          | Attribute_Old
          | Attribute_Output
@@ -12011,6 +12029,11 @@ package body Sem_Attr is
                        or else Present (Next_Formal (F2))
                      then
                         return False;
+
+                     elsif Ekind (Op) = E_Procedure then
+                        return Ekind (F1) = E_In_Out_Parameter
+                          and then Covers (Typ, Etype (F1));
+
                      else
                         return
                           (Ekind (Op) = E_Operator
@@ -12034,13 +12057,19 @@ package body Sem_Attr is
                      Get_Next_Interp (Index, It);
                   end loop;
 
+               elsif Nkind (E1) = N_Attribute_Reference
+                 and then (Attribute_Name (E1) = Name_Max
+                   or else Attribute_Name (E1) = Name_Min)
+               then
+                  Op := E1;
+
                elsif Proper_Op (Entity (E1)) then
                   Op := Entity (E1);
                   Set_Etype (N, Typ);
                end if;
 
                if No (Op) then
-                  Error_Msg_N ("No visible function for reduction", E1);
+                  Error_Msg_N ("No visible subprogram for reduction", E1);
                end if;
             end;
 

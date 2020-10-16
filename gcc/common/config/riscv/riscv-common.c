@@ -60,6 +60,14 @@ riscv_implied_info_t riscv_implied_info[] =
   {NULL, NULL}
 };
 
+static const riscv_cpu_info riscv_cpu_tables[] =
+{
+#define RISCV_CORE(CORE_NAME, ARCH, TUNE) \
+    {CORE_NAME, ARCH, TUNE},
+#include "../../../config/riscv/riscv-cores.def"
+    {NULL, NULL, NULL}
+};
+
 /* Subset list.  */
 class riscv_subset_list
 {
@@ -604,8 +612,10 @@ fail:
 std::string
 riscv_arch_str (bool version_p)
 {
-  gcc_assert (current_subset_list);
-  return current_subset_list->to_string (version_p);
+  if (current_subset_list)
+    return current_subset_list->to_string (version_p);
+  else
+    return std::string();
 }
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
@@ -653,6 +663,21 @@ riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
   current_subset_list = subset_list;
 }
 
+/* Return the riscv_cpu_info entry for CPU, NULL if not found.  */
+
+const riscv_cpu_info *
+riscv_find_cpu (const char *cpu)
+{
+  const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
+  for (;cpu_info->name != NULL; ++cpu_info)
+    {
+      const char *name = cpu_info->name;
+      if (strcmp (cpu, name) == 0)
+	return cpu_info;
+    }
+  return NULL;
+}
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -667,6 +692,12 @@ riscv_handle_option (struct gcc_options *opts,
       riscv_parse_arch_string (decoded->arg, &opts->x_target_flags, loc);
       return true;
 
+    case OPT_mcpu_:
+      if (riscv_find_cpu (decoded->arg) == NULL)
+	error_at (loc, "%<-mcpu=%s%>: unknown CPU",
+		  decoded->arg);
+      return true;
+
     default:
       return true;
     }
@@ -678,14 +709,64 @@ const char *
 riscv_expand_arch (int argc ATTRIBUTE_UNUSED,
 		   const char **argv)
 {
-  static char *_arch_buf;
   gcc_assert (argc == 1);
   int flags;
   location_t loc = UNKNOWN_LOCATION;
   riscv_parse_arch_string (argv[0], &flags, loc);
-  _arch_buf = xstrdup (riscv_arch_str (false).c_str ());
-  return _arch_buf;
+  const std::string arch = riscv_arch_str (false);
+  if (arch.length())
+    return xasprintf ("-march=%s", arch.c_str());
+  else
+    return "";
 }
+
+/* Expand default -mtune option from -mcpu option, use default --with-tune value
+   if -mcpu don't have valid value.  */
+
+const char *
+riscv_default_mtune (int argc, const char **argv)
+{
+  gcc_assert (argc == 2);
+  const riscv_cpu_info *cpu = riscv_find_cpu (argv[0]);
+  const char *default_mtune = argv[1];
+  if (cpu)
+    return cpu->tune;
+  else
+    return default_mtune;
+}
+
+/* Expand arch string with implied extensions from -mcpu option.  */
+
+const char *
+riscv_expand_arch_from_cpu (int argc ATTRIBUTE_UNUSED,
+			    const char **argv)
+{
+  gcc_assert (argc > 0 && argc <= 2);
+  const char *default_arch_str = NULL;
+  const char *arch_str = NULL;
+  if (argc >= 2)
+    default_arch_str = argv[1];
+
+  const riscv_cpu_info *cpu = riscv_find_cpu (argv[0]);
+
+  if (cpu == NULL)
+    {
+      if (default_arch_str == NULL)
+	return "";
+      else
+	arch_str = default_arch_str;
+    }
+  else
+    arch_str = cpu->arch;
+
+  location_t loc = UNKNOWN_LOCATION;
+  int flags;
+
+  riscv_parse_arch_string (arch_str, &flags, loc);
+  const std::string arch = riscv_arch_str (false);
+  return xasprintf ("-march=%s", arch.c_str());
+}
+
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options riscv_option_optimization_table[] =

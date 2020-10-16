@@ -59,6 +59,7 @@ with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
+with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 
 package body Sem_Ch5 is
@@ -1049,7 +1050,8 @@ package body Sem_Ch5 is
 
       if not Support_Composite_Assign_On_Target
         and then (Is_Array_Type (T1) or else Is_Record_Type (T1))
-        and then (not Has_Size_Clause (T1) or else Esize (T1) > 64)
+        and then (not Has_Size_Clause (T1)
+                   or else Esize (T1) > Ttypes.System_Max_Integer_Size)
       then
          Error_Msg_CRT ("composite assignment", N);
       end if;

@@ -39,10 +39,6 @@ pragma Style_Checks (All_Checks);
 --  This package represents the high level tasking interface used by the
 --  compiler to expand Ada 95 tasking constructs into simpler run time calls.
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
-
 with Ada.Exceptions;
 
 with System.Task_Primitives.Operations;

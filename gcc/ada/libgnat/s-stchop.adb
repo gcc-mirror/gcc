@@ -61,8 +61,6 @@ package body System.Stack_Checking.Operations is
    --  cache is pending, that write should be followed by a Poll to prevent
    --  losing signals.
    --
-   --  Note: This function must be compiled with Polling turned off
-   --
    --  Note: on systems with real thread-local storage, Set_Stack_Info should
    --  return an access value for such local storage. In those cases the cache
    --  will always be up-to-date.

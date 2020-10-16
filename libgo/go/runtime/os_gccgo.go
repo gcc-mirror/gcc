@@ -27,8 +27,7 @@ func mpreinit(mp *m) {
 func minit() {
 	minitSignals()
 
-	// FIXME: only works on linux for now.
-	getg().m.procid = uint64(gettid())
+	getg().m.procid = getProcID()
 }
 
 // Called from dropm to undo the effect of an minit.

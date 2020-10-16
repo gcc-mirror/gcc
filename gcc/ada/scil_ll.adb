@@ -122,7 +122,7 @@ package body SCIL_LL is
             when N_SCIL_Membership_Test =>
                pragma Assert
                  (Nkind (N) in N_Identifier | N_And_Then | N_Or_Else |
-                               N_Expression_With_Actions);
+                               N_Expression_With_Actions | N_Function_Call);
                null;
 
             when others =>

@@ -164,6 +164,11 @@ package Sem_Ch13 is
    --  parameter does the actual replacement of node N, which is either a
    --  simple direct reference to T, or a selected component that represents
    --  an appropriately qualified occurrence of T.
+   --
+   --  This also replaces each reference to a component, entry, or protected
+   --  procedure with a selected component whose prefix is the parameter.
+   --  For example, Component_Name becomes Parameter.Component_Name, where
+   --  Parameter is the parameter, which is of type T.
 
    function Rep_Item_Too_Late
      (T     : Entity_Id;
@@ -176,7 +181,7 @@ package Sem_Ch13 is
    --  is the pragma or representation clause itself, used for placing error
    --  messages if the item is too late.
    --
-   --  Fonly is a flag that causes only the freezing rule (para 9) to be
+   --  FOnly is a flag that causes only the freezing rule (para 9) to be
    --  applied, and the tests of para 10 are skipped. This is appropriate for
    --  both subtype related attributes (Alignment and Size) and for stream
    --  attributes, which, although certainly not subtype related attributes,

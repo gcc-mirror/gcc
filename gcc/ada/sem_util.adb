@@ -127,6 +127,15 @@ package body Sem_Util is
    --  Determine whether arbitrary entity Id denotes an atomic object as per
    --  RM C.6(7).
 
+   generic
+      with function Is_Effectively_Volatile_Entity
+        (Id : Entity_Id) return Boolean;
+      --  Function to use on object and type entities
+   function Is_Effectively_Volatile_Object_Shared
+     (N : Node_Id) return Boolean;
+   --  Shared function used to detect effectively volatile objects and
+   --  effectively volatile objects for reading.
+
    function Is_Fully_Initialized_Variant (Typ : Entity_Id) return Boolean;
    --  Subsidiary to Is_Fully_Initialized_Type. For an unconstrained type
    --  with discriminants whose default values are static, examine only the
@@ -982,7 +991,7 @@ package body Sem_Util is
                    Reason => PE_Bad_Predicated_Generic_Type));
 
             else
-               Error_Msg_FE (Msg & "<<", N, Typ);
+               Error_Msg_FE (Msg, N, Typ);
             end if;
 
          else
@@ -3626,7 +3635,7 @@ package body Sem_Util is
 
       Formal := First_Formal (Func_Id);
       while Present (Formal) loop
-         if Is_Effectively_Volatile (Etype (Formal)) then
+         if Is_Effectively_Volatile_For_Reading (Etype (Formal)) then
             Error_Msg_NE
               ("nonvolatile function & cannot have a volatile parameter",
                Formal, Func_Id);
@@ -3637,7 +3646,7 @@ package body Sem_Util is
 
       --  Inspect the return type
 
-      if Is_Effectively_Volatile (Etype (Func_Id)) then
+      if Is_Effectively_Volatile_For_Reading (Etype (Func_Id)) then
          Error_Msg_NE
            ("nonvolatile function & cannot have a volatile return type",
             Result_Definition (Parent (Func_Id)), Func_Id);
@@ -7825,18 +7834,9 @@ package body Sem_Util is
          Set_Etype (Def_Id, Any_Type);
       end if;
 
-      --  Inherited discriminants and components in derived record types are
-      --  immediately visible. Itypes are not.
+      --  All entities except Itypes are immediately visible
 
-      --  Unless the Itype is for a record type with a corresponding remote
-      --  type (what is that about, it was not commented ???)
-
-      if Ekind (Def_Id) in E_Discriminant | E_Component
-        or else
-          ((not Is_Record_Type (Def_Id)
-             or else No (Corresponding_Remote_Type (Def_Id)))
-            and then not Is_Itype (Def_Id))
-      then
+      if not Is_Itype (Def_Id) then
          Set_Is_Immediately_Visible (Def_Id);
          Set_Current_Entity         (Def_Id);
       end if;
@@ -11231,11 +11231,11 @@ package body Sem_Util is
 
    begin
       --  Inspect the formal parameters looking for an effectively volatile
-      --  type.
+      --  type for reading.
 
       Formal := First_Formal (Subp_Id);
       while Present (Formal) loop
-         if Is_Effectively_Volatile (Etype (Formal)) then
+         if Is_Effectively_Volatile_For_Reading (Etype (Formal)) then
             return True;
          end if;
 
@@ -11245,7 +11245,7 @@ package body Sem_Util is
       --  Inspect the return type of functions
 
       if Ekind (Subp_Id) in E_Function | E_Generic_Function
-        and then Is_Effectively_Volatile (Etype (Subp_Id))
+        and then Is_Effectively_Volatile_For_Reading (Etype (Subp_Id))
       then
          return True;
       end if;
@@ -11619,7 +11619,7 @@ package body Sem_Util is
       if Ekind (Item_Id) = E_Abstract_State then
          return State_Has_Enabled_Property;
 
-      elsif Ekind (Item_Id) = E_Variable then
+      elsif Ekind (Item_Id) in E_Variable | E_Constant then
          return Type_Or_Variable_Has_Enabled_Property (Item_Id);
 
       --  Other objects can only inherit properties through their type. We
@@ -14337,6 +14337,16 @@ package body Sem_Util is
       return Nkind (Par) in N_Subprogram_Call;
    end Is_Anonymous_Access_Actual;
 
+   ------------------------
+   -- Is_Access_Variable --
+   ------------------------
+
+   function Is_Access_Variable (E : Entity_Id) return Boolean is
+   begin
+      return Is_Access_Object_Type (E)
+        and then not Is_Access_Constant (E);
+   end Is_Access_Variable;
+
    -----------------------------
    -- Is_Actual_Out_Parameter --
    -----------------------------
@@ -15756,35 +15766,115 @@ package body Sem_Util is
       end if;
    end Is_Effectively_Volatile;
 
+   -----------------------------------------
+   -- Is_Effectively_Volatile_For_Reading --
+   -----------------------------------------
+
+   function Is_Effectively_Volatile_For_Reading
+     (Id : Entity_Id) return Boolean
+   is
+   begin
+      --  A concurrent type is effectively volatile for reading
+
+      if Is_Concurrent_Type (Id) then
+         return True;
+
+      elsif Is_Effectively_Volatile (Id) then
+
+        --  Other volatile types and objects are effectively volatile for
+        --  reading when they have property Async_Writers or Effective_Reads
+        --  set to True. This includes the case of an array type whose
+        --  Volatile_Components aspect is True (hence it is effectively
+        --  volatile) which does not have the properties Async_Writers
+        --  and Effective_Reads set to False.
+
+         if Async_Writers_Enabled (Id)
+           or else Effective_Reads_Enabled (Id)
+         then
+            return True;
+
+         --  In addition, an array type is effectively volatile for reading
+         --  when its component type is effectively volatile for reading.
+
+         elsif Is_Array_Type (Id) then
+            declare
+               Anc : Entity_Id := Base_Type (Id);
+            begin
+               if Is_Private_Type (Anc) then
+                  Anc := Full_View (Anc);
+               end if;
+
+               --  Test for presence of ancestor, as the full view of a
+               --  private type may be missing in case of error.
+
+               return
+                 Present (Anc)
+                   and then Is_Effectively_Volatile_For_Reading
+                     (Component_Type (Anc));
+            end;
+         end if;
+      end if;
+
+      return False;
+
+   end Is_Effectively_Volatile_For_Reading;
+
    ------------------------------------
    -- Is_Effectively_Volatile_Object --
    ------------------------------------
 
    function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean is
+      function Is_Effectively_Volatile_Object_Inst
+      is new Is_Effectively_Volatile_Object_Shared (Is_Effectively_Volatile);
+   begin
+      return Is_Effectively_Volatile_Object_Inst (N);
+   end Is_Effectively_Volatile_Object;
+
+   ------------------------------------------------
+   -- Is_Effectively_Volatile_Object_For_Reading --
+   ------------------------------------------------
+
+   function Is_Effectively_Volatile_Object_For_Reading
+     (N : Node_Id) return Boolean
+   is
+      function Is_Effectively_Volatile_Object_For_Reading_Inst
+      is new Is_Effectively_Volatile_Object_Shared
+        (Is_Effectively_Volatile_For_Reading);
+   begin
+      return Is_Effectively_Volatile_Object_For_Reading_Inst (N);
+   end Is_Effectively_Volatile_Object_For_Reading;
+
+   -------------------------------------------
+   -- Is_Effectively_Volatile_Object_Shared --
+   -------------------------------------------
+
+   function Is_Effectively_Volatile_Object_Shared
+     (N : Node_Id) return Boolean
+   is
    begin
       if Is_Entity_Name (N) then
          return Is_Object (Entity (N))
-           and then Is_Effectively_Volatile (Entity (N));
+           and then Is_Effectively_Volatile_Entity (Entity (N));
 
       elsif Nkind (N) in N_Indexed_Component | N_Slice then
-         return Is_Effectively_Volatile_Object (Prefix (N));
+         return Is_Effectively_Volatile_Object_Shared (Prefix (N));
 
       elsif Nkind (N) = N_Selected_Component then
          return
-           Is_Effectively_Volatile_Object (Prefix (N))
+           Is_Effectively_Volatile_Object_Shared (Prefix (N))
              or else
-           Is_Effectively_Volatile_Object (Selector_Name (N));
+           Is_Effectively_Volatile_Object_Shared (Selector_Name (N));
 
       elsif Nkind (N) in N_Qualified_Expression
                        | N_Unchecked_Type_Conversion
                        | N_Type_Conversion
       then
-         return Is_Effectively_Volatile_Object (Expression (N));
+         return Is_Effectively_Volatile_Object_Shared (Expression (N));
 
       else
          return False;
       end if;
-   end Is_Effectively_Volatile_Object;
+   end Is_Effectively_Volatile_Object_Shared;
 
    -------------------
    -- Is_Entry_Body --
@@ -18835,16 +18925,21 @@ package body Sem_Util is
 
    function Is_Static_Function (Subp : Entity_Id) return Boolean is
    begin
-      return Has_Aspect (Subp, Aspect_Static)
+      --  Always return False for pre Ada 2020 to e.g. ignore the Static
+      --  aspect in package Interfaces for Ada_Version < 2020 and also
+      --  for efficiency.
+
+      return Ada_Version >= Ada_2020
+        and then Has_Aspect (Subp, Aspect_Static)
         and then
           (No (Find_Value_Of_Aspect (Subp, Aspect_Static))
             or else Is_True (Static_Boolean
                                (Find_Value_Of_Aspect (Subp, Aspect_Static))));
    end Is_Static_Function;
 
-   ------------------------------
-   --  Is_Static_Function_Call --
-   ------------------------------
+   -----------------------------
+   -- Is_Static_Function_Call --
+   -----------------------------
 
    function Is_Static_Function_Call (Call : Node_Id) return Boolean is
       function Has_All_Static_Actuals (Call : Node_Id) return Boolean;
@@ -19064,9 +19159,12 @@ package body Sem_Util is
          then
             return True;
 
-         --  A constant is a synchronized object by default
+         --  A constant is a synchronized object by default, unless its type is
+         --  access-to-variable type.
 
-         elsif Ekind (Id) = E_Constant then
+         elsif Ekind (Id) = E_Constant
+           and then not Is_Access_Variable (Etype (Id))
+         then
             return True;
 
          --  A variable is a synchronized object if it is subject to pragma
@@ -19158,7 +19256,7 @@ package body Sem_Util is
 
    function Is_True (U : Uint) return Boolean is
    begin
-      return (U /= 0);
+      return U /= 0;
    end Is_True;
 
    --------------------------------------
@@ -19556,7 +19654,7 @@ package body Sem_Util is
    function Is_View_Conversion (N : Node_Id) return Boolean is
    begin
       if Nkind (N) = N_Type_Conversion
-        and then Nkind (Unqual_Conv (N)) = N_Identifier
+        and then Nkind (Unqual_Conv (N)) in N_Expanded_Name | N_Identifier
       then
          if Is_Tagged_Type (Etype (N))
            and then Is_Tagged_Type (Etype (Unqual_Conv (N)))

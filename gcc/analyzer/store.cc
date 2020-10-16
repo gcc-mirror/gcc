@@ -455,7 +455,6 @@ binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
 {
   gcc_assert (parent_reg);
   gcc_assert (TREE_CODE (ctor) == CONSTRUCTOR);
-  gcc_assert (!CONSTRUCTOR_NO_CLEARING (ctor));
 
   unsigned ix;
   tree index;

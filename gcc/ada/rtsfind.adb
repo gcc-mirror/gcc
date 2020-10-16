@@ -589,7 +589,7 @@ package body Rtsfind is
      range CUDA_Driver_Types .. CUDA_Vector_Types;
 
    subtype Interfaces_Descendant is RTU_Id
-     range Interfaces_Packed_Decimal .. Interfaces_Packed_Decimal;
+     range Interfaces_C .. Interfaces_Packed_Decimal;
 
    subtype System_Descendant is RTU_Id
      range System_Address_Image .. System_Tasking_Stages;

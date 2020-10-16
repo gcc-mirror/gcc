@@ -4758,7 +4758,7 @@ package body Exp_Ch3 is
    begin
       pragma Assert (Nkind (Obj_Decl) = N_Object_Declaration);
 
-      if Has_Task (Typ) or else Might_Have_Tasks (Typ) then
+      if Might_Have_Tasks (Typ) then
          Build_Activation_Chain_Entity (Obj_Decl);
 
          if Has_Task (Typ) then
@@ -5095,31 +5095,14 @@ package body Exp_Ch3 is
 
       --  Is this right??? What about No_Exception_Propagation???
 
-      --  Representations are signed
+      --  The underlying type is signed. Reset the Is_Unsigned_Type explicitly
+      --  because it might have been inherited from the parent type.
 
       if Enumeration_Rep (First_Literal (Typ)) < 0 then
-
-         --  The underlying type is signed. Reset the Is_Unsigned_Type
-         --  explicitly, because it might have been inherited from
-         --  parent type.
-
          Set_Is_Unsigned_Type (Typ, False);
-
-         if Esize (Typ) <= Standard_Integer_Size then
-            Ityp := Standard_Integer;
-         else
-            Ityp := Standard_Long_Long_Integer;
-         end if;
-
-      --  Representations are unsigned
-
-      else
-         if Esize (Typ) <= Standard_Integer_Size then
-            Ityp := RTE (RE_Unsigned);
-         else
-            Ityp := RTE (RE_Long_Long_Unsigned);
-         end if;
       end if;
+
+      Ityp := Integer_Type_For (Esize (Typ), Is_Unsigned_Type (Typ));
 
       --  The body of the function is a case statement. First collect case
       --  alternatives, or optimize the contiguous case.
@@ -5898,10 +5881,8 @@ package body Exp_Ch3 is
                Typ := Etype (Comp);
 
                if Ekind (Typ) = E_Anonymous_Access_Type
-                 and then
-                   (Has_Task (Available_View (Designated_Type (Typ)))
-                      or else
-                    Might_Have_Tasks (Available_View (Designated_Type (Typ))))
+                 and then Might_Have_Tasks
+                            (Available_View (Designated_Type (Typ)))
                  and then No (Master_Id (Typ))
                then
                   --  Ensure that the record or array type have a _master
@@ -6785,7 +6766,7 @@ package body Exp_Ch3 is
       --  of the stacks in this scenario, the stacks of the first array are
       --  not counted.
 
-      if (Has_Task (Typ) or else Might_Have_Tasks (Typ))
+      if Might_Have_Tasks (Typ)
         and then not Restriction_Active (No_Secondary_Stack)
         and then (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))
@@ -8649,10 +8630,10 @@ package body Exp_Ch3 is
          then
             Expr := Make_Integer_Literal (Loc, 2 ** Size_To_Use - 1);
 
-            --  Resolve as Unsigned_64, because the largest number we can
-            --  generate is out of range of universal integer.
+            --  Resolve as Long_Long_Unsigned, because the largest number
+            --  we can generate is out of range of universal integer.
 
-            Analyze_And_Resolve (Expr, RTE (RE_Unsigned_64));
+            Analyze_And_Resolve (Expr, Standard_Long_Long_Unsigned);
 
          --  Case of signed types
 
@@ -8739,11 +8720,14 @@ package body Exp_Ch3 is
             Size_To_Use := Size;
          end if;
 
-         --  The maximum size to use is 64 bits. This will create values of
-         --  type Unsigned_64 and the range must fit this type.
+         --  The maximum size to use is System_Max_Integer_Size bits. This
+         --  will create values of type Long_Long_Unsigned and the range
+         --  must fit this type.
 
-         if Size_To_Use /= No_Uint and then Size_To_Use > Uint_64 then
-            Size_To_Use := Uint_64;
+         if Size_To_Use /= No_Uint
+           and then Size_To_Use > System_Max_Integer_Size
+         then
+            Size_To_Use := UI_From_Int (System_Max_Integer_Size);
          end if;
 
          if Normalize_Scalars and then not IV_Attribute then

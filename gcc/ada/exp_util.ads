@@ -687,10 +687,6 @@ package Exp_Util is
    --  of entity E, in all upper case, with an ASCII.NUL appended at the end
    --  of the name if Append_NUL is True.
 
-   procedure Generate_Poll_Call (N : Node_Id);
-   --  If polling is active, then a call to the Poll routine is built,
-   --  and then inserted before the given node N and analyzed.
-
    procedure Get_Current_Value_Condition
      (Var : Node_Id;
       Op  : out Node_Kind;
@@ -760,6 +756,10 @@ package Exp_Util is
    --  function determines if the statement appears in a context that is
    --  unconditionally executed, i.e. it is not within a loop or a conditional
    --  or a case statement etc.
+
+   function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
+   --  Return a suitable standard integer type containing at least S bits and
+   --  of the signedness given by Uns.
 
    function Is_All_Null_Statements (L : List_Id) return Boolean;
    --  Return True if all the items of the list are N_Null_Statement nodes.
@@ -1164,6 +1164,10 @@ package Exp_Util is
    --  the admitedly silly case where the subtype of the boolean array is
    --  True..True, where a raise of a Constraint_Error exception is required
    --  (RM 4.5.6(6)) and ACATS-tested.
+
+   function Small_Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
+   --  Return the smallest standard integer type containing at least S bits and
+   --  of the signedness given by Uns.
 
    function Target_Has_Fixed_Ops
      (Left_Typ   : Entity_Id;

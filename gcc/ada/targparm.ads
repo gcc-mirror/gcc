@@ -101,9 +101,6 @@ package Targparm is
    --  policy name, and Opt.Task_Dispatching_Policy_Sloc is set to
    --  System_Location.
 
-   --  If a pragma Polling (On) appears, then the flag Opt.Polling_Required
-   --  is set to True.
-
    --  If a pragma Detect_Blocking appears, then the flag Opt.Detect_Blocking
    --  is set to True.
 

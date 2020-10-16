@@ -17,9 +17,11 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
-m32
-Target Report RejectNegative InverseMask(ABI64)
-Generate code for a 32-bit ABI.
+; It's not clear whether this was ever build/tested/used, so this is no longer
+; exposed to the user.
+;m32
+;Target Report RejectNegative InverseMask(ABI64)
+;Generate code for a 32-bit ABI.
 
 m64
 Target Report RejectNegative Mask(ABI64)

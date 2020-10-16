@@ -8395,8 +8395,11 @@ vectorizable_live_operation (vec_info *vinfo,
 	       were not code-generated yet so it is not too bad.
 	       ???  In fact we'd likely want to avoid this situation
 	       in the first place.  */
-	    if (gimple_code (use_stmt) != GIMPLE_PHI
-		&& !vect_stmt_dominates_stmt_p (gsi_stmt (*gsi), use_stmt))
+	    if (TREE_CODE (new_tree) == SSA_NAME
+		&& !SSA_NAME_IS_DEFAULT_DEF (new_tree)
+		&& gimple_code (use_stmt) != GIMPLE_PHI
+		&& !vect_stmt_dominates_stmt_p (SSA_NAME_DEF_STMT (new_tree),
+						use_stmt))
 	      {
 		enum tree_code code = gimple_assign_rhs_code (use_stmt);
 		gcc_assert (code == CONSTRUCTOR

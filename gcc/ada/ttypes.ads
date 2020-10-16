@@ -176,6 +176,8 @@ package Ttypes is
    System_Address_Size : constant Pos := Set_Targ.Pointer_Size;
    --  System.Address'Size (also size of all thin pointers)
 
+   System_Max_Integer_Size : constant Pos := Standard_Long_Long_Integer_Size;
+
    System_Max_Binary_Modulus_Power : constant Pos :=
                                        Standard_Long_Long_Integer_Size;
 

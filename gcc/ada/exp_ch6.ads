@@ -241,8 +241,8 @@ package Exp_Ch6 is
    --  object. Function_Call must denote a call to a CPP_Constructor function.
 
    function Might_Have_Tasks (Typ : Entity_Id) return Boolean;
-   --  Return True if Typ is a limited class-wide type (or subtype), since it
-   --  might have task components.
+   --  Return True when type Typ has tasks or when it is a limited class-wide
+   --  type (or subtype), since it might have task components.
 
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit

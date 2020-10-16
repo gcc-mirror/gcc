@@ -26,6 +26,7 @@
 
 /* %eax */
 #define bit_AVX512BF16	(1 << 5)
+#define bit_HRESET	(1 << 22)
 
 /* %ecx */
 #define bit_SSE3	(1 << 0)
@@ -124,6 +125,7 @@
 #define bit_AVX5124FMAPS (1 << 3)
 #define bit_AVX512VP2INTERSECT	(1 << 8)
 #define bit_IBT	(1 << 20)
+#define bit_UINTR (1 << 5)
 #define bit_PCONFIG	(1 << 18)
 #define bit_SERIALIZE	(1 << 14)
 #define bit_TSXLDTRK    (1 << 16)

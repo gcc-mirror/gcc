@@ -178,13 +178,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       str() const
       {
 	__string_type __ret(_M_string.get_allocator());
-	if (this->pptr())
+	if (char_type* __pptr = this->pptr())
 	  {
+	    char_type* __egptr = this->egptr();
 	    // The current egptr() may not be the actual string end.
-	    if (this->pptr() > this->egptr())
-	      __ret.assign(this->pbase(), this->pptr());
+	    if (!__egptr || __pptr > __egptr)
+	      __ret.assign(this->pbase(), __pptr);
 	    else
-	      __ret.assign(this->pbase(), this->egptr());
+	      __ret.assign(this->pbase(), __egptr);
 	  }
 	else
 	  __ret = _M_string;

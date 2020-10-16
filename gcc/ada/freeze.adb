@@ -636,7 +636,7 @@ package body Freeze is
 
          --  If Rep_Clauses are to be ignored, remove address clause from
          --  list attached to entity, because it may be illegal for gigi,
-         --  for example by breaking order of elaboration..
+         --  for example by breaking order of elaboration.
 
          if Ignore_Rep_Clauses then
             declare
@@ -758,9 +758,8 @@ package body Freeze is
    procedure Check_Compile_Time_Size (T : Entity_Id) is
 
       procedure Set_Small_Size (T : Entity_Id; S : Uint);
-      --  Sets the compile time known size (64 bits or less) in the RM_Size
-      --  field of T, checking for a size clause that was given which attempts
-      --  to give a smaller size.
+      --  Sets the compile time known size in the RM_Size field of T, checking
+      --  for a size clause that was given which attempts to give a small size.
 
       function Size_Known (T : Entity_Id) return Boolean;
       --  Recursive function that does all the work
@@ -778,7 +777,7 @@ package body Freeze is
 
       procedure Set_Small_Size (T : Entity_Id; S : Uint) is
       begin
-         if S > 64 then
+         if S > System_Max_Integer_Size then
             return;
 
          --  Check for bad size clause given
@@ -848,7 +847,8 @@ package body Freeze is
             end if;
 
             --  Check for all indexes static, and also compute possible size
-            --  (in case it is not greater than 64 and may be packable).
+            --  (in case it is not greater than System_Max_Integer_Size and
+            --  thus may be packable).
 
             declare
                Size : Uint := Component_Size (T);
@@ -1077,8 +1077,7 @@ package body Freeze is
 
                      --  We can deal with elementary types, small packed arrays
                      --  if the representation is a modular type and also small
-                     --  record types (if the size is not greater than 64, but
-                     --  the condition is checked by Set_Small_Size).
+                     --  record types as checked by Set_Small_Size.
 
                      if Is_Elementary_Type (Ctyp)
                        or else (Is_Array_Type (Ctyp)
@@ -2831,7 +2830,7 @@ package body Freeze is
 
                --  Case of component size that may result in bit packing
 
-               if 1 <= Csiz and then Csiz <= 64 then
+               if 1 <= Csiz and then Csiz <= System_Max_Integer_Size then
                   declare
                      Ent         : constant Entity_Id :=
                                      First_Subtype (Arr);
@@ -3177,9 +3176,9 @@ package body Freeze is
          procedure Check_Large_Modular_Array (Typ : Entity_Id);
          --  Check that the size of array type Typ can be computed without
          --  overflow, and generates a Storage_Error otherwise. This is only
-         --  relevant for array types whose index is a (mod 2**64) type, where
-         --  wrap-around arithmetic might yield a meaningless value for the
-         --  length of the array, or its corresponding attribute.
+         --  relevant for array types whose index has System_Max_Integer_Size
+         --  bits, where wrap-around arithmetic might yield a meaningless value
+         --  for the length of the array, or its corresponding attribute.
 
          procedure Check_Pragma_Thread_Local_Storage (Var_Id : Entity_Id);
          --  Ensure that the initialization state of variable Var_Id subject
@@ -5810,7 +5809,7 @@ package body Freeze is
                     and then not Has_Pragma_Pack (E)
                     and then not Has_Component_Size_Clause (E)
                     and then Known_Static_RM_Size (Ctyp)
-                    and then Rsiz <= 64
+                    and then Rsiz <= System_Max_Integer_Size
                     and then not (Addressable (Rsiz)
                                    and then Known_Static_Esize (Ctyp)
                                    and then Esize (Ctyp) = Rsiz)
@@ -6387,7 +6386,7 @@ package body Freeze is
             end if;
 
          --  The pool applies to named and anonymous access types, but not
-         --  to subprogram and to  internal types generated for 'Access
+         --  to subprogram and to internal types generated for 'Access
          --  references.
 
          elsif Is_Access_Type (E)
@@ -6411,6 +6410,11 @@ package body Freeze is
 
                if Nkind (Default_Pool) = N_Null then
                   Set_No_Pool_Assigned (E);
+
+               --  Case of pragma Default_Storage_Pool (Standard)
+
+               elsif Entity (Default_Pool) = Standard_Standard then
+                  Set_Associated_Storage_Pool (E, RTE (RE_Global_Pool_Object));
 
                --  Case of pragma Default_Storage_Pool (storage_pool_NAME)
 
@@ -8494,20 +8498,20 @@ package body Freeze is
       Set_Analyzed (Lo, False);
       Analyze (Lo);
 
-      --  Resolve with universal fixed if the base type, and the base type if
-      --  it is a subtype. Note we can't resolve the base type with itself,
-      --  that would be a reference before definition.
+      --  Resolve with universal fixed if the base type, and with the base
+      --  type if we are freezing a subtype. Note we can't resolve the base
+      --  type with itself, that would be a reference before definition.
+      --  The resolution of the bounds of a subtype, if they are given by real
+      --  literals,  includes the setting of the Corresponding_Integer_Value,
+      --  as for other literals of a fixed-point type.
 
       if Typ = Btyp then
          Resolve (Lo, Universal_Fixed);
+         Set_Corresponding_Integer_Value
+           (Lo, UR_To_Uint (Realval (Lo) / Small));
       else
          Resolve (Lo, Btyp);
       end if;
-
-      --  Set corresponding integer value for bound
-
-      Set_Corresponding_Integer_Value
-        (Lo, UR_To_Uint (Realval (Lo) / Small));
 
       --  Similar processing for high bound
 
@@ -8517,12 +8521,11 @@ package body Freeze is
 
       if Typ = Btyp then
          Resolve (Hi, Universal_Fixed);
+         Set_Corresponding_Integer_Value
+           (Hi, UR_To_Uint (Realval (Hi) / Small));
       else
          Resolve (Hi, Btyp);
       end if;
-
-      Set_Corresponding_Integer_Value
-        (Hi, UR_To_Uint (Realval (Hi) / Small));
 
       --  Set type of range to correspond to bounds
 

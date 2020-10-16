@@ -90,7 +90,8 @@
 #if SANITIZER_LINUX
 # include <utime.h>
 # include <sys/ptrace.h>
-# if defined(__mips64) || defined(__aarch64__) || defined(__arm__)
+#if defined(__mips64) || defined(__aarch64__) || defined(__arm__) || \
+    SANITIZER_RISCV64
 #  include <asm/ptrace.h>
 #  ifdef __arm__
 typedef struct user_fpregs elf_fpregset_t;
@@ -170,9 +171,9 @@ typedef struct user_fpregs elf_fpregset_t;
 namespace __sanitizer {
   unsigned struct_utsname_sz = sizeof(struct utsname);
   unsigned struct_stat_sz = sizeof(struct stat);
-#if !SANITIZER_IOS
+#if !SANITIZER_IOS && !(SANITIZER_MAC && TARGET_CPU_ARM64)
   unsigned struct_stat64_sz = sizeof(struct stat64);
-#endif // !SANITIZER_IOS
+#endif // !SANITIZER_IOS && !(SANITIZER_MAC && TARGET_CPU_ARM64)
   unsigned struct_rusage_sz = sizeof(struct rusage);
   unsigned struct_tm_sz = sizeof(struct tm);
   unsigned struct_passwd_sz = sizeof(struct passwd);
@@ -197,9 +198,9 @@ namespace __sanitizer {
   unsigned struct_regex_sz = sizeof(regex_t);
   unsigned struct_regmatch_sz = sizeof(regmatch_t);
 
-#if SANITIZER_MAC && !SANITIZER_IOS
+#if (SANITIZER_MAC && !TARGET_CPU_ARM64) && !SANITIZER_IOS
   unsigned struct_statfs64_sz = sizeof(struct statfs64);
-#endif // SANITIZER_MAC && !SANITIZER_IOS
+#endif // (SANITIZER_MAC && !TARGET_CPU_ARM64) && !SANITIZER_IOS
 
 #if !SANITIZER_ANDROID
   unsigned struct_fstab_sz = sizeof(struct fstab);
@@ -229,9 +230,9 @@ namespace __sanitizer {
 #if SANITIZER_LINUX && !SANITIZER_ANDROID
   // Use pre-computed size of struct ustat to avoid <sys/ustat.h> which
   // has been removed from glibc 2.28.
-#if defined(__aarch64__) || defined(__s390x__) || defined (__mips64) \
-  || defined(__powerpc64__) || defined(__arch64__) || defined(__sparcv9) \
-  || defined(__x86_64__) || (defined(__riscv) && __riscv_xlen == 64)
+#if defined(__aarch64__) || defined(__s390x__) || defined(__mips64) ||     \
+    defined(__powerpc64__) || defined(__arch64__) || defined(__sparcv9) || \
+    defined(__x86_64__) || SANITIZER_RISCV64
 #define SIZEOF_STRUCT_USTAT 32
 #elif defined(__arm__) || defined(__i386__) || defined(__mips__) \
   || defined(__powerpc__) || defined(__s390__) || defined(__sparc__)
@@ -303,13 +304,16 @@ unsigned struct_ElfW_Phdr_sz = sizeof(Elf_Phdr);
   int glob_altdirfunc = GLOB_ALTDIRFUNC;
 #endif
 
-#if SANITIZER_LINUX && !SANITIZER_ANDROID && \
-    (defined(__i386) || defined(__x86_64) || defined(__mips64) || \
-      defined(__powerpc64__) || defined(__aarch64__) || defined(__arm__) || \
-      defined(__s390__))
+#if SANITIZER_LINUX && !SANITIZER_ANDROID &&                               \
+    (defined(__i386) || defined(__x86_64) || defined(__mips64) ||          \
+     defined(__powerpc64__) || defined(__aarch64__) || defined(__arm__) || \
+     defined(__s390__) || SANITIZER_RISCV64)
 #if defined(__mips64) || defined(__powerpc64__) || defined(__arm__)
   unsigned struct_user_regs_struct_sz = sizeof(struct pt_regs);
   unsigned struct_user_fpregs_struct_sz = sizeof(elf_fpregset_t);
+#elif SANITIZER_RISCV64
+  unsigned struct_user_regs_struct_sz = sizeof(struct user_regs_struct);
+  unsigned struct_user_fpregs_struct_sz = sizeof(struct __riscv_q_ext_state);
 #elif defined(__aarch64__)
   unsigned struct_user_regs_struct_sz = sizeof(struct user_pt_regs);
   unsigned struct_user_fpregs_struct_sz = sizeof(struct user_fpsimd_state);
@@ -321,7 +325,8 @@ unsigned struct_ElfW_Phdr_sz = sizeof(Elf_Phdr);
   unsigned struct_user_fpregs_struct_sz = sizeof(struct user_fpregs_struct);
 #endif // __mips64 || __powerpc64__ || __aarch64__
 #if defined(__x86_64) || defined(__mips64) || defined(__powerpc64__) || \
-    defined(__aarch64__) || defined(__arm__) || defined(__s390__)
+    defined(__aarch64__) || defined(__arm__) || defined(__s390__) ||    \
+    SANITIZER_RISCV64
   unsigned struct_user_fpxregs_struct_sz = 0;
 #else
   unsigned struct_user_fpxregs_struct_sz = sizeof(struct user_fpxregs_struct);

@@ -94,7 +94,9 @@ static int self_owner;
 static volatile int delete_hook_installed;
 
 /* TLS data access internal API.  A straight __thread variable starting with
-   VxWorks 7, a pointer returned by kernel provided routines otherwise.  */
+   VxWorks 7, a pointer returned by kernel provided routines otherwise.  And
+   on VxWorks 6, the kernel expects us to notify entry/exit of regions
+   handling such variables by calls to kernel provided __gthread routines.  */
 
 #if _VXWORKS_MAJOR_GE(7)
 
@@ -103,22 +105,28 @@ static __thread struct tls_data *__gthread_tls_data;
 #define VX_GET_TLS_DATA() __gthread_tls_data
 #define VX_SET_TLS_DATA(x) __gthread_tls_data = (x)
 
-#define VX_ENTER_TLS_DTOR()
-#define VX_LEAVE_TLS_DTOR()
-
 #else
 
 extern void *__gthread_get_tls_data (void);
 extern void __gthread_set_tls_data (void *data);
 
-extern void __gthread_enter_tls_dtor_context (void);
-extern void __gthread_leave_tls_dtor_context (void);
-
 #define VX_GET_TLS_DATA() __gthread_get_tls_data()
 #define VX_SET_TLS_DATA(x) __gthread_set_tls_data(x)
 
+#endif
+
+#ifdef _VXWORKS_MAJOR_EQ(6)
+
+extern void __gthread_enter_tls_dtor_context (void);
+extern void __gthread_leave_tls_dtor_context (void);
+
 #define VX_ENTER_TLS_DTOR() __gthread_enter_tls_dtor_context ()
 #define VX_LEAVE_TLS_DTOR() __gthread_leave_tls_dtor_context ()
+
+#else
+
+#define VX_ENTER_TLS_DTOR()
+#define VX_LEAVE_TLS_DTOR()
 
 #endif
 

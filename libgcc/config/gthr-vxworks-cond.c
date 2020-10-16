@@ -26,6 +26,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    This file implements the GTHREAD_HAS_COND part of the interface
    exposed by gthr-vxworks.h.  */
 
+#if __GTHREAD_HAS_COND
+
 #include "gthr.h"
 #include <taskLib.h>
 
@@ -66,13 +68,11 @@ __gthread_cond_wait (__gthread_cond_t *cond,
   if (!mutex)
     return ERROR;
 
-  __RETURN_ERRNO_IF_NOT_OK (semGive (*mutex));
-
-  __RETURN_ERRNO_IF_NOT_OK (semTake (*cond, WAIT_FOREVER));
+  int ret = __CHECK_RESULT (semExchange (*mutex, *cond, WAIT_FOREVER));
 
   __RETURN_ERRNO_IF_NOT_OK (semTake (*mutex, WAIT_FOREVER));
 
-  return OK;
+  return ret;
 }
 
 int
@@ -81,3 +81,5 @@ __gthread_cond_wait_recursive (__gthread_cond_t *cond,
 {
   return __gthread_cond_wait (cond, mutex);
 }
+
+#endif

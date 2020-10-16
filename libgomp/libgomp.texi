@@ -167,7 +167,7 @@ linkage, and do not throw exceptions.
 * omp_get_default_device::      Get the default device for target regions
 * omp_get_dynamic::             Dynamic teams setting
 * omp_get_level::               Number of parallel regions
-* omp_get_max_active_levels::   Maximum number of active regions
+* omp_get_max_active_levels::   Current maximum number of active regions
 * omp_get_max_task_priority::   Maximum task priority value that can be set
 * omp_get_max_threads::         Maximum number of threads of parallel region
 * omp_get_nested::              Nested parallel regions
@@ -177,7 +177,7 @@ linkage, and do not throw exceptions.
 * omp_get_num_threads::         Size of the active team
 * omp_get_proc_bind::           Whether theads may be moved between CPUs
 * omp_get_schedule::            Obtain the runtime scheduling method
-* omp_get_supported_active_levels:: Maximum number of active levels supported
+* omp_get_supported_active_levels:: Maximum number of active regions supported
 * omp_get_team_num::            Get team number
 * omp_get_team_size::           Number of threads in a team
 * omp_get_thread_limit::        Maximum number of threads
@@ -380,7 +380,7 @@ which enclose the calling call.
 
 
 @node omp_get_max_active_levels
-@section @code{omp_get_max_active_levels} -- Maximum number of active regions
+@section @code{omp_get_max_active_levels} -- Current maximum number of active regions
 @table @asis
 @item @emph{Description}:
 This function obtains the maximum allowed number of nested, active parallel regions.

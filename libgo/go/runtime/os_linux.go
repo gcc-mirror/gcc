@@ -13,6 +13,10 @@ type mOS struct {
 	unused byte
 }
 
+func getProcID() uint64 {
+	return uint64(gettid())
+}
+
 func futex(addr unsafe.Pointer, op int32, val uint32, ts, addr2 unsafe.Pointer, val3 uint32) int32 {
 	return int32(syscall(_SYS_futex, uintptr(addr), uintptr(op), uintptr(val), uintptr(ts), uintptr(addr2), uintptr(val3)))
 }

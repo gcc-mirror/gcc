@@ -30,10 +30,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during tasking
---  operations. It causes infinite loops and other problems.
-
 with System.Task_Primitives.Operations;
 with System.Soft_Links.Tasking;
 

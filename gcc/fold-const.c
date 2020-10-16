@@ -15489,6 +15489,8 @@ ptr_difference_const (tree e1, tree e2, poly_int64_pod *diff)
 tree
 convert_to_ptrofftype_loc (location_t loc, tree off)
 {
+  if (ptrofftype_p (TREE_TYPE (off)))
+    return off;
   return fold_convert_loc (loc, sizetype, off);
 }
 
