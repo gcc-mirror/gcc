@@ -1,3 +1,7 @@
+2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/gomp/order-4.f90: Adjust.
+
 2021-02-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline
