@@ -133,28 +133,31 @@ gfc_array_dataptr_type (tree desc)
 #define LBOUND_SUBFIELD 1
 #define UBOUND_SUBFIELD 2
 
+static tree
+gfc_get_descriptor_field (tree desc, unsigned field_idx)
+{
+  tree type = TREE_TYPE (desc);
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+
+  tree field = gfc_advance_chain (TYPE_FIELDS (type), field_idx);
+  gcc_assert (field != NULL_TREE);
+
+  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
+			  desc, field, NULL_TREE);
+}
+
 /* This provides READ-ONLY access to the data field.  The field itself
    doesn't have the proper type.  */
 
 tree
 gfc_conv_descriptor_data_get (tree desc)
 {
-  tree field, type, t;
-
-  type = TREE_TYPE (desc);
+  tree type = TREE_TYPE (desc);
   if (TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+    gcc_unreachable ();
 
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-
-  field = TYPE_FIELDS (type);
-  gcc_assert (DATA_FIELD == 0);
-
-  t = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field), desc,
-		       field, NULL_TREE);
-  t = fold_convert (GFC_TYPE_ARRAY_DATAPTR_TYPE (type), t);
-
-  return t;
+  tree field = gfc_get_descriptor_field (desc, DATA_FIELD);
+  return fold_convert (GFC_TYPE_ARRAY_DATAPTR_TYPE (type), field);
 }
 
 /* This provides WRITE access to the data field.
@@ -168,17 +171,8 @@ gfc_conv_descriptor_data_get (tree desc)
 void
 gfc_conv_descriptor_data_set (stmtblock_t *block, tree desc, tree value)
 {
-  tree field, type, t;
-
-  type = TREE_TYPE (desc);
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-
-  field = TYPE_FIELDS (type);
-  gcc_assert (DATA_FIELD == 0);
-
-  t = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field), desc,
-		       field, NULL_TREE);
-  gfc_add_modify (block, t, fold_convert (TREE_TYPE (field), value));
+  tree field = gfc_get_descriptor_field (desc, DATA_FIELD);
+  gfc_add_modify (block, field, fold_convert (TREE_TYPE (field), value));
 }
 
 
@@ -188,33 +182,16 @@ gfc_conv_descriptor_data_set (stmtblock_t *block, tree desc, tree value)
 tree
 gfc_conv_descriptor_data_addr (tree desc)
 {
-  tree field, type, t;
-
-  type = TREE_TYPE (desc);
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-
-  field = TYPE_FIELDS (type);
-  gcc_assert (DATA_FIELD == 0);
-
-  t = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field), desc,
-		       field, NULL_TREE);
-  return gfc_build_addr_expr (NULL_TREE, t);
+  tree field = gfc_get_descriptor_field (desc, DATA_FIELD);
+  return gfc_build_addr_expr (NULL_TREE, field);
 }
 
 static tree
 gfc_conv_descriptor_offset (tree desc)
 {
-  tree type;
-  tree field;
-
-  type = TREE_TYPE (desc);
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-
-  field = gfc_advance_chain (TYPE_FIELDS (type), OFFSET_FIELD);
-  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
-
-  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			  desc, field, NULL_TREE);
+  tree field = gfc_get_descriptor_field (desc, OFFSET_FIELD);
+  gcc_assert (TREE_TYPE (field) == gfc_array_index_type);
+  return field;
 }
 
 tree
@@ -235,34 +212,17 @@ gfc_conv_descriptor_offset_set (stmtblock_t *block, tree desc,
 tree
 gfc_conv_descriptor_dtype (tree desc)
 {
-  tree field;
-  tree type;
-
-  type = TREE_TYPE (desc);
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-
-  field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
-  gcc_assert (field != NULL_TREE
-	      && TREE_TYPE (field) == get_dtype_type_node ());
-
-  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			  desc, field, NULL_TREE);
+  tree field = gfc_get_descriptor_field (desc, DTYPE_FIELD);
+  gcc_assert (TREE_TYPE (field) == get_dtype_type_node ());
+  return field;
 }
 
 static tree
 gfc_conv_descriptor_span (tree desc)
 {
-  tree type;
-  tree field;
-
-  type = TREE_TYPE (desc);
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-
-  field = gfc_advance_chain (TYPE_FIELDS (type), SPAN_FIELD);
-  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
-
-  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			  desc, field, NULL_TREE);
+  tree field = gfc_get_descriptor_field (desc, SPAN_FIELD);
+  gcc_assert (TREE_TYPE (field) == gfc_array_index_type);
+  return field;
 }
 
 tree
@@ -328,22 +288,13 @@ gfc_conv_descriptor_attribute (tree desc)
 			  dtype, tmp, NULL_TREE);
 }
 
-
 tree
 gfc_get_descriptor_dimension (tree desc)
 {
-  tree type, field;
-
-  type = TREE_TYPE (desc);
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-
-  field = gfc_advance_chain (TYPE_FIELDS (type), DIMENSION_FIELD);
-  gcc_assert (field != NULL_TREE
-	  && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
-	  && TREE_CODE (TREE_TYPE (TREE_TYPE (field))) == RECORD_TYPE);
-
-  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			  desc, field, NULL_TREE);
+  tree field = gfc_get_descriptor_field (desc, DIMENSION_FIELD);
+  gcc_assert (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (field))) == RECORD_TYPE);
+  return field;
 }
 
 
@@ -361,38 +312,31 @@ gfc_conv_descriptor_dimension (tree desc, tree dim)
 tree
 gfc_conv_descriptor_token (tree desc)
 {
-  tree type;
-  tree field;
-
-  type = TREE_TYPE (desc);
-  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
   gcc_assert (flag_coarray == GFC_FCOARRAY_LIB);
-  field = gfc_advance_chain (TYPE_FIELDS (type), CAF_TOKEN_FIELD);
-
+  tree field = gfc_get_descriptor_field (desc, CAF_TOKEN_FIELD);
   /* Should be a restricted pointer - except in the finalization wrapper.  */
-  gcc_assert (field != NULL_TREE
-	      && (TREE_TYPE (field) == prvoid_type_node
-		  || TREE_TYPE (field) == pvoid_type_node));
-
-  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			  desc, field, NULL_TREE);
+  gcc_assert (TREE_TYPE (field) == prvoid_type_node
+	      || TREE_TYPE (field) == pvoid_type_node);
+  return field;
 }
 
+static tree
+gfc_conv_descriptor_subfield (tree desc, tree dim, unsigned field_idx)
+{
+  tree tmp = gfc_conv_descriptor_dimension (desc, dim);
+  tree field = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (tmp)), field_idx);
+  gcc_assert (field != NULL_TREE);
+
+  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
+			  tmp, field, NULL_TREE);
+}
 
 static tree
 gfc_conv_descriptor_stride (tree desc, tree dim)
 {
-  tree tmp;
-  tree field;
-
-  tmp = gfc_conv_descriptor_dimension (desc, dim);
-  field = TYPE_FIELDS (TREE_TYPE (tmp));
-  field = gfc_advance_chain (field, STRIDE_SUBFIELD);
-  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
-
-  tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			 tmp, field, NULL_TREE);
-  return tmp;
+  tree field = gfc_conv_descriptor_subfield (desc, dim, STRIDE_SUBFIELD);
+  gcc_assert (TREE_TYPE (field) == gfc_array_index_type);
+  return field;
 }
 
 tree
@@ -421,17 +365,9 @@ gfc_conv_descriptor_stride_set (stmtblock_t *block, tree desc,
 static tree
 gfc_conv_descriptor_lbound (tree desc, tree dim)
 {
-  tree tmp;
-  tree field;
-
-  tmp = gfc_conv_descriptor_dimension (desc, dim);
-  field = TYPE_FIELDS (TREE_TYPE (tmp));
-  field = gfc_advance_chain (field, LBOUND_SUBFIELD);
-  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
-
-  tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			 tmp, field, NULL_TREE);
-  return tmp;
+  tree field = gfc_conv_descriptor_subfield (desc, dim, LBOUND_SUBFIELD);
+  gcc_assert (TREE_TYPE (field) == gfc_array_index_type);
+  return field;
 }
 
 tree
@@ -451,17 +387,9 @@ gfc_conv_descriptor_lbound_set (stmtblock_t *block, tree desc,
 static tree
 gfc_conv_descriptor_ubound (tree desc, tree dim)
 {
-  tree tmp;
-  tree field;
-
-  tmp = gfc_conv_descriptor_dimension (desc, dim);
-  field = TYPE_FIELDS (TREE_TYPE (tmp));
-  field = gfc_advance_chain (field, UBOUND_SUBFIELD);
-  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
-
-  tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			 tmp, field, NULL_TREE);
-  return tmp;
+  tree field = gfc_conv_descriptor_subfield (desc, dim, UBOUND_SUBFIELD);
+  gcc_assert (TREE_TYPE (field) == gfc_array_index_type);
+  return field;
 }
 
 tree
