@@ -413,8 +413,13 @@ public:
 
 public:
   tree name;	/* The identifier being looked for.  */
+
+  /* Usually we just add things to the VALUE binding, but we record
+     (hidden) IMPLICIT_TYPEDEFs on the type binding, which is used for
+     using-decl resolution.  */
   tree value;	/* A (possibly ambiguous) set of things found.  */
   tree type;	/* A type that has been found.  */
+
   LOOK_want want;  /* What kind of entity we want.  */
 
   bool deduping; /* Full deduping is needed because using declarations
@@ -5062,8 +5067,10 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
   /* Only process exporting if we're going to be inserting.  */
   bool revealing_p = insert_p && !fn_scope_p && module_has_cmi_p ();
 
+  /* First do the value binding.  */
   if (!lookup.value)
-    /* Nothing.  */;
+    /* Nothing (only implicit typedef found).  */
+    gcc_checking_assert (lookup.type);
   else if (OVL_P (lookup.value) && (!value || OVL_P (value)))
     {
       for (lkp_iterator usings (lookup.value); usings; ++usings)
@@ -5073,8 +5080,10 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	  if (exporting)
 	    {
 	      /* If the using decl is exported, the things it refers
-		 to must also be exported.  */
-	      if (!DECL_MODULE_EXPORT_P (new_fn))
+		 to must also be exported (or not in module purview).  */
+	      if (!DECL_MODULE_EXPORT_P (new_fn)
+		  && (DECL_LANG_SPECIFIC (new_fn)
+		      && DECL_MODULE_PURVIEW_P (new_fn)))
 		{
 		  error ("%q#D does not have external linkage", new_fn);
 		  inform (DECL_SOURCE_LOCATION (new_fn),
@@ -5089,6 +5098,10 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	     scope has the same name and the same parameter types as a
 	     function introduced by a using declaration the program is
 	     ill-formed.  */
+	  /* This seems overreaching, asking core -- why do we care
+	     about decls in the namespace that we cannot name (because
+	     they are not transitively imported.  We just check the
+	     decls that are in this TU.  */
 	  bool found = false;
 	  for (ovl_iterator old (value); !found && old; ++old)
 	    {
@@ -5099,18 +5112,23 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		  /* The function already exists in the current
 		     namespace.  We will still want to insert it if
 		     it is revealing a not-revealed thing.  */
+		  found = true;
 		  if (!revealing_p)
-		    found = true;
+		    ;
 		  else if (old.using_p ())
 		    {
 		      if (exporting)
 			/* Update in place.  'tis ok.  */
 			OVL_EXPORT_P (old.get_using ()) = true;
-		      found = true;
+		      ;
 		    }
-		  // FIXME: This can cause the same decl to appear
-		  // twice on a single overload.  That very likely
-		  // breaks a dedup invariant.
+		  else if (DECL_MODULE_EXPORT_P (new_fn))
+		    ;
+		  else
+		    {
+		      value = old.remove_node (value);
+		      found = false;
+		    }
 		  break;
 		}
 	      else if (old.using_p ())
@@ -5150,12 +5168,13 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       failed = true;
     }
   else if (insert_p)
-    // FIXME:exporting non fn?
+    // FIXME:what if we're newly exporting lookup.value
     value = lookup.value;
-
+  
+  /* Now the type binding.  */
   if (lookup.type && lookup.type != type)
     {
-      // FIXME: Exporting etc?
+      // FIXME: What if we're exporting lookup.type?
       if (type && !decls_match (lookup.type, type))
 	{
 	  diagnose_name_conflict (lookup.type, type);

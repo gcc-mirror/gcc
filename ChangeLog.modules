@@ -1,3 +1,8 @@
+2020-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (do_nonmember_using_decl): Fix duplication case.
+
 2020-10-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
