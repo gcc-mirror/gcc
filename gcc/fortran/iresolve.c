@@ -1296,11 +1296,7 @@ gfc_resolve_index_func (gfc_expr *f, gfc_actual_arglist *a)
 
   f->ts.type = BT_INTEGER;
   if (kind)
-    {
-      f->ts.kind = mpz_get_si ((kind)->value.integer);
-      a_back->next = NULL;
-      gfc_free_actual_arglist (a_kind);
-    }
+    f->ts.kind = mpz_get_si ((kind)->value.integer);
   else
     f->ts.kind = gfc_default_integer_kind;
 

@@ -5038,6 +5038,11 @@ got_specific:
   if (!sym->module)
     gfc_intrinsic_symbol (sym);
 
+  /* Have another stab at simplification since elemental intrinsics with array
+     actual arguments would be missed by the calls above to do_simplify.  */
+  if (isym->elemental)
+    gfc_simplify_expr (expr, 1);
+
   return MATCH_YES;
 }
 
