@@ -1999,7 +1999,7 @@ vr_values::dump_all_value_ranges (FILE *file)
 
   for (i = 0; i < num_vr_values; i++)
     {
-      if (vr_value[i])
+      if (vr_value[i] && ssa_name (i))
 	{
 	  print_generic_expr (file, ssa_name (i));
 	  fprintf (file, ": ");
