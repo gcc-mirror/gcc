@@ -132,6 +132,12 @@
 # define SANITIZER_X32 0
 #endif
 
+#if defined(__i386__) || defined(_M_IX86)
+# define SANITIZER_I386 1
+#else
+# define SANITIZER_I386 0
+#endif
+
 #if defined(__mips__)
 # define SANITIZER_MIPS 1
 # if defined(__mips64)
@@ -213,6 +219,12 @@
 # define SANITIZER_MYRIAD2 0
 #endif
 
+#if defined(__riscv) && (__riscv_xlen == 64)
+#define SANITIZER_RISCV64 1
+#else
+#define SANITIZER_RISCV64 0
+#endif
+
 // By default we allow to use SizeClassAllocator64 on 64-bit platform.
 // But in some cases (e.g. AArch64's 39-bit address space) SizeClassAllocator64
 // does not work well and we need to fallback to SizeClassAllocator32.
@@ -233,6 +245,8 @@
 // will still work but will consume more memory for TwoLevelByteMap.
 #if defined(__mips__)
 # define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 40)
+#elif SANITIZER_RISCV64
+#define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 38)
 #elif defined(__aarch64__)
 # if SANITIZER_MAC
 // Darwin iOS/ARM64 has a 36-bit VMA, 64GiB VM

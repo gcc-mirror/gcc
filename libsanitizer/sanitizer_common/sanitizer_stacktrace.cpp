@@ -10,9 +10,11 @@
 // run-time libraries.
 //===----------------------------------------------------------------------===//
 
+#include "sanitizer_stacktrace.h"
+
 #include "sanitizer_common.h"
 #include "sanitizer_flags.h"
-#include "sanitizer_stacktrace.h"
+#include "sanitizer_platform.h"
 
 namespace __sanitizer {
 
@@ -21,6 +23,28 @@ uptr StackTrace::GetNextInstructionPc(uptr pc) {
   return pc + 8;
 #elif defined(__powerpc__) || defined(__arm__) || defined(__aarch64__)
   return pc + 4;
+#elif SANITIZER_RISCV64
+  // Current check order is 4 -> 2 -> 6 -> 8
+  u8 InsnByte = *(u8 *)(pc);
+  if (((InsnByte & 0x3) == 0x3) && ((InsnByte & 0x1c) != 0x1c)) {
+    // xxxxxxxxxxxbbb11 | 32 bit | bbb != 111
+    return pc + 4;
+  }
+  if ((InsnByte & 0x3) != 0x3) {
+    // xxxxxxxxxxxxxxaa | 16 bit | aa != 11
+    return pc + 2;
+  }
+  // RISC-V encoding allows instructions to be up to 8 bytes long
+  if ((InsnByte & 0x3f) == 0x1f) {
+    // xxxxxxxxxx011111 | 48 bit |
+    return pc + 6;
+  }
+  if ((InsnByte & 0x7f) == 0x3f) {
+    // xxxxxxxxx0111111 | 64 bit |
+    return pc + 8;
+  }
+  // bail-out if could not figure out the instruction size
+  return 0;
 #else
   return pc + 1;
 #endif
@@ -60,8 +84,8 @@ static inline uhwptr *GetCanonicFrame(uptr bp,
   // Nope, this does not look right either. This means the frame after next does
   // not have a valid frame pointer, but we can still extract the caller PC.
   // Unfortunately, there is no way to decide between GCC and LLVM frame
-  // layouts. Assume GCC.
-  return bp_prev - 1;
+  // layouts. Assume LLVM.
+  return bp_prev;
 #else
   return (uhwptr*)bp;
 #endif
@@ -84,23 +108,19 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
          IsAligned((uptr)frame, sizeof(*frame)) &&
          size < max_depth) {
 #ifdef __powerpc__
-    // PowerPC ABIs specify that the return address is saved on the
-    // *caller's* stack frame.  Thus we must dereference the back chain
-    // to find the caller frame before extracting it.
+    // PowerPC ABIs specify that the return address is saved at offset
+    // 16 of the *caller's* stack frame.  Thus we must dereference the
+    // back chain to find the caller frame before extracting it.
     uhwptr *caller_frame = (uhwptr*)frame[0];
     if (!IsValidFrame((uptr)caller_frame, stack_top, bottom) ||
         !IsAligned((uptr)caller_frame, sizeof(uhwptr)))
       break;
-    // For most ABIs the offset where the return address is saved is two
-    // register sizes.  The exception is the SVR4 ABI, which uses an
-    // offset of only one register size.
-#ifdef _CALL_SYSV
-    uhwptr pc1 = caller_frame[1];
-#else
     uhwptr pc1 = caller_frame[2];
-#endif
 #elif defined(__s390__)
     uhwptr pc1 = frame[14];
+#elif defined(__riscv)
+    // frame[-1] contains the return address
+    uhwptr pc1 = frame[-1];
 #else
     uhwptr pc1 = frame[1];
 #endif
@@ -113,7 +133,13 @@ void BufferedStackTrace::UnwindFast(uptr pc, uptr bp, uptr stack_top,
       trace_buffer[size++] = (uptr) pc1;
     }
     bottom = (uptr)frame;
-    frame = GetCanonicFrame((uptr)frame[0], stack_top, bottom);
+#if defined(__riscv)
+    // frame[-2] contain fp of the previous frame
+    uptr new_bp = (uptr)frame[-2];
+#else
+    uptr new_bp = (uptr)frame[0];
+#endif
+    frame = GetCanonicFrame(new_bp, stack_top, bottom);
   }
 }
 

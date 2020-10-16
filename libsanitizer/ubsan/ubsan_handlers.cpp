@@ -16,6 +16,7 @@
 #include "ubsan_diag.h"
 #include "ubsan_flags.h"
 #include "ubsan_monitor.h"
+#include "ubsan_value.h"
 
 #include "sanitizer_common/sanitizer_common.h"
 
@@ -640,6 +641,36 @@ void __ubsan::__ubsan_handle_invalid_builtin_abort(InvalidBuiltinData *Data) {
   Die();
 }
 
+static void handleInvalidObjCCast(InvalidObjCCast *Data, ValueHandle Pointer,
+                                  ReportOptions Opts) {
+  SourceLocation Loc = Data->Loc.acquire();
+  ErrorType ET = ErrorType::InvalidObjCCast;
+
+  if (ignoreReport(Loc, Opts, ET))
+    return;
+
+  ScopedReport R(Opts, Loc, ET);
+
+  const char *GivenClass = getObjCClassName(Pointer);
+  const char *GivenClassStr = GivenClass ? GivenClass : "<unknown type>";
+
+  Diag(Loc, DL_Error, ET,
+       "invalid ObjC cast, object is a '%0', but expected a %1")
+      << GivenClassStr << Data->ExpectedType;
+}
+
+void __ubsan::__ubsan_handle_invalid_objc_cast(InvalidObjCCast *Data,
+                                               ValueHandle Pointer) {
+  GET_REPORT_OPTIONS(false);
+  handleInvalidObjCCast(Data, Pointer, Opts);
+}
+void __ubsan::__ubsan_handle_invalid_objc_cast_abort(InvalidObjCCast *Data,
+                                                     ValueHandle Pointer) {
+  GET_REPORT_OPTIONS(true);
+  handleInvalidObjCCast(Data, Pointer, Opts);
+  Die();
+}
+
 static void handleNonNullReturn(NonNullReturnData *Data, SourceLocation *LocPtr,
                                 ReportOptions Opts, bool IsAttr) {
   if (!LocPtr)
@@ -862,21 +893,6 @@ void __ubsan_handle_cfi_bad_type(CFICheckFailData *Data, ValueHandle Vtable,
 #endif
 
 }  // namespace __ubsan
-
-void __ubsan::__ubsan_handle_cfi_bad_icall(CFIBadIcallData *CallData,
-                                           ValueHandle Function) {
-  GET_REPORT_OPTIONS(false);
-  CFICheckFailData Data = {CFITCK_ICall, CallData->Loc, CallData->Type};
-  handleCFIBadIcall(&Data, Function, Opts);
-}
-
-void __ubsan::__ubsan_handle_cfi_bad_icall_abort(CFIBadIcallData *CallData,
-                                                 ValueHandle Function) {
-  GET_REPORT_OPTIONS(true);
-  CFICheckFailData Data = {CFITCK_ICall, CallData->Loc, CallData->Type};
-  handleCFIBadIcall(&Data, Function, Opts);
-  Die();
-}
 
 void __ubsan::__ubsan_handle_cfi_check_fail(CFICheckFailData *Data,
                                             ValueHandle Value,

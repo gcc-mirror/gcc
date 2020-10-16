@@ -21,10 +21,6 @@
 
 namespace __ubsan {
 
-const char *MaybeCallUbsanDefaultOptions() {
-  return (&__ubsan_default_options) ? __ubsan_default_options() : "";
-}
-
 static const char *GetFlag(const char *flag) {
   // We cannot call getenv() from inside a preinit array initializer
   if (SANITIZER_CAN_USE_PREINIT_ARRAY) {
@@ -54,7 +50,6 @@ void InitializeFlags() {
   {
     CommonFlags cf;
     cf.CopyFrom(*common_flags());
-    cf.print_summary = false;
     cf.external_symbolizer_path = GetFlag("UBSAN_SYMBOLIZER_PATH");
     OverrideCommonFlags(cf);
   }
@@ -67,7 +62,7 @@ void InitializeFlags() {
   RegisterUbsanFlags(&parser, f);
 
   // Override from user-specified string.
-  parser.ParseString(MaybeCallUbsanDefaultOptions());
+  parser.ParseString(__ubsan_default_options());
   // Override from environment variable.
   parser.ParseStringFromEnv("UBSAN_OPTIONS");
   InitializeCommonFlags();

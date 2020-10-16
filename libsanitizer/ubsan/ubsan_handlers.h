@@ -168,6 +168,14 @@ struct InvalidBuiltinData {
 /// Handle a builtin called in an invalid way.
 RECOVERABLE(invalid_builtin, InvalidBuiltinData *Data)
 
+struct InvalidObjCCast {
+  SourceLocation Loc;
+  const TypeDescriptor &ExpectedType;
+};
+
+/// Handle an invalid ObjC cast.
+RECOVERABLE(invalid_objc_cast, InvalidObjCCast *Data, ValueHandle Pointer)
+
 struct NonNullReturnData {
   SourceLocation AttrLoc;
 };
@@ -207,19 +215,11 @@ enum CFITypeCheckKind : unsigned char {
   CFITCK_VMFCall,
 };
 
-struct CFIBadIcallData {
-  SourceLocation Loc;
-  const TypeDescriptor &Type;
-};
-
 struct CFICheckFailData {
   CFITypeCheckKind CheckKind;
   SourceLocation Loc;
   const TypeDescriptor &Type;
 };
-
-/// \brief Handle control flow integrity failure for indirect function calls.
-RECOVERABLE(cfi_bad_icall, CFIBadIcallData *Data, ValueHandle Function)
 
 /// \brief Handle control flow integrity failures.
 RECOVERABLE(cfi_check_fail, CFICheckFailData *Data, ValueHandle Function,
