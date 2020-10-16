@@ -239,7 +239,9 @@ hybrid_folder::value_of_expr (tree op, gimple *stmt)
 tree
 hybrid_folder::value_on_edge (edge e, tree op)
 {
-  tree evrp_ret = evrp_folder::value_on_edge (e, op);
+  // Call evrp::value_of_expr directly.  Otherwise another dual call is made
+  // via hybrid_folder::value_of_expr, but without an edge.
+  tree evrp_ret = evrp_folder::value_of_expr (op, NULL);
   tree ranger_ret = m_ranger->value_on_edge (e, op);
   return choose_value (evrp_ret, ranger_ret);
 }
@@ -247,7 +249,14 @@ hybrid_folder::value_on_edge (edge e, tree op)
 tree
 hybrid_folder::value_of_stmt (gimple *stmt, tree op) 
 {
-  tree evrp_ret = evrp_folder::value_of_stmt (stmt, op);
+  // Call evrp::value_of_expr directly.  Otherwise another dual call is made
+  // via hybrid_folder::value_of_expr, but without a stmt.
+  tree evrp_ret;
+  if (op)
+    evrp_ret = evrp_folder::value_of_expr (op, NULL);
+  else
+    evrp_ret = NULL_TREE;
+
   tree ranger_ret = m_ranger->value_of_stmt (stmt, op);
   return choose_value (evrp_ret, ranger_ret);
 }
