@@ -3064,6 +3064,14 @@ pointer_plus_operator::wi_fold (irange &r, tree type,
 				const wide_int &rh_lb,
 				const wide_int &rh_ub) const
 {
+  // Check for [0,0] + const, and simply return the const.
+  if (lh_lb == 0 && lh_ub == 0 && rh_lb == rh_ub)
+    {
+      tree val = wide_int_to_tree (type, rh_lb);
+      r.set (val, val);
+      return;
+    }
+
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
   //
