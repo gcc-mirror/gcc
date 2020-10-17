@@ -960,9 +960,13 @@ namespace __variant
 	    }
 	  else
 	    {
-	      __element = __gen_vtable_impl<
+	      auto __tmp_element = __gen_vtable_impl<
 		remove_reference_t<decltype(__element)>,
 		std::index_sequence<__indices..., __index>>::_S_apply();
+	      static_assert(is_same_v<_Tp, decltype(__tmp_element)>,
+			    "std::visit requires the visitor to have the same "
+			    "return type for all alternatives of a variant");
+	      __element = __tmp_element;
 	    }
 	}
     };
@@ -1026,10 +1030,8 @@ namespace __variant
 				    std::declval<_Variants>()...))>;
 	    if constexpr (__visit_ret_type_mismatch)
 	      {
-		static_assert(!__visit_ret_type_mismatch,
-		  "std::visit requires the visitor to have the same "
-		  "return type for all alternatives of a variant");
-		return __nonesuch{};
+		struct __cannot_match {};
+		return __cannot_match{};
 	      }
 	    else
 	      return _Array_type{&__visit_invoke};
