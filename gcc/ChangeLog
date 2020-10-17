@@ -1,3 +1,165 @@
+2020-10-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* config/arm/arm_mve.h (__arm_vcvtnq_u32_f32): New.
+
+2020-10-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* config/arm/arm_mve.h (vqrdmlashq_n_u8, vqrdmlashq_n_u16)
+	(vqrdmlashq_n_u32, vqrdmlahq_n_u8, vqrdmlahq_n_u16)
+	(vqrdmlahq_n_u32, vqdmlahq_n_u8, vqdmlahq_n_u16, vqdmlahq_n_u32)
+	(vmlaldavaxq_p_u16, vmlaldavaxq_p_u32): Remove.
+	* config/arm/arm_mve_builtins.def (vqrdmlashq_n_u, vqrdmlahq_n_u)
+	(vqdmlahq_n_u, vmlaldavaxq_p_u): Remove.
+	* config/arm/unspecs.md (VQDMLAHQ_N_U, VQRDMLAHQ_N_U)
+	(VQRDMLASHQ_N_U)
+	(VMLALDAVAXQ_P_U): Remove unspecs.
+	* config/arm/iterators.md (VQDMLAHQ_N_U, VQRDMLAHQ_N_U)
+	(VQRDMLASHQ_N_U, VMLALDAVAXQ_P_U): Remove attributes.
+	(VQDMLAHQ_N, VQRDMLAHQ_N, VQRDMLASHQ_N, VMLALDAVAXQ_P): Remove
+	unsigned variants from iterators.
+	* config/arm/mve.md (mve_vqdmlahq_n_<supf><mode>)
+	(mve_vqrdmlahq_n_<supf><mode>)
+	(mve_vqrdmlashq_n_<supf><mode>, mve_vmlaldavaxq_p_<supf><mode>):
+	Update comment.
+
+2020-10-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* config/arm/arm_mve.h (vqdmlashq, vqdmlashq_m): Define.
+	* config/arm/arm_mve_builtins.def (vqdmlashq_n_s)
+	(vqdmlashq_m_n_s,): New.
+	* config/arm/unspecs.md (VQDMLASHQ_N_S, VQDMLASHQ_M_N_S): New
+	unspecs.
+	* config/arm/iterators.md (VQDMLASHQ_N_S, VQDMLASHQ_M_N_S): New
+	attributes.
+	(VQDMLASHQ_N): New iterator.
+	* config/arm/mve.md (mve_vqdmlashq_n_, mve_vqdmlashq_m_n_s): New
+	patterns.
+
+2020-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97386
+	* combine.c (simplify_shift_const_1): Don't optimize nested ROTATEs if
+	they have different modes.
+
+2020-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/97294
+	* tree-cfg.c (move_block_to_fn): Call notice_special_calls on
+	call stmts being moved into dest_cfun.
+	* omp-low.c (lower_rec_input_clauses): Set cfun->calls_alloca when
+	adding __builtin_alloca_with_align call without gimplification.
+
+2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97291
+	* config/arm/arm-builtins.c (arm_strsbwbs_qualifiers): Modify array.
+	(arm_strsbwbu_qualifiers): Likewise.
+	(arm_strsbwbs_p_qualifiers): Likewise.
+	(arm_strsbwbu_p_qualifiers): Likewise.
+	* config/arm/arm_mve.h (__arm_vstrdq_scatter_base_wb_s64): Modify
+	function definition.
+	(__arm_vstrdq_scatter_base_wb_u64): Likewise.
+	(__arm_vstrdq_scatter_base_wb_p_s64): Likewise.
+	(__arm_vstrdq_scatter_base_wb_p_u64): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_s32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_u32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_s32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_u32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_f32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_f32): Likewise.
+	* config/arm/arm_mve_builtins.def (vstrwq_scatter_base_wb_add_u): Remove
+	expansion for the builtin.
+	(vstrwq_scatter_base_wb_add_s): Likewise.
+	(vstrwq_scatter_base_wb_add_f): Likewise.
+	(vstrdq_scatter_base_wb_add_u): Likewise.
+	(vstrdq_scatter_base_wb_add_s): Likewise.
+	(vstrwq_scatter_base_wb_p_add_u): Likewise.
+	(vstrwq_scatter_base_wb_p_add_s): Likewise.
+	(vstrwq_scatter_base_wb_p_add_f): Likewise.
+	(vstrdq_scatter_base_wb_p_add_u): Likewise.
+	(vstrdq_scatter_base_wb_p_add_s): Likewise.
+	* config/arm/mve.md (mve_vstrwq_scatter_base_wb_<supf>v4si): Remove
+	expand.
+	(mve_vstrwq_scatter_base_wb_add_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_<supf>v4si_insn): Rename pattern to ...
+	(mve_vstrwq_scatter_base_wb_<supf>v4si): This.
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si): Remove expand.
+	(mve_vstrwq_scatter_base_wb_p_add_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si_insn): Rename pattern to ...
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si): This.
+	(mve_vstrwq_scatter_base_wb_fv4sf): Remove expand.
+	(mve_vstrwq_scatter_base_wb_add_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_fv4sf_insn): Rename pattern to ...
+	(mve_vstrwq_scatter_base_wb_fv4sf): This.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): Remove expand.
+	(mve_vstrwq_scatter_base_wb_p_add_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf_insn): Rename pattern to ...
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): This.
+	(mve_vstrdq_scatter_base_wb_<supf>v2di): Remove expand.
+	(mve_vstrdq_scatter_base_wb_add_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_<supf>v2di_insn): Rename pattern to ...
+	(mve_vstrdq_scatter_base_wb_<supf>v2di): This.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): Remove expand.
+	(mve_vstrdq_scatter_base_wb_p_add_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di_insn): Rename pattern to ...
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): This.
+
+2020-10-16  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	Backported from master:
+	2020-10-06  Joe Ramsay  <joe.ramsay@arm.com>
+
+	* config/arm/arm-cpus.in:
+	(ALL_FPU_INTERNAL): Remove vfp_base.
+	(VFPv2): Remove vfp_base.
+	(MVE): Remove vfp_base.
+	(vfp_base): Redefine as implied bit dependent on MVE or FP
+	(cortex-m55): Add flags to disable MVE, MVE FP, FP and DSP extensions.
+	* config/arm/arm.c (arm_configure_build_target): Add implied bits to ISA.
+	* config/arm/parsecpu.awk:
+	(gen_isa): Print implied bits and their dependencies to ISA header.
+	(gen_data): Add parsing for implied feature bits.
+
+2020-10-16  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-10-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96394
+	* ipa-prop.c (update_indirect_edges_after_inlining): Do not add
+	resolved speculation edges to vector of new direct edges even in
+	presence of multiple speculative direct edges for a single call.
+
+2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97404
+	* ipa-prop.c (struct ipa_vr_ggc_hash_traits):
+	Compare types of VRP as we can merge ranges of different types.
+
 2020-10-15  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:

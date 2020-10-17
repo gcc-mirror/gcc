@@ -1,3 +1,129 @@
+2020-10-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vcvtnq_u32_f32.c: New test.
+
+2020-10-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vmlaldavaxq_p_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vmlaldavaxq_p_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqdmlahq_n_u8.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlahq_n_u8.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u16.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u32.c: Remove.
+	* gcc.target/arm/mve/intrinsics/vqrdmlashq_n_u8.c: Remove.
+
+2020-10-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2020-10-08  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96914
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s32.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_m_n_s8.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s16.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s32.c: New test.
+	* gcc.target/arm/mve/intrinsics/vqdmlashq_n_s8.c: New test.
+
+2020-10-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-07-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/95886
+	* gcc.target/i386/memcpy-pr95886.c: Restrict test to !ia32.
+
+2020-10-16  Martin Sebor  <msebor@redhat.com>
+
+	Backported from master:
+	2020-07-23  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/95886
+	* gcc.target/i386/memcpy-pr95886.c: Restrict test to LP64.
+
+2020-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97386
+	* gcc.c-torture/execute/pr97386-1.c: New test.
+	* gcc.c-torture/execute/pr97386-2.c: New test.
+
+2020-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/97294
+	* gcc.dg/asan/pr97294.c: New test.
+
+2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97291
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_p_s64.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_p_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_u32.c: Likewise.
+
+2020-10-16  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	Backported from master:
+	2020-10-06  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	* gcc.target/arm/cortex-m55-nodsp-flag-hard.c: New test.
+	* gcc.target/arm/cortex-m55-nodsp-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nodsp-nofp-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nofp-flag-hard.c: New test.
+	* gcc.target/arm/cortex-m55-nofp-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nofp-nomve-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nomve-flag-hard.c: New test.
+	* gcc.target/arm/cortex-m55-nomve-flag-softfp.c: New test.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-hard.c: New test.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-softfp.c: New test.
+	* gcc.target/arm/multilib.exp: Add tests for -mcpu=cortex-m55.
+
+2020-10-16  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2020-10-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/96394
+	* gcc.dg/tree-prof/pr96394.c: New test.
+
+2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97404
+	* gcc.c-torture/execute/pr97404.c: New test.
+
 2020-10-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
