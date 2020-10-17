@@ -1,3 +1,12 @@
+2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97404
+	* ipa-prop.c (struct ipa_vr_ggc_hash_traits):
+	Compare types of VRP as we can merge ranges of different types.
+
 2020-10-15  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:

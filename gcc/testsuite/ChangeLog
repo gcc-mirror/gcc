@@ -1,3 +1,11 @@
+2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97404
+	* gcc.c-torture/execute/pr97404.c: New test.
+
 2020-10-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
