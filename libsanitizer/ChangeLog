@@ -1,3 +1,7 @@
+2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update revision.
+
 2020-09-21  Ian Lance Taylor  <iant@golang.org>
 
 	* libbacktrace/backtrace-rename.h (backtrace_uncompress_lzma):

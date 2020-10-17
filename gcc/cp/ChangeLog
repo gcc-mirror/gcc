@@ -1,3 +1,15 @@
+2020-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97460
+	* pt.c (push_template_decl): Check DECL_LANG_SPECIFIC in friend
+	case.
+
+2020-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/96258
+	* parser.c (cp_parser_declaration): Make token2 point to EOF if
+	token1 was EOF.
+
 2020-10-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/95844

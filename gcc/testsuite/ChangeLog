@@ -1,3 +1,71 @@
+2020-10-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr96139-a.c: Remove -m32.
+	* gcc.target/powerpc/pr96139-b.c: Remove -m64.
+
+2020-10-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95979
+	* gfortran.dg/index_4.f90: New test.
+
+2020-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97462
+	* gcc.dg/pr97462.c: New file.
+
+2020-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97460
+	* g++.dg/template/pr97460.C: New.
+
+2020-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/96258
+	* g++.dg/parse/pr96258.C: New.
+
+2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97327
+	* gcc.target/arm/mve/intrinsics/pr97327.c: New test.
+
+2020-10-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-53.c: New testcase.
+
+2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97291
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_p_s64.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_p_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_u32.c: Likewise.
+
+2020-10-16  Jan Hubicka  <jh@suse.cz>
+
+	PR testsuite/97426
+	* gcc.dg/tree-ssa/modref-4.c: Fix return test.
+
+2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97404
+	* gcc.c-torture/execute/pr97404.c: New test.
+
+2020-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97428
+	* gcc.dg/vect/vect-complex-5.c: Expect to SLP.
+	* gcc.dg/vect/pr97428.c: Likewise.
+
 2020-10-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/builtins-1-p9-runnable.c: Adjust for big endian.

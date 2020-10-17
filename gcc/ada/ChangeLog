@@ -1,3 +1,384 @@
+2020-10-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb, exp_aggr.adb, exp_attr.adb, exp_ch6.adb,
+	freeze.adb, sem_aggr.adb, sem_attr.adb, sem_ch13.adb,
+	sem_ch13.ads, sem_ch6.adb, sem_eval.adb, sem_util.adb: Fix style
+	and typos.
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_cat.adb (Is_Primary): Handle N_Range properly.
+
+2020-10-16  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* elists.ads (New_Elmt_List): New functions.
+	* elists.adb (New_Elmt_List): New functions.
+	* exp_prag.adb: Add dependency on Elists.
+	(Expand_Pragma_CUDA_Execute): New function.
+	(Expand_N_Pragma): Add call to Expand_Pragma_CUDA_Execute.
+	* rtsfind.ads: Add CUDA.Internal, CUDA.Runtime, System.C
+	packages and RE_Push_Call_Configuration,
+	RE_Pop_Call_Configuration, RE_Launch_Kernel, RO_IC_Unsigned,
+	RO_IC_Unsigned_Long_Long entities.
+	* rtsfind.adb: Extend Interfaces_Descendant to include
+	Interfaces_C.
+
+2020-10-16  Bob Duff  <duff@adacore.com>
+
+	* par-ch4.adb (P_Name): Allow Tok_Left_Bracket in two places to
+	call P_Qualified_Expression. We don't need to modify other
+	places that call P_Qualified_Expression, because a
+	qualified_expression is a name in Ada 2012 and higher, so P_Name
+	is the right place.  The parser already parses aggregates with
+	brackets; we just need to allow that in qualified expressions.
+
+2020-10-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Child_Unit): When the child unit
+	is a renaming of a generic child unit then traverse the scope
+	containing the renaming declaration to locate the instance of
+	its parent.  Otherwise the parent is not installed and the
+	frontend cannot process the instantiation.
+
+2020-10-16  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-numeri.ads: Remove the greek letter.
+
+2020-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute): Refine previous patch
+	to use root type (and not base type) on enumeration types.
+
+2020-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute): Use the base type
+	instead of the root type when type of object is private. Remove
+	Ada_2020 guard, because it has been checked during prior
+	analysis. Use Underlying_Type in all cases, as it is a no-op on
+	types that are not private.
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* aspects.ads, snames.ads-tmpl: Add support for
+	Exclusive_Functions aspect.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Ditto.
+	* exp_ch9.adb (Build_Protected_Subprogram_Body): Take aspect
+	Exclusive_Functions into account.
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies on system.ads,
+	add gnatbind switch -t to avoid timestamp inconsistencies during
+	build.
+	* libgnat/system.ads: Move...
+	* gcc-interface/system.ads: ... here.
+
+2020-10-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_eval.adb (Subtypes_Statically_Match): Retrieve
+	discriminant constraints from the two types via new function
+	Original_Discriminant_Constraint rather than
+	Discriminant_Constraint.
+	(Original_Discriminant_Constraint): New function to locate the
+	nearest explicit discriminant constraint associated with a type
+	that may possibly have inherited a constraint from an ancestor
+	type.
+
+2020-10-16  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Remove obsolete
+	comment and code.
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/95953
+	* libgnat/a-suenco.adb (Convert): Fix handling of third UTF-8
+	byte.
+
+2020-10-16  Steve Baird  <baird@adacore.com>
+
+	* exp_util.adb (Is_Related_To_Func_Return): Cope with the case
+	where the FE introduces a type conversion.
+
+2020-10-16  Chris Martin  <cmartin@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_Access_Variable): New function.
+	(Is_Synchronized_Object): Call new function when determining if
+	a constant can be regarded as synchronized.
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	Call Set_BIP_Initialization_Call systematically.
+	* exp_ch7.adb (Process_Transient_In_Scope): Take
+	BIP_Initialization_Call into account to decide where to insert
+	the Hook.
+
+2020-10-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_View_Conversion): Detect qualified types.
+	* sem_util.ads (Is_Actual_In_Out_Parameter): Fix style in
+	comment.
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* scil_ll.adb, sem_scil.adb: Update assertions.
+
+2020-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Min_Max): Handle the case where attribute
+	name (qualified by required type) appears as the reducer of a
+	'Reduce attribute reference.
+	(Resolve_Attribute) <Reduce>: Handle properly the presence of a
+	procedure or an attribute reference Min/Max as a reducer.
+	* exp_attr.adb (Expand_Attribute_Reference) <Reduce>: New
+	subprogram Build_Stat, to construct the combining statement
+	which appears in the generated loop for Reduce, and which is
+	either a function call when the reducer is a function or an
+	attribute, or a procedure call when reducer is an appropriate
+	procedure.  BuilD_Stat is used both when the prefix of 'Reduce
+	is a value sequence and when it is an object
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Allocate result of string
+	concatenation on secondary stack when relevant.
+
+2020-10-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Declare_Expression): Retrieve the created
+	block entity that is the scope of the local declarations, from
+	either a local object declaration or an object renaming
+	declaration. The block entity does not have an explicit
+	declaration, but appears as the scope of all locally declared
+	objects.
+
+2020-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/system-aix.ads: Likewise.
+	* libgnat/system-darwin-arm.ads: Likewise.
+	* libgnat/system-darwin-ppc.ads: Likewise.
+	* libgnat/system-darwin-x86.ads: Likewise.
+	* libgnat/system-djgpp.ads: Likewise.
+	* libgnat/system-dragonfly-x86_64.ads: Likewise.
+	* libgnat/system-freebsd.ads: Likewise.
+	* libgnat/system-hpux-ia64.ads: Likewise.
+	* libgnat/system-hpux.ads: Likewise.
+	* libgnat/system-linux-alpha.ads: Likewise.
+	* libgnat/system-linux-arm.ads: Likewise.
+	* libgnat/system-linux-hppa.ads: Likewise.
+	* libgnat/system-linux-ia64.ads: Likewise.
+	* libgnat/system-linux-m68k.ads: Likewise.
+	* libgnat/system-linux-mips.ads: Likewise.
+	* libgnat/system-linux-ppc.ads: Likewise.
+	* libgnat/system-linux-riscv.ads: Likewise.
+	* libgnat/system-linux-s390.ads: Likewise.
+	* libgnat/system-linux-sh4.ads: Likewise.
+	* libgnat/system-linux-sparc.ads: Likewise.
+	* libgnat/system-linux-x86.ads: Likewise.
+	* libgnat/system-lynxos178-ppc.ads: Likewise.
+	* libgnat/system-lynxos178-x86.ads: Likewise.
+	* libgnat/system-mingw.ads: Likewise.
+	* libgnat/system-qnx-aarch64.ads: Likewise.
+	* libgnat/system-rtems.ads: Likewise.
+	* libgnat/system-solaris-sparc.ads: Likewise.
+	* libgnat/system-solaris-x86.ads: Likewise.
+	* libgnat/system-vxworks-arm-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-arm-rtp.ads: Likewise.
+	* libgnat/system-vxworks-arm.ads: Likewise.
+	* libgnat/system-vxworks-e500-kernel.ads: Likewise.
+	* libgnat/system-vxworks-e500-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-e500-rtp.ads: Likewise.
+	* libgnat/system-vxworks-e500-vthread.ads: Likewise.
+	* libgnat/system-vxworks-ppc-kernel.ads: Likewise.
+	* libgnat/system-vxworks-ppc-ravenscar.ads: Likewise.
+	* libgnat/system-vxworks-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-ppc-rtp.ads: Likewise.
+	* libgnat/system-vxworks-ppc-vthread.ads: Likewise.
+	* libgnat/system-vxworks-ppc.ads: Likewise.
+	* libgnat/system-vxworks-x86-kernel.ads: Likewise.
+	* libgnat/system-vxworks-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks-x86-rtp.ads: Likewise.
+	* libgnat/system-vxworks-x86-vthread.ads: Likewise.
+	* libgnat/system-vxworks-x86.ads: Likewise.
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-aarch64.ads: Likewise.
+	* libgnat/system-vxworks7-arm-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-arm.ads: Likewise.
+	* libgnat/system-vxworks7-e500-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-x86-rtp.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-kernel.ads: Likewise.
+	* libgnat/system-vxworks7-x86_64-rtp-smp.ads: Likewise.
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl, gnat1drv.adb, expander.adb
+	doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/the_gnat_compilation_model.rst, exp_ch5.ads,
+	exp_ch5.adb, exp_ch6.adb, exp_ch7.adb, exp_util.adb,
+	exp_util.ads, libgnarl/s-osinte__aix.adb,
+	libgnarl/s-osinte__android.adb, libgnarl/s-osinte__darwin.adb,
+	libgnarl/s-osinte__gnu.adb, libgnarl/s-osinte__hpux-dce.adb,
+	libgnarl/s-osinte__lynxos178.adb, libgnarl/s-osinte__posix.adb,
+	libgnarl/s-osinte__qnx.adb, libgnarl/s-osinte__rtems.adb,
+	libgnarl/s-osinte__solaris.adb, libgnarl/s-osinte__vxworks.adb,
+	libgnarl/s-osinte__x32.adb, libgnarl/s-solita.adb,
+	libgnarl/s-taasde.adb, libgnarl/s-taprob.adb,
+	libgnarl/s-taprop__dummy.adb, libgnarl/s-taprop__hpux-dce.adb,
+	libgnarl/s-taprop__linux.adb, libgnarl/s-taprop__mingw.adb,
+	libgnarl/s-taprop__posix.adb, libgnarl/s-taprop__qnx.adb,
+	libgnarl/s-taprop__solaris.adb, libgnarl/s-taprop__vxworks.adb,
+	libgnarl/s-tarest.adb, libgnarl/s-tasini.adb,
+	libgnarl/s-taskin.adb, libgnarl/s-taspri__dummy.ads,
+	libgnarl/s-taspri__hpux-dce.ads, libgnarl/s-taspri__lynxos.ads,
+	libgnarl/s-taspri__mingw.ads,
+	libgnarl/s-taspri__posix-noaltstack.ads,
+	libgnarl/s-taspri__posix.ads, libgnarl/s-taspri__solaris.ads,
+	libgnarl/s-taspri__vxworks.ads, libgnarl/s-tassta.adb,
+	libgnarl/s-tasuti.adb, libgnarl/s-tposen.adb,
+	libgnat/a-except.adb, libgnat/a-except.ads,
+	libgnat/s-dwalin.adb, libgnat/s-dwalin.ads,
+	libgnat/s-mastop.ads, libgnat/s-soflin.adb,
+	libgnat/s-stalib.adb, libgnat/s-stalib.ads,
+	libgnat/s-stchop.adb, libgnat/s-stchop.ads,
+	libgnat/s-stchop__limit.ads, libgnat/s-traceb.ads,
+	libgnat/s-traent.adb, libgnat/s-traent.ads,
+	libgnat/s-trasym.adb, libgnat/s-trasym.ads,
+	libgnat/s-trasym__dwarf.adb, opt.adb, opt.ads, par-prag.adb,
+	sem_prag.adb, snames.ads-tmpl, switch-c.adb, targparm.adb,
+	targparm.ads, usage.adb: Remove support for -gnatP and pragma
+	Polling.
+	* gnat_ugn.texi: Regenerate.
+	* libgnat/a-excpol.adb, libgnat/a-excpol__abort.adb: Removed.
+
+2020-10-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): Create itype with unique
+	name.
+
+2020-10-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Limit scope of a
+	local object by hiding it from local subprograms; simplify
+	nested if-then-if-then condition for an Ada 83 restriction.
+	(Array_Type_Declaration): Confirm with assertion when the else
+	branch is executed.
+	(Find_Type_Of_Object): Simplify membership test with a subtype
+	range.
+
+2020-10-16  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_In_Decl_Part): Update check to
+	reject volatile object for reading.
+	* sem_res.adb (Resolve_Actuals, Resolve_Entity_Name): Update
+	check to reject volatile object for reading.
+	* sem_util.adb, sem_util.ads
+	(Check_Nonvolatile_Function_Profile,
+	Has_Effectively_Volatile_Profile): Detect use of volatile object
+	for reading.
+	(Has_Enabled_Property): Accept constants as well.
+	(Is_Effectively_Volatile_For_Reading): New function based on
+	existing Is_Effectively_Volatile.
+	(Is_Effectively_Volatile_Object_For_Reading): Adapted from the
+	existing Is_Effectively_Volatile_Object, using a shared
+	implementation in Is_Effectively_Volatile_Object_Shared.
+
+2020-10-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_In_Decls_Or_Stmts): In the case
+	of an if-statement, call Unnest_If_Statement to determine
+	whether there are nested subprograms in any of the statement
+	lists of the "if" parts that require a wrapping procedure to
+	handle possible up-level refeferences.
+	(Unnest_Block): Call Check_Unnesting_In_Handlers to do unnesting
+	of subprograms in exception handlers of the block statement.
+	(Unnest_If_Statement): New procedure to traverse the parts of an
+	if-statement and create wrapper procedures as needed to
+	encapsulate nested subprograms that may make up-level
+	references.
+	(Check_Stmts_For_Subp_Unnesting): New support procedure in
+	Unnest_If_Statement to traverse a statement list looking for
+	top-level subprogram bodies that require wrapping inside a
+	procedure (via Unnest_Statement_List) as well as possibly having
+	other statements (block, loop, if) that may themselves require
+	an unnesting transformation (via
+	Check_Unnesting_In_Decls_Or_Stmts).
+	(Unnest_Statement_List): New support procedure to traverse the
+	statements of a statement list that contains subprogram bodies
+	at the top level and replace the statement list with a wrapper
+	procedure body encapsulating the statements and a call to the
+	procedure.
+
+2020-10-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Check_OK_Stream_Convert_Function): Check for
+	abstract subprograms.
+
+2020-10-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst
+	(No_Local_Timing_Events): Package Timing_Events is a child of
+	Ada.Real_Time, not of Ada.
+	* gnat_rm.texi: Regenerate.
+
+2020-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst: Document the
+	new Max_Integer_Size attribute.
+	* gnat_rm.texi: Regenerate.
+	* exp_attr.adb (Get_Integer_Type): Call Small_Integer_Type_For.
+	(Expand_N_Attribute_Reference) <Attribute_Pred>: Replace selection
+	code with call to Integer_Type_For.
+	<Attribute_Succ>: Likewise.
+	<Attribute_Val>: Likewise.
+	<Attribute_Valid>: Likewise.
+	<Attribute_Max_Integer_Size>: Raise Program_Error.
+	* exp_ch3.adb (Expand_Freeze_Enumeration_Type): Replace selection
+	code with call to Integer_Type_For.
+	(Simple_Init_Initialize_Scalars_Type): Use Long_Long_Unsigned and
+	System_Max_Integer_Size to size the largest integer type.
+	* exp_pakd.adb (Compute_Linear_Subscript): Minor tweak.
+	(Create_Packed_Array_Impl_Type): Use Small_Integer_Type_For.
+	* exp_util.ads (Integer_Type_For): New function.
+	(Small_Integer_Type_For): Likewise.
+	* exp_util.adb (Adjust_Condition): Use Integer_Type_For.
+	(Component_May_Be_Bit_Aligned): Use System_Max_Integer_Size.
+	(Integer_Type_For): New function.
+	(Small_Integer_Type_For): Likewise.
+	(Matching_Standard_Type): Use Small_Integer_Type_For.
+	(Needs_Constant_Address): Replace 64 with System_Max_Integer_Size.
+	* freeze.adb (Set_Small_Size): Likewise.
+	(Size_Known): Likewise.
+	(Check_Suspicious_Modulus): Likewise.
+	(Check_Large_Modular_Array): Likewise.
+	(Freeze_Entity): Likewise.
+	* layout.adb (Layout_Type): Likewise.
+	* sem_aggr.adb: Add with and use clauses for Ttypes.
+	(Resolve_Aggregate): Replace 64 with System_Max_Integer_Size.
+	* sem_attr.ads (Attribute_Impl_Def): Add Attribute_Max_Integer_Size.
+	* sem_attr.adb (Analyze_Attribute) <Attribute_Max_Integer_Size>: New
+	(Eval_Attribute): Likewise.
+	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order): Change max
+	scalar size to System_Max_Integer_Size.
+	(Check_Array_Type): Replace 64 with System_Max_Integer_Size and
+	remove superfluous test.
+	(OK_Component): Likewise.
+	* sem_ch5.adb: Add with and use clauses for Ttypes.
+	(Analyze_Assignment): Replace 64 with System_Max_Integer_Size.
+	* snames.ads-tmpl (Name_Max_Integer_Size): New attribute name.
+	(Attribute_Id): Add Attribute_Max_Integer_Size.
+	* ttypes.ads (System_Max_Integer_Size): New constant.
+
 2020-10-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_ch10.adb (Install_With_Clause): Fix implementation of Ada
