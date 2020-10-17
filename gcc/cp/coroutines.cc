@@ -94,6 +94,7 @@ struct GTY((for_user)) coroutine_info
   /* Flags to avoid repeated errors for per-function issues.  */
   bool coro_ret_type_error_emitted;
   bool coro_promise_error_emitted;
+  bool coro_co_return_error_emitted;
 };
 
 struct coroutine_info_hasher : ggc_ptr_hash<coroutine_info>
@@ -466,6 +467,30 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 	    error_at (loc, "unable to find the promise type for"
 		      " this coroutine");
 	  coro_info->coro_promise_error_emitted = true;
+	  return false;
+	}
+
+      /* Test for errors in the promise type that can be determined now.  */
+      tree has_ret_void = lookup_member (coro_info->promise_type,
+					 coro_return_void_identifier,
+					 /*protect=*/1, /*want_type=*/0,
+					 tf_none);
+      tree has_ret_val = lookup_member (coro_info->promise_type,
+					coro_return_value_identifier,
+					/*protect=*/1, /*want_type=*/0,
+					tf_none);
+      if (has_ret_void && has_ret_val)
+	{
+	  location_t ploc = DECL_SOURCE_LOCATION (fndecl);
+	  if (!coro_info->coro_co_return_error_emitted)
+	    error_at (ploc, "the coroutine promise type %qT declares both"
+		      " %<return_value%> and %<return_void%>",
+		      coro_info->promise_type);
+	  inform (DECL_SOURCE_LOCATION (BASELINK_FUNCTIONS (has_ret_void)),
+		  "%<return_void%> declared here");
+	  inform (DECL_SOURCE_LOCATION (BASELINK_FUNCTIONS (has_ret_val)),
+		  "%<return_value%> declared here");
+	  coro_info->coro_co_return_error_emitted = true;
 	  return false;
 	}
 
