@@ -8,5 +8,5 @@ package syscall
 //sysnb	Uname(buf *Utsname) (err error)
 //_nuname(buf *Utsname) _C_int
 
-//sysnb raw_ptrace(request int, pid int, addr *byte, data *byte) (err Errno)
+//sysnb raw_ptrace(request int, pid int, addr uintptr, data uintptr) (err Errno)
 //ptrace(request _C_int, pid Pid_t, addr *byte, data *byte) _C_long
