@@ -169,6 +169,16 @@ package body Exp_Util is
    --  Determine whether pragma Default_Initial_Condition denoted by Prag has
    --  an assertion expression that should be verified at run time.
 
+   function Is_Uninitialized_Aggregate
+     (Exp : Node_Id;
+      T   : Entity_Id) return Boolean;
+   --  Determine whether an array aggregate used in an object declaration
+   --  is uninitialized, when the aggregate is declared with a box and
+   --  the component type has no default value. Such an aggregate can be
+   --  optimized away to prevent the copying of uninitialized data, and
+   --  the bounds of the aggregate can be propagated directly to the
+   --  object declaration.
+
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
       E : Node_Id) return Entity_Id;
@@ -5346,6 +5356,17 @@ package body Exp_Util is
       elsif Is_Build_In_Place_Function_Call (Exp) then
          null;
 
+     --  If the exprewsion is an uninitialized aggregate, no need to build
+     --  a subtype from the expression. because this may require the use
+     --  of dynamic memory to create the object.
+
+      elsif Is_Uninitialized_Aggregate (Exp, Exp_Typ) then
+         Rewrite (Subtype_Indic, New_Occurrence_Of (Etype (Exp), Sloc (N)));
+         if Nkind (N) = N_Object_Declaration then
+            Set_Expression (N, Empty);
+            Set_No_Initialization (N);
+         end if;
+
       else
          Remove_Side_Effects (Exp);
          Rewrite (Subtype_Indic,
@@ -8793,6 +8814,47 @@ package body Exp_Util is
           and then Nkind (Expr) = N_Unchecked_Type_Conversion
           and then Etype (Expression (Expr)) = RTE (RE_Tag);
    end Is_Tag_To_Class_Wide_Conversion;
+
+   --------------------------------
+   -- Is_Uninitialized_Aggregate --
+   --------------------------------
+
+   function Is_Uninitialized_Aggregate
+     (Exp : Node_Id;
+      T   : Entity_Id) return Boolean
+   is
+      Comp      : Node_Id;
+      Comp_Type : Entity_Id;
+      Typ       : Entity_Id;
+
+   begin
+      if Nkind (Exp) /= N_Aggregate then
+         return False;
+      end if;
+
+      Preanalyze_And_Resolve (Exp, T);
+      Typ  := Etype (Exp);
+
+      if No (Typ)
+        or else Ekind (Typ) /= E_Array_Subtype
+        or else Present (Expressions (Exp))
+        or else No (Component_Associations (Exp))
+      then
+         return False;
+      else
+         Comp_Type := Component_Type (Typ);
+         Comp := First (Component_Associations (Exp));
+
+         if not Box_Present (Comp)
+           or else Present (Next (Comp))
+         then
+            return False;
+         end if;
+
+         return Is_Scalar_Type (Comp_Type)
+           and then No (Default_Aspect_Component_Value (Typ));
+      end if;
+   end Is_Uninitialized_Aggregate;
 
    ----------------------------
    -- Is_Untagged_Derivation --
