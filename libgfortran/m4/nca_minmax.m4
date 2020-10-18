@@ -29,12 +29,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */'
 
 include(iparm.m4)dnl
-define(SCALAR_FUNCTION,`void nca_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
+define(SCALAR_FUNCTION,`void cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 			int *stat, char *errmsg, index_type errmsg_len);
-export_proto(nca_collsub_'$1`_scalar_'rtype_code`);
+export_proto(cas_collsub_'$1`_scalar_'rtype_code`);
 
 void
-nca_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
+cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type errmsg_len __attribute__ ((unused)))
@@ -75,12 +75,12 @@ nca_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 
 ')dnl
 define(ARRAY_FUNCTION,dnl
-`void nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
+`void cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
 				      int *stat, char *errmsg, index_type errmsg_len);
-export_proto (nca_collsub_'$1`_array_'rtype_code`);
+export_proto (cas_collsub_'$1`_array_'rtype_code`);
 
 void
-nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
+cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type errmsg_len __attribute__ ((unused)))
@@ -204,8 +204,7 @@ nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
 	  char * restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
-	  for (index_type n = 0; n < dim; n++)
-	    count[n] = 0;
+	  memset (count, 0, sizeof(index_type) * dim);
 
 	  while (dest)
 	    {
@@ -242,7 +241,6 @@ nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
 #include <string.h>
 #include "../nca/libcoarraynative.h"
 #include "../nca/collective_subroutine.h"
-#include "../nca/collective_inline.h"
 
 SCALAR_FUNCTION(`max',`if (*b > *a)
 	    *a = *b;')dnl

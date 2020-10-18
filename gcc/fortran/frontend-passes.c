@@ -181,7 +181,7 @@ gfc_run_passes (gfc_namespace *ns)
   if (flag_realloc_lhs)
     realloc_strings (ns);
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE)
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
     rewrite_co_reduce (ns);
 }
 
@@ -5917,7 +5917,7 @@ co_reduce_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
   gfc_code *assign;
   gfc_expr *e1, *e2;
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  static int num;
+  static int num = 0;
 
   if (co->op != EXEC_CALL || co->resolved_isym == NULL
       || co->resolved_isym->id != GFC_ISYM_CO_REDUCE)

@@ -22,10 +22,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef LIBGFOR_H
-#error "Include libgfortran.h before libcoarraynative.h"
-#endif
-
 #ifndef COARRAY_NATIVE_HDR
 #define COARRAY_NATIVE_HDR
 
@@ -35,16 +31,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdint.h>
 #include <stdio.h>
 
+#define DEBUG_NATIVE_COARRAY 0
 
-/* This is to create a _nca_gfortrani_ prefix for all variables and
-   function used only by nca.  */
-#if 0
-#define NUM_ADDR_BITS (8 * sizeof (int *))
-#endif
-
-#define DEBUG_NATIVE_COARRAY 1
-
-#ifdef DEBUG_NATIVE_COARRAY
+#if defined(DEBUG_NATIVE_COARRAY) && DEBUG_NATIVE_COARRAY
 #define DEBUG_PRINTF(...) dprintf (2,__VA_ARGS__)
 #else
 #define DEBUG_PRINTF(...) do {} while(0)
@@ -64,7 +53,8 @@ typedef struct {
 typedef enum {
   IMAGE_UNKNOWN = 0,
   IMAGE_OK,
-  IMAGE_FAILED
+  IMAGE_FAILED,
+  IMAGE_SUCCESS
 } image_status;
 
 typedef struct {
@@ -74,6 +64,7 @@ typedef struct {
 
 typedef struct {
   int has_failed_image;
+  int finished_images;
   image_tracker images[];
 } master;
 
@@ -97,7 +88,7 @@ internal_proto (local);
 void ensure_initialization(void);
 internal_proto(ensure_initialization);
 
-void nca_master(void (*)(void));
-export_proto (nca_master);
+void cas_master(void (*)(void));
+export_proto (cas_master);
 
 #endif

@@ -30,12 +30,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 include(iparm.m4)dnl
 define(`compare_fcn',`ifelse(rtype_kind,1,memcmp,memcmp4)')dnl
-define(SCALAR_FUNCTION,`void nca_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
+define(SCALAR_FUNCTION,`void cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 			int *stat, char *errmsg, index_type char_len, index_type errmsg_len);
-export_proto(nca_collsub_'$1`_scalar_'rtype_code`);
+export_proto(cas_collsub_'$1`_scalar_'rtype_code`);
 
 void
-nca_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
+cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type char_len,
@@ -69,32 +69,38 @@ nca_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 	}
       collsub_sync (ci);
     }
+  /* All images have to execute the same number of collsub_sync, otherwise
+     some images will hang.  Here, we execute the missing ones for images
+     that are not needed anymore in the main loop.  */
   for ( ; (local->num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
   if (!result_image || (*result_image - 1) == this_image.image_num)
     memcpy (obj, buffer, type_size);
 
+  /* We need one barrier (it could be either before or after the collsub) that
+     prevents one image from starting a new collsub before the old one has 
+     finished.  */
   finish_collective_subroutine (ci);
 
 }
 
 ')dnl
 define(ARRAY_FUNCTION,dnl
-`void nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
+`void cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
 				int *stat, char *errmsg, index_type char_len,
 				index_type errmsg_len);
-export_proto (nca_collsub_'$1`_array_'rtype_code`);
+export_proto (cas_collsub_'$1`_array_'rtype_code`);
 
 void
-nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
+cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
 			  int *stat __attribute__ ((unused)),
 			  char *errmsg __attribute__ ((unused)),
 			  index_type char_len,
 			  index_type errmsg_len __attribute__ ((unused)))
 {
   index_type count[GFC_MAX_DIMENSIONS];
-  index_type stride[GFC_MAX_DIMENSIONS];  /* stride is byte-based here.  */
+  index_type stride[GFC_MAX_DIMENSIONS];  /* Store byte-based strides here.  */
   index_type extent[GFC_MAX_DIMENSIONS];
   char *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
   char *buffer;
@@ -112,7 +118,6 @@ nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
   type_size = char_len * sizeof ('rtype_name`);
   dim = GFC_DESCRIPTOR_RANK (array);
   num_elems = 1;
-  ssize = type_size;
   packed = true;
   span = array->span != 0 ? array->span : type_size;
   for (index_type n = 0; n < dim; n++)
@@ -218,8 +223,7 @@ nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
 	  char *restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
-	  for (index_type n = 0; n < dim; n++)
-	    count[n] = 0;
+	  memset (count, 0, sizeof (index_type) * dim);
 
 	  while (dest)
 	    {
@@ -258,7 +262,6 @@ nca_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
 #include <string.h>
 #include "../nca/libcoarraynative.h"
 #include "../nca/collective_subroutine.h"
-#include "../nca/collective_inline.h"
 
 #if 'rtype_kind` == 4
 

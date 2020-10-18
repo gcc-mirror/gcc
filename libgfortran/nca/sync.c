@@ -59,35 +59,9 @@ wait_table_cond (sync_iface *si, pthread_cond_t *cond)
 }
 
 static int *
-get_locked_table(sync_iface *si) { // The initialization of the table has to 
-			    // be delayed, since we might not know the 
-			    // number of images when the library is 
-			    // initialized
+get_locked_table(sync_iface *si) {  
   lock_table(si);
   return si->table;
-  /*
-  if (si->table)
-    return si->table;
-  else if (!SHMPTR_IS_NULL(si->cis->table)) 
-    {
-      si->table = SHMPTR_AS(int *, si->cis->table, si->sm);
-      si->triggers = SHMPTR_AS(pthread_cond_t *, si->cis->triggers, si->sm);
-      return si->table;
-    }
-
-  si->cis->table = 
-  	shared_malloc(si->a, sizeof(int)*local->num_images * local->num_images);
-  si->cis->triggers = 
-	shared_malloc(si->a, sizeof(int)*local->num_images);
-
-  si->table = SHMPTR_AS(int *, si->cis->table, si->sm);
-  si->triggers = SHMPTR_AS(pthread_cond_t *, si->cis->triggers, si->sm);
-
-  for (int i = 0; i < local->num_images; i++)
-    initialize_shared_condition (&si->triggers[i]);
-
-  return si->table;
-  */
 }
 
 void
@@ -97,7 +71,6 @@ sync_iface_init (sync_iface *si, alloc_iface *ai, shared_memory *sm)
 		       shared_malloc (get_allocator(ai),
 				      sizeof(collsub_iface_shared)),
 		       sm);
-  DEBUG_PRINTF ("%s: num_images is %d\n", __PRETTY_FUNCTION__, local->num_images);
 
   sync_all_init (&si->cis->sync_all);
   initialize_shared_mutex (&si->cis->table_lock);
@@ -119,9 +92,9 @@ sync_iface_init (sync_iface *si, alloc_iface *ai, shared_memory *sm)
 void
 sync_table (sync_iface *si, int *images, size_t size)
 {
-#ifdef DEBUG_NATIVE_COARRAY
+#if defined(DEBUG_NATIVE_COARRAY) && DEBUG_NATIVE_COARRAY
   dprintf (2, "Image %d waiting for these %ld images: ", this_image.image_num + 1, size);
-  for (int d_i = 0; d_i < size; d_i++)
+  for (int d_i = 0; (size_t) d_i < size; d_i++)
     dprintf (2, "%d ", images[d_i]);
   dprintf (2, "\n");
 #endif
@@ -149,8 +122,6 @@ sync_table (sync_iface *si, int *images, size_t size)
 void
 sync_all (sync_iface *si)
 {
-
-  DEBUG_PRINTF("Syncing all\n");
 
   pthread_barrier_wait (&si->cis->sync_all);
 }

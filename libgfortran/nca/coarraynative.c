@@ -101,7 +101,7 @@ get_master (void) {
    argument.  It forks the images and waits for their completion.  */
 
 void
-nca_master (void (*image_main) (void)) {
+cas_master (void (*image_main) (void)) {
   master *m;
   int i, j;
   pid_t new;
@@ -131,12 +131,19 @@ nca_master (void (*image_main) (void)) {
   for (i = 0; i < local->num_images; i++)
     {
       new = wait (&chstatus);
-      if (!WIFEXITED (chstatus) || WEXITSTATUS (chstatus))
+      if (WIFEXITED (chstatus) && !WEXITSTATUS (chstatus))
+	{
+	  j = 0;
+	  for (; j < local->num_images && m->images[j].pid != new; j++);
+	  m->images[j].status = IMAGE_SUCCESS;
+	  m->finished_images++; /* FIXME: Needs to be atomic, probably.  */
+	}
+      else if (!WIFEXITED (chstatus) || WEXITSTATUS (chstatus))
 	{
 	  j = 0;
 	  for (; j < local->num_images && m->images[j].pid != new; j++);
 	  m->images[j].status = IMAGE_FAILED;
-	  m->has_failed_image++; //FIXME: Needs to be atomic, probably
+	  m->has_failed_image++; /* FIXME: Needs to be atomic, probably.  */
 	  dprintf (2, "ERROR: Image %d(%#x) failed\n", j, new);
 	  exit_code = 1;
 	}

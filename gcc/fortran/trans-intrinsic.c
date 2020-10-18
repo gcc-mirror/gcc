@@ -2395,8 +2395,8 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
       else
 	tmp = integer_zero_node;
       tmp = build_call_expr_loc (input_location,
-				  flag_coarray == GFC_FCOARRAY_NATIVE ?
-				   gfor_fndecl_nca_this_image :
+				  flag_coarray == GFC_FCOARRAY_SHARED ?
+				   gfor_fndecl_cas_this_image :
 				   gfor_fndecl_caf_this_image,
 				 1, tmp);
       se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
@@ -2405,7 +2405,6 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
     }
 
   /* Coarray-argument version: THIS_IMAGE(coarray [, dim]).  */
-  /* TODO: NCA handle native coarrays.  */
 
   type = gfc_get_int_type (gfc_default_integer_kind);
   corank = gfc_get_corank (expr->value.function.actual->expr);
@@ -2495,8 +2494,8 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 
   /* this_image () - 1.  */
   tmp = build_call_expr_loc (input_location, 
-			       flag_coarray == GFC_FCOARRAY_NATIVE
-			         ? gfor_fndecl_nca_this_image
+			       flag_coarray == GFC_FCOARRAY_SHARED
+			         ? gfor_fndecl_cas_this_image
 				 : gfor_fndecl_caf_this_image,
 			     1, integer_zero_node);
   tmp = fold_build2_loc (input_location, MINUS_EXPR, type,
@@ -2782,8 +2781,8 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
   else
     {
       tmp = build_call_expr_loc (input_location,
-				   flag_coarray == GFC_FCOARRAY_NATIVE
-				     ? gfor_fndecl_nca_num_images
+				   flag_coarray == GFC_FCOARRAY_SHARED
+				     ? gfor_fndecl_cas_num_images
 				     : gfor_fndecl_caf_num_images, 2,
 				 integer_zero_node,
 				 build_int_cst (integer_type_node, -1));
@@ -2830,8 +2829,8 @@ trans_num_images (gfc_se * se, gfc_expr *expr)
   else
     failed = build_int_cst (integer_type_node, -1);
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE)
-    tmp = build_call_expr_loc (input_location, gfor_fndecl_nca_num_images, 1,
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_num_images, 1,
 			       distance);
   else
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
@@ -3280,8 +3279,8 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
 	  cosize = gfc_conv_descriptor_cosize (desc, arg->expr->rank, corank);
 	  tmp = build_call_expr_loc (input_location,
-				       flag_coarray == GFC_FCOARRAY_NATIVE
-				         ? gfor_fndecl_nca_num_images
+				       flag_coarray == GFC_FCOARRAY_SHARED
+				         ? gfor_fndecl_cas_num_images
 					 : gfor_fndecl_caf_num_images,
 				     2, integer_zero_node,
 				     build_int_cst (integer_type_node, -1));
@@ -3299,8 +3298,9 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	{
 	  /* ubound = lbound + num_images() - 1.  */
 	  tmp = build_call_expr_loc (input_location,
-				     flag_coarray == GFC_FCOARRAY_NATIVE ? gfor_fndecl_nca_num_images :
-									   gfor_fndecl_caf_num_images,
+				     flag_coarray == GFC_FCOARRAY_SHARED 
+				     	? gfor_fndecl_cas_num_images 
+				     	: gfor_fndecl_caf_num_images,
 				     2, integer_zero_node,
 				     build_int_cst (integer_type_node, -1));
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
@@ -11024,7 +11024,8 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
     }
 }
 
-/* Helper function - advance to the next argument.  */
+/* Helper function - translate an argument and advance to the next.  
+   Coarrays are irrelevant here, since we just translate normal arguments.  */
 
 static tree
 trans_argument (gfc_actual_arglist **curr_al, stmtblock_t *blk,
@@ -11045,7 +11046,7 @@ trans_argument (gfc_actual_arglist **curr_al, stmtblock_t *blk,
 /* Convert CO_REDUCE for native coarrays.  */
 
 static tree
-conv_nca_reduce (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
+conv_cas_reduce (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
 {
   gfc_actual_arglist *curr_al;
   tree var, reduce_op, result_image, elem_size;
@@ -11054,6 +11055,8 @@ conv_nca_reduce (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
 
   curr_al = code->ext.actual;
 
+  /* We cannot move the gfc_init_se treatment into trans_argument, because we
+     cannot be sure that we want a pointer.  */
   gfc_init_se (&argse, NULL);
   argse.want_pointer = 1;
   is_array = curr_al->expr->rank > 0;
@@ -11069,16 +11072,16 @@ conv_nca_reduce (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
 				 null_pointer_node);
   
   if (is_array)
-    return build_call_expr_loc (input_location, gfor_fndecl_nca_reduce_array,
+    return build_call_expr_loc (input_location, gfor_fndecl_cas_reduce_array,
 				3, var, reduce_op, result_image);
 
   elem_size = size_in_bytes(TREE_TYPE(TREE_TYPE(var)));
-  return build_call_expr_loc (input_location, gfor_fndecl_nca_reduce_scalar, 4,
+  return build_call_expr_loc (input_location, gfor_fndecl_cas_reduce_scalar, 4,
 			      var, elem_size, reduce_op, result_image);
 }
 
 static tree
-conv_nca_broadcast (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
+conv_cas_broadcast (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
 {
   gfc_actual_arglist *curr_al;
   tree var, source_image, elem_size;
@@ -11097,11 +11100,11 @@ conv_nca_broadcast (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
   source_image = trans_argument (&curr_al, blk, postblk, &argse, NULL_TREE);
 
   if (is_array)
-    return build_call_expr_loc (input_location, gfor_fndecl_nca_broadcast_array,
+    return build_call_expr_loc (input_location, gfor_fndecl_cas_broadcast_array,
 				2, var, source_image);
 
   elem_size = size_in_bytes(TREE_TYPE(TREE_TYPE(var)));
-  return build_call_expr_loc (input_location, gfor_fndecl_nca_broadcast_scalar, 
+  return build_call_expr_loc (input_location, gfor_fndecl_cas_broadcast_scalar, 
   			      3, var, elem_size, source_image);
 }
 
@@ -11110,7 +11113,7 @@ static tree conv_co_collective (gfc_code *);
 /* Convert collective subroutines for native coarrays.  */
 
 static tree
-conv_nca_collective (gfc_code *code)
+conv_cas_collective (gfc_code *code)
 {
 
   switch (code->resolved_isym->id)
@@ -11122,11 +11125,12 @@ conv_nca_collective (gfc_code *code)
 
 	gfc_start_block (&block);
 	gfc_init_block (&postblock);
-	fcall = conv_nca_reduce (code, &block, &postblock);
+	fcall = conv_cas_reduce (code, &block, &postblock);
 	gfc_add_expr_to_block (&block, fcall);
 	gfc_add_block_to_block (&block, &postblock);
 	return gfc_finish_block (&block);
       }
+
     case GFC_ISYM_CO_SUM:
     case GFC_ISYM_CO_MIN:
     case GFC_ISYM_CO_MAX:
@@ -11139,15 +11143,12 @@ conv_nca_collective (gfc_code *code)
 
 	gfc_start_block (&block);
 	gfc_init_block (&postblock);
-	fcall = conv_nca_broadcast (code, &block, &postblock);
+	fcall = conv_cas_broadcast (code, &block, &postblock);
 	gfc_add_expr_to_block (&block, fcall);
 	gfc_add_block_to_block (&block, &postblock);
 	return gfc_finish_block (&block);
       }
-#if 0
-    case GFC_ISYM_CO_BROADCAST:
-      return conv_co_collective (code);
-#endif
+
     default:
       gfc_internal_error ("Invalid or unsupported isym");
       break;
@@ -11264,7 +11265,7 @@ conv_co_collective (gfc_code *code)
   /* For native coarrays, we only come here for CO_BROADCAST.  */
 
   gcc_assert (code->resolved_isym->id == GFC_ISYM_CO_BROADCAST
-	      || flag_coarray != GFC_FCOARRAY_NATIVE);
+	      || flag_coarray != GFC_FCOARRAY_SHARED);
 
   /* Generate the function call.  */
 
@@ -12260,8 +12261,8 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
     case GFC_ISYM_CO_MAX:
     case GFC_ISYM_CO_REDUCE:
     case GFC_ISYM_CO_SUM:
-      if (flag_coarray == GFC_FCOARRAY_NATIVE)
-	res = conv_nca_collective (code);
+      if (flag_coarray == GFC_FCOARRAY_SHARED)
+	res = conv_cas_collective (code);
       else
 	res = conv_co_collective (code);
       break;

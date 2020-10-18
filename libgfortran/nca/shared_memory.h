@@ -23,6 +23,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #ifndef SHARED_MEMORY_H
+#define SHARED_MEMORY_H
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -74,5 +76,4 @@ internal_proto (shared_memory_get_mem_with_alignment);
 void *shared_mem_ptr_to_void_ptr (shared_memory *, shared_mem_ptr);
 internal_proto (shared_mem_ptr_to_void_ptr);
 
-#define SHARED_MEMORY_H
 #endif

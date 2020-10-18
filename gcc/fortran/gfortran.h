@@ -2010,7 +2010,7 @@ typedef struct gfc_array_ref
   int dimen;			/* # of components in the reference */
   int codimen;
   bool in_allocate;		/* For coarray checks. */
-  bool native_coarray_argument;
+  bool shared_coarray_arg;
   gfc_expr *team;
   gfc_expr *stat;
   locus where;

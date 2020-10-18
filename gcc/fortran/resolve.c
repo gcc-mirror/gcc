@@ -3585,22 +3585,24 @@ resolve_specific_s (gfc_code *c)
 
   return false;
 }
-/* Fix up references to native coarrays in call - element references
+
+/* Fix up references to shared coarrays in call - element references
    have to be converted to full references if the coarray has to be
    passed fully.  */
 
 static void
-fixup_coarray_args (gfc_symbol *sym, gfc_actual_arglist *actual)
+fixup_shared_coarray_args (gfc_symbol *sym, gfc_actual_arglist *actual)
 {
-  gfc_formal_arglist *formal, *f;
+  gfc_formal_arglist *f;
   gfc_actual_arglist *a;
   
-  formal = gfc_sym_get_dummy_args (sym);
+  a = actual;
+  f = gfc_sym_get_dummy_args (sym);
 
-  if (formal == NULL)
+  if (f == NULL)
     return;
 
-  for (a = actual, f = formal; a && f; a = a->next, f = f->next)
+  for (; a && f; a = a->next, f = f->next)
     {
       if (a->expr == NULL || f->sym == NULL)
 	continue;
@@ -3626,7 +3628,7 @@ fixup_coarray_args (gfc_symbol *sym, gfc_actual_arglist *actual)
 		  if (ar->type == AR_ELEMENT)
 		    ar->type = !ar->dimen ? AR_FULL : AR_SECTION;
 
-		  ar->native_coarray_argument = true;
+		  ar->shared_coarray_arg = true;
 		}
 	    }
 	}
@@ -3662,7 +3664,7 @@ resolve_unknown_s (gfc_code *c)
 
 found:
   gfc_procedure_use (sym, &c->ext.actual, &c->loc);
-  
+
   c->resolved_sym = sym;
 
   return pure_subroutine (sym, sym->name, &c->loc);
@@ -3787,8 +3789,8 @@ resolve_call (gfc_code *c)
     /* Typebound procedure: Assume the worst.  */
     gfc_current_ns->proc_name->attr.array_outer_dependency = 1;
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE)
-    fixup_coarray_args (csym, c->ext.actual);
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
+    fixup_shared_coarray_args (csym, c->ext.actual);
 
   return t;
 }
@@ -10167,7 +10169,7 @@ resolve_critical (gfc_code *code)
   char name[GFC_MAX_SYMBOL_LEN];
   static int serial = 0;
 
-  if (flag_coarray != GFC_FCOARRAY_LIB && flag_coarray != GFC_FCOARRAY_NATIVE)
+  if (flag_coarray != GFC_FCOARRAY_LIB && flag_coarray != GFC_FCOARRAY_SHARED)
     return;
 
   symtree = gfc_find_symtree (gfc_current_ns->sym_root,
@@ -10205,7 +10207,7 @@ resolve_critical (gfc_code *code)
 						   NULL, 1);
   gfc_commit_symbols();
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE)
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
     {
       gfc_ref *r = gfc_get_ref ();
       r->type = REF_ARRAY;

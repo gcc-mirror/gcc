@@ -43,7 +43,7 @@ typedef struct {
 static ssize_t
 num_entries (hashmap_entry *data, size_t size)
 {
-  ssize_t i;
+  size_t i;
   ssize_t ret = 0;
   for (i = 0; i < size; i++)
     {
@@ -88,12 +88,15 @@ hash (uint64_t key)
   return key;
 }
 
+
 /* Gets a pointer to the current data in the hashmap.  */
+
 static inline hashmap_entry *
 get_data(hashmap *hm)
 {
   return SHMPTR_AS (hashmap_entry *, hm->s->data, hm->sm); 
 }
+
 
 /* Generate mask from current number of bits.  */
 
@@ -103,12 +106,14 @@ gen_mask (hashmap *hm)
   return (1 << hm->s->bitnum) - 1;
 }
 
+
 /* Add with wrap-around at hashmap size.  */
 
 static inline size_t
 hmiadd (hashmap *hm, size_t s, ssize_t o) {
   return (s + o) & gen_mask (hm);
 }
+
 
 /* Get the expected offset for entry id.  */
 
@@ -117,6 +122,7 @@ get_expected_offset (hashmap *hm, memid id)
 {
   return hash(id) >> (PTR_BITS - hm->s->bitnum);
 }
+
 
 /* Initialize the hashmap.  */
 
@@ -139,6 +145,7 @@ hashmap_init (hashmap *hm, hashmap_shared *hs, allocator *a,
   hm->a = a;
 }
 
+
 /* This checks if the entry id exists in that range the range between
    the expected position and the maximum lookahead.  */
 
@@ -160,11 +167,12 @@ scan_inside_lookahead (hashmap *hm, ssize_t expected_off, memid id)
   return -1;
 }
 
+
 /* Scan for the next empty slot we can use.  Returns offset relative
    to the expected position.  */
 
 static ssize_t
-scan_empty (hashmap *hm, ssize_t expected_off, memid id)
+scan_empty (hashmap *hm, ssize_t expected_off)
 {
   hashmap_entry *data;
 
@@ -175,6 +183,7 @@ scan_empty (hashmap *hm, ssize_t expected_off, memid id)
 
   return -1;
 }
+
 
 /* Search the hashmap for id.  */
 
@@ -199,12 +208,15 @@ hashmap_get (hashmap *hm, memid id)
   return ret;
 }
 
+
 /* Return size of a hashmap search result.  */
+
 size_t
 hm_search_result_size (hashmap_search_result *res)
 {
   return res->size;
 }
+
 
 /* Return pointer of a hashmap search result.  */
 
@@ -214,6 +226,7 @@ hm_search_result_ptr (hashmap_search_result *res)
   return res->p;
 }
 
+
 /* Return pointer of a hashmap search result.  */
 
 bool 
@@ -221,6 +234,7 @@ hm_search_result_contains (hashmap_search_result *res)
 {
   return !SHMPTR_IS_NULL(res->p);
 }
+
 
 /* Enlarge hashmap memory.  */
 
@@ -234,7 +248,6 @@ enlarge_hashmap_mem (hashmap *hm, hashmap_entry **data, bool f)
   old_size = hm->s->size;
 
   hm->s->data = shared_malloc (hm->a, (hm->s->size *= 2)*sizeof(hashmap_entry));
-  fprintf (stderr,"enlarge_hashmap_mem: %ld\n", hm->s->data.offset);
   hm->s->bitnum++;
 
   *data = get_data(hm);
@@ -245,6 +258,7 @@ enlarge_hashmap_mem (hashmap *hm, hashmap_entry **data, bool f)
   if (f)
     shared_free(hm->a, old_data_p, old_size);
 }
+
 
 /* Resize hashmap.  */
 
@@ -257,7 +271,6 @@ resize_hm (hashmap *hm, hashmap_entry **data)
   ssize_t new_offset, inital_index, new_index;
   memid id;
   ssize_t max_lookahead;
-  ssize_t old_count, new_count;
 
   /* old_data points to the old block containing the hashmap.  We
      redistribute the data from there into the new block.  */
@@ -265,14 +278,8 @@ resize_hm (hashmap *hm, hashmap_entry **data)
   old_data_p = hm->s->data;
   old_data = *data;
   old_size = hm->s->size;
-  old_count = num_entries (old_data, old_size);
 
-  fprintf(stderr, "Occupancy at resize: %f\n", ((double) old_count)/old_size);
-
-  //fprintf (stderr,"\n====== Resizing hashmap =========\n\nOld map:\n\n");
-  //dump_hm (hm);
   enlarge_hashmap_mem (hm, &new_data, false); 
-  //fprintf (stderr,"old_data: %p new_data: %p\n", old_data, new_data);
  retry_resize:
   for (size_t i = 0; i < old_size; i++)
     {
@@ -281,15 +288,13 @@ resize_hm (hashmap *hm, hashmap_entry **data)
 
       id = old_data[i].id;
       inital_index = get_expected_offset (hm, id);
-      new_offset = scan_empty (hm, inital_index, id);
+      new_offset = scan_empty (hm, inital_index);
 
       /* If we didn't find a free slot, just resize the hashmap
          again.  */
       if (new_offset == -1)
         {
           enlarge_hashmap_mem (hm, &new_data, true);
-          //fprintf (stderr,"\n====== AGAIN Resizing hashmap =========\n\n");
-          //fprintf (stderr,"old_data: %p new_data %p\n", old_data, new_data);
           goto retry_resize; /* Sue me.  */
         }
 
@@ -304,14 +309,10 @@ resize_hm (hashmap *hm, hashmap_entry **data)
             .max_lookahead =  new_data[new_index].max_lookahead, 
             .refcnt = old_data[i].refcnt});
     }
-  new_count = num_entries (new_data, hm->s->size);
-  //fprintf (stderr,"Number of elements: %ld to %ld\n", old_count, new_count);
-  //fprintf (stderr,"============ After resizing: =======\n\n");
-  //dump_hm (hm);
-  
   shared_free (hm->a, old_data_p, old_size);
   *data = new_data;
 }
+
 
 /* Set an entry in the hashmap.  */
 
@@ -324,7 +325,6 @@ hashmap_set (hashmap *hm, memid id, hashmap_search_result *hsr,
   ssize_t empty_offset;
   ssize_t delta;
 
-  //  //fprintf (stderr,"hashmap_set: id = %-16p\n", (void *) id);
   data = get_data(hm);
 
   if (hsr) {
@@ -334,7 +334,7 @@ hashmap_set (hashmap *hm, memid id, hashmap_search_result *hsr,
   }
 
   expected_offset = get_expected_offset (hm, id);
-  while ((delta = scan_empty (hm, expected_offset, id)) == -1)
+  while ((delta = scan_empty (hm, expected_offset)) == -1)
     {
       resize_hm (hm, &data);
       expected_offset = get_expected_offset (hm, id);
@@ -348,10 +348,6 @@ hashmap_set (hashmap *hm, memid id, hashmap_search_result *hsr,
                           .refcnt = 1});
 
   n_ent ++;
-  fprintf (stderr,"hashmap_set: Setting %p at %p, n_ent = %ld\n", (void *) id, data + empty_offset,
-           n_ent);
-  //  dump_hm (hm);
-  // fprintf(stderr, "--------------------------------------------------\n");
   /* TODO: Shouldn't reset refcnt, but this doesn't matter at the
      moment because of the way the function is used. */
 }
@@ -382,9 +378,7 @@ hashmap_change_refcnt (hashmap *hm, memid id, hashmap_search_result *res,
   ret = (entry->refcnt += delta);
   if (ret == 0)
     {
-      n_ent --;
-      //fprintf (stderr, "hashmap_change_refcnt: removing %p at %p, n_ent = %ld\n",
-      //         (void *) id, entry,  n_ent);
+      n_ent--;
       entry->id = 0;
       entry->p = SHMPTR_NULL;
       entry->s = 0;
@@ -392,6 +386,7 @@ hashmap_change_refcnt (hashmap *hm, memid id, hashmap_search_result *res,
 
   return ret;
 }
+
 
 /* Increase hashmap entry refcount.  */
 
@@ -402,6 +397,7 @@ hashmap_inc (hashmap *hm, memid id, hashmap_search_result * res)
   ret = hashmap_change_refcnt (hm, id, res, 1);
   ASSERT_HM (hm, ret > 0);
 }
+
 
 /* Decrease hashmap entry refcount.  */
 

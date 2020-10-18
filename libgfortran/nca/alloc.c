@@ -113,8 +113,9 @@ free_memory_with_id (alloc_iface* iface, memid id)
       char buffer[100];
       snprintf (buffer, sizeof(buffer), "Error in free_memory_with_id: "
 		"%p not found", (void *) id);
+      /* FIXME: For some reason, internal_error (NULL, buffer) fails to link,
+       * so we use dprintf at the moment.  */
       dprintf (2, buffer);
-      //      internal_error (NULL, buffer);
       exit (1);
     }
 

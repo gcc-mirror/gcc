@@ -36,55 +36,58 @@ div_ru (int divident, int divisor)
   return (divident + divisor - 1)/divisor;
 }
 
+/* Need to keep this in sync with
+   trans-array.h:gfc_coarray_allocation_type.  */
+
 enum gfc_coarray_allocation_type {
-  GFC_NCA_NORMAL_COARRAY = 3,
+  GFC_NCA_NORMAL_COARRAY = 1,
   GFC_NCA_LOCK_COARRAY,
   GFC_NCA_EVENT_COARRAY,
 };
 
-void nca_coarray_alloc (gfc_array_void *, int, int, int);
-export_proto (nca_coarray_alloc);
+void cas_coarray_alloc (gfc_array_void *, int, int, int);
+export_proto (cas_coarray_alloc);
 
 void
-nca_coarray_free (gfc_array_void *, int);
-export_proto (nca_coarray_free);
+cas_coarray_free (gfc_array_void *, int);
+export_proto (cas_coarray_free);
 
-int nca_coarray_this_image (int);
-export_proto (nca_coarray_this_image);
+int cas_coarray_this_image (int);
+export_proto (cas_coarray_this_image);
 
-int nca_coarray_num_images (int);
-export_proto (nca_coarray_num_images);
+int cas_coarray_num_images (int);
+export_proto (cas_coarray_num_images);
 
-void nca_coarray_sync_all (int *);
-export_proto (nca_coarray_sync_all);
+void cas_coarray_sync_all (int *);
+export_proto (cas_coarray_sync_all);
 
-void nca_sync_images (size_t, int *, int*, char *, size_t);
-export_proto (nca_sync_images);
+void cas_sync_images (size_t, int *, int*, char *, size_t);
+export_proto (cas_sync_images);
 
-void nca_lock (void *);
-export_proto (nca_lock);
+void cas_lock (void *);
+export_proto (cas_lock);
 
-void nca_unlock (void *);
-export_proto (nca_unlock);
+void cas_unlock (void *);
+export_proto (cas_unlock);
 
-void nca_collsub_reduce_array (gfc_array_char *, void (*) (void *, void *),
+void cas_collsub_reduce_array (gfc_array_char *, void (*) (void *, void *),
 			       int *);
-export_proto (nca_collsub_reduce_array);
+export_proto (cas_collsub_reduce_array);
 
-void nca_collsub_reduce_scalar (void *, index_type, void (*) (void *, void *),
+void cas_collsub_reduce_scalar (void *, index_type, void (*) (void *, void *),
 				int *);
-export_proto (nca_collsub_reduce_scalar);
+export_proto (cas_collsub_reduce_scalar);
 
-void nca_collsub_broadcast_array (gfc_array_char * restrict, int/*, int *, char *, 
+void cas_collsub_broadcast_array (gfc_array_char * restrict, int/*, int *, char *, 
 			     size_t*/);
-export_proto (nca_collsub_broadcast_array);
+export_proto (cas_collsub_broadcast_array);
 
-void nca_collsub_broadcast_scalar (void * restrict, size_t, int/*, int *, char *, 
+void cas_collsub_broadcast_scalar (void * restrict, size_t, int/*, int *, char *, 
 			      size_t*/);
-export_proto(nca_collsub_broadcast_scalar);
+export_proto(cas_collsub_broadcast_scalar);
 
 void
-nca_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
+cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
 		   int alloc_type)
 {
   int i, last_rank_index;
@@ -153,11 +156,10 @@ nca_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
   else
     desc->base_addr = get_memory_by_id (&local->ai, size_in_bytes,
 					(intptr_t) desc);
-  dprintf(2, "Base address of desc for image %d: %p\n", this_image.image_num + 1, desc->base_addr);
 }
 
 void
-nca_coarray_free (gfc_array_void *desc, int alloc_type)
+cas_coarray_free (gfc_array_void *desc, int alloc_type)
 {
   int i;
   if (alloc_type == GFC_NCA_LOCK_COARRAY)
@@ -186,25 +188,25 @@ nca_coarray_free (gfc_array_void *desc, int alloc_type)
 }
 
 int
-nca_coarray_this_image (int distance __attribute__((unused)))
+cas_coarray_this_image (int distance __attribute__((unused)))
 {
   return this_image.image_num + 1;
 }
 
 int
-nca_coarray_num_images (int distance __attribute__((unused)))
+cas_coarray_num_images (int distance __attribute__((unused)))
 {
   return local->num_images;
 }
 
 void
-nca_coarray_sync_all (int *stat __attribute__((unused)))
+cas_coarray_sync_all (int *stat __attribute__((unused)))
 {
   sync_all (&local->si);
 }
 
 void
-nca_sync_images (size_t s, int *images,
+cas_sync_images (size_t s, int *images,
 			  int *stat __attribute__((unused)),
 			  char *error __attribute__((unused)),
 			  size_t err_size __attribute__((unused)))
@@ -213,26 +215,26 @@ nca_sync_images (size_t s, int *images,
 }
 
 void
-nca_lock (void *lock)
+cas_lock (void *lock)
 {
   pthread_mutex_lock (lock);
 }
 
 void
-nca_unlock (void *lock)
+cas_unlock (void *lock)
 {
   pthread_mutex_unlock (lock);
 }
 
 void
-nca_collsub_reduce_array (gfc_array_char *desc, void (*assign_function) (void *, void *),
+cas_collsub_reduce_array (gfc_array_char *desc, void (*assign_function) (void *, void *),
 			  int *result_image)
 {
   collsub_reduce_array (&local->ci, desc, result_image, assign_function);
 }
 
 void
-nca_collsub_reduce_scalar (void *obj, index_type elem_size,
+cas_collsub_reduce_scalar (void *obj, index_type elem_size,
 			   void (*assign_function) (void *, void *),
 			   int *result_image)
 {
@@ -240,7 +242,7 @@ nca_collsub_reduce_scalar (void *obj, index_type elem_size,
 }
 
 void
-nca_collsub_broadcast_array (gfc_array_char * restrict a, int source_image 
+cas_collsub_broadcast_array (gfc_array_char * restrict a, int source_image 
 		  /* , int *stat __attribute__ ((unused)), 
 		  char *errmsg __attribute__ ((unused)),
 		  size_t errmsg_len __attribute__ ((unused))*/)
@@ -249,7 +251,7 @@ nca_collsub_broadcast_array (gfc_array_char * restrict a, int source_image
 }
 
 void
-nca_collsub_broadcast_scalar (void * restrict obj, size_t size, int source_image/*,
+cas_collsub_broadcast_scalar (void * restrict obj, size_t size, int source_image/*,
 		  int *stat __attribute__((unused)),
 		   char *errmsg __attribute__ ((unused)),
 		  size_t errmsg_len __attribute__ ((unused))*/)

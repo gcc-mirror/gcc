@@ -1346,7 +1346,7 @@ gfc_is_nodesc_array (gfc_symbol * sym)
   gcc_assert (array_attr->dimension || array_attr->codimension);
 
   /* We need a descriptor for native coarrays.	 */
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && sym->as && sym->as->corank)
+  if (flag_coarray == GFC_FCOARRAY_SHARED && sym->as && sym->as->corank)
     return 0;
 
   /* We only want local arrays.  */
@@ -1387,7 +1387,7 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 
   /* For -fcoarray=lib, assumed-shape arrays do not have codimension
      information stored in the descriptor.  */
-  if (flag_coarray != GFC_FCOARRAY_NATIVE)
+  if (flag_coarray != GFC_FCOARRAY_SHARED)
     {
       corank = MAX (as->corank, codim);
 
@@ -1608,7 +1608,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   /* We don't use build_array_type because this does not include
      lang-specific information (i.e. the bounds of the array) when checking
      for duplicates.  */
-  if (as->rank || (flag_coarray == GFC_FCOARRAY_NATIVE && as->corank))
+  if (as->rank || (flag_coarray == GFC_FCOARRAY_SHARED && as->corank))
     type = make_node (ARRAY_TYPE);
   else
     type = build_variant_type_copy (etype);
@@ -1696,7 +1696,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 	GFC_TYPE_ARRAY_UBOUND (type, n) = tmp;
     }
 
-  if  (flag_coarray == GFC_FCOARRAY_NATIVE && as->rank == 0 && as->corank != 0)
+  if  (flag_coarray == GFC_FCOARRAY_SHARED && as->rank == 0 && as->corank != 0)
     GFC_TYPE_ARRAY_OFFSET (type) = NULL_TREE;
   else if (known_offset)
     GFC_TYPE_ARRAY_OFFSET (type) =
@@ -1725,7 +1725,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
       build_qualified_type (GFC_TYPE_ARRAY_DATAPTR_TYPE (type),
 			    TYPE_QUAL_RESTRICT);
 
-  if (as->rank == 0 && (flag_coarray != GFC_FCOARRAY_NATIVE || as->corank == 0))
+  if (as->rank == 0 && (flag_coarray != GFC_FCOARRAY_SHARED || as->corank == 0))
     {
       if (packed != PACKED_STATIC  || flag_coarray == GFC_FCOARRAY_LIB)
 	{
@@ -1993,7 +1993,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   /* TODO: known offsets for descriptors.  */
   GFC_TYPE_ARRAY_OFFSET (fat_type) = NULL_TREE;
 
-  if (flag_coarray != GFC_FCOARRAY_NATIVE && dimen == 0)
+  if (flag_coarray != GFC_FCOARRAY_SHARED && dimen == 0)
     {
       arraytype =  build_pointer_type (etype);
       if (restricted)

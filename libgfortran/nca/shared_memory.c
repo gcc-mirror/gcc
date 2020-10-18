@@ -141,7 +141,6 @@ shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,
       memset(last_base(mem) + used_wa, 0x42, size);
       mem->meta->used = used_wa + size;
 
-      DEBUG_PRINTF ("Shared Memory: New memory of size %#lx requested, returned %#lx\n", size, used_wa);
       return (shared_mem_ptr) {.offset = used_wa};
     }
 
@@ -165,7 +164,6 @@ shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,
   *pmem = mem;
   assert(used_wa != 0);
 
-  dprintf(2, "Shared Memory: New memory of size %#lx requested, returned %#lx\n", size, used_wa);
   memset(last_base(mem) + orig_used, 0xCA, used_wa - orig_used);
   memset(last_base(mem) + used_wa, 0x42, size);
 

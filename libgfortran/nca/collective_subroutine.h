@@ -41,4 +41,15 @@ internal_proto (collsub_iface_init);
 
 void * get_collsub_buf (collsub_iface *ci, size_t size);
 internal_proto (get_collsub_buf);
+
+
+/* Needed to prevent one image starting the next collective subroutine before
+ * everyone has finished the current one. At the moment, this  is just an alias
+ * for collsub_sync, but there might be more work to do later.  */
+
+static inline void
+finish_collective_subroutine(collsub_iface *ci) {
+  collsub_sync(ci);
+}
+
 #endif

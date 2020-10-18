@@ -172,19 +172,19 @@ tree gfor_fndecl_caf_is_present;
 
 /* Native coarray functions.  */
 
-tree gfor_fndecl_nca_master;
-tree gfor_fndecl_nca_coarray_allocate;
-tree gfor_fndecl_nca_coarray_free;
-tree gfor_fndecl_nca_this_image;
-tree gfor_fndecl_nca_num_images;
-tree gfor_fndecl_nca_sync_all;
-tree gfor_fndecl_nca_sync_images;
-tree gfor_fndecl_nca_lock;
-tree gfor_fndecl_nca_unlock;
-tree gfor_fndecl_nca_reduce_scalar;
-tree gfor_fndecl_nca_reduce_array;
-tree gfor_fndecl_nca_broadcast_scalar;
-tree gfor_fndecl_nca_broadcast_array;
+tree gfor_fndecl_cas_master;
+tree gfor_fndecl_cas_coarray_allocate;
+tree gfor_fndecl_cas_coarray_free;
+tree gfor_fndecl_cas_this_image;
+tree gfor_fndecl_cas_num_images;
+tree gfor_fndecl_cas_sync_all;
+tree gfor_fndecl_cas_sync_images;
+tree gfor_fndecl_cas_lock;
+tree gfor_fndecl_cas_unlock;
+tree gfor_fndecl_cas_reduce_scalar;
+tree gfor_fndecl_cas_reduce_array;
+tree gfor_fndecl_cas_broadcast_scalar;
+tree gfor_fndecl_cas_broadcast_array;
 
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */
@@ -1048,7 +1048,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	gfc_add_decl_to_function (token);
     }
       
-  eff_dimen = flag_coarray == GFC_FCOARRAY_NATIVE
+  eff_dimen = flag_coarray == GFC_FCOARRAY_SHARED
     ? GFC_TYPE_ARRAY_RANK (type) + GFC_TYPE_ARRAY_CORANK (type)
     : GFC_TYPE_ARRAY_RANK (type);
 
@@ -1075,7 +1075,11 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	}
     }
 
-  if (flag_coarray != GFC_FCOARRAY_NATIVE)
+  /* We don't need the following code in shared coarray mode, since the
+     dimensions are handled the usual way in the loop above 
+     (eff_dimen = dimen + codimen).  */
+
+  if (flag_coarray != GFC_FCOARRAY_SHARED)
     for (dim = GFC_TYPE_ARRAY_RANK (type);
 	 dim < GFC_TYPE_ARRAY_RANK (type) + GFC_TYPE_ARRAY_CORANK (type);
 	 dim++)
@@ -1230,7 +1234,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
       || (as && as->type == AS_ASSUMED_RANK))
     return dummy;
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && sym->attr.codimension
+  if (flag_coarray == GFC_FCOARRAY_SHARED && sym->attr.codimension
       && sym->attr.allocatable)
     return dummy;
 
@@ -1851,7 +1855,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   /* Remember this variable for allocation/cleanup.  */
-  if (sym->attr.dimension || sym->attr.codimension || sym->attr.allocatable
+  if (sym->attr.dimension || sym->attr.allocatable || sym->attr.codimension
       || (sym->ts.type == BT_CLASS &&
 	  (CLASS_DATA (sym)->attr.dimension
 	   || CLASS_DATA (sym)->attr.allocatable))
@@ -1900,7 +1904,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	gcc_assert (!sym->value || sym->value->expr_type == EXPR_NULL);
     }
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && sym->attr.codimension)
+  if (flag_coarray == GFC_FCOARRAY_SHARED && sym->attr.codimension)
     TREE_STATIC(decl) = 1;
 
   gfc_finish_var_decl (decl, sym);
@@ -4096,65 +4100,65 @@ gfc_build_builtin_function_decls (void)
 	integer_type_node, 3, pvoid_type_node, integer_type_node,
 	pvoid_type_node);
     }
-  else if (flag_coarray == GFC_FCOARRAY_NATIVE)
+  else if (flag_coarray == GFC_FCOARRAY_SHARED)
     {
-      gfor_fndecl_nca_master = gfc_build_library_function_decl_with_spec (
-	 get_identifier (PREFIX("nca_master")), ".r", integer_type_node, 1,
+      gfor_fndecl_cas_master = gfc_build_library_function_decl_with_spec (
+	 get_identifier (PREFIX("cas_master")), ".r", integer_type_node, 1,
 	build_pointer_type (build_function_type_list (void_type_node, NULL_TREE)));
-      gfor_fndecl_nca_coarray_allocate = gfc_build_library_function_decl_with_spec (
-	 get_identifier (PREFIX("nca_coarray_alloc")), "..RRR", integer_type_node, 4,
+      gfor_fndecl_cas_coarray_allocate = gfc_build_library_function_decl_with_spec (
+	 get_identifier (PREFIX("cas_coarray_alloc")), "..RRR", integer_type_node, 4,
 	pvoid_type_node, integer_type_node, integer_type_node, integer_type_node,
 	NULL_TREE);
-      gfor_fndecl_nca_coarray_free = gfc_build_library_function_decl_with_spec (
-	 get_identifier (PREFIX("nca_coarray_free")), "..R", integer_type_node, 2,
+      gfor_fndecl_cas_coarray_free = gfc_build_library_function_decl_with_spec (
+	 get_identifier (PREFIX("cas_coarray_free")), "..R", integer_type_node, 2,
 	 pvoid_type_node, /* Pointer to the descriptor to be deallocated.  */
 	 integer_type_node, /* Type of allocation (normal, event, lock).  */
 	NULL_TREE);
-      gfor_fndecl_nca_this_image = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("nca_coarray_this_image")), ".X", integer_type_node, 1,
+      gfor_fndecl_cas_this_image = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("cas_coarray_this_image")), ".X", integer_type_node, 1,
 	integer_type_node, /* This is the team number.  Currently ignored.  */
 	NULL_TREE);
-      DECL_PURE_P (gfor_fndecl_nca_this_image) = 1;
-      gfor_fndecl_nca_num_images = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("nca_coarray_num_images")), ".X", integer_type_node, 1,
+      DECL_PURE_P (gfor_fndecl_cas_this_image) = 1;
+      gfor_fndecl_cas_num_images = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("cas_coarray_num_images")), ".X", integer_type_node, 1,
 	integer_type_node, /* See above.  */
 	NULL_TREE);
-      DECL_PURE_P (gfor_fndecl_nca_num_images) = 1;
-      gfor_fndecl_nca_sync_all = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("nca_coarray_sync_all")), ".X", void_type_node, 1,
+      DECL_PURE_P (gfor_fndecl_cas_num_images) = 1;
+      gfor_fndecl_cas_sync_all = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("cas_coarray_sync_all")), ".X", void_type_node, 1,
 	build_pointer_type (integer_type_node), NULL_TREE);
-      gfor_fndecl_nca_sync_images = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("nca_sync_images")), ".RRXXX", void_type_node,
+      gfor_fndecl_cas_sync_images = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("cas_sync_images")), ".RRXXX", void_type_node,
 	5, integer_type_node, pint_type, pint_type,
 	pchar_type_node, size_type_node, NULL_TREE);
-      gfor_fndecl_nca_lock = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("nca_lock")), ".w", void_type_node, 1,
+      gfor_fndecl_cas_lock = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("cas_lock")), ".w", void_type_node, 1,
 	pvoid_type_node, NULL_TREE);
-      gfor_fndecl_nca_unlock = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("nca_unlock")), ".w", void_type_node, 1,
+      gfor_fndecl_cas_unlock = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("cas_unlock")), ".w", void_type_node, 1,
 	pvoid_type_node, NULL_TREE);
 
-      gfor_fndecl_nca_reduce_scalar =
+      gfor_fndecl_cas_reduce_scalar =
 	gfc_build_library_function_decl_with_spec (
-	  get_identifier (PREFIX("nca_collsub_reduce_scalar")), ".wrW",
+	  get_identifier (PREFIX("cas_collsub_reduce_scalar")), ".wrW",
 	  void_type_node, 3, pvoid_type_node,
 	  build_pointer_type (build_function_type_list (void_type_node,
 	      pvoid_type_node, pvoid_type_node, NULL_TREE)),
 	  pint_type, NULL_TREE);
 
-      gfor_fndecl_nca_reduce_array = 
+      gfor_fndecl_cas_reduce_array = 
 	gfc_build_library_function_decl_with_spec (
-	  get_identifier (PREFIX("nca_collsub_reduce_array")), ".wrWR",
+	  get_identifier (PREFIX("cas_collsub_reduce_array")), ".wrWR",
 	  void_type_node, 4, pvoid_type_node,
 	  build_pointer_type (build_function_type_list (void_type_node,
 	      pvoid_type_node, pvoid_type_node, NULL_TREE)),
 	  pint_type, integer_type_node, NULL_TREE);
 
-      gfor_fndecl_nca_broadcast_scalar = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX ("nca_collsub_broadcast_scalar")), ".w..",
+      gfor_fndecl_cas_broadcast_scalar = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("cas_collsub_broadcast_scalar")), ".w..",
 	void_type_node, 3, pvoid_type_node, size_type_node, integer_type_node);
-      gfor_fndecl_nca_broadcast_array = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX ("nca_collsub_broadcast_array")), ".W.",
+      gfor_fndecl_cas_broadcast_array = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("cas_collsub_broadcast_array")), ".W.",
 	void_type_node, 2, pvoid_type_node, integer_type_node);
     }
 
@@ -4638,7 +4642,8 @@ void
 gfc_trans_native_coarray (stmtblock_t * init, stmtblock_t *cleanup, gfc_symbol * sym)
 {
   tree tmp, decl;
-  tree overflow = build_int_cst (integer_type_node, 0), nelems, element_size; //All unused
+  /* All unused, but needed as arguments.  */
+  tree overflow = build_int_cst (integer_type_node, 0), nelems, element_size;
   tree offset;
   tree elem_size;
   int alloc_type;
@@ -4665,7 +4670,7 @@ gfc_trans_native_coarray (stmtblock_t * init, stmtblock_t *cleanup, gfc_symbol *
 
   if (cleanup)
     {
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_nca_coarray_free,
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_coarray_free,
 				2, gfc_build_addr_expr (pvoid_type_node, decl),
 				build_int_cst (integer_type_node, alloc_type));
       gfc_add_expr_to_block (cleanup, tmp);
@@ -4997,7 +5002,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		      gfc_trans_deferred_array (sym, block);
 		    }
 		}
-	      else if (flag_coarray != GFC_FCOARRAY_NATIVE
+	      else if (flag_coarray != GFC_FCOARRAY_SHARED
 		       && sym->attr.codimension
 		       && TREE_STATIC (sym->backend_decl))
 		{
@@ -5008,7 +5013,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					NULL_TREE);
 		  continue;
 		}
-	      else if (flag_coarray == GFC_FCOARRAY_NATIVE
+	      else if (flag_coarray == GFC_FCOARRAY_SHARED
 		       && sym->attr.codimension)
 		{
 		  gfc_trans_native_coarray_inline (block, sym);
@@ -5504,7 +5509,7 @@ gfc_create_module_variable (gfc_symbol * sym)
   DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
   rest_of_decl_compilation (decl, 1, 0);
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && sym->attr.codimension
+  if (flag_coarray == GFC_FCOARRAY_SHARED && sym->attr.codimension
       && !sym->attr.allocatable)
     gfc_trans_native_coarray_static (sym);
 
@@ -5916,7 +5921,7 @@ generate_coarray_constructor_function (tree *save_fn_decl, tree *fndecl)
 
   tmp = build_function_type_list (void_type_node, NULL_TREE);
   *fndecl = build_decl (input_location, FUNCTION_DECL,
-		       create_tmp_var_name (flag_coarray == GFC_FCOARRAY_LIB ? "_caf_init" : "_nca_init"), tmp);
+		       create_tmp_var_name (flag_coarray == GFC_FCOARRAY_LIB ? "_caf_init" : "_cas_init"), tmp);
 
   DECL_STATIC_CONSTRUCTOR (*fndecl) = 1;
   SET_DECL_INIT_PRIORITY (*fndecl, DEFAULT_INIT_PRIORITY);
@@ -6663,8 +6668,8 @@ create_main_function (tree fndecl)
     }
 
   /* Call MAIN__().  */
-  if (flag_coarray == GFC_FCOARRAY_NATIVE)
-    tmp = build_call_expr_loc (input_location, gfor_fndecl_nca_master, 1,
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_master, 1,
 			       gfc_build_addr_expr (NULL, fndecl));
   else
     tmp = build_call_expr_loc (input_location,

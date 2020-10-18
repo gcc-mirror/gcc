@@ -776,7 +776,7 @@ EnumValue
 Enum(gfc_fcoarray) String(lib) Value(GFC_FCOARRAY_LIB)
 
 EnumValue
-Enum(gfc_fcoarray) String(shared) Value(GFC_FCOARRAY_NATIVE)
+Enum(gfc_fcoarray) String(shared) Value(GFC_FCOARRAY_SHARED)
 
 fcheck=
 Fortran RejectNegative JoinedOrMissing

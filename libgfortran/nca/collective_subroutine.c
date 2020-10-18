@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include "libcoarraynative.h"
 #include "collective_subroutine.h"
-#include "collective_inline.h"
 #include "allocator.h"
 
 void *
@@ -35,6 +34,8 @@ get_collsub_buf (collsub_iface *ci, size_t size)
   void *ret;
 
   pthread_mutex_lock (&ci->s->mutex);
+  /* curr_size is always at least sizeof(double), so we don't need to worry
+     about size == 0.  */
   if (size > ci->s->curr_size)
     {
       shared_free (ci->a, ci->s->collsub_buf, ci->s->curr_size);
@@ -47,17 +48,16 @@ get_collsub_buf (collsub_iface *ci, size_t size)
   return ret;
 }
 
-/* It appears as if glibc's barrier implementation does not spin (at
-   least that is what I got from a quick glance at the source code),
-   so performance would be improved quite a bit if we spun a few times
-   here so we don't run into the futex syscall.  */
+
+/* This function syncs all images with one another.  It will only return once
+   all images have called it.  */
 
 void
 collsub_sync (collsub_iface *ci)
 {
-  //dprintf (2, "Calling collsub_sync %d times\n", ++called);
   pthread_barrier_wait (&ci->s->barrier);
 }
+
 
 /* assign_function is needed since we only know how to assign the type inside
    the compiler.  It should be implemented as follows:
@@ -103,7 +103,7 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image
       imoffset = 1 << cbit;
       if (this_image.image_num + imoffset < local->num_images)
 	/* Reduce arrays elementwise.  */
-	for (size_t i = 0; i < pi.num_elem; i++) 
+	for (ssize_t i = 0; i < pi.num_elem; i++) 
 	  assign_function (this_image_buf + elem_size * i,
 			   this_image_buf + this_image_size_bytes * imoffset + elem_size * i);
  
@@ -165,7 +165,6 @@ void
 collsub_iface_init (collsub_iface *ci, alloc_iface *ai, shared_memory *sm)
 {
   pthread_barrierattr_t attr;
-  shared_mem_ptr p;
   ci->s = SHARED_MEMORY_RAW_ALLOC_PTR(sm, collsub_iface_shared);
 
   ci->s->collsub_buf = shared_malloc(get_allocator(ai), sizeof(double)*local->num_images);
@@ -188,8 +187,6 @@ collsub_broadcast_scalar (collsub_iface *ci, void *obj, index_type elem_size,
   void *buffer;
 
   buffer = get_collsub_buf (ci, elem_size);
-
-  dprintf(2, "Source image: %d\n", source_image);
 
   if (source_image == this_image.image_num)
     {
@@ -214,7 +211,6 @@ collsub_broadcast_array (collsub_iface *ci, gfc_array_char *desc,
   bool packed;
   index_type elem_size;
   index_type size_bytes;
-  char *this_image_buf;
 
   packed = pack_array_prepare (&pi, desc);
   if (pi.num_elem == 0)
@@ -244,173 +240,3 @@ collsub_broadcast_array (collsub_iface *ci, gfc_array_char *desc,
 
   finish_collective_subroutine (ci); 
 }
-
-#if 0
-
-void nca_co_broadcast (gfc_array_char *, int, int*, char *, size_t);
-export_proto (nca_co_broadcast);
-
-void
-nca_co_broadcast (gfc_array_char * restrict a, int source_image,
-		  int *stat, char *errmsg __attribute__ ((unused)),
-		  size_t errmsg_len __attribute__ ((unused)))
-{
-  index_type count[GFC_MAX_DIMENSIONS];
-  index_type stride[GFC_MAX_DIMENSIONS];
-  index_type extent[GFC_MAX_DIMENSIONS];
-  index_type type_size;
-  index_type dim;
-  index_type span;
-  bool packed, empty;
-  index_type num_elems;
-  index_type ssize, ssize_bytes;
-  char *this_shared_ptr, *other_shared_ptr;
-
-  if (stat)
-    *stat = 0;
-
-  dim = GFC_DESCRIPTOR_RANK (a);
-  type_size = GFC_DESCRIPTOR_SIZE (a);
-
-  /* Source image, gather.  */
-  if (source_image - 1 == image_num)
-    {
-      num_elems = 1;
-      if (dim > 0)
-	{
-	  span = a->span != 0 ? a->span : type_size;
-	  packed = true;
-	  empty = false;
-	  for (index_type n = 0; n < dim; n++)
-	    {
-	      count[n] = 0;
-	      stride[n] = GFC_DESCRIPTOR_STRIDE (a, n) * span;
-	      extent[n] = GFC_DESCRIPTOR_EXTENT (a, n);
-
-	      empty = empty || extent[n] <= 0;
-
-	      if (num_elems != GFC_DESCRIPTOR_STRIDE (a, n))
-		packed = false;
-
-	      num_elems *= extent[n];
-	    }
-	  ssize_bytes = num_elems * type_size;
-	}
-      else
-	{
-	  ssize_bytes = type_size;
-	  packed = true;
-	  empty = false;
-	}
-
-      prepare_collective_subroutine (ssize_bytes); // broadcast barrier 1
-      this_shared_ptr = get_obj_ptr (image_num);
-      if (packed)
-	memcpy (this_shared_ptr, a->base_addr, ssize_bytes);
-      else
-	{
-	  char *src = (char *) a->base_addr;
-	  char * restrict dest = this_shared_ptr;
-	  index_type stride0 = stride[0];
-
-	  while (src)
-	    {
-	      /* Copy the data.  */
-
-	      memcpy (dest, src, type_size);
-	      dest += type_size;
-	      src += stride0;
-	      count[0] ++;
-	      /* Advance to the next source element.  */
-	      for (index_type n = 0; count[n] == extent[n] ; )
-		{
-		  /* When we get to the end of a dimension, reset it
-		     and increment the next dimension.  */
-		  count[n] = 0;
-		  src -= stride[n] * extent[n];
-		  n++;
-		  if (n == dim)
-		    {
-		      src = NULL;
-		      break;
-		    }
-		  else
-		    {
-		      count[n]++;
-		      src += stride[n];
-		    }
-		}
-	    }
-	}
-      collsub_sync (ci); /* Broadcast barrier 2.  */
-    }
-  else   /* Target image, scatter.  */
-    {
-      collsub_sync (ci);  /* Broadcast barrier 1.  */
-      packed = 1;
-      num_elems = 1;
-      span = a->span != 0 ? a->span : type_size;
-
-      for (index_type n = 0; n < dim; n++)
-	{
-	  index_type stride_n;
-	  count[n] = 0;
-	  stride_n = GFC_DESCRIPTOR_STRIDE (a, n);
-	  stride[n] = stride_n * type_size;
-	  extent[n] = GFC_DESCRIPTOR_EXTENT (a, n);
-	  if (extent[n] <= 0)
-	    {
-	      packed = true;
-	      num_elems = 0;
-	      break;
-	    }
-	  if (num_elems != stride_n)
-	    packed = false;
-
-	  num_elems *= extent[n];
-	}
-      ssize = num_elems * type_size;
-      prepare_collective_subroutine (ssize);  /* Broadcaset barrier 2.  */
-      other_shared_ptr = get_obj_ptr (source_image - 1);
-      if (packed)
-	memcpy (a->base_addr, other_shared_ptr, ssize);
-      else
-	{
-	  char *src = other_shared_ptr;
-	  char * restrict dest = (char *) a->base_addr;
-	  index_type stride0 = stride[0];
-
-	  for (index_type n = 0; n < dim; n++)
-	    count[n] = 0;
-
-	  while (dest)
-	    {
-	      memcpy (dest, src, type_size);
-	      src += span;
-	      dest += stride0;
-	      count[0] ++;
-	      for (index_type n = 0; count[n] == extent[n] ;)
-	        {
-	      	  /* When we get to the end of a dimension, reset it and increment
-		     the next dimension.  */
-		  count[n] = 0;
-		  dest -= stride[n] * extent[n];
-		  n++;
-		  if (n == dim)
-		    {
-		      dest = NULL;
-		      break;
-		    }
-		  else
-		    {
-		      count[n]++;
-		      dest += stride[n];
-		    }
-		}
-	    }
-	}
-    }
-  finish_collective_subroutine (ci);  /* Broadcast barrier 3.  */
-}
-
-#endif

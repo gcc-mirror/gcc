@@ -9,7 +9,11 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <assert.h>
 
+/* Shared Memory objects live in their own namspace (usually found under
+ * /dev/shm/), so the "/" is needed.  It is for some reason impossible to create
+ * a shared memory object without name.  */
 #define MEMOBJ_NAME "/gfortran_coarray_memfd"
 
 size_t
@@ -26,7 +30,8 @@ round_to_pagesize(size_t s) {
 
 size_t
 next_power_of_two(size_t size) {
-  return 1 << (PTR_BITS - __builtin_clzl(size-1)); //FIXME: There's an off-by-one error, I can feel it
+  assert(size);
+  return 1 << (PTR_BITS - __builtin_clzl(size-1));
 }
 
 void
@@ -120,7 +125,7 @@ pack_array_finish (pack_info * const restrict pi, const gfc_array_char * const r
   stride0 = pi->stride[0];
   size = GFC_DESCRIPTOR_SIZE (source);
 
-  memset (count, 0, sizeof(count));
+  memset (count, '\0', sizeof (count) * dim);
   while (src)
     {
       /* Copy the data.  */
@@ -170,6 +175,8 @@ unpack_array_finish (pack_info * const restrict pi,
   dest = d->base_addr;
   dim = GFC_DESCRIPTOR_RANK (d);
 
+
+  memset(count, '\0', sizeof(count) * dim);
   while (dest)
     {
       memcpy (dest, src, size);

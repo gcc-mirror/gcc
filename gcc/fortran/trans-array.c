@@ -2958,9 +2958,9 @@ gfc_add_strides (tree expr, tree desc, int beg, int end)
 
 /* This function calculates the new offset via
 	    new_offset = offset + this_image ()
-			    * arrray.stride[first_codimension]
+			    * array.stride[first_codimension]
 			 + sum (remaining codimension offsets)
-   If offset is a pointer, we also need to multiply it by the size.*/
+   If offset is a pointer, we also need to multiply it by the size.  */
 static tree
 gfc_native_coarray_add_this_image_offset (tree offset, tree desc,
 					 gfc_array_ref *ar, int is_pointer,
@@ -2968,30 +2968,30 @@ gfc_native_coarray_add_this_image_offset (tree offset, tree desc,
 {
   tree tmp, off;
   /* Calculate the actual offset.  */
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_nca_this_image,
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_cas_this_image,
 			      1, integer_zero_node);
-  tmp = convert (TREE_TYPE(gfc_index_zero_node), tmp);
-  tmp = fold_build2_loc (input_location, MINUS_EXPR, TREE_TYPE(tmp), tmp,
-			build_int_cst (TREE_TYPE(tmp), subtract));
-  tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE(tmp),
+  tmp = convert (TREE_TYPE (gfc_index_zero_node), tmp);
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, TREE_TYPE (tmp), tmp,
+			build_int_cst (TREE_TYPE (tmp), subtract));
+  tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (tmp),
 			 gfc_conv_array_stride (desc, ar->dimen), tmp);
   /* We also need to add the missing strides once to compensate for the
     offset, that is to large now.  The loop starts at sym->as.rank+1
-    because we need to skip the first corank stride */
+    because we need to skip the first corank stride.  */
   off = gfc_add_strides (tmp, desc, ar->as->rank + 1,
 			ar->as->rank + ar->as->corank);
   if (is_pointer)
     {
-      /* Remove pointer and array from type in order to get the raw base type. */
-      tmp = TREE_TYPE(TREE_TYPE(TREE_TYPE(offset)));
+      /* Remove pointer and array from type in order to get the raw base type.  */
+      tmp = TREE_TYPE (TREE_TYPE (TREE_TYPE (offset)));
       /* And get the size of that base type.  */
-      tmp = convert (TREE_TYPE(off), size_in_bytes_loc (input_location, tmp));
-      tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE(off),
+      tmp = convert (TREE_TYPE (off), size_in_bytes_loc (input_location, tmp));
+      tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (off),
 			    off, tmp);
       return fold_build_pointer_plus_loc (input_location, offset, tmp);
     }
   else
-    return fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE(offset),
+    return fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (offset),
 			    offset, off);
 }
 
@@ -3040,7 +3040,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
       /* If we have a native coarray with implied this_image (), add the
 	 appropriate offset to the data pointer.  */
       ref = ss_info->expr->ref;
-      if (flag_coarray == GFC_FCOARRAY_NATIVE && ref
+      if (flag_coarray == GFC_FCOARRAY_SHARED && ref
 	  && ref->u.ar.dimen_type[ref->u.ar.dimen + ref->u.ar.codimen - 1]
 	     == DIMEN_THIS_IMAGE)
 	 tmp = gfc_native_coarray_add_this_image_offset (tmp, se.expr, &ref->u.ar, 1, 1);
@@ -3060,7 +3060,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
 	 offset for the codimensions.  */
       // TODO: check whether the recipient is a coarray, if it is, disable
       //	all of this
-      if (flag_coarray == GFC_FCOARRAY_NATIVE && ref
+      if (flag_coarray == GFC_FCOARRAY_SHARED && ref
 	  && ref->u.ar.dimen_type[ref->u.ar.dimen + ref->u.ar.codimen - 1]
 		    == DIMEN_THIS_IMAGE)
 	tmp = gfc_add_strides (tmp, se.expr, ref->u.ar.as->rank,
@@ -3665,7 +3665,6 @@ build_array_ref (tree desc, tree offset, tree decl, tree vptr)
 }
 
 
-
 /* Build an array reference.  se->expr already holds the array descriptor.
    This should be either a variable, indirect variable reference or component
    reference.  For arrays which do not have a descriptor, se->expr will be
@@ -3685,20 +3684,21 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
   gfc_se tmpse;
   gfc_symbol * sym = expr->symtree->n.sym;
   char *var_name = NULL;
+  /* True if the base needs the implied image offset.  */
   bool need_impl_this_image;
   int eff_dimen;
 
   need_impl_this_image =
       ar->dimen_type[ar->dimen + ar->codimen - 1] == DIMEN_THIS_IMAGE;
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE
+  if (flag_coarray == GFC_FCOARRAY_SHARED
       && !need_impl_this_image)
     eff_dimen = ar->dimen + ar->codimen - 1;
   else
     eff_dimen = ar->dimen - 1;
 
 
-  if (flag_coarray != GFC_FCOARRAY_NATIVE && ar->dimen == 0)
+  if (flag_coarray != GFC_FCOARRAY_SHARED && ar->dimen == 0)
     {
       gcc_assert (ar->codimen || sym->attr.select_rank_temporary
 		  || (ar->as && ar->as->corank));
@@ -3838,7 +3838,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
       add_to_offset (&cst_offset, &offset, tmp);
     }
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && need_impl_this_image)
+  if (flag_coarray == GFC_FCOARRAY_SHARED && need_impl_this_image)
     offset = gfc_native_coarray_add_this_image_offset (offset, se->expr, ar, 0, 0);
 
   if (!integer_zerop (cst_offset))
@@ -5584,6 +5584,10 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 
   for (n = 0; n < rank; n++)
     {
+
+      if (flag_coarray != GFC_FCOARRAY_SHARED)
+	conv_lbound = conv_ubound = NULL_TREE;
+
       /* We have 3 possibilities for determining the size of the array:
 	 lower == NULL    => lbound = 1, ubound = upper[n]
 	 upper[n] = NULL  => lbound = 1, ubound = lower[n]
@@ -5734,7 +5738,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
       gfc_conv_descriptor_lbound_set (descriptor_block, descriptor,
 				      gfc_rank_cst[n], se.expr);
       conv_lbound = se.expr;
-      if (flag_coarray == GFC_FCOARRAY_NATIVE)
+      if (flag_coarray == GFC_FCOARRAY_SHARED)
 	 {
 
 	   tmp = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
@@ -5751,14 +5755,18 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 	  gfc_add_block_to_block (pblock, &se.pre);
 	  gfc_conv_descriptor_ubound_set (descriptor_block, descriptor,
 					  gfc_rank_cst[n], se.expr);
-	   gfc_conv_descriptor_stride_set (descriptor_block, descriptor,
-					  gfc_rank_cst[n], stride);
+	  if (flag_coarray == GFC_FCOARRAY_SHARED)
+	      /* It is unclear why we don't need this in for -fcoarray=lib,
+	      	 but since the addition of shared coarrays should not change
+		 the semantics, it's inside this if.  */
+	      gfc_conv_descriptor_stride_set (descriptor_block, descriptor,
+					      gfc_rank_cst[n], stride);
 	  conv_ubound = se.expr;
-	  if (flag_coarray == GFC_FCOARRAY_NATIVE)
+	  if (flag_coarray == GFC_FCOARRAY_SHARED)
 	    {
-		      size = gfc_conv_array_extent_dim (conv_lbound, conv_ubound,
+	      size = gfc_conv_array_extent_dim (conv_lbound, conv_ubound,
 						&or_expr);
-	       size = gfc_evaluate_now (size, descriptor_block);
+	      size = gfc_evaluate_now (size, descriptor_block);
 	      stride = fold_build2_loc (input_location, MULT_EXPR,
 				       gfc_array_index_type, stride, size);
 	      stride = gfc_evaluate_now (stride, descriptor_block);
@@ -5796,7 +5804,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   /* Convert to size_t.  */
   *element_size = fold_convert (size_type_node, tmp);
 
-  if (rank == 0 && !(flag_coarray == GFC_FCOARRAY_NATIVE && corank))
+  if (rank == 0 && !(flag_coarray == GFC_FCOARRAY_SHARED && corank))
     return *element_size;
 
   *nelems = gfc_evaluate_now (stride, pblock);
@@ -5906,7 +5914,7 @@ gfc_allocate_native_coarray (stmtblock_t *b, tree decl, tree size, int corank,
 			    int alloc_type)
 {
   gfc_add_expr_to_block (b,
-	build_call_expr_loc (input_location, gfor_fndecl_nca_coarray_allocate,
+	build_call_expr_loc (input_location, gfor_fndecl_cas_coarray_allocate,
 			    4, gfc_build_addr_expr (pvoid_type_node, decl),
 			    size, build_int_cst (integer_type_node, corank),
 			    build_int_cst (integer_type_node, alloc_type)));
@@ -6055,7 +6063,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			      expr3_elem_size, nelems, expr3, e3_arr_desc,
 			      e3_has_nodescriptor, expr, &element_size);
 
-  if (dimension || (flag_coarray == GFC_FCOARRAY_NATIVE && coarray))
+  if (dimension || (flag_coarray == GFC_FCOARRAY_SHARED && coarray))
     {
       var_overflow = gfc_create_var (integer_type_node, "overflow");
       gfc_add_modify (&se->pre, var_overflow, overflow);
@@ -6097,7 +6105,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
     pointer = gfc_conv_descriptor_data_get (se->expr);
   STRIP_NOPS (pointer);
 
-  if (allocatable && !(flag_coarray == GFC_FCOARRAY_NATIVE && coarray))
+  if (allocatable && !(flag_coarray == GFC_FCOARRAY_SHARED && coarray))
     {
       not_prev_allocated = gfc_create_var (logical_type_node,
 					   "not_prev_allocated");
@@ -6110,7 +6118,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   gfc_start_block (&elseblock);
 
-  if (coarray && flag_coarray == GFC_FCOARRAY_NATIVE)
+  if (coarray && flag_coarray == GFC_FCOARRAY_SHARED)
     {
       tree elem_size
 	    = size_in_bytes (gfc_get_element_type (TREE_TYPE(se->expr)));
@@ -6170,9 +6178,9 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 				  build_empty_stmt (input_location));
     }
 
-  // For native coarrays, the size must be set before the allocation routine
-  // can be called.
-  if (coarray && flag_coarray == GFC_FCOARRAY_NATIVE)
+  /* For native coarrays, the size must be set before the allocation routine
+     can be called.  */
+  if (coarray && flag_coarray == GFC_FCOARRAY_SHARED)
     {
       gfc_add_expr_to_block (&se->pre, set_descriptor);
       gfc_add_expr_to_block (&se->pre, allocation);
@@ -6800,7 +6808,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
   offset = gfc_index_zero_node;
   size = gfc_index_one_node;
 
-  if (flag_coarray == GFC_FCOARRAY_NATIVE)
+  if (flag_coarray == GFC_FCOARRAY_SHARED)
     eff_dimen = as->rank + as->corank;
   else
     eff_dimen = as->rank;
@@ -7046,12 +7054,12 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 	return;
     }
 
-  /* if it's a coarray with implicit this_image, add that to the offset.  */
+  /* If it's a coarray with implicit this_image, add that to the offset.  */
   ref = expr->ref;
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && ref && ref->type == REF_ARRAY
+  if (flag_coarray == GFC_FCOARRAY_SHARED && ref && ref->type == REF_ARRAY
       && ref->u.ar.dimen_type[ref->u.ar.dimen + ref->u.ar.codimen - 1]
          == DIMEN_THIS_IMAGE
-      && !ref->u.ar.native_coarray_argument)
+      && !ref->u.ar.shared_coarray_arg)
     offset = gfc_native_coarray_add_this_image_offset (offset, desc,
 						       &ref->u.ar, 0, 1);
 
@@ -7061,7 +7069,7 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
      subreferences; e.g. my_integer => my_type(:)%integer_component.  */
   if (subref)
     {
-      /* Go past the array reference. */
+      /* Go past the array reference.  */
       for (ref = expr->ref; ref; ref = ref->next)
 	 {
 	  if (ref->type == REF_ARRAY &&
@@ -7070,7 +7078,7 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 	      ref = ref->next;
 	      break;
 	    }
-	  else if (flag_coarray == GFC_FCOARRAY_NATIVE && ref->type == REF_ARRAY &&
+	  else if (flag_coarray == GFC_FCOARRAY_SHARED && ref->type == REF_ARRAY &&
 		    ref->u.ar.dimen_type[ref->u.ar.dimen +ref->u.ar.codimen -1]
 		      == DIMEN_THIS_IMAGE)
 	    tmp = gfc_native_coarray_add_this_image_offset (tmp, desc, &ref->u.ar, 0, 1);
@@ -7137,8 +7145,8 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 					     gfc_array_index_type, stride, itmp);
 		  stride = gfc_evaluate_now (stride, block);
 		}
-	      if (flag_coarray == GFC_FCOARRAY_NATIVE &&
-		    ref->u.ar.dimen_type[ref->u.ar.dimen +ref->u.ar.codimen -1]
+	      if (flag_coarray == GFC_FCOARRAY_SHARED &&
+		    ref->u.ar.dimen_type[ref->u.ar.dimen + ref->u.ar.codimen -1]
 		      == DIMEN_THIS_IMAGE)
 		tmp = gfc_native_coarray_add_this_image_offset (tmp, desc, &ref->u.ar, 0, 1);
 	      /* Apply the index to obtain the array element.  */
@@ -7491,7 +7499,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       else
 	full = gfc_full_array_ref_p (info->ref, NULL);
 
-      if (flag_coarray == GFC_FCOARRAY_NATIVE &&
+      if (flag_coarray == GFC_FCOARRAY_SHARED &&
 	    info->ref->type == REF_ARRAY &&
 	    info->ref->u.ar.dimen_type[info->ref->u.ar.dimen
 				       + info->ref->u.ar.codimen - 1] ==
@@ -7732,19 +7740,17 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       tree to;
       tree base;
       tree offset;
-#if 0  /* TK */
-      ndim = info->ref ? info->ref->u.ar.dimen : ss->dimen;
-#else
+
       if (info->ref)
 	{
-	  if (info->ref->u.ar.native_coarray_argument)
+	  if (info->ref->u.ar.shared_coarray_arg)
 	    ndim = info->ref->u.ar.dimen + info->ref->u.ar.codimen;
 	  else
 	    ndim = info->ref->u.ar.dimen;
 	}
       else
 	ndim = ss->dimen;
-#endif      
+
       if (se->want_coarray)
 	{
 	  gfc_array_ref *ar = &info->ref->u.ar;
@@ -8113,15 +8119,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
       expr->ts.u.cl->backend_decl = tmp;
       se->string_length = tmp;
     }
-#if 0
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && fsym && fsym->attr.codimension && sym)
-    {
-      gfc_init_se (se, NULL);
-      tmp = gfc_get_symbol_decl (sym);
-      se->expr = gfc_build_addr_expr (NULL_TREE, tmp);
-      return;
-    }
-#endif
+
   /* Is this the result of the enclosing procedure?  */
   this_array_result = (full_array_var && sym->attr.flavor == FL_PROCEDURE);
   if (this_array_result
@@ -8129,10 +8127,9 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	&& (sym->backend_decl != parent))
     this_array_result = false;
 
-#if 1  /* TK */	  
-  if (flag_coarray == GFC_FCOARRAY_NATIVE && fsym && fsym->attr.codimension)
+  if (flag_coarray == GFC_FCOARRAY_SHARED && fsym && fsym->attr.codimension)
     g77 = false;
-#endif
+
   /* Passing address of the array if it is not pointer or assumed-shape.  */
   if (full_array_var && g77 && !this_array_result
       && sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
@@ -11083,13 +11080,13 @@ gfc_walk_array_ref (gfc_ss * ss, gfc_expr * expr, gfc_ref * ref)
 	case AR_SECTION:
 	  newss = gfc_get_array_ss (ss, expr, 0, GFC_SS_SECTION);
 	  newss->info->data.array.ref = ref;
-#if 1 /* TK */
+
 	  int eff_dimen;
-	  if (ar->native_coarray_argument)
+	  if (ar->shared_coarray_arg)
 	    eff_dimen = ar->dimen + ar->codimen;
 	  else
 	    eff_dimen = ar->dimen;
-#endif
+
 	  /* We add SS chains for all the subscripts in the section.  */
 	  for (n = 0; n < eff_dimen; n++)
 	    {

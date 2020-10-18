@@ -30,14 +30,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 #include "../nca/libcoarraynative.h"
 #include "../nca/collective_subroutine.h"
-#include "../nca/collective_inline.h"
 
-void nca_collsub_max_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
+void cas_collsub_max_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 			int *stat, char *errmsg, index_type errmsg_len);
-export_proto(nca_collsub_max_scalar_r8);
+export_proto(cas_collsub_max_scalar_r8);
 
 void
-nca_collsub_max_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
+cas_collsub_max_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type errmsg_len __attribute__ ((unused)))
@@ -77,12 +76,12 @@ nca_collsub_max_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 
 }
 
-void nca_collsub_min_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
+void cas_collsub_min_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 			int *stat, char *errmsg, index_type errmsg_len);
-export_proto(nca_collsub_min_scalar_r8);
+export_proto(cas_collsub_min_scalar_r8);
 
 void
-nca_collsub_min_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
+cas_collsub_min_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type errmsg_len __attribute__ ((unused)))
@@ -122,12 +121,12 @@ nca_collsub_min_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 
 }
 
-void nca_collsub_sum_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
+void cas_collsub_sum_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 			int *stat, char *errmsg, index_type errmsg_len);
-export_proto(nca_collsub_sum_scalar_r8);
+export_proto(cas_collsub_sum_scalar_r8);
 
 void
-nca_collsub_sum_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
+cas_collsub_sum_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type errmsg_len __attribute__ ((unused)))
@@ -166,12 +165,12 @@ nca_collsub_sum_scalar_r8 (GFC_REAL_8 *obj, int *result_image,
 
 }
 
-void nca_collsub_max_array_r8 (gfc_array_r8 * restrict array, int *result_image,
+void cas_collsub_max_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 				      int *stat, char *errmsg, index_type errmsg_len);
-export_proto (nca_collsub_max_array_r8);
+export_proto (cas_collsub_max_array_r8);
 
 void
-nca_collsub_max_array_r8 (gfc_array_r8 * restrict array, int *result_image,
+cas_collsub_max_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type errmsg_len __attribute__ ((unused)))
@@ -296,8 +295,7 @@ nca_collsub_max_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 	  char * restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
-	  for (index_type n = 0; n < dim; n++)
-	    count[n] = 0;
+	  memset (count, 0, sizeof(index_type) * dim);
 
 	  while (dest)
 	    {
@@ -327,12 +325,12 @@ nca_collsub_max_array_r8 (gfc_array_r8 * restrict array, int *result_image,
     }
     finish_collective_subroutine (ci);
 }
-void nca_collsub_min_array_r8 (gfc_array_r8 * restrict array, int *result_image,
+void cas_collsub_min_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 				      int *stat, char *errmsg, index_type errmsg_len);
-export_proto (nca_collsub_min_array_r8);
+export_proto (cas_collsub_min_array_r8);
 
 void
-nca_collsub_min_array_r8 (gfc_array_r8 * restrict array, int *result_image,
+cas_collsub_min_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type errmsg_len __attribute__ ((unused)))
@@ -457,8 +455,7 @@ nca_collsub_min_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 	  char * restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
-	  for (index_type n = 0; n < dim; n++)
-	    count[n] = 0;
+	  memset (count, 0, sizeof(index_type) * dim);
 
 	  while (dest)
 	    {
@@ -488,12 +485,12 @@ nca_collsub_min_array_r8 (gfc_array_r8 * restrict array, int *result_image,
     }
     finish_collective_subroutine (ci);
 }
-void nca_collsub_sum_array_r8 (gfc_array_r8 * restrict array, int *result_image,
+void cas_collsub_sum_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 				      int *stat, char *errmsg, index_type errmsg_len);
-export_proto (nca_collsub_sum_array_r8);
+export_proto (cas_collsub_sum_array_r8);
 
 void
-nca_collsub_sum_array_r8 (gfc_array_r8 * restrict array, int *result_image,
+cas_collsub_sum_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type errmsg_len __attribute__ ((unused)))
@@ -617,8 +614,7 @@ nca_collsub_sum_array_r8 (gfc_array_r8 * restrict array, int *result_image,
 	  char * restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
-	  for (index_type n = 0; n < dim; n++)
-	    count[n] = 0;
+	  memset (count, 0, sizeof(index_type) * dim);
 
 	  while (dest)
 	    {

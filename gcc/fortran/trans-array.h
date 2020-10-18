@@ -24,10 +24,11 @@ bool gfc_array_allocate (gfc_se *, gfc_expr *, tree, tree, tree, tree,
 			 tree, tree *, gfc_expr *, tree, bool);
 
 enum gfc_coarray_allocation_type {
-  GFC_NCA_NORMAL_COARRAY = 3,
+  GFC_NCA_NORMAL_COARRAY = 1,
   GFC_NCA_LOCK_COARRAY,
   GFC_NCA_EVENT_COARRAY
 };
+
 int gfc_native_coarray_get_allocation_type (gfc_symbol *);
 
 void gfc_allocate_native_coarray (stmtblock_t *, tree, tree, int, int);

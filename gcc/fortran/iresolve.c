@@ -4041,20 +4041,23 @@ gfc_resolve_co_collective (gfc_code *c, const char *oper)
   gfc_expr *e;
   const char *name;
 
-  if (flag_coarray != GFC_FCOARRAY_NATIVE)
-    name = gfc_get_string (PREFIX ("caf_co_sum"));
+  if (flag_coarray != GFC_FCOARRAY_SHARED)
+    name = gfc_get_string (PREFIX ("caf_co_%s"), oper);
   else
     {
       e = c->ext.actual->expr;
       kind = e->ts.kind;
 
-      name = gfc_get_string (PREFIX ("nca_collsub_%s_%s_%c%d"), oper,
+      name = gfc_get_string (PREFIX ("cas_collsub_%s_%s_%c%d"), oper,
 			     e->rank ? "array" : "scalar",
 			     gfc_type_letter (e->ts.type), kind);
     }
 
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
+
+/* All of these are needed, since they are treated seperately in the big
+ * intrinsic table.  */
 
 /* Resolve CO_SUM.  */
 
@@ -4088,18 +4091,18 @@ gfc_resolve_co_reduce (gfc_code *c)
   gfc_expr *e;
   const char *name;
 
-  if (flag_coarray != GFC_FCOARRAY_NATIVE)
+  if (flag_coarray != GFC_FCOARRAY_SHARED)
     name = gfc_get_string (PREFIX ("caf_co_reduce"));
 
   else
     {
       e = c->ext.actual->expr;
       if (e->ts.type == BT_CHARACTER)
-	name = gfc_get_string (PREFIX ("nca_collsub_reduce_%s%c%d"),
+	name = gfc_get_string (PREFIX ("cas_collsub_reduce_%s%c%d"),
 			       e->rank ? "array" : "scalar",
 			       gfc_type_letter (e->ts.type), e->ts.kind);
       else
-	name = gfc_get_string (PREFIX ("nca_collsub_reduce_%s"),
+	name = gfc_get_string (PREFIX ("cas_collsub_reduce_%s"),
 			       e->rank ? "array" : "scalar" );
     }
 
@@ -4112,17 +4115,17 @@ gfc_resolve_co_broadcast (gfc_code * c)
   gfc_expr *e;
   const char *name;
 
-  if (flag_coarray != GFC_FCOARRAY_NATIVE)
+  if (flag_coarray != GFC_FCOARRAY_SHARED)
     name = gfc_get_string (PREFIX ("caf_co_broadcast"));
   else
     {
       e = c->ext.actual->expr;
       if (e->ts.type == BT_CHARACTER)
-	name = gfc_get_string (PREFIX ("nca_collsub_broadcast_%s%c%d"),
+	name = gfc_get_string (PREFIX ("cas_collsub_broadcast_%s%c%d"),
 			       e->rank ? "array" : "scalar",
 			       gfc_type_letter (e->ts.type), e->ts.kind);
       else
-	name = gfc_get_string (PREFIX ("nca_collsub_broadcast_%s"),
+	name = gfc_get_string (PREFIX ("cas_collsub_broadcast_%s"),
 			       e->rank ? "array" : "scalar" );
     }
 

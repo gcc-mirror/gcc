@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "shared_memory.h"
 #include "alloc.h"
-#include<pthread.h>
+#include <pthread.h>
 
 typedef struct {
   pthread_barrier_t sync_all;

@@ -895,18 +895,18 @@ extern GTY(()) tree gfor_fndecl_caf_is_present;
 
 
 /* Native coarray library function decls.  */
-extern GTY(()) tree gfor_fndecl_nca_this_image;
-extern GTY(()) tree gfor_fndecl_nca_num_images;
-extern GTY(()) tree gfor_fndecl_nca_coarray_allocate;
-extern GTY(()) tree gfor_fndecl_nca_coarray_free;
-extern GTY(()) tree gfor_fndecl_nca_sync_images;
-extern GTY(()) tree gfor_fndecl_nca_sync_all;
-extern GTY(()) tree gfor_fndecl_nca_lock;
-extern GTY(()) tree gfor_fndecl_nca_unlock;
-extern GTY(()) tree gfor_fndecl_nca_reduce_scalar;
-extern GTY(()) tree gfor_fndecl_nca_reduce_array;
-extern GTY(()) tree gfor_fndecl_nca_broadcast_scalar;
-extern GTY(()) tree gfor_fndecl_nca_broadcast_array;
+extern GTY(()) tree gfor_fndecl_cas_this_image;
+extern GTY(()) tree gfor_fndecl_cas_num_images;
+extern GTY(()) tree gfor_fndecl_cas_coarray_allocate;
+extern GTY(()) tree gfor_fndecl_cas_coarray_free;
+extern GTY(()) tree gfor_fndecl_cas_sync_images;
+extern GTY(()) tree gfor_fndecl_cas_sync_all;
+extern GTY(()) tree gfor_fndecl_cas_lock;
+extern GTY(()) tree gfor_fndecl_cas_unlock;
+extern GTY(()) tree gfor_fndecl_cas_reduce_scalar;
+extern GTY(()) tree gfor_fndecl_cas_reduce_array;
+extern GTY(()) tree gfor_fndecl_cas_broadcast_scalar;
+extern GTY(()) tree gfor_fndecl_cas_broadcast_array;
 
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */
