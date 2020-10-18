@@ -590,20 +590,6 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 	    }
 	}
     }
-  else if (axstride < aystride)
-    {
-      for (y = 0; y < ycount; y++)
-	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
-
-      for (y = 0; y < ycount; y++)
-	for (n = 0; n < count; n++)
-	  for (x = 0; x < xcount; x++)
-	    /* dest[x,y] += a[x,n] * b[n,y] */
-	    dest[x*rxstride + y*rystride] +=
-					abase[x*axstride + n*aystride] *
-					bbase[n*bxstride + y*bystride];
-    }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
       const GFC_INTEGER_16 *restrict bbase_y;
@@ -617,6 +603,20 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
 	}
+    }
+  else if (axstride < aystride)
+    {
+      for (y = 0; y < ycount; y++)
+	for (x = 0; x < xcount; x++)
+	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+
+      for (y = 0; y < ycount; y++)
+	for (n = 0; n < count; n++)
+	  for (x = 0; x < xcount; x++)
+	    /* dest[x,y] += a[x,n] * b[n,y] */
+	    dest[x*rxstride + y*rystride] +=
+					abase[x*axstride + n*aystride] *
+					bbase[n*bxstride + y*bystride];
     }
   else
     {
@@ -1158,20 +1158,6 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 	    }
 	}
     }
-  else if (axstride < aystride)
-    {
-      for (y = 0; y < ycount; y++)
-	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
-
-      for (y = 0; y < ycount; y++)
-	for (n = 0; n < count; n++)
-	  for (x = 0; x < xcount; x++)
-	    /* dest[x,y] += a[x,n] * b[n,y] */
-	    dest[x*rxstride + y*rystride] +=
-					abase[x*axstride + n*aystride] *
-					bbase[n*bxstride + y*bystride];
-    }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
       const GFC_INTEGER_16 *restrict bbase_y;
@@ -1185,6 +1171,20 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
 	}
+    }
+  else if (axstride < aystride)
+    {
+      for (y = 0; y < ycount; y++)
+	for (x = 0; x < xcount; x++)
+	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+
+      for (y = 0; y < ycount; y++)
+	for (n = 0; n < count; n++)
+	  for (x = 0; x < xcount; x++)
+	    /* dest[x,y] += a[x,n] * b[n,y] */
+	    dest[x*rxstride + y*rystride] +=
+					abase[x*axstride + n*aystride] *
+					bbase[n*bxstride + y*bystride];
     }
   else
     {
@@ -1726,20 +1726,6 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 	    }
 	}
     }
-  else if (axstride < aystride)
-    {
-      for (y = 0; y < ycount; y++)
-	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
-
-      for (y = 0; y < ycount; y++)
-	for (n = 0; n < count; n++)
-	  for (x = 0; x < xcount; x++)
-	    /* dest[x,y] += a[x,n] * b[n,y] */
-	    dest[x*rxstride + y*rystride] +=
-					abase[x*axstride + n*aystride] *
-					bbase[n*bxstride + y*bystride];
-    }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
       const GFC_INTEGER_16 *restrict bbase_y;
@@ -1753,6 +1739,20 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
 	}
+    }
+  else if (axstride < aystride)
+    {
+      for (y = 0; y < ycount; y++)
+	for (x = 0; x < xcount; x++)
+	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+
+      for (y = 0; y < ycount; y++)
+	for (n = 0; n < count; n++)
+	  for (x = 0; x < xcount; x++)
+	    /* dest[x,y] += a[x,n] * b[n,y] */
+	    dest[x*rxstride + y*rystride] +=
+					abase[x*axstride + n*aystride] *
+					bbase[n*bxstride + y*bystride];
     }
   else
     {
@@ -2308,20 +2308,6 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 	    }
 	}
     }
-  else if (axstride < aystride)
-    {
-      for (y = 0; y < ycount; y++)
-	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
-
-      for (y = 0; y < ycount; y++)
-	for (n = 0; n < count; n++)
-	  for (x = 0; x < xcount; x++)
-	    /* dest[x,y] += a[x,n] * b[n,y] */
-	    dest[x*rxstride + y*rystride] +=
-					abase[x*axstride + n*aystride] *
-					bbase[n*bxstride + y*bystride];
-    }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
       const GFC_INTEGER_16 *restrict bbase_y;
@@ -2335,6 +2321,20 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
 	}
+    }
+  else if (axstride < aystride)
+    {
+      for (y = 0; y < ycount; y++)
+	for (x = 0; x < xcount; x++)
+	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+
+      for (y = 0; y < ycount; y++)
+	for (n = 0; n < count; n++)
+	  for (x = 0; x < xcount; x++)
+	    /* dest[x,y] += a[x,n] * b[n,y] */
+	    dest[x*rxstride + y*rystride] +=
+					abase[x*axstride + n*aystride] *
+					bbase[n*bxstride + y*bystride];
     }
   else
     {
@@ -2950,20 +2950,6 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 	    }
 	}
     }
-  else if (axstride < aystride)
-    {
-      for (y = 0; y < ycount; y++)
-	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
-
-      for (y = 0; y < ycount; y++)
-	for (n = 0; n < count; n++)
-	  for (x = 0; x < xcount; x++)
-	    /* dest[x,y] += a[x,n] * b[n,y] */
-	    dest[x*rxstride + y*rystride] +=
-					abase[x*axstride + n*aystride] *
-					bbase[n*bxstride + y*bystride];
-    }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
       const GFC_INTEGER_16 *restrict bbase_y;
@@ -2977,6 +2963,20 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
 	}
+    }
+  else if (axstride < aystride)
+    {
+      for (y = 0; y < ycount; y++)
+	for (x = 0; x < xcount; x++)
+	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+
+      for (y = 0; y < ycount; y++)
+	for (n = 0; n < count; n++)
+	  for (x = 0; x < xcount; x++)
+	    /* dest[x,y] += a[x,n] * b[n,y] */
+	    dest[x*rxstride + y*rystride] +=
+					abase[x*axstride + n*aystride] *
+					bbase[n*bxstride + y*bystride];
     }
   else
     {
