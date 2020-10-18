@@ -1,5 +1,30 @@
 2020-10-17  David Edelsohn  <dje.gcc@gmail.com>
 
+	* gcc.target/powerpc/p9-dimode1.c: Remove target.
+	* gcc.target/powerpc/p9-dimode2.c: Remove target.
+	* gcc.target/powerpc/p9-fpcvt-1.c: Remove target.
+	* gcc.target/powerpc/p9-fpcvt-2.c: Require lp64.
+	* gcc.target/powerpc/p9-minmax-1.c: Remove target.
+	* gcc.target/powerpc/p9-minmax-2.c: Remove target.
+	* gcc.target/powerpc/p9-minmax-3.c: Remove target.
+	* gcc.target/powerpc/p9-splat-1.c: Require lp64.
+	* gcc.target/powerpc/p9-splat-2.c: Remove target.
+	* gcc.target/powerpc/p9-splat-3.c: Remove target.
+	* gcc.target/powerpc/p9-splat-4.c: Require lp64.
+	* gcc.target/powerpc/p9-vbpermd.c: Require lp64.
+	* gcc.target/powerpc/p9-vneg.c: Require lp64.
+	* gcc.target/powerpc/p9-vparity.c: Require lp64.
+	* gcc.target/powerpc/p9-vpermr.c: Require LE.
+	* gcc.target/powerpc/p9-xxbr-1.c: Remove target.
+	* gcc.target/powerpc/p9-xxbr-2.c: Require lp64.
+	* gcc.target/powerpc/p9-xxbr-3.c: Require lp64.
+
+2020-10-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/builtins-3-p9.c: Remove le.
+
+2020-10-17  David Edelsohn  <dje.gcc@gmail.com>
+
 	* gcc.target/powerpc/pr96139-a.c: Remove -m32.
 	* gcc.target/powerpc/pr96139-b.c: Remove -m64.
 
