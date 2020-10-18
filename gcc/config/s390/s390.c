@@ -5955,6 +5955,7 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   rtx temp;
   rtx len = gen_reg_rtx (QImode);
   rtx cond;
+  rtx mem;
 
   s390_load_address (str_addr_base_reg, XEXP (string, 0));
   emit_move_insn (str_idx_reg, const0_rtx);
@@ -5996,10 +5997,10 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   LABEL_NUSES (loop_start_label) = 1;
 
   /* Load 16 bytes of the string into VR.  */
-  emit_move_insn (str_reg,
-		  gen_rtx_MEM (V16QImode,
-			       gen_rtx_PLUS (Pmode, str_idx_reg,
-					     str_addr_base_reg)));
+  mem = gen_rtx_MEM (V16QImode,
+		     gen_rtx_PLUS (Pmode, str_idx_reg, str_addr_base_reg));
+  set_mem_align (mem, 128);
+  emit_move_insn (str_reg, mem);
   if (into_loop_label != NULL_RTX)
     {
       emit_label (into_loop_label);
