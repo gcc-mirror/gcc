@@ -2,10 +2,10 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                     A D A . N U M E R I C S . A U X                      --
+--               A D A . N U M E R I C S . A U X _ F L O A T                --
 --                                                                          --
 --                                 S p e c                                  --
---                       (C Library Version, VxWorks)                       --
+--                      (C Math Library Version, Float)                     --
 --                                                                          --
 --          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -30,68 +30,58 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Version for use on VxWorks (where we have no libm.a library), so the pragma
---  Linker_Options ("-lm") is omitted in this version.
+--  This package provides the basic computational interface for the generic
+--  elementary functions. The C library version interfaces with the routines
+--  in the C mathematical library, and is thus quite portable.
 
-package Ada.Numerics.Aux is
+with Ada.Numerics.Aux_Linker_Options;
+pragma Warnings (Off, Ada.Numerics.Aux_Linker_Options);
+
+package Ada.Numerics.Aux_Float is
    pragma Pure;
 
-   type Double is new Long_Float;
-   --  Type Double is the type used to call the C routines
+   subtype T is Float;
 
    --  We import these functions directly from C. Note that we label them
    --  all as pure functions, because indeed all of them are in fact pure.
 
-   function Sin (X : Double) return Double;
-   pragma Import (Intrinsic, Sin, "sin");
-   pragma Pure_Function (Sin);
+   function Sin (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "sinf";
 
-   function Cos (X : Double) return Double;
-   pragma Import (Intrinsic, Cos, "cos");
-   pragma Pure_Function (Cos);
+   function Cos (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "cosf";
 
-   function Tan (X : Double) return Double;
-   pragma Import (Intrinsic, Tan, "tan");
-   pragma Pure_Function (Tan);
+   function Tan (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "tanf";
 
-   function Exp (X : Double) return Double;
-   pragma Import (Intrinsic, Exp, "exp");
-   pragma Pure_Function (Exp);
+   function Exp (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "expf";
 
-   function Sqrt (X : Double) return Double;
-   pragma Import (Intrinsic, Sqrt, "sqrt");
-   pragma Pure_Function (Sqrt);
+   function Sqrt (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "sqrtf";
 
-   function Log (X : Double) return Double;
-   pragma Import (Intrinsic, Log, "log");
-   pragma Pure_Function (Log);
+   function Log (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "logf";
 
-   function Acos (X : Double) return Double;
-   pragma Import (Intrinsic, Acos, "acos");
-   pragma Pure_Function (Acos);
+   function Acos (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "acosf";
 
-   function Asin (X : Double) return Double;
-   pragma Import (Intrinsic, Asin, "asin");
-   pragma Pure_Function (Asin);
+   function Asin (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "asinf";
 
-   function Atan (X : Double) return Double;
-   pragma Import (Intrinsic, Atan, "atan");
-   pragma Pure_Function (Atan);
+   function Atan (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "atanf";
 
-   function Sinh (X : Double) return Double;
-   pragma Import (Intrinsic, Sinh, "sinh");
-   pragma Pure_Function (Sinh);
+   function Sinh (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "sinhf";
 
-   function Cosh (X : Double) return Double;
-   pragma Import (Intrinsic, Cosh, "cosh");
-   pragma Pure_Function (Cosh);
+   function Cosh (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "coshf";
 
-   function Tanh (X : Double) return Double;
-   pragma Import (Intrinsic, Tanh, "tanh");
-   pragma Pure_Function (Tanh);
+   function Tanh (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "tanhf";
 
-   function Pow (X, Y : Double) return Double;
-   pragma Import (Intrinsic, Pow, "pow");
-   pragma Pure_Function (Pow);
+   function Pow (X, Y : T) return T with
+     Import, Convention => Intrinsic, External_Name => "powf";
 
-end Ada.Numerics.Aux;
+end Ada.Numerics.Aux_Float;

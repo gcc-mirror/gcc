@@ -2,9 +2,10 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                     A D A . N U M E R I C S . A U X                      --
+--         A D A . N U M E R I C S . A U X _ S H O R T _ F L O A T          --
 --                                                                          --
 --                                 S p e c                                  --
+--                  (Short Float Wrapper in terms of Float)                 --
 --                                                                          --
 --          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -29,19 +30,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a backward-compatibility unit, for users of this internal
---  package before the introduction of Aux.Generic_Float.
+--  This package provides the basic computational interface for the
+--  generic elementary functions. The functions in this unit are
+--  wrappers for those in the Float package.
 
-with Ada.Numerics.Aux_Compat;
+with Ada.Numerics.Aux_Float;
 
-package Ada.Numerics.Aux is
+package Ada.Numerics.Aux_Short_Float is
    pragma Pure;
 
-   package Aux renames Aux_Compat;
-
-   type Double is new Aux.T;
-
-   subtype T is Double;
+   subtype T is Short_Float;
+   package Aux renames Ada.Numerics.Aux_Float;
    subtype W is Aux.T;
 
    --  Use the Aux implementation.
@@ -85,4 +84,4 @@ package Ada.Numerics.Aux is
    function Pow (X, Y : T) return T
    is (T (Aux.Pow (W (X), W (Y))));
 
-end Ada.Numerics.Aux;
+end Ada.Numerics.Aux_Short_Float;

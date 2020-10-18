@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                     A D A . N U M E R I C S . A U X                      --
+--      A D A . N U M E R I C S . A U X _ L I N K E R _ O P T I O N S       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--                     Copyright (C) 2001-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,60 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a backward-compatibility unit, for users of this internal
---  package before the introduction of Aux.Generic_Float.
+--  This package is used to provide target specific linker_options for
+--  the support of C Library Math functions as required by other
+--  children packages of Ada.Numerics.Aux.
 
-with Ada.Numerics.Aux_Compat;
+--  This is a version for default use that links with -lm. An
+--  alternate __nolibm version is to be used where no additional
+--  libraries are required.
 
-package Ada.Numerics.Aux is
+--  This package should not be directly with'ed by an application program
+
+package Ada.Numerics.Aux_Linker_Options is
    pragma Pure;
-
-   package Aux renames Aux_Compat;
-
-   type Double is new Aux.T;
-
-   subtype T is Double;
-   subtype W is Aux.T;
-
-   --  Use the Aux implementation.
-
-   function Sin (X : T) return T
-   is (T (Aux.Sin (W (X))));
-
-   function Cos (X : T) return T
-   is (T (Aux.Cos (W (X))));
-
-   function Tan (X : T) return T
-   is (T (Aux.Tan (W (X))));
-
-   function Exp (X : T) return T
-   is (T (Aux.Exp (W (X))));
-
-   function Sqrt (X : T) return T
-   is (T (Aux.Sqrt (W (X))));
-
-   function Log (X : T) return T
-   is (T (Aux.Log (W (X))));
-
-   function Acos (X : T) return T
-   is (T (Aux.Acos (W (X))));
-
-   function Asin (X : T) return T
-   is (T (Aux.Asin (W (X))));
-
-   function Atan (X : T) return T
-   is (T (Aux.Atan (W (X))));
-
-   function Sinh (X : T) return T
-   is (T (Aux.Sinh (W (X))));
-
-   function Cosh (X : T) return T
-   is (T (Aux.Cosh (W (X))));
-
-   function Tanh (X : T) return T
-   is (T (Aux.Tanh (W (X))));
-
-   function Pow (X, Y : T) return T
-   is (T (Aux.Pow (W (X), W (Y))));
-
-end Ada.Numerics.Aux;
+   pragma Linker_Options ("-lm");
+end Ada.Numerics.Aux_Linker_Options;

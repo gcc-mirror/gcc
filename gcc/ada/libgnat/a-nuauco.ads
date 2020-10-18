@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                     A D A . N U M E R I C S . A U X                      --
+--              A D A . N U M E R I C S . A U X _ C O M P A T               --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--                     Copyright (C) 2001-2020, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,4 +29,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma No_Body;
+--  This package is used to provide the default type for the
+--  backward-compatibility Ada.Numerics.Aux interface.  This is
+--  Long_Float for most platforms, but there is an alternate version
+--  for x86 and x86_64 that uses the Long_Long_Float type.
+
+--  This package should not be directly with'ed by an application program
+
+with Ada.Numerics.Aux_Long_Float;
+package Ada.Numerics.Aux_Compat renames Ada.Numerics.Aux_Long_Float;

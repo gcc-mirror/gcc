@@ -36,13 +36,13 @@
 --  Uses functions sqrt, exp, log, pow, sin, asin, cos, acos, tan, atan, sinh,
 --  cosh, tanh from C library via math.h
 
-with Ada.Numerics.Aux;
+with Ada.Numerics.Aux_Generic_Float;
 
 package body Ada.Numerics.Generic_Elementary_Functions with
   SPARK_Mode => Off
 is
 
-   use type Ada.Numerics.Aux.Double;
+   package Aux is new Ada.Numerics.Aux_Generic_Float (Float_Type);
 
    Sqrt_Two : constant := 1.41421_35623_73095_04880_16887_24209_69807_85696;
    Log_Two  : constant := 0.69314_71805_59945_30941_72321_21458_17656_80755;
@@ -50,7 +50,6 @@ is
    Half_Log_Two : constant := Log_Two / 2;
 
    subtype T is Float_Type'Base;
-   subtype Double is Aux.Double;
 
    Two_Pi  : constant T := 2.0 * Pi;
    Half_Pi : constant T := Pi / 2.0;
@@ -150,8 +149,7 @@ is
                      Rest := Rest - 0.25;
                   end if;
 
-                  Result := Result *
-                    Float_Type'Base (Aux.Pow (Double (Left), Double (Rest)));
+                  Result := Result * Aux.Pow (Left, Rest);
 
                   if Right >= 0.0 then
                      return Result;
@@ -159,8 +157,7 @@ is
                      return (1.0 / Result);
                   end if;
                else
-                  return
-                    Float_Type'Base (Aux.Pow (Double (Left), Double (Right)));
+                  return Aux.Pow (Left, Right);
                end if;
             end if;
 
@@ -194,7 +191,7 @@ is
          return Pi;
       end if;
 
-      Temp := Float_Type'Base (Aux.Acos (Double (X)));
+      Temp := Aux.Acos (X);
 
       if Temp < 0.0 then
          Temp := Pi + Temp;
@@ -332,7 +329,7 @@ is
          return -(Pi / 2.0);
       end if;
 
-      return Float_Type'Base (Aux.Asin (Double (X)));
+      return Aux.Asin (X);
    end Arcsin;
 
    --  Arbitrary cycle
@@ -515,7 +512,7 @@ is
          return 1.0;
       end if;
 
-      return Float_Type'Base (Aux.Cos (Double (X)));
+      return Aux.Cos (X);
    end Cos;
 
    --  Arbitrary cycle
@@ -568,7 +565,7 @@ is
          return 1.0 / X;
       end if;
 
-      return 1.0 / Float_Type'Base (Aux.Tan (Double (X)));
+      return 1.0 / Aux.Tan (X);
    end Cot;
 
    --  Arbitrary cycle
@@ -617,7 +614,7 @@ is
          return 1.0 / X;
       end if;
 
-      return 1.0 / Float_Type'Base (Aux.Tanh (Double (X)));
+      return 1.0 / Aux.Tanh (X);
    end Coth;
 
    ---------
@@ -632,7 +629,7 @@ is
          return 1.0;
       end if;
 
-      Result := Float_Type'Base (Aux.Exp (Double (X)));
+      Result := Aux.Exp (X);
 
       --  Deal with case of Exp returning IEEE infinity. If Machine_Overflows
       --  is False, then we can just leave it as an infinity (and indeed we
@@ -716,7 +713,7 @@ is
       Raw_Atan :=
         (if Z < Sqrt_Epsilon then Z
          elsif Z = 1.0 then Pi / 4.0
-         else Float_Type'Base (Aux.Atan (Double (Z))));
+         else Aux.Atan (Z));
 
       if abs Y > abs X then
          Raw_Atan := Half_Pi - Raw_Atan;
@@ -747,7 +744,7 @@ is
          return 0.0;
       end if;
 
-      return Float_Type'Base (Aux.Log (Double (X)));
+      return Aux.Log (X);
    end Log;
 
    --  Arbitrary base
@@ -767,7 +764,7 @@ is
          return 0.0;
       end if;
 
-      return Float_Type'Base (Aux.Log (Double (X)) / Aux.Log (Double (Base)));
+      return Aux.Log (X) / Aux.Log (Base);
    end Log;
 
    ---------
@@ -782,7 +779,7 @@ is
          return X;
       end if;
 
-      return Float_Type'Base (Aux.Sin (Double (X)));
+      return Aux.Sin (X);
    end Sin;
 
    --  Arbitrary cycle
@@ -816,7 +813,7 @@ is
       --  Could test for 12.0 * abs T = Cycle, and return an exact value in
       --  those cases. It is not clear this is worth the extra test though.
 
-      return Float_Type'Base (Aux.Sin (Double (T / Cycle * Two_Pi)));
+      return Aux.Sin (T / Cycle * Two_Pi);
    end Sin;
 
    ----------
@@ -899,7 +896,7 @@ is
          return X;
       end if;
 
-      return Float_Type'Base (Aux.Sqrt (Double (X)));
+      return Aux.Sqrt (X);
    end Sqrt;
 
    ---------
@@ -919,7 +916,7 @@ is
       --  with, it is impossible for X to be exactly pi/2, and the result is
       --  always in range.
 
-      return Float_Type'Base (Aux.Tan (Double (X)));
+      return Aux.Tan (X);
    end Tan;
 
    --  Arbitrary cycle
@@ -992,7 +989,7 @@ is
          return X + X * R;
 
       else
-         return Float_Type'Base (Aux.Tanh (Double (X)));
+         return Aux.Tanh (X);
       end if;
    end Tanh;
 

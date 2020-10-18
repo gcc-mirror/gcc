@@ -234,6 +234,13 @@ GNATRTL_NONTASKING_OBJS= \
   a-nudira$(objext) \
   a-nuelfu$(objext) \
   a-nuflra$(objext) \
+  a-nagefl$(objext) \
+  a-nallfl$(objext) \
+  a-nalofl$(objext) \
+  a-nuaufl$(objext) \
+  a-nashfl$(objext) \
+  a-nuauco$(objext) \
+  a-naliop$(objext) \
   a-numaux$(objext) \
   a-numeri$(objext) \
   a-nurear$(objext) \
@@ -834,13 +841,11 @@ ATOMICS_BUILTINS_TARGET_PAIRS = \
 # Special version of units for x86 and x86-64 platforms.
 
 X86_TARGET_PAIRS = \
-  a-numaux.ads<libgnat/a-numaux__libc-x86.ads \
-  a-numaux.adb<libgnat/a-numaux__dummy.adb \
+  a-nuauco.ads<libgnat/a-nuauco__x86.ads \
   s-atocou.adb<libgnat/s-atocou__x86.adb
 
 X86_64_TARGET_PAIRS = \
-  a-numaux.ads<libgnat/a-numaux__libc-x86.ads \
-  a-numaux.adb<libgnat/a-numaux__dummy.adb \
+  a-nuauco.ads<libgnat/a-nuauco__x86.ads \
   s-atocou.adb<libgnat/s-atocou__builtin.adb
 
 # Implementation of symbolic traceback based on dwarf
@@ -916,7 +921,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
-  a-numaux.ads<libgnat/a-numaux__vxworks.ads \
+  a-naliop.ads<libgnat/a-naliop__nolibm.ads \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
@@ -1039,7 +1044,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae vxworksaespe,$(target_cpu) $(t
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<libgnat/a-elchha__vxworks-ppc-full.adb \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
-  a-numaux.ads<libgnat/a-numaux__vxworks.ads \
+  a-naliop.ads<libgnat/a-naliop__nolibm.ads \
   g-io.adb<hie/g-io__vxworks-cert.adb \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
@@ -1095,7 +1100,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(ta
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<libgnat/a-elchha__vxworks-ppc-full.adb \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
-  a-numaux.ads<libgnat/a-numaux__vxworks.ads \
+  a-naliop.ads<libgnat/a-naliop__nolibm.ads \
   g-io.adb<hie/g-io__vxworks-cert.adb \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
@@ -1314,7 +1319,7 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
-  a-numaux.ads<libgnat/a-numaux__vxworks.ads \
+  a-naliop.ads<libgnat/a-naliop__nolibm.ads \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
@@ -1648,8 +1653,6 @@ endif
 ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
-  a-numaux.ads<libgnat/a-numaux__libc-x86.ads \
-  a-numaux.adb<libgnat/a-numaux__dummy.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
@@ -2302,7 +2305,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
-  a-numaux.ads<libgnat/a-numaux__libc-x86.ads \
+  a-nuauco.ads<libgnat/a-nuauco__x86.ads \
   a-synbar.adb<libgnarl/a-synbar__posix.adb \
   a-synbar.ads<libgnarl/a-synbar__posix.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -2550,8 +2553,6 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<libgnarl/s-intman__posix.adb \
       s-osprim.adb<libgnat/s-osprim__posix.adb \
-      a-numaux.ads<libgnat/a-numaux__darwin.ads \
-      a-numaux.adb<libgnat/a-numaux__darwin.adb \
       $(ATOMICS_TARGET_PAIRS) \
       $(ATOMICS_BUILTINS_TARGET_PAIRS) \
       system.ads<libgnat/system-darwin-ppc.ads
