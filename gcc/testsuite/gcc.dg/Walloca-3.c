@@ -13,7 +13,7 @@ g1 (__SIZE_TYPE__ n)
 {
   void *p;
   if (n < LIMIT)
-    p = __builtin_alloca (n); // { dg-warning "'alloca' bound is unknown" }
+    p = __builtin_alloca (n); // { dg-warning "may be too large" }
   else
     p = __builtin_malloc (n);
   f (p);
@@ -27,7 +27,7 @@ g2 (unsigned short n)
 {
   void *p;
   if (n < SHORT_LIMIT)
-    p = __builtin_alloca (n); // { dg-warning "'alloca' bound is unknown" }
+    p = __builtin_alloca (n); // { dg-warning "may be too large" }
   else
     p = __builtin_malloc (n);
   f (p);
