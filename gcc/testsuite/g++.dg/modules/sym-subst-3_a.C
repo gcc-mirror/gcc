@@ -6,4 +6,4 @@ struct s;
 
 export s *S;
 
-// { dg-final { scan-assembler {.globl[ \t]*_?S\n} } }
+// { dg-final { scan-assembler {.globa?l[ \t]*_?S\n} } }

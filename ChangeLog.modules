@@ -1,5 +1,8 @@
 2020-10-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/sym-subst-3_a.C: Some assemblers say .global.
+
 	gcc/cp/
 	* module.cc (module_state::write_macro_locs): Macro loc count is a
 	count.
