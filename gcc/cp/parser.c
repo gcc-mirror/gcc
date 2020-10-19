@@ -23794,13 +23794,10 @@ cp_parser_class_name (cp_parser *parser,
 		      bool enum_ok)
 {
   tree decl;
-  tree scope;
-  bool typename_p;
-  cp_token *token;
   tree identifier = NULL_TREE;
 
   /* All class-names start with an identifier.  */
-  token = cp_lexer_peek_token (parser->lexer);
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
   if (token->type != CPP_NAME && token->type != CPP_TEMPLATE_ID)
     {
       cp_parser_error (parser, "expected class-name");
@@ -23816,14 +23813,16 @@ cp_parser_class_name (cp_parser *parser,
 
       where we first want to look up A<T>::a in the class of the object
       expression, as per [basic.lookup.classref].  */
-  scope = parser->scope ? parser->scope : parser->context->object_type;
+  tree scope = parser->scope ? parser->scope : parser->context->object_type;
   if (scope == error_mark_node)
     return error_mark_node;
 
   /* Any name names a type if we're following the `typename' keyword
      in a qualified name where the enclosing scope is type-dependent.  */
-  typename_p = (typename_keyword_p && scope && TYPE_P (scope)
-		&& dependent_type_p (scope));
+  const bool typename_p = (typename_keyword_p
+			   && parser->scope
+			   && TYPE_P (parser->scope)
+			   && dependent_type_p (parser->scope));
   /* Handle the common case (an identifier, but not a template-id)
      efficiently.  */
   if (token->type == CPP_NAME
