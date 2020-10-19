@@ -392,8 +392,14 @@ gimple_ranger::calc_stmt (irange &r, gimple *s, tree name)
     {
       if (r.undefined_p ())
 	return true;
+      // We sometimes get compatible types copied from operands, make sure
+      // the correct type is being returned.
       if (name && TREE_TYPE (name) != r.type ())
-	range_cast (r, TREE_TYPE (name));
+	{
+	  gcc_checking_assert (range_compatible_p (r.type (),
+						   TREE_TYPE (name)));
+	  range_cast (r, TREE_TYPE (name));
+	}
       return true;
     }
   return false;
@@ -928,7 +934,7 @@ gimple_ranger::range_on_exit (irange &r, basic_block bb, tree name)
   else
     gcc_assert (range_of_expr (r, name, s));
   gcc_checking_assert (r.undefined_p ()
-		       || types_compatible_p (r.type(), TREE_TYPE (name)));
+		       || range_compatible_p (r.type (), TREE_TYPE (name)));
 }
 
 // Calculate a range for NAME on edge E and return it in R.
@@ -948,7 +954,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
 
   range_on_exit (r, e->src, name);
   gcc_checking_assert  (r.undefined_p ()
-			|| types_compatible_p (r.type(), TREE_TYPE (name)));
+			|| range_compatible_p (r.type(), TREE_TYPE (name)));
 
   // Check to see if NAME is defined on edge e.
   if (m_cache.outgoing_edge_range_p (edge_range, e, name))

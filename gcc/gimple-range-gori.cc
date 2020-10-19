@@ -552,7 +552,7 @@ is_gimple_logical_p (const gimple *gs)
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	  // Bitwise operations on single bits are logical too.
-	  if (types_compatible_p (TREE_TYPE (gimple_assign_rhs1 (gs)),
+	  if (range_compatible_p (TREE_TYPE (gimple_assign_rhs1 (gs)),
 				  boolean_type_node))
 	    return true;
 	  break;
@@ -618,7 +618,7 @@ range_is_either_true_or_false (const irange &r)
   // This is complicated by the fact that Ada has multi-bit booleans,
   // so true can be ~[0, 0] (i.e. [1,MAX]).
   tree type = r.type ();
-  gcc_checking_assert (types_compatible_p (type, boolean_type_node));
+  gcc_checking_assert (range_compatible_p (type, boolean_type_node));
   return (r.singleton_p () || !r.contains_p (build_zero_cst (type)));
 }
 
@@ -999,11 +999,20 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name)
 
   // If NAME can be calculated on the edge, use that.
   if (m_gori_map->is_export_p (name, e->src))
-    return compute_operand_range (r, stmt, lhs, name);
-
-  // Otherwise see if NAME is derived from something that can be
-  // calculated.  This performs no dynamic lookups whatsover, so it is
-  // low cost.
+    {
+      if (compute_operand_range (r, stmt, lhs, name))
+	{
+	  // Sometimes compatible types get interchanged. See PR97360.
+	  // Make sure we are returning the type of the thing we asked for.
+	  if (!r.undefined_p () && r.type () != TREE_TYPE (name))
+	    {
+	      gcc_checking_assert (range_compatible_p (r.type (),
+						       TREE_TYPE (name)));
+	      range_cast (r, TREE_TYPE (name));
+	    }
+	  return true;
+	}
+    }
   return false;
 }
 
@@ -1156,7 +1165,7 @@ bool
 logical_stmt_cache::cacheable_p (gimple *stmt, const irange *lhs_range) const
 {
   if (gimple_code (stmt) == GIMPLE_ASSIGN
-      && types_compatible_p (TREE_TYPE (gimple_assign_lhs (stmt)),
+      && range_compatible_p (TREE_TYPE (gimple_assign_lhs (stmt)),
 			     boolean_type_node)
       && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
     {
