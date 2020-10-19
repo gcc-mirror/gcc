@@ -245,7 +245,12 @@ Classes used:
 #define MAPPED_READING 0
 #define MAPPED_WRITING 0
 #endif
-
+#if 0 // for testing
+#undef MAPPED_READING
+#undef MAPPED_WRITING
+#define MAPPED_READING 0
+#define MAPPED_WRITING 0
+#endif
 static inline cpp_hashnode *cpp_node (tree id)
 {
   return CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (id));
@@ -1299,7 +1304,7 @@ public:
   bool defrost (const char *);
 
   /* If BYTES is in the mmapped area, allocate a new buffer for it.  */
-  void preserve (bytes_in &bytes)
+  void preserve (bytes_in &bytes ATTRIBUTE_UNUSED)
   {
 #if MAPPED_READING
     if (hdr.buffer && bytes.buffer >= hdr.buffer
@@ -1313,7 +1318,7 @@ public:
   }
   /* If BYTES is not in SELF's mmapped area, free it.  SELF might be
      NULL. */
-  static void release (elf_in *self, bytes_in &bytes)
+  static void release (elf_in *self ATTRIBUTE_UNUSED, bytes_in &bytes)
   {
 #if MAPPED_READING
     if (!(self && self->hdr.buffer && bytes.buffer >= self->hdr.buffer
@@ -1867,24 +1872,10 @@ elf_out::remove_mapping ()
 char *
 elf_out::grow (char *data, unsigned needed)
 {
-  if (!hdr.buffer)
-    return NULL;
-
   if (!data)
     {
-      /* First allocation, align to SECTION_ALIGN now.  */
-      if (unsigned padding = pos & (SECTION_ALIGN - 1))
-	{
-	  padding = SECTION_ALIGN - padding;
-#if !MAPPED_WRITING
-	  /* Align the section on disk, should help the necessary copies.
-	     fseeking to extend is non-portable.  */
-	  static char zero[SECTION_ALIGN];
-	  if (::write (fd, &zero, padding) != padding)
-	    set_error (errno);
-#endif
-	  pos += padding;
-	}
+      /* First allocation, check we're aligned.  */
+      gcc_checking_assert (!(pos & (SECTION_ALIGN - 1)));
 #if MAPPED_WRITING
       data = hdr.buffer + (pos - offset);
 #endif
@@ -2054,6 +2045,18 @@ elf_out::write (const data &buffer)
 #endif
   unsigned res = pos;
   pos += buffer.pos;
+
+  if (unsigned padding = -pos & (SECTION_ALIGN - 1))
+    {
+#if !MAPPED_WRITING
+      /* Align the section on disk, should help the necessary copies.
+	 fseeking to extend is non-portable.  */
+      static char zero[SECTION_ALIGN];
+      if (::write (fd, &zero, padding) != padding)
+	set_error (errno);
+#endif
+      pos += padding;
+    }
   return res;
 }
 
@@ -2069,6 +2072,10 @@ elf_out::write (const bytes_out &buf)
 		       && buf.buffer - hdr.buffer + buf.size <= extent);
   unsigned res = pos;
   pos += buf.pos;
+
+  /* Align up.  We're not going to advance into the next page. */
+  pos += -pos & (SECTION_ALIGN - 1);
+
   return res;
 }
 #endif
