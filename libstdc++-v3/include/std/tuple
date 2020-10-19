@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr const _Head&
       _M_head(const _Head_base& __b) noexcept { return __b._M_head_impl; }
 
-      [[no_unique_address]] _Head _M_head_impl;
+      [[__no_unique_address__]] _Head _M_head_impl;
     };
 #else
   template<size_t _Idx, typename _Head>
