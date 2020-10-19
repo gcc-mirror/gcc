@@ -1579,6 +1579,11 @@ operator_lshift::op1_range (irange &r,
       wide_int shift = wi::to_wide (shift_amount);
       if (wi::lt_p (shift, 0, SIGNED))
 	return false;
+      if (shift == 0)
+	{
+	  r = lhs;
+	  return true;
+	}
 
       // Work completely in unsigned mode to start.
       tree utype = type;
