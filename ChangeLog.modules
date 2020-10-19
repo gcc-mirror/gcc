@@ -1,3 +1,12 @@
+2020-10-19  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::write_macro_locs): Macro loc count is a
+	count.
+	(module_state::read_prepare_maps): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/macloc-2_[ab].[HC]: New.
+
 2020-10-16  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk ccb4f20cbee

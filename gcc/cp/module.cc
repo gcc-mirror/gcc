@@ -15689,7 +15689,7 @@ module_state::read_prepare_maps (const module_state_config *cfg)
   ordinary += cfg->ordinary_locs;
 
   location_t macro = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
-  macro += cfg->macro_locs;
+  macro -= cfg->macro_locs;
 
   if (ordinary < LINE_MAP_MAX_LOCATION_WITH_COLS
       && macro >= LINE_MAP_MAX_LOCATION)
@@ -15943,7 +15943,7 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
   sec.u (offset);
   gcc_assert (macro_num == info.num_maps.second);
 
-  cfg->macro_locs = offset;
+  cfg->macro_locs = MAX_LOCATION_T + 1 - offset;
 
   sec.end (to, to->name (MOD_SNAME_PFX ".mlm"), crc_p);
   dump.outdent ();
