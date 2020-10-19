@@ -35,6 +35,8 @@ with Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 package body Ada.Strings.Text_Output.Buffers is
 
+   type Chunk_Access is access all Chunk;
+
    function New_Buffer
      (Indent_Amount : Natural := Default_Indent_Amount;
       Chunk_Length : Positive := Default_Chunk_Length) return Buffer
@@ -46,13 +48,20 @@ package body Ada.Strings.Text_Output.Buffers is
       end return;
    end New_Buffer;
 
+   --  We need type conversions of Chunk_Access values in the following two
+   --  procedures, because the one in Text_Output has Storage_Size => 0,
+   --  because Text_Output is Pure. We do not run afoul of 13.11.2(16/3),
+   --  which requires the allocation and deallocation to have the same pool,
+   --  because the allocation in Full_Method and the deallocation in Destroy
+   --  use the same access type, and therefore the same pool.
+
    procedure Destroy (S : in out Buffer) is
       procedure Free is new Unchecked_Deallocation (Chunk, Chunk_Access);
-      Cur : Chunk_Access := S.Initial_Chunk.Next;
+      Cur : Chunk_Access := Chunk_Access (S.Initial_Chunk.Next);
    begin
       while Cur /= null loop
          declare
-            Temp : constant Chunk_Access := Cur.Next;
+            Temp : constant Chunk_Access := Chunk_Access (Cur.Next);
          begin
             Free (Cur);
             Cur := Temp;
@@ -66,7 +75,8 @@ package body Ada.Strings.Text_Output.Buffers is
    begin
       pragma Assert (S.Cur_Chunk.Next = null);
       pragma Assert (S.Last = S.Cur_Chunk.Chars'Length);
-      S.Cur_Chunk.Next := new Chunk (S.Chunk_Length);
+      S.Cur_Chunk.Next :=
+        Text_Output.Chunk_Access (Chunk_Access'(new Chunk (S.Chunk_Length)));
       S.Cur_Chunk := S.Cur_Chunk.Next;
       S.Num_Extra_Chunks := @ + 1;
       S.Last := 0;

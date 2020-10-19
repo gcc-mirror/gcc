@@ -575,12 +575,16 @@ package body Sem_Disp is
             --  Similarly, if this is a pre/postcondition for an abstract
             --  subprogram, it may call another abstract function which is
             --  a primitive of an abstract type. The call is non-dispatching
-            --  but will be legal in overridings of the operation.
+            --  but will be legal in overridings of the operation. However,
+            --  if the call is tag-indeterminate we want to continue with
+            --  with the error checking below, as this case is illegal even
+            --  for abstract subprograms (see AI12-0170).
 
             elsif (Is_Subprogram (Scop)
                     or else Chars (Scop) = Name_Postcondition)
               and then
-                (Is_Abstract_Subprogram (Scop)
+                ((Is_Abstract_Subprogram (Scop)
+                   and then not Is_Tag_Indeterminate (N))
                   or else
                     (Nkind (Parent (Scop)) = N_Procedure_Specification
                       and then Null_Present (Parent (Scop))))

@@ -2,10 +2,10 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                     A D A . N U M E R I C S . A U X                      --
+--          A D A . N U M E R I C S . A U X _ L O N G _ F L O A T           --
 --                                                                          --
 --                                 S p e c                                  --
---                          (Apple OS X Version)                            --
+--                     (C Math Library Version, Long Float)                 --
 --                                                                          --
 --          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -30,74 +30,58 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version is for use on OS X. It uses the normal Unix math functions,
---  except for sine/cosine which have been implemented directly in Ada to get
---  the required accuracy.
+--  This package provides the basic computational interface for the generic
+--  elementary functions. The C library version interfaces with the routines
+--  in the C mathematical library, and is thus quite portable.
 
-package Ada.Numerics.Aux is
+with Ada.Numerics.Aux_Linker_Options;
+pragma Warnings (Off, Ada.Numerics.Aux_Linker_Options);
+
+package Ada.Numerics.Aux_Long_Float is
    pragma Pure;
 
-   pragma Linker_Options ("-lm");
-
-   type Double is new Long_Float;
-   --  Type Double is the type used to call the C routines
-
-   --  The following functions have been implemented in Ada, since
-   --  the OS X math library didn't meet accuracy requirements for
-   --  argument reduction. The implementation here has been tailored
-   --  to match Ada strict mode Numerics requirements while maintaining
-   --  maximum efficiency.
-   function Sin (X : Double) return Double;
-   pragma Inline (Sin);
-
-   function Cos (X : Double) return Double;
-   pragma Inline (Cos);
+   subtype T is Long_Float;
 
    --  We import these functions directly from C. Note that we label them
    --  all as pure functions, because indeed all of them are in fact pure.
 
-   function Tan (X : Double) return Double;
-   pragma Import (Intrinsic, Tan, "tan");
-   pragma Pure_Function (Tan);
+   function Sin (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "sin";
 
-   function Exp (X : Double) return Double;
-   pragma Import (Intrinsic, Exp, "exp");
-   pragma Pure_Function (Exp);
+   function Cos (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "cos";
 
-   function Sqrt (X : Double) return Double;
-   pragma Import (Intrinsic, Sqrt, "sqrt");
-   pragma Pure_Function (Sqrt);
+   function Tan (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "tan";
 
-   function Log (X : Double) return Double;
-   pragma Import (Intrinsic, Log, "log");
-   pragma Pure_Function (Log);
+   function Exp (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "exp";
 
-   function Acos (X : Double) return Double;
-   pragma Import (Intrinsic, Acos, "acos");
-   pragma Pure_Function (Acos);
+   function Sqrt (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "sqrt";
 
-   function Asin (X : Double) return Double;
-   pragma Import (Intrinsic, Asin, "asin");
-   pragma Pure_Function (Asin);
+   function Log (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "log";
 
-   function Atan (X : Double) return Double;
-   pragma Import (Intrinsic, Atan, "atan");
-   pragma Pure_Function (Atan);
+   function Acos (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "acos";
 
-   function Sinh (X : Double) return Double;
-   pragma Import (Intrinsic, Sinh, "sinh");
-   pragma Pure_Function (Sinh);
+   function Asin (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "asin";
 
-   function Cosh (X : Double) return Double;
-   pragma Import (Intrinsic, Cosh, "cosh");
-   pragma Pure_Function (Cosh);
+   function Atan (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "atan";
 
-   function Tanh (X : Double) return Double;
-   pragma Import (Intrinsic, Tanh, "tanh");
-   pragma Pure_Function (Tanh);
+   function Sinh (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "sinh";
 
-   function Pow (X, Y : Double) return Double;
-   pragma Import (Intrinsic, Pow, "pow");
-   pragma Pure_Function (Pow);
+   function Cosh (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "cosh";
 
-end Ada.Numerics.Aux;
+   function Tanh (X : T) return T with
+     Import, Convention => Intrinsic, External_Name => "tanh";
+
+   function Pow (X, Y : T) return T with
+     Import, Convention => Intrinsic, External_Name => "pow";
+
+end Ada.Numerics.Aux_Long_Float;

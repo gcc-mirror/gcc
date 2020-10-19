@@ -1391,11 +1391,14 @@ package body Ch4 is
          return Maybe;
       end Is_Quantified_Expression;
 
+      Start_Token : constant Token_Type := Token;
+      --  Used to prevent mismatches (...] and [...)
+
    --  Start of processing for P_Aggregate_Or_Paren_Expr
 
    begin
       Lparen_Sloc := Token_Ptr;
-      if Token = Tok_Left_Bracket and then Ada_Version >= Ada_2020 then
+      if Token = Tok_Left_Bracket then
          Scan;
 
          --  Special case for null aggregate in Ada 2020
@@ -1604,8 +1607,11 @@ package body Ch4 is
          --  identifier or OTHERS follows (the latter cases are missing
          --  comma cases). Also assume positional if a semicolon follows,
          --  which can happen if there are missing parens.
+         --  In Ada_2012 and Ada_2020 an iterated association can appear.
 
-         elsif Nkind (Expr_Node) = N_Iterated_Component_Association then
+         elsif Nkind (Expr_Node) in
+           N_Iterated_Component_Association | N_Iterated_Element_Association
+         then
             if No (Assoc_List) then
                Assoc_List := New_List (Expr_Node);
             else
@@ -1697,23 +1703,26 @@ package body Ch4 is
          end if;
       end loop;
 
-      --  All component associations (positional and named) have been scanned
+      --  All component associations (positional and named) have been scanned.
+      --  Scan ] or ) based on Start_Token.
 
-      if Token = Tok_Right_Bracket and then Ada_Version >= Ada_2020 then
-         Set_Component_Associations (Aggregate_Node, Assoc_List);
-         Set_Is_Homogeneous_Aggregate (Aggregate_Node);
-         Scan;  --  past right bracket
+      case Start_Token is
+         when Tok_Left_Bracket =>
+            Set_Component_Associations (Aggregate_Node, Assoc_List);
+            Set_Is_Homogeneous_Aggregate (Aggregate_Node);
+            T_Right_Bracket;
 
-         if Token = Tok_Apostrophe then
-            Scan;
+            if Token = Tok_Apostrophe then
+               Scan;
 
-            if Token = Tok_Identifier then
-               return P_Reduction_Attribute_Reference (Aggregate_Node);
+               if Token = Tok_Identifier then
+                  return P_Reduction_Attribute_Reference (Aggregate_Node);
+               end if;
             end if;
-         end if;
-      else
-         T_Right_Paren;
-      end if;
+         when Tok_Left_Paren =>
+            T_Right_Paren;
+         when others => raise Program_Error;
+      end case;
 
       if Nkind (Aggregate_Node) /= N_Delta_Aggregate then
          Set_Expressions (Aggregate_Node, Expr_List);
@@ -3411,6 +3420,7 @@ package body Ch4 is
 
    function P_Iterated_Component_Association return Node_Id is
       Assoc_Node : Node_Id;
+      Choice     : Node_Id;
       Id         : Node_Id;
       Iter_Spec  : Node_Id;
       Loop_Spec  : Node_Id;
@@ -3445,15 +3455,25 @@ package body Ch4 is
 
          if Token = Tok_Use then
 
-            --  Key-expression is present, rewrite node as an
+            --  Ada_2020 Key-expression is present, rewrite node as an
             --  iterated_Element_Awwoiation.
 
             Scan;  --  past USE
             Loop_Spec :=
               New_Node (N_Loop_Parameter_Specification, Prev_Token_Ptr);
             Set_Defining_Identifier (Loop_Spec, Id);
-            Set_Discrete_Subtype_Definition (Loop_Spec,
-               First (Discrete_Choices (Assoc_Node)));
+
+            Choice :=  First (Discrete_Choices (Assoc_Node));
+
+            if Present (Next (Choice)) then
+               Error_Msg_N ("expect loop parameter specification", Choice);
+            end if;
+
+            Remove (Choice);
+            Set_Discrete_Subtype_Definition (Loop_Spec, Choice);
+
+            Assoc_Node :=
+              New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
             Set_Loop_Parameter_Specification (Assoc_Node, Loop_Spec);
             Set_Key_Expression (Assoc_Node, P_Expression);
          end if;

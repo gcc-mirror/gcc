@@ -179,6 +179,10 @@ package Rtsfind is
       Interfaces_C,
       Interfaces_Packed_Decimal,
 
+      --  Children of Interfaces.C
+
+      Interfaces_C_Strings,
+
       --  Package System
 
       System,
@@ -628,8 +632,12 @@ package Rtsfind is
 
      RE_Stream_T,                        -- CUDA.Driver_Types
 
+     RE_Fatbin_Wrapper,                  -- CUDA.Internal
      RE_Push_Call_Configuration,         -- CUDA.Internal
      RE_Pop_Call_Configuration,          -- CUDA.Internal
+     RE_Register_Fat_Binary,             -- CUDA.Internal
+     RE_Register_Fat_Binary_End,         -- CUDA.Internal
+     RE_Register_Function,               -- CUDA.Internal
 
      RE_Launch_Kernel,                   -- CUDA.Runtime_Api
 
@@ -646,6 +654,9 @@ package Rtsfind is
 
      RO_IC_Unsigned,                     -- Interfaces.C
      RO_IC_Unsigned_Long_Long,           -- Interfaces.C
+
+     RE_Chars_Ptr,                       -- Interfaces.C.Strings
+     RE_New_Char_Array,                  -- Interfaces.C.Strings
 
      RE_Address,                         -- System
      RE_Any_Priority,                    -- System
@@ -1927,8 +1938,12 @@ package Rtsfind is
 
      RE_Stream_T                         => CUDA_Driver_Types,
 
+     RE_Fatbin_Wrapper                   => CUDA_Internal,
      RE_Push_Call_Configuration          => CUDA_Internal,
      RE_Pop_Call_Configuration           => CUDA_Internal,
+     RE_Register_Fat_Binary              => CUDA_Internal,
+     RE_Register_Fat_Binary_End          => CUDA_Internal,
+     RE_Register_Function                => CUDA_Internal,
 
      RE_Launch_Kernel                    => CUDA_Runtime_Api,
 
@@ -1945,6 +1960,9 @@ package Rtsfind is
 
      RO_IC_Unsigned                      => Interfaces_C,
      RO_IC_Unsigned_Long_Long            => Interfaces_C,
+
+     RE_Chars_Ptr                        => Interfaces_C_Strings,
+     RE_New_Char_Array                   => Interfaces_C_Strings,
 
      RE_Address                          => System,
      RE_Any_Priority                     => System,

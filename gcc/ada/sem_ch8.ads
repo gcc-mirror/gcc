@@ -82,11 +82,7 @@ package Sem_Ch8 is
    --  Subsidiaries of End_Use_Clauses. Also called directly for use clauses
    --  appearing in context clauses.
 
-   procedure Find_Direct_Name
-     (N            : Node_Id;
-      Errors_OK    : Boolean := True;
-      Marker_OK    : Boolean := True;
-      Reference_OK : Boolean := True);
+   procedure Find_Direct_Name (N : Node_Id);
    --  Given a direct name (Identifier or Operator_Symbol), this routine scans
    --  the homonym chain for the name, searching for corresponding visible
    --  entities to find the referenced entity (or in the case of overloading,

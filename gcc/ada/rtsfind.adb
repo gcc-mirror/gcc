@@ -589,7 +589,10 @@ package body Rtsfind is
      range CUDA_Driver_Types .. CUDA_Vector_Types;
 
    subtype Interfaces_Descendant is RTU_Id
-     range Interfaces_C .. Interfaces_Packed_Decimal;
+     range Interfaces_C .. Interfaces_C_Strings;
+
+   subtype Interfaces_C_Descendant is Interfaces_Descendant
+     range Interfaces_C_Strings .. Interfaces_C_Strings;
 
    subtype System_Descendant is RTU_Id
      range System_Address_Image .. System_Tasking_Stages;
@@ -673,6 +676,10 @@ package body Rtsfind is
 
       elsif U_Id in Interfaces_Descendant then
          Name_Buffer (11) := '.';
+
+         if U_Id in Interfaces_C_Descendant then
+            Name_Buffer (13) := '.';
+         end if;
 
       elsif U_Id in System_Descendant then
          Name_Buffer (7) := '.';

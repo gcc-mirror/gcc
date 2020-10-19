@@ -314,9 +314,9 @@ package body Exp_Put_Image is
          end if;
 
       elsif Is_Access_Type (U_Type) then
-         if Is_Access_Protected_Subprogram_Type (U_Type) then
+         if Is_Access_Protected_Subprogram_Type (Base_Type (U_Type)) then
             Lib_RE := RE_Put_Image_Access_Prot_Subp;
-         elsif Is_Access_Subprogram_Type (U_Type) then
+         elsif Is_Access_Subprogram_Type (Base_Type (U_Type)) then
             Lib_RE := RE_Put_Image_Access_Subp;
          elsif P_Size = System_Address_Size then
             Lib_RE := RE_Put_Image_Thin_Pointer;

@@ -32,7 +32,7 @@
 with Ada.Strings.UTF_Encoding;
 with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 
-package Ada.Strings.Text_Output with Preelaborate is
+package Ada.Strings.Text_Output with Pure is
 
    --  This package provides a "Sink" abstraction, to which characters of type
    --  Character, Wide_Character, and Wide_Wide_Character can be sent. This
@@ -48,7 +48,11 @@ package Ada.Strings.Text_Output with Preelaborate is
    --  extended. It is designed with particular extensions in mind, and these
    --  extensions are declared in child packages of this package, because they
    --  depend on implementation details in the private part of this
-   --  package. The primary extensions of Sink are:
+   --  package.
+   --
+   --  Users are not expected to extend type Sink.
+   --
+   --  The primary extensions of Sink are:
    --
    --     Buffer. The characters sent to a Buffer are stored in memory, and can
    --     be retrieved via Get functions. This is intended for the
@@ -141,15 +145,13 @@ package Ada.Strings.Text_Output with Preelaborate is
    --  slows things down, but increasing it doesn't gain much.
 
 private
-   type String_Access is access all String;
-
    --  For Buffer, the "internal buffer" mentioned above is implemented as a
    --  linked list of chunks. When the current chunk is full, we allocate a new
    --  one. For File, there is only one chunk. When it is full, we send the
    --  data to the file, and empty it.
 
    type Chunk;
-   type Chunk_Access is access all Chunk;
+   type Chunk_Access is access all Chunk with Storage_Size => 0;
    type Chunk (Length : Positive) is limited record
       Next : Chunk_Access := null;
       Chars : UTF_8_Lines (1 .. Length);

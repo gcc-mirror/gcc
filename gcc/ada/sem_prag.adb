@@ -44,6 +44,7 @@ with Exp_Util;  use Exp_Util;
 with Expander;  use Expander;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
+with GNAT_CUDA; use GNAT_CUDA;
 with Gnatvsn;   use Gnatvsn;
 with Lib;       use Lib;
 with Lib.Writ;  use Lib.Writ;
@@ -583,7 +584,7 @@ package body Sem_Prag is
       --  Otherwise the pragma is illegal
 
       else
-         Error_Msg_N ("wrong syntax for constract cases", N);
+         Error_Msg_N ("wrong syntax for contract cases", N);
       end if;
 
       Set_Is_Analyzed_Pragma (N);
@@ -14892,6 +14893,7 @@ package body Sem_Prag is
 
             else
                Set_Is_CUDA_Kernel (Kernel_Proc);
+               Add_CUDA_Kernel (Pack_Id, Kernel_Proc);
             end if;
          end CUDA_Global;
 
@@ -17021,7 +17023,7 @@ package body Sem_Prag is
                      return;
                   end if;
 
-               --  Otherwie the expression is not static
+               --  Otherwise the expression is not static
 
                else
                   Error_Pragma_Arg

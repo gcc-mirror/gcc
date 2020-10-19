@@ -38,6 +38,7 @@ with Ada.Containers.Helpers; use Ada.Containers.Helpers;
 with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Bounded_Hashed_Maps with
   SPARK_Mode => Off
@@ -884,6 +885,36 @@ is
          Process (N.Key, N.Element);
       end;
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map)
+   is
+      First_Time : Boolean := True;
+      use System.Put_Images;
+
+      procedure Put_Key_Value (Position : Cursor);
+      procedure Put_Key_Value (Position : Cursor) is
+      begin
+         if First_Time then
+            First_Time := False;
+         else
+            Simple_Array_Between (S);
+         end if;
+
+         Key_Type'Put_Image (S, Key (Position));
+         Put_Arrow (S);
+         Element_Type'Put_Image (S, Element (Position));
+      end Put_Key_Value;
+
+   begin
+      Array_Before (S);
+      Iterate (V, Put_Key_Value'Access);
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

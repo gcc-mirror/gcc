@@ -3156,6 +3156,9 @@ package Sem_Util is
    function Yields_Universal_Type (N : Node_Id) return Boolean;
    --  Determine whether unanalyzed node N yields a universal type
 
+   procedure Preanalyze_Without_Errors (N : Node_Id);
+   --  Preanalyze N without reporting errors
+
    package Interval_Lists is
       type Discrete_Interval is
          record

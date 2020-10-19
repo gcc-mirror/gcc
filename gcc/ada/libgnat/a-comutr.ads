@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type is private;
@@ -400,7 +401,10 @@ private
       Root  : aliased Root_Node_Type;
       TC    : aliased Tamper_Counts;
       Count : Count_Type := 0;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Tree);
 
    overriding procedure Adjust (Container : in out Tree);
 

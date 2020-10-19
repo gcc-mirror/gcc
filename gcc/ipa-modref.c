@@ -1654,7 +1654,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 					: callee_edge->caller);
       callee_pi = IPA_NODE_REF (callee);
 
-      (*parm_map).safe_grow (count);
+      (*parm_map).safe_grow_cleared (count);
 
       for (i = 0; i < count; i++)
 	{

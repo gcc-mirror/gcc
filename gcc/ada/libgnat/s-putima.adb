@@ -250,6 +250,11 @@ package body System.Put_Images is
       Put_7bit (S, ')');
    end Record_After;
 
+   procedure Put_Arrow (S : in out Sink'Class) is
+   begin
+      Put_UTF_8 (S, " => ");
+   end Put_Arrow;
+
    procedure Put_Image_Unknown (S : in out Sink'Class; Type_Name : String) is
    begin
       Put_UTF_8 (S, "{");

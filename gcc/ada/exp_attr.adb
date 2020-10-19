@@ -3456,8 +3456,12 @@ package body Exp_Attr is
          --  replace this attribute with a direct reference to the attribute of
          --  the appropriate index subtype (since otherwise the back end will
          --  try to give us the value of 'First for this implementation type).
+         --  Do not do this if Ptyp depends on a discriminant as its bounds
+         --  are only available through N.
 
-         if Is_Constrained_Packed_Array (Ptyp) then
+         if Is_Constrained_Packed_Array (Ptyp)
+           and then not Size_Depends_On_Discriminant (Ptyp)
+         then
             Rewrite (N,
               Make_Attribute_Reference (Loc,
                 Attribute_Name => Attribute_Name (N),

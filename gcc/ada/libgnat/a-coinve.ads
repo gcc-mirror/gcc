@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
+private with Ada.Strings.Text_Output;
 
 generic
    type Index_Type is range <>;
@@ -393,7 +394,10 @@ private
       Elements : Elements_Access := null;
       Last     : Extended_Index := No_Index;
       TC       : aliased Tamper_Counts;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Vector);
 
    overriding procedure Adjust (Container : in out Vector);
    overriding procedure Finalize (Container : in out Vector);

@@ -31,6 +31,7 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Multiway_Trees with
   SPARK_Mode => Off
@@ -1857,6 +1858,49 @@ is
 
       Process (Position.Node.Element);
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Tree)
+   is
+      use System.Put_Images;
+
+      procedure Rec (Position : Cursor);
+      --  Recursive routine operating on cursors
+
+      procedure Rec (Position : Cursor) is
+         First_Time : Boolean := True;
+      begin
+         Array_Before (S);
+
+         for X in Iterate_Children (V, Position) loop
+            if First_Time then
+               First_Time := False;
+            else
+               Array_Between (S);
+            end if;
+
+            Element_Type'Put_Image (S, Element (X));
+            if Child_Count (X) > 0 then
+               Simple_Array_Between (S);
+               Rec (X);
+            end if;
+         end loop;
+
+         Array_After (S);
+      end Rec;
+
+   begin
+      if First_Child (Root (V)) = No_Element then
+         Array_Before (S);
+         Array_After (S);
+      else
+         Rec (First_Child (Root (V)));
+      end if;
+   end Put_Image;
 
    ----------
    -- Read --

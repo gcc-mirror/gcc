@@ -1212,6 +1212,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       procedure T_Private;
       procedure T_Range;
       procedure T_Record;
+      procedure T_Right_Bracket;
       procedure T_Right_Paren;
       procedure T_Semicolon;
       procedure T_Then;

@@ -6899,23 +6899,62 @@ package body Exp_Aggr is
 
       procedure Expand_Iterated_Component (Comp : Node_Id) is
          Expr    : constant Node_Id := Expression (Comp);
-         Loop_Id : constant Entity_Id :=
-            Make_Defining_Identifier (Loc,
-              Chars => Chars (Defining_Identifier (Comp)));
 
+         Key_Expr           : Node_Id := Empty;
+         Loop_Id            : Entity_Id;
          L_Range            : Node_Id;
          L_Iteration_Scheme : Node_Id;
          Loop_Stat          : Node_Id;
          Stats              : List_Id;
 
       begin
-         if Present (Iterator_Specification (Comp)) then
+         if Nkind (Comp) = N_Iterated_Element_Association then
+            Key_Expr := Key_Expression (Comp);
+
+            --  We create a new entity as loop identifier in all cases,
+            --  as is done for generated loops elsewhere, as the loop
+            --  structure has been previously analyzed.
+
+            if Present (Iterator_Specification (Comp)) then
+
+               --  Either an Iterator_Specification of a Loop_Parameter_
+               --  Specification is present.
+
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Iterator_Specification => Iterator_Specification (Comp));
+               Loop_Id :=
+                  Make_Defining_Identifier (Loc,
+                    Chars => Chars (Defining_Identifier
+                               (Iterator_Specification (Comp))));
+               Set_Defining_Identifier
+                  (Iterator_Specification (L_Iteration_Scheme), Loop_Id);
+
+            else
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Loop_Parameter_Specification =>
+                     Loop_Parameter_Specification (Comp));
+               Loop_Id :=
+                  Make_Defining_Identifier (Loc,
+                    Chars => Chars (Defining_Identifier
+                               (Loop_Parameter_Specification (Comp))));
+               Set_Defining_Identifier
+                  (Loop_Parameter_Specification
+                     (L_Iteration_Scheme), Loop_Id);
+            end if;
+
+         elsif Present (Iterator_Specification (Comp)) then
             L_Iteration_Scheme :=
               Make_Iteration_Scheme (Loc,
                 Iterator_Specification => Iterator_Specification (Comp));
 
          else
             L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
+            Loop_Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => Chars (Defining_Identifier (Comp)));
+
             L_Iteration_Scheme :=
               Make_Iteration_Scheme (Loc,
                 Loop_Parameter_Specification =>
@@ -6928,6 +6967,9 @@ package body Exp_Aggr is
          --  expression is needed. For a named aggregate, the loop variable,
          --  whose type is that of the key, is an additional parameter for
          --  the insertion operation.
+         --  If a Key_Expression is present, it serves as the additional
+         --  parameter. Otherwise the key is given by the loop parameter
+         --  itself.
 
          if Present (Add_Unnamed_Subp) then
             Stats := New_List
@@ -6937,13 +6979,27 @@ package body Exp_Aggr is
                    New_List (New_Occurrence_Of (Temp, Loc),
                      New_Copy_Tree (Expr))));
          else
-            Stats := New_List
-              (Make_Procedure_Call_Statement (Loc,
-                 Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
-                 Parameter_Associations =>
-                   New_List (New_Occurrence_Of (Temp, Loc),
-                     New_Occurrence_Of (Loop_Id, Loc),
-                     New_Copy_Tree (Expr))));
+            --  Named or indexed aggregate, for which a key is present,
+            --  possibly with a specified key_expression.
+
+            if Present (Key_Expr) then
+               Stats := New_List
+                 (Make_Procedure_Call_Statement (Loc,
+                    Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
+                    Parameter_Associations =>
+                      New_List (New_Occurrence_Of (Temp, Loc),
+                        New_Copy_Tree (Key_Expr),
+                        New_Copy_Tree (Expr))));
+
+            else
+               Stats := New_List
+                 (Make_Procedure_Call_Statement (Loc,
+                    Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
+                    Parameter_Associations =>
+                      New_List (New_Occurrence_Of (Temp, Loc),
+                        New_Occurrence_Of (Loop_Id, Loc),
+                        New_Copy_Tree (Expr))));
+            end if;
          end if;
 
          Loop_Stat :=  Make_Implicit_Loop_Statement
@@ -7029,7 +7085,9 @@ package body Exp_Aggr is
             --  generate an insertion statement for each.
 
             while Present (Comp) loop
-               if Nkind (Comp) = N_Iterated_Component_Association then
+               if Nkind (Comp) in N_Iterated_Component_Association
+                                | N_Iterated_Element_Association
+               then
                   Expand_Iterated_Component (Comp);
                else
                   Key := First (Choices (Comp));

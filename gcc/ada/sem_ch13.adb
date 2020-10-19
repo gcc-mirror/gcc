@@ -2165,6 +2165,9 @@ package body Sem_Ch13 is
                   Seen    : in out Elist_Id)
                is
                begin
+                  --  Set name of the aspect for error messages
+                  Error_Msg_Name_1 := Nam;
+
                   --  The relaxed parameter is a formal parameter
 
                   if Nkind (Param) in N_Identifier | N_Expanded_Name then
@@ -2178,6 +2181,14 @@ package body Sem_Ch13 is
                         if Scope (Item) = Subp_Id then
 
                            pragma Assert (Is_Formal (Item));
+
+                           --  It must not have scalar or access type
+
+                           if Is_Elementary_Type (Etype (Item)) then
+                              Error_Msg_N ("illegal aspect % item", Param);
+                              Error_Msg_N
+                                ("\item must not have elementary type", Param);
+                           end if;
 
                            --  Detect duplicated items
 
@@ -2205,6 +2216,16 @@ package body Sem_Ch13 is
                           and then
                             Entity (Pref) = Subp_Id
                         then
+                           --  Function result must not have scalar or access
+                           --  type.
+
+                           if Is_Elementary_Type (Etype (Pref)) then
+                              Error_Msg_N ("illegal aspect % item", Param);
+                              Error_Msg_N
+                                ("\function result must not have elementary"
+                                 & " type", Param);
+                           end if;
+
                            --  Detect duplicated items
 
                            if Contains (Seen, Subp_Id) then
@@ -2345,12 +2366,14 @@ package body Sem_Ch13 is
                                     if not Is_OK_Static_Expression
                                       (Expression (Assoc))
                                     then
+                                       Error_Msg_Name_1 := Nam;
                                        Error_Msg_N
                                          ("expression of aspect %" &
                                           "must be static", Aspect);
                                     end if;
 
                                  else
+                                    Error_Msg_Name_1 := Nam;
                                     Error_Msg_N
                                       ("illegal aspect % expression", Expr);
                                  end if;
@@ -9560,8 +9583,8 @@ package body Sem_Ch13 is
       --  Predicate_Function of the parent type, using Add_Call above.
 
       procedure Add_Call (T : Entity_Id);
-      --  Includes a call to the predicate function for type T in Expr if T
-      --  has predicates and Predicate_Function (T) is non-empty.
+      --  Includes a call to the predicate function for type T in Expr if
+      --  Predicate_Function (T) is non-empty.
 
       function Process_RE (N : Node_Id) return Traverse_Result;
       --  Used in Process REs, tests if node N is a raise expression, and if
@@ -9585,8 +9608,8 @@ package body Sem_Ch13 is
          Exp : Node_Id;
 
       begin
-         if Present (T) and then Present (Predicate_Function (T)) then
-            Set_Has_Predicates (Typ);
+         if Present (Predicate_Function (T)) then
+            pragma Assert (Has_Predicates (Typ));
 
             --  Build the call to the predicate function of T. The type may be
             --  derived, so use an unchecked conversion for the actual.

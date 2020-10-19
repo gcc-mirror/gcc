@@ -37,6 +37,7 @@ with Ada.Containers.Helpers;
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Finalization;
 private with Ada.Streams;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type (<>) is private;
@@ -359,7 +360,10 @@ private
 
    type Set is new Ada.Finalization.Controlled with record
       Tree : Tree_Types.Tree_Type;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Set);
 
    overriding procedure Adjust (Container : in out Set);
 

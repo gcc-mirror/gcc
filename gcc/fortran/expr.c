@@ -2904,7 +2904,7 @@ gfc_check_init_expr (gfc_expr *e)
 		   && (e->value.function.isym->conversion == 1);
 
 	if (!conversion && (!gfc_is_intrinsic (sym, 0, e->where)
-	    || (m = gfc_intrinsic_func_interface (e, 0)) != MATCH_YES))
+	    || (m = gfc_intrinsic_func_interface (e, 0)) == MATCH_NO))
 	  {
 	    gfc_error ("Function %qs in initialization expression at %L "
 		       "must be an intrinsic function",

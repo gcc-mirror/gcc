@@ -1,3 +1,36 @@
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h: Condition the ___GTHREADS_CXX0X
+	section on VxWorks >= 6.
+	* config/gthr-vxworks-thread.c: Condition the entire
+	implementation on __GTHREAD_CXX0X.
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h: Condition the __GTHREAD_HAS_COND
+	section on VxWorks >= 6.
+	* config/gthr-vxworks-cond.c: Condition the entire
+	implementation on __GTHREAD_HAS_COND.
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.c: #include <taskLib.h>.
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h: Rewrite remaining occurrence
+	of _VXW_PRE_69 as _VXWORKS_PRE(6,9).
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+	     Olivier Hainque   <hainque@adacore.com>
+
+	* config/gthr-vxworks-tls.c (VX_ENTER_TLS_DTOR): Nil
+	except on VxWorks 6.
+
+2020-10-16  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxcrtstuff: Remove the -kernel/-rtp specialization.
+
 2020-10-14  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/gthr-vxworks-thread.c: Include stdlib.h.

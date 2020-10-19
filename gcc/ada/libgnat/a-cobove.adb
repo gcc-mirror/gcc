@@ -30,6 +30,7 @@
 with Ada.Containers.Generic_Array_Sort;
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Bounded_Vectors is
 
@@ -2117,6 +2118,31 @@ package body Ada.Containers.Bounded_Vectors is
 
       Query_Element (Position.Container.all, Position.Index, Process);
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Vector)
+   is
+      First_Time : Boolean := True;
+      use System.Put_Images;
+   begin
+      Array_Before (S);
+
+      for X of V loop
+         if First_Time then
+            First_Time := False;
+         else
+            Simple_Array_Between (S);
+         end if;
+
+         Element_Type'Put_Image (S, X);
+      end loop;
+
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

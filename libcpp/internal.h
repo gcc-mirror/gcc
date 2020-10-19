@@ -517,9 +517,9 @@ struct cpp_reader
      set to -1 to disable it or to a non-negative value to enable it.  */
   time_t source_date_epoch;
 
-  /* EOF token, and a token forcing paste avoidance.  */
+  /* A token forcing paste avoidance, and one demarking macro arguments.  */
   cpp_token avoid_paste;
-  cpp_token eof;
+  cpp_token endarg;
 
   /* Opaque handle to the dependencies of mkdeps.c.  */
   class mkdeps *deps;

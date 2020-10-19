@@ -31,6 +31,7 @@
 
 private with Ada.Finalization;
 private with Ada.Streams;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type (<>) is private;
@@ -115,7 +116,11 @@ private
    type Holder is new Ada.Finalization.Controlled with record
       Element : Element_Access;
       Busy    : Natural := 0;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Holder);
+
    for Holder'Read use Read;
    for Holder'Write use Write;
 

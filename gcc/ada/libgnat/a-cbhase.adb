@@ -38,6 +38,7 @@ with Ada.Containers.Helpers; use Ada.Containers.Helpers;
 with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Bounded_Hashed_Sets with
   SPARK_Mode => Off
@@ -1107,6 +1108,31 @@ is
          Process (S.Nodes (Position.Node).Element);
       end;
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Set)
+   is
+      First_Time : Boolean := True;
+      use System.Put_Images;
+   begin
+      Array_Before (S);
+
+      for X of V loop
+         if First_Time then
+            First_Time := False;
+         else
+            Simple_Array_Between (S);
+         end if;
+
+         Element_Type'Put_Image (S, X);
+      end loop;
+
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

@@ -11774,7 +11774,7 @@ to more aggressive optimization decisions.
 When a file is compiled with @option{-flto} without
 @option{-fuse-linker-plugin}, the generated object file is larger than
 a regular object file because it contains GIMPLE bytecodes and the usual
-final code (see @option{-ffat-lto-objects}.  This means that
+final code (see @option{-ffat-lto-objects}).  This means that
 object files with LTO information can be linked as normal object
 files; if @option{-fno-lto} is passed to the linker, no
 interprocedural optimizations are applied.  Note that when

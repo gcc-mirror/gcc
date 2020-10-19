@@ -1,3 +1,13 @@
+2020-10-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95979
+	* expr.c (gfc_check_init_expr): Fix check of return code from
+	gfc_intrinsic_func_interface.
+	* intrinsic.c (gfc_intrinsic_func_interface): Add further attempt
+	of simplification of elemental intrinsics with array arguments.
+	* iresolve.c (gfc_resolve_index_func): Keep optional KIND argument
+	for simplification of elemental use of INDEX.
+
 2020-10-15  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* trans-decl.c (gfc_build_builtin_function_decls): Fix the coarray fndecls.

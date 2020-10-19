@@ -607,12 +607,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
    i.e. "X % C" into "X & (C - 1)", if X and C are positive.
    Also optimize A % (C << N)  where C is a power of 2,
-   to A & ((C << N) - 1).  */
+   to A & ((C << N) - 1).
+   Also optimize "A shift (B % C)", if C is a power of 2, to
+   "A shift (B & (C - 1))".  SHIFT operation include "<<" and ">>"
+   and assume (B % C) is nonnegative as shifts negative values would
+   be UB.  */
 (match (power_of_two_cand @1)
  INTEGER_CST@1)
 (match (power_of_two_cand @1)
  (lshift INTEGER_CST@1 @2))
 (for mod (trunc_mod floor_mod)
+ (for shift (lshift rshift)
+  (simplify
+   (shift @0 (mod @1 (power_of_two_cand@2 @3)))
+   (if (integer_pow2p (@3) && tree_int_cst_sgn (@3) > 0)
+    (shift @0 (bit_and @1 (minus @2 { build_int_cst (TREE_TYPE (@2),
+						      1); }))))))
  (simplify
   (mod @0 (convert?@3 (power_of_two_cand@1 @2)))
   (if ((TYPE_UNSIGNED (type)

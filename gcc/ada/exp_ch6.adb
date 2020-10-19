@@ -2366,9 +2366,7 @@ package body Exp_Ch6 is
 
             elsif Nkind (Actual) = N_Type_Conversion
               and then
-                (Is_Numeric_Type (E_Formal)
-                  or else Is_Access_Type (E_Formal)
-                  or else Is_Enumeration_Type (E_Formal)
+                (Is_Elementary_Type (E_Formal)
                   or else Is_Bit_Packed_Array (Etype (Formal))
                   or else Is_Bit_Packed_Array (Etype (Expression (Actual)))
 
@@ -2945,7 +2943,12 @@ package body Exp_Ch6 is
             Par_Typ := Base_Type (Etype (Curr_Typ));
          end loop;
 
-         if not Is_Empty_List (Inv_Checks) then
+         --  If the node is a function call the generated tests have been
+         --  already handled in Insert_Post_Call_Actions.
+
+         if not Is_Empty_List (Inv_Checks)
+           and then Nkind (Call_Node) = N_Procedure_Call_Statement
+         then
             Insert_Actions_After (Call_Node, Inv_Checks);
          end if;
       end Add_View_Conversion_Invariants;
@@ -2971,9 +2974,7 @@ package body Exp_Ch6 is
          function May_Fold (N : Node_Id) return Traverse_Result is
          begin
             case Nkind (N) is
-               when N_Binary_Op
-                  | N_Unary_Op
-               =>
+               when N_Op =>
                   return OK;
 
                when N_Expanded_Name
@@ -3217,7 +3218,7 @@ package body Exp_Ch6 is
          then
             declare
                Actual : Node_Id;
-               Formal : Node_Id;
+               Formal : Entity_Id;
 
             begin
                Actual := First (Parameter_Associations (Call_Node));
@@ -3261,7 +3262,7 @@ package body Exp_Ch6 is
       Actual        : Node_Id;
       Formal        : Entity_Id;
       Orig_Subp     : Entity_Id := Empty;
-      Param_Count   : Natural := 0;
+      Param_Count   : Positive;
       Parent_Formal : Entity_Id;
       Parent_Subp   : Entity_Id;
       Prev_Ult      : Node_Id;
@@ -7461,10 +7462,9 @@ package body Exp_Ch6 is
       --  Check the result expression of a scalar function against the subtype
       --  of the function by inserting a conversion. This conversion must
       --  eventually be performed for other classes of types, but for now it's
-      --  only done for scalars.
-      --  ???
+      --  only done for scalars ???
 
-      if Is_Scalar_Type (Exp_Typ) then
+      if Is_Scalar_Type (Exp_Typ) and then Exp_Typ /= R_Type then
          Rewrite (Exp, Convert_To (R_Type, Exp));
 
          --  The expression is resolved to ensure that the conversion gets
@@ -8393,6 +8393,7 @@ package body Exp_Ch6 is
       --  The only exception is when the function call acts as an actual in a
       --  procedure call. In this case the function call is in a list, but the
       --  post-call actions must be inserted after the procedure call.
+      --  What if the function call is an aggregate component ???
 
       elsif Nkind (Context) = N_Procedure_Call_Statement then
          Insert_Actions_After (Context, Post_Call);
@@ -9537,9 +9538,15 @@ package body Exp_Ch6 is
 
       --  Finally, create an access object initialized to a reference to the
       --  function call. We know this access value cannot be null, so mark the
-      --  entity accordingly to suppress the access check.
+      --  entity accordingly to suppress the access check. We need to suppress
+      --  warnings, because this can be part of the expansion of "for ... of"
+      --  and similar constructs that generate finalization actions. Such
+      --  finalization actions are safe, because they check a count that
+      --  indicates which objects should be finalized, but the back end
+      --  nonetheless warns about uninitialized objects.
 
       Def_Id := Make_Temporary (Loc, 'R', Func_Call);
+      Set_Warnings_Off (Def_Id);
       Set_Etype (Def_Id, Ptr_Typ);
       Set_Is_Known_Non_Null (Def_Id);
 

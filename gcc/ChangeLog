@@ -1,3 +1,124 @@
+2020-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* vr-values.c (dump_all_value_ranges): Only dump names which are
+	still active.
+
+2020-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (pointer_plus_operator::wi_fold): Make pointer_plus
+	[0, 0] + const return a [const, const] range.
+
+2020-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-ssa-evrp.c (hybrid_folder::value_on_edge): Call
+	evrp_folder::value_of_expr directly.
+	(hybrid_folder::value_of_stmt): Ditto.
+
+2020-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97462
+	* range-op.cc (operator_lshift::op1_range): Don't trap on negative
+	shifts.
+
+2020-10-16  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VX_CRTBEGIN_SPEC): Likewise.
+
+2020-10-16  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks/_vxworks-versions.h: Only include
+	version.h if _WRS_VXWORKS_MAJOR is not defined.
+	Provide a default _WRS_VXWORKS_MINOR (0).
+
+2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97327
+	* config/arm/arm.c (fp_bitlist): Add isa_bit_mve_float to FP bits array.
+
+2020-10-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): For BB
+	vectorization swap operands only if it helps, demote mismatches to
+	external.
+
+2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97291
+	* config/arm/arm-builtins.c (arm_strsbwbs_qualifiers): Modify array.
+	(arm_strsbwbu_qualifiers): Likewise.
+	(arm_strsbwbs_p_qualifiers): Likewise.
+	(arm_strsbwbu_p_qualifiers): Likewise.
+	* config/arm/arm_mve.h (__arm_vstrdq_scatter_base_wb_s64): Modify
+	function definition.
+	(__arm_vstrdq_scatter_base_wb_u64): Likewise.
+	(__arm_vstrdq_scatter_base_wb_p_s64): Likewise.
+	(__arm_vstrdq_scatter_base_wb_p_u64): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_s32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_u32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_s32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_u32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_f32): Likewise.
+	(__arm_vstrwq_scatter_base_wb_p_f32): Likewise.
+	* config/arm/arm_mve_builtins.def (vstrwq_scatter_base_wb_add_u): Remove
+	expansion for the builtin.
+	(vstrwq_scatter_base_wb_add_s): Likewise.
+	(vstrwq_scatter_base_wb_add_f): Likewise.
+	(vstrdq_scatter_base_wb_add_u): Likewise.
+	(vstrdq_scatter_base_wb_add_s): Likewise.
+	(vstrwq_scatter_base_wb_p_add_u): Likewise.
+	(vstrwq_scatter_base_wb_p_add_s): Likewise.
+	(vstrwq_scatter_base_wb_p_add_f): Likewise.
+	(vstrdq_scatter_base_wb_p_add_u): Likewise.
+	(vstrdq_scatter_base_wb_p_add_s): Likewise.
+	* config/arm/mve.md (mve_vstrwq_scatter_base_wb_<supf>v4si): Remove
+	expand.
+	(mve_vstrwq_scatter_base_wb_add_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_<supf>v4si_insn): Rename pattern to ...
+	(mve_vstrwq_scatter_base_wb_<supf>v4si): This.
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si): Remove expand.
+	(mve_vstrwq_scatter_base_wb_p_add_<supf>v4si): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si_insn): Rename pattern to ...
+	(mve_vstrwq_scatter_base_wb_p_<supf>v4si): This.
+	(mve_vstrwq_scatter_base_wb_fv4sf): Remove expand.
+	(mve_vstrwq_scatter_base_wb_add_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_fv4sf_insn): Rename pattern to ...
+	(mve_vstrwq_scatter_base_wb_fv4sf): This.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): Remove expand.
+	(mve_vstrwq_scatter_base_wb_p_add_fv4sf): Likewise.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf_insn): Rename pattern to ...
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): This.
+	(mve_vstrdq_scatter_base_wb_<supf>v2di): Remove expand.
+	(mve_vstrdq_scatter_base_wb_add_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_<supf>v2di_insn): Rename pattern to ...
+	(mve_vstrdq_scatter_base_wb_<supf>v2di): This.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): Remove expand.
+	(mve_vstrdq_scatter_base_wb_p_add_<supf>v2di): Likewise.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di_insn): Rename pattern to ...
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): This.
+
+2020-10-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/multilib-generator (IMPLIED_EXT): New.
+	(arch_canonicalize): Update comment and handle implied extensions.
+
+2020-10-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): First analyze
+	all operands and fill in the def_stmts and ops entries.
+	(vect_def_types_match): New helper.
+
+2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97404
+	* ipa-prop.c (struct ipa_vr_ggc_hash_traits):
+	Compare types of VRP as we can merge ranges of different types.
+
+2020-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97428
+	* tree-vect-slp.c (vect_analyze_slp_instance): Split store
+	groups also for loop vectorization.
+
 2020-10-15  Tom de Vries  <tdevries@suse.de>
 
 	PR target/97436
