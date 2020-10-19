@@ -1,6 +1,7 @@
-// { dg-do compile { target c++14 } }
+// { dg-options "-std=gnu++20" }
+// { dg-do compile { target c++2a } }
 
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,16 +18,17 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// C++14 20.8.1.4 unique_ptr creation [unique.ptr.create]
+// C++20 20.11.1.5 unique_ptr creation [unique.ptr.create]
 
 #include <memory>
 
 struct A { };
 
-auto p1 = std::make_unique<A[]>();      // { dg-error "no matching function" }
-auto p2 = std::make_unique<A[]>(1, 2);  // { dg-error "no matching function" }
-auto p3 = std::make_unique<A[1]>();     // { dg-error "deleted" }
-auto p4 = std::make_unique<A[1]>(1);    // { dg-error "deleted" }
+auto p1 = std::make_unique_for_overwrite<A>(1);   // { dg-error "no matching function" }
+auto p1 = std::make_unique_for_overwrite<A[]>();  // { dg-error "no matching function" }
+auto p2 = std::make_unique_for_overwrite<A[]>(1, 2); // { dg-error "no matching function" }
+auto p3 = std::make_unique_for_overwrite<A[1]>(); // { dg-error "deleted" }
+auto p4 = std::make_unique_for_overwrite<A[1]>(1);// { dg-error "deleted" }
 
 // { dg-prune-output "declared here" }
 // { dg-prune-output "no type named" }
