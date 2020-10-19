@@ -1,3 +1,35 @@
+2020-10-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Compile Ada.Numerics
+	child units Aux_Generic_Float, Aux_Long_Long_Float, Aux_Long_Float,
+	Aux_Float, Aux_Short_Float, Aux_Compat, and Aux_Linker_Options.
+	(X86_TARGET_PAIRS): Drop dummy body for Aux.  Use x86 version
+	of Aux_Compat.
+	(X86_64_TARGET_PAIRS): Likewise.
+	(LIBGNAT_TARGET_PAIRS): On VxWorks, select the nolibm
+	variants.  Drop the darwin version of Aux.  Drop the redundant
+	libc-x86 numaux variants on x86* kfreebsd variants.
+	* libgnat/a-nagefl.ads: New Aux_Generic_Float.
+	* libgnat/a-naliop.ads: New Aux_Linker_Options.
+	* libgnat/a-naliop__nolibm.ads: New.
+	* libgnat/a-nallfl.ads: New Aux_Long_Long_Float.
+	* libgnat/a-nalofl.ads: New Aux_Long_Float.
+	* libgnat/a-nuaufl.ads: New Aux_Float.
+	* libgnat/a-nashfl.ads: New Aux_Short_Float.
+	* libgnat/a-ngcefu.adb (Exp): Factor out the Im (X) passed to
+	Sin and Cos in the Complex variant too.
+	* libgnat/a-ngcoty.adb: Switch to Aux_Generic_Float.  Drop
+	redundant conversions.
+	* libgnat/a-ngelfu.adb: Likewise.
+	* libgnat/a-nuauco.ads: New Aux_Compat.
+	* libgnat/a-nuauco__x86.ads: New.
+	* libgnat/a-numaux.ads: Replace with Compat wrapper.
+	* libgnat/a-numaux__darwin.adb: Remove.
+	* libgnat/a-numaux__darwin.ads: Remove.
+	* libgnat/a-numaux__dummy.adb: Remove.
+	* libgnat/a-numaux__libc-x86.ads: Remove.
+	* libgnat/a-numaux__vxworks.ads: Remove.
+
 2020-10-16  Piotr Trojanek  <trojanek@adacore.com>
 
 	* checks.adb, exp_aggr.adb, exp_attr.adb, exp_ch6.adb,

@@ -1,3 +1,11 @@
+2020-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* sanitizer_common/sanitizer_mac.h: Ensure that TARGET_OS_
+	macros are defined where the macOS SDK does not contain
+	them.
+	(TARGET_OS_OSX, TARGET_OS_IOS, TARGET_OS_TV, TARGET_OS_WATCH):
+	Define where needed.
+
 2020-10-16  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Update revision.
