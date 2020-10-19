@@ -14564,6 +14564,112 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
   ix86_expand_vector_init_general (mmx_ok, mode, target, vals);
 }
 
+/* Implemented as
+   V setg (V v, int idx, T val)
+   {
+     V idxv = (V){idx, idx, idx, idx, idx, idx, idx, idx};
+     V valv = (V){val, val, val, val, val, val, val, val};
+     V mask = ((V){0, 1, 2, 3, 4, 5, 6, 7} == idxv);
+     v = (v & ~mask) | (valv & mask);
+     return v;
+   }.  */
+void
+ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
+{
+  rtx vec[64];
+  machine_mode mode = GET_MODE (target);
+  machine_mode cmp_mode = mode;
+  int n_elts = GET_MODE_NUNITS (mode);
+  rtx valv,idxv,constv,idx_tmp;
+  bool ok = false;
+
+  /* 512-bits vector byte/word broadcast and comparison only available
+     under TARGET_AVX512BW, break 512-bits vector into two 256-bits vector
+     when without TARGET_AVX512BW.  */
+  if ((mode == V32HImode || mode == V64QImode) && !TARGET_AVX512BW)
+    {
+      gcc_assert (TARGET_AVX512F);
+      rtx vhi, vlo, idx_hi;
+      machine_mode half_mode;
+      rtx (*extract_hi)(rtx, rtx);
+      rtx (*extract_lo)(rtx, rtx);
+
+      if (mode == V32HImode)
+	{
+	  half_mode = V16HImode;
+	  extract_hi = gen_vec_extract_hi_v32hi;
+	  extract_lo = gen_vec_extract_lo_v32hi;
+	}
+      else
+	{
+	  half_mode = V32QImode;
+	  extract_hi = gen_vec_extract_hi_v64qi;
+	  extract_lo = gen_vec_extract_lo_v64qi;
+	}
+
+      vhi = gen_reg_rtx (half_mode);
+      vlo = gen_reg_rtx (half_mode);
+      idx_hi = gen_reg_rtx (GET_MODE (idx));
+      emit_insn (extract_hi (vhi, target));
+      emit_insn (extract_lo (vlo, target));
+      vec[0] = idx_hi;
+      vec[1] = idx;
+      vec[2] = GEN_INT (n_elts/2);
+      ix86_expand_binary_operator (MINUS, GET_MODE (idx), vec);
+      ix86_expand_vector_set_var (vhi, val, idx_hi);
+      ix86_expand_vector_set_var (vlo, val, idx);
+      emit_insn (gen_rtx_SET (target, gen_rtx_VEC_CONCAT (mode, vlo, vhi)));
+      return;
+    }
+
+  if (FLOAT_MODE_P (GET_MODE_INNER (mode)))
+    {
+      switch (mode)
+	{
+	case E_V2DFmode:
+	  cmp_mode = V2DImode;
+	  break;
+	case E_V4DFmode:
+	  cmp_mode = V4DImode;
+	  break;
+	case E_V8DFmode:
+	  cmp_mode = V8DImode;
+	  break;
+	case E_V4SFmode:
+	  cmp_mode = V4SImode;
+	  break;
+	case E_V8SFmode:
+	  cmp_mode = V8SImode;
+	  break;
+	case E_V16SFmode:
+	  cmp_mode = V16SImode;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  for (int i = 0; i != n_elts; i++)
+    vec[i] = GEN_INT (i);
+  constv = gen_rtx_CONST_VECTOR (cmp_mode, gen_rtvec_v (n_elts, vec));
+  valv = gen_reg_rtx (mode);
+  idxv = gen_reg_rtx (cmp_mode);
+  idx_tmp = convert_to_mode (GET_MODE_INNER (cmp_mode), idx, 1);
+
+  ok = ix86_expand_vector_init_duplicate (false, mode, valv, val);
+  gcc_assert (ok);
+  ok = ix86_expand_vector_init_duplicate (false, cmp_mode, idxv, idx_tmp);
+  gcc_assert (ok);
+  vec[0] = target;
+  vec[1] = valv;
+  vec[2] = target;
+  vec[3] = gen_rtx_EQ (mode, idxv, constv);
+  vec[4] = idxv;
+  vec[5] = constv;
+  ok = ix86_expand_int_vcond (vec);
+  gcc_assert (ok);
+}
+
 void
 ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 {
