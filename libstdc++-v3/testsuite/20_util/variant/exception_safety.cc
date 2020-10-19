@@ -25,6 +25,7 @@
 #include <memory>
 #include <functional>
 #include <any>
+#include <optional>
 #include <testsuite_hooks.h>
 
 void
