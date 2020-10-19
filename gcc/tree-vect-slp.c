@@ -4214,6 +4214,15 @@ vect_slp_function (function *fun)
 	}
       else
 	bbs.safe_push (bb);
+
+      /* When we have a stmt ending this block we have to insert on
+	 edges when inserting after it.  Avoid this for now.  */
+      if (gimple *last = last_stmt (bb))
+	if (is_ctrl_altering_stmt (last))
+	  {
+	    r |= vect_slp_bbs (bbs);
+	    bbs.truncate (0);
+	  }
     }
 
   if (!bbs.is_empty ())
