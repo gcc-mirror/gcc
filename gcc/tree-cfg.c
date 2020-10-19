@@ -3489,14 +3489,9 @@ verify_gimple_comparison (tree type, tree op0, tree op1, enum tree_code code)
   /* For comparisons we do not have the operations type as the
      effective type the comparison is carried out in.  Instead
      we require that either the first operand is trivially
-     convertible into the second, or the other way around.
-     Because we special-case pointers to void we allow
-     comparisons of pointers with the same mode as well.  */
+     convertible into the second, or the other way around.  */
   if (!useless_type_conversion_p (op0_type, op1_type)
-      && !useless_type_conversion_p (op1_type, op0_type)
-      && (!POINTER_TYPE_P (op0_type)
-	  || !POINTER_TYPE_P (op1_type)
-	  || TYPE_MODE (op0_type) != TYPE_MODE (op1_type)))
+      && !useless_type_conversion_p (op1_type, op0_type))
     {
       error ("mismatching comparison operand types");
       debug_generic_expr (op0_type);
