@@ -507,6 +507,13 @@ if grep 'define st_dev st_fsid' gen-sysinfo.go > /dev/null 2>&1; then
   st_dev='-e s/st_fsid/Dev/'
 fi
 
+# For historical reasons Go uses the suffix "timespec" instead of "tim" for
+# stat_t's time fields on NetBSD.
+st_times='-e s/st_atim/Atim/ -e s/st_mtim/Mtim/ -e s/st_ctim/Ctim/'
+if test "${GOOS}" = "netbsd"; then
+    st_times='-e s/st_atim/Atimespec/ -e s/st_mtim/Mtimespec/ -e s/st_ctim/Ctimespec/'
+fi
+
 # The stat type.
 # Prefer largefile variant if available.
 stat=`grep '^type _stat64 ' gen-sysinfo.go || true`
@@ -517,6 +524,7 @@ else
 fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/type _stat/type Stat_t/' \
          ${st_dev} \
+         ${st_times} \
          -e 's/st_ino/Ino/g' \
          -e 's/st_nlink/Nlink/' \
          -e 's/st_mode/Mode/' \
@@ -526,9 +534,6 @@ fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/st_size/Size/' \
          -e 's/st_blksize/Blksize/' \
          -e 's/st_blocks/Blocks/' \
-         -e 's/st_atim/Atim/' \
-         -e 's/st_mtim/Mtim/' \
-         -e 's/st_ctim/Ctim/' \
          -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec_t\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_st_timespec_t\([^a-zA-Z0-9_]\)/\1StTimespec\2/g' \
@@ -1055,6 +1060,13 @@ grep '^const _RTCF' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTCF[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RTM' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTM[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+if test "${GOOS}" = "netbsd"; then
+  if ! grep "RTM_RESOLVE" ${OUT} >/dev/null 2>&1; then
+    # NetBSD 8.0 removed RTM_RESOLVE, but it is part of the syscall package's
+    # stable API, so add it manually.
+    echo "const RTM_RESOLVE = 0xb" >> ${OUT}
+  fi
+fi
 grep '^const _RTN' gen-sysinfo.go | \
     sed -e 's/^\(const \)_\(RTN[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RTPROT' gen-sysinfo.go | \
