@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     coroutine_handle<void>
     {
     public:
-      // 17.12.3.1, construct/reset
+      // [coroutine.handle.con], construct/reset
       constexpr coroutine_handle() noexcept : _M_fr_ptr(0) {}
 
       constexpr coroutine_handle(std::nullptr_t __h) noexcept
@@ -101,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     public:
-      // 17.12.3.2, export/import
+      // [coroutine.handle.export.import], export/import
       constexpr void* address() const noexcept { return _M_fr_ptr; }
 
       constexpr static coroutine_handle from_address(void* __a) noexcept
@@ -112,7 +112,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     public:
-      // 17.12.3.3, observers
+      // [coroutine.handle.observers], observers
       constexpr explicit operator bool() const noexcept
       {
 	return bool(_M_fr_ptr);
@@ -120,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool done() const noexcept { return __builtin_coro_done(_M_fr_ptr); }
 
-      // 17.12.3.4, resumption
+      // [coroutine.handle.resumption], resumption
       void operator()() const { resume(); }
 
       void resume() const { __builtin_coro_resume(_M_fr_ptr); }
@@ -131,10 +131,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void* _M_fr_ptr;
   };
 
-  // 17.12.3.6 Comparison operators
-  /// [coroutine.handle.compare]
-  constexpr bool operator==(coroutine_handle<> __a,
-			    coroutine_handle<> __b) noexcept
+  // [coroutine.handle.compare], comparison operators
+
+  constexpr bool
+  operator==(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
   {
     return __a.address() == __b.address();
   }
@@ -142,76 +142,107 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if _COROUTINES_USE_SPACESHIP
   constexpr strong_ordering
   operator<=>(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
-  { return std::compare_three_way()(__a.address(), __b.address()); }
+  {
+    return std::compare_three_way()(__a.address(), __b.address());
+  }
 #else
   // These are to enable operation with std=c++14,17.
-  constexpr bool operator!=(coroutine_handle<> __a,
-			    coroutine_handle<> __b) noexcept
+  constexpr bool
+  operator!=(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
   {
     return !(__a == __b);
   }
 
-  constexpr bool operator<(coroutine_handle<> __a,
-			   coroutine_handle<> __b) noexcept
+  constexpr bool
+  operator<(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
   {
     return less<void*>()(__a.address(), __b.address());
   }
 
-  constexpr bool operator>(coroutine_handle<> __a,
-			   coroutine_handle<> __b) noexcept
+  constexpr bool
+  operator>(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
   {
     return __b < __a;
   }
 
-  constexpr bool operator<=(coroutine_handle<> __a,
-			    coroutine_handle<> __b) noexcept
+  constexpr bool
+  operator<=(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
   {
     return !(__a > __b);
   }
 
-  constexpr bool operator>=(coroutine_handle<> __a,
-			    coroutine_handle<> __b) noexcept
+  constexpr bool
+  operator>=(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
   {
     return !(__a < __b);
   }
 #endif
 
   template <typename _Promise>
-    struct coroutine_handle : coroutine_handle<>
+    struct coroutine_handle
     {
-      // 17.12.3.1, construct/reset
-      using coroutine_handle<>::coroutine_handle;
+      // [coroutine.handle.con], construct/reset
 
-      static coroutine_handle from_promise(_Promise& p)
+      constexpr coroutine_handle() noexcept { }
+
+      constexpr coroutine_handle(nullptr_t) noexcept { }
+
+      static coroutine_handle
+      from_promise(_Promise& __p)
       {
 	coroutine_handle __self;
 	__self._M_fr_ptr
-	  = __builtin_coro_promise((char*) &p, __alignof(_Promise), true);
+	  = __builtin_coro_promise((char*) &__p, __alignof(_Promise), true);
 	return __self;
       }
 
-      coroutine_handle& operator=(std::nullptr_t) noexcept
+      coroutine_handle& operator=(nullptr_t) noexcept
       {
-	coroutine_handle<>::operator=(nullptr);
+	_M_fr_ptr = nullptr;
 	return *this;
       }
 
-    // 17.12.3.2, export/import
-    constexpr static coroutine_handle from_address(void* __a)
-    {
-      coroutine_handle __self;
-      __self._M_fr_ptr = __a;
-      return __self;
-    }
+      // [coroutine.handle.export.import], export/import
 
-    // 17.12.3.5, promise accesss
-    _Promise& promise() const
-    {
-      void* __t
-	= __builtin_coro_promise (this->_M_fr_ptr, __alignof(_Promise), false);
-      return *static_cast<_Promise*>(__t);
-    }
-  };
+      constexpr void* address() const noexcept { return _M_fr_ptr; }
+
+      constexpr static coroutine_handle from_address(void* __a)
+      {
+	coroutine_handle __self;
+	__self._M_fr_ptr = __a;
+	return __self;
+      }
+
+      // [coroutine.handle.conv], conversion
+      constexpr operator coroutine_handle<>() const noexcept
+      { return coroutine_handle<>::from_address(address()); }
+
+      // [coroutine.handle.observers], observers
+      constexpr explicit operator bool() const noexcept
+      {
+	return bool(_M_fr_ptr);
+      }
+
+      bool done() const noexcept { return __builtin_coro_done(_M_fr_ptr); }
+
+      // [coroutine.handle.resumption], resumption
+      void operator()() const { resume(); }
+
+      void resume() const { __builtin_coro_resume(_M_fr_ptr); }
+
+      void destroy() const { __builtin_coro_destroy(_M_fr_ptr); }
+
+      // [coroutine.handle.promise], promise access
+      _Promise& promise() const
+      {
+	void* __t
+	  = __builtin_coro_promise (_M_fr_ptr, __alignof(_Promise), false);
+	return *static_cast<_Promise*>(__t);
+      }
+
+    private:
+      void* _M_fr_ptr = nullptr;
+    };
 
   /// [coroutine.noop]
   struct noop_coroutine_promise
@@ -231,35 +262,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 17.12.4.1 Class noop_coroutine_promise
   /// [coroutine.promise.noop]
   template <>
-    struct coroutine_handle<noop_coroutine_promise> : public coroutine_handle<>
+    struct coroutine_handle<noop_coroutine_promise>
     {
-      using _Promise = noop_coroutine_promise;
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3460. Unimplementable noop_coroutine_handle guarantees
+      // [coroutine.handle.noop.conv], conversion
+      constexpr operator coroutine_handle<>() const noexcept
+      { return coroutine_handle<>::from_address(address()); }
 
-    public:
-      // 17.12.4.2.1, observers
+      // [coroutine.handle.noop.observers], observers
       constexpr explicit operator bool() const noexcept { return true; }
 
       constexpr bool done() const noexcept { return false; }
 
-      // 17.12.4.2.2, resumption
+      // [coroutine.handle.noop.resumption], resumption
       void operator()() const noexcept {}
 
       void resume() const noexcept {}
 
       void destroy() const noexcept {}
 
-      // 17.12.4.2.3, promise access
-      _Promise& promise() const
-      {
-	return *static_cast<_Promise*>(
-	  __builtin_coro_promise(this->_M_fr_ptr, __alignof(_Promise), false));
-      }
+      // [coroutine.handle.noop.promise], promise access
+      noop_coroutine_promise& promise() const noexcept
+      { return __noop_coro_fr.__p; }
 
-      // 17.12.4.2.4, address
+      // [coroutine.handle.noop.address], address
+      constexpr void* address() const noexcept { return _M_fr_ptr; }
+
     private:
-      friend coroutine_handle<noop_coroutine_promise> noop_coroutine() noexcept;
+      friend coroutine_handle noop_coroutine() noexcept;
 
-      coroutine_handle() noexcept { this->_M_fr_ptr = (void*) &__noop_coro_fr; }
+      coroutine_handle() = default;
+
+      void* _M_fr_ptr = (void*) &__noop_coro_fr;
     };
 
   using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
