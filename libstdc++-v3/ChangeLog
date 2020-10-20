@@ -1,3 +1,29 @@
+2020-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (make_unique_for_overwrite): Define
+	for C++20.
+	* testsuite/20_util/unique_ptr/creation/array_neg.cc: Remove
+	unused header. Adjust standard reference.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc: New test.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite__neg.cc: New test.
+
+2020-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (_Head_base<Idx, Head, true>): Use reserved
+	form of __no_unique_address__ attribute because
+	no_unique_address is not reserved prior to C++20.
+
+2020-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/node_handle.h (_Node_handle_common): Replace
+	std::optional with custom type.
+	* testsuite/20_util/variant/exception_safety.cc: Add missing
+	header include.
+
+2020-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/precompiled/expc++.h: Removed.
+
 2020-10-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/97449
