@@ -72,9 +72,9 @@ ifneq ($(MODULE_REVISION),)
 # It is git, figure branch & dirty info
 # Subterfuge for gnumake's changing #-quote requirements
 GIT_INFO := \#
-GIT_INFO := -ne '1{s/$(GIT_INFO)$(GIT_INFO) \(.*\)*\.\.\..*/\1/;p}'
+GIT_INFO := -ne '1{s/$(GIT_INFO)$(GIT_INFO) \(.*\)*\.\.\..*/\1/;p;}'
 GIT_INFO := $(shell git -C $(srcdir)/.. status --porcelain --branch 2>/dev/null \
-  | sed $(GIT_INFO) -e '2,$${s/[^?].*/M/p;q}')
+  | sed $(GIT_INFO) -e '2,$${s/[^?].*/M/p;q;}')
 MODULE_REVISION := $(word 1,$(GIT_INFO)) $(MODULE_REVISION)$(word 2,$(GIT_INFO))
 endif
 ifeq ($(MODULE_REVISION),)

@@ -1,5 +1,8 @@
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* Make-lang.in (GIT_INFO): Support stricter seds.
+
 	Local-extern fix
 	gcc/cp
 	* name-lookup.c (push_local_extern_decl_alias): Fix default arg bug.
