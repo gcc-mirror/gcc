@@ -170,9 +170,8 @@ class vr_values : public range_query
 
 extern tree get_output_for_vrp (gimple *);
 
-// FIXME: Move this to tree-vrp.c.
-void simplify_cond_using_ranges_2 (class vr_values *, gcond *);
-
+extern bool range_fits_type_p (const value_range *vr,
+			       unsigned dest_precision, signop dest_sgn);
 extern bool bounds_of_var_in_loop (tree *min, tree *max, range_query *,
 				   class loop *loop, gimple *stmt, tree var);
 
