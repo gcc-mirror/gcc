@@ -10801,6 +10801,16 @@ package body Sem_Ch12 is
                   Next_Non_Pragma (Formal_Node);
                   Next (Actual_Of_Formal);
 
+                  --  A formal subprogram may be overloaded, so advance in
+                  --  the list of actuals to make sure we do not match two
+                  --  successive formals to the same actual. This is only
+                  --  relevant for overloadable entities, others have
+                  --  distinct names.
+
+                  if Is_Overloadable (Actual_Ent) then
+                     Next_Entity (Actual_Ent);
+                  end if;
+
                else
                   --  No further formals to match, but the generic part may
                   --  contain inherited operation that are not hidden in the
