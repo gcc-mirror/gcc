@@ -1718,8 +1718,9 @@ elf_in::begin (location_t loc)
       set_error (errno);
       return false;
     }
-  /* We'll be hopping over this randomly.  */
-  if (madvise (mapping, size, MADV_RANDOM))
+  /* We'll be hopping over this randomly.  Some systems declare the
+     first parm as char *, and other declare it as void *.  */
+  if (madvise (reinterpret_cast <char *> (mapping), size, MADV_RANDOM))
     goto fail;
 
   hdr.buffer = (char *)mapping;
