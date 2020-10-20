@@ -9619,7 +9619,7 @@ package body Sem_Res is
    --  universal types applies.
 
    procedure Resolve_Membership_Op (N : Node_Id; Typ : Entity_Id) is
-      pragma Warnings (Off, Typ);
+      pragma Assert (Is_Boolean_Type (Typ));
 
       L : constant Node_Id := Left_Opnd  (N);
       R : constant Node_Id := Right_Opnd (N);
