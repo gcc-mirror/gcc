@@ -1,3 +1,11 @@
+2020-10-19  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97327
+	* config/arm/arm.c (fp_bitlist): Add isa_bit_mve_float to FP bits array.
+
 2020-10-16  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
