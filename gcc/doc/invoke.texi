@@ -25614,7 +25614,7 @@ These options are defined for Nvidia PTX:
 
 @table @gcctabopt
 
-@itemx -m64
+@item -m64
 @opindex m64
 Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
 supported.
