@@ -2,6 +2,10 @@
 
 	Local-extern fix
 	gcc/cp
+	* name-lookup.c (push_local_extern_decl_alias): Fix default arg bug.
+
+	Local-extern fix
+	gcc/cp
 	* name-lookup.c (push_local_extern_decl_alias): Recontextualize
 	alias' parms, drop any default args.
 	gcc/testsuite/

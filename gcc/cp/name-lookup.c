@@ -3606,18 +3606,41 @@ push_local_extern_decl_alias (tree decl)
 		  DECL_CONTEXT (*chain) = alias;
 		}
 
-	      /* Drop default args.  */
 	      tree type = TREE_TYPE (alias);
-	      tree main = TYPE_MAIN_VARIANT (type);
-	      if (TYPE_ARG_TYPES (main) != TYPE_ARG_TYPES (type))
-		{
-		  /* There are default args.  Lose them.  */
-		  type = build_cp_fntype_variant
-		    (main, type_memfn_rqual (type),
-		     TYPE_RAISES_EXCEPTIONS (type),
-		     TYPE_HAS_LATE_RETURN_TYPE (type));
-		  TREE_TYPE (alias) = type;
-		}
+	      for (tree args = TYPE_ARG_TYPES (type);
+		   args; args = TREE_CHAIN (args))
+		if (TREE_PURPOSE (args))
+		  {
+		    /* There are default args.  Lose them.  */
+		    tree nargs = NULL_TREE;
+		    tree *chain = &nargs;
+		    for (args = TYPE_ARG_TYPES (type);
+			 args; args = TREE_CHAIN (args))
+		      if (args == void_list_node)
+			{
+			  *chain = args;
+			  break;
+			}
+		      else
+			{
+			  *chain
+			    = build_tree_list (NULL_TREE, TREE_VALUE (args));
+			  chain = &TREE_CHAIN (*chain);
+			}
+
+		    tree fn_type = build_function_type (TREE_TYPE (type), nargs);
+
+		    fn_type = apply_memfn_quals
+		      (fn_type, type_memfn_quals (type));
+
+		    fn_type = build_cp_fntype_variant
+		      (fn_type, type_memfn_rqual (type),
+		       TYPE_RAISES_EXCEPTIONS (type),
+		       TYPE_HAS_LATE_RETURN_TYPE (type));
+
+		    TREE_TYPE (alias) = fn_type;
+		    break;
+		  }
 	    }
 
 	  /* This is the real thing.  */
