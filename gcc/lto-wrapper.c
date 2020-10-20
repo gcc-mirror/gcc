@@ -1924,7 +1924,7 @@ cont:
 	    {
 	      char argsuffix[sizeof (DUMPBASE_SUFFIX) + 1];
 	      if (save_temps)
-		snprintf (dumpbase, sizeof (DUMPBASE_SUFFIX),
+		snprintf (argsuffix, sizeof (DUMPBASE_SUFFIX),
 			  "ltrans%u.ltrans_args", i);
 	      fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
 			    true, save_temps ? argsuffix : NULL);
