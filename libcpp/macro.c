@@ -1259,13 +1259,10 @@ collect_args (cpp_reader *pfile, const cpp_hashnode *node,
 
   if (token->type == CPP_EOF)
     {
-      /* We still need the CPP_EOF to end directives, to end
-	 pre-expansion of a macro argument, and at the end of the main
-	 file.  We do not want it at the end of a -include'd (forced)
-	 header file.  */
-      if (pfile->state.in_directive
-	  || !pfile->line_table->depth
-	  || pfile->context->prev)
+      /* Unless the EOF is marking the end of an argument, it's a fake
+	 one from the end of a file that _cpp_clean_line will not have
+	 advanced past.  */
+      if (token == &pfile->endarg)
 	_cpp_backup_tokens (pfile, 1);
       cpp_error (pfile, CPP_DL_ERROR,
 		 "unterminated argument list invoking macro \"%s\"",
@@ -1328,13 +1325,19 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node,
       pfile->state.parsing_args = 2;
       return collect_args (pfile, node, pragma_buff, num_args);
     }
-
-  /* Back up.  We may have skipped padding, in which case backing
-     up more than one token when expanding macros is in general
-     too difficult.  We re-insert it in its own context.  */
-  _cpp_backup_tokens (pfile, 1);
-  if (padding)
-    _cpp_push_token_context (pfile, NULL, padding, 1);
+  
+  /* Back up.  A CPP_EOF is either an EOF from an argument we're
+     expanding, or a fake one from lex_direct.  We want to backup the
+     former, but not the latter.  We may have skipped padding, in
+     which case backing up more than one token when expanding macros
+     is in general too difficult.  We re-insert it in its own
+     context.  */
+  if (token->type != CPP_EOF || token == &pfile->endarg)
+    {
+      _cpp_backup_tokens (pfile, 1);
+      if (padding)
+	_cpp_push_token_context (pfile, NULL, padding, 1);
+    }
 
   return NULL;
 }
@@ -2638,8 +2641,7 @@ _cpp_pop_context (cpp_reader *pfile)
   cpp_context *context = pfile->context;
 
   /* We should not be popping the base context.  */
-  if (context == &pfile->base_context)
-    abort ();
+  gcc_assert (context != &pfile->base_context);
 
   if (context->c.macro)
     {
