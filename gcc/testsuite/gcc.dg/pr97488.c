@@ -1,4 +1,4 @@
-// { dg-do compile }
+// { dg-do compile { target int128 } }
 // { dg-options "-O1 -ftree-vrp" }
 
 __int128
