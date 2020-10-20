@@ -19326,7 +19326,7 @@ tsubst_copy_and_build (tree t,
 	  {
 	    /* C++20 P0846: we can encounter an IDENTIFIER_NODE here when
 	       name lookup found nothing when parsing the template name.  */
-	    gcc_assert (cxx_dialect >= cxx20 || seen_error ());
+	    gcc_assert (cxx_dialect >= cxx2a || seen_error ());
 	    RETURN (tid);
 	  }
 	else
