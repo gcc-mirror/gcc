@@ -75,6 +75,8 @@ struct gomp_task_icv gomp_global_icv = {
 
 unsigned long gomp_max_active_levels_var = gomp_supported_active_levels;
 bool gomp_cancel_var = false;
+enum gomp_target_offload_t gomp_target_offload_var
+  = GOMP_TARGET_OFFLOAD_DEFAULT;
 int gomp_max_task_priority_var = 0;
 #ifndef HAVE_SYNC_BUILTINS
 gomp_mutex_t gomp_managed_threads_lock;
@@ -372,6 +374,48 @@ parse_unsigned_long_list (const char *name, unsigned long *p1stvalue,
   free (values);
   gomp_error ("Invalid value for environment variable %s", name);
   return false;
+}
+
+static void
+parse_target_offload (const char *name, enum gomp_target_offload_t *offload)
+{
+  const char *env;
+  bool found = false;
+  enum gomp_target_offload_t new_offload;
+
+  env = getenv (name);
+  if (env == NULL)
+    return;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (strncasecmp (env, "default", 7) == 0)
+    {
+      env += 7;
+      found = true;
+      new_offload = GOMP_TARGET_OFFLOAD_DEFAULT;
+    }
+  else if (strncasecmp (env, "mandatory", 9) == 0)
+    {
+      env += 9;
+      found = true;
+      new_offload = GOMP_TARGET_OFFLOAD_MANDATORY;
+    }
+  else if (strncasecmp (env, "disabled", 8) == 0)
+    {
+      env += 8;
+      found = true;
+      new_offload = GOMP_TARGET_OFFLOAD_DISABLED;
+    }
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (found && *env == '\0')
+    {
+      *offload = new_offload;
+      return;
+    }
+
+  gomp_error ("Invalid value for environment variable OMP_TARGET_OFFLOAD");
 }
 
 /* Parse environment variable set to a boolean or list of omp_proc_bind_t
@@ -1334,6 +1378,21 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
     }
   fputs ("'\n", stderr);
 
+  fputs ("  OMP_TARGET_OFFLOAD = '", stderr);
+  switch (gomp_target_offload_var)
+    {
+    case GOMP_TARGET_OFFLOAD_DEFAULT:
+      fputs ("DEFAULT", stderr);
+      break;
+    case GOMP_TARGET_OFFLOAD_MANDATORY:
+      fputs ("MANDATORY", stderr);
+      break;
+    case GOMP_TARGET_OFFLOAD_DISABLED:
+      fputs ("DISABLED", stderr);
+      break;
+    }
+  fputs ("'\n", stderr);
+
   if (verbose)
     {
       fputs ("  GOMP_CPU_AFFINITY = ''\n", stderr);
@@ -1366,6 +1425,7 @@ initialize_env (void)
   parse_boolean ("OMP_CANCELLATION", &gomp_cancel_var);
   parse_boolean ("OMP_DISPLAY_AFFINITY", &gomp_display_affinity_var);
   parse_int ("OMP_DEFAULT_DEVICE", &gomp_global_icv.default_device_var, true);
+  parse_target_offload ("OMP_TARGET_OFFLOAD", &gomp_target_offload_var);
   parse_int ("OMP_MAX_TASK_PRIORITY", &gomp_max_task_priority_var, true);
   parse_unsigned_long ("OMP_MAX_ACTIVE_LEVELS", &gomp_max_active_levels_var,
 		       true);
