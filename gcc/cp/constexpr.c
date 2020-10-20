@@ -1602,6 +1602,11 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	    arg = adjust_temp_type (type, arg);
 	  if (!TREE_CONSTANT (arg))
 	    *non_constant_args = true;
+	  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+	    /* The destructor needs to see any modifications the callee makes
+	       to the argument.  */
+	    *non_constant_args = true;
+
 	  /* For virtual calls, adjust the this argument, so that it is
 	     the object on which the method is called, rather than
 	     one of its bases.  */
@@ -2626,14 +2631,14 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		     problems with verify_gimple.  */
 		  arg = unshare_expr_without_location (arg);
 		  TREE_VEC_ELT (bound, i) = arg;
+
+		  /* And then unshare again so the callee doesn't change the
+		     argument values in the hash table. XXX Could we unshare
+		     lazily in cxx_eval_store_expression?  */
+		  arg = unshare_constructor (arg);
+		  if (TREE_CODE (arg) == CONSTRUCTOR)
+		    vec_safe_push (ctors, arg);
 		}
-	      /* Don't share a CONSTRUCTOR that might be changed.  This is not
-		 redundant with the unshare just above; we also don't want to
-		 change the argument values in the hash table.  XXX Could we
-		 unshare lazily in cxx_eval_store_expression?  */
-	      arg = unshare_constructor (arg);
-	      if (TREE_CODE (arg) == CONSTRUCTOR)
-		vec_safe_push (ctors, arg);
 	      ctx->global->values.put (remapped, arg);
 	      remapped = DECL_CHAIN (remapped);
 	    }
