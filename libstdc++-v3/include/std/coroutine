@@ -249,16 +249,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   };
 
-  void __dummy_resume_destroy() __attribute__((__weak__));
-  void __dummy_resume_destroy() {}
-
-  struct __noop_coro_frame
-  {
-    void (*__r)() = __dummy_resume_destroy;
-    void (*__d)() = __dummy_resume_destroy;
-    struct noop_coroutine_promise __p;
-  } __noop_coro_fr __attribute__((__weak__));
-
   // 17.12.4.1 Class noop_coroutine_promise
   /// [coroutine.promise.noop]
   template <>
@@ -284,7 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // [coroutine.handle.noop.promise], promise access
       noop_coroutine_promise& promise() const noexcept
-      { return __noop_coro_fr.__p; }
+      { return _S_fr.__p; }
 
       // [coroutine.handle.noop.address], address
       constexpr void* address() const noexcept { return _M_fr_ptr; }
@@ -292,12 +282,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       friend coroutine_handle noop_coroutine() noexcept;
 
-      coroutine_handle() = default;
+      struct __frame
+      {
+	static void __dummy_resume_destroy() { }
 
-      void* _M_fr_ptr = (void*) &__noop_coro_fr;
+	void (*__r)() = __dummy_resume_destroy;
+	void (*__d)() = __dummy_resume_destroy;
+	struct noop_coroutine_promise __p;
+      };
+
+      static __frame _S_fr;
+
+      explicit coroutine_handle() noexcept = default;
+
+      void* _M_fr_ptr = &_S_fr;
     };
 
   using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
+
+  inline noop_coroutine_handle::__frame
+  noop_coroutine_handle::_S_fr{};
 
   inline noop_coroutine_handle noop_coroutine() noexcept
   {
