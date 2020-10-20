@@ -97,18 +97,6 @@ along with GCC; see the file COPYING3.  If not see
     }		\
   while (0)
 
-/* Specific CPU macro definitions expected by the system headers,
-   inferred from -mcpu requests by the user.  Different versions of
-   VxWorks expect different forms of macros, such as
-
-   -D_VX_CPU=_VX_PPC403 on Vx7 and some variants of Vx6,
-   -DCPU=PPC403 on all Vx6 and earlier.  */
-
-#if TARGET_VXWORKS7
-#define VX_CPU_PREFIX "_VX_"
-#else
-#define VX_CPU_PREFIX ""
-#endif
 
 #define VX_CPUDEF(CPUID) \
   ":-D" VX_CPU_PREFIX "CPU=" VX_CPU_PREFIX #CPUID
