@@ -5347,7 +5347,7 @@ package body Exp_Util is
       then
          null;
 
-      --  For limited objects initialized with build in place function calls,
+      --  For limited objects initialized with build-in-place function calls,
       --  nothing to be done; otherwise we prematurely introduce an N_Reference
       --  node in the expression initializing the object, which breaks the
       --  circuitry that detects and adds the additional arguments to the
@@ -5356,9 +5356,9 @@ package body Exp_Util is
       elsif Is_Build_In_Place_Function_Call (Exp) then
          null;
 
-     --  If the exprewsion is an uninitialized aggregate, no need to build
-     --  a subtype from the expression. because this may require the use
-     --  of dynamic memory to create the object.
+     --  If the expression is an uninitialized aggregate, no need to build
+     --  a subtype from the expression, because this may require the use of
+     --  dynamic memory to create the object.
 
       elsif Is_Uninitialized_Aggregate (Exp, Exp_Typ) then
          Rewrite (Subtype_Indic, New_Occurrence_Of (Etype (Exp), Sloc (N)));
