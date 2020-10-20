@@ -3279,10 +3279,9 @@ gomp_target_init (void)
   const char *suffix = SONAME_SUFFIX (1);
   const char *cur, *next;
   char *plugin_name;
-  int i, new_num_devices;
-
-  num_devices = 0;
-  devices = NULL;
+  int i, new_num_devs;
+  int num_devs = 0, num_devs_openmp;
+  struct gomp_device_descr *devs = NULL;
 
   if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_DISABLED)
     return;
@@ -3303,7 +3302,7 @@ gomp_target_init (void)
 	plugin_name = (char *) malloc (prefix_len + cur_len + suffix_len + 1);
 	if (!plugin_name)
 	  {
-	    num_devices = 0;
+	    num_devs = 0;
 	    break;
 	  }
 
@@ -3313,16 +3312,16 @@ gomp_target_init (void)
 
 	if (gomp_load_plugin_for_device (&current_device, plugin_name))
 	  {
-	    new_num_devices = current_device.get_num_devices_func ();
-	    if (new_num_devices >= 1)
+	    new_num_devs = current_device.get_num_devices_func ();
+	    if (new_num_devs >= 1)
 	      {
 		/* Augment DEVICES and NUM_DEVICES.  */
 
-		devices = realloc (devices, (num_devices + new_num_devices)
-				   * sizeof (struct gomp_device_descr));
-		if (!devices)
+		devs = realloc (devs, (num_devs + new_num_devs)
+				      * sizeof (struct gomp_device_descr));
+		if (!devs)
 		  {
-		    num_devices = 0;
+		    num_devs = 0;
 		    free (plugin_name);
 		    break;
 		  }
@@ -3332,12 +3331,12 @@ gomp_target_init (void)
 		current_device.type = current_device.get_type_func ();
 		current_device.mem_map.root = NULL;
 		current_device.state = GOMP_DEVICE_UNINITIALIZED;
-		for (i = 0; i < new_num_devices; i++)
+		for (i = 0; i < new_num_devs; i++)
 		  {
 		    current_device.target_id = i;
-		    devices[num_devices] = current_device;
-		    gomp_mutex_init (&devices[num_devices].lock);
-		    num_devices++;
+		    devs[num_devs] = current_device;
+		    gomp_mutex_init (&devs[num_devs].lock);
+		    num_devs++;
 		  }
 	      }
 	  }
@@ -3349,34 +3348,37 @@ gomp_target_init (void)
 
   /* In DEVICES, sort the GOMP_OFFLOAD_CAP_OPENMP_400 ones first, and set
      NUM_DEVICES_OPENMP.  */
-  struct gomp_device_descr *devices_s
-    = malloc (num_devices * sizeof (struct gomp_device_descr));
-  if (!devices_s)
+  struct gomp_device_descr *devs_s
+    = malloc (num_devs * sizeof (struct gomp_device_descr));
+  if (!devs_s)
     {
-      num_devices = 0;
-      free (devices);
-      devices = NULL;
+      num_devs = 0;
+      free (devs);
+      devs = NULL;
     }
-  num_devices_openmp = 0;
-  for (i = 0; i < num_devices; i++)
-    if (devices[i].capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
-      devices_s[num_devices_openmp++] = devices[i];
-  int num_devices_after_openmp = num_devices_openmp;
-  for (i = 0; i < num_devices; i++)
-    if (!(devices[i].capabilities & GOMP_OFFLOAD_CAP_OPENMP_400))
-      devices_s[num_devices_after_openmp++] = devices[i];
-  free (devices);
-  devices = devices_s;
+  num_devs_openmp = 0;
+  for (i = 0; i < num_devs; i++)
+    if (devs[i].capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
+      devs_s[num_devs_openmp++] = devs[i];
+  int num_devs_after_openmp = num_devs_openmp;
+  for (i = 0; i < num_devs; i++)
+    if (!(devs[i].capabilities & GOMP_OFFLOAD_CAP_OPENMP_400))
+      devs_s[num_devs_after_openmp++] = devs[i];
+  free (devs);
+  devs = devs_s;
 
-  for (i = 0; i < num_devices; i++)
+  for (i = 0; i < num_devs; i++)
     {
       /* The 'devices' array can be moved (by the realloc call) until we have
 	 found all the plugins, so registering with the OpenACC runtime (which
 	 takes a copy of the pointer argument) must be delayed until now.  */
-      if (devices[i].capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
-	goacc_register (&devices[i]);
+      if (devs[i].capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
+	goacc_register (&devs[i]);
     }
 
+  num_devices = num_devs;
+  num_devices_openmp = num_devs_openmp;
+  devices = devs;
   if (atexit (gomp_target_fini) != 0)
     gomp_fatal ("atexit failed");
 }
