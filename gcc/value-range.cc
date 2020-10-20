@@ -35,18 +35,14 @@ along with GCC; see the file COPYING3.  If not see
 irange &
 irange::operator= (const irange &src)
 {
-  if (legacy_mode_p () != src.legacy_mode_p ())
-    {
-      copy_legacy_range (src);
-      return *this;
-    }
   if (legacy_mode_p ())
     {
-      gcc_checking_assert (src.legacy_mode_p ());
-      m_num_ranges = src.m_num_ranges;
-      m_base[0] = src.m_base[0];
-      m_base[1] = src.m_base[1];
-      m_kind = src.m_kind;
+      copy_to_legacy (src);
+      return *this;
+    }
+  if (src.legacy_mode_p ())
+    {
+      copy_legacy_to_multi_range (src);
       return *this;
     }
 
@@ -81,42 +77,58 @@ irange::maybe_anti_range () const
 	  && upper_bound () == wi::max_value (precision, sign));
 }
 
-// Copy between a legacy and a multi-range, or vice-versa.
-
 void
-irange::copy_legacy_range (const irange &src)
+irange::copy_legacy_to_multi_range (const irange &src)
 {
-  gcc_checking_assert (src.legacy_mode_p () != legacy_mode_p ());
+  gcc_checking_assert (src.legacy_mode_p ());
+  gcc_checking_assert (!legacy_mode_p ());
   if (src.undefined_p ())
     set_undefined ();
   else if (src.varying_p ())
     set_varying (src.type ());
-  else if (src.kind () == VR_ANTI_RANGE)
-    {
-      if (src.legacy_mode_p () && !range_has_numeric_bounds_p (&src))
-	set_varying (src.type ());
-      else
-	set (src.min (), src.max (), VR_ANTI_RANGE);
-    }
-  else if (legacy_mode_p () && src.maybe_anti_range ())
-    {
-      int_range<3> tmp (src);
-      tmp.invert ();
-      set (tmp.min (), wide_int_to_tree (src.type (), tmp.upper_bound (0)),
-	   VR_ANTI_RANGE);
-    }
   else
     {
-      // If copying legacy to int_range, normalize any symbolics.
-      if (src.legacy_mode_p () && !range_has_numeric_bounds_p (&src))
+      if (range_has_numeric_bounds_p (&src))
+	set (src.min (), src.max (), src.kind ());
+      else
 	{
 	  value_range cst (src);
 	  cst.normalize_symbolics ();
+	  gcc_checking_assert (cst.varying_p () || cst.kind () == VR_RANGE);
 	  set (cst.min (), cst.max ());
-	  return;
 	}
-      set (src.min (), src.max ());
     }
+}
+
+// Copy any type of irange into a legacy.
+
+void
+irange::copy_to_legacy (const irange &src)
+{
+  gcc_checking_assert (legacy_mode_p ());
+  // Copy legacy to legacy.
+  if (src.legacy_mode_p ())
+    {
+      m_num_ranges = src.m_num_ranges;
+      m_base[0] = src.m_base[0];
+      m_base[1] = src.m_base[1];
+      m_kind = src.m_kind;
+      return;
+    }
+  // Copy multi-range to legacy.
+  if (src.undefined_p ())
+    set_undefined ();
+  else if (src.varying_p ())
+    set_varying (src.type ());
+  else if (src.maybe_anti_range ())
+    {
+      int_range<3> r (src);
+      r.invert ();
+      // Use tree variants to save on tree -> wi -> tree conversions.
+      set (r.tree_lower_bound (0), r.tree_upper_bound (0), VR_ANTI_RANGE);
+    }
+  else
+    set (src.tree_lower_bound (), src.tree_upper_bound ());
 }
 
 // Swap min/max if they are out of order.  Return TRUE if further
