@@ -1,5 +1,17 @@
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
+	Libcody by value
+	* Makefile.def: Add libcody as a component library.
+	* Makefile.in: Change libcody from an external library to a
+	component.
+	* Makfile.tpl: Likewise.
+	* configure.ac: Likewise.
+	* configure: Regenerated.
+	gcc/
+	* Makefile.in: Likewise.
+	* configure.ac: Likewise.
+	* configure: Regenerated.
+
 	* libcody/: Import by value.
 
 	gcc/cp/
