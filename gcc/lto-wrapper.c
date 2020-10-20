@@ -950,7 +950,7 @@ compile_offload_image (const char *target, const char *compiler_path,
 
   obstack_ptr_grow (&argv_obstack, NULL);
   argv = XOBFINISH (&argv_obstack, char **);
-  fork_execute (argv[0], argv, true);
+  fork_execute (argv[0], argv, true, "offload_args");
   obstack_free (&argv_obstack, NULL);
 
   free_array_of_ptrs ((void **) paths, n_paths);
@@ -1777,7 +1777,8 @@ cont1:
 
   new_argv = XOBFINISH (&argv_obstack, const char **);
   argv_ptr = &new_argv[new_head_argc];
-  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true);
+  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true,
+		"ltrans_args");
 
   /* Copy the early generated debug info from the objects to temporary
      files and append those to the partial link commandline.  */
@@ -1921,8 +1922,12 @@ cont:
 	    }
 	  else
 	    {
+	      char argsuffix[sizeof (DUMPBASE_SUFFIX) + 1];
+	      if (save_temps)
+		snprintf (dumpbase, sizeof (DUMPBASE_SUFFIX),
+			  "ltrans%u.ltrans_args", i);
 	      fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
-			    true);
+			    true, save_temps ? argsuffix : NULL);
 	      maybe_unlink (input_name);
 	    }
 
@@ -1973,7 +1978,7 @@ cont:
 	  new_argv = XOBFINISH (&argv_obstack, const char **);
 
 	  pex = collect_execute (new_argv[0], CONST_CAST (char **, new_argv),
-				 NULL, NULL, PEX_SEARCH, false);
+				 NULL, NULL, PEX_SEARCH, false, NULL);
 	  do_wait (new_argv[0], pex);
 	  freeargv (make_argv);
 	  maybe_unlink (makefile);
