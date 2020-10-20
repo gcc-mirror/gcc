@@ -3596,6 +3596,29 @@ push_local_extern_decl_alias (tree decl)
 	{
 	  /* No existing namespace-scope decl.  Make one.  */
 	  alias = copy_decl (decl);
+	  if (TREE_CODE (alias) == FUNCTION_DECL)
+	    {
+	      /* Recontextualize the parms.  */
+	      for (tree *chain = &DECL_ARGUMENTS (alias);
+		   *chain; chain = &DECL_CHAIN (*chain))
+		{
+		  *chain = copy_decl (*chain);
+		  DECL_CONTEXT (*chain) = alias;
+		}
+
+	      /* Drop default args.  */
+	      tree type = TREE_TYPE (alias);
+	      tree main = TYPE_MAIN_VARIANT (type);
+	      if (TYPE_ARG_TYPES (main) != TYPE_ARG_TYPES (type))
+		{
+		  /* There are default args.  Lose them.  */
+		  type = build_cp_fntype_variant
+		    (main, type_memfn_rqual (type),
+		     TYPE_RAISES_EXCEPTIONS (type),
+		     TYPE_HAS_LATE_RETURN_TYPE (type));
+		  TREE_TYPE (alias) = type;
+		}
+	    }
 
 	  /* This is the real thing.  */
 	  DECL_LOCAL_DECL_P (alias) = false;

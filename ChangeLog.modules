@@ -1,5 +1,12 @@
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
+	Local-extern fix
+	gcc/cp
+	* name-lookup.c (push_local_extern_decl_alias): Recontextualize
+	alias' parms, drop any default args.
+	gcc/testsuite/
+	* g++.dg/modules/local-extern-2.H: New.
+
 	Libcody by value
 	* Makefile.def: Add libcody as a component library.
 	* Makefile.in: Change libcody from an external library to a
