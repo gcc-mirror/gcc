@@ -434,6 +434,13 @@ struct gomp_task_icv
   struct target_mem_desc *target_data;
 };
 
+enum gomp_target_offload_t
+{
+  GOMP_TARGET_OFFLOAD_DEFAULT,
+  GOMP_TARGET_OFFLOAD_MANDATORY,
+  GOMP_TARGET_OFFLOAD_DISABLED
+};
+
 #define gomp_supported_active_levels INT_MAX
 
 extern struct gomp_task_icv gomp_global_icv;
@@ -442,6 +449,7 @@ extern gomp_mutex_t gomp_managed_threads_lock;
 #endif
 extern unsigned long gomp_max_active_levels_var;
 extern bool gomp_cancel_var;
+extern enum gomp_target_offload_t gomp_target_offload_var;
 extern int gomp_max_task_priority_var;
 extern unsigned long long gomp_spin_count_var, gomp_throttled_spin_count_var;
 extern unsigned long gomp_available_cpus, gomp_managed_threads;
