@@ -1,5 +1,7 @@
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
+	* libcody/: Import by value.
+
 	gcc/cp/
 	* module.cc (elf_in::begin): Fix madvise on AIX.
 
