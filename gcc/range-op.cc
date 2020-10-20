@@ -1642,6 +1642,11 @@ operator_rshift::op1_range (irange &r,
 		    wi::uhwi (prec, TYPE_PRECISION (TREE_TYPE (shift))),
 		    UNSIGNED))
 	return false;
+      if (wi::to_wide (shift) == 0)
+	{
+	  r = lhs;
+	  return true;
+	}
 
       // Folding the original operation may discard some impossible
       // ranges from the LHS.

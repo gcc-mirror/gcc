@@ -456,6 +456,17 @@ is
       end;
    end Element;
 
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 10) return Set is
+   begin
+      return Result : Set (Capacity, 0) do
+         Reserve_Capacity (Result, Capacity);
+      end return;
+   end Empty;
+
    ---------------------
    -- Equivalent_Sets --
    ---------------------

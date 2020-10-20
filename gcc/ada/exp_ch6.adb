@@ -2800,6 +2800,10 @@ package body Exp_Ch6 is
       --  though useless predicate checks will be generally removed by
       --  back-end optimizations.
 
+      procedure Check_Subprogram_Variant;
+      --  Emit a call to the internally generated procedure with checks for
+      --  aspect Subprogrgram_Variant, if present and enabled.
+
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
       --  Within an instance, a type derived from an untagged formal derived
       --  type inherits from the original parent, not from the actual. The
@@ -3057,6 +3061,37 @@ package body Exp_Ch6 is
             return False;
          end if;
       end Can_Fold_Predicate_Call;
+
+      ------------------------------
+      -- Check_Subprogram_Variant --
+      ------------------------------
+
+      procedure Check_Subprogram_Variant is
+         Variant_Prag : constant Node_Id :=
+           Get_Pragma (Current_Scope, Pragma_Subprogram_Variant);
+
+         Variant_Proc : Entity_Id;
+
+      begin
+         if Present (Variant_Prag) and then Is_Checked (Variant_Prag) then
+
+            --  Analysis of the pragma rewrites its argument with a reference
+            --  to the internally generated procedure.
+
+            Variant_Proc :=
+              Entity
+                (Expression
+                   (First
+                      (Pragma_Argument_Associations (Variant_Prag))));
+
+            Insert_Action (Call_Node,
+              Make_Procedure_Call_Statement (Loc,
+                 Name                   =>
+                   New_Occurrence_Of (Variant_Proc, Loc),
+                 Parameter_Associations =>
+                   New_Copy_List (Parameter_Associations (Call_Node))));
+         end if;
+      end Check_Subprogram_Variant;
 
       ---------------------------
       -- Inherited_From_Formal --
@@ -3926,42 +3961,47 @@ package body Exp_Ch6 is
 
                            procedure Insert_Level_Assign (Branch : Node_Id) is
 
-                              procedure Expand_Branch (Assn : Node_Id);
+                              procedure Expand_Branch (Res_Assn : Node_Id);
                               --  Perform expansion or iterate further within
-                              --  nested conditionals.
+                              --  nested conditionals given the object
+                              --  declaration or assignment to result object
+                              --  created during expansion which represents
+                              --  a branch of the conditional expression.
 
                               -------------------
                               -- Expand_Branch --
                               -------------------
 
-                              procedure Expand_Branch (Assn : Node_Id) is
+                              procedure Expand_Branch (Res_Assn : Node_Id) is
                               begin
-                                 pragma Assert (Nkind (Assn) =
-                                                 N_Assignment_Statement);
+                                 pragma Assert (Nkind (Res_Assn) in
+                                                 N_Assignment_Statement |
+                                                 N_Object_Declaration);
 
                                  --  There are more nested conditional
                                  --  expressions so we must go deeper.
 
-                                 if Nkind (Expression (Assn)) =
+                                 if Nkind (Expression (Res_Assn)) =
                                       N_Expression_With_Actions
                                    and then
                                      Nkind
-                                       (Original_Node (Expression (Assn))) in
-                                         N_Case_Expression | N_If_Expression
+                                       (Original_Node (Expression (Res_Assn)))
+                                         in N_Case_Expression | N_If_Expression
                                  then
-                                    Insert_Level_Assign (Expression (Assn));
+                                    Insert_Level_Assign
+                                      (Expression (Res_Assn));
 
                                  --  Add the level assignment
 
                                  else
-                                    Insert_Before_And_Analyze (Assn,
+                                    Insert_Before_And_Analyze (Res_Assn,
                                       Make_Assignment_Statement (Loc,
                                         Name       =>
                                           New_Occurrence_Of
                                             (Lvl, Loc),
                                         Expression =>
                                           Dynamic_Accessibility_Level
-                                            (Expression (Assn))));
+                                            (Expression (Res_Assn))));
                                  end if;
                               end Expand_Branch;
 
@@ -3979,20 +4019,23 @@ package body Exp_Ch6 is
                               --  Find the relevant statement in the actions
 
                               Cond := First (Actions (Branch));
-                              loop
+                              while Present (Cond) loop
                                  exit when Nkind (Cond) in
                                              N_Case_Statement | N_If_Statement;
 
                                  Next (Cond);
-
-                                 if No (Cond) then
-                                    raise Program_Error;
-                                 end if;
                               end loop;
+
+                              --  The conditional expression may have been
+                              --  optimized away, so examine the actions in
+                              --  the branch.
+
+                              if No (Cond) then
+                                 Expand_Branch (Last (Actions (Branch)));
 
                               --  Iterate through if expression branches
 
-                              if Nkind (Cond) = N_If_Statement then
+                              elsif Nkind (Cond) = N_If_Statement then
                                  Expand_Branch (Last (Then_Statements (Cond)));
                                  Expand_Branch (Last (Else_Statements (Cond)));
 
@@ -4649,6 +4692,18 @@ package body Exp_Ch6 is
       --  the various expansion activities for actuals is carried out.
 
       Expand_Actuals (Call_Node, Subp, Post_Call);
+
+      --  If it is a recursive call then call the internal procedure that
+      --  verifies Subprogram_Variant contract (if present and enabled).
+      --  Detecting calls to subprogram aliases is necessary for recursive
+      --  calls in instances of generic subprograms, where the renaming of
+      --  the current subprogram is called.
+
+      if Is_Subprogram (Subp)
+        and then Same_Or_Aliased_Subprograms (Subp, Current_Scope)
+      then
+         Check_Subprogram_Variant;
+      end if;
 
       --  Verify that the actuals do not share storage. This check must be done
       --  on the caller side rather that inside the subprogram to avoid issues

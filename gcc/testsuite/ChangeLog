@@ -1,3 +1,112 @@
+2020-10-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97360-2.c: New test.
+
+2020-10-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/sad-vectorize-1.c: Remove target.
+	* gcc.target/powerpc/sad-vectorize-2.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v16qi-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v16qi.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v16qiu-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v16qiu.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v2df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v2di.c: Require lp64.
+	* gcc.target/powerpc/vec-extract-v4sf.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v4si-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v4si.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v4siu-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v4siu.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v8hi-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v8hi.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v8hiu-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v8hiu.c: Remove target.
+	* gcc.target/powerpc/vec-init-1.c: Remove target.
+	* gcc.target/powerpc/vec-init-2.c: Require lp64.
+	* gcc.target/powerpc/vec-init-3.c: Require lp64.
+	* gcc.target/powerpc/vec-init-4.c: Remove target.
+	* gcc.target/powerpc/vec-init-5.c: Remove target.
+	* gcc.target/powerpc/vec-init-6.c: Require lp64.
+	* gcc.target/powerpc/vec-init-7.c: Require lp64.
+	* gcc.target/powerpc/vec-init-8.c: Remove target.
+	* gcc.target/powerpc/vec-init-9.c: Require lp64.
+	* gcc.target/powerpc/vec-setup-double.c: Remove target.
+	* gcc.target/powerpc/vec-setup-long.c: Remove target.
+	* gcc.target/powerpc/vsu/vec-xl-len-13.c: Correct expected warnings.
+	* gcc.target/powerpc/vsu/vsu.exp: Enable on AIX.
+
+2020-10-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-extract-char.p7.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-char.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-char.p9.c: Remove target.
+	Expect 3 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-double.p7.c: Remove target.
+	Add -mbig-endian for Linux.
+	* gcc.target/powerpc/fold-vec-extract-double.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-float.p7.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-float.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-float.p9.c: Require lp64.
+	* gcc.target/powerpc/fold-vec-extract-int.p7.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-int.p9.c: Remove target.
+	Expect 3 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p7.c: Remove target.
+	Expect 4 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Remove target.
+	Expect 4 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p9.c: Require lp64.
+	* gcc.target/powerpc/fold-vec-extract-short.p7.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-short.p9.c: Require lp64.
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-double.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Remove target.
+	Require 8 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: Remove target.
+	* gcc.target/powerpc/fold-vec-select-double.c: Remove target.
+	* gcc.target/powerpc/fold-vec-select-float.c: Remove target.
+	* gcc.target/powerpc/fold-vec-splats-int.c: Require lp64.
+	* gcc.target/powerpc/fold-vec-splats-longlong.c: Require lp64.
+
+2020-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97438
+	* g++.dg/coroutines/pr97438.C: New test.
+
+2020-10-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/97456
+	* gcc.dg/tree-ssa/pr97456.c: New test.
+
+2020-10-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/pr97471.c: New.
+
+2020-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97488.c: New test.
+
+2020-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97486
+	* gcc.dg/vect/bb-slp-pr97486.c: New testcase.
+
+2020-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97467.c: New test.
+
+2020-10-19  Li Jia He  <helijia@gcc.gnu.org>
+
+	PR tree-optimization/66552
+	* gcc.dg/pr66552.c: New testcase.
+
 2020-10-18  Harald Anlauf  <anlauf@gmx.de>
 
 	* gfortran.dg/matmul_20.f90: New test.

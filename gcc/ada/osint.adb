@@ -1072,7 +1072,7 @@ package body Osint is
 
    function File_Hash (F : File_Name_Type) return File_Hash_Num is
    begin
-      return File_Hash_Num (Int (F) rem File_Hash_Num'Range_Length);
+      return File_Hash_Num (Int (F) mod File_Hash_Num'Range_Length);
    end File_Hash;
 
    -----------------

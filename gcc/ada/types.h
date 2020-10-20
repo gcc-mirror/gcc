@@ -150,30 +150,32 @@ typedef int Union_Id;
 
 /* Range definitions for Tree Data:  */
 
-#define List_Low_Bound		-100000000
+#define List_Low_Bound		-99999999
 #define List_High_Bound		0
 
 #define Node_Low_Bound		0
-#define Node_High_Bound		99999999
+#define Node_High_Bound		1999999999
+/* Above is the correct value of Node_High_Bound for 64-bit machines. It is
+   wrong for 32-bit machines, but that doesn't matter. */
 
-#define Elist_Low_Bound		100000000
-#define Elist_High_Bound	199999999
+#define Elist_Low_Bound		-199999999
+#define Elist_High_Bound	-100000000
 
-#define Elmt_Low_Bound		200000000
-#define Elmt_High_Bound		299999999
+#define Elmt_Low_Bound		-299999999
+#define Elmt_High_Bound		-200000000
 
-#define Names_Low_Bound		300000000
-#define Names_High_Bound	399999999
+#define Names_Low_Bound		-399999999
+#define Names_High_Bound	-300000000
 
-#define Strings_Low_Bound	400000000
-#define Strings_High_Bound	499999999
+#define Strings_Low_Bound	-499999999
+#define Strings_High_Bound	-400000000
 
-#define Ureal_Low_Bound		500000000
-#define Ureal_High_Bound        599999999
+#define Ureal_Low_Bound		-599999999
+#define Ureal_High_Bound        -500000000
 
-#define Uint_Low_Bound		600000000
-#define Uint_Table_Start        2000000000
-#define Uint_High_Bound	        2099999999
+#define Uint_Low_Bound		-2100000000
+#define Uint_Table_Start        -699999999
+#define Uint_High_Bound	        -600000000
 
 SUBTYPE (List_Range,      Int, List_Low_Bound,    List_High_Bound)
 SUBTYPE (Node_Range,      Int, Node_Low_Bound,    Node_High_Bound)

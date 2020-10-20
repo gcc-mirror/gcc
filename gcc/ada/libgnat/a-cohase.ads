@@ -61,7 +61,7 @@ is
       Constant_Indexing => Constant_Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty       => Empty_Set,
+      Aggregate         => (Empty       => Empty,
                             Add_Unnamed => Include);
 
    pragma Preelaborable_Initialization (Set);
@@ -82,6 +82,8 @@ is
 
    package Set_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
+
+   function Empty (Capacity : Count_Type := 1000) return Set;
 
    function "=" (Left, Right : Set) return Boolean;
    --  For each element in Left, set equality attempts to find the equal

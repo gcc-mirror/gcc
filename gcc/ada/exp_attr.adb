@@ -2334,7 +2334,7 @@ package body Exp_Attr is
               and then Is_Entity_Name (Prefix (Enc_Object))
               and then (Ekind (Btyp) = E_General_Access_Type
                          or else Is_Local_Anonymous_Access (Btyp))
-              and then Ekind (Entity (Prefix (Enc_Object))) in Formal_Kind
+              and then Is_Formal (Entity (Prefix (Enc_Object)))
               and then Ekind (Etype (Entity (Prefix (Enc_Object))))
                          = E_Anonymous_Access_Type
               and then Present (Extra_Accessibility
@@ -4665,6 +4665,8 @@ package body Exp_Attr is
          Subp    : Node_Id;
          Temp    : Entity_Id;
 
+         use Old_Attr_Util.Conditional_Evaluation;
+         use Old_Attr_Util.Indirect_Temps;
       begin
          --  Generating C code we don't need to expand this attribute when
          --  we are analyzing the internally built nested postconditions
@@ -4748,10 +4750,60 @@ package body Exp_Attr is
             Ins_Nod := First (Declarations (Ins_Nod));
          end if;
 
+         if Eligible_For_Conditional_Evaluation (N) then
+            declare
+               Eval_Stmts : constant List_Id := New_List;
+
+               procedure Append_For_Indirect_Temp
+                 (N : Node_Id; Is_Eval_Stmt : Boolean);
+               --  Append either a declaration (which is to be elaborated
+               --  unconditionally) or an evaluation statement (which is
+               --  to be executed conditionally).
+
+               -------------------------------
+               --  Append_For_Indirect_Temp --
+               -------------------------------
+
+               procedure Append_For_Indirect_Temp
+                 (N : Node_Id; Is_Eval_Stmt : Boolean)
+               is
+               begin
+                  if Is_Eval_Stmt then
+                     Append_To (Eval_Stmts, N);
+                  else
+                     Insert_Before_And_Analyze (Ins_Nod, N);
+                  end if;
+               end Append_For_Indirect_Temp;
+
+               procedure Declare_Indirect_Temporary is new
+                 Declare_Indirect_Temp
+                   (Append_Item => Append_For_Indirect_Temp);
+            begin
+               Declare_Indirect_Temporary
+                 (Attr_Prefix => Pref, Indirect_Temp => Temp);
+
+               Insert_Before_And_Analyze (
+                 Ins_Nod,
+                 Make_If_Statement
+                   (Sloc            => Loc,
+                    Condition       => Conditional_Evaluation_Condition  (N),
+                    Then_Statements => Eval_Stmts));
+
+               Rewrite (N, Indirect_Temp_Value
+                             (Temp => Temp,
+                              Typ  => Etype (Pref),
+                              Loc  => Loc));
+
+               if Present (Subp) then
+                  Pop_Scope;
+               end if;
+               return;
+            end;
+
          --  Preserve the tag of the prefix by offering a specific view of the
          --  class-wide version of the prefix.
 
-         if Is_Tagged_Type (Typ) then
+         elsif Is_Tagged_Type (Typ) then
 
             --  Generate:
             --    CW_Temp : constant Typ'Class := Typ'Class (Pref);
@@ -6037,11 +6089,11 @@ package body Exp_Attr is
       when Attribute_Scaling =>
          Expand_Fpt_Attribute_RI (N);
 
-      -------------------------
-      -- Simple_Storage_Pool --
-      -------------------------
+      ----------------------------------------
+      -- Simple_Storage_Pool & Storage_Pool --
+      ----------------------------------------
 
-      when Attribute_Simple_Storage_Pool =>
+      when Attribute_Simple_Storage_Pool | Attribute_Storage_Pool =>
          Rewrite (N,
            Make_Type_Conversion (Loc,
              Subtype_Mark => New_Occurrence_Of (Etype (N), Loc),
@@ -6176,17 +6228,6 @@ package body Exp_Attr is
 
             Expand_Size_Attribute (N);
          end Size;
-
-      ------------------
-      -- Storage_Pool --
-      ------------------
-
-      when Attribute_Storage_Pool =>
-         Rewrite (N,
-           Make_Type_Conversion (Loc,
-             Subtype_Mark => New_Occurrence_Of (Etype (N), Loc),
-             Expression   => New_Occurrence_Of (Entity (N), Loc)));
-         Analyze_And_Resolve (N, Typ);
 
       ------------------
       -- Storage_Size --

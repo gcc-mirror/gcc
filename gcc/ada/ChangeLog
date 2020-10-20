@@ -1,3 +1,245 @@
+2020-10-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb: (P_Aggregate_Or_Paren_Expr): Recognize
+	Iterated_Element_Component.
+	(P_Iterated_Component_Association): Rebuild node as an Iterated_
+	Element_Association when Key_Expression is present, and attach
+	either the Loop_Parameter_Specification or the
+	Iterator_Specification to the new node.
+	* sem_aggr.adb: (Resolve_Container_Aggregate):
+	Resolve_Iterated_Association handles bota Iterated_Component_
+	and Iterated_Element_Associations, in which case it analyzes and
+	resoles the orresponding Key_Expression.
+	* exp_aggr.adb (Expand_Iterated_Component): If a Key_Expression
+	is present, use it as the required parameter in the call to the
+	insertion routine for the destination container aggregate. Call
+	this routine for both kinds of Iterated_Associations.
+
+2020-10-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Enable needed range checks.
+
+2020-10-19  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	Set the Warnings_Off flag on the pointer object used in the
+	expansion of iterators and similar.
+
+2020-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (PowerPC/Linux): Use s-taspri__posix.ads instead
+	of s-taspri__posix-noaltstack.ads for s-taspri.ads.
+
+2020-10-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Add_Call): Remove excessive condition and
+	unnecessary call to Set_Has_Predicates.
+
+2020-10-19  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Use debug switch -gnatdF for this alternative
+	display of messages.
+	* errout.adb (Output_Messages): Alternative display when -gnatdF
+	is used.
+	* erroutc.adb (Output_Msg_Text): Likewise.
+
+2020-10-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Check_Untagged_Equality): Check for AI12-0352.
+
+2020-10-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Add_View_Conversion_Invariants): Do not insert
+	generated invariant checks when the call is a function call.
+	These tests are properly inserted in the code in procedure
+	Insert_Post_Call_Actions, which takes care of finding the proper
+	insertion point for the checks.
+	(Insert_Post_Call_Actions): Add question marks to indicate
+	possible gap in handling function calls that appear as aggregate
+	components.
+
+2020-10-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* contracts.adb (Process_Preconditions_For): Do not exclude
+	instances.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Disable spurious
+	warning on internally generated variables.
+
+2020-10-19  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* debug.adb: Document -gnatd_c flag as being used for CUDA.
+	* gnat_cuda.ads: New file.
+	* gnat_cuda.adb: New file.
+	* rtsfind.ads: Add Interfaces_C_Strings package and
+	RE_Fatbin_Wrapper, RE_Register_Fat_Binary,
+	RE_Register_Fat_Binary_End, RE_Register_Function, RE_Chars_Ptr,
+	RE_New_Char_Array entities.
+	* rtsfind.adb: Create new Interfaces_C_Descendant subtype,
+	handle it.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Call CUDA init
+	procedure.
+	* sem_prag.adb (Analyze_Pragma): Call Add_Cuda_Kernel procedure.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Add gnat_cuda.o.
+
+2020-10-19  Bob Duff  <duff@adacore.com>
+
+	* ghost.adb (Whole_Object_Ref): New function to compute the name
+	of the whole object.
+	(Mark_And_Set_Ghost_Assignment): Rewrite to use
+	Whole_Object_Ref.  We need to partly analyze the left-hand side
+	in order to distinguish expanded names and record components.
+	* lib-xref.ads, lib-xref.adb (Deferred_References): Move table
+	to body, and add Defer_Reference to update the table, avoiding
+	duplicates.
+	(Generate_Reference): Avoid duplicates.
+	* sem_ch8.ads, sem_ch8.adb (Find_Direct_Name): Remove _OK
+	parameters, which are no longer needed. Ignore errors in
+	Ignore_Errors mode.
+	* sem_util.ads, sem_util.adb (Preanalyze_Without_Errors): Make
+	this public, so we can call it from Ghost.
+	* errout.ads, scng.adb, sem_prag.adb: Minor.
+
+2020-10-19  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Check if type
+	depends on discriminant.
+
+2020-10-19  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-coinve.adb, libgnat/a-cidlli.adb (Put_Image): Call
+	Iterate.
+
+2020-10-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): Properly apply
+	subtype constraints when using a Default_Value.
+	* freeze.adb: Fix typo.
+
+2020-10-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Relaxed_Initialization): Fix bug
+	where a call to Error_Msg_N leads to crash due to
+	Error_Msg_Name_1 being removed by the call, while a subsequent
+	call to Error_Msg_N tries to use it. The variable
+	Error_Msg_Name_1 should be restored prior to the next call. Also
+	add checking for the new rules.
+
+2020-10-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* checks.adb (Apply_Type_Conversion_Checks): Minor code clean
+	up.
+	* exp_ch4.adb (Discrete_Range_Check): Optimize range checks.
+	Update comments.
+	(Expand_N_Type_Conversion): Generate range check when rewriting
+	a type conversion if needed. Add assertion.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Minor code clean
+	up.
+	* sem_res.adb (Resolve_Type_Conversion): Apply range check when
+	needed.  Update comments.
+
+2020-10-19  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-textio.ads: Update top-level comment.
+
+2020-10-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part): Fix typo.
+
+2020-10-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Simplify condition for by-copy
+	types.
+
+2020-10-19  Yannick Moy  <moy@adacore.com>
+
+	* errout.ads: Add comment regarding lack of preservation of
+	Errout state across successive calls to the API.
+
+2020-10-19  Bob Duff  <duff@adacore.com>
+
+	* exp_put_image.adb (Build_Elementary_Put_Image_Call): Use the
+	base type to recognize various cases of access types.
+	* libgnat/a-cbdlli.adb, libgnat/a-cbdlli.ads, libgnat/a-cbhama.adb,
+	libgnat/a-cbhama.ads, libgnat/a-cbhase.adb, libgnat/a-cbhase.ads,
+	libgnat/a-cbmutr.adb, libgnat/a-cbmutr.ads, libgnat/a-cborma.adb,
+	libgnat/a-cborma.ads, libgnat/a-cborse.adb, libgnat/a-cborse.ads,
+	libgnat/a-cdlili.adb, libgnat/a-cdlili.ads, libgnat/a-cidlli.adb,
+	libgnat/a-cidlli.ads, libgnat/a-cihama.adb, libgnat/a-cihama.ads,
+	libgnat/a-cihase.adb, libgnat/a-cihase.ads, libgnat/a-cimutr.adb,
+	libgnat/a-cimutr.ads, libgnat/a-ciorma.adb, libgnat/a-ciorma.ads,
+	libgnat/a-ciormu.adb, libgnat/a-ciormu.ads, libgnat/a-ciorse.adb,
+	libgnat/a-ciorse.ads, libgnat/a-coboho.adb, libgnat/a-coboho.ads,
+	libgnat/a-cobove.adb, libgnat/a-cobove.ads, libgnat/a-cohama.adb,
+	libgnat/a-cohama.ads, libgnat/a-cohase.adb, libgnat/a-cohase.ads,
+	libgnat/a-coinho.adb, libgnat/a-coinho.ads,
+	libgnat/a-coinho__shared.adb, libgnat/a-coinho__shared.ads,
+	libgnat/a-coinve.adb, libgnat/a-coinve.ads, libgnat/a-comutr.adb,
+	libgnat/a-comutr.ads, libgnat/a-coorma.adb, libgnat/a-coorma.ads,
+	libgnat/a-coormu.adb, libgnat/a-coormu.ads, libgnat/a-coorse.adb,
+	libgnat/a-coorse.ads, libgnat/a-strunb.adb, libgnat/a-strunb.ads,
+	libgnat/a-strunb__shared.adb, libgnat/a-strunb__shared.ads:
+	Implement Put_Image attibute.
+	* libgnat/a-stteou.ads, libgnat/s-putima.ads,
+	libgnat/a-stouut.ads, libgnat/a-stoubu.adb: Make
+	Ada.Strings.Text_Output, Ada.Strings.Text_Output.Utils, and
+	System.Put_Images Pure, so they can be with'ed by Pure units
+	that should have Put_Image defined.
+	* libgnat/a-stouut.adb: Add missing column adjustments, and
+	remove a redundant one.
+	* libgnat/s-putima.adb (Put_Arrow): New routine to print an
+	arrow. Avoids adding a with clause to some containers.
+
+2020-10-19  Bob Duff  <duff@adacore.com>
+
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Require matching
+	parens or brackets.
+	* par.adb, par-tchk.adb (T_Right_Bracket): New procedure to give
+	an error on missing ].
+
+2020-10-19  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): Do not trust in the decoration
+	of the Entity attribute in constants associated with
+	discriminals of protected types.
+
+2020-10-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Context): When the enclosing
+	subprogram is abstract, bypass early return if the call is
+	tag-indeterminate, to continue with the later error checking.
+
+2020-10-19  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch7.adb (Uninstall_Declarations): Uninstall the
+	declaration of a subtype declaration defined in the private part
+	of a package.
+
+2020-10-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Simplify code since
+	we are always under -gnatX if we encounter a Tok_Left_Bracket.
+	* scng.adb (Scan): [] is an aggregate under -gnatX and a wide
+	character otherwise.
+
+2020-10-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Cleanup.
+
+2020-10-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Is_Direct_Deep_Call): Refine type from Node_Id to
+	Entity_Id.
+
+2020-10-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (May_Fold): Detect all operators, i.e. both binary
+	and unary ones.
+
+2020-10-19  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Simplify repeated calls to
+	Nkind.
+
 2020-10-18  Alexandre Oliva  <oliva@adacore.com>
 
 	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Compile Ada.Numerics

@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_insert() with int
    inputs produce the right codegen.  Power9 variant.  */
 
-/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9" } */
 
@@ -59,7 +59,7 @@ testui2_cst(unsigned int x, vector unsigned int v)
 /* { dg-final { scan-assembler-times {\mxxinsertw\M} 4 { target lp64 } } } */
 
 
-/* { dg-final { scan-assembler-times {\maddi\M} 12 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi\M} 8 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstw\M} 8 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlxv\M} 8 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlvewx\M} 4 { target ilp32 } } } */

@@ -8178,8 +8178,9 @@ package body Exp_Ch3 is
             --  Taft-amendment types, which potentially have controlled
             --  components), expand the list controller object that will store
             --  the dynamically allocated objects. Don't do this transformation
-            --  for expander-generated access types, but do it for types that
-            --  are the full view of types derived from other private types.
+            --  for expander-generated access types, except do it for types
+            --  that are the full view of types derived from other private
+            --  types and for access types used to implement indirect temps.
             --  Also suppress the list controller in the case of a designated
             --  type with convention Java, since this is used when binding to
             --  Java API specs, where there's no equivalent of a finalization
@@ -8188,6 +8189,8 @@ package body Exp_Ch3 is
 
             if not Comes_From_Source (Def_Id)
               and then not Has_Private_Declaration (Def_Id)
+              and then not Old_Attr_Util.Indirect_Temps
+                             .Is_Access_Type_For_Indirect_Temp (Def_Id)
             then
                null;
 
@@ -9468,6 +9471,31 @@ package body Exp_Ch3 is
              (Is_Null_Extension (Etype (Subp))
                and then Etype (Alias (Subp)) /= Etype (Subp))
          then
+            --  If there is a non-overloadable homonym in the current
+            --  scope, the implicit declaration remains invisible.
+            --  We check the current entity with the same name, or its
+            --  homonym in case the derivation takes place after the
+            --  hiding object declaration.
+
+            if Present (Current_Entity (Subp)) then
+               declare
+                  Curr : constant Entity_Id := Current_Entity (Subp);
+                  Prev : constant Entity_Id := Homonym (Curr);
+               begin
+                  if (Comes_From_Source (Curr)
+                    and then Scope (Curr) = Current_Scope
+                    and then not Is_Overloadable (Curr))
+                  or else
+                    (Present (Prev)
+                      and then Comes_From_Source (Prev)
+                      and then Scope (Prev) = Current_Scope
+                      and then not Is_Overloadable (Prev))
+                  then
+                     goto Next_Prim;
+                  end if;
+               end;
+            end if;
+
             Formal_List := No_List;
             Formal := First_Formal (Subp);
 

@@ -2888,35 +2888,6 @@ last_and_only_stmt (basic_block bb)
     return NULL;
 }
 
-/* Reinstall those PHI arguments queued in OLD_EDGE to NEW_EDGE.  */
-
-static void
-reinstall_phi_args (edge new_edge, edge old_edge)
-{
-  edge_var_map *vm;
-  int i;
-  gphi_iterator phis;
-
-  vec<edge_var_map> *v = redirect_edge_var_map_vector (old_edge);
-  if (!v)
-    return;
-
-  for (i = 0, phis = gsi_start_phis (new_edge->dest);
-       v->iterate (i, &vm) && !gsi_end_p (phis);
-       i++, gsi_next (&phis))
-    {
-      gphi *phi = phis.phi ();
-      tree result = redirect_edge_var_map_result (vm);
-      tree arg = redirect_edge_var_map_def (vm);
-
-      gcc_assert (result == gimple_phi_result (phi));
-
-      add_phi_arg (phi, arg, new_edge, redirect_edge_var_map_location (vm));
-    }
-
-  redirect_edge_var_map_clear (old_edge);
-}
-
 /* Returns the basic block after which the new basic block created
    by splitting edge EDGE_IN should be placed.  Tries to keep the new block
    near its "logical" location.  This is of most help to humans looking
@@ -2956,11 +2927,24 @@ gimple_split_edge (edge edge_in)
   new_bb = create_empty_bb (after_bb);
   new_bb->count = edge_in->count ();
 
-  e = redirect_edge_and_branch (edge_in, new_bb);
-  gcc_assert (e == edge_in);
-
+  /* We want to avoid re-allocating PHIs when we first
+     add the fallthru edge from new_bb to dest but we also
+     want to avoid changing PHI argument order when
+     first redirecting edge_in away from dest.  The former
+     avoids changing PHI argument order by adding them
+     last and then the redirection swapping it back into
+     place by means of unordered remove.
+     So hack around things by temporarily removing all PHIs
+     from the destination during the edge redirection and then
+     making sure the edges stay in order.  */
+  gimple_seq saved_phis = phi_nodes (dest);
+  unsigned old_dest_idx = edge_in->dest_idx;
+  set_phi_nodes (dest, NULL);
   new_edge = make_single_succ_edge (new_bb, dest, EDGE_FALLTHRU);
-  reinstall_phi_args (new_edge, e);
+  e = redirect_edge_and_branch (edge_in, new_bb);
+  gcc_assert (e == edge_in && new_edge->dest_idx == old_dest_idx);
+  /* set_phi_nodes sets the BB of the PHI nodes, so do it manually here.  */
+  dest->il.gimple.phi_nodes = saved_phis;
 
   return new_bb;
 }

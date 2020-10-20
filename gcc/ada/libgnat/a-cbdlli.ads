@@ -56,7 +56,7 @@ is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty        => Empty_List,
+      Aggregate         => (Empty        => Empty,
                             Add_Unnamed  => Append_One);
    pragma Preelaborable_Initialization (List);
 
@@ -66,6 +66,8 @@ is
    Empty_List : constant List;
 
    No_Element : constant Cursor;
+
+   function Empty (Capacity : Count_Type := 10) return List;
 
    function Has_Element (Position : Cursor) return Boolean;
 
@@ -274,7 +276,7 @@ private
    type Node_Array is array (Count_Type range <>) of Node_Type;
 
    type List (Capacity : Count_Type) is tagged record
-      Nodes  : Node_Array (1 .. Capacity) := (others => <>);
+      Nodes  : Node_Array (1 .. Capacity);
       Free   : Count_Type'Base := -1;
       First  : Count_Type := 0;
       Last   : Count_Type := 0;

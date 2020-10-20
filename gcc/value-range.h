@@ -124,7 +124,8 @@ protected:
   wide_int legacy_upper_bound (unsigned) const;
   int value_inside_range (tree) const;
   bool maybe_anti_range () const;
-  void copy_legacy_range (const irange &);
+  void copy_to_legacy (const irange &);
+  void copy_legacy_to_multi_range (const irange &);
 
 private:
   unsigned char m_num_ranges;

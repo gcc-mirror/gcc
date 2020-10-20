@@ -437,6 +437,10 @@ package Namet is
    function Name_Entries_Count return Nat;
    --  Return current number of entries in the names table
 
+   function Last_Name_Id return Name_Id;
+   --  Return the last Name_Id in the table. This information is valid until
+   --  new names have been added.
+
    --------------------------
    -- Obsolete Subprograms --
    --------------------------

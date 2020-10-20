@@ -582,7 +582,8 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	      continue;
 	    }
 
-	  if (is_a <bb_vec_info> (vinfo))
+	  if (is_a <bb_vec_info> (vinfo)
+	      && !oprnd_info->any_pattern)
 	    {
 	      /* Now for commutative ops we should see whether we can
 		 make the other operand matching.  */

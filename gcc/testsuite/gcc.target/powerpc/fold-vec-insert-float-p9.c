@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_insert with float
    inputs produce the right codegen.  Power9 variant.  */
 
-/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9" } */
 

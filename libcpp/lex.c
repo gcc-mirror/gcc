@@ -2768,7 +2768,10 @@ _cpp_lex_direct (cpp_reader *pfile)
       if (!_cpp_get_fresh_line (pfile))
 	{
 	  result->type = CPP_EOF;
-	  if (!pfile->state.in_directive)
+	  /* Not a real EOF in a directive or arg parsing -- we refuse
+  	     to advance to the next file now, and will once we're out
+  	     of those modes.  */
+	  if (!pfile->state.in_directive && !pfile->state.parsing_args)
 	    {
 	      /* Tell the compiler the line number of the EOF token.  */
 	      result->src_loc = pfile->line_table->highest_line;

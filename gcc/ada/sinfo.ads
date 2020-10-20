@@ -4251,6 +4251,7 @@ package Sinfo is
       --  Expression (Node3)
       --  Loop_Parameter_Specification (Node4)
       --  Loop_Actions (List5-Sem)
+      --  Box_Present (Flag15)
 
       --  Exactly one of Iterator_Specification or Loop_Parameter_
       --  specification is present. If the Key_Expression is absent,
@@ -5414,9 +5415,9 @@ package Sinfo is
 
       --  PARAMETER_SPECIFICATION ::=
       --    DEFINING_IDENTIFIER_LIST : [ALIASED] MODE [NULL_EXCLUSION]
-      --      SUBTYPE_MARK [:= DEFAULT_EXPRESSION]
+      --      SUBTYPE_MARK [:= DEFAULT_EXPRESSION] [ASPECT_SPECIFICATIONS]
       --  | DEFINING_IDENTIFIER_LIST : ACCESS_DEFINITION
-      --      [:= DEFAULT_EXPRESSION]
+      --      [:= DEFAULT_EXPRESSION] [ASPECT_SPECIFICATIONS]
 
       --  Although the syntax allows multiple identifiers in the list, the
       --  semantics is as though successive specifications were given with
@@ -7945,8 +7946,8 @@ package Sinfo is
       --  operation) are also in this list.
 
       --  Contract_Test_Cases contains a collection of pragmas that correspond
-      --  to aspects/pragmas Contract_Cases and Test_Case. The ordering in the
-      --  list is in LIFO fashion.
+      --  to aspects/pragmas Contract_Cases, Test_Case and Subprogram_Variant.
+      --  The ordering in the list is in LIFO fashion.
 
       --  Classifications contains pragmas that either declare, categorize, or
       --  establish dependencies between subprogram or package inputs and

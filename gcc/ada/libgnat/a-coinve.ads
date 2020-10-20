@@ -77,6 +77,8 @@ is
 
    No_Element : constant Cursor;
 
+   function Empty (Capacity : Count_Type := 10) return Vector;
+
    function Has_Element (Position : Cursor) return Boolean;
 
    package Vector_Iterator_Interfaces is new

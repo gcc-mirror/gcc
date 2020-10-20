@@ -57,7 +57,7 @@ is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty       => Empty_List,
+      Aggregate         => (Empty       => Empty,
                             Add_Unnamed => Append_One);
 
    pragma Preelaborable_Initialization (List);
@@ -66,6 +66,7 @@ is
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_List : constant List;
+   function Empty return List;
 
    No_Element : constant Cursor;
 
@@ -391,6 +392,7 @@ private
    --  Returns a pointer to the element designated by Position.
 
    Empty_List : constant List := (Controlled with others => <>);
+   function Empty return List is (Empty_List);
 
    No_Element : constant Cursor := Cursor'(null, null);
 

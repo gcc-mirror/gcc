@@ -1,3 +1,69 @@
+2020-10-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97360
+	* gimple-range.h (range_compatible_p): New.
+	* gimple-range-gori.cc (is_gimple_logical_p): Use range_compatible_p.
+	(range_is_either_true_or_false): Ditto.
+	(gori_compute::outgoing_edge_range_p): Cast result to the correct
+	type if necessary.
+	(logical_stmt_cache::cacheable_p): Use range_compatible_p.
+	* gimple-range.cc (gimple_ranger::calc_stmt): Check range_compatible_p
+	before casting the range.
+	(gimple_ranger::range_on_exit): Use range_compatible_p.
+	(gimple_ranger::range_on_edge): Ditto.
+
+2020-10-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/97456
+	* tree-complex.c (set_component_ssa_name): Do not replace ignored decl
+	default definitions with new component vars.  Reorder if conditions.
+
+2020-10-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/vsx.md (vextract_fp_from_shorth):  Fix vals_be.
+	(vextract_fp_from_shortl) Same.
+
+2020-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97488
+	* range-op.cc (operator_lshift::op1_range): Handle large right shifts.
+
+2020-10-19  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref.c (compute_parm_map): Clear vector.
+
+2020-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97486
+	* tree-vect-slp.c (vect_slp_function): Split after stmts
+	ending a BB.
+
+2020-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (OPptimize Options): Add missing closing
+	parenthesis.
+
+2020-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97467
+	* range-op.cc (operator_lshift::op1_range): Handle shifts by 0.
+
+2020-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97466
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove
+	spurious assert, re-indent.
+
+2020-10-19  Li Jia He  <helijia@gcc.gnu.org>
+
+	PR tree-optimization/66552
+	* match.pd (x << (n % C) -> x << (n & C-1)): New simplification.
+
+2020-10-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_comparison): Drop special-case
+	for pointer comparison.
+
 2020-10-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* vr-values.c (dump_all_value_ranges): Only dump names which are

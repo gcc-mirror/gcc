@@ -614,6 +614,17 @@ is
       return Position.Container.Elements.EA (Position.Index);
    end Element;
 
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 10) return Vector is
+   begin
+      return Result : Vector do
+         Reserve_Capacity (Result, Capacity);
+      end return;
+   end Empty;
+
    --------------
    -- Finalize --
    --------------

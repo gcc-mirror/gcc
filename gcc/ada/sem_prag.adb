@@ -4070,10 +4070,10 @@ package body Sem_Prag is
       procedure Ensure_Aggregate_Form (Arg : Node_Id);
       --  Subsidiary routine to the processing of pragmas Abstract_State,
       --  Contract_Cases, Depends, Global, Initializes, Refined_Depends,
-      --  Refined_Global and Refined_State. Transform argument Arg into
-      --  an aggregate if not one already. N_Null is never transformed.
-      --  Arg may denote an aspect specification or a pragma argument
-      --  association.
+      --  Refined_Global, Refined_State and Subprogram_Variant. Transform
+      --  argument Arg into an aggregate if not one already. N_Null is never
+      --  transformed. Arg may denote an aspect specification or a pragma
+      --  argument association.
 
       procedure Error_Pragma (Msg : String);
       pragma No_Return (Error_Pragma);
@@ -23898,6 +23898,139 @@ package body Sem_Prag is
             end if;
          end Style_Checks;
 
+         ------------------------
+         -- Subprogram_Variant --
+         ------------------------
+
+         --  pragma Subprogram_Variant ( SUBPROGRAM_VARIANT_ITEM
+         --                           {, SUBPROGRAM_VARIANT_ITEM } );
+
+         --  SUBPROGRAM_VARIANT_ITEM ::=
+         --    CHANGE_DIRECTION => discrete_EXPRESSION
+
+         --  CHANGE_DIRECTION ::= Increases | Decreases
+
+         --  Characteristics:
+
+         --    * Analysis - The annotation undergoes initial checks to verify
+         --    the legal placement and context. Secondary checks preanalyze the
+         --    expressions in:
+
+         --       Analyze_Subprogram_Variant_In_Decl_Part
+
+         --    * Expansion - The annotation is expanded during the expansion of
+         --    the related subprogram [body] contract as performed in:
+
+         --       Expand_Subprogram_Contract
+
+         --    * Template - The annotation utilizes the generic template of the
+         --    related subprogram [body] when it is:
+
+         --       aspect on subprogram declaration
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
+
+         --    The annotation must prepare its own template when it is:
+
+         --       pragma on subprogram declaration
+
+         --    * Globals - Capture of global references must occur after full
+         --    analysis.
+
+         --    * Instance - The annotation is instantiated automatically when
+         --    the related generic subprogram [body] is instantiated except for
+         --    the "pragma on subprogram declaration" case. In that scenario
+         --    the annotation must instantiate itself.
+
+         when Pragma_Subprogram_Variant => Subprogram_Variant : declare
+            Spec_Id   : Entity_Id;
+            Subp_Decl : Node_Id;
+            Subp_Spec : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Subprogram_Variant
+            --  must be associated with a subprogram declaration or a body that
+            --  acts as a spec.
+
+            Subp_Decl :=
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
+
+            --  Generic subprogram
+
+            if Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
+            then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            --  Subprogram
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               Subp_Spec := Specification (Subp_Decl);
+
+               --  Pragma Subprogram_Variant is forbidden on null procedures,
+               --  as this may lead to potential ambiguities in behavior when
+               --  interface null procedures are involved. Also, it just
+               --  wouldn't make sense, because null procedure is not
+               --  recursive.
+
+               if Nkind (Subp_Spec) = N_Procedure_Specification
+                 and then Null_Present (Subp_Spec)
+               then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to null procedure"), N);
+                  return;
+               end if;
+
+            else
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Spec_Id);
+            Ensure_Aggregate_Form (Get_Argument (N, Spec_Id));
+
+            --  Chain the pragma on the contract for further processing by
+            --  Analyze_Contract_Cases_In_Decl_Part.
+
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+
+            --  Fully analyze the pragma when it appears inside a subprogram
+            --  body because it cannot benefit from forward references.
+
+            if Nkind (Subp_Decl) in N_Subprogram_Body
+                                  | N_Subprogram_Body_Stub
+            then
+               --  The legality checks of pragma Subprogram_Variant are
+               --  affected by the SPARK mode in effect and the volatility
+               --  of the context. Analyze all pragmas in a specific order.
+
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_Subprogram_Variant_In_Decl_Part (N);
+            end if;
+         end Subprogram_Variant;
+
          --------------
          -- Subtitle --
          --------------
@@ -28918,6 +29051,152 @@ package body Sem_Prag is
       Set_Is_Analyzed_Pragma (N);
    end Analyze_Refined_State_In_Decl_Part;
 
+   ---------------------------------------------
+   -- Analyze_Subprogram_Variant_In_Decl_Part --
+   ---------------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
+   procedure Analyze_Subprogram_Variant_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty)
+   is
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
+      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
+
+      procedure Analyze_Variant (Variant : Node_Id);
+      --  Verify the legality of a single contract case
+
+      ---------------------
+      -- Analyze_Variant --
+      ---------------------
+
+      procedure Analyze_Variant (Variant : Node_Id) is
+         Direction       : Node_Id;
+         Expr            : Node_Id;
+         Errors          : Nat;
+         Extra_Direction : Node_Id;
+
+      begin
+         if Nkind (Variant) /= N_Component_Association then
+            Error_Msg_N ("wrong syntax in subprogram variant", Variant);
+            return;
+         end if;
+
+         Direction := First (Choices (Variant));
+         Expr      := Expression (Variant);
+
+         --  Each variant must have exactly one direction
+
+         Extra_Direction := Next (Direction);
+
+         if Present (Extra_Direction) then
+            Error_Msg_N
+              ("subprogram variant case must have exactly one direction",
+               Extra_Direction);
+         end if;
+
+         --  Check placement of OTHERS if available (SPARK RM 6.1.3(1))
+
+         if Nkind (Direction) = N_Identifier then
+            if Chars (Direction) /= Name_Decreases
+                 and then
+               Chars (Direction) /= Name_Increases
+            then
+               Error_Msg_N ("wrong direction", Direction);
+            end if;
+         else
+            Error_Msg_N ("wrong syntax", Direction);
+         end if;
+
+         Errors := Serious_Errors_Detected;
+         Preanalyze_Assert_Expression (Expr, Any_Discrete);
+
+         --  Emit a clarification message when the variant expression
+         --  contains at least one undefined reference, possibly due
+         --  to contract freezing.
+
+         if Errors /= Serious_Errors_Detected
+           and then Present (Freeze_Id)
+           and then Has_Undefined_Reference (Expr)
+         then
+            Contract_Freeze_Error (Spec_Id, Freeze_Id);
+         end if;
+      end Analyze_Variant;
+
+      --  Local variables
+
+      Variants : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
+      Variant       : Node_Id;
+      Restore_Scope : Boolean := False;
+
+   --  Start of processing for Analyze_Subprogram_Variant_In_Decl_Part
+
+   begin
+      --  Do not analyze the pragma multiple times
+
+      if Is_Analyzed_Pragma (N) then
+         return;
+      end if;
+
+      --  Set the Ghost mode in effect from the pragma. Due to the delayed
+      --  analysis of the pragma, the Ghost mode at point of declaration and
+      --  point of analysis may not necessarily be the same. Use the mode in
+      --  effect at the point of declaration.
+
+      Set_Ghost_Mode (N);
+
+      --  Single and multiple contract cases must appear in aggregate form. If
+      --  this is not the case, then either the parser of the analysis of the
+      --  pragma failed to produce an aggregate.
+
+      pragma Assert (Nkind (Variants) = N_Aggregate);
+
+      if Present (Component_Associations (Variants)) then
+
+         --  Ensure that the formal parameters are visible when analyzing all
+         --  clauses. This falls out of the general rule of aspects pertaining
+         --  to subprogram declarations.
+
+         if not In_Open_Scopes (Spec_Id) then
+            Restore_Scope := True;
+            Push_Scope (Spec_Id);
+
+            if Is_Generic_Subprogram (Spec_Id) then
+               Install_Generic_Formals (Spec_Id);
+            else
+               Install_Formals (Spec_Id);
+            end if;
+         end if;
+
+         Variant := First (Component_Associations (Variants));
+         while Present (Variant) loop
+            Analyze_Variant (Variant);
+            Next (Variant);
+         end loop;
+
+         if Restore_Scope then
+            End_Scope;
+         end if;
+
+      --  Otherwise the pragma is illegal
+
+      else
+         Error_Msg_N ("wrong syntax for subprogram variant", N);
+      end if;
+
+      Set_Is_Analyzed_Pragma (N);
+
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+   end Analyze_Subprogram_Variant_In_Decl_Part;
+
    ------------------------------------
    -- Analyze_Test_Case_In_Decl_Part --
    ------------------------------------
@@ -30983,6 +31262,7 @@ package body Sem_Prag is
       Pragma_Storage_Unit                   =>  0,
       Pragma_Stream_Convert                 =>  0,
       Pragma_Style_Checks                   =>  0,
+      Pragma_Subprogram_Variant             => -1,
       Pragma_Subtitle                       =>  0,
       Pragma_Suppress                       =>  0,
       Pragma_Suppress_All                   =>  0,
@@ -31274,6 +31554,7 @@ package body Sem_Prag is
             | Name_Predicate
             | Name_Refined_Post
             | Name_Statement_Assertions
+            | Name_Subprogram_Variant
          =>
             return True;
 

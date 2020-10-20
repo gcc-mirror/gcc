@@ -1416,8 +1416,14 @@ package body Sem_Warn is
                           and then not Warnings_Off_E1
                           and then not Has_Junk_Name (E1)
                         then
-                           Output_Reference_Error
-                             ("?v?variable& is read but never assigned!");
+                           if Is_Access_Type (E1T)
+                             or else
+                               not Is_Partially_Initialized_Type (E1T, False)
+                           then
+                              Output_Reference_Error
+                                ("?v?variable& is read but never assigned!");
+                           end if;
+
                            May_Need_Initialized_Actual (E1);
                         end if;
 

@@ -673,6 +673,13 @@ package body Switch.C is
                        new String'(Switch_Chars (Ptr .. Max));
                      return;
 
+                  --  -gnaten (memory to allocate for nodes)
+
+                  when 'n' =>
+                     Ptr := Ptr + 1;
+                     Scan_Pos
+                       (Switch_Chars, Max, Ptr, Nodes_Size_In_Meg, C);
+
                   --  -gnateO= (object path file)
 
                   --  This is an internal switch

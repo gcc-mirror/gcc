@@ -33,7 +33,6 @@ with Osint;    use Osint;
 with Osint.B;  use Osint.B;
 with Output;   use Output;
 with Rident;   use Rident;
-with Stringt;  use Stringt;
 with Table;
 with Targparm; use Targparm;
 with Types;    use Types;
@@ -1161,19 +1160,18 @@ package body Bindgen is
       procedure Write_Name_With_Len (Nam : Name_Id) is
       begin
          Get_Name_String (Nam);
-
-         Start_String;
-         Store_String_Char (Character'Val (Name_Len));
-         Store_String_Chars (Name_Buffer (1 .. Name_Len));
-
-         Write_String_Table_Entry (End_String);
+         Write_Str ("Character'Val (");
+         Write_Int (Int (Name_Len));
+         Write_Str (") & """);
+         Write_Str (Name_Buffer (1 .. Name_Len));
+         Write_Char ('"');
       end Write_Name_With_Len;
 
       --  Local variables
 
-      Amp : Character;
-      KN  : Name_Id := No_Name;
-      VN  : Name_Id := No_Name;
+      First : Boolean := True;
+      KN    : Name_Id := No_Name;
+      VN    : Name_Id := No_Name;
 
    --  Start of processing for Gen_Bind_Env_String
 
@@ -1187,21 +1185,26 @@ package body Bindgen is
       Set_Special_Output (Write_Bind_Line'Access);
 
       WBI ("   Bind_Env : aliased constant String :=");
-      Amp := ' ';
+
       while VN /= No_Name loop
-         Write_Str ("     " & Amp & ' ');
+         if First then
+            Write_Str ("     ");
+         else
+            Write_Str ("     & ");
+         end if;
+
          Write_Name_With_Len (KN);
          Write_Str (" & ");
          Write_Name_With_Len (VN);
          Write_Eol;
 
          Bind_Environment.Get_Next (KN, VN);
-         Amp := '&';
+         First := False;
       end loop;
+
       WBI ("     & ASCII.NUL;");
 
       Cancel_Special_Output;
-
       Bind_Env_String_Built := True;
    end Gen_Bind_Env_String;
 

@@ -969,8 +969,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Disable std::make_unique for arrays of known bound
   template<typename _Tp, typename... _Args>
-    inline typename _MakeUniq<_Tp>::__invalid_type
+    typename _MakeUniq<_Tp>::__invalid_type
     make_unique(_Args&&...) = delete;
+
+#if __cplusplus > 201703L
+  /// std::make_unique_for_overwrite for single objects
+  template<typename _Tp>
+    inline typename _MakeUniq<_Tp>::__single_object
+    make_unique_for_overwrite()
+    { return unique_ptr<_Tp>(new _Tp); }
+
+  /// std::make_unique_for_overwrite for arrays of unknown bound
+  template<typename _Tp>
+    inline typename _MakeUniq<_Tp>::__array
+    make_unique_for_overwrite(size_t __n)
+    { return unique_ptr<_Tp>(new remove_extent_t<_Tp>[__n]); }
+
+  /// Disable std::make_unique_for_overwrite for arrays of known bound
+  template<typename _Tp, typename... _Args>
+    typename _MakeUniq<_Tp>::__invalid_type
+    make_unique_for_overwrite(_Args&&...) = delete;
+#endif // C++20
+
   // @} relates unique_ptr
 #endif // C++14
 

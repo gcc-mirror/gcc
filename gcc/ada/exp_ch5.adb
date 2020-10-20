@@ -3115,7 +3115,35 @@ package body Exp_Ch5 is
          if Validity_Check_Default
            and then not Predicates_Ignored (Etype (Expr))
          then
-            Ensure_Valid (Expr);
+            --  Recognize the simple case where Expr is an object reference
+            --  and the case statement is directly preceded by an
+            --  "if Obj'Valid then": in this case, do not emit another validity
+            --  check.
+
+            declare
+               Check_Validity : Boolean := True;
+               Attr           : Node_Id;
+            begin
+               if Nkind (Expr) = N_Identifier
+                 and then Nkind (Parent (N)) = N_If_Statement
+                 and then Nkind (Original_Node (Condition (Parent (N))))
+                           = N_Attribute_Reference
+                 and then No (Prev (N))
+               then
+                  Attr := Original_Node (Condition (Parent (N)));
+
+                  if Attribute_Name (Attr) = Name_Valid
+                    and then Nkind (Prefix (Attr)) = N_Identifier
+                    and then Entity (Prefix (Attr)) = Entity (Expr)
+                  then
+                     Check_Validity := False;
+                  end if;
+               end if;
+
+               if Check_Validity then
+                  Ensure_Valid (Expr);
+               end if;
+            end;
          end if;
 
          --  If there is only a single alternative, just replace it with the

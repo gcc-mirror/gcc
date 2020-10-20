@@ -12224,7 +12224,14 @@ that no warnings are given for comparisons or subranges for any type.
 
 This switch activates warnings for access to variables which
 may not be properly initialized. The default is that
-such warnings are generated.
+such warnings are generated. This switch will also be emitted when
+initializing an array or record object via the following aggregate:
+
+@example
+Array_Or_Record : XXX := (others => <>);
+@end example
+
+unless the relevant type fully initializes all components.
 @end table
 
 @geindex -gnatwV (gcc)
@@ -12238,17 +12245,6 @@ such warnings are generated.
 
 This switch suppresses warnings for access to variables which
 may not be properly initialized.
-For variables of a composite type, the warning can also be suppressed in
-Ada 2005 by using a default initialization with a box. For example, if
-Table is an array of records whose components are only partially uninitialized,
-then the following code:
-
-@example
-Tab : Table := (others => <>);
-@end example
-
-will suppress warnings on subsequent statements that access components
-of variable Tab.
 @end table
 
 @geindex -gnatw.v (gcc)

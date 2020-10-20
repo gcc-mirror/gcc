@@ -60,7 +60,7 @@ is
      with Constant_Indexing => Constant_Reference,
           Default_Iterator  => Iterate,
           Iterator_Element  => Element_Type,
-          Aggregate         => (Empty       => Empty_Set,
+          Aggregate         => (Empty       => Empty,
                                 Add_Unnamed => Include);
 
    pragma Preelaborable_Initialization (Set);
@@ -71,6 +71,8 @@ is
    Empty_Set : constant Set;
    --  Set objects declared without an initialization expression are
    --  initialized to the value Empty_Set.
+
+   function Empty (Capacity : Count_Type := 1000) return Set;
 
    No_Element : constant Cursor;
    --  Cursor objects declared without an initialization expression are

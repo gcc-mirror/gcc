@@ -1,3 +1,10 @@
+2020-10-19  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (struct cpp_reader): Rename 'eof' field to 'endarg'.
+	* init.c (cpp_create_reader): Adjust.
+	* macro.c (collect_args): Use endarg for separator.  Always rewind
+	in the not-fn case.
+
 2020-10-08  Nathan Sidwell  <nathan@acm.org>
 
 	* internal.h (enum include_type): Rename IT_MAIN_INJECT to

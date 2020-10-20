@@ -1009,6 +1009,15 @@ package body Sem_Type is
       elsif T2 = Any_Composite and then Is_Aggregate_Type (T1) then
          return True;
 
+      --  In Ada_2020, an aggregate is compatible with the type that
+      --  as the ccorrespoding aspect.
+
+      elsif Ada_Version >= Ada_2020
+        and then T2 = Any_Composite
+        and then Present (Find_Aspect (T1, Aspect_Aggregate))
+      then
+         return True;
+
       --  If the expected type is an anonymous access, the designated type must
       --  cover that of the expression. Use the base type for this check: even
       --  though access subtypes are rare in sources, they are generated for

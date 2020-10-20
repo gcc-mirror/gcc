@@ -153,7 +153,8 @@ package body Ch13 is
             Result := True;
          else
             Scan; -- past identifier
-            Result := Token in Tok_Arrow | Tok_Comma | Tok_Is | Tok_Semicolon;
+            Result := Token in
+              Tok_Arrow | Tok_Comma | Tok_Is | Tok_Semicolon | Tok_Right_Paren;
          end if;
 
       --  If earlier than Ada 2012, check for valid aspect identifier (possibly
@@ -956,7 +957,7 @@ package body Ch13 is
          --  If Decl is Error, we ignore the aspects, and issue a message
 
          elsif Decl = Error
-            or else not Permits_Aspect_Specifications (Decl)
+           or else not Permits_Aspect_Specifications (Decl)
          then
             Error_Msg ("aspect specifications not allowed here", Ptr);
 

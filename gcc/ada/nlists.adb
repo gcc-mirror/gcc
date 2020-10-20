@@ -338,8 +338,6 @@ package body Nlists is
    ----------------
 
    procedure Initialize is
-      E : constant List_Id := Error_List;
-
    begin
       Lists.Init;
       Next_Node.Init;
@@ -348,9 +346,9 @@ package body Nlists is
       --  Allocate Error_List list header
 
       Lists.Increment_Last;
-      Set_Parent (E, Empty);
-      Set_First  (E, Empty);
-      Set_Last   (E, Empty);
+      Set_Parent (Error_List, Empty);
+      Set_First  (Error_List, Empty);
+      Set_Last   (Error_List, Empty);
    end Initialize;
 
    ------------------
