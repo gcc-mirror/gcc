@@ -1106,7 +1106,7 @@ BUILD_ERRORS = build/errors.o
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
-	   $(CPPINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
+	   $(CPPINC) $(CODYINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
 	   $(ISLINC)
 
 COMPILE.base = $(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -o $@

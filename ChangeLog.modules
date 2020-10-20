@@ -1,5 +1,8 @@
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* Makefile.in (INCLUDES): Add $(CODYINC).
+
 	gcc/cp/
 	* Make-lang.in (GIT_INFO): Support stricter seds.
 
