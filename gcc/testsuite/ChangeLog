@@ -1,3 +1,68 @@
+2020-10-20  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/Wbuiltin-declaration-mismatch-9.c: Improve pruning of
+	invalid scanf call messages.
+
+2020-10-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97505
+	* gfortran.dg/pr97505.f90: New file.
+
+2020-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/local-extern.C: New.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Wrestrict-22.c: New test.
+	* g++.dg/torture/pr92421.C: Adjust for ranger.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Walloca-1.c: Adjust for ranger.
+	* gcc.dg/Walloca-12.c: Same.
+	* gcc.dg/Walloca-13.c: Same.
+	* gcc.dg/Walloca-2.c: Same.
+	* gcc.dg/Walloca-3.c: Same.
+	* gcc.dg/Walloca-6.c: Same.
+	* gcc.dg/Wvla-larger-than-2.c: Same.
+
+2020-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.misc-tests/outputs.exp: Add ltrans_args dump files
+	for 'lto save-temps'.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97501.c: New test.
+
+2020-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/cpp/endif.c: Move to ...
+	* c-c++-common/cpp/endif.c: ... here.
+	* gcc.dg/cpp/endif.h: Move to ...
+	* c-c++-common/cpp/endif.h: ... here.
+	* c-c++-common/cpp/eof-2.c: Adjust diagnostic.
+	* c-c++-common/cpp/eof-3.c: Adjust diagnostic.
+
+2020-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82239
+	* g++.dg/cpp0x/static_assert16.C: New test.
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/opt11.adb: Add new expected warning.
+
+2020-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97496
+	* gcc.dg/vect/bb-slp-pr97496.c: New testcase.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97488.c: Add target int128 predicate.
+
 2020-10-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr97360-2.c: New test.

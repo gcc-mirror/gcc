@@ -1,3 +1,88 @@
+2020-10-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_Hash_node_value_base<>): Remove _Hash_node_base inheritance.
+	(_Hash_node_code_cache<bool _Cache_hash_code>): New.
+	(_Hash_node_value<typename _Value, bool _Cache_hash_code>): New.
+	(_Hash_node<>): Inherits _Hash_node_base<> and _Hash_node_value<>.
+	(_Map_base<>::__node_type): Remove.
+	(_Map_base<>::iterator): Remove.
+	(_Insert_base<>::__hash_cached): New.
+	(_Insert_base<>::__constant_iterators): New.
+	(_Insert_base<>::__hashtable_alloc): New.
+	(_Insert_base<>::__node_type): Remove.
+	(_Insert_base<>::__node_ptr): New.
+	(_Hash_code_base<>): Remove specializations.
+	(_Hash_code_base<>::__node_type): Remove.
+	(_Hash_code_base<>::_M_bucket_index(const __node_type*, size_t)):
+	Replace by...
+	(_Hash_code_base<>::_M_bucket_index(const _Hash_node_value<>&, size_t)):
+	...this.
+	(_Hash_code_base<>::_M_store_code(__node_type*, __hash_code)):
+	Replace by...
+	(_Hash_code_base<>::_M_store_code(_Hash_node_code_cache<>&, __hash_code)):
+	...this.
+	(_Hash_code_base<>::_M_copy_code(__node_type*, const __node_type*)):
+	Replace by...
+	(_Hash_code_base<>::_M_copy_code(_Hash_node_code_cache<>&,
+	const _Hash_node_code_base<>&)): ...this.
+	(_Hashtable_base<>::__constant_iterators): Remove.
+	(_Hashtable_base<>::__unique_keys): Remove.
+	(_Hashtable_base<>::__node_type): Remove.
+	(_Hashtable_base<>::iterator): Remove.
+	(_Hashtable_base<>::const_iterator): Remove.
+	(_Hashtable_base<>::local_iterator): Remove.
+	(_Hashtable_base<>::const_local_iterator): Remove.
+	(_Hashtable_base<>::__ireturn_type): Remove.
+	(_Hashtable_base<>::_Equal_hash_code<>::_S_equals): Replace by...
+	(_Hashtable_base<>::_S_equals(__hash_code, const _Hash_node_code_hash<>&)):
+	...this.
+	(_Hashtable_base<>::_Equal_hash_code<>::_S_node_equals): Replace by...
+	(_Hashtable_base<>::_S_node_equals(__hash_code,
+	const _Hash_node_code_hash<>&)): ...this.
+	(_Hashtable_base<>::_Equal_hash_code<>): Remove.
+	(_Hashtable_base<>::_M_equals): Adapt.
+	(_Hashtable_baxe<>::_M_node_equals): Adapt.
+	(_Equality<>::_M_equal): Adapt.
+	(_Hashtable_alloc<>::__node_ptr): New.
+	(_Hashtable_alloc<>::__bucket_type): Rename into...
+	(_Hashtable_alloc<>::__node_base_ptr): ...this.
+	(_Hashtable_alloc<>::__bucket_alloc_type): Rename into...
+	(_Hashtable_alloc<>::__buckets_alloc_type): ...this.
+	(_Hashtable_alloc<>::__bucket_alloc_traits): Rename into...
+	(_Hashtable_alloc<>::__buckets_alloc_traits): ...this.
+	(_Hashtable_alloc<>::__buckets_ptr): New.
+	(_Hashtable_alloc<>::_M_allocate_node): Adapt.
+	(_Hashtable_alloc<>::_M_deallocate_node): Adapt.
+	(_Hashtable_alloc<>::_M_deallocate_node_ptr): Adapt.
+	(_Hashtable_alloc<>::_M_deallocate_nodes): Adapt.
+	(_Hashtable_alloc<>::_M_allocate_buckets): Adapt.
+	(_Hashtable_alloc<>::_M_deallocate_buckets): Adapt.
+	* include/bits/hashtable.h (_Hashtable<>): Adapt.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/21_strings/basic_string/capacity/1.cc: Pass
+	-Wno-stringop-overflow to test.
+
+2020-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95917
+	* include/std/coroutine (__noop_coro_frame): Replace with
+	noop_coroutine_handle::__frame.
+	(__dummy_resume_destroy): Define inline in __frame.
+	(__noop_coro_fr): Replace with noop_coroutine_handle::_S_fr
+	and define as inline.
+	* testsuite/18_support/coroutines/95917.cc: New test.
+
+2020-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/coroutine (coroutine_handle<_Promise>): Remove
+	base class. Add constructors, conversions, accessors etc. as
+	proposed for LWG 3460.
+	(coroutine_handle<noop_coroutine_promise>): Likewise.
+	* testsuite/18_support/coroutines/lwg3460.cc: New test.
+
 2020-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unique_ptr.h (make_unique_for_overwrite): Define

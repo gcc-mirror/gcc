@@ -1,3 +1,8 @@
+2020-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (push_local_extern_decl_alias): Reconstextualize
+	alias' parm decls.  Drop any default args.
+
 2020-10-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/97438

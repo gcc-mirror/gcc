@@ -1,3 +1,139 @@
+2020-10-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97505
+	* vr-values.c (vr_values::extract_range_basic): Trap if
+	vr_values version disagrees with range_of_builtin_call.
+
+2020-10-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Don't implcitly enable Altivec ABI if set on the command line.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* calls.c (get_size_range): Adjust to work with ranger.
+	* calls.h (get_size_range): Add ranger argument to prototype.
+	* gimple-ssa-warn-restrict.c (class wrestrict_dom_walker): Remove.
+	(check_call): Pull out of wrestrict_dom_walker into a
+	static function.
+	(wrestrict_dom_walker::before_dom_children): Rename to...
+	(wrestrict_walk): ...this.
+	(pass_wrestrict::execute): Instantiate ranger.
+	(class builtin_memref): Add stmt and query fields.
+	(builtin_access::builtin_access): Add range_query field.
+	(builtin_memref::builtin_memref): Same.
+	(builtin_memref::extend_offset_range): Same.
+	(builtin_access::builtin_access): Make work with ranger.
+	(wrestrict_dom_walker::check_call): Pull out into...
+	(check_call): ...here.
+	(check_bounds_or_overlap): Add range_query argument.
+	* gimple-ssa-warn-restrict.h (check_bounds_or_overlap):
+	Add range_query and gimple stmt arguments.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-warn-alloca.c (enum alloca_type): Remove
+	ALLOCA_BOUND_UNKNOWN and ALLOCA_CAST_FROM_SIGNED.
+	(warn_limit_specified_p): New.
+	(alloca_call_type_by_arg): Remove.
+	(cast_from_signed_p): Remove.
+	(is_max): Remove.
+	(alloca_call_type): Remove heuristics and replace with call into
+	ranger.
+	(pass_walloca::execute): Instantiate ranger.
+
+2020-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto-wrapper.c (run_gcc): Use proper variable for
+	%u.ltrans_args dump suffix.
+
+2020-10-20  Zhiheng Xie  <xiezhiheng@huawei.com>
+	    Nannan Zheng  <zhengnannan@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for get/set reg intrinsics.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::range_of_builtin_ubsan_call):
+	Make externally visble...
+	(range_of_builtin_ubsan_call): ...here.  Add range_query argument.
+	(gimple_ranger::range_of_builtin_call): Make externally visible...
+	(range_of_builtin_call): ...here.  Add range_query argument.
+	* gimple-range.h (range_of_builtin_call): Move out from class and
+	make externally visible.
+	* vr-values.c (vr_values::extract_range_basic): Abstract out
+	builtin handling to...
+	(vr_values::range_of_expr): Handle non SSAs.
+	(vr_values::extract_range_builtin): ...here.
+	* vr-values.h (class vr_values): Add extract_range_builtin.
+	(range_of_expr): Rename NAME to EXPR.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97501
+	* gimple-range.cc (gimple_ranger::range_of_ssa_name_with_loop_info):
+	Saturate overflows returned from SCEV.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::operator=): Split up call to
+	copy_legacy_range into...
+	(irange::copy_to_legacy): ...this.
+	(irange::copy_legacy_to_multi_range): ...and this.
+	(irange::copy_legacy_range): Remove.
+	* value-range.h: Remove copoy_legacy_range.
+	Add copy_legacy_to_multi_range and copy_to_legacy.
+
+2020-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (NVPTX options): Use @item not @itemx.
+
+2020-10-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (reinstall_phi_args): Remove.
+	(gimple_split_edge): Remove PHIs around the edge redirection
+	to avoid touching them at all.
+
+2020-10-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_reduction): Use the correct
+	loops latch edge for the PHI arg lookup.
+
+2020-10-20  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md (andneghi3): Allow general operand for
+	op1 and update output assembler template.
+
+2020-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* collect-utils.c (collect_execute, fork_execute): Add at-file suffix
+	argument.
+	* collect-utils.h (collect_execute, fork_execute): Update prototype.
+	* collect2.c (maybe_run_lto_and_relink, do_link, main, do_dsymutil):
+	Update calls by passing NULL.
+	* config/i386/intelmic-mkoffload.c (compile_for_target,
+	generate_host_descr_file, prepare_target_image, main): Likewise.
+	* config/gcn/mkoffload.c (compile_native, main): Pass at-file suffix.
+	* config/nvptx/mkoffload.c (compile_native, main): Likewise.
+	* lto-wrapper.c (compile_offload_image): Likewise.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_rshift::op1_range): Special case
+	shifting by zero.
+
+2020-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97496
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Guard extern
+	promotion with not in pattern.
+
+2020-10-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_vec_strlen): Add alignment
+	for memory access inside loop.
+
 2020-10-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/97360

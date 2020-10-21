@@ -1,3 +1,30 @@
+2020-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (gomp_target_init): Inside of the function, use automatic
+	variables corresponding to num_devices, num_devices_openmp and devices
+	global variables and update the globals only at the end of the
+	function.
+
+2020-10-20  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* env.c (gomp_target_offload_var): New.
+	(parse_target_offload): New.
+	(handle_omp_display_env): Print value of OMP_TARGET_OFFLOAD.
+	(initialize_env): Parse OMP_TARGET_OFFLOAD.
+	* libgomp.h (gomp_target_offload_t): New.
+	(gomp_target_offload_var): New.
+	* libgomp.texi (OMP_TARGET_OFFLOAD): New section.
+	* target.c (resolve_device): Generate error if device not found and
+	offloading is mandatory.
+	(gomp_target_fallback): Generate error if offloading is mandatory.
+	(GOMP_target): Add argument in call to gomp_target_fallback.
+	(GOMP_target_ext): Likewise.
+	(gomp_target_data_fallback): Generate error if offloading is mandatory.
+	(GOMP_target_data): Add argument in call to gomp_target_data_fallback.
+	(GOMP_target_data_ext): Likewise.
+	(gomp_target_task_fn): Add argument in call to gomp_target_fallback.
+	(gomp_target_init): Return early if offloading is disabled.
+
 2020-10-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* libgomp.texi (omp_get_max_active_levels): Modify description.
