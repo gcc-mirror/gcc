@@ -1,4 +1,4 @@
-/* { dg-do run { target { powerpc64le-*-* } } } */
+/* { dg-do run } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -maltivec" } */
 
