@@ -24,7 +24,7 @@ void foo1 (size_t len, size_t len2, size_t len3)
   char *s = alloca (123);
   useit (s);			// OK, constant argument to alloca
 
-  s = alloca (num);		// { dg-warning "may be too large" }
+  s = alloca (num);		// { dg-warning "\(may be too large|unbounded use\)" }
   useit (s);
 
   s = alloca (30000);		/* { dg-warning "is too large" } */
