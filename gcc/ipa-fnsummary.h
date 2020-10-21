@@ -49,7 +49,10 @@ enum ipa_hints_vals {
      Set by simple_edge_hints in ipa-inline-analysis.c.   */
   INLINE_HINT_cross_module = 64,
   /* We know that the callee is hot by profile.  */
-  INLINE_HINT_known_hot = 128
+  INLINE_HINT_known_hot = 128,
+  /* There is builtin_constant_p dependent on parameter which is usually
+     a strong hint to inline.  */
+  INLINE_HINT_builtin_constant_p = 256
 };
 
 typedef int ipa_hints;
@@ -123,10 +126,12 @@ public:
   ipa_fn_summary ()
     : min_size (0),
       inlinable (false), single_caller (false),
-      fp_expressions (false), estimated_stack_size (false),
+      fp_expressions (false),
+      estimated_stack_size (false),
       time (0), conds (NULL),
       size_time_table (NULL), call_size_time_table (NULL),
       loop_iterations (NULL), loop_strides (NULL),
+      builtin_constant_p_parms (vNULL),
       growth (0), scc_no (0)
   {
   }
@@ -140,6 +145,7 @@ public:
     time (s.time), conds (s.conds), size_time_table (s.size_time_table),
     call_size_time_table (NULL),
     loop_iterations (s.loop_iterations), loop_strides (s.loop_strides),
+    builtin_constant_p_parms (s.builtin_constant_p_parms),
     growth (s.growth), scc_no (s.scc_no)
   {}
 
@@ -182,6 +188,8 @@ public:
   vec<ipa_freqcounting_predicate, va_gc> *loop_iterations;
   /* Predicates on when some loops in the function can have known strides.  */
   vec<ipa_freqcounting_predicate, va_gc> *loop_strides;
+  /* Parameters tested by builtin_constant_p.  */
+  vec<int, va_heap, vl_ptr> GTY((skip)) builtin_constant_p_parms;
   /* Estimated growth for inlining all copies of the function before start
      of small functions inlining.
      This value will get out of date as the callers are duplicated, but

@@ -878,7 +878,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       bool apply_hints = (hints & (INLINE_HINT_indirect_call
 				   | INLINE_HINT_known_hot
 				   | INLINE_HINT_loop_iterations
-				   | INLINE_HINT_loop_stride));
+				   | INLINE_HINT_loop_stride
+				   | INLINE_HINT_builtin_constant_p));
 
       if (growth <= opt_for_fn (to->decl,
 				param_max_inline_insns_size))
@@ -1317,6 +1318,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		| INLINE_HINT_loop_stride))
       || callee_info->growth <= 0)
     badness = badness.shift (badness > 0 ? -2 : 2);
+  if (hints & INLINE_HINT_builtin_constant_p)
+    badness = badness.shift (badness > 0 ? -4 : 4);
   if (hints & (INLINE_HINT_same_scc))
     badness = badness.shift (badness > 0 ? 3 : -3);
   else if (hints & (INLINE_HINT_in_scc))

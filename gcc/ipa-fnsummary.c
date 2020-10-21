@@ -141,6 +141,11 @@ ipa_dump_hints (FILE *f, ipa_hints hints)
       hints &= ~INLINE_HINT_known_hot;
       fprintf (f, " known_hot");
     }
+  if (hints & INLINE_HINT_builtin_constant_p)
+    {
+      hints &= ~INLINE_HINT_builtin_constant_p;
+      fprintf (f, " builtin_constant_p");
+    }
   gcc_assert (!hints);
 }
 
@@ -751,6 +756,7 @@ ipa_fn_summary::~ipa_fn_summary ()
   vec_free (call_size_time_table);
   vec_free (loop_iterations);
   vec_free (loop_strides);
+  builtin_constant_p_parms.release ();
 }
 
 void
@@ -899,7 +905,8 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	  new_predicate = es->predicate->remap_after_duplication
 				 (possible_truths);
 	  if (new_predicate == false && *es->predicate != false)
-	    optimized_out_size += es->call_stmt_size * ipa_fn_summary::size_scale;
+	    optimized_out_size
+		 += es->call_stmt_size * ipa_fn_summary::size_scale;
 	  edge_set_predicate (edge, &new_predicate);
 	}
       info->loop_iterations
@@ -908,6 +915,15 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
       info->loop_strides
 	= remap_freqcounting_preds_after_dup (info->loop_strides,
 					      possible_truths);
+      if (info->builtin_constant_p_parms.length())
+	{
+	  vec <int, va_heap, vl_ptr> parms = info->builtin_constant_p_parms;
+	  int ip;
+	  info->builtin_constant_p_parms = vNULL;
+	  for (i = 0; parms.iterate (i, &ip); i++)
+	    if (!avals.m_known_vals[ip])
+	      info->builtin_constant_p_parms.safe_push (ip);
+	}
 
       /* If inliner or someone after inliner will ever start producing
          non-trivial clones, we will get trouble with lack of information
@@ -920,6 +936,9 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
       info->size_time_table = vec_safe_copy (info->size_time_table);
       info->loop_iterations = vec_safe_copy (info->loop_iterations);
       info->loop_strides = vec_safe_copy (info->loop_strides);
+
+      info->builtin_constant_p_parms
+	     = info->builtin_constant_p_parms.copy ();
 
       ipa_freqcounting_predicate *f;
       for (int i = 0; vec_safe_iterate (info->loop_iterations, i, &f); i++)
@@ -1066,6 +1085,13 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	    fprintf (f, " inlinable");
 	  if (s->fp_expressions)
 	    fprintf (f, " fp_expression");
+	  if (s->builtin_constant_p_parms.length ())
+	    {
+	      fprintf (f, " builtin_constant_p_parms");
+	      for (unsigned int i = 0;
+		   i < s->builtin_constant_p_parms.length (); i++)
+		fprintf (f, " %i", s->builtin_constant_p_parms[i]);
+	    }
 	  fprintf (f, "\n  global time:     %f\n", s->time.to_double ());
 	  fprintf (f, "  self size:       %i\n", ss->self_size);
 	  fprintf (f, "  global size:     %i\n", ss->size);
@@ -1517,6 +1543,21 @@ fail:
   return false;
 }
 
+/* Record to SUMMARY that PARM is used by builtin_constant_p.  */
+
+static void
+add_builtin_constant_p_parm (class ipa_fn_summary *summary, int parm)
+{
+  int ip;
+
+  /* Avoid duplicates.  */
+  for (unsigned int i = 0;
+       summary->builtin_constant_p_parms.iterate (i, &ip); i++)
+    if (ip == parm)
+      return;
+  summary->builtin_constant_p_parms.safe_push (parm);
+}
+
 /* If BB ends by a conditional we can turn into predicates, attach corresponding
    predicates to the CFG edges.   */
 
@@ -1598,6 +1639,8 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   op2 = gimple_call_arg (set_stmt, 0);
   if (!decompose_param_expr (fbi, set_stmt, op2, &index, &param_type, &aggpos))
     return;
+  if (!aggpos.by_ref)
+    add_builtin_constant_p_parm (summary, index);
   FOR_EACH_EDGE (e, ei, bb->succs) if (e->flags & EDGE_FALSE_VALUE)
     {
       predicate p = add_condition (summary, params_summary, index,
@@ -3717,6 +3760,9 @@ ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
 	hints |= INLINE_HINT_in_scc;
       if (DECL_DECLARED_INLINE_P (m_node->decl))
 	hints |= INLINE_HINT_declared_inline;
+      if (info->builtin_constant_p_parms.length ()
+	  && DECL_DECLARED_INLINE_P (m_node->decl))
+	hints |= INLINE_HINT_builtin_constant_p;
 
       ipa_freqcounting_predicate *fcp;
       for (i = 0; vec_safe_iterate (info->loop_iterations, i, &fcp); i++)
@@ -4044,8 +4090,13 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 	  operand_map[i] = map;
 	  gcc_assert (map < ipa_get_param_count (params_summary));
 	}
+
+      int ip;
+      for (i = 0; callee_info->builtin_constant_p_parms.iterate (i, &ip); i++)
+	if (ip < count && operand_map[ip] >= 0)
+	  add_builtin_constant_p_parm (info, operand_map[ip]);
     }
-  sreal freq =  edge->sreal_frequency ();
+  sreal freq = edge->sreal_frequency ();
   for (i = 0; vec_safe_iterate (callee_info->size_time_table, i, &e); i++)
     {
       predicate p;
@@ -4443,6 +4494,15 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	      vec_safe_push (info->loop_strides, fcp);
 	    }
 	}
+      count2 = streamer_read_uhwi (&ib);
+      if (info && count2)
+	info->builtin_constant_p_parms.reserve_exact (count2);
+      for (j = 0; j < count2; j++)
+	{
+	  int parm = streamer_read_uhwi (&ib);
+	  if (info)
+	    info->builtin_constant_p_parms.quick_push (parm);
+	}
       for (e = node->callees; e; e = e->next_callee)
 	read_ipa_call_summary (&ib, e, info != NULL);
       for (e = node->indirect_calls; e; e = e->next_callee)
@@ -4618,6 +4678,11 @@ ipa_fn_summary_write (void)
 	      fcp->predicate->stream_out (ob);
 	      fcp->freq.stream_out (ob);
 	    }
+	  streamer_write_uhwi (ob, info->builtin_constant_p_parms.length ());
+	  int ip;
+	  for (i = 0; info->builtin_constant_p_parms.iterate (i, &ip);
+	       i++)
+	    streamer_write_uhwi (ob, ip);
 	  for (edge = cnode->callees; edge; edge = edge->next_callee)
 	    write_ipa_call_summary (ob, edge);
 	  for (edge = cnode->indirect_calls; edge; edge = edge->next_callee)
