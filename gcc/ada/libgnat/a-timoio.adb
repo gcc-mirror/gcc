@@ -29,13 +29,39 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Text_IO.Modular_Aux;
-
-with System.Unsigned_Types; use System.Unsigned_Types;
+with Ada.Text_IO.Integer_Aux;
+with System.Img_BIU; use System.Img_BIU;
+with System.Img_Uns; use System.Img_Uns;
+with System.Img_LLB; use System.Img_LLB;
+with System.Img_LLU; use System.Img_LLU;
+with System.Img_LLW; use System.Img_LLW;
+with System.Img_WIU; use System.Img_WIU;
+with System.Val_Uns; use System.Val_Uns;
+with System.Val_LLU; use System.Val_LLU;
 
 package body Ada.Text_IO.Modular_IO is
 
-   package Aux renames Ada.Text_IO.Modular_Aux;
+   package Aux_Uns is new
+     Ada.Text_IO.Integer_Aux
+       (Unsigned,
+        Scan_Unsigned,
+        Set_Image_Unsigned,
+        Set_Image_Width_Unsigned,
+        Set_Image_Based_Unsigned);
+
+   package Aux_LLU is new
+     Ada.Text_IO.Integer_Aux
+       (Long_Long_Unsigned,
+        Scan_Long_Long_Unsigned,
+        Set_Image_Long_Long_Unsigned,
+        Set_Image_Width_Long_Long_Unsigned,
+        Set_Image_Based_Long_Long_Unsigned);
+
+   Need_LLU : constant Boolean := Num'Base'Size > Unsigned'Size;
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Unsigned is acceptable, and where a Long_Long_Unsigned is needed. This
+   --  Boolean is used to test for these cases and since it is a constant, only
+   --  code for the relevant case will be included in the instance.
 
    ---------
    -- Get --
@@ -46,13 +72,15 @@ package body Ada.Text_IO.Modular_IO is
       Item  : out Num;
       Width : Field := 0)
    is
+      --  We depend on a range check to get Data_Error
+
       pragma Unsuppress (Range_Check);
 
    begin
-      if Num'Size > Unsigned'Size then
-         Aux.Get_LLU (File, Long_Long_Unsigned (Item), Width);
+      if Need_LLU then
+         Aux_LLU.Get (File, Long_Long_Unsigned (Item), Width);
       else
-         Aux.Get_Uns (File, Unsigned (Item), Width);
+         Aux_Uns.Get (File, Unsigned (Item), Width);
       end if;
 
    exception
@@ -63,17 +91,8 @@ package body Ada.Text_IO.Modular_IO is
      (Item  : out Num;
       Width : Field := 0)
    is
-      pragma Unsuppress (Range_Check);
-
    begin
-      if Num'Size > Unsigned'Size then
-         Aux.Get_LLU (Current_In, Long_Long_Unsigned (Item), Width);
-      else
-         Aux.Get_Uns (Current_In, Unsigned (Item), Width);
-      end if;
-
-   exception
-      when Constraint_Error => raise Data_Error;
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -81,13 +100,15 @@ package body Ada.Text_IO.Modular_IO is
       Item : out Num;
       Last : out Positive)
    is
+      --  We depend on a range check to get Data_Error
+
       pragma Unsuppress (Range_Check);
 
    begin
-      if Num'Size > Unsigned'Size then
-         Aux.Gets_LLU (From, Long_Long_Unsigned (Item), Last);
+      if Need_LLU then
+         Aux_LLU.Gets (From, Long_Long_Unsigned (Item), Last);
       else
-         Aux.Gets_Uns (From, Unsigned (Item), Last);
+         Aux_Uns.Gets (From, Unsigned (Item), Last);
       end if;
 
    exception
@@ -105,10 +126,10 @@ package body Ada.Text_IO.Modular_IO is
       Base  : Number_Base := Default_Base)
    is
    begin
-      if Num'Size > Unsigned'Size then
-         Aux.Put_LLU (File, Long_Long_Unsigned (Item), Width, Base);
+      if Need_LLU then
+         Aux_LLU.Put (File, Long_Long_Unsigned (Item), Width, Base);
       else
-         Aux.Put_Uns (File, Unsigned (Item), Width, Base);
+         Aux_Uns.Put (File, Unsigned (Item), Width, Base);
       end if;
    end Put;
 
@@ -118,11 +139,7 @@ package body Ada.Text_IO.Modular_IO is
       Base  : Number_Base := Default_Base)
    is
    begin
-      if Num'Size > Unsigned'Size then
-         Aux.Put_LLU (Current_Out, Long_Long_Unsigned (Item), Width, Base);
-      else
-         Aux.Put_Uns (Current_Out, Unsigned (Item), Width, Base);
-      end if;
+      Put (Current_Out, Item, Width, Base);
    end Put;
 
    procedure Put
@@ -131,10 +148,10 @@ package body Ada.Text_IO.Modular_IO is
       Base : Number_Base := Default_Base)
    is
    begin
-      if Num'Size > Unsigned'Size then
-         Aux.Puts_LLU (To, Long_Long_Unsigned (Item), Base);
+      if Need_LLU then
+         Aux_LLU.Puts (To, Long_Long_Unsigned (Item), Base);
       else
-         Aux.Puts_Uns (To, Unsigned (Item), Base);
+         Aux_Uns.Puts (To, Unsigned (Item), Base);
       end if;
    end Put;
 

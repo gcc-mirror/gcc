@@ -570,21 +570,27 @@ package body Exp_Imgv is
          Tent := Rtyp;
 
       elsif Is_Signed_Integer_Type (Rtyp) then
-         if Esize (Rtyp) <= Esize (Standard_Integer) then
+         if Esize (Rtyp) <= Standard_Integer_Size then
             Imid := RE_Image_Integer;
             Tent := Standard_Integer;
-         else
+         elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
             Imid := RE_Image_Long_Long_Integer;
             Tent := Standard_Long_Long_Integer;
+         else
+            Imid := RE_Image_Long_Long_Long_Integer;
+            Tent := Standard_Long_Long_Long_Integer;
          end if;
 
       elsif Is_Modular_Integer_Type (Rtyp) then
          if Modulus (Rtyp) <= Modulus (RTE (RE_Unsigned)) then
             Imid := RE_Image_Unsigned;
             Tent := RTE (RE_Unsigned);
-         else
+         elsif Modulus (Rtyp) <= Modulus (RTE (RE_Long_Long_Unsigned)) then
             Imid := RE_Image_Long_Long_Unsigned;
             Tent := RTE (RE_Long_Long_Unsigned);
+         else
+            Imid := RE_Image_Long_Long_Long_Unsigned;
+            Tent := RTE (RE_Long_Long_Long_Unsigned);
          end if;
 
       elsif Is_Fixed_Point_Type (Rtyp) and then Has_Decimal_Small (Rtyp) then
@@ -895,20 +901,22 @@ package body Exp_Imgv is
            Make_Integer_Literal (Loc,
              Intval => Int (Wide_Character_Encoding_Method)));
 
-      elsif     Rtyp = Base_Type (Standard_Short_Short_Integer)
-        or else Rtyp = Base_Type (Standard_Short_Integer)
-        or else Rtyp = Base_Type (Standard_Integer)
-      then
-         Vid := RE_Value_Integer;
-
       elsif Is_Signed_Integer_Type (Rtyp) then
-         Vid := RE_Value_Long_Long_Integer;
+         if Esize (Rtyp) <= Standard_Integer_Size then
+            Vid := RE_Value_Integer;
+         elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
+            Vid := RE_Value_Long_Long_Integer;
+         else
+            Vid := RE_Value_Long_Long_Long_Integer;
+         end if;
 
       elsif Is_Modular_Integer_Type (Rtyp) then
          if Modulus (Rtyp) <= Modulus (RTE (RE_Unsigned)) then
             Vid := RE_Value_Unsigned;
-         else
+         elsif Modulus (Rtyp) <= Modulus (RTE (RE_Long_Long_Unsigned)) then
             Vid := RE_Value_Long_Long_Unsigned;
+         else
+            Vid := RE_Value_Long_Long_Long_Unsigned;
          end if;
 
       elsif Is_Decimal_Fixed_Point_Type (Rtyp) then
@@ -1415,14 +1423,30 @@ package body Exp_Imgv is
       --  Signed integer types
 
       elsif Is_Signed_Integer_Type (Rtyp) then
-         XX := RE_Width_Long_Long_Integer;
-         YY := Standard_Long_Long_Integer;
+         if Esize (Rtyp) <= Standard_Integer_Size then
+            XX := RE_Width_Integer;
+            YY := Standard_Integer;
+         elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
+            XX := RE_Width_Long_Long_Integer;
+            YY := Standard_Long_Long_Integer;
+         else
+            XX := RE_Width_Long_Long_Long_Integer;
+            YY := Standard_Long_Long_Long_Integer;
+         end if;
 
       --  Modular integer types
 
       elsif Is_Modular_Integer_Type (Rtyp) then
-         XX := RE_Width_Long_Long_Unsigned;
-         YY := RTE (RE_Long_Long_Unsigned);
+         if Modulus (Rtyp) <= Modulus (RTE (RE_Unsigned)) then
+            XX := RE_Width_Unsigned;
+            YY := RTE (RE_Unsigned);
+         elsif Modulus (Rtyp) <= Modulus (RTE (RE_Long_Long_Unsigned)) then
+            XX := RE_Width_Long_Long_Unsigned;
+            YY := RTE (RE_Long_Long_Unsigned);
+         else
+            XX := RE_Width_Long_Long_Long_Unsigned;
+            YY := RTE (RE_Long_Long_Long_Unsigned);
+         end if;
 
       --  Real types
 

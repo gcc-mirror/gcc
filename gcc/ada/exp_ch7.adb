@@ -3157,6 +3157,14 @@ package body Exp_Ch7 is
 
          Append_To (Finalizer_Stmts, Label);
 
+         --  Disable warnings on Obj_Id. This works around an issue where GCC
+         --  is not able to detect that Obj_Id is protected by a counter and
+         --  emits spurious warnings.
+
+         if not Comes_From_Source (Obj_Id) then
+            Set_Warnings_Off (Obj_Id);
+         end if;
+
          --  Processing for simple protected objects. Such objects require
          --  manual finalization of their lock managers.
 

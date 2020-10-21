@@ -620,7 +620,7 @@ package body Exp_Fixd is
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc)),
 
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Double_Divide), Loc),
+             Name => New_Occurrence_Of (RTE (RE_Double_Divide64), Loc),
              Parameter_Associations => New_List (
                Build_Conversion (N, QR_Typ, X),
                Build_Conversion (N, QR_Typ, Y),
@@ -977,7 +977,7 @@ package body Exp_Fixd is
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc)),
 
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Scaled_Divide), Loc),
+             Name => New_Occurrence_Of (RTE (RE_Scaled_Divide64), Loc),
              Parameter_Associations => New_List (
                Build_Conversion (N, QR_Typ, X),
                Build_Conversion (N, QR_Typ, Y),

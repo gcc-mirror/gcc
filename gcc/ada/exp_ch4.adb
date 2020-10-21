@@ -1385,7 +1385,7 @@ package body Exp_Ch4 is
          --    (left'address, right'address, left'length, right'length) <op> 0
 
          --  x = U for unsigned, S for signed
-         --  n = 8,16,32,64 for component size
+         --  n = 8,16,32,64,128 for component size
          --  Add _Unaligned if length < 4 and component size is 8.
          --  <op> is the standard comparison operator
 
@@ -1422,11 +1422,18 @@ package body Exp_Ch4 is
                Comp := RE_Compare_Array_S32;
             end if;
 
-         else pragma Assert (Component_Size (Typ1) = 64);
+         elsif Component_Size (Typ1) = 64 then
             if Is_Unsigned_Type (Ctyp) then
                Comp := RE_Compare_Array_U64;
             else
                Comp := RE_Compare_Array_S64;
+            end if;
+
+         else pragma Assert (Component_Size (Typ1) = 128);
+            if Is_Unsigned_Type (Ctyp) then
+               Comp := RE_Compare_Array_U128;
+            else
+               Comp := RE_Compare_Array_S128;
             end if;
          end if;
 
@@ -8992,15 +8999,18 @@ package body Exp_Ch4 is
                     Make_Integer_Literal (Loc, Modulus (Rtyp)),
                     Exp))));
 
-         --  Binary modular case, in this case, we call one of two routines,
+         --  Binary modular case, in this case, we call one of three routines,
          --  either the unsigned integer case, or the unsigned long long
-         --  integer case, with a final "and" operation to do the required mod.
+         --  integer case, or the unsigned long long long integer case, with a
+         --  final "and" operation to do the required mod.
 
          else
-            if UI_To_Int (Esize (Rtyp)) <= Standard_Integer_Size then
+            if Esize (Rtyp) <= Standard_Integer_Size then
                Ent := RTE (RE_Exp_Unsigned);
-            else
+            elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
                Ent := RTE (RE_Exp_Long_Long_Unsigned);
+            else
+               Ent := RTE (RE_Exp_Long_Long_Long_Unsigned);
             end if;
 
             Rewrite (N,
@@ -9022,36 +9032,43 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Typ);
          return;
 
-      --  Signed integer cases, done using either Integer or Long_Long_Integer.
-      --  It is not worth having routines for Short_[Short_]Integer, since for
-      --  most machines it would not help, and it would generate more code that
-      --  might need certification when a certified run time is required.
+      --  Signed integer cases, using either Integer, Long_Long_Integer or
+      --  Long_Long_Long_Integer. It is not worth also having routines for
+      --  Short_[Short_]Integer, since for most machines it would not help,
+      --  and it would generate more code that might need certification when
+      --  a certified run time is required.
 
       --  In the integer cases, we have two routines, one for when overflow
       --  checks are required, and one when they are not required, since there
       --  is a real gain in omitting checks on many machines.
 
-      elsif Rtyp = Base_Type (Standard_Long_Long_Integer)
-        or else (Rtyp = Base_Type (Standard_Long_Integer)
-                  and then
-                    Esize (Standard_Long_Integer) > Esize (Standard_Integer))
-        or else Rtyp = Universal_Integer
-      then
-         Etyp := Standard_Long_Long_Integer;
-
-         if Ovflo then
-            Rent := RE_Exp_Long_Long_Integer;
-         else
-            Rent := RE_Exn_Long_Long_Integer;
-         end if;
-
       elsif Is_Signed_Integer_Type (Rtyp) then
-         Etyp := Standard_Integer;
+         if Esize (Rtyp) <= Standard_Integer_Size then
+            Etyp := Standard_Integer;
 
-         if Ovflo then
-            Rent := RE_Exp_Integer;
+            if Ovflo then
+               Rent := RE_Exp_Integer;
+            else
+               Rent := RE_Exn_Integer;
+            end if;
+
+         elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
+            Etyp := Standard_Long_Long_Integer;
+
+            if Ovflo then
+               Rent := RE_Exp_Long_Long_Integer;
+            else
+               Rent := RE_Exn_Long_Long_Integer;
+            end if;
+
          else
-            Rent := RE_Exn_Integer;
+            Etyp := Standard_Long_Long_Long_Integer;
+
+            if Ovflo then
+               Rent := RE_Exp_Long_Long_Long_Integer;
+            else
+               Rent := RE_Exn_Long_Long_Long_Integer;
+            end if;
          end if;
 
       --  Floating-point cases. We do not need separate routines for the
@@ -14101,6 +14118,11 @@ package body Exp_Ch4 is
          elsif Is_OK_For_Range (Uint_64) then
             return Uint_64;
 
+         --  If the size of Typ is 128 then check 127
+
+         elsif Tsiz = Uint_128 and then Is_OK_For_Range (Uint_127) then
+            return Uint_127;
+
          else
             return Uint_128;
          end if;
@@ -14220,12 +14242,8 @@ package body Exp_Ch4 is
       --  type instead of the first subtype because operations are done in
       --  the base type, so this avoids the need for useless conversions.
 
-      if Nsiz <= Standard_Integer_Size then
-         Ntyp := Etype (Standard_Integer);
-
-      elsif Nsiz <= Standard_Long_Long_Integer_Size then
-         Ntyp := Etype (Standard_Long_Long_Integer);
-
+      if Nsiz <= System_Max_Integer_Size then
+         Ntyp := Etype (Integer_Type_For (Nsiz, Uns => False));
       else
          return;
       end if;

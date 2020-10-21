@@ -1,4 +1,5 @@
-/* { dg-do compile { target powerpc64le-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8" } */
 
 typedef struct

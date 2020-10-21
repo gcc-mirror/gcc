@@ -60,7 +60,12 @@ package Interfaces is
    --  such as SPARK or CodePeer. In the normal case Long_Long_Integer is
    --  always 64-bits so we get the desired 64-bit type.
 
-   type Unsigned_8  is mod 2 ** 8;
+   type Integer_128 is new Long_Long_Long_Integer;
+   --  Note: we use Long_Long_Long_Integer instead of literal bounds to allow
+   --  this unit to be compiled with compilers not supporting 128-bit integers.
+   --  We do not put a confirming size clause of 128 bits for the same reason.
+
+   type Unsigned_8 is mod 2 ** 8;
    for Unsigned_8'Size use  8;
 
    type Unsigned_16 is mod 2 ** 16;
@@ -78,6 +83,9 @@ package Interfaces is
    for Unsigned_64'Size use 64;
    --  See comment on Integer_64 above
 
+   type Unsigned_128 is mod 2 ** Long_Long_Long_Integer'Size;
+   --  See comment on Integer_128 above
+
    function Shift_Left
      (Value  : Unsigned_8;
       Amount : Natural) return Unsigned_8
@@ -176,6 +184,31 @@ package Interfaces is
    function Rotate_Right
      (Value  : Unsigned_64;
       Amount : Natural) return Unsigned_64
+      with Import, Convention => Intrinsic, Static;
+
+   function Shift_Left
+     (Value  : Unsigned_128;
+      Amount : Natural) return Unsigned_128
+      with Import, Convention => Intrinsic, Static;
+
+   function Shift_Right
+     (Value  : Unsigned_128;
+      Amount : Natural) return Unsigned_128
+      with Import, Convention => Intrinsic, Static;
+
+   function Shift_Right_Arithmetic
+     (Value  : Unsigned_128;
+      Amount : Natural) return Unsigned_128
+      with Import, Convention => Intrinsic, Static;
+
+   function Rotate_Left
+     (Value  : Unsigned_128;
+      Amount : Natural) return Unsigned_128
+      with Import, Convention => Intrinsic, Static;
+
+   function Rotate_Right
+     (Value  : Unsigned_128;
+      Amount : Natural) return Unsigned_128
       with Import, Convention => Intrinsic, Static;
 
    --  IEEE Floating point types

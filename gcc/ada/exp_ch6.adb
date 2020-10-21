@@ -1458,12 +1458,12 @@ package body Exp_Ch6 is
       Subp      : Entity_Id;
       Post_Call : out List_Id)
    is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Actual    : Node_Id;
-      Formal    : Entity_Id;
-      N_Node    : Node_Id;
-      E_Actual  : Entity_Id;
-      E_Formal  : Entity_Id;
+      Loc      : constant Source_Ptr := Sloc (N);
+      Actual   : Node_Id;
+      Formal   : Entity_Id;
+      N_Node   : Node_Id;
+      E_Actual : Entity_Id;
+      E_Formal : Entity_Id;
 
       procedure Add_Call_By_Copy_Code;
       --  For cases where the parameter must be passed by copy, this routine
@@ -3658,7 +3658,7 @@ package body Exp_Ch6 is
 
          --  Create possible extra actual for accessibility level
 
-         if Present (Get_Accessibility (Formal)) then
+         if Present (Extra_Accessibility (Formal)) then
 
             --  Ada 2005 (AI-252): If the actual was rewritten as an Access
             --  attribute, then the original actual may be an aliased object
@@ -3748,7 +3748,7 @@ package body Exp_Ch6 is
                   Add_Extra_Actual
                     (Expr =>
                        New_Occurrence_Of (Get_Accessibility (Parm_Ent), Loc),
-                     EF   => Get_Accessibility (Formal));
+                     EF   => Extra_Accessibility (Formal));
                end;
 
             elsif Is_Entity_Name (Prev_Orig) then
@@ -3782,7 +3782,7 @@ package body Exp_Ch6 is
                           (Expr =>
                              New_Occurrence_Of
                                (Get_Accessibility (Parm_Ent), Loc),
-                           EF   => Get_Accessibility (Formal));
+                           EF   => Extra_Accessibility (Formal));
 
                      --  If the actual access parameter does not have an
                      --  associated extra formal providing its scope level,
@@ -3794,7 +3794,7 @@ package body Exp_Ch6 is
                           (Expr =>
                              Make_Integer_Literal (Loc,
                                Intval => Scope_Depth (Standard_Standard)),
-                           EF   => Get_Accessibility (Formal));
+                           EF   => Extra_Accessibility (Formal));
                      end if;
                   end;
 
@@ -3804,7 +3804,7 @@ package body Exp_Ch6 is
                else
                   Add_Extra_Actual
                     (Expr => Dynamic_Accessibility_Level (Prev_Orig),
-                     EF   => Get_Accessibility (Formal));
+                     EF   => Extra_Accessibility (Formal));
                end if;
 
             --  If the actual is an access discriminant, then pass the level
@@ -3820,7 +3820,7 @@ package body Exp_Ch6 is
                  (Expr =>
                     Make_Integer_Literal (Loc,
                       Intval => Object_Access_Level (Prefix (Prev_Orig))),
-                  EF   => Get_Accessibility (Formal));
+                  EF   => Extra_Accessibility (Formal));
 
             --  All other cases
 
@@ -3878,7 +3878,7 @@ package body Exp_Ch6 is
                                    New_Occurrence_Of
                                      (Get_Accessibility
                                         (Entity (Prev_Ult)), Loc),
-                                 EF   => Get_Accessibility (Formal));
+                                 EF   => Extra_Accessibility (Formal));
 
                            --  Normal case, call Object_Access_Level. Note:
                            --  should be Dynamic_Accessibility_Level ???
@@ -3889,7 +3889,7 @@ package body Exp_Ch6 is
                                    Make_Integer_Literal (Loc,
                                      Intval =>
                                        Object_Access_Level (Prev_Orig)),
-                                 EF   => Get_Accessibility (Formal));
+                                 EF   => Extra_Accessibility (Formal));
                            end if;
 
                         --  Treat the unchecked attributes as library-level
@@ -3901,7 +3901,7 @@ package body Exp_Ch6 is
                              (Expr =>
                                 Make_Integer_Literal (Loc,
                                   Intval => Scope_Depth (Standard_Standard)),
-                              EF   => Get_Accessibility (Formal));
+                              EF   => Extra_Accessibility (Formal));
 
                         --  No other cases of attributes returning access
                         --  values that can be passed to access parameters.
@@ -3923,7 +3923,7 @@ package body Exp_Ch6 is
                        (Expr =>
                           Make_Integer_Literal (Loc,
                             Intval => Scope_Depth (Current_Scope) + 1),
-                        EF   => Get_Accessibility (Formal));
+                        EF   => Extra_Accessibility (Formal));
 
                   --  For most other cases we simply pass the level of the
                   --  actual's access type. The type is retrieved from
@@ -4151,7 +4151,7 @@ package body Exp_Ch6 is
 
                            Add_Extra_Actual
                              (Expr => New_Occurrence_Of (Lvl, Loc),
-                              EF   => Get_Accessibility (Formal));
+                              EF   => Extra_Accessibility (Formal));
                         end;
 
                      --  General case uncomplicated by conditional expressions
@@ -4159,7 +4159,7 @@ package body Exp_Ch6 is
                      else
                         Add_Extra_Actual
                           (Expr => Dynamic_Accessibility_Level (Prev),
-                           EF   => Get_Accessibility (Formal));
+                           EF   => Extra_Accessibility (Formal));
                      end if;
                end case;
             end if;
@@ -8360,9 +8360,12 @@ package body Exp_Ch6 is
          --  The write-back of (in)-out parameters is handled by the back-end,
          --  but the constraint checks generated when subtypes of formal and
          --  actual don't match must be inserted in the form of assignments.
+         --  Also do this in the case of explicit dereferences, which can occur
+         --  due to rewritings of function calls with controlled results.
 
          if Nkind (N) = N_Function_Call
            or else Nkind (Original_Node (N)) = N_Function_Call
+           or else Nkind (N) = N_Explicit_Dereference
          then
             pragma Assert (Ada_Version >= Ada_2012);
             --  Functions with '[in] out' parameters are only allowed in Ada
@@ -8387,13 +8390,28 @@ package body Exp_Ch6 is
             --  the write back to be skipped completely.
 
             --  To deal with this, we replace the call by
-
+            --
             --    do
             --       Tnnn : constant function-result-type := function-call;
             --       Post_Call actions
             --    in
             --       Tnnn;
             --    end;
+            --
+            --   However, that doesn't work if function-result-type requires
+            --   finalization (because function-call's result never gets
+            --   finalized). So in that case, we instead replace the call by
+            --
+            --    do
+            --       type Ref is access all function-result-type;
+            --       Ptr : constant Ref := function-call'Reference;
+            --       Tnnn : constant function-result-type := Ptr.all;
+            --       Finalize (Ptr.all);
+            --       Post_Call actions
+            --    in
+            --       Tnnn;
+            --    end;
+            --
 
             declare
                Loc   : constant Source_Ptr := Sloc (N);
@@ -8402,12 +8420,63 @@ package body Exp_Ch6 is
                Name  : constant Node_Id   := Relocate_Node (N);
 
             begin
-               Prepend_To (Post_Call,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Tnnn,
-                   Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
-                   Constant_Present    => True,
-                   Expression          => Name));
+               if Needs_Finalization (FRTyp) then
+                  declare
+                     Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+
+                     Ptr_Typ_Decl : constant Node_Id :=
+                       Make_Full_Type_Declaration (Loc,
+                         Defining_Identifier => Ptr_Typ,
+                         Type_Definition     =>
+                           Make_Access_To_Object_Definition (Loc,
+                             All_Present        => True,
+                             Subtype_Indication =>
+                               New_Occurrence_Of (FRTyp, Loc)));
+
+                     Ptr_Obj : constant Entity_Id :=
+                       Make_Temporary (Loc, 'P');
+
+                     Ptr_Obj_Decl : constant Node_Id :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Ptr_Obj,
+                         Object_Definition   =>
+                           New_Occurrence_Of (Ptr_Typ, Loc),
+                         Constant_Present    => True,
+                         Expression          =>
+                           Make_Attribute_Reference (Loc,
+                           Prefix         => Name,
+                           Attribute_Name => Name_Unrestricted_Access));
+
+                     function Ptr_Dereference return Node_Id is
+                       (Make_Explicit_Dereference (Loc,
+                          Prefix => New_Occurrence_Of (Ptr_Obj, Loc)));
+
+                     Tnn_Decl : constant Node_Id :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Tnnn,
+                         Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
+                         Constant_Present    => True,
+                         Expression          => Ptr_Dereference);
+
+                     Finalize_Call : constant Node_Id :=
+                       Make_Final_Call
+                         (Obj_Ref => Ptr_Dereference, Typ => FRTyp);
+                  begin
+                     --  Prepend in reverse order
+
+                     Prepend_To (Post_Call, Finalize_Call);
+                     Prepend_To (Post_Call, Tnn_Decl);
+                     Prepend_To (Post_Call, Ptr_Obj_Decl);
+                     Prepend_To (Post_Call, Ptr_Typ_Decl);
+                  end;
+               else
+                  Prepend_To (Post_Call,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Tnnn,
+                      Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
+                      Constant_Present    => True,
+                      Expression          => Name));
+               end if;
 
                Rewrite (N,
                  Make_Expression_With_Actions (Loc,

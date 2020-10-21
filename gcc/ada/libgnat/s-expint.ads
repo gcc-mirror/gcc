@@ -31,12 +31,11 @@
 
 --  Integer exponentiation (checks on)
 
-package System.Exp_Int is
-   pragma Pure;
+with System.Expont;
 
-   function Exp_Integer
-     (Left  : Integer;
-      Right : Natural)
-      return  Integer;
+package System.Exp_Int is
+
+   function Exp_Integer is new Expont (Integer);
+   pragma Pure_Function (Exp_Integer);
 
 end System.Exp_Int;

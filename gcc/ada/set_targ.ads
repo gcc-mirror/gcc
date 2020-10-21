@@ -71,6 +71,7 @@ package Set_Targ is
    Float_Words_BE             : Nat; -- Float words stored big-endian?
    Int_Size                   : Pos; -- Standard.Integer'Size
    Long_Double_Size           : Pos; -- Standard.Long_Long_Float'Size
+   Long_Long_Long_Size        : Pos; -- Standard.Long_Long_Long_Integer'Size
    Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
    Long_Size                  : Pos; -- Standard.Long_Integer'Size
    Maximum_Alignment          : Pos; -- Maximum permitted alignment

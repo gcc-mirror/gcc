@@ -7241,7 +7241,7 @@ package body Sem_Ch3 is
          --  Introduce an implicit base type for the derived type even if there
          --  is no constraint attached to it, since this seems closer to the
          --  Ada semantics. Build a full type declaration tree for the derived
-         --  type using the implicit base type as the defining identifier. The
+         --  type using the implicit base type as the defining identifier. Then
          --  build a subtype declaration tree which applies the constraint (if
          --  any) have it replace the derived type declaration.
 
@@ -9750,6 +9750,13 @@ package body Sem_Ch3 is
       --  subtype until later, so we obtain the convention from the base type.
 
       Set_Convention (Derived_Type, Convention (Parent_Base));
+
+      if Is_Tagged_Type (Derived_Type)
+        and then Present (Class_Wide_Type (Derived_Type))
+      then
+         Set_Convention (Class_Wide_Type (Derived_Type),
+           Convention (Class_Wide_Type (Parent_Base)));
+      end if;
 
       --  Set SSO default for record or array type
 
@@ -19432,17 +19439,20 @@ package body Sem_Ch3 is
       ----------------------
 
       procedure Set_Modular_Size (Bits : Int) is
+         Siz : Int;
+
       begin
          Set_RM_Size (T, UI_From_Int (Bits));
 
-         if Bits <= 8 then
-            Init_Esize (T, 8);
+         if Bits < System_Max_Binary_Modulus_Power then
+            Siz := 8;
 
-         elsif Bits <= 16 then
-            Init_Esize (T, 16);
+            while Siz < 128 loop
+               exit when Bits <= Siz;
+               Siz := Siz * 2;
+            end loop;
 
-         elsif Bits <= 32 then
-            Init_Esize (T, 32);
+            Init_Esize (T, Siz);
 
          else
             Init_Esize (T, System_Max_Binary_Modulus_Power);
@@ -19457,14 +19467,14 @@ package body Sem_Ch3 is
 
    begin
       --  If the mod expression is (exactly) 2 * literal, where literal is
-      --  64 or less,then almost certainly the * was meant to be **. Warn.
+      --  128 or less,then almost certainly the * was meant to be **. Warn.
 
       if Warn_On_Suspicious_Modulus_Value
         and then Nkind (Mod_Expr) = N_Op_Multiply
         and then Nkind (Left_Opnd (Mod_Expr)) = N_Integer_Literal
         and then Intval (Left_Opnd (Mod_Expr)) = Uint_2
         and then Nkind (Right_Opnd (Mod_Expr)) = N_Integer_Literal
-        and then Intval (Right_Opnd (Mod_Expr)) <= Uint_64
+        and then Intval (Right_Opnd (Mod_Expr)) <= Uint_128
       then
          Error_Msg_N
            ("suspicious MOD value, was '*'* intended'??M?", Mod_Expr);
@@ -22463,8 +22473,8 @@ package body Sem_Ch3 is
          Check_Bound (Hi);
 
          if Errs then
-            Hi := Type_High_Bound (Standard_Long_Long_Integer);
-            Lo := Type_Low_Bound (Standard_Long_Long_Integer);
+            Hi := Type_High_Bound (Standard_Long_Long_Long_Integer);
+            Lo := Type_Low_Bound  (Standard_Long_Long_Long_Integer);
          end if;
 
          --  Find type to derive from
@@ -22488,11 +22498,15 @@ package body Sem_Ch3 is
             Check_Restriction (No_Long_Long_Integers, Def);
             Base_Typ := Base_Type (Standard_Long_Long_Integer);
 
+         elsif Can_Derive_From (Standard_Long_Long_Long_Integer) then
+            Check_Restriction (No_Long_Long_Integers, Def);
+            Base_Typ := Base_Type (Standard_Long_Long_Long_Integer);
+
          else
-            Base_Typ := Base_Type (Standard_Long_Long_Integer);
+            Base_Typ := Base_Type (Standard_Long_Long_Long_Integer);
             Error_Msg_N ("integer type definition bounds out of range", Def);
-            Hi := Type_High_Bound (Standard_Long_Long_Integer);
-            Lo := Type_Low_Bound (Standard_Long_Long_Integer);
+            Hi := Type_High_Bound (Standard_Long_Long_Long_Integer);
+            Lo := Type_Low_Bound  (Standard_Long_Long_Long_Integer);
          end if;
       end if;
 

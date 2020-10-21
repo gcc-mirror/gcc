@@ -1191,19 +1191,21 @@ package Snames is
    Name_Signed_16                      : constant Name_Id := N + $; -- GNAT
    Name_Signed_32                      : constant Name_Id := N + $; -- GNAT
    Name_Signed_64                      : constant Name_Id := N + $; -- GNAT
+   Name_Signed_128                     : constant Name_Id := N + $; -- GNAT
    Name_Unsigned_8                     : constant Name_Id := N + $; -- GNAT
    Name_Unsigned_16                    : constant Name_Id := N + $; -- GNAT
    Name_Unsigned_32                    : constant Name_Id := N + $; -- GNAT
    Name_Unsigned_64                    : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_128                   : constant Name_Id := N + $; -- GNAT
 
    subtype Scalar_Id is Name_Id
-     range Name_Short_Float .. Name_Unsigned_64;
+     range Name_Short_Float .. Name_Unsigned_128;
 
    subtype Float_Scalar_Id is Name_Id
      range Name_Short_Float .. Name_Long_Long_Float;
 
    subtype Integer_Scalar_Id is Name_Id
-     range Name_Signed_8 .. Name_Unsigned_64;
+     range Name_Signed_8 .. Name_Unsigned_128;
 
    --  Names of recognized checks for pragma Suppress
 

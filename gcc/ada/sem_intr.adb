@@ -38,6 +38,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 
 package body Sem_Intr is
@@ -430,11 +431,18 @@ package body Sem_Intr is
       if Size /= 8  and then
          Size /= 16 and then
          Size /= 32 and then
-         Size /= 64
+         Size /= 64 and then
+         Size /= System_Max_Integer_Size
       then
-         Errint
-           ("first argument for shift must have size 8, 16, 32 or 64",
-            Ptyp1, N, Relaxed => True);
+         if System_Max_Integer_Size > 64 then
+            Errint
+              ("first argument for shift must have size 8, 16, 32, 64 or 128",
+               Ptyp1, N, Relaxed => True);
+         else
+            Errint
+              ("first argument for shift must have size 8, 16, 32 or 64",
+               Ptyp1, N, Relaxed => True);
+         end if;
          return;
 
       elsif Non_Binary_Modulus (Typ1) then
@@ -449,10 +457,19 @@ package body Sem_Intr is
         and then Modulus (Typ1) /= Uint_2 ** 16
         and then Modulus (Typ1) /= Uint_2 ** 32
         and then Modulus (Typ1) /= Uint_2 ** 64
+        and then Modulus (Typ1) /= Uint_2 ** System_Max_Binary_Modulus_Power
       then
-         Errint
-           ("modular type for shift must have modulus of 2'*'*8, "
-            & "2'*'*16, 2'*'*32, or 2'*'*64", Ptyp1, N, Relaxed => True);
+         if System_Max_Binary_Modulus_Power > 64 then
+            Errint
+              ("modular type for shift must have modulus of 2'*'*8, "
+               & "2'*'*16, 2'*'*32, 2'*'*64 or 2'*'*128", Ptyp1, N,
+               Relaxed => True);
+         else
+            Errint
+              ("modular type for shift must have modulus of 2'*'*8, "
+               & "2'*'*16, 2'*'*32, or 2'*'*64", Ptyp1, N,
+               Relaxed => True);
+         end if;
 
       elsif Etype (Arg1) /= Etype (E) then
          Errint

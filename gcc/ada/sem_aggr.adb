@@ -1640,21 +1640,16 @@ package body Sem_Aggr is
          Set_Etype  (Ent, Standard_Void_Type);
          Set_Parent (Ent, Parent (N));
          Push_Scope (Ent);
-         Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => Chars (Defining_Identifier (N)));
 
          --  Insert and decorate the index variable in the current scope.
          --  The expression has to be analyzed once the index variable is
-         --  directly visible. Mark the variable as referenced to prevent
-         --  spurious warnings, given that subsequent uses of its name in the
-         --  expression will reference the internal (synonym) loop variable.
+         --  directly visible.
 
+         Id := Defining_Identifier (N);
          Enter_Name (Id);
          Set_Etype (Id, Index_Typ);
          Set_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
-         Set_Referenced (Id);
 
          --  Analyze a copy of the expression, to verify legality. We use
          --  a copy because the expression will be analyzed anew when the
@@ -1662,6 +1657,7 @@ package body Sem_Aggr is
          --  as a loop with a new index variable.
 
          Expr := New_Copy_Tree (Expression (N));
+         Set_Parent (Expr, N);
          Dummy := Resolve_Aggr_Expr (Expr, False);
 
          --  An iterated_component_association may appear in a nested
@@ -1841,7 +1837,7 @@ package body Sem_Aggr is
       if Others_Present and then not Others_Allowed then
          Error_Msg_N
            ("OTHERS choice not allowed here",
-            First (Choices (First (Component_Associations (N)))));
+            First (Choice_List (First (Component_Associations (N)))));
          return Failure;
       end if;
 
@@ -2057,8 +2053,13 @@ package body Sem_Aggr is
                      return Failure;
                   end if;
 
+               --  ??? Checks for dynamically tagged expressions below will
+               --  be only applied to iterated_component_association after
+               --  expansion; in particular, errors might not be reported when
+               --  -gnatc switch is used.
+
                elsif Nkind (Assoc) = N_Iterated_Component_Association then
-                  null;   --  handled above, in a loop context.
+                  null;   --  handled above, in a loop context
 
                elsif not Resolve_Aggr_Expr
                            (Expression (Assoc), Single_Elmt => Single_Choice)

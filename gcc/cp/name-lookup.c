@@ -2969,6 +2969,52 @@ push_local_extern_decl_alias (tree decl)
 	{
 	  /* No existing namespace-scope decl.  Make one.  */
 	  alias = copy_decl (decl);
+	  if (TREE_CODE (alias) == FUNCTION_DECL)
+	    {
+	      /* Recontextualize the parms.  */
+	      for (tree *chain = &DECL_ARGUMENTS (alias);
+		   *chain; chain = &DECL_CHAIN (*chain))
+		{
+		  *chain = copy_decl (*chain);
+		  DECL_CONTEXT (*chain) = alias;
+		}
+
+	      tree type = TREE_TYPE (alias);
+	      for (tree args = TYPE_ARG_TYPES (type);
+		   args; args = TREE_CHAIN (args))
+		if (TREE_PURPOSE (args))
+		  {
+		    /* There are default args.  Lose them.  */
+		    tree nargs = NULL_TREE;
+		    tree *chain = &nargs;
+		    for (args = TYPE_ARG_TYPES (type);
+			 args; args = TREE_CHAIN (args))
+		      if (args == void_list_node)
+			{
+			  *chain = args;
+			  break;
+			}
+		      else
+			{
+			  *chain
+			    = build_tree_list (NULL_TREE, TREE_VALUE (args));
+			  chain = &TREE_CHAIN (*chain);
+			}
+
+		    tree fn_type = build_function_type (TREE_TYPE (type), nargs);
+
+		    fn_type = apply_memfn_quals
+		      (fn_type, type_memfn_quals (type));
+
+		    fn_type = build_cp_fntype_variant
+		      (fn_type, type_memfn_rqual (type),
+		       TYPE_RAISES_EXCEPTIONS (type),
+		       TYPE_HAS_LATE_RETURN_TYPE (type));
+
+		    TREE_TYPE (alias) = fn_type;
+		    break;
+		  }
+	    }
 
 	  /* This is the real thing.  */
 	  DECL_LOCAL_DECL_P (alias) = false;

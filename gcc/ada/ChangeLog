@@ -1,3 +1,441 @@
+2020-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Constrain_Decimal, Constrain_Enumeration,
+	Constrain_Float, Constrain_Integer, Constrain_Ordinary_Fixed):
+	Refine parameter type from Node_Id to Entity_Id.
+
+2020-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sprint.adb (po): Set Dump_Freeze_Null to False; align colons.
+	(ps): Likewise.
+
+2020-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: The flag Box_Present can appear in
+	Iterated_Element_Association nodes.
+	* sem_aggr.adb (Resolve_Aggregate): Call
+	Resolve_Container_Aggregate when type of context has
+	corresponding aspect.
+	* sem_type.adb (Covers): In Ada_2020 an aggregate is compatible
+	with a type that carries the corresponding aspect.
+	* exp_ch3.adb (Make_Controlling_Function_Wrappers): Do not
+	create declarations and bodies for inherited primitive functions
+	of null extensions that dispatch on result, when current scope
+	includes an immediately visible non-overloadable homonym of the
+	function.
+	* libgnat/a-cborse.adb, libgnat/a-cborse.ads,
+	libgnat/a-cbhase.ads, libgnat/a-cbhase.adb,
+	libgnat/a-cborma.adb, libgnat/a-cborma.ads,
+	libgnat/a-cbhama.adb, libgnat/a-cbhama.ads,
+	libgnat/a-cbdlli.adb, libgnat/a-cbdlli.ads,
+	libgnat/a-convec.ads, libgnat/a-ciorse.ads,
+	libgnat/a-cihase.ads, libgnat/a-cihase.adb,
+	libgnat/a-ciorma.ads, libgnat/a-cihama.ads,
+	libgnat/a-cihama.adb, libgnat/a-cidlli.ads,
+	libgnat/a-cidlli.adb, libgnat/a-coinve.adb,
+	libgnat/a-cobove.adb, libgnat/a-cobove.ads,
+	libgnat/a-convec.adb, libgnat/a-coinve.ads,
+	libgnat/a-coorse.ads, libgnat/a-cohase.adb,
+	libgnat/a-cohase.ads, libgnat/a-coorma.ads,
+	libgnat/a-cohama.adb, libgnat/a-cohama.ads,
+	libgnat/a-cdlili.ads: Add primitive function Empty for use in
+	aspect Aggregate, and add corresponding body or expression
+	function.
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* aspects.adb (Has_Aspect_Specifications_Flag): Add
+	N_Parameter_Specification.
+	* par-ch13.adb (Aspect_Specifications_Present): Also handle case
+	of an unknown aspect on the last formal parameter (terminated by
+	a Tok_Right_Paren). Minor reformatting.
+	* par-ch6.adb (P_Formal_Part): Scan aspects on formal
+	parameters.
+	* par.adb: Fix typos.
+	* sem_ch6.adb (Process_Formals): Add processing of aspects and
+	in particular Unreferenced aspect for now.
+	* sinfo.ads: Allow ASPECT_SPECIFICATIONS on a
+	PARAMETER_SPECIFICATION.
+	* doc/gnat_rm/implementation_defined_aspects.rst
+	(Aspect Unreferenced): Update documentation.
+	* gnat_rm.texi: Regenerate.
+
+2020-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Get_Accessibility): Refine result
+	type from Node_Id to Entity_Id.
+
+2020-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb, exp_attr.adb, sem_ch13.adb, sem_util.adb: Use
+	Is_Formal where possible.
+
+2020-10-20  Steve Baird  <baird@adacore.com>
+
+	* sem_util.ads: Declare a new package, Old_Attr_Util, which in
+	turn declares two more packages, Conditional_Evaluation and
+	Indirect_Temps. Conditional_Evaluation provides a predicate for
+	deciding whether a given 'Old attribute reference is eligible
+	for conditional evaluation and, in the case where it is
+	eligible, a function that constructs the Boolean-valued
+	condition that is to be evaluated at run time in deciding
+	whether to evaluate the attribute prefix.  Indirect_Temps
+	provides support for declaring a temporary which is only
+	initialized conditionally; more specifically, an access type and
+	a variable of that type are declared (unconditionally) and then
+	the variable is (conditionally) initialized with an allocator.
+	The existence of the access type and the pointer variable is
+	hidden from clients, except that a predicate,
+	Is_Access_Type_For_Indirect_Temp, is provided for identifying
+	such access types. This is needed because we want such an access
+	type to be treated like a "normal" access type (specifically
+	with respect to finalization of allocated objects). Other parts
+	of the compiler treat access types differently if
+	Comes_From_Source is False, or if the secondary stack storage
+	pool is used; this predicate is used to disable this special
+	treatment.
+	* sem_attr.adb (Uneval_Old_Msg): Improve message text to reflect
+	Ada202x changes.
+	(Analyze_Attribute): A previously-illegal 'Old attribute
+	reference is accepted in Ada2020 if it is eligible for
+	conditional evaluation.
+	* sem_res.adb (Valid_Conversion): Do not treat a rewritten 'Old
+	attribute like other rewrite substitutions. This makes a
+	difference, for example, in the case where we are generating the
+	expansion of a membership test of the form "Saooaaat'Old in
+	Named_Access_Type"; in this case Valid_Conversion needs to
+	return True (otherwise the expansion will be False - see the
+	call site in exp_ch4.adb).
+	* exp_attr.adb (Expand_N_Attribute_Reference): When expanding a
+	'Old attribute reference, test for the case where the reference
+	is eligible for conditional evaluation. In that case, use the
+	new "indirect temporary" mechanism provided by Sem_Util.
+	* exp_prag.adb
+	(Expand_Attributes_In_Consequence.Expand_Attributes): If
+	Sem_Util.Indirect_Temp_Needed indicates that there could be
+	correctness problems associated with the old expansion scheme
+	for dealing with 'Old attributes in contract cases consequences,
+	then we use the new "indirect temporary" mechanism provided by
+	Sem_Util instead. We do not want to do this unconditionally.
+	* sem_util.adb: Provide a body for the new Old_Attr_Util
+	package. Further work is needed in several areas for
+	correctness:
+	- The function Is_Repeatedly_Evaluated does not deal with
+	container aggregates yet.
+	- The function Is_Known_On_Entry does not deal with interactions
+	with the Global aspect.
+	Each area where more work is needed is indicated with a "???"
+	comment in the code; a more detailed description can be found
+	there. Some optimization opportunties are similarly indicated
+	with a "???" comment.
+	* exp_ch3.adb (Freeze_Type): In deciding whether to generate
+	expansion for the list controller of an access type, take the
+	predicate Is_Access_Type_For_Indirect_Temp into account. If the
+	predicate yields True, then generate the expansion.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): We don't
+	normally finalize allocated objects that are allocated on the
+	secondary stack. Add an exception to this rule if the predicate
+	Is_Access_Type_For_Indirect_Temp yields True.  As a result of
+	this exception, we have to deal with the fact that gigi expects
+	a different parameter profile if we are using the secondary
+	stack pool; the Pool and Alignment parameters must be omitted in
+	this case.
+
+2020-10-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch12.adb (Install_Parents_Of_Generic_Context,
+	Remove_Parents_Of_Generic_Context): New subprograms.
+	(Instantiate_Package_Body): Adding assertions to ensure that
+	installed parents are properly removed.
+
+2020-10-20  Claire Dross  <dross@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Emit a warning on 'Update
+	when Warn_On_Obsolescent_Feature is set to True.
+
+2020-10-20  Richard Kenner  <kenner@adacore.com>
+
+	* gnat_cuda.adb (Build_Register_Function_Call): Make procedure
+	call instead of function, rename to
+	Build_Register_Procedure_Call.
+	(Build_CUDA_Init_Proc): Make procedure call instead of function.
+
+2020-10-20  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Branch): Properly anticipate expansion of
+	conditional expressions producing object declarations in
+	addition to assignment statements, and rename formal.
+
+2020-10-20  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Write_Source_Code_Line): Adopt display closer to
+	GCC format.
+	(Output_Messages): Deal specially with info messages.
+	* erroutc.adb (Prescan_Message): Fix bug leading to check
+	messages being considered as error messages in pretty output
+	mode.
+
+2020-10-20  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Properly handle the case
+	where the condition of a conditional expression has been
+	optimized out when calculating the value of an extra
+	accessibility parameter.
+
+2020-10-20  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Change "_" to "-".
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): Warn on not fully
+	initialized box aggregate.
+	* sem_aggr.ads: Fix typo.
+	* sem_res.adb (Resolve_Actuals): Fix typo in error message
+	format marking it incorrectly as a continuation message.
+	* sem_elab.adb (Check_Internal_Call_Continue): Similarly, add
+	missing primary message in case of a call to an actual generic
+	subprogram.
+	* sem_warn.adb (Check_References): Do not warn on read but never
+	assigned variables if the type is partially initialized.
+	* libgnat/a-except.ads, libgnat/a-ststun.ads,
+	libgnat/g-sechas.ads, libgnat/a-cbdlli.ads,
+	libgnat/a-cfdlli.ads, libgnat/a-cobove.ads,
+	libgnat/a-cohata.ads, libgnat/a-crbltr.ads,
+	libgnat/a-cbmutr.ads, libgnat/a-crdlli.ads,
+	libgnat/a-cbsyqu.ads: Address new warning.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Update doc on -gnatwv.
+	* gnat_ugn.texi: Regenerate.
+
+2020-10-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Mark static
+	expression functions as inlined.
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* contracts.adb (Is_Prologue_Renaming): This function was
+	missing support for E_Constant which can also be generated in
+	protected objects.
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb (Gen_Bind_Env_String): Generate Ada 2012 compatible
+	strings. Code cleanup.
+
+2020-10-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb, sem_util.ads: Comment fix.
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Check_Constrained_Object): Suppress discriminant
+	checks when the type has default discriminants and comes from
+	expansion of a "for of" loop.
+
+2020-10-20  Bob Duff  <duff@adacore.com>
+
+	* atree.ads: Make Default_Node a constant.  Remove the
+	modification of Comes_From_Source, and use a separate flag for
+	that.  Change Sloc to 0; it always overwritten, and never left
+	as the No_Location value.
+	(Print_Statistics): Move to spec so we can call it from
+	gnat1drv.
+	(Num_Nodes): Rename to clarify that this is approximate.
+	Correct comment: nodes and entities are never deleted, the count
+	is never decremented, and this is not used by Xref.
+	(Initialize): Correct comment: Error_List is not created here.
+	Other minor naming and comment changes.
+	* atree.adb (Extend_Node, New_Copy, New_Entity, New_Node):
+	Streamline these. Simplify and improve efficiency.  Move code
+	from Allocate_Initialize_Node to these, where it can be executed
+	unconditionally.  Take advantage of automatic zeroing of the
+	Nodes table.
+	(Allocate_Initialize_Node): Remove this. It was an efficiency
+	bottleneck, and somewhat complicated, because it was called from
+	4 places, and had all sorts of conditionals to check where it
+	was called from. Better to move most of that code to the call
+	sites, where it can be executed (or not) unconditionally.
+	(Allocate_New_Node): New procedure to partly replace
+	Allocate_Initialize_Node (called from just 2 of those 4 places).
+	(Comes_From_Source_Default): New flag written/read by
+	Set_Comes_From_Source_Default/Get_Comes_From_Source_Default.
+	This allows us to make Default_Node into a constant with
+	all-zeros value.
+	(Set_Paren_Count_Of_Copy): New procedure to avoid duplicated
+	code.
+	(Report): New procedure to encapsulate the call to the reporting
+	procedure.
+	(Atree_Private_Part): We now need a body for this package, to
+	contain package body Nodes.
+	(Approx_Num_Nodes_And_Entities): Was Num_Nodes.  For efficiency,
+	compute the answer from Nodes.Last. That way we don't need to
+	increment a counter on every node creation. Other minor naming
+	and comment changes.
+	* gnat1drv.adb: Call Atree.Print_Statistics if -gnatd.A switch
+	was given.  Add comment documenting the new order dependency (we
+	must process the command line before calling Atree.Initialize).
+	* debug.adb: Document -gnatd.A.
+	* einfo.adb, sinfo.adb: Remove useless Style_Checks pragmas.
+	* nlists.ads (Allocate_List_Tables): Inline makes node creation
+	a little faster.
+	* nlists.adb (Initialize): Remove local constant E, which didn't
+	seem to add clarity.
+	* treepr.adb (Print_Init): Use renamed
+	Approx_Num_Nodes_And_Entities function.
+	* types.ads: Change the Low and High bounds as described above.
+	* types.h: Change Low and High bounds to match types.ads.
+	* sem_ch8.adb, namet.adb, namet.ads: Move the computation of
+	Last_Name_Id from sem_ch8 to namet, and correct it to not assume
+	Name_Ids are positive.
+	* ali.adb, ali-util.adb, bindo-writers.adb, exp_dist.adb,
+	fmap.adb, fname-uf.adb, osint.adb: Fix various hash functions to
+	avoid assuming the various ranges are positive. Note that "mod"
+	returns a nonnegative result when the second operand is
+	positive. "rem" can return negative values in that case (in
+	particular, if the first operand is negative, which it now is).
+	* switch-c.adb: Allow switch -gnaten to control the value of
+	Nodes_Size_In_Meg.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Remove traling whitespaces.
+	* opt.ads (Nodes_Size_In_Meg): New Variable.
+
+2020-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Always generate a renaming
+	that is handled by the front-end in the case of an indexed or a
+	selected component whose prefix has a nonstandard representation.
+
+2020-10-20  Pat Rogers  <rogers@adacore.com>
+
+	* doc/gnat_rm/the_gnat_library.rst: Add Ada.Task_Initialization.
+	* gnat_rm.texi: Regenerate.
+
+2020-10-20  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb: (Error_Msg-Internal): Pass the location for a line
+	insertion if any in the message.
+	(Output_Messages: Add display of source code lines if -gnatdF is
+	set.
+	(Write_Source_Code_Line): Code clean up.
+	* erroutc.adb (Prescan_Message): Apply prescan for continuation
+	lines when -gnatdF is set, and record presence of line
+	insertion.
+	* erroutc.ads (Has_Insertion_Line): New global for prescan.
+	(Error_Msg_Object): Add field to record line insertion if
+	present.
+	* errutil.adb (Error_Msg): Pass no location for Insertion_Sloc.
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Case_Statement): Do not generate
+	validity check when possible.
+
+2020-10-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Iterated_Component): Reorganize code to
+	ensure that Loop_Id is properly initialized on all paths, and
+	remove code duplication.
+
+2020-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Propagate predicate
+	function to full view of the created type as well, if it was
+	created.
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Merge handling of
+	Simple_Storage_Pool and Storage_Pool.
+
+2020-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads: Introduce Subprogram_Variant aspect with the
+	following properties: GNAT-specific, with mandatory expression,
+	not a representation aspect, never delayed.
+	* contracts.adb (Expand_Subprogram_Contract): Mention new aspect
+	in the comment.
+	(Add_Contract_Item): Support addition of pragma
+	Subprogram_Variant to N_Contract node.
+	(Analyze_Entry_Or_Subprogram_Contract): Mention new aspect in
+	the comment; add pragma Subprogram_Variant to N_Contract node.
+	(Build_Postconditions_Procedure): Adapt call to
+	Insert_Before_First_Source_Declaration, which is now reused in
+	expansion of new aspect.
+	(Process_Contract_Cases_For): Also process Subprogram_Variant,
+	which is stored in N_Contract node together with Contract_Cases.
+	* contracts.ads (Analyze_Entry_Or_Subprogram_Contract): Mention
+	new aspect in the comment.
+	(Analyze_Entry_Or_Subprogram_Body_Contract): Likewise.
+	* einfo.adb (Get_Pragma): Support retrieval of new pragma.
+	* einfo.ads (Get_Pragma): Likewise.
+	* exp_ch6.adb (Check_Subprogram_Variant): New routine for
+	emitting call to check Subprogram_Variant expressions at run
+	time.
+	(Expand_Call_Helper): Check Subprogram_Variant expressions at
+	recursive calls.
+	* exp_prag.adb (Make_Op): Moved from expansion of pragma
+	Loop_Variant to Exp_Util, so it is now reused for expansion of
+	pragma Subprogram_Variant.
+	(Process_Variant): Adapt call to Make_Op after moving it to
+	Exp_Util.
+	(Expand_Pragma_Subprogram_Variant): New routine.
+	* exp_prag.ads (Expand_Pragma_Subprogram_Variant): Likewise.
+	* exp_util.adb (Make_Variant_Comparison): Moved from Exp_Prag
+	(see above).
+	* exp_util.ads (Make_Variant_Comparison): Likewise.
+	* inline.adb (Remove_Aspects_And_Pragmas): Handle aspect/pragma
+	Subprogram_Variant just like similar contracts.
+	* par-prag.adb (Prag): Likewise.
+	* sem.adb (Insert_Before_First_Source_Declaration): Moved from
+	Contracts (see above).
+	* sem.ads (Insert_Before_First_Source_Declaration): Likewise.
+	* sem_ch12.adb: Mention new aspect in the comment about
+	"Implementation of Generic Contracts", just like similar aspects
+	are mentioned there.
+	* sem_ch13.adb (Insert_Pragma): Mention new aspect in the
+	comment, because this routine is now used for Subprogram_Variant
+	just like for other similar aspects.
+	(Analyze_Aspect_Specifications): Mention new aspect in comments;
+	it is handled just like aspect Contract_Cases.
+	(Check_Aspect_At_Freeze_Point): Do not expect aspect
+	Subprogram_Variant just like we don't expect aspect
+	Contract_Cases.
+	* sem_prag.adb (Ensure_Aggregate_Form): Now also used for pragma
+	Subprogram_Variant, so update comment.
+	(Analyze_Pragma): Add initial checks for pragma
+	Subprogram_Variant.
+	(Analyze_Subprogram_Variant_In_Decl_Part): New routine with
+	secondary checks on the new pragma.
+	(Sig_Flags): Handle references within pragma Subprogram_Variant
+	expression just like references in similar pragma
+	Contract_Cases.
+	(Is_Valid_Assertion_Kind): Handle Subprogram_Variant just like
+	other similar contracts.
+	* sem_prag.ads (Analyze_Subprogram_Variant_In_Decl_Part): New
+	routine.
+	* sem_res.adb (Same_Or_Aliased_Subprograms): Moved to Sem_Util,
+	so it can be reused for detection of recursive calls where
+	Subprogram_Variant needs to be verified.
+	* sem_util.adb (Is_Subprogram_Contract_Annotation): Handle new
+	Subprogram_Variant annotation just like other similar
+	annotations.
+	(Same_Or_Aliased_Subprograms): Moved from Sem_Res (see above).
+	* sem_util.ads (Is_Subprogram_Contract_Annotation): Mention new
+	aspect in the comment.
+	(Same_Or_Aliased_Subprograms): Moved from Sem_Res (see above).
+	* sinfo.ads (N_Contract): Document handling of
+	Subprogram_Variant.
+	* snames.ads-tmpl: Add name for the internally generated
+	procedure with checks for Subprogram_Variant expression, name
+	for the new aspect and new pragma corresponding to aspect
+	Subprogram_Variant.
+
+2020-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.ads: Reorder declaration.
+
 2020-10-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* par-ch4.adb: (P_Aggregate_Or_Paren_Expr): Recognize

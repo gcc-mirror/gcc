@@ -72,6 +72,10 @@ package body System.Img_Dec is
       Aft   : Natural;
       Exp   : Natural)
    is
+      pragma Assert (NDigs >= 1);
+      pragma Assert (Digs'First = 1);
+      pragma Assert (Digs'First < Digs'Last);
+
       Minus : constant Boolean := (Digs (Digs'First) = '-');
       --  Set True if input is negative
 
@@ -135,6 +139,10 @@ package body System.Img_Dec is
       procedure Round (N : Integer) is
          D : Character;
 
+         pragma Assert (NDigs >= 1);
+         pragma Assert (Digs'First = 1);
+         pragma Assert (Digs'First < Digs'Last);
+
       begin
          --  Nothing to do if rounding past the last digit we have
 
@@ -164,10 +172,17 @@ package body System.Img_Dec is
 
          else
             LD := N;
+            pragma Assert (LD >= 1);
+            --  In this case, we have N < LD and N >= FD. FD is a Natural,
+            --  So we can conclude, LD >= 1
             ND := LD - 1;
+            pragma Assert (N + 1 <= Digs'Last);
 
             if Digs (N + 1) >= '5' then
-               for J in reverse 2 .. N loop
+               for J in reverse Digs'First + 1 .. Digs'First + N - 1 loop
+                  pragma Assert (Digs (J) in '0' .. '9' | ' ' | '-');
+                  --  Because it is a decimal image, we can assume that
+                  --  it can only contain these characters.
                   D := Character'Succ (Digs (J));
 
                   if D <= '9' then
@@ -196,6 +211,17 @@ package body System.Img_Dec is
 
       procedure Set (C : Character) is
       begin
+         pragma Assert (P >= (S'First - 1) and P < S'Last and
+                        P < Natural'Last);
+         --  No check is done as documented in the header : updating P to
+         --  point to the last character stored, the caller promises that the
+         --  buffer is large enough and no check is made for this.
+         --  Constraint_Error will not necessarily be raised if this
+         --  requirement is violated, since it is perfectly valid to compile
+         --  this unit with checks off.
+         --
+         --  Due to codepeer limitation, codepeer should be used with switch:
+         --   -no-propagation system.img_dec.set_decimal_digits.set
          P := P + 1;
          S (P) := C;
       end Set;
@@ -230,6 +256,9 @@ package body System.Img_Dec is
 
       procedure Set_Digits (S, E : Natural) is
       begin
+         pragma Assert (S >= Digs'First and E <= Digs'Last);
+         --  S and E should be in the Digs array range
+         --  TBC: Analysis should be completed
          for J in S .. E loop
             Set (Digs (J));
          end loop;
@@ -254,8 +283,10 @@ package body System.Img_Dec is
       if Exp > 0 then
          Set_Blanks_And_Sign (Fore - 1);
          Round (Digits_After_Point + 2);
+
          Set (Digs (FD));
          FD := FD + 1;
+         pragma Assert (ND >= 1);
          ND := ND - 1;
          Set ('.');
 
@@ -388,6 +419,9 @@ package body System.Img_Dec is
 
             else
                Set_Blanks_And_Sign (Fore - Digits_Before_Point);
+               pragma Assert (FD + Digits_Before_Point - 1 >= 0);
+               --  In this branch, we have Digits_Before_Point > 0. It is the
+               --  else of test (Digits_Before_Point <= 0)
                Set_Digits (FD, FD + Digits_Before_Point - 1);
                Set ('.');
                Set_Digits (FD + Digits_Before_Point, LD);

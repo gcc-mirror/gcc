@@ -1013,8 +1013,7 @@ package body Checks is
       --  Now see if an overflow check is required
 
       declare
-         Siz   : constant Int := UI_To_Int (Esize (Rtyp));
-         Dsiz  : constant Int := Siz * 2;
+         Dsiz  : constant Uint := 2 * Esize (Rtyp);
          Opnod : Node_Id;
          Ctyp  : Entity_Id;
          Opnd  : Node_Id;
@@ -1050,33 +1049,47 @@ package body Checks is
          --  an integer type of sufficient length to hold the largest possible
          --  result.
 
-         --  If the size of check type exceeds the size of Long_Long_Integer,
+         --  If the size of the check type exceeds the maximum integer size,
          --  we use a different approach, expanding to:
 
-         --    typ (xxx_With_Ovflo_Check (Integer_64 (x), Integer (y)))
+         --    typ (xxx_With_Ovflo_Check (Integer_NN (x), Integer_NN (y)))
 
          --  where xxx is Add, Multiply or Subtract as appropriate
 
          --  Find check type if one exists
 
-         if Dsiz <= Standard_Integer_Size then
-            Ctyp := Standard_Integer;
-
-         elsif Dsiz <= Standard_Long_Long_Integer_Size then
-            Ctyp := Standard_Long_Long_Integer;
+         if Dsiz <= System_Max_Integer_Size then
+            Ctyp := Integer_Type_For (Dsiz, Uns => False);
 
          --  No check type exists, use runtime call
 
          else
-            if Nkind (N) = N_Op_Add then
-               Cent := RE_Add_With_Ovflo_Check;
-
-            elsif Nkind (N) = N_Op_Multiply then
-               Cent := RE_Multiply_With_Ovflo_Check;
-
+            if System_Max_Integer_Size = 64 then
+               Ctyp := RTE (RE_Integer_64);
             else
-               pragma Assert (Nkind (N) = N_Op_Subtract);
-               Cent := RE_Subtract_With_Ovflo_Check;
+               Ctyp := RTE (RE_Integer_128);
+            end if;
+
+            if Nkind (N) = N_Op_Add then
+               if System_Max_Integer_Size = 64 then
+                  Cent := RE_Add_With_Ovflo_Check64;
+               else
+                  Cent := RE_Add_With_Ovflo_Check128;
+               end if;
+
+            elsif Nkind (N) = N_Op_Subtract then
+               if System_Max_Integer_Size = 64 then
+                  Cent := RE_Subtract_With_Ovflo_Check64;
+               else
+                  Cent := RE_Subtract_With_Ovflo_Check128;
+               end if;
+
+            else pragma Assert (Nkind (N) = N_Op_Multiply);
+               if System_Max_Integer_Size = 64 then
+                  Cent := RE_Multiply_With_Ovflo_Check64;
+               else
+                  Cent := RE_Multiply_With_Ovflo_Check128;
+               end if;
             end if;
 
             Rewrite (N,
@@ -1084,8 +1097,8 @@ package body Checks is
                 Make_Function_Call (Loc,
                   Name => New_Occurrence_Of (RTE (Cent), Loc),
                   Parameter_Associations => New_List (
-                    OK_Convert_To (RTE (RE_Integer_64), Left_Opnd  (N)),
-                    OK_Convert_To (RTE (RE_Integer_64), Right_Opnd (N))))));
+                    OK_Convert_To (Ctyp, Left_Opnd  (N)),
+                    OK_Convert_To (Ctyp, Right_Opnd (N))))));
 
             Analyze_And_Resolve (N, Typ);
             return;

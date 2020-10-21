@@ -29,19 +29,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This function performs exponentiation of unsigned types (with binary
---  modulus values exceeding that of Unsigned_Types.Unsigned). The result
---  is always full width, the caller must do a masking operation if the
---  modulus is less than 2 ** (Long_Long_Unsigned'Size).
+--  This function performs exponentiation of unsigned types with binary modulus
+--  values exceeding that of System.Unsigned_Types.Unsigned.
+--  The result is always full width, the caller must do a masking operation if
+--  the modulus is less than 2 ** Long_Long_Unsigned'Size.
 
+with System.Exponu;
 with System.Unsigned_Types;
 
 package System.Exp_LLU is
-   pragma Pure;
 
-   function Exp_Long_Long_Unsigned
-     (Left  : System.Unsigned_Types.Long_Long_Unsigned;
-      Right : Natural)
-      return  System.Unsigned_Types.Long_Long_Unsigned;
+   subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
+
+   function Exp_Long_Long_Unsigned is new Exponu (Long_Long_Unsigned);
+   pragma Pure_Function (Exp_Long_Long_Unsigned);
 
 end System.Exp_LLU;

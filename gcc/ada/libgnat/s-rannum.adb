@@ -387,6 +387,12 @@ is
         or Unsigned_64 (Unsigned_32'(Random (Gen)));
    end Random;
 
+   function Random (Gen : Generator) return Unsigned_128 is
+   begin
+      return Shift_Left (Unsigned_128 (Unsigned_64'(Random (Gen))), 64)
+        or Unsigned_128 (Unsigned_64'(Random (Gen)));
+   end Random;
+
    ---------------------
    -- Random_Discrete --
    ---------------------

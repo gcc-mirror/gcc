@@ -7028,12 +7028,13 @@ package body Sem_Ch13 is
                else
                   if Is_Elementary_Type (Etyp)
                     and then Size /= System_Storage_Unit
-                    and then Size /= System_Storage_Unit * 2
-                    and then Size /= System_Storage_Unit * 4
-                    and then Size /= System_Storage_Unit * 8
+                    and then Size /= 16
+                    and then Size /= 32
+                    and then Size /= 64
+                    and then Size /= System_Max_Integer_Size
                   then
                      Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
-                     Error_Msg_Uint_2 := Error_Msg_Uint_1 * 8;
+                     Error_Msg_Uint_2 := UI_From_Int (System_Max_Integer_Size);
                      Error_Msg_N
                        ("size for primitive object must be a power of 2 in "
                         & "the range ^-^", N);
@@ -15418,7 +15419,7 @@ package body Sem_Ch13 is
    begin
       Init_Alignment (T);
 
-      --  Find the minimum standard size (8,16,32,64) that fits
+      --  Find the minimum standard size (8,16,32,64,128) that fits
 
       Lo := Enumeration_Rep (Entity (Type_Low_Bound (T)));
       Hi := Enumeration_Rep (Entity (Type_High_Bound (T)));
@@ -15433,8 +15434,11 @@ package body Sem_Ch13 is
          elsif Lo >= -Uint_2**31 and then Hi < Uint_2**31 then
             Sz := 32;
 
-         else pragma Assert (Lo >= -Uint_2**63 and then Hi < Uint_2**63);
+         elsif Lo >= -Uint_2**63 and then Hi < Uint_2**63 then
             Sz := 64;
+
+         else pragma Assert (Lo >= -Uint_2**127 and then Hi < Uint_2**127);
+            Sz := 128;
          end if;
 
       else
@@ -15447,8 +15451,11 @@ package body Sem_Ch13 is
          elsif Hi < Uint_2**32 then
             Sz := 32;
 
-         else pragma Assert (Hi < Uint_2**63);
+         elsif Hi < Uint_2**64 then
             Sz := 64;
+
+         else pragma Assert (Hi < Uint_2**128);
+            Sz := 128;
          end if;
       end if;
 

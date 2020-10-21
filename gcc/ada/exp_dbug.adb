@@ -247,7 +247,7 @@ package body Exp_Dbug is
 
       --  Here we check if the static bounds match the natural size, which is
       --  the size passed through with the debugging information. This is the
-      --  Esize rounded up to 8, 16, 32 or 64 as appropriate.
+      --  Esize rounded up to 8, 16, 32, 64 or 128 as appropriate.
 
       else
          declare
@@ -261,8 +261,10 @@ package body Exp_Dbug is
                Siz := Uint_16;
             elsif Esize (E) <= 32 then
                Siz := Uint_32;
-            else
+            elsif Esize (E) <= 64 then
                Siz := Uint_64;
+            else
+               Siz := Uint_128;
             end if;
 
             if Is_Modular_Integer_Type (E) or else Is_Enumeration_Type (E) then

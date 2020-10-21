@@ -53,6 +53,7 @@ with Sem;      use Sem;
 with Sem_Aggr; use Sem_Aggr;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
@@ -1954,7 +1955,30 @@ package body Exp_Aggr is
                   Expander_Mode_Save_And_Set (False);
                   Tcopy := New_Copy_Tree (Expr);
                   Set_Parent (Tcopy, N);
-                  Analyze_And_Resolve (Tcopy, Component_Type (Etype (N)));
+
+                  --  For iterated_component_association analyze and resolve
+                  --  the expression with name of the index parameter visible.
+                  --  To manipulate scopes, we use entity of the implicit loop.
+
+                  if Is_Iterated_Component then
+                     declare
+                        Index_Parameter : constant Entity_Id :=
+                          Defining_Identifier (Parent (Expr));
+                     begin
+                        Push_Scope (Scope (Index_Parameter));
+                        Enter_Name (Index_Parameter);
+                        Analyze_And_Resolve
+                          (Tcopy, Component_Type (Etype (N)));
+                        End_Scope;
+                     end;
+
+                  --  For ordinary component association, just analyze and
+                  --  resolve the expression.
+
+                  else
+                     Analyze_And_Resolve (Tcopy, Component_Type (Etype (N)));
+                  end if;
+
                   Expander_Mode_Restore;
                end if;
             end if;
@@ -2334,7 +2358,7 @@ package body Exp_Aggr is
             Sort_Case_Table (Table);
          end if;
 
-         --  STEP 1 (b):  take care of the whole set of discrete choices
+         --  STEP 1 (b): take care of the whole set of discrete choices
 
          for J in 1 .. Nb_Choices loop
             Low  := Table (J).Choice_Lo;
@@ -6755,15 +6779,16 @@ package body Exp_Aggr is
    ------------------------
 
    procedure Expand_N_Aggregate (N : Node_Id) is
+      T : constant Entity_Id := Etype (N);
    begin
       --  Record aggregate case
 
-      if Is_Record_Type (Etype (N))
-        and then not Is_Private_Type (Etype (N))
+      if Is_Record_Type (T)
+        and then not Is_Private_Type (T)
       then
          Expand_Record_Aggregate (N);
 
-      elsif Has_Aspect (Etype (N), Aspect_Aggregate) then
+      elsif Has_Aspect (T, Aspect_Aggregate) then
          Expand_Container_Aggregate (N);
 
       --  Array aggregate case
@@ -6811,11 +6836,10 @@ package body Exp_Aggr is
                  and then No (Expressions (N))
                then
                   declare
-                     T  : constant Entity_Id := Etype (N);
-                     X  : constant Node_Id   := First_Index (T);
-                     EC : constant Node_Id   := Expression (CA);
-                     CV : constant Uint      := Char_Literal_Value (EC);
-                     CC : constant Int       := UI_To_Int (CV);
+                     X  : constant Node_Id := First_Index (T);
+                     EC : constant Node_Id := Expression (CA);
+                     CV : constant Uint    := Char_Literal_Value (EC);
+                     CC : constant Int     := UI_To_Int (CV);
 
                   begin
                      if Nkind (X) = N_Range

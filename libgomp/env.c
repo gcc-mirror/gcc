@@ -380,8 +380,7 @@ static void
 parse_target_offload (const char *name, enum gomp_target_offload_t *offload)
 {
   const char *env;
-  bool found = false;
-  enum gomp_target_offload_t new_offload;
+  int new_offload = -1;
 
   env = getenv (name);
   if (env == NULL)
@@ -392,24 +391,21 @@ parse_target_offload (const char *name, enum gomp_target_offload_t *offload)
   if (strncasecmp (env, "default", 7) == 0)
     {
       env += 7;
-      found = true;
       new_offload = GOMP_TARGET_OFFLOAD_DEFAULT;
     }
   else if (strncasecmp (env, "mandatory", 9) == 0)
     {
       env += 9;
-      found = true;
       new_offload = GOMP_TARGET_OFFLOAD_MANDATORY;
     }
   else if (strncasecmp (env, "disabled", 8) == 0)
     {
       env += 8;
-      found = true;
       new_offload = GOMP_TARGET_OFFLOAD_DISABLED;
     }
   while (isspace ((unsigned char) *env))
     ++env;
-  if (found && *env == '\0')
+  if (new_offload != -1 && *env == '\0')
     {
       *offload = new_offload;
       return;

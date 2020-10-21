@@ -73,6 +73,15 @@ begin
       Curlen := Len - 17;
       Krlen := 8;
 
+   elsif Len >= 27
+     and then Buffer (1 .. 27) = "ada-long_long_long_integer_"
+   then
+      Startloc := 3;
+      Buffer (2 .. Len - 2) := Buffer (4 .. Len);
+      Buffer (18 .. Len - 10) := Buffer (26 .. Len - 2);
+      Curlen := Len - 10;
+      Krlen := 8;
+
    elsif Len >= 4 and then Buffer (1 .. 4) = "ada-" then
       Startloc := 3;
       Buffer (2 .. Len - 2) := Buffer (4 .. Len);
@@ -89,7 +98,23 @@ begin
       Startloc := 3;
       Buffer (2 .. Len - 5) := Buffer (7 .. Len);
       Curlen := Len - 5;
-      Krlen  := 8;
+      if Buffer (Curlen - 2 .. Curlen) = "128"
+        or else Buffer (3 .. 9) = "exn_lll"
+        or else Buffer (3 .. 9) = "exp_lll"
+        or else Buffer (3 .. 9) = "img_lll"
+        or else Buffer (3 .. 9) = "val_lll"
+        or else Buffer (3 .. 9) = "wid_lll"
+        or else (Buffer (3 .. 6) = "pack" and then Curlen = 10)
+      then
+         if Buffer (3 .. 15) = "compare_array" then
+            Buffer (3 .. 4) := "ca";
+            Buffer (5 .. Curlen - 11) := Buffer (16 .. Curlen);
+            Curlen := Curlen - 11;
+         end if;
+         Krlen := 9;
+      else
+         Krlen := 8;
+      end if;
 
    elsif Len >= 11 and then Buffer (1 .. 11) = "interfaces-" then
       Startloc := 3;

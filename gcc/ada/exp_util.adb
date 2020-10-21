@@ -7751,6 +7751,15 @@ package body Exp_Util is
             return Standard_Long_Long_Integer;
          end if;
 
+      --  This is the canonical 128-bit type
+
+      elsif S <= Standard_Long_Long_Long_Integer_Size then
+         if Uns then
+            return Standard_Long_Long_Long_Unsigned;
+         else
+            return Standard_Long_Long_Long_Integer;
+         end if;
+
       else
          raise Program_Error;
       end if;
@@ -13591,6 +13600,13 @@ package body Exp_Util is
             return Standard_Long_Long_Unsigned;
          else
             return Standard_Long_Long_Integer;
+         end if;
+
+      elsif S <= Standard_Long_Long_Long_Integer_Size then
+         if Uns then
+            return Standard_Long_Long_Long_Unsigned;
+         else
+            return Standard_Long_Long_Long_Integer;
          end if;
 
       else

@@ -17807,15 +17807,17 @@ package body Sem_Prag is
          --    Short_Float
          --  | Float
          --  | Long_Float
-         --  | Long_Long_Flat
+         --  | Long_Long_Float
          --  | Signed_8
          --  | Signed_16
          --  | Signed_32
          --  | Signed_64
+         --  | Signed_128
          --  | Unsigned_8
          --  | Unsigned_16
          --  | Unsigned_32
          --  | Unsigned_64
+         --  | Unsigned_128
 
          when Pragma_Initialize_Scalars => Do_Initialize_Scalars : declare
             Seen : array (Scalar_Id) of Node_Id := (others => Empty);
@@ -17868,7 +17870,14 @@ package body Sem_Prag is
             begin
                Analyze_And_Resolve (Val_Expr, Any_Integer);
 
-               if Is_OK_Static_Expression (Val_Expr) then
+               if (Scal_Typ = Name_Signed_128
+                    or else Scal_Typ = Name_Unsigned_128)
+                 and then Ttypes.System_Max_Integer_Size < 128
+               then
+                  Error_Msg_Name_1 := Scal_Typ;
+                  Error_Msg_N ("value cannot be set for type %", Val_Expr);
+
+               elsif Is_OK_Static_Expression (Val_Expr) then
                   Set_Invalid_Scalar_Value (Scal_Typ, Expr_Value (Val_Expr));
 
                else

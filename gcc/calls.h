@@ -142,6 +142,8 @@ enum size_range_flags
    SR_USE_LARGEST = 2
   };
 extern bool get_size_range (tree, tree[2], int = 0);
+extern bool get_size_range (class range_query *, tree, gimple *,
+			    tree[2], int = 0);
 extern rtx rtx_for_static_chain (const_tree, bool);
 extern bool cxx17_empty_base_field_p (const_tree);
 

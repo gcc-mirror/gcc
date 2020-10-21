@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca-larger-than=256 -O2" } */
-/* { dg-xfail-if "Currently broken but Andrew's work should fix this" { *-*-* } } */
 
 void f (void*);
 void g (__SIZE_TYPE__ n)

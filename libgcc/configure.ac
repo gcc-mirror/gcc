@@ -383,11 +383,11 @@ AC_COMPUTE_INT([glibc_version_minor], [__GLIBC_MINOR__],
 				      [glibc_version_minor=0])])
 AC_MSG_RESULT([$glibc_version_major.$glibc_version_minor])
 
-# Determine floating-point type for powerpc*-*-linux*.
+# Determine floating-point type for powerpc*-*-linux* or vxworks7*.
 # Single-precision-only FPRs are not a supported configuration for
 # this target, so are not allowed for in this test.
 case ${host} in
-powerpc*-*-linux*)
+powerpc*-*-linux* | powerpc*-*-vxworks7*)
   cat > conftest.c <<EOF
 #ifdef __powerpc64__
 ppc_fp_type=64

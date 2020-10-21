@@ -140,11 +140,13 @@ package body Fname is
       Renamings_Included : Boolean := True) return Boolean
    is
    begin
-      --  Definitely false if longer than 12 characters (8.3)
-      --  except for the Interfaces packages
+      --  Definitely false if longer than 12 characters (8.3), except for the
+      --  Interfaces packages and also the implementation units of the 128-bit
+      --  types under System.
 
       if Fname'Length > 12
         and then Fname (Fname'First .. Fname'First + 1) /= "i-"
+        and then Fname (Fname'First .. Fname'First + 1) /= "s-"
       then
          return False;
       end if;

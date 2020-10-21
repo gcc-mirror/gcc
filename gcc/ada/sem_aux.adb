@@ -163,6 +163,8 @@ package body Sem_Aux is
          return Standard_Long_Unsigned;
       elsif Siz = Esize (Standard_Long_Long_Integer) then
          return Standard_Long_Long_Unsigned;
+      elsif Siz = Esize (Standard_Long_Long_Long_Integer) then
+         return Standard_Long_Long_Long_Unsigned;
       else
          raise Program_Error;
       end if;
@@ -363,6 +365,9 @@ package body Sem_Aux is
 
          elsif B = Base_Type (Standard_Long_Long_Integer) then
             return Standard_Long_Long_Integer;
+
+         elsif B = Base_Type (Standard_Long_Long_Long_Integer) then
+            return Standard_Long_Long_Long_Integer;
 
          elsif Is_Generic_Type (Typ) then
             if Present (Parent (B)) then

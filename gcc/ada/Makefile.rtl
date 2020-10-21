@@ -206,6 +206,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-llitio$(objext) \
   a-lliwti$(objext) \
   a-llizti$(objext) \
+  a-llltio$(objext) \
+  a-lllwti$(objext) \
+  a-lllzti$(objext) \
   a-locale$(objext) \
   a-nbnbin$(objext) \
   a-nbnbre$(objext) \
@@ -347,7 +350,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-tigeau$(objext) \
   a-tiinau$(objext) \
   a-tiinio$(objext) \
-  a-timoau$(objext) \
   a-timoio$(objext) \
   a-tiocst$(objext) \
   a-tirsfi$(objext) \
@@ -375,7 +377,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-wtgeau$(objext) \
   a-wtinau$(objext) \
   a-wtinio$(objext) \
-  a-wtmoau$(objext) \
   a-wtmoio$(objext) \
   a-wttest$(objext) \
   a-wwboio$(objext) \
@@ -399,7 +400,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-ztgeau$(objext) \
   a-ztinau$(objext) \
   a-ztinio$(objext) \
-  a-ztmoau$(objext) \
   a-ztmoio$(objext) \
   a-zttest$(objext) \
   a-zzboio$(objext) \
@@ -518,6 +518,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-aoinar$(objext) \
   s-aomoar$(objext) \
   s-aotase$(objext) \
+  s-aridou$(objext) \
   s-arit64$(objext) \
   s-assert$(objext) \
   s-atacco$(objext) \
@@ -582,6 +583,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-explli$(objext) \
   s-expllu$(objext) \
   s-expmod$(objext) \
+  s-exponn$(objext) \
+  s-expont$(objext) \
+  s-exponu$(objext) \
   s-expuns$(objext) \
   s-fatflt$(objext) \
   s-fatgen$(objext) \
@@ -600,6 +604,10 @@ GNATRTL_NONTASKING_OBJS= \
   s-geveop$(objext) \
   s-gloloc$(objext) \
   s-htable$(objext) \
+  s-imageb$(objext) \
+  s-imagei$(objext) \
+  s-imageu$(objext) \
+  s-imagew$(objext) \
   s-imenne$(objext) \
   s-imgbiu$(objext) \
   s-imgboo$(objext) \
@@ -734,6 +742,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-vallli$(objext) \
   s-valllu$(objext) \
   s-valrea$(objext) \
+  s-valuei$(objext) \
+  s-valueu$(objext) \
   s-valuns$(objext) \
   s-valuti$(objext) \
   s-valwch$(objext) \
@@ -748,8 +758,12 @@ GNATRTL_NONTASKING_OBJS= \
   s-widboo$(objext) \
   s-widcha$(objext) \
   s-widenu$(objext) \
+  s-widint$(objext) \
   s-widlli$(objext) \
   s-widllu$(objext) \
+  s-widthi$(objext) \
+  s-widthu$(objext) \
+  s-widuns$(objext) \
   s-widwch$(objext) \
   s-wwdcha$(objext) \
   s-wwdenu$(objext) \
@@ -866,6 +880,96 @@ TRASYM_DWARF_COMMON_OBJS = s-objrea$(objext) s-dwalin$(objext) s-mmap$(objext) \
 TRASYM_DWARF_UNIX_OBJS = $(TRASYM_DWARF_COMMON_OBJS) s-mmauni$(objext)
 
 TRASYM_DWARF_MINGW_OBJS = $(TRASYM_DWARF_COMMON_OBJS)
+
+GNATRTL_128BIT_PAIRS = \
+  a-tiinio.adb<libgnat/a-tiinio__128.adb \
+  a-timoio.adb<libgnat/a-timoio__128.adb \
+  a-wtinio.adb<libgnat/a-wtinio__128.adb \
+  a-wtmoio.adb<libgnat/a-wtmoio__128.adb \
+  a-ztinio.adb<libgnat/a-ztinio__128.adb \
+  a-ztmoio.adb<libgnat/a-ztmoio__128.adb \
+  s-scaval.ads<libgnat/s-scaval__128.ads \
+  s-scaval.adb<libgnat/s-scaval__128.adb
+
+# Objects needed for 128-bit types
+GNATRTL_128BIT_OBJS = \
+  s-arit128$(objext) \
+  s-casi128$(objext) \
+  s-caun128$(objext) \
+  s-exnllli$(objext) \
+  s-expllli$(objext) \
+  s-explllu$(objext) \
+  s-imglllb$(objext) \
+  s-imgllli$(objext) \
+  s-imglllu$(objext) \
+  s-imglllw$(objext) \
+  s-pack65$(objext)  \
+  s-pack66$(objext)  \
+  s-pack67$(objext)  \
+  s-pack68$(objext)  \
+  s-pack69$(objext)  \
+  s-pack70$(objext)  \
+  s-pack71$(objext)  \
+  s-pack72$(objext)  \
+  s-pack73$(objext)  \
+  s-pack74$(objext)  \
+  s-pack75$(objext)  \
+  s-pack76$(objext)  \
+  s-pack77$(objext)  \
+  s-pack78$(objext)  \
+  s-pack79$(objext)  \
+  s-pack80$(objext)  \
+  s-pack81$(objext)  \
+  s-pack82$(objext)  \
+  s-pack83$(objext)  \
+  s-pack84$(objext)  \
+  s-pack85$(objext)  \
+  s-pack86$(objext)  \
+  s-pack87$(objext)  \
+  s-pack88$(objext)  \
+  s-pack89$(objext)  \
+  s-pack90$(objext)  \
+  s-pack91$(objext)  \
+  s-pack92$(objext)  \
+  s-pack93$(objext)  \
+  s-pack94$(objext)  \
+  s-pack95$(objext)  \
+  s-pack96$(objext)  \
+  s-pack97$(objext)  \
+  s-pack98$(objext)  \
+  s-pack99$(objext)  \
+  s-pack100$(objext) \
+  s-pack101$(objext) \
+  s-pack102$(objext) \
+  s-pack103$(objext) \
+  s-pack104$(objext) \
+  s-pack105$(objext) \
+  s-pack106$(objext) \
+  s-pack107$(objext) \
+  s-pack108$(objext) \
+  s-pack109$(objext) \
+  s-pack110$(objext) \
+  s-pack111$(objext) \
+  s-pack112$(objext) \
+  s-pack113$(objext) \
+  s-pack114$(objext) \
+  s-pack115$(objext) \
+  s-pack116$(objext) \
+  s-pack117$(objext) \
+  s-pack118$(objext) \
+  s-pack119$(objext) \
+  s-pack120$(objext) \
+  s-pack121$(objext) \
+  s-pack122$(objext) \
+  s-pack123$(objext) \
+  s-pack124$(objext) \
+  s-pack125$(objext) \
+  s-pack126$(objext) \
+  s-pack127$(objext) \
+  s-valllli$(objext) \
+  s-vallllu$(objext) \
+  s-widllli$(objext) \
+  s-widlllu$(objext)
 
 # Shared library version
 LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(GNAT_SRC)/gnatvsn.ads | sed -e 's/.*"\(.*\)".*/\1/'))
@@ -2023,12 +2127,14 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
       LIBGNAT_TARGET_PAIRS += $(X86_TARGET_PAIRS)
       SO_OPTS= -m32 -Wl,-soname,
     else
-      LIBGNAT_TARGET_PAIRS += $(X86_64_TARGET_PAIRS)
+      LIBGNAT_TARGET_PAIRS += $(X86_64_TARGET_PAIRS) $(GNATRTL_128BIT_PAIRS)
+      EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
       SO_OPTS = -m64 -Wl,-soname,
     endif
   else
     ifeq ($(strip $(MULTISUBDIR)),/64)
-      LIBGNAT_TARGET_PAIRS += $(X86_64_TARGET_PAIRS)
+      LIBGNAT_TARGET_PAIRS += $(X86_64_TARGET_PAIRS) $(GNATRTL_128BIT_PAIRS)
+      EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
       SO_OPTS = -m64 -Wl,-soname,
     else
       LIBGNAT_TARGET_PAIRS += $(X86_TARGET_PAIRS)
@@ -2420,12 +2526,14 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
+  $(GNATRTL_128BIT_PAIRS) \
   system.ads<libgnat/system-linux-x86.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS += g-sse.o g-ssvety.o
   EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
 
   EH_MECHANISM=-gcc

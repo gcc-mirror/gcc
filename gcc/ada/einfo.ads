@@ -1861,8 +1861,8 @@ package Einfo is
 
 --    Has_Own_DIC (Flag3) [base type only]
 --       Defined in all type entities. Set for a private type and its full view
---       (and its underlying full view, if the full view is itsef private) when
---       the type is subject to pragma Default_Initial_Condition.
+--       (and its underlying full view, if the full view is itself private)
+--       when the type is subject to pragma Default_Initial_Condition.
 
 --    Has_Own_Invariants (Flag232) [base type only]
 --       Defined in all type entities. Set on any type that defines at least

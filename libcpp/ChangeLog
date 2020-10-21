@@ -1,3 +1,11 @@
+2020-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (_cpp_lex_direct): Do not complete EOF processing when
+	parsing_args.
+	* macro.c (collect_args): Do not unwind fake EOF.
+	(funlike_invocation_p): Do not unwind fake EOF.
+	(cpp_context): Replace abort with gcc_assert.
+
 2020-10-19  Nathan Sidwell  <nathan@acm.org>
 
 	* internal.h (struct cpp_reader): Rename 'eof' field to 'endarg'.
