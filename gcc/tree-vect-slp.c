@@ -2380,6 +2380,12 @@ vect_analyze_slp_backedges (vec_info *vinfo, slp_tree node,
     if (child)
       vect_analyze_slp_backedges (vinfo, child, bst_map, visited);
 
+  /* Inductions are not vectorized by vectorizing their defining cycle
+     but by materializing the values from SCEV data.  */
+  if (STMT_VINFO_DEF_TYPE (SLP_TREE_REPRESENTATIVE (node))
+      == vect_induction_def)
+    return;
+
   if (gphi *phi = dyn_cast <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
     for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
       {
