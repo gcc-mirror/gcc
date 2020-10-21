@@ -19665,6 +19665,20 @@ vld4q_dup_bf16 (const bfloat16_t * __ptr)
   return __rv.__i;
 }
 
+__extension__ extern __inline bfloat16x4_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vld1_lane_bf16 (const bfloat16_t * __a, bfloat16x4_t __b, const int __c)
+{
+  return __builtin_neon_vld1_lanev4bf (__a, __b, __c);
+}
+
+__extension__ extern __inline bfloat16x8_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vld1q_lane_bf16 (const bfloat16_t * __a, bfloat16x8_t __b, const int __c)
+{
+  return __builtin_neon_vld1_lanev8bf (__a, __b, __c);
+}
+
 #pragma GCC pop_options
 
 #ifdef __cplusplus

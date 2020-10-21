@@ -312,8 +312,8 @@ VAR1 (TERNOP, vtbx3, v8qi)
 VAR1 (TERNOP, vtbx4, v8qi)
 VAR12 (LOAD1, vld1,
         v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
-VAR10 (LOAD1LANE, vld1_lane,
-	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
+VAR12 (LOAD1LANE, vld1_lane,
+	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di, v4bf, v8bf)
 VAR10 (LOAD1, vld1_dup,
 	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
 VAR12 (STORE1, vst1,
