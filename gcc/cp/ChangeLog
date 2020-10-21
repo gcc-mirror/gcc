@@ -1,3 +1,19 @@
+2020-10-20  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (tsubst_copy_and_build): Use cxx2a.
+
+2020-10-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97010
+	* pt.c (tsubst_copy_and_build) <case TEMPLATE_ID_EXPR>: Call
+	tsubst_copy_and_build explicitly instead of using the RECUR macro.
+	Handle a TEMPLATE_ID_EXPR with an IDENTIFIER_NODE as its operand.
+	<case CALL_EXPR>: Perform ADL for a TEMPLATE_ID_EXPR with an
+	IDENTIFIER_NODE as its operand.
+
 2020-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

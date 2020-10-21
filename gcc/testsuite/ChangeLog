@@ -1,3 +1,12 @@
+2020-10-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2020-10-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97010
+	* g++.dg/cpp2a/fn-template21.C: New test.
+	* g++.dg/cpp2a/fn-template22.C: New test.
+
 2020-10-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

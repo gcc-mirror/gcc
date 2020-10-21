@@ -1,3 +1,77 @@
+2020-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.__init__):
+	Use gdb.Type.strip_typedefs().
+	* testsuite/libstdc++-prettyprinters/compat.cc: Use a typedef in
+	the emulated old type.
+
+2020-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string(const _CharT*, const _Alloc&)): Constrain to
+	require an allocator-like type to fix CTAD ambiguity (LWG 3706).
+	Define inline.
+	* include/bits/basic_string.tcc [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string(const _CharT*, const _Alloc&)): Remove non-inline
+	definition.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc:
+	Remove dg-skip-if.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+
+2020-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/allocator/char/minimal.cc:
+	Do not require cxx11-abi effective target.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/minimal.cc:
+	Likewise.
+	* testsuite/27_io/basic_fstream/cons/base.cc: Likewise.
+
+2020-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ios_base.h (ios_base::failure): Add constructors
+	takeing error_code argument. Add code() member function.
+	* testsuite/27_io/ios_base/failure/cxx11.cc: Allow test to
+	run for the old ABI but do not check for derivation from
+	std::system_error.
+	* testsuite/27_io/ios_base/failure/error_code.cc: New test.
+
+2020-10-20  Nuno Lopes  <nuno.lopes@ist.utl.pt>
+
+	Backported from master:
+	2020-10-13  Nuno Lopes  <nuno.lopes@ist.utl.pt>
+
+	* include/bits/stl_algo.h (any_of): Fix incorrect description
+	in comment.
+
+2020-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (copy, move, copy_backward)
+	(move_backward): Fix documentation for returned iterator.
+
+2020-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Correct name of option.
+	* doc/html/*: Regenerate.
+
 2020-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
