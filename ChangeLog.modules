@@ -1,5 +1,10 @@
 2020-10-21  Nathan Sidwell  <nathan@acm.org>
 
+	AIX fixinclude
+	fixincludes/
+	* inclhack.def (aix_physadr_t): New.
+	* fixincl.x: Regenerated.
+
 	AIX test fix
 	gcc/testsuite/
 	* g++.dg/modules/literals-1_[ab].C: Add -Wno-psabi
