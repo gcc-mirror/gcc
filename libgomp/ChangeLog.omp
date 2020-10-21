@@ -1,3 +1,22 @@
+2021-01-05  Julian Brown  <julian@codesourcery.com>
+
+	Backport from mainline
+
+	libgomp/
+	* plugin/plugin-nvptx.c (SOFTSTACK_CACHE_LIMIT): New define.
+	(struct ptx_device): Add omp_stacks struct.
+	(nvptx_open_device): Initialise cached-stacks housekeeping info.
+	(nvptx_close_device): Free cached stacks block and mutex.
+	(nvptx_stacks_free): New function.
+	(nvptx_alloc): Add SUPPRESS_ERRORS parameter.
+	(GOMP_OFFLOAD_alloc): Add strategies for freeing soft-stacks block.
+	(nvptx_stacks_alloc): Rename to...
+	(nvptx_stacks_acquire): This.  Cache stacks block between runs if same
+	size or smaller is required.
+	(nvptx_stacks_free): Remove.
+	(GOMP_OFFLOAD_run): Call nvptx_stacks_acquire and lock stacks block
+	during kernel execution.
+
 2020-12-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
