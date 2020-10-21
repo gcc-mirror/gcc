@@ -8,6 +8,12 @@
 	* inclhack.def (aix_physadr_t): New.
 	* fixincl.x: Regenerated.
 
+	Vector bools
+	gcc/cp/
+	* module.cc (trees_{in,out}::type_node): Deal with non-standard bools.
+	gcc/testsuite/
+	* g++.dg/modules/bool-1{,_[abc]}.[CHh]: New.
+
 	AIX test fix
 	gcc/testsuite/
 	* g++.dg/modules/literals-1_[ab].C: Add -Wno-psabi

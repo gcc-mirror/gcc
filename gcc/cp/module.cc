@@ -8654,15 +8654,10 @@ trees_out::type_node (tree type)
       /* No additional data.  */
       break;
 
-    case DECLTYPE_TYPE:
-    case TYPEOF_TYPE:
-    case UNDERLYING_TYPE:
-      tree_node (TYPE_VALUES_RAW (type));
-      if (TREE_CODE (type) == DECLTYPE_TYPE)
-	/* We stash a whole bunch of things into decltype's
-	   flags.  */
-	if (streaming_p ())
-	  tree_node_bools (type);
+    case BOOLEAN_TYPE:
+      /* A non-standard boolean type.  */
+      if (streaming_p ())
+	u (TYPE_PRECISION (type));
       break;
 
     case INTEGER_TYPE:
@@ -8711,6 +8706,17 @@ trees_out::type_node (tree type)
     case REFERENCE_TYPE:
       if (streaming_p ())
 	u (TYPE_REF_IS_RVALUE (type));
+      break;
+
+    case DECLTYPE_TYPE:
+    case TYPEOF_TYPE:
+    case UNDERLYING_TYPE:
+      tree_node (TYPE_VALUES_RAW (type));
+      if (TREE_CODE (type) == DECLTYPE_TYPE)
+	/* We stash a whole bunch of things into decltype's
+	   flags.  */
+	if (streaming_p ())
+	  tree_node_bools (type);
       break;
 
     case TYPE_ARGUMENT_PACK:
@@ -9162,6 +9168,14 @@ trees_in::tree_node (bool is_use)
 	      res = build_complex_type (res);
 	    break;
 
+	  case BOOLEAN_TYPE:
+	    {
+	      unsigned precision = u ();
+	      if (!get_overrun ())
+		res = build_nonstandard_boolean_type (precision);
+	    }
+	    break;
+
 	  case INTEGER_TYPE:
 	    if (res)
 	      {
@@ -9179,22 +9193,6 @@ trees_in::tree_node (bool is_use)
 		if (!get_overrun ())
 		  res = build_nonstandard_integer_type (enc >> 1, enc & 1);
 	      }
-	    break;
-
-	  case DECLTYPE_TYPE:
-	  case TYPEOF_TYPE:
-	  case UNDERLYING_TYPE:
-	    {
-	      tree expr = tree_node ();
-	      if (!get_overrun ())
-		{
-		  res = cxx_make_type (code);
-		  TYPE_VALUES_RAW (res) = expr;
-		  if (code == DECLTYPE_TYPE)
-		    tree_node_bools (res);
-		  SET_TYPE_STRUCTURAL_EQUALITY (res);
-		}
-	    }
 	    break;
 
 	  case FUNCTION_TYPE:
@@ -9230,6 +9228,22 @@ trees_in::tree_node (bool is_use)
 	      bool rval = bool (u ());
 	      if (!get_overrun ())
 		res = cp_build_reference_type (res, rval);
+	    }
+	    break;
+
+	  case DECLTYPE_TYPE:
+	  case TYPEOF_TYPE:
+	  case UNDERLYING_TYPE:
+	    {
+	      tree expr = tree_node ();
+	      if (!get_overrun ())
+		{
+		  res = cxx_make_type (code);
+		  TYPE_VALUES_RAW (res) = expr;
+		  if (code == DECLTYPE_TYPE)
+		    tree_node_bools (res);
+		  SET_TYPE_STRUCTURAL_EQUALITY (res);
+		}
 	    }
 	    break;
 
