@@ -1104,7 +1104,6 @@ all-build: maybe-all-build-m4
 all-build: maybe-all-build-texinfo
 all-build: maybe-all-build-fixincludes
 all-build: maybe-all-build-libcpp
-all-build: maybe-all-build-libcody
 
 .PHONY: all-host
 
@@ -3305,63 +3304,6 @@ all-build-libcpp: configure-build-libcpp
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
 		$(TARGET-build-libcpp))
 @endif build-libcpp
-
-
-
-
-
-.PHONY: configure-build-libcody maybe-configure-build-libcody
-maybe-configure-build-libcody:
-@if gcc-bootstrap
-configure-build-libcody: stage_current
-@endif gcc-bootstrap
-@if build-libcody
-maybe-configure-build-libcody: configure-build-libcody
-configure-build-libcody: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	test ! -f $(BUILD_SUBDIR)/libcody/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/libcody; \
-	$(BUILD_EXPORTS)  \
-	echo Configuring in $(BUILD_SUBDIR)/libcody; \
-	cd "$(BUILD_SUBDIR)/libcody" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(BUILD_SUBDIR)/libcody/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libcody; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
-	  --target=${target_alias}  \
-	  || exit 1
-@endif build-libcody
-
-
-
-
-
-.PHONY: all-build-libcody maybe-all-build-libcody
-maybe-all-build-libcody:
-@if gcc-bootstrap
-all-build-libcody: stage_current
-@endif gcc-bootstrap
-@if build-libcody
-TARGET-build-libcody=all
-maybe-all-build-libcody: all-build-libcody
-all-build-libcody: configure-build-libcody
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(BUILD_EXPORTS)  \
-	(cd $(BUILD_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
-		$(TARGET-build-libcody))
-@endif build-libcody
 
 
 
@@ -25890,13 +25832,7 @@ maybe-install-libcody:
 @if libcody
 maybe-install-libcody: install-libcody
 
-install-libcody: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install)
+install-libcody:
 
 @endif libcody
 
@@ -25905,13 +25841,7 @@ maybe-install-strip-libcody:
 @if libcody
 maybe-install-strip-libcody: install-strip-libcody
 
-install-strip-libcody: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+install-strip-libcody:
 
 @endif libcody
 
@@ -25922,23 +25852,8 @@ maybe-info-libcody:
 @if libcody
 maybe-info-libcody: info-libcody
 
-info-libcody: \
-    configure-libcody 
-	@[ -f ./libcody/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in libcody"; \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          info) \
-	  || exit 1
+# libcody doesn't support info.
+info-libcody:
 
 @endif libcody
 
@@ -25972,23 +25887,8 @@ maybe-pdf-libcody:
 @if libcody
 maybe-pdf-libcody: pdf-libcody
 
-pdf-libcody: \
-    configure-libcody 
-	@[ -f ./libcody/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing pdf in libcody"; \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          pdf) \
-	  || exit 1
+# libcody doesn't support pdf.
+pdf-libcody:
 
 @endif libcody
 
@@ -25997,23 +25897,8 @@ maybe-html-libcody:
 @if libcody
 maybe-html-libcody: html-libcody
 
-html-libcody: \
-    configure-libcody 
-	@[ -f ./libcody/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing html in libcody"; \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          html) \
-	  || exit 1
+# libcody doesn't support html.
+html-libcody:
 
 @endif libcody
 
@@ -26047,24 +25932,8 @@ maybe-install-info-libcody:
 @if libcody
 maybe-install-info-libcody: install-info-libcody
 
-install-info-libcody: \
-    configure-libcody \
-    info-libcody 
-	@[ -f ./libcody/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-info in libcody"; \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-info) \
-	  || exit 1
+# libcody doesn't support install-info.
+install-info-libcody:
 
 @endif libcody
 
@@ -26073,24 +25942,8 @@ maybe-install-pdf-libcody:
 @if libcody
 maybe-install-pdf-libcody: install-pdf-libcody
 
-install-pdf-libcody: \
-    configure-libcody \
-    pdf-libcody 
-	@[ -f ./libcody/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-pdf in libcody"; \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-pdf) \
-	  || exit 1
+# libcody doesn't support install-pdf.
+install-pdf-libcody:
 
 @endif libcody
 
@@ -26099,24 +25952,8 @@ maybe-install-html-libcody:
 @if libcody
 maybe-install-html-libcody: install-html-libcody
 
-install-html-libcody: \
-    configure-libcody \
-    html-libcody 
-	@[ -f ./libcody/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-html in libcody"; \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-html) \
-	  || exit 1
+# libcody doesn't support install-html.
+install-html-libcody:
 
 @endif libcody
 
@@ -60454,16 +60291,6 @@ all-stagetrain-gcc: maybe-all-build-libcpp
 all-stagefeedback-gcc: maybe-all-build-libcpp
 all-stageautoprofile-gcc: maybe-all-build-libcpp
 all-stageautofeedback-gcc: maybe-all-build-libcpp
-all-gcc: maybe-all-build-libcody
-all-stage1-gcc: maybe-all-build-libcody
-all-stage2-gcc: maybe-all-build-libcody
-all-stage3-gcc: maybe-all-build-libcody
-all-stage4-gcc: maybe-all-build-libcody
-all-stageprofile-gcc: maybe-all-build-libcody
-all-stagetrain-gcc: maybe-all-build-libcody
-all-stagefeedback-gcc: maybe-all-build-libcody
-all-stageautoprofile-gcc: maybe-all-build-libcody
-all-stageautofeedback-gcc: maybe-all-build-libcody
 all-gcc: maybe-all-zlib
 all-stage1-gcc: maybe-all-stage1-zlib
 all-stage2-gcc: maybe-all-stage2-zlib

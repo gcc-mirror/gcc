@@ -1,5 +1,9 @@
 2020-10-21  Nathan Sidwell  <nathan@acm.org>
 
+	* Makefile.def: Don't build libcody for build.  Do not install it
+	either.
+	* Makefile.in: Rebuilt.
+
 	gcc/testsuite/
 	* g++.dg/modules/builtin-3_[ab].C: Scans for darwin, thanks Iain
 
