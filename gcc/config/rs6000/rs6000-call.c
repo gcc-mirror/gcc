@@ -12914,15 +12914,13 @@ rs6000_init_builtins (void)
   /* Vector pair and vector quad support.  */
   if (TARGET_EXTRA_BUILTINS)
     {
-      tree oi_uns_type = make_unsigned_type (256);
-      vector_pair_type_node = build_distinct_type_copy (oi_uns_type);
+      vector_pair_type_node = make_unsigned_type (256);
       SET_TYPE_MODE (vector_pair_type_node, POImode);
       layout_type (vector_pair_type_node);
       lang_hooks.types.register_builtin_type (vector_pair_type_node,
 					      "__vector_pair");
 
-      tree xi_uns_type = make_unsigned_type (512);
-      vector_quad_type_node = build_distinct_type_copy (xi_uns_type);
+      vector_quad_type_node = make_unsigned_type (512);
       SET_TYPE_MODE (vector_quad_type_node, PXImode);
       layout_type (vector_quad_type_node);
       lang_hooks.types.register_builtin_type (vector_quad_type_node,
