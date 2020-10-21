@@ -1,5 +1,8 @@
 2020-10-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/builtin-3_[ab].C: Scans for darwin, thanks Iain
+
 	AIX fixinclude
 	fixincludes/
 	* inclhack.def (aix_physadr_t): New.
