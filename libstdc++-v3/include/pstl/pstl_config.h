@@ -11,13 +11,13 @@
 #define _PSTL_CONFIG_H
 
 // The version is XYYZ, where X is major, YY is minor, and Z is patch (i.e. X.YY.Z)
-#define _PSTL_VERSION 9000
+#define _PSTL_VERSION 12000
 #define _PSTL_VERSION_MAJOR (_PSTL_VERSION / 1000)
 #define _PSTL_VERSION_MINOR ((_PSTL_VERSION % 1000) / 10)
 #define _PSTL_VERSION_PATCH (_PSTL_VERSION % 10)
 
 #if !defined(_PSTL_PAR_BACKEND_SERIAL) && !defined(_PSTL_PAR_BACKEND_TBB)
-#    error "The parallel backend is neither serial nor TBB"
+#    error "A parallel backend must be specified"
 #endif
 
 // Check the user-defined macro for warnings
@@ -40,6 +40,15 @@
 #define _PSTL_STRING(x) _PSTL_STRING_AUX(x)
 #define _PSTL_STRING_CONCAT(x, y) x #y
 
+#ifdef _PSTL_HIDE_FROM_ABI_PER_TU
+#    define _PSTL_HIDE_FROM_ABI_PUSH                                                                                   \
+        _Pragma("clang attribute push(__attribute__((internal_linkage)), apply_to=any(function,record))")
+#    define _PSTL_HIDE_FROM_ABI_POP _Pragma("clang attribute pop")
+#else
+#    define _PSTL_HIDE_FROM_ABI_PUSH /* nothing */
+#    define _PSTL_HIDE_FROM_ABI_POP  /* nothing */
+#endif
+
 // note that when ICC or Clang is in use, _PSTL_GCC_VERSION might not fully match
 // the actual GCC version on the system.
 #define _PSTL_GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
@@ -50,7 +59,8 @@
 #endif
 
 // Enable SIMD for compilers that support OpenMP 4.0
-#if (_OPENMP >= 201307) || (__INTEL_COMPILER >= 1600) || (!defined(__INTEL_COMPILER) && _PSTL_GCC_VERSION >= 40900)
+#if (_OPENMP >= 201307) || (__INTEL_COMPILER >= 1600) || (!defined(__INTEL_COMPILER) && _PSTL_GCC_VERSION >= 40900) || \
+    defined(__clang__)
 #    define _PSTL_PRAGMA_SIMD _PSTL_PRAGMA(omp simd)
 #    define _PSTL_PRAGMA_DECLARE_SIMD _PSTL_PRAGMA(omp declare simd)
 #    define _PSTL_PRAGMA_SIMD_REDUCTION(PRM) _PSTL_PRAGMA(omp simd reduction(PRM))
@@ -70,7 +80,7 @@
 #    define _PSTL_PRAGMA_FORCEINLINE
 #endif
 
-#if (__INTEL_COMPILER >= 1900) || (_PSTL_GCC_VERSION >= 100000)
+#if (__INTEL_COMPILER >= 1900)
 #    define _PSTL_PRAGMA_SIMD_SCAN(PRM) _PSTL_PRAGMA(omp simd reduction(inscan, PRM))
 #    define _PSTL_PRAGMA_SIMD_INCLUSIVE_SCAN(PRM) _PSTL_PRAGMA(omp scan inclusive(PRM))
 #    define _PSTL_PRAGMA_SIMD_EXCLUSIVE_SCAN(PRM) _PSTL_PRAGMA(omp scan exclusive(PRM))
@@ -100,11 +110,7 @@
 #    define _PSTL_UDR_PRESENT 0
 #endif
 
-#if ((__INTEL_COMPILER >= 1900 && __INTEL_COMPILER_BUILD_DATE >= 20180626) || _PSTL_GCC_VERSION >= 100000)
-#    define _PSTL_UDS_PRESENT 1
-#else
-#    define _PSTL_UDS_PRESENT 0
-#endif
+#define _PSTL_UDS_PRESENT (__INTEL_COMPILER >= 1900 && __INTEL_COMPILER_BUILD_DATE >= 20180626)
 
 #if _PSTL_EARLYEXIT_PRESENT
 #    define _PSTL_PRAGMA_SIMD_EARLYEXIT _PSTL_PRAGMA(omp simd early_exit)
