@@ -142,10 +142,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __gnu_cxx::__atomic_add_dispatch(&_M_use_count, 1); }
 
       void
-      _M_add_ref_lock();
+      _M_add_ref_lock()
+      {
+	if (!_M_add_ref_lock_nothrow())
+	  __throw_bad_weak_ptr();
+      }
 
       bool
-      _M_add_ref_lock_nothrow();
+      _M_add_ref_lock_nothrow() noexcept;
 
       void
       _M_release() noexcept
@@ -213,48 +217,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Atomic_word  _M_use_count;     // #shared
       _Atomic_word  _M_weak_count;    // #weak + (#shared != 0)
     };
-
-  template<>
-    inline void
-    _Sp_counted_base<_S_single>::
-    _M_add_ref_lock()
-    {
-      if (_M_use_count == 0)
-	__throw_bad_weak_ptr();
-      ++_M_use_count;
-    }
-
-  template<>
-    inline void
-    _Sp_counted_base<_S_mutex>::
-    _M_add_ref_lock()
-    {
-      __gnu_cxx::__scoped_lock sentry(*this);
-      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1) == 0)
-	{
-	  _M_use_count = 0;
-	  __throw_bad_weak_ptr();
-	}
-    }
-
-  template<>
-    inline void
-    _Sp_counted_base<_S_atomic>::
-    _M_add_ref_lock()
-    {
-      // Perform lock-free add-if-not-zero operation.
-      _Atomic_word __count = _M_get_use_count();
-      do
-	{
-	  if (__count == 0)
-	    __throw_bad_weak_ptr();
-	  // Replace the current counter value with the old value + 1, as
-	  // long as it's not changed meanwhile.
-	}
-      while (!__atomic_compare_exchange_n(&_M_use_count, &__count, __count + 1,
-					  true, __ATOMIC_ACQ_REL,
-					  __ATOMIC_RELAXED));
-    }
 
   template<>
     inline bool
@@ -736,7 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __shared_count(const __shared_count& __r) noexcept
       : _M_pi(__r._M_pi)
       {
-	if (_M_pi != 0)
+	if (_M_pi != nullptr)
 	  _M_pi->_M_add_ref_copy();
       }
 
@@ -746,9 +708,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Sp_counted_base<_Lp>* __tmp = __r._M_pi;
 	if (__tmp != _M_pi)
 	  {
-	    if (__tmp != 0)
+	    if (__tmp != nullptr)
 	      __tmp->_M_add_ref_copy();
-	    if (_M_pi != 0)
+	    if (_M_pi != nullptr)
 	      _M_pi->_M_release();
 	    _M_pi = __tmp;
 	  }
@@ -765,7 +727,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       long
       _M_get_use_count() const noexcept
-      { return _M_pi != 0 ? _M_pi->_M_get_use_count() : 0; }
+      { return _M_pi ? _M_pi->_M_get_use_count() : 0; }
 
       bool
       _M_unique() const noexcept
@@ -897,9 +859,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __shared_count<_Lp>::__shared_count(const __weak_count<_Lp>& __r)
     : _M_pi(__r._M_pi)
     {
-      if (_M_pi != nullptr)
-	_M_pi->_M_add_ref_lock();
-      else
+      if (_M_pi == nullptr || !_M_pi->_M_add_ref_lock_nothrow())
 	__throw_bad_weak_ptr();
     }
 
@@ -907,12 +867,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<_Lock_policy _Lp>
     inline
     __shared_count<_Lp>::
-    __shared_count(const __weak_count<_Lp>& __r, std::nothrow_t)
+    __shared_count(const __weak_count<_Lp>& __r, std::nothrow_t) noexcept
     : _M_pi(__r._M_pi)
     {
-      if (_M_pi != nullptr)
-	if (!_M_pi->_M_add_ref_lock_nothrow())
-	  _M_pi = nullptr;
+      if (_M_pi && !_M_pi->_M_add_ref_lock_nothrow())
+	_M_pi = nullptr;
     }
 
 #define __cpp_lib_shared_ptr_arrays 201611L
@@ -1175,7 +1134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(__p), _M_refcount()
 	{
 	  _M_refcount._M_swap(__r._M_refcount);
-	  __r._M_ptr = 0;
+	  __r._M_ptr = nullptr;
 	}
 
       __shared_ptr(const __shared_ptr&) noexcept = default;
@@ -1191,7 +1150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_ptr(__r._M_ptr), _M_refcount()
       {
 	_M_refcount._M_swap(__r._M_refcount);
-	__r._M_ptr = 0;
+	__r._M_ptr = nullptr;
       }
 
       template<typename _Yp, typename = _Compatible<_Yp>>
@@ -1199,7 +1158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(__r._M_ptr), _M_refcount()
 	{
 	  _M_refcount._M_swap(__r._M_refcount);
-	  __r._M_ptr = 0;
+	  __r._M_ptr = nullptr;
 	}
 
       template<typename _Yp, typename = _Compatible<_Yp>>
@@ -1305,7 +1264,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	reset(_Yp* __p) // _Yp must be complete.
 	{
 	  // Catch self-reset errors.
-	  __glibcxx_assert(__p == 0 || __p != _M_ptr);
+	  __glibcxx_assert(__p == nullptr || __p != _M_ptr);
 	  __shared_ptr(__p).swap(*this);
 	}
 
@@ -1325,8 +1284,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_ptr; }
 
       /// Return true if the stored pointer is not null.
-      explicit operator bool() const // never throws
-      { return _M_ptr == 0 ? false : true; }
+      explicit operator bool() const noexcept
+      { return _M_ptr != nullptr; }
 
       /// Return true if use_count() == 1.
       bool
@@ -1378,7 +1337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // This constructor is used by __weak_ptr::lock() and
       // shared_ptr::shared_ptr(const weak_ptr&, std::nothrow_t).
-      __shared_ptr(const __weak_ptr<_Tp, _Lp>& __r, std::nothrow_t)
+      __shared_ptr(const __weak_ptr<_Tp, _Lp>& __r, std::nothrow_t) noexcept
       : _M_refcount(__r._M_refcount, std::nothrow)
       {
 	_M_ptr = _M_refcount._M_get_use_count() ? __r._M_ptr : nullptr;

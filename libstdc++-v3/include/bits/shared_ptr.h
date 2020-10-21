@@ -413,7 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	allocate_shared(const _Alloc& __a, _Args&&... __args);
 
       // This constructor is non-standard, it is used by weak_ptr::lock().
-      shared_ptr(const weak_ptr<_Tp>& __r, std::nothrow_t)
+      shared_ptr(const weak_ptr<_Tp>& __r, std::nothrow_t) noexcept
       : __shared_ptr<_Tp>(__r, std::nothrow) { }
 
       friend class weak_ptr<_Tp>;
