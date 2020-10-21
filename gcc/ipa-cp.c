@@ -5946,22 +5946,6 @@ ipcp_generate_summary (void)
     ipa_analyze_node (node);
 }
 
-/* Write ipcp summary for nodes in SET.  */
-
-static void
-ipcp_write_summary (void)
-{
-  ipa_prop_write_jump_functions ();
-}
-
-/* Read ipcp summary.  */
-
-static void
-ipcp_read_summary (void)
-{
-  ipa_prop_read_jump_functions ();
-}
-
 namespace {
 
 const pass_data pass_data_ipa_cp =
@@ -5983,8 +5967,8 @@ public:
   pass_ipa_cp (gcc::context *ctxt)
     : ipa_opt_pass_d (pass_data_ipa_cp, ctxt,
 		      ipcp_generate_summary, /* generate_summary */
-		      ipcp_write_summary, /* write_summary */
-		      ipcp_read_summary, /* read_summary */
+		      NULL, /* write_summary */
+		      NULL, /* read_summary */
 		      ipcp_write_transformation_summaries, /*
 		      write_optimization_summary */
 		      ipcp_read_transformation_summaries, /*

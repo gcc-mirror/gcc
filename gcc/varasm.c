@@ -276,10 +276,12 @@ get_noswitch_section (unsigned int flags, noswitch_section_callback callback)
 }
 
 /* Return the named section structure associated with NAME.  Create
-   a new section with the given fields if no such structure exists.  */
+   a new section with the given fields if no such structure exists.
+   When NOT_EXISTING, then fail if the section already exists.  */
 
 section *
-get_section (const char *name, unsigned int flags, tree decl)
+get_section (const char *name, unsigned int flags, tree decl,
+	     bool not_existing)
 {
   section *sect, **slot;
 
@@ -296,6 +298,9 @@ get_section (const char *name, unsigned int flags, tree decl)
     }
   else
     {
+      if (not_existing)
+	internal_error ("Section already exists: %qs", name);
+
       sect = *slot;
       /* It is fine if one of the sections has SECTION_NOTYPE as long as
          the other has none of the contrary flags (see the logic at the end

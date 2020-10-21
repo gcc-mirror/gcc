@@ -4346,6 +4346,7 @@ ipa_fn_summary_read (void)
   struct lto_file_decl_data *file_data;
   unsigned int j = 0;
 
+  ipa_prop_read_jump_functions ();
   ipa_fn_summary_alloc ();
 
   while ((file_data = file_data_vec[j++]))
@@ -4364,8 +4365,6 @@ ipa_fn_summary_read (void)
 		     "ipa inline summary is missing in input file");
     }
   ipa_register_cgraph_hooks ();
-  if (!flag_ipa_cp)
-    ipa_prop_read_jump_functions ();
 
   gcc_assert (ipa_fn_summaries);
   ipa_fn_summaries->enable_insertion_hook ();
@@ -4500,8 +4499,7 @@ ipa_fn_summary_write (void)
   produce_asm (ob, NULL);
   destroy_output_block (ob);
 
-  if (!flag_ipa_cp)
-    ipa_prop_write_jump_functions ();
+  ipa_prop_write_jump_functions ();
 }
 
 
