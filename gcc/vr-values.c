@@ -1844,7 +1844,7 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
   if (is_gimple_min_invariant (chrec))
     {
       *min = *max = chrec;
-      return true;
+      goto fix_overflow;
     }
 
   if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
@@ -1964,6 +1964,7 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
   else
     *min = init;
 
+ fix_overflow:
   /* Even for valid range info, sometimes overflow flag will leak in.
      As GIMPLE IL should have no constants with TREE_OVERFLOW set, we
      drop them.  */
