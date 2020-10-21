@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodules-ts -Wno-pedantic" }
+// { dg-additional-options "-fmodules-ts -Wno-pedantic -Wno-psabi" }
 
 // Make sure e can serialize various literals.  */
 

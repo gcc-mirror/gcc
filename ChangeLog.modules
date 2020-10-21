@@ -1,3 +1,9 @@
+2020-10-21  Nathan Sidwell  <nathan@acm.org>
+
+	AIX test fix
+	gcc/testsuite/
+	* g++.dg/modules/literals-1_[ab].C: Add -Wno-psabi
+
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/

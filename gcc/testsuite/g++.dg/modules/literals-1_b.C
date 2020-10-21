@@ -1,4 +1,4 @@
-// { dg-additional-options -fmodules-ts }
+// { dg-additional-options {-fmodules-ts -Wno-psabi} }
 
 import real2reel;
 
