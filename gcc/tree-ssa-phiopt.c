@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "tree-eh.h"
 #include "gimple-fold.h"
+#include "internal-fn.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
@@ -61,8 +62,9 @@ static bool minmax_replacement (basic_block, basic_block,
 				edge, edge, gimple *, tree, tree);
 static bool abs_replacement (basic_block, basic_block,
 			     edge, edge, gimple *, tree, tree);
-static bool cond_removal_in_popcount_pattern (basic_block, basic_block,
-					      edge, edge, gimple *, tree, tree);
+static bool cond_removal_in_popcount_clz_ctz_pattern (basic_block, basic_block,
+						      edge, edge, gimple *,
+						      tree, tree);
 static bool cond_store_replacement (basic_block, basic_block, edge, edge,
 				    hash_set<tree> *);
 static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
@@ -344,8 +346,9 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (!early_p
-		   && cond_removal_in_popcount_pattern (bb, bb1, e1, e2,
-							phi, arg0, arg1))
+		   && cond_removal_in_popcount_clz_ctz_pattern (bb, bb1, e1,
+								e2, phi, arg0,
+								arg1))
 	    cfgchanged = true;
 	  else if (minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
@@ -1777,16 +1780,20 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
    <bb 4>
    c_12 = PHI <_9(2)>
-*/
+
+   Similarly for __builtin_clz or __builtin_ctz if
+   C?Z_DEFINED_VALUE_AT_ZERO is 2, optab is present and
+   instead of 0 above it uses the value from that macro.  */
 
 static bool
-cond_removal_in_popcount_pattern (basic_block cond_bb, basic_block middle_bb,
-				  edge e1, edge e2,
-				  gimple *phi, tree arg0, tree arg1)
+cond_removal_in_popcount_clz_ctz_pattern (basic_block cond_bb,
+					  basic_block middle_bb,
+					  edge e1, edge e2, gimple *phi,
+					  tree arg0, tree arg1)
 {
   gimple *cond;
   gimple_stmt_iterator gsi, gsi_from;
-  gimple *popcount;
+  gimple *call;
   gimple *cast = NULL;
   tree lhs, arg;
 
@@ -1804,35 +1811,67 @@ cond_removal_in_popcount_pattern (basic_block cond_bb, basic_block middle_bb,
   gsi_next_nondebug (&gsi);
   if (!gsi_end_p (gsi))
     {
-      popcount = gsi_stmt (gsi);
+      call = gsi_stmt (gsi);
       gsi_next_nondebug (&gsi);
       if (!gsi_end_p (gsi))
 	return false;
     }
   else
     {
-      popcount = cast;
+      call = cast;
       cast = NULL;
     }
 
-  /* Check that we have a popcount builtin.  */
-  if (!is_gimple_call (popcount))
+  /* Check that we have a popcount/clz/ctz builtin.  */
+  if (!is_gimple_call (call) || gimple_call_num_args (call) != 1)
     return false;
-  combined_fn cfn = gimple_call_combined_fn (popcount);
+
+  arg = gimple_call_arg (call, 0);
+  lhs = gimple_get_lhs (call);
+
+  if (lhs == NULL_TREE)
+    return false;
+
+  combined_fn cfn = gimple_call_combined_fn (call);
+  internal_fn ifn = IFN_LAST;
+  int val = 0;
   switch (cfn)
     {
     CASE_CFN_POPCOUNT:
       break;
+    CASE_CFN_CLZ:
+      if (INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+	{
+	  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
+	  if (direct_internal_fn_supported_p (IFN_CLZ, TREE_TYPE (arg),
+					      OPTIMIZE_FOR_BOTH)
+	      && CLZ_DEFINED_VALUE_AT_ZERO (mode, val) == 2)
+	    {
+	      ifn = IFN_CLZ;
+	      break;
+	    }
+	}
+      return false;
+    CASE_CFN_CTZ:
+      if (INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+	{
+	  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
+	  if (direct_internal_fn_supported_p (IFN_CTZ, TREE_TYPE (arg),
+					      OPTIMIZE_FOR_BOTH)
+	      && CTZ_DEFINED_VALUE_AT_ZERO (mode, val) == 2)
+	    {
+	      ifn = IFN_CTZ;
+	      break;
+	    }
+	}
+      return false;
     default:
       return false;
     }
 
-  arg = gimple_call_arg (popcount, 0);
-  lhs = gimple_get_lhs (popcount);
-
   if (cast)
     {
-      /* We have a cast stmt feeding popcount builtin.  */
+      /* We have a cast stmt feeding popcount/clz/ctz builtin.  */
       /* Check that we have a cast prior to that.  */
       if (gimple_code (cast) != GIMPLE_ASSIGN
 	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (cast)))
@@ -1845,7 +1884,7 @@ cond_removal_in_popcount_pattern (basic_block cond_bb, basic_block middle_bb,
 
   cond = last_stmt (cond_bb);
 
-  /* Cond_bb has a check for b_4 [!=|==] 0 before calling the popcount
+  /* Cond_bb has a check for b_4 [!=|==] 0 before calling the popcount/clz/ctz
      builtin.  */
   if (gimple_code (cond) != GIMPLE_COND
       || (gimple_cond_code (cond) != NE_EXPR
@@ -1865,10 +1904,13 @@ cond_removal_in_popcount_pattern (basic_block cond_bb, basic_block middle_bb,
     }
 
   /* Check PHI arguments.  */
-  if (lhs != arg0 || !integer_zerop (arg1))
+  if (lhs != arg0
+      || TREE_CODE (arg1) != INTEGER_CST
+      || wi::to_wide (arg1) != val)
     return false;
 
-  /* And insert the popcount builtin and cast stmt before the cond_bb.  */
+  /* And insert the popcount/clz/ctz builtin and cast stmt before the
+     cond_bb.  */
   gsi = gsi_last_bb (cond_bb);
   if (cast)
     {
@@ -1876,9 +1918,19 @@ cond_removal_in_popcount_pattern (basic_block cond_bb, basic_block middle_bb,
       gsi_move_before (&gsi_from, &gsi);
       reset_flow_sensitive_info (gimple_get_lhs (cast));
     }
-  gsi_from = gsi_for_stmt (popcount);
-  gsi_move_before (&gsi_from, &gsi);
-  reset_flow_sensitive_info (gimple_get_lhs (popcount));
+  gsi_from = gsi_for_stmt (call);
+  if (ifn == IFN_LAST || gimple_call_internal_p (call))
+    gsi_move_before (&gsi_from, &gsi);
+  else
+    {
+      /* For __builtin_c[lt]z* force .C[LT]Z ifn, because only
+	 the latter is well defined at zero.  */
+      call = gimple_build_call_internal (ifn, 1, gimple_call_arg (call, 0));
+      gimple_call_set_lhs (call, lhs);
+      gsi_insert_before (&gsi, call, GSI_SAME_STMT);
+      gsi_remove (&gsi_from, true);
+    }
+  reset_flow_sensitive_info (lhs);
 
   /* Now update the PHI and remove unneeded bbs.  */
   replace_phi_edge_with_variable (cond_bb, e2, phi, lhs);
