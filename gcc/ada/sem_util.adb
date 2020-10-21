@@ -12729,12 +12729,11 @@ package body Sem_Util is
    ----------------------------------
 
    function Has_Non_Trivial_Precondition (Subp : Entity_Id) return Boolean is
-      Pre : constant Node_Id := Find_Aspect (Subp, Aspect_Pre);
-
+      Pre : constant Node_Id := Find_Aspect (Subp, Aspect_Pre,
+                                             Class_Present => True);
    begin
       return
         Present (Pre)
-          and then Class_Present (Pre)
           and then not Is_Entity_Name (Expression (Pre));
    end Has_Non_Trivial_Precondition;
 

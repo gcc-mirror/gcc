@@ -54,7 +54,6 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
@@ -251,6 +250,18 @@ package body Sem_Ch13 is
      Expr : Node_Id);
    --  Resolve each one of the operations specified in the specification of
    --  Aspect_Aggregate.
+
+   procedure Validate_Aspect_Stable_Properties
+     (E : Entity_Id; N : Node_Id; Class_Present : Boolean);
+   --  Check legality of functions given in the Ada 202x Stable_Properties
+   --  (or Stable_Properties'Class) aspect.
+
+   procedure Resolve_Aspect_Stable_Properties
+    (Typ_Or_Subp   : Entity_Id;
+     Expr          : Node_Id;
+     Class_Present : Boolean);
+   --  Resolve each one of the functions specified in the specification of
+   --  aspect Stable_Properties (or Stable_Properties'Class).
 
    procedure Resolve_Iterable_Operation
      (N      : Node_Id;
@@ -2956,6 +2967,18 @@ package body Sem_Ch13 is
                   end if;
             end case;
 
+            if Delay_Required
+
+               and then A_Id = Aspect_Stable_Properties
+               --  ??? It seems like we should do this for all aspects, not
+               --  just Stable_Properties, but that causes as-yet-undiagnosed
+               --  regressions.
+
+            then
+               Set_Has_Delayed_Aspects (E);
+               Set_Is_Delayed_Aspect (Aspect);
+            end if;
+
             --  Check 13.1(9.2/5): A representation aspect of a subtype or type
             --  shall not be specified (whether by a representation item or an
             --  aspect_specification) before the type is completely defined
@@ -4195,6 +4218,12 @@ package body Sem_Ch13 is
 
                when Aspect_Aggregate =>
                   Validate_Aspect_Aggregate (Expr);
+                  Record_Rep_Item (E, Aspect);
+                  goto Continue;
+
+               when Aspect_Stable_Properties =>
+                  Validate_Aspect_Stable_Properties
+                    (E, Expr, Class_Present => Class_Present (Aspect));
                   Record_Rep_Item (E, Aspect);
                   goto Continue;
 
@@ -10490,12 +10519,14 @@ package body Sem_Ch13 is
       --  Expression from call to Check_Aspect_At_Freeze_Point.
 
       T : constant Entity_Id :=
-            (if Present (Freeze_Expr)
+            (if Present (Freeze_Expr) and (A_Id /= Aspect_Stable_Properties)
              then Etype (Original_Node (Freeze_Expr))
              else Empty);
       --  Type required for preanalyze call. We use the original expression to
       --  get the proper type, to prevent cascaded errors when the expression
-      --  is constant-folded.
+      --  is constant-folded. For Stable_Properties, the aspect value is
+      --  not semantically an expression (although it is syntactically);
+      --  in particular, it has no type.
 
       Err : Boolean;
       --  Set False if error
@@ -10902,7 +10933,13 @@ package body Sem_Ch13 is
             return;
 
          when Aspect_Aggregate =>
-            Resolve_Aspect_Aggregate (Entity (ASN), Expr);
+            Resolve_Aspect_Aggregate (Entity (ASN), Expression (ASN));
+            return;
+
+         when Aspect_Stable_Properties =>
+            Resolve_Aspect_Stable_Properties
+              (Entity (ASN), Expression (ASN),
+               Class_Present => Class_Present (ASN));
             return;
 
          --  Invariant/Predicate take boolean expressions
@@ -14894,6 +14931,10 @@ package body Sem_Ch13 is
                   when Aspect_Aggregate =>
                      Resolve_Aspect_Aggregate (Entity (ASN), Expr);
 
+                  when Aspect_Stable_Properties =>
+                     Resolve_Aspect_Stable_Properties
+                       (Entity (ASN), Expr, Class_Present (ASN));
+
                   --  For now we only deal with aspects that do not generate
                   --  subprograms, or that may mention current instances of
                   --  types. These will require special handling (???TBD).
@@ -15032,6 +15073,60 @@ package body Sem_Ch13 is
       end loop;
    end Parse_Aspect_Aggregate;
 
+   ------------------------------------
+   -- Parse_Aspect_Stable_Properties --
+   ------------------------------------
+
+   function Parse_Aspect_Stable_Properties
+     (Aspect_Spec : Node_Id; Negated : out Boolean) return Subprogram_List
+   is
+      L  : List_Id;
+      Id : Node_Id;
+
+      function Extract_Entity (Expr : Node_Id) return Entity_Id;
+      --  Given an element of a Stable_Properties aspect spec,
+      --  return the associated entity.
+      --  This function updates the Negated flag as a side-effect.
+
+      function Extract_Entity (Expr : Node_Id) return Entity_Id is
+         Name : Node_Id := Expr;
+      begin
+         if Nkind (Expr) = N_Op_Not then
+            Negated := True;
+            Name := Right_Opnd (Expr);
+         end if;
+         if Nkind (Name) in N_Has_Entity then
+            return Entity (Name);
+         else
+            return Empty;
+         end if;
+      end Extract_Entity;
+   begin
+      Negated := False;
+
+      if Nkind (Aspect_Spec) /= N_Aggregate then
+         return (1 => Extract_Entity (Aspect_Spec));
+      else
+         L := Expressions (Aspect_Spec);
+         Id := First (L);
+
+         return Result : Subprogram_List (1 .. List_Length (L)) do
+            for I in Result'Range loop
+               Result (I) := Extract_Entity (Id);
+
+               if not Present (Result (I)) then
+                  pragma Assert (Serious_Errors_Detected > 0);
+                  goto Ignore_Aspect;
+               end if;
+
+               Next (Id);
+            end loop;
+         end return;
+      end if;
+
+      <<Ignore_Aspect>> return (1 .. 0 => <>);
+   end Parse_Aspect_Stable_Properties;
+
    -------------------------------
    -- Validate_Aspect_Aggregate --
    -------------------------------
@@ -15077,6 +15172,135 @@ package body Sem_Ch13 is
          Error_Msg_N ("incomplete specification for indexed aggregate", N);
       end if;
    end Validate_Aspect_Aggregate;
+
+   -------------------------------
+   -- Validate_Aspect_Stable_Properties --
+   -------------------------------
+
+   procedure Validate_Aspect_Stable_Properties
+     (E : Entity_Id; N : Node_Id; Class_Present : Boolean)
+   is
+      Is_Aspect_Of_Type : constant Boolean := Is_Type (E);
+
+      type Permission is (Forbidden, Optional, Required);
+      Modifier_Permission : Permission :=
+       (if Is_Aspect_Of_Type then Forbidden else Optional);
+      Modifier_Error_Called : Boolean := False;
+
+      procedure Check_Property_Function_Arg (PF_Arg : Node_Id);
+      --  Check syntax of a property function argument
+
+      ----------------------------------
+      -- Check_Property_Function_Arg --
+      ----------------------------------
+
+      procedure Check_Property_Function_Arg (PF_Arg : Node_Id) is
+         procedure Modifier_Error;
+         --  Generate message about bad "not" modifier if no message already
+         --  generated. Errors include specifying "not" for an aspect of
+         --  of a type and specifying "not" for some but not all of the
+         --  names in a list.
+
+         --------------------
+         -- Modifier_Error --
+         --------------------
+
+         procedure Modifier_Error is
+         begin
+            if Modifier_Error_Called then
+               return; -- error message already generated
+            end if;
+
+            Modifier_Error_Called := True;
+
+            if Is_Aspect_Of_Type then
+               Error_Msg_N
+                 ("NOT modifier not allowed for Stable_Properties aspect"
+                  & " of a type", PF_Arg);
+            else
+               Error_Msg_N ("Mixed use of NOT modifiers", PF_Arg);
+            end if;
+         end Modifier_Error;
+
+         PF_Name : Node_Id := PF_Arg;
+
+         --  Start of processing for Check_Property_Function_Arg
+      begin
+         if Nkind (PF_Arg) = N_Op_Not then
+            PF_Name := Right_Opnd (PF_Arg);
+
+            case Modifier_Permission is
+               when Forbidden =>
+                  Modifier_Error;
+               when Optional =>
+                  Modifier_Permission := Required;
+               when Required =>
+                  null;
+            end case;
+         else
+            case Modifier_Permission is
+               when Forbidden =>
+                  null;
+               when Optional =>
+                  Modifier_Permission := Forbidden;
+               when Required =>
+                  Modifier_Error;
+            end case;
+         end if;
+
+         if Nkind (PF_Name) not in
+           N_Identifier | N_Operator_Symbol | N_Selected_Component
+         then
+            Error_Msg_N ("Bad property function name", PF_Name);
+         end if;
+      end Check_Property_Function_Arg;
+
+   begin
+      if Ada_Version < Ada_2020 then
+         Error_Msg_N ("Aspect Stable_Properties is an Ada_2020 feature", N);
+      end if;
+
+      if (not Is_Aspect_Of_Type) and then (not Is_Subprogram (E)) then
+         Error_Msg_N ("Stable_Properties aspect can only be specified for "
+                      & "a type or a subprogram", N);
+      elsif Class_Present then
+         if Is_Aspect_Of_Type then
+            if not Is_Tagged_Type (E) then
+               Error_Msg_N
+                 ("Stable_Properties'Class aspect cannot be specified for "
+                  & "an untagged type", N);
+            end if;
+         else
+            if not Is_Dispatching_Operation (E) then
+               Error_Msg_N
+                 ("Stable_Properties'Class aspect cannot be specified for "
+                  & "a subprogram that is not a primitive subprogram "
+                  & "of a tagged type", N);
+            end if;
+         end if;
+      end if;
+
+      if Nkind (N) = N_Aggregate then
+         if Present (Component_Associations (N))
+            or else Null_Record_Present (N)
+            or else not Present (Expressions (N))
+         then
+            Error_Msg_N ("Bad Stable_Properties aspect specification", N);
+            return;
+         end if;
+
+         declare
+            PF_Arg : Node_Id := First (Expressions (N));
+         begin
+            while Present (PF_Arg) loop
+               Check_Property_Function_Arg (PF_Arg);
+               PF_Arg := Next (PF_Arg);
+            end loop;
+         end;
+      else
+         Check_Property_Function_Arg (N);
+      end if;
+   end Validate_Aspect_Stable_Properties;
 
    --------------------------------
    -- Resolve_Iterable_Operation --
@@ -15436,6 +15660,224 @@ package body Sem_Ch13 is
          Next (Assoc);
       end loop;
    end Resolve_Aspect_Aggregate;
+
+   --------------------------------------
+   -- Resolve_Aspect_Stable_Properties --
+   --------------------------------------
+
+   procedure Resolve_Aspect_Stable_Properties
+    (Typ_Or_Subp : Entity_Id; Expr : Node_Id; Class_Present : Boolean)
+   is
+      Is_Aspect_Of_Type : constant Boolean := Is_Type (Typ_Or_Subp);
+
+      Singleton : constant Boolean := Nkind (Expr) /= N_Aggregate;
+      Subp_Name : Node_Id := (if Singleton
+                              then Expr
+                              else First (Expressions (Expr)));
+      Has_Not   : Boolean;
+   begin
+      if Is_Aspect_Of_Type
+         and then Has_Private_Declaration (Typ_Or_Subp)
+         and then not Is_Private_Type (Typ_Or_Subp)
+      then
+         Error_Msg_N
+           ("Stable_Properties aspect cannot be specified " &
+             "for the completion of a private type", Typ_Or_Subp);
+      end if;
+
+      --  Analogous checks that the aspect is not specified for a completion
+      --  in the subprogram case are not performed here because they are not
+      --  specific to this particular aspect. Right ???
+
+      loop
+         Has_Not := Nkind (Subp_Name) = N_Op_Not;
+         if Has_Not then
+            Set_Analyzed (Subp_Name); -- ???
+            Subp_Name := Right_Opnd (Subp_Name);
+         end if;
+
+         if No (Etype (Subp_Name)) then
+            Analyze (Subp_Name);
+         end if;
+
+         declare
+            Subp : Entity_Id := Empty;
+
+            I  : Interp_Index;
+            It : Interp;
+
+            function Is_Property_Function (E : Entity_Id) return Boolean;
+            --  Implements RM 7.3.4 definition of "property function".
+
+            function Is_Property_Function (E : Entity_Id) return Boolean is
+            begin
+               if Ekind (E) not in E_Function | E_Operator
+                 or else Number_Formals (E) /= 1
+               then
+                  return False;
+               end if;
+
+               declare
+                  Param_Type : constant Entity_Id :=
+                     Base_Type (Etype (First_Formal (E)));
+
+                  function Matches_Param_Type (Typ : Entity_Id)
+                    return Boolean is
+                    ((Base_Type (Typ) = Param_Type)
+                     or else
+                     (Is_Class_Wide_Type (Param_Type)
+                      and then Is_Ancestor (Root_Type (Param_Type),
+                                            Base_Type (Typ))));
+               begin
+                  if Is_Aspect_Of_Type then
+                     if Matches_Param_Type (Typ_Or_Subp) then
+                        return True;
+                     end if;
+                  elsif Is_Primitive (Typ_Or_Subp) then
+                     declare
+                        Formal : Entity_Id := First_Formal (Typ_Or_Subp);
+                     begin
+                        while Present (Formal) loop
+                           if Matches_Param_Type (Etype (Formal)) then
+
+                              --  Test whether Typ_Or_Subp (which is a subp
+                              --  in this case) is primitive op of the type
+                              --  of this parameter.
+                              if Scope (Typ_Or_Subp) = Scope (Param_Type) then
+                                 return True;
+                              end if;
+                           end if;
+                           Next_Formal (Formal);
+                        end loop;
+                     end;
+                  end if;
+               end;
+
+               return False;
+            end Is_Property_Function;
+         begin
+            if not Is_Overloaded (Subp_Name) then
+               Subp := Entity (Subp_Name);
+               if not Is_Property_Function (Subp) then
+                  Error_Msg_NE ("improper property function for&",
+                    Subp_Name, Typ_Or_Subp);
+                  return;
+               end if;
+            else
+               Set_Entity (Subp_Name, Empty);
+               Get_First_Interp (Subp_Name, I, It);
+               while Present (It.Nam) loop
+                  if Is_Property_Function (It.Nam) then
+                     if Present (Subp) then
+                        Error_Msg_NE
+                          ("ambiguous property function name for&",
+                           Subp_Name, Typ_Or_Subp);
+                        return;
+                     end if;
+
+                     Subp := It.Nam;
+                     Set_Is_Overloaded (Subp_Name, False);
+                     Set_Entity (Subp_Name, Subp);
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+
+               if No (Subp) then
+                  Error_Msg_NE ("improper property function for&",
+                    Subp_Name, Typ_Or_Subp);
+                  return;
+               end if;
+            end if;
+
+            --  perform legality (as opposed to name resolution) Subp checks
+
+            if Is_Limited_Type (Etype (Subp)) then
+               Error_Msg_NE
+                 ("result type of property function for& is limited",
+                  Subp_Name, Typ_Or_Subp);
+            end if;
+
+            if Ekind (First_Formal (Subp)) /= E_In_Parameter then
+               Error_Msg_NE
+                 ("mode of parameter of property function for& is not IN",
+                  Subp_Name, Typ_Or_Subp);
+            end if;
+
+            if Is_Class_Wide_Type (Etype (First_Formal (Subp))) then
+               if not Covers (Etype (First_Formal (Subp)), Typ_Or_Subp) then
+                  Error_Msg_NE
+                    ("class-wide parameter type of property function " &
+                     "for& does not cover the type",
+                     Subp_Name, Typ_Or_Subp);
+
+               --  ??? This test is slightly stricter than 7.3.4(12/5);
+               --  some legal corner cases may be incorrectly rejected.
+               elsif Scope (Subp) /= Scope (Etype (First_Formal (Subp)))
+               then
+                  Error_Msg_NE
+                    ("property function for& not declared in same scope " &
+                     "as parameter type",
+                     Subp_Name, Typ_Or_Subp);
+               end if;
+            elsif Is_Aspect_Of_Type and then
+              Scope (Subp) /= Scope (Typ_Or_Subp) and then
+              Scope (Subp) /= Standard_Standard --  e.g., derived type's "abs"
+            then
+               Error_Msg_NE
+                 ("property function for& " &
+                  "not a primitive function of the type",
+                  Subp_Name, Typ_Or_Subp);
+            end if;
+
+            if Has_Not then
+               --  check that Subp was mentioned in param type's aspect spec
+               declare
+                  Param_Type : constant Entity_Id :=
+                    Base_Type (Etype (First_Formal (Subp)));
+                  Aspect_Spec : constant Node_Id :=
+                    Find_Value_Of_Aspect
+                      (Param_Type, Aspect_Stable_Properties,
+                       Class_Present => Class_Present);
+                  Found : Boolean := False;
+               begin
+                  if Present (Aspect_Spec) then
+                     declare
+                        Ignored : Boolean;
+                        SPF_List : constant Subprogram_List :=
+                          Parse_Aspect_Stable_Properties
+                            (Aspect_Spec, Negated => Ignored);
+                     begin
+                        Found := (for some E of SPF_List => E = Subp);
+                        --  look through renamings ???
+                     end;
+                  end if;
+                  if not Found then
+                     declare
+                        CW_Modifier : constant String :=
+                          (if Class_Present then "class-wide " else "");
+                     begin
+                        Error_Msg_NE
+                       (CW_Modifier
+                         & "property function for& mentioned after NOT "
+                         & "but not a "
+                         & CW_Modifier
+                         & "stable property function of its parameter type",
+                        Subp_Name, Typ_Or_Subp);
+                     end;
+                  end if;
+               end;
+            end if;
+         end;
+
+         exit when Singleton;
+         Subp_Name :=
+           Next ((if Has_Not then Parent (Subp_Name) else Subp_Name));
+         exit when No (Subp_Name);
+      end loop;
+
+      Set_Analyzed (Expr);
+   end Resolve_Aspect_Stable_Properties;
 
    ----------------
    -- Set_Biased --

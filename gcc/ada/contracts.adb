@@ -47,6 +47,7 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -1668,6 +1669,12 @@ package body Contracts is
       --  function, Result contains the entity of parameter _Result, to be
       --  used in the creation of procedure _Postconditions.
 
+      procedure Add_Stable_Property_Contracts
+        (Subp_Id : Entity_Id; Class_Present : Boolean);
+      --  Augment postcondition contracts to reflect Stable_Property aspect
+      --  (if Class_Present = False) or Stable_Property'Class aspect (if
+      --  Class_Present = True).
+
       procedure Append_Enabled_Item (Item : Node_Id; List : in out List_Id);
       --  Append a node to a list. If there is no list, create a new one. When
       --  the item denotes a pragma, it is added to the list only when it is
@@ -1904,6 +1911,244 @@ package body Contracts is
             Next_Formal (Formal);
          end loop;
       end Add_Invariant_And_Predicate_Checks;
+
+      -----------------------------------
+      -- Add_Stable_Property_Contracts --
+      -----------------------------------
+
+      procedure Add_Stable_Property_Contracts
+        (Subp_Id : Entity_Id; Class_Present : Boolean)
+      is
+         Loc         : constant Source_Ptr := Sloc (Subp_Id);
+
+         procedure Insert_Stable_Property_Check
+           (Formal : Entity_Id; Property_Function : Entity_Id);
+         --  Build the pragma for one check and insert it in the tree.
+
+         function Make_Stable_Property_Condition
+           (Formal : Entity_Id; Property_Function : Entity_Id) return Node_Id;
+         --  Builds tree for "Func (Formal) = Func (Formal)'Old" expression.
+
+         function Stable_Properties
+           (Aspect_Bearer : Entity_Id; Negated : out Boolean)
+           return Subprogram_List;
+         --  If no aspect specified, then returns length-zero result.
+         --  Negated indicates that reserved word NOT was specified.
+
+         ----------------------------------
+         -- Insert_Stable_Property_Check --
+         ----------------------------------
+
+         procedure Insert_Stable_Property_Check
+           (Formal : Entity_Id; Property_Function : Entity_Id) is
+
+            Args : constant List_Id :=
+              New_List
+                (Make_Pragma_Argument_Association
+                   (Sloc => Loc,
+                    Expression =>
+                      Make_Stable_Property_Condition
+                         (Formal            => Formal,
+                          Property_Function => Property_Function)),
+                 Make_Pragma_Argument_Association
+                   (Sloc => Loc,
+                    Expression =>
+                      Make_String_Literal
+                        (Sloc => Loc,
+                         Strval =>
+                           "failed stable property check at "
+                           & Build_Location_String (Loc)
+                           & " for parameter "
+                           & To_String (Fully_Qualified_Name_String
+                               (Formal, Append_NUL => False))
+                           & " and property function "
+                           & To_String (Fully_Qualified_Name_String
+                               (Property_Function, Append_NUL => False))
+                        )));
+
+            Prag : constant Node_Id :=
+              Make_Pragma (Loc,
+                Pragma_Identifier            =>
+                  Make_Identifier (Loc, Name_Postcondition),
+                Pragma_Argument_Associations => Args,
+                Class_Present                => Class_Present);
+
+            Subp_Decl : Node_Id := Subp_Id;
+         begin
+            --  Enclosing_Declaration may return, for example,
+            --  a N_Procedure_Specification node. Cope with this.
+            loop
+               Subp_Decl := Enclosing_Declaration (Subp_Decl);
+               exit when Is_Declaration (Subp_Decl);
+               Subp_Decl := Parent (Subp_Decl);
+               pragma Assert (Present (Subp_Decl));
+            end loop;
+
+            Insert_After_And_Analyze (Subp_Decl, Prag);
+         end Insert_Stable_Property_Check;
+
+         ------------------------------------
+         -- Make_Stable_Property_Condition --
+         ------------------------------------
+
+         function Make_Stable_Property_Condition
+           (Formal : Entity_Id; Property_Function : Entity_Id) return Node_Id
+         is
+            function Call_Property_Function return Node_Id is
+              (Make_Function_Call
+                 (Loc,
+                  Name                   =>
+                    New_Occurrence_Of (Property_Function, Loc),
+                  Parameter_Associations =>
+                    New_List (New_Occurrence_Of (Formal, Loc))));
+         begin
+            return Make_Op_Eq
+              (Loc,
+               Call_Property_Function,
+               Make_Attribute_Reference
+                 (Loc,
+                  Prefix         => Call_Property_Function,
+                  Attribute_Name => Name_Old));
+         end Make_Stable_Property_Condition;
+
+         -----------------------
+         -- Stable_Properties --
+         -----------------------
+
+         function Stable_Properties
+           (Aspect_Bearer : Entity_Id; Negated : out Boolean)
+           return Subprogram_List
+         is
+            Aspect_Spec : Node_Id :=
+              Find_Value_Of_Aspect
+                (Aspect_Bearer, Aspect_Stable_Properties,
+                 Class_Present => Class_Present);
+         begin
+            --  ??? For a derived type, we wish Find_Value_Of_Aspect
+            --  somehow knew that this aspect is not inherited.
+            --  But it doesn't, so we cope with that here.
+            --
+            --  There are probably issues here with inheritance from
+            --  interface types, where just looking for the one parent type
+            --  isn't enough. But this is far from the only work needed for
+            --  Stable_Properties'Class for interface types.
+
+            if Is_Derived_Type (Aspect_Bearer) then
+               declare
+                  Parent_Type : constant Entity_Id :=
+                    Etype (Base_Type (Aspect_Bearer));
+               begin
+                  if Aspect_Spec =
+                     Find_Value_Of_Aspect
+                       (Parent_Type, Aspect_Stable_Properties,
+                        Class_Present => Class_Present)
+                  then
+                     --  prevent inheritance
+                     Aspect_Spec := Empty;
+                  end if;
+               end;
+            end if;
+
+            if No (Aspect_Spec) then
+               Negated := Aspect_Bearer = Subp_Id;
+               --  This is a little bit subtle.
+               --  We need to assign True in the Subp_Id case in order to
+               --  distinguish between no aspect spec at all vs. an
+               --  explicitly specified "with S_P => []" empty list.
+               --  In both cases Stable_Properties will return a length-0
+               --  array, but the two cases are not equivalent.
+               --  Very roughly speaking the lack of an S_P aspect spec for
+               --  a subprogram would be equivalent to something like
+               --  "with S_P => [not]", where we apply the "not" modifier to
+               --  an empty set of subprograms, if such a construct existed.
+               --  We could just assign True here, but it seems untidy to
+               --  return True in the case of an aspect spec for a type
+               --  (since negation is only allowed for subp S_P aspects).
+
+               return (1 .. 0 => <>);
+            else
+               return Parse_Aspect_Stable_Properties
+                        (Aspect_Spec, Negated => Negated);
+            end if;
+         end Stable_Properties;
+
+         Formal                  : Entity_Id := First_Formal (Subp_Id);
+         Type_Of_Formal          : Entity_Id;
+
+         Subp_Properties_Negated : Boolean;
+         Subp_Properties         : constant Subprogram_List :=
+           Stable_Properties (Subp_Id, Subp_Properties_Negated);
+
+         --  start of processing for Add_Stable_Property_Contracts
+
+      begin
+         if not (Is_Primitive (Subp_Id) and then Comes_From_Source (Subp_Id))
+         then
+            return;
+         end if;
+
+         while Present (Formal) loop
+            Type_Of_Formal := Base_Type (Etype (Formal));
+
+            if not Subp_Properties_Negated then
+
+               for SPF_Id of Subp_Properties loop
+                  if Type_Of_Formal = Base_Type (Etype (First_Formal (SPF_Id)))
+                     and then Scope (Type_Of_Formal) = Scope (Subp_Id)
+                  then
+                     --  ??? Need to filter out checks for SPFs that are
+                     --  mentioned explicitly in the postcondition of
+                     --  Subp_Id.
+
+                     Insert_Stable_Property_Check
+                       (Formal => Formal, Property_Function => SPF_Id);
+                  end if;
+               end loop;
+
+            elsif Scope (Type_Of_Formal) = Scope (Subp_Id) then
+               declare
+                  Ignored : Boolean range False .. False;
+
+                  Typ_Property_Funcs : constant Subprogram_List :=
+                     Stable_Properties (Type_Of_Formal, Negated => Ignored);
+
+                  function Excluded_By_Aspect_Spec_Of_Subp
+                    (SPF_Id : Entity_Id) return Boolean;
+                  --  Examine Subp_Properties to determine whether SPF should
+                  --  be excluded.
+
+                  -------------------------------------
+                  -- Excluded_By_Aspect_Spec_Of_Subp --
+                  -------------------------------------
+
+                  function Excluded_By_Aspect_Spec_Of_Subp
+                    (SPF_Id : Entity_Id) return Boolean is
+                  begin
+                     pragma Assert (Subp_Properties_Negated);
+                     --  Look through renames for equality test here ???
+                     return  (for some F of Subp_Properties => F = SPF_Id);
+                  end Excluded_By_Aspect_Spec_Of_Subp;
+
+                  --  Look through renames for equality test here ???
+                  Subp_Is_Stable_Property_Function : constant Boolean :=
+                    (for some F of Typ_Property_Funcs => F = Subp_Id);
+               begin
+                  if not Subp_Is_Stable_Property_Function then
+                     for SPF_Id of Typ_Property_Funcs loop
+                        if not Excluded_By_Aspect_Spec_Of_Subp (SPF_Id) then
+                           --  ??? Need to filter out checks for SPFs that are
+                           --  mentioned explicitly in the postcondition of
+                           --  Subp_Id.
+                           Insert_Stable_Property_Check
+                             (Formal => Formal, Property_Function => SPF_Id);
+                        end if;
+                     end loop;
+                  end if;
+               end;
+            end if;
+            Next_Formal (Formal);
+         end loop;
+      end Add_Stable_Property_Contracts;
 
       -------------------------
       -- Append_Enabled_Item --
@@ -2793,30 +3038,39 @@ package body Contracts is
       --  Routine _Postconditions holds all contract assertions that must be
       --  verified on exit from the related subprogram.
 
-      --  Step 1: Handle all preconditions. This action must come before the
+      --  Step 1: augment contracts list with postconditions associated with
+      --  Stable_Properties and Stable_Properties'Class aspects. This must
+      --  precede Process_Postconditions.
+
+      for Class_Present in Boolean loop
+         Add_Stable_Property_Contracts
+           (Subp_Id, Class_Present => Class_Present);
+      end loop;
+
+      --  Step 2: Handle all preconditions. This action must come before the
       --  processing of pragma Contract_Cases because the pragma prepends items
       --  to the body declarations.
 
       Process_Preconditions;
 
-      --  Step 2: Handle all postconditions. This action must come before the
+      --  Step 3: Handle all postconditions. This action must come before the
       --  processing of pragma Contract_Cases because the pragma appends items
       --  to list Stmts.
 
       Process_Postconditions (Stmts);
 
-      --  Step 3: Handle pragma Contract_Cases. This action must come before
+      --  Step 4: Handle pragma Contract_Cases. This action must come before
       --  the processing of invariants and predicates because those append
       --  items to list Stmts.
 
       Process_Contract_Cases (Stmts);
 
-      --  Step 4: Apply invariant and predicate checks on a function result and
+      --  Step 5: Apply invariant and predicate checks on a function result and
       --  all formals. The resulting checks are accumulated in list Stmts.
 
       Add_Invariant_And_Predicate_Checks (Subp_Id, Stmts, Result);
 
-      --  Step 5: Construct procedure _Postconditions
+      --  Step 6: Construct procedure _Postconditions
 
       Build_Postconditions_Procedure (Subp_Id, Stmts, Result);
 

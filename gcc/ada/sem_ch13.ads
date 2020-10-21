@@ -25,6 +25,7 @@
 
 with Table;
 with Types; use Types;
+with Sem_Disp; use Sem_Disp;
 with Uintp; use Uintp;
 
 package Sem_Ch13 is
@@ -146,6 +147,11 @@ package Sem_Ch13 is
    --  Utility to unpack the subprograms in an occurrence of aspect Aggregate;
    --  used to verify the structure of the aspect, and resolve and expand an
    --  aggregate for a container type that carries the aspect.
+
+   function Parse_Aspect_Stable_Properties
+     (Aspect_Spec : Node_Id; Negated : out Boolean) return Subprogram_List;
+   --  Utility to unpack the subprograms in a Stable_Properties list;
+   --  in the case of the aspect of a type, Negated will always be False.
 
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean;
    --  Called at start of processing a representation clause/pragma. Used to

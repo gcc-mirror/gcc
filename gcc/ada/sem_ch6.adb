@@ -2109,12 +2109,18 @@ package body Sem_Ch6 is
    --  is just a string, as in (conjunction = "or"). In these cases the parser
    --  generates this node, and the semantics does the disambiguation. Other
    --  such case are actuals in an instantiation, the generic unit in an
-   --  instantiation, and pragma arguments.
+   --  instantiation, pragma arguments, and aspect specifications.
 
    procedure Analyze_Operator_Symbol (N : Node_Id) is
       Par : constant Node_Id := Parent (N);
 
+      Maybe_Aspect_Spec : Node_Id := Par;
    begin
+      if Nkind (Maybe_Aspect_Spec) /= N_Aspect_Specification then
+         --  deal with N_Aggregate nodes
+         Maybe_Aspect_Spec := Parent (Maybe_Aspect_Spec);
+      end if;
+
       if        (Nkind (Par) = N_Function_Call and then N = Name (Par))
         or else  Nkind (Par) = N_Function_Instantiation
         or else (Nkind (Par) = N_Indexed_Component and then N = Prefix (Par))
@@ -2123,6 +2129,10 @@ package body Sem_Ch6 is
         or else  Nkind (Par) = N_Subprogram_Renaming_Declaration
         or else (Nkind (Par) = N_Attribute_Reference
                   and then Attribute_Name (Par) /= Name_Value)
+        or else (Nkind (Maybe_Aspect_Spec) = N_Aspect_Specification
+                  and then Get_Aspect_Id (Maybe_Aspect_Spec)
+                            --  include other aspects here ???
+                            in Aspect_Stable_Properties | Aspect_Aggregate)
       then
          Find_Direct_Name (N);
 
