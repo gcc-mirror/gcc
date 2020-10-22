@@ -1441,7 +1441,29 @@
 ;; Integer compares
 ;;
 
-(define_insn "*vec_cmp<VICMP_HW_OP:code><VI:mode>_nocc"
+(define_expand "vec_cmp<VI_HW:mode><VI_HW:mode>"
+  [(set (match_operand:VI_HW    0 "register_operand" "")
+	(match_operator:VI_HW   1 ""
+	  [(match_operand:VI_HW 2 "register_operand" "")
+	   (match_operand:VI_HW 3 "register_operand" "")]))]
+  "TARGET_VX"
+{
+  s390_expand_vec_compare (operands[0], GET_CODE(operands[1]), operands[2], operands[3]);
+  DONE;
+})
+
+(define_expand "vec_cmpu<VI_HW:mode><VI_HW:mode>"
+  [(set (match_operand:VI_HW    0 "register_operand" "")
+	(match_operator:VI_HW   1 ""
+	  [(match_operand:VI_HW 2 "register_operand" "")
+	   (match_operand:VI_HW 3 "register_operand" "")]))]
+  "TARGET_VX"
+{
+  s390_expand_vec_compare (operands[0], GET_CODE(operands[1]), operands[2], operands[3]);
+  DONE;
+})
+
+(define_insn "*vec_cmp<VICMP_HW_OP:code><VI:mode><VI:mode>_nocc"
   [(set (match_operand:VI                 2 "register_operand" "=v")
 	(VICMP_HW_OP:VI (match_operand:VI 0 "register_operand"  "v")
 			(match_operand:VI 1 "register_operand"  "v")))]
