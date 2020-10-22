@@ -7481,6 +7481,8 @@ trees_in::install_entity (tree decl)
   return true;
 }
 
+static bool has_definition (tree decl);
+
 /* DECL is a decl node that must be written by value.  DEP is the
    decl's depset.  */
 
@@ -7709,10 +7711,11 @@ trees_out::decl_value (tree decl, depset *dep)
 	}
     }
 
-  if (!type && inner
-      && TREE_CODE (inner) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (inner)
-      && TYPE_NAME (TREE_TYPE (inner)) == inner)
+  bool is_typedef = (!type && inner
+		     && TREE_CODE (inner) == TYPE_DECL
+		     && DECL_ORIGINAL_TYPE (inner)
+		     && TYPE_NAME (TREE_TYPE (inner)) == inner);
+  if (is_typedef)
     {
       /* A typedef type.  */
       int type_tag = insert (TREE_TYPE (inner));
@@ -7742,6 +7745,22 @@ trees_out::decl_value (tree decl, depset *dep)
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written decl:%d %C:%N", tag,
 				 TREE_CODE (decl), decl);
+
+  if (!inner || NAMESPACE_SCOPE_P (inner))
+    gcc_checking_assert (!inner
+			 || !dep == (VAR_OR_FUNCTION_DECL_P (inner)
+				     && DECL_LOCAL_DECL_P (inner)));
+  else if ((TREE_CODE (inner) == TYPE_DECL
+	    && TYPE_NAME (TREE_TYPE (inner)) == inner
+	    && !is_typedef)
+	   || TREE_CODE (inner) == FUNCTION_DECL)
+    {
+      bool write_defn = !dep && has_definition (decl);
+      if (streaming_p ())
+	u (write_defn);
+      if (write_defn)
+	write_definition (decl);
+    }
 }
 
 tree
@@ -8118,6 +8137,16 @@ trees_in::decl_value ()
     }
 
   unused = saved_unused;
+
+  if (inner
+      && !NAMESPACE_SCOPE_P (inner)
+      && ((TREE_CODE (inner) == TYPE_DECL
+	   && TYPE_NAME (TREE_TYPE (inner)) == inner
+	   && !is_typedef)
+	  || TREE_CODE (inner) == FUNCTION_DECL)
+      && u ())
+    read_definition (decl);
+
   return decl;
 }
 

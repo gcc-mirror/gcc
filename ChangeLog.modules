@@ -1,5 +1,12 @@
 2020-10-22  Nathan Sidwell  <nathan@acm.org>
 
+	Block-scope structures, like wow, why worked so far?
+	gcc/cp/
+	* module.cc (trees_{in,out}::decl_value): Stream local struct
+	definitions.
+	gcc/testsuite/
+	* g++.dg/modules/local-struct-1_[ab].C: New.
+
 	gcc/cp/
 	* module.cc (trees_in::is_matching_decl): Add builtin data
 	copying.
