@@ -14,11 +14,11 @@
 namespace Cody {
 
 #if NMS_CHECKING
-void (AssertFailed) (Location loc)
+void (AssertFailed) (Location loc) noexcept
 {
   (HCF) ("assertion failed", loc);
 }
-void (Unreachable) (Location loc)
+void (Unreachable) (Location loc) noexcept
 {
   (HCF) ("unreachable reached", loc);
 }
