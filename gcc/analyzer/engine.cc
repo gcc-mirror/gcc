@@ -1937,6 +1937,8 @@ exploded_graph::~exploded_graph ()
 exploded_node *
 exploded_graph::add_function_entry (function *fun)
 {
+  gcc_assert (gimple_has_body_p (fun->decl));
+
   /* Be idempotent.  */
   if (m_functions_with_enodes.contains (fun))
     {
@@ -3980,6 +3982,9 @@ exploded_graph::on_escaped_function (tree fndecl)
 
   function *fun = cgnode->get_fun ();
   if (!fun)
+    return;
+
+  if (!gimple_has_body_p (fndecl))
     return;
 
   exploded_node *enode = add_function_entry (fun);
