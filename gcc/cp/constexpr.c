@@ -6403,9 +6403,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case EMPTY_CLASS_EXPR:
-      /* This is good enough for a function argument that might not get
-	 used, and they can't do anything with it, so just return it.  */
-      return t;
+      /* Handle EMPTY_CLASS_EXPR produced by build_call_a by lowering
+	 it to an appropriate CONSTRUCTOR.  */
+      return build_constructor (TREE_TYPE (t), NULL);
 
     case STATEMENT_LIST:
       new_ctx = *ctx;
@@ -8186,13 +8186,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case COMPOUND_EXPR:
       {
 	/* check_return_expr sometimes wraps a TARGET_EXPR in a
-	   COMPOUND_EXPR; don't get confused.  Also handle EMPTY_CLASS_EXPR
-	   introduced by build_call_a.  */
+	   COMPOUND_EXPR; don't get confused.  */
 	tree op0 = TREE_OPERAND (t, 0);
 	tree op1 = TREE_OPERAND (t, 1);
 	STRIP_NOPS (op1);
-	if ((TREE_CODE (op0) == TARGET_EXPR && op1 == TARGET_EXPR_SLOT (op0))
-	    || TREE_CODE (op1) == EMPTY_CLASS_EXPR)
+	if (TREE_CODE (op0) == TARGET_EXPR && op1 == TARGET_EXPR_SLOT (op0))
 	  return RECUR (op0, want_rval);
 	else
 	  goto binary;
@@ -8321,7 +8319,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case EMPTY_CLASS_EXPR:
-      return false;
+      return true;
 
     case GOTO_EXPR:
       {
