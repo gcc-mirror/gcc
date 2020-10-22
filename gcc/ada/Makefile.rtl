@@ -1026,6 +1026,8 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
   a-naliop.ads<libgnat/a-naliop__nolibm.ads \
+  a-nuaufl.ads<libgnat/a-nuaufl__wraplf.ads \
+  a-nashfl.ads<libgnat/a-nashfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
@@ -1149,6 +1151,8 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae vxworksaespe,$(target_cpu) $(t
   a-elchha.adb<libgnat/a-elchha__vxworks-ppc-full.adb \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
   a-naliop.ads<libgnat/a-naliop__nolibm.ads \
+  a-nuaufl.ads<libgnat/a-nuaufl__wraplf.ads \
+  a-nashfl.ads<libgnat/a-nashfl__wraplf.ads \
   g-io.adb<hie/g-io__vxworks-cert.adb \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
@@ -1205,6 +1209,8 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(ta
   a-elchha.adb<libgnat/a-elchha__vxworks-ppc-full.adb \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
   a-naliop.ads<libgnat/a-naliop__nolibm.ads \
+  a-nuaufl.ads<libgnat/a-nuaufl__wraplf.ads \
+  a-nashfl.ads<libgnat/a-nashfl__wraplf.ads \
   g-io.adb<hie/g-io__vxworks-cert.adb \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
@@ -1425,6 +1431,8 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
   a-naliop.ads<libgnat/a-naliop__nolibm.ads \
+  a-nuaufl.ads<libgnat/a-nuaufl__wraplf.ads \
+  a-nashfl.ads<libgnat/a-nashfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
