@@ -156,12 +156,6 @@ omp_get_proc_bind (void)
 }
 
 int
-omp_get_initial_device (void)
-{
-  return GOMP_DEVICE_HOST_FALLBACK;
-}
-
-int
 omp_get_num_places (void)
 {
   return gomp_places_list_len;
@@ -241,7 +235,6 @@ ialias (omp_get_max_active_levels)
 ialias (omp_get_supported_active_levels)
 ialias (omp_get_cancellation)
 ialias (omp_get_proc_bind)
-ialias (omp_get_initial_device)
 ialias (omp_get_max_task_priority)
 ialias (omp_get_num_places)
 ialias (omp_get_place_num)
