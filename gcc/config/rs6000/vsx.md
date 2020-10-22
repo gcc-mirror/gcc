@@ -6035,7 +6035,7 @@
                     (match_operand:QI 2 "const_0_to_1_operand" "n")]
         UNSPEC_VCNTMB))]
   "TARGET_POWER10"
-  "vcntmb<VSX_MM_SUFFIX> %0,%1,%2"
+  "vcntmb<wd> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "vec_extract_<mode>"
@@ -6043,7 +6043,7 @@
 	(unspec:SI [(match_operand:VSX_MM 1 "altivec_register_operand" "v")]
 	UNSPEC_VEXTRACT))]
   "TARGET_POWER10"
-  "vextract<VSX_MM_SUFFIX>m %0,%1"
+  "vextract<wd>m %0,%1"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "vec_expand_<mode>"
@@ -6051,5 +6051,5 @@
         (unspec:VSX_MM [(match_operand:VSX_MM 1 "vsx_register_operand" "v")]
         UNSPEC_VEXPAND))]
   "TARGET_POWER10"
-  "vexpand<VSX_MM_SUFFIX>m %0,%1"
+  "vexpand<wd>m %0,%1"
   [(set_attr "type" "vecsimple")])
