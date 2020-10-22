@@ -26262,7 +26262,7 @@ package body Sem_Util is
          end if;
 
          if Has_Own_Invariants (From_Typ) then
-            Set_Has_Own_Invariants (Typ);
+            Set_Has_Own_Invariants (Base_Type (Typ));
          end if;
 
          if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then

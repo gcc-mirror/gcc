@@ -18533,7 +18533,7 @@ package body Sem_Prag is
             --  The pragma defines a type-specific invariant, the type is said
             --  to have invariants of its "own".
 
-            Set_Has_Own_Invariants (Typ);
+            Set_Has_Own_Invariants (Base_Type (Typ));
 
             --  If the invariant is class-wide, then it can be inherited by
             --  derived or interface implementing types. The type is said to

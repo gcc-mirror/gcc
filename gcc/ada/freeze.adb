@@ -2594,13 +2594,6 @@ package body Freeze is
               and then not GNATprove_Mode
             then
                Set_Has_Own_Invariants (Arr);
-
-               --  The array type is an implementation base type. Propagate the
-               --  same property to the first subtype.
-
-               if Is_Itype (Arr) then
-                  Set_Has_Own_Invariants (First_Subtype (Arr));
-               end if;
             end if;
 
             --  Warn for pragma Pack overriding foreign convention
