@@ -3954,7 +3954,8 @@ init_subob_ctx (const constexpr_ctx *ctx, constexpr_ctx &new_ctx,
   new_ctx = *ctx;
 
   if (index && TREE_CODE (index) != INTEGER_CST
-      && TREE_CODE (index) != FIELD_DECL)
+      && TREE_CODE (index) != FIELD_DECL
+      && TREE_CODE (index) != RANGE_EXPR)
     /* This won't have an element in the new CONSTRUCTOR.  */
     return;
 
@@ -3967,7 +3968,13 @@ init_subob_ctx (const constexpr_ctx *ctx, constexpr_ctx &new_ctx,
      update object to refer to the subobject and ctor to refer to
      the (newly created) sub-initializer.  */
   if (ctx->object)
-    new_ctx.object = build_ctor_subob_ref (index, type, ctx->object);
+    {
+      if (index == NULL_TREE || TREE_CODE (index) == RANGE_EXPR)
+	/* There's no well-defined subobject for this index.  */
+	new_ctx.object = NULL_TREE;
+      else
+	new_ctx.object = build_ctor_subob_ref (index, type, ctx->object);
+    }
   tree elt = build_constructor (type, NULL);
   CONSTRUCTOR_NO_CLEARING (elt) = true;
   new_ctx.ctor = elt;
