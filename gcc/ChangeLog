@@ -1,3 +1,9 @@
+2020-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/97506
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc): Move
+	op_true to dest directly when op_true equals op_false.
+
 2020-10-19  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	Backported from master:
