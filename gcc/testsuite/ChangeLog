@@ -1,3 +1,7 @@
+2020-10-22  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* gcc.target/arm/simd/mve-vmul_1.c: New test.
+
 2020-10-20  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/Wbuiltin-declaration-mismatch-9.c: Improve pruning of

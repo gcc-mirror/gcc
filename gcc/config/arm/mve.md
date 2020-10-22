@@ -1551,6 +1551,17 @@
   [(set_attr "type" "mve_move")
 ])
 
+(define_insn "mve_vmulq<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(mult:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")))
+  ]
+  "TARGET_HAVE_MVE"
+  "vmul.i%#<V_sz_elem>\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])
+
 ;;
 ;; [vornq_u, vornq_s])
 ;;
@@ -2562,9 +2573,8 @@
 (define_insn "mve_vmulq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMULQ_F))
+	(mult:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		    (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vmul.f%#<V_sz_elem>	%q0, %q1, %q2"
