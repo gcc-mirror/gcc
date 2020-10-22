@@ -1572,6 +1572,7 @@ endif
 ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__solaris.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__solaris.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
