@@ -2009,7 +2009,6 @@ vect_analyze_slp_instance (vec_info *vinfo,
   slp_instance new_instance;
   slp_tree node;
   unsigned int group_size;
-  tree vectype, scalar_type = NULL_TREE;
   unsigned int i;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   vec<stmt_vec_info> scalar_stmts;
@@ -2019,40 +2018,24 @@ vect_analyze_slp_instance (vec_info *vinfo,
     vect_location = stmt_info->stmt;
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
-      scalar_type = TREE_TYPE (DR_REF (dr));
       group_size = DR_GROUP_SIZE (stmt_info);
-      vectype = get_vectype_for_scalar_type (vinfo, scalar_type, group_size);
     }
   else if (!dr && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       gcc_assert (is_a <loop_vec_info> (vinfo));
-      vectype = STMT_VINFO_VECTYPE (stmt_info);
       group_size = REDUC_GROUP_SIZE (stmt_info);
     }
   else if (is_gimple_assign (stmt_info->stmt)
 	    && gimple_assign_rhs_code (stmt_info->stmt) == CONSTRUCTOR)
     {
-      vectype = TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt));
       group_size = CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt_info->stmt));
       constructor = true;
     }
   else
     {
       gcc_assert (is_a <loop_vec_info> (vinfo));
-      vectype = STMT_VINFO_VECTYPE (stmt_info);
       group_size = as_a <loop_vec_info> (vinfo)->reductions.length ();
     }
-
-  if (!vectype)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Build SLP failed: unsupported data-type %T\n",
-			 scalar_type);
-
-      return false;
-    }
-  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   /* Create a node (a root of the SLP tree) for the packed grouped stores.  */
   scalar_stmts.create (group_size);
@@ -2127,7 +2110,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
   /* Build the tree for the SLP instance.  */
   bool *matches = XALLOCAVEC (bool, group_size);
   unsigned npermutes = 0;
-  poly_uint64 max_nunits = nunits;
+  poly_uint64 max_nunits = 1;
   unsigned tree_size = 0;
   node = vect_build_slp_tree (vinfo, scalar_stmts, group_size,
 			      &max_nunits, matches, &npermutes,
@@ -2201,7 +2184,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	     instructions do not generate this SLP instance.  */
 	  if (is_a <loop_vec_info> (vinfo)
 	      && loads_permuted
-	      && dr && vect_store_lanes_supported (vectype, group_size, false))
+	      && dr
+	      && vect_store_lanes_supported
+		   (STMT_VINFO_VECTYPE (scalar_stmts[0]), group_size, false))
 	    {
 	      slp_tree load_node;
 	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (new_instance), i, load_node)
@@ -2284,51 +2269,57 @@ vect_analyze_slp_instance (vec_info *vinfo,
     }
 
   /* Try to break the group up into pieces.  */
-  unsigned HOST_WIDE_INT const_nunits;
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-      && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info))
-      && nunits.is_constant (&const_nunits))
+      && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
     {
       for (i = 0; i < group_size; i++)
 	if (!matches[i])
 	  break;
 
-      /* For basic block SLP, try to break the group up into multiples of the
-	 vector size.  */
+      /* For basic block SLP, try to break the group up into multiples of
+	 a vector size.  */
       if (is_a <bb_vec_info> (vinfo)
-	  && (i >= const_nunits && i < group_size))
+	  && (i > 1 && i < group_size))
 	{
-	  /* Split into two groups at the first vector boundary before i.  */
-	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
-	  unsigned group1_size = i & ~(const_nunits - 1);
-
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Splitting SLP group at stmt %u\n", i);
-	  stmt_vec_info rest = vect_split_slp_store_group (stmt_info,
-							   group1_size);
-	  bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
-						max_tree_size);
-	  /* If the first non-match was in the middle of a vector,
-	     skip the rest of that vector.  Do not bother to re-analyze
-	     single stmt groups.  */
-	  if (group1_size < i)
+	  tree scalar_type
+	    = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
+	  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
+						      least_bit_hwi (i));
+	  unsigned HOST_WIDE_INT const_nunits;
+	  if (vectype
+	      && TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits))
 	    {
-	      i = group1_size + const_nunits;
+	      /* Split into two groups at the first vector boundary.  */
+	      gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
+	      unsigned group1_size = i & ~(const_nunits - 1);
+
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Splitting SLP group at stmt %u\n", i);
+	      stmt_vec_info rest = vect_split_slp_store_group (stmt_info,
+							       group1_size);
+	      bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
+						    max_tree_size);
+	      /* If the first non-match was in the middle of a vector,
+		 skip the rest of that vector.  Do not bother to re-analyze
+		 single stmt groups.  */
+	      if (group1_size < i)
+		{
+		  i = group1_size + const_nunits;
+		  if (i + 1 < group_size)
+		    rest = vect_split_slp_store_group (rest, const_nunits);
+		}
 	      if (i + 1 < group_size)
-		rest = vect_split_slp_store_group (rest, const_nunits);
+		res |= vect_analyze_slp_instance (vinfo, bst_map,
+						  rest, max_tree_size);
+	      return res;
 	    }
-	  if (i + 1 < group_size)
-	    res |= vect_analyze_slp_instance (vinfo, bst_map,
-					      rest, max_tree_size);
-	  return res;
 	}
 
       /* For loop vectorization split into arbitrary pieces of size > 1.  */
       if (is_a <loop_vec_info> (vinfo)
 	  && (i > 1 && i < group_size))
 	{
-	  gcc_assert ((const_nunits & (const_nunits - 1)) == 0);
 	  unsigned group1_size = i;
 
 	  if (dump_enabled_p ())
