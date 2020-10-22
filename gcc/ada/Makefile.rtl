@@ -2015,6 +2015,9 @@ ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__lynxos.ads \
+  a-nuaufl.ads<libgnat/a-nuaufl__wraplf.ads \
+  a-nashfl.ads<libgnat/a-nashfl__wraplf.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   g-soliop.ads<libgnat/g-soliop__lynxos.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__lynxos.adb \
