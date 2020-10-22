@@ -6,8 +6,9 @@
     int vec_test_lsbb_all_ones (vector unsigned char);
  */
 
-/* { dg-do run } */
-/* { dg-require-effective-target power10_hw } */
+/* { dg-do run { target { power10_hw } } } */
+/* { dg-do link { target { ! power10_hw } } } */
+/* { dg-require-effective-target power10_ok } */
 /* { dg-options "-fno-inline -mdejagnu-cpu=power10 -O2" } */
 
 #include <altivec.h>

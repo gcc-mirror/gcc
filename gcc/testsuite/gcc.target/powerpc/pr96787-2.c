@@ -1,5 +1,6 @@
-/* { dg-do run } */
-/* { dg-require-effective-target power10_hw } */
+/* { dg-do run { target { power10_hw } } } */
+/* { dg-do link { target { ! power10_hw } } } */
+/* { dg-require-effective-target power10_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power10" } */
 
 /* Verify that we generate an indirect sibcall for ELFv2 on P10 and

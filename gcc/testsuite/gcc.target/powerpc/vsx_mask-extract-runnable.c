@@ -1,6 +1,7 @@
-/* { dg-do run } */
+/* { dg-do run { target { power10_hw } } } */
+/* { dg-do link { target { ! power10_hw } } } */
 /* { dg-options "-mcpu=power10 -O2" } */
-/* { dg-require-effective-target power10_hw } */
+/* { dg-require-effective-target power10_ok } */
 
 /* Check that the expected 128-bit instructions are generated if the processor
    supports the 128-bit integer instructions. */
