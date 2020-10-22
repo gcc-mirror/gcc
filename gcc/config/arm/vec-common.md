@@ -111,39 +111,29 @@
   [(set (match_operand:VALLW 0 "s_register_operand")
 	(smin:VALLW (match_operand:VALLW 1 "s_register_operand")
 		    (match_operand:VALLW 2 "s_register_operand")))]
-  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
-		    || flag_unsafe_math_optimizations))
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+   "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "umin<mode>3"
   [(set (match_operand:VINTW 0 "s_register_operand")
 	(umin:VINTW (match_operand:VINTW 1 "s_register_operand")
 		    (match_operand:VINTW 2 "s_register_operand")))]
-  "TARGET_NEON
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+   "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "smax<mode>3"
   [(set (match_operand:VALLW 0 "s_register_operand")
 	(smax:VALLW (match_operand:VALLW 1 "s_register_operand")
 		    (match_operand:VALLW 2 "s_register_operand")))]
-  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
-		    || flag_unsafe_math_optimizations))
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+   "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "umax<mode>3"
   [(set (match_operand:VINTW 0 "s_register_operand")
 	(umax:VINTW (match_operand:VINTW 1 "s_register_operand")
 		    (match_operand:VINTW 2 "s_register_operand")))]
-  "TARGET_NEON
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+   "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "vec_perm<mode>"
   [(match_operand:VE 0 "s_register_operand")
