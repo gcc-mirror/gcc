@@ -10528,7 +10528,12 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	    if ((!key.ret
 		 || same_type_p (key.ret, fndecl_declared_return_type (m_inner)))
 		&& type_memfn_rqual (m_type) == key.ref_q
-		&& compparms (key.args, TYPE_ARG_TYPES (m_type)))
+		&& compparms (key.args, TYPE_ARG_TYPES (m_type))
+		/* Reject if old is a "C" builtin and new is not "C".
+		   Matches decls_match behaviour.  */
+		&& (!DECL_IS_BUILTIN (m_inner)
+		    || !DECL_EXTERN_C_P (m_inner)
+		    || DECL_EXTERN_C_P (d_inner)))
 	      {
 		tree m_reqs = get_constraints (m_inner);
 		if (m_reqs)
@@ -10955,6 +10960,9 @@ trees_in::is_matching_decl (tree existing, tree decl)
       tree e_type = TREE_TYPE (existing);
       tree d_type = TREE_TYPE (decl);
 
+      if (DECL_EXTERN_C_P (decl) != DECL_EXTERN_C_P (existing))
+	goto mismatch;
+
       for (tree e_args = TYPE_ARG_TYPES (e_type),
 	     d_args = TYPE_ARG_TYPES (d_type);
 	   e_args != d_args && (e_args || d_args);
@@ -11029,7 +11037,8 @@ trees_in::is_matching_decl (tree existing, tree decl)
       && !DECL_UNDECLARED_BUILTIN_P (decl))
     {
       /* We're matching a builtin that the user has yet to declare.
-	 We are the one! */
+	 We are the one!  This is very much duplicate-decl
+	 shenanigans. */
       DECL_SOURCE_LOCATION (existing) = DECL_SOURCE_LOCATION (decl);
       if (TREE_CODE (decl) != TYPE_DECL)
 	{
@@ -11039,6 +11048,21 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	}
       /* This is actually an import! */
       DECL_MODULE_IMPORT_P (existing) = true;
+
+      /* Yay, sliced!  */
+      existing->base = decl->base;
+
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  /* Ew :(  */
+	  memcpy (&existing->decl_common.size,
+		  &decl->decl_common.size,
+		  (offsetof (tree_decl_common, pt_uid)
+		   - offsetof (tree_decl_common, size)));
+	  existing->function_decl.built_in_class = DECL_BUILT_IN_CLASS (decl);
+	  DECL_UNCHECKED_FUNCTION_CODE (existing)
+	    = DECL_UNCHECKED_FUNCTION_CODE (decl);
+	}
     }
 
   if (VAR_OR_FUNCTION_DECL_P (decl)

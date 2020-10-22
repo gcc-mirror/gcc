@@ -1776,7 +1776,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 			newdecl);
 	      inform (olddecl_loc,
 		      "previous declaration %q#D", olddecl);
-	      return NULL_TREE;
+	      return error_mark_node;
 	    }
 	  /* For function versions, params and types match, but they
 	     are not ambiguous.  */

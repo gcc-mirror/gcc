@@ -1,6 +1,15 @@
 2020-10-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* gcc/cp/decl.c (duplicate_decls_): Return error_mark_node for
+	extern "C" collision.
+	* gcc/cp/module.cc (check_mergeable_decl): Check extern "C"-ness.
+	(trees_in::is_matching_decl): Check extern "C" builtin mismatch.
+	Propagate flags on smashing a builtin.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-6_[ab].[HC]: New.
+
+	gcc/cp/
 	* mapper-client.cc: Enable networking only when CODY_NETWORKING
 	* mapper-server.cc: Likewise.
 	libcody/
