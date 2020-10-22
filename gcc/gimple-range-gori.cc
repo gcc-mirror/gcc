@@ -552,7 +552,7 @@ is_gimple_logical_p (const gimple *gs)
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	  // Bitwise operations on single bits are logical too.
-	  if (range_compatible_p (TREE_TYPE (gimple_assign_rhs1 (gs)),
+	  if (types_compatible_p (TREE_TYPE (gimple_assign_rhs1 (gs)),
 				  boolean_type_node))
 	    return true;
 	  break;
@@ -1165,7 +1165,7 @@ bool
 logical_stmt_cache::cacheable_p (gimple *stmt, const irange *lhs_range) const
 {
   if (gimple_code (stmt) == GIMPLE_ASSIGN
-      && range_compatible_p (TREE_TYPE (gimple_assign_lhs (stmt)),
+      && types_compatible_p (TREE_TYPE (gimple_assign_lhs (stmt)),
 			     boolean_type_node)
       && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
     {
