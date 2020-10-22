@@ -2454,23 +2454,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 	  }
 
       if (tgt && is_oacc_kernels (tgt))
-	{
-	  /* Strip out reductions, as they are not handled yet.  */
-	  tree *prev_ptr = &clauses;
-
-	  while (tree probe = *prev_ptr)
-	    {
-	      tree *next_ptr = &OMP_CLAUSE_CHAIN (probe);
-	      
-	      if (OMP_CLAUSE_CODE (probe) == OMP_CLAUSE_REDUCTION)
-		*prev_ptr = *next_ptr;
-	      else
-		prev_ptr = next_ptr;
-	    }
-
-	  gimple_omp_for_set_clauses (stmt, clauses);
-	  check_oacc_kernel_gwv (stmt, ctx);
-	}
+	check_oacc_kernel_gwv (stmt, ctx);
 
       /* Collect all variables named in reductions on this loop.  Ensure
 	 that, if this loop has a reduction on some variable v, and there is
@@ -2553,6 +2537,24 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
       ctx->outer_reduction_clauses
 	= chainon (unshare_expr (ctx->local_reduction_clauses),
 		   ctx->outer_reduction_clauses);
+
+      if (tgt && is_oacc_kernels (tgt))
+	{
+	  /* Strip out reductions, as they are not handled yet.  */
+	  tree *prev_ptr = &clauses;
+
+	  while (tree probe = *prev_ptr)
+	    {
+	      tree *next_ptr = &OMP_CLAUSE_CHAIN (probe);
+
+	      if (OMP_CLAUSE_CODE (probe) == OMP_CLAUSE_REDUCTION)
+		*prev_ptr = *next_ptr;
+	      else
+		prev_ptr = next_ptr;
+	    }
+
+	  gimple_omp_for_set_clauses (stmt, clauses);
+	}
     }
 
   scan_sharing_clauses (clauses, ctx);
