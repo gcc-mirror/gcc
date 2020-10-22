@@ -111,6 +111,8 @@ test_insert_search_collapse ()
   ASSERT_TRUE (t->every_base);
   ASSERT_EQ (t->bases, NULL);
   ASSERT_EQ (t->search (1), NULL);
+
+  delete t;
 }
 
 static void
@@ -155,6 +157,9 @@ test_merge ()
   base_node = t1->search (3);
   ASSERT_EQ (base_node->refs, NULL);
   ASSERT_TRUE (base_node->every_ref);
+
+  delete t1;
+  delete t2;
 }
 
 
