@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
+
 #include "mapper.h"
 // C++
 #include <algorithm>
@@ -215,25 +218,42 @@ module_resolver::IncludeTranslateRequest (Cody::Server *s, std::string &include)
   if (iter == map.end () && default_translate)
     {
       // Not found, look for it
-      if (fd_repo == -1 && !repo.empty ())
+      auto file = GetCMIName (include);
+      struct stat statbuf;
+      bool ok = true;
+
+#if HAVE_FSTATAT
+      int fd_dir = AT_FDCWD;
+      if (!repo.empty ())
 	{
-	  fd_repo = open (repo.c_str (), O_RDONLY | O_CLOEXEC | O_DIRECTORY);
-	  if (fd_repo < 0)
-	    fd_repo = -2;
+	  if (fd_repo == -1)
+	    {
+	      fd_repo = open (repo.c_str (),
+			      O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+	      if (fd_repo < 0)
+		fd_repo = -2;
+	    }
+	  fd_dir = fd_repo;
 	}
 
-      if (fd_repo >= 0 || repo.empty ())
-	{
-	  auto file = GetCMIName (include);
-	  struct stat statbuf;
-	  if (fstatat (repo.empty () ? AT_FDCWD : fd_repo,
-		       file.c_str (), &statbuf, 0) < 0
-	      || !S_ISREG (statbuf.st_mode))
-	    // Mark as not present
-	    file.clear ();
-	  auto res = map.emplace (include, file);
-	  iter = res.first;
-	}
+      if (!repo.empty () && fd_repo < 0)
+	ok = false;
+      else if (fstatat (fd_dir, file.c_str (), &statbuf, 0) < 0
+	       || !S_ISREG (statbuf.st_mode))
+	ok = false;
+#else
+      auto append = repo;
+      append.push_back (DIR_SEPARATOR);
+      append.append (file);
+      if (stat (append.c_str (), &statbuf) < 0
+	  || !S_ISREG (statbuf.st_mode))
+	ok = false;
+#endif
+      if (!ok)
+	// Mark as not present
+	file.clear ();
+      auto res = map.emplace (include, file);
+      iter = res.first;
     }
 
   if (iter == map.end () || iter->second.empty ())

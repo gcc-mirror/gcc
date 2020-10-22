@@ -251,6 +251,11 @@ Classes used:
 #define MAPPED_READING 0
 #define MAPPED_WRITING 0
 #endif
+
+#if !HOST_HAS_O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
+
 static inline cpp_hashnode *cpp_node (tree id)
 {
   return CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (id));

@@ -1415,7 +1415,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap memrchr posix_fallocate setlocale \
-	gcc_UNLOCKED_FUNCS madvise mallinfo execv mallinfo2)
+	gcc_UNLOCKED_FUNCS madvise mallinfo execv mallinfo2 fstatat)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
@@ -1584,6 +1584,17 @@ return fcntl (1, F_SETLKW, &fl);]])],
 if test $ac_cv_f_setlkw = yes; then
   AC_DEFINE(HOST_HAS_F_SETLKW, 1,
   [Define if F_SETLKW supported by fcntl.])
+fi
+
+# Check if O_CLOEXEC is defined by fcntl
+AC_CACHE_CHECK(for O_CLOEXEC, ac_cv_o_cloexec, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <fcntl.h>]], [[
+return open ("/dev/null", O_RDONLY | O_CLOEXEC);]])],
+[ac_cv_o_cloexec=yes],[ac_cv_o_cloexec=no])])
+if test $ac_cv_o_cloexec = yes; then
+  AC_DEFINE(HOST_HAS_O_CLOEXEC, 1,
+  [Define if O_CLOEXEC supported by fcntl.])
 fi
 
 # C++ Modules would like some networking features to provide the mapping

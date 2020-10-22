@@ -1283,6 +1283,12 @@
 #endif
 
 
+/* Define to 1 if you have the `fstatat' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_FSTATAT
+#endif
+
+
 /* Define to 1 if you have the <ftw.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_FTW_H
@@ -2084,6 +2090,12 @@
 /* Define if F_SETLKW supported by fcntl. */
 #ifndef USED_FOR_TARGET
 #undef HOST_HAS_F_SETLKW
+#endif
+
+
+/* Define if O_CLOEXEC supported by fcntl. */
+#ifndef USED_FOR_TARGET
+#undef HOST_HAS_O_CLOEXEC
 #endif
 
 

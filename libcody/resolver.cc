@@ -10,6 +10,13 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#if defined (__unix__) || defined (__MACH__)
+// Autoconf test?
+#define HAVE_FSTATAT 1
+#else
+#define HAVE_FSTATAT 0
+#endif
+
 // Resolver code
 
 #if __windows__
@@ -35,6 +42,8 @@ inline bool IsAbsPath (char const *str)
   return IsDirSep (str[0]);
 }
 #endif
+
+constexpr char DIR_SEPARATOR = '/';
 
 constexpr char DOT_REPLACE = ','; // Replace . directories
 constexpr char COLON_REPLACE = '-'; // Replace : (partition char)
@@ -158,23 +167,31 @@ int Resolver::IncludeTranslateRequest (Server *s, std::string &include)
   bool xlate = false;
 
   // This is not the most efficient
-  int fd_dir = open (REPO_DIR, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
-  if (fd_dir >= 0)
-    {
-      auto cmi = GetCMIName (include);
-      struct stat statbuf;
-      if (fstatat (fd_dir, cmi.c_str (), &statbuf, 0) == 0
-	  && S_ISREG (statbuf.st_mode))
-	{
-	  // Sadly can't easily check if this proces has read access,
-	  // except by trying to open it.
-	  s->PathnameResponse (cmi);
-	  xlate = true;
-	}
-      close (fd_dir);
-    }
+  auto cmi = GetCMIName (include);
+  struct stat statbuf;
 
-  if (!xlate)
+#if HAVE_FSTATAT
+  int fd_dir = open (REPO_DIR, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+  if (fd_dir >= 0
+      && fstatat (fd_dir, cmi.c_str (), &statbuf, 0) == 0
+      && S_ISREG (statbuf.st_mode))
+    // Sadly can't easily check if this proces has read access,
+    // except by trying to open it.
+    xlate = true;
+  if (fd_dir >= 0)
+    close (fd_dir);
+#else
+  std::string append = REPO_DIR;
+  append.push_back (DIR_SEPARATOR);
+  append.append (cmi);
+  if (stat (append.c_str (), &statbuf) == 0
+      || S_ISREG (statbuf.st_mode))
+    xlate = true;
+#endif
+
+  if (xlate)
+    s->PathnameResponse (cmi);
+  else
     s->BoolResponse (false);
 
   return 0;

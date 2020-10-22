@@ -1,5 +1,15 @@
 2020-10-22  Nathan Sidwell  <nathan@acm.org>
 
+	libcody/  9e71a7c Avoid fstatat when unavailable
+	gcc/
+	* configure.ac: Check for fstatat & O_CLOEXEC.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+	gcc/cp/
+	* mapper-resolver.cc: Include config.h, system.h.  Cope with lack
+	of fstatat.
+	* module.cc: Workaround lack of O_CLOEXEC.
+
 	Block-scope structures, like wow, why worked so far?
 	gcc/cp/
 	* module.cc (trees_{in,out}::decl_value): Stream local struct
