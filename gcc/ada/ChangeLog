@@ -1,3 +1,608 @@
+2020-10-22  Martin Liska  <mliska@suse.cz>
+
+	PR c/94722
+	* gcc-interface/utils.c (handle_no_stack_protect_attribute):
+	New.
+	(handle_stack_protect_attribute): Add error message for a
+	no_stack_protector function.
+
+2020-10-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <lynxos178>: Rely on
+	Aux_Long_Float for all real types.
+
+2020-10-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS): Use Long Float-based
+	variant of Aux_Short_Float and Aux_Float on vxworks targets.
+	* libgnat/a-nashfl__wraplf.ads: New.
+	* libgnat/a-nuaufl__wraplf.ads: New.
+
+2020-10-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <sparc*-sun-solaris>:
+	Use wraplf version of a-nallfl.
+
+2020-10-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS): Use
+	a-nallfl__wraplf.ads on aarch64-* and ppc*-linux-gnu targets.
+	* libgnat/a-nallfl__wraplf.ads: New.
+
+2020-10-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc-interface/trans.c: Include tree-nested.h
+	(walk_nesting_tree): Update for new nested function info.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add a-llltio, a-lllwti,
+	a-lllzti and remove a-timoau, a-wtmoau and a-ztmoau.
+	(GNATRTL_128BIT_PAIRS): Add a-tiinio.adb, a-timoio.adb, a-wtinio.adb,
+	a-wtmoio.adb, a-ztinio.adb and a-ztmoio.adb.
+	* impunit.adb (Non_Imp_File_Names_95): Add a-llltio, a-lllwti and
+	a-lllzti.
+	* krunch.ads: Document trick for Ada.Long_Long_Long_Integer_*_IO.
+	* krunch.adb (Krunch): Add trick for Ada.Long_Long_Long_Integer_*_IO.
+	* libgnat/a-llltio.ads: Instantiate Ada.Text_IO.Integer_IO.
+	* libgnat/a-lllwti.ads: Instantiate Ada.Wide_Text_IO.Integer_IO.
+	* libgnat/a-lllzti.ads: Instantiate Ada.Wide_Wide_Text_IO.Integer_IO.
+	* libgnat/a-tigeau.ads (Load_Integer): New procedure.
+	* libgnat/a-tigeau.adb (Load_Integer): Likewise.
+	* libgnat/a-tiinau.ads, libgnat/a-tiinau.adb: Change to generic
+	package.
+	* libgnat/a-tiinio.adb: Instantiate it.
+	* libgnat/a-tiinio__128.adb: Likewise.
+	* libgnat/a-timoau.ads, libgnat/a-timoau.adb: Change to generic
+	package.
+	* libgnat/a-timoio.adb: Instantiate it.
+	* libgnat/a-timoio__128.adb: Likewise.
+	* libgnat/a-wtgeau.ads (Load_Integer): New procedure.
+	* libgnat/a-wtgeau.adb (Load_Integer): Likewise.
+	* libgnat/a-wtinau.ads, libgnat/a-wtinau.adb: Change to generic
+	package.
+	* libgnat/a-wtinio.adb: Instantiate it.
+	* libgnat/a-wtinio__128.adb: Likewise.
+	* libgnat/a-wtmoau.ads, libgnat/a-wtmoau.adb: Change to generic
+	package.
+	* libgnat/a-wtmoio.adb: Instantiate it.
+	* libgnat/a-wtmoio__128.adb: Likewise.
+	* libgnat/a-ztgeau.ads (Load_Integer): New procedure.
+	* libgnat/a-ztgeau.adb (Load_Integer): Likewise.
+	* libgnat/a-ztinau.ads, libgnat/a-ztinau.adb: Change to generic
+	package.
+	* libgnat/a-ztinio.adb: Instantiate it.
+	* libgnat/a-ztinio__128.adb: Likewise.
+	* libgnat/a-ztmoau.ads, libgnat/a-ztmoau.adb: Change to generic
+	package.
+	* libgnat/a-ztmoio.adb: Instantiate it.
+	* libgnat/a-ztmoio__128.adb: Likewise.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Freeze_Subprogram_Body): Do not move the freeze
+	node of the package body enclosing the instance when its parent
+	is in the same declarative part as the freeze node of the parent.
+
+2020-10-21  Steve Baird  <baird@adacore.com>
+
+	* exp_ch6.adb (Insert_Post_Call_Actions): When a function's
+	result type requires finalization and we decide to make copy of
+	a call to the function and subsequently refer only to the copy,
+	then don't forget to finalize the original function result
+	object.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-widint,
+	s-widthi, s-widuns, s-widuns.
+	(GNATRTL_128BIT_OBJS): Add s-imglllb, s-imgllli, s-imglllu, s-imglllw,
+	s-valllli, s-vallllu, s-widllli, s-widlllu.
+	* exp_imgv.adb (Expand_Image_Attribute): Deal with 128-bit types.
+	(Expand_Value_Attribute): Likewise.
+	(Expand_Width_Attribute): Likewise.
+	* exp_put_image.adb (Build_Elementary_Put_Image_Call): Likewise.
+	* krunch.adb (Krunch): Deal with s-img, s-val and s-wid prefixes.
+	* rtsfind.ads (RTU_Id): Add System_Img_LLLI, System_Img_LLLU,
+	System_Val_LLLI, System_Val_LLL, System_Wid_Int, System_Wid_LLLI,
+	System_Wid_LLLU, System_Wid_Uns).
+	(RE_Id): Add RE_Image_Long_Long_Long_Integer,
+	RE_Image_Long_Long_Long_Unsigned,
+	RE_Put_Image_Long_Long_Long_Integer,
+	RE_Put_Image_Long_Long_Long_Unsigned,
+	RE_Long_Long_Long_Unsigned, RE_Value_Long_Long_Long_Integer,
+	RE_Value_Long_Long_Long_Unsigned, RE_Width_Integer,
+	RE_Width_Long_Long_Long_Integer, RE_Width_Long_Long_Long_Unsigned,
+	RE_Width_Unsigned, RE_Image_Long_Long_Long_Integer,
+	RE_Image_Long_Long_Long_Unsigned, RE_Put_Image_Long_Long_Long_Integer,
+	RE_Put_Image_Long_Long_Long_Unsigned, RE_Long_Long_Long_Unsigned,
+	RE_Value_Long_Long_Long_Integer, RE_Value_Long_Long_Long_Unsigned,
+	RE_Width_Integer, RE_Width_Long_Long_Long_Integer,
+	RE_Width_Long_Long_Long_Unsigned, RE_Width_Unsigned.
+	* libgnat/s-imageb.ads, libgnat/s-imageb.adb: New generic
+	package.
+	* libgnat/s-imagei.ads, libgnat/s-imagei.adb: Likewise.
+	* libgnat/s-imageu.ads, libgnat/s-imageu.adb: Likewise.
+	* libgnat/s-imagew.ads, libgnat/s-imagew.adb: Likewise.
+	* libgnat/s-imgbiu.ads: Instantiate System.Image_B.
+	* libgnat/s-imgbiu.adb: Add pragma No_Body.
+	* libgnat/s-imgint.ads: Instantiate System.Image_I.
+	* libgnat/s-imgint.adb: Add pragma No_Body.
+	* libgnat/s-imgllb.ads: Instantiate System.Image_B.
+	* libgnat/s-imgllb.adb: Add pragma No_Body0
+	* libgnat/s-imglli.ads: Instantiate System.Image_I.
+	* libgnat/s-imglli.adb: Add pragma No_Body.
+	* libgnat/s-imglllb.ads: Instantiate System.Image_B.
+	* libgnat/s-imgllli.ads: Instantiate System.Image_I.
+	* libgnat/s-imglllu.ads: Instantiate System.Image_U.
+	* libgnat/s-imglllw.ads: Instantiate System.Image_W.
+	* libgnat/s-imgllu.ads: Instantiate System.Image_U.
+	* libgnat/s-imgllu.adb: Add pragma No_Body.
+	* libgnat/s-imgllw.ads: Instantiate System.Image_W.
+	* libgnat/s-imgllw.adb: Add pragma No_Body.
+	* libgnat/s-imgrea.adb: Remove clauses for System.Unsigned_Types.
+	* libgnat/s-imguns.ads: Instantiate System.Image_U.
+	* libgnat/s-imguns.adb: Add pragma No_Body.
+	* libgnat/s-imgwiu.ads: Instantiate System.Image_W.
+	* libgnat/s-imgwiu.adb: Add pragma No_Body.
+	* libgnat/s-putima.ads (Long_Long_Long_Unsigned): New subtype.
+	(Put_Image_Long_Long_Long_Unsigned): New procedure.
+	* libgnat/s-putima.adb (Small): Rename to Integer_Images.
+	(Large): Rename to LL_Integer_Images.
+	(LLL_Integer_Images): New instantiation.
+	(Put_Image_Long_Long_Long_Integer): New renaming.
+	(Put_Image_Long_Long_Long_Unsigned): Likewise.
+	* libgnat/s-valint.ads: Instantiate System.Value_I.
+	* libgnat/s-valint.adb: Add pragma No_Body.
+	* libgnat/s-vallli.ads: Instantiate System.Value_I.
+	* libgnat/s-vallli.adb: Add pragma No_Body.
+	* libgnat/s-valllli.ads: Instantiate System.Value_I.
+	* libgnat/s-vallllu.ads: Instantiate System.Value_U.
+	* libgnat/s-valllu.ads: Instantiate System.Value_U.
+	* libgnat/s-valllu.adb: Add pragma No_Body.
+	* libgnat/s-valuei.ads, libgnat/s-valuei.adb: New generic
+	package.
+	* libgnat/s-valueu.ads, libgnat/s-valueu.adb: Likewise.
+	* libgnat/s-valuns.ads: Instantiate System.Value_U.
+	* libgnat/s-valuns.adb: Add pragma No_Body.
+	* libgnat/s-widint.ads: Instantiate System.Width_I.
+	* libgnat/s-widlli.ads: Likewise.
+	* libgnat/s-widlli.adb: Add pragma No_Body.
+	* libgnat/s-widllli.ads: Instantiate System.Width_I.
+	* libgnat/s-widlllu.ads: Instantiate System.Width_U.
+	* libgnat/s-widllu.ads: Likewise.
+	* libgnat/s-widllu.adb: Add pragma No_Body.
+	* libgnat/s-widthi.ads, libgnat/s-widthi.adb: New generic
+	package.
+	* libgnat/s-widthu.ads, libgnat/s-widthu.adb: Likewise.
+	* libgnat/s-widuns.ads: Instantiate System.Width_U.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* set_targ.adb (DTN): Fix oversight.
+	(Read_Target_Dependent_Values): Do not error out on missing
+	Long_Long_Long_Size entry and reuse Long_Long_Size for it.
+
+2020-10-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Gen_Loop): Analyze copy of the expression in the
+	scope of the implicit loop with name of the index parameter
+	visible.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_128BIT_PAIRS): New variable.
+	(GNATRTL_128BIT_OBJS): Likewise.
+	(Windows): In 64-bit mode, add the former to LIBGNAT_TARGET_PAIRS and
+	the latter to EXTRA_GNATRTL_NONTASKING_OBJS.
+	(x86_64/linux): Likewise, but unconditionally.
+	(GNATRTL_NONTASKING_OBJS): Add s-aridou, s-exponn, s-expont,
+	s-exponu.
+	* ada_get_targ.adb (Get_Long_Long_Long_Size): New function.
+	* checks.adb (Apply_Arithmetic_Overflow_Strict): Use Integer_Type_For
+	to find an appropriate integer type; if it does not exist and the max
+	integer size is larger than 64, use the 128-bit arithmetic routines.
+	* cstand.adb (Create_Standard): Build Standard_Long_Long_Long_Integer
+	and its base type.  Use it for Etype of Any_Integer, Any_Modular and
+	Any_Numeric.  Use its size for Build Standard_Long_Long_Long_Unsigned
+	and Universal_Integer.
+	(Print_Standard): Print Long_Long_Long_Integer.
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Mod>: Adjust
+	comment.
+	* exp_ch3.adb (Simple_Init_Initialize_Scalars_Type): Deal with 128-bit
+	types.
+	* exp_ch4.adb (Expand_Array_Comparison): Likewise.
+	(Expand_N_Op_Expon): Likewise.
+	(Narrow_Large_Operation): Likewise.
+	* exp_dbug.adb (Bounds_Match_Size): Handle 128-bit size.
+	* exp_fixd.adb (Build_Double_Divide_Code): Use RE_Double_Divide64.
+	* exp_intr.adb (Expand_Binary_Operator_Call): Handle 128-bit size.
+	* exp_pakd.ads (E_Array): Extend range to 127.
+	(Bits_Id): Fill in up to 127.
+	(Get_Id): Likewise.
+	(GetU_Id): Likewise.
+	(Set_Id): Likewise.
+	(SetU_Id): Likewise.
+	* exp_pakd.adb (Revert_Storage_Order): Handle 128-bit size.
+	* exp_util.adb (Integer_Type_For): Likewise.
+	(Small_Integer_Type_For): Likewise.
+	* fname.adb (Is_Predefined_File_Name): Do not return False for names
+	larger than 12 characters if they start with "s-".
+	* freeze.adb (Adjust_Esize_For_Alignment): Change the maximum value
+	to System_Max_Integer_Size.
+	(Check_Suspicious_Modulus): Adjust comment.
+	(Freeze_Entity): Likewise.
+	* get_targ.ads (Get_Long_Long_Long_Size): New function.
+	* get_targ.adb (Get_Long_Long_Long_Size): Likewise.
+	(Width_From_Size): Deal with 128-bit size.
+	* gnat1drv.adb (Adjust_Global_Switches): Deal with 128-bit types.
+	* impunit.adb (Get_Kind_Of_File): Bump buffer size.  Accept files with
+	13 characters if they start with 's'.  Compare slice of Buffer.
+	(Not_Impl_Defined_Unit): Accept files with 13 characters if they start
+	with 's'.
+	* krunch.ads: Document length for 128-bit support units.
+	* krunch.adb (Krunch): Set length to 9 for 128-bit support units.
+	* layout.adb (Layout_Type): Use System_Max_Integer_Size as alignment
+	limit.
+	* rtsfind.ads (RTU_Id): Add System_Arith_128,
+	System_Compare_Array_Signed_128, System_Compare_Array_Unsigned_128,
+	System_Exn_LLLI, System_Exp_LLLU, System_Pack_[65..127].
+	(RE_Id): Add RE_Integer_128, RE_Unsigned_128, RE_Add_With_Ovflo_Check128
+	RE_Multiply_With_Ovflo_Check128, RE_Subtract_With_Ovflo_Check128,
+	RE_Bswap_128, RE_Compare_Array_S128, RE_Compare_Array_U128,
+	RE_Exn_Long_Long_Long_Integer, RE_Exp_Long_Long_Long_Integer,
+	RE_Exp_Long_Long_Long_Unsigned, RE_Bits_[65-127], RE_Get_[65-127],
+	RE_Set_[65-127], RE_IS_Is16, RE_IS_Iu16, RE_Integer_128 and
+	RE_Unsigned_128.  Rename RE_Add_With_Ovflo_Check, RE_Double_Divide,
+	RE_Multiply_With_Ovflo_Check, RE_Scaled_Divide and
+	RE_Subtract_With_Ovflo_Check.  Remove RE_IS_Iz1, RE_IS_Iz2, RE_IS_Iz4,
+	RE_IS_Iz8, RE_Long_Unsigned, RE_Short_Unsigned, RE_Short_Short_Unsigned
+	(RE_Unit_Table): Likewise.
+	* sem_aux.adb (Corresponding_Unsigned_Type): Deal with a size equal to
+	that of Standard_Long_Long_Long_Integer.
+	(First_Subtype): Deal with Standard_Long_Long_Long_Integer'Base.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause) <Attribute_Size>:
+	Check the size against powers of 2 and System_Max_Integer_Size for
+	objects as well.
+	(Set_Enum_Esize): Deal with 128-bit bounds.
+	* sem_ch3.adb (Set_Modular_Size): Handle 128-bit size.
+	(Modular_Type_Declaration): Deal with 128-bit types.
+	(Signed_Integer_Type_Declaration): Support derivation from
+	Standard_Long_Long_Long_Integer.
+	* sem_ch4.adb (Analyze_Mod): Handle 128-bit modulus.
+	* sem_intr.adb: Add with and use clauses for Ttypes.
+	(Check_Shift): Handle 128-bit size and modulus.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Initialize_Scalars>: Deal
+	with Signed_128 and Unsigned_128.
+	(Analyze_Integer_Value): Handle 128-bit size.
+	* sem_util.ads (Addressable): Adjust description.
+	* sem_util.adb (Addressable): Return true for 128 if the system
+	supports 128 bits.
+	(Set_Invalid_Binder_Values): Deal with Signed_128 and Unsigned_128.
+	* set_targ.ads (Long_Long_Long_Size): New variable.
+	* set_targ.adb (S_Long_Long_Long_Size): New constant.
+	(DTN): Add entry for S_Long_Long_Long_Size.
+	(DTV): Add entry for Long_Long_Long_Size.
+	(Set_Targ): Set Long_Long_Long_Size.
+	* snames.ads-tmpl (Name_Max_Integer_Size): New attribute name.
+	(Name_Signed_128): New scalar name.
+	(Name_Unsigned_128): Likewise.
+	(Scalar_Id): Adjust.
+	(Integer_Scalar_Id): Likewise.
+	(Attribute_Id): Add Attribute_Max_Integer_Size.
+	* stand.ads (Standard_Entity_Type): Add S_Long_Long_Long_Integer.
+	(Standard_Long_Long_Long_Integer): New renaming.
+	(Universal_Integer): Adjust description.
+	(Standard_Long_Long_Long_Unsigned): New variable.
+	* switch-c.adb (Scan_Front_End_Switches): Deal with -gnate128.
+	* ttypes.ads (Standard_Long_Long_Long_Integer_Size): New variable.
+	(Standard_Long_Long_Long_Integer_Width): Likewise.
+	(System_Max_Integer_Size): Turn into variable.
+	(System_Max_Binary_Modulus_Power): Likewise.
+	* uintp.ads (Uint_127): New constant.
+	* uintp.adb (UI_Power_2): Extednd to 128.
+	(UI_Power_10): Likewise.
+	(UI_Expon): Deal with exponent up to 128 specially.
+	* usage.adb (Write_Switch_Char): Print -gnate128 switch.
+	* libgnat/a-tifiio.adb (Put_Scaled): Call Scaled_Divide64.
+	* libgnat/interfac__2020.ads (Integer_128): New integer type.
+	(Unsigned_128): New modular type.
+	(Shift_Left, Shift_Right, Shift_Right_Arithmetic, Rotate_Left,
+	Rotate_Right): New intrinsic functions operating on it.
+	* libgnat/s-aridou.ads, libgnat/s-aridou.adb: New generic
+	package.
+	* libgnat/s-arit64.ads, libgnat/s-arit64.adb: Instantiate
+	System.Arithmetic_Double.
+	* libgnat/s-arit128.ads, libgnat/s-arit128.adb: Likewise.
+	* libgnat/s-bytswa.ads: Add with clause for Interfaces, use subtypes
+	of unsigned types defined in Interfaces and add Bswap_128.
+	* libgnat/s-casi128.ads, libgnat/s-casi128.adb: New package.
+	* libgnat/s-caun128.ads, libgnat/s-caun128.adb: Likewise.
+	* libgnat/s-exnint.ads: Instantiate System.Exponn.
+	* libgnat/s-exnint.adb: Add pragma No_Body.
+	* libgnat/s-exnlli.ads: Instantiate System.Exponn.
+	* libgnat/s-exnlli.adb: Add pragma No_Body.
+	* libgnat/s-exnllli.ads: Instantiate System.Exponn.
+	* libgnat/s-expint.ads: Likewise.
+	* libgnat/s-expint.adb: Add pragma No_Body.
+	* libgnat/s-explli.ads: Instantiate System.Exponn.
+	* libgnat/s-explli.adb: Add pragma No_Body.
+	* libgnat/s-expllli.ads: Instantiate System.Exponn.
+	* libgnat/s-explllu.ads: Instantiate System.Exponu.
+	* libgnat/s-expllu.ads: Likewise.
+	* libgnat/s-expllu.adb: Add pragma No_Body.
+	* libgnat/s-exponn.ads, libgnat/s-exponn.adb: New generic
+	function.
+	* libgnat/s-expont.ads, libgnat/s-expont.adb: Likewise.
+	* libgnat/s-exponu.ads, libgnat/s-exponu.adb: Likewise.
+	* libgnat/s-expuns.ads, libgnat/s-expuns.adb: Likewise.
+	* libgnat/s-pack65.ads, libgnat/s-pack65.adb: New package.
+	* libgnat/s-pack66.ads, libgnat/s-pack66.adb: New package.
+	* libgnat/s-pack67.ads, libgnat/s-pack67.adb: New package.
+	* libgnat/s-pack68.ads, libgnat/s-pack68.adb: New package.
+	* libgnat/s-pack69.ads, libgnat/s-pack69.adb: New package.
+	* libgnat/s-pack70.ads, libgnat/s-pack70.adb: New package.
+	* libgnat/s-pack71.ads, libgnat/s-pack71.adb: New package.
+	* libgnat/s-pack72.ads, libgnat/s-pack72.adb: New package.
+	* libgnat/s-pack73.ads, libgnat/s-pack73.adb: New package.
+	* libgnat/s-pack74.ads, libgnat/s-pack74.adb: New package.
+	* libgnat/s-pack75.ads, libgnat/s-pack75.adb: New package.
+	* libgnat/s-pack76.ads, libgnat/s-pack76.adb: New package.
+	* libgnat/s-pack77.ads, libgnat/s-pack77.adb: New package.
+	* libgnat/s-pack78.ads, libgnat/s-pack78.adb: New package.
+	* libgnat/s-pack79.ads, libgnat/s-pack79.adb: New package.
+	* libgnat/s-pack80.ads, libgnat/s-pack80.adb: New package.
+	* libgnat/s-pack81.ads, libgnat/s-pack81.adb: New package.
+	* libgnat/s-pack82.ads, libgnat/s-pack82.adb: New package.
+	* libgnat/s-pack83.ads, libgnat/s-pack83.adb: New package.
+	* libgnat/s-pack84.ads, libgnat/s-pack84.adb: New package.
+	* libgnat/s-pack85.ads, libgnat/s-pack85.adb: New package.
+	* libgnat/s-pack86.ads, libgnat/s-pack86.adb: New package.
+	* libgnat/s-pack87.ads, libgnat/s-pack87.adb: New package.
+	* libgnat/s-pack88.ads, libgnat/s-pack88.adb: New package.
+	* libgnat/s-pack89.ads, libgnat/s-pack89.adb: New package.
+	* libgnat/s-pack90.ads, libgnat/s-pack90.adb: New package.
+	* libgnat/s-pack91.ads, libgnat/s-pack91.adb: New package.
+	* libgnat/s-pack92.ads, libgnat/s-pack92.adb: New package.
+	* libgnat/s-pack93.ads, libgnat/s-pack93.adb: New package.
+	* libgnat/s-pack94.ads, libgnat/s-pack94.adb: New package.
+	* libgnat/s-pack95.ads, libgnat/s-pack95.adb: New package.
+	* libgnat/s-pack96.ads, libgnat/s-pack96.adb: New package.
+	* libgnat/s-pack97.ads, libgnat/s-pack97.adb: New package.
+	* libgnat/s-pack98.ads, libgnat/s-pack98.adb: New package.
+	* libgnat/s-pack99.ads, libgnat/s-pack99.adb: New package.
+	* libgnat/s-pack100.ads, libgnat/s-pack100.adb: New package.
+	* libgnat/s-pack101.ads, libgnat/s-pack101.adb: New package.
+	* libgnat/s-pack102.ads, libgnat/s-pack102.adb: New package.
+	* libgnat/s-pack103.ads, libgnat/s-pack103.adb: New package.
+	* libgnat/s-pack104.ads, libgnat/s-pack104.adb: New package.
+	* libgnat/s-pack105.ads, libgnat/s-pack105.adb: New package.
+	* libgnat/s-pack106.ads, libgnat/s-pack106.adb: New package.
+	* libgnat/s-pack107.ads, libgnat/s-pack107.adb: New package.
+	* libgnat/s-pack108.ads, libgnat/s-pack108.adb: New package.
+	* libgnat/s-pack109.ads, libgnat/s-pack109.adb: New package.
+	* libgnat/s-pack110.ads, libgnat/s-pack110.adb: New package.
+	* libgnat/s-pack111.ads, libgnat/s-pack111.adb: New package.
+	* libgnat/s-pack112.ads, libgnat/s-pack112.adb: New package.
+	* libgnat/s-pack113.ads, libgnat/s-pack113.adb: New package.
+	* libgnat/s-pack114.ads, libgnat/s-pack114.adb: New package.
+	* libgnat/s-pack115.ads, libgnat/s-pack115.adb: New package.
+	* libgnat/s-pack116.ads, libgnat/s-pack116.adb: New package.
+	* libgnat/s-pack117.ads, libgnat/s-pack117.adb: New package.
+	* libgnat/s-pack118.ads, libgnat/s-pack118.adb: New package.
+	* libgnat/s-pack119.ads, libgnat/s-pack119.adb: New package.
+	* libgnat/s-pack120.ads, libgnat/s-pack120.adb: New package.
+	* libgnat/s-pack121.ads, libgnat/s-pack121.adb: New package.
+	* libgnat/s-pack122.ads, libgnat/s-pack122.adb: New package.
+	* libgnat/s-pack123.ads, libgnat/s-pack123.adb: New package.
+	* libgnat/s-pack124.ads, libgnat/s-pack124.adb: New package.
+	* libgnat/s-pack125.ads, libgnat/s-pack125.adb: New package.
+	* libgnat/s-pack126.ads, libgnat/s-pack126.adb: New package.
+	* libgnat/s-pack127.ads, libgnat/s-pack127.adb: New package.
+	* libgnat/s-rannum.ads (Random): New function returning 128-bit.
+	* libgnat/s-rannum.adb (Random): Implement it.
+	* libgnat/s-scaval.ads: Add with clause for Interfaces, use subtypes
+	of unsigned types defined in Interfaces.
+	* libgnat/s-scaval.adb: Add use clause for Interfaces.
+	* libgnat/s-scaval__128.ads, libgnat/s-scaval__128.adb: New
+	package.
+	* libgnat/s-unstyp.ads (Long_Long_Long_Unsigned): New modular type.
+	(Shift_Left, Shift_Right, Shift_Right_Arithmetic, Rotate_Left,
+	Rotate_Right): New intrinsic functions operating on it.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Add
+	Long_Long_Long_Integer to the list of predefined integer types.
+	* gnat_rm.texi: Regenerate.
+
+2020-10-21  Yannick Moy  <moy@adacore.com>
+
+	* ada_get_targ.adb (Width_From_Size): Add case for 128 bits.
+	Reorder declarations in the same order as get_targ.adb to
+	facilitate diffs.
+
+2020-10-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Expand_N_Aggregate): Refactor repeated calls to
+	Etype (N).
+	(Build_Array_Aggr_Code): Fix whitespace.
+
+2020-10-21  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* adaint.c (__gnat_file_time): Use regular arithmetic instead of
+	__builtin_*_overflow routines if GCC version 4 or less and
+	compiler is g++.
+
+2020-10-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Use Choice_List, which
+	internally calls either Choice or Discrete_Choices, depending on
+	the context.
+
+2020-10-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Use
+	existing defining identifier for index parameter.
+
+2020-10-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb (Build_Task_Activation_Call): Do not generate a
+	call to activate tasks if we are within the scope of a protected
+	type and pragma Detect_Blocking is active.
+
+2020-10-21  Liaiss Merzougue  <merzougue@adacore.com>
+
+	* libgnat/s-carsi8.adb (Compare_Array_S8): Add pragma Assert to
+	avoid warning concerning Left_Len and RighLen value regarding
+	Bytes_Compared_As_Words.
+	* libgnat/s-carun8.adb (Compare_Array_U8): Likewise.
+	* libgnat/s-geveop.adb (Binary_Operation, Unary_Operation): Add
+	pragma Assert concerning divide by 0 warning.
+	* libgnat/s-imgcha.adb (Image_Character): Code update to prevent
+	constant operation warning.
+	(Image_Character): Add pragma Assert concerning the unchecked
+	String size.
+	* libgnat/s-imgdec.adb
+	(Round): Upate loop code to prevent warning concerning
+	Digs'First access.
+	(Round): Add pragma assert.
+	(Set): Add pragma Assert for the unchecked string size.
+	(Set_Digits): Add pragma Assert for the input range.
+	(Set_Decimal_Digits): Add pragma Assert.
+	(Set_Blank_And_Sign): Add pragma Assert for the input range.
+	* libgnat/s-arit64.adb (DoubleDivide): Add pragma Assert
+	concerning Du /= 0.
+	(Multiply_With_Ovflo_Check): Add pragma Annotate to avoid
+	warning concerning unsigned -> signed conversion.
+	* libgnat/s-imguns.adb (Set_Image_Unsigned): Add pragma Assert
+	to prevent overflow check warning.  Add pragma Assert for
+	controlling S'First = 1.
+	* libgnat/s-imgrea.adb (Image_Floating_Point, Set, Set_Digs,
+	Set_Special_Fill, Convert_Integer): Add pragma Annotate to
+	prevent overflow check warning.
+	(Set_Image_Real): Add pragma Annotate to avoid dead code warning
+	on float check. Add pragma Assert to prevent overflow check
+	warning.
+	* libgnat/s-imgwiu.adb (Set_Digits, Set_Image_Width_Unsigned):
+	Add pragma assert to prevent overflow check warning.
+	* libgnat/s-imgllu.adb (Set_Image_Long_Long_Unsigned): Add
+	pragma assert to prevent overflow check warning.
+	* libgnat/s-imgint.adb (Set_Digits): Add Assert for input
+	constraint and to prevent overflow check warning, create
+	Non_Positive subtype, and change the T parameter as Non_Positive
+	instead Integer.
+	(Set_Image_Integer): Add pragma assert to prevent overflow check
+	warning.
+	* libgnat/s-imglli.adb (Set_Digits): Add Assert for input
+	constraint and to prevent overflow check warning, create
+	Non_Positive subtype, and change the T parameter as Non_Positive
+	instead Integer.
+	(Set_Image_Long_Long_Integer): Add pragma assert to prevent
+	overflow check warning.
+	* libgnat/s-fatgen.adb (Decompose, Pred, Succ): Add pragma
+	Annotate to prevent dead code due to invalid float check.
+	* libgnat/s-imenne.adb (Image_Enumeration_8,
+	Image_Enumeration_16, Image_Enumeration_32): Add pragma Assert
+	to prevent overflow check warning.  Add Names_Index subtype for
+	restricting Index_table content.
+
+2020-10-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Insert_Post_Call_Actions): Test for
+	N_Explicit_Dereference as part of the existing test for function
+	calls.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Strict_Alignment): Do not set the flag for
+	a bit-packed array type, even if it is a by-reference type.
+
+2020-10-21  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* adaint.c (__gnat_file_time): New routine.
+	(__gnat_copy_attribs): Copy timestamps in nanoseconds.
+	* libgnat/a-direct.adb (C_Modification_Time): Bind to
+	__gnat_file_time.
+	(Modification_Time): Call to C_Modification_Time.
+
+2020-10-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association):
+	Expression's copy and now has the same parent as the original
+	expression.
+	(Resolve_Array_Aggregate): Add ??? comment about a still
+	existing minor issue that led to discovery of the above crash.
+
+2020-10-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch12.adb (Install_Parents_Of_Generic_Context): Simplify
+	functionality; collect and install parents of generic child
+	package.
+	(Remove_Parents_Of_Generic_Context): Code cleanup.
+	(Instantiate_Package_Body): Hide parents of generic context from
+	visibility before installing the parent instance; restore their
+	visibility when the instance is analyzed
+
+2020-10-21  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-osinte__lynxos178e.ads: Remove -mthreads switch.
+
+2020-10-21  Patrick Bernardi  <bernardi@adacore.com>
+
+	* env.c (__gnat_setenv): call setenv for VxWorks 7 kernel mode.
+	(__gnat_environ): envGet takes an int instead of a NULL pointer.
+	(__gnat_unsetenv): call unsetenv for VxWorks 7 kernel mode.
+	(__gnat_clearenv): use __gnat_unsetenv to clear environment
+	variables.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Freeze_Subprogram_Body): Call
+	Package_Freeze_Node to retrieve the freeze node for the
+	enclosing body of the generic.
+
+2020-10-21  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Modify calls to
+	Add_Extra_Actual to use Extra_Accessibility instead of
+	Get_Accessibility for the EF parameter.
+
+2020-10-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Whitespace cleanup.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Make minimum
+	accessibility a constant object.
+
+2020-10-21  Patrick Bernardi  <bernardi@adacore.com>
+
+	* env.c (__gnat_environ): For VxWorks kernel simply return the
+	result of the envGet call. Do this for VxWorks 6 and 7 as they
+	both support the same API.
+
+2020-10-21  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer): Disable warnings on referenced
+	entity.
+
+2020-10-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads, sem_ch3.adb, sem_util.adb: Fix comments.
+
+2020-10-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Type): Propagate convention of
+	class-wide parent.
+
+2020-10-21  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cofove.adb (Copy): Add explanation in case of
+	Capacity_Error.
+	(Insert_Space): Raise Capacity_Error if the new length is
+	greater than the capacity.
+	(Reserve_Capacity): Raise Capacity_Error instead of
+	Constraint_Error.
+
 2020-10-20  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_ch3.adb (Constrain_Decimal, Constrain_Enumeration,

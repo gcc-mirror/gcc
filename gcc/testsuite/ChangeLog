@@ -1,3 +1,151 @@
+2020-10-22  Martin Liska  <mliska@suse.cz>
+
+	PR c/94722
+	* g++.dg/no-stack-protector-attr-2.C: New test.
+	* g++.dg/no-stack-protector-attr-3.C: New test.
+	* g++.dg/no-stack-protector-attr.C: New test.
+
+2020-10-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr97249-1.c: New test.
+
+2020-10-22  Dennis Zhang  <dennis.zh@live.com>
+
+	* gcc.target/arm/simd/mve-vminmax_1.c: New test.
+
+2020-10-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97520.c: New.
+
+2020-10-22  Dennis Zhang  <dennis.zh@live.com>
+
+	* gcc.target/arm/simd/mve-vmul_1.c: New test.
+
+2020-10-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97515
+	* gcc.dg/pr97515.c: New file.
+
+2020-10-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-extract-float.p9.c: rldicl and
+	subfic only for target LE.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p9.c: xori only
+	for target LE.  Adjust mfvsrd and add mfvsrld for BE.
+	* gcc.target/powerpc/fold-vec-extract-short.p9.c: vextuhrx for LE.
+	vextuhlx for BE.
+	* gcc.target/powerpc/p9-lxvx-stxvx-1.c: Remove target.
+	* gcc.target/powerpc/p9-lxvx-stxvx-2.c: Remove target.
+	* gcc.target/powerpc/p9-lxvx-stxvx-3.c: Remove target. Require
+	float128
+
+2020-10-21  Martin Liska  <mliska@suse.cz>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	PR target/97360
+	* gcc.target/powerpc/pr97360.c: New test.
+
+2020-10-21  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/97445
+	* gcc.dg/ipa/inlinehint-5.c: New test.
+
+2020-10-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/p9-extract-1.c: Require lp64.
+	* gcc.target/powerpc/p9-extract-2.c: Require lp64.
+	* gcc.target/powerpc/p9-extract-3.c: Require lp64.
+	* gcc.target/powerpc/p9-permute.c: Remove target.
+	* gcc.target/powerpc/pr63335.c: Remove target.
+	* gcc.target/powerpc/pr87507.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-1.c: Require LE and P8.
+	* gcc.target/powerpc/swaps-p8-10.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-11.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-12.c: Require LE and P8.
+	* gcc.target/powerpc/swaps-p8-13.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-14.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-15.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-16.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-17.c: Require P8.
+	* gcc.target/powerpc/swaps-p8-18.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-19.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-2.c: Require LE and P8.
+	* gcc.target/powerpc/swaps-p8-20.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-21.c: Remove target. Require Altivec.
+	* gcc.target/powerpc/swaps-p8-22.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-23.c: Require LE and P8.
+	* gcc.target/powerpc/swaps-p8-24.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-25.c: Require LE and P8.
+	* gcc.target/powerpc/swaps-p8-26.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-27.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-28.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-29.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-3.c: Require LE and P8.
+	* gcc.target/powerpc/swaps-p8-30.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-31.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-32.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-33.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-34.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-35.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-36.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-37.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-38.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-39.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-4.c: Require LE and P8.
+	* gcc.target/powerpc/swaps-p8-40.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-41.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-42.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-43.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-44.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-45.c: Remove target.
+	* gcc.target/powerpc/swaps-p8-46.c: Require LE.
+	* gcc.target/powerpc/swaps-p8-5.c: Require LE and P8.
+	* gcc.target/powerpc/swaps-p8-6.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-7.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-8.c: Remove target. Require P8.
+	* gcc.target/powerpc/swaps-p8-9.c: Remove target. Require P8.
+	* gcc.target/powerpc/vec-cmp.c: Require LP64.
+	* gcc.target/powerpc/vec-cmpne.c: Remove target.
+	* gcc.target/powerpc/vec-mul.c: Remove target.
+	* gcc.target/powerpc/vec-set-char.c: Require LP64.
+	* gcc.target/powerpc/vec-set-int.c: Require LP64.
+	* gcc.target/powerpc/vec-set-short.c: Require LP64.
+	* gcc.target/powerpc/vec-xxpermdi.c: Remove target. Require VSX.
+	* gcc.target/powerpc/vsxcopy.c: Remove target. Require VSX.
+
+2020-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97500
+	* gfortran.dg/pr97500.f90: New testcase.
+
+2020-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/97506
+	* gcc.target/i386/pr97506.c: New test.
+
+2020-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97503
+	* gcc.dg/tree-ssa/pr97503.c: New test.
+
+2020-10-21  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/97414
+	* g++.dg/asan/pr97414.C: New test.
+
+2020-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/multfixed.adb: Update expected exception message.
+
+2020-10-21  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vstX_lane.c (CMT):
+	Adopt the same style used in the rest of the file.
+
+2020-10-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Walloca-1.c: Adjust for 32-bits.
+
 2020-10-22  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/arm/simd/mve-vminmax_1.c: New test.

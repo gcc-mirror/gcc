@@ -1,3 +1,41 @@
+2020-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h (shared_ptr(const weak_ptr&, nothrow_t)):
+	Add noexcept.
+	* include/bits/shared_ptr_base.h (_Sp_counted_base::_M_add_ref_lock):
+	Remove specializations and just call _M_add_ref_lock_nothrow.
+	(__shared_count, __shared_ptr): Use nullptr for null pointer
+	constants.
+	(__shared_count(const __weak_count&)): Use _M_add_ref_lock_nothrow
+	instead of _M_add_ref_lock.
+	(__shared_count(const __weak_count&, nothrow_t)): Add noexcept.
+	(__shared_ptr::operator bool()): Add noexcept.
+	(__shared_ptr(const __weak_ptr&, nothrow_t)): Add noexcept.
+
+2020-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97512
+	* include/bits/ranges_util.h (tuple_size<subrange>)
+	(tuple_element<I, cv subrange>): Move here from ...
+	* include/std/ranges: ... here.
+	* testsuite/std/ranges/subrange/97512.cc: New test.
+
+2020-10-21  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/pstl/algorithm_impl.h: Update file.
+	* include/pstl/execution_impl.h: Likewise.
+	* include/pstl/glue_algorithm_impl.h: Likewise.
+	* include/pstl/glue_memory_impl.h: Likewise.
+	* include/pstl/glue_numeric_impl.h: Likewise.
+	* include/pstl/memory_impl.h: Likewise.
+	* include/pstl/numeric_impl.h: Likewise.
+	* include/pstl/parallel_backend.h: Likewise.
+	* include/pstl/parallel_backend_serial.h: Likewise.
+	* include/pstl/parallel_backend_tbb.h: Likewise.
+	* include/pstl/parallel_backend_utils.h: Likewise.
+	* include/pstl/pstl_config.h: Likewise.
+	* include/pstl/unseq_backend_simd.h: Likewise.
+
 2020-10-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h

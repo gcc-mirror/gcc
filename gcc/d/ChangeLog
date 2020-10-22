@@ -1,3 +1,8 @@
+2020-10-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* decl.cc: Include tree-nested.h
+	(get_symbol_decl): Update for new nested function info.
+
 2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 70aabfb51

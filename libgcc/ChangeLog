@@ -1,3 +1,11 @@
+2020-10-21  Douglas Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc*-wrs-vxworks7*): New case.
+	* configure.ac: Handle powerpc*-*-vxworks7* as
+	powerpc*-*-linux* for ppc-fp_type.
+	* configure: Regenerate.
+
 2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* config/gthr-vxworks.h: Condition the ___GTHREADS_CXX0X
