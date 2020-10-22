@@ -1956,8 +1956,9 @@ exploded_graph::add_function_entry (function *fun)
     return NULL;
 
   exploded_node *enode = get_or_create_node (point, state, NULL);
-  /* We should never fail to add such a node.  */
-  gcc_assert (enode);
+  if (!enode)
+    return NULL;
+
   add_edge (m_origin, enode, NULL);
 
   m_functions_with_enodes.add (fun);
