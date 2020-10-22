@@ -921,7 +921,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Constructor.  */
   explicit cgraph_node (int uid)
     : symtab_node (SYMTAB_FUNCTION), callees (NULL), callers (NULL),
-      indirect_calls (NULL), origin (NULL), nested (NULL), next_nested (NULL),
+      indirect_calls (NULL),
       next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
       clone_of (NULL), call_site_hash (NULL), former_clone_of (NULL),
       simdclone (NULL), simd_clones (NULL), ipa_transforms_to_apply (vNULL),
@@ -1160,9 +1160,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Return the DECL_STRUCT_FUNCTION of the function.  */
   struct function *get_fun () const;
-
-  /* cgraph_node is no longer nested function; update cgraph accordingly.  */
-  void unnest (void);
 
   /* Bring cgraph node local.  */
   void make_local (void);
@@ -1436,13 +1433,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* List of edges representing indirect calls with a yet undetermined
      callee.  */
   cgraph_edge *indirect_calls;
-  /* For nested functions points to function the node is nested in.  */
-  cgraph_node *origin;
-  /* Points to first nested function, if any.  */
-  cgraph_node *nested;
-  /* Pointer to the next function with same origin, if any.  */
-  cgraph_node *next_nested;
-  /* Pointer to the next clone.  */
   cgraph_node *next_sibling_clone;
   cgraph_node *prev_sibling_clone;
   cgraph_node *clones;

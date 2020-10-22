@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "dumpfile.h"
 #include "c-ubsan.h"
+#include "tree-nested.h"
 
 /*  The gimplification pass converts the language-dependent trees
     (ld-trees) emitted by the parser into language-independent trees
@@ -572,7 +573,8 @@ c_genericize (tree fndecl)
 
   /* Dump all nested functions now.  */
   cgn = cgraph_node::get_create (fndecl);
-  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
+  for (cgn = first_nested_function (cgn);
+       cgn; cgn = next_nested_function (cgn))
     c_genericize (cgn->decl);
 }
 

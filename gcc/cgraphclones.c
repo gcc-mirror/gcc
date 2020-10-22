@@ -382,13 +382,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
     }
   new_node->decl = new_decl;
   new_node->register_symbol ();
-  new_node->origin = origin;
   new_node->lto_file_data = lto_file_data;
-  if (new_node->origin)
-    {
-      new_node->next_nested = new_node->origin->nested;
-      new_node->origin->nested = new_node;
-    }
   new_node->analyzed = analyzed;
   new_node->definition = definition;
   new_node->versionable = versionable;

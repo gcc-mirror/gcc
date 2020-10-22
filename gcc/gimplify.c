@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "omp-offload.h"
 #include "context.h"
+#include "tree-nested.h"
 
 /* Hash set of poisoned variables in a bind expr.  */
 static hash_set<tree> *asan_poisoned_variables = NULL;
@@ -959,7 +960,8 @@ unshare_body (tree fndecl)
   delete visited;
 
   if (cgn)
-    for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
+    for (cgn = first_nested_function (cgn); cgn;
+	 cgn = next_nested_function (cgn))
       unshare_body (cgn->decl);
 }
 
@@ -1002,7 +1004,8 @@ unvisit_body (tree fndecl)
   unmark_visited (&DECL_SIZE_UNIT (DECL_RESULT (fndecl)));
 
   if (cgn)
-    for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
+    for (cgn = first_nested_function (cgn);
+	 cgn; cgn = next_nested_function (cgn))
       unvisit_body (cgn->decl);
 }
 

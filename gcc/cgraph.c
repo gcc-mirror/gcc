@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "tree-into-ssa.h"
 #include "ipa-inline.h"
+#include "tree-nested.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -517,13 +518,8 @@ cgraph_node::create (tree decl)
     node->ifunc_resolver = true;
 
   node->register_symbol ();
+  maybe_record_nested_function (node);
 
-  if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
-    {
-      node->origin = cgraph_node::get_create (DECL_CONTEXT (decl));
-      node->next_nested = node->origin->nested;
-      node->origin->nested = node;
-    }
   return node;
 }
 
@@ -1861,22 +1857,7 @@ cgraph_node::remove (void)
      */
   force_output = false;
   forced_by_abi = false;
-  cgraph_node *next;
-  for (cgraph_node *n = nested; n; n = next)
-  {
-    next = n->next_nested;
-    n->origin = NULL;
-    n->next_nested = NULL;
-  }
-  nested = NULL;
-  if (origin)
-    {
-      cgraph_node **node2 = &origin->nested;
 
-      while (*node2 != this)
-	node2 = &(*node2)->next_nested;
-      *node2 = next_nested;
-    }
   unregister ();
   if (prev_sibling_clone)
     prev_sibling_clone->next_sibling_clone = next_sibling_clone;
@@ -2139,7 +2120,7 @@ cgraph_node::dump (FILE *f)
     }
   if (tp_first_run > 0)
     fprintf (f, " first_run:%" PRId64, (int64_t) tp_first_run);
-  if (origin)
+  if (cgraph_node *origin = nested_function_origin (this))
     fprintf (f, " nested in:%s", origin->dump_asm_name ());
   if (gimple_has_body_p (decl))
     fprintf (f, " body");
@@ -2346,19 +2327,6 @@ cgraph_function_possibly_inlined_p (tree decl)
   if (!symtab->global_info_ready)
     return !DECL_UNINLINABLE (decl);
   return DECL_POSSIBLY_INLINED (decl);
-}
-
-/* cgraph_node is no longer nested function; update cgraph accordingly.  */
-void
-cgraph_node::unnest (void)
-{
-  cgraph_node **node2 = &origin->nested;
-  gcc_assert (origin);
-
-  while (*node2 != this)
-    node2 = &(*node2)->next_nested;
-  *node2 = next_nested;
-  origin = NULL;
 }
 
 /* Return function availability.  See cgraph.h for description of individual
@@ -3798,27 +3766,32 @@ cgraph_node::verify_node (void)
 	}
     }
 
-  if (nested != NULL)
+  if (nested_function_info *info = nested_function_info::get (this))
     {
-      for (cgraph_node *n = nested; n != NULL; n = n->next_nested)
+      if (info->nested != NULL)
 	{
-	  if (n->origin == NULL)
+	  for (cgraph_node *n = info->nested; n != NULL;
+	       n = next_nested_function (n))
 	    {
-	      error ("missing origin for a node in a nested list");
-	      error_found = true;
-	    }
-	  else if (n->origin != this)
-	    {
-	      error ("origin points to a different parent");
-	      error_found = true;
-	      break;
+	      nested_function_info *ninfo = nested_function_info::get (n);
+	      if (ninfo->origin == NULL)
+		{
+		  error ("missing origin for a node in a nested list");
+		  error_found = true;
+		}
+	      else if (ninfo->origin != this)
+		{
+		  error ("origin points to a different parent");
+		  error_found = true;
+		  break;
+		}
 	    }
 	}
-    }
-  if (next_nested != NULL && origin == NULL)
-    {
-      error ("missing origin for a node in a nested list");
-      error_found = true;
+      if (info->next_nested != NULL && info->origin == NULL)
+	{
+	  error ("missing origin for a node in a nested list");
+	  error_found = true;
+	}
     }
 
   if (error_found)
@@ -4022,6 +3995,7 @@ cgraph_node::get_fun () const
 void
 cgraph_c_finalize (void)
 {
+  nested_function_info::release ();
   symtab = NULL;
 
   x_cgraph_nodes_queue = NULL;
