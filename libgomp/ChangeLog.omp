@@ -3,6 +3,13 @@
 	Backport from mainline
 	2020-10-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c/target-41.c: New test.
+
+2020-11-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-10-22  Jakub Jelinek  <jakub@redhat.com>
+
 	* icv.c (omp_get_initial_device): Remove including corresponding
 	ialias.
 	* icv-device.c (omp_get_initial_device): New function.  Return
