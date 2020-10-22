@@ -45,6 +45,7 @@
 
 #if ! __cpp_lib_make_obj_using_allocator
 # include <utility>			// pair, index_sequence
+# include <tuple>			// tuple, forward_as_tuple
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -286,8 +287,8 @@ namespace pmr
 	construct(pair<_Tp1, _Tp2>* __p, _Up&& __x, _Vp&& __y)
 	{
 	  this->construct(__p, piecewise_construct,
-			  forward_as_tuple(std::forward<_Up>(__x)),
-			  forward_as_tuple(std::forward<_Vp>(__y)));
+	      std::forward_as_tuple(std::forward<_Up>(__x)),
+	      std::forward_as_tuple(std::forward<_Vp>(__y)));
 	}
 
       template <typename _Tp1, typename _Tp2, typename _Up, typename _Vp>
@@ -296,8 +297,8 @@ namespace pmr
 	construct(pair<_Tp1, _Tp2>* __p, const std::pair<_Up, _Vp>& __pr)
 	{
 	  this->construct(__p, piecewise_construct,
-			  forward_as_tuple(__pr.first),
-			  forward_as_tuple(__pr.second));
+	      std::forward_as_tuple(__pr.first),
+	      std::forward_as_tuple(__pr.second));
 	}
 
       template<typename _Tp1, typename _Tp2, typename _Up, typename _Vp>
@@ -306,8 +307,8 @@ namespace pmr
 	construct(pair<_Tp1, _Tp2>* __p, pair<_Up, _Vp>&& __pr)
 	{
 	  this->construct(__p, piecewise_construct,
-			  forward_as_tuple(std::forward<_Up>(__pr.first)),
-			  forward_as_tuple(std::forward<_Vp>(__pr.second)));
+	      std::forward_as_tuple(std::forward<_Up>(__pr.first)),
+	      std::forward_as_tuple(std::forward<_Vp>(__pr.second)));
 	}
 #else // make_obj_using_allocator
       template<typename _Tp1, typename... _Args>
