@@ -22,7 +22,8 @@ enum processor_type
 {
   PROCESSOR_FIJI,    // gfx803
   PROCESSOR_VEGA10,  // gfx900
-  PROCESSOR_VEGA20   // gfx906
+  PROCESSOR_VEGA20,  // gfx906
+  PROCESSOR_GFX908   // as yet unnamed
 };
 
 /* Set in gcn_option_override.  */

@@ -1,3 +1,18 @@
+2021-03-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2020-10-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-opts.h (enum processor_type): Add PROCESSOR_GFX908.
+	* config/gcn/gcn.c (gcn_omp_device_kind_arch_isa): Add gfx908.
+	(output_file_start): Add gfx908.
+	* config/gcn/gcn.opt (gpu_type): Add gfx908.
+	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Add march=gfx908.
+	(MULTILIB_DIRNAMES): Add gfx908.
+	* config/gcn/mkoffload.c (EF_AMDGPU_MACH_AMDGCN_GFX908): New define.
+	(main): Recognize gfx908.
+	* config/gcn/t-omp-device: Add gfx908.
+
 2021-03-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-expand.c (expand_oacc_for): Convert .tile variable to
