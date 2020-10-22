@@ -335,19 +335,24 @@ copy_early_debug_info (const char *infile, const char *outfile)
 	    {
 	    case R_X86_64_32:
 	    case R_X86_64_32S:
-	      reloc->r_info = R_AMDGPU_ABS32;
+	      reloc->r_info = ELF32_R_INFO(ELF32_R_SYM(reloc->r_info),
+					   R_AMDGPU_ABS32);
 	      break;
 	    case R_X86_64_PC32:
-	      reloc->r_info = R_AMDGPU_REL32;
+	      reloc->r_info = ELF32_R_INFO(ELF32_R_SYM(reloc->r_info),
+					   R_AMDGPU_REL32);
 	      break;
 	    case R_X86_64_PC64:
-	      reloc->r_info = R_AMDGPU_REL64;
+	      reloc->r_info = ELF32_R_INFO(ELF32_R_SYM(reloc->r_info),
+					   R_AMDGPU_REL64);
 	      break;
 	    case R_X86_64_64:
-	      reloc->r_info = R_AMDGPU_ABS64;
+	      reloc->r_info = ELF32_R_INFO(ELF32_R_SYM(reloc->r_info),
+					   R_AMDGPU_ABS64);
 	      break;
 	    case R_X86_64_RELATIVE:
-	      reloc->r_info = R_AMDGPU_RELATIVE64;
+	      reloc->r_info = ELF32_R_INFO(ELF32_R_SYM(reloc->r_info),
+					   R_AMDGPU_RELATIVE64);
 	      break;
 	    default:
 	      gcc_unreachable ();
