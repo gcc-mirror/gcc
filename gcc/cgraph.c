@@ -3872,15 +3872,26 @@ cgraph_node::function_or_virtual_thunk_symbol
 }
 
 /* When doing LTO, read cgraph_node's body from disk if it is not already
-   present.  */
+   present.  Also perform any necessary clone materializations.  */
 
 bool
-cgraph_node::get_untransformed_body (void)
+cgraph_node::get_untransformed_body ()
 {
   lto_file_decl_data *file_data;
   const char *data, *name;
   size_t len;
   tree decl = this->decl;
+
+  /* See if there is clone to be materialized.
+     (inline clones does not need materialization, but we can be seeing
+      an inline clone of real clone).  */
+  cgraph_node *p = this;
+  for (cgraph_node *c = clone_of; c; c = c->clone_of)
+    {
+      if (c->decl != decl)
+	p->materialize_clone ();
+      p = c;
+    }
 
   /* Check if body is already there.  Either we have gimple body or
      the function is thunk and in that case we set DECL_ARGUMENTS.  */

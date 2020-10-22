@@ -8138,6 +8138,10 @@ ipa_pta_execute (void)
       from = constraints.length ();
     }
 
+  /* FIXME: Clone materialization is not preserving stmt references.  */
+  FOR_EACH_DEFINED_FUNCTION (node)
+    node->clear_stmts_in_references ();
+
   /* Build the constraints.  */
   FOR_EACH_DEFINED_FUNCTION (node)
     {

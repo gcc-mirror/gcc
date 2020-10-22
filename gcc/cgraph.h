@@ -1145,12 +1145,14 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* When doing LTO, read cgraph_node's body from disk if it is not already
      present.  */
-  bool get_untransformed_body (void);
+  bool get_untransformed_body ();
 
   /* Prepare function body.  When doing LTO, read cgraph_node's body from disk 
      if it is not already present.  When some IPA transformations are scheduled,
      apply them.  */
-  bool get_body (void);
+  bool get_body ();
+
+  void materialize_clone (void);
 
   /* Release memory used to represent body of function.
      Use this only for functions that are released before being translated to
@@ -2285,13 +2287,6 @@ public:
      functions into callgraph in a way so they look like ordinary reachable
      functions inserted into callgraph already at construction time.  */
   void process_new_functions (void);
-
-  /* Once all functions from compilation unit are in memory, produce all clones
-     and update all calls.  We might also do this on demand if we don't want to
-     bring all functions to memory prior compilation, but current WHOPR
-     implementation does that and it is bit easier to keep everything right
-     in this order.  */
-  void materialize_all_clones (void);
 
   /* Register a symbol NODE.  */
   inline void register_symbol (symtab_node *node);

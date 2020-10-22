@@ -1083,114 +1083,57 @@ void cgraph_node::remove_from_clone_tree ()
 
 /* Given virtual clone, turn it into actual clone.  */
 
-static void
-cgraph_materialize_clone (cgraph_node *node)
+void
+cgraph_node::materialize_clone ()
 {
-  bitmap_obstack_initialize (NULL);
-  node->former_clone_of = node->clone_of->decl;
-  if (node->clone_of->former_clone_of)
-    node->former_clone_of = node->clone_of->former_clone_of;
+  clone_of->get_untransformed_body ();
+  former_clone_of = clone_of->decl;
+  if (clone_of->former_clone_of)
+    former_clone_of = clone_of->former_clone_of;
+  if (symtab->dump_file)
+    {
+      fprintf (symtab->dump_file, "cloning %s to %s\n",
+	       clone_of->dump_name (),
+	       dump_name ());
+      if (clone.tree_map)
+        {
+	  fprintf (symtab->dump_file, "    replace map:");
+	  for (unsigned int i = 0;
+	       i < vec_safe_length (clone.tree_map);
+	       i++)
+	    {
+	      ipa_replace_map *replace_info;
+	      replace_info = (*clone.tree_map)[i];
+	      fprintf (symtab->dump_file, "%s %i -> ",
+		       i ? "," : "", replace_info->parm_num);
+	      print_generic_expr (symtab->dump_file,
+				  replace_info->new_tree);
+	    }
+	  fprintf (symtab->dump_file, "\n");
+	}
+      if (clone.param_adjustments)
+	clone.param_adjustments->dump (symtab->dump_file);
+    }
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (node->clone_of->decl, node->decl,
-			    node->clone.tree_map, node->clone.param_adjustments,
+  tree_function_versioning (clone_of->decl, decl,
+			    clone.tree_map, clone.param_adjustments,
 			    true, NULL, NULL);
   if (symtab->dump_file)
     {
-      dump_function_to_file (node->clone_of->decl, symtab->dump_file,
+      dump_function_to_file (clone_of->decl, symtab->dump_file,
 			     dump_flags);
-      dump_function_to_file (node->decl, symtab->dump_file, dump_flags);
+      dump_function_to_file (decl, symtab->dump_file, dump_flags);
     }
 
-  cgraph_node *clone_of = node->clone_of;
+  cgraph_node *this_clone_of = clone_of;
   /* Function is no longer clone.  */
-  node->remove_from_clone_tree ();
-  if (!clone_of->analyzed && !clone_of->clones)
+  remove_from_clone_tree ();
+  if (!this_clone_of->analyzed && !this_clone_of->clones)
     {
-      clone_of->release_body ();
-      clone_of->remove_callees ();
-      clone_of->remove_all_references ();
+      this_clone_of->release_body ();
+      this_clone_of->remove_callees ();
+      this_clone_of->remove_all_references ();
     }
-  bitmap_obstack_release (NULL);
-}
-
-/* Once all functions from compilation unit are in memory, produce all clones
-   and update all calls.  We might also do this on demand if we don't want to
-   bring all functions to memory prior compilation, but current WHOPR
-   implementation does that and it is a bit easier to keep everything right in
-   this order.  */
-
-void
-symbol_table::materialize_all_clones (void)
-{
-  cgraph_node *node;
-  bool stabilized = false;
-  
-
-  if (symtab->dump_file)
-    fprintf (symtab->dump_file, "Materializing clones\n");
-
-  cgraph_node::checking_verify_cgraph_nodes ();
-
-  /* We can also do topological order, but number of iterations should be
-     bounded by number of IPA passes since single IPA pass is probably not
-     going to create clones of clones it created itself.  */
-  while (!stabilized)
-    {
-      stabilized = true;
-      FOR_EACH_FUNCTION (node)
-        {
-	  if (node->clone_of && node->decl != node->clone_of->decl
-	      && !gimple_has_body_p (node->decl))
-	    {
-	      if (!node->clone_of->clone_of)
-		node->clone_of->get_untransformed_body ();
-	      if (gimple_has_body_p (node->clone_of->decl))
-	        {
-		  if (symtab->dump_file)
-		    {
-		      fprintf (symtab->dump_file, "cloning %s to %s\n",
-			       node->clone_of->dump_name (),
-			       node->dump_name ());
-		      if (node->clone.tree_map)
-		        {
-			  unsigned int i;
-			  fprintf (symtab->dump_file, "    replace map:");
-			  for (i = 0;
-			       i < vec_safe_length (node->clone.tree_map);
-			       i++)
-			    {
-			      ipa_replace_map *replace_info;
-			      replace_info = (*node->clone.tree_map)[i];
-			      fprintf (symtab->dump_file, "%s %i -> ",
-				       i ? "," : "", replace_info->parm_num);
-			      print_generic_expr (symtab->dump_file,
-						  replace_info->new_tree);
-			    }
-			  fprintf (symtab->dump_file, "\n");
-			}
-		      if (node->clone.param_adjustments)
-			node->clone.param_adjustments->dump (symtab->dump_file);
-		    }
-		  cgraph_materialize_clone (node);
-		  stabilized = false;
-	        }
-	    }
-	}
-    }
-  FOR_EACH_FUNCTION (node)
-    if (!node->analyzed && node->callees)
-      {
-	node->remove_callees ();
-	node->remove_all_references ();
-      }
-    else
-      node->clear_stmts_in_references ();
-  if (symtab->dump_file)
-    fprintf (symtab->dump_file, "Materialization Call site updates done.\n");
-
-  cgraph_node::checking_verify_cgraph_nodes ();
-
-  symtab->remove_unreachable_nodes (symtab->dump_file);
 }
 
 #include "gt-cgraphclones.h"

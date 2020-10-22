@@ -1601,6 +1601,7 @@ mark_functions_to_output (void)
   FOR_EACH_FUNCTION (node)
     {
       tree decl = node->decl;
+      node->clear_stmts_in_references ();
 
       gcc_assert (!node->process || node->same_comdat_group);
       if (node->process)
@@ -2274,6 +2275,9 @@ cgraph_node::expand (void)
   announce_function (decl);
   process = 0;
   gcc_assert (lowered);
+
+  /* Initialize the default bitmap obstack.  */
+  bitmap_obstack_initialize (NULL);
   get_untransformed_body ();
 
   /* Generate RTL for the body of DECL.  */
@@ -2281,9 +2285,6 @@ cgraph_node::expand (void)
   timevar_push (TV_REST_OF_COMPILATION);
 
   gcc_assert (symtab->global_info_ready);
-
-  /* Initialize the default bitmap obstack.  */
-  bitmap_obstack_initialize (NULL);
 
   /* Initialize the RTL code for the function.  */
   saved_loc = input_location;
@@ -2298,7 +2299,8 @@ cgraph_node::expand (void)
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
 
   update_ssa (TODO_update_ssa_only_virtuals);
-  execute_all_ipa_transforms (false);
+  if (ipa_transforms_to_apply.exists ())
+    execute_all_ipa_transforms (false);
 
   /* Perform all tree transforms and optimizations.  */
 
