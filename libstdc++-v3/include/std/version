@@ -144,7 +144,7 @@
 #define __cpp_lib_map_try_emplace 201411
 #define __cpp_lib_math_special_functions 201603L
 #ifdef _GLIBCXX_HAS_GTHREADS
-# define __cpp_lib_memory_resource 201603
+# define __cpp_lib_memory_resource 201603L
 #else
 # define __cpp_lib_memory_resource 1
 #endif
@@ -217,6 +217,9 @@
 # define __cpp_lib_jthread 201911L
 #endif
 #define __cpp_lib_list_remove_return_type 201806L
+#if __cpp_lib_concepts
+# define __cpp_lib_make_obj_using_allocator 201811L
+#endif
 #define __cpp_lib_math_constants 201907L
 #define __cpp_lib_polymorphic_allocator 201902L
 #if __cpp_lib_concepts

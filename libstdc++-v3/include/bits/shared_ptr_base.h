@@ -51,9 +51,15 @@
 
 #include <typeinfo>
 #include <bits/allocated_ptr.h>
+#include <bits/allocator.h>
+#include <bits/exception_defines.h>
+#include <bits/functional_hash.h>
 #include <bits/refwrap.h>
-#include <bits/stl_function.h>
+#include <bits/stl_function.h>  // std::less
+#include <bits/unique_ptr.h>
 #include <ext/aligned_buffer.h>
+#include <ext/atomicity.h>
+#include <ext/concurrence.h>
 #if __cplusplus > 201703L
 # include <compare>
 #endif

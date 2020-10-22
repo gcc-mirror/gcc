@@ -35,19 +35,18 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <mutex>
+#include <mutex>	      // call_once
 #include <thread>
-#include <condition_variable>
+#include <condition_variable> // __at_thread_exit_elt
 #include <system_error>
 #include <atomic>
+#include <bits/allocated_ptr.h>
 #include <bits/atomic_futex.h>
-#include <bits/functexcept.h>
 #include <bits/invoke.h>
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
 #include <bits/std_function.h>
 #include <bits/uses_allocator.h>
-#include <bits/allocated_ptr.h>
 #include <ext/aligned_buffer.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

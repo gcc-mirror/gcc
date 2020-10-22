@@ -33,14 +33,19 @@
 
 #if __cplusplus >= 201703L
 
-#include <memory>			// align, allocator_arg_t, __uses_alloc
-#include <utility>			// pair, index_sequence
 #include <vector>			// vector
 #include <cstddef>			// size_t, max_align_t, byte
 #include <shared_mutex>			// shared_mutex
-#include <bits/functexcept.h>
+#include <bits/align.h>			// align
+#include <bits/functexcept.h>		// __throw_bad_array_new_length
+#include <bits/uses_allocator.h>	// __use_alloc
+#include <bits/uses_allocator_args.h>	// uninitialized_construct_using_alloc
 #include <ext/numeric_traits.h>
 #include <debug/assertions.h>
+
+#if ! __cpp_lib_make_obj_using_allocator
+# include <utility>			// pair, index_sequence
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -49,7 +54,7 @@ namespace pmr
 {
 #ifdef _GLIBCXX_HAS_GTHREADS
   // Header and all contents are present.
-# define __cpp_lib_memory_resource 201603
+# define __cpp_lib_memory_resource 201603L
 #else
   // The pmr::synchronized_pool_resource type is missing.
 # define __cpp_lib_memory_resource 1
@@ -231,7 +236,7 @@ namespace pmr
 	}
 #endif // C++2a
 
-#if __cplusplus == 201703L
+#if ! __cpp_lib_make_obj_using_allocator
       template<typename _Tp1, typename... _Args>
 	__attribute__((__nonnull__))
 	typename __not_pair<_Tp1>::type
@@ -304,7 +309,7 @@ namespace pmr
 			  forward_as_tuple(std::forward<_Up>(__pr.first)),
 			  forward_as_tuple(std::forward<_Vp>(__pr.second)));
 	}
-#else
+#else // make_obj_using_allocator
       template<typename _Tp1, typename... _Args>
 	__attribute__((__nonnull__))
 	void
@@ -334,6 +339,7 @@ namespace pmr
       using __uses_alloc1_ = __uses_alloc1<polymorphic_allocator>;
       using __uses_alloc2_ = __uses_alloc2<polymorphic_allocator>;
 
+#if ! __cpp_lib_make_obj_using_allocator
       template<typename _Ind, typename... _Args>
 	static tuple<_Args&&...>
 	_S_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)
@@ -354,6 +360,7 @@ namespace pmr
 	_S_construct_p(__uses_alloc2_ __ua, index_sequence<_Ind...>,
 		       tuple<_Args...>& __t)
 	{ return { std::get<_Ind>(std::move(__t))..., *__ua._M_a }; }
+#endif
 
       memory_resource* _M_resource;
     };
