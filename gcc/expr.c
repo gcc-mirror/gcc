@@ -10356,7 +10356,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	scalar_int_mode int_mode;
 	if (is_int_mode (mode, &int_mode))
 	  {
-	    if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (exp)))
+	    if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (exp))
+		&& maybe_ne (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (exp)))
+			     * TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp)),
+			     GET_MODE_PRECISION (int_mode)))
 	      return const_scalar_mask_from_tree (int_mode, exp);
 	    else
 	      {
