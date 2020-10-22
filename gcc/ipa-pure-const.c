@@ -1152,6 +1152,9 @@ funct_state_summary_t::insert (cgraph_node *node, funct_state_d *state)
       new (state) funct_state_d (*a);
       free (a);
     }
+  else
+    /* Do not keep stale summaries.  */
+    funct_state_summaries->remove (node);
 }
 
 /* Called when new clone is inserted to callgraph late.  */

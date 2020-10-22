@@ -33,9 +33,14 @@
 
 #if __cplusplus >= 201402L
 
-#include <bits/c++config.h>
-#include <condition_variable>
+#include <chrono>
 #include <bits/functexcept.h>
+#include <bits/move.h>        // move, __exchange
+#include <bits/std_mutex.h>   // defer_lock_t
+
+#if ! (_GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK)
+# include <condition_variable>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -49,11 +54,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_HAS_GTHREADS
 
 #if __cplusplus >= 201703L
-#define __cpp_lib_shared_mutex 201505
+#define __cpp_lib_shared_mutex 201505L
   class shared_mutex;
 #endif
 
-#define __cpp_lib_shared_timed_mutex 201402
+#define __cpp_lib_shared_timed_mutex 201402L
   class shared_timed_mutex;
 
   /// @cond undocumented
@@ -399,7 +404,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   /// @endcond
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
   /// The standard shared mutex type.
   class shared_mutex
   {
@@ -814,7 +819,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       release() noexcept
       {
 	_M_owns = false;
-	return std::exchange(_M_pm, nullptr);
+	return std::__exchange(_M_pm, nullptr);
       }
 
       // Getters

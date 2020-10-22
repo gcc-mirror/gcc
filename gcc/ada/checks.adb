@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Eval_Fat; use Eval_Fat;
 with Exp_Ch11; use Exp_Ch11;
-with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Util; use Exp_Util;
@@ -602,19 +601,16 @@ package body Checks is
          return;
 
       --  Only apply the run-time check if the access parameter has an
-      --  associated extra access level parameter and when the level of the
-      --  type is less deep than the level of the access parameter, and
-      --  accessibility checks are not suppressed.
+      --  associated extra access level parameter and when accessibility checks
+      --  are enabled.
 
       elsif Present (Param_Ent)
-         and then Present (Extra_Accessibility (Param_Ent))
-         and then UI_Gt (Object_Access_Level (N),
-                         Deepest_Type_Access_Level (Typ))
+         and then Present (Get_Accessibility (Param_Ent))
          and then not Accessibility_Checks_Suppressed (Param_Ent)
          and then not Accessibility_Checks_Suppressed (Typ)
       then
          Param_Level :=
-           New_Occurrence_Of (Extra_Accessibility (Param_Ent), Loc);
+           New_Occurrence_Of (Get_Accessibility (Param_Ent), Loc);
 
          --  Use the dynamic accessibility parameter for the function's result
          --  when one has been created instead of statically referring to the
@@ -2153,6 +2149,15 @@ package body Checks is
          Lo_OK := (Lo >= UR_From_Uint (Ifirst));
       end if;
 
+      --  Saturate the lower bound to that of the expression's type, because
+      --  we do not want to create an out-of-range value but we still need to
+      --  do a comparison to catch NaNs.
+
+      if Lo < Expr_Value_R (Type_Low_Bound (Expr_Type)) then
+         Lo := Expr_Value_R (Type_Low_Bound (Expr_Type));
+         Lo_OK := True;
+      end if;
+
       if Lo_OK then
 
          --  Lo_Chk := (X >= Lo)
@@ -2185,6 +2190,15 @@ package body Checks is
       else
          Hi := Machine (Expr_Type, UR_From_Uint (Ilast), Round_Even, Expr);
          Hi_OK := (Hi <= UR_From_Uint (Ilast));
+      end if;
+
+      --  Saturate the higher bound to that of the expression's type, because
+      --  we do not want to create an out-of-range value but we still need to
+      --  do a comparison to catch NaNs.
+
+      if Hi > Expr_Value_R (Type_High_Bound (Expr_Type)) then
+         Hi := Expr_Value_R (Type_High_Bound (Expr_Type));
+         Hi_OK := True;
       end if;
 
       if Hi_OK then

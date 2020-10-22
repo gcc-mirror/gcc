@@ -748,6 +748,10 @@ package body Exp_Prag is
       --  type of which is Integer, the value of which is Init_Val if present
       --  and 0 otherwise.
 
+      function Get_Launch_Kernel_Arg_Type (N : Positive) return Entity_Id;
+      --  Returns the type of the Nth argument of the Launch_Kernel CUDA
+      --  runtime function.
+
       function To_Addresses (Elmts : Elist_Id) return List_Id;
       --  Returns a new list containing each element of Elmts wrapped in an
       --  'address attribute reference. When passed No_Elist, returns an empty
@@ -910,7 +914,7 @@ package body Exp_Prag is
            (Decl_Id     => Decl_Id,
             Init_Val    => Init_Val,
             Typ         =>
-              New_Occurrence_Of (RTE (RO_IC_Unsigned_Long_Long), Loc),
+              New_Occurrence_Of (Get_Launch_Kernel_Arg_Type (5), Loc),
             Default_Val => Make_Integer_Literal (Loc, 0));
       end Build_Shared_Memory_Declaration;
 
@@ -948,9 +952,24 @@ package body Exp_Prag is
          return Build_Simple_Declaration_With_Default
            (Decl_Id     => Decl_Id,
             Init_Val    => Init_Val,
-            Typ         => New_Occurrence_Of (RTE (RE_Stream_T), Loc),
+            Typ         =>
+              New_Occurrence_Of (Get_Launch_Kernel_Arg_Type (6), Loc),
             Default_Val => Make_Null (Loc));
       end Build_Stream_Declaration;
+
+      --------------------------------
+      -- Get_Launch_Kernel_Arg_Type --
+      --------------------------------
+
+      function Get_Launch_Kernel_Arg_Type (N : Positive) return Entity_Id is
+         Argument : Entity_Id := First_Entity (RTE (RE_Launch_Kernel));
+      begin
+         for J in 2 .. N loop
+            Argument := Next_Entity (Argument);
+         end loop;
+
+         return Etype (Argument);
+      end Get_Launch_Kernel_Arg_Type;
 
       ------------------
       -- To_Addresses --
@@ -1831,11 +1850,7 @@ package body Exp_Prag is
       --  Raise Assertion_Error when the corresponding consequence of a case
       --  guard that evaluated to True fails.
 
-      if No (Stmts) then
-         Stmts := New_List;
-      end if;
-
-      Append_To (Stmts, Conseq_Checks);
+      Append_New_To (Stmts, Conseq_Checks);
 
       In_Assertion_Expr := In_Assertion_Expr - 1;
    end Expand_Pragma_Contract_Cases;
@@ -2451,28 +2466,20 @@ package body Exp_Prag is
 
          --  Step 3: Store value of the expression from the previous iteration
 
-         if No (Old_Assign) then
-            Old_Assign := New_List;
-         end if;
-
          --  Generate:
          --    Old := Curr;
 
-         Append_To (Old_Assign,
+         Append_New_To (Old_Assign,
            Make_Assignment_Statement (Loc,
              Name       => New_Occurrence_Of (Old_Id, Loc),
              Expression => New_Occurrence_Of (Curr_Id, Loc)));
 
          --  Step 4: Store the current value of the expression
 
-         if No (Curr_Assign) then
-            Curr_Assign := New_List;
-         end if;
-
          --  Generate:
          --    Curr := <Expr>;
 
-         Append_To (Curr_Assign,
+         Append_New_To (Curr_Assign,
            Make_Assignment_Statement (Loc,
              Name       => New_Occurrence_Of (Curr_Id, Loc),
              Expression => Relocate_Node (Expr)));

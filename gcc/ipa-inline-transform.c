@@ -644,16 +644,16 @@ save_inline_function_body (struct cgraph_node *node)
   tree_function_versioning (node->decl, first_clone->decl,
 			    NULL, NULL, true, NULL, NULL);
 
-  /* The function will be short lived and removed after we inline all the clones,
-     but make it internal so we won't confuse ourself.  */
+  /* The function will be short lived and removed after we inline all the
+     clones, but make it internal so we won't confuse ourself.  */
   DECL_EXTERNAL (first_clone->decl) = 0;
   TREE_PUBLIC (first_clone->decl) = 0;
   DECL_COMDAT (first_clone->decl) = 0;
   first_clone->ipa_transforms_to_apply.release ();
 
   /* When doing recursive inlining, the clone may become unnecessary.
-     This is possible i.e. in the case when the recursive function is proved to be
-     non-throwing and the recursion happens only in the EH landing pad.
+     This is possible i.e. in the case when the recursive function is proved to
+     be non-throwing and the recursion happens only in the EH landing pad.
      We cannot remove the clone until we are done with saving the body.
      Remove it now.  */
   if (!first_clone->callers)
@@ -695,6 +695,14 @@ inline_transform (struct cgraph_node *node)
      once to some clones.  This needs revisiting after WPA cleanups.  */
   if (cfun->after_inlining)
     return 0;
+
+  cgraph_node *next_clone;
+  for (cgraph_node *n = node->clones; n; n = next_clone)
+    {
+      next_clone = n->next_sibling_clone;
+      if (n->decl != node->decl)
+	n->materialize_clone ();
+    }
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */

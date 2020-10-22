@@ -1335,6 +1335,31 @@ package body Exp_Ch3 is
       return Agg;
    end Build_Equivalent_Record_Aggregate;
 
+   ----------------------------
+   -- Init_Proc_Level_Formal --
+   ----------------------------
+
+   function Init_Proc_Level_Formal (Proc : Entity_Id) return Entity_Id is
+      Form : Entity_Id;
+   begin
+      --  Move through the formals of the initialization procedure Proc to find
+      --  the extra accessibility level parameter associated with the object
+      --  being initialized.
+
+      Form := First_Formal (Proc);
+      while Present (Form) loop
+         if Chars (Form) = Name_uInit_Level then
+            return Form;
+         end if;
+
+         Next_Formal (Form);
+      end loop;
+
+      --  No formal was found, return Empty
+
+      return Empty;
+   end Init_Proc_Level_Formal;
+
    -------------------------------
    -- Build_Initialization_Call --
    -------------------------------
@@ -1770,6 +1795,24 @@ package body Exp_Ch3 is
       elsif Present (Constructor_Ref) then
          Append_List_To (Args,
            New_Copy_List (Parameter_Associations (Constructor_Ref)));
+      end if;
+
+      --  Pass the extra accessibility level parameter associated with the
+      --  level of the object being initialized when required.
+
+      --  When no entity is present for Id_Ref it may not have been fully
+      --  analyzed, so allow the default value of standard standard to be
+      --  passed ???
+
+      if Is_Entity_Name (Id_Ref)
+        and then Present (Init_Proc_Level_Formal (Proc))
+      then
+         Append_To (Args,
+           Make_Parameter_Association (Loc,
+             Selector_Name             =>
+               Make_Identifier (Loc, Name_uInit_Level),
+             Explicit_Actual_Parameter =>
+               Dynamic_Accessibility_Level (Id_Ref)));
       end if;
 
       Append_To (Res,
@@ -2511,6 +2554,21 @@ package body Exp_Ch3 is
                   New_Occurrence_Of (Standard_Boolean, Loc),
                 Expression =>
                   New_Occurrence_Of (Standard_True, Loc)));
+         end if;
+
+         --  Create an extra accessibility parameter to capture the level of
+         --  the object being initialized when its type is a limited record.
+
+         if Is_Limited_Record (Rec_Type) then
+            Append_To (Parameters,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier => Make_Defining_Identifier
+                                         (Loc, Name_uInit_Level),
+                Parameter_Type      =>
+                  New_Occurrence_Of (Standard_Natural, Loc),
+                Expression          =>
+                  Make_Integer_Literal
+                    (Loc, Scope_Depth (Standard_Standard))));
          end if;
 
          Set_Parameter_Specifications (Proc_Spec_Node, Parameters);
@@ -7449,7 +7507,8 @@ package body Exp_Ch3 is
 
             if No (Expr) then
                Level_Expr :=
-                 Make_Integer_Literal (Loc, Scope_Depth (Standard_Standard));
+                 Make_Integer_Literal
+                   (Loc, Scope_Depth (Standard_Standard));
 
             --  When the expression of the object is a function which returns
             --  an anonymous access type the master of the call is the object
@@ -7459,7 +7518,7 @@ package body Exp_Ch3 is
               and then Ekind (Etype (Name (Expr))) = E_Anonymous_Access_Type
             then
                Level_Expr := Make_Integer_Literal (Loc,
-                               Object_Access_Level (Def_Id));
+                               Static_Accessibility_Level (Def_Id));
 
             --  General case
 
@@ -8143,7 +8202,8 @@ package body Exp_Ch3 is
                   --  It is known that the accessibility level of the access
                   --  type is deeper than that of the pool.
 
-                  if Type_Access_Level (Def_Id) > Object_Access_Level (Pool)
+                  if Type_Access_Level (Def_Id)
+                       > Static_Accessibility_Level (Pool)
                     and then Is_Class_Wide_Type (Etype (Pool))
                     and then not Accessibility_Checks_Suppressed (Def_Id)
                     and then not Accessibility_Checks_Suppressed (Pool)

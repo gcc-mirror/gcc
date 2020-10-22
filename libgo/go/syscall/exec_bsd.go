@@ -93,7 +93,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	// Enable tracing if requested.
 	if sys.Ptrace {
-		err1 = raw_ptrace(_PTRACE_TRACEME, 0, nil, nil)
+		err1 = raw_ptrace(_PTRACE_TRACEME, 0, 0, 0)
 		if err1 != 0 {
 			goto childerror
 		}

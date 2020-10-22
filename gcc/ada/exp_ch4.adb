@@ -31,7 +31,6 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Atag; use Exp_Atag;
-with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
@@ -6867,37 +6866,27 @@ package body Exp_Ch4 is
                   --  Apply an accessibility check if the access object has an
                   --  associated access level and when the level of the type is
                   --  less deep than the level of the access parameter. This
-                  --  only occur for access parameters and stand-alone objects
-                  --  of an anonymous access type.
+                  --  can only occur for access parameters and stand-alone
+                  --  objects of an anonymous access type.
 
                   else
-                     if Present (Expr_Entity)
-                       and then
-                         Present
-                           (Effective_Extra_Accessibility (Expr_Entity))
-                       and then UI_Gt (Object_Access_Level (Lop),
-                                       Type_Access_Level (Rtyp))
-                     then
-                        Param_Level :=
-                          New_Occurrence_Of
-                            (Effective_Extra_Accessibility (Expr_Entity), Loc);
+                     Param_Level := Dynamic_Accessibility_Level (Expr_Entity);
 
-                        Type_Level :=
-                          Make_Integer_Literal (Loc, Type_Access_Level (Rtyp));
+                     Type_Level :=
+                       Make_Integer_Literal (Loc, Type_Access_Level (Rtyp));
 
-                        --  Return True only if the accessibility level of the
-                        --  expression entity is not deeper than the level of
-                        --  the tested access type.
+                     --  Return True only if the accessibility level of the
+                     --  expression entity is not deeper than the level of
+                     --  the tested access type.
 
-                        Rewrite (N,
-                          Make_And_Then (Loc,
-                            Left_Opnd  => Relocate_Node (N),
-                            Right_Opnd => Make_Op_Le (Loc,
-                                            Left_Opnd  => Param_Level,
-                                            Right_Opnd => Type_Level)));
+                     Rewrite (N,
+                       Make_And_Then (Loc,
+                         Left_Opnd  => Relocate_Node (N),
+                         Right_Opnd => Make_Op_Le (Loc,
+                                         Left_Opnd  => Param_Level,
+                                         Right_Opnd => Type_Level)));
 
-                        Analyze_And_Resolve (N);
-                     end if;
+                     Analyze_And_Resolve (N);
 
                      --  If the designated type is tagged, do tagged membership
                      --  operation.
@@ -12296,7 +12285,7 @@ package body Exp_Ch4 is
            and then Ekind (Operand_Type) = E_Anonymous_Access_Type
            and then Nkind (Operand) = N_Selected_Component
            and then Ekind (Entity (Selector_Name (Operand))) = E_Discriminant
-           and then Object_Access_Level (Operand) >
+           and then Static_Accessibility_Level (Operand) >
                       Type_Access_Level (Target_Type)
          then
             Raise_Accessibility_Error;

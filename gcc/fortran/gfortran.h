@@ -1361,6 +1361,14 @@ enum gfc_omp_requires_kind
 				   | OMP_REQ_ATOMIC_MEM_ORDER_RELAXED)
 };
 
+enum gfc_omp_memorder
+{
+  OMP_MEMORDER_ACQ_REL,
+  OMP_MEMORDER_RELEASE,
+  OMP_MEMORDER_ACQUIRE,
+  OMP_MEMORDER_LAST
+};
+
 typedef struct gfc_omp_clauses
 {
   struct gfc_expr *if_expr;
@@ -1376,6 +1384,7 @@ typedef struct gfc_omp_clauses
   bool inbranch, notinbranch, defaultmap, nogroup;
   bool sched_simd, sched_monotonic, sched_nonmonotonic;
   bool simd, threads, depend_source, order_concurrent;
+  enum gfc_omp_memorder memorder;
   enum gfc_omp_cancel_kind cancel;
   enum gfc_omp_proc_bind_kind proc_bind;
   struct gfc_expr *safelen_expr;

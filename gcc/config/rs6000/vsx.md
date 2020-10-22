@@ -352,6 +352,8 @@
    UNSPEC_VSX_FIRST_MISMATCH_EOS_INDEX
    UNSPEC_XXGENPCV
    UNSPEC_MTVSBM
+   UNSPEC_EXTENDDITI2
+   UNSPEC_MTVSRD_DITI_W1
    UNSPEC_VCNTMB
    UNSPEC_VEXPAND
    UNSPEC_VEXTRACT
@@ -1252,6 +1254,24 @@
       DONE;
     }
 })
+
+;; Load rightmost element from load_data
+;; using lxvrbx, lxvrhx, lxvrwx, lxvrdx.
+(define_insn "vsx_lxvr<wd>x"
+  [(set (match_operand:TI 0 "vsx_register_operand" "=wa")
+	(zero_extend:TI (match_operand:INT_ISA3  1 "memory_operand" "Z")))]
+  "TARGET_POWER10"
+  "lxvr<wd>x %x0,%y1"
+  [(set_attr "type" "vecload")])
+
+;; Store rightmost element into store_data
+;; using stxvrbx, stxvrhx, strvxwx, strvxdx.
+(define_insn "vsx_stxvr<wd>x"
+  [(set (match_operand:INT_ISA3 0 "memory_operand" "=Z")
+	(truncate:INT_ISA3 (match_operand:TI 1 "vsx_register_operand" "wa")))]
+  "TARGET_POWER10"
+  "stxvr<wd>x %x1,%y0"
+  [(set_attr "type" "vecstore")])
 
 ;; Explicit load/store expanders for the builtin functions for lxvd2x, etc.,
 ;; when you really want their element-reversing behavior.
@@ -4795,6 +4815,37 @@
   "vextsw2d %0,%1"
   [(set_attr "type" "vecexts")])
 
+;; ISA 3.1 vector sign extend
+;; Move DI value from GPR to TI mode in VSX register, word 1.
+(define_insn "mtvsrdd_diti_w1"
+  [(set (match_operand:TI 0 "register_operand" "=wa")
+	(unspec:TI [(match_operand:DI 1 "register_operand" "r")]
+		     UNSPEC_MTVSRD_DITI_W1))]
+  "TARGET_POWERPC64 && TARGET_DIRECT_MOVE"
+  "mtvsrdd %x0,0,%1"
+  [(set_attr "type" "vecmove")])
+
+;; Sign extend 64-bit value in TI reg, word 1, to 128-bit value in TI reg
+(define_insn "extendditi2_vector"
+  [(set (match_operand:TI 0 "gpc_reg_operand" "=v")
+	(unspec:TI [(match_operand:TI 1 "gpc_reg_operand" "v")]
+		     UNSPEC_EXTENDDITI2))]
+  "TARGET_POWER10"
+  "vextsd2q %0,%1"
+  [(set_attr "type" "vecexts")])
+
+(define_expand "extendditi2"
+  [(set (match_operand:TI 0 "gpc_reg_operand")
+	(sign_extend:DI (match_operand:DI 1 "gpc_reg_operand")))]
+  "TARGET_POWER10"
+  {
+    /* Move 64-bit src from GPR to vector reg and sign extend to 128-bits.  */
+    rtx temp = gen_reg_rtx (TImode);
+    emit_insn (gen_mtvsrdd_diti_w1 (temp, operands[1]));
+    emit_insn (gen_extendditi2_vector (operands[0], temp));
+    DONE;
+  })
+
 
 ;; ISA 3.0 Binary Floating-Point Support
 
@@ -6035,7 +6086,7 @@
                     (match_operand:QI 2 "const_0_to_1_operand" "n")]
         UNSPEC_VCNTMB))]
   "TARGET_POWER10"
-  "vcntmb<VSX_MM_SUFFIX> %0,%1,%2"
+  "vcntmb<wd> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "vec_extract_<mode>"
@@ -6043,7 +6094,7 @@
 	(unspec:SI [(match_operand:VSX_MM 1 "altivec_register_operand" "v")]
 	UNSPEC_VEXTRACT))]
   "TARGET_POWER10"
-  "vextract<VSX_MM_SUFFIX>m %0,%1"
+  "vextract<wd>m %0,%1"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "vec_expand_<mode>"
@@ -6051,5 +6102,5 @@
         (unspec:VSX_MM [(match_operand:VSX_MM 1 "vsx_register_operand" "v")]
         UNSPEC_VEXPAND))]
   "TARGET_POWER10"
-  "vexpand<VSX_MM_SUFFIX>m %0,%1"
+  "vexpand<wd>m %0,%1"
   [(set_attr "type" "vecsimple")])

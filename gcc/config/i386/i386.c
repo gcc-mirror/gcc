@@ -13098,6 +13098,43 @@ ix86_print_operand (FILE *file, rtx x, int code)
       fputs (dstr, file);
     }
 
+  /* Print bcst_mem_operand.  */
+  else if (GET_CODE (x) == VEC_DUPLICATE)
+    {
+      machine_mode vmode = GET_MODE (x);
+      /* Must be bcst_memory_operand.  */
+      gcc_assert (bcst_mem_operand (x, vmode));
+
+      rtx mem = XEXP (x,0);
+      ix86_print_operand (file, mem, 0);
+
+      switch (vmode)
+	{
+	case E_V2DImode:
+	case E_V2DFmode:
+	  fputs ("{1to2}", file);
+	  break;
+	case E_V4SImode:
+	case E_V4SFmode:
+	case E_V4DImode:
+	case E_V4DFmode:
+	  fputs ("{1to4}", file);
+	  break;
+	case E_V8SImode:
+	case E_V8SFmode:
+	case E_V8DFmode:
+	case E_V8DImode:
+	  fputs ("{1to8}", file);
+	  break;
+	case E_V16SFmode:
+	case E_V16SImode:
+	  fputs ("{1to16}", file);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   else
     {
       /* We have patterns that allow zero sets of memory, for instance.

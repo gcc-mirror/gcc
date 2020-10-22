@@ -19,7 +19,7 @@ const SYS_EXECVE = 0
 //sys	ptrace64(request int, id int64, addr int64, data int, buff uintptr) (err error)
 //ptrace64(request _C_int, id int64, addr int64, data _C_int, buff *byte) _C_int
 
-func raw_ptrace(request int, pid int, addr *byte, data *byte) Errno {
+func raw_ptrace(request int, pid int, addr uintptr, data uintptr) Errno {
 	if request == _PTRACE_TRACEME {
 		// Convert to AIX ptrace call.
 		err := ptrace64(_PT_TRACE_ME, 0, 0, 0, 0)

@@ -270,11 +270,6 @@ begin
 
    --  No line for -gnatez : internal switch
 
-   --  Line for -gnate128 switch
-
-   Write_Switch_Char ("e128");
-   Write_Line ("Enable support for 128-bit types");
-
    --  Line for -gnatE switch
 
    Write_Switch_Char ("E");

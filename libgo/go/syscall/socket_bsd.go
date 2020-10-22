@@ -13,6 +13,7 @@ import "unsafe"
 const SizeofSockaddrInet4 = 16
 const SizeofSockaddrInet6 = 28
 const SizeofSockaddrUnix = 110
+const SizeofSockaddrDatalink = 20
 
 type RawSockaddrInet4 struct {
 	Len    uint8
@@ -74,6 +75,46 @@ func (sa *RawSockaddrUnix) getLen() (int, error) {
 
 func (sa *RawSockaddrUnix) adjustAbstract(sl Socklen_t) Socklen_t {
 	return sl
+}
+
+type SockaddrDatalink struct {
+	Len    uint8
+	Family uint8
+	Index  uint16
+	Type   uint8
+	Nlen   uint8
+	Alen   uint8
+	Slen   uint8
+	Data   [12]int8
+	raw    RawSockaddrDatalink
+}
+
+func (sa *SockaddrDatalink) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
+	if sa.Index == 0 {
+		return nil, 0, EINVAL
+	}
+	sa.raw.Len = sa.Len
+	sa.raw.Family = AF_LINK
+	sa.raw.Index = sa.Index
+	sa.raw.Type = sa.Type
+	sa.raw.Nlen = sa.Nlen
+	sa.raw.Alen = sa.Alen
+	sa.raw.Slen = sa.Slen
+	for i := 0; i < len(sa.raw.Data); i++ {
+		sa.raw.Data[i] = sa.Data[i]
+	}
+	return (*RawSockaddrAny)(unsafe.Pointer(&sa.raw)), SizeofSockaddrDatalink, nil
+}
+
+type RawSockaddrDatalink struct {
+	Len    uint8
+	Family uint8
+	Index  uint16
+	Type   uint8
+	Nlen   uint8
+	Alen   uint8
+	Slen   uint8
+	Data   [12]int8
 }
 
 type RawSockaddr struct {

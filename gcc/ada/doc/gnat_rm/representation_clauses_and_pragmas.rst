@@ -195,12 +195,12 @@ increasing it.  For example, if we have:
      type My_Boolean is new Boolean;
      for My_Boolean'Size use 32;
 
-then values of this type will always be 32 bits long.  In the case of
-discrete types, the size can be increased up to 64 bits, with the effect
-that the entire specified field is used to hold the value, sign- or
-zero-extended as appropriate.  If more than 64 bits is specified, then
-padding space is allocated after the value, and a warning is issued that
-there are unused bits.
+then values of this type will always be 32-bit long.  In the case of discrete
+types, the size can be increased up to 64 bits on 32-bit targets and 128 bits
+on 64-bit targets, with the effect that the entire specified field is used to
+hold the value, sign- or zero-extended as appropriate.  If more than 64 bits
+or 128 bits resp. is specified, then padding space is allocated after the
+value, and a warning is issued that there are unused bits.
 
 Similarly the size of records and arrays may be increased, and the effect
 is to add padding bits after the value.  This also causes a warning message
@@ -678,8 +678,9 @@ of this subtype, and must be a multiple of the alignment value.
 
 In addition, component size clauses are allowed which cause the array
 to be packed, by specifying a smaller value.  A first case is for
-component size values in the range 1 through 63.  The value specified
-must not be smaller than the Size of the subtype.  GNAT will accurately
+component size values in the range 1 through 63 on 32-bit targets,
+and 1 through 127 on 64-bit targets.  The value specified may not
+be smaller than the Size of the subtype.  GNAT will accurately
 honor all packing requests in this range.  For example, if we have:
 
 
@@ -1094,7 +1095,8 @@ be one of the following cases:
 * Any small simple record type with a static size.
 
 For all these cases, if the component subtype size is in the range
-1 through 64, then the effect of the pragma ``Pack`` is exactly as though a
+1 through 63 on 32-bit targets, and 1 through 127 on 64-bit targets,
+then the effect of the pragma ``Pack`` is exactly as though a
 component size were specified giving the component subtype size.
 
 All other types are non-packable, they occupy an integral number of storage
@@ -1124,11 +1126,13 @@ using an explicit ``Component_Size`` setting instead, which never generates
 a warning, since the intention of the programmer is clear in this case.
 
 GNAT treats packed arrays in one of two ways.  If the size of the array is
-known at compile time and is less than 64 bits, then internally the array
-is represented as a single modular type, of exactly the appropriate number
-of bits.  If the length is greater than 63 bits, or is not known at compile
-time, then the packed array is represented as an array of bytes, and the
-length is always a multiple of 8 bits.
+known at compile time and is at most 64 bits on 32-bit targets, and at most
+128 bits on 64-bit targets, then internally the array is represented as a
+single modular type, of exactly the appropriate number of bits.  If the
+length is greater than 64 bits on 32-bit targets, and greater than 128
+bits on 64-bit targets, or is not known at compile time, then the packed
+array is represented as an array of bytes, and its length is always a
+multiple of 8 bits.
 
 Note that to represent a packed array as a modular type, the alignment must
 be suitable for the modular type involved. For example, on typical machines
@@ -1200,17 +1204,17 @@ taken by components.  We distinguish between *packable* components and
 Components of the following types are considered packable:
 
 * Components of an elementary type are packable unless they are aliased,
-  independent, or of an atomic type.
+  independent or atomic.
 
 * Small packed arrays, where the size is statically known, are represented
   internally as modular integers, and so they are also packable.
 
 * Small simple records, where the size is statically known, are also packable.
 
-For all these cases, if the ``'Size`` value is in the range 1 through 64, the
-components occupy the exact number of bits corresponding to this value
-and are packed with no padding bits, i.e. they can start on an arbitrary
-bit boundary.
+For all these cases, if the ``'Size`` value is in the range 1 through 64 on
+32-bit targets, and 1 through 128 on 64-bit targets, the components occupy
+the exact number of bits corresponding to this value and are packed with no
+padding bits, i.e. they can start on an arbitrary bit boundary.
 
 All other types are non-packable, they occupy an integral number of storage
 units and the only effect of pragma ``Pack`` is to remove alignment gaps.
@@ -1237,7 +1241,7 @@ For example, consider the record
      end record;
      pragma Pack (X2);
 
-The representation for the record ``X2`` is as follows:
+The representation for the record ``X2`` is as follows on 32-bit targets:
 
 .. code-block:: ada
 
@@ -1252,17 +1256,16 @@ The representation for the record ``X2`` is as follows:
   end record;
 
 Studying this example, we see that the packable fields ``L1``
-and ``L2`` are
-of length equal to their sizes, and placed at specific bit boundaries (and
-not byte boundaries) to
-eliminate padding.  But ``L3`` is of a non-packable float type (because
+and ``L2`` are of length equal to their sizes, and placed at
+specific bit boundaries (and not byte boundaries) to eliminate
+padding.  But ``L3`` is of a non-packable float type (because
 it is aliased), so it is on the next appropriate alignment boundary.
 
 The next two fields are fully packable, so ``L4`` and ``L5`` are
 minimally packed with no gaps.  However, type ``Rb2`` is a packed
-array that is longer than 64 bits, so it is itself non-packable.  Thus
-the ``L6`` field is aligned to the next byte boundary, and takes an
-integral number of bytes, i.e., 72 bits.
+array that is longer than 64 bits, so it is itself non-packable on
+32-bit targets.  Thus the ``L6`` field is aligned to the next byte
+boundary, and takes an integral number of bytes, i.e., 72 bits.
 
 .. _Record_Representation_Clauses:
 
@@ -1283,7 +1286,8 @@ clauses is that the size must be at least the ``'Size`` value of the type
 (actually the Value_Size).  There are no restrictions due to alignment,
 and such components may freely cross storage boundaries.
 
-Packed arrays with a size up to and including 64 bits are represented
+Packed arrays with a size up to and including 64 bits on 32-bit targets,
+and up to and including 128 bits on 64-bit targets, are represented
 internally using a modular type with the appropriate number of bits, and
 thus the same lack of restriction applies.  For example, if you declare:
 
@@ -1296,30 +1300,30 @@ thus the same lack of restriction applies.  For example, if you declare:
 then a component clause for a component of type ``R`` may start on any
 specified bit boundary, and may specify a value of 49 bits or greater.
 
-For packed bit arrays that are longer than 64 bits, there are two
-cases. If the component size is a power of 2 (1,2,4,8,16,32 bits),
-including the important case of single bits or boolean values, then
-there are no limitations on placement of such components, and they
-may start and end at arbitrary bit boundaries.
+For packed bit arrays that are longer than 64 bits on 32-bit targets,
+and longer than 128 bits on 64-bit targets, there are two cases. If the
+component size is a power of 2 (1,2,4,8,16,32,64 bits), including the
+important case of single bits or boolean values, then there are no
+limitations on placement of such components, and they may start and
+end at arbitrary bit boundaries.
 
-If the component size is not a power of 2 (e.g., 3 or 5), then
-an array of this type longer than 64 bits must always be placed on
-on a storage unit (byte) boundary and occupy an integral number
-of storage units (bytes). Any component clause that does not
-meet this requirement will be rejected.
+If the component size is not a power of 2 (e.g., 3 or 5), then an array
+of this type must always be placed on on a storage unit (byte) boundary
+and occupy an integral number of storage units (bytes). Any component
+clause that does not meet this requirement will be rejected.
 
-Any aliased component, or component of an aliased type, must
-have its normal alignment and size. A component clause that
-does not meet this requirement will be rejected.
+Any aliased component, or component of an aliased type, must have its
+normal alignment and size. A component clause that does not meet this
+requirement will be rejected.
 
 The tag field of a tagged type always occupies an address sized field at
 the start of the record.  No component clause may attempt to overlay this
 tag. When a tagged type appears as a component, the tag field must have
 proper alignment
 
-In the case of a record extension ``T1``, of a type ``T``, no component clause applied
-to the type ``T1`` can specify a storage location that would overlap the first
-``T'Size`` bytes of the record.
+In the case of a record extension ``T1``, of a type ``T``, no component
+clause applied to the type ``T1`` can specify a storage location that
+would overlap the first ``T'Object_Size`` bits of the record.
 
 For all other component types, including non-bit-packed arrays,
 the component can be placed at an arbitrary bit boundary,
@@ -1350,8 +1354,7 @@ Handling of Records with Holes
 .. index:: Handling of Records with Holes
 
 As a result of alignment considerations, records may contain "holes"
-or gaps
-which do not correspond to the data bits of any of the components.
+or gaps which do not correspond to the data bits of any of the components.
 Record representation clauses can also result in holes in records.
 
 GNAT does not attempt to clear these holes, so in record objects,

@@ -82,8 +82,16 @@ range_query::value_of_expr (tree name, gimple *stmt)
 
   if (!irange::supports_type_p (TREE_TYPE (name)))
     return NULL_TREE;
-  if (range_of_expr (r, name, stmt) && r.singleton_p (&t))
-    return t;
+
+  if (range_of_expr (r, name, stmt))
+    {
+      // A constant used in an unreachable block oftens returns as UNDEFINED.
+      // If the result is undefined, check the global value for a constant.
+      if (r.undefined_p ())
+	range_of_expr (r, name);
+      if (r.singleton_p (&t))
+	return t;
+    }
   return NULL_TREE;
 }
 
@@ -95,8 +103,15 @@ range_query::value_on_edge (edge e, tree name)
 
   if (!irange::supports_type_p (TREE_TYPE (name)))
     return NULL_TREE;
-  if (range_on_edge (r, e, name) && r.singleton_p (&t))
-    return t;
+  if (range_on_edge (r, e, name))
+    {
+      // A constant used in an unreachable block oftens returns as UNDEFINED.
+      // If the result is undefined, check the global value for a constant.
+      if (r.undefined_p ())
+	range_of_expr (r, name);
+      if (r.singleton_p (&t))
+	return t;
+    }
   return NULL_TREE;
 
 }

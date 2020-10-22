@@ -844,28 +844,6 @@ package body Switch.C is
                      Disable_Switch_Storing;
                      Ptr := Ptr + 1;
 
-                  --  -gnate128 (Enable 128-bit types)
-
-                  when '1' =>
-                     if Ptr = Max then
-                        Bad_Switch ("-gnate1");
-                     end if;
-
-                     Ptr := Ptr + 1;
-
-                     if Switch_Chars (Ptr) /= '2' then
-                        Bad_Switch ("-gnate1" & Switch_Chars (Ptr .. Max));
-                     end if;
-
-                     Ptr := Ptr + 1;
-
-                     if Switch_Chars (Ptr) /= '8' then
-                        Bad_Switch ("-gnate12" & Switch_Chars (Ptr .. Max));
-                     end if;
-
-                     Enable_128bit_Types := True;
-                     Ptr := Ptr + 1;
-
                   --  All other -gnate? switches are unassigned
 
                   when others =>

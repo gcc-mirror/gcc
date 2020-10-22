@@ -50,6 +50,7 @@
 #include "gomp-constants.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-nested.h"
 
 #include "ada.h"
 #include "adadecode.h"
@@ -3696,7 +3697,8 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
 static void
 walk_nesting_tree (struct cgraph_node *node, walk_tree_fn func, void *data)
 {
-  for (node = node->nested; node; node = node->next_nested)
+  for (node = first_nested_function (node);
+       node; node = next_nested_function (node))
     {
       walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl), func, data);
       walk_nesting_tree (node, func, data);

@@ -6,8 +6,8 @@
 /* { dg-options "-mdejagnu-cpu=power9 -O2 " } */
 
 /* { dg-final { scan-assembler-times {\mxscvspdp\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mrldicl\M} 1 } } */
-/* { dg-final { scan-assembler-times {\msubfic\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mrldicl\M} 1 { target le } } } */
+/* { dg-final { scan-assembler-times {\msubfic\M} 1 { target le } } } */
 /* { dg-final { scan-assembler-times {\msldi\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mmtvsrdd\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvslo\M} 1 } } */

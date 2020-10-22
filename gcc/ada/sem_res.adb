@@ -2097,7 +2097,8 @@ package body Sem_Res is
          then
             Error_Msg_NE ("ambiguous call to&", Arg, Name (Arg));
 
-            --  Could use comments on what is going on here???
+            --  Examine possible interpretations, and adapt the message
+            --  for inherited subprograms declared by a type derivation.
 
             Get_First_Interp (Name (Arg), I, It);
             while Present (It.Nam) loop
@@ -2112,6 +2113,11 @@ package body Sem_Res is
                Get_Next_Interp (I, It);
             end loop;
          end if;
+
+         --  Additional message and hint if the ambiguity involves an Ada2020
+         --  container aggregate.
+
+         Check_Ambiguous_Aggregate (N);
       end Report_Ambiguous_Argument;
 
       -----------------------
@@ -3473,13 +3479,13 @@ package body Sem_Res is
 
                elsif Has_Discriminants (F_Typ)
                  and then not Is_Constrained (F_Typ)
-                 and then not Has_Constrained_Partial_View (F_Typ)
-                 and then not Is_Generic_Type (F_Typ)
+                 and then not Object_Type_Has_Constrained_Partial_View
+                                (Typ => F_Typ, Scop => Current_Scope)
                then
                   null;
 
                else
-                  Error_Msg_NE ("untagged actual does not match "
+                  Error_Msg_NE ("untagged actual does not statically match "
                                 & "aliased formal&", A, F);
                end if;
 
@@ -3493,16 +3499,16 @@ package body Sem_Res is
 
             elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type then
                if Nkind (Parent (N)) = N_Type_Conversion
-                 and then Type_Access_Level (Etype (Parent (N))) <
-                                                        Object_Access_Level (A)
+                 and then Type_Access_Level (Etype (Parent (N)))
+                            < Static_Accessibility_Level (A)
                then
                   Error_Msg_N ("aliased actual has wrong accessibility", A);
                end if;
 
             elsif Nkind (Parent (N)) = N_Qualified_Expression
               and then Nkind (Parent (Parent (N))) = N_Allocator
-              and then Type_Access_Level (Etype (Parent (Parent (N)))) <
-                                                        Object_Access_Level (A)
+              and then Type_Access_Level (Etype (Parent (Parent (N))))
+                         < Static_Accessibility_Level (A)
             then
                Error_Msg_N
                  ("aliased actual in allocator has wrong accessibility", A);
@@ -5043,7 +5049,7 @@ package body Sem_Res is
          elsif Nkind (Disc_Exp) = N_Attribute_Reference
            and then Get_Attribute_Id (Attribute_Name (Disc_Exp)) =
                       Attribute_Access
-           and then Object_Access_Level (Prefix (Disc_Exp)) >
+           and then Static_Accessibility_Level (Prefix (Disc_Exp)) >
                       Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
@@ -5055,7 +5061,7 @@ package body Sem_Res is
 
          elsif Ekind (Etype (Disc_Exp)) = E_Anonymous_Access_Type
            and then Nkind (Disc_Exp) = N_Selected_Component
-           and then Object_Access_Level (Prefix (Disc_Exp)) >
+           and then Static_Accessibility_Level (Prefix (Disc_Exp)) >
                       Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
@@ -13337,8 +13343,8 @@ package body Sem_Res is
                --  checking the prefix of the operand for this case).
 
                if Nkind (Operand) = N_Selected_Component
-                 and then Object_Access_Level (Operand) >
-                   Deepest_Type_Access_Level (Target_Type)
+                 and then Static_Accessibility_Level (Operand)
+                            > Deepest_Type_Access_Level (Target_Type)
                then
                   --  In an instance, this is a run-time check, but one we know
                   --  will fail, so generate an appropriate warning. The raise
@@ -13544,8 +13550,8 @@ package body Sem_Res is
                --  checking the prefix of the operand for this case).
 
                if Nkind (Operand) = N_Selected_Component
-                 and then Object_Access_Level (Operand) >
-                          Deepest_Type_Access_Level (Target_Type)
+                 and then Static_Accessibility_Level (Operand)
+                            > Deepest_Type_Access_Level (Target_Type)
                then
                   --  In an instance, this is a run-time check, but one we know
                   --  will fail, so generate an appropriate warning. The raise

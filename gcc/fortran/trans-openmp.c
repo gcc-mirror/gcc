@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "omp-general.h"
 #include "omp-low.h"
+#include "memmodel.h"  /* For MEMMODEL_ enums.  */
+
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_tdiag__
 #include "diagnostic-core.h"
@@ -4785,10 +4787,30 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
 }
 
 static tree
-gfc_trans_omp_flush (void)
+gfc_trans_omp_flush (gfc_code *code)
 {
-  tree decl = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
-  return build_call_expr_loc (input_location, decl, 0);
+  tree call;
+  if (!code->ext.omp_clauses
+      || code->ext.omp_clauses->memorder == OMP_MEMORDER_LAST)
+    {
+      call = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
+      call = build_call_expr_loc (input_location, call, 0);
+    }
+  else
+    {
+      enum memmodel mo = MEMMODEL_LAST;
+      switch (code->ext.omp_clauses->memorder)
+	{
+	case OMP_MEMORDER_ACQ_REL: mo = MEMMODEL_ACQ_REL; break;
+	case OMP_MEMORDER_RELEASE: mo = MEMMODEL_RELEASE; break;
+	case OMP_MEMORDER_ACQUIRE: mo = MEMMODEL_ACQUIRE; break;
+	default: gcc_unreachable (); break;
+	}
+      call = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
+      call = build_call_expr_loc (input_location, call, 1,
+				  build_int_cst (integer_type_node, mo));
+    }
+  return call;
 }
 
 static tree
@@ -6033,7 +6055,7 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_DO_SIMD:
       return gfc_trans_omp_do_simd (code, NULL, NULL, NULL_TREE);
     case EXEC_OMP_FLUSH:
-      return gfc_trans_omp_flush ();
+      return gfc_trans_omp_flush (code);
     case EXEC_OMP_MASTER:
       return gfc_trans_omp_master (code);
     case EXEC_OMP_ORDERED:

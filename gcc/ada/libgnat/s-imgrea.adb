@@ -376,17 +376,20 @@ package body System.Img_Real is
          --  be significantly more efficient than the Long_Long_Unsigned one.
 
          if X < Powten (Unsdigs) then
+            pragma Assert (X in 0.0 .. Long_Long_Float (Unsigned'Last));
             Ndigs := 0;
             Set_Image_Unsigned
               (Unsigned (Long_Long_Float'Truncation (X)),
                Digs, Ndigs);
-            pragma Annotate (CodePeer, False_Positive, "overflow check",
-                             "The X integer part fits in unsigned");
 
          --  But if we want more digits than fit in Unsigned, we have to use
          --  the Long_Long_Unsigned routine after all.
 
          else
+            pragma Assert (X < Powten (Maxdigs));
+            pragma Assert
+              (X in 0.0 .. Long_Long_Float (Long_Long_Unsigned'Last));
+
             Ndigs := 0;
             Set_Image_Long_Long_Unsigned
               (Long_Long_Unsigned (Long_Long_Float'Truncation (X)),
@@ -507,6 +510,8 @@ package body System.Img_Real is
          if V > Long_Long_Float'Last then
             pragma Annotate (CodePeer, False_Positive, "dead code",
                              "CodePeer analysis ignores NaN and Inf values");
+            pragma Annotate (CodePeer, False_Positive, "test always true",
+                             "CodePeer analysis ignores NaN and Inf values");
             Set ('+');
             Set ('I');
             Set ('n');
@@ -516,8 +521,6 @@ package body System.Img_Real is
 
          elsif V < Long_Long_Float'First then
             Set ('-');
-            pragma Annotate (CodePeer, False_Positive, "dead code",
-                             "CodePeer analysis ignores NaN and Inf values");
             Set ('I');
             Set ('n');
             Set ('f');

@@ -73039,7 +73039,7 @@ done
   CXXFLAGS="$ac_save_CXXFLAGS"
 
     ;;
-  *-vxworks)
+  *-vxworks*)
     $as_echo "#define HAVE_ACOSF 1" >>confdefs.h
 
     $as_echo "#define HAVE_ASINF 1" >>confdefs.h

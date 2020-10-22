@@ -965,7 +965,7 @@ package body Sem_Ch6 is
                   --  special logic above, and call Object_Access_Level with
                   --  the original expression.
 
-                  elsif Object_Access_Level (Expr) >
+                  elsif Static_Accessibility_Level (Expr) >
                           Scope_Depth (Scope (Scope_Id))
                   then
                      Error_Msg_N
@@ -1436,7 +1436,7 @@ package body Sem_Ch6 is
 
          if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
            and then Is_Limited_View (Etype (Scope_Id))
-           and then Object_Access_Level (Expr) >
+           and then Static_Accessibility_Level (Expr) >
                       Subprogram_Access_Level (Scope_Id)
          then
             --  Suppress the message in a generic, where the rewriting
@@ -4718,7 +4718,7 @@ package body Sem_Ch6 is
                                 Attribute_Name => Name_Min,
                                 Expressions    => New_List (
                                   Make_Integer_Literal (Loc,
-                                    Object_Access_Level (Form)),
+                                    Scope_Depth (Current_Scope)),
                                   New_Occurrence_Of
                                     (Extra_Accessibility (Form), Loc))));
                      begin

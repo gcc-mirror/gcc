@@ -446,17 +446,31 @@ gimple_ranger::range_of_non_trivial_assignment (irange &r, gimple *stmt)
     return false;
 
   tree base = gimple_range_base_of_assignment (stmt);
-  if (base && TREE_CODE (base) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+  if (base)
     {
-      int_range_max range1;
-      tree ssa = TREE_OPERAND (base, 0);
-      if (range_of_expr (range1, ssa, stmt))
+      if (TREE_CODE (base) == MEM_REF)
 	{
-	  tree type = TREE_TYPE (ssa);
-	  range_operator *op = range_op_handler (POINTER_PLUS_EXPR, type);
-	  int_range<2> offset (TREE_OPERAND (base, 1), TREE_OPERAND (base, 1));
-	  op->fold_range (r, type, range1, offset);
+	  if (TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+	    {
+	      int_range_max range1;
+	      tree ssa = TREE_OPERAND (base, 0);
+	      if (range_of_expr (range1, ssa, stmt))
+		{
+		  tree type = TREE_TYPE (ssa);
+		  range_operator *op = range_op_handler (POINTER_PLUS_EXPR,
+							 type);
+		  int_range<2> offset (TREE_OPERAND (base, 1),
+				       TREE_OPERAND (base, 1));
+		  op->fold_range (r, type, range1, offset);
+		  return true;
+		}
+	    }
+	  return false;
+	}
+      if (gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+	{
+	  // Handle "= &a"  and return non-zero.
+	  r = range_nonzero (TREE_TYPE (gimple_assign_rhs1 (stmt)));
 	  return true;
 	}
     }

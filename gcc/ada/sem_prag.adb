@@ -544,7 +544,7 @@ package body Sem_Prag is
       Set_Ghost_Mode (N);
 
       --  Single and multiple contract cases must appear in aggregate form. If
-      --  this is not the case, then either the parser of the analysis of the
+      --  this is not the case, then either the parser or the analysis of the
       --  pragma failed to produce an aggregate.
 
       pragma Assert (Nkind (CCases) = N_Aggregate);
@@ -4798,7 +4798,7 @@ package body Sem_Prag is
          --  Chain the pragma on the contract for further processing by
          --  Analyze_Pre_Post_Condition_In_Decl_Part.
 
-         Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+         Add_Contract_Item (N, Subp_Id);
 
          --  Fully analyze the pragma when it appears inside an entry or
          --  subprogram body because it cannot benefit from forward references.
@@ -8270,8 +8270,13 @@ package body Sem_Prag is
             --  Accept Intrinsic Export on types if Relaxed_RM_Semantics
 
             if not (Is_Type (E) and then Relaxed_RM_Semantics) then
-               Error_Pragma_Arg
-                 ("second argument of pragma% must be a subprogram", Arg2);
+               if From_Aspect_Specification (N) then
+                  Error_Pragma_Arg
+                     ("entity for aspect% must be a subprogram", Arg2);
+               else
+                  Error_Pragma_Arg
+                     ("second argument of pragma% must be a subprogram", Arg2);
+               end if;
             end if;
 
          --  Special checks for C_Variadic_n
@@ -9543,10 +9548,17 @@ package body Sem_Prag is
             Process_Import_Predefined_Type;
 
          else
-            Error_Pragma_Arg
-              ("second argument of pragma% must be object, subprogram "
-               & "or incomplete type",
-               Arg2);
+            if From_Aspect_Specification (N) then
+               Error_Pragma_Arg
+                  ("entity for aspect% must be object, subprogram "
+                     & "or incomplete type",
+                   Arg2);
+            else
+               Error_Pragma_Arg
+                  ("second argument of pragma% must be object, subprogram "
+                     & "or incomplete type",
+                   Arg2);
+            end if;
          end if;
 
          --  If this pragma applies to a compilation unit, then the unit, which

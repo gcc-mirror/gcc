@@ -135,6 +135,11 @@ package Exp_Ch3 is
    --  type is valid only when Normalize_Scalars or Initialize_Scalars is
    --  active, or if N is the node for a 'Invalid_Value attribute node.
 
+   function Init_Proc_Level_Formal (Proc : Entity_Id) return Entity_Id;
+   --  Fetch the extra formal from an initalization procedure "proc"
+   --  corresponding to the level of the object being initialized. When none
+   --  is present Empty is returned.
+
    procedure Init_Secondary_Tags
      (Typ            : Entity_Id;
       Target         : Node_Id;

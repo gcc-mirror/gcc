@@ -7,7 +7,7 @@
 package syscall
 
 // Dummy function
-func raw_ptrace(request int, pid int, addr *byte, data *byte) Errno {
+func raw_ptrace(request int, pid int, addr uintptr, data uintptr) Errno {
 	return ENOSYS
 }
 

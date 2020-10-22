@@ -781,7 +781,8 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 
 		    case CT_SPECIAL_MEMORY:
 		      insn_allows_mem[i] = allows_mem[i] = 1;
-		      if (MEM_P (op) && constraint_satisfied_p (op, cn))
+		      if (MEM_P (extract_mem_from_operand (op))
+			  && constraint_satisfied_p (op, cn))
 			win = 1;
 		      break;
 
@@ -1397,15 +1398,16 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
      commutative.  */
   for (i = 0; i < recog_data.n_operands; i++)
     {
+      rtx op_mem = extract_mem_from_operand (recog_data.operand[i]);
       memcpy (op_costs[i], init_cost, struct_costs_size);
 
       if (GET_CODE (recog_data.operand[i]) == SUBREG)
 	recog_data.operand[i] = SUBREG_REG (recog_data.operand[i]);
 
-      if (MEM_P (recog_data.operand[i]))
-	record_address_regs (GET_MODE (recog_data.operand[i]),
-			     MEM_ADDR_SPACE (recog_data.operand[i]),
-			     XEXP (recog_data.operand[i], 0),
+      if (MEM_P (op_mem))
+	record_address_regs (GET_MODE (op_mem),
+			     MEM_ADDR_SPACE (op_mem),
+			     XEXP (op_mem, 0),
 			     0, MEM, SCRATCH, frequency * 2);
       else if (constraints[i][0] == 'p'
 	       || (insn_extra_address_constraint
