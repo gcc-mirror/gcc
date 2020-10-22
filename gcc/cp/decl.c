@@ -2685,19 +2685,20 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
 	    {
 	      enum built_in_function fncode = DECL_FUNCTION_CODE (newdecl);
-	      switch (fncode)
+	      if (builtin_decl_explicit_p (fncode))
 		{
-		  /* If a compatible prototype of these builtin functions
-		     is seen, assume the runtime implements it with the
-		     expected semantics.  */
-		case BUILT_IN_STPCPY:
-		  if (builtin_decl_explicit_p (fncode))
-		    set_builtin_decl_implicit_p (fncode, true);
-		  break;
-		default:
-		  if (builtin_decl_explicit_p (fncode))
-		    set_builtin_decl_declared_p (fncode, true);
-		  break;
+		  /* A compatible prototype of these builtin functions
+		     is seen, assume the runtime implements it with
+		     the expected semantics.  */
+		  switch (fncode)
+		    {
+		    case BUILT_IN_STPCPY:
+		      set_builtin_decl_implicit_p (fncode, true);
+		      break;
+		    default:
+		      set_builtin_decl_declared_p (fncode, true);
+		      break;
+		    }
 		}
 
 	      copy_attributes_to_builtin (newdecl);

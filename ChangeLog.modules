@@ -1,5 +1,13 @@
 2020-10-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_in::is_matching_decl): Add builtin data
+	copying.
+	(trees_in::read_function_def): Recontextualize parms.
+	* decl.c (duplicate_decls): Refactor builtin copying.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-7_[ab].[HC]: New.
+
 	libcody/
 	* fatal.cc: noexcept fix from Iain Sandoe.
 

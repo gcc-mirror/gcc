@@ -11059,9 +11059,26 @@ trees_in::is_matching_decl (tree existing, tree decl)
 		  &decl->decl_common.size,
 		  (offsetof (tree_decl_common, pt_uid)
 		   - offsetof (tree_decl_common, size)));
-	  existing->function_decl.built_in_class = DECL_BUILT_IN_CLASS (decl);
-	  DECL_UNCHECKED_FUNCTION_CODE (existing)
-	    = DECL_UNCHECKED_FUNCTION_CODE (decl);
+	  auto bltin_class = DECL_BUILT_IN_CLASS (decl);
+	  existing->function_decl.built_in_class = bltin_class;
+	  auto fncode = DECL_UNCHECKED_FUNCTION_CODE (decl);
+	  DECL_UNCHECKED_FUNCTION_CODE (existing) = fncode;
+	  if (existing->function_decl.built_in_class == BUILT_IN_NORMAL)
+	    {
+	      if (builtin_decl_explicit_p (built_in_function (fncode)))
+		switch (fncode)
+		  {
+		  case BUILT_IN_STPCPY:
+		    set_builtin_decl_implicit_p
+		      (built_in_function (fncode), true);
+		    break;
+		  default:
+		    set_builtin_decl_declared_p
+		      (built_in_function (fncode), true);
+		    break;
+		  }
+	      copy_attributes_to_builtin (decl);
+	    }
 	}
     }
 
@@ -11354,16 +11371,21 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   tree context = tree_node ();
   constexpr_fundef cexpr;
 
+  tree maybe_dup = odr_duplicate (maybe_template, DECL_SAVED_TREE (decl));
+  bool installing = maybe_dup && !DECL_SAVED_TREE (decl);
+
+  if (maybe_dup)
+    for (auto parm = DECL_ARGUMENTS (maybe_dup); parm; parm = DECL_CHAIN (parm))
+      DECL_CONTEXT (parm) = decl;
+
   if (int wtag = i ())
     {
       int tag = 1;
       cexpr.result = error_mark_node;
 
-      if (wtag)
-	{
-	  cexpr.result = copy_decl (result);
-	  tag = insert (cexpr.result);
-	}
+      cexpr.result = copy_decl (result);
+      tag = insert (cexpr.result);
+
       if (wtag != tag)
 	set_overrun ();
       dump (dumper::TREE)
@@ -11372,7 +11394,7 @@ trees_in::read_function_def (tree decl, tree maybe_template)
       cexpr.parms = NULL_TREE;
       tree *chain = &cexpr.parms;
       unsigned ix = 0;
-      for (tree parm = DECL_ARGUMENTS (decl);
+      for (tree parm = DECL_ARGUMENTS (maybe_dup ? maybe_dup : decl);
 	   parm; parm = DECL_CHAIN (parm), ix++)
 	{
 	  tree p = copy_decl (parm);
@@ -11393,16 +11415,15 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   if (get_overrun ())
     return NULL_TREE;
 
-  /* Oh for C++20 structured bindings.  */
-  tree maybe_dup = odr_duplicate (maybe_template, DECL_SAVED_TREE (decl));
-  bool installing = maybe_dup && !DECL_SAVED_TREE (decl);
-
   if (installing)
     {
       DECL_NOT_REALLY_EXTERN (decl) = flags & 1;
       DECL_RESULT (decl) = result;
       DECL_INITIAL (decl) = initial;
       DECL_SAVED_TREE (decl) = saved;
+      if (maybe_dup)
+	DECL_ARGUMENTS (decl) = DECL_ARGUMENTS (maybe_dup);
+
       if (context)
 	SET_DECL_FRIEND_CONTEXT (decl, context);
       if (cexpr.decl)
