@@ -2589,6 +2589,8 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	return gcn_arch == PROCESSOR_VEGA10;
       if (strcmp (name, "gfx906") == 0)
 	return gcn_arch == PROCESSOR_VEGA20;
+      if (strcmp (name, "gfx908") == 0)
+	return gcn_arch == PROCESSOR_GFX908;
       return 0;
     default:
       gcc_unreachable ();
@@ -5030,6 +5032,7 @@ output_file_start (void)
     case PROCESSOR_FIJI: cpu = "gfx803"; break;
     case PROCESSOR_VEGA10: cpu = "gfx900"; break;
     case PROCESSOR_VEGA20: cpu = "gfx906"; break;
+    case PROCESSOR_GFX908: cpu = "gfx908+sram-ecc"; break;
     default: gcc_unreachable ();
     }
 

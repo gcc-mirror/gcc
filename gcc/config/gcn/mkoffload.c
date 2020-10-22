@@ -51,6 +51,8 @@
 #define EF_AMDGPU_MACH_AMDGCN_GFX900 0x2c
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX906
 #define EF_AMDGPU_MACH_AMDGCN_GFX906 0x2f
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX908
+#define EF_AMDGPU_MACH_AMDGCN_GFX908 0x230  // Assume SRAM-ECC enabled.
 
 #ifndef R_AMDGPU_NONE
 #define R_AMDGPU_NONE		0
@@ -856,6 +858,8 @@ main (int argc, char **argv)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX900;
       else if (strcmp (argv[i], "-march=gfx906") == 0)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX906;
+      else if (strcmp (argv[i], "-march=gfx908") == 0)
+	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX908;
     }
 
   if (!(fopenacc ^ fopenmp))
