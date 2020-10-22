@@ -740,4 +740,6 @@ decimal_real_maxval (REAL_VALUE_TYPE *r, int sign, machine_mode mode)
   decimal_real_from_string (r, max);
   if (sign)
     decimal128SetSign ((decimal128 *) r->sig, 1);
+
+  r->sign = sign;
 }
