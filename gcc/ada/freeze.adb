@@ -6391,8 +6391,7 @@ package body Freeze is
          --  to subprogram and to internal types generated for 'Access
          --  references.
 
-         elsif Is_Access_Type (E)
-           and then not Is_Access_Subprogram_Type (E)
+         elsif Is_Access_Object_Type (E)
            and then Ekind (E) /= E_Access_Attribute_Type
          then
             --  If a pragma Default_Storage_Pool applies, and this type has no

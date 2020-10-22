@@ -12401,8 +12401,7 @@ package body Exp_Util is
             if Is_Ignored_Ghost_Entity (Typ) then
                null;
 
-            elsif ((Is_Access_Type (Typ)
-                      and then not Is_Access_Subprogram_Type (Typ)
+            elsif ((Is_Access_Object_Type (Typ)
                       and then Needs_Finalization
                                  (Available_View (Designated_Type (Typ))))
                     or else (Is_Type (Typ) and then Needs_Finalization (Typ)))
