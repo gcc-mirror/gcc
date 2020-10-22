@@ -118,7 +118,8 @@ resolve_device (int device_id)
   if (device_id < 0 || device_id >= gomp_get_num_devices ())
     {
       if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
-	  && device_id != GOMP_DEVICE_HOST_FALLBACK)
+	  && device_id != GOMP_DEVICE_HOST_FALLBACK
+	  && device_id != num_devices_openmp)
 	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
 		    "but device not found");
 
@@ -132,8 +133,7 @@ resolve_device (int device_id)
     {
       gomp_mutex_unlock (&devices[device_id].lock);
 
-      if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
-	  && device_id != GOMP_DEVICE_HOST_FALLBACK)
+      if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY)
 	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
 		    "but device is finalized");
 
@@ -2904,7 +2904,7 @@ GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
 void *
 omp_target_alloc (size_t size, int device_num)
 {
-  if (device_num == GOMP_DEVICE_HOST_FALLBACK)
+  if (device_num == gomp_get_num_devices ())
     return malloc (size);
 
   if (device_num < 0)
@@ -2930,7 +2930,7 @@ omp_target_free (void *device_ptr, int device_num)
   if (device_ptr == NULL)
     return;
 
-  if (device_num == GOMP_DEVICE_HOST_FALLBACK)
+  if (device_num == gomp_get_num_devices ())
     {
       free (device_ptr);
       return;
@@ -2961,7 +2961,7 @@ omp_target_is_present (const void *ptr, int device_num)
   if (ptr == NULL)
     return 1;
 
-  if (device_num == GOMP_DEVICE_HOST_FALLBACK)
+  if (device_num == gomp_get_num_devices ())
     return 1;
 
   if (device_num < 0)
@@ -2995,7 +2995,7 @@ omp_target_memcpy (void *dst, const void *src, size_t length,
   struct gomp_device_descr *dst_devicep = NULL, *src_devicep = NULL;
   bool ret;
 
-  if (dst_device_num != GOMP_DEVICE_HOST_FALLBACK)
+  if (dst_device_num != gomp_get_num_devices ())
     {
       if (dst_device_num < 0)
 	return EINVAL;
@@ -3008,7 +3008,7 @@ omp_target_memcpy (void *dst, const void *src, size_t length,
 	  || dst_devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
 	dst_devicep = NULL;
     }
-  if (src_device_num != GOMP_DEVICE_HOST_FALLBACK)
+  if (src_device_num != num_devices_openmp)
     {
       if (src_device_num < 0)
 	return EINVAL;
@@ -3146,7 +3146,7 @@ omp_target_memcpy_rect (void *dst, const void *src, size_t element_size,
   if (!dst && !src)
     return INT_MAX;
 
-  if (dst_device_num != GOMP_DEVICE_HOST_FALLBACK)
+  if (dst_device_num != gomp_get_num_devices ())
     {
       if (dst_device_num < 0)
 	return EINVAL;
@@ -3159,7 +3159,7 @@ omp_target_memcpy_rect (void *dst, const void *src, size_t element_size,
 	  || dst_devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
 	dst_devicep = NULL;
     }
-  if (src_device_num != GOMP_DEVICE_HOST_FALLBACK)
+  if (src_device_num != num_devices_openmp)
     {
       if (src_device_num < 0)
 	return EINVAL;
@@ -3195,7 +3195,7 @@ int
 omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
 			  size_t size, size_t device_offset, int device_num)
 {
-  if (device_num == GOMP_DEVICE_HOST_FALLBACK)
+  if (device_num == gomp_get_num_devices ())
     return EINVAL;
 
   if (device_num < 0)
@@ -3258,7 +3258,7 @@ omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
 int
 omp_target_disassociate_ptr (const void *ptr, int device_num)
 {
-  if (device_num == GOMP_DEVICE_HOST_FALLBACK)
+  if (device_num == gomp_get_num_devices ())
     return EINVAL;
 
   if (device_num < 0)
@@ -3301,9 +3301,9 @@ int
 omp_pause_resource (omp_pause_resource_t kind, int device_num)
 {
   (void) kind;
-  if (device_num == GOMP_DEVICE_HOST_FALLBACK)
+  if (device_num == gomp_get_num_devices ())
     return gomp_pause_host ();
-  if (device_num < 0 || device_num >= gomp_get_num_devices ())
+  if (device_num < 0 || device_num >= num_devices_openmp)
     return -1;
   /* Do nothing for target devices for now.  */
   return 0;
