@@ -5,6 +5,17 @@
 #ifndef CODY_HH
 #define CODY_HH 1
 
+// Have a known-good list of networking systems
+#if defined (__unix__) || defined (__MACH__)
+#define CODY_NETWORKING 1
+#else
+#define CODY_NETWORKING 0
+#endif
+#if 0  // For testing
+#undef CODY_NETWORKING
+#define CODY_NETWORKING 0
+#endif
+
 // C++
 #include <memory>
 #include <string>
@@ -14,7 +25,9 @@
 // OS
 #include <errno.h>
 #include <sys/types.h>
+#if CODY_NETWORKING
 #include <sys/socket.h>
+#endif
 
 namespace Cody {
 
@@ -22,6 +35,9 @@ namespace Cody {
 // Fortunately both versions 0 and 1 will recognize each other's HELLO
 // messages sufficiently to error out
 constexpr unsigned Version = 1;
+
+// FIXME: I guess we need a file-handle abstraction here
+// Is windows DWORDPTR still?, or should it be FILE *? (ew).
 
 namespace Detail  {
 
@@ -123,7 +139,7 @@ public:
   /// Lex the next input line into a vector of words.
   /// @param words filled with a vector of lexed strings
   /// @result 0 if no errors, an errno value on lexxing error such as
-  /// there being no next line (ENOMSG), or malformed quoting (EINVAL)
+  /// there being no next line (ENOENT), or malformed quoting (EINVAL)
   int Lex (std::vector<std::string> &words);
 
 public:
@@ -730,6 +746,7 @@ public:
 
 // Helper network stuff
 
+#if CODY_NETWORKING
 // Socket with specific address
 int OpenSocket (char const **, sockaddr const *sock, socklen_t len);
 int ListenSocket (char const **, sockaddr const *sock, socklen_t len,
@@ -743,6 +760,7 @@ int ListenLocal (char const **, char const *name, unsigned backlog = 0);
 int OpenInet6 (char const **e, char const *name, int port);
 int ListenInet6 (char const **, char const *name, int port,
 		 unsigned backlog = 0);
+#endif
 
 // FIXME: Mapping file utilities?
 

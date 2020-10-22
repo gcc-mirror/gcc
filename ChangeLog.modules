@@ -1,3 +1,11 @@
+2020-10-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* mapper-client.cc: Enable networking only when CODY_NETWORKING
+	* mapper-server.cc: Likewise.
+	libcody/
+	Rebase b26a54f | Enable networking only on known-good systems
+
 2020-10-21  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.def: Don't build libcody for build.  Do not install it

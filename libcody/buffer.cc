@@ -224,9 +224,9 @@ int MessageBuffer::Lex (std::vector<std::string> &result)
 {
   result.clear ();
 
-  int err = ENOMSG;
+  int err = ENOENT;
   if (IsAtEnd ())
-    return ENOMSG;
+    return ENOENT;
 
   Assert (buffer.back () == S2C(u8"\n"));
 
@@ -362,7 +362,7 @@ int MessageBuffer::Lex (std::vector<std::string> &result)
     }
   lastBol = iter - buffer.begin ();
   if (result.empty ())
-    return ENOMSG;
+    return ENOENT;
 
   return 0;
 }

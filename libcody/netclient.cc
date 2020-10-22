@@ -4,6 +4,8 @@
 
 // Cody
 #include "internal.hh"
+
+#if CODY_NETWORKING
 // C
 #include <cerrno>
 #include <cstring>
@@ -130,3 +132,5 @@ int OpenInet6 (char const **e, char const *name, int port)
 }
 
 }
+
+#endif

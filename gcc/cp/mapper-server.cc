@@ -824,8 +824,12 @@ static int maybe_parse_socket (std::string &option, module_resolver *r)
 
   /* Does it look like a socket?  */
   if (option[0] == '=')
-    /* A local socket.  */
-    fd = Cody::ListenLocal (&errmsg, option.c_str () + 1);
+    {
+      /* A local socket.  */
+#if CODY_NETWORKING
+      fd = Cody::ListenLocal (&errmsg, option.c_str () + 1);
+#endif
+    }
   else
     {
       auto colon = option.find_last_of (':');
@@ -840,7 +844,9 @@ static int maybe_parse_socket (std::string &option, module_resolver *r)
 	    {
 	      /* Ends in ':number', treat as ipv6 domain socket.  */
 	      option.erase (colon);
+#if CODY_NETWORKING
 	      fd = Cody::ListenInet6 (&errmsg, option.c_str (), port);
+#endif
 	    }
 	}
     }

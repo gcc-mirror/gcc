@@ -164,7 +164,10 @@ module_client::open_module_client (location_t loc, const char *o,
 	    case '=':
 	      // =localsocket
 	      {
-		int fd = Cody::OpenLocal (&errmsg, name.c_str () + 1);
+		int fd = -1;
+#if CODY_NETWORKING
+		fd = Cody::OpenLocal (&errmsg, name.c_str () + 1);
+#endif
 		if (fd >= 0)
 		  c = new module_client (fd, fd);
 	      }
@@ -188,7 +191,10 @@ module_client::open_module_client (location_t loc, const char *o,
 		    if (port && endp != cptr + 1 && !*endp)
 		      {
 			name[colon] = 0;
-			int fd = Cody::OpenInet6 (&errmsg, name.c_str (), port);
+			int fd = 01;
+#if CODY_NETWORKING
+			fd = Cody::OpenInet6 (&errmsg, name.c_str (), port);
+#endif
 			name[colon] = ':';
 
 			if (fd >= 0)

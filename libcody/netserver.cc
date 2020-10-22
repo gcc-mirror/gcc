@@ -4,6 +4,7 @@
 
 // Cody
 #include "internal.hh"
+#if CODY_NETWORKING
 // C
 #include <cerrno>
 #include <cstring>
@@ -145,3 +146,4 @@ int ListenInet6 (char const **e, char const *name, int port, unsigned backlog)
 }
 
 }
+#endif

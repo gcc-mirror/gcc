@@ -73,8 +73,8 @@ void HCF [[noreturn]]
  ) noexcept;
 
 #if NMS_CHECKING
-void AssertFailed [[noreturn]] (Location loc = Location ());
-void Unreachable [[noreturn]] (Location loc = Location ());
+void AssertFailed [[noreturn]] (Location loc = Location ()) noexcept;
+void Unreachable [[noreturn]] (Location loc = Location ()) noexcept;
 #if !CODY_LOC_BUILTIN && !CODY_LOC_SOURCE
 #define AssertFailed() AssertFailed (Cody::Location (__FILE__, __LINE__))
 #define Unreachable() Unreachable (Cody::Location (__FILE__, __LINE__))
@@ -100,7 +100,7 @@ void Unreachable [[noreturn]] (Location loc = Location ());
 // If you don't have the GNU ,##__VA_ARGS__ pasting extension, we'll
 // need another fallback
 #define Assert(EXPR, ...)						\
-  (__builtin_expect (bool (EXPR, ##__VA_ARGS__), true)		\
+  (__builtin_expect (bool (EXPR, ##__VA_ARGS__), true)			\
    ? (void)0 : AssertFailed ())
 #endif
 #else
@@ -113,7 +113,7 @@ void Unreachable [[noreturn]] (Location loc = Location ());
   ((void)sizeof (bool (EXPR, ##__VA_ARGS__)), (void)0)
 #endif
 
-inline void Unreachable ()
+inline void Unreachable () noexcept
 {
   __builtin_unreachable ();
 }
