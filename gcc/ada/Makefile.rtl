@@ -1402,6 +1402,7 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
     VX=vxworks7
     EH_MECHANISM=-gcc
     SIGTRAMP_OBJ=sigtramp-vxworks.o
+    LIBGNAT_TARGET_PAIRS += a-nallfl.ads<libgnat/a-nallfl__wraplf.ads
   else
     ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
       ARCH_STR=arm
@@ -1538,6 +1539,7 @@ endif
 ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__qnx.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__qnx.adb \
   s-osinte.adb<libgnarl/s-osinte__qnx.adb \
@@ -1780,6 +1782,7 @@ endif
 ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
@@ -2197,6 +2200,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   a-synbar.adb<libgnarl/a-synbar__posix.adb \
   a-synbar.ads<libgnarl/a-synbar__posix.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -2268,6 +2272,7 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   a-synbar.adb<libgnarl/a-synbar__posix.adb \
   a-synbar.ads<libgnarl/a-synbar__posix.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -2683,6 +2688,7 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
 
   ifeq ($(strip $(filter-out arm64 aarch64,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
+      a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
       s-intman.adb<libgnarl/s-intman__susv3.adb \
       s-osprim.adb<libgnat/s-osprim__darwin.adb \
       $(ATOMICS_TARGET_PAIRS) \
