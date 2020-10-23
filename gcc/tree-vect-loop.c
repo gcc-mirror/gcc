@@ -9084,8 +9084,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 
   split_edge (loop_preheader_edge (loop));
 
-  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
-      && vect_use_loop_mask_for_alignment_p (loop_vinfo))
+  if (vect_use_loop_mask_for_alignment_p (loop_vinfo))
     /* This will deal with any possible peeling.  */
     vect_prepare_for_masked_peels (loop_vinfo);
 
