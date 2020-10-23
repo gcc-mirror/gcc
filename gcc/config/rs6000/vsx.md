@@ -3109,7 +3109,7 @@
 	 [(match_operand:VSX_EXTRACT_I4 1 "altivec_register_operand" "v")
 	  (match_operand:QI 2 "const_0_to_3_operand" "n")]
 	 UNSPEC_XXGENPCV))]
-    "TARGET_POWER10 && TARGET_64BIT"
+    "TARGET_POWER10"
     "xxgenpcv<wd>m %x0,%1,%2"
     [(set_attr "type" "vecsimple")])
 
