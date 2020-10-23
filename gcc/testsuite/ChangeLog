@@ -1,3 +1,84 @@
+2020-10-22  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/vec-splati-runnable.c: Don't abort on
+	undefined output.
+
+2020-10-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/rlwimi-2.c: Adjust expected results for lp64.
+	* gcc.target/powerpc/vec-rlmi-rlnm.c: Remove target and LP64.
+	Adjust xxlor expected results.
+
+2020-10-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/flush-1.f90: New test.
+	* gfortran.dg/gomp/flush-2.f90: New test.
+
+2020-10-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-load-element-extend-char.c: New test.
+	* gcc.target/powerpc/vsx-load-element-extend-int.c: New test.
+	* gcc.target/powerpc/vsx-load-element-extend-longlong.c: New test.
+	* gcc.target/powerpc/vsx-load-element-extend-short.c: New test.
+	* gcc.target/powerpc/vsx-store-element-truncate-char.c: New test.
+	* gcc.target/powerpc/vsx-store-element-truncate-int.c: New test.
+	* gcc.target/powerpc/vsx-store-element-truncate-longlong.c: New test.
+	* gcc.target/powerpc/vsx-store-element-truncate-short.c: New test.
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/run_all.sh: Define and substitute target_{max,min}_int.
+	* ada/acats/support/macro.dfs: Parameterize {MAX,MIN}_INT.
+	* gnat.dg/assert1.adb: Adjust conditionally to 128-bit integer types.
+	* gnat.dg/size_clause1.adb: Do not expect a warning for LP64 targets.
+	* gnat.dg/warn11.adb: Likewise.
+	* gnat.dg/specs/rep_clause5.ads (Array_2_Type): Add alignment clause.
+
+2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97328
+	* g++.dg/cpp2a/constexpr-init19.C: New test.
+	* g++.dg/cpp2a/constexpr-init20.C: New test.
+
+2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96575
+	* g++.dg/cpp1z/constexpr-96575.C: New test.
+
+2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97511
+	* g++.dg/template/shadow3.C: New test.
+
+2020-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97521
+	* gcc.target/i386/pr97521.c: New testcase.
+
+2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.dg/pr97502.c: New test.
+
+2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.dg/dfp/pr97439.c: New test.
+
+2020-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97514
+	* gcc.dg/analyzer/pr97514.c: New test.
+
+2020-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/analyzer/ctor-dtor-1.C: New test.
+	* g++.dg/analyzer/dyncast-1.C: New test.
+	* g++.dg/analyzer/vfunc-1.C: New test.
+
+2020-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97489
+	* g++.dg/analyzer/pr97489.C: New test.
+
 2020-10-22  Martin Liska  <mliska@suse.cz>
 
 	PR c/94722

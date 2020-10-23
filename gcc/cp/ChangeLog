@@ -1,3 +1,26 @@
+2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97328
+	* constexpr.c (init_subob_ctx): Don't punt on RANGE_EXPR
+	indexes, instead build a sub-aggregate initialization context
+	with no subobject.
+
+2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96575
+	* constexpr.c (cxx_eval_constant_expression)
+	<case EMPTY_CLASS_EXPR>: Lower it to a CONSTRUCTOR.
+	(potential_constant_expression_1) <case COMPOUND_EXPR>: Remove
+	now-redundant handling of COMPOUND_EXPR with EMPTY_CLASS_EXPR
+	second operand.
+	<case EMPTY_CLASS_EXPR>: Return true instead of false.
+
+2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97511
+	* decl.c (duplicate_decls): Return NULL_TREE if
+	DECL_TEMPLATE_PARM_P differ.
+
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (push_local_extern_decl_alias): Reconstextualize

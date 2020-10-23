@@ -1,3 +1,125 @@
+2020-10-22  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_xxspltidp_v2df): Delete
+	debug printf.  Remove trailing ".\n" from inform message.
+	Break long line.
+
+2020-10-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (is_gimple_logical_p): Use types_compatible_p
+	for logical compatibility.
+	(logical_stmt_cache::cacheable_p): Ditto.
+
+2020-10-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::get_untransformed_body): Perform lazy
+	clone materialization.
+	* cgraph.h (cgraph_node::materialize_clone): Declare.
+	(symbol_table::materialize_all_clones): Remove.
+	* cgraphclones.c (cgraph_materialize_clone): Turn to ...
+	(cgraph_node::materialize_clone): .. this one; move here
+	dumping from symbol_table::materialize_all_clones.
+	(symbol_table::materialize_all_clones): Remove.
+	* cgraphunit.c (mark_functions_to_output): Clear stmt references.
+	(cgraph_node::expand): Initialize bitmaps early;
+	do not call execute_all_ipa_transforms if there are no transforms.
+	* ipa-inline-transform.c (save_inline_function_body): Fix formating.
+	(inline_transform): Materialize all clones before function is modified.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call):
+	Materialize clone if needed.
+	* ipa.c (class pass_materialize_all_clones): Remove.
+	(make_pass_materialize_all_clones): Remove.
+	* passes.c (execute_all_ipa_transforms): Materialize all clones.
+	* passes.def: Remove pass_materialize_all_clones.
+	* tree-pass.h (make_pass_materialize_all_clones): Remove.
+	* tree-ssa-structalias.c (ipa_pta_execute): Clear refs.
+
+2020-10-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/altivec.h (vec_xl_zext, vec_xl_sext, vec_xst_trunc):
+	New defines.
+	* config/rs6000/rs6000-builtin.def (BU_P10V_OVERLOAD_X): New builtin
+	macro.
+	(BU_P10V_AV_X): New builtin macro.
+	(se_lxvrhbx, se_lxrbhx, se_lxvrwx, se_lxvrdx): Define internal names
+	for load and sign extend vector element.
+	(ze_lxvrbx, ze_lxvrhx, ze_lxvrwx, ze_lxvrdx): Define internal names
+	for load and zero extend vector element.
+	(tr_stxvrbx, tr_stxvrhx, tr_stxvrwx, tr_stxvrdx): Define internal names
+	for truncate and store vector element.
+	(se_lxvrx, ze_lxvrx, tr_stxvrx): Define internal names for overloaded
+	load/store rightmost element.
+	* config/rs6000/rs6000-call.c (altivec_builtin_types): Define the
+	internal monomorphs P10_BUILTIN_SE_LXVRBX, P10_BUILTIN_SE_LXVRHX,
+	P10_BUILTIN_SE_LXVRWX, P10_BUILTIN_SE_LXVRDX,
+	P10_BUILTIN_ZE_LXVRBX, P10_BUILTIN_ZE_LXVRHX, P10_BUILTIN_ZE_LXVRWX,
+	P10_BUILTIN_ZE_LXVRDX,
+	P10_BUILTIN_TR_STXVRBX, P10_BUILTIN_TR_STXVRHX, P10_BUILTIN_TR_STXVRWX,
+	P10_BUILTIN_TR_STXVRDX,
+	(altivec_expand_lxvr_builtin): New expansion for load element builtins.
+	(altivec_expand_stv_builtin): Update to for truncate and store builtins.
+	(altivec_expand_builtin): Add clases for load/store rightmost builtins.
+	(altivec_init_builtins): Add def_builtin entries for
+	__builtin_altivec_se_lxvrbx, __builtin_altivec_se_lxvrhx,
+	__builtin_altivec_se_lxvrwx, __builtin_altivec_se_lxvrdx,
+	__builtin_altivec_ze_lxvrbx, __builtin_altivec_ze_lxvrhx,
+	__builtin_altivec_ze_lxvrwx, __builtin_altivec_ze_lxvrdx,
+	__builtin_altivec_tr_stxvrbx, __builtin_altivec_tr_stxvrhx,
+	__builtin_altivec_tr_stxvrwx, __builtin_altivec_tr_stxvrdx,
+	__builtin_vec_se_lxvrx, __builtin_vec_ze_lxvrx, __builtin_vec_tr_stxvrx.
+	* config/rs6000/vsx.md (vsx_lxvr<wd>x, vsx_stxvr<wd>x, vsx_stxvr<wd>x):
+	New define_insn entries.
+	* doc/extend.texi:  Add documentation for vsx_xl_sext, vsx_xl_zext,
+	and vec_xst_trunc.
+
+2020-10-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/vsx.md (enum unspec): Add
+	UNSPEC_EXTENDDITI2 and UNSPEC_MTVSRD_DITI_W1 entries.
+	(mtvsrdd_diti_w1, extendditi2_vector): New define_insns.
+	(extendditi2): New define_expand.
+
+2020-10-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/i386/mingw-w64.h (TARGET_LIBC_HAS_FUNCTION): Enable
+	sincos optimization.
+
+2020-10-22  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/vsx.md (vec_cntmb_<mode>, vec_extract_<mode>),
+	(vec_expand_<mode>): Replace <VSX_MM_SUFFIX> with <wd>.
+
+2020-10-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_analyze_slp_instance): Refactor so
+	computing a vector type early is not needed, for store group
+	splitting compute a new vector type based on the desired
+	group size.
+
+2020-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97521
+	* expr.c (expand_expr_real_1): Be more careful when
+	expanding a VECTOR_BOOLEAN_TYPE_P VECTOR_CSTs.
+
+2020-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* ipa-modref-tree.c (selftest::test_insert_search_collapse): Fix
+	leak.
+	(selftest::test_merge): Fix leaks.
+
+2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/97502
+	* config/s390/vector.md ("vec_cmp<VI_HW:mode><VI_HW:mode>")
+	("vec_cmpu<VI_HW:mode><VI_HW:mode>"): New expanders.
+
+2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR rtl-optimization/97439
+	* dfp.c (decimal_real_maxval): Set the sign flag in the
+	generated number.
+
 2020-10-22  Martin Liska  <mliska@suse.cz>
 
 	PR c/94722

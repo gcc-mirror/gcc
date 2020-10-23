@@ -1,3 +1,321 @@
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_128BIT_PAIRS): Add i-cexten.ads.
+	* debug.adb (d.H): Document new usage.
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst (Size Clauses):
+	Document new limit on 64-bit platforms.
+	(Component_Size Clauses): Likewise.
+	(Pragma Pack for Arrays): Likewise.
+	(Pragma Pack for Records): Likewise.
+	(Record Representation Clauses): Likewise.
+	* gnat_rm.texi: Regenerate.
+	* gnat1drv.adb (Adjust_Global_Switches): Rewrite code enabling or
+	disabling the support for 128-bit integer types.
+	* switch-c.adb (Scan_Front_End_Switches): Do not deal with e128.
+	* usage.adb (Write_Switch_Char): Do not print -gnate128 switch.
+	* libgnat/i-cexten__128.ads: New file.
+
+2020-10-22  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads (Has_Limited_View): New synthesized attribute.
+	* einfo.adb (Has_Limited_View): New synthesized attribute.
+	(Set_Limited_View): Complete assertion.
+	* sem_ch10.ads (Is_Visible_Through_Renamings): Make this routine
+	public to invoke it from Find_Expanded_Name and avoid reporting
+	spurious errors on renamings of limited-with packages.
+	(Load_Needed_Body): Moved to have this spec alphabetically
+	ordered.
+	* sem_ch10.adb (Is_Visible_Through_Renamings): Moved to library
+	level.
+	(Is_Limited_Withed_Unit): New subprogram.
+	* sem_ch3.adb (Access_Type_Declaration): Adding protection to
+	avoid reading attribute Entity() when not available.
+	* sem_ch8.adb (Analyze_Package_Renaming): Report error on
+	renamed package not visible through context clauses.
+	(Find_Expanded_Name): Report error on renamed package not
+	visible through context clauses; handle special case where the
+	prefix is a renaming of a (now visible) shadow package.
+
+2020-10-22  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_prag.adb (Get_Launch_Kernel_Arg_Type): New function.
+	(Build_Shared_Memory_Declaration): Use
+	Get_Launch_Kernel_Arg_Type.
+	(Build_Stream_Declaration): Use Get_Launch_Kernel_Arg_Type.
+	* rtsfind.ads: Remove RO_IC_Unsigned_Long_Long.
+
+2020-10-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-imenne.adb, libgnat/s-imgrea.adb: Add assertions.
+
+2020-10-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-imgrea.adb (Set_Image_Real): Update annotations.
+
+2020-10-22  Steve Baird  <baird@adacore.com>
+
+	* aspects.ads: Introduce the subtype Nonoverridable_Aspect_Id,
+	whose Static_Predicate reflects the list of nonoverridable
+	aspects given in Ada RM 13.1.1(18.7).
+	* sem_util.ads, sem_util.adb: Add two new visible subprograms,
+	Check_Inherited_Nonoverridable_Aspects and Is_Confirming. The
+	former is used to check the consistency of inherited
+	nonoverridable aspects from multiple sources. The latter
+	indicates whether two aspect specifications for a nonoverridable
+	aspect are confirming. Because of compatibility concerns in
+	compiling QGen, Is_Confirming always returns True if
+	Relaxed_RM_Semantics (i.e., -gnatd.M) is specified.
+	* sem_ch3.adb (Derived_Type_Declaration): Call new
+	Check_Inherited_Nonoverridable_Aspects procedure if interface
+	list is non-empty.
+	* sem_ch9.adb (Check_Interfaces): Call new
+	Check_Inherited_Nonoverridable_Aspects procedure if interface
+	list is non-empty.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): When an explicit
+	aspect specification overrides an inherited nonoverridable
+	aspect, check that the explicit specification is confirming.
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.ads (Check_Compile_Time_Size): Adjust size limit.
+
+2020-10-22  Richard Kenner  <kenner@adacore.com>
+
+	* sprint.adb (pg, po, ps): Use {Push,Pop}_Output.
+	* treepr.adb (pl, pn): Likewise.
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_advice.rst: Minor fix.
+	* gnat_rm.texi: Regenerate.
+
+2020-10-22  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Is_Container_Aggregate): A new local predicates
+	which indicates whether a given expression is a container
+	aggregate. The implementation of this function is incomplete; in
+	the unusual case of a record aggregate (i.e., not a container
+	aggregate) of a type whose Aggregate aspect is specified, the
+	function will incorrectly return True.
+	(Immediate_Context_Implies_Is_Potentially_Unevaluated): Improve
+	handling of aggregate components.
+	(Is_Repeatedly_Evaluated): Test for container aggregate
+	components along with existing test for array aggregate
+	components.
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_fixd.adb (Fpt_Value): Fold if-then-else with identical arms.
+
+2020-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb (P_Iterated_Component_Association): If the
+	construct includes an iterator filter it corresponds to an
+	Iterated_Element_Association, so build the proper node for it.
+	* exp_aggr.adb (Expand_Container_Aggregate, Aggregate_Size): If
+	the component is an Iterated_Element_Association, treat it as
+	having a non-static size.
+
+2020-10-22  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* scng.adb (Scan): Check if any letter of the token is
+	uppercase.
+
+2020-10-22  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Accessibility_Level_Helper): Conversions to
+	named access types get the level associated with the named
+	access type.
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Constrained_Partial_View): Add "base type" marker.
+
+2020-10-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.adb (Has_Constrained_Partial_View): Apply Base_Type to Id.
+	* sem_res.adb (Resolve_Actuals.Check_Aliased_Parameter): Remove
+	"not Is_Generic_Type" test and call
+	Object_Type_Has_Constrained_Partial_View instead of
+	Has_Constrained_Partial_View. Improve related error message to
+	say "does not statically match" instead of just "does not
+	match".
+
+2020-10-22  Steve Baird  <baird@adacore.com>
+
+	* sem_util.ads, sem_util.adb: Declare and implement a new
+	predicate, Derivation_Too_Early_To_Inherit.  This function
+	indicates whether a given derived type fails to inherit a given
+	streaming-related attribute from its parent type because the
+	declaration of the derived type precedes the corresponding
+	attribute_definition_clause of the parent.
+	* exp_tss.adb (Find_Inherited_TSS): Call
+	Derivation_Too_Early_To_Inherit instead of unconditionally
+	assuming that a parent type's streaming attribute is available
+	for inheritance by an immediate descendant type.
+	* sem_attr.adb (Stream_Attribute_Available): Call
+	Derivation_Too_Early_To_Inherit instead of unconditionally
+	assuming that a parent type's streaming attribute is available
+	for inheritance by an immediate descendant type.
+	* exp_attr.adb (Default_Streaming_Unavailable): A new predicate;
+	given a type, indicates whether predefined (as opposed to
+	user-defined) streaming operations for the type should be
+	implemented by raising Program_Error.
+	(Expand_N_Attribute_Reference): For each of the 4
+	streaming-related attributes (i.e., Read, Write, Input, Output),
+	after determining that no user-defined implementation is
+	available (including a Stream_Convert pragma), call
+	Default_Streaming_Unavailable; if that call returns True, then
+	implement the streaming operation as "raise Program_Error;".
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Float_Conversion_Check): Saturate the bounds
+	of the check to those of the base type of the expression.
+
+2020-10-22  Justin Squirek  <squirek@adacore.com>
+
+	* checks.adb (Apply_Accessibility_Check): Modify condition to
+	avoid flawed optimization and use Get_Accessibility over
+	Extra_Accessibility.
+	* exp_attr.adb: Remove inclusion of Exp_Ch2.adb.
+	* exp_ch2.adb, exp_ch2.ads (Param_Entity): Moved to sem_util.
+	* exp_ch3.ads (Init_Proc_Level_Formal): New function.
+	* exp_ch3.adb (Build_Init_Procedure): Add extra accessibility
+	formal for init procs when the associated type is a limited
+	record.
+	(Build_Initialization_Call): Add condition to handle propagation
+	of the new extra accessibility paramter actual needed for init
+	procs.
+	(Init_Proc_Level_Formal): Created to fetch a the extra
+	accessibility parameter associated with init procs if one
+	exists.
+	* exp_ch4.adb (Build_Attribute_Reference): Modify static check
+	to be dynamic.
+	* exp_ch6.adb (Add_Cond_Expression_Extra_Actual): Move logic
+	used to expand conditional expressions used as actuals for
+	anonymous access formals.
+	(Expand_Call_Helper): Remove extranious accessibility
+	calculation logic.
+	* exp_util.adb: Remove inclusion of Exp_Ch2.adb.
+	* par-ch3.adb (P_Array_Type_Definition): Properly set
+	Aliased_Present on access definitions
+	* sem_attr.adb (Resolve_Attribute): Replace instances for
+	Object_Access_Level with Static_Accessibility_Level.
+	* sem_ch13.adb (Storage_Pool): Replace instances for
+	Object_Access_Level with Static_Accessibility_Level.
+	* sem_ch6.adb (Check_Return_Construct_Accessibility): Replace
+	instances for Object_Access_Level with
+	Static_Accessibility_Level.
+	* sem_ch9.adb (Analyze_Requeue): Replace instances for
+	Object_Access_Level with Static_Accessibility_Level.
+	* sem_res.adb (Check_Aliased_Parameter,
+	Check_Allocator_Discrim_Accessibility, Valid_Conversion):
+	Replace instances for Object_Access_Level with
+	Static_Accessibility_Level.
+	* sem_util.adb, sem_util.ads (Accessibility_Level_Helper):
+	Created to centralize calculation of accessibility levels.
+	(Build_Component_Subtype): Replace instances for
+	Object_Access_Level with Static_Accessibility_Level.
+	(Defining_Entity): Add extra parameter to dictate whether an
+	error is raised or empty is return in the case of an irrelevant
+	N.
+	(Dynamic_Accessibility_Level): Rewritten to use
+	Accessibility_Level_Helper.
+	(Is_View_Conversion): Check membership against Etype to capture
+	nodes like explicit dereferences which have types but are not
+	expanded names or identifers.
+	(Object_Access_LeveL): Removed.
+	(Param_Entity): Moved from sem_util.
+	(Static_Accessibility_Level): Created as a replacement to
+	Object_Access_Level, it also uses Accessibility_Level_Helper for
+	its implementation.
+	* snames.ads-tmpl: Added new name for extra accessibility
+	parameter in init procs.
+
+2020-10-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Contract_Cases,
+	Expand_Pragma_Loop_Variant): Reuse Append_New_To.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part): Fix typo.
+	(Analyze_Pre_Post_Condition): Refactor repeated calls to
+	Defining_Entity.
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Minor
+	fixes.
+	* gnat_rm.texi: Regenerate.
+
+2020-10-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Check_Unused_Withs): Move local variables from
+	to a nested procedure; Lunit is passed as a parameter to
+	Check_System_Aux and its type is refined from Node_Id to
+	Entity_Id; Cnode is now a constant.
+
+2020-10-22  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/s-rident.ads (Profile_Info): Use a common profile
+	definition for Jorvik and GNAT Extended Ravenscar, using the
+	GNAT Extended Ravenscar definition.
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (64-bit platforms): Add GNATRTL_128BIT_PAIRS to
+	the LIBGNAT_TARGET_PAIRS list and also GNATRTL_128BIT_OBJS to
+	the EXTRA_GNATRTL_NONTASKING_OBJS list.
+
+2020-10-22  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_prag.adb (Process_Convention,
+	Process_Import_Or_Interface): Fix error message.
+
+2020-10-22  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch13.adb (Make_Aitem_Pragma): Turn into function. This
+	removes a side-effect on the Aitem variable.
+	(Analyze_Aspect_Specifications): Handle Suppress and Unsuppress
+	aspects differently from the Linker_Section aspect.
+	(Ceck_Aspect_At_Freeze_Point): Don't expect Suppress/Unsuppress
+	to be delayed anymore.
+
+2020-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb: (Resolve_Container_Aggregate): For an indexed
+	container, verify that expressions and component associations
+	are not both present.
+	* exp_aggr.adb: Code reorganization, additional comments.
+	(Expand_Container_Aggregate): Use Aggregate_Size for Iterated_
+	Component_Associations for indexed aggregates. If present, the
+	default value of the formal in the constructor function is used
+	when the size of the aggregate cannot be determined statically.
+
+2020-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Fix oversight for Bit_Position.
+
+2020-10-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Check_Ambiguous_Aggregate): When a
+	subprogram call is found to be ambiguous, check whether
+	ambiguity is caused by an aggregate actual.  and indicate that
+	it should carry a type qualification.
+	* sem_ch4.adb (Traverse_Hoonyms, Try_Primitive_Operation): Call
+	it.
+	* sem_res.adb (Report_Ambiguous_Argument): Call it.
+
+2020-10-22  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Check_One_Unit): Avoid repeated calls by using a
+	local variable Lunit; remove local constant Eitem, which was
+	identical to Lunit.
+
+2020-10-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <x86*-vxworks*>: Select
+	nolibm and wraplf variants like other vxworks ports.
+
 2020-10-22  Martin Liska  <mliska@suse.cz>
 
 	PR c/94722
