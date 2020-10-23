@@ -3582,7 +3582,8 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   tree-ssa-threadupdate.h inchash.h wide-int.h signop.h hash-map.h \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
   lcm.h cfgloopmanip.h file-prefix-map.h builtins.def $(INSN_ATTR_H) \
-  pass-instances.def params.list
+  pass-instances.def params.list $(srcdir)/../include/gomp-constants.h \
+  $(EXPR_H)
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
@@ -3592,7 +3593,7 @@ s-header-vars: Makefile
 # more portable than a trailing "-e d" to filter out the uninteresting lines,
 # in particular on ia64-hpux where "s/.../p" only prints if -n was requested
 # as well.
-	$(foreach header_var,$(shell sed < Makefile -n -e 's/^\([A-Z0-9_]*_H\)[      ]*=.*/\1/p'),echo $(header_var)=$(shell echo $($(header_var):$(srcdir)/%=.../%) | sed -e 's~\.\.\./config/~config/~' -e 's~\.\.\..*/~~') >> tmp-header-vars;) \
+	$(foreach header_var,$(shell sed < Makefile -n -e 's/^\([A-Z0-9_]*_H\)[ 	]*=.*/\1/p'),echo $(header_var)=$(shell echo $($(header_var):$(srcdir)/%=.../%) | sed -e 's~\.\.\./config/~config/~' -e 's~\.\.\./common/config/~common/config/~' -e 's~\.\.\.[^ 	]*/~~g') >> tmp-header-vars;)
 	$(SHELL) $(srcdir)/../move-if-change tmp-header-vars b-header-vars
 	$(STAMP) s-header-vars
 
@@ -3605,8 +3606,8 @@ install-gengtype: installdirs gengtype$(exeext) gtype.state
 
 # Install the headers needed to build a plugin.
 install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
-# We keep the directory structure for files in config or c-family and .def
-# files. All other files are flattened to a single directory.
+# We keep the directory structure for files in config, common/config or
+# c-family and .def files. All other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
 	headers=`echo $(PLUGIN_HEADERS) $$(cd $(srcdir); echo *.h *.def) | tr ' ' '\012' | sort -u`; \
 	srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
@@ -3618,7 +3619,8 @@ install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 	  else continue; \
 	  fi; \
 	  case $$path in \
-	  "$(srcdir)"/config/* | "$(srcdir)"/c-family/* | "$(srcdir)"/*.def ) \
+	  "$(srcdir)"/config/* | "$(srcdir)"/common/config/* \
+	  | "$(srcdir)"/c-family/* | "$(srcdir)"/*.def ) \
 	    base=`echo "$$path" | sed -e "s|$$srcdirstrip/||"`;; \
 	  *) base=`basename $$path` ;; \
 	  esac; \
