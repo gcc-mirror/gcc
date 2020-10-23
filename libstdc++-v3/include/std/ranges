@@ -205,9 +205,11 @@ namespace ranges
       : _M_value(std::move(__t))
       { }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3428. single_view's in place constructor should be explicit
       template<typename... _Args>
 	requires constructible_from<_Tp, _Args...>
-	constexpr
+	constexpr explicit
 	single_view(in_place_t, _Args&&... __args)
 	: _M_value{in_place, std::forward<_Args>(__args)...}
 	{ }
@@ -1801,7 +1803,10 @@ namespace views
       }
     };
 
-  template<range _Range>
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3447. Deduction guides for take_view and drop_view have different
+  // constraints
+  template<typename _Range>
     take_view(_Range&&, range_difference_t<_Range>)
       -> take_view<views::all_t<_Range>>;
 
