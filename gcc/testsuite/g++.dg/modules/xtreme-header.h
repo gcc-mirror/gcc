@@ -27,7 +27,8 @@
 #include <deque>
 #include <exception>
 #if !NO_ASSOCIATED_LAMBDA
-#include <execution>
+// FIXME: PR 97549
+//#include <execution>
 #endif
 #include <filesystem>
 #include <forward_list>

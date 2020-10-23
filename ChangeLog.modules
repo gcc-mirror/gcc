@@ -1,5 +1,11 @@
 2020-10-23  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk e957b86ca26
+	libstdc++: Rebase include/pstl to current upstream
+	gcc/testsuite/
+	PR 97549 workaround
+	* g++.dg/modules/xtream-header{,-2}.h: Don't include <exception>.
+
 	Merge trunk 310fe80babe
 	Fortran: class.c - update vtable comment
 

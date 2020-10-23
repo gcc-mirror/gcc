@@ -181,7 +181,7 @@ __simd_first(_Index1 __first1, _DifferenceType __n, _Index2 __first2, _Pred __pr
         _DifferenceType __i;
         _PSTL_PRAGMA_VECTOR_UNALIGNED // Do not generate peel loop part
             _PSTL_PRAGMA_SIMD_REDUCTION(|
-                                         : __found) for (__i = 0; __i < __block_size; ++__i)
+                                        : __found) for (__i = 0; __i < __block_size; ++__i)
         {
             const _DifferenceType __t = __pred(__first1[__i], __first2[__i]);
             __lane[__i] = __t;
@@ -189,14 +189,14 @@ __simd_first(_Index1 __first1, _DifferenceType __n, _Index2 __first2, _Pred __pr
         }
         if (__found)
         {
-            _DifferenceType __i;
+            _DifferenceType __i2;
             // This will vectorize
-            for (__i = 0; __i < __block_size; ++__i)
+            for (__i2 = 0; __i2 < __block_size; ++__i2)
             {
-                if (__lane[__i])
+                if (__lane[__i2])
                     break;
             }
-            return std::make_pair(__first1 + __i, __first2 + __i);
+            return std::make_pair(__first1 + __i2, __first2 + __i2);
         }
         __first1 += __block_size;
         __first2 += __block_size;
@@ -403,7 +403,7 @@ __simd_adjacent_find(_Index __first, _Index __last, _BinaryPredicate __pred, boo
         _DifferenceType __found = 0;
         _PSTL_PRAGMA_VECTOR_UNALIGNED // Do not generate peel loop part
             _PSTL_PRAGMA_SIMD_REDUCTION(|
-                                         : __found) for (__i = 0; __i < __block_size - 1; ++__i)
+                                        : __found) for (__i = 0; __i < __block_size - 1; ++__i)
         {
             //TODO: to improve SIMD vectorization
             const _DifferenceType __t = __pred(*(__first + __i), *(__first + __i + 1));
@@ -486,15 +486,15 @@ __simd_transform_reduce(_Size __n, _Tp __init, _BinaryOperation __binary_op, _Un
             __lane[__j] = __binary_op(__lane[__j], __f(last_iteration + __j));
         }
         // combiner
-        for (_Size __i = 0; __i < __block_size; ++__i)
+        for (_Size __j = 0; __j < __block_size; ++__j)
         {
-            __init = __binary_op(__init, __lane[__i]);
+            __init = __binary_op(__init, __lane[__j]);
         }
         // destroyer
         _PSTL_PRAGMA_SIMD
-        for (_Size __i = 0; __i < __block_size; ++__i)
+        for (_Size __j = 0; __j < __block_size; ++__j)
         {
-            __lane[__i].~_Tp();
+            __lane[__j].~_Tp();
         }
     }
     else
@@ -796,8 +796,9 @@ __simd_find_first_of(_ForwardIterator1 __first, _ForwardIterator1 __last, _Forwa
     {
         for (; __first != __last; ++__first)
         {
-  	    if (__unseq_backend::__simd_or(__s_first, __n2,
-                          __internal::__equal_value_by_pred<decltype(*__first), _BinaryPredicate>(*__first, __pred)))
+            if (__unseq_backend::__simd_or(
+                    __s_first, __n2,
+                    __internal::__equal_value_by_pred<decltype(*__first), _BinaryPredicate>(*__first, __pred)))
             {
                 return __first;
             }
@@ -807,10 +808,10 @@ __simd_find_first_of(_ForwardIterator1 __first, _ForwardIterator1 __last, _Forwa
     {
         for (; __s_first != __s_last; ++__s_first)
         {
-  	    const auto __result = __unseq_backend::__simd_first(__first, _DifferencType(0), __n1,
-                                               [__s_first, &__pred](_ForwardIterator1 __it, _DifferencType __i) {
-                                                   return __pred(__it[__i], *__s_first);
-                                               });
+            const auto __result = __unseq_backend::__simd_first(
+                __first, _DifferencType(0), __n1, [__s_first, &__pred](_ForwardIterator1 __it, _DifferencType __i) {
+                    return __pred(__it[__i], *__s_first);
+                });
             if (__result != __last)
             {
                 return __result;
@@ -825,9 +826,9 @@ _RandomAccessIterator
 __simd_remove_if(_RandomAccessIterator __first, _DifferenceType __n, _UnaryPredicate __pred) noexcept
 {
     // find first element we need to remove
-    auto __current =
-        __unseq_backend::__simd_first(__first, _DifferenceType(0), __n,
-                     [&__pred](_RandomAccessIterator __it, _DifferenceType __i) { return __pred(__it[__i]); });
+    auto __current = __unseq_backend::__simd_first(
+        __first, _DifferenceType(0), __n,
+        [&__pred](_RandomAccessIterator __it, _DifferenceType __i) { return __pred(__it[__i]); });
     __n -= __current - __first;
 
     // if we have in sequence only one element that pred(__current[1]) != false we can exit the function
