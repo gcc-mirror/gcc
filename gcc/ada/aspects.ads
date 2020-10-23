@@ -13,16 +13,10 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -194,6 +188,7 @@ package Aspects is
       Aspect_Exclusive_Functions,
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
+      Aspect_Full_Access_Only,
       Aspect_Independent,
       Aspect_Independent_Components,
       Aspect_Import,
@@ -228,6 +223,16 @@ package Aspects is
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
    --  Aspect_Id's excluding No_Aspect
+
+   subtype Nonoverridable_Aspect_Id is Aspect_Id with
+     Static_Predicate => Nonoverridable_Aspect_Id in
+       Aspect_Default_Iterator | Aspect_Iterator_Element |
+       Aspect_Implicit_Dereference | Aspect_Constant_Indexing |
+       Aspect_Variable_Indexing | Aspect_Aggregate |
+       Aspect_Max_Entry_Queue_Length
+       --  | Aspect_No_Controlled_Parts
+       --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration
+       ;  --  see RM 13.1.1(18.7)
 
    --  The following array indicates aspects that accept 'Class
 
@@ -550,6 +555,7 @@ package Aspects is
       Aspect_Discard_Names                => True,
       Aspect_Export                       => True,
       Aspect_Favor_Top_Level              => False,
+      Aspect_Full_Access_Only             => True,
       Aspect_Independent                  => True,
       Aspect_Independent_Components       => True,
       Aspect_Import                       => True,
@@ -630,6 +636,7 @@ package Aspects is
       Aspect_External_Name                => Name_External_Name,
       Aspect_External_Tag                 => Name_External_Tag,
       Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
+      Aspect_Full_Access_Only             => Name_Full_Access_Only,
       Aspect_Ghost                        => Name_Ghost,
       Aspect_Global                       => Name_Global,
       Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
@@ -972,6 +979,7 @@ package Aspects is
       Aspect_Atomic_Components            => Rep_Aspect,
       Aspect_Bit_Order                    => Rep_Aspect,
       Aspect_Component_Size               => Rep_Aspect,
+      Aspect_Full_Access_Only             => Rep_Aspect,
       Aspect_Machine_Radix                => Rep_Aspect,
       Aspect_Object_Size                  => Rep_Aspect,
       Aspect_Pack                         => Rep_Aspect,

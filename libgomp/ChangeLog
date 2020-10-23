@@ -1,3 +1,34 @@
+2020-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-41.c: New test.
+
+2020-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* icv.c (omp_get_initial_device): Remove including corresponding
+	ialias.
+	* icv-device.c (omp_get_initial_device): New function.  Return
+	gomp_get_num_devices ().  Add ialias.
+	* target.c (resolve_device): Don't fail with
+	OMP_TARGET_OFFLOAD=mandatory if device_id is equal to
+	gomp_get_num_devices ().
+	(omp_target_alloc, omp_target_free, omp_target_is_present,
+	omp_target_memcpy, omp_target_memcpy_rect, omp_target_associate_ptr,
+	omp_target_disassociate_ptr, omp_pause_resource): Use
+	gomp_get_num_devices () instead of GOMP_DEVICE_HOST_FALLBACK on the
+	first use in the functions, in uses dominated by the
+	gomp_get_num_devices call use num_devices_openmp instead.
+	* libgomp.texi (omp_get_initial_device): Document.
+	* config/gcn/icv-device.c (omp_get_initial_device): New function.
+	Add ialias.
+	* config/nvptx/icv-device.c (omp_get_initial_device): Likewise.
+	* testsuite/libgomp.c/target-40.c: New test.
+
+2020-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (parse_target_offload): Change new_offload var type to int,
+	preinitialize to -1, remove found var and test new_offload != -1
+	instead of found.
+
 2020-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* target.c (gomp_target_init): Inside of the function, use automatic

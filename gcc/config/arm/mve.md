@@ -1329,15 +1329,25 @@
 ;;
 ;; [vmaxq_u, vmaxq_s])
 ;;
-(define_insn "mve_vmaxq_<supf><mode>"
+(define_insn "mve_vmaxq_s<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VMAXQ))
+	(smax:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vmax.<supf>%#<V_sz_elem>\t%q0, %q1, %q2"
+  "vmax.%#<V_s_elem>\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])
+
+(define_insn "mve_vmaxq_u<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(umax:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")))
+  ]
+  "TARGET_HAVE_MVE"
+  "vmax.%#<V_u_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1389,15 +1399,25 @@
 ;;
 ;; [vminq_s, vminq_u])
 ;;
-(define_insn "mve_vminq_<supf><mode>"
+(define_insn "mve_vminq_s<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VMINQ))
+	(smin:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vmin.<supf>%#<V_sz_elem>\t%q0, %q1, %q2"
+  "vmin.%#<V_s_elem>\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])
+
+(define_insn "mve_vminq_u<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(umin:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")))
+  ]
+  "TARGET_HAVE_MVE"
+  "vmin.%#<V_u_elem>\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1545,6 +1565,17 @@
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")]
 	 VMULQ))
+  ]
+  "TARGET_HAVE_MVE"
+  "vmul.i%#<V_sz_elem>\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])
+
+(define_insn "mve_vmulq<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(mult:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
   "vmul.i%#<V_sz_elem>\t%q0, %q1, %q2"
@@ -1920,6 +1951,17 @@
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
 		       (match_operand:MVE_2 2 "s_register_operand" "w")]
 	 VSUBQ))
+  ]
+  "TARGET_HAVE_MVE"
+  "vsub.i%#<V_sz_elem>\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])
+
+(define_insn "mve_vsubq<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(minus:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		     (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
   "vsub.i%#<V_sz_elem>\t%q0, %q1, %q2"
@@ -2382,9 +2424,8 @@
 (define_insn "mve_vmaxnmq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMAXNMQ_F))
+	(smax:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		    (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vmaxnm.f%#<V_sz_elem>	%q0, %q1, %q2"
@@ -2442,9 +2483,8 @@
 (define_insn "mve_vminnmq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMINNMQ_F))
+	(smin:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		    (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vminnm.f%#<V_sz_elem>	%q0, %q1, %q2"
@@ -2562,9 +2602,8 @@
 (define_insn "mve_vmulq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VMULQ_F))
+	(mult:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		    (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vmul.f%#<V_sz_elem>	%q0, %q1, %q2"
@@ -2832,9 +2871,8 @@
 (define_insn "mve_vsubq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VSUBQ_F))
+	(minus:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		     (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vsub.f%#<V_sz_elem>\t%q0, %q1, %q2"

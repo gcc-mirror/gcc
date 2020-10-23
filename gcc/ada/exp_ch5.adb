@@ -523,11 +523,11 @@ package body Exp_Ch5 is
       elsif Has_Controlled_Component (L_Type) then
          Loop_Required := True;
 
-      --  If object is atomic/VFA, we cannot tolerate a loop
+      --  If object is full access, we cannot tolerate a loop
 
-      elsif Is_Atomic_Or_VFA_Object (Act_Lhs)
+      elsif Is_Full_Access_Object (Act_Lhs)
               or else
-            Is_Atomic_Or_VFA_Object (Act_Rhs)
+            Is_Full_Access_Object (Act_Rhs)
       then
          return;
 
@@ -536,8 +536,8 @@ package body Exp_Ch5 is
 
       elsif Has_Atomic_Components (L_Type)
         or else Has_Atomic_Components (R_Type)
-        or else Is_Atomic_Or_VFA (Component_Type (L_Type))
-        or else Is_Atomic_Or_VFA (Component_Type (R_Type))
+        or else Is_Full_Access (Component_Type (L_Type))
+        or else Is_Full_Access (Component_Type (R_Type))
       then
          Loop_Required := True;
 
@@ -2518,7 +2518,7 @@ package body Exp_Ch5 is
                                Condition =>
                                  Make_Op_Gt (Loc,
                                    Left_Opnd  =>
-                                     Dynamic_Accessibility_Level (Rhs),
+                                     Accessibility_Level (Rhs, Dynamic_Level),
                                    Right_Opnd =>
                                      Make_Integer_Literal (Loc,
                                        Intval =>
@@ -2534,7 +2534,8 @@ package body Exp_Ch5 is
                                          (Effective_Extra_Accessibility
                                             (Entity (Lhs)), Loc),
                                      Expression =>
-                                        Dynamic_Accessibility_Level (Rhs));
+                                       Accessibility_Level
+                                         (Rhs, Dynamic_Level));
 
          begin
             if not Accessibility_Checks_Suppressed (Entity (Lhs)) then

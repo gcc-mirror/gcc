@@ -3680,6 +3680,10 @@ This attribute adds stack protection code to the function if
 flags @option{-fstack-protector}, @option{-fstack-protector-strong}
 or @option{-fstack-protector-explicit} are set.
 
+@item no_stack_protector
+@cindex @code{no_stack_protector} function attribute
+This attribute prevents stack protection code for the function.
+
 @item target (@var{string}, @dots{})
 @cindex @code{target} function attribute
 Multiple target back ends implement the @code{target} attribute
@@ -17660,6 +17664,37 @@ Perform a 64-bit parallel bits extract operation, as if implemented by the
 @code{pextd} instruction.
 @findex __builtin_pextd
 
+@smallexample
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed char *);
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed short *);
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed int *);
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed long long *);
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned char *);
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned short *);
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned int *);
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned long long *);
+@end smallexample
+
+Load (and sign extend) to an __int128 vector, as if implemented by the ISA 3.1
+@code{lxvrbx} @code{lxvrhx} @code{lxvrwx} @code{lxvrdx} instructions.
+@findex vsx_xl_sext
+@findex vsx_xl_zext
+
+@smallexample
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed char *);
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed short *);
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed int *);
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed long long *);
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *);
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned short *);
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned int *);
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned long long *);
+@end smallexample
+
+Truncate and store the rightmost element of a vector, as if implemented by the
+ISA 3.1 @code{stxvrbx} @code{stxvrhx} @code{stxvrwx} @code{stxvrdx} instructions.
+@findex vec_xst_trunc
+
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec/VSX Built-in Functions
 
@@ -21609,10 +21644,10 @@ void amo_stdat_smin (int64_t *, int64_t);
 ISA 3.1 of the PowerPC added new Matrix-Multiply Assist (MMA) instructions.
 GCC provides support for these instructions through the following built-in
 functions which are enabled with the @code{-mmma} option.  The vec_t type
-below is defined to be a normal vector unsigned char type.  The uint2, uint4
+below is defined to be a normal vector unsigned char type.  The uint2, uint4
 and uint8 parameters are 2-bit, 4-bit and 8-bit unsigned integer constants
-respectively.  The compiler will verify that they are constants and that
-their values are within range. 
+respectively.  The compiler will verify that they are constants and that
+their values are within range.
 
 The built-in functions supported are:
 

@@ -1940,6 +1940,7 @@ read_count_file (void)
   while ((tag = gcov_read_unsigned ()))
     {
       unsigned length = gcov_read_unsigned ();
+      int read_length = (int)length;
       unsigned long base = gcov_position ();
 
       if (tag == GCOV_TAG_OBJECT_SUMMARY)
@@ -1972,7 +1973,6 @@ read_count_file (void)
 	}
       else if (tag == GCOV_TAG_FOR_COUNTER (GCOV_COUNTER_ARCS) && fn)
 	{
-	  int read_length = (int)length;
 	  length = abs (read_length);
 	  if (length != GCOV_TAG_COUNTER_LENGTH (fn->counts.size ()))
 	    goto mismatch;
@@ -1980,10 +1980,10 @@ read_count_file (void)
 	  if (read_length > 0)
 	    for (ix = 0; ix != fn->counts.size (); ix++)
 	      fn->counts[ix] += gcov_read_counter ();
-	  else
-	    length = 0;
 	}
-      gcov_sync (base, length);
+      if (read_length < 0)
+	read_length = 0;
+      gcov_sync (base, read_length);
       if ((error = gcov_is_error ()))
 	{
 	  fnotice (stderr,

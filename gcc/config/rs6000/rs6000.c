@@ -27047,11 +27047,10 @@ rs6000_const_f32_to_i32 (rtx operand)
 void
 rs6000_emit_xxspltidp_v2df (rtx dst, long value)
 {
-  printf("rs6000_emit_xxspltidp_v2df called %ld\n", value);
-  printf("rs6000_emit_xxspltidp_v2df called 0x%lx\n", value);
   if (((value & 0x7F800000) == 0) && ((value & 0x7FFFFF) != 0))
     inform (input_location,
-	    "the result for the xxspltidp instruction is undefined for subnormal input values.\n");
+	    "the result for the xxspltidp instruction "
+	    "is undefined for subnormal input values");
   emit_insn( gen_xxspltidp_v2df_inst (dst, GEN_INT (value)));
 }
 

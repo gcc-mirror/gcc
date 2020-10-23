@@ -10073,6 +10073,7 @@ package body Exp_Ch9 is
       Conc_Typ : Entity_Id;
       Concval  : Node_Id;
       Ename    : Node_Id;
+      Enc_Subp : Entity_Id;
       Index    : Node_Id;
       Old_Typ  : Entity_Id;
 
@@ -10588,6 +10589,26 @@ package body Exp_Ch9 is
       loop
          Old_Typ := Scope (Old_Typ);
       end loop;
+
+      --  Obtain the innermost enclosing callable construct for use in
+      --  generating a dynamic accessibility check.
+
+      Enc_Subp := Current_Scope;
+
+      if Ekind (Enc_Subp) not in Entry_Kind | Subprogram_Kind then
+         Enc_Subp := Enclosing_Subprogram (Enc_Subp);
+      end if;
+
+      --  Generate a dynamic accessibility check on the target object
+
+      Insert_Before_And_Analyze (N,
+        Make_Raise_Program_Error (Loc,
+          Condition =>
+            Make_Op_Gt (Loc,
+              Left_Opnd  => Accessibility_Level (Name (N), Dynamic_Level),
+              Right_Opnd => Make_Integer_Literal (Loc,
+                              Scope_Depth (Enc_Subp))),
+          Reason    => PE_Accessibility_Check_Failed));
 
       --  Ada 2012 (AI05-0030): We have a dispatching requeue of the form
       --  Concval.Ename where the type of Concval is class-wide concurrent

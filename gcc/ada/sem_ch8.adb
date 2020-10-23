@@ -52,6 +52,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch6;  use Sem_Ch6;
+with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Dim;  use Sem_Dim;
@@ -1544,6 +1545,21 @@ package body Sem_Ch8 is
          Set_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
 
+      elsif Present (Renamed_Entity (Old_P))
+        and then (From_Limited_With (Renamed_Entity (Old_P))
+                    or else Has_Limited_View (Renamed_Entity (Old_P)))
+        and then not
+          Unit_Is_Visible (Cunit (Get_Source_Unit (Renamed_Entity (Old_P))))
+      then
+         Error_Msg_NE
+           ("renaming of limited view of package & not usable in this context"
+            & " (RM 8.5.3(3.1/2))", Name (N), Renamed_Entity (Old_P));
+
+         --  Set basic attributes to minimize cascaded errors
+
+         Set_Ekind (New_P, E_Package);
+         Set_Etype (New_P, Standard_Void_Type);
+
       --  Here for OK package renaming
 
       else
@@ -2989,16 +3005,7 @@ package body Sem_Ch8 is
          --  Check whether the renaming is for a defaulted actual subprogram
          --  with a class-wide actual.
 
-         --  The class-wide wrapper is not needed in GNATprove_Mode and there
-         --  is an external axiomatization on the package.
-
-         if CW_Actual
-           and then Box_Present (Inst_Node)
-           and then not
-             (GNATprove_Mode
-               and then
-                 Present (Containing_Package_With_Ext_Axioms (Formal_Spec)))
-         then
+         if CW_Actual and then Box_Present (Inst_Node) then
             Build_Class_Wide_Wrapper (New_S, Old_S);
 
          elsif Is_Entity_Name (Nam)
@@ -3857,29 +3864,6 @@ package body Sem_Ch8 is
       Ada_Version := Save_AV;
       Ada_Version_Pragma := Save_AVP;
       Ada_Version_Explicit := Save_AV_Exp;
-
-      --  In GNATprove mode, the renamings of actual subprograms are replaced
-      --  with wrapper functions that make it easier to propagate axioms to the
-      --  points of call within an instance. Wrappers are generated if formal
-      --  subprogram is subject to axiomatization.
-
-      --  The types in the wrapper profiles are obtained from (instances of)
-      --  the types of the formal subprogram.
-
-      if Is_Actual
-        and then GNATprove_Mode
-        and then Present (Containing_Package_With_Ext_Axioms (Formal_Spec))
-        and then not Inside_A_Generic
-      then
-         if Ekind (Old_S) = E_Function then
-            Rewrite (N, Build_Function_Wrapper (Formal_Spec, Old_S));
-            Analyze (N);
-
-         elsif Ekind (Old_S) = E_Operator then
-            Rewrite (N, Build_Operator_Wrapper (Formal_Spec, Old_S));
-            Analyze (N);
-         end if;
-      end if;
 
       --  Check if we are looking at an Ada 2012 defaulted formal subprogram
       --  and mark any use_package_clauses that affect the visibility of the
@@ -6290,6 +6274,22 @@ package body Sem_Ch8 is
       then
          P_Name := Renamed_Object (P_Name);
 
+         if From_Limited_With (P_Name)
+           and then not Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
+         then
+            Error_Msg_NE
+              ("renaming of limited view of package & not usable in this"
+               & " context (RM 8.5.3(3.1/2))", Prefix (N), P_Name);
+
+         elsif Has_Limited_View (P_Name)
+           and then not Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
+           and then not Is_Visible_Through_Renamings (P_Name)
+         then
+            Error_Msg_NE
+              ("renaming of limited view of package & not usable in this"
+               & " context (RM 8.5.3(3.1/2))", Prefix (N), P_Name);
+         end if;
+
          --  Rewrite node with entity field pointing to renamed object
 
          Rewrite (Prefix (N), New_Copy (Prefix (N)));
@@ -6353,6 +6353,19 @@ package body Sem_Ch8 is
               and then Scope (Non_Limited_View (Id)) = P_Name
             then
                Candidate        := Get_Full_View (Non_Limited_View (Id));
+               Is_New_Candidate := True;
+
+            --  Handle special case where the prefix is a renaming of a shadow
+            --  package which is visible. Required to avoid reporting spurious
+            --  errors.
+
+            elsif Ekind (P_Name) = E_Package
+              and then From_Limited_With (P_Name)
+              and then not From_Limited_With (Id)
+              and then Sloc (Scope (Id)) = Sloc (P_Name)
+              and then Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
+            then
+               Candidate        := Get_Full_View (Id);
                Is_New_Candidate := True;
 
             --  An unusual case arises with a fully qualified name for an

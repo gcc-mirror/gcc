@@ -783,6 +783,13 @@ ipa_param_adjustments::modify_call (gcall *stmt,
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned i = 0;
+      cgraph_node *callee_node = cgraph_node::get (callee_decl);
+
+      /* FIXME: we don't seem to be able to insert debug args before clone
+	 is materialized.  Materializing them early leads to extra memory
+	 use.  */
+      if (callee_node->clone_of)
+	callee_node->get_untransformed_body ();
       for (tree old_parm = DECL_ARGUMENTS (old_decl);
 	   old_parm && i < old_nargs && ((int) i) < m_always_copy_start;
 	   old_parm = DECL_CHAIN (old_parm), i++)

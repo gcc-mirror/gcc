@@ -2002,6 +2002,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  || DECL_IMPLICIT_TYPEDEF_P (newdecl)))
     return NULL_TREE;
 
+  if (DECL_TEMPLATE_PARM_P (olddecl) != DECL_TEMPLATE_PARM_P (newdecl))
+    return NULL_TREE;
+
   if (!validate_constexpr_redeclaration (olddecl, newdecl))
     return error_mark_node;
 

@@ -264,6 +264,9 @@ package body Treepr is
       Lid : Int;
 
    begin
+      Push_Output;
+      Set_Standard_Output;
+
       if L < 0 then
          Lid := L;
 
@@ -292,6 +295,7 @@ package body Treepr is
       --  Now output the list
 
       Print_Tree_List (List_Id (Lid));
+      Pop_Output;
    end pl;
 
    --------
@@ -300,6 +304,9 @@ package body Treepr is
 
    procedure pn (N : Union_Id) is
    begin
+      Push_Output;
+      Set_Standard_Output;
+
       case N is
          when List_Low_Bound .. List_High_Bound - 1 =>
             pl (Int (N));
@@ -332,6 +339,8 @@ package body Treepr is
             Write_Int (Int (N));
             Write_Eol;
       end case;
+
+      Pop_Output;
    end pn;
 
    --------

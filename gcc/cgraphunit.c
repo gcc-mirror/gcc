@@ -673,9 +673,8 @@ cgraph_node::analyze (void)
       /* Lower the function.  */
       if (!lowered)
 	{
-	  if (nested)
+	  if (first_nested_function (this))
 	    lower_nested_functions (decl);
-	  gcc_assert (!nested);
 
 	  gimple_register_cfg_hooks ();
 	  bitmap_obstack_initialize (NULL);
@@ -1602,6 +1601,7 @@ mark_functions_to_output (void)
   FOR_EACH_FUNCTION (node)
     {
       tree decl = node->decl;
+      node->clear_stmts_in_references ();
 
       gcc_assert (!node->process || node->same_comdat_group);
       if (node->process)
@@ -2275,6 +2275,9 @@ cgraph_node::expand (void)
   announce_function (decl);
   process = 0;
   gcc_assert (lowered);
+
+  /* Initialize the default bitmap obstack.  */
+  bitmap_obstack_initialize (NULL);
   get_untransformed_body ();
 
   /* Generate RTL for the body of DECL.  */
@@ -2282,9 +2285,6 @@ cgraph_node::expand (void)
   timevar_push (TV_REST_OF_COMPILATION);
 
   gcc_assert (symtab->global_info_ready);
-
-  /* Initialize the default bitmap obstack.  */
-  bitmap_obstack_initialize (NULL);
 
   /* Initialize the RTL code for the function.  */
   saved_loc = input_location;
@@ -2299,7 +2299,8 @@ cgraph_node::expand (void)
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
 
   update_ssa (TODO_update_ssa_only_virtuals);
-  execute_all_ipa_transforms (false);
+  if (ipa_transforms_to_apply.exists ())
+    execute_all_ipa_transforms (false);
 
   /* Perform all tree transforms and optimizations.  */
 
@@ -2343,14 +2344,11 @@ cgraph_node::expand (void)
     }
 
   gimple_set_body (decl, NULL);
-  if (DECL_STRUCT_FUNCTION (decl) == 0
-      && !cgraph_node::get (decl)->origin)
+  if (DECL_STRUCT_FUNCTION (decl) == 0)
     {
       /* Stop pointing to the local nodes about to be freed.
 	 But DECL_INITIAL must remain nonzero so we know this
-	 was an actual function definition.
-	 For a nested function, this is done in c_pop_function_context.
-	 If rest_of_compilation set this to 0, leave it 0.  */
+	 was an actual function definition.  */
       if (DECL_INITIAL (decl) != 0)
 	DECL_INITIAL (decl) = error_mark_node;
     }
@@ -3000,6 +2998,9 @@ symbol_table::finalize_compilation_unit (void)
 
   /* Gimplify and lower thunks.  */
   analyze_functions (/*first_time=*/false);
+
+  /* All nested functions should be lowered now.  */
+  nested_function_info::release ();
 
   /* Offloading requires LTO infrastructure.  */
   if (!in_lto_p && g->have_offload)

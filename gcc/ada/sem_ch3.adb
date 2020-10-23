@@ -1329,7 +1329,8 @@ package body Sem_Ch3 is
       if Nkind (S) /= N_Subtype_Indication then
          Analyze (S);
 
-         if Present (Entity (S))
+         if Nkind (S) in N_Has_Entity
+           and then Present (Entity (S))
            and then Ekind (Root_Type (Entity (S))) = E_Incomplete_Type
          then
             Set_Directly_Designated_Type (T, Entity (S));
@@ -10875,6 +10876,13 @@ package body Sem_Ch3 is
                   then
                      null;
 
+                  --  Subprogram renamings cannot be overridden
+
+                  elsif Comes_From_Source (Subp)
+                     and then Present (Alias (Subp))
+                  then
+                     null;
+
                   else
                      Error_Msg_NE
                        ("type must be declared abstract or & overridden",
@@ -15725,7 +15733,9 @@ package body Sem_Ch3 is
          null;
 
       --  Ada 2005 (AI-228): Calculate the "require overriding" and "abstract"
-      --  properties of the subprogram, as defined in RM-3.9.3(4/2-6/2).
+      --  properties of the subprogram, as defined in RM-3.9.3(4/2-6/2). Note
+      --  that functions with controlling access results of record extensions
+      --  with a null extension part require overriding (AI95-00391/06).
 
       --  Ada 202x (AI12-0042): Similarly, set those properties for
       --  implementing the rule of RM 7.3.2(6.1/4).
@@ -15743,8 +15753,7 @@ package body Sem_Ch3 is
                              and then Ekind (Etype (New_Subp)) =
                                                        E_Anonymous_Access_Type
                              and then Designated_Type (Etype (New_Subp)) =
-                                                        Derived_Type
-                             and then not Is_Null_Extension (Derived_Type))
+                                                        Derived_Type)
                    or else (Comes_From_Source (Alias (New_Subp))
                              and then Is_EVF_Procedure (Alias (New_Subp)))
 
@@ -16754,6 +16763,14 @@ package body Sem_Ch3 is
                Next (Intf);
             end loop;
          end;
+
+         --  Check consistency of any nonoverridable aspects that are
+         --  inherited from multiple sources.
+
+         Check_Inherited_Nonoverridable_Aspects
+           (Inheritor      => T,
+            Interface_List => Interface_List (Def),
+            Parent_Type    => Parent_Type);
       end if;
 
       if Parent_Type = Any_Type

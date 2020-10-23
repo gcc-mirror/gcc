@@ -114,12 +114,11 @@ __go_syscall6(uintptr_t flag, uintptr_t a1, uintptr_t a2, uintptr_t a3,
 
 #endif
 
-// AIX ptrace is really different from Linux ptrace. Let syscall
-// package handles it.
-#if defined(HAVE_SYS_PTRACE_H) && !defined(_AIX)
+
+#if defined(HAVE_SYS_PTRACE_H) && defined(__linux__)
 
 // Despite documented appearances, this is actually implemented as
-// a variadic function within glibc.
+// a variadic function within glibc on Linux.
 
 long
 __go_ptrace(int request, pid_t pid, void *addr, void *data)

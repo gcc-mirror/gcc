@@ -186,10 +186,6 @@ package body GNAT.Sockets is
        else Value);
    --  Removes dot at the end of error message
 
-   procedure Raise_Socket_Error (Error : Integer);
-   --  Raise Socket_Error with an exception message describing the error code
-   --  from errno.
-
    procedure Raise_Host_Error (H_Error : Integer; Name : String);
    --  Raise Host_Error exception with message describing error code (note
    --  hstrerror seems to be obsolete) from h_errno. Name is the name

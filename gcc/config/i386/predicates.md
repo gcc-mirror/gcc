@@ -1081,6 +1081,19 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "vector_memory_operand")))
 
+(define_predicate "bcst_mem_operand"
+  (and (match_code "vec_duplicate")
+       (and (match_test "TARGET_AVX512F")
+	    (ior (match_test "TARGET_AVX512VL")
+		 (match_test "GET_MODE_SIZE (GET_MODE (op)) == 64")))
+       (match_test "VALID_BCST_MODE_P (GET_MODE_INNER (GET_MODE (op)))")
+       (match_test "memory_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))")))
+
+; Return true when OP is bcst_mem_operand or vector_memory_operand.
+(define_predicate "bcst_vector_operand"
+  (ior (match_operand 0 "vector_operand")
+       (match_operand 0 "bcst_mem_operand")))
+
 ;; Return true when OP is either nonimmediate operand, or any
 ;; CONST_VECTOR.
 (define_predicate "nonimmediate_or_const_vector_operand"

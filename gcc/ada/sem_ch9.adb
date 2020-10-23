@@ -2360,7 +2360,8 @@ package body Sem_Ch9 is
          --  entry body) unless it is a parameter of the innermost enclosing
          --  accept statement (or entry body).
 
-         if Object_Access_Level (Target_Obj) >= Scope_Depth (Outer_Ent)
+         if Static_Accessibility_Level (Target_Obj, Zero_On_Dynamic_Level)
+              >= Scope_Depth (Outer_Ent)
            and then
              (not Is_Entity_Name (Target_Obj)
                or else not Is_Formal (Entity (Target_Obj))
@@ -3532,6 +3533,14 @@ package body Sem_Ch9 is
 
             Next (Iface);
          end loop;
+
+         --  Check consistency of any nonoverridable aspects that are
+         --  inherited from multiple sources.
+
+         Check_Inherited_Nonoverridable_Aspects
+           (Inheritor      => N,
+            Interface_List => Interface_List (N),
+            Parent_Type    => Empty);
       end if;
 
       if not Has_Private_Declaration (T) then

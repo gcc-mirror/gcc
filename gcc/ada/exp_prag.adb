@@ -682,12 +682,16 @@ package body Exp_Prag is
          Init_Val : Node_Id) return Node_Id;
       --  Build an object declaration of the form
       --
-      --    Decl_Id : CUDA.Vectory_Types.Dim3 := Val;
+      --    Decl_Id : CUDA.Internal.Dim3 := Val;
       --
       --  Val depends on the nature of Init_Val, as follows:
       --
-      --    * If Init_Val is already of type CUDA.Vector_Types.Dim3, then
-      --      Init_Val is used.
+      --    * If Init_Val is of type CUDA.Vector_Types.Dim3, then Val has the
+      --      following form:
+      --
+      --        (Interfaces.C.Unsigned (Val.X),
+      --         Interfaces.C.Unsigned (Val.Y),
+      --         Interfaces.C.Unsigned (Val.Z))
       --
       --    * If Init_Val is a single Integer, Val has the following form:
       --
@@ -729,8 +733,8 @@ package body Exp_Prag is
         (Decl_Id  : Entity_Id;
          Init_Val : Node_Id) return Node_Id;
       --  Builds a declaration the Defining_Identifier of which is Decl_Id, the
-      --  type of which is CUDA.Driver_Types.Stream_T and the value of which is
-      --  Init_Val if present or null if not.
+      --  type of which is inferred from CUDA.Internal.Launch_Kernel and the
+      --  value of which is Init_Val if present or null if not.
 
       function Build_Simple_Declaration_With_Default
          (Decl_Id     : Entity_Id;
@@ -747,6 +751,16 @@ package body Exp_Prag is
       --  Build a declaration the Defining_Identifier of which is Decl_Id, the
       --  type of which is Integer, the value of which is Init_Val if present
       --  and 0 otherwise.
+
+      function Etype_Or_Dim3 (N : Node_Id) return Node_Id;
+      --  If N is an aggregate whose type is unknown, return a new occurrence
+      --  of the public Dim3 type. Otherwise, return a new occurrence of N's
+      --  type.
+
+      function Get_Nth_Arg_Type
+         (Subprogram : Entity_Id;
+          N          : Positive) return Entity_Id;
+      --  Returns the type of the Nth argument of Subprogram.
 
       function To_Addresses (Elmts : Elist_Id) return List_Id;
       --  Returns a new list containing each element of Elmts wrapped in an
@@ -788,57 +802,81 @@ package body Exp_Prag is
         (Decl_Id  : Entity_Id;
          Init_Val : Node_Id) return Node_Id
       is
-         Grid_Dim_X : Node_Id;
-         Grid_Dim_Y : Node_Id;
-         Grid_Dim_Z : Node_Id;
-         Init_Value : Node_Id;
+         --  Expressions for each component of the returned Dim3
+         Dim_X    : Node_Id;
+         Dim_Y    : Node_Id;
+         Dim_Z    : Node_Id;
+
+         --  Type of CUDA.Internal.Dim3 - inferred from
+         --  RE_Push_Call_Configuration to avoid needing changes in GNAT when
+         --  the CUDA bindings change (this happens frequently).
+         Internal_Dim3 : constant Entity_Id :=
+           Get_Nth_Arg_Type (RTE (RE_Push_Call_Configuration), 1);
+
+         --  Entities for each component of external and internal Dim3
+         First_Component  : Entity_Id := First_Entity (RTE (RE_Dim3));
+         Second_Component : Entity_Id := Next_Entity (First_Component);
+         Third_Component  : Entity_Id := Next_Entity (Second_Component);
       begin
+
+         --  Sem_prag.adb ensured that Init_Val is either a Dim3, an
+         --  aggregate of three Any_Integers or Any_Integer.
+
+         --  If Init_Val is a Dim3, use each of its components.
+
          if Etype (Init_Val) = RTE (RE_Dim3) then
-            Init_Value := Init_Val;
+            Dim_X := Make_Selected_Component (Loc,
+              Prefix        => New_Occurrence_Of (Entity (Init_Val), Loc),
+              Selector_Name => New_Occurrence_Of (First_Component, Loc));
+
+            Dim_Y := Make_Selected_Component (Loc,
+              Prefix        => New_Occurrence_Of (Entity (Init_Val), Loc),
+              Selector_Name => New_Occurrence_Of (Second_Component, Loc));
+
+            Dim_Z := Make_Selected_Component (Loc,
+              Prefix        => New_Occurrence_Of (Entity (Init_Val), Loc),
+              Selector_Name => New_Occurrence_Of (Third_Component, Loc));
          else
             --  If Init_Val is an aggregate, use each of its arguments
 
             if Nkind (Init_Val) = N_Aggregate then
-               Grid_Dim_X := First (Expressions (Init_Val));
-               Grid_Dim_Y := Next (Grid_Dim_X);
-               Grid_Dim_Z := Next (Grid_Dim_Y);
+               Dim_X := First (Expressions (Init_Val));
+               Dim_Y := Next (Dim_X);
+               Dim_Z := Next (Dim_Y);
 
             --  Otherwise, we know it is an integer and the rest defaults to 1.
 
             else
-               Grid_Dim_X := Init_Val;
-               Grid_Dim_Y := Make_Integer_Literal (Loc, 1);
-               Grid_Dim_Z := Make_Integer_Literal (Loc, 1);
+               Dim_X := Init_Val;
+               Dim_Y := Make_Integer_Literal (Loc, 1);
+               Dim_Z := Make_Integer_Literal (Loc, 1);
             end if;
-
-            --  Then cast every value to Interfaces.C.Unsigned and build an
-            --  aggregate we can use to initialize the Dim3.
-
-            Init_Value :=
-              Make_Aggregate (Loc,
-                Expressions => New_List (
-                  Make_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RO_IC_Unsigned), Loc),
-                    Expression   => New_Copy_Tree (Grid_Dim_X)),
-
-                  Make_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RO_IC_Unsigned), Loc),
-                    Expression   => New_Copy_Tree (Grid_Dim_Y)),
-
-                  Make_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RO_IC_Unsigned), Loc),
-                    Expression   => New_Copy_Tree (Grid_Dim_Z))));
          end if;
 
-         --  Finally return the declaration
+         First_Component  := First_Entity (Internal_Dim3);
+         Second_Component := Next_Entity (First_Component);
+         Third_Component  := Next_Entity (Second_Component);
+
+         --  Finally return the CUDA.Internal.Dim3 declaration with an
+         --  aggregate initialization expression.
 
          return Make_Object_Declaration (Loc,
             Defining_Identifier => Decl_Id,
-            Object_Definition   => New_Occurrence_Of (RTE (RE_Dim3), Loc),
-            Expression          => Init_Value);
+            Object_Definition   => New_Occurrence_Of (Internal_Dim3, Loc),
+            Expression          => Make_Aggregate (Loc,
+              Expressions => New_List (
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark =>
+                     New_Occurrence_Of (Etype (First_Component), Loc),
+                   Expression   => New_Copy_Tree (Dim_X)),
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark =>
+                     New_Occurrence_Of (Etype (Second_Component), Loc),
+                   Expression   => New_Copy_Tree (Dim_Y)),
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark =>
+                     New_Occurrence_Of (Etype (Third_Component), Loc),
+                   Expression   => New_Copy_Tree (Dim_Z)))));
       end Build_Dim3_Declaration;
 
       -----------------------------------
@@ -910,7 +948,8 @@ package body Exp_Prag is
            (Decl_Id     => Decl_Id,
             Init_Val    => Init_Val,
             Typ         =>
-              New_Occurrence_Of (RTE (RO_IC_Unsigned_Long_Long), Loc),
+              New_Occurrence_Of
+                (Get_Nth_Arg_Type (RTE (RE_Launch_Kernel), 5), Loc),
             Default_Val => Make_Integer_Literal (Loc, 0));
       end Build_Shared_Memory_Declaration;
 
@@ -948,9 +987,42 @@ package body Exp_Prag is
          return Build_Simple_Declaration_With_Default
            (Decl_Id     => Decl_Id,
             Init_Val    => Init_Val,
-            Typ         => New_Occurrence_Of (RTE (RE_Stream_T), Loc),
+            Typ         =>
+              New_Occurrence_Of
+                (Get_Nth_Arg_Type (RTE (RE_Launch_Kernel), 6), Loc),
             Default_Val => Make_Null (Loc));
       end Build_Stream_Declaration;
+
+      ------------------------
+      -- Etype_Or_Dim3  --
+      ------------------------
+
+      function Etype_Or_Dim3 (N : Node_Id) return Node_Id is
+      begin
+         if Nkind (N) = N_Aggregate and then Is_Composite_Type (Etype (N))
+         then
+            return New_Occurrence_Of (RTE (RE_Dim3), Sloc (N));
+         end if;
+
+         return New_Occurrence_Of (Etype (N), Loc);
+      end Etype_Or_Dim3;
+
+      ----------------------
+      -- Get_Nth_Arg_Type --
+      ----------------------
+
+      function Get_Nth_Arg_Type
+         (Subprogram : Entity_Id;
+          N          : Positive) return Entity_Id
+      is
+         Argument : Entity_Id := First_Entity (Subprogram);
+      begin
+         for J in 2 .. N loop
+            Argument := Next_Entity (Argument);
+         end loop;
+
+         return Etype (Argument);
+      end Get_Nth_Arg_Type;
 
       ------------------
       -- To_Addresses --
@@ -986,12 +1058,27 @@ package body Exp_Prag is
       Shared_Memory    : constant Node_Id := Get_Pragma_Arg (Arg_N (N, 4));
       CUDA_Stream      : constant Node_Id := Get_Pragma_Arg (Arg_N (N, 5));
 
-      --  Entities of objects that capture the value of pragma arguments
-
+      --  Entities of objects that will be overwritten by calls to cuda runtime
       Grids_Id  : constant Entity_Id := Make_Temporary (Loc, 'C');
       Blocks_Id : constant Entity_Id := Make_Temporary (Loc, 'C');
       Memory_Id : constant Entity_Id := Make_Temporary (Loc, 'C');
       Stream_Id : constant Entity_Id := Make_Temporary (Loc, 'C');
+
+      --  Entities of objects that capture the value of pragma arguments
+      Temp_Grid  : constant Entity_Id := Make_Temporary (Loc, 'C');
+      Temp_Block : constant Entity_Id := Make_Temporary (Loc, 'C');
+
+      --  Declarations for temporary block and grids. These needs to be stored
+      --  in temporary declarations as the expressions will need to be
+      --  referenced multiple times but could have side effects.
+      Temp_Grid_Decl : constant Node_Id := Make_Object_Declaration (Loc,
+        Defining_Identifier => Temp_Grid,
+        Object_Definition   => Etype_Or_Dim3 (Grid_Dimensions),
+        Expression          => Grid_Dimensions);
+      Temp_Block_Decl : constant Node_Id := Make_Object_Declaration (Loc,
+        Defining_Identifier => Temp_Block,
+        Object_Definition   => Etype_Or_Dim3 (Block_Dimensions),
+        Expression          => Block_Dimensions);
 
       --  List holding the entities of the copies of Procedure_Call's
       --  arguments.
@@ -1016,14 +1103,25 @@ package body Exp_Prag is
    --  Start of processing for CUDA_Execute
 
    begin
+      --  Append temporary declarations
+
+      Append_To (Blk_Decls, Temp_Grid_Decl);
+      Analyze (Temp_Grid_Decl);
+
+      Append_To (Blk_Decls, Temp_Block_Decl);
+      Analyze (Temp_Block_Decl);
+
       --  Build parameter declarations for CUDA API calls
 
       Append_To
-        (Blk_Decls, Build_Dim3_Declaration (Grids_Id, Grid_Dimensions));
+        (Blk_Decls,
+         Build_Dim3_Declaration
+           (Grids_Id, New_Occurrence_Of (Temp_Grid, Loc)));
 
       Append_To
         (Blk_Decls,
-         Build_Dim3_Declaration (Blocks_Id, Block_Dimensions));
+         Build_Dim3_Declaration
+           (Blocks_Id, New_Occurrence_Of (Temp_Block, Loc)));
 
       Append_To
         (Blk_Decls,
@@ -1831,11 +1929,7 @@ package body Exp_Prag is
       --  Raise Assertion_Error when the corresponding consequence of a case
       --  guard that evaluated to True fails.
 
-      if No (Stmts) then
-         Stmts := New_List;
-      end if;
-
-      Append_To (Stmts, Conseq_Checks);
+      Append_New_To (Stmts, Conseq_Checks);
 
       In_Assertion_Expr := In_Assertion_Expr - 1;
    end Expand_Pragma_Contract_Cases;
@@ -2451,28 +2545,20 @@ package body Exp_Prag is
 
          --  Step 3: Store value of the expression from the previous iteration
 
-         if No (Old_Assign) then
-            Old_Assign := New_List;
-         end if;
-
          --  Generate:
          --    Old := Curr;
 
-         Append_To (Old_Assign,
+         Append_New_To (Old_Assign,
            Make_Assignment_Statement (Loc,
              Name       => New_Occurrence_Of (Old_Id, Loc),
              Expression => New_Occurrence_Of (Curr_Id, Loc)));
 
          --  Step 4: Store the current value of the expression
 
-         if No (Curr_Assign) then
-            Curr_Assign := New_List;
-         end if;
-
          --  Generate:
          --    Curr := <Expr>;
 
-         Append_To (Curr_Assign,
+         Append_New_To (Curr_Assign,
            Make_Assignment_Statement (Loc,
              Name       => New_Occurrence_Of (Curr_Id, Loc),
              Expression => Relocate_Node (Expr)));

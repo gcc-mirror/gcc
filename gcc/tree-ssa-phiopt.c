@@ -1842,10 +1842,10 @@ cond_removal_in_popcount_clz_ctz_pattern (basic_block cond_bb,
     CASE_CFN_CLZ:
       if (INTEGRAL_TYPE_P (TREE_TYPE (arg)))
 	{
-	  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-	  if (direct_internal_fn_supported_p (IFN_CLZ, TREE_TYPE (arg),
-					      OPTIMIZE_FOR_BOTH)
-	      && CLZ_DEFINED_VALUE_AT_ZERO (mode, val) == 2)
+	  tree type = TREE_TYPE (arg);
+	  if (direct_internal_fn_supported_p (IFN_CLZ, type, OPTIMIZE_FOR_BOTH)
+	      && CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type),
+					    val) == 2)
 	    {
 	      ifn = IFN_CLZ;
 	      break;
@@ -1855,10 +1855,10 @@ cond_removal_in_popcount_clz_ctz_pattern (basic_block cond_bb,
     CASE_CFN_CTZ:
       if (INTEGRAL_TYPE_P (TREE_TYPE (arg)))
 	{
-	  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
-	  if (direct_internal_fn_supported_p (IFN_CTZ, TREE_TYPE (arg),
-					      OPTIMIZE_FOR_BOTH)
-	      && CTZ_DEFINED_VALUE_AT_ZERO (mode, val) == 2)
+	  tree type = TREE_TYPE (arg);
+	  if (direct_internal_fn_supported_p (IFN_CTZ, type, OPTIMIZE_FOR_BOTH)
+	      && CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type),
+					    val) == 2)
 	    {
 	      ifn = IFN_CTZ;
 	      break;

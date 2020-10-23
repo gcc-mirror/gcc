@@ -1272,6 +1272,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
 		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
 
+#define VALID_BCST_MODE_P(MODE)			\
+  ((MODE) == SFmode || (MODE) == DFmode		\
+   || (MODE) == SImode || (MODE) == DImode)
+
 /* It is possible to write patterns to move flags; but until someone
    does it,  */
 #define AVOID_CCMODE_COPIES

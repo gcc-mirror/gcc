@@ -1334,6 +1334,26 @@ jobserver_active_p (void)
     return JS_PREFIX "cannot access %<" JS_NEEDLE "%> file descriptors";
 }
 
+/* Test that a make command is present and working, return true if so.  */
+
+static bool
+make_exists (void)
+{
+  const char *make = "make";
+  char **make_argv = buildargv (getenv ("MAKE"));
+  if (make_argv)
+    make = make_argv[0];
+  const char *make_args[] = {make, "--version", NULL};
+
+  int exit_status = 0;
+  int err = 0;
+  const char *errmsg
+    = pex_one (PEX_SEARCH, make_args[0], CONST_CAST (char **, make_args),
+	       "make", NULL, NULL, &exit_status, &err);
+  freeargv (make_argv);
+  return errmsg == NULL && exit_status == 0 && err == 0;
+}
+
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
 static void
@@ -1569,6 +1589,10 @@ run_gcc (unsigned argc, char *argv[])
 	  jobserver = 1;
 	}
     }
+
+  /* We need make working for a parallel execution.  */
+  if (parallel && !make_exists ())
+    parallel = 0;
 
   if (!dumppfx)
     {

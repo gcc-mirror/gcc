@@ -18,13 +18,6 @@
 -- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
 -- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
--- As a special exception,  if other files  instantiate  generics from this --
--- unit, or you link  this unit with other files  to produce an executable, --
--- this  unit  does not  by itself cause  the resulting  executable  to  be --
--- covered  by the  GNU  General  Public  License.  This exception does not --
--- however invalidate  any other reasons why  the executable file  might be --
--- covered by the  GNU Public License.                                      --
---                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
@@ -246,10 +239,6 @@ package Sem_Aux is
    --  only checks for a rep item that has been directly specified for E (and
    --  not inherited from its parents, if any). If found then True is returned,
    --  otherwise False indicates that no matching entry was found.
-
-   function Has_Rep_Item (E : Entity_Id; N : Node_Id) return Boolean;
-   --  Determine whether the Rep_Item chain of arbitrary entity E contains item
-   --  N. N must denote a valid rep item.
 
    function Has_Rep_Pragma
      (E             : Entity_Id;

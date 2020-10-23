@@ -799,23 +799,14 @@ procedure Gnat1drv is
          Set_Standard_Output;
       end if;
 
-      --  Enable or disable the support for 128-bit types
+      --  Enable or disable the support for 128-bit types. It is automatically
+      --  enabled if the back end supports them, unless -gnatd.H is specified.
 
-      if Enable_128bit_Types then
-         if Ttypes.Standard_Long_Long_Long_Integer_Size < 128 then
-            Write_Line
-              ("128-bit types not implemented in this configuration");
-            raise Unrecoverable_Error;
-         end if;
+      Enable_128bit_Types := Ttypes.Standard_Long_Long_Long_Integer_Size = 128;
 
-      --  In GNAT mode the support is automatically enabled if available,
-      --  so that the runtime is compiled with the support enabled.
+      if Enable_128bit_Types and then Debug_Flag_Dot_HH then
+         Enable_128bit_Types := False;
 
-      elsif GNAT_Mode then
-         Enable_128bit_Types :=
-           Ttypes.Standard_Long_Long_Long_Integer_Size = 128;
-
-      else
          Ttypes.Standard_Long_Long_Long_Integer_Size :=
            Ttypes.Standard_Long_Long_Integer_Size;
          Ttypes.Standard_Long_Long_Long_Integer_Width :=

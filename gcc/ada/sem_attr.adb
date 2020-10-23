@@ -6288,6 +6288,15 @@ package body Sem_Attr is
 
          if Comes_From_Source (N) then
             Check_Not_Incomplete_Type;
+
+            --  'Tag requires visibility on the corresponding package holding
+            --  the tag, so record a reference here, to avoid spurious unused
+            --  with_clause reported when compiling the main unit.
+
+            if In_Extended_Main_Source_Unit (Current_Scope) then
+               Set_Referenced (P_Type, True);
+               Set_Referenced (Scope (P_Type), True);
+            end if;
          end if;
 
          --  Set appropriate type
@@ -7914,7 +7923,7 @@ package body Sem_Attr is
 
                if Known_Static_Component_Bit_Offset (CE) then
                   Compile_Time_Known_Attribute
-                    (N, Component_Bit_Offset (Entity (P)));
+                    (N, Component_Bit_Offset (CE));
                else
                   Check_Expressions;
                end if;
@@ -11277,10 +11286,10 @@ package body Sem_Attr is
                  --  Otherwise a check will be generated later when the return
                  --  statement gets expanded.
 
-                 and then not Is_Special_Aliased_Formal_Access
-                                (N, Current_Scope)
+                 and then not Is_Special_Aliased_Formal_Access (N)
                  and then
-                   Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
+                   Static_Accessibility_Level (N, Zero_On_Dynamic_Level) >
+                     Deepest_Type_Access_Level (Btyp)
                then
                   --  In an instance, this is a runtime check, but one we know
                   --  will fail, so generate an appropriate warning. As usual,
@@ -11423,8 +11432,20 @@ package body Sem_Attr is
 
                if Attr_Id /= Attribute_Unchecked_Access
                  and then Ekind (Btyp) = E_General_Access_Type
+
+                 --  Call Accessibility_Level directly to avoid returning zero
+                 --  on cases where the prefix is an explicitly aliased
+                 --  parameter in a return statement, instead of using the
+                 --  normal Static_Accessibility_Level function.
+
+                 --  Shouldn't this be handled somehow in
+                 --  Static_Accessibility_Level ???
+
+                 and then Nkind (Accessibility_Level (P, Dynamic_Level))
+                            = N_Integer_Literal
                  and then
-                   Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
+                   Intval (Accessibility_Level (P, Dynamic_Level))
+                     > Deepest_Type_Access_Level (Btyp)
                then
                   Accessibility_Message;
                   return;
@@ -11445,7 +11466,8 @@ package body Sem_Attr is
                --  anonymous_access_to_protected, there are no accessibility
                --  checks either. Omit check entirely for Unrestricted_Access.
 
-               elsif Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
+               elsif Static_Accessibility_Level (P, Zero_On_Dynamic_Level)
+                       > Deepest_Type_Access_Level (Btyp)
                  and then Comes_From_Source (N)
                  and then Ekind (Btyp) = E_Access_Protected_Subprogram_Type
                  and then Attr_Id /= Attribute_Unrestricted_Access
@@ -11493,7 +11515,7 @@ package body Sem_Attr is
 
             Set_Etype (N, Btyp);
 
-            --  Check for incorrect atomic/volatile reference (RM C.6(12))
+            --  Check for incorrect atomic/volatile/VFA reference (RM C.6(12))
 
             if Attr_Id /= Attribute_Unrestricted_Access then
                if Is_Atomic_Object (P)
@@ -11509,6 +11531,27 @@ package body Sem_Attr is
                   Error_Msg_F
                     ("access to volatile object cannot yield access-to-" &
                      "non-volatile type", P);
+
+               elsif Is_Volatile_Full_Access_Object (P)
+                 and then not Is_Volatile_Full_Access (Designated_Type (Typ))
+               then
+                  Error_Msg_F
+                    ("access to full access object cannot yield access-to-" &
+                     "non-full-access type", P);
+               end if;
+
+               --  Check for nonatomic subcomponent of a full access object
+               --  in Ada 2020 (RM C.6 (12)).
+
+               if Ada_Version >= Ada_2020
+                 and then Is_Subcomponent_Of_Full_Access_Object (P)
+                 and then not Is_Atomic_Object (P)
+               then
+                  Error_Msg_NE
+                    ("cannot have access attribute with prefix &", N, P);
+                  Error_Msg_N
+                    ("\nonatomic subcomponent of full access object "
+                     & "(RM C.6(12))", N);
                end if;
             end if;
 
@@ -12406,11 +12449,17 @@ package body Sem_Attr is
       --  applies to an ancestor type.
 
       while Etype (Etyp) /= Etyp loop
-         Etyp := Etype (Etyp);
+         declare
+            Derived_Type : constant Entity_Id := Etyp;
+         begin
+            Etyp := Etype (Etyp);
 
-         if Has_Stream_Attribute_Definition (Etyp, Nam) then
-            return True;
-         end if;
+            if Has_Stream_Attribute_Definition (Etyp, Nam) then
+               if not Derivation_Too_Early_To_Inherit (Derived_Type, Nam) then
+                  return True;
+               end if;
+            end if;
+         end;
       end loop;
 
       if Ada_Version < Ada_2005 then

@@ -81,7 +81,7 @@ ALIGN (16)
 #define SQRT80 sqrtw
 #endif
 
-     typedef ALIGN (16)
+     typedef ALIGN (8)
      struct {
        UINT64 w[3];
      } UINT192;

@@ -2271,6 +2271,14 @@ execute_all_ipa_transforms (bool do_not_collect)
     return;
   node = cgraph_node::get (current_function_decl);
 
+  cgraph_node *next_clone;
+  for (cgraph_node *n = node->clones; n; n = next_clone)
+    {
+      next_clone = n->next_sibling_clone;
+      if (n->decl != node->decl)
+	n->materialize_clone ();
+    }
+
   if (node->ipa_transforms_to_apply.exists ())
     {
       unsigned int i;

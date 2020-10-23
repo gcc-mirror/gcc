@@ -709,13 +709,12 @@ package Rtsfind is
      RE_Stream_T,                        -- CUDA.Driver_Types
 
      RE_Fatbin_Wrapper,                  -- CUDA.Internal
-     RE_Push_Call_Configuration,         -- CUDA.Internal
+     RE_Launch_Kernel,                   -- CUDA.Internal
      RE_Pop_Call_Configuration,          -- CUDA.Internal
+     RE_Push_Call_Configuration,         -- CUDA.Internal
      RE_Register_Fat_Binary,             -- CUDA.Internal
      RE_Register_Fat_Binary_End,         -- CUDA.Internal
      RE_Register_Function,               -- CUDA.Internal
-
-     RE_Launch_Kernel,                   -- CUDA.Runtime_Api
 
      RE_Dim3,                            -- CUDA.Vector_Types
 
@@ -731,7 +730,6 @@ package Rtsfind is
      RE_Unsigned_128,                    -- Interfaces
 
      RO_IC_Unsigned,                     -- Interfaces.C
-     RO_IC_Unsigned_Long_Long,           -- Interfaces.C
 
      RE_Chars_Ptr,                       -- Interfaces.C.Strings
      RE_New_Char_Array,                  -- Interfaces.C.Strings
@@ -2358,13 +2356,12 @@ package Rtsfind is
      RE_Stream_T                         => CUDA_Driver_Types,
 
      RE_Fatbin_Wrapper                   => CUDA_Internal,
-     RE_Push_Call_Configuration          => CUDA_Internal,
+     RE_Launch_Kernel                    => CUDA_Internal,
      RE_Pop_Call_Configuration           => CUDA_Internal,
+     RE_Push_Call_Configuration          => CUDA_Internal,
      RE_Register_Fat_Binary              => CUDA_Internal,
      RE_Register_Fat_Binary_End          => CUDA_Internal,
      RE_Register_Function                => CUDA_Internal,
-
-     RE_Launch_Kernel                    => CUDA_Runtime_Api,
 
      RE_Dim3                             => CUDA_Vector_Types,
 
@@ -2380,7 +2377,6 @@ package Rtsfind is
      RE_Unsigned_128                     => Interfaces,
 
      RO_IC_Unsigned                      => Interfaces_C,
-     RO_IC_Unsigned_Long_Long            => Interfaces_C,
 
      RE_Chars_Ptr                        => Interfaces_C_Strings,
      RE_New_Char_Array                   => Interfaces_C_Strings,

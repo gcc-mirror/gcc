@@ -47,10 +47,11 @@ test_wait_for()
 // needs to use a more recent epoch.
 struct recent_epoch_float_clock
 {
-  using rep = std::chrono::duration<float>::rep;
-  using period = std::chrono::duration<float>::period;
-  using time_point = std::chrono::time_point<recent_epoch_float_clock,
-    std::chrono::duration<float>>;
+  using duration = std::chrono::duration<float>;
+  using rep = duration::rep;
+  using period = duration::period;
+  using time_point
+    = std::chrono::time_point<recent_epoch_float_clock, duration>;
   static constexpr bool is_steady = true;
 
   static const std::chrono::steady_clock::time_point epoch;

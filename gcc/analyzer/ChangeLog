@@ -1,3 +1,17 @@
+2020-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97514
+	* engine.cc (exploded_graph::add_function_entry): Handle failure
+	to create an enode, rather than asserting.
+
+2020-10-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97489
+	* engine.cc (exploded_graph::add_function_entry): Assert that we
+	have a function body.
+	(exploded_graph::on_escaped_function): Reject fndecls that don't
+	have a function body.
+
 2020-10-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93388

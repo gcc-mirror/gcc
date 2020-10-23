@@ -1,4 +1,5 @@
-/* { dg-do compile { target { powerpc64le-*-* } } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -maltivec" } */
 
 /* The expansion for vector character multiply introduces a vperm operation.

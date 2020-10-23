@@ -334,7 +334,8 @@ omp_discover_implicit_declare_target (void)
 	else if (DECL_STRUCT_FUNCTION (node->decl)
 		 && DECL_STRUCT_FUNCTION (node->decl)->has_omp_target)
 	  worklist.safe_push (node->decl);
-	for (cgn = node->nested; cgn; cgn = cgn->next_nested)
+	for (cgn = first_nested_function (node);
+	     cgn; cgn = next_nested_function (cgn))
 	  if (omp_declare_target_fn_p (cgn->decl))
 	    worklist.safe_push (cgn->decl);
 	  else if (DECL_STRUCT_FUNCTION (cgn->decl)

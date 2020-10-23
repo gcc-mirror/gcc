@@ -2097,7 +2097,8 @@ package body Sem_Res is
          then
             Error_Msg_NE ("ambiguous call to&", Arg, Name (Arg));
 
-            --  Could use comments on what is going on here???
+            --  Examine possible interpretations, and adapt the message
+            --  for inherited subprograms declared by a type derivation.
 
             Get_First_Interp (Name (Arg), I, It);
             while Present (It.Nam) loop
@@ -2112,6 +2113,11 @@ package body Sem_Res is
                Get_Next_Interp (I, It);
             end loop;
          end if;
+
+         --  Additional message and hint if the ambiguity involves an Ada2020
+         --  container aggregate.
+
+         Check_Ambiguous_Aggregate (N);
       end Report_Ambiguous_Argument;
 
       -----------------------
@@ -3473,13 +3479,13 @@ package body Sem_Res is
 
                elsif Has_Discriminants (F_Typ)
                  and then not Is_Constrained (F_Typ)
-                 and then not Has_Constrained_Partial_View (F_Typ)
-                 and then not Is_Generic_Type (F_Typ)
+                 and then not Object_Type_Has_Constrained_Partial_View
+                                (Typ => F_Typ, Scop => Current_Scope)
                then
                   null;
 
                else
-                  Error_Msg_NE ("untagged actual does not match "
+                  Error_Msg_NE ("untagged actual does not statically match "
                                 & "aliased formal&", A, F);
                end if;
 
@@ -3493,16 +3499,16 @@ package body Sem_Res is
 
             elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type then
                if Nkind (Parent (N)) = N_Type_Conversion
-                 and then Type_Access_Level (Etype (Parent (N))) <
-                                                        Object_Access_Level (A)
+                 and then Type_Access_Level (Etype (Parent (N)))
+                            < Static_Accessibility_Level (A, Object_Decl_Level)
                then
                   Error_Msg_N ("aliased actual has wrong accessibility", A);
                end if;
 
             elsif Nkind (Parent (N)) = N_Qualified_Expression
               and then Nkind (Parent (Parent (N))) = N_Allocator
-              and then Type_Access_Level (Etype (Parent (Parent (N)))) <
-                                                        Object_Access_Level (A)
+              and then Type_Access_Level (Etype (Parent (Parent (N))))
+                         < Static_Accessibility_Level (A, Object_Decl_Level)
             then
                Error_Msg_N
                  ("aliased actual in allocator has wrong accessibility", A);
@@ -4720,7 +4726,7 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  Check illegal cases of atomic/volatile actual (RM C.6(12,13))
+            --  Check illegal cases of atomic/volatile/VFA actual (RM C.6(12))
 
             if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
               and then Comes_From_Source (N)
@@ -4742,17 +4748,29 @@ package body Sem_Res is
                      A, F);
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
+
+               elsif Is_Volatile_Full_Access_Object (A)
+                 and then not Is_Volatile_Full_Access (Etype (F))
+               then
+                  Error_Msg_NE
+                    ("cannot pass full access object to nonfull access "
+                     & "formal&", A, F);
+                  Error_Msg_N
+                    ("\which is passed by reference (RM C.6(12))", A);
                end if;
 
+               --  Check for nonatomic subcomponent of a full access object
+               --  in Ada 2020 (RM C.6 (12)).
+
                if Ada_Version >= Ada_2020
-                 and then Is_Subcomponent_Of_Atomic_Object (A)
+                 and then Is_Subcomponent_Of_Full_Access_Object (A)
                  and then not Is_Atomic_Object (A)
                then
                   Error_Msg_N
-                    ("cannot pass nonatomic subcomponent of atomic object",
-                     A);
+                    ("cannot pass nonatomic subcomponent of full access "
+                     & "object", A);
                   Error_Msg_NE
-                    ("\to formal & which is passed by reference (RM C.6(13))",
+                    ("\to formal & which is passed by reference (RM C.6(12))",
                      A, F);
                end if;
             end if;
@@ -5043,8 +5061,9 @@ package body Sem_Res is
          elsif Nkind (Disc_Exp) = N_Attribute_Reference
            and then Get_Attribute_Id (Attribute_Name (Disc_Exp)) =
                       Attribute_Access
-           and then Object_Access_Level (Prefix (Disc_Exp)) >
-                      Deepest_Type_Access_Level (Alloc_Typ)
+           and then Static_Accessibility_Level
+                      (Disc_Exp, Zero_On_Dynamic_Level)
+                        > Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("prefix of attribute has deeper level than allocator type",
@@ -5055,8 +5074,9 @@ package body Sem_Res is
 
          elsif Ekind (Etype (Disc_Exp)) = E_Anonymous_Access_Type
            and then Nkind (Disc_Exp) = N_Selected_Component
-           and then Object_Access_Level (Prefix (Disc_Exp)) >
-                      Deepest_Type_Access_Level (Alloc_Typ)
+           and then Static_Accessibility_Level
+                      (Disc_Exp, Zero_On_Dynamic_Level)
+                        > Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("access discriminant has deeper level than allocator type",
@@ -13333,12 +13353,13 @@ package body Sem_Res is
             then
                --  When the operand is a selected access discriminant the check
                --  needs to be made against the level of the object denoted by
-               --  the prefix of the selected name (Object_Access_Level handles
+               --  the prefix of the selected name (Accessibility_Level handles
                --  checking the prefix of the operand for this case).
 
                if Nkind (Operand) = N_Selected_Component
-                 and then Object_Access_Level (Operand) >
-                   Deepest_Type_Access_Level (Target_Type)
+                 and then Static_Accessibility_Level
+                            (Operand, Zero_On_Dynamic_Level)
+                              > Deepest_Type_Access_Level (Target_Type)
                then
                   --  In an instance, this is a run-time check, but one we know
                   --  will fail, so generate an appropriate warning. The raise
@@ -13506,6 +13527,13 @@ package body Sem_Res is
                          N_Function_Specification
                         or else Ekind (Target_Type) in
                                   Anonymous_Access_Kind)
+
+              --  Check we are not in a return value ???
+
+              and then (not In_Return_Value (N)
+                         or else
+                           Nkind (Associated_Node_For_Itype (Target_Type))
+                             = N_Component_Declaration)
             then
                --  In an instance, this is a run-time check, but one we know
                --  will fail, so generate an appropriate warning. The raise
@@ -13540,12 +13568,13 @@ package body Sem_Res is
             then
                --  When the operand is a selected access discriminant the check
                --  needs to be made against the level of the object denoted by
-               --  the prefix of the selected name (Object_Access_Level handles
+               --  the prefix of the selected name (Accessibility_Level handles
                --  checking the prefix of the operand for this case).
 
                if Nkind (Operand) = N_Selected_Component
-                 and then Object_Access_Level (Operand) >
-                          Deepest_Type_Access_Level (Target_Type)
+                 and then Static_Accessibility_Level
+                            (Operand, Zero_On_Dynamic_Level)
+                              > Deepest_Type_Access_Level (Target_Type)
                then
                   --  In an instance, this is a run-time check, but one we know
                   --  will fail, so generate an appropriate warning. The raise

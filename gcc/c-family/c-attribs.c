@@ -65,6 +65,8 @@ static tree handle_no_sanitize_undefined_attribute (tree *, tree, tree, int,
 static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
+static tree handle_no_stack_protector_function_attribute (tree *, tree,
+							tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocf_check_attribute (tree *, tree, tree, int, bool *);
@@ -248,6 +250,14 @@ static const struct attribute_spec::exclusions attr_noinit_exclusions[] =
   ATTR_EXCL (NULL, false, false, false),
 };
 
+static const struct attribute_spec::exclusions attr_stack_protect_exclusions[] =
+{
+  ATTR_EXCL ("stack_protect", true, false, false),
+  ATTR_EXCL ("no_stack_protector", true, false, false),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+
 /* Table of machine-independent attributes common to all C-like languages.
 
    Current list of processed common attributes: nonnull.  */
@@ -275,7 +285,11 @@ const struct attribute_spec c_common_attribute_table[] =
   { "volatile",               0, 0, true,  false, false, false,
 			      handle_noreturn_attribute, NULL },
   { "stack_protect",          0, 0, true,  false, false, false,
-			      handle_stack_protect_attribute, NULL },
+			      handle_stack_protect_attribute,
+			      attr_stack_protect_exclusions },
+  { "no_stack_protector",     0, 0, true, false, false, false,
+			      handle_no_stack_protector_function_attribute,
+			      attr_stack_protect_exclusions },
   { "noinline",               0, 0, true,  false, false, false,
 			      handle_noinline_attribute,
 	                      attr_noinline_exclusions },
@@ -1146,6 +1160,22 @@ handle_asan_odr_indicator_attribute (tree *, tree, tree, int, bool *)
 static tree
 handle_stack_protect_attribute (tree *node, tree name, tree, int,
 				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_stack_protector" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_no_stack_protector_function_attribute (tree *node, tree name, tree,
+					      int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
