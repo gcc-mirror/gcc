@@ -595,7 +595,7 @@ determine_versionability (struct cgraph_node *node,
   /* There are a number of generic reasons functions cannot be versioned.  We
      also cannot remove parameters if there are type attributes such as fnspec
      present.  */
-  if (node->alias || node->thunk.thunk_p)
+  if (node->alias || node->thunk)
     reason = "alias or thunk";
   else if (!node->versionable)
     reason = "not a tree_versionable_function";
@@ -646,7 +646,7 @@ determine_versionability (struct cgraph_node *node,
 	    reason = "external function which calls va_arg_pack_len";
         }
 
-  if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
+  if (reason && dump_file && !node->alias && !node->thunk)
     fprintf (dump_file, "Function %s is not versionable, reason: %s.\n",
 	     node->dump_name (), reason);
 
@@ -691,7 +691,7 @@ gather_caller_stats (struct cgraph_node *node, void *data)
   struct cgraph_edge *cs;
 
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (!cs->caller->thunk.thunk_p)
+    if (!cs->caller->thunk)
       {
         if (cs->count.ipa ().initialized_p ())
 	  stats->count_sum += cs->count.ipa ();
@@ -1155,7 +1155,7 @@ count_callers (cgraph_node *node, void *data)
   for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
     /* Local thunks can be handled transparently, but if the thunk cannot
        be optimized out, count it as a real use.  */
-    if (!cs->caller->thunk.thunk_p || !cs->caller->local)
+    if (!cs->caller->thunk || !cs->caller->local)
       ++*caller_count;
   return false;
 }
@@ -1168,7 +1168,7 @@ set_single_call_flag (cgraph_node *node, void *)
 {
   cgraph_edge *cs = node->callers;
   /* Local thunks can be handled transparently, skip them.  */
-  while (cs && cs->caller->thunk.thunk_p && cs->caller->local)
+  while (cs && cs->caller->thunk && cs->caller->local)
     cs = cs->next_caller;
   if (cs && IPA_NODE_REF (cs->caller))
     {
@@ -1215,7 +1215,7 @@ initialize_node_lattices (struct cgraph_node *node)
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS)
-      && !node->alias && !node->thunk.thunk_p)
+      && !node->alias && !node->thunk)
     {
       fprintf (dump_file, "Initializing lattices of %s\n",
 	       node->dump_name ());
@@ -1240,7 +1240,7 @@ initialize_node_lattices (struct cgraph_node *node)
       node->clone.param_adjustments->get_surviving_params (&surviving_params);
 
       if (dump_file && (dump_flags & TDF_DETAILS)
-	  && !node->alias && !node->thunk.thunk_p)
+	  && !node->alias && !node->thunk)
 	{
 	  bool first = true;
 	  for (int j = 0; j < ipa_get_param_count (info); j++)
@@ -2806,12 +2806,12 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
    non-thunk) destination, the call passes through a thunk.  */
 
 static bool
-call_passes_through_thunk_p (cgraph_edge *cs)
+call_passes_through_thunk (cgraph_edge *cs)
 {
   cgraph_node *alias_or_thunk = cs->callee;
   while (alias_or_thunk->alias)
     alias_or_thunk = alias_or_thunk->get_alias_target ();
-  return alias_or_thunk->thunk.thunk_p;
+  return alias_or_thunk->thunk;
 }
 
 /* Propagate constants from the caller to the callee of CS.  INFO describes the
@@ -2853,7 +2853,7 @@ propagate_constants_across_call (struct cgraph_edge *cs)
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series
      of aliases first.  */
-  if (call_passes_through_thunk_p (cs))
+  if (call_passes_through_thunk (cs))
     {
       ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
 							       0));
@@ -4698,7 +4698,7 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	  if (!IPA_EDGE_REF (cs)
 	      || i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      || (i == 0
-		  && call_passes_through_thunk_p (cs)))
+		  && call_passes_through_thunk (cs)))
 	    {
 	      newval = NULL_TREE;
 	      break;
@@ -5661,7 +5661,7 @@ has_undead_caller_from_outside_scc_p (struct cgraph_node *node,
   struct cgraph_edge *cs;
 
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (cs->caller->thunk.thunk_p
+    if (cs->caller->thunk
 	&& cs->caller->call_for_symbol_thunks_and_aliases
 	  (has_undead_caller_from_outside_scc_p, NULL, true))
       return true;

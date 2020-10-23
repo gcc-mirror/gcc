@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "ipa-inline.h"
 #include "tree-nested.h"
+#include "symtab-thunks.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -629,14 +630,16 @@ cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
 		       ? virtual_value == wi::to_wide (virtual_offset)
 		       : virtual_value == 0);
 
-  node->thunk.fixed_offset = fixed_offset;
-  node->thunk.virtual_value = virtual_value;
-  node->thunk.indirect_offset = indirect_offset;
-  node->thunk.alias = real_alias;
-  node->thunk.this_adjusting = this_adjusting;
-  node->thunk.virtual_offset_p = virtual_offset != NULL;
-  node->thunk.thunk_p = true;
+  node->thunk = true;
   node->definition = true;
+
+  thunk_info *i = thunk_info::get_create (node);
+  i->fixed_offset = fixed_offset;
+  i->virtual_value = virtual_value;
+  i->indirect_offset = indirect_offset;
+  i->alias = real_alias;
+  i->this_adjusting = this_adjusting;
+  i->virtual_offset_p = virtual_offset != NULL;
 
   return node;
 }
@@ -910,7 +913,7 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       = decl_maybe_in_construction_p (NULL, NULL, call_stmt,
 				      caller->decl);
   else
-    edge->in_polymorphic_cdtor = caller->thunk.thunk_p;
+    edge->in_polymorphic_cdtor = caller->thunk;
   if (callee)
     caller->calls_declare_variant_alt |= callee->declare_variant_alt;
 
@@ -2173,37 +2176,17 @@ cgraph_node::dump (FILE *f)
 
   fprintf (f, "\n");
 
-  if (thunk.thunk_p)
+  if (thunk)
     {
       fprintf (f, "  Thunk");
-      if (thunk.alias)
-	fprintf (f, "  of %s (asm:%s)",
-		 lang_hooks.decl_printable_name (thunk.alias, 2),
-		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
-      fprintf (f, " fixed offset %i virtual value %i indirect_offset %i "
-		  "has virtual offset %i\n",
-	       (int)thunk.fixed_offset,
-	       (int)thunk.virtual_value,
-	       (int)thunk.indirect_offset,
-	       (int)thunk.virtual_offset_p);
+      thunk_info::get (this)->dump (f);
     }
   else if (former_thunk_p ())
-    fprintf (f, "  Former thunk fixed offset %i virtual value %i "
-	     "indirect_offset %i has virtual offset %i\n",
-	     (int)thunk.fixed_offset,
-	     (int)thunk.virtual_value,
-	     (int)thunk.indirect_offset,
-	     (int)thunk.virtual_offset_p);
-  if (alias && thunk.alias
-      && DECL_P (thunk.alias))
     {
-      fprintf (f, "  Alias of %s",
-	       lang_hooks.decl_printable_name (thunk.alias, 2));
-      if (DECL_ASSEMBLER_NAME_SET_P (thunk.alias))
-	fprintf (f, " (asm:%s)",
-		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
-      fprintf (f, "\n");
+      fprintf (f, "  Former thunk ");
+      thunk_info::get (this)->dump (f);
     }
+  else gcc_checking_assert (!thunk_info::get (this));
   
   fprintf (f, "  Called by: ");
 
@@ -2444,11 +2427,11 @@ cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
   if (avail <= AVAIL_INTERPOSABLE)
     return false;
   for (e = callers; e; e = e->next_caller)
-    if (e->caller->thunk.thunk_p
+    if (e->caller->thunk
 	&& (include_overwritable
 	    || e->caller->get_availability () > AVAIL_INTERPOSABLE)
 	&& !(exclude_virtual_thunks
-	     && e->caller->thunk.virtual_offset_p))
+	     && thunk_info::get (e->caller)->virtual_offset_p))
       if (e->caller->call_for_symbol_thunks_and_aliases (callback, data,
 						       include_overwritable,
 						       exclude_virtual_thunks))
@@ -2522,7 +2505,7 @@ set_nothrow_flag_1 (cgraph_node *node, bool nothrow, bool non_call,
 	set_nothrow_flag_1 (alias, nothrow, non_call, changed);
     }
   for (cgraph_edge *e = node->callers; e; e = e->next_caller)
-    if (e->caller->thunk.thunk_p
+    if (e->caller->thunk
 	&& (!nothrow || e->caller->get_availability () > AVAIL_INTERPOSABLE))
       set_nothrow_flag_1 (e->caller, nothrow, non_call, changed);
 }
@@ -2571,7 +2554,7 @@ set_malloc_flag_1 (cgraph_node *node, bool malloc_p, bool *changed)
     }
 
   for (cgraph_edge *e = node->callers; e; e = e->next_caller)
-    if (e->caller->thunk.thunk_p
+    if (e->caller->thunk
 	&& (!malloc_p || e->caller->get_availability () > AVAIL_INTERPOSABLE))
       set_malloc_flag_1 (e->caller, malloc_p, changed);
 }
@@ -2690,13 +2673,13 @@ set_const_flag_1 (cgraph_node *node, bool set_const, bool looping,
 	set_const_flag_1 (alias, set_const, looping, changed);
     }
   for (cgraph_edge *e = node->callers; e; e = e->next_caller)
-    if (e->caller->thunk.thunk_p
+    if (e->caller->thunk
 	&& (!set_const || e->caller->get_availability () > AVAIL_INTERPOSABLE))
       {
 	/* Virtual thunks access virtual offset in the vtable, so they can
 	   only be pure, never const.  */
         if (set_const
-	    && (e->caller->thunk.virtual_offset_p
+	    && (thunk_info::get (e->caller)->virtual_offset_p
 	        || !node->binds_to_current_def_p (e->caller)))
 	  *changed |= e->caller->set_pure_flag (true, looping);
 	else
@@ -3040,7 +3023,7 @@ collect_callers_of_node_1 (cgraph_node *node, void *data)
   if (avail > AVAIL_INTERPOSABLE)
     for (cs = node->callers; cs != NULL; cs = cs->next_caller)
       if (!cs->indirect_inlining_edge
-	  && !cs->caller->thunk.thunk_p)
+	  && !cs->caller->thunk)
         redirect_callers->safe_push (cs);
   return false;
 }
@@ -3071,7 +3054,7 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
       || node2->former_clone_of == node->decl)
     return true;
 
-  if (!node->thunk.thunk_p && !node->former_thunk_p ())
+  if (!node->thunk && !node->former_thunk_p ())
     {
       while (node2 && node->decl != node2->decl)
 	node2 = node2->clone_of;
@@ -3081,9 +3064,9 @@ clone_of_p (cgraph_node *node, cgraph_node *node2)
   /* There are no virtual clones of thunks so check former_clone_of or if we
      might have skipped thunks because this adjustments are no longer
      necessary.  */
-  while (node->thunk.thunk_p || node->former_thunk_p ())
+  while (node->thunk || node->former_thunk_p ())
     {
-      if (!node->thunk.this_adjusting)
+      if (!thunk_info::get (node)->this_adjusting)
 	return false;
       /* In case of instrumented expanded thunks, which can have multiple calls
 	 in them, we do not know how to continue and just have to be
@@ -3647,7 +3630,7 @@ cgraph_node::verify_node (void)
 	}
     }
 
-  if (analyzed && thunk.thunk_p)
+  if (analyzed && thunk)
     {
       if (!callees)
 	{
@@ -3831,7 +3814,7 @@ cgraph_node::function_symbol (enum availability *availability,
 {
   cgraph_node *node = ultimate_alias_target (availability, ref);
 
-  while (node->thunk.thunk_p)
+  while (node->thunk)
     {
       enum availability a;
 
@@ -3858,7 +3841,7 @@ cgraph_node::function_or_virtual_thunk_symbol
 {
   cgraph_node *node = ultimate_alias_target (availability, ref);
 
-  while (node->thunk.thunk_p && !node->thunk.virtual_offset_p)
+  while (node->thunk && !thunk_info::get (node)->virtual_offset_p)
     {
       enum availability a;
 
@@ -4007,6 +3990,7 @@ void
 cgraph_c_finalize (void)
 {
   nested_function_info::release ();
+  thunk_info::release ();
   symtab = NULL;
 
   x_cgraph_nodes_queue = NULL;
@@ -4042,7 +4026,7 @@ bool
 cgraph_node::has_thunk_p (cgraph_node *node, void *)
 {
   for (cgraph_edge *e = node->callers; e; e = e->next_caller)
-    if (e->caller->thunk.thunk_p)
+    if (e->caller->thunk)
       return true;
   return false;
 }
@@ -4177,6 +4161,21 @@ cgraph_c_tests ()
 }
 
 } // namespace selftest
+
+/* Return true if this node represents a former, i.e. an expanded, thunk.  */
+
+bool
+cgraph_node::former_thunk_p (void)
+{
+  if (thunk)
+    return false;
+  thunk_info *i = thunk_info::get (this);
+  if (!i)
+    return false;
+  gcc_checking_assert (i->fixed_offset || i->virtual_offset_p
+		       || i->indirect_offset);
+  return true;
+}
 
 #endif /* CHECKING_P */
 

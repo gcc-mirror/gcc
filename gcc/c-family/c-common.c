@@ -9134,7 +9134,7 @@ c_common_finalize_early_debug (void)
      functions that are still reachable at this point.  */
   struct cgraph_node *cnode;
   FOR_EACH_FUNCTION (cnode)
-    if (!cnode->alias && !cnode->thunk.thunk_p
+    if (!cnode->alias && !cnode->thunk
 	&& (cnode->has_gimple_body_p () || !DECL_IS_BUILTIN (cnode->decl)))
       (*debug_hooks->early_global_decl) (cnode->decl);
 }

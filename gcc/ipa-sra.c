@@ -2935,7 +2935,7 @@ check_for_caller_issues (struct cgraph_node *node, void *data)
 
   for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
     {
-      if (cs->caller->thunk.thunk_p)
+      if (cs->caller->thunk)
 	{
 	  issues->thunk = true;
 	  /* TODO: We should be able to process at least some types of

@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "symtab-thunks.h"
 
 /* Create clone of edge in the node N represented by CALL_EXPR
    the callgraph.  */
@@ -183,28 +184,28 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   cgraph_node *new_thunk, *thunk_of;
   thunk_of = thunk->callees->callee->ultimate_alias_target ();
 
-  if (thunk_of->thunk.thunk_p)
+  if (thunk_of->thunk)
     node = duplicate_thunk_for_node (thunk_of, node);
 
   if (!DECL_ARGUMENTS (thunk->decl))
     thunk->get_untransformed_body ();
 
+  thunk_info *i = thunk_info::get (thunk);
   cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (cs->caller->thunk.thunk_p
-	&& cs->caller->thunk.fixed_offset == thunk->thunk.fixed_offset
-	&& cs->caller->thunk.virtual_value == thunk->thunk.virtual_value
-	&& cs->caller->thunk.indirect_offset == thunk->thunk.indirect_offset
-	&& cs->caller->thunk.this_adjusting == thunk->thunk.this_adjusting
-	&& cs->caller->thunk.virtual_offset_p == thunk->thunk.virtual_offset_p)
-      return cs->caller;
+    if (cs->caller->thunk)
+      {
+	thunk_info *i2 = thunk_info::get (cs->caller);
+	if (*i2 == *i)
+	  return cs->caller;
+      }
 
   tree new_decl;
   if (node->clone.param_adjustments)
     {
       /* We do not need to duplicate this_adjusting thunks if we have removed
 	 this.  */
-      if (thunk->thunk.this_adjusting
+      if (i->this_adjusting
 	  && !node->clone.param_adjustments->first_param_intact_p ())
 	return node;
 
@@ -256,7 +257,7 @@ void
 cgraph_edge::redirect_callee_duplicating_thunks (cgraph_node *n)
 {
   cgraph_node *orig_to = callee->ultimate_alias_target ();
-  if (orig_to->thunk.thunk_p)
+  if (orig_to->thunk)
     n = duplicate_thunk_for_node (orig_to, n);
 
   redirect_callee (n);
@@ -270,14 +271,14 @@ cgraph_node::expand_all_artificial_thunks ()
 {
   cgraph_edge *e;
   for (e = callers; e;)
-    if (e->caller->thunk.thunk_p)
+    if (e->caller->thunk)
       {
 	cgraph_node *thunk = e->caller;
 
 	e = e->next_caller;
-	if (thunk->expand_thunk (false, false))
+	if (expand_thunk (thunk, false, false))
 	  {
-	    thunk->thunk.thunk_p = false;
+	    thunk->thunk = false;
 	    thunk->analyze ();
 	    ipa_analyze_node (thunk);
 	    inline_analyze_function (thunk);
@@ -812,7 +813,7 @@ cgraph_node::create_edge_including_clones (cgraph_node *callee,
   if (node)
     while (node != this)
       /* Thunk clones do not get updated while copying inline function body.  */
-      if (!node->thunk.thunk_p)
+      if (!node->thunk)
 	{
 	  cgraph_edge *edge = node->get_edge (old_stmt);
 

@@ -681,52 +681,6 @@ extern const char * const cgraph_availability_names[];
 extern const char * const ld_plugin_symbol_resolution_names[];
 extern const char * const tls_model_names[];
 
-/* Sub-structure of cgraph_node.  Holds information about thunk, used only for
-   same body aliases.
-
-   Thunks are basically wrappers around methods which are introduced in case
-   of multiple inheritance in order to adjust the value of the "this" pointer
-   or of the returned value.
-
-   In the case of this-adjusting thunks, each back-end can override the
-   can_output_mi_thunk/output_mi_thunk target hooks to generate a minimal thunk
-   (with a tail call for instance) directly as assembly.  For the default hook
-   or for the case where the can_output_mi_thunk hooks return false, the thunk
-   is gimplified and lowered using the regular machinery.  */
-
-struct GTY(()) cgraph_thunk_info {
-  /* Offset used to adjust "this".  */
-  HOST_WIDE_INT fixed_offset;
-
-  /* Offset in the virtual table to get the offset to adjust "this".  Valid iff
-     VIRTUAL_OFFSET_P is true.  */
-  HOST_WIDE_INT virtual_value;
-
-  /* Offset from "this" to get the offset to adjust "this".  Zero means: this
-     offset is to be ignored.  */
-  HOST_WIDE_INT indirect_offset;
-
-  /* Thunk target, i.e. the method that this thunk wraps.  Depending on the
-     TARGET_USE_LOCAL_THUNK_ALIAS_P macro, this may have to be a new alias.  */
-  tree alias;
-
-  /* Nonzero for a "this" adjusting thunk and zero for a result adjusting
-     thunk.  */
-  bool this_adjusting;
-
-  /* If true, this thunk is what we call a virtual thunk.  In this case:
-     * for this-adjusting thunks, after the FIXED_OFFSET based adjustment is
-       done, add to the result the offset found in the vtable at:
-	 vptr + VIRTUAL_VALUE
-     * for result-adjusting thunks, the FIXED_OFFSET adjustment is done after
-       the virtual one.  */
-  bool virtual_offset_p;
-
-  /* Set to true when alias node (the cgraph_node to which this struct belong)
-     is a thunk.  Access to any other fields is invalid if this is false.  */
-  bool thunk_p;
-};
-
 /* Represent which DECL tree (or reference to such tree)
    will be replaced by another tree while versioning.  */
 struct GTY(()) ipa_replace_map
@@ -925,10 +879,11 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
       clone_of (NULL), call_site_hash (NULL), former_clone_of (NULL),
       simdclone (NULL), simd_clones (NULL), ipa_transforms_to_apply (vNULL),
-      inlined_to (NULL), rtl (NULL), clone (), thunk (),
+      inlined_to (NULL), rtl (NULL), clone (),
       count (profile_count::uninitialized ()),
       count_materialization_scale (REG_BR_PROB_BASE), profile_id (0),
-      unit_id (0), tp_first_run (0), used_as_abstract_origin (false),
+      unit_id (0), tp_first_run (0), thunk (false),
+      used_as_abstract_origin (false),
       lowered (false), process (false), frequency (NODE_FREQUENCY_NORMAL),
       only_called_at_startup (false), only_called_at_exit (false),
       tm_clone (false), dispatcher_function (false), calls_comdat_local (false),
@@ -1078,7 +1033,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Add thunk alias into callgraph.  The alias declaration is ALIAS and it
      aliases DECL with an adjustments made into the first parameter.
-     See comments in struct cgraph_thunk_info for detail on the parameters.  */
+     See comments in struct symtab-thunks.h for detail on the parameters.  */
   cgraph_node * create_thunk (tree alias, tree, bool this_adjusting,
 			      HOST_WIDE_INT fixed_offset,
 			      HOST_WIDE_INT virtual_value,
@@ -1098,13 +1053,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   cgraph_node *ultimate_alias_target (availability *availability = NULL,
 				      symtab_node *ref = NULL);
-
-  /* Expand thunk NODE to gimple if possible.
-     When FORCE_GIMPLE_THUNK is true, gimple thunk is created and
-     no assembler is produced.
-     When OUTPUT_ASM_THUNK is true, also produce assembler for
-     thunks that are not lowered.  */
-  bool expand_thunk (bool output_asm_thunks, bool force_gimple_thunk);
 
   /*  Call expand_thunk on all callers that are thunks and analyze those
       nodes that were expanded.  */
@@ -1324,7 +1272,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   inline bool has_gimple_body_p (void);
 
   /* Return true if this node represents a former, i.e. an expanded, thunk.  */
-  inline bool former_thunk_p (void);
+  bool former_thunk_p (void);
 
   /* Check if function calls comdat local.  This is used to recompute
      calls_comdat_local flag after function transformations.  */
@@ -1462,7 +1410,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   struct cgraph_rtl_info *rtl;
   cgraph_clone_info clone;
-  cgraph_thunk_info thunk;
 
   /* Expected number of executions: calculated in profile.c.  */
   profile_count count;
@@ -1476,6 +1423,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Time profiler: first run of function.  */
   int tp_first_run;
 
+  /* True when symbol is a thunk.  */
+  unsigned thunk : 1;
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
   unsigned used_as_abstract_origin : 1;
@@ -2241,6 +2190,10 @@ struct asmname_hasher : ggc_ptr_hash <symtab_node>
   static bool equal (symtab_node *n, const_tree t);
 };
 
+struct thunk_info;
+template <class T> class function_summary;
+typedef function_summary <thunk_info *> thunk_summary;
+
 class GTY((tag ("SYMTAB"))) symbol_table
 {
 public:
@@ -2257,6 +2210,7 @@ public:
   function_flags_ready (false), cpp_implicit_aliases_done (false),
   section_hash (NULL), assembler_name_hash (NULL), init_priority_hash (NULL),
   dump_file (NULL), ipa_clones_dump_file (NULL), cloned_nodes (),
+  m_thunks (NULL),
   m_first_edge_removal_hook (NULL), m_first_cgraph_removal_hook (NULL),
   m_first_edge_duplicated_hook (NULL), m_first_cgraph_duplicated_hook (NULL),
   m_first_cgraph_insertion_hook (NULL), m_first_varpool_insertion_hook (NULL),
@@ -2538,6 +2492,9 @@ public:
 
   hash_set <const cgraph_node *> GTY ((skip)) cloned_nodes;
 
+  /* Thunk annotations.  */
+  thunk_summary *m_thunks;
+
 private:
   /* Allocate a cgraph_edge structure and fill it with data according to the
      parameters of which only CALLEE can be NULL (when creating an indirect
@@ -2611,6 +2568,9 @@ cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 /* In cgraphunit.c  */
 void cgraphunit_c_finalize (void);
 int tp_first_run_node_cmp (const void *pa, const void *pb);
+
+/* In symtab-thunks.cc  */
+void symtab_thunks_cc_finalize (void);
 
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
     IN_SSA is true if the gimple is in SSA.  */
@@ -3082,18 +3042,7 @@ symbol_table::next_function_with_gimple_body (cgraph_node *node)
 inline bool
 cgraph_node::has_gimple_body_p (void)
 {
-  return definition && !thunk.thunk_p && !alias;
-}
-
-/* Return true if this node represents a former, i.e. an expanded, thunk.  */
-
-inline bool
-cgraph_node::former_thunk_p (void)
-{
-  return (!thunk.thunk_p
-	  && (thunk.fixed_offset
-	      || thunk.virtual_offset_p
-	      || thunk.indirect_offset));
+  return definition && !thunk && !alias;
 }
 
 /* Walk all functions with body defined.  */
