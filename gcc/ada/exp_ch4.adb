@@ -3505,8 +3505,17 @@ package body Exp_Ch4 is
             Alloc :=
               Make_Allocator (Loc,
                 Expression => New_Occurrence_Of (ConstrT, Loc));
+
+            --  Allocate on the secondary stack. This is currently done
+            --  only for type String, which normally doesn't have default
+            --  initialization, but we need to Set_No_Initialization in case
+            --  of Initialize_Scalars or Normalize_Scalars; otherwise, the
+            --  allocator will get transformed and will not use the secondary
+            --  stack.
+
             Set_Storage_Pool (Alloc, RTE (RE_SS_Pool));
             Set_Procedure_To_Call (Alloc, RTE (RE_SS_Allocate));
+            Set_No_Initialization (Alloc);
 
             Temp := Make_Temporary (Loc, 'R', Alloc);
             Insert_Action (Cnode,
