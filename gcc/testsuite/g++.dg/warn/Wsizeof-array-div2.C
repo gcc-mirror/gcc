@@ -1,5 +1,5 @@
 // PR c++/91741
-// { dg-do compile }
+// { dg-do compile { target { lp64 } } }
 // { dg-options "-Wall" }
 // From <https://www.viva64.com/en/examples/v706/>.
 
