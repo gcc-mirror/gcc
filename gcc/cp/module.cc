@@ -3343,8 +3343,8 @@ static loc_spans spans;
 /* Data needed by a module during the process of loading.  */
 struct GTY(()) slurping {
 
-  /* Remap numbers are shifted by 1.  Bit0 encodes if the import is
-     direct.  */
+  /* Remap import's module numbering to our numbering.  Values are
+     shifted by 1.  Bit0 encodes if the import is direct.  */
   vec<unsigned, va_heap, vl_embed> *
     GTY((skip)) remap;			/* Module owner remapping.  */
 
@@ -3352,8 +3352,9 @@ struct GTY(()) slurping {
 
   /* This map is only for header imports themselves -- the global
      headers bitmap hold it for the current TU.  */
-  // FIXME: Do we need this, now we hold directness info in the remap array?
-  bitmap headers;	/* Transitive direct header import graph. */
+  bitmap headers;	/* Transitive set of direct imports, including
+			   self.  Used for macro visibility and
+			   priority.  */
 
   /* These objects point into the mmapped area, unless we're not doing
      that, or we got frozen or closed.  In those cases they point to
@@ -5312,9 +5313,8 @@ trees_out::core_bools (tree t)
 	if (!is_external)
 	  /* decl_flag_1 is DECL_EXTERNAL. Things we emit here, might
 	     well be external from the POV of an importer.  */
-	  // FIXME: p1815? static variables become external.
-	  // We might need to know if this is a TEMPLATE_RESULT -- a
-	  // flag from the caller?
+	  // FIXME: Do we need to know if this is a TEMPLATE_RESULT --
+	  // a flag from the caller?
 	  switch (code)
 	    {
 	    default:
@@ -6044,7 +6044,6 @@ trees_out::core_vals (tree t)
 	{
 	  /* Builtins can be streamed by value when a header declares
 	     them.  */
-	  // FIXME: Perhaps it's just BUILT_IN_NORMAL that's needed here?
 	  WU (DECL_BUILT_IN_CLASS (t));
 	  if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
 	    WU (DECL_UNCHECKED_FUNCTION_CODE (t));

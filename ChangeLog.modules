@@ -1,6 +1,9 @@
 2020-10-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc: Address 3 now-irrelevant FIXMES.
+
+	gcc/cp/
 	* module.cc (enum merge_kind): Reorder.
 	(merge_kind_name): Likewise.
 
