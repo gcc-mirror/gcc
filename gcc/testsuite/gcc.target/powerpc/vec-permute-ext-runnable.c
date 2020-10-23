@@ -6,7 +6,7 @@
 
 #define DEBUG 0
 
-#ifdef DEBUG
+#if DEBUG
 #include <stdio.h>
 #endif
 

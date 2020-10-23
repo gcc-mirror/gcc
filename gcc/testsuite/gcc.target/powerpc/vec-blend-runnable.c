@@ -6,7 +6,7 @@
 
 #define DEBUG 0
 
-#ifdef DEBUG
+#if DEBUG
 #include <stdio.h>
 #endif
 
@@ -145,7 +145,8 @@ main (int argc, char *argv [])
 
   if (!vec_all_eq (vresult_ushort,  expected_vresult_ushort)) {
 #if DEBUG
-    printf("ERROR, vec_blendv (vsrc_a_ushort, vsrc_b_ushort, vsrc_c_ushort)\n");
+    printf("ERROR, vec_blendv (vsrc_a_ushort, vsrc_b_ushort, "
+	   "vsrc_c_ushort)\n");
     for(i = 0; i < 8; i++)
       printf(" vresult_ushort[%d] = %d, expected_vresult_ushort[%d] = %d\n",
 	     i, vresult_ushort[i], i, expected_vresult_ushort[i]);

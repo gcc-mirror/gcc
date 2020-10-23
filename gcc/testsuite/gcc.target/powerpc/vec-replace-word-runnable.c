@@ -7,7 +7,7 @@
 
 #define DEBUG 0
 
-#ifdef DEBUG
+#if DEBUG
 #include <stdio.h>
 #endif
 
@@ -213,7 +213,8 @@ main (int argc, char *argv [])
 
   if (!vec_all_eq (vresult_float,  expected_vresult_float)) {
 #if DEBUG
-    printf("ERROR, vec_replace_unaligned (src_vb_float, src_va_float, index)\n");
+    printf("ERROR, vec_replace_unaligned (src_vb_float, src_va_float, "
+	   "index)\n");
     for(i = 0; i < 4; i++)
       printf(" vresult_float[%d] = %f, expected_vresult_float[%d] = %f\n",
 	     i, vresult_float[i], i, expected_vresult_float[i]);
@@ -234,7 +235,8 @@ main (int argc, char *argv [])
 
   if (!vec_all_eq (vresult_ullint,  expected_vresult_ullint)) {
 #if DEBUG
-    printf("ERROR, vec_replace_unaligned (src_vb_ullint, src_va_ullint, index)\n");
+    printf("ERROR, vec_replace_unaligned (src_vb_ullint, src_va_ullint, "
+	   "index)\n");
     for(i = 0; i < 2; i++)
       printf(" vresult_ullint[%d] = %d, expected_vresult_ullint[%d] = %d\n",
 	     i, vresult_ullint[i], i, expected_vresult_ullint[i]);
@@ -253,7 +255,8 @@ main (int argc, char *argv [])
 
   if (!vec_all_eq (vresult_llint,  expected_vresult_llint)) {
 #if DEBUG
-    printf("ERROR, vec_replace_unaligned (src_vb_llint, src_va_llint, index)\n");
+    printf("ERROR, vec_replace_unaligned (src_vb_llint, src_va_llint, "
+	   "index)\n");
     for(i = 0; i < 2; i++)
       printf(" vresult_llint[%d] = %d, expected_vresult_llint[%d] = %d\n",
 	     i, vresult_llint[i], i, expected_vresult_llint[i]);
@@ -271,8 +274,8 @@ main (int argc, char *argv [])
 
   if (!vec_all_eq (vresult_double,  expected_vresult_double)) {
 #if DEBUG
-    printf("ERROR, vec_replace_unaligned (src_vb_double, src_va_double, index)\
-n");
+    printf("ERROR, vec_replace_unaligned (src_vb_double, src_va_double, "
+	   "index)\n");
     for(i = 0; i < 2; i++)
       printf(" vresult_double[%d] = %f, expected_vresult_double[%d] = %f\n",
 	     i, vresult_double[i], i, expected_vresult_double[i]);
