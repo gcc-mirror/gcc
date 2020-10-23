@@ -3177,13 +3177,13 @@ warn_parm_ptrarray_mismatch (location_t origloc, tree curparms, tree newparms)
 	{
 	  curtyp = TREE_TYPE (curtyp);
 	  newtyp = TREE_TYPE (newtyp);
+
+	  if (!newtyp)
+	    /* Bail on error.  */
+	    return;
 	}
       while (TREE_CODE (curtyp) == POINTER_TYPE
 	     && TREE_CODE (newtyp) == POINTER_TYPE);
-
-      if (!newtyp)
-	/* Bail on error.  */
-	return;
 
       if (TREE_CODE (curtyp) != ARRAY_TYPE
 	  || TREE_CODE (newtyp) != ARRAY_TYPE)
