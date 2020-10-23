@@ -2109,6 +2109,7 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree attrs)
 		     is followed by a comma and a dollar sign its bound is
 		     on the list.  Otherwise it's a VLA with an unspecified
 		     bound.  */
+		  acc.static_p = p[-2] == 's';
 		  acc.minsize = HOST_WIDE_INT_M1U;
 		}
 
