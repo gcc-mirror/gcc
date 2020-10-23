@@ -49,7 +49,7 @@ package body Uintp is
    Uint_Int_Last : Uint;
    --  Uint value containing Int'Last value set by Initialize
 
-   UI_Power_2 : array (Int range 0 .. 64) of Uint;
+   UI_Power_2 : array (Int range 0 .. 128) of Uint;
    --  This table is used to memoize exponentiations by powers of 2. The Nth
    --  entry, if set, contains the Uint value 2**N. Initially UI_Power_2_Set
    --  is zero and only the 0'th entry is set, the invariant being that all
@@ -58,7 +58,7 @@ package body Uintp is
    UI_Power_2_Set : Nat;
    --  Number of entries set in UI_Power_2;
 
-   UI_Power_10 : array (Int range 0 .. 64) of Uint;
+   UI_Power_10 : array (Int range 0 .. 128) of Uint;
    --  This table is used to memoize exponentiations by powers of 10 in the
    --  same manner as described above for UI_Power_2.
 
@@ -1317,9 +1317,9 @@ package body Uintp is
 
       --  Cases which can be done by table lookup
 
-      elsif Right <= Uint_64 then
+      elsif Right <= Uint_128 then
 
-         --  2**N for N in 2 .. 64
+         --  2**N for N in 2 .. 128
 
          if Left = Uint_2 then
             declare
@@ -1339,7 +1339,7 @@ package body Uintp is
                return UI_Power_2 (Right_Int);
             end;
 
-         --  10**N for N in 2 .. 64
+         --  10**N for N in 2 .. 128
 
          elsif Left = Uint_10 then
             declare

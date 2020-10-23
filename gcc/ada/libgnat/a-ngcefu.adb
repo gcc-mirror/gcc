@@ -481,11 +481,12 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    ---------
 
    function Exp (X : Complex) return Complex is
+      ImX : constant Real'Base := Im (X);
       EXP_RE_X : constant Real'Base := Exp (Re (X));
 
    begin
-      return Compose_From_Cartesian (EXP_RE_X * Cos (Im (X)),
-                                     EXP_RE_X * Sin (Im (X)));
+      return Compose_From_Cartesian (EXP_RE_X * Cos (ImX),
+                                     EXP_RE_X * Sin (ImX));
    end Exp;
 
    function Exp (X : Imaginary) return Complex is

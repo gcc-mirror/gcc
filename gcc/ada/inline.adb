@@ -317,6 +317,7 @@ package body Inline is
    --    Refined_Global
    --    Refined_Depends
    --    Refined_Post
+   --    Subprogram_Variant
    --    Test_Case
    --    Unmodified
    --    Unreferenced
@@ -3728,8 +3729,8 @@ package body Inline is
          return;
       end if;
 
-      if Nkind (Orig_Bod) = N_Defining_Identifier
-        or else Nkind (Orig_Bod) = N_Defining_Operator_Symbol
+      if Nkind (Orig_Bod) in N_Defining_Identifier
+                           | N_Defining_Operator_Symbol
       then
          --  Subprogram is renaming_as_body. Calls occurring after the renaming
          --  can be replaced with calls to the renamed entity directly, because
@@ -5119,6 +5120,7 @@ package body Inline is
                                         | Name_Refined_Global
                                         | Name_Refined_Depends
                                         | Name_Refined_Post
+                                        | Name_Subprogram_Variant
                                         | Name_Test_Case
                                         | Name_Unmodified
                                         | Name_Unreferenced

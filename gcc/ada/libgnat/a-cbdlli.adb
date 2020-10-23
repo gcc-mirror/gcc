@@ -28,6 +28,7 @@
 ------------------------------------------------------------------------------
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Bounded_Doubly_Linked_Lists with
   SPARK_Mode => Off
@@ -516,6 +517,17 @@ is
 
       return Position.Container.Nodes (Position.Node).Element;
    end Element;
+
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 10) return List is
+   begin
+      return Result : List (Capacity) do
+         null;
+      end return;
+   end Empty;
 
    --------------
    -- Finalize --
@@ -1490,6 +1502,31 @@ is
          Process (N.Element);
       end;
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : List)
+   is
+      First_Time : Boolean := True;
+      use System.Put_Images;
+   begin
+      Array_Before (S);
+
+      for X of V loop
+         if First_Time then
+            First_Time := False;
+         else
+            Simple_Array_Between (S);
+         end if;
+
+         Element_Type'Put_Image (S, X);
+      end loop;
+
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

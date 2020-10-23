@@ -1391,8 +1391,6 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
     }
 
   /* Redirect edges.  */
-  for (j = 0; j < num_edges; j++)
-    new_edges[j] = NULL;
   for (i = 0; i < n; i++)
     {
       edge_iterator ei;
@@ -1401,13 +1399,24 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
 
       FOR_EACH_EDGE (e, ei, new_bb->succs)
 	{
-	  for (j = 0; j < num_edges; j++)
-	    if (edges[j] && edges[j]->src == bb && edges[j]->dest == e->dest)
-	      new_edges[j] = e;
-
 	  if (!(e->dest->flags & BB_DUPLICATED))
 	    continue;
 	  redirect_edge_and_branch_force (e, get_bb_copy (e->dest));
+	}
+    }
+  for (j = 0; j < num_edges; j++)
+    {
+      if (!edges[j])
+	new_edges[j] = NULL;
+      else
+	{
+	  basic_block src = edges[j]->src;
+	  basic_block dest = edges[j]->dest;
+	  if (src->flags & BB_DUPLICATED)
+	    src = get_bb_copy (src);
+	  if (dest->flags & BB_DUPLICATED)
+	    dest = get_bb_copy (dest);
+	  new_edges[j] = find_edge (src, dest);
 	}
     }
 

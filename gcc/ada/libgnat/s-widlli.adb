@@ -29,45 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Wid_LLI is
+--  This package does not require a body, since it is an instantiation. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-   -----------------------------
-   -- Width_Long_Long_Integer --
-   -----------------------------
-
-   function Width_Long_Long_Integer
-     (Lo, Hi : Long_Long_Integer)
-      return   Natural
-   is
-      W : Natural;
-      T : Long_Long_Integer;
-
-   begin
-      if Lo > Hi then
-         return 0;
-
-      else
-         --  Minimum value is 2, one for sign, one for digit
-
-         W := 2;
-
-         --  Get max of absolute values, but avoid bomb if we have the maximum
-         --  negative number (note that First + 1 has same digits as First)
-
-         T := Long_Long_Integer'Max (
-                abs (Long_Long_Integer'Max (Lo, Long_Long_Integer'First + 1)),
-                abs (Long_Long_Integer'Max (Hi, Long_Long_Integer'First + 1)));
-
-         --  Increase value if more digits required
-
-         while T >= 10 loop
-            T := T / 10;
-            W := W + 1;
-         end loop;
-
-         return W;
-      end if;
-
-   end Width_Long_Long_Integer;
-
-end System.Wid_LLI;
+pragma No_Body;

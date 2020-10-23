@@ -910,6 +910,15 @@ package Exp_Util is
    --  wide type. Set Related_Id to request an external name for the subtype
    --  rather than an internal temporary.
 
+   function Make_Variant_Comparison
+     (Loc      : Source_Ptr;
+      Mode     : Name_Id;
+      Curr_Val : Node_Id;
+      Old_Val  : Node_Id) return Node_Id;
+   --  Subsidiary to the expansion of pragmas Loop_Variant and
+   --  Subprogram_Variant. Generate a comparison between Curr_Val and Old_Val
+   --  depending on the variant mode (Increases / Decreases).
+
    procedure Map_Types (Parent_Type : Entity_Id; Derived_Type : Entity_Id);
    --  Establish the following mapping between the attributes of tagged parent
    --  type Parent_Type and tagged derived type Derived_Type.
@@ -981,6 +990,11 @@ package Exp_Util is
    --  2**K, where K is in the range 1 .. M, where the Esize of N is 2**(M+1).
    --  If so, returns the value K, otherwise returns zero. The caller checks
    --  that N is of an integer type.
+
+   function Predicate_Check_In_Scope (N : Node_Id) return Boolean;
+   --  Return True if predicate checks should be generated in the current
+   --  scope on the given node. Will return False for example when the current
+   --  scope is a predefined primitive operation.
 
    procedure Process_Statements_For_Controlled_Objects (N : Node_Id);
    --  N is a node which contains a non-handled statement list. Inspect the
@@ -1198,11 +1212,6 @@ package Exp_Util is
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is within a case or an if expression
-
-   function Predicate_Check_In_Scope (N : Node_Id) return Boolean;
-   --  Return True if predicate checks should be generated in the current
-   --  scope on the given node. Will return False for example when the current
-   --  scope is a predefined primitive operation.
 
 private
    pragma Inline (Duplicate_Subexpr);

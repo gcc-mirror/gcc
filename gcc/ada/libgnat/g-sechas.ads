@@ -218,7 +218,9 @@ package GNAT.Secure_Hashes is
          --  HMAC key
       end record;
 
+      pragma Warnings (Off, "aggregate not fully initialized");
       Initial_Context : constant Context (KL => 0) := (others => <>);
+      pragma Warnings (On, "aggregate not fully initialized");
       --  Initial values are provided by default initialization of Context
 
       type Hash_Stream (C : access Context) is

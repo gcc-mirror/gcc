@@ -580,7 +580,7 @@ package body Ada.Text_IO.Fixed_IO is
                YY := 10**(Integer'Min (Max_Digits, AA - (J - 1) * Max_Digits));
             end if;
 
-            Scaled_Divide (XX, YY, Z, Q (J), R => XX, Round => False);
+            Scaled_Divide64 (XX, YY, Z, Q (J), R => XX, Round => False);
          end loop;
 
          if -E > A then

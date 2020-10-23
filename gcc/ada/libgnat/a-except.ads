@@ -301,6 +301,8 @@ private
    pragma Stream_Convert (Exception_Occurrence, String_To_EO, EO_To_String);
    --  Functions for implementing Exception_Occurrence stream attributes
 
+   pragma Warnings (Off, "aggregate not fully initialized");
    Null_Occurrence : constant Exception_Occurrence := (others => <>);
+   pragma Warnings (On, "aggregate not fully initialized");
 
 end Ada.Exceptions;

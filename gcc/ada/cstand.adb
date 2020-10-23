@@ -719,6 +719,11 @@ package body CStand is
         (Standard_Long_Long_Integer, Standard_Long_Long_Integer_Size);
       Set_Is_Implementation_Defined (Standard_Long_Long_Integer);
 
+      Build_Signed_Integer_Type
+        (Standard_Long_Long_Long_Integer,
+         Standard_Long_Long_Long_Integer_Size);
+      Set_Is_Implementation_Defined (Standard_Long_Long_Long_Integer);
+
       Create_Unconstrained_Base_Type
         (Standard_Short_Short_Integer, E_Signed_Integer_Subtype);
 
@@ -733,6 +738,9 @@ package body CStand is
 
       Create_Unconstrained_Base_Type
         (Standard_Long_Long_Integer, E_Signed_Integer_Subtype);
+
+      Create_Unconstrained_Base_Type
+        (Standard_Long_Long_Long_Integer, E_Signed_Integer_Subtype);
 
       Create_Float_Types;
 
@@ -1238,11 +1246,11 @@ package body CStand is
       Set_Elem_Alignment    (Any_Fixed);
 
       Any_Integer := New_Standard_Entity ("an integer type");
-      Set_Ekind             (Any_Integer, E_Signed_Integer_Type);
-      Set_Scope             (Any_Integer, Standard_Standard);
-      Set_Etype             (Any_Integer, Standard_Long_Long_Integer);
-      Init_Size             (Any_Integer, Standard_Long_Long_Integer_Size);
-      Set_Elem_Alignment    (Any_Integer);
+      Set_Ekind            (Any_Integer, E_Signed_Integer_Type);
+      Set_Scope            (Any_Integer, Standard_Standard);
+      Set_Etype            (Any_Integer, Standard_Long_Long_Long_Integer);
+      Init_Size            (Any_Integer, Standard_Long_Long_Long_Integer_Size);
+      Set_Elem_Alignment   (Any_Integer);
 
       Set_Integer_Bounds
         (Any_Integer,
@@ -1251,19 +1259,19 @@ package body CStand is
          Hb  => Intval (High_Bound (Scalar_Range (Standard_Integer))));
 
       Any_Modular := New_Standard_Entity ("a modular type");
-      Set_Ekind             (Any_Modular, E_Modular_Integer_Type);
-      Set_Scope             (Any_Modular, Standard_Standard);
-      Set_Etype             (Any_Modular, Standard_Long_Long_Integer);
-      Init_Size             (Any_Modular, Standard_Long_Long_Integer_Size);
-      Set_Elem_Alignment    (Any_Modular);
-      Set_Is_Unsigned_Type  (Any_Modular);
+      Set_Ekind            (Any_Modular, E_Modular_Integer_Type);
+      Set_Scope            (Any_Modular, Standard_Standard);
+      Set_Etype            (Any_Modular, Standard_Long_Long_Long_Integer);
+      Init_Size            (Any_Modular, Standard_Long_Long_Long_Integer_Size);
+      Set_Elem_Alignment   (Any_Modular);
+      Set_Is_Unsigned_Type (Any_Modular);
 
       Any_Numeric := New_Standard_Entity ("a numeric type");
-      Set_Ekind             (Any_Numeric, E_Signed_Integer_Type);
-      Set_Scope             (Any_Numeric, Standard_Standard);
-      Set_Etype             (Any_Numeric, Standard_Long_Long_Integer);
-      Init_Size             (Any_Numeric, Standard_Long_Long_Integer_Size);
-      Set_Elem_Alignment    (Any_Numeric);
+      Set_Ekind            (Any_Numeric, E_Signed_Integer_Type);
+      Set_Scope            (Any_Numeric, Standard_Standard);
+      Set_Etype            (Any_Numeric, Standard_Long_Long_Long_Integer);
+      Init_Size            (Any_Numeric, Standard_Long_Long_Long_Integer_Size);
+      Set_Elem_Alignment   (Any_Numeric);
 
       Any_Real := New_Standard_Entity ("a real type");
       Set_Ekind             (Any_Real, E_Floating_Point_Type);
@@ -1339,10 +1347,16 @@ package body CStand is
       Build_Unsigned_Integer_Type
         (Standard_Long_Unsigned, Standard_Long_Integer_Size);
 
-      Standard_Long_Long_Unsigned
-        := New_Standard_Entity ("long_long_unsigned");
+      Standard_Long_Long_Unsigned :=
+        New_Standard_Entity ("long_long_unsigned");
       Build_Unsigned_Integer_Type
         (Standard_Long_Long_Unsigned, Standard_Long_Long_Integer_Size);
+
+      Standard_Long_Long_Long_Unsigned :=
+        New_Standard_Entity ("long_long_long_unsigned");
+      Build_Unsigned_Integer_Type
+        (Standard_Long_Long_Long_Unsigned,
+         Standard_Long_Long_Long_Integer_Size);
 
       --  Standard_Unsigned_64 is not user visible, but is used internally. It
       --  is an unsigned type mod 2**64 with 64 bits size.
@@ -1358,16 +1372,16 @@ package body CStand is
 
       --  Note: universal integer and universal real are constructed as fully
       --  formed signed numeric types, with parameters corresponding to the
-      --  longest runtime types (Long_Long_Integer and Long_Long_Float). This
-      --  allows Gigi to properly process references to universal types that
-      --  are not folded at compile time.
+      --  longest runtime types (Long_Long_Long_Integer and Long_Long_Float).
+      --  This allows Gigi to properly process references to universal types
+      --  that are not folded at compile time.
 
       Universal_Integer := New_Standard_Entity ("universal_integer");
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Universal_Integer);
       Set_Scope (Universal_Integer, Standard_Standard);
       Build_Signed_Integer_Type
-        (Universal_Integer, Standard_Long_Long_Integer_Size);
+        (Universal_Integer, Standard_Long_Long_Long_Integer_Size);
 
       Universal_Real := New_Standard_Entity ("universal_real");
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
@@ -1952,6 +1966,13 @@ package body CStand is
       P_Int_Range (Standard_Long_Long_Integer_Size);
       Write_Str ("   for Long_Long_Integer'Size use ");
       Write_Int (Standard_Long_Long_Integer_Size);
+      P (";");
+      Write_Eol;
+
+      Write_Str ("   type Long_Long_Long_Integer");
+      P_Int_Range (Standard_Long_Long_Long_Integer_Size);
+      Write_Str ("   for Long_Long_Long_Integer'Size use ");
+      Write_Int (Standard_Long_Long_Long_Integer_Size);
       P (";");
       Write_Eol;
 

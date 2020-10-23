@@ -1577,7 +1577,17 @@ operator_lshift::op1_range (irange &r,
   if (op2.singleton_p (&shift_amount))
     {
       wide_int shift = wi::to_wide (shift_amount);
-      gcc_checking_assert (wi::gt_p (shift, 0, SIGNED));
+      if (wi::lt_p (shift, 0, SIGNED))
+	return false;
+      if (wi::ge_p (shift, wi::uhwi (TYPE_PRECISION (type),
+				     TYPE_PRECISION (op2.type ())),
+		    UNSIGNED))
+	return false;
+      if (shift == 0)
+	{
+	  r = lhs;
+	  return true;
+	}
 
       // Work completely in unsigned mode to start.
       tree utype = type;
@@ -1632,6 +1642,11 @@ operator_rshift::op1_range (irange &r,
 		    wi::uhwi (prec, TYPE_PRECISION (TREE_TYPE (shift))),
 		    UNSIGNED))
 	return false;
+      if (wi::to_wide (shift) == 0)
+	{
+	  r = lhs;
+	  return true;
+	}
 
       // Folding the original operation may discard some impossible
       // ranges from the LHS.
@@ -3063,6 +3078,14 @@ pointer_plus_operator::wi_fold (irange &r, tree type,
 				const wide_int &rh_lb,
 				const wide_int &rh_ub) const
 {
+  // Check for [0,0] + const, and simply return the const.
+  if (lh_lb == 0 && lh_ub == 0 && rh_lb == rh_ub)
+    {
+      tree val = wide_int_to_tree (type, rh_lb);
+      r.set (val, val);
+      return;
+    }
+
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
   //

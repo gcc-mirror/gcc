@@ -4143,11 +4143,11 @@ package body Sem_Res is
                         --  types.
 
                         if Is_By_Reference_Type (Etype (F))
-                           or else Is_By_Reference_Type (Expr_Typ)
+                          or else Is_By_Reference_Type (Expr_Typ)
                         then
                            Error_Msg_N
                              ("view conversion between unrelated by reference "
-                              & "array types not allowed (\'A'I-00246)", A);
+                              & "array types not allowed ('A'I-00246)", A);
 
                         --  In Ada 2005 mode, check view conversion component
                         --  type cannot be private, tagged, or volatile. Note
@@ -6124,27 +6124,6 @@ package body Sem_Res is
    ------------------
 
    procedure Resolve_Call (N : Node_Id; Typ : Entity_Id) is
-      function Same_Or_Aliased_Subprograms
-        (S : Entity_Id;
-         E : Entity_Id) return Boolean;
-      --  Returns True if the subprogram entity S is the same as E or else
-      --  S is an alias of E.
-
-      ---------------------------------
-      -- Same_Or_Aliased_Subprograms --
-      ---------------------------------
-
-      function Same_Or_Aliased_Subprograms
-        (S : Entity_Id;
-         E : Entity_Id) return Boolean
-      is
-         Subp_Alias : constant Entity_Id := Alias (S);
-      begin
-         return S = E or else (Present (Subp_Alias) and then Subp_Alias = E);
-      end Same_Or_Aliased_Subprograms;
-
-      --  Local variables
-
       Loc      : constant Source_Ptr := Sloc (N);
       Subp     : constant Node_Id    := Name (N);
       Body_Id  : Entity_Id;
@@ -6156,8 +6135,6 @@ package body Sem_Res is
       Norm_OK  : Boolean;
       Rtype    : Entity_Id;
       Scop     : Entity_Id;
-
-   --  Start of processing for Resolve_Call
 
    begin
       --  Preserve relevant elaboration-related attributes of the context which
@@ -11641,12 +11618,12 @@ package body Sem_Res is
       --  to apply checks required for a subtype conversion.
 
       --  Skip these type conversion checks if universal fixed operands
-      --  operands involved, since range checks are handled separately for
+      --  are involved, since range checks are handled separately for
       --  these cases (in the appropriate Expand routines in unit Exp_Fixd).
 
       if Nkind (N) = N_Type_Conversion
         and then not Is_Generic_Type (Root_Type (Target_Typ))
-        and then Target_Typ  /= Universal_Fixed
+        and then Target_Typ /= Universal_Fixed
         and then Operand_Typ /= Universal_Fixed
       then
          Apply_Type_Conversion_Checks (N);
@@ -11886,19 +11863,13 @@ package body Sem_Res is
            (N, Target_Typ, Static_Failure_Is_Error => True);
       end if;
 
-      --  If at this stage we have a real to integer conversion, make sure that
-      --  the Do_Range_Check flag is set, because such conversions in general
-      --  need a range check. We only need this if expansion is off.
-      --  In GNATprove mode, we only do that when converting from fixed-point
-      --  (as floating-point to integer conversions are now handled in
-      --  GNATprove mode).
+      --  If at this stage we have a fixed point to integer conversion, make
+      --  sure that the Do_Range_Check flag is set which is not always done
+      --  by exp_fixd.adb.
 
       if Nkind (N) = N_Type_Conversion
-        and then not Expander_Active
         and then Is_Integer_Type (Target_Typ)
-        and then (Is_Fixed_Point_Type (Operand_Typ)
-                   or else (not GNATprove_Mode
-                             and then Is_Floating_Point_Type (Operand_Typ)))
+        and then Is_Fixed_Point_Type (Operand_Typ)
         and then not Range_Checks_Suppressed (Target_Typ)
         and then not Range_Checks_Suppressed (Operand_Typ)
       then
@@ -13451,11 +13422,21 @@ package body Sem_Res is
             --  rewritten. The Comes_From_Source test isn't sufficient because
             --  nodes in inlined calls to predefined library routines can have
             --  Comes_From_Source set to False. (Is there a better way to test
-            --  for implicit conversions???)
+            --  for implicit conversions???).
+            --
+            --  Do not treat a rewritten 'Old attribute reference like other
+            --  rewrite substitutions. This makes a difference, for example,
+            --  in the case where we are generating the expansion of a
+            --  membership test of the form
+            --     Saooaaat'Old in Named_Access_Type
+            --  because in this case Valid_Conversion needs to return True
+            --  (otherwise the expansion will be False - see the call site
+            --  in exp_ch4.adb).
 
             if Ada_Version >= Ada_2012
               and then not Comes_From_Source (N)
               and then Is_Rewrite_Substitution (N)
+              and then not Is_Attribute_Old (Original_Node (N))
               and then Ekind (Base_Type (Target_Type)) = E_General_Access_Type
               and then Ekind (Opnd_Type) = E_Anonymous_Access_Type
             then

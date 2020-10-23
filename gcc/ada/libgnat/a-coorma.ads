@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Finalization;
 private with Ada.Streams;
+private with Ada.Strings.Text_Output;
 
 generic
    type Key_Type is private;
@@ -58,13 +59,14 @@ is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty     => Empty_Map,
+      Aggregate         => (Empty     => Empty,
                             Add_Named => Insert);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_Map : constant Map;
+   function Empty return Map;
 
    No_Element : constant Cursor;
 
@@ -259,7 +261,10 @@ private
 
    type Map is new Ada.Finalization.Controlled with record
       Tree : Tree_Types.Tree_Type;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map);
 
    overriding procedure Adjust (Container : in out Map);
 
@@ -369,6 +374,7 @@ private
    --  Returns a pointer to the element designated by Position.
 
    Empty_Map : constant Map := (Controlled with others => <>);
+   function Empty return Map is (Empty_Map);
 
    No_Element : constant Cursor := Cursor'(null, null);
 

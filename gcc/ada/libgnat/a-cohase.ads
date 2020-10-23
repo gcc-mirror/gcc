@@ -37,6 +37,7 @@ private with Ada.Containers.Hash_Tables;
 with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type is private;
@@ -60,7 +61,7 @@ is
       Constant_Indexing => Constant_Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty       => Empty_Set,
+      Aggregate         => (Empty       => Empty,
                             Add_Unnamed => Include);
 
    pragma Preelaborable_Initialization (Set);
@@ -81,6 +82,8 @@ is
 
    package Set_Iterator_Interfaces is new
      Ada.Iterator_Interfaces (Cursor, Has_Element);
+
+   function Empty (Capacity : Count_Type := 1000) return Set;
 
    function "=" (Left, Right : Set) return Boolean;
    --  For each element in Left, set equality attempts to find the equal
@@ -504,7 +507,10 @@ private
 
    type Set is new Ada.Finalization.Controlled with record
       HT : HT_Types.Hash_Table_Type;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Set);
 
    overriding procedure Adjust (Container : in out Set);
 

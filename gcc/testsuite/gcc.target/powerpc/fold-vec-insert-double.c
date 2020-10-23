@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_insert with 
    double inputs produce the right codegen.  */
 
-/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2" } */
 

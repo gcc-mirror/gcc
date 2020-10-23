@@ -591,8 +591,8 @@ package Lib.Xref is
 
    --  What we do in such cases is to gather nodes, where we would have liked
    --  to call Generate_Reference but we couldn't because we didn't know enough
-   --  into this table, then we deal with generating references later on when
-   --  we have sufficient information to do it right.
+   --  into a table, then we deal with generating references later on when we
+   --  have sufficient information to do it right.
 
    type Deferred_Reference_Entry is record
       E : Entity_Id;
@@ -600,13 +600,8 @@ package Lib.Xref is
    end record;
    --  One entry, E, N are as required for Generate_Reference call
 
-   package Deferred_References is new Table.Table (
-     Table_Component_Type => Deferred_Reference_Entry,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => 512,
-     Table_Increment      => 200,
-     Table_Name           => "Name_Deferred_References");
+   procedure Defer_Reference (Deferred_Reference : Deferred_Reference_Entry);
+   --  Add one entry to the deferred reference table
 
    procedure Process_Deferred_References;
    --  This procedure is called from Frontend to process these table entries.

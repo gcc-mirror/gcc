@@ -1544,6 +1544,7 @@ package body Sem_Ch13 is
       --    Refined_Global
       --    Refined_State
       --    SPARK_Mode
+      --    Subprogram_Variant
       --    Warnings
       --  Insert pragma Prag such that it mimics the placement of a source
       --  pragma of the same kind. Flag Is_Generic should be set when the
@@ -1764,10 +1765,10 @@ package body Sem_Ch13 is
       --  analyzed right now.
 
       --  Note that there is a special handling for Pre, Post, Test_Case,
-      --  Contract_Cases aspects. In these cases, we do not have to worry
-      --  about delay issues, since the pragmas themselves deal with delay
-      --  of visibility for the expression analysis. Thus, we just insert
-      --  the pragma after the node N.
+      --  Contract_Cases and Subprogram_Variant aspects. In these cases, we do
+      --  not have to worry about delay issues, since the pragmas themselves
+      --  deal with delay of visibility for the expression analysis. Thus, we
+      --  just insert the pragma after the node N.
 
       --  Loop through aspects
 
@@ -2165,6 +2166,9 @@ package body Sem_Ch13 is
                   Seen    : in out Elist_Id)
                is
                begin
+                  --  Set name of the aspect for error messages
+                  Error_Msg_Name_1 := Nam;
+
                   --  The relaxed parameter is a formal parameter
 
                   if Nkind (Param) in N_Identifier | N_Expanded_Name then
@@ -2178,6 +2182,14 @@ package body Sem_Ch13 is
                         if Scope (Item) = Subp_Id then
 
                            pragma Assert (Is_Formal (Item));
+
+                           --  It must not have scalar or access type
+
+                           if Is_Elementary_Type (Etype (Item)) then
+                              Error_Msg_N ("illegal aspect % item", Param);
+                              Error_Msg_N
+                                ("\item must not have elementary type", Param);
+                           end if;
 
                            --  Detect duplicated items
 
@@ -2205,6 +2217,16 @@ package body Sem_Ch13 is
                           and then
                             Entity (Pref) = Subp_Id
                         then
+                           --  Function result must not have scalar or access
+                           --  type.
+
+                           if Is_Elementary_Type (Etype (Pref)) then
+                              Error_Msg_N ("illegal aspect % item", Param);
+                              Error_Msg_N
+                                ("\function result must not have elementary"
+                                 & " type", Param);
+                           end if;
+
                            --  Detect duplicated items
 
                            if Contains (Seen, Subp_Id) then
@@ -2345,12 +2367,14 @@ package body Sem_Ch13 is
                                     if not Is_OK_Static_Expression
                                       (Expression (Assoc))
                                     then
+                                       Error_Msg_Name_1 := Nam;
                                        Error_Msg_N
                                          ("expression of aspect %" &
                                           "must be static", Aspect);
                                     end if;
 
                                  else
+                                    Error_Msg_Name_1 := Nam;
                                     Error_Msg_N
                                       ("illegal aspect % expression", Expr);
                                  end if;
@@ -4169,8 +4193,8 @@ package body Sem_Ch13 is
 
                --  Case 4: Aspects requiring special handling
 
-               --  Pre/Post/Test_Case/Contract_Cases whose corresponding
-               --  pragmas take care of the delay.
+               --  Pre/Post/Test_Case/Contract_Cases/Subprogram_Variant whose
+               --  corresponding pragmas take care of the delay.
 
                --  Pre/Post
 
@@ -4369,6 +4393,19 @@ package body Sem_Ch13 is
                --  Contract_Cases
 
                when Aspect_Contract_Cases =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Nam);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Subprogram_Variant
+
+               when Aspect_Subprogram_Variant =>
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
@@ -6991,12 +7028,13 @@ package body Sem_Ch13 is
                else
                   if Is_Elementary_Type (Etyp)
                     and then Size /= System_Storage_Unit
-                    and then Size /= System_Storage_Unit * 2
-                    and then Size /= System_Storage_Unit * 4
-                    and then Size /= System_Storage_Unit * 8
+                    and then Size /= 16
+                    and then Size /= 32
+                    and then Size /= 64
+                    and then Size /= System_Max_Integer_Size
                   then
                      Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
-                     Error_Msg_Uint_2 := Error_Msg_Uint_1 * 8;
+                     Error_Msg_Uint_2 := UI_From_Int (System_Max_Integer_Size);
                      Error_Msg_N
                        ("size for primitive object must be a power of 2 in "
                         & "the range ^-^", N);
@@ -7168,7 +7206,7 @@ package body Sem_Ch13 is
 
                   --  check (C)
 
-                  if Present (Obj) and then Ekind (Obj) in Formal_Kind then
+                  if Present (Obj) and then Is_Formal (Obj) then
                      Error_Msg_N
                        ("subpool cannot be part of a parameter", Ent);
                      return;
@@ -9560,8 +9598,8 @@ package body Sem_Ch13 is
       --  Predicate_Function of the parent type, using Add_Call above.
 
       procedure Add_Call (T : Entity_Id);
-      --  Includes a call to the predicate function for type T in Expr if T
-      --  has predicates and Predicate_Function (T) is non-empty.
+      --  Includes a call to the predicate function for type T in Expr if
+      --  Predicate_Function (T) is non-empty.
 
       function Process_RE (N : Node_Id) return Traverse_Result;
       --  Used in Process REs, tests if node N is a raise expression, and if
@@ -9585,8 +9623,8 @@ package body Sem_Ch13 is
          Exp : Node_Id;
 
       begin
-         if Present (T) and then Present (Predicate_Function (T)) then
-            Set_Has_Predicates (Typ);
+         if Present (Predicate_Function (T)) then
+            pragma Assert (Has_Predicates (Typ));
 
             --  Build the call to the predicate function of T. The type may be
             --  derived, so use an unchecked conversion for the actual.
@@ -10832,6 +10870,7 @@ package body Sem_Ch13 is
             | Aspect_Refined_State
             | Aspect_Relaxed_Initialization
             | Aspect_SPARK_Mode
+            | Aspect_Subprogram_Variant
             | Aspect_Test_Case
             | Aspect_Unimplemented
             | Aspect_Volatile_Function
@@ -15380,7 +15419,7 @@ package body Sem_Ch13 is
    begin
       Init_Alignment (T);
 
-      --  Find the minimum standard size (8,16,32,64) that fits
+      --  Find the minimum standard size (8,16,32,64,128) that fits
 
       Lo := Enumeration_Rep (Entity (Type_Low_Bound (T)));
       Hi := Enumeration_Rep (Entity (Type_High_Bound (T)));
@@ -15395,8 +15434,11 @@ package body Sem_Ch13 is
          elsif Lo >= -Uint_2**31 and then Hi < Uint_2**31 then
             Sz := 32;
 
-         else pragma Assert (Lo >= -Uint_2**63 and then Hi < Uint_2**63);
+         elsif Lo >= -Uint_2**63 and then Hi < Uint_2**63 then
             Sz := 64;
+
+         else pragma Assert (Lo >= -Uint_2**127 and then Hi < Uint_2**127);
+            Sz := 128;
          end if;
 
       else
@@ -15409,8 +15451,11 @@ package body Sem_Ch13 is
          elsif Hi < Uint_2**32 then
             Sz := 32;
 
-         else pragma Assert (Hi < Uint_2**63);
+         elsif Hi < Uint_2**64 then
             Sz := 64;
+
+         else pragma Assert (Hi < Uint_2**128);
+            Sz := 128;
          end if;
       end if;
 

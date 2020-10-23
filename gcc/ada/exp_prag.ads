@@ -49,4 +49,15 @@ package Exp_Prag is
    --  applies to package Pack_Id. N denotes the related package spec or
    --  body.
 
+   procedure Expand_Pragma_Subprogram_Variant
+     (Prag       : Node_Id;
+      Subp_Id    : Entity_Id;
+      Body_Decls : List_Id);
+   --  Given pragma Subprogram_Variant Prag, create the circuitry needed
+   --  to evaluate variant expressions at the subprogram entry and at the
+   --  recursive call. Subp_Id is the related subprogram for which the pragma
+   --  applies and Body_Decls are its body declarations. On exit, the argument
+   --  of Prag is replaced with a reference to procedure with checks for the
+   --  variant expressions.
+
 end Exp_Prag;

@@ -6359,8 +6359,10 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* Verify following REDUC_IDX from the latch def leads us back to the PHI
      and compute the reduction chain length.  Discover the real
      reduction operation stmt on the way (stmt_info and slp_for_stmt_info).  */
-  tree reduc_def = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
-					  loop_latch_edge (loop));
+  tree reduc_def
+    = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
+			     loop_latch_edge
+			       (gimple_bb (reduc_def_phi)->loop_father));
   unsigned reduc_chain_length = 0;
   bool only_slp_reduc_chain = true;
   stmt_info = NULL;

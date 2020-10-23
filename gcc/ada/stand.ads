@@ -440,8 +440,8 @@ package Stand is
 
    Universal_Integer : Entity_Id;
    --  Entity for universal integer type. The bounds of this type correspond
-   --  to the largest supported integer type (i.e. Long_Long_Integer). It is
-   --  the type used for runtime calculations in type universal integer.
+   --  to the largest supported integer type (i.e. Long_Long_Long_Integer).
+   --  It is the type used for runtime calculations in type universal integer.
 
    Universal_Real : Entity_Id;
    --  Entity for universal real type. The bounds of this type correspond to
@@ -464,11 +464,12 @@ package Stand is
    --  These are signed integer types with the indicated sizes. Used for the
    --  underlying implementation types for fixed-point and enumeration types.
 
-   Standard_Short_Short_Unsigned : Entity_Id;
-   Standard_Short_Unsigned       : Entity_Id;
-   Standard_Unsigned             : Entity_Id;
-   Standard_Long_Unsigned        : Entity_Id;
-   Standard_Long_Long_Unsigned   : Entity_Id;
+   Standard_Short_Short_Unsigned    : Entity_Id;
+   Standard_Short_Unsigned          : Entity_Id;
+   Standard_Unsigned                : Entity_Id;
+   Standard_Long_Unsigned           : Entity_Id;
+   Standard_Long_Long_Unsigned      : Entity_Id;
+   Standard_Long_Long_Long_Unsigned : Entity_Id;
    --  Unsigned types with same Esize as corresponding signed integer types
 
    Standard_Unsigned_64 : Entity_Id;

@@ -1496,6 +1496,7 @@ begin
          | Pragma_Storage_Unit
          | Pragma_Stream_Convert
          | Pragma_Subtitle
+         | Pragma_Subprogram_Variant
          | Pragma_Suppress
          | Pragma_Suppress_Debug_Info
          | Pragma_Suppress_Exception_Locations

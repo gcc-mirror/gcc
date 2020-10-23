@@ -53,6 +53,7 @@ with Sem;      use Sem;
 with Sem_Aggr; use Sem_Aggr;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Mech; use Sem_Mech;
@@ -1954,7 +1955,30 @@ package body Exp_Aggr is
                   Expander_Mode_Save_And_Set (False);
                   Tcopy := New_Copy_Tree (Expr);
                   Set_Parent (Tcopy, N);
-                  Analyze_And_Resolve (Tcopy, Component_Type (Etype (N)));
+
+                  --  For iterated_component_association analyze and resolve
+                  --  the expression with name of the index parameter visible.
+                  --  To manipulate scopes, we use entity of the implicit loop.
+
+                  if Is_Iterated_Component then
+                     declare
+                        Index_Parameter : constant Entity_Id :=
+                          Defining_Identifier (Parent (Expr));
+                     begin
+                        Push_Scope (Scope (Index_Parameter));
+                        Enter_Name (Index_Parameter);
+                        Analyze_And_Resolve
+                          (Tcopy, Component_Type (Etype (N)));
+                        End_Scope;
+                     end;
+
+                  --  For ordinary component association, just analyze and
+                  --  resolve the expression.
+
+                  else
+                     Analyze_And_Resolve (Tcopy, Component_Type (Etype (N)));
+                  end if;
+
                   Expander_Mode_Restore;
                end if;
             end if;
@@ -2334,7 +2358,7 @@ package body Exp_Aggr is
             Sort_Case_Table (Table);
          end if;
 
-         --  STEP 1 (b):  take care of the whole set of discrete choices
+         --  STEP 1 (b): take care of the whole set of discrete choices
 
          for J in 1 .. Nb_Choices loop
             Low  := Table (J).Choice_Lo;
@@ -6755,15 +6779,16 @@ package body Exp_Aggr is
    ------------------------
 
    procedure Expand_N_Aggregate (N : Node_Id) is
+      T : constant Entity_Id := Etype (N);
    begin
       --  Record aggregate case
 
-      if Is_Record_Type (Etype (N))
-        and then not Is_Private_Type (Etype (N))
+      if Is_Record_Type (T)
+        and then not Is_Private_Type (T)
       then
          Expand_Record_Aggregate (N);
 
-      elsif Has_Aspect (Etype (N), Aspect_Aggregate) then
+      elsif Has_Aspect (T, Aspect_Aggregate) then
          Expand_Container_Aggregate (N);
 
       --  Array aggregate case
@@ -6811,11 +6836,10 @@ package body Exp_Aggr is
                  and then No (Expressions (N))
                then
                   declare
-                     T  : constant Entity_Id := Etype (N);
-                     X  : constant Node_Id   := First_Index (T);
-                     EC : constant Node_Id   := Expression (CA);
-                     CV : constant Uint      := Char_Literal_Value (EC);
-                     CC : constant Int       := UI_To_Int (CV);
+                     X  : constant Node_Id := First_Index (T);
+                     EC : constant Node_Id := Expression (CA);
+                     CV : constant Uint    := Char_Literal_Value (EC);
+                     CC : constant Int     := UI_To_Int (CV);
 
                   begin
                      if Nkind (X) = N_Range
@@ -6899,35 +6923,86 @@ package body Exp_Aggr is
 
       procedure Expand_Iterated_Component (Comp : Node_Id) is
          Expr    : constant Node_Id := Expression (Comp);
-         Loop_Id : constant Entity_Id :=
-            Make_Defining_Identifier (Loc,
-              Chars => Chars (Defining_Identifier (Comp)));
 
+         Key_Expr           : Node_Id := Empty;
+         Loop_Id            : Entity_Id;
          L_Range            : Node_Id;
          L_Iteration_Scheme : Node_Id;
          Loop_Stat          : Node_Id;
+         Params             : List_Id;
          Stats              : List_Id;
 
       begin
-         if Present (Iterator_Specification (Comp)) then
-            L_Iteration_Scheme :=
-              Make_Iteration_Scheme (Loc,
-                Iterator_Specification => Iterator_Specification (Comp));
+         if Nkind (Comp) = N_Iterated_Element_Association then
+            Key_Expr := Key_Expression (Comp);
 
+            --  We create a new entity as loop identifier in all cases,
+            --  as is done for generated loops elsewhere, as the loop
+            --  structure has been previously analyzed.
+
+            if Present (Iterator_Specification (Comp)) then
+
+               --  Either an Iterator_Specification of a Loop_Parameter_
+               --  Specification is present.
+
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Iterator_Specification => Iterator_Specification (Comp));
+               Loop_Id :=
+                  Make_Defining_Identifier (Loc,
+                    Chars => Chars (Defining_Identifier
+                               (Iterator_Specification (Comp))));
+               Set_Defining_Identifier
+                  (Iterator_Specification (L_Iteration_Scheme), Loop_Id);
+
+            else
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Loop_Parameter_Specification =>
+                     Loop_Parameter_Specification (Comp));
+               Loop_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => Chars (Defining_Identifier
+                              (Loop_Parameter_Specification (Comp))));
+               Set_Defining_Identifier
+                 (Loop_Parameter_Specification
+                    (L_Iteration_Scheme), Loop_Id);
+            end if;
          else
-            L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
-            L_Iteration_Scheme :=
-              Make_Iteration_Scheme (Loc,
-                Loop_Parameter_Specification =>
-                  Make_Loop_Parameter_Specification (Loc,
-                    Defining_Identifier => Loop_Id,
-                    Discrete_Subtype_Definition => L_Range));
+
+            --  Iterated_Component_Association.
+
+            Loop_Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => Chars (Defining_Identifier (Comp)));
+
+            if Present (Iterator_Specification (Comp)) then
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Iterator_Specification => Iterator_Specification (Comp));
+
+            else
+               --  Loop_Parameter_Specifcation is parsed with a choice list.
+               --  where the range is the first (and only) choice.
+
+               L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
+
+               L_Iteration_Scheme :=
+                 Make_Iteration_Scheme (Loc,
+                   Loop_Parameter_Specification =>
+                     Make_Loop_Parameter_Specification (Loc,
+                       Defining_Identifier => Loop_Id,
+                       Discrete_Subtype_Definition => L_Range));
+            end if;
          end if;
 
          --  Build insertion statement. For a positional aggregate, only the
          --  expression is needed. For a named aggregate, the loop variable,
          --  whose type is that of the key, is an additional parameter for
          --  the insertion operation.
+         --  If a Key_Expression is present, it serves as the additional
+         --  parameter. Otherwise the key is given by the loop parameter
+         --  itself.
 
          if Present (Add_Unnamed_Subp) then
             Stats := New_List
@@ -6937,13 +7012,23 @@ package body Exp_Aggr is
                    New_List (New_Occurrence_Of (Temp, Loc),
                      New_Copy_Tree (Expr))));
          else
+            --  Named or indexed aggregate, for which a key is present,
+            --  possibly with a specified key_expression.
+
+            if Present (Key_Expr) then
+               Params := New_List (New_Occurrence_Of (Temp, Loc),
+                            New_Copy_Tree (Key_Expr),
+                            New_Copy_Tree (Expr));
+            else
+               Params := New_List (New_Occurrence_Of (Temp, Loc),
+                            New_Occurrence_Of (Loop_Id, Loc),
+                            New_Copy_Tree (Expr));
+            end if;
+
             Stats := New_List
               (Make_Procedure_Call_Statement (Loc,
                  Name => New_Occurrence_Of (Entity (Add_Named_Subp), Loc),
-                 Parameter_Associations =>
-                   New_List (New_Occurrence_Of (Temp, Loc),
-                     New_Occurrence_Of (Loop_Id, Loc),
-                     New_Copy_Tree (Expr))));
+                 Parameter_Associations => Params));
          end if;
 
          Loop_Stat :=  Make_Implicit_Loop_Statement
@@ -7029,7 +7114,9 @@ package body Exp_Aggr is
             --  generate an insertion statement for each.
 
             while Present (Comp) loop
-               if Nkind (Comp) = N_Iterated_Component_Association then
+               if Nkind (Comp) in N_Iterated_Component_Association
+                                | N_Iterated_Element_Association
+               then
                   Expand_Iterated_Component (Comp);
                else
                   Key := First (Choices (Comp));

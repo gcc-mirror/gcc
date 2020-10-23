@@ -377,6 +377,7 @@ package Nlists is
    --  "if Present (Statements)" as opposed to "if Statements /= No_List".
 
    procedure Allocate_List_Tables (N : Node_Or_Entity_Id);
+   pragma Inline (Allocate_List_Tables);
    --  Called when nodes table is expanded to include node N. This call
    --  makes sure that list structures internal to Nlists are adjusted
    --  appropriately to reflect this increase in the size of the nodes table.

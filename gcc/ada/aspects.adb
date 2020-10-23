@@ -455,6 +455,7 @@ package body Aspects is
       N_Package_Instantiation                  => True,
       N_Package_Specification                  => True,
       N_Package_Renaming_Declaration           => True,
+      N_Parameter_Specification                => True,
       N_Private_Extension_Declaration          => True,
       N_Private_Type_Declaration               => True,
       N_Procedure_Instantiation                => True,

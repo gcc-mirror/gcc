@@ -1193,6 +1193,38 @@ package body Sem is
       end if;
    end Insert_Before_And_Analyze;
 
+   --------------------------------------------
+   -- Insert_Before_First_Source_Declaration --
+   --------------------------------------------
+
+   procedure Insert_Before_First_Source_Declaration
+     (Stmt  : Node_Id;
+      Decls : List_Id)
+   is
+      Decl : Node_Id;
+   begin
+      --  Inspect the declarations of the related subprogram body looking for
+      --  the first source declaration.
+
+      pragma Assert (Present (Decls));
+
+      Decl := First (Decls);
+      while Present (Decl) loop
+         if Comes_From_Source (Decl) then
+            Insert_Before (Decl, Stmt);
+            return;
+         end if;
+
+         Next (Decl);
+      end loop;
+
+      --  If we get there, then the subprogram body lacks any source
+      --  declarations. The body of _Postconditions now acts as the
+      --  last declaration.
+
+      Append (Stmt, Decls);
+   end Insert_Before_First_Source_Declaration;
+
    -----------------------------------
    -- Insert_List_After_And_Analyze --
    -----------------------------------

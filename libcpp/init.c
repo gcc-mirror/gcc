@@ -248,8 +248,10 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   /* Set up static tokens.  */
   pfile->avoid_paste.type = CPP_PADDING;
   pfile->avoid_paste.val.source = NULL;
-  pfile->eof.type = CPP_EOF;
-  pfile->eof.flags = 0;
+  pfile->avoid_paste.src_loc = 0;
+  pfile->endarg.type = CPP_EOF;
+  pfile->endarg.flags = 0;
+  pfile->endarg.src_loc = 0;
 
   /* Create a token buffer for the lexer.  */
   _cpp_init_tokenrun (&pfile->base_run, 250);

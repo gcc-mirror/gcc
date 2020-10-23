@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-Wno-stringop-overflow" }
+
 // 21.3.3 string capacity
 
 #include <string>

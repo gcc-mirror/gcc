@@ -29,45 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Unsigned_Types; use System.Unsigned_Types;
+--  This package does not require a body, since it is an instantiation. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-package body System.Wid_LLU is
-
-   ------------------------------
-   -- Width_Long_Long_Unsigned --
-   ------------------------------
-
-   function Width_Long_Long_Unsigned
-     (Lo, Hi : Long_Long_Unsigned)
-      return   Natural
-   is
-      W : Natural;
-      T : Long_Long_Unsigned;
-
-   begin
-      if Lo > Hi then
-         return 0;
-
-      else
-         --  Minimum value is 2, one for sign, one for digit
-
-         W := 2;
-
-         --  Get max of absolute values, but avoid bomb if we have the maximum
-         --  negative number (note that First + 1 has same digits as First)
-
-         T := Long_Long_Unsigned'Max (Lo, Hi);
-
-         --  Increase value if more digits required
-
-         while T >= 10 loop
-            T := T / 10;
-            W := W + 1;
-         end loop;
-
-         return W;
-      end if;
-
-   end Width_Long_Long_Unsigned;
-
-end System.Wid_LLU;
+pragma No_Body;

@@ -29,55 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Exp_Int is
+--  This package does not require a body, since it is an instantiation. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-   -----------------
-   -- Exp_Integer --
-   -----------------
-
-   --  Note that negative exponents get a constraint error because the
-   --  subtype of the Right argument (the exponent) is Natural.
-
-   function Exp_Integer
-     (Left  : Integer;
-      Right : Natural)
-      return  Integer
-   is
-      Result : Integer := 1;
-      Factor : Integer := Left;
-      Exp    : Natural := Right;
-
-   begin
-      --  We use the standard logarithmic approach, Exp gets shifted right
-      --  testing successive low order bits and Factor is the value of the
-      --  base raised to the next power of 2.
-
-      --  Note: it is not worth special casing base values -1, 0, +1 since
-      --  the expander does this when the base is a literal, and other cases
-      --  will be extremely rare.
-
-      if Exp /= 0 then
-         loop
-            if Exp rem 2 /= 0 then
-               declare
-                  pragma Unsuppress (All_Checks);
-               begin
-                  Result := Result * Factor;
-               end;
-            end if;
-
-            Exp := Exp / 2;
-            exit when Exp = 0;
-
-            declare
-               pragma Unsuppress (All_Checks);
-            begin
-               Factor := Factor * Factor;
-            end;
-         end loop;
-      end if;
-
-      return Result;
-   end Exp_Integer;
-
-end System.Exp_Int;
+pragma No_Body;

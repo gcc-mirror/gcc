@@ -1,3 +1,274 @@
+2020-10-20  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/Wbuiltin-declaration-mismatch-9.c: Improve pruning of
+	invalid scanf call messages.
+
+2020-10-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97505
+	* gfortran.dg/pr97505.f90: New file.
+
+2020-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/local-extern.C: New.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Wrestrict-22.c: New test.
+	* g++.dg/torture/pr92421.C: Adjust for ranger.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Walloca-1.c: Adjust for ranger.
+	* gcc.dg/Walloca-12.c: Same.
+	* gcc.dg/Walloca-13.c: Same.
+	* gcc.dg/Walloca-2.c: Same.
+	* gcc.dg/Walloca-3.c: Same.
+	* gcc.dg/Walloca-6.c: Same.
+	* gcc.dg/Wvla-larger-than-2.c: Same.
+
+2020-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.misc-tests/outputs.exp: Add ltrans_args dump files
+	for 'lto save-temps'.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97501.c: New test.
+
+2020-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/cpp/endif.c: Move to ...
+	* c-c++-common/cpp/endif.c: ... here.
+	* gcc.dg/cpp/endif.h: Move to ...
+	* c-c++-common/cpp/endif.h: ... here.
+	* c-c++-common/cpp/eof-2.c: Adjust diagnostic.
+	* c-c++-common/cpp/eof-3.c: Adjust diagnostic.
+
+2020-10-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82239
+	* g++.dg/cpp0x/static_assert16.C: New test.
+
+2020-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/opt11.adb: Add new expected warning.
+
+2020-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97496
+	* gcc.dg/vect/bb-slp-pr97496.c: New testcase.
+
+2020-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97488.c: Add target int128 predicate.
+
+2020-10-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97360-2.c: New test.
+
+2020-10-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/sad-vectorize-1.c: Remove target.
+	* gcc.target/powerpc/sad-vectorize-2.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v16qi-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v16qi.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v16qiu-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v16qiu.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v2df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v2di.c: Require lp64.
+	* gcc.target/powerpc/vec-extract-v4sf.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v4si-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v4si.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v4siu-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v4siu.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v8hi-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v8hi.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v8hiu-df.c: Remove target.
+	* gcc.target/powerpc/vec-extract-v8hiu.c: Remove target.
+	* gcc.target/powerpc/vec-init-1.c: Remove target.
+	* gcc.target/powerpc/vec-init-2.c: Require lp64.
+	* gcc.target/powerpc/vec-init-3.c: Require lp64.
+	* gcc.target/powerpc/vec-init-4.c: Remove target.
+	* gcc.target/powerpc/vec-init-5.c: Remove target.
+	* gcc.target/powerpc/vec-init-6.c: Require lp64.
+	* gcc.target/powerpc/vec-init-7.c: Require lp64.
+	* gcc.target/powerpc/vec-init-8.c: Remove target.
+	* gcc.target/powerpc/vec-init-9.c: Require lp64.
+	* gcc.target/powerpc/vec-setup-double.c: Remove target.
+	* gcc.target/powerpc/vec-setup-long.c: Remove target.
+	* gcc.target/powerpc/vsu/vec-xl-len-13.c: Correct expected warnings.
+	* gcc.target/powerpc/vsu/vsu.exp: Enable on AIX.
+
+2020-10-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-extract-char.p7.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-char.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-char.p9.c: Remove target.
+	Expect 3 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-double.p7.c: Remove target.
+	Add -mbig-endian for Linux.
+	* gcc.target/powerpc/fold-vec-extract-double.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-float.p7.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-float.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-float.p9.c: Require lp64.
+	* gcc.target/powerpc/fold-vec-extract-int.p7.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-int.p9.c: Remove target.
+	Expect 3 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p7.c: Remove target.
+	Expect 4 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Remove target.
+	Expect 4 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p9.c: Require lp64.
+	* gcc.target/powerpc/fold-vec-extract-short.p7.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-extract-short.p9.c: Require lp64.
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-double.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Remove target.
+	Require 8 addi for ilp32.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: Remove target.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: Remove target.
+	* gcc.target/powerpc/fold-vec-select-double.c: Remove target.
+	* gcc.target/powerpc/fold-vec-select-float.c: Remove target.
+	* gcc.target/powerpc/fold-vec-splats-int.c: Require lp64.
+	* gcc.target/powerpc/fold-vec-splats-longlong.c: Require lp64.
+
+2020-10-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97438
+	* g++.dg/coroutines/pr97438.C: New test.
+
+2020-10-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/97456
+	* gcc.dg/tree-ssa/pr97456.c: New test.
+
+2020-10-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/cpp/pr97471.c: New.
+
+2020-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97488.c: New test.
+
+2020-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97486
+	* gcc.dg/vect/bb-slp-pr97486.c: New testcase.
+
+2020-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97467.c: New test.
+
+2020-10-19  Li Jia He  <helijia@gcc.gnu.org>
+
+	PR tree-optimization/66552
+	* gcc.dg/pr66552.c: New testcase.
+
+2020-10-18  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/matmul_20.f90: New test.
+
+2020-10-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/p9-dimode1.c: Remove target.
+	* gcc.target/powerpc/p9-dimode2.c: Remove target.
+	* gcc.target/powerpc/p9-fpcvt-1.c: Remove target.
+	* gcc.target/powerpc/p9-fpcvt-2.c: Require lp64.
+	* gcc.target/powerpc/p9-minmax-1.c: Remove target.
+	* gcc.target/powerpc/p9-minmax-2.c: Remove target.
+	* gcc.target/powerpc/p9-minmax-3.c: Remove target.
+	* gcc.target/powerpc/p9-splat-1.c: Require lp64.
+	* gcc.target/powerpc/p9-splat-2.c: Remove target.
+	* gcc.target/powerpc/p9-splat-3.c: Remove target.
+	* gcc.target/powerpc/p9-splat-4.c: Require lp64.
+	* gcc.target/powerpc/p9-vbpermd.c: Require lp64.
+	* gcc.target/powerpc/p9-vneg.c: Require lp64.
+	* gcc.target/powerpc/p9-vparity.c: Require lp64.
+	* gcc.target/powerpc/p9-vpermr.c: Require LE.
+	* gcc.target/powerpc/p9-xxbr-1.c: Remove target.
+	* gcc.target/powerpc/p9-xxbr-2.c: Require lp64.
+	* gcc.target/powerpc/p9-xxbr-3.c: Require lp64.
+
+2020-10-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/builtins-3-p9.c: Remove le.
+
+2020-10-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr96139-a.c: Remove -m32.
+	* gcc.target/powerpc/pr96139-b.c: Remove -m64.
+
+2020-10-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95979
+	* gfortran.dg/index_4.f90: New test.
+
+2020-10-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97462
+	* gcc.dg/pr97462.c: New file.
+
+2020-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97460
+	* g++.dg/template/pr97460.C: New.
+
+2020-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/96258
+	* g++.dg/parse/pr96258.C: New.
+
+2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97327
+	* gcc.target/arm/mve/intrinsics/pr97327.c: New test.
+
+2020-10-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-53.c: New testcase.
+
+2020-10-16  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/97291
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_p_s64.c: Modify.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_p_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_u32.c: Likewise.
+
+2020-10-16  Jan Hubicka  <jh@suse.cz>
+
+	PR testsuite/97426
+	* gcc.dg/tree-ssa/modref-4.c: Fix return test.
+
+2020-10-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/97404
+	* gcc.c-torture/execute/pr97404.c: New test.
+
+2020-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97428
+	* gcc.dg/vect/vect-complex-5.c: Expect to SLP.
+	* gcc.dg/vect/pr97428.c: Likewise.
+
 2020-10-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/builtins-1-p9-runnable.c: Adjust for big endian.

@@ -68,18 +68,9 @@
        envLib.h on VxWorks MILS and VxWorks 653.  */
     #include <vThreadsData.h>
     #include <envLib.h>
-  #elif (_WRS_VXWORKS_MAJOR <= 6)
+  #else
+    /* Kernel mode */
     #include <envLib.h>
-    /* In that mode the following symbol is not defined in any VxWorks
-       include files, prior to vxWorks 7, so we declare it as extern.  */
-    extern char** ppGlobalEnviron;
-  #elif (_WRS_VXWORKS_MAJOR >= 7)
-    /* This should work for kernel mode on VxWorks 7.x.  In 7.2 the tcb
-       is made private, so accessor functions must be used, in 7.0 it
-       is optional but there is no way to distinguish between 7.2
-       and 7.0 since the version.h header file was never updated.  */
-    #include <envLib.h>
-    #include <taskLibCommon.h>
   #endif
 #endif
 
@@ -108,7 +99,8 @@ __gnat_getenv (char *name, int *len, char **value)
 void
 __gnat_setenv (char *name, char *value)
 {
-#if (defined (__vxworks) && defined (__RTP__)) || defined (__APPLE__)
+#if (defined (__vxworks) && (defined (__RTP__) || _WRS_VXWORKS_MAJOR >= 7)) \
+    || defined (__APPLE__)
   setenv (name, value, 1);
 
 #else
@@ -119,9 +111,9 @@ __gnat_setenv (char *name, char *value)
 
   sprintf (expression, "%s=%s", name, value);
   putenv (expression);
-#if defined (__MINGW32__) || (defined (__vxworks) && ! defined (__RTP__))
-  /* On some systems like MacOS X and Windows, putenv is making a copy of the
-     expression string so we can free it after the call to putenv */
+#if defined (__MINGW32__) || defined (__vxworks)
+  /* putenv for Windows and VxWorks 6 kernel modules makes a copy of the
+     expression string, so we need to free it after the call to putenv. */
   free (expression);
 #endif
 #endif
@@ -144,17 +136,16 @@ __gnat_environ (void)
   extern char **environ;
   return environ;
 #else
-  #if defined (__RTP__) || defined (VTHREADS) || (_WRS_VXWORKS_MAJOR <= 6)
+  #if defined (__RTP__) || defined (VTHREADS)
     return environ;
-  #elif (_WRS_VXWORKS_MAJOR >= 7)
-    char **task_environ;
-
-    task_environ = envGet (taskIdSelf ());
-
-    if (task_environ == NULL)
-       return ppGlobalEnviron;
-    else
-       return task_environ;
+  #else
+    /* For VxWorks kernel modules use envGet to get the task's environment
+       (either the task's private environment if it has one or the global
+       environment otherwise). taskId parameter of 0 refers to the current
+       task (the VxWorks documentation says to use NULL but the compiler
+       complains that taskId is an int rather than a pointer. Internally,
+       VxWorks uses 0 as well). */
+    return envGet (0);
   #endif
 #endif
 }
@@ -162,7 +153,8 @@ __gnat_environ (void)
 void __gnat_unsetenv (char *name)
 {
 #if defined (__hpux__) || defined (__sun__) \
-     || (defined (__vxworks) && ! defined (__RTP__)) \
+     || (defined (__vxworks) && ! defined (__RTP__) \
+          && _WRS_VXWORKS_MAJOR <= 6) \
      || defined (_AIX) || defined (__Lynx__)
 
   /* On Solaris and HP-UX there is no function to clear an environment
@@ -185,7 +177,7 @@ void __gnat_unsetenv (char *name)
      if (strlen (env[index]) > size) {
        if (strstr (env[index], name) == env[index] &&
 	   env[index][size] == '=') {
-#if defined (__vxworks) && ! defined (__RTP__)
+#if defined (__vxworks)
          /* on Vxworks we are sure that the string has been allocated using
             malloc */
          free (env[index]);
@@ -218,9 +210,10 @@ void __gnat_unsetenv (char *name)
 void __gnat_clearenv (void)
 {
 #if defined (__sun__) \
-  || (defined (__vxworks) && ! defined (__RTP__)) || defined (__Lynx__) \
+  || (defined (__vxworks) && !defined (__RTP__) && _WRS_VXWORKS_MAJOR <= 6) \
+  || defined (__Lynx__) \
   || defined (__PikeOS__)
-  /* On Solaris, VxWorks (not RTPs), and Lynx there is no system
+  /* On Solaris, VxWorks kernel pre 7, and Lynx there is no system
      call to unset a variable or to clear the environment so set all
      the entries in the environ table to NULL (see comment in
      __gnat_unsetenv for more explanation). */
@@ -232,7 +225,8 @@ void __gnat_clearenv (void)
     index++;
   }
 #elif defined (__MINGW32__) || defined (__FreeBSD__) || defined (__APPLE__) \
-   || (defined (__vxworks) && defined (__RTP__)) || defined (__CYGWIN__) \
+   || (defined (__vxworks) && defined (__RTP__) || _WRS_VXWORKS_MAJOR >= 7) \
+   || defined (__CYGWIN__) \
    || defined (__NetBSD__) || defined (__OpenBSD__) || defined (__rtems__) \
    || defined (__DragonFly__) || defined (__DJGPP__)
   /* On Windows, FreeBSD and MacOS there is no function to clean all the

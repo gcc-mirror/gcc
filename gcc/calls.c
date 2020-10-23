@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimple-fold.h"
 #include "attr-fnspec.h"
+#include "value-query.h"
 
 #include "tree-pretty-print.h"
 
@@ -1244,7 +1245,8 @@ alloc_max_size (void)
    in a multi-range, otherwise to the smallest valid subrange.  */
 
 bool
-get_size_range (tree exp, tree range[2], int flags /* = 0 */)
+get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
+		int flags /* = 0 */)
 {
   if (!exp)
     return false;
@@ -1263,7 +1265,21 @@ get_size_range (tree exp, tree range[2], int flags /* = 0 */)
   enum value_range_kind range_type;
 
   if (integral)
-    range_type = determine_value_range (exp, &min, &max);
+    {
+      value_range vr;
+      if (query && query->range_of_expr (vr, exp, stmt))
+	{
+	  range_type = vr.kind ();
+	  if (!vr.undefined_p ())
+	    {
+	      min = wi::to_wide (vr.min ());
+	      max = wi::to_wide (vr.max ());
+	    }
+	}
+      else
+	range_type = determine_value_range (exp, &min, &max);
+
+    }
   else
     range_type = VR_VARYING;
 
@@ -1367,6 +1383,12 @@ get_size_range (tree exp, tree range[2], int flags /* = 0 */)
   range[1] = wide_int_to_tree (exptype, max);
 
   return true;
+}
+
+bool
+get_size_range (tree exp, tree range[2], int flags /* = 0 */)
+{
+  return get_size_range (/*query=*/NULL, exp, /*stmt=*/NULL, range, flags);
 }
 
 /* Diagnose a call EXP to function FN decorated with attribute alloc_size

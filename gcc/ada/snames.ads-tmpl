@@ -196,6 +196,7 @@ package Snames is
    Name_uTask_Name                     : constant Name_Id := N + $;
    Name_uTrace_Sp                      : constant Name_Id := N + $;
    Name_uType_Invariant                : constant Name_Id := N + $;
+   Name_uVariants                      : constant Name_Id := N + $;
 
    --  Names of predefined primitives used in the expansion of dispatching
    --  requeue and select statements, Abort, 'Callable and 'Terminated.
@@ -668,6 +669,7 @@ package Snames is
    Name_Source_Reference               : constant Name_Id := N + $; -- GNAT
    Name_Static_Elaboration_Desired     : constant Name_Id := N + $; -- GNAT
    Name_Stream_Convert                 : constant Name_Id := N + $; -- GNAT
+   Name_Subprogram_Variant             : constant Name_Id := N + $; -- GNAT
    Name_Subtitle                       : constant Name_Id := N + $; -- GNAT
    Name_Suppress_All                   : constant Name_Id := N + $; -- GNAT
    Name_Suppress_Debug_Info            : constant Name_Id := N + $; -- GNAT
@@ -1189,19 +1191,21 @@ package Snames is
    Name_Signed_16                      : constant Name_Id := N + $; -- GNAT
    Name_Signed_32                      : constant Name_Id := N + $; -- GNAT
    Name_Signed_64                      : constant Name_Id := N + $; -- GNAT
+   Name_Signed_128                     : constant Name_Id := N + $; -- GNAT
    Name_Unsigned_8                     : constant Name_Id := N + $; -- GNAT
    Name_Unsigned_16                    : constant Name_Id := N + $; -- GNAT
    Name_Unsigned_32                    : constant Name_Id := N + $; -- GNAT
    Name_Unsigned_64                    : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_128                   : constant Name_Id := N + $; -- GNAT
 
    subtype Scalar_Id is Name_Id
-     range Name_Short_Float .. Name_Unsigned_64;
+     range Name_Short_Float .. Name_Unsigned_128;
 
    subtype Float_Scalar_Id is Name_Id
      range Name_Short_Float .. Name_Long_Long_Float;
 
    subtype Integer_Scalar_Id is Name_Id
-     range Name_Signed_8 .. Name_Unsigned_64;
+     range Name_Signed_8 .. Name_Unsigned_128;
 
    --  Names of recognized checks for pragma Suppress
 
@@ -2102,6 +2106,7 @@ package Snames is
       Pragma_Source_Reference,
       Pragma_Static_Elaboration_Desired,
       Pragma_Stream_Convert,
+      Pragma_Subprogram_Variant,
       Pragma_Subtitle,
       Pragma_Suppress_All,
       Pragma_Suppress_Debug_Info,

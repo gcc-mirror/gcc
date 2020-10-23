@@ -36,8 +36,9 @@
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by
 --  setting the corresponding assertion policy to Ignore. These preconditions
---  are partial and protect against Status_Error, Mode_Error, and Layout_Error,
---  but not against other types of errors.
+--  are partial. They protect fully against Status_Error and Mode_Error,
+--  partially against Layout_Error (see SPARK User's Guide for details), and
+--  not against other types of errors.
 
 pragma Assertion_Policy (Pre => Ignore);
 

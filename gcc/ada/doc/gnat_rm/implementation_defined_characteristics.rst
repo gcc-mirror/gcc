@@ -100,17 +100,19 @@ further details.
   "The predefined integer types declared in
   ``Standard``.  See 3.5.4(25)."
 
-====================== =======================================
-Type                   Representation
-====================== =======================================
-*Short_Short_Integer*  8 bit signed
-*Short_Integer*        (Short) 16 bit signed
-*Integer*              32 bit signed
-*Long_Integer*         64 bit signed (on most 64 bit targets,
-                       depending on the C definition of long).
-                       32 bit signed (all other targets)
-*Long_Long_Integer*    64 bit signed
-====================== =======================================
+========================= =======================================
+Type                       Representation
+========================= =======================================
+*Short_Short_Integer*      8-bit signed
+*Short_Integer*            16-bit signed
+*Integer*                  32-bit signed
+*Long_Integer*             64-bit signed (on most 64-bit targets,
+                           depending on the C definition of long)
+                           32-bit signed (on all other targets)
+*Long_Long_Integer*        64-bit signed
+*Long_Long_Long_Integer*   128-bit signed (on 64-bit targets)
+                           64-bit signed (on 32-bit targets)
+========================= =======================================
 
 *
   "Any nonstandard integer types and the operators defined

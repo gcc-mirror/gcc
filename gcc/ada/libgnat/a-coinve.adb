@@ -31,6 +31,7 @@ with Ada.Containers.Generic_Array_Sort;
 with Ada.Unchecked_Deallocation;
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Indefinite_Vectors with
   SPARK_Mode => Off
@@ -743,6 +744,17 @@ is
          end if;
       end;
    end Element;
+
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 10) return Vector is
+   begin
+      return Result : Vector do
+         Reserve_Capacity (Result, Capacity);
+      end return;
+   end Empty;
 
    --------------
    -- Finalize --
@@ -2648,6 +2660,34 @@ is
          Query_Element (Position.Container.all, Position.Index, Process);
       end if;
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Vector)
+   is
+      First_Time : Boolean := True;
+      use System.Put_Images;
+
+      procedure Put_Elem (Position : Cursor);
+      procedure Put_Elem (Position : Cursor) is
+      begin
+         if First_Time then
+            First_Time := False;
+         else
+            Simple_Array_Between (S);
+         end if;
+
+         Element_Type'Put_Image (S, Element (Position));
+      end Put_Elem;
+
+   begin
+      Array_Before (S);
+      Iterate (V, Put_Elem'Access);
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

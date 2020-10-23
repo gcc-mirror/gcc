@@ -18633,16 +18633,17 @@ package body Sem_Elab is
             elsif Nkind (N) = N_Attribute_Reference then
                Error_Msg_NE
                  ("Access attribute of & before body seen<<", N, Orig_Ent);
-               Error_Msg_N ("\possible Program_Error on later references<", N);
+               Error_Msg_N
+                 ("\possible Program_Error on later references<<", N);
                Insert_Check := False;
 
             elsif Nkind (Unit_Declaration_Node (Orig_Ent)) /=
                     N_Subprogram_Renaming_Declaration
+              or else Is_Generic_Actual_Subprogram (Orig_Ent)
             then
                Error_Msg_NE
                  ("cannot call& before body seen<<", N, Orig_Ent);
-
-            elsif not Is_Generic_Actual_Subprogram (Orig_Ent) then
+            else
                Insert_Check := False;
             end if;
 

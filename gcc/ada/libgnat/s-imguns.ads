@@ -30,31 +30,29 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for supporting the Image attribute for
---  modular integer types up to size Unsigned'Size, and also for conversion
---  operations required in Text_IO.Modular_IO for such types.
+--  modular integer types up to Unsigned, and also for conversion operations
+--  required in Text_IO.Modular_IO for such types.
 
+with System.Image_U;
 with System.Unsigned_Types;
 
 package System.Img_Uns is
    pragma Pure;
 
+   subtype Unsigned is Unsigned_Types.Unsigned;
+
+   package Impl is new Image_U (Unsigned);
+
    procedure Image_Unsigned
-     (V : System.Unsigned_Types.Unsigned;
+     (V : Unsigned;
       S : in out String;
-      P : out Natural);
-   pragma Inline (Image_Unsigned);
-   --  Computes Unsigned'Image (V) and stores the result in S (1 .. P) setting
-   --  the resulting value of P. The caller guarantees that S is long enough to
-   --  hold the result, and that S'First is 1.
+      P : out Natural)
+     renames Impl.Image_Unsigned;
 
    procedure Set_Image_Unsigned
-     (V : System.Unsigned_Types.Unsigned;
+     (V : Unsigned;
       S : in out String;
-      P : in out Natural);
-   --  Stores the image of V in S starting at S (P + 1), P is updated to point
-   --  to the last character stored. The value stored is identical to the value
-   --  of Unsigned'Image (V) except that no leading space is stored. The caller
-   --  guarantees that S is long enough to hold the result. S need not have a
-   --  lower bound of 1.
+      P : in out Natural)
+     renames Impl.Set_Image_Unsigned;
 
 end System.Img_Uns;

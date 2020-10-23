@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 with Ada.Containers.Helpers;
 private with Ada.Streams;
 private with Ada.Finalization;
+private with Ada.Strings.Text_Output;
 
 generic
    type Index_Type is range <>;
@@ -59,7 +60,7 @@ package Ada.Containers.Bounded_Vectors is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty          => Empty_Vector,
+      Aggregate         => (Empty          => Empty,
                             Add_Unnamed    => Append_One,
                             New_Indexed    => New_Vector,
                             Assign_Indexed => Replace_Element);
@@ -77,6 +78,8 @@ package Ada.Containers.Bounded_Vectors is
 
    package Vector_Iterator_Interfaces is new
       Ada.Iterator_Interfaces (Cursor, Has_Element);
+
+   function Empty (Capacity : Count_Type := 10) return Vector;
 
    overriding function "=" (Left, Right : Vector) return Boolean;
 
@@ -389,10 +392,13 @@ private
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
    type Vector (Capacity : Count_Type) is tagged record
-      Elements : Elements_Array (1 .. Capacity) := (others => <>);
+      Elements : Elements_Array (1 .. Capacity);
       Last     : Extended_Index := No_Index;
       TC       : aliased Tamper_Counts;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Vector);
 
    procedure Write
      (Stream    : not null access Root_Stream_Type'Class;

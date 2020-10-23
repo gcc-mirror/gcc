@@ -1385,7 +1385,7 @@ package body Exp_Ch4 is
          --    (left'address, right'address, left'length, right'length) <op> 0
 
          --  x = U for unsigned, S for signed
-         --  n = 8,16,32,64 for component size
+         --  n = 8,16,32,64,128 for component size
          --  Add _Unaligned if length < 4 and component size is 8.
          --  <op> is the standard comparison operator
 
@@ -1422,11 +1422,18 @@ package body Exp_Ch4 is
                Comp := RE_Compare_Array_S32;
             end if;
 
-         else pragma Assert (Component_Size (Typ1) = 64);
+         elsif Component_Size (Typ1) = 64 then
             if Is_Unsigned_Type (Ctyp) then
                Comp := RE_Compare_Array_U64;
             else
                Comp := RE_Compare_Array_S64;
+            end if;
+
+         else pragma Assert (Component_Size (Typ1) = 128);
+            if Is_Unsigned_Type (Ctyp) then
+               Comp := RE_Compare_Array_U128;
+            else
+               Comp := RE_Compare_Array_S128;
             end if;
          end if;
 
@@ -3524,12 +3531,13 @@ package body Exp_Ch4 is
          --  Note that we have arranged that the result will not be treated as
          --  a static constant, so we won't get an illegality during this
          --  insertion.
+         --  We also enable checks (in particular range checks) in case the
+         --  bounds of Subtyp_Ind are out of range.
 
          Insert_Action (Cnode,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Ent,
-             Object_Definition   => Subtyp_Ind),
-           Suppress => All_Checks);
+             Object_Definition   => Subtyp_Ind));
       end if;
 
       --  If the result of the concatenation appears as the initializing
@@ -8991,15 +8999,18 @@ package body Exp_Ch4 is
                     Make_Integer_Literal (Loc, Modulus (Rtyp)),
                     Exp))));
 
-         --  Binary modular case, in this case, we call one of two routines,
+         --  Binary modular case, in this case, we call one of three routines,
          --  either the unsigned integer case, or the unsigned long long
-         --  integer case, with a final "and" operation to do the required mod.
+         --  integer case, or the unsigned long long long integer case, with a
+         --  final "and" operation to do the required mod.
 
          else
-            if UI_To_Int (Esize (Rtyp)) <= Standard_Integer_Size then
+            if Esize (Rtyp) <= Standard_Integer_Size then
                Ent := RTE (RE_Exp_Unsigned);
-            else
+            elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
                Ent := RTE (RE_Exp_Long_Long_Unsigned);
+            else
+               Ent := RTE (RE_Exp_Long_Long_Long_Unsigned);
             end if;
 
             Rewrite (N,
@@ -9021,36 +9032,43 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Typ);
          return;
 
-      --  Signed integer cases, done using either Integer or Long_Long_Integer.
-      --  It is not worth having routines for Short_[Short_]Integer, since for
-      --  most machines it would not help, and it would generate more code that
-      --  might need certification when a certified run time is required.
+      --  Signed integer cases, using either Integer, Long_Long_Integer or
+      --  Long_Long_Long_Integer. It is not worth also having routines for
+      --  Short_[Short_]Integer, since for most machines it would not help,
+      --  and it would generate more code that might need certification when
+      --  a certified run time is required.
 
       --  In the integer cases, we have two routines, one for when overflow
       --  checks are required, and one when they are not required, since there
       --  is a real gain in omitting checks on many machines.
 
-      elsif Rtyp = Base_Type (Standard_Long_Long_Integer)
-        or else (Rtyp = Base_Type (Standard_Long_Integer)
-                  and then
-                    Esize (Standard_Long_Integer) > Esize (Standard_Integer))
-        or else Rtyp = Universal_Integer
-      then
-         Etyp := Standard_Long_Long_Integer;
-
-         if Ovflo then
-            Rent := RE_Exp_Long_Long_Integer;
-         else
-            Rent := RE_Exn_Long_Long_Integer;
-         end if;
-
       elsif Is_Signed_Integer_Type (Rtyp) then
-         Etyp := Standard_Integer;
+         if Esize (Rtyp) <= Standard_Integer_Size then
+            Etyp := Standard_Integer;
 
-         if Ovflo then
-            Rent := RE_Exp_Integer;
+            if Ovflo then
+               Rent := RE_Exp_Integer;
+            else
+               Rent := RE_Exn_Integer;
+            end if;
+
+         elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
+            Etyp := Standard_Long_Long_Integer;
+
+            if Ovflo then
+               Rent := RE_Exp_Long_Long_Integer;
+            else
+               Rent := RE_Exn_Long_Long_Integer;
+            end if;
+
          else
-            Rent := RE_Exn_Integer;
+            Etyp := Standard_Long_Long_Long_Integer;
+
+            if Ovflo then
+               Rent := RE_Exp_Long_Long_Long_Integer;
+            else
+               Rent := RE_Exn_Long_Long_Long_Integer;
+            end if;
          end if;
 
       --  Floating-point cases. We do not need separate routines for the
@@ -11447,13 +11465,28 @@ package body Exp_Ch4 is
       --  Start of processing for Discrete_Range_Check
 
       begin
-         --  Nothing to do if conversion was rewritten
+         --  Clear the Do_Range_Check flag on N if needed: this can occur when
+         --  e.g. a trivial type conversion is rewritten by its expression.
+
+         Set_Do_Range_Check (N, False);
+
+         --  Nothing more to do if conversion was rewritten
 
          if Nkind (N) /= N_Type_Conversion then
             return;
          end if;
 
          Expr := Expression (N);
+
+         --  Nothing to do if no range check flag set
+
+         if not Do_Range_Check (Expr) then
+            return;
+         end if;
+
+         --  Clear the Do_Range_Check flag on Expr
+
+         Set_Do_Range_Check (Expr, False);
 
          --  Nothing to do if range checks suppressed
 
@@ -11473,23 +11506,20 @@ package body Exp_Ch4 is
          --  Before we do a range check, we have to deal with treating
          --  a fixed-point operand as an integer. The way we do this
          --  is simply to do an unchecked conversion to an appropriate
-         --  integer type large enough to hold the result.
+         --  integer type with the smallest size, so that we can suppress
+         --  trivial checks.
 
          if Is_Fixed_Point_Type (Etype (Expr)) then
-            if Esize (Base_Type (Etype (Expr))) > Standard_Integer_Size then
-               Ityp := Standard_Long_Long_Integer;
-            else
-               Ityp := Standard_Integer;
-            end if;
+            Ityp := Small_Integer_Type_For
+                      (Esize (Base_Type (Etype (Expr))), False);
 
-            --  Generate a temporary with the large type to facilitate in the C
-            --  backend the code generation for the unchecked conversion.
+            --  Generate a temporary with the integer type to facilitate in the
+            --  C backend the code generation for the unchecked conversion.
 
             if Modify_Tree_For_C then
                Generate_Temporary;
             end if;
 
-            Set_Do_Range_Check (Expr, False);
             Rewrite (Expr, Unchecked_Convert_To (Ityp, Expr));
          end if;
 
@@ -11726,7 +11756,12 @@ package body Exp_Ch4 is
          Tnn    : Entity_Id;
 
       begin
-         --  Nothing to do if conversion was rewritten
+         --  Clear the Do_Range_Check flag on N if needed: this can occur when
+         --  e.g. a trivial type conversion is rewritten by its expression.
+
+         Set_Do_Range_Check (N, False);
+
+         --  Nothing more to do if conversion was rewritten
 
          if Nkind (N) /= N_Type_Conversion then
             return;
@@ -11734,7 +11769,7 @@ package body Exp_Ch4 is
 
          Expr := Expression (N);
 
-         --  Clear the flag once for all
+         --  Clear the Do_Range_Check flag on Expr
 
          Set_Do_Range_Check (Expr, False);
 
@@ -12009,7 +12044,8 @@ package body Exp_Ch4 is
 
       --  Nothing at all to do if conversion is to the identical type so remove
       --  the conversion completely, it is useless, except that it may carry
-      --  an Assignment_OK attribute, which must be propagated to the operand.
+      --  an Assignment_OK attribute, which must be propagated to the operand
+      --  and the Do_Range_Check flag on Operand should be taken into account.
 
       if Operand_Type = Target_Type then
          if Assignment_OK (N) then
@@ -12017,6 +12053,13 @@ package body Exp_Ch4 is
          end if;
 
          Rewrite (N, Relocate_Node (Operand));
+
+         if Do_Range_Check (Operand) then
+            pragma Assert (Is_Discrete_Type (Operand_Type));
+
+            Discrete_Range_Check;
+         end if;
+
          goto Done;
       end if;
 
@@ -12125,7 +12168,7 @@ package body Exp_Ch4 is
       --  in Checks.Apply_Arithmetic_Overflow_Check, but we catch more cases in
       --  the processing here. Also we still need the Checks circuit, since we
       --  have to be sure not to generate junk overflow checks in the first
-      --  place, since it would be trick to remove them here.
+      --  place, since it would be tricky to remove them here.
 
       if Integer_Promotion_Possible (N) then
 
@@ -12409,7 +12452,9 @@ package body Exp_Ch4 is
       --  These conversions require special expansion and processing, found in
       --  the Exp_Fixd package. We ignore cases where Conversion_OK is set,
       --  since from a semantic point of view, these are simple integer
-      --  conversions, which do not need further processing.
+      --  conversions, which do not need further processing except for the
+      --  generation of range checks, which is performed at the end of this
+      --  procedure.
 
       elsif Is_Fixed_Point_Type (Operand_Type)
         and then not Conversion_OK (N)
@@ -12617,11 +12662,15 @@ package body Exp_Ch4 is
          then
             Real_Range_Check;
          end if;
+
+         pragma Assert (not Do_Range_Check (Expression (N)));
       end if;
 
       --  Here at end of processing
 
    <<Done>>
+      pragma Assert (not Do_Range_Check (N));
+
       --  Apply predicate check if required. Note that we can't just call
       --  Apply_Predicate_Check here, because the type looks right after
       --  the conversion and it would omit the check. The Comes_From_Source
@@ -14069,6 +14118,11 @@ package body Exp_Ch4 is
          elsif Is_OK_For_Range (Uint_64) then
             return Uint_64;
 
+         --  If the size of Typ is 128 then check 127
+
+         elsif Tsiz = Uint_128 and then Is_OK_For_Range (Uint_127) then
+            return Uint_127;
+
          else
             return Uint_128;
          end if;
@@ -14188,12 +14242,8 @@ package body Exp_Ch4 is
       --  type instead of the first subtype because operations are done in
       --  the base type, so this avoids the need for useless conversions.
 
-      if Nsiz <= Standard_Integer_Size then
-         Ntyp := Etype (Standard_Integer);
-
-      elsif Nsiz <= Standard_Long_Long_Integer_Size then
-         Ntyp := Etype (Standard_Long_Long_Integer);
-
+      if Nsiz <= System_Max_Integer_Size then
+         Ntyp := Etype (Integer_Type_For (Nsiz, Uns => False));
       else
          return;
       end if;

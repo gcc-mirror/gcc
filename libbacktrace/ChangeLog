@@ -1,3 +1,8 @@
+2020-10-20  Ian Lance Taylor  <iant@golang.org>
+
+	* internal.h (ATTRIBUTE_FALLTHROUGH): Define.
+	* elf.c (elf_zlib_inflate): Use ATTRIBUTE_FALLTHROUGH.
+
 2020-09-28  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/97082

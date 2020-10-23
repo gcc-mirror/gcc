@@ -26,6 +26,7 @@
 ------------------------------------------------------------------------------
 
 with Unchecked_Conversion;
+with System.Put_Images;
 
 package body Ada.Containers.Bounded_Holders is
 
@@ -63,6 +64,20 @@ package body Ada.Containers.Bounded_Holders is
    begin
       return Get (Left) = Get (Right);
    end "=";
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Holder)
+   is
+      use System.Put_Images;
+   begin
+      Array_Before (S);
+      Element_Type'Put_Image (S, Get (V));
+      Array_After (S);
+   end Put_Image;
 
    ---------
    -- Get --

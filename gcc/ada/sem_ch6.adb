@@ -609,6 +609,12 @@ package body Sem_Ch6 is
                   Set_Expression
                     (Original_Node (Subprogram_Spec (Def_Id)),
                      New_Copy_Tree (Expr));
+
+                  --  Mark static expression functions as inlined, to ensure
+                  --  that even calls with nonstatic actuals will be inlined.
+
+                  Set_Has_Pragma_Inline (Def_Id);
+                  Set_Is_Inlined (Def_Id);
                end if;
             end if;
          end;
@@ -666,9 +672,9 @@ package body Sem_Ch6 is
       end if;
    end Analyze_Expression_Function;
 
-   ----------------------------------------
-   -- Analyze_Extended_Return_Statement  --
-   ----------------------------------------
+   ---------------------------------------
+   -- Analyze_Extended_Return_Statement --
+   ---------------------------------------
 
    procedure Analyze_Extended_Return_Statement (N : Node_Id) is
    begin
@@ -4693,7 +4699,7 @@ package body Sem_Ch6 is
                   then
                      --  Generate the minimum accessibility level object
 
-                     --    A60b : natural := natural'min(1, paramL);
+                     --    A60b : constant natural := natural'min(1, paramL);
 
                      declare
                         Loc      : constant Source_Ptr := Sloc (Body_Nod);
@@ -4702,6 +4708,7 @@ package body Sem_Ch6 is
                             Defining_Identifier =>
                               Make_Temporary
                                 (Loc, 'A', Extra_Accessibility (Form)),
+                            Constant_Present    => True,
                             Object_Definition   => New_Occurrence_Of
                                                      (Standard_Natural, Loc),
                             Expression          =>
@@ -9118,10 +9125,27 @@ package body Sem_Ch6 is
               ("equality operator appears too late (Ada 2012)?y?", Eq_Op);
          end if;
 
-      --  No error detected
+      --  Finally check for AI12-0352: declaration of a user-defined primitive
+      --  equality operation for a record type T is illegal if it occurs after
+      --  a type has been derived from T.
 
       else
-         return;
+         Obj_Decl := Next (Parent (Typ));
+
+         while Present (Obj_Decl) and then Obj_Decl /= Decl loop
+            if Nkind (Obj_Decl) = N_Full_Type_Declaration
+              and then Etype (Defining_Identifier (Obj_Decl)) = Typ
+            then
+               Error_Msg_N
+                 ("equality operator cannot appear after derivation", Eq_Op);
+               Error_Msg_NE
+                 ("an equality operator for& cannot be declared after "
+                  & "this point??",
+                  Obj_Decl, Typ);
+            end if;
+
+            Next (Obj_Decl);
+         end loop;
       end if;
    end Check_Untagged_Equality;
 
@@ -12257,6 +12281,27 @@ package body Sem_Ch6 is
                Error_Msg_N
                  ("formal parameter of mode `IN` cannot be volatile", Formal);
             end if;
+         end if;
+
+         --  Deal with aspects on formal parameters. Only Unreferenced is
+         --  supported for the time being.
+
+         if Has_Aspects (Param_Spec) then
+            declare
+               Aspect : Node_Id := First (Aspect_Specifications (Param_Spec));
+            begin
+               while Present (Aspect) loop
+                  if Chars (Identifier (Aspect)) = Name_Unreferenced then
+                     Set_Has_Pragma_Unreferenced (Formal);
+                  else
+                     Error_Msg_NE
+                       ("unsupported aspect& on parameter",
+                        Aspect, Identifier (Aspect));
+                  end if;
+
+                  Next (Aspect);
+               end loop;
+            end;
          end if;
 
       <<Continue>>

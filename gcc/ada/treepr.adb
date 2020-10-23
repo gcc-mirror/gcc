@@ -869,6 +869,8 @@ package body Treepr is
    ----------------
 
    procedure Print_Init is
+      Max_Hash_Entries : constant Nat :=
+        Approx_Num_Nodes_And_Entities + Num_Lists + Num_Elists;
    begin
       Printing_Descendants := True;
       Write_Eol;
@@ -877,7 +879,7 @@ package body Treepr is
       --  the maximum possible number of entries, so that the hash table
       --  cannot get significantly overloaded.
 
-      Hash_Table_Len := (150 * (Num_Nodes + Num_Lists + Num_Elists)) / 100;
+      Hash_Table_Len := (150 * Max_Hash_Entries) / 100;
       Hash_Table := new Hash_Table_Type  (0 .. Hash_Table_Len - 1);
 
       for J in Hash_Table'Range loop

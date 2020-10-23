@@ -209,6 +209,7 @@ package body Errutil is
             Sfile               => Get_Source_File_Index (Sptr),
             Sptr                => Sptr,
             Optr                => Optr,
+            Insertion_Sloc      => No_Location,
             Line                => Get_Physical_Line_Number (Sptr),
             Col                 => Get_Column_Number (Sptr),
             Compile_Time_Pragma => Is_Compile_Time_Msg,

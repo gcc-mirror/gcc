@@ -476,7 +476,7 @@ void exec_vstX_lane (void)
 
   TEST_ALL_EXTRA_CHUNKS(2, 1);
 #undef CMT
-#define CMT " chunk 1"
+#define CMT " (chunk 1)"
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_st2_1, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_st2_1, CMT);
   CHECK(TEST_MSG, int, 32, 2, PRIx32, expected_st2_1, CMT);

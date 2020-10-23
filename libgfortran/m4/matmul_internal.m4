@@ -506,20 +506,6 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 	    }
 	}
     }
-  else if (axstride < aystride)
-    {
-      for (y = 0; y < ycount; y++)
-	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = ('rtype_name`)0;
-
-      for (y = 0; y < ycount; y++)
-	for (n = 0; n < count; n++)
-	  for (x = 0; x < xcount; x++)
-	    /* dest[x,y] += a[x,n] * b[n,y] */
-	    dest[x*rxstride + y*rystride] +=
-					abase[x*axstride + n*aystride] *
-					bbase[n*bxstride + y*bystride];
-    }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
       const 'rtype_name` *restrict bbase_y;
@@ -533,6 +519,20 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
 	}
+    }
+  else if (axstride < aystride)
+    {
+      for (y = 0; y < ycount; y++)
+	for (x = 0; x < xcount; x++)
+	  dest[x*rxstride + y*rystride] = ('rtype_name`)0;
+
+      for (y = 0; y < ycount; y++)
+	for (n = 0; n < count; n++)
+	  for (x = 0; x < xcount; x++)
+	    /* dest[x,y] += a[x,n] * b[n,y] */
+	    dest[x*rxstride + y*rystride] +=
+					abase[x*axstride + n*aystride] *
+					bbase[n*bxstride + y*bystride];
     }
   else
     {

@@ -265,97 +265,86 @@ package Types is
 
    --  These types are represented as integer indices into various tables.
    --  However, they should be treated as private, except in a few documented
-   --  cases. In particular it is never appropriate to perform arithmetic
-   --  operations using these types.
+   --  cases. In particular it is usually inappropriate to perform arithmetic
+   --  operations using these types. One exception is in computing hash
+   --  functions of these types.
 
    --  In most contexts, the strongly typed interface determines which of these
    --  types is present. However, there are some situations (involving untyped
    --  traversals of the tree), where it is convenient to be easily able to
    --  distinguish these values. The underlying representation in all cases is
    --  an integer type Union_Id, and we ensure that the range of the various
-   --  possible values for each of the above types is disjoint so that this
-   --  distinction is possible.
+   --  possible values for each of the above types is disjoint (except that
+   --  List_Id and Node_Id overlap at Empty) so that this distinction is
+   --  possible.
 
    --  Note: it is also helpful for debugging purposes to make these ranges
    --  distinct. If a bug leads to misidentification of a value, then it will
    --  typically result in an out of range value and a Constraint_Error.
 
+   --  The range of Node_Id is most of the nonnegative integers. The other
+   --  ranges are negative. Uint has a very large range, because a substantial
+   --  part of this range is used to store direct values; see Uintp for
+   --  details. The other types have 100 million values, which should be
+   --  plenty.
+
    type Union_Id is new Int;
    --  The type in the tree for a union of possible ID values
 
-   List_Low_Bound : constant := -100_000_000;
+   --  Following are the Low and High bounds of the various ranges.
+
+   List_Low_Bound : constant := -099_999_999;
    --  The List_Id values are subscripts into an array of list headers which
-   --  has List_Low_Bound as its lower bound. This value is chosen so that all
-   --  List_Id values are negative, and the value zero is in the range of both
-   --  List_Id and Node_Id values (see further description below).
+   --  has List_Low_Bound as its lower bound.
 
    List_High_Bound : constant := 0;
-   --  Maximum List_Id subscript value. This allows up to 100 million list Id
-   --  values, which is in practice infinite, and there is no need to check the
-   --  range. The range overlaps the node range by one element (with value
-   --  zero), which is used both for the Empty node, and for indicating no
-   --  list. The fact that the same value is used is convenient because it
-   --  means that the default value of Empty applies to both nodes and lists,
-   --  and also is more efficient to test for.
+   --  Maximum List_Id subscript value. The ranges of List_Id and Node_Id
+   --  overlap by one element (with value zero), which is used both for the
+   --  Empty node, and for No_List. The fact that the same value is used is
+   --  convenient because it means that the default value of Empty applies to
+   --  both nodes and lists, and also is more efficient to test for.
 
    Node_Low_Bound : constant := 0;
    --  The tree Id values start at zero, because we use zero for Empty (to
-   --  allow a zero test for Empty). Actual tree node subscripts start at 0
-   --  since Empty is a legitimate node value.
+   --  allow a zero test for Empty).
 
-   Node_High_Bound : constant := 099_999_999;
-   --  Maximum number of nodes that can be allocated is 100 million, which
-   --  is in practice infinite, and there is no need to check the range.
+   Node_High_Bound : constant :=
+     (if Standard'Address_Size = 32 then 299_999_999 else 1_999_999_999);
 
-   Elist_Low_Bound : constant := 100_000_000;
+   Elist_Low_Bound : constant := -199_999_999;
    --  The Elist_Id values are subscripts into an array of elist headers which
    --  has Elist_Low_Bound as its lower bound.
 
-   Elist_High_Bound : constant := 199_999_999;
-   --  Maximum Elist_Id subscript value. This allows up to 100 million Elists,
-   --  which is in practice infinite and there is no need to check the range.
+   Elist_High_Bound : constant := -100_000_000;
 
-   Elmt_Low_Bound : constant := 200_000_000;
+   Elmt_Low_Bound : constant := -299_999_999;
    --  Low bound of element Id values. The use of these values is internal to
    --  the Elists package, but the definition of the range is included here
    --  since it must be disjoint from other Id values. The Elmt_Id values are
    --  subscripts into an array of list elements which has this as lower bound.
 
-   Elmt_High_Bound : constant := 299_999_999;
-   --  Upper bound of Elmt_Id values. This allows up to 100 million element
-   --  list members, which is in practice infinite (no range check needed).
+   Elmt_High_Bound : constant := -200_000_000;
 
-   Names_Low_Bound : constant := 300_000_000;
-   --  Low bound for name Id values
+   Names_Low_Bound : constant := -399_999_999;
 
-   Names_High_Bound : constant := 399_999_999;
-   --  Maximum number of names that can be allocated is 100 million, which is
-   --  in practice infinite and there is no need to check the range.
+   Names_High_Bound : constant := -300_000_000;
 
-   Strings_Low_Bound : constant := 400_000_000;
-   --  Low bound for string Id values
+   Strings_Low_Bound : constant := -499_999_999;
 
-   Strings_High_Bound : constant := 499_999_999;
-   --  Maximum number of strings that can be allocated is 100 million, which
-   --  is in practice infinite and there is no need to check the range.
+   Strings_High_Bound : constant := -400_000_000;
 
-   Ureal_Low_Bound : constant := 500_000_000;
-   --  Low bound for Ureal values
+   Ureal_Low_Bound : constant := -599_999_999;
 
-   Ureal_High_Bound : constant := 599_999_999;
-   --  Maximum number of Ureal values stored is 100_000_000 which is in
-   --  practice infinite so that no check is required.
+   Ureal_High_Bound : constant := -500_000_000;
 
-   Uint_Low_Bound : constant := 600_000_000;
+   Uint_Low_Bound : constant := -2_100_000_000;
    --  Low bound for Uint values
 
-   Uint_Table_Start : constant := 2_000_000_000;
+   Uint_Table_Start : constant := -699_999_999;
    --  Location where table entries for universal integers start (see
    --  Uintp spec for details of the representation of Uint values).
 
-   Uint_High_Bound : constant := 2_099_999_999;
-   --  The range of Uint values is very large, since a substantial part
-   --  of this range is used to store direct values, see Uintp for details.
+   Uint_High_Bound : constant := -600_000_000;
 
    --  The following subtype definitions are used to provide convenient names
    --  for membership tests on Int values to see what data type range they

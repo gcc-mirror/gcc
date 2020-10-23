@@ -1094,6 +1094,15 @@ package body Namet is
       return Id in Name_Entries.First .. Name_Entries.Last;
    end Is_Valid_Name;
 
+   ------------------
+   -- Last_Name_Id --
+   ------------------
+
+   function Last_Name_Id return Name_Id is
+   begin
+      return Name_Id (Int (First_Name_Id) + Name_Entries_Count - 1);
+   end Last_Name_Id;
+
    --------------------
    -- Length_Of_Name --
    --------------------

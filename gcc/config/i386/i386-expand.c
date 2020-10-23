@@ -3525,6 +3525,13 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
   machine_mode mode = GET_MODE (dest);
   machine_mode cmpmode = GET_MODE (cmp);
 
+  /* Simplify trivial VEC_COND_EXPR to avoid ICE in pr97506.  */
+  if (rtx_equal_p (op_true, op_false))
+    {
+      emit_move_insn (dest, op_true);
+      return;
+    }
+
   /* In AVX512F the result of comparison is an integer mask.  */
   bool maskcmp = mode != cmpmode && ix86_valid_mask_cmp_mode (mode);
 

@@ -116,7 +116,14 @@ resolve_device (int device_id)
     }
 
   if (device_id < 0 || device_id >= gomp_get_num_devices ())
-    return NULL;
+    {
+      if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
+	  && device_id != GOMP_DEVICE_HOST_FALLBACK)
+	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
+		    "but device not found");
+
+      return NULL;
+    }
 
   gomp_mutex_lock (&devices[device_id].lock);
   if (devices[device_id].state == GOMP_DEVICE_UNINITIALIZED)
@@ -124,6 +131,12 @@ resolve_device (int device_id)
   else if (devices[device_id].state == GOMP_DEVICE_FINALIZED)
     {
       gomp_mutex_unlock (&devices[device_id].lock);
+
+      if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
+	  && device_id != GOMP_DEVICE_HOST_FALLBACK)
+	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
+		    "but device is finalized");
+
       return NULL;
     }
   gomp_mutex_unlock (&devices[device_id].lock);
@@ -1997,9 +2010,16 @@ gomp_unload_device (struct gomp_device_descr *devicep)
 /* Host fallback for GOMP_target{,_ext} routines.  */
 
 static void
-gomp_target_fallback (void (*fn) (void *), void **hostaddrs)
+gomp_target_fallback (void (*fn) (void *), void **hostaddrs,
+		      struct gomp_device_descr *devicep)
 {
   struct gomp_thread old_thr, *thr = gomp_thread ();
+
+  if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
+      && devicep != NULL)
+    gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, but device cannot "
+		"be used for offloading");
+
   old_thr = *thr;
   memset (thr, '\0', sizeof (*thr));
   if (gomp_places_list)
@@ -2107,7 +2127,7 @@ GOMP_target (int device, void (*fn) (void *), const void *unused,
       /* All shared memory devices should use the GOMP_target_ext function.  */
       || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM
       || !(fn_addr = gomp_get_target_fn_addr (devicep, fn)))
-    return gomp_target_fallback (fn, hostaddrs);
+    return gomp_target_fallback (fn, hostaddrs, devicep);
 
   struct target_mem_desc *tgt_vars
     = gomp_map_vars (devicep, mapnum, hostaddrs, NULL, sizes, kinds, false,
@@ -2243,7 +2263,7 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 				      tgt_align, tgt_size);
 	    }
 	}
-      gomp_target_fallback (fn, hostaddrs);
+      gomp_target_fallback (fn, hostaddrs, devicep);
       return;
     }
 
@@ -2276,9 +2296,15 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 /* Host fallback for GOMP_target_data{,_ext} routines.  */
 
 static void
-gomp_target_data_fallback (void)
+gomp_target_data_fallback (struct gomp_device_descr *devicep)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
+
+  if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
+      && devicep != NULL)
+    gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, but device cannot "
+		"be used for offloading");
+
   if (icv->target_data)
     {
       /* Even when doing a host fallback, if there are any active
@@ -2302,7 +2328,7 @@ GOMP_target_data (int device, const void *unused, size_t mapnum,
   if (devicep == NULL
       || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
       || (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM))
-    return gomp_target_data_fallback ();
+    return gomp_target_data_fallback (devicep);
 
   struct target_mem_desc *tgt
     = gomp_map_vars (devicep, mapnum, hostaddrs, NULL, sizes, kinds, false,
@@ -2321,7 +2347,7 @@ GOMP_target_data_ext (int device, size_t mapnum, void **hostaddrs,
   if (devicep == NULL
       || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
       || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-    return gomp_target_data_fallback ();
+    return gomp_target_data_fallback (devicep);
 
   struct target_mem_desc *tgt
     = gomp_map_vars (devicep, mapnum, hostaddrs, NULL, sizes, kinds, true,
@@ -2617,7 +2643,7 @@ gomp_target_task_fn (void *data)
 	  || (devicep->can_run_func && !devicep->can_run_func (fn_addr)))
 	{
 	  ttask->state = GOMP_TARGET_TASK_FALLBACK;
-	  gomp_target_fallback (ttask->fn, ttask->hostaddrs);
+	  gomp_target_fallback (ttask->fn, ttask->hostaddrs, devicep);
 	  return false;
 	}
 
@@ -3253,10 +3279,12 @@ gomp_target_init (void)
   const char *suffix = SONAME_SUFFIX (1);
   const char *cur, *next;
   char *plugin_name;
-  int i, new_num_devices;
+  int i, new_num_devs;
+  int num_devs = 0, num_devs_openmp;
+  struct gomp_device_descr *devs = NULL;
 
-  num_devices = 0;
-  devices = NULL;
+  if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_DISABLED)
+    return;
 
   cur = OFFLOAD_PLUGINS;
   if (*cur)
@@ -3274,7 +3302,7 @@ gomp_target_init (void)
 	plugin_name = (char *) malloc (prefix_len + cur_len + suffix_len + 1);
 	if (!plugin_name)
 	  {
-	    num_devices = 0;
+	    num_devs = 0;
 	    break;
 	  }
 
@@ -3284,16 +3312,16 @@ gomp_target_init (void)
 
 	if (gomp_load_plugin_for_device (&current_device, plugin_name))
 	  {
-	    new_num_devices = current_device.get_num_devices_func ();
-	    if (new_num_devices >= 1)
+	    new_num_devs = current_device.get_num_devices_func ();
+	    if (new_num_devs >= 1)
 	      {
 		/* Augment DEVICES and NUM_DEVICES.  */
 
-		devices = realloc (devices, (num_devices + new_num_devices)
-				   * sizeof (struct gomp_device_descr));
-		if (!devices)
+		devs = realloc (devs, (num_devs + new_num_devs)
+				      * sizeof (struct gomp_device_descr));
+		if (!devs)
 		  {
-		    num_devices = 0;
+		    num_devs = 0;
 		    free (plugin_name);
 		    break;
 		  }
@@ -3303,12 +3331,12 @@ gomp_target_init (void)
 		current_device.type = current_device.get_type_func ();
 		current_device.mem_map.root = NULL;
 		current_device.state = GOMP_DEVICE_UNINITIALIZED;
-		for (i = 0; i < new_num_devices; i++)
+		for (i = 0; i < new_num_devs; i++)
 		  {
 		    current_device.target_id = i;
-		    devices[num_devices] = current_device;
-		    gomp_mutex_init (&devices[num_devices].lock);
-		    num_devices++;
+		    devs[num_devs] = current_device;
+		    gomp_mutex_init (&devs[num_devs].lock);
+		    num_devs++;
 		  }
 	      }
 	  }
@@ -3320,34 +3348,37 @@ gomp_target_init (void)
 
   /* In DEVICES, sort the GOMP_OFFLOAD_CAP_OPENMP_400 ones first, and set
      NUM_DEVICES_OPENMP.  */
-  struct gomp_device_descr *devices_s
-    = malloc (num_devices * sizeof (struct gomp_device_descr));
-  if (!devices_s)
+  struct gomp_device_descr *devs_s
+    = malloc (num_devs * sizeof (struct gomp_device_descr));
+  if (!devs_s)
     {
-      num_devices = 0;
-      free (devices);
-      devices = NULL;
+      num_devs = 0;
+      free (devs);
+      devs = NULL;
     }
-  num_devices_openmp = 0;
-  for (i = 0; i < num_devices; i++)
-    if (devices[i].capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
-      devices_s[num_devices_openmp++] = devices[i];
-  int num_devices_after_openmp = num_devices_openmp;
-  for (i = 0; i < num_devices; i++)
-    if (!(devices[i].capabilities & GOMP_OFFLOAD_CAP_OPENMP_400))
-      devices_s[num_devices_after_openmp++] = devices[i];
-  free (devices);
-  devices = devices_s;
+  num_devs_openmp = 0;
+  for (i = 0; i < num_devs; i++)
+    if (devs[i].capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
+      devs_s[num_devs_openmp++] = devs[i];
+  int num_devs_after_openmp = num_devs_openmp;
+  for (i = 0; i < num_devs; i++)
+    if (!(devs[i].capabilities & GOMP_OFFLOAD_CAP_OPENMP_400))
+      devs_s[num_devs_after_openmp++] = devs[i];
+  free (devs);
+  devs = devs_s;
 
-  for (i = 0; i < num_devices; i++)
+  for (i = 0; i < num_devs; i++)
     {
       /* The 'devices' array can be moved (by the realloc call) until we have
 	 found all the plugins, so registering with the OpenACC runtime (which
 	 takes a copy of the pointer argument) must be delayed until now.  */
-      if (devices[i].capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
-	goacc_register (&devices[i]);
+      if (devs[i].capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
+	goacc_register (&devs[i]);
     }
 
+  num_devices = num_devs;
+  num_devices_openmp = num_devs_openmp;
+  devices = devs;
   if (atexit (gomp_target_fini) != 0)
     gomp_fatal ("atexit failed");
 }

@@ -33,10 +33,10 @@
 
 #pragma GCC system_header
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_node_extract 201606
 
-#include <optional>
+#include <new>
 #include <bits/alloc_traits.h>
 #include <bits/ptr_traits.h>
 
@@ -57,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       get_allocator() const noexcept
       {
 	__glibcxx_assert(!this->empty());
-	return allocator_type(*_M_alloc);
+	return allocator_type(_M_alloc._M_alloc);
       }
 
       explicit operator bool() const noexcept { return _M_ptr != nullptr; }
@@ -65,76 +65,151 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[nodiscard]] bool empty() const noexcept { return _M_ptr == nullptr; }
 
     protected:
-      constexpr _Node_handle_common() noexcept : _M_ptr(), _M_alloc() {}
+      constexpr _Node_handle_common() noexcept : _M_ptr() { }
 
-      ~_Node_handle_common() { _M_destroy(); }
+      ~_Node_handle_common()
+      {
+	if (!empty())
+	  _M_reset();
+      }
 
       _Node_handle_common(_Node_handle_common&& __nh) noexcept
-      : _M_ptr(__nh._M_ptr), _M_alloc(std::move(__nh._M_alloc))
+      : _M_ptr(__nh._M_ptr)
       {
-	__nh._M_ptr = nullptr;
-	__nh._M_alloc = nullopt;
+	if (_M_ptr)
+	  _M_move(std::move(__nh));
       }
 
       _Node_handle_common&
       operator=(_Node_handle_common&& __nh) noexcept
       {
-	_M_destroy();
-	_M_ptr = __nh._M_ptr;
-	if constexpr (is_move_assignable_v<_NodeAlloc>)
+	if (empty())
 	  {
-	    if (_AllocTraits::propagate_on_container_move_assignment::value
-		|| !this->_M_alloc)
-	      this->_M_alloc = std::move(__nh._M_alloc);
-	    else
-	      {
-		__glibcxx_assert(this->_M_alloc == __nh._M_alloc);
-	      }
+	    if (!__nh.empty())
+	      _M_move(std::move(__nh));
 	  }
+	else if (__nh.empty())
+	  _M_reset();
 	else
 	  {
-	    __glibcxx_assert(_M_alloc);
+	    // Free the current node before replacing the allocator.
+	    _AllocTraits::destroy(*_M_alloc, _M_ptr->_M_valptr());
+	    _AllocTraits::deallocate(*_M_alloc, _M_ptr, 1);
+
+	    _M_alloc = __nh._M_alloc.release(); // assigns if POCMA
+	    _M_ptr = __nh._M_ptr;
+	    __nh._M_ptr = nullptr;
 	  }
-	__nh._M_ptr = nullptr;
-	__nh._M_alloc = nullopt;
 	return *this;
       }
 
       _Node_handle_common(typename _AllocTraits::pointer __ptr,
 			  const _NodeAlloc& __alloc)
-      : _M_ptr(__ptr), _M_alloc(__alloc) { }
+      : _M_ptr(__ptr), _M_alloc(__alloc)
+      {
+	__glibcxx_assert(__ptr != nullptr);
+      }
 
       void
       _M_swap(_Node_handle_common& __nh) noexcept
       {
-	using std::swap;
-	swap(_M_ptr, __nh._M_ptr);
-	if (_AllocTraits::propagate_on_container_swap::value
-	    || !_M_alloc || !__nh._M_alloc)
-	  _M_alloc.swap(__nh._M_alloc);
+	if (empty())
+	  {
+	    if (!__nh.empty())
+	      _M_move(std::move(__nh));
+	  }
+	else if (__nh.empty())
+	  __nh._M_move(std::move(*this));
 	else
 	  {
-	    __glibcxx_assert(_M_alloc == __nh._M_alloc);
+	    using std::swap;
+	    swap(_M_ptr, __nh._M_ptr);
+	    _M_alloc.swap(__nh._M_alloc); // swaps if POCS
 	  }
       }
 
     private:
+      // Moves the pointer and allocator from __nh to *this.
+      // Precondition: empty() && !__nh.empty()
+      // Postcondition: !empty() && __nh.empty()
       void
-      _M_destroy() noexcept
+      _M_move(_Node_handle_common&& __nh) noexcept
       {
-	if (_M_ptr != nullptr)
-	  {
-	    allocator_type __alloc(*_M_alloc);
-	    allocator_traits<allocator_type>::destroy(__alloc,
-						      _M_ptr->_M_valptr());
-	    _AllocTraits::deallocate(*_M_alloc, _M_ptr, 1);
-	  }
+	::new (std::__addressof(_M_alloc)) _NodeAlloc(__nh._M_alloc.release());
+	_M_ptr = __nh._M_ptr;
+	__nh._M_ptr = nullptr;
+      }
+
+      // Deallocates the node, destroys the allocator.
+      // Precondition: !empty()
+      // Postcondition: empty()
+      void
+      _M_reset() noexcept
+      {
+	_NodeAlloc __alloc = _M_alloc.release();
+	_AllocTraits::destroy(__alloc, _M_ptr->_M_valptr());
+	_AllocTraits::deallocate(__alloc, _M_ptr, 1);
+	_M_ptr = nullptr;
       }
 
     protected:
-      typename _AllocTraits::pointer	_M_ptr;
+      typename _AllocTraits::pointer _M_ptr;
+
     private:
-      optional<_NodeAlloc>		_M_alloc;
+      // A simplified, non-copyable std::optional<_NodeAlloc>.
+      // Call release() before destruction iff the allocator member is active.
+      union _Optional_alloc
+      {
+	_Optional_alloc() { }
+	~_Optional_alloc() { }
+
+	_Optional_alloc(_Optional_alloc&&) = delete;
+	_Optional_alloc& operator=(_Optional_alloc&&) = delete;
+
+	_Optional_alloc(const _NodeAlloc& __alloc) noexcept
+	: _M_alloc(__alloc)
+	{ }
+
+	// Precondition: _M_alloc is the active member of the union.
+	void
+	operator=(_NodeAlloc&& __alloc) noexcept
+	{
+	  using _ATr = _AllocTraits;
+	  if constexpr (_ATr::propagate_on_container_move_assignment::value)
+	    _M_alloc = std::move(__alloc);
+	  else if constexpr (!_AllocTraits::is_always_equal::value)
+	    __glibcxx_assert(_M_alloc == __alloc);
+	}
+
+	// Precondition: _M_alloc is the active member of both unions.
+	void
+	swap(_Optional_alloc& __other) noexcept
+	{
+	  using std::swap;
+	  if constexpr (_AllocTraits::propagate_on_container_swap::value)
+	    swap(_M_alloc, __other._M_alloc);
+	  else if constexpr (!_AllocTraits::is_always_equal::value)
+	    __glibcxx_assert(_M_alloc == __other._M_alloc);
+	}
+
+	// Precondition: _M_alloc is the active member of the union.
+	_NodeAlloc& operator*() noexcept { return _M_alloc; }
+
+	// Precondition: _M_alloc is the active member of the union.
+	_NodeAlloc release() noexcept
+	{
+	  _NodeAlloc __tmp = std::move(_M_alloc);
+	  _M_alloc.~_NodeAlloc();
+	  return __tmp;
+	}
+
+	struct _Empty { };
+
+	[[__no_unique_address__]] _Empty     _M_empty;
+	[[__no_unique_address__]] _NodeAlloc _M_alloc;
+      };
+
+      [[__no_unique_address__]] _Optional_alloc _M_alloc;
 
       template<typename _Key2, typename _Value2, typename _KeyOfValue,
 	       typename _Compare, typename _ValueAlloc>

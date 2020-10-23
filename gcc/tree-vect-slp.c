@@ -531,78 +531,75 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
       oprnd = oprnd_info->ops[stmt_num];
       tree type = TREE_TYPE (oprnd);
 
-	  if (!types_compatible_p (oprnd_info->first_op_type, type))
+      if (!types_compatible_p (oprnd_info->first_op_type, type))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Build SLP failed: different operand types\n");
+	  return 1;
+	}
+
+      /* Not first stmt of the group, check that the def-stmt/s match
+	 the def-stmt/s of the first stmt.  Allow different definition
+	 types for reduction chains: the first stmt must be a
+	 vect_reduction_def (a phi node), and the rest
+	 end in the reduction chain.  */
+      if ((!vect_def_types_match (oprnd_info->first_dt, dt)
+	   && !(oprnd_info->first_dt == vect_reduction_def
+		&& !STMT_VINFO_DATA_REF (stmt_info)
+		&& REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+		&& def_stmt_info
+		&& !STMT_VINFO_DATA_REF (def_stmt_info)
+		&& (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
+		    == REDUC_GROUP_FIRST_ELEMENT (stmt_info))))
+	  || (!STMT_VINFO_DATA_REF (stmt_info)
+	      && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	      && ((!def_stmt_info
+		   || STMT_VINFO_DATA_REF (def_stmt_info)
+		   || (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
+		       != REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
+		  != (oprnd_info->first_dt != vect_reduction_def))))
+	{
+	  /* Try swapping operands if we got a mismatch.  For BB
+	     vectorization only in case it will clearly improve things.  */
+	  if (i == commutative_op && !swapped
+	      && (!is_a <bb_vec_info> (vinfo)
+		  || (!vect_def_types_match ((*oprnds_info)[i+1]->first_dt,
+					     dts[i+1])
+		      && (vect_def_types_match (oprnd_info->first_dt, dts[i+1])
+			  || vect_def_types_match
+			       ((*oprnds_info)[i+1]->first_dt, dts[i])))))
 	    {
-	      gcc_assert ((i != commutative_op
-			   && (commutative_op == -1U
-			       || i != commutative_op + 1)));
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "trying swapped operands\n");
+	      std::swap (dts[i], dts[i+1]);
+	      std::swap ((*oprnds_info)[i]->def_stmts[stmt_num],
+			 (*oprnds_info)[i+1]->def_stmts[stmt_num]);
+	      std::swap ((*oprnds_info)[i]->ops[stmt_num],
+			 (*oprnds_info)[i+1]->ops[stmt_num]);
+	      swapped = true;
+	      continue;
+	    }
+
+	  if (is_a <bb_vec_info> (vinfo)
+	      && !oprnd_info->any_pattern)
+	    {
+	      /* Now for commutative ops we should see whether we can
+		 make the other operand matching.  */
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: different operand types\n");
+				 "treating operand as external\n");
+	      oprnd_info->first_dt = dt = vect_external_def;
+	    }
+	  else
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: different types\n");
 	      return 1;
 	    }
-
-	  /* Not first stmt of the group, check that the def-stmt/s match
-	     the def-stmt/s of the first stmt.  Allow different definition
-	     types for reduction chains: the first stmt must be a
-	     vect_reduction_def (a phi node), and the rest
-	     end in the reduction chain.  */
-	  if ((!vect_def_types_match (oprnd_info->first_dt, dt)
-	       && !(oprnd_info->first_dt == vect_reduction_def
-		    && !STMT_VINFO_DATA_REF (stmt_info)
-		    && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
-		    && def_stmt_info
-		    && !STMT_VINFO_DATA_REF (def_stmt_info)
-		    && (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
-			== REDUC_GROUP_FIRST_ELEMENT (stmt_info))))
-	      || (!STMT_VINFO_DATA_REF (stmt_info)
-		  && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
-		  && ((!def_stmt_info
-		       || STMT_VINFO_DATA_REF (def_stmt_info)
-		       || (REDUC_GROUP_FIRST_ELEMENT (def_stmt_info)
-			   != REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
-		      != (oprnd_info->first_dt != vect_reduction_def))))
-	    {
-	      /* Try swapping operands if we got a mismatch.  For BB
-		 vectorization only in case it will clearly improve things.  */
-	      if (i == commutative_op && !swapped
-		  && (!is_a <bb_vec_info> (vinfo)
-		      || (!vect_def_types_match ((*oprnds_info)[i+1]->first_dt,
-						 dts[i+1])
-			  && (vect_def_types_match (oprnd_info->first_dt,
-						    dts[i+1])
-			      || vect_def_types_match
-				   ((*oprnds_info)[i+1]->first_dt, dts[i])))))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_NOTE, vect_location,
-				     "trying swapped operands\n");
-		  std::swap (dts[i], dts[i+1]);
-		  std::swap ((*oprnds_info)[i]->def_stmts[stmt_num],
-			     (*oprnds_info)[i+1]->def_stmts[stmt_num]);
-		  std::swap ((*oprnds_info)[i]->ops[stmt_num],
-			     (*oprnds_info)[i+1]->ops[stmt_num]);
-		  swapped = true;
-		  continue;
-		}
-
-	      if (is_a <bb_vec_info> (vinfo))
-		{
-		  /* Now for commutative ops we should see whether we can
-		     make the other operand matching.  */
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "treating operand as external\n");
-		  oprnd_info->first_dt = dt = vect_external_def;
-		}
-	      else
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Build SLP failed: different types\n");
-		  return 1;
-		}
-	    }
+	}
 
       /* Make sure to demote the overall operand to external.  */
       if (dt == vect_external_def)
@@ -2382,6 +2379,12 @@ vect_analyze_slp_backedges (vec_info *vinfo, slp_tree node,
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     if (child)
       vect_analyze_slp_backedges (vinfo, child, bst_map, visited);
+
+  /* Inductions are not vectorized by vectorizing their defining cycle
+     but by materializing the values from SCEV data.  */
+  if (STMT_VINFO_DEF_TYPE (SLP_TREE_REPRESENTATIVE (node))
+      == vect_induction_def)
+    return;
 
   if (gphi *phi = dyn_cast <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
     for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
@@ -4218,6 +4221,15 @@ vect_slp_function (function *fun)
 	}
       else
 	bbs.safe_push (bb);
+
+      /* When we have a stmt ending this block we have to insert on
+	 edges when inserting after it.  Avoid this for now.  */
+      if (gimple *last = last_stmt (bb))
+	if (is_ctrl_altering_stmt (last))
+	  {
+	    r |= vect_slp_bbs (bbs);
+	    bbs.truncate (0);
+	  }
     }
 
   if (!bbs.is_empty ())

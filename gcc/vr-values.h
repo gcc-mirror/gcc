@@ -101,7 +101,7 @@ class vr_values : public range_query
   vr_values (void);
   ~vr_values (void);
 
-  virtual bool range_of_expr (irange &r, tree name, gimple *stmt) OVERRIDE;
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt) OVERRIDE;
   virtual tree value_of_expr (tree, gimple * = NULL) OVERRIDE;
   virtual tree value_on_edge (edge, tree) OVERRIDE;
   virtual tree value_of_stmt (gimple *, tree = NULL_TREE) OVERRIDE;
@@ -148,6 +148,7 @@ class vr_values : public range_query
   void extract_range_from_comparison (value_range_equiv *, gimple *);
   void vrp_visit_assignment_or_call (gimple*, tree *, value_range_equiv *);
   void vrp_visit_switch_stmt (gswitch *, edge *);
+  bool extract_range_builtin (value_range_equiv *, gimple *);
 
   /* This probably belongs in the lattice rather than in here.  */
   bool values_propagated;
@@ -169,9 +170,8 @@ class vr_values : public range_query
 
 extern tree get_output_for_vrp (gimple *);
 
-// FIXME: Move this to tree-vrp.c.
-void simplify_cond_using_ranges_2 (class vr_values *, gcond *);
-
+extern bool range_fits_type_p (const value_range *vr,
+			       unsigned dest_precision, signop dest_sgn);
 extern bool bounds_of_var_in_loop (tree *min, tree *max, range_query *,
 				   class loop *loop, gimple *stmt, tree var);
 

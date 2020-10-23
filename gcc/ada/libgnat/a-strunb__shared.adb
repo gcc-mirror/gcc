@@ -1297,6 +1297,16 @@ package body Ada.Strings.Unbounded is
    end Overwrite;
 
    ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Unbounded_String) is
+   begin
+      String'Put_Image (S, To_String (V));
+   end Put_Image;
+
+   ---------------
    -- Reference --
    ---------------
 
