@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-skip-if "small alignment" { pdp11-*-* } } */
 
 extern void abort (void);
@@ -7,7 +8,7 @@ typedef struct Bar {
 } Bar __attribute__((__aligned__(128)));
 
 typedef struct Foo {
-      Bar bar[4];
+      Bar bar[4];	/* { dg-error "size of array element is not a multiple of its alignment" } */
 } Foo;
 
 Foo foo[4];
