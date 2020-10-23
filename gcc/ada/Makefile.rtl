@@ -1958,6 +1958,7 @@ endif
 ifeq ($(strip $(filter-out s390% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux.ads \
@@ -2393,6 +2394,7 @@ endif
 ifeq ($(strip $(filter-out sparc% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux__sparc.ads \
@@ -2786,6 +2788,7 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
 
   ifeq ($(strip $(filter-out powerpc%,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
+      a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
       s-intman.adb<libgnarl/s-intman__posix.adb \
       s-osprim.adb<libgnat/s-osprim__posix.adb \
       $(ATOMICS_TARGET_PAIRS) \
