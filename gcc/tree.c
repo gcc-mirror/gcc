@@ -10926,8 +10926,15 @@ build_truth_vector_type_for_mode (poly_uint64 nunits, machine_mode mask_mode)
 {
   gcc_assert (mask_mode != BLKmode);
 
-  poly_uint64 vsize = GET_MODE_BITSIZE (mask_mode);
-  unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
+  unsigned HOST_WIDE_INT esize;
+  if (VECTOR_MODE_P (mask_mode))
+    {
+      poly_uint64 vsize = GET_MODE_BITSIZE (mask_mode);
+      esize = vector_element_size (vsize, nunits);
+    }
+  else
+    esize = 1;
+
   tree bool_type = build_nonstandard_boolean_type (esize);
 
   return make_vector_type (bool_type, nunits, mask_mode);
