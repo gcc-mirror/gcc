@@ -12258,7 +12258,7 @@ package body Exp_Ch4 is
 
             else
                Apply_Accessibility_Check
-                 (Operand_Acc, Target_Type, Insert_Node => Operand);
+                 (Operand, Target_Type, Insert_Node => Operand);
             end if;
 
          --  If the level of the operand type is statically deeper than the
