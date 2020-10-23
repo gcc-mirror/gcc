@@ -1,3 +1,8 @@
+2020-10-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* mapper-server.cc: Disable networking when not available.
+
 2020-10-22  Nathan Sidwell  <nathan@acm.org>
 
 	libcody/  9e71a7c Avoid fstatat when unavailable

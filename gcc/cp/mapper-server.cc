@@ -73,10 +73,15 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
+#if !HOST_HAS_O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
+
 #ifndef HAVE_SIGHANDLER_T
 typedef void (*sighandler_t) (int);
 #endif
 
+#ifdef NETWORKING
 struct netmask {
   in6_addr addr;
   unsigned bits;
@@ -124,6 +129,7 @@ struct netmask_cmp {
 
 typedef std::set<netmask, netmask_cmp> netmask_set_t;
 typedef std::vector<netmask> netmask_vec_t;
+#endif
 
 const char *progname;
 
@@ -145,9 +151,11 @@ static bool flag_xlate = false;
 /* Root binary directory.  */
 static const char *flag_root = "gcm.cache";
 
+#ifdef NETWORKING
 static netmask_set_t netmask_set;
 
 static netmask_vec_t accept_addrs;
+#endif
 
 /* Strip out the source directory from FILE.  */
 
@@ -214,6 +222,7 @@ error (const char *msg, ...)
   exit (1);
 }
 
+#ifdef NETWORKING
 /* Progress messages to the user.  */
 static bool ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD
 noisy (const char *fmt, ...)
@@ -227,6 +236,7 @@ noisy (const char *fmt, ...)
 
   return false;
 }
+#endif
 
 /* More messages to the user.  */
 
@@ -281,7 +291,7 @@ print_version (void)
    false if we fail to resolve it.  */
 
 static bool
-accept_from (char *arg)
+accept_from (char *arg ATTRIBUTE_UNUSED)
 {
   bool ok = true;
 #if HAVE_AF_INET6
@@ -392,6 +402,8 @@ process_args (int argc, char **argv)
   return optind;
 }
 
+#ifdef NETWORKING
+
 /* Manipulate the EPOLL state, or do nothing, if there is epoll.  */
 
 #ifdef HAVE_EPOLL
@@ -413,7 +425,6 @@ do_epoll_ctl (int epoll_fd, int code, int event, int fd, unsigned data)
 #define my_epoll_ctl(EFD,C,EV,FD,CL) ((void)(EFD), (void)(FD), (void)(CL))
 #endif
 
-#ifdef NETWORKING
 /* We increment this to tell the server to shut down.  */
 static volatile int term = false;
 static volatile int kill_sock_fd = -1;
@@ -772,42 +783,6 @@ server (bool ipv6, int sock_fd, module_resolver *resolver)
     }
 }
 
-#if 0
-      
-
-      if (eintr)
-	flag_noisy && noisy ("Interrupted wait");
- 
-
-      if (sock_fd >= 0 && (term || flag_one || flag_sequential))
-	{
-	  /* Stop paying attention to sock_fd.  */
-	  my_epoll_ctl (epoll_fd, EPOLL_CTL_DEL, EPOLLIN, sock_fd, NULL);
-	  if (flag_one || term)
-	    {
-	      close (sock_fd);
-	      sock_fd = -1;
-	    }
-	}
-    }
-
-#if defined (HAVE_EPOLL) || defined (HAVE_PSELECT) || defined (HAVE_SELECT)
-  /* Restore the signal mask.  */
-  sigprocmask (SIG_SETMASK, &mask, NULL);
-#endif
-
-  gcc_assert (sock_fd < 0);
-  if (epoll_fd >= 0)
-    close (epoll_fd);
-
-  if (term_pipe && term_pipe[0] >= 0)
-    {
-      close (term_pipe[0]);
-      close (term_pipe[1]);
-    }
-}
-#endif
-
 #endif
 
 static int maybe_parse_socket (std::string &option, module_resolver *r)
@@ -886,8 +861,10 @@ main (int argc, char *argv[])
   /* Ignore sigpipe, so read/write get an error.  */
   signal (SIGPIPE, SIG_IGN);
 #endif
+#ifdef NETWORKING
 #ifdef SIGINT
   signal (SIGINT, kill_signal);
+#endif
 #endif
 
   int argno = process_args (argc, argv);
