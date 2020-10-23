@@ -1,3 +1,12 @@
+2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR rtl-optimization/97439
+	* dfp.c (decimal_real_maxval): Set the sign flag in the
+	generated number.
+
 2020-10-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (neoversen2_tunings): Define.
