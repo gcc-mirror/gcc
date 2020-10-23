@@ -318,8 +318,8 @@ VAR10 (LOAD1, vld1_dup,
 	v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
 VAR12 (STORE1, vst1,
 	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
-VAR12 (STORE1LANE, vst1_lane,
-	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di)
+VAR14 (STORE1LANE, vst1_lane,
+       v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di, v4bf, v8bf)
 VAR13 (LOAD1, vld2,
 	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v4bf, v8bf)
 VAR9 (LOAD1LANE, vld2_lane,
