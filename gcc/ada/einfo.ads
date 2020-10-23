@@ -420,8 +420,10 @@ package Einfo is
 --       output of certain warnings.
 
 --    Aft_Value (synthesized)
---       Applies to fixed and decimal types. Computes a universal integer that
---       holds value of the Aft attribute for the type.
+--       Applies to fixed-point types and subtypes. This yields the value of
+--       the Aft attribute for the type, i.e. the number of decimal digits
+--       needed after the decimal point to accommodate the delta of the type,
+--       unless the delta is greater than 0.1, in which case it is 1.
 
 --    Alias (Node18)
 --       Defined in overloadable entities (literals, subprograms, entries) and
@@ -4263,9 +4265,10 @@ package Einfo is
 --       explicit range).
 
 --    Scale_Value (Uint16)
---       Defined in decimal fixed-point types and subtypes. Contains the scale
---       for the type (i.e. the value of type'Scale = the number of decimal
---       digits after the decimal point).
+--       Defined in decimal fixed-point types and subtypes. This holds the
+--       value of the Scale attribute for the type, i.e. the scale of the type
+--       defined as the integer N such that the delta is equal to 10.0**(-N).
+--       Note that, if Scale_Value is positive, then it is equal to Aft_Value.
 
 --    Scope (Node3)
 --       Defined in all entities. Points to the entity for the scope (block,
