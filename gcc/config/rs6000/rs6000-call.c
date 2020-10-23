@@ -9564,7 +9564,9 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   else if (icode == CODE_FOR_altivec_vcfux
       || icode == CODE_FOR_altivec_vcfsx
       || icode == CODE_FOR_altivec_vctsxs
-      || icode == CODE_FOR_altivec_vctuxs)
+      || icode == CODE_FOR_altivec_vctuxs
+      || icode == CODE_FOR_vsx_xvcvuxddp_scale
+      || icode == CODE_FOR_vsx_xvcvsxddp_scale)
     {
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
