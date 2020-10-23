@@ -31685,6 +31685,19 @@ crt0%O%s %:if-exists(crti%O%s) \
 %:if-exists-else(crtbeginT%O%s crtbegin%O%s)
 @end smallexample
 
+@item @code{if-exists-then-else}
+The @code{if-exists-then-else} spec function takes at least two arguments
+and an optional third one. The first argument is an absolute pathname to a
+file.  If the file exists, the function returns the second argument.
+If the file does not exist, the function returns the third argument if there
+is one, or NULL otherwise. This can be used to expand one text, or optionally
+another, based on the existence of a file.  Here is a small example of its
+usage:
+
+@smallexample
+-l%:if-exists-then-else(%:getenv(VSB_DIR rtnet.h) rtnet net)
+@end smallexample
+
 @item @code{replace-outfile}
 The @code{replace-outfile} spec function takes two arguments.  It looks for the
 first argument in the outfiles array and replaces it with the second argument.  Here

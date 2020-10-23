@@ -1957,6 +1957,17 @@
   [(set_attr "type" "mve_move")
 ])
 
+(define_insn "mve_vsubq<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(minus:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		     (match_operand:MVE_2 2 "s_register_operand" "w")))
+  ]
+  "TARGET_HAVE_MVE"
+  "vsub.i%#<V_sz_elem>\t%q0, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])
+
 ;;
 ;; [vabdq_f])
 ;;
@@ -2860,9 +2871,8 @@
 (define_insn "mve_vsubq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VSUBQ_F))
+	(minus:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		     (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vsub.f%#<V_sz_elem>\t%q0, %q1, %q2"

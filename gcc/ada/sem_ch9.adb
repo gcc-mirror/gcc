@@ -2360,7 +2360,8 @@ package body Sem_Ch9 is
          --  entry body) unless it is a parameter of the innermost enclosing
          --  accept statement (or entry body).
 
-         if Static_Accessibility_Level (Target_Obj) >= Scope_Depth (Outer_Ent)
+         if Static_Accessibility_Level (Target_Obj, Zero_On_Dynamic_Level)
+              >= Scope_Depth (Outer_Ent)
            and then
              (not Is_Entity_Name (Target_Obj)
                or else not Is_Formal (Entity (Target_Obj))

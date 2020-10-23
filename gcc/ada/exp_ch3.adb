@@ -1812,7 +1812,7 @@ package body Exp_Ch3 is
              Selector_Name             =>
                Make_Identifier (Loc, Name_uInit_Level),
              Explicit_Actual_Parameter =>
-               Dynamic_Accessibility_Level (Id_Ref)));
+               Accessibility_Level (Id_Ref, Dynamic_Level)));
       end if;
 
       Append_To (Res,
@@ -7517,13 +7517,13 @@ package body Exp_Ch3 is
             elsif Nkind (Expr) = N_Function_Call
               and then Ekind (Etype (Name (Expr))) = E_Anonymous_Access_Type
             then
-               Level_Expr := Make_Integer_Literal (Loc,
-                               Static_Accessibility_Level (Def_Id));
+               Level_Expr := Accessibility_Level
+                               (Def_Id, Object_Decl_Level);
 
             --  General case
 
             else
-               Level_Expr := Dynamic_Accessibility_Level (Expr);
+               Level_Expr := Accessibility_Level (Expr, Dynamic_Level);
             end if;
 
             Level_Decl :=
@@ -8203,7 +8203,7 @@ package body Exp_Ch3 is
                   --  type is deeper than that of the pool.
 
                   if Type_Access_Level (Def_Id)
-                       > Static_Accessibility_Level (Pool)
+                       > Static_Accessibility_Level (Pool, Object_Decl_Level)
                     and then Is_Class_Wide_Type (Etype (Pool))
                     and then not Accessibility_Checks_Suppressed (Def_Id)
                     and then not Accessibility_Checks_Suppressed (Pool)

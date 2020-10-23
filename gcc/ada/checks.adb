@@ -589,7 +589,6 @@ package body Checks is
       then
          Param_Ent := Entity (N);
          while Present (Renamed_Object (Param_Ent)) loop
-
             --  Renamed_Object must return an Entity_Name here
             --  because of preceding "Present (E_E_A (...))" test.
 
@@ -605,25 +604,41 @@ package body Checks is
       --  are enabled.
 
       elsif Present (Param_Ent)
-         and then Present (Get_Accessibility (Param_Ent))
+         and then Present (Get_Dynamic_Accessibility (Param_Ent))
          and then not Accessibility_Checks_Suppressed (Param_Ent)
          and then not Accessibility_Checks_Suppressed (Typ)
       then
+         --  Obtain the parameter's accessibility level
+
          Param_Level :=
-           New_Occurrence_Of (Get_Accessibility (Param_Ent), Loc);
+           New_Occurrence_Of (Get_Dynamic_Accessibility (Param_Ent), Loc);
 
          --  Use the dynamic accessibility parameter for the function's result
          --  when one has been created instead of statically referring to the
          --  deepest type level so as to appropriatly handle the rules for
          --  RM 3.10.2 (10.1/3).
 
-         if Ekind (Scope (Param_Ent))
-              in E_Function | E_Operator | E_Subprogram_Type
-           and then Present (Extra_Accessibility_Of_Result (Scope (Param_Ent)))
+         if Ekind (Scope (Param_Ent)) = E_Function
+           and then In_Return_Value (N)
+           and then Ekind (Typ) = E_Anonymous_Access_Type
          then
-            Type_Level :=
-              New_Occurrence_Of
-                (Extra_Accessibility_Of_Result (Scope (Param_Ent)), Loc);
+            --  Associate the level of the result type to the extra result
+            --  accessibility parameter belonging to the current function.
+
+            if Present (Extra_Accessibility_Of_Result (Scope (Param_Ent))) then
+               Type_Level :=
+                 New_Occurrence_Of
+                   (Extra_Accessibility_Of_Result (Scope (Param_Ent)), Loc);
+
+            --  In Ada 2005 and earlier modes, a result extra accessibility
+            --  parameter is not generated and no dynamic check is performed.
+
+            else
+               return;
+            end if;
+
+         --  Otherwise get the type's accessibility level normally
+
          else
             Type_Level :=
               Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));

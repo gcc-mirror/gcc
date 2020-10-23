@@ -310,6 +310,7 @@ package body Impunit is
     ("g-sha512", F),  -- GNAT.SHA512
     ("g-signal", F),  -- GNAT.Signals
     ("g-socket", F),  -- GNAT.Sockets
+    ("g-socpol", F),  -- GNAT.Sockets.Poll
     ("g-souinf", F),  -- GNAT.Source_Info
     ("g-speche", F),  -- GNAT.Spell_Checker
     ("g-spchge", F),  -- GNAT.Spell_Checker_Generic

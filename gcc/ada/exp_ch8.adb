@@ -129,7 +129,7 @@ package body Exp_Ch8 is
             if Is_Packed (Etype (Prefix (Nam))) then
                return True;
 
-            elsif Is_Atomic_Or_VFA_Object (Prefix (Nam)) then
+            elsif Is_Full_Access_Object (Prefix (Nam)) then
                return True;
 
             else
@@ -152,7 +152,7 @@ package body Exp_Ch8 is
                then
                   return True;
 
-               elsif Is_Atomic_Or_VFA_Object (Prefix (Nam)) then
+               elsif Is_Full_Access_Object (Prefix (Nam)) then
                   return True;
 
                else

@@ -1,3 +1,5 @@
+/* { dg-do compile } */
+/* { dg-options "" } */
 /* { dg-skip-if "small alignment" { pdp11-*-* } } */
 
 typedef __attribute__((aligned(16)))
@@ -5,7 +7,7 @@ struct {
   unsigned long long w[3];
 } UINT192;
 
-UINT192 bid_Kx192[32];
+UINT192 bid_Kx192[32];	/* { dg-error "size of array element is not a multiple of its alignment" } */
 
 extern void abort (void);
 

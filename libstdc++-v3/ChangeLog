@@ -1,3 +1,54 @@
+2020-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/memory_resource: Include <tuple>.
+	(polymorphic_allocator::construct): Qualify forward_as_tuple.
+	* include/std/memory_resource: Likewise.
+
+2020-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/condition_variable/members/68519.cc:
+	Define recent_epoch_float_clock::duration to meet the Cpp17Clock
+	requirements.
+
+2020-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/shared_mutex: Only include <condition_variable>
+	when pthread_rwlock_t and POSIX timers are not available.
+	(__cpp_lib_shared_mutex, __cpp_lib_shared_timed_mutex): Change
+	value to be type 'long'.
+	* include/std/version (__cpp_lib_shared_mutex)
+	(__cpp_lib_shared_timed_mutex): Likewise.
+
+2020-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/shared_ptr.h: Include <iosfwd>.
+	* include/bits/shared_ptr_base.h: Include required headers here
+	directly, instead of in <memory>.
+	* include/bits/uses_allocator_args.h: New file. Move utility
+	functions for uses-allocator construction from <memory> to here.
+	Only define the utility functions when concepts are available.
+	(__cpp_lib_make_obj_using_allocator): Define non-standard
+	feature test macro.
+	* include/std/condition_variable: Remove unused headers.
+	* include/std/future: Likewise.
+	* include/std/memory: Remove headers that are not needed
+	directly, and are now inclkuded where they're needed. Include
+	new <bits/uses_allocator_args.h> header.
+	* include/std/memory_resource: Include only the necessary
+	headers. Use new feature test macro to detect support for the
+	utility functions.
+	* include/std/scoped_allocator: Likewise.
+	* include/std/version (__cpp_lib_make_obj_using_allocator):
+	Define.
+
+2020-10-22  Olivier Hainque  <hainque@adacore.com>
+
+	* crossconfig.m4: Turn vxworks matcher into vxworks*.
+	* configure.host: Likewise.
+	* configure: Regenerate.
+
 2020-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr.h (shared_ptr(const weak_ptr&, nothrow_t)):

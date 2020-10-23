@@ -26,9 +26,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    This file implements the GTHREAD_HAS_COND part of the interface
    exposed by gthr-vxworks.h.  */
 
+#include "gthr.h"
+
 #if __GTHREAD_HAS_COND
 
-#include "gthr.h"
 #include <taskLib.h>
 
 /* --------------------------- Condition Variables ------------------------ */

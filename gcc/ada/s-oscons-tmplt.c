@@ -96,7 +96,7 @@ pragma Style_Checks ("M32766");
 /* Define _BSD_SOURCE to get CRTSCTS */
 # define _BSD_SOURCE
 
-#endif /* defined (__linux__) */
+#endif /* defined (__linux__) || defined (__ANDROID__) */
 
 /* Include gsocket.h before any system header so it can redefine FD_SETSIZE */
 
@@ -121,6 +121,8 @@ pragma Style_Checks ("M32766");
  **/
 
 # include <vxWorks.h>
+#elif !defined(__MINGW32__)
+#include <poll.h>
 #endif
 
 #include "adaint.h"
@@ -1735,11 +1737,27 @@ CND(SIZEOF_sigset, "sigset")
 #endif
 
 #if defined(_WIN32) || defined(__vxworks)
+#define SIZEOF_nfds_t sizeof (int) * 8
 #define SIZEOF_socklen_t sizeof (size_t)
 #else
+#define SIZEOF_nfds_t sizeof (nfds_t) * 8
 #define SIZEOF_socklen_t sizeof (socklen_t)
 #endif
+CND(SIZEOF_nfds_t, "Size of nfds_t");
 CND(SIZEOF_socklen_t, "Size of socklen_t");
+
+{
+#if defined(__vxworks)
+#define SIZEOF_fd_type sizeof (int) * 8
+#define SIZEOF_pollfd_events sizeof (short) * 8
+#else
+const struct pollfd v_pollfd;
+#define SIZEOF_fd_type sizeof (v_pollfd.fd) * 8
+#define SIZEOF_pollfd_events sizeof (v_pollfd.events) * 8
+#endif
+CND(SIZEOF_fd_type, "Size of socket fd");
+CND(SIZEOF_pollfd_events, "Size of pollfd.events");
+}
 
 #ifndef IF_NAMESIZE
 #ifdef IF_MAX_STRING_SIZE
@@ -1749,6 +1767,50 @@ CND(SIZEOF_socklen_t, "Size of socklen_t");
 #endif
 #endif
 CND(IF_NAMESIZE, "Max size of interface name with 0 terminator");
+
+/*
+
+   --  Poll values
+
+*/
+
+#if defined(__vxworks)
+#ifndef POLLIN
+#define POLLIN 1
+#endif
+
+#ifndef POLLPRI
+#define POLLPRI 2
+#endif
+
+#ifndef POLLOUT
+#define POLLOUT 4
+#endif
+
+#ifndef POLLERR
+#define POLLERR 8
+#endif
+
+#ifndef POLLHUP
+#define POLLHUP 16
+#endif
+
+#ifndef POLLNVAL
+#define POLLNVAL 32
+#endif
+
+#elif defined(_WIN32)
+#define POLLPRI 0
+/*  If the POLLPRI flag is set on a socket for the Microsoft Winsock provider,
+ *  the WSAPoll function will fail. */
+#endif
+
+CND(POLLIN, "There is data to read");
+CND(POLLPRI, "Urgent data to read");
+CND(POLLOUT, "Writing will not block");
+CND(POLLERR, "Error (output only)");
+CND(POLLHUP, "Hang up (output only)");
+CND(POLLNVAL, "Invalid request");
 
 /*
 
@@ -1798,6 +1860,13 @@ CST(Inet_Pton_Linkname, "")
 # define Inet_Ntop_Linkname "__gnat_inet_ntop"
 #endif
 CST(Inet_Ntop_Linkname, "")
+
+#if defined(_WIN32)
+# define Poll_Linkname "WSAPoll"
+#else
+# define Poll_Linkname "poll"
+#endif
+CST(Poll_Linkname, "")
 
 #endif /* HAVE_SOCKETS */
 

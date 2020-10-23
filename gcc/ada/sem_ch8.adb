@@ -3005,16 +3005,7 @@ package body Sem_Ch8 is
          --  Check whether the renaming is for a defaulted actual subprogram
          --  with a class-wide actual.
 
-         --  The class-wide wrapper is not needed in GNATprove_Mode and there
-         --  is an external axiomatization on the package.
-
-         if CW_Actual
-           and then Box_Present (Inst_Node)
-           and then not
-             (GNATprove_Mode
-               and then
-                 Present (Containing_Package_With_Ext_Axioms (Formal_Spec)))
-         then
+         if CW_Actual and then Box_Present (Inst_Node) then
             Build_Class_Wide_Wrapper (New_S, Old_S);
 
          elsif Is_Entity_Name (Nam)
@@ -3873,29 +3864,6 @@ package body Sem_Ch8 is
       Ada_Version := Save_AV;
       Ada_Version_Pragma := Save_AVP;
       Ada_Version_Explicit := Save_AV_Exp;
-
-      --  In GNATprove mode, the renamings of actual subprograms are replaced
-      --  with wrapper functions that make it easier to propagate axioms to the
-      --  points of call within an instance. Wrappers are generated if formal
-      --  subprogram is subject to axiomatization.
-
-      --  The types in the wrapper profiles are obtained from (instances of)
-      --  the types of the formal subprogram.
-
-      if Is_Actual
-        and then GNATprove_Mode
-        and then Present (Containing_Package_With_Ext_Axioms (Formal_Spec))
-        and then not Inside_A_Generic
-      then
-         if Ekind (Old_S) = E_Function then
-            Rewrite (N, Build_Function_Wrapper (Formal_Spec, Old_S));
-            Analyze (N);
-
-         elsif Ekind (Old_S) = E_Operator then
-            Rewrite (N, Build_Operator_Wrapper (Formal_Spec, Old_S));
-            Analyze (N);
-         end if;
-      end if;
 
       --  Check if we are looking at an Ada 2012 defaulted formal subprogram
       --  and mark any use_package_clauses that affect the visibility of the

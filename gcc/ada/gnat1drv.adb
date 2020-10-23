@@ -800,30 +800,21 @@ procedure Gnat1drv is
       end if;
 
       --  Enable or disable the support for 128-bit types. It is automatically
-      --  enabled if the back end supports them, unless not in GNAT mode and
-      --  either the runtime does not contain the required support units or the
-      --  switch -gnatd.H is specified.
+      --  enabled if the back end supports them, unless -gnatd.H is specified.
 
       Enable_128bit_Types := Ttypes.Standard_Long_Long_Long_Integer_Size = 128;
 
-      if Enable_128bit_Types and then not GNAT_Mode then
-         Name_Len := 13;
-         Name_Buffer (1 .. Name_Len) := "s-arit128.ads";
+      if Enable_128bit_Types and then Debug_Flag_Dot_HH then
+         Enable_128bit_Types := False;
 
-         if Find_File (Name_Find, Osint.Source, Full_Name => True) = No_File
-           or else Debug_Flag_Dot_HH
-         then
-            Enable_128bit_Types := False;
-
-            Ttypes.Standard_Long_Long_Long_Integer_Size :=
-              Ttypes.Standard_Long_Long_Integer_Size;
-            Ttypes.Standard_Long_Long_Long_Integer_Width :=
-              Ttypes.Standard_Long_Long_Integer_Width;
-            Ttypes.System_Max_Integer_Size :=
-              Ttypes.Standard_Long_Long_Integer_Size;
-            Ttypes.System_Max_Binary_Modulus_Power :=
-              Ttypes.Standard_Long_Long_Integer_Size;
-         end if;
+         Ttypes.Standard_Long_Long_Long_Integer_Size :=
+           Ttypes.Standard_Long_Long_Integer_Size;
+         Ttypes.Standard_Long_Long_Long_Integer_Width :=
+           Ttypes.Standard_Long_Long_Integer_Width;
+         Ttypes.System_Max_Integer_Size :=
+           Ttypes.Standard_Long_Long_Integer_Size;
+         Ttypes.System_Max_Binary_Modulus_Power :=
+           Ttypes.Standard_Long_Long_Integer_Size;
       end if;
 
       --  Finally capture adjusted value of Suppress_Options as the initial

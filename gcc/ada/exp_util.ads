@@ -427,11 +427,6 @@ package Exp_Util is
    --  for trouble using this function and, if so, the assignment is expanded
    --  component-wise, which the back end is required to handle correctly.
 
-   function Containing_Package_With_Ext_Axioms
-     (E : Entity_Id) return Entity_Id;
-   --  Returns the package entity with an external axiomatization containing E,
-   --  if any, or Empty if none.
-
    procedure Convert_To_Actual_Subtype (Exp : Node_Id);
    --  The Etype of an expression is the nominal type of the expression,
    --  not the actual subtype. Often these are the same, but not always.
@@ -729,12 +724,6 @@ package Exp_Util is
 
    function Has_Access_Constraint (E : Entity_Id) return Boolean;
    --  Given object or type E, determine if a discriminant is of an access type
-
-   function Has_Annotate_Pragma_For_External_Axiomatization
-     (E : Entity_Id) return Boolean;
-   --  Returns whether E is a package entity, for which the initial list of
-   --  pragmas at the start of the package declaration contains
-   --    pragma Annotate (GNATprove, External_Axiomatization);
 
    function Homonym_Number (Subp : Entity_Id) return Pos;
    --  Here subp is the entity for a subprogram. This routine returns the

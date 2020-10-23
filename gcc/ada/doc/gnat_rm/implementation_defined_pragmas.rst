@@ -37,7 +37,21 @@ This pragma must appear at the start of the statement sequence of a
 handled sequence of statements (right after the ``begin``).  It has
 the effect of deferring aborts for the sequence of statements (but not
 for the declarations or handlers, if any, associated with this statement
-sequence).
+sequence). This can also be useful for adding a polling point in Ada code,
+where asynchronous abort of tasks is checked when leaving the statement
+sequence, and is lighter than, for example, using ``delay 0.0;``, since with
+zero-cost exception handling, propagating exceptions (implicitly used to
+implement task abort) cannot be done reliably in an asynchronous way.
+
+An example of usage would be:
+
+.. code-block:: ada
+
+  --  Add a polling point to check for task aborts
+
+  begin
+     pragma Abort_Defer;
+  end;
 
 .. _Pragma-Abstract_State:
 
@@ -7270,12 +7284,6 @@ not create a synchronization point. Second, in the case of ``pragma Atomic``,
 there is no guarantee that all the bits will be accessed if the reference
 is not to the whole object; the compiler is allowed (and generally will)
 access only part of the object in this case.
-
-It is not permissible to specify ``Atomic`` and ``Volatile_Full_Access`` for
-the same type or object.
-
-It is not permissible to specify ``Volatile_Full_Access`` for a composite
-(record or array) type or object that has an ``Aliased`` subcomponent.
 
 .. _Pragma-Volatile_Function:
 

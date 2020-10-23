@@ -784,20 +784,19 @@ package body Sem_Ch6 is
       ------------------------------------------
 
       procedure Check_Return_Construct_Accessibility (Return_Stmt : Node_Id) is
-         Assoc         : Node_Id;
-         Agg           : Node_Id := Empty;
-         Discr         : Entity_Id;
-         Expr          : Node_Id;
-         Obj           : Node_Id;
-         Process_Exprs : Boolean := False;
-         Return_Con    : Node_Id;
+         Return_Con : Node_Id;
+         Assoc      : Node_Id := Empty;
+         Assoc_Expr : Node_Id;
+         Disc       : Entity_Id;
+         Obj_Decl   : Node_Id;
+         Unqual     : Node_Id;
 
       begin
          --  Only perform checks on record types with access discriminants and
          --  non-internally generated functions.
 
          if not Is_Record_Type (R_Type)
-           or else not Has_Discriminants (R_Type)
+           or else not Has_Anonymous_Access_Discriminant (R_Type)
            or else not Comes_From_Source (Return_Stmt)
          then
             return;
@@ -837,165 +836,218 @@ package body Sem_Ch6 is
 
             Return_Con := Original_Node (Return_Con);
          else
-            Return_Con := Return_Stmt;
+            Return_Con := Expression (Return_Stmt);
          end if;
 
-         --  We may need to check an aggregate or a subtype indication
-         --  depending on how the discriminants were specified and whether
-         --  we are looking at an extended return statement.
+         --  Obtain the accessibility levels of the expressions associated
+         --  with all anonymous access discriminants, then generate a
+         --  dynamic check or static error when relevant.
 
-         if Nkind (Return_Con) = N_Object_Declaration
-           and then Nkind (Object_Definition (Return_Con))
-                      = N_Subtype_Indication
+         Unqual := Unqualify (Original_Node (Return_Con));
+
+         --  Obtain the corresponding declaration based on the return object's
+         --  identifier.
+
+         if Nkind (Unqual) = N_Identifier
+           and then Nkind (Parent (Entity (Unqual)))
+                      in N_Object_Declaration
+                       | N_Object_Renaming_Declaration
          then
-            Assoc := Original_Node
-                       (First
-                         (Constraints
-                           (Constraint (Object_Definition (Return_Con)))));
+            Obj_Decl := Original_Node (Parent (Entity (Unqual)));
+
+         --  We were passed the object declaration directly, so use it
+
+         elsif Nkind (Unqual) in N_Object_Declaration
+                               | N_Object_Renaming_Declaration
+         then
+            Obj_Decl := Unqual;
+
+         --  Otherwise, we are looking at something else
+
          else
-            --  Qualified expressions may be nested
+            Obj_Decl := Empty;
 
-            Agg := Original_Node (Expression (Return_Con));
-            while Nkind (Agg) = N_Qualified_Expression loop
-               Agg := Original_Node (Expression (Agg));
-            end loop;
+         end if;
 
-            --  If we are looking at an aggregate instead of a function call we
-            --  can continue checking accessibility for the supplied
-            --  discriminant associations.
+         --  Hop up object renamings when present
 
-            if Nkind (Agg) = N_Aggregate then
-               if Present (Expressions (Agg)) then
-                  Assoc         := First (Expressions (Agg));
-                  Process_Exprs := True;
+         if Present (Obj_Decl)
+           and then Nkind (Obj_Decl) = N_Object_Renaming_Declaration
+         then
+            while Nkind (Obj_Decl) = N_Object_Renaming_Declaration loop
+
+               if Nkind (Name (Obj_Decl)) not in N_Entity then
+                  --  We may be looking at the expansion of iterators or
+                  --  some other internally generated construct, so it is safe
+                  --  to ignore checks ???
+
+                  if not Comes_From_Source (Obj_Decl) then
+                     return;
+                  end if;
+
+                  Obj_Decl := Original_Node
+                                (Declaration_Node
+                                  (Ultimate_Prefix (Name (Obj_Decl))));
+
+               --  Move up to the next declaration based on the object's name
+
                else
-                  Assoc := First (Component_Associations (Agg));
+                  Obj_Decl := Original_Node
+                                (Declaration_Node (Name (Obj_Decl)));
+               end if;
+            end loop;
+         end if;
+
+         --  Obtain the discriminant values from the return aggregate
+
+         --  Do we cover extension aggregates correctly ???
+
+         if Nkind (Unqual) = N_Aggregate then
+            if Present (Expressions (Unqual)) then
+               Assoc := First (Expressions (Unqual));
+            else
+               Assoc := First (Component_Associations (Unqual));
+            end if;
+
+         --  There is an object declaration for the return object
+
+         elsif Present (Obj_Decl) then
+            --  When a subtype indication is present in an object declaration
+            --  it must contain the object's discriminants.
+
+            if Nkind (Object_Definition (Obj_Decl)) = N_Subtype_Indication then
+               Assoc := First
+                          (Constraints
+                            (Constraint
+                              (Object_Definition (Obj_Decl))));
+
+            --  The object declaration contains an aggregate
+
+            elsif Present (Expression (Obj_Decl)) then
+
+               if Nkind (Unqualify (Expression (Obj_Decl))) = N_Aggregate then
+                  --  Grab the first associated discriminant expresion
+
+                  if Present
+                       (Expressions (Unqualify (Expression (Obj_Decl))))
+                  then
+                     Assoc := First
+                                (Expressions
+                                  (Unqualify (Expression (Obj_Decl))));
+                  else
+                     Assoc := First
+                                (Component_Associations
+                                  (Unqualify (Expression (Obj_Decl))));
+                  end if;
+
+               --  Otherwise, this is something else
+
+               else
+                  return;
                end if;
 
-            --  Otherwise the expression is not of interest ???
+            --  There are no supplied discriminants in the object declaration,
+            --  so get them from the type definition since they must be default
+            --  initialized.
+
+            --  Do we handle constrained subtypes correctly ???
+
+            elsif Nkind (Unqual) = N_Object_Declaration then
+               Assoc := First_Discriminant
+                          (Etype (Object_Definition (Obj_Decl)));
 
             else
-               return;
+               Assoc := First_Discriminant (Etype (Unqual));
             end if;
+
+         --  When we are not looking at an aggregate or an identifier, return
+         --  since any other construct (like a function call) is not
+         --  applicable since checks will be performed on the side of the
+         --  callee.
+
+         else
+            return;
          end if;
 
-         --  Move through the discriminants checking the accessibility level
-         --  of each co-extension's associated expression.
+         --  Obtain the discriminants so we know the actual type in case the
+         --  value of their associated expression gets implicitly converted.
 
-         Discr := First_Discriminant (R_Type);
-         while Present (Discr) loop
-            if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
+         if No (Obj_Decl) then
+            pragma Assert (Nkind (Unqual) = N_Aggregate);
 
-               if Nkind (Assoc) = N_Attribute_Reference then
-                  Expr := Assoc;
-               elsif Nkind (Assoc) in
-                       N_Component_Association | N_Discriminant_Association
+            Disc := First_Discriminant (Etype (Unqual));
+
+         else
+            Disc := First_Discriminant
+                      (Etype (Defining_Identifier (Obj_Decl)));
+         end if;
+
+         --  Loop through each of the discriminants and check each expression
+         --  associated with an anonymous access discriminant.
+
+         while Present (Assoc) and then Present (Disc) loop
+            --  Unwrap the associated expression
+
+            if Nkind (Assoc)
+                 in N_Component_Association | N_Discriminant_Association
+            then
+               Assoc_Expr := Expression (Assoc);
+
+            elsif Nkind (Assoc) in N_Entity
+              and then Ekind (Assoc) = E_Discriminant
+            then
+               Assoc_Expr := Discriminant_Default_Value (Assoc);
+
+            else
+               Assoc_Expr := Assoc;
+            end if;
+
+            --  Check the accessibility level of the expression when the
+            --  discriminant is of an anonymous access type.
+
+            if Present (Assoc_Expr)
+              and then Ekind (Etype (Disc)) = E_Anonymous_Access_Type
+            then
+               --  Perform a static check first, if possible
+
+               if Static_Accessibility_Level
+                    (Expr              => Assoc_Expr,
+                     Level             => Zero_On_Dynamic_Level,
+                     In_Return_Context => True)
+                      > Scope_Depth (Scope (Scope_Id))
                then
-                  Expr := Expression (Assoc);
-               else
-                  Expr := Empty;
+                  Error_Msg_N
+                    ("access discriminant in return object would be a dangling"
+                     & " reference", Return_Stmt);
+                  exit;
+
                end if;
 
-               --  This anonymous access discriminant has an associated
-               --  expression which needs checking.
+               --  Otherwise, generate a dynamic check based on the extra
+               --  accessibility of the result.
 
-               if Present (Expr)
-                 and then Nkind (Expr) = N_Attribute_Reference
-                 and then Attribute_Name (Expr) /= Name_Unrestricted_Access
-               then
-                  --  Obtain the object to perform static checks on by moving
-                  --  up the prefixes in the expression taking into account
-                  --  named access types and renamed objects within the
-                  --  expression.
-
-                  --  Note, this loop duplicates some of the logic in
-                  --  Object_Access_Level since we have to check special rules
-                  --  based on the context we are in (a return aggregate)
-                  --  relating to formals of the current function.
-
-                  Obj := Original_Node (Prefix (Expr));
-                  loop
-                     while Nkind (Obj) in N_Explicit_Dereference
-                                        | N_Indexed_Component
-                                        | N_Selected_Component
-                     loop
-                        --  When we encounter a named access type then we can
-                        --  ignore accessibility checks on the dereference.
-
-                        if Ekind (Etype (Original_Node (Prefix (Obj))))
-                             in E_Access_Type ..
-                                E_Access_Protected_Subprogram_Type
-                        then
-                           if Nkind (Obj) = N_Selected_Component then
-                              Obj := Selector_Name (Obj);
-                           else
-                              Obj := Original_Node (Prefix (Obj));
-                           end if;
-                           exit;
-                        end if;
-
-                        Obj := Original_Node (Prefix (Obj));
-                     end loop;
-
-                     if Nkind (Obj) = N_Selected_Component then
-                        Obj := Selector_Name (Obj);
-                     end if;
-
-                     --  Check for renamings
-
-                     pragma Assert (Is_Entity_Name (Obj));
-
-                     if Present (Renamed_Object (Entity (Obj))) then
-                        Obj := Renamed_Object (Entity (Obj));
-                     else
-                        exit;
-                     end if;
-                  end loop;
-
-                  --  Do not check aliased formals statically
-
-                  if Is_Formal (Entity (Obj))
-                    and then (Is_Aliased (Entity (Obj))
-                               or else Ekind (Etype (Entity (Obj))) =
-                                         E_Anonymous_Access_Type)
-                  then
-                     null;
-
-                  --  Otherwise, handle the expression normally, avoiding the
-                  --  special logic above, and call Object_Access_Level with
-                  --  the original expression.
-
-                  elsif Static_Accessibility_Level (Expr) >
-                          Scope_Depth (Scope (Scope_Id))
-                  then
-                     Error_Msg_N
-                       ("access discriminant in return aggregate would "
-                        & "be a dangling reference", Obj);
-                  end if;
+               if Present (Extra_Accessibility_Of_Result (Scope_Id)) then
+                  Insert_Before_And_Analyze (Return_Stmt,
+                    Make_Raise_Program_Error (Loc,
+                      Condition =>
+                        Make_Op_Gt (Loc,
+                          Left_Opnd  => Accessibility_Level
+                                          (Expr              => Assoc_Expr,
+                                           Level             => Dynamic_Level,
+                                           In_Return_Context => True),
+                          Right_Opnd => Extra_Accessibility_Of_Result
+                                          (Scope_Id)),
+                      Reason    => PE_Accessibility_Check_Failed));
                end if;
             end if;
 
-            Next_Discriminant (Discr);
+            --  Iterate over the discriminants
 
+            Disc := Next_Discriminant (Disc);
             if not Is_List_Member (Assoc) then
-               Assoc := Empty;
+               exit;
             else
                Nlists.Next (Assoc);
-            end if;
-
-            --  After aggregate expressions, examine component associations if
-            --  present.
-
-            if No (Assoc) then
-               if Present (Agg)
-                 and then Process_Exprs
-                 and then Present (Component_Associations (Agg))
-               then
-                  Assoc         := First (Component_Associations (Agg));
-                  Process_Exprs := False;
-               else
-                  exit;
-               end if;
             end if;
          end loop;
       end Check_Return_Construct_Accessibility;
@@ -1436,8 +1488,8 @@ package body Sem_Ch6 is
 
          if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
            and then Is_Limited_View (Etype (Scope_Id))
-           and then Static_Accessibility_Level (Expr) >
-                      Subprogram_Access_Level (Scope_Id)
+           and then Static_Accessibility_Level (Expr, Zero_On_Dynamic_Level)
+                      > Subprogram_Access_Level (Scope_Id)
          then
             --  Suppress the message in a generic, where the rewriting
             --  is irrelevant.
@@ -2578,6 +2630,9 @@ package body Sem_Ch6 is
       Loc       : constant Source_Ptr := Sloc (N);
       Prev_Id   : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
 
+      Body_Nod         : Node_Id := Empty;
+      Minimum_Acc_Objs : List_Id := No_List;
+
       Conformant : Boolean;
       Desig_View : Entity_Id := Empty;
       Exch_Views : Elist_Id  := No_Elist;
@@ -2661,6 +2716,13 @@ package body Sem_Ch6 is
       --  incomplete types coming from a limited context and replace their
       --  limited views with the non-limited ones. Return the list of changes
       --  to be used to undo the transformation.
+
+      procedure Generate_Minimum_Accessibility
+        (Extra_Access : Entity_Id;
+         Related_Form : Entity_Id := Empty);
+      --  Generate a minimum accessibility object for a given extra
+      --  accessibility formal (Extra_Access) and its related formal if it
+      --  exists.
 
       function Is_Private_Concurrent_Primitive
         (Subp_Id : Entity_Id) return Boolean;
@@ -3439,6 +3501,66 @@ package body Sem_Ch6 is
          return Result;
       end Exchange_Limited_Views;
 
+      ------------------------------------
+      -- Generate_Minimum_Accessibility --
+      ------------------------------------
+
+      procedure Generate_Minimum_Accessibility
+        (Extra_Access : Entity_Id;
+         Related_Form : Entity_Id := Empty)
+      is
+         Loc      : constant Source_Ptr := Sloc (Body_Nod);
+         Form     : Entity_Id;
+         Obj_Node : Node_Id;
+      begin
+         --  When no related formal exists then we are dealing with an
+         --  extra accessibility formal for a function result.
+
+         if No (Related_Form) then
+            Form := Extra_Access;
+         else
+            Form := Related_Form;
+         end if;
+
+         --  Create the minimum accessibility object
+
+         Obj_Node :=
+            Make_Object_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Temporary
+                 (Loc, 'A', Extra_Access),
+             Object_Definition   => New_Occurrence_Of
+                                      (Standard_Natural, Loc),
+             Expression          =>
+               Make_Attribute_Reference (Loc,
+                 Prefix         => New_Occurrence_Of
+                                     (Standard_Natural, Loc),
+                 Attribute_Name => Name_Min,
+                 Expressions    => New_List (
+                   Make_Integer_Literal (Loc,
+                     Scope_Depth (Body_Id)),
+                   New_Occurrence_Of
+                     (Extra_Access, Loc))));
+
+         --  Add the new local object to the Minimum_Acc_Obj to
+         --  be later prepended to the subprogram's list of
+         --  declarations after we are sure all expansion is
+         --  done.
+
+         if Present (Minimum_Acc_Objs) then
+            Prepend (Obj_Node, Minimum_Acc_Objs);
+         else
+            Minimum_Acc_Objs := New_List (Obj_Node);
+         end if;
+
+         --  Register the object and analyze it
+
+         Set_Minimum_Accessibility
+           (Form, Defining_Identifier (Obj_Node));
+
+         Analyze (Obj_Node);
+      end Generate_Minimum_Accessibility;
+
       -------------------------------------
       -- Is_Private_Concurrent_Primitive --
       -------------------------------------
@@ -3769,9 +3891,6 @@ package body Sem_Ch6 is
       end Verify_Overriding_Indicator;
 
       --  Local variables
-
-      Body_Nod         : Node_Id := Empty;
-      Minimum_Acc_Objs : List_Id := No_List;
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
       Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
@@ -4650,7 +4769,7 @@ package body Sem_Ch6 is
 
       --  This method is used to supplement our "small integer model" for
       --  accessibility-check generation (for more information see
-      --  Dynamic_Accessibility_Level).
+      --  Accessibility_Level).
 
       --  Because we allow accessibility values greater than our expected value
       --  passing along the same extra accessibility formal as an actual
@@ -4701,49 +4820,31 @@ package body Sem_Ch6 is
 
                      --    A60b : constant natural := natural'min(1, paramL);
 
-                     declare
-                        Loc      : constant Source_Ptr := Sloc (Body_Nod);
-                        Obj_Node : constant Node_Id :=
-                           Make_Object_Declaration (Loc,
-                            Defining_Identifier =>
-                              Make_Temporary
-                                (Loc, 'A', Extra_Accessibility (Form)),
-                            Constant_Present    => True,
-                            Object_Definition   => New_Occurrence_Of
-                                                     (Standard_Natural, Loc),
-                            Expression          =>
-                              Make_Attribute_Reference (Loc,
-                                Prefix         => New_Occurrence_Of
-                                                    (Standard_Natural, Loc),
-                                Attribute_Name => Name_Min,
-                                Expressions    => New_List (
-                                  Make_Integer_Literal (Loc,
-                                    Scope_Depth (Current_Scope)),
-                                  New_Occurrence_Of
-                                    (Extra_Accessibility (Form), Loc))));
-                     begin
-                        --  Add the new local object to the Minimum_Acc_Obj to
-                        --  be later prepended to the subprogram's list of
-                        --  declarations after we are sure all expansion is
-                        --  done.
-
-                        if Present (Minimum_Acc_Objs) then
-                           Prepend (Obj_Node, Minimum_Acc_Objs);
-                        else
-                           Minimum_Acc_Objs := New_List (Obj_Node);
-                        end if;
-
-                        --  Register the object and analyze it
-
-                        Set_Minimum_Accessibility
-                          (Form, Defining_Identifier (Obj_Node));
-
-                        Analyze (Obj_Node);
-                     end;
+                     Generate_Minimum_Accessibility
+                       (Extra_Accessibility (Form), Form);
                   end if;
 
                   Next_Formal (Form);
                end loop;
+
+               --  Generate the minimum accessibility level object for the
+               --  function's Extra_Accessibility_Of_Result.
+
+               --    A31b : constant natural := natural'min (2, funcL);
+
+               if Ekind (Body_Id) = E_Function
+                 and then Present (Extra_Accessibility_Of_Result (Body_Id))
+               then
+                  Generate_Minimum_Accessibility
+                    (Extra_Accessibility_Of_Result (Body_Id));
+
+                  --  Replace the Extra_Accessibility_Of_Result with the new
+                  --  minimum accessibility object.
+
+                  Set_Extra_Accessibility_Of_Result
+                    (Body_Id, Minimum_Accessibility
+                                (Extra_Accessibility_Of_Result (Body_Id)));
+               end if;
             end if;
          end;
       end if;
