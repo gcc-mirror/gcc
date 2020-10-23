@@ -1,5 +1,9 @@
 2020-10-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (enum merge_kind): Reorder.
+	(merge_kind_name): Likewise.
+
 	Merge trunk cd8b7d7b24c
 	Link with the configured net lib on vxworks7
 

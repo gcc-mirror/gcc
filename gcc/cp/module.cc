@@ -2854,16 +2854,21 @@ enum merge_kind
   MK_vtable,	/* Found by CTX and index on TYPE_VTABLES  */
   MK_as_base,	/* Found by CTX.  */
 
-  MK_indirect_lwm = 0x5,
-  MK_local_friend = MK_indirect_lwm, /* Found by CTX, index.  */
+  MK_partial,
+
   MK_enum,	/* Found by CTX, & 1stMemberNAME.  */
   MK_attached,  /* Found by attachee & index.  */
 
+  MK_friend_spec,  /* Like named, but has a tmpl & args too.  */
+  MK_local_friend, /* Found by CTX, index.  */
+
+  MK_indirect_lwm = MK_enum,
+  
   /* Template specialization kinds below. These are all found via
      primary template and specialization args.  */
-  MK_template_mask = 0x8,  /* A template specialization.  */
+  MK_template_mask = 0x10,  /* A template specialization.  */
 
-  MK_tmpl_decl_mask = 0x4, /* In decl table (not a type specialization).  */
+  MK_tmpl_decl_mask = 0x8, /* In decl table (not a type specialization).  */
 
   /* Following bit has meaning dependent on MK_tmpl_decl_mask. */
   MK_tmpl_alias_mask = 0x2, /* An alias specialization (in both).  */
@@ -2880,24 +2885,25 @@ enum merge_kind
 
   MK_alias_spec = MK_decl_spec | MK_tmpl_alias_mask,
 
-  // FIXME: perhaps the MK_field, MK_vtable, MK_as_base can all be
-  // combined, so that this can be put up there?
-  MK_partial = 16,
-  MK_friend_spec = 17,  /* Like named, but has a tmpl & args too.  */
-  MK_hwm
+  MK_hwm = 0x20
 };
 /* This is more than a debugging array.  NULLs are used to determine
    an invalid merge_kind number.  */
 static char const *const merge_kind_name[MK_hwm] =
   {
-    "unique", "named", "field", "vtable",		/* 0...3  */
-    "asbase", "local friend", "enum", "attached",	/* 4...7  */
-    "type spec", "type tmpl spec",	/*  8,9 type (template).  */
-    NULL, "type partial spec",		/* 10,11 partial template. */
-    "decl spec", "decl tmpl spec",	/* 12,13 decl (template).  */
-    "alias spec", NULL,			/* 14,15 alias. */
-    "partial",				/* 16 constrained partial */
-    "friend spec",			/* 17 friend specialization.  */
+    "unique", "named", "field", "vtable",	/* 0...3  */
+    "asbase", "partial", "enum", "attached",	/* 4...7  */
+
+    "friend spec", "local friend", NULL, NULL,  /* 8...11 */
+    NULL, NULL, NULL, NULL,
+
+    "type spec", "type tmpl spec",	/* 16,17 type (template).  */
+    NULL, "type partial spec",		/* 18,19 partial template. */
+    NULL, NULL, NULL, NULL,
+
+    "decl spec", "decl tmpl spec",	/* 24,25 decl (template).  */
+    "alias spec", NULL,			/* 26,27 alias. */
+    NULL, NULL, NULL, NULL,
   };
 
 /* Mergeable entity location data.  */
@@ -10706,7 +10712,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       if (get_overrun ())
 	return error_mark_node;
 
-      if (mk < MK_indirect_lwm || mk == MK_partial)
+      if (mk < MK_indirect_lwm)
 	{
 	  DECL_NAME (decl) = name;
 	  DECL_CONTEXT (decl) = FROB_CONTEXT (container);
@@ -10892,7 +10898,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 			break;
 		      }
 
-		    if (existing && mk < MK_indirect_lwm
+		    if (existing && mk < MK_indirect_lwm && mk != MK_partial
 			&& TREE_CODE (decl) == TEMPLATE_DECL
 			&& !DECL_MEMBER_TEMPLATE_P (decl))
 		      {
