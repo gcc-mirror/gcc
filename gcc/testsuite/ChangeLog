@@ -1,3 +1,36 @@
+2020-10-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-10-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95979
+	* gfortran.dg/index_4.f90: New test.
+
+2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97328
+	* g++.dg/cpp2a/constexpr-init19.C: New test.
+	* g++.dg/cpp2a/constexpr-init20.C: New test.
+
+2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.dg/dfp/pr97439.c: New test.
+
+2020-10-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-10-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96759
+	* g++.target/riscv/pr96759.C: New.
+	* gcc.target/riscv/pr96759.c: New.
+
 2020-10-21  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/97506

@@ -1,3 +1,13 @@
+2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97328
+	* constexpr.c (init_subob_ctx): Don't punt on RANGE_EXPR
+	indexes, instead build a sub-aggregate initialization context
+	with no subobject.
+
 2020-10-20  Marek Polacek  <polacek@redhat.com>
 
 	* pt.c (tsubst_copy_and_build): Use cxx2a.
