@@ -10817,13 +10817,6 @@ Similarly to @code{TARGET_D_CPU_VERSIONS}, but is used for versions
 relating to the target operating system.
 @end deftypefn
 
-@deftypefn {D Target Hook} unsigned TARGET_D_CRITSEC_SIZE (void)
-Returns the size of the data structure used by the target operating system
-for critical sections and monitors.  For example, on Microsoft Windows this
-would return the @code{sizeof(CRITICAL_SECTION)}, while other platforms that
-implement pthreads would return @code{sizeof(pthread_mutex_t)}.
-@end deftypefn
-
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces
