@@ -1,3 +1,13 @@
+2020-10-23  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/mve.md (mve_vsubq<mode>): New entry for vsub instruction
+	using expression 'minus'.
+	(mve_vsubq_f<mode>): Use minus instead of VSUBQ_F unspec.
+	* config/arm/neon.md (sub<mode>3, sub<mode>3_fp16): Removed.
+	(neon_vsub<mode>): Use gen_sub<mode>3 instead of gen_sub<mode>3_fp16.
+	* config/arm/vec-common.md (sub<mode>3): Use the new mode macros
+	ARM_HAVE_<MODE>_ARITH. Use iterator VDQ instead of VALL.
+
 2020-10-22  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_xxspltidp_v2df): Delete

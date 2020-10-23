@@ -521,28 +521,6 @@
                     (const_string "neon_sub<q>")))]
 )
 
-(define_insn "sub<mode>3"
- [(set
-   (match_operand:VH 0 "s_register_operand" "=w")
-   (minus:VH
-    (match_operand:VH 1 "s_register_operand" "w")
-    (match_operand:VH 2 "s_register_operand" "w")))]
- "ARM_HAVE_NEON_<MODE>_ARITH"
- "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set_attr "type" "neon_sub<q>")]
-)
-
-(define_insn "sub<mode>3_fp16"
- [(set
-   (match_operand:VH 0 "s_register_operand" "=w")
-   (minus:VH
-    (match_operand:VH 1 "s_register_operand" "w")
-    (match_operand:VH 2 "s_register_operand" "w")))]
- "TARGET_NEON_FP16INST"
- "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set_attr "type" "neon_sub<q>")]
-)
-
 (define_insn "*mul<mode>3_neon"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
         (mult:VDQW (match_operand:VDQW 1 "s_register_operand" "w")
@@ -1637,7 +1615,7 @@
    (match_operand:VH 2 "s_register_operand")]
   "TARGET_NEON_FP16INST"
 {
-  emit_insn (gen_sub<mode>3_fp16 (operands[0], operands[1], operands[2]));
+  emit_insn (gen_sub<mode>3 (operands[0], operands[1], operands[2]));
   DONE;
 })
 
