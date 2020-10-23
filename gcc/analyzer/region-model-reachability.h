@@ -35,7 +35,7 @@ namespace ana {
 class reachable_regions
 {
 public:
-  reachable_regions (region_model *model, region_model_manager *mgr);
+  reachable_regions (region_model *model);
 
   /* Callback called for each cluster when initializing this object.  */
   static void init_cluster_cb (const region *base_reg,
@@ -97,7 +97,6 @@ public:
 private:
   region_model *m_model;
   store *m_store;
-  region_model_manager *m_mgr;
 
   /* The base regions already seen.  */
   hash_set<const region *> m_reachable_base_regs;
