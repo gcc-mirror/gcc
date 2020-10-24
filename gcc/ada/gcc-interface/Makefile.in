@@ -216,7 +216,7 @@ endif
 ifneq ($(xmake_file),)
 include $(xmake_file)
 endif
-
+
 # Now figure out from those variables how to compile and link.
 
 all.indirect: Makefile ../gnat1$(exeext)
@@ -311,7 +311,7 @@ Makefile: ../config.status $(srcdir)/ada/gcc-interface/Makefile.in $(srcdir)/ada
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
 .NOEXPORT:
-
+
 # Lists of files for various purposes.
 
 GNATLINK_OBJS = gnatlink.o \
