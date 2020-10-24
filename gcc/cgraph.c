@@ -4098,6 +4098,21 @@ cgraph_node::check_calls_comdat_local_p ()
   return false;
 }
 
+/* Return true if this node represents a former, i.e. an expanded, thunk.  */
+
+bool
+cgraph_node::former_thunk_p (void)
+{
+  if (thunk)
+    return false;
+  thunk_info *i = thunk_info::get (this);
+  if (!i)
+    return false;
+  gcc_checking_assert (i->fixed_offset || i->virtual_offset_p
+		       || i->indirect_offset);
+  return true;
+}
+
 /* A stashed copy of "symtab" for use by selftest::symbol_table_test.
    This needs to be a global so that it can be a GC root, and thus
    prevent the stashed copy from being garbage-collected if the GC runs
@@ -4161,21 +4176,6 @@ cgraph_c_tests ()
 }
 
 } // namespace selftest
-
-/* Return true if this node represents a former, i.e. an expanded, thunk.  */
-
-bool
-cgraph_node::former_thunk_p (void)
-{
-  if (thunk)
-    return false;
-  thunk_info *i = thunk_info::get (this);
-  if (!i)
-    return false;
-  gcc_checking_assert (i->fixed_offset || i->virtual_offset_p
-		       || i->indirect_offset);
-  return true;
-}
 
 #endif /* CHECKING_P */
 
