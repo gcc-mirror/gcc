@@ -1096,11 +1096,10 @@ package body System.Tasking.Stages is
             --  stack analysis.
 
             Big_Overflow_Guard : constant := 64 * 1024 + 8 * 1024;
-            Small_Stack_Limit  : constant := 64 * 1024;
-            --  ??? These three values are experimental, and seem to work on
-            --  most platforms. They still need to be analyzed further. They
-            --  also need documentation, what are they and why does the logic
-            --  differ depending on whether the stack is large or small???
+            --  These two values are experimental, and seem to work on most
+            --  platforms. They still need to be analyzed further. They also
+            --  need documentation, what are they and why does the logic differ
+            --  depending on whether the stack is large or small???
 
             Pattern_Size : Natural :=
                              Natural (Self_ID.Common.
@@ -1123,7 +1122,7 @@ package body System.Tasking.Stages is
                --  Adjustments for inner frames
 
                Pattern_Size := Pattern_Size -
-                 (if Pattern_Size < Small_Stack_Limit
+                 (if Pattern_Size < Big_Overflow_Guard
                     then Small_Overflow_Guard
                     else Big_Overflow_Guard);
             else
