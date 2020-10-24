@@ -1,3 +1,190 @@
+2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* Makefile.in: Add symtab-thunks.o
+	(GTFILES): Add symtab-thunks.h and symtab-thunks.cc; remove cgraphunit.c
+	* cgraph.c: Include symtab-thunks.h.
+	(cgraph_node::create_thunk): Update
+	(symbol_table::create_edge): Update
+	(cgraph_node::dump): Update
+	(cgraph_node::call_for_symbol_thunks_and_aliases): Update
+	(set_nothrow_flag_1): Update
+	(set_malloc_flag_1): Update
+	(set_const_flag_1): Update
+	(collect_callers_of_node_1): Update
+	(clone_of_p): Update
+	(cgraph_node::verify_node): Update
+	(cgraph_node::function_symbol): Update
+	(cgraph_c_finalize): Call thunk_info::release.
+	(cgraph_node::has_thunk_p): Update
+	(cgraph_node::former_thunk_p): Move here from cgraph.h; reimplement.
+	* cgraph.h (struct cgraph_thunk_info): Rename to symtab-thunks.h.
+	(cgraph_node): Remove thunk field; add thunk bitfield.
+	(cgraph_node::expand_thunk): Move to symtab-thunks.h
+	(symtab_thunks_cc_finalize): Declare.
+	(cgraph_node::has_gimple_body_p): Update.
+	(cgraph_node::former_thunk_p): Update.
+	* cgraphclones.c: Include symtab-thunks.h.
+	(duplicate_thunk_for_node): Update.
+	(cgraph_edge::redirect_callee_duplicating_thunks): Update.
+	(cgraph_node::expand_all_artificial_thunks): Update.
+	(cgraph_node::create_edge_including_clones): Update.
+	* cgraphunit.c: Include symtab-thunks.h.
+	(vtable_entry_type): Move to symtab-thunks.c.
+	(cgraph_node::analyze): Update.
+	(analyze_functions): Update.
+	(mark_functions_to_output): Update.
+	(thunk_adjust): Move to symtab-thunks.c
+	(cgraph_node::expand_thunk): Move to symtab-thunks.c
+	(cgraph_node::assemble_thunks_and_aliases): Update.
+	(output_in_order): Update.
+	(cgraphunit_c_finalize): Do not clear vtable_entry_type.
+	(cgraph_node::create_wrapper): Update.
+	* gengtype.c (open_base_files): Add symtab-thunks.h
+	* ipa-comdats.c (propagate_comdat_group): UPdate.
+	(ipa_comdats): Update.
+	* ipa-cp.c (determine_versionability): UPdate.
+	(gather_caller_stats): Update.
+	(count_callers): Update
+	(set_single_call_flag): Update
+	(initialize_node_lattices): Update
+	(call_passes_through_thunk_p): Update
+	(call_passes_through_thunk): Update
+	(propagate_constants_across_call): Update
+	(find_more_scalar_values_for_callers_subset): Update
+	(has_undead_caller_from_outside_scc_p): Update
+	* ipa-fnsummary.c (evaluate_properties_for_edge): Update.
+	(compute_fn_summary): Update.
+	(inline_analyze_function): Update.
+	* ipa-icf.c: Include symtab-thunks.h.
+	(sem_function::equals_wpa): Update.
+	(redirect_all_callers): Update.
+	(sem_function::init): Update.
+	(sem_function::parse): Update.
+	* ipa-inline-transform.c: Include symtab-thunks.h.
+	(inline_call): Update.
+	(save_inline_function_body): Update.
+	(preserve_function_body_p): Update.
+	* ipa-inline.c (inline_small_functions): Update.
+	* ipa-polymorphic-call.c: Include alloc-pool.h, symbol-summary.h,
+	symtab-thunks.h
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Update.
+	* ipa-pure-const.c: Include symtab-thunks.h.
+	(analyze_function): Update.
+	* ipa-sra.c (check_for_caller_issues): Update.
+	* ipa-utils.c (ipa_reverse_postorder): Update.
+	(ipa_merge_profiles): Update.
+	* ipa-visibility.c (non_local_p): Update.
+	(cgraph_node::local_p): Update.
+	(function_and_variable_visibility): Update.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Update.
+	* lto-cgraph.c: Include alloc-pool.h, symbol-summary.h and
+	symtab-thunks.h
+	(lto_output_edge): Update.
+	(lto_output_node): Update.
+	(compute_ltrans_boundary): Update.
+	(output_symtab): Update.
+	(verify_node_partition): Update.
+	(input_overwrite_node): Update.
+	(input_node): Update.
+	* lto-streamer-in.c (fixup_call_stmt_edges): Update.
+	* symtab-thunks.cc: New file.
+	* symtab-thunks.h: New file.
+	* toplev.c (toplev::finalize): Call symtab_thunks_cc_finalize.
+	* trans-mem.c (ipa_tm_mayenterirr_function): Update.
+	(ipa_tm_execute): Update.
+	* tree-inline.c (expand_call_inline): Update.
+	* tree-nested.c (create_nesting_tree): Update.
+	(convert_all_function_calls): Update.
+	(gimplify_all_functions): Update.
+	* tree-profile.c (tree_profiling): Update.
+	* tree-ssa-structalias.c (associate_varinfo_to_alias): Update.
+	* tree.c (free_lang_data_in_decl): Update.
+	* value-prof.c (init_node_map): Update.
+
+2020-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91741
+	* doc/invoke.texi: Document -Wsizeof-array-div.
+
+2020-10-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97552
+	* attribs.c (init_attr_rdwr_indices): Handle static VLA parameters.
+
+2020-10-23  Douglas Rupp  <rupp@adacore.com>
+
+	* config/vxworks.h (VXWORKS_NET_LIBS_RTP): Use -lrtnet if
+	rtnetStackLib.h is available,fallback to -lnet otherwise.
+
+2020-10-23  Douglas Rupp  <rupp@adacore.com>
+
+	* gcc.c (if-exists-then-else): New built-in spec function.
+	* doc/invoke.texi: Document it.
+
+2020-10-23  Tulio Magno Quites Machado Filho  <tuliom@linux.ibm.com>
+
+	* doc/extend.texi (PowerPC Built-in Functions): Replace
+	extraneous characters with whitespace.
+
+2020-10-23  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (read_count_file): Never call gcov_sync with a negative
+	value.
+
+2020-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Add gomp-constants.h and $(EXPR_H).
+	(s-header-vars): Accept not just spaces but also tabs between *_H name
+	and =.  Handle common/config/ headers similarly to config.  Don't
+	throw away everything from first ... to last / on the remaining
+	string, instead skip just ... to corresponding last / without
+	intervening spaces and tabs.
+	(install-plugin): Treat common/config headers like config headers.
+	* config/i386/t-i386 (TM_H): Add
+	$(srcdir)/common/config/i386/i386-cpuinfo.h.
+
+2020-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97164
+	* stor-layout.c (layout_type): Also reject arrays where element size
+	is constant, but not a multiple of element alignment.
+
+2020-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (analyze_and_mark_doloop_use): Bail out if
+	the loop is subject to a pragma Unroll with no specific count.
+
+2020-10-23  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/mve.md (mve_vsubq<mode>): New entry for vsub instruction
+	using expression 'minus'.
+	(mve_vsubq_f<mode>): Use minus instead of VSUBQ_F unspec.
+	* config/arm/neon.md (sub<mode>3, sub<mode>3_fp16): Removed.
+	(neon_vsub<mode>): Use gen_sub<mode>3 instead of gen_sub<mode>3_fp16.
+	* config/arm/vec-common.md (sub<mode>3): Use the new mode macros
+	ARM_HAVE_<MODE>_ARITH. Use iterator VDQ instead of VALL.
+
+2020-10-23  Martin Liska  <mliska@suse.cz>
+
+	PR lto/97524
+	* lto-wrapper.c (make_exists): New function.
+	(run_gcc): Use it to check that make is present and working
+	for parallel execution.
+
+2020-10-23  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2020-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97521
+	* expr.c (expand_expr_real_1): Be more careful when
+	expanding a VECTOR_BOOLEAN_TYPE_P VECTOR_CSTs.
+
+2020-10-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Remove the redundant
+	LOOP_VINFO_FULLY_MASKED_P check.
+
 2020-10-23  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/arm/mve.md (mve_vsubq<mode>): New entry for vsub instruction

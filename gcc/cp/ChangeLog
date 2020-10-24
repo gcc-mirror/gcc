@@ -1,3 +1,8 @@
+2020-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91741
+	* typeck.c (cp_build_binary_op): Implement -Wsizeof-array-div.
+
 2020-10-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/97328

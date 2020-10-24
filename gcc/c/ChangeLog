@@ -1,3 +1,17 @@
+2020-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91741
+	* c-parser.c (c_parser_binary_expression): Implement -Wsizeof-array-div.
+	(c_parser_postfix_expression): Set PAREN_SIZEOF_EXPR.
+	(c_parser_expr_list): Handle PAREN_SIZEOF_EXPR like SIZEOF_EXPR.
+	* c-tree.h (char_type_p): Declare.
+	* c-typeck.c (char_type_p): No longer static.
+
+2020-10-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97552
+	* c-decl.c (get_parm_array_spec): Handle static VLA parameters.
+
 2020-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/50584

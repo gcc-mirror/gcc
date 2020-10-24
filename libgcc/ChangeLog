@@ -1,3 +1,9 @@
+2020-10-23  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks-thread.c: #include gthr.h before
+	testing the guard defined there.
+	* config/gthr-vxworks-cond.c: Likewise.
+
 2020-10-21  Douglas Rupp  <rupp@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 

@@ -1,3 +1,23 @@
+2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-common.c (c_common_finalize_early_debug): Update for new thunk api.
+
+2020-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91741
+	* c-common.c (verify_tree): Handle PAREN_SIZEOF_EXPR.
+	(c_common_init_ts): Likewise.
+	* c-common.def (PAREN_SIZEOF_EXPR): New tree code.
+	* c-common.h (maybe_warn_sizeof_array_div): Declare.
+	* c-warn.c (sizeof_pointer_memaccess_warning): Unwrap NOP_EXPRs.
+	(maybe_warn_sizeof_array_div): New function.
+	* c.opt (Wsizeof-array-div): New option.
+
+2020-10-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97463
+	* c-warn.c (warn_parm_ptrarray_mismatch): Move null test earlier.
+
 2020-10-22  Martin Liska  <mliska@suse.cz>
 
 	PR c/94722

@@ -1,3 +1,8 @@
+2020-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97164
+	* bid_functions.h (UINT192): Decrease alignment to 8 bytes.
+
 2020-05-05  Martin Liska  <mliska@suse.cz>
 
 	PR libgcc/92565

@@ -1,3 +1,60 @@
+2020-10-23  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wsizeof-array-div1.c: Expect certain warnings on
+	lp64 targets only.
+	* g++.dg/warn/Wsizeof-array-div2.C: Only run on lp64 targets.
+
+2020-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91741
+	* c-c++-common/Wsizeof-pointer-div.c: Add dg-warning.
+	* c-c++-common/Wsizeof-array-div1.c: New test.
+	* g++.dg/warn/Wsizeof-array-div1.C: New test.
+	* g++.dg/warn/Wsizeof-array-div2.C: New test.
+
+2020-10-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97552
+	* gcc.dg/Wvla-parameter-2.c: Adjust text of expected warning.
+	* gcc.dg/Wnonnull-5.c: New test.
+
+2020-10-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97463
+	* gcc.dg/pr97463.c: New test.
+
+2020-10-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/vec-rlmi-rlnm.c: Update xxlor expect.
+
+2020-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/compat/eh/filter2_y.C: Add noexcept(false) to
+	destructor.
+
+2020-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97164
+	* c-c++-common/pr97164.c: New test.
+	* gcc.c-torture/execute/pr36093.c: Move ...
+	* gcc.dg/pr36093.c: ... here.  Add dg-do compile and dg-error
+	directives.
+	* gcc.c-torture/execute/pr43783.c: Move ...
+	* gcc.dg/pr43783.c: ... here.  Add dg-do compile, dg-options and
+	dg-error directives.
+
+2020-10-23  Dennis Zhang  <dennis.zh@live.com>
+
+	* gcc.target/arm/simd/mve-vsub_1.c: New test.
+
+2020-10-23  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2020-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97521
+	* gcc.target/i386/pr97521.c: New testcase.
+
 2020-10-23  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/arm/simd/mve-vsub_1.c: New test.

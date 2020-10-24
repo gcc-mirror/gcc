@@ -1,3 +1,10 @@
+2020-10-23  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (single_view::single_view): Mark the
+	in place constructor explicit as per LWG 3428.
+	(take_view): Remove the constraint on the deduction guide's
+	template parameter as per LWG 3447.
+
 2020-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/memory_resource: Include <tuple>.
