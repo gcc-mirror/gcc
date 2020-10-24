@@ -6,7 +6,6 @@ public:
   enum { val = (N == 0) ? M : GCD<N, M % N>::val };
 // { dg-error "constant expression" "valid" { target *-*-* } .-1 }
 // { dg-message "template argument" "valid" { target *-*-* } .-2 }
-// { dg-warning "division by" "" { target *-*-* } .-3 }
 };
 
 int main() {
