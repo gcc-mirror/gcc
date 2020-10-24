@@ -3034,6 +3034,7 @@ synth_module_prologue (void)
   objc_object_name = get_identifier (OBJECT_TYPEDEF_NAME);
   objc_instancetype_name = get_identifier (INSTANCE_TYPEDEF_NAME);
   objc_class_name = get_identifier (CLASS_TYPEDEF_NAME);
+  objc_selector_name = get_identifier (SEL_TYPEDEF_NAME);
 
   /* Declare the 'id', 'instancetype' and 'Class' typedefs.  */
   type = lang_hooks.decls.pushdecl (build_decl (input_location,

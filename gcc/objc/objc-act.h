@@ -371,6 +371,7 @@ enum objc_tree_index
     OCTI_ID_NAME,
     OCTI_INSTANCETYPE_NAME,
     OCTI_CLASS_NAME,
+    OCTI_SEL_NAME,
     OCTI_CNST_STR_ID,
     OCTI_CNST_STR_TYPE,
     OCTI_CNST_STR_GLOB_ID,
@@ -576,6 +577,7 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define objc_object_name        objc_global_trees[OCTI_ID_NAME]
 #define objc_instancetype_name	objc_global_trees[OCTI_INSTANCETYPE_NAME]
 #define objc_class_name		objc_global_trees[OCTI_CLASS_NAME]
+#define objc_selector_name	objc_global_trees[OCTI_SEL_NAME]
 
 /* Constant string classes.  */
 #define constant_string_id	objc_global_trees[OCTI_CNST_STR_ID]
@@ -614,6 +616,7 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define OBJECT_TYPEDEF_NAME		"id"
 #define INSTANCE_TYPEDEF_NAME		"instancetype"
 #define CLASS_TYPEDEF_NAME		"Class"
+#define SEL_TYPEDEF_NAME		"SEL"
 
 #define TAG_OBJECT			"objc_object"
 #define TAG_CLASS			"objc_class"
