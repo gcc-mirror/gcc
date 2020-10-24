@@ -4,6 +4,7 @@
 
 /* { dg-do compile {target power10_ok} } */
 /* { dg-do run {target power10_hw} } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power10 -O3" } */
 
 /* At time of writing, we also geenerate a .constrprop copy
