@@ -256,6 +256,10 @@ U
 C ObjC C++ ObjC++ Joined Separate MissingArgError(macro name missing after %qs)
 -U<macro>	Undefine <macro>.
 
+WNSObject-attribute
+C ObjC C++ ObjC++ LTO Var(warn_nsobject_attribute) Warning Init(1)
+Warn if the NSObject attribute is applied to a non-typedef.
+
 Wabi
 C ObjC C++ ObjC++ LTO Var(warn_abi) Warning
 Warn about things that will change when compiling with an ABI-compliant compiler.
