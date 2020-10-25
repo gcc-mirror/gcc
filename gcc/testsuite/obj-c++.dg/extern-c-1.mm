@@ -1,5 +1,6 @@
 /* Test extern c support inside @implementation */
 /* Devang Patel  <dpatel@apple.com>.  */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 #include <objc/objc.h>
 

@@ -1,5 +1,6 @@
 /* Tests of duplication.  */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 @interface class1
 - (int) meth1;   /* { dg-message "previous declaration" } */

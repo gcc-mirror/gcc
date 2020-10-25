@@ -2,6 +2,7 @@
    may be lost, leading to superfluous warnings.  */
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 /* One-line substitute for objc/objc.h */
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
