@@ -3040,7 +3040,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
       /* If we have a native coarray with implied this_image (), add the
 	 appropriate offset to the data pointer.  */
       ref = ss_info->expr->ref;
-      if (flag_coarray == GFC_FCOARRAY_SHARED && ref
+      if (flag_coarray == GFC_FCOARRAY_SHARED && ref && ref->type == REF_ARRAY
 	  && ref->u.ar.dimen_type[ref->u.ar.dimen + ref->u.ar.codimen - 1]
 	     == DIMEN_THIS_IMAGE)
 	 tmp = gfc_native_coarray_add_this_image_offset (tmp, se.expr, &ref->u.ar, 1, 1);
@@ -3060,7 +3060,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
 	 offset for the codimensions.  */
       // TODO: check whether the recipient is a coarray, if it is, disable
       //	all of this
-      if (flag_coarray == GFC_FCOARRAY_SHARED && ref
+      if (flag_coarray == GFC_FCOARRAY_SHARED && ref && ref->type == REF_ARRAY
 	  && ref->u.ar.dimen_type[ref->u.ar.dimen + ref->u.ar.codimen - 1]
 		    == DIMEN_THIS_IMAGE)
 	tmp = gfc_add_strides (tmp, se.expr, ref->u.ar.as->rank,
