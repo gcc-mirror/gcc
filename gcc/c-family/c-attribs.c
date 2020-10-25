@@ -158,6 +158,7 @@ static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
 static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nsobject_attribute (tree *, tree, tree, int, bool *);
+static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -513,6 +514,8 @@ const struct attribute_spec c_common_attribute_table[] =
   /* Attributes used by Objective-C.  */
   { "NSObject",		      0, 0, true, false, false, false,
 			      handle_nsobject_attribute, NULL },
+  { "objc_root_class",	      0, 0, true, false, false, false,
+			      handle_objc_root_class_attribute, NULL },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -5160,6 +5163,22 @@ handle_nsobject_attribute (tree *node, tree name, tree args,
   tree t = tree_cons (name, args, TYPE_ATTRIBUTES (type));
   TREE_TYPE (*node) = build_type_attribute_variant (type, t);
 
+  return NULL_TREE;
+}
+
+/* Handle a "objc_root_class" attributes; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_objc_root_class_attribute (tree */*node*/, tree name, tree /*args*/,
+				  int /*flags*/, bool *no_add_attrs)
+{
+  /* This has no meaning outside Objective-C.  */
+  if (!c_dialect_objc())
+    warning (OPT_Wattributes, "%qE is only applicable to Objective-C"
+	     " class interfaces, attribute ignored", name);
+
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 

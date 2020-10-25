@@ -571,11 +571,11 @@ lookup_protocol_in_reflist (tree rproto_list, tree lproto)
 }
 
 void
-objc_start_class_interface (tree klass, tree super_class,
+objc_start_class_interface (tree klass, location_t name_loc, tree super_class,
 			    tree protos, tree attributes)
 {
   if (flag_objc1_only && attributes)
-    error_at (input_location, "class attributes are not available in Objective-C 1.0");
+    error_at (name_loc, "class attributes are not available in Objective-C 1.0");
 
   objc_interface_context
     = objc_ivar_context
@@ -7014,6 +7014,12 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	  CLASS_SUPER_NAME (objc_implementation_context)
 	    = CLASS_SUPER_NAME (implementation_template);
 	}
+
+      if (!CLASS_SUPER_NAME (objc_implementation_context)
+	  && !lookup_attribute ("objc_root_class",
+				TYPE_ATTRIBUTES (implementation_template)))
+	  warning (OPT_Wobjc_root_class, "class %qE defined without"
+		      " specifying a base class", class_name);
       break;
 
     case CLASS_INTERFACE_TYPE:
@@ -7044,6 +7050,8 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 		TREE_DEPRECATED (klass) = 1;
 	      else if (is_attribute_p  ("objc_exception", name))
 		CLASS_HAS_EXCEPTION_ATTR (klass) = 1;
+	      else if (is_attribute_p  ("objc_root_class", name))
+		;
 	      else if (is_attribute_p  ("visibility", name))
 		;
 	      else

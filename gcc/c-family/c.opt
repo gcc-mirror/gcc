@@ -1002,6 +1002,11 @@ Enum(cpp_normalize_level) String(id) Value(normalized_identifier_C)
 EnumValue
 Enum(cpp_normalize_level) String(nfc) Value(normalized_C)
 
+Wobjc-root-class
+ObjC ObjC++ Var(warn_objc_root_class) Warning Init(1)
+Warn if a class interface has no superclass.  Root classes may use an attribute
+to suppress this warning.
+
 Wold-style-cast
 C++ ObjC++ Var(warn_old_style_cast) Warning
 Warn if a C-style cast is used in a program.

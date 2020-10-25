@@ -124,7 +124,7 @@ extern tree objc_get_protocol_qualified_type (tree, tree);
 extern tree objc_get_class_reference (tree);
 extern tree objc_get_class_ivars (tree);
 extern bool objc_detect_field_duplicates (bool);
-extern void objc_start_class_interface (tree, tree, tree, tree);
+extern void objc_start_class_interface (tree, location_t, tree, tree, tree);
 extern void objc_start_category_interface (tree, tree, tree, tree);
 extern void objc_start_protocol (tree, tree, tree);
 extern void objc_continue_interface (void);

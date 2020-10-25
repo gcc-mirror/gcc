@@ -276,7 +276,7 @@ Objective-C and Objective-C++ Dialects}.
 -fzero-link @gol
 -gen-decls @gol
 -Wassign-intercept  -Wno-property-assign-default @gol
--Wno-protocol  -Wselector @gol
+-Wno-protocol -Wobjc-root-class -Wselector @gol
 -Wstrict-selector-match @gol
 -Wundeclared-selector}
 
@@ -4347,6 +4347,13 @@ implemented in the class, even if a method implementation is inherited
 from the superclass.  If you use the @option{-Wno-protocol} option, then
 methods inherited from the superclass are considered to be implemented,
 and no warning is issued for them.
+
+@item -Wobjc-root-class @r{(Objective-C and Objective-C++ only)}
+@opindex Wobjc-root-class
+Warn if a class interface lacks a superclass. Most classes will inherit
+from @code{NSObject} (or @code{Object}) for example.  When declaring
+classes intended to be root classes, the warning can be suppressed by
+marking their interfaces with @code{__attribute__((objc_root_class))}.
 
 @item -Wselector @r{(Objective-C and Objective-C++ only)}
 @opindex Wselector

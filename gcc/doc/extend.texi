@@ -8518,6 +8518,12 @@ and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
 
+@item objc_root_class @r{(Objective-C and Objective-C++ only)}
+@cindex @code{objc_root_class} type attribute
+This attribute marks a class as being a root class, and thus allows
+the compiler to elide any warnings about a missing superclass and to
+make additional checks for mandatory methods as needed.
+
 @end table
 
 To specify multiple attributes, separate them by commas within the

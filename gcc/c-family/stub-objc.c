@@ -137,6 +137,7 @@ objc_set_method_opt (bool ARG_UNUSED (optional))
 
 void
 objc_start_class_interface (tree ARG_UNUSED (name),
+			    location_t /*name_loc*/,
 			    tree ARG_UNUSED (super),
 			    tree ARG_UNUSED (protos),
 			    tree ARG_UNUSED (attribs))
