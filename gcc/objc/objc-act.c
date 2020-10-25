@@ -7015,12 +7015,14 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	      tree name = TREE_PURPOSE (attribute);
 
 	      /* TODO: Document what the objc_exception attribute is/does.  */
-	      /* We handle the 'deprecated' and (undocumented) 'objc_exception'
-		 attributes.  */
+	      /* We handle the 'deprecated', 'visibility' and (undocumented)
+		 'objc_exception' attributes.  */
 	      if (is_attribute_p  ("deprecated", name))
 		TREE_DEPRECATED (klass) = 1;
 	      else if (is_attribute_p  ("objc_exception", name))
 		CLASS_HAS_EXCEPTION_ATTR (klass) = 1;
+	      else if (is_attribute_p  ("visibility", name))
+		;
 	      else
 		/* Warn about and ignore all others for now, but store them.  */
 		warning (OPT_Wattributes, "%qE attribute directive ignored", name);
