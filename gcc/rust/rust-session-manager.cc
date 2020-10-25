@@ -626,8 +626,7 @@ Session::injection (AST::Crate &crate)
    * rustc also has a "quote" macro that is defined differently and is
    * supposedly not stable so eh. */
   /* TODO: actually implement injection of these macros. In particular, derive
-   * macros, cfg, and
-   * test should be prioritised since they seem to be used the most. */
+   * macros, cfg, and test should be prioritised since they seem to be used the most. */
 
   // crate injection
   std::vector<std::string> names;

@@ -70,9 +70,12 @@ public:
 
   // Copy constructor has to deep copy the type as it is a unique pointer
   GenericArgsBinding (GenericArgsBinding const &other)
-    : identifier (other.identifier), type (other.type->clone_type ()),
-      locus (other.locus)
-  {}
+    : identifier (other.identifier), locus (other.locus)
+  {
+    // guard to protect from null pointer dereference
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+  }
 
   // default destructor
   ~GenericArgsBinding () = default;
@@ -81,8 +84,14 @@ public:
   GenericArgsBinding &operator= (GenericArgsBinding const &other)
   {
     identifier = other.identifier;
-    type = other.type->clone_type ();
     locus = other.locus;
+
+    // guard to protect from null pointer dereference
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
+
     return *this;
   }
 
@@ -231,6 +240,9 @@ protected:
    * and creates a SimplePath from them. */
   SimplePath convert_to_simple_path (bool with_opening_scope_resolution) const;
 
+  // Removes all segments of the path.
+  void remove_all_segments () { segments.clear (); segments.shrink_to_fit (); }
+
 public:
   /* Returns whether the path is a single segment (excluding qualified path
    * initial as segment). */
@@ -285,6 +297,10 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if path is empty (error state), so base stripping on that.
+  void mark_for_strip () override { remove_all_segments (); }
+  bool is_marked_for_strip () const override { return is_error (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -446,13 +462,6 @@ public:
 
   // Constructor
   TypePathFunction (std::vector<std::unique_ptr<Type>> inputs,
-		    Type *type = nullptr)
-    : inputs (std::move (inputs)), return_type (type), is_invalid (false)
-  {}
-  // FIXME: deprecated
-
-  // Constructor
-  TypePathFunction (std::vector<std::unique_ptr<Type>> inputs,
 		    std::unique_ptr<Type> type = nullptr)
     : inputs (std::move (inputs)), return_type (std::move (type)),
       is_invalid (false)
@@ -460,9 +469,12 @@ public:
 
   // Copy constructor with clone
   TypePathFunction (TypePathFunction const &other)
-    : return_type (other.return_type->clone_type ()),
-      is_invalid (other.is_invalid)
+    : is_invalid (other.is_invalid)
   {
+    // guard to protect from null pointer dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+
     inputs.reserve (other.inputs.size ());
     for (const auto &e : other.inputs)
       inputs.push_back (e->clone_type ());
@@ -473,8 +485,13 @@ public:
   // Overloaded assignment operator to clone type
   TypePathFunction &operator= (TypePathFunction const &other)
   {
-    return_type = other.return_type->clone_type ();
     is_invalid = other.is_invalid;
+
+    // guard to protect from null pointer dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
 
     inputs.reserve (other.inputs.size ());
     for (const auto &e : other.inputs)
@@ -537,10 +554,6 @@ public:
   Location locus;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  TypePath *clone_type_impl () const override { return new TypePath (*this); }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   TypePath *clone_type_no_bounds_impl () const override
@@ -635,9 +648,12 @@ public:
 
   // Copy constructor uses custom deep copy for Type to preserve polymorphism
   QualifiedPathType (QualifiedPathType const &other)
-    : type_to_invoke_on (other.type_to_invoke_on->clone_type ()),
-      trait_path (other.trait_path), locus (other.locus)
-  {}
+    : trait_path (other.trait_path), locus (other.locus)
+  {
+    // guard to prevent null dereference
+    if (other.type_to_invoke_on != nullptr)
+      type_to_invoke_on = other.type_to_invoke_on->clone_type ();
+  }
 
   // default destructor
   ~QualifiedPathType () = default;
@@ -645,9 +661,15 @@ public:
   // overload assignment operator to use custom clone method
   QualifiedPathType &operator= (QualifiedPathType const &other)
   {
-    type_to_invoke_on = other.type_to_invoke_on->clone_type ();
     trait_path = other.trait_path;
     locus = other.locus;
+
+    // guard to prevent null dereference
+    if (other.type_to_invoke_on != nullptr)
+      type_to_invoke_on = other.type_to_invoke_on->clone_type ();
+    else
+      type_to_invoke_on = nullptr;
+
     return *this;
   }
 
@@ -710,6 +732,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if path_type is error, so base stripping on that.
+  void mark_for_strip () override { path_type = QualifiedPathType::create_error (); }
+  bool is_marked_for_strip () const override { return is_error (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -735,13 +761,6 @@ class QualifiedPathInType : public TypeNoBounds
   Location locus;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  QualifiedPathInType *clone_type_impl () const override
-  {
-    return new QualifiedPathInType (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   QualifiedPathInType *clone_type_no_bounds_impl () const override

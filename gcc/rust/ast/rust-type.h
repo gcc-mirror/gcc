@@ -177,13 +177,6 @@ class ParenthesisedType : public TypeNoBounds
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ParenthesisedType *clone_type_impl () const override
-  {
-    return new ParenthesisedType (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   ParenthesisedType *clone_type_no_bounds_impl () const override
   {
     return new ParenthesisedType (*this);
@@ -242,13 +235,6 @@ class ImplTraitTypeOneBound : public TypeNoBounds
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ImplTraitTypeOneBound *clone_type_impl () const override
-  {
-    return new ImplTraitTypeOneBound (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   ImplTraitTypeOneBound *clone_type_no_bounds_impl () const override
   {
     return new ImplTraitTypeOneBound (*this);
@@ -276,13 +262,6 @@ class TraitObjectTypeOneBound : public TypeNoBounds
   Location locus;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  TraitObjectTypeOneBound *clone_type_impl () const override
-  {
-    return new TraitObjectTypeOneBound (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   TraitObjectTypeOneBound *clone_type_no_bounds_impl () const override
@@ -362,10 +341,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  TupleType *clone_type_impl () const override { return new TupleType (*this); }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   TupleType *clone_type_no_bounds_impl () const override
   {
     return new TupleType (*this);
@@ -380,10 +355,6 @@ class NeverType : public TypeNoBounds
   Location locus;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  NeverType *clone_type_impl () const override { return new NeverType (*this); }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   NeverType *clone_type_no_bounds_impl () const override
@@ -455,13 +426,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  RawPointerType *clone_type_impl () const override
-  {
-    return new RawPointerType (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   RawPointerType *clone_type_no_bounds_impl () const override
   {
     return new RawPointerType (*this);
@@ -522,13 +486,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ReferenceType *clone_type_impl () const override
-  {
-    return new ReferenceType (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   ReferenceType *clone_type_no_bounds_impl () const override
   {
     return new ReferenceType (*this);
@@ -577,10 +534,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ArrayType *clone_type_impl () const override { return new ArrayType (*this); }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   ArrayType *clone_type_no_bounds_impl () const override
   {
     return new ArrayType (*this);
@@ -627,10 +580,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  SliceType *clone_type_impl () const override { return new SliceType (*this); }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   SliceType *clone_type_no_bounds_impl () const override
   {
     return new SliceType (*this);
@@ -645,13 +594,6 @@ class InferredType : public TypeNoBounds
 
   // e.g. Vec<_> = whatever
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  InferredType *clone_type_impl () const override
-  {
-    return new InferredType (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   InferredType *clone_type_no_bounds_impl () const override
@@ -699,9 +641,12 @@ public:
 
   // Copy constructor with clone
   MaybeNamedParam (MaybeNamedParam const &other)
-    : param_type (other.param_type->clone_type ()),
-      param_kind (other.param_kind), name (other.name), locus (other.locus)
-  {}
+    : param_kind (other.param_kind), name (other.name), locus (other.locus)
+  {
+    // guard to prevent null dereference
+    if (other.param_type != nullptr)
+      param_type = other.param_type->clone_type ();
+  }
 
   ~MaybeNamedParam () = default;
 
@@ -710,8 +655,13 @@ public:
   {
     name = other.name;
     param_kind = other.param_kind;
-    param_type = other.param_type->clone_type ();
     locus = other.locus;
+
+    // guard to prevent null dereference
+    if (other.param_type != nullptr)
+      param_type = other.param_type->clone_type ();
+    else
+      param_type = nullptr;
 
     return *this;
   }
@@ -773,10 +723,12 @@ public:
   BareFunctionType (BareFunctionType const &other)
     : for_lifetimes (other.for_lifetimes),
       function_qualifiers (other.function_qualifiers), params (other.params),
-      is_variadic (other.is_variadic),
-      return_type (other.return_type->clone_type_no_bounds ()),
-      locus (other.locus)
-  {}
+      is_variadic (other.is_variadic), locus (other.locus)
+  {
+    // guard to prevent null dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type_no_bounds ();
+  }
 
   // Overload assignment operator to deep copy
   BareFunctionType &operator= (BareFunctionType const &other)
@@ -785,8 +737,13 @@ public:
     function_qualifiers = other.function_qualifiers;
     params = other.params;
     is_variadic = other.is_variadic;
-    return_type = other.return_type->clone_type_no_bounds ();
     locus = other.locus;
+
+    // guard to prevent null dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type_no_bounds ();
+    else
+      return_type = nullptr;
 
     return *this;
   }
@@ -802,13 +759,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  BareFunctionType *clone_type_impl () const override
-  {
-    return new BareFunctionType (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   BareFunctionType *clone_type_no_bounds_impl () const override

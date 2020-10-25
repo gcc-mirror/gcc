@@ -23,7 +23,7 @@ protected:
   virtual ExprWithBlock *clone_expr_with_block_impl () const = 0;
 
   // prevent having to define multiple clone expressions
-  ExprWithBlock *clone_expr_impl () const override
+  ExprWithBlock *clone_expr_impl () const final override
   {
     return clone_expr_with_block_impl ();
   }
@@ -73,19 +73,16 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  LiteralExpr *clone_expr_impl () const override
-  {
-    return new LiteralExpr (*this);
-  }
+  // Invalid if literal is in error state, so base stripping on that.
+  void mark_for_strip () override { literal = Literal::create_error (); }
+  bool is_marked_for_strip () const override { return literal.is_error (); }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   LiteralExpr *clone_expr_without_block_impl () const override
   {
-    return new LiteralExpr (*this);
+    return clone_literal_expr_impl ();
   }
 
   /* not virtual as currently no subclasses of LiteralExpr, but could be in
@@ -121,7 +118,7 @@ public:
   /* this can never be a cfg predicate - cfg and cfg_attr require a token-tree
    * cfg */
   bool
-  check_cfg_predicate (const Session &session ATTRIBUTE_UNUSED) const override
+  check_cfg_predicate (const Session&) const override
   {
     return false;
   }
@@ -212,17 +209,25 @@ protected:
 
   // Copy constructor (only for initialisation of expr purposes)
   OperatorExpr (OperatorExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus),
-      main_or_left_expr (other.main_or_left_expr->clone_expr ())
-  {}
+    : ExprWithoutBlock (other), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.main_or_left_expr != nullptr)
+      main_or_left_expr = other.main_or_left_expr->clone_expr ();
+  }
 
   // Overload assignment operator to deep copy expr
   OperatorExpr &operator= (OperatorExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    main_or_left_expr = other.main_or_left_expr->clone_expr ();
     locus = other.locus;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.main_or_left_expr != nullptr)
+      main_or_left_expr = other.main_or_left_expr->clone_expr ();
+    else
+      main_or_left_expr = nullptr;
 
     return *this;
   }
@@ -234,6 +239,10 @@ protected:
 public:
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
+
+  // Invalid if expr is null, so base stripping on that.
+  void mark_for_strip () override { main_or_left_expr = nullptr; }
+  bool is_marked_for_strip () const override { return main_or_left_expr == nullptr; }
 };
 
 /* Unary prefix & or &mut (or && and &&mut) borrow operator. Cannot be
@@ -249,21 +258,13 @@ public:
   BorrowExpr (std::unique_ptr<Expr> borrow_lvalue, bool is_mut_borrow,
 	      bool is_double_borrow, std::vector<Attribute> outer_attribs,
 	      Location locus)
-    : OperatorExpr (std::move (borrow_lvalue), std::move (outer_attribs),
-		    locus),
-      is_mut (is_mut_borrow), double_borrow (is_double_borrow)
+    : OperatorExpr (std::move (borrow_lvalue), std::move (outer_attribs), 
+      locus), is_mut (is_mut_borrow), double_borrow (is_double_borrow)
   {}
 
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  BorrowExpr *clone_expr_impl () const override
-  {
-    return new BorrowExpr (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   BorrowExpr *clone_expr_without_block_impl () const override
@@ -289,13 +290,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  DereferenceExpr *clone_expr_impl () const override
-  {
-    return new DereferenceExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   DereferenceExpr *clone_expr_without_block_impl () const override
   {
     return new DereferenceExpr (*this);
@@ -318,13 +312,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ErrorPropagationExpr *clone_expr_impl () const override
-  {
-    return new ErrorPropagationExpr (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   ErrorPropagationExpr *clone_expr_without_block_impl () const override
@@ -366,13 +353,6 @@ public:
   Expr *get_expr () { return main_or_left_expr.get (); }
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  NegationExpr *clone_expr_impl () const override
-  {
-    return new NegationExpr (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   NegationExpr *clone_expr_without_block_impl () const override
@@ -450,13 +430,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ArithmeticOrLogicalExpr *clone_expr_impl () const override
-  {
-    return new ArithmeticOrLogicalExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   ArithmeticOrLogicalExpr *clone_expr_without_block_impl () const override
   {
     return new ArithmeticOrLogicalExpr (*this);
@@ -527,13 +500,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ComparisonExpr *clone_expr_impl () const override
-  {
-    return new ComparisonExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   ComparisonExpr *clone_expr_without_block_impl () const override
   {
     return new ComparisonExpr (*this);
@@ -597,13 +563,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  LazyBooleanExpr *clone_expr_impl () const override
-  {
-    return new LazyBooleanExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   LazyBooleanExpr *clone_expr_without_block_impl () const override
   {
     return new LazyBooleanExpr (*this);
@@ -650,13 +609,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  TypeCastExpr *clone_expr_impl () const override
-  {
-    return new TypeCastExpr (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   TypeCastExpr *clone_expr_without_block_impl () const override
@@ -710,13 +662,6 @@ public:
   Expr *get_lhs () { return main_or_left_expr.get (); }
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  AssignmentExpr *clone_expr_impl () const override
-  {
-    return new AssignmentExpr (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   AssignmentExpr *clone_expr_without_block_impl () const override
@@ -791,13 +736,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  CompoundAssignmentExpr *clone_expr_impl () const override
-  {
-    return new CompoundAssignmentExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   CompoundAssignmentExpr *clone_expr_without_block_impl () const override
   {
     return new CompoundAssignmentExpr (*this);
@@ -828,17 +766,26 @@ public:
   // Copy constructor includes clone for expr_in_parens
   GroupedExpr (GroupedExpr const &other)
     : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
-      expr_in_parens (other.expr_in_parens->clone_expr ()), locus (other.locus)
-  {}
+      locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr_in_parens != nullptr)
+      expr_in_parens = other.expr_in_parens->clone_expr ();
+  }
 
   // Overloaded assignment operator to clone expr_in_parens
   GroupedExpr &operator= (GroupedExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
     inner_attrs = other.inner_attrs;
-    expr_in_parens = other.expr_in_parens->clone_expr ();
     locus = other.locus;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr_in_parens != nullptr)
+      expr_in_parens = other.expr_in_parens->clone_expr ();
+    else
+      expr_in_parens = nullptr;
 
     return *this;
   }
@@ -852,14 +799,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  GroupedExpr *clone_expr_impl () const override
-  {
-    return new GroupedExpr (*this);
-  }
+  // Invalid if inner expr is null, so base stripping on that.
+  void mark_for_strip () override { expr_in_parens = nullptr; }
+  bool is_marked_for_strip () const override { return expr_in_parens == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   GroupedExpr *clone_expr_without_block_impl () const override
@@ -988,6 +932,9 @@ class ArrayExpr : public ExprWithoutBlock
   std::unique_ptr<ArrayElems> internal_elements;
 
   Location locus;
+  
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
 
 public:
   std::string as_string () const override;
@@ -1009,7 +956,7 @@ public:
   // Copy constructor requires cloning ArrayElems for polymorphism to hold
   ArrayExpr (ArrayExpr const &other)
     : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
-      locus (other.locus)
+      locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     if (other.has_array_elems ())
       internal_elements = other.internal_elements->clone_array_elems ();
@@ -1020,10 +967,14 @@ public:
   {
     ExprWithoutBlock::operator= (other);
     inner_attrs = other.inner_attrs;
+    locus = other.locus;
+    marked_for_strip = other.marked_for_strip;
+    // outer_attrs = other.outer_attrs;
+
     if (other.has_array_elems ())
       internal_elements = other.internal_elements->clone_array_elems ();
-    locus = other.locus;
-    // outer_attrs = other.outer_attrs;
+    else
+      internal_elements = nullptr;
 
     return *this;
   }
@@ -1037,11 +988,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ArrayExpr *clone_expr_impl () const override { return new ArrayExpr (*this); }
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   ArrayExpr *clone_expr_without_block_impl () const override
@@ -1075,18 +1026,31 @@ public:
 
   // Copy constructor requires special cloning due to unique_ptr
   ArrayIndexExpr (ArrayIndexExpr const &other)
-    : ExprWithoutBlock (other), array_expr (other.array_expr->clone_expr ()),
-      index_expr (other.index_expr->clone_expr ()), locus (other.locus)
-  {}
+    : ExprWithoutBlock (other), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.array_expr != nullptr)
+      array_expr = other.array_expr->clone_expr ();
+    if (other.index_expr != nullptr)
+      index_expr = other.index_expr->clone_expr ();
+  }
 
   // Overload assignment operator to clone unique_ptrs
   ArrayIndexExpr &operator= (ArrayIndexExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    array_expr = other.array_expr->clone_expr ();
-    index_expr = other.index_expr->clone_expr ();
     // outer_attrs = other.outer_attrs;
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.array_expr != nullptr)
+      array_expr = other.array_expr->clone_expr ();
+    else 
+      array_expr = nullptr;
+    if (other.index_expr != nullptr)
+      index_expr = other.index_expr->clone_expr ();
+    else
+      index_expr = nullptr;
 
     return *this;
   }
@@ -1100,14 +1064,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ArrayIndexExpr *clone_expr_impl () const override
-  {
-    return new ArrayIndexExpr (*this);
-  }
+  // Invalid if either expr is null, so base stripping on that.
+  void mark_for_strip () override { array_expr = nullptr; index_expr = nullptr; }
+  bool is_marked_for_strip () const override { return array_expr == nullptr && index_expr == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   ArrayIndexExpr *clone_expr_without_block_impl () const override
@@ -1126,6 +1087,9 @@ class TupleExpr : public ExprWithoutBlock
 
   Location locus;
 
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
+
 public:
   std::string as_string () const override;
 
@@ -1142,7 +1106,7 @@ public:
   // copy constructor with vector clone
   TupleExpr (TupleExpr const &other)
     : ExprWithoutBlock (other), inner_attrs (other.inner_attrs),
-      locus (other.locus)
+      locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     tuple_elems.reserve (other.tuple_elems.size ());
     for (const auto &e : other.tuple_elems)
@@ -1155,6 +1119,7 @@ public:
     ExprWithoutBlock::operator= (other);
     inner_attrs = other.inner_attrs;
     locus = other.locus;
+    marked_for_strip = other.marked_for_strip;
 
     tuple_elems.reserve (other.tuple_elems.size ());
     for (const auto &e : other.tuple_elems)
@@ -1175,11 +1140,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  TupleExpr *clone_expr_impl () const override { return new TupleExpr (*this); }
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   TupleExpr *clone_expr_without_block_impl () const override
@@ -1213,18 +1178,26 @@ public:
 
   // Copy constructor requires a clone for tuple_expr
   TupleIndexExpr (TupleIndexExpr const &other)
-    : ExprWithoutBlock (other), tuple_expr (other.tuple_expr->clone_expr ()),
-      tuple_index (other.tuple_index), locus (other.locus)
-  {}
+    : ExprWithoutBlock (other), tuple_index (other.tuple_index), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.tuple_expr != nullptr)
+      tuple_expr = other.tuple_expr->clone_expr ();
+  }
 
   // Overload assignment operator in order to clone
   TupleIndexExpr &operator= (TupleIndexExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    tuple_expr = other.tuple_expr->clone_expr ();
     tuple_index = other.tuple_index;
     locus = other.locus;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.tuple_expr != nullptr)
+      tuple_expr = other.tuple_expr->clone_expr ();
+    else
+      tuple_expr = nullptr;
 
     return *this;
   }
@@ -1238,14 +1211,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  TupleIndexExpr *clone_expr_impl () const override
-  {
-    return new TupleIndexExpr (*this);
-  }
+  // Invalid if tuple expr is null, so base stripping on that.
+  void mark_for_strip () override { tuple_expr = nullptr; }
+  bool is_marked_for_strip () const override { return tuple_expr == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   TupleIndexExpr *clone_expr_without_block_impl () const override
@@ -1271,6 +1241,10 @@ public:
   const PathInExpression &get_struct_name () const { return struct_name; }
 
   std::string as_string () const override;
+
+  // Invalid if path is empty, so base stripping on that.
+  void mark_for_strip () override { struct_name = PathInExpression::create_error (); }
+  bool is_marked_for_strip () const override { return struct_name.is_error (); }
 };
 
 // Actual AST node of the struct creator (with no fields). Not abstract!
@@ -1301,13 +1275,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  StructExprStruct *clone_expr_impl () const override
-  {
-    return new StructExprStruct (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   StructExprStruct *clone_expr_without_block_impl () const override
   {
     return new StructExprStruct (*this);
@@ -1332,7 +1299,7 @@ public:
     /* HACK: gets around base_struct pointer being null (e.g. if no struct base
      * exists) */
     if (other.base_struct != nullptr)
-      other.base_struct->clone_expr ();
+      base_struct = other.base_struct->clone_expr ();
   }
 
   // Destructor
@@ -1341,7 +1308,11 @@ public:
   // Overload assignment operator to clone base_struct
   StructBase &operator= (StructBase const &other)
   {
-    base_struct = other.base_struct->clone_expr ();
+    // prevent null pointer dereference
+    if (other.base_struct != nullptr)
+      base_struct = other.base_struct->clone_expr ();
+    else
+      base_struct = nullptr;
 
     return *this;
   }
@@ -1557,13 +1528,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  StructExprStructFields *clone_expr_impl () const override
-  {
-    return new StructExprStructFields (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   StructExprStructFields *clone_expr_without_block_impl () const override
   {
     return new StructExprStructFields (*this);
@@ -1593,13 +1557,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  StructExprStructBase *clone_expr_impl () const override
-  {
-    return new StructExprStructBase (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   StructExprStructBase *clone_expr_without_block_impl () const override
@@ -1669,13 +1626,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  StructExprTuple *clone_expr_impl () const override
-  {
-    return new StructExprTuple (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   StructExprTuple *clone_expr_without_block_impl () const override
   {
     return new StructExprTuple (*this);
@@ -1708,13 +1658,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  StructExprUnit *clone_expr_impl () const override
-  {
-    return new StructExprUnit (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   StructExprUnit *clone_expr_without_block_impl () const override
   {
     return new StructExprUnit (*this);
@@ -1738,6 +1681,10 @@ protected:
 public:
   // TODO: maybe remove and have string version gotten here directly
   PathInExpression get_enum_variant_path () const { return enum_variant_path; }
+
+  // Invalid if path is in error state, so base stripping on that.
+  void mark_for_strip () override { enum_variant_path = PathInExpression::create_error (); }
+  bool is_marked_for_strip () const override { return enum_variant_path.is_error (); }
 };
 
 /* Base AST node for a single enum expression field (in enum instance creation)
@@ -1827,9 +1774,6 @@ public:
     : EnumExprFieldWithVal (std::move (field_value)),
       field_name (std::move (field_name))
   {}
-
-  // copy constructor, destructor, and assignment operator should not need
-  // defining
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1924,13 +1868,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  EnumExprStruct *clone_expr_impl () const override
-  {
-    return new EnumExprStruct (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   EnumExprStruct *clone_expr_without_block_impl () const override
   {
     return new EnumExprStruct (*this);
@@ -1993,13 +1930,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  EnumExprTuple *clone_expr_impl () const override
-  {
-    return new EnumExprTuple (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   EnumExprTuple *clone_expr_without_block_impl () const override
   {
     return new EnumExprTuple (*this);
@@ -2031,13 +1961,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  EnumExprFieldless *clone_expr_impl () const override
-  {
-    return new EnumExprFieldless (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   EnumExprFieldless *clone_expr_without_block_impl () const override
@@ -2077,9 +2000,11 @@ public:
 
   // copy constructor requires clone
   CallExpr (CallExpr const &other)
-    : ExprWithoutBlock (other), function (other.function->clone_expr ()),
-      locus (other.locus)
-  /*, params(other.params),*/ {
+    : ExprWithoutBlock (other), locus (other.locus) {
+    // guard to prevent null dereference (only required if error state)
+    if (other.function != nullptr)
+      function = other.function->clone_expr ();
+
     params.reserve (other.params.size ());
     for (const auto &e : other.params)
       params.push_back (e->clone_expr ());
@@ -2089,10 +2014,14 @@ public:
   CallExpr &operator= (CallExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    function = other.function->clone_expr ();
     locus = other.locus;
-    // params = other.params;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.function != nullptr)
+      function = other.function->clone_expr ();
+    else
+      function = nullptr;
 
     params.reserve (other.params.size ());
     for (const auto &e : other.params)
@@ -2113,11 +2042,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  CallExpr *clone_expr_impl () const override { return new CallExpr (*this); }
+  // Invalid if function expr is null, so base stripping on that.
+  void mark_for_strip () override { function = nullptr; }
+  bool is_marked_for_strip () const override { return function == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   CallExpr *clone_expr_without_block_impl () const override
@@ -2155,9 +2084,11 @@ public:
 
   // copy constructor required due to cloning
   MethodCallExpr (MethodCallExpr const &other)
-    : ExprWithoutBlock (other), receiver (other.receiver->clone_expr ()),
-      method_name (other.method_name), locus (other.locus)
-  /*, params(other.params),*/ {
+    : ExprWithoutBlock (other), method_name (other.method_name), locus (other.locus) {
+    // guard to prevent null dereference (only required if error state)
+    if (other.receiver != nullptr)
+      receiver = other.receiver->clone_expr ();
+
     params.reserve (other.params.size ());
     for (const auto &e : other.params)
       params.push_back (e->clone_expr ());
@@ -2167,11 +2098,15 @@ public:
   MethodCallExpr &operator= (MethodCallExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    receiver = other.receiver->clone_expr ();
     method_name = other.method_name;
     locus = other.locus;
-    // params = other.params;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.receiver != nullptr)
+      receiver = other.receiver->clone_expr ();
+    else
+      receiver = nullptr;
 
     params.reserve (other.params.size ());
     for (const auto &e : other.params)
@@ -2189,14 +2124,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MethodCallExpr *clone_expr_impl () const override
-  {
-    return new MethodCallExpr (*this);
-  }
+  // Invalid if receiver expr is null, so base stripping on that.
+  void mark_for_strip () override { receiver = nullptr; }
+  bool is_marked_for_strip () const override { return receiver == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   MethodCallExpr *clone_expr_without_block_impl () const override
@@ -2227,18 +2159,26 @@ public:
 
   // Copy constructor required due to unique_ptr cloning
   FieldAccessExpr (FieldAccessExpr const &other)
-    : ExprWithoutBlock (other), receiver (other.receiver->clone_expr ()),
-      field (other.field), locus (other.locus)
-  {}
+    : ExprWithoutBlock (other), field (other.field), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.receiver != nullptr)
+      receiver = other.receiver->clone_expr ();
+  }
 
   // Overload assignment operator to clone unique_ptr
   FieldAccessExpr &operator= (FieldAccessExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    receiver = other.receiver->clone_expr ();
     field = other.field;
     locus = other.locus;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.receiver != nullptr)
+      receiver = other.receiver->clone_expr ();
+    else
+      receiver = nullptr;
 
     return *this;
   }
@@ -2252,14 +2192,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  FieldAccessExpr *clone_expr_impl () const override
-  {
-    return new FieldAccessExpr (*this);
-  }
+  // Invalid if receiver expr is null, so base stripping on that.
+  void mark_for_strip () override { receiver = nullptr; }
+  bool is_marked_for_strip () const override { return receiver == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   FieldAccessExpr *clone_expr_without_block_impl () const override
@@ -2294,6 +2231,8 @@ public:
     : pattern (other.pattern->clone_pattern ())
   {
     // guard to protect from null pointer dereference
+    if (other.pattern != nullptr)
+      pattern = other.pattern->clone_pattern ();
     if (other.type != nullptr)
       type = other.type->clone_type ();
   }
@@ -2303,8 +2242,15 @@ public:
   // Assignment operator must be overloaded to clone as well
   ClosureParam &operator= (ClosureParam const &other)
   {
-    pattern = other.pattern->clone_pattern ();
-    type = other.type->clone_type ();
+    // guard to protect from null pointer dereference
+    if (other.pattern != nullptr)
+      pattern = other.pattern->clone_pattern ();
+    else
+      pattern = nullptr;
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
 
     return *this;
   }
@@ -2367,17 +2313,26 @@ public:
 
   // Copy constructor must be defined to allow copying via cloning of unique_ptr
   ClosureExprInner (ClosureExprInner const &other)
-    : ClosureExpr (other), closure_inner (other.closure_inner->clone_expr ())
-  {}
+    : ClosureExpr (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.closure_inner != nullptr)
+      closure_inner = other.closure_inner->clone_expr ();
+  }
 
   // Overload assignment operator to clone closure_inner
   ClosureExprInner &operator= (ClosureExprInner const &other)
   {
     ClosureExpr::operator= (other);
-    closure_inner = other.closure_inner->clone_expr ();
     // params = other.params;
     // has_move = other.has_move;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.closure_inner != nullptr)
+      closure_inner = other.closure_inner->clone_expr ();
+    else
+      closure_inner = nullptr;
 
     return *this;
   }
@@ -2388,14 +2343,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ClosureExprInner *clone_expr_impl () const override
-  {
-    return new ClosureExprInner (*this);
-  }
+  // Invalid if inner expr is null, so base stripping on that.
+  void mark_for_strip () override { closure_inner = nullptr; }
+  bool is_marked_for_strip () const override { return closure_inner == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   ClosureExprInner *clone_expr_without_block_impl () const override
@@ -2437,8 +2389,7 @@ public:
 
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
-    : ExprWithBlock (other), /*statements(other.statements),*/
-      inner_attrs (other.inner_attrs), locus (other.locus)
+    : ExprWithBlock (other), inner_attrs (other.inner_attrs), locus (other.locus)
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
@@ -2453,11 +2404,15 @@ public:
   BlockExpr &operator= (BlockExpr const &other)
   {
     ExprWithBlock::operator= (other);
-    // statements = other.statements;
-    expr = other.expr->clone_expr_without_block ();
     inner_attrs = other.inner_attrs;
     locus = other.locus;
     // outer_attrs = other.outer_attrs;
+
+    // guard to protect from null pointer dereference
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr_without_block ();
+    else
+      expr = nullptr;
 
     statements.reserve (other.statements.size ());
     for (const auto &e : other.statements)
@@ -2481,14 +2436,16 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  BlockExpr *clone_expr_impl () const override
-  {
-    return clone_block_expr_impl ();
+  // Invalid if has no statements or final expr, so base stripping on that.
+  void mark_for_strip () override 
+  { 
+    expr = nullptr; 
+    statements.clear (); 
+    statements.shrink_to_fit (); 
   }
+  bool is_marked_for_strip () const override { return expr == nullptr && statements.empty (); }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   BlockExpr *clone_expr_with_block_impl () const override
@@ -2507,6 +2464,7 @@ protected:
 // Represents a type-specified closure expression AST node
 class ClosureExprInnerTyped : public ClosureExpr
 {
+  // TODO: spec says typenobounds
   std::unique_ptr<Type> return_type;
   std::unique_ptr<BlockExpr>
     expr; // only used because may be polymorphic in future
@@ -2529,19 +2487,32 @@ public:
 
   // Copy constructor requires cloning
   ClosureExprInnerTyped (ClosureExprInnerTyped const &other)
-    : ClosureExpr (other), return_type (other.return_type->clone_type ()),
-      expr (other.expr->clone_block_expr ())
-  {}
+    : ClosureExpr (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr != nullptr)
+      expr = other.expr->clone_block_expr ();
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+  }
 
   // Overload assignment operator to clone unique_ptrs
   ClosureExprInnerTyped &operator= (ClosureExprInnerTyped const &other)
   {
     ClosureExpr::operator= (other);
-    return_type = other.return_type->clone_type ();
-    expr = other.expr->clone_block_expr ();
     // params = other.params;
     // has_move = other.has_move;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr != nullptr)
+      expr = other.expr->clone_block_expr ();
+    else
+      expr = nullptr;
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
 
     return *this;
   }
@@ -2552,14 +2523,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ClosureExprInnerTyped *clone_expr_impl () const override
-  {
-    return new ClosureExprInnerTyped (*this);
-  }
+  /* Invalid if inner expr is null, so base stripping on that. Technically, type should also not be null. */
+  void mark_for_strip () override { expr = nullptr; }
+  bool is_marked_for_strip () const override { return expr == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   ClosureExprInnerTyped *clone_expr_without_block_impl () const override
@@ -2574,6 +2542,9 @@ class ContinueExpr : public ExprWithoutBlock
   // bool has_label;
   Lifetime label;
   Location locus;
+
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
 
 public:
   std::string as_string () const override;
@@ -2594,14 +2565,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ContinueExpr *clone_expr_impl () const override
-  {
-    return new ContinueExpr (*this);
-  }
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   ContinueExpr *clone_expr_without_block_impl () const override
@@ -2621,6 +2589,9 @@ class BreakExpr : public ExprWithoutBlock
   std::unique_ptr<Expr> break_expr;
 
   Location locus;
+
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
 
 public:
   std::string as_string () const override;
@@ -2643,7 +2614,7 @@ public:
 
   // Copy constructor defined to use clone for unique pointer
   BreakExpr (BreakExpr const &other)
-    : ExprWithoutBlock (other), label (other.label), locus (other.locus)
+    : ExprWithoutBlock (other), label (other.label), locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
     if (other.break_expr != nullptr)
@@ -2655,9 +2626,15 @@ public:
   {
     ExprWithoutBlock::operator= (other);
     label = other.label;
-    break_expr = other.break_expr->clone_expr ();
     locus = other.locus;
+    marked_for_strip = other.marked_for_strip;
     // outer_attrs = other.outer_attrs;
+
+    // guard to protect from null pointer dereference
+    if (other.break_expr != nullptr)
+      break_expr = other.break_expr->clone_expr ();
+    else
+      break_expr = nullptr;
 
     return *this;
   }
@@ -2671,11 +2648,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  BreakExpr *clone_expr_impl () const override { return new BreakExpr (*this); }
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   BreakExpr *clone_expr_without_block_impl () const override
@@ -2718,16 +2695,29 @@ public:
 
   // Copy constructor with cloning
   RangeFromToExpr (RangeFromToExpr const &other)
-    : RangeExpr (other), from (other.from->clone_expr ()),
-      to (other.to->clone_expr ())
-  {}
+    : RangeExpr (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.from != nullptr)
+      from = other.from->clone_expr ();
+    if (other.to != nullptr)
+      to = other.to->clone_expr ();
+  }
 
   // Overload assignment operator to clone unique pointers
   RangeFromToExpr &operator= (RangeFromToExpr const &other)
   {
     RangeExpr::operator= (other);
-    from = other.from->clone_expr ();
-    to = other.to->clone_expr ();
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.from != nullptr)
+      from = other.from->clone_expr ();
+    else
+      from = nullptr;
+    if (other.to != nullptr)
+      to = other.to->clone_expr ();
+    else
+      to = nullptr;
 
     return *this;
   }
@@ -2738,14 +2728,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  RangeFromToExpr *clone_expr_impl () const override
-  {
-    return new RangeFromToExpr (*this);
-  }
+  // Invalid if either expr is null, so base stripping on that. 
+  void mark_for_strip () override { from = nullptr; to = nullptr; }
+  bool is_marked_for_strip () const override { return from == nullptr && to == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   RangeFromToExpr *clone_expr_without_block_impl () const override
@@ -2769,14 +2756,23 @@ public:
 
   // Copy constructor with clone
   RangeFromExpr (RangeFromExpr const &other)
-    : RangeExpr (other), from (other.from->clone_expr ())
-  {}
+    : RangeExpr (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.from != nullptr)
+      from = other.from->clone_expr ();
+  }
 
   // Overload assignment operator to clone unique_ptr
   RangeFromExpr &operator= (RangeFromExpr const &other)
   {
     RangeExpr::operator= (other);
-    from = other.from->clone_expr ();
+    
+    // guard to prevent null dereference (only required if error state)
+    if (other.from != nullptr)
+      from = other.from->clone_expr ();
+    else
+      from = nullptr;
 
     return *this;
   }
@@ -2787,14 +2783,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  RangeFromExpr *clone_expr_impl () const override
-  {
-    return new RangeFromExpr (*this);
-  }
+  // Invalid if expr is null, so base stripping on that. 
+  void mark_for_strip () override { from = nullptr; }
+  bool is_marked_for_strip () const override { return from == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   RangeFromExpr *clone_expr_without_block_impl () const override
@@ -2819,14 +2812,23 @@ public:
 
   // Copy constructor with clone
   RangeToExpr (RangeToExpr const &other)
-    : RangeExpr (other), to (other.to->clone_expr ())
-  {}
+    : RangeExpr (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.to != nullptr)
+      to = other.to->clone_expr ();
+  }
 
   // Overload assignment operator to clone unique_ptr
   RangeToExpr &operator= (RangeToExpr const &other)
   {
     RangeExpr::operator= (other);
-    to = other.to->clone_expr ();
+    
+    // guard to prevent null dereference (only required if error state)
+    if (other.to != nullptr)
+      to = other.to->clone_expr ();
+    else
+      to = nullptr;
 
     return *this;
   }
@@ -2837,14 +2839,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  RangeToExpr *clone_expr_impl () const override
-  {
-    return new RangeToExpr (*this);
-  }
+  // Invalid if expr is null, so base stripping on that. 
+  void mark_for_strip () override { to = nullptr; }
+  bool is_marked_for_strip () const override { return to == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   RangeToExpr *clone_expr_without_block_impl () const override
@@ -2857,6 +2856,9 @@ protected:
 // constructs a std::ops::RangeFull object
 class RangeFullExpr : public RangeExpr
 {
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
+
 public:
   std::string as_string () const override;
 
@@ -2865,14 +2867,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  RangeFullExpr *clone_expr_impl () const override
-  {
-    return new RangeFullExpr (*this);
-  }
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   RangeFullExpr *clone_expr_without_block_impl () const override
@@ -2900,16 +2899,29 @@ public:
 
   // Copy constructor with clone
   RangeFromToInclExpr (RangeFromToInclExpr const &other)
-    : RangeExpr (other), from (other.from->clone_expr ()),
-      to (other.to->clone_expr ())
-  {}
+    : RangeExpr (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.from != nullptr)
+      from = other.from->clone_expr ();
+    if (other.to != nullptr)
+      to = other.to->clone_expr ();
+  }
 
   // Overload assignment operator to use clone
   RangeFromToInclExpr &operator= (RangeFromToInclExpr const &other)
   {
     RangeExpr::operator= (other);
-    from = other.from->clone_expr ();
-    to = other.to->clone_expr ();
+    
+    // guard to prevent null dereference (only required if error state)
+    if (other.from != nullptr)
+      from = other.from->clone_expr ();
+    else
+      from = nullptr;
+    if (other.to != nullptr)
+      to = other.to->clone_expr ();
+    else
+      to = nullptr;
 
     return *this;
   }
@@ -2920,14 +2932,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  RangeFromToInclExpr *clone_expr_impl () const override
-  {
-    return new RangeFromToInclExpr (*this);
-  }
+  // Invalid if either expr is null, so base stripping on that. 
+  void mark_for_strip () override { from = nullptr; to = nullptr; }
+  bool is_marked_for_strip () const override { return from == nullptr && to == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   RangeFromToInclExpr *clone_expr_without_block_impl () const override
@@ -2952,14 +2961,23 @@ public:
 
   // Copy constructor with clone
   RangeToInclExpr (RangeToInclExpr const &other)
-    : RangeExpr (other), to (other.to->clone_expr ())
-  {}
+    : RangeExpr (other)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.to != nullptr)
+      to = other.to->clone_expr ();
+  }
 
   // Overload assignment operator to clone pointer
   RangeToInclExpr &operator= (RangeToInclExpr const &other)
   {
     RangeExpr::operator= (other);
-    to = other.to->clone_expr ();
+    
+    // guard to prevent null dereference (only required if error state)
+    if (other.to != nullptr)
+      to = other.to->clone_expr ();
+    else
+      to = nullptr;
 
     return *this;
   }
@@ -2970,14 +2988,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  RangeToInclExpr *clone_expr_impl () const override
-  {
-    return new RangeToInclExpr (*this);
-  }
+  // Invalid if expr is null, so base stripping on that. 
+  void mark_for_strip () override { to = nullptr; }
+  bool is_marked_for_strip () const override { return to == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   RangeToInclExpr *clone_expr_without_block_impl () const override
@@ -2994,6 +3009,9 @@ public:
 
   Location locus;
 
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
+
   std::string as_string () const override;
 
   /* Returns whether the object has an expression returned (i.e. not void return
@@ -3009,7 +3027,7 @@ public:
 
   // Copy constructor with clone
   ReturnExpr (ReturnExpr const &other)
-    : ExprWithoutBlock (other), locus (other.locus)
+    : ExprWithoutBlock (other), locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
     if (other.return_expr != nullptr)
@@ -3020,9 +3038,15 @@ public:
   ReturnExpr &operator= (ReturnExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    return_expr = other.return_expr->clone_expr ();
     locus = other.locus;
+    marked_for_strip = other.marked_for_strip;
     // outer_attrs = other.outer_attrs;
+
+    // guard to protect from null pointer dereference
+    if (other.return_expr != nullptr)
+      return_expr = other.return_expr->clone_expr ();
+    else
+      return_expr = nullptr;
 
     return *this;
   }
@@ -3036,14 +3060,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ReturnExpr *clone_expr_impl () const override
-  {
-    return new ReturnExpr (*this);
-  }
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   ReturnExpr *clone_expr_without_block_impl () const override
@@ -3074,17 +3095,25 @@ public:
 
   // Copy constructor with clone
   UnsafeBlockExpr (UnsafeBlockExpr const &other)
-    : ExprWithBlock (other), expr (other.expr->clone_block_expr ()),
-      locus (other.locus)
-  {}
+    : ExprWithBlock (other), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr != nullptr)
+      expr = other.expr->clone_block_expr ();
+  }
 
   // Overloaded assignment operator to clone
   UnsafeBlockExpr &operator= (UnsafeBlockExpr const &other)
   {
     ExprWithBlock::operator= (other);
-    expr = other.expr->clone_block_expr ();
     locus = other.locus;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.expr != nullptr)
+      expr = other.expr->clone_block_expr ();
+    else
+      expr = nullptr;
 
     return *this;
   }
@@ -3098,14 +3127,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  UnsafeBlockExpr *clone_expr_impl () const override
-  {
-    return new UnsafeBlockExpr (*this);
-  }
+  // Invalid if block is null, so base stripping on that. 
+  void mark_for_strip () override { expr = nullptr; }
+  bool is_marked_for_strip () const override { return expr == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   UnsafeBlockExpr *clone_expr_with_block_impl () const override
@@ -3164,18 +3190,26 @@ protected:
 
   // Copy constructor for BaseLoopExpr with clone
   BaseLoopExpr (BaseLoopExpr const &other)
-    : ExprWithBlock (other), loop_label (other.loop_label),
-      loop_block (other.loop_block->clone_block_expr ()), locus (other.locus)
-  {}
+    : ExprWithBlock (other), loop_label (other.loop_label), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.loop_block != nullptr)
+      loop_block = other.loop_block->clone_block_expr ();
+  }
 
   // Overloaded assignment operator to clone
   BaseLoopExpr &operator= (BaseLoopExpr const &other)
   {
     ExprWithBlock::operator= (other);
-    loop_block = other.loop_block->clone_block_expr ();
     loop_label = other.loop_label;
     locus = other.locus;
     // outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.loop_block != nullptr)
+      loop_block = other.loop_block->clone_block_expr ();
+    else
+      loop_block = nullptr;
 
     return *this;
   }
@@ -3189,6 +3223,10 @@ public:
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
+
+  // Invalid if loop block is null, so base stripping on that. 
+  void mark_for_strip () override { loop_block = nullptr; }
+  bool is_marked_for_strip () const override { return loop_block == nullptr; }
 };
 
 // 'Loop' expression (i.e. the infinite loop) AST node
@@ -3208,10 +3246,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  LoopExpr *clone_expr_impl () const override { return new LoopExpr (*this); }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   LoopExpr *clone_expr_with_block_impl () const override
@@ -3263,13 +3297,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  WhileLoopExpr *clone_expr_impl () const override
-  {
-    return new WhileLoopExpr (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   WhileLoopExpr *clone_expr_with_block_impl () const override
@@ -3338,13 +3365,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  WhileLetLoopExpr *clone_expr_impl () const override
-  {
-    return new WhileLetLoopExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   WhileLetLoopExpr *clone_expr_with_block_impl () const override
   {
     return new WhileLetLoopExpr (*this);
@@ -3400,13 +3420,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ForLoopExpr *clone_expr_impl () const override
-  {
-    return new ForLoopExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   ForLoopExpr *clone_expr_with_block_impl () const override
   {
     return new ForLoopExpr (*this);
@@ -3437,17 +3450,30 @@ public:
 
   // Copy constructor with clone
   IfExpr (IfExpr const &other)
-    : ExprWithBlock (other), condition (other.condition->clone_expr ()),
-      if_block (other.if_block->clone_block_expr ()), locus (other.locus)
-  {}
+    : ExprWithBlock (other), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.condition != nullptr)
+      condition = other.condition->clone_expr ();
+    if (other.if_block != nullptr)
+      if_block = other.if_block->clone_block_expr ();
+  }
 
   // Overloaded assignment operator to clone expressions
   IfExpr &operator= (IfExpr const &other)
   {
     ExprWithBlock::operator= (other);
-    condition = other.condition->clone_expr ();
-    if_block = other.if_block->clone_block_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.condition != nullptr)
+      condition = other.condition->clone_expr ();
+    else
+      condition = nullptr;
+    if (other.if_block != nullptr)
+      if_block = other.if_block->clone_block_expr ();
+    else
+      if_block = nullptr;
 
     return *this;
   }
@@ -3477,19 +3503,19 @@ public:
   Expr *get_if_condition () { return condition.get (); }
   BlockExpr *get_if_block () { return if_block.get (); }
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExpr *clone_expr_impl () const override { return new IfExpr (*this); }
+  // Invalid if if block or condition is null, so base stripping on that. 
+  void mark_for_strip () override { if_block = nullptr; condition = nullptr; }
+  bool is_marked_for_strip () const override { return if_block == nullptr && condition == nullptr; }
 
+protected:
   // Base clone function but still concrete as concrete base class
   virtual IfExpr *clone_if_expr_impl () const { return new IfExpr (*this); }
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  IfExpr *clone_expr_with_block_impl () const override
+  IfExpr *clone_expr_with_block_impl () const final override
   {
-    return new IfExpr (*this);
+    return clone_if_expr_impl ();
   }
 };
 
@@ -3534,20 +3560,6 @@ public:
   void vis_else_block (ASTVisitor &vis) { else_block->accept_vis (vis); }
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqElse *clone_expr_impl () const override
-  {
-    return new IfExprConseqElse (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqElse *clone_expr_with_block_impl () const override
-  {
-    return new IfExprConseqElse (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   IfExprConseqElse *clone_if_expr_impl () const override
@@ -3602,20 +3614,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  IfExprConseqIf *clone_expr_impl () const override
-  {
-    return new IfExprConseqIf (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIf *clone_expr_with_block_impl () const override
-  {
-    return new IfExprConseqIf (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   IfExprConseqIf *clone_if_expr_impl () const override
   {
     return new IfExprConseqIf (*this);
@@ -3646,11 +3644,14 @@ public:
 
   // copy constructor with clone
   IfLetExpr (IfLetExpr const &other)
-    : ExprWithBlock (other),
-      /*match_arm_patterns(other.match_arm_patterns),*/ value (
-	other.value->clone_expr ()),
-      if_block (other.if_block->clone_block_expr ()), locus (other.locus)
+    : ExprWithBlock (other), locus (other.locus)
   {
+    // guard to prevent null dereference (only required if error state)
+    if (other.value != nullptr)
+      value = other.value->clone_expr ();
+    if (other.if_block != nullptr)
+      if_block = other.if_block->clone_block_expr ();
+
     match_arm_patterns.reserve (other.match_arm_patterns.size ());
     for (const auto &e : other.match_arm_patterns)
       match_arm_patterns.push_back (e->clone_pattern ());
@@ -3660,10 +3661,17 @@ public:
   IfLetExpr &operator= (IfLetExpr const &other)
   {
     ExprWithBlock::operator= (other);
-    // match_arm_patterns = other.match_arm_patterns;
-    value = other.value->clone_expr ();
-    if_block = other.if_block->clone_block_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.value != nullptr)
+      value = other.value->clone_expr ();
+    else
+      value = nullptr;
+    if (other.if_block != nullptr)
+      if_block = other.if_block->clone_block_expr ();
+    else
+      if_block = nullptr;
 
     match_arm_patterns.reserve (other.match_arm_patterns.size ());
     for (const auto &e : other.match_arm_patterns)
@@ -3687,16 +3695,16 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if block or value is null, so base stripping on that. 
+  void mark_for_strip () override { if_block = nullptr; value = nullptr; }
+  bool is_marked_for_strip () const override { return if_block == nullptr && value == nullptr; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExpr *clone_expr_impl () const override { return new IfLetExpr (*this); }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExpr *clone_expr_with_block_impl () const override
+   * than base (or rather this or any derived object) */
+  IfLetExpr *clone_expr_with_block_impl () const final override
   {
-    return new IfLetExpr (*this);
+    return clone_if_let_expr_impl ();
   }
 
   // Base clone function but still concrete as concrete base class
@@ -3746,20 +3754,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIfLet *clone_expr_impl () const override
-  {
-    return new IfExprConseqIfLet (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIfLet *clone_expr_with_block_impl () const override
-  {
-    return new IfExprConseqIfLet (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   IfExprConseqIfLet *clone_if_expr_impl () const override
@@ -3814,20 +3808,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  IfLetExprConseqElse *clone_expr_impl () const override
-  {
-    return new IfLetExprConseqElse (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExprConseqElse *clone_expr_with_block_impl () const override
-  {
-    return new IfLetExprConseqElse (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   IfLetExprConseqElse *clone_if_let_expr_impl () const override
   {
     return new IfLetExprConseqElse (*this);
@@ -3879,20 +3859,6 @@ public:
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  IfLetExprConseqIf *clone_expr_impl () const override
-  {
-    return new IfLetExprConseqIf (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExprConseqIf *clone_expr_with_block_impl () const override
-  {
-    return new IfLetExprConseqIf (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
   IfLetExprConseqIf *clone_if_let_expr_impl () const override
   {
     return new IfLetExprConseqIf (*this);
@@ -3942,20 +3908,6 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExprConseqIfLet *clone_expr_impl () const override
-  {
-    return new IfLetExprConseqIfLet (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExprConseqIfLet *clone_expr_with_block_impl () const override
-  {
-    return new IfLetExprConseqIfLet (*this);
-  }
-
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   IfLetExprConseqIfLet *clone_if_let_expr_impl () const override
@@ -4012,6 +3964,8 @@ public:
 
     if (other.guard_expr != nullptr)
       guard_expr = other.guard_expr->clone_expr ();
+    else
+      guard_expr = nullptr;
 
     match_arm_patterns.reserve (other.match_arm_patterns.size ());
     for (const auto &e : other.match_arm_patterns)
@@ -4224,10 +4178,13 @@ public:
 
   // Copy constructor requires clone due to unique_ptr
   MatchExpr (MatchExpr const &other)
-    : ExprWithBlock (other), branch_value (other.branch_value->clone_expr ()),
-      inner_attrs (other.inner_attrs), match_arms (other.match_arms),
-      locus (other.locus)
+    : ExprWithBlock (other), inner_attrs (other.inner_attrs), 
+      match_arms (other.match_arms), locus (other.locus)
   {
+    // guard to prevent null dereference (only required if error state)
+    if (other.branch_value != nullptr)
+      branch_value = other.branch_value->clone_expr ();
+
     /*match_arms.reserve (other.match_arms.size ());
     for (const auto &e : other.match_arms)
       match_arms.push_back (e->clone_match_case ());*/
@@ -4237,11 +4194,16 @@ public:
   MatchExpr &operator= (MatchExpr const &other)
   {
     ExprWithBlock::operator= (other);
-    branch_value = other.branch_value->clone_expr ();
     inner_attrs = other.inner_attrs;
     match_arms = other.match_arms;
     // outer_attrs = other.outer_attrs;
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.branch_value != nullptr)
+      branch_value = other.branch_value->clone_expr ();
+    else
+      branch_value = nullptr;
 
     /*match_arms.reserve (other.match_arms.size ());
     for (const auto &e : other.match_arms)
@@ -4259,11 +4221,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MatchExpr *clone_expr_impl () const override { return new MatchExpr (*this); }
+  // Invalid if branch value is null, so base stripping on that. 
+  void mark_for_strip () override { branch_value = nullptr; }
+  bool is_marked_for_strip () const override { return branch_value == nullptr; }
 
+protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   MatchExpr *clone_expr_with_block_impl () const override
@@ -4289,16 +4251,24 @@ public:
 
   // copy constructor with clone
   AwaitExpr (AwaitExpr const &other)
-    : ExprWithoutBlock (other),
-      awaited_expr (other.awaited_expr->clone_expr ()), locus (other.locus)
-  {}
+    : ExprWithoutBlock (other), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.awaited_expr != nullptr)
+      awaited_expr = other.awaited_expr->clone_expr ();
+  }
 
   // overloaded assignment operator with clone
   AwaitExpr &operator= (AwaitExpr const &other)
   {
     ExprWithoutBlock::operator= (other);
-    awaited_expr = other.awaited_expr->clone_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.awaited_expr != nullptr)
+      awaited_expr = other.awaited_expr->clone_expr ();
+    else
+      awaited_expr = nullptr;
 
     return *this;
   }
@@ -4313,6 +4283,10 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if awaited expr is null, so base stripping on that. 
+  void mark_for_strip () override { awaited_expr = nullptr; }
+  bool is_marked_for_strip () const override { return awaited_expr == nullptr; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4341,17 +4315,25 @@ public:
 
   // copy constructor with clone
   AsyncBlockExpr (AsyncBlockExpr const &other)
-    : ExprWithBlock (other), has_move (other.has_move),
-      block_expr (other.block_expr->clone_block_expr ()), locus (other.locus)
-  {}
+    : ExprWithBlock (other), has_move (other.has_move), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.block_expr != nullptr)
+      block_expr = other.block_expr->clone_block_expr ();
+  }
 
   // overloaded assignment operator to clone
   AsyncBlockExpr &operator= (AsyncBlockExpr const &other)
   {
     ExprWithBlock::operator= (other);
     has_move = other.has_move;
-    block_expr = other.block_expr->clone_block_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.block_expr != nullptr)
+      block_expr = other.block_expr->clone_block_expr ();
+    else
+      block_expr = nullptr;
 
     return *this;
   }
@@ -4366,6 +4348,10 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if block is null, so base stripping on that. 
+  void mark_for_strip () override { block_expr = nullptr; }
+  bool is_marked_for_strip () const override { return block_expr == nullptr; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

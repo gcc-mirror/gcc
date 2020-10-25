@@ -591,7 +591,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   bool
-  check_cfg_predicate (const Session &session ATTRIBUTE_UNUSED) const override
+  check_cfg_predicate (const Session&) const override
   {
     // this should never be called - should be converted first
     return false;
@@ -764,6 +764,9 @@ public:
    * methods. */
   virtual Location get_locus_slow () const { return Location (); }
 
+  virtual void mark_for_strip () = 0;
+  virtual bool is_marked_for_strip () const = 0;
+
 protected:
   // Clone function implementation as pure virtual method
   virtual Stmt *clone_stmt_impl () const = 0;
@@ -772,10 +775,6 @@ protected:
 // Rust "item" AST node (declaration of top-level/module-level allowed stuff)
 class Item : public Stmt
 {
-  std::vector<Attribute> outer_attrs;
-
-  // TODO: should outer attrs be defined here or in each derived class?
-
 public:
   // Unique pointer custom clone function
   std::unique_ptr<Item> clone_item () const
@@ -783,29 +782,22 @@ public:
     return std::unique_ptr<Item> (clone_item_impl ());
   }
 
-  std::string as_string () const;
+  std::string as_string () const = 0;
 
   /* Adds crate names to the vector passed by reference, if it can
-   * (polymorphism). */
+   * (polymorphism). TODO: remove, unused. */
   virtual void
   add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
   {}
 
-  virtual void accept_vis (ASTVisitor &vis ATTRIBUTE_UNUSED) {}
-
 protected:
-  // Constructor
-  Item (std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
-    : outer_attrs (std::move (outer_attribs))
-  {}
-
   // Clone function implementation as pure virtual method
   virtual Item *clone_item_impl () const = 0;
 
   /* Save having to specify two clone methods in derived classes by making
    * statement clone return item clone. Hopefully won't affect performance too
    * much. */
-  Item *clone_stmt_impl () const override { return clone_item_impl (); }
+  Item *clone_stmt_impl () const final override { return clone_item_impl (); }
 };
 
 // forward decl of ExprWithoutBlock
@@ -849,6 +841,9 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  virtual void mark_for_strip () = 0;
+  virtual bool is_marked_for_strip () const = 0;
+
 protected:
   // Constructor
   Expr (std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
@@ -882,7 +877,7 @@ protected:
   /* Save having to specify two clone methods in derived classes by making expr
    * clone return exprwithoutblock clone. Hopefully won't affect performance too
    * much. */
-  ExprWithoutBlock *clone_expr_impl () const override
+  ExprWithoutBlock *clone_expr_impl () const final override
   {
     return clone_expr_without_block_impl ();
   }
@@ -935,6 +930,10 @@ public:
     return std::unique_ptr<IdentifierExpr> (clone_identifier_expr_impl ());
   }
 
+  // "Error state" if ident is empty, so base stripping on this.
+  void mark_for_strip () override { ident = {}; }
+  bool is_marked_for_strip () const override { return ident.empty (); }
+
 protected:
   // Clone method implementation
   IdentifierExpr *clone_expr_without_block_impl () const override
@@ -946,9 +945,6 @@ protected:
   {
     return new IdentifierExpr (*this);
   }
-
-  IdentifierExpr (IdentifierExpr const &other) = default;
-  IdentifierExpr &operator= (IdentifierExpr const &other) = default;
 };
 
 // Pattern base AST node
@@ -994,7 +990,7 @@ public:
 
   /* HACK: convert to trait bound. Virtual method overriden by classes that
    * enable this. */
-  virtual TraitBound *to_trait_bound (bool in_parens ATTRIBUTE_UNUSED) const
+  virtual TraitBound *to_trait_bound (bool) const
   {
     return nullptr;
   }
@@ -1025,7 +1021,7 @@ protected:
   /* Save having to specify two clone methods in derived classes by making type
    * clone return typenobounds clone. Hopefully won't affect performance too
    * much. */
-  TypeNoBounds *clone_type_impl () const override
+  TypeNoBounds *clone_type_impl () const final override
   {
     return clone_type_no_bounds_impl ();
   }
@@ -1207,10 +1203,12 @@ class MacroItem : public Item
 {
   /*public:
   std::string as_string() const;*/
+  //std::vector<Attribute> outer_attrs;
+
 protected:
-  MacroItem (std::vector<Attribute> outer_attribs)
-    : Item (std::move (outer_attribs))
-  {}
+  /*MacroItem (std::vector<Attribute> outer_attribs)
+    : outer_attrs (std::move (outer_attribs))
+  {}*/
 };
 
 // Item used in trait declarations - abstract base class
@@ -1298,6 +1296,7 @@ class MacroInvocationSemi : public MacroItem,
 			    public InherentImplItem,
 			    public TraitImplItem
 {
+  std::vector<Attribute> outer_attrs;
   SimplePath path;
   // all delim types except curly must have invocation end with a semicolon
   DelimType delim_type;
@@ -1310,36 +1309,15 @@ public:
   MacroInvocationSemi (SimplePath macro_path, DelimType delim_type,
 		       std::vector<std::unique_ptr<TokenTree>> token_trees,
 		       std::vector<Attribute> outer_attribs, Location locus)
-    : MacroItem (std::move (outer_attribs)), path (std::move (macro_path)),
+    : outer_attrs (std::move (outer_attribs)), path (std::move (macro_path)),
       delim_type (delim_type), token_trees (std::move (token_trees)),
       locus (locus)
   {}
-  /* TODO: possible issue with Item and TraitItem hierarchies both having outer
-   * attributes
-   * - storage inefficiency at least.
-   * Best current idea is to make Item preferred and have TraitItem get virtual
-   * functions for attributes or something. Or just redo the "composition"
-   * approach, but then this prevents polymorphism and would entail redoing
-   * quite a bit of the parser. */
 
-  // Move constructors
-  MacroInvocationSemi (MacroInvocationSemi &&other) = default;
-  MacroInvocationSemi &operator= (MacroInvocationSemi &&other) = default;
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  // Clones this macro invocation semi.
-  std::unique_ptr<MacroInvocationSemi> clone_macro_invocation_semi () const
-  {
-    return std::unique_ptr<MacroInvocationSemi> (
-      clone_macro_invocation_semi_impl ());
-  }
-
-protected:
   // Copy constructor with vector clone
   MacroInvocationSemi (MacroInvocationSemi const &other)
     : MacroItem (other), TraitItem (other), InherentImplItem (other),
-      TraitImplItem (other), path (other.path), delim_type (other.delim_type),
+      TraitImplItem (other), outer_attrs(other.outer_attrs), path (other.path), delim_type (other.delim_type),
       locus (other.locus)
   {
     token_trees.reserve (other.token_trees.size ());
@@ -1354,6 +1332,7 @@ protected:
     TraitItem::operator= (other);
     InherentImplItem::operator= (other);
     TraitImplItem::operator= (other);
+    outer_attrs = other.outer_attrs;
     path = other.path;
     delim_type = other.delim_type;
     locus = other.locus;
@@ -1365,6 +1344,24 @@ protected:
     return *this;
   }
 
+  // Move constructors
+  MacroInvocationSemi (MacroInvocationSemi &&other) = default;
+  MacroInvocationSemi &operator= (MacroInvocationSemi &&other) = default;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  // Clones this macro invocation semi.
+  std::unique_ptr<MacroInvocationSemi> clone_macro_invocation_semi () const
+  {
+    return std::unique_ptr<MacroInvocationSemi> (
+      clone_macro_invocation_semi_impl ());
+  }
+
+  // Invalid if path is empty, so base stripping on that.
+  void mark_for_strip () override { path = SimplePath::create_empty (); }
+  bool is_marked_for_strip () const override { return path.is_empty (); }
+
+protected:
   MacroInvocationSemi *clone_macro_invocation_semi_impl () const
   {
     return new MacroInvocationSemi (*this);
@@ -1390,13 +1387,6 @@ protected:
   {
     return clone_macro_invocation_semi_impl ();
   }
-
-  // FIXME: remove if item impl virtual override works properly
-  // Use covariance to implement clone function as returning this object rather
-  // than base
-  /*MacroInvocationSemi* clone_statement_impl() const override {
-      return clone_macro_invocation_semi_impl ();
-  }*/
 
   /* Use covariance to implement clone function as returning this object rather
    * than base */

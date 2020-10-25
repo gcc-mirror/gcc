@@ -715,24 +715,24 @@ protected:
 class VisItem : public Item
 {
   Visibility visibility;
+  std::vector<Attribute> outer_attrs;
 
 protected:
   // Visibility constructor
   VisItem (Visibility visibility,
 	   std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
-    : Item (std::move (outer_attrs)), visibility (std::move (visibility))
+    : visibility (std::move (visibility)), outer_attrs(std::move (outer_attrs))
   {}
 
   // Visibility copy constructor
-  VisItem (VisItem const &other) : Item (other), visibility (other.visibility)
+  VisItem (VisItem const &other) : visibility (other.visibility), outer_attrs(other.outer_attrs)
   {}
 
   // Overload assignment operator to clone
   VisItem &operator= (VisItem const &other)
   {
-    Item::operator= (other);
     visibility = other.visibility;
-    // outer_attrs = other.outer_attrs;
+    outer_attrs = other.outer_attrs;
 
     return *this;
   }
@@ -747,6 +747,13 @@ public:
   bool has_visibility () const { return !visibility.is_error (); }
 
   std::string as_string () const override;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  Visibility &get_vis () { return visibility; }
+  const Visibility &get_vis () const { return visibility; }
+
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 };
 
 // Rust module item - abstract base class
@@ -767,6 +774,10 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+
+  // Invalid if name is empty, so base stripping on that.
+  void mark_for_strip () override { module_name = ""; }
+  bool is_marked_for_strip () const override { return module_name.empty (); }
 };
 
 // Module with a body, defined in file
@@ -837,17 +848,14 @@ protected:
   {
     return new ModuleBodied (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual ModuleBodied* clone_statement_impl() const override {
-      return new ModuleBodied(*this);
-  }*/
 };
 
 // Module without a body, loaded from external file
 class ModuleNoBody : public Module
 {
+  /* TODO: are modules loaded from file unique? As in, can you load the same file into two different
+   * other files? Because this may make the difference between simply replacing this with the module
+   * "definition" (as loaded from another file) vs this having to "reference" a module with body. */
 public:
   std::string as_string () const override;
 
@@ -867,12 +875,6 @@ protected:
   {
     return new ModuleNoBody (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual ModuleNoBody* clone_statement_impl() const override {
-      return new ModuleNoBody(*this);
-  }*/
 };
 
 // Rust extern crate declaration AST node
@@ -920,6 +922,10 @@ public:
     names.push_back (referenced_crate);
   }
 
+  // Invalid if crate name is empty, so base stripping on that.
+  void mark_for_strip () override { referenced_crate = ""; }
+  bool is_marked_for_strip () const override { return referenced_crate.empty (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -927,12 +933,6 @@ protected:
   {
     return new ExternCrate (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual ExternCrate* clone_statement_impl() const override {
-      return new ExternCrate(*this);
-  }*/
 };
 
 // The path-ish thing referred to in a use declaration - abstract base class
@@ -1153,18 +1153,26 @@ public:
 
   // Copy constructor with clone
   UseDeclaration (UseDeclaration const &other)
-    : VisItem (other), use_tree (other.use_tree->clone_use_tree ()),
-      locus (other.locus)
-  {}
+    : VisItem (other), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.use_tree != nullptr)
+      use_tree = other.use_tree->clone_use_tree ();
+  }
 
   // Overloaded assignment operator to clone
   UseDeclaration &operator= (UseDeclaration const &other)
   {
     VisItem::operator= (other);
-    use_tree = other.use_tree->clone_use_tree ();
     // visibility = other.visibility->clone_visibility();
     // outer_attrs = other.outer_attrs;
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.use_tree != nullptr)
+      use_tree = other.use_tree->clone_use_tree ();
+    else
+      use_tree = nullptr;
 
     return *this;
   }
@@ -1177,6 +1185,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if use tree is null, so base stripping on that.
+  void mark_for_strip () override { use_tree = nullptr; }
+  bool is_marked_for_strip () const override { return use_tree == nullptr; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1184,12 +1196,6 @@ protected:
   {
     return new UseDeclaration (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual UseDeclaration* clone_statement_impl() const override {
-      return new UseDeclaration(*this);
-  }*/
 };
 
 // Parameters used in a function - TODO inline?
@@ -1264,11 +1270,16 @@ public:
     : VisItem (other), qualifiers (other.qualifiers),
       function_name (other.function_name),
       function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause),
-      function_body (other.function_body->clone_block_expr ()),
-      locus (other.locus)
+      where_clause (other.where_clause), locus (other.locus)
   {
+    // guard to prevent null dereference (always required)
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    
+    // guard to prevent null dereference (only required if error state)
+    if (other.function_body != nullptr)
+      function_body = other.function_body->clone_block_expr ();
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -1280,14 +1291,23 @@ public:
     VisItem::operator= (other);
     function_name = other.function_name;
     qualifiers = other.qualifiers;
-    // generic_params = other.generic_params;
     function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
     where_clause = other.where_clause;
-    function_body = other.function_body->clone_block_expr ();
     // visibility = other.visibility->clone_visibility();
     // outer_attrs = other.outer_attrs;
     locus = other.locus;
+
+    // guard to prevent null dereference (always required)
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
+    
+    // guard to prevent null dereference (only required if error state)
+    if (other.function_body != nullptr)
+      function_body = other.function_body->clone_block_expr ();
+    else
+      function_body = nullptr;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -1303,6 +1323,10 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if block is null, so base stripping on that.
+  void mark_for_strip () override { function_body = nullptr; }
+  bool is_marked_for_strip () const override { return function_body == nullptr; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1322,12 +1346,6 @@ protected:
   {
     return new Function (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual Function* clone_statement_impl() const override {
-      return new Function(*this);
-  }*/
 };
 
 // Rust type alias (i.e. typedef) AST node
@@ -1370,9 +1388,12 @@ public:
   // Copy constructor
   TypeAlias (TypeAlias const &other)
     : VisItem (other), new_type_name (other.new_type_name),
-      where_clause (other.where_clause),
-      existing_type (other.existing_type->clone_type ()), locus (other.locus)
+      where_clause (other.where_clause), locus (other.locus)
   {
+    // guard to prevent null dereference (only required if error state)
+    if (other.existing_type != nullptr)
+      existing_type = other.existing_type->clone_type ();
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -1383,12 +1404,16 @@ public:
   {
     VisItem::operator= (other);
     new_type_name = other.new_type_name;
-    // generic_params = other.generic_params;
     where_clause = other.where_clause;
-    existing_type = other.existing_type->clone_type ();
     // visibility = other.visibility->clone_visibility();
     // outer_attrs = other.outer_attrs;
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.existing_type != nullptr)
+      existing_type = other.existing_type->clone_type ();
+    else
+      existing_type = nullptr;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -1405,6 +1430,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if existing type is null, so base stripping on that.
+  void mark_for_strip () override { existing_type = nullptr; }
+  bool is_marked_for_strip () const override { return existing_type == nullptr; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1416,12 +1445,6 @@ protected:
   {
     return new TypeAlias (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual TypeAlias* clone_statement_impl() const override {
-      return new TypeAlias(*this);
-  }*/
 };
 
 // Rust base struct declaration AST node - abstract base class
@@ -1447,6 +1470,10 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   Location get_locus () const { return locus; }
+
+  // Invalid if name is empty, so base stripping on that.
+  void mark_for_strip () override { struct_name = ""; }
+  bool is_marked_for_strip () const override { return struct_name.empty (); }
 
 protected:
   Struct (Identifier struct_name,
@@ -1584,8 +1611,7 @@ public:
 		std::vector<Attribute> outer_attrs, Location locus)
     : Struct (std::move (struct_name), std::move (generic_params),
 	      std::move (where_clause), std::move (vis), locus,
-	      std::move (outer_attrs)),
-      is_unit (true)
+	      std::move (outer_attrs)), is_unit (true)
   {}
   // TODO: can a unit struct have generic fields? assuming yes for now.
 
@@ -1603,12 +1629,6 @@ protected:
   {
     return new StructStruct (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual StructStruct* clone_statement_impl() const override {
-      return new StructStruct(*this);
-  }*/
 };
 
 // A single field in a tuple
@@ -1702,12 +1722,6 @@ protected:
   {
     return new TupleStruct (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual TupleStruct* clone_statement_impl() const override {
-      return new TupleStruct(*this);
-  }*/
 };
 
 /* An item used in an "enum" tagged union - not abstract: base represents a
@@ -1937,16 +1951,14 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if name is empty, so base stripping on that.
+  void mark_for_strip () override { enum_name = ""; }
+  bool is_marked_for_strip () const override { return enum_name.empty (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Enum *clone_item_impl () const override { return new Enum (*this); }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual Enum* clone_statement_impl() const override {
-      return new Enum(*this);
-  }*/
 };
 
 // Rust untagged union used for C compat AST node
@@ -2020,16 +2032,14 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if name is empty, so base stripping on that.
+  void mark_for_strip () override { union_name = ""; }
+  bool is_marked_for_strip () const override { return union_name.empty (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Union *clone_item_impl () const override { return new Union (*this); }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual Union* clone_statement_impl() const override {
-      return new Union(*this);
-  }*/
 };
 
 /* "Constant item" AST node - used for constant, compile-time expressions
@@ -2041,7 +2051,7 @@ class ConstantItem : public VisItem,
   // either has an identifier or "_" - maybe handle in identifier?
   // bool identifier_is_underscore;
   // if no identifier declared, identifier will be "_"
-  Identifier identifier;
+  std::string identifier;
 
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> const_expr;
@@ -2051,7 +2061,7 @@ class ConstantItem : public VisItem,
 public:
   std::string as_string () const override;
 
-  ConstantItem (Identifier ident, Visibility vis, std::unique_ptr<Type> type,
+  ConstantItem (std::string ident, Visibility vis, std::unique_ptr<Type> type,
 		std::unique_ptr<Expr> const_expr,
 		std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -2060,19 +2070,31 @@ public:
   {}
 
   ConstantItem (ConstantItem const &other)
-    : VisItem (other), identifier (other.identifier),
-      type (other.type->clone_type ()),
-      const_expr (other.const_expr->clone_expr ()), locus (other.locus)
-  {}
+    : VisItem (other), identifier (other.identifier), locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    if (other.const_expr != nullptr)
+      const_expr = other.const_expr->clone_expr ();
+  }
 
   // Overload assignment operator to clone
   ConstantItem &operator= (ConstantItem const &other)
   {
     VisItem::operator= (other);
     identifier = other.identifier;
-    type = other.type->clone_type ();
-    const_expr = other.const_expr->clone_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
+    if (other.const_expr != nullptr)
+      const_expr = other.const_expr->clone_expr ();
+    else
+      const_expr = nullptr;
 
     return *this;
   }
@@ -2083,11 +2105,15 @@ public:
 
   /* Returns whether constant item is an "unnamed" (wildcard underscore used
    * as identifier) constant. */
-  bool is_unnamed () const { return identifier == std::string ("_"); }
+  bool is_unnamed () const { return identifier == "_"; }
 
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if type or expression are null, so base stripping on that.
+  void mark_for_strip () override { type = nullptr; const_expr = nullptr; }
+  bool is_marked_for_strip () const override { return type == nullptr && const_expr == nullptr; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2110,12 +2136,6 @@ protected:
   {
     return new ConstantItem (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual ConstantItem* clone_statement_impl() const override {
-      return new ConstantItem(*this);
-  }*/
 };
 
 /* Static item AST node - items within module scope with fixed storage
@@ -2142,9 +2162,14 @@ public:
   // Copy constructor with clone
   StaticItem (StaticItem const &other)
     : VisItem (other), has_mut (other.has_mut), name (other.name),
-      type (other.type->clone_type ()), expr (other.expr->clone_expr ()),
       locus (other.locus)
-  {}
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr ();
+  }
 
   // Overloaded assignment operator to clone
   StaticItem &operator= (StaticItem const &other)
@@ -2152,9 +2177,17 @@ public:
     VisItem::operator= (other);
     name = other.name;
     has_mut = other.has_mut;
-    type = other.type->clone_type ();
-    expr = other.expr->clone_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr ();
+    else
+      expr = nullptr;
 
     return *this;
   }
@@ -2167,6 +2200,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if type or expression are null, so base stripping on that.
+  void mark_for_strip () override { type = nullptr; expr = nullptr; }
+  bool is_marked_for_strip () const override { return type == nullptr && expr == nullptr; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2174,12 +2211,6 @@ protected:
   {
     return new StaticItem (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual StaticItem* clone_statement_impl() const override {
-      return new StaticItem(*this);
-  }*/
 };
 
 // Function declaration in traits
@@ -2606,7 +2637,6 @@ protected:
 class Trait : public VisItem
 {
   bool has_unsafe;
-
   Identifier name;
 
   // bool has_generics;
@@ -2706,16 +2736,14 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if trait name is empty, so base stripping on that.
+  void mark_for_strip () override { name = ""; }
+  bool is_marked_for_strip () const override { return name.empty (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Trait *clone_item_impl () const override { return new Trait (*this); }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual Trait* clone_statement_impl() const override {
-      return new Trait(*this);
-  }*/
 };
 
 // Implementation item declaration AST node - abstract base class
@@ -2751,6 +2779,10 @@ public:
 
   Location get_locus () const { return locus; }
 
+  // Invalid if trait type is null, so base stripping on that.
+  void mark_for_strip () override { trait_type = nullptr; }
+  bool is_marked_for_strip () const override { return trait_type == nullptr; }
+
 protected:
   // Mega-constructor
   Impl (std::vector<std::unique_ptr<GenericParam>> generic_params,
@@ -2766,10 +2798,13 @@ protected:
 
   // Copy constructor
   Impl (Impl const &other)
-    : VisItem (other), trait_type (other.trait_type->clone_type ()),
-      where_clause (other.where_clause), inner_attrs (other.inner_attrs),
-      locus (other.locus)
+    : VisItem (other), where_clause (other.where_clause), 
+      inner_attrs (other.inner_attrs), locus (other.locus)
   {
+    // guard to prevent null dereference (only required if error state)
+    if (other.trait_type != nullptr)
+      trait_type = other.trait_type->clone_type ();
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -2779,10 +2814,15 @@ protected:
   Impl &operator= (Impl const &other)
   {
     VisItem::operator= (other);
-    trait_type = other.trait_type->clone_type ();
     where_clause = other.where_clause;
     inner_attrs = other.inner_attrs;
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.trait_type != nullptr)
+      trait_type = other.trait_type->clone_type ();
+    else
+      trait_type = nullptr;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2853,12 +2893,6 @@ protected:
   {
     return new InherentImpl (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual InherentImpl* clone_statement_impl() const override {
-      return new InherentImpl(*this);
-  }*/
 };
 
 // The "impl footrait for foo" impl block declaration AST node
@@ -2928,12 +2962,6 @@ protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   TraitImpl *clone_item_impl () const override { return new TraitImpl (*this); }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual TraitImpl* clone_statement_impl() const override {
-      return new TraitImpl(*this);
-  }*/
 };
 
 // Abstract base class for an item used inside an extern block
@@ -2950,6 +2978,10 @@ class ExternalItem
 
 public:
   virtual ~ExternalItem () {}
+
+  /* TODO: spec syntax rules state that "MacroInvocationSemi" can be used as 
+   * ExternalItem, but text body isn't so clear. Adding MacroInvocationSemi 
+   * support would require a lot of refactoring. */
 
   // Returns whether item has outer attributes.
   bool has_outer_attrs () const { return !outer_attrs.empty (); }
@@ -2968,6 +3000,11 @@ public:
   Location get_locus () const { return locus; }
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  // TODO: make virtual? Would be more flexible.
+  // Based on idea that name should never be empty.
+  void mark_for_strip () { item_name = ""; };
+  bool is_marked_for_strip () const { return item_name.empty (); };
 
 protected:
   ExternalItem (Identifier item_name, Visibility vis,
@@ -3209,6 +3246,9 @@ class ExternBlock : public VisItem
   std::vector<std::unique_ptr<ExternalItem>> extern_items;
 
   Location locus;
+  
+  // TODO: find another way to store this to save memory?
+  bool marked_for_strip = false;
 
 public:
   std::string as_string () const override;
@@ -3234,7 +3274,7 @@ public:
   // Copy constructor with vector clone
   ExternBlock (ExternBlock const &other)
     : VisItem (other), abi (other.abi), inner_attrs (other.inner_attrs),
-      locus (other.locus)
+      locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     extern_items.reserve (other.extern_items.size ());
     for (const auto &e : other.extern_items)
@@ -3248,6 +3288,7 @@ public:
     abi = other.abi;
     inner_attrs = other.inner_attrs;
     locus = other.locus;
+    marked_for_strip = other.marked_for_strip;
 
     extern_items.reserve (other.extern_items.size ());
     for (const auto &e : other.extern_items)
@@ -3264,6 +3305,18 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Can't think of any invalid invariants, so store boolean.
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
+
+  // TODO: think of better way to do this
+  const std::vector<std::unique_ptr<ExternalItem>>& get_extern_items () const { return extern_items; }
+  std::vector<std::unique_ptr<ExternalItem>>& get_extern_items () { return extern_items; }
+
+  // TODO: think of better way to do this
+  const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -3271,12 +3324,6 @@ protected:
   {
     return new ExternBlock (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual ExternBlock* clone_statement_impl() const override {
-      return new ExternBlock(*this);
-  }*/
 };
 
 // Replaced with forward decls - defined in "rust-macro.h"

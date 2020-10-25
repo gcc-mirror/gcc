@@ -192,6 +192,8 @@ Attribute &Attribute::operator= (Attribute const &other)
   // guard to protect from null pointer dereference
   if (other.attr_input != nullptr)
     attr_input = other.attr_input->clone_attr_input ();
+  else
+    attr_input = nullptr;
 
   return *this;
 }
@@ -323,7 +325,13 @@ std::string
 VisItem::as_string () const
 {
   // FIXME: can't do formatting on string to make identation occur.
-  std::string str = Item::as_string ();
+  std::string str;
+
+  if (!outer_attrs.empty ())
+    {
+      for (const auto &attr : outer_attrs)
+	  str += attr.as_string () + "\n";
+    }
 
   if (has_visibility ())
     {
@@ -334,7 +342,7 @@ VisItem::as_string () const
 }
 
 // Creates a string that reflects the outer attributes stored.
-std::string
+/*std::string
 Item::as_string () const
 {
   std::string str;
@@ -348,7 +356,7 @@ Item::as_string () const
     }
 
   return str;
-}
+}*/
 
 std::string
 Module::as_string () const
@@ -1400,8 +1408,14 @@ TypeAlias::as_string () const
 std::string
 MacroInvocationSemi::as_string () const
 {
+  std::string str;
+
   // get outer attrs
-  std::string str = MacroItem::as_string ();
+  if (!outer_attrs.empty ())
+    {
+      for (const auto &attr : outer_attrs)
+	  str += attr.as_string () + "\n";
+    }
 
   str += "\n" + path.as_string () + "!";
 
@@ -1498,7 +1512,16 @@ MacroRule::as_string () const
 std::string
 MacroRulesDefinition::as_string () const
 {
-  std::string str ("macro_rules!");
+  std::string str;
+
+  // get outer attrs
+  if (!outer_attrs.empty ())
+    {
+      for (const auto &attr : outer_attrs)
+	  str += attr.as_string () + "\n";
+    }
+
+  str += "macro_rules!";
 
   str += rule_name;
 
@@ -1510,9 +1533,7 @@ MacroRulesDefinition::as_string () const
   else
     {
       for (const auto &rule : rules)
-	{
 	  str += "\n  " + rule.as_string ();
-	}
     }
 
   str += "\n Delim type: ";
@@ -5403,9 +5424,9 @@ std::vector<Attribute> Attribute::separate_cfg_attrs () {
     if (!has_attr_input () || path.as_string () != "cfg_attr")
       return {};
 
-      // TODO: maybe replace with storing a "has been parsed" variable?
-      parse_attr_to_meta_item ();
-      // can't be const because of this anyway
+    // TODO: maybe replace with storing a "has been parsed" variable?
+    parse_attr_to_meta_item ();
+    // can't be const because of this anyway
 
     return attr_input->separate_cfg_attrs ();
   }

@@ -1,8 +1,217 @@
 #include "rust-macro-expand.h"
 #include "rust-ast-full.h"
 // is full really required?
+#include "rust-ast-visitor.h"
 
 namespace Rust {
+    // Visitor used to expand attributes.
+    class AttrVisitor : public AST::ASTVisitor {
+      private:
+        MacroExpander& expander;
+
+      public:
+        AttrVisitor(MacroExpander& expander) : expander(expander) {}
+
+        void visit(AST::Token& tok) override {}
+        void visit(AST::DelimTokenTree& delim_tok_tree) override {}
+        void visit(AST::AttrInputMetaItemContainer& input) override {}
+        void visit(AST::IdentifierExpr& ident_expr) override {}
+        void visit(AST::Lifetime& lifetime) override {}
+        void visit(AST::LifetimeParam& lifetime_param) override {}
+        void visit(AST::MacroInvocationSemi& macro) override {}
+
+        void visit(AST::PathInExpression& path) override {}
+        void visit(AST::TypePathSegment& segment) override {}
+        void visit(AST::TypePathSegmentGeneric& segment) override {}
+        void visit(AST::TypePathSegmentFunction& segment) override {}
+        void visit(AST::TypePath& path) override {}
+        void visit(AST::QualifiedPathInExpression& path) override {}
+        void visit(AST::QualifiedPathInType& path) override {}
+
+        void visit(AST::LiteralExpr& expr) override {}
+        void visit(AST::AttrInputLiteral& attr_input) override {}
+        void visit(AST::MetaItemLitExpr& meta_item) override {}
+        void visit(AST::MetaItemPathLit& meta_item) override {}
+        void visit(AST::BorrowExpr& expr) override {}
+        void visit(AST::DereferenceExpr& expr) override {}
+        void visit(AST::ErrorPropagationExpr& expr) override {}
+        void visit(AST::NegationExpr& expr) override {}
+        void visit(AST::ArithmeticOrLogicalExpr& expr) override {}
+        void visit(AST::ComparisonExpr& expr) override {}
+        void visit(AST::LazyBooleanExpr& expr) override {}
+        void visit(AST::TypeCastExpr& expr) override {}
+        void visit(AST::AssignmentExpr& expr) override {}
+        void visit(AST::CompoundAssignmentExpr& expr) override {}
+        void visit(AST::GroupedExpr& expr) override {}
+        void visit(AST::ArrayElemsValues& elems) override {}
+        void visit(AST::ArrayElemsCopied& elems) override {}
+        void visit(AST::ArrayExpr& expr) override {}
+        void visit(AST::ArrayIndexExpr& expr) override {}
+        void visit(AST::TupleExpr& expr) override {}
+        void visit(AST::TupleIndexExpr& expr) override {}
+        void visit(AST::StructExprStruct& expr) override {}
+        void visit(AST::StructExprFieldIdentifier& field) override {}
+        void visit(AST::StructExprFieldIdentifierValue& field) override {}
+        void visit(AST::StructExprFieldIndexValue& field) override {}
+        void visit(AST::StructExprStructFields& expr) override {}
+        void visit(AST::StructExprStructBase& expr) override {}
+        void visit(AST::StructExprTuple& expr) override {}
+        void visit(AST::StructExprUnit& expr) override {}
+        void visit(AST::EnumExprFieldIdentifier& field) override {}
+        void visit(AST::EnumExprFieldIdentifierValue& field) override {}
+        void visit(AST::EnumExprFieldIndexValue& field) override {}
+        void visit(AST::EnumExprStruct& expr) override {}
+        void visit(AST::EnumExprTuple& expr) override {}
+        void visit(AST::EnumExprFieldless& expr) override {}
+        void visit(AST::CallExpr& expr) override {}
+        void visit(AST::MethodCallExpr& expr) override {}
+        void visit(AST::FieldAccessExpr& expr) override {}
+        void visit(AST::ClosureExprInner& expr) override {}
+        void visit(AST::BlockExpr& expr) override {}
+        void visit(AST::ClosureExprInnerTyped& expr) override {}
+        void visit(AST::ContinueExpr& expr) override {}
+        void visit(AST::BreakExpr& expr) override {}
+        void visit(AST::RangeFromToExpr& expr) override {}
+        void visit(AST::RangeFromExpr& expr) override {}
+        void visit(AST::RangeToExpr& expr) override {}
+        void visit(AST::RangeFullExpr& expr) override {}
+        void visit(AST::RangeFromToInclExpr& expr) override {}
+        void visit(AST::RangeToInclExpr& expr) override {}
+        void visit(AST::ReturnExpr& expr) override {}
+        void visit(AST::UnsafeBlockExpr& expr) override {}
+        void visit(AST::LoopExpr& expr) override {}
+        void visit(AST::WhileLoopExpr& expr) override {}
+        void visit(AST::WhileLetLoopExpr& expr) override {}
+        void visit(AST::ForLoopExpr& expr) override {}
+        void visit(AST::IfExpr& expr) override {}
+        void visit(AST::IfExprConseqElse& expr) override {}
+        void visit(AST::IfExprConseqIf& expr) override {}
+        void visit(AST::IfExprConseqIfLet& expr) override {}
+        void visit(AST::IfLetExpr& expr) override {}
+        void visit(AST::IfLetExprConseqElse& expr) override {}
+        void visit(AST::IfLetExprConseqIf& expr) override {}
+        void visit(AST::IfLetExprConseqIfLet& expr) override {}
+        void visit(AST::MatchExpr& expr) override {}
+        void visit(AST::AwaitExpr& expr) override {}
+        void visit(AST::AsyncBlockExpr& expr) override {}
+
+        void visit(AST::TypeParam& param) override {}
+        void visit(AST::LifetimeWhereClauseItem& item) override {}
+        void visit(AST::TypeBoundWhereClauseItem& item) override {}
+        void visit(AST::Method& method) override {}
+        void visit(AST::ModuleBodied& module) override {}
+        void visit(AST::ModuleNoBody& module) override {}
+        void visit(AST::ExternCrate& crate) override {}
+        void visit(AST::UseTreeGlob& use_tree) override {}
+        void visit(AST::UseTreeList& use_tree) override {}
+        void visit(AST::UseTreeRebind& use_tree) override {}
+        void visit(AST::UseDeclaration& use_decl) override {}
+        void visit(AST::Function& function) override {}
+        void visit(AST::TypeAlias& type_alias) override {}
+        void visit(AST::StructStruct& struct_item) override {}
+        void visit(AST::TupleStruct& tuple_struct) override {}
+        void visit(AST::EnumItem& item) override {}
+        void visit(AST::EnumItemTuple& item) override {}
+        void visit(AST::EnumItemStruct& item) override {}
+        void visit(AST::EnumItemDiscriminant& item) override {}
+        void visit(AST::Enum& enum_item) override {}
+        void visit(AST::Union& union_item) override {}
+        void visit(AST::ConstantItem& const_item) override {}
+        void visit(AST::StaticItem& static_item) override {}
+        void visit(AST::TraitItemFunc& item) override {}
+        void visit(AST::TraitItemMethod& item) override {}
+        void visit(AST::TraitItemConst& item) override {}
+        void visit(AST::TraitItemType& item) override {}
+        void visit(AST::Trait& trait) override {}
+        void visit(AST::InherentImpl& impl) override {}
+        void visit(AST::TraitImpl& impl) override {}
+        void visit(AST::ExternalStaticItem& item) override {}
+        void visit(AST::ExternalFunctionItem& item) override {}
+        void visit(AST::ExternBlock& block) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(block.get_outer_attrs());
+            if (expander.fails_cfg(block.get_outer_attrs())) {
+                block.mark_for_strip();
+                return;
+            }
+
+            // strip test based on inner attrs
+            expander.expand_cfg_attrs(block.get_inner_attrs());
+            if (expander.fails_cfg(block.get_inner_attrs())) {
+                block.mark_for_strip();
+                return;
+            }
+
+            // strip external items if required
+            auto& extern_items = block.get_extern_items();
+            for (auto i = 0; i < extern_items.size(); ) {
+                auto& item = extern_items[i];
+
+                // mark for stripping if required
+                item->accept_vis(*this);
+
+                if (item->is_marked_for_strip ())
+                    extern_items.erase (extern_items.begin() + i);
+                else
+                    i++;
+                
+            }
+        }
+
+        void visit(AST::MacroMatchFragment& match) override {}
+        void visit(AST::MacroMatchRepetition& match) override {}
+        void visit(AST::MacroMatcher& matcher) override {}
+        void visit(AST::MacroRulesDefinition& rules_def) override {}
+        void visit(AST::MacroInvocation& macro_invoc) override {}
+        void visit(AST::MetaItemPath& meta_item) override {}
+        void visit(AST::MetaItemSeq& meta_item) override {}
+        void visit(AST::MetaWord& meta_item) override {}
+        void visit(AST::MetaNameValueStr& meta_item) override {}
+        void visit(AST::MetaListPaths& meta_item) override {}
+        void visit(AST::MetaListNameValueStr& meta_item) override {}
+
+        void visit(AST::LiteralPattern& pattern) override {}
+        void visit(AST::IdentifierPattern& pattern) override {}
+        void visit(AST::WildcardPattern& pattern) override {}
+        void visit(AST::RangePatternBoundLiteral& bound) override {}
+        void visit(AST::RangePatternBoundPath& bound) override {}
+        void visit(AST::RangePatternBoundQualPath& bound) override {}
+        void visit(AST::RangePattern& pattern) override {}
+        void visit(AST::ReferencePattern& pattern) override {}
+        void visit(AST::StructPatternFieldTuplePat& field) override {}
+        void visit(AST::StructPatternFieldIdentPat& field) override {}
+        void visit(AST::StructPatternFieldIdent& field) override {}
+        void visit(AST::StructPattern& pattern) override {}
+        void visit(AST::TupleStructItemsNoRange& tuple_items) override {}
+        void visit(AST::TupleStructItemsRange& tuple_items) override {}
+        void visit(AST::TupleStructPattern& pattern) override {}
+        void visit(AST::TuplePatternItemsMultiple& tuple_items) override {}
+        void visit(AST::TuplePatternItemsRanged& tuple_items) override {}
+        void visit(AST::TuplePattern& pattern) override {}
+        void visit(AST::GroupedPattern& pattern) override {}
+        void visit(AST::SlicePattern& pattern) override {}
+
+        void visit(AST::EmptyStmt& stmt) override {}
+        void visit(AST::LetStmt& stmt) override {}
+        void visit(AST::ExprStmtWithoutBlock& stmt) override {}
+        void visit(AST::ExprStmtWithBlock& stmt) override {}
+
+        void visit(AST::TraitBound& bound) override {}
+        void visit(AST::ImplTraitType& type) override {}
+        void visit(AST::TraitObjectType& type) override {}
+        void visit(AST::ParenthesisedType& type) override {}
+        void visit(AST::ImplTraitTypeOneBound& type) override {}
+        void visit(AST::TraitObjectTypeOneBound& type) override {}
+        void visit(AST::TupleType& type) override {}
+        void visit(AST::NeverType& type) override {}
+        void visit(AST::RawPointerType& type) override {}
+        void visit(AST::ReferenceType& type) override {}
+        void visit(AST::ArrayType& type) override {}
+        void visit(AST::SliceType& type) override {}
+        void visit(AST::InferredType& type) override {}
+        void visit(AST::BareFunctionType& type) override {}
+    };
+
     void MacroExpander::expand_invoc(std::unique_ptr<AST::MacroInvocation>& invoc) {
         /* if current expansion depth > recursion limit, create an error (maybe fatal
          * error) and return */
@@ -24,7 +233,7 @@ namespace Rust {
             - derive container macro - unreachable*/
     }
 
-    /* Determines whether any cfg predicate is false and hence item with attributes should 
+    /* Determines whether any cfg predicate is false and hence item with attributes should
      * be stripped.  */
     bool MacroExpander::fails_cfg(std::vector<AST::Attribute>& attrs) {
         for (auto& attr : attrs) {
@@ -80,6 +289,14 @@ namespace Rust {
             // TODO: maybe create warning here? probably not desired behaviour
         }
         // expand module attributes?
+
+        // expand attributes recursively
+        AttrVisitor attr_visitor(*this);
+        for (auto& i : crate.items) {
+            i->accept_vis(attr_visitor);
+        }
+        // TODO: should recursive attribute and macro expansion be done in the same transversal? Or in
+        // separate ones like currently?
 
         // expand module tree recursively
 

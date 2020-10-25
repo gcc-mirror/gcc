@@ -77,7 +77,7 @@ public:
     : variable_ident (other.variable_ident), is_ref (other.is_ref),
       is_mut (other.is_mut), locus (other.locus)
   {
-    // fix to get prevent null pointer dereference
+    // fix to prevent null pointer dereference
     if (other.to_bind != nullptr)
       to_bind = other.to_bind->clone_pattern ();
   }
@@ -90,9 +90,11 @@ public:
     is_mut = other.is_mut;
     locus = other.locus;
 
-    // fix to get prevent null pointer dereference
+    // fix to prevent null pointer dereference
     if (other.to_bind != nullptr)
       to_bind = other.to_bind->clone_pattern ();
+    else 
+      to_bind = nullptr;
 
     return *this;
   }
@@ -1006,14 +1008,23 @@ public:
 
   // Copy constructor requires clone
   TuplePattern (TuplePattern const &other)
-    : items (other.items->clone_tuple_pattern_items ()), locus (other.locus)
-  {}
+    : locus (other.locus)
+  {
+    // guard to prevent null dereference
+    if (other.items != nullptr)
+      items = other.items->clone_tuple_pattern_items ();
+  }
 
   // Overload assignment operator to clone
   TuplePattern &operator= (TuplePattern const &other)
   {
-    items = other.items->clone_tuple_pattern_items ();
     locus = other.locus;
+
+    // guard to prevent null dereference
+    if (other.items != nullptr)
+      items = other.items->clone_tuple_pattern_items ();
+    else
+      items = nullptr;
 
     return *this;
   }
