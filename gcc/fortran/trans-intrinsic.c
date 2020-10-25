@@ -4238,12 +4238,60 @@ gfc_get_symbol_for_expr (gfc_expr * expr, bool ignore_optional)
   return sym;
 }
 
+/* Remove empty actual arguments.  */
+
+static void
+remove_empty_actual_arguments (gfc_actual_arglist **ap)
+{
+  while (*ap)
+    {
+      if ((*ap)->expr == NULL)
+	{
+	  gfc_actual_arglist *r = *ap;
+	  *ap = r->next;
+	  r->next = NULL;
+	  gfc_free_actual_arglist (r);
+	}
+      else
+	ap = &((*ap)->next);
+    }
+}
+
+/* Generate the right symbol for the specific intrinsic function and
+ modify the expr accordingly.  This assumes that absent optional
+ arguments should be removed.  FIXME: This should be extended for
+ procedures which do not ignore optional arguments (PR 97454).  */
+
+gfc_symbol *
+specific_intrinsic_symbol (gfc_expr *expr)
+{
+  gfc_symbol *sym;
+
+  sym = gfc_find_intrinsic_symbol (expr);
+  if (sym == NULL)
+    {
+      sym = gfc_get_intrinsic_function_symbol (expr);
+      sym->ts = expr->ts;
+      if (sym->ts.type == BT_CHARACTER && sym->ts.u.cl)
+	sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
+
+      gfc_copy_formal_args_intr (sym, expr->value.function.isym,
+				 expr->value.function.actual, true);
+      sym->backend_decl
+	= gfc_get_extern_function_decl (sym, expr->value.function.actual);
+    }
+  remove_empty_actual_arguments (&(expr->value.function.actual));
+
+  return sym;
+}
+
 /* Generate a call to an external intrinsic function.  */
 static void
 gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 {
   gfc_symbol *sym;
   vec<tree, va_gc> *append_args;
+  bool specific_symbol;
 
   gcc_assert (!se->ss || se->ss->info->expr == expr);
 
@@ -4252,7 +4300,28 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
   else
     gcc_assert (expr->rank == 0);
 
-  sym = gfc_get_symbol_for_expr (expr, se->ignore_optional);
+  switch (expr->value.function.isym->id)
+    {
+    case GFC_ISYM_FINDLOC:
+    case GFC_ISYM_MAXLOC:
+    case GFC_ISYM_MINLOC:
+    case GFC_ISYM_MAXVAL:
+    case GFC_ISYM_MINVAL:
+      specific_symbol = true;
+      break;
+    default:
+      specific_symbol = false;
+    }
+
+  if (specific_symbol)
+    {
+      /* Need to copy here because specific_intrinsic_symbol modifies
+	 expr to omit the absent optional arguments.  */
+      expr = gfc_copy_expr (expr);
+      sym = specific_intrinsic_symbol (expr);
+    }
+  else
+    sym = gfc_get_symbol_for_expr (expr, se->ignore_optional);
 
   /* Calls to libgfortran_matmul need to be appended special arguments,
      to be able to call the BLAS ?gemm functions if required and possible.  */
@@ -4302,7 +4371,11 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			  append_args);
-  gfc_free_symbol (sym);
+
+  if (specific_symbol)
+    gfc_free_expr (expr);
+  else
+    gfc_free_symbol (sym);
 }
 
 /* ANY and ALL intrinsics. ANY->op == NE_EXPR, ALL->op == EQ_EXPR.
@@ -5081,12 +5154,10 @@ strip_kind_from_actual (gfc_actual_arglist * actual)
 {
   for (gfc_actual_arglist *a = actual; a; a = a->next)
     {
-      gfc_actual_arglist *b = a->next;
-      if (b && b->name && strcmp (b->name, "kind") == 0)
+      if (a && a->name && strcmp (a->name, "kind") == 0)
 	{
-	  a->next = b->next;
-	  b->next = NULL;
-	  gfc_free_actual_arglist (b);
+	  gfc_free_expr (a->expr);
+	  a->expr = NULL;
 	}
     }
 }
@@ -5224,20 +5295,17 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
-      gfc_actual_arglist *a, *b;
+      gfc_actual_arglist *a;
       a = actual;
       strip_kind_from_actual (a);
-      while (a->next)
+      while (a)
 	{
-	  b = a->next;
-	  if (b->expr == NULL || strcmp (b->name, "dim") == 0)
+	  if (a->name && strcmp (a->name, "dim") == 0)
 	    {
-	      a->next = b->next;
-	      b->next = NULL;
-	      gfc_free_actual_arglist (b);
+	      gfc_free_expr (a->expr);
+	      a->expr = NULL;
 	    }
-	  else
-	    a = b;
+	  a = a->next;
 	}
       gfc_conv_intrinsic_funcall (se, expr);
       return;
@@ -5996,29 +6064,16 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
-      gfc_actual_arglist *a2, *a3;
-      a2 = actual->next;  /* dim */
-      a3 = a2->next;      /* mask */
-      if (a2->expr == NULL || expr->rank == 0)
+      gfc_actual_arglist *dim = actual->next;
+      if (expr->rank == 0 && dim->expr != 0)
 	{
-	  if (a3->expr == NULL)
-	    actual->next = NULL;
-	  else
-	    {
-	      actual->next = a3;
-	      a2->next = NULL;
-	    }
-	  gfc_free_actual_arglist (a2);
+	  gfc_free_expr (dim->expr);
+	  dim->expr = NULL;
 	}
-      else
-	if (a3->expr == NULL)
-	  {
-	    a2->next = NULL;
-	    gfc_free_actual_arglist (a3);
-	  }
       gfc_conv_intrinsic_funcall (se, expr);
       return;
     }
+
   type = gfc_typenode_for_spec (&expr->ts);
   /* Initialize the result.  */
   limit = gfc_create_var (type, "limit");

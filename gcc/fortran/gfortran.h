@@ -1673,6 +1673,9 @@ typedef struct gfc_symbol
   /* Set if the dummy argument of a procedure could be an array despite
      being called with a scalar actual argument. */
   unsigned maybe_array:1;
+  /* Set if this should be passed by value, but is not a VALUE argument
+     according to the Fortran standard.  */
+  unsigned pass_as_value:1;
 
   int refs;
   struct gfc_namespace *ns;	/* namespace containing this symbol */
@@ -3248,7 +3251,7 @@ bool gfc_type_is_extension_of (gfc_symbol *, gfc_symbol *);
 bool gfc_type_compatible (gfc_typespec *, gfc_typespec *);
 
 void gfc_copy_formal_args_intr (gfc_symbol *, gfc_intrinsic_sym *,
-				gfc_actual_arglist *);
+				gfc_actual_arglist *, bool copy_type = false);
 
 void gfc_free_finalizer (gfc_finalizer *el); /* Needed in resolve.c, too  */
 
@@ -3273,6 +3276,8 @@ void gfc_intrinsic_done_1 (void);
 
 char gfc_type_letter (bt, bool logical_equals_int = false);
 gfc_symbol * gfc_get_intrinsic_sub_symbol (const char *);
+gfc_symbol *gfc_get_intrinsic_function_symbol (gfc_expr *);
+gfc_symbol *gfc_find_intrinsic_symbol (gfc_expr *);
 bool gfc_convert_type (gfc_expr *, gfc_typespec *, int);
 bool gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int,
 			    bool array = false);
