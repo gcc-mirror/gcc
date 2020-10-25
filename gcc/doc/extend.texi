@@ -7429,6 +7429,33 @@ data in this way can reduce program startup times.  This attribute is
 specific to ELF targets and relies on the linker to place such data in
 the right location
 
+@item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective
+-C++ only)}
+@cindex @code{objc_nullability} variable attribute
+This attribute applies to pointer variables only.  It allows marking the
+pointer with one of four possible values describing the conditions under
+which the pointer might have a @code{nil} value. In most cases, the
+attribute is intended to be an internal representation for property and
+method nullability (specified by language keywords); it is not recommended
+to use it directly.
+
+When @var{nullability kind} is @code{"unspecified"} or @code{0}, nothing is
+known about the conditions in which the pointer might be @code{nil}. Making
+this state specific serves to avoid false positives in diagnostics.
+
+When @var{nullability kind} is @code{"nonnull"} or @code{1}, the pointer has
+no meaning if it is @code{nil} and thus the compiler is free to emit
+diagnostics if it can be determined that the value will be @code{nil}.
+
+When @var{nullability kind} is @code{"nullable"} or @code{2}, the pointer might
+be @code{nil} and carry meaning as such.
+
+When @var{nullability kind} is @code{"resettable"} or @code{3} (used only in
+the context of property attribute lists) this describes the case in which a
+property setter may take the value @code{nil} (which perhaps causes the
+property to be reset in some manner to a default) but for which the property
+getter will never validly return @code{nil}.
+
 @end table
 
 @node ARC Variable Attributes

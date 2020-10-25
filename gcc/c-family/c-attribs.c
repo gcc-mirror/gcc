@@ -159,6 +159,7 @@ static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nsobject_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
+static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -516,6 +517,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_nsobject_attribute, NULL },
   { "objc_root_class",	      0, 0, true, false, false, false,
 			      handle_objc_root_class_attribute, NULL },
+  { "objc_nullability",	      1, 1, true, false, false, false,
+			      handle_objc_nullability_attribute, NULL },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -5179,6 +5182,52 @@ handle_objc_root_class_attribute (tree */*node*/, tree name, tree /*args*/,
 	     " class interfaces, attribute ignored", name);
 
   *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+/* Handle an "objc_nullability" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_objc_nullability_attribute (tree *node, tree name, tree args,
+				   int /*flags*/,
+				   bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+
+  tree type = TREE_TYPE (*node);
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    type = TREE_TYPE (type);
+
+  if (type && !POINTER_TYPE_P (type))
+    {
+      error ("%qE cannot be applied to non-pointer type %qT", name, type);
+      return NULL_TREE;
+    }
+
+  /* We accept objc_nullability() with a single argument.
+     string: "unspecified", "nullable", "nonnull" or "resettable"
+     integer: 0 and 3 where the values have the same meaning as
+     the strings.  */
+  tree val = TREE_VALUE (args);
+  if (TREE_CODE (val) == INTEGER_CST)
+    {
+      val = default_conversion (val);
+      if (!tree_fits_uhwi_p (val) || tree_to_uhwi (val) > 3)
+	error ("%qE attribute argument %qE is not an integer constant"
+	       " between 0 and 3", name, val);
+      else
+	*no_add_attrs = false; /* OK */
+    }
+  else if (TREE_CODE (val) == STRING_CST
+	   && (strcmp (TREE_STRING_POINTER (val), "nullable") == 0
+	      || strcmp (TREE_STRING_POINTER (val), "nonnull") == 0
+	      || strcmp (TREE_STRING_POINTER (val), "unspecified") == 0
+	      || strcmp (TREE_STRING_POINTER (val), "resettable") == 0))
+    *no_add_attrs = false; /* OK */
+  else if (val != error_mark_node)
+    error ("%qE attribute argument %qE is not recognised", name, val);
+
   return NULL_TREE;
 }
 

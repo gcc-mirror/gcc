@@ -825,6 +825,11 @@ objc_prop_attr_kind_for_rid (enum rid prop_rid)
       case RID_PROPATOMIC:	return OBJC_PROPERTY_ATTR_ATOMIC;
       case RID_NONATOMIC:	return OBJC_PROPERTY_ATTR_NONATOMIC;
 
+      case RID_NULL_UNSPECIFIED:return OBJC_PROPERTY_ATTR_NULL_UNSPECIFIED;
+      case RID_NULLABLE:	return OBJC_PROPERTY_ATTR_NULLABLE;
+      case RID_NONNULL:		return OBJC_PROPERTY_ATTR_NONNULL;
+      case RID_NULL_RESETTABLE:	return OBJC_PROPERTY_ATTR_NULL_RESETTABLE;
+
       case RID_CLASS:		return OBJC_PROPERTY_ATTR_CLASS;
     }
 }
@@ -994,6 +999,27 @@ objc_add_property_declaration (location_t location, tree decl,
   if (attrs[OBJC_PROPATTR_GROUP_CLASS])
     property_nonatomic = attrs[OBJC_PROPATTR_GROUP_CLASS]->prop_kind
 			 == OBJC_PROPERTY_ATTR_CLASS;
+
+  /* Nullability specifications for the property.  */
+  enum objc_property_nullability property_nullability
+    =  OBJC_PROPERTY_NULL_UNSET;
+  if (attrs[OBJC_PROPATTR_GROUP_NULLABLE])
+    {
+      if (attrs[OBJC_PROPATTR_GROUP_NULLABLE]->prop_kind
+	  == OBJC_PROPERTY_ATTR_NULL_UNSPECIFIED)
+	property_nullability = OBJC_PROPERTY_NULL_UNSPECIFIED;
+      else if (attrs[OBJC_PROPATTR_GROUP_NULLABLE]->prop_kind
+	  == OBJC_PROPERTY_ATTR_NULLABLE)
+	property_nullability = OBJC_PROPERTY_NULLABLE;
+      else if (attrs[OBJC_PROPATTR_GROUP_NULLABLE]->prop_kind
+	  == OBJC_PROPERTY_ATTR_NONNULL)
+	property_nullability = OBJC_PROPERTY_NONNULL;
+      else if (attrs[OBJC_PROPATTR_GROUP_NULLABLE]->prop_kind
+	  == OBJC_PROPERTY_ATTR_NULL_RESETTABLE)
+	property_nullability = OBJC_PROPERTY_NULL_RESETTABLE;
+      else
+	gcc_unreachable ();
+    }
 
   /* TODO: Check that the property type is an Objective-C object or a
      "POD".  */
@@ -1272,7 +1298,8 @@ objc_add_property_declaration (location_t location, tree decl,
   tree property_decl = make_node (PROPERTY_DECL);
 
   /* Copy the basic information from the original decl.  */
-  TREE_TYPE (property_decl) = TREE_TYPE (decl);
+  tree p_type = TREE_TYPE (decl);
+  TREE_TYPE (property_decl) = p_type;
   DECL_SOURCE_LOCATION (property_decl) = DECL_SOURCE_LOCATION (decl);
   TREE_DEPRECATED (property_decl) = TREE_DEPRECATED (decl);
 
@@ -1286,6 +1313,28 @@ objc_add_property_declaration (location_t location, tree decl,
   PROPERTY_ASSIGN_SEMANTICS (property_decl) = property_assign_semantics;
   PROPERTY_IVAR_NAME (property_decl) = NULL_TREE;
   PROPERTY_DYNAMIC (property_decl) = 0;
+
+  /* FIXME: We seem to drop any existing DECL_ATTRIBUTES on the floor.  */
+  if (property_nullability != OBJC_PROPERTY_NULL_UNSET)
+    {
+      if (p_type && !POINTER_TYPE_P (p_type))
+	error_at (decl_loc, "nullability specifier %qE cannot be applied to"
+		  " non-pointer type %qT",
+		  attrs[OBJC_PROPATTR_GROUP_NULLABLE]->name, p_type);
+      else if (p_type && POINTER_TYPE_P (p_type) && TREE_TYPE (p_type)
+	       && POINTER_TYPE_P (TREE_TYPE (p_type)))
+	error_at (decl_loc, "nullability specifier %qE cannot be applied to"
+		  " multi-level pointer type %qT",
+		  attrs[OBJC_PROPATTR_GROUP_NULLABLE]->name, p_type);
+      else
+	{
+	  tree attr_name = get_identifier ("objc_nullability");
+	  tree attr_value = build_int_cst (unsigned_type_node,
+				       (unsigned)property_nullability);
+	  tree nulla = build_tree_list (attr_name, attr_value);
+	  DECL_ATTRIBUTES (property_decl) = nulla;
+	}
+    }
 
   /* Remember the fact that the property was found in the @optional
      section in a @protocol, or not.  */
