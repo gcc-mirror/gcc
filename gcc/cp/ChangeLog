@@ -1,3 +1,10 @@
+2020-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96241
+	* constexpr.c (cxx_eval_array_reference): Set up ctx->ctor if we
+	are initializing an aggregate.  Call free_constructor on the new
+	CONSTRUCTOR if it isn't returned from cxx_eval_constant_expression.
+
 2020-10-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91741

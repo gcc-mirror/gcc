@@ -1,3 +1,38 @@
+2020-10-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/97451
+	* configure.ac (HAVE_AS_WORKING_DWARF_4_FLAG): Renamed to ...
+	(HAVE_AS_WORKING_DWARF_N_FLAG): This.  Don't define if there is
+	an extra assembly input file in debug info.  Replace success
+	with dwarf4_success in the 32-bit --gdwarf-4 check.
+	* dwarf2out.c (asm_outputs_debug_line_str): Check
+	HAVE_AS_WORKING_DWARF_N_FLAG instead of
+	HAVE_AS_WORKING_DWARF_4_FLAG.
+	* gcc.c (ASM_DEBUG_SPEC): Likewise.
+	(ASM_DEBUG_OPTION_SPEC): Likewise.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
+2020-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97538
+	* calls.c (get_size_range): Handle undefined ranges.
+
+2020-10-24  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::former_thunk_p): Move out of CHECKING_P
+	macro.
+
+2020-10-24  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimate_address_p): Limit
+	AND addressing to just lvx/stvx style addresses.
+
+2020-10-24  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.md (cstore<mode>4): Don't call
+	rs6000_emit_int_cmove for power10 when -mno-isel.
+
 2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* Makefile.in: Add symtab-thunks.o

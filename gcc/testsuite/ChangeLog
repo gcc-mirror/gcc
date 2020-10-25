@@ -1,3 +1,13 @@
+2020-10-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96241
+	* g++.dg/cpp0x/constexpr-96241.C: New test.
+	* g++.dg/cpp1y/constexpr-96241.C: New test.
+
+2020-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/pr97538.C: New test.
+
 2020-10-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/Wsizeof-array-div1.c: Expect certain warnings on
