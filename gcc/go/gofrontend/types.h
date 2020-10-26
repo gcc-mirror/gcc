@@ -667,7 +667,7 @@ class Type
 
   // Whether the type is permitted in the heap.
   bool
-  in_heap()
+  in_heap() const
   { return this->do_in_heap(); }
 
   // Return a hash code for this type for the method hash table.
@@ -1120,7 +1120,7 @@ class Type
   { return false; }
 
   virtual bool
-  do_in_heap()
+  do_in_heap() const
   { return true; }
 
   virtual unsigned int
@@ -2660,7 +2660,7 @@ class Struct_type : public Type
   do_hash_might_panic();
 
   bool
-  do_in_heap();
+  do_in_heap() const;
 
   unsigned int
   do_hash_for_method(Gogo*, int) const;
@@ -2842,7 +2842,7 @@ class Array_type : public Type
   { return this->length_ != NULL && this->element_type_->hash_might_panic(); }
 
   bool
-  do_in_heap()
+  do_in_heap() const
   { return this->length_ == NULL || this->element_type_->in_heap(); }
 
   unsigned int
@@ -3591,7 +3591,7 @@ class Named_type : public Type
   do_needs_key_update();
 
   bool
-  do_in_heap()
+  do_in_heap() const
   { return this->in_heap_ && this->type_->in_heap(); }
 
   unsigned int
@@ -3754,7 +3754,7 @@ class Forward_declaration_type : public Type
   { return this->real_type()->needs_key_update(); }
 
   bool
-  do_in_heap()
+  do_in_heap() const
   { return this->real_type()->in_heap(); }
 
   unsigned int

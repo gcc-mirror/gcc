@@ -1049,6 +1049,13 @@ Import::read_named_type(int index)
       this->require_c_string(" ");
     }
 
+  bool in_heap = true;
+  if (this->match_c_string("notinheap"))
+    {
+      this->require_c_string("notinheap ");
+      in_heap = false;
+    }
+
   bool is_alias = false;
   if (this->match_c_string("= "))
     {
@@ -1102,7 +1109,14 @@ Import::read_named_type(int index)
   // declaration of a type defined in some other file.
   Type* type;
   if (this->match_c_string(">") || this->match_c_string("\n"))
-    type = this->types_[index];
+    {
+      type = this->types_[index];
+      if (!in_heap)
+	go_error_at(this->location_,
+		    ("import error at %d for type index %d: "
+		     "forward declaration marked notinheap"),
+		    this->pos(), index);
+    }
   else
     {
       if (no->is_type_declaration())
@@ -1117,6 +1131,8 @@ Import::read_named_type(int index)
 	  // This type has not yet been imported.
 	  ntype->clear_is_visible();
 
+	  if (!in_heap)
+	    ntype->set_not_in_heap();
 	  if (is_alias)
 	    ntype->set_is_alias();
 
