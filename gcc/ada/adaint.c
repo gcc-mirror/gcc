@@ -237,6 +237,11 @@ UINT __gnat_current_ccs_encoding;
 
 #include "adaint.h"
 
+#if defined (__APPLE__) && defined (st_mtime)
+#define st_atim st_atimespec
+#define st_mtim st_mtimespec
+#endif
+
 /* Define symbols O_BINARY and O_TEXT as harmless zeroes if they are not
    defined in the current system. On DOS-like systems these flags control
    whether the file is opened/created in text-translation mode (CR/LF in

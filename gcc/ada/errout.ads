@@ -381,12 +381,11 @@ package Errout is
    --      continuations are being gathered into a single message.
 
    --    Insertion character | (Vertical bar: non-serious error)
-   --      By default, error messages (other than warning messages) are
-   --      considered to be fatal error messages which prevent expansion or
-   --      generation of code in the presence of the -gnatQ switch. If the
-   --      insertion character | appears, the message is considered to be
-   --      non-serious, and does not cause Serious_Errors_Detected to be
-   --      incremented (so expansion is not prevented by such a msg). This
+   --      By default, error messages (but not warning messages) are considered
+   --      to be fatal error messages, which prevent expansion and generation
+   --      of code. If the insertion character | appears, the message is
+   --      considered to be nonserious, and Serious_Errors_Detected is not
+   --      incremented, so expansion is not prevented by such a msg. This
    --      insertion character is ignored in continuation messages.
 
    --    Insertion character ~ (Tilde: insert string)

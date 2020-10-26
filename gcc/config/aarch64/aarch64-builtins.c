@@ -132,6 +132,7 @@ const unsigned int FLAG_AUTO_FP = 1U << 5;
 const unsigned int FLAG_FP = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS;
 const unsigned int FLAG_ALL = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS
   | FLAG_READ_MEMORY | FLAG_PREFETCH_MEMORY | FLAG_WRITE_MEMORY;
+const unsigned int FLAG_STORE = FLAG_WRITE_MEMORY | FLAG_AUTO_FP;
 
 typedef struct
 {

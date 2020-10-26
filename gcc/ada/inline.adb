@@ -2917,7 +2917,24 @@ package body Inline is
          --  formal in the inlined code.
 
          if Is_Entity_Name (A) and then Ekind (F) /= E_In_Parameter then
-            Set_Last_Assignment (Entity (A), Empty);
+
+            --  In GNATprove mode a protected component acting as an actual
+            --  subprogram parameter will appear as inlined-for-proof. However,
+            --  its E_Component entity is not an assignable object, so the
+            --  assertion in Set_Last_Assignment will fail. We just omit the
+            --  call to Set_Last_Assignment, because GNATprove flags useless
+            --  assignments with its own flow analysis.
+            --
+            --  In GNAT mode such a problem does not occur, because protected
+            --  components are inlined via object renamings whose entity kind
+            --  E_Variable is assignable.
+
+            if Is_Assignable (Entity (A)) then
+               Set_Last_Assignment (Entity (A), Empty);
+            else
+               pragma Assert
+                 (GNATprove_Mode and then Is_Protected_Component (Entity (A)));
+            end if;
          end if;
 
          --  If the argument may be a controlling argument in a call within

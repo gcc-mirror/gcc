@@ -816,6 +816,11 @@ Wsizeof-pointer-div
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers.
 
+Wsizeof-array-div
+C ObjC C++ ObjC++ Var(warn_sizeof_array_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about divisions of two sizeof operators when the first one is applied
+to an array and the divisor does not equal the size of the array element.
+
 Wsizeof-pointer-memaccess
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious length parameters to certain string functions if the argument uses sizeof.

@@ -7972,7 +7972,7 @@ static bool
 associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
   if ((node->alias
-       || (node->thunk.thunk_p
+       || (node->thunk
 	   && ! node->inlined_to))
       && node->analyzed
       && !node->ifunc_resolver)
@@ -8137,10 +8137,6 @@ ipa_pta_execute (void)
       fprintf (dump_file, "\n");
       from = constraints.length ();
     }
-
-  /* FIXME: Clone materialization is not preserving stmt references.  */
-  FOR_EACH_DEFINED_FUNCTION (node)
-    node->clear_stmts_in_references ();
 
   /* Build the constraints.  */
   FOR_EACH_DEFINED_FUNCTION (node)

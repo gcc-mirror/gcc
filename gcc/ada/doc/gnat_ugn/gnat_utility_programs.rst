@@ -1920,8 +1920,8 @@ building specialized scripts.
 
 
    :switch:`--comments-fill`
-     Fill comment blocks. This is the default.
-     Use :switch:`--no-comments-fill` to turn off filling.
+     Fill comment blocks.
+     The default is :switch:`--no-comments-fill`.
 
 
    :switch:`--comments-special`

@@ -2833,7 +2833,10 @@ package body Contracts is
    procedure Freeze_Previous_Contracts (Body_Decl : Node_Id) is
       function Causes_Contract_Freezing (N : Node_Id) return Boolean;
       pragma Inline (Causes_Contract_Freezing);
-      --  Determine whether arbitrary node N causes contract freezing
+      --  Determine whether arbitrary node N causes contract freezing. This is
+      --  used as an assertion for the current body declaration that caused
+      --  contract freezing, and as a condition to detect body declaration that
+      --  already caused contract freezing before.
 
       procedure Freeze_Contracts;
       pragma Inline (Freeze_Contracts);
@@ -2851,9 +2854,17 @@ package body Contracts is
 
       function Causes_Contract_Freezing (N : Node_Id) return Boolean is
       begin
-         return Nkind (N) in
-           N_Entry_Body      | N_Package_Body         | N_Protected_Body |
-           N_Subprogram_Body | N_Subprogram_Body_Stub | N_Task_Body;
+         --  The following condition matches guards for calls to
+         --  Freeze_Previous_Contracts from routines that analyze various body
+         --  declarations. In particular, it detects expression functions, as
+         --  described in the call from Analyze_Subprogram_Body_Helper.
+
+         return
+           Comes_From_Source (Original_Node (N))
+             and then
+           Nkind (N) in
+             N_Entry_Body      | N_Package_Body         | N_Protected_Body |
+             N_Subprogram_Body | N_Subprogram_Body_Stub | N_Task_Body;
       end Causes_Contract_Freezing;
 
       ----------------------

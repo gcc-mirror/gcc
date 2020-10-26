@@ -147,18 +147,19 @@ Type                   Representation
 *
   "The small of an ordinary fixed point type.  See 3.5.9(8)."
 
-``Fine_Delta`` is 2**(-63)
+The small is the largest power of two that does not exceed the delta.
 
 *
   "What combinations of small, range, and digits are
   supported for fixed point types.  See 3.5.9(10)."
 
-Any combinations are permitted that do not result in a small less than
-``Fine_Delta`` and do not result in a mantissa larger than 63 bits.
-If the mantissa is larger than 53 bits on machines where Long_Long_Float
-is 64 bits (true of all architectures except x86), then the output from
-Text_IO is accurate to only 53 bits, rather than the full mantissa.  This
-is because floating-point conversions are used to convert fixed point.
+For an ordinary fixed point type, the small must lie in 2**(-80) .. 2**80
+and the range in -10.0**36 .. 10.0**36; any combination is permitted that
+does not result in a mantissa larger than 63 bits. However, if the mantissa
+is larger than 53 bits on machines where Long_Long_Float is 64 bits (true
+of all architectures except x86), then the output from Text_IO may be
+accurate to only 53 bits, rather than the full mantissa.  This is because
+floating-point conversions may be used to convert fixed point.
 
 
 *

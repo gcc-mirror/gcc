@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
+#include "symtab-thunks.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -230,6 +231,11 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     e->callee->remove_from_same_comdat_group ();
 
   e->callee->inlined_to = inlining_into;
+  if (e->callee->ipa_transforms_to_apply.length ())
+    {
+      e->callee->ipa_transforms_to_apply.release ();
+      e->callee->ipa_transforms_to_apply = vNULL;
+    }
 
   /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = next)
@@ -353,14 +359,18 @@ inline_call (struct cgraph_edge *e, bool update_original,
   to = e->caller;
   if (to->inlined_to)
     to = to->inlined_to;
-  if (to->thunk.thunk_p)
+  if (to->thunk)
     {
       struct cgraph_node *target = to->callees->callee;
       thunk_expansion = true;
+
+      /* Remove all annotations, but keep thunk info.  */
+      thunk_info info = *thunk_info::get (to);
       symtab->call_cgraph_removal_hooks (to);
+      *thunk_info::get_create (to) = info;
       if (in_lto_p)
 	to->get_untransformed_body ();
-      to->expand_thunk (false, true);
+      expand_thunk (to, false, true);
       /* When thunk is instrumented we may have multiple callees.  */
       for (e = to->callees; e && e->callee != target; e = e->next_callee)
 	;
@@ -564,9 +574,9 @@ save_inline_function_body (struct cgraph_node *node)
   first_clone = node->clones;
 
   /* Arrange first clone to not be thunk as those do not have bodies.  */
-  if (first_clone->thunk.thunk_p)
+  if (first_clone->thunk)
     {
-      while (first_clone->thunk.thunk_p)
+      while (first_clone->thunk)
         first_clone = first_clone->next_sibling_clone;
       first_clone->prev_sibling_clone->next_sibling_clone
 	= first_clone->next_sibling_clone;
@@ -601,7 +611,10 @@ save_inline_function_body (struct cgraph_node *node)
 
   tree prev_body_holder = node->decl;
   if (!ipa_saved_clone_sources)
-    ipa_saved_clone_sources = new function_summary <tree *> (symtab);
+    {
+      ipa_saved_clone_sources = new function_summary <tree *> (symtab);
+      ipa_saved_clone_sources->disable_insertion_hook ();
+    }
   else
     {
       tree *p = ipa_saved_clone_sources->get (node);
@@ -673,11 +686,11 @@ static bool
 preserve_function_body_p (struct cgraph_node *node)
 {
   gcc_assert (symtab->global_info_ready);
-  gcc_assert (!node->alias && !node->thunk.thunk_p);
+  gcc_assert (!node->alias && !node->thunk);
 
   /* Look if there is any non-thunk clone around.  */
   for (node = node->clones; node; node = node->next_sibling_clone)
-    if (!node->thunk.thunk_p)
+    if (!node->thunk)
       return true;
   return false;
 }
@@ -703,6 +716,7 @@ inline_transform (struct cgraph_node *node)
       if (n->decl != node->decl)
 	n->materialize_clone ();
     }
+  node->clear_stmts_in_references ();
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */

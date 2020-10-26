@@ -7978,7 +7978,16 @@ package body Freeze is
          --  Check that a type referenced by an entity can be frozen
 
          if Is_Entity_Name (Node) and then Present (Entity (Node)) then
-            Check_And_Freeze_Type (Etype (Entity (Node)));
+            --  The entity itself may be a type, as in a membership test
+            --  or an attribute reference. Freezing its own type would be
+            --  incomplete if the entity is derived or an extension.
+
+            if Is_Type (Entity (Node)) then
+               Check_And_Freeze_Type (Entity (Node));
+
+            else
+               Check_And_Freeze_Type (Etype (Entity (Node)));
+            end if;
 
             --  Check that the enclosing record type can be frozen
 

@@ -941,7 +941,10 @@ class GTY((user)) ipa_node_params_t: public function_summary <ipa_node_params *>
 {
 public:
   ipa_node_params_t (symbol_table *table, bool ggc):
-    function_summary<ipa_node_params *> (table, ggc) { }
+    function_summary<ipa_node_params *> (table, ggc)
+  {
+    disable_insertion_hook ();
+  }
 
   /* Hook that is called by summary when a node is duplicated.  */
   virtual void duplicate (cgraph_node *node,

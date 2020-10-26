@@ -752,7 +752,8 @@ symtab_node::remove_stmt_references (gimple *stmt)
       i++;
 }
 
-/* Remove all stmt references in non-speculative references.
+/* Remove all stmt references in non-speculative references in THIS
+   and all clones.
    Those are not maintained during inlining & cloning.
    The exception are speculative references that are updated along
    with callgraph edges associated with them.  */
@@ -770,6 +771,13 @@ symtab_node::clear_stmts_in_references (void)
 	r->lto_stmt_uid = 0;
 	r->speculative_id = 0;
       }
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (this);
+  if (cnode)
+    {
+      if (cnode->clones)
+	for (cnode = cnode->clones; cnode; cnode = cnode->next_sibling_clone)
+	  cnode->clear_stmts_in_references ();
+    }
 }
 
 /* Remove all references in ref list.  */

@@ -227,7 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     inline bool
     _Sp_counted_base<_S_single>::
-    _M_add_ref_lock_nothrow()
+    _M_add_ref_lock_nothrow() noexcept
     {
       if (_M_use_count == 0)
 	return false;
@@ -238,7 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     inline bool
     _Sp_counted_base<_S_mutex>::
-    _M_add_ref_lock_nothrow()
+    _M_add_ref_lock_nothrow() noexcept
     {
       __gnu_cxx::__scoped_lock sentry(*this);
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1) == 0)
@@ -252,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     inline bool
     _Sp_counted_base<_S_atomic>::
-    _M_add_ref_lock_nothrow()
+    _M_add_ref_lock_nothrow() noexcept
     {
       // Perform lock-free add-if-not-zero operation.
       _Atomic_word __count = _M_get_use_count();
@@ -693,7 +693,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit __shared_count(const __weak_count<_Lp>& __r);
 
       // Does not throw if __r._M_get_use_count() == 0, caller must check.
-      explicit __shared_count(const __weak_count<_Lp>& __r, std::nothrow_t);
+      explicit
+      __shared_count(const __weak_count<_Lp>& __r, std::nothrow_t) noexcept;
 
       ~__shared_count() noexcept
       {

@@ -444,6 +444,18 @@ enum excess_precision_type
   EXCESS_PRECISION_TYPE_FAST
 };
 
+/* Level of size optimization.  */
+
+enum optimize_size_level
+{
+  /* Do not optimize for size.  */
+  OPTIMIZE_SIZE_NO,
+  /* Optimize for size but not at extreme performance costs.  */
+  OPTIMIZE_SIZE_BALANCED,
+  /* Optimize for size as much as possible.  */
+  OPTIMIZE_SIZE_MAX
+};
+
 /* Support for user-provided GGC and PCH markers.  The first parameter
    is a pointer to a pointer, the second a cookie.  */
 typedef void (*gt_pointer_operator) (void *, void *);

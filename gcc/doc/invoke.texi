@@ -363,6 +363,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-shift-overflow  -Wshift-overflow=@var{n} @gol
 -Wsign-compare  -Wsign-conversion @gol
 -Wno-sizeof-array-argument @gol
+-Wsizeof-array-div @gol
 -Wsizeof-pointer-div  -Wsizeof-pointer-memaccess @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
@@ -5301,6 +5302,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wreturn-type  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
+-Wsizeof-array-div @gol
 -Wsizeof-pointer-div @gol
 -Wsizeof-pointer-memaccess @gol
 -Wstrict-aliasing  @gol
@@ -8054,6 +8056,23 @@ real to lower precision real values.  This option is also enabled by
 @opindex Wno-scalar-storage-order
 @opindex Wscalar-storage-order
 Do not warn on suspicious constructs involving reverse scalar storage order.
+
+@item -Wsizeof-array-div
+@opindex Wsizeof-array-div
+@opindex Wno-sizeof-array-div
+Warn about divisions of two sizeof operators when the first one is applied
+to an array and the divisor does not equal the size of the array element.
+In such a case, the computation will not yield the number of elements in the
+array, which is likely what the user intended.  This warning warns e.g. about
+@smallexample
+int fn ()
+@{
+  int arr[10];
+  return sizeof (arr) / sizeof (short);
+@}
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wsizeof-pointer-div
 @opindex Wsizeof-pointer-div

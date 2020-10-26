@@ -4706,14 +4706,13 @@ cp_build_binary_op (const op_location_t &location,
 	{
 	  tree type0 = TREE_OPERAND (op0, 0);
 	  tree type1 = TREE_OPERAND (op1, 0);
-	  tree first_arg = type0;
+	  tree first_arg = tree_strip_any_location_wrapper (type0);
 	  if (!TYPE_P (type0))
 	    type0 = TREE_TYPE (type0);
 	  if (!TYPE_P (type1))
 	    type1 = TREE_TYPE (type1);
 	  if (INDIRECT_TYPE_P (type0) && same_type_p (TREE_TYPE (type0), type1))
 	    {
-	      STRIP_ANY_LOCATION_WRAPPER (first_arg);
 	      if (!(TREE_CODE (first_arg) == PARM_DECL
 		    && DECL_ARRAY_PARAMETER_P (first_arg)
 		    && warn_sizeof_array_argument)
@@ -4729,6 +4728,13 @@ cp_build_binary_op (const op_location_t &location,
 			      "first %<sizeof%> operand was declared here");
 		}
 	    }
+	  else if (TREE_CODE (type0) == ARRAY_TYPE
+		   && !char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type0)))
+		   /* Set by finish_parenthesized_expr.  */
+		   && !TREE_NO_WARNING (op1)
+		   && (complain & tf_warning))
+	    maybe_warn_sizeof_array_div (location, first_arg, type0,
+					 op1, non_reference (type1));
 	}
 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE

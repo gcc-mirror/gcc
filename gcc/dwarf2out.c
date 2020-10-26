@@ -11884,7 +11884,7 @@ asm_outputs_debug_line_str (void)
     return true;
   else
     {
-#if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+#if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_N_FLAG)
       return !dwarf_split_debug_info && dwarf_version >= 5;
 #else
       return false;

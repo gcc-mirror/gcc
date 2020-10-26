@@ -699,7 +699,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	       }
 	  }
 	else
-	  gcc_assert (!count || callee->thunk.thunk_p);
+	  gcc_assert (!count || callee->thunk);
     }
   else if (e->call_stmt && !e->call_stmt_cannot_inline_p && info->conds)
     {
@@ -3051,12 +3051,12 @@ compute_fn_summary (struct cgraph_node *node, bool early)
   class ipa_size_summary *size_info = ipa_size_summaries->get_create (node);
 
   /* Estimate the stack size for the function if we're optimizing.  */
-  self_stack_size = optimize && !node->thunk.thunk_p
+  self_stack_size = optimize && !node->thunk
 		    ? estimated_stack_frame_size (node) : 0;
   size_info->estimated_self_stack_size = self_stack_size;
   info->estimated_stack_size = self_stack_size;
 
-  if (node->thunk.thunk_p)
+  if (node->thunk)
     {
       ipa_call_summary *es = ipa_call_summaries->get_create (node->callees);
       predicate t = true;
@@ -4221,7 +4221,7 @@ inline_analyze_function (struct cgraph_node *node)
 
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function: %s\n", node->dump_name ());
-  if (opt_for_fn (node->decl, optimize) && !node->thunk.thunk_p)
+  if (opt_for_fn (node->decl, optimize) && !node->thunk)
     inline_indirect_intraprocedural_analysis (node);
   compute_fn_summary (node, false);
   if (!optimize)

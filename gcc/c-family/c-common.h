@@ -176,6 +176,7 @@ enum rid
   RID_IS_TRIVIALLY_COPYABLE,
   RID_IS_UNION,                RID_UNDERLYING_TYPE,
   RID_IS_ASSIGNABLE,           RID_IS_CONSTRUCTIBLE,
+  RID_IS_NOTHROW_ASSIGNABLE,   RID_IS_NOTHROW_CONSTRUCTIBLE,
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
@@ -1373,6 +1374,7 @@ extern void warn_for_omitted_condop (location_t, tree);
 extern bool warn_for_restrict (unsigned, tree *, unsigned);
 extern void warn_for_address_or_pointer_of_packed_member (tree, tree);
 extern void warn_parm_array_mismatch (location_t, tree, tree);
+extern void maybe_warn_sizeof_array_div (location_t, tree, tree, tree, tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and

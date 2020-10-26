@@ -4421,23 +4421,30 @@ package body Sem_Warn is
                      end if;
 
                      declare
-                        B : constant Node_Id := Parent (Parent (Scope (E)));
-                        S : Entity_Id := Empty;
+                        S : Node_Id := Scope (E);
                      begin
-                        if Nkind (B) in
-                             N_Expression_Function |
-                             N_Subprogram_Body     |
-                             N_Subprogram_Renaming_Declaration
-                        then
-                           S := Corresponding_Spec (B);
+                        if Ekind (S) = E_Subprogram_Body then
+                           S := Parent (S);
+
+                           while Nkind (S) not in
+                             N_Expression_Function             |
+                             N_Subprogram_Body                 |
+                             N_Subprogram_Renaming_Declaration |
+                             N_Empty
+                           loop
+                              S := Parent (S);
+                           end loop;
+
+                           if Present (S) then
+                              S := Corresponding_Spec (S);
+                           end if;
                         end if;
 
                         --  Do not warn for dispatching operations, because
                         --  that causes too much noise. Also do not warn for
-                        --  trivial subprograms.
+                        --  trivial subprograms (e.g. stubs).
 
-                        if (not Present (S)
-                            or else not Is_Dispatching_Operation (S))
+                        if (No (S) or else not Is_Dispatching_Operation (S))
                           and then not Is_Trivial_Subprogram (Scope (E))
                         then
                            Error_Msg_NE -- CODEFIX

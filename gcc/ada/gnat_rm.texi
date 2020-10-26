@@ -6536,7 +6536,7 @@ See Ada 2012 Reference Manual for details.
 Syntax:
 
 @example
-pragma Profile (Ravenscar | Restricted | Rational |
+pragma Profile (Ravenscar | Restricted | Rational | Jorvik |
                 GNAT_Extended_Ravenscar | GNAT_Ravenscar_EDF );
 @end example
 
@@ -6544,10 +6544,12 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma. This is a
 configuration pragma that establishes a set of configuration pragmas
 that depend on the argument. @code{Ravenscar} is standard in Ada 2005.
+@code{Jorvik} is standard in Ada 202x.
 The other possibilities (@code{Restricted}, @code{Rational},
 @code{GNAT_Extended_Ravenscar}, @code{GNAT_Ravenscar_EDF})
-are implementation-defined. The set of configuration pragmas
-is defined in the following sections.
+are implementation-defined.  @code{GNAT_Extended_Ravenscar} is an alias for @code{Jorvik}.
+
+The set of configuration pragmas is defined in the following sections.
 
 
 @itemize *
@@ -6647,7 +6649,7 @@ No rendezvous statements are allowed.
 @end itemize
 
 The Ravenscar profile also includes the following restrictions that specify
-that there are no semantic dependences on the corresponding predefined
+that there are no semantic dependencies on the corresponding predefined
 packages:
 
 
@@ -6699,12 +6701,10 @@ automatically causes the use of a simplified,
 more efficient version of the tasking run-time library.
 
 @item 
-Pragma Profile (GNAT_Extended_Ravenscar)
+Pragma Profile (Jorvik)
 
-This profile corresponds to a GNAT specific extension of the
-Ravenscar profile. The profile may change in the future although
-only in a compatible way: some restrictions may be removed or
-relaxed. It is defined as a variation of the Ravenscar profile.
+@code{Jorvik} is the new profile added to the Ada 202x draft standard,
+previously implemented under the name @code{GNAT_Extended_Ravenscar}.
 
 The @code{No_Implicit_Heap_Allocations} restriction has been replaced
 by @code{No_Implicit_Task_Allocations} and
@@ -6715,6 +6715,11 @@ The @code{Simple_Barriers} restriction has been replaced by
 
 The @code{Max_Protected_Entries}, @code{Max_Entry_Queue_Length}, and
 @code{No_Relative_Delay} restrictions have been removed.
+
+Details on the rationale for @code{Jorvik} and implications for use may be
+found in @cite{A New Ravenscar-Based Profile} by P. Rogers, J. Ruiz,
+T. Gingold and P. Bernardi, in @cite{Reliable Software Technologies -- Ada Europe 2017}, Springer-Verlag Lecture Notes in Computer Science,
+Number 10300.
 
 @item 
 Pragma Profile (GNAT_Ravenscar_EDF)
@@ -9933,7 +9938,7 @@ This boolean aspect is equivalent to @ref{10b,,pragma Unmodified}.
 
 This boolean aspect is equivalent to @ref{10c,,pragma Unreferenced}.
 
-When using the @code{-gnatX} switch, this aspect is also supported on formal
+When using the @code{-gnat2020} switch, this aspect is also supported on formal
 parameters, which is in particular the only form possible for expression
 functions.
 
@@ -15675,7 +15680,7 @@ Representation
 "The small of an ordinary fixed point type.  See 3.5.9(8)."
 @end itemize
 
-@code{Fine_Delta} is 2**(-63)
+The small is the largest power of two that does not exceed the delta.
 
 
 @itemize *
@@ -15685,12 +15690,13 @@ Representation
 supported for fixed point types.  See 3.5.9(10)."
 @end itemize
 
-Any combinations are permitted that do not result in a small less than
-@code{Fine_Delta} and do not result in a mantissa larger than 63 bits.
-If the mantissa is larger than 53 bits on machines where Long_Long_Float
-is 64 bits (true of all architectures except x86), then the output from
-Text_IO is accurate to only 53 bits, rather than the full mantissa.  This
-is because floating-point conversions are used to convert fixed point.
+For an ordinary fixed point type, the small must lie in 2**(-80) .. 2**80
+and the range in -10.0**36 .. 10.0**36; any combination is permitted that
+does not result in a mantissa larger than 63 bits. However, if the mantissa
+is larger than 53 bits on machines where Long_Long_Float is 64 bits (true
+of all architectures except x86), then the output from Text_IO may be
+accurate to only 53 bits, rather than the full mantissa.  This is because
+floating-point conversions may be used to convert fixed point.
 
 
 @itemize *

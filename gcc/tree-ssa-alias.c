@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "errors.h"
 #include "dbgcnt.h"
 #include "gimple-pretty-print.h"
+#include "print-tree.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -2572,6 +2573,99 @@ modref_may_conflict (const gimple *stmt,
   return false;
 }
 
+/* Check if REF conflicts with call using "fn spec" attribute.
+   If CLOBBER is true we are checking for writes, otherwise check loads.
+
+   Return 0 if there are no conflicts (except for possible function call
+   argument reads), 1 if there are conflicts and -1 if we can not decide by
+   fn spec.  */
+
+static int
+check_fnspec (gcall *call, ao_ref *ref, bool clobber)
+{
+  attr_fnspec fnspec = gimple_call_fnspec (call);
+  if (fnspec.known_p ())
+    {
+      if (clobber
+	  ? !fnspec.global_memory_written_p ()
+	  : !fnspec.global_memory_read_p ())
+	{
+	  for (unsigned int i = 0; i < gimple_call_num_args (call); i++)
+	    if (POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, i)))
+		&& (!fnspec.arg_specified_p (i)
+		    || (clobber ? fnspec.arg_maybe_written_p (i)
+			: fnspec.arg_maybe_read_p (i))))
+	      {
+		ao_ref dref;
+		tree size = NULL_TREE;
+		unsigned int size_arg;
+
+		if (!fnspec.arg_specified_p (i))
+		  ;
+		else if (fnspec.arg_max_access_size_given_by_arg_p
+			   (i, &size_arg))
+		  size = gimple_call_arg (call, size_arg);
+		else if (fnspec.arg_access_size_given_by_type_p (i))
+		  {
+		    tree callee = gimple_call_fndecl (call);
+		    tree t = TYPE_ARG_TYPES (TREE_TYPE (callee));
+
+		    for (unsigned int p = 0; p < i; p++)
+		      t = TREE_CHAIN (t);
+		    size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_VALUE (t)));
+		  }
+		ao_ref_init_from_ptr_and_size (&dref,
+					       gimple_call_arg (call, i),
+					       size);
+		if (refs_may_alias_p_1 (&dref, ref, false))
+		  return 1;
+	      }
+	  if (clobber
+	      && fnspec.errno_maybe_written_p ()
+	      && flag_errno_math
+	      && targetm.ref_may_alias_errno (ref))
+	    return 1;
+	  return 0;
+	}
+    }
+
+ /* FIXME: we should handle barriers more consistently, but for now leave the
+    check here.  */
+  if (gimple_call_builtin_p (call, BUILT_IN_NORMAL))
+    switch (DECL_FUNCTION_CODE (gimple_call_fndecl (call)))
+      {
+      /* __sync_* builtins and some OpenMP builtins act as threading
+	 barriers.  */
+#undef DEF_SYNC_BUILTIN
+#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
+#include "sync-builtins.def"
+#undef DEF_SYNC_BUILTIN
+      case BUILT_IN_GOMP_ATOMIC_START:
+      case BUILT_IN_GOMP_ATOMIC_END:
+      case BUILT_IN_GOMP_BARRIER:
+      case BUILT_IN_GOMP_BARRIER_CANCEL:
+      case BUILT_IN_GOMP_TASKWAIT:
+      case BUILT_IN_GOMP_TASKGROUP_END:
+      case BUILT_IN_GOMP_CRITICAL_START:
+      case BUILT_IN_GOMP_CRITICAL_END:
+      case BUILT_IN_GOMP_CRITICAL_NAME_START:
+      case BUILT_IN_GOMP_CRITICAL_NAME_END:
+      case BUILT_IN_GOMP_LOOP_END:
+      case BUILT_IN_GOMP_LOOP_END_CANCEL:
+      case BUILT_IN_GOMP_ORDERED_START:
+      case BUILT_IN_GOMP_ORDERED_END:
+      case BUILT_IN_GOMP_SECTIONS_END:
+      case BUILT_IN_GOMP_SECTIONS_END_CANCEL:
+      case BUILT_IN_GOMP_SINGLE_COPY_START:
+      case BUILT_IN_GOMP_SINGLE_COPY_END:
+	return 1;
+
+      default:
+	return -1;
+      }
+  return -1;
+}
+
 /* If the call CALL may use the memory reference REF return true,
    otherwise return false.  */
 
@@ -2650,222 +2744,13 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       && !is_global_var (base))
     goto process_args;
 
-  /* Handle those builtin functions explicitly that do not act as
-     escape points.  See tree-ssa-structalias.c:find_func_aliases
-     for the list of builtins we might need to handle here.  */
-  if (callee != NULL_TREE
-      && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
-    switch (DECL_FUNCTION_CODE (callee))
-      {
-	/* All the following functions read memory pointed to by
-	   their second argument.  strcat/strncat additionally
-	   reads memory pointed to by the first argument.  */
-	case BUILT_IN_STRCAT:
-	case BUILT_IN_STRNCAT:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   NULL_TREE);
-	    if (refs_may_alias_p_1 (&dref, ref, false))
-	      return true;
-	  }
-	  /* FALLTHRU */
-	case BUILT_IN_STRCPY:
-	case BUILT_IN_STRNCPY:
-	case BUILT_IN_MEMCPY:
-	case BUILT_IN_MEMMOVE:
-	case BUILT_IN_MEMPCPY:
-	case BUILT_IN_STPCPY:
-	case BUILT_IN_STPNCPY:
-	case BUILT_IN_TM_MEMCPY:
-	case BUILT_IN_TM_MEMMOVE:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    if (gimple_call_num_args (call) == 3)
-	      size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 1),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	case BUILT_IN_STRCAT_CHK:
-	case BUILT_IN_STRNCAT_CHK:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   NULL_TREE);
-	    if (refs_may_alias_p_1 (&dref, ref, false))
-	      return true;
-	  }
-	  /* FALLTHRU */
-	case BUILT_IN_STRCPY_CHK:
-	case BUILT_IN_STRNCPY_CHK:
-	case BUILT_IN_MEMCPY_CHK:
-	case BUILT_IN_MEMMOVE_CHK:
-	case BUILT_IN_MEMPCPY_CHK:
-	case BUILT_IN_STPCPY_CHK:
-	case BUILT_IN_STPNCPY_CHK:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    if (gimple_call_num_args (call) == 4)
-	      size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 1),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	case BUILT_IN_BCOPY:
-	  {
-	    ao_ref dref;
-	    tree size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-
-	/* The following functions read memory pointed to by their
-	   first argument.  */
-	CASE_BUILT_IN_TM_LOAD (1):
-	CASE_BUILT_IN_TM_LOAD (2):
-	CASE_BUILT_IN_TM_LOAD (4):
-	CASE_BUILT_IN_TM_LOAD (8):
-	CASE_BUILT_IN_TM_LOAD (FLOAT):
-	CASE_BUILT_IN_TM_LOAD (DOUBLE):
-	CASE_BUILT_IN_TM_LOAD (LDOUBLE):
-	CASE_BUILT_IN_TM_LOAD (M64):
-	CASE_BUILT_IN_TM_LOAD (M128):
-	CASE_BUILT_IN_TM_LOAD (M256):
-	case BUILT_IN_TM_LOG:
-	case BUILT_IN_TM_LOG_1:
-	case BUILT_IN_TM_LOG_2:
-	case BUILT_IN_TM_LOG_4:
-	case BUILT_IN_TM_LOG_8:
-	case BUILT_IN_TM_LOG_FLOAT:
-	case BUILT_IN_TM_LOG_DOUBLE:
-	case BUILT_IN_TM_LOG_LDOUBLE:
-	case BUILT_IN_TM_LOG_M64:
-	case BUILT_IN_TM_LOG_M128:
-	case BUILT_IN_TM_LOG_M256:
-	  return ptr_deref_may_alias_ref_p_1 (gimple_call_arg (call, 0), ref);
-
-	/* These read memory pointed to by the first argument.  */
-	case BUILT_IN_STRDUP:
-	case BUILT_IN_STRNDUP:
-	case BUILT_IN_REALLOC:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    if (gimple_call_num_args (call) == 2)
-	      size = gimple_call_arg (call, 1);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	/* These read memory pointed to by the first argument.  */
-	case BUILT_IN_INDEX:
-	case BUILT_IN_STRCHR:
-	case BUILT_IN_STRRCHR:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   NULL_TREE);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	/* These read memory pointed to by the first argument with size
-	   in the third argument.  */
-	case BUILT_IN_MEMCHR:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   gimple_call_arg (call, 2));
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	/* These read memory pointed to by the first and second arguments.  */
-	case BUILT_IN_STRSTR:
-	case BUILT_IN_STRPBRK:
-	  {
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   NULL_TREE);
-	    if (refs_may_alias_p_1 (&dref, ref, false))
-	      return true;
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 1),
-					   NULL_TREE);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-
-	/* The following builtins do not read from memory.  */
-	case BUILT_IN_FREE:
-	case BUILT_IN_MALLOC:
-	case BUILT_IN_POSIX_MEMALIGN:
-	case BUILT_IN_ALIGNED_ALLOC:
-	case BUILT_IN_CALLOC:
-	CASE_BUILT_IN_ALLOCA:
-	case BUILT_IN_STACK_SAVE:
-	case BUILT_IN_STACK_RESTORE:
-	case BUILT_IN_MEMSET:
-	case BUILT_IN_TM_MEMSET:
-	case BUILT_IN_MEMSET_CHK:
-	case BUILT_IN_FREXP:
-	case BUILT_IN_FREXPF:
-	case BUILT_IN_FREXPL:
-	case BUILT_IN_GAMMA_R:
-	case BUILT_IN_GAMMAF_R:
-	case BUILT_IN_GAMMAL_R:
-	case BUILT_IN_LGAMMA_R:
-	case BUILT_IN_LGAMMAF_R:
-	case BUILT_IN_LGAMMAL_R:
-	case BUILT_IN_MODF:
-	case BUILT_IN_MODFF:
-	case BUILT_IN_MODFL:
-	case BUILT_IN_REMQUO:
-	case BUILT_IN_REMQUOF:
-	case BUILT_IN_REMQUOL:
-	case BUILT_IN_SINCOS:
-	case BUILT_IN_SINCOSF:
-	case BUILT_IN_SINCOSL:
-	case BUILT_IN_ASSUME_ALIGNED:
-	case BUILT_IN_VA_END:
-	  return false;
-	/* __sync_* builtins and some OpenMP builtins act as threading
-	   barriers.  */
-#undef DEF_SYNC_BUILTIN
-#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
-#include "sync-builtins.def"
-#undef DEF_SYNC_BUILTIN
-	case BUILT_IN_GOMP_ATOMIC_START:
-	case BUILT_IN_GOMP_ATOMIC_END:
-	case BUILT_IN_GOMP_BARRIER:
-	case BUILT_IN_GOMP_BARRIER_CANCEL:
-	case BUILT_IN_GOMP_TASKWAIT:
-	case BUILT_IN_GOMP_TASKGROUP_END:
-	case BUILT_IN_GOMP_CRITICAL_START:
-	case BUILT_IN_GOMP_CRITICAL_END:
-	case BUILT_IN_GOMP_CRITICAL_NAME_START:
-	case BUILT_IN_GOMP_CRITICAL_NAME_END:
-	case BUILT_IN_GOMP_LOOP_END:
-	case BUILT_IN_GOMP_LOOP_END_CANCEL:
-	case BUILT_IN_GOMP_ORDERED_START:
-	case BUILT_IN_GOMP_ORDERED_END:
-	case BUILT_IN_GOMP_SECTIONS_END:
-	case BUILT_IN_GOMP_SECTIONS_END_CANCEL:
-	case BUILT_IN_GOMP_SINGLE_COPY_START:
-	case BUILT_IN_GOMP_SINGLE_COPY_END:
-	  return true;
-
-	default:
-	  /* Fallthru to general call handling.  */;
-      }
+  if (int res = check_fnspec (call, ref, false))
+    {
+      if (res == 1)
+	return true;
+    }
+  else
+    goto process_args;
 
   /* Check if base is a global static variable that is not read
      by the function.  */
@@ -3104,205 +2989,13 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       && SSA_NAME_POINTS_TO_READONLY_MEMORY (TREE_OPERAND (base, 0)))
     return false;
 
-  /* Handle those builtin functions explicitly that do not act as
-     escape points.  See tree-ssa-structalias.c:find_func_aliases
-     for the list of builtins we might need to handle here.  */
-  if (callee != NULL_TREE
-      && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
-    switch (DECL_FUNCTION_CODE (callee))
-      {
-	/* All the following functions clobber memory pointed to by
-	   their first argument.  */
-	case BUILT_IN_STRCPY:
-	case BUILT_IN_STRNCPY:
-	case BUILT_IN_MEMCPY:
-	case BUILT_IN_MEMMOVE:
-	case BUILT_IN_MEMPCPY:
-	case BUILT_IN_STPCPY:
-	case BUILT_IN_STPNCPY:
-	case BUILT_IN_STRCAT:
-	case BUILT_IN_STRNCAT:
-	case BUILT_IN_MEMSET:
-	case BUILT_IN_TM_MEMSET:
-	CASE_BUILT_IN_TM_STORE (1):
-	CASE_BUILT_IN_TM_STORE (2):
-	CASE_BUILT_IN_TM_STORE (4):
-	CASE_BUILT_IN_TM_STORE (8):
-	CASE_BUILT_IN_TM_STORE (FLOAT):
-	CASE_BUILT_IN_TM_STORE (DOUBLE):
-	CASE_BUILT_IN_TM_STORE (LDOUBLE):
-	CASE_BUILT_IN_TM_STORE (M64):
-	CASE_BUILT_IN_TM_STORE (M128):
-	CASE_BUILT_IN_TM_STORE (M256):
-	case BUILT_IN_TM_MEMCPY:
-	case BUILT_IN_TM_MEMMOVE:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    /* Don't pass in size for strncat, as the maximum size
-	       is strlen (dest) + n + 1 instead of n, resp.
-	       n + 1 at dest + strlen (dest), but strlen (dest) isn't
-	       known.  */
-	    if (gimple_call_num_args (call) == 3
-		&& DECL_FUNCTION_CODE (callee) != BUILT_IN_STRNCAT)
-	      size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	case BUILT_IN_STRCPY_CHK:
-	case BUILT_IN_STRNCPY_CHK:
-	case BUILT_IN_MEMCPY_CHK:
-	case BUILT_IN_MEMMOVE_CHK:
-	case BUILT_IN_MEMPCPY_CHK:
-	case BUILT_IN_STPCPY_CHK:
-	case BUILT_IN_STPNCPY_CHK:
-	case BUILT_IN_STRCAT_CHK:
-	case BUILT_IN_STRNCAT_CHK:
-	case BUILT_IN_MEMSET_CHK:
-	  {
-	    ao_ref dref;
-	    tree size = NULL_TREE;
-	    /* Don't pass in size for __strncat_chk, as the maximum size
-	       is strlen (dest) + n + 1 instead of n, resp.
-	       n + 1 at dest + strlen (dest), but strlen (dest) isn't
-	       known.  */
-	    if (gimple_call_num_args (call) == 4
-		&& DECL_FUNCTION_CODE (callee) != BUILT_IN_STRNCAT_CHK)
-	      size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 0),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	case BUILT_IN_BCOPY:
-	  {
-	    ao_ref dref;
-	    tree size = gimple_call_arg (call, 2);
-	    ao_ref_init_from_ptr_and_size (&dref,
-					   gimple_call_arg (call, 1),
-					   size);
-	    return refs_may_alias_p_1 (&dref, ref, false);
-	  }
-	/* Allocating memory does not have any side-effects apart from
-	   being the definition point for the pointer.  */
-	case BUILT_IN_MALLOC:
-	case BUILT_IN_ALIGNED_ALLOC:
-	case BUILT_IN_CALLOC:
-	case BUILT_IN_STRDUP:
-	case BUILT_IN_STRNDUP:
-	  /* Unix98 specifies that errno is set on allocation failure.  */
-	  if (flag_errno_math
-	      && targetm.ref_may_alias_errno (ref))
-	    return true;
-	  return false;
-	case BUILT_IN_STACK_SAVE:
-	CASE_BUILT_IN_ALLOCA:
-	case BUILT_IN_ASSUME_ALIGNED:
-	  return false;
-	/* But posix_memalign stores a pointer into the memory pointed to
-	   by its first argument.  */
-	case BUILT_IN_POSIX_MEMALIGN:
-	  {
-	    tree ptrptr = gimple_call_arg (call, 0);
-	    ao_ref dref;
-	    ao_ref_init_from_ptr_and_size (&dref, ptrptr,
-					   TYPE_SIZE_UNIT (ptr_type_node));
-	    return (refs_may_alias_p_1 (&dref, ref, false)
-		    || (flag_errno_math
-			&& targetm.ref_may_alias_errno (ref)));
-	  }
-	/* Freeing memory kills the pointed-to memory.  More importantly
-	   the call has to serve as a barrier for moving loads and stores
-	   across it.  */
-	case BUILT_IN_FREE:
-	case BUILT_IN_VA_END:
-	  {
-	    tree ptr = gimple_call_arg (call, 0);
-	    return ptr_deref_may_alias_ref_p_1 (ptr, ref);
-	  }
-	/* Realloc serves both as allocation point and deallocation point.  */
-	case BUILT_IN_REALLOC:
-	  {
-	    tree ptr = gimple_call_arg (call, 0);
-	    /* Unix98 specifies that errno is set on allocation failure.  */
-	    return ((flag_errno_math
-		     && targetm.ref_may_alias_errno (ref))
-		    || ptr_deref_may_alias_ref_p_1 (ptr, ref));
-	  }
-	case BUILT_IN_GAMMA_R:
-	case BUILT_IN_GAMMAF_R:
-	case BUILT_IN_GAMMAL_R:
-	case BUILT_IN_LGAMMA_R:
-	case BUILT_IN_LGAMMAF_R:
-	case BUILT_IN_LGAMMAL_R:
-	  {
-	    tree out = gimple_call_arg (call, 1);
-	    if (ptr_deref_may_alias_ref_p_1 (out, ref))
-	      return true;
-	    if (flag_errno_math)
-	      break;
-	    return false;
-	  }
-	case BUILT_IN_FREXP:
-	case BUILT_IN_FREXPF:
-	case BUILT_IN_FREXPL:
-	case BUILT_IN_MODF:
-	case BUILT_IN_MODFF:
-	case BUILT_IN_MODFL:
-	  {
-	    tree out = gimple_call_arg (call, 1);
-	    return ptr_deref_may_alias_ref_p_1 (out, ref);
-	  }
-	case BUILT_IN_REMQUO:
-	case BUILT_IN_REMQUOF:
-	case BUILT_IN_REMQUOL:
-	  {
-	    tree out = gimple_call_arg (call, 2);
-	    if (ptr_deref_may_alias_ref_p_1 (out, ref))
-	      return true;
-	    if (flag_errno_math)
-	      break;
-	    return false;
-	  }
-	case BUILT_IN_SINCOS:
-	case BUILT_IN_SINCOSF:
-	case BUILT_IN_SINCOSL:
-	  {
-	    tree sin = gimple_call_arg (call, 1);
-	    tree cos = gimple_call_arg (call, 2);
-	    return (ptr_deref_may_alias_ref_p_1 (sin, ref)
-		    || ptr_deref_may_alias_ref_p_1 (cos, ref));
-	  }
-	/* __sync_* builtins and some OpenMP builtins act as threading
-	   barriers.  */
-#undef DEF_SYNC_BUILTIN
-#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
-#include "sync-builtins.def"
-#undef DEF_SYNC_BUILTIN
-	case BUILT_IN_GOMP_ATOMIC_START:
-	case BUILT_IN_GOMP_ATOMIC_END:
-	case BUILT_IN_GOMP_BARRIER:
-	case BUILT_IN_GOMP_BARRIER_CANCEL:
-	case BUILT_IN_GOMP_TASKWAIT:
-	case BUILT_IN_GOMP_TASKGROUP_END:
-	case BUILT_IN_GOMP_CRITICAL_START:
-	case BUILT_IN_GOMP_CRITICAL_END:
-	case BUILT_IN_GOMP_CRITICAL_NAME_START:
-	case BUILT_IN_GOMP_CRITICAL_NAME_END:
-	case BUILT_IN_GOMP_LOOP_END:
-	case BUILT_IN_GOMP_LOOP_END_CANCEL:
-	case BUILT_IN_GOMP_ORDERED_START:
-	case BUILT_IN_GOMP_ORDERED_END:
-	case BUILT_IN_GOMP_SECTIONS_END:
-	case BUILT_IN_GOMP_SECTIONS_END_CANCEL:
-	case BUILT_IN_GOMP_SINGLE_COPY_START:
-	case BUILT_IN_GOMP_SINGLE_COPY_END:
-	  return true;
-	default:
-	  /* Fallthru to general call handling.  */;
-      }
+  if (int res = check_fnspec (call, ref, true))
+    {
+      if (res == 1)
+	return true;
+    }
+  else
+    return false;
 
   /* Check if base is a global static variable that is not written
      by the function.  */
@@ -4079,6 +3772,8 @@ void
 attr_fnspec::verify ()
 {
   bool err = false;
+  if (!len)
+    return;
 
   /* Check return value specifier.  */
   if (len < return_desc_size)
@@ -4092,8 +3787,17 @@ attr_fnspec::verify ()
 	   && str[0] != 'R' && str[0] != 'W')
     err = true;
 
-  if (str[1] != ' ')
-    err = true;
+  switch (str[1])
+    {
+      case ' ':
+      case 'p':
+      case 'P':
+      case 'c':
+      case 'C':
+	break;
+      default:
+	err = true;
+    }
 
   /* Now check all parameters.  */
   for (unsigned int i = 0; arg_specified_p (i); i++)
@@ -4105,6 +3809,8 @@ attr_fnspec::verify ()
 	  case 'X':
 	  case 'r':
 	  case 'R':
+	  case 'o':
+	  case 'O':
 	  case 'w':
 	  case 'W':
 	  case '.':
@@ -4112,7 +3818,15 @@ attr_fnspec::verify ()
 	  default:
 	    err = true;
 	}
-      if (str[idx + 1] != ' ')
+      if ((str[idx + 1] >= '1' && str[idx + 1] <= '9')
+	  || str[idx + 1] == 't')
+	{
+	  if (str[idx] != 'r' && str[idx] != 'R'
+	      && str[idx] != 'w' && str[idx] != 'W'
+	      && str[idx] != 'o' && str[idx] != 'O')
+	    err = true;
+	}
+      else if (str[idx + 1] != ' ')
 	err = true;
     }
   if (err)

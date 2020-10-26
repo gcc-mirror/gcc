@@ -95,7 +95,7 @@ non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
   return !(node->only_called_directly_or_aliased_p ()
 	   /* i386 would need update to output thunk with local calling
 	      conventions.  */
-	   && !node->thunk.thunk_p
+	   && !node->thunk
 	   && node->definition
 	   && !DECL_EXTERNAL (node->decl)
 	   && !lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl))
@@ -112,7 +112,7 @@ cgraph_node::local_p (void)
 {
    cgraph_node *n = ultimate_alias_target ();
 
-   if (n->thunk.thunk_p)
+   if (n->thunk)
      return n->callees->callee->local_p ();
    return !n->call_for_symbol_thunks_and_aliases (non_local_p,
 						  NULL, true);
@@ -729,7 +729,7 @@ function_and_variable_visibility (bool whole_program)
 	  && !DECL_EXTERNAL (node->decl))
 	localize_node (whole_program, node);
 
-      if (node->thunk.thunk_p
+      if (node->thunk
 	  && TREE_PUBLIC (node->decl))
 	{
 	  struct cgraph_node *decl_node = node;

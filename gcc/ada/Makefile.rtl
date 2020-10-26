@@ -2795,8 +2795,19 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
       $(ATOMICS_BUILTINS_TARGET_PAIRS) \
       system.ads<libgnat/system-darwin-ppc.ads
 
-    ifeq ($(strip $(MULTISUBDIR)),/ppc64)
+    ifeq ($(strip $(filter-out powerpc64,$(target_cpu))),)
+      ifneq ($(strip $(MULTISUBDIR)),/ppc)
+        LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+        EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+      else
+        SO_OPTS += -m32
+      endif
+    else
+      ifeq ($(strip $(MULTISUBDIR)),/ppc64)
         SO_OPTS += -m64
+        LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+        EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+      endif
     endif
   endif
 

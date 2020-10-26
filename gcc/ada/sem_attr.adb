@@ -1460,7 +1460,7 @@ package body Sem_Attr is
             if Ada_Version < Ada_2020
               and then not Is_Scalar_Type (Image_Type)
             then
-               Error_Msg_Ada_2020_Feature ("|nonscalar ''Image", Sloc (P));
+               Error_Msg_Ada_2020_Feature ("nonscalar ''Image", Sloc (P));
                Error_Attr;
             end if;
          end Check_Image_Type;

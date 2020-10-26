@@ -1297,6 +1297,7 @@ OBJS = \
 	cfgloopmanip.o \
 	cfgrtl.o \
 	symtab.o \
+	symtab-thunks.o \
 	cgraph.o \
 	cgraphbuild.o \
 	cgraphunit.o \
@@ -2591,6 +2592,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/function-abi.h \
   $(srcdir)/output.h $(srcdir)/cfgloop.h $(srcdir)/cfg.h $(srcdir)/profile-count.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/ipa-ref.h $(srcdir)/cgraph.h \
+  $(srcdir)/symtab-thunks.h $(srcdir)/symtab-thunks.cc \
   $(srcdir)/reload.h $(srcdir)/caller-save.c $(srcdir)/symtab.c \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
   $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c $(srcdir)/ipa-utils.h \
@@ -2629,7 +2631,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/omp-offload.c \
   $(srcdir)/omp-general.c \
   $(srcdir)/omp-low.c \
-  $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
+  $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c \
   $(srcdir)/cgraphclones.c \
   $(srcdir)/tree-phinodes.c \
   $(srcdir)/tree-ssa-alias.h \
