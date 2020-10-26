@@ -720,7 +720,7 @@ free_aux_for_edges (void)
 DEBUG_FUNCTION void
 debug_bb (basic_block bb)
 {
-  dump_bb (stderr, bb, 0, dump_flags);
+  debug_bb (bb, dump_flags);
 }
 
 DEBUG_FUNCTION basic_block
@@ -728,6 +728,24 @@ debug_bb_n (int n)
 {
   basic_block bb = BASIC_BLOCK_FOR_FN (cfun, n);
   debug_bb (bb);
+  return bb;
+}
+
+/* Print BB with specified FLAGS.  */
+
+DEBUG_FUNCTION void
+debug_bb (basic_block bb, dump_flags_t flags)
+{
+  dump_bb (stderr, bb, 0, flags);
+}
+
+/* Print basic block numbered N with specified FLAGS.  */
+
+DEBUG_FUNCTION basic_block
+debug_bb_n (int n, dump_flags_t flags)
+{
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, n);
+  debug_bb (bb, flags);
   return bb;
 }
 

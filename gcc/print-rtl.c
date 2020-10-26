@@ -2139,7 +2139,7 @@ extern void debug_bb_slim (basic_block);
 DEBUG_FUNCTION void
 debug_bb_slim (basic_block bb)
 {
-  dump_bb (stderr, bb, 0, TDF_SLIM | TDF_BLOCKS);
+  debug_bb (bb, TDF_SLIM | TDF_BLOCKS);
 }
 
 extern void debug_bb_n_slim (int);
