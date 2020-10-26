@@ -18,19 +18,19 @@ func getProcID() uint64 {
 	return uint64(lwp_self())
 }
 
-//extern _lwp_self
+//extern-sysinfo _lwp_self
 func lwp_self() int32
 
 //go:noescape
-//extern _lwp_park
+//extern-sysinfo _lwp_park
 func lwp_park(ts int32, rel int32, abstime *timespec, unpark int32, hint, unparkhint unsafe.Pointer) int32
 
 //go:noescape
-//extern _lwp_unpark
+//extern-sysinfo _lwp_unpark
 func lwp_unpark(lwp int32, hint unsafe.Pointer) int32
 
 //go:noescape
-//extern sysctl
+//extern-sysinfo sysctl
 func sysctl(*uint32, uint32, *byte, *uintptr, *byte, uintptr) int32
 
 func getncpu() int32 {
