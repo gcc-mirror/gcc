@@ -231,6 +231,11 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     e->callee->remove_from_same_comdat_group ();
 
   e->callee->inlined_to = inlining_into;
+  if (e->callee->ipa_transforms_to_apply.length ())
+    {
+      e->callee->ipa_transforms_to_apply.release ();
+      e->callee->ipa_transforms_to_apply = vNULL;
+    }
 
   /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = next)
@@ -606,7 +611,10 @@ save_inline_function_body (struct cgraph_node *node)
 
   tree prev_body_holder = node->decl;
   if (!ipa_saved_clone_sources)
-    ipa_saved_clone_sources = new function_summary <tree *> (symtab);
+    {
+      ipa_saved_clone_sources = new function_summary <tree *> (symtab);
+      ipa_saved_clone_sources->disable_insertion_hook ();
+    }
   else
     {
       tree *p = ipa_saved_clone_sources->get (node);

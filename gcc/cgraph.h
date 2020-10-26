@@ -1402,7 +1402,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Interprocedural passes scheduled to have their transform functions
      applied next time we execute local pass on them.  We maintain it
      per-function in order to allow IPA passes to introduce new functions.  */
-  vec<ipa_opt_pass> GTY((skip)) ipa_transforms_to_apply;
+  vec<ipa_opt_pass, va_heap, vl_ptr> GTY((skip)) ipa_transforms_to_apply;
 
   /* For inline clones this points to the function they will be
      inlined into.  */

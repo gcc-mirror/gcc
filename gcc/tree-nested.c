@@ -65,8 +65,11 @@ nested_function_info *
 nested_function_info::get_create (cgraph_node *node)
 {
   if (!nested_function_sum)
-    nested_function_sum = new function_summary <nested_function_info *>
-				 (symtab);
+    {
+      nested_function_sum = new function_summary <nested_function_info *>
+				   (symtab);
+      nested_function_sum->disable_insertion_hook ();
+    }
   return nested_function_sum->get_create (node);
 }
 
@@ -124,6 +127,9 @@ nested_function_info::release ()
 void
 maybe_record_nested_function (cgraph_node *node)
 {
+  /* All nested functions gets lowered during the construction of symtab.  */
+  if (symtab->state > CONSTRUCTION)
+    return;
   if (DECL_CONTEXT (node->decl)
       && TREE_CODE (DECL_CONTEXT (node->decl)) == FUNCTION_DECL)
     {

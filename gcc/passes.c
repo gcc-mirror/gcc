@@ -2566,7 +2566,8 @@ execute_one_pass (opt_pass *pass)
     {
       struct cgraph_node *node;
       FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-	node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
+	if (!node->inlined_to)
+	  node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
     }
   else if (dump_file)
     do_per_function (execute_function_dump, pass);

@@ -31,17 +31,27 @@ public:
   function_summary_base (symbol_table *symtab CXX_MEM_STAT_INFO):
   m_symtab (symtab),
   m_insertion_enabled (true),
+  m_duplication_enabled (true),
   m_allocator ("function summary" PASS_MEM_STAT)
   {}
 
   /* Basic implementation of insert operation.  */
-  virtual void insert (cgraph_node *, T *) {}
+  virtual void insert (cgraph_node *, T *)
+  {
+    /* In most cases, it makes no sense to create summaries without
+       initializing them.  */
+    gcc_unreachable ();
+  }
 
   /* Basic implementation of removal operation.  */
   virtual void remove (cgraph_node *, T *) {}
 
   /* Basic implementation of duplication operation.  */
-  virtual void duplicate (cgraph_node *, cgraph_node *, T *, T *) {}
+  virtual void duplicate (cgraph_node *, cgraph_node *, T *, T *)
+  {
+    /* It makes no sense to not copy anything during duplication.  */
+    gcc_unreachable ();
+  }
 
   /* Enable insertion hook invocation.  */
   void enable_insertion_hook ()
@@ -53,6 +63,18 @@ public:
   void disable_insertion_hook ()
   {
     m_insertion_enabled = false;
+  }
+
+  /* Enable duplication hook invocation.  */
+  void enable_duplication_hook ()
+  {
+    m_duplication_enabled = true;
+  }
+
+  /* Enable duplication hook invocation.  */
+  void disable_duplication_hook ()
+  {
+    m_duplication_enabled = false;
   }
 
 protected:
@@ -88,6 +110,8 @@ protected:
 
   /* Indicates if insertion hook is enabled.  */
   bool m_insertion_enabled;
+  /* Indicates if duplication hook is enabled.  */
+  bool m_duplication_enabled;
 
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
@@ -269,10 +293,13 @@ function_summary<T *>::symtab_duplication (cgraph_node *node,
 					   cgraph_node *node2, void *data)
 {
   function_summary *summary = (function_summary <T *> *) (data);
-  T *v = summary->get (node);
+  if (summary->m_duplication_enabled)
+    {
+      T *v = summary->get (node);
 
-  if (v)
-    summary->duplicate (node, node2, v, summary->get_create (node2));
+      if (v)
+	summary->duplicate (node, node2, v, summary->get_create (node2));
+    }
 }
 
 template <typename T>
@@ -468,12 +495,15 @@ fast_function_summary<T *, V>::symtab_duplication (cgraph_node *node,
 						   void *data)
 {
   fast_function_summary *summary = (fast_function_summary <T *, V> *) (data);
-  T *v = summary->get (node);
-
-  if (v)
+  if (summary->m_duplication_enabled)
     {
-      T *duplicate = summary->get_create (node2);
-      summary->duplicate (node, node2, v, duplicate);
+      T *v = summary->get (node);
+
+      if (v)
+	{
+	  T *duplicate = summary->get_create (node2);
+	  summary->duplicate (node, node2, v, duplicate);
+	}
     }
 }
 
@@ -536,6 +566,7 @@ public:
   call_summary_base (symbol_table *symtab CXX_MEM_STAT_INFO):
   m_symtab (symtab),
   m_initialize_when_cloning (false),
+  m_duplication_enabled (true),
   m_allocator ("call summary" PASS_MEM_STAT)
   {}
 
@@ -543,7 +574,22 @@ public:
   virtual void remove (cgraph_edge *, T *) {}
 
   /* Basic implementation of duplication operation.  */
-  virtual void duplicate (cgraph_edge *, cgraph_edge *, T *, T *) {}
+  virtual void duplicate (cgraph_edge *, cgraph_edge *, T *, T *)
+  {
+    gcc_unreachable ();
+  }
+
+  /* Enable duplication hook invocation.  */
+  void enable_duplication_hook ()
+  {
+    m_duplication_enabled = true;
+  }
+
+  /* Enable duplication hook invocation.  */
+  void disable_duplication_hook ()
+  {
+    m_duplication_enabled = false;
+  }
 
 protected:
   /* Allocates new data that are stored within map.  */
@@ -576,6 +622,8 @@ protected:
   cgraph_2edge_hook_list *m_symtab_duplication_hook;
   /* Initialize summary for an edge that is cloned.  */
   bool m_initialize_when_cloning;
+  /* Indicates if duplication hook is enabled.  */
+  bool m_duplication_enabled;
 
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
@@ -726,16 +774,19 @@ call_summary<T *>::symtab_duplication (cgraph_edge *edge1,
 				       cgraph_edge *edge2, void *data)
 {
   call_summary *summary = (call_summary <T *> *) (data);
-  T *edge1_summary = NULL;
+  if (summary->m_duplication_enabled)
+    {
+      T *edge1_summary = NULL;
 
-  if (summary->m_initialize_when_cloning)
-    edge1_summary = summary->get_create (edge1);
-  else
-    edge1_summary = summary->get (edge1);
+      if (summary->m_initialize_when_cloning)
+	edge1_summary = summary->get_create (edge1);
+      else
+	edge1_summary = summary->get (edge1);
 
-  if (edge1_summary)
-    summary->duplicate (edge1, edge2, edge1_summary,
-			summary->get_create (edge2));
+      if (edge1_summary)
+	summary->duplicate (edge1, edge2, edge1_summary,
+			    summary->get_create (edge2));
+    }
 }
 
 template <typename T>
@@ -892,17 +943,20 @@ fast_call_summary<T *, V>::symtab_duplication (cgraph_edge *edge1,
 						 cgraph_edge *edge2, void *data)
 {
   fast_call_summary *summary = (fast_call_summary <T *, V> *) (data);
-  T *edge1_summary = NULL;
-
-  if (summary->m_initialize_when_cloning)
-    edge1_summary = summary->get_create (edge1);
-  else
-    edge1_summary = summary->get (edge1);
-
-  if (edge1_summary)
+  if (summary->m_duplication_enabled)
     {
-      T *duplicate = summary->get_create (edge2);
-      summary->duplicate (edge1, edge2, edge1_summary, duplicate);
+      T *edge1_summary = NULL;
+
+      if (summary->m_initialize_when_cloning)
+	edge1_summary = summary->get_create (edge1);
+      else
+	edge1_summary = summary->get (edge1);
+
+      if (edge1_summary)
+	{
+	  T *duplicate = summary->get_create (edge2);
+	  summary->duplicate (edge1, edge2, edge1_summary, duplicate);
+	}
     }
 }
 
