@@ -1,5 +1,8 @@
 2020-10-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_in::chained_decls): Chain should always be null.
+
 	libcody/
 	Rebase on upstream, collect new autoconf bits.
 

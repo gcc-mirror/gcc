@@ -4900,29 +4900,19 @@ tree
 trees_in::chained_decls ()
 {
   tree decls = NULL_TREE;
-  for (tree *chain = &decls; chain && !get_overrun ();)
+  for (tree *chain = &decls;;)
     if (tree decl = tree_node ())
       {
-	if (!DECL_P (decl))
-	  set_overrun ();
-	else
+	if (!DECL_P (decl) || DECL_CHAIN (decl))
 	  {
-	    if (*chain)
-	      {
-		// FIXME: suspicious, perhaps chain only when we know
-		// not the definition?
-		gcc_checking_assert (TREE_CODE (decl) == PARM_DECL
-				     && TREE_CODE (*chain) == PARM_DECL);
-	      }
-	    *chain = decl;
-	    chain = &DECL_CHAIN (decl);
+	    set_overrun ();
+	    break;
 	  }
+	*chain = decl;
+	chain = &DECL_CHAIN (decl);
       }
     else
-      {
-	gcc_checking_assert (!*chain);
-	chain = NULL;
-      }
+      break;
 
   return decls;
 }
