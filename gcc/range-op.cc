@@ -3680,13 +3680,26 @@ range_tests ()
   // Test 1-bit signed integer union.
   // [-1,-1] U [0,0] = VARYING.
   tree one_bit_type = build_nonstandard_integer_type (1, 0);
+  tree one_bit_min = vrp_val_min (one_bit_type);
+  tree one_bit_max = vrp_val_max (one_bit_type);
   {
-    tree one_bit_min = vrp_val_min (one_bit_type);
-    tree one_bit_max = vrp_val_max (one_bit_type);
     int_range<2> min (one_bit_min, one_bit_min);
     int_range<2> max (one_bit_max, one_bit_max);
     max.union_ (min);
     ASSERT_TRUE (max.varying_p ());
+  }
+
+  // Test inversion of 1-bit signed integers.
+  {
+    int_range<2> min (one_bit_min, one_bit_min);
+    int_range<2> max (one_bit_max, one_bit_max);
+    int_range<2> t;
+    t = min;
+    t.invert ();
+    ASSERT_TRUE (t == max);
+    t = max;
+    t.invert ();
+    ASSERT_TRUE (t == min);
   }
 
   // Test that NOT(255) is [0..254] in 8-bit land.
