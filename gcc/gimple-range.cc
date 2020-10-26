@@ -611,7 +611,7 @@ range_of_builtin_call (range_query &query, irange &r, gcall *call)
 
   tree type = gimple_call_return_type (call);
   tree arg;
-  int mini, maxi, zerov, prec;
+  int mini, maxi, zerov = 0, prec;
   scalar_int_mode mode;
 
   switch (func)
