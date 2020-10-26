@@ -1,3 +1,8 @@
+2020-10-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.rtl: Add GNATRTL_128BIT_PAIRS/OBJS for 64bit
+	PowerPC Darwin cases.
+
 2020-10-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* adaint.c: On Darwin platforms, define st_atim to
