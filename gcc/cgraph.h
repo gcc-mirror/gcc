@@ -1279,7 +1279,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   bool check_calls_comdat_local_p ();
 
   /* Return true if function should be optimized for size.  */
-  bool optimize_for_size_p (void);
+  enum optimize_size_level optimize_for_size_p (void);
 
   /* Dump the callgraph to file F.  */
   static void dump_cgraph (FILE *f);
@@ -3315,15 +3315,17 @@ cgraph_node::mark_force_output (void)
 
 /* Return true if function should be optimized for size.  */
 
-inline bool
+inline enum optimize_size_level
 cgraph_node::optimize_for_size_p (void)
 {
   if (opt_for_fn (decl, optimize_size))
-    return true;
+    return OPTIMIZE_SIZE_MAX;
+  if (count == profile_count::zero ())
+    return OPTIMIZE_SIZE_MAX;
   if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    return true;
+    return OPTIMIZE_SIZE_BALANCED;
   else
-    return false;
+    return OPTIMIZE_SIZE_NO;
 }
 
 /* Return symtab_node for NODE or create one if it is not present
