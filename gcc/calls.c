@@ -630,21 +630,32 @@ special_function_p (const_tree fndecl, int flags)
   return flags;
 }
 
+/* Return fnspec for DECL.  */
+
+static attr_fnspec
+decl_fnspec (tree fndecl)
+{
+  tree attr;
+  tree type = TREE_TYPE (fndecl);
+  if (type)
+    {
+      attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
+      if (attr)
+	{
+	  return TREE_VALUE (TREE_VALUE (attr));
+	}
+    }
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    return builtin_fnspec (fndecl);
+  return "";
+}
+
 /* Similar to special_function_p; return a set of ERF_ flags for the
    function FNDECL.  */
 static int
 decl_return_flags (tree fndecl)
 {
-  tree attr;
-  tree type = TREE_TYPE (fndecl);
-  if (!type)
-    return 0;
-
-  attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
-  if (!attr)
-    return 0;
-
-  attr_fnspec fnspec (TREE_VALUE (TREE_VALUE (attr)));
+  attr_fnspec fnspec = decl_fnspec (fndecl);
 
   unsigned int arg;
   if (fnspec.returns_arg (&arg))

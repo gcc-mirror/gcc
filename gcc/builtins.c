@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
+#include "attr-fnspec.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -12912,4 +12913,166 @@ access_ref::offset_bounded () const
   tree min = TYPE_MIN_VALUE (ptrdiff_type_node);
   tree max = TYPE_MAX_VALUE (ptrdiff_type_node);
   return wi::to_offset (min) <= offrng[0] && offrng[1] <= wi::to_offset (max);
+}
+
+/* If CALLEE has known side effects, fill in INFO and return true.
+   See tree-ssa-structalias.c:find_func_aliases
+   for the list of builtins we might need to handle here.  */
+
+attr_fnspec
+builtin_fnspec (tree callee)
+{
+  built_in_function code = DECL_FUNCTION_CODE (callee);
+
+  switch (code)
+    {
+      /* All the following functions read memory pointed to by
+	 their second argument and write memory pointed to by first
+	 argument.
+	 strcat/strncat additionally reads memory pointed to by the first
+	 argument.  */
+      case BUILT_IN_STRCAT:
+      case BUILT_IN_STRCAT_CHK:
+	return "1cW R ";
+      case BUILT_IN_STRNCAT:
+      case BUILT_IN_STRNCAT_CHK:
+	return "1cW R3";
+      case BUILT_IN_STRCPY:
+      case BUILT_IN_STRCPY_CHK:
+	return "1cO R ";
+      case BUILT_IN_STPCPY:
+      case BUILT_IN_STPCPY_CHK:
+	return ".cO R ";
+      case BUILT_IN_STRNCPY:
+      case BUILT_IN_MEMCPY:
+      case BUILT_IN_MEMMOVE:
+      case BUILT_IN_TM_MEMCPY:
+      case BUILT_IN_TM_MEMMOVE:
+      case BUILT_IN_STRNCPY_CHK:
+      case BUILT_IN_MEMCPY_CHK:
+      case BUILT_IN_MEMMOVE_CHK:
+	return "1cO3R3";
+      case BUILT_IN_MEMPCPY:
+      case BUILT_IN_MEMPCPY_CHK:
+	return ".cO3R3";
+      case BUILT_IN_STPNCPY:
+      case BUILT_IN_STPNCPY_CHK:
+	return ".cO3R3";
+      case BUILT_IN_BCOPY:
+	return ".cR3O3";
+
+      /* The following functions read memory pointed to by their
+	 first argument.  */
+      CASE_BUILT_IN_TM_LOAD (1):
+      CASE_BUILT_IN_TM_LOAD (2):
+      CASE_BUILT_IN_TM_LOAD (4):
+      CASE_BUILT_IN_TM_LOAD (8):
+      CASE_BUILT_IN_TM_LOAD (FLOAT):
+      CASE_BUILT_IN_TM_LOAD (DOUBLE):
+      CASE_BUILT_IN_TM_LOAD (LDOUBLE):
+      CASE_BUILT_IN_TM_LOAD (M64):
+      CASE_BUILT_IN_TM_LOAD (M128):
+      CASE_BUILT_IN_TM_LOAD (M256):
+      case BUILT_IN_TM_LOG:
+      case BUILT_IN_TM_LOG_1:
+      case BUILT_IN_TM_LOG_2:
+      case BUILT_IN_TM_LOG_4:
+      case BUILT_IN_TM_LOG_8:
+      case BUILT_IN_TM_LOG_FLOAT:
+      case BUILT_IN_TM_LOG_DOUBLE:
+      case BUILT_IN_TM_LOG_LDOUBLE:
+      case BUILT_IN_TM_LOG_M64:
+      case BUILT_IN_TM_LOG_M128:
+      case BUILT_IN_TM_LOG_M256:
+	return ".cR ";
+
+      case BUILT_IN_INDEX:
+      case BUILT_IN_STRCHR:
+      case BUILT_IN_STRRCHR:
+	return ".cR ";
+
+      /* These read memory pointed to by the first argument.
+	 Allocating memory does not have any side-effects apart from
+	 being the definition point for the pointer.
+	 Unix98 specifies that errno is set on allocation failure.  */
+      case BUILT_IN_STRDUP:
+	return "mCR ";
+      case BUILT_IN_STRNDUP:
+	return "mCR2";
+      /* Allocating memory does not have any side-effects apart from
+	 being the definition point for the pointer.  */
+      case BUILT_IN_MALLOC:
+      case BUILT_IN_ALIGNED_ALLOC:
+      case BUILT_IN_CALLOC:
+	return "mC";
+      CASE_BUILT_IN_ALLOCA:
+	return "mc";
+      /* These read memory pointed to by the first argument with size
+	 in the third argument.  */
+      case BUILT_IN_MEMCHR:
+	return ".cR3";
+      /* These read memory pointed to by the first and second arguments.  */
+      case BUILT_IN_STRSTR:
+      case BUILT_IN_STRPBRK:
+	return ".cR R ";
+      /* Freeing memory kills the pointed-to memory.  More importantly
+	 the call has to serve as a barrier for moving loads and stores
+	 across it.  */
+      case BUILT_IN_STACK_RESTORE:
+      case BUILT_IN_FREE:
+	return ".co ";
+      case BUILT_IN_VA_END:
+	return ".cO ";
+      /* Realloc serves both as allocation point and deallocation point.  */
+      case BUILT_IN_REALLOC:
+	return ".cw ";
+      case BUILT_IN_GAMMA_R:
+      case BUILT_IN_GAMMAF_R:
+      case BUILT_IN_GAMMAL_R:
+      case BUILT_IN_LGAMMA_R:
+      case BUILT_IN_LGAMMAF_R:
+      case BUILT_IN_LGAMMAL_R:
+	return ".C. Ot";
+      case BUILT_IN_FREXP:
+      case BUILT_IN_FREXPF:
+      case BUILT_IN_FREXPL:
+      case BUILT_IN_MODF:
+      case BUILT_IN_MODFF:
+      case BUILT_IN_MODFL:
+	return ".c. Ot";
+      case BUILT_IN_REMQUO:
+      case BUILT_IN_REMQUOF:
+      case BUILT_IN_REMQUOL:
+	return ".c. . Ot";
+      case BUILT_IN_SINCOS:
+      case BUILT_IN_SINCOSF:
+      case BUILT_IN_SINCOSL:
+	return ".c. OtOt";
+      case BUILT_IN_MEMSET:
+      case BUILT_IN_MEMSET_CHK:
+      case BUILT_IN_TM_MEMSET:
+	return "1cO3";
+      CASE_BUILT_IN_TM_STORE (1):
+      CASE_BUILT_IN_TM_STORE (2):
+      CASE_BUILT_IN_TM_STORE (4):
+      CASE_BUILT_IN_TM_STORE (8):
+      CASE_BUILT_IN_TM_STORE (FLOAT):
+      CASE_BUILT_IN_TM_STORE (DOUBLE):
+      CASE_BUILT_IN_TM_STORE (LDOUBLE):
+      CASE_BUILT_IN_TM_STORE (M64):
+      CASE_BUILT_IN_TM_STORE (M128):
+      CASE_BUILT_IN_TM_STORE (M256):
+	return ".cO ";
+      case BUILT_IN_STACK_SAVE:
+	return ".c";
+      case BUILT_IN_ASSUME_ALIGNED:
+	return "1cX ";
+      /* But posix_memalign stores a pointer into the memory pointed to
+	 by its first argument.  */
+      case BUILT_IN_POSIX_MEMALIGN:
+	return ".cOt";
+
+      default:
+	return "";
+    }
 }
