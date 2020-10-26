@@ -1170,6 +1170,8 @@ vectorize_loops (void)
   if (vect_loops_num <= 1)
     return 0;
 
+  slp_tree_pool = new object_allocator<_slp_tree> ("SLP nodes for vect");
+
   if (cfun->has_simduid_loops)
     note_simd_array_uses (&simd_array_to_simduid_htab);
 
@@ -1292,6 +1294,8 @@ vectorize_loops (void)
     shrink_simd_arrays (simd_array_to_simduid_htab, simduid_to_vf_htab);
   delete simduid_to_vf_htab;
   cfun->has_simduid_loops = false;
+  delete slp_tree_pool;
+  slp_tree_pool = NULL;
 
   if (num_vectorized_loops > 0)
     {
@@ -1427,7 +1431,12 @@ pass_slp_vectorize::execute (function *fun)
 	}
     }
 
+  slp_tree_pool = new object_allocator<_slp_tree> ("SLP nodes for slp");
+
   vect_slp_function (fun);
+
+  delete slp_tree_pool;
+  slp_tree_pool = NULL;
 
   if (!in_loop_pipeline)
     {

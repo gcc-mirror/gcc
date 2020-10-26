@@ -52,6 +52,23 @@ along with GCC; see the file COPYING3.  If not see
 static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);
 
+object_allocator<_slp_tree> *slp_tree_pool;
+
+void *
+_slp_tree::operator new (size_t n)
+{
+  gcc_assert (n == sizeof (_slp_tree));
+  return slp_tree_pool->allocate_raw ();
+}
+
+void
+_slp_tree::operator delete (void *node, size_t n)
+{
+  gcc_assert (n == sizeof (_slp_tree));
+  slp_tree_pool->remove_raw (node);
+}
+
+
 /* Initialize a SLP node.  */
 
 _slp_tree::_slp_tree ()

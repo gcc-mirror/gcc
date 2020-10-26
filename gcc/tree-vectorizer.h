@@ -26,6 +26,7 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
 #include "target.h"
+#include "alloc-pool.h"
 
 
 /* Used for naming of new temporaries.  */
@@ -115,6 +116,8 @@ typedef hash_map<tree_operand_hash,
  ************************************************************************/
 typedef struct _slp_tree *slp_tree;
 
+extern object_allocator<_slp_tree> *slp_tree_pool;
+
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
 struct _slp_tree {
@@ -163,6 +166,12 @@ struct _slp_tree {
   enum tree_code code;
 
   int vertex;
+
+  /* Allocate from slp_tree_pool.  */
+  static void *operator new (size_t);
+
+  /* Return memory to slp_tree_pool.  */
+  static void operator delete (void *, size_t);
 };
 
 
