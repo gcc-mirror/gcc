@@ -2187,7 +2187,7 @@ static void cp_parser_already_scoped_statement
 static void cp_parser_declaration_seq_opt
   (cp_parser *);
 static void cp_parser_declaration
-  (cp_parser *);
+  (cp_parser *, tree);
 static void cp_parser_toplevel_declaration
   (cp_parser *);
 static void cp_parser_block_declaration
@@ -2238,7 +2238,7 @@ static tree cp_parser_alias_declaration
 static void cp_parser_asm_definition
   (cp_parser *);
 static void cp_parser_linkage_specification
-  (cp_parser *);
+  (cp_parser *, tree);
 static void cp_parser_static_assert
   (cp_parser *, bool);
 static tree cp_parser_decltype
@@ -13496,7 +13496,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
       __extension__ declaration */
 
 static void
-cp_parser_declaration (cp_parser* parser)
+cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
 {
   int saved_pedantic;
 
@@ -13504,7 +13504,7 @@ cp_parser_declaration (cp_parser* parser)
   if (cp_parser_extension_opt (parser, &saved_pedantic))
     {
       /* Parse the qualified declaration.  */
-      cp_parser_declaration (parser);
+      cp_parser_declaration (parser, prefix_attrs);
       /* Restore the PEDANTIC flag.  */
       pedantic = saved_pedantic;
 
@@ -13521,11 +13521,50 @@ cp_parser_declaration (cp_parser* parser)
 
   tree attributes = NULL_TREE;
 
+  /* Conditionally, allow attributes to precede a linkage specification.  */
+  if (token1->keyword == RID_ATTRIBUTE)
+    {
+      cp_lexer_save_tokens (parser->lexer);
+      attributes = cp_parser_attributes_opt (parser);
+      gcc_checking_assert (attributes);
+      cp_token *t1 = cp_lexer_peek_token (parser->lexer);
+      cp_token *t2 = (t1->type == CPP_EOF
+		      ? t1 : cp_lexer_peek_nth_token (parser->lexer, 2));
+      if (t1->keyword == RID_EXTERN
+	  && cp_parser_is_pure_string_literal (t2))
+	{
+	  cp_lexer_commit_tokens (parser->lexer);
+	  /* We might have already been here.  */
+	  if (!c_dialect_objc ())
+	    {
+	      warning_at (token1->location, OPT_Wattributes, "attributes are"
+			  " only permitted in this position for Objective-C++,"
+			  " ignored");
+	      attributes = NULL_TREE;
+	    }
+	  token1 = t1;
+	  token2 = t2;
+	}
+      else
+	{
+	  cp_lexer_rollback_tokens (parser->lexer);
+	  attributes = NULL_TREE;
+	}
+    }
+  /* If we already had some attributes, and we've added more, then prepend.
+     Otherwise attributes just contains any that we just read.  */
+  if (prefix_attrs)
+    {
+      if (attributes)
+	TREE_CHAIN (prefix_attrs) = attributes;
+      attributes = prefix_attrs;
+    }
+
   /* If the next token is `extern' and the following token is a string
      literal, then we have a linkage specification.  */
   if (token1->keyword == RID_EXTERN
       && cp_parser_is_pure_string_literal (token2))
-    cp_parser_linkage_specification (parser);
+    cp_parser_linkage_specification (parser, attributes);
   /* If the next token is `template', then we have either a template
      declaration, an explicit instantiation, or an explicit
      specialization.  */
@@ -13575,7 +13614,7 @@ cp_parser_declaration (cp_parser* parser)
     cp_parser_namespace_definition (parser);
   /* Objective-C++ declaration/definition.  */
   else if (c_dialect_objc () && OBJC_IS_AT_KEYWORD (token1->keyword))
-    cp_parser_objc_declaration (parser, NULL_TREE);
+    cp_parser_objc_declaration (parser, attributes);
   else if (c_dialect_objc ()
 	   && token1->keyword == RID_ATTRIBUTE
 	   && cp_parser_objc_valid_prefix_attributes (parser, &attributes))
@@ -13617,7 +13656,7 @@ cp_parser_toplevel_declaration (cp_parser* parser)
     }
   else
     /* Parse the declaration itself.  */
-    cp_parser_declaration (parser);
+    cp_parser_declaration (parser, NULL_TREE);
 }
 
 /* Parse a block-declaration.
@@ -14726,7 +14765,7 @@ cp_parser_function_specifier_opt (cp_parser* parser,
      extern string-literal declaration  */
 
 static void
-cp_parser_linkage_specification (cp_parser* parser)
+cp_parser_linkage_specification (cp_parser* parser, tree prefix_attr)
 {
   tree linkage;
 
@@ -14791,7 +14830,7 @@ cp_parser_linkage_specification (cp_parser* parser)
       saved_in_unbraced_linkage_specification_p
 	= parser->in_unbraced_linkage_specification_p;
       parser->in_unbraced_linkage_specification_p = true;
-      cp_parser_declaration (parser);
+      cp_parser_declaration (parser, prefix_attr);
       parser->in_unbraced_linkage_specification_p
 	= saved_in_unbraced_linkage_specification_p;
     }
@@ -33099,7 +33138,7 @@ cp_parser_objc_interstitial_code (cp_parser* parser)
   if (token->keyword == RID_EXTERN
       && cp_parser_is_pure_string_literal
 	 (cp_lexer_peek_nth_token (parser->lexer, 2)))
-    cp_parser_linkage_specification (parser);
+    cp_parser_linkage_specification (parser, NULL_TREE);
   /* Handle #pragma, if any.  */
   else if (token->type == CPP_PRAGMA)
     cp_parser_pragma (parser, pragma_objc_icode, NULL);
@@ -33864,11 +33903,15 @@ static bool
 cp_parser_objc_valid_prefix_attributes (cp_parser* parser, tree *attrib)
 {
   cp_lexer_save_tokens (parser->lexer);
-  *attrib = cp_parser_attributes_opt (parser);
-  gcc_assert (*attrib);
+  tree addon = cp_parser_attributes_opt (parser);
+  gcc_checking_assert (addon);
   if (OBJC_IS_AT_KEYWORD (cp_lexer_peek_token (parser->lexer)->keyword))
     {
       cp_lexer_commit_tokens (parser->lexer);
+      if (*attrib)
+	TREE_CHAIN (*attrib) = addon;
+      else
+	*attrib = addon;
       return true;
     }
   cp_lexer_rollback_tokens (parser->lexer);
@@ -41892,7 +41935,7 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
       switch (context)
 	{
 	case pragma_external:
-	  cp_parser_declaration (parser);
+	  cp_parser_declaration (parser, NULL_TREE);
 	  break;
 	case pragma_member:
 	  cp_parser_member_declaration (parser);
@@ -43449,7 +43492,7 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 	}
 
       /* We only have to consider the pragma_external case here.  */
-      cp_parser_declaration (parser);
+      cp_parser_declaration (parser, NULL_TREE);
       if (parser->oacc_routine
 	  && !parser->oacc_routine->fndecl_seen)
 	cp_ensure_no_oacc_routine (parser);
