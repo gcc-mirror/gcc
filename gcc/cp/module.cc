@@ -2824,7 +2824,7 @@ enum tree_tag {
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_ptrmem_type,	/* Pointer to member type.  */
 
-  tt_parm,		/* Function paramter or result.  */
+  tt_parm,		/* Function parameter or result.  */
   tt_enum_value,	/* An enum value.  */
   tt_enum_decl,		/* An enum decl.  */
   tt_data_member,	/* Data member/using-decl.  */
@@ -8141,6 +8141,8 @@ trees_in::decl_value ()
 		 tag, TREE_CODE (TREE_TYPE (decl)), TREE_TYPE (decl));
     }
 
+  unused = saved_unused;
+
   if (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
     {
       unsigned flags = u ();
@@ -8158,8 +8160,6 @@ trees_in::decl_value ()
 				CLASSTYPE_MEMBER_VEC (DECL_CONTEXT (decl)));
 	}
     }
-
-  unused = saved_unused;
 
   if (inner
       && !NAMESPACE_SCOPE_P (inner)
@@ -8581,7 +8581,7 @@ trees_out::type_node (tree type)
       tree_node (root);
 
       int flags = -1;
-      
+
       if (TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE)
 	{
@@ -8598,7 +8598,8 @@ trees_out::type_node (tree type)
 	}
       else
 	{
-	  // FIXME: Align
+	  if (TYPE_USER_ALIGN (type))
+	    flags = exact_log2 (TYPE_ALIGN (type));
 	}
 
       if (streaming_p ())
@@ -9394,7 +9395,7 @@ trees_in::tree_node (bool is_use)
 	  }
 	else
 	  {
-	    res = build_aligned_type (res, flags);
+	    res = build_aligned_type (res, 1u << flags);
 	    TYPE_USER_ALIGN (res) = true;
 	  }
 

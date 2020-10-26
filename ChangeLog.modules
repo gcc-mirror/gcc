@@ -1,6 +1,12 @@
 2020-10-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::type_node): Stream alignment.
+	(trees_in::type_node): Alignment is a log.
+	gcc/testsuite/
+	* g++.dg/modules/align-type-1_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::tree_list): Address more Fixmes,
 	either by obsoleting them, or coding around their confusion.
 
