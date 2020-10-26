@@ -2428,7 +2428,8 @@ process_alt_operands (int only_alternative)
 		      break;
 
 		    case CT_MEMORY:
-		      if (satisfies_memory_constraint_p (op, cn))
+		      if (MEM_P (op)
+			  && satisfies_memory_constraint_p (op, cn))
 			win = true;
 		      else if (spilled_pseudo_p (op))
 			win = true;
