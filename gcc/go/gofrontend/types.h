@@ -1426,8 +1426,6 @@ class Type
   // The GC symbol for this type.  This starts out as NULL and
   // is filled in as needed.
   Bvariable* gc_symbol_var_;
-  // Whether this type can appear in the heap.
-  bool in_heap_;
 };
 
 // Type hash table operations, treating aliases as identical to the
