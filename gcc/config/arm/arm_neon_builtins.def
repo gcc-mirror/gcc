@@ -324,8 +324,8 @@ VAR14 (STORE1LANE, vst1_lane,
        v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v2di, v4bf, v8bf)
 VAR13 (LOAD1, vld2,
 	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v4bf, v8bf)
-VAR9 (LOAD1LANE, vld2_lane,
-	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR11 (LOAD1LANE, vld2_lane,
+       v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf, v4bf, v8bf)
 VAR8 (LOAD1, vld2_dup, v8qi, v4hi, v4hf, v2si, v2sf, di, v4bf, v8bf)
 VAR13 (STORE1, vst2,
 	v8qi, v4hi, v4hf, v4bf, v2si, v2sf, di, v16qi, v8hi, v8hf, v8bf, v4si, v4sf)
@@ -333,8 +333,8 @@ VAR9 (STORE1LANE, vst2_lane,
 	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
 VAR13 (LOAD1, vld3,
 	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v4bf, v8bf)
-VAR9 (LOAD1LANE, vld3_lane,
-	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR11 (LOAD1LANE, vld3_lane,
+        v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf, v4bf, v8bf)
 VAR8 (LOAD1, vld3_dup, v8qi, v4hi, v4hf, v2si, v2sf, di, v4bf, v8bf)
 VAR13 (STORE1, vst3,
 	v8qi, v4hi, v4hf, v4bf, v2si, v2sf, di, v16qi, v8hi, v8hf, v8bf, v4si, v4sf)
@@ -342,8 +342,8 @@ VAR9 (STORE1LANE, vst3_lane,
 	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
 VAR13 (LOAD1, vld4,
 	v8qi, v4hi, v4hf, v2si, v2sf, di, v16qi, v8hi, v8hf, v4si, v4sf, v4bf, v8bf)
-VAR9 (LOAD1LANE, vld4_lane,
-	v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf)
+VAR11 (LOAD1LANE, vld4_lane,
+        v8qi, v4hi, v4hf, v2si, v2sf, v8hi, v8hf, v4si, v4sf, v4bf, v8bf)
 VAR8 (LOAD1, vld4_dup, v8qi, v4hi, v4hf, v2si, v2sf, di, v4bf, v8bf)
 VAR13 (STORE1, vst4,
 	v8qi, v4hi, v4hf, v4bf, v2si, v2sf, di, v16qi, v8hi, v8hf, v8bf, v4si, v4sf)
