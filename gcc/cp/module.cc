@@ -6315,8 +6315,11 @@ trees_out::core_vals (tree t)
 #undef WU
 }
 
-// FIXME: Not 100% sure I'm marking all the TREE_USED's that need to
-// be marked
+// Streaming in a reference to a decl can cause that decl to be
+// TREE_USED, which is the mark_used behaviour we need most of the
+// time.  The trees_in::unused can be incremented to inhibit this,
+// which is at least needed for vtables.
+
 bool
 trees_in::core_vals (tree t)
 {
@@ -8805,7 +8808,8 @@ trees_out::type_node (tree type)
   return;
 }
 
-/* T is a non-mergeable node that must be written by value.   */
+/* T is (mostly*) a non-mergeable node that must be written by value.
+   The mergeable case is a BINFO, which are as-if DECLSs.   */
 
 void
 trees_out::tree_value (tree t)
@@ -8833,8 +8837,6 @@ trees_out::tree_value (tree t)
     }
 
   if  (TREE_CODE (t) == TREE_BINFO)
-    // FIXME: We could elide this when we know the dominating type
-    // must be unique.  See how we do so for regular key_mergeable.
     /* Binfos are decl-like and need merging information.  */
     binfo_mergeable (t);
 
@@ -11039,17 +11041,15 @@ trees_in::is_matching_decl (tree existing, tree decl)
      that shouldn't go to duplicate_decls (FIELD_DECLs etc).   */
   else if (!cp_tree_equal (TREE_TYPE (existing), TREE_TYPE (decl)))
     {
-      // FIXME: Might be template specialization from a module, not
-      // necessarily global module
     mismatch:
-      if (DECL_IS_BUILTIN (existing))
-	// FIXME: It'd be nice if we had a way of determining
-	// whether this builtin had already met a proper decl.  For
-	// now just copy the type.  Perhaps we should update
-	// SOURCE_LOCATION in those cases?
+      if (DECL_UNDECLARED_BUILTIN_P (existing))
+	/* Just like duplicate_decls, presum the user knows what
+	   they're doing in overriding a builtin.   */
 	TREE_TYPE (existing) = TREE_TYPE (decl);
       else
 	{
+	  // FIXME: Might be template specialization from a module,
+	  // not necessarily global module
 	  error_at (DECL_SOURCE_LOCATION (decl),
 		    "conflicting global module declaration %#qD", decl);
 	  inform (DECL_SOURCE_LOCATION (existing),
@@ -12612,7 +12612,6 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	  if (!header_module_p ())
 	    /* Ignore internal-linkage entitites.  */
 	    return false;
-	  // FIXME: Promote here?  Or should we have done that already?
 	}
 
       if ((TREE_CODE (decl) == VAR_DECL
@@ -13148,9 +13147,8 @@ depset::hash::find_dependencies ()
   unreached.release ();
 }
 
-/* Compare two binding entries.  TYPE_DECL before non-exported before
-   exported.  */
-// FIXME: Reachable globals are not findable by name
+/* Compare two entries of a single binding.  TYPE_DECL before
+   non-exported before exported.  */
 
 static int
 binding_cmp (const void *a_, const void *b_)
