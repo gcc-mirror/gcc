@@ -1997,124 +1997,50 @@ calculate_unrolling_factor (poly_uint64 nunits, unsigned int group_size)
   return exact_div (common_multiple (nunits, group_size), group_size);
 }
 
-/* Analyze an SLP instance starting from a group of grouped stores.  Call
-   vect_build_slp_tree to build a tree of packed stmts if possible.
-   Return FALSE if it's impossible to SLP any stmt in the loop.  */
+enum slp_instance_kind {
+    slp_inst_kind_store,
+    slp_inst_kind_reduc_group,
+    slp_inst_kind_reduc_chain,
+    slp_inst_kind_ctor
+};
 
 static bool
 vect_analyze_slp_instance (vec_info *vinfo,
 			   scalar_stmts_to_slp_tree_map_t *bst_map,
-			   stmt_vec_info stmt_info, unsigned max_tree_size)
+			   stmt_vec_info stmt_info, unsigned max_tree_size);
+
+/* Analyze an SLP instance starting from SCALAR_STMTS which are a group
+   of KIND.  Return true if successful.  */
+
+static bool
+vect_build_slp_instance (vec_info *vinfo,
+			 slp_instance_kind kind,
+			 vec<stmt_vec_info> scalar_stmts,
+			 stmt_vec_info root_stmt_info,
+			 unsigned max_tree_size,
+			 scalar_stmts_to_slp_tree_map_t *bst_map,
+			 /* ???  We need stmt_info for group splitting.  */
+			 stmt_vec_info stmt_info_)
 {
-  slp_instance new_instance;
-  slp_tree node;
-  unsigned int group_size;
-  unsigned int i;
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  vec<stmt_vec_info> scalar_stmts;
-  bool constructor = false;
-
-  if (is_a <bb_vec_info> (vinfo))
-    vect_location = stmt_info->stmt;
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    {
-      group_size = DR_GROUP_SIZE (stmt_info);
-    }
-  else if (!dr && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
-    {
-      gcc_assert (is_a <loop_vec_info> (vinfo));
-      group_size = REDUC_GROUP_SIZE (stmt_info);
-    }
-  else if (is_gimple_assign (stmt_info->stmt)
-	    && gimple_assign_rhs_code (stmt_info->stmt) == CONSTRUCTOR)
-    {
-      group_size = CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt_info->stmt));
-      constructor = true;
-    }
-  else
-    {
-      gcc_assert (is_a <loop_vec_info> (vinfo));
-      group_size = as_a <loop_vec_info> (vinfo)->reductions.length ();
-    }
-
-  /* Create a node (a root of the SLP tree) for the packed grouped stores.  */
-  scalar_stmts.create (group_size);
-  stmt_vec_info next_info = stmt_info;
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    {
-      /* Collect the stores and store them in SLP_TREE_SCALAR_STMTS.  */
-      while (next_info)
-        {
-	  scalar_stmts.safe_push (vect_stmt_to_vectorize (next_info));
-	  next_info = DR_GROUP_NEXT_ELEMENT (next_info);
-        }
-    }
-  else if (!dr && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
-    {
-      /* Collect the reduction stmts and store them in
-	 SLP_TREE_SCALAR_STMTS.  */
-      while (next_info)
-        {
-	  scalar_stmts.safe_push (vect_stmt_to_vectorize (next_info));
-	  next_info = REDUC_GROUP_NEXT_ELEMENT (next_info);
-        }
-      /* Mark the first element of the reduction chain as reduction to properly
-	 transform the node.  In the reduction analysis phase only the last
-	 element of the chain is marked as reduction.  */
-      STMT_VINFO_DEF_TYPE (stmt_info)
-	= STMT_VINFO_DEF_TYPE (scalar_stmts.last ());
-      STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
-	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (scalar_stmts.last ()));
-    }
-  else if (constructor)
-    {
-      tree rhs = gimple_assign_rhs1 (stmt_info->stmt);
-      tree val;
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
-	{
-	  if (TREE_CODE (val) == SSA_NAME)
-	    {
-	      gimple* def = SSA_NAME_DEF_STMT (val);
-	      stmt_vec_info def_info = vinfo->lookup_stmt (def);
-	      /* Value is defined in another basic block.  */
-	      if (!def_info)
-		return false;
-	      def_info = vect_stmt_to_vectorize (def_info);
-	      scalar_stmts.safe_push (def_info);
-	    }
-	  else
-	    return false;
-	}
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Analyzing vectorizable constructor: %G\n",
-			 stmt_info->stmt);
-    }
-  else
-    {
-      /* Collect reduction statements.  */
-      vec<stmt_vec_info> reductions = as_a <loop_vec_info> (vinfo)->reductions;
-      for (i = 0; reductions.iterate (i, &next_info); i++)
-	scalar_stmts.safe_push (next_info);
-    }
-
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "Starting SLP discovery for\n");
-      for (i = 0; i < scalar_stmts.length (); ++i)
+      for (unsigned i = 0; i < scalar_stmts.length (); ++i)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "  %G", scalar_stmts[i]->stmt);
     }
 
   /* Build the tree for the SLP instance.  */
+  unsigned int group_size = scalar_stmts.length ();
   bool *matches = XALLOCAVEC (bool, group_size);
   unsigned npermutes = 0;
   poly_uint64 max_nunits = 1;
   unsigned tree_size = 0;
-  node = vect_build_slp_tree (vinfo, scalar_stmts, group_size,
-			      &max_nunits, matches, &npermutes,
-			      &tree_size, bst_map);
+  unsigned i;
+  slp_tree node = vect_build_slp_tree (vinfo, scalar_stmts, group_size,
+				       &max_nunits, matches, &npermutes,
+				       &tree_size, bst_map);
   if (node != NULL)
     {
       /* Calculate the unrolling factor based on the smallest type.  */
@@ -2148,11 +2074,11 @@ vect_analyze_slp_instance (vec_info *vinfo,
       else
 	{
 	  /* Create a new SLP instance.  */
-	  new_instance = XNEW (class _slp_instance);
+	  slp_instance new_instance = XNEW (class _slp_instance);
 	  SLP_INSTANCE_TREE (new_instance) = node;
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
-	  SLP_INSTANCE_ROOT_STMT (new_instance) = constructor ? stmt_info : NULL;
+	  SLP_INSTANCE_ROOT_STMT (new_instance) = root_stmt_info;
 	  new_instance->reduc_phis = NULL;
 	  new_instance->cost_vec = vNULL;
 	  new_instance->subgraph_entries = vNULL;
@@ -2184,7 +2110,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	     instructions do not generate this SLP instance.  */
 	  if (is_a <loop_vec_info> (vinfo)
 	      && loads_permuted
-	      && dr
+	      && kind == slp_inst_kind_store
 	      && vect_store_lanes_supported
 		   (STMT_VINFO_VECTYPE (scalar_stmts[0]), group_size, false))
 	    {
@@ -2213,9 +2139,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 
 	  /* If this is a reduction chain with a conversion in front
 	     amend the SLP tree with a node for that.  */
-	  if (!dr
-	      && REDUC_GROUP_FIRST_ELEMENT (stmt_info)
-	      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def)
+	  if (kind == slp_inst_kind_reduc_chain
+	      && STMT_VINFO_DEF_TYPE (scalar_stmts[0]) != vect_reduction_def)
 	    {
 	      /* Get at the conversion stmt - we know it's the single use
 		 of the last stmt of the reduction chain.  */
@@ -2225,7 +2150,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	      bool r = single_imm_use (gimple_assign_lhs (tem),
 				       &use_p, &use_stmt);
 	      gcc_assert (r);
-	      next_info = vinfo->lookup_stmt (use_stmt);
+	      stmt_vec_info next_info = vinfo->lookup_stmt (use_stmt);
 	      next_info = vect_stmt_to_vectorize (next_info);
 	      scalar_stmts = vNULL;
 	      scalar_stmts.create (group_size);
@@ -2268,10 +2193,13 @@ vect_analyze_slp_instance (vec_info *vinfo,
       scalar_stmts.release ();
     }
 
+  stmt_vec_info stmt_info = stmt_info_;
   /* Try to break the group up into pieces.  */
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-      && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
+  if (kind == slp_inst_kind_store)
     {
+      /* ???  We could delay all the actual splitting of store-groups
+	 until after SLP discovery of the original group completed.
+	 Then we can recurse to vect_build_slp_instance directly.  */
       for (i = 0; i < group_size; i++)
 	if (!matches[i])
 	  break;
@@ -2352,6 +2280,122 @@ vect_analyze_slp_instance (vec_info *vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "SLP discovery failed\n");
   return false;
+}
+
+
+/* Analyze an SLP instance starting from a group of grouped stores.  Call
+   vect_build_slp_tree to build a tree of packed stmts if possible.
+   Return FALSE if it's impossible to SLP any stmt in the loop.  */
+
+static bool
+vect_analyze_slp_instance (vec_info *vinfo,
+			   scalar_stmts_to_slp_tree_map_t *bst_map,
+			   stmt_vec_info stmt_info, unsigned max_tree_size)
+{
+  unsigned int group_size;
+  unsigned int i;
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  vec<stmt_vec_info> scalar_stmts;
+  slp_instance_kind kind;
+
+  if (is_a <bb_vec_info> (vinfo))
+    vect_location = stmt_info->stmt;
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    {
+      kind = slp_inst_kind_store;
+      group_size = DR_GROUP_SIZE (stmt_info);
+    }
+  else if (!dr && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+    {
+      kind = slp_inst_kind_reduc_chain;
+      gcc_assert (is_a <loop_vec_info> (vinfo));
+      group_size = REDUC_GROUP_SIZE (stmt_info);
+    }
+  else if (is_gimple_assign (stmt_info->stmt)
+	    && gimple_assign_rhs_code (stmt_info->stmt) == CONSTRUCTOR)
+    {
+      kind = slp_inst_kind_ctor;
+      group_size = CONSTRUCTOR_NELTS (gimple_assign_rhs1 (stmt_info->stmt));
+    }
+  else
+    {
+      kind = slp_inst_kind_reduc_group;
+      gcc_assert (is_a <loop_vec_info> (vinfo));
+      group_size = as_a <loop_vec_info> (vinfo)->reductions.length ();
+    }
+
+  /* Create a node (a root of the SLP tree) for the packed grouped stores.  */
+  scalar_stmts.create (group_size);
+  stmt_vec_info next_info = stmt_info;
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    {
+      /* Collect the stores and store them in SLP_TREE_SCALAR_STMTS.  */
+      while (next_info)
+	{
+	  scalar_stmts.safe_push (vect_stmt_to_vectorize (next_info));
+	  next_info = DR_GROUP_NEXT_ELEMENT (next_info);
+	}
+    }
+  else if (!dr && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+    {
+      /* Collect the reduction stmts and store them in
+	 SLP_TREE_SCALAR_STMTS.  */
+      while (next_info)
+	{
+	  scalar_stmts.safe_push (vect_stmt_to_vectorize (next_info));
+	  next_info = REDUC_GROUP_NEXT_ELEMENT (next_info);
+	}
+      /* Mark the first element of the reduction chain as reduction to properly
+	 transform the node.  In the reduction analysis phase only the last
+	 element of the chain is marked as reduction.  */
+      STMT_VINFO_DEF_TYPE (stmt_info)
+	= STMT_VINFO_DEF_TYPE (scalar_stmts.last ());
+      STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
+	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (scalar_stmts.last ()));
+    }
+  else if (kind == slp_inst_kind_ctor)
+    {
+      tree rhs = gimple_assign_rhs1 (stmt_info->stmt);
+      tree val;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
+	{
+	  if (TREE_CODE (val) == SSA_NAME)
+	    {
+	      gimple* def = SSA_NAME_DEF_STMT (val);
+	      stmt_vec_info def_info = vinfo->lookup_stmt (def);
+	      /* Value is defined in another basic block.  */
+	      if (!def_info)
+		return false;
+	      def_info = vect_stmt_to_vectorize (def_info);
+	      scalar_stmts.safe_push (def_info);
+	    }
+	  else
+	    return false;
+	}
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Analyzing vectorizable constructor: %G\n",
+			 stmt_info->stmt);
+    }
+  else
+    {
+      /* Collect reduction statements.  */
+      vec<stmt_vec_info> reductions = as_a <loop_vec_info> (vinfo)->reductions;
+      for (i = 0; reductions.iterate (i, &next_info); i++)
+	scalar_stmts.safe_push (next_info);
+    }
+
+  /* Build the tree for the SLP instance.  */
+  bool res = vect_build_slp_instance (vinfo, kind, scalar_stmts,
+				      kind == slp_inst_kind_ctor
+				      ? stmt_info : NULL,
+				      max_tree_size,
+				      bst_map, stmt_info);
+
+  /* ???  If this is slp_inst_kind_store and the above succeeded here's
+     where we should do store group splitting.  */
+
+  return res;
 }
 
 /* Fill in backedge SLP children in the SLP graph.  */
