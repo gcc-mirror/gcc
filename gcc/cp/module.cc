@@ -8616,7 +8616,7 @@ trees_out::type_node (tree type)
 	  tree_node (raises);
 	}
 
-      tree_node (error_mark_node);  // FIXME: Attribs
+      tree_node (TYPE_ATTRIBUTES (type));
 
       if (streaming_p ())
 	{
@@ -9399,9 +9399,7 @@ trees_in::tree_node (bool is_use)
 	    TYPE_USER_ALIGN (res) = true;
 	  }
 
-	tree attribs = tree_node ();
-	if (attribs != error_mark_node
-	    && !get_overrun ())
+	if (tree attribs = tree_node ())
 	  res = cp_build_type_attribute_variant (res, attribs);
 
 	int quals = i ();
