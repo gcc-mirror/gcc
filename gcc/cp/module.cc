@@ -5992,16 +5992,13 @@ trees_out::core_vals (tree t)
       break;
 
       /* Decls.  */
-    case RESULT_DECL:
-      // FIXME?
-      break;
-
     case VAR_DECL:
       if (DECL_CONTEXT (t)
 	  && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
 	break;
       /* FALLTHROUGH  */
 
+    case RESULT_DECL:
     case PARM_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
 	WT (DECL_VALUE_EXPR (t));
@@ -6061,7 +6058,7 @@ trees_out::core_vals (tree t)
       /* nonlocalized_vars is a middle-end thing.  */
       WT (t->block.subblocks);
       WT (t->block.supercontext);
-      // FIXME: Same as for decl's abstract_origin
+      // FIXME: As for decl's abstract_origin, does this introduce crosslinks?
       WT (t->block.abstract_origin);
       /* fragment_origin, fragment_chain are middle-end things.  */
       WT (t->block.chain);
@@ -6469,16 +6466,13 @@ trees_in::core_vals (tree t)
       break;
 
       /* Decls.  */
-    case RESULT_DECL:
-      // FIXME?
-      break;
-
     case VAR_DECL:
       if (DECL_CONTEXT (t)
 	  && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
 	break;
       /* FALLTHROUGH  */
 
+    case RESULT_DECL:
     case PARM_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
 	{
