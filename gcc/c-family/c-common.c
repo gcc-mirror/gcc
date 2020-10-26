@@ -527,6 +527,8 @@ const struct c_common_resword c_common_reswords[] =
   { "while",		RID_WHILE,	0 },
   { "__is_assignable", RID_IS_ASSIGNABLE, D_CXXONLY },
   { "__is_constructible", RID_IS_CONSTRUCTIBLE, D_CXXONLY },
+  { "__is_nothrow_assignable", RID_IS_NOTHROW_ASSIGNABLE, D_CXXONLY },
+  { "__is_nothrow_constructible", RID_IS_NOTHROW_CONSTRUCTIBLE, D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },
