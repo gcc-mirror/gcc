@@ -7577,9 +7577,6 @@ trees_out::decl_value (tree decl, depset *dep)
       && dump ("Writing %s:%d %C:%N%S", merge_kind_name[mk], tag,
 	       TREE_CODE (decl), decl, decl);
 
-  // FIXME: If mergeable, mark function parms etc as mergeable too
-  // Don't I already do this now?
-
   tree inner = decl;
   int inner_tag = 0;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -7676,7 +7673,6 @@ trees_out::decl_value (tree decl, depset *dep)
 	       merge_kind_name[mk], TREE_CODE (decl), decl);
 
   if (inner && TREE_CODE (inner) == FUNCTION_DECL)
-    // FIXME: Stream in the type here as that's where the default args are?
     fn_parms_fini (inner);
 
   if (!is_key_order ())
@@ -7929,6 +7925,7 @@ trees_in::decl_value ()
     parm_tag = fn_parms_init (inner);
 
   tree existing = key_mergeable (tag, mk, decl, inner, type, container, is_mod);
+  tree existing_inner = existing;
   if (existing)
     {
       if (existing == error_mark_node)
@@ -7950,8 +7947,8 @@ trees_in::decl_value ()
       back_refs[~tag] = existing;
       if (inner_tag != 0)
 	{
-	  existing = DECL_TEMPLATE_RESULT (existing);
-	  back_refs[~inner_tag] = existing;
+	  existing_inner = DECL_TEMPLATE_RESULT (existing);
+	  back_refs[~inner_tag] = existing_inner;
 	}
 
       if (type_tag != 0)
@@ -7964,9 +7961,7 @@ trees_in::decl_value ()
     }
 
   if (parm_tag)
-    // FIXME: Is this comment 100% accurate?
-    /* EXISTING is the template result (or NULL).  */
-    fn_parms_fini (parm_tag, inner, existing, has_defn);
+    fn_parms_fini (parm_tag, inner, existing_inner, has_defn);
 
   if (!tree_node_vals (decl))
     goto bail;

@@ -1,5 +1,9 @@
 2020-10-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_{in,out}::tree_list): Address more Fixmes,
+	either by obsoleting them, or coding around their confusion.
+
 	libcody/
 	Rebase on upstream, robustify enable-checking.
 
