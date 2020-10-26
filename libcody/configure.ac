@@ -27,10 +27,10 @@ NMS_BUGURL
 NMS_ENABLE_CHECKING
 NMS_ENABLE_EXCEPTIONS
 
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AC_CHECK_TOOL([AR],[ar])
-AC_CHECK_PROG([DOXYGEN],[doxygen],[: NOTdoxygen])
-AC_CHECK_PROG([ALOY],[aloy],[: Joust testsuite missing])
+AC_CHECK_PROG([DOXYGEN],[doxygen],[doxygen],[: NOTdoxygen])
+AC_CHECK_PROG([ALOY],[aloy],[aloy],[: Joust testsuite missing])
 AH_VERBATIM([_GNU_SOURCE],[#define _GNU_SOURCE 1])
 AH_VERBATIM([_FORTIFY_SOURCE],[#undef _FORTIFY_SOURCE])
 

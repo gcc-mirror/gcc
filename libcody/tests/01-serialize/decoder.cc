@@ -18,7 +18,7 @@
 // CHECK2-NEXT: line:0 word:0 'line-1'
 // CHECK2-NEXT: line:0 word:1 'word:1'
 // CHECK2-NEXT: line:1 word:0 'line 2'
-// CHECK2-NEXT: error:No message
+// CHECK2-NEXT: error:No 
 // CHECK2-NEXT: $EOF
 
 // RUN: <<'
@@ -31,7 +31,7 @@
    RUN: <<'\g'
 */
 // RUN: $subdir$stem |& ezio -p CHECK4 $test
-// CHECK4-NEXT: error:No message
+// CHECK4-NEXT: error:No 
 // CHECK4-NEXT: error:Invalid argument
 // CHECK4-NEXT: line:1 word:0 ''\g''
 // CHECK4-NEXT: $EOF

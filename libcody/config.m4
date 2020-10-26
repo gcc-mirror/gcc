@@ -228,7 +228,7 @@ AC_MSG_CHECKING([distribution])
 AC_MSG_RESULT([$nms_distribution])])
 
 AC_DEFUN([NMS_ENABLE_CHECKING],
-[AC_ARG_ENABLE(checking,
+[AC_ARG_ENABLE([checking],
 AS_HELP_STRING([--enable-checking],
 [enable run-time checking]),,
 [enable_checking="yes"])
@@ -260,7 +260,7 @@ AC_MSG_RESULT(installed))])
 
 AC_DEFUN([NMS_ENABLE_BACKTRACE],
 [AC_REQUIRE([NMS_DISTRIBUTION])
-AC_ARG_ENABLE(backtrace,
+AC_ARG_ENABLE([backtrace],
 AS_HELP_STRING([--enable-backtrace],[provide backtrace on fatality.]),,
 [enable_backtrace="maybe"])
 if test "${enable_backtrace:-maybe}" != no ; then
