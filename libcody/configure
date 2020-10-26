@@ -3115,8 +3115,6 @@ ac_config_files="$ac_config_files $CONFIG_FILES"
 configure_args=$ac_configure_args
 
 
-
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking bugurl" >&5
 printf %s "checking bugurl... " >&6; }
 
@@ -3148,9 +3146,9 @@ else
 fi
 
 case "$enable_checking" in
-  ("yes") nms_checking=yes ;;
+  (yes|yes,*) nms_checking=yes ;;
   ("no") nms_checking= ;;
-  (*) as_fn_error $? "unknown check \"$enable_check\"" "$LINENO" 5 ;;
+  (*) as_fn_error $? "unknown check \"$enable_checking\"" "$LINENO" 5 ;;
 esac
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking checking" >&5
 printf %s "checking checking... " >&6; }
