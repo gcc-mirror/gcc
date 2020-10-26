@@ -1,6 +1,10 @@
 2020-10-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::tree_list): New streamers.
+	(trees_{in,out}::{read,write}_class_def): Use them.
+
+	gcc/cp/
 	* module.cc: Remove or clarify more now-obsolete FIXMEs.
 
 	gcc/cp/

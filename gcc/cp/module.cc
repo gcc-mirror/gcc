@@ -2990,6 +2990,7 @@ private:
   vec<tree, va_heap> *vec_chained_decls ();
   vec<tree, va_gc> *tree_vec (); /* vec of tree.  */
   vec<tree_pair_s, va_gc> *tree_pair_vec (); /* vec of tree_pair.  */
+  tree tree_list (bool has_purpose);
 
 public:
   /* Read a tree node.  */
@@ -3154,6 +3155,7 @@ private:
   void vec_chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
+  void tree_list (tree, bool has_purpose);
 
 public:
   /* Mark a node for by-value walking.  */
@@ -5025,6 +5027,33 @@ trees_in::tree_pair_vec ()
   return v;
 }
 
+void
+trees_out::tree_list (tree list, bool has_purpose)
+{
+  for (; list; list = TREE_CHAIN (list))
+    {
+      gcc_checking_assert (TREE_VALUE (list));
+      tree_node (TREE_VALUE (list));
+      if (has_purpose)
+	tree_node (TREE_PURPOSE (list));
+    }
+  tree_node (NULL_TREE);
+}
+
+tree
+trees_in::tree_list (bool has_purpose)
+{
+  tree res = NULL_TREE;
+
+  for (tree *chain = &res; tree value = tree_node ();
+       chain = &TREE_CHAIN (*chain))
+    {
+      tree purpose = has_purpose ? tree_node () : NULL_TREE;
+      *chain = build_tree_list (purpose, value);
+    }
+
+  return res;
+}
 /* Start tree write.  Write information to allocate the receiving
    node.  */
 
@@ -11650,12 +11679,7 @@ trees_out::write_class_def (tree defn)
 	write_definition (vtables);
 
       /* Write the friend classes.  */
-      for (tree friends = CLASSTYPE_FRIEND_CLASSES (type);
-	   friends; friends = TREE_CHAIN (friends))
-	/* TREE_VALUE is what we want.  */
-	tree_node (TREE_VALUE (friends));
-      /* End of friends.  */
-      tree_node (NULL_TREE);
+      tree_list (CLASSTYPE_FRIEND_CLASSES (type), false);
 
       /* Write the friend functions.  */
       for (tree friends = DECL_FRIENDLIST (defn);
@@ -11663,26 +11687,13 @@ trees_out::write_class_def (tree defn)
 	{
 	  /* Name of these friends.  */
 	  tree_node (TREE_PURPOSE (friends));
-	  for (tree decls = TREE_VALUE (friends);
-	       decls; decls = TREE_CHAIN (decls))
-	    tree_node (TREE_VALUE (decls));
-	  /* End of these friends called this.  */
-	  tree_node (NULL_TREE);
+	  tree_list (TREE_VALUE (friends), false);
 	}
-      /* End of friends.  */
+      /* End of friend fns.  */
       tree_node (NULL_TREE);
 
       /* Write the decl list.  */
-      for (tree decls = CLASSTYPE_DECL_LIST (type); decls;
-	   decls = TREE_CHAIN (decls))
-	{
-	  tree value = TREE_VALUE (decls);
-	  gcc_checking_assert (value);
-	  tree_node (value);
-	  tree_node (TREE_PURPOSE (decls));
-	}
-      /* End of decls.  */
-      tree_node (NULL_TREE);
+      tree_list (CLASSTYPE_DECL_LIST (type), true);
 
       if (TYPE_CONTAINS_VPTR_P (type))
 	{
@@ -11936,30 +11947,15 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	    }
 	}
 
-      // FIXME: We should be able to reverse the lists in the writer
-      tree friend_classes = NULL_TREE;
-      while (tree val = tree_node ())
-	friend_classes = tree_cons (NULL_TREE, val, friend_classes);
-      friend_classes = nreverse (friend_classes);
-
+      tree friend_classes = tree_list (false);
       tree friend_functions = NULL_TREE;
-      while (tree name = tree_node ())
+      for (tree *chain = &friend_functions;
+	   tree name = tree_node (); chain = &TREE_CHAIN (*chain))
 	{
-	  tree val = NULL_TREE;
-	  while (tree decl = tree_node ())
-	    val = tree_cons (NULL_TREE, decl, val);
-	  nreverse (val);
-	  friend_functions = tree_cons (name, val, friend_functions);
+	  tree val = tree_list (false);
+	  *chain = build_tree_list (name, val);
 	}
-      friend_functions = nreverse (friend_functions);
-
-      tree decl_list = NULL_TREE;
-      while (tree decl = tree_node ())
-	{
-	  tree purpose = tree_node ();
-	  decl_list = tree_cons (purpose, decl, decl_list);
-	}
-      decl_list = nreverse (decl_list);
+      tree decl_list = tree_list (true);
 
       if (installing)
 	{
