@@ -7519,7 +7519,7 @@ package body Sem_Ch8 is
 
          --  Reference to type name in predicate/invariant expression
 
-         elsif (Is_Task_Type (P_Type) or else Is_Protected_Type (P_Type))
+         elsif Is_Concurrent_Type (P_Type)
            and then not In_Open_Scopes (P_Name)
            and then (not Is_Concurrent_Type (Etype (P_Name))
                       or else not In_Open_Scopes (Etype (P_Name)))

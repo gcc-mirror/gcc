@@ -25472,7 +25472,7 @@ package body Sem_Util is
       --  All other cases do not require a transient scope
 
       else
-         pragma Assert (Is_Protected_Type (Typ) or else Is_Task_Type (Typ));
+         pragma Assert (Is_Concurrent_Type (Typ));
          return False;
       end if;
    end Old_Requires_Transient_Scope;
