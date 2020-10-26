@@ -5138,6 +5138,8 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
   // Left fold.
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
     {
+      if (expr1)
+	return error_mark_node;
       cp_lexer_consume_token (parser->lexer);
       int op = cp_parser_fold_operator (parser);
       if (op == ERROR_MARK)
