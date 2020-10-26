@@ -6062,7 +6062,8 @@ trees_out::core_vals (tree t)
       WT (t->block.abstract_origin);
       /* fragment_origin, fragment_chain are middle-end things.  */
       WT (t->block.chain);
-      // FIXME: block_num, die?
+      /* nonlocalized_vars, block_num & die are middle endy/debug
+	 things.  */
       break;
 
     case CALL_EXPR:
@@ -6099,10 +6100,6 @@ trees_out::core_vals (tree t)
       }
       break;
 
-    case OPTIMIZATION_NODE:
-      gcc_unreachable (); // FIXME
-      break;
-
     case STATEMENT_LIST:
       for (tree_stmt_iterator iter = tsi_start (t);
 	   !tsi_end_p (iter); tsi_next (&iter))
@@ -6111,8 +6108,14 @@ trees_out::core_vals (tree t)
       WT (NULL_TREE);
       break;
 
+    case OPTIMIZATION_NODE:
     case TARGET_OPTION_NODE:
-      gcc_unreachable (); // FIXME
+      // FIXME: Our representation for these two nodes is a cache of
+      // the resulting set of options.  Not a record of the options
+      // that got changed by a particular attribute or pragma.  Should
+      // we record that, or should we record the diff from the command
+      // line options?
+      gcc_unreachable ();
       break;
 
     case TREE_BINFO:
@@ -6536,7 +6539,8 @@ trees_in::core_vals (tree t)
       RT (t->block.abstract_origin);
       /* fragment_origin, fragment_chain are middle-end.  */
       RT (t->block.chain);
-      // block_num, die?
+      /* nonlocalized_vars, block_num, die are middle endy/debug
+	 things.  */
       break;
 
     case CALL_EXPR:
@@ -6569,10 +6573,6 @@ trees_in::core_vals (tree t)
       }
       break;
 
-    case OPTIMIZATION_NODE:
-      gcc_unreachable (); // FIXME
-      break;
-
     case STATEMENT_LIST:
       {
 	tree_stmt_iterator iter = tsi_start (t);
@@ -6581,8 +6581,10 @@ trees_in::core_vals (tree t)
       }
       break;
 
+    case OPTIMIZATION_NODE:
     case TARGET_OPTION_NODE:
-      gcc_unreachable (); // FIXME
+      /* Not yet implemented, see trees_out::core_vals.  */
+      gcc_unreachable ();
       break;
 
     case TREE_BINFO:
