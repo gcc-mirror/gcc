@@ -1115,6 +1115,7 @@ cgraph_node::materialize_clone ()
       if (clone.param_adjustments)
 	clone.param_adjustments->dump (symtab->dump_file);
     }
+  clear_stmts_in_references ();
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (clone_of->decl, decl,
 			    clone.tree_map, clone.param_adjustments,

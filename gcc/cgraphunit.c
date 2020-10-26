@@ -1600,7 +1600,6 @@ mark_functions_to_output (void)
   FOR_EACH_FUNCTION (node)
     {
       tree decl = node->decl;
-      node->clear_stmts_in_references ();
 
       gcc_assert (!node->process || node->same_comdat_group);
       if (node->process)

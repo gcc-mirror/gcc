@@ -716,6 +716,7 @@ inline_transform (struct cgraph_node *node)
       if (n->decl != node->decl)
 	n->materialize_clone ();
     }
+  node->clear_stmts_in_references ();
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
