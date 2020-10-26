@@ -6293,7 +6293,7 @@ package body Sem_Res is
 
       --  Normal subprogram call with name established in Resolve
 
-      elsif not (Is_Type (Entity (Subp))) then
+      elsif not Is_Type (Entity (Subp)) then
          Nam := Entity (Subp);
          Set_Entity_With_Checks (Subp, Nam);
 

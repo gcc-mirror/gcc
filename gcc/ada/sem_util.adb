@@ -27600,8 +27600,6 @@ package body Sem_Util is
             Style.Check_Identifier (Nod, Val_Actual);
          end if;
       end if;
-
-      Set_Entity (N, Val);
    end Set_Entity_With_Checks;
 
    ------------------------------
