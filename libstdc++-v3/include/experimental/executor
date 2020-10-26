@@ -1602,8 +1602,8 @@ inline namespace v1
       {
 #if defined(_GLIBCXX_HAS_GTHREADS)
 	bool
-	running_in_this_thread() const
-	{ return std::this_thread::get_id() == _M_state->_M_running_on; }
+	running_in_this_thread() const noexcept
+	{ return std::this_thread::get_id() == _M_running_on; }
 
 	std::thread::id _M_running_on;
 #else
