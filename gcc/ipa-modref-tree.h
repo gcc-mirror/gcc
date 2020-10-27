@@ -544,6 +544,32 @@ struct GTY((user)) modref_tree
   {
     collapse ();
   }
+
+  /* Update parameter indexes in TT according to MAP.  */
+  void
+  remap_params (vec <int> *map)
+  {
+    size_t i;
+    modref_base_node <T> *base_node;
+    FOR_EACH_VEC_SAFE_ELT (bases, i, base_node)
+      {
+	size_t j;
+	modref_ref_node <T> *ref_node;
+	FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+	  {
+	    size_t k;
+	    modref_access_node *access_node;
+	    FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	      if (access_node->parm_index > 0)
+		{
+		  if (access_node->parm_index < (int)map->length ())
+		    access_node->parm_index = (*map)[access_node->parm_index];
+		  else
+		    access_node->parm_index = -1;
+		}
+	  }
+      }
+  }
 };
 
 void modref_c_tests ();

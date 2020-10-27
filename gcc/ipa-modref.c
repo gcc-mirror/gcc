@@ -1080,6 +1080,9 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
 				 modref_summary_lto *src_data,
 				 modref_summary_lto *dst_data)
 {
+  /* Be sure that no furhter cloning happens after ipa-modref.  If it does
+     we will need to update signatures for possible param changes.  */
+  gcc_checking_assert (!((modref_summaries_lto *)summaries_lto)->propagated);
   dst_data->stores = modref_records_lto::create_ggc
 			(src_data->stores->max_bases,
 			 src_data->stores->max_refs,
@@ -1474,43 +1477,20 @@ modref_read (void)
     }
 }
 
-/* Update parameter indexes in TT according to MAP.  */
-
-void
-remap_arguments (vec <int> *map, modref_records *tt)
-{
-  size_t i;
-  modref_base_node <alias_set_type> *base_node;
-  FOR_EACH_VEC_SAFE_ELT (tt->bases, i, base_node)
-    {
-      size_t j;
-      modref_ref_node <alias_set_type> *ref_node;
-      FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
-	{
-	  size_t k;
-	  modref_access_node *access_node;
-	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
-	    if (access_node->parm_index > 0)
-	      {
-		if (access_node->parm_index < (int)map->length ())
-		  access_node->parm_index = (*map)[access_node->parm_index];
-		else
-		  access_node->parm_index = -1;
-	      }
-	}
-    }
-}
-
 /* If signature changed, update the summary.  */
 
-static unsigned int
-modref_transform (struct cgraph_node *node)
+static void
+update_signature (struct cgraph_node *node)
 {
-  if (!node->clone.param_adjustments || !optimization_summaries)
-    return 0;
-  modref_summary *r = optimization_summaries->get (node);
-  if (!r)
-    return 0;
+  if (!node->clone.param_adjustments)
+    return;
+
+  modref_summary *r = optimization_summaries
+		      ? optimization_summaries->get (node) : NULL;
+  modref_summary_lto *r_lto = summaries_lto
+			      ? summaries_lto->get (node) : NULL;
+  if (!r && !r_lto)
+    return;
   if (dump_file)
     {
       fprintf (dump_file, "Updating summary for %s from:\n",
@@ -1539,14 +1519,25 @@ modref_transform (struct cgraph_node *node)
       if (idx >= 0)
 	map[idx] = i;
     }
-  remap_arguments (&map, r->loads);
-  remap_arguments (&map, r->stores);
+  if (r)
+    {
+      r->loads->remap_params (&map);
+      r->stores->remap_params (&map);
+    }
+  if (r_lto)
+    {
+      r_lto->loads->remap_params (&map);
+      r_lto->stores->remap_params (&map);
+    }
   if (dump_file)
     {
       fprintf (dump_file, "to:\n");
-      r->dump (dump_file);
+      if (r)
+        r->dump (dump_file);
+      if (r_lto)
+        r_lto->dump (dump_file);
     }
-  return 0;
+  return;
 }
 
 /* Definition of the modref IPA pass.  */
@@ -1575,7 +1566,7 @@ public:
 		      modref_read,     /* read_optimization_summary */
 		      NULL,            /* stmt_fixup */
 		      0,               /* function_transform_todo_flags_start */
-		      modref_transform,/* function_transform */
+		      NULL,	       /* function_transform */
 		      NULL)            /* variable_transform */
   {}
 
@@ -2137,6 +2128,9 @@ pass_ipa_modref::execute (function *)
 
       modref_propagate_in_scc (component_node);
     }
+  cgraph_node *node;
+  FOR_EACH_FUNCTION (node)
+    update_signature (node);
   if (summaries_lto)
     ((modref_summaries_lto *)summaries_lto)->propagated = true;
   ipa_free_postorder_info ();
