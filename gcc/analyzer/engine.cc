@@ -517,6 +517,29 @@ readability_comparator (const void *p1, const void *p2)
   if (int cmp = pv2.m_stack_depth - pv1.m_stack_depth)
     return cmp;
 
+  /* Otherwise, if they have the same readability, then impose an
+     arbitrary deterministic ordering on them.  */
+
+  if (int cmp = TREE_CODE (pv1.m_tree) - TREE_CODE (pv2.m_tree))
+    return cmp;
+
+  switch (TREE_CODE (pv1.m_tree))
+    {
+    default:
+      break;
+    case SSA_NAME:
+      if (int cmp = (SSA_NAME_VERSION (pv1.m_tree)
+		     - SSA_NAME_VERSION (pv2.m_tree)))
+	return cmp;
+      break;
+    case PARM_DECL:
+    case VAR_DECL:
+    case RESULT_DECL:
+      if (int cmp = DECL_UID (pv1.m_tree) - DECL_UID (pv2.m_tree))
+	return cmp;
+      break;
+    }
+
   /* TODO: We ought to find ways of sorting such cases.  */
   return 0;
 }
@@ -1824,8 +1847,9 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
       && point_b.get_function () != NULL
       && point_a.get_function () != point_b.get_function ())
     {
-      return ka.m_worklist.m_plan.cmp_function (point_a.get_function (),
-						point_b.get_function ());
+      if (int cmp = ka.m_worklist.m_plan.cmp_function (point_a.get_function (),
+						       point_b.get_function ()))
+	return cmp;
     }
 
   /* First, order by SCC.  */
@@ -1876,20 +1900,15 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
   const program_state &state_b = kb.m_enode->get_state ();
 
   /* Sort by sm-state, so that identical sm-states are grouped
-     together in the worklist.
-     For now, sort by the hash value (might not be deterministic).  */
+     together in the worklist.  */
   for (unsigned sm_idx = 0; sm_idx < state_a.m_checker_states.length ();
        ++sm_idx)
     {
       sm_state_map *smap_a = state_a.m_checker_states[sm_idx];
       sm_state_map *smap_b = state_b.m_checker_states[sm_idx];
 
-      hashval_t hash_a = smap_a->hash ();
-      hashval_t hash_b = smap_b->hash ();
-      if (hash_a < hash_b)
-	return -1;
-      else if (hash_a > hash_b)
-	return 1;
+      if (int smap_cmp = sm_state_map::cmp (*smap_a, *smap_b))
+	return smap_cmp;
     }
 
   /* Otherwise, we have two enodes at the same program point but with
