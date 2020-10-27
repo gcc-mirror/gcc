@@ -149,6 +149,17 @@ impl_region_model_context::on_escaped_function (tree fndecl)
   m_eg->on_escaped_function (fndecl);
 }
 
+/* struct setjmp_record.  */
+
+int
+setjmp_record::cmp (const setjmp_record &rec1, const setjmp_record &rec2)
+{
+  if (int cmp_enode = rec1.m_enode->m_index - rec2.m_enode->m_index)
+    return cmp_enode;
+  gcc_assert (&rec1 == &rec2);
+  return 0;
+}
+
 /* class setjmp_svalue : public svalue.  */
 
 /* Implementation of svalue::accept vfunc for setjmp_svalue.  */
@@ -3506,8 +3517,7 @@ public:
 
   void dump_dot (graphviz_out *gv, const dump_args_t &args) const FINAL OVERRIDE
   {
-    gv->println ("subgraph \"cluster_supernode_%p\" {",
-		 (const void *)this);
+    gv->println ("subgraph \"cluster_supernode_%i\" {", m_supernode->m_index);
     gv->indent ();
     gv->println ("style=\"dashed\";");
     gv->println ("label=\"SN: %i (bb: %i; scc: %i)\";",
@@ -3527,6 +3537,17 @@ public:
   void add_node (exploded_node *en) FINAL OVERRIDE
   {
     m_enodes.safe_push (en);
+  }
+
+  /* Comparator for use by auto_vec<supernode_cluster *>::qsort.  */
+
+  static int cmp_ptr_ptr (const void *p1, const void *p2)
+  {
+    const supernode_cluster *c1
+      = *(const supernode_cluster * const *)p1;
+    const supernode_cluster *c2
+      = *(const supernode_cluster * const *)p2;
+    return c1->m_supernode->m_index - c2->m_supernode->m_index;
   }
 
 private:
@@ -3555,7 +3576,8 @@ public:
   {
     const char *funcname = function_name (m_fun);
 
-    gv->println ("subgraph \"cluster_function_%p\" {", (const void *)this);
+    gv->println ("subgraph \"cluster_function_%s\" {",
+		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (m_fun->decl)));
     gv->indent ();
     gv->write_indent ();
     gv->print ("label=\"call string: ");
@@ -3563,10 +3585,19 @@ public:
     gv->print (" function: %s \";", funcname);
     gv->print ("\n");
 
+    /* Dump m_map, sorting it to avoid churn when comparing dumps.  */
+    auto_vec<supernode_cluster *> child_clusters (m_map.elements ());
     for (map_t::iterator iter = m_map.begin ();
 	 iter != m_map.end ();
 	 ++iter)
-      (*iter).second->dump_dot (gv, args);
+      child_clusters.quick_push ((*iter).second);
+
+    child_clusters.qsort (supernode_cluster::cmp_ptr_ptr);
+
+    unsigned i;
+    supernode_cluster *child_cluster;
+    FOR_EACH_VEC_ELT (child_clusters, i, child_cluster)
+      child_cluster->dump_dot (gv, args);
 
     /* Terminate subgraph.  */
     gv->outdent ();
@@ -3586,6 +3617,21 @@ public:
 	m_map.put (supernode, child);
 	child->add_node (en);
       }
+  }
+
+  /* Comparator for use by auto_vec<function_call_string_cluster *>.  */
+
+  static int cmp_ptr_ptr (const void *p1, const void *p2)
+  {
+    const function_call_string_cluster *c1
+      = *(const function_call_string_cluster * const *)p1;
+    const function_call_string_cluster *c2
+      = *(const function_call_string_cluster * const *)p2;
+    if (int cmp_names
+	= strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (c1->m_fun->decl)),
+		  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (c2->m_fun->decl))))
+      return cmp_names;
+    return call_string::cmp (c1->m_cs, c2->m_cs);
   }
 
 private:
@@ -3680,10 +3726,18 @@ public:
     FOR_EACH_VEC_ELT (m_functionless_enodes, i, enode)
       enode->dump_dot (gv, args);
 
+    /* Dump m_map, sorting it to avoid churn when comparing dumps.  */
+    auto_vec<function_call_string_cluster *> child_clusters (m_map.elements ());
     for (map_t::iterator iter = m_map.begin ();
 	 iter != m_map.end ();
 	 ++iter)
-      (*iter).second->dump_dot (gv, args);
+      child_clusters.quick_push ((*iter).second);
+
+    child_clusters.qsort (function_call_string_cluster::cmp_ptr_ptr);
+
+    function_call_string_cluster *child_cluster;
+    FOR_EACH_VEC_ELT (child_clusters, i, child_cluster)
+      child_cluster->dump_dot (gv, args);
   }
 
   void add_node (exploded_node *en) FINAL OVERRIDE

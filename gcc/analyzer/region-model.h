@@ -300,6 +300,9 @@ public:
   virtual bool implicitly_live_p (const svalue_set &live_svalues,
 				  const region_model *model) const;
 
+  static int cmp_ptr (const svalue *, const svalue *);
+  static int cmp_ptr_ptr (const void *, const void *);
+
  protected:
   svalue (complexity c, tree type)
   : m_complexity (c), m_type (type)
@@ -551,6 +554,8 @@ struct setjmp_record
     hstate->add_ptr (m_enode);
     hstate->add_ptr (m_setjmp_call);
   }
+
+  static int cmp (const setjmp_record &rec1, const setjmp_record &rec2);
 
   const exploded_node *m_enode;
   const gcall *m_setjmp_call;
@@ -987,6 +992,8 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
 
+  const char *get_name () const { return m_name; }
+
  private:
   const char *m_name;
 };
@@ -1078,6 +1085,7 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
 
+  const function_point &get_point () const { return m_point; }
   const svalue *get_base_svalue () const { return m_base_sval; }
   const svalue *get_iter_svalue () const { return m_iter_sval; }
 
@@ -1171,6 +1179,8 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
+
+  const binding_map &get_map () const { return m_map; }
 
   iterator_t begin () const { return m_map.begin (); }
   iterator_t end () const { return m_map.end (); }
@@ -1279,6 +1289,9 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
+
+  const gimple *get_stmt () const { return m_stmt; }
+  const region *get_id_region () const { return m_id_reg; }
 
  private:
   const gimple *m_stmt;
@@ -1418,7 +1431,7 @@ public:
 
   bool non_null_p () const;
 
-  static int cmp_ptrs (const void *, const void *);
+  static int cmp_ptr_ptr (const void *, const void *);
 
   region_offset get_offset () const;
   bool get_byte_size (byte_size_t *out) const;

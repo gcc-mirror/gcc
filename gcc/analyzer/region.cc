@@ -517,10 +517,11 @@ region::region (complexity c, unsigned id, const region *parent, tree type)
   gcc_assert (type == NULL_TREE || TYPE_P (type));
 }
 
-/* Comparator for regions, using their IDs to order them.  */
+/* Comparator for use by vec<const region *>::qsort,
+   using their IDs to order them.  */
 
 int
-region::cmp_ptrs (const void *p1, const void *p2)
+region::cmp_ptr_ptr (const void *p1, const void *p2)
 {
   const region * const *reg1 = (const region * const *)p1;
   const region * const *reg2 = (const region * const *)p2;

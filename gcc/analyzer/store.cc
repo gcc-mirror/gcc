@@ -208,6 +208,23 @@ concrete_binding::overlaps_p (const concrete_binding &other) const
   return false;
 }
 
+/* Comparator for use by vec<const concrete_binding *>::qsort.  */
+
+int
+concrete_binding::cmp_ptr_ptr (const void *p1, const void *p2)
+{
+  const concrete_binding *b1 = *(const concrete_binding * const *)p1;
+  const concrete_binding *b2 = *(const concrete_binding * const *)p2;
+
+  if (int kind_cmp = b1->get_kind () - b2->get_kind ())
+    return kind_cmp;
+
+  if (int start_cmp = wi::cmps (b1->m_start_bit_offset, b2->m_start_bit_offset))
+    return start_cmp;
+
+  return wi::cmpu (b1->m_size_in_bits, b2->m_size_in_bits);
+}
+
 /* class symbolic_binding : public binding_key.  */
 
 void
@@ -216,6 +233,20 @@ symbolic_binding::dump_to_pp (pretty_printer *pp, bool simple) const
   binding_key::dump_to_pp (pp, simple);
   pp_string (pp, ", region: ");
   m_region->dump_to_pp (pp, simple);
+}
+
+/* Comparator for use by vec<const symbolic_binding *>::qsort.  */
+
+int
+symbolic_binding::cmp_ptr_ptr (const void *p1, const void *p2)
+{
+  const symbolic_binding *b1 = *(const symbolic_binding * const *)p1;
+  const symbolic_binding *b2 = *(const symbolic_binding * const *)p2;
+
+  if (int kind_cmp = b1->get_kind () - b2->get_kind ())
+    return kind_cmp;
+
+  return region::cmp_ids (b1->get_region (), b2->get_region ());
 }
 
 /* The store is oblivious to the types of the svalues bound within
@@ -407,6 +438,40 @@ binding_map::to_json () const
     }
 
   return map_obj;
+}
+
+/* Comparator for imposing an order on binding_maps.  */
+
+int
+binding_map::cmp (const binding_map &map1, const binding_map &map2)
+{
+  if (int count_cmp = map1.elements () - map2.elements ())
+    return count_cmp;
+
+  auto_vec <const binding_key *> keys1 (map1.elements ());
+  for (map_t::iterator iter = map1.begin ();
+       iter != map1.end (); ++iter)
+    keys1.quick_push ((*iter).first);
+  keys1.qsort (binding_key::cmp_ptrs);
+
+  auto_vec <const binding_key *> keys2 (map2.elements ());
+  for (map_t::iterator iter = map2.begin ();
+       iter != map2.end (); ++iter)
+    keys2.quick_push ((*iter).first);
+  keys2.qsort (binding_key::cmp_ptrs);
+
+  for (size_t i = 0; i < keys1.length (); i++)
+    {
+      const binding_key *k1 = keys1[i];
+      const binding_key *k2 = keys2[i];
+      if (int key_cmp = binding_key::cmp (k1, k2))
+	return key_cmp;
+      gcc_assert (k1 == k2);
+      if (int sval_cmp = svalue::cmp_ptr (map1.get (k1), map2.get (k2)))
+	return sval_cmp;
+    }
+
+  return 0;
 }
 
 /* Get the child region of PARENT_REG based upon INDEX within a
@@ -1512,7 +1577,7 @@ get_sorted_parent_regions (auto_vec<const region *> *out,
     out->safe_push (*iter);
 
   /* Sort OUT.  */
-  out->qsort (region::cmp_ptrs);
+  out->qsort (region::cmp_ptr_ptr);
 }
 
 /* Dump a representation of this store to PP, using SIMPLE to control how
@@ -1532,7 +1597,7 @@ store::dump_to_pp (pretty_printer *pp, bool simple, bool multiline,
       const region *base_reg = (*iter).first;
       base_regions.safe_push (base_reg);
     }
-  base_regions.qsort (region::cmp_ptrs);
+  base_regions.qsort (region::cmp_ptr_ptr);
 
   /* Gather clusters, organize by parent region, so that we can group
      together locals, globals, etc.  */
@@ -1653,7 +1718,7 @@ store::to_json () const
       const region *base_reg = (*iter).first;
       base_regions.safe_push (base_reg);
     }
-  base_regions.qsort (region::cmp_ptrs);
+  base_regions.qsort (region::cmp_ptr_ptr);
 
   /* Gather clusters, organize by parent region, so that we can group
      together locals, globals, etc.  */
@@ -1991,10 +2056,19 @@ store::can_merge_p (const store *store_a, const store *store_b,
       base_regions.add (base_reg_b);
     }
 
+  /* Sort the base regions before considering them.  This ought not to
+     affect the results, but can affect which types UNKNOWN_REGIONs are
+     created for in a run; sorting them thus avoids minor differences
+     in logfiles.  */
+  auto_vec<const region *> vec_base_regions (base_regions.elements ());
   for (hash_set<const region *>::iterator iter = base_regions.begin ();
        iter != base_regions.end (); ++iter)
+    vec_base_regions.quick_push (*iter);
+  vec_base_regions.qsort (region::cmp_ptr_ptr);
+  unsigned i;
+  const region *base_reg;
+  FOR_EACH_VEC_ELT (vec_base_regions, i, base_reg)
     {
-      const region *base_reg = *iter;
       const binding_cluster *cluster_a = store_a->get_cluster (base_reg);
       const binding_cluster *cluster_b = store_b->get_cluster (base_reg);
       /* At least one of cluster_a and cluster_b must be non-NULL.  */

@@ -170,21 +170,29 @@ sm_state_map::print (const region_model *model,
 	pp_newline (pp);
       first = false;
     }
+  auto_vec <const svalue *> keys (m_map.elements ());
   for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
+    keys.quick_push ((*iter).first);
+  keys.qsort (svalue::cmp_ptr_ptr);
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (keys, i, sval)
     {
       if (multiline)
 	pp_string (pp, "  ");
       else if (!first)
 	pp_string (pp, ", ");
       first = false;
-      const svalue *sval = (*iter).first;
-      pp_pointer (pp, sval);
-      pp_string (pp, ": ");
+      if (!flag_dump_noaddr)
+	{
+	  pp_pointer (pp, sval);
+	  pp_string (pp, ": ");
+	}
       sval->dump_to_pp (pp, simple);
 
-      entry_t e = (*iter).second;
+      entry_t e = *const_cast <map_t &> (m_map).get (sval);
       pp_string (pp, ": ");
       e.m_state->dump_to_pp (pp);
       if (model)
@@ -916,6 +924,7 @@ program_state::prune_for_point (exploded_graph &eg,
       auto_vec<const decl_region *> ssa_name_regs;
       new_state.m_region_model->get_ssa_name_regions_for_current_frame
 	(&ssa_name_regs);
+      ssa_name_regs.qsort (region::cmp_ptr_ptr);
       unsigned i;
       const decl_region *reg;
       FOR_EACH_VEC_ELT (ssa_name_regs, i, reg)
@@ -1032,18 +1041,26 @@ program_state::validate (const extrinsic_state &ext_state) const
 
 static void
 log_set_of_svalues (logger *logger, const char *name,
-		     const svalue_set &set)
+		    const svalue_set &set)
 {
   logger->log (name);
   logger->inc_indent ();
+  auto_vec<const svalue *> sval_vecs (set.elements ());
   for (svalue_set::iterator iter = set.begin ();
        iter != set.end (); ++iter)
+    sval_vecs.quick_push (*iter);
+  sval_vecs.qsort (svalue::cmp_ptr_ptr);
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (sval_vecs, i, sval)
     {
       logger->start_log_line ();
       pretty_printer *pp = logger->get_printer ();
-      const svalue *sval = (*iter);
-      pp_pointer (pp, sval);
-      pp_string (pp, ": ");
+      if (!flag_dump_noaddr)
+	{
+	  pp_pointer (pp, sval);
+	  pp_string (pp, ": ");
+	}
       sval->dump_to_pp (pp, false);
       logger->end_log_line ();
     }

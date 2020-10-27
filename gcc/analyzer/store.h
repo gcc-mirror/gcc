@@ -237,6 +237,8 @@ public:
 
   bool overlaps_p (const concrete_binding &other) const;
 
+  static int cmp_ptr_ptr (const void *, const void *);
+
 private:
   bit_offset_t m_start_bit_offset;
   bit_size_t m_size_in_bits;
@@ -281,6 +283,8 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
 
   const region *get_region () const { return m_region; }
+
+  static int cmp_ptr_ptr (const void *, const void *);
 
 private:
   const region *m_region;
@@ -345,6 +349,8 @@ public:
 
   bool apply_ctor_to_region (const region *parent_reg, tree ctor,
 			     region_model_manager *mgr);
+
+  static int cmp (const binding_map &map1, const binding_map &map2);
 
 private:
   bool apply_ctor_val_to_range (const region *parent_reg,
