@@ -3781,10 +3781,7 @@ attr_fnspec::verify ()
   else if ((len - return_desc_size) % arg_desc_size)
     err = true;
   else if ((str[0] < '1' || str[0] > '4')
-	   && str[0] != '.' && str[0] != 'm'
-	   /* FIXME: Fortran trans-decl.c contains multiple wrong fnspec
-	      strings.  The following characters have no meaning.  */
-	   && str[0] != 'R' && str[0] != 'W')
+	   && str[0] != '.' && str[0] != 'm')
     err = true;
 
   switch (str[1])
