@@ -11851,7 +11851,6 @@ instantiate_class_template_1 (tree type)
 		   Ignore it; it will be regenerated when needed.  */
 		continue;
 
-	      /* Build new CLASSTYPE_NESTED_UTDS.  */
 	      bool class_template_p = (TREE_CODE (t) != ENUMERAL_TYPE
 				       && TYPE_LANG_SPECIFIC (t)
 				       && CLASSTYPE_IS_TEMPLATE (t));
@@ -12009,10 +12008,10 @@ instantiate_class_template_1 (tree type)
 			    TREE_TYPE (r) = error_mark_node;
 			}
 
-		      /* If it is a TYPE_DECL for a class-scoped ENUMERAL_TYPE,
-			 such a thing will already have been added to the field
-			 list by tsubst_enum in finish_member_declaration in the
-			 CLASSTYPE_NESTED_UTDS case above.  */
+		      /* If it is a TYPE_DECL for a class-scoped
+			 ENUMERAL_TYPE, such a thing will already have
+			 been added to the field list by tsubst_enum
+			 in finish_member_declaration case above.  */
 		      if (!(TREE_CODE (r) == TYPE_DECL
 			    && TREE_CODE (TREE_TYPE (r)) == ENUMERAL_TYPE
 			    && DECL_ARTIFICIAL (r)))
@@ -24959,19 +24958,6 @@ mark_class_instantiated (tree t, int extern_p)
     }
 }
 
-/* Called from do_type_instantiation through binding_table_foreach to
-   do recursive instantiation for the type bound in ENTRY.  */
-static void
-bt_instantiate_type_proc (binding_entry entry, void *data)
-{
-  tree storage = tree (data);
-
-  if (CLASS_TYPE_P (entry->type)
-      && CLASSTYPE_TEMPLATE_INFO (entry->type)
-      && !uses_template_parms (CLASSTYPE_TI_ARGS (entry->type)))
-    do_type_instantiation (entry->type, storage, 0);
-}
-
 /* Perform an explicit instantiation of template class T.  STORAGE, if
    non-null, is the RID for extern, inline or static.  COMPLAIN is
    nonzero if this is called from the parser, zero if called recursively,
@@ -25095,10 +25081,14 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	  instantiate_decl (fld, /*defer_ok=*/true,
 			    /*expl_inst_class_mem_p=*/true);
       }
+    else if (DECL_IMPLICIT_TYPEDEF_P (fld))
+      {
+	tree type = TREE_TYPE (fld);
 
-  if (CLASSTYPE_NESTED_UTDS (t))
-    binding_table_foreach (CLASSTYPE_NESTED_UTDS (t),
-			   bt_instantiate_type_proc, storage);
+	if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
+	    && !uses_template_parms (CLASSTYPE_TI_ARGS (type)))
+	  do_type_instantiation (type, storage, 0);
+      }
 }
 
 /* Given a function DECL, which is a specialization of TMPL, modify

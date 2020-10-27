@@ -1738,16 +1738,6 @@ insert_late_enum_def_bindings (tree klass, tree enumtype)
     }
 }
 
-/* Compute the chain index of a binding_entry given the HASH value of its
-   name and the total COUNT of chains.  COUNT is assumed to be a power
-   of 2.  */
-
-#define ENTRY_INDEX(HASH, COUNT) (((HASH) >> 3) & ((COUNT) - 1))
-
-/* A free list of "binding_entry"s awaiting for re-use.  */
-
-static GTY((deletable)) binding_entry free_binding_entry = NULL;
-
 /* The binding oracle; see cp-tree.h.  */
 
 cp_binding_oracle_function *cp_binding_oracle;
@@ -1770,180 +1760,6 @@ query_oracle (tree name)
   cp_binding_oracle (CP_ORACLE_IDENTIFIER, name);
 }
 
-/* Create a binding_entry object for (NAME, TYPE).  */
-
-static inline binding_entry
-binding_entry_make (tree name, tree type)
-{
-  binding_entry entry;
-
-  if (free_binding_entry)
-    {
-      entry = free_binding_entry;
-      free_binding_entry = entry->chain;
-    }
-  else
-    entry = ggc_alloc<binding_entry_s> ();
-
-  entry->name = name;
-  entry->type = type;
-  entry->chain = NULL;
-
-  return entry;
-}
-
-/* Put ENTRY back on the free list.  */
-#if 0
-static inline void
-binding_entry_free (binding_entry entry)
-{
-  entry->name = NULL;
-  entry->type = NULL;
-  entry->chain = free_binding_entry;
-  free_binding_entry = entry;
-}
-#endif
-
-/* The datatype used to implement the mapping from names to types at
-   a given scope.  */
-struct GTY(()) binding_table_s {
-  /* Array of chains of "binding_entry"s  */
-  binding_entry * GTY((length ("%h.chain_count"))) chain;
-
-  /* The number of chains in this table.  This is the length of the
-     member "chain" considered as an array.  */
-  size_t chain_count;
-
-  /* Number of "binding_entry"s in this table.  */
-  size_t entry_count;
-};
-
-/* Construct TABLE with an initial CHAIN_COUNT.  */
-
-static inline void
-binding_table_construct (binding_table table, size_t chain_count)
-{
-  table->chain_count = chain_count;
-  table->entry_count = 0;
-  table->chain = ggc_cleared_vec_alloc<binding_entry> (table->chain_count);
-}
-
-/* Make TABLE's entries ready for reuse.  */
-#if 0
-static void
-binding_table_free (binding_table table)
-{
-  size_t i;
-  size_t count;
-
-  if (table == NULL)
-    return;
-
-  for (i = 0, count = table->chain_count; i < count; ++i)
-    {
-      binding_entry temp = table->chain[i];
-      while (temp != NULL)
-	{
-	  binding_entry entry = temp;
-	  temp = entry->chain;
-	  binding_entry_free (entry);
-	}
-      table->chain[i] = NULL;
-    }
-  table->entry_count = 0;
-}
-#endif
-
-/* Allocate a table with CHAIN_COUNT, assumed to be a power of two.  */
-
-static inline binding_table
-binding_table_new (size_t chain_count)
-{
-  binding_table table = ggc_alloc<binding_table_s> ();
-  table->chain = NULL;
-  binding_table_construct (table, chain_count);
-  return table;
-}
-
-/* Expand TABLE to twice its current chain_count.  */
-
-static void
-binding_table_expand (binding_table table)
-{
-  const size_t old_chain_count = table->chain_count;
-  const size_t old_entry_count = table->entry_count;
-  const size_t new_chain_count = 2 * old_chain_count;
-  binding_entry *old_chains = table->chain;
-  size_t i;
-
-  binding_table_construct (table, new_chain_count);
-  for (i = 0; i < old_chain_count; ++i)
-    {
-      binding_entry entry = old_chains[i];
-      for (; entry != NULL; entry = old_chains[i])
-	{
-	  const unsigned int hash = IDENTIFIER_HASH_VALUE (entry->name);
-	  const size_t j = ENTRY_INDEX (hash, new_chain_count);
-
-	  old_chains[i] = entry->chain;
-	  entry->chain = table->chain[j];
-	  table->chain[j] = entry;
-	}
-    }
-  table->entry_count = old_entry_count;
-}
-
-/* Insert a binding for NAME to TYPE into TABLE.  */
-
-static void
-binding_table_insert (binding_table table, tree name, tree type)
-{
-  const unsigned int hash = IDENTIFIER_HASH_VALUE (name);
-  const size_t i = ENTRY_INDEX (hash, table->chain_count);
-  binding_entry entry = binding_entry_make (name, type);
-
-  entry->chain = table->chain[i];
-  table->chain[i] = entry;
-  ++table->entry_count;
-
-  if (3 * table->chain_count < 5 * table->entry_count)
-    binding_table_expand (table);
-}
-
-/* Return the binding_entry, if any, that maps NAME.  */
-
-binding_entry
-binding_table_find (binding_table table, tree name)
-{
-  const unsigned int hash = IDENTIFIER_HASH_VALUE (name);
-  binding_entry entry = table->chain[ENTRY_INDEX (hash, table->chain_count)];
-
-  while (entry != NULL && entry->name != name)
-    entry = entry->chain;
-
-  return entry;
-}
-
-/* Apply PROC -- with DATA -- to all entries in TABLE.  */
-
-void
-binding_table_foreach (binding_table table, bt_foreach_proc proc, void *data)
-{
-  size_t chain_count;
-  size_t i;
-
-  if (!table)
-    return;
-
-  chain_count = table->chain_count;
-  for (i = 0; i < chain_count; ++i)
-    {
-      binding_entry entry = table->chain[i];
-      for (; entry != NULL; entry = entry->chain)
-	proc (entry, data);
-    }
-}
-
 #ifndef ENABLE_SCOPE_CHECKING
 #  define ENABLE_SCOPE_CHECKING 0
 #else
@@ -6884,10 +6700,6 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 
       if (processing_template_decl)
 	{
-	  /* This may change after the call to push_template_decl, but
-	     we want the original value.  */
-	  tree name = DECL_NAME (decl);
-
 	  decl = push_template_decl (decl, is_friend);
 	  if (decl == error_mark_node)
 	    return error_mark_node;
@@ -6906,17 +6718,8 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 	      finish_member_declaration (CLASSTYPE_TI_TEMPLATE (type));
 
 	      if (!COMPLETE_TYPE_P (current_class_type))
-		{
-		  maybe_add_class_template_decl_list (current_class_type,
-						      type, /*friend_p=*/0);
-		  /* Put this UTD in the table of UTDs for the class.  */
-		  if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
-		    CLASSTYPE_NESTED_UTDS (current_class_type) =
-		      binding_table_new (SCOPE_DEFAULT_HT_SIZE);
-
-		  binding_table_insert
-		    (CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
-		}
+		maybe_add_class_template_decl_list (current_class_type,
+						    type, /*friend_p=*/0);
 	    }
 	}
     }
@@ -7077,17 +6880,8 @@ do_pushtag (tree name, tree type, TAG_how how)
 
   if (b->kind == sk_class
       && !COMPLETE_TYPE_P (current_class_type))
-    {
-      maybe_add_class_template_decl_list (current_class_type,
-					  type, /*friend_p=*/0);
-
-      if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
-	CLASSTYPE_NESTED_UTDS (current_class_type)
-	  = binding_table_new (SCOPE_DEFAULT_HT_SIZE);
-
-      binding_table_insert
-	(CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
-    }
+    maybe_add_class_template_decl_list (current_class_type,
+					type, /*friend_p=*/0);
 
   decl = TYPE_NAME (type);
   gcc_assert (TREE_CODE (decl) == TYPE_DECL);

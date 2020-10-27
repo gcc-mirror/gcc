@@ -2219,7 +2219,6 @@ struct GTY(()) lang_type {
   tree vtables;
   tree typeinfo_var;
   vec<tree, va_gc> *vbases;
-  binding_table nested_udts;
   tree as_base;
   vec<tree, va_gc> *pure_virtuals;
   tree friend_classes;
@@ -2371,12 +2370,6 @@ struct GTY(()) lang_type {
    until the destructor is created with lazily_declare_fn.  */
 #define CLASSTYPE_DESTRUCTOR(NODE) \
   (get_class_binding_direct (NODE, dtor_identifier))
-
-/* A dictionary of the nested user-defined-types (class-types, or enums)
-   found within this class.  This table includes nested member class
-   templates.  */
-#define CLASSTYPE_NESTED_UTDS(NODE) \
-   (LANG_TYPE_CLASS_CHECK (NODE)->nested_udts)
 
 /* Nonzero if NODE has a primary base class, i.e., a base class with
    which it shares the virtual function table pointer.  */
