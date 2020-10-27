@@ -1,3 +1,184 @@
+2020-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): If the aggregate
+	includes an Others_Choice in an association that is an
+	Iterated_Component_Association, generate a proper loop for it.
+
+2020-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-tifiio.adb: Add missing sign in documentation.
+	* libgnat/s-imgrea.ads: Minor fixes in commentary.
+
+2020-10-26  Pat Rogers  <rogers@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Include
+	"Jorvik" in pragma Profile description.
+	* gnat_rm.texi: Regenerate.
+
+2020-10-26  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Check_Image_Type): Remove "|", so the compiler
+	will not crash.
+	* errout.ads: Improve comment. This has nothing to do with
+	-gnatQ.
+
+2020-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-tifiio.adb: Minor editions to documentation.
+
+2020-10-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Causes_Contract_Freezing): Extend condition to
+	match the one in Analyze_Subprogram_Body_Helper. This routine is
+	used both as an assertion at the very start of
+	Freeze_Previous_Contracts and to detect previous declaration for
+	which Freeze_Previous_Contracts has been executed.
+
+2020-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-tifiio.adb: Move around documentaton paragraph.
+
+2020-10-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Establish_Actual_Mapping_For_Inlined_Call): Add
+	guard for a call to Set_Last_Assignment with the same condition
+	as the assertion in that routine and explain why this guard
+	fails in GNATprove mode.
+
+2020-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Adjust
+	the entries of 3.5.9(8) and 3.5.9(10).
+	* gnat_rm.texi: Regenerate.
+
+2020-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-tifiio.adb: Change the range of supported Small
+	values.
+	(E0, E1, E2): Adjust factors.
+	(Exact): Return false if the Small does not fit in 64 bits.
+
+2020-10-26  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.adb (Wait_On_Socket): Boolean parameter
+	For_Read changed to Event parameter of type
+	GNAT.Sockets.Poll.Wait_Event_Set.  Implementation is simplified
+	and based on call to GNAT.Sockets.Poll.Wait now.
+
+2020-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-tifiio.adb: Minor editions to documentation.
+
+2020-10-26  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb (Restore_Private_Views): Do not lose the
+	information provided by Is_Generic_Actual_Type in GNATprove
+	mode.
+
+2020-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Suppress warning
+	on formal parameters of all dispatching operations.
+
+2020-10-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Array_Aggregate): Fix typos in
+	error message.
+
+2020-10-26  Olivier Hainque  <hainque@adacore.com>
+
+	* libgnat/s-dwalin.adb (Symbolic_Traceback): Always emit the hex
+	address at the beginning of an entry if suppression is not
+	requested. Consistently output a "???" for the subprogram name
+	when it is unknown.
+
+2020-10-26  Doug Rupp  <rupp@adacore.com>
+
+	* s-oscons-tmplt.c (_nfds_t): Use sizeof (unsigned long int).
+
+2020-10-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch4.adb (P_Iterated_Component_Association): Move code for
+	iterated_element_association to
+	Build_Iterated_Element_Association.
+
+2020-10-26  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb (Needs_Body_Instantiated): In GNATprove mode, do
+	not instantiate bodies outside of the main unit.
+
+2020-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Array_Aggregate): For an
+	association that is an iterated component association, attach
+	the copy of the expression to the tree prior to analysis, in
+	order to preserve its context. This is needed when verifying
+	static semantic rules that depend on context, for example that a
+	use of 'Old appears only within a postcondition.
+
+2020-10-26  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document that
+	--no-comments-fill is now the default.
+
+2020-10-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Extension_Aggregate): When testing for
+	an aggregate that is illegal due to having an ancestor type that
+	has unknown discriminants, add an "or else" condition testing
+	whether the aggregate type has unknown discriminants and that
+	Partial_View_Has_Unknown_Discr is also set on the ancestor type.
+	Extend the comment, including adding ??? about a possible
+	simpler test.
+
+2020-10-26  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-cihama.adb, libgnat/a-cohama.adb,
+	libgnat/a-cohase.adb (Delete): Set Position.Position, and
+	assert.
+
+2020-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name.Undefined): Handle known unit
+	names with 3 selectors.
+
+2020-10-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Delta_Or_Update): Add missing call
+	to Enter_Name, just like it is called for
+	iterated_component_association in Expand_SPARK_N_Aggregate.
+
+2020-10-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Delta_Or_Update): Reuse local
+	constant Expr and the Choice_List routine.
+	(Expand_SPARK_N_Aggregate): Reuse local constant Expr.
+
+2020-10-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch4.adb (P_Iterated_Component_Association): Fix typos in
+	comments.
+
+2020-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch6.adb (P_Formal_Part): Ada 2020 supports scanning
+	aspects on formal parameters.
+	* doc/gnat_rm/implementation_defined_aspects.rst (Aspect
+	Unreferenced): Update documentation.
+	* gnat_rm.texi: Regenerate.
+
+2020-10-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Type_Refs): When an entity in an expression
+	function is a type, freeze the entity and not just its type,
+	which would be incomplete when the type is derived and/or
+	tagged.
+
+2020-10-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_Update_Attribute): Handle
+	subtype_indication just like in Expand_Delta_Array_Aggregate.
+
 2020-10-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.rtl: Add GNATRTL_128BIT_PAIRS/OBJS for 64bit

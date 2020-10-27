@@ -1,3 +1,15 @@
+2020-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* cp-tree.h (CPTK_IS_NOTHROW_ASSIGNABLE): New.
+	(CPTK_IS_NOTHROW_CONSTRUCTIBLE): Likewise.
+	(is_nothrow_xible): Likewise.
+	* method.c (is_nothrow_xible): New.
+	(is_trivially_xible): Tweak.
+	* parser.c (cp_parser_primary_expression): Handle the new RID_*.
+	(cp_parser_trait_expr): Likewise.
+	* semantics.c (trait_expr_value): Handle the new RID_*.
+	(finish_trait_expr): Likewise.
+
 2020-10-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/96241

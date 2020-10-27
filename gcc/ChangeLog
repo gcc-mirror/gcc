@@ -1,3 +1,180 @@
+2020-10-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97567
+	* gimple-range-gori.cc (gori_compute::logical_combine): Union the
+	ranges of operand1 and operand2, not intersect.
+
+2020-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* attr-fnspec.h: Update toplevel comment.
+	(attr_fnspec::attr_fnspec): New constructor.
+	(attr_fnspec::arg_read_p,
+	attr_fnspec::arg_written_p,
+	attr_fnspec::arg_access_size_given_by_arg_p,
+	attr_fnspec::arg_single_access_p
+	attr_fnspec::loads_known_p
+	attr_fnspec::stores_known_p,
+	attr_fnspec::clobbers_errno_p): New member functions.
+	(gimple_call_fnspec): Declare.
+	(builtin_fnspec): Declare.
+	* builtins.c: Include attr-fnspec.h
+	(builtin_fnspec): New function.
+	* builtins.def (BUILT_IN_MEMCPY): Do not specify RET1 fnspec.
+	(BUILT_IN_MEMMOVE): Do not specify RET1 fnspec.
+	(BUILT_IN_MEMSET): Do not specify RET1 fnspec.
+	(BUILT_IN_STRCAT): Do not specify RET1 fnspec.
+	(BUILT_IN_STRCPY): Do not specify RET1 fnspec.
+	(BUILT_IN_STRNCAT): Do not specify RET1 fnspec.
+	(BUILT_IN_STRNCPY): Do not specify RET1 fnspec.
+	(BUILT_IN_MEMCPY_CHK): Do not specify RET1 fnspec.
+	(BUILT_IN_MEMMOVE_CHK): Do not specify RET1 fnspec.
+	(BUILT_IN_MEMSET_CHK): Do not specify RET1 fnspec.
+	(BUILT_IN_STRCAT_CHK): Do not specify RET1 fnspec.
+	(BUILT_IN_STRCPY_CHK): Do not specify RET1 fnspec.
+	(BUILT_IN_STRNCAT_CHK): Do not specify RET1 fnspec.
+	(BUILT_IN_STRNCPY_CHK): Do not specify RET1 fnspec.
+	* gimple.c (gimple_call_fnspec): Return attr_fnspec.
+	(gimple_call_arg_flags): Update.
+	(gimple_call_return_flags): Update.
+	* tree-ssa-alias.c (check_fnspec): New function.
+	(ref_maybe_used_by_call_p_1): Use fnspec for builtin handling.
+	(call_may_clobber_ref_p_1): Likewise.
+	(attr_fnspec::verify): Update verifier.
+	* calls.c (decl_fnspec): New function.
+	(decl_return_flags): Use it.
+
+2020-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97555
+	* range-op.cc (range_tests): Test 1-bit signed invert.
+	* value-range.cc (subtract_one): Adjust comment.
+	(add_one): New.
+	(irange::invert): Call add_one.
+
+2020-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_node::optimize_for_size_p): Return
+	optimize_size_level.
+	(cgraph_node::optimize_for_size_p): Update.
+	* coretypes.h (enum optimize_size_level): New enum.
+	* predict.c (unlikely_executed_edge_p): Microoptimize.
+	(optimize_function_for_size_p): Return optimize_size_level.
+	(optimize_bb_for_size_p): Likewise.
+	(optimize_edge_for_size_p): Likewise.
+	(optimize_insn_for_size_p): Likewise.
+	(optimize_loop_nest_for_size_p): Likewise.
+	* predict.h (optimize_function_for_size_p): Update declaration.
+	(optimize_bb_for_size_p): Update declaration.
+	(optimize_edge_for_size_p): Update declaration.
+	(optimize_insn_for_size_p): Update declaration.
+	(optimize_loop_for_size_p): Update declaration.
+	(optimize_loop_nest_for_size_p): Update declaration.
+
+2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (enum slp_instance_kind): New.
+	(vect_build_slp_instance): Split out from...
+	(vect_analyze_slp_instance): ... this.
+
+2020-10-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (range_of_builtin_call): Initialize zerov to 0.
+
+2020-10-26  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/97576
+	* cgraphclones.c (cgraph_node::materialize_clone): Clear stmt
+	references.
+	* cgraphunit.c (mark_functions_to_output): Do not clear them here.
+	* ipa-inline-transform.c (inline_transform): Clear stmt references.
+	* symtab.c (symtab_node::clear_stmts_in_references): Make recursive
+	for clones.
+	* tree-ssa-structalias.c (ipa_pta_execute): Do not clear references.
+
+2020-10-26  Zhiheng Xie  <xiezhiheng@huawei.com>
+	    Nannan Zheng  <zhengnannan@huawei.com>
+
+	* config/aarch64/aarch64-builtins.c: Add FLAG STORE.
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for store intrinsics.
+
+2020-10-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/97546
+	* gimple-ssa-store-merging.c (find_bswap_or_nop): Return NULL if
+	type is not INTEGER_CST.
+
+2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97521
+	* expr.c (const_scalar_mask_from_tree): Remove.
+	(expand_expr_real_1): Always VIEW_CONVERT integer mode
+	vector constants to an integer type.
+	* tree.c (build_truth_vector_type_for_mode): Use a single-bit
+	boolean component type for non-vector-mode mask_mode.
+
+2020-10-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95458
+	* config/i386/i386-expand.c (ix86_expand_cmpstrn_or_cmpmem):
+	Return false for -mno-inline-all-stringops.
+
+2020-10-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95151
+	* config/i386/i386-expand.c (ix86_expand_cmpstrn_or_cmpmem): New
+	function.
+	* config/i386/i386-protos.h (ix86_expand_cmpstrn_or_cmpmem): New
+	prototype.
+	* config/i386/i386.md (cmpmemsi): New pattern.
+
+2020-10-26  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md ("vcond_mask_<mode><mode>"): New expander.
+
+2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	* sbitmap.c (sbitmap_vector_alloc): Use size_t for byte
+	quantities to avoid overflow.
+
+2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97539
+	* tree-vect-loop-manip.c (vect_do_peeling): Reset out-of-loop
+	debug uses before peeling.
+
+2020-10-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (struct cgraph_node): Make ipa_transforms_to_apply vl_ptr.
+	* ipa-inline-analysis.c (initialize_growth_caches): Disable insertion
+	and duplication hooks.
+	* ipa-inline-transform.c (clone_inlined_nodes): Clear
+	ipa_transforms_to_apply.
+	(save_inline_function_body): Disable insertion hoook for
+	ipa_saved_clone_sources.
+	* ipa-prop.c (ipcp_transformation_initialize): Disable insertion hook.
+	* ipa-prop.h (ipa_node_params_t): Disable insertion hook.
+	* ipa-reference.c (propagate): Disable insertion hoook.
+	* ipa-sra.c (ipa_sra_summarize_function): Move out of anonymous
+	namespace.
+	(ipa_sra_function_summaries::insert): New virtual function.
+	* passes.c (execute_one_pass): Do not add transforms to inline clones.
+	* symbol-summary.h (function_summary_base): Make insert and duplicate
+	hooks fail instead of silently producing empty summaries; add way to
+	disable duplication hooks
+	(call_summary_base): Likewise.
+	* tree-nested.c (nested_function_info::get_create): Disable insertion
+	hooks
+	(maybe_record_nested_function): Likewise.
+
+2020-10-26  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* cfg.c (debug_bb): New overloaded function.
+	(debug_bb_n): New overloaded function.
+	* cfg.h (debug_bb): New declaration.
+	(debug_bb_n): New declaration.
+	* print-rtl.c (debug_bb_slim): Call debug_bb with flags.
+
 2020-10-24  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/97451

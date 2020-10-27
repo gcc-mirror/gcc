@@ -1,3 +1,10 @@
+2020-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* c-common.c (__is_nothrow_assignable): New.
+	(__is_nothrow_constructible): Likewise.
+	* c-common.h (RID_IS_NOTHROW_ASSIGNABLE): New.
+	(RID_IS_NOTHROW_CONSTRUCTIBLE): Likewise.
+
 2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-common.c (c_common_finalize_early_debug): Update for new thunk api.
