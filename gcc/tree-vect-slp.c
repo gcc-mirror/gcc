@@ -4336,14 +4336,6 @@ vect_slp_bbs (vec<basic_block> bbs)
 	  if (!vect_find_stmt_data_reference (NULL, stmt, &datarefs,
 					      &dataref_groups, current_group))
 	    ++current_group;
-
-	  if (insns > param_slp_max_insns_in_bb)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "not vectorized: too many instructions in "
-				 "region.\n");
-	    }
 	}
     }
 
@@ -4386,14 +4378,26 @@ vect_slp_function (function *fun)
       /* Split when a BB is not dominated by the first block.  */
       if (!bbs.is_empty ()
 	  && !dominated_by_p (CDI_DOMINATORS, bb, bbs[0]))
-	split = true;
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "splitting region at dominance boundary bb%d\n",
+			     bb->index);
+	  split = true;
+	}
       /* Split when the loop determined by the first block
 	 is exited.  This is because we eventually insert
 	 invariants at region begin.  */
       else if (!bbs.is_empty ()
 	       && bbs[0]->loop_father != bb->loop_father
 	       && !flow_loop_nested_p (bbs[0]->loop_father, bb->loop_father))
-	split = true;
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "splitting region at loop %d exit at bb%d\n",
+			     bbs[0]->loop_father->num, bb->index);
+	  split = true;
+	}
 
       if (split && !bbs.is_empty ())
 	{
@@ -4404,11 +4408,17 @@ vect_slp_function (function *fun)
       else
 	bbs.safe_push (bb);
 
-      /* When we have a stmt ending this block we have to insert on
-	 edges when inserting after it.  Avoid this for now.  */
+      /* When we have a stmt ending this block and defining a
+	 value we have to insert on edges when inserting after it for
+	 a vector containing its definition.  Avoid this for now.  */
       if (gimple *last = last_stmt (bb))
-	if (is_ctrl_altering_stmt (last))
+	if (gimple_get_lhs (last)
+	    && is_ctrl_altering_stmt (last))
 	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "splitting region at control altering "
+			       "definition %G", last);
 	    r |= vect_slp_bbs (bbs);
 	    bbs.truncate (0);
 	  }
