@@ -2396,7 +2396,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  tree scalar_type
 	    = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
 	  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
-						      least_bit_hwi (i));
+						      1 << floor_log2 (i));
 	  unsigned HOST_WIDE_INT const_nunits;
 	  if (vectype
 	      && TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits))
