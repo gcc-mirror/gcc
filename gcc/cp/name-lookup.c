@@ -8697,12 +8697,8 @@ reuse_namespace (tree *slot, tree ctx, tree name)
   return NULL_TREE;
 }
 
-/* The anonymous namespace name can be module-dependent.  */
-static tree GTY() anon_name;
-
 static tree
-make_namespace (tree ctx, tree name, location_t loc,
-		bool inline_p, tree asm_name = NULL_TREE)
+make_namespace (tree ctx, tree name, location_t loc, bool inline_p)
 {
   /* Create the namespace.  */
   tree ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
@@ -8714,40 +8710,10 @@ make_namespace (tree ctx, tree name, location_t loc,
   DECL_CONTEXT (ns) = FROB_CONTEXT (ctx);
 
   if (!name)
-    {
-      if (!asm_name)
-	{
-	  /* Figure out the anonymous namespace assembler name.  */
-	  asm_name = anon_identifier;
-	  if (module_interface_p ())
-	    {
-	      /* We must use the full partition name.  */
-	      const char *name = module_name (0, true);
-	      unsigned len = strlen (name);
-	      unsigned pos = IDENTIFIER_LENGTH (asm_name);
-	      char *buf = XALLOCAVEC (char, pos + len * 3 + 1);
-
-	      memcpy (buf, IDENTIFIER_POINTER (asm_name), pos);
-	      buf[pos++] = '_';
-	      for (const char *ptr = name; *ptr; ptr++)
-		if (ISALNUM (*ptr))
-		  buf[pos++] = *ptr;
-		else
-		  pos += sprintf (&buf[pos], "_%02x", (unsigned char)*ptr);
-	      asm_name = get_identifier_with_length (buf, pos);
-	    }
-	  else if (global_purview_p ())
-	    /* We cannot have it here, because there's nothing
-	       unique to mangle into the name.  */
-	    // FIXME: this is wrong, we can do this by giving
-	    // anon-namespaces TU-specific indices, it doesn't matter
-	    // if these are different upon import.
-	    error ("anonymous namespaces cannot be used in"
-		   " global module fragment");
-	  anon_name = asm_name;
-	}
-      SET_DECL_ASSEMBLER_NAME (ns, asm_name);
-    }
+    /* It's possible we'll need to give anon-namespaces in different
+       header-unit imports distinct names.  If so, I think those
+       names can be unique to this TU -- use the module index?  */
+    SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
   else if (TREE_PUBLIC (ctx))
     TREE_PUBLIC (ns) = true;
 
@@ -8966,14 +8932,14 @@ pop_namespace (void)
 
 tree
 add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
-			bool visible_p, bool inline_p, tree anon_name)
+			bool visible_p, bool inline_p)
 {
   gcc_checking_assert (origin);
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);
   if (!decl)
     {
-      decl = make_namespace (ctx, name, loc, inline_p, anon_name);
+      decl = make_namespace (ctx, name, loc, inline_p);
       DECL_MODULE_IMPORT_P (decl) = true;
       make_namespace_finish (decl, slot, true);
     }

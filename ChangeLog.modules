@@ -1,5 +1,14 @@
 2020-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	No special anon-namespace naming
+	gcc/cp/
+	* name-lookup.h (add_imported_namespace): Drop anon name parm.
+	* name-lookup.c (anon_name): Delete.
+	(make_namespace): Nothing special for anonymous namespace.
+	(add_imported_namespace): Likewise.
+	* module.cc (module_state::{read,write}_namespaces): Anon
+	namepspace does not need naming.
+
 	gcc/testsuite/
 	* g++.dg/modules/xtreme-tr1{.h,_a.H,_b.C}: New.
 

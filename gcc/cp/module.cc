@@ -14947,11 +14947,6 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 		       inline_p ? ", inline" : "");
       sec.u (b->cluster);
       sec.u (to->name (DECL_NAME (ns)));
-      if (!DECL_NAME (ns))
-	{
-	  gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (ns));
-	  sec.u (to->name (DECL_ASSEMBLER_NAME_RAW (ns)));
-	}
       write_namespace (sec, b->deps[0]);
 
       /* Don't use bools, because this can be near the end of the
@@ -14982,7 +14977,6 @@ module_state::read_namespaces (unsigned num)
     {
       unsigned entity_index = sec.u ();
       unsigned name = sec.u ();
-      unsigned anon_name = name ? 0 : sec.u ();
 
       tree parent = read_namespace (sec);
 
@@ -14996,8 +14990,6 @@ module_state::read_namespaces (unsigned num)
 	break;
 
       tree id = name ? get_identifier (from ()->name (name)) : NULL_TREE;
-      tree anon_id = anon_name
-	? get_identifier (from ()->name (anon_name)) : NULL_TREE;
       bool public_p = flags & 4;
       bool inline_p = flags & 2;
       bool export_p = flags & 1;
@@ -15009,8 +15001,7 @@ module_state::read_namespaces (unsigned num)
       bool visible_p = (export_p
 			|| (public_p && (is_partition () || is_module ())));
       tree inner = add_imported_namespace (parent, id, mod,
-					   src_loc, visible_p, inline_p,
-					   anon_id);
+					   src_loc, visible_p, inline_p);
       if (export_p && is_partition ())
 	DECL_MODULE_EXPORT_P (inner) = true;
 
