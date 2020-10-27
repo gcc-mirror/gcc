@@ -1046,8 +1046,8 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       if ((__nmatches == 1 && __matches_lengths[0] == __pos)
 	  || (__nmatches == 2 && (__matches_lengths[0] == __pos
 				  || __matches_lengths[1] == __pos)))
-	__member = (__matches[0] >= __indexlen
-		    ? __matches[0] - __indexlen : __matches[0]);
+	__member = (__matches[0] >= (int)__indexlen
+		    ? __matches[0] - (int)__indexlen : __matches[0]);
       else
 	__err |= ios_base::failbit;
 
