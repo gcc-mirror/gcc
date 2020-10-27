@@ -45,3 +45,55 @@ subroutine check ()
   end do
 !$acc end  parallel
 end subroutine check
+
+
+subroutine gwv_sl ()
+  implicit none (type, external)
+  integer :: i
+
+  !$acc serial loop &
+  !$acc &       gang(num:5) & ! { dg-error "argument not permitted on 'gang' clause" "TODO" { xfail *-*-* } }
+  !$acc & & ! { dg-bogus "14: argument not permitted on 'gang' clause" "TODO" { xfail *-*-* } .+6 }
+  !$acc &    worker(num:5) & ! { dg-error "argument not permitted on 'worker' clause" "TODO" { xfail *-*-* } }
+  !$acc & & ! { dg-bogus "14: argument not permitted on 'worker' clause" "TODO" { xfail *-*-* } .+4 }
+  !$acc &     vector(length:5) & ! { dg-error "argument not permitted on 'vector' clause" "TODO" { xfail *-*-* } }
+  !$acc & ! { dg-bogus "14: argument not permitted on 'vector' clause" "TODO" { xfail *-*-* } .+2 }
+  ! { dg-message "99: enclosing parent compute construct" "" { target *-*-* } .-1 }
+  do i = 0, 10
+  end do
+  !$acc end serial loop
+end subroutine gwv_sl
+
+subroutine gwv_s_l ()
+  implicit none (type, external)
+  integer :: i
+
+  !$acc serial ! { dg-message "72: enclosing parent compute construct" }
+  !$acc loop &
+  !$acc &         gang(num:5) & ! { dg-error "argument not permitted on 'gang' clause" "TODO" { xfail *-*-* } }
+  !$acc & & ! { dg-bogus "14: argument not permitted on 'gang' clause" "TODO" { xfail *-*-* } .+5 }
+  !$acc &   worker(num:5) & ! { dg-error "argument not permitted on 'worker' clause" "TODO" { xfail *-*-* } }
+  !$acc & & ! { dg-bogus "14: argument not permitted on 'worker' clause" "TODO" { xfail *-*-* } .+3 }
+  !$acc &      vector(length:5) & ! { dg-error "argument not permitted on 'vector' clause" "TODO" { xfail *-*-* } }
+  !$acc & ! { dg-bogus "14: argument not permitted on 'vector' clause" "TODO" { xfail *-*-* } .+1 }
+  do i = 0, 10
+  end do
+  !$acc end serial
+end subroutine gwv_s_l
+
+subroutine gwv_r () ! { dg-message "16: enclosing routine" }
+  implicit none (type, external)
+  integer :: i
+
+  !$acc routine(gwv_r)
+
+  !$acc loop &
+  !$acc &     gang(num:5) & ! { dg-error "argument not permitted on 'gang' clause" "TODO" { xfail *-*-* } }
+  !$acc & & ! { dg-bogus "14: argument not permitted on 'gang' clause" "TODO" { xfail *-*-* } .+5 }
+  !$acc &      worker(num:5) & ! { dg-error "argument not permitted on 'worker' clause" "TODO" { xfail *-*-* } }
+  !$acc & & ! { dg-bogus "14: argument not permitted on 'worker' clause" "TODO" { xfail *-*-* } .+3 }
+  !$acc &    vector(length:5) & ! { dg-error "argument not permitted on 'vector' clause" "TODO" { xfail *-*-* } }
+  !$acc & ! { dg-bogus "14: argument not permitted on 'vector' clause" "TODO" { xfail *-*-* } .+1 }
+  do i = 0, 10
+  end do
+end subroutine gwv_r
