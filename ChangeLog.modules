@@ -1,5 +1,9 @@
 2020-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_{in,out}::{read,write}_class_def): Remove
+	nested udt FIXMEs.  They are no longer a thing.
+
 	Merge trunk 54380d42e6f
 	c++: Kill nested_udts
 

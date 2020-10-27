@@ -11705,8 +11705,6 @@ trees_out::write_class_def (tree defn)
 	  tree_node (NULL_TREE);
 	}
     }
-
-  // FIXME: lang->nested_udts
 }
 
 void
@@ -11825,8 +11823,6 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	}
     }
 
-  // FIXME: Read more stuff!
-  // lang->nested_udts
   tree maybe_dup = odr_duplicate (maybe_template, TYPE_SIZE (type));
   bool installing = maybe_dup && !TYPE_SIZE (type);
   if (installing)
