@@ -271,7 +271,7 @@ public:
 
   hashval_t hash () const
   {
-    return (binding_key::impl_hash () ^ (long)m_region);
+    return (binding_key::impl_hash () ^ (intptr_t)m_region);
   }
   bool operator== (const symbolic_binding &other) const
   {
