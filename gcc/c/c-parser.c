@@ -4977,9 +4977,6 @@ c_parser_std_attribute (c_parser *parser, bool for_tm)
 static tree
 c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
 {
-  bool seen_deprecated = false;
-  bool seen_fallthrough = false;
-  bool seen_maybe_unused = false;
   location_t loc = c_parser_peek_token (parser)->location;
   if (!c_parser_require (parser, CPP_OPEN_SQUARE, "expected %<[%>"))
     return NULL_TREE;
@@ -5005,55 +5002,8 @@ c_parser_std_attribute_specifier (c_parser *parser, bool for_tm)
       tree attribute = c_parser_std_attribute (parser, for_tm);
       if (attribute != error_mark_node)
 	{
-	  bool duplicate = false;
-	  tree name = get_attribute_name (attribute);
-	  tree ns = get_attribute_namespace (attribute);
-	  if (ns == NULL_TREE)
-	    {
-	      /* Some standard attributes may appear at most once in
-		 each attribute list.  Diagnose duplicates and remove
-		 them from the list to avoid subsequent diagnostics
-		 such as the more general one for multiple
-		 "fallthrough" attributes in the same place (including
-		 in separate attribute lists in the same attribute
-		 specifier sequence, which is not a constraint
-		 violation).  */
-	      if (is_attribute_p ("deprecated", name))
-		{
-		  if (seen_deprecated)
-		    {
-		      error ("attribute %<deprecated%> can appear at most "
-			     "once in an attribute-list");
-		      duplicate = true;
-		    }
-		  seen_deprecated = true;
-		}
-	      else if (is_attribute_p ("fallthrough", name))
-		{
-		  if (seen_fallthrough)
-		    {
-		      error ("attribute %<fallthrough%> can appear at most "
-			     "once in an attribute-list");
-		      duplicate = true;
-		    }
-		  seen_fallthrough = true;
-		}
-	      else if (is_attribute_p ("maybe_unused", name))
-		{
-		  if (seen_maybe_unused)
-		    {
-		      error ("attribute %<maybe_unused%> can appear at most "
-			     "once in an attribute-list");
-		      duplicate = true;
-		    }
-		  seen_maybe_unused = true;
-		}
-	    }
-	  if (!duplicate)
-	    {
-	      TREE_CHAIN (attribute) = attributes;
-	      attributes = attribute;
-	    }
+	  TREE_CHAIN (attribute) = attributes;
+	  attributes = attribute;
 	}
       if (c_parser_next_token_is_not (parser, CPP_COMMA))
 	break;
