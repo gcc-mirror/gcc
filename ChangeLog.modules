@@ -1,5 +1,8 @@
 2020-10-27  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/xtreme-tr1{.h,_a.H,_b.C}: New.
+
 	gcc/cp/
 	* module.cc (trees_out::vec_chained_decls): Detect anonymous
 	struct with typedef name.
