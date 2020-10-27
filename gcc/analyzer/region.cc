@@ -938,6 +938,11 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
   tree init = DECL_INITIAL (m_decl);
   if (!init)
     {
+      /* If we have an "extern" decl then there may be an initializer in
+	 another TU.  */
+      if (DECL_EXTERNAL (m_decl))
+	return NULL;
+
       /* Implicit initialization to zero; use a compound_svalue for it.
 	 Doing so requires that we have a concrete binding for this region,
 	 which can fail if we have a region with unknown size
