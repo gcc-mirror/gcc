@@ -22,13 +22,11 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include <string.h>
 #include "libgfortran.h"
 #include "libcoarraynative.h"
-#include "sync.h"
 #include "lock.h"
-#include "util.h"
-#include "collective_subroutine.h"
+
+#include <string.h>
 
 static inline int
 div_ru (int divident, int divisor)

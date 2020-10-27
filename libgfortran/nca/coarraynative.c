@@ -27,13 +27,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libcoarraynative.h"
 #include "allocator.h"
 #include "hashmap.h"
-#include "util.h"
 #include "lock.h"
 #include "collective_subroutine.h"
 
 #include <unistd.h>
 #include <sys/mman.h>
-// #include <stdlib.h>
 #include <sys/wait.h>
 
 #define GFORTRAN_ENV_NUM_IMAGES "GFORTRAN_NUM_IMAGES"

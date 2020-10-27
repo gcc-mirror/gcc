@@ -23,12 +23,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 
-#include <string.h>
-
 #include "libgfortran.h"
 #include "libcoarraynative.h"
-#include "sync.h"
-#include "util.h"
+
+#include <string.h>
 
 static void
 sync_all_init (pthread_barrier_t *b)

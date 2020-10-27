@@ -25,8 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef IPSYNC_HDR
 #define IPSYNC_HDR
 
-#include "shared_memory.h"
-#include "alloc.h"
 #include <pthread.h>
 
 typedef struct {

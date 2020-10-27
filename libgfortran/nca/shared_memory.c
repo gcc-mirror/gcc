@@ -24,12 +24,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 #include "libcoarraynative.h"
-#include "util.h"
+
 #include <sys/mman.h>
 #include <unistd.h>
 #include <string.h>
-
-#include "shared_memory.h"
 
 /* This implements shared memory based on POSIX mmap.  We start with
    memory block of the size of the global shared memory data, rounded

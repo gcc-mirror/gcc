@@ -25,16 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef SHARED_MEMORY_H
 #define SHARED_MEMORY_H
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <limits.h>
-
 /* A struct to serve as an opaque shared memory object.  */
 
 struct shared_memory_act;

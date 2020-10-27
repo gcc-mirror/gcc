@@ -25,9 +25,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef UTIL_HDR
 #define UTIL_HDR
 
-#include <stdint.h>
-#include <stddef.h>
 #include <pthread.h>
+#include <limits.h>
+#include <assert.h>
 
 #define PTR_BITS (CHAR_BIT*sizeof(void *))
 

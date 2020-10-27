@@ -22,11 +22,12 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include <string.h>
 #include "libgfortran.h"
 #include "libcoarraynative.h"
 #include "collective_subroutine.h"
 #include "allocator.h"
+
+#include <string.h>
 
 void *
 get_collsub_buf (collsub_iface *ci, size_t size)

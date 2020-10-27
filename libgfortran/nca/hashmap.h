@@ -24,13 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef HASHMAP_H
 
-#include "shared_memory.h"
-#include "allocator.h"
-
-#include <stdint.h>
-#include <stddef.h>
-
-
 /* Data structures and variables:
 
    memid is a unique identifier for the coarray, the address of its

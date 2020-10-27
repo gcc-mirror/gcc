@@ -23,6 +23,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
+#include "shared_memory.h"
+#include "allocator.h"
 #include "hashmap.h"
 #include <string.h>
 

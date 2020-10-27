@@ -25,12 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef COARRAY_NATIVE_HDR
 #define COARRAY_NATIVE_HDR
 
-#include "libgfortran.h"
-
-#include <sys/types.h>
-#include <stdint.h>
-#include <stdio.h>
-
 #define DEBUG_NATIVE_COARRAY 0
 
 #if defined(DEBUG_NATIVE_COARRAY) && DEBUG_NATIVE_COARRAY
@@ -39,10 +33,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEBUG_PRINTF(...) do {} while(0)
 #endif
 
-#include "allocator.h"
-#include "hashmap.h"
+#include "shared_memory.h"
+#include "alloc.h"
 #include "sync.h"
-#include "lock.h"
+#include "util.h"
 #include "collective_subroutine.h"
 
 typedef struct {
