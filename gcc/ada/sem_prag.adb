@@ -10438,10 +10438,13 @@ package body Sem_Prag is
                      Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
                   end if;
 
-               --  Special processing for No_Tasking restriction placed in
-               --  a configuration pragmas file.
+               --  Special processing for No_Tasking restriction (not just a
+               --  warning) when it appears as a configuration pragmas.
 
-               elsif R_Id = No_Tasking and then No (Cunit (Main_Unit)) then
+               elsif R_Id = No_Tasking
+                 and then No (Cunit (Main_Unit))
+                 and then not Warn
+               then
                   Set_Global_No_Tasking;
                end if;
 
