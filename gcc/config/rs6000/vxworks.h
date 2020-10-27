@@ -127,7 +127,7 @@ along with GCC; see the file COPYING3.  If not see
   VX_MCPU(603, PPC603)   ";"		\
   VX_MCPU(604, PPC604)   ";"		\
   VX_MCPU(860, PPC860)   ";"		\
-  VX_MCPU(e6500, E6500)  ";"		\
+  VX_MCPU(e6500, PPCE6500)  ";"		\
   VX_MCPU(8540, PPC85XX) ";"		\
   VX_MCPU(8548, PPC85XX) ";"		\
   VX_CPUDEF(PPC604)			\
