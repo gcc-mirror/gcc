@@ -8,7 +8,7 @@
    the stxvr*x instruction is generated. At higher optimization levels
    the instruction we are looking for is sometimes replaced by other
    store instructions.  */
-/* { dg-options "-mdejagnu-cpu=power10 -O0" } */
+/* { dg-options "-mdejagnu-cpu=power10 -O0 -save-temps" } */
 
 /* { dg-final { scan-assembler-times {\mstxvrbx\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mstbx\M} 0 } } */
