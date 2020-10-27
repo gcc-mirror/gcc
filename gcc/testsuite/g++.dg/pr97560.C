@@ -1,4 +1,5 @@
-// { dg-do compile }
+// PR tree-optimization/97560
+// { dg-do compile { target c++11 } }
 // { dg-options "-O2 -fno-tree-forwprop -fnon-call-exceptions" }
 
 template <typename>
