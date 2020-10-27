@@ -69,9 +69,18 @@
 # include <compare>
 #endif
 
+#endif // C++11
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /** @brief The type of placeholder objects defined by libstdc++.
+   *  @ingroup binders
+   */
+  template<int _Num> struct _Placeholder { };
+
+#if __cplusplus >= 201103L
 
 #if __cplusplus >= 201703L
 # define __cpp_lib_invoke 201411L
@@ -202,11 +211,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp> inline constexpr int is_placeholder_v
     = is_placeholder<_Tp>::value;
 #endif // C++17
-
-  /** @brief The type of placeholder objects defined by libstdc++.
-   *  @ingroup binders
-   */
-  template<int _Num> struct _Placeholder { };
 
   /** @namespace std::placeholders
    *  @brief ISO C++ 2011 namespace for std::bind placeholders.
@@ -1271,10 +1275,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++17
 #endif // C++14
+#endif // C++11
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-#endif // C++11
 
 #endif // _GLIBCXX_FUNCTIONAL
