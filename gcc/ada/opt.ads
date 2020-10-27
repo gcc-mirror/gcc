@@ -1588,6 +1588,12 @@ package Opt is
    --  Tolerate time stamp and other consistency errors. If this flag is set to
    --  True (-t), then inconsistencies result in warnings rather than errors.
 
+   Transform_Function_Array : Boolean := False;
+   --  GNAT
+   --  If this switch is set True, then functions returning constrained arrays
+   --  are transformed into a procedure with an out parameter, and all calls
+   --  are updated accordingly.
+
    Treat_Categorization_Errors_As_Warnings : Boolean := False;
    --  Normally categorization errors are true illegalities. If this switch
    --  is set, then such errors result in warning messages rather than error

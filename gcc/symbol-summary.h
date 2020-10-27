@@ -28,12 +28,22 @@ class function_summary_base
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  function_summary_base (symbol_table *symtab CXX_MEM_STAT_INFO):
-  m_symtab (symtab),
-  m_insertion_enabled (true),
-  m_duplication_enabled (true),
+  function_summary_base (symbol_table *symtab,
+			 cgraph_node_hook symtab_insertion,
+			 cgraph_node_hook symtab_removal,
+			 cgraph_2node_hook symtab_duplication
+			 CXX_MEM_STAT_INFO):
+  m_symtab (symtab), m_symtab_insertion (symtab_insertion),
+  m_symtab_removal (symtab_removal),
+  m_symtab_duplication (symtab_duplication),
+  m_symtab_insertion_hook (NULL), m_symtab_duplication_hook (NULL),
   m_allocator ("function summary" PASS_MEM_STAT)
-  {}
+  {
+    enable_insertion_hook ();
+    m_symtab_removal_hook
+      = m_symtab->add_cgraph_removal_hook (m_symtab_removal, this);
+    enable_duplication_hook ();
+  }
 
   /* Basic implementation of insert operation.  */
   virtual void insert (cgraph_node *, T *)
@@ -56,25 +66,37 @@ public:
   /* Enable insertion hook invocation.  */
   void enable_insertion_hook ()
   {
-    m_insertion_enabled = true;
+    if (m_symtab_insertion_hook == NULL)
+      m_symtab_insertion_hook
+	= m_symtab->add_cgraph_insertion_hook (m_symtab_insertion, this);
   }
 
   /* Enable insertion hook invocation.  */
   void disable_insertion_hook ()
   {
-    m_insertion_enabled = false;
+    if (m_symtab_insertion_hook != NULL)
+      {
+	m_symtab->remove_cgraph_insertion_hook (m_symtab_insertion_hook);
+	m_symtab_insertion_hook = NULL;
+      }
   }
 
   /* Enable duplication hook invocation.  */
   void enable_duplication_hook ()
   {
-    m_duplication_enabled = true;
+    if (m_symtab_duplication_hook == NULL)
+      m_symtab_duplication_hook
+	= m_symtab->add_cgraph_duplication_hook (m_symtab_duplication, this);
   }
 
   /* Enable duplication hook invocation.  */
   void disable_duplication_hook ()
   {
-    m_duplication_enabled = false;
+    if (m_symtab_duplication_hook != NULL)
+      {
+	m_symtab->remove_cgraph_duplication_hook (m_symtab_duplication_hook);
+	m_symtab_duplication_hook = NULL;
+      }
   }
 
 protected:
@@ -99,19 +121,22 @@ protected:
   /* Unregister all call-graph hooks.  */
   void unregister_hooks ();
 
+  /* Symbol table the summary is registered to.  */
+  symbol_table *m_symtab;
+
+  /* Insertion function defined by a summary.  */
+  cgraph_node_hook m_symtab_insertion;
+  /* Removal function defined by a summary.  */
+  cgraph_node_hook m_symtab_removal;
+  /* Duplication function defined by a summary.  */
+  cgraph_2node_hook m_symtab_duplication;
+
   /* Internal summary insertion hook pointer.  */
   cgraph_node_hook_list *m_symtab_insertion_hook;
   /* Internal summary removal hook pointer.  */
   cgraph_node_hook_list *m_symtab_removal_hook;
   /* Internal summary duplication hook pointer.  */
   cgraph_2node_hook_list *m_symtab_duplication_hook;
-  /* Symbol table the summary is registered to.  */
-  symbol_table *m_symtab;
-
-  /* Indicates if insertion hook is enabled.  */
-  bool m_insertion_enabled;
-  /* Indicates if duplication hook is enabled.  */
-  bool m_duplication_enabled;
 
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
@@ -125,9 +150,9 @@ template <typename T>
 void
 function_summary_base<T>::unregister_hooks ()
 {
-  m_symtab->remove_cgraph_insertion_hook (m_symtab_insertion_hook);
+  disable_insertion_hook ();
   m_symtab->remove_cgraph_removal_hook (m_symtab_removal_hook);
-  m_symtab->remove_cgraph_duplication_hook (m_symtab_duplication_hook);
+  disable_duplication_hook ();
 }
 
 /* We want to pass just pointer types as argument for function_summary
@@ -242,19 +267,11 @@ private:
 template <typename T>
 function_summary<T *>::function_summary (symbol_table *symtab, bool ggc
 					 MEM_STAT_DECL):
-  function_summary_base<T> (symtab PASS_MEM_STAT), m_ggc (ggc),
-  m_map (13, ggc, true, GATHER_STATISTICS PASS_MEM_STAT)
-{
-  this->m_symtab_insertion_hook
-    = this->m_symtab->add_cgraph_insertion_hook (function_summary::symtab_insertion,
-						 this);
-  this->m_symtab_removal_hook
-    = this->m_symtab->add_cgraph_removal_hook (function_summary::symtab_removal,
-					       this);
-  this->m_symtab_duplication_hook
-    = this->m_symtab->add_cgraph_duplication_hook (function_summary::symtab_duplication,
-						   this);
-}
+  function_summary_base<T> (symtab, function_summary::symtab_insertion,
+			    function_summary::symtab_removal,
+			    function_summary::symtab_duplication
+			    PASS_MEM_STAT),
+  m_ggc (ggc), m_map (13, ggc, true, GATHER_STATISTICS PASS_MEM_STAT) {}
 
 template <typename T>
 function_summary<T *>::~function_summary ()
@@ -273,9 +290,7 @@ function_summary<T *>::symtab_insertion (cgraph_node *node, void *data)
 {
   gcc_checking_assert (node->get_uid ());
   function_summary *summary = (function_summary <T *> *) (data);
-
-  if (summary->m_insertion_enabled)
-    summary->insert (node, summary->get_create (node));
+  summary->insert (node, summary->get_create (node));
 }
 
 template <typename T>
@@ -293,13 +308,10 @@ function_summary<T *>::symtab_duplication (cgraph_node *node,
 					   cgraph_node *node2, void *data)
 {
   function_summary *summary = (function_summary <T *> *) (data);
-  if (summary->m_duplication_enabled)
-    {
-      T *v = summary->get (node);
+  T *v = summary->get (node);
 
-      if (v)
-	summary->duplicate (node, node2, v, summary->get_create (node2));
-    }
+  if (v)
+    summary->duplicate (node, node2, v, summary->get_create (node2));
 }
 
 template <typename T>
@@ -439,19 +451,15 @@ private:
 };
 
 template <typename T, typename V>
-fast_function_summary<T *, V>::fast_function_summary (symbol_table *symtab MEM_STAT_DECL):
-  function_summary_base<T> (symtab PASS_MEM_STAT), m_vector (NULL)
+fast_function_summary<T *, V>::fast_function_summary (symbol_table *symtab
+						      MEM_STAT_DECL):
+  function_summary_base<T> (symtab,
+			    fast_function_summary::symtab_insertion,
+			    fast_function_summary::symtab_removal,
+			    fast_function_summary::symtab_duplication
+			    PASS_MEM_STAT), m_vector (NULL)
 {
   vec_alloc (m_vector, 13 PASS_MEM_STAT);
-  this->m_symtab_insertion_hook
-    = this->m_symtab->add_cgraph_insertion_hook (fast_function_summary::symtab_insertion,
-						 this);
-  this->m_symtab_removal_hook
-    = this->m_symtab->add_cgraph_removal_hook (fast_function_summary::symtab_removal,
-					       this);
-  this->m_symtab_duplication_hook
-    = this->m_symtab->add_cgraph_duplication_hook (fast_function_summary::symtab_duplication,
-						   this);
 }
 
 template <typename T, typename V>
@@ -472,9 +480,7 @@ fast_function_summary<T *, V>::symtab_insertion (cgraph_node *node, void *data)
 {
   gcc_checking_assert (node->get_uid ());
   fast_function_summary *summary = (fast_function_summary <T *, V> *) (data);
-
-  if (summary->m_insertion_enabled)
-    summary->insert (node, summary->get_create (node));
+  summary->insert (node, summary->get_create (node));
 }
 
 template <typename T, typename V>
@@ -495,15 +501,12 @@ fast_function_summary<T *, V>::symtab_duplication (cgraph_node *node,
 						   void *data)
 {
   fast_function_summary *summary = (fast_function_summary <T *, V> *) (data);
-  if (summary->m_duplication_enabled)
-    {
-      T *v = summary->get (node);
+  T *v = summary->get (node);
 
-      if (v)
-	{
-	  T *duplicate = summary->get_create (node2);
-	  summary->duplicate (node, node2, v, duplicate);
-	}
+  if (v)
+    {
+      T *duplicate = summary->get_create (node2);
+      summary->duplicate (node, node2, v, duplicate);
     }
 }
 
@@ -563,12 +566,17 @@ class call_summary_base
 {
 public:
   /* Default construction takes SYMTAB as an argument.  */
-  call_summary_base (symbol_table *symtab CXX_MEM_STAT_INFO):
-  m_symtab (symtab),
+  call_summary_base (symbol_table *symtab, cgraph_edge_hook symtab_removal,
+		     cgraph_2edge_hook symtab_duplication CXX_MEM_STAT_INFO):
+  m_symtab (symtab), m_symtab_removal (symtab_removal),
+  m_symtab_duplication (symtab_duplication), m_symtab_duplication_hook (NULL),
   m_initialize_when_cloning (false),
-  m_duplication_enabled (true),
   m_allocator ("call summary" PASS_MEM_STAT)
-  {}
+  {
+    m_symtab_removal_hook
+      = m_symtab->add_edge_removal_hook (m_symtab_removal, this);
+    enable_duplication_hook ();
+  }
 
   /* Basic implementation of removal operation.  */
   virtual void remove (cgraph_edge *, T *) {}
@@ -582,13 +590,20 @@ public:
   /* Enable duplication hook invocation.  */
   void enable_duplication_hook ()
   {
-    m_duplication_enabled = true;
+    if (m_symtab_duplication_hook == NULL)
+      m_symtab_duplication_hook
+	= m_symtab->add_edge_duplication_hook (m_symtab_duplication,
+					       this);
   }
 
   /* Enable duplication hook invocation.  */
   void disable_duplication_hook ()
   {
-    m_duplication_enabled = false;
+    if (m_symtab_duplication_hook != NULL)
+      {
+	m_symtab->remove_edge_duplication_hook (m_symtab_duplication_hook);
+	m_symtab_duplication_hook = NULL;
+      }
   }
 
 protected:
@@ -616,14 +631,17 @@ protected:
   /* Symbol table the summary is registered to.  */
   symbol_table *m_symtab;
 
+  /* Removal function defined by a summary.  */
+  cgraph_edge_hook m_symtab_removal;
+  /* Duplication function defined by a summary.  */
+  cgraph_2edge_hook m_symtab_duplication;
+
   /* Internal summary removal hook pointer.  */
   cgraph_edge_hook_list *m_symtab_removal_hook;
   /* Internal summary duplication hook pointer.  */
   cgraph_2edge_hook_list *m_symtab_duplication_hook;
   /* Initialize summary for an edge that is cloned.  */
   bool m_initialize_when_cloning;
-  /* Indicates if duplication hook is enabled.  */
-  bool m_duplication_enabled;
 
 private:
   /* Return true when the summary uses GGC memory for allocation.  */
@@ -638,7 +656,7 @@ void
 call_summary_base<T>::unregister_hooks ()
 {
   m_symtab->remove_edge_removal_hook (m_symtab_removal_hook);
-  m_symtab->remove_edge_duplication_hook (m_symtab_duplication_hook);
+  disable_duplication_hook ();
 }
 
 /* An impossible class templated by non-pointers so, which makes sure that only
@@ -660,16 +678,9 @@ public:
   /* Default construction takes SYMTAB as an argument.  */
   call_summary (symbol_table *symtab, bool ggc = false
 		CXX_MEM_STAT_INFO)
-  : call_summary_base<T> (symtab PASS_MEM_STAT), m_ggc (ggc),
-    m_map (13, ggc, true, GATHER_STATISTICS PASS_MEM_STAT)
-  {
-    this->m_symtab_removal_hook
-      = this->m_symtab->add_edge_removal_hook (call_summary::symtab_removal,
-					       this);
-    this->m_symtab_duplication_hook
-      = this->m_symtab->add_edge_duplication_hook (call_summary::symtab_duplication,
-						   this);
-  }
+  : call_summary_base<T> (symtab, call_summary::symtab_removal,
+			  call_summary::symtab_duplication PASS_MEM_STAT),
+    m_ggc (ggc), m_map (13, ggc, true, GATHER_STATISTICS PASS_MEM_STAT) {}
 
   /* Destructor.  */
   virtual ~call_summary ();
@@ -774,19 +785,16 @@ call_summary<T *>::symtab_duplication (cgraph_edge *edge1,
 				       cgraph_edge *edge2, void *data)
 {
   call_summary *summary = (call_summary <T *> *) (data);
-  if (summary->m_duplication_enabled)
-    {
-      T *edge1_summary = NULL;
+  T *edge1_summary = NULL;
 
-      if (summary->m_initialize_when_cloning)
-	edge1_summary = summary->get_create (edge1);
-      else
-	edge1_summary = summary->get (edge1);
+  if (summary->m_initialize_when_cloning)
+    edge1_summary = summary->get_create (edge1);
+  else
+    edge1_summary = summary->get (edge1);
 
-      if (edge1_summary)
-	summary->duplicate (edge1, edge2, edge1_summary,
-			    summary->get_create (edge2));
-    }
+  if (edge1_summary)
+    summary->duplicate (edge1, edge2, edge1_summary,
+			summary->get_create (edge2));
 }
 
 template <typename T>
@@ -830,15 +838,11 @@ class GTY((user)) fast_call_summary <T *, V>: public call_summary_base<T>
 public:
   /* Default construction takes SYMTAB as an argument.  */
   fast_call_summary (symbol_table *symtab CXX_MEM_STAT_INFO)
-  : call_summary_base<T> (symtab PASS_MEM_STAT), m_vector (NULL)
+  : call_summary_base<T> (symtab, fast_call_summary::symtab_removal,
+			  fast_call_summary::symtab_duplication PASS_MEM_STAT),
+    m_vector (NULL)
   {
     vec_alloc (m_vector, 13 PASS_MEM_STAT);
-    this->m_symtab_removal_hook
-      = this->m_symtab->add_edge_removal_hook (fast_call_summary::symtab_removal,
-					       this);
-    this->m_symtab_duplication_hook
-      = this->m_symtab->add_edge_duplication_hook (fast_call_summary::symtab_duplication,
-						   this);
   }
 
   /* Destructor.  */
@@ -943,20 +947,17 @@ fast_call_summary<T *, V>::symtab_duplication (cgraph_edge *edge1,
 						 cgraph_edge *edge2, void *data)
 {
   fast_call_summary *summary = (fast_call_summary <T *, V> *) (data);
-  if (summary->m_duplication_enabled)
+  T *edge1_summary = NULL;
+
+  if (summary->m_initialize_when_cloning)
+    edge1_summary = summary->get_create (edge1);
+  else
+    edge1_summary = summary->get (edge1);
+
+  if (edge1_summary)
     {
-      T *edge1_summary = NULL;
-
-      if (summary->m_initialize_when_cloning)
-	edge1_summary = summary->get_create (edge1);
-      else
-	edge1_summary = summary->get (edge1);
-
-      if (edge1_summary)
-	{
-	  T *duplicate = summary->get_create (edge2);
-	  summary->duplicate (edge1, edge2, edge1_summary, duplicate);
-	}
+      T *duplicate = summary->get_create (edge2);
+      summary->duplicate (edge1, edge2, edge1_summary, duplicate);
     }
 }
 

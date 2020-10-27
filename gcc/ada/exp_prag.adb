@@ -778,16 +778,23 @@ package body Exp_Prag is
       is
          Copy  : Entity_Id;
          Param : Node_Id;
+         Expr  : Node_Id;
       begin
          Param := First (Params);
          while Present (Param) loop
             Copy := Make_Temporary (Loc, 'C');
 
+            if Nkind (Param) = N_Parameter_Association then
+               Expr := Explicit_Actual_Parameter (Param);
+            else
+               Expr := Param;
+            end if;
+
             Append_To (Decls,
                Make_Object_Declaration (Loc,
                  Defining_Identifier => Copy,
-                 Object_Definition   => New_Occurrence_Of (Etype (Param), Loc),
-                 Expression          => New_Copy_Tree (Param)));
+                 Object_Definition   => New_Occurrence_Of (Etype (Expr), Loc),
+                 Expression          => New_Copy_Tree (Expr)));
 
             Append_Elmt (Copy, Copies);
             Next (Param);

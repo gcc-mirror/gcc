@@ -7377,15 +7377,24 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
   if (slp_node)
     {
       vec_initial_defs.reserve (vec_num);
-      gcc_assert (slp_node == slp_node_instance->reduc_phis);
-      stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (reduc_stmt_info);
-      tree neutral_op
-	= neutral_op_for_slp_reduction (slp_node, vectype_out,
-					STMT_VINFO_REDUC_CODE (reduc_info),
-					first != NULL);
-      get_initial_defs_for_reduction (loop_vinfo, slp_node_instance->reduc_phis,
-				      &vec_initial_defs, vec_num,
-				      first != NULL, neutral_op);
+      if (nested_cycle)
+	{
+	  unsigned phi_idx = loop_preheader_edge (loop)->dest_idx;
+	  vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[phi_idx],
+			     &vec_initial_defs);
+	}
+      else
+	{
+	  gcc_assert (slp_node == slp_node_instance->reduc_phis);
+	  stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (reduc_stmt_info);
+	  tree neutral_op
+	      = neutral_op_for_slp_reduction (slp_node, vectype_out,
+					      STMT_VINFO_REDUC_CODE (reduc_info),
+					      first != NULL);
+	  get_initial_defs_for_reduction (loop_vinfo, slp_node_instance->reduc_phis,
+					  &vec_initial_defs, vec_num,
+					  first != NULL, neutral_op);
+	}
     }
   else
     {
@@ -7516,6 +7525,79 @@ vectorizable_lc_phi (loop_vec_info loop_vinfo,
     }
   if (!slp_node)
     *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
+
+  return true;
+}
+
+/* Vectorizes PHIs.  */
+
+bool
+vectorizable_phi (vec_info *,
+		  stmt_vec_info stmt_info, gimple **vec_stmt,
+		  slp_tree slp_node)
+{
+  if (!is_a <gphi *> (stmt_info->stmt) || !slp_node)
+    return false;
+
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+    return false;
+
+  tree vectype = SLP_TREE_VECTYPE (slp_node);
+
+  if (!vec_stmt) /* transformation not required.  */
+    {
+      slp_tree child;
+      unsigned i;
+      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (slp_node), i, child)
+	if (!child)
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "PHI node with unvectorized backedge def\n");
+	    return false;
+	  }
+	else if (!vect_maybe_update_slp_op_vectype (child, vectype))
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "incompatible vector types for invariants\n");
+	    return false;
+	  }
+      STMT_VINFO_TYPE (stmt_info) = phi_info_type;
+      return true;
+    }
+
+  tree scalar_dest = gimple_phi_result (stmt_info->stmt);
+  basic_block bb = gimple_bb (stmt_info->stmt);
+  tree vec_dest = vect_create_destination_var (scalar_dest, vectype);
+  auto_vec<tree> vec_oprnds;
+  auto_vec<gphi *> new_phis;
+  for (unsigned i = 0; i < gimple_phi_num_args (stmt_info->stmt); ++i)
+    {
+      slp_tree child = SLP_TREE_CHILDREN (slp_node)[i];
+
+      /* Skip not yet vectorized defs.  */
+      if (SLP_TREE_DEF_TYPE (child) == vect_internal_def
+	  && SLP_TREE_VEC_STMTS (child).is_empty ())
+	continue;
+
+      vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[i], &vec_oprnds);
+      if (!new_phis.exists ())
+	{
+	  new_phis.create (vec_oprnds.length ());
+	  for (unsigned j = 0; j < vec_oprnds.length (); j++)
+	    {
+	      /* Create the vectorized LC PHI node.  */
+	      new_phis.quick_push (create_phi_node (vec_dest, bb));
+	      SLP_TREE_VEC_STMTS (slp_node).quick_push (new_phis[j]);
+	    }
+	}
+      edge e = gimple_phi_arg_edge (as_a <gphi *> (stmt_info->stmt), i);
+      for (unsigned j = 0; j < vec_oprnds.length (); j++)
+	add_phi_arg (new_phis[j], vec_oprnds[j], e, UNKNOWN_LOCATION);
+    }
+  /* We should have at least one already vectorized child.  */
+  gcc_assert (new_phis.exists ());
 
   return true;
 }
@@ -8376,8 +8458,16 @@ vectorizable_live_operation (vec_info *vinfo,
       gimple_seq stmts = NULL;
       new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree),
 				       &stmts, true, NULL_TREE);
-
-      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+      if (is_a <gphi *> (vec_stmt))
+	{
+	  gimple_stmt_iterator si = gsi_after_labels (gimple_bb (vec_stmt));
+	  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
+	}
+      else
+	{
+	  gimple_stmt_iterator si = gsi_for_stmt (vec_stmt);
+	  gsi_insert_seq_after (&si, stmts, GSI_SAME_STMT);
+	}
 
       /* Replace use of lhs with newly computed result.  If the use stmt is a
 	 single arg PHI, just replace all uses of PHI result.  It's necessary

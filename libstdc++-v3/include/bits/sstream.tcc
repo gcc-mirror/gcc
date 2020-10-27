@@ -90,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const __size_type __capacity = _M_string.capacity();
 
 #if _GLIBCXX_USE_CXX11_ABI
-      if ((this->epptr() - this->pbase()) < __capacity)
+      if (size_t(this->epptr() - this->pbase()) < __capacity)
 	{
 	  // There is additional capacity in _M_string that can be used.
 	  char_type* __base = const_cast<char_type*>(_M_string.data());

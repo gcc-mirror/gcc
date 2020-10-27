@@ -1,3 +1,29 @@
+2020-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (strand::_State): Fix thinko.
+
+2020-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* include/std/type_traits (__is_nt_constructible_impl): Remove.
+	(__is_nothrow_constructible_impl): Adjust.
+	(is_nothrow_default_constructible): Likewise.
+	(__is_nt_assignable_impl): Remove.
+	(__is_nothrow_assignable_impl): Adjust.
+
+2020-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97570
+	* libsupc++/new_opa.cc: Declare size_t in global namespace.
+	Remove unused header.
+
+2020-10-26  Stephan Bergmann  <sbergman@redhat.com>
+
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_base::_M_add_ref_lock_nothrow(): Add noexcept to
+	definitions to match declaration.
+	(__shared_count(const __weak_count&, nothrow_t)): Add noexcept
+	to declaration to match definition.
+
 2020-10-23  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (single_view::single_view): Mark the

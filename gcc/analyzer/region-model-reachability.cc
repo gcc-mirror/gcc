@@ -227,6 +227,29 @@ reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
     }
 }
 
+/* Dump SET to PP, sorting it to avoid churn when comparing dumps.  */
+
+template <typename T>
+static void
+dump_set (const hash_set<const T *> &set, pretty_printer *pp)
+{
+  auto_vec<const T *> elements (set.elements ());
+  for (typename hash_set<const T *>::iterator iter = set.begin ();
+       iter != set.end (); ++iter)
+    elements.quick_push (*iter);
+
+  elements.qsort (T::cmp_ptr_ptr);
+
+  unsigned i;
+  const T *element;
+  FOR_EACH_VEC_ELT (elements, i, element)
+    {
+      pp_string (pp, "  ");
+      element->dump_to_pp (pp, true);
+      pp_newline (pp);
+    }
+}
+
 /* Dump a multiline representation of this object to PP.  */
 
 void
@@ -234,40 +257,19 @@ reachable_regions::dump_to_pp (pretty_printer *pp) const
 {
   pp_string (pp, "reachable clusters: ");
   pp_newline (pp);
-  for (hash_set<const region *>::iterator iter = m_reachable_base_regs.begin ();
-       iter != m_reachable_base_regs.end (); ++iter)
-    {
-      pp_string (pp, "  ");
-      (*iter)->dump_to_pp (pp, true);
-      pp_newline (pp);
-    }
+  dump_set (m_reachable_base_regs, pp);
+
   pp_string (pp, "mutable clusters: ");
   pp_newline (pp);
-  for (hash_set<const region *>::iterator iter = m_mutable_base_regs.begin ();
-       iter != m_mutable_base_regs.end (); ++iter)
-    {
-      pp_string (pp, "  ");
-      (*iter)->dump_to_pp (pp, true);
-      pp_newline (pp);
-    }
+  dump_set (m_mutable_base_regs, pp);
+
   pp_string (pp, "reachable svals: ");
   pp_newline (pp);
-  for (svalue_set::iterator iter = m_reachable_svals.begin ();
-       iter != m_reachable_svals.end (); ++iter)
-    {
-      pp_string (pp, "  ");
-      (*iter)->dump_to_pp (pp, true);
-      pp_newline (pp);
-    }
+  dump_set (m_reachable_svals, pp);
+
   pp_string (pp, "mutable svals: ");
   pp_newline (pp);
-  for (svalue_set::iterator iter = m_mutable_svals.begin ();
-       iter != m_mutable_svals.end (); ++iter)
-    {
-      pp_string (pp, "  ");
-      (*iter)->dump_to_pp (pp, true);
-      pp_newline (pp);
-    }
+  dump_set (m_mutable_svals, pp);
 }
 
 /* Dump a multiline representation of this object to stderr.  */

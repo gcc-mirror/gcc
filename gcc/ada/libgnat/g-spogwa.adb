@@ -36,8 +36,6 @@ procedure GNAT.Sockets.Poll.G_Wait
 is
    use Interfaces;
 
-   use type C.int;
-
    function C_Select
      (Nfds      : C.int;
       readfds   : access FD_Set_Type;
@@ -65,8 +63,8 @@ begin
 
    if Timeout >= 0 then
       Timeout_A := Timeout_V'Access;
-      Timeout_V.tv_sec  := Thin_Common.time_t  (Timeout / 1000);
-      Timeout_V.tv_usec := Thin_Common.suseconds_t (Timeout rem 1000 * 1000);
+      Timeout_V.Tv_Sec  := Thin_Common.time_t  (Timeout / 1000);
+      Timeout_V.Tv_Usec := Thin_Common.suseconds_t (Timeout rem 1000 * 1000);
    end if;
 
    Reset_Socket_Set (Rfds);

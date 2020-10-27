@@ -21299,6 +21299,8 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 bool
 aarch64_expand_cpymem (rtx *operands)
 {
+  /* These need to be signed as we need to perform arithmetic on n as
+     signed operations.  */
   int n, mode_bits;
   rtx dst = operands[0];
   rtx src = operands[1];
@@ -21309,20 +21311,23 @@ aarch64_expand_cpymem (rtx *operands)
   /* When optimizing for size, give a better estimate of the length of a
      memcpy call, but use the default otherwise.  Moves larger than 8 bytes
      will always require an even number of instructions to do now.  And each
-     operation requires both a load+store, so devide the max number by 2.  */
-  int max_num_moves = (speed_p ? 16 : AARCH64_CALL_RATIO) / 2;
+     operation requires both a load+store, so divide the max number by 2.  */
+  unsigned int max_num_moves = (speed_p ? 16 : AARCH64_CALL_RATIO) / 2;
 
   /* We can't do anything smart if the amount to copy is not constant.  */
   if (!CONST_INT_P (operands[2]))
     return false;
 
-  n = INTVAL (operands[2]);
+  unsigned HOST_WIDE_INT tmp = INTVAL (operands[2]);
 
   /* Try to keep the number of instructions low.  For all cases we will do at
      most two moves for the residual amount, since we'll always overlap the
      remainder.  */
-  if (((n / 16) + (n % 16 ? 2 : 0)) > max_num_moves)
+  if (((tmp / 16) + (tmp % 16 ? 2 : 0)) > max_num_moves)
     return false;
+
+  /* At this point tmp is known to have to fit inside an int.  */
+  n = tmp;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);

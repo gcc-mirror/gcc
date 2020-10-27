@@ -1582,7 +1582,11 @@ run_gcc (unsigned argc, char *argv[])
     {
       const char *jobserver_error = jobserver_active_p ();
       if (jobserver && jobserver_error != NULL)
-	warning (0, jobserver_error);
+	{
+	  warning (0, jobserver_error);
+	  parallel = 0;
+	  jobserver = 0;
+	}
       else if (!jobserver && jobserver_error == NULL)
 	{
 	  parallel = 1;

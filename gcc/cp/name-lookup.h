@@ -23,29 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "c-family/c-common.h"
 
-/* The type of dictionary used to map names to types declared at
-   a given scope.  */
-typedef struct binding_table_s *binding_table;
-typedef struct binding_entry_s *binding_entry;
-
-/* The type of a routine repeatedly called by binding_table_foreach.  */
-typedef void (*bt_foreach_proc) (binding_entry, void *);
-
-struct GTY(()) binding_entry_s {
-  binding_entry chain;
-  tree name;
-  tree type;
-};
-
-/* These macros indicate the initial chains count for binding_table.  */
-#define SCOPE_DEFAULT_HT_SIZE		(1 << 3)
-#define CLASS_SCOPE_HT_SIZE		(1 << 3)
-#define NAMESPACE_ORDINARY_HT_SIZE	(1 << 5)
-#define NAMESPACE_STD_HT_SIZE		(1 << 8)
-#define GLOBAL_SCOPE_HT_SIZE		(1 << 8)
-
-extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
-extern binding_entry binding_table_find (binding_table, tree);
 
 /* The datatype used to implement C++ scope.  */
 struct cp_binding_level;

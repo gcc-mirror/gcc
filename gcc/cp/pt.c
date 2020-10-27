@@ -11851,7 +11851,6 @@ instantiate_class_template_1 (tree type)
 		   Ignore it; it will be regenerated when needed.  */
 		continue;
 
-	      /* Build new CLASSTYPE_NESTED_UTDS.  */
 	      bool class_template_p = (TREE_CODE (t) != ENUMERAL_TYPE
 				       && TYPE_LANG_SPECIFIC (t)
 				       && CLASSTYPE_IS_TEMPLATE (t));
@@ -12009,10 +12008,10 @@ instantiate_class_template_1 (tree type)
 			    TREE_TYPE (r) = error_mark_node;
 			}
 
-		      /* If it is a TYPE_DECL for a class-scoped ENUMERAL_TYPE,
-			 such a thing will already have been added to the field
-			 list by tsubst_enum in finish_member_declaration in the
-			 CLASSTYPE_NESTED_UTDS case above.  */
+		      /* If it is a TYPE_DECL for a class-scoped
+			 ENUMERAL_TYPE, such a thing will already have
+			 been added to the field list by tsubst_enum
+			 in finish_member_declaration case above.  */
 		      if (!(TREE_CODE (r) == TYPE_DECL
 			    && TREE_CODE (TREE_TYPE (r)) == ENUMERAL_TYPE
 			    && DECL_ARTIFICIAL (r)))
@@ -24959,19 +24958,6 @@ mark_class_instantiated (tree t, int extern_p)
     }
 }
 
-/* Called from do_type_instantiation through binding_table_foreach to
-   do recursive instantiation for the type bound in ENTRY.  */
-static void
-bt_instantiate_type_proc (binding_entry entry, void *data)
-{
-  tree storage = *(tree *) data;
-
-  if (MAYBE_CLASS_TYPE_P (entry->type)
-      && CLASSTYPE_TEMPLATE_INFO (entry->type)
-      && !uses_template_parms (CLASSTYPE_TI_ARGS (entry->type)))
-    do_type_instantiation (TYPE_MAIN_DECL (entry->type), storage, 0);
-}
-
 /* Perform an explicit instantiation of template class T.  STORAGE, if
    non-null, is the RID for extern, inline or static.  COMPLAIN is
    nonzero if this is called from the parser, zero if called recursively,
@@ -24980,20 +24966,11 @@ bt_instantiate_type_proc (binding_entry entry, void *data)
 void
 do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 {
-  int extern_p = 0;
-  int nomem_p = 0;
-  int static_p = 0;
-  int previous_instantiation_extern_p = 0;
-
-  if (TREE_CODE (t) == TYPE_DECL)
-    t = TREE_TYPE (t);
-
-  if (! CLASS_TYPE_P (t) || ! CLASSTYPE_TEMPLATE_INFO (t))
+  if (!(CLASS_TYPE_P (t) && CLASSTYPE_TEMPLATE_INFO (t)))
     {
-      tree tmpl =
-	(TYPE_TEMPLATE_INFO (t)) ? TYPE_TI_TEMPLATE (t) : NULL;
-      if (tmpl)
-	error ("explicit instantiation of non-class template %qD", tmpl);
+      if (tree ti = TYPE_TEMPLATE_INFO (t))
+	error ("explicit instantiation of non-class template %qD",
+	       TI_TEMPLATE (ti));
       else
 	error ("explicit instantiation of non-template type %qT", t);
       return;
@@ -25008,6 +24985,11 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	       t);
       return;
     }
+
+  /* At most one of these will be true.  */
+  bool extern_p = false;
+  bool nomem_p = false;
+  bool static_p = false;
 
   if (storage != NULL_TREE)
     {
@@ -25024,52 +25006,45 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 		 " on explicit instantiations", storage);
 
       if (storage == ridpointers[(int) RID_INLINE])
-	nomem_p = 1;
+	nomem_p = true;
       else if (storage == ridpointers[(int) RID_EXTERN])
-	extern_p = 1;
+	extern_p = true;
       else if (storage == ridpointers[(int) RID_STATIC])
-	static_p = 1;
+	static_p = true;
       else
-	{
-	  error ("storage class %qD applied to template instantiation",
-		 storage);
-	  extern_p = 0;
-	}
+	error ("storage class %qD applied to template instantiation",
+	       storage);
     }
 
   if (CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
-    {
-      /* DR 259 [temp.spec].
+    /* DR 259 [temp.spec].
 
-	 Both an explicit instantiation and a declaration of an explicit
-	 specialization shall not appear in a program unless the explicit
-	 instantiation follows a declaration of the explicit specialization.
+       Both an explicit instantiation and a declaration of an explicit
+       specialization shall not appear in a program unless the
+       explicit instantiation follows a declaration of the explicit
+       specialization.
 
-	 For a given set of template parameters, if an explicit
-	 instantiation of a template appears after a declaration of an
-	 explicit specialization for that template, the explicit
-	 instantiation has no effect.  */
-      return;
-    }
-  else if (CLASSTYPE_EXPLICIT_INSTANTIATION (t))
+       For a given set of template parameters, if an explicit
+       instantiation of a template appears after a declaration of an
+       explicit specialization for that template, the explicit
+       instantiation has no effect.  */
+    return;
+
+  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && !CLASSTYPE_INTERFACE_ONLY (t))
     {
+      /* We've already instantiated the template.  */
+
       /* [temp.spec]
 
 	 No program shall explicitly instantiate any template more
 	 than once.
 
-	 If PREVIOUS_INSTANTIATION_EXTERN_P, then the first explicit
-	 instantiation was `extern'.  If EXTERN_P then the second is.
-	 These cases are OK.  */
-      previous_instantiation_extern_p = CLASSTYPE_INTERFACE_ONLY (t);
+	 If EXTERN_P then this is ok.  */
+      if (!extern_p && (complain & tf_error))
+	permerror (input_location,
+		   "duplicate explicit instantiation of %q#T", t);
 
-      if (!previous_instantiation_extern_p && !extern_p
-	  && (complain & tf_error))
-	permerror (input_location, "duplicate explicit instantiation of %q#T", t);
-
-      /* If we've already instantiated the template, just return now.  */
-      if (!CLASSTYPE_INTERFACE_ONLY (t))
-	return;
+      return;
     }
 
   check_explicit_instantiation_namespace (TYPE_NAME (t));
@@ -25106,10 +25081,14 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 	  instantiate_decl (fld, /*defer_ok=*/true,
 			    /*expl_inst_class_mem_p=*/true);
       }
+    else if (DECL_IMPLICIT_TYPEDEF_P (fld))
+      {
+	tree type = TREE_TYPE (fld);
 
-  if (CLASSTYPE_NESTED_UTDS (t))
-    binding_table_foreach (CLASSTYPE_NESTED_UTDS (t),
-			   bt_instantiate_type_proc, &storage);
+	if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
+	    && !uses_template_parms (CLASSTYPE_TI_ARGS (type)))
+	  do_type_instantiation (type, storage, 0);
+      }
 }
 
 /* Given a function DECL, which is a specialization of TMPL, modify

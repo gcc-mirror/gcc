@@ -31,8 +31,7 @@
 
 #pragma GCC system_header
 
-#include <bits/c++config.h>
-#include <bits/stl_function.h>
+#include <functional> // for std::_Placeholder, std::_Bind, std::_Bind_result
 
 #include <typeinfo>
 #include <new>
@@ -42,18 +41,49 @@
 #include <tr1/functional_hash.h>
 #include <ext/type_traits.h>
 #include <bits/move.h> // for std::__addressof
-#if __cplusplus >= 201103L
-#  include <type_traits> // for integral_constant, true_type, false_type
-#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-#if __cplusplus >= 201103L
-  template<int> struct _Placeholder;
-  template<typename> class _Bind;
-  template<typename, typename> class _Bind_result;
-#endif
+
+#if __cplusplus < 201103L
+  // In C++98 mode, <functional> doesn't declare std::placeholders::_1 etc.
+  // because they are not reserved names in C++98. However, they are reserved
+  // by <tr1/functional> so we can declare them here, in order to redeclare
+  // them in the std::tr1::placeholders namespace below.
+  namespace placeholders
+  {
+    extern const _Placeholder<1> _1;
+    extern const _Placeholder<2> _2;
+    extern const _Placeholder<3> _3;
+    extern const _Placeholder<4> _4;
+    extern const _Placeholder<5> _5;
+    extern const _Placeholder<6> _6;
+    extern const _Placeholder<7> _7;
+    extern const _Placeholder<8> _8;
+    extern const _Placeholder<9> _9;
+    extern const _Placeholder<10> _10;
+    extern const _Placeholder<11> _11;
+    extern const _Placeholder<12> _12;
+    extern const _Placeholder<13> _13;
+    extern const _Placeholder<14> _14;
+    extern const _Placeholder<15> _15;
+    extern const _Placeholder<16> _16;
+    extern const _Placeholder<17> _17;
+    extern const _Placeholder<18> _18;
+    extern const _Placeholder<19> _19;
+    extern const _Placeholder<20> _20;
+    extern const _Placeholder<21> _21;
+    extern const _Placeholder<22> _22;
+    extern const _Placeholder<23> _23;
+    extern const _Placeholder<24> _24;
+    extern const _Placeholder<25> _25;
+    extern const _Placeholder<26> _26;
+    extern const _Placeholder<27> _27;
+    extern const _Placeholder<28> _28;
+    extern const _Placeholder<29> _29;
+  }
+#endif // C++98
 
 namespace tr1
 {
@@ -850,49 +880,18 @@ namespace tr1
     const int is_placeholder<_Tp>::value;
 
   /// The type of placeholder objects defined by libstdc++.
-  template<int _Num> struct _Placeholder { };
+  using ::std::_Placeholder;
 
   /** @namespace std::tr1::placeholders
    *  @brief Sub-namespace for tr1/functional.
    */
-  namespace placeholders 
-  { 
-    /*  Define a large number of placeholders. There is no way to
-     *  simplify this with variadic templates, because we're introducing
-     *  unique names for each.
-     */
-    namespace 
-    {
-      _Placeholder<1> _1;
-      _Placeholder<2> _2;
-      _Placeholder<3> _3;
-      _Placeholder<4> _4;
-      _Placeholder<5> _5;
-      _Placeholder<6> _6;
-      _Placeholder<7> _7;
-      _Placeholder<8> _8;
-      _Placeholder<9> _9;
-      _Placeholder<10> _10;
-      _Placeholder<11> _11;
-      _Placeholder<12> _12;
-      _Placeholder<13> _13;
-      _Placeholder<14> _14;
-      _Placeholder<15> _15;
-      _Placeholder<16> _16;
-      _Placeholder<17> _17;
-      _Placeholder<18> _18;
-      _Placeholder<19> _19;
-      _Placeholder<20> _20;
-      _Placeholder<21> _21;
-      _Placeholder<22> _22;
-      _Placeholder<23> _23;
-      _Placeholder<24> _24;
-      _Placeholder<25> _25;
-      _Placeholder<26> _26;
-      _Placeholder<27> _27;
-      _Placeholder<28> _28;
-      _Placeholder<29> _29;
-    } 
+  namespace placeholders
+  {
+    // The C++11 std::placeholders are already exported from the library.
+    // Reusing them here avoids needing to export additional symbols for
+    // the TR1 placeholders, and avoids ODR violations due to defining
+    // them with internal linkage (as we used to do).
+    using namespace ::std::placeholders;
   }
 
   /**
@@ -901,22 +900,13 @@ namespace tr1
    */
   template<int _Num>
     struct is_placeholder<_Placeholder<_Num> >
-    { static const int value = _Num; };
-
-  template<int _Num>
-    const int is_placeholder<_Placeholder<_Num> >::value;
-
-#if __cplusplus >= 201103L
-  template<int _Num>
-    struct is_placeholder<std::_Placeholder<_Num>>
-    : std::integral_constant<int, _Num>
+    : integral_constant<int, _Num>
     { };
 
   template<int _Num>
-    struct is_placeholder<const std::_Placeholder<_Num>>
-    : std::integral_constant<int, _Num>
+    struct is_placeholder<const _Placeholder<_Num> >
+    : integral_constant<int, _Num>
     { };
-#endif
 
   /**
    * Stores a tuple of indices. Used by bind() to extract the elements
@@ -1423,6 +1413,9 @@ namespace tr1
                                                    _Signature> >::value;
 
 #if __cplusplus >= 201103L
+  // Specialize tr1::is_bind_expression for std::bind closure types,
+  // so that they can also work with tr1::bind.
+
   template<typename _Signature>
     struct is_bind_expression<std::_Bind<_Signature>>
     : true_type { };
@@ -2242,20 +2235,8 @@ namespace tr1
 }
 
 #if __cplusplus >= 201103L
-
-  template<typename> struct is_placeholder;
-
-  template<int _Num>
-    struct is_placeholder<tr1::_Placeholder<_Num>>
-    : integral_constant<int, _Num>
-    { };
-
-  template<int _Num>
-    struct is_placeholder<const tr1::_Placeholder<_Num>>
-    : integral_constant<int, _Num>
-    { };
-
-  template<typename> struct is_bind_expression;
+  // Specialize std::is_bind_expression for tr1::bind closure types,
+  // so that they can also work with std::bind.
 
   template<typename _Signature>
     struct is_bind_expression<tr1::_Bind<_Signature>>

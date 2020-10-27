@@ -3665,7 +3665,7 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      if Modify_Tree_For_C
+      if Transform_Function_Array
         and then Nkind (Call_Node) = N_Function_Call
         and then Is_Entity_Name (Name (Call_Node))
       then
@@ -6691,7 +6691,7 @@ package body Exp_Ch6 is
       --  are not needed by the C generator (and this also produces cleaner
       --  output).
 
-      if Modify_Tree_For_C
+      if Transform_Function_Array
         and then Nkind (Specification (N)) = N_Function_Specification
         and then Is_Array_Type (Etype (Subp))
         and then Is_Constrained (Etype (Subp))

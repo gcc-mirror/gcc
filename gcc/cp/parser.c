@@ -17642,10 +17642,8 @@ cp_parser_explicit_instantiation (cp_parser* parser)
      instantiation.  */
   if (declares_class_or_enum && cp_parser_declares_only_class_p (parser))
     {
-      tree type;
-
-      type = check_tag_decl (&decl_specifiers,
-			     /*explicit_type_instantiation_p=*/true);
+      tree type = check_tag_decl (&decl_specifiers,
+				  /*explicit_type_instantiation_p=*/true);
       /* Turn access control back on for names used during
 	 template instantiation.  */
       pop_deferring_access_checks ();
@@ -25156,14 +25154,12 @@ cp_parser_member_declaration (cp_parser* parser)
 	}
       else
 	{
-	  tree type;
-
 	  /* See if this declaration is a friend.  */
 	  friend_p = cp_parser_friend_p (&decl_specifiers);
 	  /* If there were decl-specifiers, check to see if there was
 	     a class-declaration.  */
-	  type = check_tag_decl (&decl_specifiers,
-				 /*explicit_type_instantiation_p=*/false);
+	  tree type = check_tag_decl (&decl_specifiers,
+				      /*explicit_type_instantiation_p=*/false);
 	  /* Nested classes have already been added to the class, but
 	     a `friend' needs to be explicitly registered.  */
 	  if (friend_p)

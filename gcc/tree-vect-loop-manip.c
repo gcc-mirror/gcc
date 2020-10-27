@@ -1084,6 +1084,33 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop,
   exit = single_exit (loop);
   basic_block new_preheader = new_bbs[0];
 
+  /* Before installing PHI arguments make sure that the edges
+     into them match that of the scalar loop we analyzed.  This
+     makes sure the SLP tree matches up between the main vectorized
+     loop and the epilogue vectorized copies.  */
+  if (single_succ_edge (preheader)->dest_idx
+      != single_succ_edge (new_bbs[0])->dest_idx)
+    {
+      basic_block swap_bb = new_bbs[1];
+      gcc_assert (EDGE_COUNT (swap_bb->preds) == 2);
+      std::swap (EDGE_PRED (swap_bb, 0), EDGE_PRED (swap_bb, 1));
+      EDGE_PRED (swap_bb, 0)->dest_idx = 0;
+      EDGE_PRED (swap_bb, 1)->dest_idx = 1;
+    }
+  if (duplicate_outer_loop)
+    {
+      class loop *new_inner_loop = get_loop_copy (scalar_loop->inner);
+      if (loop_preheader_edge (scalar_loop)->dest_idx
+	  != loop_preheader_edge (new_inner_loop)->dest_idx)
+	{
+	  basic_block swap_bb = new_inner_loop->header;
+	  gcc_assert (EDGE_COUNT (swap_bb->preds) == 2);
+	  std::swap (EDGE_PRED (swap_bb, 0), EDGE_PRED (swap_bb, 1));
+	  EDGE_PRED (swap_bb, 0)->dest_idx = 0;
+	  EDGE_PRED (swap_bb, 1)->dest_idx = 1;
+	}
+    }
+
   add_phi_args_after_copy (new_bbs, scalar_loop->num_nodes + 1, NULL);
 
   /* Skip new preheader since it's deleted if copy loop is added at entry.  */

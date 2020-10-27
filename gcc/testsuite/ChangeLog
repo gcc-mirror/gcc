@@ -1,3 +1,185 @@
+2020-10-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/localentry-1.c: Remove -mpcrel from options.
+	* gcc.target/powerpc/notoc-direct-1.c: Likewise.
+	* gcc.target/powerpc/pr94740.c: Likewise.
+
+2020-10-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/bswap64-4.c: Comment.
+
+2020-10-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/pr93122.c: Replace -mcpu with -mdejagnu-cpu.
+	* gcc.target/powerpc/vsx_mask-count-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-expand-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-extract-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-move-runnable.c: Likewise.
+
+2020-10-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/vsx-load-element-extend-char.c: Require int128.
+	* gcc.target/powerpc/vsx-load-element-extend-int.c: Likewise.
+	* gcc.target/powerpc/vsx-load-element-extend-longlong.c: Likewise.
+	* gcc.target/powerpc/vsx-load-element-extend-short.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-char.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-int.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-longlong.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-short.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-count-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-expand-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-extract-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-move-runnable.c: Likewise.
+
+2020-10-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/cfuged-1.c,
+	gcc.target/powerpc/cntlzdm-1.c,
+	gcc.target/powerpc/cnttzdm-1.c,
+	gcc.target/powerpc/dg-future-1.c,
+	gcc.target/powerpc/lsbb-runnable.c,
+	gcc.target/powerpc/mma-double-test.c,
+	gcc.target/powerpc/mma-single-test.c,
+	gcc.target/powerpc/p10-arch31.c,
+	gcc.target/powerpc/p10-identify.c,
+	gcc.target/powerpc/pdep-1.c,
+	gcc.target/powerpc/pextd-1.c,
+	gcc.target/powerpc/pr96787-2.c,
+	gcc.target/powerpc/vec-blend-runnable.c,
+	gcc.target/powerpc/vec-cfuged-1.c,
+	gcc.target/powerpc/vec-clrl-1.c,
+	gcc.target/powerpc/vec-clrl-3.c,
+	gcc.target/powerpc/vec-clrr-1.c,
+	gcc.target/powerpc/vec-clrr-3.c,
+	gcc.target/powerpc/vec-cntlzm-1.c,
+	gcc.target/powerpc/vec-cnttzm-1.c,
+	gcc.target/powerpc/vec-extracth-1.c,
+	gcc.target/powerpc/vec-extracth-3.c,
+	gcc.target/powerpc/vec-extracth-5.c,
+	gcc.target/powerpc/vec-extracth-7.c,
+	gcc.target/powerpc/vec-extractl-1.c,
+	gcc.target/powerpc/vec-extractl-3.c,
+	gcc.target/powerpc/vec-extractl-5.c,
+	gcc.target/powerpc/vec-extractl-7.c,
+	gcc.target/powerpc/vec-gnb-1.c,
+	gcc.target/powerpc/vec-insert-word-runnable.c,
+	gcc.target/powerpc/vec-pdep-1.c,
+	gcc.target/powerpc/vec-permute-ext-runnable.c,
+	gcc.target/powerpc/vec-pext-1.c,
+	gcc.target/powerpc/vec-replace-word-runnable.c,
+	gcc.target/powerpc/vec-shift-double-runnable.c,
+	gcc.target/powerpc/vec-splati-runnable.c,
+	gcc.target/powerpc/vec-stril-1.c,
+	gcc.target/powerpc/vec-stril-16.c,
+	gcc.target/powerpc/vec-stril-17.c,
+	gcc.target/powerpc/vec-stril-18.c,
+	gcc.target/powerpc/vec-stril-19.c,
+	gcc.target/powerpc/vec-stril-20.c,
+	gcc.target/powerpc/vec-stril-21.c,
+	gcc.target/powerpc/vec-stril-22.c,
+	gcc.target/powerpc/vec-stril-23.c,
+	gcc.target/powerpc/vec-stril-3.c,
+	gcc.target/powerpc/vec-stril-5.c,
+	gcc.target/powerpc/vec-stril-7.c,
+	gcc.target/powerpc/vec-stril_p-1.c,
+	gcc.target/powerpc/vec-stril_p-3.c,
+	gcc.target/powerpc/vec-stril_p-5.c,
+	gcc.target/powerpc/vec-stril_p-7.c,
+	gcc.target/powerpc/vec-strir-1.c,
+	gcc.target/powerpc/vec-strir-16.c,
+	gcc.target/powerpc/vec-strir-17.c,
+	gcc.target/powerpc/vec-strir-18.c,
+	gcc.target/powerpc/vec-strir-19.c,
+	gcc.target/powerpc/vec-strir-20.c,
+	gcc.target/powerpc/vec-strir-21.c,
+	gcc.target/powerpc/vec-strir-22.c,
+	gcc.target/powerpc/vec-strir-23.c,
+	gcc.target/powerpc/vec-strir-3.c,
+	gcc.target/powerpc/vec-strir-5.c,
+	gcc.target/powerpc/vec-strir-7.c,
+	gcc.target/powerpc/vec-strir_p-1.c,
+	gcc.target/powerpc/vec-strir_p-3.c,
+	gcc.target/powerpc/vec-strir_p-5.c,
+	gcc.target/powerpc/vec-strir_p-7.c,
+	gcc.target/powerpc/vec-ternarylogic-1.c,
+	gcc.target/powerpc/vec-ternarylogic-3.c,
+	gcc.target/powerpc/vec-ternarylogic-5.c,
+	gcc.target/powerpc/vec-ternarylogic-7.c,
+	gcc.target/powerpc/vec-ternarylogic-9.c,
+	gcc.target/powerpc/vsx_mask-count-runnable.c,
+	gcc.target/powerpc/vsx_mask-expand-runnable.c,
+	gcc.target/powerpc/vsx_mask-extract-runnable.c,
+	gcc.target/powerpc/vsx_mask-move-runnable.c,
+	gcc.target/powerpc/xxgenpc-runnable.c: Link testcase when it
+	can't be run.
+
+2020-10-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/dimode_off.c: Add -mno-prefixed to options.
+
+2020-10-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/cprophard.c: Add -mno-pcrel to options.
+	* gcc.target/powerpc/float128-hw3.c: Likewise.
+	* gcc.target/powerpc/pr79439-1.c: Likewise.
+	* gcc.target/powerpc/pr79439-2.c: Likewise.
+	* gcc.target/powerpc/r2_shrink-wrap.c: Likewise.
+
+2020-10-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97567.c: New.
+
+2020-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97555.c: New test.
+
+2020-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/ext/is_nothrow_constructible1.C: New file.
+	* g++.dg/ext/is_nothrow_constructible2.C: New file.
+	* g++.dg/ext/is_nothrow_constructible3.C: New file.
+	* g++.dg/ext/is_nothrow_constructible4.C: New file.
+	* g++.dg/ext/is_nothrow_constructible5.C: New file.
+	* g++.dg/ext/is_nothrow_constructible6.C: New file.
+
+2020-10-26  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/97576
+	* gcc.c-torture/compile/pr97576.c: New test.
+
+2020-10-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/97546
+	* gcc.target/aarch64/sve/acle/general/pr97546.c: New test.
+
+2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97521
+	* gcc.target/i386/pr97521.c: New testcase.
+
+2020-10-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95458
+	* gcc.target/i386/pr95458-1.c: New test.
+	* gcc.target/i386/pr95458-2.c: Likewise.
+
+2020-10-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95151
+	* gcc.target/i386/pr95151-1.c: New test.
+	* gcc.target/i386/pr95151-2.c: Likewise.
+	* gcc.target/i386/pr95151-3.c: Likewise.
+	* gcc.target/i386/pr95151-4.c: Likewise.
+
+2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97539
+	* gcc.dg/pr97539.c: New testcase.
+
+2020-10-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/warn14.adb: Update expectations.
+
 2020-10-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/96241

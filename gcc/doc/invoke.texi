@@ -13749,10 +13749,6 @@ code to iterate.  2 allows partial vector loads and stores in all loops.
 The parameter only has an effect on targets that support partial
 vector loads and stores.
 
-@item slp-max-insns-in-bb
-Maximum number of instructions in basic block to be
-considered for SLP vectorization.
-
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
 

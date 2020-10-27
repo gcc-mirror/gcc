@@ -1,5 +1,6 @@
-/* { dg-do run } */
-/* { dg-require-effective-target power10_hw } */
+/* { dg-do run { target { power10_hw } } } */
+/* { dg-do link { target { ! power10_hw } } } */
+/* { dg-require-effective-target power10_ok } */
 /* { dg-options "-mdejagnu-cpu=power10 -O2" } */
 
 /* This test will only run when the power10_hw_available test passes.

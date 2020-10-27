@@ -131,6 +131,25 @@ extrinsic_state::get_model_manager () const
     return NULL; /* for selftests.  */
 }
 
+/* struct sm_state_map::entry_t.  */
+
+int
+sm_state_map::entry_t::cmp (const entry_t &entry_a, const entry_t &entry_b)
+{
+  gcc_assert (entry_a.m_state);
+  gcc_assert (entry_b.m_state);
+  if (int cmp_state = ((int)entry_a.m_state->get_id ()
+		       - (int)entry_b.m_state->get_id ()))
+    return cmp_state;
+  if (entry_a.m_origin && entry_b.m_origin)
+    return svalue::cmp_ptr (entry_a.m_origin, entry_b.m_origin);
+  if (entry_a.m_origin)
+    return 1;
+  if (entry_b.m_origin)
+    return -1;
+  return 0;
+}
+
 /* class sm_state_map.  */
 
 /* sm_state_map's ctor.  */
@@ -170,21 +189,29 @@ sm_state_map::print (const region_model *model,
 	pp_newline (pp);
       first = false;
     }
+  auto_vec <const svalue *> keys (m_map.elements ());
   for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
+    keys.quick_push ((*iter).first);
+  keys.qsort (svalue::cmp_ptr_ptr);
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (keys, i, sval)
     {
       if (multiline)
 	pp_string (pp, "  ");
       else if (!first)
 	pp_string (pp, ", ");
       first = false;
-      const svalue *sval = (*iter).first;
-      pp_pointer (pp, sval);
-      pp_string (pp, ": ");
+      if (!flag_dump_noaddr)
+	{
+	  pp_pointer (pp, sval);
+	  pp_string (pp, ": ");
+	}
       sval->dump_to_pp (pp, simple);
 
-      entry_t e = (*iter).second;
+      entry_t e = *const_cast <map_t &> (m_map).get (sval);
       pp_string (pp, ": ");
       e.m_state->dump_to_pp (pp);
       if (model)
@@ -543,6 +570,44 @@ sm_state_map::on_unknown_change (const svalue *sval,
   for (svalue_set::iterator iter = svals_to_unset.begin ();
        iter != svals_to_unset.end (); ++iter)
     impl_set_state (*iter, (state_machine::state_t)0, NULL, ext_state);
+}
+
+/* Comparator for imposing an order on sm_state_map instances.  */
+
+int
+sm_state_map::cmp (const sm_state_map &smap_a, const sm_state_map &smap_b)
+{
+  if (int cmp_count = smap_a.elements () - smap_b.elements ())
+    return cmp_count;
+
+  auto_vec <const svalue *> keys_a (smap_a.elements ());
+  for (map_t::iterator iter = smap_a.begin ();
+       iter != smap_a.end ();
+       ++iter)
+    keys_a.quick_push ((*iter).first);
+  keys_a.qsort (svalue::cmp_ptr_ptr);
+
+  auto_vec <const svalue *> keys_b (smap_b.elements ());
+  for (map_t::iterator iter = smap_b.begin ();
+       iter != smap_b.end ();
+       ++iter)
+    keys_b.quick_push ((*iter).first);
+  keys_b.qsort (svalue::cmp_ptr_ptr);
+
+  unsigned i;
+  const svalue *sval_a;
+  FOR_EACH_VEC_ELT (keys_a, i, sval_a)
+    {
+      const svalue *sval_b = keys_b[i];
+      if (int cmp_sval = svalue::cmp_ptr (sval_a, sval_b))
+	return cmp_sval;
+      const entry_t *e_a = const_cast <map_t &> (smap_a.m_map).get (sval_a);
+      const entry_t *e_b = const_cast <map_t &> (smap_b.m_map).get (sval_b);
+      if (int cmp_entry = entry_t::cmp (*e_a, *e_b))
+	return cmp_entry;
+    }
+
+  return 0;
 }
 
 /* Canonicalize SVAL before getting/setting it within the map.
@@ -916,6 +981,7 @@ program_state::prune_for_point (exploded_graph &eg,
       auto_vec<const decl_region *> ssa_name_regs;
       new_state.m_region_model->get_ssa_name_regions_for_current_frame
 	(&ssa_name_regs);
+      ssa_name_regs.qsort (region::cmp_ptr_ptr);
       unsigned i;
       const decl_region *reg;
       FOR_EACH_VEC_ELT (ssa_name_regs, i, reg)
@@ -1032,18 +1098,26 @@ program_state::validate (const extrinsic_state &ext_state) const
 
 static void
 log_set_of_svalues (logger *logger, const char *name,
-		     const svalue_set &set)
+		    const svalue_set &set)
 {
   logger->log (name);
   logger->inc_indent ();
+  auto_vec<const svalue *> sval_vecs (set.elements ());
   for (svalue_set::iterator iter = set.begin ();
        iter != set.end (); ++iter)
+    sval_vecs.quick_push (*iter);
+  sval_vecs.qsort (svalue::cmp_ptr_ptr);
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (sval_vecs, i, sval)
     {
       logger->start_log_line ();
       pretty_printer *pp = logger->get_printer ();
-      const svalue *sval = (*iter);
-      pp_pointer (pp, sval);
-      pp_string (pp, ": ");
+      if (!flag_dump_noaddr)
+	{
+	  pp_pointer (pp, sval);
+	  pp_string (pp, ": ");
+	}
       sval->dump_to_pp (pp, false);
       logger->end_log_line ();
     }

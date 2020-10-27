@@ -1342,8 +1342,7 @@ region_model::get_initial_value_for_global (const region *reg) const
      global decl defined in this TU that hasn't been touched yet, then
      the initial value of REG can be taken from the initialization value
      of the decl.  */
-  if ((called_from_main_p () && !DECL_EXTERNAL (decl))
-      || TREE_READONLY (decl))
+  if (called_from_main_p () || TREE_READONLY (decl))
     {
       /* Attempt to get the initializer value for base_reg.  */
       if (const svalue *base_reg_init
@@ -2192,7 +2191,10 @@ region_model::get_representative_path_var (const region *reg,
 	return path_var (function_reg->get_fndecl (), 0);
       }
     case RK_LABEL:
-      gcc_unreachable (); // TODO
+      {
+	const label_region *label_reg = as_a <const label_region *> (reg);
+	return path_var (label_reg->get_label (), 0);
+      }
 
     case RK_SYMBOLIC:
       {

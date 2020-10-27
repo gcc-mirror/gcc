@@ -882,8 +882,8 @@ package body Exp_Unst is
                      --  outside the nested structure do not affect us.
 
                      if Scope_Within (Ent, Subp)
-                        and then Is_Subprogram (Ent)
-                        and then not Is_Imported (Ent)
+                       and then Is_Subprogram (Ent)
+                       and then not Is_Imported (Ent)
                      then
                         Append_Unique_Call ((N, Current_Subprogram, Ent));
                      end if;
