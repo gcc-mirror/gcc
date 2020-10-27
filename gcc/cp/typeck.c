@@ -4428,6 +4428,104 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
     }
 }
 
+/* Warn about [expr.arith.conv]/2: If one operand is of enumeration type and
+   the other operand is of a different enumeration type or a floating-point
+   type, this behavior is deprecated ([depr.arith.conv.enum]).  CODE is the
+   code of the binary operation, TYPE0 and TYPE1 are the types of the operands,
+   and LOC is the location for the whole binary expression.
+   TODO: Consider combining this with -Wenum-compare in build_new_op_1.  */
+
+static void
+do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
+			  tree type1)
+{
+  if (TREE_CODE (type0) == ENUMERAL_TYPE
+      && TREE_CODE (type1) == ENUMERAL_TYPE
+      && TYPE_MAIN_VARIANT (type0) != TYPE_MAIN_VARIANT (type1))
+    {
+      /* In C++20, -Wdeprecated-enum-enum-conversion is on by default.
+	 Otherwise, warn if -Wenum-conversion is on.  */
+      enum opt_code opt;
+      if (warn_deprecated_enum_enum_conv)
+	opt = OPT_Wdeprecated_enum_enum_conversion;
+      else if (warn_enum_conversion)
+	opt = OPT_Wenum_conversion;
+      else
+	return;
+
+      switch (code)
+	{
+	case GT_EXPR:
+	case LT_EXPR:
+	case GE_EXPR:
+	case LE_EXPR:
+	case EQ_EXPR:
+	case NE_EXPR:
+	  /* Comparisons are handled by -Wenum-compare.  */
+	  return;
+	case SPACESHIP_EXPR:
+	  /* This is invalid, don't warn.  */
+	  return;
+	case BIT_AND_EXPR:
+	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	  warning_at (loc, opt, "bitwise operation between different "
+		      "enumeration types %qT and %qT is deprecated",
+		      type0, type1);
+	  return;
+	default:
+	  warning_at (loc, opt, "arithmetic between different enumeration "
+		      "types %qT and %qT is deprecated", type0, type1);
+	  return;
+	}
+    }
+  else if ((TREE_CODE (type0) == ENUMERAL_TYPE
+	    && TREE_CODE (type1) == REAL_TYPE)
+	   || (TREE_CODE (type0) == REAL_TYPE
+	       && TREE_CODE (type1) == ENUMERAL_TYPE))
+    {
+      const bool enum_first_p = TREE_CODE (type0) == ENUMERAL_TYPE;
+      /* In C++20, -Wdeprecated-enum-float-conversion is on by default.
+	 Otherwise, warn if -Wenum-conversion is on.  */
+      enum opt_code opt;
+      if (warn_deprecated_enum_float_conv)
+	opt = OPT_Wdeprecated_enum_float_conversion;
+      else if (warn_enum_conversion)
+	opt = OPT_Wenum_conversion;
+      else
+	return;
+
+      switch (code)
+	{
+	case GT_EXPR:
+	case LT_EXPR:
+	case GE_EXPR:
+	case LE_EXPR:
+	case EQ_EXPR:
+	case NE_EXPR:
+	  if (enum_first_p)
+	    warning_at (loc, opt, "comparison of enumeration type %qT with "
+			"floating-point type %qT is deprecated",
+			type0, type1);
+	  else
+	    warning_at (loc, opt, "comparison of floating-point type %qT "
+			"with enumeration type %qT is deprecated",
+			type0, type1);
+	  return;
+	default:
+	  if (enum_first_p)
+	    warning_at (loc, opt, "arithmetic between enumeration type %qT "
+			"and floating-point type %qT is deprecated",
+			type0, type1);
+	  else
+	    warning_at (loc, opt, "arithmetic between floating-point type %qT "
+			"and enumeration type %qT is deprecated",
+			type0, type1);
+	  return;
+	}
+    }
+}
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the location_t of the operator in the source code.
@@ -5445,11 +5543,15 @@ cp_build_binary_op (const op_location_t &location,
     {
       result_type = cp_common_type (type0, type1);
       if (complain & tf_warning)
-	do_warn_double_promotion (result_type, type0, type1,
-				  "implicit conversion from %qH to %qI "
-				  "to match other operand of binary "
-				  "expression",
-				  location);
+	{
+	  do_warn_double_promotion (result_type, type0, type1,
+				    "implicit conversion from %qH to %qI "
+				    "to match other operand of binary "
+				    "expression",
+				    location);
+	  do_warn_enum_conversions (location, code, TREE_TYPE (orig_op0),
+				    TREE_TYPE (orig_op1));
+	}
     }
 
   if (code == SPACESHIP_EXPR)

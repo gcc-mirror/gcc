@@ -518,6 +518,15 @@ C++ ObjC++ Var(warn_deprecated_copy, 2) Warning
 Mark implicitly-declared copy operations as deprecated if the class has a
 user-provided copy operation or destructor.
 
+Wdeprecated-enum-enum-conversion
+C++ ObjC++ Var(warn_deprecated_enum_enum_conv) Warning
+Warn about deprecated arithmetic conversions on operands of enumeration types.
+
+Wdeprecated-enum-float-conversion
+C++ ObjC++ Var(warn_deprecated_enum_float_conv) Warning
+Warn about deprecated arithmetic conversions on operands where one is of enumeration
+type and the other is of a floating-point type.
+
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers.
@@ -559,7 +568,7 @@ C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,W
 Warn about comparison of different enum types.
 
 Wenum-conversion
-C ObjC Var(warn_enum_conversion) Init(0) Warning LangEnabledBy(C ObjC,Wextra)
+C ObjC C++ ObjC++ Var(warn_enum_conversion) Init(0) Warning LangEnabledBy(C ObjC,Wextra)
 Warn about implicit conversion of enum types.
 
 Werror

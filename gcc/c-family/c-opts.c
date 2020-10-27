@@ -925,6 +925,16 @@ c_common_post_options (const char **pfilename)
   SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_volatile,
 		       cxx_dialect >= cxx20 && warn_deprecated);
 
+  /* -Wdeprecated-enum-enum-conversion is enabled by default in C++20.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       warn_deprecated_enum_enum_conv,
+		       cxx_dialect >= cxx20 && warn_deprecated);
+
+  /* -Wdeprecated-enum-float-conversion is enabled by default in C++20.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       warn_deprecated_enum_float_conv,
+		       cxx_dialect >= cxx20 && warn_deprecated);
+
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;

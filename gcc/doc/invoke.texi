@@ -239,6 +239,7 @@ in the following sections.
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
+-Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
 -Wno-invalid-offsetof  -Wno-literal-suffix  -Wmismatched-tags @gol
@@ -3358,6 +3359,42 @@ warning is enabled by @option{-Wextra}.  With
 @option{-Wdeprecated-copy-dtor}, also deprecate if the class has a
 user-provided destructor.
 
+@item -Wno-deprecated-enum-enum-conversion @r{(C++ and Objective-C++ only)}
+@opindex Wdeprecated-enum-enum-conversion
+@opindex Wno-deprecated-enum-enum-conversion
+Disable the warning about the case when the usual arithmetic conversions
+are applied on operands where one is of enumeration type and the other is
+of a different enumeration type.  This conversion was deprecated in C++20.
+For example:
+
+@smallexample
+enum E1 @{ e @};
+enum E2 @{ f @};
+int k = f - e;
+@end smallexample
+
+@option{-Wdeprecated-enum-enum-conversion} is enabled by default with
+@option{-std=c++20}.  In pre-C++20 dialects, this warning can be enabled
+by @option{-Wenum-conversion}.
+
+@item -Wno-deprecated-enum-float-conversion @r{(C++ and Objective-C++ only)}
+@opindex Wdeprecated-enum-float-conversion
+@opindex Wno-deprecated-enum-float-conversion
+Disable the warning about the case when the usual arithmetic conversions
+are applied on operands where one is of enumeration type and the other is
+of a floating-point type.  This conversion was deprecated in C++20.  For
+example:
+
+@smallexample
+enum E1 @{ e @};
+enum E2 @{ f @};
+bool b = e <= 3.7;
+@end smallexample
+
+@option{-Wdeprecated-enum-float-conversion} is enabled by default with
+@option{-std=c++20}.  In pre-C++20 dialects, this warning can be enabled
+by @option{-Wenum-conversion}.
+
 @item -Wno-init-list-lifetime @r{(C++ and Objective-C++ only)}
 @opindex Winit-list-lifetime
 @opindex Wno-init-list-lifetime
@@ -5271,7 +5308,6 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wcomment  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
--Wenum-conversion @r{in C/ObjC;} @gol
 -Wformat   @gol
 -Wformat-overflow  @gol
 -Wformat-truncation  @gol
@@ -5340,6 +5376,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wcast-function-type  @gol
 -Wdeprecated-copy @r{(C++ only)} @gol
 -Wempty-body  @gol
+-Wenum-conversion @r{(C only)} @gol
 -Wignored-qualifiers @gol
 -Wimplicit-fallthrough=3 @gol
 -Wmissing-field-initializers  @gol
@@ -8006,11 +8043,12 @@ In C++ enumerated type mismatches in conditional expressions are also
 diagnosed and the warning is enabled by default.  In C this warning is 
 enabled by @option{-Wall}.
 
-@item -Wenum-conversion @r{(C, Objective-C only)}
+@item -Wenum-conversion
 @opindex Wenum-conversion
 @opindex Wno-enum-conversion
 Warn when a value of enumerated type is implicitly converted to a 
-different enumerated type.  This warning is enabled by @option{-Wextra}.
+different enumerated type.  This warning is enabled by @option{-Wextra}
+in C@.
 
 @item -Wjump-misses-init @r{(C, Objective-C only)}
 @opindex Wjump-misses-init
