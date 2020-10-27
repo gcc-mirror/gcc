@@ -2420,6 +2420,27 @@ package body Sem_Ch6 is
 
       else
          Error_Msg_N ("invalid procedure or entry call", N);
+
+         --  Specialize the error message in the case where both a
+         --  primitive operation and a record component are visible
+         --  at the same time.
+
+         if Nkind (P) = N_Selected_Component
+           and then Is_Entity_Name (Selector_Name (P))
+         then
+            declare
+               Sel : constant Entity_Id := Entity (Selector_Name (P));
+            begin
+               if Ekind (Sel) = E_Component
+                 and then Present (Homonym (Sel))
+                 and then Ekind (Homonym (Sel)) = E_Procedure
+               then
+                  Error_Msg_NE ("\component & conflicts with"
+                    & " homonym procedure (RM 4.1.3 (9.2/3))",
+                    Selector_Name (P), Sel);
+               end if;
+            end;
+         end if;
       end if;
 
    <<Leave>>
