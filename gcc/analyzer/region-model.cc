@@ -2192,7 +2192,10 @@ region_model::get_representative_path_var (const region *reg,
 	return path_var (function_reg->get_fndecl (), 0);
       }
     case RK_LABEL:
-      gcc_unreachable (); // TODO
+      {
+	const label_region *label_reg = as_a <const label_region *> (reg);
+	return path_var (label_reg->get_label (), 0);
+      }
 
     case RK_SYMBOLIC:
       {

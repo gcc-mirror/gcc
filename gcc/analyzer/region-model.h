@@ -1694,6 +1694,8 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   enum region_kind get_kind () const FINAL OVERRIDE { return RK_LABEL; }
 
+  tree get_label () const { return m_label; }
+
 private:
   tree m_label;
 };
