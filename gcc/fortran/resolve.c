@@ -16476,6 +16476,7 @@ gfc_impure_variable (gfc_symbol *sym)
 
   proc = sym->ns->proc_name;
   if (sym->attr.dummy
+      && !sym->attr.value
       && ((proc->attr.subroutine && sym->attr.intent == INTENT_IN)
 	  || proc->attr.function))
     return 1;
