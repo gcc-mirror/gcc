@@ -4934,7 +4934,15 @@ trees_out::vec_chained_decls (tree decls)
     }
 
   for (tree decl = decls; decl; decl = DECL_CHAIN (decl))
-    tree_node (decl);
+    {
+      if (DECL_IMPLICIT_TYPEDEF_P (decl)
+	  && TYPE_NAME (TREE_TYPE (decl)) != decl)
+	/* An anonynmous struct with a typedef name.  An odd thing to
+	   write.  */
+	tree_node (NULL_TREE);
+      else
+	tree_node (decl);
+    }
 }
 
 vec<tree, va_heap> *
@@ -4949,7 +4957,7 @@ trees_in::vec_chained_decls ()
       for (unsigned ix = 0; ix < len; ix++)
 	{
 	  tree decl = tree_node ();
-	  if (!decl || !DECL_P (decl))
+	  if (decl && !DECL_P (decl))
 	    {
 	      set_overrun ();
 	      break;
@@ -7222,6 +7230,8 @@ trees_out::add_indirects (tree decl)
 	 different RECORD_TYPEs for the same type, and things go
 	 south.  */
       tree type = TREE_TYPE (inner);
+      gcc_checking_assert (DECL_ORIGINAL_TYPE (inner)
+			   || TYPE_NAME (type) == inner);
       int tag = insert (type);
       if (streaming_p ())
 	dump (dumper::TREE) && dump ("Indirect:%d decl's type %C:%N", tag,
@@ -7257,6 +7267,8 @@ trees_in::add_indirects (tree decl)
   if (TREE_CODE (inner) == TYPE_DECL)
     {
       tree type = TREE_TYPE (inner);
+      gcc_checking_assert (DECL_ORIGINAL_TYPE (inner)
+			   || TYPE_NAME (type) == inner);
       int tag = insert (type);
       dump (dumper::TREE)
 	&& dump ("Indirect:%d decl's type %C:%N", tag, TREE_CODE (type), type);
@@ -11631,7 +11643,8 @@ trees_out::write_class_def (tree defn)
 	    if (TREE_CODE (m) == TYPE_DECL
 		&& DECL_ARTIFICIAL (m)
 		&& TYPE_STUB_DECL (TREE_TYPE (m)) == m)
-	      /* This is a using-decl for a type.  Write the type.  */
+	      /* This is a using-decl for a type, or an anonymous
+		 struct (maybe with a typedef name).  Write the type.  */
 	      m = TREE_TYPE (m);
 	    tree_node (m);
 	  }
@@ -11793,7 +11806,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	      if (get_overrun ())
 		break;
 	      if (TYPE_P (m))
-		m = TYPE_NAME (m);
+		m = TYPE_STUB_DECL (m);
 	      member_vec->quick_push (m);
 	    }
 	}
@@ -11885,6 +11898,15 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  for (unsigned ix = 0; ix != len; ix++)
 	    {
 	      tree decl = (*fields)[ix];
+
+	      if (!decl)
+		{
+		  /* An anonymous struct with typedef name.  */
+		  tree tdef = (*fields)[ix+1];
+		  decl = TYPE_STUB_DECL (TREE_TYPE (tdef));
+		  gcc_checking_assert (IDENTIFIER_ANON_P (DECL_NAME (decl))
+				       && decl != tdef);
+		}
 
 	      gcc_checking_assert (!*chain == !DECL_CLONED_FUNCTION_P (decl));
 	      *chain = decl;

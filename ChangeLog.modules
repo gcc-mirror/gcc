@@ -1,6 +1,16 @@
 2020-10-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::vec_chained_decls): Detect anonymous
+	struct with typedef name.
+	(trees_{in,out}::add_indirect): Assert TYPE_DECL is typedef or
+	type's TYPE_NAME.
+	(trees_{in,out}::{read,write}_class_def): Cope with anon-structs
+	with typedef names.
+	gcc/testsuite/
+	* g++.dg/modules/tdef-8_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (depset_cmp): Decide strcmp question.
 	(module_state::write_prepare_maps): Document pruning question.
 
