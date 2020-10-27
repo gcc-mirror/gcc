@@ -4,7 +4,7 @@
 int a, b, c, d;
 void k() {
   unsigned f = 1;
-  long g = 4073709551615;
+  long long g = 4073709551615;
   for (; a; a++)
     for (;;) {
       d = 0;
@@ -16,7 +16,7 @@ void k() {
       ;
   g || f;
   int i = 0 - f || g;
-  long j = g - f;
+  long long j = g - f;
   if (j || f) {
     if (g < 4073709551615)
       for (;;)
