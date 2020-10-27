@@ -13336,9 +13336,7 @@ depset_cmp (const void *a_, const void *b_)
 
   if (a_kind == depset::EK_BINDING)
     {
-      /* Both are bindings.  */
-      /* Order by identifier hash (hey, it's a consistent number).  */
-      // FIXME: strcmp for user-meaningful order?
+      /* Both are bindings.  Order by identifier hash.  */
       gcc_checking_assert (a->get_name () != b->get_name ());
       return (IDENTIFIER_HASH_VALUE (a->get_name ())
 	      < IDENTIFIER_HASH_VALUE (b->get_name ())
@@ -15642,10 +15640,13 @@ module_state::read_location (bytes_in &sec) const
 }
 
 /* Prepare the span adjustments.  */
-// FIXME: The location streaming does not consider running out of
-// locations in either the module interface, nor in the importers.
-// At least we fail with a hard error though.  This routine should
-// fill in the module_state_config, not the individual writers.
+// FIXME: I do not prune the unreachable locations.  Modules with
+// textually-large GMFs could well cause us to run out of locations.
+// Regular single-file modules could also be affected.  We should
+// determine which locations we need to represent, so that we do not
+// grab more locations than necessary.  Perhaps we should decompose
+// locations so that we can have a more graceful degradation upon
+// running out?
 
 location_map_info
 module_state::write_prepare_maps (module_state_config *)
@@ -15788,9 +15789,6 @@ module_state::read_prepare_maps (const module_state_config *cfg)
 
 /* Write the location maps.  This also determines the shifts for the
    location spans.  */
-// FIXME: I do not prune the unreachable locations.  Modules with
-// textually-large GMFs could well cause us to run out of locations.
-// Regular single-file modules could also be affected.
 
 void
 module_state::write_ordinary_maps (elf_out *to, location_map_info &info,

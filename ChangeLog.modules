@@ -1,6 +1,10 @@
 2020-10-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset_cmp): Decide strcmp question.
+	(module_state::write_prepare_maps): Document pruning question.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::{read,write}_class_def): Remove
 	nested udt FIXMEs.  They are no longer a thing.
 
