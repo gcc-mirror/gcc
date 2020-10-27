@@ -254,7 +254,7 @@ along with GCC; see the file COPYING3.  If not see
    `errno'.  If !flag_errno_math they are instead "const".  */
 #undef ATTR_MATHFN_ERRNO
 #define ATTR_MATHFN_ERRNO (flag_errno_math ? \
-	ATTR_NOTHROW_LEAF_LIST : ATTR_CONST_NOTHROW_LEAF_LIST)
+	ATTR_ERRNOCONST_NOTHROW_LEAF_LIST : ATTR_CONST_NOTHROW_LEAF_LIST)
 
 /* Define an attribute list for math functions that are normally
    "const" but if flag_rounding_math is set they are instead "pure".
@@ -271,7 +271,8 @@ along with GCC; see the file COPYING3.  If not see
    "const" depending on whether we care about FP rounding.  */
 #undef ATTR_MATHFN_FPROUNDING_ERRNO
 #define ATTR_MATHFN_FPROUNDING_ERRNO (flag_errno_math ? \
-	ATTR_NOTHROW_LEAF_LIST : ATTR_MATHFN_FPROUNDING)
+	(flag_rounding_math ? ATTR_ERRNOPURE_NOTHROW_LEAF_LIST \
+	 : ATTR_ERRNOCONST_NOTHROW_LEAF_LIST) : ATTR_MATHFN_FPROUNDING)
 
 /* Define an attribute list for math functions that need to mind FP
    rounding, but because they store into memory they are never "const"
