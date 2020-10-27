@@ -2100,7 +2100,7 @@ exploded_graph::get_or_create_node (const program_point &point,
   /* Impose a limit on the number of enodes per program point, and
      simply stop if we exceed it.  */
   if ((int)per_point_data->m_enodes.length ()
-      > param_analyzer_max_enodes_per_program_point)
+      >= param_analyzer_max_enodes_per_program_point)
     {
       pretty_printer pp;
       point.print (&pp, format (false));
