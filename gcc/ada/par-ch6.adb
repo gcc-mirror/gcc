@@ -1631,8 +1631,8 @@ package body Ch6 is
          --  the time being.
 
          elsif Token = Tok_With then
-            if not Extensions_Allowed then
-               Error_Msg_SP ("aspect on formal parameter requires -gnatX");
+            if Ada_Version < Ada_2020 then
+               Error_Msg_SP ("aspect on formal parameter requires -gnat2020");
             end if;
 
             P_Aspect_Specifications (Specification_Node, False);

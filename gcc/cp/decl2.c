@@ -2894,9 +2894,8 @@ constrain_class_visibility (tree type)
 /* Functions for adjusting the visibility of a tagged type and its nested
    types and declarations when it gets a name for linkage purposes from a
    typedef.  */
-
-static void bt_reset_linkage_1 (binding_entry, void *);
-static void bt_reset_linkage_2 (binding_entry, void *);
+// FIXME: It is now a DR for such a class type to contain anything
+// other than C.  So at minium most of this can probably be deleted.
 
 /* First reset the visibility of all the types.  */
 
@@ -2905,13 +2904,9 @@ reset_type_linkage_1 (tree type)
 {
   set_linkage_according_to_type (type, TYPE_MAIN_DECL (type));
   if (CLASS_TYPE_P (type))
-    binding_table_foreach (CLASSTYPE_NESTED_UTDS (type),
-			   bt_reset_linkage_1, NULL);
-}
-static void
-bt_reset_linkage_1 (binding_entry b, void */*data*/)
-{
-  reset_type_linkage_1 (b->type);
+    for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
+      if (DECL_IMPLICIT_TYPEDEF_P (member))
+	reset_type_linkage_1 (TREE_TYPE (member));
 }
 
 /* Then reset the visibility of any static data members or member
@@ -2930,9 +2925,10 @@ reset_decl_linkage (tree decl)
   tentative_decl_linkage (decl);
 }
 
-static void
-reset_type_linkage_2 (tree type)
+void
+reset_type_linkage (tree type)
 {
+  reset_type_linkage_1 (type);
   if (CLASS_TYPE_P (type))
     {
       if (tree vt = CLASSTYPE_VTABLES (type))
@@ -2955,22 +2951,10 @@ reset_type_linkage_2 (tree type)
 	  tree mem = STRIP_TEMPLATE (m);
 	  if (TREE_CODE (mem) == VAR_DECL || TREE_CODE (mem) == FUNCTION_DECL)
 	    reset_decl_linkage (mem);
+	  else if (DECL_IMPLICIT_TYPEDEF_P (mem))
+	    reset_type_linkage (TREE_TYPE (mem));
 	}
-      binding_table_foreach (CLASSTYPE_NESTED_UTDS (type),
-			     bt_reset_linkage_2, NULL);
     }
-}
-
-static void
-bt_reset_linkage_2 (binding_entry b, void */*data*/)
-{
-  reset_type_linkage_2 (b->type);
-}
-void
-reset_type_linkage (tree type)
-{
-  reset_type_linkage_1 (type);
-  reset_type_linkage_2 (type);
 }
 
 /* Set up our initial idea of what the linkage of DECL should be.  */

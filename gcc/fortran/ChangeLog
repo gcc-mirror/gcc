@@ -1,3 +1,25 @@
+2020-10-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/97454
+	* gfortran.h (gfc_symbol): Add pass_as_value flag.
+	(gfc_copy_formal_args_intr): Add optional argument
+	copy_type.
+	(gfc_get_intrinsic_function_symbol): Add prototype.
+	(gfc_find_intrinsic_symbol): Add prototype.
+	* intrinsic.c (gfc_get_intrinsic_function_symbol): New function.
+	(gfc_find_intrinsic_symbol): New function.
+	* symbol.c (gfc_copy_formal_args_intr): Add argument. Handle case
+	where the type needs to be copied from the actual argument.
+	* trans-intrinsic.c (remove_empty_actual_arguments): New function.
+	(specific_intrinsic_symbol): New function.
+	(gfc_conv_intrinsic_funcall): Use it.
+	(strip_kind_from_actual): Adjust so that the expression pointer
+	is set to NULL.
+	(gfc_conv_intrinsic_minmaxloc): Likewise.
+	(gfc_conv_intrinsic_minmaxval): Adjust removal of dim.
+	* trans-types.c (gfc_sym_type): If sym->pass_as_value is set, do
+	not pass by reference.
+
 2020-10-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (enum gfc_omp_memorder): Add.

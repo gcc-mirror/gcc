@@ -404,22 +404,16 @@ gcov_counter_add (gcov_type *counter, gcov_type value,
     *counter += value;
 }
 
-/* Allocate gcov_kvp from heap.  If we are recursively called, then allocate
-   it from a list of pre-allocated pool.  */
+/* Allocate gcov_kvp from statically pre-allocated pool,
+   or use heap otherwise.  */
 
 static inline struct gcov_kvp *
 allocate_gcov_kvp (void)
 {
   struct gcov_kvp *new_node = NULL;
 
-  static
-#if defined(HAVE_CC_TLS)
-__thread
-#endif
-  volatile unsigned in_recursion ATTRIBUTE_UNUSED = 0;
-
 #if !defined(IN_GCOV_TOOL) && !defined(L_gcov_merge_topn)
-  if (__builtin_expect (in_recursion, 0))
+  if (__gcov_kvp_pool_index < GCOV_PREALLOCATED_KVP)
     {
       unsigned index;
 #if GCOV_SUPPORTS_ATOMIC
@@ -430,17 +424,11 @@ __thread
 #endif
       if (index < GCOV_PREALLOCATED_KVP)
 	new_node = &__gcov_kvp_pool[index];
-      else
-	/* Do not crash in the situation.  */
-	return NULL;
     }
-  else
 #endif
-    {
-      in_recursion = 1;
-      new_node = (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
-      in_recursion = 0;
-    }
+
+  if (new_node == NULL)
+    new_node = (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
 
   return new_node;
 }

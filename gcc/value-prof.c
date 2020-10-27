@@ -1222,7 +1222,7 @@ init_node_map (bool local)
   cgraph_node_map = new hash_map<profile_id_hash, cgraph_node *>;
 
   FOR_EACH_DEFINED_FUNCTION (n)
-    if (n->has_gimple_body_p () || n->thunk.thunk_p)
+    if (n->has_gimple_body_p () || n->thunk)
       {
 	cgraph_node **val;
 	dump_user_location_t loc

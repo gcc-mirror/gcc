@@ -2448,18 +2448,30 @@ package body Exp_Aggr is
             Next (Expr);
          end loop;
 
-         --  STEP 2 (b): Generate final loop if an others choice is present
+         --  STEP 2 (b): Generate final loop if an others choice is present.
          --  Here Nb_Elements gives the offset of the last positional element.
 
          if Present (Component_Associations (N)) then
             Assoc := Last (Component_Associations (N));
 
-            --  Ada 2005 (AI-287)
+            if Nkind (Assoc) = N_Iterated_Component_Association then
+               --  Ada 2020: generate a loop to have a proper scope for
+               --  the identifier that typically appears in the expression.
+               --  The lower bound of the loop is the position after all
+               --  previous positional components.
 
-            Append_List (Gen_While (Add (Nb_Elements, To => Aggr_L),
-                                    Aggr_High,
-                                    Get_Assoc_Expr (Assoc)), --  AI-287
-                         To => New_Code);
+               Append_List (Gen_Loop (Add (Nb_Elements + 1, To => Aggr_L),
+                                      Aggr_High,
+                                      Expression (Assoc)),
+                            To => New_Code);
+            else
+               --  Ada 2005 (AI-287)
+
+               Append_List (Gen_While (Add (Nb_Elements, To => Aggr_L),
+                                       Aggr_High,
+                                       Get_Assoc_Expr (Assoc)),
+                            To => New_Code);
+            end if;
          end if;
       end if;
 

@@ -54,6 +54,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "tree-pretty-print.h"
 #include "tree-nested.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "symtab-thunks.h"
 
 #include "d-tree.h"
 
@@ -1702,7 +1705,7 @@ finish_thunk (tree thunk, tree function)
       if (!stdarg_p (TREE_TYPE (thunk)))
 	{
 	  thunk_node->create_edge (funcn, NULL, thunk_node->count);
-	  thunk_node->expand_thunk (false, true);
+	  expand_thunk (thunk_node, false, true);
 	}
 
       /* Tell the back-end to not bother inlining the function, this is

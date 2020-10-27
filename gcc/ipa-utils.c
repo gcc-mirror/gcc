@@ -297,7 +297,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
 	  && (pass
 	      || (!node->address_taken
 		  && !node->inlined_to
-		  && !node->alias && !node->thunk.thunk_p
+		  && !node->alias && !node->thunk
 		  && !node->only_called_directly_p ())))
 	{
 	  stack_size = 0;
@@ -460,8 +460,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
     }
 
   /* First handle functions with no gimple body.  */
-  if (dst->thunk.thunk_p || dst->alias
-      || src->thunk.thunk_p || src->alias)
+  if (dst->thunk || dst->alias
+      || src->thunk || src->alias)
     {
       scale_ipa_profile_for_fn (dst, orig_count);
       return;

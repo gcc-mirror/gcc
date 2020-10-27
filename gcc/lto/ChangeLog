@@ -1,3 +1,8 @@
+2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (add_symbol_to_partition_1): Update for new thunk
+	api.
+
 2020-08-27  Martin Liska  <mliska@suse.cz>
 
 	* lto-common.c (lto_file_finalize): Set exact argument of a vector

@@ -730,10 +730,10 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
         if (lhs.zero_p ())
 	  {
 	    // An OR operation will only take the FALSE path if both
-	    // operands are false, so [20, 255] intersect [0, 5] is the
+	    // operands are false, so either [20, 255] or [0, 5] is the
 	    // union: [0,5][20,255].
 	    r = op1.false_range;
-	    r.intersect (op2.false_range);
+	    r.union_ (op2.false_range);
 	  }
 	else
 	  {

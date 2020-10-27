@@ -45,6 +45,7 @@
 #include "alloc-pool.h"
 #include "tree-nested.h"
 #include "symbol-summary.h"
+#include "symtab-thunks.h"
 
 /* Summary of nested functions.  */
 static function_summary <nested_function_info *>
@@ -64,8 +65,11 @@ nested_function_info *
 nested_function_info::get_create (cgraph_node *node)
 {
   if (!nested_function_sum)
-    nested_function_sum = new function_summary <nested_function_info *>
-				 (symtab);
+    {
+      nested_function_sum = new function_summary <nested_function_info *>
+				   (symtab);
+      nested_function_sum->disable_insertion_hook ();
+    }
   return nested_function_sum->get_create (node);
 }
 
@@ -123,6 +127,9 @@ nested_function_info::release ()
 void
 maybe_record_nested_function (cgraph_node *node)
 {
+  /* All nested functions gets lowered during the construction of symtab.  */
+  if (symtab->state > CONSTRUCTION)
+    return;
   if (DECL_CONTEXT (node->decl)
       && TREE_CODE (DECL_CONTEXT (node->decl)) == FUNCTION_DECL)
     {
@@ -937,7 +944,7 @@ create_nesting_tree (struct cgraph_node *cgn)
   info->mem_refs = new hash_set<tree *>;
   info->suppress_expansion = BITMAP_ALLOC (&nesting_info_bitmap_obstack);
   info->context = cgn->decl;
-  info->thunk_p = cgn->thunk.thunk_p;
+  info->thunk_p = cgn->thunk;
 
   for (cgn = first_nested_function (cgn); cgn;
        cgn = next_nested_function (cgn))
@@ -3047,7 +3054,7 @@ convert_all_function_calls (struct nesting_info *root)
     if (n->thunk_p)
       {
 	tree decl = n->context;
-	tree alias = cgraph_node::get (decl)->thunk.alias;
+	tree alias = thunk_info::get (cgraph_node::get (decl))->alias;
 	DECL_STATIC_CHAIN (decl) = DECL_STATIC_CHAIN (alias);
       }
 
@@ -3083,7 +3090,7 @@ convert_all_function_calls (struct nesting_info *root)
 	if (n->thunk_p)
 	  {
 	    tree decl = n->context;
-	    tree alias = cgraph_node::get (decl)->thunk.alias;
+	    tree alias = thunk_info::get (cgraph_node::get (decl))->alias;
 	    DECL_STATIC_CHAIN (decl) = DECL_STATIC_CHAIN (alias);
 	  }
     }
@@ -3638,7 +3645,7 @@ gimplify_all_functions (struct cgraph_node *root)
     gimplify_function_tree (root->decl);
   for (iter = first_nested_function (root); iter;
        iter = next_nested_function (iter))
-    if (!iter->thunk.thunk_p)
+    if (!iter->thunk)
       gimplify_all_functions (iter);
 }
 

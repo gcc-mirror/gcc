@@ -658,6 +658,17 @@
   DONE;
 })
 
+(define_expand "vcond_mask_<mode><mode>"
+  [(set (match_operand:V 0 "register_operand" "")
+	(if_then_else:V
+	 (eq (match_operand:<tointvec> 3 "register_operand" "")
+	     (match_dup 4))
+	 (match_operand:V 2 "register_operand" "")
+	 (match_operand:V 1 "register_operand" "")))]
+  "TARGET_VX"
+  "operands[4] = CONST0_RTX (<tointvec>mode);")
+
+
 ; We only have HW support for byte vectors.  The middle-end is
 ; supposed to lower the mode if required.
 (define_insn "vec_permv16qi"

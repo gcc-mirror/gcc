@@ -1,3 +1,8 @@
+2020-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk 54380d42e6f
+	c++: Kill nested_udts
+
 2020-10-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

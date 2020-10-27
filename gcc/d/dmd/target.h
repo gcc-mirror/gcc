@@ -28,7 +28,6 @@ struct TargetC
 {
     unsigned longsize;            // size of a C 'long' or 'unsigned long' type
     unsigned long_doublesize;     // size of a C 'long double'
-    unsigned criticalSectionSize; // size of os critical section
 };
 
 struct TargetCPP
@@ -98,7 +97,6 @@ public:
     // Type sizes and support.
     unsigned alignsize(Type *type);
     unsigned fieldalign(Type *type);
-    unsigned critsecsize();
     Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
     int isVectorTypeSupported(int sz, Type *type);
     bool isVectorOpSupported(Type *type, TOK op, Type *t2 = NULL);

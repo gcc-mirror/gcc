@@ -35716,6 +35716,42 @@ vcvtq_high_bf16_f32 (bfloat16x8_t __inactive, float32x4_t __a)
   return __builtin_aarch64_bfcvtn2v8bf (__inactive, __a);
 }
 
+__extension__ extern __inline bfloat16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcopy_lane_bf16 (bfloat16x4_t __a, const int __lane1,
+		 bfloat16x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ extern __inline bfloat16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcopyq_lane_bf16 (bfloat16x8_t __a, const int __lane1,
+		  bfloat16x4_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ extern __inline bfloat16x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcopy_laneq_bf16 (bfloat16x4_t __a, const int __lane1,
+		  bfloat16x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
+__extension__ extern __inline bfloat16x8_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vcopyq_laneq_bf16 (bfloat16x8_t __a, const int __lane1,
+		   bfloat16x8_t __b, const int __lane2)
+{
+  return __aarch64_vset_lane_any (__aarch64_vget_lane_any (__b, __lane2),
+				  __a, __lane1);
+}
+
 #pragma GCC pop_options
 
 /* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */

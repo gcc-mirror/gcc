@@ -318,7 +318,15 @@ public:
     location_t loc1 = pk1->get_location ();
     location_t loc2 = pk2->get_location ();
 
-    return linemap_compare_locations (line_table, loc2, loc1);
+    if (int cmp = linemap_compare_locations (line_table, loc2, loc1))
+      return cmp;
+    if (int cmp = ((int)pk1->m_sd.get_epath_length ()
+		   - (int)pk2->m_sd.get_epath_length ()))
+      return cmp;
+    if (int cmp = strcmp (pk1->m_sd.m_d->get_kind (),
+			  pk2->m_sd.m_d->get_kind ()))
+      return cmp;
+    return 0;
   }
 
   const saved_diagnostic &m_sd;

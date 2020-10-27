@@ -67,9 +67,9 @@ void a2pampan (int (*(*(*[2])[n1])[n2]));
 int f2ia1_1 (int n, int [n][n]);            // { sg-message "previously declared as 'int\\\[n]\\\[n]' with bound argument 1" }
 int f2ia1_1 (int n, int[static n][n]);
 int f2ia1_1 (int n, int a[static n][n]) { return sizeof *a; }
-int f2ia1_1 (int n, int[static n + 1][n]);  // { dg-warning "argument 2 of type 'int\\\[n \\\+ 1]\\\[n]' declared with mismatched bound 'n \\\+ 1'" }
+int f2ia1_1 (int n, int[static n + 1][n]);  // { dg-warning "argument 2 of type 'int\\\[static  *n \\\+ 1]\\\[n]' declared with mismatched bound 'n \\\+ 1'" }
 
-int f2ias1_1 (int n, int [static n][n]);    // { dg-message "previously declared as 'int\\\[n]\\\[n]' with bound argument 1" }
+int f2ias1_1 (int n, int [static n][n]);    // { dg-message "previously declared as 'int\\\[static +n]\\\[n]' with bound argument 1" }
 int f2ias1_1 (int n, int[n][n]);
 int f2ias1_1 (int n, int a[++n][n])         // { dg-warning "argument 2 of type 'int\\\[\\\+\\\+n]\\\[n]' declared with mismatched bound ' ?\\+\\+n'" }
 { return sizeof *a; }

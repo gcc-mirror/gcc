@@ -5551,9 +5551,25 @@ package body Sem_Ch8 is
               and then N = Prefix (Parent (N))
               and then Is_Known_Unit (Parent (N))
             then
-               Error_Msg_Node_2 := Selector_Name (Parent (N));
-               Error_Msg_N -- CODEFIX
-                 ("\\missing `WITH &.&;`", Prefix (Parent (N)));
+               declare
+                  P : Node_Id := Parent (N);
+               begin
+                  Error_Msg_Name_1 := Chars (N);
+                  Error_Msg_Name_2 := Chars (Selector_Name (P));
+
+                  if Nkind (Parent (P)) = N_Selected_Component
+                    and then Is_Known_Unit (Parent (P))
+                  then
+                     P := Parent (P);
+                     Error_Msg_Name_3 := Chars (Selector_Name (P));
+                     Error_Msg_N -- CODEFIX
+                       ("\\missing `WITH %.%.%;`", N);
+
+                  else
+                     Error_Msg_N -- CODEFIX
+                       ("\\missing `WITH %.%;`", N);
+                  end if;
+               end;
             end if;
 
             --  Now check for possible misspellings

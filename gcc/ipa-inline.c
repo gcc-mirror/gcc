@@ -1947,7 +1947,7 @@ inline_small_functions (void)
     if (!node->inlined_to)
       {
 	if (!node->alias && node->analyzed
-	    && (node->has_gimple_body_p () || node->thunk.thunk_p)
+	    && (node->has_gimple_body_p () || node->thunk)
 	    && opt_for_fn (node->decl, optimize))
 	  {
 	    class ipa_fn_summary *info = ipa_fn_summaries->get (node);

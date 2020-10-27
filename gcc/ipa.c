@@ -475,7 +475,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		}
 
 	    }
-	  else if (cnode->thunk.thunk_p)
+	  else if (cnode->thunk)
 	    enqueue_node (cnode->callees->callee, &first, &reachable);
 
 	  /* If any reachable function has simd clones, mark them as
@@ -525,7 +525,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  /* We keep definitions of thunks and aliases in the boundary so
 	     we can walk to the ultimate alias targets and function symbols
 	     reliably.  */
-	  if (node->alias || node->thunk.thunk_p)
+	  if (node->alias || node->thunk)
 	    ;
 	  else if (!body_needed_for_clonning.contains (node->decl))
 	    {
@@ -537,7 +537,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	    }
 	  else if (!node->clone_of)
 	    gcc_assert (in_lto_p || DECL_RESULT (node->decl));
-	  if (node->definition && !node->alias && !node->thunk.thunk_p)
+	  if (node->definition && !node->alias && !node->thunk)
 	    {
 	      if (file)
 		fprintf (file, " %s", node->dump_name ());
@@ -547,7 +547,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      node->cpp_implicit_alias = false;
 	      node->alias = false;
 	      node->transparent_alias = false;
-	      node->thunk.thunk_p = false;
+	      node->thunk = false;
 	      node->weakref = false;
 	      /* After early inlining we drop always_inline attributes on
 		 bodies of functions that are still referenced (have their

@@ -181,7 +181,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 
       /* Add all thunks associated with the function.  */
       for (e = cnode->callers; e; e = e->next_caller)
-	if (e->caller->thunk.thunk_p && !e->caller->inlined_to)
+	if (e->caller->thunk && !e->caller->inlined_to)
 	  add_symbol_to_partition_1 (part, e->caller);
     }
 

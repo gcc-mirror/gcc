@@ -4070,6 +4070,16 @@ package body Sem_Ch12 is
             return True;
          end if;
 
+         --  In GNATprove mode, never instantiate bodies outside of the main
+         --  unit, as it does not use frontend/backend inlining in the way that
+         --  GNAT does, so does not benefit from such instantiations. On the
+         --  contrary, such instantiations may bring artificial constraints,
+         --  as for example such bodies may require preprocessing.
+
+         if GNATprove_Mode then
+            return False;
+         end if;
+
          --  If not, then again no need to instantiate bodies in generic units
 
          if Is_Generic_Unit (Cunit_Entity (Get_Code_Unit (N))) then
@@ -15379,13 +15389,21 @@ package body Sem_Ch12 is
          if Is_Type (E)
            and then Nkind (Parent (E)) = N_Subtype_Declaration
          then
+            --  Always preserve the flag Is_Generic_Actual_Type for GNATprove,
+            --  as it is needed to identify the subtype with the type it
+            --  renames, when there are conversions between access types
+            --  to these.
+
+            if GNATprove_Mode then
+               null;
+
             --  If the actual for E is itself a generic actual type from
             --  an enclosing instance, E is still a generic actual type
             --  outside of the current instance. This matter when resolving
             --  an overloaded call that may be ambiguous in the enclosing
             --  instance, when two of its actuals coincide.
 
-            if Is_Entity_Name (Subtype_Indication (Parent (E)))
+            elsif Is_Entity_Name (Subtype_Indication (Parent (E)))
               and then Is_Generic_Actual_Type
                          (Entity (Subtype_Indication (Parent (E))))
             then

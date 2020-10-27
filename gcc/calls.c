@@ -630,21 +630,32 @@ special_function_p (const_tree fndecl, int flags)
   return flags;
 }
 
+/* Return fnspec for DECL.  */
+
+static attr_fnspec
+decl_fnspec (tree fndecl)
+{
+  tree attr;
+  tree type = TREE_TYPE (fndecl);
+  if (type)
+    {
+      attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
+      if (attr)
+	{
+	  return TREE_VALUE (TREE_VALUE (attr));
+	}
+    }
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    return builtin_fnspec (fndecl);
+  return "";
+}
+
 /* Similar to special_function_p; return a set of ERF_ flags for the
    function FNDECL.  */
 static int
 decl_return_flags (tree fndecl)
 {
-  tree attr;
-  tree type = TREE_TYPE (fndecl);
-  if (!type)
-    return 0;
-
-  attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
-  if (!attr)
-    return 0;
-
-  attr_fnspec fnspec (TREE_VALUE (TREE_VALUE (attr)));
+  attr_fnspec fnspec = decl_fnspec (fndecl);
 
   unsigned int arg;
   if (fnspec.returns_arg (&arg))
@@ -1269,16 +1280,14 @@ get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
       value_range vr;
       if (query && query->range_of_expr (vr, exp, stmt))
 	{
+	  if (vr.undefined_p ())
+	    vr.set_varying (TREE_TYPE (exp));
 	  range_type = vr.kind ();
-	  if (!vr.undefined_p ())
-	    {
-	      min = wi::to_wide (vr.min ());
-	      max = wi::to_wide (vr.max ());
-	    }
+	  min = wi::to_wide (vr.min ());
+	  max = wi::to_wide (vr.max ());
 	}
       else
 	range_type = determine_value_range (exp, &min, &max);
-
     }
   else
     range_type = VR_VARYING;

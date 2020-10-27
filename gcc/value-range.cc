@@ -1772,19 +1772,30 @@ irange::irange_intersect (const irange &r)
     verify_range ();
 }
 
+// Signed 1-bits are strange.  You can't subtract 1, because you can't
+// represent the number 1.  This works around that for the invert routine.
+
 static wide_int inline
 subtract_one (const wide_int &x, tree type, wi::overflow_type &overflow)
 {
-  // A signed 1-bit bit-field, has a range of [-1,0] so subtracting +1
-  // overflows, since +1 is unrepresentable.  This is why we have an
-  // addition of -1 here.
   if (TYPE_SIGN (type) == SIGNED)
-    return wi::add (x, -1 , SIGNED, &overflow);
+    return wi::add (x, -1, SIGNED, &overflow);
   else
     return wi::sub (x, 1, UNSIGNED, &overflow);
 }
 
-/* Return the inverse of a range.  */
+// The analogous function for adding 1.
+
+static wide_int inline
+add_one (const wide_int &x, tree type, wi::overflow_type &overflow)
+{
+  if (TYPE_SIGN (type) == SIGNED)
+    return wi::sub (x, -1, SIGNED, &overflow);
+  else
+    return wi::add (x, 1, UNSIGNED, &overflow);
+}
+
+// Return the inverse of a range.
 
 void
 irange::invert ()
@@ -1881,7 +1892,7 @@ irange::invert ()
   // set the overflow bit.
   if (type_max != wi::to_wide (orig_range.m_base[i]))
     {
-      tmp = wi::add (wi::to_wide (orig_range.m_base[i]), 1, sign, &ovf);
+      tmp = add_one (wi::to_wide (orig_range.m_base[i]), ttype, ovf);
       m_base[nitems++] = wide_int_to_tree (ttype, tmp);
       m_base[nitems++] = wide_int_to_tree (ttype, type_max);
       if (ovf)

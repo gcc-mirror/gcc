@@ -1,7 +1,7 @@
 /* PR target/93122 */
 /* { dg-require-effective-target power10_ok } */
 /* { dg-do compile { target lp64 } } */
-/* { dg-options "-fstack-clash-protection -mprefixed -mcpu=power10" } */
+/* { dg-options "-fstack-clash-protection -mprefixed -mdejagnu-cpu=power10" } */
 
 void bar (char *);
 

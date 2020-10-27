@@ -452,7 +452,7 @@ package body Sem_Aggr is
          This_Range : constant Node_Id := Aggregate_Bounds (N);
          --  The aggregate range node of this specific sub-aggregate
 
-         This_Low  : constant Node_Id := Low_Bound (Aggregate_Bounds (N));
+         This_Low  : constant Node_Id := Low_Bound  (Aggregate_Bounds (N));
          This_High : constant Node_Id := High_Bound (Aggregate_Bounds (N));
          --  The aggregate bounds of this specific sub-aggregate
 
@@ -785,7 +785,7 @@ package body Sem_Aggr is
    -----------------------
 
    procedure Resolve_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
       Aggr_Subtyp : Entity_Id;
       --  The actual aggregate subtype. This is not necessarily the same as Typ
@@ -815,6 +815,8 @@ package body Sem_Aggr is
 
          return False;
       end Within_Aggregate;
+
+   --  Start of processing for Resolve_Aggregate
 
    begin
       --  Ignore junk empty aggregate resulting from parser error
@@ -1588,12 +1590,39 @@ package body Sem_Aggr is
          Index_Typ : Entity_Id)
       is
          Loc : constant Source_Ptr := Sloc (N);
+         Id  : constant Entity_Id  := Defining_Identifier (N);
+
+         -----------------------
+         -- Remove_References --
+         -----------------------
+
+         function Remove_Ref (N : Node_Id) return Traverse_Result;
+         --  Remove references to the entity Id after analysis, so it can be
+         --  properly reanalyzed after construct is expanded into a loop.
+
+         function Remove_Ref (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Identifier
+               and then Present (Entity (N))
+               and then Entity (N) = Id
+            then
+               Set_Entity (N, Empty);
+               Set_Etype (N, Empty);
+            end if;
+            Set_Analyzed (N, False);
+            return OK;
+         end Remove_Ref;
+
+         procedure Remove_References is new Traverse_Proc (Remove_Ref);
+
+         --  Local variables
 
          Choice : Node_Id;
          Dummy  : Boolean;
          Ent    : Entity_Id;
          Expr   : Node_Id;
-         Id     : Entity_Id;
+
+      --  Start of processing for Resolve_Iterated_Component_Association
 
       begin
          --  An element iterator specification cannot appear in
@@ -1646,26 +1675,28 @@ package body Sem_Aggr is
          --  The expression has to be analyzed once the index variable is
          --  directly visible.
 
-         Id := Defining_Identifier (N);
          Enter_Name (Id);
          Set_Etype (Id, Index_Typ);
          Set_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
 
-         --  Analyze a copy of the expression, to verify legality. We use
-         --  a copy because the expression will be analyzed anew when the
-         --  enclosing aggregate is expanded, and the construct is rewritten
-         --  as a loop with a new index variable.
+         --  Analyze the expression without expansion, to verify legality.
+         --  After analysis we remove references to the index variable because
+         --  the expression will be analyzed anew when the enclosing aggregate
+         --  is expanded, and the construct is rewritten as a loop with a new
+         --  index variable.
 
-         Expr := New_Copy_Tree (Expression (N));
-         Set_Parent (Expr, N);
-         Dummy := Resolve_Aggr_Expr (Expr, False);
+         Expr := Expression (N);
+
+         Expander_Mode_Save_And_Set (False);
+         Dummy := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
+         Expander_Mode_Restore;
+         Remove_References (Expr);
 
          --  An iterated_component_association may appear in a nested
          --  aggregate for a multidimensional structure: preserve the bounds
          --  computed for the expression, as well as the anonymous array
          --  type generated for it; both are needed during array expansion.
-         --  This does not work for more than two levels of nesting. ???
 
          if Nkind (Expr) = N_Aggregate then
             Set_Aggregate_Bounds (Expression (N), Aggregate_Bounds (Expr));
@@ -2572,7 +2603,7 @@ package body Sem_Aggr is
             --  In order to diagnose the semantic error we create a duplicate
             --  tree to analyze it and perform the check.
 
-            else
+            elsif Nkind (Assoc) /= N_Iterated_Component_Association then
                declare
                   Save_Analysis : constant Boolean := Full_Analysis;
                   Expr          : constant Node_Id :=
@@ -3026,6 +3057,7 @@ package body Sem_Aggr is
 
       Assoc  : Node_Id;
       Choice : Node_Id;
+      Expr   : Node_Id;
 
    begin
       Assoc := First (Deltas);
@@ -3062,8 +3094,12 @@ package body Sem_Aggr is
                end if;
                Enter_Name (Id);
 
-               Analyze_And_Resolve
-                 (New_Copy_Tree (Expression (Assoc)), Component_Type (Typ));
+               --  Resolve a copy of the expression, after setting
+               --  its parent properly to preserve its context.
+
+               Expr := New_Copy_Tree (Expression (Assoc));
+               Set_Parent (Expr, Assoc);
+               Analyze_And_Resolve (Expr, Component_Type (Typ));
                End_Scope;
             end;
 
@@ -3086,7 +3122,7 @@ package body Sem_Aggr is
                         Base_Type (Index_Type)
                      then
                         Error_Msg_NE
-                          ("choice does mat match index type of",
+                          ("choice does not match index type of &",
                            Choice, Typ);
                      end if;
                   else
@@ -3458,10 +3494,23 @@ package body Sem_Aggr is
 
       if Is_Entity_Name (A) and then Is_Type (Entity (A)) then
 
-         --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
-         --  must not have unknown discriminants.
+         --  AI05-0115: If the ancestor part is a subtype mark, the ancestor
+         --  must not have unknown discriminants. To catch cases where the
+         --  aggregate occurs at a place where the full view of the ancestor
+         --  type is visible and doesn't have unknown discriminants, but the
+         --  aggregate type was derived from a partial view that has unknown
+         --  discriminants, we check whether the aggregate type has unknown
+         --  discriminants (unknown discriminants were inherited), along
+         --  with checking that the partial view of the ancestor has unknown
+         --  discriminants. (It might be sufficient to replace the entire
+         --  condition with Has_Unknown_Discriminants (Typ), but that might
+         --  miss some cases, not clear, and causes error changes in some tests
+         --  such as class-wide cases, that aren't clearly improvements. ???)
 
-         if Has_Unknown_Discriminants (Entity (A)) then
+         if Has_Unknown_Discriminants (Entity (A))
+           or else (Has_Unknown_Discriminants (Typ)
+                      and then Partial_View_Has_Unknown_Discr (Entity (A)))
+         then
             Error_Msg_NE
               ("aggregate not available for type& whose ancestor "
                  & "has unknown discriminants", N, Typ);

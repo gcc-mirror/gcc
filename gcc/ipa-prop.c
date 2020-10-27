@@ -4211,7 +4211,10 @@ ipcp_transformation_initialize (void)
   if (!ipa_vr_hash_table)
     ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
   if (ipcp_transformation_sum == NULL)
-    ipcp_transformation_sum = ipcp_transformation_t::create_ggc (symtab);
+    {
+      ipcp_transformation_sum = ipcp_transformation_t::create_ggc (symtab);
+      ipcp_transformation_sum->disable_insertion_hook ();
+    }
 }
 
 /* Release the IPA CP transformation summary.  */

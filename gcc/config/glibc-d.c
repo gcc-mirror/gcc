@@ -42,23 +42,7 @@ glibc_d_os_builtins (void)
 #endif
 }
 
-/* Implement TARGET_D_CRITSEC_SIZE for Glibc targets.  */
-
-static unsigned
-glibc_d_critsec_size (void)
-{
-  /* This is the sizeof pthread_mutex_t.  */
-#ifdef GNU_USER_TARGET_D_CRITSEC_SIZE
-  return GNU_USER_TARGET_D_CRITSEC_SIZE;
-#else
-  return (POINTER_SIZE == 64) ? 40 : 24;
-#endif
-}
-
 #undef TARGET_D_OS_VERSIONS
 #define TARGET_D_OS_VERSIONS glibc_d_os_builtins
-
-#undef TARGET_D_CRITSEC_SIZE
-#define TARGET_D_CRITSEC_SIZE glibc_d_critsec_size
 
 struct gcc_targetdm targetdm = TARGETDM_INITIALIZER;

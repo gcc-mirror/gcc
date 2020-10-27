@@ -265,6 +265,18 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
     }									\
   while (0)
 
+/* For specific CPU macro definitions expected by the system headers,
+   different versions of VxWorks expect different forms of macros,
+   such as "_VX_CPU=..." on Vx7 and some variants of Vx6, or "CPU=..."
+   on all Vx6 and earlier.  Setup a common prefix macro here, that
+   arch specific ports can reuse.  */
+
+#if TARGET_VXWORKS7
+#define VX_CPU_PREFIX "_VX_"
+#else
+#define VX_CPU_PREFIX ""
+#endif
+
 #define VXWORKS_KIND VXWORKS_KIND_NORMAL
 
 /* The diab linker does not handle .gnu_attribute sections.  */

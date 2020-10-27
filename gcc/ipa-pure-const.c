@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "symtab-thunks.h"
 
 /* Lattice values for const and pure functions.  Everything starts out
    being const, then may drop to pure and then neither depending on
@@ -1025,11 +1026,11 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 		    flags_from_decl_or_type (fn->decl),
 		    fn->cannot_return_p ());
 
-  if (fn->thunk.thunk_p || fn->alias)
+  if (fn->thunk || fn->alias)
     {
       /* Thunk gets propagated through, so nothing interesting happens.  */
       gcc_assert (ipa);
-      if (fn->thunk.thunk_p && fn->thunk.virtual_offset_p)
+      if (fn->thunk && thunk_info::get (fn)->virtual_offset_p)
 	l->pure_const_state = IPA_NEITHER;
       return l;
     }

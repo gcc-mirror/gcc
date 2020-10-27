@@ -202,16 +202,6 @@ Target::fieldalign (Type *type)
   return align / BITS_PER_UNIT;
 }
 
-/* Return size of OS critical section.
-   Can't use the sizeof () calls directly since cross compiling is supported
-   and would end up using the host sizes rather than the target sizes.  */
-
-unsigned
-Target::critsecsize (void)
-{
-  return targetdm.d_critsec_size ();
-}
-
 /* Returns a Type for the va_list type of the target.  */
 
 Type *

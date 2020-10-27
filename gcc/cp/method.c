@@ -1924,13 +1924,24 @@ is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
 bool
 is_trivially_xible (enum tree_code code, tree to, tree from)
 {
-  tree expr;
-  expr = is_xible_helper (code, to, from, /*trivial*/true);
-
+  tree expr = is_xible_helper (code, to, from, /*trivial*/true);
   if (expr == NULL_TREE || expr == error_mark_node)
     return false;
   tree nt = cp_walk_tree_without_duplicates (&expr, check_nontriv, NULL);
   return !nt;
+}
+
+/* Returns true iff TO is nothrow assignable (if CODE is MODIFY_EXPR) or
+   constructible (otherwise) from FROM, which is a single type for
+   assignment or a list of types for construction.  */
+
+bool
+is_nothrow_xible (enum tree_code code, tree to, tree from)
+{
+  tree expr = is_xible_helper (code, to, from, /*trivial*/false);
+  if (expr == NULL_TREE || expr == error_mark_node)
+    return false;
+  return expr_noexcept_p (expr, tf_none);
 }
 
 /* Returns true iff TO is assignable (if CODE is MODIFY_EXPR) or

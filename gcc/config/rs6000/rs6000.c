@@ -9110,15 +9110,21 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
   bool reg_offset_p = reg_offset_addressing_ok_p (mode);
   bool quad_offset_p = mode_supports_dq_form (mode);
 
-  /* If this is an unaligned stvx/ldvx type address, discard the outer AND.  */
+  if (TARGET_ELF && RS6000_SYMBOL_REF_TLS_P (x))
+    return 0;
+
+  /* Handle unaligned altivec lvx/stvx type addresses.  */
   if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode)
       && GET_CODE (x) == AND
       && CONST_INT_P (XEXP (x, 1))
       && INTVAL (XEXP (x, 1)) == -16)
-    x = XEXP (x, 0);
+    {
+      x = XEXP (x, 0);
+      return (legitimate_indirect_address_p (x, reg_ok_strict)
+	      || legitimate_indexed_address_p (x, reg_ok_strict)
+	      || virtual_stack_registers_memory_p (x));
+    }
 
-  if (TARGET_ELF && RS6000_SYMBOL_REF_TLS_P (x))
-    return 0;
   if (legitimate_indirect_address_p (x, reg_ok_strict))
     return 1;
   if (TARGET_UPDATE

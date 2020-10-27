@@ -20,6 +20,7 @@
 
 #include <experimental/memory_resource>
 #include <cstdlib>
+#include <cstdint>
 #include <testsuite_hooks.h>
 
 #if (defined __sun__ || defined __VXWORKS__) && defined __i386__

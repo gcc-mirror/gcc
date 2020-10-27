@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "dbgcnt.h"
 #include "tree-vector-builder.h"
+#include "symtab-thunks.h"
 
 using namespace ipa_icf_gimple;
 
@@ -530,22 +531,14 @@ sem_function::equals_wpa (sem_item *item,
 
   m_compared_func = static_cast<sem_function *> (item);
 
-  if (cnode->thunk.thunk_p != cnode2->thunk.thunk_p)
-    return return_false_with_msg ("thunk_p mismatch");
+  if (cnode->thunk != cnode2->thunk)
+    return return_false_with_msg ("thunk mismatch");
+  if (cnode->former_thunk_p () != cnode2->former_thunk_p ())
+    return return_false_with_msg ("former_thunk_p mismatch");
 
-  if (cnode->thunk.thunk_p)
-    {
-      if (cnode->thunk.fixed_offset != cnode2->thunk.fixed_offset)
-        return return_false_with_msg ("thunk fixed_offset mismatch");
-      if (cnode->thunk.virtual_value != cnode2->thunk.virtual_value)
-        return return_false_with_msg ("thunk virtual_value mismatch");
-      if (cnode->thunk.indirect_offset != cnode2->thunk.indirect_offset)
-        return return_false_with_msg ("thunk indirect_offset mismatch");
-      if (cnode->thunk.this_adjusting != cnode2->thunk.this_adjusting)
-        return return_false_with_msg ("thunk this_adjusting mismatch");
-      if (cnode->thunk.virtual_offset_p != cnode2->thunk.virtual_offset_p)
-        return return_false_with_msg ("thunk virtual_offset_p mismatch");
-    }
+  if ((cnode->thunk || cnode->former_thunk_p ())
+      && thunk_info::get (cnode) != thunk_info::get (cnode2))
+    return return_false_with_msg ("thunk_info mismatch");
 
   /* Compare special function DECL attributes.  */
   if (DECL_FUNCTION_PERSONALITY (decl)
@@ -968,7 +961,7 @@ redirect_all_callers (cgraph_node *n, cgraph_node *to)
       /* Redirecting thunks to interposable symbols or symbols in other sections
 	 may not be supported by target output code.  Play safe for now and
 	 punt on redirection.  */
-      if (!e->caller->thunk.thunk_p)
+      if (!e->caller->thunk)
 	{
 	  struct cgraph_edge *nexte = e->next_caller;
           e->redirect_callee (to);
@@ -1362,7 +1355,7 @@ sem_function::init (ipa_icf_gimple::func_checker *checker)
 
   edge_count = n_edges_for_fn (func);
   cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
-  if (!cnode->thunk.thunk_p)
+  if (!cnode->thunk)
     {
       cfg_checksum = coverage_compute_cfg_checksum (func);
 
@@ -1407,12 +1400,7 @@ sem_function::init (ipa_icf_gimple::func_checker *checker)
   else
     {
       cfg_checksum = 0;
-      inchash::hash hstate;
-      hstate.add_hwi (cnode->thunk.fixed_offset);
-      hstate.add_hwi (cnode->thunk.virtual_value);
-      hstate.add_flag (cnode->thunk.this_adjusting);
-      hstate.add_flag (cnode->thunk.virtual_offset_p);
-      gcode_hash = hstate.end ();
+      gcode_hash = thunk_info::get (cnode)->hash ();
     }
 
   m_checker = NULL;
@@ -1494,7 +1482,7 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack,
   tree fndecl = node->decl;
   function *func = DECL_STRUCT_FUNCTION (fndecl);
 
-  if (!func || (!node->has_gimple_body_p () && !node->thunk.thunk_p))
+  if (!func || (!node->has_gimple_body_p () && !node->thunk))
     return NULL;
 
   if (lookup_attribute_by_prefix ("omp ", DECL_ATTRIBUTES (node->decl)) != NULL)

@@ -5793,7 +5793,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
 	      DECL_INITIAL (decl) = error_mark_node;
 	    }
 	}
-      if (gimple_has_body_p (decl) || (node && node->thunk.thunk_p))
+      if (gimple_has_body_p (decl) || (node && node->thunk))
 	{
 	  tree t;
 
@@ -10530,7 +10530,7 @@ set_call_expr_flags (tree decl, int flags)
   if (flags & ECF_RET1)
     DECL_ATTRIBUTES (decl)
       = tree_cons (get_identifier ("fn spec"),
-		   build_tree_list (NULL_TREE, build_string (1, "1")),
+		   build_tree_list (NULL_TREE, build_string (2, "1 ")),
 		   DECL_ATTRIBUTES (decl));
   if ((flags & ECF_TM_PURE) && flag_tm)
     apply_tm_attr (decl, get_identifier ("transaction_pure"));
@@ -10592,10 +10592,10 @@ build_common_builtin_nodes (void)
 
       if (!builtin_decl_explicit_p (BUILT_IN_MEMCPY))
 	local_define_builtin ("__builtin_memcpy", ftype, BUILT_IN_MEMCPY,
-			      "memcpy", ECF_NOTHROW | ECF_LEAF | ECF_RET1);
+			      "memcpy", ECF_NOTHROW | ECF_LEAF);
       if (!builtin_decl_explicit_p (BUILT_IN_MEMMOVE))
 	local_define_builtin ("__builtin_memmove", ftype, BUILT_IN_MEMMOVE,
-			      "memmove", ECF_NOTHROW | ECF_LEAF | ECF_RET1);
+			      "memmove", ECF_NOTHROW | ECF_LEAF);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_MEMCMP))
@@ -10613,7 +10613,7 @@ build_common_builtin_nodes (void)
 					ptr_type_node, integer_type_node,
 					size_type_node, NULL_TREE);
       local_define_builtin ("__builtin_memset", ftype, BUILT_IN_MEMSET,
-			    "memset", ECF_NOTHROW | ECF_LEAF | ECF_RET1);
+			    "memset", ECF_NOTHROW | ECF_LEAF);
     }
 
   /* If we're checking the stack, `alloca' can throw.  */
@@ -10942,8 +10942,15 @@ build_truth_vector_type_for_mode (poly_uint64 nunits, machine_mode mask_mode)
 {
   gcc_assert (mask_mode != BLKmode);
 
-  poly_uint64 vsize = GET_MODE_BITSIZE (mask_mode);
-  unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
+  unsigned HOST_WIDE_INT esize;
+  if (VECTOR_MODE_P (mask_mode))
+    {
+      poly_uint64 vsize = GET_MODE_BITSIZE (mask_mode);
+      esize = vector_element_size (vsize, nunits);
+    }
+  else
+    esize = 1;
+
   tree bool_type = build_nonstandard_boolean_type (esize);
 
   return make_vector_type (bool_type, nunits, mask_mode);

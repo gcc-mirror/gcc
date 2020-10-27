@@ -23,7 +23,7 @@ procedure Warn14 is
   package YY is
     type XX is tagged null record;
 
-    function F4 (Y : XX; U : Boolean) return Natural is (1); --  { dg-warning "formal parameter \"U\" is not referenced" }
+    function F4 (Y : XX; U : Boolean) return Natural is (1);
   end YY;
 
   XXX : YY.XX;

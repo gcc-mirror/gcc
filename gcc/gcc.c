@@ -880,7 +880,7 @@ proper position among the other output files.  */
 /* Define ASM_DEBUG_SPEC to be a spec suitable for translating '-g'
    to the assembler, when compiling assembly sources only.  */
 #ifndef ASM_DEBUG_SPEC
-# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_N_FLAG)
 /* If --gdwarf-N is supported and as can handle even compiler generated
    .debug_line with it, supply --gdwarf-N in ASM_DEBUG_OPTION_SPEC rather
    than in ASM_DEBUG_SPEC, so that it applies to both .s and .c etc.
@@ -921,7 +921,7 @@ proper position among the other output files.  */
 /* Define ASM_DEBUG_OPTION_SPEC to be a spec suitable for translating '-g'
    to the assembler when compiling all sources.  */
 #ifndef ASM_DEBUG_OPTION_SPEC
-# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_N_FLAG)
 #  define ASM_DEBUG_OPTION_DWARF_OPT					\
 	"%{%:dwarf-version-gt(4):--gdwarf-5 ;"				\
 	"%:dwarf-version-gt(3):--gdwarf-4 ;"				\

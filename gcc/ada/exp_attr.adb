@@ -8164,6 +8164,9 @@ package body Exp_Attr is
          while Present (Comp) loop
             if Nkind (Comp) = N_Range then
                Process_Range_Update (Temp, Comp, Expr, Typ);
+            elsif Nkind (Comp) = N_Subtype_Indication then
+               Process_Range_Update
+                 (Temp, Range_Expression (Constraint (Comp)), Expr, Typ);
             else
                Process_Component_Or_Element_Update (Temp, Comp, Expr, Typ);
             end if;

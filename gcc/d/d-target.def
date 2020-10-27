@@ -46,15 +46,5 @@ relating to the target operating system.",
  void, (void),
  hook_void_void)
 
-/* The sizeof CRITICAL_SECTION or pthread_mutex_t.  */
-DEFHOOK
-(d_critsec_size,
- "Returns the size of the data structure used by the target operating system\n\
-for critical sections and monitors.  For example, on Microsoft Windows this\n\
-would return the @code{sizeof(CRITICAL_SECTION)}, while other platforms that\n\
-implement pthreads would return @code{sizeof(pthread_mutex_t)}.",
- unsigned, (void),
- hook_uint_void_0)
-
 /* Close the 'struct gcc_targetdm' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

@@ -55,6 +55,9 @@ DEFTREECODE (USERDEF_LITERAL, "userdef_literal", tcc_exceptional, 3)
    or for the purpose of -Wsizeof-pointer-memaccess warning.  */
 DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)
 
+/* Like above, but enclosed in parentheses.  Used to suppress warnings.  */
+DEFTREECODE (PAREN_SIZEOF_EXPR, "paren_sizeof_expr", tcc_expression, 1)
+
 /* Used to represent a `for' statement. The operands are
    FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY, and FOR_SCOPE,
    respectively.  */
