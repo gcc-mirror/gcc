@@ -1486,6 +1486,28 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  continue;
 	}
 
+      if (is_a <bb_vec_info> (vinfo)
+	  && oprnd_info->first_dt == vect_internal_def)
+	{
+	  /* For BB vectorization, if all defs are the same do not
+	     bother to continue the build along the single-lane
+	     graph but use a splat of the scalar value.  */
+	  stmt_vec_info first_def = oprnd_info->def_stmts[0];
+	  for (j = 1; j < group_size; ++j)
+	    if (oprnd_info->def_stmts[j] != first_def)
+	      break;
+	  if (j == group_size
+	      /* But avoid doing this for loads where we may be
+		 able to CSE things.  */
+	      && !gimple_vuse (first_def->stmt))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Using a splat of the uniform operand\n");
+	      oprnd_info->first_dt = vect_external_def;
+	    }
+	}
+
       if (oprnd_info->first_dt != vect_internal_def
 	  && oprnd_info->first_dt != vect_reduction_def
 	  && oprnd_info->first_dt != vect_induction_def)
