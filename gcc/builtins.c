@@ -12960,6 +12960,15 @@ builtin_fnspec (tree callee)
 	return ".cO3R3";
       case BUILT_IN_BCOPY:
 	return ".cR3O3";
+      case BUILT_IN_BZERO:
+	return ".cO2";
+      case BUILT_IN_MEMCMP:
+      case BUILT_IN_MEMCMP_EQ:
+      case BUILT_IN_BCMP:
+      case BUILT_IN_STRNCMP:
+      case BUILT_IN_STRNCMP_EQ:
+      case BUILT_IN_STRNCASECMP:
+	return ".cR3R3";
 
       /* The following functions read memory pointed to by their
 	 first argument.  */
@@ -12987,9 +12996,13 @@ builtin_fnspec (tree callee)
 	return ".cR ";
 
       case BUILT_IN_INDEX:
+      case BUILT_IN_RINDEX:
       case BUILT_IN_STRCHR:
+      case BUILT_IN_STRLEN:
       case BUILT_IN_STRRCHR:
 	return ".cR ";
+      case BUILT_IN_STRNLEN:
+	return ".cR2";
 
       /* These read memory pointed to by the first argument.
 	 Allocating memory does not have any side-effects apart from
@@ -13014,6 +13027,11 @@ builtin_fnspec (tree callee)
       /* These read memory pointed to by the first and second arguments.  */
       case BUILT_IN_STRSTR:
       case BUILT_IN_STRPBRK:
+      case BUILT_IN_STRCASECMP:
+      case BUILT_IN_STRCSPN:
+      case BUILT_IN_STRSPN:
+      case BUILT_IN_STRCMP:
+      case BUILT_IN_STRCMP_EQ:
 	return ".cR R ";
       /* Freeing memory kills the pointed-to memory.  More importantly
 	 the call has to serve as a barrier for moving loads and stores
