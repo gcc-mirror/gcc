@@ -331,9 +331,9 @@ namespace __detail
       return _Expr<_Closure, _Tp>(_Closure(this->_M_closure));            \
     }
 
-    _DEFINE_EXPR_UNARY_OPERATOR(+, __unary_plus)
-    _DEFINE_EXPR_UNARY_OPERATOR(-, __negate)
-    _DEFINE_EXPR_UNARY_OPERATOR(~, __bitwise_not)
+    _DEFINE_EXPR_UNARY_OPERATOR(+, struct std::__unary_plus)
+    _DEFINE_EXPR_UNARY_OPERATOR(-, struct std::__negate)
+    _DEFINE_EXPR_UNARY_OPERATOR(~, struct std::__bitwise_not)
 
 #undef _DEFINE_EXPR_UNARY_OPERATOR
 
@@ -402,24 +402,24 @@ namespace __detail
       return _Expr<_Closure, _Value>(_Closure(__v, __e ()));            \
     }
 
-    _DEFINE_EXPR_BINARY_OPERATOR(+, __plus)
-    _DEFINE_EXPR_BINARY_OPERATOR(-, __minus)
-    _DEFINE_EXPR_BINARY_OPERATOR(*, __multiplies)
-    _DEFINE_EXPR_BINARY_OPERATOR(/, __divides)
-    _DEFINE_EXPR_BINARY_OPERATOR(%, __modulus)
-    _DEFINE_EXPR_BINARY_OPERATOR(^, __bitwise_xor)
-    _DEFINE_EXPR_BINARY_OPERATOR(&, __bitwise_and)
-    _DEFINE_EXPR_BINARY_OPERATOR(|, __bitwise_or)
-    _DEFINE_EXPR_BINARY_OPERATOR(<<, __shift_left)
-    _DEFINE_EXPR_BINARY_OPERATOR(>>, __shift_right)
-    _DEFINE_EXPR_BINARY_OPERATOR(&&, __logical_and)
-    _DEFINE_EXPR_BINARY_OPERATOR(||, __logical_or)
-    _DEFINE_EXPR_BINARY_OPERATOR(==, __equal_to)
-    _DEFINE_EXPR_BINARY_OPERATOR(!=, __not_equal_to)
-    _DEFINE_EXPR_BINARY_OPERATOR(<, __less)
-    _DEFINE_EXPR_BINARY_OPERATOR(>, __greater)
-    _DEFINE_EXPR_BINARY_OPERATOR(<=, __less_equal)
-    _DEFINE_EXPR_BINARY_OPERATOR(>=, __greater_equal)
+    _DEFINE_EXPR_BINARY_OPERATOR(+, struct std::__plus)
+    _DEFINE_EXPR_BINARY_OPERATOR(-, struct std::__minus)
+    _DEFINE_EXPR_BINARY_OPERATOR(*, struct std::__multiplies)
+    _DEFINE_EXPR_BINARY_OPERATOR(/, struct std::__divides)
+    _DEFINE_EXPR_BINARY_OPERATOR(%, struct std::__modulus)
+    _DEFINE_EXPR_BINARY_OPERATOR(^, struct std::__bitwise_xor)
+    _DEFINE_EXPR_BINARY_OPERATOR(&, struct std::__bitwise_and)
+    _DEFINE_EXPR_BINARY_OPERATOR(|, struct std::__bitwise_or)
+    _DEFINE_EXPR_BINARY_OPERATOR(<<, struct std::__shift_left)
+    _DEFINE_EXPR_BINARY_OPERATOR(>>, struct std::__shift_right)
+    _DEFINE_EXPR_BINARY_OPERATOR(&&, struct std::__logical_and)
+    _DEFINE_EXPR_BINARY_OPERATOR(||, struct std::__logical_or)
+    _DEFINE_EXPR_BINARY_OPERATOR(==, struct std::__equal_to)
+    _DEFINE_EXPR_BINARY_OPERATOR(!=, struct std::__not_equal_to)
+    _DEFINE_EXPR_BINARY_OPERATOR(<, struct std::__less)
+    _DEFINE_EXPR_BINARY_OPERATOR(>, struct std::__greater)
+    _DEFINE_EXPR_BINARY_OPERATOR(<=, struct std::__less_equal)
+    _DEFINE_EXPR_BINARY_OPERATOR(>=, struct std::__greater_equal)
 
 #undef _DEFINE_EXPR_BINARY_OPERATOR
 
@@ -442,20 +442,20 @@ namespace __detail
       return _Expr<_Closure, _Tp>(_Closure(__v));                        \
     }
 
-    _DEFINE_EXPR_UNARY_FUNCTION(abs, _Abs)
-    _DEFINE_EXPR_UNARY_FUNCTION(cos, _Cos)
-    _DEFINE_EXPR_UNARY_FUNCTION(acos, _Acos)
-    _DEFINE_EXPR_UNARY_FUNCTION(cosh, _Cosh)
-    _DEFINE_EXPR_UNARY_FUNCTION(sin, _Sin)
-    _DEFINE_EXPR_UNARY_FUNCTION(asin, _Asin)
-    _DEFINE_EXPR_UNARY_FUNCTION(sinh, _Sinh)
-    _DEFINE_EXPR_UNARY_FUNCTION(tan, _Tan)
-    _DEFINE_EXPR_UNARY_FUNCTION(tanh, _Tanh)
-    _DEFINE_EXPR_UNARY_FUNCTION(atan, _Atan)
-    _DEFINE_EXPR_UNARY_FUNCTION(exp, _Exp)
-    _DEFINE_EXPR_UNARY_FUNCTION(log, _Log)
-    _DEFINE_EXPR_UNARY_FUNCTION(log10, _Log10)
-    _DEFINE_EXPR_UNARY_FUNCTION(sqrt, _Sqrt)
+    _DEFINE_EXPR_UNARY_FUNCTION(abs, struct std::_Abs)
+    _DEFINE_EXPR_UNARY_FUNCTION(cos, struct std::_Cos)
+    _DEFINE_EXPR_UNARY_FUNCTION(acos, struct std::_Acos)
+    _DEFINE_EXPR_UNARY_FUNCTION(cosh, struct std::_Cosh)
+    _DEFINE_EXPR_UNARY_FUNCTION(sin, struct std::_Sin)
+    _DEFINE_EXPR_UNARY_FUNCTION(asin, struct std::_Asin)
+    _DEFINE_EXPR_UNARY_FUNCTION(sinh, struct std::_Sinh)
+    _DEFINE_EXPR_UNARY_FUNCTION(tan, struct std::_Tan)
+    _DEFINE_EXPR_UNARY_FUNCTION(tanh, struct std::_Tanh)
+    _DEFINE_EXPR_UNARY_FUNCTION(atan, struct std::_Atan)
+    _DEFINE_EXPR_UNARY_FUNCTION(exp, struct std::_Exp)
+    _DEFINE_EXPR_UNARY_FUNCTION(log, struct std::_Log)
+    _DEFINE_EXPR_UNARY_FUNCTION(log10, struct std::_Log10)
+    _DEFINE_EXPR_UNARY_FUNCTION(sqrt, struct std::_Sqrt)
 
 #undef _DEFINE_EXPR_UNARY_FUNCTION
 
@@ -545,8 +545,8 @@ namespace __detail
       return _Expr<_Closure, _Tp>(_Closure(__t, __v));                 \
     }
 
-_DEFINE_EXPR_BINARY_FUNCTION(atan2, _Atan2)
-_DEFINE_EXPR_BINARY_FUNCTION(pow, _Pow)
+_DEFINE_EXPR_BINARY_FUNCTION(atan2, struct std::_Atan2)
+_DEFINE_EXPR_BINARY_FUNCTION(pow, struct std::_Pow)
 
 #undef _DEFINE_EXPR_BINARY_FUNCTION
 
