@@ -256,6 +256,8 @@ public:
   void dump (bool simple=true) const;
   label_text get_desc (bool simple=true) const;
 
+  json::value *to_json () const;
+
   virtual const region_svalue *
   dyn_cast_region_svalue () const { return NULL; }
   virtual const constant_svalue *
@@ -804,7 +806,10 @@ public:
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_BINOP; }
-  virtual const binop_svalue *dyn_cast_binop_svalue () const { return this; }
+  const binop_svalue *dyn_cast_binop_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
@@ -1065,7 +1070,10 @@ public:
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_WIDENING; }
-  const widening_svalue *dyn_cast_widening_svalue () const { return this; }
+  const widening_svalue *dyn_cast_widening_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
@@ -1156,7 +1164,10 @@ public:
   compound_svalue (tree type, const binding_map &map);
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_COMPOUND; }
-  const compound_svalue *dyn_cast_compound_svalue () const { return this; }
+  const compound_svalue *dyn_cast_compound_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
@@ -1261,7 +1272,10 @@ public:
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_CONJURED; }
-  const conjured_svalue *dyn_cast_conjured_svalue () const { return this; }
+  const conjured_svalue *dyn_cast_conjured_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
@@ -1399,6 +1413,8 @@ public:
 
   virtual void dump_to_pp (pretty_printer *pp, bool simple) const = 0;
   void dump (bool simple) const;
+
+  json::value *to_json () const;
 
   bool non_null_p () const;
 
@@ -2482,6 +2498,7 @@ public:
   bool maybe_set_lhs (const svalue *result) const;
 
   tree get_arg_tree (unsigned idx) const;
+  tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;
@@ -2581,7 +2598,8 @@ class region_model
 
   bool maybe_update_for_edge (const superedge &edge,
 			      const gimple *last_stmt,
-			      region_model_context *ctxt);
+			      region_model_context *ctxt,
+			      rejected_constraint **out);
 
   const region *push_frame (function *fun, const vec<const svalue *> *arg_sids,
 			    region_model_context *ctxt);
@@ -2625,6 +2643,9 @@ class region_model
 			   region_model_context *ctxt);
   bool add_constraint (tree lhs, enum tree_code op, tree rhs,
 		       region_model_context *ctxt);
+  bool add_constraint (tree lhs, enum tree_code op, tree rhs,
+		       region_model_context *ctxt,
+		       rejected_constraint **out);
 
   const region *create_region_for_heap_alloc (const svalue *size_in_bytes);
   const region *create_region_for_alloca (const svalue *size_in_bytes);
@@ -2694,12 +2715,15 @@ class region_model
 				region_model_context *ctxt);
   bool apply_constraints_for_gcond (const cfg_superedge &edge,
 				    const gcond *cond_stmt,
-				    region_model_context *ctxt);
+				    region_model_context *ctxt,
+				    rejected_constraint **out);
   bool apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 				      const gswitch *switch_stmt,
-				      region_model_context *ctxt);
+				      region_model_context *ctxt,
+				      rejected_constraint **out);
   bool apply_constraints_for_exception (const gimple *last_stmt,
-					region_model_context *ctxt);
+					region_model_context *ctxt,
+					rejected_constraint **out);
 
   int poison_any_pointers_to_descendents (const region *reg,
 					  enum poison_kind pkind);
@@ -2711,6 +2735,9 @@ class region_model
 
   bool called_from_main_p () const;
   const svalue *get_initial_value_for_global (const region *reg) const;
+
+  void check_for_writable_region (const region* dest_reg,
+				  region_model_context *ctxt) const;
 
   /* Storing this here to avoid passing it around everywhere.  */
   region_model_manager *const m_mgr;
@@ -2768,6 +2795,9 @@ class region_model_context
      know how to handle the tree code of T at LOC.  */
   virtual void on_unexpected_tree_code (tree t,
 					const dump_location_t &loc) = 0;
+
+  /* Hook for clients to be notified when a function_decl escapes.  */
+  virtual void on_escaped_function (tree fndecl) = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -2794,6 +2824,8 @@ public:
   {
   }
   void on_unexpected_tree_code (tree, const dump_location_t &) OVERRIDE {}
+
+  void on_escaped_function (tree) OVERRIDE {}
 };
 
 /* A subclass of region_model_context for determining if operations fail
@@ -2844,6 +2876,24 @@ struct model_merger
   const region_model *m_model_b;
   const program_point &m_point;
   region_model *m_merged_model;
+};
+
+/* A record that can (optionally) be written out when
+   region_model::add_constraint fails.  */
+
+struct rejected_constraint
+{
+  rejected_constraint (const region_model &model,
+		     tree lhs, enum tree_code op, tree rhs)
+  : m_model (model), m_lhs (lhs), m_op (op), m_rhs (rhs)
+  {}
+
+  void dump_to_pp (pretty_printer *pp) const;
+
+  region_model m_model;
+  tree m_lhs;
+  enum tree_code m_op;
+  tree m_rhs;
 };
 
 /* A bundle of state.  */

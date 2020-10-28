@@ -36,6 +36,14 @@
 
 /* Internal data types for implementing the intrinsics.  */
 typedef unsigned int __mmask32;
+typedef int __v4si_u __attribute__ ((__vector_size__ (16),	\
+				     __may_alias__, __aligned__ (1)));
+typedef int __v8si_u __attribute__ ((__vector_size__ (32),	\
+				     __may_alias__, __aligned__ (1)));
+typedef long long __v2di_u __attribute__ ((__vector_size__ (16),	\
+					   __may_alias__, __aligned__ (1)));
+typedef long long __v4di_u __attribute__ ((__vector_size__ (32),	\
+					   __may_alias__, __aligned__ (1)));
 
 extern __inline __m256d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -265,6 +273,13 @@ _mm_maskz_mov_epi64 (__mmask8 __U, __m128i __A)
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_load_epi64 (void const *__P)
+{
+  return (__m256i) (*(__v4di *) __P);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_load_epi64 (__m256i __W, __mmask8 __U, void const *__P)
 {
   return (__m256i) __builtin_ia32_movdqa64load256_mask ((__v4di *) __P,
@@ -282,6 +297,13 @@ _mm256_maskz_load_epi64 (__mmask8 __U, void const *__P)
 							_mm256_setzero_si256 (),
 							(__mmask8)
 							__U);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_load_epi64 (void const *__P)
+{
+  return (__m128i) (*(__v2di *) __P);
 }
 
 extern __inline __m128i
@@ -363,6 +385,13 @@ _mm_maskz_mov_epi32 (__mmask8 __U, __m128i __A)
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_load_epi32 (void const *__P)
+{
+  return (__m256i) (*(__v8si *) __P);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_load_epi32 (__m256i __W, __mmask8 __U, void const *__P)
 {
   return (__m256i) __builtin_ia32_movdqa32load256_mask ((__v8si *) __P,
@@ -380,6 +409,13 @@ _mm256_maskz_load_epi32 (__mmask8 __U, void const *__P)
 							_mm256_setzero_si256 (),
 							(__mmask8)
 							__U);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_load_epi32 (void const *__P)
+{
+  return (__m128i) (*(__v4si *) __P);
 }
 
 extern __inline __m128i
@@ -405,11 +441,25 @@ _mm_maskz_load_epi32 (__mmask8 __U, void const *__P)
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_store_epi32 (void *__P, __m256i __A)
+{
+  *(__v8si *) __P = (__v8si) __A;
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_store_epi32 (void *__P, __mmask8 __U, __m256i __A)
 {
   __builtin_ia32_movdqa32store256_mask ((__v8si *) __P,
 					(__v8si) __A,
 					(__mmask8) __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_store_epi32 (void *__P, __m128i __A)
+{
+  *(__v4si *) __P = (__v4si) __A;
 }
 
 extern __inline void
@@ -719,6 +769,13 @@ _mm_mask_storeu_ps (void *__P, __mmask8 __U, __m128 __A)
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_loadu_epi64 (void const *__P)
+{
+  return (__m256i) (*(__v4di_u *) __P);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_loadu_epi64 (__m256i __W, __mmask8 __U, void const *__P)
 {
   return (__m256i) __builtin_ia32_loaddqudi256_mask ((const long long *) __P,
@@ -734,6 +791,13 @@ _mm256_maskz_loadu_epi64 (__mmask8 __U, void const *__P)
 						     (__v4di)
 						     _mm256_setzero_si256 (),
 						     (__mmask8) __U);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_loadu_epi64 (void const *__P)
+{
+  return (__m128i) (*(__v2di_u *) __P);
 }
 
 extern __inline __m128i
@@ -789,6 +853,13 @@ _mm_mask_storeu_epi64 (void *__P, __mmask8 __U, __m128i __A)
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_loadu_epi32 (void const *__P)
+{
+  return (__m256i) (*(__v8si_u *) __P);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_loadu_epi32 (__m256i __W, __mmask8 __U, void const *__P)
 {
   return (__m256i) __builtin_ia32_loaddqusi256_mask ((const int *) __P,
@@ -804,6 +875,13 @@ _mm256_maskz_loadu_epi32 (__mmask8 __U, void const *__P)
 						     (__v8si)
 						     _mm256_setzero_si256 (),
 						     (__mmask8) __U);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_loadu_epi32 (void const *__P)
+{
+  return (__m128i) (*(__v4si_u *) __P);
 }
 
 extern __inline __m128i
@@ -13730,6 +13808,13 @@ _mm256_permutex_pd (__m256d __X, const int __M)
 #endif
 
 #define _mm256_permutexvar_ps(A, B)	_mm256_permutevar8x32_ps ((B), (A))
+#define _mm256_mask_cvt_roundps_ph(A, B, C, D)	\
+  _mm256_mask_cvtps_ph ((A), (B), (C), (D))
+#define _mm256_maskz_cvt_roundps_ph(A, B, C)	\
+  _mm256_maskz_cvtps_ph ((A), (B), (C))
+#define _mm_mask_cvt_roundps_ph(A, B, C, D)	\
+  _mm_mask_cvtps_ph ((A), (B), (C), (D))
+#define _mm_maskz_cvt_roundps_ph(A, B, C) _mm_maskz_cvtps_ph ((A), (B), (C))
 
 #ifdef __DISABLE_AVX512VL__
 #undef __DISABLE_AVX512VL__

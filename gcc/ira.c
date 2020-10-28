@@ -1868,7 +1868,7 @@ ira_setup_alts (rtx_insn *insn)
 
 			case CT_MEMORY:
 			case CT_SPECIAL_MEMORY:
-			  if (MEM_P (op))
+			  if (MEM_P (extract_mem_from_operand (op)))
 			    goto op_success;
 			  win_p = true;
 			  break;

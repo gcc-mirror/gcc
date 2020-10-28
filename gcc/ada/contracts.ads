@@ -69,15 +69,16 @@ package Contracts is
    --  subprogram body Body_Id as if they appeared at the end of a declarative
    --  region. Pragmas in question are:
    --
-   --    Contract_Cases   (stand alone subprogram body)
-   --    Depends          (stand alone subprogram body)
-   --    Global           (stand alone subprogram body)
-   --    Postcondition    (stand alone subprogram body)
-   --    Precondition     (stand alone subprogram body)
+   --    Contract_Cases     (stand alone subprogram body)
+   --    Depends            (stand alone subprogram body)
+   --    Global             (stand alone subprogram body)
+   --    Postcondition      (stand alone subprogram body)
+   --    Precondition       (stand alone subprogram body)
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post
-   --    Test_Case        (stand alone subprogram body)
+   --    Subprogram_Variant (stand alone subprogram body)
+   --    Test_Case          (stand alone subprogram body)
 
    procedure Analyze_Entry_Or_Subprogram_Contract
      (Subp_Id   : Entity_Id;
@@ -91,6 +92,7 @@ package Contracts is
    --    Global
    --    Postcondition
    --    Precondition
+   --    Subprogram_Variant
    --    Test_Case
    --
    --  Freeze_Id is the entity of a [generic] package body or a [generic]

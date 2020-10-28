@@ -1580,7 +1580,7 @@ analyze_insns_in_loop (class loop *loop)
   struct var_to_expand *ves = NULL;
   iv_to_split **slot1;
   var_to_expand **slot2;
-  vec<edge> edges = get_loop_exit_edges (loop);
+  auto_vec<edge> edges = get_loop_exit_edges (loop);
   edge exit;
   bool can_apply = false;
 
@@ -1656,7 +1656,6 @@ analyze_insns_in_loop (class loop *loop)
       }
     }
 
-  edges.release ();
   free (body);
   return opt_info;
 }

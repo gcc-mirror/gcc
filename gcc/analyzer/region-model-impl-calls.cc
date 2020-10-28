@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "selftest.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
@@ -101,6 +102,14 @@ tree
 call_details::get_arg_tree (unsigned idx) const
 {
   return gimple_call_arg (m_call, idx);
+}
+
+/* Get the type of argument IDX.  */
+
+tree
+call_details::get_arg_type (unsigned idx) const
+{
+  return TREE_TYPE (gimple_call_arg (m_call, idx));
 }
 
 /* Get argument IDX at the callsite as an svalue.  */
@@ -296,6 +305,8 @@ region_model::impl_call_memcpy (const call_details &cd)
 	return;
     }
 
+  check_for_writable_region (dest_reg, cd.get_ctxt ());
+
   /* Otherwise, mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg);
 }
@@ -336,6 +347,8 @@ region_model::impl_call_memset (const call_details &cd)
 	    }
 	}
     }
+
+  check_for_writable_region (dest_reg, cd.get_ctxt ());
 
   /* Otherwise, mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg);
@@ -387,6 +400,8 @@ region_model::impl_call_strcpy (const call_details &cd)
 					 cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_sval);
+
+  check_for_writable_region (dest_reg, cd.get_ctxt ());
 
   /* For now, just mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg);

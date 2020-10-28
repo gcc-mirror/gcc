@@ -1,9 +1,13 @@
 ifeq ($(MULTIBUILDTOP),)
 BITS=$(shell if test -z "`$(CC) -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then \
     echo '64'; else echo '32'; fi)
+ARX=$(shell echo $(AR) | sed -e 's/-X[^ ]*//g')
 MAJOR=$(firstword $(subst :, ,$(libtool_VERSION)))
 all-local:
-	ar -X$(BITS) rc .libs/$(PACKAGE).a ../ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
-	ar -X$(BITS) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
+	-rm -f .libs/$(PACKAGE).a ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a
+	$(AR) rc .libs/$(PACKAGE).a .libs/$(PACKAGE).so.$(MAJOR)
+	$(AR) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
+	$(ARX) -X$(BITS) rc .libs/$(PACKAGE).a ../ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
+	$(ARX) -X$(BITS) rc ../pthread/$(PACKAGE)/.libs/$(PACKAGE).a ../pthread/ppc$(BITS)/$(PACKAGE)/.libs/$(PACKAGE).so.$(MAJOR)
 endif
 

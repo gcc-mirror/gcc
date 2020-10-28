@@ -13,16 +13,10 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -113,6 +107,12 @@
 --  a z (which is not used much) and also (as in the Wide_Text_IO case),
 --  we replace the prefix ada.wide_wide_text_io- by a-zt- and then
 --  the normal crunching rules are applied.
+
+--  An additional trick is used for Ada.Long_Long_Long_Integer_*_IO, where
+--  the Integer word is dropped.
+
+--  The units implementing the support of 128-bit types are crunched to 9 and
+--  System.Compare_Array_* is replaced with System.CA_* before crunching.
 
 --  These are the only irregularity required (so far) to keep the file names
 --  unique in the standard predefined libraries.

@@ -16,13 +16,10 @@ const SYS_EXECVE = 0
 //sys	Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
 //open64at(dirfd _C_int, path *byte, flags _C_int, mode Mode_t) _C_int
 
-//sys	ptrace(request int, id int, addr uintptr, data int, buff uintptr) (val int)
-//ptrace(request _C_int, id int, addr uintptr, data _C_int, buff *byte) _C_int
-
 //sys	ptrace64(request int, id int64, addr int64, data int, buff uintptr) (err error)
 //ptrace64(request _C_int, id int64, addr int64, data _C_int, buff *byte) _C_int
 
-func raw_ptrace(request int, pid int, addr *byte, data *byte) Errno {
+func raw_ptrace(request int, pid int, addr uintptr, data uintptr) Errno {
 	if request == _PTRACE_TRACEME {
 		// Convert to AIX ptrace call.
 		err := ptrace64(_PT_TRACE_ME, 0, 0, 0, 0)

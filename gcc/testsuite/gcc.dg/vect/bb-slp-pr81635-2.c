@@ -61,4 +61,4 @@ f4 (double *p, double *q)
     }
 }
 
-/* { dg-final { scan-tree-dump-not "basic block vectorized" "slp1" } } */
+/* { dg-final { scan-tree-dump-not "optimized: basic block" "slp1" } } */

@@ -1045,7 +1045,8 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
   rtx src2 = operands[2];
 
   /* Both source operands cannot be in memory.  */
-  if (MEM_P (src1) && MEM_P (src2))
+  if ((MEM_P (src1) || bcst_mem_operand (src1, mode))
+      && (MEM_P (src2) || bcst_mem_operand (src2, mode)))
     return false;
 
   /* Canonicalize operand order for commutative operators.  */
@@ -3524,6 +3525,13 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 {
   machine_mode mode = GET_MODE (dest);
   machine_mode cmpmode = GET_MODE (cmp);
+
+  /* Simplify trivial VEC_COND_EXPR to avoid ICE in pr97506.  */
+  if (rtx_equal_p (op_true, op_false))
+    {
+      emit_move_insn (dest, op_true);
+      return;
+    }
 
   /* In AVX512F the result of comparison is an integer mask.  */
   bool maskcmp = mode != cmpmode && ix86_valid_mask_cmp_mode (mode);
@@ -10225,12 +10233,16 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V4SF_V2DF_QI_INT:
+    case V2DF_FTYPE_V2DF_V4SF_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_QI_INT:
     case V4SF_FTYPE_V4SF_V2DF_V4SF_QI_INT:
+    case V4SF_FTYPE_V4SF_V2DF_V4SF_UQI_INT:
       nargs = 5;
       break;
     case V16SF_FTYPE_V16SF_INT_V16SF_HI_INT:
     case V8DF_FTYPE_V8DF_INT_V8DF_QI_INT:
+    case V8DF_FTYPE_V8DF_INT_V8DF_UQI_INT:
+    case V16SF_FTYPE_V16SF_INT_V16SF_UHI_INT:
       nargs_constant = 4;
       nargs = 5;
       break;
@@ -10413,6 +10425,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case USHORT_FTYPE_VOID:
     case UINT64_FTYPE_VOID:
     case UINT_FTYPE_VOID:
+    case UINT8_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
       nargs = 0;
       klass = load;
@@ -11199,6 +11212,19 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
       pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCCmode, FLAGS_REG),
 			const0_rtx);
+      emit_insn (gen_rtx_SET (target, pat));
+
+      return target;
+
+    case IX86_BUILTIN_TESTUI:
+      emit_insn (gen_testui ());
+
+      if (target == 0
+	  || !register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+
+      pat = gen_rtx_LTU (QImode, gen_rtx_REG (CCCmode, FLAGS_REG),
+			 const0_rtx);
       emit_insn (gen_rtx_SET (target, pat));
 
       return target;
@@ -12805,6 +12831,14 @@ rdseed_step:
       op0 = force_reg (mode, op0);
 
       emit_insn (gen_incssp (mode, op0));
+      return 0;
+
+    case IX86_BUILTIN_HRESET:
+      icode = CODE_FOR_hreset;
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      op0 = force_reg (SImode, op0);
+      emit_insn (gen_hreset (op0));
       return 0;
 
     case IX86_BUILTIN_RSTORSSP:

@@ -249,6 +249,10 @@ extern int can_compare_p (enum rtx_code, machine_mode,
    VALUE_MODE.  */
 extern bool can_vcond_compare_p (enum rtx_code, machine_mode, machine_mode);
 
+/* Return whether the backend can emit vector set instructions for inserting
+   element into vector at variable index position.  */
+extern bool can_vec_set_var_idx_p (machine_mode);
+
 extern rtx prepare_operand (enum insn_code, rtx, int, machine_mode,
 			    machine_mode, int);
 /* Emit a pair of rtl insns to compare two rtx's and to jump

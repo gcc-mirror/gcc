@@ -3719,7 +3719,7 @@ parser_build_unary_op (location_t loc, enum tree_code code, struct c_expr arg)
 
 /* Returns true if TYPE is a character type, *not* including wchar_t.  */
 
-static bool
+bool
 char_type_p (tree type)
 {
   return (type == char_type_node

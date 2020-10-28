@@ -76,14 +76,18 @@ struct inline_param_summary
      parameters REG_BR_PROB_BASE.
 
      Value 0 is reserved for compile time invariants. */
-  int change_prob;
+  short change_prob;
+  unsigned points_to_local_or_readonly_memory : 1;
   bool equal_to (const inline_param_summary &other) const
   {
-    return change_prob == other.change_prob;
+    return change_prob == other.change_prob
+	   && points_to_local_or_readonly_memory
+	      == other.points_to_local_or_readonly_memory;
   }
   bool useless_p (void) const
   {
-    return change_prob == REG_BR_PROB_BASE;
+    return change_prob == REG_BR_PROB_BASE
+	   && !points_to_local_or_readonly_memory;
   }
 };
 
@@ -239,7 +243,8 @@ public:
   predicate remap_after_inlining (class ipa_fn_summary *,
 		  		  class ipa_node_params *params_summary,
 			          class ipa_fn_summary *,
-			          vec<int>, vec<int>, clause_t, const predicate &);
+				  vec<int>, vec<HOST_WIDE_INT>,
+				  clause_t, const predicate &);
 
   void stream_in (class lto_input_block *);
   void stream_out (struct output_block *);

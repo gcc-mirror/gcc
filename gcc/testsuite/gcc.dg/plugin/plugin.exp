@@ -100,7 +100,7 @@ set plugin_test_list [list \
 	  diagnostic-test-paths-2.c \
 	  diagnostic-test-paths-3.c \
 	  diagnostic-test-paths-4.c \
-	  diagnostic-path-format-default.c \
+	  diagnostic-path-format-plain.c \
 	  diagnostic-path-format-none.c \
 	  diagnostic-path-format-separate-events.c \
 	  diagnostic-path-format-inline-events-1.c \

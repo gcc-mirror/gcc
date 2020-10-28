@@ -38,6 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "gimple-pretty-print.h"
 #include "tree-into-ssa.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "symtab-thunks.h"
 
 /* Return true when TYPE contains an polymorphic type and thus is interesting
    for devirtualization machinery.  */
@@ -1007,8 +1010,9 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	     Because we walked all the way to the beginning of thunk, we now
 	     see pointer &bar-thunk.fixed_offset and need to compensate
 	     for it.  */
-	  if (node->thunk.fixed_offset)
-	    offset -= node->thunk.fixed_offset * BITS_PER_UNIT;
+	  thunk_info *info = thunk_info::get (node);
+	  if (info && info->fixed_offset)
+	    offset -= info->fixed_offset * BITS_PER_UNIT;
 
 	  /* Dynamic casting has possibly upcasted the type
 	     in the hierarchy.  In this case outer type is less
@@ -1021,7 +1025,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	      /* If we compile thunk with virtual offset, the THIS pointer
 		 is adjusted by unknown value.  We can't thus use outer info
 		 at all.  */
-	      || node->thunk.virtual_offset_p)
+	      || (info && info->virtual_offset_p))
 	    {
 	      outer_type = NULL;
 	      if (instance)
@@ -1047,10 +1051,10 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	    }
 	  if (instance)
 	    {
+	      thunk_info *info = thunk_info::get (node);
 	      /* If method is expanded thunk, we need to apply thunk offset
 		 to instance pointer.  */
-	      if (node->thunk.virtual_offset_p
-		  || node->thunk.fixed_offset)
+	      if (info && (info->virtual_offset_p || info->fixed_offset))
 		*instance = NULL;
 	      else
 	        *instance = base_pointer;

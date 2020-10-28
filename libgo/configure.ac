@@ -33,10 +33,6 @@ AC_SUBST(CFLAGS)
 
 case ${host} in
   *-*-aix*)
-    # static hash tables crashes on AIX when libgo is built with O2
-    CFLAGS="$CFLAGS -fno-section-anchors"
-    GOCFLAGS="$GOCFLAGS -fno-section-anchors"
-
     # Check default architecture for FAT library creation
     if test -z "`$CC -x c -E /dev/null -g3 -o - | grep 64BIT`" ; then
         AIX_EXTRA_ARCH='64'
@@ -342,8 +338,14 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 [GOARCH=ppc64le],
 [GOARCH=ppc64])])
     ;;
-  riscv64-*-*)
-    GOARCH=riscv64
+  riscv*-*-*)
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+#if __riscv_xlen == 64
+#error 64-bit
+#endif
+])],
+[GOARCH=riscv],
+[GOARCH=riscv64])
     ;;
   s390*-*-*)
     AC_COMPILE_IFELSE([AC_LANG_SOURCE([
@@ -578,7 +580,7 @@ AC_C_BIGENDIAN
 
 GCC_CHECK_UNWIND_GETIPINFO
 
-AC_CHECK_HEADERS(port.h sched.h semaphore.h sys/file.h sys/mman.h syscall.h sys/epoll.h sys/event.h sys/inotify.h sys/ptrace.h sys/syscall.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/if.h net/if_arp.h net/route.h netpacket/packet.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/fs.h linux/ptrace.h linux/reboot.h netinet/in_syst.h netinet/ip.h netinet/ip_mroute.h netinet/if_ether.h)
+AC_CHECK_HEADERS(port.h sched.h semaphore.h sys/file.h sys/mman.h syscall.h sys/epoll.h sys/event.h sys/inotify.h sys/ptrace.h sys/syscall.h sys/sysctl.h sys/user.h sys/utsname.h sys/select.h sys/socket.h net/bpf.h net/if.h net/if_arp.h net/route.h netpacket/packet.h sys/prctl.h sys/mount.h sys/vfs.h sys/statfs.h sys/timex.h sys/sysinfo.h utime.h linux/ether.h linux/fs.h linux/ptrace.h linux/reboot.h netinet/in_syst.h netinet/ip.h netinet/ip_mroute.h netinet/if_ether.h)
 
 AC_CHECK_HEADERS([netinet/icmp6.h], [], [],
 [#include <netinet/in.h>

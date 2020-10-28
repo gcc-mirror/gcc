@@ -3,7 +3,8 @@
 /* { dg-do compile } */
 
 #include "../objc-obj-c++-shared/TestsuiteObject.h"
-#include "../objc-obj-c++-shared/runtime.h"
+/* NOTE: we are relying on the built-in type for objc_getClass being used
+   rather than the one that might come from including <objc/runtime.h>.  */
 #include <stddef.h>
 
 /* FIXME: This is temporary.  At the moment, the compiler, when
@@ -13,6 +14,9 @@
 #ifndef __NEXT_RUNTIME__
 # define objc_getClass(C) objc_get_class(C)
 #endif
+
+/* FIXME: casting of super is not permitted by clang, so that many of the
+   tests here are testing non-portable code.  */
 
 @protocol Func
 + (int) class_func0;

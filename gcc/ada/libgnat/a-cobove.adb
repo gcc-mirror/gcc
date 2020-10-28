@@ -30,6 +30,7 @@
 with Ada.Containers.Generic_Array_Sort;
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Bounded_Vectors is
 
@@ -349,6 +350,17 @@ package body Ada.Containers.Bounded_Vectors is
 
       Container.Insert (Container.Last + 1, New_Item, Count);
    end Append;
+
+   ----------------
+   -- Append_One --
+   ----------------
+
+   procedure Append_One (Container : in out Vector;
+                         New_Item  :        Element_Type)
+   is
+   begin
+      Insert (Container, Last_Index (Container) + 1, New_Item, 1);
+   end Append_One;
 
    --------------
    -- Capacity --
@@ -696,6 +708,17 @@ package body Ada.Containers.Bounded_Vectors is
       end if;
    end Element;
 
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 10) return Vector is
+   begin
+      return Result : Vector (Capacity) do
+         Reserve_Capacity (Result, Capacity);
+      end return;
+   end Empty;
+
    --------------
    -- Finalize --
    --------------
@@ -823,6 +846,16 @@ package body Ada.Containers.Bounded_Vectors is
    begin
       return Index_Type'First;
    end First_Index;
+
+   -----------------
+   -- New_Vector --
+   -----------------
+
+   function New_Vector (First, Last : Index_Type) return Vector
+   is
+   begin
+      return (To_Vector (Count_Type (Last - First + 1)));
+   end New_Vector;
 
    ---------------------
    -- Generic_Sorting --
@@ -2096,6 +2129,31 @@ package body Ada.Containers.Bounded_Vectors is
 
       Query_Element (Position.Container.all, Position.Index, Process);
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Vector)
+   is
+      First_Time : Boolean := True;
+      use System.Put_Images;
+   begin
+      Array_Before (S);
+
+      for X of V loop
+         if First_Time then
+            First_Time := False;
+         else
+            Simple_Array_Between (S);
+         end if;
+
+         Element_Type'Put_Image (S, X);
+      end loop;
+
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

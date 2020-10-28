@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "builtins.h"
 #include "tree-cfgcleanup.h"
+#include "options.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -122,7 +123,8 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   static bool
   equal (const value_range *a, const value_range *b)
     {
-      return a->equal_p (*b);
+      return (a->equal_p (*b)
+	      && types_compatible_p (a->type (), b->type ()));
     }
   static const bool empty_zero_p = true;
   static void
@@ -1220,6 +1222,73 @@ load_from_unmodified_param_or_agg (struct ipa_func_body_info *fbi,
     return -1;
 
   return index;
+}
+
+/* Walk pointer adjustemnts from OP (such as POINTER_PLUS and ADDR_EXPR)
+   to find original pointer.  Initialize RET to the pointer which results from
+   the walk.
+   If offset is known return true and initialize OFFSET_RET.  */
+
+bool
+unadjusted_ptr_and_unit_offset (tree op, tree *ret, poly_int64 *offset_ret)
+{
+  poly_int64 offset = 0;
+  bool offset_known = true;
+  int i;
+
+  for (i = 0; i < param_ipa_jump_function_lookups; i++)
+    {
+      if (TREE_CODE (op) == ADDR_EXPR)
+	{
+	  poly_int64 extra_offset = 0;
+	  tree base = get_addr_base_and_unit_offset (TREE_OPERAND (op, 0),
+						     &offset);
+	  if (!base)
+	    {
+	      base = get_base_address (TREE_OPERAND (op, 0));
+	      if (TREE_CODE (base) != MEM_REF)
+		break;
+	      offset_known = false;
+	    }
+	  else
+	    {
+	      if (TREE_CODE (base) != MEM_REF)
+		break;
+	      offset += extra_offset;
+	    }
+	  op = TREE_OPERAND (base, 0);
+	  if (mem_ref_offset (base).to_shwi (&extra_offset))
+	    offset += extra_offset;
+	  else
+	    offset_known = false;
+	}
+      else if (TREE_CODE (op) == SSA_NAME
+	       && !SSA_NAME_IS_DEFAULT_DEF (op))
+	{
+	  gimple *pstmt = SSA_NAME_DEF_STMT (op);
+
+	  if (gimple_assign_single_p (pstmt))
+	    op = gimple_assign_rhs1 (pstmt);
+	  else if (is_gimple_assign (pstmt)
+		   && gimple_assign_rhs_code (pstmt) == POINTER_PLUS_EXPR)
+	    {
+	      poly_int64 extra_offset = 0;
+	      if (ptrdiff_tree_p (gimple_assign_rhs2 (pstmt),
+		  &extra_offset))
+		offset += extra_offset;
+	      else
+		offset_known = false;
+	      op = gimple_assign_rhs1 (pstmt);
+	    }
+	  else
+	    break;
+	}
+      else
+	break;
+    }
+  *ret = op;
+  *offset_ret = offset;
+  return offset_known;
 }
 
 /* Given that an actual argument is an SSA_NAME (given in NAME) and is a result
@@ -3787,11 +3856,13 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
-      cgraph_node *spec_target = NULL;
 
-      /* FIXME: This may need updating for multiple calls.  */
+      auto_vec<cgraph_node *, 4> spec_targets;
       if (ie->speculative)
-	spec_target = ie->first_speculative_call_target ()->callee;
+	for (cgraph_edge *direct = ie->first_speculative_call_target ();
+	     direct;
+	     direct = direct->next_speculative_call_target ())
+	  spec_targets.safe_push (direct->callee);
 
       if (!opt_for_fn (node->decl, flag_indirect_inlining))
 	new_direct_edge = NULL;
@@ -3814,7 +3885,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       /* If speculation was removed, then we need to do nothing.  */
       if (new_direct_edge && new_direct_edge != ie
-	  && new_direct_edge->callee == spec_target)
+	  && spec_targets.contains (new_direct_edge->callee))
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
 	  top = IPA_EDGE_REF (cs);
@@ -4124,7 +4195,8 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_all_node_params (void)
 {
-  ggc_delete (ipa_node_params_sum);
+  if (ipa_node_params_sum)
+    ggc_delete (ipa_node_params_sum);
   ipa_node_params_sum = NULL;
 }
 
@@ -4368,7 +4440,8 @@ ipa_register_cgraph_hooks (void)
 static void
 ipa_unregister_cgraph_hooks (void)
 {
-  symtab->remove_cgraph_insertion_hook (function_insertion_hook_holder);
+  if (function_insertion_hook_holder)
+    symtab->remove_cgraph_insertion_hook (function_insertion_hook_holder);
   function_insertion_hook_holder = NULL;
 }
 
@@ -5795,4 +5868,14 @@ ipa_agg_value::equal_to (const ipa_agg_value &other)
   return offset == other.offset
 	 && operand_equal_p (value, other.value, 0);
 }
+
+/* Destructor also removing individual aggregate values.  */
+
+ipa_auto_call_arg_values::~ipa_auto_call_arg_values ()
+{
+  ipa_release_agg_values (m_known_aggs, false);
+}
+
+
+
 #include "gt-ipa-prop.h"

@@ -30,10 +30,32 @@
 ------------------------------------------------------------------------------
 
 with Ada.Text_IO.Integer_Aux;
+with System.Img_BIU; use System.Img_BIU;
+with System.Img_Int; use System.Img_Int;
+with System.Img_LLB; use System.Img_LLB;
+with System.Img_LLI; use System.Img_LLI;
+with System.Img_LLW; use System.Img_LLW;
+with System.Img_WIU; use System.Img_WIU;
+with System.Val_Int; use System.Val_Int;
+with System.Val_LLI; use System.Val_LLI;
 
 package body Ada.Text_IO.Integer_IO is
 
-   package Aux renames Ada.Text_IO.Integer_Aux;
+   package Aux_Int is new
+     Ada.Text_IO.Integer_Aux
+       (Integer,
+        Scan_Integer,
+        Set_Image_Integer,
+        Set_Image_Width_Integer,
+        Set_Image_Based_Integer);
+
+   package Aux_LLI is new
+     Ada.Text_IO.Integer_Aux
+       (Long_Long_Integer,
+        Scan_Long_Long_Integer,
+        Set_Image_Long_Long_Integer,
+        Set_Image_Width_Long_Long_Integer,
+        Set_Image_Based_Long_Long_Integer);
 
    Need_LLI : constant Boolean := Num'Base'Size > Integer'Size;
    --  Throughout this generic body, we distinguish between the case where type
@@ -57,9 +79,9 @@ package body Ada.Text_IO.Integer_IO is
 
    begin
       if Need_LLI then
-         Aux.Get_LLI (File, Long_Long_Integer (Item), Width);
+         Aux_LLI.Get (File, Long_Long_Integer (Item), Width);
       else
-         Aux.Get_Int (File, Integer (Item), Width);
+         Aux_Int.Get (File, Integer (Item), Width);
       end if;
 
    exception
@@ -70,20 +92,8 @@ package body Ada.Text_IO.Integer_IO is
      (Item  : out Num;
       Width : Field := 0)
    is
-      --  We depend on a range check to get Data_Error
-
-      pragma Unsuppress (Range_Check);
-      pragma Unsuppress (Overflow_Check);
-
    begin
-      if Need_LLI then
-         Aux.Get_LLI (Current_In, Long_Long_Integer (Item), Width);
-      else
-         Aux.Get_Int (Current_In, Integer (Item), Width);
-      end if;
-
-   exception
-      when Constraint_Error => raise Data_Error;
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -98,9 +108,9 @@ package body Ada.Text_IO.Integer_IO is
 
    begin
       if Need_LLI then
-         Aux.Gets_LLI (From, Long_Long_Integer (Item), Last);
+         Aux_LLI.Gets (From, Long_Long_Integer (Item), Last);
       else
-         Aux.Gets_Int (From, Integer (Item), Last);
+         Aux_Int.Gets (From, Integer (Item), Last);
       end if;
 
    exception
@@ -119,9 +129,9 @@ package body Ada.Text_IO.Integer_IO is
    is
    begin
       if Need_LLI then
-         Aux.Put_LLI (File, Long_Long_Integer (Item), Width, Base);
+         Aux_LLI.Put (File, Long_Long_Integer (Item), Width, Base);
       else
-         Aux.Put_Int (File, Integer (Item), Width, Base);
+         Aux_Int.Put (File, Integer (Item), Width, Base);
       end if;
    end Put;
 
@@ -131,11 +141,7 @@ package body Ada.Text_IO.Integer_IO is
       Base  : Number_Base := Default_Base)
    is
    begin
-      if Need_LLI then
-         Aux.Put_LLI (Current_Out, Long_Long_Integer (Item), Width, Base);
-      else
-         Aux.Put_Int (Current_Out, Integer (Item), Width, Base);
-      end if;
+      Put (Current_Out, Item, Width, Base);
    end Put;
 
    procedure Put
@@ -145,9 +151,9 @@ package body Ada.Text_IO.Integer_IO is
    is
    begin
       if Need_LLI then
-         Aux.Puts_LLI (To, Long_Long_Integer (Item), Base);
+         Aux_LLI.Puts (To, Long_Long_Integer (Item), Base);
       else
-         Aux.Puts_Int (To, Integer (Item), Base);
+         Aux_Int.Puts (To, Integer (Item), Base);
       end if;
    end Put;
 

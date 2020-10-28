@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "symtab-thunks.h"
 
 /* Lattice values for const and pure functions.  Everything starts out
    being const, then may drop to pure and then neither depending on
@@ -381,13 +382,11 @@ check_op (funct_state local, tree t, bool checking_write)
 	fprintf (dump_file, "    Volatile indirect ref is not const/pure\n");
       return;
     }
-  else if (t
-  	   && (INDIRECT_REF_P (t) || TREE_CODE (t) == MEM_REF)
-	   && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
-	   && !ptr_deref_may_alias_global_p (TREE_OPERAND (t, 0)))
+  else if (refs_local_or_readonly_memory_p (t))
     {
       if (dump_file)
-	fprintf (dump_file, "    Indirect ref to local memory is OK\n");
+	fprintf (dump_file, "    Indirect ref to local or readonly "
+		 "memory is OK\n");
       return;
     }
   else if (checking_write)
@@ -744,6 +743,8 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
   /* Do consider clobber as side effects before IPA, so we rather inline
      C++ destructors and keep clobber semantics than eliminate them.
 
+     Similar logic is in ipa-modref.
+
      TODO: We may get smarter during early optimizations on these and let
      functions containing only clobbers to be optimized more.  This is a common
      case of C++ destructors.  */
@@ -1025,11 +1026,11 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 		    flags_from_decl_or_type (fn->decl),
 		    fn->cannot_return_p ());
 
-  if (fn->thunk.thunk_p || fn->alias)
+  if (fn->thunk || fn->alias)
     {
       /* Thunk gets propagated through, so nothing interesting happens.  */
       gcc_assert (ipa);
-      if (fn->thunk.thunk_p && fn->thunk.virtual_offset_p)
+      if (fn->thunk && thunk_info::get (fn)->virtual_offset_p)
 	l->pure_const_state = IPA_NEITHER;
       return l;
     }
@@ -1152,6 +1153,9 @@ funct_state_summary_t::insert (cgraph_node *node, funct_state_d *state)
       new (state) funct_state_d (*a);
       free (a);
     }
+  else
+    /* Do not keep stale summaries.  */
+    funct_state_summaries->remove (node);
 }
 
 /* Called when new clone is inserted to callgraph late.  */

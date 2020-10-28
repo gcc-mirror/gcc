@@ -30,6 +30,7 @@
 with Ada.Unchecked_Deallocation;
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Indefinite_Doubly_Linked_Lists with
   SPARK_Mode => Off
@@ -183,6 +184,18 @@ is
    begin
       Insert (Container, No_Element, New_Item, Count);
    end Append;
+
+   ---------------
+   -- Append_One --
+   ---------------
+
+   procedure Append_One
+     (Container : in out List;
+      New_Item  : Element_Type)
+   is
+   begin
+      Insert (Container, No_Element, New_Item, 1);
+   end Append_One;
 
    ------------
    -- Assign --
@@ -1296,6 +1309,34 @@ is
          Process (Position.Node.Element.all);
       end;
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : List)
+   is
+      First_Time : Boolean := True;
+      use System.Put_Images;
+
+      procedure Put_Elem (Position : Cursor);
+      procedure Put_Elem (Position : Cursor) is
+      begin
+         if First_Time then
+            First_Time := False;
+         else
+            Simple_Array_Between (S);
+         end if;
+
+         Element_Type'Put_Image (S, Element (Position));
+      end Put_Elem;
+
+   begin
+      Array_Before (S);
+      Iterate (V, Put_Elem'Access);
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

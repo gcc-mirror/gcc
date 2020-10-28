@@ -1194,6 +1194,11 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (0, OPTION_MASK_ISA2_WAITPKG, "__builtin_ia32_tpause",
 	       UINT8_FTYPE_UNSIGNED_UINT64, IX86_BUILTIN_TPAUSE);
 
+  /* UINTR.  */
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_UINTR,
+	       "__builtin_ia32_testui",
+	       UINT8_FTYPE_VOID, IX86_BUILTIN_TESTUI);
+
   /* CLDEMOTE.  */
   def_builtin (0, OPTION_MASK_ISA2_CLDEMOTE, "__builtin_ia32_cldemote",
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLDEMOTE);

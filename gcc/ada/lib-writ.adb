@@ -268,17 +268,6 @@ package body Lib.Writ is
       --  Collect with lines for entries in the context clause of the given
       --  compilation unit, Cunit.
 
-      procedure Update_Tables_From_ALI_File;
-      --  Given an up to date ALI file (see Up_To_Date_ALI_file_Exists
-      --  function), update tables from the ALI information, including
-      --  specifically the Compilation_Switches table.
-
-      function Up_To_Date_ALI_File_Exists return Boolean;
-      --  If there exists an ALI file that is up to date, then this function
-      --  initializes the tables in the ALI spec to contain information on
-      --  this file (using Scan_ALI) and returns True. If no file exists,
-      --  or the file is not up to date, then False is returned.
-
       procedure Write_Unit_Information (Unit_Num : Unit_Number_Type);
       --  Write out the library information for one unit for which code is
       --  generated (includes unit line and with lines).
@@ -396,76 +385,6 @@ package body Lib.Writ is
             Next (Item);
          end loop;
       end Collect_Withs;
-
-      --------------------------------
-      -- Up_To_Date_ALI_File_Exists --
-      --------------------------------
-
-      function Up_To_Date_ALI_File_Exists return Boolean is
-         Name : File_Name_Type;
-         Text : Text_Buffer_Ptr;
-         Id   : Sdep_Id;
-         Sind : Source_File_Index;
-
-      begin
-         Opt.Check_Object_Consistency := True;
-         Read_Library_Info (Name, Text);
-
-         --  Return if we could not find an ALI file
-
-         if Text = null then
-            return False;
-         end if;
-
-         --  Return if ALI file has bad format
-
-         Initialize_ALI;
-
-         if Scan_ALI (Name, Text, False, Err => True) = No_ALI_Id then
-            return False;
-         end if;
-
-         --  If we have an OK ALI file, check if it is up to date
-         --  Note that we assume that the ALI read has all the entries
-         --  we have in our table, plus some additional ones (that can
-         --  come from expansion).
-
-         Id := First_Sdep_Entry;
-         for J in 1 .. Num_Sdep loop
-            Sind := Source_Index (Sdep_Table (J));
-
-            while Sdep.Table (Id).Sfile /= File_Name (Sind) loop
-               if Id = Sdep.Last then
-                  return False;
-               else
-                  Id := Id + 1;
-               end if;
-            end loop;
-
-            if Sdep.Table (Id).Stamp /= Time_Stamp (Sind) then
-               return False;
-            end if;
-         end loop;
-
-         return True;
-      end Up_To_Date_ALI_File_Exists;
-
-      ---------------------------------
-      -- Update_Tables_From_ALI_File --
-      ---------------------------------
-
-      procedure Update_Tables_From_ALI_File is
-      begin
-         --  Build Compilation_Switches table
-
-         Compilation_Switches.Init;
-
-         for J in First_Arg_Entry .. Args.Last loop
-            Compilation_Switches.Increment_Last;
-            Compilation_Switches.Table (Compilation_Switches.Last) :=
-              Args.Table (J);
-         end loop;
-      end Update_Tables_From_ALI_File;
 
       ----------------------------
       -- Write_Unit_Information --
@@ -1095,8 +1014,7 @@ package body Lib.Writ is
          return;
       end if;
 
-      --  Build sorted source dependency table. We do this right away, because
-      --  it is referenced by Up_To_Date_ALI_File_Exists.
+      --  Build sorted source dependency table.
 
       for Unum in Units.First .. Last_Unit loop
          if Cunit_Entity (Unum) = Empty
@@ -1130,20 +1048,8 @@ package body Lib.Writ is
 
       Lib.Sort (Sdep_Table (1 .. Num_Sdep));
 
-      --  If we are not generating code, and there is an up to date ALI file
-      --  file accessible, read it, and acquire the compilation arguments from
-      --  this file. In GNATprove mode, always generate the ALI file, which
-      --  contains a special section for formal verification.
-
-      if Operating_Mode /= Generate_Code and then not GNATprove_Mode then
-         if Up_To_Date_ALI_File_Exists then
-            Update_Tables_From_ALI_File;
-            return;
-         end if;
-      end if;
-
-      --  Otherwise acquire compilation arguments and prepare to write out a
-      --  new ali file.
+      --  Acquire compilation arguments and prepare to write out a new ali
+      --  file.
 
       Create_Output_Library_Info;
 

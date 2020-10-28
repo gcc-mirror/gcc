@@ -98,6 +98,13 @@ package body System.Compare_Array_Unsigned_8 is
             end if;
          end loop;
 
+         pragma Assert (Left_Len >= Bytes_Compared_As_Words);
+         pragma Assert (Right_Len >= Bytes_Compared_As_Words);
+         --  Left_Len and Right_Len are always greater or equal to
+         --  Bytes_Compared_As_Words because:
+         --    * Compare_Len is min (Left_Len, Right_Len)
+         --    * Words_To_Compare = Compare_Len / 4
+         --    * Bytes_Compared_As_Words = Words_To_Compare * 4
          return Compare_Array_U8_Unaligned
                   (AddA (Left,  Address (Bytes_Compared_As_Words)),
                    AddA (Right, Address (Bytes_Compared_As_Words)),

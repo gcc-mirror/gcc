@@ -1,4 +1,7 @@
 /* { dg-options "-std=c++11" } */
+#ifdef _AIX
+#define _STD_TYPES_T
+#endif
 #include <cstdio>
 #include <cstdint>
 /* Missing <cinttypes>.  */

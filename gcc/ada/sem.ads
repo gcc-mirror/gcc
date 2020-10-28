@@ -671,6 +671,13 @@ package Sem is
    --  Suppress argument is present, then the analysis is done with the
    --  specified check suppressed (can be All_Checks to suppress all checks).
 
+   procedure Insert_Before_First_Source_Declaration
+     (Stmt  : Node_Id;
+      Decls : List_Id);
+   --  Insert node Stmt before the first source declaration of the related
+   --  subprogram's body. If no such declaration exists, Stmt becomes the last
+   --  declaration.
+
    function External_Ref_In_Generic (E : Entity_Id) return Boolean;
    --  Return True if we are in the context of a generic and E is
    --  external (more global) to it.

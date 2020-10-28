@@ -645,8 +645,8 @@ COMM
 HAVE_XZ_FALSE
 HAVE_XZ_TRUE
 XZ
-HAVE_DSYMUTIL_FALSE
-HAVE_DSYMUTIL_TRUE
+USE_DSYMUTIL_FALSE
+USE_DSYMUTIL_TRUE
 HAVE_OBJCOPY_DEBUGLINK_FALSE
 HAVE_OBJCOPY_DEBUGLINK_TRUE
 READELF
@@ -13860,12 +13860,12 @@ $as_echo "no" >&6; }
 fi
 
 
- if test -n "${DSYMUTIL}"; then
-  HAVE_DSYMUTIL_TRUE=
-  HAVE_DSYMUTIL_FALSE='#'
+ if test -n "${DSYMUTIL}" -a "$FORMAT_FILE" = "macho.lo"; then
+  USE_DSYMUTIL_TRUE=
+  USE_DSYMUTIL_FALSE='#'
 else
-  HAVE_DSYMUTIL_TRUE='#'
-  HAVE_DSYMUTIL_FALSE=
+  USE_DSYMUTIL_TRUE='#'
+  USE_DSYMUTIL_FALSE=
 fi
 
 
@@ -14271,8 +14271,8 @@ if test -z "${HAVE_OBJCOPY_DEBUGLINK_TRUE}" && test -z "${HAVE_OBJCOPY_DEBUGLINK
   as_fn_error $? "conditional \"HAVE_OBJCOPY_DEBUGLINK\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_DSYMUTIL_TRUE}" && test -z "${HAVE_DSYMUTIL_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_DSYMUTIL\" was never defined.
+if test -z "${USE_DSYMUTIL_TRUE}" && test -z "${USE_DSYMUTIL_FALSE}"; then
+  as_fn_error $? "conditional \"USE_DSYMUTIL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_XZ_TRUE}" && test -z "${HAVE_XZ_FALSE}"; then

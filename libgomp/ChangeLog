@@ -1,3 +1,172 @@
+2020-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-41.c: New test.
+
+2020-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* icv.c (omp_get_initial_device): Remove including corresponding
+	ialias.
+	* icv-device.c (omp_get_initial_device): New function.  Return
+	gomp_get_num_devices ().  Add ialias.
+	* target.c (resolve_device): Don't fail with
+	OMP_TARGET_OFFLOAD=mandatory if device_id is equal to
+	gomp_get_num_devices ().
+	(omp_target_alloc, omp_target_free, omp_target_is_present,
+	omp_target_memcpy, omp_target_memcpy_rect, omp_target_associate_ptr,
+	omp_target_disassociate_ptr, omp_pause_resource): Use
+	gomp_get_num_devices () instead of GOMP_DEVICE_HOST_FALLBACK on the
+	first use in the functions, in uses dominated by the
+	gomp_get_num_devices call use num_devices_openmp instead.
+	* libgomp.texi (omp_get_initial_device): Document.
+	* config/gcn/icv-device.c (omp_get_initial_device): New function.
+	Add ialias.
+	* config/nvptx/icv-device.c (omp_get_initial_device): Likewise.
+	* testsuite/libgomp.c/target-40.c: New test.
+
+2020-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (parse_target_offload): Change new_offload var type to int,
+	preinitialize to -1, remove found var and test new_offload != -1
+	instead of found.
+
+2020-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (gomp_target_init): Inside of the function, use automatic
+	variables corresponding to num_devices, num_devices_openmp and devices
+	global variables and update the globals only at the end of the
+	function.
+
+2020-10-20  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* env.c (gomp_target_offload_var): New.
+	(parse_target_offload): New.
+	(handle_omp_display_env): Print value of OMP_TARGET_OFFLOAD.
+	(initialize_env): Parse OMP_TARGET_OFFLOAD.
+	* libgomp.h (gomp_target_offload_t): New.
+	(gomp_target_offload_var): New.
+	* libgomp.texi (OMP_TARGET_OFFLOAD): New section.
+	* target.c (resolve_device): Generate error if device not found and
+	offloading is mandatory.
+	(gomp_target_fallback): Generate error if offloading is mandatory.
+	(GOMP_target): Add argument in call to gomp_target_fallback.
+	(GOMP_target_ext): Likewise.
+	(gomp_target_data_fallback): Generate error if offloading is mandatory.
+	(GOMP_target_data): Add argument in call to gomp_target_data_fallback.
+	(GOMP_target_data_ext): Likewise.
+	(gomp_target_task_fn): Add argument in call to gomp_target_fallback.
+	(gomp_target_init): Return early if offloading is disabled.
+
+2020-10-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* libgomp.texi (omp_get_max_active_levels): Modify description.
+	(omp_get_supported_active_levels): Make descriptions consistent.
+
+2020-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (omp_get_supported_active_levels): Fix a typo.
+
+2020-10-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* env.c (gomp_max_active_levels_var): Initialize to
+	gomp_supported_active_levels.
+	(initialize_env): Limit gomp_max_active_levels_var to be at most
+	equal to gomp_supported_active_levels.
+	* fortran.c (omp_get_supported_active_levels): Add ialias_redirect.
+	(omp_get_supported_active_levels_): New.
+	* icv.c (omp_set_max_active_levels): Limit gomp_max_active_levels_var
+	to at most equal to gomp_supported_active_levels.
+	(omp_get_supported_active_levels): New.
+	* libgomp.h (gomp_supported_active_levels): New.
+	* libgomp.map (OMP_5.0.1): Add omp_get_supported_active_levels and
+	omp_get_supported_active_levels_.
+	* libgomp.texi (omp_get_supported_active_levels): New.
+	(omp_set_max_active_levels): Update.  Add reference to
+	omp_get_supported_active_levels.
+	* omp.h.in (omp_get_supported_active_levels): New.
+	* omp_lib.f90.in (omp_get_supported_active_levels): New.
+	* omp_lib.h.in (omp_get_supported_active_levels): New.
+	* testsuite/libgomp.c/lib-2.c (main): Check omp_get_max_active_levels
+	against omp_get_supported_active_levels.
+	* testsuite/libgomp.fortran/lib4.f90 (lib4): Likewise.
+
+2020-10-11  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/t-aix: Delete and recreate libgomp before creating
+	FAT library.
+
+2020-10-08  Tom de Vries  <tdevries@suse.de>
+
+	PR libgomp/81802
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_run): Report launch
+	dimensions.
+
+2020-10-06  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-fortran/declare-5.f90: Add xfail for PR92790.
+
+2020-10-06  Tom de Vries  <tdevries@suse.de>
+
+	PR middle-end/90861
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Remove xfail.
+
+2020-10-05  Tom de Vries  <tdevries@suse.de>
+
+	PR fortran/95654
+	* testsuite/libgomp.fortran/pr95654.f90: New test.
+
+2020-10-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	* Makefile.in: Regenerate with automake 1.15.1.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2020-09-30  Andrew Stubbs  <ams@codesourcery.com>
+
+	* parallel.c (gomp_resolve_num_threads): Ignore nest_var on nvptx
+	and amdgcn targets.
+
+2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/declare-target-3.f90: New test.
+
+2020-09-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/bar.c (gomp_barrier_wait_end): Skip the barrier if the
+	total number of threads is one.
+	(gomp_team_barrier_wake): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* config/nvptx/bar.c (gomp_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wake): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* testsuite/libgomp.c-c++-common/nested-parallel-unbalanced.c: New test.
+
+2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/96390
+	* testsuite/libgomp.c++/pr96390.C: New test.
+	* testsuite/libgomp.c-c++-common/pr96390.c: New test.
+
+2020-09-27  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/t-aix: Use $(AR) without -X32_64.
+
+2020-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-25.c: New test.
+
+2020-09-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95654
+	* testsuite/libgomp.fortran/pr66199-5.f90: Make stop codes unique.
+
+2020-09-22  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (link_ptx): Print elog if cuLinkComplete call
+	fails.
+
 2020-09-16  Nathan Sidwell  <nathan@acm.org>
 
 	* testsuite/libgomp.c++/udr-3.C: Add missing ctor.

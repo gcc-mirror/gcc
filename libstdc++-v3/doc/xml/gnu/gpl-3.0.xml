@@ -1,9 +1,9 @@
-<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0"
 	  xml:id="appendix.gpl-3.0"><info><title>
     <acronym>GNU</acronym> General Public License version 3
   </title></info>
   <?dbhtml filename="appendix_gpl.html"?>
-  
+
   <para>
     Version 3, 29 June 2007
   </para>

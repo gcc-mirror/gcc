@@ -150,6 +150,12 @@ private package Ada.Text_IO.Generic_Aux is
       Ptr    : in out Integer);
    --  Same as above, but no indication if character is loaded
 
+   procedure Load_Integer
+     (File : File_Type;
+      Buf  : out String;
+      Ptr  : in out Natural);
+   --  Loads a possibly signed integer literal value
+
    function Nextc (File : File_Type) return Integer;
    --  Like Getc, but includes a call to Ungetc, so that the file
    --  pointer is not moved by the call.

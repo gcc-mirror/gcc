@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 with Ada.Containers.Helpers;
 private with Ada.Finalization;
 private with Ada.Streams;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type is private;
@@ -55,7 +56,9 @@ is
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
-      Iterator_Element  => Element_Type;
+      Iterator_Element  => Element_Type,
+      Aggregate         => (Empty       => Empty,
+                            Add_Unnamed => Append_One);
 
    pragma Preelaborable_Initialization (List);
 
@@ -63,6 +66,7 @@ is
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_List : constant List;
+   function Empty return List;
 
    No_Element : constant Cursor;
 
@@ -151,6 +155,10 @@ is
      (Container : in out List;
       New_Item  : Element_Type;
       Count     : Count_Type := 1);
+
+   procedure Append_One
+     (Container : in out List;
+      New_Item  : Element_Type);
 
    procedure Delete
      (Container : in out List;
@@ -275,7 +283,10 @@ private
         Last   : Node_Access := null;
         Length : Count_Type := 0;
         TC     : aliased Tamper_Counts;
-     end record;
+     end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : List);
 
    overriding procedure Adjust (Container : in out List);
 
@@ -381,6 +392,7 @@ private
    --  Returns a pointer to the element designated by Position.
 
    Empty_List : constant List := (Controlled with others => <>);
+   function Empty return List is (Empty_List);
 
    No_Element : constant Cursor := Cursor'(null, null);
 

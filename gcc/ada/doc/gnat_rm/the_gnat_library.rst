@@ -505,6 +505,18 @@ This package provides subprograms for Text_IO for unbounded
 wide wide strings, avoiding the necessity for an intermediate operation
 with ordinary wide wide strings.
 
+.. _`Ada.Task_Initialization_(a-tasini.ads)`:
+
+``Ada.Task_Initialization`` (:file:`a-tasini.ads`)
+==================================================
+
+.. index:: Ada.Task_Initialization (a-tasini.ads)
+
+This package provides a way to set a global initialization handler that
+is automatically invoked whenever a task is activated. Handlers are
+parameterless procedures. Note that such a handler is only invoked for
+those tasks activated after the handler is set.
+
 .. _`Ada.Text_IO.C_Streams_(a-tiocst.ads)`:
 
 ``Ada.Text_IO.C_Streams`` (:file:`a-tiocst.ads`)

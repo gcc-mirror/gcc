@@ -26,6 +26,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
+with System.Put_Images;
 
 package body Ada.Containers.Indefinite_Holders is
 
@@ -228,6 +229,22 @@ package body Ada.Containers.Indefinite_Holders is
 
       B := B - 1;
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Holder)
+   is
+      use System.Put_Images;
+   begin
+      Array_Before (S);
+      if not Is_Empty (V) then
+         Element_Type'Put_Image (S, Element (V));
+      end if;
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

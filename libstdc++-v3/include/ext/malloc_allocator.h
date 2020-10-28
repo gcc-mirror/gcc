@@ -102,8 +102,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Tp*
       allocate(size_type __n, const void* = 0)
       {
-	if (__n > this->_M_max_size())
-	  std::__throw_bad_alloc();
+	if (__builtin_expect(__n > this->_M_max_size(), false))
+	  {
+	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	    // 3190. allocator::allocate sometimes returns too little storage
+	    if (__n > (std::size_t(-1) / sizeof(_Tp)))
+	      std::__throw_bad_array_new_length();
+	    std::__throw_bad_alloc();
+	  }
 
 	_Tp* __ret = 0;
 #if __cpp_aligned_new

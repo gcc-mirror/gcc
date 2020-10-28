@@ -175,6 +175,8 @@ public:
   void print_source_line (pretty_printer *pp) const;
   void dump () const;
 
+  json::object *to_json () const;
+
   hashval_t hash () const;
   bool operator== (const program_point &other) const
   {

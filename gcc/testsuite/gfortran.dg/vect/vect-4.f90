@@ -13,4 +13,3 @@ Y = Y + A * X
 END
 
 ! { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } 
-! { dg-final { scan-tree-dump-times "accesses have the same alignment." 1 "vect" } }

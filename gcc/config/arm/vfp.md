@@ -387,31 +387,15 @@
    (set_attr "arch"           "t2,any,any,any,a,t2,any,any,any,any,any,any")]
 )
 
-(define_insn "*mov_load_vfp_hf16"
-  [(set (match_operand:HF 0 "s_register_operand" "=t")
-	(match_operand:HF 1 "memory_operand" "Uj"))]
-  "TARGET_HAVE_MVE_FLOAT"
-  "vldr.16\\t%0, %E1"
-)
-
-(define_insn "*mov_store_vfp_hf16"
-  [(set (match_operand:HF 0 "memory_operand" "=Uj")
-	(match_operand:HF 1 "s_register_operand"   "t"))]
-  "TARGET_HAVE_MVE_FLOAT"
-  "vstr.16\\t%1, %E0"
-)
-
 ;; HFmode and BFmode moves
 
 (define_insn "*mov<mode>_vfp_<mode>16"
   [(set (match_operand:HFBF 0 "nonimmediate_operand"
-			  "= ?r,?m,t,r,t,r,t, t, Um,r")
+			  "= ?r,?m,t,r,t,r,t, t, Uj,r")
 	(match_operand:HFBF 1 "general_operand"
-			  "  m,r,t,r,r,t,Dv,Um,t, F"))]
+			  "  m,r,t,r,r,t,Dv,Uj,t, F"))]
   "TARGET_32BIT
-   && TARGET_VFP_FP16INST
-   && arm_mve_mode_and_operands_type_check (<MODE>mode, operands[0],
-					    operands[1])
+   && (TARGET_VFP_FP16INST || TARGET_HAVE_MVE)
    && (s_register_operand (operands[0], <MODE>mode)
        || s_register_operand (operands[1], <MODE>mode))"
  {
@@ -430,9 +414,15 @@
     case 6: /* S register from immediate.  */
       return \"vmov.f16\\t%0, %1\t%@ __<fporbf>\";
     case 7: /* S register from memory.  */
-      return \"vld1.16\\t{%z0}, %A1\";
+      if (TARGET_HAVE_MVE)
+	return \"vldr.16\\t%0, %1\";
+      else
+	return \"vld1.16\\t{%z0}, %A1\";
     case 8: /* Memory from S register.  */
-      return \"vst1.16\\t{%z1}, %A0\";
+      if (TARGET_HAVE_MVE)
+	return \"vstr.16\\t%1, %0\";
+      else
+	return \"vst1.16\\t{%z1}, %A0\";
     case 9: /* ARM register from constant.  */
       {
 	long bits;
@@ -2135,7 +2125,7 @@
 	(match_operand:DF 1 "const_double_operand" "F"))
    (clobber (match_operand:DF 2 "s_register_operand" "=r"))]
   "arm_disable_literal_pool
-   && TARGET_HARD_FLOAT
+   && TARGET_VFP_BASE
    && !arm_const_double_rtx (operands[1])
    && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1]))"
   "#"
@@ -2161,7 +2151,7 @@
 	(match_operand:SF 1 "const_double_operand" "E"))
    (clobber (match_operand:SF 2 "s_register_operand" "=r"))]
   "arm_disable_literal_pool
-   && TARGET_HARD_FLOAT
+   && TARGET_VFP_BASE
    && !vfp3_const_double_rtx (operands[1])"
   "#"
   ""

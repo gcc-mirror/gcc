@@ -368,6 +368,22 @@ nvptx_name_replacement (const char *name)
   return name;
 }
 
+/* Return NULL if NAME contains no dot.  Otherwise return a copy of NAME
+   with the dots replaced with dollar signs.  */
+
+static char *
+nvptx_replace_dot (const char *name)
+{
+  if (strchr (name, '.') == NULL)
+    return NULL;
+
+  char *p = xstrdup (name);
+  for (size_t i = 0; i < strlen (p); ++i)
+    if (p[i] == '.')
+      p[i] = '$';
+  return p;
+}
+
 /* If MODE should be treated as two registers of an inner mode, return
    that inner mode.  Otherwise return VOIDmode.  */
 
@@ -827,26 +843,12 @@ write_var_marker (FILE *file, bool is_defn, bool globalize, const char *name)
   fputs ("\n", file);
 }
 
-/* Write a .func or .kernel declaration or definition along with
-   a helper comment for use by ld.  S is the stream to write to, DECL
-   the decl for the function with name NAME.   For definitions, emit
-   a declaration too.  */
+/* Helper function for write_fn_proto.  */
 
-static const char *
-write_fn_proto (std::stringstream &s, bool is_defn,
-		const char *name, const_tree decl)
+static void
+write_fn_proto_1 (std::stringstream &s, bool is_defn,
+		  const char *name, const_tree decl)
 {
-  if (is_defn)
-    /* Emit a declaration. The PTX assembler gets upset without it.   */
-    name = write_fn_proto (s, false, name, decl);
-  else
-    {
-      /* Avoid repeating the name replacement.  */
-      name = nvptx_name_replacement (name);
-      if (name[0] == '*')
-	name++;
-    }
-
   write_fn_marker (s, is_defn, TREE_PUBLIC (decl), name);
 
   /* PTX declaration.  */
@@ -929,8 +931,38 @@ write_fn_proto (std::stringstream &s, bool is_defn,
     s << ")";
 
   s << (is_defn ? "\n" : ";\n");
+}
 
-  return name;
+/* Write a .func or .kernel declaration or definition along with
+   a helper comment for use by ld.  S is the stream to write to, DECL
+   the decl for the function with name NAME.  For definitions, emit
+   a declaration too.  */
+
+static void
+write_fn_proto (std::stringstream &s, bool is_defn,
+		const char *name, const_tree decl)
+{
+  const char *replacement = nvptx_name_replacement (name);
+  char *replaced_dots = NULL;
+  if (replacement != name)
+    name = replacement;
+  else
+    {
+      replaced_dots = nvptx_replace_dot (name);
+      if (replaced_dots)
+	name = replaced_dots;
+    }
+  if (name[0] == '*')
+    name++;
+
+  if (is_defn)
+    /* Emit a declaration.  The PTX assembler gets upset without it.  */
+    write_fn_proto_1 (s, false, name, decl);
+
+  write_fn_proto_1 (s, is_defn, name, decl);
+
+  if (replaced_dots)
+    XDELETE (replaced_dots);
 }
 
 /* Construct a function declaration from a call insn.  This can be
@@ -942,6 +974,8 @@ static void
 write_fn_proto_from_insn (std::stringstream &s, const char *name,
 			  rtx result, rtx pat)
 {
+  char *replaced_dots = NULL;
+
   if (!name)
     {
       s << "\t.callprototype ";
@@ -949,7 +983,15 @@ write_fn_proto_from_insn (std::stringstream &s, const char *name,
     }
   else
     {
-      name = nvptx_name_replacement (name);
+      const char *replacement = nvptx_name_replacement (name);
+      if (replacement != name)
+	name = replacement;
+      else
+	{
+	  replaced_dots = nvptx_replace_dot (name);
+	  if (replaced_dots)
+	    name = replaced_dots;
+	}
       write_fn_marker (s, false, true, name);
       s << "\t.extern .func ";
     }
@@ -958,6 +1000,8 @@ write_fn_proto_from_insn (std::stringstream &s, const char *name,
     write_return_mode (s, true, GET_MODE (result));
 
   s << name;
+  if (replaced_dots)
+    XDELETE (replaced_dots);
 
   int arg_end = XVECLEN (pat, 0);
   for (int i = 1; i < arg_end; i++)
@@ -2101,7 +2145,7 @@ nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
       val = INTVAL (XEXP (x, 1));
       x = XEXP (x, 0);
       gcc_assert (GET_CODE (x) == SYMBOL_REF);
-      /* FALLTHROUGH */
+      gcc_fallthrough (); /* FALLTHROUGH */
 
     case SYMBOL_REF:
       gcc_assert (size == init_frag.size);
@@ -2349,6 +2393,7 @@ const char *
 nvptx_output_mov_insn (rtx dst, rtx src)
 {
   machine_mode dst_mode = GET_MODE (dst);
+  machine_mode src_mode = GET_MODE (src);
   machine_mode dst_inner = (GET_CODE (dst) == SUBREG
 			    ? GET_MODE (XEXP (dst, 0)) : dst_mode);
   machine_mode src_inner = (GET_CODE (src) == SUBREG
@@ -2375,7 +2420,7 @@ nvptx_output_mov_insn (rtx dst, rtx src)
   if (GET_MODE_SIZE (dst_inner) == GET_MODE_SIZE (src_inner))
     {
       if (GET_MODE_BITSIZE (dst_mode) == 128
-	  && GET_MODE_BITSIZE (GET_MODE (src)) == 128)
+	  && GET_MODE_BITSIZE (src_mode) == 128)
 	{
 	  /* mov.b128 is not supported.  */
 	  if (dst_inner == V2DImode && src_inner == TImode)
@@ -2387,6 +2432,10 @@ nvptx_output_mov_insn (rtx dst, rtx src)
 	}
       return "%.\tmov.b%T0\t%0, %1;";
     }
+
+  if (GET_MODE_BITSIZE (src_inner) == 128
+      && GET_MODE_BITSIZE (src_mode) == 64)
+    return "%.\tmov.b%T0\t%0, %1;";
 
   return "%.\tcvt%t0%t1\t%0, %1;";
 }
@@ -2458,9 +2507,20 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
   
   if (decl)
     {
+      char *replaced_dots = NULL;
       const char *name = get_fnname_from_decl (decl);
-      name = nvptx_name_replacement (name);
+      const char *replacement = nvptx_name_replacement (name);
+      if (replacement != name)
+	name = replacement;
+      else
+	{
+	  replaced_dots = nvptx_replace_dot (name);
+	  if (replaced_dots)
+	    name = replaced_dots;
+	}
       assemble_name (asm_out_file, name);
+      if (replaced_dots)
+	XDELETE (replaced_dots);
     }
   else
     output_address (VOIDmode, callee);
@@ -2598,7 +2658,7 @@ nvptx_print_operand (FILE *file, rtx x, int code)
     {
     case 'A':
       x = XEXP (x, 0);
-      /* FALLTHROUGH.  */
+      gcc_fallthrough (); /* FALLTHROUGH. */
 
     case 'D':
       if (GET_CODE (x) == CONST)
@@ -6531,6 +6591,23 @@ nvptx_set_current_function (tree fndecl)
   oacc_bcast_partition = 0;
 }
 
+/* Implement TARGET_LIBC_HAS_FUNCTION.  */
+
+bool
+nvptx_libc_has_function (enum function_class fn_class, tree type)
+{
+  if (fn_class == function_sincos)
+    {
+      if (type != NULL_TREE)
+	/* Currently, newlib does not support sincosl.  */
+	return type == float_type_node || type == double_type_node;
+      else
+	return true;
+    }
+
+  return default_libc_has_function (fn_class, type);
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -6675,6 +6752,9 @@ nvptx_set_current_function (tree fndecl)
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION nvptx_set_current_function
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION nvptx_libc_has_function
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

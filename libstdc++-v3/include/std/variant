@@ -182,7 +182,7 @@ namespace __variant
   // used for raw visitation with indices passed in
   struct __variant_idx_cookie { using type = __variant_idx_cookie; };
   // Used to enable deduction (and same-type checking) for std::visit:
-  template<typename> struct __deduce_visit_result { };
+  template<typename _Tp> struct __deduce_visit_result { using type = _Tp; };
 
   // Visit variants that might be valueless.
   template<typename _Visitor, typename... _Variants>
@@ -960,9 +960,13 @@ namespace __variant
 	    }
 	  else
 	    {
-	      __element = __gen_vtable_impl<
+	      auto __tmp_element = __gen_vtable_impl<
 		remove_reference_t<decltype(__element)>,
 		std::index_sequence<__indices..., __index>>::_S_apply();
+	      static_assert(is_same_v<_Tp, decltype(__tmp_element)>,
+			    "std::visit requires the visitor to have the same "
+			    "return type for all alternatives of a variant");
+	      __element = __tmp_element;
 	    }
 	}
     };
@@ -1017,7 +1021,24 @@ namespace __variant
 
       static constexpr auto
       _S_apply()
-      { return _Array_type{&__visit_invoke}; }
+      {
+	if constexpr (_Array_type::__result_is_deduced::value)
+	  {
+	    constexpr bool __visit_ret_type_mismatch =
+	      !is_same_v<typename _Result_type::type,
+			 decltype(__visit_invoke(std::declval<_Visitor>(),
+				    std::declval<_Variants>()...))>;
+	    if constexpr (__visit_ret_type_mismatch)
+	      {
+		struct __cannot_match {};
+		return __cannot_match{};
+	      }
+	    else
+	      return _Array_type{&__visit_invoke};
+	  }
+	else
+	  return _Array_type{&__visit_invoke};
+      }
     };
 
   template<typename _Result_type, typename _Visitor, typename... _Variants>
@@ -1692,6 +1713,26 @@ namespace __variant
 			   std::forward<_Variants>(__variants)...);
     }
 
+  template<typename _Tp, typename... _Types>
+     constexpr inline bool __same_types = (is_same_v<_Tp, _Types> && ...);
+
+  template <size_t _Idx, typename _Visitor, typename _Variant>
+    decltype(auto)
+    __check_visitor_result(_Visitor&& __vis, _Variant&& __variant)
+    {
+      return std::__invoke(std::forward<_Visitor>(__vis),
+			   std::get<_Idx>(std::forward<_Variant>(__variant)));
+    }
+
+  template <typename _Visitor, typename _Variant, size_t... _Idxs>
+    constexpr bool __check_visitor_results(std::index_sequence<_Idxs...>)
+    {
+      return __same_types<decltype(__check_visitor_result<_Idxs>(
+	std::declval<_Visitor>(),
+	std::declval<_Variant>()))...>;
+    }
+
+
   template<typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     visit(_Visitor&& __visitor, _Variants&&... __variants)
@@ -1704,8 +1745,28 @@ namespace __variant
 
       using _Tag = __detail::__variant::__deduce_visit_result<_Result_type>;
 
-      return std::__do_visit<_Tag>(std::forward<_Visitor>(__visitor),
-				   std::forward<_Variants>(__variants)...);
+      if constexpr (sizeof...(_Variants) == 1)
+	{
+	  constexpr bool __visit_rettypes_match =
+	    __check_visitor_results<_Visitor, _Variants...>(
+	      std::make_index_sequence<
+	        std::variant_size<remove_reference_t<_Variants>...>::value>());
+	  if constexpr (!__visit_rettypes_match)
+	    {
+	      static_assert(__visit_rettypes_match,
+			  "std::visit requires the visitor to have the same "
+			  "return type for all alternatives of a variant");
+	      return;
+	    }
+	  else
+	    return std::__do_visit<_Tag>(
+	      std::forward<_Visitor>(__visitor),
+	      std::forward<_Variants>(__variants)...);
+	}
+      else
+	return std::__do_visit<_Tag>(
+	  std::forward<_Visitor>(__visitor),
+	  std::forward<_Variants>(__variants)...);
     }
 
 #if __cplusplus > 201703L

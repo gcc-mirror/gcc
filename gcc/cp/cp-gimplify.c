@@ -962,7 +962,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     omp_cxx_notice_variable (wtd->omp_ctx, stmt);
 
   /* Don't dereference parms in a thunk, pass the references through. */
-  if ((TREE_CODE (stmt) == CALL_EXPR && CALL_FROM_THUNK_P (stmt))
+  if ((TREE_CODE (stmt) == CALL_EXPR && call_from_lambda_thunk_p (stmt))
       || (TREE_CODE (stmt) == AGGR_INIT_EXPR && AGGR_INIT_FROM_THUNK_P (stmt)))
     {
       *walk_subtrees = 0;
@@ -980,21 +980,17 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   /* Map block scope extern declarations to visible declarations with the
      same name and type in outer scopes if any.  */
-  if (cp_function_chain->extern_decl_map
-      && VAR_OR_FUNCTION_DECL_P (stmt)
-      && DECL_EXTERNAL (stmt))
-    {
-      struct cxx_int_tree_map *h, in;
-      in.uid = DECL_UID (stmt);
-      h = cp_function_chain->extern_decl_map->find_with_hash (&in, in.uid);
-      if (h)
-	{
-	  *stmt_p = h->to;
-	  TREE_USED (h->to) |= TREE_USED (stmt);
-	  *walk_subtrees = 0;
-	  return NULL;
-	}
-    }
+  if (VAR_OR_FUNCTION_DECL_P (stmt) && DECL_LOCAL_DECL_P (stmt))
+    if (tree alias = DECL_LOCAL_DECL_ALIAS (stmt))
+      {
+	if (alias != error_mark_node)
+	  {
+	    *stmt_p = alias;
+	    TREE_USED (alias) |= TREE_USED (stmt);
+	  }
+	*walk_subtrees = 0;
+	return NULL;
+      }
 
   if (TREE_CODE (stmt) == INTEGER_CST
       && TYPE_REF_P (TREE_TYPE (stmt))

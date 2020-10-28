@@ -381,6 +381,8 @@
 #define __builtin_ia32_vfmaddss3_mask3(A, B, C, D, E) __builtin_ia32_vfmaddss3_mask3(A, B, C, D, 8)
 #define __builtin_ia32_vfmaddss3_maskz(A, B, C, D, E) __builtin_ia32_vfmaddss3_maskz(A, B, C, D, 8)
 #define __builtin_ia32_vfmsubss3_mask3(A, B, C, D, E) __builtin_ia32_vfmsubss3_mask3(A, B, C, D, 8)
+#define __builtin_ia32_cvtsd2ss_mask_round(A, B, C, D, E) __builtin_ia32_cvtsd2ss_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_cvtss2sd_mask_round(A, B, C, D, E) __builtin_ia32_cvtss2sd_mask_round(A, B, C, D, 8)
 
 /* avx512erintrin.h */
 #define __builtin_ia32_exp2ps_mask(A, B, C, D) __builtin_ia32_exp2ps_mask(A, B, C, 8)
@@ -393,6 +395,10 @@
 #define __builtin_ia32_rcp28sd_round(A, B, C) __builtin_ia32_rcp28sd_round(A, B, 8)
 #define __builtin_ia32_rsqrt28ss_round(A, B, C) __builtin_ia32_rsqrt28ss_round(A, B, 8)
 #define __builtin_ia32_rsqrt28sd_round(A, B, C) __builtin_ia32_rsqrt28sd_round(A, B, 8)
+#define __builtin_ia32_rcp28sd_mask_round(A, B, C, D, E) __builtin_ia32_rcp28sd_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_rcp28ss_mask_round(A, B, C, D, E) __builtin_ia32_rcp28ss_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_rsqrt28sd_mask_round(A, B, C, D, E) __builtin_ia32_rsqrt28sd_mask_round(A, B, C, D, 8)
+#define __builtin_ia32_rsqrt28ss_mask_round(A, B, C, D, E) __builtin_ia32_rsqrt28ss_mask_round(A, B, C, D, 8)
 
 /* avx512pfintrin.h */
 #define __builtin_ia32_gatherpfdps(A, B, C, D, E) __builtin_ia32_gatherpfdps(A, B, C, 1, _MM_HINT_T0)
@@ -464,6 +470,10 @@
 #define __builtin_ia32_cvtps2qq512_mask(A, B, C, D) __builtin_ia32_cvtps2qq512_mask(A, B, C, 8)
 #define __builtin_ia32_cvtpd2uqq512_mask(A, B, C, D) __builtin_ia32_cvtpd2uqq512_mask(A, B, C, 8)
 #define __builtin_ia32_cvtpd2qq512_mask(A, B, C, D) __builtin_ia32_cvtpd2qq512_mask(A, B, C, 8)
+#define __builtin_ia32_reducesd_mask_round(A, B, C, D, E, F) __builtin_ia32_reducesd_mask_round(A, B, 8, D, E, 8)
+#define __builtin_ia32_reducess_mask_round(A, B, C, D, E, F) __builtin_ia32_reducess_mask_round(A, B, 8, D, E, 8)
+#define __builtin_ia32_reducepd512_mask_round(A, B, C, D, E) __builtin_ia32_reducepd512_mask_round(A, 8, C, D, 8)
+#define __builtin_ia32_reduceps512_mask_round(A, B, C, D, E) __builtin_ia32_reduceps512_mask_round(A, 8, C, D, 8)
 
 /* avx512vlintrin.h */
 #define __builtin_ia32_vpermilps_mask(A, E, C, D) __builtin_ia32_vpermilps_mask(A, 1, C, D)
@@ -679,6 +689,16 @@
 #define __builtin_ia32_vpclmulqdq_v4di(A, B, C)  __builtin_ia32_vpclmulqdq_v4di(A, B, 1) 
 #define __builtin_ia32_vpclmulqdq_v2di(A, B, C)  __builtin_ia32_vpclmulqdq_v2di(A, B, 1) 
 #define __builtin_ia32_vpclmulqdq_v8di(A, B, C)  __builtin_ia32_vpclmulqdq_v8di(A, B, 1) 
+
+/* lwpintrin.h */
+#define __builtin_ia32_lwpval32(D2, D1, F) __builtin_ia32_lwpval32 (D2, D1, 1)
+#define __builtin_ia32_lwpval64(D2, D1, F) __builtin_ia32_lwpval64 (D2, D1, 1)
+#define __builtin_ia32_lwpins32(D2, D1, F) __builtin_ia32_lwpins32 (D2, D1, 1)
+#define __builtin_ia32_lwpins64(D2, D1, F) __builtin_ia32_lwpins64 (D2, D1, 1)
+
+/* tbmintrin.h */
+#define __builtin_ia32_bextri_u32(X, Y) __builtin_ia32_bextri_u32 (X, 1)
+#define __builtin_ia32_bextri_u64(X, Y) __builtin_ia32_bextri_u64 (X, 1)
 
 #include <wmmintrin.h>
 #include <immintrin.h>

@@ -136,6 +136,25 @@ enum aarch64_addr_query_type {
   ADDR_QUERY_ANY
 };
 
+/* Enumerates values that can be arbitrarily mixed into a calculation
+   in order to make the result of the calculation unique to its use case.
+
+   AARCH64_SALT_SSP_SET
+   AARCH64_SALT_SSP_TEST
+      Used when calculating the address of the stack protection canary value.
+      There is a separate value for setting and testing the canary, meaning
+      that these two operations produce unique addresses: they are different
+      from each other, and from all other address calculations.
+
+      The main purpose of this is to prevent the SET address being spilled
+      to the stack and reloaded for the TEST, since that would give an
+      attacker the opportunity to change the address of the expected
+      canary value.  */
+enum aarch64_salt_type {
+  AARCH64_SALT_SSP_SET,
+  AARCH64_SALT_SSP_TEST
+};
+
 /* A set of tuning parameters contains references to size and time
    cost models and vectors for address cost calculations, register
    move costs and memory move costs.  */
@@ -608,9 +627,9 @@ opt_machine_mode aarch64_ptrue_all_mode (rtx);
 rtx aarch64_convert_sve_data_to_pred (rtx, machine_mode, rtx);
 rtx aarch64_expand_sve_dupq (rtx, machine_mode, rtx);
 void aarch64_expand_mov_immediate (rtx, rtx);
+rtx aarch64_stack_protect_canary_mem (machine_mode, rtx, aarch64_salt_type);
 rtx aarch64_ptrue_reg (machine_mode);
 rtx aarch64_pfalse_reg (machine_mode);
-bool aarch64_sve_pred_dominates_p (rtx *, rtx);
 bool aarch64_sve_same_pred_for_ptest_p (rtx *, rtx *);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);
 void aarch64_expand_sve_mem_move (rtx, rtx, machine_mode);

@@ -1,17 +1,12 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mzarch" } */
+/* { dg-options "-O3 -mzarch -march=z196" } */
 
-/* a is used after the comparison.  We cannot use load and test here
-   since it would turn SNaNs into QNaNs.  */
+/* Use load-and-test instructions if compared for (in)equality and if variable
+   `a` is dead after the comparison.  For all other cases use
+   compare-and-signal instructions.  */
 
-double gl;
+#include "load-and-test-fp.h"
 
-double
-foo (double dummy, double a)
-{
-  if (a == 0.0)
-    gl = 1;
-  return a;
-}
-
-/* { dg-final { scan-assembler {\tcdbr?\t} } } */
+/* { dg-final { scan-assembler-times "ltdbr\t" 2 } } */
+/* { dg-final { scan-assembler-times "cdbr\t" 2 } } */
+/* { dg-final { scan-assembler-times "kdbr\t" 8 } } */

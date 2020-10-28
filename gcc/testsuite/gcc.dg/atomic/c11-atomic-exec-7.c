@@ -2,6 +2,7 @@
    we generate correct code.  */
 /* { dg-do run } */
 /* { dg-options "-std=c11 -pedantic-errors -fdump-tree-original" } */
+/* { dg-xfail-run-if "PR97444: stack atomics" { nvptx*-*-* } }*/
 
 #include <stdatomic.h>
 #include <limits.h>

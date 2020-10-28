@@ -34,7 +34,6 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
-with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
@@ -64,6 +63,12 @@ package body Ghost is
    -----------------------
    -- Local subprograms --
    -----------------------
+
+   function Whole_Object_Ref (Ref : Node_Id) return Node_Id;
+   --  For a name that denotes an object, returns a name that denotes the whole
+   --  object, declared by an object declaration, formal parameter declaration,
+   --  etc. For example, for P.X.Comp (J), if P is a package X is a record
+   --  object, this returns P.X.
 
    function Ghost_Entity (Ref : Node_Id) return Entity_Id;
    pragma Inline (Ghost_Entity);
@@ -1009,10 +1014,8 @@ package body Ghost is
       ----------------------------
 
       function Ultimate_Original_Node (Nod : Node_Id) return Node_Id is
-         Res : Node_Id;
-
+         Res : Node_Id := Nod;
       begin
-         Res := Nod;
          while Original_Node (Res) /= Res loop
             Res := Original_Node (Res);
          end loop;
@@ -1176,61 +1179,73 @@ package body Ghost is
    -----------------------------------
 
    procedure Mark_And_Set_Ghost_Assignment (N : Node_Id) is
+      --  A ghost assignment is an assignment whose left-hand side denotes a
+      --  ghost object. Subcomponents are not marked "ghost", so we need to
+      --  find the containing "whole" object. So, for "P.X.Comp (J) := ...",
+      --  where P is a package, X is a record, and Comp is an array, we need
+      --  to check the ghost flags of X.
+
       Orig_Lhs : constant Node_Id := Name (N);
-      Orig_Ref : constant Node_Id := Ultimate_Prefix (Orig_Lhs);
-
-      Id  : Entity_Id;
-      Ref : Node_Id;
-
    begin
-      --  A reference to a whole Ghost object (SPARK RM 6.9(1)) appears as an
-      --  identifier. If the reference has not been analyzed yet, preanalyze a
-      --  copy of the reference to discover the nature of its entity.
+      --  Ghost assignments are irrelevant when the expander is inactive, and
+      --  processing them in that mode can lead to spurious errors.
 
-      if Nkind (Orig_Ref) = N_Identifier and then not Analyzed (Orig_Ref) then
-         Ref := New_Copy_Tree (Orig_Ref);
-
-         --  Alter the assignment statement by setting its left-hand side to
-         --  the copy.
-
-         Set_Name   (N, Ref);
-         Set_Parent (Ref, N);
-
-         --  Preanalysis is carried out by looking for a Ghost entity while
-         --  suppressing all possible side effects.
-
-         Find_Direct_Name
-           (N            => Ref,
-            Errors_OK    => False,
-            Marker_OK    => False,
-            Reference_OK => False);
-
-         --  Restore the original state of the assignment statement
-
-         Set_Name (N, Orig_Lhs);
-
-      --  A potential reference to a Ghost entity is already properly resolved
-      --  when the left-hand side is analyzed.
-
-      else
-         Ref := Orig_Ref;
-      end if;
-
-      --  An assignment statement becomes Ghost when its target denotes a Ghost
-      --  object. Install the Ghost mode of the target.
-
-      Id := Ghost_Entity (Ref);
-
-      if Present (Id) then
-         if Is_Checked_Ghost_Entity (Id) then
-            Install_Ghost_Region (Check, N);
-
-         elsif Is_Ignored_Ghost_Entity (Id) then
-            Install_Ghost_Region (Ignore, N);
-
-            Set_Is_Ignored_Ghost_Node (N);
-            Record_Ignored_Ghost_Node (N);
+      if Expander_Active then
+         if not Analyzed (Orig_Lhs)
+           and then Nkind (Orig_Lhs) = N_Indexed_Component
+           and then Nkind (Prefix (Orig_Lhs)) = N_Selected_Component
+           and then Nkind (Prefix (Prefix (Orig_Lhs))) =
+           N_Indexed_Component
+         then
+            Analyze (Orig_Lhs);
          end if;
+
+         --  Make sure Lhs is at least preanalyzed, so we can tell whether
+         --  it denotes a ghost variable. In some cases we need to do a full
+         --  analysis, or else the back end gets confused. Note that in the
+         --  preanalysis case, we are preanalyzing a copy of the left-hand
+         --  side name, temporarily attached to the tree.
+
+         declare
+            Lhs : constant Node_Id :=
+              (if Analyzed (Orig_Lhs) then Orig_Lhs
+               else New_Copy_Tree (Orig_Lhs));
+         begin
+            if not Analyzed (Lhs) then
+               Set_Name   (N, Lhs);
+               Set_Parent (Lhs, N);
+               Preanalyze_Without_Errors (Lhs);
+               Set_Name (N, Orig_Lhs);
+            end if;
+
+            declare
+               Whole : constant Node_Id := Whole_Object_Ref (Lhs);
+               Id    : Entity_Id;
+            begin
+               if Is_Entity_Name (Whole) then
+                  Id := Entity (Whole);
+
+                  if Present (Id) then
+                     --  Left-hand side denotes a Checked ghost entity, so
+                     --  install the region.
+
+                     if Is_Checked_Ghost_Entity (Id) then
+                        Install_Ghost_Region (Check, N);
+
+                     --  Left-hand side denotes an Ignored ghost entity, so
+                     --  install the region, and mark the assignment statement
+                     --  as an ignored ghost assignment, so it will be removed
+                     --  later.
+
+                     elsif Is_Ignored_Ghost_Entity (Id) then
+                        Install_Ghost_Region (Ignore, N);
+                        Set_Is_Ignored_Ghost_Node (N);
+                        Record_Ignored_Ghost_Node (N);
+                     end if;
+                  end if;
+               end if;
+            end;
+         end;
       end if;
    end Mark_And_Set_Ghost_Assignment;
 
@@ -1854,5 +1869,25 @@ package body Ghost is
          Set_Is_Ignored_Ghost_Entity (Id);
       end if;
    end Set_Is_Ghost_Entity;
+
+   ----------------------
+   -- Whole_Object_Ref --
+   ----------------------
+
+   function Whole_Object_Ref (Ref : Node_Id) return Node_Id is
+   begin
+      if Nkind (Ref) in N_Indexed_Component | N_Slice
+        or else (Nkind (Ref) = N_Selected_Component
+                   and then Is_Object_Reference (Prefix (Ref)))
+      then
+         if Is_Access_Type (Etype (Prefix (Ref))) then
+            return Ref;
+         else
+            return Whole_Object_Ref (Prefix (Ref));
+         end if;
+      else
+         return Ref;
+      end if;
+   end Whole_Object_Ref;
 
 end Ghost;

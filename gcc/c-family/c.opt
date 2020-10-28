@@ -371,7 +371,7 @@ C ObjC C++ ObjC++ Var(warn_frame_address) Warning LangEnabledBy(C ObjC C++ ObjC+
 Warn when __builtin_frame_address or __builtin_return_address is used unsafely.
 
 Wbuiltin-declaration-mismatch
-C ObjC C++ ObjC++ Var(warn_builtin_declaraion_mismatch) Init(1) Warning
+C ObjC C++ ObjC++ Var(warn_builtin_declaration_mismatch) Init(1) Warning
 Warn when a built-in function is declared with the wrong signature.
 
 Wbuiltin-macro-redefined
@@ -474,6 +474,11 @@ Warn for converting NULL from/to a non-pointer type.
 Wcpp
 C ObjC C++ ObjC++ CppReason(CPP_W_WARNING_DIRECTIVE)
 ; Documented in common.opt
+
+Wctad-maybe-unsupported
+C++ ObjC++ Var(warn_ctad_maybe_unsupported) Warning
+Warn when performing class template argument deduction on a type with no
+deduction guides.
 
 Wctor-dtor-privacy
 C++ ObjC++ Var(warn_ctor_dtor_privacy) Warning
@@ -795,6 +800,10 @@ Wpacked-not-aligned
 C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when fields in a struct with the packed attribute are misaligned.
 
+Wrange-loop-construct
+C++ ObjC++ Var(warn_range_loop_construct) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn when a range-based for-loop is creating unnecessary copies.
+
 Wredundant-tags
 C++ ObjC++ Var(warn_redundant_tags) Warning
 Warn when a class or enumerated type is referenced using a redundant class-key.
@@ -806,6 +815,11 @@ Warn about missing sized deallocation functions.
 Wsizeof-pointer-div
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers.
+
+Wsizeof-array-div
+C ObjC C++ ObjC++ Var(warn_sizeof_array_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about divisions of two sizeof operators when the first one is applied
+to an array and the divisor does not equal the size of the array element.
 
 Wsizeof-pointer-memaccess
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)

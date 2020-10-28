@@ -13,16 +13,10 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -153,6 +147,7 @@ package Aspects is
       Aspect_Storage_Size,
       Aspect_Stream_Size,
       Aspect_String_Literal,
+      Aspect_Subprogram_Variant,            -- GNAT
       Aspect_Suppress,
       Aspect_Synchronization,
       Aspect_Test_Case,                     -- GNAT
@@ -190,8 +185,10 @@ package Aspects is
       Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
       Aspect_CUDA_Global,                   -- GNAT
+      Aspect_Exclusive_Functions,
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
+      Aspect_Full_Access_Only,
       Aspect_Independent,
       Aspect_Independent_Components,
       Aspect_Import,
@@ -226,6 +223,16 @@ package Aspects is
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
    --  Aspect_Id's excluding No_Aspect
+
+   subtype Nonoverridable_Aspect_Id is Aspect_Id with
+     Static_Predicate => Nonoverridable_Aspect_Id in
+       Aspect_Default_Iterator | Aspect_Iterator_Element |
+       Aspect_Implicit_Dereference | Aspect_Constant_Indexing |
+       Aspect_Variable_Indexing | Aspect_Aggregate |
+       Aspect_Max_Entry_Queue_Length
+       --  | Aspect_No_Controlled_Parts
+       --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration
+       ;  --  see RM 13.1.1(18.7)
 
    --  The following array indicates aspects that accept 'Class
 
@@ -425,6 +432,7 @@ package Aspects is
       Aspect_Storage_Size               => Expression,
       Aspect_Stream_Size                => Expression,
       Aspect_String_Literal             => Name,
+      Aspect_Subprogram_Variant         => Expression,
       Aspect_Suppress                   => Name,
       Aspect_Synchronization            => Name,
       Aspect_Test_Case                  => Expression,
@@ -472,6 +480,7 @@ package Aspects is
       Aspect_Dynamic_Predicate            => False,
       Aspect_Effective_Reads              => False,
       Aspect_Effective_Writes             => False,
+      Aspect_Exclusive_Functions          => False,
       Aspect_Extensions_Visible           => False,
       Aspect_External_Name                => False,
       Aspect_External_Tag                 => False,
@@ -524,6 +533,7 @@ package Aspects is
       Aspect_Storage_Size                 => True,
       Aspect_Stream_Size                  => True,
       Aspect_String_Literal               => False,
+      Aspect_Subprogram_Variant           => False,
       Aspect_Suppress                     => False,
       Aspect_Synchronization              => False,
       Aspect_Test_Case                    => False,
@@ -545,6 +555,7 @@ package Aspects is
       Aspect_Discard_Names                => True,
       Aspect_Export                       => True,
       Aspect_Favor_Top_Level              => False,
+      Aspect_Full_Access_Only             => True,
       Aspect_Independent                  => True,
       Aspect_Independent_Components       => True,
       Aspect_Import                       => True,
@@ -619,11 +630,13 @@ package Aspects is
       Aspect_Effective_Reads              => Name_Effective_Reads,
       Aspect_Effective_Writes             => Name_Effective_Writes,
       Aspect_Elaborate_Body               => Name_Elaborate_Body,
+      Aspect_Exclusive_Functions          => Name_Exclusive_Functions,
       Aspect_Export                       => Name_Export,
       Aspect_Extensions_Visible           => Name_Extensions_Visible,
       Aspect_External_Name                => Name_External_Name,
       Aspect_External_Tag                 => Name_External_Tag,
       Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
+      Aspect_Full_Access_Only             => Name_Full_Access_Only,
       Aspect_Ghost                        => Name_Ghost,
       Aspect_Global                       => Name_Global,
       Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
@@ -697,6 +710,7 @@ package Aspects is
       Aspect_Storage_Size                 => Name_Storage_Size,
       Aspect_Stream_Size                  => Name_Stream_Size,
       Aspect_String_Literal               => Name_String_Literal,
+      Aspect_Subprogram_Variant           => Name_Subprogram_Variant,
       Aspect_Suppress                     => Name_Suppress,
       Aspect_Suppress_Debug_Info          => Name_Suppress_Debug_Info,
       Aspect_Suppress_Initialization      => Name_Suppress_Initialization,
@@ -851,6 +865,7 @@ package Aspects is
       Aspect_Dispatching_Domain           => Always_Delay,
       Aspect_Dynamic_Predicate            => Always_Delay,
       Aspect_Elaborate_Body               => Always_Delay,
+      Aspect_Exclusive_Functions          => Always_Delay,
       Aspect_External_Name                => Always_Delay,
       Aspect_External_Tag                 => Always_Delay,
       Aspect_Favor_Top_Level              => Always_Delay,
@@ -951,6 +966,7 @@ package Aspects is
       Aspect_Relaxed_Initialization       => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Static                       => Never_Delay,
+      Aspect_Subprogram_Variant           => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
       Aspect_Unimplemented                => Never_Delay,
@@ -963,6 +979,7 @@ package Aspects is
       Aspect_Atomic_Components            => Rep_Aspect,
       Aspect_Bit_Order                    => Rep_Aspect,
       Aspect_Component_Size               => Rep_Aspect,
+      Aspect_Full_Access_Only             => Rep_Aspect,
       Aspect_Machine_Radix                => Rep_Aspect,
       Aspect_Object_Size                  => Rep_Aspect,
       Aspect_Pack                         => Rep_Aspect,

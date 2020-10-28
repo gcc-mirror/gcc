@@ -47,6 +47,8 @@ public:
 
   void print (pretty_printer *pp) const;
 
+  json::value *to_json () const;
+
   hashval_t hash () const;
 
   bool empty_p () const { return m_return_edges.is_empty (); }

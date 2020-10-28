@@ -5,6 +5,6 @@
 package syscall
 
 // 64-bit ptrace(3C) doesn't exist
-func raw_ptrace(request int, pid int, addr *byte, data *byte) Errno {
+func raw_ptrace(request int, pid int, addr uintptr, data uintptr) Errno {
 	return ENOSYS
 }

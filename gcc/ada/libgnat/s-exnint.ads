@@ -31,9 +31,11 @@
 
 --  Integer exponentiation (checks off)
 
-package System.Exn_Int is
-   pragma Pure;
+with System.Exponn;
 
-   function Exn_Integer (Left : Integer; Right : Natural) return Integer;
+package System.Exn_Int is
+
+   function Exn_Integer is new Exponn (Integer);
+   pragma Pure_Function (Exn_Integer);
 
 end System.Exn_Int;

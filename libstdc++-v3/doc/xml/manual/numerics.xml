@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.numerics" xreflabel="Numerics">
 <?dbhtml filename="numerics.html"?>
 
@@ -17,11 +17,11 @@
 <!-- Sect1 01 : Complex -->
 <section xml:id="std.numerics.complex" xreflabel="complex"><info><title>Complex</title></info>
 <?dbhtml filename="complex.html"?>
-  
+
   <para>
   </para>
   <section xml:id="numerics.complex.processing" xreflabel="complex Processing"><info><title>complex Processing</title></info>
-    
+
     <para>
     </para>
    <para>Using <code>complex&lt;&gt;</code> becomes even more comple- er, sorry,
@@ -52,7 +52,7 @@
 <!-- Sect1 02 : Generalized Operations -->
 <section xml:id="std.numerics.generalized_ops" xreflabel="Generalized Ops"><info><title>Generalized Operations</title></info>
 <?dbhtml filename="generalized_numeric_operations.html"?>
-  
+
   <para>
   </para>
 
@@ -95,10 +95,10 @@
 <!-- Sect1 03 : Interacting with C -->
 <section xml:id="std.numerics.c" xreflabel="Interacting with C"><info><title>Interacting with C</title></info>
 <?dbhtml filename="numerics_and_c.html"?>
-  
+
 
   <section xml:id="numerics.c.array" xreflabel="Numerics vs. Arrays"><info><title>Numerics vs. Arrays</title></info>
-    
+
 
    <para>One of the major reasons why FORTRAN can chew through numbers so well
       is that it is defined to be free of pointer aliasing, an assumption
@@ -121,7 +121,7 @@
   </section>
 
   <section xml:id="numerics.c.c99" xreflabel="C99"><info><title>C99</title></info>
-    
+
 
    <para>In addition to the other topics on this page, we'll note here some
       of the C99 features that appear in libstdc++.

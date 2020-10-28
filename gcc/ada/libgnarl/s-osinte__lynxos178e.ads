@@ -47,10 +47,6 @@ with System.Multiprocessors;
 package System.OS_Interface is
    pragma Preelaborate;
 
-   pragma Linker_Options ("-mthreads");
-   --  Selects the POSIX 1.c runtime, rather than the non-threading runtime or
-   --  the deprecated legacy threads library.
-
    subtype int            is Interfaces.C.int;
    subtype short          is Interfaces.C.short;
    subtype long           is Interfaces.C.long;

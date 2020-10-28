@@ -71,6 +71,7 @@ class region_model;
 class region_model_context;
   class impl_region_model_context;
 class call_details;
+struct rejected_constraint;
 class constraint_manager;
 class equiv_class;
 
@@ -301,7 +302,8 @@ private:
 
 /* Disable -Wformat-diag; we want to be able to use pp_printf
    for logging/dumping without complying with the rules for diagnostics.  */
-
+#if __GNUC__ >= 10
 #pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 #endif /* GCC_ANALYZER_ANALYZER_H */

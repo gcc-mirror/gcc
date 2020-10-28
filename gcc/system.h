@@ -732,7 +732,7 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 
 #ifdef INCLUDE_MALLOC_H
-#ifdef HAVE_MALLINFO
+#if defined(HAVE_MALLINFO) || defined(HAVE_MALLINFO2)
 #include <malloc.h>
 #endif
 #endif
@@ -1237,6 +1237,7 @@ void gcc_stablesort (void *, size_t, size_t,
 
 #define ONE_K 1024
 #define ONE_M (ONE_K * ONE_K)
+#define ONE_G (ONE_K * ONE_M)
 
 /* Display a number as an integer multiple of either:
    - 1024, if said integer is >= to 10 K (in base 2)

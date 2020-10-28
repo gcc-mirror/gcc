@@ -464,6 +464,95 @@
 ;;
 ;; - MNEMONIC is the mnemonic of the associated SVE instruction.
 ;;
+;; For (3) and (4), we combine these operations with an UNSPEC_SEL
+;; that selects between the result of the FP operation and the "else"
+;; value.  (This else value is a merge input for _m ACLE functions
+;; and zero for _z ACLE functions.)  The outer pattern then has the form:
+;;
+;;   (unspec [pred fp_operation else_value] UNSPEC_SEL)
+;;
+;; This means that the patterns for (3) and (4) have two predicates:
+;; one for the FP operation itself and one for the UNSPEC_SEL.
+;; This pattern is equivalent to the result of combining an instance
+;; of (1) or (2) with a separate vcond instruction, so these patterns
+;; are useful as combine targets too.
+;;
+;; However, in the combine case, the instructions that we want to
+;; combine might use different predicates.  Then:
+;;
+;; - Some of the active lanes of the FP operation might be discarded
+;;   by the UNSPEC_SEL.  It's OK to drop the FP operation on those lanes,
+;;   even for SVE_STRICT_GP, since the operations on those lanes are
+;;   effectively dead code.
+;;
+;; - Some of the inactive lanes of the FP operation might be selected
+;;   by the UNSPEC_SEL, giving unspecified values for those lanes.
+;;   SVE_RELAXED_GP lets us extend the FP operation to cover these
+;;   extra lanes, but SVE_STRICT_GP does not.
+;;
+;; Thus SVE_RELAXED_GP allows us to ignore the predicate on the FP operation
+;; and operate on exactly the lanes selected by the UNSPEC_SEL predicate.
+;; This typically leads to patterns like:
+;;
+;;    (unspec [(match_operand 1 "register_operand" "Upl")
+;;             (unspec [(match_operand N)
+;;                      (const_int SVE_RELAXED_GP)
+;;                      ...]
+;;                     UNSPEC_COND_<MNEMONIC>)
+;;             ...])
+;;
+;; where operand N is allowed to be anything.  These instructions then
+;; have rewrite rules to replace operand N with operand 1, which gives the
+;; instructions a canonical form and means that the original operand N is
+;; not kept live unnecessarily.
+;;
+;; In contrast, SVE_STRICT_GP only allows the UNSPEC_SEL predicate to be
+;; a subset of the FP operation predicate.  This case isn't interesting
+;; for FP operations that have an all-true predicate, since such operations
+;; use SVE_RELAXED_GP instead.  And it is not possible for instruction
+;; conditions to track the subset relationship for arbitrary registers.
+;; So in practice, the only useful case for SVE_STRICT_GP is the one
+;; in which the predicates match:
+;;
+;;    (unspec [(match_operand 1 "register_operand" "Upl")
+;;             (unspec [(match_dup 1)
+;;                      (const_int SVE_STRICT_GP)
+;;                      ...]
+;;                     UNSPEC_COND_<MNEMONIC>)
+;;             ...])
+;;
+;; This pattern would also be correct for SVE_RELAXED_GP, but it would
+;; be redundant with the one above.  However, if the combine pattern
+;; has multiple FP operations, using a match_operand allows combinations
+;; of SVE_STRICT_GP and SVE_RELAXED_GP in the same operation, provided
+;; that the predicates are the same:
+;;
+;;    (unspec [(match_operand 1 "register_operand" "Upl")
+;;             (...
+;;                (unspec [(match_dup 1)
+;;                         (match_operand:SI N "aarch64_sve_gp_strictness")
+;;                         ...]
+;;                        UNSPEC_COND_<MNEMONIC1>)
+;;                (unspec [(match_dup 1)
+;;                         (match_operand:SI M "aarch64_sve_gp_strictness")
+;;                         ...]
+;;                        UNSPEC_COND_<MNEMONIC2>) ...)
+;;             ...])
+;;
+;; The fully-relaxed version of this pattern is:
+;;
+;;    (unspec [(match_operand 1 "register_operand" "Upl")
+;;             (...
+;;                (unspec [(match_operand:SI N)
+;;                         (const_int SVE_RELAXED_GP)
+;;                         ...]
+;;                        UNSPEC_COND_<MNEMONIC1>)
+;;                (unspec [(match_operand:SI M)
+;;                         (const_int SVE_RELAXED_GP)
+;;                         ...]
+;;                        UNSPEC_COND_<MNEMONIC2>) ...)
+;;             ...])
+;;
 ;; -------------------------------------------------------------------------
 ;; ---- Note on FFR handling
 ;; -------------------------------------------------------------------------
@@ -3304,18 +3393,18 @@
 )
 
 ;; Predicated floating-point unary arithmetic, merging with the first input.
-(define_insn_and_rewrite "*cond_<optab><mode>_2"
+(define_insn_and_rewrite "*cond_<optab><mode>_2_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 3)
-	      (match_operand:SI 4 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")]
 	     SVE_COND_FP_UNARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[3], operands[1])"
+  "TARGET_SVE"
   "@
    <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>
    movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
@@ -3323,6 +3412,24 @@
   {
     operands[3] = copy_rtx (operands[1]);
   }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+(define_insn "*cond_<optab><mode>_2_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")]
+	     SVE_COND_FP_UNARY)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
   [(set_attr "movprfx" "*,yes")]
 )
 
@@ -3334,20 +3441,18 @@
 ;; which is handled above rather than here.  Marking all the alternatives
 ;; as earlyclobber helps to make the instruction more regular to the
 ;; register allocator.
-(define_insn_and_rewrite "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, ?&w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w")]
 	     SVE_COND_FP_UNARY)
 	   (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && !rtx_equal_p (operands[2], operands[3])
-   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[3])"
   "@
    <sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
@@ -3356,6 +3461,25 @@
   {
     operands[4] = copy_rtx (operands[1]);
   }
+  [(set_attr "movprfx" "*,yes,yes")]
+)
+
+(define_insn "*cond_<optab><mode>_any_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, ?&w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w")]
+	     SVE_COND_FP_UNARY)
+	   (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[3])"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0, %3\;<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
   [(set_attr "movprfx" "*,yes,yes")]
 )
 
@@ -4649,19 +4773,19 @@
 
 ;; Predicated floating-point binary operations that take an integer as their
 ;; second operand, with inactive lanes coming from the first operand.
-(define_insn_and_rewrite "*cond_<optab><mode>_2"
+(define_insn_and_rewrite "*cond_<optab><mode>_2_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
 	      (match_operand:<V_INT_EQUIV> 3 "register_operand" "w, w")]
 	     SVE_COND_FP_BINARY_INT)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE"
   "@
    <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
@@ -4672,24 +4796,41 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_<optab><mode>_2_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
+	      (match_operand:<V_INT_EQUIV> 3 "register_operand" "w, w")]
+	     SVE_COND_FP_BINARY_INT)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Predicated floating-point binary operations that take an integer as
 ;; their second operand, with the values of inactive lanes being distinct
 ;; from the other inputs.
-(define_insn_and_rewrite "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w, w, w")
 	      (match_operand:<V_INT_EQUIV> 3 "register_operand" "w, w, w, w")]
 	     SVE_COND_FP_BINARY_INT)
 	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && !rtx_equal_p (operands[2], operands[4])
-   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
@@ -4709,6 +4850,35 @@
       operands[5] = copy_rtx (operands[1]);
     else
       FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+(define_insn_and_rewrite "*cond_<optab><mode>_any_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w, w, w")
+	      (match_operand:<V_INT_EQUIV> 3 "register_operand" "w, w, w, w")]
+	     SVE_COND_FP_BINARY_INT)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   #"
+  "&& reload_completed
+   && register_operand (operands[4], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[4])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
 )
@@ -4813,19 +4983,19 @@
 )
 
 ;; Predicated floating-point operations, merging with the first input.
-(define_insn_and_rewrite "*cond_<optab><mode>_2"
+(define_insn_and_rewrite "*cond_<optab><mode>_2_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE"
   "@
    <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
@@ -4836,20 +5006,39 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_<optab><mode>_2_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")]
+	     SVE_COND_FP_BINARY)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Same for operations that take a 1-bit constant.
-(define_insn_and_rewrite "*cond_<optab><mode>_2_const"
+(define_insn_and_rewrite "*cond_<optab><mode>_2_const_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
 	      (match_operand:SVE_FULL_F 3 "<sve_pred_fp_rhs2_immediate>")]
 	     SVE_COND_FP_BINARY_I1)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE"
   "@
    <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
    movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
@@ -4860,20 +5049,39 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_<optab><mode>_2_const_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
+	      (match_operand:SVE_FULL_F 3 "<sve_pred_fp_rhs2_immediate>")]
+	     SVE_COND_FP_BINARY_I1)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Predicated floating-point operations, merging with the second input.
-(define_insn_and_rewrite "*cond_<optab><mode>_3"
+(define_insn_and_rewrite "*cond_<optab><mode>_3_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "0, w")]
 	     SVE_COND_FP_BINARY)
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE"
   "@
    <sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
    movprfx\t%0, %3\;<sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
@@ -4884,14 +5092,33 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_<optab><mode>_3_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "0, w")]
+	     SVE_COND_FP_BINARY)
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0, %3\;<sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Predicated floating-point operations, merging with an independent value.
-(define_insn_and_rewrite "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, &w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w, w, w, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, 0, w, w, w")]
 	     SVE_COND_FP_BINARY)
@@ -4899,8 +5126,7 @@
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && !rtx_equal_p (operands[2], operands[4])
-   && !rtx_equal_p (operands[3], operands[4])
-   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+   && !rtx_equal_p (operands[3], operands[4])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
@@ -4925,22 +5151,52 @@
   [(set_attr "movprfx" "yes")]
 )
 
+(define_insn_and_rewrite "*cond_<optab><mode>_any_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, &w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w, w, w, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, 0, w, w, w")]
+	     SVE_COND_FP_BINARY)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[4])
+   && !rtx_equal_p (operands[3], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   #"
+  "&& reload_completed
+   && register_operand (operands[4], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[4])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
 ;; Same for operations that take a 1-bit constant.
-(define_insn_and_rewrite "*cond_<optab><mode>_any_const"
+(define_insn_and_rewrite "*cond_<optab><mode>_any_const_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, ?w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w")
 	      (match_operand:SVE_FULL_F 3 "<sve_pred_fp_rhs2_immediate>")]
 	     SVE_COND_FP_BINARY_I1)
 	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, 0, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && !rtx_equal_p (operands[2], operands[4])
-   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
    movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
@@ -4959,6 +5215,34 @@
       operands[5] = copy_rtx (operands[1]);
     else
       FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+(define_insn_and_rewrite "*cond_<optab><mode>_any_const_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, ?w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w")
+	      (match_operand:SVE_FULL_F 3 "<sve_pred_fp_rhs2_immediate>")]
+	     SVE_COND_FP_BINARY_I1)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   #"
+  "&& reload_completed
+   && register_operand (operands[4], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[4])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
 )
@@ -5001,19 +5285,19 @@
 
 ;; Predicated floating-point addition of a constant, merging with the
 ;; first input.
-(define_insn_and_rewrite "*cond_add<mode>_2_const"
+(define_insn_and_rewrite "*cond_add<mode>_2_const_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, ?w, ?w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, 0, w, w")
 	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_immediate" "vsA, vsN, vsA, vsN")]
 	     UNSPEC_COND_FADD)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE"
   "@
    fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
    fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
@@ -5026,23 +5310,42 @@
   [(set_attr "movprfx" "*,*,yes,yes")]
 )
 
+(define_insn "*cond_add<mode>_2_const_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, ?w, ?w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, 0, w, w")
+	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_immediate" "vsA, vsN, vsA, vsN")]
+	     UNSPEC_COND_FADD)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
+   movprfx\t%0, %2\;fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0, %2\;fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3"
+  [(set_attr "movprfx" "*,*,yes,yes")]
+)
+
 ;; Predicated floating-point addition of a constant, merging with an
 ;; independent value.
-(define_insn_and_rewrite "*cond_add<mode>_any_const"
+(define_insn_and_rewrite "*cond_add<mode>_any_const_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, w, w, ?w, ?w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w, w, w, w")
 	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_immediate" "vsA, vsN, vsA, vsN, vsA, vsN")]
 	     UNSPEC_COND_FADD)
 	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, 0, w, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && !rtx_equal_p (operands[2], operands[4])
-   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
@@ -5064,6 +5367,37 @@
       operands[5] = copy_rtx (operands[1]);
     else
       FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+(define_insn_and_rewrite "*cond_add<mode>_any_const_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, w, w, ?w, ?w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w, w, w, w")
+	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_immediate" "vsA, vsN, vsA, vsN, vsA, vsN")]
+	     UNSPEC_COND_FADD)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, 0, w, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
+   #
+   #"
+  "&& reload_completed
+   && register_operand (operands[4], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[4])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
 )
@@ -5110,19 +5444,19 @@
 )
 
 ;; Predicated FCADD, merging with the first input.
-(define_insn_and_rewrite "*cond_<optab><mode>_2"
+(define_insn_and_rewrite "*cond_<optab><mode>_2_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")]
 	     SVE_COND_FCADD)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE"
   "@
    fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>
    movprfx\t%0, %2\;fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>"
@@ -5133,22 +5467,39 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_<optab><mode>_2_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")]
+	     SVE_COND_FCADD)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>
+   movprfx\t%0, %2\;fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Predicated FCADD, merging with an independent value.
-(define_insn_and_rewrite "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, 0, w, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w, w, w")]
 	     SVE_COND_FCADD)
 	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && !rtx_equal_p (operands[2], operands[4])
-   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>
@@ -5168,6 +5519,35 @@
       operands[5] = copy_rtx (operands[1]);
     else
       FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+(define_insn_and_rewrite "*cond_<optab><mode>_any_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, 0, w, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w, w, w")]
+	     SVE_COND_FCADD)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[2], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;fcadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>, #<rot>
+   #"
+  "&& reload_completed
+   && register_operand (operands[4], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[4])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[2],
+					     operands[4], operands[1]));
+    operands[4] = operands[2] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
 )
@@ -5209,19 +5589,19 @@
 
 ;; Predicated floating-point subtraction from a constant, merging with the
 ;; second input.
-(define_insn_and_rewrite "*cond_sub<mode>_3_const"
+(define_insn_and_rewrite "*cond_sub<mode>_3_const_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "aarch64_sve_float_arith_immediate")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "0, w")]
 	     UNSPEC_COND_FSUB)
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE"
   "@
    fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
    movprfx\t%0, %3\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2"
@@ -5232,12 +5612,28 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_sub<mode>_3_const_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "aarch64_sve_float_arith_immediate")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "0, w")]
+	     UNSPEC_COND_FSUB)
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2
+   movprfx\t%0, %3\;fsubr\t%0.<Vetype>, %1/m, %0.<Vetype>, #%2"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Predicated floating-point subtraction from a constant, merging with an
 ;; independent value.
-;;
-;; The subtraction predicate and the merge predicate are allowed to be
-;; different.
-(define_insn_and_rewrite "*cond_sub<mode>_relaxed_const"
+(define_insn_and_rewrite "*cond_sub<mode>_const_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, ?w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
@@ -5272,11 +5668,7 @@
   [(set_attr "movprfx" "yes")]
 )
 
-;; Predicated floating-point subtraction from a constant, merging with an
-;; independent value.
-;;
-;; The subtraction predicate and the merge predicate must be the same.
-(define_insn_and_rewrite "*cond_sub<mode>_strict_const"
+(define_insn_and_rewrite "*cond_sub<mode>_const_strict"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, w, ?w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
@@ -5329,19 +5721,19 @@
 )
 
 ;; Predicated floating-point absolute difference.
-(define_insn_and_rewrite "*aarch64_pred_abd<mode>"
+(define_insn_and_rewrite "*aarch64_pred_abd<mode>_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "%0, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")]
 	     UNSPEC_COND_FSUB)]
 	  UNSPEC_COND_FABS))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE"
   "@
    fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0, %2\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
@@ -5349,6 +5741,25 @@
   {
     operands[5] = copy_rtx (operands[1]);
   }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+(define_insn "*aarch64_pred_abd<mode>_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "%0, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")]
+	     UNSPEC_COND_FSUB)]
+	  UNSPEC_COND_FABS))]
+  "TARGET_SVE"
+  "@
+   fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
   [(set_attr "movprfx" "*,yes")]
 )
 
@@ -5376,82 +5787,124 @@
 
 ;; Predicated floating-point absolute difference, merging with the first
 ;; input.
-(define_insn_and_rewrite "*aarch64_cond_abd<mode>_2"
+(define_insn_and_rewrite "*aarch64_cond_abd<mode>_2_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (unspec:SVE_FULL_F
-		[(match_operand 6)
-		 (match_operand:SI 7 "aarch64_sve_gp_strictness")
+		[(match_operand 5)
+		 (const_int SVE_RELAXED_GP)
 		 (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
 		 (match_operand:SVE_FULL_F 3 "register_operand" "w, w")]
 		UNSPEC_COND_FSUB)]
 	     UNSPEC_COND_FABS)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])
-   && aarch64_sve_pred_dominates_p (&operands[6], operands[1])"
+  "TARGET_SVE"
   "@
    fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0, %2\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
   "&& (!rtx_equal_p (operands[1], operands[4])
-       || !rtx_equal_p (operands[1], operands[6]))"
+       || !rtx_equal_p (operands[1], operands[5]))"
   {
     operands[4] = copy_rtx (operands[1]);
-    operands[6] = copy_rtx (operands[1]);
+    operands[5] = copy_rtx (operands[1]);
   }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+(define_insn "*aarch64_cond_abd<mode>_2_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (match_operand:SI 4 "aarch64_sve_gp_strictness")
+	      (unspec:SVE_FULL_F
+		[(match_dup 1)
+		 (match_operand:SI 5 "aarch64_sve_gp_strictness")
+		 (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
+		 (match_operand:SVE_FULL_F 3 "register_operand" "w, w")]
+		UNSPEC_COND_FSUB)]
+	     UNSPEC_COND_FABS)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
   [(set_attr "movprfx" "*,yes")]
 )
 
 ;; Predicated floating-point absolute difference, merging with the second
 ;; input.
-(define_insn_and_rewrite "*aarch64_cond_abd<mode>_3"
+(define_insn_and_rewrite "*aarch64_cond_abd<mode>_3_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (unspec:SVE_FULL_F
-		[(match_operand 6)
-		 (match_operand:SI 7 "aarch64_sve_gp_strictness")
+		[(match_operand 5)
+		 (const_int SVE_RELAXED_GP)
 		 (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
 		 (match_operand:SVE_FULL_F 3 "register_operand" "0, w")]
 		UNSPEC_COND_FSUB)]
 	     UNSPEC_COND_FABS)
 	   (match_dup 3)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])
-   && aarch64_sve_pred_dominates_p (&operands[6], operands[1])"
+  "TARGET_SVE"
   "@
    fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
    movprfx\t%0, %3\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
   "&& (!rtx_equal_p (operands[1], operands[4])
-       || !rtx_equal_p (operands[1], operands[6]))"
+       || !rtx_equal_p (operands[1], operands[5]))"
   {
     operands[4] = copy_rtx (operands[1]);
-    operands[6] = copy_rtx (operands[1]);
+    operands[5] = copy_rtx (operands[1]);
   }
+  [(set_attr "movprfx" "*,yes")]
+)
+
+(define_insn "*aarch64_cond_abd<mode>_3_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (match_operand:SI 4 "aarch64_sve_gp_strictness")
+	      (unspec:SVE_FULL_F
+		[(match_dup 1)
+		 (match_operand:SI 5 "aarch64_sve_gp_strictness")
+		 (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
+		 (match_operand:SVE_FULL_F 3 "register_operand" "0, w")]
+		UNSPEC_COND_FSUB)]
+	     UNSPEC_COND_FABS)
+	   (match_dup 3)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0, %3\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>"
   [(set_attr "movprfx" "*,yes")]
 )
 
 ;; Predicated floating-point absolute difference, merging with an
 ;; independent value.
-(define_insn_and_rewrite "*aarch64_cond_abd<mode>_any"
+(define_insn_and_rewrite "*aarch64_cond_abd<mode>_any_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, &w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (unspec:SVE_FULL_F
-		[(match_operand 7)
-		 (match_operand:SI 8 "aarch64_sve_gp_strictness")
+		[(match_operand 6)
+		 (const_int SVE_RELAXED_GP)
 		 (match_operand:SVE_FULL_F 2 "register_operand" "0, w, w, w, w")
 		 (match_operand:SVE_FULL_F 3 "register_operand" "w, 0, w, w, w")]
 		UNSPEC_COND_FSUB)]
@@ -5460,9 +5913,7 @@
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && !rtx_equal_p (operands[2], operands[4])
-   && !rtx_equal_p (operands[3], operands[4])
-   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])
-   && aarch64_sve_pred_dominates_p (&operands[7], operands[1])"
+   && !rtx_equal_p (operands[3], operands[4])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
@@ -5472,21 +5923,57 @@
   "&& 1"
   {
     if (reload_completed
-        && register_operand (operands[4], <MODE>mode)
-        && !rtx_equal_p (operands[0], operands[4]))
+	&& register_operand (operands[4], <MODE>mode)
+	&& !rtx_equal_p (operands[0], operands[4]))
       {
 	emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[3],
 						 operands[4], operands[1]));
 	operands[4] = operands[3] = operands[0];
       }
     else if (!rtx_equal_p (operands[1], operands[5])
-	     || !rtx_equal_p (operands[1], operands[7]))
+	     || !rtx_equal_p (operands[1], operands[6]))
       {
 	operands[5] = copy_rtx (operands[1]);
-	operands[7] = copy_rtx (operands[1]);
+	operands[6] = copy_rtx (operands[1]);
       }
     else
       FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+(define_insn_and_rewrite "*aarch64_cond_abd<mode>_any_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, &w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (unspec:SVE_FULL_F
+		[(match_dup 1)
+		 (match_operand:SI 6 "aarch64_sve_gp_strictness")
+		 (match_operand:SVE_FULL_F 2 "register_operand" "0, w, w, w, w")
+		 (match_operand:SVE_FULL_F 3 "register_operand" "w, 0, w, w, w")]
+		UNSPEC_COND_FSUB)]
+	     UNSPEC_COND_FABS)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[4])
+   && !rtx_equal_p (operands[3], operands[4])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %2.<Vetype>\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   #"
+  "&& reload_completed
+   && register_operand (operands[4], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[4])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[3],
+					     operands[4], operands[1]));
+    operands[4] = operands[3] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
 )
@@ -6416,20 +6903,20 @@
 
 ;; Predicated floating-point ternary operations, merging with the
 ;; first input.
-(define_insn_and_rewrite "*cond_<optab><mode>_2"
+(define_insn_and_rewrite "*cond_<optab><mode>_2_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")
 	      (match_operand:SVE_FULL_F 4 "register_operand" "w, w")]
 	     SVE_COND_FP_TERNARY)
 	   (match_dup 2)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE"
   "@
    <sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
    movprfx\t%0, %2\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
@@ -6440,22 +6927,42 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_<optab><mode>_2_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "0, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")
+	      (match_operand:SVE_FULL_F 4 "register_operand" "w, w")]
+	     SVE_COND_FP_TERNARY)
+	   (match_dup 2)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0, %2\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Predicated floating-point ternary operations, merging with the
 ;; third input.
-(define_insn_and_rewrite "*cond_<optab><mode>_4"
+(define_insn_and_rewrite "*cond_<optab><mode>_4_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")
 	      (match_operand:SVE_FULL_F 4 "register_operand" "0, w")]
 	     SVE_COND_FP_TERNARY)
 	   (match_dup 4)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE"
   "@
    <sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
    movprfx\t%0, %4\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
@@ -6466,15 +6973,35 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_<optab><mode>_4_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")
+	      (match_operand:SVE_FULL_F 4 "register_operand" "0, w")]
+	     SVE_COND_FP_TERNARY)
+	   (match_dup 4)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   <sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %4\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Predicated floating-point ternary operations, merging with an
 ;; independent value.
-(define_insn_and_rewrite "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, &w, &w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 6)
-	      (match_operand:SI 7 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, 0, w, w, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w, w, 0, w, w")
 	      (match_operand:SVE_FULL_F 4 "register_operand" "w, 0, w, w, w, w")]
@@ -6484,8 +7011,7 @@
   "TARGET_SVE
    && !rtx_equal_p (operands[2], operands[5])
    && !rtx_equal_p (operands[3], operands[5])
-   && !rtx_equal_p (operands[4], operands[5])
-   && aarch64_sve_pred_dominates_p (&operands[6], operands[1])"
+   && !rtx_equal_p (operands[4], operands[5])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
@@ -6507,6 +7033,41 @@
       operands[6] = copy_rtx (operands[1]);
     else
       FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+(define_insn_and_rewrite "*cond_<optab><mode>_any_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, &w, &w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, 0, w, w, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w, w, 0, w, w")
+	      (match_operand:SVE_FULL_F 4 "register_operand" "w, 0, w, w, w, w")]
+	     SVE_COND_FP_TERNARY)
+	   (match_operand:SVE_FULL_F 5 "aarch64_simd_reg_or_zero" "Dz, Dz, Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE
+   && !rtx_equal_p (operands[2], operands[5])
+   && !rtx_equal_p (operands[3], operands[5])
+   && !rtx_equal_p (operands[4], operands[5])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_fmad_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %4.<Vetype>
+   movprfx\t%0.<Vetype>, %1/m, %4.<Vetype>\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   #"
+  "&& reload_completed
+   && register_operand (operands[5], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[5])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[4],
+					     operands[5], operands[1]));
+    operands[5] = operands[4] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
 )
@@ -6572,20 +7133,20 @@
 )
 
 ;; Predicated FCMLA, merging with the third input.
-(define_insn_and_rewrite "*cond_<optab><mode>_4"
+(define_insn_and_rewrite "*cond_<optab><mode>_4_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")
 	      (match_operand:SVE_FULL_F 4 "register_operand" "0, w")]
 	     SVE_COND_FCMLA)
 	   (match_dup 4)]
 	  UNSPEC_SEL))]
-  "TARGET_SVE && aarch64_sve_pred_dominates_p (&operands[5], operands[1])"
+  "TARGET_SVE"
   "@
    fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>
    movprfx\t%0, %4\;fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>"
@@ -6596,23 +7157,41 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+(define_insn "*cond_<optab><mode>_4_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w")
+	      (match_operand:SVE_FULL_F 4 "register_operand" "0, w")]
+	     SVE_COND_FCMLA)
+	   (match_dup 4)]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
+  "@
+   fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>
+   movprfx\t%0, %4\;fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>"
+  [(set_attr "movprfx" "*,yes")]
+)
+
 ;; Predicated FCMLA, merging with an independent value.
-(define_insn_and_rewrite "*cond_<optab><mode>_any"
+(define_insn_and_rewrite "*cond_<optab><mode>_any_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 6)
-	      (match_operand:SI 7 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w, w")
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w, w, w")
 	      (match_operand:SVE_FULL_F 4 "register_operand" "w, 0, w, w")]
 	     SVE_COND_FCMLA)
 	   (match_operand:SVE_FULL_F 5 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && !rtx_equal_p (operands[4], operands[5])
-   && aarch64_sve_pred_dominates_p (&operands[6], operands[1])"
+  "TARGET_SVE && !rtx_equal_p (operands[4], operands[5])"
   "@
    movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>
    movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>
@@ -6632,6 +7211,36 @@
       operands[6] = copy_rtx (operands[1]);
     else
       FAIL;
+  }
+  [(set_attr "movprfx" "yes")]
+)
+
+(define_insn_and_rewrite "*cond_<optab><mode>_any_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, &w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w, w")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w, w, w, w")
+	      (match_operand:SVE_FULL_F 4 "register_operand" "w, 0, w, w")]
+	     SVE_COND_FCMLA)
+	   (match_operand:SVE_FULL_F 5 "aarch64_simd_reg_or_zero" "Dz, Dz, 0, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && !rtx_equal_p (operands[4], operands[5])"
+  "@
+   movprfx\t%0.<Vetype>, %1/z, %4.<Vetype>\;fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>
+   movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>
+   movprfx\t%0.<Vetype>, %1/m, %4.<Vetype>\;fcmla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>, #<rot>
+   #"
+  "&& reload_completed
+   && register_operand (operands[5], <MODE>mode)
+   && !rtx_equal_p (operands[0], operands[5])"
+  {
+    emit_insn (gen_vcond_mask_<mode><vpred> (operands[0], operands[4],
+					     operands[5], operands[1]));
+    operands[5] = operands[4] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
 )
@@ -7328,32 +7937,50 @@
   "TARGET_SVE"
 )
 
-(define_insn_and_rewrite "*aarch64_pred_fac<cmp_op><mode>"
+(define_insn_and_rewrite "*aarch64_pred_fac<cmp_op><mode>_relaxed"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
 	(unspec:<VPRED>
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
 	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 5)
-	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w")]
 	     UNSPEC_COND_FABS)
 	   (unspec:SVE_FULL_F
-	     [(match_operand 7)
-	      (match_operand:SI 8 "aarch64_sve_gp_strictness")
+	     [(match_operand 6)
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 3 "register_operand" "w")]
 	     UNSPEC_COND_FABS)]
 	  SVE_COND_FP_ABS_CMP))]
-  "TARGET_SVE
-   && aarch64_sve_pred_dominates_p (&operands[5], operands[1])
-   && aarch64_sve_pred_dominates_p (&operands[7], operands[1])"
+  "TARGET_SVE"
   "fac<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
   "&& (!rtx_equal_p (operands[1], operands[5])
-       || !rtx_equal_p (operands[1], operands[7]))"
+       || !rtx_equal_p (operands[1], operands[6]))"
   {
     operands[5] = copy_rtx (operands[1]);
-    operands[7] = copy_rtx (operands[1]);
+    operands[6] = copy_rtx (operands[1]);
   }
+)
+
+(define_insn "*aarch64_pred_fac<cmp_op><mode>_strict"
+  [(set (match_operand:<VPRED> 0 "register_operand" "=Upa")
+	(unspec:<VPRED>
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (match_operand:SI 4 "aarch64_sve_ptrue_flag")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w")]
+	     UNSPEC_COND_FABS)
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (match_operand:SI 6 "aarch64_sve_gp_strictness")
+	      (match_operand:SVE_FULL_F 3 "register_operand" "w")]
+	     UNSPEC_COND_FABS)]
+	  SVE_COND_FP_ABS_CMP))]
+  "TARGET_SVE"
+  "fac<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -7937,20 +8564,18 @@
 ;; the same register (despite having different modes).  Making all the
 ;; alternatives earlyclobber makes things more consistent for the
 ;; register allocator.
-(define_insn_and_rewrite "*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>"
+(define_insn_and_rewrite "*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_relaxed"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=&w, &w, ?&w")
 	(unspec:SVE_FULL_HSDI
 	  [(match_operand:<SVE_FULL_HSDI:VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (unspec:SVE_FULL_HSDI
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w")]
 	     SVE_COND_FCVTI)
 	   (match_operand:SVE_FULL_HSDI 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && <SVE_FULL_HSDI:elem_bits> >= <SVE_FULL_F:elem_bits>
-   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE && <SVE_FULL_HSDI:elem_bits> >= <SVE_FULL_F:elem_bits>"
   "@
    fcvtz<su>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_F:Vetype>
    movprfx\t%0.<SVE_FULL_HSDI:Vetype>, %1/z, %2.<SVE_FULL_HSDI:Vetype>\;fcvtz<su>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_F:Vetype>
@@ -7959,6 +8584,25 @@
   {
     operands[4] = copy_rtx (operands[1]);
   }
+  [(set_attr "movprfx" "*,yes,yes")]
+)
+
+(define_insn "*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_strict"
+  [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=&w, &w, ?&w")
+	(unspec:SVE_FULL_HSDI
+	  [(match_operand:<SVE_FULL_HSDI:VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_FULL_HSDI
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand" "w, w, w")]
+	     SVE_COND_FCVTI)
+	   (match_operand:SVE_FULL_HSDI 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && <SVE_FULL_HSDI:elem_bits> >= <SVE_FULL_F:elem_bits>"
+  "@
+   fcvtz<su>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_F:Vetype>
+   movprfx\t%0.<SVE_FULL_HSDI:Vetype>, %1/z, %2.<SVE_FULL_HSDI:Vetype>\;fcvtz<su>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_F:Vetype>
+   movprfx\t%0, %3\;fcvtz<su>\t%0.<SVE_FULL_HSDI:Vetype>, %1/m, %2.<SVE_FULL_F:Vetype>"
   [(set_attr "movprfx" "*,yes,yes")]
 )
 
@@ -8101,20 +8745,18 @@
 ;; the same register (despite having different modes).  Making all the
 ;; alternatives earlyclobber makes things more consistent for the
 ;; register allocator.
-(define_insn_and_rewrite "*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>"
+(define_insn_and_rewrite "*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>_relaxed"
   [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, ?&w")
 	(unspec:SVE_FULL_F
 	  [(match_operand:<SVE_FULL_HSDI:VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (unspec:SVE_FULL_F
 	     [(match_operand 4)
-	      (match_operand:SI 5 "aarch64_sve_gp_strictness")
+	      (const_int SVE_RELAXED_GP)
 	      (match_operand:SVE_FULL_HSDI 2 "register_operand" "w, w, w")]
 	     SVE_COND_ICVTF)
 	   (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
 	  UNSPEC_SEL))]
-  "TARGET_SVE
-   && <SVE_FULL_HSDI:elem_bits> >= <SVE_FULL_F:elem_bits>
-   && aarch64_sve_pred_dominates_p (&operands[4], operands[1])"
+  "TARGET_SVE && <SVE_FULL_HSDI:elem_bits> >= <SVE_FULL_F:elem_bits>"
   "@
    <su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
    movprfx\t%0.<SVE_FULL_HSDI:Vetype>, %1/z, %2.<SVE_FULL_HSDI:Vetype>\;<su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
@@ -8123,6 +8765,25 @@
   {
     operands[4] = copy_rtx (operands[1]);
   }
+  [(set_attr "movprfx" "*,yes,yes")]
+)
+
+(define_insn "*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>_strict"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=&w, &w, ?&w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<SVE_FULL_HSDI:VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_STRICT_GP)
+	      (match_operand:SVE_FULL_HSDI 2 "register_operand" "w, w, w")]
+	     SVE_COND_ICVTF)
+	   (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "0, Dz, w")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE && <SVE_FULL_HSDI:elem_bits> >= <SVE_FULL_F:elem_bits>"
+  "@
+   <su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
+   movprfx\t%0.<SVE_FULL_HSDI:Vetype>, %1/z, %2.<SVE_FULL_HSDI:Vetype>\;<su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>
+   movprfx\t%0, %3\;<su>cvtf\t%0.<SVE_FULL_F:Vetype>, %1/m, %2.<SVE_FULL_HSDI:Vetype>"
   [(set_attr "movprfx" "*,yes,yes")]
 )
 

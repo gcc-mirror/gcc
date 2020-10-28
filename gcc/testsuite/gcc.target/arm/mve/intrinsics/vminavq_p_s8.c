@@ -10,7 +10,6 @@ foo (uint8_t a, int8x16_t b, mve_pred16_t p)
   return vminavq_p_s8 (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vminavt.s8"  }  } */
 
 uint8_t
 foo1 (uint8_t a, int8x16_t b, mve_pred16_t p)
@@ -18,4 +17,12 @@ foo1 (uint8_t a, int8x16_t b, mve_pred16_t p)
   return vminavq_p (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vminavt.s8"  }  } */
+
+int8_t
+foo2 (uint32_t a, int8x16_t b, mve_pred16_t p)
+{
+  return vminavq_p (a, b, p);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
+/* { dg-final { scan-assembler-times "vminavt.s8" 3 } } */

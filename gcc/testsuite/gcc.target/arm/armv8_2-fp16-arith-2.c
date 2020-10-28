@@ -6,9 +6,9 @@
 /* Test instructions generated for half-precision arithmetic without
    unsafe-math-optimizations.  */
 
-typedef __fp16 float16_t;
-typedef __simd64_float16_t float16x4_t;
-typedef __simd128_float16_t float16x8_t;
+typedef _Float16 float16_t;
+typedef _Float16 float16x4_t __attribute__ ((vector_size (8)));
+typedef _Float16 float16x8_t __attribute__ ((vector_size (16)));
 
 typedef short int16x4_t __attribute__ ((vector_size (8)));
 typedef short int int16x8_t  __attribute__ ((vector_size (16)));
@@ -16,7 +16,7 @@ typedef short int int16x8_t  __attribute__ ((vector_size (16)));
 float16_t
 fp16_abs (float16_t a)
 {
-  return (a < 0) ? -a : a;
+  return __builtin_fabsf16 (a);
 }
 
 #define TEST_UNOP(NAME, OPERATOR, TY)		\
@@ -89,17 +89,23 @@ TEST_CMP (greaterthanqual, >=, int16x8_t, float16x8_t)
 /* { dg-final { scan-assembler-times {vneg\.f16\ts[0-9]+, s[0-9]+} 1 } }  */
 /* { dg-final { scan-assembler-times {vneg\.f16\td[0-9]+, d[0-9]+} 1 } }  */
 /* { dg-final { scan-assembler-times {vneg\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vabs\.f16\ts[0-9]+, s[0-9]+} 2 } }  */
 
-/* { dg-final { scan-assembler-times {vadd\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 13 } }  */
-/* { dg-final { scan-assembler-times {vsub\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 13 } }  */
-/* { dg-final { scan-assembler-times {vmul\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 13 } }  */
+/* { dg-final { scan-assembler-times {vadd\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vadd\.f16\td[0-9]+, d[0-9]+, d[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vadd\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } }  */
+
+/* { dg-final { scan-assembler-times {vsub\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vsub\.f16\td[0-9]+, d[0-9]+, d[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vsub\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } }  */
+
+/* { dg-final { scan-assembler-times {vmul\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vmul\.f16\td[0-9]+, d[0-9]+, d[0-9]+} 1 } }  */
+/* { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } }  */
+
 /* { dg-final { scan-assembler-times {vdiv\.f16\ts[0-9]+, s[0-9]+, s[0-9]+} 13 } }  */
 /* { dg-final { scan-assembler-times {vcmp\.f32\ts[0-9]+, s[0-9]+} 26 } }  */
-
 /* { dg-final { scan-assembler-times {vcmpe\.f32\ts[0-9]+, s[0-9]+} 52 } }  */
-/* { dg-final { scan-assembler-times {vcmpe\.f32\ts[0-9]+, #0} 2 } }  */
-
-/* { dg-final { scan-assembler-not {vabs\.f16} } }  */
 
 /* { dg-final { scan-assembler-not {vadd\.f32} } }  */
 /* { dg-final { scan-assembler-not {vsub\.f32} } }  */

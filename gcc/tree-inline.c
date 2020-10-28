@@ -61,6 +61,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "sreal.h"
 #include "tree-cfgcleanup.h"
 #include "tree-ssa-live.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "symtab-thunks.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -4792,13 +4795,14 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 
   /* If callee is thunk, all we need is to adjust the THIS pointer
      and redirect to function being thunked.  */
-  if (id->src_node->thunk.thunk_p)
+  if (id->src_node->thunk)
     {
       cgraph_edge *edge;
       tree virtual_offset = NULL;
       profile_count count = cg_edge->count;
       tree op;
       gimple_stmt_iterator iter = gsi_for_stmt (stmt);
+      thunk_info *info = thunk_info::get (id->src_node);
 
       cgraph_edge::remove (cg_edge);
       edge = id->src_node->callees->clone (id->dst_node, call_stmt,
@@ -4807,16 +4811,16 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 					   profile_count::one (),
 				           true);
       edge->count = count;
-      if (id->src_node->thunk.virtual_offset_p)
-        virtual_offset = size_int (id->src_node->thunk.virtual_value);
+      if (info->virtual_offset_p)
+	virtual_offset = size_int (info->virtual_value);
       op = create_tmp_reg_fn (cfun, TREE_TYPE (gimple_call_arg (stmt, 0)),
 			      NULL);
       gsi_insert_before (&iter, gimple_build_assign (op,
 						    gimple_call_arg (stmt, 0)),
 			 GSI_NEW_STMT);
-      gcc_assert (id->src_node->thunk.this_adjusting);
-      op = thunk_adjust (&iter, op, 1, id->src_node->thunk.fixed_offset,
-			 virtual_offset, id->src_node->thunk.indirect_offset);
+      gcc_assert (info->this_adjusting);
+      op = thunk_adjust (&iter, op, 1, info->fixed_offset,
+			 virtual_offset, info->indirect_offset);
 
       gimple_call_set_arg (stmt, 0, op);
       gimple_call_set_fndecl (stmt, edge->callee->decl);

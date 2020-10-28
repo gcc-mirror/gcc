@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "dumpfile.h"
 #include "c-ubsan.h"
+#include "tree-nested.h"
 
 /*  The gimplification pass converts the language-dependent trees
     (ld-trees) emitted by the parser into language-independent trees
@@ -533,10 +534,6 @@ c_genericize (tree fndecl)
 		 &pset);
     }
 
-  if (warn_duplicated_branches)
-    walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
-				  do_warn_duplicated_branches_r, NULL);
-
   /* Genericize loops and other structured control constructs.  The C++
      front end has already done this in lang-specific code.  */
   if (!c_dialect_cxx ())
@@ -549,6 +546,10 @@ c_genericize (tree fndecl)
       restore_bc_state (&save_state);
       pop_cfun ();
     }
+
+  if (warn_duplicated_branches)
+    walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
+				  do_warn_duplicated_branches_r, NULL);
 
   /* Dump the C-specific tree IR.  */
   dump_orig = get_dump_info (TDI_original, &local_dump_flags);
@@ -572,7 +573,8 @@ c_genericize (tree fndecl)
 
   /* Dump all nested functions now.  */
   cgn = cgraph_node::get_create (fndecl);
-  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
+  for (cgn = first_nested_function (cgn);
+       cgn; cgn = next_nested_function (cgn))
     c_genericize (cgn->decl);
 }
 

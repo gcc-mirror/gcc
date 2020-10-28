@@ -2618,8 +2618,11 @@ set via @code{__attribute__}.",
 DEFHOOK
 (libc_has_function,
  "This hook determines whether a function from a class of functions\n\
-@var{fn_class} is present in the target C library.",
- bool, (enum function_class fn_class),
+@var{fn_class} is present in the target C library.  If @var{type} is NULL,\n\
+the caller asks for support for all standard (float, double, long double)\n\
+types.  If @var{type} is non-NULL, the caller asks for support for a\n\
+specific type.",
+ bool, (enum function_class fn_class, tree type),
  default_libc_has_function)
 
 DEFHOOK

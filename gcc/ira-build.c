@@ -128,7 +128,6 @@ create_loop_tree_nodes (void)
   bool skip_p;
   edge_iterator ei;
   edge e;
-  vec<edge> edges;
   loop_p loop;
 
   ira_bb_nodes
@@ -173,14 +172,13 @@ create_loop_tree_nodes (void)
 	      }
 	  if (skip_p)
 	    continue;
-	  edges = get_loop_exit_edges (loop);
+	  auto_vec<edge> edges = get_loop_exit_edges (loop);
 	  FOR_EACH_VEC_ELT (edges, j, e)
 	    if ((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e))
 	      {
 		skip_p = true;
 		break;
 	      }
-	  edges.release ();
 	  if (skip_p)
 	    continue;
 	}
@@ -1964,17 +1962,15 @@ create_loop_tree_node_allocnos (ira_loop_tree_node_t loop_node)
       int i;
       edge_iterator ei;
       edge e;
-      vec<edge> edges;
 
       ira_assert (current_loops != NULL);
       FOR_EACH_EDGE (e, ei, loop_node->loop->header->preds)
 	if (e->src != loop_node->loop->latch)
 	  create_loop_allocnos (e);
 
-      edges = get_loop_exit_edges (loop_node->loop);
+      auto_vec<edge> edges = get_loop_exit_edges (loop_node->loop);
       FOR_EACH_VEC_ELT (edges, i, e)
 	create_loop_allocnos (e);
-      edges.release ();
     }
 }
 
@@ -2167,13 +2163,12 @@ loop_with_complex_edge_p (class loop *loop)
   int i;
   edge_iterator ei;
   edge e;
-  vec<edge> edges;
   bool res;
 
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     if (e->flags & EDGE_EH)
       return true;
-  edges = get_loop_exit_edges (loop);
+  auto_vec<edge> edges = get_loop_exit_edges (loop);
   res = false;
   FOR_EACH_VEC_ELT (edges, i, e)
     if (e->flags & EDGE_COMPLEX)
@@ -2181,7 +2176,6 @@ loop_with_complex_edge_p (class loop *loop)
 	res = true;
 	break;
       }
-  edges.release ();
   return res;
 }
 #endif

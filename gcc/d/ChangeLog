@@ -1,3 +1,22 @@
+2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* decl.cc (finish_thunk): Update for new thunk api.
+
+2020-10-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* decl.cc: Include tree-nested.h
+	(get_symbol_decl): Update for new nested function info.
+
+2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 70aabfb51
+
+2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 3a9790525
+	* d-target.cc (Target::isVectorTypeSupported): Adjust return codes for
+	invalid size and invalid base type.
+
 2020-09-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/97002

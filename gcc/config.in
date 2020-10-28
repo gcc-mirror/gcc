@@ -394,6 +394,12 @@
 #endif
 
 
+/* Define if your assembler supports the --gdwarf-5 option. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_GDWARF_5_DEBUG_FLAG
+#endif
+
+
 /* Define if your assembler supports .gnu_attribute. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_GNU_ATTRIBUTE
@@ -713,6 +719,13 @@
 #endif
 
 
+/* Define if your assembler supports --gdwarf-4/--gdwarf-5 even with compiler
+   generated .debug_line. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_WORKING_DWARF_N_FLAG
+#endif
+
+
 /* Define if your assembler supports -xbrace_comment option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_XBRACE_COMMENT_OPTION
@@ -987,6 +1000,13 @@
    0. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_MALLINFO
+#endif
+
+
+/* Define to 1 if we found a declaration for 'mallinfo2', otherwise define to
+   0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_MALLINFO2
 #endif
 
 
@@ -1662,6 +1682,12 @@
 /* Define to 1 if you have the `mallinfo' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MALLINFO
+#endif
+
+
+/* Define to 1 if you have the `mallinfo2' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_MALLINFO2
 #endif
 
 

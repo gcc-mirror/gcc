@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.localization.locales.locale" xreflabel="Locale">
 
 <info><title>locale</title>
@@ -106,7 +106,7 @@ portability is an issue.
 
 
   <section xml:id="locale.impl.c"><info><title>Interacting with "C" locales</title></info>
-    
+
 
 <itemizedlist>
    <listitem>

@@ -81,104 +81,53 @@
 ;; patterns separately for Neon, IWMMXT and MVE.
 
 (define_expand "add<mode>3"
-  [(set (match_operand:VNIM 0 "s_register_operand")
-	(plus:VNIM (match_operand:VNIM 1 "s_register_operand")
-		   (match_operand:VNIM 2 "s_register_operand")))]
-  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
-		    || flag_unsafe_math_optimizations))
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))
-   || (TARGET_HAVE_MVE && VALID_MVE_SI_MODE(<MODE>mode))
-   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE(<MODE>mode))"
-{
-})
-
-;; Vector arithmetic.  Expanders are blank, then unnamed insns implement
-;; patterns separately for Neon and MVE.
-
-(define_expand "addv8hf3"
-  [(set (match_operand:V8HF 0 "s_register_operand")
-	(plus:V8HF (match_operand:V8HF 1 "s_register_operand")
-		   (match_operand:V8HF 2 "s_register_operand")))]
-  "(TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE(V8HFmode))
-   || (TARGET_NEON_FP16INST && flag_unsafe_math_optimizations)"
-{
-  if (TARGET_NEON_FP16INST && flag_unsafe_math_optimizations)
-    emit_insn (gen_addv8hf3_neon (operands[0], operands[1], operands[2]));
-})
-
-;; Vector arithmetic.  Expanders are blank, then unnamed insns implement
-;; patterns separately for Neon and IWMMXT.
-
-(define_expand "add<mode>3"
-  [(set (match_operand:VNINOTM 0 "s_register_operand")
-	(plus:VNINOTM (match_operand:VNINOTM 1 "s_register_operand")
-		      (match_operand:VNINOTM 2 "s_register_operand")))]
-  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
-		    || flag_unsafe_math_optimizations))
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
-
-;; Vector arithmetic. Expanders are blank, then unnamed insns implement
-;; patterns separately for IWMMXT and Neon.
+  [(set (match_operand:VDQ 0 "s_register_operand")
+	(plus:VDQ (match_operand:VDQ 1 "s_register_operand")
+		  (match_operand:VDQ 2 "s_register_operand")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "sub<mode>3"
-  [(set (match_operand:VALL 0 "s_register_operand")
-        (minus:VALL (match_operand:VALL 1 "s_register_operand")
-                    (match_operand:VALL 2 "s_register_operand")))]
-  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
-		    || flag_unsafe_math_optimizations))
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+  [(set (match_operand:VDQ 0 "s_register_operand")
+	(minus:VDQ (match_operand:VDQ 1 "s_register_operand")
+		   (match_operand:VDQ 2 "s_register_operand")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "mul<mode>3"
-  [(set (match_operand:VALLW 0 "s_register_operand")
-        (mult:VALLW (match_operand:VALLW 1 "s_register_operand")
-		    (match_operand:VALLW 2 "s_register_operand")))]
-  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
-		    || flag_unsafe_math_optimizations))
-   || (<MODE>mode == V4HImode && TARGET_REALLY_IWMMXT)"
-{
-})
+  [(set (match_operand:VDQWH 0 "s_register_operand")
+	(mult:VDQWH (match_operand:VDQWH 1 "s_register_operand")
+		    (match_operand:VDQWH 2 "s_register_operand")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "smin<mode>3"
   [(set (match_operand:VALLW 0 "s_register_operand")
 	(smin:VALLW (match_operand:VALLW 1 "s_register_operand")
 		    (match_operand:VALLW 2 "s_register_operand")))]
-  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
-		    || flag_unsafe_math_optimizations))
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+   "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "umin<mode>3"
   [(set (match_operand:VINTW 0 "s_register_operand")
 	(umin:VINTW (match_operand:VINTW 1 "s_register_operand")
 		    (match_operand:VINTW 2 "s_register_operand")))]
-  "TARGET_NEON
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+   "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "smax<mode>3"
   [(set (match_operand:VALLW 0 "s_register_operand")
 	(smax:VALLW (match_operand:VALLW 1 "s_register_operand")
 		    (match_operand:VALLW 2 "s_register_operand")))]
-  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
-		    || flag_unsafe_math_optimizations))
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+   "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "umax<mode>3"
   [(set (match_operand:VINTW 0 "s_register_operand")
 	(umax:VINTW (match_operand:VINTW 1 "s_register_operand")
 		    (match_operand:VINTW 2 "s_register_operand")))]
-  "TARGET_NEON
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
-{
-})
+   "ARM_HAVE_<MODE>_ARITH"
+)
 
 (define_expand "vec_perm<mode>"
   [(match_operand:VE 0 "s_register_operand")

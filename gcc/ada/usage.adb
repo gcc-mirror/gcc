@@ -378,11 +378,6 @@ begin
    Write_Switch_Char ("p");
    Write_Line ("Suppress all checks");
 
-   --  Line for -gnatP switch
-
-   Write_Switch_Char ("P");
-   Write_Line ("Generate periodic calls to System.Polling.Poll");
-
    --  Line for -gnatq switch
 
    Write_Switch_Char ("q");

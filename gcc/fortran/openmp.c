@@ -2766,15 +2766,44 @@ match
 gfc_match_omp_flush (void)
 {
   gfc_omp_namelist *list = NULL;
+  gfc_omp_clauses *c = NULL;
+  gfc_gobble_whitespace ();
+  enum gfc_omp_memorder mo = OMP_MEMORDER_LAST;
+  if (gfc_match_omp_eos () == MATCH_NO && gfc_peek_ascii_char () != '(')
+    {
+      if (gfc_match ("acq_rel") == MATCH_YES)
+	mo = OMP_MEMORDER_ACQ_REL;
+      else if (gfc_match ("release") == MATCH_YES)
+	mo = OMP_MEMORDER_RELEASE;
+      else if (gfc_match ("acquire") == MATCH_YES)
+	mo = OMP_MEMORDER_ACQUIRE;
+      else
+	{
+	  gfc_error ("Expected AQC_REL, RELEASE, or ACQUIRE at %C");
+	  return MATCH_ERROR;
+	}
+      c = gfc_get_omp_clauses ();
+      c->memorder = mo;
+    }
   gfc_match_omp_variable_list (" (", &list, true);
+  if (list && mo != OMP_MEMORDER_LAST)
+    {
+      gfc_error ("List specified together with memory order clause in FLUSH "
+		 "directive at %C");
+      gfc_free_omp_namelist (list);
+      gfc_free_omp_clauses (c);
+      return MATCH_ERROR;
+    }
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP FLUSH statement at %C");
       gfc_free_omp_namelist (list);
+      gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
   new_st.op = EXEC_OMP_FLUSH;
   new_st.ext.omp_namelist = list;
+  new_st.ext.omp_clauses = c;
   return MATCH_YES;
 }
 

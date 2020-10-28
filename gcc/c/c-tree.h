@@ -675,6 +675,7 @@ extern location_t c_last_sizeof_loc;
 
 extern struct c_switch *c_switch_stack;
 
+extern bool char_type_p (tree);
 extern tree c_objc_common_truthvalue_conversion (location_t, tree);
 extern tree require_complete_type (location_t, tree);
 extern bool same_translation_unit_p (const_tree, const_tree);

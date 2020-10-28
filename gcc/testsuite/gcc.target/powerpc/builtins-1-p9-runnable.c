@@ -16,8 +16,13 @@ int main() {
   vfb = (vector float){10.0, -2.0, 70.0, 999.0 };
 
   /* Expected results.  */
+#ifdef __BIG_ENDIAN__
+  vexpected = (vector unsigned short) { 0x4900, 0xc000, 0x5460, 0x63ce,
+					0x3666, 0x3e66, 0x4d00, 0x563e };
+#else
   vexpected = (vector unsigned short) { 0x3666, 0x3e66, 0x4d00, 0x563e,
-					0x4900, 0xc000, 0x5460, 0x63ce};
+					0x4900, 0xc000, 0x5460, 0x63ce };
+#endif
 
 /*
      vresult = vec_pack_to_short_fp32 (vfa, vfb);
@@ -44,7 +49,7 @@ int main() {
   for(i = 0; i< 8; i++) {
     if (vresult[i] != vexpected[i]) {
 	printf("i=[%d] 0x%x != 0x%x \n",i,vresult[i],vexpected[i]);
-      abort();
+	abort();
     }
   }
 }

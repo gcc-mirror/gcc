@@ -539,7 +539,7 @@ func implements(T, V *rtype) bool {
 		for j := 0; j < len(v.methods); j++ {
 			tm := &t.methods[i]
 			vm := &v.methods[j]
-			if *vm.name == *tm.name && (vm.pkgPath == tm.pkgPath || (vm.pkgPath != nil && tm.pkgPath != nil && *vm.pkgPath == *tm.pkgPath)) && toType(vm.typ).common() == toType(tm.typ).common() {
+			if *vm.name == *tm.name && (vm.pkgPath == tm.pkgPath || (vm.pkgPath != nil && tm.pkgPath != nil && *vm.pkgPath == *tm.pkgPath)) && rtypeEqual(toType(vm.typ).common(), toType(tm.typ).common()) {
 				if i++; i >= len(t.methods) {
 					return true
 				}
@@ -556,7 +556,7 @@ func implements(T, V *rtype) bool {
 	for j := 0; j < len(v.methods); j++ {
 		tm := &t.methods[i]
 		vm := &v.methods[j]
-		if *vm.name == *tm.name && (vm.pkgPath == tm.pkgPath || (vm.pkgPath != nil && tm.pkgPath != nil && *vm.pkgPath == *tm.pkgPath)) && toType(vm.mtyp).common() == toType(tm.typ).common() {
+		if *vm.name == *tm.name && (vm.pkgPath == tm.pkgPath || (vm.pkgPath != nil && tm.pkgPath != nil && *vm.pkgPath == *tm.pkgPath)) && rtypeEqual(toType(vm.mtyp).common(), toType(tm.typ).common()) {
 			if i++; i >= len(t.methods) {
 				return true
 			}
@@ -572,7 +572,7 @@ func implements(T, V *rtype) bool {
 // and the ideal constant rules (no ideal constants at run time).
 func directlyAssignable(T, V *rtype) bool {
 	// x's type V is identical to T?
-	if T == V {
+	if rtypeEqual(T, V) {
 		return true
 	}
 
@@ -599,7 +599,7 @@ func haveIdenticalType(T, V Type, cmpTags bool) bool {
 }
 
 func haveIdenticalUnderlyingType(T, V *rtype, cmpTags bool) bool {
-	if T == V {
+	if rtypeEqual(T, V) {
 		return true
 	}
 

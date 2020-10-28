@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -57,6 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "builtins.h"
 #include "gimple-fold.h"
+#include "attr-fnspec.h"
+#include "value-query.h"
 
 #include "tree-pretty-print.h"
 
@@ -641,25 +644,15 @@ decl_return_flags (tree fndecl)
   if (!attr)
     return 0;
 
-  attr = TREE_VALUE (TREE_VALUE (attr));
-  if (!attr || TREE_STRING_LENGTH (attr) < 1)
-    return 0;
+  attr_fnspec fnspec (TREE_VALUE (TREE_VALUE (attr)));
 
-  switch (TREE_STRING_POINTER (attr)[0])
-    {
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-      return ERF_RETURNS_ARG | (TREE_STRING_POINTER (attr)[0] - '1');
+  unsigned int arg;
+  if (fnspec.returns_arg (&arg))
+    return ERF_RETURNS_ARG | arg;
 
-    case 'm':
-      return ERF_NOALIAS;
-
-    case '.':
-    default:
-      return 0;
-    }
+  if (fnspec.returns_noalias_p ())
+    return ERF_NOALIAS;
+  return 0;
 }
 
 /* Return nonzero when FNDECL represents a call to setjmp.  */
@@ -1243,14 +1236,17 @@ alloc_max_size (void)
    after adjusting it if necessary to make EXP a represents a valid size
    of object, or a valid size argument to an allocation function declared
    with attribute alloc_size (whose argument may be signed), or to a string
-   manipulation function like memset.  When ALLOW_ZERO is true, allow
-   returning a range of [0, 0] for a size in an anti-range [1, N] where
-   N > PTRDIFF_MAX.  A zero range is a (nearly) invalid argument to
-   allocation functions like malloc but it is a valid argument to
-   functions like memset.  */
+   manipulation function like memset.
+   When ALLOW_ZERO is set in FLAGS, allow returning a range of [0, 0] for
+   a size in an anti-range [1, N] where N > PTRDIFF_MAX.  A zero range is
+   a (nearly) invalid argument to allocation functions like malloc but it
+   is a valid argument to functions like memset.
+   When USE_LARGEST is set in FLAGS set RANGE to the largest valid subrange
+   in a multi-range, otherwise to the smallest valid subrange.  */
 
 bool
-get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
+get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
+		int flags /* = 0 */)
 {
   if (!exp)
     return false;
@@ -1269,7 +1265,19 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
   enum value_range_kind range_type;
 
   if (integral)
-    range_type = determine_value_range (exp, &min, &max);
+    {
+      value_range vr;
+      if (query && query->range_of_expr (vr, exp, stmt))
+	{
+	  if (vr.undefined_p ())
+	    vr.set_varying (TREE_TYPE (exp));
+	  range_type = vr.kind ();
+	  min = wi::to_wide (vr.min ());
+	  max = wi::to_wide (vr.max ());
+	}
+      else
+	range_type = determine_value_range (exp, &min, &max);
+    }
   else
     range_type = VR_VARYING;
 
@@ -1322,25 +1330,50 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
 	      min = wi::zero (expprec);
 	    }
 	}
-      else if (wi::eq_p (0, min - 1))
-	{
-	  /* EXP is unsigned and not in the range [1, MAX].  That means
-	     it's either zero or greater than MAX.  Even though 0 would
-	     normally be detected by -Walloc-zero, unless ALLOW_ZERO
-	     is true, set the range to [MAX, TYPE_MAX] so that when MAX
-	     is greater than the limit the whole range is diagnosed.  */
-	  if (allow_zero)
-	    min = max = wi::zero (expprec);
-	  else
-	    {
-	      min = max + 1;
-	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
-	    }
-	}
       else
 	{
-	  max = min - 1;
-	  min = wi::zero (expprec);
+	  wide_int maxsize = wi::to_wide (max_object_size ());
+	  min = wide_int::from (min, maxsize.get_precision (), UNSIGNED);
+	  max = wide_int::from (max, maxsize.get_precision (), UNSIGNED);
+	  if (wi::eq_p (0, min - 1))
+	    {
+	      /* EXP is unsigned and not in the range [1, MAX].  That means
+		 it's either zero or greater than MAX.  Even though 0 would
+		 normally be detected by -Walloc-zero, unless ALLOW_ZERO
+		 is set, set the range to [MAX, TYPE_MAX] so that when MAX
+		 is greater than the limit the whole range is diagnosed.  */
+	      wide_int maxsize = wi::to_wide (max_object_size ());
+	      if (flags & SR_ALLOW_ZERO)
+		{
+		  if (wi::leu_p (maxsize, max + 1)
+		      || !(flags & SR_USE_LARGEST))
+		    min = max = wi::zero (expprec);
+		  else
+		    {
+		      min = max + 1;
+		      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+		    }
+		}
+	      else
+		{
+		  min = max + 1;
+		  max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+		}
+	    }
+	  else if ((flags & SR_USE_LARGEST)
+		   && wi::ltu_p (max + 1, maxsize))
+	    {
+	      /* When USE_LARGEST is set and the larger of the two subranges
+		 is a valid size, use it...  */
+	      min = max + 1;
+	      max = maxsize;
+	    }
+	  else
+	    {
+	      /* ...otherwise use the smaller subrange.  */
+	      max = min - 1;
+	      min = wi::zero (expprec);
+	    }
 	}
     }
 
@@ -1348,6 +1381,12 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
   range[1] = wide_int_to_tree (exptype, max);
 
   return true;
+}
+
+bool
+get_size_range (tree exp, tree range[2], int flags /* = 0 */)
+{
+  return get_size_range (/*query=*/NULL, exp, /*stmt=*/NULL, range, flags);
 }
 
 /* Diagnose a call EXP to function FN decorated with attribute alloc_size
@@ -1924,7 +1963,10 @@ static void
 maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 {
   auto_diagnostic_group adg;
-  bool warned = false;
+
+  /* Set if a warning has been issued for any argument (used to decide
+     whether to emit an informational note at the end).  */
+  bool any_warned = false;
 
   /* A string describing the attributes that the warnings issued by this
      function apply to.  Used to print one informational note per function
@@ -1974,27 +2016,60 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
       else
 	access_size = rwm->get (sizidx)->size;
 
-      bool warned = false;
+      /* Format the value or range to avoid an explosion of messages.  */
+      char sizstr[80];
+      tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
+      if (get_size_range (access_size, sizrng, true))
+	{
+	  const char *s0 = print_generic_expr_to_str (sizrng[0]);
+	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
+	    {
+	      gcc_checking_assert (strlen (s0) < sizeof sizstr);
+	      strcpy (sizstr, s0);
+	    }
+	  else
+	    {
+	      const char *s1 = print_generic_expr_to_str (sizrng[1]);
+	      gcc_checking_assert (strlen (s0) + strlen (s1)
+				   < sizeof sizstr - 4);
+	      sprintf (sizstr, "[%s, %s]", s0, s1);
+	    }
+	}
+      else
+	*sizstr = '\0';
+
+      /* Set if a warning has been issued for the current argument.  */
+      bool arg_warned = false;
       location_t loc = EXPR_LOCATION (exp);
       tree ptr = access.second.ptr;
-      tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
-      if (get_size_range (access_size, sizrng, true)
+      if (*sizstr
 	  && tree_int_cst_sgn (sizrng[0]) < 0
 	  && tree_int_cst_sgn (sizrng[1]) < 0)
 	{
 	  /* Warn about negative sizes.  */
-	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
-	    warned = warning_at (loc, OPT_Wstringop_overflow_,
-				 "%Kargument %i value %E is negative",
-				 exp, sizidx + 1, access_size);
+	  if (access.second.internal_p)
+	    {
+	      const std::string argtypestr
+		= access.second.array_as_string (ptrtype);
+
+	      arg_warned = warning_at (loc, OPT_Wstringop_overflow_,
+				       "%Kbound argument %i value %s is "
+				       "negative for a variable length array "
+				       "argument %i of type %s",
+				       exp, sizidx + 1, sizstr,
+				       ptridx + 1, argtypestr.c_str ());
+	    }
 	  else
-	    warned = warning_at (loc, OPT_Wstringop_overflow_,
-				 "%Kargument %i range [%E, %E] is negative",
-				 exp, sizidx + 1, sizrng[0], sizrng[1]);
-	  if (warned)
+	    arg_warned = warning_at (loc, OPT_Wstringop_overflow_,
+				     "%Kargument %i value %s is negative",
+				     exp, sizidx + 1, sizstr);
+
+	  if (arg_warned)
 	    {
 	      append_attrname (access, attrstr, sizeof attrstr);
-	      /* Avoid warning again for the same attribute.  */
+	      /* Remember a warning has been issued and avoid warning
+		 again below for the same attribute.  */
+	      any_warned = true;
 	      continue;
 	    }
 	}
@@ -2006,7 +2081,6 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	      /* Multiply ACCESS_SIZE by the size of the type the pointer
 		 argument points to.  If it's incomplete the size is used
 		 as is.  */
-	      access_size = NULL_TREE;
 	      if (tree argsize = TYPE_SIZE_UNIT (argtype))
 		if (TREE_CODE (argsize) == INTEGER_CST)
 		  {
@@ -2028,35 +2102,44 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 		 different from also declaring the pointer argument with
 		 attribute nonnull when the function accepts null pointers
 		 only when the corresponding size is zero.  */
-	      if (tree_int_cst_equal (sizrng[0], sizrng[1]))
-		warned = warning_at (loc, OPT_Wnonnull,
-				     "%Kargument %i is null but "
-				     "the corresponding size argument %i "
-				     "value is %E",
-				     exp, ptridx + 1, sizidx + 1, access_size);
+	      if (access.second.internal_p)
+		{
+		  const std::string argtypestr
+		    = access.second.array_as_string (ptrtype);
+
+		  arg_warned = warning_at (loc, OPT_Wnonnull,
+					   "%Kargument %i of variable length "
+					   "array %s is null but "
+					   "the corresponding bound argument "
+					   "%i value is %s",
+					   exp, sizidx + 1, argtypestr.c_str (),
+					   ptridx + 1, sizstr);
+		}
 	      else
-		warned = warning_at (loc, OPT_Wnonnull,
-				     "%Kargument %i is null but "
-				     "the corresponding size argument %i "
-				     "range is [%E, %E]",
-				     exp, ptridx + 1, sizidx + 1,
-				     sizrng[0], sizrng[1]);
+		arg_warned = warning_at (loc, OPT_Wnonnull,
+					 "%Kargument %i is null but "
+					 "the corresponding size argument "
+					 "%i value is %s",
+					 exp, ptridx + 1, sizidx + 1,
+					 sizstr);
 	    }
 	  else if (access_size && access.second.static_p)
 	    {
 	      /* Warn about null pointers for [static N] array arguments
 		 but do not warn for ordinary (i.e., nonstatic) arrays.  */
-	      warned = warning_at (loc, OPT_Wnonnull,
-				   "%Kargument %i to %<%T[static %E]%> null "
-				   "where non-null expected",
-				   exp, ptridx + 1, argtype,
-				   sizrng[0]);
+	      arg_warned = warning_at (loc, OPT_Wnonnull,
+				       "%Kargument %i to %<%T[static %E]%> "
+				       "is null where non-null expected",
+				       exp, ptridx + 1, argtype,
+				       access_size);
 	    }
 
-	  if (warned)
+	  if (arg_warned)
 	    {
 	      append_attrname (access, attrstr, sizeof attrstr);
-	      /* Avoid warning again for the same attribute.  */
+	      /* Remember a warning has been issued and avoid warning
+		 again below for the same attribute.  */
+	      any_warned = true;
 	      continue;
 	    }
 	}
@@ -2101,7 +2184,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 
       if (TREE_NO_WARNING (exp))
 	{
-	  warned = true;
+	  any_warned = true;
 
 	  if (access.second.internal_p)
 	    inform (loc, "referencing argument %u of type %qT",
@@ -2124,7 +2207,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 		"in a call with type %qT and attribute %qs",
 		fntype, attrstr);
     }
-  else if (warned)
+  else if (any_warned)
     {
       if (fndecl)
 	inform (DECL_SOURCE_LOCATION (fndecl),

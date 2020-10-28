@@ -1395,6 +1395,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       if (target == 0
 	  || target == op0
 	  || target == op1
+	  || reg_overlap_mentioned_p (target, op0)
+	  || reg_overlap_mentioned_p (target, op1)
 	  || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (int_mode);
 
@@ -1475,6 +1477,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  if (target == 0
 	      || target == op0
 	      || target == op1
+	      || reg_overlap_mentioned_p (target, op0)
+	      || reg_overlap_mentioned_p (target, op1)
 	      || !valid_multiword_target_p (target))
 	    target = gen_reg_rtx (int_mode);
 
@@ -1533,6 +1537,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  || target == op0
 	  || target == op1
 	  || !REG_P (target)
+	  || reg_overlap_mentioned_p (target, op0)
+	  || reg_overlap_mentioned_p (target, op1)
 	  || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (int_mode);
 
@@ -2670,6 +2676,7 @@ expand_absneg_bit (enum rtx_code code, scalar_float_mode mode,
 
   if (target == 0
       || target == op0
+      || reg_overlap_mentioned_p (target, op0)
       || (nwords > 1 && !valid_multiword_target_p (target)))
     target = gen_reg_rtx (mode);
 
@@ -2951,7 +2958,10 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       int i;
       rtx_insn *insns;
 
-      if (target == 0 || target == op0 || !valid_multiword_target_p (target))
+      if (target == 0
+	  || target == op0
+	  || reg_overlap_mentioned_p (target, op0)
+	  || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (int_mode);
 
       start_sequence ();
@@ -3472,6 +3482,8 @@ expand_copysign_bit (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
   if (target == 0
       || target == op0
       || target == op1
+      || reg_overlap_mentioned_p (target, op0)
+      || reg_overlap_mentioned_p (target, op1)
       || (nwords > 1 && !valid_multiword_target_p (target)))
     target = gen_reg_rtx (mode);
 
@@ -3839,6 +3851,27 @@ can_vcond_compare_p (enum rtx_code code, machine_mode value_mode,
   return (icode = get_vcond_icode (value_mode, cmp_op_mode, unsigned_p))
 	 != CODE_FOR_nothing
 	 && insn_operand_matches (icode, 3, test);
+}
+
+/* Return whether the backend can emit vector set instructions for inserting
+   element into vector at variable index position.  */
+
+bool
+can_vec_set_var_idx_p (machine_mode vec_mode)
+{
+  if (!VECTOR_MODE_P (vec_mode))
+    return false;
+
+  machine_mode inner_mode = GET_MODE_INNER (vec_mode);
+  rtx reg1 = alloca_raw_REG (vec_mode, LAST_VIRTUAL_REGISTER + 1);
+  rtx reg2 = alloca_raw_REG (inner_mode, LAST_VIRTUAL_REGISTER + 2);
+  rtx reg3 = alloca_raw_REG (VOIDmode, LAST_VIRTUAL_REGISTER + 3);
+
+  enum insn_code icode = optab_handler (vec_set_optab, vec_mode);
+
+  return icode != CODE_FOR_nothing && insn_operand_matches (icode, 0, reg1)
+	 && insn_operand_matches (icode, 1, reg2)
+	 && insn_operand_matches (icode, 2, reg3);
 }
 
 /* This function is called when we are going to emit a compare instruction that

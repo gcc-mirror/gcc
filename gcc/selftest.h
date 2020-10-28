@@ -268,6 +268,7 @@ extern void vec_perm_indices_c_tests ();
 extern void wide_int_cc_tests ();
 extern void opt_proposer_c_tests ();
 extern void dbgcnt_c_tests ();
+extern void ipa_modref_tree_c_tests ();
 
 extern int num_passes;
 

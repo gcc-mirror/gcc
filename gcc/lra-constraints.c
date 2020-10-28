@@ -416,14 +416,34 @@ valid_address_p (rtx op, struct address_info *ad,
   return valid_address_p (ad->mode, *ad->outer, ad->as);
 }
 
+/* For special_memory_operand, it could be false for MEM_P (op),
+   i.e. bcst_mem_operand in i386 backend.
+   Extract and return real memory operand or op.  */
+rtx
+extract_mem_from_operand (rtx op)
+{
+  for (rtx x = op;; x = XEXP (x, 0))
+    {
+      if (MEM_P (x))
+	return x;
+      if (GET_RTX_LENGTH (GET_CODE (x)) != 1
+	  || GET_RTX_FORMAT (GET_CODE (x))[0] != 'e')
+	break;
+    }
+  return op;
+}
+
 /* Return true if the eliminated form of memory reference OP satisfies
    extra (special) memory constraint CONSTRAINT.  */
 static bool
 satisfies_memory_constraint_p (rtx op, enum constraint_num constraint)
 {
   struct address_info ad;
+  rtx mem = extract_mem_from_operand (op);
+  if (!MEM_P (mem))
+    return false;
 
-  decompose_mem_address (&ad, op);
+  decompose_mem_address (&ad, mem);
   address_eliminator eliminator (&ad);
   return constraint_satisfied_p (op, constraint);
 }
@@ -1132,8 +1152,13 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   narrow_reload_pseudo_class (out_rtx, goal_class);
   if (find_reg_note (curr_insn, REG_UNUSED, out_rtx) == NULL_RTX)
     {
+      reg = SUBREG_P (out_rtx) ? SUBREG_REG (out_rtx) : out_rtx;
       start_sequence ();
-      if (out >= 0 && curr_static_id->operand[out].strict_low)
+      /* If we had strict_low_part, use it also in reload to keep other
+	 parts unchanged but do it only for regs as strict_low_part
+	 has no sense for memory and probably there is no insn pattern
+	 to match the reload insn in memory case.  */
+      if (out >= 0 && curr_static_id->operand[out].strict_low && REG_P (reg))
 	out_rtx = gen_rtx_STRICT_LOW_PART (VOIDmode, out_rtx);
       lra_emit_move (out_rtx, copy_rtx (new_out_reg));
       emit_insn (*after);
@@ -2401,8 +2426,7 @@ process_alt_operands (int only_alternative)
 		      break;
 
 		    case CT_MEMORY:
-		      if (MEM_P (op)
-			  && satisfies_memory_constraint_p (op, cn))
+		      if (satisfies_memory_constraint_p (op, cn))
 			win = true;
 		      else if (spilled_pseudo_p (op))
 			win = true;
@@ -2443,8 +2467,7 @@ process_alt_operands (int only_alternative)
 		      break;
 
 		    case CT_SPECIAL_MEMORY:
-		      if (MEM_P (op)
-			  && satisfies_memory_constraint_p (op, cn))
+		      if (satisfies_memory_constraint_p (op, cn))
 			win = true;
 		      else if (spilled_pseudo_p (op))
 			win = true;

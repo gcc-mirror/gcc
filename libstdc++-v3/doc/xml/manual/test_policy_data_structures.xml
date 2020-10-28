@@ -3835,7 +3835,7 @@
       <!-- 01 <a href="multimap_text_find_timing_test_small"> -->
       <section xml:id="performance.multimap.text_find_small">
 	<info><title>
-	  Text <function>find</function> with Small Secondary-to-Primary Key Ratios 
+	  Text <function>find</function> with Small Secondary-to-Primary Key Ratios
 	</title></info>
 	<para></para>
 
@@ -4299,7 +4299,7 @@
       <!-- 02 <a href="multimap_text_find_timing_test_large"> -->
       <section xml:id="performance.multimap.text_find_large">
 	<info><title>
-	  Text <function>find</function> with Large Secondary-to-Primary Key Ratios 
+	  Text <function>find</function> with Large Secondary-to-Primary Key Ratios
 	</title></info>
 	<para></para>
 

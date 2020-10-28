@@ -1,3 +1,87 @@
+2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-common.c (c_common_finalize_early_debug): Update for new thunk api.
+
+2020-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91741
+	* c-common.c (verify_tree): Handle PAREN_SIZEOF_EXPR.
+	(c_common_init_ts): Likewise.
+	* c-common.def (PAREN_SIZEOF_EXPR): New tree code.
+	* c-common.h (maybe_warn_sizeof_array_div): Declare.
+	* c-warn.c (sizeof_pointer_memaccess_warning): Unwrap NOP_EXPRs.
+	(maybe_warn_sizeof_array_div): New function.
+	* c.opt (Wsizeof-array-div): New option.
+
+2020-10-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97463
+	* c-warn.c (warn_parm_ptrarray_mismatch): Move null test earlier.
+
+2020-10-22  Martin Liska  <mliska@suse.cz>
+
+	PR c/94722
+	* c-attribs.c (handle_no_stack_protect_function_attribute): New.
+	(handle_stack_protect_attribute): Add error message for a
+	no_stack_protector function.
+
+2020-10-22  Martin Liska  <mliska@suse.cz>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use the stack_protector enum.
+
+2020-10-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-gimplify.c: Include tree-nested.h
+	(c_genericize): Update for new nested function info.
+
+2020-10-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97413
+	* c-attribs.c (build_attr_access_from_parms): Wrap chain of VLA
+	bounds in an extra list.
+
+2020-10-05  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97197
+	* c-pretty-print.c: Include langhooks.h.
+	(c_pretty_printer::postfix_expression): Handle TARGET_MEM_REF as
+	expression.
+	(c_pretty_printer::expression): Handle TARGET_MEM_REF as
+	unary_expression.
+	(c_pretty_printer::unary_expression): Handle TARGET_MEM_REF.
+
+2020-09-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97189
+	* c-attribs.c (append_access_attr): Use the function declaration
+	location for a warning about an attribute access argument.
+
+2020-09-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* c.opt (Wrange-loop-construct): New option.
+
+2020-09-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97131
+	* c-warn.c (warn_parm_ptrarray_mismatch): Handle more invalid input.
+
+2020-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/97125
+	* c-gimplify.c (c_genericize): Only call do_warn_duplicated_branches_r
+	after loops and other structured control constructs have been lowered.
+
+2020-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wbuiltin-declaration-mismatch): Fix typo in variable name:
+	warn_builtin_declaraion_mismatch -> warn_builtin_declaration_mismatch.
+
+2020-09-21  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wctad-maybe-unsupported): New option.
+
 2020-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/50584

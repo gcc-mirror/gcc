@@ -59,11 +59,12 @@
 #include "gimplify.h"
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
-#include "gimple-ssa.h"
 #include "gimple-walk.h"
+#include "ssa.h"
+#include "tree-vectorizer.h"
+#include "tree-ssa-propagate.h"
 #include "intl.h"
 #include "tm-constrs.h"
-#include "tree-vectorizer.h"
 #include "target-globals.h"
 #include "builtins.h"
 #include "tree-vector-builder.h"
@@ -75,9 +76,6 @@
 #endif
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
-#include "tree-ssa-propagate.h"
-#include "tree-vrp.h"
-#include "tree-ssanames.h"
 #include "rs6000-internal.h"
 #include "opts.h"
 
@@ -3451,6 +3449,96 @@ rs6000_override_options_after_change (void)
     flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 }
 
+#ifdef TARGET_USES_LINUX64_OPT
+static void
+rs6000_linux64_override_options ()
+{
+  if (!global_options_set.x_rs6000_alignment_flags)
+    rs6000_alignment_flags = MASK_ALIGN_NATURAL;
+  if (rs6000_isa_flags & OPTION_MASK_64BIT)
+    {
+      if (DEFAULT_ABI != ABI_AIX)
+	{
+	  rs6000_current_abi = ABI_AIX;
+	  error (INVALID_64BIT, "call");
+	}
+      dot_symbols = !strcmp (rs6000_abi_name, "aixdesc");
+      if (ELFv2_ABI_CHECK)
+	{
+	  rs6000_current_abi = ABI_ELFv2;
+	  if (dot_symbols)
+	    error ("%<-mcall-aixdesc%> incompatible with %<-mabi=elfv2%>");
+	}
+      if (rs6000_isa_flags & OPTION_MASK_RELOCATABLE)
+	{
+	  rs6000_isa_flags &= ~OPTION_MASK_RELOCATABLE;
+	  error (INVALID_64BIT, "relocatable");
+	}
+      if (rs6000_isa_flags & OPTION_MASK_EABI)
+	{
+	  rs6000_isa_flags &= ~OPTION_MASK_EABI;
+	  error (INVALID_64BIT, "eabi");
+	}
+      if (TARGET_PROTOTYPE)
+	{
+	  target_prototype = 0;
+	  error (INVALID_64BIT, "prototype");
+	}
+      if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) == 0)
+	{
+	  rs6000_isa_flags |= OPTION_MASK_POWERPC64;
+	  error ("%<-m64%> requires a PowerPC64 cpu");
+	}
+      if (!global_options_set.x_rs6000_current_cmodel)
+	SET_CMODEL (CMODEL_MEDIUM);
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_MINIMAL_TOC) != 0)
+	{
+	  if (global_options_set.x_rs6000_current_cmodel
+	      && rs6000_current_cmodel != CMODEL_SMALL)
+	    error ("%<-mcmodel incompatible with other toc options%>");
+	  if (TARGET_MINIMAL_TOC)
+	    SET_CMODEL (CMODEL_SMALL);
+	  else if (TARGET_PCREL
+		   || (PCREL_SUPPORTED_BY_OS
+		       && (rs6000_isa_flags_explicit & OPTION_MASK_PCREL) == 0))
+	    /* Ignore -mno-minimal-toc.  */
+	    ;
+	  else
+	    SET_CMODEL (CMODEL_SMALL);
+	}
+      if (rs6000_current_cmodel != CMODEL_SMALL)
+	{
+	  if (!global_options_set.x_TARGET_NO_FP_IN_TOC)
+	    TARGET_NO_FP_IN_TOC = rs6000_current_cmodel == CMODEL_MEDIUM;
+	  if (!global_options_set.x_TARGET_NO_SUM_IN_TOC)
+	    TARGET_NO_SUM_IN_TOC = 0;
+	}
+      if (TARGET_PLTSEQ && DEFAULT_ABI != ABI_ELFv2)
+	{
+	  if (global_options_set.x_rs6000_pltseq)
+	    warning (0, "%qs unsupported for this ABI",
+		     "-mpltseq");
+	  rs6000_pltseq = false;
+	}
+    }
+  else if (TARGET_64BIT)
+    error (INVALID_32BIT, "32");
+  else
+    {
+      if (TARGET_PROFILE_KERNEL)
+	{
+	  profile_kernel = 0;
+	  error (INVALID_32BIT, "profile-kernel");
+	}
+      if (global_options_set.x_rs6000_current_cmodel)
+	{
+	  SET_CMODEL (CMODEL_SMALL);
+	  error (INVALID_32BIT, "cmodel");
+	}
+    }
+}
+#endif
+
 /* Override command line options.
 
    Combine build-specific configuration information with options
@@ -4236,7 +4324,9 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   /* Enable Altivec ABI for AIX -maltivec.  */
-  if (TARGET_XCOFF && (TARGET_ALTIVEC || TARGET_VSX))
+  if (TARGET_XCOFF
+      && (TARGET_ALTIVEC || TARGET_VSX)
+      && !global_options_set.x_rs6000_altivec_abi)
     {
       if (main_target_opt != NULL && !main_target_opt->x_rs6000_altivec_abi)
 	error ("target attribute or pragma changes AltiVec ABI");
@@ -5731,7 +5821,7 @@ direct_return (void)
 
 /* Helper for num_insns_constant.  Calculate number of instructions to
    load VALUE to a single gpr using combinations of addi, addis, ori,
-   oris and sldi instructions.  */
+   oris, sldi and rldimi instructions.  */
 
 static int
 num_insns_constant_gpr (HOST_WIDE_INT value)
@@ -5759,7 +5849,7 @@ num_insns_constant_gpr (HOST_WIDE_INT value)
 
       high >>= 1;
 
-      if (low == 0)
+      if (low == 0 || low == high)
 	return num_insns_constant_gpr (high) + 1;
       else if (high == 0)
 	return num_insns_constant_gpr (low) + 1;
@@ -8364,7 +8454,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	low_int = 0;
       high_int = INTVAL (XEXP (x, 1)) - low_int;
       sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (x, 0),
-					 GEN_INT (high_int)), 0);
+					 gen_int_mode (high_int, Pmode)), 0);
       return plus_constant (Pmode, sum, low_int);
     }
   else if (GET_CODE (x) == PLUS
@@ -9020,15 +9110,21 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
   bool reg_offset_p = reg_offset_addressing_ok_p (mode);
   bool quad_offset_p = mode_supports_dq_form (mode);
 
-  /* If this is an unaligned stvx/ldvx type address, discard the outer AND.  */
+  if (TARGET_ELF && RS6000_SYMBOL_REF_TLS_P (x))
+    return 0;
+
+  /* Handle unaligned altivec lvx/stvx type addresses.  */
   if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode)
       && GET_CODE (x) == AND
       && CONST_INT_P (XEXP (x, 1))
       && INTVAL (XEXP (x, 1)) == -16)
-    x = XEXP (x, 0);
+    {
+      x = XEXP (x, 0);
+      return (legitimate_indirect_address_p (x, reg_ok_strict)
+	      || legitimate_indexed_address_p (x, reg_ok_strict)
+	      || virtual_stack_registers_memory_p (x));
+    }
 
-  if (TARGET_ELF && RS6000_SYMBOL_REF_TLS_P (x))
-    return 0;
   if (legitimate_indirect_address_p (x, reg_ok_strict))
     return 1;
   if (TARGET_UPDATE
@@ -21176,9 +21272,9 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  return true;
 	}
       else if ((outer_code == PLUS
-		&& reg_or_add_cint_operand (x, VOIDmode))
+		&& reg_or_add_cint_operand (x, mode))
 	       || (outer_code == MINUS
-		   && reg_or_sub_cint_operand (x, VOIDmode))
+		   && reg_or_sub_cint_operand (x, mode))
 	       || ((outer_code == SET
 		    || outer_code == IOR
 		    || outer_code == XOR)
@@ -26957,11 +27053,10 @@ rs6000_const_f32_to_i32 (rtx operand)
 void
 rs6000_emit_xxspltidp_v2df (rtx dst, long value)
 {
-  printf("rs6000_emit_xxspltidp_v2df called %ld\n", value);
-  printf("rs6000_emit_xxspltidp_v2df called 0x%lx\n", value);
   if (((value & 0x7F800000) == 0) && ((value & 0x7FFFFF) != 0))
     inform (input_location,
-	    "the result for the xxspltidp instruction is undefined for subnormal input values.\n");
+	    "the result for the xxspltidp instruction "
+	    "is undefined for subnormal input values");
   emit_insn( gen_xxspltidp_v2df_inst (dst, GEN_INT (value)));
 }
 

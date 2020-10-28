@@ -80,8 +80,8 @@ package body Freeze is
    --  Typ is a type that is being frozen. If no size clause is given,
    --  but a default Esize has been computed, then this default Esize is
    --  adjusted up if necessary to be consistent with a given alignment,
-   --  but never to a value greater than Long_Long_Integer'Size. This
-   --  is used for all discrete types and for fixed-point types.
+   --  but never to a value greater than System_Max_Integer_Size. This is
+   --  used for all discrete types and for fixed-point types.
 
    procedure Build_And_Analyze_Renamed_Body
      (Decl  : Node_Id;
@@ -182,6 +182,12 @@ package body Freeze is
    --  the designated type. Otherwise freezing the access type does not freeze
    --  the designated type.
 
+   function Is_Uninitialized_Aggregate (N : Node_Id) return Boolean;
+   --  Determine whether an array aggregate used in an object declaration
+   --  is uninitialized, when the aggregate is declared with a box and
+   --  the component type has no default value. Such an aggregate can be
+   --  optimized away and prevent the copying of uninitialized data.
+
    procedure Process_Default_Expressions
      (E     : Entity_Id;
       After : in out Node_Id);
@@ -231,9 +237,7 @@ package body Freeze is
       if Known_Esize (Typ) and then Known_Alignment (Typ) then
          Align := Alignment_In_Bits (Typ);
 
-         if Align > Esize (Typ)
-           and then Align <= Standard_Long_Long_Integer_Size
-         then
+         if Align > Esize (Typ) and then Align <= System_Max_Integer_Size then
             Set_Esize (Typ, Align);
          end if;
       end if;
@@ -636,7 +640,7 @@ package body Freeze is
 
          --  If Rep_Clauses are to be ignored, remove address clause from
          --  list attached to entity, because it may be illegal for gigi,
-         --  for example by breaking order of elaboration..
+         --  for example by breaking order of elaboration.
 
          if Ignore_Rep_Clauses then
             declare
@@ -720,7 +724,14 @@ package body Freeze is
          --  expansion elsewhere. This exception is necessary to avoid copying
          --  limited objects.
 
-         if Present (Init) and then not Is_Limited_View (Typ) then
+         if Present (Init)
+           and then not Is_Limited_View (Typ)
+         then
+            if Is_Uninitialized_Aggregate (Init) then
+               Init := Empty;
+               Set_No_Initialization (Decl);
+               return;
+            end if;
 
             --  Capture initialization value at point of declaration, and make
             --  explicit assignment legal, because object may be a constant.
@@ -758,9 +769,8 @@ package body Freeze is
    procedure Check_Compile_Time_Size (T : Entity_Id) is
 
       procedure Set_Small_Size (T : Entity_Id; S : Uint);
-      --  Sets the compile time known size (64 bits or less) in the RM_Size
-      --  field of T, checking for a size clause that was given which attempts
-      --  to give a smaller size.
+      --  Sets the compile time known size in the RM_Size field of T, checking
+      --  for a size clause that was given which attempts to give a small size.
 
       function Size_Known (T : Entity_Id) return Boolean;
       --  Recursive function that does all the work
@@ -778,7 +788,7 @@ package body Freeze is
 
       procedure Set_Small_Size (T : Entity_Id; S : Uint) is
       begin
-         if S > 64 then
+         if S > System_Max_Integer_Size then
             return;
 
          --  Check for bad size clause given
@@ -848,7 +858,8 @@ package body Freeze is
             end if;
 
             --  Check for all indexes static, and also compute possible size
-            --  (in case it is not greater than 64 and may be packable).
+            --  (in case it is not greater than System_Max_Integer_Size and
+            --  thus may be packable).
 
             declare
                Size : Uint := Component_Size (T);
@@ -1077,8 +1088,7 @@ package body Freeze is
 
                      --  We can deal with elementary types, small packed arrays
                      --  if the representation is a modular type and also small
-                     --  record types (if the size is not greater than 64, but
-                     --  the condition is checked by Set_Small_Size).
+                     --  record types as checked by Set_Small_Size.
 
                      if Is_Elementary_Type (Ctyp)
                        or else (Is_Array_Type (Ctyp)
@@ -1610,7 +1620,10 @@ package body Freeze is
       Comp  : Entity_Id;
 
    begin
-      if Is_By_Reference_Type (E) then
+      --  Bit-packed array types do not require strict alignment, even if they
+      --  are by-reference types, because they are accessed in a special way.
+
+      if Is_By_Reference_Type (E) and then not Is_Bit_Packed_Array (E) then
          Set_Strict_Alignment (E);
 
       elsif Is_Array_Type (E) then
@@ -1724,11 +1737,11 @@ package body Freeze is
       end loop;
    end Check_Unsigned_Type;
 
-   -----------------------------
-   -- Is_Atomic_VFA_Aggregate --
-   -----------------------------
+   ------------------------------
+   -- Is_Full_Access_Aggregate --
+   ------------------------------
 
-   function Is_Atomic_VFA_Aggregate (N : Node_Id) return Boolean is
+   function Is_Full_Access_Aggregate (N : Node_Id) return Boolean is
       Loc   : constant Source_Ptr := Sloc (N);
       New_N : Node_Id;
       Par   : Node_Id;
@@ -1752,9 +1765,9 @@ package body Freeze is
          when N_Assignment_Statement =>
             Typ := Etype (Name (Par));
 
-            if not Is_Atomic_Or_VFA (Typ)
+            if not Is_Full_Access (Typ)
               and then not (Is_Entity_Name (Name (Par))
-                             and then Is_Atomic_Or_VFA (Entity (Name (Par))))
+                             and then Is_Full_Access (Entity (Name (Par))))
             then
                return False;
             end if;
@@ -1762,8 +1775,8 @@ package body Freeze is
          when N_Object_Declaration =>
             Typ := Etype (Defining_Identifier (Par));
 
-            if not Is_Atomic_Or_VFA (Typ)
-              and then not Is_Atomic_Or_VFA (Defining_Identifier (Par))
+            if not Is_Full_Access (Typ)
+              and then not Is_Full_Access (Defining_Identifier (Par))
             then
                return False;
             end if;
@@ -1784,7 +1797,7 @@ package body Freeze is
 
       Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
       return True;
-   end Is_Atomic_VFA_Aggregate;
+   end Is_Full_Access_Aggregate;
 
    -----------------------------------------------
    -- Explode_Initialization_Compound_Statement --
@@ -2202,7 +2215,7 @@ package body Freeze is
       --  generated a message on the template.
 
       procedure Check_Suspicious_Modulus (Utype : Entity_Id);
-      --  Give warning for modulus of 8, 16, 32, or 64 given as an explicit
+      --  Give warning for modulus of 8, 16, 32, 64 or 128 given as an explicit
       --  integer literal without an explicit corresponding size clause. The
       --  caller has checked that Utype is a modular integer type.
 
@@ -2626,12 +2639,12 @@ package body Freeze is
                end;
             end if;
 
-            --  Check for Aliased or Atomic_Components/Atomic/VFA with
+            --  Check for Aliased or Atomic_Components or Full Access with
             --  unsuitable packing or explicit component size clause given.
 
             if (Has_Aliased_Components (Arr)
                  or else Has_Atomic_Components (Arr)
-                 or else Is_Atomic_Or_VFA (Ctyp))
+                 or else Is_Full_Access (Ctyp))
               and then
                 (Has_Component_Size_Clause (Arr) or else Is_Packed (Arr))
             then
@@ -2639,8 +2652,8 @@ package body Freeze is
 
                   procedure Complain_CS (T : String);
                   --  Outputs error messages for incorrect CS clause or pragma
-                  --  Pack for aliased or atomic/VFA components (T is "aliased"
-                  --  or "atomic/vfa");
+                  --  Pack for aliased or full access components (T is either
+                  --  "aliased" or "atomic" or "volatile full access");
 
                   -----------------
                   -- Complain_CS --
@@ -2831,7 +2844,7 @@ package body Freeze is
 
                --  Case of component size that may result in bit packing
 
-               if 1 <= Csiz and then Csiz <= 64 then
+               if 1 <= Csiz and then Csiz <= System_Max_Integer_Size then
                   declare
                      Ent         : constant Entity_Id :=
                                      First_Subtype (Arr);
@@ -2894,7 +2907,7 @@ package body Freeze is
                         end if;
                      end if;
 
-                     --  Bit packing is never needed for 8, 16, 32, 64
+                     --  Bit packing is never needed for 8, 16, 32, 64 or 128
 
                      if Addressable (Csiz) then
 
@@ -3177,9 +3190,9 @@ package body Freeze is
          procedure Check_Large_Modular_Array (Typ : Entity_Id);
          --  Check that the size of array type Typ can be computed without
          --  overflow, and generates a Storage_Error otherwise. This is only
-         --  relevant for array types whose index is a (mod 2**64) type, where
-         --  wrap-around arithmetic might yield a meaningless value for the
-         --  length of the array, or its corresponding attribute.
+         --  relevant for array types whose index has System_Max_Integer_Size
+         --  bits, where wrap-around arithmetic might yield a meaningless value
+         --  for the length of the array, or its corresponding attribute.
 
          procedure Check_Pragma_Thread_Local_Storage (Var_Id : Entity_Id);
          --  Ensure that the initialization state of variable Var_Id subject
@@ -5505,11 +5518,11 @@ package body Freeze is
          --  than component-wise (the assignment to the temp may be done
          --  component-wise, but that is harmless).
 
-         elsif Is_Atomic_Or_VFA (E)
+         elsif Is_Full_Access (E)
            and then Nkind (Parent (E)) = N_Object_Declaration
            and then Present (Expression (Parent (E)))
            and then Nkind (Expression (Parent (E))) = N_Aggregate
-           and then Is_Atomic_VFA_Aggregate (Expression (Parent (E)))
+           and then Is_Full_Access_Aggregate (Expression (Parent (E)))
          then
             null;
          end if;
@@ -5810,7 +5823,7 @@ package body Freeze is
                     and then not Has_Pragma_Pack (E)
                     and then not Has_Component_Size_Clause (E)
                     and then Known_Static_RM_Size (Ctyp)
-                    and then Rsiz <= 64
+                    and then Rsiz <= System_Max_Integer_Size
                     and then not (Addressable (Rsiz)
                                    and then Known_Static_Esize (Ctyp)
                                    and then Esize (Ctyp) = Rsiz)
@@ -6387,7 +6400,7 @@ package body Freeze is
             end if;
 
          --  The pool applies to named and anonymous access types, but not
-         --  to subprogram and to  internal types generated for 'Access
+         --  to subprogram and to internal types generated for 'Access
          --  references.
 
          elsif Is_Access_Type (E)
@@ -6411,6 +6424,11 @@ package body Freeze is
 
                if Nkind (Default_Pool) = N_Null then
                   Set_No_Pool_Assigned (E);
+
+               --  Case of pragma Default_Storage_Pool (Standard)
+
+               elsif Entity (Default_Pool) = Standard_Standard then
+                  Set_Associated_Storage_Pool (E, RTE (RE_Global_Pool_Object));
 
                --  Case of pragma Default_Storage_Pool (storage_pool_NAME)
 
@@ -6826,7 +6844,7 @@ package body Freeze is
          end if;
 
          --  If the type has a Defaut_Value/Default_Component_Value aspect,
-         --  this is where we analye the expression (after the type is frozen,
+         --  this is where we analyze the expression (after the type is frozen,
          --  since in the case of Default_Value, we are analyzing with the
          --  type itself, and we treat Default_Component_Value similarly for
          --  the sake of uniformity).
@@ -7990,19 +8008,19 @@ package body Freeze is
          if Nkind (Node) in N_Has_Etype
            and then Present (Etype (Node))
            and then Is_Access_Type (Etype (Node))
-           and then Nkind (Parent (Node)) = N_Function_Call
-           and then Node = Controlling_Argument (Parent (Node))
          then
-            Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            if Nkind (Parent (Node)) = N_Function_Call
+              and then Node = Controlling_Argument (Parent (Node))
+            then
+               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
 
-         --  An explicit dereference freezes the designated type as well,
-         --  even though that type is not attached to an entity in the
-         --  expression.
+            --  An explicit dereference freezes the designated type as well,
+            --  even though that type is not attached to an entity in the
+            --  expression.
 
-         elsif Nkind (Node) in N_Has_Etype
-           and then Nkind (Parent (Node)) = N_Explicit_Dereference
-         then
-            Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            elsif Nkind (Parent (Node)) = N_Explicit_Dereference then
+               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            end if;
 
          --  An iterator specification freezes the iterator type, even though
          --  that type is not attached to an entity in the construct.
@@ -8494,20 +8512,20 @@ package body Freeze is
       Set_Analyzed (Lo, False);
       Analyze (Lo);
 
-      --  Resolve with universal fixed if the base type, and the base type if
-      --  it is a subtype. Note we can't resolve the base type with itself,
-      --  that would be a reference before definition.
+      --  Resolve with universal fixed if the base type, and with the base
+      --  type if we are freezing a subtype. Note we can't resolve the base
+      --  type with itself, that would be a reference before definition.
+      --  The resolution of the bounds of a subtype, if they are given by real
+      --  literals,  includes the setting of the Corresponding_Integer_Value,
+      --  as for other literals of a fixed-point type.
 
       if Typ = Btyp then
          Resolve (Lo, Universal_Fixed);
+         Set_Corresponding_Integer_Value
+           (Lo, UR_To_Uint (Realval (Lo) / Small));
       else
          Resolve (Lo, Btyp);
       end if;
-
-      --  Set corresponding integer value for bound
-
-      Set_Corresponding_Integer_Value
-        (Lo, UR_To_Uint (Realval (Lo) / Small));
 
       --  Similar processing for high bound
 
@@ -8517,12 +8535,11 @@ package body Freeze is
 
       if Typ = Btyp then
          Resolve (Hi, Universal_Fixed);
+         Set_Corresponding_Integer_Value
+           (Hi, UR_To_Uint (Realval (Hi) / Small));
       else
          Resolve (Hi, Btyp);
       end if;
-
-      Set_Corresponding_Integer_Value
-        (Hi, UR_To_Uint (Realval (Hi) / Small));
 
       --  Set type of range to correspond to bounds
 
@@ -9126,6 +9143,40 @@ package body Freeze is
          Build_Procedure_Form (Unit_Declaration_Node (E));
       end if;
    end Freeze_Subprogram;
+
+   --------------------------------
+   -- Is_Uninitialized_Aggregate --
+   --------------------------------
+
+   function Is_Uninitialized_Aggregate (N : Node_Id) return Boolean is
+      Aggr : constant Node_Id := Original_Node (N);
+      Typ  : constant Entity_Id := Etype (Aggr);
+
+      Comp      : Node_Id;
+      Comp_Type : Entity_Id;
+   begin
+      if Nkind (Aggr) /= N_Aggregate
+        or else No (Typ)
+        or else Ekind (Typ) /= E_Array_Type
+        or else Present (Expressions (Aggr))
+        or else No (Component_Associations (Aggr))
+      then
+         return False;
+      else
+         Comp_Type := Component_Type (Typ);
+         Comp := First (Component_Associations (Aggr));
+
+         if not Box_Present (Comp)
+           or else Present (Next (Comp))
+         then
+            return False;
+         end if;
+
+         return Is_Scalar_Type (Comp_Type)
+           and then No (Default_Aspect_Component_Value (Typ))
+           and then No (Default_Aspect_Value (Comp_Type));
+      end if;
+   end Is_Uninitialized_Aggregate;
 
    ----------------------
    -- Is_Fully_Defined --

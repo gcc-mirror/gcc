@@ -5,10 +5,10 @@
 /* { dg-require-effective-target p9vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2 " } */
 
-/* { dg-final { scan-assembler-times {\mxxlor\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mrldic\M} 1 } } */
-/* { dg-final { scan-assembler-times {\mmtvsrdd\M} 1 } } */
-/* { dg-final { scan-assembler-times {\mvslo\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxxlor\M} 2 { target lp64} } } */
+/* { dg-final { scan-assembler-times {\mrldic\M} 1 { target lp64} } } */
+/* { dg-final { scan-assembler-times {\mmtvsrdd\M} 1 { target lp64} } } */
+/* { dg-final { scan-assembler-times {\mvslo\M} 1 { target lp64} } } */
 
 #include <altivec.h>
 

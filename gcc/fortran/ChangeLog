@@ -1,3 +1,179 @@
+2020-10-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_memorder): Add.
+	(gfc_omp_clauses): Use it.
+	* openmp.c (gfc_match_omp_flush): Match memorder clauses.
+	* trans-openmp.c (gfc_trans_omp_flush): Handle them.
+	(gfc_trans_omp_directive): Update call.
+
+2020-10-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/45516
+	* class.c: Add _deallocate to the vtable documentation
+	comment.
+
+2020-10-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95979
+	* expr.c (gfc_check_init_expr): Fix check of return code from
+	gfc_intrinsic_func_interface.
+	* intrinsic.c (gfc_intrinsic_func_interface): Add further attempt
+	of simplification of elemental intrinsics with array arguments.
+	* iresolve.c (gfc_resolve_index_func): Keep optional KIND argument
+	for simplification of elemental use of INDEX.
+
+2020-10-15  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-decl.c (gfc_build_builtin_function_decls): Fix the coarray fndecls.
+
+2020-10-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97390
+	* scanner.c (load_line): Fix line-truncation warning for !$acc
+	and !gcc$ in free-form source code.
+
+2020-10-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* decl.c (gfc_get_common): Use gfc_match_common_name instead
+	of match_common_name.
+	* decl.c (gfc_bind_idents): Use gfc_match_common_name instead
+	of match_common_name.
+	* match.c : Rename match_common_name to gfc_match_common_name.
+	* match.c (gfc_match_common): Use gfc_match_common_name instead
+	of match_common_name.
+	* match.h : Rename match_common_name to gfc_match_common_name.
+	* resolve.c (resolve_common_vars): Check each symbol in a
+	common block has a global symbol.  If there is a global symbol
+	issue an error if the symbol type is a module or a program.
+
+2020-10-12  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/96099
+	* decl.c (gfc_match_implicit): Check for numeric and logical
+	types.
+
+2020-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47469
+	* trans-expr.c (arrayfunc_assign_needs_temporary): Tidy detection
+	of pointer and allocatable functions.
+
+2020-10-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/97272
+	* trans-intrinsic.c (strip_kind_from_actual): Helper function for
+	removal of KIND argument.
+	(gfc_conv_intrinsic_minmaxloc): Ignore KIND argument here, as it
+	is treated elsewhere.
+
+2020-10-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* trans-decl.c (gfc_build_library_function_decl_with_spec): Verify
+	fnspec.
+	(gfc_build_intrinsic_function_decls): Update fnspecs.
+	(gfc_build_builtin_function_decls): Update fnspecs.
+	* trans-io.c (gfc_build_io_library_fndecls): Update fnspecs.
+	* trans-types.c (create_fn_spec): Update fnspecs.
+
+2020-09-30  Jan Hubicka  <jh@suse.cz>
+
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Add traling dots
+	to spec strings so they match the number of parameters; do not use
+	R and W for non-pointer parameters. Drop pointless specifier on
+	caf_stop_numeric and caf_get_team.
+
+2020-09-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Add trailing dots so
+	length of spec string matches number of arguments.
+
+2020-09-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97242
+	* expr.c (gfc_is_not_contiguous): Fix check.
+	(gfc_check_pointer_assign): Use it.
+
+2020-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/97045
+	* trans-array.c (gfc_conv_array_ref): Make sure that the class
+	decl is passed to build_array_ref in the case of unlimited
+	polymorphic entities.
+	* trans-expr.c (gfc_conv_derived_to_class): Ensure that array
+	refs do not preceed the _len component. Free the _len expr.
+	* trans-stmt.c (trans_associate_var): Reset 'need_len_assign'
+	for polymorphic scalars.
+	* trans.c (gfc_build_array_ref): When the vptr size is used for
+	span, multiply by the _len field of unlimited polymorphic
+	entities, when non-zero.
+
+2020-09-30  Tom de Vries  <tdevries@suse.de>
+
+	* f95-lang.c (gfc_init_builtin_functions):  Update
+	targetm.libc_has_function call.
+
+2020-09-28  Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	Revert:
+	2020-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+		    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* decl.c (gfc_get_common): Use gfc_match_common_name instead
+	of match_common_name.
+	* decl.c (gfc_bind_idents): Use gfc_match_common_name instead
+	of match_common_name.
+	* match.c : Rename match_common_name to gfc_match_common_name.
+	* match.c (gfc_match_common): Use gfc_match_common_name instead
+	of match_common_name.
+	* match.h : Rename match_common_name to gfc_match_common_name.
+	* resolve.c (resolve_common_vars): Check each symbol in a
+	common block has a global symbol.  If there is a global symbol
+	issue an error if the symbol type is known as is not a common
+	block name.
+
+2020-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mark Eggleston  <markeggleston@gcc.gnu.org>
+
+	PR fortran/95614
+	* decl.c (gfc_get_common): Use gfc_match_common_name instead
+	of match_common_name.
+	* decl.c (gfc_bind_idents): Use gfc_match_common_name instead
+	of match_common_name.
+	* match.c : Rename match_common_name to gfc_match_common_name.
+	* match.c (gfc_match_common): Use gfc_match_common_name instead
+	of match_common_name.
+	* match.h : Rename match_common_name to gfc_match_common_name.
+	* resolve.c (resolve_common_vars): Check each symbol in a
+	common block has a global symbol.  If there is a global symbol
+	issue an error if the symbol type is known as is not a common
+	block name.
+
+2020-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96495
+	* trans-expr.c (gfc_conv_procedure_call): Take the deallocation
+	of allocatable result components of a scalar result outside the
+	scalarization loop. Find and use the stored result.
+
+2020-09-21  Harald Anlauf  <anlauf@gmx.de>
+	    Paul Thomas   <pault@gcc.gnu.org>
+
+	* iresolve.c (gfc_resolve_mvbits): Remove unneeded conversion of
+	FROMPOS, LEN and TOPOS arguments to fit a C int.
+	* trans-intrinsic.c (gfc_conv_intrinsic_mvbits): Add inline
+	expansion of MVBITS intrinsic elemental subroutine and add code
+	for runtime argument checking.
+	(gfc_conv_intrinsic_subroutine): Recognise MVBITS intrinsic, but
+	defer handling to gfc_trans_call.
+	* trans-stmt.c (replace_ss):
+	(gfc_trans_call): Adjust to handle inline expansion, scalarization
+	of intrinsic subroutine MVBITS in gfc_conv_intrinsic_mvbits.
+	* trans.h (gfc_conv_intrinsic_mvbits): Add prototype for
+	gfc_conv_intrinsic_mvbits.
+
 2020-09-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* interface.c (gfc_compare_actual_formal): Add assertion after

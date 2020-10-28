@@ -8,5 +8,5 @@ void g (unsigned int n)
 {
   if (n == 7)
     n = 11;
-  f (__builtin_alloca (n)); /* { dg-warning "unbounded use of 'alloca'" } */
+  f (__builtin_alloca (n)); /* { dg-warning "may be too large" } */
 }

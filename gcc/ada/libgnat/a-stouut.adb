@@ -142,6 +142,7 @@ package body Ada.Strings.Text_Output.Utils is
 
          S.Cur_Chunk.Chars (S.Last + 1 .. S.Last + Item'Length) := Item;
          S.Last := S.Last + Item'Length;
+         S.Column := S.Column + Item'Length;
          Full (S);
          --  ???Seems like maybe we shouldn't call Full until we have MORE
          --  characters. But then we can't pass Chunk_Length => 1 to
@@ -175,6 +176,7 @@ package body Ada.Strings.Text_Output.Utils is
 
          S.Cur_Chunk.Chars (S.Last + 1 .. S.Last + Item'Length) := Item;
          S.Last := S.Last + Item'Length;
+         S.Column := S.Column + Item'Length;
       else
          Put_UTF_8_Outline (S, Item);
       end if;
@@ -191,7 +193,6 @@ package body Ada.Strings.Text_Output.Utils is
                Put_UTF_8 (S, Item (Line_Start .. Index - 1));
             end if;
             New_Line (S);
-            S.Column := 1;
             Line_Start := Index + 1;
          end if;
 

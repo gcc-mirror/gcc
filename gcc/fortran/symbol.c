@@ -4645,12 +4645,13 @@ add_proc_interface (gfc_symbol *sym, ifsrc source, gfc_formal_arglist *formal)
    declaration statement (see match_proc_decl()) to create the formal
    args based on the args of a given named interface.
 
-   When an actual argument list is provided, skip the absent arguments.
+   When an actual argument list is provided, skip the absent arguments
+   unless copy_type is true.
    To be used together with gfc_se->ignore_optional.  */
 
 void
 gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src,
-			   gfc_actual_arglist *actual)
+			   gfc_actual_arglist *actual, bool copy_type)
 {
   gfc_formal_arglist *head = NULL;
   gfc_formal_arglist *tail = NULL;
@@ -4677,13 +4678,27 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src,
 	      act_arg = act_arg->next;
 	      continue;
 	    }
-	  act_arg = act_arg->next;
 	}
       formal_arg = gfc_get_formal_arglist ();
       gfc_get_symbol (curr_arg->name, gfc_current_ns, &(formal_arg->sym));
 
       /* May need to copy more info for the symbol.  */
-      formal_arg->sym->ts = curr_arg->ts;
+      if (copy_type && act_arg->expr != NULL)
+	{
+	  formal_arg->sym->ts = act_arg->expr->ts;
+	  if (act_arg->expr->rank > 0)
+	    {
+	      formal_arg->sym->attr.dimension = 1;
+	      formal_arg->sym->as = gfc_get_array_spec();
+	      formal_arg->sym->as->rank = -1;
+	      formal_arg->sym->as->type = AS_ASSUMED_RANK;
+	    }
+	  if (act_arg->name && strcmp (act_arg->name, "%VAL") == 0)
+	    formal_arg->sym->pass_as_value = 1;
+	}
+      else
+	formal_arg->sym->ts = curr_arg->ts;
+
       formal_arg->sym->attr.optional = curr_arg->optional;
       formal_arg->sym->attr.value = curr_arg->value;
       formal_arg->sym->attr.intent = curr_arg->intent;
@@ -4708,6 +4723,8 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src,
 
       /* Validate changes.  */
       gfc_commit_symbol (formal_arg->sym);
+      if (actual)
+	act_arg = act_arg->next;
     }
 
   /* Add the interface to the symbol.  */

@@ -620,7 +620,7 @@ s-zstdpkglist: Makefile
 	echo 'package goroot' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
-	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_./]*_c\.lo||g' | sed 's|\([a-z0-9_./]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
+	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_./]*_c\.lo||g' | sed 's|golang\.org/[a-z0-9_./]*\.lo||g' | sed 's|\([a-z0-9_./]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
 	echo '}' >> zstdpkglist.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh zstdpkglist.go.tmp zstdpkglist.go
 	$(STAMP) $@
@@ -973,6 +973,12 @@ endif
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 
+if LIBGO_IS_AIX
+# reflect tests must be done with -static-libgo. Otherwize,
+# there will be a duplication of the canonicalization map.
+reflect_check_GOCFLAGS = -static-libgo -Wl,-bbigtoc
+endif
+
 if HAVE_STATIC_LINK
 # Use -static for the syscall tests if possible, because otherwise when
 # running as root the re-execs ignore LD_LIBRARY_PATH.
@@ -1090,7 +1096,7 @@ if LIBGO_IS_BSD
 $(eval $(call PACKAGE_template,golang.org/x/net/route))
 
 golangorg_x_net_route_lo = \
-	golang.org/net/route.lo
+	golang.org/x/net/route.lo
 
 endif
 

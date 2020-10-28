@@ -353,8 +353,7 @@ supplement_binding (cxx_binding *binding, tree decl)
 	   /* If TARGET_BVAL is anticipated but has not yet been
 	      declared, pretend it is not there at all.  */
 	   || (TREE_CODE (target_bval) == FUNCTION_DECL
-	       && DECL_ANTICIPATED (target_bval)
-	       && !DECL_HIDDEN_FRIEND_P (target_bval)))
+	       && DECL_UNDECLARED_BUILTIN_P (target_bval)))
     binding->value = decl;
   else if (TREE_CODE (target_bval) == TYPE_DECL
 	   && DECL_ARTIFICIAL (target_bval)
@@ -407,7 +406,7 @@ supplement_binding (cxx_binding *binding, tree decl)
 	   && DECL_EXTERNAL (target_decl) && DECL_EXTERNAL (target_bval)
 	   && !DECL_CLASS_SCOPE_P (target_decl))
     {
-      duplicate_decls (decl, binding->value, /*newdecl_is_friend=*/false);
+      duplicate_decls (decl, binding->value);
       ok = false;
     }
   else if (TREE_CODE (decl) == NAMESPACE_DECL
@@ -785,14 +784,14 @@ safe_push_template_decl (tree decl)
 }
 
 static inline tree
-safe_pushtag (tree name, tree type, tag_scope scope)
+safe_pushtag (tree name, tree type)
 {
   void (*save_oracle) (enum cp_oracle_request, tree identifier);
 
   save_oracle = cp_binding_oracle;
   cp_binding_oracle = NULL;
 
-  tree ret = pushtag (name, type, scope);
+  tree ret = pushtag (name, type);
 
   cp_binding_oracle = save_oracle;
 
@@ -800,14 +799,14 @@ safe_pushtag (tree name, tree type, tag_scope scope)
 }
 
 static inline tree
-safe_pushdecl_maybe_friend (tree decl, bool is_friend)
+safe_pushdecl (tree decl)
 {
   void (*save_oracle) (enum cp_oracle_request, tree identifier);
 
   save_oracle = cp_binding_oracle;
   cp_binding_oracle = NULL;
 
-  tree ret = pushdecl (decl, is_friend);
+  tree ret = pushdecl (decl);
 
   cp_binding_oracle = save_oracle;
 
@@ -1514,7 +1513,7 @@ plugin_build_decl (cc1_plugin::connection *self,
   if (template_decl_p)
     {
       if (RECORD_OR_UNION_CODE_P (code))
-	safe_pushtag (identifier, TREE_TYPE (decl), ts_current);
+	safe_pushtag (identifier, TREE_TYPE (decl));
       else
 	decl = safe_push_template_decl (decl);
 
@@ -1533,11 +1532,11 @@ plugin_build_decl (cc1_plugin::connection *self,
 	finish_member_declaration (tdecl);
     }
   else if (RECORD_OR_UNION_CODE_P (code))
-    safe_pushtag (identifier, TREE_TYPE (decl), ts_current);
+    safe_pushtag (identifier, TREE_TYPE (decl));
   else if (class_member_p)
     finish_member_declaration (decl);
   else
-    decl = safe_pushdecl_maybe_friend (decl, false);
+    decl = safe_pushdecl (decl);
 
   if ((ctor || dtor)
       /* Don't crash after a duplicate declaration of a cdtor.  */
@@ -1650,7 +1649,7 @@ plugin_add_friend (cc1_plugin::connection * /* self */,
     make_friend_class (type, TREE_TYPE (decl), true);
   else
     {
-      DECL_FRIEND_P (decl) = true;
+      DECL_UNIQUE_FRIEND_P (decl) = true;
       add_friend (type, decl, true);
     }
 
@@ -3608,7 +3607,7 @@ plugin_build_constant (cc1_plugin::connection *self, gcc_type type_in,
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
   cp_finish_decl (decl, cst, true, NULL, LOOKUP_ONLYCONVERTING);
-  safe_pushdecl_maybe_friend (decl, false);
+  safe_pushdecl (decl);
 
   return 1;
 }

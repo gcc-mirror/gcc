@@ -71,7 +71,7 @@ private
       EA : Stream_Element_Array (1 .. Last);
    end record;
 
-   Empty_Elements : aliased Elements_Type := (Last => 0, EA => (others => <>));
+   Empty_Elements : aliased Elements_Type (0);
 
    type Elements_Access is access all Elements_Type;
 

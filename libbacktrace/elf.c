@@ -2081,10 +2081,10 @@ elf_zlib_inflate (const unsigned char *pin, size_t sin, uint16_t *zdebug_table,
 			{
 			case 6:
 			  *plen++ = prev;
-			  /* fallthrough */
+			  ATTRIBUTE_FALLTHROUGH;
 			case 5:
 			  *plen++ = prev;
-			  /* fallthrough */
+			  ATTRIBUTE_FALLTHROUGH;
 			case 4:
 			  *plen++ = prev;
 			}
@@ -2115,22 +2115,22 @@ elf_zlib_inflate (const unsigned char *pin, size_t sin, uint16_t *zdebug_table,
 			{
 			case 10:
 			  *plen++ = 0;
-			  /* fallthrough */
+			  ATTRIBUTE_FALLTHROUGH;
 			case 9:
 			  *plen++ = 0;
-			  /* fallthrough */
+			  ATTRIBUTE_FALLTHROUGH;
 			case 8:
 			  *plen++ = 0;
-			  /* fallthrough */
+			  ATTRIBUTE_FALLTHROUGH;
 			case 7:
 			  *plen++ = 0;
-			  /* fallthrough */
+			  ATTRIBUTE_FALLTHROUGH;
 			case 6:
 			  *plen++ = 0;
-			  /* fallthrough */
+			  ATTRIBUTE_FALLTHROUGH;
 			case 5:
 			  *plen++ = 0;
-			  /* fallthrough */
+			  ATTRIBUTE_FALLTHROUGH;
 			case 4:
 			  *plen++ = 0;
 			}

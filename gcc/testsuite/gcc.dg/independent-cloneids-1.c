@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fipa-cp -fipa-cp-clone"  } */
+/* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-rtl-final"  } */
 /* { dg-skip-if "Odd label definition syntax" { mmix-*-* } } */
 
 extern int printf (const char *, ...);
@@ -29,11 +29,11 @@ baz (int arg)
   return foo (8);
 }
 
-/* { dg-final { scan-assembler-times {(?n)^_*bar[.$_]constprop[.$_]0:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)^_*bar[.$_]constprop[.$_]1:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)^_*bar[.$_]constprop[.$_]2:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)^_*foo[.$_]constprop[.$_]0:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)^_*foo[.$_]constprop[.$_]1:} 1 } } */
-/* { dg-final { scan-assembler-times {(?n)^_*foo[.$_]constprop[.$_]2:} 1 } } */
-/* { dg-final { scan-assembler-not {(?n)^_*foo[.$_]constprop[.$_]3:} } } */
-/* { dg-final { scan-assembler-not {(?n)^_*foo[.$_]constprop[.$_]4:} } } */
+/* { dg-final { scan-rtl-dump-times {(?n)^;; Function bar.constprop \(bar[.$_]constprop[.$_]0,} 1 "final" } } */
+/* { dg-final { scan-rtl-dump-times {(?n)^;; Function bar.constprop \(bar[.$_]constprop[.$_]1,} 1 "final" } } */
+/* { dg-final { scan-rtl-dump-times {(?n)^;; Function bar.constprop \(bar[.$_]constprop[.$_]2,} 1 "final" } } */
+/* { dg-final { scan-rtl-dump-times {(?n)^;; Function foo.constprop \(foo[.$_]constprop[.$_]0,} 1 "final" } } */
+/* { dg-final { scan-rtl-dump-times {(?n)^;; Function foo.constprop \(foo[.$_]constprop[.$_]1,} 1 "final" } } */
+/* { dg-final { scan-rtl-dump-times {(?n)^;; Function foo.constprop \(foo[.$_]constprop[.$_]2,} 1 "final" } } */
+/* { dg-final { scan-rtl-dump-times {(?n)^;; Function foo.constprop \(foo[.$_]constprop[.$_]3,} 0 "final" } } */
+/* { dg-final { scan-rtl-dump-times {(?n)^;; Function foo.constprop \(foo[.$_]constprop[.$_]4,} 0 "final" } } */

@@ -66,6 +66,8 @@ class impl_region_model_context : public region_model_context
   void on_unexpected_tree_code (tree t,
 				const dump_location_t &loc) FINAL OVERRIDE;
 
+  void on_escaped_function (tree fndecl) FINAL OVERRIDE;
+
   exploded_graph *m_eg;
   log_user m_logger;
   const exploded_node *m_enode_for_diag;
@@ -165,6 +167,7 @@ class exploded_node : public dnode<eg_traits>
     /* Node was processed by maybe_process_run_of_before_supernode_enodes.  */
     STATUS_BULK_MERGED
   };
+  static const char * status_to_str (enum status s);
 
   exploded_node (const point_and_state &ps, int index);
 
@@ -178,6 +181,8 @@ class exploded_node : public dnode<eg_traits>
   void dump_to_pp (pretty_printer *pp, const extrinsic_state &ext_state) const;
   void dump (FILE *fp, const extrinsic_state &ext_state) const;
   void dump (const extrinsic_state &ext_state) const;
+
+  json::object *to_json (const extrinsic_state &ext_state) const;
 
   /* The result of on_stmt.  */
   struct on_stmt_flags
@@ -306,6 +311,8 @@ class exploded_edge : public dedge<eg_traits>
   ~exploded_edge ();
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const FINAL OVERRIDE;
+
+  json::object *to_json () const;
 
   //private:
   const superedge *const m_sedge;
@@ -782,6 +789,8 @@ public:
   void dump_states_for_supernode (FILE *, const supernode *snode) const;
   void dump_exploded_nodes () const;
 
+  json::object *to_json () const;
+
   exploded_node *get_node_by_index (int idx) const;
 
   const call_string_data_map_t *get_per_call_string_data () const
@@ -791,6 +800,8 @@ public:
   {
     return m_worklist.get_scc_id (node);
   }
+
+  void on_escaped_function (tree fndecl);
 
 private:
   void print_bar_charts (pretty_printer *pp) const;
@@ -838,6 +849,10 @@ private:
   call_string_data_map_t m_per_call_string_data;
 
   auto_vec<int> m_PK_AFTER_SUPERNODE_per_snode;
+
+  /* Functions with a top-level enode, to make add_function_entry
+     be idempotent, for use in handling callbacks.  */
+  hash_set<function *> m_functions_with_enodes;
 };
 
 /* A path within an exploded_graph: a sequence of edges.  */
@@ -873,17 +888,20 @@ class feasibility_problem
 {
 public:
   feasibility_problem (unsigned eedge_idx,
-		       const region_model &model,
 		       const exploded_edge &eedge,
-		       const gimple *last_stmt)
-  : m_eedge_idx (eedge_idx), m_model (model), m_eedge (eedge),
-    m_last_stmt (last_stmt)
+		       const gimple *last_stmt,
+		       rejected_constraint *rc)
+  : m_eedge_idx (eedge_idx), m_eedge (eedge),
+    m_last_stmt (last_stmt), m_rc (rc)
   {}
+  ~feasibility_problem () { delete m_rc; }
+
+  void dump_to_pp (pretty_printer *pp) const;
 
   unsigned m_eedge_idx;
-  region_model m_model;
   const exploded_edge &m_eedge;
   const gimple *m_last_stmt;
+  rejected_constraint *m_rc;
 };
 
 /* Finding the shortest exploded_path within an exploded_graph.  */

@@ -53,6 +53,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "debug.h"
 #include "tree-pretty-print.h"
+#include "tree-nested.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "symtab-thunks.h"
 
 #include "d-tree.h"
 
@@ -1280,8 +1284,8 @@ get_symbol_decl (Declaration *decl)
 	 all static chain passing is handled by the front-end.  Do this even
 	 if we are not emitting the body.  */
       struct cgraph_node *node = cgraph_node::get_create (decl->csym);
-      if (node->origin)
-	node->unnest ();
+      if (nested_function_origin (node))
+	unnest_function (node);
     }
 
   /* Mark compiler generated temporaries as artificial.  */
@@ -1701,7 +1705,7 @@ finish_thunk (tree thunk, tree function)
       if (!stdarg_p (TREE_TYPE (thunk)))
 	{
 	  thunk_node->create_edge (funcn, NULL, thunk_node->count);
-	  thunk_node->expand_thunk (false, true);
+	  expand_thunk (thunk_node, false, true);
 	}
 
       /* Tell the back-end to not bother inlining the function, this is

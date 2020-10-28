@@ -33,13 +33,16 @@
 --  (supporting alternative byte ordering), and by the GNAT.Byte_Swapping run
 --  time package which provides user level routines for byte swapping.
 
+with Interfaces;
+
 package System.Byte_Swapping is
 
    pragma Pure;
 
-   type U16 is mod 2**16;
-   type U32 is mod 2**32;
-   type U64 is mod 2**64;
+   subtype U16  is Interfaces.Unsigned_16;
+   subtype U32  is Interfaces.Unsigned_32;
+   subtype U64  is Interfaces.Unsigned_64;
+   subtype U128 is Interfaces.Unsigned_128;
 
    function Bswap_16 (X : U16) return U16;
    pragma Import (Intrinsic, Bswap_16, "__builtin_bswap16");
@@ -49,5 +52,8 @@ package System.Byte_Swapping is
 
    function Bswap_64 (X : U64) return U64;
    pragma Import (Intrinsic, Bswap_64, "__builtin_bswap64");
+
+   function Bswap_128 (X : U128) return U128;
+   pragma Import (Intrinsic, Bswap_128, "__builtin_bswap128");
 
 end System.Byte_Swapping;

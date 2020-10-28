@@ -281,6 +281,7 @@
     UNSPEC_GEN_TAG_RND		; Generate a random 4-bit MTE tag.
     UNSPEC_TAG_SPACE		; Translate address to MTE tag address space.
     UNSPEC_LD1RO
+    UNSPEC_SALT_ADDR
 ])
 
 (define_c_enum "unspecv" [
@@ -1360,13 +1361,14 @@
 
 (define_insn "*movti_aarch64"
   [(set (match_operand:TI 0
-	 "nonimmediate_operand"  "=   r,w, r,w,r,m,m,w,m")
+	 "nonimmediate_operand"  "=   r,w,w, r,w,r,m,m,w,m")
 	(match_operand:TI 1
-	 "aarch64_movti_operand" " rUti,r, w,w,m,r,Z,m,w"))]
+	 "aarch64_movti_operand" " rUti,Z,r, w,w,m,r,Z,m,w"))]
   "(register_operand (operands[0], TImode)
     || aarch64_reg_or_zero (operands[1], TImode))"
   "@
    #
+   movi\\t%0.2d, #0
    #
    #
    mov\\t%0.16b, %1.16b
@@ -1375,11 +1377,11 @@
    stp\\txzr, xzr, %0
    ldr\\t%q0, %1
    str\\t%q1, %0"
-  [(set_attr "type" "multiple,f_mcr,f_mrc,neon_logic_q, \
+  [(set_attr "type" "multiple,neon_move,f_mcr,f_mrc,neon_logic_q, \
 		             load_16,store_16,store_16,\
                              load_16,store_16")
-   (set_attr "length" "8,8,8,4,4,4,4,4,4")
-   (set_attr "arch" "*,*,*,simd,*,*,*,fp,fp")]
+   (set_attr "length" "8,4,8,8,4,4,4,4,4,4")
+   (set_attr "arch" "*,simd,*,*,simd,*,*,*,fp,fp")]
 )
 
 ;; Split a TImode register-register or register-immediate move into
@@ -1510,9 +1512,9 @@
 
 (define_insn "*movtf_aarch64"
   [(set (match_operand:TF 0
-	 "nonimmediate_operand" "=w,?&r,w ,?r,w,?w,w,m,?r,m ,m")
+	 "nonimmediate_operand" "=w,?r ,w ,?r,w,?w,w,m,?r,m ,m")
 	(match_operand:TF 1
-	 "general_operand"      " w,?r, ?r,w ,Y,Y ,m,w,m ,?r,Y"))]
+	 "general_operand"      " w,?rY,?r,w ,Y,Y ,m,w,m ,?r,Y"))]
   "TARGET_FLOAT && (register_operand (operands[0], TFmode)
     || aarch64_reg_or_fp_zero (operands[1], TFmode))"
   "@
@@ -1535,7 +1537,7 @@
 
 (define_split
    [(set (match_operand:TF 0 "register_operand" "")
-	 (match_operand:TF 1 "aarch64_reg_or_imm" ""))]
+	 (match_operand:TF 1 "nonmemory_operand" ""))]
   "reload_completed && aarch64_split_128bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
   {
@@ -6881,43 +6883,37 @@
   DONE;
 })
 
-;; Named patterns for stack smashing protection.
+;; Defined for -mstack-protector-guard=sysreg, which goes through this
+;; pattern rather than stack_protect_combined_set.  Our implementation
+;; of the latter can handle both.
 (define_expand "stack_protect_set"
   [(match_operand 0 "memory_operand")
-   (match_operand 1 "memory_operand")]
+   (match_operand 1 "")]
+  ""
+{
+  emit_insn (gen_stack_protect_combined_set (operands[0], operands[1]));
+  DONE;
+})
+
+(define_expand "stack_protect_combined_set"
+  [(match_operand 0 "memory_operand")
+   (match_operand 1 "")]
   ""
 {
   machine_mode mode = GET_MODE (operands[0]);
-  if (aarch64_stack_protector_guard != SSP_GLOBAL)
-  {
-    /* Generate access through the system register.  */
-    rtx tmp_reg = gen_reg_rtx (mode);
-    if (mode == DImode)
-    {
-        emit_insn (gen_reg_stack_protect_address_di (tmp_reg));
-        emit_insn (gen_adddi3 (tmp_reg, tmp_reg,
-			       GEN_INT (aarch64_stack_protector_guard_offset)));
-    }
-    else
-    {
-	emit_insn (gen_reg_stack_protect_address_si (tmp_reg));
-	emit_insn (gen_addsi3 (tmp_reg, tmp_reg,
-			       GEN_INT (aarch64_stack_protector_guard_offset)));
-
-    }
-    operands[1] = gen_rtx_MEM (mode, tmp_reg);
-  }
-  
+  operands[1] = aarch64_stack_protect_canary_mem (mode, operands[1],
+						  AARCH64_SALT_SSP_SET);
   emit_insn ((mode == DImode
 	      ? gen_stack_protect_set_di
 	      : gen_stack_protect_set_si) (operands[0], operands[1]));
   DONE;
 })
 
+;; Operand 1 is either AARCH64_SALT_SSP_SET or AARCH64_SALT_SSP_TEST.
 (define_insn "reg_stack_protect_address_<mode>"
  [(set (match_operand:PTR 0 "register_operand" "=r")
-       (unspec:PTR [(const_int 0)]
-	UNSPEC_SSP_SYSREG))]
+       (unspec:PTR [(match_operand 1 "const_int_operand")]
+		   UNSPEC_SSP_SYSREG))]
  "aarch64_stack_protector_guard != SSP_GLOBAL"
  {
    char buf[150];
@@ -6940,37 +6936,29 @@
   [(set_attr "length" "12")
    (set_attr "type" "multiple")])
 
+;; Defined for -mstack-protector-guard=sysreg, which goes through this
+;; pattern rather than stack_protect_combined_test.  Our implementation
+;; of the latter can handle both.
 (define_expand "stack_protect_test"
   [(match_operand 0 "memory_operand")
-   (match_operand 1 "memory_operand")
+   (match_operand 1 "")
+   (match_operand 2)]
+  ""
+{
+  emit_insn (gen_stack_protect_combined_test (operands[0], operands[1],
+					      operands[2]));
+  DONE;
+})
+
+(define_expand "stack_protect_combined_test"
+  [(match_operand 0 "memory_operand")
+   (match_operand 1 "")
    (match_operand 2)]
   ""
 {
   machine_mode mode = GET_MODE (operands[0]);
-
-  if (aarch64_stack_protector_guard != SSP_GLOBAL)
-  {
-    /* Generate access through the system register. The
-       sequence we want here is the access
-       of the stack offset to come with
-       mrs scratch_reg, <system_register>
-       add scratch_reg, scratch_reg, :lo12:offset. */
-    rtx tmp_reg = gen_reg_rtx (mode);
-    if (mode == DImode)
-    {
-       emit_insn (gen_reg_stack_protect_address_di (tmp_reg));
-       emit_insn (gen_adddi3 (tmp_reg, tmp_reg,
-       		              GEN_INT (aarch64_stack_protector_guard_offset)));
-    }
-    else
-    {
-	emit_insn (gen_reg_stack_protect_address_si (tmp_reg));
-	emit_insn (gen_addsi3 (tmp_reg, tmp_reg,
-			       GEN_INT (aarch64_stack_protector_guard_offset)));
-
-    }
-    operands[1] = gen_rtx_MEM (mode, tmp_reg);
-  }
+  operands[1] = aarch64_stack_protect_canary_mem (mode, operands[1],
+						  AARCH64_SALT_SSP_TEST);
   emit_insn ((mode == DImode
 	     ? gen_stack_protect_test_di
 	     : gen_stack_protect_test_si) (operands[0], operands[1]));

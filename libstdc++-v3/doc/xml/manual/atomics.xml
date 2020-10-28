@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.atomics" xreflabel="Atomics">
 <?dbhtml filename="atomics.html"?>
 
@@ -21,7 +21,7 @@
 
 <!-- Sect1 01 : API -->
 <section xml:id="std.atomics.api"><info><title>API Reference</title></info>
-  
+
 
   <para>
     All items are declared in the standard header

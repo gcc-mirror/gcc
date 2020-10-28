@@ -29,10 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Img_LLU;        use System.Img_LLU;
-with System.Img_Uns;        use System.Img_Uns;
-with System.Powten_Table;   use System.Powten_Table;
-with System.Unsigned_Types; use System.Unsigned_Types;
+with System.Img_LLU;      use System.Img_LLU;
+with System.Img_Uns;      use System.Img_Uns;
+with System.Powten_Table; use System.Powten_Table;
 with System.Float_Control;
 
 package body System.Img_Real is
@@ -99,6 +98,11 @@ package body System.Img_Real is
       if (not Is_Negative (V) and then V <= Long_Long_Float'Last)
         or else (not Long_Long_Float'Signed_Zeros and then V = -0.0)
       then
+         pragma Annotate (CodePeer, False_Positive, "condition predetermined",
+                          "CodePeer analysis ignores NaN and Inf values");
+         pragma Assert (S'Last > 1);
+         --  The caller is responsible for S to be large enough for all
+         --  Image_Floating_Point operation.
          S (1) := ' ';
          P := 1;
       else
@@ -372,6 +376,7 @@ package body System.Img_Real is
          --  be significantly more efficient than the Long_Long_Unsigned one.
 
          if X < Powten (Unsdigs) then
+            pragma Assert (X in 0.0 .. Long_Long_Float (Unsigned'Last));
             Ndigs := 0;
             Set_Image_Unsigned
               (Unsigned (Long_Long_Float'Truncation (X)),
@@ -381,6 +386,10 @@ package body System.Img_Real is
          --  the Long_Long_Unsigned routine after all.
 
          else
+            pragma Assert (X < Powten (Maxdigs));
+            pragma Assert
+              (X in 0.0 .. Long_Long_Float (Long_Long_Unsigned'Last));
+
             Ndigs := 0;
             Set_Image_Long_Long_Unsigned
               (Long_Long_Unsigned (Long_Long_Float'Truncation (X)),
@@ -394,6 +403,12 @@ package body System.Img_Real is
 
       procedure Set (C : Character) is
       begin
+         pragma Assert (P in S'First - 1 .. S'Last - 1);
+         --  No check is done as documented in the header: updating P to point
+         --  to the last character stored, the caller promises that the buffer
+         --  is large enough and no check is made for this. Constraint_Error
+         --  will not necessarily be raised if this requirement is violated,
+         --  since it is perfectly valid to compile this unit with checks off.
          P := P + 1;
          S (P) := C;
       end Set;
@@ -424,6 +439,8 @@ package body System.Img_Real is
 
       procedure Set_Digs (S, E : Natural) is
       begin
+         pragma Assert (S >= Digs'First and E <= Digs'Last);
+         --  S and E should be in the Digs array range
          for J in S .. E loop
             Set (Digs (J));
          end loop;
@@ -437,9 +454,13 @@ package body System.Img_Real is
          F : Natural;
 
       begin
+         pragma Assert ((Fore + Aft - N + 1) in Natural);
+         --  Fore + Aft - N + 1 should be in the Natural range
          F := Fore + 1 + Aft - N;
 
          if Exp /= 0 then
+            pragma Assert (F + Exp + 1 <= Natural'Last);
+            --  F + Exp + 1 should be in the Natural range
             F := F + Exp + 1;
          end if;
 
@@ -487,15 +508,15 @@ package body System.Img_Real is
          --  an infinite value, so we print Inf.
 
          if V > Long_Long_Float'Last then
-            pragma Annotate
-              (CodePeer, Intentional, "test always true", "test for infinity");
-
+            pragma Annotate (CodePeer, False_Positive, "dead code",
+                             "CodePeer analysis ignores NaN and Inf values");
+            pragma Annotate (CodePeer, False_Positive, "test always true",
+                             "CodePeer analysis ignores NaN and Inf values");
             Set ('+');
             Set ('I');
             Set ('n');
             Set ('f');
             Set_Special_Fill (4);
-
          --  In all other cases we print NaN
 
          elsif V < Long_Long_Float'First then
@@ -504,7 +525,6 @@ package body System.Img_Real is
             Set ('n');
             Set ('f');
             Set_Special_Fill (4);
-
          else
             Set ('N');
             Set ('a');
@@ -597,6 +617,7 @@ package body System.Img_Real is
 
                   for J in 1 .. Scale + NF loop
                      Ndigs := Ndigs + 1;
+                     pragma Assert (Ndigs <= Digs'Last);
                      Digs (Ndigs) := '0';
                   end loop;
 
@@ -663,6 +684,7 @@ package body System.Img_Real is
 
             for J in 1 .. NFrac - Maxdigs + 1 loop
                Ndigs := Ndigs + 1;
+               pragma Assert (Ndigs <= Digs'Last);
                Digs (Ndigs) := '0';
                Scale := Scale - 1;
             end loop;

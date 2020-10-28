@@ -4835,7 +4835,7 @@ gfc_match_implicit (void)
       /* Last chance -- check <TYPE> <SELECTOR> (<RANGE>).  */
       if (ts.type == BT_CHARACTER)
 	m = gfc_match_char_spec (&ts);
-      else if (ts.type != BT_DERIVED)
+      else if (gfc_numeric_ts(&ts) || ts.type == BT_LOGICAL)
 	{
 	  m = gfc_match_kind_spec (&ts, false);
 	  if (m == MATCH_NO)
@@ -6007,7 +6007,7 @@ get_bind_c_idents (void)
       found_id = MATCH_YES;
       gfc_get_ha_symbol (name, &tmp_sym);
     }
-  else if (match_common_name (name) == MATCH_YES)
+  else if (gfc_match_common_name (name) == MATCH_YES)
     {
       found_id = MATCH_YES;
       com_block = gfc_get_common (name, 0);
@@ -6052,7 +6052,7 @@ get_bind_c_idents (void)
 	      found_id = MATCH_YES;
 	      gfc_get_ha_symbol (name, &tmp_sym);
 	    }
-	  else if (match_common_name (name) == MATCH_YES)
+	  else if (gfc_match_common_name (name) == MATCH_YES)
 	    {
 	      found_id = MATCH_YES;
 	      com_block = gfc_get_common (name, 0);

@@ -179,7 +179,7 @@ package body ALI.Util is
 
    function Hash (F : File_Name_Type) return Header_Num is
    begin
-      return Header_Num (Int (F) rem Header_Num'Range_Length);
+      return Header_Num (Int (F) mod Header_Num'Range_Length);
    end Hash;
 
    ---------------------------

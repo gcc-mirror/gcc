@@ -235,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const __clock_t::time_point __s_entry = __clock_t::now();
 	  const auto __delta = __atime - __c_entry;
 	  const auto __s_atime = __s_entry +
-	      chrono::__detail::ceil<_Duration>(__delta);
+	      chrono::__detail::ceil<__clock_t::duration>(__delta);
 	  if (_M_load_when_equal_until(__val, __mo, __s_atime))
 	    return true;
 	  __c_entry = _Clock::now();

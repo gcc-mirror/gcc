@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 private with System;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type (<>) is private;
@@ -93,10 +94,13 @@ private
    type Holder is record
       Data : Storage_Array (1 .. Max_Size_In_Storage_Elements);
    end record
-     with Alignment => Standard'Maximum_Alignment;
+     with Alignment => Standard'Maximum_Alignment, Put_Image => Put_Image;
    --  We would like to say "Alignment => Element_Type'Alignment", but that
    --  is illegal because it's not static, so we use the maximum possible
    --  (default) alignment instead.
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Holder);
 
    type Element_Access is access all Element_Type;
    pragma Assert (Element_Access'Size = Standard'Address_Size,

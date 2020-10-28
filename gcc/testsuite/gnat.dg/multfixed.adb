@@ -18,7 +18,7 @@ begin
    raise Program_Error;
 exception
    when Exc : Constraint_Error =>
-      if Exception_Message (Exc) /= "System.Arith_64.Raise_Error: 64-bit arithmetic overflow" then
+      if Exception_Message (Exc) /= "System.Arith_64.Impl.Raise_Error: Double arithmetic overflow" then
          raise Program_Error;
       end if;
 end Multfixed;

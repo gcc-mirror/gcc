@@ -10,7 +10,6 @@ foo (uint32_t a, int32x4_t b)
   return vminavq_s32 (a, b);
 }
 
-/* { dg-final { scan-assembler "vminav.s32"  }  } */
 
 uint32_t
 foo1 (uint32_t a, int32x4_t b)
@@ -18,4 +17,12 @@ foo1 (uint32_t a, int32x4_t b)
   return vminavq (a, b);
 }
 
-/* { dg-final { scan-assembler "vminav.s32"  }  } */
+
+int32_t
+foo2 (uint16_t a, int32x4_t b)
+{
+  return vminavq (a, b);
+}
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
+/* { dg-final { scan-assembler-times "vminav.s32" 3 } } */

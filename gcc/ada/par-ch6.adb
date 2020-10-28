@@ -1627,6 +1627,25 @@ package body Ch6 is
             Scan; -- past right paren
             exit Specification_Loop;
 
+         --  Support for aspects on formal parameters is a GNAT extension for
+         --  the time being.
+
+         elsif Token = Tok_With then
+            if not Extensions_Allowed then
+               Error_Msg_SP ("aspect on formal parameter requires -gnatX");
+            end if;
+
+            P_Aspect_Specifications (Specification_Node, False);
+
+            if Token = Tok_Right_Paren then
+               Scan;  -- past right paren
+               exit Specification_Loop;
+
+            elsif Token = Tok_Semicolon then
+               Save_Scan_State (Scan_State);
+               Scan; -- past semicolon
+            end if;
+
          --  Special check for common error of using comma instead of semicolon
 
          elsif Token = Tok_Comma then

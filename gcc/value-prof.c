@@ -331,7 +331,10 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       /* When user uses an unsigned type with a big value, constant converted
 	 to gcov_type (a signed type) can be negative.  */
       gcov_type value = hist->hvalue.counters[i];
-      if (hist->type == HIST_TYPE_TOPN_VALUES)
+      if (hist->type == HIST_TYPE_TOPN_VALUES
+	  || hist->type == HIST_TYPE_IOR)
+	/* Note that the IOR counter tracks pointer values and these can have
+	   sign bit set.  */
 	;
       else
 	gcc_assert (value >= 0);
@@ -1219,7 +1222,7 @@ init_node_map (bool local)
   cgraph_node_map = new hash_map<profile_id_hash, cgraph_node *>;
 
   FOR_EACH_DEFINED_FUNCTION (n)
-    if (n->has_gimple_body_p () || n->thunk.thunk_p)
+    if (n->has_gimple_body_p () || n->thunk)
       {
 	cgraph_node **val;
 	dump_user_location_t loc

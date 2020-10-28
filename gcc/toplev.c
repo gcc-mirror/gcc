@@ -84,6 +84,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "dump-context.h"
 #include "print-tree.h"
 #include "optinfo-emit-json.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
+#include "dbgcnt.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -2211,6 +2214,9 @@ finalize (bool no_backend)
   if (profile_report)
     dump_profile_report ();
 
+  if (flag_dbg_cnt_list)
+    dbg_cnt_list_all_counters ();
+
   /* Language-specific end of compilation actions.  */
   lang_hooks.finish ();
 }
@@ -2497,9 +2503,11 @@ toplev::finalize (void)
   /* Needs to be called before cgraph_c_finalize since it uses symtab.  */
   ipa_reference_c_finalize ();
   ipa_fnsummary_c_finalize ();
+  ipa_modref_c_finalize ();
 
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();
+  symtab_thunks_cc_finalize ();
   dwarf2out_c_finalize ();
   gcse_c_finalize ();
   ipa_cp_c_finalize ();

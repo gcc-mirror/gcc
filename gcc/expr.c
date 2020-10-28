@@ -5168,6 +5168,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
       rtx reg, mem;
 
       reg = expand_expr (from, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+      /* Handle PARALLEL.  */
+      reg = maybe_emit_group_store (reg, TREE_TYPE (from));
       reg = force_not_mem (reg);
       mem = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_WRITE);
       if (TREE_CODE (to) == MEM_REF && REF_REVERSE_STORAGE_ORDER (to))
@@ -6922,7 +6924,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	insn_code icode = CODE_FOR_nothing;
 	tree elt;
 	tree elttype = TREE_TYPE (type);
-	int elt_size = tree_to_uhwi (TYPE_SIZE (elttype));
+	int elt_size = vector_element_bits (type);
 	machine_mode eltmode = TYPE_MODE (elttype);
 	HOST_WIDE_INT bitsize;
 	HOST_WIDE_INT bitpos;
@@ -6987,6 +6989,15 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	      }
 	  }
 
+	/* Compute the size of the elements in the CTOR.  It differs
+	   from the size of the vector type elements only when the
+	   CTOR elements are vectors themselves.  */
+	tree val_type = TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value);
+	if (VECTOR_TYPE_P (val_type))
+	  bitsize = tree_to_uhwi (TYPE_SIZE (val_type));
+	else
+	  bitsize = elt_size;
+
 	/* If the constructor has fewer elements than the vector,
 	   clear the whole array first.  Similarly if this is static
 	   constructor of a non-BLKmode object.  */
@@ -7001,11 +7012,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 
 	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
 	      {
-		tree sz = TYPE_SIZE (TREE_TYPE (value));
-		int n_elts_here
-		  = tree_to_uhwi (int_const_binop (TRUNC_DIV_EXPR, sz,
-						   TYPE_SIZE (elttype)));
-
+		int n_elts_here = bitsize / elt_size;
 		count += n_elts_here;
 		if (mostly_zeros_p (value))
 		  zero_count += n_elts_here;
@@ -7045,7 +7052,6 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    HOST_WIDE_INT eltpos;
 	    tree value = ce->value;
 
-	    bitsize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (value)));
 	    if (cleared && initializer_zerop (value))
 	      continue;
 

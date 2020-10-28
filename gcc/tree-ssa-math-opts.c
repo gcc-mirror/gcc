@@ -1139,7 +1139,7 @@ execute_cse_sincos_1 (tree name)
 {
   gimple_stmt_iterator gsi;
   imm_use_iterator use_iter;
-  tree fndecl, res, type;
+  tree fndecl, res, type = NULL_TREE;
   gimple *def_stmt, *use_stmt, *stmt;
   int seen_cos = 0, seen_sin = 0, seen_cexpi = 0;
   auto_vec<gimple *> stmts;
@@ -1147,7 +1147,6 @@ execute_cse_sincos_1 (tree name)
   int i;
   bool cfg_changed = false;
 
-  type = TREE_TYPE (name);
   FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, name)
     {
       if (gimple_code (use_stmt) != GIMPLE_CALL
@@ -1169,9 +1168,21 @@ execute_cse_sincos_1 (tree name)
 	  break;
 
 	default:;
+	  continue;
 	}
-    }
 
+      tree t = mathfn_built_in_type (gimple_call_combined_fn (use_stmt));
+      if (!type)
+	{
+	  type = t;
+	  t = TREE_TYPE (name);
+	}
+      /* This checks that NAME has the right type in the first round,
+	 and, in subsequent rounds, that the built_in type is the same
+	 type, or a compatible type.  */
+      if (type != t && !types_compatible_p (type, t))
+	return false;
+    }
   if (seen_cos + seen_sin + seen_cexpi <= 1)
     return false;
 
@@ -2176,12 +2187,14 @@ pass_cse_sincos::execute (function *fun)
 		CASE_CFN_COS:
 		CASE_CFN_SIN:
 		CASE_CFN_CEXPI:
+		  arg = gimple_call_arg (stmt, 0);
 		  /* Make sure we have either sincos or cexp.  */
-		  if (!targetm.libc_has_function (function_c99_math_complex)
-		      && !targetm.libc_has_function (function_sincos))
+		  if (!targetm.libc_has_function (function_c99_math_complex,
+						  TREE_TYPE (arg))
+		      && !targetm.libc_has_function (function_sincos,
+						     TREE_TYPE (arg)))
 		    break;
 
-		  arg = gimple_call_arg (stmt, 0);
 		  if (TREE_CODE (arg) == SSA_NAME)
 		    cfg_changed |= execute_cse_sincos_1 (arg);
 		  break;
@@ -3565,8 +3578,23 @@ divmod_candidate_p (gassign *stmt)
 
   /* Disable the transform if either is a constant, since division-by-constant
      may have specialized expansion.  */
-  if (CONSTANT_CLASS_P (op1) || CONSTANT_CLASS_P (op2))
+  if (CONSTANT_CLASS_P (op1))
     return false;
+
+  if (CONSTANT_CLASS_P (op2))
+    {
+      if (integer_pow2p (op2))
+	return false;
+
+      if (TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT
+	  && TYPE_PRECISION (type) <= BITS_PER_WORD)
+	return false;
+
+      /* If the divisor is not power of 2 and the precision wider than
+	 HWI, expand_divmod punts on that, so in that case it is better
+	 to use divmod optab or libfunc.  Similarly if choose_multiplier
+	 might need pre/post shifts of BITS_PER_WORD or more.  */
+    }
 
   /* Exclude the case where TYPE_OVERFLOW_TRAPS (type) as that should
      expand using the [su]divv optabs.  */

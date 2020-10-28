@@ -36,10 +36,13 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <memory>
-#include <utility>
 #include <tuple>
 #include <bits/alloc_traits.h>
+#include <bits/stl_pair.h>
+#include <bits/uses_allocator.h>
+#if __cplusplus > 201703L
+# include <bits/uses_allocator_args.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -194,7 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using __outermost_alloc_traits
 	  = allocator_traits<typename __outermost_type<_Alloc>::type>;
 
-#if __cplusplus <= 201703
+#if ! __cpp_lib_make_obj_using_allocator
       template<typename _Tp, typename... _Args>
         void
         _M_construct(__uses_alloc0, _Tp* __p, _Args&&... __args)
@@ -226,7 +229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       std::forward<_Args>(__args)...,
 			       inner_allocator());
         }
-#endif // C++17
+#endif // ! make_obj_using_allocator
 
       template<typename _Alloc>
         static _Alloc
@@ -364,7 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type max_size() const
       { return __traits::max_size(outer_allocator()); }
 
-#if __cplusplus <= 201703
+#if ! __cpp_lib_make_obj_using_allocator
       template<typename _Tp, typename... _Args>
 	typename __not_pair<_Tp>::type
 	construct(_Tp* __p, _Args&&... __args)
@@ -427,7 +430,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    std::forward_as_tuple(std::forward<_Up>(__x.first)),
 		    std::forward_as_tuple(std::forward<_Vp>(__x.second)));
 	}
-#else // C++2a
+#else // make_obj_using_allocator
       template<typename _Tp, typename... _Args>
 	__attribute__((__nonnull__))
 	void
@@ -441,7 +444,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  uses_allocator_construction_args<_Tp>(inner_allocator(),
 	    std::forward<_Args>(__args)...));
 	}
-#endif // C++2a
+#endif
 
       template<typename _Tp>
         void destroy(_Tp* __p)
@@ -464,7 +467,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                  const scoped_allocator_adaptor<_OutA2, _InA...>& __b) noexcept;
 
     private:
-#if __cplusplus <= 201703L
+#if ! __cpp_lib_make_obj_using_allocator
       template<typename _Ind, typename... _Args>
 	tuple<_Args&&...>
 	_M_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)
@@ -487,7 +490,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  return { std::get<_Ind>(std::move(__t))..., inner_allocator() };
 	}
-#endif // C++17
+#endif // ! make_obj_using_allocator
     };
 
   /// @related std::scoped_allocator_adaptor

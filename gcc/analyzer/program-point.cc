@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple-pretty-print.h"
 #include "gcc-rich-location.h"
+#include "json.h"
 #include "analyzer/call-string.h"
 #include "ordered-hash-map.h"
 #include "options.h"
@@ -198,8 +199,12 @@ function_point::get_location () const
   const gimple *stmt = get_stmt ();
   if (stmt)
     return stmt->location;
-
-  return UNKNOWN_LOCATION;
+  if (m_kind == PK_BEFORE_SUPERNODE)
+    return m_supernode->get_start_location ();
+  else if (m_kind == PK_AFTER_SUPERNODE)
+    return m_supernode->get_end_location ();
+  else
+    return UNKNOWN_LOCATION;
 }
 
 /* Create a function_point representing the entrypoint of function FUN.  */
@@ -279,6 +284,43 @@ program_point::dump () const
   pp.buffer->stream = stderr;
   print (&pp, format (true));
   pp_flush (&pp);
+}
+
+/* Return a new json::object of the form
+   {"kind"  : str,
+    "snode_idx" : int (optional), the index of the supernode,
+    "from_edge_snode_idx" : int (only for kind=='PK_BEFORE_SUPERNODE'),
+    "stmt_idx": int (only for kind=='PK_BEFORE_STMT',
+    "call_string": object for the call_string}.  */
+
+json::object *
+program_point::to_json () const
+{
+  json::object *point_obj = new json::object ();
+
+  point_obj->set ("kind",
+		  new json::string (point_kind_to_string (get_kind ())));
+
+  if (get_supernode ())
+    point_obj->set ("snode_idx",
+		    new json::integer_number (get_supernode ()->m_index));
+
+  switch (get_kind ())
+    {
+    default: break;
+    case PK_BEFORE_SUPERNODE:
+      if (const superedge *sedge = get_from_edge ())
+	point_obj->set ("from_edge_snode_idx",
+			new json::integer_number (sedge->m_src->m_index));
+      break;
+    case PK_BEFORE_STMT:
+      point_obj->set ("stmt_idx", new json::integer_number (get_stmt_idx ()));
+      break;
+    }
+
+  point_obj->set ("call_string", m_call_string.to_json ());
+
+  return point_obj;
 }
 
 /* Generate a hash value for this program_point.  */

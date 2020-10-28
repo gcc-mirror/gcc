@@ -17,10 +17,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.9.1.4 unique_ptr creation [unique.ptr.create]
+// C++14 20.8.1.4 unique_ptr creation [unique.ptr.create]
 
 #include <memory>
-#include <testsuite_hooks.h>
 
 struct A { };
 

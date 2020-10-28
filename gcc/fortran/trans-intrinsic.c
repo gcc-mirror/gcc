@@ -4258,12 +4258,60 @@ gfc_get_symbol_for_expr (gfc_expr * expr, bool ignore_optional)
   return sym;
 }
 
+/* Remove empty actual arguments.  */
+
+static void
+remove_empty_actual_arguments (gfc_actual_arglist **ap)
+{
+  while (*ap)
+    {
+      if ((*ap)->expr == NULL)
+	{
+	  gfc_actual_arglist *r = *ap;
+	  *ap = r->next;
+	  r->next = NULL;
+	  gfc_free_actual_arglist (r);
+	}
+      else
+	ap = &((*ap)->next);
+    }
+}
+
+/* Generate the right symbol for the specific intrinsic function and
+ modify the expr accordingly.  This assumes that absent optional
+ arguments should be removed.  FIXME: This should be extended for
+ procedures which do not ignore optional arguments (PR 97454).  */
+
+gfc_symbol *
+specific_intrinsic_symbol (gfc_expr *expr)
+{
+  gfc_symbol *sym;
+
+  sym = gfc_find_intrinsic_symbol (expr);
+  if (sym == NULL)
+    {
+      sym = gfc_get_intrinsic_function_symbol (expr);
+      sym->ts = expr->ts;
+      if (sym->ts.type == BT_CHARACTER && sym->ts.u.cl)
+	sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
+
+      gfc_copy_formal_args_intr (sym, expr->value.function.isym,
+				 expr->value.function.actual, true);
+      sym->backend_decl
+	= gfc_get_extern_function_decl (sym, expr->value.function.actual);
+    }
+  remove_empty_actual_arguments (&(expr->value.function.actual));
+
+  return sym;
+}
+
 /* Generate a call to an external intrinsic function.  */
 static void
 gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 {
   gfc_symbol *sym;
   vec<tree, va_gc> *append_args;
+  bool specific_symbol;
 
   gcc_assert (!se->ss || se->ss->info->expr == expr);
 
@@ -4272,7 +4320,28 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
   else
     gcc_assert (expr->rank == 0);
 
-  sym = gfc_get_symbol_for_expr (expr, se->ignore_optional);
+  switch (expr->value.function.isym->id)
+    {
+    case GFC_ISYM_FINDLOC:
+    case GFC_ISYM_MAXLOC:
+    case GFC_ISYM_MINLOC:
+    case GFC_ISYM_MAXVAL:
+    case GFC_ISYM_MINVAL:
+      specific_symbol = true;
+      break;
+    default:
+      specific_symbol = false;
+    }
+
+  if (specific_symbol)
+    {
+      /* Need to copy here because specific_intrinsic_symbol modifies
+	 expr to omit the absent optional arguments.  */
+      expr = gfc_copy_expr (expr);
+      sym = specific_intrinsic_symbol (expr);
+    }
+  else
+    sym = gfc_get_symbol_for_expr (expr, se->ignore_optional);
 
   /* Calls to libgfortran_matmul need to be appended special arguments,
      to be able to call the BLAS ?gemm functions if required and possible.  */
@@ -4322,7 +4391,11 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			  append_args);
-  gfc_free_symbol (sym);
+
+  if (specific_symbol)
+    gfc_free_expr (expr);
+  else
+    gfc_free_symbol (sym);
 }
 
 /* ANY and ALL intrinsics. ANY->op == NE_EXPR, ALL->op == EQ_EXPR.
@@ -5093,6 +5166,22 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Remove unneeded kind= argument from actual argument list when the
+   result conversion is dealt with in a different place.  */
+
+static void
+strip_kind_from_actual (gfc_actual_arglist * actual)
+{
+  for (gfc_actual_arglist *a = actual; a; a = a->next)
+    {
+      if (a && a->name && strcmp (a->name, "kind") == 0)
+	{
+	  gfc_free_expr (a->expr);
+	  a->expr = NULL;
+	}
+    }
+}
+
 /* Emit code for minloc or maxloc intrinsic.  There are many different cases
    we need to handle.  For performance reasons we sometimes create two
    loops instead of one, where the second one is much simpler.
@@ -5226,19 +5315,17 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
-      gfc_actual_arglist *a, *b;
+      gfc_actual_arglist *a;
       a = actual;
-      while (a->next)
+      strip_kind_from_actual (a);
+      while (a)
 	{
-	  b = a->next;
-	  if (b->expr == NULL || strcmp (b->name, "dim") == 0)
+	  if (a->name && strcmp (a->name, "dim") == 0)
 	    {
-	      a->next = b->next;
-	      b->next = NULL;
-	      gfc_free_actual_arglist (b);
+	      gfc_free_expr (a->expr);
+	      a->expr = NULL;
 	    }
-	  else
-	    a = b;
+	  a = a->next;
 	}
       gfc_conv_intrinsic_funcall (se, expr);
       return;
@@ -5997,29 +6084,16 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
-      gfc_actual_arglist *a2, *a3;
-      a2 = actual->next;  /* dim */
-      a3 = a2->next;      /* mask */
-      if (a2->expr == NULL || expr->rank == 0)
+      gfc_actual_arglist *dim = actual->next;
+      if (expr->rank == 0 && dim->expr != 0)
 	{
-	  if (a3->expr == NULL)
-	    actual->next = NULL;
-	  else
-	    {
-	      actual->next = a3;
-	      a2->next = NULL;
-	    }
-	  gfc_free_actual_arglist (a2);
+	  gfc_free_expr (dim->expr);
+	  dim->expr = NULL;
 	}
-      else
-	if (a3->expr == NULL)
-	  {
-	    a2->next = NULL;
-	    gfc_free_actual_arglist (a3);
-	  }
       gfc_conv_intrinsic_funcall (se, expr);
       return;
     }
+
   type = gfc_typenode_for_spec (&expr->ts);
   /* Initialize the result.  */
   limit = gfc_create_var (type, "limit");
@@ -11947,6 +12021,169 @@ conv_intrinsic_event_query (gfc_code *code)
   return gfc_finish_block (&se.pre);
 }
 
+
+/* This is a peculiar case because of the need to do dependency checking.
+   It is called via trans-stmt.c(gfc_trans_call), where it is picked out as
+   a special case and this function called instead of
+   gfc_conv_procedure_call.  */
+void
+gfc_conv_intrinsic_mvbits (gfc_se *se, gfc_actual_arglist *actual_args,
+			   gfc_loopinfo *loop)
+{
+  gfc_actual_arglist *actual;
+  gfc_se argse[5];
+  gfc_expr *arg[5];
+  gfc_ss *lss;
+  int n;
+
+  tree from, frompos, len, to, topos;
+  tree lenmask, oldbits, newbits, bitsize;
+  tree type, utype, above, mask1, mask2;
+
+  if (loop)
+    lss = loop->ss;
+  else
+    lss = gfc_ss_terminator;
+
+  actual = actual_args;
+  for (n = 0; n < 5; n++, actual = actual->next)
+    {
+      arg[n] = actual->expr;
+      gfc_init_se (&argse[n], NULL);
+
+      if (lss != gfc_ss_terminator)
+	{
+	  gfc_copy_loopinfo_to_se (&argse[n], loop);
+	  /* Find the ss for the expression if it is there.  */
+	  argse[n].ss = lss;
+	  gfc_mark_ss_chain_used (lss, 1);
+	}
+
+      gfc_conv_expr (&argse[n], arg[n]);
+
+      if (loop)
+	lss = argse[n].ss;
+    }
+
+  from    = argse[0].expr;
+  frompos = argse[1].expr;
+  len     = argse[2].expr;
+  to      = argse[3].expr;
+  topos   = argse[4].expr;
+
+  /* The type of the result (TO).  */
+  type    = TREE_TYPE (to);
+  bitsize = build_int_cst (integer_type_node, TYPE_PRECISION (type));
+
+  /* Optionally generate code for runtime argument check.  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_BITS)
+    {
+      tree nbits, below, ccond;
+      tree fp = fold_convert (long_integer_type_node, frompos);
+      tree ln = fold_convert (long_integer_type_node, len);
+      tree tp = fold_convert (long_integer_type_node, topos);
+      below = fold_build2_loc (input_location, LT_EXPR,
+			       logical_type_node, frompos,
+			       build_int_cst (TREE_TYPE (frompos), 0));
+      above = fold_build2_loc (input_location, GT_EXPR,
+			       logical_type_node, frompos,
+			       fold_convert (TREE_TYPE (frompos), bitsize));
+      ccond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+			       logical_type_node, below, above);
+      gfc_trans_runtime_check (true, false, ccond, &argse[1].pre,
+			       &arg[1]->where,
+			       "FROMPOS argument (%ld) out of range 0:%d "
+			       "in intrinsic MVBITS", fp, bitsize);
+      below = fold_build2_loc (input_location, LT_EXPR,
+			       logical_type_node, len,
+			       build_int_cst (TREE_TYPE (len), 0));
+      above = fold_build2_loc (input_location, GT_EXPR,
+			       logical_type_node, len,
+			       fold_convert (TREE_TYPE (len), bitsize));
+      ccond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+			       logical_type_node, below, above);
+      gfc_trans_runtime_check (true, false, ccond, &argse[2].pre,
+			       &arg[2]->where,
+			       "LEN argument (%ld) out of range 0:%d "
+			       "in intrinsic MVBITS", ln, bitsize);
+      below = fold_build2_loc (input_location, LT_EXPR,
+			       logical_type_node, topos,
+			       build_int_cst (TREE_TYPE (topos), 0));
+      above = fold_build2_loc (input_location, GT_EXPR,
+			       logical_type_node, topos,
+			       fold_convert (TREE_TYPE (topos), bitsize));
+      ccond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+			       logical_type_node, below, above);
+      gfc_trans_runtime_check (true, false, ccond, &argse[4].pre,
+			       &arg[4]->where,
+			       "TOPOS argument (%ld) out of range 0:%d "
+			       "in intrinsic MVBITS", tp, bitsize);
+
+      /* The tests above ensure that FROMPOS, LEN and TOPOS fit into short
+	 integers.  Additions below cannot overflow.  */
+      nbits = fold_convert (long_integer_type_node, bitsize);
+      above = fold_build2_loc (input_location, PLUS_EXPR,
+			       long_integer_type_node, fp, ln);
+      ccond = fold_build2_loc (input_location, GT_EXPR,
+			       logical_type_node, above, nbits);
+      gfc_trans_runtime_check (true, false, ccond, &argse[1].pre,
+			       &arg[1]->where,
+			       "FROMPOS(%ld)+LEN(%ld)>BIT_SIZE(%d) "
+			       "in intrinsic MVBITS", fp, ln, bitsize);
+      above = fold_build2_loc (input_location, PLUS_EXPR,
+			       long_integer_type_node, tp, ln);
+      ccond = fold_build2_loc (input_location, GT_EXPR,
+			       logical_type_node, above, nbits);
+      gfc_trans_runtime_check (true, false, ccond, &argse[4].pre,
+			       &arg[4]->where,
+			       "TOPOS(%ld)+LEN(%ld)>BIT_SIZE(%d) "
+			       "in intrinsic MVBITS", tp, ln, bitsize);
+    }
+
+  for (n = 0; n < 5; n++)
+    {
+      gfc_add_block_to_block (&se->pre, &argse[n].pre);
+      gfc_add_block_to_block (&se->post, &argse[n].post);
+    }
+
+  /* lenmask = (LEN >= bit_size (TYPE)) ? ~(TYPE)0 : ((TYPE)1 << LEN) - 1  */
+  above = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
+			   len, fold_convert (TREE_TYPE (len), bitsize));
+  mask1 = build_int_cst (type, -1);
+  mask2 = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+			   build_int_cst (type, 1), len);
+  mask2 = fold_build2_loc (input_location, MINUS_EXPR, type,
+			   mask2, build_int_cst (type, 1));
+  lenmask = fold_build3_loc (input_location, COND_EXPR, type,
+			     above, mask1, mask2);
+
+  /* newbits = (((UTYPE)(FROM) >> FROMPOS) & lenmask) << TOPOS.
+   * For valid frompos+len <= bit_size(FROM) the conversion to unsigned is
+   * not strictly necessary; artificial bits from rshift will be masked.  */
+  utype = unsigned_type_for (type);
+  newbits = fold_build2_loc (input_location, RSHIFT_EXPR, utype,
+			     fold_convert (utype, from), frompos);
+  newbits = fold_build2_loc (input_location, BIT_AND_EXPR, type,
+			     fold_convert (type, newbits), lenmask);
+  newbits = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+			     newbits, topos);
+
+  /* oldbits = TO & (~(lenmask << TOPOS)).  */
+  oldbits = fold_build2_loc (input_location, LSHIFT_EXPR, type,
+			     lenmask, topos);
+  oldbits = fold_build1_loc (input_location, BIT_NOT_EXPR, type, oldbits);
+  oldbits = fold_build2_loc (input_location, BIT_AND_EXPR, type, oldbits, to);
+
+  /* TO = newbits | oldbits.  */
+  se->expr = fold_build2_loc (input_location, BIT_IOR_EXPR, type,
+			      oldbits, newbits);
+
+  /* Return the assignment.  */
+  se->expr = fold_build2_loc (input_location, MODIFY_EXPR,
+			      void_type_node, to, se->expr);
+}
+
+
 static tree
 conv_intrinsic_move_alloc (gfc_code *code)
 {
@@ -12277,6 +12514,10 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
 
     case GFC_ISYM_KILL:
       res = conv_intrinsic_kill_sub (code);
+      break;
+
+    case GFC_ISYM_MVBITS:
+      res = NULL_TREE;
       break;
 
     case GFC_ISYM_SYSTEM_CLOCK:

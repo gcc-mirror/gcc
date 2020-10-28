@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.localization.facet.ctype" xreflabel="ctype">
 <?dbhtml filename="ctype.html"?>
 
@@ -15,7 +15,7 @@
 
 
   <section xml:id="facet.ctype.impl.spec"><info><title>Specializations</title></info>
-    
+
 
 <para>
 For the required specialization <classname>codecvt&lt;wchar_t, char, mbstate_t&gt;</classname>,

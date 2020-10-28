@@ -48,6 +48,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfg.h"
 #include "basic-block.h"
 #include "ipa-utils.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
+#include "symtab-thunks.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -351,14 +354,18 @@ inline_call (struct cgraph_edge *e, bool update_original,
   to = e->caller;
   if (to->inlined_to)
     to = to->inlined_to;
-  if (to->thunk.thunk_p)
+  if (to->thunk)
     {
       struct cgraph_node *target = to->callees->callee;
       thunk_expansion = true;
+
+      /* Remove all annotations, but keep thunk info.  */
+      thunk_info info = *thunk_info::get (to);
       symtab->call_cgraph_removal_hooks (to);
+      *thunk_info::get_create (to) = info;
       if (in_lto_p)
 	to->get_untransformed_body ();
-      to->expand_thunk (false, true);
+      expand_thunk (to, false, true);
       /* When thunk is instrumented we may have multiple callees.  */
       for (e = to->callees; e && e->callee != target; e = e->next_callee)
 	;
@@ -487,6 +494,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   gcc_assert (curr->callee->inlined_to == to);
 
   old_size = ipa_size_summaries->get (to)->size;
+  ipa_merge_modref_summary_after_inlining (e);
   ipa_merge_fn_summary_after_inlining (e);
   if (e->in_polymorphic_cdtor)
     mark_all_inlined_calls_cdtor (e->callee);
@@ -561,9 +569,9 @@ save_inline_function_body (struct cgraph_node *node)
   first_clone = node->clones;
 
   /* Arrange first clone to not be thunk as those do not have bodies.  */
-  if (first_clone->thunk.thunk_p)
+  if (first_clone->thunk)
     {
-      while (first_clone->thunk.thunk_p)
+      while (first_clone->thunk)
         first_clone = first_clone->next_sibling_clone;
       first_clone->prev_sibling_clone->next_sibling_clone
 	= first_clone->next_sibling_clone;
@@ -641,16 +649,16 @@ save_inline_function_body (struct cgraph_node *node)
   tree_function_versioning (node->decl, first_clone->decl,
 			    NULL, NULL, true, NULL, NULL);
 
-  /* The function will be short lived and removed after we inline all the clones,
-     but make it internal so we won't confuse ourself.  */
+  /* The function will be short lived and removed after we inline all the
+     clones, but make it internal so we won't confuse ourself.  */
   DECL_EXTERNAL (first_clone->decl) = 0;
   TREE_PUBLIC (first_clone->decl) = 0;
   DECL_COMDAT (first_clone->decl) = 0;
   first_clone->ipa_transforms_to_apply.release ();
 
   /* When doing recursive inlining, the clone may become unnecessary.
-     This is possible i.e. in the case when the recursive function is proved to be
-     non-throwing and the recursion happens only in the EH landing pad.
+     This is possible i.e. in the case when the recursive function is proved to
+     be non-throwing and the recursion happens only in the EH landing pad.
      We cannot remove the clone until we are done with saving the body.
      Remove it now.  */
   if (!first_clone->callers)
@@ -670,11 +678,11 @@ static bool
 preserve_function_body_p (struct cgraph_node *node)
 {
   gcc_assert (symtab->global_info_ready);
-  gcc_assert (!node->alias && !node->thunk.thunk_p);
+  gcc_assert (!node->alias && !node->thunk);
 
   /* Look if there is any non-thunk clone around.  */
   for (node = node->clones; node; node = node->next_sibling_clone)
-    if (!node->thunk.thunk_p)
+    if (!node->thunk)
       return true;
   return false;
 }
@@ -692,6 +700,14 @@ inline_transform (struct cgraph_node *node)
      once to some clones.  This needs revisiting after WPA cleanups.  */
   if (cfun->after_inlining)
     return 0;
+
+  cgraph_node *next_clone;
+  for (cgraph_node *n = node->clones; n; n = next_clone)
+    {
+      next_clone = n->next_sibling_clone;
+      if (n->decl != node->decl)
+	n->materialize_clone ();
+    }
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */

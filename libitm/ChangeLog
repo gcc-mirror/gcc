@@ -1,3 +1,7 @@
+2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/powerpc/sjlj.S: Support __PCREL__ code.
+
 2020-07-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/aarch64/sjlj.S: Add conditional pac-ret protection.

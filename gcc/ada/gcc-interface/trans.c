@@ -50,6 +50,7 @@
 #include "gomp-constants.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-nested.h"
 
 #include "ada.h"
 #include "adadecode.h"
@@ -900,7 +901,7 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	 the actual assignment might end up being done component-wise.  */
       return (!constant
 	      ||(Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
-		 && Is_Atomic_Or_VFA (Defining_Entity (gnat_parent)))
+		 && Is_Full_Access (Defining_Entity (gnat_parent)))
 	      /* We don't use a constructor if this is a class-wide object
 		 because the effective type of the object is the equivalent
 		 type of the class-wide subtype and it smashes most of the
@@ -915,7 +916,7 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	      || Name (gnat_parent) == gnat_node
 	      || (Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
 		  && Is_Entity_Name (Name (gnat_parent))
-		  && Is_Atomic_Or_VFA (Entity (Name (gnat_parent)))));
+		  && Is_Full_Access (Entity (Name (gnat_parent)))));
 
     case N_Unchecked_Type_Conversion:
 	if (!constant)
@@ -3696,7 +3697,8 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
 static void
 walk_nesting_tree (struct cgraph_node *node, walk_tree_fn func, void *data)
 {
-  for (node = node->nested; node; node = node->next_nested)
+  for (node = first_nested_function (node);
+       node; node = next_nested_function (node))
     {
       walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl), func, data);
       walk_nesting_tree (node, func, data);
@@ -4017,6 +4019,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   gnat_poplevel ();
   gnu_result = end_stmt_group ();
 
+  /* Attempt setting the end_locus of our GCC body tree, typically a BIND_EXPR,
+     then the end_locus of our GCC subprogram declaration tree.  */
+  set_end_locus_from_node (gnu_result, gnat_node);
+  set_end_locus_from_node (gnu_subprog_decl, gnat_node);
+
   /* If we populated the parameter attributes cache, we need to make sure that
      the cached expressions are evaluated on all the possible paths leading to
      their uses.  So we force their evaluation on entry of the function.  */
@@ -4110,12 +4117,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   gnu_return_label_stack->pop ();
-
-  /* Attempt setting the end_locus of our GCC body tree, typically a
-     BIND_EXPR or STATEMENT_LIST, then the end_locus of our GCC subprogram
-     declaration tree.  */
-  set_end_locus_from_node (gnu_result, gnat_node);
-  set_end_locus_from_node (gnu_subprog_decl, gnat_node);
 
   /* On SEH targets, install an exception handler around the main entry
      point to catch unhandled exceptions.  */

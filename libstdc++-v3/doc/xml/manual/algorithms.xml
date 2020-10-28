@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.algorithms" xreflabel="Algorithms">
 <?dbhtml filename="algorithms.html"?>
 
@@ -65,13 +65,13 @@
 
 <!-- Sect1 02 : Mutating -->
 <section xml:id="std.algorithms.mutating" xreflabel="Mutating"><info><title>Mutating</title></info>
-  
+
 
   <section xml:id="algorithms.mutating.swap" xreflabel="swap"><info><title><function>swap</function></title></info>
-    
+
 
     <section xml:id="algorithms.swap.specializations" xreflabel="Specializations"><info><title>Specializations</title></info>
-    
+
 
    <para>If you call <code> std::swap(x,y); </code> where x and y are standard
       containers, then the call will automatically be replaced by a call to

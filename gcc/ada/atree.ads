@@ -13,16 +13,10 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -70,7 +64,7 @@ package Atree is
 
    --  Currently entities are composed of 7 sequentially allocated 32-byte
    --  nodes, considered as a single record. The following definition gives
-   --  the number of extension nodes.
+   --  the number of extension nodes. ????We plan to change this.
 
    Num_Extension_Nodes : Node_Id := 6;
    --  This value is increased by one if debug flag -gnatd.N is set. This is
@@ -80,6 +74,10 @@ package Atree is
    --  Measurements conducted for the 5->6 bump showed an increase from 1.81 to
    --  2.01 for the nodes/entities ratio and a 2% increase in compilation time
    --  on average for the GCC-based compiler at -O0 on a 32-bit x86 host.
+
+   procedure Print_Statistics;
+   pragma Export (Ada, Print_Statistics);
+   --  Print various statistics on the tables maintained by the package
 
    ----------------------------------------
    -- Definitions of Fields in Tree Node --
@@ -231,12 +229,9 @@ package Atree is
    function Flags_Address return System.Address;
    --  Return address of Flags table (used in Back_End for Gigi call)
 
-   function Num_Nodes return Nat;
-   --  Total number of nodes allocated, where an entity counts as a single
-   --  node. This count is incremented every time a node or entity is
-   --  allocated, and decremented every time a node or entity is deleted.
-   --  This value is used by Xref and by Treepr to allocate hash tables of
-   --  suitable size for hashing Node_Id values.
+   function Approx_Num_Nodes_And_Entities return Nat;
+   --  This is an approximation to the number of nodes and entities allocated,
+   --  used to determine sizes of hash tables.
 
    -----------------------
    -- Use of Empty Node --
@@ -404,9 +399,8 @@ package Atree is
    --  place, and then for subsequent modifications as required.
 
    procedure Initialize;
-   --  Called at the start of compilation to initialize the allocation of
-   --  the node and list tables and make the standard entries for Empty,
-   --  Error and Error_List.
+   --  Called at the start of compilation to initialize the allocation of the
+   --  node and list tables and make the entries for Empty and Error.
 
    procedure Lock;
    --  Called before the back end is invoked to lock the nodes table
@@ -551,7 +545,7 @@ package Atree is
    --  semantic chains: Homonym and Next_Entity: the corresponding links must
    --  be adjusted by the caller, according to context.
 
-   function Extend_Node (Node : Node_Id) return Entity_Id;
+   function Extend_Node (Source : Node_Id) return Entity_Id;
    --  This function returns a copy of its input node with an extension added.
    --  The fields of the extension are set to Empty. Due to the way extensions
    --  are handled (as four consecutive array elements), it may be necessary
@@ -3843,7 +3837,8 @@ package Atree is
             --    Field6-11     Holds Field36-Field41
 
          end case;
-      end record;
+      end record; -- Node_Record
+      pragma Suppress_Initialization (Node_Record); -- see package Nodes below
 
       pragma Pack (Node_Record);
       for Node_Record'Size use 8 * 32;
@@ -3855,7 +3850,7 @@ package Atree is
       --  Default value used to initialize default nodes. Note that some of the
       --  fields get overwritten, and in particular, Nkind always gets reset.
 
-      Default_Node : Node_Record := (
+      Default_Node : constant Node_Record := (
          Is_Extension      => False,
          Pflag1            => False,
          Pflag2            => False,
@@ -3864,7 +3859,6 @@ package Atree is
          Rewrite_Ins       => False,
          Analyzed          => False,
          Comes_From_Source => False,
-         --  modified by Set_Comes_From_Source_Default
          Error_Posted      => False,
          Flag4             => False,
 
@@ -3886,7 +3880,7 @@ package Atree is
 
          Nkind             => N_Unused_At_Start,
 
-         Sloc              => No_Location,
+         Sloc              => 0,
          Link              => Empty_List_Or_Node,
          Field1            => Empty_List_Or_Node,
          Field2            => Empty_List_Or_Node,
@@ -3938,17 +3932,18 @@ package Atree is
          Field11           => Empty_List_Or_Node,
          Field12           => Empty_List_Or_Node);
 
-      --  The following defines the extendable array used for the nodes table
-      --  Nodes with extensions use six consecutive entries in the array
+      --  The following defines the extendable array used for the nodes table.
+      --  Nodes with extensions use multiple consecutive entries in the array
+      --  (see Num_Extension_Nodes).
 
-      package Nodes is new Table.Table (
-        Table_Component_Type => Node_Record,
-        Table_Index_Type     => Node_Id'Base,
-        Table_Low_Bound      => First_Node_Id,
-        Table_Initial        => Alloc.Nodes_Initial,
-        Table_Increment      => Alloc.Nodes_Increment,
-        Release_Threshold    => Alloc.Nodes_Release_Threshold,
-        Table_Name           => "Nodes");
+      package Nodes is new Table.Table
+        (Table_Component_Type => Node_Record,
+         Table_Index_Type     => Node_Id'Base,
+         Table_Low_Bound      => First_Node_Id,
+         Table_Initial        => Alloc.Nodes_Initial,
+         Table_Increment      => Alloc.Nodes_Increment,
+         Release_Threshold    => Alloc.Nodes_Release_Threshold,
+         Table_Name           => "Nodes");
 
       --  The following is a parallel table to Nodes, which provides 8 more
       --  bits of space that logically belong to the corresponding node. This

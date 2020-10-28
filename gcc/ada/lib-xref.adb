@@ -53,6 +53,14 @@ package body Lib.Xref is
    -- Declarations --
    ------------------
 
+   package Deferred_References is new Table.Table (
+     Table_Component_Type => Deferred_Reference_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 512,
+     Table_Increment      => 200,
+     Table_Name           => "Name_Deferred_References");
+
    --  The Xref table is used to record references. The Loc field is set
    --  to No_Location for a definition entry.
 
@@ -198,6 +206,21 @@ package body Lib.Xref is
          Xrefs.Decrement_Last;
       end if;
    end Add_Entry;
+
+   ---------------------
+   -- Defer_Reference --
+   ---------------------
+
+   procedure Defer_Reference (Deferred_Reference : Deferred_Reference_Entry) is
+   begin
+      --  If Get_Ignore_Errors, then we are in Preanalyze_Without_Errors, and
+      --  we should not record cross references, because that will cause
+      --  duplicates when we call Analyze.
+
+      if not Get_Ignore_Errors then
+         Deferred_References.Append (Deferred_Reference);
+      end if;
+   end Defer_Reference;
 
    -----------
    -- Equal --
@@ -595,6 +618,14 @@ package body Lib.Xref is
    --  Start of processing for Generate_Reference
 
    begin
+      --  If Get_Ignore_Errors, then we are in Preanalyze_Without_Errors, and
+      --  we should not record cross references, because that will cause
+      --  duplicates when we call Analyze.
+
+      if Get_Ignore_Errors then
+         return;
+      end if;
+
       --  May happen in case of severe errors
 
       if Nkind (E) not in N_Entity then

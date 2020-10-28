@@ -44,5 +44,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" { target { vect_int_mult && { vect_unpack && vect_pack_trunc } } } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" { target { vect_int_mult && { vect_unpack && vect_pack_trunc } } } } } */
 

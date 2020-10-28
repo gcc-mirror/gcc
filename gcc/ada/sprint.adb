@@ -420,6 +420,8 @@ package body Sprint is
       Dump_Original_Only  := False;
       Dump_Freeze_Null    := True;
       Current_Source_File := No_Source_File;
+      Push_Output;
+      Set_Standard_Output;
 
       if Arg in List_Range then
          Sprint_Node_List (List_Id (Arg), New_Lines => True);
@@ -432,6 +434,7 @@ package body Sprint is
       end if;
 
       Write_Eol;
+      Pop_Output;
    end pg;
 
    --------
@@ -441,8 +444,11 @@ package body Sprint is
    procedure po (Arg : Union_Id) is
    begin
       Dump_Generated_Only := False;
-      Dump_Original_Only := True;
+      Dump_Original_Only  := True;
+      Dump_Freeze_Null    := False;
       Current_Source_File := No_Source_File;
+      Push_Output;
+      Set_Standard_Output;
 
       if Arg in List_Range then
          Sprint_Node_List (List_Id (Arg), New_Lines => True);
@@ -455,6 +461,7 @@ package body Sprint is
       end if;
 
       Write_Eol;
+      Pop_Output;
    end po;
 
    ----------------------
@@ -473,8 +480,11 @@ package body Sprint is
    procedure ps (Arg : Union_Id) is
    begin
       Dump_Generated_Only := False;
-      Dump_Original_Only := False;
+      Dump_Original_Only  := False;
+      Dump_Freeze_Null    := False;
       Current_Source_File := No_Source_File;
+      Push_Output;
+      Set_Standard_Output;
 
       if Arg in List_Range then
          Sprint_Node_List (List_Id (Arg), New_Lines => True);
@@ -487,6 +497,7 @@ package body Sprint is
       end if;
 
       Write_Eol;
+      Pop_Output;
    end ps;
 
    --------------------

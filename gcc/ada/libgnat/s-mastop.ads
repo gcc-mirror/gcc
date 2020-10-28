@@ -31,10 +31,6 @@
 
 pragma Compiler_Unit_Warning;
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we get
---  elaboration circularities with System.Exception_Tables.
-
 with System.Storage_Elements;
 
 package System.Machine_State_Operations is

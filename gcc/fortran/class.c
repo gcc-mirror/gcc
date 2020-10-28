@@ -49,6 +49,8 @@ along with GCC; see the file COPYING3.  If not see
     * _copy:     A procedure pointer to a copying procedure.
     * _final:    A procedure pointer to a wrapper function, which frees
 		 allocatable components and calls FINAL subroutines.
+    * _deallocate: A procedure pointer to a deallocation procedure; nonnull
+		 only for a recursive derived type.
 
    After these follow procedure pointer components for the specific
    type-bound procedures.  */

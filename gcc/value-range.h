@@ -43,6 +43,7 @@ enum value_range_kind
 
 class irange
 {
+  friend class irange_allocator;
 public:
   // In-place setters.
   void set (tree, tree, value_range_kind = VR_RANGE);
@@ -80,6 +81,7 @@ public:
   bool operator!= (const irange &r) const { return !(*this == r); }
 
   // Misc methods.
+  bool fits_p (const irange &r) { return m_max_ranges >= r.num_pairs (); }
   void dump (FILE * = stderr) const;
 
   // Deprecated legacy public methods.
@@ -122,7 +124,8 @@ protected:
   wide_int legacy_upper_bound (unsigned) const;
   int value_inside_range (tree) const;
   bool maybe_anti_range () const;
-  void copy_legacy_range (const irange &);
+  void copy_to_legacy (const irange &);
+  void copy_legacy_to_multi_range (const irange &);
 
 private:
   unsigned char m_num_ranges;
@@ -617,6 +620,69 @@ vrp_val_min (const_tree type)
   if (POINTER_TYPE_P (type))
     return build_zero_cst (const_cast<tree> (type));
   return NULL_TREE;
+}
+
+// This is the irange storage class.  It is used to allocate the
+// minimum amount of storage needed for a given irange.  Storage is
+// automatically freed at destruction of the storage class.
+//
+// It is meant for long term storage, as opposed to int_range_max
+// which is meant for intermediate temporary results on the stack.
+//
+// The newly allocated irange is initialized to the empty set
+// (undefined_p() is true).
+
+class irange_allocator
+{
+public:
+  irange_allocator ();
+  ~irange_allocator ();
+  // Return a new range with NUM_PAIRS.
+  irange *allocate (unsigned num_pairs);
+  // Return a copy of SRC with the minimum amount of sub-ranges needed
+  // to represent it.
+  irange *allocate (const irange &src);
+private:
+  DISABLE_COPY_AND_ASSIGN (irange_allocator);
+  struct obstack m_obstack;
+};
+
+inline
+irange_allocator::irange_allocator ()
+{
+  obstack_init (&m_obstack);
+}
+
+inline
+irange_allocator::~irange_allocator ()
+{
+  obstack_free (&m_obstack, NULL);
+}
+
+// Return a new range with NUM_PAIRS.
+
+inline irange *
+irange_allocator::allocate (unsigned num_pairs)
+{
+  // Never allocate 0 pairs.
+  // Don't allocate 1 either, or we get legacy value_range's.
+  if (num_pairs < 2)
+    num_pairs = 2;
+
+  size_t nbytes = sizeof (tree) * 2 * num_pairs;
+
+  // Allocate the irange and required memory for the vector.
+  void *r = obstack_alloc (&m_obstack, sizeof (irange));
+  tree *mem = (tree *) obstack_alloc (&m_obstack, nbytes);
+  return new (r) irange (mem, num_pairs);
+}
+
+inline irange *
+irange_allocator::allocate (const irange &src)
+{
+  irange *r = allocate (src.num_pairs ());
+  *r = src;
+  return r;
 }
 
 #endif // GCC_VALUE_RANGE_H

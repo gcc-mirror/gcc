@@ -1237,6 +1237,14 @@ class Expression
   virtual void
   do_dump_expression(Ast_dump_context*) const = 0;
 
+  // Start exporting a type conversion for a constant, if needed.
+  static bool
+  export_constant_type(Export_function_body*, Type*);
+
+  // Finish exporting a type conversion for a constant.
+  static void
+  finish_export_constant_type(Export_function_body*, bool);
+
   // Varargs lowering creates a slice object (unnamed compiler temp)
   // to contain the variable length collection of values. The enum
   // below tells the lowering routine whether it can mark that temp

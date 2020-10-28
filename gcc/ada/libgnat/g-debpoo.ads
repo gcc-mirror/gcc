@@ -299,7 +299,7 @@ package GNAT.Debug_Pools is
    --  If Valid is True, Size_In_Storage_Elements is set to the size of this
    --  chunk of memory.
 
-   type Byte_Count is mod System.Max_Binary_Modulus;
+   type Byte_Count is mod 2 ** Long_Long_Integer'Size;
    --  Type used for maintaining byte counts, needs to be large enough to
    --  to accommodate counts allowing for repeated use of the same memory.
 

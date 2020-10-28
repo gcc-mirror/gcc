@@ -2220,11 +2220,6 @@ add_function_candidate (struct z_candidate **candidates,
   int viable = 1;
   struct rejection_reason *reason = NULL;
 
-  /* At this point we should not see any functions which haven't been
-     explicitly declared, except for friend functions which will have
-     been found using argument dependent lookup.  */
-  gcc_assert (!DECL_ANTICIPATED (fn) || DECL_HIDDEN_FRIEND_P (fn));
-
   /* The `this', `in_chrg' and VTT arguments to constructors are not
      considered in overload resolution.  */
   if (DECL_CONSTRUCTOR_P (fn))
@@ -4774,7 +4769,16 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
      *fn = cand->fn;
 
    /* Build the CALL_EXPR.  */
-   return build_over_call (cand, LOOKUP_NORMAL, complain);
+   tree ret = build_over_call (cand, LOOKUP_NORMAL, complain);
+
+   /* Set this flag for all callers of this function.  In addition to
+      new-expressions, this is called for allocating coroutine state; treat
+      that as an implicit new-expression.  */
+   tree call = extract_call_expr (ret);
+   if (TREE_CODE (call) == CALL_EXPR)
+     CALL_FROM_NEW_OR_DELETE_P (call) = 1;
+
+   return ret;
 }
 
 /* Build a new call to operator().  This may change ARGS.  */
@@ -6151,7 +6155,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
     case VEC_NEW_EXPR:
     case VEC_DELETE_EXPR:
     case DELETE_EXPR:
-      /* Use build_op_new_call and build_op_delete_call instead.  */
+      /* Use build_operator_new_call and build_op_delete_call instead.  */
       gcc_unreachable ();
 
     case CALL_EXPR:
@@ -6343,11 +6347,6 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    {
 	      tree call = extract_call_expr (result);
 	      CALL_EXPR_OPERATOR_SYNTAX (call) = true;
-
-	      if (processing_template_decl && DECL_HIDDEN_FRIEND_P (cand->fn))
-		/* This prevents build_new_function_call from discarding this
-		   function during instantiation of the enclosing template.  */
-		KOENIG_LOOKUP_P (call) = 1;
 
 	      /* Specify evaluation order as per P0145R2.  */
 	      CALL_EXPR_ORDERED_ARGS (call) = false;
@@ -6993,6 +6992,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       if (DECL_DELETED_FN (fn) && alloc_fn)
 	return NULL_TREE;
 
+      tree ret;
       if (placement)
 	{
 	  /* The placement args might not be suitable for overload
@@ -7005,7 +7005,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	    argarray[i] = CALL_EXPR_ARG (placement, i);
 	  if (!mark_used (fn, complain) && !(complain & tf_error))
 	    return error_mark_node;
-	  return build_cxx_call (fn, nargs, argarray, complain);
+	  ret = build_cxx_call (fn, nargs, argarray, complain);
 	}
       else
 	{
@@ -7023,7 +7023,6 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 						  complain);
 	    }
 
-	  tree ret;
 	  releasing_vec args;
 	  args->quick_push (addr);
 	  if (destroying)
@@ -7036,8 +7035,18 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	      args->quick_push (al);
 	    }
 	  ret = cp_build_function_call_vec (fn, &args, complain);
-	  return ret;
 	}
+
+      /* Set this flag for all callers of this function.  In addition to
+	 delete-expressions, this is called for deallocating coroutine state;
+	 treat that as an implicit delete-expression.  This is also called for
+	 the delete if the constructor throws in a new-expression, and for a
+	 deleting destructor (which implements a delete-expression).  */
+      tree call = extract_call_expr (ret);
+      if (TREE_CODE (call) == CALL_EXPR)
+	CALL_FROM_NEW_OR_DELETE_P (call) = 1;
+
+      return ret;
     }
 
   /* [expr.new]
@@ -8429,6 +8438,28 @@ conv_binds_ref_to_prvalue (conversion *c)
   return false;
 }
 
+/* True iff converting EXPR to a reference type TYPE does not involve
+   creating a temporary.  */
+
+bool
+ref_conv_binds_directly_p (tree type, tree expr)
+{
+  gcc_assert (TYPE_REF_P (type));
+
+  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
+  void *p = conversion_obstack_alloc (0);
+
+  conversion *conv = implicit_conversion (type, TREE_TYPE (expr), expr,
+					  /*c_cast_p=*/false,
+					  LOOKUP_IMPLICIT, tf_none);
+  bool ret = conv && !conv->bad_p && !conv_binds_ref_to_prvalue (conv);
+
+  /* Free all the conversions we allocated.  */
+  obstack_free (&conversion_obstack, p);
+
+  return ret;
+}
+
 /* Call the trivial destructor for INSTANCE, which can be either an lvalue of
    class type or a pointer to class type.  If NO_PTR_DEREF is true and
    INSTANCE has pointer type, clobber the pointer rather than what it points
@@ -9200,6 +9231,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 		}
 	    }
 	  call = cxx_constant_value (call, obj_arg);
+	  if (obj_arg && !error_operand_p (call))
+	    call = build2 (INIT_EXPR, void_type_node, obj_arg, call);
 	}
     }
   return call;

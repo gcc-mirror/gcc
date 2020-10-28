@@ -102,6 +102,37 @@ Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
 Common Joined UInteger Var(param_early_inlining_insns) Init(6) Optimization Param
 Maximal estimated growth of function body caused by early inlining of single call.
 
+-param=evrp-mode=
+Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_EVRP_FIRST) Param Optimization
+--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in.
+
+Enum
+Name(evrp_mode) Type(enum evrp_mode) UnknownError(unknown evrp mode %qs)
+
+EnumValue
+Enum(evrp_mode) String(legacy) Value(EVRP_MODE_EVRP_ONLY)
+
+EnumValue
+Enum(evrp_mode) String(ranger) Value(EVRP_MODE_RVRP_ONLY)
+
+EnumValue
+Enum(evrp_mode) String(legacy-first) Value(EVRP_MODE_EVRP_FIRST)
+
+EnumValue
+Enum(evrp_mode) String(ranger-first) Value(EVRP_MODE_RVRP_FIRST)
+
+EnumValue
+Enum(evrp_mode) String(ranger-trace) Value(EVRP_MODE_RVRP_TRACE)
+
+EnumValue
+Enum(evrp_mode) String(ranger-debug) Value(EVRP_MODE_RVRP_DEBUG)
+
+EnumValue
+Enum(evrp_mode) String(trace) Value(EVRP_MODE_TRACE)
+
+EnumValue
+Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)
+
 -param=fsm-maximum-phi-arguments=
 Common Joined UInteger Var(param_fsm_maximum_phi_arguments) Init(100) IntegerRange(1, 999999) Param Optimization
 Maximum number of arguments a PHI may have before the FSM threader will not try to thread through its block.
@@ -214,9 +245,17 @@ Percentage penalty functions containing a single call to another function will r
 Common Joined UInteger Var(param_ipa_cp_unit_growth) Init(10) Param Optimization
 How much can given compilation unit grow because of the interprocedural constant propagation (in percent).
 
+-param=ipa-cp-large-unit-insns=
+Common Joined UInteger Var(param_ipa_cp_large_unit_insns) Optimization Init(16000) Param
+The size of translation unit that IPA-CP pass considers large.
+
 -param=ipa-cp-value-list-size=
 Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param Optimization
 Maximum size of a list of values associated with each parameter for interprocedural constant propagation.
+
+-param-ipa-jump-function-lookups=
+Common Joined UInteger Var(param_ipa_jump_function_lookups) Init(8) Param Optimization
+Maximum number of statements visited during jump function offset discovery.
 
 -param=ipa-max-aa-steps=
 Common Joined UInteger Var(param_ipa_max_aa_steps) Init(25000) Param Optimization
@@ -229,6 +268,10 @@ Maximum number of aggregate content items for a parameter in jump functions and 
 -param=ipa-max-param-expr-ops=
 Common Joined UInteger Var(param_ipa_max_param_expr_ops) Init(10) Param Optimization
 Maximum number of operations in a parameter expression that can be handled by IPA analysis.
+
+-param=ipa-max-loop-predicates=
+Common Joined UInteger Var(param_ipa_max_loop_predicates) Init(16) Param Optimization
+Maximum number of different predicates used to track properties of loops in IPA analysis.
 
 -param=ipa-max-switch-predicate-bounds=
 Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param Optimization
@@ -878,11 +921,15 @@ Maximum number of bases stored in each modref tree.
 
 -param=modref-max-refs=
 Common Joined UInteger Var(param_modref_max_refs) Init(16)
-Maximum number of refs stored in each modref tree.
+Maximum number of references stored in each modref base.
+
+-param=modref-max-accesses=
+Common Joined UInteger Var(param_modref_max_accesses) Init(16)
+Maximum number of accesse stored in each modref reference.
 
 -param=modref-max-tests=
 Common Joined UInteger Var(param_modref_max_tests) Init(64)
-Maximum number of tests perofmed by modref query
+Maximum number of tests performed by modref query.
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization

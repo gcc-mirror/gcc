@@ -1,10 +1,10 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-g -gno-strict-dwarf -dA" }
-// { dg-final { scan-assembler-times " DW_AT_reference" 5 { xfail *-*-aix* } } }
-// { dg-final { scan-assembler-times " DW_AT_rvalue_reference" 5 { xfail *-*-aix* } } }
-// { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_subroutine_type" 6 { xfail *-*-aix* } } }
-// { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_ptr_to_member_type" 7 { xfail *-*-aix* } } }
-// { dg-final { scan-assembler-times " DW_AT_use_location" 1 { xfail *-*-aix* } } }
+// { dg-final { scan-assembler-times " DW_AT_reference" 5 } }
+// { dg-final { scan-assembler-times " DW_AT_rvalue_reference" 5 } }
+// { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_subroutine_type" 6 } }
+// { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_ptr_to_member_type" 7 } }
+// { dg-final { scan-assembler-times " DW_AT_use_location" 1 } }
 
 struct S
 {

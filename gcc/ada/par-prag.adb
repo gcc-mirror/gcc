@@ -1449,7 +1449,6 @@ begin
          | Pragma_Partition_Elaboration_Policy
          | Pragma_Passive
          | Pragma_Persistent_BSS
-         | Pragma_Polling
          | Pragma_Post
          | Pragma_Post_Class
          | Pragma_Postcondition
@@ -1497,6 +1496,7 @@ begin
          | Pragma_Storage_Unit
          | Pragma_Stream_Convert
          | Pragma_Subtitle
+         | Pragma_Subprogram_Variant
          | Pragma_Suppress
          | Pragma_Suppress_Debug_Info
          | Pragma_Suppress_Exception_Locations

@@ -5784,6 +5784,9 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	  continue;
 	}
 
+      if (pd->u.array.static_p)
+	spec += 's';
+
       if (TREE_CODE (nelts) == INTEGER_CST)
 	{
 	  /* Skip all constant bounds except the most significant one.
@@ -5796,9 +5799,8 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	    return attrs;
 
 	  char buf[40];
-	  const char *code = pd->u.array.static_p ? "s" : "";
 	  unsigned HOST_WIDE_INT n = tree_to_uhwi (nelts);
-	  sprintf (buf, "%s%llu", code, (unsigned long long)n);
+	  sprintf (buf, "%llu", (unsigned long long)n);
 	  spec += buf;
 	  break;
 	}

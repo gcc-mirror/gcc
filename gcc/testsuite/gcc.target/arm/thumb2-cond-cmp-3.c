@@ -1,6 +1,6 @@
 /* Use conditional compare */                                                                                         
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { arm_thumb1_ok } } */
+/* { dg-skip-if "" { arm_thumb1_ok || arm_cortex_m } } */
 /* { dg-final { scan-assembler "cmpgt" } } */
 
 int f(int i, int j)

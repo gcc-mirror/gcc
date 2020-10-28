@@ -34,7 +34,7 @@
 
 #include <concepts>
 #include <bits/ptr_traits.h>	// to_address
-#include <bits/range_cmp.h>	// identity, ranges::less
+#include <bits/ranges_cmp.h>	// identity, ranges::less
 
 #if __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)

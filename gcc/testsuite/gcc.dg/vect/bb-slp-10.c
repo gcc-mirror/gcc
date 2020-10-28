@@ -50,5 +50,5 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump "unsupported unaligned access" "slp2" { target { ! vect_element_align } } } } */
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" { target vect_element_align } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp2" { target vect_element_align } } } */
   

@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined(__GTHREADS)
 
 #include <vxWorks.h>
+#include <taskLib.h>
 
 #ifndef __RTP__
 # include <vxLib.h>

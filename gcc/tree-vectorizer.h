@@ -161,6 +161,8 @@ struct _slp_tree {
   unsigned int lanes;
   /* The operation of this node.  */
   enum tree_code code;
+
+  int vertex;
 };
 
 
@@ -204,6 +206,7 @@ public:
 #define SLP_TREE_CHILDREN(S)                     (S)->children
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts
 #define SLP_TREE_SCALAR_OPS(S)                   (S)->ops
+#define SLP_TREE_REF_COUNT(S)                    (S)->refcnt
 #define SLP_TREE_VEC_STMTS(S)                    (S)->vec_stmts
 #define SLP_TREE_VEC_DEFS(S)                     (S)->vec_defs
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
@@ -359,7 +362,6 @@ public:
 
   /* The SLP graph.  */
   auto_vec<slp_instance> slp_instances;
-  auto_vec<slp_tree> slp_loads;
 
   /* Maps base addresses to an innermost_loop_behavior that gives the maximum
      known alignment for that base.  */
@@ -827,94 +829,14 @@ loop_vec_info_for_loop (class loop *loop)
 typedef class _bb_vec_info : public vec_info
 {
 public:
-
-  /* GIMPLE statement iterator going from region_begin to region_end.  */
-
-  struct const_iterator
-  {
-    const_iterator (gimple_stmt_iterator _gsi) : gsi (_gsi) {}
-
-    const const_iterator &
-    operator++ ()
-    {
-      gsi_next (&gsi); return *this;
-    }
-
-    gimple *operator* () const { return gsi_stmt (gsi); }
-
-    bool
-    operator== (const const_iterator &other) const
-    {
-      return gsi_stmt (gsi) == gsi_stmt (other.gsi);
-    }
-
-    bool
-    operator!= (const const_iterator &other) const
-    {
-      return !(*this == other);
-    }
-
-    gimple_stmt_iterator gsi;
-  };
-
-  /* GIMPLE statement iterator going from region_end to region_begin.  */
-
-  struct const_reverse_iterator
-  {
-    const_reverse_iterator (gimple_stmt_iterator _gsi) : gsi (_gsi) {}
-
-    const const_reverse_iterator &
-    operator++ ()
-    {
-      gsi_prev (&gsi); return *this;
-    }
-
-    gimple *operator* () const { return gsi_stmt (gsi); }
-
-    bool
-    operator== (const const_reverse_iterator &other) const
-    {
-      return gsi_stmt (gsi) == gsi_stmt (other.gsi);
-    }
-
-    bool
-    operator!= (const const_reverse_iterator &other) const
-    {
-      return !(*this == other);
-    }
-
-    gimple_stmt_iterator gsi;
-  };
-
-  _bb_vec_info (gimple_stmt_iterator, gimple_stmt_iterator, vec_info_shared *);
+  _bb_vec_info (vec<basic_block> bbs, vec_info_shared *);
   ~_bb_vec_info ();
 
-  /* Returns iterator_range for range-based loop.  */
-
-  iterator_range<const_iterator>
-  region_stmts ()
-  {
-    return iterator_range<const_iterator> (region_begin, region_end);
-  }
-
-  /* Returns iterator_range for range-based loop in a reverse order.  */
-
-  iterator_range<const_reverse_iterator>
-  reverse_region_stmts ()
-  {
-    const_reverse_iterator begin = region_end;
-    if (*begin == NULL)
-      begin = const_reverse_iterator (gsi_last_bb (gsi_bb (region_end)));
-    else
-      ++begin;
-
-    const_reverse_iterator end = region_begin;
-    return iterator_range<const_reverse_iterator> (begin, ++end);
-  }
-
-  basic_block bb;
-  gimple_stmt_iterator region_begin;
-  gimple_stmt_iterator region_end;
+  /* The region we are operating on.  bbs[0] is the entry, excluding
+     its PHI nodes.  In the future we might want to track an explicit
+     entry edge to cover bbs[0] PHI nodes and have a region entry
+     insert location.  */
+  vec<basic_block> bbs;
 } *bb_vec_info;
 
 #define BB_VINFO_BB(B)               (B)->bb
@@ -1136,10 +1058,6 @@ public:
      pattern statement.  */
   gimple_seq pattern_def_seq;
 
-  /* List of datarefs that are known to have the same alignment as the dataref
-     of this stmt.  */
-  vec<dr_p> same_align_refs;
-
   /* Selected SIMD clone's function info.  First vector element
      is SIMD clone's function decl, followed by a pair of trees (base + step)
      for linear arguments (pair of NULLs for other arguments).  */
@@ -1329,7 +1247,6 @@ struct gather_scatter_info {
 #define STMT_VINFO_IN_PATTERN_P(S)         (S)->in_pattern_p
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
 #define STMT_VINFO_PATTERN_DEF_SEQ(S)      (S)->pattern_def_seq
-#define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
 #define STMT_VINFO_SIMD_CLONE_INFO(S)	   (S)->simd_clone_info
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
 #define STMT_VINFO_GROUPED_ACCESS(S) \
@@ -1967,7 +1884,8 @@ extern tree vect_create_addr_base_for_vector_ref (vec_info *,
 extern widest_int vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo);
 bool vect_rgroup_iv_might_wrap_p (loop_vec_info, rgroup_controls *);
 /* Used in tree-vect-loop-manip.c */
-extern void determine_peel_for_niter (loop_vec_info);
+extern opt_result vect_determine_partial_vectors_and_peeling (loop_vec_info,
+							      bool);
 /* Used in gimple-loop-interchange.c and tree-parloops.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
@@ -2034,6 +1952,7 @@ extern void vect_get_slp_defs (slp_tree, vec<tree> *);
 extern void vect_get_slp_defs (vec_info *, slp_tree, vec<vec<tree> > *,
 			       unsigned n = -1U);
 extern bool vect_slp_bb (basic_block);
+extern bool vect_slp_function (function *);
 extern stmt_vec_info vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern stmt_vec_info vect_find_first_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (stmt_vec_info, loop_vec_info);

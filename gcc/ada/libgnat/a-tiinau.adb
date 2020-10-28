@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---              A D A . T E X T _ I O . I N T E G E R  _ A U X              --
+--              A D A . T E X T _ I O . I N T E G E R _ A U X               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -31,36 +31,15 @@
 
 with Ada.Text_IO.Generic_Aux; use Ada.Text_IO.Generic_Aux;
 
-with System.Img_BIU;   use System.Img_BIU;
-with System.Img_Int;   use System.Img_Int;
-with System.Img_LLB;   use System.Img_LLB;
-with System.Img_LLI;   use System.Img_LLI;
-with System.Img_LLW;   use System.Img_LLW;
-with System.Img_WIU;   use System.Img_WIU;
-with System.Val_Int;   use System.Val_Int;
-with System.Val_LLI;   use System.Val_LLI;
-
 package body Ada.Text_IO.Integer_Aux is
 
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
+   ---------
+   -- Get --
+   ---------
 
-   procedure Load_Integer
-     (File : File_Type;
-      Buf  : out String;
-      Ptr  : in out Natural);
-   --  This is an auxiliary routine that is used to load a possibly signed
-   --  integer literal value from the input file into Buf, starting at Ptr + 1.
-   --  On return, Ptr is set to the last character stored.
-
-   -------------
-   -- Get_Int --
-   -------------
-
-   procedure Get_Int
+   procedure Get
      (File  : File_Type;
-      Item  : out Integer;
+      Item  : out Num;
       Width : Field)
    is
       Buf  : String (1 .. Field'Last);
@@ -75,130 +54,38 @@ package body Ada.Text_IO.Integer_Aux is
          Load_Integer (File, Buf, Stop);
       end if;
 
-      Item := Scan_Integer (Buf, Ptr'Access, Stop);
+      Item := Scan (Buf, Ptr'Access, Stop);
       Check_End_Of_Field (Buf, Stop, Ptr, Width);
-   end Get_Int;
+   end Get;
 
-   -------------
-   -- Get_LLI --
-   -------------
+   ----------
+   -- Gets --
+   ----------
 
-   procedure Get_LLI
-     (File  : File_Type;
-      Item  : out Long_Long_Integer;
-      Width : Field)
-   is
-      Buf  : String (1 .. Field'Last);
-      Ptr  : aliased Integer := 1;
-      Stop : Integer := 0;
-
-   begin
-      if Width /= 0 then
-         Load_Width (File, Width, Buf, Stop);
-         String_Skip (Buf, Ptr);
-      else
-         Load_Integer (File, Buf, Stop);
-      end if;
-
-      Item := Scan_Long_Long_Integer (Buf, Ptr'Access, Stop);
-      Check_End_Of_Field (Buf, Stop, Ptr, Width);
-   end Get_LLI;
-
-   --------------
-   -- Gets_Int --
-   --------------
-
-   procedure Gets_Int
+   procedure Gets
      (From : String;
-      Item : out Integer;
+      Item : out Num;
       Last : out Positive)
    is
       Pos : aliased Integer;
 
    begin
       String_Skip (From, Pos);
-      Item := Scan_Integer (From, Pos'Access, From'Last);
+      Item := Scan (From, Pos'Access, From'Last);
       Last := Pos - 1;
 
    exception
       when Constraint_Error =>
          raise Data_Error;
-   end Gets_Int;
+   end Gets;
 
-   --------------
-   -- Gets_LLI --
-   --------------
+   ---------
+   -- Put --
+   ---------
 
-   procedure Gets_LLI
-     (From : String;
-      Item : out Long_Long_Integer;
-      Last : out Positive)
-   is
-      Pos : aliased Integer;
-
-   begin
-      String_Skip (From, Pos);
-      Item := Scan_Long_Long_Integer (From, Pos'Access, From'Last);
-      Last := Pos - 1;
-
-   exception
-      when Constraint_Error =>
-         raise Data_Error;
-   end Gets_LLI;
-
-   ------------------
-   -- Load_Integer --
-   ------------------
-
-   procedure Load_Integer
-     (File : File_Type;
-      Buf  : out String;
-      Ptr  : in out Natural)
-   is
-      Hash_Loc : Natural;
-      Loaded   : Boolean;
-
-   begin
-      Load_Skip (File);
-      Load (File, Buf, Ptr, '+', '-');
-
-      Load_Digits (File, Buf, Ptr, Loaded);
-
-      if Loaded then
-
-         --  Deal with based literal. We recognize either the standard '#' or
-         --  the allowed alternative replacement ':' (see RM J.2(3)).
-
-         Load (File, Buf, Ptr, '#', ':', Loaded);
-
-         if Loaded then
-            Hash_Loc := Ptr;
-            Load_Extended_Digits (File, Buf, Ptr);
-            Load (File, Buf, Ptr, Buf (Hash_Loc));
-         end if;
-
-         --  Deal with exponent
-
-         Load (File, Buf, Ptr, 'E', 'e', Loaded);
-
-         if Loaded then
-
-            --  Note: it is strange to allow a minus sign, since the syntax
-            --  does not, but that is what ACVC test CE3704F, case (6) wants.
-
-            Load (File, Buf, Ptr, '+', '-');
-            Load_Digits (File, Buf, Ptr);
-         end if;
-      end if;
-   end Load_Integer;
-
-   -------------
-   -- Put_Int --
-   -------------
-
-   procedure Put_Int
+   procedure Put
      (File  : File_Type;
-      Item  : Integer;
+      Item  : Num;
       Width : Field;
       Base  : Number_Base)
    is
@@ -207,48 +94,23 @@ package body Ada.Text_IO.Integer_Aux is
 
    begin
       if Base = 10 and then Width = 0 then
-         Set_Image_Integer (Item, Buf, Ptr);
+         Set_Image (Item, Buf, Ptr);
       elsif Base = 10 then
-         Set_Image_Width_Integer (Item, Width, Buf, Ptr);
+         Set_Image_Width (Item, Width, Buf, Ptr);
       else
-         Set_Image_Based_Integer (Item, Base, Width, Buf, Ptr);
+         Set_Image_Based (Item, Base, Width, Buf, Ptr);
       end if;
 
       Put_Item (File, Buf (1 .. Ptr));
-   end Put_Int;
+   end Put;
 
-   -------------
-   -- Put_LLI --
-   -------------
+   ----------
+   -- Puts --
+   ----------
 
-   procedure Put_LLI
-     (File  : File_Type;
-      Item  : Long_Long_Integer;
-      Width : Field;
-      Base  : Number_Base)
-   is
-      Buf : String (1 .. Integer'Max (Field'Last, Width));
-      Ptr : Natural := 0;
-
-   begin
-      if Base = 10 and then Width = 0 then
-         Set_Image_Long_Long_Integer (Item, Buf, Ptr);
-      elsif Base = 10 then
-         Set_Image_Width_Long_Long_Integer (Item, Width, Buf, Ptr);
-      else
-         Set_Image_Based_Long_Long_Integer (Item, Base, Width, Buf, Ptr);
-      end if;
-
-      Put_Item (File, Buf (1 .. Ptr));
-   end Put_LLI;
-
-   --------------
-   -- Puts_Int --
-   --------------
-
-   procedure Puts_Int
+   procedure Puts
      (To   : out String;
-      Item : Integer;
+      Item : Num;
       Base : Number_Base)
    is
       Buf : String (1 .. Integer'Max (Field'Last, To'Length));
@@ -256,9 +118,9 @@ package body Ada.Text_IO.Integer_Aux is
 
    begin
       if Base = 10 then
-         Set_Image_Width_Integer (Item, To'Length, Buf, Ptr);
+         Set_Image_Width (Item, To'Length, Buf, Ptr);
       else
-         Set_Image_Based_Integer (Item, Base, To'Length, Buf, Ptr);
+         Set_Image_Based (Item, Base, To'Length, Buf, Ptr);
       end if;
 
       if Ptr > To'Length then
@@ -266,32 +128,6 @@ package body Ada.Text_IO.Integer_Aux is
       else
          To (To'First .. To'First + Ptr - 1) := Buf (1 .. Ptr);
       end if;
-   end Puts_Int;
-
-   --------------
-   -- Puts_LLI --
-   --------------
-
-   procedure Puts_LLI
-     (To   : out String;
-      Item : Long_Long_Integer;
-      Base : Number_Base)
-   is
-      Buf : String (1 .. Integer'Max (Field'Last, To'Length));
-      Ptr : Natural := 0;
-
-   begin
-      if Base = 10 then
-         Set_Image_Width_Long_Long_Integer (Item, To'Length, Buf, Ptr);
-      else
-         Set_Image_Based_Long_Long_Integer (Item, Base, To'Length, Buf, Ptr);
-      end if;
-
-      if Ptr > To'Length then
-         raise Layout_Error;
-      else
-         To (To'First .. To'First + Ptr - 1) := Buf (1 .. Ptr);
-      end if;
-   end Puts_LLI;
+   end Puts;
 
 end Ada.Text_IO.Integer_Aux;

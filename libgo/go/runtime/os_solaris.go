@@ -10,6 +10,10 @@ type mOS struct {
 	waitsema uintptr // semaphore for parking on locks
 }
 
+func getProcID() uint64 {
+	return uint64(gettid())
+}
+
 //extern malloc
 func libc_malloc(uintptr) unsafe.Pointer
 

@@ -40,10 +40,6 @@
 --  For configurations where SCHED_FIFO and priority ceiling are not a
 --  requirement, this file can also be used (e.g AiX threads)
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during tasking
---  operations. It causes infinite loops and other problems.
-
 with Ada.Unchecked_Conversion;
 
 with Interfaces.C;

@@ -17,9 +17,11 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
-m32
-Target Report RejectNegative InverseMask(ABI64)
-Generate code for a 32-bit ABI.
+; It's not clear whether this was ever build/tested/used, so this is no longer
+; exposed to the user.
+;m32
+;Target Report RejectNegative InverseMask(ABI64)
+;Generate code for a 32-bit ABI.
 
 m64
 Target Report RejectNegative Mask(ABI64)
@@ -37,7 +39,7 @@ msoft-stack
 Target Report Mask(SOFT_STACK)
 Use custom stacks instead of local memory for automatic storage.
 
-msoft-stack-reserve-local
+msoft-stack-reserve-local=
 Target Report Joined RejectNegative UInteger Var(nvptx_softstack_size) Init(128)
 Specify size of .local memory used for stack when the exact amount is not known.
 
@@ -59,6 +61,7 @@ Enum(ptx_isa) String(sm_30) Value(PTX_ISA_SM30)
 EnumValue
 Enum(ptx_isa) String(sm_35) Value(PTX_ISA_SM35)
 
+; Default needs to be in sync with default in ASM_SPEC in nvptx.h.
 misa=
-Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM30)
+Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM35)
 Specify the version of the ptx ISA to use.

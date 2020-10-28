@@ -1201,7 +1201,7 @@ set_constraints (tree t, tree ci)
 void
 remove_constraints (tree t)
 {
-  gcc_assert (DECL_P (t));
+  gcc_checking_assert (DECL_P (t));
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
@@ -1217,11 +1217,16 @@ maybe_substitute_reqs_for (tree reqs, const_tree decl_)
 {
   if (reqs == NULL_TREE)
     return NULL_TREE;
+
   tree decl = CONST_CAST_TREE (decl_);
   tree result = STRIP_TEMPLATE (decl);
-  if (DECL_FRIEND_P (result))
+
+  if (DECL_UNIQUE_FRIEND_P (result))
     {
-      tree tmpl = decl == result ? DECL_TI_TEMPLATE (result) : decl;
+      tree tmpl = decl;
+      if (TREE_CODE (decl) != TEMPLATE_DECL)
+	tmpl = DECL_TI_TEMPLATE (result);
+
       tree gargs = generic_targs_for (tmpl);
       processing_template_decl_sentinel s;
       if (uses_template_parms (gargs))
@@ -1427,7 +1432,9 @@ tree
 build_type_constraint (tree decl, tree args, tsubst_flags_t complain)
 {
   tree wildcard = build_nt (WILDCARD_DECL);
+  ++processing_template_decl;
   tree check = build_concept_check (decl, wildcard, args, complain);
+  --processing_template_decl;
   if (check == error_mark_node)
     return error_mark_node;
   return unpack_concept_check (check);

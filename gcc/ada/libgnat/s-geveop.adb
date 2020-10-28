@@ -66,6 +66,13 @@ package body System.Generic_Vector_Operations is
       function VP is new Ada.Unchecked_Conversion (Address, Vector_Ptr);
       function EP is new Ada.Unchecked_Conversion (Address, Element_Ptr);
 
+      pragma Assert (VI > 0);
+      --  VI = VU
+      --  VU = Vectors.Vector'Size / Storage_Unit
+      --  Vector'Size = System.Word_Size
+      --  System.Word_Size is a multiple of Storage_Unit
+      --  Vector'Size > Storage_Unit
+      --  VI > 0
       SA : constant Address :=
              AddA (XA, To_Address
                          ((Integer_Address (Length) / VI * VI) and Unaligned));
@@ -111,6 +118,13 @@ package body System.Generic_Vector_Operations is
       function VP is new Ada.Unchecked_Conversion (Address, Vector_Ptr);
       function EP is new Ada.Unchecked_Conversion (Address, Element_Ptr);
 
+      pragma Assert (VI > 0);
+      --  VI = VU
+      --  VU = Vectors.Vector'Size / Storage_Unit
+      --  Vector'Size = System.Word_Size
+      --  System.Word_Size is a multiple of Storage_Unit
+      --  Vector'Size > Storage_Unit
+      --  VI > 0
       SA : constant Address :=
              AddA (XA, To_Address
                          ((Integer_Address (Length) / VI * VI) and Unaligned));

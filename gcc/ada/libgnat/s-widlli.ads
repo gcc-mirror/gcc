@@ -29,17 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for Width attribute for all
---  non-static signed integer subtypes. Note we only have one routine,
---  since this seems a fairly marginal function.
+--  Width attribute for signed integers larger than Integer
+
+with System.Width_I;
 
 package System.Wid_LLI is
-   pragma Pure;
 
-   function Width_Long_Long_Integer
-     (Lo, Hi : Long_Long_Integer)
-      return   Natural;
-   --  Compute Width attribute for non-static type derived from a signed
-   --  Integer type. The arguments Lo, Hi are the bounds of the type.
+   function Width_Long_Long_Integer is new Width_I (Long_Long_Integer);
+   pragma Pure_Function (Width_Long_Long_Integer);
 
 end System.Wid_LLI;

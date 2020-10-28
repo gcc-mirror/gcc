@@ -13,16 +13,10 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -49,7 +43,7 @@ package body Uintp is
    Uint_Int_Last : Uint;
    --  Uint value containing Int'Last value set by Initialize
 
-   UI_Power_2 : array (Int range 0 .. 64) of Uint;
+   UI_Power_2 : array (Int range 0 .. 128) of Uint;
    --  This table is used to memoize exponentiations by powers of 2. The Nth
    --  entry, if set, contains the Uint value 2**N. Initially UI_Power_2_Set
    --  is zero and only the 0'th entry is set, the invariant being that all
@@ -58,7 +52,7 @@ package body Uintp is
    UI_Power_2_Set : Nat;
    --  Number of entries set in UI_Power_2;
 
-   UI_Power_10 : array (Int range 0 .. 64) of Uint;
+   UI_Power_10 : array (Int range 0 .. 128) of Uint;
    --  This table is used to memoize exponentiations by powers of 10 in the
    --  same manner as described above for UI_Power_2.
 
@@ -1317,9 +1311,9 @@ package body Uintp is
 
       --  Cases which can be done by table lookup
 
-      elsif Right <= Uint_64 then
+      elsif Right <= Uint_128 then
 
-         --  2**N for N in 2 .. 64
+         --  2**N for N in 2 .. 128
 
          if Left = Uint_2 then
             declare
@@ -1339,7 +1333,7 @@ package body Uintp is
                return UI_Power_2 (Right_Int);
             end;
 
-         --  10**N for N in 2 .. 64
+         --  10**N for N in 2 .. 128
 
          elsif Left = Uint_10 then
             declare

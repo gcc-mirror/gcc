@@ -238,8 +238,8 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    function From_String (Arg : String) return Big_Integer is
       Result : Big_Integer;
    begin
-      --  ??? only support Long_Long_Integer, good enough for now
-      Set_Bignum (Result, To_Bignum (Long_Long_Integer'Value (Arg)));
+      --  ??? only support Long_Long_Long_Integer, good enough for now
+      Set_Bignum (Result, To_Bignum (Long_Long_Long_Integer'Value (Arg)));
       return Result;
    end From_String;
 

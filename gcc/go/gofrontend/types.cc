@@ -5182,7 +5182,11 @@ Function_type::do_export(Export* exp) const
 	    first = false;
 	  else
 	    exp->write_c_string(", ");
-	  exp->write_name(p->name());
+	  // The hash for a function type ignores parameter names, so
+	  // we don't want to write them out here.  If we did write
+	  // them out, we could get spurious changes in export data
+	  // when recompiling a package.
+	  exp->write_name("");
 	  exp->write_c_string(" ");
 	  if (!is_varargs || p + 1 != this->parameters_->end())
 	    exp->write_type(p->type());
@@ -5213,7 +5217,7 @@ Function_type::do_export(Export* exp) const
 		first = false;
 	      else
 		exp->write_c_string(", ");
-	      exp->write_name(p->name());
+	      exp->write_name("");
 	      exp->write_c_string(" ");
 	      exp->write_type(p->type());
 	    }
@@ -5350,8 +5354,12 @@ Function_type::copy_with_receiver_as_param(bool want_pointer_receiver) const
 	   ++p)
 	new_params->push_back(*p);
     }
-  return Type::make_function_type(NULL, new_params, this->results_,
-				  this->location_);
+  Function_type* ret = Type::make_function_type(NULL, new_params,
+						this->results_,
+						this->location_);
+  if (this->is_varargs_)
+    ret->set_is_varargs();
+  return ret;
 }
 
 // Make a copy of a function type ignoring any receiver and adding a

@@ -236,6 +236,9 @@
 #define vec_lvebx __builtin_vec_lvebx
 #define vec_lvehx __builtin_vec_lvehx
 #define vec_lvewx __builtin_vec_lvewx
+#define vec_xl_zext __builtin_vec_ze_lxvrx
+#define vec_xl_sext __builtin_vec_se_lxvrx
+#define vec_xst_trunc __builtin_vec_tr_stxvrx
 #define vec_neg __builtin_vec_neg
 #define vec_pmsum_be __builtin_vec_vpmsum
 #define vec_shasigma_be __builtin_crypto_vshasigma

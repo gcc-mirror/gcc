@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "omp-offload.h"
 #include "context.h"
+#include "tree-nested.h"
 
 /* Hash set of poisoned variables in a bind expr.  */
 static hash_set<tree> *asan_poisoned_variables = NULL;
@@ -959,7 +960,8 @@ unshare_body (tree fndecl)
   delete visited;
 
   if (cgn)
-    for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
+    for (cgn = first_nested_function (cgn); cgn;
+	 cgn = next_nested_function (cgn))
       unshare_body (cgn->decl);
 }
 
@@ -1002,7 +1004,8 @@ unvisit_body (tree fndecl)
   unmark_visited (&DECL_SIZE_UNIT (DECL_RESULT (fndecl)));
 
   if (cgn)
-    for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
+    for (cgn = first_nested_function (cgn);
+	 cgn; cgn = next_nested_function (cgn))
       unvisit_body (cgn->decl);
 }
 
@@ -1468,15 +1471,22 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 
 	  if (flag_openacc && oacc_declare_returns != NULL)
 	    {
-	      tree *c = oacc_declare_returns->get (t);
+	      tree key = t;
+	      if (DECL_HAS_VALUE_EXPR_P (key))
+		{
+		  key = DECL_VALUE_EXPR (key);
+		  if (TREE_CODE (key) == INDIRECT_REF)
+		    key = TREE_OPERAND (key, 0);
+		}
+	      tree *c = oacc_declare_returns->get (key);
 	      if (c != NULL)
 		{
 		  if (ret_clauses)
 		    OMP_CLAUSE_CHAIN (*c) = ret_clauses;
 
-		  ret_clauses = *c;
+		  ret_clauses = unshare_expr (*c);
 
-		  oacc_declare_returns->remove (t);
+		  oacc_declare_returns->remove (key);
 
 		  if (oacc_declare_returns->is_empty ())
 		    {

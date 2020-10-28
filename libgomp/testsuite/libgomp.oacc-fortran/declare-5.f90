@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-xfail-run-if "PR92790 - acc declare device_resident - Fortran common blocks not handled" { *-*-* } { "*" } { "-DACC_DEVICE_TYPE_host=1" } }
 
 module vars
   implicit none

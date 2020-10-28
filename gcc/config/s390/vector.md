@@ -1425,35 +1425,45 @@
 
 ; Vector copysign, implement using vector select
 (define_expand "copysign<mode>3"
-  [(set (match_operand:VFT 0 "register_operand" "")
-	(if_then_else:VFT
-	 (eq (match_dup 3)
-	     (match_dup 4))
-	 (match_operand:VFT 1 "register_operand"  "")
-	 (match_operand:VFT 2 "register_operand"  "")))]
+  [(set (match_operand:VFT            0 "register_operand" "")
+	(ior:VFT
+	 (and:VFT (match_operand:VFT  2 "register_operand" "")
+		  (match_dup 3))
+	 (and:VFT (not:VFT (match_dup 3))
+		  (match_operand:VFT  1 "register_operand" ""))))]
   "TARGET_VX"
 {
-  int sz = GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode));
-  int prec = GET_MODE_PRECISION (GET_MODE_INNER (<tointvec>mode));
-  wide_int mask_val = wi::shwi (1l << (sz - 1), prec);
-
-  rtx mask = gen_reg_rtx (<tointvec>mode);
-
-  int nunits = GET_MODE_NUNITS (<tointvec>mode);
-  rtvec v = rtvec_alloc (nunits);
-  for (int i = 0; i < nunits; i++)
-    RTVEC_ELT (v, i) = GEN_INT (mask_val.to_shwi ());
-
-  mask = gen_rtx_CONST_VECTOR (<tointvec>mode, v);
-  operands[3] = force_reg (<tointvec>mode, mask);
-  operands[4] = CONST0_RTX (<tointvec>mode);
+  rtx mask = s390_build_signbit_mask (<MODE>mode);
+  operands[3] = force_reg (<MODE>mode, mask);
 })
 
 ;;
 ;; Integer compares
 ;;
 
-(define_insn "*vec_cmp<VICMP_HW_OP:code><VI:mode>_nocc"
+(define_expand "vec_cmp<VI_HW:mode><VI_HW:mode>"
+  [(set (match_operand:VI_HW    0 "register_operand" "")
+	(match_operator:VI_HW   1 ""
+	  [(match_operand:VI_HW 2 "register_operand" "")
+	   (match_operand:VI_HW 3 "register_operand" "")]))]
+  "TARGET_VX"
+{
+  s390_expand_vec_compare (operands[0], GET_CODE(operands[1]), operands[2], operands[3]);
+  DONE;
+})
+
+(define_expand "vec_cmpu<VI_HW:mode><VI_HW:mode>"
+  [(set (match_operand:VI_HW    0 "register_operand" "")
+	(match_operator:VI_HW   1 ""
+	  [(match_operand:VI_HW 2 "register_operand" "")
+	   (match_operand:VI_HW 3 "register_operand" "")]))]
+  "TARGET_VX"
+{
+  s390_expand_vec_compare (operands[0], GET_CODE(operands[1]), operands[2], operands[3]);
+  DONE;
+})
+
+(define_insn "*vec_cmp<VICMP_HW_OP:code><VI:mode><VI:mode>_nocc"
   [(set (match_operand:VI                 2 "register_operand" "=v")
 	(VICMP_HW_OP:VI (match_operand:VI 0 "register_operand"  "v")
 			(match_operand:VI 1 "register_operand"  "v")))]

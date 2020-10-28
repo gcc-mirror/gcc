@@ -1,4 +1,5 @@
-/* { dg-do compile { target { powerpc64le-*-* } } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-O2 -ftree-vectorize -mdejagnu-cpu=power8 -ffast-math -fvect-cost-model=unlimited" } */
 
 /* This tests special handling for various uses of xxpermdi, other than

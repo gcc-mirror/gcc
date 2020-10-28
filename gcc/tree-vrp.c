@@ -4010,9 +4010,12 @@ class vrp_folder : public substitute_and_fold_engine
     : substitute_and_fold_engine (/* Fold all stmts.  */ true),
       m_vr_values (v), simplifier (v)
     {  }
-  tree get_value (tree, gimple *stmt) FINAL OVERRIDE;
   bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
 
+  tree value_of_expr (tree name, gimple *stmt) OVERRIDE
+    {
+      return m_vr_values->value_of_expr (name, stmt);
+    }
   class vr_values *m_vr_values;
 
 private:
@@ -4023,8 +4026,6 @@ private:
     { return simplifier.vrp_evaluate_conditional (code, op0, op1, stmt); }
   bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
     { return simplifier.simplify (gsi); }
- tree op_with_constant_singleton_value_range (tree op)
-    { return m_vr_values->op_with_constant_singleton_value_range (op); }
 
   simplify_using_ranges simplifier;
 };
@@ -4100,18 +4101,6 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
     return true;
 
   return simplify_stmt_using_ranges (si);
-}
-
-/* If OP has a value range with a single constant value return that,
-   otherwise return NULL_TREE.  This returns OP itself if OP is a
-   constant.
-
-   Implemented as a pure wrapper right now, but this will change.  */
-
-tree
-vrp_folder::get_value (tree op, gimple *stmt ATTRIBUTE_UNUSED)
-{
-  return op_with_constant_singleton_value_range (op);
 }
 
 /* Return the LHS of any ASSERT_EXPR where OP appears as the first
@@ -4406,6 +4395,67 @@ vrp_prop::vrp_finalize (vrp_folder *folder, bool warn_array_bounds_p)
     }
 }
 
+/* STMT is a conditional at the end of a basic block.
+
+   If the conditional is of the form SSA_NAME op constant and the SSA_NAME
+   was set via a type conversion, try to replace the SSA_NAME with the RHS
+   of the type conversion.  Doing so makes the conversion dead which helps
+   subsequent passes.  */
+
+static void
+vrp_simplify_cond_using_ranges (vr_values *query, gcond *stmt)
+{
+  tree op0 = gimple_cond_lhs (stmt);
+  tree op1 = gimple_cond_rhs (stmt);
+
+  /* If we have a comparison of an SSA_NAME (OP0) against a constant,
+     see if OP0 was set by a type conversion where the source of
+     the conversion is another SSA_NAME with a range that fits
+     into the range of OP0's type.
+
+     If so, the conversion is redundant as the earlier SSA_NAME can be
+     used for the comparison directly if we just massage the constant in the
+     comparison.  */
+  if (TREE_CODE (op0) == SSA_NAME
+      && TREE_CODE (op1) == INTEGER_CST)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
+      tree innerop;
+
+      if (!is_gimple_assign (def_stmt)
+	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+	return;
+
+      innerop = gimple_assign_rhs1 (def_stmt);
+
+      if (TREE_CODE (innerop) == SSA_NAME
+	  && !POINTER_TYPE_P (TREE_TYPE (innerop))
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop)
+	  && desired_pro_or_demotion_p (TREE_TYPE (innerop), TREE_TYPE (op0)))
+	{
+	  const value_range *vr = query->get_value_range (innerop);
+
+	  if (range_int_cst_p (vr)
+	      && range_fits_type_p (vr,
+				    TYPE_PRECISION (TREE_TYPE (op0)),
+				    TYPE_SIGN (TREE_TYPE (op0)))
+	      && int_fits_type_p (op1, TREE_TYPE (innerop)))
+	    {
+	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
+	      gimple_cond_set_lhs (stmt, innerop);
+	      gimple_cond_set_rhs (stmt, newconst);
+	      update_stmt (stmt);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Folded into: ");
+		  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
+	    }
+	}
+    }
+}
+
 /* Main entry point to VRP (Value Range Propagation).  This pass is
    loosely based on J. R. C. Patterson, ``Accurate Static Branch
    Prediction by Value Range Propagation,'' in SIGPLAN Conference on
@@ -4493,8 +4543,8 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
     {
       gimple *last = last_stmt (bb);
       if (last && gimple_code (last) == GIMPLE_COND)
-	simplify_cond_using_ranges_2 (&vrp_prop.vr_values,
-				      as_a <gcond *> (last));
+	vrp_simplify_cond_using_ranges (&vrp_prop.vr_values,
+					as_a <gcond *> (last));
     }
 
   free_numbers_of_iterations_estimates (fun);

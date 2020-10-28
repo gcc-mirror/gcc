@@ -607,12 +607,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
    i.e. "X % C" into "X & (C - 1)", if X and C are positive.
    Also optimize A % (C << N)  where C is a power of 2,
-   to A & ((C << N) - 1).  */
+   to A & ((C << N) - 1).
+   Also optimize "A shift (B % C)", if C is a power of 2, to
+   "A shift (B & (C - 1))".  SHIFT operation include "<<" and ">>"
+   and assume (B % C) is nonnegative as shifts negative values would
+   be UB.  */
 (match (power_of_two_cand @1)
  INTEGER_CST@1)
 (match (power_of_two_cand @1)
  (lshift INTEGER_CST@1 @2))
 (for mod (trunc_mod floor_mod)
+ (for shift (lshift rshift)
+  (simplify
+   (shift @0 (mod @1 (power_of_two_cand@2 @3)))
+   (if (integer_pow2p (@3) && tree_int_cst_sgn (@3) > 0)
+    (shift @0 (bit_and @1 (minus @2 { build_int_cst (TREE_TYPE (@2),
+						      1); }))))))
  (simplify
   (mod @0 (convert?@3 (power_of_two_cand@1 @2)))
   (if ((TYPE_UNSIGNED (type)
@@ -3521,6 +3531,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (optimize_vectors_before_lowering_p () && types_match (@0, @1))
   (vec_cond (bit_and (bit_not @0) @1) @2 @3)))
 
+/* Canonicalize mask ? { 0, ... } : { -1, ...} to ~mask if the mask
+   types are compatible.  */
+(simplify
+ (vec_cond @0 VECTOR_CST@1 VECTOR_CST@2)
+ (if (VECTOR_BOOLEAN_TYPE_P (type)
+      && types_match (type, TREE_TYPE (@0)))
+  (if (integer_zerop (@1) && integer_all_onesp (@2))
+   (bit_not @0)
+   (if (integer_all_onesp (@1) && integer_zerop (@2))
+    @0))))
+
 /* Simplification moved from fold_cond_expr_with_comparison.  It may also
    be extended.  */
 /* This pattern implements two kinds simplification:
@@ -5174,7 +5195,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (with {
        const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (@0);
        bool use_exp2 = false;
-       if (targetm.libc_has_function (function_c99_misc)
+       if (targetm.libc_has_function (function_c99_misc, TREE_TYPE (@0))
 	   && value->cl == rvc_normal)
 	 {
 	   REAL_VALUE_TYPE frac_rvt = *value;
@@ -5473,7 +5494,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       cexpis (CEXPI)
   (simplify
    (cexps compositional_complex@0)
-   (if (targetm.libc_has_function (function_c99_math_complex))
+   (if (targetm.libc_has_function (function_c99_math_complex, TREE_TYPE (@0)))
     (complex
      (mult (exps@1 (realpart @0)) (realpart (cexpis:type@2 (imagpart @0))))
      (mult @1 (imagpart @2)))))))
@@ -5525,7 +5546,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* truncl(extend(x)) and trunc(extend(x)) -> extend(truncf(x)), etc.,
     if x is a float.  */
  (if (optimize && canonicalize_math_p ()
-      && targetm.libc_has_function (function_c99_misc))
+      && targetm.libc_has_function (function_c99_misc, NULL_TREE))
   (simplify
    (froms (convert float_value_p@0))
    (convert (tos @0)))))
@@ -6185,7 +6206,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
       && direct_internal_fn_supported_p (IFN_CTZ, TREE_TYPE (@0),
 					 OPTIMIZE_FOR_SPEED))
-  (plus (CTZ:type @0) { build_one_cst (type); })))
+  (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+   (plus (CTZ:type (convert:utype @0)) { build_one_cst (type); }))))
 #endif
 
 (for ffs (BUILT_IN_FFS BUILT_IN_FFSL BUILT_IN_FFSLL

@@ -134,8 +134,7 @@ begin_lambda_type (tree lambda)
   IDENTIFIER_LAMBDA_P (name) = true;
 
   /* Create the new RECORD_TYPE for this lambda.  */
-  tree type = xref_tag (/*tag_code=*/record_type, name,
-			/*scope=*/ts_lambda, /*template_header_p=*/false);
+  tree type = xref_tag (/*tag_code=*/record_type, name);
   if (type == error_mark_node)
     return error_mark_node;
 
@@ -476,7 +475,7 @@ static GTY(()) tree max_id;
 static tree
 vla_capture_type (tree array_type)
 {
-  tree type = xref_tag (record_type, make_anon_name (), ts_current, false);
+  tree type = xref_tag (record_type, make_anon_name ());
   xref_basetypes (type, NULL_TREE);
   type = begin_class_definition (type);
   if (!ptr_id)
@@ -1189,6 +1188,8 @@ maybe_add_lambda_conv_op (tree type)
   tree name = make_conv_op_name (rettype);
   tree thistype = cp_build_qualified_type (type, TYPE_QUAL_CONST);
   tree fntype = build_method_type_directly (thistype, rettype, void_list_node);
+  /* DR 1722: The conversion function should be noexcept.  */
+  fntype = build_exception_variant (fntype, noexcept_true_spec);
   tree convfn = build_lang_decl (FUNCTION_DECL, name, fntype);
   SET_DECL_LANGUAGE (convfn, lang_cplusplus);
   tree fn = convfn;
@@ -1322,6 +1323,13 @@ lambda_static_thunk_p (tree fn)
 	  && DECL_ARTIFICIAL (fn)
 	  && DECL_STATIC_FUNCTION_P (fn)
 	  && LAMBDA_TYPE_P (CP_DECL_CONTEXT (fn)));
+}
+
+bool
+call_from_lambda_thunk_p (tree call)
+{
+  return (CALL_FROM_THUNK_P (call)
+	  && lambda_static_thunk_p (current_function_decl));
 }
 
 /* Returns true iff VAL is a lambda-related declaration which should

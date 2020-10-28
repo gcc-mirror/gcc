@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                        S Y S T E M . X P _ B M L                         --
+--                       S Y S T E M . E X P _ L L U                        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,46 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Unsigned_Types; use System.Unsigned_Types;
+--  This package does not require a body, since it is an instantiation. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-package body System.Exp_LLU is
-
-   ----------------------------
-   -- Exp_Long_Long_Unsigned --
-   ----------------------------
-
-   function Exp_Long_Long_Unsigned
-     (Left  : Long_Long_Unsigned;
-      Right : Natural)
-      return  Long_Long_Unsigned
-   is
-      Result : Long_Long_Unsigned := 1;
-      Factor : Long_Long_Unsigned := Left;
-      Exp    : Natural := Right;
-
-   begin
-      --  We use the standard logarithmic approach, Exp gets shifted right
-      --  testing successive low order bits and Factor is the value of the
-      --  base raised to the next power of 2.
-
-      --  Note: it is not worth special casing the cases of base values -1,0,+1
-      --  since the expander does this when the base is a literal, and other
-      --  cases will be extremely rare.
-
-      if Exp /= 0 then
-         loop
-            if Exp rem 2 /= 0 then
-               Result := Result * Factor;
-            end if;
-
-            Exp := Exp / 2;
-            exit when Exp = 0;
-            Factor := Factor * Factor;
-         end loop;
-      end if;
-
-      return Result;
-
-   end Exp_Long_Long_Unsigned;
-
-end System.Exp_LLU;
+pragma No_Body;

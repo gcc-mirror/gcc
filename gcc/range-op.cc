@@ -287,6 +287,15 @@ value_range_with_overflow (irange &r, tree type,
     }
   else
     {
+      // If both bounds either underflowed or overflowed, then the result
+      // is undefined.
+      if ((min_ovf == wi::OVF_OVERFLOW && max_ovf == wi::OVF_OVERFLOW)
+	  || (min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_UNDERFLOW))
+	{
+	  r.set_undefined ();
+	  return;
+	}
+
       // If overflow does not wrap, saturate to [MIN, MAX].
       wide_int new_lb, new_ub;
       if (min_ovf == wi::OVF_UNDERFLOW)
@@ -1317,10 +1326,10 @@ operator_div::wi_fold (irange &r, tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  // If we know we will divide by zero, return undefined.
+  // If we know we will divide by zero...
   if (rh_lb == 0 && rh_ub == 0)
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 
@@ -1350,7 +1359,7 @@ operator_div::wi_fold (irange &r, tree type,
   // If we're definitely dividing by zero, there's nothing to do.
   if (wi_zero_p (type, divisor_min, divisor_max))
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 
@@ -1429,6 +1438,27 @@ public:
 				const wide_int &,
 				const wide_int &) const;
 } op_lshift;
+
+class operator_rshift : public cross_product_operator
+{
+public:
+  virtual bool fold_range (irange &r, tree type,
+			   const irange &op1,
+			   const irange &op2) const;
+  virtual void wi_fold (irange &r, tree type,
+			const wide_int &lh_lb,
+			const wide_int &lh_ub,
+			const wide_int &rh_lb,
+			const wide_int &rh_ub) const;
+  virtual bool wi_op_overflows (wide_int &res,
+				tree type,
+				const wide_int &w0,
+				const wide_int &w1) const;
+  virtual bool op1_range (irange &, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
+} op_rshift;
+
 
 bool
 operator_lshift::fold_range (irange &r, tree type,
@@ -1546,59 +1576,56 @@ operator_lshift::op1_range (irange &r,
   tree shift_amount;
   if (op2.singleton_p (&shift_amount))
     {
-      int_range<1> shifted (shift_amount, shift_amount), ub, lb;
-      const range_operator *rshift_op = range_op_handler (RSHIFT_EXPR, type);
-      rshift_op->fold_range (ub, type, lhs, shifted);
-      if (TYPE_UNSIGNED (type))
+      wide_int shift = wi::to_wide (shift_amount);
+      if (wi::lt_p (shift, 0, SIGNED))
+	return false;
+      if (wi::ge_p (shift, wi::uhwi (TYPE_PRECISION (type),
+				     TYPE_PRECISION (op2.type ())),
+		    UNSIGNED))
+	return false;
+      if (shift == 0)
 	{
-	  r = ub;
+	  r = lhs;
 	  return true;
 	}
-      // For signed types, we can't just do an arithmetic rshift,
-      // because that will propagate the sign bit.
-      //
-      //  LHS
-      // 1110 = OP1 << 1
-      //
-      // Assuming a 4-bit signed integer, a right shift will result in
-      // OP1=1111, but OP1 could have also been 0111.  What we want is
-      // a range from 0111 to 1111.  That is, a range from the logical
-      // rshift (0111) to the arithmetic rshift (1111).
-      //
-      // Perform a logical rshift by doing the rshift as unsigned.
-      tree unsigned_type = unsigned_type_for (type);
-      int_range_max unsigned_lhs = lhs;
-      range_cast (unsigned_lhs, unsigned_type);
-      rshift_op = range_op_handler (RSHIFT_EXPR, unsigned_type);
-      rshift_op->fold_range (lb, unsigned_type, unsigned_lhs, shifted);
-      range_cast (lb, type);
-      r = lb;
-      r.union_ (ub);
+
+      // Work completely in unsigned mode to start.
+      tree utype = type;
+      if (TYPE_SIGN (type) == SIGNED)
+	{
+	  int_range_max tmp = lhs;
+	  utype = unsigned_type_for (type);
+	  range_cast (tmp, utype);
+	  op_rshift.fold_range (r, utype, tmp, op2);
+	}
+      else
+	op_rshift.fold_range (r, utype, lhs, op2);
+
+      // Start with ranges which can produce the LHS by right shifting the
+      // result by the shift amount.
+      // ie   [0x08, 0xF0] = op1 << 2 will start with
+      //      [00001000, 11110000] = op1 << 2
+      //  [0x02, 0x4C] aka [00000010, 00111100]
+
+      // Then create a range from the LB with the least significant upper bit
+      // set, to the upper bound with all the bits set.
+      // This would be [0x42, 0xFC] aka [01000010, 11111100].
+
+      // Ideally we do this for each subrange, but just lump them all for now.
+      unsigned low_bits = TYPE_PRECISION (utype)
+			  - TREE_INT_CST_LOW (shift_amount);
+      wide_int up_mask = wi::mask (low_bits, true, TYPE_PRECISION (utype));
+      wide_int new_ub = wi::bit_or (up_mask, r.upper_bound ());
+      wide_int new_lb = wi::set_bit (r.lower_bound (), low_bits);
+      int_range<2> fill_range (utype, new_lb, new_ub);
+      r.union_ (fill_range);
+
+      if (utype != type)
+	range_cast (r, type);
       return true;
     }
   return false;
 }
-
-
-class operator_rshift : public cross_product_operator
-{
-public:
-  virtual bool fold_range (irange &r, tree type,
-			   const irange &op1,
-			   const irange &op2) const;
-  virtual void wi_fold (irange &r, tree type,
-		        const wide_int &lh_lb,
-		        const wide_int &lh_ub,
-		        const wide_int &rh_lb,
-		        const wide_int &rh_ub) const;
-  virtual bool wi_op_overflows (wide_int &res,
-				tree type,
-				const wide_int &w0,
-				const wide_int &w1) const;
-  virtual bool op1_range (irange &, tree type,
-			  const irange &lhs,
-			  const irange &op2) const;
-} op_rshift;
 
 bool
 operator_rshift::op1_range (irange &r,
@@ -1609,6 +1636,18 @@ operator_rshift::op1_range (irange &r,
   tree shift;
   if (op2.singleton_p (&shift))
     {
+      // Ignore nonsensical shifts.
+      unsigned prec = TYPE_PRECISION (type);
+      if (wi::ge_p (wi::to_wide (shift),
+		    wi::uhwi (prec, TYPE_PRECISION (TREE_TYPE (shift))),
+		    UNSIGNED))
+	return false;
+      if (wi::to_wide (shift) == 0)
+	{
+	  r = lhs;
+	  return true;
+	}
+
       // Folding the original operation may discard some impossible
       // ranges from the LHS.
       int_range_max lhs_refined;
@@ -1832,14 +1871,25 @@ operator_cast::op1_range (irange &r, tree type,
 							  type,
 							  converted_lhs,
 							  lim_range);
-	  // And union this with the entire outer types negative range.
-	  int_range_max neg (type,
-			     wi::min_value (TYPE_PRECISION (type),
-					    SIGNED),
-			     lim - 1);
-	  neg.union_ (lhs_neg);
+	  // lhs_neg now has all the negative versions of the LHS.
+	  // Now union in all the values from SIGNED MIN (0x80000) to
+	  // lim-1 in order to fill in all the ranges with the upper
+	  // bits set.
+
+	  // PR 97317.  If the lhs has only 1 bit less precision than the rhs,
+	  // we don't need to create a range from min to lim-1
+	  // calculate neg range traps trying to create [lim, lim - 1].
+	  wide_int min_val = wi::min_value (TYPE_PRECISION (type), SIGNED);
+	  if (lim != min_val)
+	    {
+	      int_range_max neg (type,
+				 wi::min_value (TYPE_PRECISION (type),
+						SIGNED),
+				 lim - 1);
+	      lhs_neg.union_ (neg);
+	    }
 	  // And finally, munge the signed and unsigned portions.
-	  r.union_ (neg);
+	  r.union_ (lhs_neg);
 	}
       // And intersect with any known value passed in the extra operand.
       r.intersect (op2);
@@ -2589,10 +2639,10 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
 
-  // Mod 0 is undefined.  Return undefined.
+  // Mod 0 is undefined.
   if (wi_zero_p (type, rh_lb, rh_ub))
     {
-      r.set_undefined ();
+      r.set_varying (type);
       return;
     }
 
@@ -2825,9 +2875,19 @@ operator_abs::wi_fold (irange &r, tree type,
   // ABS_EXPR may flip the range around, if the original range
   // included negative values.
   if (wi::eq_p (lh_lb, min_value))
-    min = max_value;
+    {
+      // ABS ([-MIN, -MIN]) isn't representable, but we have traditionally
+      // returned [-MIN,-MIN] so this preserves that behaviour.  PR37078
+      if (wi::eq_p (lh_ub, min_value))
+	{
+	  r = int_range<1> (type, min_value, min_value);
+	  return;
+	}
+      min = max_value;
+    }
   else
     min = wi::abs (lh_lb);
+
   if (wi::eq_p (lh_ub, min_value))
     max = max_value;
   else
@@ -3018,6 +3078,14 @@ pointer_plus_operator::wi_fold (irange &r, tree type,
 				const wide_int &rh_lb,
 				const wide_int &rh_ub) const
 {
+  // Check for [0,0] + const, and simply return the const.
+  if (lh_lb == 0 && lh_ub == 0 && rh_lb == rh_ub)
+    {
+      tree val = wide_int_to_tree (type, rh_lb);
+      r.set (val, val);
+      return;
+    }
+
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
   //
@@ -3552,6 +3620,52 @@ operator_tests ()
       negatives.intersect (op1);
       ASSERT_TRUE (negatives.undefined_p ());
     }
+
+  if (TYPE_PRECISION (unsigned_type_node) > 31)
+    {
+      // unsigned VARYING = op1 << 1 should be VARYING.
+      int_range<2> lhs (unsigned_type_node);
+      int_range<2> shift (INT (1), INT (1));
+      int_range_max op1;
+      op_lshift.op1_range (op1, unsigned_type_node, lhs, shift);
+      ASSERT_TRUE (op1.varying_p ());
+
+      // 0 = op1 << 1  should be [0,0], [0x8000000, 0x8000000].
+      int_range<2> zero (UINT (0), UINT (0));
+      op_lshift.op1_range (op1, unsigned_type_node, zero, shift);
+      ASSERT_TRUE (op1.num_pairs () == 2);
+      // Remove the [0,0] range.
+      op1.intersect (zero);
+      ASSERT_TRUE (op1.num_pairs () == 1);
+      //  op1 << 1   should be [0x8000,0x8000] << 1,
+      //  which should result in [0,0].
+      int_range_max result;
+      op_lshift.fold_range (result, unsigned_type_node, op1, shift);
+      ASSERT_TRUE (result == zero);
+    }
+  // signed VARYING = op1 << 1 should be VARYING.
+  if (TYPE_PRECISION (integer_type_node) > 31)
+    {
+      // unsigned VARYING = op1 << 1  hould be VARYING.
+      int_range<2> lhs (integer_type_node);
+      int_range<2> shift (INT (1), INT (1));
+      int_range_max op1;
+      op_lshift.op1_range (op1, integer_type_node, lhs, shift);
+      ASSERT_TRUE (op1.varying_p ());
+
+      //  0 = op1 << 1  should be [0,0], [0x8000000, 0x8000000].
+      int_range<2> zero (INT (0), INT (0));
+      op_lshift.op1_range (op1, integer_type_node, zero, shift);
+      ASSERT_TRUE (op1.num_pairs () == 2);
+      // Remove the [0,0] range.
+      op1.intersect (zero);
+      ASSERT_TRUE (op1.num_pairs () == 1);
+      //  op1 << 1   shuould be [0x8000,0x8000] << 1,
+      //  which should result in [0,0].
+      int_range_max result;
+      op_lshift.fold_range (result, unsigned_type_node, op1, shift);
+      ASSERT_TRUE (result == zero);
+    }
 }
 
 // Run all of the selftests within this file.
@@ -3836,6 +3950,27 @@ range_tests ()
   r0 = int_range<1> (INT (0), INT (0));
   r0.invert ();
   ASSERT_TRUE (r0.nonzero_p ());
+
+  // test legacy interaction
+  // r0 = ~[1,1]
+  r0 = int_range<1> (UINT (1), UINT (1), VR_ANTI_RANGE);
+  // r1 = ~[3,3]
+  r1 = int_range<1> (UINT (3), UINT (3), VR_ANTI_RANGE);
+
+  // vv = [0,0][2,2][4, MAX]
+  int_range<3> vv = r0;
+  vv.intersect (r1);
+
+  ASSERT_TRUE (vv.contains_p (UINT (2)));
+  ASSERT_TRUE (vv.num_pairs () == 3);
+
+  // create r0 as legacy [1,1]
+  r0 = int_range<1> (UINT (1), UINT (1));
+  // And union it with  [0,0][2,2][4,MAX] multi range
+  r0.union_ (vv);
+  // The result should be [0,2][4,MAX], or ~[3,3]  but it must contain 2
+  ASSERT_TRUE (r0.contains_p (UINT (2)));
+
 
   multi_precision_range_tests ();
   int_range_max_tests ();

@@ -4170,6 +4170,47 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		    return subop1;
 		}
 	    }
+
+	  /* Simplify vec_select of a subreg of X to just a vec_select of X
+	     when X has same component mode as vec_select.  */
+	  unsigned HOST_WIDE_INT subreg_offset = 0;
+	  if (GET_CODE (trueop0) == SUBREG
+	      && GET_MODE_INNER (mode)
+		 == GET_MODE_INNER (GET_MODE (SUBREG_REG (trueop0)))
+	      && GET_MODE_NUNITS (mode).is_constant (&l1)
+	      && constant_multiple_p (subreg_memory_offset (trueop0),
+				      GET_MODE_UNIT_BITSIZE (mode),
+				      &subreg_offset))
+	    {
+	      poly_uint64 nunits
+		= GET_MODE_NUNITS (GET_MODE (SUBREG_REG (trueop0)));
+	      bool success = true;
+	      for (int i = 0; i != l1; i++)
+		{
+		  rtx idx = XVECEXP (trueop1, 0, i);
+		  if (!CONST_INT_P (idx)
+		      || maybe_ge (UINTVAL (idx) + subreg_offset, nunits))
+		    {
+		      success = false;
+		      break;
+		    }
+		}
+
+	      if (success)
+		{
+		  rtx par = trueop1;
+		  if (subreg_offset)
+		    {
+		      rtvec vec = rtvec_alloc (l1);
+		      for (int i = 0; i < l1; i++)
+			RTVEC_ELT (vec, i)
+			  = GEN_INT (INTVAL (XVECEXP (trueop1, 0, i))
+				     + subreg_offset);
+		      par = gen_rtx_PARALLEL (VOIDmode, vec);
+		    }
+		  return gen_rtx_VEC_SELECT (mode, SUBREG_REG (trueop0), par);
+		}
+	    }
 	}
 
       if (XVECLEN (trueop1, 0) == 1

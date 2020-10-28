@@ -20,6 +20,8 @@ main (void)
   omp_set_max_active_levels (6);
   if (omp_get_max_active_levels () != 6)
     abort ();
+  if (omp_get_max_active_levels () > omp_get_supported_active_levels ())
+    abort ();
 
   return 0;
 }

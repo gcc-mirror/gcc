@@ -146,7 +146,6 @@ static int __attribute__ ((__unused__)) not_target_flags = 0;
 #  undef TARGET_ALIGN_NATURAL
 #  define TARGET_ALIGN_NATURAL 1
 # endif
-
 /* On Darwin32, we need to recurse until we find the starting stuct type.  */
 static int 
 _darwin_rs6000_special_round_type_align (const char *struc, int comp, int spec)
@@ -163,7 +162,7 @@ _darwin_rs6000_special_round_type_align (const char *struc, int comp, int spec)
       case UNION_TYPE:
 	return MAX (MAX (comp, spec), objc_alignof_type (_stp) * __CHAR_BIT__);
 	break;
-      case E_DFmode:
+      case DFmode:
       case _C_LNG_LNG:
       case _C_ULNG_LNG:
 	return MAX (MAX (comp, spec), 64);

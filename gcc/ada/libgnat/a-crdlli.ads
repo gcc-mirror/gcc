@@ -314,7 +314,7 @@ private
    type Node_Array is array (Count_Type range <>) of Node_Type;
 
    type List (Capacity : Count_Type) is tagged limited record
-      Nodes  : Node_Array (1 .. Capacity) := (others => <>);
+      Nodes  : Node_Array (1 .. Capacity);
       Free   : Count_Type'Base := -1;
       First  : Count_Type := 0;
       Last   : Count_Type := 0;

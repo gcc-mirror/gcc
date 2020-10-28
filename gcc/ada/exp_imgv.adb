@@ -479,13 +479,16 @@ package body Exp_Imgv is
 
       Ptyp := Entity (Pref);
 
-      --  Ada 2020 allows 'Image on private types, so we need to fetch the
-      --  underlying type.
+      --  Ada 2020 allows 'Image on private types, so fetch the underlying
+      --  type to obtain the structure of the type. We use the base type,
+      --  not the root type, to handle properly derived types, but we use
+      --  the root type for enumeration types, because the literal map is
+      --  attached to the root. Should be inherited ???
 
-      if Ada_Version >= Ada_2020 then
+      if Is_Enumeration_Type (Ptyp) then
          Rtyp := Underlying_Type (Root_Type (Ptyp));
       else
-         Rtyp := Root_Type (Ptyp);
+         Rtyp := Underlying_Type (Base_Type (Ptyp));
       end if;
 
       --  Enable speed-optimized expansion of user-defined enumeration types
@@ -567,21 +570,27 @@ package body Exp_Imgv is
          Tent := Rtyp;
 
       elsif Is_Signed_Integer_Type (Rtyp) then
-         if Esize (Rtyp) <= Esize (Standard_Integer) then
+         if Esize (Rtyp) <= Standard_Integer_Size then
             Imid := RE_Image_Integer;
             Tent := Standard_Integer;
-         else
+         elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
             Imid := RE_Image_Long_Long_Integer;
             Tent := Standard_Long_Long_Integer;
+         else
+            Imid := RE_Image_Long_Long_Long_Integer;
+            Tent := Standard_Long_Long_Long_Integer;
          end if;
 
       elsif Is_Modular_Integer_Type (Rtyp) then
          if Modulus (Rtyp) <= Modulus (RTE (RE_Unsigned)) then
             Imid := RE_Image_Unsigned;
             Tent := RTE (RE_Unsigned);
-         else
+         elsif Modulus (Rtyp) <= Modulus (RTE (RE_Long_Long_Unsigned)) then
             Imid := RE_Image_Long_Long_Unsigned;
             Tent := RTE (RE_Long_Long_Unsigned);
+         else
+            Imid := RE_Image_Long_Long_Long_Unsigned;
+            Tent := RTE (RE_Long_Long_Long_Unsigned);
          end if;
 
       elsif Is_Fixed_Point_Type (Rtyp) and then Has_Decimal_Small (Rtyp) then
@@ -610,15 +619,18 @@ package body Exp_Imgv is
            or else No (Lit_Strings (Rtyp))
          then
             --  When pragma Discard_Names applies to the first subtype, build
-            --  (Pref'Pos (Expr))'Img.
+            --  (Long_Long_Integer (Pref'Pos (Expr)))'Img. The conversion is
+            --  there to avoid applying 'Img directly in Universal_Integer,
+            --  which can be a very large type. See also the handling of 'Val.
 
             Rewrite (N,
               Make_Attribute_Reference (Loc,
                 Prefix =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => Pref,
-                     Attribute_Name => Name_Pos,
-                     Expressions    => New_List (Expr)),
+                  Convert_To (Standard_Long_Long_Integer,
+                    Make_Attribute_Reference (Loc,
+                    Prefix         => Pref,
+                    Attribute_Name => Name_Pos,
+                    Expressions    => New_List (Expr))),
                 Attribute_Name =>
                   Name_Img));
             Analyze_And_Resolve (N, Standard_String);
@@ -657,9 +669,10 @@ package body Exp_Imgv is
             T : Entity_Id;
          begin
             --  In Ada 2020 we need the underlying type here, because 'Image is
-            --  allowed on private types.
+            --  allowed on private types. We have already checked the version
+            --  when resolving the attribute.
 
-            if Ada_Version >= Ada_2020 then
+            if Is_Private_Type (Ptyp) then
                T := Rtyp;
             else
                T := Ptyp;
@@ -683,9 +696,7 @@ package body Exp_Imgv is
          declare
             Conv : Node_Id;
          begin
-            if Ada_Version >= Ada_2020
-              and then Is_Private_Type (Etype (Expr))
-            then
+            if Is_Private_Type (Etype (Expr)) then
                if Is_Fixed_Point_Type (Rtyp) then
                   Conv := Convert_To (Tent, OK_Convert_To (Rtyp, Expr));
                else
@@ -893,20 +904,22 @@ package body Exp_Imgv is
            Make_Integer_Literal (Loc,
              Intval => Int (Wide_Character_Encoding_Method)));
 
-      elsif     Rtyp = Base_Type (Standard_Short_Short_Integer)
-        or else Rtyp = Base_Type (Standard_Short_Integer)
-        or else Rtyp = Base_Type (Standard_Integer)
-      then
-         Vid := RE_Value_Integer;
-
       elsif Is_Signed_Integer_Type (Rtyp) then
-         Vid := RE_Value_Long_Long_Integer;
+         if Esize (Rtyp) <= Standard_Integer_Size then
+            Vid := RE_Value_Integer;
+         elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
+            Vid := RE_Value_Long_Long_Integer;
+         else
+            Vid := RE_Value_Long_Long_Long_Integer;
+         end if;
 
       elsif Is_Modular_Integer_Type (Rtyp) then
          if Modulus (Rtyp) <= Modulus (RTE (RE_Unsigned)) then
             Vid := RE_Value_Unsigned;
-         else
+         elsif Modulus (Rtyp) <= Modulus (RTE (RE_Long_Long_Unsigned)) then
             Vid := RE_Value_Long_Long_Unsigned;
+         else
+            Vid := RE_Value_Long_Long_Long_Unsigned;
          end if;
 
       elsif Is_Decimal_Fixed_Point_Type (Rtyp) then
@@ -1413,14 +1426,30 @@ package body Exp_Imgv is
       --  Signed integer types
 
       elsif Is_Signed_Integer_Type (Rtyp) then
-         XX := RE_Width_Long_Long_Integer;
-         YY := Standard_Long_Long_Integer;
+         if Esize (Rtyp) <= Standard_Integer_Size then
+            XX := RE_Width_Integer;
+            YY := Standard_Integer;
+         elsif Esize (Rtyp) <= Standard_Long_Long_Integer_Size then
+            XX := RE_Width_Long_Long_Integer;
+            YY := Standard_Long_Long_Integer;
+         else
+            XX := RE_Width_Long_Long_Long_Integer;
+            YY := Standard_Long_Long_Long_Integer;
+         end if;
 
       --  Modular integer types
 
       elsif Is_Modular_Integer_Type (Rtyp) then
-         XX := RE_Width_Long_Long_Unsigned;
-         YY := RTE (RE_Long_Long_Unsigned);
+         if Modulus (Rtyp) <= Modulus (RTE (RE_Unsigned)) then
+            XX := RE_Width_Unsigned;
+            YY := RTE (RE_Unsigned);
+         elsif Modulus (Rtyp) <= Modulus (RTE (RE_Long_Long_Unsigned)) then
+            XX := RE_Width_Long_Long_Unsigned;
+            YY := RTE (RE_Long_Long_Unsigned);
+         else
+            XX := RE_Width_Long_Long_Long_Unsigned;
+            YY := RTE (RE_Long_Long_Long_Unsigned);
+         end if;
 
       --  Real types
 

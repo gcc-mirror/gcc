@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "graphviz.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "ordered-hash-map.h"
 #include "options.h"
@@ -299,6 +300,33 @@ equiv_class::print (pretty_printer *pp) const
   pp_character (pp, '}');
 }
 
+/* Return a new json::object of the form
+   {"svals" : [str],
+    "constant" : optional str}.  */
+
+json::object *
+equiv_class::to_json () const
+{
+  json::object *ec_obj = new json::object ();
+
+  json::array *sval_arr = new json::array ();
+  int i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (m_vars, i, sval)
+    sval_arr->append (sval->to_json ());
+  ec_obj->set ("svals", sval_arr);
+
+  if (m_constant)
+    {
+      pretty_printer pp;
+      pp_format_decoder (&pp) = default_tree_printer;
+      pp_printf (&pp, "%qE", m_constant);
+      ec_obj->set ("constant", new json::string (pp_formatted_text (&pp)));
+    }
+
+  return ec_obj;
+}
+
 /* Generate a hash value for this equiv_class.
    This relies on the ordering of m_vars, and so this object needs to
    have been canonicalized for this to be meaningful.  */
@@ -497,6 +525,23 @@ constraint::print (pretty_printer *pp, const constraint_manager &cm) const
   m_rhs.print (pp);
   pp_string (pp, ": ");
   m_rhs.get_obj (cm).print (pp);
+}
+
+/* Return a new json::object of the form
+   {"lhs" : int, the EC index
+    "op"  : str,
+    "rhs" : int, the EC index}.  */
+
+json::object *
+constraint::to_json () const
+{
+  json::object *con_obj = new json::object ();
+
+  con_obj->set ("lhs", new json::integer_number (m_lhs.as_int ()));
+  con_obj->set ("op", new json::string (constraint_op_code (m_op)));
+  con_obj->set ("rhs", new json::integer_number (m_rhs.as_int ()));
+
+  return con_obj;
 }
 
 /* Generate a hash value for this constraint.  */
@@ -768,6 +813,38 @@ debug (const constraint_manager &cm)
   cm.dump ();
 }
 
+/* Return a new json::object of the form
+   {"ecs" : array of objects, one per equiv_class
+    "constraints" : array of objects, one per constraint}.  */
+
+json::object *
+constraint_manager::to_json () const
+{
+  json::object *cm_obj = new json::object ();
+
+  /* Equivalence classes.  */
+  {
+    json::array *ec_arr = new json::array ();
+    int i;
+    equiv_class *ec;
+    FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
+      ec_arr->append (ec->to_json ());
+    cm_obj->set ("ecs", ec_arr);
+  }
+
+  /* Constraints.  */
+  {
+    json::array *con_arr = new json::array ();
+    int i;
+    constraint *c;
+    FOR_EACH_VEC_ELT (m_constraints, i, c)
+      con_arr->append (c->to_json ());
+    cm_obj->set ("constraints", con_arr);
+  }
+
+  return cm_obj;
+}
+
 /* Attempt to add the constraint LHS OP RHS to this constraint_manager.
    Return true if the constraint could be added (or is already true).
    Return false if the constraint contradicts existing knowledge.  */
@@ -937,10 +1014,10 @@ constraint_manager::add_unknown_constraint (equiv_class_id lhs_ec_id,
 
 void
 constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
-					      enum constraint_op c_op,
-					      equiv_class_id rhs_id)
+					     enum constraint_op c_op,
+					     equiv_class_id rhs_id)
 {
-  if (m_constraints.length () >= param_analyzer_max_constraints)
+  if (m_constraints.length () >= (unsigned)param_analyzer_max_constraints)
     return;
 
   constraint new_c (lhs_id, c_op, rhs_id);

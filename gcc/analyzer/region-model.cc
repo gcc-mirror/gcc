@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "selftest.h"
 #include "function.h"
+#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
@@ -737,12 +738,14 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	  /* No side-effects (tracking stream state is out-of-scope
 	     for the analyzer).  */
 	}
-      else if (is_named_call_p (callee_fndecl, "memset", call, 3))
+      else if (is_named_call_p (callee_fndecl, "memset", call, 3)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
 	  impl_call_memset (cd);
 	  return false;
 	}
-      else if (is_named_call_p (callee_fndecl, "strlen", call, 1))
+      else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
 	  if (impl_call_strlen (cd))
 	    return false;
@@ -833,7 +836,7 @@ region_model::handle_unrecognized_call (const gcall *call,
 {
   tree fndecl = get_fndecl_for_call (call, ctxt);
 
-  reachable_regions reachable_regs (&m_store, m_mgr);
+  reachable_regions reachable_regs (this, m_mgr);
 
   /* Determine the reachable regions and their mutability.  */
   {
@@ -881,7 +884,7 @@ region_model::handle_unrecognized_call (const gcall *call,
     }
 
   /* Mark any clusters that have escaped.  */
-  reachable_regs.mark_escaped_clusters ();
+  reachable_regs.mark_escaped_clusters (ctxt);
 
   /* Update bindings for all clusters that have escaped, whether above,
      or previously.  */
@@ -901,7 +904,7 @@ void
 region_model::get_reachable_svalues (svalue_set *out,
 				     const svalue *extra_sval)
 {
-  reachable_regions reachable_regs (&m_store, m_mgr);
+  reachable_regions reachable_regs (this, m_mgr);
 
   /* Add globals and regions that already escaped in previous
      unknown calls.  */
@@ -1330,35 +1333,39 @@ region_model::get_initial_value_for_global (const region *reg) const
      an unknown value if an unknown call has occurred, unless this is
      static to-this-TU and hasn't escaped.  Globals that have escaped
      are explicitly tracked, so we shouldn't hit this case for them.  */
-  if (m_store.called_unknown_fn_p () && TREE_PUBLIC (decl))
+  if (m_store.called_unknown_fn_p ()
+      && TREE_PUBLIC (decl)
+      && !TREE_READONLY (decl))
     return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
 
   /* If we are on a path from the entrypoint from "main" and we have a
      global decl defined in this TU that hasn't been touched yet, then
      the initial value of REG can be taken from the initialization value
      of the decl.  */
-  if (called_from_main_p () && !DECL_EXTERNAL (decl))
+  if ((called_from_main_p () && !DECL_EXTERNAL (decl))
+      || TREE_READONLY (decl))
     {
-      /* Get the initializer value for base_reg.  */
-      const svalue *base_reg_init
-	= base_reg->get_svalue_for_initializer (m_mgr);
-      gcc_assert (base_reg_init);
-      if (reg == base_reg)
-	return base_reg_init;
-      else
+      /* Attempt to get the initializer value for base_reg.  */
+      if (const svalue *base_reg_init
+	    = base_reg->get_svalue_for_initializer (m_mgr))
 	{
-	  /* Get the value for REG within base_reg_init.  */
-	  binding_cluster c (base_reg);
-	  c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init,
-		  BK_direct);
-	  const svalue *sval
-	    = c.get_any_binding (m_mgr->get_store_manager (), reg);
-	  if (sval)
+	  if (reg == base_reg)
+	    return base_reg_init;
+	  else
 	    {
-	      if (reg->get_type ())
-		sval = m_mgr->get_or_create_cast (reg->get_type (),
-						  sval);
-	      return sval;
+	      /* Get the value for REG within base_reg_init.  */
+	      binding_cluster c (base_reg);
+	      c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init,
+		      BK_direct);
+	      const svalue *sval
+		= c.get_any_binding (m_mgr->get_store_manager (), reg);
+	      if (sval)
+		{
+		  if (reg->get_type ())
+		    sval = m_mgr->get_or_create_cast (reg->get_type (),
+						      sval);
+		  return sval;
+		}
 	    }
 	}
     }
@@ -1529,15 +1536,130 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
   return m_mgr->get_symbolic_region (ptr_sval);
 }
 
+/* A subclass of pending_diagnostic for complaining about writes to
+   constant regions of memory.  */
+
+class write_to_const_diagnostic
+: public pending_diagnostic_subclass<write_to_const_diagnostic>
+{
+public:
+  write_to_const_diagnostic (const region *reg, tree decl)
+  : m_reg (reg), m_decl (decl)
+  {}
+
+  const char *get_kind () const FINAL OVERRIDE
+  {
+    return "write_to_const_diagnostic";
+  }
+
+  bool operator== (const write_to_const_diagnostic &other) const
+  {
+    return (m_reg == other.m_reg
+	    && m_decl == other.m_decl);
+  }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    bool warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			      "write to %<const%> object %qE", m_decl);
+    if (warned)
+      inform (DECL_SOURCE_LOCATION (m_decl), "declared here");
+    return warned;
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  {
+    return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+  }
+
+private:
+  const region *m_reg;
+  tree m_decl;
+};
+
+/* A subclass of pending_diagnostic for complaining about writes to
+   string literals.  */
+
+class write_to_string_literal_diagnostic
+: public pending_diagnostic_subclass<write_to_string_literal_diagnostic>
+{
+public:
+  write_to_string_literal_diagnostic (const region *reg)
+  : m_reg (reg)
+  {}
+
+  const char *get_kind () const FINAL OVERRIDE
+  {
+    return "write_to_string_literal_diagnostic";
+  }
+
+  bool operator== (const write_to_string_literal_diagnostic &other) const
+  {
+    return m_reg == other.m_reg;
+  }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    return warning_at (rich_loc, OPT_Wanalyzer_write_to_string_literal,
+		       "write to string literal");
+    /* Ideally we would show the location of the STRING_CST as well,
+       but it is not available at this point.  */
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  {
+    return ev.formatted_print ("write to string literal here");
+  }
+
+private:
+  const region *m_reg;
+};
+
+/* Use CTXT to warn If DEST_REG is a region that shouldn't be written to.  */
+
+void
+region_model::check_for_writable_region (const region* dest_reg,
+					 region_model_context *ctxt) const
+{
+  /* Fail gracefully if CTXT is NULL.  */
+  if (!ctxt)
+    return;
+
+  const region *base_reg = dest_reg->get_base_region ();
+  switch (base_reg->get_kind ())
+    {
+    default:
+      break;
+    case RK_DECL:
+      {
+	const decl_region *decl_reg = as_a <const decl_region *> (base_reg);
+	tree decl = decl_reg->get_decl ();
+	/* Warn about writes to const globals.
+	   Don't warn for writes to const locals, and params in particular,
+	   since we would warn in push_frame when setting them up (e.g the
+	   "this" param is "T* const").  */
+	if (TREE_READONLY (decl)
+	    && is_global_var (decl))
+	  ctxt->warn (new write_to_const_diagnostic (dest_reg, decl));
+      }
+      break;
+    case RK_STRING:
+      ctxt->warn (new write_to_string_literal_diagnostic (dest_reg));
+      break;
+    }
+}
+
 /* Set the value of the region given by LHS_REG to the value given
    by RHS_SVAL.  */
 
 void
 region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
-			 region_model_context */*ctxt*/)
+			 region_model_context *ctxt)
 {
   gcc_assert (lhs_reg);
   gcc_assert (rhs_sval);
+
+  check_for_writable_region (lhs_reg, ctxt);
 
   m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
 		     BK_direct);
@@ -1805,6 +1927,20 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
     ctxt->on_condition (lhs, op, rhs);
 
   return true;
+}
+
+/* As above, but when returning false, if OUT is non-NULL, write a
+   new rejected_constraint to *OUT.  */
+
+bool
+region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
+			      region_model_context *ctxt,
+			      rejected_constraint **out)
+{
+  bool sat = add_constraint (lhs, op, rhs, ctxt);
+  if (!sat && out)
+    *out = new rejected_constraint (*this, lhs, op, rhs);
+  return sat;
 }
 
 /* Subroutine of region_model::add_constraint for handling optimized
@@ -2123,11 +2259,14 @@ region_model::get_representative_path_var (const region *reg,
 	path_var offset_pv
 	  = get_representative_path_var (offset_reg->get_byte_offset (),
 					 visited);
-	if (!offset_pv)
+	if (!offset_pv || TREE_CODE (offset_pv.m_tree) != INTEGER_CST)
 	  return path_var (NULL_TREE, 0);
+	tree addr_parent = build1 (ADDR_EXPR,
+				   build_pointer_type (reg->get_type ()),
+				   parent_pv.m_tree);
 	return path_var (build2 (MEM_REF,
 				 reg->get_type (),
-				 parent_pv.m_tree, offset_pv.m_tree),
+				 addr_parent, offset_pv.m_tree),
 			 parent_pv.m_stack_depth);
       }
 
@@ -2185,6 +2324,8 @@ region_model::update_for_phis (const supernode *snode,
 /* Attempt to update this model for taking EDGE (where the last statement
    was LAST_STMT), returning true if the edge can be taken, false
    otherwise.
+   When returning false, if OUT is non-NULL, write a new rejected_constraint
+   to it.
 
    For CFG superedges where LAST_STMT is a conditional or a switch
    statement, attempt to add the relevant conditions for EDGE to this
@@ -2204,7 +2345,8 @@ region_model::update_for_phis (const supernode *snode,
 bool
 region_model::maybe_update_for_edge (const superedge &edge,
 				     const gimple *last_stmt,
-				     region_model_context *ctxt)
+				     region_model_context *ctxt,
+				     rejected_constraint **out)
 {
   /* Handle frame updates for interprocedural edges.  */
   switch (edge.m_kind)
@@ -2244,20 +2386,21 @@ region_model::maybe_update_for_edge (const superedge &edge,
   if (const gcond *cond_stmt = dyn_cast <const gcond *> (last_stmt))
     {
       const cfg_superedge *cfg_sedge = as_a <const cfg_superedge *> (&edge);
-      return apply_constraints_for_gcond (*cfg_sedge, cond_stmt, ctxt);
+      return apply_constraints_for_gcond (*cfg_sedge, cond_stmt, ctxt, out);
     }
 
   if (const gswitch *switch_stmt = dyn_cast <const gswitch *> (last_stmt))
     {
       const switch_cfg_superedge *switch_sedge
 	= as_a <const switch_cfg_superedge *> (&edge);
-      return apply_constraints_for_gswitch (*switch_sedge, switch_stmt, ctxt);
+      return apply_constraints_for_gswitch (*switch_sedge, switch_stmt,
+					    ctxt, out);
     }
 
   /* Apply any constraints due to an exception being thrown.  */
   if (const cfg_superedge *cfg_sedge = dyn_cast <const cfg_superedge *> (&edge))
     if (cfg_sedge->get_flags () & EDGE_EH)
-      return apply_constraints_for_exception (last_stmt, ctxt);
+      return apply_constraints_for_exception (last_stmt, ctxt, out);
 
   return true;
 }
@@ -2335,12 +2478,15 @@ region_model::update_for_call_summary (const callgraph_superedge &cg_sedge,
    If they are feasible, add the constraints and return true.
 
    Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).  */
+   (and so the edge should not be taken).
+   When returning false, if OUT is non-NULL, write a new rejected_constraint
+   to it.  */
 
 bool
 region_model::apply_constraints_for_gcond (const cfg_superedge &sedge,
 					   const gcond *cond_stmt,
-					   region_model_context *ctxt)
+					   region_model_context *ctxt,
+					   rejected_constraint **out)
 {
   ::edge cfg_edge = sedge.get_cfg_edge ();
   gcc_assert (cfg_edge != NULL);
@@ -2351,7 +2497,7 @@ region_model::apply_constraints_for_gcond (const cfg_superedge &sedge,
   tree rhs = gimple_cond_rhs (cond_stmt);
   if (cfg_edge->flags & EDGE_FALSE_VALUE)
     op = invert_tree_comparison (op, false /* honor_nans */);
-  return add_constraint (lhs, op, rhs, ctxt);
+  return add_constraint (lhs, op, rhs, ctxt, out);
 }
 
 /* Given an EDGE guarded by SWITCH_STMT, determine appropriate constraints
@@ -2360,12 +2506,15 @@ region_model::apply_constraints_for_gcond (const cfg_superedge &sedge,
    If they are feasible, add the constraints and return true.
 
    Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).  */
+   (and so the edge should not be taken).
+   When returning false, if OUT is non-NULL, write a new rejected_constraint
+   to it.  */
 
 bool
 region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 					     const gswitch *switch_stmt,
-					     region_model_context *ctxt)
+					     region_model_context *ctxt,
+					     rejected_constraint **out)
 {
   tree index  = gimple_switch_index (switch_stmt);
   tree case_label = edge.get_case_label ();
@@ -2377,13 +2526,13 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
       if (upper_bound)
 	{
 	  /* Range.  */
-	  if (!add_constraint (index, GE_EXPR, lower_bound, ctxt))
+	  if (!add_constraint (index, GE_EXPR, lower_bound, ctxt, out))
 	    return false;
-	  return add_constraint (index, LE_EXPR, upper_bound, ctxt);
+	  return add_constraint (index, LE_EXPR, upper_bound, ctxt, out);
 	}
       else
 	/* Single-value.  */
-	return add_constraint (index, EQ_EXPR, lower_bound, ctxt);
+	return add_constraint (index, EQ_EXPR, lower_bound, ctxt, out);
     }
   else
     {
@@ -2403,14 +2552,16 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 	      /* Exclude this range-valued case.
 		 For now, we just exclude the boundary values.
 		 TODO: exclude the values within the region.  */
-	      if (!add_constraint (index, NE_EXPR, other_lower_bound, ctxt))
+	      if (!add_constraint (index, NE_EXPR, other_lower_bound,
+				   ctxt, out))
 		return false;
-	      if (!add_constraint (index, NE_EXPR, other_upper_bound, ctxt))
+	      if (!add_constraint (index, NE_EXPR, other_upper_bound,
+				   ctxt, out))
 		return false;
 	    }
 	  else
 	    /* Exclude this single-valued case.  */
-	    if (!add_constraint (index, NE_EXPR, other_lower_bound, ctxt))
+	    if (!add_constraint (index, NE_EXPR, other_lower_bound, ctxt, out))
 	      return false;
 	}
       return true;
@@ -2422,11 +2573,14 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
    If they are feasible, add the constraints and return true.
 
    Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).  */
+   (and so the edge should not be taken).
+   When returning false, if OUT is non-NULL, write a new rejected_constraint
+   to it.  */
 
 bool
 region_model::apply_constraints_for_exception (const gimple *last_stmt,
-					       region_model_context *ctxt)
+					       region_model_context *ctxt,
+					       rejected_constraint **out)
 {
   gcc_assert (last_stmt);
   if (const gcall *call = dyn_cast <const gcall *> (last_stmt))
@@ -2439,7 +2593,7 @@ region_model::apply_constraints_for_exception (const gimple *last_stmt,
 	     leak report due to the result being lost when following
 	     the EH edge.  */
 	  if (tree lhs = gimple_call_lhs (call))
-	    return add_constraint (lhs, EQ_EXPR, null_pointer_node, ctxt);
+	    return add_constraint (lhs, EQ_EXPR, null_pointer_node, ctxt, out);
 	  return true;
 	}
   return true;
@@ -2857,6 +3011,19 @@ DEBUG_FUNCTION void
 debug (const region_model &rmodel)
 {
   rmodel.dump (false);
+}
+
+/* struct rejected_constraint.  */
+
+void
+rejected_constraint::dump_to_pp (pretty_printer *pp) const
+{
+  region_model m (m_model);
+  const svalue *lhs_sval = m.get_rvalue (m_lhs, NULL);
+  const svalue *rhs_sval = m.get_rvalue (m_rhs, NULL);
+  lhs_sval->dump_to_pp (pp, true);
+  pp_printf (pp, " %s ", op_symbol_code (m_op));
+  rhs_sval->dump_to_pp (pp, true);
 }
 
 /* class engine.  */

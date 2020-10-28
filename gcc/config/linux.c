@@ -25,7 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "linux-protos.h"
 
 bool
-linux_libc_has_function (enum function_class fn_class)
+linux_libc_has_function (enum function_class fn_class,
+			 tree type ATTRIBUTE_UNUSED)
 {
   if (OPTION_GLIBC || OPTION_MUSL)
     return true;

@@ -47,12 +47,8 @@ struct GTY(()) binding_entry_s {
 extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
 extern binding_entry binding_table_find (binding_table, tree);
 
-/* Datatype that represents binding established by a declaration between
-   a name and a C++ entity.  */
-typedef struct cxx_binding cxx_binding;
-
 /* The datatype used to implement C++ scope.  */
-typedef struct cp_binding_level cp_binding_level;
+struct cp_binding_level;
 
 /* Nonzero if this binding is for a local scope, as opposed to a class
    or namespace scope.  */
@@ -62,6 +58,14 @@ typedef struct cp_binding_level cp_binding_level;
    currently being defined.  */
 #define INHERITED_VALUE_BINDING_P(NODE) ((NODE)->value_is_inherited)
 
+/* The IMPLICIT_TYPEDEF is hidden from ordinary name lookup (it was
+   injected via a local class's friend decl). The typdef may be in the
+   VALUE or the TYPE slot.  We do not get the situation where the
+   value and type slots are both filled and both hidden.  */
+#define HIDDEN_TYPE_BINDING_P(NODE) ((NODE)->type_is_hidden)
+
+/* Datatype that represents binding established by a declaration between
+   a name and a C++ entity.  */
 struct GTY(()) cxx_binding {
   /* Link to chain together various bindings for this name.  */
   cxx_binding *previous;
@@ -71,8 +75,10 @@ struct GTY(()) cxx_binding {
   tree type;
   /* The scope at which this binding was made.  */
   cp_binding_level *scope;
-  unsigned value_is_inherited : 1;
-  unsigned is_local : 1;
+
+  bool value_is_inherited : 1;
+  bool is_local : 1;
+  bool type_is_hidden : 1;
 };
 
 /* Datatype used to temporarily save C++ bindings (for implicit
@@ -123,23 +129,6 @@ enum scope_kind {
 			"template <>", this scope is always empty.  */
   sk_transaction,    /* A synchronized or atomic statement.  */
   sk_omp	     /* An OpenMP structured block.  */
-};
-
-/* The scope where the class/struct/union/enum tag applies.  */
-enum tag_scope {
-  ts_current = 0,	/* Current scope only.  This is for the
-			     class-key identifier;
-			   case mentioned in [basic.lookup.elab]/2,
-			   or the class/enum definition
-			     class-key identifier { ... };  */
-  ts_global = 1,	/* All scopes.  This is the 3.4.1
-			   [basic.lookup.unqual] lookup mentioned
-			   in [basic.lookup.elab]/2.  */
-  ts_within_enclosing_non_class = 2,	/* Search within enclosing non-class
-					   only, for friend class lookup
-					   according to [namespace.memdef]/3
-					   and [class.friend]/9.  */
-  ts_lambda = 3			/* Declaring a lambda closure.  */
 };
 
 struct GTY(()) cp_class_binding {
@@ -328,7 +317,19 @@ inline tree lookup_name (tree name, LOOK_want want)
   return lookup_name (name, LOOK_where::ALL, want);
 }
 
-extern tree lookup_type_scope (tree, tag_scope);
+enum class TAG_how
+{
+  CURRENT_ONLY = 0, // Look and insert only in current scope
+
+  GLOBAL = 1, // Unqualified lookup, innermost-non-class insertion
+
+  INNERMOST_NON_CLASS = 2, // Look and insert only into
+			   // innermost-non-class
+
+  HIDDEN_FRIEND = 3, // As INNERMOST_NON_CLASS, but hide it
+};
+
+extern tree lookup_elaborated_type (tree, TAG_how);
 extern tree get_namespace_binding (tree ns, tree id);
 extern void set_global_binding (tree decl);
 inline tree get_global_binding (tree id)
@@ -341,9 +342,8 @@ extern tree lookup_qualified_name (tree scope, tree name,
 extern tree lookup_qualified_name (tree scope, const char *name,
 				   LOOK_want = LOOK_want::NORMAL,
 				   bool = true);
-extern bool is_local_extern (tree);
 extern bool pushdecl_class_level (tree);
-extern tree pushdecl_namespace_level (tree, bool);
+extern tree pushdecl_namespace_level (tree, bool hiding = false);
 extern bool push_class_level_binding (tree, tree);
 extern tree get_local_decls ();
 extern int function_parm_depth (void);
@@ -369,11 +369,11 @@ extern void cp_emit_debug_info_for_using (tree, tree);
 
 extern void finish_nonmember_using_decl (tree scope, tree name);
 extern void finish_using_directive (tree target, tree attribs);
-extern tree pushdecl (tree, bool is_friend = false);
+extern tree pushdecl (tree, bool hiding = false);
 extern tree pushdecl_outermost_localscope (tree);
-extern tree pushdecl_top_level (tree, bool is_friend = false);
+extern tree pushdecl_top_level (tree);
 extern tree pushdecl_top_level_and_finish (tree, tree);
-extern tree pushtag (tree, tree, tag_scope);
+extern tree pushtag (tree, tree, TAG_how = TAG_how::CURRENT_ONLY);
 extern int push_namespace (tree, bool make_inline = false);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);

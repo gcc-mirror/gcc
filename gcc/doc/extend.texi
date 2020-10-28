@@ -3680,6 +3680,10 @@ This attribute adds stack protection code to the function if
 flags @option{-fstack-protector}, @option{-fstack-protector-strong}
 or @option{-fstack-protector-explicit} are set.
 
+@item no_stack_protector
+@cindex @code{no_stack_protector} function attribute
+This attribute prevents stack protection code for the function.
+
 @item target (@var{string}, @dots{})
 @cindex @code{target} function attribute
 Multiple target back ends implement the @code{target} attribute
@@ -6622,6 +6626,31 @@ Enable/disable the generation of the XSAVEOPT instructions.
 @itemx no-xsaves
 @cindex @code{target("xsaves")} function attribute, x86
 Enable/disable the generation of the XSAVES instructions.
+
+@item amx-tile
+@itemx no-amx-tile
+@cindex @code{target("amx-tile")} function attribute, x86
+Enable/disable the generation of the AMX-TILE instructions.
+
+@item amx-int8
+@itemx no-amx-int8
+@cindex @code{target("amx-int8")} function attribute, x86
+Enable/disable the generation of the AMX-INT8 instructions.
+
+@item amx-bf16
+@itemx no-amx-bf16
+@cindex @code{target("amx-bf16")} function attribute, x86
+Enable/disable the generation of the AMX-BF16 instructions.
+
+@item uintr
+@itemx no-uintr
+@cindex @code{target("uintr")} function attribute, x86
+Enable/disable the generation of the UINTR instructions.
+
+@item hreset
+@itemx no-hreset
+@cindex @code{target("hreset")} function attribute, x86
+Enable/disable the generation of the HRESET instruction.
 
 @item cld
 @itemx no-cld
@@ -12760,7 +12789,7 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
 @code{j1f}, @code{j1l}, @code{j1}, @code{jnf}, @code{jnl}, @code{jn},
 @code{lgammaf_r}, @code{lgammal_r}, @code{lgamma_r}, @code{mempcpy},
 @code{pow10f}, @code{pow10l}, @code{pow10}, @code{printf_unlocked},
-@code{rindex}, @code{roundeven}, @code{roundevenf}, @code{roudnevenl},
+@code{rindex}, @code{roundeven}, @code{roundevenf}, @code{roundevenl},
 @code{scalbf}, @code{scalbl}, @code{scalb},
 @code{signbit}, @code{signbitf}, @code{signbitl}, @code{signbitd32},
 @code{signbitd64}, @code{signbitd128}, @code{significandf},
@@ -17635,6 +17664,37 @@ Perform a 64-bit parallel bits extract operation, as if implemented by the
 @code{pextd} instruction.
 @findex __builtin_pextd
 
+@smallexample
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed char *);
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed short *);
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed int *);
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed long long *);
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned char *);
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned short *);
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned int *);
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned long long *);
+@end smallexample
+
+Load (and sign extend) to an __int128 vector, as if implemented by the ISA 3.1
+@code{lxvrbx} @code{lxvrhx} @code{lxvrwx} @code{lxvrdx} instructions.
+@findex vsx_xl_sext
+@findex vsx_xl_zext
+
+@smallexample
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed char *);
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed short *);
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed int *);
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed long long *);
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *);
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned short *);
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned int *);
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned long long *);
+@end smallexample
+
+Truncate and store the rightmost element of a vector, as if implemented by the
+ISA 3.1 @code{stxvrbx} @code{stxvrhx} @code{stxvrwx} @code{stxvrdx} instructions.
+@findex vec_xst_trunc
+
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec/VSX Built-in Functions
 
@@ -20961,9 +21021,9 @@ given by the third argument, using natural element order in the second
 argument.  The rest of the second argument is unchanged.  If the byte
 index is greater than 14 for halfwords, greater than 12 for words, or
 greater than 8 for doublewords the result is undefined.   For little-endian,
-the generated code will be semantically equivalent to @code{vins[bhw]rx}
+the generated code will be semantically equivalent to @code{vins[bhwd]rx}
 instructions.  Similarly for big-endian it will be semantically equivalent
-to @code{vins[bhw]lx}.  Note that some fairly anomalous results can be
+to @code{vins[bhwd]lx}.  Note that some fairly anomalous results can be
 generated if the byte index is not aligned on an element boundary for the
 type of element being inserted.
 @findex vec_insertl
@@ -20996,8 +21056,8 @@ for halfwords, 12 for words, or 8 for doublewords, the intrinsic will be
 rejected. Note that the underlying hardware instruction uses the same register
 for the second argument and the result.
 For little-endian, the code generation will be semantically equivalent to
-@code{vins[bhw]lx}, while for big-endian it will be semantically equivalent to
-@code{vins[bhw]rx}.
+@code{vins[bhwd]lx}, while for big-endian it will be semantically equivalent to
+@code{vins[bhwd]rx}.
 Note that some fairly anomalous results can be generated if the byte index is
 not aligned on an element boundary for the sort of element being inserted.
 @findex vec_inserth
@@ -21584,10 +21644,10 @@ void amo_stdat_smin (int64_t *, int64_t);
 ISA 3.1 of the PowerPC added new Matrix-Multiply Assist (MMA) instructions.
 GCC provides support for these instructions through the following built-in
 functions which are enabled with the @code{-mmma} option.  The vec_t type
-below is defined to be a normal vector unsigned char type.  The uint2, uint4
+below is defined to be a normal vector unsigned char type.  The uint2, uint4
 and uint8 parameters are 2-bit, 4-bit and 8-bit unsigned integer constants
-respectively.  The compiler will verify that they are constants and that
-their values are within range. 
+respectively.  The compiler will verify that they are constants and that
+their values are within range.
 
 The built-in functions supported are:
 

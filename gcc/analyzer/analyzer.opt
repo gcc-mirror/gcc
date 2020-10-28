@@ -114,6 +114,14 @@ Wanalyzer-use-of-pointer-in-stale-stack-frame
 Common Var(warn_analyzer_use_of_pointer_in_stale_stack_frame) Init(1) Warning
 Warn about code paths in which a pointer to a stale stack frame is used.
 
+Wanalyzer-write-to-const
+Common Var(warn_analyzer_write_to_const) Init(1) Warning
+Warn about code paths which attempt to write to a const object.
+
+Wanalyzer-write-to-string-literal
+Common Var(warn_analyzer_write_to_string_literal) Init(1) Warning
+Warn about code paths which attempt to write to a string literal.
+
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
 Warn if the code is too complicated for the analyzer to fully explore.
@@ -125,6 +133,10 @@ Restrict the analyzer to run just the named checker.
 fanalyzer-fine-grained
 Common Var(flag_analyzer_fine_grained) Init(0)
 Avoid combining multiple statements into one exploded edge.
+
+fanalyzer-feasibility
+Common Var(flag_analyzer_feasibility) Init(1)
+Verify that paths are feasible when emitting diagnostics.
 
 fanalyzer-show-duplicate-count
 Common Var(flag_analyzer_show_duplicate_count) Init(0)
@@ -185,6 +197,10 @@ Dump a textual representation of the exploded graph to SRCFILE.eg.txt.
 fdump-analyzer-exploded-nodes-3
 Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_3)
 Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
+
+fdump-analyzer-json
+Common RejectNegative Var(flag_dump_analyzer_json)
+Dump analyzer-specific data to a SRCFILE.analyzer.json.gz file.
 
 fdump-analyzer-state-purge
 Common RejectNegative Var(flag_dump_analyzer_state_purge)

@@ -65,6 +65,8 @@ static tree handle_no_sanitize_undefined_attribute (tree *, tree, tree, int,
 static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
+static tree handle_no_stack_protector_function_attribute (tree *, tree,
+							tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocf_check_attribute (tree *, tree, tree, int, bool *);
@@ -248,6 +250,14 @@ static const struct attribute_spec::exclusions attr_noinit_exclusions[] =
   ATTR_EXCL (NULL, false, false, false),
 };
 
+static const struct attribute_spec::exclusions attr_stack_protect_exclusions[] =
+{
+  ATTR_EXCL ("stack_protect", true, false, false),
+  ATTR_EXCL ("no_stack_protector", true, false, false),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+
 /* Table of machine-independent attributes common to all C-like languages.
 
    Current list of processed common attributes: nonnull.  */
@@ -275,7 +285,11 @@ const struct attribute_spec c_common_attribute_table[] =
   { "volatile",               0, 0, true,  false, false, false,
 			      handle_noreturn_attribute, NULL },
   { "stack_protect",          0, 0, true,  false, false, false,
-			      handle_stack_protect_attribute, NULL },
+			      handle_stack_protect_attribute,
+			      attr_stack_protect_exclusions },
+  { "no_stack_protector",     0, 0, true, false, false, false,
+			      handle_no_stack_protector_function_attribute,
+			      attr_stack_protect_exclusions },
   { "noinline",               0, 0, true,  false, false, false,
 			      handle_noinline_attribute,
 	                      attr_noinline_exclusions },
@@ -1146,6 +1160,22 @@ handle_asan_odr_indicator_attribute (tree *, tree, tree, int, bool *)
 static tree
 handle_stack_protect_attribute (tree *node, tree name, tree, int,
 				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_stack_protector" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_no_stack_protector_function_attribute (tree *node, tree name, tree,
+					      int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -4151,18 +4181,12 @@ append_access_attr (tree node[3], tree attrs, const char *attrstr,
 				 "missing in previous designation",
 				 attrstr);
 	  else if (newa->internal_p || cura->internal_p)
-	    {
-	      /* Mismatch in the value of the size argument and a VLA
-		 bound.  */
-	      location_t argloc = curloc;
-	      if (tree arg = get_argument (node[2], newa->sizarg))
-		argloc = DECL_SOURCE_LOCATION (arg);
-	      warned = warning_at (argloc, OPT_Wattributes,
-				   "attribute %qs positional argument 2 "
-				   "conflicts with previous designation "
-				   "by argument %u",
-				   attrstr, cura->sizarg + 1);
-	    }
+	    /* Mismatch in the value of the size argument and a VLA bound.  */
+	    warned = warning_at (curloc, OPT_Wattributes,
+				 "attribute %qs positional argument 2 "
+				 "conflicts with previous designation "
+				 "by argument %u",
+				 attrstr, cura->sizarg + 1);
 	  else
 	    /* Mismatch in the value of the size argument between two
 	       explicit access attributes.  */
@@ -4553,10 +4577,11 @@ handle_access_attribute (tree node[3], tree name, tree args,
    result in the following attribute access:
 
      value: "+^2[*],$0$1^3[*],$1$1"
-     chain: <0, x> <1, y>
+     list:  < <0, x> <1, y> >
 
-   where each <node> on the chain corresponds to one VLA bound for each
-   of the two parameters.  */
+   where the list has a single value which itself is is a list each
+   of whose <node>s corresponds to one VLA bound for each of the two
+   parameters.  */
 
 tree
 build_attr_access_from_parms (tree parms, bool skip_voidptr)
@@ -4660,13 +4685,17 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
   if (!spec.length ())
     return NULL_TREE;
 
+  /* Attribute access takes a two or three arguments.  Wrap VBLIST in
+     another list in case it has more nodes than would otherwise fit.  */
+    vblist = build_tree_list (NULL_TREE, vblist);
+
   /* Build a single attribute access with the string describing all
      array arguments and an optional list of any non-parameter VLA
      bounds in order.  */
   tree str = build_string (spec.length (), spec.c_str ());
   tree attrargs = tree_cons (NULL_TREE, str, vblist);
   tree name = get_identifier ("access");
-  return tree_cons (name, attrargs, NULL_TREE);
+  return build_tree_list (name, attrargs);
 }
 
 /* Handle a "nothrow" attribute; arguments as in

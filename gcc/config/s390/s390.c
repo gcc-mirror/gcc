@@ -2467,6 +2467,9 @@ s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
   rtx elt;
   bool b;
 
+  /* Handle floats by bitcasting them to ints.  */
+  op = gen_lowpart (related_int_vector_mode (GET_MODE (op)).require (), op);
+
   gcc_assert (!!start == !!end);
   if (!const_vec_duplicate_p (op, &elt)
       || !CONST_INT_P (elt))
@@ -5952,6 +5955,7 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   rtx temp;
   rtx len = gen_reg_rtx (QImode);
   rtx cond;
+  rtx mem;
 
   s390_load_address (str_addr_base_reg, XEXP (string, 0));
   emit_move_insn (str_idx_reg, const0_rtx);
@@ -5993,10 +5997,10 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   LABEL_NUSES (loop_start_label) = 1;
 
   /* Load 16 bytes of the string into VR.  */
-  emit_move_insn (str_reg,
-		  gen_rtx_MEM (V16QImode,
-			       gen_rtx_PLUS (Pmode, str_idx_reg,
-					     str_addr_base_reg)));
+  mem = gen_rtx_MEM (V16QImode,
+		     gen_rtx_PLUS (Pmode, str_idx_reg, str_addr_base_reg));
+  set_mem_align (mem, 128);
+  emit_move_insn (str_reg, mem);
   if (into_loop_label != NULL_RTX)
     {
       emit_label (into_loop_label);
@@ -6863,15 +6867,16 @@ s390_expand_vec_init (rtx target, rtx vals)
     }
 
   /* Use vector gen mask or vector gen byte mask if possible.  */
-  if (all_same && all_const_int
-      && (XVECEXP (vals, 0, 0) == const0_rtx
-	  || s390_contiguous_bitmask_vector_p (XVECEXP (vals, 0, 0),
-					       NULL, NULL)
-	  || s390_bytemask_vector_p (XVECEXP (vals, 0, 0), NULL)))
+  if (all_same && all_const_int)
     {
-      emit_insn (gen_rtx_SET (target,
-			      gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0))));
-      return;
+      rtx vec = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+      if (XVECEXP (vals, 0, 0) == const0_rtx
+	  || s390_contiguous_bitmask_vector_p (vec, NULL, NULL)
+	  || s390_bytemask_vector_p (vec, NULL))
+	{
+	  emit_insn (gen_rtx_SET (target, vec));
+	  return;
+	}
     }
 
   /* Use vector replicate instructions.  vlrep/vrepi/vrep  */
@@ -6947,6 +6952,30 @@ s390_expand_vec_init (rtx target, rtx vals)
 							 GEN_INT (i), target),
 					      UNSPEC_VEC_SET)));
     }
+}
+
+/* Emit a vector constant that contains 1s in each element's sign bit position
+   and 0s in other positions.  MODE is the desired constant's mode.  */
+extern rtx
+s390_build_signbit_mask (machine_mode mode)
+{
+  /* Generate the integral element mask value.  */
+  machine_mode inner_mode = GET_MODE_INNER (mode);
+  int inner_bitsize = GET_MODE_BITSIZE (inner_mode);
+  wide_int mask_val = wi::set_bit_in_zero (inner_bitsize - 1, inner_bitsize);
+
+  /* Emit the element mask rtx.  Use gen_lowpart in order to cast the integral
+     value to the desired mode.  */
+  machine_mode int_mode = related_int_vector_mode (mode).require ();
+  rtx mask = immed_wide_int_const (mask_val, GET_MODE_INNER (int_mode));
+  mask = gen_lowpart (inner_mode, mask);
+
+  /* Emit the vector mask rtx by mode the element mask rtx.  */
+  int nunits = GET_MODE_NUNITS (mode);
+  rtvec v = rtvec_alloc (nunits);
+  for (int i = 0; i < nunits; i++)
+    RTVEC_ELT (v, i) = mask;
+  return gen_rtx_CONST_VECTOR (mode, v);
 }
 
 /* Structure to hold the initial parameters for a compare_and_swap operation
@@ -16082,12 +16111,13 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
      fenv_var = __builtin_s390_efpc ();
      __builtin_s390_sfpc (fenv_var & mask) */
-  tree old_fpc = build2 (MODIFY_EXPR, unsigned_type_node, fenv_var, call_efpc);
-  tree new_fpc =
-    build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
-	    build_int_cst (unsigned_type_node,
-			   ~(FPC_DXC_MASK | FPC_FLAGS_MASK |
-			     FPC_EXCEPTION_MASK)));
+  tree old_fpc = build4 (TARGET_EXPR, unsigned_type_node, fenv_var, call_efpc,
+			 NULL_TREE, NULL_TREE);
+  tree new_fpc
+    = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
+	      build_int_cst (unsigned_type_node,
+			     ~(FPC_DXC_MASK | FPC_FLAGS_MASK
+			       | FPC_EXCEPTION_MASK)));
   tree set_new_fpc = build_call_expr (sfpc, 1, new_fpc);
   *hold = build2 (COMPOUND_EXPR, void_type_node, old_fpc, set_new_fpc);
 
@@ -16106,8 +16136,8 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   __atomic_feraiseexcept ((old_fpc & FPC_FLAGS_MASK) >> FPC_FLAGS_SHIFT);  */
 
   old_fpc = create_tmp_var_raw (unsigned_type_node);
-  tree store_old_fpc = build2 (MODIFY_EXPR, void_type_node,
-			       old_fpc, call_efpc);
+  tree store_old_fpc = build4 (TARGET_EXPR, void_type_node, old_fpc, call_efpc,
+			       NULL_TREE, NULL_TREE);
 
   set_new_fpc = build_call_expr (sfpc, 1, fenv_var);
 

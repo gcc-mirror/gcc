@@ -209,7 +209,12 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mavx512bf16",	OPTION_MASK_ISA2_AVX512BF16 },
   { "-menqcmd",		OPTION_MASK_ISA2_ENQCMD },
   { "-mserialize",	OPTION_MASK_ISA2_SERIALIZE },
-  { "-mtsxldtrk",	OPTION_MASK_ISA2_TSXLDTRK }
+  { "-mtsxldtrk",	OPTION_MASK_ISA2_TSXLDTRK },
+  { "-mamx-tile",	OPTION_MASK_ISA2_AMX_TILE },
+  { "-mamx-int8",	OPTION_MASK_ISA2_AMX_INT8 },
+  { "-mamx-bf16",	OPTION_MASK_ISA2_AMX_BF16 },
+  { "-muintr",		OPTION_MASK_ISA2_UINTR },
+  { "-mhreset",		OPTION_MASK_ISA2_HRESET }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1028,11 +1033,16 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("movdir64b", OPT_mmovdir64b),
     IX86_ATTR_ISA ("waitpkg", OPT_mwaitpkg),
     IX86_ATTR_ISA ("cldemote", OPT_mcldemote),
+    IX86_ATTR_ISA ("uintr", OPT_muintr),
     IX86_ATTR_ISA ("ptwrite",   OPT_mptwrite),
     IX86_ATTR_ISA ("avx512bf16",   OPT_mavx512bf16),
     IX86_ATTR_ISA ("enqcmd", OPT_menqcmd),
     IX86_ATTR_ISA ("serialize", OPT_mserialize),
     IX86_ATTR_ISA ("tsxldtrk", OPT_mtsxldtrk),
+    IX86_ATTR_ISA ("amx-tile", OPT_mamx_tile),
+    IX86_ATTR_ISA ("amx-int8", OPT_mamx_int8),
+    IX86_ATTR_ISA ("amx-bf16", OPT_mamx_bf16),
+    IX86_ATTR_ISA ("hreset", OPT_mhreset),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -1893,6 +1903,9 @@ ix86_option_override_internal (bool main_args_p,
       opts->x_ix86_stringop_alg = no_stringop;
     }
 
+  if (TARGET_UINTR && !TARGET_64BIT)
+    error ("%<-muintr%> not supported for 32-bit code");
+
   if (!opts->x_ix86_arch_string)
     opts->x_ix86_arch_string
       = TARGET_64BIT_P (opts->x_ix86_isa_flags)
@@ -2052,10 +2065,27 @@ ix86_option_override_internal (bool main_args_p,
 	    return false;
 	  }
 
+	/* The feature-only micro-architecture levels that use
+	   PTA_NO_TUNE are only defined for the x86-64 psABI.  */
+	if ((processor_alias_table[i].flags & PTA_NO_TUNE) != 0
+	    && (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
+		|| opts->x_ix86_abi != SYSV_ABI))
+	  {
+	    error (G_("%<%s%> architecture level is only defined"
+		      " for the x86-64 psABI"), opts->x_ix86_arch_string);
+	    return false;
+	  }
+
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_arch = processor_alias_table[i].processor;
-	/* Default cpu tuning to the architecture.  */
-	ix86_tune = ix86_arch;
+
+	/* Default cpu tuning to the architecture, unless the table
+	   entry requests not to do this.  Used by the x86-64 psABI
+	   micro-architecture levels.  */
+	if ((processor_alias_table[i].flags & PTA_NO_TUNE) == 0)
+	  ix86_tune = ix86_arch;
+	else
+	  ix86_tune = PROCESSOR_GENERIC;
 
 	if (((processor_alias_table[i].flags & PTA_MMX) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MMX))
@@ -2258,6 +2288,18 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags2_explicit
 		 & OPTION_MASK_ISA2_AVX512BF16))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512BF16;
+	if (((processor_alias_table[i].flags & PTA_AMX_TILE) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA2_AMX_TILE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_TILE;
+	if (((processor_alias_table[i].flags & PTA_AMX_INT8) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA2_AMX_INT8))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_INT8;
+	if (((processor_alias_table[i].flags & PTA_AMX_BF16) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA2_AMX_BF16))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_BF16;
         if (((processor_alias_table[i].flags & PTA_MOVDIRI) != 0)
             && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVDIRI))
           opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVDIRI;
@@ -2366,7 +2408,8 @@ ix86_option_override_internal (bool main_args_p,
     ix86_arch_features[i] = !!(initial_ix86_arch_features[i] & ix86_arch_mask);
 
   for (i = 0; i < pta_size; i++)
-    if (! strcmp (opts->x_ix86_tune_string, processor_alias_table[i].name))
+    if (! strcmp (opts->x_ix86_tune_string, processor_alias_table[i].name)
+	&& (processor_alias_table[i].flags & PTA_NO_TUNE) == 0)
       {
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_tune = processor_alias_table[i].processor;
@@ -2410,8 +2453,9 @@ ix86_option_override_internal (bool main_args_p,
 
       auto_vec <const char *> candidates;
       for (i = 0; i < pta_size; i++)
-	if (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
-	    || ((processor_alias_table[i].flags & PTA_64BIT) != 0))
+	if ((!TARGET_64BIT_P (opts->x_ix86_isa_flags)
+	     || ((processor_alias_table[i].flags & PTA_64BIT) != 0))
+	    && (processor_alias_table[i].flags & PTA_NO_TUNE) == 0)
 	  candidates.safe_push (processor_alias_table[i].name);
 
 #ifdef HAVE_LOCAL_CPU_DETECT

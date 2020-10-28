@@ -51,6 +51,10 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" } } */
+/* Since the fix for PR97307 which sinks the load of a[i], preventing
+   if-conversion to happen, targets that cannot do masked loads only
+   vectorize the inline copy.  */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" { target vect_masked_load } } } */
+/* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" { target { ! vect_masked_load } } } } */
 /* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 2 "vect" { target vect_fold_extract_last } } } */
 /* { dg-final { scan-tree-dump-not "condition expression based on integer induction." "vect" } } */

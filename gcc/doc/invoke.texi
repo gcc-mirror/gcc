@@ -236,7 +236,8 @@ in the following sections.
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
--Wno-conversion-null  -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
+-Wno-conversion-null  -Wctad-maybe-unsupported @gol
+-Wctor-dtor-privacy  -Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
 -Weffc++  -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
@@ -244,7 +245,7 @@ in the following sections.
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
 -Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor @gol
 -Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n} @gol
--Wredundant-move -Wredundant-tags @gol
+-Wrange-loop-construct -Wredundant-move -Wredundant-tags @gol
 -Wreorder  -Wregister @gol
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
@@ -362,6 +363,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-shift-overflow  -Wshift-overflow=@var{n} @gol
 -Wsign-compare  -Wsign-conversion @gol
 -Wno-sizeof-array-argument @gol
+-Wsizeof-array-div @gol
 -Wsizeof-pointer-div  -Wsizeof-pointer-memaccess @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
@@ -392,6 +394,7 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer @gol
 -fanalyzer-call-summaries @gol
 -fanalyzer-checker=@var{name} @gol
+-fno-analyzer-feasibility @gol
 -fanalyzer-fine-grained @gol
 -fanalyzer-state-merge @gol
 -fanalyzer-state-purge @gol
@@ -406,6 +409,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes @gol
 -fdump-analyzer-exploded-nodes-2 @gol
 -fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
 -fdump-analyzer-supergraph @gol
 -Wno-analyzer-double-fclose @gol
@@ -426,6 +430,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-use-after-free @gol
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wno-analyzer-use-of-uninitialized-value @gol
+-Wno-analyzer-write-to-const @gol
+-Wno-analyzer-write-to-string-literal @gol
 }
 
 @item C and Objective-C-only Warning Options
@@ -483,7 +489,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion @gol
 -fif-conversion2  -findirect-inlining @gol
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n} @gol
--finline-small-functions  -fipa-cp  -fipa-cp-clone @gol
+-finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone @gol
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const @gol
 -fipa-reference  -fipa-reference-addressable @gol
 -fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm} @gol
@@ -1104,7 +1110,7 @@ Objective-C and Objective-C++ Dialects}.
 -march=@var{arch}  -mbmx  -mno-bmx  -mcdx  -mno-cdx}
 
 @emph{Nvidia PTX Options}
-@gccoptlist{-m32  -m64  -mmainkernel  -moptimize}
+@gccoptlist{-m64  -mmainkernel  -moptimize}
 
 @emph{OpenRISC Options}
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div @gol
@@ -1359,6 +1365,7 @@ See RS/6000 and PowerPC Options.
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
+-mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -3304,6 +3311,25 @@ void f(int *a, int b, int c) @{
 
 Enabled by default with @option{-std=c++20}.
 
+@item -Wctad-maybe-unsupported @r{(C++ and Objective-C++ only)}
+@opindex Wctad-maybe-unsupported
+@opindex Wno-ctad-maybe-unsupported
+Warn when performing class template argument deduction (CTAD) on a type with
+no explicitly written deduction guides.  This warning will point out cases
+where CTAD succeeded only because the compiler synthesized the implicit
+deduction guides, which might not be what the programmer intended.  Certain
+style guides allow CTAD only on types that specifically "opt-in"; i.e., on
+types that are designed to support CTAD.  This warning can be suppressed with
+the following pattern:
+
+@smallexample
+struct allow_ctad_t; // any name works
+template <typename T> struct S @{
+  S(T) @{ @}
+@};
+S(allow_ctad_t) -> S<void>; // guide with incomplete parameter type will never be considered
+@end smallexample
+
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy
 @opindex Wno-ctor-dtor-privacy
@@ -3581,6 +3607,24 @@ expression being returned and the function return type differ, yet G++
 treats the return value as if it were designated by an rvalue.
 
 This warning is enabled by @option{-Wextra}.
+
+@item -Wrange-loop-construct @r{(C++ and Objective-C++ only)}
+@opindex Wrange-loop-construct
+@opindex Wno-range-loop-construct
+This warning warns when a C++ range-based for-loop is creating an unnecessary
+copy.  This can happen when the range declaration is not a reference, but
+probably should be.  For example:
+
+@smallexample
+struct S @{ char arr[128]; @};
+void fn () @{
+  S arr[5];
+  for (const auto x : arr) @{ @dots{} @}
+@}
+@end smallexample
+
+It does not warn when the type being copied is a trivially-copyable type whose
+size is less than 64 bytes.  This warning is enabled by @option{-Wall}.
 
 @item -Wredundant-tags @r{(C++ and Objective-C++ only)}
 @opindex Wredundant-tags
@@ -4304,7 +4348,8 @@ options:
 @gccoptlist{-fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-line-numbers @gol
 -fdiagnostics-color=never @gol
--fdiagnostics-urls=never}
+-fdiagnostics-urls=never @gol
+-fdiagnostics-path-format=separate-events}
 In the future, if GCC changes the default appearance of its diagnostics, the
 corresponding option to disable the new behavior will be added to this list.
 
@@ -5251,11 +5296,13 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wparentheses  @gol
 -Wpessimizing-move @r{(only for C++)}  @gol
 -Wpointer-sign  @gol
+-Wrange-loop-construct @r{(only for C++)}  @gol
 -Wreorder   @gol
 -Wrestrict   @gol
 -Wreturn-type  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
+-Wsizeof-array-div @gol
 -Wsizeof-pointer-div @gol
 -Wsizeof-pointer-memaccess @gol
 -Wstrict-aliasing  @gol
@@ -8010,6 +8057,23 @@ real to lower precision real values.  This option is also enabled by
 @opindex Wscalar-storage-order
 Do not warn on suspicious constructs involving reverse scalar storage order.
 
+@item -Wsizeof-array-div
+@opindex Wsizeof-array-div
+@opindex Wno-sizeof-array-div
+Warn about divisions of two sizeof operators when the first one is applied
+to an array and the divisor does not equal the size of the array element.
+In such a case, the computation will not yield the number of elements in the
+array, which is likely what the user intended.  This warning warns e.g. about
+@smallexample
+int fn ()
+@{
+  int arr[10];
+  return sizeof (arr) / sizeof (short);
+@}
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
+
 @item -Wsizeof-pointer-div
 @opindex Wsizeof-pointer-div
 @opindex Wno-sizeof-pointer-div
@@ -8758,6 +8822,8 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
+-Wanalyzer-write-to-const @gol
+-Wanalyzer-write-to-string-literal @gol
 }
 
 This option is only available if GCC was configured with analyzer
@@ -8940,6 +9006,30 @@ to disable it.
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
 
+@item -Wno-analyzer-write-to-const
+@opindex Wanalyzer-write-to-const
+@opindex Wno-analyzer-write-to-const
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-write-to-const}
+to disable it.
+
+This diagnostic warns for paths through the code in which the analyzer
+detects an attempt to write through a pointer to a @code{const} object.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
+
+@item -Wno-analyzer-write-to-string-literal
+@opindex Wanalyzer-write-to-string-literal
+@opindex Wno-analyzer-write-to-string-literal
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-write-to-string-literal}
+to disable it.
+
+This diagnostic warns for paths through the code in which the analyzer
+detects an attempt to write through a pointer to a string literal.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
+
 @end table
 
 Pertinent parameters for controlling the exploration are:
@@ -8971,6 +9061,17 @@ Some checkers are disabled by default (even with @option{-fanalyzer}),
 such as the @code{taint} checker that implements
 @option{-Wanalyzer-tainted-array-index}, and this option is required
 to enable them.
+
+@item -fno-analyzer-feasibility
+@opindex fanalyzer-feasibility
+@opindex fno-analyzer-feasibility
+This option is intended for analyzer developers.
+
+By default the analyzer verifies that there is a feasible control flow path
+for each diagnostic it emits: that the conditions that hold are not mutually
+exclusive.  Diagnostics for which no feasible path can be found are rejected.
+This filtering can be suppressed with @option{-fno-analyzer-feasibility}, for
+debugging issues in this code.
 
 @item -fanalyzer-fine-grained
 @opindex fanalyzer-fine-grained
@@ -9102,6 +9203,12 @@ Dump a textual representation of the ``exploded graph'' to
 Dump a textual representation of the ``exploded graph'' to
 one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
 This is typically a large number of dump files.
+
+@item -fdump-analyzer-json
+@opindex fdump-analyzer-json
+Dump a compressed JSON representation of analyzer internals to
+@file{@var{file}.analyzer.json.gz}.  The precise format is subject
+to change.
 
 @item -fdump-analyzer-state-purge
 @opindex fdump-analyzer-state-purge
@@ -9649,6 +9756,7 @@ compilation time.
 -fif-conversion @gol
 -fif-conversion2 @gol
 -finline-functions-called-once @gol
+-fipa-modref @gol
 -fipa-profile @gol
 -fipa-pure-const @gol
 -fipa-reference @gol
@@ -10744,10 +10852,17 @@ default at any optimization level.
 @opindex fipa-profile
 Perform interprocedural profile propagation.  The functions called only from
 cold functions are marked as cold. Also functions executed once (such as
-@code{cold}, @code{noreturn}, static constructors or destructors) are identified. Cold
-functions and loop less parts of functions executed once are then optimized for
-size.
+@code{cold}, @code{noreturn}, static constructors or destructors) are
+identified. Cold functions and loop less parts of functions executed once are
+then optimized for size.
 Enabled by default at @option{-O} and higher.
+
+@item -fipa-modref
+@opindex fipa-modref
+Perform interprocedural mod/ref analysis.  This optimization analyzes the side
+effects of functions (memory locations that are modified or referenced) and
+enables better optimization across the function call boundary.  This flag is
+enabled by default at @option{-O} and higher.
 
 @item -fipa-cp
 @opindex fipa-cp
@@ -10832,7 +10947,7 @@ callers are impacted, therefore need to be patched as well.
 @gccoptlist{-fwhole-program  -fipa-pta  -fipa-reference  -fipa-ra @gol
 -fipa-icf  -fipa-icf-functions  -fipa-icf-variables @gol
 -fipa-bit-cp  -fipa-vrp  -fipa-pure-const  -fipa-reference-addressable @gol
--fipa-stack-alignment}
+-fipa-stack-alignment -fipa-modref}
 
 @item inline-only-static
 
@@ -11554,7 +11669,18 @@ Do not remove unused C++ allocations in dead code elimination.
 
 @item -fallow-store-data-races
 @opindex fallow-store-data-races
-Allow the compiler to introduce new data races on stores.
+Allow the compiler to perform optimizations that may introduce new data races
+on stores, without proving that the variable cannot be concurrently accessed
+by other threads.  Does not affect optimization of local data.  It is safe to
+use this option if it is known that global data will not be accessed by
+multiple threads.
+
+Examples of optimizations enabled by @option{-fallow-store-data-races} include
+hoisting or if-conversions that may cause a value that was already in memory
+to be re-written with that same value.  Such re-writing is safe in a single
+threaded context but may be unsafe in a multi-threaded context.  Note that on
+some processors, if-conversions may be required in order to enable
+vectorization.
 
 Enabled at level @option{-Ofast}.
 
@@ -11667,7 +11793,7 @@ to more aggressive optimization decisions.
 When a file is compiled with @option{-flto} without
 @option{-fuse-linker-plugin}, the generated object file is larger than
 a regular object file because it contains GIMPLE bytecodes and the usual
-final code (see @option{-ffat-lto-objects}.  This means that
+final code (see @option{-ffat-lto-objects}).  This means that
 object files with LTO information can be linked as normal object
 files; if @option{-fno-lto} is passed to the linker, no
 interprocedural optimizations are applied.  Note that when
@@ -12725,6 +12851,18 @@ Deeper chains are still handled by late inlining.
 Probability (in percent) that C++ inline function with comdat visibility
 are shared across multiple compilation units.
 
+@item ipa-modref-max-bases
+@item ipa-modref-max-refs
+@item ipa-modref-max-accesses
+Specifies the maximal number of base pointers, referneces and accesses stored
+for a single function by mod/ref analysis.
+
+@item ipa-modref-max-tests
+Specifies the maxmal number of tests alias oracle can perform to disambiguate
+memory locations using the mod/ref information.  This parameter ought to be
+bigger than @option{--param ipa-modref-max-bases} and @option{--param
+ipa-modref-max-refs}.
+
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
 database lookup. If the value is 0, the compiler uses an id that
@@ -13337,6 +13475,9 @@ loop in the loop nest by a given number of iterations.  The strip
 length can be changed using the @option{loop-block-tile-size}
 parameter.
 
+@item ipa-jump-function-lookups
+Specifies number of statements visited during jump function offset discovery.
+
 @item ipa-cp-value-list-size
 IPA-CP attempts to track all possible values and types passed to a function's
 parameter in order to propagate them and perform devirtualization.
@@ -13373,6 +13514,10 @@ When IPA-CP determines that a cloning candidate would make the number
 of iterations of a loop known, it adds a bonus of
 @option{ipa-cp-loop-hint-bonus} to the profitability score of
 the candidate.
+
+@item ipa-max-loop-predicates
+The maximum number of different predicates IPA will use to describe when
+loops in a function have known properties.
 
 @item ipa-max-aa-steps
 During its analysis of function bodies, IPA-CP employs alias analysis
@@ -17473,8 +17618,10 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
 @samp{cortex-a65}, @samp{cortex-a65ae}, @samp{cortex-a34},
+@samp{cortex-a78}, @samp{cortex-a78ae},
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
-@samp{neoverse-e1},@samp{neoverse-n1},@samp{qdf24xx}, @samp{saphira},
+@samp{neoverse-e1}, @samp{neoverse-n1}, @samp{neoverse-n2},
+@samp{neoverse-v1}, @samp{qdf24xx}, @samp{saphira},
 @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
 @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
@@ -17487,7 +17634,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
-@samp{cortex-r82}, @samp{native}.
+@samp{cortex-r82}, @samp{cortex-x1}, @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -19314,16 +19461,17 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
+@samp{cortex-a78}, @samp{cortex-a78ae},
 @samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f},
 @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p}, @samp{cortex-m55},
+@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-x1},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
-@samp{neoverse-n1}, @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2},
-@samp{ep9312}, @samp{fa526}, @samp{fa626}, @samp{fa606te}, @samp{fa626te},
-@samp{fmp626}, @samp{fa726te}, @samp{xgene1}.
+@samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{xscale},
+@samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}, @samp{fa526}, @samp{fa626},
+@samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}, @samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible names are:
@@ -25485,17 +25633,16 @@ These options are defined for Nvidia PTX:
 
 @table @gcctabopt
 
-@item -m32
-@itemx -m64
-@opindex m32
+@item -m64
 @opindex m64
-Generate code for 32-bit or 64-bit ABI.
+Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
+supported.
 
 @item -misa=@var{ISA-string}
 @opindex march
 Generate code for given the specified PTX ISA (e.g.@: @samp{sm_35}).  ISA
 strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
-@samp{sm_35}.  The default ISA is sm_30.
+@samp{sm_35}.  The default ISA is sm_35.
 
 @item -mmainkernel
 @opindex mmainkernel
@@ -25872,14 +26019,30 @@ Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
 lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
 @samp{rv32imaf}.
 
+When @option{-march=} is not specified, use the setting from @option{-mcpu}.
+
+If both @option{-march} and @option{-mcpu=} are not specified, the default for
+this argument is system dependent, users who want a specific architecture
+extensions should specify one explicitly.
+
+@item -mcpu=@var{processor-string}
+@opindex mcpu
+Use architecture of and optimize the output for the given processor, specified
+by particular CPU name.
+Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
+@samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
+@samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
+@samp{sifive-u54}, and @samp{sifive-u74}.
+
 @item -mtune=@var{processor-string}
 @opindex mtune
-Optimize the output for the given processor, specified by microarchitecture
-name.  Permissible values for this option are: @samp{rocket},
+Optimize the output for the given processor, specified by microarchitecture or
+particular CPU name.  Permissible values for this option are: @samp{rocket},
 @samp{sifive-3-series}, @samp{sifive-5-series}, @samp{sifive-7-series},
-and @samp{size}.
+@samp{size}, and all valid options for @option{-mcpu=}.
 
-When @option{-mtune=} is not specified, the default is @samp{rocket}.
+When @option{-mtune=} is not specified, use the setting from @option{-mcpu},
+the default is @samp{rocket} if both are not specified.
 
 The @samp{size} choice is not intended for use by end-users.  This is used
 when @option{-Os} is specified.  It overrides the instruction cost info
@@ -27612,7 +27775,7 @@ system representing a certain processor type.  Possible values for
 @var{cpu-type} are @samp{z900}/@samp{arch5}, @samp{z990}/@samp{arch6},
 @samp{z9-109}, @samp{z9-ec}/@samp{arch7}, @samp{z10}/@samp{arch8},
 @samp{z196}/@samp{arch9}, @samp{zEC12}, @samp{z13}/@samp{arch11},
-@samp{z14}/@samp{arch12}, and @samp{native}.
+@samp{z14}/@samp{arch12}, @samp{z15}/@samp{arch13}, and @samp{native}.
 
 The default is @option{-march=z900}.
 
@@ -29162,7 +29325,7 @@ Generate instructions for the machine type @var{cpu-type}.  In contrast to
 for the specified @var{cpu-type}, @option{-march=@var{cpu-type}} allows GCC
 to generate code that may not run at all on processors other than the one
 indicated.  Specifying @option{-march=@var{cpu-type}} implies 
-@option{-mtune=@var{cpu-type}}.
+@option{-mtune=@var{cpu-type}}, except where noted otherwise.
 
 The choices for @var{cpu-type} are:
 
@@ -29177,6 +29340,19 @@ of the selected instruction set.
 
 @item x86-64
 A generic CPU with 64-bit extensions.
+
+@item x86-64-v2
+@itemx x86-64-v3
+@itemx x86-64-v4
+These choices for @var{cpu-type} select the corresponding
+micro-architecture level from the x86-64 psABI.  They are only available
+when compiling for an x86-64 target that uses the System V psABI@.
+
+Since these @var{cpu-type} values do not have a corresponding
+@option{-mtune} setting, using @option{-march} with these values enables
+generic tuning.  Specific tuning can be enabled using the
+@option{-mtune=@var{other-cpu-type}} option with an appropriate
+@var{other-cpu-type} value.
 
 @item i386
 Original Intel i386 CPU@.
@@ -30117,6 +30293,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -menqcmd
 @opindex menqcmd
+@itemx -muintr
+@opindex muintr
 @need 200
 @itemx -mtsxldtrk
 @opindex mtsxldtrk
@@ -30141,6 +30319,18 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mserialize
 @opindex mserialize
+@need 200
+@itemx -mamx-tile
+@opindex mamx-tile
+@need 200
+@itemx -mamx-int8
+@opindex mamx-int8
+@need 200
+@itemx -mamx-bf16
+@opindex mamx-bf16
+@need 200
+@itemx -mhreset
+@opindex mhreset
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
@@ -30149,8 +30339,8 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
-ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE
-or CLDEMOTE extended instruction sets.  Each has a corresponding
+ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
+UINTR, HRESET or CLDEMOTE extended instruction sets.  Each has a corresponding
 @option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
@@ -31512,6 +31702,19 @@ based on the existence of the first.  Here is a small example of its usage:
 *startfile:
 crt0%O%s %:if-exists(crti%O%s) \
 %:if-exists-else(crtbeginT%O%s crtbegin%O%s)
+@end smallexample
+
+@item @code{if-exists-then-else}
+The @code{if-exists-then-else} spec function takes at least two arguments
+and an optional third one. The first argument is an absolute pathname to a
+file.  If the file exists, the function returns the second argument.
+If the file does not exist, the function returns the third argument if there
+is one, or NULL otherwise. This can be used to expand one text, or optionally
+another, based on the existence of a file.  Here is a small example of its
+usage:
+
+@smallexample
+-l%:if-exists-then-else(%:getenv(VSB_DIR rtnet.h) rtnet net)
 @end smallexample
 
 @item @code{replace-outfile}

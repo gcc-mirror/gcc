@@ -579,7 +579,7 @@
 		Only k String DNA Hash
 	      </strong></p><div class="equation-contents"><span class="mathphrase">
 		f<sub>2</sub>(s, m) = ∑ <sub>i
-		= 0</sub><sup>k - 1</sup> s<sub>i</sub> a<sup>i</sup> mod m 
+		= 0</sub><sup>k - 1</sup> s<sub>i</sub> a<sup>i</sup> mod m
 	      </span></div></div><br class="equation-break" /><p>requiring scanning over only</p><p>k = log<sub>4</sub>( m )</p><p>characters.</p><p>Other more elaborate hash-functions might scan k
 	    characters starting at a random position (determined at each
 	    resize), or scanning k random positions (determined at
@@ -675,7 +675,7 @@
 	    l<sub>i</sub>, and assume uniform distribution. Then</p><div class="equation"><a id="id-1.3.5.8.4.4.2.3.3.4.9"></a><p class="title"><strong>Equation 21.7. 
 		Probability of Probe Sequence of Length k
 	      </strong></p><div class="equation-contents"><span class="mathphrase">
-		p<sub>1</sub> = 
+		p<sub>1</sub> =
 	      </span></div></div><br class="equation-break" /><p>P(l<sub>1</sub> ≥ k) =</p><p>
 	      P(l<sub>1</sub> ≥ α ( 1 + k / α - 1) ≤ (a)
 	    </p><p>
@@ -689,7 +689,7 @@
 	    I(.) denote the indicator function. Then</p><div class="equation"><a id="id-1.3.5.8.4.4.2.3.3.4.14"></a><p class="title"><strong>Equation 21.8. 
 		Probability Probe Sequence in Some Bin
 	      </strong></p><div class="equation-contents"><span class="mathphrase">
-		P( exists<sub>i</sub> l<sub>i</sub> ≥ k ) = 
+		P( exists<sub>i</sub> l<sub>i</sub> ≥ k ) =
 	      </span></div></div><br class="equation-break" /><p>P ( ∑ <sub>i = 1</sub><sup>m</sup>
 	    I(l<sub>i</sub> ≥ k) ≥ 1 ) =</p><p>P ( ∑ <sub>i = 1</sub><sup>m</sup> I (
 	    l<sub>i</sub> ≥ k ) ≥ m p<sub>1</sub> ( 1 + 1 / (m
@@ -747,7 +747,7 @@
 		be used with mod range hashing</p></li></ol></div><p>The graphic below gives an overall picture of the resize-related
 	      classes. <code class="classname">basic_hash_table</code>
 	      is parametrized by <code class="classname">Resize_Policy</code>, which it subclasses
-	      publicly. This class is currently instantiated only by <code class="classname">hash_standard_resize_policy</code>. 
+	      publicly. This class is currently instantiated only by <code class="classname">hash_standard_resize_policy</code>.
 	      <code class="classname">hash_standard_resize_policy</code>
 	      itself is parametrized by <code class="classname">Trigger_Policy</code> and
 	      <code class="classname">Size_Policy</code>. Currently, <code class="classname">Trigger_Policy</code> is
@@ -911,7 +911,7 @@
 	      node_end() const;
 
 	      node_iterator
-	      node_end(); 
+	      node_end();
 	    </pre><p>The first pairs return node iterators corresponding to the
 	    root node of the tree; the latter pair returns node iterators
 	    corresponding to a just-after-leaf node.</p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="container.tree.node.updator"></a>Node Updator</h6></div></div></div><p>The tree-based containers are parametrized by a
@@ -928,7 +928,7 @@
 	    The tree defines within each node a <code class="classname">metadata_type</code>
 	    object.</p><p><code class="classname">node_update</code> must also define the following method
 	    for restoring node invariants:</p><pre class="programlisting">
-	      void 
+	      void
 	      operator()(node_iterator nd_it, const_node_iterator end_nd_it)
 	    </pre><p>In this method, <code class="varname">nd_it</code> is a
 	    <code class="classname">node_iterator</code> corresponding to a node whose
@@ -1021,8 +1021,8 @@
 	data structure to use. Instantiating it by <code class="classname">pat_trie_tag</code>, specifies an
 	underlying PATRICIA trie (explained shortly); any other tag is
 	currently illegal.</p><p>Following is a description of a (PATRICIA) trie
-	(this implementation follows <a class="xref" href="policy_data_structures.html#biblio.okasaki98mereable" title="Fast mergeable integer maps">[biblio.okasaki98mereable]</a> and 
-	<a class="xref" href="policy_data_structures.html#biblio.filliatre2000ptset" title="Ptset: Sets of integers implemented as Patricia trees">[biblio.filliatre2000ptset]</a>). 
+	(this implementation follows <a class="xref" href="policy_data_structures.html#biblio.okasaki98mereable" title="Fast mergeable integer maps">[biblio.okasaki98mereable]</a> and
+	<a class="xref" href="policy_data_structures.html#biblio.filliatre2000ptset" title="Ptset: Sets of integers implemented as Patricia trees">[biblio.filliatre2000ptset]</a>).
 	</p><p>A (PATRICIA) trie is similar to a tree, but with the
 	following differences:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>It explicitly views keys as a sequence of elements.
 	  E.g., a trie can view a string as a sequence of
@@ -1174,7 +1174,7 @@
 	  which unconditionally move an accessed element to the front of
 	  the list. The latter type is very useful in this library,
 	  since there is no need to associate metadata with each element.
-	  (See <a class="xref" href="policy_data_structures.html#biblio.andrew04mtf" title="MTF, Bit, and COMB: A Guide to Deterministic and Randomized Algorithms for the List Update Problem">[biblio.andrew04mtf]</a> 
+	  (See <a class="xref" href="policy_data_structures.html#biblio.andrew04mtf" title="MTF, Bit, and COMB: A Guide to Deterministic and Randomized Algorithms for the List Update Problem">[biblio.andrew04mtf]</a>
 	  </p></div><div class="section"><div class="titlepage"><div><div><h6 class="title"><a id="container.list.details.mapped"></a>Use in Multimaps</h6></div></div></div><p>In this library, there are no equivalents for the standard's
 	  multimaps and multisets; instead one uses an associative
 	  container mapping primary keys to secondary keys.</p><p>List-based containers are especially useful as associative
@@ -1219,7 +1219,7 @@
 	<code class="classname">binomial_heap_tag</code>,
 	<code class="classname">rc_binomial_heap_tag</code>,
 	or <code class="classname">thin_heap_tag</code>,
-	specifies, respectively, 
+	specifies, respectively,
 	an underlying pairing heap (<a class="xref" href="policy_data_structures.html#biblio.fredman86pairing" title="The pairing heap: a new form of self-adjusting heap">[biblio.fredman86pairing]</a>),
 	binary heap (<a class="xref" href="policy_data_structures.html#biblio.clrs2001" title="Introduction to Algorithms, 2nd edition">[biblio.clrs2001]</a>),
 	binomial heap (<a class="xref" href="policy_data_structures.html#biblio.clrs2001" title="Introduction to Algorithms, 2nd edition">[biblio.clrs2001]</a>),
@@ -1376,7 +1376,7 @@
 	    heap, and so might be more appropriate for some graph
 	    algorithms.</p></li></ol></div><p>Of course, one can use any order-preserving associative
 	  container as a priority queue, as in the graphic above label C, possibly by creating an adapter class
-	  over the associative container (much as 
+	  over the associative container (much as
 	  <code class="classname">std::priority_queue</code> can adapt <code class="classname">std::vector</code>).
 	  This has the advantage that no cross-referencing is necessary
 	  at all; the priority queue itself is an associative container.
@@ -1390,14 +1390,14 @@
 	  types. <code class="classname">__gnu_pbds::priority_queue</code>
 	  publicly defines <code class="classname">container_category</code> as one of the tags. Given any
 	  container <code class="classname">Cntnr</code>, the tag of the underlying
-	  data structure can be found via <code class="classname">typename 
+	  data structure can be found via <code class="classname">typename
 	  Cntnr::container_category</code>; this is one of the possible tags shown in the graphic below.
 	  </p><div class="figure"><a id="id-1.3.5.8.4.4.6.3.4.4"></a><p class="title"><strong>Figure 21.33. Priority-Queue Data-Structure Tags.</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_priority_queue_tag_hierarchy.png" align="middle" alt="Priority-Queue Data-Structure Tags." /></div></div></div><br class="figure-break" /><p>Additionally, a traits mechanism can be used to query a
 	  container type for its attributes. Given any container
 	  <code class="classname">Cntnr</code>, then </p><pre class="programlisting">__gnu_pbds::container_traits&lt;Cntnr&gt;</pre><p>
 	  is a traits class identifying the properties of the
 	  container.</p><p>To find if a container might throw if two of its objects are
-	  joined, one can use 
+	  joined, one can use
 	  </p><pre class="programlisting">
 	    container_traits&lt;Cntnr&gt;::split_join_can_throw
 	  </pre><p>

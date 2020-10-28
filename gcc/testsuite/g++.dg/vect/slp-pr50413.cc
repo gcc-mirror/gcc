@@ -160,5 +160,4 @@ void shift(unsigned char t)
   V.bitmap.b96 = t;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 0 "slp2" } } */
-
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 0 "slp2" } } */

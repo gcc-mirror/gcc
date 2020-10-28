@@ -51,6 +51,9 @@
 #include "tree-ssa-address.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "symtab-thunks.h"
 
 #define A_RUNINSTRUMENTEDCODE	0x0001
 #define A_RUNUNINSTRUMENTEDCODE	0x0002
@@ -4729,7 +4732,8 @@ ipa_tm_mayenterirr_function (struct cgraph_node *node)
      result in one of the bits above being set so that we will not
      have to recurse next time.  */
   if (node->alias)
-    return ipa_tm_mayenterirr_function (cgraph_node::get (node->thunk.alias));
+    return ipa_tm_mayenterirr_function
+		 (cgraph_node::get (thunk_info::get (node)->alias));
 
   /* What remains is unmarked local functions without items that force
      the function to go irrevocable.  */
@@ -5475,7 +5479,7 @@ ipa_tm_execute (void)
 		 we need not scan the callees now, as the base will do.  */
 	      if (node->alias)
 		{
-		  node = cgraph_node::get (node->thunk.alias);
+		  node = cgraph_node::get (thunk_info::get (node)->alias);
 		  d = get_cg_data (&node, true);
 		  maybe_push_queue (node, &tm_callees, &d->in_callee_queue);
 		  continue;

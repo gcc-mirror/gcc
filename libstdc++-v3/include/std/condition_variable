@@ -39,10 +39,7 @@
 
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
-#include <ext/concurrence.h>
 #include <bits/alloc_traits.h>
-#include <bits/allocator.h>
-#include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
 #include <bits/cxxabi_forced.h>
 

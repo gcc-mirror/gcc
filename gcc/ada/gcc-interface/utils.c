@@ -92,6 +92,7 @@ static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
+static tree handle_no_stack_protector_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
@@ -114,6 +115,13 @@ static const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
   { "cold", true,  true,  true  },
   { "hot" , true,  true,  true  },
   { NULL  , false, false, false }
+};
+
+static const struct attribute_spec::exclusions attr_stack_protect_exclusions[] =
+{
+  { "stack_protect", true, false, false },
+  { "no_stack_protector", true, false, false },
+  { NULL, false, false, false },
 };
 
 /* Fake handler for attributes we don't properly support, typically because
@@ -141,7 +149,11 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "noreturn",     0, 0,  true,  false, false, false,
     handle_noreturn_attribute, NULL },
   { "stack_protect",0, 0, true,  false, false, false,
-    handle_stack_protect_attribute, NULL },
+    handle_stack_protect_attribute,
+    attr_stack_protect_exclusions },
+  { "no_stack_protector",0, 0, true,  false, false, false,
+    handle_no_stack_protector_attribute,
+    attr_stack_protect_exclusions },
   { "noinline",     0, 0,  true,  false, false, false,
     handle_noinline_attribute, NULL },
   { "noclone",      0, 0,  true,  false, false, false,
@@ -6559,6 +6571,23 @@ handle_stack_protect_attribute (tree *node, tree name, tree, int,
 
   return NULL_TREE;
 }
+
+/* Handle a "no_stack_protector" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_no_stack_protector_attribute (tree *node, tree name, tree, int,
+				   bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 
 /* Handle a "noinline" attribute; arguments as in
    struct attribute_spec.handler.  */

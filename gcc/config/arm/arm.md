@@ -7289,7 +7289,9 @@
 (define_insn "*arm32_mov<mode>"
   [(set (match_operand:HFBF 0 "nonimmediate_operand" "=r,m,r,r")
 	(match_operand:HFBF 1 "general_operand"	   " m,r,r,F"))]
-  "TARGET_32BIT && !TARGET_HARD_FLOAT
+  "TARGET_32BIT
+   && !TARGET_HARD_FLOAT
+   && !TARGET_HAVE_MVE
    && (	  s_register_operand (operands[0], <MODE>mode)
        || s_register_operand (operands[1], <MODE>mode))"
   "*
@@ -7355,7 +7357,7 @@
   if (arm_disable_literal_pool
       && (REG_P (operands[0]) || SUBREG_P (operands[0]))
       && CONST_DOUBLE_P (operands[1])
-      && TARGET_HARD_FLOAT
+      && TARGET_VFP_BASE
       && !vfp3_const_double_rtx (operands[1]))
     {
       rtx clobreg = gen_reg_rtx (SFmode);
@@ -7452,7 +7454,7 @@
   if (arm_disable_literal_pool
       && (REG_P (operands[0]) || SUBREG_P (operands[0]))
       && CONSTANT_P (operands[1])
-      && TARGET_HARD_FLOAT
+      && TARGET_VFP_BASE
       && !arm_const_double_rtx (operands[1])
       && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1])))
     {
@@ -9212,7 +9214,7 @@
 	operands[2] = operands[1];
       else
 	{
-	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  rtx mem = force_const_mem (SImode, operands[1]);
 	  emit_move_insn (operands[2], mem);
 	}
     }
@@ -9295,7 +9297,7 @@
 	operands[3] = operands[1];
       else
 	{
-	  rtx mem = XEXP (force_const_mem (SImode, operands[1]), 0);
+	  rtx mem = force_const_mem (SImode, operands[1]);
 	  emit_move_insn (operands[3], mem);
 	}
     }

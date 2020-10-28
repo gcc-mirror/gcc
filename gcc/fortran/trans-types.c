@@ -2257,7 +2257,8 @@ gfc_sym_type (gfc_symbol * sym)
   else
     type = gfc_typenode_for_spec (&sym->ts, sym->attr.codimension);
 
-  if (sym->attr.dummy && !sym->attr.function && !sym->attr.value)
+  if (sym->attr.dummy && !sym->attr.function && !sym->attr.value
+      && !sym->pass_as_value)
     byref = 1;
   else
     byref = 0;
@@ -2955,20 +2956,33 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
 
   memset (&spec, 0, sizeof (spec));
   spec[0] = '.';
-  spec_len = 1;
+  spec[1] = ' ';
+  spec_len = 2;
 
   if (sym->attr.entry_master)
-    spec[spec_len++] = 'R';
+    {
+      spec[spec_len++] = 'R';
+      spec[spec_len++] = ' ';
+    }
   if (gfc_return_by_reference (sym))
     {
       gfc_symbol *result = sym->result ? sym->result : sym;
 
       if (result->attr.pointer || sym->attr.proc_pointer)
-	spec[spec_len++] = '.';
+	{
+	  spec[spec_len++] = '.';
+	  spec[spec_len++] = ' ';
+	}
       else
-	spec[spec_len++] = 'w';
+	{
+	  spec[spec_len++] = 'w';
+	  spec[spec_len++] = ' ';
+	}
       if (sym->ts.type == BT_CHARACTER)
-	spec[spec_len++] = 'R';
+	{
+	  spec[spec_len++] = 'R';
+	  spec[spec_len++] = ' ';
+	}
     }
 
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
@@ -2983,11 +2997,20 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
 		&& (CLASS_DATA (f->sym)->ts.u.derived->attr.proc_pointer_comp
 		    || CLASS_DATA (f->sym)->ts.u.derived->attr.pointer_comp))
 	    || (f->sym->ts.type == BT_INTEGER && f->sym->ts.is_c_interop))
-	  spec[spec_len++] = '.';
+	  {
+	    spec[spec_len++] = '.';
+	    spec[spec_len++] = ' ';
+	  }
 	else if (f->sym->attr.intent == INTENT_IN)
-	  spec[spec_len++] = 'r';
+	  {
+	    spec[spec_len++] = 'r';
+	    spec[spec_len++] = ' ';
+	  }
 	else if (f->sym)
-	  spec[spec_len++] = 'w';
+	  {
+	    spec[spec_len++] = 'w';
+	    spec[spec_len++] = ' ';
+	  }
       }
 
   tmp = build_tree_list (NULL_TREE, build_string (spec_len, spec));

@@ -86,7 +86,10 @@ proc check_compile {basename type contents args} {
     set f [open $src "w"]
     puts $f $contents
     close $f
+    global compiler_flags
+    set save_compiler_flags $compiler_flags
     set lines [${tool}_target_compile $src $output $compile_type "$options"]
+    set compiler_flags $save_compiler_flags 
     file delete $src
 
     set scan_output $output
@@ -7194,6 +7197,14 @@ proc check_effective_target_vect_load_lanes { } {
 	     || [istarget aarch64*-*-*] }}]
 }
 
+# Return 1 if the target supports vector masked loads.
+
+proc check_effective_target_vect_masked_load { } {
+    return [expr { [check_avx_available]
+		   || [check_effective_target_aarch64_sve]
+		   || [istarget amdgcn*-*-*] } ]
+}
+
 # Return 1 if the target supports vector masked stores.
 
 proc check_effective_target_vect_masked_store { } {
@@ -7233,6 +7244,8 @@ proc check_effective_target_vect_cond_mixed { } {
       expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*] 
+	     || ([istarget arm*-*-*]
+		 && [check_effective_target_arm_neon_ok])
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
@@ -8956,6 +8969,39 @@ proc check_effective_target_avx512vaes { } {
     } "-mvaes" ]
 }
 
+# Return 1 if amx-tile instructions can be compiled.
+proc check_effective_target_amx_tile { } {
+    return [check_no_compiler_messages amx_tile object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tilerelease" ::);
+	}
+    } "-mamx-tile" ]
+}
+
+# Return 1 if amx-int8 instructions can be compiled.
+proc check_effective_target_amx_int8 { } {
+    return [check_no_compiler_messages amx_int8 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpbssd\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-int8" ]
+}
+
+# Return 1 if amx-bf16 instructions can be compiled.
+proc check_effective_target_amx_bf16 { } {
+    return [check_no_compiler_messages amx_bf16 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpbf16ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-bf16" ]
+}
+
 # Return 1 if vpclmulqdq instructions can be compiled.
 proc check_effective_target_vpclmulqdq { } {
     return [check_no_compiler_messages vpclmulqdq object {
@@ -10347,7 +10393,7 @@ proc check_effective_target_arm_v8_3a_bkey_directive { } {
 # Overhead Loop, 0 otherwise.  The test is valid for ARM.
 
 proc check_effective_target_arm_v8_1_lob_ok { } {
-    if { ![istarget arm*-*-*] } {
+    if { ![check_effective_target_arm_cortex_m] } {
         return 0;
     } else {
 	return [check_runtime arm_v8_1_lob_hw_available {
@@ -10361,7 +10407,7 @@ proc check_effective_target_arm_v8_1_lob_ok { } {
 		  asm goto ("le lr, %l0" : : : "lr" : loop);
 		  return i != 10;
 		}
-	} "-march=armv8.1-m.main" ]
+	} "-march=armv8.1-m.main -mthumb" ]
     }
 }
 
@@ -10509,4 +10555,30 @@ proc check_symver_available { } {
 		return 0;
 	    }
 	}]
+}
+
+# Return 1 if emitted assembly contains .ident directive.
+
+proc check_effective_target_ident_directive {} {
+    return [check_no_messages_and_pattern ident_directive \
+		"(?n)^\[\t\]+\\.ident" assembly {
+	int i;
+    }]
+}
+
+# Return 1 if we're able to assemble movdiri and movdir64b
+
+proc check_effective_target_movdir { } {
+    return [check_no_compiler_messages movdir object {
+	void
+	foo (unsigned int *d, unsigned int s)
+	{
+	  __builtin_ia32_directstoreu_u32 (d, s);
+	}
+	void
+	bar (void *d, const void *s)
+	{
+	  __builtin_ia32_movdir64b (d, s);
+	}
+    } "-mmovdiri -mmovdir64b" ]
 }

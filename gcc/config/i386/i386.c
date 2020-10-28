@@ -1484,7 +1484,7 @@ ix86_reg_parm_stack_space (const_tree fndecl)
 bool
 ix86_libc_has_function (enum function_class fn_class)
 {
-  return targetm.libc_has_function (fn_class);
+  return targetm.libc_has_function (fn_class, NULL_TREE);
 }
 
 /* Returns value SYSV_ABI, MS_ABI dependent on fntype,
@@ -13098,6 +13098,43 @@ ix86_print_operand (FILE *file, rtx x, int code)
       fputs (dstr, file);
     }
 
+  /* Print bcst_mem_operand.  */
+  else if (GET_CODE (x) == VEC_DUPLICATE)
+    {
+      machine_mode vmode = GET_MODE (x);
+      /* Must be bcst_memory_operand.  */
+      gcc_assert (bcst_mem_operand (x, vmode));
+
+      rtx mem = XEXP (x,0);
+      ix86_print_operand (file, mem, 0);
+
+      switch (vmode)
+	{
+	case E_V2DImode:
+	case E_V2DFmode:
+	  fputs ("{1to2}", file);
+	  break;
+	case E_V4SImode:
+	case E_V4SFmode:
+	case E_V4DImode:
+	case E_V4DFmode:
+	  fputs ("{1to4}", file);
+	  break;
+	case E_V8SImode:
+	case E_V8SFmode:
+	case E_V8DFmode:
+	case E_V8DImode:
+	  fputs ("{1to8}", file);
+	  break;
+	case E_V16SFmode:
+	case E_V16SImode:
+	  fputs ("{1to16}", file);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   else
     {
       /* We have patterns that allow zero sets of memory, for instance.
@@ -15131,10 +15168,31 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
       /* Codes needing carry flag.  */
     case GEU:			/* CF=0 */
     case LTU:			/* CF=1 */
+      rtx geu;
       /* Detect overflow checks.  They need just the carry flag.  */
       if (GET_CODE (op0) == PLUS
 	  && (rtx_equal_p (op1, XEXP (op0, 0))
 	      || rtx_equal_p (op1, XEXP (op0, 1))))
+	return CCCmode;
+      /* Similarly for *setcc_qi_addqi3_cconly_overflow_1_* patterns.
+	 Match LTU of op0
+	 (neg:QI (geu:QI (reg:CC_CCC FLAGS_REG) (const_int 0)))
+	 and op1
+	 (ltu:QI (reg:CC_CCC FLAGS_REG) (const_int 0))
+	 where CC_CCC is either CC or CCC.  */
+      else if (code == LTU
+	       && GET_CODE (op0) == NEG
+	       && GET_CODE (geu = XEXP (op0, 0)) == GEU
+	       && REG_P (XEXP (geu, 0))
+	       && (GET_MODE (XEXP (geu, 0)) == CCCmode
+		   || GET_MODE (XEXP (geu, 0)) == CCmode)
+	       && REGNO (XEXP (geu, 0)) == FLAGS_REG
+	       && XEXP (geu, 1) == const0_rtx
+	       && GET_CODE (op1) == LTU
+	       && REG_P (XEXP (op1, 0))
+	       && GET_MODE (XEXP (op1, 0)) == GET_MODE (XEXP (geu, 0))
+	       && REGNO (XEXP (op1, 0)) == FLAGS_REG
+	       && XEXP (op1, 1) == const0_rtx)
 	return CCCmode;
       else
 	return CCmode;
@@ -19749,33 +19807,56 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case COMPARE:
-      if (GET_CODE (XEXP (x, 0)) == ZERO_EXTRACT
-	  && XEXP (XEXP (x, 0), 1) == const1_rtx
-	  && CONST_INT_P (XEXP (XEXP (x, 0), 2))
-	  && XEXP (x, 1) == const0_rtx)
+      rtx op0, op1;
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+      if (GET_CODE (op0) == ZERO_EXTRACT
+	  && XEXP (op0, 1) == const1_rtx
+	  && CONST_INT_P (XEXP (op0, 2))
+	  && op1 == const0_rtx)
 	{
 	  /* This kind of construct is implemented using test[bwl].
 	     Treat it as if we had an AND.  */
-	  mode = GET_MODE (XEXP (XEXP (x, 0), 0));
+	  mode = GET_MODE (XEXP (op0, 0));
 	  *total = (cost->add
-		    + rtx_cost (XEXP (XEXP (x, 0), 0), mode, outer_code,
+		    + rtx_cost (XEXP (op0, 0), mode, outer_code,
 				opno, speed)
 		    + rtx_cost (const1_rtx, mode, outer_code, opno, speed));
 	  return true;
 	}
 
-      if (GET_CODE (XEXP (x, 0)) == PLUS
-	  && rtx_equal_p (XEXP (XEXP (x, 0), 0), XEXP (x, 1)))
+      if (GET_CODE (op0) == PLUS && rtx_equal_p (XEXP (op0, 0), op1))
 	{
 	  /* This is an overflow detection, count it as a normal compare.  */
-	  *total = rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
-			     COMPARE, 0, speed);
+	  *total = rtx_cost (op0, GET_MODE (op0), COMPARE, 0, speed);
+	  return true;
+	}
+
+      rtx geu;
+      /* Match x
+	 (compare:CCC (neg:QI (geu:QI (reg:CC_CCC FLAGS_REG) (const_int 0)))
+		      (ltu:QI (reg:CC_CCC FLAGS_REG) (const_int 0)))  */
+      if (mode == CCCmode
+	  && GET_CODE (op0) == NEG
+	  && GET_CODE (geu = XEXP (op0, 0)) == GEU
+	  && REG_P (XEXP (geu, 0))
+	  && (GET_MODE (XEXP (geu, 0)) == CCCmode
+	      || GET_MODE (XEXP (geu, 0)) == CCmode)
+	  && REGNO (XEXP (geu, 0)) == FLAGS_REG
+	  && XEXP (geu, 1) == const0_rtx
+	  && GET_CODE (op1) == LTU
+	  && REG_P (XEXP (op1, 0))
+	  && GET_MODE (XEXP (op1, 0)) == GET_MODE (XEXP (geu, 0))
+	  && REGNO (XEXP (op1, 0)) == FLAGS_REG
+	  && XEXP (op1, 1) == const0_rtx)
+	{
+	  /* This is *setcc_qi_addqi3_cconly_overflow_1_* patterns, a nop.  */
+	  *total = 0;
 	  return true;
 	}
 
       /* The embedded comparison operand is completely free.  */
-      if (!general_operand (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-	  && XEXP (x, 1) == const0_rtx)
+      if (!general_operand (op0, GET_MODE (op0)) && op1 == const0_rtx)
 	*total = 0;
 
       return false;

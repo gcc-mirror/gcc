@@ -8,5 +8,5 @@
 
 #include "p9-vec-length-8.h"
 
-/* { dg-final { scan-assembler-times {\mlxvl\M} 30 } } */
-/* { dg-final { scan-assembler-times {\mstxvl\M} 10 } } */
+/* { dg-final { scan-assembler-times {\mlxvl\M} 21 } } */
+/* { dg-final { scan-assembler-times {\mstxvl\M} 7 } } */

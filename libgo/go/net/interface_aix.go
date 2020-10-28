@@ -33,8 +33,6 @@ const _RTAX_NETMASK = 2
 const _RTAX_IFA = 5
 const _RTAX_MAX = 8
 
-const _SIOCGIFMTU = -0x3fd796aa
-
 func getIfList() ([]byte, error) {
 	needed, err := syscall.Getkerninfo(_KINFO_RT_IFLIST, 0, 0, 0)
 	if err != nil {

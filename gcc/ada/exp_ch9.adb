@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Aspects;  use Aspects;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -4089,8 +4090,17 @@ package body Exp_Ch9 is
                     Parameter_Associations => Uactuals));
          end if;
 
-         Lock_Kind := RE_Lock_Read_Only;
-
+         if Has_Aspect (Pid, Aspect_Exclusive_Functions)
+           and then
+             (No (Find_Value_Of_Aspect (Pid, Aspect_Exclusive_Functions))
+               or else
+                 Is_True (Static_Boolean (Find_Value_Of_Aspect
+                   (Pid, Aspect_Exclusive_Functions))))
+         then
+            Lock_Kind := RE_Lock;
+         else
+            Lock_Kind := RE_Lock_Read_Only;
+         end if;
       else
          Unprot_Call :=
            Make_Procedure_Call_Statement (Loc,
@@ -4949,6 +4959,18 @@ package body Exp_Ch9 is
       --  it is a ghost entity.
 
       if No (Chain) or else Is_Ignored_Ghost_Entity (Chain) then
+         return;
+
+      --  The availability of the activation chain entity does not ensure
+      --  that we have tasks to activate because it may have been declared
+      --  by the frontend to pass a required extra formal to a build-in-place
+      --  subprogram call. If we are within the scope of a protected type and
+      --  pragma Detect_Blocking is active we can assume that no tasks will be
+      --  activated; if tasks are created in a protected object and this pragma
+      --  is active then the frontend emits a warning and Program_Error is
+      --  raised at runtime.
+
+      elsif Detect_Blocking and then Within_Protected_Type (Current_Scope) then
          return;
       end if;
 
@@ -10051,6 +10073,7 @@ package body Exp_Ch9 is
       Conc_Typ : Entity_Id;
       Concval  : Node_Id;
       Ename    : Node_Id;
+      Enc_Subp : Entity_Id;
       Index    : Node_Id;
       Old_Typ  : Entity_Id;
 
@@ -10566,6 +10589,26 @@ package body Exp_Ch9 is
       loop
          Old_Typ := Scope (Old_Typ);
       end loop;
+
+      --  Obtain the innermost enclosing callable construct for use in
+      --  generating a dynamic accessibility check.
+
+      Enc_Subp := Current_Scope;
+
+      if Ekind (Enc_Subp) not in Entry_Kind | Subprogram_Kind then
+         Enc_Subp := Enclosing_Subprogram (Enc_Subp);
+      end if;
+
+      --  Generate a dynamic accessibility check on the target object
+
+      Insert_Before_And_Analyze (N,
+        Make_Raise_Program_Error (Loc,
+          Condition =>
+            Make_Op_Gt (Loc,
+              Left_Opnd  => Accessibility_Level (Name (N), Dynamic_Level),
+              Right_Opnd => Make_Integer_Literal (Loc,
+                              Scope_Depth (Enc_Subp))),
+          Reason    => PE_Accessibility_Check_Failed));
 
       --  Ada 2012 (AI05-0030): We have a dispatching requeue of the form
       --  Concval.Ename where the type of Concval is class-wide concurrent

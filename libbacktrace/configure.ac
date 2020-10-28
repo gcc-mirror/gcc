@@ -510,7 +510,7 @@ AM_CONDITIONAL(HAVE_OBJCOPY_DEBUGLINK, test "$libbacktrace_cv_objcopy_debuglink"
 
 AC_ARG_VAR(DSYMUTIL, [location of dsymutil])
 AC_CHECK_PROG(DSYMUTIL, dsymutil, dsymutil)
-AM_CONDITIONAL(HAVE_DSYMUTIL, test -n "${DSYMUTIL}")
+AM_CONDITIONAL(USE_DSYMUTIL, test -n "${DSYMUTIL}" -a "$FORMAT_FILE" = "macho.lo")
 
 AC_ARG_VAR(NM, [location of nm])
 AC_CHECK_PROG(NM, nm, nm)

@@ -128,7 +128,7 @@ propagate_comdat_group (struct symtab_node *symbol,
 	if (cgraph_node * cn = dyn_cast <cgraph_node *> (symbol2))
 	  {
 	    /* Thunks cannot call across section boundary.  */
-	    if (cn->thunk.thunk_p)
+	    if (cn->thunk)
 	      newgroup = propagate_comdat_group (symbol2, newgroup, map);
 	    /* If we see inline clone, its comdat group actually
 	       corresponds to the comdat group of the function it
@@ -344,7 +344,7 @@ ipa_comdats (void)
       if (!symbol->get_comdat_group ()
 	  && !symbol->alias
 	  && (!(fun = dyn_cast <cgraph_node *> (symbol))
-	      || !fun->thunk.thunk_p)
+	      || !fun->thunk)
 	  && symbol->real_symbol_p ())
 	{
 	  tree *val = map.get (symbol);

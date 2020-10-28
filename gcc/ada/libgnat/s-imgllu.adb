@@ -29,45 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Unsigned_Types; use System.Unsigned_Types;
+--  This package does not require a body, since it is an instantiation. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-package body System.Img_LLU is
-
-   ------------------------------
-   -- Image_Long_Long_Unsigned --
-   ------------------------------
-
-   procedure Image_Long_Long_Unsigned
-     (V : System.Unsigned_Types.Long_Long_Unsigned;
-      S : in out String;
-      P : out Natural)
-   is
-      pragma Assert (S'First = 1);
-   begin
-      S (1) := ' ';
-      P := 1;
-      Set_Image_Long_Long_Unsigned (V, S, P);
-   end Image_Long_Long_Unsigned;
-
-   ----------------------------------
-   -- Set_Image_Long_Long_Unsigned --
-   ----------------------------------
-
-   procedure Set_Image_Long_Long_Unsigned
-     (V : Long_Long_Unsigned;
-      S : in out String;
-      P : in out Natural)
-   is
-   begin
-      if V >= 10 then
-         Set_Image_Long_Long_Unsigned (V / 10, S, P);
-         P := P + 1;
-         S (P) := Character'Val (48 + (V rem 10));
-
-      else
-         P := P + 1;
-         S (P) := Character'Val (48 + V);
-      end if;
-   end Set_Image_Long_Long_Unsigned;
-
-end System.Img_LLU;
+pragma No_Body;

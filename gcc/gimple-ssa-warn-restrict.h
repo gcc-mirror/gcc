@@ -22,5 +22,8 @@
 
 extern int check_bounds_or_overlap (gimple *, tree, tree, tree, tree,
 				    bool = false, bool = true);
+extern int check_bounds_or_overlap (class range_query *, gimple *,
+				    tree, tree, tree, tree,
+				    bool = false, bool = true);
 
 #endif /* GIMPLE_SSA_WARN_RESTRICT_H */

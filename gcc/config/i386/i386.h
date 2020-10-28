@@ -203,6 +203,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SERIALIZE_P(x) TARGET_ISA2_SERIALIZE_P(x)
 #define TARGET_TSXLDTRK	TARGET_ISA2_TSXLDTRK
 #define TARGET_TSXLDTRK_P(x) TARGET_ISA2_TSXLDTRK_P(x)
+#define TARGET_AMX_TILE TARGET_ISA2_AMX_TILE
+#define TARGET_AMX_TILE_P(x) TARGET_ISA2_AMX_TILE(x)
+#define TARGET_AMX_INT8 TARGET_ISA2_AMX_INT8
+#define TARGET_AMX_INT8_P(x) TARGET_ISA2_AMX_INT8(x)
+#define TARGET_AMX_BF16 TARGET_ISA2_AMX_BF16
+#define TARGET_AMX_BF16_P(x) TARGET_ISA2_AMX_BF16(x)
+#define TARGET_UINTR	TARGET_ISA2_UINTR
+#define TARGET_UINTR_P(x) TARGET_ISA2_UINTR_P(x)
+#define TARGET_HRESET	    TARGET_ISA2_HRESET
+#define TARGET_HRESET_P(x)  TARGET_ISA2_HRESET_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -1261,6 +1271,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FMA4_VEC_FLOAT_MODE_P(MODE) \
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
 		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
+
+#define VALID_BCST_MODE_P(MODE)			\
+  ((MODE) == SFmode || (MODE) == DFmode		\
+   || (MODE) == SImode || (MODE) == DImode)
 
 /* It is possible to write patterns to move flags; but until someone
    does it,  */
@@ -2427,7 +2441,7 @@ const wide_int_bitmask PTA_AVX512F (HOST_WIDE_INT_1U << 40);
 const wide_int_bitmask PTA_AVX512ER (HOST_WIDE_INT_1U << 41);
 const wide_int_bitmask PTA_AVX512PF (HOST_WIDE_INT_1U << 42);
 const wide_int_bitmask PTA_AVX512CD (HOST_WIDE_INT_1U << 43);
-/* Hole after PTA_MPX was removed.  */
+const wide_int_bitmask PTA_NO_TUNE (HOST_WIDE_INT_1U << 44);
 const wide_int_bitmask PTA_SHA (HOST_WIDE_INT_1U << 45);
 const wide_int_bitmask PTA_PREFETCHWT1 (HOST_WIDE_INT_1U << 46);
 const wide_int_bitmask PTA_CLFLUSHOPT (HOST_WIDE_INT_1U << 47);
@@ -2466,6 +2480,21 @@ const wide_int_bitmask PTA_ENQCMD (0, HOST_WIDE_INT_1U << 15);
 const wide_int_bitmask PTA_CLDEMOTE (0, HOST_WIDE_INT_1U << 16);
 const wide_int_bitmask PTA_SERIALIZE (0, HOST_WIDE_INT_1U << 17);
 const wide_int_bitmask PTA_TSXLDTRK (0, HOST_WIDE_INT_1U << 18);
+const wide_int_bitmask PTA_AMX_TILE(0, HOST_WIDE_INT_1U << 19);
+const wide_int_bitmask PTA_AMX_INT8(0, HOST_WIDE_INT_1U << 20);
+const wide_int_bitmask PTA_AMX_BF16(0, HOST_WIDE_INT_1U << 21);
+const wide_int_bitmask PTA_UINTR (0, HOST_WIDE_INT_1U << 22);
+const wide_int_bitmask PTA_HRESET(0, HOST_WIDE_INT_1U << 23);
+
+const wide_int_bitmask PTA_X86_64_BASELINE = PTA_64BIT | PTA_MMX | PTA_SSE
+  | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR;
+const wide_int_bitmask PTA_X86_64_V2 = (PTA_X86_64_BASELINE & (~PTA_NO_SAHF))
+  | PTA_CX16 | PTA_POPCNT | PTA_SSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_SSSE3;
+const wide_int_bitmask PTA_X86_64_V3 = PTA_X86_64_V2
+  | PTA_AVX | PTA_AVX2 | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_LZCNT
+  | PTA_MOVBE | PTA_XSAVE;
+const wide_int_bitmask PTA_X86_64_V4 = PTA_X86_64_V3
+  | PTA_AVX512F | PTA_AVX512BW | PTA_AVX512CD | PTA_AVX512DQ | PTA_AVX512VL;
 
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
@@ -2499,9 +2528,10 @@ const wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_CLWB | PTA_AVX512VP2INTERSECT;
 const wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_COOPERLAKE | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_ENQCMD | PTA_CLDEMOTE
-  | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK;
+  | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK | PTA_AMX_TILE
+  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR;
 const wide_int_bitmask PTA_ALDERLAKE = PTA_SKYLAKE | PTA_CLDEMOTE | PTA_PTWRITE
-  | PTA_WAITPKG | PTA_SERIALIZE;
+  | PTA_WAITPKG | PTA_SERIALIZE | PTA_HRESET;
 const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
   | PTA_AVX512F | PTA_AVX512CD;
 const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;

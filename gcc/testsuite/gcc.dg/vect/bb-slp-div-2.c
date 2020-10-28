@@ -11,4 +11,4 @@ f (void)
   x[3] += y[3] / z[3] * 2;
 }
 
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target vect_int } } } */
+/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" { target vect_int } } } */

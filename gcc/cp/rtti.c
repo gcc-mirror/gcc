@@ -169,8 +169,7 @@ init_rtti_processing (void)
   tree type_info_type;
 
   push_nested_namespace (std_node);
-  type_info_type = xref_tag (class_type, get_identifier ("type_info"),
-			     /*tag_scope=*/ts_current, false);
+  type_info_type = xref_tag (class_type, get_identifier ("type_info"));
   pop_nested_namespace (std_node);
   const_type_info_type_node
     = cp_build_qualified_type (type_info_type, TYPE_QUAL_CONST);
@@ -761,9 +760,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 
 	      push_abi_namespace ();
 	      tinfo_ptr = xref_tag (class_type,
-				    get_identifier ("__class_type_info"),
-				    /*tag_scope=*/ts_current, false);
-
+				    get_identifier ("__class_type_info"));
 	      tinfo_ptr = build_pointer_type
 		(cp_build_qualified_type
 		 (tinfo_ptr, TYPE_QUAL_CONST));
@@ -948,10 +945,8 @@ tinfo_base_init (tinfo_s *ti, tree target)
   vtable_ptr = ti->vtable;
   if (!vtable_ptr)
     {
-      tree real_type;
       push_abi_namespace ();
-      real_type = xref_tag (class_type, ti->name,
-			    /*tag_scope=*/ts_current, false);
+      tree real_type = xref_tag (class_type, ti->name);
       pop_abi_namespace ();
 
       if (!COMPLETE_TYPE_P (real_type))

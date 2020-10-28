@@ -30,32 +30,29 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for supporting the Image attribute for
---  unsigned (modular) integer types larger than Size Unsigned'Size, and also
---  for conversion operations required in Text_IO.Modular_IO for such types.
+--  modular integer types larger than Unsigned, and also for conversion
+--  operations required in Text_IO.Modular_IO for such types.
 
+with System.Image_U;
 with System.Unsigned_Types;
 
 package System.Img_LLU is
    pragma Pure;
 
-   procedure Image_Long_Long_Unsigned
-     (V : System.Unsigned_Types.Long_Long_Unsigned;
-      S : in out String;
-      P : out Natural);
-   pragma Inline (Image_Long_Long_Unsigned);
+   subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
 
-   --  Computes Long_Long_Unsigned'Image (V) and stores the result in
-   --  S (1 .. P) setting the resulting value of P. The caller guarantees
-   --  that S is long enough to hold the result, and that S'First is 1.
+   package Impl is new Image_U (Long_Long_Unsigned);
+
+   procedure Image_Long_Long_Unsigned
+     (V : Long_Long_Unsigned;
+      S : in out String;
+      P : out Natural)
+     renames Impl.Image_Unsigned;
 
    procedure Set_Image_Long_Long_Unsigned
-     (V : System.Unsigned_Types.Long_Long_Unsigned;
+     (V : Long_Long_Unsigned;
       S : in out String;
-      P : in out Natural);
-   --  Stores the image of V in S starting at S (P + 1), P is updated to point
-   --  to the last character stored. The value stored is identical to the value
-   --  of Long_Long_Unsigned'Image (V) except that no leading space is stored.
-   --  The caller guarantees that S is long enough to hold the result. S need
-   --  not have a lower bound of 1.
+      P : in out Natural)
+     renames Impl.Set_Image_Unsigned;
 
 end System.Img_LLU;

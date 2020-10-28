@@ -578,16 +578,35 @@ fix = {
 };
 
 /*
+ *  inttypes.h STDC_FORMAT_MACROS
+ */
+fix = {
+    hackname  = aix_inttypes;
+    mach      = "*-*-aix*";
+    files     = "sys/inttypes.h";
+    select    = "#if !defined\\(__cplusplus\\) \\|\\| defined\\(__STDC_FORMAT_MACROS\\)";
+    c_fix     = format;
+    c_fix_arg = "#if 1";
+    test_text = "#if !defined(__cplusplus) || defined(__STDC_FORMAT_MACROS)";
+};
+
+/*
  *  malloc.h on AIX6 uses XLC++ specific builtin syntax
  */
 fix = {
     hackname  = aix_malloc;
     mach      = "*-*-aix*";
     files     = "malloc.h";
-    select    = "#ifdef __cplusplus";
+    select    = "#ifdef __cplusplus\n"
+                "extern \"C\" \\{\n"
+                "[ \t]extern \"builtin\" char \\*__alloca \\(size_t\\);";
     c_fix     = format;
-    c_fix_arg = "#if (defined(__cplusplus) && defined(__IBMCPP__))";
-    test_text = "#ifdef __cplusplus";
+    c_fix_arg = "#if (defined(__cplusplus) && defined(__IBMCPP__))\n"
+                "extern \"C\" {\n"
+	"\textern \"builtin\" char *__alloca (size_t);";
+    test_text = "#ifdef __cplusplus\n"
+                "extern \"C\" {\n"
+	"\textern \"builtin\" char *__alloca (size_t);";
 };
 
 /*

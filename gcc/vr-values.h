@@ -21,28 +21,19 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_VR_VALUES_H
 
 #include "value-range-equiv.h"
+#include "value-query.h"
 
 // Abstract class to return a range for a given SSA.
 
-class range_query
-{
-public:
-  virtual const value_range_equiv *get_value_range (const_tree,
-						    gimple * = NULL) = 0;
-  virtual ~range_query () { }
-};
-
 // Class to simplify a statement using range information.
-//
-// The constructor takes a full vr_values, but all it needs is
-// get_value_range() from it.  This class could be made to work with
-// any range repository.
 
-class simplify_using_ranges : public range_query
+class simplify_using_ranges
 {
 public:
-  simplify_using_ranges (class range_query *);
+  simplify_using_ranges (class range_query *query = NULL);
   ~simplify_using_ranges ();
+  void set_range_query (class range_query *q) { query = q; }
+
   bool simplify (gimple_stmt_iterator *);
 
   // ?? These should be cleaned, merged, and made private.
@@ -53,8 +44,6 @@ public:
 						bool *, bool *);
 
 private:
-  const value_range_equiv *get_value_range (const_tree op,
-					    gimple *stmt = NULL) OVERRIDE;
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_div_or_mod_using_ranges (gimple_stmt_iterator *, gimple *);
   bool simplify_abs_using_ranges (gimple_stmt_iterator *, gimple *);
@@ -89,7 +78,7 @@ private:
 
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
-  class range_query *store;
+  class range_query *query;
 };
 
 /* The VR_VALUES class holds the current view of range information
@@ -112,7 +101,12 @@ class vr_values : public range_query
   vr_values (void);
   ~vr_values (void);
 
-  const value_range_equiv *get_value_range (const_tree, gimple * = NULL);
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt) OVERRIDE;
+  virtual tree value_of_expr (tree, gimple * = NULL) OVERRIDE;
+  virtual tree value_on_edge (edge, tree) OVERRIDE;
+  virtual tree value_of_stmt (gimple *, tree = NULL_TREE) OVERRIDE;
+  virtual const value_range_equiv *get_value_range (const_tree,
+						    gimple * = NULL) OVERRIDE;
   void set_vr_value (tree, value_range_equiv *);
   value_range_equiv *swap_vr_value (tree, value_range_equiv *);
 
@@ -136,9 +130,9 @@ class vr_values : public range_query
 
   /* Allocate a new value_range object.  */
   value_range_equiv *allocate_value_range_equiv (void)
-    { return vrp_value_range_pool.allocate (); }
+    { return range_query::allocate_value_range_equiv (); }
   void free_value_range (value_range_equiv *vr)
-    { vrp_value_range_pool.remove (vr); }
+    { free_value_range_equiv (vr); }
 
  private:
   value_range_equiv *get_lattice_entry (const_tree);
@@ -154,9 +148,7 @@ class vr_values : public range_query
   void extract_range_from_comparison (value_range_equiv *, gimple *);
   void vrp_visit_assignment_or_call (gimple*, tree *, value_range_equiv *);
   void vrp_visit_switch_stmt (gswitch *, edge *);
-
-  /* Allocation pools for value_range objects.  */
-  object_allocator<value_range_equiv> vrp_value_range_pool;
+  bool extract_range_builtin (value_range_equiv *, gimple *);
 
   /* This probably belongs in the lattice rather than in here.  */
   bool values_propagated;
@@ -176,17 +168,10 @@ class vr_values : public range_query
   simplify_using_ranges simplifier;
 };
 
-inline const value_range_equiv *
-simplify_using_ranges::get_value_range (const_tree op, gimple *stmt)
-{
-  return store->get_value_range (op, stmt);
-}
-
 extern tree get_output_for_vrp (gimple *);
 
-// FIXME: Move this to tree-vrp.c.
-void simplify_cond_using_ranges_2 (class vr_values *, gcond *);
-
+extern bool range_fits_type_p (const value_range *vr,
+			       unsigned dest_precision, signop dest_sgn);
 extern bool bounds_of_var_in_loop (tree *min, tree *max, range_query *,
 				   class loop *loop, gimple *stmt, tree var);
 

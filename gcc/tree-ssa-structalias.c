@@ -4857,6 +4857,14 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	 point for reachable memory of their arguments.  */
       else if (flags & (ECF_PURE|ECF_LOOPING_CONST_OR_PURE))
 	handle_pure_call (t, &rhsc);
+      /* If the call is to a replaceable operator delete and results
+	 from a delete expression as opposed to a direct call to
+	 such operator, then the effects for PTA (in particular
+	 the escaping of the pointer) can be ignored.  */
+      else if (fndecl
+	       && DECL_IS_OPERATOR_DELETE_P (fndecl)
+	       && gimple_call_from_new_or_delete (t))
+	;
       else
 	handle_rhs_call (t, &rhsc);
       if (gimple_call_lhs (t))
@@ -7964,7 +7972,7 @@ static bool
 associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
   if ((node->alias
-       || (node->thunk.thunk_p
+       || (node->thunk
 	   && ! node->inlined_to))
       && node->analyzed
       && !node->ifunc_resolver)
@@ -8129,6 +8137,10 @@ ipa_pta_execute (void)
       fprintf (dump_file, "\n");
       from = constraints.length ();
     }
+
+  /* FIXME: Clone materialization is not preserving stmt references.  */
+  FOR_EACH_DEFINED_FUNCTION (node)
+    node->clear_stmts_in_references ();
 
   /* Build the constraints.  */
   FOR_EACH_DEFINED_FUNCTION (node)
