@@ -1486,6 +1486,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_TASK_REDUCTION:
+	case OMP_CLAUSE_ALLOCATE:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -1653,6 +1654,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_ALIGNED:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_ALLOCATE:
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE_TO:

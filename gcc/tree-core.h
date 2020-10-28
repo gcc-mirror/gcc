@@ -276,6 +276,9 @@ enum omp_clause_code {
   /* OpenMP clause: aligned (variable-list[:alignment]).  */
   OMP_CLAUSE_ALIGNED,
 
+  /* OpenMP clause: allocate ([allocator:]variable-list).  */
+  OMP_CLAUSE_ALLOCATE,
+
   /* OpenMP clause: depend ({in,out,inout}:variable-list).  */
   OMP_CLAUSE_DEPEND,
 

@@ -34127,6 +34127,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'a':
 	  if (!strcmp ("aligned", p))
 	    result = PRAGMA_OMP_CLAUSE_ALIGNED;
+	  else if (!strcmp ("allocate", p))
+	    result = PRAGMA_OMP_CLAUSE_ALLOCATE;
 	  else if (!strcmp ("async", p))
 	    result = PRAGMA_OACC_CLAUSE_ASYNC;
 	  else if (!strcmp ("attach", p))
@@ -36282,6 +36284,47 @@ cp_parser_omp_clause_aligned (cp_parser *parser, tree list)
   return nlist;
 }
 
+/* OpenMP 5.0:
+   allocate ( variable-list )
+   allocate ( expression : variable-list )  */
+
+static tree
+cp_parser_omp_clause_allocate (cp_parser *parser, tree list)
+{
+  tree nlist, c, allocator = NULL_TREE;
+  bool colon;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  cp_parser_parse_tentatively (parser);
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
+  parser->colon_corrects_to_scope_p = false;
+  allocator = cp_parser_assignment_expression (parser);
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+    {
+      cp_parser_parse_definitely (parser);
+      cp_lexer_consume_token (parser->lexer);
+      if (allocator == error_mark_node)
+	allocator = NULL_TREE;
+    }
+  else
+    {
+      cp_parser_abort_tentative_parse (parser);
+      allocator = NULL_TREE;
+    }
+
+  nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_ALLOCATE, list,
+					  &colon);
+
+  for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
+    OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
+
+  return nlist;
+}
+
 /* OpenMP 2.5:
    lastprivate ( variable-list )
 
@@ -37598,6 +37641,10 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_ALIGNED:
 	  clauses = cp_parser_omp_clause_aligned (parser, clauses);
 	  c_name = "aligned";
+	  break;
+	case PRAGMA_OMP_CLAUSE_ALLOCATE:
+	  clauses = cp_parser_omp_clause_allocate (parser, clauses);
+	  c_name = "allocate";
 	  break;
 	case PRAGMA_OMP_CLAUSE_LINEAR:
 	  {
@@ -39618,6 +39665,7 @@ cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDER))
 
 static tree
@@ -39902,6 +39950,7 @@ cp_parser_omp_sections_scope (cp_parser *parser)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
 static tree
@@ -39952,6 +40001,7 @@ cp_parser_omp_sections (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COPYIN)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PROC_BIND))
 
 static tree
@@ -40097,6 +40147,7 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COPYPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
 static tree
@@ -40129,6 +40180,7 @@ cp_parser_omp_single (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MERGEABLE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
 
 static tree
@@ -40193,7 +40245,8 @@ cp_parser_omp_taskyield (cp_parser *parser, cp_token *pragma_tok)
    # pragma omp taskgroup taskgroup-clause[optseq] new-line  */
 
 #define OMP_TASKGROUP_CLAUSE_MASK				\
-	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TASK_REDUCTION))
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TASK_REDUCTION))
 
 static tree
 cp_parser_omp_taskgroup (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
@@ -40302,6 +40355,7 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
 
 static tree
@@ -40400,6 +40454,7 @@ cp_parser_omp_distribute (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_TEAMS)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULT))
 
 static tree
@@ -40806,6 +40861,7 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULTMAP)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR))
 
 static bool
@@ -42955,6 +43011,7 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MERGEABLE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
 

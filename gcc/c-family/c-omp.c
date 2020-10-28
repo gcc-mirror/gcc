@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "gimplify.h"
 #include "langhooks.h"
+#include "bitmap.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
@@ -1575,6 +1576,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
   tree next, c;
   enum c_omp_clause_split s;
   int i;
+  bool has_dup_allocate = false;
 
   for (i = 0; i < C_OMP_CLAUSE_SPLIT_COUNT; i++)
     cclauses[i] = NULL;
@@ -2198,11 +2200,178 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_FOR;
 	  break;
+	/* Allocate clause is allowed on target, teams, distribute, parallel,
+	   for, sections and taskloop.  Distribute it to all.  */
+	case OMP_CLAUSE_ALLOCATE:
+	  s = C_OMP_CLAUSE_SPLIT_COUNT;
+	  for (i = 0; i < C_OMP_CLAUSE_SPLIT_COUNT; i++)
+	    {
+	      switch (i)
+		{
+		case C_OMP_CLAUSE_SPLIT_TARGET:
+		  if ((mask & (OMP_CLAUSE_MASK_1
+			       << PRAGMA_OMP_CLAUSE_MAP)) == 0)
+		    continue;
+		  break;
+		case C_OMP_CLAUSE_SPLIT_TEAMS:
+		  if ((mask & (OMP_CLAUSE_MASK_1
+			       << PRAGMA_OMP_CLAUSE_NUM_TEAMS)) == 0)
+		    continue;
+		  break;
+		case C_OMP_CLAUSE_SPLIT_DISTRIBUTE:
+		  if ((mask & (OMP_CLAUSE_MASK_1
+			       << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)) == 0)
+		    continue;
+		  break;
+		case C_OMP_CLAUSE_SPLIT_PARALLEL:
+		  if ((mask & (OMP_CLAUSE_MASK_1
+			       << PRAGMA_OMP_CLAUSE_NUM_THREADS)) == 0)
+		    continue;
+		  break;
+		case C_OMP_CLAUSE_SPLIT_FOR:
+		  STATIC_ASSERT (C_OMP_CLAUSE_SPLIT_SECTIONS
+				 == C_OMP_CLAUSE_SPLIT_FOR
+				 && (C_OMP_CLAUSE_SPLIT_TASKLOOP
+				     == C_OMP_CLAUSE_SPLIT_FOR)
+				 && (C_OMP_CLAUSE_SPLIT_LOOP
+				     == C_OMP_CLAUSE_SPLIT_FOR));
+		  if (code == OMP_SECTIONS)
+		    break;
+		  if ((mask & (OMP_CLAUSE_MASK_1
+			       << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
+		    break;
+		  if ((mask & (OMP_CLAUSE_MASK_1
+			       << PRAGMA_OMP_CLAUSE_NOGROUP)) != 0)
+		    break;
+		  continue;
+		case C_OMP_CLAUSE_SPLIT_SIMD:
+		  continue;
+		default:
+		  gcc_unreachable ();
+		}
+	      if (s != C_OMP_CLAUSE_SPLIT_COUNT)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_ALLOCATE);
+		  OMP_CLAUSE_DECL (c)
+		    = OMP_CLAUSE_DECL (clauses);
+		  OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+		    = OMP_CLAUSE_ALLOCATE_ALLOCATOR (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[s];
+		  cclauses[s] = c;
+		  has_dup_allocate = true;
+		}
+	      s = (enum c_omp_clause_split) i;
+	    }
+	  gcc_assert (s != C_OMP_CLAUSE_SPLIT_COUNT);
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
       OMP_CLAUSE_CHAIN (clauses) = cclauses[s];
       cclauses[s] = clauses;
+    }
+
+  if (has_dup_allocate)
+    {
+      bool need_prune = false;
+      bitmap_obstack_initialize (NULL);
+      for (i = 0; i < C_OMP_CLAUSE_SPLIT_SIMD - (code == OMP_LOOP); i++)
+	if (cclauses[i])
+	  {
+	    bitmap_head allocate_head;
+	    bitmap_initialize (&allocate_head, &bitmap_default_obstack);
+	    for (c = cclauses[i]; c; c = OMP_CLAUSE_CHAIN (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE
+		  && DECL_P (OMP_CLAUSE_DECL (c)))
+		bitmap_set_bit (&allocate_head,
+				DECL_UID (OMP_CLAUSE_DECL (c)));
+	    for (c = cclauses[i]; c; c = OMP_CLAUSE_CHAIN (c))
+	      switch (OMP_CLAUSE_CODE (c))
+		{
+		case OMP_CLAUSE_PRIVATE:
+		case OMP_CLAUSE_FIRSTPRIVATE:
+		case OMP_CLAUSE_LASTPRIVATE:
+		case OMP_CLAUSE_LINEAR:
+		case OMP_CLAUSE_REDUCTION:
+		case OMP_CLAUSE_IN_REDUCTION:
+		case OMP_CLAUSE_TASK_REDUCTION:
+		  if (DECL_P (OMP_CLAUSE_DECL (c)))
+		    bitmap_clear_bit (&allocate_head,
+				      DECL_UID (OMP_CLAUSE_DECL (c)));
+		  break;
+		default:
+		  break;
+		}
+	    for (c = cclauses[i]; c; c = OMP_CLAUSE_CHAIN (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE
+		  && DECL_P (OMP_CLAUSE_DECL (c))
+		  && bitmap_bit_p (&allocate_head,
+				   DECL_UID (OMP_CLAUSE_DECL (c))))
+		{
+		  /* Mark allocate clauses which don't have corresponding
+		     explicit data sharing clause.  */
+		  OMP_CLAUSE_ALLOCATE_COMBINED (c) = 1;
+		  need_prune = true;
+		}
+	  }
+      bitmap_obstack_release (NULL);
+      if (need_prune)
+	{
+	  /* At least one allocate clause has been marked.  Walk all the
+	     duplicated allocate clauses in sync.  If it is marked in all
+	     constituent constructs, diagnose it as invalid and remove
+	     them.  Otherwise, remove all marked inner clauses inside
+	     a construct that doesn't have them marked.  Keep the outer
+	     marked ones, because some clause duplication is done only
+	     during gimplification.  */
+	  tree *p[C_OMP_CLAUSE_SPLIT_COUNT];
+	  for (i = 0; i < C_OMP_CLAUSE_SPLIT_COUNT; i++)
+	    if (cclauses[i] == NULL_TREE
+		|| i == C_OMP_CLAUSE_SPLIT_SIMD
+		|| (i == C_OMP_CLAUSE_SPLIT_LOOP && code == OMP_LOOP))
+	      p[i] = NULL;
+	    else
+	      p[i] = &cclauses[i];
+	  do
+	    {
+	      int j = -1;
+	      tree seen = NULL_TREE;
+	      for (i = C_OMP_CLAUSE_SPLIT_COUNT - 1; i >= 0; i--)
+		if (p[i])
+		  {
+		    while (*p[i]
+			   && OMP_CLAUSE_CODE (*p[i]) != OMP_CLAUSE_ALLOCATE)
+		      p[i] = &OMP_CLAUSE_CHAIN (*p[i]);
+		    if (*p[i] == NULL_TREE)
+		      {
+			i = C_OMP_CLAUSE_SPLIT_COUNT;
+			break;
+		      }
+		    if (!OMP_CLAUSE_ALLOCATE_COMBINED (*p[i]) && j == -1)
+		      j = i;
+		    seen = *p[i];
+		  }
+	      if (i == C_OMP_CLAUSE_SPLIT_COUNT)
+		break;
+	      if (j == -1)
+		error_at (OMP_CLAUSE_LOCATION (seen),
+			  "%qD specified in %<allocate%> clause but not in "
+			  "an explicit privatization clause",
+			  OMP_CLAUSE_DECL (seen));
+	      for (i = 0; i < C_OMP_CLAUSE_SPLIT_COUNT; i++)
+		if (p[i])
+		  {
+		    if (i > j)
+		      /* Remove.  */
+		      *p[i] = OMP_CLAUSE_CHAIN (*p[i]);
+		    else
+		      /* Keep.  */
+		      p[i] = &OMP_CLAUSE_CHAIN (*p[i]);
+		  }
+	    }
+	  while (1);
+	}
     }
 
   if (!flag_checking)
