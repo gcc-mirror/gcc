@@ -1541,12 +1541,45 @@ execute_oacc_device_lower ()
       flag_openacc_dims = (char *)&flag_openacc_dims;
     }
 
+  bool is_oacc_parallel
+    = (lookup_attribute ("oacc parallel",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
   bool is_oacc_kernels
     = (lookup_attribute ("oacc kernels",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  bool is_oacc_serial
+    = (lookup_attribute ("oacc serial",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  int fn_level = oacc_fn_attrib_level (attrs);
+  bool is_oacc_routine = (fn_level >= 0);
+  gcc_checking_assert (is_oacc_parallel
+		       + is_oacc_kernels
+		       + is_oacc_serial
+		       + is_oacc_routine
+		       == 1);
+
   bool is_oacc_kernels_parallelized
     = (lookup_attribute ("oacc kernels parallelized",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  if (is_oacc_kernels_parallelized)
+    gcc_checking_assert (is_oacc_kernels);
+
+  if (dump_file)
+    {
+      if (is_oacc_parallel)
+	fprintf (dump_file, "Function is OpenACC parallel offload\n");
+      else if (is_oacc_kernels)
+	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
+		 (is_oacc_kernels_parallelized
+		  ? "parallelized" : "unparallelized"));
+      else if (is_oacc_serial)
+	fprintf (dump_file, "Function is OpenACC serial offload\n");
+      else if (is_oacc_routine)
+	fprintf (dump_file, "Function is OpenACC routine level %d\n",
+		 fn_level);
+      else
+	gcc_unreachable ();
+    }
 
   /* Unparallelized OpenACC kernels constructs must get launched as 1 x 1 x 1
      kernels, so remove the parallelism dimensions function attributes
@@ -1559,22 +1592,10 @@ execute_oacc_device_lower ()
 
   /* Discover, partition and process the loops.  */
   oacc_loop *loops = oacc_loop_discovery ();
-  int fn_level = oacc_fn_attrib_level (attrs);
 
-  if (dump_file)
-    {
-      if (fn_level >= 0)
-	fprintf (dump_file, "Function is OpenACC routine level %d\n",
-		 fn_level);
-      else if (is_oacc_kernels)
-	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
-		 (is_oacc_kernels_parallelized
-		  ? "parallelized" : "unparallelized"));
-      else
-	fprintf (dump_file, "Function is OpenACC parallel offload\n");
-    }
-
-  unsigned outer_mask = fn_level >= 0 ? GOMP_DIM_MASK (fn_level) - 1 : 0;
+  unsigned outer_mask = 0;
+  if (is_oacc_routine)
+    outer_mask = GOMP_DIM_MASK (fn_level) - 1;
   unsigned used_mask = oacc_loop_partition (loops, outer_mask);
   /* OpenACC kernels constructs are special: they currently don't use the
      generic oacc_loop infrastructure and attribute/dimension processing.  */

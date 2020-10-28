@@ -1,5 +1,5 @@
 ! Check offloaded function's attributes and classification for OpenACC
-! parallel.
+! serial.
 
 ! { dg-additional-options "-O2" }
 ! { dg-additional-options "-fopt-info-optimized-omp" }
@@ -14,18 +14,18 @@ program main
 
   call setup(a, b)
 
-  !$acc parallel loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC gang vector loop parallelism" }
+  !$acc serial loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC gang vector loop parallelism" }
   do i = 0, n - 1
      c(i) = a(i) + b(i)
   end do
-  !$acc end parallel loop
+  !$acc end serial loop
 end program main
 
 ! Check the offloaded function's attributes.
-! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc parallel, omp target entrypoint\\)\\)" 1 "ompexp" } }
+! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc serial, omp target entrypoint\\)\\)" 1 "ompexp" } }
 
 ! Check the offloaded function's classification and compute dimensions (will
 ! always be 1 x 1 x 1 for non-offloading compilation).
-! { dg-final { scan-tree-dump-times "(?n)Function is OpenACC parallel offload" 1 "oaccdevlow" } }
+! { dg-final { scan-tree-dump-times "(?n)Function is OpenACC serial offload" 1 "oaccdevlow" } }
 ! { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccdevlow" } }
-! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc parallel, omp target entrypoint\\)\\)" 1 "oaccdevlow" } }
+! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc serial, omp target entrypoint\\)\\)" 1 "oaccdevlow" } }
