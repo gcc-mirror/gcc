@@ -1769,21 +1769,31 @@ GLIBCXX_3.4.21 {
 
     # ABI-tagged stringstreams
 #   _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*;
-    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOSa*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKNS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_Openmode;
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*__xfer_bufptrs*;
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[a1346789]*;
 #   _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]*;
-    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOSa*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKNS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_Openmode;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
 #   _ZNSt7__cxx1119basic_istringstreamI[cw]St11char_traitsI[cw]*;
 #   _ZNSt7__cxx1119basic_ostringstreamI[cw]St11char_traitsI[cw]*;
-    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]E[ORS]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOSa*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKNS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_Openmode;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
     _ZNKSt7__cxx1115basic_stringbuf*;
-    _ZNKSt7__cxx1118basic_stringstream*;
+    _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
+    _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE5rdbufEv;
     _ZNKSt7__cxx1119basic_istringstream*;
     _ZNKSt7__cxx1119basic_ostringstream*;
     _ZT[ISTV]NSt7__cxx1115basic_stringbuf*;
@@ -2325,6 +2335,87 @@ GLIBCXX_3.4.29 {
     # std::__throw_bad_array_new_length()
     _ZSt28__throw_bad_array_new_lengthv;
 
+    # basic_stringbuf::basic_stringbuf(allocator const&)
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC1ERKS3_;
+
+    # basic_stringbuf::basic_stringbuf(ios_base::openmode, allocator const&)
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC1ESt13_Ios_OpenmodeRKS3;
+
+    # basic_stringbuf::basic_stringbuf(basic_string&&, ios_base::openmode)
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC1EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+
+    # basic_stringbuf::basic_stringbuf(basic_stringbuf&&, allocator const&)
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaIcEEC1EOS4_RKS3_;
+
+    # basic_stringbuf::get_allocator()
+    _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE13get_allocatorEv;
+
+    # basic_stringbuf::view()
+    _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+
+    # basic_istringstream::basic_istringstream(basic_string&&, ios_base::openmode)
+    _ZNSt7__cxx1119basic_istringstreamI[cw]St11char_traitsI[cw]ESaIcEEC1EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+
+    # basic_istringstream::basic_istringstream(ios_base::openmode, allocator const&)
+    _ZNSt7__cxx1119basic_istringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC1ESt13_Ios_OpenmodeRKS3_;
+
+    # basic_istringstream::view()
+    _ZNKSt7__cxx1119basic_istringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+
+    # basic_ostringstream::basic_ostringstream(basic_string&&, ios_base::openmode)
+    _ZNSt7__cxx1119basic_ostringstreamI[cw]St11char_traitsI[cw]ESaIcEEC1EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+
+    # basic_ostringstream::basic_ostringstream(ios_base::openmode, allocator const&)
+    _ZNSt7__cxx1119basic_ostringstreamI[cw]St11char_traitsI[cw]ESaIcEEC1ESt13_Ios_OpenmodeRKS3_;
+
+    # basic_ostringstream::view()
+    _ZNKSt7__cxx1119basic_ostringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+
+    # basic_stringstream::basic_stringstream(basic_string&&, ios_base::openmode)
+    _ZNSt7__cxx1119basic_stringstreamI[cw]St11char_traitsI[cw]ESaIcEEC1EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+
+    # basic_stringstream::basic_stringstream(ios_base::openmode, allocator const&)
+    _ZNSt7__cxx1119basic_stringstreamI[cw]St11char_traitsI[cw]ESaIcEEC1ESt13_Ios_OpenmodeRKS3_;
+
+    # basic_stringstream::view()
+    _ZNKSt7__cxx1119basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+
+    # basic_stringbuf::basic_stringbuf(allocator const&)
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKS3_;
+
+    # basic_stringbuf::basic_stringbuf(ios_base::openmode, allocator const&)
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_OpenmodeRKS3_;
+
+    # basic_stringbuf::basic_stringbuf(basic_string&&, ios_base::openmode)
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+
+    # basic_stringbuf::basic_stringbuf(basic_stringbuf&&, allocator const&)
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_RKS3_;
+
+    # basic_stringbuf::get_allocator()
+    _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE13get_allocatorEv;
+
+    # basic_stringbuf::view()
+    _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+
+    # basic_istringstream::basic_istringstream(basic_string&&, ios_base::openmode)
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+
+    # basic_[io]stringstream::basic_[io]stringstream(ios_base::openmode, allocator const&)
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_OpenmodeRKS3_;
+
+    # basic_istringstream::view()
+    _ZNKSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+
+    # basic_stringstream::basic_stringstream(basic_string&&, ios_base::openmode)
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
+
+    # basic_stringstream::basic_stringstream(ios_base::openmode, allocator const&)
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_OpenmodeRKS3_;
+
+    # basic_stringstream::view()
+    _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+
 } GLIBCXX_3.4.28;
 
 # Symbols in the support library (libsupc++) have their own tag.
@@ -2624,15 +2715,6 @@ CXXABI_1.3.12 {
     _ZTIPKDu;
 
 } CXXABI_1.3.11;
-
-CXXABI_1.3.13 {
-
-    # std::exception_ptr::_M_addref()
-    _ZNSt15__exception_ptr13exception_ptr9_M_addrefEv;
-    # std::exception_ptr::_M_release()
-    _ZNSt15__exception_ptr13exception_ptr10_M_releaseEv;
-
-} CXXABI_1.3.12;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {
