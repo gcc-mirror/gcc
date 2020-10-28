@@ -25595,9 +25595,11 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
       if (nested_p)
 	block = push_stmt_list ();
       else
-	start_preparsed_function (d, NULL_TREE, SF_PRE_PARSED);
+	{
+	  start_preparsed_function (d, NULL_TREE, SF_PRE_PARSED);
 
-      perform_instantiation_time_access_checks (code_pattern, args);
+	  perform_instantiation_time_access_checks (code_pattern, args);
+	}
 
       /* Create substitution entries for the parameters.  */
       register_parameter_specializations (code_pattern, d);
@@ -25636,7 +25638,8 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
     }
 
   /* We're not deferring instantiation any more.  */
-  TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
+  if (!nested_p)
+    TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
 
   if (push_to_top)
     pop_from_top_level ();

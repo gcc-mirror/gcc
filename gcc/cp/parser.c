@@ -42700,15 +42700,19 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       DECL_ATTRIBUTES (fndecl)
 	= tree_cons (get_identifier ("gnu_inline"), NULL_TREE,
 		     DECL_ATTRIBUTES (fndecl));
-      if (processing_template_decl)
-	fndecl = push_template_decl (fndecl);
       bool block_scope = false;
-      tree block = NULL_TREE;
       if (current_function_decl)
 	{
 	  block_scope = true;
 	  DECL_CONTEXT (fndecl) = current_function_decl;
 	  DECL_LOCAL_DECL_P (fndecl) = true;
+	}
+
+      if (processing_template_decl)
+	fndecl = push_template_decl (fndecl);
+
+      if (block_scope)
+	{
 	  if (!processing_template_decl)
 	    pushdecl (fndecl);
 	}
@@ -42736,6 +42740,8 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	  /* We should never meet a matched duplicate decl.  */
 	  gcc_checking_assert (d == error_mark_node || d == fndecl);
 	}
+
+      tree block = NULL_TREE;
       if (!block_scope)
 	start_preparsed_function (fndecl, NULL_TREE, SF_PRE_PARSED);
       else
