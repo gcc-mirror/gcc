@@ -1038,6 +1038,22 @@ package body Sem_Ch8 is
             Mark_Ghost_Renaming (N, Entity (Nam));
          end if;
 
+         --  Check against AI12-0401 here before Resolve may rewrite Nam and
+         --  potentially generate spurious warnings.
+
+         if Nkind (Nam) = N_Qualified_Expression
+           and then Is_Variable (Expression (Nam))
+           and then not
+             (Subtypes_Statically_Match (T, Etype (Expression (Nam)))
+                or else
+              Subtypes_Statically_Match (Base_Type (T), Etype (Nam)))
+         then
+            Error_Msg_N
+              ("subtype of renamed qualified expression does not " &
+               "statically match", N);
+            return;
+         end if;
+
          Resolve (Nam, T);
 
          --  If the renamed object is a function call of a limited type,
