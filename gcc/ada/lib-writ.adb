@@ -1125,9 +1125,7 @@ package body Lib.Writ is
 
             if Nkind (U) = N_Subprogram_Body
               and then Present (Corresponding_Spec (U))
-              and then
-                Ekind (Corresponding_Spec (U)) in E_Generic_Procedure
-                                                | E_Generic_Function
+              and then Is_Generic_Subprogram (Corresponding_Spec (U))
             then
                null;
 

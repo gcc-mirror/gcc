@@ -24781,18 +24781,15 @@ package body Sem_Prag is
          --  body, not in the spec).
 
          when Pragma_Unimplemented_Unit => Unimplemented_Unit : declare
-            Cunitent : constant Entity_Id   :=
+            Cunitent : constant Entity_Id :=
                          Cunit_Entity (Get_Source_Unit (Loc));
-            Ent_Kind : constant Entity_Kind := Ekind (Cunitent);
 
          begin
             GNAT_Pragma;
             Check_Arg_Count (0);
 
             if Operating_Mode = Generate_Code
-              or else Ent_Kind = E_Generic_Function
-              or else Ent_Kind = E_Generic_Procedure
-              or else Ent_Kind = E_Generic_Package
+              or else Is_Generic_Unit (Cunitent)
             then
                Get_Name_String (Chars (Cunitent));
                Set_Casing (Mixed_Case);

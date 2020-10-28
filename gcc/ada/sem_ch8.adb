@@ -8750,9 +8750,8 @@ package body Sem_Ch8 is
 
          --  Mark primitives
 
-         elsif (Ekind (Id) in Overloadable_Kind
-                 or else Ekind (Id) in
-                           E_Generic_Function | E_Generic_Procedure)
+         elsif (Is_Overloadable (Id)
+                 or else Is_Generic_Subprogram (Id))
            and then (Is_Potentially_Use_Visible (Id)
                       or else Is_Intrinsic_Subprogram (Id)
                       or else (Ekind (Id) in E_Function | E_Procedure
