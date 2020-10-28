@@ -6925,6 +6925,10 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       non_constant_p = true;
     }
 
+  if (non_constant_p)
+    /* If we saw something bad, go back to our argument.  The wrapping below is
+       only for the cases of TREE_CONSTANT argument or overflow.  */
+    r = t;
 
   if (!non_constant_p && overflow_p)
     non_constant_p = true;
@@ -6941,12 +6945,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     return r;
   else if (non_constant_p && TREE_CONSTANT (r))
     {
-      /* If __builtin_is_constant_evaluated () was evaluated to true
-	 and the result is not a valid constant expression, we need to
-	 punt.  */
-      if (manifestly_const_eval)
-	return cxx_eval_outermost_constant_expr (t, true, strict,
-						 false, false, object);
       /* This isn't actually constant, so unset TREE_CONSTANT.
 	 Don't clear TREE_CONSTANT on ADDR_EXPR, as the middle-end requires
 	 it to be set if it is invariant address, even when it is not
