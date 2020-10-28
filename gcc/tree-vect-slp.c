@@ -3371,7 +3371,13 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 
   if (is_a <bb_vec_info> (vinfo)
       && !vect_update_shared_vectype (stmt_info, SLP_TREE_VECTYPE (node)))
-    return false;
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "desired vector type conflicts with earlier one "
+			 "for %G", stmt_info->stmt);
+      return false;
+    }
 
   bool dummy;
   return vect_analyze_stmt (vinfo, stmt_info, &dummy,
