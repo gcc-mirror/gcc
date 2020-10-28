@@ -2412,15 +2412,21 @@ vect_build_slp_instance (vec_info *vinfo,
 							       group1_size);
 	      bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
 						    max_tree_size);
-	      /* If the first non-match was in the middle of a vector,
-		 skip the rest of that vector.  Do not bother to re-analyze
-		 single stmt groups.  */
-	      if (group1_size < i)
+	      /* Split the rest at the failure point and possibly
+		 re-analyze the remaining matching part if it has
+		 at least two lanes.  */
+	      if (group1_size < i
+		  && (i + 1 < group_size
+		      || i - group1_size > 1))
 		{
-		  i = group1_size + const_nunits;
-		  if (i + 1 < group_size)
-		    rest = vect_split_slp_store_group (rest, const_nunits);
+		  stmt_vec_info rest2 = rest;
+		  rest = vect_split_slp_store_group (rest, i - group1_size);
+		  if (i - group1_size > 1)
+		    res |= vect_analyze_slp_instance (vinfo, bst_map,
+						      rest2, max_tree_size);
 		}
+	      /* Re-analyze the non-matching tail if it has at least
+		 two lanes.  */
 	      if (i + 1 < group_size)
 		res |= vect_analyze_slp_instance (vinfo, bst_map,
 						  rest, max_tree_size);
