@@ -3043,7 +3043,7 @@ vect_optimize_slp (vec_info *vinfo)
   /* Now elide load permutations that are not necessary.  */
   for (i = 0; i < leafs.length (); ++i)
     {
-      node = vertices[i];
+      node = vertices[leafs[i]];
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
 
