@@ -9708,6 +9708,21 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  omp_add_variable (ctx, decl, GOVD_NONTEMPORAL);
 	  break;
 
+	case OMP_CLAUSE_ALLOCATE:
+	  decl = OMP_CLAUSE_DECL (c);
+	  if (error_operand_p (decl))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  if (gimplify_expr (&OMP_CLAUSE_ALLOCATE_ALLOCATOR (c), pre_p, NULL,
+			     is_gimple_val, fb_rvalue) == GS_ERROR)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  break;
+
 	case OMP_CLAUSE_DEFAULT:
 	  ctx->default_kind = OMP_CLAUSE_DEFAULT_KIND (c);
 	  break;
@@ -10618,6 +10633,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
+	case OMP_CLAUSE_ALLOCATE:
 	  break;
 
 	default:
@@ -12149,7 +12165,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	    *gforo_clauses_ptr = c;
 	    gforo_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
 	    break;
-	  /* Taskloop clause we duplicate on both taskloops.  */
+	  /* Collapse clause we duplicate on both taskloops.  */
 	  case OMP_CLAUSE_COLLAPSE:
 	    *gfor_clauses_ptr = c;
 	    gfor_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
@@ -12190,6 +12206,13 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	      OMP_CLAUSE_SHARED_FIRSTPRIVATE (*gtask_clauses_ptr) = 1;
 	    gtask_clauses_ptr
 	      = &OMP_CLAUSE_CHAIN (*gtask_clauses_ptr);
+	    break;
+	  /* Allocate clause we duplicate on task and inner taskloop.  */
+	  case OMP_CLAUSE_ALLOCATE:
+	    *gfor_clauses_ptr = c;
+	    gfor_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
+	    *gtask_clauses_ptr = copy_node (c);
+	    gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (*gtask_clauses_ptr);
 	    break;
 	  default:
 	    gcc_unreachable ();

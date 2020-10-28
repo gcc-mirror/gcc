@@ -767,6 +767,9 @@ output_refs (lto_symtab_encoder_t encoder)
 	  for (int i = 0; node->iterate_reference (i, ref); i++)
 	    lto_output_ref (ob, ref, encoder);
 	}
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	if (cnode->declare_variant_alt)
+	  omp_lto_output_declare_variant_alt (ob, cnode, encoder);
     }
 
   streamer_write_uhwi_stream (ob->main_stream, 0);
@@ -1608,6 +1611,9 @@ input_refs (class lto_input_block *ib,
 	  input_ref (ib, node, nodes);
 	  count--;
 	}
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	if (cnode->declare_variant_alt)
+	  omp_lto_input_declare_variant_alt (ib, cnode, nodes);
     }
 }
 	    

@@ -1,3 +1,216 @@
+2020-10-27  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR rtl-optimization/97497
+	* config/s390/s390.c (s390_hard_regno_call_part_clobbered): Do not
+	return true for r12 when -fpic is used.
+
+2020-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/97535
+	* config/aarch64/aarch64.c (aarch64_expand_cpymem): Use unsigned
+	arithmetic in check.
+
+2020-10-27  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/arm_neon.h (vcopy_lane_bf16, vcopyq_lane_bf16)
+	(vcopyq_laneq_bf16, vcopy_laneq_bf16): New intrinsics.
+
+2020-10-27  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VX_CPU_PREFIX): #define here.
+	* config/rs6000/vxworks.h: Remove #definition.
+
+2020-10-27  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (CPP_SPEC): Fix macro definition
+	for -mcpu=e6500.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_instance): Use ceil_log2
+	to compute maximum group-size.
+
+2020-10-27  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/97586
+	* ipa-modref-tree.h (modref_tree::remap_params): New member function.
+	* ipa-modref.c (modref_summaries_lto::duplicate): Check that
+	optimization summaries are not duplicated.
+	(remap_arguments): Remove.
+	(modref_transform): Rename to ...
+	(update_signature): ... this one; handle also lto summary.
+	(pass_ipa_modref::execute): Update signatures here rather
+	than in transform hook.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_bbs): Remove no-op
+	slp-max-insns-in-bb check.
+	(vect_slp_function): Dump when splitting the function.
+	Adjust the split condition for control altering stmts.
+	* params.opt (-param=slp-max-insns-in-bb): Remove.
+	* doc/invoke.texi (-param=slp-max-insns-in-bb): Likewise.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gimple_expr_type): For PHIs return the type
+	of the result.
+	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Make sure edge order into copied loop headers line up with the
+	originals.
+	* tree-vect-loop.c (vect_transform_cycle_phi): Handle nested
+	loops with SLP.
+	(vectorizable_phi): New function.
+	(vectorizable_live_operation): For BB vectorization compute insert
+	location here.
+	* tree-vect-slp.c (vect_free_slp_tree): Deal with NULL
+	SLP_TREE_CHILDREN entries.
+	(vect_create_new_slp_node): Add overloads with pre-existing node
+	argument.
+	(vect_print_slp_graph): Likewise.
+	(vect_mark_slp_stmts): Likewise.
+	(vect_mark_slp_stmts_relevant): Likewise.
+	(vect_gather_slp_loads): Likewise.
+	(vect_optimize_slp): Likewise.
+	(vect_slp_analyze_node_operations): Likewise.
+	(vect_bb_slp_scalar_cost): Likewise.
+	(vect_remove_slp_scalar_calls): Likewise.
+	(vect_get_and_check_slp_defs): Handle PHIs.
+	(vect_build_slp_tree_1): Handle PHIs.
+	(vect_build_slp_tree_2): Continue SLP build, following PHI
+	arguments.  Fix memory leak.
+	(vect_build_slp_tree): Put stub node into the hash-map so
+	we can discover cycles directly.
+	(vect_build_slp_instance): Set the backedge SLP def for
+	reduction chains.
+	(vect_analyze_slp_backedges): Remove.
+	(vect_analyze_slp): Do not call it.
+	(vect_slp_convert_to_external): Release SLP_TREE_LOAD_PERMUTATION.
+	(vect_slp_analyze_node_operations): Handle stray failed
+	backedge defs by failing.
+	(vect_slp_build_vertices): Adjust leaf condition.
+	(vect_bb_slp_mark_live_stmts): Handle PHIs, use visited
+	hash-set to handle cycles.
+	(vect_slp_analyze_operations): Adjust.
+	(vect_bb_partition_graph_r): Likewise.
+	(vect_slp_function): Adjust split condition to allow CFG
+	merges.
+	(vect_schedule_slp_instance): Rename to ...
+	(vect_schedule_slp_node): ... this.  Move DFS walk to ...
+	(vect_schedule_scc): ... this new function.
+	(vect_schedule_slp): Call it.  Remove ad-hoc vectorized
+	backedge fill code.
+	* tree-vect-stmts.c (vect_analyze_stmt): Call
+	vectorizable_phi.
+	(vect_transform_stmt): Likewise.
+	(vect_is_simple_use): Handle vect_backedge_def.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Only
+	set loop header PHIs to vect_unknown_def_type for loop
+	vectorization.
+	* tree-vectorizer.h (enum vect_def_type): Add vect_backedge_def.
+	(enum stmt_vec_info_type): Add phi_info_type.
+	(vectorizable_phi): Declare.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_2): When vectorizing
+	BBs splat uniform operands and stop SLP discovery.
+
+2020-10-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/aarch64/aarch64-linux.h (GNU_USER_TARGET_D_CRITSEC_SIZE):
+	Remove.
+	* config/glibc-d.c (glibc_d_critsec_size): Likewise.
+	(TARGET_D_CRITSEC_SIZE): Likewise.
+	* config/i386/linux-common.h (GNU_USER_TARGET_D_CRITSEC_SIZE):
+	Likewise.
+	* config/sol2-d.c (solaris_d_critsec_size): Likewise.
+	(TARGET_D_CRITSEC_SIZE):  Likewise.
+	* doc/tm.texi.in (TARGET_D_CRITSEC_SIZE): Likewise.
+	* doc/tm.texi: Regenerate.
+
+2020-10-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* gcov-io.h (GCOV_PREALLOCATED_KVP): Pre-allocate 64
+	static counters.
+
+2020-10-27  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (attr_fnspec::verify): Re-enabl checking.
+
+2020-10-27  Jan Hubicka  <jh@suse.cz>
+
+	* builtin-attrs.def (STRERRNOC): New macro.
+	(STRERRNOP): New macro.
+	(ATTR_ERRNOCONST_NOTHROW_LEAF_LIST): New attr list.
+	(ATTR_ERRNOPURE_NOTHROW_LEAF_LIST): New attr list.
+	* builtins.def (ATTR_MATHFN_ERRNO): Use
+	ATTR_ERRNOCONST_NOTHROW_LEAF_LIST.
+	(ATTR_MATHFN_FPROUNDING_ERRNO): Use ATTR_ERRNOCONST_NOTHROW_LEAF_LIST
+	or ATTR_ERRNOPURE_NOTHROW_LEAF_LIST.
+
+2020-10-27  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (opt_var_ref_t): New.
+	(riscv_ext_flag_table_t): New.
+	(riscv_ext_flag_table): New.
+	(riscv_parse_arch_string): Pass gcc_options* instead of
+	&opts->x_target_flags only, and using riscv_arch_option_table to
+	setup flags.
+	(riscv_handle_option): Update argument for riscv_parse_arch_string.
+	(riscv_expand_arch): Ditto.
+	(riscv_expand_arch_from_cpu): Ditto.
+
+2020-10-27  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-ccp.c (evaluate_stmt): Use EAF_RETURN_ARG; do not handle
+	string buitings specially.
+
+2020-10-27  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (set_call_expr_flags): Fix string for ECF_RET1.
+	(build_common_builtin_nodes): Do not set ECF_RET1 for memcpy, memmove,
+	and memset. They are handled by builtin_fnspec.
+
+2020-10-27  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (builtin_fnspec): Add bzero, memcmp, memcmp_eq, bcmp,
+	strncmp, strncmp_eq, strncasecmp, rindex, strlen, strlnen, strcasecmp,
+	strcspn, strspn, strcmp, strcmp_eq.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (slp_tree_pool): Declare.
+	(_slp_tree::operator new): Likewise.
+	(_slp_tree::operator delete): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Allocate and free the
+	slp_tree_pool.
+	(pass_slp_vectorize::execute): Likewise.
+	* tree-vect-slp.c (slp_tree_pool): Define.
+	(_slp_tree::operator new): Likewise.
+	(_slp_tree::operator delete): Likewise.
+
+2020-10-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (run_gcc): Do not use sub-make when jobserver is
+	not detected properly.
+
+2020-10-27  Martin Liska  <mliska@suse.cz>
+
+	* symbol-summary.h (call_summary_base): Pass symtab hooks to
+	base and register (or unregister) hooks directly.
+
+2020-10-27  Martin Liska  <mliska@suse.cz>
+
+	* symbol-summary.h (function_summary_base::unregister_hooks):
+	Call disable_insertion_hook and disable_duplication_hook.
+	(function_summary_base::symtab_insertion): New field.
+	(function_summary_base::symtab_removal): Likewise.
+	(function_summary_base::symtab_duplication): Likewise.
+	Register hooks in function_summary_base and directly register
+	(or unregister) hooks.
+
 2020-10-26  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/97567

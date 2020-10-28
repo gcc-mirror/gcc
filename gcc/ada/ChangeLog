@@ -1,3 +1,69 @@
+2020-10-27  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl: Add vx7r2cert spec file to ARM, PowerPC and x86
+	targets.
+	* vxworks7-cert-rtp-link.spec: New spec file.
+
+2020-10-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add g-spogwa object.
+	* libgnat/g-spogwa.adb: Fix style errors.
+
+2020-10-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Array_Aggregate): Dedicated
+	routine for array aggregates; mostly reuses existing code, but
+	calls itself recursively for multi-dimensional array aggregates.
+	(Expand_SPARK_N_Aggregate): Call Expand_SPARK_Array_Aggregate to
+	do the actual expansion, starting from the first index of the
+	array type.
+
+2020-10-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): new
+	internal subprogram Remove_References, to reset semantic
+	information on each reference to the index variable of the
+	association, so that Collect_Aggregate_Bounds can work properly
+	on multidimensional arrays with nested associations, and
+	subsequent expansion into loops can verify that dimensions of
+	each subaggregate are compatible.
+
+2020-10-27  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_prag.adb (Append_Copies): Handle N_Parameter_Associations.
+
+2020-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada_get_targ.adb (Digits_From_Size): Delete.
+	(Width_From_Size): Likewise.
+	* get_targ.adb (Digits_From_Size): Likewise.
+	(Width_From_Size): Likewise.
+	* get_targ.ads (Digits_From_Size): Likewise.
+	(Width_From_Size): Likewise.
+	* ttypes.ads: Remove with clause for Get_Targ.
+	(Standard_Short_Short_Integer_Width): Delete.
+	(Standard_Short_Integer_Width): Likewise.
+	(Standard_Integer_Width): Likewise.
+	(Standard_Long_Integer_Width): Likewise.
+	(Standard_Long_Long_Integer_Width): Likewise.
+	(Standard_Long_Long_Long_Integer_Width): Likewise.
+	(Standard_Short_Float_Digits): Likewise.
+	(Standard_Float_Digits): Likewise.
+	(Standard_Long_Float_Digits): Likewise.
+	(Standard_Long_Long_Float_Digits): Likewise.
+	* gnat1drv.adb (Adjust_Global_Switches): Adjust.
+
+2020-10-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb, freeze.adb, gnat1drv.adb, opt.ads, sem_ch6.adb
+	(Transform_Function_Array): New flag, split from Modify_Tree_For_C.
+	* exp_unst.adb: Minor reformatting.
+
+2020-10-27  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socpol.adb (Wait): Do not exit from loop on EINTR
+	error and timeout is over.
+
 2020-10-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_aggr.adb (Build_Array_Aggr_Code): If the aggregate

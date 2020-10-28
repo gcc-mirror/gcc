@@ -1,3 +1,8 @@
+2020-10-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_std_attribute_specifier): Allow duplicate
+	standard attributes.
+
 2020-10-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91741

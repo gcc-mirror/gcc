@@ -1,3 +1,101 @@
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97568
+	* region-model.cc (region_model::get_initial_value_for_global):
+	Move check that !DECL_EXTERNAL from here to...
+	* region.cc (decl_region::get_svalue_for_initializer): ...here,
+	using it to reject zero initialization.
+
+2020-10-27  Markus Böck  <markus.boeck02@gmail.com>
+
+	PR analyzer/96608
+	* store.h (hash): Cast to intptr_t instead of long
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* constraint-manager.cc (svalue_cmp_by_ptr): Delete.
+	(equiv_class::canonicalize): Use svalue::cmp_ptr_ptr instead.
+	(equiv_class_cmp): Eliminate pointer comparison.
+	* diagnostic-manager.cc (dedupe_key::comparator): If they are at
+	the same location, also compare epath ength and pending_diagnostic
+	kind.
+	* engine.cc (readability_comparator): If two path_vars have the
+	same readability, then impose an arbitrary ordering on them.
+	(worklist::key_t::cmp): If two points have the same plan ordering,
+	continue the comparison.  Call sm_state_map::cmp rather than
+	comparing hash values.
+	* program-state.cc (sm_state_map::entry_t::cmp): New.
+	(sm_state_map::cmp): New.
+	* program-state.h (sm_state_map::entry_t::cmp): New decl.
+	(sm_state_map::elements): New.
+	(sm_state_map::cmp): New.
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (setjmp_record::cmp): New.
+	(supernode_cluster::dump_dot): Avoid embedding pointer in cluster
+	name.
+	(supernode_cluster::cmp_ptr_ptr): New.
+	(function_call_string_cluster::dump_dot): Avoid embedding pointer
+	in cluster name.  Sort m_map when dumping child clusters.
+	(function_call_string_cluster::cmp_ptr_ptr): New.
+	(root_cluster::dump_dot): Sort m_map when dumping child clusters.
+	* program-point.cc (function_point::cmp): New.
+	(function_point::cmp_ptr): New.
+	* program-point.h (function_point::cmp): New decl.
+	(function_point::cmp_ptr): New decl.
+	* program-state.cc (sm_state_map::print): Sort the values.  Guard
+	the printing of pointers with !flag_dump_noaddr.
+	(program_state::prune_for_point): Sort the regions.
+	(log_set_of_svalues): Sort the values.  Guard the printing of
+	pointers with !flag_dump_noaddr.
+	* region-model-manager.cc (log_uniq_map): Sort the values.
+	* region-model-reachability.cc (dump_set): New function template.
+	(reachable_regions::dump_to_pp): Use it.
+	* region-model.h (svalue::cmp_ptr): New decl.
+	(svalue::cmp_ptr_ptr): New decl.
+	(setjmp_record::cmp): New decl.
+	(placeholder_svalue::get_name): New accessor.
+	(widening_svalue::get_point): New accessor.
+	(compound_svalue::get_map): New accessor.
+	(conjured_svalue::get_stmt): New accessor.
+	(conjured_svalue::get_id_region): New accessor.
+	(region::cmp_ptrs): Rename to...
+	(region::cmp_ptr_ptr): ...this.
+	* region.cc (region::cmp_ptrs): Rename to...
+	(region::cmp_ptr_ptr): ...this.
+	* state-purge.cc
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Sort
+	m_points_needing_name when dumping.
+	* store.cc (concrete_binding::cmp_ptr_ptr): New.
+	(symbolic_binding::cmp_ptr_ptr): New.
+	(binding_map::cmp): New.
+	(get_sorted_parent_regions): Update for renaming of
+	region::cmp_ptrs to region::cmp_ptr_ptr.
+	(store::dump_to_pp): Likewise.
+	(store::to_json): Likewise.
+	(store::can_merge_p): Sort the base regions before considering
+	them.
+	* store.h (concrete_binding::cmp_ptr_ptr): New decl.
+	(symbolic_binding::cmp_ptr_ptr): New decl.
+	(binding_map::cmp): New decl.
+	* supergraph.cc (supergraph::supergraph): Assign UIDs to the
+	gimple stmts.
+	* svalue.cc (cmp_cst): New.
+	(svalue::cmp_ptr): New.
+	(svalue::cmp_ptr_ptr): New.
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_graph::get_or_create_node): Fix off-by-one
+	when imposing param_analyzer_max_enodes_per_program_point limit.
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::get_representative_path_var):
+	Implement case RK_LABEL.
+	* region-model.h (label_region::get_label): New accessor.
+
 2020-10-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97514

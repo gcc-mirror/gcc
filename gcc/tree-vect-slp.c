@@ -413,6 +413,7 @@ vect_def_types_match (enum vect_def_type dta, enum vect_def_type dtb)
    ok return 0.  */
 static int
 vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
+			     bool *skip_args,
 			     vec<stmt_vec_info> stmts, unsigned stmt_num,
 			     vec<slp_oprnd_info> *oprnds_info)
 {
@@ -507,6 +508,14 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	  return -1;
 	}
 
+      if (skip_args[i])
+	{
+	  oprnd_info->def_stmts.quick_push (NULL);
+	  oprnd_info->ops.quick_push (NULL_TREE);
+	  oprnd_info->first_dt = vect_uninitialized_def;
+	  continue;
+	}
+
       if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
 	oprnd_info->any_pattern = true;
 
@@ -589,6 +598,12 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
   /* Now match the operand definition types to that of the first stmt.  */
   for (i = 0; i < number_of_oprnds;)
     {
+      if (skip_args[i])
+	{
+	  ++i;
+	  continue;
+	}
+
       oprnd_info = (*oprnds_info)[i];
       dt = dts[i];
       stmt_vec_info def_stmt_info = oprnd_info->def_stmts[stmt_num];
@@ -1412,7 +1427,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 
   /* If the SLP node is a PHI (induction or reduction), terminate
      the recursion.  */
-  bool skip_args[2] = { false, false };
+  bool *skip_args = XALLOCAVEC (bool, nops);
+  memset (skip_args, 0, nops);
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
       {
@@ -1557,7 +1573,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
   slp_oprnd_info oprnd_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
     {
-      int res = vect_get_and_check_slp_defs (vinfo, swap[i],
+      int res = vect_get_and_check_slp_defs (vinfo, swap[i], skip_args,
 					     stmts, i, &oprnds_info);
       if (res != 0)
 	matches[(res == -1) ? 0 : i] = false;
@@ -1582,6 +1598,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
       slp_tree child;
       unsigned int j;
 
+      /* We're skipping certain operands from processing, for example
+	 outer loop reduction initial defs.  */
+      if (skip_args[i])
+	{
+	  children.safe_push (NULL);
+	  continue;
+	}
+
       if (oprnd_info->first_dt == vect_uninitialized_def)
 	{
 	  /* COND_EXPR have one too many eventually if the condition
@@ -1590,16 +1614,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  continue;
 	}
 
-      /* We're skipping certain operands from processing, for example
-	 outer loop reduction initial defs.  */
-      if (i <= 1 && skip_args[i])
-	{
-	  children.safe_push (NULL);
-	  continue;
-	}
-
       if (is_a <bb_vec_info> (vinfo)
-	  && oprnd_info->first_dt == vect_internal_def)
+	  && oprnd_info->first_dt == vect_internal_def
+	  && !oprnd_info->any_pattern)
 	{
 	  /* For BB vectorization, if all defs are the same do not
 	     bother to continue the build along the single-lane
@@ -2412,15 +2429,21 @@ vect_build_slp_instance (vec_info *vinfo,
 							       group1_size);
 	      bool res = vect_analyze_slp_instance (vinfo, bst_map, stmt_info,
 						    max_tree_size);
-	      /* If the first non-match was in the middle of a vector,
-		 skip the rest of that vector.  Do not bother to re-analyze
-		 single stmt groups.  */
-	      if (group1_size < i)
+	      /* Split the rest at the failure point and possibly
+		 re-analyze the remaining matching part if it has
+		 at least two lanes.  */
+	      if (group1_size < i
+		  && (i + 1 < group_size
+		      || i - group1_size > 1))
 		{
-		  i = group1_size + const_nunits;
-		  if (i + 1 < group_size)
-		    rest = vect_split_slp_store_group (rest, const_nunits);
+		  stmt_vec_info rest2 = rest;
+		  rest = vect_split_slp_store_group (rest, i - group1_size);
+		  if (i - group1_size > 1)
+		    res |= vect_analyze_slp_instance (vinfo, bst_map,
+						      rest2, max_tree_size);
 		}
+	      /* Re-analyze the non-matching tail if it has at least
+		 two lanes.  */
 	      if (i + 1 < group_size)
 		res |= vect_analyze_slp_instance (vinfo, bst_map,
 						  rest, max_tree_size);
@@ -3037,7 +3060,7 @@ vect_optimize_slp (vec_info *vinfo)
   /* Now elide load permutations that are not necessary.  */
   for (i = 0; i < leafs.length (); ++i)
     {
-      node = vertices[i];
+      node = vertices[leafs[i]];
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
 
@@ -3348,7 +3371,13 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 
   if (is_a <bb_vec_info> (vinfo)
       && !vect_update_shared_vectype (stmt_info, SLP_TREE_VECTYPE (node)))
-    return false;
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "desired vector type conflicts with earlier one "
+			 "for %G", stmt_info->stmt);
+      return false;
+    }
 
   bool dummy;
   return vect_analyze_stmt (vinfo, stmt_info, &dummy,

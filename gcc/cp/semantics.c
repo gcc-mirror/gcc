@@ -6373,6 +6373,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   /* 1 if normal/task reduction has been seen, -1 if inscan reduction
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
+  bool allocate_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -7196,6 +7197,73 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else
 	    bitmap_set_bit (&oacc_reduction_head, DECL_UID (t));
+	  break;
+
+	case OMP_CLAUSE_ALLOCATE:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (t == current_class_ptr)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<this%> not allowed in %<allocate%> clause");
+	      remove = true;
+	      break;
+	    }
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	    {
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
+		break;
+	      if (DECL_P (t))
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not a variable in %<allocate%> clause", t);
+	      else
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not a variable in %<allocate%> clause", t);
+	      remove = true;
+	    }
+	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
+	    {
+	      warning_at (OMP_CLAUSE_LOCATION (c), 0,
+			"%qD appears more than once in %<allocate%> clauses",
+			t);
+	      remove = true;
+	    }
+	  else
+	    {
+	      bitmap_set_bit (&aligned_head, DECL_UID (t));
+	      allocate_seen = true;
+	    }
+	  t = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	  if (error_operand_p (t))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  if (t == NULL_TREE)
+	    break;
+	  tree allocatort;
+	  allocatort = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+	  if (!type_dependent_expression_p (t)
+	      && (TREE_CODE (allocatort) != ENUMERAL_TYPE
+		  || TYPE_NAME (allocatort) == NULL_TREE
+		  || TREE_CODE (TYPE_NAME (allocatort)) != TYPE_DECL
+		  || (DECL_NAME (TYPE_NAME (allocatort))
+		      != get_identifier ("omp_allocator_handle_t"))
+		  || (TYPE_CONTEXT (allocatort)
+		      != DECL_CONTEXT (global_namespace))))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<allocate%> clause allocator expression has "
+			"type %qT rather than %<omp_allocator_handle_t%>",
+			TREE_TYPE (t));
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		t = maybe_constant_value (t);
+	      OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = t;
+	    }
 	  break;
 
 	case OMP_CLAUSE_DEPEND:
@@ -8169,6 +8237,12 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	{
 	  const char *share_name = NULL;
 
+	  if (allocate_seen
+	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_SHARED
+	      && DECL_P (t))
+	    bitmap_clear_bit (&aligned_head,
+			      DECL_UID (OMP_CLAUSE_DECL (c)));
+	    
 	  if (VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	    share_name = "threadprivate";
 	  else switch (cxx_omp_predetermined_sharing_1 (t))
@@ -8261,6 +8335,25 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       else
 	pc = &OMP_CLAUSE_CHAIN (c);
     }
+
+  if (allocate_seen)
+    for (pc = &clauses, c = clauses; c ; c = *pc)
+      {
+	bool remove = false;
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE
+	    && !OMP_CLAUSE_ALLOCATE_COMBINED (c)
+	    && bitmap_bit_p (&aligned_head, DECL_UID (OMP_CLAUSE_DECL (c))))
+	  {
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qD specified in %<allocate%> clause but not in "
+		      "an explicit privatization clause", OMP_CLAUSE_DECL (c));
+	    remove = true;
+	  }
+	if (remove)
+	  *pc = OMP_CLAUSE_CHAIN (c);
+	else
+	  pc = &OMP_CLAUSE_CHAIN (c);
+      }
 
   bitmap_obstack_release (NULL);
   return clauses;

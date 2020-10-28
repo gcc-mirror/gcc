@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_double } */
 
 double x[1024];
 void bar (void);

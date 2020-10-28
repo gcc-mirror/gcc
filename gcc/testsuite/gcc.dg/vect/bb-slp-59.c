@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_double } */
 /* { dg-additional-options "-fdump-tree-loopdone" } */
 
 double x[1024];

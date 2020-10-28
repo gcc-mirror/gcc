@@ -1,3 +1,134 @@
+2020-10-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-deprecated-4.c, gcc.dg/c2x-attr-fallthrough-4.c,
+	gcc.dg/c2x-attr-maybe_unused-4.c: Allow duplicate attributes.
+
+2020-10-27  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/pr97497.c: New test.
+
+2020-10-27  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/value_8.f90: New test.
+
+2020-10-27  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/vec-blend-runnable.c: Change #ifdef
+	DEBUG to #if DEBUG.
+	Fix printf line so it is less then 80 characters long.
+	* gcc.target/powerpc/vec-insert-word-runnable.c: Change
+	#ifdef DEBUG to #if DEBUG.
+	* gcc.target/powerpc/vec-permute-ext-runnable.c: Change
+	#ifdef DEBUG to #if DEBUG.
+	* gcc.target/powerpc/vec-replace-word-runnable.c: Change
+	#ifdef DEBUG to #if DEBUG.
+	Fix printf lines so they are less then 80 characters long.
+	* gcc.target/powerpc/vec-shift-double-runnable.c: Change
+	#ifdef DEBUG to #if DEBUG.
+
+2020-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/97535
+	* gcc.target/aarch64/pr97535.c: New test.
+
+2020-10-27  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vect_copy_lane_1.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopy_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopy_lane_bf16_indices_2.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopy_laneq_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopy_laneq_bf16_indices_2.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopyq_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopyq_lane_bf16_indices_2.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopyq_laneq_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopyq_laneq_bf16_indices_2.c:
+	Likewise.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-67.c: New testcase.
+
+2020-10-27  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92942
+	* gcc.dg/Wstringop-overflow-56.c: New test.
+	* gcc.dg/Wstringop-overflow-57.c: Same.
+
+2020-10-27  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-44.s: Remove.
+
+2020-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97567.c: Update to work with 32 bit targets.
+
+2020-10-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97568
+	* gcc.dg/analyzer/pr97568.c: New test.
+
+2020-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97560
+	PR testsuite/97590
+	* g++.dg/pr97560.C: Require c++11 effective target and add comment
+	with PR number.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-54.c: New test.
+	* gcc.dg/vect/bb-slp-55.c: Likewise.
+	* gcc.dg/vect/bb-slp-56.c: Likewise.
+	* gcc.dg/vect/bb-slp-57.c: Likewise.
+	* gcc.dg/vect/bb-slp-58.c: Likewise.
+	* gcc.dg/vect/bb-slp-59.c: Likewise.
+	* gcc.dg/vect/bb-slp-60.c: Likewise.
+	* gcc.dg/vect/bb-slp-61.c: Likewise.
+	* gcc.dg/vect/bb-slp-62.c: Likewise.
+	* gcc.dg/vect/bb-slp-63.c: Likewise.
+	* gcc.dg/vect/bb-slp-64.c: Likewise.
+	* gcc.dg/vect/bb-slp-65.c: Likewise.
+	* gcc.dg/vect/bb-slp-66.c: Likewise.
+	* gcc.dg/vect/vect-outer-slp-1.c: Likewise.
+	* gfortran.dg/vect/O3-bb-slp-1.f: Likewise.
+	* gfortran.dg/vect/O3-bb-slp-2.f: Likewise.
+	* g++.dg/vect/simd-11.cc: Likewise.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr95866-1.c: Adjust.
+
+2020-10-27  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/swaps-p8-22.c: Enable only for aix and
+	-m64 linux.
+
+2020-10-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* gcc.dg/tree-prof/pr97461.c: New test.
+
+2020-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97560
+	* g++.dg/pr97560.C: New test.
+
+2020-10-27  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/vsx_mask-count-runnable.c: Separate options
+	passed to dg-require-effective-target.
+	* gcc.target/powerpc/vsx_mask-expand-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-extract-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-move-runnable.c: Likewise.
+
 2020-10-26  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/localentry-1.c: Remove -mpcrel from options.

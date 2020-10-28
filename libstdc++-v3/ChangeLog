@@ -1,3 +1,53 @@
+2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (std::_Placeholder): Define for C++98
+	as well as later standards.
+	* include/tr1/functional (std::placeholders::_1 etc): Declare
+	for C++98.
+	(tr1::_Placeholder): Replace with using-declaration for
+	std::_Placeholder.
+	(tr1::placeholders::_1 etc.): Replace with using-directive for
+	std::placeholders.
+
+2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr1/ell_integral.tcc (__ellint_rf, __ellint_rd)
+	(__ellint_rc, __ellint_rj): Remove unused variables.
+	* include/tr1/modified_bessel_func.tcc (__airy): Likewise.
+
+2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (__str_codecvt_out_all):
+	Add cast to compare operands of the same signedness.
+	* include/bits/locale_facets_nonio.tcc
+	(time_get::_M_extract_wday_or_month): Likewise.
+	* include/bits/sstream.tcc (basic_stringbuf::overflow):
+	Likewise.
+	* include/tr1/legendre_function.tcc (__sph_legendre): Use
+	unsigned for loop variable.
+
+2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (from_chars): Add noexcept to match
+	definitions in src/c++17/floating_from_chars.cc
+
+2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (fs::directory_iterator::operator*):
+	Add noexcept. Do not throw on precondition violation.
+
+2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_List::begin, path::_List::end):
+	Add noexcept to match definitions in src/c++17/fs_path.cc.
+
+2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Add missing <cstdint> header.
+	* testsuite/experimental/memory_resource/resource_adaptor.cc:
+	Likewise.
+
 2020-10-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/executor (strand::_State): Fix thinko.

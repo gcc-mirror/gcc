@@ -13795,6 +13795,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   /* 1 if normal/task reduction has been seen, -1 if inscan reduction
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
+  bool allocate_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -14342,6 +14343,29 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else
 	    bitmap_set_bit (&oacc_reduction_head, DECL_UID (t));
+	  break;
+
+	case OMP_CLAUSE_ALLOCATE:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE is not a variable in %<allocate%> clause", t);
+	      remove = true;
+	    }
+	  else if (bitmap_bit_p (&aligned_head, DECL_UID (t)))
+	    {
+	      warning_at (OMP_CLAUSE_LOCATION (c), 0,
+			  "%qE appears more than once in %<allocate%> clauses",
+			  t);
+	      remove = true;
+	    }
+	  else
+	    {
+	      bitmap_set_bit (&aligned_head, DECL_UID (t));
+	      if (!OMP_CLAUSE_ALLOCATE_COMBINED (c))
+		allocate_seen = true;
+	    }
 	  break;
 
 	case OMP_CLAUSE_DEPEND:
@@ -15041,10 +15065,27 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       reduction_seen = -2;
     }
 
-  if (linear_variable_step_check || reduction_seen == -2)
+  if (linear_variable_step_check || reduction_seen == -2 || allocate_seen)
     for (pc = &clauses, c = clauses; c ; c = *pc)
       {
 	bool remove = false;
+	if (allocate_seen)
+	  switch (OMP_CLAUSE_CODE (c))
+	    {
+	    case OMP_CLAUSE_PRIVATE:
+	    case OMP_CLAUSE_FIRSTPRIVATE:
+	    case OMP_CLAUSE_LASTPRIVATE:
+	    case OMP_CLAUSE_LINEAR:
+	    case OMP_CLAUSE_REDUCTION:
+	    case OMP_CLAUSE_IN_REDUCTION:
+	    case OMP_CLAUSE_TASK_REDUCTION:
+	      if (DECL_P (OMP_CLAUSE_DECL (c)))
+		bitmap_clear_bit (&aligned_head,
+				  DECL_UID (OMP_CLAUSE_DECL (c)));
+	      break;
+	    default:
+	      break;
+	    }
 	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
 	    && OMP_CLAUSE_LINEAR_VARIABLE_STRIDE (c)
 	    && !bitmap_bit_p (&map_head,
@@ -15059,6 +15100,25 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
 	  OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
 
+	if (remove)
+	  *pc = OMP_CLAUSE_CHAIN (c);
+	else
+	  pc = &OMP_CLAUSE_CHAIN (c);
+      }
+
+  if (allocate_seen)
+    for (pc = &clauses, c = clauses; c ; c = *pc)
+      {
+	bool remove = false;
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE
+	    && !OMP_CLAUSE_ALLOCATE_COMBINED (c)
+	    && bitmap_bit_p (&aligned_head, DECL_UID (OMP_CLAUSE_DECL (c))))
+	  {
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qD specified in %<allocate%> clause but not in "
+		      "an explicit privatization clause", OMP_CLAUSE_DECL (c));
+	    remove = true;
+	  }
 	if (remove)
 	  *pc = OMP_CLAUSE_CHAIN (c);
 	else
