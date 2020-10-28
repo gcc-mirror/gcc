@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <unistd.h>
+#include "usleep.h"
 
 int main ()
 {
@@ -18,28 +19,28 @@ int main ()
 
     #pragma omp target nowait map(alloc: b) depend(in: d[2]) depend(out: d[3])
     {
-      usleep (1000);
+      tgt_usleep (1000);
       #pragma omp atomic update
       b |= 4;
     }
 
     #pragma omp target nowait map(alloc: b) depend(in: d[2]) depend(out: d[4])
     {
-      usleep (5000);
+      tgt_usleep (5000);
       #pragma omp atomic update
       b |= 1;
     }
 
     #pragma omp target nowait map(alloc: c) depend(in: d[3], d[4]) depend(out: d[5])
     {
-      usleep (5000);
+      tgt_usleep (5000);
       #pragma omp atomic update
       c |= 8;
     }
 
     #pragma omp target nowait map(alloc: c) depend(in: d[3], d[4]) depend(out: d[6])
     {
-      usleep (1000);
+      tgt_usleep (1000);
       #pragma omp atomic update
       c |= 2;
     }
