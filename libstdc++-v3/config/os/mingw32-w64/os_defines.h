@@ -90,4 +90,7 @@
 
 #define _GLIBCXX_USE_CRT_RAND_S 1
 
+// See libstdc++/94268
+#define _GLIBCXX_BUFSIZ 4096
+
 #endif

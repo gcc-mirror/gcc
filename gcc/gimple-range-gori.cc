@@ -1313,13 +1313,15 @@ gori_compute_cache::cache_stmt (gimple *stmt)
   else if (tree cached_name = m_cache->same_cached_name (op1, op2))
     {
       tf_range op1_range, op2_range;
-      gcc_assert (m_cache->get_range (op1_range, op1, cached_name));
-      gcc_assert (m_cache->get_range (op2_range, op2, cached_name));
-      gcc_assert (logical_combine (r_true_side, code, m_bool_one,
-				   op1_range, op2_range));
-      gcc_assert (logical_combine (r_false_side, code, m_bool_zero,
-				   op1_range, op2_range));
-      m_cache->set_range (lhs, cached_name,
-			  tf_range (r_true_side, r_false_side));
+      bool ok = m_cache->get_range (op1_range, op1, cached_name);
+      ok = ok && m_cache->get_range (op2_range, op2, cached_name);
+      ok = ok && logical_combine (r_true_side, code, m_bool_one,
+				  op1_range, op2_range);
+      ok = ok && logical_combine (r_false_side, code, m_bool_zero,
+				  op1_range, op2_range);
+      gcc_checking_assert (ok);
+      if (ok)
+	m_cache->set_range (lhs, cached_name,
+			    tf_range (r_true_side, r_false_side));
     }
 }

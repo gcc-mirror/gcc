@@ -1,5 +1,8 @@
 2020-10-28  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 7d5f38e49e5
+	c++: Refactor push_template_decl
+
 	gcc/cp/
 	* module.cc: More FIXME addressing.
 	(trees_out::get_merge_kind): Assert function-scope entities are

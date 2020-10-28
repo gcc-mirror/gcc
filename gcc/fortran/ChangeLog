@@ -1,3 +1,25 @@
+2020-10-27  Harald Anlauf  <anlauf@gmx.de>
+
+	* resolve.c (gfc_impure_variable): A dummy argument with the VALUE
+	attribute may be redefined without making a procedure impure.
+
+2020-10-27  Richard Biener  <rguenther@suse.de>
+
+	* trans-array.c (gfc_get_descriptor_field): New helper.
+	(gfc_conv_descriptor_data_get): Use it - drop strange
+	REFERENCE_TYPE handling and make sure we don't trigger it.
+	(gfc_conv_descriptor_data_addr): Use gfc_get_descriptor_field.
+	(gfc_conv_descriptor_data_set): Likewise.
+	(gfc_conv_descriptor_offset): Likewise.
+	(gfc_conv_descriptor_dtype): Likewise.
+	(gfc_conv_descriptor_span): Likewise.
+	(gfc_get_descriptor_dimension): Likewise.
+	(gfc_conv_descriptor_token): Likewise.
+	(gfc_conv_descriptor_subfield): New helper.
+	(gfc_conv_descriptor_stride): Use it.
+	(gfc_conv_descriptor_lbound): Likewise.
+	(gfc_conv_descriptor_ubound): Likewise.
+
 2020-10-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/97454

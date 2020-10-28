@@ -1,4 +1,4 @@
-/* Test C2x fallthrough attribute: duplicates.  */
+/* Test C2x fallthrough attribute: duplicates (allowed after N2557).  */
 /* { dg-do compile } */
 /* { dg-options "-std=c2x -pedantic-errors" } */
 
@@ -9,12 +9,9 @@ f (int a)
     {
     case 1:
       a++;
-      [[fallthrough, __fallthrough__]]; /* { dg-error "can appear at most once" } */
+      [[fallthrough, __fallthrough__]]; /* { dg-warning "specified multiple times" } */
     case 2:
       a++;
-      /* Separate attribute lists in the same attribute specifier
-	 sequence, with the same attribute in them, are OK (but
-	 receive a warning).  */
       [[fallthrough]] [[fallthrough]]; /* { dg-warning "specified multiple times" } */
     case 3:
       a++;

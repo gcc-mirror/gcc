@@ -2428,7 +2428,13 @@ vect_slp_analyze_node_alignment (vec_info *vinfo, slp_tree node)
   /* We need to commit to a vector type for the group now.  */
   if (is_a <bb_vec_info> (vinfo)
       && !vect_update_shared_vectype (first_stmt_info, SLP_TREE_VECTYPE (node)))
-    return false;
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "desired vector type conflicts with earlier one "
+			 "for %G", first_stmt_info->stmt);
+      return false;
+    }
 
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
   vect_compute_data_ref_alignment (vinfo, dr_info);

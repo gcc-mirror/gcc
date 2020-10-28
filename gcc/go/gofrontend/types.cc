@@ -6048,7 +6048,7 @@ Struct_type::do_hash_might_panic()
 // Return whether this struct type is permitted to be in the heap.
 
 bool
-Struct_type::do_in_heap()
+Struct_type::do_in_heap() const
 {
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)
