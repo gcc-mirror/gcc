@@ -1,3 +1,8 @@
+2020-10-28  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* lang-specs.h: Fix -xc++-{,user-,system-}header.
+
 2020-10-27  Nathan Sidwell  <nathan@acm.org>
 
 	No special anon-namespace naming
