@@ -7208,10 +7208,11 @@ trees_out::add_indirects (tree decl)
 {
   unsigned count = 0;
 
-  // FIXME: We'll eventually want default fn parms of templates and
-  // perhaps default template parms too.  I think the former can be
-  // referenced from instantiations (as they are lazily instantiated).
-  // Also (deferred?) exception specifications of templates.
+  // FIXME:OPTIMIZATION We'll eventually want default fn parms of
+  // templates and perhaps default template parms too.  The former can
+  // be referenced from instantiations (as they are lazily
+  // instantiated).  Also (deferred?) exception specifications of
+  // templates.  See the note about PARM_DECLs in trees_out::decl_node.
   tree inner = decl;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
@@ -8251,7 +8252,8 @@ trees_out::decl_node (tree decl, walk_kind ref)
       break;
 
     case RESULT_DECL:
-      // FIXME: Like a parm?
+      /* Unlike PARM_DECLs, RESULT_DECLs are only generated and
+         referenced when we're inside the function itself.  */
       return true;
 
     case PARM_DECL:
@@ -8264,14 +8266,15 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	    /* That must have put this in the map.  */
 	    walk_kind ref = ref_node (decl);
 	    if (ref != WK_none)
-	      // FIXME: We can wander into bits of the template this
-	      // was instantiated from.  For instance deferred
-	      // noexcept and (probably?) default parms.  We need to
-	      // refer to that specific node in some way.  For now
-	      // just clone it.  We should preemptively put those
-	      // things in the map when we reference their template by
-	      // name.  See add_indirects.
+	      // FIXME:OPTIMIZATION We can wander into bits of the
+	      // template this was instantiated from.  For instance
+	      // deferred noexcept and default parms.  Currently we'll
+	      // end up cloning those bits of tree.  It would be nice
+	      // to reference those specific nodes.  I think putting
+	      // those things in the map when we reference their
+	      // template by name.  See the note in add_indirects.
 	      return true;
+
 	    dump (dumper::TREE)
 	      && dump ("Wrote %s reference %N",
 		       TREE_CODE (decl) == PARM_DECL ? "parameter" : "result",
@@ -8474,7 +8477,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   /* If this is the TEMPLATE_DECL_RESULT of a TEMPLATE_DECL, get the
      TEMPLATE_DECL.  Note TI_TEMPLATE is not a TEMPLATE_DECL for
      (some) friends, so we need to check that.  */
-  // FIXME: should local friend template specializations be by value?
+  // FIXME: Should local friend template specializations be by value?
   // They don't get idents so we'll never know they're imported, but I
   // think we can only reach them from the TU that defines the
   // befriending class?
@@ -9698,8 +9701,6 @@ trees_in::tree_node (bool is_use)
 
       if (DECL_CLONED_FUNCTION_P (res))
 	TREE_USED (DECL_CLONED_FUNCTION (res)) = true;
-
-      // FIXME: What about the enum const debug thingy?
     }
 
   dump.outdent ();
@@ -10045,13 +10046,6 @@ trees_out::get_merge_kind (tree decl, depset *dep)
       tree ctx = CP_DECL_CONTEXT (decl);
       if (TREE_CODE (ctx) == FUNCTION_DECL)
 	{
-	  // FIXME: This not right if DECL has a template header.  For
-	  // those will have instantiations pointing at it.  I think the
-	  // only case is class definitions inside templates (including
-	  // lambdas).  At least those have an ABI-mandated
-	  // disambiguation mechanism that we can leverage.  Hm, do
-	  // such class definitions show up in the instantiation
-	  // table, and hence have DEP non-null?
 	  gcc_checking_assert (TREE_CODE (decl) == USING_DECL
 			       || !DECL_LANG_SPECIFIC (decl)
 			       || !DECL_TEMPLATE_INFO (decl));
@@ -10155,7 +10149,25 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	    gcc_unreachable ();
 
 	  case FUNCTION_DECL:
-	    // FIXME: What if it's voldemorty?
+	    // FIXME: This can occur for (a) voldemorty TYPE_DECLS
+	    // (which are returned from a function), or (b)
+	    // block-scope class definitions in template functions.
+	    // These are as unique as the containing function.  While
+	    // on read-back we can discover if the CTX was a
+	    // duplicate, we don't have a mechanism to get from the
+	    // existing CTX to the existing version of this decl.
+	    if (TREE_CODE (decl) == TEMPLATE_DECL)
+	      {
+		tree res = DECL_TEMPLATE_RESULT (decl);
+		// FIXME: block-scope var decls seem to have a
+		// template-head.  I do not see why they need that --
+		// it cannot differ from the containing template's
+		gcc_checking_assert (TREE_CODE (res) == TYPE_DECL
+				     || TREE_CODE (res) == VAR_DECL);
+	      }
+	    else
+	      gcc_checking_assert (TREE_CODE (decl) == TYPE_DECL);
+
 	    mk = MK_unique;
 	    break;
 
@@ -10204,8 +10216,8 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
 
 	if (TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
-	  // FIXME: Doesn't this need some kind of deduplication using
-	  // the uniqueness of the context?
+	  /* An block-scope classes of templates are themselves
+	     templates.  */
 	  gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
 
 	if (dep->is_friend_spec ())

@@ -1,6 +1,11 @@
 2020-10-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc: More FIXME addressing.
+	(trees_out::get_merge_kind): Assert function-scope entities are
+	not unexpected.
+
+	gcc/cp/
 	* module.cc: More FIXME fixing.
 
 	gcc/cp/
