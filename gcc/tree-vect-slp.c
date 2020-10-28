@@ -1599,7 +1599,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	}
 
       if (is_a <bb_vec_info> (vinfo)
-	  && oprnd_info->first_dt == vect_internal_def)
+	  && oprnd_info->first_dt == vect_internal_def
+	  && !oprnd_info->any_pattern)
 	{
 	  /* For BB vectorization, if all defs are the same do not
 	     bother to continue the build along the single-lane
