@@ -5555,16 +5555,6 @@ mark_used (tree decl, tsubst_flags_t complain)
   if (DECL_ODR_USED (decl))
     return true;
 
-  /* Normally, we can wait until instantiation-time to synthesize DECL.
-     However, if DECL is a static data member initialized with a constant
-     or a constexpr function, we need it right now because a reference to
-     such a data member or a call to such function is not value-dependent.
-     For a function that uses auto in the return type, we need to instantiate
-     it to find out its type.  For OpenMP user defined reductions, we need
-     them instantiated for reduction clauses which inline them by hand
-     directly.  */
-  maybe_instantiate_decl (decl);
-
   if (flag_concepts && TREE_CODE (decl) == FUNCTION_DECL
       && !constraints_satisfied_p (decl))
     {
@@ -5579,6 +5569,16 @@ mark_used (tree decl, tsubst_flags_t complain)
 	}
       return false;
     }
+
+  /* Normally, we can wait until instantiation-time to synthesize DECL.
+     However, if DECL is a static data member initialized with a constant
+     or a constexpr function, we need it right now because a reference to
+     such a data member or a call to such function is not value-dependent.
+     For a function that uses auto in the return type, we need to instantiate
+     it to find out its type.  For OpenMP user defined reductions, we need
+     them instantiated for reduction clauses which inline them by hand
+     directly.  */
+  maybe_instantiate_decl (decl);
 
   if (processing_template_decl || in_template_function ())
     return true;
