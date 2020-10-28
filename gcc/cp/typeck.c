@@ -4512,6 +4512,9 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 			"with enumeration type %qT is deprecated",
 			type0, type1);
 	  return;
+	case SPACESHIP_EXPR:
+	  /* This is invalid, don't warn.  */
+	  return;
 	default:
 	  if (enum_first_p)
 	    warning_at (loc, opt, "arithmetic between enumeration type %qT "
@@ -5584,6 +5587,12 @@ cp_build_binary_op (const op_location_t &location,
 	   arithmetic conversions are applied to the operands."  So we don't do
 	   arithmetic conversions if the operands both have enumeral type.  */
 	result_type = NULL_TREE;
+      else if ((orig_code0 == ENUMERAL_TYPE && orig_code1 == REAL_TYPE)
+	       || (orig_code0 == REAL_TYPE && orig_code1 == ENUMERAL_TYPE))
+	/* [depr.arith.conv.enum]: Three-way comparisons between such operands
+	   [where one is of enumeration type and the other is of a different
+	   enumeration type or a floating-point type] are ill-formed.  */
+	result_type = NULL_TREE;
 
       if (result_type)
 	{
@@ -5598,12 +5607,12 @@ cp_build_binary_op (const op_location_t &location,
 	     type to a floating point type, the program is ill-formed.  */
 	  bool ok = true;
 	  if (TREE_CODE (result_type) == REAL_TYPE
-	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (orig_op0)))
+	      && CP_INTEGRAL_TYPE_P (orig_type0))
 	    /* OK */;
 	  else if (!check_narrowing (result_type, orig_op0, complain))
 	    ok = false;
 	  if (TREE_CODE (result_type) == REAL_TYPE
-	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (orig_op1)))
+	      && CP_INTEGRAL_TYPE_P (orig_type1))
 	    /* OK */;
 	  else if (!check_narrowing (result_type, orig_op1, complain))
 	    ok = false;
