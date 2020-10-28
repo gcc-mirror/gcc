@@ -2424,7 +2424,7 @@ output_function (struct cgraph_node *node)
   /* As we do not recurse into BLOCK_SUBBLOCKS but only BLOCK_SUPERCONTEXT
      collect block tree leafs and stream those.  */
   auto_vec<tree> block_tree_leafs;
-  if (DECL_INITIAL (function))
+  if (DECL_INITIAL (function) && DECL_INITIAL (function) != error_mark_node)
     collect_block_tree_leafs (DECL_INITIAL (function), block_tree_leafs);
   streamer_write_uhwi (ob, block_tree_leafs.length ());
   for (unsigned i = 0; i < block_tree_leafs.length (); ++i)
@@ -2788,7 +2788,8 @@ lto_output (void)
 		  && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	      /* Thunks have no body but they may be synthetized
 		 at WPA time.  */
-	      || DECL_ARGUMENTS (cnode->decl)))
+	      || DECL_ARGUMENTS (cnode->decl)
+	      || cnode->declare_variant_alt))
 	output_function (cnode);
       else if ((vnode = dyn_cast <varpool_node *> (snode))
 	       && (DECL_INITIAL (vnode->decl) != error_mark_node
