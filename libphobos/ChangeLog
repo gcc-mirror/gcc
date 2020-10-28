@@ -1,3 +1,7 @@
+2020-10-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 58560d51.
+
 2020-10-12  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* libdruntime/config/mips/switchcontext.S [__mips_hard_float]:

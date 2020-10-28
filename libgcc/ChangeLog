@@ -1,3 +1,9 @@
+2020-10-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* libgcov.h (gcov_counter_add): Use first static counters
+	as it should help to have malloc wrappers set up.
+
 2020-10-23  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* config/gthr-vxworks-thread.c: #include gthr.h before

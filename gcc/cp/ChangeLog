@@ -1,3 +1,43 @@
+2020-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct lang_type): Delete nested_udts field.
+	(CLASSTYPE_NESTED_UTDS): Delete.
+	* name-lookup.h (binding_table, binding_entry): Delete typedefs.
+	(bt_foreach_proc): Likewise.
+	(struct binding_entry_s): Delete.
+	(SCOPE_DEFAULT_HT_SIZE, CLASS_SCOPE_HT_SIZE)
+	(NAMESPACE_ORDINARY_HT_SIZE, NAMESPACE_STD_HT_SIZE)
+	(GLOBAL_SCOPE_HT_SIZE): Delete.
+	(binding_table_foreach, binding_table_find): Delete declarations.
+	* name-lookup.c (ENTRY_INDEX): Delete.
+	(free_binding_entry): Delete.
+	(binding_entry_make, binding_entry_free): Delete.
+	(struct binding_table_s): Delete.
+	(binding_table_construct, binding_table_free): Delete.
+	(binding_table_new, binding_table_expand): Delete.
+	(binding_table_insert, binding_table_find): Delete.
+	(binding_table_foreach): Delete.
+	(maybe_process_template_type_declaration): Delete
+	CLASSTYPE_NESTED_UTDS insertion.
+	(do_pushtag): Likewise.
+	* decl2.c (bt_reset_linkage_1): Fold into reset_type_linkage_1.
+	(reset_type_linkage_2, bt_reset_linkage_2): Fold into
+	reset_type_linkage.
+	* pt.c (instantiate_class_template_1): Delete NESTED_UTDs comment.
+	(bt_instantiate_type_proc): Delete.
+	(do_type_instantiation): Instantiate implicit typedef fields.
+	Delete NESTED_UTD walk.
+	* search.c (lookup_field_r): Delete unreachable NESTED_UTD
+	search.
+
+2020-10-27  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_explicit_instantiation): Refactor some RAII.
+	* pt.c (bt_instantiate_type_proc): DATA is the tree, pass type to
+	do_type_instantiation.
+	(do_type_instantiation): Require T to be a type.  Refactor for
+	some RAII.
+
 2020-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* cp-tree.h (CPTK_IS_NOTHROW_ASSIGNABLE): New.
