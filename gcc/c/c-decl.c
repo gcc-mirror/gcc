@@ -9630,7 +9630,9 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
 	    warn_if_shadowing (decl);
 	}
       else
-	error_at (DECL_SOURCE_LOCATION (decl), "parameter name omitted");
+	pedwarn_c11 (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+		     "ISO C does not support omitting parameter names in "
+		     "function definitions before C2X");
     }
 
   /* Record the parameter list in the function declaration.  */
