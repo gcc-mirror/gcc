@@ -413,6 +413,7 @@ vect_def_types_match (enum vect_def_type dta, enum vect_def_type dtb)
    ok return 0.  */
 static int
 vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
+			     bool *skip_args,
 			     vec<stmt_vec_info> stmts, unsigned stmt_num,
 			     vec<slp_oprnd_info> *oprnds_info)
 {
@@ -507,6 +508,14 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	  return -1;
 	}
 
+      if (skip_args[i])
+	{
+	  oprnd_info->def_stmts.quick_push (NULL);
+	  oprnd_info->ops.quick_push (NULL_TREE);
+	  oprnd_info->first_dt = vect_uninitialized_def;
+	  continue;
+	}
+
       if (def_stmt_info && is_pattern_stmt_p (def_stmt_info))
 	oprnd_info->any_pattern = true;
 
@@ -589,6 +598,12 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
   /* Now match the operand definition types to that of the first stmt.  */
   for (i = 0; i < number_of_oprnds;)
     {
+      if (skip_args[i])
+	{
+	  ++i;
+	  continue;
+	}
+
       oprnd_info = (*oprnds_info)[i];
       dt = dts[i];
       stmt_vec_info def_stmt_info = oprnd_info->def_stmts[stmt_num];
@@ -1412,7 +1427,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 
   /* If the SLP node is a PHI (induction or reduction), terminate
      the recursion.  */
-  bool skip_args[2] = { false, false };
+  bool *skip_args = XALLOCAVEC (bool, nops);
+  memset (skip_args, 0, nops);
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
       {
@@ -1557,7 +1573,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
   slp_oprnd_info oprnd_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
     {
-      int res = vect_get_and_check_slp_defs (vinfo, swap[i],
+      int res = vect_get_and_check_slp_defs (vinfo, swap[i], skip_args,
 					     stmts, i, &oprnds_info);
       if (res != 0)
 	matches[(res == -1) ? 0 : i] = false;
@@ -1582,19 +1598,19 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
       slp_tree child;
       unsigned int j;
 
+      /* We're skipping certain operands from processing, for example
+	 outer loop reduction initial defs.  */
+      if (skip_args[i])
+	{
+	  children.safe_push (NULL);
+	  continue;
+	}
+
       if (oprnd_info->first_dt == vect_uninitialized_def)
 	{
 	  /* COND_EXPR have one too many eventually if the condition
 	     is a SSA name.  */
 	  gcc_assert (i == 3 && nops == 4);
-	  continue;
-	}
-
-      /* We're skipping certain operands from processing, for example
-	 outer loop reduction initial defs.  */
-      if (i <= 1 && skip_args[i])
-	{
-	  children.safe_push (NULL);
 	  continue;
 	}
 
