@@ -702,8 +702,11 @@ wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
       /* If the bit we just set is at the msb of the block, make sure
 	 that any higher bits are zeros.  */
       if (bit + 1 < precision && subbit == HOST_BITS_PER_WIDE_INT - 1)
-	val[len++] = 0;
-      return len;
+	{
+	  val[len++] = 0;
+	  return len;
+	}
+      return canonize (val, len, precision);
     }
   else
     {
