@@ -9284,27 +9284,33 @@ expand_omp_target (struct omp_region *region)
   entry_bb = region->entry;
   exit_bb = region->exit;
 
+  if (target_kind == GF_OMP_TARGET_KIND_OACC_KERNELS)
+    mark_loops_in_oacc_kernels_region (region->entry, region->exit);
+
+  /* Going on, all OpenACC compute constructs are mapped to
+     'BUILT_IN_GOACC_PARALLEL', and get their compute regions outlined.
+     To distinguish between them, we attach attributes.  */
   switch (target_kind)
     {
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL:
+      DECL_ATTRIBUTES (child_fn)
+	= tree_cons (get_identifier ("oacc parallel"),
+		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
+      break;
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
-      mark_loops_in_oacc_kernels_region (region->entry, region->exit);
-
-      /* Further down, all OpenACC compute constructs will be mapped to
-	 BUILT_IN_GOACC_PARALLEL, and to distinguish between them, there
-	 is an "oacc kernels" attribute set for OpenACC kernels.  */
       DECL_ATTRIBUTES (child_fn)
 	= tree_cons (get_identifier ("oacc kernels"),
 		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
       break;
     case GF_OMP_TARGET_KIND_OACC_SERIAL:
-      /* Further down, all OpenACC compute constructs will be mapped to
-	 BUILT_IN_GOACC_PARALLEL, and to distinguish between them, there
-	 is an "oacc serial" attribute set for OpenACC serial.  */
       DECL_ATTRIBUTES (child_fn)
 	= tree_cons (get_identifier ("oacc serial"),
 		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
       break;
     default:
+      /* Make sure we don't miss any.  */
+      gcc_checking_assert (!(is_gimple_omp_oacc (entry_stmt)
+			     && is_gimple_omp_offloaded (entry_stmt)));
       break;
     }
 
