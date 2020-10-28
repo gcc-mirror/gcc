@@ -2421,9 +2421,8 @@ package body Sem_Ch6 is
       else
          Error_Msg_N ("invalid procedure or entry call", N);
 
-         --  Specialize the error message in the case where both a
-         --  primitive operation and a record component are visible
-         --  at the same time.
+         --  Specialize the error message in the case where both a primitive
+         --  operation and a record component are visible at the same time.
 
          if Nkind (P) = N_Selected_Component
            and then Is_Entity_Name (Selector_Name (P))

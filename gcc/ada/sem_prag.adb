@@ -10439,7 +10439,7 @@ package body Sem_Prag is
                   end if;
 
                --  Special processing for No_Tasking restriction (not just a
-               --  warning) when it appears as a configuration pragmas.
+               --  warning) when it appears as a configuration pragma.
 
                elsif R_Id = No_Tasking
                  and then No (Cunit (Main_Unit))
