@@ -21866,7 +21866,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 	    open_paren = NULL;
 	}
       if (open_paren)
-	declarator->parenthesized = open_paren->location;
+	declarator->parenthesized = make_location (open_paren->location,
+						   open_paren->location,
+						   close_paren->location);
     }
 
   /* If we entered a scope, we must exit it now.  */
