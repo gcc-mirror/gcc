@@ -5923,9 +5923,9 @@ trees_out::core_vals (tree t)
 	}
 
       WT (t->decl_common.attributes);
-      // FIXME: Check this doesn't introduce cross-decl links,  for
-      // instance from instantiation to the template.  If so, we'll
-      // need more deduplication logic
+      // FIXME: Does this introduce cross-decl links?  For instance
+      // from instantiation to the template.  If so, we'll need more
+      // deduplication logic
       WT (t->decl_common.abstract_origin);
     }
 
@@ -6151,7 +6151,9 @@ trees_out::core_vals (tree t)
       // the resulting set of options.  Not a record of the options
       // that got changed by a particular attribute or pragma.  Should
       // we record that, or should we record the diff from the command
-      // line options?
+      // line options?  The latter seems the right behaviour, but is
+      // (a) harder, and I guess could introduce strangeness if the
+      // importer has set some incompatible set of optimization flags?
       gcc_unreachable ();
       break;
 
@@ -7509,13 +7511,7 @@ trees_in::install_entity (tree decl)
   if (pending & 2)
     {
       DECL_MODULE_PENDING_MEMBERS_P (decl) = true;
-      if (TREE_CODE (decl) == TEMPLATE_DECL)
-	{
-	  // FIXME: DECL_MODULE_PENDING_MEMBERS_P requires a
-	  // TYPE_DECL, what was I thinking?
-	  gcc_unreachable ();
-	  DECL_MODULE_PENDING_MEMBERS_P (DECL_TEMPLATE_RESULT (decl)) = true;
-	}
+      gcc_checking_assert (TREE_CODE (decl) != TEMPLATE_DECL);
     }
 
   return true;
@@ -15217,10 +15213,10 @@ module_state::write_pendings (elf_out *to, vec<depset *> depsets,
 	      key = TI_TEMPLATE (ti);
 	}
 
-      // FIXME: More than likely when there is one pending member,
-      // there will be others.  All written in the same section and
-      // keyed to the same class.  We only need to record one of
-      // them.  The same is not true for specializations
+      // FIXME:OPTIMIZATION More than likely when there is one pending
+      // member, there will be others.  All written in the same
+      // section and keyed to the same class.  We only need to record
+      // one of them.  The same is not true for specializations
 
       if (key)
 	{
@@ -15653,13 +15649,16 @@ module_state::read_location (bytes_in &sec) const
 }
 
 /* Prepare the span adjustments.  */
-// FIXME: I do not prune the unreachable locations.  Modules with
-// textually-large GMFs could well cause us to run out of locations.
-// Regular single-file modules could also be affected.  We should
-// determine which locations we need to represent, so that we do not
-// grab more locations than necessary.  Perhaps we should decompose
-// locations so that we can have a more graceful degradation upon
-// running out?
+
+// FIXME:OPTIMIZATION I do not prune the unreachable locations.
+// Modules with textually-large GMFs could well cause us to run out of
+// locations.  Regular single-file modules could also be affected.  We
+// should determine which locations we need to represent, so that we
+// do not grab more locations than necessary.  An example is in
+// write_macro_maps where we work around macro expansions that are not
+// covering any locations -- the macro expands to nothing.  Perhaps we
+// should decompose locations so that we can have a more graceful
+// degradation upon running out?
 
 location_map_info
 module_state::write_prepare_maps (module_state_config *)
@@ -15982,11 +15981,8 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
 	    {
 	      /* We're ending on an empty macro expansion.  The
 		 preprocessor doesn't prune such things.  */
-	      // FIXME: This goes to show we should be eliding all
-	      // macro expansions that are not covering any location
-	      // we need to output (just like non-macro locations,
-	      // mentioned above).  They also happen in #if
-	      // conditionals, that we don't care about at all.
+	      // FIXME:OPTIMIZATION This is an example of the non-pruning of
+	      // locations.  See write_prepare_maps.
 	      gcc_checking_assert (!mmap->n_tokens);
 	      continue;
 	    }
@@ -17621,8 +17617,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Human-readable info.  */
   write_readme (to, config.dialect_str, extensions);
-  // FIXME: Write ths info to the 'reproducer' file yet to be implemented
-  // write_env (to);
+  // FIXME: Write this info to the 'reproducer' file yet to be
+  // implemented write_env (to);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
