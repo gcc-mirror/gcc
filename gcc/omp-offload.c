@@ -196,7 +196,26 @@ omp_declare_target_var_p (tree decl)
 static tree
 omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 {
-  if (TREE_CODE (*tp) == FUNCTION_DECL)
+  if (TREE_CODE (*tp) == CALL_EXPR
+      && CALL_EXPR_FN (*tp)
+      && TREE_CODE (CALL_EXPR_FN (*tp)) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (CALL_EXPR_FN (*tp), 0)) == FUNCTION_DECL
+      && lookup_attribute ("omp declare variant base",
+			   DECL_ATTRIBUTES (TREE_OPERAND (CALL_EXPR_FN (*tp),
+							  0))))
+    {
+      tree fn = TREE_OPERAND (CALL_EXPR_FN (*tp), 0);
+      for (tree attr = DECL_ATTRIBUTES (fn); attr; attr = TREE_CHAIN (attr))
+	{
+	  attr = lookup_attribute ("omp declare variant base", attr);
+	  if (attr == NULL_TREE)
+	    break;
+	  tree purpose = TREE_PURPOSE (TREE_VALUE (attr));
+	  if (TREE_CODE (purpose) == FUNCTION_DECL)
+	    omp_discover_declare_target_tgt_fn_r (&purpose, walk_subtrees, data);
+	}
+    }
+  else if (TREE_CODE (*tp) == FUNCTION_DECL)
     {
       tree decl = *tp;
       tree id = get_identifier ("omp declare target");
@@ -237,7 +256,7 @@ omp_discover_declare_target_tgt_fn_r (tree *tp, int *walk_subtrees, void *data)
 	}
       if (omp_declare_target_fn_p (decl)
 	  || lookup_attribute ("omp declare target host",
-				    DECL_ATTRIBUTES (decl)))
+			       DECL_ATTRIBUTES (decl)))
 	return NULL_TREE;
 
       if (!DECL_EXTERNAL (decl) && DECL_SAVED_TREE (decl))
