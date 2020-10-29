@@ -7570,7 +7570,6 @@ vectorizable_phi (vec_info *,
   tree scalar_dest = gimple_phi_result (stmt_info->stmt);
   basic_block bb = gimple_bb (stmt_info->stmt);
   tree vec_dest = vect_create_destination_var (scalar_dest, vectype);
-  auto_vec<tree> vec_oprnds;
   auto_vec<gphi *> new_phis;
   for (unsigned i = 0; i < gimple_phi_num_args (stmt_info->stmt); ++i)
     {
@@ -7581,6 +7580,7 @@ vectorizable_phi (vec_info *,
 	  && SLP_TREE_VEC_STMTS (child).is_empty ())
 	continue;
 
+      auto_vec<tree> vec_oprnds;
       vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[i], &vec_oprnds);
       if (!new_phis.exists ())
 	{
