@@ -6652,6 +6652,16 @@ Enable/disable the generation of the UINTR instructions.
 @cindex @code{target("hreset")} function attribute, x86
 Enable/disable the generation of the HRESET instruction.
 
+@item kl
+@itemx no-kl
+@cindex @code{target("kl")} function attribute, x86
+Enable/disable the generation of the KEYLOCKER instructions.
+
+@item widekl
+@itemx no-widekl
+@cindex @code{target("widekl")} function attribute, x86
+Enable/disable the generation of the WIDEKL instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86

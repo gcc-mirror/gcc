@@ -1,3 +1,226 @@
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97608
+	* gcc.dg/analyzer/malloc-1.c (test_42d): New.
+	* gcc.dg/analyzer/pr97608.c: New test.
+
+2020-10-28  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/vsx-load-element-extend-char.c: Put "dg-do run"
+	before "dg-do compile", and make them mutually exclusive.
+	* gcc.target/powerpc/vsx-load-element-extend-int.c: Likewise.
+	* gcc.target/powerpc/vsx-load-element-extend-longlong.c: Likewise.
+	* gcc.target/powerpc/vsx-load-element-extend-short.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-char.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-int.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-longlong.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-short.c: Likewise.
+	* gcc.target/powerpc/altivec-consts.c: Likewise, add -save-temps.
+	* gcc.target/powerpc/le-altivec-consts.c: Likewise.
+
+2020-10-28  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/float128-type-1.c: Simplify target test.
+	* gcc.target/powerpc/float128-type-2.c: Likewise.
+
+2020-10-28  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-extract-char.p9.c: Don't check addi
+	count for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-int.p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p7.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Likewise.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/mvp3.C: New test.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* g++.dg/cpp0x/linkage2.C: Add dg-warning.
+	* g++.dg/parse/attr3.C: Likewise.
+	* g++.dg/cpp2a/enum-conv1.C: New test.
+	* g++.dg/cpp2a/enum-conv2.C: New test.
+	* g++.dg/cpp2a/enum-conv3.C: New test.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96675
+	PR c++/96742
+	* g++.dg/warn/Wdiv-by-zero-3.C: Turn dg-warning into dg-bogus.
+	* g++.dg/warn/Wtautological-compare3.C: New test.
+	* g++.dg/warn/Wtype-limits5.C: New test.
+	* g++.old-deja/g++.pt/crash10.C: Remove dg-warning.
+
+2020-10-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/sad-vectorize-1.c: Remove AIX skip.
+	* gcc.target/powerpc/sad-vectorize-2.c: Remove AIX skip.
+	* gcc.target/powerpc/sad-vectorize-3.c: Remove target.
+	Require p9vector_hw.
+	* gcc.target/powerpc/sad-vectorize-4.c: Remove target.
+	Require p9vector_hw.
+	* gcc.target/powerpc/signbit-1.c: Remove target.
+	Require ppc_float128_sw.
+	* gcc.target/powerpc/signbit-2.c: Remove target.
+	Require ppc_float128_sw.
+	* gcc.target/powerpc/signbit-3.c: Remove target.
+	Require ppc_float128_sw.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94799
+	* g++.dg/template/lookup16.C: New test.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86773
+	* g++.dg/cpp1z/fold12.C: New test.
+
+2020-10-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/97535
+	* gcc.target/aarch64/pr97535.c: Exclude ILP32.
+
+2020-10-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/97457
+	* gcc.dg/vect/pr97457.c: New test.
+
+2020-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-parm-omit-1.c, gcc.dg/c11-parm-omit-2.c,
+	gcc.dg/c11-parm-omit-3.c, gcc.dg/c11-parm-omit-4.c,
+	gcc.dg/c2x-parm-omit-1.c, gcc.dg/c2x-parm-omit-2.c,
+	gcc.dg/c2x-parm-omit-3.c, gcc.dg/c2x-parm-omit-4.c: New tests.
+	* gcc.dg/noncompile/pr79758.c: Do not expect error for omitted
+	parameter name.
+
+2020-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95132
+	* g++.dg/cpp2a/concepts-fn7.C: New test.
+
+2020-10-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/vadsdu-0.c: Remove target.
+	* gcc.target/powerpc/vadsdu-1.c: Remove target.
+	* gcc.target/powerpc/vadsdu-2.c: Remove target.
+	* gcc.target/powerpc/vadsdu-3.c: Remove target.
+	* gcc.target/powerpc/vadsdu-4.c: Remove target.
+	* gcc.target/powerpc/vadsdu-5.c: Remove target.
+	* gcc.target/powerpc/vadsdub-1.c: Remove target.
+	* gcc.target/powerpc/vadsdub-2.c: Remove target.
+	* gcc.target/powerpc/vadsduh-1.c: Remove target.
+	* gcc.target/powerpc/vadsduh-2.c: Remove target.
+	* gcc.target/powerpc/vadsduw-1.c: Remove target.
+	* gcc.target/powerpc/vadsduw-2.c: Remove target.
+	* gcc.target/powerpc/vslv-0.c: Remove target.
+	* gcc.target/powerpc/vslv-1.c: Remove target.
+	* gcc.target/powerpc/vsrv-0.c: Remove target.
+	* gcc.target/powerpc/vsrv-1.c: Remove target.
+
+2020-10-28  David Edelsohn  <dje.gcc@gmail.com>
+	    Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/byte-in-either-range-0.c: Remove target.
+	* gcc.target/powerpc/byte-in-either-range-1.c: Remove target.
+	* gcc.target/powerpc/byte-in-range-0.c: Remove target.
+	* gcc.target/powerpc/byte-in-range-1.c: Remove target.
+	* gcc.target/powerpc/byte-in-set-0.c: Remove target.
+	* gcc.target/powerpc/byte-in-set-1.c: Remove target.
+	* gcc.target/powerpc/byte-in-set-2.c: Remove target. Expect
+	implicit declaration warning.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-58.c: Require vect_double.
+	* gcc.dg/vect/bb-slp-59.c: Likewise.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97615
+	* gcc.dg/vect/bb-slp-pr97615.c: New testcase.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-68.c: New testcase.
+
+2020-10-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(hbfloat16_t): Define type.
+	(CHECK_FP): Make it working for bfloat types.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstN_lane_1.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstN_lane_2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_bf16_indices_1.c:
+	Likewise.
+
+2020-10-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vldN_lane_1.c: New
+	testcase.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vldN_lane_2.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_bf16_indices_1.c:
+	Likewise.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/allocate-1.c: New test.
+	* c-c++-common/gomp/allocate-2.c: New test.
+	* c-c++-common/gomp/clauses-1.c (omp_allocator_handle_t): New typedef.
+	(foo, bar, baz): Add allocate clauses where allowed.
+
+2020-10-28  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/vsx-load-element-extend-char.c: Add -save-temps.
+	* gcc.target/powerpc/vsx-load-element-extend-int.c: Likewise.
+	* gcc.target/powerpc/vsx-load-element-extend-longlong.c: Likewise.
+	* gcc.target/powerpc/vsx-load-element-extend-short.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-char.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-int.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-longlong.c: Likewise.
+	* gcc.target/powerpc/vsx-store-element-truncate-short.c: Likewise.
+
+2020-10-28  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/vec-blend-runnable.c: Add save-temps.
+	* gcc.target/powerpc/vec-insert-word-runnable.c: Likewise.
+	* gcc.target/powerpc/vec-permute-ext-runnable.c: Likewise.
+	* gcc.target/powerpc/vec-replace-word-runnable.c: Likewise.
+	* gcc.target/powerpc/vec-splati-runnable.c: Likewise.
+	* gcc.target/powerpc/vec-ternarylogic-3.c: Likewise.
+	* gcc.target/powerpc/vec-ternarylogic-9.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-count-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-expand-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-extract-runnable.c: Likewise.
+	* gcc.target/powerpc/vsx_mask-move-runnable.c: Likewise.
+	* gcc.target/powerpc/vec-shift-double-runnable.c: Likewise,
+	and correct assembly match.
+
 2020-10-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c2x-attr-deprecated-4.c, gcc.dg/c2x-attr-fallthrough-4.c,

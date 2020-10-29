@@ -1627,8 +1627,10 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      break;
 	  if (j == group_size
 	      /* But avoid doing this for loads where we may be
-		 able to CSE things.  */
-	      && !gimple_vuse (first_def->stmt))
+		 able to CSE things, unless the stmt is not
+		 vectorizable.  */
+	      && (!STMT_VINFO_VECTORIZABLE (first_def)
+		  || !gimple_vuse (first_def->stmt)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
@@ -2379,7 +2381,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "Final SLP tree for instance:\n");
+			       "Final SLP tree for instance %p:\n", new_instance);
 	      vect_print_slp_graph (MSG_NOTE, vect_location,
 				    SLP_INSTANCE_TREE (new_instance));
 	    }
@@ -3402,7 +3404,7 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "Building vector operands from scalars instead\n");
+		     "Building vector operands of %p from scalars instead\n", node);
 
   /* Don't remove and free the child nodes here, since they could be
      referenced by other structures.  The analysis and scheduling phases

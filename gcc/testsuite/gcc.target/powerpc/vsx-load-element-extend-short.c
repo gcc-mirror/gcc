@@ -2,8 +2,9 @@
    Test of vec_xl_sext and vec_xl_zext (load into rightmost
    vector element and zero/sign extend). */
 
-/* { dg-do compile {target power10_ok} } */
-/* { dg-do run {target power10_hw} } */
+/* { dg-do run { target power10_hw } } */
+/* { dg-do compile { target { ! power10_hw } } } */
+/* { dg-require-effective-target power10_ok } */
 /* { dg-require-effective-target int128 } */
 
 /* Deliberately set optization to zero for this test to confirm

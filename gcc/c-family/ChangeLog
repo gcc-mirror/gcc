@@ -1,3 +1,19 @@
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* c-opts.c (c_common_post_options): In C++20, turn on
+	-Wdeprecated-enum-enum-conversion and
+	-Wdeprecated-enum-float-conversion.
+	* c.opt (Wdeprecated-enum-enum-conversion,
+	Wdeprecated-enum-float-conversion): New options.
+	(Wenum-conversion): Allow for C++ too.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_ALLOCATE.
+	* c-omp.c: Include bitmap.h.
+	(c_omp_split_clauses): Handle OMP_CLAUSE_ALLOCATE.
+
 2020-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* c-common.c (__is_nothrow_assignable): New.

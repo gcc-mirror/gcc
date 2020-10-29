@@ -1,3 +1,139 @@
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/complexity.o.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* doc/invoke.texi: Document -Wdeprecated-enum-enum-conversion
+	and -Wdeprecated-enum-float-conversion.  -Wenum-conversion is
+	no longer C/ObjC only.
+
+2020-10-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/97457
+	* value-range.cc (irange::set): Don't decay POLY_INT_CST ranges
+	to integer ranges.
+
+2020-10-28  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/vsx.md(xxgenpcvm_<mode>_internal): Remove TARGET_64BIT.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_analyze_node_operations_1): Dump
+	when shared vectype update fails.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): For skipped
+	args just push NULLs and vect_uninitialized_def.
+	(vect_build_slp_tree_2): Allocate skip_args for all ops
+	and pass it down to vect_get_and_check_slp_defs.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97615
+	* tree-vect-slp.c (vect_build_slp_tree_2): Do not build
+	an external from pattern defs.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_optimize_slp): Fix iteration over
+	all loads.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_instance): Split the store
+	group at the failure boundary and also re-analyze a large enough
+	matching rest.
+
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_slp_analyze_node_alignment):
+	Dump when vect_update_shared_vectype fails.
+
+2020-10-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/arm_neon.h (__ST2_LANE_FUNC, __ST3_LANE_FUNC)
+	(__ST4_LANE_FUNC): Rename the macro generating the 'q' variants
+	into __ST2Q_LANE_FUNC, __ST2Q_LANE_FUNC, __ST2Q_LANE_FUNC so they
+	all can be undefed at the and of the file.
+	(vst2_lane_bf16, vst2q_lane_bf16, vst3_lane_bf16, vst3q_lane_bf16)
+	(vst4_lane_bf16, vst4q_lane_bf16): Add new intrinsics.
+
+2020-10-28  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/arm_neon.h (__LD2_LANE_FUNC, __LD3_LANE_FUNC)
+	(__LD4_LANE_FUNC): Rename the macro generating the 'q' variants
+	into __LD2Q_LANE_FUNC, __LD2Q_LANE_FUNC, __LD2Q_LANE_FUNC so they
+	all can be undefed at the and of the file.
+	(vld2_lane_bf16, vld2q_lane_bf16, vld3_lane_bf16, vld3q_lane_bf16)
+	(vld4_lane_bf16, vld4q_lane_bf16): Add new intrinsics.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_ALLOCATE.
+	* tree.h (OMP_CLAUSE_ALLOCATE_ALLOCATOR,
+	OMP_CLAUSE_ALLOCATE_COMBINED): Define.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add allocate
+	clause.
+	(walk_tree_1): Handle OMP_CLAUSE_ALLOCATE.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	* gimplify.c (gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses,
+	gimplify_omp_for): Likewise.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Likewise.
+	* omp-low.c (scan_sharing_clauses): Likewise.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-offload.c (omp_declare_target_tgt_fn_r): Handle direct calls to
+	declare variant base functions.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/96680
+	* lto-streamer.h (omp_lto_output_declare_variant_alt,
+	omp_lto_input_declare_variant_alt): Declare variant.
+	* symtab.c (symtab_node::get_partitioning_class): Return
+	SYMBOL_DUPLICATE for declare_variant_alt nodes.
+	* passes.c (ipa_write_summaries): Add declare_variant_alt to
+	partition.
+	* lto-cgraph.c (output_refs): Call omp_lto_output_declare_variant_alt
+	on declare_variant_alt nodes.
+	(input_refs): Call omp_lto_input_declare_variant_alt on
+	declare_variant_alt nodes.
+	* lto-streamer-out.c (output_function): Don't call
+	collect_block_tree_leafs if DECL_INITIAL is error_mark_node.
+	(lto_output): Call output_function even for declare_variant_alt
+	nodes.
+	* omp-general.c (omp_lto_output_declare_variant_alt,
+	omp_lto_input_declare_variant_alt): New functions.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* wide-int.cc (wi::set_bit_large): Call canonize unless setting
+	msb bit and clearing bits above it.
+
+2020-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute_cache::cache_stmt): Accumulate
+	return values and only set cache when everything returned true.
+	* gimple-range.cc (get_tree_range): Set the return range to UNDEFINED
+	when the range isn't supported.
+	(gimple_ranger::calc_stmt): Return varying if the type is supported,
+	even if the stmt processing failed.  False otherwise.
+	(range_of_builtin_ubsan_call): Don't use gcc_assert.
+	(range_of_builtin_call): Ditto.
+	(gimple_ranger::range_of_cond_expr): Ditto.
+	(gimple_ranger::range_of_expr): Ditto
+	(gimple_ranger::range_on_entry): Ditto.
+	(gimple_ranger::range_on_exit): Ditto.
+	(gimple_ranger::range_on_edge): DItto.
+	(gimple_ranger::range_of_stmt): Don't use gcc_assert, and initialize
+	return value to UNDEFINED.
+
 2020-10-27  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR rtl-optimization/97497

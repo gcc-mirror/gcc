@@ -91,19 +91,15 @@ non_null_ref::process_name (tree name)
     {
       gimple *s = USE_STMT (use_p);
       unsigned index = gimple_bb (s)->index;
-      tree value;
-      enum tree_code comp_code;
 
       // If bit is already set for this block, dont bother looking again.
       if (bitmap_bit_p (b, index))
 	continue;
 
-      // If we can infer a != 0 range, then set the bit for this BB
-      if (infer_value_range (s, name, &comp_code, &value))
-	{
-	  if (comp_code == NE_EXPR && integer_zerop (value))
-	    bitmap_set_bit (b, index);
-	}
+      // If we can infer a nonnull range, then set the bit for this BB
+      if (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name)
+	  && infer_nonnull_range (s, name))
+	bitmap_set_bit (b, index);
     }
 
   m_nn[v] = b;

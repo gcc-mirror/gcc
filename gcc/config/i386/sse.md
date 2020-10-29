@@ -205,6 +205,19 @@
   UNSPECV_MWAIT
   UNSPECV_VZEROALL
   UNSPECV_VZEROUPPER
+
+  ;; For KEYLOCKER
+  UNSPECV_LOADIWKEY
+  UNSPECV_AESDEC128KLU8
+  UNSPECV_AESENC128KLU8
+  UNSPECV_AESDEC256KLU8
+  UNSPECV_AESENC256KLU8
+  UNSPECV_AESDECWIDE128KLU8
+  UNSPECV_AESENCWIDE128KLU8
+  UNSPECV_AESDECWIDE256KLU8
+  UNSPECV_AESENCWIDE256KLU8
+  UNSPECV_ENCODEKEY128U32
+  UNSPECV_ENCODEKEY256U32
 ])
 
 ;; All vector modes including V?TImode, used in move patterns.
@@ -23316,3 +23329,208 @@
           (match_operand:<avx512fmaskhalfmode> 4 "register_operand" "Yk")))]
   "TARGET_AVX512BF16"
   "vdpbf16ps\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}")
+
+;; KEYLOCKER
+(define_insn "loadiwkey"
+  [(unspec_volatile:V2DI [(match_operand:V2DI 0 "register_operand" "v")
+                          (match_operand:V2DI 1 "register_operand" "v")
+                          (match_operand:V2DI 2 "register_operand" "Yz")
+                          (match_operand:SI   3 "register_operand" "a")]
+                         UNSPECV_LOADIWKEY)
+   (clobber (reg:CC FLAGS_REG))]
+  "TARGET_KL"
+  "loadiwkey\t{%0, %1|%1, %0}"
+  [(set_attr "type" "other")])
+
+(define_expand "encodekey128u32"
+  [(match_par_dup 2
+    [(set (match_operand:SI 0 "register_operand")
+	  (unspec_volatile:SI
+	    [(match_operand:SI   1 "register_operand")
+	     (reg:V2DI XMM0_REG)]
+            UNSPECV_ENCODEKEY128U32))])]
+  "TARGET_KL"
+{
+  rtx xmm_regs[7];
+  rtx tmp_unspec;
+  unsigned i;
+
+  /* parallel rtx for encodekey128 predicate */
+  operands[2] = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (8));
+
+  for (i = 0; i < 7; i++)
+    xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+  tmp_unspec
+    = gen_rtx_UNSPEC_VOLATILE (SImode,
+			       gen_rtvec (2, operands[1], xmm_regs[0]),
+			       UNSPECV_ENCODEKEY128U32);
+
+  XVECEXP (operands[2], 0, 0)
+    = gen_rtx_SET (operands[0], tmp_unspec);
+
+  tmp_unspec
+    = gen_rtx_UNSPEC_VOLATILE (V2DImode,
+			       gen_rtvec (1, const0_rtx),
+			       UNSPECV_ENCODEKEY128U32);
+
+  for (i = 0; i < 3; i++)
+    XVECEXP (operands[2], 0, i + 1)
+      = gen_rtx_SET (xmm_regs[i], tmp_unspec);
+
+  for (i = 4; i < 7; i++)
+    XVECEXP (operands[2], 0, i)
+      = gen_rtx_SET (xmm_regs[i], CONST0_RTX (V2DImode));
+
+  XVECEXP (operands[2], 0, 7)
+    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+})
+
+(define_insn "*encodekey128u32"
+  [(match_parallel 2 "encodekey128_operation"
+    [(set (match_operand:SI 0 "register_operand" "=r")
+	  (unspec_volatile:SI
+	    [(match_operand:SI   1 "register_operand" "r")
+	     (reg:V2DI XMM0_REG)]
+            UNSPECV_ENCODEKEY128U32))])]
+  "TARGET_KL"
+  "encodekey128\t{%1, %0|%0, %1}"
+  [(set_attr "type" "other")])
+
+(define_expand "encodekey256u32"
+  [(match_par_dup 2
+    [(set (match_operand:SI 0 "register_operand")
+	  (unspec_volatile:SI
+	    [(match_operand:SI   1 "register_operand")
+	     (reg:V2DI XMM0_REG)
+	     (reg:V2DI XMM1_REG)]
+	    UNSPECV_ENCODEKEY256U32))])]
+  "TARGET_KL"
+{
+  rtx xmm_regs[7];
+  rtx tmp_unspec;
+  unsigned i;
+
+  /* parallel rtx for encodekey256 predicate */
+  operands[2] = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (9));
+
+  for (i = 0; i < 7; i++)
+    xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+  tmp_unspec
+    = gen_rtx_UNSPEC_VOLATILE (SImode,
+			       gen_rtvec (3, operands[1],
+					  xmm_regs[0], xmm_regs[1]),
+			       UNSPECV_ENCODEKEY256U32);
+
+  XVECEXP (operands[2], 0, 0)
+    = gen_rtx_SET (operands[0], tmp_unspec);
+
+  tmp_unspec
+    = gen_rtx_UNSPEC_VOLATILE (V2DImode,
+			       gen_rtvec (1, const0_rtx),
+			       UNSPECV_ENCODEKEY256U32);
+
+  for (i = 0; i < 4; i++)
+    XVECEXP (operands[2], 0, i + 1)
+      = gen_rtx_SET (xmm_regs[i], tmp_unspec);
+
+  for (i = 4; i < 7; i++)
+    XVECEXP (operands[2], 0, i + 1)
+      = gen_rtx_SET (xmm_regs[i], CONST0_RTX (V2DImode));
+
+  XVECEXP (operands[2], 0, 8)
+    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+})
+
+(define_insn "*encodekey256u32"
+  [(match_parallel 2 "encodekey256_operation"
+    [(set (match_operand:SI 0 "register_operand" "=r")
+	  (unspec_volatile:SI
+	    [(match_operand:SI   1 "register_operand" "r")
+	     (reg:V2DI XMM0_REG)
+	     (reg:V2DI XMM1_REG)]
+	    UNSPECV_ENCODEKEY256U32))])]
+  "TARGET_KL"
+  "encodekey256\t{%1, %0|%0, %1}"
+  [(set_attr "type" "other")])
+
+(define_int_iterator AESDECENCKL [UNSPECV_AESDEC128KLU8  UNSPECV_AESDEC256KLU8
+                                  UNSPECV_AESENC128KLU8  UNSPECV_AESENC256KLU8])
+
+(define_int_attr aesklvariant [(UNSPECV_AESDEC128KLU8 "dec128kl")
+                               (UNSPECV_AESDEC256KLU8 "dec256kl")
+                               (UNSPECV_AESENC128KLU8 "enc128kl")
+                               (UNSPECV_AESENC256KLU8 "enc256kl")])
+
+(define_insn "aes<aesklvariant>u8"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+        (unspec_volatile:V2DI [(match_operand:V2DI 1 "register_operand" "0")
+                               (match_operand:BLK   2 "memory_operand" "m")]
+                              AESDECENCKL))
+   (set (reg:CCZ FLAGS_REG)
+        (unspec_volatile:CCZ [(match_dup 1) (match_dup 2)] AESDECENCKL))]
+  "TARGET_KL"
+  "aes<aesklvariant>\t{%2, %0|%0, %2}"
+  [(set_attr "type" "other")])
+
+(define_int_iterator AESDECENCWIDEKL [UNSPECV_AESDECWIDE128KLU8  UNSPECV_AESDECWIDE256KLU8
+                                      UNSPECV_AESENCWIDE128KLU8  UNSPECV_AESENCWIDE256KLU8])
+
+(define_int_attr aeswideklvariant [(UNSPECV_AESDECWIDE128KLU8 "decwide128kl")
+                                   (UNSPECV_AESDECWIDE256KLU8 "decwide256kl")
+                                   (UNSPECV_AESENCWIDE128KLU8 "encwide128kl")
+                                   (UNSPECV_AESENCWIDE256KLU8 "encwide256kl")])
+
+(define_int_attr AESWIDEKLVARIANT [(UNSPECV_AESDECWIDE128KLU8 "AESDECWIDE128KLU8")
+                                   (UNSPECV_AESDECWIDE256KLU8 "AESDECWIDE256KLU8")
+                                   (UNSPECV_AESENCWIDE128KLU8 "AESENCWIDE128KLU8")
+                                   (UNSPECV_AESENCWIDE256KLU8 "AESENCWIDE256KLU8")])
+
+(define_expand "aes<aeswideklvariant>u8"
+  [(match_par_dup 1
+    [(set (reg:CCZ FLAGS_REG)
+	  (unspec_volatile:CCZ
+	    [(match_operand:BLK 0 "memory_operand")]
+	    AESDECENCWIDEKL))])]
+  "TARGET_WIDEKL"
+{
+  rtx xmm_regs[8];
+  rtx tmp_unspec;
+  unsigned i;
+
+  /* parallel rtx for widekl predicate */
+  operands[1] = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (9));
+
+  for (i = 0; i < 8; i++)
+    xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+  tmp_unspec
+    = gen_rtx_UNSPEC_VOLATILE (CCZmode,
+			       gen_rtvec (1, operands[0]),
+			       UNSPECV_<AESWIDEKLVARIANT>);
+
+  XVECEXP (operands[1], 0, 0)
+     = gen_rtx_SET (gen_rtx_REG (CCZmode, FLAGS_REG),
+		    tmp_unspec);
+
+  for (i = 0; i < 8; i++)
+    {
+      tmp_unspec
+	= gen_rtx_UNSPEC_VOLATILE (V2DImode,
+				   gen_rtvec (1, xmm_regs[i]),
+				   UNSPECV_<AESWIDEKLVARIANT>);
+      XVECEXP (operands[1], 0, i + 1)
+	= gen_rtx_SET (xmm_regs[i], tmp_unspec);
+    }
+})
+
+(define_insn "*aes<aeswideklvariant>u8"
+  [(match_parallel 1 "aeswidekl_operation"
+    [(set (reg:CCZ FLAGS_REG)
+	  (unspec_volatile:CCZ
+	    [(match_operand:BLK 0 "memory_operand" "m")]
+	    AESDECENCWIDEKL))])]
+  "TARGET_WIDEKL"
+  "aes<aeswideklvariant>\t{%0}"
+  [(set_attr "type" "other")])

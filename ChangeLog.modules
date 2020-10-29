@@ -1,3 +1,8 @@
+2020-10-29  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk 53dede0f04b
+	CSE conversions within sincos [Alexandre Oliva]
+
 2020-10-28  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk 4289e488ddd

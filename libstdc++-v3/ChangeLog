@@ -1,3 +1,104 @@
+2020-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Remove duplicate
+	patterns.
+	(CXXABI_1.3.13): Restore missing piece.
+
+2020-10-28  Thomas Rodgers  <trodgers@redhat.com>
+
+	* acinclude.m4 (glibcxx_SUBDIRS): Add src/c++20.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): New symbols.
+	* configure: Regenerate.
+	* include/std/sstream:
+	(basic_stringbuf::basic_stringbuf(allocator const&)): New constructor.
+	(basic_stringbuf::basic_stringbuf(openmode, allocator const&)): Likewise.
+	(basic_stringbuf::basic_stringbuf(basic_string&&, openmode)): Likewise.
+	(basic_stringbuf::basic_stringbuf(basic_stringbuf&&, allocator const&)):
+	Likewise.
+	(basic_stringbuf::get_allocator()): New method.
+	(basic_stringbuf::view()): Likewise.
+	(basic_istringstream::basic_istringstream(basic_string&&, openmode)):
+	New constructor.
+	(basic_istringstream::basic_istringstream(openmode, allocator const&)):
+	Likewise
+	(basic_istringstream::view()): New method.
+	(basic_ostringstream::basic_ostringstream(basic_string&&, openmode)):
+	New constructor.
+	(basic_ostringstream::basic_ostringstream(openmode, allocator const&)):
+	Likewise
+	(basic_ostringstream::view()): New method.
+	(basic_stringstream::basic_stringstream(basic_string&&, openmode)):
+	New constructor.
+	(basic_stringstream::basic_stringstream(openmode, allocator const&)):
+	Likewise
+	(basic_stringstream::view()): New method.
+	* src/Makefile.in: Add c++20 directory.
+	* src/Makefile.am: Regenerate.
+	* src/c++20/Makefile.am: Add makefile for new sub-directory.
+	* src/c++20/Makefile.in: Generate.
+	* src/c++20/sstream-inst.cc: New file defining explicit
+	instantiations for basic_stringbuf, basic_istringstream,
+	basic_ostringstream, and basic_stringstream member functions
+	added in C++20.
+	* testsuite/27_io/basic_stringbuf/cons/char/2.cc: New test.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/view/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/view/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/view/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/view/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/view/wchar_t/1.cc: Likewise.
+
+2020-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/96713
+	* include/std/chrono (year_month_weekday::operator sys_days):
+	Cast the result of index() to int so that the initializer for
+	days{} is sign-extended when it's converted to the underlying
+	type.
+	* testsuite/std/time/year_month_weekday/3.cc: New test.
+
+2020-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opnt.cc (new): Add comment about forced unwind
+	exceptions.
+
+2020-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94268
+	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_BUFSIZ):
+	Define.
+	* config/os/mingw32/os_defines.h (_GLIBCXX_BUFSIZ):
+	Define.
+	* include/bits/fstream.tcc: Use _GLIBCXX_BUFSIZ instead
+	of BUFSIZ.
+	* include/ext/stdio_filebuf.h: Likewise.
+	* include/std/fstream (_GLIBCXX_BUFSIZ): Define.
+
+2020-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95592
+	* include/bits/valarray_after.h (_DEFINE_EXPR_UNARY_OPERATOR)
+	(_DEFINE_EXPR_BINARY_OPERATOR, _DEFINE_EXPR_BINARY_FUNCTION):
+	Use elaborated-type-specifier and qualified-id to avoid
+	ambiguities with QNX system headers.
+	* testsuite/26_numerics/valarray/95592.cc: New test.
+
+2020-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95609
+	* include/std/span (span): Reorder data members to match common
+	implementations of struct iovec.
+	* testsuite/23_containers/span/layout_compat.cc: New test.
+
 2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/functional (std::_Placeholder): Define for C++98

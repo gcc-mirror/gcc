@@ -509,6 +509,14 @@ void test_42c (void)
   free (q - 64); /* this is probably OK.  */
 } /* { dg-bogus "leak of 'p'" } */
 
+void *
+test_42d (void)
+{
+  void *p = malloc (1024);
+  void *q = p + 64;
+  return q;
+} /* { dg-bogus "leak of 'p'" } */
+
 #if 0
 void test_31 (void *p)
 {

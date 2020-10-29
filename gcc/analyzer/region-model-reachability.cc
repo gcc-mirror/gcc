@@ -181,6 +181,40 @@ reachable_regions::handle_sval (const svalue *sval)
     }
   if (const svalue *cast = sval->maybe_undo_cast ())
     handle_sval (cast);
+
+  /* If SVAL is the result of a reversible operation, then the operands
+     are reachable.  */
+  switch (sval->get_kind ())
+    {
+    default:
+      break;
+    case SK_UNARYOP:
+      {
+	const unaryop_svalue *unaryop_sval = (const unaryop_svalue *)sval;
+	switch (unaryop_sval->get_op ())
+	  {
+	  default:
+	    break;
+	  case NEGATE_EXPR:
+	    handle_sval (unaryop_sval->get_arg ());
+	    break;
+	  }
+      }
+      break;
+    case SK_BINOP:
+      {
+	const binop_svalue *binop_sval = (const binop_svalue *)sval;
+	switch (binop_sval->get_op ())
+	  {
+	  default:
+	    break;
+	  case POINTER_PLUS_EXPR:
+	    handle_sval (binop_sval->get_arg0 ());
+	    handle_sval (binop_sval->get_arg1 ());
+	    break;
+	  }
+      }
+    }
 }
 
 /* Add SVAL.  If it is a pointer, add the pointed-to region.
@@ -214,6 +248,8 @@ void
 reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
 {
   gcc_assert (ctxt);
+  auto_vec<const function_region *> escaped_fn_regs
+    (m_mutable_base_regs.elements ());
   for (hash_set<const region *>::iterator iter = m_mutable_base_regs.begin ();
        iter != m_mutable_base_regs.end (); ++iter)
     {
@@ -223,8 +259,14 @@ reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
       /* If we have a function that's escaped, potentially add
 	 it to the worklist.  */
       if (const function_region *fn_reg = base_reg->dyn_cast_function_region ())
-	ctxt->on_escaped_function (fn_reg->get_fndecl ());
+	escaped_fn_regs.quick_push (fn_reg);
     }
+  /* Sort to ensure deterministic results.  */
+  escaped_fn_regs.qsort (region::cmp_ptr_ptr);
+  unsigned i;
+  const function_region *fn_reg;
+  FOR_EACH_VEC_ELT (escaped_fn_regs, i, fn_reg)
+    ctxt->on_escaped_function (fn_reg->get_fndecl ());
 }
 
 /* Dump SET to PP, sorting it to avoid churn when comparing dumps.  */

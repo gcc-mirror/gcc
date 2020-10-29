@@ -138,6 +138,9 @@
 /* Define to 1 if you have the `logl' function. */
 #undef HAVE_LOGL
 
+/* Define to 1 if you have the <lwp.h> header file. */
+#undef HAVE_LWP_H
+
 /* Define to 1 if you have the `matherr' function. */
 #undef HAVE_MATHERR
 

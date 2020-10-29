@@ -1,3 +1,21 @@
+2020-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (store_parm_decls_newstyle): Use pedwarn_c11 not
+	error_at for omitted parameter name.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle allocate.
+	(c_parser_omp_clause_allocate): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_ALLOCATE.
+	(OMP_FOR_CLAUSE_MASK, OMP_SECTIONS_CLAUSE_MASK,
+	OMP_PARALLEL_CLAUSE_MASK, OMP_SINGLE_CLAUSE_MASK,
+	OMP_TASK_CLAUSE_MASK, OMP_TASKGROUP_CLAUSE_MASK,
+	OMP_DISTRIBUTE_CLAUSE_MASK, OMP_TEAMS_CLAUSE_MASK,
+	OMP_TARGET_CLAUSE_MASK, OMP_TASKLOOP_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_ALLOCATE.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_ALLOCATE.
+
 2020-10-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (c_parser_std_attribute_specifier): Allow duplicate
