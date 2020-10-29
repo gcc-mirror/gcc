@@ -19783,6 +19783,54 @@ vld4q_lane_bf16 (const bfloat16_t * __a, bfloat16x8x4_t __b, const int __c)
   return __rv.__i;
 }
 
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vst2_lane_bf16 (bfloat16_t * __a, bfloat16x4x2_t __b, const int __c)
+{
+  union { bfloat16x4x2_t __i; __builtin_neon_ti __o; } __bu = { __b };
+  __builtin_neon_vst2_lanev4bf (__a, __bu.__o, __c);
+}
+
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vst2q_lane_bf16 (bfloat16_t * __a, bfloat16x8x2_t __b, const int __c)
+{
+  union { bfloat16x8x2_t __i; __builtin_neon_oi __o; } __bu = { __b };
+  __builtin_neon_vst2_lanev8bf (__a, __bu.__o, __c);
+}
+
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vst3_lane_bf16 (bfloat16_t * __a, bfloat16x4x3_t __b, const int __c)
+{
+  union { bfloat16x4x3_t __i; __builtin_neon_ei __o; } __bu = { __b };
+  __builtin_neon_vst3_lanev4bf (__a, __bu.__o, __c);
+}
+
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vst3q_lane_bf16 (bfloat16_t * __a, bfloat16x8x3_t __b, const int __c)
+{
+  union { bfloat16x8x3_t __i; __builtin_neon_ci __o; } __bu = { __b };
+  __builtin_neon_vst3_lanev8bf (__a, __bu.__o, __c);
+}
+
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vst4_lane_bf16 (bfloat16_t * __a, bfloat16x4x4_t __b, const int __c)
+{
+  union { bfloat16x4x4_t __i; __builtin_neon_oi __o; } __bu = { __b };
+  __builtin_neon_vst4_lanev4bf (__a, __bu.__o, __c);
+}
+
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vst4q_lane_bf16 (bfloat16_t * __a, bfloat16x8x4_t __b, const int __c)
+{
+  union { bfloat16x8x4_t __i; __builtin_neon_xi __o; } __bu = { __b };
+  __builtin_neon_vst4_lanev8bf (__a, __bu.__o, __c);
+}
+
 #pragma GCC pop_options
 
 #ifdef __cplusplus
