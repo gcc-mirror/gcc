@@ -1368,7 +1368,7 @@ namespace __detail
 
       ~_Local_iterator_base()
       {
-	if (_M_bucket_count != -1)
+	if (_M_bucket_count != size_t(-1))
 	  _M_destroy();
       }
 
@@ -1376,7 +1376,7 @@ namespace __detail
       : __node_iter_base(__iter._M_cur), _M_bucket(__iter._M_bucket)
       , _M_bucket_count(__iter._M_bucket_count)
       {
-	if (_M_bucket_count != -1)
+	if (_M_bucket_count != size_t(-1))
 	  _M_init(*__iter._M_h());
       }
 
