@@ -7714,6 +7714,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		}
 	      return false;
 	    }
+	  /* Treat __PRETTY_FUNCTION__ inside a template function as
+	     potentially-constant.  */
+	  else if (DECL_PRETTY_FUNCTION_P (t)
+		   && DECL_VALUE_EXPR (t) == error_mark_node)
+	    return true;
 	  return RECUR (DECL_VALUE_EXPR (t), rval);
 	}
       if (want_rval
