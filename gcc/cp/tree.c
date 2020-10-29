@@ -4100,13 +4100,14 @@ is_dummy_object (const_tree ob)
 	  && TREE_OPERAND (ob, 0) == void_node);
 }
 
-/* Returns true if TYPE is a character type or std::byte.  */
+/* Returns true if TYPE is char, unsigned char, or std::byte.  */
 
 bool
 is_byte_access_type (tree type)
 {
   type = TYPE_MAIN_VARIANT (type);
-  if (char_type_p (type))
+  if (type == char_type_node
+      || type == unsigned_char_type_node)
     return true;
 
   return (TREE_CODE (type) == ENUMERAL_TYPE
