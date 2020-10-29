@@ -3937,7 +3937,8 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	continue;
       else
 	kind = scalar_stmt;
-      record_stmt_cost (cost_vec, 1, kind, orig_stmt_info, 0, vect_body);
+      record_stmt_cost (cost_vec, 1, kind, orig_stmt_info,
+			SLP_TREE_VECTYPE (node), 0, vect_body);
     }
 
   auto_vec<bool, 20> subtree_life;
