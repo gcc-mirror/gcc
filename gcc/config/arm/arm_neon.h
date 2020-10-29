@@ -19510,6 +19510,20 @@ vbfmlaltq_laneq_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x8_t __b,
 }
 
 __extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vst1_bf16 (bfloat16_t * __a, bfloat16x4_t __b)
+{
+  __builtin_neon_vst1v4bf (__a, __b);
+}
+
+__extension__ extern __inline void
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vst1q_bf16 (bfloat16_t * __a, bfloat16x8_t __b)
+{
+  __builtin_neon_vst1v8bf (__a, __b);
+}
+
+__extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_bf16 (bfloat16_t * __ptr, bfloat16x4x2_t __val)
 {
