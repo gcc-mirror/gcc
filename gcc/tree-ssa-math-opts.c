@@ -187,6 +187,10 @@ static struct
 {
   /* Number of cexpi calls inserted.  */
   int inserted;
+
+  /* Number of conversions removed.  */
+  int conv_removed;
+
 } sincos_stats;
 
 static struct
@@ -1099,6 +1103,103 @@ make_pass_cse_reciprocals (gcc::context *ctxt)
   return new pass_cse_reciprocals (ctxt);
 }
 
+/* If NAME is the result of a type conversion, look for other
+   equivalent dominating or dominated conversions, and replace all
+   uses with the earliest dominating name, removing the redundant
+   conversions.  Return the prevailing name.  */
+
+static tree
+execute_cse_conv_1 (tree name)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (name)
+      || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+    return name;
+
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+
+  if (!gimple_assign_cast_p (def_stmt))
+    return name;
+
+  tree src = gimple_assign_rhs1 (def_stmt);
+
+  if (TREE_CODE (src) != SSA_NAME)
+    return name;
+
+  imm_use_iterator use_iter;
+  gimple *use_stmt;
+
+  /* Find the earliest dominating def.    */
+  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, src)
+    {
+      if (use_stmt == def_stmt
+	  || !gimple_assign_cast_p (use_stmt))
+	continue;
+
+      tree lhs = gimple_assign_lhs (use_stmt);
+
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs)
+	  || (gimple_assign_rhs1 (use_stmt)
+	      != gimple_assign_rhs1 (def_stmt))
+	  || !types_compatible_p (TREE_TYPE (name), TREE_TYPE (lhs)))
+	continue;
+
+      bool use_dominates;
+      if (gimple_bb (def_stmt) == gimple_bb (use_stmt))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+	  while (!gsi_end_p (gsi) && gsi_stmt (gsi) != def_stmt)
+	    gsi_next (&gsi);
+	  use_dominates = !gsi_end_p (gsi);
+	}
+      else if (dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt),
+			       gimple_bb (def_stmt)))
+	use_dominates = false;
+      else if (dominated_by_p (CDI_DOMINATORS, gimple_bb (def_stmt),
+			       gimple_bb (use_stmt)))
+	use_dominates = true;
+      else
+	continue;
+
+      if (use_dominates)
+	{
+	  std::swap (name, lhs);
+	  std::swap (def_stmt, use_stmt);
+	}
+    }
+
+  /* Now go through all uses of SRC again, replacing the equivalent
+     dominated conversions.  We may replace defs that were not
+     dominated by the then-prevailing defs when we first visited
+     them.  */
+  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, src)
+    {
+      if (use_stmt == def_stmt
+	  || !gimple_assign_cast_p (use_stmt))
+	continue;
+
+      tree lhs = gimple_assign_lhs (use_stmt);
+
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs)
+	  || (gimple_assign_rhs1 (use_stmt)
+	      != gimple_assign_rhs1 (def_stmt))
+	  || !types_compatible_p (TREE_TYPE (name), TREE_TYPE (lhs)))
+	continue;
+
+      if (gimple_bb (def_stmt) == gimple_bb (use_stmt)
+	  || dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt),
+			     gimple_bb (def_stmt)))
+	{
+	  sincos_stats.conv_removed++;
+
+	  gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+	  replace_uses_by (lhs, name);
+	  gsi_remove (&gsi, true);
+	}
+    }
+
+  return name;
+}
+
 /* Records an occurrence at statement USE_STMT in the vector of trees
    STMTS if it is dominated by *TOP_BB or dominates it or this basic block
    is not yet initialized.  Returns true if the occurrence was pushed on
@@ -1147,6 +1248,8 @@ execute_cse_sincos_1 (tree name)
   int i;
   bool cfg_changed = false;
 
+  name = execute_cse_conv_1 (name);
+
   FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, name)
     {
       if (gimple_code (use_stmt) != GIMPLE_CALL
@@ -1181,7 +1284,7 @@ execute_cse_sincos_1 (tree name)
 	 and, in subsequent rounds, that the built_in type is the same
 	 type, or a compatible type.  */
       if (type != t && !types_compatible_p (type, t))
-	return false;
+	RETURN_FROM_IMM_USE_STMT (use_iter, false);
     }
   if (seen_cos + seen_sin + seen_cexpi <= 1)
     return false;
@@ -2296,6 +2399,8 @@ pass_cse_sincos::execute (function *fun)
 
   statistics_counter_event (fun, "sincos statements inserted",
 			    sincos_stats.inserted);
+  statistics_counter_event (fun, "conv statements removed",
+			    sincos_stats.conv_removed);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
