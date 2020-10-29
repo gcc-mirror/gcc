@@ -10,6 +10,7 @@
 #include "config.h"
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
@@ -176,6 +177,9 @@
 #endif
 #if defined(HAVE_PORT_H)
 #include <port.h>
+#endif
+#if defined(HAVE_LWP_H)
+#include <lwp.h>
 #endif
 
 #ifdef USE_LIBFFI

@@ -1627,8 +1627,10 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      break;
 	  if (j == group_size
 	      /* But avoid doing this for loads where we may be
-		 able to CSE things.  */
-	      && !gimple_vuse (first_def->stmt))
+		 able to CSE things, unless the stmt is not
+		 vectorizable.  */
+	      && (!STMT_VINFO_VECTORIZABLE (first_def)
+		  || !gimple_vuse (first_def->stmt)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
@@ -2379,7 +2381,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "Final SLP tree for instance:\n");
+			       "Final SLP tree for instance %p:\n", new_instance);
 	      vect_print_slp_graph (MSG_NOTE, vect_location,
 				    SLP_INSTANCE_TREE (new_instance));
 	    }
@@ -3402,7 +3404,7 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "Building vector operands from scalars instead\n");
+		     "Building vector operands of %p from scalars instead\n", node);
 
   /* Don't remove and free the child nodes here, since they could be
      referenced by other structures.  The analysis and scheduling phases
@@ -3935,7 +3937,8 @@ vect_bb_slp_scalar_cost (vec_info *vinfo,
 	continue;
       else
 	kind = scalar_stmt;
-      record_stmt_cost (cost_vec, 1, kind, orig_stmt_info, 0, vect_body);
+      record_stmt_cost (cost_vec, 1, kind, orig_stmt_info,
+			SLP_TREE_VECTYPE (node), 0, vect_body);
     }
 
   auto_vec<bool, 20> subtree_life;
@@ -4827,13 +4830,16 @@ vect_get_slp_defs (vec_info *,
 
 /* Generate vector permute statements from a list of loads in DR_CHAIN.
    If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
-   permute statements for the SLP node NODE.  */
+   permute statements for the SLP node NODE.  Store the number of vector
+   permute instructions in *N_PERMS and the number of vector load
+   instructions in *N_LOADS.  */
 
 bool
 vect_transform_slp_perm_load (vec_info *vinfo,
 			      slp_tree node, vec<tree> dr_chain,
 			      gimple_stmt_iterator *gsi, poly_uint64 vf,
-			      bool analyze_only, unsigned *n_perms)
+			      bool analyze_only, unsigned *n_perms,
+			      unsigned int *n_loads)
 {
   stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
   int vec_index = 0;
@@ -4885,6 +4891,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
   vec_perm_builder mask;
   unsigned int nelts_to_build;
   unsigned int nvectors_per_build;
+  unsigned int in_nlanes;
   bool repeating_p = (group_size == DR_GROUP_SIZE (stmt_info)
 		      && multiple_p (nunits, group_size));
   if (repeating_p)
@@ -4895,6 +4902,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
       mask.new_vector (nunits, group_size, 3);
       nelts_to_build = mask.encoded_nelts ();
       nvectors_per_build = SLP_TREE_VEC_STMTS (node).length ();
+      in_nlanes = DR_GROUP_SIZE (stmt_info) * 3;
     }
   else
     {
@@ -4906,7 +4914,10 @@ vect_transform_slp_perm_load (vec_info *vinfo,
       mask.new_vector (const_nunits, const_nunits, 1);
       nelts_to_build = const_vf * group_size;
       nvectors_per_build = 1;
+      in_nlanes = const_vf * DR_GROUP_SIZE (stmt_info);
     }
+  auto_sbitmap used_in_lanes (in_nlanes);
+  bitmap_clear (used_in_lanes);
 
   unsigned int count = mask.encoded_nelts ();
   mask.quick_grow (count);
@@ -4918,6 +4929,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
       unsigned int stmt_num = j % group_size;
       unsigned int i = (iter_num * DR_GROUP_SIZE (stmt_info)
 			+ SLP_TREE_LOAD_PERMUTATION (node)[stmt_num]);
+      bitmap_set_bit (used_in_lanes, i);
       if (repeating_p)
 	{
 	  first_vec_index = 0;
@@ -5028,6 +5040,32 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	  first_vec_index = -1;
 	  second_vec_index = -1;
 	  noop_p = true;
+	}
+    }
+
+  if (n_loads)
+    {
+      if (repeating_p)
+	*n_loads = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+      else
+	{
+	  /* Enforced above when !repeating_p.  */
+	  unsigned int const_nunits = nunits.to_constant ();
+	  *n_loads = 0;
+	  bool load_seen = false;
+	  for (unsigned i = 0; i < in_nlanes; ++i)
+	    {
+	      if (i % const_nunits == 0)
+		{
+		  if (load_seen)
+		    *n_loads += 1;
+		  load_seen = false;
+		}
+	      if (bitmap_bit_p (used_in_lanes, i))
+		load_seen = true;
+	    }
+	  if (load_seen)
+	    *n_loads += 1;
 	}
     }
 

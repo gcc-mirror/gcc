@@ -253,7 +253,7 @@ The size of translation unit that IPA-CP pass considers large.
 Common Joined UInteger Var(param_ipa_cp_value_list_size) Init(8) Param Optimization
 Maximum size of a list of values associated with each parameter for interprocedural constant propagation.
 
--param-ipa-jump-function-lookups=
+-param=ipa-jump-function-lookups=
 Common Joined UInteger Var(param_ipa_jump_function_lookups) Init(8) Param Optimization
 Maximum number of statements visited during jump function offset discovery.
 

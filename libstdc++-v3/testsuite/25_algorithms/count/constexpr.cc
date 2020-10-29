@@ -28,7 +28,9 @@ test()
 
   const auto out8 = std::count(ca0.begin(), ca0.end(), 6);
 
-  return true;
+  const auto out9 = std::count(ca0.begin(), ca0.end(), 16);
+
+  return out8 == 1 && out9 == 0;
 }
 
 static_assert(test());

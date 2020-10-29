@@ -97,6 +97,9 @@ class state_change;
 class rewind_info_t;
 
 class engine;
+class state_machine;
+class logger;
+class visitor;
 
 /* Forward decls of functions.  */
 

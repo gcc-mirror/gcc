@@ -28,7 +28,9 @@ test()
 
   std::replace_if(ar0.begin(), ar0.end(), [](int i){ return i % 2 == 1; }, 42);
 
-  return true;
+  std::array<int, 12> ar1{{0, 42, 2, 42, 4, 42, 6, 6, 8, 42, 42, 42}};
+
+  return ar0 == ar1;
 }
 
 static_assert(test());

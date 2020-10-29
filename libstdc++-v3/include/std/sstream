@@ -181,8 +181,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_stringbuf(__string_type&& __s,
 	              ios_base::openmode __mode = ios_base::in
 						  | ios_base::out )
-      : __streambuf_type(), _M_mode(__mode), _M_string(move(__s))
-      { }
+      : __streambuf_type(), _M_mode(__mode), _M_string(std::move(__s))
+      { _M_stringbuf_init(__mode); }
 
       template<typename _SAlloc>
       basic_stringbuf(const basic_string<_CharT, _Traits, _SAlloc>& __s,

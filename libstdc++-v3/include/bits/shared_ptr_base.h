@@ -415,7 +415,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       public:
 	_Impl(_Ptr __p, _Deleter __d, const _Alloc& __a) noexcept
-	: _M_ptr(__p), _Del_base(std::move(__d)), _Alloc_base(__a)
+	: _Del_base(std::move(__d)), _Alloc_base(__a), _M_ptr(__p)
 	{ }
 
 	_Deleter& _M_del() noexcept { return _Del_base::_S_get(*this); }

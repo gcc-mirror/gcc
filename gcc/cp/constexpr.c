@@ -1602,6 +1602,11 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	    arg = adjust_temp_type (type, arg);
 	  if (!TREE_CONSTANT (arg))
 	    *non_constant_args = true;
+	  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+	    /* The destructor needs to see any modifications the callee makes
+	       to the argument.  */
+	    *non_constant_args = true;
+
 	  /* For virtual calls, adjust the this argument, so that it is
 	     the object on which the method is called, rather than
 	     one of its bases.  */
@@ -2288,7 +2293,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    {
 	      tree type = build_array_type_nelts (char_type_node,
 						  tree_to_uhwi (arg0));
-	      tree var = build_decl (loc, VAR_DECL, heap_uninit_identifier,
+	      tree var = build_decl (loc, VAR_DECL,
+				     (IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (fun))
+				      & OVL_OP_FLAG_VEC)
+				     ? heap_vec_uninit_identifier
+				     : heap_uninit_identifier,
 				     type);
 	      DECL_ARTIFICIAL (var) = 1;
 	      TREE_STATIC (var) = 1;
@@ -2306,6 +2315,42 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		  if (DECL_NAME (var) == heap_uninit_identifier
 		      || DECL_NAME (var) == heap_identifier)
 		    {
+		      if (IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (fun))
+			  & OVL_OP_FLAG_VEC)
+			{
+			  if (!ctx->quiet)
+			    {
+			      error_at (loc, "array deallocation of object "
+					     "allocated with non-array "
+					     "allocation");
+			      inform (DECL_SOURCE_LOCATION (var),
+				      "allocation performed here");
+			    }
+			  *non_constant_p = true;
+			  return t;
+			}
+		      DECL_NAME (var) = heap_deleted_identifier;
+		      ctx->global->values.remove (var);
+		      ctx->global->heap_dealloc_count++;
+		      return void_node;
+		    }
+		  else if (DECL_NAME (var) == heap_vec_uninit_identifier
+			   || DECL_NAME (var) == heap_vec_identifier)
+		    {
+		      if ((IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (fun))
+			   & OVL_OP_FLAG_VEC) == 0)
+			{
+			  if (!ctx->quiet)
+			    {
+			      error_at (loc, "non-array deallocation of "
+					     "object allocated with array "
+					     "allocation");
+			      inform (DECL_SOURCE_LOCATION (var),
+				      "allocation performed here");
+			    }
+			  *non_constant_p = true;
+			  return t;
+			}
 		      DECL_NAME (var) = heap_deleted_identifier;
 		      ctx->global->values.remove (var);
 		      ctx->global->heap_dealloc_count++;
@@ -2586,14 +2631,14 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		     problems with verify_gimple.  */
 		  arg = unshare_expr_without_location (arg);
 		  TREE_VEC_ELT (bound, i) = arg;
+
+		  /* And then unshare again so the callee doesn't change the
+		     argument values in the hash table. XXX Could we unshare
+		     lazily in cxx_eval_store_expression?  */
+		  arg = unshare_constructor (arg);
+		  if (TREE_CODE (arg) == CONSTRUCTOR)
+		    vec_safe_push (ctors, arg);
 		}
-	      /* Don't share a CONSTRUCTOR that might be changed.  This is not
-		 redundant with the unshare just above; we also don't want to
-		 change the argument values in the hash table.  XXX Could we
-		 unshare lazily in cxx_eval_store_expression?  */
-	      arg = unshare_constructor (arg);
-	      if (TREE_CODE (arg) == CONSTRUCTOR)
-		vec_safe_push (ctors, arg);
 	      ctx->global->values.put (remapped, arg);
 	      remapped = DECL_CHAIN (remapped);
 	    }
@@ -4605,7 +4650,9 @@ non_const_var_error (location_t loc, tree r)
   auto_diagnostic_group d;
   tree type = TREE_TYPE (r);
   if (DECL_NAME (r) == heap_uninit_identifier
-      || DECL_NAME (r) == heap_identifier)
+      || DECL_NAME (r) == heap_identifier
+      || DECL_NAME (r) == heap_vec_uninit_identifier
+      || DECL_NAME (r) == heap_vec_identifier)
     {
       error_at (loc, "the content of uninitialized storage is not usable "
 		"in a constant expression");
@@ -6365,8 +6412,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    && TREE_TYPE (op) == ptr_type_node
 	    && TREE_CODE (TREE_OPERAND (op, 0)) == ADDR_EXPR
 	    && VAR_P (TREE_OPERAND (TREE_OPERAND (op, 0), 0))
-	    && DECL_NAME (TREE_OPERAND (TREE_OPERAND (op, 0),
-					0)) == heap_uninit_identifier)
+	    && (DECL_NAME (TREE_OPERAND (TREE_OPERAND (op, 0),
+					 0)) == heap_uninit_identifier
+		|| DECL_NAME (TREE_OPERAND (TREE_OPERAND (op, 0),
+					    0)) == heap_vec_uninit_identifier))
 	  {
 	    tree var = TREE_OPERAND (TREE_OPERAND (op, 0), 0);
 	    tree var_size = TYPE_SIZE_UNIT (TREE_TYPE (var));
@@ -6380,7 +6429,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		elt_type = TREE_TYPE (TREE_TYPE (fld2));
 		cookie_size = TYPE_SIZE_UNIT (TREE_TYPE (fld1));
 	      }
-	    DECL_NAME (var) = heap_identifier;
+	    DECL_NAME (var)
+	      = (DECL_NAME (var) == heap_uninit_identifier
+		 ? heap_identifier : heap_vec_identifier);
 	    TREE_TYPE (var)
 	      = build_new_constexpr_heap_type (elt_type, cookie_size,
 					       var_size);
@@ -6651,6 +6702,8 @@ find_heap_var_refs (tree *tp, int *walk_subtrees, void */*data*/)
   if (VAR_P (*tp)
       && (DECL_NAME (*tp) == heap_uninit_identifier
 	  || DECL_NAME (*tp) == heap_identifier
+	  || DECL_NAME (*tp) == heap_vec_uninit_identifier
+	  || DECL_NAME (*tp) == heap_vec_identifier
 	  || DECL_NAME (*tp) == heap_deleted_identifier))
     return *tp;
 
@@ -6872,6 +6925,10 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       non_constant_p = true;
     }
 
+  if (non_constant_p)
+    /* If we saw something bad, go back to our argument.  The wrapping below is
+       only for the cases of TREE_CONSTANT argument or overflow.  */
+    r = t;
 
   if (!non_constant_p && overflow_p)
     non_constant_p = true;
@@ -6888,12 +6945,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     return r;
   else if (non_constant_p && TREE_CONSTANT (r))
     {
-      /* If __builtin_is_constant_evaluated () was evaluated to true
-	 and the result is not a valid constant expression, we need to
-	 punt.  */
-      if (manifestly_const_eval)
-	return cxx_eval_outermost_constant_expr (t, true, strict,
-						 false, false, object);
       /* This isn't actually constant, so unset TREE_CONSTANT.
 	 Don't clear TREE_CONSTANT on ADDR_EXPR, as the middle-end requires
 	 it to be set if it is invariant address, even when it is not

@@ -118,4 +118,6 @@
 
 #include <prfchwintrin.h>
 
+#include <keylockerintrin.h>
+
 #endif /* _IMMINTRIN_H_INCLUDED */

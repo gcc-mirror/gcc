@@ -115,7 +115,7 @@ extern void __gthread_set_tls_data (void *data);
 
 #endif
 
-#ifdef _VXWORKS_MAJOR_EQ(6)
+#if _VXWORKS_MAJOR_EQ(6)
 
 extern void __gthread_enter_tls_dtor_context (void);
 extern void __gthread_leave_tls_dtor_context (void);

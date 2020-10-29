@@ -31,7 +31,10 @@ test()
   const auto out5 = std::binary_search(ca0.begin(), ca0.end(), 5,
 				       std::less<int>());
 
-  return true;
+  const auto out6 = std::binary_search(ca0.begin(), ca0.end(), 4.5,
+				       std::less<>());
+
+  return out4 && out5 && !out6;
 }
 
 static_assert(test());

@@ -1,3 +1,11 @@
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/96680
+	* lto-common.c (lto_fixup_prevailing_decls): Don't use
+	LTO_NO_PREVAIL on TREE_LIST's TREE_PURPOSE.
+	* lto-partition.c (lto_balanced_map): Treat declare_variant_alt
+	nodes like definitions.
+
 2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): Update for new thunk

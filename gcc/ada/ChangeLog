@@ -1,3 +1,9 @@
+2020-10-28  Alexandre Oliva  <oliva@adacore.com>
+
+	PR ada/97504
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS> <riscv*-*-*>: Use wraplf
+	version of Aux_Long_Long_Float.
+
 2020-10-27  Doug Rupp  <rupp@adacore.com>
 
 	* Makefile.rtl: Add vx7r2cert spec file to ARM, PowerPC and x86

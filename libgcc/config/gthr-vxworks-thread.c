@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "gthr.h"
 
-#if __GTHREAD_CXX0X
+#if __GTHREADS_CXX0X
 
 #include <taskLib.h>
 #include <stdlib.h>

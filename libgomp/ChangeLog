@@ -1,3 +1,22 @@
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-42.c: New test.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR testsuite/81690
+	* testsuite/libgomp.c/usleep.h: New file.
+	* testsuite/libgomp.c/target-32.c: Include usleep.h.
+	(main): Use tgt_usleep instead of usleep.
+	* testsuite/libgomp.c/thread-limit-2.c: Include usleep.h.
+	(main): Use tgt_usleep instead of usleep.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/96680
+	* testsuite/libgomp.c/declare-variant-1.c: New test.
+
 2020-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/target-41.c: New test.

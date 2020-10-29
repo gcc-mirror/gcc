@@ -3953,7 +3953,10 @@ compute_avail (void)
 			 adding the reference to EXP_GEN.  */
 		      if (BB_MAY_NOTRETURN (block)
 			  && vn_reference_may_trap (ref))
-			continue;
+			{
+			  operands.release ();
+			  continue;
+			}
 
 		      /* If the value of the reference is not invalidated in
 			 this block until it is computed, add the expression

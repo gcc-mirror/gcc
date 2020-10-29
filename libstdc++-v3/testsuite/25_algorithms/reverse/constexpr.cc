@@ -23,8 +23,6 @@
 constexpr bool
 test()
 {
-  auto ok = true;
-
   std::array<int, 12> ar0{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
 
   std::reverse(ar0.begin() + 2, ar0.begin() + 9);

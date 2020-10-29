@@ -22,7 +22,6 @@
 /* -m32 target with constant test uses (+2)li where the -m64 has an ld */
 /* { dg-final { scan-assembler-times {\mli\M} 5 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\maddi\M} 6 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M} 4 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mldx\M} 3 { target lp64 } } } */

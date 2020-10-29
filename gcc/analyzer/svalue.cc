@@ -52,41 +52,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
+#include "analyzer/svalue.h"
 #include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
 namespace ana {
-
-/* struct complexity.  */
-
-/* Get complexity for a new node that references REG
-   (the complexity of REG, plus one for the new node).  */
-
-complexity::complexity (const region *reg)
-: m_num_nodes (reg->get_complexity ().m_num_nodes + 1),
-  m_max_depth (reg->get_complexity ().m_max_depth + 1)
-{
-}
-
-/* Get complexity for a new node that references SVAL.
-   (the complexity of SVAL, plus one for the new node).  */
-
-complexity::complexity (const svalue *sval)
-: m_num_nodes (sval->get_complexity ().m_num_nodes + 1),
-  m_max_depth (sval->get_complexity ().m_max_depth + 1)
-{
-}
-
-/* Get complexity for a new node that references nodes with complexity
-   C1 and C2.  */
-
-complexity
-complexity::from_pair (const complexity &c1, const complexity &c2)
-{
-  return complexity (c1.m_num_nodes + c2.m_num_nodes + 1,
-		     MAX (c1.m_max_depth, c2.m_max_depth) + 1);
-}
 
 /* class svalue and its various subclasses.  */
 
