@@ -1,3 +1,12 @@
+2020-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97081
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): Use the
+	precision of the shifted operand to determine the mask.
+
 2020-10-26  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
