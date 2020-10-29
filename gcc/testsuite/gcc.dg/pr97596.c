@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O2" } */
 
 void
