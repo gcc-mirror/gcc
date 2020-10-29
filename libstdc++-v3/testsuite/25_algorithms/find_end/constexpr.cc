@@ -24,7 +24,7 @@
 constexpr bool
 test()
 {
-  constexpr std::array<int, 12> ca0{{0, 1, 2, 3, 4, 5,  6, 7, 8,  9, 10, 11}};
+  constexpr std::array<int, 12> ca0{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
   constexpr std::array<int, 3> cam{{4, 5, 6}};
   constexpr std::array<int, 3> camm{{-4, -5, -6}};
 
@@ -35,7 +35,7 @@ test()
 				  camm.begin(), camm.end(),
 				  [](int i, int j){ return i + 1 == -j; });
 
-  return true;
+  return outf == (ca0.begin() + 4) && outg == (ca0.begin() + 3);
 }
 
 static_assert(test());

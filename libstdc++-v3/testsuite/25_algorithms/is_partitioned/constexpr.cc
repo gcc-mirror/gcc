@@ -29,7 +29,7 @@ test()
   const auto outs = std::is_partitioned(caeo.begin(), caeo.end(),
 					[](int i){ return i % 2 == 0; });
 
-  return true;
+  return outs;
 }
 
 static_assert(test());

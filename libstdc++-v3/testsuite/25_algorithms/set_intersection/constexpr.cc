@@ -36,7 +36,7 @@ test()
 					   cas.begin(), cas.end(),
 					   out0.begin(), std::less<int>());
 
-  return true;
+  return outxx == (out0.begin() + 9) && outyy == outxx;
 }
 
 static_assert(test());
