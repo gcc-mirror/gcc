@@ -2288,7 +2288,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    {
 	      tree type = build_array_type_nelts (char_type_node,
 						  tree_to_uhwi (arg0));
-	      tree var = build_decl (loc, VAR_DECL, heap_uninit_identifier,
+	      tree var = build_decl (loc, VAR_DECL,
+				     (IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (fun))
+				      & OVL_OP_FLAG_VEC)
+				     ? heap_vec_uninit_identifier
+				     : heap_uninit_identifier,
 				     type);
 	      DECL_ARTIFICIAL (var) = 1;
 	      TREE_STATIC (var) = 1;
@@ -2306,6 +2310,42 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		  if (DECL_NAME (var) == heap_uninit_identifier
 		      || DECL_NAME (var) == heap_identifier)
 		    {
+		      if (IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (fun))
+			  & OVL_OP_FLAG_VEC)
+			{
+			  if (!ctx->quiet)
+			    {
+			      error_at (loc, "array deallocation of object "
+					     "allocated with non-array "
+					     "allocation");
+			      inform (DECL_SOURCE_LOCATION (var),
+				      "allocation performed here");
+			    }
+			  *non_constant_p = true;
+			  return t;
+			}
+		      DECL_NAME (var) = heap_deleted_identifier;
+		      ctx->global->values.remove (var);
+		      ctx->global->heap_dealloc_count++;
+		      return void_node;
+		    }
+		  else if (DECL_NAME (var) == heap_vec_uninit_identifier
+			   || DECL_NAME (var) == heap_vec_identifier)
+		    {
+		      if ((IDENTIFIER_OVL_OP_FLAGS (DECL_NAME (fun))
+			   & OVL_OP_FLAG_VEC) == 0)
+			{
+			  if (!ctx->quiet)
+			    {
+			      error_at (loc, "non-array deallocation of "
+					     "object allocated with array "
+					     "allocation");
+			      inform (DECL_SOURCE_LOCATION (var),
+				      "allocation performed here");
+			    }
+			  *non_constant_p = true;
+			  return t;
+			}
 		      DECL_NAME (var) = heap_deleted_identifier;
 		      ctx->global->values.remove (var);
 		      ctx->global->heap_dealloc_count++;
@@ -4605,7 +4645,9 @@ non_const_var_error (location_t loc, tree r)
   auto_diagnostic_group d;
   tree type = TREE_TYPE (r);
   if (DECL_NAME (r) == heap_uninit_identifier
-      || DECL_NAME (r) == heap_identifier)
+      || DECL_NAME (r) == heap_identifier
+      || DECL_NAME (r) == heap_vec_uninit_identifier
+      || DECL_NAME (r) == heap_vec_identifier)
     {
       error_at (loc, "the content of uninitialized storage is not usable "
 		"in a constant expression");
@@ -6365,8 +6407,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    && TREE_TYPE (op) == ptr_type_node
 	    && TREE_CODE (TREE_OPERAND (op, 0)) == ADDR_EXPR
 	    && VAR_P (TREE_OPERAND (TREE_OPERAND (op, 0), 0))
-	    && DECL_NAME (TREE_OPERAND (TREE_OPERAND (op, 0),
-					0)) == heap_uninit_identifier)
+	    && (DECL_NAME (TREE_OPERAND (TREE_OPERAND (op, 0),
+					 0)) == heap_uninit_identifier
+		|| DECL_NAME (TREE_OPERAND (TREE_OPERAND (op, 0),
+					    0)) == heap_vec_uninit_identifier))
 	  {
 	    tree var = TREE_OPERAND (TREE_OPERAND (op, 0), 0);
 	    tree var_size = TYPE_SIZE_UNIT (TREE_TYPE (var));
@@ -6380,7 +6424,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		elt_type = TREE_TYPE (TREE_TYPE (fld2));
 		cookie_size = TYPE_SIZE_UNIT (TREE_TYPE (fld1));
 	      }
-	    DECL_NAME (var) = heap_identifier;
+	    DECL_NAME (var)
+	      = (DECL_NAME (var) == heap_uninit_identifier
+		 ? heap_identifier : heap_vec_identifier);
 	    TREE_TYPE (var)
 	      = build_new_constexpr_heap_type (elt_type, cookie_size,
 					       var_size);
@@ -6651,6 +6697,8 @@ find_heap_var_refs (tree *tp, int *walk_subtrees, void */*data*/)
   if (VAR_P (*tp)
       && (DECL_NAME (*tp) == heap_uninit_identifier
 	  || DECL_NAME (*tp) == heap_identifier
+	  || DECL_NAME (*tp) == heap_vec_uninit_identifier
+	  || DECL_NAME (*tp) == heap_vec_identifier
 	  || DECL_NAME (*tp) == heap_deleted_identifier))
     return *tp;
 

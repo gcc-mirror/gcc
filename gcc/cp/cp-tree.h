@@ -178,6 +178,8 @@ enum cp_tree_index
     CPTI_HEAP_UNINIT_IDENTIFIER,
     CPTI_HEAP_IDENTIFIER,
     CPTI_HEAP_DELETED_IDENTIFIER,
+    CPTI_HEAP_VEC_UNINIT_IDENTIFIER,
+    CPTI_HEAP_VEC_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -322,6 +324,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define heap_uninit_identifier		cp_global_trees[CPTI_HEAP_UNINIT_IDENTIFIER]
 #define heap_identifier			cp_global_trees[CPTI_HEAP_IDENTIFIER]
 #define heap_deleted_identifier		cp_global_trees[CPTI_HEAP_DELETED_IDENTIFIER]
+#define heap_vec_uninit_identifier	cp_global_trees[CPTI_HEAP_VEC_UNINIT_IDENTIFIER]
+#define heap_vec_identifier		cp_global_trees[CPTI_HEAP_VEC_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
