@@ -1289,12 +1289,36 @@ public:
   virtual void accept_vis (ASTVisitor &vis) = 0;
 };
 
+// Abstract base class for an item used inside an extern block
+class ExternalItem
+{
+public:
+  virtual ~ExternalItem () {}
+
+  // Unique pointer custom clone function
+  std::unique_ptr<ExternalItem> clone_external_item () const
+  {
+    return std::unique_ptr<ExternalItem> (clone_external_item_impl ());
+  }
+
+  virtual std::string as_string () const = 0;
+
+  virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual void mark_for_strip () = 0;
+  virtual bool is_marked_for_strip () const = 0;
+
+protected:
+  // Clone function implementation as pure virtual method
+  virtual ExternalItem *clone_external_item_impl () const = 0;
+};
+
 /* A macro invocation item (or statement) AST node (i.e. semi-coloned macro
  * invocation) */
 class MacroInvocationSemi : public MacroItem,
 			    public TraitItem,
 			    public InherentImplItem,
-			    public TraitImplItem
+			    public TraitImplItem, public ExternalItem
 {
   std::vector<Attribute> outer_attrs;
   SimplePath path;
@@ -1391,6 +1415,13 @@ protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   MacroInvocationSemi *clone_trait_item_impl () const override
+  {
+    return clone_macro_invocation_semi_impl ();
+  }
+
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  MacroInvocationSemi *clone_external_item_impl () const override
   {
     return clone_macro_invocation_semi_impl ();
   }

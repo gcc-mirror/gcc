@@ -5632,62 +5632,51 @@ Parser<ManagedTokenSource>::parse_external_item ()
 	// parse parameters
 	std::vector<AST::NamedFunctionParam> function_params;
 	bool is_variadic = false;
+  std::vector<AST::Attribute> variadic_attrs;
 
 	const_TokenPtr t = lexer.peek_token ();
-	while (t->get_id () != RIGHT_PAREN)
-	  {
-	    AST::NamedFunctionParam param = parse_named_function_param ();
+	while (t->get_id () != RIGHT_PAREN) {
+      std::vector<AST::Attribute> maybe_variadic_attrs = parse_outer_attributes ();
+      if (lexer.peek_token ()->get_id () == ELLIPSIS) {
+        // variadic - use attrs for this
+        lexer.skip_token ();
+		    is_variadic = true;
+        variadic_attrs = std::move (maybe_variadic_attrs);
+		    t = lexer.peek_token ();
 
-	    if (param.is_error ())
-	      {
-		// is this an error? probably
-		rust_error_at (t->get_locus (),
-			       "could not parse named function parameter in "
-			       "external function");
-		skip_after_semicolon ();
-		return nullptr;
-	      }
+        if (t->get_id() != RIGHT_PAREN) {
+          rust_error_at (t->get_locus (),
+				   "expected right parentheses after variadic in named function "
+           "parameters, found %qs",
+				   t->get_token_description ());
+          skip_after_semicolon ();
+		      return nullptr;
+        }
 
+        break;
+      }
+
+	    AST::NamedFunctionParam param = parse_named_function_param (std::move (maybe_variadic_attrs));
+	    if (param.is_error ()) {
+		    rust_error_at (t->get_locus (),
+			       "could not parse named function parameter in external function");
+		    skip_after_semicolon ();
+		    return nullptr;
+	    }
 	    function_params.push_back (std::move (param));
 
-	    t = lexer.peek_token ();
-	    if (t->get_id () != COMMA)
-	      {
-		if (t->get_id () != RIGHT_PAREN)
-		  {
-		    rust_error_at (t->get_locus (),
-				   "expected comma or right parentheses in "
-				   "named function parameters, found %qs",
-				   t->get_token_description ());
-		  }
-		else
-		  {
-		    // end of loop
+	    if (lexer.peek_token ()->get_id () != COMMA) 
 		    break;
-		  }
-	      }
+      
 	    // skip comma
 	    lexer.skip_token ();
-
 	    t = lexer.peek_token ();
+	}
 
-	    // parse variadic ... if it exists
-	    if (t->get_id () == ELLIPSIS
-		&& lexer.peek_token (1)->get_id () == RIGHT_PAREN)
-	      {
-		lexer.skip_token ();
-
-		is_variadic = true;
-
-		t = lexer.peek_token ();
-	      }
-	  }
-
-	if (!skip_token (RIGHT_PAREN))
-	  {
+	if (!skip_token (RIGHT_PAREN)) {
 	    skip_after_semicolon ();
 	    return nullptr;
-	  }
+	}
 
 	// parse (optional) return type
 	std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
@@ -5705,7 +5694,7 @@ Parser<ManagedTokenSource>::parse_external_item ()
 	  new AST::ExternalFunctionItem (
 	    std::move (ident), std::move (generic_params),
 	    std::move (return_type), std::move (where_clause),
-	    std::move (function_params), is_variadic, std::move (vis),
+	    std::move (function_params), is_variadic, std::move (variadic_attrs), std::move (vis),
 	    std::move (outer_attrs), locus));
       }
     default:
@@ -5722,10 +5711,10 @@ Parser<ManagedTokenSource>::parse_external_item ()
  * identifier). */
 template <typename ManagedTokenSource>
 AST::NamedFunctionParam
-Parser<ManagedTokenSource>::parse_named_function_param ()
+Parser<ManagedTokenSource>::parse_named_function_param (std::vector<AST::Attribute> outer_attrs)
 {
   // parse identifier/_
-  Identifier name;
+  std::string name;
 
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
@@ -5760,7 +5749,7 @@ Parser<ManagedTokenSource>::parse_named_function_param ()
       return AST::NamedFunctionParam::create_error ();
     }
 
-  return AST::NamedFunctionParam (std::move (name), std::move (param_type));
+  return AST::NamedFunctionParam (std::move (name), std::move (param_type), std::move (outer_attrs));
 }
 
 // Parses a statement (will further disambiguate any statement).

@@ -3979,6 +3979,7 @@ EnumItemDiscriminant::as_string () const
   return str;
 }
 
+#if 0
 std::string
 ExternalItem::as_string () const
 {
@@ -3993,9 +3994,7 @@ ExternalItem::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   // start visibility on new line and with a space
@@ -4003,21 +4002,35 @@ ExternalItem::as_string () const
 
   return str;
 }
+#endif
 
 std::string
 ExternalStaticItem::as_string () const
 {
-  std::string str = ExternalItem::as_string ();
+  // outer attributes
+  std::string str = "outer attributes: ";
+  if (outer_attrs.empty ())
+    {
+      str += "none";
+    }
+  else
+    {
+      /* note that this does not print them with "outer attribute" syntax -
+       * just the body */
+      for (const auto &attr : outer_attrs)
+	  str += "\n  " + attr.as_string ();
+    }
+
+  // start visibility on new line and with a space
+  str += "\n" + visibility.as_string () + " ";
 
   str += "static ";
 
   if (has_mut)
-    {
       str += "mut ";
-    }
 
   // add name
-  str += get_item_name ();
+  str += item_name;
 
   // add type on new line
   str += "\n Type: " + item_type->as_string ();
@@ -4028,12 +4041,27 @@ ExternalStaticItem::as_string () const
 std::string
 ExternalFunctionItem::as_string () const
 {
-  std::string str = ExternalItem::as_string ();
+  // outer attributes
+  std::string str = "outer attributes: ";
+  if (outer_attrs.empty ())
+    {
+      str += "none";
+    }
+  else
+    {
+      /* note that this does not print them with "outer attribute" syntax -
+       * just the body */
+      for (const auto &attr : outer_attrs)
+	  str += "\n  " + attr.as_string ();
+    }
+
+  // start visibility on new line and with a space
+  str += "\n" + visibility.as_string () + " ";
 
   str += "fn ";
 
   // add name
-  str += get_item_name ();
+  str += item_name;
 
   // generic params
   str += "\n Generic params: ";
@@ -4061,19 +4089,29 @@ ExternalFunctionItem::as_string () const
 
   // function params
   str += "\n Function params: ";
-  if (function_params.empty ())
+  if (function_params.empty () && !has_variadics)
     {
       str += "none";
     }
   else
     {
       for (const auto &param : function_params)
-	{
 	  str += "\n  " + param.as_string ();
-	}
+      
       if (has_variadics)
 	{
-	  str += "\n  .. (variadic)";
+    str += "\n  variadic outer attrs: ";
+    if (has_variadic_outer_attrs ()) 
+      {
+        
+        for (const auto &attr : variadic_outer_attrs)
+	  str += "\n   " + attr.as_string ();
+      }
+    else
+      {
+        str += "none";
+      }
+	  str += "\n  ... (variadic)";
 	}
     }
 
@@ -4083,13 +4121,9 @@ ExternalFunctionItem::as_string () const
   // where clause
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   return str;
 }
@@ -4097,7 +4131,19 @@ ExternalFunctionItem::as_string () const
 std::string
 NamedFunctionParam::as_string () const
 {
-  std::string str = name;
+  std::string str = "outer attributes: ";
+
+  if (!has_outer_attrs ()) 
+    {
+      str += "none";
+    } 
+  else 
+    {
+      for (const auto& attr : outer_attrs)
+        str += "\n " + attr.as_string ();
+    }
+
+  str += "\n" + name;
 
   str += "\n Type: " + param_type->as_string ();
 

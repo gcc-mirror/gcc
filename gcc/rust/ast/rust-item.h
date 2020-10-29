@@ -2964,6 +2964,7 @@ protected:
   TraitImpl *clone_item_impl () const override { return new TraitImpl (*this); }
 };
 
+#if 0
 // Abstract base class for an item used inside an extern block
 class ExternalItem
 {
@@ -3040,34 +3041,56 @@ protected:
   // possibly make this public if required
   std::string get_item_name () const { return item_name; }
 };
+#endif
 
 // A static item used in an extern block
 class ExternalStaticItem : public ExternalItem
 {
+  // bool has_outer_attrs;
+  std::vector<Attribute> outer_attrs;
+
+  // bool has_visibility;
+  Visibility visibility;
+
+  Identifier item_name;
+  Location locus;
+
   bool has_mut;
   std::unique_ptr<Type> item_type;
 
 public:
   ExternalStaticItem (Identifier item_name, std::unique_ptr<Type> item_type,
-		      bool is_mut, Visibility vis,
-		      std::vector<Attribute> outer_attrs, Location locus)
-    : ExternalItem (std::move (item_name), std::move (vis),
-		    std::move (outer_attrs), locus),
-      has_mut (is_mut), item_type (std::move (item_type))
+		      bool is_mut, Visibility vis, std::vector<Attribute> outer_attrs, 
+          Location locus)
+    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)), 
+      item_name (std::move (item_name)), locus (locus), has_mut (is_mut), 
+      item_type (std::move (item_type))
   {}
 
   // Copy constructor
   ExternalStaticItem (ExternalStaticItem const &other)
-    : ExternalItem (other), has_mut (other.has_mut),
-      item_type (other.item_type->clone_type ())
-  {}
+    : outer_attrs (other.outer_attrs), visibility (other.visibility), item_name (other.item_name), 
+      locus (other.locus), has_mut (other.has_mut)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.item_type != nullptr)
+      item_type = other.item_type->clone_type ();
+  }
 
   // Overloaded assignment operator to clone
   ExternalStaticItem &operator= (ExternalStaticItem const &other)
   {
-    ExternalItem::operator= (other);
-    item_type = other.item_type->clone_type ();
+    outer_attrs = other.outer_attrs;
+    visibility = other.visibility;
+    item_name = other.item_name;
+    locus = other.locus;
     has_mut = other.has_mut;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.item_type != nullptr)
+      item_type = other.item_type->clone_type ();
+    else
+      item_type = nullptr;
 
     return *this;
   }
@@ -3079,6 +3102,22 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Returns whether item has outer attributes.
+  bool has_outer_attrs () const { return !outer_attrs.empty (); }
+
+  // Returns whether item has non-default visibility.
+  bool has_visibility () const { return !visibility.is_error (); }
+
+  Location get_locus () const { return locus; }
+
+  // Based on idea that type should never be null.
+  void mark_for_strip () override { item_type = nullptr; };
+  bool is_marked_for_strip () const override { return item_type == nullptr; };
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -3094,16 +3133,21 @@ struct NamedFunctionParam
 {
 private:
   // bool has_name;   // otherwise is _
-  Identifier name; // TODO: handle wildcard in identifier?
+  std::string name; 
 
   std::unique_ptr<Type> param_type;
 
   // TODO: should this store location data?
 
+  // seemingly new since writing this node
+  std::vector<Attribute> outer_attrs; 
+
 public:
-  // Returns whether the named function parameter has a name (i.e. name is not
-  // '_').
+  /* Returns whether the named function parameter has a name (i.e. name is not
+   * '_'). */
   bool has_name () const { return name != "_"; }
+
+  bool has_outer_attrs () const { return !outer_attrs.empty (); }
 
   // Returns whether the named function parameter is in an error state.
   bool is_error () const
@@ -3115,17 +3159,21 @@ public:
   // Creates an error state named function parameter.
   static NamedFunctionParam create_error ()
   {
-    return NamedFunctionParam ("", nullptr);
+    return NamedFunctionParam ("", nullptr, {});
   }
 
-  NamedFunctionParam (Identifier name, std::unique_ptr<Type> param_type)
-    : name (std::move (name)), param_type (std::move (param_type))
+  NamedFunctionParam (std::string name, std::unique_ptr<Type> param_type, std::vector<Attribute> outer_attrs)
+    : name (std::move (name)), param_type (std::move (param_type)), outer_attrs (std::move (outer_attrs))
   {}
 
   // Copy constructor
   NamedFunctionParam (NamedFunctionParam const &other)
-    : name (other.name), param_type (other.param_type->clone_type ())
-  {}
+    : name (other.name), outer_attrs (other.outer_attrs)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.param_type != nullptr)
+      param_type = other.param_type->clone_type ();
+  }
 
   ~NamedFunctionParam () = default;
 
@@ -3133,8 +3181,14 @@ public:
   NamedFunctionParam &operator= (NamedFunctionParam const &other)
   {
     name = other.name;
-    param_type = other.param_type->clone_type ();
     // has_name = other.has_name;
+    outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.param_type != nullptr)
+      param_type = other.param_type->clone_type ();
+    else
+      param_type = nullptr;
 
     return *this;
   }
@@ -3144,11 +3198,28 @@ public:
   NamedFunctionParam &operator= (NamedFunctionParam &&other) = default;
 
   std::string as_string () const;
+
+  // Based on idea that nane should never be empty.
+  void mark_for_strip () { param_type = nullptr; };
+  bool is_marked_for_strip () const { return is_error (); };
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 };
 
 // A function item used in an extern block
 class ExternalFunctionItem : public ExternalItem
 {
+  // bool has_outer_attrs;
+  std::vector<Attribute> outer_attrs;
+
+  // bool has_visibility;
+  Visibility visibility;
+
+  Identifier item_name;
+  Location locus;
+
   // bool has_generics;
   // Generics generic_params;
   std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
@@ -3162,6 +3233,7 @@ class ExternalFunctionItem : public ExternalItem
 
   std::vector<NamedFunctionParam> function_params;
   bool has_variadics;
+  std::vector<Attribute> variadic_outer_attrs;
 
 public:
   // Returns whether item has generic parameters.
@@ -3173,28 +3245,48 @@ public:
   // Returns whether item has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
+  // Returns whether item has outer attributes.
+  bool has_outer_attrs () const { return !outer_attrs.empty (); }
+
+  // Returns whether item has non-default visibility.
+  bool has_visibility () const { return !visibility.is_error (); }
+
+  // Returns whether item has variadic parameters.
+  bool is_variadic () const { return has_variadics; }
+
+  // Returns whether item has outer attributes on its variadic parameters.
+  bool has_variadic_outer_attrs () const { return !variadic_outer_attrs.empty (); }
+
+  Location get_locus () const { return locus; }
+
   ExternalFunctionItem (
     Identifier item_name,
     std::vector<std::unique_ptr<GenericParam>> generic_params,
     std::unique_ptr<Type> return_type, WhereClause where_clause,
-    std::vector<NamedFunctionParam> function_params, bool has_variadics,
+    std::vector<NamedFunctionParam> function_params, bool has_variadics, std::vector<Attribute> variadic_outer_attrs,
     Visibility vis, std::vector<Attribute> outer_attrs, Location locus)
-    : ExternalItem (std::move (item_name), std::move (vis),
-		    std::move (outer_attrs), locus),
+    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)), 
+      item_name (std::move (item_name)), locus (locus),
       generic_params (std::move (generic_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
       function_params (std::move (function_params)),
-      has_variadics (has_variadics)
-  {}
+      has_variadics (has_variadics), variadic_outer_attrs (std::move (variadic_outer_attrs))
+  {
+    // TODO: assert that if has variadic outer attrs, then has_variadics is true?
+  }
 
   // Copy constructor with clone
   ExternalFunctionItem (ExternalFunctionItem const &other)
-    : ExternalItem (other), return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause),
+    : outer_attrs (other.outer_attrs), visibility (other.visibility), item_name (other.item_name), 
+      locus (other.locus), where_clause (other.where_clause),
       function_params (other.function_params),
-      has_variadics (other.has_variadics)
+      has_variadics (other.has_variadics), variadic_outer_attrs (other.variadic_outer_attrs)
   {
+    // guard to prevent null pointer dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -3203,11 +3295,20 @@ public:
   // Overloaded assignment operator with clone
   ExternalFunctionItem &operator= (ExternalFunctionItem const &other)
   {
-    ExternalItem::operator= (other);
-    return_type = other.return_type->clone_type ();
+    outer_attrs = other.outer_attrs;
+    visibility = other.visibility;
+    item_name = other.item_name;
+    locus = other.locus;
     where_clause = other.where_clause;
     function_params = other.function_params;
     has_variadics = other.has_variadics;
+    variadic_outer_attrs = other.variadic_outer_attrs;
+
+    // guard to prevent null pointer dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -3223,6 +3324,17 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Based on idea that nane should never be empty.
+  void mark_for_strip () override { item_name = ""; };
+  bool is_marked_for_strip () const override { return item_name.empty (); };
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  std::vector<NamedFunctionParam> &get_function_params () { return function_params; }
+  const std::vector<NamedFunctionParam> &get_function_params () const { return function_params; }
 
 protected:
   /* Use covariance to implement clone function as returning this object

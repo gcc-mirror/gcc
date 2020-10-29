@@ -125,8 +125,35 @@ namespace Rust {
         void visit(AST::Trait& trait) override {}
         void visit(AST::InherentImpl& impl) override {}
         void visit(AST::TraitImpl& impl) override {}
-        void visit(AST::ExternalStaticItem& item) override {}
-        void visit(AST::ExternalFunctionItem& item) override {}
+        void visit(AST::ExternalStaticItem& item) override {
+            // strip test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::ExternalFunctionItem& item) override {
+            // strip test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+
+            /* strip function parameters if required - this is specifically 
+             * allowed by spec */
+            auto& params = item.get_function_params();
+            for (auto i = 0; i < params.size(); ) {
+                if (expander.fails_cfg (params[i].get_outer_attrs ()))
+                    params.erase (params.begin() + i);
+                else
+                    i++;
+            }
+
+            /* TODO: assuming that variadic nature cannot be stripped. If this 
+             * is not true, then have code here to do so. */
+        }
         void visit(AST::ExternBlock& block) override {
             // initial strip test based on outer attrs
             expander.expand_cfg_attrs(block.get_outer_attrs());
@@ -154,7 +181,6 @@ namespace Rust {
                     extern_items.erase (extern_items.begin() + i);
                 else
                     i++;
-                
             }
         }
 

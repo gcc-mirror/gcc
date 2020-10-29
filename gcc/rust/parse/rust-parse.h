@@ -230,7 +230,8 @@ private:
   parse_extern_block (AST::Visibility vis,
 		      std::vector<AST::Attribute> outer_attrs);
   std::unique_ptr<AST::ExternalItem> parse_external_item ();
-  AST::NamedFunctionParam parse_named_function_param ();
+  AST::NamedFunctionParam parse_named_function_param (
+    std::vector<AST::Attribute> outer_attrs = std::vector<AST::Attribute> ());
   AST::Method parse_method ();
 
   // Expression-related (Pratt parsed)
