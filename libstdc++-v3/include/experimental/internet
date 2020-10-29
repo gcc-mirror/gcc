@@ -2393,7 +2393,7 @@ namespace ip
     : __hash_base<size_t, experimental::net::v1::ip::address>
     {
       size_t
-      operator()(const argument_type& __a) const
+      operator()(const experimental::net::v1::ip::address& __a) const
       {
 	if (__a.is_v4())
 	  return _Hash_impl::hash(__a.to_v4());
@@ -2407,7 +2407,7 @@ namespace ip
     : __hash_base<size_t, experimental::net::v1::ip::address_v4>
     {
       size_t
-      operator()(const argument_type& __a) const
+      operator()(const experimental::net::v1::ip::address_v4& __a) const
       { return _Hash_impl::hash(__a.to_bytes()); }
     };
 
@@ -2415,7 +2415,7 @@ namespace ip
     : __hash_base<size_t, experimental::net::v1::ip::address_v6>
     {
       size_t
-      operator()(const argument_type& __a) const
+      operator()(const experimental::net::v1::ip::address_v6& __a) const
       { return _Hash_impl::hash(__a.to_bytes()); }
     };
 
