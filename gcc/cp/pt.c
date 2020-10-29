@@ -5089,8 +5089,7 @@ process_partial_specialization (tree decl)
     = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (maintmpl)));
   if (comp_template_args (inner_args, INNERMOST_TEMPLATE_ARGS (main_args))
       && (!flag_concepts
-	  || !strictly_subsumes (current_template_constraints (),
-				 main_args, maintmpl)))
+	  || !strictly_subsumes (current_template_constraints (), maintmpl)))
     {
       if (!flag_concepts)
         error ("partial specialization %q+D does not specialize "
@@ -8178,7 +8177,7 @@ is_compatible_template_arg (tree parm, tree arg)
         return false;
     }
 
-  return weakly_subsumes (parm_cons, new_args, arg);
+  return weakly_subsumes (parm_cons, arg);
 }
 
 // Convert a placeholder argument into a binding to the original

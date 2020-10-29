@@ -759,20 +759,18 @@ normalize_expression (tree t, tree args, norm_info info)
 static GTY((deletable)) hash_map<tree,tree> *normalized_map;
 
 static tree
-get_normalized_constraints (tree t, tree args, norm_info info)
+get_normalized_constraints (tree t, norm_info info)
 {
   auto_timevar time (TV_CONSTRAINT_NORM);
-  return normalize_expression (t, args, info);
+  return normalize_expression (t, NULL_TREE, info);
 }
 
 /* Returns the normalized constraints from a constraint-info object
-   or NULL_TREE if the constraints are null. ARGS provide the initial
-   arguments for normalization and IN_DECL provides the declaration
-   to which the constraints belong.  */
+   or NULL_TREE if the constraints are null. IN_DECL provides the
+   declaration to which the constraints belong.  */
 
 static tree
-get_normalized_constraints_from_info (tree ci, tree args, tree in_decl,
-				      bool diag = false)
+get_normalized_constraints_from_info (tree ci, tree in_decl, bool diag = false)
 {
   if (ci == NULL_TREE)
     return NULL_TREE;
@@ -780,8 +778,7 @@ get_normalized_constraints_from_info (tree ci, tree args, tree in_decl,
   /* Substitution errors during normalization are fatal.  */
   ++processing_template_decl;
   norm_info info (in_decl, diag ? tf_norm : tf_none);
-  tree t = get_normalized_constraints (CI_ASSOCIATED_CONSTRAINTS (ci),
-				       args, info);
+  tree t = get_normalized_constraints (CI_ASSOCIATED_CONSTRAINTS (ci), info);
   --processing_template_decl;
 
   return t;
@@ -843,9 +840,8 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
 
   push_nested_class_guard pncs (DECL_CONTEXT (d));
 
-  tree args = generic_targs_for (tmpl);
   tree ci = get_constraints (decl);
-  tree norm = get_normalized_constraints_from_info (ci, args, tmpl, diag);
+  tree norm = get_normalized_constraints_from_info (ci, tmpl, diag);
 
   if (!diag)
     hash_map_safe_put<hm_ggc> (normalized_map, tmpl, norm);
@@ -866,11 +862,10 @@ normalize_concept_definition (tree tmpl, bool diag = false)
   if (OVL_P (tmpl))
     tmpl = OVL_FIRST (tmpl);
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
-  tree args = generic_targs_for (tmpl);
   tree def = get_concept_definition (DECL_TEMPLATE_RESULT (tmpl));
   ++processing_template_decl;
   norm_info info (tmpl, diag ? tf_norm : tf_none);
-  tree norm = get_normalized_constraints (def, args, info);
+  tree norm = get_normalized_constraints (def, info);
   --processing_template_decl;
 
   if (!diag)
@@ -895,40 +890,18 @@ normalize_nontemplate_requirements (tree decl, bool diag = false)
   return get_normalized_constraints_from_decl (decl, diag);
 }
 
-/* Normalize an EXPR as a constraint using ARGS.  */
+/* Normalize an EXPR as a constraint.  */
 
 static tree
-normalize_constraint_expression (tree expr, tree args, bool diag = false)
+normalize_constraint_expression (tree expr, bool diag)
 {
   if (!expr || expr == error_mark_node)
     return expr;
   ++processing_template_decl;
   norm_info info (diag ? tf_norm : tf_none);
-  tree norm = get_normalized_constraints (expr, args, info);
+  tree norm = get_normalized_constraints (expr, info);
   --processing_template_decl;
   return norm;
-}
-
-/* Normalize an EXPR as a constraint.  */
-
-static tree
-normalize_constraint_expression (tree expr, bool diag = false)
-{
-  if (!expr || expr == error_mark_node)
-    return expr;
-
-  /* For concept checks, use the supplied template arguments as those used
-     for normalization. Otherwise, there are no template arguments.  */
-  tree args;
-  if (concept_check_p (expr))
-    {
-      tree id = unpack_concept_check (expr);
-      args = TREE_OPERAND (id, 1);
-    }
-  else
-    args = NULL_TREE;
-
-  return normalize_constraint_expression (expr, args, diag);
 }
 
 /* 17.4.1.2p2. Two constraints are identical if they are formed
@@ -2998,9 +2971,7 @@ finish_compound_requirement (location_t loc, tree expr, tree type, bool noexcept
 tree
 finish_nested_requirement (location_t loc, tree expr)
 {
-  /* Currently open template headers have dummy arg vectors, so don't
-     pass into normalization.  */
-  tree norm = normalize_constraint_expression (expr, NULL_TREE, false);
+  tree norm = normalize_constraint_expression (expr, false);
 
   /* Build the constraint, saving its normalization as its type.  */
   tree r = build1 (NESTED_REQ, norm, expr);
@@ -3105,25 +3076,25 @@ subsumes_constraints (tree a, tree b)
   return subsumes (a, b);
 }
 
-/* Returns true when the constraints in CI (with arguments
-   ARGS) strictly subsume the associated constraints of TMPL.  */
+/* Returns true when the constraints in CI strictly subsume
+   the associated constraints of TMPL.  */
 
 bool
-strictly_subsumes (tree ci, tree args, tree tmpl)
+strictly_subsumes (tree ci, tree tmpl)
 {
-  tree n1 = get_normalized_constraints_from_info (ci, args, NULL_TREE);
+  tree n1 = get_normalized_constraints_from_info (ci, NULL_TREE);
   tree n2 = get_normalized_constraints_from_decl (tmpl);
 
   return subsumes (n1, n2) && !subsumes (n2, n1);
 }
 
-/* REturns true when the constraints in CI (with arguments ARGS) subsume
-   the associated constraints of TMPL.  */
+/* Returns true when the constraints in CI subsume the
+   associated constraints of TMPL.  */
 
 bool
-weakly_subsumes (tree ci, tree args, tree tmpl)
+weakly_subsumes (tree ci, tree tmpl)
 {
-  tree n1 = get_normalized_constraints_from_info (ci, args, NULL_TREE);
+  tree n1 = get_normalized_constraints_from_info (ci, NULL_TREE);
   tree n2 = get_normalized_constraints_from_decl (tmpl);
 
   return subsumes (n1, n2);
