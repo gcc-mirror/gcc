@@ -4830,13 +4830,16 @@ vect_get_slp_defs (vec_info *,
 
 /* Generate vector permute statements from a list of loads in DR_CHAIN.
    If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
-   permute statements for the SLP node NODE.  */
+   permute statements for the SLP node NODE.  Store the number of vector
+   permute instructions in *N_PERMS and the number of vector load
+   instructions in *N_LOADS.  */
 
 bool
 vect_transform_slp_perm_load (vec_info *vinfo,
 			      slp_tree node, vec<tree> dr_chain,
 			      gimple_stmt_iterator *gsi, poly_uint64 vf,
-			      bool analyze_only, unsigned *n_perms)
+			      bool analyze_only, unsigned *n_perms,
+			      unsigned int *n_loads)
 {
   stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
   int vec_index = 0;
@@ -4888,6 +4891,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
   vec_perm_builder mask;
   unsigned int nelts_to_build;
   unsigned int nvectors_per_build;
+  unsigned int in_nlanes;
   bool repeating_p = (group_size == DR_GROUP_SIZE (stmt_info)
 		      && multiple_p (nunits, group_size));
   if (repeating_p)
@@ -4898,6 +4902,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
       mask.new_vector (nunits, group_size, 3);
       nelts_to_build = mask.encoded_nelts ();
       nvectors_per_build = SLP_TREE_VEC_STMTS (node).length ();
+      in_nlanes = DR_GROUP_SIZE (stmt_info) * 3;
     }
   else
     {
@@ -4909,7 +4914,10 @@ vect_transform_slp_perm_load (vec_info *vinfo,
       mask.new_vector (const_nunits, const_nunits, 1);
       nelts_to_build = const_vf * group_size;
       nvectors_per_build = 1;
+      in_nlanes = const_vf * DR_GROUP_SIZE (stmt_info);
     }
+  auto_sbitmap used_in_lanes (in_nlanes);
+  bitmap_clear (used_in_lanes);
 
   unsigned int count = mask.encoded_nelts ();
   mask.quick_grow (count);
@@ -4921,6 +4929,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
       unsigned int stmt_num = j % group_size;
       unsigned int i = (iter_num * DR_GROUP_SIZE (stmt_info)
 			+ SLP_TREE_LOAD_PERMUTATION (node)[stmt_num]);
+      bitmap_set_bit (used_in_lanes, i);
       if (repeating_p)
 	{
 	  first_vec_index = 0;
@@ -5031,6 +5040,32 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	  first_vec_index = -1;
 	  second_vec_index = -1;
 	  noop_p = true;
+	}
+    }
+
+  if (n_loads)
+    {
+      if (repeating_p)
+	*n_loads = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+      else
+	{
+	  /* Enforced above when !repeating_p.  */
+	  unsigned int const_nunits = nunits.to_constant ();
+	  *n_loads = 0;
+	  bool load_seen = false;
+	  for (unsigned i = 0; i < in_nlanes; ++i)
+	    {
+	      if (i % const_nunits == 0)
+		{
+		  if (load_seen)
+		    *n_loads += 1;
+		  load_seen = false;
+		}
+	      if (bitmap_bit_p (used_in_lanes, i))
+		load_seen = true;
+	    }
+	  if (load_seen)
+	    *n_loads += 1;
 	}
     }
 

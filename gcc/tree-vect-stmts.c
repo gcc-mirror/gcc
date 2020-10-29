@@ -1098,39 +1098,15 @@ vect_model_load_cost (vec_info *vinfo,
 	 the first group element not by the first scalar stmt DR.  */
       stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
       /* Record the cost for the permutation.  */
-      unsigned n_perms;
-      unsigned assumed_nunits
-	= vect_nunits_for_cost (STMT_VINFO_VECTYPE (first_stmt_info));
+      unsigned n_perms, n_loads;
       vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL,
-				    vf, true, &n_perms);
+				    vf, true, &n_perms, &n_loads);
       inside_cost += record_stmt_cost (cost_vec, n_perms, vec_perm,
 				       first_stmt_info, 0, vect_body);
+
       /* And adjust the number of loads performed.  This handles
 	 redundancies as well as loads that are later dead.  */
-      auto_sbitmap perm (DR_GROUP_SIZE (first_stmt_info));
-      bitmap_clear (perm);
-      for (unsigned i = 0;
-	   i < SLP_TREE_LOAD_PERMUTATION (slp_node).length (); ++i)
-	bitmap_set_bit (perm, SLP_TREE_LOAD_PERMUTATION (slp_node)[i]);
-      ncopies = 0;
-      bool load_seen = false;
-      for (unsigned i = 0; i < DR_GROUP_SIZE (first_stmt_info); ++i)
-	{
-	  if (i % assumed_nunits == 0)
-	    {
-	      if (load_seen)
-		ncopies++;
-	      load_seen = false;
-	    }
-	  if (bitmap_bit_p (perm, i))
-	    load_seen = true;
-	}
-      if (load_seen)
-	ncopies++;
-      gcc_assert (ncopies
-		  <= (DR_GROUP_SIZE (first_stmt_info)
-		      - DR_GROUP_GAP (first_stmt_info)
-		      + assumed_nunits - 1) / assumed_nunits);
+      ncopies = n_loads;
     }
 
   /* Grouped loads read all elements in the group at once,
