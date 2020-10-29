@@ -181,6 +181,40 @@ reachable_regions::handle_sval (const svalue *sval)
     }
   if (const svalue *cast = sval->maybe_undo_cast ())
     handle_sval (cast);
+
+  /* If SVAL is the result of a reversible operation, then the operands
+     are reachable.  */
+  switch (sval->get_kind ())
+    {
+    default:
+      break;
+    case SK_UNARYOP:
+      {
+	const unaryop_svalue *unaryop_sval = (const unaryop_svalue *)sval;
+	switch (unaryop_sval->get_op ())
+	  {
+	  default:
+	    break;
+	  case NEGATE_EXPR:
+	    handle_sval (unaryop_sval->get_arg ());
+	    break;
+	  }
+      }
+      break;
+    case SK_BINOP:
+      {
+	const binop_svalue *binop_sval = (const binop_svalue *)sval;
+	switch (binop_sval->get_op ())
+	  {
+	  default:
+	    break;
+	  case POINTER_PLUS_EXPR:
+	    handle_sval (binop_sval->get_arg0 ());
+	    handle_sval (binop_sval->get_arg1 ());
+	    break;
+	  }
+      }
+    }
 }
 
 /* Add SVAL.  If it is a pointer, add the pointed-to region.
