@@ -517,6 +517,7 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 {
   svalue_set svals_to_unset;
 
+  auto_vec<const svalue *> leaked_svals (m_map.elements ());
   for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
        ++iter)
@@ -527,8 +528,18 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 	  svals_to_unset.add (iter_sval);
 	  entry_t e = (*iter).second;
 	  if (!m_sm.can_purge_p (e.m_state))
-	    ctxt->on_state_leak (m_sm, iter_sval, e.m_state);
+	    leaked_svals.quick_push (iter_sval);
 	}
+    }
+
+  leaked_svals.qsort (svalue::cmp_ptr_ptr);
+
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (leaked_svals, i, sval)
+    {
+      entry_t e = *m_map.get (sval);
+      ctxt->on_state_leak (m_sm, sval, e.m_state);
     }
 
   for (svalue_set::iterator iter = svals_to_unset.begin ();
@@ -1181,6 +1192,7 @@ program_state::detect_leaks (const program_state &src_state,
 			  dest_svalues);
     }
 
+  auto_vec <const svalue *> dead_svals (src_svalues.elements ());
   for (svalue_set::iterator iter = src_svalues.begin ();
        iter != src_svalues.end (); ++iter)
     {
@@ -1188,10 +1200,18 @@ program_state::detect_leaks (const program_state &src_state,
       /* For each sval reachable from SRC_STATE, determine if it is
 	 live in DEST_STATE: either explicitly reachable, or implicitly
 	 live based on the set of explicitly reachable svalues.
-	 Call CTXT->on_svalue_leak on those that have ceased to be live.  */
+	 Record those that have ceased to be live.  */
       if (!sval->live_p (dest_svalues, dest_state.m_region_model))
-	ctxt->on_svalue_leak (sval);
+	dead_svals.quick_push (sval);
     }
+
+  /* Call CTXT->on_svalue_leak on all svals in SRC_STATE  that have ceased
+     to be live, sorting them first to ensure deterministic behavior.  */
+  dead_svals.qsort (svalue::cmp_ptr_ptr);
+  unsigned i;
+  const svalue *sval;
+  FOR_EACH_VEC_ELT (dead_svals, i, sval)
+    ctxt->on_svalue_leak (sval);
 
   /* Purge dead svals from sm-state.  */
   ctxt->on_liveness_change (dest_svalues, dest_state.m_region_model);
