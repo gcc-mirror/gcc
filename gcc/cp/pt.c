@@ -5682,11 +5682,6 @@ template_parm_outer_level (tree t, void *data)
 tree
 push_template_decl (tree decl, bool is_friend)
 {
-  int new_template_p = 0;
-  /* True if the template is a member template, in the sense of
-     [temp.mem].  */
-  bool member_template_p = false;
-
   if (decl == error_mark_node || !current_template_parms)
     return error_mark_node;
 
@@ -5739,12 +5734,17 @@ push_template_decl (tree decl, bool is_friend)
   else
     is_primary = template_parm_scope_p ();
 
+  /* True if the template is a member template, in the sense of
+     [temp.mem].  */
+  bool member_template_p = false;
+
   if (is_primary)
     {
       warning (OPT_Wtemplates, "template %qD declared", decl);
 
       if (DECL_CLASS_SCOPE_P (decl))
 	member_template_p = true;
+
       if (TREE_CODE (decl) == TYPE_DECL
 	  && IDENTIFIER_ANON_P (DECL_NAME (decl)))
 	{
@@ -5812,11 +5812,16 @@ push_template_decl (tree decl, bool is_friend)
 	}
     }
 
+  bool local_p = (!DECL_IMPLICIT_TYPEDEF_P (decl)
+		  && ((ctx && TREE_CODE (ctx) == FUNCTION_DECL)
+		      || (VAR_OR_FUNCTION_DECL_P (decl)
+			  && DECL_LOCAL_DECL_P (decl))));
+
   /* Check to see that the rules regarding the use of default
      arguments are not being violated.  We check args for a friend
      functions when we know whether it's a definition, introducing
      declaration or re-declaration.  */
-  if (!is_friend || TREE_CODE (decl) != FUNCTION_DECL)
+  if (!local_p && (!is_friend || TREE_CODE (decl) != FUNCTION_DECL))
     check_default_tmpl_args (decl, current_template_parms,
 			     is_primary, is_partial, is_friend);
 
@@ -5869,14 +5874,20 @@ push_template_decl (tree decl, bool is_friend)
     return process_partial_specialization (decl);
 
   tree args = current_template_args ();
-
-  tree tmpl;
-  if (!ctx
-      || TREE_CODE (ctx) == FUNCTION_DECL
-      || (CLASS_TYPE_P (ctx) && TYPE_BEING_DEFINED (ctx))
-      || (TREE_CODE (decl) == TYPE_DECL && LAMBDA_TYPE_P (TREE_TYPE (decl)))
-      || (is_friend && !(DECL_LANG_SPECIFIC (decl)
-			 && DECL_TEMPLATE_INFO (decl))))
+  tree tmpl = NULL_TREE;
+  bool new_template_p = false;
+  if (local_p)
+    {
+      /* Does not get a template head.  */
+      tmpl = NULL_TREE;
+      gcc_checking_assert (!is_primary);
+    }
+  else if (!ctx
+	   || TREE_CODE (ctx) == FUNCTION_DECL
+	   || (CLASS_TYPE_P (ctx) && TYPE_BEING_DEFINED (ctx))
+	   || (TREE_CODE (decl) == TYPE_DECL && LAMBDA_TYPE_P (TREE_TYPE (decl)))
+	   || (is_friend && !(DECL_LANG_SPECIFIC (decl)
+			      && DECL_TEMPLATE_INFO (decl))))
     {
       if (DECL_LANG_SPECIFIC (decl)
 	  && DECL_TEMPLATE_INFO (decl)
@@ -5903,7 +5914,7 @@ push_template_decl (tree decl, bool is_friend)
 	{
 	  tmpl = build_template_decl (decl, current_template_parms,
 				      member_template_p);
-	  new_template_p = 1;
+	  new_template_p = true;
 
 	  if (DECL_LANG_SPECIFIC (decl)
 	      && DECL_TEMPLATE_SPECIALIZATION (decl))
@@ -5935,8 +5946,6 @@ push_template_decl (tree decl, bool is_friend)
 	  && DECL_TEMPLATE_SPECIALIZATION (decl)
 	  && DECL_MEMBER_TEMPLATE_P (tmpl))
 	{
-	  tree new_tmpl;
-
 	  /* The declaration is a specialization of a member
 	     template, declared outside the class.  Therefore, the
 	     innermost template arguments will be NULL, so we
@@ -5944,7 +5953,7 @@ push_template_decl (tree decl, bool is_friend)
 	     earlier call to check_explicit_specialization.  */
 	  args = DECL_TI_ARGS (decl);
 
-	  new_tmpl
+	  tree new_tmpl
 	    = build_template_decl (decl, current_template_parms,
 				   member_template_p);
 	  DECL_TI_TEMPLATE (decl) = new_tmpl;
@@ -6016,7 +6025,7 @@ push_template_decl (tree decl, bool is_friend)
 	}
     }
 
-  gcc_checking_assert (DECL_TEMPLATE_RESULT (tmpl) == decl);
+  gcc_checking_assert (!tmpl || DECL_TEMPLATE_RESULT (tmpl) == decl);
 
   if (new_template_p)
     {
@@ -6028,65 +6037,71 @@ push_template_decl (tree decl, bool is_friend)
       if (!ctx
 	  && !(is_friend && template_class_depth (current_class_type) > 0))
 	{
-	  tmpl = pushdecl_namespace_level (tmpl, /*hiding=*/is_friend);
-	  if (tmpl == error_mark_node)
+	  tree pushed = pushdecl_namespace_level (tmpl, /*hiding=*/is_friend);
+	  if (pushed == error_mark_node)
 	    return error_mark_node;
+
+	  /* pushdecl may have found an existing template.  */
+	  if (pushed != tmpl)
+	    {
+	      decl = DECL_TEMPLATE_RESULT (pushed);
+	      tmpl = NULL_TREE;
+	    }
 	}
     }
-  else
+  else if (tmpl)
     /* The type may have been completed, or (erroneously) changed.  */
     TREE_TYPE (tmpl) = TREE_TYPE (decl);
 
-  if (is_primary)
-    {
-      tree parms = DECL_TEMPLATE_PARMS (tmpl);
-
-      DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
-
-      /* Give template template parms a DECL_CONTEXT of the template
-	 for which they are a parameter.  */
-      parms = INNERMOST_TEMPLATE_PARMS (parms);
-      for (int i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
-	{
-	  tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
-	  if (TREE_CODE (parm) == TEMPLATE_DECL)
-	    DECL_CONTEXT (parm) = tmpl;
-	}
-
-      if (TREE_CODE (decl) == TYPE_DECL
-	  && TYPE_DECL_ALIAS_P (decl))
-	{
-	  if (tree constr
-	      = TEMPLATE_PARMS_CONSTRAINTS (DECL_TEMPLATE_PARMS (tmpl)))
-	    {
-	      /* ??? Why don't we do this here for all templates?  */
-	      constr = build_constraints (constr, NULL_TREE);
-	      set_constraints (decl, constr);
-	    }
-	  if (complex_alias_template_p (tmpl))
-	    TEMPLATE_DECL_COMPLEX_ALIAS_P (tmpl) = true;
-	}
-    }
-
-  /* The DECL_TI_ARGS of DECL contains full set of arguments referring
-     back to its most general template.  If TMPL is a specialization,
-     ARGS may only have the innermost set of arguments.  Add the missing
-     argument levels if necessary.  */
-  if (DECL_TEMPLATE_INFO (tmpl))
-    args = add_outermost_template_args (DECL_TI_ARGS (tmpl), args);
-
-  tree info = build_template_info (tmpl, args);
-
-  if (DECL_IMPLICIT_TYPEDEF_P (decl))
-    SET_TYPE_TEMPLATE_INFO (TREE_TYPE (tmpl), info);
-  else
+  if (tmpl)
     {
       if (is_primary)
-	retrofit_lang_decl (decl);
-      if (DECL_LANG_SPECIFIC (decl)
-	  && !(VAR_OR_FUNCTION_DECL_P (decl)
-	       && DECL_LOCAL_DECL_P (decl)))
-	DECL_TEMPLATE_INFO (decl) = info;
+	{
+	  tree parms = DECL_TEMPLATE_PARMS (tmpl);
+
+	  DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
+
+	  /* Give template template parms a DECL_CONTEXT of the template
+	     for which they are a parameter.  */
+	  parms = INNERMOST_TEMPLATE_PARMS (parms);
+	  for (int i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
+	    {
+	      tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+	      if (TREE_CODE (parm) == TEMPLATE_DECL)
+		DECL_CONTEXT (parm) = tmpl;
+	    }
+
+	  if (TREE_CODE (decl) == TYPE_DECL
+	      && TYPE_DECL_ALIAS_P (decl))
+	    {
+	      if (tree constr
+		  = TEMPLATE_PARMS_CONSTRAINTS (DECL_TEMPLATE_PARMS (tmpl)))
+		{
+		  /* ??? Why don't we do this here for all templates?  */
+		  constr = build_constraints (constr, NULL_TREE);
+		  set_constraints (decl, constr);
+		}
+	      if (complex_alias_template_p (tmpl))
+		TEMPLATE_DECL_COMPLEX_ALIAS_P (tmpl) = true;
+	    }
+	}
+
+      /* The DECL_TI_ARGS of DECL contains full set of arguments
+	 referring wback to its most general template.  If TMPL is a
+	 specialization, ARGS may only have the innermost set of
+	 arguments.  Add the missing argument levels if necessary.  */
+      if (DECL_TEMPLATE_INFO (tmpl))
+	args = add_outermost_template_args (DECL_TI_ARGS (tmpl), args);
+
+      tree info = build_template_info (tmpl, args);
+
+      if (DECL_IMPLICIT_TYPEDEF_P (decl))
+	SET_TYPE_TEMPLATE_INFO (TREE_TYPE (tmpl), info);
+      else
+	{
+	  retrofit_lang_decl (decl);
+	  DECL_TEMPLATE_INFO (decl) = info;
+	}
     }
 
   if (flag_implicit_templates
@@ -6098,7 +6113,9 @@ push_template_decl (tree decl, bool is_friend)
        mark_needed will tell cgraph to do the right thing.  */
     DECL_COMDAT (decl) = true;
 
-  return DECL_TEMPLATE_RESULT (tmpl);
+  gcc_checking_assert (!tmpl || DECL_TEMPLATE_RESULT (tmpl) == decl);
+
+  return decl;
 }
 
 /* FN is an inheriting constructor that inherits from the constructor
