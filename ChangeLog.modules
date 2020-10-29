@@ -1,5 +1,13 @@
 2020-10-29  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk bafcf452c79
+	opts: Sanity check for param names.
+	gcc/
+	* params.opt: Fixup lazy-load parm name.
+	gcc/testsuite/
+	* g++.dg/modules/freeze-1_d.C: Adjust.
+	* g++.dg/modules/nest-1_c.C: Adjust.
+
 	Merge trunk 53dede0f04b
 	CSE conversions within sincos [Alexandre Oliva]
 

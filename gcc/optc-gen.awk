@@ -104,6 +104,9 @@ for (i = 0; i < n_opts; i++) {
 	enabledby_negarg = nth_arg(3, enabledby_arg);
         lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enabledby_negarg);
     }
+
+    if (flag_set_p("Param", flags[i]) && !(opts[i] ~ "^-param="))
+      print "#error Parameter option name '" opts[i] "' must start with '-param='"
 }
 
 
