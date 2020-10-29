@@ -1,3 +1,70 @@
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	* decl.c (grokdeclarator): Offer a fix-it hint for the "unnecessary
+	parentheses in declaration" warning.
+	* parser.c (cp_parser_direct_declarator): When setting
+	declarator->parenthesized, use a location range.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* call.c (build_conditional_expr_1): Warn about the deprecated
+	enum/real type conversion in C++20.  Also warn about a non-enumerated
+	and enumerated type in ?: when -Wenum-conversion is on.
+	* typeck.c (do_warn_enum_conversions): New function.
+	(cp_build_binary_op): Call it.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96675
+	PR c++/96742
+	* pt.c (tsubst_copy_and_build): Call value_dependent_expression_p or
+	type_dependent_expression_p instead of type_dependent_expression_p_push.
+	But only call value_dependent_expression_p for expressions that are
+	potential_constant_expression.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94799
+	* parser.c (cp_parser_class_name): Use parser->scope when
+	setting typename_p.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86773
+	* parser.c (cp_parser_fold_expression): Return error_mark_node
+	if a left fold is preceded by an expression.
+
+2020-10-28  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_omp_declare_reduction): Set
+	DECL_LOCAL_DECL_P before push_template_decl.
+	* pt.c (instantiate_body): Nested fns do not have template_info.
+
+2020-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95132
+	* decl2.c (mark_used): Move up the constraints_satisfied_p check
+	so that we check constraints before calling maybe_instantiate_decl.
+
+2020-10-28  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (push_template_decl): Refactor for some RAII.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Handle allocate.
+	(cp_parser_omp_clause_allocate): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_ALLOCATE.
+	(OMP_FOR_CLAUSE_MASK, OMP_SECTIONS_CLAUSE_MASK,
+	OMP_PARALLEL_CLAUSE_MASK, OMP_SINGLE_CLAUSE_MASK,
+	OMP_TASK_CLAUSE_MASK, OMP_TASKGROUP_CLAUSE_MASK,
+	OMP_DISTRIBUTE_CLAUSE_MASK, OMP_TEAMS_CLAUSE_MASK,
+	OMP_TARGET_CLAUSE_MASK, OMP_TASKLOOP_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_ALLOCATE.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_ALLOCATE.
+	* pt.c (tsubst_omp_clauses): Likewise.
+
 2020-10-27  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (struct lang_type): Delete nested_udts field.

@@ -1,3 +1,45 @@
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (sm_state_map::on_liveness_change): Sort the
+	leaking svalues before calling on_state_leak.
+	(program_state::detect_leaks): Likewise when calling
+	on_svalue_leak.
+	* region-model-reachability.cc
+	(reachable_regions::mark_escaped_clusters): Likewise when
+	calling on_escaped_function.
+
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97608
+	* region-model-reachability.cc (reachable_regions::handle_sval):
+	Operands of reachable reversible operations are reachable.
+
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class state_machine): New forward decl.
+	(class logger): Likewise.
+	(class visitor): Likewise.
+	* complexity.cc: New file, taken from svalue.cc.
+	* complexity.h: New file, taken from region-model.h.
+	* region-model.h: Include "analyzer/svalue.h" and
+	"analyzer/region.h".  Move struct complexity to complexity.h.
+	Move svalue, its subclasses and supporting decls to svalue.h.
+	Move region, its subclasses and supporting decls to region.h.
+	* region.cc: Include "analyzer/region.h".
+	(symbolic_region::symbolic_region): Move here from region-model.h.
+	* region.h: New file, based on material from region-model.h.
+	* svalue.cc: Include "analyzer/svalue.h".
+	(complexity::complexity): Move to complexity.cc.
+	(complexity::from_pair): Likewise.
+	* svalue.h: New file, based on material from region-model.h.
+
+2020-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (sm_state_map::print): Guard the printing of
+	the origin pointer with !flag_dump_noaddr.
+	* region.cc (string_region::dump_to_pp): Likewise for
+	m_string_cst.
+
 2020-10-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97568
