@@ -184,35 +184,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Generating functions.
        */
-      template<typename _UniformRandomNumberGenerator>
+      template<typename _UniformRandomBitGenerator>
 	result_type
-	operator()(_UniformRandomNumberGenerator& __urng)
+	operator()(_UniformRandomBitGenerator& __urng)
         { return this->operator()(__urng, _M_param); }
 
-      template<typename _UniformRandomNumberGenerator>
+      template<typename _UniformRandomBitGenerator>
 	result_type
-	operator()(_UniformRandomNumberGenerator& __urng,
+	operator()(_UniformRandomBitGenerator& __urng,
 		   const param_type& __p);
 
       template<typename _ForwardIterator,
-	       typename _UniformRandomNumberGenerator>
+	       typename _UniformRandomBitGenerator>
 	void
 	__generate(_ForwardIterator __f, _ForwardIterator __t,
-		   _UniformRandomNumberGenerator& __urng)
+		   _UniformRandomBitGenerator& __urng)
 	{ this->__generate(__f, __t, __urng, _M_param); }
 
       template<typename _ForwardIterator,
-	       typename _UniformRandomNumberGenerator>
+	       typename _UniformRandomBitGenerator>
 	void
 	__generate(_ForwardIterator __f, _ForwardIterator __t,
-		   _UniformRandomNumberGenerator& __urng,
+		   _UniformRandomBitGenerator& __urng,
 		   const param_type& __p)
 	{ this->__generate_impl(__f, __t, __urng, __p); }
 
-      template<typename _UniformRandomNumberGenerator>
+      template<typename _UniformRandomBitGenerator>
 	void
 	__generate(result_type* __f, result_type* __t,
-		   _UniformRandomNumberGenerator& __urng,
+		   _UniformRandomBitGenerator& __urng,
 		   const param_type& __p)
 	{ this->__generate_impl(__f, __t, __urng, __p); }
 
@@ -227,10 +227,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       template<typename _ForwardIterator,
-	       typename _UniformRandomNumberGenerator>
+	       typename _UniformRandomBitGenerator>
 	void
 	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
-			_UniformRandomNumberGenerator& __urng,
+			_UniformRandomBitGenerator& __urng,
 			const param_type& __p);
 
       param_type _M_param;
@@ -265,17 +265,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _IntType>
-    template<typename _UniformRandomNumberGenerator>
+    template<typename _UniformRandomBitGenerator>
       typename uniform_int_distribution<_IntType>::result_type
       uniform_int_distribution<_IntType>::
-      operator()(_UniformRandomNumberGenerator& __urng,
+      operator()(_UniformRandomBitGenerator& __urng,
 		 const param_type& __param)
       {
-	typedef typename _UniformRandomNumberGenerator::result_type
-	  _Gresult_type;
-	typedef typename std::make_unsigned<result_type>::type __utype;
-	typedef typename std::common_type<_Gresult_type, __utype>::type
-	  __uctype;
+	typedef typename _UniformRandomBitGenerator::result_type _Gresult_type;
+	typedef typename make_unsigned<result_type>::type __utype;
+	typedef typename common_type<_Gresult_type, __utype>::type __uctype;
 
 	const __uctype __urngmin = __urng.min();
 	const __uctype __urngmax = __urng.max();
@@ -351,19 +349,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _IntType>
     template<typename _ForwardIterator,
-	     typename _UniformRandomNumberGenerator>
+	     typename _UniformRandomBitGenerator>
       void
       uniform_int_distribution<_IntType>::
       __generate_impl(_ForwardIterator __f, _ForwardIterator __t,
-		      _UniformRandomNumberGenerator& __urng,
+		      _UniformRandomBitGenerator& __urng,
 		      const param_type& __param)
       {
 	__glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-	typedef typename _UniformRandomNumberGenerator::result_type
-	  _Gresult_type;
-	typedef typename std::make_unsigned<result_type>::type __utype;
-	typedef typename std::common_type<_Gresult_type, __utype>::type
-	  __uctype;
+	typedef typename _UniformRandomBitGenerator::result_type _Gresult_type;
+	typedef typename make_unsigned<result_type>::type __utype;
+	typedef typename common_type<_Gresult_type, __utype>::type __uctype;
 
 	const __uctype __urngmin = __urng.min();
 	const __uctype __urngmax = __urng.max();
