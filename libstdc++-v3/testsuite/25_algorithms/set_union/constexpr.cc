@@ -29,13 +29,14 @@ test()
   std::array<int, 24> out0{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
   const auto out11 = std::set_union(ca0.begin(), ca0.end(),
-				    cas.begin(), cas.end(), out0.begin());
+				    cas.begin(), cas.end(),
+				    out0.begin());
 
   const auto out22 = std::set_union(ca0.begin(), ca0.end(),
 				    cas.begin(), cas.end(),
 				    out0.begin(), std::less<int>());
 
-  return true;
+  return out11 == (out0.begin() + 15) && out22 == out11;
 }
 
 static_assert(test());
