@@ -210,6 +210,17 @@ init_global_partition (module_cluster *cluster, tree decl)
   if (*mslot)
     decl = ovl_make (decl, *mslot);
   *mslot = decl;
+
+  if (TREE_CODE (decl) == CONST_DECL)
+    {
+      tree type = TREE_TYPE (decl);
+      if (TREE_CODE (type) == ENUMERAL_TYPE
+	  && IDENTIFIER_ANON_P (DECL_NAME (TYPE_NAME (type)))
+	  && decl == TREE_VALUE (TYPE_VALUES (type)))
+	/* Anonymous enums are keyed by their first enumerator, put
+	   the TYPE_DECL here too.  */
+	*mslot = ovl_make (TYPE_NAME (type), *mslot);
+    }
 }
 
 /* Get the fixed binding slot IX.  Creating the vector if CREATE is

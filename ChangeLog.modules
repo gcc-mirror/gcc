@@ -1,5 +1,15 @@
 2020-10-29  Nathan Sidwell  <nathan@acm.org>
 
+	Prague anon-enum keying by underlying type
+	gcc/cp/
+	* module.cc (trees_{in,out}::key_mergeable): Stream MK_enum
+	underlying type decl.
+	(check_mergeable_decl): The enum itself is on the ovl list.
+	* name-lookup.c (init_global_partition): Copy the enum for the
+	first member of an anonymous enum.
+	gcc/testsuite/
+	* g++.dg/modules/enum-8_[abcd].[CH]: New.
+
 	gcc/cp/
 	* module.cc (trees_out::get_merge_kind): Resolve FIXMEs.
 	(trees_out::key_mergeable): Likewise.

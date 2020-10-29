@@ -10465,11 +10465,18 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  break;
 
 	case MK_enum:
-	  /* Anonymous enums are located by their first identifier.  */
-	  // FIXME: Post-Prague, also underlying type
-	  gcc_checking_assert (UNSCOPED_ENUM_P (TREE_TYPE (decl)));
-	  if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
-	    name = DECL_NAME (TREE_VALUE (values));
+	  {
+	    /* Anonymous enums are located by their first identifier,
+	       and underlying type.  */
+	    tree type = TREE_TYPE (decl);
+
+	    gcc_checking_assert (UNSCOPED_ENUM_P (type));
+	    /* Using the type name drops the bit precision we might
+	       have been using on the enum.  */
+	    key.ret = TYPE_NAME (ENUM_UNDERLYING_TYPE (type));
+	    if (tree values = TYPE_VALUES (type))
+	      name = DECL_NAME (TREE_VALUE (values));
+	  }
 	  break;
 
 	case MK_attached:
@@ -10508,8 +10515,11 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  u (code);
 	}
 
-      if (mk == MK_partial
-	  || (mk == MK_named && inner && TREE_CODE (inner) == FUNCTION_DECL))
+      if (mk == MK_enum)
+	tree_node (key.ret);
+      else if (mk == MK_partial
+	       || (mk == MK_named && inner
+		   && TREE_CODE (inner) == FUNCTION_DECL))
 	{
 	  tree_node (key.ret);
 	  tree arg = key.args;
@@ -10554,13 +10564,6 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	    /* Namespaces are never overloaded.  */
 	    return match;
 
-	  if (mk == MK_enum
-	      && TREE_CODE (m_inner) == CONST_DECL
-	      && TREE_CODE (TREE_TYPE (m_inner)) == ENUMERAL_TYPE)
-	    {
-	      tree enum_decl = TYPE_STUB_DECL (TREE_TYPE (m_inner));
-	      return enum_decl;
-	    }
 	  continue;
 	}
 
@@ -10607,7 +10610,14 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	case TYPE_DECL:
 	  if (DECL_IMPLICIT_TYPEDEF_P (d_inner)
 	      == DECL_IMPLICIT_TYPEDEF_P (m_inner))
-	    return match;
+	    {
+	      if (!IDENTIFIER_ANON_P (DECL_NAME (m_inner)))
+		return match;
+	      else if (mk == MK_enum
+		       && (TYPE_NAME (ENUM_UNDERLYING_TYPE (TREE_TYPE (m_inner)))
+			   == key.ret))
+		return match;
+	    }
 	  break;
 
 	default:
@@ -10707,9 +10717,11 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       key.ref_q = cp_ref_qualifier ((code >> 0) & 3);
       key.index = code >> 2;
 
-      if (mk == MK_partial
-	  || ((mk == MK_named || mk == MK_friend_spec)
-	      && inner && TREE_CODE (inner) == FUNCTION_DECL))
+      if (mk == MK_enum)
+	key.ret = tree_node ();
+      else if (mk == MK_partial
+	       || ((mk == MK_named || mk == MK_friend_spec)
+		   && inner && TREE_CODE (inner) == FUNCTION_DECL))
 	{
 	  key.ret = tree_node ();
 	  tree arg, *arg_ptr = &key.args;
@@ -10791,12 +10803,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		tree *vslot = mergeable_namespace_slots (container, name,
 							 !is_mod, &mvec);
 		existing = check_mergeable_decl (mk, decl, *vslot, key);
-		if (mk == MK_enum)
-		  /* We do not need to register enum-keyed types here,
-		     as they'll be entered when we deal with the enumerator
-		     itself.  */
-		  ;
-		else if (!existing)
+		if (!existing)
 		  add_mergeable_namespace_entity (vslot, decl);
 		else
 		  {
