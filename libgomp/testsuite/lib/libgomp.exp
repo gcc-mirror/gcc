@@ -243,6 +243,12 @@ proc libgomp_init { args } {
     if { $offload_additional_options != "" } {
 	lappend ALWAYS_CFLAGS "additional_flags=${offload_additional_options}"
     }
+
+    # Tell warning from error diagnostics.  This fits for C, C++, and Fortran.
+    global gcc_warning_prefix
+    set gcc_warning_prefix "\[Ww\]arning:"
+    global gcc_error_prefix
+    set gcc_error_prefix "(\[Ff\]atal )?\[Ee\]rror:"
 }
 
 #
