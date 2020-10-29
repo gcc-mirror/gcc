@@ -4115,46 +4115,46 @@ gfc_build_builtin_function_decls (void)
   else if (flag_coarray == GFC_FCOARRAY_SHARED)
     {
       gfor_fndecl_cas_master = gfc_build_library_function_decl_with_spec (
-	 get_identifier (PREFIX("cas_master")), ". r", integer_type_node, 1,
+	 get_identifier (PREFIX("cas_master")), ". r ", integer_type_node, 1,
 	build_pointer_type (build_function_type_list (void_type_node, NULL_TREE)));
       gfor_fndecl_cas_coarray_allocate = gfc_build_library_function_decl_with_spec (
-	 get_identifier (PREFIX("cas_coarray_alloc")), ". . R R R", integer_type_node, 4,
+	 get_identifier (PREFIX("cas_coarray_alloc")), ". . R R R ", integer_type_node, 4,
 	pvoid_type_node, integer_type_node, integer_type_node, integer_type_node,
 	NULL_TREE);
       gfor_fndecl_cas_coarray_free = gfc_build_library_function_decl_with_spec (
-	 get_identifier (PREFIX("cas_coarray_free")), ". . R", integer_type_node, 2,
+	 get_identifier (PREFIX("cas_coarray_free")), ". . R ", integer_type_node, 2,
 	 pvoid_type_node, /* Pointer to the descriptor to be deallocated.  */
 	 integer_type_node, /* Type of allocation (normal, event, lock).  */
 	NULL_TREE);
       gfor_fndecl_cas_this_image = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cas_coarray_this_image")), ". X", integer_type_node, 1,
+	get_identifier (PREFIX("cas_coarray_this_image")), ". X ", integer_type_node, 1,
 	integer_type_node, /* This is the team number.  Currently ignored.  */
 	NULL_TREE);
       DECL_PURE_P (gfor_fndecl_cas_this_image) = 1;
       gfor_fndecl_cas_num_images = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cas_coarray_num_images")), ". X",
+	get_identifier (PREFIX("cas_coarray_num_images")), ". X ",
 	integer_type_node, 1,
 	integer_type_node, /* See above.  */
 	NULL_TREE);
       DECL_PURE_P (gfor_fndecl_cas_num_images) = 1;
       gfor_fndecl_cas_sync_all = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cas_coarray_sync_all")), ". X", void_type_node, 1,
+	get_identifier (PREFIX("cas_coarray_sync_all")), ". X ", void_type_node, 1,
 	build_pointer_type (integer_type_node), NULL_TREE);
       gfor_fndecl_cas_sync_images = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cas_sync_images")), ". R R X X X",
+	get_identifier (PREFIX("cas_sync_images")), ". R R X X X ",
 	void_type_node,
 	5, integer_type_node, pint_type, pint_type,
 	pchar_type_node, size_type_node, NULL_TREE);
       gfor_fndecl_cas_lock = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cas_lock")), ". w", void_type_node, 1,
+	get_identifier (PREFIX("cas_lock")), ". w ", void_type_node, 1,
 	pvoid_type_node, NULL_TREE);
       gfor_fndecl_cas_unlock = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cas_unlock")), ". w", void_type_node, 1,
+	get_identifier (PREFIX("cas_unlock")), ". w ", void_type_node, 1,
 	pvoid_type_node, NULL_TREE);
 
       gfor_fndecl_cas_reduce_scalar =
 	gfc_build_library_function_decl_with_spec (
-	  get_identifier (PREFIX("cas_collsub_reduce_scalar")), ". w r W",
+	  get_identifier (PREFIX("cas_collsub_reduce_scalar")), ". w r W ",
 	  void_type_node, 3, pvoid_type_node,
 	  build_pointer_type (build_function_type_list (void_type_node,
 	      pvoid_type_node, pvoid_type_node, NULL_TREE)),
@@ -4162,17 +4162,17 @@ gfc_build_builtin_function_decls (void)
 
       gfor_fndecl_cas_reduce_array = 
 	gfc_build_library_function_decl_with_spec (
-	  get_identifier (PREFIX("cas_collsub_reduce_array")), ". w r W R",
+	  get_identifier (PREFIX("cas_collsub_reduce_array")), ". w r W R ",
 	  void_type_node, 4, pvoid_type_node,
 	  build_pointer_type (build_function_type_list (void_type_node,
 	      pvoid_type_node, pvoid_type_node, NULL_TREE)),
 	  pint_type, integer_type_node, NULL_TREE);
 
       gfor_fndecl_cas_broadcast_scalar = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX ("cas_collsub_broadcast_scalar")), ". w . .",
+	get_identifier (PREFIX ("cas_collsub_broadcast_scalar")), ". w . . ",
 	void_type_node, 3, pvoid_type_node, size_type_node, integer_type_node);
       gfor_fndecl_cas_broadcast_array = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX ("cas_collsub_broadcast_array")), ". W .",
+	get_identifier (PREFIX ("cas_collsub_broadcast_array")), ". W . ",
 	void_type_node, 2, pvoid_type_node, integer_type_node);
     }
 
