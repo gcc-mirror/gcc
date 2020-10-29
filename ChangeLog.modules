@@ -1,6 +1,10 @@
 2020-10-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::get_merge_kind): Resolve FIXMEs.
+	(trees_out::key_mergeable): Likewise.
+
+	gcc/cp/
 	* module.cc (trees_out::get_merge_kind): Only function-scope
 	entities we meet are implicit TYPE_DECLs.
 

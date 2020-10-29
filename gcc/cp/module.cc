@@ -10037,15 +10037,22 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 {
   if (!dep)
     {
-      if (VAR_OR_FUNCTION_DECL_P (decl)
-	  && DECL_LOCAL_DECL_P (decl))
-	return MK_unique;
+      if (VAR_OR_FUNCTION_DECL_P (decl))
+	{
+	  /* Any var or function with template info should have DEP.  */
+	  gcc_checking_assert (!DECL_LANG_SPECIFIC (decl)
+			       || !DECL_TEMPLATE_INFO (decl));
+	  if (DECL_LOCAL_DECL_P (decl))
+	    return MK_unique;
+	}
 
       /* Either unique, or some member of a class that cannot have an
 	 out-of-class definition.  For instance a FIELD_DECL.  */
       tree ctx = CP_DECL_CONTEXT (decl);
       if (TREE_CODE (ctx) == FUNCTION_DECL)
 	{
+	  /* USING_DECLs cannot have DECL_TEMPLATE_INFO -- this isn't
+	     permitting them to have one.   */
 	  gcc_checking_assert (TREE_CODE (decl) == USING_DECL
 			       || !DECL_LANG_SPECIFIC (decl)
 			       || !DECL_TEMPLATE_INFO (decl));
@@ -10055,17 +10062,7 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 
       if (TREE_CODE (decl) == TEMPLATE_DECL
 	  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
-	// FIXME: Discover whether these friends are also on the
-	// DECL_FRIENDLIST, like the below friends.
 	return MK_local_friend;
-
-      if (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_TEMPLATE_INFO (decl)
-	  && TREE_CODE (DECL_TI_TEMPLATE (decl)) != TEMPLATE_DECL)
-	/* A template specialization friend, we can treat as-if
-	   unique.  */
-	// FIXME: Isn't this now MK_friend_spec?
-	return MK_unique;
 
       gcc_checking_assert (TYPE_P (ctx));
       if (TREE_CODE (decl) == USING_DECL)
@@ -10095,6 +10092,7 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 				   == INTEGER_TYPE);
 	      return MK_unique;
 	    }
+
 	  return MK_field;
 	}
 
@@ -10111,6 +10109,7 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	   thunks), or it's a duplicate (so it will be dropped).  */
 	return MK_unique;
 
+      /* There should be no other cases.  */
       gcc_unreachable ();
     }
 
@@ -10135,12 +10134,12 @@ trees_out::get_merge_kind (tree decl, depset *dep)
       gcc_unreachable ();
 
     case depset::EK_DECL:
-      if (dep->is_partial ())
-	{
-	  mk = MK_partial;
-	  break;
-	}
       {
+	if (dep->is_partial ())
+	  {
+	    mk = MK_partial;
+	    break;
+	  }
 	tree ctx = CP_DECL_CONTEXT (decl);
 
 	switch (TREE_CODE (ctx))
@@ -10188,14 +10187,14 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	      mk = MK_local_friend;
 	    else if (IDENTIFIER_ANON_P (DECL_NAME (decl)))
 	      {
-		/* Usually no way to merge it.  */
-		mk = MK_unique;
-
-		if (TREE_CODE (decl) == TYPE_DECL
+		if (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && UNSCOPED_ENUM_P (TREE_TYPE (decl))
 		    && TYPE_VALUES (TREE_TYPE (decl)))
-		  /* Keyed by first enum value.  */
+		  /* Keyed by first enum value, and underlying type.  */
 		  mk = MK_enum;
+		else
+		  /* No way to merge it, it is an ODR land-mine.  */
+		  mk = MK_unique;
 	      }
 	  }
       }
@@ -10306,8 +10305,8 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       if (streaming_p ())
 	u (get_mergeable_specialization_flags (entry->tmpl, decl));
 
-      // FIXME: Variable templates with concepts need constraints from
-      // the specialization -- see spec_hasher::equal
+      // FIXME: Do variable templates with concepts need constraints
+      // from the specialization? -- see spec_hasher::equal
       if (CHECKING_P)
 	{
 	  /* Make sure we can locate the decl.  */
@@ -10407,10 +10406,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  break;
 
 	case MK_field:
-	  // FIXME: Much like tt_data_member -- commonize?
-	  // lookup named FIELD_DECLs by name, not iteration
-	  // FIXME: Probably need to ignore implicit member fns as
-	  // their presence and location is unstable
 	  {
 	    unsigned ix = 0;
 	    if (TREE_CODE (inner) != FIELD_DECL)
@@ -10434,7 +10429,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  break;
 
 	case MK_vtable:
-	  // FIXME: Much like tt_vtable -- commonize?
 	  {
 	    tree vtable = CLASSTYPE_VTABLES (TREE_TYPE (container));
 	    for (unsigned ix = 0; ; vtable = DECL_CHAIN (vtable), ix++)
