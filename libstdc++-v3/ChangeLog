@@ -59,7 +59,7 @@
 
 2020-10-28  Patrick Palka  <ppalka@redhat.com>
 
-	PR libstdc++/96713
+	PR libstdc++/97613
 	* include/std/chrono (year_month_weekday::operator sys_days):
 	Cast the result of index() to int so that the initializer for
 	days{} is sign-extended when it's converted to the underlying
