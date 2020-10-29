@@ -1952,7 +1952,8 @@ extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, vec<tree>,
 					  gimple_stmt_iterator *, poly_uint64,
-					  bool, unsigned *);
+					  bool, unsigned *,
+					  unsigned * = nullptr);
 extern bool vect_slp_analyze_operations (vec_info *);
 extern void vect_schedule_slp (vec_info *, vec<slp_instance>);
 extern opt_result vect_analyze_slp (vec_info *, unsigned);

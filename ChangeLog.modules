@@ -1,5 +1,8 @@
 2020-10-29  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 9703b8d98c1
+	c++: Stop (most) function-scope entities having a template header
+
 	Merge trunk bafcf452c79
 	opts: Sanity check for param names.
 	gcc/

@@ -136,7 +136,7 @@ test03()
       VERIFY( !ranges::lexicographical_compare(cy.begin(), cy.end(),
 					       cz.begin(), cz.end()) );
 
-      std::vector<int> vx(x, x+5), vy(y, y+5);
+      std::vector<int> vx(x, x+5), vy(y, y+4);
       VERIFY( ranges::lexicographical_compare(vx, vy) );
       VERIFY( !ranges::lexicographical_compare(vx, vy, ranges::greater{}) );
       VERIFY( !ranges::lexicographical_compare(vy, vx) );
