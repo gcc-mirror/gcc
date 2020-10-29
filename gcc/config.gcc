@@ -731,6 +731,9 @@ case ${target} in
   extra_options="$extra_options rpath.opt dragonfly.opt"
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
+  d_target_objs="${d_target_objs} dragonfly-d.o"
+  tmake_file="${tmake_file} t-dragonfly"
+  target_has_targetdm=yes
   ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later
