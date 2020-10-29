@@ -19557,6 +19557,20 @@ vst4q_bf16 (bfloat16_t * __ptr, bfloat16x8x4_t __val)
   return __builtin_neon_vst4v8bf (__ptr, __bu.__o);
 }
 
+__extension__ extern __inline bfloat16x4_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vld1_bf16 (bfloat16_t const * __ptr)
+{
+  return __builtin_neon_vld1v4bf (__ptr);
+}
+
+__extension__ extern __inline bfloat16x8_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vld1q_bf16 (const bfloat16_t * __ptr)
+{
+  return __builtin_neon_vld1v8bf (__ptr);
+}
+
 __extension__ extern __inline bfloat16x4x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_bf16 (bfloat16_t const * __ptr)
