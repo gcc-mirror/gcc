@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
+#include "analyzer/region.h"
 #include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
@@ -824,6 +825,16 @@ root_region::dump_to_pp (pretty_printer *pp, bool simple) const
 }
 
 /* class symbolic_region : public map_region.  */
+
+/* symbolic_region's ctor.  */
+
+symbolic_region::symbolic_region (unsigned id, region *parent,
+				  const svalue *sval_ptr)
+: region (complexity::from_pair (parent, sval_ptr), id, parent,
+	  TREE_TYPE (sval_ptr->get_type ())),
+  m_sval_ptr (sval_ptr)
+{
+}
 
 /* Implementation of region::accept vfunc for symbolic_region.  */
 
