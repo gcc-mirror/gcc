@@ -1993,7 +1993,8 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   /* TODO: known offsets for descriptors.  */
   GFC_TYPE_ARRAY_OFFSET (fat_type) = NULL_TREE;
 
-  if (flag_coarray != GFC_FCOARRAY_SHARED && dimen == 0)
+  if ((flag_coarray != GFC_FCOARRAY_SHARED && dimen == 0)
+      || (flag_coarray == GFC_FCOARRAY_SHARED && dimen == 0 && codimen == 0))
     {
       arraytype =  build_pointer_type (etype);
       if (restricted)

@@ -7332,9 +7332,11 @@ gfc_trans_deallocate (gfc_code *code)
 	 {
 	  gfc_ref *ref, *last;
 
-	  for (ref = expr->ref, last = ref; ref; last = ref, ref = ref->next);
+	  for (ref = expr->ref, last = ref; ref; last = ref, ref = ref->next)
+	    ;
+
 	  ref = last;
-	  if (ref->type == REF_ARRAY && ref->u.ar.codimen)
+	  if (ref && ref->type == REF_ARRAY && ref->u.ar.codimen)
 	    {
 	      gfc_symbol *sym = expr->symtree->n.sym;
 	      int alloc_type = gfc_native_coarray_get_allocation_type (sym);
