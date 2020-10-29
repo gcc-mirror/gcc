@@ -11083,7 +11083,7 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	TREE_TYPE (existing) = TREE_TYPE (decl);
       else
 	{
-	  // FIXME: Might be template specialization from a module,
+	  // FIXME:QOI Might be template specialization from a module,
 	  // not necessarily global module
 	  error_at (DECL_SOURCE_LOCATION (decl),
 		    "conflicting global module declaration %#qD", decl);
@@ -11492,7 +11492,7 @@ trees_in::read_function_def (tree decl, tree maybe_template)
     }
   else if (maybe_dup)
     {
-      // FIXME: Check matching defn
+      // FIXME:QOI Check matching defn
     }
   
   return true;
@@ -11561,7 +11561,7 @@ trees_in::read_var_def (tree decl, tree maybe_template)
     }
   else if (maybe_dup)
     {
-      // FIXME: Check matching defn
+      // FIXME:QOI Check matching defn
     }
 
   return true;
@@ -11852,7 +11852,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       if (maybe_dup != defn)
 	{
 	  // FIXME: This is needed on other defns too, almost
-	  // duplicate-decl like?
+	  // duplicate-decl like?  See is_matching_decl too.
 	  /* Copy flags from the duplicate.  */
 	  tree type_dup = TREE_TYPE (maybe_dup);
 
@@ -11917,7 +11917,6 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       TYPE_VFIELD (type) = vfield;
       TYPE_BINFO (type) = binfo;
 
-      // FIXME: Do I need to rewire DECL_CHAIN on template clones?
       if (TYPE_LANG_SPECIFIC (type))
 	{
 	  CLASSTYPE_LAMBDA_EXPR (type) = lambda;
@@ -11936,7 +11935,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
     }
   else if (maybe_dup)
     {
-      // FIXME: Check matching defn
+      // FIXME:QOI Check matching defn
     }
 
   if (TYPE_LANG_SPECIFIC (type))
@@ -12471,10 +12470,6 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	  tree ctx = CP_DECL_CONTEXT (decl);
 	  tree not_tmpl = STRIP_TEMPLATE (decl);
 
-	  // FIXME: I think I have to defer some internal linkage
-	  // checking until later, as we can be inside a member of an
-	  // internal linkage entity, and we don't want to complain
-	  // about that touching internal things itself.
 	  if (!TREE_PUBLIC (ctx))
 	    /* Member of internal namespace.  */
 	    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
@@ -12980,7 +12975,7 @@ depset::hash::add_specializations (bool decl_p)
 	/* Likewise, GMF explicit or partial specializations.  */
 	needs_reaching = true;
 
-#if 0 && CHECKING_P
+#if false && CHECKING_P
       /* The instantiation isn't always on
 	 DECL_TEMPLATE_INSTANTIATIONS, */
       // FIXME: we probably need to remember this information?
@@ -13252,7 +13247,7 @@ depset::hash::finalize_dependencies ()
 	      depset *rdep = dep->deps[ix];
 	      if (rdep->is_internal ())
 		{
-		  // FIXME: Better location information?  We're
+		  // FIXME:QOI Better location information?  We're
 		  // losing, so it doesn't matter about efficiency
 		  tree decl = dep->get_entity ();
 		  error_at (DECL_SOURCE_LOCATION (decl),
@@ -13378,11 +13373,16 @@ depset_cmp (const void *a_, const void *b_)
 
 /* Sort the clusters in SCC such that those that depend on one another
    are placed later.   */
-// FIXME: I am still not convinced this is both needed and sufficient.
-// We emit the decls in this order but that emission could walk into
-// later decls (from the body of the decl, or default arg-like
-// things).  Why doesn't that walk do the right thing?  And if it DTRT
-// why do we need to sort here -- won't things naturally work?
+
+// FIXME: I am not convinced this is needed and, if needed,
+// sufficient.  We emit the decls in this order but that emission
+// could walk into later decls (from the body of the decl, or default
+// arg-like things).  Why doesn't that walk do the right thing?  And
+// if it DTRT why do we need to sort here -- won't things naturally
+// work?  I think part of the issue is that when we're going to refer
+// to an entity by name, and that entity is in the same cluster as us,
+// we need to actually walk that entity, if we've not already walked
+// it.
 static void
 sort_cluster (depset::hash *original, depset *scc[], unsigned size)
 {
@@ -15006,9 +15006,6 @@ module_state::read_namespaces (unsigned num)
 	DECL_MODULE_EXPORT_P (inner) = true;
 
       /* Install the namespace.  */
-      // FIXME: Probably a helper function trying to escape?
-      // Have add_imported_namespace return an indicator that WE
-      // created the namespace?
       (*entity_ary)[entity_lwm + entity_index] = inner;
       if (DECL_MODULE_IMPORT_P (inner))
 	{
