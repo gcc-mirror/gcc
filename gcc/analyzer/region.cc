@@ -1135,9 +1135,12 @@ string_region::dump_to_pp (pretty_printer *pp, bool simple) const
     {
       pp_string (pp, "string_region(");
       dump_tree (pp, m_string_cst);
-      pp_string (pp, " (");
-      pp_pointer (pp, m_string_cst);
-      pp_string (pp, "))");
+      if (!flag_dump_noaddr)
+	{
+	  pp_string (pp, " (");
+	  pp_pointer (pp, m_string_cst);
+	  pp_string (pp, "))");
+	}
     }
 }
 

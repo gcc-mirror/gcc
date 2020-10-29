@@ -224,8 +224,11 @@ sm_state_map::print (const region_model *model,
       if (e.m_origin)
 	{
 	  pp_string (pp, " (origin: ");
-	  pp_pointer (pp, e.m_origin);
-	  pp_string (pp, ": ");
+	  if (!flag_dump_noaddr)
+	    {
+	      pp_pointer (pp, e.m_origin);
+	      pp_string (pp, ": ");
+	    }
 	  e.m_origin->dump_to_pp (pp, simple);
 	  if (model)
 	    if (tree rep = model->get_representative_tree (e.m_origin))
