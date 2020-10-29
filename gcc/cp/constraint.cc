@@ -686,7 +686,8 @@ normalize_concept_check (tree check, tree args, norm_info info)
     }
 
   /* Substitute through the arguments of the concept check. */
-  targs = tsubst_template_args (targs, args, info.complain, info.in_decl);
+  if (args)
+    targs = tsubst_template_args (targs, args, info.complain, info.in_decl);
   if (targs == error_mark_node)
     return error_mark_node;
 
