@@ -32,10 +32,10 @@ void test01()
 {
   X* px = 0;
   std::tr1::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 554 }
+  // { dg-error "incomplete" "" { target *-*-* } 559 }
 
   std::tr1::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 593 }
+  // { dg-error "incomplete" "" { target *-*-* } 600 }
 }
 
 // Ignore additional diagnostic given with -Wsystem-headers:
