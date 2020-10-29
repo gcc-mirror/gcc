@@ -1407,7 +1407,7 @@ free_all_tagged_tu_seen_up_to (const struct tagged_tu_seen_cache *tu_til)
       const struct tagged_tu_seen_cache *const tu1
 	= (const struct tagged_tu_seen_cache *) tu;
       tu = tu1->next;
-      free (CONST_CAST (struct tagged_tu_seen_cache *, tu1));
+      XDELETE (CONST_CAST (struct tagged_tu_seen_cache *, tu1));
     }
   tagged_tu_seen_base = tu_til;
 }
@@ -8314,13 +8314,13 @@ finish_init (void)
     {
       struct constructor_stack *q = constructor_stack;
       constructor_stack = q->next;
-      free (q);
+      XDELETE (q);
     }
 
   gcc_assert (!constructor_range_stack);
 
   /* Pop back to the data of the outer initializer (if any).  */
-  free (spelling_base);
+  XDELETE (spelling_base);
 
   constructor_decl = p->decl;
   require_constant_value = p->require_constant_value;
@@ -8333,7 +8333,7 @@ finish_init (void)
   spelling_size = p->spelling_size;
   constructor_top_level = p->top_level;
   initializer_stack = p->next;
-  free (p);
+  XDELETE (p);
 }
 
 /* Call here when we see the initializer is surrounded by braces.
@@ -8864,7 +8864,7 @@ pop_init_level (location_t loc, int implicit,
   RESTORE_SPELLING_DEPTH (constructor_depth);
 
   constructor_stack = p->next;
-  free (p);
+  XDELETE (p);
 
   if (ret.value == NULL_TREE && constructor_stack == 0)
     ret.value = error_mark_node;
