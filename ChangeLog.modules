@@ -1,5 +1,9 @@
 2020-10-29  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::get_merge_kind): Only function-scope
+	entities we meet are implicit TYPE_DECLs.
+
 	Merge trunk 9703b8d98c1
 	c++: Stop (most) function-scope entities having a template header
 

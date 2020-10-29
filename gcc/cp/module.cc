@@ -10156,17 +10156,8 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	    // on read-back we can discover if the CTX was a
 	    // duplicate, we don't have a mechanism to get from the
 	    // existing CTX to the existing version of this decl.
-	    if (TREE_CODE (decl) == TEMPLATE_DECL)
-	      {
-		tree res = DECL_TEMPLATE_RESULT (decl);
-		// FIXME: block-scope var decls seem to have a
-		// template-head.  I do not see why they need that --
-		// it cannot differ from the containing template's
-		gcc_checking_assert (TREE_CODE (res) == TYPE_DECL
-				     || TREE_CODE (res) == VAR_DECL);
-	      }
-	    else
-	      gcc_checking_assert (TREE_CODE (decl) == TYPE_DECL);
+	    gcc_checking_assert
+	      (DECL_IMPLICIT_TYPEDEF_P (STRIP_TEMPLATE (decl)));
 
 	    mk = MK_unique;
 	    break;
