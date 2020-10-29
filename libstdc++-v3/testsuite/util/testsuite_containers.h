@@ -168,7 +168,7 @@ namespace __gnu_test
   template<typename _Tp>
     struct reverse_members<_Tp, false>
     {
-      reverse_members(_Tp& container) { }
+      reverse_members(_Tp&) { }
     };
 
   template<typename _Iterator,

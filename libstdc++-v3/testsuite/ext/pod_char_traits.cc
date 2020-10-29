@@ -22,6 +22,7 @@
 // Benjamin Kosnik <bkoz@redhat.com>
 
 #include <ext/pod_char_traits.h>
+#include <testsuite_hooks.h>
 
 int main()
 {
@@ -40,10 +41,12 @@ int main()
   char_type c1 = { uc1 };
   char_type c2 = { uc2 };
   test = !(c1 == c2);
+  VERIFY( test );
 
   // 2 char_traits
   test = traits_type::eq(c1, c2);
-  
+  VERIFY( ! test );
+
   // 3 basic_string<char_type>
   typedef std::basic_string<char_type>	string_type;
   string_type str;

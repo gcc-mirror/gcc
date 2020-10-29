@@ -116,3 +116,7 @@ void operator delete(void* p) throw()
 	std::printf("%lu allocations to be released \n", (unsigned long)count);
     }
 }
+
+#if __cpp_sized_deallocation
+void operator delete(void* p, std::size_t) throw() { ::operator delete(p); }
+#endif

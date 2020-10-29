@@ -21,6 +21,12 @@
 
 #include <list>
 
+#if __cplusplus >= 201103L
+# define NOTHROW(X) noexcept(X)
+#else
+# define NOTHROW(X)
+#endif
+
 namespace std {
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template <class T, class Allocator> class list;
@@ -45,5 +51,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
     bool operator<=(const list<T,Allocator>& x, const list<T,Allocator>&);
 
   template <class T, class Allocator>
-    void swap(list<T,Allocator>& x, list<T,Allocator>& y);
+    void swap(list<T,Allocator>& x, list<T,Allocator>& y)
+      NOTHROW(noexcept(x.swap(y)));
 }

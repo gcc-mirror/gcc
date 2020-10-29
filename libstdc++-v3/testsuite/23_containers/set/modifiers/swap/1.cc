@@ -5,19 +5,25 @@
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
 // any later version.
- 
+
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
- 
+
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
 #include <set>
 #include <testsuite_hooks.h>
- 
+
+#if __cplusplus >= 201103L
+# define NOTHROW noexcept
+#else
+# define NOTHROW
+#endif
+
 struct T { int i; };
 
 // T must be LessThanComparable to pass concept-checks
@@ -27,9 +33,9 @@ int swap_calls;
 
 namespace std
 {
-  template<> 
-    void 
-    set<T>::swap(set<T>&) 
+  template<>
+    void
+    set<T>::swap(set<T>&) NOTHROW
     { ++swap_calls; }
 }
 
