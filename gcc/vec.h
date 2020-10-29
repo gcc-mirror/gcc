@@ -1731,7 +1731,7 @@ vec<T, va_heap, vl_ptr>::copy (ALONE_MEM_STAT_DECL) const
 {
   vec<T, va_heap, vl_ptr> new_vec = vNULL;
   if (length ())
-    new_vec.m_vec = m_vec->copy ();
+    new_vec.m_vec = m_vec->copy (ALONE_PASS_MEM_STAT);
   return new_vec;
 }
 
