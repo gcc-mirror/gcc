@@ -3539,6 +3539,20 @@ rs6000_linux64_override_options ()
 }
 #endif
 
+/* Return true if we are using GLIBC, and it supports IEEE 128-bit long double.
+   This support is only in little endian GLIBC 2.32 or newer.  */
+static bool
+glibc_supports_ieee_128bit (void)
+{
+#ifdef OPTION_GLIBC
+  if (OPTION_GLIBC && !BYTES_BIG_ENDIAN
+      && ((TARGET_GLIBC_MAJOR * 1000) + TARGET_GLIBC_MINOR) >= 2032)
+    return true;
+#endif /* OPTION_GLIBC.  */
+
+  return false;
+}
+
 /* Override command line options.
 
    Combine build-specific configuration information with options
@@ -4164,9 +4178,8 @@ rs6000_option_override_internal (bool global_init_p)
 	  static bool warned_change_long_double;
 
 	  if (!warned_change_long_double
-	      && (!OPTION_GLIBC
-		  || (!lang_GNU_C () && !lang_GNU_CXX ())
-		  || ((TARGET_GLIBC_MAJOR * 1000) + TARGET_GLIBC_MINOR) < 2032))
+	      && (!glibc_supports_ieee_128bit ()
+		  || (!lang_GNU_C () && !lang_GNU_CXX ())))
 	    {
 	      warned_change_long_double = true;
 	      if (TARGET_IEEEQUAD)
