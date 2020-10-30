@@ -1715,6 +1715,36 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     }
   if (omp_clauses->depend_source)
     fputs (" DEPEND(source)", dumpfile);
+  if (omp_clauses->capture)
+    fputs (" CAPTURE", dumpfile);
+  if (omp_clauses->atomic_op != GFC_OMP_ATOMIC_UNSET)
+    {
+      const char *atomic_op;
+      switch (omp_clauses->atomic_op)
+	{
+	case GFC_OMP_ATOMIC_READ: atomic_op = "READ"; break;
+	case GFC_OMP_ATOMIC_WRITE: atomic_op = "WRITE"; break;
+	case GFC_OMP_ATOMIC_UPDATE: atomic_op = "UPDATE"; break;
+	default: gcc_unreachable ();
+	}
+      fputc (' ', dumpfile);
+      fputs (atomic_op, dumpfile);
+    }
+  if (omp_clauses->memorder != OMP_MEMORDER_UNSET)
+    {
+      const char *memorder;
+      switch (omp_clauses->memorder)
+	{
+	case OMP_MEMORDER_ACQ_REL: memorder = "ACQ_REL"; break;
+	case OMP_MEMORDER_ACQUIRE: memorder = "AQUIRE"; break;
+	case OMP_MEMORDER_RELAXED: memorder = "RELAXED"; break;
+	case OMP_MEMORDER_RELEASE: memorder = "RELEASE"; break;
+	case OMP_MEMORDER_SEQ_CST: memorder = "SEQ_CST"; break;
+	default: gcc_unreachable ();
+	}
+      fputc (' ', dumpfile);
+      fputs (memorder, dumpfile);
+    }
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -1880,6 +1910,10 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_TASKWAIT:
     case EXEC_OMP_TASKYIELD:
       return;
+    case EXEC_OACC_ATOMIC:
+    case EXEC_OMP_ATOMIC:
+      omp_clauses = c->block ? c->block->ext.omp_clauses : NULL;
+      break;
     default:
       break;
     }

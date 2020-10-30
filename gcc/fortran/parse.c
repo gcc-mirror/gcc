@@ -5062,9 +5062,9 @@ parse_omp_oacc_atomic (bool omp_p)
   np = new_level (cp);
   np->op = cp->op;
   np->block = NULL;
-  np->ext.omp_atomic = cp->ext.omp_atomic;
-  count = 1 + ((cp->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
-	       == GFC_OMP_ATOMIC_CAPTURE);
+  np->ext.omp_clauses = cp->ext.omp_clauses;
+  cp->ext.omp_clauses = NULL;
+  count = 1 + np->ext.omp_clauses->capture;
 
   while (count)
     {
@@ -5090,8 +5090,7 @@ parse_omp_oacc_atomic (bool omp_p)
       gfc_warning_check ();
       st = next_statement ();
     }
-  else if ((cp->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
-	   == GFC_OMP_ATOMIC_CAPTURE)
+  else if (np->ext.omp_clauses->capture)
     gfc_error ("Missing !$OMP END ATOMIC after !$OMP ATOMIC CAPTURE at %C");
   return st;
 }

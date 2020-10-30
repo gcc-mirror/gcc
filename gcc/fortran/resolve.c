@@ -10731,15 +10731,12 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_ATOMIC:
 	case EXEC_OACC_ATOMIC:
 	  {
-	    gfc_omp_atomic_op aop
-	      = (gfc_omp_atomic_op) (b->ext.omp_atomic & GFC_OMP_ATOMIC_MASK);
-
 	    /* Verify this before calling gfc_resolve_code, which might
 	       change it.  */
 	    gcc_assert (b->next && b->next->op == EXEC_ASSIGN);
-	    gcc_assert (((aop != GFC_OMP_ATOMIC_CAPTURE)
+	    gcc_assert ((!b->ext.omp_clauses->capture
 			 && b->next->next == NULL)
-			|| ((aop == GFC_OMP_ATOMIC_CAPTURE)
+			|| (b->ext.omp_clauses->capture
 			    && b->next->next != NULL
 			    && b->next->next->op == EXEC_ASSIGN
 			    && b->next->next->next == NULL));
