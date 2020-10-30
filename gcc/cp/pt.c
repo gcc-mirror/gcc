@@ -17390,6 +17390,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	  case OMP_CLAUSE_INCLUSIVE:
 	  case OMP_CLAUSE_EXCLUSIVE:
+	  case OMP_CLAUSE_ALLOCATE:
 	    /* tsubst_expr on SCOPE_REF results in returning
 	       finish_non_static_data_member result.  Undo that here.  */
 	    if (TREE_CODE (OMP_CLAUSE_DECL (oc)) == SCOPE_REF
