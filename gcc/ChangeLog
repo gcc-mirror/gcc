@@ -1,3 +1,20 @@
+2020-10-29  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-10-29  Martin Liska  <mliska@suse.cz>
+
+	PR lto/97508
+	* langhooks.c (lhd_begin_section): Call get_section with
+	not_existing = true.
+	* output.h (get_section): Add new argument.
+	* varasm.c (get_section): Fail when NOT_EXISTING is true
+	and a section already exists.
+	* ipa-cp.c (ipcp_write_summary): Remove.
+	(ipcp_read_summary): Likewise.
+	* ipa-fnsummary.c (ipa_fn_summary_read): Always read jump
+	functions summary.
+	(ipa_fn_summary_write): Always stream it.
+
 2020-10-28  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

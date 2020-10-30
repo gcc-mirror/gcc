@@ -1,3 +1,11 @@
+2020-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/25_algorithms/lexicographical_compare/constrained.cc:
+	(test03): Fix initializing the vector vy with the array y of size 4.
+
 2020-10-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
