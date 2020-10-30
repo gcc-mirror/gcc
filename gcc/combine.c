@@ -7665,6 +7665,24 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       if (new_rtx != 0)
 	return gen_rtx_ASHIFT (mode, new_rtx, XEXP (inner, 1));
     }
+  else if (GET_CODE (inner) == MULT
+	   && CONST_INT_P (XEXP (inner, 1))
+	   && pos_rtx == 0 && pos == 0)
+    {
+      /* We're extracting the least significant bits of an rtx
+	 (mult X (const_int 2^C)), where LEN > C.  Extract the
+	 least significant (LEN - C) bits of X, giving an rtx
+	 whose mode is MODE, then multiply it by 2^C.  */
+      const HOST_WIDE_INT shift_amt = exact_log2 (INTVAL (XEXP (inner, 1)));
+      if (IN_RANGE (shift_amt, 1, len - 1))
+	{
+	  new_rtx = make_extraction (mode, XEXP (inner, 0),
+				     0, 0, len - shift_amt,
+				     unsignedp, in_dest, in_compare);
+	  if (new_rtx)
+	    return gen_rtx_MULT (mode, new_rtx, XEXP (inner, 1));
+	}
+    }
   else if (GET_CODE (inner) == TRUNCATE
 	   /* If trying or potentionally trying to extract
 	      bits outside of is_mode, don't look through
