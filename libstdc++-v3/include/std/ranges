@@ -1810,6 +1810,10 @@ namespace views
     take_view(_Range&&, range_difference_t<_Range>)
       -> take_view<views::all_t<_Range>>;
 
+  template<typename _Tp>
+    inline constexpr bool enable_borrowed_range<take_view<_Tp>>
+      = enable_borrowed_range<_Tp>;
+
   namespace views
   {
     inline constexpr __adaptor::_RangeAdaptor take
@@ -2010,6 +2014,10 @@ namespace views
     drop_view(_Range&&, range_difference_t<_Range>)
       -> drop_view<views::all_t<_Range>>;
 
+  template<typename _Tp>
+    inline constexpr bool enable_borrowed_range<drop_view<_Tp>>
+      = enable_borrowed_range<_Tp>;
+
   namespace views
   {
     inline constexpr __adaptor::_RangeAdaptor drop
@@ -2070,6 +2078,10 @@ namespace views
   template<typename _Range, typename _Pred>
     drop_while_view(_Range&&, _Pred)
       -> drop_while_view<views::all_t<_Range>, _Pred>;
+
+  template<typename _Tp, typename _Pred>
+    inline constexpr bool enable_borrowed_range<drop_while_view<_Tp, _Pred>>
+      = enable_borrowed_range<_Tp>;
 
   namespace views
   {
@@ -2891,6 +2903,10 @@ namespace views
   template<typename _Range>
     common_view(_Range&&) -> common_view<views::all_t<_Range>>;
 
+  template<typename _Tp>
+    inline constexpr bool enable_borrowed_range<common_view<_Tp>>
+      = enable_borrowed_range<_Tp>;
+
   namespace views
   {
     inline constexpr __adaptor::_RangeAdaptorClosure common
@@ -2975,6 +2991,10 @@ namespace views
 
   template<typename _Range>
     reverse_view(_Range&&) -> reverse_view<views::all_t<_Range>>;
+
+  template<typename _Tp>
+    inline constexpr bool enable_borrowed_range<reverse_view<_Tp>>
+      = enable_borrowed_range<_Tp>;
 
   namespace views
   {
@@ -3300,6 +3320,10 @@ namespace views
 
       _Vp _M_base = _Vp();
     };
+
+  template<typename _Tp, size_t _Nm>
+    inline constexpr bool enable_borrowed_range<elements_view<_Tp, _Nm>>
+      = enable_borrowed_range<_Tp>;
 
   template<typename _Range>
     using keys_view = elements_view<views::all_t<_Range>, 0>;
