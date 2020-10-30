@@ -46,6 +46,9 @@ package System.Img_Real is
    --  ordinary fixed point (see package System.Img_Dec for handling of decimal
    --  fixed point). The caller guarantees that S is long enough to hold the
    --  result and has a lower bound of 1.
+   --
+   --  Remark: This procedure should NOT be called with V = -0.0 or V = +/-Inf,
+   --          The result is irrelevant.
 
    procedure Image_Floating_Point
      (V    : Long_Long_Float;
