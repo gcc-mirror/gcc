@@ -10934,6 +10934,7 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
   new_level->errors = errorcount + sorrycount;
   new_level->next = NULL;
   new_level->refcount = 0;
+  new_level->path = new_level->visible = nullptr;
   set_refcount_ptr (new_level->next, current_tinst_level);
   set_refcount_ptr (current_tinst_level, new_level);
 

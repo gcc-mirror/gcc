@@ -6273,6 +6273,13 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
      arguments.  */
   tree tldcl, targs;
 
+  /* For modules we need to know (a) the modules on the path of
+     instantiation and (b) the transitive imports along that path.
+     Note that these two bitmaps may be inherited from NEXT, if this
+     decl is in the same module as NEXT (or has no new information).  */
+  bitmap path;
+  bitmap visible;
+
  private:
   /* Return TRUE iff the original node is a split list.  */
   bool split_list_p () const { return targs; }

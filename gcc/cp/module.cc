@@ -18014,12 +18014,75 @@ get_import_bitmap ()
   return (*modules)[0]->imports;
 }
 
+/* Return the visible imports and path of instantiation for an
+   instantiation at TINST.  If TINST is nullptr, we're not in an
+   instantiation, and thus will return the visible imports of the
+   current TU (and NULL *PATH_MAP_P).   We cache the information on
+   the tinst level itself.  */
+
+static bitmap
+path_of_instantiation (tinst_level *tinst,  bitmap *path_map_p)
+{
+  gcc_checking_assert (modules_p ());
+
+  if (!tinst)
+    {
+      /* Not inside an instantiation, just the regular case.  */
+      *path_map_p = nullptr;
+      return get_import_bitmap ();
+    }
+
+  if (!tinst->path)
+    {
+      /* Calculate.  */
+      bitmap visible = path_of_instantiation (tinst->next, path_map_p);
+      bitmap path_map = *path_map_p;
+
+      if (!path_map)
+	{
+	  path_map = BITMAP_GGC_ALLOC ();
+	  bitmap_set_bit (path_map, 0);
+	}
+
+      tree decl = tinst->tldcl;
+      if (TREE_CODE (decl) == TREE_LIST)
+	decl = TREE_PURPOSE (decl);
+      if (TYPE_P (decl))
+	decl = TYPE_NAME (decl);
+
+      if (unsigned mod = get_originating_module (decl))
+	if (!bitmap_bit_p (path_map, mod))
+	  {
+	    /* This is brand new information!  */
+	    bitmap new_path = BITMAP_GGC_ALLOC ();
+	    bitmap_copy (new_path, path_map);
+	    bitmap_set_bit (new_path, mod);
+	    path_map = new_path;
+
+	    bitmap imports = (*modules)[mod]->imports;
+	    if (bitmap_intersect_compl_p (imports, visible))
+	      {
+		/* IMPORTS contains additional modules to VISIBLE.  */
+		bitmap new_visible = BITMAP_GGC_ALLOC ();
+
+		bitmap_ior (new_visible, visible, imports);
+		visible = new_visible;
+	      }
+	  }
+
+      tinst->path = path_map;
+      tinst->visible = visible;
+    }
+
+  *path_map_p = tinst->path;
+  return tinst->visible;
+}
+
 /* Return the bitmap describing what modules are visible along the
-   path of instantiation.  If we're not instantiation, this will be
+   path of instantiation.  If we're not an instantiation, this will be
    the visible imports of the TU.  *PATH_MAP_P is filled in with the
-   modules owning the instantiation path -- wee see the
-   module-linkage entities of those modules.  */
-// FIXME: Should we cache this?  smoosh it into tinst_level?
+   modules owning the instantiation path -- we see the module-linkage
+   entities of those modules.  */
 
 bitmap
 module_visible_instantiation_path (bitmap *path_map_p)
@@ -18027,35 +18090,7 @@ module_visible_instantiation_path (bitmap *path_map_p)
   if (!modules_p ())
     return NULL;
 
-  bitmap visible = (*modules)[0]->imports;
-
-  if (tinst_level *path = current_instantiation ())
-    {
-      bitmap path_map = BITMAP_GGC_ALLOC ();
-      bitmap_set_bit (path_map, 0);
-
-      bitmap tmp = BITMAP_GGC_ALLOC ();
-      bitmap_copy (tmp, visible);
-      visible = tmp;
-      for (; path; path = path->next)
-	{
-	  tree decl = path->tldcl;
-	  if (TREE_CODE (decl) == TREE_LIST)
-	    decl = TREE_PURPOSE (decl);
-	  if (TYPE_P (decl))
-	    decl = TYPE_NAME (decl);
-	  if (unsigned mod = get_originating_module (decl))
-	    if (!bitmap_bit_p (path_map, mod))
-	      {
-		bitmap_set_bit (path_map, mod);
-		bitmap imports = (*modules)[mod]->imports;
-		bitmap_ior_into (visible, imports);
-	      }
-	}
-      *path_map_p = path_map;
-    }
-
-  return visible;
+  return path_of_instantiation (current_instantiation (), path_map_p);
 }
 
 /* We've just directly imported IMPORT.  Update our import/export

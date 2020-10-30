@@ -1,3 +1,13 @@
+2020-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	Cache Path Of Instantiation
+	gcc/cp/
+	* cp-tree.h (struct tinst_level): Add path and visible bitmaps.
+	* module.cc (path_of_instantiation): New recursive helper broken
+	out of ...
+	(module_visible_instantiation): ... here.  Call it.
+	* pt.c (push_tinst_level_loc): Nullify path and visible bitmaps.
+
 2020-10-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
