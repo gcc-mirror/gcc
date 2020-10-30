@@ -12046,6 +12046,18 @@ argument list due to stack realignment.  Return @code{NULL} if no DRAP
 is needed.
 @end deftypefn
 
+@deftypefn {Target Hook} HARD_REG_SET TARGET_ZERO_CALL_USED_REGS (HARD_REG_SET @var{selected_regs})
+This target hook emits instructions to zero the subset of @var{selected_regs}
+that could conceivably contain values that are useful to an attacker.
+Return the set of registers that were actually cleared.
+
+The default implementation uses normal move instructions to zero
+all the registers in @var{selected_regs}.  Define this hook if the
+target has more efficient ways of zeroing certain registers,
+or if you believe that certain registers would never contain
+values that are useful to an attacker.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS (void)
 When optimization is disabled, this hook indicates whether or not
 arguments should be allocated to stack slots.  Normally, GCC allocates

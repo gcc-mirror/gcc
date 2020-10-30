@@ -491,6 +491,7 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_late_compilation);
       PUSH_INSERT_PASSES_WITHIN (pass_late_compilation)
+	  NEXT_PASS (pass_zero_call_used_regs);
 	  NEXT_PASS (pass_compute_alignments);
 	  NEXT_PASS (pass_variable_tracking);
 	  NEXT_PASS (pass_free_cfg);

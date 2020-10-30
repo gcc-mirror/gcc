@@ -3996,6 +3996,92 @@ performing a link with relocatable output (i.e.@: @code{ld -r}) on them.
 A declaration to which @code{weakref} is attached and that is associated
 with a named @code{target} must be @code{static}.
 
+@item zero_call_used_regs ("@var{choice}")
+@cindex @code{zero_call_used_regs} function attribute
+
+The @code{zero_call_used_regs} attribute causes the compiler to zero
+a subset of all call-used registers@footnote{A ``call-used'' register
+is a register whose contents can be changed by a function call;
+therefore, a caller cannot assume that the register has the same contents
+on return from the function as it had before calling the function.  Such
+registers are also called ``call-clobbered'', ``caller-saved'', or
+``volatile''.} at function return.
+This is used to increase program security by either mitigating
+Return-Oriented Programming (ROP) attacks or preventing information leakage
+through registers.
+
+In order to satisfy users with different security needs and control the
+run-time overhead at the same time, the @var{choice} parameter provides a
+flexible way to choose the subset of the call-used registers to be zeroed.
+The three basic values of @var{choice} are:
+
+@itemize @bullet
+@item
+@samp{skip} doesn't zero any call-used registers.
+
+@item
+@samp{used} only zeros call-used registers that are used in the function.
+A ``used'' register is one whose content has been set or referenced in
+the function.
+
+@item
+@samp{all} zeros all call-used registers.
+@end itemize
+
+In addition to these three basic choices, it is possible to modify
+@samp{used} or @samp{all} as follows:
+
+@itemize @bullet
+@item
+Adding @samp{-gpr} restricts the zeroing to general-purpose registers.
+
+@item
+Adding @samp{-arg} restricts the zeroing to registers that can sometimes
+be used to pass function arguments.  This includes all argument registers
+defined by the platform's calling conversion, regardless of whether the
+function uses those registers for function arguments or not.
+@end itemize
+
+The modifiers can be used individually or together.  If they are used
+together, they must appear in the order above.
+
+The full list of @var{choice}s is therefore:
+
+@table @code
+@item skip
+doesn't zero any call-used register.
+
+@item used
+only zeros call-used registers that are used in the function.
+
+@item used-gpr
+only zeros call-used general purpose registers that are used in the function.
+
+@item used-arg
+only zeros call-used registers that are used in the function and pass arguments.
+
+@item used-gpr-arg
+only zeros call-used general purpose registers that are used in the function
+and pass arguments.
+
+@item all
+zeros all call-used registers.
+
+@item all-gpr
+zeros all call-used general purpose registers.
+
+@item all-arg
+zeros all call-used registers that pass arguments.
+
+@item all-gpr-arg
+zeros all call-used general purpose registers that pass
+arguments.
+@end table
+
+Of this list, @samp{used-arg}, @samp{used-gpr-arg}, @samp{all-arg},
+and @samp{all-gpr-arg} are mainly used for ROP mitigation.
+
+The default for the attribute is controlled by @option{-fzero-call-used-regs}.
 @end table
 
 @c This is the end of the target-independent attribute table
