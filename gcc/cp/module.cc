@@ -6087,8 +6087,14 @@ trees_out::core_vals (tree t)
       WT (t->function_decl.vindex);
       break;
 
-    case TYPE_DECL: /* DECL_ORIGINAL_TYPE */
-    case USING_DECL: /* USING_DECL_SCOPE  */
+    case USING_DECL:
+      /* USING_DECL_DECLS  */
+      WT (t->decl_common.initial);
+      /* FALLTHROUGH  */
+
+    case TYPE_DECL:
+      /* USING_DECL: USING_DECL_SCOPE  */
+      /* TYPE_DECL: DECL_ORIGINAL_TYPE */
       WT (t->decl_non_common.result);
       break;
 
@@ -6573,8 +6579,14 @@ trees_in::core_vals (tree t)
       }
       break;
 
-    case TYPE_DECL: /* DECL_ORIGINAL_TYPE */
-    case USING_DECL: /* USING_DECL_SCOPE  */
+    case USING_DECL:
+      /* USING_DECL_DECLS  */
+      RT (t->decl_common.initial);
+      /* FALLTHROUGH  */
+
+    case TYPE_DECL:
+      /* USING_DECL: USING_DECL_SCOPE  */
+      /* TYPE_DECL: DECL_ORIGINAL_TYPE */
       RT (t->decl_non_common.result);
       break;
 
@@ -6830,7 +6842,18 @@ trees_out::lang_decl_vals (tree t)
     case lds_min:  /* lang_decl_min.  */
     lds_min:
       WT (lang->u.min.template_info);
-      WT (lang->u.min.access);
+      {
+	tree access = lang->u.min.access;
+
+	/* DECL_ACCESS needs to be maintained by the definition of the
+	   (derived) class that changes the access.  The other users
+	   of DECL_ACCESS need to write it here.  */
+	if (!DECL_THUNK_P (t)
+	    && (DECL_CONTEXT (t) && TYPE_P (DECL_CONTEXT (t))))
+	  access = NULL_TREE;
+
+	WT (access);
+      }
       break;
 
     case lds_ns:  /* lang_decl_ns.  */
@@ -11607,11 +11630,6 @@ member_owned_by_class (tree member)
   return member;
 }
 
-// FIXME: Handle DECL_ACCESS of members.  They will have USING_DECLS
-// on the TYPE_FIELDS chain, from whence we can find the right
-// DECL_ACCESS.  Also the used decls will be in the member_vector.
-// Stream out and reconstruct on readin.
-
 void
 trees_out::write_class_def (tree defn)
 {
@@ -11919,6 +11937,25 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	      gcc_checking_assert (!*chain == !DECL_CLONED_FUNCTION_P (decl));
 	      *chain = decl;
 	      chain = &DECL_CHAIN (decl);
+
+	      if (TREE_CODE (decl) == USING_DECL
+		  && TREE_CODE (USING_DECL_SCOPE (decl)) == RECORD_TYPE)
+		{
+		  /* Reconstruct DECL_ACCESS.  */
+		  tree decls = USING_DECL_DECLS (decl);
+		  tree access = declared_access (decl);
+
+		  for (ovl_iterator iter (decls); iter; ++iter)
+		    {
+		      tree d = *iter;
+
+		      retrofit_lang_decl (d);
+		      tree list = DECL_ACCESS (d);
+
+		      if (!purpose_member (type, list))
+			DECL_ACCESS (d) = tree_cons (type, access, list);
+		    }
+		}
 	    }
 	}
 
