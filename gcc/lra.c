@@ -160,8 +160,6 @@ static void invalidate_insn_recog_data (int);
 static int get_insn_freq (rtx_insn *);
 static void invalidate_insn_data_regno_info (lra_insn_recog_data_t,
 					     rtx_insn *, int);
-static void remove_scratches_1 (rtx_insn *);
-
 /* Expand all regno related info needed for LRA.  */
 static void
 expand_reg_data (int old)
@@ -482,6 +480,8 @@ lra_emit_add (rtx x, rtx y, rtx z)
 /* The number of emitted reload insns so far.  */
 int lra_curr_reload_num;
 
+static void remove_insn_scratches (rtx_insn *insn);
+
 /* Emit x := y, processing special case when y = u + v or y = u + v *
    scale + w through emit_add (Y can be an address which is base +
    index reg * scale + displacement in general case).  X may be used
@@ -503,7 +503,7 @@ lra_emit_move (rtx x, rtx y)
       /* The move pattern may require scratch registers, so convert them
 	 into real registers now.  */
       if (insn != NULL_RTX)
-	remove_scratches_1 (insn);
+	remove_insn_scratches (insn);
       if (REG_P (x))
 	lra_reg_info[ORIGINAL_REGNO (x)].last_reload = ++lra_curr_reload_num;
       /* Function emit_move can create pseudos -- so expand the pseudo
@@ -1988,169 +1988,34 @@ lra_substitute_pseudo_within_insn (rtx_insn *insn, int old_regno,
 
 
 
-/* This page contains code dealing with scratches (changing them onto
-   pseudos and restoring them from the pseudos).
-
-   We change scratches into pseudos at the beginning of LRA to
-   simplify dealing with them (conflicts, hard register assignments).
-
-   If the pseudo denoting scratch was spilled it means that we do need
-   a hard register for it.  Such pseudos are transformed back to
-   scratches at the end of LRA.	 */
-
-/* Description of location of a former scratch operand.	 */
-struct sloc
+/* Return new register of the same mode as ORIGINAL of class ALL_REGS.
+   Used in ira_remove_scratches.  */
+static rtx
+get_scratch_reg (rtx original)
 {
-  rtx_insn *insn; /* Insn where the scratch was.  */
-  int nop;  /* Number of the operand which was a scratch.  */
-  int icode;  /* Original icode from which scratch was removed.  */
-};
-
-typedef struct sloc *sloc_t;
-
-/* Locations of the former scratches.  */
-static vec<sloc_t> scratches;
-
-/* Bitmap of scratch regnos.  */
-static bitmap_head scratch_bitmap;
-
-/* Bitmap of scratch operands.	*/
-static bitmap_head scratch_operand_bitmap;
-
-/* Return true if pseudo REGNO is made of SCRATCH.  */
-bool
-lra_former_scratch_p (int regno)
-{
-  return bitmap_bit_p (&scratch_bitmap, regno);
+  return lra_create_new_reg (GET_MODE (original), original, ALL_REGS, NULL);
 }
 
-/* Return true if the operand NOP of INSN is a former scratch.	*/
-bool
-lra_former_scratch_operand_p (rtx_insn *insn, int nop)
-{
-  return bitmap_bit_p (&scratch_operand_bitmap,
-		       INSN_UID (insn) * MAX_RECOG_OPERANDS + nop) != 0;
-}
-
-/* Register operand NOP in INSN as a former scratch.  It will be
-   changed to scratch back, if it is necessary, at the LRA end.  */
-void
-lra_register_new_scratch_op (rtx_insn *insn, int nop, int icode)
-{
-  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
-  rtx op = *id->operand_loc[nop];
-  sloc_t loc = XNEW (struct sloc);
-  lra_assert (REG_P (op));
-  loc->insn = insn;
-  loc->nop = nop;
-  loc->icode = icode;
-  scratches.safe_push (loc);
-  bitmap_set_bit (&scratch_bitmap, REGNO (op));
-  bitmap_set_bit (&scratch_operand_bitmap,
-		  INSN_UID (insn) * MAX_RECOG_OPERANDS + nop);
-  add_reg_note (insn, REG_UNUSED, op);
-}
-
-/* Change INSN's scratches into pseudos and save their location.  */
+/* Remove all insn scratches in INSN.  */
 static void
-remove_scratches_1 (rtx_insn *insn)
+remove_insn_scratches (rtx_insn *insn)
 {
-  int i;
-  bool insn_changed_p;
-  rtx reg;
-  lra_insn_recog_data_t id;
-  struct lra_static_insn_data *static_id;
-
-  id = lra_get_insn_recog_data (insn);
-  static_id = id->insn_static_data;
-  insn_changed_p = false;
-  for (i = 0; i < static_id->n_operands; i++)
-    if (GET_CODE (*id->operand_loc[i]) == SCRATCH
-	&& GET_MODE (*id->operand_loc[i]) != VOIDmode)
-      {
-	insn_changed_p = true;
-	*id->operand_loc[i] = reg
-	  = lra_create_new_reg (static_id->operand[i].mode,
-				*id->operand_loc[i], ALL_REGS, NULL);
-	lra_register_new_scratch_op (insn, i, id->icode);
-	if (lra_dump_file != NULL)
-	  fprintf (lra_dump_file,
-		   "Removing SCRATCH in insn #%u (nop %d)\n",
-		   INSN_UID (insn), i);
-      }
-  if (insn_changed_p)
-    /* Because we might use DF right after caller-saves sub-pass
-       we need to keep DF info up to date.  */
+  if (ira_remove_insn_scratches (insn, true, lra_dump_file, get_scratch_reg))
     df_insn_rescan (insn);
 }
 
-/* Change scratches into pseudos and save their location.  */
+/* Remove all insn scratches in the current function.  */
 static void
 remove_scratches (void)
 {
   basic_block bb;
   rtx_insn *insn;
 
-  scratches.create (get_max_uid ());
-  bitmap_initialize (&scratch_bitmap, &reg_obstack);
-  bitmap_initialize (&scratch_operand_bitmap, &reg_obstack);
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
-    if (INSN_P (insn))
-      remove_scratches_1 (insn);
+      if (INSN_P (insn))
+        remove_insn_scratches (insn);
 }
-
-/* Changes pseudos created by function remove_scratches onto scratches.	 */
-static void
-restore_scratches (void)
-{
-  int regno;
-  unsigned i;
-  sloc_t loc;
-  rtx_insn *last = NULL;
-  lra_insn_recog_data_t id = NULL;
-
-  for (i = 0; scratches.iterate (i, &loc); i++)
-    {
-      /* Ignore already deleted insns.  */
-      if (NOTE_P (loc->insn)
-	  && NOTE_KIND (loc->insn) == NOTE_INSN_DELETED)
-	continue;
-      if (last != loc->insn)
-	{
-	  last = loc->insn;
-	  id = lra_get_insn_recog_data (last);
-	}
-      if (loc->icode != id->icode)
-	{
-	  /* The icode doesn't match, which means the insn has been modified
-	     (e.g. register elimination).  The scratch cannot be restored.  */
-	  continue;
-	}
-      if (REG_P (*id->operand_loc[loc->nop])
-	  && ((regno = REGNO (*id->operand_loc[loc->nop]))
-	      >= FIRST_PSEUDO_REGISTER)
-	  && lra_get_regno_hard_regno (regno) < 0)
-	{
-	  /* It should be only case when scratch register with chosen
-	     constraint 'X' did not get memory or hard register.  */
-	  lra_assert (lra_former_scratch_p (regno));
-	  *id->operand_loc[loc->nop]
-	    = gen_rtx_SCRATCH (GET_MODE (*id->operand_loc[loc->nop]));
-	  lra_update_dup (id, loc->nop);
-	  if (lra_dump_file != NULL)
-	    fprintf (lra_dump_file, "Restoring SCRATCH in insn #%u(nop %d)\n",
-		     INSN_UID (loc->insn), loc->nop);
-	}
-    }
-  for (i = 0; scratches.iterate (i, &loc); i++)
-    free (loc);
-  scratches.release ();
-  bitmap_clear (&scratch_bitmap);
-  bitmap_clear (&scratch_operand_bitmap);
-}
-
-
 
 /* Function checks RTL for correctness.	 If FINAL_P is true, it is
    done at the end of LRA and the check is more rigorous.  */
@@ -2543,7 +2408,7 @@ lra (FILE *f)
 	lra_bad_spill_regno_start = lra_constraint_new_regno_start;
       lra_assignment_iter_after_spill = 0;
     }
-  restore_scratches ();
+  ira_restore_scratches (lra_dump_file);
   lra_eliminate (true, false);
   lra_final_code_change ();
   lra_in_progress = 0;
