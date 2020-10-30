@@ -5675,10 +5675,10 @@ package body Exp_Attr is
          RT_Subprg_Name : Node_Id;
 
       begin
-         --  Look for the enclosing concurrent type
+         --  Look for the enclosing protected type
 
          Conctyp := Current_Scope;
-         while not Is_Concurrent_Type (Conctyp) loop
+         while not Is_Protected_Type (Conctyp) loop
             Conctyp := Scope (Conctyp);
          end loop;
 
@@ -5687,13 +5687,15 @@ package body Exp_Attr is
          --  Generate the actual of the call
 
          Subprg := Current_Scope;
-         while not Present (Protected_Body_Subprogram (Subprg)) loop
+         while not (Is_Subprogram_Or_Entry (Subprg)
+                    and then Present (Protected_Body_Subprogram (Subprg)))
+         loop
             Subprg := Scope (Subprg);
          end loop;
 
          --  Use of 'Priority inside protected entries and barriers (in both
          --  cases the type of the first formal of their expanded subprogram
-         --  is Address)
+         --  is Address).
 
          if Etype (First_Entity (Protected_Body_Subprogram (Subprg))) =
               RTE (RE_Address)

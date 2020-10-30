@@ -2416,10 +2416,10 @@ package body Exp_Ch5 is
 
             if Is_Expanded_Priority_Attribute (Ent) then
 
-               --  Look for the enclosing concurrent type
+               --  Look for the enclosing protected type
 
                Conctyp := Current_Scope;
-               while not Is_Concurrent_Type (Conctyp) loop
+               while not Is_Protected_Type (Conctyp) loop
                   Conctyp := Scope (Conctyp);
                end loop;
 
@@ -2428,7 +2428,10 @@ package body Exp_Ch5 is
                --  Generate the first actual of the call
 
                Subprg := Current_Scope;
-               while not Present (Protected_Body_Subprogram (Subprg)) loop
+               while
+                 not (Is_Subprogram_Or_Entry (Subprg)
+                      and then Present (Protected_Body_Subprogram (Subprg)))
+               loop
                   Subprg := Scope (Subprg);
                end loop;
 
