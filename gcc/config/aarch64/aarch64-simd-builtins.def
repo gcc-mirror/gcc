@@ -430,17 +430,17 @@
   VAR1 (UNOPUS, lfrintnudf, 2, FP, di)
 
   /* Implemented by <optab><fcvt_target><VDQF:mode>2.  */
-  VAR1 (UNOP, floatv4hi, 2, ALL, v4hf)
-  VAR1 (UNOP, floatv8hi, 2, ALL, v8hf)
-  VAR1 (UNOP, floatv2si, 2, ALL, v2sf)
-  VAR1 (UNOP, floatv4si, 2, ALL, v4sf)
-  VAR1 (UNOP, floatv2di, 2, ALL, v2df)
+  VAR1 (UNOP, floatv4hi, 2, FP, v4hf)
+  VAR1 (UNOP, floatv8hi, 2, FP, v8hf)
+  VAR1 (UNOP, floatv2si, 2, FP, v2sf)
+  VAR1 (UNOP, floatv4si, 2, FP, v4sf)
+  VAR1 (UNOP, floatv2di, 2, FP, v2df)
 
-  VAR1 (UNOP, floatunsv4hi, 2, ALL, v4hf)
-  VAR1 (UNOP, floatunsv8hi, 2, ALL, v8hf)
-  VAR1 (UNOP, floatunsv2si, 2, ALL, v2sf)
-  VAR1 (UNOP, floatunsv4si, 2, ALL, v4sf)
-  VAR1 (UNOP, floatunsv2di, 2, ALL, v2df)
+  VAR1 (UNOP, floatunsv4hi, 2, FP, v4hf)
+  VAR1 (UNOP, floatunsv8hi, 2, FP, v8hf)
+  VAR1 (UNOP, floatunsv2si, 2, FP, v2sf)
+  VAR1 (UNOP, floatunsv4si, 2, FP, v4sf)
+  VAR1 (UNOP, floatunsv2di, 2, FP, v2df)
 
   VAR5 (UNOPU, bswap, 2, ALL, v4hi, v8hi, v2si, v4si, v2di)
 
@@ -469,13 +469,13 @@
   BUILTIN_VHSDF (UNOP, abs, 2, ALL)
   VAR1 (UNOP, abs, 2, ALL, hf)
 
-  BUILTIN_VQ_HSF (UNOP, vec_unpacks_hi_, 10, ALL)
-  VAR1 (BINOP, float_truncate_hi_, 0, ALL, v4sf)
-  VAR1 (BINOP, float_truncate_hi_, 0, ALL, v8hf)
+  BUILTIN_VQ_HSF (UNOP, vec_unpacks_hi_, 10, FP)
+  VAR1 (BINOP, float_truncate_hi_, 0, FP, v4sf)
+  VAR1 (BINOP, float_truncate_hi_, 0, FP, v8hf)
 
-  VAR1 (UNOP, float_extend_lo_, 0, ALL, v2df)
-  VAR1 (UNOP, float_extend_lo_,  0, ALL, v4sf)
-  BUILTIN_VDF (UNOP, float_truncate_lo_, 0, ALL)
+  VAR1 (UNOP, float_extend_lo_, 0, FP, v2df)
+  VAR1 (UNOP, float_extend_lo_,  0, FP, v4sf)
+  BUILTIN_VDF (UNOP, float_truncate_lo_, 0, FP)
 
   /* Implemented by aarch64_ld1<VALL_F16:mode>.  */
   BUILTIN_VALL_F16 (LOAD1, ld1, 0, ALL)
@@ -619,18 +619,18 @@
   VAR1 (UNOP, sqrt, 2, ALL, hf)
 
   /* Implemented by <optab><mode>hf2.  */
-  VAR1 (UNOP, floatdi, 2, ALL, hf)
-  VAR1 (UNOP, floatsi, 2, ALL, hf)
-  VAR1 (UNOP, floathi, 2, ALL, hf)
-  VAR1 (UNOPUS, floatunsdi, 2, ALL, hf)
-  VAR1 (UNOPUS, floatunssi, 2, ALL, hf)
-  VAR1 (UNOPUS, floatunshi, 2, ALL, hf)
-  BUILTIN_GPI_I16 (UNOP, fix_trunchf, 2, ALL)
-  BUILTIN_GPI (UNOP, fix_truncsf, 2, ALL)
-  BUILTIN_GPI (UNOP, fix_truncdf, 2, ALL)
-  BUILTIN_GPI_I16 (UNOPUS, fixuns_trunchf, 2, ALL)
-  BUILTIN_GPI (UNOPUS, fixuns_truncsf, 2, ALL)
-  BUILTIN_GPI (UNOPUS, fixuns_truncdf, 2, ALL)
+  VAR1 (UNOP, floatdi, 2, FP, hf)
+  VAR1 (UNOP, floatsi, 2, FP, hf)
+  VAR1 (UNOP, floathi, 2, FP, hf)
+  VAR1 (UNOPUS, floatunsdi, 2, FP, hf)
+  VAR1 (UNOPUS, floatunssi, 2, FP, hf)
+  VAR1 (UNOPUS, floatunshi, 2, FP, hf)
+  BUILTIN_GPI_I16 (UNOP, fix_trunchf, 2, FP)
+  BUILTIN_GPI (UNOP, fix_truncsf, 2, FP)
+  BUILTIN_GPI (UNOP, fix_truncdf, 2, FP)
+  BUILTIN_GPI_I16 (UNOPUS, fixuns_trunchf, 2, FP)
+  BUILTIN_GPI (UNOPUS, fixuns_truncsf, 2, FP)
+  BUILTIN_GPI (UNOPUS, fixuns_truncdf, 2, FP)
 
   /* Implemented by aarch64_sm3ss1qv4si.  */
   VAR1 (TERNOPU, sm3ss1q, 0, ALL, v4si)
@@ -701,10 +701,10 @@
   VAR1 (QUADOP_LANE, fmlslq_laneq_high, 0, ALL, v4sf)
 
   /* Implemented by aarch64_<frintnzs_op><mode>.  */
-  BUILTIN_VSFDF (UNOP, frint32z, 0, ALL)
-  BUILTIN_VSFDF (UNOP, frint32x, 0, ALL)
-  BUILTIN_VSFDF (UNOP, frint64z, 0, ALL)
-  BUILTIN_VSFDF (UNOP, frint64x, 0, ALL)
+  BUILTIN_VSFDF (UNOP, frint32z, 0, FP)
+  BUILTIN_VSFDF (UNOP, frint32x, 0, FP)
+  BUILTIN_VSFDF (UNOP, frint64z, 0, FP)
+  BUILTIN_VSFDF (UNOP, frint64x, 0, FP)
 
   /* Implemented by aarch64_bfdot{_lane}{q}<mode>.  */
   VAR2 (TERNOP, bfdot, 0, ALL, v2sf, v4sf)
@@ -728,7 +728,7 @@
   VAR1 (TERNOP_SSUS, simd_usmmla, 0, NONE, v16qi)
 
   /* Implemented by aarch64_bfcvtn{q}{2}<mode>  */
-  VAR1 (UNOP, bfcvtn, 0, ALL, v4bf)
-  VAR1 (UNOP, bfcvtn_q, 0, ALL, v8bf)
-  VAR1 (BINOP, bfcvtn2, 0, ALL, v8bf)
-  VAR1 (UNOP, bfcvt, 0, ALL, bf)
+  VAR1 (UNOP, bfcvtn, 0, FP, v4bf)
+  VAR1 (UNOP, bfcvtn_q, 0, FP, v8bf)
+  VAR1 (BINOP, bfcvtn2, 0, FP, v8bf)
+  VAR1 (UNOP, bfcvt, 0, FP, bf)
