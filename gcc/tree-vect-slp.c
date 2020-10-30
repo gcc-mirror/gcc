@@ -3487,8 +3487,8 @@ vect_prologue_cost_for_slp (slp_tree node,
 static bool
 vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 				  slp_instance node_instance,
-				  hash_set<slp_tree> &visited,
-				  hash_set<slp_tree> &lvisited,
+				  hash_set<slp_tree> &visited_set,
+				  vec<slp_tree> &visited_vec,
 				  stmt_vector_for_cost *cost_vec)
 {
   int i, j;
@@ -3511,15 +3511,18 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 
   /* If we already analyzed the exact same set of scalar stmts we're done.
      We share the generated vector stmts for those.  */
-  if (visited.contains (node)
-      || lvisited.add (node))
+  if (visited_set.add (node))
     return true;
+  visited_vec.safe_push (node);
 
   bool res = true;
+  unsigned visited_rec_start = visited_vec.length ();
+  unsigned cost_vec_rec_start = cost_vec->length ();
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     {
       res = vect_slp_analyze_node_operations (vinfo, child, node_instance,
-					      visited, lvisited, cost_vec);
+					      visited_set, visited_vec,
+					      cost_vec);
       if (!res)
 	break;
     }
@@ -3527,8 +3530,14 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   if (res)
     res = vect_slp_analyze_node_operations_1 (vinfo, node, node_instance,
 					      cost_vec);
+  /* If analysis failed we have to pop all recursive visited nodes
+     plus ourselves.  */
   if (!res)
-    lvisited.remove (node);
+    {
+      while (visited_vec.length () >= visited_rec_start)
+	visited_set.remove (visited_vec.pop ());
+      cost_vec->truncate (cost_vec_rec_start);
+    }
 
   /* When the node can be vectorized cost invariant nodes it references.
      This is not done in DFS order to allow the refering node
@@ -3543,9 +3552,9 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	  /* Perform usual caching, note code-generation still
 	     code-gens these nodes multiple times but we expect
 	     to CSE them later.  */
-	  && !visited.contains (child)
-	  && !lvisited.add (child))
+	  && !visited_set.add (child))
 	{
+	  visited_vec.safe_push (child);
 	  /* ???  After auditing more code paths make a "default"
 	     and push the vector type from NODE to all children
 	     if it is not already set.  */
@@ -3705,14 +3714,14 @@ vect_slp_analyze_operations (vec_info *vinfo)
   hash_set<slp_tree> visited;
   for (i = 0; vinfo->slp_instances.iterate (i, &instance); )
     {
-      hash_set<slp_tree> lvisited;
+      auto_vec<slp_tree> visited_vec;
       stmt_vector_for_cost cost_vec;
       cost_vec.create (2);
       if (is_a <bb_vec_info> (vinfo))
 	vect_location = instance->location ();
       if (!vect_slp_analyze_node_operations (vinfo,
 					     SLP_INSTANCE_TREE (instance),
-					     instance, visited, lvisited,
+					     instance, visited, visited_vec,
 					     &cost_vec)
 	  /* Instances with a root stmt require vectorized defs for the
 	     SLP tree root.  */
@@ -3729,12 +3738,11 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	  vect_free_slp_instance (instance);
           vinfo->slp_instances.ordered_remove (i);
 	  cost_vec.release ();
+	  while (!visited_vec.is_empty ())
+	    visited.remove (visited_vec.pop ());
 	}
       else
 	{
-	  for (hash_set<slp_tree>::iterator x = lvisited.begin();
-	       x != lvisited.end(); ++x)
-	    visited.add (*x);
 	  i++;
 
 	  /* For BB vectorization remember the SLP graph entry
