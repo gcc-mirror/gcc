@@ -459,6 +459,13 @@ class GitCommit:
                             msg = 'one space should follow asterisk'
                             self.errors.append(Error(msg, line))
                         else:
+                            content = m.group('content')
+                            parts = content.split(':')
+                            if len(parts) > 1:
+                                for needle in ('()', '[]', '<>'):
+                                    if ' ' + needle in parts[0]:
+                                        msg = f'empty group "{needle}" found'
+                                        self.errors.append(Error(msg, line))
                             last_entry.lines.append(line)
                     else:
                         if last_entry.is_empty:

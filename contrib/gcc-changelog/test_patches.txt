@@ -3193,5 +3193,46 @@ index fe18288..313f84d 100644
  
 +
 -- 
+=== 0001-tree-optimization-97633-fix-SLP-scheduling-of-single.patch ===
+From c0bfd9672e19caf08e45afeb4277f848488ced2b Mon Sep 17 00:00:00 2001
+From: Richard Biener <rguenther@suse.de>
+Date: Fri, 30 Oct 2020 09:57:02 +0100
+Subject: [PATCH] tree-optimization/97633 - fix SLP scheduling of single-node
+ cycles
+
+This makes sure to update backedges in single-node cycles.
+
+2020-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97633
+	* tree-vect-slp.c (): Update backedges in single-node cycles.
+	Optimize processing of externals.
+
+	* g++.dg/vect/slp-pr97636.cc: New testcase.
+	* gcc.dg/vect/bb-slp-pr97633.c: Likewise.
+---
+ gcc/testsuite/g++.dg/vect/slp-pr97636.cc   |  83 +++++++++++
+ gcc/testsuite/gcc.dg/vect/bb-slp-pr97633.c |  27 ++++
+ gcc/tree-vect-slp.c                        | 162 +++++++++++----------
+ 3 files changed, 198 insertions(+), 74 deletions(-)
+ create mode 100644 gcc/testsuite/g++.dg/vect/slp-pr97636.cc
+ create mode 100644 gcc/testsuite/gcc.dg/vect/bb-slp-pr97633.c
+
+diff --git a/gcc/testsuite/g++.dg/vect/slp-pr97636.cc b/gcc/testsuite/g++.dg/vect/slp-pr97636.cc
+new file mode 100644
+index 00000000000..012342004f1
+--- /dev/null
++++ b/gcc/testsuite/g++.dg/vect/slp-pr97636.cc
+@@ -0,0 +1 @@
++
+diff --git a/gcc/tree-vect-slp.c b/gcc/tree-vect-slp.c
+index 5d69a98c2a9..714e50697bd 100644
+--- a/gcc/tree-vect-slp.c
++++ b/gcc/tree-vect-slp.c
+@@ -1 +1,2 @@
+ 
++
+-- 
+
 2.7.4
 
