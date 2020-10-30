@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the default version of this package, based on Big_Integers only.
-
 with Ada.Strings.Text_Output.Utils;
 with System.Img_Real; use System.Img_Real;
 
@@ -85,14 +83,16 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    ---------
 
    function "=" (L, R : Valid_Big_Real) return Boolean is
-     (abs L.Num = abs R.Num and then L.Den = R.Den);
+     (L.Num = R.Num and then L.Den = R.Den);
 
    ---------
    -- "<" --
    ---------
 
    function "<" (L, R : Valid_Big_Real) return Boolean is
-     (abs L.Num * R.Den < abs R.Num * L.Den);
+     (L.Num * R.Den < R.Num * L.Den);
+   --  The denominator is guaranteed to be positive since Normalized is
+   --  always called when constructing a Valid_Big_Real
 
    ----------
    -- "<=" --
