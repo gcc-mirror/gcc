@@ -1193,7 +1193,7 @@ package body System.Generic_Bignums is
       return To_Bignum (Long_Long_Long_Integer (X));
    end To_Bignum;
 
-   function To_Bignum (X : Unsigned_64) return Big_Integer is
+   function To_Bignum (X : Unsigned_128) return Big_Integer is
    begin
       if X = 0 then
          return Allocate_Big_Integer ((1 .. 0 => <>), False);
@@ -1205,9 +1205,31 @@ package body System.Generic_Bignums is
 
       --  Two word result
 
-      else
+      elsif Shift_Right (X, 32) < 2 ** 32 then
          return Allocate_Big_Integer ((SD (X / Base), SD (X mod Base)), False);
+
+      --  Three or four word result
+
+      else
+         declare
+            Vector : Digit_Vector (1 .. 4);
+            High   : constant Unsigned_64 := Unsigned_64 (Shift_Right (X, 64));
+            Low    : constant Unsigned_64 :=
+              Unsigned_64 (X and 16#FFFF_FFFF_FFFF_FFFF#);
+
+         begin
+            Vector (1) := SD (High / Base);
+            Vector (2) := SD (High mod Base);
+            Vector (3) := SD (Low / Base);
+            Vector (4) := SD (Low mod Base);
+            return Normalize (Vector, False);
+         end;
       end if;
+   end To_Bignum;
+
+   function To_Bignum (X : Unsigned_64) return Big_Integer is
+   begin
+      return To_Bignum (Unsigned_128 (X));
    end To_Bignum;
 
    ---------------
