@@ -32,6 +32,7 @@
 --  This is the default version of this package, based on Big_Integers only.
 
 with Ada.Strings.Text_Output.Utils;
+with System.Img_Real; use System.Img_Real;
 
 package body Ada.Numerics.Big_Numbers.Big_Reals is
 
@@ -122,8 +123,15 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
       -----------------
 
       function To_Big_Real (Arg : Num) return Valid_Big_Real is
+         S : String (1 .. Max_Real_Image_Length);
+         P : Natural := 0;
       begin
-         return From_String (Arg'Image);
+         --  Use Long_Long_Unsigned'Width - 1 digits = 20 which is sufficient
+         --  for the largest floating point format.
+
+         Set_Image_Real
+           (Long_Long_Float (Arg), S, P, Fore => 1, Aft => 20, Exp => 5);
+         return From_String (S (1 .. P));
       end To_Big_Real;
 
       -------------------
