@@ -141,7 +141,7 @@ namespace ranges
       struct __box<_Tp>
       {
       private:
-	[[no_unique_address]] _Tp _M_value;
+	[[no_unique_address]] _Tp _M_value = _Tp();
 
       public:
 	__box() = default;
@@ -160,7 +160,7 @@ namespace ranges
 
 	template<typename... _Args>
 	  requires constructible_from<_Tp, _Args...>
-	  constexpr
+	  constexpr explicit
 	  __box(in_place_t, _Args&&... __args)
 	  noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
 	  : _M_value{std::forward<_Args>(__args)...}
