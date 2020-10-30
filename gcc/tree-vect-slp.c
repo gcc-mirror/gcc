@@ -5554,32 +5554,42 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
   gcc_assert (!existed_p);
   info->dfs = maxdfs;
   info->lowlink = maxdfs;
-  info->on_stack = true;
   maxdfs++;
+
+  /* Leaf.  */
+  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
+    {
+      info->on_stack = false;
+      vect_schedule_slp_node (vinfo, node, instance);
+      return;
+    }
+
+  info->on_stack = true;
   stack.safe_push (node);
+
   unsigned i;
   slp_tree child;
-
-  /* ???  We're keeping SLP_TREE_CHILDREN of externalized nodes.  */
-  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
-    FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-      {
-	if (!child)
-	  continue;
-	slp_scc_info *child_info = scc_info.get (child);
-	if (!child_info)
-	  {
-	    vect_schedule_scc (vinfo, child, instance, scc_info, maxdfs, stack);
-	    /* Recursion might have re-allocated the node.  */
-	    info = scc_info.get (node);
-	    child_info = scc_info.get (child);
-	    info->lowlink = MIN (info->lowlink, child_info->lowlink);
-	  }
-	else if (child_info->on_stack)
-	  info->lowlink = MIN (info->lowlink, child_info->dfs);
-      }
+  /* DFS recurse.  */
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    {
+      if (!child)
+	continue;
+      slp_scc_info *child_info = scc_info.get (child);
+      if (!child_info)
+	{
+	  vect_schedule_scc (vinfo, child, instance, scc_info, maxdfs, stack);
+	  /* Recursion might have re-allocated the node.  */
+	  info = scc_info.get (node);
+	  child_info = scc_info.get (child);
+	  info->lowlink = MIN (info->lowlink, child_info->lowlink);
+	}
+      else if (child_info->on_stack)
+	info->lowlink = MIN (info->lowlink, child_info->dfs);
+    }
   if (info->lowlink != info->dfs)
     return;
+
+  auto_vec<slp_tree, 4> phis_to_fixup;
 
   /* Singleton.  */
   if (stack.last () == node)
@@ -5587,64 +5597,71 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
       stack.pop ();
       info->on_stack = false;
       vect_schedule_slp_node (vinfo, node, instance);
-      return;
+      if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+	  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
+	phis_to_fixup.quick_push (node);
     }
-  /* SCC.  */
-  int last_idx = stack.length () - 1;
-  while (stack[last_idx] != node)
-    last_idx--;
-  /* We can break the cycle at PHIs who have at least one child
-     code generated.  Then we could re-start the DFS walk until
-     all nodes in the SCC are covered (we might have new entries
-     for only back-reachable nodes).  But it's simpler to just
-     iterate and schedule those that are ready.  */
-  auto_vec<slp_tree, 4> phis_to_fixup;
-  unsigned todo = stack.length () - last_idx;
-  do
+  else
     {
-      for (int idx = stack.length () - 1; idx >= last_idx; --idx)
+      /* SCC.  */
+      int last_idx = stack.length () - 1;
+      while (stack[last_idx] != node)
+	last_idx--;
+      /* We can break the cycle at PHIs who have at least one child
+	 code generated.  Then we could re-start the DFS walk until
+	 all nodes in the SCC are covered (we might have new entries
+	 for only back-reachable nodes).  But it's simpler to just
+	 iterate and schedule those that are ready.  */
+      unsigned todo = stack.length () - last_idx;
+      do
 	{
-	  slp_tree entry = stack[idx];
-	  if (!entry)
-	    continue;
-	  bool phi = (SLP_TREE_CODE (entry) != VEC_PERM_EXPR
-		      && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (entry)->stmt));
-	  bool ready = !phi;
-	  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (entry), i, child)
-	    if (!child)
-	      {
-		gcc_assert (phi);
-		ready = true;
-		break;
-	      }
-	    else if (scc_info.get (child)->on_stack)
-	      {
-		if (!phi)
-		  {
-		    ready = false;
-		    break;
-		  }
-	      }
-	    else
-	      {
-		if (phi)
-		  {
-		    ready = true;
-		    break;
-		  }
-	      }
-	  if (ready)
+	  for (int idx = stack.length () - 1; idx >= last_idx; --idx)
 	    {
-	      vect_schedule_slp_node (vinfo, entry, instance);
-	      scc_info.get (entry)->on_stack = false;
-	      stack[idx] = NULL;
-	      todo--;
-	      if (phi)
-		phis_to_fixup.safe_push (entry);
+	      slp_tree entry = stack[idx];
+	      if (!entry)
+		continue;
+	      bool phi = (SLP_TREE_CODE (entry) != VEC_PERM_EXPR
+			  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (entry)->stmt));
+	      bool ready = !phi;
+	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (entry), i, child)
+		  if (!child)
+		    {
+		      gcc_assert (phi);
+		      ready = true;
+		      break;
+		    }
+		  else if (scc_info.get (child)->on_stack)
+		    {
+		      if (!phi)
+			{
+			  ready = false;
+			  break;
+			}
+		    }
+		  else
+		    {
+		      if (phi)
+			{
+			  ready = true;
+			  break;
+			}
+		    }
+	      if (ready)
+		{
+		  vect_schedule_slp_node (vinfo, entry, instance);
+		  scc_info.get (entry)->on_stack = false;
+		  stack[idx] = NULL;
+		  todo--;
+		  if (phi)
+		    phis_to_fixup.safe_push (entry);
+		}
 	    }
 	}
+      while (todo != 0);
+
+      /* Pop the SCC.  */
+      stack.truncate (last_idx);
     }
-  while (todo != 0);
 
   /* Now fixup the backedge def of the vectorized PHIs in this SCC.  */
   slp_tree phi_node;
@@ -5666,9 +5683,6 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 			 e, gimple_phi_arg_location (phi, dest_idx));
 	}
     }
-
-  /* Pop the SCC.  */
-  stack.truncate (last_idx);
 }
 
 /* Generate vector code for SLP_INSTANCES in the loop/basic block.  */
