@@ -3388,6 +3388,9 @@ struct GTY(()) slurping {
   }
 
  public:
+  void release_macros ();
+
+ public:
   void alloc_remap (unsigned size)
   {
     gcc_assert (!remap);
@@ -3426,11 +3429,16 @@ slurping::~slurping ()
 {
   vec_free (remap);
   remap = NULL;
+  release_macros ();
+  close ();
+}
+
+void slurping::release_macros ()
+{
   if (macro_defs.size)
     elf_in::release (from, macro_defs);
   if (macro_tbl.size)
     elf_in::release (from, macro_tbl);
-  close ();
 }
 
 /* Information about location maps used during writing.  */
@@ -10306,7 +10314,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	u (get_mergeable_specialization_flags (entry->tmpl, decl));
 
       // FIXME: Do variable templates with concepts need constraints
-      // from the specialization? -- see spec_hasher::equal
+      // from the specialization?  See spec_hasher::equal
       if (CHECKING_P)
 	{
 	  /* Make sure we can locate the decl.  */
@@ -17618,7 +17626,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Human-readable info.  */
   write_readme (to, config.dialect_str, extensions);
-  // FIXME: Write this info to the 'reproducer' file yet to be
+  // FIXME:QOI: Write this info to the 'reproducer' file yet to be
   // implemented write_env (to);
 
   trees_out::instrument ();
@@ -17930,17 +17938,12 @@ module_state::maybe_completed_reading ()
   if (loadedness == ML_LANGUAGE && slurp->current == ~0u && !slurp->remaining)
     {
       lazy_open--;
-      // FIXME: Can we just keep the file mapped until after
-      // preprocessing?  I think that's what the above load_state ==
-      // ML_LANGUAGE is ensuring?
-      if (slurp->macro_defs.size)
-	from ()->preserve (slurp->macro_defs);
-      if (slurp->macro_tbl.size)
-	from ()->preserve (slurp->macro_tbl);
+      /* We no longer need the macros, all tokenizing has been done.  */
+      slurp->release_macros ();
+
       from ()->end ();
       slurp->close ();
-      if (!is_header ())
-	slurped ();
+      slurped ();
     }
 }
 
@@ -18210,8 +18213,6 @@ get_importing_module (tree decl, bool flexible)
 }
 
 /* Is it permissible to redeclare DECL.  */
-// FIXME: This needs extending? see its use in decl.c  Perhaps we
-// should emit the errors here?
 
 bool
 module_may_redeclare (tree decl)
@@ -18233,8 +18234,6 @@ module_may_redeclare (tree decl)
 	  // caller's given us the right thing.  An alternative would
 	  // be to put both the template and the result into the
 	  // entity hash, but that seems expensive?
-	  // Also look at xref_tag_1's unhinding of friends, which
-	  // just looks at TYPE_TEMPLATE_INFO.
 	}
       unsigned index = import_entity_index (decl);
       them = import_entity_module (index);
@@ -18507,9 +18506,6 @@ try_increase_lazy (unsigned want)
 }
 
 /* Pick a victim module to freeze its reader.  */
-// FIXME: Verify this works across reading phases.  If there's a phase
-// left to do, we must preserve the whole elf file.  Not just the tree
-// sections.
 
 void
 module_state::freeze_an_elf ()
@@ -18800,9 +18796,12 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
       if (module->is_header ())
 	module_kind |= MK_GLOBAL | MK_EXPORTING;
 
-      /* Copy the importing information we may have already done.  */
-      // FIXME: We have to separate out the imports that only happen
-      // in the GMF.  Unless 2191 succeeds (which it better)
+      /* Copy the importing information we may have already done.  We
+	 do not need to separate out the imports that only happen in
+	 the GMF, inspite of what the literal wording of the std
+	 might imply.  See p2191, the core list had a discussion
+	 where the module implementors agreed that the GMF of a named
+	 module is invisible to importers.  */
       module->imports = current->imports;
 
       module->mod = 0;
@@ -18835,10 +18834,12 @@ module_initializer_kind ()
 }
 
 /* Emit calls to each direct import's global initializer.  Including
-   direct imports of directly imported header units.  */
-
-// FIXME: We should probably call the initializers brought in by
-// header units too.  But ordering is important for them.
+   direct imports of directly imported header units.  The initializers
+   of (static) entities in header units will be called by their
+   importing modules (for the instance contained within that), or by
+   the current TU (for the instances we've brought in).  Of course
+   such header unit behaviour is evil, but iostream went through that
+   door some time ago.  */
 
 void
 module_add_import_initializers ()
@@ -19544,6 +19545,22 @@ load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
   return 1;
 }
 
+/* At the end of tokenizing, we no longer need the macro tables of
+   imports.  But the user might have requested some checking.  */
+
+void
+maybe_check_all_macros (cpp_reader *reader)
+{
+  if (!warn_imported_macros)
+    return;
+
+  /* Force loading of any remaining deferred macros.  This will
+     produce diagnostics if they are ill-formed.  */
+  unsigned n = dump.push (NULL);
+  cpp_forall_identifiers (reader, load_macros, NULL);
+  dump.pop (n);
+}
+
 /* Write the CMI, if we're a module interface.  */
 
 void
@@ -19551,15 +19568,6 @@ finish_module_processing (cpp_reader *reader)
 {
   if (header_module_p ())
     module_kind &= ~MK_EXPORTING;
-
-  if (warn_imported_macros)
-    {
-      /* Force loading of any remaining deferred macros.  This will
-	 produce diagnostics if they are ill-formed.  */
-      unsigned n = dump.push (NULL);
-      cpp_forall_identifiers (reader, load_macros, NULL);
-      dump.pop (n);
-    }
 
   if (!modules || !(*modules)[0]->name)
     {
@@ -19584,7 +19592,6 @@ finish_module_processing (cpp_reader *reader)
 
       unsigned n = dump.push (state);
       state->announce ("creating");
-      // FIXME: A default for the -fmodule-header case?
       if (state->filename)
 	{
 	  size_t len = 0;

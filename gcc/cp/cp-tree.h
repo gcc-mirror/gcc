@@ -7058,6 +7058,7 @@ extern cpp_macro *module_cpp_deferred_macro (cpp_reader *,
 					     location_t, cpp_hashnode *);
 extern void init_modules (cpp_reader *);
 extern void fini_modules ();
+extern void maybe_check_all_macros (cpp_reader *);
 extern void finish_module_processing (cpp_reader *);
 extern char const *module_name (unsigned, bool header_ok);
 extern bitmap get_import_bitmap ();

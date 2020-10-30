@@ -673,6 +673,8 @@ cp_lexer_new_main (void)
      diagnostic functions to get the compiler source location.  */
   done_lexing = true;
 
+  maybe_check_all_macros (parse_in);
+
   gcc_assert (!lexer->next_token->purged_p);
   return lexer;
 }

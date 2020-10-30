@@ -1,5 +1,14 @@
 2020-10-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (maybe_check_all_macros): Declare.
+	* module.cc (slurping::release_macros): New.
+	(slurping::~slurping): Use it.
+	(module_state::maybe_completed_reading): Use it.
+	(maybe_check_all_macros): New, broken out of ...
+	(finish_module_processing): ... here.  DO NOT CALL.
+	* parser.c (cp_lexer_new_main): Call it here.
+
 	Cache Path Of Instantiation
 	gcc/cp/
 	* cp-tree.h (struct tinst_level): Add path and visible bitmaps.
