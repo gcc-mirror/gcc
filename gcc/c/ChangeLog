@@ -1,3 +1,10 @@
+2020-10-29  Asher Gordon  <AsDaGo@posteo.net>
+
+	* c-typeck.c (free_all_tagged_tu_seen_up_to): Replace free
+	with XDELETE.
+	(finish_init): Likewise.
+	(pop_init_level): Likewise.
+
 2020-10-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (store_parm_decls_newstyle): Use pedwarn_c11 not

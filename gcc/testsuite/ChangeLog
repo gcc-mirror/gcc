@@ -1,3 +1,95 @@
+2020-10-29  Marek Polacek  <polacek@redhat.com>
+
+	DR 625
+	PR c++/97479
+	* g++.dg/cpp0x/auto3.C: Update dg-error.
+	* g++.dg/cpp0x/auto9.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-2.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-3.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979.C: Likewise.
+	* g++.dg/DRs/dr625.C: New test.
+
+2020-10-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93107
+	* g++.dg/cpp0x/initlist-deduce3.C: New test.
+
+2020-10-29  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp2a/enum-conv1.C: Remove unused code.
+	* g++.dg/cpp2a/spaceship-err5.C: New test.
+
+2020-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97412
+	* g++.dg/cpp2a/concepts-variadic2.C: New test.
+
+2020-10-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97388
+	* g++.dg/cpp2a/constexpr-dtor8.C: New test.
+
+2020-10-29  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/97388
+	* g++.dg/cpp2a/constexpr-dtor5.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor6.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor7.C: New test.
+
+2020-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95808
+	* g++.dg/cpp2a/constexpr-new15.C: New test.
+
+2020-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-bool-1.c, gcc.dg/c2x-bool-1.c, gcc.dg/c99-bool-4.c:
+	New tests.
+
+2020-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr97596.c: Require int128 effective target.
+
+2020-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97596.c: New.
+
+2020-10-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* gnat.dg/sin_cos.ads: New.
+	* gnat.dg/sin_cos.adb: New.
+	* gcc.dg/sin_cos.c: New.
+
+2020-10-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/keylocker-aesdec128kl.c: New test.
+	* gcc.target/i386/keylocker-aesdec256kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesdecwide128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesdecwide256kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesenc128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesencwide128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesencwide256kl.c: Likewise.
+	* gcc.target/i386/keylocker-encodekey128.c: Likewise.
+	* gcc.target/i386/keylocker-encodekey256.c: Likewise.
+	* gcc.target/i386/keylocker-loadiwkey.c: Likewise.
+	* g++.dg/other/i386-2.C: Add -mkl and -mwidekl.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/sse-12.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Add kl and widekl.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute test.
+
+2020-10-29  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pr65935.c: Adjust.
+
+2020-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/pr97609.C: New.
+
 2020-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97608

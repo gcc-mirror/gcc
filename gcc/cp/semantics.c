@@ -7200,7 +7200,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_ALLOCATE:
-	  t = OMP_CLAUSE_DECL (c);
+	  t = omp_clause_decl_field (OMP_CLAUSE_DECL (c));
+	  if (t)
+	    omp_note_field_privatization (t, OMP_CLAUSE_DECL (c));
+	  else
+	    t = OMP_CLAUSE_DECL (c);
 	  if (t == current_class_ptr)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
@@ -7208,7 +7212,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      remove = true;
 	      break;
 	    }
-	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	  if (!VAR_P (t)
+	      && TREE_CODE (t) != PARM_DECL
+	      && TREE_CODE (t) != FIELD_DECL)
 	    {
 	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 		break;
@@ -7232,17 +7238,18 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      bitmap_set_bit (&aligned_head, DECL_UID (t));
 	      allocate_seen = true;
 	    }
-	  t = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
-	  if (error_operand_p (t))
+	  tree allocator;
+	  allocator = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	  if (error_operand_p (allocator))
 	    {
 	      remove = true;
 	      break;
 	    }
-	  if (t == NULL_TREE)
-	    break;
+	  if (allocator == NULL_TREE)
+	    goto handle_field_decl;
 	  tree allocatort;
-	  allocatort = TYPE_MAIN_VARIANT (TREE_TYPE (t));
-	  if (!type_dependent_expression_p (t)
+	  allocatort = TYPE_MAIN_VARIANT (TREE_TYPE (allocator));
+	  if (!type_dependent_expression_p (allocator)
 	      && (TREE_CODE (allocatort) != ENUMERAL_TYPE
 		  || TYPE_NAME (allocatort) == NULL_TREE
 		  || TREE_CODE (TYPE_NAME (allocatort)) != TYPE_DECL
@@ -7254,17 +7261,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<allocate%> clause allocator expression has "
 			"type %qT rather than %<omp_allocator_handle_t%>",
-			TREE_TYPE (t));
+			TREE_TYPE (allocator));
 	      remove = true;
 	    }
 	  else
 	    {
-	      t = mark_rvalue_use (t);
+	      allocator = mark_rvalue_use (allocator);
 	      if (!processing_template_decl)
-		t = maybe_constant_value (t);
-	      OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = t;
+		allocator = maybe_constant_value (allocator);
+	      OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) = allocator;
 	    }
-	  break;
+	  goto handle_field_decl;
 
 	case OMP_CLAUSE_DEPEND:
 	  t = OMP_CLAUSE_DECL (c);

@@ -44,13 +44,13 @@ bool are_ordered(const rvalstruct& lhs, const rvalstruct& rhs)
 bool are_ordered_int(const int& lhs, const int& rhs)
 { return lhs < rhs; }
 
-void 
+void
 check_make(int* array, int length)
 {
   rvalstruct makeheap[9];
   int        makeheap_ref[9];
   std::copy(array, array + length, makeheap);
-  std::copy(array, array + length, makeheap_ref);  
+  std::copy(array, array + length, makeheap_ref);
   container makecon(makeheap, makeheap + length);
   container_ref makecon_ref(makeheap_ref, makeheap_ref + length);
   std::make_heap(makecon.begin(), makecon.end(), are_ordered);
@@ -75,7 +75,7 @@ check_pop(int* array, int length)
   std::pop_heap(popcon_ref.begin(), popcon_ref.end(), are_ordered_int);
   for (int z = 0; z < length; ++z)
     VERIFY( popheap[z] == popheap_ref[z] );
-  VERIFY( (std::__is_heap(popheap, popheap + length - 1), are_ordered) );
+  VERIFY( std::__is_heap(popheap, popheap + length - 1, are_ordered) );
   for (int z = 0; z < length; ++z)
     VERIFY( popheap[z].val <= popheap[length-1].val && popheap[z].valid );
 }
@@ -104,7 +104,7 @@ check_push(int* array, int pushval, int length)
   rvalstruct pushheap[10];
   int        pushheap_ref[10];
   std::copy(array, array + length, pushheap);
-  std::copy(array, array + length, pushheap_ref);  
+  std::copy(array, array + length, pushheap_ref);
   pushheap[length] = pushval;
   pushheap_ref[length] = pushval;
   container pushcon(pushheap, pushheap + length + 1);

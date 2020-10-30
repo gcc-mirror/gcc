@@ -46,7 +46,7 @@ void test01()
     {
       strm << std::endl;
     }
-  catch(foobar)
+  catch(const foobar&)
     {
       // strm should throw foobar and not do anything else
       VERIFY(strm.bad());

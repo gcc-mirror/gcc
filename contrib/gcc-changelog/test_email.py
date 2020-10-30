@@ -365,3 +365,8 @@ class TestGccChangelog(unittest.TestCase):
     def test_square_and_lt_gt(self):
         email = self.from_patch_glob('0001-Check-for-more-missing')
         assert not email.errors
+
+    def test_empty_parenthesis(self):
+        email = self.from_patch_glob('0001-tree-optimization-97633-fix')
+        assert len(email.errors) == 1
+        assert email.errors[0].message == 'empty group "()" found'

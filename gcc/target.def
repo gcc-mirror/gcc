@@ -5080,6 +5080,21 @@ argument list due to stack realignment.  Return @code{NULL} if no DRAP\n\
 is needed.",
  rtx, (void), NULL)
 
+/* Generate instruction sequence to zero call used registers.  */
+DEFHOOK
+(zero_call_used_regs,
+ "This target hook emits instructions to zero the subset of @var{selected_regs}\n\
+that could conceivably contain values that are useful to an attacker.\n\
+Return the set of registers that were actually cleared.\n\
+\n\
+The default implementation uses normal move instructions to zero\n\
+all the registers in @var{selected_regs}.  Define this hook if the\n\
+target has more efficient ways of zeroing certain registers,\n\
+or if you believe that certain registers would never contain\n\
+values that are useful to an attacker.",
+ HARD_REG_SET, (HARD_REG_SET selected_regs),
+default_zero_call_used_regs)
+
 /* Return true if all function parameters should be spilled to the
    stack.  */
 DEFHOOK

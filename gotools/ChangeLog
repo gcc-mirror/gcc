@@ -1,3 +1,9 @@
+2020-10-29  Nikhil Benesch  <nikhil.benesch@gmail.com>
+
+	* Makefile.am (check-runtime): Add runtime_linknames.go to
+	--extrafiles.
+	* Makefile.in: Regenerate.
+
 2020-01-21  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (gofmt$(EXEEXT)): Link against $(LIBGOTOOL).

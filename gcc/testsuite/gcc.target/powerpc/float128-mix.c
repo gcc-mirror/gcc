@@ -1,15 +1,17 @@
-/* { dg-do compile { target { powerpc*-*-linux* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-O2 -mvsx" } */
+/* { dg-require-effective-target ppc_float128_sw } */
+/* { dg-options "-O2 -mvsx -Wno-psabi -mabi=ibmlongdouble -mlong-double-128" } */
 
-
-/* Test to make sure that __float128 and long double cannot be combined together.  */
-__float128 add (__float128 a, long double b)
+/* Test to make sure that __float128 and long double cannot be combined
+   together, when long double uses the IBM extended double format, and
+   __float128 uses the IEEE 128-bit format.  */
+__float128
+add (__float128 a, long double b)
 {
-  return a+b;	/* { dg-error "__float128 and long double cannot be used in the same expression" } */
+  return a+b;	/* { dg-error "IEEE 128-bit and IBM 128-bit floating point" } */
 }
 
-__ibm128 sub (long double a, __float128 b)
+long double
+sub (long double a, __float128 b)
 {
-  return a-b;	/* { dg-error "__float128 and long double cannot be used in the same expression" } */
+  return a-b;	/* { dg-error "IEEE 128-bit and IBM 128-bit floating point" } */
 }

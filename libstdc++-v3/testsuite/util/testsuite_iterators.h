@@ -599,7 +599,7 @@ namespace __gnu_test
     ItType<T>
     it(int pos)
     {
-      ITERATOR_VERIFY(pos >= 0 && pos <= size());
+      ITERATOR_VERIFY(pos >= 0 && (unsigned)pos <= size());
       return ItType<T>(bounds.first + pos, &bounds);
     }
 

@@ -1,3 +1,174 @@
+2020-10-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (compute_avail): Free operands consistently.
+	* tree-vect-loop.c (vectorizable_phi): Make sure all operand
+	defs vectors are released.
+
+2020-10-29  Jan Hubicka  <jh@suse.cz>
+
+	* vec.h (vec<T, va_heap, vl_ptr>::copy): Pass mem stat info.
+
+2020-10-29  Jan Hubicka  <jh@suse.cz>
+
+	* wide-int.h (trailing_wide_ints <N>): Turn len to array of structures
+	so it does not imply typeless storage.
+	(trailing_wide_ints <N>::operator): update
+	(trailing_wide_ints <N>::operator []): Update.
+
+2020-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/stdbool.h [__STDC_VERSION__ > 201710L] (true, false):
+	Define with type _Bool.
+
+2020-10-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97505
+	* vr-values.c (vr_values::extract_range_basic): Enable
+	trap again for everything except UBSAN builtins.
+
+2020-10-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_transform_slp_perm_load): Take an
+	optional extra parameter.
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Calculate
+	the number of loads as well as the number of permutes, taking
+	the counting loop from...
+	* tree-vect-stmts.c (vect_model_load_cost): ...here.  Use the
+	value computed by vect_transform_slp_perm_load for ncopies.
+
+2020-10-29  Martin Liska  <mliska@suse.cz>
+
+	PR lto/97508
+	* langhooks.c (lhd_begin_section): Call get_section with
+	not_existing = true.
+	* output.h (get_section): Add new argument.
+	* varasm.c (get_section): Fail when NOT_EXISTING is true
+	and a section already exists.
+	* ipa-cp.c (ipcp_write_summary): Remove.
+	(ipcp_read_summary): Likewise.
+	* ipa-fnsummary.c (ipa_fn_summary_read): Always read jump
+	functions summary.
+	(ipa_fn_summary_write): Always stream it.
+
+2020-10-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Pass
+	SLP_TREE_VECTYPE to record_stmt_cost.
+
+2020-10-29  Martin Liska  <mliska@suse.cz>
+
+	* optc-gen.awk: Check that params start with -param=.
+	* params.opt: Fix ipa-jump-function-lookups.
+
+2020-10-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-math-opts.c (sincos_stats): Add conv_removed.
+	(execute_cse_conv_1): New.
+	(execute_cse_sincos_1): Call it.  Fix return within
+	FOR_EACH_IMM_USE_STMT.
+	(pass_cse_sincos::execute): Report conv_inserted.
+
+2020-10-29  Xuepeng Guo  <xuepeng.guo@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect KL, AESKLE and WIDEKL features.
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_KL_SET): New.
+	(OPTION_MASK_ISA_WIDEKL_SET): Likewise.
+	(OPTION_MASK_ISA_KL_UNSET): Likewise.
+	(OPTION_MASK_ISA_WIDEKL_UNSET): Likewise.
+	(OPTION_MASK_ISA2_AVX2_UNSET): Likewise.
+	(OPTION_MASK_ISA2_AVX_UNSET): Likewise.
+	(OPTION_MASK_ISA2_SSE4_2_UNSET): Likewise.
+	(OPTION_MASK_ISA2_SSE4_1_UNSET): Likewise.
+	(OPTION_MASK_ISA2_SSE4_UNSET): Likewise.
+	(OPTION_MASK_ISA2_SSSE3_UNSET): Likewise.
+	(OPTION_MASK_ISA2_SSE3_UNSET): Likewise.
+	(OPTION_MASK_ISA2_SSE2_UNSET): Likewise.
+	(OPTION_MASK_ISA2_SSE_UNSET): Likewise.
+	(ix86_handle_option): Handle kl and widekl, add dependency chain
+	for KL and SSE2.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	(FEATURE_KL, FEATURE_AESKLE, FEATURE_WIDEKL): New.
+	* common/config/i386/i386-isas.h: Add ISA_NAMES_TABLE_ENTRY
+	for KL, AESKLE and WIDEKL.
+	* config.gcc: Add keylockerintrin.h.
+	* doc/invoke.texi: Document new option -mkl and -mwidekl.
+	* doc/extend.texi: Document kl and widekl.
+	* config/i386/cpuid.h (bit_KL, bit_AESKLE, bit_WIDEKL): New.
+	* config/i386/i386-builtin-types.def ((UINT, UINT, V2DI, V2DI, PVOID),
+	(UINT, UINT, V2DI, PVOID), (VOID, V2DI, V2DI, V2DI, UINT),
+	(UINT8, PV2DI, V2DI, PCVOID), (UINT8, PV2DI, PCV2DI, PCVOID)): New
+	function types.
+	* config/i386/i386-builtin.def: Add
+	__builtin_ia32_loadiwkey,
+	__builtin_ia32_aesdec128kl_u8,
+	__builtin_ia32_aesdec256kl_u8,
+	__builtin_ia32_aesenc128kl_u8,
+	__builtin_ia32_aesenc256kl_u8,
+	__builtin_ia32_aesdecwide128kl_u8,
+	__builtin_ia32_aesdecwide256kl_u8,
+	__builtin_ia32_aesencwide128kl_u8,
+	__builtin_ia32_aesencwide256kl_u8,
+	__builtin_ia32_encodekey128_u32,
+	__builtin_ia32_encodekey256_u32.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	kl and widekl.
+	* config/i386/i386-options.c (isa2_opts): Add -mkl and -mwidekl.
+	(ix86_option_override_internal): Handle KL and WIDEKL.
+	(ix86_valid_target_attribute_inner_p): Add attribute for kl and widekl.
+	* config/i386/i386-expand.c
+	(ix86_expand_builtin): Expand Keylocker Builtins.
+	* config/i386/i386.h (TARGET_KL): New.
+	(TARGET_KL_P): Likewise.
+	(TARGET_WIDEKL): Likewise.
+	(TARGET_WIDEKL_P): Likewise.
+	(PTA_KL): Likewise.
+	(PTA_WIDEKL): Likewise.
+	(PTA_TIGERLAKE): Add PTA_KL, PTA_WIDEKL.
+	(PTA_ALDERLAKE): Likewise.
+	* config/i386/i386.opt: Add new option mkl and mwidekl.
+	* config/i386/keylockerintrin.h: New header file for Keylocker.
+	* config/i386/immintrin.h: Include keylockerintrin.h.
+	* config/i386/predicates.md (encodekey128_operation): New
+	predicate.
+	(encodekey256_operation): Likewise.
+	(aeswidekl_operation): Likewise.
+	* config/i386/sse.md (UNSPECV_LOADIWKEY): New.
+	(UNSPECV_AESDEC128KLU8): Likewise.
+	(UNSPECV_AESENC128KLU8): Likewise.
+	(UNSPECV_AESDEC256KLU8): Likewise.
+	(UNSPECV_AESENC256KLU8): Likewise.
+	(UNSPECV_AESDECWIDE128KLU8): Likewise.
+	(UNSPECV_AESENCWIDE128KLU8): Likewise.
+	(UNSPECV_AESDECWIDE256KLU8): Likewise.
+	(UNSPECV_AESENCWIDE256KLU8): Likewise.
+	(UNSPECV_ENCODEKEY128U32): Likewise.
+	(UNSPECV_ENCODEKEY256U32): Likewise.
+	(encodekey128u32): New expander.
+	(encodekey256u32): Likewise.
+	(aes<aeswideklvariant>u8): Likewise.
+	(loadiwkey): New insn pattern.
+	(*encodekey128u32): Likewise.
+	(*encodekey256u32): Likewise.
+	(aes<aesklvariant>u8): Likewise.
+	(*aes<aeswideklvariant>u8): Likewise.
+
+2020-10-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_2): Allow splatting
+	not vectorizable loads.
+	(vect_build_slp_instance): Amend dumping with address.
+	(vect_slp_convert_to_external): Likewise.
+
+2020-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97609
+	* gimple-range-cache.cc (non_null_ref::process_name): Call
+	infer_nonnull_range directly instead of infer_value_range.
+
 2020-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (ANALYZER_OBJS): Add analyzer/complexity.o.

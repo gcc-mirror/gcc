@@ -23,11 +23,11 @@
 namespace nu
 {
   struct S { bool swapped = false; };
-  constexpr void swap(S& l, S& r) { }
+  constexpr void swap(S&, S&) { }
   struct T { int i; };
 
   union U { char c; int i; };
-  constexpr void swap(U& l, U& r) { }
+  constexpr void swap(U&, U&) { }
 }
 
 static_assert( std::swappable<nu::S> );

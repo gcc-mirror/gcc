@@ -31,7 +31,4 @@ struct C {
     C operator()(int, int);
 };
 
-int main() {
-    C c = C();
-}
-
+C c = C();

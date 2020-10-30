@@ -345,6 +345,8 @@ rtx expand_atomic_store (rtx, rtx, enum memmodel, bool);
 rtx expand_atomic_fetch_op (rtx, rtx, rtx, enum rtx_code, enum memmodel, 
 			      bool);
 
+extern void expand_asm_reg_clobber_mem_blockage (HARD_REG_SET);
+
 extern bool insn_operand_matches (enum insn_code icode, unsigned int opno,
 				  rtx operand);
 extern bool valid_multiword_target_p (rtx);

@@ -21,6 +21,12 @@
 
 #include <deque>
 
+#if __cplusplus >= 201103L
+# define NOTHROW(X) noexcept(X)
+#else
+# define NOTHROW(X)
+#endif
+
 namespace std {
   template <class T, class Allocator> class deque;
 
@@ -43,5 +49,6 @@ namespace std {
     bool operator<= (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
 
   template <class T, class Allocator>
-    void swap(deque<T,Allocator>& x, deque<T,Allocator>& y);
+    void swap(deque<T,Allocator>& x, deque<T,Allocator>& y)
+      NOTHROW(noexcept(x.swap(y)));
 }

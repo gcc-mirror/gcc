@@ -1,3 +1,271 @@
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Tighten patterns
+	for old <sstream> symbols some more.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (subrange::subrange(R&&)): Use
+	direct-initialization instead of list-initialization, so a
+	potential narrowing conversion from ranges::size(r) to the
+	stored size isn't ill-formed.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/parse_numbers.h (_Select_int_base): Avoid
+	narrowing conversion in constant expression.
+	* include/experimental/buffer (buffer_copy): Avoid narrowing
+	conversion.
+	* include/experimental/internet (hash<>::operator()): Do not
+	use deprecated 'argument_type' member.
+	* include/std/variant (variant::emplace): Use cast instead
+	of implicit conversion from size_t to narrower unsigned type.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr1/shared_ptr.h (__shared_count, __shared_ptr)
+	(shared_ptr): Add diagnostic pragmas around uses of auto_ptr.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
+	Adust dg-error line numbers.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/96817.cc: Avoid -Wunused warnings.
+	* testsuite/20_util/any/assign/2.cc: Likewise.
+	* testsuite/20_util/any/cons/2.cc: Likewise.
+	* testsuite/20_util/align/1.cc: Avoid -Wsign-compare warning.
+	* testsuite/20_util/function/65760.cc: Avoid -Wunused warning.
+	* testsuite/20_util/function/1.cc: Avoid -Wcatch-value warning.
+	* testsuite/20_util/function/cons/move_target.cc: Avoid -Wunused
+	warning.
+	* testsuite/20_util/headers/memory/synopsis.cc: Add exception
+	specification.
+	* testsuite/20_util/monotonic_buffer_resource/allocate.cc: Avoid
+	-Wsign-compare warning.
+	* testsuite/20_util/tuple/cons/deduction.cc: Avoid -Wunused
+	warning.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/808590-cxx11.cc:
+	Avoid -Wdeprecated-copy warning.
+	* testsuite/21_strings/basic_string/56166.cc: Avoid
+	-Wcatch-value warning.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stod.cc:
+	Avoid -Wcatch-value warnings.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stof.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoi.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stol.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stold.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoll.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoul.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/stoull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stod.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stof.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoi.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stol.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stold.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoll.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoul.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/stoull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/nonnull.cc:
+	Prune additional diagnostics.
+	* testsuite/21_strings/basic_string_view/operations/find/char/nonnull.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/rfind/char/nonnull.cc:
+	Likewise.
+	* testsuite/21_strings/headers/string/synopsis.cc: Add exception
+	specifications.
+	* testsuite/22_locale/locale/cons/12352.cc: Define sized
+	delete operators to avoid warnings.
+	* testsuite/23_containers/deque/modifiers/swap/1.cc: Add
+	exception specification.
+	* testsuite/23_containers/forward_list/cons/11.cc: Avoid
+	-Wdeprecated-copy warning.
+	* testsuite/23_containers/headers/bitset/synopsis.cc: Add
+	exception specification.
+	* testsuite/23_containers/headers/deque/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/forward_list/synopsis.cc:
+	Likewise.
+	* testsuite/23_containers/headers/list/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/map/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/queue/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/set/synopsis.cc: Likewise.
+	* testsuite/23_containers/headers/vector/synopsis.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/swap/1.cc: Likewise.
+	* testsuite/23_containers/map/modifiers/swap/1.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/swap/1.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/modifiers/swap/1.cc:
+	Likewise.
+	* testsuite/23_containers/set/modifiers/swap/1.cc: Likewise.
+	* testsuite/23_containers/unordered_set/56267-2.cc: Avoid
+	-Wdeprecated-copy warning.
+	* testsuite/23_containers/vector/bool/23632.cc: Avoid
+	-Wempty-body warning.
+	* testsuite/23_containers/vector/modifiers/swap/1.cc: Add
+	exception specification.
+	* testsuite/25_algorithms/heap/moveable2.cc: Fix misplaced
+	parentheses around arguments.
+	* testsuite/25_algorithms/sample/1.cc: Use return value.
+	* testsuite/25_algorithms/search/searcher.cc: Avoid -Wunused
+	warnings.
+	* testsuite/27_io/basic_ostream/exceptions/char/9561.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/exceptions/wchar_t/9561.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Avoid
+	-Wsign-compare warning.
+	* testsuite/experimental/any/assign/2.cc: Avoid -Wunused warnings.
+	* testsuite/experimental/any/cons/2.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Avoid -Wign-compare warning.
+	* testsuite/experimental/memory/observer_ptr/cons/cons.cc:
+	Likewise.
+	* testsuite/experimental/memory_resource/null_memory_resource.cc:
+	Likewise.
+	* testsuite/experimental/source_location/1.cc: Avoid -Waddress
+	warning.
+	* testsuite/ext/pod_char_traits.cc: Avoid -Wunused warning.
+	* testsuite/ext/vstring/modifiers/clear/56166.cc: Avoid
+	-Wcatch-value.
+	* testsuite/std/concepts/concepts.lang/concept.swappable/swap.cc:
+	Avoid -Wunused warning.
+	* testsuite/std/concepts/concepts.lang/concept.swappable/swappable.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
+	Prune additional warnings.
+	* testsuite/tr1/3_function_objects/function/1.cc: Avoid
+	-Wcatch-value warning.
+	* testsuite/util/replacement_memory_operators.h: Define sized
+	delete to avoid warnings.
+	* testsuite/util/testsuite_api.h (_NonDefaultConstructible): Add
+	user-declared assignment operator to stop -Wdeprecated-copy
+	warnings.
+	* testsuite/util/testsuite_containers.h: Avoid -Wunused warning.
+	* testsuite/util/testsuite_iterators.h: Avoid -Wsign-compare
+	warnings.
+	* testsuite/util/testsuite_new_operators.h: Define sized deleted.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/all_of/constexpr.cc: Check result of
+	the algorithm.
+	* testsuite/25_algorithms/any_of/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/count/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/equal/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/fill/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/find_end/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/find_if/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/merge/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/mismatch/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/none_of/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/remove_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/remove_copy_if/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/remove_if/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/replace_if/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/reverse/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/reverse_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/rotate_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/search/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/set_difference/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/set_intersection/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/set_symmetric_difference/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/set_union/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/unique_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/constexpr.cc: Likewise.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uniform_int_dist.h (_Power_of_two): Add
+	constexpr.
+	(uniform_int_distribution::_S_nd): Add static_assert to ensure
+	the wider type is twice as wide as the result type.
+	(uniform_int_distribution::__generate_impl): Add static_assert
+	and declare variables as constexpr where appropriate.
+	(uniform_int_distribution:operator()): Likewise. Only consider
+	the uniform random bit generator's range of possible results
+	when deciding whether _S_nd can be used, not the __uctype type.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/rope (_Refcount_Base::_M_ref_count): Remove
+	volatile qualifier.
+	(_Refcount_Base::_M_decr()): Likewise.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_Function_handler<void, void>):
+	Define explicit specialization used for invalid target types.
+	(_Base_manager::_M_manager) [!__cpp_rtti]: Return null.
+	(function::target_type()): Check for null pointer.
+	(function::target()): Define unconditionall. Fix bug with
+	const_cast of function pointer type.
+	(function::target() const): Define unconditionally, but
+	only use RTTI if enabled.
+	* testsuite/20_util/function/target_no_rtti.cc: New test.
+
+2020-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/25_algorithms/lexicographical_compare/constrained.cc:
+	(test03): Fix initializing the vector vy with the array y of size 4.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Local_iterator_base): Cast
+	value to avoid -Wsign-compare warnings.
+	* include/bits/regex.h (sub_match::_M_str): Avoid narrowing
+	conversion.
+	* include/bits/regex_compiler.tcc (_Compiler::_M_quantifier):
+	Initialize variable to avoid -Wmaybe-uninitialized warning.
+	* include/bits/shared_ptr_base.h (_Sp_counted_deleter::_Impl):
+	Reorder mem-initializer-list to avoid -Wreorder warning.
+	* include/bits/stl_tree.h (_Rb_tree_impl): Explicitly
+	initialize base class in copy constructor.
+	* include/debug/safe_iterator.h (_Safe_iterator): Likewise.
+	* include/ext/debug_allocator.h: Reorder mem-initializer-list
+	to avoid -Wreorder warning.
+	* include/ext/throw_allocator.h (throw_allocator_limit)
+	(throw_allocator_random): Add user-declared assignment operators
+	to avoid -Wdeprecated-copy warnings.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uniform_int_dist.h (uniform_int_distribution):
+	Rename _UniformRandomNumberGenerator template parameters to
+	_UniformRandomBitGenerator, as per P0346R1.
+
+2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream (basic_stringbuf(__string_type&&, openmode)):
+	Call _M_init_syncbuf to set up get/put areas. Also qualify
+	std::move.
+
 2020-10-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Remove duplicate

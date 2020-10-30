@@ -6484,6 +6484,48 @@ expand_memory_blockage (void)
     expand_asm_memory_blockage ();
 }
 
+/* Generate asm volatile("" : : : "memory") as a memory blockage, at the
+   same time clobbering the register set specified by REGS.  */
+
+void
+expand_asm_reg_clobber_mem_blockage (HARD_REG_SET regs)
+{
+  rtx asm_op, clob_mem;
+
+  unsigned int num_of_regs = 0;
+  for (unsigned int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (TEST_HARD_REG_BIT (regs, i))
+      num_of_regs++;
+
+  asm_op = gen_rtx_ASM_OPERANDS (VOIDmode, "", "", 0,
+				 rtvec_alloc (0), rtvec_alloc (0),
+				 rtvec_alloc (0), UNKNOWN_LOCATION);
+  MEM_VOLATILE_P (asm_op) = 1;
+
+  rtvec v = rtvec_alloc (num_of_regs + 2);
+
+  clob_mem = gen_rtx_SCRATCH (VOIDmode);
+  clob_mem = gen_rtx_MEM (BLKmode, clob_mem);
+  clob_mem = gen_rtx_CLOBBER (VOIDmode, clob_mem);
+
+  RTVEC_ELT (v, 0) = asm_op;
+  RTVEC_ELT (v, 1) = clob_mem;
+
+  if (num_of_regs > 0)
+    {
+      unsigned int j = 2;
+      for (unsigned int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (TEST_HARD_REG_BIT (regs, i))
+	  {
+	    RTVEC_ELT (v, j) = gen_rtx_CLOBBER (VOIDmode, regno_reg_rtx[i]);
+ 	    j++;
+	  }
+      gcc_assert (j == (num_of_regs + 2));
+    }
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, v));
+}
+
 /* This routine will either emit the mem_thread_fence pattern or issue a 
    sync_synchronize to generate a fence for memory model MEMMODEL.  */
 

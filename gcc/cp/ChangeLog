@@ -1,3 +1,95 @@
+2020-10-29  Marek Polacek  <polacek@redhat.com>
+
+	DR 625
+	PR c++/97479
+	* parser.c (cp_parser_type_id_1): Reject using auto as
+	a template-argument in C++20.
+
+2020-10-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93107
+	* pt.c (do_auto_deduction): Call resolve_nondeduced_context for
+	the elements of a { } list.
+
+2020-10-29  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (do_warn_enum_conversions): Don't warn for SPACESHIP_EXPR.
+	(cp_build_binary_op): Reject float <=> enum or enum <=> float.  Use
+	CP_INTEGRAL_TYPE_P instead of INTEGRAL_OR_ENUMERATION_TYPE_P.
+
+2020-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (get_normalized_constraints): Remove 'args'
+	parameter.  Pass NULL_TREE as the initial template arguments to
+	normalize_expression.
+	(get_normalized_constraints_from_info): Remove 'args' parameter
+	and adjust the call to get_normalized_constraints.
+	(get_normalized_constraints_from_decl): Remove 'args' local
+	variable and adjust call to get_normalized_constraints_from_info.
+	(normalize_concept_definition): Remove 'args' local variable
+	and adjust call to get_normalized_constraints.
+	(normalize_constraint_expression): Remove the two-parameter
+	overload.  Remove 'args' parameter from the three-parameter
+	overload and update function comment accordingly.  Remove
+	default argument from 'diag' parameter.  Adjust call to
+	get_normalized_constraints.
+	(finish_nested_requirement): Adjust call to
+	normalize_constraint_expression.
+	(strictly_subsumes): Remove 'args' parameter.  Adjust call to
+	get_normalized_constraints_from_info.
+	(weakly_subsumes): Likewise.
+	* cp-tree.h (strictly_subsumes): Remove 'args' parameter.
+	(weakly_subsumes): Likewise.
+	* pt.c (process_partial_specialization): Adjust call to
+	strictly_subsumes.
+	(is_compatible_template_arg): Adjust call to weakly_subsumes.
+
+2020-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97412
+	* constraint.cc (normalize_concept_check): Don't call
+	tsubst_template_args when 'args' is NULL.
+
+2020-10-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97388
+	* constexpr.c (cxx_eval_outermost_constant_expr): Revert to
+	original expression if evaluation sets non_constant_p.
+
+2020-10-29  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/97388
+	* constexpr.c (cxx_bind_parameters_in_call): Set non_constant_args
+	if the parameter type has a non-trivial destructor.
+	(cxx_eval_call_expression): Only unshare arguments if we're
+	memoizing this evaluation.
+
+2020-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95808
+	* cp-tree.h (enum cp_tree_index): Add CPTI_HEAP_VEC_UNINIT_IDENTIFIER
+	and CPTI_HEAP_VEC_IDENTIFIER.
+	(heap_vec_uninit_identifier, heap_vec_identifier): Define.
+	* decl.c (initialize_predefined_identifiers): Initialize those
+	identifiers.
+	* constexpr.c (cxx_eval_call_expression): Reject array allocations
+	deallocated with non-array deallocation or non-array allocations
+	deallocated with array deallocation.
+	(non_const_var_error): Handle heap_vec_uninit_identifier and
+	heap_vec_identifier too.
+	(cxx_eval_constant_expression): Handle also heap_vec_uninit_identifier
+	and in that case during initialization replace it with
+	heap_vec_identifier.
+	(find_heap_var_refs): Handle heap_vec_uninit_identifier and
+	heap_vec_identifier too.
+
+2020-10-29  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (push_template_decl): Do not give function-scope entities
+	other than implicit typedefs a template header. Do not readd
+	template info to a redeclared template.
+
 2020-10-28  Marek Polacek  <polacek@redhat.com>
 
 	* decl.c (grokdeclarator): Offer a fix-it hint for the "unnecessary

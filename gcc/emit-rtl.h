@@ -310,6 +310,9 @@ struct GTY(()) rtl_data {
      sets them.  */
   HARD_REG_SET asm_clobbers;
 
+  /* All hard registers that need to be zeroed at the return of the routine.  */
+  HARD_REG_SET must_be_zero_on_return;
+
   /* The highest address seen during shorten_branches.  */
   int max_insn_address;
 };

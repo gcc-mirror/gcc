@@ -74,3 +74,11 @@ foo (int x, int z)
     r += bar (x, &r, 0);
   #pragma omp taskwait
 }
+
+void
+qux (const omp_allocator_handle_t h)
+{
+  int x = 0;
+  #pragma omp parallel firstprivate (x) allocate (h: x)
+  x = 1;
+}

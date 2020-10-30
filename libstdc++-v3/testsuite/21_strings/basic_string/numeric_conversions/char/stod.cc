@@ -38,9 +38,9 @@ test01()
   try
     {
       string one;
-      stod(one);      
+      stod(one);
     }
-  catch(std::invalid_argument)
+  catch(const std::invalid_argument&)
     {
       test = true;
     }
@@ -53,9 +53,9 @@ test01()
   try
     {
       string one("a");
-      stod(one);      
+      stod(one);
     }
-  catch(std::invalid_argument)
+  catch(const std::invalid_argument&)
     {
       test = true;
     }
@@ -69,7 +69,7 @@ test01()
   try
     {
       string one("2.0a");
-      d1 = stod(one, &idx1);      
+      d1 = stod(one, &idx1);
     }
   catch(...)
     {
@@ -86,7 +86,7 @@ test01()
       one.append(2 * numeric_limits<double>::max_exponent10, '9');
       d1 = stod(one);
     }
-  catch(std::out_of_range)
+  catch(const std::out_of_range&)
     {
       test = true;
     }
@@ -120,7 +120,7 @@ test01()
 	  string one(to_string(ld1));
 	  d1 = stod(one);
 	}
-      catch(std::out_of_range)
+      catch(const std::out_of_range&)
 	{
 	  test = true;
 	}

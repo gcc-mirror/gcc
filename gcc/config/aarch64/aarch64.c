@@ -2886,33 +2886,6 @@ aarch64_is_noplt_call_p (rtx sym)
   return false;
 }
 
-/* Return true if the offsets to a zero/sign-extract operation
-   represent an expression that matches an extend operation.  The
-   operands represent the parameters from
-
-   (extract:MODE (mult (reg) (MULT_IMM)) (EXTRACT_IMM) (const_int 0)).  */
-bool
-aarch64_is_extend_from_extract (scalar_int_mode mode, rtx mult_imm,
-				rtx extract_imm)
-{
-  HOST_WIDE_INT mult_val, extract_val;
-
-  if (! CONST_INT_P (mult_imm) || ! CONST_INT_P (extract_imm))
-    return false;
-
-  mult_val = INTVAL (mult_imm);
-  extract_val = INTVAL (extract_imm);
-
-  if (extract_val > 8
-      && extract_val < GET_MODE_BITSIZE (mode)
-      && exact_log2 (extract_val & ~7) > 0
-      && (extract_val & 7) <= 4
-      && mult_val == (1 << (extract_val & 7)))
-    return true;
-
-  return false;
-}
-
 /* Emit an insn that's a simple single-set.  Both the operands must be
    known to be valid.  */
 inline static rtx_insn *
@@ -8936,22 +8909,6 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
       index = XEXP (XEXP (x, 0), 0);
       shift = INTVAL (XEXP (x, 1));
     }
-  /* (sign_extract:DI (mult:DI (reg:DI) (const_int scale)) 32+shift 0) */
-  else if ((GET_CODE (x) == SIGN_EXTRACT
-	    || GET_CODE (x) == ZERO_EXTRACT)
-	   && GET_MODE (x) == DImode
-	   && GET_CODE (XEXP (x, 0)) == MULT
-	   && GET_MODE (XEXP (XEXP (x, 0), 0)) == DImode
-	   && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
-    {
-      type = (GET_CODE (x) == SIGN_EXTRACT)
-	? ADDRESS_REG_SXTW : ADDRESS_REG_UXTW;
-      index = XEXP (XEXP (x, 0), 0);
-      shift = exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)));
-      if (INTVAL (XEXP (x, 1)) != 32 + shift
-	  || INTVAL (XEXP (x, 2)) != 0)
-	shift = -1;
-    }
   /* (and:DI (mult:DI (reg:DI) (const_int scale))
      (const_int 0xffffffff<<shift)) */
   else if (GET_CODE (x) == AND
@@ -8965,22 +8922,6 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
       index = XEXP (XEXP (x, 0), 0);
       shift = exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)));
       if (INTVAL (XEXP (x, 1)) != (HOST_WIDE_INT)0xffffffff << shift)
-	shift = -1;
-    }
-  /* (sign_extract:DI (ashift:DI (reg:DI) (const_int shift)) 32+shift 0) */
-  else if ((GET_CODE (x) == SIGN_EXTRACT
-	    || GET_CODE (x) == ZERO_EXTRACT)
-	   && GET_MODE (x) == DImode
-	   && GET_CODE (XEXP (x, 0)) == ASHIFT
-	   && GET_MODE (XEXP (XEXP (x, 0), 0)) == DImode
-	   && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
-    {
-      type = (GET_CODE (x) == SIGN_EXTRACT)
-	? ADDRESS_REG_SXTW : ADDRESS_REG_UXTW;
-      index = XEXP (XEXP (x, 0), 0);
-      shift = INTVAL (XEXP (XEXP (x, 0), 1));
-      if (INTVAL (XEXP (x, 1)) != 32 + shift
-	  || INTVAL (XEXP (x, 2)) != 0)
 	shift = -1;
     }
   /* (and:DI (ashift:DI (reg:DI) (const_int shift))
@@ -11360,16 +11301,6 @@ aarch64_strip_extend (rtx x, bool strip_shift)
   if (!is_a <scalar_int_mode> (GET_MODE (op), &mode))
     return op;
 
-  /* Zero and sign extraction of a widened value.  */
-  if ((GET_CODE (op) == ZERO_EXTRACT || GET_CODE (op) == SIGN_EXTRACT)
-      && XEXP (op, 2) == const0_rtx
-      && GET_CODE (XEXP (op, 0)) == MULT
-      && aarch64_is_extend_from_extract (mode, XEXP (XEXP (op, 0), 1),
-					 XEXP (op, 1)))
-    return XEXP (XEXP (op, 0), 0);
-
-  /* It can also be represented (for zero-extend) as an AND with an
-     immediate.  */
   if (GET_CODE (op) == AND
       && GET_CODE (XEXP (op, 0)) == MULT
       && CONST_INT_P (XEXP (XEXP (op, 0), 1))
@@ -11704,35 +11635,15 @@ aarch64_branch_cost (bool speed_p, bool predictable_p)
     return branch_costs->unpredictable;
 }
 
-/* Return true if the RTX X in mode MODE is a zero or sign extract
+/* Return true if X is a zero or sign extract
    usable in an ADD or SUB (extended register) instruction.  */
 static bool
-aarch64_rtx_arith_op_extract_p (rtx x, scalar_int_mode mode)
+aarch64_rtx_arith_op_extract_p (rtx x)
 {
-  /* Catch add with a sign extract.
-     This is add_<optab><mode>_multp2.  */
-  if (GET_CODE (x) == SIGN_EXTRACT
-      || GET_CODE (x) == ZERO_EXTRACT)
-    {
-      rtx op0 = XEXP (x, 0);
-      rtx op1 = XEXP (x, 1);
-      rtx op2 = XEXP (x, 2);
-
-      if (GET_CODE (op0) == MULT
-	  && CONST_INT_P (op1)
-	  && op2 == const0_rtx
-	  && CONST_INT_P (XEXP (op0, 1))
-	  && aarch64_is_extend_from_extract (mode,
-					     XEXP (op0, 1),
-					     op1))
-	{
-	  return true;
-	}
-    }
   /* The simple case <ARITH>, XD, XN, XM, [us]xt.
      No shift.  */
-  else if (GET_CODE (x) == SIGN_EXTEND
-	   || GET_CODE (x) == ZERO_EXTEND)
+  if (GET_CODE (x) == SIGN_EXTEND
+      || GET_CODE (x) == ZERO_EXTEND)
     return REG_P (XEXP (x, 0));
 
   return false;
@@ -12419,8 +12330,8 @@ cost_minus:
 	  }
 
 	/* Look for SUB (extended register).  */
-	if (is_a <scalar_int_mode> (mode, &int_mode)
-	    && aarch64_rtx_arith_op_extract_p (op1, int_mode))
+	if (is_a <scalar_int_mode> (mode)
+	    && aarch64_rtx_arith_op_extract_p (op1))
 	  {
 	    if (speed)
 	      *cost += extra_cost->alu.extend_arith;
@@ -12499,8 +12410,8 @@ cost_plus:
 	*cost += rtx_cost (op1, mode, PLUS, 1, speed);
 
 	/* Look for ADD (extended register).  */
-	if (is_a <scalar_int_mode> (mode, &int_mode)
-	    && aarch64_rtx_arith_op_extract_p (op0, int_mode))
+	if (is_a <scalar_int_mode> (mode)
+	    && aarch64_rtx_arith_op_extract_p (op0))
 	  {
 	    if (speed)
 	      *cost += extra_cost->alu.extend_arith;

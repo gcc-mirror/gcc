@@ -8,9 +8,9 @@
 template <typename T>
 void foo1(T& t) {
   typename T::template C<void> tcv = t;
-  typename T::template C<auto> u = tcv;
-  T::template C<auto>::f (tcv, u); // { dg-error "incomplete" }
-  (typename T::template D<auto> (t)); // { dg-error "invalid" }
+  typename T::template C<auto> u = tcv; // { dg-error "not permitted" "" { target c++20 } }
+  T::template C<auto>::f (tcv, u); // { dg-error "incomplete|not permitted" }
+  (typename T::template D<auto> (t)); // { dg-error "invalid|not permitted" }
 }
 
 struct T1 {
@@ -26,9 +26,9 @@ struct T1 {
 template <typename T>
 void foo2(T& t) {
   typename T::template C<void> tcv = t;
-  typename T::template C<auto> u = tcv;
-  T::template C<auto>::f (tcv, u); // { dg-error "incomplete" }
-  T::template D<auto> (t); // { dg-error "yields a type" }
+  typename T::template C<auto> u = tcv; // { dg-error "not permitted" "" { target c++20 } }
+  T::template C<auto>::f (tcv, u); // { dg-error "incomplete|not permitted" }
+  T::template D<auto> (t); // { dg-error "yields a type|not permitted" }
 }
 
 struct T2 {
