@@ -321,7 +321,13 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
       offrng[1] = maxoff;
       offset_int absmax = wi::abs (max);
       if (offrng[0] < absmax)
-	offrng[0] += min;
+	{
+	  offrng[0] += min;
+	  /* Cap the lower bound at the upper (set to MAXOFF above)
+	     to avoid inadvertently recreating an inverted range.  */
+	  if (offrng[1] < offrng[0])
+	    offrng[0] = offrng[1];
+	}
       else
 	offrng[0] = 0;
     }
