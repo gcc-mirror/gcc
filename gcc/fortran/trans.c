@@ -1808,7 +1808,7 @@ void
 gfc_set_backend_locus (locus * loc)
 {
   gfc_current_backend_file = loc->lb->file;
-  input_location = loc->lb->location;
+  input_location = gfc_get_location (loc);
 }
 
 
@@ -1818,7 +1818,10 @@ gfc_set_backend_locus (locus * loc)
 void
 gfc_restore_backend_locus (locus * loc)
 {
-  gfc_set_backend_locus (loc);
+  /* This only restores the information captured by gfc_save_backend_locus,
+     intentionally does not use gfc_get_location.  */
+  input_location = loc->lb->location;
+  gfc_current_backend_file = loc->lb->file;
   free (loc->lb);
 }
 
