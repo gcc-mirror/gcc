@@ -15659,11 +15659,11 @@ module_state::read_location (bytes_in &sec) const
 
 /* Prepare the span adjustments.  */
 
-// FIXME:OPTIMIZATION I do not prune the unreachable locations.
-// Modules with textually-large GMFs could well cause us to run out of
-// locations.  Regular single-file modules could also be affected.  We
-// should determine which locations we need to represent, so that we
-// do not grab more locations than necessary.  An example is in
+// FIXME:QOI I do not prune the unreachable locations.  Modules with
+// textually-large GMFs could well cause us to run out of locations.
+// Regular single-file modules could also be affected.  We should
+// determine which locations we need to represent, so that we do not
+// grab more locations than necessary.  An example is in
 // write_macro_maps where we work around macro expansions that are not
 // covering any locations -- the macro expands to nothing.  Perhaps we
 // should decompose locations so that we can have a more graceful
@@ -15823,8 +15823,8 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
   filenames.create (20);
 
   /* Determine the unique filenames.  */
-  // FIXME: Should be found by the prepare fn as part of the
-  // unreachable pruning
+  // FIXME:QOI We should find the set of filenames when working out
+  // which locations we actually need.  See write_prepare_maps.
   for (unsigned ix = loc_spans::SPAN_FIRST; ix != spans.length (); ix++)
     {
       loc_spans::span &span = spans[ix];
@@ -15990,7 +15990,7 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
 	    {
 	      /* We're ending on an empty macro expansion.  The
 		 preprocessor doesn't prune such things.  */
-	      // FIXME:OPTIMIZATION This is an example of the non-pruning of
+	      // FIXME:QOI This is an example of the non-pruning of
 	      // locations.  See write_prepare_maps.
 	      gcc_checking_assert (!mmap->n_tokens);
 	      continue;
@@ -17626,8 +17626,13 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Human-readable info.  */
   write_readme (to, config.dialect_str, extensions);
-  // FIXME:QOI: Write this info to the 'reproducer' file yet to be
-  // implemented write_env (to);
+
+  // FIXME:QOI:  Have a command line switch to control more detailed
+  // information (which might leak data you do not want to leak).
+  // Perhaps (some of) the write_readme contents should also be
+  // so-controlled.
+  if (false)
+    write_env (to);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
@@ -17852,11 +17857,12 @@ module_state::read_language (bool outermost)
 	  gcc_assert (!(*entity_ary)[ix + entity_lwm].is_lazy ());
     }
 
-  // FIXME: Belfast order-of-initialization means this may be
-  // inadequate.  We only need the inits from directly imported header
-  // units.  Even if they're also indirectly imported, because they
-  // might be providing us a static decl with a dynamic init (looking
-  // at you _Ioinit).
+  // If the import is a header-unit, we need to register initializers
+  // of any static objects it contains (looking at you _Ioinit).
+  // Notice, the ordering of these initializers will be that of a
+  // dynamic initializer at this point in the current TU.  (Other
+  // instances of these objects in other TUs will be initialized as
+  // part of that TU's global initializers.)
   if (ok && counts[MSC_inits] && !read_inits (counts[MSC_inits]))
     ok = false;
 
@@ -18673,7 +18679,6 @@ lazy_load_members (tree decl)
       decl = tmpl;
     }
 
-  // FIXME: This looks like the specialization load, modulo a bit invert
   timevar_start (TV_MODULE_IMPORT);
   unsigned ident = import_entity_index (decl);
   if (pendset *set = pending_table->get (~ident, true))
