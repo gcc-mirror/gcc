@@ -77,6 +77,7 @@ struct GTY(()) thunk_info {
     fixed_offset = other.fixed_offset;
     virtual_value = other.virtual_value;
     indirect_offset = other.indirect_offset;
+    alias = other.alias;
     this_adjusting = other.this_adjusting;
     virtual_offset_p = other.virtual_offset_p;
     return *this;
@@ -132,6 +133,12 @@ struct GTY(()) thunk_info {
 
   /* Remove thunk_info.  */
   static void remove (cgraph_node *node);
+
+  /* Add unprocessed thunk.  */
+  void register_early (cgraph_node *node);
+
+  /* Attach recorded thunks to cgraph_nodes.  */
+  static void process_early_thunks ();
 
   /* Release all thunk_infos.  */
   static void release (void);

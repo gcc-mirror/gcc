@@ -633,13 +633,20 @@ cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
   node->thunk = true;
   node->definition = true;
 
-  thunk_info *i = thunk_info::get_create (node);
+  thunk_info *i;
+  thunk_info local_info;
+  if (symtab->state < CONSTRUCTION)
+    i = &local_info;
+  else
+    i = thunk_info::get_create (node);
   i->fixed_offset = fixed_offset;
   i->virtual_value = virtual_value;
   i->indirect_offset = indirect_offset;
   i->alias = real_alias;
   i->this_adjusting = this_adjusting;
   i->virtual_offset_p = virtual_offset != NULL;
+  if (symtab->state < CONSTRUCTION)
+    i->register_early (node);
 
   return node;
 }
