@@ -8,7 +8,8 @@
   Class isa;
 }
 /* Test missing '=' in setter/getter attributes.  */
-@property (getter)  int property_a; /* { dg-error "missing .=. .after .getter. attribute." } */
-@property (setter) int property_b;  /* { dg-error "missing .=. .after .setter. attribute." } */
-@property (assign, getter) int property_c; /* { dg-error "missing .=. .after .getter. attribute." } */
+@property (getter)  int property_a; /* { dg-error {expected '=' after Objective-C 'getter'} } */
+@property (setter) int property_b;  /* { dg-error {expected '=' after Objective-C 'setter'} } */
+@property (assign, getter) int property_c; /* { dg-error {expected '=' after Objective-C 'getter'} } */
+@property (retain, getter=) id x; /* { dg-error {expected 'getter' selector name} } */
 @end

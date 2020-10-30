@@ -28,6 +28,66 @@ enum GTY(()) objc_ivar_visibility_kind {
   OBJC_IVAR_VIS_PACKAGE   = 3
 };
 
+/* ObjC property attribute kinds.
+   These have two fields; a unique value (that identifies which attribute)
+   and a group key that indicates membership of an exclusion group.
+   Only one member may be present from an exclusion group in a given attribute
+   list.
+   getters and setters have additional rules, since they are excluded from
+   non-overlapping group sets.  */
+
+enum objc_property_attribute_group
+{
+  OBJC_PROPATTR_GROUP_UNKNOWN = 0,
+  OBJC_PROPATTR_GROUP_GETTER,
+  OBJC_PROPATTR_GROUP_SETTER,
+  OBJC_PROPATTR_GROUP_READWRITE,
+  OBJC_PROPATTR_GROUP_ASSIGN,
+  OBJC_PROPATTR_GROUP_ATOMIC,
+  OBJC_PROPATTR_GROUP_MAX
+};
+
+enum objc_property_attribute_kind
+{
+  OBJC_PROPERTY_ATTR_UNKNOWN =		0|OBJC_PROPATTR_GROUP_UNKNOWN,
+  OBJC_PROPERTY_ATTR_GETTER =		( 1 << 8)|OBJC_PROPATTR_GROUP_GETTER,
+  OBJC_PROPERTY_ATTR_SETTER =		( 2 << 8)|OBJC_PROPATTR_GROUP_SETTER,
+  OBJC_PROPERTY_ATTR_READONLY =		( 3 << 8)|OBJC_PROPATTR_GROUP_READWRITE,
+  OBJC_PROPERTY_ATTR_READWRITE =	( 4 << 8)|OBJC_PROPATTR_GROUP_READWRITE,
+  OBJC_PROPERTY_ATTR_ASSIGN =		( 5 << 8)|OBJC_PROPATTR_GROUP_ASSIGN,
+  OBJC_PROPERTY_ATTR_RETAIN =		( 6 << 8)|OBJC_PROPATTR_GROUP_ASSIGN,
+  OBJC_PROPERTY_ATTR_COPY =		( 7 << 8)|OBJC_PROPATTR_GROUP_ASSIGN,
+  OBJC_PROPERTY_ATTR_ATOMIC =		( 8 << 8)|OBJC_PROPATTR_GROUP_ATOMIC,
+  OBJC_PROPERTY_ATTR_NONATOMIC =	( 9 << 8)|OBJC_PROPATTR_GROUP_ATOMIC,
+  OBJC_PROPERTY_ATTR_MAX =		(255 << 8|OBJC_PROPATTR_GROUP_MAX)
+};
+
+#define OBJC_PROPATTR_GROUP_MASK 0x0f
+
+/* To contain parsed, but unverified, information about a single property
+   attribute.  */
+struct property_attribute_info
+{
+  property_attribute_info (tree name, location_t loc,
+			   enum objc_property_attribute_kind k)
+   : name (name), ident (NULL_TREE), prop_loc (loc), prop_kind (k),
+     parse_error (false) {}
+
+  enum objc_property_attribute_group group ()
+    {
+      return (enum objc_property_attribute_group)
+	((unsigned)prop_kind & OBJC_PROPATTR_GROUP_MASK);
+    }
+
+  tree name; /* Name of the attribute.  */
+  tree ident; /* For getter/setter cases, the method/selector name.  */
+  location_t prop_loc; /* Extended location covering the parsed attr.  */
+  enum objc_property_attribute_kind prop_kind : 16;
+  unsigned parse_error : 1; /* The C/C++ parser saw an error in this attr.  */
+};
+
+extern enum objc_property_attribute_kind objc_prop_attr_kind_for_rid (enum rid);
+
 /* Objective-C / Objective-C++ entry points.  */
 
 /* The following ObjC/ObjC++ functions are called by the C and/or C++
@@ -90,8 +150,8 @@ extern tree objc_generate_write_barrier (tree, enum tree_code, tree);
 extern void objc_set_method_opt (bool);
 extern void objc_finish_foreach_loop (location_t, tree, tree, tree, tree, tree);
 extern bool  objc_method_decl (enum tree_code);
-extern void objc_add_property_declaration (location_t, tree, bool, bool, bool, 
-					   bool, bool, bool, tree, tree);
+extern void objc_add_property_declaration (location_t, tree,
+					   vec<property_attribute_info *>&);
 extern tree objc_maybe_build_component_ref (tree, tree);
 extern tree objc_build_class_component_ref (tree, tree);
 extern tree objc_maybe_build_modify_expr (tree, tree);

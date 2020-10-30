@@ -551,7 +551,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 		     returning a token of type CPP_AT_NAME and rid
 		     code RID_CLASS (not RID_AT_CLASS).  The language
 		     parser needs to convert that to RID_AT_CLASS.
+		     However, we've now spliced the '@' together with the
+		     keyword that follows; Adjust the location so that we
+		     get a source range covering the composite.
 		  */
+	         *loc = make_location (atloc, atloc, newloc);
 		  break;
 		}
 	      /* FALLTHROUGH */

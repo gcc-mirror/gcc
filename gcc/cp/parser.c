@@ -33692,30 +33692,11 @@ cp_parser_objc_struct_declaration (cp_parser *parser)
 static void
 cp_parser_objc_at_property_declaration (cp_parser *parser)
 {
-  /* The following variables hold the attributes of the properties as
-     parsed.  They are 'false' or 'NULL_TREE' if the attribute was not
-     seen.  When we see an attribute, we set them to 'true' (if they
-     are boolean properties) or to the identifier (if they have an
-     argument, ie, for getter and setter).  Note that here we only
-     parse the list of attributes, check the syntax and accumulate the
-     attributes that we find.  objc_add_property_declaration() will
-     then process the information.  */
-  bool property_assign = false;
-  bool property_copy = false;
-  tree property_getter_ident = NULL_TREE;
-  bool property_nonatomic = false;
-  bool property_readonly = false;
-  bool property_readwrite = false;
-  bool property_retain = false;
-  tree property_setter_ident = NULL_TREE;
+  /* Parse the optional attribute list.
 
-  /* 'properties' is the list of properties that we read.  Usually a
-     single one, but maybe more (eg, in "@property int a, b, c;" there
-     are three).  */
-  tree properties;
-  location_t loc;
-
-  loc = cp_lexer_peek_token (parser->lexer)->location;
+     A list of parsed, but not verified, attributes.  */
+  vec<property_attribute_info *> prop_attr_list = vNULL;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
   cp_lexer_consume_token (parser->lexer);  /* Eat '@property'.  */
 
@@ -33724,132 +33705,172 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
     {
       /* Eat the '('.  */
       matching_parens parens;
+      location_t attr_start = cp_lexer_peek_token (parser->lexer)->location;
       parens.consume_open (parser);
+      bool syntax_error = false;
 
-      while (true)
+      /* Allow empty @property attribute lists, but with a warning.  */
+      location_t attr_end = cp_lexer_peek_token (parser->lexer)->location;
+      location_t attr_comb;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
 	{
-	  bool syntax_error = false;
-	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-      	  enum rid keyword;
+	  attr_comb = make_location (attr_end, attr_start, attr_end);
+	  warning_at (attr_comb, OPT_Wattributes,
+		      "empty property attribute list");
+	}
+      else
+	while (true)
+	  {
+	    cp_token *token = cp_lexer_peek_token (parser->lexer);
+	    attr_start = token->location;
+	    attr_end = get_finish (token->location);
+	    attr_comb = make_location (attr_start, attr_start, attr_end);
 
-	  if (token->type != CPP_NAME)
-	    {
-	      cp_parser_error (parser, "expected identifier");
-	      break;
-	    }
-	  keyword = C_RID_CODE (token->u.value);
-	  cp_lexer_consume_token (parser->lexer);
-	  switch (keyword)
-	    {
-	    case RID_ASSIGN:    property_assign = true;    break;
-	    case RID_COPY:      property_copy = true;      break;
-	    case RID_NONATOMIC: property_nonatomic = true; break;
-	    case RID_READONLY:  property_readonly = true;  break;
-	    case RID_READWRITE: property_readwrite = true; break;
-	    case RID_RETAIN:    property_retain = true;    break;
-
-	    case RID_GETTER:
-	    case RID_SETTER:
-	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ))
-		{
-		  if (keyword == RID_GETTER)
-		    cp_parser_error (parser,
-				     "missing %<=%> (after %<getter%> attribute)");
-		  else
-		    cp_parser_error (parser,
-				     "missing %<=%> (after %<setter%> attribute)");
-		  syntax_error = true;
+	    if (token->type == CPP_CLOSE_PAREN || token->type == CPP_COMMA)
+	      {
+		warning_at (attr_comb, OPT_Wattributes,
+			    "missing property attribute");
+		if (token->type == CPP_CLOSE_PAREN)
 		  break;
-		}
-	      cp_lexer_consume_token (parser->lexer); /* eat the = */
-	      if (!cp_parser_objc_selector_p (cp_lexer_peek_token (parser->lexer)->type))
-		{
-		  cp_parser_error (parser, "expected identifier");
-		  syntax_error = true;
-		  break;
-		}
-	      if (keyword == RID_SETTER)
-		{
-		  if (property_setter_ident != NULL_TREE)
-		    {
-		      cp_parser_error (parser, "the %<setter%> attribute may only be specified once");
-		      cp_lexer_consume_token (parser->lexer);
-		    }
-		  else
-		    property_setter_ident = cp_parser_objc_selector (parser);
-		  if (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
-		    cp_parser_error (parser, "setter name must terminate with %<:%>");
-		  else
-		    cp_lexer_consume_token (parser->lexer);
-		}
-	      else
-		{
-		  if (property_getter_ident != NULL_TREE)
-		    {
-		      cp_parser_error (parser, "the %<getter%> attribute may only be specified once");
-		      cp_lexer_consume_token (parser->lexer);
-		    }
-		  else
-		    property_getter_ident = cp_parser_objc_selector (parser);
-		}
-	      break;
-	    default:
-	      cp_parser_error (parser, "unknown property attribute");
-	      syntax_error = true;
-	      break;
-	    }
+		cp_lexer_consume_token (parser->lexer);
+		continue;
+	      }
 
-	  if (syntax_error)
-	    break;
+	    tree attr_name = NULL_TREE;
+	    if (identifier_p (token->u.value))
+	      attr_name = token->u.value;
 
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	    enum rid keyword;
+	    if (token->type == CPP_NAME)
+	      keyword = C_RID_CODE (token->u.value);
+	    else
+	      keyword = RID_MAX; /* By definition, an unknown property.  */
 	    cp_lexer_consume_token (parser->lexer);
-	  else
-	    break;
-	}
 
-      /* FIXME: "@property (setter, assign);" will generate a spurious
-	 "error: expected ‘)’ before ‘,’ token".  This is because
-	 cp_parser_require, unlike the C counterpart, will produce an
-	 error even if we are in error recovery.  */
-      if (!parens.require_close (parser))
-	{
-	  cp_parser_skip_to_closing_parenthesis (parser,
-						 /*recovering=*/true,
-						 /*or_comma=*/false,
-						 /*consume_paren=*/true);
-	}
+	    enum objc_property_attribute_kind prop_kind
+	      = objc_prop_attr_kind_for_rid (keyword);
+	    property_attribute_info *prop
+	      = new property_attribute_info (attr_name, attr_comb, prop_kind);
+	    prop_attr_list.safe_push (prop);
+
+	    tree meth_name;
+	    switch (prop->prop_kind)
+	      {
+	      default: break;
+	      case OBJC_PROPERTY_ATTR_UNKNOWN:
+		if (attr_name)
+		  error_at (attr_start, "unknown property attribute %qE",
+			    attr_name);
+		else
+		  error_at (attr_start, "unknown property attribute");
+		prop->parse_error = syntax_error = true;
+		break;
+
+	      case OBJC_PROPERTY_ATTR_GETTER:
+	      case OBJC_PROPERTY_ATTR_SETTER:
+		if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ))
+		  {
+		    attr_comb = make_location (attr_end, attr_start, attr_end);
+		    error_at (attr_comb, "expected %<=%> after Objective-C %qE",
+			      attr_name);
+		    prop->parse_error = syntax_error = true;
+		    break;
+		  }
+
+		token = cp_lexer_peek_token (parser->lexer);
+		attr_end = token->location;
+		cp_lexer_consume_token (parser->lexer); /* eat the = */
+
+		if (!cp_parser_objc_selector_p
+		     (cp_lexer_peek_token (parser->lexer)->type))
+		  {
+		    attr_comb = make_location (attr_end, attr_start, attr_end);
+		    error_at (attr_comb, "expected %qE selector name",
+			      attr_name);
+		    prop->parse_error = syntax_error = true;
+		    break;
+		  }
+
+		/* Get the end of the method name, and consume the name.  */
+		token = cp_lexer_peek_token (parser->lexer);
+		attr_end = get_finish (token->location);
+		/* Because method names may contain C++ keywords, we have a
+		   routine to fetch them (this also consumes the token).  */
+		meth_name = cp_parser_objc_selector (parser);
+
+		if (prop->prop_kind == OBJC_PROPERTY_ATTR_SETTER)
+		  {
+		    if (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
+		      {
+			attr_comb = make_location (attr_end, attr_start,
+						   attr_end);
+			error_at (attr_comb, "setter method names must"
+				  " terminate with %<:%>");
+			prop->parse_error = syntax_error = true;
+		      }
+		    else
+		      {
+			attr_end = get_finish (cp_lexer_peek_token
+					       (parser->lexer)->location);
+			cp_lexer_consume_token (parser->lexer);
+		      }
+		    attr_comb = make_location (attr_start, attr_start,
+					       attr_end);
+		  }
+		else
+		  attr_comb = make_location (attr_start, attr_start,
+					     attr_end);
+		prop->ident = meth_name;
+		/* Updated location including all that was successfully
+		   parsed.  */
+		prop->prop_loc = attr_comb;
+		break;
+	      }
+
+	    /* If we see a comma here, then keep going - even if we already
+	       saw a syntax error.  For simple mistakes e.g. (asign, getter=x)
+	       this makes a more useful output and avoid spurious warnings
+	       about missing attributes that are, in fact, specified after the
+	       one with the syntax error.  */
+	    if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	      cp_lexer_consume_token (parser->lexer);
+	    else
+	      break;
+	  }
+
+      if (syntax_error || !parens.require_close (parser))
+	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					       /*or_comma=*/false,
+					       /*consume_paren=*/true);
     }
 
-  /* ... and the property declaration(s).  */
-  properties = cp_parser_objc_struct_declaration (parser);
+  /* 'properties' is the list of properties that we read.  Usually a
+     single one, but maybe more (eg, in "@property int a, b, c;" there
+     are three).
+     TODO: Update this parsing so that it accepts (erroneous) bitfields so
+     that we can issue a meaningful and consistent (between C/C++) error
+     message from objc_add_property_declaration ().  */
+  tree properties = cp_parser_objc_struct_declaration (parser);
 
   if (properties == error_mark_node)
-    {
-      cp_parser_skip_to_end_of_statement (parser);
-      /* If the next token is now a `;', consume it.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	cp_lexer_consume_token (parser->lexer);
-      return;
-    }
-
-  if (properties == NULL_TREE)
+    cp_parser_skip_to_end_of_statement (parser);
+  else if (properties == NULL_TREE)
     cp_parser_error (parser, "expected identifier");
   else
     {
-      /* Comma-separated properties are chained together in
-	 reverse order; add them one by one.  */
+      /* Comma-separated properties are chained together in reverse order;
+	 add them one by one.  */
       properties = nreverse (properties);
-
       for (; properties; properties = TREE_CHAIN (properties))
 	objc_add_property_declaration (loc, copy_node (properties),
-				       property_readonly, property_readwrite,
-				       property_assign, property_retain,
-				       property_copy, property_nonatomic,
-				       property_getter_ident, property_setter_ident);
+				       prop_attr_list);
     }
 
   cp_parser_consume_semicolon_at_end_of_statement (parser);
+
+  while (!prop_attr_list.is_empty())
+    delete prop_attr_list.pop ();
+  prop_attr_list.release ();
 }
 
 /* Parse an Objective-C++ @synthesize declaration.  The syntax is:

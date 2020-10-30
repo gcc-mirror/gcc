@@ -31,4 +31,4 @@
    			          /* { dg-message "originally specified here" "" { target *-*-* } property_e_first } */
 @end
 
-@property id test; /* { dg-error "property declaration not in .interface or .protocol context" } */
+@property id test; /* { dg-error {property declaration not in '@interface', '@protocol' or 'category' context} } */

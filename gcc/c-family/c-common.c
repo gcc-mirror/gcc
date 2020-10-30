@@ -568,14 +568,15 @@ const struct c_common_resword c_common_reswords[] =
   { "oneway",		RID_ONEWAY,		D_OBJC },
   { "out",		RID_OUT,		D_OBJC },
   /* These are recognized inside a property attribute list */
-  { "assign",	        RID_ASSIGN,		D_OBJC }, 
-  { "copy",	        RID_COPY,		D_OBJC }, 
-  { "getter",		RID_GETTER,		D_OBJC }, 
-  { "nonatomic",	RID_NONATOMIC,		D_OBJC }, 
-  { "readonly",		RID_READONLY,		D_OBJC }, 
-  { "readwrite",	RID_READWRITE,		D_OBJC }, 
-  { "retain",	        RID_RETAIN,		D_OBJC }, 
-  { "setter",		RID_SETTER,		D_OBJC }, 
+  { "assign",		RID_ASSIGN,		D_OBJC },
+  { "atomic",		RID_PROPATOMIC,		D_OBJC },
+  { "copy",		RID_COPY,		D_OBJC },
+  { "getter",		RID_GETTER,		D_OBJC },
+  { "nonatomic",	RID_NONATOMIC,		D_OBJC },
+  { "readonly",		RID_READONLY,		D_OBJC },
+  { "readwrite",	RID_READWRITE,		D_OBJC },
+  { "retain",		RID_RETAIN,		D_OBJC },
+  { "setter",		RID_SETTER,		D_OBJC },
 };
 
 const unsigned int num_c_common_reswords =
