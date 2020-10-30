@@ -33884,16 +33884,17 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
       /* Eat the '('.  */
       matching_parens parens;
       parens.consume_open (parser);
+      bool syntax_error = false;
 
       while (true)
 	{
-	  bool syntax_error = false;
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
       	  enum rid keyword;
 
 	  if (token->type != CPP_NAME)
 	    {
 	      cp_parser_error (parser, "expected identifier");
+	      syntax_error = true;
 	      break;
 	    }
 	  keyword = C_RID_CODE (token->u.value);
@@ -33967,17 +33968,11 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
 	    break;
 	}
 
-      /* FIXME: "@property (setter, assign);" will generate a spurious
-	 "error: expected ‘)’ before ‘,’ token".  This is because
-	 cp_parser_require, unlike the C counterpart, will produce an
-	 error even if we are in error recovery.  */
-      if (!parens.require_close (parser))
-	{
-	  cp_parser_skip_to_closing_parenthesis (parser,
+      if (syntax_error || !parens.require_close (parser))
+	cp_parser_skip_to_closing_parenthesis (parser,
 						 /*recovering=*/true,
 						 /*or_comma=*/false,
 						 /*consume_paren=*/true);
-	}
     }
 
   /* ... and the property declaration(s).  */
