@@ -1,3 +1,14 @@
+2020-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-tls.c: Fix preprocessor logic
+	controlling the definition of VX_ENTER_TLS_DTOR and
+	VX_LEAVE_TLS_DTOR based on a version major check.
+
+2020-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-thread.c: Fix name of macro used
+	to condition the inclusion of an actual implementation.
+
 2020-10-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/97461
