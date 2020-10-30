@@ -3645,6 +3645,15 @@ insert (void)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
 
       changed = false;
+      /* Insert expressions for hoisting.  Do a backward walk here since
+	 inserting into BLOCK exposes new opportunities in its predecessors.  */
+      if (flag_code_hoisting)
+	for (int idx = rpo_num - 1; idx >= 0; --idx)
+	  {
+	    basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
+	    if (EDGE_COUNT (block->succs) >= 2)
+	      changed |= do_hoist_insertion (block);
+	  }
       for (int idx = 0; idx < rpo_num; ++idx)
 	{
 	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
@@ -3679,10 +3688,6 @@ insert (void)
 		  if (do_partial_partial)
 		    changed |= do_pre_partial_partial_insertion (block, dom);
 		}
-
-	      /* Insert expressions for hoisting.  */
-	      if (flag_code_hoisting && EDGE_COUNT (block->succs) >= 2)
-		changed |= do_hoist_insertion (block);
 	    }
 	}
 
