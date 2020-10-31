@@ -636,7 +636,7 @@ namespace views
       {
 	if (_M_stream != nullptr)
 	  *_M_stream >> _M_object;
-	return _Iterator{*this};
+	return _Iterator{this};
       }
 
       constexpr default_sentinel_t
@@ -657,8 +657,8 @@ namespace views
 	_Iterator() = default;
 
 	constexpr explicit
-	_Iterator(basic_istream_view& __parent) noexcept
-	  : _M_parent(std::__addressof(__parent))
+	_Iterator(basic_istream_view* __parent) noexcept
+	  : _M_parent(__parent)
 	{ }
 
 	_Iterator(const _Iterator&) = delete;
@@ -1147,9 +1147,9 @@ namespace views
 	_Iterator() = default;
 
 	constexpr
-	_Iterator(filter_view& __parent, _Vp_iter __current)
+	_Iterator(filter_view* __parent, _Vp_iter __current)
 	  : _M_current(std::move(__current)),
-	    _M_parent(std::__addressof(__parent))
+	    _M_parent(__parent)
 	{ }
 
 	constexpr _Vp_iter
@@ -1239,8 +1239,8 @@ namespace views
 	_Sentinel() = default;
 
 	constexpr explicit
-	_Sentinel(filter_view& __parent)
-	  : _M_end(ranges::end(__parent._M_base))
+	_Sentinel(filter_view* __parent)
+	  : _M_end(ranges::end(__parent->_M_base))
 	{ }
 
 	constexpr sentinel_t<_Vp>
@@ -1280,23 +1280,23 @@ namespace views
       begin()
       {
 	if (_M_cached_begin._M_has_value())
-	  return {*this, _M_cached_begin._M_get(_M_base)};
+	  return {this, _M_cached_begin._M_get(_M_base)};
 
 	__glibcxx_assert(_M_pred.has_value());
 	auto __it = __detail::find_if(ranges::begin(_M_base),
 				      ranges::end(_M_base),
 				      std::ref(*_M_pred));
 	_M_cached_begin._M_set(_M_base, __it);
-	return {*this, std::move(__it)};
+	return {this, std::move(__it)};
       }
 
       constexpr auto
       end()
       {
 	if constexpr (common_range<_Vp>)
-	  return _Iterator{*this, ranges::end(_M_base)};
+	  return _Iterator{this, ranges::end(_M_base)};
 	else
-	  return _Sentinel{*this};
+	  return _Sentinel{this};
       }
     };
 
@@ -1375,9 +1375,9 @@ namespace views
 	  _Iterator() = default;
 
 	  constexpr
-	  _Iterator(_Parent& __parent, _Base_iter __current)
+	  _Iterator(_Parent* __parent, _Base_iter __current)
 	    : _M_current(std::move(__current)),
-	      _M_parent(std::__addressof(__parent))
+	      _M_parent(__parent)
 	  { }
 
 	  constexpr
@@ -1490,17 +1490,17 @@ namespace views
 	  friend constexpr _Iterator
 	  operator+(_Iterator __i, difference_type __n)
 	    requires random_access_range<_Base>
-	  { return {*__i._M_parent, __i._M_current + __n}; }
+	  { return {__i._M_parent, __i._M_current + __n}; }
 
 	  friend constexpr _Iterator
 	  operator+(difference_type __n, _Iterator __i)
 	    requires random_access_range<_Base>
-	  { return {*__i._M_parent, __i._M_current + __n}; }
+	  { return {__i._M_parent, __i._M_current + __n}; }
 
 	  friend constexpr _Iterator
 	  operator-(_Iterator __i, difference_type __n)
 	    requires random_access_range<_Base>
-	  { return {*__i._M_parent, __i._M_current - __n}; }
+	  { return {__i._M_parent, __i._M_current - __n}; }
 
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 3483. transform_view::iterator's difference is overconstrained
@@ -1611,13 +1611,13 @@ namespace views
 
       constexpr _Iterator<false>
       begin()
-      { return _Iterator<false>{*this, ranges::begin(_M_base)}; }
+      { return _Iterator<false>{this, ranges::begin(_M_base)}; }
 
       constexpr _Iterator<true>
       begin() const
 	requires range<const _Vp>
 	  && regular_invocable<const _Fp&, range_reference_t<const _Vp>>
-      { return _Iterator<true>{*this, ranges::begin(_M_base)}; }
+      { return _Iterator<true>{this, ranges::begin(_M_base)}; }
 
       constexpr _Sentinel<false>
       end()
@@ -1625,7 +1625,7 @@ namespace views
 
       constexpr _Iterator<false>
       end() requires common_range<_Vp>
-      { return _Iterator<false>{*this, ranges::end(_M_base)}; }
+      { return _Iterator<false>{this, ranges::end(_M_base)}; }
 
       constexpr _Sentinel<true>
       end() const
@@ -1637,7 +1637,7 @@ namespace views
       end() const
 	requires common_range<const _Vp>
 	  && regular_invocable<const _Fp&, range_reference_t<const _Vp>>
-      { return _Iterator<true>{*this, ranges::end(_M_base)}; }
+      { return _Iterator<true>{this, ranges::end(_M_base)}; }
 
       constexpr auto
       size() requires sized_range<_Vp>
@@ -2193,9 +2193,9 @@ namespace views
 	  _Iterator() = default;
 
 	  constexpr
-	  _Iterator(_Parent& __parent, _Outer_iter __outer)
+	  _Iterator(_Parent* __parent, _Outer_iter __outer)
 	    : _M_outer(std::move(__outer)),
-	      _M_parent(std::__addressof(__parent))
+	      _M_parent(__parent)
 	  { _M_satisfy(); }
 
 	  constexpr
@@ -2315,8 +2315,8 @@ namespace views
 	  _Sentinel() = default;
 
 	  constexpr explicit
-	  _Sentinel(_Parent& __parent)
-	    : _M_end(ranges::end(__parent._M_base))
+	  _Sentinel(_Parent* __parent)
+	    : _M_end(ranges::end(__parent->_M_base))
 	  { }
 
 	  constexpr
@@ -2363,7 +2363,7 @@ namespace views
 	constexpr bool __use_const
 	  = (__detail::__simple_view<_Vp>
 	     && is_reference_v<range_reference_t<_Vp>>);
-	return _Iterator<__use_const>{*this, ranges::begin(_M_base)};
+	return _Iterator<__use_const>{this, ranges::begin(_M_base)};
       }
 
       constexpr auto
@@ -2371,7 +2371,7 @@ namespace views
 	requires input_range<const _Vp>
 	  && is_reference_v<range_reference_t<const _Vp>>
       {
-	return _Iterator<true>{*this, ranges::begin(_M_base)};
+	return _Iterator<true>{this, ranges::begin(_M_base)};
       }
 
       constexpr auto
@@ -2380,10 +2380,10 @@ namespace views
 	if constexpr (forward_range<_Vp> && is_reference_v<_InnerRange>
 		      && forward_range<_InnerRange>
 		      && common_range<_Vp> && common_range<_InnerRange>)
-	  return _Iterator<__detail::__simple_view<_Vp>>{*this,
+	  return _Iterator<__detail::__simple_view<_Vp>>{this,
 							 ranges::end(_M_base)};
 	else
-	  return _Sentinel<__detail::__simple_view<_Vp>>{*this};
+	  return _Sentinel<__detail::__simple_view<_Vp>>{this};
       }
 
       constexpr auto
@@ -2396,9 +2396,9 @@ namespace views
 		      && forward_range<range_reference_t<const _Vp>>
 		      && common_range<const _Vp>
 		      && common_range<range_reference_t<const _Vp>>)
-	  return _Iterator<true>{*this, ranges::end(_M_base)};
+	  return _Iterator<true>{this, ranges::end(_M_base)};
 	else
-	  return _Sentinel<true>{*this};
+	  return _Sentinel<true>{this};
       }
     };
 
@@ -2517,14 +2517,14 @@ namespace views
 	  _OuterIter() = default;
 
 	  constexpr explicit
-	  _OuterIter(_Parent& __parent) requires (!forward_range<_Base>)
-	    : _M_parent(std::__addressof(__parent))
+	  _OuterIter(_Parent* __parent) requires (!forward_range<_Base>)
+	    : _M_parent(__parent)
 	  { }
 
 	  constexpr
-	  _OuterIter(_Parent& __parent, iterator_t<_Base> __current)
+	  _OuterIter(_Parent* __parent, iterator_t<_Base> __current)
 	    requires forward_range<_Base>
-	    : _M_parent(std::__addressof(__parent)),
+	    : _M_parent(__parent),
 	      _M_current(std::move(__current))
 	  { }
 
@@ -2749,25 +2749,25 @@ namespace views
       {
 	if constexpr (forward_range<_Vp>)
 	  return _OuterIter<__detail::__simple_view<_Vp>>{
-	      *this, ranges::begin(_M_base)};
+	      this, ranges::begin(_M_base)};
 	else
 	  {
 	    _M_current = ranges::begin(_M_base);
-	    return _OuterIter<false>{*this};
+	    return _OuterIter<false>{this};
 	  }
       }
 
       constexpr auto
       begin() const requires forward_range<_Vp> && forward_range<const _Vp>
       {
-	return _OuterIter<true>{*this, ranges::begin(_M_base)};
+	return _OuterIter<true>{this, ranges::begin(_M_base)};
       }
 
       constexpr auto
       end() requires forward_range<_Vp> && common_range<_Vp>
       {
 	return _OuterIter<__detail::__simple_view<_Vp>>{
-	    *this, ranges::end(_M_base)};
+	    this, ranges::end(_M_base)};
       }
 
       constexpr auto
@@ -2776,7 +2776,7 @@ namespace views
 	if constexpr (forward_range<_Vp>
 		      && forward_range<const _Vp>
 		      && common_range<const _Vp>)
-	  return _OuterIter<true>{*this, ranges::end(_M_base)};
+	  return _OuterIter<true>{this, ranges::end(_M_base)};
 	else
 	  return default_sentinel;
       }
