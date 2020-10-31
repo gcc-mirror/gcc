@@ -331,6 +331,12 @@ objc_is_property_ref (tree ARG_UNUSED (node))
   return 0;
 }
 
+bool
+objc_non_constant_expr_p (tree)
+{
+  return 0;
+}
+
 tree
 objc_maybe_build_component_ref (tree ARG_UNUSED (datum), tree ARG_UNUSED (component))
 {

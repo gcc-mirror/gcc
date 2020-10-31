@@ -1720,7 +1720,6 @@ objc_build_class_component_ref (tree class_name, tree property_ident)
 }
 
 
-
 /* This is used because we don't want to expose PROPERTY_REF to the
    C/C++ frontends.  Maybe we should!  */
 bool
@@ -1730,6 +1729,21 @@ objc_is_property_ref (tree node)
     return true;
   else
     return false;
+}
+
+/* We use this to report tree codes that are known to be invalid in const-
+   expression contexts.  */
+bool
+objc_non_constant_expr_p (tree node)
+{
+  switch (TREE_CODE (node))
+    {
+      default:
+	return false;
+      case MESSAGE_SEND_EXPR:
+      case PROPERTY_REF:
+	return true;
+    }
 }
 
 /* This function builds a setter call for a PROPERTY_REF (real, for a
