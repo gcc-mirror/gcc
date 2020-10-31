@@ -458,7 +458,7 @@ namespace __detail
     // Return a bucket count appropriate for n elements
     std::size_t
     _M_bkt_for_elements(std::size_t __n) const
-    { return __builtin_ceill(__n / (double)_M_max_load_factor); }
+    { return __builtin_ceil(__n / (double)_M_max_load_factor); }
 
     // __n_bkt is current bucket count, __n_elt is current element count,
     // and __n_ins is number of elements to be inserted.  Do we need to
@@ -559,7 +559,7 @@ namespace __detail
 	_M_next_resize = size_t(-1);
       else
 	_M_next_resize
-	  = __builtin_floorl(__res * (double)_M_max_load_factor);
+	  = __builtin_floor(__res * (double)_M_max_load_factor);
 
       return __res;
     }
@@ -567,7 +567,7 @@ namespace __detail
     // Return a bucket count appropriate for n elements
     std::size_t
     _M_bkt_for_elements(std::size_t __n) const noexcept
-    { return __builtin_ceill(__n / (double)_M_max_load_factor); }
+    { return __builtin_ceil(__n / (double)_M_max_load_factor); }
 
     // __n_bkt is current bucket count, __n_elt is current element count,
     // and __n_ins is number of elements to be inserted.  Do we need to
@@ -587,11 +587,11 @@ namespace __detail
 	      / (double)_M_max_load_factor;
 	  if (__min_bkts >= __n_bkt)
 	    return { true,
-	      _M_next_bkt(std::max<std::size_t>(__builtin_floorl(__min_bkts) + 1,
+	      _M_next_bkt(std::max<std::size_t>(__builtin_floor(__min_bkts) + 1,
 						__n_bkt * _S_growth_factor)) };
 
 	  _M_next_resize
-	    = __builtin_floorl(__n_bkt * (double)_M_max_load_factor);
+	    = __builtin_floor(__n_bkt * (double)_M_max_load_factor);
 	  return { false, 0 };
 	}
       else

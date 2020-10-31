@@ -58,7 +58,7 @@ namespace __detail
 	  return 1;
 
 	_M_next_resize =
-	  __builtin_floorl(__fast_bkt[__n] * (long double)_M_max_load_factor);
+	  __builtin_floor(__fast_bkt[__n] * (double)_M_max_load_factor);
 	return __fast_bkt[__n];
       }
 
@@ -81,7 +81,7 @@ namespace __detail
       _M_next_resize = size_t(-1);
     else
       _M_next_resize =
-	__builtin_floorl(*__next_bkt * (long double)_M_max_load_factor);
+	__builtin_floor(*__next_bkt * (double)_M_max_load_factor);
 
     return *__next_bkt;
   }
@@ -105,16 +105,16 @@ namespace __detail
 	// If _M_next_resize is 0 it means that we have nothing allocated so
 	// far and that we start inserting elements. In this case we start
 	// with an initial bucket size of 11.
-	long double __min_bkts
+	double __min_bkts
 	  = std::max<std::size_t>(__n_elt + __n_ins, _M_next_resize ? 0 : 11)
-	  / (long double)_M_max_load_factor;
+	  / (double)_M_max_load_factor;
 	if (__min_bkts >= __n_bkt)
 	  return { true,
-	    _M_next_bkt(std::max<std::size_t>(__builtin_floorl(__min_bkts) + 1,
+	    _M_next_bkt(std::max<std::size_t>(__builtin_floor(__min_bkts) + 1,
 					      __n_bkt * _S_growth_factor)) };
 
 	_M_next_resize
-	  = __builtin_floorl(__n_bkt * (long double)_M_max_load_factor);
+	  = __builtin_floor(__n_bkt * (double)_M_max_load_factor);
 	return { false, 0 };
       }
     else
