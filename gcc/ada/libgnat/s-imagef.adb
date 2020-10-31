@@ -208,15 +208,15 @@ package body System.Image_F is
       --  Number of rounds of scaled divide to be performed
 
       Q : Int;
-      --  Quotient of the scaled divide in this round. Only the first round
-      --  may yield more than Maxdigs digits. The sign is not significant.
+      --  Quotient of the scaled divide in this round. Only the first round may
+      --  yield more than Maxdigs digits and has a significant sign.
 
       Buf : String (1 .. Maxdigs);
       Len : Natural;
       --  Buffer for the image of the quotient
 
-      Digs  : String (1 .. N * Maxdigs + 1);
-      Ndigs : Natural := 0;
+      Digs  : String (1 .. 2 + N * Maxdigs);
+      Ndigs : Natural;
       --  Concatenated image of the successive quotients
 
       Scale : Integer := 0;
@@ -227,10 +227,14 @@ package body System.Image_F is
       --  First two operands of the scaled divide
 
    begin
-      --  Set the first character like Image, either minus or space
+      --  Set the first character like Image
 
-      Digs (1) := (if V < 0 then '-' else ' ');
-      Ndigs := 1;
+      if V >= 0 then
+         Digs (1) := ' ';
+         Ndigs := 1;
+      else
+         Ndigs := 0;
+      end if;
 
       for J in 1 .. N loop
          exit when XX = 0;
@@ -239,7 +243,7 @@ package body System.Image_F is
 
          if J = 1 then
             if Q /= 0 then
-               Set_Image_Integer (abs Q, Digs, Ndigs);
+               Set_Image_Integer (Q, Digs, Ndigs);
             end if;
 
             Scale := Scale + D;
@@ -249,16 +253,29 @@ package body System.Image_F is
             YY := 10**Maxdigs;
 
          else
+            pragma Assert (-10**Maxdigs < Q and then Q < 10**Maxdigs);
+
             Len := 0;
             Set_Image_Integer (abs Q, Buf, Len);
 
-            if Ndigs = 1 then
-               Digs (2 .. Len + 1) := Buf (1 .. Len);
-               Ndigs := Len + 1;
+            pragma Assert (1 <= Len and then Len <= Maxdigs);
+
+            --  If no character but the space has been written, write the
+            --  minus if need be, since Set_Image_Integer did not do it.
+
+            if Ndigs <= 1 then
+               if Q /= 0 then
+                  if Ndigs = 0 then
+                     Digs (1) := '-';
+                  end if;
+
+                  Digs (2 .. Len + 1) := Buf (1 .. Len);
+                  Ndigs := Len + 1;
+               end if;
+
+            --  Or else pad the output with zeroes up to Maxdigs
 
             else
-               --  Pad the output with zeroes up to Maxdigs
-
                for K in 1 .. Maxdigs - Len loop
                   Digs (Ndigs + K) := '0';
                end loop;
@@ -276,7 +293,7 @@ package body System.Image_F is
 
       --  If no digit was output, this is zero
 
-      if Ndigs = 1 then
+      if Ndigs <= 1 then
          Digs (1 .. 2) := " 0";
          Ndigs := 2;
       end if;
