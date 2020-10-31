@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "attr-fnspec.h"
+#include "symtab-clones.h"
 
 /* Class (from which there is one global instance) that holds modref summaries
    for all analyzed functions.  */
@@ -1606,7 +1607,8 @@ modref_read (void)
 static void
 update_signature (struct cgraph_node *node)
 {
-  if (!node->clone.param_adjustments)
+  clone_info *info = clone_info::get (node);
+  if (!info || !info->param_adjustments)
     return;
 
   modref_summary *r = optimization_summaries
@@ -1625,9 +1627,9 @@ update_signature (struct cgraph_node *node)
   size_t i, max = 0;
   ipa_adjusted_param *p;
 
-  FOR_EACH_VEC_SAFE_ELT (node->clone.param_adjustments->m_adj_params, i, p)
+  FOR_EACH_VEC_SAFE_ELT (info->param_adjustments->m_adj_params, i, p)
     {
-      int idx = node->clone.param_adjustments->get_original_index (i);
+      int idx = info->param_adjustments->get_original_index (i);
       if (idx > (int)max)
 	max = idx;
     }
@@ -1637,9 +1639,9 @@ update_signature (struct cgraph_node *node)
   map.reserve (max + 1);
   for (i = 0; i <= max; i++)
     map.quick_push (-1);
-  FOR_EACH_VEC_SAFE_ELT (node->clone.param_adjustments->m_adj_params, i, p)
+  FOR_EACH_VEC_SAFE_ELT (info->param_adjustments->m_adj_params, i, p)
     {
-      int idx = node->clone.param_adjustments->get_original_index (i);
+      int idx = info->param_adjustments->get_original_index (i);
       if (idx >= 0)
 	map[idx] = i;
     }

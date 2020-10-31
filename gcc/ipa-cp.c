@@ -124,6 +124,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "dbgcnt.h"
+#include "symtab-clones.h"
 
 template <typename valtype> class ipcp_value;
 
@@ -1226,18 +1227,21 @@ initialize_node_lattices (struct cgraph_node *node)
 
   auto_vec<bool, 16> surviving_params;
   bool pre_modified = false;
-  if (!disable && node->clone.param_adjustments)
+
+  clone_info *cinfo = clone_info::get (node);
+
+  if (!disable && cinfo && cinfo->param_adjustments)
     {
       /* At the moment all IPA optimizations should use the number of
 	 parameters of the prevailing decl as the m_always_copy_start.
 	 Handling any other value would complicate the code below, so for the
 	 time bing let's only assert it is so.  */
-      gcc_assert ((node->clone.param_adjustments->m_always_copy_start
+      gcc_assert ((cinfo->param_adjustments->m_always_copy_start
 		   == ipa_get_param_count (info))
-		  || node->clone.param_adjustments->m_always_copy_start < 0);
+		  || cinfo->param_adjustments->m_always_copy_start < 0);
 
       pre_modified = true;
-      node->clone.param_adjustments->get_surviving_params (&surviving_params);
+      cinfo->param_adjustments->get_surviving_params (&surviving_params);
 
       if (dump_file && (dump_flags & TDF_DETAILS)
 	  && !node->alias && !node->thunk)
@@ -4456,9 +4460,10 @@ want_remove_some_param_p (cgraph_node *node, vec<tree> known_csts)
 
       if (!filled_vec)
        {
-         if (!node->clone.param_adjustments)
+	 clone_info *info = clone_info::get (node);
+	 if (!info || !info->param_adjustments)
            return true;
-         node->clone.param_adjustments->get_surviving_params (&surviving);
+	 info->param_adjustments->get_surviving_params (&surviving);
          filled_vec = true;
        }
       if (surviving.length() < (unsigned) i &&  surviving[i])
@@ -4484,7 +4489,9 @@ create_specialized_node (struct cgraph_node *node,
   struct ipa_agg_replacement_value *av;
   struct cgraph_node *new_node;
   int i, count = ipa_get_param_count (info);
-  ipa_param_adjustments *old_adjustments = node->clone.param_adjustments;
+  clone_info *cinfo = clone_info::get (node);
+  ipa_param_adjustments *old_adjustments = cinfo
+					   ? cinfo->param_adjustments : NULL;
   ipa_param_adjustments *new_adjustments;
   gcc_assert (!info->ipcp_orig_node);
   gcc_assert (node->can_change_signature
@@ -4538,7 +4545,7 @@ create_specialized_node (struct cgraph_node *node,
   else
     new_adjustments = NULL;
 
-  replace_trees = vec_safe_copy (node->clone.tree_map);
+  replace_trees = cinfo ? vec_safe_copy (cinfo->tree_map) : NULL;
   for (i = 0; i < count; i++)
     {
       tree t = known_csts[i];
