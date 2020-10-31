@@ -428,10 +428,10 @@ package body System.Value_R is
       --  First character can be either a decimal digit or a dot
 
       if Str (Index) in '0' .. '9' then
-         After_Point := False;
-
          pragma Annotate
-           (CodePeer, Intentional, "test always true", "defensive code below");
+           (CodePeer, False_Positive, "test always true", "defensive code");
+
+         After_Point := False;
 
          --  If this is a digit it can indicates either the float decimal
          --  part or the base to use.
