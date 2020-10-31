@@ -462,6 +462,47 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	}
     }
 
+  if (cost > 2 && TARGET_64BIT && TARGET_ZBB)
+    {
+      int leading_ones = clz_hwi (~value);
+      int trailing_ones = ctz_hwi (~value);
+
+      /* If all bits are one except a few that are zero, and the zero bits
+	 are within a range of 11 bits, and at least one of the upper 32-bits
+	 is a zero, then we can generate a constant by loading a small
+	 negative constant and rotating.  */
+      if (leading_ones < 32
+	  && ((64 - leading_ones - trailing_ones) < 12))
+	{
+	  codes[0].code = UNKNOWN;
+	  /* The sign-bit might be zero, so just rotate to be safe.  */
+	  codes[0].value = (((unsigned HOST_WIDE_INT) value >> trailing_ones)
+			    | (value << (64 - trailing_ones)));
+	  codes[1].code = ROTATERT;
+	  codes[1].value = 64 - trailing_ones;
+	  cost = 2;
+	}
+      /* Handle the case where the 11 bit range of zero bits wraps around.  */
+      else
+	{
+	  int upper_trailing_ones = ctz_hwi (~value >> 32);
+	  int lower_leading_ones = clz_hwi (~value << 32);
+
+	  if (upper_trailing_ones < 32 && lower_leading_ones < 32
+	      && ((64 - upper_trailing_ones - lower_leading_ones) < 12))
+	    {
+	      codes[0].code = UNKNOWN;
+	      /* The sign-bit might be zero, so just rotate to be safe.  */
+	      codes[0].value = ((value << (32 - upper_trailing_ones))
+				| ((unsigned HOST_WIDE_INT) value
+				   >> (32 + upper_trailing_ones)));
+	      codes[1].code = ROTATERT;
+	      codes[1].value = 32 - upper_trailing_ones;
+	      cost = 2;
+	    }
+	}
+    }
+
   gcc_assert (cost <= RISCV_MAX_INTEGER_OPS);
   return cost;
 }
