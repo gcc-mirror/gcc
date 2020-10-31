@@ -448,15 +448,15 @@ package body Exp_Fixd is
      (N       : Node_Id;
       X, Y, Z : Node_Id) return Node_Id
    is
-      Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
-      Z_Size : constant Nat := UI_To_Int (Esize (Etype (Z)));
+      Y_Size : constant Nat := UI_To_Int (RM_Size (Etype (Y)));
+      Z_Size : constant Nat := UI_To_Int (RM_Size (Etype (Z)));
       Expr   : Node_Id;
 
    begin
       --  If the denominator fits in Max_Integer_Size bits, we can build the
       --  operations directly without causing any intermediate overflow.
 
-      if 2 * Nat'Max (Y_Size, Z_Size) <= System_Max_Integer_Size then
+      if Y_Size + Z_Size <= System_Max_Integer_Size then
          return Build_Divide (N, X, Build_Multiply (N, Y, Z));
 
       --  Otherwise we use the runtime routine
@@ -516,9 +516,9 @@ package body Exp_Fixd is
    is
       Loc    : constant Source_Ptr := Sloc (N);
 
-      X_Size : constant Nat := UI_To_Int (Esize (Etype (X)));
-      Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
-      Z_Size : constant Nat := UI_To_Int (Esize (Etype (Z)));
+      X_Size : constant Nat := UI_To_Int (RM_Size (Etype (X)));
+      Y_Size : constant Nat := UI_To_Int (RM_Size (Etype (Y)));
+      Z_Size : constant Nat := UI_To_Int (RM_Size (Etype (Z)));
 
       QR_Id  : RE_Id;
       QR_Siz : Nat;
@@ -533,7 +533,7 @@ package body Exp_Fixd is
    begin
       --  Find type that will allow computation of denominator
 
-      QR_Siz := Nat'Max (X_Size, 2 * Nat'Max (Y_Size, Z_Size));
+      QR_Siz := Nat'Max (X_Size, Y_Size + Z_Size);
 
       if QR_Siz <= 16 then
          QR_Typ := Standard_Integer_16;
@@ -724,10 +724,10 @@ package body Exp_Fixd is
             end;
          end if;
 
-         --  Now the result size must be at least twice the longer of
-         --  the two sizes, to accommodate all possible results.
+         --  Now the result size must be at least the sum of the two sizes,
+         --  to accommodate all possible results.
 
-         Rsize := 2 * Int'Max (Left_Size, Right_Size);
+         Rsize := Left_Size + Right_Size;
 
          if Rsize <= 8 then
             Result_Type := Standard_Integer_8;
@@ -828,15 +828,15 @@ package body Exp_Fixd is
      (N       : Node_Id;
       X, Y, Z : Node_Id) return Node_Id
    is
-      X_Size : constant Nat := UI_To_Int (Esize (Etype (X)));
-      Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
+      X_Size : constant Nat := UI_To_Int (RM_Size (Etype (X)));
+      Y_Size : constant Nat := UI_To_Int (RM_Size (Etype (Y)));
       Expr   : Node_Id;
 
    begin
       --  If the numerator fits in Max_Integer_Size bits, we can build the
       --  operations directly without causing any intermediate overflow.
 
-      if 2 * Nat'Max (X_Size, Y_Size) <= System_Max_Integer_Size then
+      if X_Size + Y_Size <= System_Max_Integer_Size then
          return Build_Divide (N, Build_Multiply (N, X, Y), Z);
 
       --  Otherwise we use the runtime routine
@@ -893,9 +893,9 @@ package body Exp_Fixd is
    is
       Loc    : constant Source_Ptr := Sloc (N);
 
-      X_Size : constant Nat := UI_To_Int (Esize (Etype (X)));
-      Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
-      Z_Size : constant Nat := UI_To_Int (Esize (Etype (Z)));
+      X_Size : constant Nat := UI_To_Int (RM_Size (Etype (X)));
+      Y_Size : constant Nat := UI_To_Int (RM_Size (Etype (Y)));
+      Z_Size : constant Nat := UI_To_Int (RM_Size (Etype (Z)));
 
       QR_Id  : RE_Id;
       QR_Siz : Nat;
@@ -910,7 +910,7 @@ package body Exp_Fixd is
    begin
       --  Find type that will allow computation of numerator
 
-      QR_Siz := Nat'Max (2 * Nat'Max (X_Size, Y_Size), Z_Size);
+      QR_Siz := Nat'Max (X_Size + Y_Size, Z_Size);
 
       if QR_Siz <= 16 then
          QR_Typ := Standard_Integer_16;
