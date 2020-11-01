@@ -1491,9 +1491,11 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
     }
   if (flag_checking && decl)
     {
-      cgraph_node *node = cgraph_node::get (decl);
-      clone_info *info = clone_info::get (node);
-      gcc_assert (!node || !info || !info->param_adjustments);
+      if (cgraph_node *node = cgraph_node::get (decl))
+	{
+	  clone_info *info = clone_info::get (node);
+	  gcc_assert (!info || !info->param_adjustments);
+	}
     }
 
   clone_info *callee_info = clone_info::get (e->callee);
