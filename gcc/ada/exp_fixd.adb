@@ -69,7 +69,7 @@ package body Exp_Fixd is
    --  Build an expression that converts the expression Expr to type Typ,
    --  taking the source location from Sloc (N). If the conversions involve
    --  fixed-point types, then the Conversion_OK flag will be set so that the
-   --  resulting conversions do not get re-expanded. On return the resulting
+   --  resulting conversions do not get re-expanded. On return, the resulting
    --  node has its Etype set. If Rchk is set, then Do_Range_Check is set
    --  in the resulting conversion node. If Trunc is set, then the
    --  Float_Truncate flag is set on the conversion, which must be from
@@ -86,7 +86,7 @@ package body Exp_Fixd is
    --  two operand types), and both operands are converted to this type. The
    --  Etype of the result is also set to this value. The Rounded_Result flag
    --  of the result in this case is set from the Rounded_Result flag of node
-   --  N. On return, the resulting node is analyzed and has its Etype set.
+   --  N. On return, the resulting node has its Etype set.
 
    function Build_Double_Divide
      (N       : Node_Id;
@@ -94,7 +94,7 @@ package body Exp_Fixd is
    --  Returns a node corresponding to the value X/(Y*Z) using the source
    --  location from Sloc (N). The division is rounded if the Rounded_Result
    --  flag of N is set. The integer types of X, Y, Z may be different. On
-   --  return the resulting node is analyzed, and has its Etype set.
+   --  return, the resulting node has its Etype set.
 
    procedure Build_Double_Divide_Code
      (N        : Node_Id;
@@ -115,10 +115,9 @@ package body Exp_Fixd is
    --  Make_Op_Multiply only in that the Etype of the resulting node is set (to
    --  Universal_Real), or they can be integer or fixed-point types. In this
    --  case the types need not be the same, and Build_Multiply chooses a type
-   --  long enough to hold the product (i.e. twice the size of the longer of
-   --  the two operand types), and both operands are converted to this type.
-   --  The Etype of the result is also set to this value. On return, the
-   --  resulting node is analyzed and has Etype set.
+   --  long enough to hold the product and both operands are converted to this
+   --  type. The type of the result is also set to this value. On return, the
+   --  resulting node has its Etype set.
 
    function Build_Rem (N : Node_Id; L, R : Node_Id) return Node_Id;
    --  Builds an N_Op_Rem node from the given left and right operand
@@ -127,7 +126,7 @@ package body Exp_Fixd is
    --  operand with the smaller sized type to match the type of the other
    --  operand and sets this as the result type. The result is never rounded
    --  (rem operations cannot be rounded in any case). On return, the resulting
-   --  node is analyzed and has its Etype set.
+   --  node has its Etype set.
 
    function Build_Scaled_Divide
      (N       : Node_Id;
@@ -135,7 +134,7 @@ package body Exp_Fixd is
    --  Returns a node corresponding to the value X*Y/Z using the source
    --  location from Sloc (N). The division is rounded if the Rounded_Result
    --  flag of N is set. The integer types of X, Y, Z may be different. On
-   --  return the resulting node is analyzed and has is Etype set.
+   --  return the resulting node has its Etype set.
 
    procedure Build_Scaled_Divide_Code
      (N        : Node_Id;
