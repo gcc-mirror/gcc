@@ -5469,6 +5469,9 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 					    &caller_count))
     return false;
 
+  if (!dbg_cnt (ipa_cp_values))
+    return false;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, " - considering value ");
@@ -5584,6 +5587,12 @@ decide_whether_version_node (struct cgraph_node *node)
 
   if (info->do_clone_for_all_contexts)
     {
+      if (!dbg_cnt (ipa_cp_values))
+	{
+	  info->do_clone_for_all_contexts = false;
+	  return ret;
+	}
+
       struct cgraph_node *clone;
       vec<cgraph_edge *> callers = node->collect_callers ();
 
@@ -5871,7 +5880,8 @@ ipcp_store_vr_results (void)
 	  ipa_vr vr;
 
 	  if (!plats->m_value_range.bottom_p ()
-	      && !plats->m_value_range.top_p ())
+	      && !plats->m_value_range.top_p ()
+	      && dbg_cnt (ipa_cp_vr))
 	    {
 	      vr.known = true;
 	      vr.type = plats->m_value_range.m_vr.kind ();
