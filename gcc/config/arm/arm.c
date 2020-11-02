@@ -28414,12 +28414,19 @@ thumb1_gen_const_int_1 (T dst, HOST_WIDE_INT op1)
     }
 }
 
-/* Proxy for thumb1.md, since the thumb1_const_print and
+/* Proxies for thumb1.md, since the thumb1_const_print and
    thumb1_const_rtl classes are not exported.  */
 void
 thumb1_gen_const_int_rtl (rtx dst, HOST_WIDE_INT op1)
 {
   thumb1_const_rtl t (dst);
+  thumb1_gen_const_int_1 (t, op1);
+}
+
+void
+thumb1_gen_const_int_print (rtx dst, HOST_WIDE_INT op1)
+{
+  thumb1_const_print t (asm_out_file, REGNO (dst));
   thumb1_gen_const_int_1 (t, op1);
 }
 

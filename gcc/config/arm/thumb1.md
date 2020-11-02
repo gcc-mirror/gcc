@@ -688,40 +688,11 @@
 	  }
 	else if (GET_CODE (operands[1]) == CONST_INT)
 	  {
-	    int i;
-	    HOST_WIDE_INT op1 = INTVAL (operands[1]);
-	    bool mov_done_p = false;
-	    rtx ops[2];
-	    ops[0] = operands[0];
-
-	    /* Emit upper 3 bytes if needed.  */
-	    for (i = 0; i < 3; i++)
-	      {
-		int byte = (op1 >> (8 * (3 - i))) & 0xff;
-
-		if (byte)
-		  {
-		    ops[1] = GEN_INT (byte);
-		    if (mov_done_p)
-		      output_asm_insn ("adds\t%0, %1", ops);
-		    else
-		      output_asm_insn ("movs\t%0, %1", ops);
-		    mov_done_p = true;
-		  }
-
-		if (mov_done_p)
-		  output_asm_insn ("lsls\t%0, #8", ops);
-	      }
-
-	    /* Emit lower byte if needed.  */
-	    ops[1] = GEN_INT (op1 & 0xff);
-	    if (!mov_done_p)
-	      output_asm_insn ("movs\t%0, %1", ops);
-	    else if (op1 & 0xff)
-	      output_asm_insn ("adds\t%0, %1", ops);
-	    return "";
+	    thumb1_gen_const_int_print (operands[0], INTVAL (operands[1]));
+	    return \"\";
 	  }
-	  gcc_unreachable ();
+
+	gcc_unreachable ();
 
       case 8: return "ldr\t%0, %1";
       case 9: return "str\t%1, %0";
