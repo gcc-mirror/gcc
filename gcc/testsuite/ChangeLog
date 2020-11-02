@@ -1,3 +1,215 @@
+2020-11-02  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-complete1.C: Delete test that became
+	ill-formed after P2104.
+
+2020-11-02  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/bcd-2.c: Add include altivec.h.
+	* gcc.target/powerpc/bcd-3.c: Add include altivec.h.
+	* gcc.target/powerpc/bcd-4.c: New test.
+
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/concepts/pack-1.C: New.
+	* g++.dg/lookup/using53.C: Add an enum.
+	* g++.dg/template/error25.C: Relax 'export' error check.
+
+2020-11-02  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/97638
+	* gcc.target/aarch64/pr97638.c: New test.a
+
+2020-11-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-49.c: New testcase.
+
+2020-11-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pure-code/no-literal-pool-m23.c: New.
+
+2020-11-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pure-code/no-literal-pool-m0.c: New.
+
+2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* gfortran.dg/goacc/pr92793-1.f90: Adjust.
+
+2020-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97655
+	* gfortran.dg/gomp/atomic.f90: Update tree-dump counts; move
+	invalid OMP 5.0 code to ...
+	* gfortran.dg/gomp/atomic-2.f90: ... here; update dg-error.
+	* gfortran.dg/gomp/requires-9.f90: Update tree dump scan.
+
+2020-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97558
+	* gcc.dg/vect/pr97558-2.c: New testcase.
+
+2020-11-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97505
+	* gcc.dg/pr97505.c: New test.
+
+2020-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97558
+	* gcc.dg/vect/pr97558.c: New testcase.
+
+2020-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97650
+	* gcc.dg/vect/bb-slp-pr97650.c: New testcase.
+
+2020-11-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-7.c: New.
+	* gcc.target/riscv/attribute-10.c: Update test arch string.
+
+2020-11-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96770
+	* gcc.target/arm/pure-code/pr96770.c: New test.
+
+2020-11-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96967
+	* gcc.target/arm/pure-code/pr96767.c: New test.
+
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/SEL-typedef.mm: New test.
+	* objc.dg/SEL-typedef.m: New test.
+
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/property/at-property-1.mm: Adjust test after
+	fixing spurious error output.
+
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/amxbf16-asmintel-1.c: Require masm_intel.
+	* gcc.target/i386/amxint8-asmintel-1.c: Likewise.
+	* gcc.target/i386/amxtile-asmintel-1.c: Likewise.
+
+2020-10-30  Qing Zhao  <qing.zhao@oracle.com>
+	    H.J.Lu  <hjl.tools@gmail.com>
+
+	* c-c++-common/zero-scratch-regs-1.c: New test.
+	* c-c++-common/zero-scratch-regs-10.c: New test.
+	* c-c++-common/zero-scratch-regs-11.c: New test.
+	* c-c++-common/zero-scratch-regs-2.c: New test.
+	* c-c++-common/zero-scratch-regs-3.c: New test.
+	* c-c++-common/zero-scratch-regs-4.c: New test.
+	* c-c++-common/zero-scratch-regs-5.c: New test.
+	* c-c++-common/zero-scratch-regs-6.c: New test.
+	* c-c++-common/zero-scratch-regs-7.c: New test.
+	* c-c++-common/zero-scratch-regs-8.c: New test.
+	* c-c++-common/zero-scratch-regs-9.c: New test.
+	* c-c++-common/zero-scratch-regs-attr-usages.c: New test.
+	* gcc.target/i386/zero-scratch-regs-1.c: New test.
+	* gcc.target/i386/zero-scratch-regs-10.c: New test.
+	* gcc.target/i386/zero-scratch-regs-11.c: New test.
+	* gcc.target/i386/zero-scratch-regs-12.c: New test.
+	* gcc.target/i386/zero-scratch-regs-13.c: New test.
+	* gcc.target/i386/zero-scratch-regs-14.c: New test.
+	* gcc.target/i386/zero-scratch-regs-15.c: New test.
+	* gcc.target/i386/zero-scratch-regs-16.c: New test.
+	* gcc.target/i386/zero-scratch-regs-17.c: New test.
+	* gcc.target/i386/zero-scratch-regs-18.c: New test.
+	* gcc.target/i386/zero-scratch-regs-19.c: New test.
+	* gcc.target/i386/zero-scratch-regs-2.c: New test.
+	* gcc.target/i386/zero-scratch-regs-20.c: New test.
+	* gcc.target/i386/zero-scratch-regs-21.c: New test.
+	* gcc.target/i386/zero-scratch-regs-22.c: New test.
+	* gcc.target/i386/zero-scratch-regs-23.c: New test.
+	* gcc.target/i386/zero-scratch-regs-24.c: New test.
+	* gcc.target/i386/zero-scratch-regs-25.c: New test.
+	* gcc.target/i386/zero-scratch-regs-26.c: New test.
+	* gcc.target/i386/zero-scratch-regs-27.c: New test.
+	* gcc.target/i386/zero-scratch-regs-28.c: New test.
+	* gcc.target/i386/zero-scratch-regs-29.c: New test.
+	* gcc.target/i386/zero-scratch-regs-30.c: New test.
+	* gcc.target/i386/zero-scratch-regs-31.c: New test.
+	* gcc.target/i386/zero-scratch-regs-3.c: New test.
+	* gcc.target/i386/zero-scratch-regs-4.c: New test.
+	* gcc.target/i386/zero-scratch-regs-5.c: New test.
+	* gcc.target/i386/zero-scratch-regs-6.c: New test.
+	* gcc.target/i386/zero-scratch-regs-7.c: New test.
+	* gcc.target/i386/zero-scratch-regs-8.c: New test.
+	* gcc.target/i386/zero-scratch-regs-9.c: New test.
+
+2020-10-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97556
+	* gcc.dg/Warray-bounds-70.c: New test.
+
+2020-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/guality/guality.exp: Skip $rootme-based check if unset.
+	* gcc.dg/guality/guality.exp: Likewise.
+	* gfortran.dg/guality/guality.exp: Likewise.
+	* lib/asan-dg.exp: Don't use $asan_saved_library_path if not set.
+	* lib/tsan-dg.exp: Don't use $tsan_saved_library_path if not set.
+	* lib/ubsan-dg.exp: Don't use $ubsan_saved_library_path if not set.
+
+2020-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/atomic-2.f90: New test.
+	* gfortran.dg/gomp/atomic.f90: New test.
+
+2020-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* gcc.dg/tree-ssa/ssa-hoist-7.c: New testcase.
+
+2020-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97626
+	* gcc.dg/vect/bb-slp-pr97626.c: New testcase.
+
+2020-10-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* c-c++-common/goacc/clause-locations.c: Rewrite into...
+	* c-c++-common/goacc/pr92793-1.c: ... this.
+	* gfortran.dg/goacc/clause-locations.f90: Rewrite into...
+	* gfortran.dg/goacc/pr92793-1.f90: ... this.
+
+2020-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97633
+	* g++.dg/vect/slp-pr97636.cc: New testcase.
+	* gcc.dg/vect/bb-slp-pr97633.c: Likewise.
+
+2020-10-30  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/96998
+	* gcc.c-torture/compile/pr96998.c: New test.
+
+2020-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/allocate-3.c: New test.
+
+2020-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/allocate-1.c (qux): Add another test.
+	* g++.dg/gomp/allocate-1.C: New test.
+
+2020-10-30  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pr65935.c: Adjust.
+
+2020-10-30  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-mix-2.c: New test.
+	* gcc.target/powerpc/float128-mix-3.c: New test.
+	* gcc.target/powerpc/float128-mix.c: Update failure messages.
+
 2020-10-29  Marek Polacek  <polacek@redhat.com>
 
 	DR 625

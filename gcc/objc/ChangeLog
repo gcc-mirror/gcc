@@ -1,3 +1,15 @@
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (synth_module_prologue): Get the SEL identifier.
+	* objc-act.h (enum objc_tree_index): Add OCTI_SEL_NAME.
+	(objc_selector_name): New.
+	(SEL_TYPEDEF_NAME): New.
+	* objc-gnu-runtime-abi-01.c
+	(gnu_runtime_01_initialize): Initialize SEL typedef.
+	* objc-next-runtime-abi-01.c
+	(next_runtime_01_initialize): Likewise.
+	* objc-next-runtime-abi-02.c
+
 2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-runtime-abi-02.c

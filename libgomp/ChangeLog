@@ -1,3 +1,22 @@
+2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/85486
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-2.c: Simplify and enhance.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: Likewise.
+
+2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/80219
+	PR testsuite/85303
+	* testsuite/lib/libgomp.exp (libgomp_init): Set
+	'gcc_warning_prefix', 'gcc_error_prefix'.
+
+2020-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.c (gomp_map_vars_internal): Use FIELD_TGT_EMPTY macro
+	even in field_tgt_clear initializer.
+
 2020-10-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/target-42.c: New test.

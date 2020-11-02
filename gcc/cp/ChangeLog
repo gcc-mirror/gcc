@@ -1,3 +1,44 @@
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (start_decl_1): Refactor declarations.  Fixup some
+	whitespace.
+	(lookup_and_check_tag): Fixup some whitespace.
+
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Refactor some template & builtin
+	handling.
+
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct cxx_int_tree_map): Delete.
+	(struct cxx_int_tree_map_hasher): Delete.
+	* cp-gimplify.c (cxx_int_tree_map_hasher::equal): Delete.
+	(cxx_int_tree_map_hasher::hash): Delete.
+
+2020-11-02  Patrick Palka  <ppalka@redhat.com>
+
+	* class.c (finish_struct_1): Don't call clear_satisfaction_cache.
+	* constexpr.c (clear_cv_and_fold_caches): Likewise.  Remove bool
+	parameter.
+	* constraint.cc (clear_satisfaction_cache): Remove definition.
+	* cp-tree.h (clear_satisfaction_cache): Remove declaration.
+	(clear_cv_and_fold_caches): Remove bool parameter.
+	* typeck2.c (store_init_value): Remove argument to
+	clear_cv_and_fold_caches.
+
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_objc_at_property_declaration): Use any
+	exisiting syntax error to suppress complaints about a missing
+	closing parenthesis in parsing property attributes.
+
+2020-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses) <case OMP_CLAUSE_ALLOCATE>: Handle
+	non-static members in methods.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_ALLOCATE.
+
 2020-10-29  Marek Polacek  <polacek@redhat.com>
 
 	DR 625
