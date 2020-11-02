@@ -28528,9 +28528,19 @@ arm_thumb1_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
     {
       if (mi_delta > 255)
 	{
-	  fputs ("\tldr\tr3, ", file);
-	  assemble_name (file, label);
-	  fputs ("+4\n", file);
+	  /* With -mpure-code, we cannot load MI_DELTA from the
+	     constant pool: we build it explicitly.  */
+	  if (target_pure_code)
+	    {
+	      thumb1_const_print r3 (file, 3);
+	      thumb1_gen_const_int_1 (r3, mi_delta);
+	    }
+	  else
+	    {
+	      fputs ("\tldr\tr3, ", file);
+	      assemble_name (file, label);
+	      fputs ("+4\n", file);
+	    }
 	  asm_fprintf (file, "\t%ss\t%r, %r, r3\n",
 		       mi_op, this_regno, this_regno);
 	}
@@ -28566,30 +28576,37 @@ arm_thumb1_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 	fputs ("\tpop\t{r3}\n", file);
 
       fprintf (file, "\tbx\tr12\n");
-      ASM_OUTPUT_ALIGN (file, 2);
-      assemble_name (file, label);
-      fputs (":\n", file);
-      if (flag_pic)
-	{
-	  /* Output ".word .LTHUNKn-[3,7]-.LTHUNKPCn".  */
-	  rtx tem = XEXP (DECL_RTL (function), 0);
-	  /* For TARGET_THUMB1_ONLY the thunk is in Thumb mode, so the PC
-	     pipeline offset is four rather than eight.  Adjust the offset
-	     accordingly.  */
-	  tem = plus_constant (GET_MODE (tem), tem,
-			       TARGET_THUMB1_ONLY ? -3 : -7);
-	  tem = gen_rtx_MINUS (GET_MODE (tem),
-			       tem,
-			       gen_rtx_SYMBOL_REF (Pmode,
-						   ggc_strdup (labelpc)));
-	  assemble_integer (tem, 4, BITS_PER_WORD, 1);
-	}
-      else
-	/* Output ".word .LTHUNKn".  */
-	assemble_integer (XEXP (DECL_RTL (function), 0), 4, BITS_PER_WORD, 1);
 
-      if (TARGET_THUMB1_ONLY && mi_delta > 255)
-	assemble_integer (GEN_INT(mi_delta), 4, BITS_PER_WORD, 1);
+      /* With -mpure-code, we don't need to emit literals for the
+	 function address and delta since we emitted code to build
+	 them.  */
+      if (!target_pure_code)
+	{
+	  ASM_OUTPUT_ALIGN (file, 2);
+	  assemble_name (file, label);
+	  fputs (":\n", file);
+	  if (flag_pic)
+	    {
+	      /* Output ".word .LTHUNKn-[3,7]-.LTHUNKPCn".  */
+	      rtx tem = XEXP (DECL_RTL (function), 0);
+	      /* For TARGET_THUMB1_ONLY the thunk is in Thumb mode, so the PC
+		 pipeline offset is four rather than eight.  Adjust the offset
+		 accordingly.  */
+	      tem = plus_constant (GET_MODE (tem), tem,
+				   TARGET_THUMB1_ONLY ? -3 : -7);
+	      tem = gen_rtx_MINUS (GET_MODE (tem),
+				   tem,
+				   gen_rtx_SYMBOL_REF (Pmode,
+						       ggc_strdup (labelpc)));
+	      assemble_integer (tem, 4, BITS_PER_WORD, 1);
+	    }
+	  else
+	    /* Output ".word .LTHUNKn".  */
+	    assemble_integer (XEXP (DECL_RTL (function), 0), 4, BITS_PER_WORD, 1);
+
+	  if (TARGET_THUMB1_ONLY && mi_delta > 255)
+	    assemble_integer (GEN_INT (mi_delta), 4, BITS_PER_WORD, 1);
+	}
     }
   else
     {
