@@ -1,3 +1,30 @@
+2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* gfortran.dg/goacc/pr92793-1.f90: Adjust.
+
+2020-10-30  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97412
+	* g++.dg/cpp2a/concepts-variadic2.C: New test.
+
+2020-10-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-10-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* c-c++-common/goacc/clause-locations.c: Rewrite into...
+	* c-c++-common/goacc/pr92793-1.c: ... this.
+	* gfortran.dg/goacc/clause-locations.f90: Rewrite into...
+	* gfortran.dg/goacc/pr92793-1.f90: ... this.
+
 2020-10-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2020-10-30  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97412
+	* constraint.cc (normalize_concept_check): Don't call
+	tsubst_template_args when 'args' is NULL.
+
 2020-10-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

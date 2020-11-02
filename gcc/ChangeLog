@@ -1,3 +1,8 @@
+2020-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* wide-int.cc (wi::set_bit_large): Call canonize unless setting
+	msb bit and clearing bits above it.
+
 2020-10-29  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:

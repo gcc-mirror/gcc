@@ -1,3 +1,12 @@
+2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* trans.c (gfc_set_backend_locus): Use 'gfc_get_location'.
+	(gfc_restore_backend_locus): Adjust.
+
 2020-10-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
