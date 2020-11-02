@@ -6899,37 +6899,28 @@ const char* f (enum Color clr)
 
 Option @option{-Wstringop-overflow=2} is enabled by default.
 
-@item -Wno-stringop-overread
-@opindex Wstringop-overread
-@opindex Wno-stringop-overread
-Warn for calls to string manipulation functions such as @code{memchr},
-@code{strcpy} that are determined to read past the end of the source
-sequence. 
-
-Option @option{-Wstringop-overread} is enabled by default.
-
 @table @gcctabopt
 @item -Wstringop-overflow
 @itemx -Wstringop-overflow=1
 @opindex Wstringop-overflow
 @opindex Wno-stringop-overflow
 The @option{-Wstringop-overflow=1} option uses type-zero Object Size Checking
-to determine the sizes of destination objects.  This is the default setting
-of the option.  At this setting the option does not warn for writes past
-the end of subobjects of larger objects accessed by pointers unless the
-size of the largest surrounding object is known.  When the destination may
-be one of several objects it is assumed to be the largest one of them.  On
-Linux systems, when optimization is enabled at this setting the option warns
-for the same code as when the @code{_FORTIFY_SOURCE} macro is defined to
-a non-zero value.
+to determine the sizes of destination objects.  At this setting the option
+does not warn for writes past the end of subobjects of larger objects accessed
+by pointers unless the size of the largest surrounding object is known.  When
+the destination may be one of several objects it is assumed to be the largest
+one of them.  On Linux systems, when optimization is enabled at this setting
+the option warns for the same code as when the @code{_FORTIFY_SOURCE} macro
+is defined to a non-zero value.
 
 @item -Wstringop-overflow=2
 The @option{-Wstringop-overflow=2} option uses type-one Object Size Checking
 to determine the sizes of destination objects.  At this setting the option
-warna about overflows when writing to members of the largest complete
+warns about overflows when writing to members of the largest complete
 objects whose exact size is known.  However, it does not warn for excessive
 writes to the same members of unknown objects referenced by pointers since
-they may point to arrays containing unknown numbers of elements.
+they may point to arrays containing unknown numbers of elements.  This is
+the default setting of the option.
 
 @item -Wstringop-overflow=3
 The @option{-Wstringop-overflow=3} option uses type-two Object Size Checking
@@ -6946,6 +6937,15 @@ one of several objects it uses the size of the largest of them to decide
 whether to issue a warning.  Similarly to @option{-Wstringop-overflow=3} this
 setting of the option may result in warnings for benign code.
 @end table
+
+@item -Wno-stringop-overread
+@opindex Wstringop-overread
+@opindex Wno-stringop-overread
+Warn for calls to string manipulation functions such as @code{memchr}, or
+@code{strcpy} that are determined to read past the end of the source
+sequence.
+
+Option @option{-Wstringop-overread} is enabled by default.
 
 @item -Wno-stringop-truncation
 @opindex Wstringop-truncation
