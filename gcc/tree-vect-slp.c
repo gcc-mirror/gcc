@@ -2592,7 +2592,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
       /* Collect reduction statements.  */
       vec<stmt_vec_info> reductions = as_a <loop_vec_info> (vinfo)->reductions;
       for (i = 0; reductions.iterate (i, &next_info); i++)
-	scalar_stmts.safe_push (next_info);
+	if (STMT_VINFO_RELEVANT_P (next_info)
+	    || STMT_VINFO_LIVE_P (next_info))
+	  scalar_stmts.quick_push (next_info);
     }
 
   /* Build the tree for the SLP instance.  */
@@ -2628,29 +2630,29 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {
-      if (loop_vinfo->reduction_chains.length () > 0)
-	{
-	  /* Find SLP sequences starting from reduction chains.  */
-	  FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
-	    if (! vect_analyze_slp_instance (vinfo, bst_map, first_element,
-					     max_tree_size))
+      /* Find SLP sequences starting from reduction chains.  */
+      FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
+	if (! STMT_VINFO_RELEVANT_P (first_element)
+	    && ! STMT_VINFO_LIVE_P (first_element))
+	  ;
+	else if (! vect_analyze_slp_instance (vinfo, bst_map, first_element,
+					      max_tree_size))
+	  {
+	    /* Dissolve reduction chain group.  */
+	    stmt_vec_info vinfo = first_element;
+	    stmt_vec_info last = NULL;
+	    while (vinfo)
 	      {
-		/* Dissolve reduction chain group.  */
-		stmt_vec_info vinfo = first_element;
-		stmt_vec_info last = NULL;
-		while (vinfo)
-		  {
-		    stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
-		    REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
-		    REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
-		    last = vinfo;
-		    vinfo = next;
-		  }
-		STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
-		/* It can be still vectorized as part of an SLP reduction.  */
-		loop_vinfo->reductions.safe_push (last);
+		stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
+		REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
+		REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
+		last = vinfo;
+		vinfo = next;
 	      }
-	}
+	    STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
+	    /* It can be still vectorized as part of an SLP reduction.  */
+	    loop_vinfo->reductions.safe_push (last);
+	  }
 
       /* Find SLP sequences starting from groups of reductions.  */
       if (loop_vinfo->reductions.length () > 1)

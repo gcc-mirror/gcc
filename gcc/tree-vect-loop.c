@@ -666,27 +666,50 @@ vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
   unsigned i;
 
   FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo), i, first)
-    if (STMT_VINFO_IN_PATTERN_P (first))
-      {
-	stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
-	while (next)
-	  {
-	    if (! STMT_VINFO_IN_PATTERN_P (next)
-		|| STMT_VINFO_REDUC_IDX (STMT_VINFO_RELATED_STMT (next)) == -1)
-	      break;
-	    next = REDUC_GROUP_NEXT_ELEMENT (next);
-	  }
-	/* If not all stmt in the chain are patterns or if we failed
-	   to update STMT_VINFO_REDUC_IDX try to handle the chain
-	   without patterns.  */
-	if (! next
-	    && STMT_VINFO_REDUC_IDX (STMT_VINFO_RELATED_STMT (first)) != -1)
-	  {
-	    vect_fixup_reduc_chain (first);
-	    LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
-	      = STMT_VINFO_RELATED_STMT (first);
-	  }
-      }
+    {
+      stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
+      while (next)
+	{
+	  if ((STMT_VINFO_IN_PATTERN_P (next)
+	       != STMT_VINFO_IN_PATTERN_P (first))
+	      || STMT_VINFO_REDUC_IDX (vect_stmt_to_vectorize (next)) == -1)
+	    break;
+	  next = REDUC_GROUP_NEXT_ELEMENT (next);
+	}
+      /* If all reduction chain members are well-formed patterns adjust
+	 the group to group the pattern stmts instead.  */
+      if (! next
+	  && STMT_VINFO_REDUC_IDX (vect_stmt_to_vectorize (first)) != -1)
+	{
+	  if (STMT_VINFO_IN_PATTERN_P (first))
+	    {
+	      vect_fixup_reduc_chain (first);
+	      LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
+		= STMT_VINFO_RELATED_STMT (first);
+	    }
+	}
+      /* If not all stmt in the chain are patterns or if we failed
+	 to update STMT_VINFO_REDUC_IDX dissolve the chain and handle
+	 it as regular reduction instead.  */
+      else
+	{
+	  stmt_vec_info vinfo = first;
+	  stmt_vec_info last = NULL;
+	  while (vinfo)
+	    {
+	      next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
+	      REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
+	      REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
+	      last = vinfo;
+	      vinfo = next;
+	    }
+	  STMT_VINFO_DEF_TYPE (vect_stmt_to_vectorize (first))
+	    = vect_internal_def;
+	  loop_vinfo->reductions.safe_push (vect_stmt_to_vectorize (last));
+	  LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo).unordered_remove (i);
+	  --i;
+	}
+    }
 }
 
 /* Function vect_get_loop_niters.
