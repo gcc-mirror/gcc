@@ -11567,7 +11567,7 @@ package body Sem_Ch12 is
             --  Use default to construct declaration
 
             if Present (Subt_Mark) then
-               Def := New_Copy (Subt_Mark);
+               Def := New_Copy_Tree (Subt_Mark);
             else
                pragma Assert (Present (Acc_Def));
                Def := New_Copy_Tree (Acc_Def);
