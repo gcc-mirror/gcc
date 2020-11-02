@@ -6336,9 +6336,28 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
     {
       if (is_a <gphi *> (stmt_info->stmt))
-	/* Analysis for double-reduction is done on the outer
-	   loop PHI, nested cycles have no further restrictions.  */
-	STMT_VINFO_TYPE (stmt_info) = cycle_phi_info_type;
+	{
+	  if (slp_node)
+	    {
+	      /* We eventually need to set a vector type on invariant
+		 arguments.  */
+	      unsigned j;
+	      slp_tree child;
+	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (slp_node), j, child)
+		if (!vect_maybe_update_slp_op_vectype
+		       (child, SLP_TREE_VECTYPE (slp_node)))
+		  {
+		    if (dump_enabled_p ())
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				       "incompatible vector types for "
+				       "invariants\n");
+		    return false;
+		  }
+	    }
+	  /* Analysis for double-reduction is done on the outer
+	     loop PHI, nested cycles have no further restrictions.  */
+	  STMT_VINFO_TYPE (stmt_info) = cycle_phi_info_type;
+	}
       else
 	STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
