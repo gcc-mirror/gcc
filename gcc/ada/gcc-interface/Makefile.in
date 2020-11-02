@@ -110,7 +110,7 @@ NO_INLINE_ADAFLAGS = -fno-inline
 NO_OMIT_ADAFLAGS = -fno-omit-frame-pointer
 NO_SIBLING_ADAFLAGS = -fno-optimize-sibling-calls
 NO_REORDER_ADAFLAGS = -fno-toplevel-reorder
-GNATLIBFLAGS = -W -Wall -gnatpg -nostdinc
+GNATLIBFLAGS = -W -Wall -gnatg -nostdinc
 GNATLIBCFLAGS = -g -O2
 # Pretend that _Unwind_GetIPInfo is available for the target by default.  This
 # should be autodetected during the configuration of libada and passed down to
