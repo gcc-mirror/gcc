@@ -12,5 +12,5 @@ extern void f2 ();
 template<>
 extern void f2<void> ();  // { dg-error "explicit template specialization cannot have a storage class" }
 
-export template<class T>  // { dg-warning "keyword 'export' not implemented" }
+export template<class T>  // { dg-warning "keyword 'export'" }
 static void* f3 ();
