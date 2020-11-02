@@ -9500,6 +9500,12 @@ thumb_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	  || CONST_DOUBLE_P (x)
 	  || CONSTANT_ADDRESS_P (x)
 	  || (TARGET_HAVE_MOVT && GET_CODE (x) == SYMBOL_REF)
+	  /* On Thumb-1 without MOVT/MOVW and literal pool disabled,
+	     we build the symbol address with upper/lower
+	     relocations.  */
+	  || (TARGET_THUMB1
+	      && GET_CODE (x) == SYMBOL_REF
+	      && arm_disable_literal_pool)
 	  || flag_pic);
 }
 
