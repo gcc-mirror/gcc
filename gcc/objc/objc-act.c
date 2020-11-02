@@ -822,6 +822,7 @@ objc_prop_attr_kind_for_rid (enum rid prop_rid)
       case RID_RETAIN:		return OBJC_PROPERTY_ATTR_RETAIN;
       case RID_COPY:		return OBJC_PROPERTY_ATTR_COPY;
 
+      case RID_PROPATOMIC:	return OBJC_PROPERTY_ATTR_ATOMIC;
       case RID_NONATOMIC:	return OBJC_PROPERTY_ATTR_NONATOMIC;
 
     }

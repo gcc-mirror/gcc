@@ -85,7 +85,7 @@ enum rid
   RID_GETTER, RID_SETTER,
   RID_READONLY, RID_READWRITE,
   RID_ASSIGN, RID_RETAIN, RID_COPY,
-  RID_NONATOMIC,
+  RID_PROPATOMIC, RID_NONATOMIC,
 
   /* C (reserved and imaginary types not implemented, so any use is a
      syntax error) */
