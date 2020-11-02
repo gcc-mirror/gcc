@@ -1737,6 +1737,8 @@ cache_integer_cst (tree t)
 
   gcc_assert (!TREE_OVERFLOW (t));
 
+  /* The caching indices here must match those in
+     wide_int_to_type_1.  */
   switch (TREE_CODE (type))
     {
     case NULLPTR_TYPE:
@@ -1745,12 +1747,15 @@ cache_integer_cst (tree t)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      /* Cache NULL pointer.  */
-      if (integer_zerop (t))
-	{
-	  limit = 1;
+      {
+	if (integer_zerop (t))
 	  ix = 0;
-	}
+	else if (integer_onep (t))
+	  ix = 2;
+
+	if (ix >= 0)
+	  limit = 3;
+      }
       break;
 
     case BOOLEAN_TYPE:
