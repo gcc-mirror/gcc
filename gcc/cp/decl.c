@@ -138,7 +138,7 @@ static location_t smallest_type_location (const cp_decl_specifier_seq*);
 tree cp_global_trees[CPTI_MAX];
 
 /* A list of objects which have constructors or destructors
-   which reside in the global scope.  The decl is stored in
+   which reside in namespace scope.  The decl is stored in
    the TREE_VALUE slot and the initializer is stored
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;
@@ -5458,20 +5458,17 @@ start_decl (const cp_declarator *declarator,
 void
 start_decl_1 (tree decl, bool initialized)
 {
-  tree type;
-  bool complete_p;
-  bool aggregate_definition_p;
-
-  gcc_assert (!processing_template_decl);
+  gcc_checking_assert (!processing_template_decl);
 
   if (error_operand_p (decl))
     return;
 
-  gcc_assert (VAR_P (decl));
+  gcc_checking_assert (VAR_P (decl));
 
-  type = TREE_TYPE (decl);
-  complete_p = COMPLETE_TYPE_P (type);
-  aggregate_definition_p = MAYBE_CLASS_TYPE_P (type) && !DECL_EXTERNAL (decl);
+  tree type = TREE_TYPE (decl);
+  bool complete_p = COMPLETE_TYPE_P (type);
+  bool aggregate_definition_p
+    = MAYBE_CLASS_TYPE_P (type) && !DECL_EXTERNAL (decl);
 
   /* If an explicit initializer is present, or if this is a definition
      of an aggregate, then we need a complete type at this point.
@@ -5496,6 +5493,7 @@ start_decl_1 (tree decl, bool initialized)
 				   : TCTX_STATIC_STORAGE);
       verify_type_context (input_location, context, TREE_TYPE (decl));
     }
+
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?  */
     {
@@ -14877,7 +14875,6 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
   else
     decl = lookup_elaborated_type (name, how);
 
-
   if (!decl)
     /* We found nothing.  */
     return NULL_TREE;
@@ -14898,8 +14895,8 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
   if (TREE_CODE (decl) != TYPE_DECL)
     /* Found not-a-type.  */
     return NULL_TREE;
-
-    /* Look for invalid nested type:
+  
+  /* Look for invalid nested type:
      class C {
      class C {};
      };  */
