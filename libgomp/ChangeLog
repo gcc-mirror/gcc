@@ -1,3 +1,13 @@
+2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/80219
+	PR testsuite/85303
+	* testsuite/lib/libgomp.exp (libgomp_init): Set
+	'gcc_warning_prefix', 'gcc_error_prefix'.
+
 2020-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
