@@ -820,7 +820,7 @@
    && !satisfies_constraint_K (operands[1])"
   [(clobber (const_int 0))]
   "
-    thumb1_gen_const_int (operands[0], INTVAL (operands[1]));
+    thumb1_gen_const_int_rtl (operands[0], INTVAL (operands[1]));
     DONE;
   "
 )

@@ -4528,38 +4528,6 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
     }
 }
 
-/* Emit a sequence of movs/adds/shift to produce a 32-bit constant.
-   Avoid generating useless code when one of the bytes is zero.  */
-void
-thumb1_gen_const_int (rtx op0, HOST_WIDE_INT op1)
-{
-  bool mov_done_p = false;
-  int i;
-
-  /* Emit upper 3 bytes if needed.  */
-  for (i = 0; i < 3; i++)
-    {
-      int byte = (op1 >> (8 * (3 - i))) & 0xff;
-
-      if (byte)
-	{
-	  emit_set_insn (op0, mov_done_p
-			 ? gen_rtx_PLUS (SImode,op0, GEN_INT (byte))
-			 : GEN_INT (byte));
-	  mov_done_p = true;
-	}
-
-      if (mov_done_p)
-	emit_set_insn (op0, gen_rtx_ASHIFT (SImode, op0, GEN_INT (8)));
-    }
-
-  /* Emit lower byte if needed.  */
-  if (!mov_done_p)
-    emit_set_insn (op0, GEN_INT (op1 & 0xff));
-  else if (op1 & 0xff)
-    emit_set_insn (op0, gen_rtx_PLUS (SImode, op0, GEN_INT (op1 & 0xff)));
-}
-
 /* Emit a sequence of insns to handle a large constant.
    CODE is the code of the operation required, it can be any of SET, PLUS,
    IOR, AND, XOR, MINUS;
@@ -28261,6 +28229,198 @@ arm_internal_label (FILE *stream, const char *prefix, unsigned long labelno)
       arm_target_insn = NULL;
     }
   default_internal_label (stream, prefix, labelno);
+}
+
+/* Define classes to generate code as RTL or output asm to a file.
+   Using templates then allows to use the same code to output code
+   sequences in the two formats.  */
+class thumb1_const_rtl
+{
+ public:
+  thumb1_const_rtl (rtx dst) : dst (dst) {}
+
+  void mov (HOST_WIDE_INT val)
+  {
+    emit_set_insn (dst, GEN_INT (val));
+  }
+
+  void add (HOST_WIDE_INT val)
+  {
+    emit_set_insn (dst, gen_rtx_PLUS (SImode, dst, GEN_INT (val)));
+  }
+
+  void ashift (HOST_WIDE_INT shift)
+  {
+    emit_set_insn (dst, gen_rtx_ASHIFT (SImode, dst, GEN_INT (shift)));
+  }
+
+  void neg ()
+  {
+    emit_set_insn (dst, gen_rtx_NEG (SImode, dst));
+  }
+
+ private:
+  rtx dst;
+};
+
+class thumb1_const_print
+{
+ public:
+  thumb1_const_print (FILE *f, int regno)
+  {
+    t_file = f;
+    dst_regname = reg_names[regno];
+  }
+
+  void mov (HOST_WIDE_INT val)
+  {
+    asm_fprintf (t_file, "\tmovs\t%s, #" HOST_WIDE_INT_PRINT_DEC "\n",
+		 dst_regname, val);
+  }
+
+  void add (HOST_WIDE_INT val)
+  {
+    asm_fprintf (t_file, "\tadds\t%s, #" HOST_WIDE_INT_PRINT_DEC "\n",
+		 dst_regname, val);
+  }
+
+  void ashift (HOST_WIDE_INT shift)
+  {
+    asm_fprintf (t_file, "\tlsls\t%s, #" HOST_WIDE_INT_PRINT_DEC "\n",
+		 dst_regname, shift);
+  }
+
+  void neg ()
+  {
+    asm_fprintf (t_file, "\trsbs\t%s, #0\n", dst_regname);
+  }
+
+ private:
+  FILE *t_file;
+  const char *dst_regname;
+};
+
+/* Emit a sequence of movs/adds/shift to produce a 32-bit constant.
+   Avoid generating useless code when one of the bytes is zero.  */
+template <class T>
+void
+thumb1_gen_const_int_1 (T dst, HOST_WIDE_INT op1)
+{
+  bool mov_done_p = false;
+  unsigned HOST_WIDE_INT val = op1;
+  int shift = 0;
+  int i;
+
+  gcc_assert (op1 == trunc_int_for_mode (op1, SImode));
+
+  if (val <= 255)
+    {
+      dst.mov (val);
+      return;
+    }
+
+  /* For negative numbers with the first nine bits set, build the
+     opposite of OP1, then negate it, it's generally shorter and not
+     longer.  */
+  if ((val & 0xFF800000) == 0xFF800000)
+    {
+      thumb1_gen_const_int_1 (dst, -op1);
+      dst.neg ();
+      return;
+    }
+
+  /* In the general case, we need 7 instructions to build
+     a 32 bits constant (1 movs, 3 lsls, 3 adds). We can
+     do better if VAL is small enough, or
+     right-shiftable by a suitable amount.  If the
+     right-shift enables to encode at least one less byte,
+     it's worth it: we save a adds and a lsls at the
+     expense of a final lsls.  */
+  int final_shift = number_of_first_bit_set (val);
+
+  int leading_zeroes = clz_hwi (val);
+  int number_of_bytes_needed
+    = ((HOST_BITS_PER_WIDE_INT - 1 - leading_zeroes)
+       / BITS_PER_UNIT) + 1;
+  int number_of_bytes_needed2
+    = ((HOST_BITS_PER_WIDE_INT - 1 - leading_zeroes - final_shift)
+       / BITS_PER_UNIT) + 1;
+
+  if (number_of_bytes_needed2 < number_of_bytes_needed)
+    val >>= final_shift;
+  else
+    final_shift = 0;
+
+  /* If we are in a very small range, we can use either a single movs
+     or movs+adds.  */
+  if (val <= 510)
+    {
+      if (val > 255)
+	{
+	  unsigned HOST_WIDE_INT high = val - 255;
+
+	  dst.mov (high);
+	  dst.add (255);
+	}
+      else
+	dst.mov (val);
+
+      if (final_shift > 0)
+	dst.ashift (final_shift);
+    }
+  else
+    {
+      /* General case, emit upper 3 bytes as needed.  */
+      for (i = 0; i < 3; i++)
+	{
+	  unsigned HOST_WIDE_INT byte = (val >> (8 * (3 - i))) & 0xff;
+
+	  if (byte)
+	    {
+	      /* We are about to emit new bits, stop accumulating a
+		 shift amount, and left-shift only if we have already
+		 emitted some upper bits.  */
+	      if (mov_done_p)
+		{
+		  dst.ashift (shift);
+		  dst.add (byte);
+		}
+	      else
+		dst.mov (byte);
+
+	      /* Stop accumulating shift amount since we've just
+		 emitted some bits.  */
+	      shift = 0;
+
+	      mov_done_p = true;
+	    }
+
+	  if (mov_done_p)
+	    shift += 8;
+	}
+
+      /* Emit lower byte.  */
+      if (!mov_done_p)
+	dst.mov (val & 0xff);
+      else
+	{
+	  dst.ashift (shift);
+	  if (val & 0xff)
+	    dst.add (val & 0xff);
+	}
+
+      if (final_shift > 0)
+	dst.ashift (final_shift);
+    }
+}
+
+/* Proxy for thumb1.md, since the thumb1_const_print and
+   thumb1_const_rtl classes are not exported.  */
+void
+thumb1_gen_const_int_rtl (rtx dst, HOST_WIDE_INT op1)
+{
+  thumb1_const_rtl t (dst);
+  thumb1_gen_const_int_1 (t, op1);
 }
 
 /* Output code to add DELTA to the first argument, and then jump
