@@ -165,6 +165,7 @@ ssa_block_ranges::~ssa_block_ranges ()
 void
 ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
 {
+  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
   irange *m = m_irange_allocator->allocate (r);
   m_tab[bb->index] = m;
 }
@@ -174,6 +175,7 @@ ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
 void
 ssa_block_ranges::set_bb_varying (const basic_block bb)
 {
+  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
   m_tab[bb->index] = m_type_range;
 }
 
@@ -183,6 +185,7 @@ ssa_block_ranges::set_bb_varying (const basic_block bb)
 bool
 ssa_block_ranges::get_bb_range (irange &r, const basic_block bb)
 {
+  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
   irange *m = m_tab[bb->index];
   if (m)
     {
@@ -197,6 +200,7 @@ ssa_block_ranges::get_bb_range (irange &r, const basic_block bb)
 bool
 ssa_block_ranges::bb_range_p (const basic_block bb)
 {
+  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
   return m_tab[bb->index] != NULL;
 }
 
@@ -244,8 +248,8 @@ block_range_cache::~block_range_cache ()
   m_ssa_ranges.release ();
 }
 
-// Return a reference to the m_block_cache for NAME.  If it has not been
-// accessed yet, allocate it.
+// Return a reference to the ssa_block_cache for NAME.  If it has not been
+// accessed yet, allocate it first.
 
 ssa_block_ranges &
 block_range_cache::get_block_ranges (tree name)
@@ -255,9 +259,22 @@ block_range_cache::get_block_ranges (tree name)
     m_ssa_ranges.safe_grow_cleared (num_ssa_names + 1);
 
   if (!m_ssa_ranges[v])
-    m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name), m_irange_allocator);
-
+    m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name),
+					    m_irange_allocator);
   return *(m_ssa_ranges[v]);
+}
+
+
+// Return a pointer to the ssa_block_cache for NAME.  If it has not been
+// accessed yet, return NULL.
+
+ssa_block_ranges *
+block_range_cache::query_block_ranges (tree name)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_ssa_ranges.length () || !m_ssa_ranges[v])
+    return NULL;
+  return m_ssa_ranges[v];
 }
 
 // Set the range for NAME on entry to block BB to R.
@@ -283,7 +300,10 @@ block_range_cache::set_bb_varying (tree name, const basic_block bb)
 bool
 block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 {
-  return get_block_ranges (name).get_bb_range (r, bb);
+  ssa_block_ranges *ptr = query_block_ranges (name);
+  if (ptr)
+    return ptr->get_bb_range (r, bb);
+  return false;
 }
 
 // Return true if NAME has a range set in block BB.
@@ -291,7 +311,10 @@ block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 bool
 block_range_cache::bb_range_p (tree name, const basic_block bb)
 {
-  return get_block_ranges (name).bb_range_p (bb);
+  ssa_block_ranges *ptr = query_block_ranges (name);
+  if (ptr)
+    return ptr->bb_range_p (bb);
+  return false;
 }
 
 // Print all known block caches to file F.
@@ -470,6 +493,46 @@ ranger_cache::~ranger_cache ()
   m_poor_value_list.release ();
   m_workback.release ();
   m_update_list.release ();
+}
+
+// Dump the global caches to file F.  if GORI_DUMP is true, dump the
+// gori map as well.
+
+void
+ranger_cache::dump (FILE *f, bool gori_dump)
+{
+  m_globals.dump (f);
+  if (gori_dump)
+    {
+      fprintf (f, "\nDUMPING GORI MAP\n");
+      gori_compute::dump (f);
+    }
+  fprintf (f, "\n");
+}
+
+// Dump the caches for basic block BB to file F.
+
+void
+ranger_cache::dump (FILE *f, basic_block bb)
+{
+  m_on_entry.dump (f, bb);
+}
+
+// Get the global range for NAME, and return in R.  Return false if the
+// global range is not set.
+
+bool
+ranger_cache::get_global_range (irange &r, tree name) const
+{
+  return m_globals.get_global_range (r, name);
+}
+
+//  Set the global range of NAME to R.
+
+void
+ranger_cache::set_global_range (tree name, const irange &r)
+{
+  m_globals.set_global_range (name, r);
 }
 
 // Push a request for a new lookup in block BB of name.  Return true if
@@ -869,5 +932,4 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  iterative_cache_update (name);
 	}
     }
- 
 }

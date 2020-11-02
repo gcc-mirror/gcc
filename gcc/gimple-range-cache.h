@@ -60,6 +60,7 @@ public:
 private:
   vec<class ssa_block_ranges *> m_ssa_ranges;
   ssa_block_ranges &get_block_ranges (tree name);
+  ssa_block_ranges *query_block_ranges (tree name);
   irange_allocator *m_irange_allocator;
 };
 
@@ -95,10 +96,16 @@ public:
   virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
 
+  bool get_global_range (irange &r, tree name) const;
+  void set_global_range (tree name, const irange &r);
+
+  non_null_ref m_non_null;
+
+  void dump (FILE *f, bool dump_gori = true);
+  void dump (FILE *f, basic_block bb);
+private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;
-  non_null_ref m_non_null;
-private:
   void add_to_update (basic_block bb);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void iterative_cache_update (tree name);
