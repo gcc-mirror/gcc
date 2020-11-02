@@ -2471,22 +2471,27 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
 	  DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
 	}
-      DECL_TEMPLATE_INSTANTIATED (newdecl)
-	|= DECL_TEMPLATE_INSTANTIATED (olddecl);
-      DECL_ODR_USED (newdecl) |= DECL_ODR_USED (olddecl);
 
-      /* If the OLDDECL is an instantiation and/or specialization,
-	 then the NEWDECL must be too.  But, it may not yet be marked
-	 as such if the caller has created NEWDECL, but has not yet
-	 figured out that it is a redeclaration.  */
-      if (!DECL_USE_TEMPLATE (newdecl))
-	DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
+      if (TREE_CODE (newdecl) != TYPE_DECL)
+	{
+	  DECL_TEMPLATE_INSTANTIATED (newdecl)
+	    |= DECL_TEMPLATE_INSTANTIATED (olddecl);
+	  DECL_ODR_USED (newdecl) |= DECL_ODR_USED (olddecl);
+
+	  /* If the OLDDECL is an instantiation and/or specialization,
+	     then the NEWDECL must be too.  But, it may not yet be marked
+	     as such if the caller has created NEWDECL, but has not yet
+	     figured out that it is a redeclaration.  */
+	  if (!DECL_USE_TEMPLATE (newdecl))
+	    DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
+
+	  DECL_INITIALIZED_IN_CLASS_P (newdecl)
+	    |= DECL_INITIALIZED_IN_CLASS_P (olddecl);
+	}
 
       /* Don't really know how much of the language-specific
 	 values we should copy from old to new.  */
       DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
-      DECL_INITIALIZED_IN_CLASS_P (newdecl)
-	|= DECL_INITIALIZED_IN_CLASS_P (olddecl);
 
       if (LANG_DECL_HAS_MIN (newdecl))
 	{
@@ -2646,19 +2651,20 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
 	    {
 	      enum built_in_function fncode = DECL_FUNCTION_CODE (newdecl);
-	      switch (fncode)
+	      if (builtin_decl_explicit_p (fncode))
 		{
-		  /* If a compatible prototype of these builtin functions
-		     is seen, assume the runtime implements it with the
-		     expected semantics.  */
-		case BUILT_IN_STPCPY:
-		  if (builtin_decl_explicit_p (fncode))
-		    set_builtin_decl_implicit_p (fncode, true);
-		  break;
-		default:
-		  if (builtin_decl_explicit_p (fncode))
-		    set_builtin_decl_declared_p (fncode, true);
-		  break;
+		  /* A compatible prototype of these builtin functions
+		     is seen, assume the runtime implements it with
+		     the expected semantics.  */
+		  switch (fncode)
+		    {
+		    case BUILT_IN_STPCPY:
+		      set_builtin_decl_implicit_p (fncode, true);
+		      break;
+		    default:
+		      set_builtin_decl_declared_p (fncode, true);
+		      break;
+		    }
 		}
 
 	      copy_attributes_to_builtin (newdecl);
