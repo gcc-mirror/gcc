@@ -1054,7 +1054,6 @@ extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
 extern const cpp_token *cpp_get_token (cpp_reader *);
 extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 						     location_t *);
-extern void cpp_enable_filename_token (cpp_reader *, bool);
 inline bool cpp_user_macro_p (const cpp_hashnode *node)
 {
   return node->type == NT_USER_MACRO;

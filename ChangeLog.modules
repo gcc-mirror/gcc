@@ -1,5 +1,9 @@
 2020-11-02  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/cpplib.h (cpp_enable_filename_token): Delete.
+	* macro.c (cpp_enable_filename_token): Delete.
+
 	Merge trunk b2a31e2c341
 
 	gcc/cp/
