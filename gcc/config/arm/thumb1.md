@@ -675,7 +675,7 @@
       case 7:
       /* pure-code alternative: build the constant byte by byte,
 	 instead of loading it from a constant pool.  */
-	if (GET_CODE (operands[1]) == SYMBOL_REF)
+	if (arm_valid_symbolic_address_p (operands[1]))
 	  {
 	    output_asm_insn (\"movs\\t%0, #:upper8_15:%1\", operands);
 	    output_asm_insn (\"lsls\\t%0, #8\", operands);
@@ -686,7 +686,7 @@
 	    output_asm_insn (\"adds\\t%0, #:lower0_7:%1\", operands);
 	    return \"\";
 	  }
-	else
+	else if (GET_CODE (operands[1]) == CONST_INT)
 	  {
 	    int i;
 	    HOST_WIDE_INT op1 = INTVAL (operands[1]);
@@ -721,6 +721,7 @@
 	      output_asm_insn ("adds\t%0, %1", ops);
 	    return "";
 	  }
+	  gcc_unreachable ();
 
       case 8: return "ldr\t%0, %1";
       case 9: return "str\t%1, %0";
