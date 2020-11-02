@@ -26184,7 +26184,8 @@ package body Sem_Util is
      (Typ      : Entity_Id;
       From_Typ : Entity_Id)
    is
-      DIC_Proc : Entity_Id;
+      DIC_Proc         : Entity_Id;
+      Partial_DIC_Proc : Entity_Id;
 
    begin
       if Present (Typ) and then Present (From_Typ) then
@@ -26205,6 +26206,7 @@ package body Sem_Util is
          end if;
 
          DIC_Proc := DIC_Procedure (From_Typ);
+         Partial_DIC_Proc := Partial_DIC_Procedure (From_Typ);
 
          --  The setting of the attributes is intentionally conservative. This
          --  prevents accidental clobbering of enabled attributes.
@@ -26219,6 +26221,12 @@ package body Sem_Util is
 
          if Present (DIC_Proc) and then No (DIC_Procedure (Typ)) then
             Set_DIC_Procedure (Typ, DIC_Proc);
+         end if;
+
+         if Present (Partial_DIC_Proc)
+           and then No (Partial_DIC_Procedure (Typ))
+         then
+            Set_Partial_DIC_Procedure (Typ, Partial_DIC_Proc);
          end if;
       end if;
    end Propagate_DIC_Attributes;

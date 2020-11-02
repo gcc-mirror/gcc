@@ -293,23 +293,29 @@ package Exp_Util is
    --  type is frozen.
 
    function Build_DIC_Call
-     (Loc    : Source_Ptr;
-      Obj_Id : Entity_Id;
-      Typ    : Entity_Id) return Node_Id;
-   --  Build a call to the DIC procedure of type Typ with Obj_Id as the actual
+     (Loc      : Source_Ptr;
+      Obj_Name : Node_Id;
+      Typ      : Entity_Id) return Node_Id;
+   --  Build a call to the DIC procedure for Typ with Obj_Name as the actual
    --  parameter.
 
    procedure Build_DIC_Procedure_Body
-     (Typ        : Entity_Id;
-      For_Freeze : Boolean := False);
+     (Typ         : Entity_Id;
+      Partial_DIC : Boolean := False);
    --  Create the body of the procedure which verifies the assertion expression
-   --  of pragma Default_Initial_Condition at run time. Flag For_Freeze should
-   --  be set when the body is constructed as part of the freezing actions for
-   --  Typ.
+   --  of pragma Default_Initial_Condition at run time. Partial_DIC indicates
+   --  that a partial DIC-checking procedure body should be built, for checking
+   --  a DIC associated with the type's partial view, and which will be called
+   --  by the main DIC procedure.
 
-   procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id);
+   procedure Build_DIC_Procedure_Declaration
+     (Typ         : Entity_Id;
+      Partial_DIC : Boolean := False);
    --  Create the declaration of the procedure which verifies the assertion
-   --  expression of pragma Default_Initial_Condition at run time.
+   --  expression of pragma Default_Initial_Condition at run time. Partial_DIC
+   --  indicates that a partial DIC-checking procedure should be declared,
+   --  for checking a DIC associated with the type's partial view, and which
+   --  will be called by the main DIC procedure.
 
    procedure Build_Invariant_Procedure_Body
      (Typ               : Entity_Id;

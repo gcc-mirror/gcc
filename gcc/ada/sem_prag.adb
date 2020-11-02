@@ -15111,7 +15111,7 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_No_Identifiers;
-            Check_At_Most_N_Arguments (1);
+            Check_At_Most_N_Arguments (2);  -- Accounts for implicit type arg
 
             Typ  := Empty;
             Stmt := Prev (N);
@@ -15173,6 +15173,27 @@ package body Sem_Prag is
             --  expression.
 
             Set_Has_Own_DIC (Typ);
+
+            --  A type entity argument is appended to facilitate inheriting the
+            --  aspect/pragma from parent types (see Build_DIC_Procedure_Body),
+            --  though that extra argument isn't documented for the pragma.
+
+            if not Present (Arg2) then
+               --  When the pragma has no arguments, create an argument with
+               --  the value Empty, so the type name argument can be appended
+               --  following it (since it's expected as the second argument).
+
+               if not Present (Arg1) then
+                  Set_Pragma_Argument_Associations (N, New_List (
+                    Make_Pragma_Argument_Association (Sloc (Typ),
+                      Expression => Empty)));
+               end if;
+
+               Append_To
+                 (Pragma_Argument_Associations (N),
+                  Make_Pragma_Argument_Association (Sloc (Typ),
+                    Expression => New_Occurrence_Of (Typ, Sloc (Typ))));
+            end if;
 
             --  Chain the pragma on the rep item chain for further processing
 

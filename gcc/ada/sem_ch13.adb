@@ -3606,11 +3606,17 @@ package body Sem_Ch13 is
                --  wrapped inside of a procedure at the freeze point of the
                --  private type's full view.
 
+               --  A type entity argument is appended to facilitate inheriting
+               --  the aspect from parent types (see Build_DIC_Procedure_Body),
+               --  though that extra argument isn't documented for the pragma.
+
                when Aspect_Default_Initial_Condition =>
                   Aitem := Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
-                         Expression => Relocate_Node (Expr))),
+                         Expression => Relocate_Node (Expr)),
+                       Make_Pragma_Argument_Association (Sloc (Ent),
+                         Expression => Ent)),
                      Pragma_Name                  =>
                        Name_Default_Initial_Condition);
 

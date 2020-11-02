@@ -5388,6 +5388,24 @@ package body Exp_Ch4 is
 
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
                Analyze_And_Resolve (N, PtrT);
+
+               --  When designated type has Default_Initial_Condition aspects,
+               --  make a call to the type's DIC procedure to perform the
+               --  checks. Theoretically this might also be needed for cases
+               --  where the type doesn't have an init proc, but those should
+               --  be very uncommon, and for now we only support the init proc
+               --  case. ???
+
+               if Has_DIC (Dtyp)
+                 and then Present (DIC_Procedure (Dtyp))
+                 and then not Has_Null_Body (DIC_Procedure (Dtyp))
+               then
+                  Insert_Action (N,
+                                 Build_DIC_Call (Loc,
+                                   Make_Explicit_Dereference (Loc,
+                                     Prefix => New_Occurrence_Of (Temp, Loc)),
+                                 Dtyp));
+               end if;
             end if;
          end if;
       end;
