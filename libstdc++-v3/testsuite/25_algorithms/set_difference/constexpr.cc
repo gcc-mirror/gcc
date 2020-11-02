@@ -29,13 +29,16 @@ test()
   std::array<int, 24> out0{{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
   const auto outvv = std::set_difference(ca0.begin(), ca0.end(),
-					 cas.begin(), cas.end(), out0.begin());
+					 cas.begin(), cas.end(),
+					 out0.begin());
 
   const auto outww = std::set_difference(ca0.begin(), ca0.end(),
 				         cas.begin(), cas.end(),
-				         out0.begin(), std::less<int>());
+				         outvv,
+					 std::less<int>());
 
-  return true;
+
+  return outvv == (out0.begin() + 3) && outww == (outvv + 3);
 }
 
 static_assert(test());

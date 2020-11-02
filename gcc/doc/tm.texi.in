@@ -8109,6 +8109,8 @@ and the associated definitions of those functions.
 
 @hook TARGET_GET_DRAP_RTX
 
+@hook TARGET_ZERO_CALL_USED_REGS
+
 @hook TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
 
 @hook TARGET_CONST_ANCHOR

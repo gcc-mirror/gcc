@@ -27,6 +27,9 @@
 // 23.2.9  Primitive numeric input conversion [utility.from.chars]
 //
 
+// Prefer to use std::pmr::string if possible, which requires the cxx11 ABI.
+#define _GLIBCXX_USE_CXX11_ABI 1
+
 #include <charconv>
 #include <string>
 #include <memory_resource>
@@ -87,6 +90,12 @@ namespace
     void* m_ptr = nullptr;
   };
 
+#if _GLIBCXX_USE_CXX11_ABI
+  using buffered_string = std::pmr::string;
+#else
+  using buffered_string = std::string;
+#endif
+
   inline bool valid_fmt(chars_format fmt)
   {
     return fmt != chars_format{}
@@ -130,7 +139,7 @@ namespace
   // Returns a nullptr if a valid pattern is not present.
   const char*
   pattern(const char* const first, const char* last,
-	  chars_format& fmt, pmr::string& buf)
+	  chars_format& fmt, buffered_string& buf)
   {
     // fmt has the value of one of the enumerators of chars_format.
     __glibcxx_assert(valid_fmt(fmt));
@@ -359,6 +368,22 @@ namespace
     return result;
   }
 
+#if ! _GLIBCXX_USE_CXX11_ABI
+  inline bool
+  reserve_string(std::string& s) noexcept
+  {
+    __try
+      {
+	s.reserve(buffer_resource::guaranteed_capacity());
+      }
+    __catch (const std::bad_alloc&)
+      {
+	return false;
+      }
+    return true;
+  }
+#endif
+
 } // namespace
 
 // FIXME: This should be reimplemented so it doesn't use strtod and newlocale.
@@ -369,10 +394,16 @@ from_chars_result
 from_chars(const char* first, const char* last, float& value,
 	   chars_format fmt) noexcept
 {
+  errc ec = errc::invalid_argument;
+#if _GLIBCXX_USE_CXX11_ABI
   buffer_resource mr;
   pmr::string buf(&mr);
+#else
+  string buf;
+  if (!reserve_string(buf))
+    return make_result(first, 0, {}, ec);
+#endif
   size_t len = 0;
-  errc ec = errc::invalid_argument;
   __try
     {
       if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
@@ -389,10 +420,16 @@ from_chars_result
 from_chars(const char* first, const char* last, double& value,
 	   chars_format fmt) noexcept
 {
+  errc ec = errc::invalid_argument;
+#if _GLIBCXX_USE_CXX11_ABI
   buffer_resource mr;
   pmr::string buf(&mr);
+#else
+  string buf;
+  if (!reserve_string(buf))
+    return make_result(first, 0, {}, ec);
+#endif
   size_t len = 0;
-  errc ec = errc::invalid_argument;
   __try
     {
       if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
@@ -409,10 +446,16 @@ from_chars_result
 from_chars(const char* first, const char* last, long double& value,
 	   chars_format fmt) noexcept
 {
+  errc ec = errc::invalid_argument;
+#if _GLIBCXX_USE_CXX11_ABI
   buffer_resource mr;
   pmr::string buf(&mr);
+#else
+  string buf;
+  if (!reserve_string(buf))
+    return make_result(first, 0, {}, ec);
+#endif
   size_t len = 0;
-  errc ec = errc::invalid_argument;
   __try
     {
       if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]

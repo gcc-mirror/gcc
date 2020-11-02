@@ -3967,7 +3967,7 @@ static tree gfc_trans_omp_workshare (gfc_code *, gfc_omp_clauses *);
 static tree
 gfc_trans_omp_atomic (gfc_code *code)
 {
-  gfc_code *atomic_code = code;
+  gfc_code *atomic_code = code->block;
   gfc_se lse;
   gfc_se rse;
   gfc_se vse;
@@ -3979,12 +3979,16 @@ gfc_trans_omp_atomic (gfc_code *code)
   enum tree_code aop = OMP_ATOMIC;
   bool var_on_left = false;
   enum omp_memory_order mo;
-  if (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SEQ_CST)
-    mo = OMP_MEMORY_ORDER_SEQ_CST;
-  else if (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_ACQ_REL)
-    mo = OMP_MEMORY_ORDER_ACQ_REL;
-  else
-    mo = OMP_MEMORY_ORDER_RELAXED;
+  switch (atomic_code->ext.omp_clauses->memorder)
+    {
+    case OMP_MEMORDER_UNSET: mo = OMP_MEMORY_ORDER_UNSPECIFIED; break;
+    case OMP_MEMORDER_ACQ_REL: mo = OMP_MEMORY_ORDER_ACQ_REL; break;
+    case OMP_MEMORDER_ACQUIRE: mo = OMP_MEMORY_ORDER_ACQUIRE; break;
+    case OMP_MEMORDER_RELAXED: mo = OMP_MEMORY_ORDER_RELAXED; break;
+    case OMP_MEMORDER_RELEASE: mo = OMP_MEMORY_ORDER_RELEASE; break;
+    case OMP_MEMORDER_SEQ_CST: mo = OMP_MEMORY_ORDER_SEQ_CST; break;
+    default: gcc_unreachable ();
+    }
 
   code = code->block->next;
   gcc_assert (code->op == EXEC_ASSIGN);
@@ -3996,16 +4000,16 @@ gfc_trans_omp_atomic (gfc_code *code)
   gfc_start_block (&block);
 
   expr2 = code->expr2;
-  if (((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+  if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        != GFC_OMP_ATOMIC_WRITE)
       && expr2->expr_type == EXPR_FUNCTION
       && expr2->value.function.isym
       && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
     expr2 = expr2->value.function.actual->expr;
 
-  switch (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+  if ((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
+      == GFC_OMP_ATOMIC_READ)
     {
-    case GFC_OMP_ATOMIC_READ:
       gfc_conv_expr (&vse, code->expr1);
       gfc_add_block_to_block (&block, &vse.pre);
 
@@ -4023,7 +4027,9 @@ gfc_trans_omp_atomic (gfc_code *code)
       gfc_add_block_to_block (&block, &rse.pre);
 
       return gfc_finish_block (&block);
-    case GFC_OMP_ATOMIC_CAPTURE:
+    }
+  if (atomic_code->ext.omp_clauses->capture)
+    {
       aop = OMP_ATOMIC_CAPTURE_NEW;
       if (expr2->expr_type == EXPR_VARIABLE)
 	{
@@ -4042,9 +4048,6 @@ gfc_trans_omp_atomic (gfc_code *code)
 	      && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
 	    expr2 = expr2->value.function.actual->expr;
 	}
-      break;
-    default:
-      break;
     }
 
   gfc_conv_expr (&lse, code->expr1);
@@ -4052,9 +4055,9 @@ gfc_trans_omp_atomic (gfc_code *code)
   type = TREE_TYPE (lse.expr);
   lhsaddr = gfc_build_addr_expr (NULL, lse.expr);
 
-  if (((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+  if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        == GFC_OMP_ATOMIC_WRITE)
-      || (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SWAP))
+      || (atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_SWAP))
     {
       gfc_conv_expr (&rse, expr2);
       gfc_add_block_to_block (&block, &rse.pre);
@@ -4190,9 +4193,9 @@ gfc_trans_omp_atomic (gfc_code *code)
 
   rhs = gfc_evaluate_now (rse.expr, &block);
 
-  if (((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+  if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        == GFC_OMP_ATOMIC_WRITE)
-      || (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SWAP))
+      || (atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_SWAP))
     x = rhs;
   else
     {
@@ -4791,7 +4794,7 @@ gfc_trans_omp_flush (gfc_code *code)
 {
   tree call;
   if (!code->ext.omp_clauses
-      || code->ext.omp_clauses->memorder == OMP_MEMORDER_LAST)
+      || code->ext.omp_clauses->memorder == OMP_MEMORDER_UNSET)
     {
       call = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
       call = build_call_expr_loc (input_location, call, 0);

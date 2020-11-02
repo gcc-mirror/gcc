@@ -56,6 +56,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "gimple-expr.h"
 #include "memmodel.h"
+#include "backend.h"
+#include "emit-rtl.h"
+#include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "tree-vrp.h"
@@ -985,6 +988,35 @@ default_function_value_regno_p (const unsigned int regno ATTRIBUTE_UNUSED)
 #else
   gcc_unreachable ();
 #endif
+}
+
+/* The default hook for TARGET_ZERO_CALL_USED_REGS.  */
+
+HARD_REG_SET
+default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
+{
+  gcc_assert (!hard_reg_set_empty_p (need_zeroed_hardregs));
+
+  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
+      {
+	rtx_insn *last_insn = get_last_insn ();
+	machine_mode mode = GET_MODE (regno_reg_rtx[regno]);
+	rtx zero = CONST0_RTX (mode);
+	rtx_insn *insn = emit_move_insn (regno_reg_rtx[regno], zero);
+	if (!valid_insn_p (insn))
+	  {
+	    static bool issued_error;
+	    if (!issued_error)
+	      {
+		issued_error = true;
+		sorry ("%qs not supported on this target",
+			"-fzero-call-used_regs");
+	      }
+	    delete_insns_since (last_insn);
+	  }
+      }
+  return need_zeroed_hardregs;
 }
 
 rtx

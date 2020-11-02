@@ -32,7 +32,8 @@ test()
   const auto outgg = std::mismatch(ca0.begin(), ca0.end(), cax.begin(),
 				   std::equal_to<int>());
 
-  return true;
+  return outff.first == (ca0.begin() + 6) && outff.second == (cax.begin() + 6)
+    && outgg == outff;
 }
 
 static_assert(test());

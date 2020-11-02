@@ -5133,7 +5133,191 @@ move_unallocated_pseudos (void)
 
   first_moveable_pseudo = last_moveable_pseudo = 0;
 }
+
 
+
+/* Code dealing with scratches (changing them onto
+   pseudos and restoring them from the pseudos).
+
+   We change scratches into pseudos at the beginning of IRA to
+   simplify dealing with them (conflicts, hard register assignments).
+
+   If the pseudo denoting scratch was spilled it means that we do not
+   need a hard register for it.  Such pseudos are transformed back to
+   scratches at the end of LRA.  */
+
+/* Description of location of a former scratch operand.	 */
+struct sloc
+{
+  rtx_insn *insn; /* Insn where the scratch was.  */
+  int nop;  /* Number of the operand which was a scratch.  */
+  unsigned regno; /* regno gnerated instead of scratch */
+  int icode;  /* Original icode from which scratch was removed.  */
+};
+
+typedef struct sloc *sloc_t;
+
+/* Locations of the former scratches.  */
+static vec<sloc_t> scratches;
+
+/* Bitmap of scratch regnos.  */
+static bitmap_head scratch_bitmap;
+
+/* Bitmap of scratch operands.	*/
+static bitmap_head scratch_operand_bitmap;
+
+/* Return true if pseudo REGNO is made of SCRATCH.  */
+bool
+ira_former_scratch_p (int regno)
+{
+  return bitmap_bit_p (&scratch_bitmap, regno);
+}
+
+/* Return true if the operand NOP of INSN is a former scratch.	*/
+bool
+ira_former_scratch_operand_p (rtx_insn *insn, int nop)
+{
+  return bitmap_bit_p (&scratch_operand_bitmap,
+		       INSN_UID (insn) * MAX_RECOG_OPERANDS + nop) != 0;
+}
+
+/* Register operand NOP in INSN as a former scratch.  It will be
+   changed to scratch back, if it is necessary, at the LRA end.  */
+void
+ira_register_new_scratch_op (rtx_insn *insn, int nop, int icode)
+{
+  rtx op = *recog_data.operand_loc[nop];
+  sloc_t loc = XNEW (struct sloc);
+  ira_assert (REG_P (op));
+  loc->insn = insn;
+  loc->nop = nop;
+  loc->regno = REGNO (op);
+  loc->icode = icode;
+  scratches.safe_push (loc);
+  bitmap_set_bit (&scratch_bitmap, REGNO (op));
+  bitmap_set_bit (&scratch_operand_bitmap,
+		  INSN_UID (insn) * MAX_RECOG_OPERANDS + nop);
+  add_reg_note (insn, REG_UNUSED, op);
+}
+
+/* Return true if string STR contains constraint 'X'.  */
+static bool
+contains_X_constraint_p (const char *str)
+{
+  int c;
+  
+  while ((c = *str))
+    {
+      str += CONSTRAINT_LEN (c, str);
+      if (c == 'X') return true;
+    }
+  return false;
+}
+  
+/* Change INSN's scratches into pseudos and save their location.  */
+bool
+ira_remove_insn_scratches (rtx_insn *insn, bool all_p, FILE *dump_file,
+			   rtx (*get_reg) (rtx original))
+{
+  int i;
+  bool insn_changed_p;
+  rtx reg, *loc;
+   
+  extract_insn (insn);
+  insn_changed_p = false;
+  for (i = 0; i < recog_data.n_operands; i++)
+    {
+      loc = recog_data.operand_loc[i];
+      if (GET_CODE (*loc) == SCRATCH && GET_MODE (*loc) != VOIDmode)
+	{
+	  if (! all_p && contains_X_constraint_p (recog_data.constraints[i]))
+	    continue;
+	  insn_changed_p = true;
+	  *loc = reg = get_reg (*loc);
+	  ira_register_new_scratch_op (insn, i, INSN_CODE (insn));
+	  if (ira_dump_file != NULL)
+	    fprintf (dump_file,
+		     "Removing SCRATCH to p%u in insn #%u (nop %d)\n",
+		     REGNO (reg), INSN_UID (insn), i);
+	}
+    }
+  return insn_changed_p;
+}
+
+/* Return new register of the same mode as ORIGINAL.  Used in
+   ira_remove_scratches.  */
+static rtx
+get_scratch_reg (rtx original)
+{
+  return gen_reg_rtx (GET_MODE (original));
+}
+
+/* Change scratches into pseudos and save their location.  */
+void
+ira_remove_scratches (void)
+{
+  basic_block bb;
+  rtx_insn *insn;
+
+  scratches.create (get_max_uid ());
+  bitmap_initialize (&scratch_bitmap, &reg_obstack);
+  bitmap_initialize (&scratch_operand_bitmap, &reg_obstack);
+  FOR_EACH_BB_FN (bb, cfun)
+    FOR_BB_INSNS (bb, insn)
+    if (INSN_P (insn)
+	&& ira_remove_insn_scratches (insn, false, ira_dump_file, get_scratch_reg))
+      /* Because we might use DF, we need to keep DF info up to date.  */
+      df_insn_rescan (insn);
+}
+
+/* Changes pseudos created by function remove_scratches onto scratches.	 */
+void
+ira_restore_scratches (FILE *dump_file)
+{
+  int regno, n;
+  unsigned i;
+  rtx *op_loc;
+  sloc_t loc;
+
+  for (i = 0; scratches.iterate (i, &loc); i++)
+    {
+      /* Ignore already deleted insns.  */
+      if (NOTE_P (loc->insn)
+	  && NOTE_KIND (loc->insn) == NOTE_INSN_DELETED)
+	continue;
+      extract_insn (loc->insn);
+      if (loc->icode != INSN_CODE (loc->insn))
+	{
+	  /* The icode doesn't match, which means the insn has been modified
+	     (e.g. register elimination).  The scratch cannot be restored.  */
+	  continue;
+	}
+      op_loc = recog_data.operand_loc[loc->nop];
+      if (REG_P (*op_loc)
+	  && ((regno = REGNO (*op_loc)) >= FIRST_PSEUDO_REGISTER)
+	  && reg_renumber[regno] < 0)
+	{
+	  /* It should be only case when scratch register with chosen
+	     constraint 'X' did not get memory or hard register.  */
+	  ira_assert (ira_former_scratch_p (regno));
+	  *op_loc = gen_rtx_SCRATCH (GET_MODE (*op_loc));
+	  for (n = 0; n < recog_data.n_dups; n++)
+	    *recog_data.dup_loc[n]
+	      = *recog_data.operand_loc[(int) recog_data.dup_num[n]];
+	  if (dump_file != NULL)
+	    fprintf (dump_file, "Restoring SCRATCH in insn #%u(nop %d)\n",
+		     INSN_UID (loc->insn), loc->nop);
+	}
+    }
+  for (i = 0; scratches.iterate (i, &loc); i++)
+    free (loc);
+  scratches.release ();
+  bitmap_clear (&scratch_bitmap);
+  bitmap_clear (&scratch_operand_bitmap);
+}
+
+
+
 /* If the backend knows where to allocate pseudos for hard
    register initial values, register these allocations now.  */
 static void
@@ -5182,7 +5366,9 @@ allocate_initial_values (void)
 						  &hreg, &preg));
     }
 }
+
 
+
 
 /* True when we use LRA instead of reload pass for the current
    function.  */
@@ -5203,6 +5389,17 @@ ira (FILE *f)
   int ira_max_point_before_emit;
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
+
+  if (flag_ira_verbose < 10)
+    {
+      internal_flag_ira_verbose = flag_ira_verbose;
+      ira_dump_file = f;
+    }
+  else
+    {
+      internal_flag_ira_verbose = flag_ira_verbose - 10;
+      ira_dump_file = stderr;
+    }
 
   clear_bb_flags ();
 
@@ -5250,17 +5447,6 @@ ira (FILE *f)
   if (flag_caller_saves && !ira_use_lra_p)
     init_caller_save ();
 
-  if (flag_ira_verbose < 10)
-    {
-      internal_flag_ira_verbose = flag_ira_verbose;
-      ira_dump_file = f;
-    }
-  else
-    {
-      internal_flag_ira_verbose = flag_ira_verbose - 10;
-      ira_dump_file = stderr;
-    }
-
   setup_prohibited_mode_move_regs ();
   decrease_live_ranges_number ();
   df_note_add_problem ();
@@ -5305,9 +5491,6 @@ ira (FILE *f)
   if (warn_clobbered)
     generate_setjmp_warnings ();
 
-  if (resize_reg_info () && flag_ira_loop_pressure)
-    ira_set_pseudo_classes (true, ira_dump_file);
-
   init_alias_analysis ();
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   reg_equiv = XCNEWVEC (struct equivalence, max_reg_num ());
@@ -5330,6 +5513,12 @@ ira (FILE *f)
   free_dominance_info (CDI_DOMINATORS);
   end_alias_analysis ();
   free (reg_equiv);
+
+  if (ira_use_lra_p)
+    ira_remove_scratches ();
+
+  if (resize_reg_info () && flag_ira_loop_pressure)
+    ira_set_pseudo_classes (true, ira_dump_file);
 
   setup_reg_equiv ();
   grow_reg_equivs ();

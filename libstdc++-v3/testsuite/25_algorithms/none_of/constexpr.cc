@@ -29,7 +29,7 @@ test()
   const auto outhh = std::none_of(ca0.begin(), ca0.end(),
 				  [](int i){ return i > 12; });
 
-  return true;
+  return outhh;
 }
 
 static_assert(test());

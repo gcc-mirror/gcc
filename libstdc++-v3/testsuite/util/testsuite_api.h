@@ -86,6 +86,9 @@ namespace __gnu_test
     NonDefaultConstructible(const NonDefaultConstructible&) { }
 
 #if __cplusplus >= 201103L
+    NonDefaultConstructible&
+    operator=(const NonDefaultConstructible&) = default;
+
     // For std::iota.
     NonDefaultConstructible&
     operator++()

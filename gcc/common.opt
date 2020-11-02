@@ -228,6 +228,10 @@ unsigned int flag_sanitize_coverage
 Variable
 bool dump_base_name_prefixed = false
 
+; What subset of registers should be zeroed on function return
+Variable
+unsigned int flag_zero_call_used_regs
+
 ###
 Driver
 
@@ -3110,6 +3114,10 @@ Assume signed arithmetic overflow wraps around.
 fzero-initialized-in-bss
 Common Report Var(flag_zero_initialized_in_bss) Init(1)
 Put zero initialized data in the bss section.
+
+fzero-call-used-regs=
+Common Report RejectNegative Joined
+Clear call-used registers upon function return.
 
 g
 Common Driver RejectNegative JoinedOrMissing

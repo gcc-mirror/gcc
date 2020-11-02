@@ -207,6 +207,13 @@ extern bool ira_bad_reload_regno (int, rtx, rtx);
 
 extern void ira_adjust_equiv_reg_cost (unsigned, int);
 
+extern bool ira_former_scratch_p (int regno);
+extern bool ira_former_scratch_operand_p (rtx_insn *insn, int nop);
+extern void ira_register_new_scratch_op (rtx_insn *insn, int nop, int icode);
+extern bool ira_remove_insn_scratches (rtx_insn *insn, bool all_p, FILE *dump_file,
+				       rtx (*get_reg) (rtx original));
+extern void ira_restore_scratches (FILE *dump_file);
+
 /* ira-costs.c */
 extern void ira_costs_c_finalize (void);
 

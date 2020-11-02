@@ -1,5 +1,7 @@
 2020-11-02  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk b2a31e2c341
+
 	gcc/cp/
 	* module.cc (module_state::write_elf): Remove obsolete FIXME.
 

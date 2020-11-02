@@ -22795,9 +22795,20 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
   if (!cp_parser_parse_definitely (parser))
     abstract_declarator = NULL;
 
+  bool auto_typeid_ok = false;
+  /* The concepts TS allows 'auto' as a type-id.  */
+  if (flag_concepts_ts)
+    auto_typeid_ok = !parser->in_type_id_in_expr_p;
+  /* DR 625 prohibits use of auto as a template-argument.  We allow 'auto'
+     outside the template-argument-list context here only for the sake of
+     diagnostic: grokdeclarator then can emit a better error message for
+     e.g. using T = auto.  */
+  else if (flag_concepts)
+    auto_typeid_ok = (!parser->in_type_id_in_expr_p
+		      && !parser->in_template_argument_list_p);
+
   if (type_specifier_seq.type
-      /* The concepts TS allows 'auto' as a type-id.  */
-      && (!flag_concepts || parser->in_type_id_in_expr_p)
+      && !auto_typeid_ok
       /* None of the valid uses of 'auto' in C++14 involve the type-id
 	 nonterminal, but it is valid in a trailing-return-type.  */
       && !(cxx_dialect >= cxx14 && is_trailing_return))
@@ -22824,6 +22835,9 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 		inform (DECL_SOURCE_LOCATION (tmpl), "%qD declared here",
 			tmpl);
 	      }
+	    else if (parser->in_template_argument_list_p)
+	      error_at (loc, "%qT not permitted in template argument",
+			auto_node);
 	    else
 	      error_at (loc, "invalid use of %qT", auto_node);
 	    return error_mark_node;
@@ -34251,16 +34265,17 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
       /* Eat the '('.  */
       matching_parens parens;
       parens.consume_open (parser);
+      bool syntax_error = false;
 
       while (true)
 	{
-	  bool syntax_error = false;
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
       	  enum rid keyword;
 
 	  if (token->type != CPP_NAME)
 	    {
 	      cp_parser_error (parser, "expected identifier");
+	      syntax_error = true;
 	      break;
 	    }
 	  keyword = C_RID_CODE (token->u.value);
@@ -34334,17 +34349,11 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
 	    break;
 	}
 
-      /* FIXME: "@property (setter, assign);" will generate a spurious
-	 "error: expected ‘)’ before ‘,’ token".  This is because
-	 cp_parser_require, unlike the C counterpart, will produce an
-	 error even if we are in error recovery.  */
-      if (!parens.require_close (parser))
-	{
-	  cp_parser_skip_to_closing_parenthesis (parser,
+      if (syntax_error || !parens.require_close (parser))
+	cp_parser_skip_to_closing_parenthesis (parser,
 						 /*recovering=*/true,
 						 /*or_comma=*/false,
 						 /*consume_paren=*/true);
-	}
     }
 
   /* ... and the property declaration(s).  */

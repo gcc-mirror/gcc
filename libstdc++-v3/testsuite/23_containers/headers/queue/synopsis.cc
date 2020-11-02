@@ -20,6 +20,12 @@
 
 #include <queue>
 
+#if __cplusplus >= 201103L
+# define NOTHROW noexcept
+#else
+# define NOTHROW
+#endif
+
 namespace std {
   template <class T, class Container> class queue;
   template <class T, class Container>

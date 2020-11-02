@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_FLAG_TYPES_H
 #define GCC_FLAG_TYPES_H
 
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
+
 enum debug_info_type
 {
   NO_DEBUG,	    /* Write no debug info.  */
@@ -285,6 +287,24 @@ enum sanitize_code {
 				  | SANITIZE_BOUNDS_STRICT
 };
 
+/* Different settings for zeroing subset of registers.  */
+namespace zero_regs_flags {
+  const unsigned int UNSET = 0;
+  const unsigned int SKIP = 1UL << 0;
+  const unsigned int ONLY_USED = 1UL << 1;
+  const unsigned int ONLY_GPR = 1UL << 2;
+  const unsigned int ONLY_ARG = 1UL << 3;
+  const unsigned int ENABLED = 1UL << 4;
+  const unsigned int USED_GPR_ARG = ENABLED | ONLY_USED | ONLY_GPR | ONLY_ARG;
+  const unsigned int USED_GPR = ENABLED | ONLY_USED | ONLY_GPR;
+  const unsigned int USED_ARG = ENABLED | ONLY_USED | ONLY_ARG;
+  const unsigned int USED = ENABLED | ONLY_USED;
+  const unsigned int ALL_GPR_ARG = ENABLED | ONLY_GPR | ONLY_ARG;
+  const unsigned int ALL_GPR = ENABLED | ONLY_GPR;
+  const unsigned int ALL_ARG = ENABLED | ONLY_ARG;
+  const unsigned int ALL = ENABLED;
+}
+
 /* Settings of flag_incremental_link.  */
 enum incremental_link {
   INCREMENTAL_LINK_NONE,
@@ -394,5 +414,7 @@ enum evrp_mode
   EVRP_MODE_RVRP_TRACE = EVRP_MODE_RVRP_ONLY | EVRP_MODE_TRACE,
   EVRP_MODE_RVRP_DEBUG = EVRP_MODE_RVRP_ONLY | EVRP_MODE_DEBUG
 };
+
+#endif
 
 #endif /* ! GCC_FLAG_TYPES_H */

@@ -802,6 +802,9 @@ enum omp_mask1
   OMP_CLAUSE_USE_DEVICE_PTR,
   OMP_CLAUSE_USE_DEVICE_ADDR,  /* OpenMP 5.0.  */
   OMP_CLAUSE_DEVICE_TYPE,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_ATOMIC,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_CAPTURE,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_MEMORDER,  /* OpenMP 5.0.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -1017,6 +1020,22 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  n->expr = alignment;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_MEMORDER)
+	      && c->memorder == OMP_MEMORDER_UNSET
+	      && gfc_match ("acq_rel") == MATCH_YES)
+	    {
+	      c->memorder = OMP_MEMORDER_ACQ_REL;
+	      needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_MEMORDER)
+	      && c->memorder == OMP_MEMORDER_UNSET
+	      && gfc_match ("acquire") == MATCH_YES)
+	    {
+	      c->memorder = OMP_MEMORDER_ACQUIRE;
+	      needs_space = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_ASYNC)
 	      && !c->async
 	      && gfc_match ("async") == MATCH_YES)
@@ -1055,6 +1074,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    continue;
 	  break;
 	case 'c':
+	  if ((mask & OMP_CLAUSE_CAPTURE)
+	      && !c->capture
+	      && gfc_match ("capture") == MATCH_YES)
+	    {
+	      c->capture = true;
+	      needs_space = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_COLLAPSE)
 	      && !c->collapse)
 	    {
@@ -1681,6 +1708,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  break;
 	case 'r':
+	  if ((mask & OMP_CLAUSE_ATOMIC)
+	      && c->atomic_op == GFC_OMP_ATOMIC_UNSET
+	      && gfc_match ("read") == MATCH_YES)
+	    {
+	      c->atomic_op = GFC_OMP_ATOMIC_READ;
+	      needs_space = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_REDUCTION)
 	      && gfc_match ("reduction ( ") == MATCH_YES)
 	    {
@@ -1801,6 +1836,22 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else
 		gfc_current_locus = old_loc;
 	    }
+	  if ((mask & OMP_CLAUSE_MEMORDER)
+	      && c->memorder == OMP_MEMORDER_UNSET
+	      && gfc_match ("relaxed") == MATCH_YES)
+	    {
+	      c->memorder = OMP_MEMORDER_RELAXED;
+	      needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_MEMORDER)
+	      && c->memorder == OMP_MEMORDER_UNSET
+	      && gfc_match ("release") == MATCH_YES)
+	    {
+	      c->memorder = OMP_MEMORDER_RELEASE;
+	      needs_space = true;
+	      continue;
+	    }
 	  break;
 	case 's':
 	  if ((mask & OMP_CLAUSE_SAFELEN)
@@ -1885,6 +1936,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_MEMORDER)
+	      && c->memorder == OMP_MEMORDER_UNSET
+	      && gfc_match ("seq_cst") == MATCH_YES)
+	    {
+	      c->memorder = OMP_MEMORDER_SEQ_CST;
+	      needs_space = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_SHARED)
 	      && gfc_match_omp_variable_list ("shared (",
 					      &c->lists[OMP_LIST_SHARED],
@@ -1943,6 +2002,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      && gfc_match ("untied") == MATCH_YES)
 	    {
 	      c->untied = needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_ATOMIC)
+	      && c->atomic_op == GFC_OMP_ATOMIC_UNSET
+	      && gfc_match ("update") == MATCH_YES)
+	    {
+	      c->atomic_op = GFC_OMP_ATOMIC_UPDATE;
+	      needs_space = true;
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_USE_DEVICE)
@@ -2024,6 +2091,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      else if (m == MATCH_NO)
 		needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_ATOMIC)
+	      && c->atomic_op == GFC_OMP_ATOMIC_UNSET
+	      && gfc_match ("write") == MATCH_YES)
+	    {
+	      c->atomic_op = GFC_OMP_ATOMIC_WRITE;
+	      needs_space = true;
 	      continue;
 	    }
 	  break;
@@ -2658,6 +2733,9 @@ cleanup:
   (omp_mask (OMP_CLAUSE_THREADS) | OMP_CLAUSE_SIMD)
 #define OMP_DECLARE_TARGET_CLAUSES \
   (omp_mask (OMP_CLAUSE_TO) | OMP_CLAUSE_LINK | OMP_CLAUSE_DEVICE_TYPE)
+#define OMP_ATOMIC_CLAUSES \
+  (omp_mask (OMP_CLAUSE_ATOMIC) | OMP_CLAUSE_CAPTURE | OMP_CLAUSE_HINT	\
+   | OMP_CLAUSE_MEMORDER)
 
 
 static match
@@ -2768,7 +2846,7 @@ gfc_match_omp_flush (void)
   gfc_omp_namelist *list = NULL;
   gfc_omp_clauses *c = NULL;
   gfc_gobble_whitespace ();
-  enum gfc_omp_memorder mo = OMP_MEMORDER_LAST;
+  enum gfc_omp_memorder mo = OMP_MEMORDER_UNSET;
   if (gfc_match_omp_eos () == MATCH_NO && gfc_peek_ascii_char () != '(')
     {
       if (gfc_match ("acq_rel") == MATCH_YES)
@@ -2786,7 +2864,7 @@ gfc_match_omp_flush (void)
       c->memorder = mo;
     }
   gfc_match_omp_variable_list (" (", &list, true);
-  if (list && mo != OMP_MEMORDER_LAST)
+  if (list && mo != OMP_MEMORDER_UNSET)
     {
       gfc_error ("List specified together with memory order clause in FLUSH "
 		 "directive at %C");
@@ -4014,49 +4092,29 @@ gfc_match_omp_ordered_depend (void)
 }
 
 
-static match
-gfc_match_omp_oacc_atomic (bool omp_p)
+/* omp atomic [clause-list]
+   - atomic-clause:  read | write | update
+   - capture
+   - memory-order-clause: seq_cst | acq_rel | release | acquire | relaxed
+   - hint(hint-expr)
+*/
+
+match
+gfc_match_omp_atomic (void)
 {
-  gfc_omp_atomic_op op = GFC_OMP_ATOMIC_UPDATE;
-  int seq_cst = 0;
-  if (gfc_match ("% seq_cst") == MATCH_YES)
-    seq_cst = 1;
-  locus old_loc = gfc_current_locus;
-  if (seq_cst && gfc_match_char (',') == MATCH_YES)
-    seq_cst = 2;
-  if (seq_cst == 2
-      || gfc_match_space () == MATCH_YES)
-    {
-      gfc_gobble_whitespace ();
-      if (gfc_match ("update") == MATCH_YES)
-	op = GFC_OMP_ATOMIC_UPDATE;
-      else if (gfc_match ("read") == MATCH_YES)
-	op = GFC_OMP_ATOMIC_READ;
-      else if (gfc_match ("write") == MATCH_YES)
-	op = GFC_OMP_ATOMIC_WRITE;
-      else if (gfc_match ("capture") == MATCH_YES)
-	op = GFC_OMP_ATOMIC_CAPTURE;
-      else
-	{
-	  if (seq_cst == 2)
-	    gfc_current_locus = old_loc;
-	  goto finish;
-	}
-      if (!seq_cst
-	  && (gfc_match (", seq_cst") == MATCH_YES
-	      || gfc_match ("% seq_cst") == MATCH_YES))
-	seq_cst = 1;
-    }
- finish:
-  if (gfc_match_omp_eos () != MATCH_YES)
-    {
-      gfc_error ("Unexpected junk after $OMP ATOMIC statement at %C");
-      return MATCH_ERROR;
-    }
-  new_st.op = (omp_p ? EXEC_OMP_ATOMIC : EXEC_OACC_ATOMIC);
-  if (seq_cst)
-    op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_SEQ_CST);
-  else if (omp_p)
+  gfc_omp_clauses *c;
+  locus loc = gfc_current_locus;
+
+  if (gfc_match_omp_clauses (&c, OMP_ATOMIC_CLAUSES, true, true) != MATCH_YES)
+    return MATCH_ERROR;
+
+  if (c->capture && c->atomic_op != GFC_OMP_ATOMIC_UNSET)
+    gfc_error ("OMP ATOMIC at %L with multiple atomic clauses", &loc);
+
+  if (c->atomic_op == GFC_OMP_ATOMIC_UNSET)
+    c->atomic_op = GFC_OMP_ATOMIC_UPDATE;
+
+  if (c->memorder == OMP_MEMORDER_UNSET)
     {
       gfc_namespace *prog_unit = gfc_current_ns;
       while (prog_unit->parent)
@@ -4065,32 +4123,96 @@ gfc_match_omp_oacc_atomic (bool omp_p)
 	{
 	case 0:
 	case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
+	  c->memorder = OMP_MEMORDER_RELAXED;
 	  break;
 	case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST:
-	  op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_SEQ_CST);
+	  c->memorder = OMP_MEMORDER_SEQ_CST;
 	  break;
 	case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL:
-	  op = (gfc_omp_atomic_op) (op | GFC_OMP_ATOMIC_ACQ_REL);
+	  if (c->capture)
+	    c->memorder = OMP_MEMORDER_ACQ_REL;
+	  else if (c->atomic_op == GFC_OMP_ATOMIC_READ)
+	    c->memorder = OMP_MEMORDER_ACQUIRE;
+	  else
+	    c->memorder = OMP_MEMORDER_RELEASE;
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
     }
-  new_st.ext.omp_atomic = op;
+  else
+    switch (c->atomic_op)
+      {
+      case GFC_OMP_ATOMIC_READ:
+	if (c->memorder == OMP_MEMORDER_ACQ_REL
+	    || c->memorder == OMP_MEMORDER_RELEASE)
+	  {
+	    gfc_error ("!$OMP ATOMIC READ at %L incompatible with "
+		       "ACQ_REL or RELEASE clauses", &loc);
+	    c->memorder = OMP_MEMORDER_SEQ_CST;
+	  }
+	break;
+      case GFC_OMP_ATOMIC_WRITE:
+	if (c->memorder == OMP_MEMORDER_ACQ_REL
+	    || c->memorder == OMP_MEMORDER_ACQUIRE)
+	  {
+	    gfc_error ("!$OMP ATOMIC WRITE at %L incompatible with "
+		       "ACQ_REL or ACQUIRE clauses", &loc);
+	    c->memorder = OMP_MEMORDER_SEQ_CST;
+	  }
+	break;
+      case GFC_OMP_ATOMIC_UPDATE:
+	if ((c->memorder == OMP_MEMORDER_ACQ_REL
+	     || c->memorder == OMP_MEMORDER_ACQUIRE)
+	    && !c->capture)
+	  {
+	    gfc_error ("!$OMP ATOMIC UPDATE at %L incompatible with "
+		       "ACQ_REL or ACQUIRE clauses", &loc);
+	    c->memorder = OMP_MEMORDER_SEQ_CST;
+	  }
+	break;
+      default:
+	break;
+      }
+  gfc_error_check ();
+  new_st.ext.omp_clauses = c;
+  new_st.op = EXEC_OMP_ATOMIC;
   return MATCH_YES;
 }
+
+
+/* acc atomic [ read | write | update | capture]
+   acc atomic update capture.  */
 
 match
 gfc_match_oacc_atomic (void)
 {
-  return gfc_match_omp_oacc_atomic (false);
+  gfc_omp_clauses *c = gfc_get_omp_clauses ();
+  c->atomic_op = GFC_OMP_ATOMIC_UPDATE;
+  c->memorder = OMP_MEMORDER_RELAXED;
+  gfc_gobble_whitespace ();
+  if (gfc_match ("update capture") == MATCH_YES)
+    c->capture = true;
+  else if (gfc_match ("update") == MATCH_YES)
+    ;
+  else if (gfc_match ("read") == MATCH_YES)
+    c->atomic_op = GFC_OMP_ATOMIC_READ;
+  else if (gfc_match ("write") == MATCH_YES)
+    c->atomic_op = GFC_OMP_ATOMIC_WRITE;
+  else if (gfc_match ("capture") == MATCH_YES)
+    c->capture = true;
+  gfc_gobble_whitespace ();
+  if (gfc_match_omp_eos () != MATCH_YES)
+    {
+      gfc_error ("Unexpected junk after !$ACC ATOMIC statement at %C");
+      gfc_free_omp_clauses (c);
+      return MATCH_ERROR;
+    }
+  new_st.ext.omp_clauses = c;
+  new_st.op = EXEC_OACC_ATOMIC;
+  return MATCH_YES;
 }
 
-match
-gfc_match_omp_atomic (void)
-{
-  return gfc_match_omp_oacc_atomic (true);
-}
 
 match
 gfc_match_omp_barrier (void)
@@ -5514,11 +5636,12 @@ is_conversion (gfc_expr *expr, bool widening)
 static void
 resolve_omp_atomic (gfc_code *code)
 {
-  gfc_code *atomic_code = code;
+  gfc_code *atomic_code = code->block;
   gfc_symbol *var;
   gfc_expr *expr2, *expr2_tmp;
   gfc_omp_atomic_op aop
-    = (gfc_omp_atomic_op) (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK);
+    = (gfc_omp_atomic_op) (atomic_code->ext.omp_clauses->atomic_op
+			   & GFC_OMP_ATOMIC_MASK);
 
   code = code->block->next;
   /* resolve_blocks asserts this is initially EXEC_ASSIGN.
@@ -5531,7 +5654,7 @@ resolve_omp_atomic (gfc_code *code)
       gfc_error ("unexpected !$OMP ATOMIC expression at %L", &code->loc);
       return;
     }
-  if (aop != GFC_OMP_ATOMIC_CAPTURE)
+  if (!atomic_code->ext.omp_clauses->capture)
     {
       if (code->next != NULL)
 	goto unexpected;
@@ -5591,7 +5714,11 @@ resolve_omp_atomic (gfc_code *code)
 		   "must be scalar and cannot reference var at %L",
 		   &expr2->where);
       return;
-    case GFC_OMP_ATOMIC_CAPTURE:
+    default:
+      break;
+    }
+  if (atomic_code->ext.omp_clauses->capture)
+    {
       expr2_tmp = expr2;
       if (expr2 == code->expr2)
 	{
@@ -5640,9 +5767,6 @@ resolve_omp_atomic (gfc_code *code)
 	  if (expr2 == NULL)
 	    expr2 = code->expr2;
 	}
-      break;
-    default:
-      break;
     }
 
   if (gfc_expr_attr (code->expr1).allocatable)
@@ -5652,12 +5776,12 @@ resolve_omp_atomic (gfc_code *code)
       return;
     }
 
-  if (aop == GFC_OMP_ATOMIC_CAPTURE
+  if (atomic_code->ext.omp_clauses->capture
       && code->next == NULL
       && code->expr2->rank == 0
       && !expr_references_sym (code->expr2, var, NULL))
-    atomic_code->ext.omp_atomic
-      = (gfc_omp_atomic_op) (atomic_code->ext.omp_atomic
+    atomic_code->ext.omp_clauses->atomic_op
+      = (gfc_omp_atomic_op) (atomic_code->ext.omp_clauses->atomic_op
 			     | GFC_OMP_ATOMIC_SWAP);
   else if (expr2->expr_type == EXPR_OP)
     {
@@ -5867,7 +5991,7 @@ resolve_omp_atomic (gfc_code *code)
     gfc_error ("!$OMP ATOMIC assignment must have an operator or "
 	       "intrinsic on right hand side at %L", &expr2->where);
 
-  if (aop == GFC_OMP_ATOMIC_CAPTURE && code->next)
+  if (atomic_code->ext.omp_clauses->capture && code->next)
     {
       code = code->next;
       if (code->expr1->expr_type != EXPR_VARIABLE
@@ -6866,6 +6990,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
 		   "FROM clause", &code->loc);
       break;
     case EXEC_OMP_ATOMIC:
+      resolve_omp_clauses (code, code->block->ext.omp_clauses, NULL);
       resolve_omp_atomic (code);
       break;
     case EXEC_OMP_CRITICAL:

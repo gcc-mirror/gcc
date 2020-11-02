@@ -37,9 +37,9 @@ test01()
   try
     {
       wstring one;
-      stol(one);      
+      stol(one);
     }
-  catch(std::invalid_argument)
+  catch(const std::invalid_argument&)
     {
       test = true;
     }
@@ -52,9 +52,9 @@ test01()
   try
     {
       wstring one(L"a");
-      stol(one);      
+      stol(one);
     }
-  catch(std::invalid_argument)
+  catch(const std::invalid_argument&)
     {
       test = true;
     }
@@ -67,7 +67,7 @@ test01()
   try
     {
       wstring one(L"a");
-      l1 = stol(one, 0, 16);      
+      l1 = stol(one, 0, 16);
     }
   catch(...)
     {
@@ -80,7 +80,7 @@ test01()
   try
     {
       wstring one(L"78");
-      l1 = stol(one, &idx1, 8);      
+      l1 = stol(one, &idx1, 8);
     }
   catch(...)
     {
@@ -93,7 +93,7 @@ test01()
   try
     {
       wstring one(L"10112");
-      l1 = stol(one, &idx1, 2);      
+      l1 = stol(one, &idx1, 2);
     }
   catch(...)
     {
@@ -106,7 +106,7 @@ test01()
   try
     {
       wstring one(L"0XE");
-      l1 = stol(one, &idx1, 0);      
+      l1 = stol(one, &idx1, 0);
     }
   catch(...)
     {
@@ -122,7 +122,7 @@ test01()
       wstring one(1000, L'9');
       l1 = stol(one);
     }
-  catch(std::out_of_range)
+  catch(const std::out_of_range&)
     {
       test = true;
     }

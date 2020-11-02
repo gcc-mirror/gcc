@@ -9500,6 +9500,13 @@ thumb_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	  || CONST_DOUBLE_P (x)
 	  || CONSTANT_ADDRESS_P (x)
 	  || (TARGET_HAVE_MOVT && GET_CODE (x) == SYMBOL_REF)
+	  /* On Thumb-1 without MOVT/MOVW and literal pool disabled,
+	     we build the symbol address with upper/lower
+	     relocations.  */
+	  || (TARGET_THUMB1
+	      && !label_mentioned_p (x)
+	      && arm_valid_symbolic_address_p (x)
+	      && arm_disable_literal_pool)
 	  || flag_pic);
 }
 
@@ -31653,7 +31660,12 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
    According to the ARM ELF ABI, the initial addend of REL-type relocations
    processing MOVW and MOVT instructions is formed by interpreting the 16-bit
    literal field of the instruction as a 16-bit signed value in the range
-   -32768 <= A < 32768.  */
+   -32768 <= A < 32768.
+
+   In Thumb-1 mode, we use upper/lower relocations which have an 8-bit
+   unsigned range of 0 <= A < 256 as described in the AAELF32
+   relocation handling documentation: REL-type relocations are encoded
+   as unsigned in this case.  */
 
 bool
 arm_valid_symbolic_address_p (rtx addr)
@@ -31677,7 +31689,12 @@ arm_valid_symbolic_address_p (rtx addr)
       xop1 = XEXP (tmp, 1);
 
       if (GET_CODE (xop0) == SYMBOL_REF && CONST_INT_P (xop1))
-	  return IN_RANGE (INTVAL (xop1), -0x8000, 0x7fff);
+	{
+	  if (TARGET_THUMB1 && !TARGET_HAVE_MOVT)
+	    return IN_RANGE (INTVAL (xop1), 0, 0xff);
+	  else
+	    return IN_RANGE (INTVAL (xop1), -0x8000, 0x7fff);
+	}
     }
 
   return false;

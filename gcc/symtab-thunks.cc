@@ -52,6 +52,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Used for vtable lookup in thunk adjusting.  */
 static GTY (()) tree vtable_entry_type;
+struct GTY (()) unprocessed_thunk
+{
+  cgraph_node *node;
+  thunk_info *info;
+};
+/* To be PCH safe we store thunks into a vector before end of compilation
+   unit.  */
+static GTY (()) vec<unprocessed_thunk, va_gc> *thunks;
 
 namespace {
 
@@ -145,6 +153,33 @@ thunk_info::hash ()
   hstate.add_flag (this_adjusting);
   hstate.add_flag (virtual_offset_p);
   return hstate.end ();
+}
+
+/* Add unprocessed thunk.  */
+void
+thunk_info::register_early (cgraph_node *node)
+{
+  unprocessed_thunk entry = {node, new (ggc_alloc <thunk_info> ()) thunk_info};
+  *entry.info = *this;
+  vec_safe_push (thunks, entry);
+}
+
+/* Attach recorded thunks to cgraph_nodes.
+   All this is done only to avoid need to stream summaries to PCH.  */
+void
+thunk_info::process_early_thunks ()
+{
+  unprocessed_thunk *e;
+  unsigned int i;
+  if (!thunks)
+    return;
+
+  FOR_EACH_VEC_ELT (*thunks, i, e)
+    {
+      *thunk_info::get_create (e->node) = *e->info;
+    }
+  vec_free (thunks);
+  thunks = NULL;
 }
 
 /* Adjust PTR by the constant FIXED_OFFSET, by the vtable offset indicated by

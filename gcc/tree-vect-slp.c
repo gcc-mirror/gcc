@@ -530,6 +530,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
       if (backedge
 	  && dts[i] == vect_external_def
 	  && is_a <bb_vec_info> (vinfo)
+	  && TREE_CODE (oprnd) == SSA_NAME
 	  && !SSA_NAME_IS_DEFAULT_DEF (oprnd)
 	  && !dominated_by_p (CDI_DOMINATORS,
 			      as_a <bb_vec_info> (vinfo)->bbs[0],
@@ -2591,7 +2592,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
       /* Collect reduction statements.  */
       vec<stmt_vec_info> reductions = as_a <loop_vec_info> (vinfo)->reductions;
       for (i = 0; reductions.iterate (i, &next_info); i++)
-	scalar_stmts.safe_push (next_info);
+	if (STMT_VINFO_RELEVANT_P (next_info)
+	    || STMT_VINFO_LIVE_P (next_info))
+	  scalar_stmts.quick_push (next_info);
     }
 
   /* Build the tree for the SLP instance.  */
@@ -2627,29 +2630,29 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {
-      if (loop_vinfo->reduction_chains.length () > 0)
-	{
-	  /* Find SLP sequences starting from reduction chains.  */
-	  FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
-	    if (! vect_analyze_slp_instance (vinfo, bst_map, first_element,
-					     max_tree_size))
+      /* Find SLP sequences starting from reduction chains.  */
+      FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
+	if (! STMT_VINFO_RELEVANT_P (first_element)
+	    && ! STMT_VINFO_LIVE_P (first_element))
+	  ;
+	else if (! vect_analyze_slp_instance (vinfo, bst_map, first_element,
+					      max_tree_size))
+	  {
+	    /* Dissolve reduction chain group.  */
+	    stmt_vec_info vinfo = first_element;
+	    stmt_vec_info last = NULL;
+	    while (vinfo)
 	      {
-		/* Dissolve reduction chain group.  */
-		stmt_vec_info vinfo = first_element;
-		stmt_vec_info last = NULL;
-		while (vinfo)
-		  {
-		    stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
-		    REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
-		    REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
-		    last = vinfo;
-		    vinfo = next;
-		  }
-		STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
-		/* It can be still vectorized as part of an SLP reduction.  */
-		loop_vinfo->reductions.safe_push (last);
+		stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
+		REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
+		REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
+		last = vinfo;
+		vinfo = next;
 	      }
-	}
+	    STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
+	    /* It can be still vectorized as part of an SLP reduction.  */
+	    loop_vinfo->reductions.safe_push (last);
+	  }
 
       /* Find SLP sequences starting from groups of reductions.  */
       if (loop_vinfo->reductions.length () > 1)
@@ -3487,8 +3490,8 @@ vect_prologue_cost_for_slp (slp_tree node,
 static bool
 vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 				  slp_instance node_instance,
-				  hash_set<slp_tree> &visited,
-				  hash_set<slp_tree> &lvisited,
+				  hash_set<slp_tree> &visited_set,
+				  vec<slp_tree> &visited_vec,
 				  stmt_vector_for_cost *cost_vec)
 {
   int i, j;
@@ -3511,15 +3514,18 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 
   /* If we already analyzed the exact same set of scalar stmts we're done.
      We share the generated vector stmts for those.  */
-  if (visited.contains (node)
-      || lvisited.add (node))
+  if (visited_set.add (node))
     return true;
+  visited_vec.safe_push (node);
 
   bool res = true;
+  unsigned visited_rec_start = visited_vec.length ();
+  unsigned cost_vec_rec_start = cost_vec->length ();
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     {
       res = vect_slp_analyze_node_operations (vinfo, child, node_instance,
-					      visited, lvisited, cost_vec);
+					      visited_set, visited_vec,
+					      cost_vec);
       if (!res)
 	break;
     }
@@ -3527,8 +3533,14 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   if (res)
     res = vect_slp_analyze_node_operations_1 (vinfo, node, node_instance,
 					      cost_vec);
+  /* If analysis failed we have to pop all recursive visited nodes
+     plus ourselves.  */
   if (!res)
-    lvisited.remove (node);
+    {
+      while (visited_vec.length () >= visited_rec_start)
+	visited_set.remove (visited_vec.pop ());
+      cost_vec->truncate (cost_vec_rec_start);
+    }
 
   /* When the node can be vectorized cost invariant nodes it references.
      This is not done in DFS order to allow the refering node
@@ -3543,9 +3555,9 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	  /* Perform usual caching, note code-generation still
 	     code-gens these nodes multiple times but we expect
 	     to CSE them later.  */
-	  && !visited.contains (child)
-	  && !lvisited.add (child))
+	  && !visited_set.add (child))
 	{
+	  visited_vec.safe_push (child);
 	  /* ???  After auditing more code paths make a "default"
 	     and push the vector type from NODE to all children
 	     if it is not already set.  */
@@ -3705,14 +3717,14 @@ vect_slp_analyze_operations (vec_info *vinfo)
   hash_set<slp_tree> visited;
   for (i = 0; vinfo->slp_instances.iterate (i, &instance); )
     {
-      hash_set<slp_tree> lvisited;
+      auto_vec<slp_tree> visited_vec;
       stmt_vector_for_cost cost_vec;
       cost_vec.create (2);
       if (is_a <bb_vec_info> (vinfo))
 	vect_location = instance->location ();
       if (!vect_slp_analyze_node_operations (vinfo,
 					     SLP_INSTANCE_TREE (instance),
-					     instance, visited, lvisited,
+					     instance, visited, visited_vec,
 					     &cost_vec)
 	  /* Instances with a root stmt require vectorized defs for the
 	     SLP tree root.  */
@@ -3729,12 +3741,11 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	  vect_free_slp_instance (instance);
           vinfo->slp_instances.ordered_remove (i);
 	  cost_vec.release ();
+	  while (!visited_vec.is_empty ())
+	    visited.remove (visited_vec.pop ());
 	}
       else
 	{
-	  for (hash_set<slp_tree>::iterator x = lvisited.begin();
-	       x != lvisited.end(); ++x)
-	    visited.add (*x);
 	  i++;
 
 	  /* For BB vectorization remember the SLP graph entry
@@ -5554,32 +5565,42 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
   gcc_assert (!existed_p);
   info->dfs = maxdfs;
   info->lowlink = maxdfs;
-  info->on_stack = true;
   maxdfs++;
+
+  /* Leaf.  */
+  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
+    {
+      info->on_stack = false;
+      vect_schedule_slp_node (vinfo, node, instance);
+      return;
+    }
+
+  info->on_stack = true;
   stack.safe_push (node);
+
   unsigned i;
   slp_tree child;
-
-  /* ???  We're keeping SLP_TREE_CHILDREN of externalized nodes.  */
-  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
-    FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-      {
-	if (!child)
-	  continue;
-	slp_scc_info *child_info = scc_info.get (child);
-	if (!child_info)
-	  {
-	    vect_schedule_scc (vinfo, child, instance, scc_info, maxdfs, stack);
-	    /* Recursion might have re-allocated the node.  */
-	    info = scc_info.get (node);
-	    child_info = scc_info.get (child);
-	    info->lowlink = MIN (info->lowlink, child_info->lowlink);
-	  }
-	else if (child_info->on_stack)
-	  info->lowlink = MIN (info->lowlink, child_info->dfs);
-      }
+  /* DFS recurse.  */
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    {
+      if (!child)
+	continue;
+      slp_scc_info *child_info = scc_info.get (child);
+      if (!child_info)
+	{
+	  vect_schedule_scc (vinfo, child, instance, scc_info, maxdfs, stack);
+	  /* Recursion might have re-allocated the node.  */
+	  info = scc_info.get (node);
+	  child_info = scc_info.get (child);
+	  info->lowlink = MIN (info->lowlink, child_info->lowlink);
+	}
+      else if (child_info->on_stack)
+	info->lowlink = MIN (info->lowlink, child_info->dfs);
+    }
   if (info->lowlink != info->dfs)
     return;
+
+  auto_vec<slp_tree, 4> phis_to_fixup;
 
   /* Singleton.  */
   if (stack.last () == node)
@@ -5587,64 +5608,71 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
       stack.pop ();
       info->on_stack = false;
       vect_schedule_slp_node (vinfo, node, instance);
-      return;
+      if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+	  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
+	phis_to_fixup.quick_push (node);
     }
-  /* SCC.  */
-  int last_idx = stack.length () - 1;
-  while (stack[last_idx] != node)
-    last_idx--;
-  /* We can break the cycle at PHIs who have at least one child
-     code generated.  Then we could re-start the DFS walk until
-     all nodes in the SCC are covered (we might have new entries
-     for only back-reachable nodes).  But it's simpler to just
-     iterate and schedule those that are ready.  */
-  auto_vec<slp_tree, 4> phis_to_fixup;
-  unsigned todo = stack.length () - last_idx;
-  do
+  else
     {
-      for (int idx = stack.length () - 1; idx >= last_idx; --idx)
+      /* SCC.  */
+      int last_idx = stack.length () - 1;
+      while (stack[last_idx] != node)
+	last_idx--;
+      /* We can break the cycle at PHIs who have at least one child
+	 code generated.  Then we could re-start the DFS walk until
+	 all nodes in the SCC are covered (we might have new entries
+	 for only back-reachable nodes).  But it's simpler to just
+	 iterate and schedule those that are ready.  */
+      unsigned todo = stack.length () - last_idx;
+      do
 	{
-	  slp_tree entry = stack[idx];
-	  if (!entry)
-	    continue;
-	  bool phi = (SLP_TREE_CODE (entry) != VEC_PERM_EXPR
-		      && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (entry)->stmt));
-	  bool ready = !phi;
-	  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (entry), i, child)
-	    if (!child)
-	      {
-		gcc_assert (phi);
-		ready = true;
-		break;
-	      }
-	    else if (scc_info.get (child)->on_stack)
-	      {
-		if (!phi)
-		  {
-		    ready = false;
-		    break;
-		  }
-	      }
-	    else
-	      {
-		if (phi)
-		  {
-		    ready = true;
-		    break;
-		  }
-	      }
-	  if (ready)
+	  for (int idx = stack.length () - 1; idx >= last_idx; --idx)
 	    {
-	      vect_schedule_slp_node (vinfo, entry, instance);
-	      scc_info.get (entry)->on_stack = false;
-	      stack[idx] = NULL;
-	      todo--;
-	      if (phi)
-		phis_to_fixup.safe_push (entry);
+	      slp_tree entry = stack[idx];
+	      if (!entry)
+		continue;
+	      bool phi = (SLP_TREE_CODE (entry) != VEC_PERM_EXPR
+			  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (entry)->stmt));
+	      bool ready = !phi;
+	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (entry), i, child)
+		  if (!child)
+		    {
+		      gcc_assert (phi);
+		      ready = true;
+		      break;
+		    }
+		  else if (scc_info.get (child)->on_stack)
+		    {
+		      if (!phi)
+			{
+			  ready = false;
+			  break;
+			}
+		    }
+		  else
+		    {
+		      if (phi)
+			{
+			  ready = true;
+			  break;
+			}
+		    }
+	      if (ready)
+		{
+		  vect_schedule_slp_node (vinfo, entry, instance);
+		  scc_info.get (entry)->on_stack = false;
+		  stack[idx] = NULL;
+		  todo--;
+		  if (phi)
+		    phis_to_fixup.safe_push (entry);
+		}
 	    }
 	}
+      while (todo != 0);
+
+      /* Pop the SCC.  */
+      stack.truncate (last_idx);
     }
-  while (todo != 0);
 
   /* Now fixup the backedge def of the vectorized PHIs in this SCC.  */
   slp_tree phi_node;
@@ -5666,9 +5694,6 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 			 e, gimple_phi_arg_location (phi, dest_idx));
 	}
     }
-
-  /* Pop the SCC.  */
-  stack.truncate (last_idx);
 }
 
 /* Generate vector code for SLP_INSTANCES in the loop/basic block.  */

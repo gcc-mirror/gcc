@@ -1727,6 +1727,7 @@ open_base_files (void)
       "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
       "ipa-prop.h", "ipa-fnsummary.h", "dwarf2out.h", "omp-general.h",
       "omp-offload.h", "ipa-modref-tree.h", "ipa-modref.h", "symtab-thunks.h",
+      "symtab-clones.h",
       NULL
     };
     const char *const *ifp;

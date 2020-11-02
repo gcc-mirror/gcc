@@ -1791,11 +1791,11 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_Openmode;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
-    _ZNKSt7__cxx1115basic_stringbuf*;
+    _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
     _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
     _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE5rdbufEv;
-    _ZNKSt7__cxx1119basic_istringstream*;
-    _ZNKSt7__cxx1119basic_ostringstream*;
+    _ZNKSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
+    _ZNKSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE5rdbufEv;
     _ZT[ISTV]NSt7__cxx1115basic_stringbuf*;
     _ZT[ISTV]NSt7__cxx1118basic_stringstream*;
     _ZT[ISTV]NSt7__cxx1119basic_istringstream*;

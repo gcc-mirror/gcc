@@ -29,7 +29,9 @@ test()
 
   const auto outt = std::is_permutation(ca0.begin(), ca0.end(), cap.begin());
 
-  return true;
+  const auto outf = std::is_permutation(ca0.begin() + 1, ca0.end(), cap.begin());
+
+  return outt && !outf;
 }
 
 static_assert(test());

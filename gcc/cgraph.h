@@ -691,27 +691,6 @@ struct GTY(()) ipa_replace_map
   int parm_num;
 };
 
-struct GTY(()) cgraph_clone_info
-{
-  /* Constants discovered by IPA-CP, i.e. which parameter should be replaced
-     with what.  */
-  vec<ipa_replace_map *, va_gc> *tree_map;
-  /* Parameter modification that IPA-SRA decided to perform.  */
-  ipa_param_adjustments *param_adjustments;
-  /* Lists of dummy-decl and offset pairs representing split formal parameters
-     in the caller.  Offsets of all new replacements are enumerated, those
-     coming from the same original parameter have the same dummy decl stored
-     along with them.
-
-     Dummy decls sit in call statement arguments followed by new parameter
-     decls (or their SSA names) in between (caller) clone materialization and
-     call redirection.  Redirection then recognizes the dummy variable and
-     together with the stored offsets can reconstruct what exactly the new
-     parameter decls represent and can leave in place only those that the
-     callee expects.  */
-  vec<ipa_param_performed_split, va_gc> *performed_splits;
-};
-
 enum cgraph_simd_clone_arg_type
 {
   SIMD_CLONE_ARG_TYPE_VECTOR,
@@ -879,7 +858,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       next_sibling_clone (NULL), prev_sibling_clone (NULL), clones (NULL),
       clone_of (NULL), call_site_hash (NULL), former_clone_of (NULL),
       simdclone (NULL), simd_clones (NULL), ipa_transforms_to_apply (vNULL),
-      inlined_to (NULL), rtl (NULL), clone (),
+      inlined_to (NULL), rtl (NULL),
       count (profile_count::uninitialized ()),
       count_materialization_scale (REG_BR_PROB_BASE), profile_id (0),
       unit_id (0), tp_first_run (0), thunk (false),
@@ -1409,7 +1388,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   cgraph_node *inlined_to;
 
   struct cgraph_rtl_info *rtl;
-  cgraph_clone_info clone;
 
   /* Expected number of executions: calculated in profile.c.  */
   profile_count count;
@@ -2190,9 +2168,15 @@ struct asmname_hasher : ggc_ptr_hash <symtab_node>
   static bool equal (symtab_node *n, const_tree t);
 };
 
+/* Core summaries maintained about symbols.  */
+
 struct thunk_info;
 template <class T> class function_summary;
 typedef function_summary <thunk_info *> thunk_summary;
+
+struct clone_info;
+template <class T> class function_summary;
+typedef function_summary <clone_info *> clone_summary;
 
 class GTY((tag ("SYMTAB"))) symbol_table
 {
@@ -2210,7 +2194,7 @@ public:
   function_flags_ready (false), cpp_implicit_aliases_done (false),
   section_hash (NULL), assembler_name_hash (NULL), init_priority_hash (NULL),
   dump_file (NULL), ipa_clones_dump_file (NULL), cloned_nodes (),
-  m_thunks (NULL),
+  m_thunks (NULL), m_clones (NULL),
   m_first_edge_removal_hook (NULL), m_first_cgraph_removal_hook (NULL),
   m_first_edge_duplicated_hook (NULL), m_first_cgraph_duplicated_hook (NULL),
   m_first_cgraph_insertion_hook (NULL), m_first_varpool_insertion_hook (NULL),
@@ -2494,6 +2478,9 @@ public:
 
   /* Thunk annotations.  */
   thunk_summary *m_thunks;
+
+  /* Virtual clone annotations.  */
+  clone_summary *m_clones;
 
 private:
   /* Allocate a cgraph_edge structure and fill it with data according to the

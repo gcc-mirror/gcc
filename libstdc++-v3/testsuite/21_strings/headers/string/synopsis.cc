@@ -20,6 +20,12 @@
 
 #include <string>
 
+#if __cplusplus >= 201103L
+# define NOTHROW noexcept
+#else
+# define NOTHROW
+#endif
+
 namespace std {
   //  lib.char.traits, character traits:
   template<class charT>
@@ -54,7 +60,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   template<class charT, class traits, class Allocator>
   bool operator==(const basic_string<charT,traits,Allocator>& lhs,
-		  const basic_string<charT,traits,Allocator>& rhs);
+		  const basic_string<charT,traits,Allocator>& rhs) NOTHROW;
   template<class charT, class traits, class Allocator>
   bool operator==(const charT* lhs,
 		  const basic_string<charT,traits,Allocator>& rhs);
@@ -63,7 +69,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 		  const charT* rhs);
   template<class charT, class traits, class Allocator>
   bool operator!=(const basic_string<charT,traits,Allocator>& lhs,
-		  const basic_string<charT,traits,Allocator>& rhs);
+		  const basic_string<charT,traits,Allocator>& rhs) NOTHROW;
   template<class charT, class traits, class Allocator>
   bool operator!=(const charT* lhs,
 		  const basic_string<charT,traits,Allocator>& rhs);
@@ -73,7 +79,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   template<class charT, class traits, class Allocator>
   bool operator< (const basic_string<charT,traits,Allocator>& lhs,
-		  const basic_string<charT,traits,Allocator>& rhs);
+		  const basic_string<charT,traits,Allocator>& rhs) NOTHROW;
   template<class charT, class traits, class Allocator>
   bool operator< (const basic_string<charT,traits,Allocator>& lhs,
 		  const charT* rhs);
@@ -82,7 +88,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 		  const basic_string<charT,traits,Allocator>& rhs);
   template<class charT, class traits, class Allocator>
   bool operator> (const basic_string<charT,traits,Allocator>& lhs,
-		  const basic_string<charT,traits,Allocator>& rhs);
+		  const basic_string<charT,traits,Allocator>& rhs) NOTHROW;
   template<class charT, class traits, class Allocator>
   bool operator> (const basic_string<charT,traits,Allocator>& lhs,
 		  const charT* rhs);
@@ -92,7 +98,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   template<class charT, class traits, class Allocator>
   bool operator<=(const basic_string<charT,traits,Allocator>& lhs,
-		  const basic_string<charT,traits,Allocator>& rhs);
+		  const basic_string<charT,traits,Allocator>& rhs) NOTHROW;
   template<class charT, class traits, class Allocator>
   bool operator<=(const basic_string<charT,traits,Allocator>& lhs,
 		  const charT* rhs);
@@ -101,7 +107,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 		  const basic_string<charT,traits,Allocator>& rhs);
   template<class charT, class traits, class Allocator>
   bool operator>=(const basic_string<charT,traits,Allocator>& lhs,
-		  const basic_string<charT,traits,Allocator>& rhs);
+		  const basic_string<charT,traits,Allocator>& rhs) NOTHROW;
   template<class charT, class traits, class Allocator>
   bool operator>=(const basic_string<charT,traits,Allocator>& lhs,
 		  const charT* rhs);
@@ -112,7 +118,11 @@ _GLIBCXX_END_NAMESPACE_CXX11
   //  lib.string.special:
   template<class charT, class traits, class Allocator>
   void swap(basic_string<charT,traits,Allocator>& lhs,
-	    basic_string<charT,traits,Allocator>& rhs);
+	    basic_string<charT,traits,Allocator>& rhs)
+#if __cplusplus >= 201103L
+  noexcept(noexcept(lhs.swap(rhs)))
+#endif
+  ;
 
   template<class charT, class traits, class Allocator>
   basic_istream<charT,traits>&

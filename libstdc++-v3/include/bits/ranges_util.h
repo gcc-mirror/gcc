@@ -247,7 +247,7 @@ namespace ranges
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
 	subrange(_Rng&& __r) requires _S_store_size && sized_range<_Rng>
-	: subrange{__r, ranges::size(__r)}
+	: subrange(__r, ranges::size(__r))
 	{ }
 
       template<__detail::__not_same_as<subrange> _Rng>

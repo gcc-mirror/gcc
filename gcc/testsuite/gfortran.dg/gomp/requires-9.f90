@@ -80,6 +80,6 @@ end subroutine
 ! { dg-final { scan-tree-dump-times "#pragma omp atomic seq_cst\[\n\r]\[^\n\r]*&i5 =" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp atomic seq_cst\[\n\r]\[^\n\r]*&i5b =" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp atomic seq_cst\[\n\r]\[^\n\r]*&i6 =" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp atomic acq_rel\[\n\r]\[^\n\r]*&i7 =" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp atomic acq_rel\[\n\r]\[^\n\r]*&i7b =" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp atomic release\[\n\r]\[^\n\r]*&i7 =" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp atomic release\[\n\r]\[^\n\r]*&i7b =" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp atomic seq_cst\[\n\r]\[^\n\r]*&i8 =" 1 "original" } }

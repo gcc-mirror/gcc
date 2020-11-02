@@ -5103,8 +5103,7 @@ process_partial_specialization (tree decl)
     = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (maintmpl)));
   if (comp_template_args (inner_args, INNERMOST_TEMPLATE_ARGS (main_args))
       && (!flag_concepts
-	  || !strictly_subsumes (current_template_constraints (),
-				 main_args, maintmpl)))
+	  || !strictly_subsumes (current_template_constraints (), maintmpl)))
     {
       if (!flag_concepts)
         error ("partial specialization %q+D does not specialize "
@@ -8200,7 +8199,7 @@ is_compatible_template_arg (tree parm, tree arg)
         return false;
     }
 
-  return weakly_subsumes (parm_cons, new_args, arg);
+  return weakly_subsumes (parm_cons, arg);
 }
 
 // Convert a placeholder argument into a binding to the original
@@ -17455,6 +17454,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	  case OMP_CLAUSE_INCLUSIVE:
 	  case OMP_CLAUSE_EXCLUSIVE:
+	  case OMP_CLAUSE_ALLOCATE:
 	    /* tsubst_expr on SCOPE_REF results in returning
 	       finish_non_static_data_member result.  Undo that here.  */
 	    if (TREE_CODE (OMP_CLAUSE_DECL (oc)) == SCOPE_REF
@@ -29324,7 +29324,13 @@ do_auto_deduction (tree type, tree init, tree auto_node,
   if (type == error_mark_node)
     return error_mark_node;
 
-  init = resolve_nondeduced_context (init, complain);
+  if (BRACE_ENCLOSED_INITIALIZER_P (init))
+    /* We don't recurse here because we can't deduce from a nested
+       initializer_list.  */
+    for (constructor_elt &elt : *CONSTRUCTOR_ELTS (init))
+      elt.value = resolve_nondeduced_context (elt.value, complain);
+  else
+    init = resolve_nondeduced_context (init, complain);
 
   if (context == adc_decomp_type
       && auto_node == type

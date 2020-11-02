@@ -922,7 +922,23 @@ validate_simplify_insn (rtx_insn *insn)
       }
   return ((num_changes_pending () > 0) && (apply_change_group () > 0));
 }
-
+
+/* Check whether INSN matches a specific alternative of an .md pattern.  */
+
+bool
+valid_insn_p (rtx_insn *insn)
+{
+  recog_memoized (insn);
+  if (INSN_CODE (insn) < 0)
+    return false;
+  extract_insn (insn);
+  /* We don't know whether the insn will be in code that is optimized
+     for size or speed, so consider all enabled alternatives.  */
+  if (!constrain_operands (1, get_enabled_alternatives (insn)))
+    return false;
+  return true;
+}
+
 /* Return 1 if OP is a valid general operand for machine mode MODE.
    This is either a register reference, a memory reference,
    or a constant.  In the case of a memory reference, the address

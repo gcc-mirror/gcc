@@ -70,6 +70,12 @@ along with GCC; see the file COPYING3.  If not see
 	      builtin_define ("__PPC");		\
 	      builtin_define ("__powerpc");	\
 	    }					\
+						\
+	  /* __ppc isn't emitted by the system compiler \
+	     any more but a few system headers still depend \
+	     on it, as well as on __ppc__.  */	\
+	  builtin_define ("__ppc");		\
+	  builtin_define ("__ppc__");		\
 	}					\
 						\
       /* Asserts for #cpu and #machine.  */	\

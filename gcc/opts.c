@@ -1776,6 +1776,24 @@ const struct sanitizer_opts_s coverage_sanitizer_opts[] =
   { NULL, 0U, 0UL, false }
 };
 
+/* -fzero-call-used-regs= suboptions.  */
+const struct zero_call_used_regs_opts_s zero_call_used_regs_opts[] =
+{
+#define ZERO_CALL_USED_REGS_OPT(name, flags) \
+    { #name, flags }
+  ZERO_CALL_USED_REGS_OPT (skip, zero_regs_flags::SKIP),
+  ZERO_CALL_USED_REGS_OPT (used-gpr-arg, zero_regs_flags::USED_GPR_ARG),
+  ZERO_CALL_USED_REGS_OPT (used-gpr, zero_regs_flags::USED_GPR),
+  ZERO_CALL_USED_REGS_OPT (used-arg, zero_regs_flags::USED_ARG),
+  ZERO_CALL_USED_REGS_OPT (used, zero_regs_flags::USED),
+  ZERO_CALL_USED_REGS_OPT (all-gpr-arg, zero_regs_flags::ALL_GPR_ARG),
+  ZERO_CALL_USED_REGS_OPT (all-gpr, zero_regs_flags::ALL_GPR),
+  ZERO_CALL_USED_REGS_OPT (all-arg, zero_regs_flags::ALL_ARG),
+  ZERO_CALL_USED_REGS_OPT (all, zero_regs_flags::ALL),
+#undef ZERO_CALL_USED_REGS_OPT
+  {NULL, 0U}
+};
+
 /* A struct for describing a run of chars within a string.  */
 
 class string_fragment
@@ -1966,6 +1984,27 @@ parse_no_sanitize_attribute (char *value)
 
       q = strtok (NULL, ",");
     }
+
+  return flags;
+}
+
+/* Parse -fzero-call-used-regs suboptions from ARG, return the FLAGS.  */
+
+unsigned int
+parse_zero_call_used_regs_options (const char *arg)
+{
+  unsigned int flags = 0;
+
+  /* Check to see if the string matches a sub-option name.  */
+  for (unsigned int i = 0; zero_call_used_regs_opts[i].name != NULL; ++i)
+    if (strcmp (arg, zero_call_used_regs_opts[i].name) == 0)
+      {
+	flags = zero_call_used_regs_opts[i].flag;
+	break;
+      }
+
+  if (!flags)
+    error ("unrecognized argument to %<-fzero-call-used-regs=%>: %qs", arg);
 
   return flags;
 }
@@ -2596,6 +2635,11 @@ common_handle_option (struct gcc_options *opts,
       /* Automatically sets -ftree-loop-vectorize and
 	 -ftree-slp-vectorize.  Nothing more to do here.  */
       break;
+    case OPT_fzero_call_used_regs_:
+      opts->x_flag_zero_call_used_regs
+	= parse_zero_call_used_regs_options (arg);
+      break;
+
     case OPT_fshow_column:
       dc->show_column = value;
       break;

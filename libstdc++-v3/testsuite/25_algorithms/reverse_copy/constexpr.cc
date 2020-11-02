@@ -29,7 +29,7 @@ test()
 
   const auto outqq = std::reverse_copy(ca0.rbegin(), ca0.rend(), out0.begin());
 
-  return true;
+  return outqq == (out0.begin() + ca0.size()) && out0[3] == 3;
 }
 
 static_assert(test());

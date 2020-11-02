@@ -33,7 +33,12 @@ test()
   const auto outb = std::equal(ca0.begin(), ca0.end(), cas.begin(),
 			       [](int i, int j){ return i + 3 == j; });
 
-  return true;
+  auto ca2 = ca0;
+  ca2[5] = -1;
+
+  const auto outc = std::equal(ca0.begin(), ca0.end(), ca2.begin());
+
+  return outa && outb && !outc;
 }
 
 static_assert(test());

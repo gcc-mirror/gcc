@@ -29,6 +29,7 @@
 // Instantiations in this file are only for the new SSO std::string ABI
 #include <sstream>
 
+#if _GLIBCXX_USE_CXX11_ABI
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -106,3 +107,5 @@ basic_stringstream<wchar_t>::view() const noexcept;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
+
+#endif //_GLIBCXX_USE_CXX11_ABI

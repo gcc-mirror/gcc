@@ -1432,14 +1432,17 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 
   if (is_gimple_call (stmt) && extract_range_builtin (vr, stmt))
     {
+      combined_fn cfn = gimple_call_combined_fn (stmt);
+      if (cfn == CFN_UBSAN_CHECK_ADD
+	  || cfn == CFN_UBSAN_CHECK_SUB
+	  || cfn == CFN_UBSAN_CHECK_MUL)
+	return;
+
       value_range_equiv tmp;
       /* Assert that any ranges vr_values::extract_range_builtin gets
 	 are also handled by the ranger counterpart.  */
       gcc_assert (range_of_builtin_call (*this, tmp, as_a<gcall *> (stmt)));
-#if 0
-      /* Disable this while PR97505 is resolved.  */
       gcc_assert (tmp.equal_p (*vr, /*ignore_equivs=*/false));
-#endif
       return;
     }
   /* Handle extraction of the two results (result of arithmetics and

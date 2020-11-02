@@ -2925,7 +2925,9 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 	  modref_summary *summary = get_modref_function_summary (node);
 	  if (summary)
 	    {
-	      if (!modref_may_conflict (call, summary->stores, ref, tbaa_p))
+	      if (!modref_may_conflict (call, summary->stores, ref, tbaa_p)
+		  && (!summary->writes_errno
+		      || !targetm.ref_may_alias_errno (ref)))
 		{
 		  alias_stats.modref_clobber_no_alias++;
 		  if (dump_file && (dump_flags & TDF_DETAILS))

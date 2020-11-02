@@ -2505,7 +2505,7 @@ process_alt_operands (int only_alternative)
 	  while ((p += len), c);
 
 	  scratch_p = (operand_reg[nop] != NULL_RTX
-		       && lra_former_scratch_p (REGNO (operand_reg[nop])));
+		       && ira_former_scratch_p (REGNO (operand_reg[nop])));
 	  /* Record which operands fit this alternative.  */
 	  if (win)
 	    {
@@ -4354,8 +4354,8 @@ curr_insn_transform (bool check_only_p)
 		 assigment pass and the scratch pseudo will be
 		 spilled.  Spilled scratch pseudos are transformed
 		 back to scratches at the LRA end.  */
-	      && lra_former_scratch_operand_p (curr_insn, i)
-	      && lra_former_scratch_p (REGNO (op)))
+	      && ira_former_scratch_operand_p (curr_insn, i)
+	      && ira_former_scratch_p (REGNO (op)))
 	    {
 	      int regno = REGNO (op);
 	      lra_change_class (regno, NO_REGS, "      Change to", true);
@@ -4376,7 +4376,7 @@ curr_insn_transform (bool check_only_p)
 	      && goal_alt[i] != NO_REGS && REG_P (op)
 	      && (regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER
 	      && regno < new_regno_start
-	      && ! lra_former_scratch_p (regno)
+	      && ! ira_former_scratch_p (regno)
 	      && reg_renumber[regno] < 0
 	      /* Check that the optional reload pseudo will be able to
 		 hold given mode value.  */

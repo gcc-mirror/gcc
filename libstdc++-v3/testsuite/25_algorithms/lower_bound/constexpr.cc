@@ -31,7 +31,7 @@ test()
   const auto outcc = std::lower_bound(ca0.begin(), ca0.end(), 6,
 				      std::less<int>());
 
-  return true;
+  return outbb == (ca0.begin() + 6) && outcc == outbb;
 }
 
 static_assert(test());

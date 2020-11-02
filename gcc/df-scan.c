@@ -3614,6 +3614,14 @@ df_update_entry_block_defs (void)
 }
 
 
+/* Return true if REGNO is used by the epilogue.  */
+bool
+df_epilogue_uses_p (unsigned int regno)
+{
+  return (EPILOGUE_USES (regno)
+	  || TEST_HARD_REG_BIT (crtl->must_be_zero_on_return, regno));
+}
+
 /* Set the bit for regs that are considered being used at the exit. */
 
 static void
@@ -3661,7 +3669,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
      epilogue as being live at the end of the function since they
      may be referenced by our caller.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (global_regs[i] || EPILOGUE_USES (i))
+    if (global_regs[i] || df_epilogue_uses_p (i))
       bitmap_set_bit (exit_block_uses, i);
 
   if (targetm.have_epilogue () && epilogue_completed)
@@ -3802,7 +3810,6 @@ df_hard_reg_init (void)
   initialized = true;
 }
 
-
 /* Recompute the parts of scanning that are based on regs_ever_live
    because something changed in that array.  */
 
@@ -3861,7 +3868,6 @@ df_regs_ever_live_p (unsigned int regno)
 {
   return regs_ever_live[regno];
 }
-
 
 /* Set regs_ever_live[REGNO] to VALUE.  If this cause regs_ever_live
    to change, schedule that change for the next update.  */

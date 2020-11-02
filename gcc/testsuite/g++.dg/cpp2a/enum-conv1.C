@@ -110,9 +110,6 @@ enum_float (bool b)
   r += b ? d : u1; // { dg-warning "conditional expression between" "" { target c++20 } }
   r += b ? u1 : d; // { dg-warning "conditional expression between" "" { target c++20 } }
 
-  // FIXME should be error
-  // e1 <=> d;
-
   d += e1; // { dg-warning "arithmetic between floating-point type .double. and enumeration type .E1." "" { target c++20 } }
   d = e1;
 

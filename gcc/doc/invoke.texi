@@ -555,7 +555,7 @@ Objective-C and Objective-C++ Dialects}.
 -funit-at-a-time  -funroll-all-loops  -funroll-loops @gol
 -funsafe-math-optimizations  -funswitch-loops @gol
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt @gol
--fweb  -fwhole-program  -fwpa  -fuse-linker-plugin @gol
+-fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os  -Ofast  -Og}
 
@@ -12705,6 +12705,19 @@ int foo (void)
 @end smallexample
 
 Not all targets support this option.
+
+@item -fzero-call-used-regs=@var{choice}
+@opindex fzero-call-used-regs
+Zero call-used registers at function return to increase program
+security by either mitigating Return-Oriented Programming (ROP)
+attacks or preventing information leakage through registers.
+
+The possible values of @var{choice} are the same as for the
+@code{zero_call_used_regs} attribute (@pxref{Function Attributes}).
+The default is @samp{skip}.
+
+You can control this behavior for a specific function by using the function
+attribute @code{zero_call_used_regs} (@pxref{Function Attributes}).
 
 @item --param @var{name}=@var{value}
 @opindex param

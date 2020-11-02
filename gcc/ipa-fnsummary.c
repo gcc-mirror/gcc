@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-into-ssa.h"
+#include "symtab-clones.h"
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
@@ -811,9 +812,10 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
      that are known to be false or true.  */
   info->conds = vec_safe_copy (info->conds);
 
+  clone_info *cinfo = clone_info::get (dst);
   /* When there are any replacements in the function body, see if we can figure
      out that something was optimized out.  */
-  if (ipa_node_params_sum && dst->clone.tree_map)
+  if (ipa_node_params_sum && cinfo && cinfo->tree_map)
     {
       vec<size_time_entry, va_gc> *entry = info->size_time_table;
       /* Use SRC parm info since it may not be copied yet.  */
@@ -834,7 +836,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	{
 	  struct ipa_replace_map *r;
 
-	  for (j = 0; vec_safe_iterate (dst->clone.tree_map, j, &r); j++)
+	  for (j = 0; vec_safe_iterate (cinfo->tree_map, j, &r); j++)
 	    {
 	      if (r->parm_num == i)
 		{

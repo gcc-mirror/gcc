@@ -183,11 +183,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  switch (__op)
 	    {
-#if __cpp_rtti
 	    case __get_type_info:
+#if __cpp_rtti
 	      __dest._M_access<const type_info*>() = &typeid(_Functor);
-	      break;
+#else
+	      __dest._M_access<const type_info*>() = nullptr;
 #endif
+	      break;
 	    case __get_functor_ptr:
 	      __dest._M_access<_Functor*>() = _M_get_pointer(__source);
 	      break;
@@ -292,6 +294,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     std::forward<_ArgTypes>(__args)...);
       }
     };
+
+  // Specialization for invalid types
+  template<>
+    class _Function_handler<void, void>
+    {
+    public:
+      static bool
+      _M_manager(_Any_data&, const _Any_data&, _Manager_operation)
+      { return false; }
+    };
+
+  // Avoids instantiating ill-formed specializations of _Function_handler
+  // in std::function<_Signature>::target<_Functor>().
+  // e.g. _Function_handler<Sig, void()> and _Function_handler<Sig, void>
+  // would be ill-formed.
+  template<typename _Signature, typename _Functor,
+	   bool __valid = is_object<_Functor>::value>
+    struct _Target_handler
+    : _Function_handler<_Signature, typename remove_cv<_Functor>::type>
+    { };
+
+  template<typename _Signature, typename _Functor>
+    struct _Target_handler<_Signature, _Functor, false>
+    : _Function_handler<void, void>
+    { };
 
   /**
    *  @brief Primary class template for std::function.
@@ -553,17 +580,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    _Any_data __typeinfo_result;
 	    _M_manager(__typeinfo_result, _M_functor, __get_type_info);
-	    return *__typeinfo_result._M_access<const type_info*>();
+	    if (auto __ti =  __typeinfo_result._M_access<const type_info*>())
+	      return *__ti;
 	  }
-	else
-	  return typeid(void);
+	return typeid(void);
       }
+#endif
 
       /**
        *  @brief Access the stored target function object.
        *
        *  @return Returns a pointer to the stored target function object,
-       *  if @c typeid(_Functor).equals(target_type()); otherwise, a NULL
+       *  if @c typeid(_Functor).equals(target_type()); otherwise, a null
        *  pointer.
        *
        * This function does not throw exceptions.
@@ -576,24 +604,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  const function* __const_this = this;
 	  const _Functor* __func = __const_this->template target<_Functor>();
-	  return const_cast<_Functor*>(__func);
+	  // If is_function_v<_Functor> is true then const_cast<_Functor*>
+	  // would be ill-formed, so use *const_cast<_Functor**> instead.
+	  return *const_cast<_Functor**>(&__func);
 	}
 
       template<typename _Functor>
 	const _Functor*
 	target() const noexcept
 	{
-	  if (typeid(_Functor) == target_type() && _M_manager)
+	  if _GLIBCXX17_CONSTEXPR (is_object<_Functor>::value)
 	    {
-	      _Any_data __ptr;
-	      _M_manager(__ptr, _M_functor, __get_functor_ptr);
-	      return __ptr._M_access<const _Functor*>();
+	      // For C++11 and C++14 if-constexpr is not used above, so
+	      // _Target_handler avoids ill-formed _Function_handler types.
+	      using _Handler = _Target_handler<_Res(_ArgTypes...), _Functor>;
+
+	      if (_M_manager == &_Handler::_M_manager
+#if __cpp_rtti
+		  || (_M_manager && typeid(_Functor) == target_type())
+#endif
+		 )
+		{
+		  _Any_data __ptr;
+		  _M_manager(__ptr, _M_functor, __get_functor_ptr);
+		  return __ptr._M_access<const _Functor*>();
+		}
 	    }
-	  else
-	    return nullptr;
+	  return nullptr;
 	}
       // @}
-#endif
 
     private:
       using _Invoker_type = _Res (*)(const _Any_data&, _ArgTypes&&...);

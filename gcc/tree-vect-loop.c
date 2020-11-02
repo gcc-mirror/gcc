@@ -666,27 +666,50 @@ vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
   unsigned i;
 
   FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo), i, first)
-    if (STMT_VINFO_IN_PATTERN_P (first))
-      {
-	stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
-	while (next)
-	  {
-	    if (! STMT_VINFO_IN_PATTERN_P (next)
-		|| STMT_VINFO_REDUC_IDX (STMT_VINFO_RELATED_STMT (next)) == -1)
-	      break;
-	    next = REDUC_GROUP_NEXT_ELEMENT (next);
-	  }
-	/* If not all stmt in the chain are patterns or if we failed
-	   to update STMT_VINFO_REDUC_IDX try to handle the chain
-	   without patterns.  */
-	if (! next
-	    && STMT_VINFO_REDUC_IDX (STMT_VINFO_RELATED_STMT (first)) != -1)
-	  {
-	    vect_fixup_reduc_chain (first);
-	    LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
-	      = STMT_VINFO_RELATED_STMT (first);
-	  }
-      }
+    {
+      stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
+      while (next)
+	{
+	  if ((STMT_VINFO_IN_PATTERN_P (next)
+	       != STMT_VINFO_IN_PATTERN_P (first))
+	      || STMT_VINFO_REDUC_IDX (vect_stmt_to_vectorize (next)) == -1)
+	    break;
+	  next = REDUC_GROUP_NEXT_ELEMENT (next);
+	}
+      /* If all reduction chain members are well-formed patterns adjust
+	 the group to group the pattern stmts instead.  */
+      if (! next
+	  && STMT_VINFO_REDUC_IDX (vect_stmt_to_vectorize (first)) != -1)
+	{
+	  if (STMT_VINFO_IN_PATTERN_P (first))
+	    {
+	      vect_fixup_reduc_chain (first);
+	      LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
+		= STMT_VINFO_RELATED_STMT (first);
+	    }
+	}
+      /* If not all stmt in the chain are patterns or if we failed
+	 to update STMT_VINFO_REDUC_IDX dissolve the chain and handle
+	 it as regular reduction instead.  */
+      else
+	{
+	  stmt_vec_info vinfo = first;
+	  stmt_vec_info last = NULL;
+	  while (vinfo)
+	    {
+	      next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
+	      REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
+	      REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
+	      last = vinfo;
+	      vinfo = next;
+	    }
+	  STMT_VINFO_DEF_TYPE (vect_stmt_to_vectorize (first))
+	    = vect_internal_def;
+	  loop_vinfo->reductions.safe_push (vect_stmt_to_vectorize (last));
+	  LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo).unordered_remove (i);
+	  --i;
+	}
+    }
 }
 
 /* Function vect_get_loop_niters.
@@ -6313,9 +6336,28 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
     {
       if (is_a <gphi *> (stmt_info->stmt))
-	/* Analysis for double-reduction is done on the outer
-	   loop PHI, nested cycles have no further restrictions.  */
-	STMT_VINFO_TYPE (stmt_info) = cycle_phi_info_type;
+	{
+	  if (slp_node)
+	    {
+	      /* We eventually need to set a vector type on invariant
+		 arguments.  */
+	      unsigned j;
+	      slp_tree child;
+	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (slp_node), j, child)
+		if (!vect_maybe_update_slp_op_vectype
+		       (child, SLP_TREE_VECTYPE (slp_node)))
+		  {
+		    if (dump_enabled_p ())
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				       "incompatible vector types for "
+				       "invariants\n");
+		    return false;
+		  }
+	    }
+	  /* Analysis for double-reduction is done on the outer
+	     loop PHI, nested cycles have no further restrictions.  */
+	  STMT_VINFO_TYPE (stmt_info) = cycle_phi_info_type;
+	}
       else
 	STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
@@ -7570,7 +7612,6 @@ vectorizable_phi (vec_info *,
   tree scalar_dest = gimple_phi_result (stmt_info->stmt);
   basic_block bb = gimple_bb (stmt_info->stmt);
   tree vec_dest = vect_create_destination_var (scalar_dest, vectype);
-  auto_vec<tree> vec_oprnds;
   auto_vec<gphi *> new_phis;
   for (unsigned i = 0; i < gimple_phi_num_args (stmt_info->stmt); ++i)
     {
@@ -7581,6 +7622,7 @@ vectorizable_phi (vec_info *,
 	  && SLP_TREE_VEC_STMTS (child).is_empty ())
 	continue;
 
+      auto_vec<tree> vec_oprnds;
       vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[i], &vec_oprnds);
       if (!new_phis.exists ())
 	{

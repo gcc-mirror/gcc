@@ -3539,6 +3539,20 @@ rs6000_linux64_override_options ()
 }
 #endif
 
+/* Return true if we are using GLIBC, and it supports IEEE 128-bit long double.
+   This support is only in little endian GLIBC 2.32 or newer.  */
+static bool
+glibc_supports_ieee_128bit (void)
+{
+#ifdef OPTION_GLIBC
+  if (OPTION_GLIBC && !BYTES_BIG_ENDIAN
+      && ((TARGET_GLIBC_MAJOR * 1000) + TARGET_GLIBC_MINOR) >= 2032)
+    return true;
+#endif /* OPTION_GLIBC.  */
+
+  return false;
+}
+
 /* Override command line options.
 
    Combine build-specific configuration information with options
@@ -4158,8 +4172,14 @@ rs6000_option_override_internal (bool global_init_p)
 
       if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
 	{
+	  /* Determine if the user can change the default long double type at
+	     compilation time.  Only C and C++ support this, and you need GLIBC
+	     2.32 or newer.  Only issue one warning.  */
 	  static bool warned_change_long_double;
-	  if (!warned_change_long_double)
+
+	  if (!warned_change_long_double
+	      && (!glibc_supports_ieee_128bit ()
+		  || (!lang_GNU_C () && !lang_GNU_CXX ())))
 	    {
 	      warned_change_long_double = true;
 	      if (TARGET_IEEEQUAD)
@@ -14392,22 +14412,10 @@ rs6000_invalid_binary_op (int op ATTRIBUTE_UNUSED,
 
   if (!TARGET_FLOAT128_CVT)
     {
-      if ((mode1 == KFmode && mode2 == IFmode)
-	  || (mode1 == IFmode && mode2 == KFmode))
-	return N_("__float128 and __ibm128 cannot be used in the same "
-		  "expression");
-
-      if (TARGET_IEEEQUAD
-	  && ((mode1 == IFmode && mode2 == TFmode)
-	      || (mode1 == TFmode && mode2 == IFmode)))
-	return N_("__ibm128 and long double cannot be used in the same "
-		  "expression");
-
-      if (!TARGET_IEEEQUAD
-	  && ((mode1 == KFmode && mode2 == TFmode)
-	      || (mode1 == TFmode && mode2 == KFmode)))
-	return N_("__float128 and long double cannot be used in the same "
-		  "expression");
+      if ((FLOAT128_IEEE_P (mode1) && FLOAT128_IBM_P (mode2))
+	  || (FLOAT128_IBM_P (mode1) && FLOAT128_IEEE_P (mode2)))
+	return N_("Invalid mixing of IEEE 128-bit and IBM 128-bit floating "
+		  "point types");
     }
 
   return NULL;

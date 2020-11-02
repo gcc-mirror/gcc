@@ -38,7 +38,7 @@ int init()
 void clean_terminate() { _Exit(0); }
 
 int
-main (int argc, char **argv)
+main ()
 {
   std::set_terminate(clean_terminate);
   init();
