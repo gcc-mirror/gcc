@@ -11465,11 +11465,6 @@ package body Exp_Ch4 is
       --  Start of processing for Discrete_Range_Check
 
       begin
-         --  Clear the Do_Range_Check flag on N if needed: this can occur when
-         --  e.g. a trivial type conversion is rewritten by its expression.
-
-         Set_Do_Range_Check (N, False);
-
          --  Nothing more to do if conversion was rewritten
 
          if Nkind (N) /= N_Type_Conversion then
@@ -11477,12 +11472,6 @@ package body Exp_Ch4 is
          end if;
 
          Expr := Expression (N);
-
-         --  Nothing to do if no range check flag set
-
-         if not Do_Range_Check (Expr) then
-            return;
-         end if;
 
          --  Clear the Do_Range_Check flag on Expr
 
@@ -11756,11 +11745,6 @@ package body Exp_Ch4 is
          Tnn    : Entity_Id;
 
       begin
-         --  Clear the Do_Range_Check flag on N if needed: this can occur when
-         --  e.g. a trivial type conversion is rewritten by its expression.
-
-         Set_Do_Range_Check (N, False);
-
          --  Nothing more to do if conversion was rewritten
 
          if Nkind (N) /= N_Type_Conversion then
@@ -12032,20 +12016,16 @@ package body Exp_Ch4 is
       --  Nothing at all to do if conversion is to the identical type so remove
       --  the conversion completely, it is useless, except that it may carry
       --  an Assignment_OK attribute, which must be propagated to the operand
-      --  and the Do_Range_Check flag on Operand should be taken into account.
+      --  and the Do_Range_Check flag on the operand must be cleared, if any.
 
       if Operand_Type = Target_Type then
          if Assignment_OK (N) then
             Set_Assignment_OK (Operand);
          end if;
 
+         Set_Do_Range_Check (Operand, False);
+
          Rewrite (N, Relocate_Node (Operand));
-
-         if Do_Range_Check (Operand) then
-            pragma Assert (Is_Discrete_Type (Operand_Type));
-
-            Discrete_Range_Check;
-         end if;
 
          goto Done;
       end if;
@@ -12468,16 +12448,11 @@ package body Exp_Ch4 is
 
          if Is_Fixed_Point_Type (Target_Type) then
             Expand_Convert_Fixed_To_Fixed (N);
-            Real_Range_Check;
-
          elsif Is_Integer_Type (Target_Type) then
             Expand_Convert_Fixed_To_Integer (N);
-            Discrete_Range_Check;
-
          else
             pragma Assert (Is_Floating_Point_Type (Target_Type));
             Expand_Convert_Fixed_To_Float (N);
-            Real_Range_Check;
          end if;
 
       --  Case of conversions to a fixed-point type
@@ -12492,11 +12467,9 @@ package body Exp_Ch4 is
       then
          if Is_Integer_Type (Operand_Type) then
             Expand_Convert_Integer_To_Fixed (N);
-            Real_Range_Check;
          else
             pragma Assert (Is_Floating_Point_Type (Operand_Type));
             Expand_Convert_Float_To_Fixed (N);
-            Real_Range_Check;
          end if;
 
       --  Case of array conversions
@@ -12656,8 +12629,6 @@ package body Exp_Ch4 is
       --  Here at end of processing
 
    <<Done>>
-      pragma Assert (not Do_Range_Check (N));
-
       --  Apply predicate check if required. Note that we can't just call
       --  Apply_Predicate_Check here, because the type looks right after
       --  the conversion and it would omit the check. The Comes_From_Source
