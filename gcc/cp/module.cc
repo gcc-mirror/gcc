@@ -17479,10 +17479,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Now join everything up.  */
   table.find_dependencies ();
-  // FIXME: Find reachable GMF entities from non-emitted pieces.  It'd
-  // be nice to have a flag telling us this walk's necessary.  Even
-  // better to not do it (why are we making visible implementation
-  // details?) Fight the spec!
 
   if (!table.finalize_dependencies ())
     {
