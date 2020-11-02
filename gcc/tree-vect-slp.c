@@ -530,6 +530,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
       if (backedge
 	  && dts[i] == vect_external_def
 	  && is_a <bb_vec_info> (vinfo)
+	  && TREE_CODE (oprnd) == SSA_NAME
 	  && !SSA_NAME_IS_DEFAULT_DEF (oprnd)
 	  && !dominated_by_p (CDI_DOMINATORS,
 			      as_a <bb_vec_info> (vinfo)->bbs[0],
