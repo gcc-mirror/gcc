@@ -1441,20 +1441,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  return NULL;
 
 	vect_def_type def_type = STMT_VINFO_DEF_TYPE (stmt_info);
-	/* Induction from different IVs is not supported.  */
 	if (def_type == vect_induction_def)
 	  {
-	    stmt_vec_info other_info;
-	    FOR_EACH_VEC_ELT (stmts, i, other_info)
-	      if (stmt_info != other_info)
-		return NULL;
-
-	    /* Induction PHIs are leafs.  */
-	    (*tree_size)++;
-	    node = vect_create_new_slp_node (node, stmts, nops);
-	    SLP_TREE_VECTYPE (node) = vectype;
-	    SLP_TREE_CHILDREN (node).quick_grow_cleared (nops);
-	    return node;
+	    /* Induction PHIs are not cycles but walk the initial
+	       value.  */
+	    class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+	    if (nested_in_vect_loop_p (loop, stmt_info))
+	      loop = loop->inner;
+	    skip_args[loop_latch_edge (loop)->dest_idx] = true;
 	  }
 	else if (def_type == vect_reduction_def
 		 || def_type == vect_double_reduction_def

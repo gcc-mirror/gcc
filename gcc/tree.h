@@ -4429,6 +4429,7 @@ extern tree build_constructor_from_vec (tree, const vec<tree, va_gc> *);
 extern tree build_constructor_va (tree, int, ...);
 extern tree build_clobber (tree);
 extern tree build_real_from_int_cst (tree, const_tree);
+extern tree build_real_from_wide (tree, const wide_int_ref &, signop);
 extern tree build_complex (tree, tree, tree);
 extern tree build_complex_inf (tree, bool);
 extern tree build_each_one_cst (tree);

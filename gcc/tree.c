@@ -2250,6 +2250,22 @@ build_real_from_int_cst (tree type, const_tree i)
   return v;
 }
 
+/* Return a new REAL_CST node whose type is TYPE
+   and whose value is the integer value I which has sign SGN.  */
+
+tree
+build_real_from_wide (tree type, const wide_int_ref &i, signop sgn)
+{
+  REAL_VALUE_TYPE d;
+
+  /* Clear all bits of the real value type so that we can later do
+     bitwise comparisons to see if two values are the same.  */
+  memset (&d, 0, sizeof d);
+
+  real_from_integer (&d, TYPE_MODE (type), i, sgn);
+  return build_real (type, d);
+}
+
 /* Return a newly constructed STRING_CST node whose value is the LEN
    characters at STR when STR is nonnull, or all zeros otherwise.
    Note that for a C string literal, LEN should include the trailing NUL.
