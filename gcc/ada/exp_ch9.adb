@@ -7061,7 +7061,6 @@ package body Exp_Ch9 is
       Enqueue_Call      : Node_Id;
       Formals           : List_Id;
       Hdle              : List_Id;
-      Handler_Stmt      : Node_Id;
       Index             : Node_Id;
       Lim_Typ_Stmts     : List_Id;
       N_Orig            : Node_Id;
@@ -7737,16 +7736,6 @@ package body Exp_Ch9 is
              Has_Created_Identifier => True,
              Is_Asynchronous_Call_Block => True);
 
-         --  Aborts are not deferred at beginning of exception handlers in
-         --  ZCX mode.
-
-         if ZCX_Exceptions then
-            Handler_Stmt := Make_Null_Statement (Loc);
-
-         else
-            Handler_Stmt := Build_Runtime_Call (Loc, RE_Abort_Undefer);
-         end if;
-
          Stmts := New_List (
            Make_Block_Statement (Loc,
              Handled_Statement_Sequence =>
@@ -7763,11 +7752,11 @@ package body Exp_Ch9 is
                    Make_Implicit_Exception_Handler (Loc,
 
                --  when Abort_Signal =>
-               --     Abort_Undefer.all;
+               --     null;
 
                      Exception_Choices =>
                        New_List (New_Occurrence_Of (Stand.Abort_Signal, Loc)),
-                     Statements => New_List (Handler_Stmt))))),
+                     Statements => New_List (Make_Null_Statement (Loc)))))),
 
          --  if not Cancelled (Bnn) then
          --     triggered statements
