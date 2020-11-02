@@ -752,8 +752,6 @@ default_handle_c_option (size_t code ATTRIBUTE_UNUSED,
 bool
 c_common_post_options (const char **pfilename)
 {
-  struct cpp_callbacks *cb;
-
   /* Canonicalize the input and output filenames.  */
   if (in_fnames == NULL)
     {
@@ -1105,7 +1103,7 @@ c_common_post_options (const char **pfilename)
       input_location = UNKNOWN_LOCATION;
     }
 
-  cb = cpp_get_callbacks (parse_in);
+  struct cpp_callbacks *cb = cpp_get_callbacks (parse_in);
   cb->file_change = cb_file_change;
   cb->dir_change = cb_dir_change;
   cpp_post_options (parse_in);
