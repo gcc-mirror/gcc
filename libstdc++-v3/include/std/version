@@ -229,6 +229,10 @@
 #define __cpp_lib_span 202002L
 #define __cpp_lib_ssize 201902L
 #define __cpp_lib_starts_ends_with 201711L
+# if _GLIBCXX_USE_CXX11_ABI
+// Only supported with cx11-abi
+#  define __cpp_lib_syncbuf 201803L
+# endif
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
 #endif

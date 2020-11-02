@@ -141,6 +141,6 @@
 #include <ranges>
 #include <span>
 #include <stop_token>
-// #include <syncstream>
+#include <syncstream>
 #include <version>
 #endif
