@@ -7831,7 +7831,6 @@ extern tree evaluate_concept_check              (tree, tsubst_flags_t);
 extern tree satisfy_constraint_expression	(tree);
 extern bool constraints_satisfied_p		(tree);
 extern bool constraints_satisfied_p		(tree, tree);
-extern void clear_satisfaction_cache		();
 extern bool* lookup_subsumption_result          (tree, tree);
 extern bool save_subsumption_result             (tree, tree, bool);
 extern tree find_template_parameters		(tree, tree);
@@ -7901,7 +7900,7 @@ extern bool var_in_maybe_constexpr_fn           (tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
-extern void clear_cv_and_fold_caches		(bool = true);
+extern void clear_cv_and_fold_caches		(void);
 extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it
