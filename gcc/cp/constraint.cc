@@ -2327,15 +2327,6 @@ save_satisfaction (tree constr, tree args, tree result)
   *slot = entry;
 }
 
-void
-clear_satisfaction_cache ()
-{
-  if (sat_cache)
-    sat_cache->empty ();
-  if (decl_satisfied_cache)
-    decl_satisfied_cache->empty ();
-}
-
 /* A tool to help manage satisfaction caching in satisfy_constraint_r.
    Note the cache is only used when not diagnosing errors.  */
 

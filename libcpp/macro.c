@@ -340,6 +340,8 @@ static cpp_macro *create_iso_definition (cpp_reader *);
 static cpp_macro *lex_expansion_token (cpp_reader *, cpp_macro *);
 static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
 				  const cpp_macro *);
+static bool compare_macros (const cpp_macro *, const cpp_macro *);
+
 static bool parse_params (cpp_reader *, unsigned *, bool *);
 static void check_trad_stringification (cpp_reader *, const cpp_macro *,
 					const cpp_string *);
@@ -1433,7 +1435,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
       /* Laziness can only affect the expansion tokens of the macro,
 	 not its fun-likeness or parameters.  */
-      _cpp_maybe_notify_macro_use (pfile, node);
+      _cpp_maybe_notify_macro_use (pfile, node, location);
       if (pfile->cb.used)
 	pfile->cb.used (pfile, location, node);
 
@@ -3111,6 +3113,14 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
       macro1->lazy = 0;
     }
 
+  return compare_macros (macro1, macro2);
+}
+
+/* Return TRUE if MACRO1 and MACRO2 differ.  */
+
+static bool
+compare_macros (const cpp_macro *macro1, const cpp_macro *macro2)
+{
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
 
@@ -3579,6 +3589,10 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 {
   cpp_macro *macro = (cpp_macro *) placement;
 
+  /* Zero init all the fields.  This'll tell the compiler know all the
+     following inits are writing a virgin object.  */
+  memset (macro, 0, offsetof (cpp_macro, exp));
+
   macro->line = pfile->directive_line;
   macro->parm.params = 0;
   macro->lazy = 0;
@@ -3665,10 +3679,12 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
 }
 
 /* Notify the use of NODE in a macro-aware context (i.e. expanding it,
-   or testing its existance).  Also applies any lazy definition.  */
+   or testing its existance).  Also applies any lazy definition.
+   Return FALSE if the macro isn't really there.  */
 
 extern void
-_cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+_cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+		       location_t loc)
 {
   node->flags |= NODE_USED;
   switch (node->type)
@@ -3686,12 +3702,12 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
 
     case NT_BUILTIN_MACRO:
       if (pfile->cb.used_define)
-	pfile->cb.used_define (pfile, pfile->directive_line, node);
+	pfile->cb.used_define (pfile, loc, node);
       break;
 
     case NT_VOID:
       if (pfile->cb.used_undef)
-	pfile->cb.used_undef (pfile, pfile->directive_line, node);
+	pfile->cb.used_undef (pfile, loc, node);
       break;
 
     default:

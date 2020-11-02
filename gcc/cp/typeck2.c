@@ -954,7 +954,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     return split_nonconstant_init (decl, value);
 
   /* DECL may change value; purge caches.  */
-  clear_cv_and_fold_caches (TREE_STATIC (decl));
+  clear_cv_and_fold_caches ();
 
   /* If the value is a constant, just put it in DECL_INITIAL.  If DECL
      is an automatic variable, the middle end will turn this into a

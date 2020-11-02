@@ -1134,6 +1134,7 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
          preprocessed source.  */
       line_map_ordinary *last = LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
       if (!ORDINARY_MAP_STARTING_LINE_NUMBER (last)
+	  && 0 == filename_cmp (to_file, ORDINARY_MAP_FILE_NAME (last))
 	  && SOURCE_LINE (last, pfile->line_table->highest_line) == 2)
 	{
 	  ord_map = last;
@@ -1981,7 +1982,7 @@ do_ifdef (cpp_reader *pfile)
 	{
 	  skip = !_cpp_defined_macro_p (node);
 	  _cpp_mark_macro_used (node);
-	  _cpp_maybe_notify_macro_use (pfile, node);
+	  _cpp_maybe_notify_macro_use (pfile, node, pfile->directive_line);
 	  if (pfile->cb.used)
 	    pfile->cb.used (pfile, pfile->directive_line, node);
 	  check_eol (pfile, false);
@@ -2004,13 +2005,9 @@ do_ifndef (cpp_reader *pfile)
 
       if (node)
 	{
-	  /* Do not treat conditional macros as being defined.  This is due to
-	     the powerpc port using conditional macros for 'vector', 'bool',
-	     and 'pixel' to act as conditional keywords.  This messes up tests
-	     like #ifndef bool.  */
 	  skip = _cpp_defined_macro_p (node);
 	  _cpp_mark_macro_used (node);
-	  _cpp_maybe_notify_macro_use (pfile, node);
+	  _cpp_maybe_notify_macro_use (pfile, node, pfile->directive_line);
 	  if (pfile->cb.used)
 	    pfile->cb.used (pfile, pfile->directive_line, node);
 	  check_eol (pfile, false);

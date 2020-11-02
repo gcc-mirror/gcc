@@ -138,7 +138,7 @@ static location_t smallest_type_location (const cp_decl_specifier_seq*);
 tree cp_global_trees[CPTI_MAX];
 
 /* A list of objects which have constructors or destructors
-   which reside in the global scope.  The decl is stored in
+   which reside in namespace scope.  The decl is stored in
    the TREE_VALUE slot and the initializer is stored
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;
@@ -2471,22 +2471,27 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
 	  DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
 	}
-      DECL_TEMPLATE_INSTANTIATED (newdecl)
-	|= DECL_TEMPLATE_INSTANTIATED (olddecl);
-      DECL_ODR_USED (newdecl) |= DECL_ODR_USED (olddecl);
 
-      /* If the OLDDECL is an instantiation and/or specialization,
-	 then the NEWDECL must be too.  But, it may not yet be marked
-	 as such if the caller has created NEWDECL, but has not yet
-	 figured out that it is a redeclaration.  */
-      if (!DECL_USE_TEMPLATE (newdecl))
-	DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
+      if (TREE_CODE (newdecl) != TYPE_DECL)
+	{
+	  DECL_TEMPLATE_INSTANTIATED (newdecl)
+	    |= DECL_TEMPLATE_INSTANTIATED (olddecl);
+	  DECL_ODR_USED (newdecl) |= DECL_ODR_USED (olddecl);
+
+	  /* If the OLDDECL is an instantiation and/or specialization,
+	     then the NEWDECL must be too.  But, it may not yet be marked
+	     as such if the caller has created NEWDECL, but has not yet
+	     figured out that it is a redeclaration.  */
+	  if (!DECL_USE_TEMPLATE (newdecl))
+	    DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
+
+	  DECL_INITIALIZED_IN_CLASS_P (newdecl)
+	    |= DECL_INITIALIZED_IN_CLASS_P (olddecl);
+	}
 
       /* Don't really know how much of the language-specific
 	 values we should copy from old to new.  */
       DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
-      DECL_INITIALIZED_IN_CLASS_P (newdecl)
-	|= DECL_INITIALIZED_IN_CLASS_P (olddecl);
 
       if (LANG_DECL_HAS_MIN (newdecl))
 	{
@@ -2646,19 +2651,20 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
 	    {
 	      enum built_in_function fncode = DECL_FUNCTION_CODE (newdecl);
-	      switch (fncode)
+	      if (builtin_decl_explicit_p (fncode))
 		{
-		  /* If a compatible prototype of these builtin functions
-		     is seen, assume the runtime implements it with the
-		     expected semantics.  */
-		case BUILT_IN_STPCPY:
-		  if (builtin_decl_explicit_p (fncode))
-		    set_builtin_decl_implicit_p (fncode, true);
-		  break;
-		default:
-		  if (builtin_decl_explicit_p (fncode))
-		    set_builtin_decl_declared_p (fncode, true);
-		  break;
+		  /* A compatible prototype of these builtin functions
+		     is seen, assume the runtime implements it with
+		     the expected semantics.  */
+		  switch (fncode)
+		    {
+		    case BUILT_IN_STPCPY:
+		      set_builtin_decl_implicit_p (fncode, true);
+		      break;
+		    default:
+		      set_builtin_decl_declared_p (fncode, true);
+		      break;
+		    }
 		}
 
 	      copy_attributes_to_builtin (newdecl);
@@ -5452,20 +5458,17 @@ start_decl (const cp_declarator *declarator,
 void
 start_decl_1 (tree decl, bool initialized)
 {
-  tree type;
-  bool complete_p;
-  bool aggregate_definition_p;
-
-  gcc_assert (!processing_template_decl);
+  gcc_checking_assert (!processing_template_decl);
 
   if (error_operand_p (decl))
     return;
 
-  gcc_assert (VAR_P (decl));
+  gcc_checking_assert (VAR_P (decl));
 
-  type = TREE_TYPE (decl);
-  complete_p = COMPLETE_TYPE_P (type);
-  aggregate_definition_p = MAYBE_CLASS_TYPE_P (type) && !DECL_EXTERNAL (decl);
+  tree type = TREE_TYPE (decl);
+  bool complete_p = COMPLETE_TYPE_P (type);
+  bool aggregate_definition_p
+    = MAYBE_CLASS_TYPE_P (type) && !DECL_EXTERNAL (decl);
 
   /* If an explicit initializer is present, or if this is a definition
      of an aggregate, then we need a complete type at this point.
@@ -5490,6 +5493,7 @@ start_decl_1 (tree decl, bool initialized)
 				   : TCTX_STATIC_STORAGE);
       verify_type_context (input_location, context, TREE_TYPE (decl));
     }
+
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?  */
     {
@@ -14871,7 +14875,6 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
   else
     decl = lookup_elaborated_type (name, how);
 
-
   if (!decl)
     /* We found nothing.  */
     return NULL_TREE;
@@ -14892,8 +14895,8 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
   if (TREE_CODE (decl) != TYPE_DECL)
     /* Found not-a-type.  */
     return NULL_TREE;
-
-    /* Look for invalid nested type:
+  
+  /* Look for invalid nested type:
      class C {
      class C {};
      };  */

@@ -497,7 +497,32 @@
 
 #define vec_xlx __builtin_vec_vextulx
 #define vec_xrx __builtin_vec_vexturx
+
 #endif
+
+/* BCD builtins, map ABI builtin name to existing builtin name.  */
+#define __builtin_bcdadd     __builtin_vec_bcdadd
+#define __builtin_bcdadd_lt  __builtin_vec_bcdadd_lt
+#define __builtin_bcdadd_eq  __builtin_vec_bcdadd_eq
+#define __builtin_bcdadd_gt  __builtin_vec_bcdadd_gt
+#define __builtin_bcdadd_ofl __builtin_vec_bcdadd_ov
+#define __builtin_bcdadd_ov  __builtin_vec_bcdadd_ov
+#define __builtin_bcdsub     __builtin_vec_bcdsub
+#define __builtin_bcdsub_lt  __builtin_vec_bcdsub_lt
+#define __builtin_bcdsub_eq  __builtin_vec_bcdsub_eq
+#define __builtin_bcdsub_gt  __builtin_vec_bcdsub_gt
+#define __builtin_bcdsub_ofl __builtin_vec_bcdsub_ov
+#define __builtin_bcdsub_ov  __builtin_vec_bcdsub_ov
+#define __builtin_bcdinvalid __builtin_vec_bcdinvalid
+#define __builtin_bcdmul10   __builtin_vec_bcdmul10
+#define __builtin_bcddiv10   __builtin_vec_bcddiv10
+#define __builtin_bcd2dfp    __builtin_vec_denb2dfp
+#define __builtin_bcdcmpeq(a,b)   __builtin_vec_bcdsub_eq(a,b,0)
+#define __builtin_bcdcmpgt(a,b)   __builtin_vec_bcdsub_gt(a,b,0)
+#define __builtin_bcdcmplt(a,b)   __builtin_vec_bcdsub_lt(a,b,0)
+#define __builtin_bcdcmpge(a,b)   __builtin_vec_bcdsub_ge(a,b,0)
+#define __builtin_bcdcmple(a,b)   __builtin_vec_bcdsub_le(a,b,0)
+
 
 /* Predicates.
    For C++, we use templates in order to allow non-parenthesized arguments.

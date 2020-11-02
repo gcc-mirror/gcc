@@ -1867,19 +1867,6 @@ public:
 
 #define cp_noexcept_operand scope_chain->noexcept_operand
 
-/* A list of private types mentioned, for deferred access checking.  */
-
-struct GTY((for_user)) cxx_int_tree_map {
-  unsigned int uid;
-  tree to;
-};
-
-struct cxx_int_tree_map_hasher : ggc_ptr_hash<cxx_int_tree_map>
-{
-  static hashval_t hash (cxx_int_tree_map *);
-  static bool equal (cxx_int_tree_map *, cxx_int_tree_map *);
-};
-
 struct named_label_entry; /* Defined in decl.c.  */
 
 struct named_label_hash : ggc_remove <named_label_entry *>
@@ -7831,7 +7818,6 @@ extern tree evaluate_concept_check              (tree, tsubst_flags_t);
 extern tree satisfy_constraint_expression	(tree);
 extern bool constraints_satisfied_p		(tree);
 extern bool constraints_satisfied_p		(tree, tree);
-extern void clear_satisfaction_cache		();
 extern bool* lookup_subsumption_result          (tree, tree);
 extern bool save_subsumption_result             (tree, tree, bool);
 extern tree find_template_parameters		(tree, tree);
@@ -7901,7 +7887,7 @@ extern bool var_in_maybe_constexpr_fn           (tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
-extern void clear_cv_and_fold_caches		(bool = true);
+extern void clear_cv_and_fold_caches		(void);
 extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it

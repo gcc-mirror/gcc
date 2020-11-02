@@ -8142,7 +8142,11 @@ ix86_expand_prologue (void)
   rtx static_chain = NULL_RTX;
 
   if (ix86_function_naked (current_function_decl))
-    return;
+    {
+      if (flag_stack_usage_info)
+	current_function_static_stack_size = 0;
+      return;
+    }
 
   ix86_finalize_stack_frame_flags ();
 

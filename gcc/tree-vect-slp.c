@@ -530,6 +530,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
       if (backedge
 	  && dts[i] == vect_external_def
 	  && is_a <bb_vec_info> (vinfo)
+	  && TREE_CODE (oprnd) == SSA_NAME
 	  && !SSA_NAME_IS_DEFAULT_DEF (oprnd)
 	  && !dominated_by_p (CDI_DOMINATORS,
 			      as_a <bb_vec_info> (vinfo)->bbs[0],
@@ -1440,20 +1441,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  return NULL;
 
 	vect_def_type def_type = STMT_VINFO_DEF_TYPE (stmt_info);
-	/* Induction from different IVs is not supported.  */
 	if (def_type == vect_induction_def)
 	  {
-	    stmt_vec_info other_info;
-	    FOR_EACH_VEC_ELT (stmts, i, other_info)
-	      if (stmt_info != other_info)
-		return NULL;
-
-	    /* Induction PHIs are leafs.  */
-	    (*tree_size)++;
-	    node = vect_create_new_slp_node (node, stmts, nops);
-	    SLP_TREE_VECTYPE (node) = vectype;
-	    SLP_TREE_CHILDREN (node).quick_grow_cleared (nops);
-	    return node;
+	    /* Induction PHIs are not cycles but walk the initial
+	       value.  */
+	    class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+	    if (nested_in_vect_loop_p (loop, stmt_info))
+	      loop = loop->inner;
+	    skip_args[loop_latch_edge (loop)->dest_idx] = true;
 	  }
 	else if (def_type == vect_reduction_def
 		 || def_type == vect_double_reduction_def
@@ -2591,7 +2586,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
       /* Collect reduction statements.  */
       vec<stmt_vec_info> reductions = as_a <loop_vec_info> (vinfo)->reductions;
       for (i = 0; reductions.iterate (i, &next_info); i++)
-	scalar_stmts.safe_push (next_info);
+	if (STMT_VINFO_RELEVANT_P (next_info)
+	    || STMT_VINFO_LIVE_P (next_info))
+	  scalar_stmts.quick_push (next_info);
     }
 
   /* Build the tree for the SLP instance.  */
@@ -2627,29 +2624,29 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {
-      if (loop_vinfo->reduction_chains.length () > 0)
-	{
-	  /* Find SLP sequences starting from reduction chains.  */
-	  FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
-	    if (! vect_analyze_slp_instance (vinfo, bst_map, first_element,
-					     max_tree_size))
+      /* Find SLP sequences starting from reduction chains.  */
+      FOR_EACH_VEC_ELT (loop_vinfo->reduction_chains, i, first_element)
+	if (! STMT_VINFO_RELEVANT_P (first_element)
+	    && ! STMT_VINFO_LIVE_P (first_element))
+	  ;
+	else if (! vect_analyze_slp_instance (vinfo, bst_map, first_element,
+					      max_tree_size))
+	  {
+	    /* Dissolve reduction chain group.  */
+	    stmt_vec_info vinfo = first_element;
+	    stmt_vec_info last = NULL;
+	    while (vinfo)
 	      {
-		/* Dissolve reduction chain group.  */
-		stmt_vec_info vinfo = first_element;
-		stmt_vec_info last = NULL;
-		while (vinfo)
-		  {
-		    stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
-		    REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
-		    REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
-		    last = vinfo;
-		    vinfo = next;
-		  }
-		STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
-		/* It can be still vectorized as part of an SLP reduction.  */
-		loop_vinfo->reductions.safe_push (last);
+		stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
+		REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
+		REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
+		last = vinfo;
+		vinfo = next;
 	      }
-	}
+	    STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
+	    /* It can be still vectorized as part of an SLP reduction.  */
+	    loop_vinfo->reductions.safe_push (last);
+	  }
 
       /* Find SLP sequences starting from groups of reductions.  */
       if (loop_vinfo->reductions.length () > 1)

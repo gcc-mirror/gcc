@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-range.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "attr-fnspec.h"
+#include "symtab-clones.h"
 
 /* Class (from which there is one global instance) that holds modref summaries
    for all analyzed functions.  */
@@ -318,6 +320,8 @@ modref_summary::dump (FILE *out)
   dump_records (loads, out);
   fprintf (out, "  stores:\n");
   dump_records (stores, out);
+  if (writes_errno)
+    fprintf (out, "  Writes errno\n");
 }
 
 /* Dump summary.  */
@@ -511,6 +515,43 @@ ignore_stores_p (tree caller, int flags)
   return false;
 }
 
+/* Determine parm_map for argument I of STMT.  */
+
+modref_parm_map
+parm_map_for_arg (gimple *stmt, int i)
+{
+  tree op = gimple_call_arg (stmt, i);
+  bool offset_known;
+  poly_int64 offset;
+  struct modref_parm_map parm_map;
+
+  offset_known = unadjusted_ptr_and_unit_offset (op, &op, &offset);
+  if (TREE_CODE (op) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (op)
+      && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
+    {
+      int index = 0;
+      for (tree t = DECL_ARGUMENTS (current_function_decl);
+	   t != SSA_NAME_VAR (op); t = DECL_CHAIN (t))
+	{
+	  if (!t)
+	    {
+	      index = -1;
+	      break;
+	    }
+	  index++;
+	}
+      parm_map.parm_index = index;
+      parm_map.parm_offset_known = offset_known;
+      parm_map.parm_offset = offset;
+    }
+  else if (points_to_local_or_readonly_memory_p (op))
+    parm_map.parm_index = -2;
+  else
+    parm_map.parm_index = -1;
+  return parm_map;
+}
+
 /* Merge side effects of call STMT to function with CALLEE_SUMMARY
    int CUR_SUMMARY.  Return true if something changed.
    If IGNORE_STORES is true, do not merge stores.  */
@@ -527,37 +568,21 @@ merge_call_side_effects (modref_summary *cur_summary,
     fprintf (dump_file, " - Merging side effects of %s with parm map:",
 	     callee_node->dump_name ());
 
+  /* We can not safely optimize based on summary of callee if it does
+     not always bind to current def: it is possible that memory load
+     was optimized out earlier which may not happen in the interposed
+     variant.  */
+  if (!callee_node->binds_to_current_def_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file, " - May be interposed: collapsing loads.\n");
+      cur_summary->loads->collapse ();
+    }
+
   parm_map.safe_grow_cleared (gimple_call_num_args (stmt));
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
-      tree op = gimple_call_arg (stmt, i);
-      bool offset_known;
-      poly_int64 offset;
-
-      offset_known = unadjusted_ptr_and_unit_offset (op, &op, &offset);
-      if (TREE_CODE (op) == SSA_NAME
-	  && SSA_NAME_IS_DEFAULT_DEF (op)
-	  && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
-	{
-	  int index = 0;
-	  for (tree t = DECL_ARGUMENTS (current_function_decl);
-	       t != SSA_NAME_VAR (op); t = DECL_CHAIN (t))
-	    {
-	      if (!t)
-		{
-		  index = -1;
-		  break;
-		}
-	      index++;
-	    }
-	  parm_map[i].parm_index = index;
-	  parm_map[i].parm_offset_known = offset_known;
-	  parm_map[i].parm_offset = offset;
-	}
-      else if (points_to_local_or_readonly_memory_p (op))
-	parm_map[i].parm_index = -2;
-      else
-	parm_map[i].parm_index = -1;
+      parm_map[i] = parm_map_for_arg (stmt, i);
       if (dump_file)
 	{
 	  fprintf (dump_file, " %i", parm_map[i].parm_index);
@@ -575,9 +600,130 @@ merge_call_side_effects (modref_summary *cur_summary,
   /* Merge with callee's summary.  */
   changed |= cur_summary->loads->merge (callee_summary->loads, &parm_map);
   if (!ignore_stores)
-    changed |= cur_summary->stores->merge (callee_summary->stores,
-					   &parm_map);
+    {
+      changed |= cur_summary->stores->merge (callee_summary->stores,
+					     &parm_map);
+      if (!cur_summary->writes_errno
+	  && callee_summary->writes_errno)
+	{
+	  cur_summary->writes_errno = true;
+	  changed = true;
+	}
+    }
   return changed;
+}
+
+/* Return access mode for argument I of call STMT with FNSPEC.  */
+
+static modref_access_node
+get_access_for_fnspec (gcall *call, attr_fnspec &fnspec,
+		       unsigned int i, modref_parm_map &map)
+{
+  tree size = NULL_TREE;
+  unsigned int size_arg;
+
+  if (!fnspec.arg_specified_p (i))
+    ;
+  else if (fnspec.arg_max_access_size_given_by_arg_p (i, &size_arg))
+    size = gimple_call_arg (call, size_arg);
+  else if (fnspec.arg_access_size_given_by_type_p (i))
+    {
+      tree callee = gimple_call_fndecl (call);
+      tree t = TYPE_ARG_TYPES (TREE_TYPE (callee));
+
+      for (unsigned int p = 0; p < i; p++)
+	t = TREE_CHAIN (t);
+      size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_VALUE (t)));
+    }
+  modref_access_node a = {0, -1, -1,
+			  map.parm_offset, map.parm_index,
+			  map.parm_offset_known};
+  poly_int64 size_hwi;
+  if (size
+      && poly_int_tree_p (size, &size_hwi)
+      && coeffs_in_range_p (size_hwi, 0,
+			    HOST_WIDE_INT_MAX / BITS_PER_UNIT))
+    {
+      a.size = -1;
+      a.max_size = size_hwi << LOG2_BITS_PER_UNIT;
+    }
+  return a;
+}
+
+/* Apply side effects of call STMT to CUR_SUMMARY using FNSPEC.
+   If IGNORE_STORES is true ignore them.
+   Return false if no useful summary can be produced.   */
+
+static bool
+process_fnspec (modref_summary *cur_summary, gcall *call, bool ignore_stores)
+{
+  attr_fnspec fnspec = gimple_call_fnspec (call);
+  if (!fnspec.known_p ())
+    {
+      if (dump_file && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
+	fprintf (dump_file, "      Builtin with no fnspec: %s\n",
+		 IDENTIFIER_POINTER (DECL_NAME (gimple_call_fndecl (call))));
+      if (ignore_stores)
+	{
+	  cur_summary->loads->collapse ();
+	  return true;
+	}
+      return false;
+    }
+  if (fnspec.global_memory_read_p ())
+    cur_summary->loads->collapse ();
+  else
+    {
+      for (unsigned int i = 0; i < gimple_call_num_args (call); i++)
+	if (!POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, i))))
+	  ;
+	else if (!fnspec.arg_specified_p (i)
+		 || fnspec.arg_maybe_read_p (i))
+	  {
+	    modref_parm_map map = parm_map_for_arg (call, i);
+
+	    if (map.parm_index == -2)
+	      continue;
+	    if (map.parm_index == -1)
+	      {
+		cur_summary->loads->collapse ();
+		break;
+	      }
+	    cur_summary->loads->insert (0, 0,
+					get_access_for_fnspec (call,
+							       fnspec, i, map));
+	  }
+    }
+  if (ignore_stores)
+    return true;
+  if (fnspec.global_memory_written_p ())
+    cur_summary->stores->collapse ();
+  else
+    {
+      for (unsigned int i = 0; i < gimple_call_num_args (call); i++)
+	if (!POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, i))))
+	  ;
+	else if (!fnspec.arg_specified_p (i)
+		 || fnspec.arg_maybe_written_p (i))
+	  {
+	    modref_parm_map map = parm_map_for_arg (call, i);
+
+	    if (map.parm_index == -2)
+	      continue;
+	    if (map.parm_index == -1)
+	      {
+		cur_summary->stores->collapse ();
+		break;
+	      }
+	    cur_summary->stores->insert (0, 0,
+					 get_access_for_fnspec (call,
+								fnspec, i,
+								map));
+	  }
+      if (fnspec.errno_maybe_written_p () && flag_errno_math)
+	cur_summary->writes_errno = true;
+    }
+  return true;
 }
 
 /* Analyze function call STMT in function F.
@@ -585,7 +731,7 @@ merge_call_side_effects (modref_summary *cur_summary,
 
 static bool
 analyze_call (modref_summary *cur_summary,
-	      gimple *stmt, vec <gimple *> *recursive_calls)
+	      gcall *stmt, vec <gimple *> *recursive_calls)
 {
   /* Check flags on the function call.  In certain cases, analysis can be
      simplified.  */
@@ -628,17 +774,6 @@ analyze_call (modref_summary *cur_summary,
 
   struct cgraph_node *callee_node = cgraph_node::get_create (callee);
 
-  /* We can not safely optimize based on summary of callee if it does
-     not always bind to current def: it is possible that memory load
-     was optimized out earlier which may not happen in the interposed
-     variant.  */
-  if (!callee_node->binds_to_current_def_p ())
-    {
-      if (dump_file)
-	fprintf (dump_file, " - May be interposed: collapsing loads.\n");
-      cur_summary->loads->collapse ();
-    }
-
   /* If this is a recursive call, the target summary is the same as ours, so
      there's nothing to do.  */
   if (recursive_call_p (current_function_decl, callee))
@@ -656,16 +791,9 @@ analyze_call (modref_summary *cur_summary,
   callee_node = callee_node->function_symbol (&avail);
   if (avail <= AVAIL_INTERPOSABLE)
     {
-      /* Keep stores summary, but discard all loads for interposable function
-	 symbols.  */
-      if (ignore_stores)
-	{
-	  cur_summary->loads->collapse ();
-	  return true;
-	}
       if (dump_file)
 	fprintf (dump_file, " - Function availability <= AVAIL_INTERPOSABLE.\n");
-      return false;
+      return process_fnspec (cur_summary, stmt, ignore_stores);
     }
 
   /* Get callee's modref summary.  As above, if there's no summary, we either
@@ -673,14 +801,9 @@ analyze_call (modref_summary *cur_summary,
   modref_summary *callee_summary = optimization_summaries->get (callee_node);
   if (!callee_summary)
     {
-      if (ignore_stores)
-	{
-	  cur_summary->loads->collapse ();
-	  return true;
-	}
       if (dump_file)
 	fprintf (dump_file, " - No modref summary available for callee.\n");
-      return false;
+      return process_fnspec (cur_summary, stmt, ignore_stores);
     }
 
   merge_call_side_effects (cur_summary, stmt, callee_summary, ignore_stores,
@@ -786,7 +909,7 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
      return false;
    case GIMPLE_CALL:
      if (!ipa)
-       return analyze_call (summary, stmt, recursive_calls);
+       return analyze_call (summary, as_a <gcall *> (stmt), recursive_calls);
      return true;
    default:
      /* Nothing to do for other types of statements.  */
@@ -905,6 +1028,7 @@ analyze_function (function *f, bool ipa)
       summary->stores = modref_records::create_ggc (param_modref_max_bases,
 						    param_modref_max_refs,
 						    param_modref_max_accesses);
+      summary->writes_errno = false;
     }
   if (lto)
     {
@@ -1071,6 +1195,7 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
 			 src_data->loads->max_refs,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
+  dst_data->writes_errno = src_data->writes_errno;
 }
 
 /* Called when new clone is inserted to callgraph late.  */
@@ -1482,7 +1607,8 @@ modref_read (void)
 static void
 update_signature (struct cgraph_node *node)
 {
-  if (!node->clone.param_adjustments)
+  clone_info *info = clone_info::get (node);
+  if (!info || !info->param_adjustments)
     return;
 
   modref_summary *r = optimization_summaries
@@ -1501,9 +1627,9 @@ update_signature (struct cgraph_node *node)
   size_t i, max = 0;
   ipa_adjusted_param *p;
 
-  FOR_EACH_VEC_SAFE_ELT (node->clone.param_adjustments->m_adj_params, i, p)
+  FOR_EACH_VEC_SAFE_ELT (info->param_adjustments->m_adj_params, i, p)
     {
-      int idx = node->clone.param_adjustments->get_original_index (i);
+      int idx = info->param_adjustments->get_original_index (i);
       if (idx > (int)max)
 	max = idx;
     }
@@ -1513,9 +1639,9 @@ update_signature (struct cgraph_node *node)
   map.reserve (max + 1);
   for (i = 0; i <= max; i++)
     map.quick_push (-1);
-  FOR_EACH_VEC_SAFE_ELT (node->clone.param_adjustments->m_adj_params, i, p)
+  FOR_EACH_VEC_SAFE_ELT (info->param_adjustments->m_adj_params, i, p)
     {
-      int idx = node->clone.param_adjustments->get_original_index (i);
+      int idx = info->param_adjustments->get_original_index (i);
       if (idx >= 0)
 	map[idx] = i;
     }

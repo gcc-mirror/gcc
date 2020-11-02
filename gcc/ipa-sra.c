@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree-streamer.h"
 #include "internal-fn.h"
+#include "symtab-clones.h"
 
 static void ipa_sra_summarize_function (cgraph_node *);
 
@@ -3686,10 +3687,11 @@ process_isra_node_results (cgraph_node *node,
 
   auto_vec<bool, 16> surviving_params;
   bool check_surviving = false;
-  if (node->clone.param_adjustments)
+  clone_info *cinfo = clone_info::get (node);
+  if (cinfo && cinfo->param_adjustments)
     {
       check_surviving = true;
-      node->clone.param_adjustments->get_surviving_params (&surviving_params);
+      cinfo->param_adjustments->get_surviving_params (&surviving_params);
     }
 
   unsigned param_count = vec_safe_length (ifs->m_parameters);
@@ -3723,7 +3725,8 @@ process_isra_node_results (cgraph_node *node,
     }
 
   vec<ipa_adjusted_param, va_gc> *new_params = NULL;
-  if (ipa_param_adjustments *old_adjustments = node->clone.param_adjustments)
+  if (ipa_param_adjustments *old_adjustments
+	 = cinfo ? cinfo->param_adjustments : NULL)
     {
       unsigned old_adj_len = vec_safe_length (old_adjustments->m_adj_params);
       for (unsigned i = 0; i < old_adj_len; i++)
@@ -3784,10 +3787,11 @@ disable_unavailable_parameters (cgraph_node *node, isra_func_summary *ifs)
 
   auto_vec<bool, 16> surviving_params;
   bool check_surviving = false;
-  if (node->clone.param_adjustments)
+  clone_info *cinfo = clone_info::get (node);
+  if (cinfo && cinfo->param_adjustments)
     {
       check_surviving = true;
-      node->clone.param_adjustments->get_surviving_params (&surviving_params);
+      cinfo->param_adjustments->get_surviving_params (&surviving_params);
     }
   bool dumped_first = false;
   for (unsigned i = 0; i < len; i++)

@@ -3,13 +3,13 @@
 
 ! { dg-final { scan-tree-dump-times "#pragma omp atomic relaxed" 4 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp atomic release" 4 "original" } }
-! { dg-final { scan-tree-dump-times "v = #pragma omp atomic capture relaxed" 4 "original" } }
-! { dg-final { scan-tree-dump-times "v = #pragma omp atomic capture release" 2 "original" } }
+! { dg-final { scan-tree-dump-times "v = #pragma omp atomic capture relaxed" 2 "original" } }
+! { dg-final { scan-tree-dump-times "v = #pragma omp atomic capture release" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "v = #pragma omp atomic read acquire" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "#pragma omp atomic seq_cst" 7 "original" } }
 ! { dg-final { scan-tree-dump-times "v = #pragma omp atomic read seq_cst" 3 "original" } }
-! { dg-final { scan-tree-dump-times "v = #pragma omp atomic capture seq_cst" 6 "original" } }
+! { dg-final { scan-tree-dump-times "v = #pragma omp atomic capture seq_cst" 3 "original" } }
 
 
 subroutine foo ()
@@ -36,15 +36,7 @@ subroutine foo ()
   x = x + 2
   v = x
   !$omp end atomic
-  !$omp atomic update seq_cst capture
-  x = x + 2
-  v = x
-  !$omp end atomic
   !$omp atomic seq_cst, capture
-  x = x + 2
-  v = x
-  !$omp end atomic
-  !$omp atomic seq_cst, capture, update
   x = x + 2
   v = x
   !$omp end atomic
@@ -55,10 +47,6 @@ subroutine foo ()
   !$omp atomic update, seq_cst
   x = x + v
   !$omp atomic capture, seq_cst
-  x = x + 2
-  v = x
-  !$omp end atomic
-  !$omp atomic capture, seq_cst ,update
   x = x + 2
   v = x
   !$omp end atomic
@@ -78,10 +66,6 @@ subroutine bar
   i = i + 1
   !$omp atomic relaxed
   i = i + 1
-  !$omp atomic relaxed capture update
-  i = i + 1
-  v = i
-  !$omp end atomic
   !$omp atomic relaxed capture
   i = i + 1
   v = i
@@ -90,15 +74,7 @@ subroutine bar
   i = i + 1
   v = i
   !$omp end atomic
-  !$omp atomic update capture,release , hint (1)
-  i = i + 1
-  v = i
-  !$omp end atomic
   !$omp atomic hint(0),relaxed capture
-  i = i + 1
-  v = i
-  !$omp end atomic
-  !$omp atomic hint(0),update relaxed capture
   i = i + 1
   v = i
   !$omp end atomic
