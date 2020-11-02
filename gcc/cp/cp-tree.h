@@ -1867,19 +1867,6 @@ public:
 
 #define cp_noexcept_operand scope_chain->noexcept_operand
 
-/* A list of private types mentioned, for deferred access checking.  */
-
-struct GTY((for_user)) cxx_int_tree_map {
-  unsigned int uid;
-  tree to;
-};
-
-struct cxx_int_tree_map_hasher : ggc_ptr_hash<cxx_int_tree_map>
-{
-  static hashval_t hash (cxx_int_tree_map *);
-  static bool equal (cxx_int_tree_map *, cxx_int_tree_map *);
-};
-
 struct named_label_entry; /* Defined in decl.c.  */
 
 struct named_label_hash : ggc_remove <named_label_entry *>
