@@ -4107,11 +4107,12 @@ gfc_match_omp_atomic (void)
 
   if (gfc_match_omp_clauses (&c, OMP_ATOMIC_CLAUSES, true, true) != MATCH_YES)
     return MATCH_ERROR;
+
+  if (c->capture && c->atomic_op != GFC_OMP_ATOMIC_UNSET)
+    gfc_error ("OMP ATOMIC at %L with multiple atomic clauses", &loc);
+
   if (c->atomic_op == GFC_OMP_ATOMIC_UNSET)
     c->atomic_op = GFC_OMP_ATOMIC_UPDATE;
-
-  if (c->capture && c->atomic_op != GFC_OMP_ATOMIC_UPDATE)
-    gfc_error ("OMP ATOMIC at %L with CAPTURE clause must be UPDATE", &loc);
 
   if (c->memorder == OMP_MEMORDER_UNSET)
     {
@@ -4128,12 +4129,12 @@ gfc_match_omp_atomic (void)
 	  c->memorder = OMP_MEMORDER_SEQ_CST;
 	  break;
 	case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL:
-	  if (c->atomic_op == GFC_OMP_ATOMIC_READ)
-	    c->memorder = OMP_MEMORDER_ACQUIRE;
-	  else if (c->atomic_op == GFC_OMP_ATOMIC_READ)
-	    c->memorder = OMP_MEMORDER_RELEASE;
-	  else
+	  if (c->capture)
 	    c->memorder = OMP_MEMORDER_ACQ_REL;
+	  else if (c->atomic_op == GFC_OMP_ATOMIC_READ)
+	    c->memorder = OMP_MEMORDER_ACQUIRE;
+	  else
+	    c->memorder = OMP_MEMORDER_RELEASE;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -4161,8 +4162,9 @@ gfc_match_omp_atomic (void)
 	  }
 	break;
       case GFC_OMP_ATOMIC_UPDATE:
-	if (c->memorder == OMP_MEMORDER_ACQ_REL
-	    || c->memorder == OMP_MEMORDER_ACQUIRE)
+	if ((c->memorder == OMP_MEMORDER_ACQ_REL
+	     || c->memorder == OMP_MEMORDER_ACQUIRE)
+	    && !c->capture)
 	  {
 	    gfc_error ("!$OMP ATOMIC UPDATE at %L incompatible with "
 		       "ACQ_REL or ACQUIRE clauses", &loc);
