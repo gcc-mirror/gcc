@@ -31474,7 +31474,6 @@ package body Sem_Prag is
             --  RM defined
 
               Name_Assert
-            | Name_Assertion_Policy
             | Name_Static_Predicate
             | Name_Dynamic_Predicate
             | Name_Pre
