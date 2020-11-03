@@ -10832,7 +10832,13 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 
 	  op = fixup_modeless_constant (op, mode);
 
-	  if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
+	  /* NB: 3-operands load implied it's a mask load,
+	     and that mask operand shoud be at the end.
+	     Keep all-ones mask which would be simplified by the expander.  */
+	  if (nargs == 3 && i == 2 && klass == load
+	      && constm1_operand (op, mode))
+	    ;
+	  else if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	    op = copy_to_mode_reg (mode, op);
 	  else
 	    {
