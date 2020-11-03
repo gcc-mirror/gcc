@@ -19081,15 +19081,6 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
   LAMBDA_EXPR_INSTANTIATED (r) = true;
 
-  if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
-    /* A lambda in a default argument outside a class gets no
-       LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
-       tsubst_default_argument calls start_lambda_scope, so we need to
-       specifically ignore it here, and use the global scope.  */
-    record_null_lambda_scope (r);
-  else
-    record_lambda_scope (r);
-
   gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
 
@@ -19167,6 +19158,15 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   tree type = begin_lambda_type (r);
   if (type == error_mark_node)
     return error_mark_node;
+
+  if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
+    /* A lambda in a default argument outside a class gets no
+       LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
+       tsubst_default_argument calls start_lambda_scope, so we need to
+       specifically ignore it here, and use the global scope.  */
+    record_null_lambda_scope (r);
+  else
+    record_lambda_scope (r);
 
   /* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
   determine_visibility (TYPE_NAME (type));
@@ -25571,9 +25571,6 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
 
   if (VAR_P (d))
     {
-      tree init;
-      bool const_init = false;
-
       /* Clear out DECL_RTL; whatever was there before may not be right
 	 since we've reset the type of the declaration.  */
       SET_DECL_RTL (d, NULL);
@@ -25583,7 +25580,8 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
 	 regenerate_decl_from_template so we don't need to
 	 push/pop_access_scope again here.  Pull it out so that
 	 cp_finish_decl can process it.  */
-      init = DECL_INITIAL (d);
+      bool const_init = false;
+      tree init = DECL_INITIAL (d);
       DECL_INITIAL (d) = NULL_TREE;
       DECL_INITIALIZED_P (d) = 0;
 
