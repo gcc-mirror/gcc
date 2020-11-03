@@ -444,21 +444,24 @@ Syntax::
                         Type_Invariant       |
                         Type_Invariant'Class
 
-  ID_ASSERTION_KIND ::= Assertions           |
-                        Assert_And_Cut       |
-                        Assume               |
-                        Contract_Cases       |
-                        Debug                |
-                        Ghost                |
-                        Invariant            |
-                        Invariant'Class      |
-                        Loop_Invariant       |
-                        Loop_Variant         |
-                        Postcondition        |
-                        Precondition         |
-                        Predicate            |
-                        Refined_Post         |
-                        Statement_Assertions
+  ID_ASSERTION_KIND ::= Assertions                |
+                        Assert_And_Cut            |
+                        Assume                    |
+                        Contract_Cases            |
+                        Debug                     |
+                        Default_Initial_Condition |
+                        Ghost                     |
+                        Initial_Condition         |
+                        Invariant                 |
+                        Invariant'Class           |
+                        Loop_Invariant            |
+                        Loop_Variant              |
+                        Postcondition             |
+                        Precondition              |
+                        Predicate                 |
+                        Refined_Post              |
+                        Statement_Assertions      |
+                        Subprogram_Variant
 
   POLICY_IDENTIFIER ::= Check | Disable | Ignore | Suppressible
 
