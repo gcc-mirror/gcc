@@ -1016,7 +1016,6 @@ extern location_t cpp_main_loc (const cpp_reader *);
 
 /* Adjust for the main file to be an include.  */
 extern void cpp_retrofit_as_include (cpp_reader *);
-extern const cpp_hashnode *cpp_main_controlling_macro (cpp_reader *);
 
 /* Set up built-ins with special behavior.  Use cpp_init_builtins()
    instead unless your know what you are doing.  */

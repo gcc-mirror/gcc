@@ -1167,14 +1167,6 @@ cpp_retrofit_as_include (cpp_reader *pfile)
   pfile->mi_cmacro = 0;
 }
 
-/* Return the controlling macro for the (retrofitted_as_include) main
-   file.  */
-const cpp_hashnode *
-cpp_main_controlling_macro (cpp_reader *pfile)
-{
-  return pfile->main_file->cmacro;
-}
-
 /* Could not open FILE.  The complication is dependency output.  */
 static void
 open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets,

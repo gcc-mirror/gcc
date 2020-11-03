@@ -1,5 +1,16 @@
 2020-11-03  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanup unnecessary or stale changes.
+	gcc/cp/
+	* class.c (clone_cdtor): Fix erroneous comment.
+	* decl.c (finish_enum_value_list): Revert local change.
+	gcc/
+	* doc/cppopts.texi (EE): Delete stale info.
+	libcpp.
+	* files.c (cpp_main_controlling_macro): Delete.
+	* include/cpplibc.h (cpp_main_controlling_macro): Delete.
+	* mkdeps.c: Rename bmi->cmi
+
 	Merge trunk 444655b6f02
 	c++: cp_tree_equal cleanups
 

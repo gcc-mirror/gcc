@@ -81,7 +81,7 @@ public:
   };
 
   mkdeps ()
-    : module_name (NULL), bmi_name (NULL), is_header_unit (false), quote_lwm (0)
+    : module_name (NULL), cmi_name (NULL), is_header_unit (false), quote_lwm (0)
   {
   }
   ~mkdeps ()
@@ -97,7 +97,7 @@ public:
     for (i = modules.size (); i--;)
       XDELETEVEC (modules[i]);
     XDELETEVEC (module_name);
-    free (const_cast <char *> (bmi_name));
+    free (const_cast <char *> (cmi_name));
   }
 
 public:
@@ -108,7 +108,7 @@ public:
 
 public:
   const char *module_name;
-  const char *bmi_name;
+  const char *cmi_name;
   bool is_header_unit;
   unsigned short quote_lwm;
 };
@@ -332,21 +332,21 @@ deps_add_vpath (class mkdeps *d, const char *vpath)
 }
 
 /* Add a new module dependency.  M is the module name, with P being
-   any partition name thereof (might be NULL).  If BMI is NULL, this
+   any partition name thereof (might be NULL).  If CMI is NULL, this
    is an import dependency.  Otherwise, this is an output dependency
-   specifying BMI as the output file, of type IS_HEADER_UNIT.  */
+   specifying CMI as the output file, of type IS_HEADER_UNIT.  */
 
 void
 deps_add_module (struct mkdeps *d, const char *m,
-		 const char *bmi, bool is_header_unit)
+		 const char *cmi, bool is_header_unit)
 {
   m = xstrdup (m);
 
-  if (bmi)
+  if (cmi)
     {
       d->module_name = m;
       d->is_header_unit = is_header_unit;
-      d->bmi_name = xstrdup (bmi);
+      d->cmi_name = xstrdup (cmi);
     }
   else
     d->modules.push (m);
@@ -408,8 +408,8 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
   if (d->deps.size ())
     {
       column = make_write_vec (d->targets, fp, 0, colmax, d->quote_lwm);
-      if (CPP_OPTION (pfile, deps.modules) && d->bmi_name)
-	column = make_write_name (d->bmi_name, fp, column, colmax);
+      if (CPP_OPTION (pfile, deps.modules) && d->cmi_name)
+	column = make_write_name (d->cmi_name, fp, column, colmax);
       fputs (":", fp);
       column++;
       make_write_vec (d->deps, fp, column, colmax);
@@ -425,8 +425,8 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
   if (d->modules.size ())
     {
       column = make_write_vec (d->targets, fp, 0, colmax, d->quote_lwm);
-      if (d->bmi_name)
-	column = make_write_name (d->bmi_name, fp, column, colmax);
+      if (d->cmi_name)
+	column = make_write_name (d->cmi_name, fp, column, colmax);
       fputs (":", fp);
       column++;
       column = make_write_vec (d->modules, fp, column, colmax, 0, ".c++m");
@@ -435,14 +435,14 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 
   if (d->module_name)
     {
-      if (d->bmi_name)
+      if (d->cmi_name)
 	{
-	  /* module-name : bmi-name */
+	  /* module-name : cmi-name */
 	  column = make_write_name (d->module_name, fp, 0, colmax,
 				    true, ".c++m");
 	  fputs (":", fp);
 	  column++;
-	  column = make_write_name (d->bmi_name, fp, column, colmax);
+	  column = make_write_name (d->cmi_name, fp, column, colmax);
 	  fputs ("\n", fp);
 
 	  column = fprintf (fp, ".PHONY:");
@@ -451,13 +451,13 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 	  fputs ("\n", fp);
 	}
 
-      if (d->bmi_name && !d->is_header_unit)
+      if (d->cmi_name && !d->is_header_unit)
 	{
 	  /* An order-only dependency.
-	      bmi-name :| first-target
+	      cmi-name :| first-target
 	     We can probably drop this this in favour of Make-4.3's grouped
 	      targets '&:'  */
-	  column = make_write_name (d->bmi_name, fp, 0, colmax);
+	  column = make_write_name (d->cmi_name, fp, 0, colmax);
 	  fputs (":|", fp);
 	  column++;
 	  column = make_write_name (d->targets[0], fp, column, colmax);
