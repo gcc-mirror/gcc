@@ -975,11 +975,10 @@ check_handlers_1 (tree master, tree_stmt_iterator i)
       tree handler = tsi_stmt (i);
       if (TREE_TYPE (handler) && can_convert_eh (type, TREE_TYPE (handler)))
 	{
-	  warning_at (EXPR_LOCATION (handler), 0,
-		      "exception of type %qT will be caught",
-		      TREE_TYPE (handler));
-	  warning_at (EXPR_LOCATION (master), 0,
-		      "   by earlier handler for %qT", type);
+	  if (warning_at (EXPR_LOCATION (handler), OPT_Wexceptions,
+			  "exception of type %qT will be caught by earlier "
+			  "handler", TREE_TYPE (handler)))
+	    inform (EXPR_LOCATION (master), "for type %qT", type);
 	  break;
 	}
     }

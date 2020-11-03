@@ -579,6 +579,10 @@ Werror-implicit-function-declaration
 C ObjC RejectNegative Warning Alias(Werror=, implicit-function-declaration)
 This switch is deprecated; use -Werror=implicit-function-declaration instead.
 
+Wexceptions
+C++ ObjC++ Var(warn_exceptions) Init(1)
+Warn when an exception handler is shadowed by another handler.
+
 Wextra
 C ObjC C++ ObjC++ Warning
 ; in common.opt

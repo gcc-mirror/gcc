@@ -240,7 +240,7 @@ in the following sections.
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
--Weffc++  -Wextra-semi  -Wno-inaccessible-base @gol
+-Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
 -Wno-invalid-offsetof  -Wno-literal-suffix  -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
@@ -3738,6 +3738,12 @@ non-polymorphic bases classes too.
 When selecting this option, be aware that the standard library
 headers do not obey all of these guidelines; use @samp{grep -v}
 to filter out those warnings.
+
+@item -Wno-exceptions @r{(C++ and Objective-C++ only)}
+@opindex Wexceptions
+@opindex Wno-exceptions
+Disable the warning about the case when an exception handler is shadowed by
+another handler, which can point out a wrong ordering of exception handlers.
 
 @item -Wstrict-null-sentinel @r{(C++ and Objective-C++ only)}
 @opindex Wstrict-null-sentinel
