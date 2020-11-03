@@ -24,10 +24,11 @@ from dateutil.parser import parse
 
 from git_commit import GitCommit, GitInfo
 
-from unidiff import PatchSet
+from unidiff import PatchSet, PatchedFile
 
 DATE_PREFIX = 'Date: '
 FROM_PREFIX = 'From: '
+unidiff_supports_renaming = hasattr(PatchedFile(), 'is_rename')
 
 
 class GitEmail(GitCommit):
@@ -58,7 +59,7 @@ class GitEmail(GitCommit):
                 t = 'A'
             elif f.is_removed_file:
                 t = 'D'
-            elif f.is_rename:
+            elif unidiff_supports_renaming and f.is_rename:
                 # Consider that renamed files are two operations: the deletion
                 # of the original name and the addition of the new one.
                 modified_files.append((source, 'D'))
