@@ -239,7 +239,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
-  if (info->param_adjustments)
+  if (info && info->param_adjustments)
     clone_info::get_create (new_thunk)->param_adjustments
 	   = info->param_adjustments;
   new_thunk->unit_id = thunk->unit_id;
