@@ -22485,7 +22485,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %d", clonei->simdlen);
+		  "unsupported simdlen %wd", clonei->simdlen.to_constant ());
       return 0;
     }
 
@@ -22590,7 +22590,8 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	clonei->simdlen = clonei->vecsize_int;
       else
 	clonei->simdlen = clonei->vecsize_float;
-      clonei->simdlen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
+      clonei->simdlen = clonei->simdlen
+			/ GET_MODE_BITSIZE (TYPE_MODE (base_type));
     }
   else if (clonei->simdlen > 16)
     {
@@ -22612,7 +22613,8 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (cnt > (TARGET_64BIT ? 16 : 8))
 	{
 	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "unsupported simdlen %d", clonei->simdlen);
+		      "unsupported simdlen %wd",
+		      clonei->simdlen.to_constant ());
 	  return 0;
 	}
       }
