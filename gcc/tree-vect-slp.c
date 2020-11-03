@@ -1444,9 +1444,13 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	if (def_type == vect_induction_def)
 	  {
 	    /* Induction PHIs are not cycles but walk the initial
-	       value.  */
+	       value.  Only for inner loops through, for outer loops
+	       we need to pick up the value from the actual PHIs
+	       to more easily support peeling and epilogue vectorization.  */
 	    class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-	    if (nested_in_vect_loop_p (loop, stmt_info))
+	    if (!nested_in_vect_loop_p (loop, stmt_info))
+	      skip_args[loop_preheader_edge (loop)->dest_idx] = true;
+	    else
 	      loop = loop->inner;
 	    skip_args[loop_latch_edge (loop)->dest_idx] = true;
 	  }
