@@ -1,3 +1,13 @@
+2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def(vbfcvt): New entry.
+	(vbfcvt_high, bfcvt): Likewise.
+	* config/aarch64/aarch64-simd.md(aarch64_vbfcvt<mode>): New entry.
+	(aarch64_vbfcvt_highv8bf, aarch64_bfcvtsf): Likewise.
+	* config/aarch64/arm_bf16.h (vcvtah_f32_bf16): New intrinsic.
+	* config/aarch64/arm_neon.h (vcvt_f32_bf16): Likewise.
+	(vcvtq_low_f32_bf16, vcvtq_high_f32_bf16): Likewise.
+
 2020-11-02  Alan Modra  <amodra@gmail.com>
 
 	PR middle-end/97267
