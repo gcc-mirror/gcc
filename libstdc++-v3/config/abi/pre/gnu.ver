@@ -2371,6 +2371,11 @@ GLIBCXX_3.4.29 {
     # basic_stringstream::view()
     _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
 
+    # std::once_flag::_M_activate()
+    _ZNSt9once_flag11_M_activateEv;
+    # std::once_flag::_M_finish(bool)
+    _ZNSt9once_flag9_M_finishEb;
+
 } GLIBCXX_3.4.28;
 
 # Symbols in the support library (libsupc++) have their own tag.
