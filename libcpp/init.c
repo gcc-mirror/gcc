@@ -669,7 +669,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 {
   if (mkdeps *deps = cpp_get_deps (pfile))
     /* Set the default target (if there is none already).  */
-    deps_add_default_target (pfile->deps, fname);
+    deps_add_default_target (deps, fname);
 
   pfile->main_file
     = _cpp_find_file (pfile, fname, &pfile->no_search_path, /*angle=*/0,
