@@ -2554,6 +2554,15 @@ cpp_peek_token (cpp_reader *pfile, int index)
 	  index--;
 	  break;
 	}
+      else if (peektok->type == CPP_PRAGMA)
+	{
+	  /* Don't peek past a pragma.  */
+	  if (peektok == &pfile->directive_result)
+	    /* Save the pragma in the buffer.  */
+	    *pfile->cur_token++ = *peektok;
+	  index--;
+	  break;
+	}
     }
   while (index--);
 
@@ -2757,14 +2766,7 @@ _cpp_lex_direct (cpp_reader *pfile)
   buffer = pfile->buffer;
   if (buffer->need_line)
     {
-      if (pfile->state.in_deferred_pragma)
-	{
-	  result->type = CPP_PRAGMA_EOL;
-	  pfile->state.in_deferred_pragma = false;
-	  if (!pfile->state.pragma_allow_expansion)
-	    pfile->state.prevent_expansion--;
-	  return result;
-	}
+      gcc_assert (!pfile->state.in_deferred_pragma);
       if (!_cpp_get_fresh_line (pfile))
 	{
 	  result->type = CPP_EOF;
@@ -2829,6 +2831,19 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      && !CPP_OPTION (pfile, traditional)))
 	CPP_INCREMENT_LINE (pfile, 0);
       buffer->need_line = true;
+      if (pfile->state.in_deferred_pragma)
+	{
+	  /* Produce the PRAGMA_EOL on this line.  File reading
+	     ensures there is always a \n at end of the buffer, thus
+	     in a deferred pragma we always see CPP_PRAGMA_EOL before
+	     any CPP_EOF.  */
+	  result->type = CPP_PRAGMA_EOL;
+	  result->flags &= ~PREV_WHITE;
+	  pfile->state.in_deferred_pragma = false;
+	  if (!pfile->state.pragma_allow_expansion)
+	    pfile->state.prevent_expansion--;
+	  return result;
+	}
       goto fresh_line;
 
     case '0': case '1': case '2': case '3': case '4':
