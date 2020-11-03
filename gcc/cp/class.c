@@ -4838,7 +4838,10 @@ copy_fndecl_with_name (tree fn, tree name, tree_code code,
 
   /* Create the RTL for this function.  */
   SET_DECL_RTL (clone, NULL);
-  rest_of_decl_compilation (clone, namespace_bindings_p (), at_eof);
+
+  /* Regardless of the current scope, this is a member function, so
+     not at namespace scope.  */
+  rest_of_decl_compilation (clone, /*top_level=*/0, at_eof);
 
   return clone;
 }
@@ -4898,8 +4901,9 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 /* Build the clones of FN, return the number of clones built.  These
    will be inserted onto DECL_CHAIN of FN.  */
 
-static unsigned
-build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p)
+static void
+build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p,
+		    bool update_methods)
 {
   unsigned count = 0;
 
@@ -4935,7 +4939,16 @@ build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p)
       count += 2;
     }
 
-  return count;
+  /* The original is now an abstract function that is never
+     emitted.  */
+  DECL_ABSTRACT_P (fn) = true;
+
+  if (update_methods)
+    for (tree clone = fn; count--;)
+      {
+	clone = DECL_CHAIN (clone);
+	add_method (DECL_CONTEXT (clone), clone, false);
+      }
 }
 
 /* Produce declarations for all appropriate clones of FN.  If
@@ -4958,17 +4971,7 @@ clone_cdtor (tree fn, bool update_methods)
   bool base_omits_inherited = (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
 			       && base_ctor_omit_inherited_parms (fn));
 
-  unsigned count = build_cdtor_clones (fn, vtt, base_omits_inherited);
-
-  /* Note that this is an abstract function that is never emitted.  */
-  DECL_ABSTRACT_P (fn) = true;
-
-  if (update_methods)
-    for (tree clone = fn; count--;)
-      {
-	clone = DECL_CHAIN (clone);
-	add_method (DECL_CONTEXT (clone), clone, false);
-      }
+  build_cdtor_clones (fn, vtt, base_omits_inherited, update_methods);
 }
 
 /* DECL is an in charge constructor, which is being defined. This will
@@ -5055,8 +5058,8 @@ adjust_clone_args (tree decl)
 static void
 clone_constructors_and_destructors (tree t)
 {
-  /* While constructors can be via a using declaration, at this point
-     we no longer need to know that.  */
+  /* We do not need to propagate the usingness to the clone, at this
+     point that is not needed.  */
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     clone_cdtor (*iter, /*update_methods=*/true);
 
