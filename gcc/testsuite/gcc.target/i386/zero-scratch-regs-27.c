@@ -7,9 +7,9 @@ foo (int x)
   return x;
 }
 
-/* { dg-final { scan-assembler "xorl\[ \t\]*%edx, %edx" } } */
-/* { dg-final { scan-assembler "movl\[ \t\]*%edx, %ecx" } } */
-/* { dg-final { scan-assembler "movl\[ \t\]*%edx, %esi" } } */
-/* { dg-final { scan-assembler "movl\[ \t\]*%edx, %edi" } } */
-/* { dg-final { scan-assembler "movl\[ \t\]*%edx, %r8d" } } */
-/* { dg-final { scan-assembler "movl\[ \t\]*%edx, %r9d" } } */
+/* { dg-final { scan-assembler "xorl\[ \t\]+%edx, %edx" } } */
+/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %ecx" } } */
+/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %esi" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %edi" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %r8d" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %r9d" { target { ! ia32 } } } } */

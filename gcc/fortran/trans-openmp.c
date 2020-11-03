@@ -3771,34 +3771,38 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
     }
   if (clauses->vector)
     {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_VECTOR);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
       if (clauses->vector_expr)
 	{
 	  tree vector_var
 	    = gfc_convert_expr_to_tree (block, clauses->vector_expr);
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_VECTOR);
 	  OMP_CLAUSE_VECTOR_EXPR (c) = vector_var;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
-	}
-      else
-	{
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_VECTOR);
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
+	  /* TODO: We're not capturing location information for individual
+	     clauses.  However, if we have an expression attached to the
+	     clause, that one provides better location information.  */
+	  OMP_CLAUSE_LOCATION (c)
+	    = gfc_get_location (&clauses->vector_expr->where);
 	}
     }
   if (clauses->worker)
     {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_WORKER);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
       if (clauses->worker_expr)
 	{
 	  tree worker_var
 	    = gfc_convert_expr_to_tree (block, clauses->worker_expr);
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_WORKER);
 	  OMP_CLAUSE_WORKER_EXPR (c) = worker_var;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
-	}
-      else
-	{
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_WORKER);
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
+	  /* TODO: We're not capturing location information for individual
+	     clauses.  However, if we have an expression attached to the
+	     clause, that one provides better location information.  */
+	  OMP_CLAUSE_LOCATION (c)
+	    = gfc_get_location (&clauses->worker_expr->where);
 	}
     }
   if (clauses->gang)
@@ -3806,11 +3810,19 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       tree arg;
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_GANG);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
       if (clauses->gang_num_expr)
 	{
 	  arg = gfc_convert_expr_to_tree (block, clauses->gang_num_expr);
 	  OMP_CLAUSE_GANG_EXPR (c) = arg;
+
+	  /* TODO: We're not capturing location information for individual
+	     clauses.  However, if we have an expression attached to the
+	     clause, that one provides better location information.  */
+	  OMP_CLAUSE_LOCATION (c)
+	    = gfc_get_location (&clauses->gang_num_expr->where);
 	}
+
       if (clauses->gang_static)
 	{
 	  arg = clauses->gang_static_expr

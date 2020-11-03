@@ -1,3 +1,133 @@
+2020-11-02  Thomas Rodgers  <trodgers@redhat.com>
+
+	* doc/doxygen/user.cfg.in (INPUT): Add new header.
+	* include/Makefile.am (std_headers): Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* include/std/syncstream: New header.
+	* include/std/version: Add __cpp_lib_syncbuf.
+	* testsuite/27_io/basic_syncbuf/1.cc: New test.
+	* testsuite/27_io/basic_syncbuf/2.cc: Likewise.
+	* testsuite/27_io/basic_syncbuf/basic_ops/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_syncbuf/requirements/types.cc:
+	Likewise.
+	* testsuite/27_io/basic_syncbuf/sync_ops/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_syncstream/1.cc: Likewise.
+	* testsuite/27_io/basic_syncstream/2.cc: Likewise.
+	* testsuite/27_io/basic_syncstream/basic_ops/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_syncstream/requirements/types.cc:
+	Likewise.
+
+2020-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_integral<wchar_t>)
+	(make_unsigned<wchar_t>, make_signed<wchar_t>): Define based
+	on #ifdef __WCHAR_TYPE__ instead of _GLIBCXX_USE_WCHAR_T.
+	* include/bits/cpp_type_traits.h (__is_integer<wchar_t>)
+	(__is_char<wchar_t>): Likewise.
+
+2020-10-31  François Dumont  <fdumont@gcc.gnu.org>
+
+	* src/c++17/floating_from_chars.cc (_GLIBCXX_USE_CX11_ABI): Add define.
+	(buffering_string): New.
+	[!_GLIBCXX_USE_CXX11_ABI](reserve_string): New.
+	(from_chars): Adapt.
+	* src/c++20/sstream-inst.cc: Limit instantiations to
+	_GLIBCXX_USE_CXX11_ABI.
+
+2020-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (independent_bit_engine): Fix typo
+	in comment.
+	(shuffle_order_engine): Fix incorrect description in comment.
+	* include/bits/random.tcc (__representable_as_double
+	(__p1_representable_as_double): New helper functions.
+	(shuffle_order_engine::operator()): Use double for calculation
+	if (max() - min() + 1) is representable as double.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2020-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96958
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy)
+	(_Power2_rehash_policy): Use ceil and floor instead of ceill and
+	floorl.
+	* src/c++11/hashtable_c++0x.cc (_Prime_rehash_policy): Likewise.
+	Use double instead of long double.
+
+2020-10-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/97600
+	* include/std/ranges (basic_istream_view::begin): Initialize
+	_Iterator from 'this' instead of '*this'.
+	(basic_istream_view::_Iterator::_Iterator): Adjust constructor
+	accordingly.
+	(filter_view::_Iterator::_Iterator): Take a filter_view*
+	argument instead of a filter_view& argument.
+	(filter_view::_Sentinel::_Sentinel): Likewise.
+	(filter_view::begin): Initialize _Iterator from 'this' instead
+	of '*this'.
+	(filter_view::end): Likewise.
+	(transform_view::_Iterator::_Iterator): Take a _Parent* instead
+	of a _Parent&.
+	(filter_view::_Iterator::operator+): Adjust accordingly.
+	(filter_view::_Iterator::operator-): Likewise.
+	(filter_view::begin): Initialize _Iterator from 'this' instead
+	of '*this'.
+	(filter_view::end): Likewise.
+	(join_view::_Iterator): Take a _Parent* instead of a _Parent&.
+	(join_view::_Sentinel): Likewise.
+	(join_view::begin): Initialize _Iterator from 'this' instead of
+	'*this'.
+	(join_view::end): Initialize _Sentinel from 'this' instead of
+	'*this'.
+	(split_view::_OuterIter): Take a _Parent& instead of a _Parent*.
+	(split_view::begin): Initialize _OuterIter from 'this' instead
+	of '*this'.
+	(split_view::end): Likewise.
+	* testsuite/std/ranges/97600.cc: New test.
+
+2020-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (enable_borrowed_view<take_view<T>>)
+	(enable_borrowed_view<drop_view<T>>)
+	(enable_borrowed_view<drop_while_view<T>>)
+	(enable_borrowed_view<reverse_view<T>>)
+	(enable_borrowed_view<common_view<T>>)
+	(enable_borrowed_view<elements_view<T>>): Add partial
+	specializations as per P2017R1.
+	* testsuite/std/ranges/adaptors/conditionally_borrowed.cc:
+	New test.
+
+2020-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96958
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy)
+	(_Power2_rehash_policy): Use double instead of long double.
+
+2020-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Avoid -Wcatch-value warnings.
+
+2020-10-30  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__box): For the partial
+	specialization used by types that are already semiregular,
+	make the default constructor value-initialize the underlying
+	object instead of default-initializing it.  Make its in place
+	constructor explicit.
+	* testsuite/std/ranges/adaptors/detail/semiregular_box.cc:
+	Augment test.
+
+2020-10-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc: XFAIL on AIX.
+
 2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Tighten patterns

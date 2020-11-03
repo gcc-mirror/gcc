@@ -5214,7 +5214,8 @@ contains_X_constraint_p (const char *str)
   return false;
 }
   
-/* Change INSN's scratches into pseudos and save their location.  */
+/* Change INSN's scratches into pseudos and save their location.
+   Return true if we changed any scratch.  */
 bool
 ira_remove_insn_scratches (rtx_insn *insn, bool all_p, FILE *dump_file,
 			   rtx (*get_reg) (rtx original))
@@ -5245,17 +5246,19 @@ ira_remove_insn_scratches (rtx_insn *insn, bool all_p, FILE *dump_file,
 }
 
 /* Return new register of the same mode as ORIGINAL.  Used in
-   ira_remove_scratches.  */
+   remove_scratches.  */
 static rtx
 get_scratch_reg (rtx original)
 {
   return gen_reg_rtx (GET_MODE (original));
 }
 
-/* Change scratches into pseudos and save their location.  */
-void
-ira_remove_scratches (void)
+/* Change scratches into pseudos and save their location.  Return true
+   if we changed any scratch.  */
+static bool
+remove_scratches (void)
 {
+  bool change_p = false;
   basic_block bb;
   rtx_insn *insn;
 
@@ -5266,8 +5269,12 @@ ira_remove_scratches (void)
     FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn)
 	&& ira_remove_insn_scratches (insn, false, ira_dump_file, get_scratch_reg))
-      /* Because we might use DF, we need to keep DF info up to date.  */
-      df_insn_rescan (insn);
+      {
+	/* Because we might use DF, we need to keep DF info up to date.  */
+	df_insn_rescan (insn);
+	change_p = true;
+      }
+  return change_p;
 }
 
 /* Changes pseudos created by function remove_scratches onto scratches.	 */
@@ -5514,8 +5521,8 @@ ira (FILE *f)
   end_alias_analysis ();
   free (reg_equiv);
 
-  if (ira_use_lra_p)
-    ira_remove_scratches ();
+  if (ira_use_lra_p && remove_scratches ())
+    ira_expand_reg_equiv ();
 
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);

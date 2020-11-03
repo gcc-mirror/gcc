@@ -338,16 +338,18 @@ simd_clone_mangle (struct cgraph_node *node,
 {
   char vecsize_mangle = clone_info->vecsize_mangle;
   char mask = clone_info->inbranch ? 'M' : 'N';
-  unsigned int simdlen = clone_info->simdlen;
+  poly_uint64 simdlen = clone_info->simdlen;
   unsigned int n;
   pretty_printer pp;
 
-  gcc_assert (vecsize_mangle && simdlen);
+  gcc_assert (vecsize_mangle && maybe_ne (simdlen, 0U));
 
   pp_string (&pp, "_ZGV");
   pp_character (&pp, vecsize_mangle);
   pp_character (&pp, mask);
-  pp_decimal_int (&pp, simdlen);
+  /* For now, simdlen is always constant, while variable simdlen pp 'n'.  */
+  unsigned int len = simdlen.to_constant ();
+  pp_decimal_int (&pp, (len));
 
   for (n = 0; n < clone_info->nargs; ++n)
     {
@@ -491,7 +493,7 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
 {
   tree fndecl = node->decl;
   tree orig_rettype = TREE_TYPE (TREE_TYPE (fndecl));
-  unsigned int veclen;
+  poly_uint64 veclen;
   tree t;
 
   /* Adjust the function return type.  */
@@ -502,17 +504,18 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
     veclen = node->simdclone->vecsize_int;
   else
     veclen = node->simdclone->vecsize_float;
-  veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (t));
-  if (veclen > node->simdclone->simdlen)
+  veclen = exact_div (veclen, GET_MODE_BITSIZE (SCALAR_TYPE_MODE (t)));
+  if (multiple_p (veclen, node->simdclone->simdlen))
     veclen = node->simdclone->simdlen;
   if (POINTER_TYPE_P (t))
     t = pointer_sized_int_node;
-  if (veclen == node->simdclone->simdlen)
+  if (known_eq (veclen, node->simdclone->simdlen))
     t = build_vector_type (t, node->simdclone->simdlen);
   else
     {
       t = build_vector_type (t, veclen);
-      t = build_array_type_nelts (t, node->simdclone->simdlen / veclen);
+      t = build_array_type_nelts (t, exact_div (node->simdclone->simdlen,
+						veclen));
     }
   TREE_TYPE (TREE_TYPE (fndecl)) = t;
   if (!node->definition)
@@ -526,7 +529,7 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
 
   tree atype = build_array_type_nelts (orig_rettype,
 				       node->simdclone->simdlen);
-  if (veclen != node->simdclone->simdlen)
+  if (maybe_ne (veclen, node->simdclone->simdlen))
     return build1 (VIEW_CONVERT_EXPR, atype, t);
 
   /* Set up a SIMD array to use as the return value.  */
@@ -546,7 +549,7 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
    SIMDLEN is the number of elements.  */
 
 static tree
-create_tmp_simd_array (const char *prefix, tree type, int simdlen)
+create_tmp_simd_array (const char *prefix, tree type, poly_uint64 simdlen)
 {
   tree atype = build_array_type_nelts (type, simdlen);
   tree avar = create_tmp_var_raw (atype, prefix);
@@ -578,7 +581,8 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
   struct cgraph_simd_clone *sc = node->simdclone;
   vec<ipa_adjusted_param, va_gc> *new_params = NULL;
   vec_safe_reserve (new_params, sc->nargs);
-  unsigned i, j, veclen;
+  unsigned i, j, k;
+  poly_uint64 veclen;
 
   for (i = 0; i < sc->nargs; ++i)
     {
@@ -614,8 +618,9 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	    veclen = sc->vecsize_int;
 	  else
 	    veclen = sc->vecsize_float;
-	  veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (parm_type));
-	  if (veclen > sc->simdlen)
+	  veclen = exact_div (veclen,
+			      GET_MODE_BITSIZE (SCALAR_TYPE_MODE (parm_type)));
+	  if (multiple_p (veclen, sc->simdlen))
 	    veclen = sc->simdlen;
 	  adj.op = IPA_PARAM_OP_NEW;
 	  adj.param_prefix_index = IPA_PARAM_PREFIX_SIMD;
@@ -624,10 +629,11 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	  else
 	    adj.type = build_vector_type (parm_type, veclen);
 	  sc->args[i].vector_type = adj.type;
-	  for (j = veclen; j < sc->simdlen; j += veclen)
+	  k = vector_unroll_factor (sc->simdlen, veclen);
+	  for (j = 1; j < k; j++)
 	    {
 	      vec_safe_push (new_params, adj);
-	      if (j == veclen)
+	      if (j == 1)
 		{
 		  memset (&adj, 0, sizeof (adj));
 		  adj.op = IPA_PARAM_OP_NEW;
@@ -663,8 +669,9 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	veclen = sc->vecsize_int;
       else
 	veclen = sc->vecsize_float;
-      veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
-      if (veclen > sc->simdlen)
+      veclen = exact_div (veclen,
+			  GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type)));
+      if (multiple_p (veclen, sc->simdlen))
 	veclen = sc->simdlen;
       if (sc->mask_mode != VOIDmode)
 	adj.type
@@ -675,7 +682,8 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	adj.type = build_vector_type (base_type, veclen);
       vec_safe_push (new_params, adj);
 
-      for (j = veclen; j < sc->simdlen; j += veclen)
+      k = vector_unroll_factor (sc->simdlen, veclen);
+      for (j = 1; j < k; j++)
 	vec_safe_push (new_params, adj);
 
       /* We have previously allocated one extra entry for the mask.  Use
@@ -690,9 +698,9 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	  if (sc->mask_mode == VOIDmode)
 	    sc->args[i].simd_array
 	      = create_tmp_simd_array ("mask", base_type, sc->simdlen);
-	  else if (veclen < sc->simdlen)
+	  else if (k > 1)
 	    sc->args[i].simd_array
-	      = create_tmp_simd_array ("mask", adj.type, sc->simdlen / veclen);
+	      = create_tmp_simd_array ("mask", adj.type, k);
 	  else
 	    sc->args[i].simd_array = NULL_TREE;
 	}
@@ -783,7 +791,8 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 	    }
 	  continue;
 	}
-      if (simd_clone_subparts (TREE_TYPE (arg)) == node->simdclone->simdlen)
+      if (known_eq (simd_clone_subparts (TREE_TYPE (arg)),
+		    node->simdclone->simdlen))
 	{
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
 	  tree ptr = build_fold_addr_expr (array);
@@ -795,8 +804,10 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
       else
 	{
 	  unsigned int simdlen = simd_clone_subparts (TREE_TYPE (arg));
+	  unsigned int times = vector_unroll_factor (node->simdclone->simdlen,
+						     simdlen);
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
-	  for (k = 0; k < node->simdclone->simdlen; k += simdlen)
+	  for (k = 0; k < times; k++)
 	    {
 	      tree ptr = build_fold_addr_expr (array);
 	      int elemsize;
@@ -808,7 +819,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 	      tree elemtype = TREE_TYPE (TREE_TYPE (arg));
 	      elemsize = GET_MODE_SIZE (SCALAR_TYPE_MODE (elemtype));
 	      tree t = build2 (MEM_REF, TREE_TYPE (arg), ptr,
-			       build_int_cst (ptype, k * elemsize));
+			       build_int_cst (ptype, k * elemsize * simdlen));
 	      t = build2 (MODIFY_EXPR, TREE_TYPE (t), t, arg);
 	      gimplify_and_add (t, &seq);
 	    }
@@ -981,8 +992,9 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 		  iter, NULL_TREE, NULL_TREE);
       adjustments->register_replacement (&(*adjustments->m_adj_params)[j], r);
 
-      if (simd_clone_subparts (vectype) < node->simdclone->simdlen)
-	j += node->simdclone->simdlen / simd_clone_subparts (vectype) - 1;
+      if (multiple_p (node->simdclone->simdlen, simd_clone_subparts (vectype)))
+	j += vector_unroll_factor (node->simdclone->simdlen,
+				   simd_clone_subparts (vectype)) - 1;
     }
 
   tree name;
@@ -1249,7 +1261,8 @@ simd_clone_adjust (struct cgraph_node *node)
 	 below).  */
       loop = alloc_loop ();
       cfun->has_force_vectorize_loops = true;
-      loop->safelen = node->simdclone->simdlen;
+      /* For now, simlen is always constant.  */
+      loop->safelen = node->simdclone->simdlen.to_constant ();
       loop->force_vectorize = true;
       loop->header = body_bb;
     }
@@ -1275,7 +1288,8 @@ simd_clone_adjust (struct cgraph_node *node)
 	    {
 	      tree maskt = TREE_TYPE (mask_array);
 	      int c = tree_to_uhwi (TYPE_MAX_VALUE (TYPE_DOMAIN (maskt)));
-	      c = node->simdclone->simdlen / (c + 1);
+	      /* For now, c must be constant here.  */
+	      c = exact_div (node->simdclone->simdlen, c + 1).to_constant ();
 	      int s = exact_log2 (c);
 	      gcc_assert (s > 0);
 	      c--;
@@ -1683,7 +1697,7 @@ expand_simd_clones (struct cgraph_node *node)
       if (clone_info == NULL)
 	continue;
 
-      int orig_simdlen = clone_info->simdlen;
+      poly_uint64 orig_simdlen = clone_info->simdlen;
       tree base_type = simd_clone_compute_base_data_type (node, clone_info);
       /* The target can return 0 (no simd clones should be created),
 	 1 (just one ISA of simd clones should be created) or higher

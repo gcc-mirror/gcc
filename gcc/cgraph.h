@@ -759,17 +759,17 @@ struct GTY(()) cgraph_simd_clone_arg {
 
 struct GTY(()) cgraph_simd_clone {
   /* Number of words in the SIMD lane associated with this clone.  */
-  unsigned int simdlen;
+  poly_uint64 simdlen;
 
   /* Number of annotated function arguments in `args'.  This is
      usually the number of named arguments in FNDECL.  */
   unsigned int nargs;
 
   /* Max hardware vector size in bits for integral vectors.  */
-  unsigned int vecsize_int;
+  poly_uint64 vecsize_int;
 
   /* Max hardware vector size in bits for floating point vectors.  */
-  unsigned int vecsize_float;
+  poly_uint64 vecsize_float;
 
   /* Machine mode of the mask argument(s), if they are to be passed
      as bitmasks in integer argument(s).  VOIDmode if masks are passed

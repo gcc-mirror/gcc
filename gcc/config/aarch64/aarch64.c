@@ -22960,18 +22960,23 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					tree base_type, int num)
 {
   tree t, ret_type, arg_type;
-  unsigned int elt_bits, vec_bits, count;
+  unsigned int elt_bits, count;
+  unsigned HOST_WIDE_INT const_simdlen;
+  poly_uint64 vec_bits;
 
   if (!TARGET_SIMD)
     return 0;
 
-  if (clonei->simdlen
-      && (clonei->simdlen < 2
-	  || clonei->simdlen > 1024
-	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
+  /* For now, SVE simdclones won't produce illegal simdlen, So only check
+     const simdlens here.  */
+  if (maybe_ne (clonei->simdlen, 0U)
+      && clonei->simdlen.is_constant (&const_simdlen)
+      && (const_simdlen < 2
+	  || const_simdlen > 1024
+	  || (const_simdlen & (const_simdlen - 1)) != 0))
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %d", clonei->simdlen);
+		  "unsupported simdlen %wd", const_simdlen);
       return 0;
     }
 
@@ -23015,21 +23020,24 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   clonei->vecsize_mangle = 'n';
   clonei->mask_mode = VOIDmode;
   elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
-  if (clonei->simdlen == 0)
+  if (known_eq (clonei->simdlen, 0U))
     {
       count = 2;
       vec_bits = (num == 0 ? 64 : 128);
-      clonei->simdlen = vec_bits / elt_bits;
+      clonei->simdlen = exact_div (vec_bits, elt_bits);
     }
   else
     {
       count = 1;
       vec_bits = clonei->simdlen * elt_bits;
-      if (vec_bits != 64 && vec_bits != 128)
+      /* For now, SVE simdclones won't produce illegal simdlen, So only check
+	 const simdlens here.  */
+      if (clonei->simdlen.is_constant (&const_simdlen)
+	  && maybe_ne (vec_bits, 64U) && maybe_ne (vec_bits, 128U))
 	{
 	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "GCC does not currently support simdlen %d for type %qT",
-		      clonei->simdlen, base_type);
+		      "GCC does not currently support simdlen %wd for type %qT",
+		      const_simdlen, base_type);
 	  return 0;
 	}
     }

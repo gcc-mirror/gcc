@@ -7,4 +7,4 @@ long double ret_x87 (void)
 }
 
 /* { dg-final { scan-assembler-times "fldz" 7 } } */
-/* { dg-final { scan-assembler-times "fstp" 7 } } */
+/* { dg-final { scan-assembler-times "fstp\[ \t\]+%st\\(0\\)" 7 } } */

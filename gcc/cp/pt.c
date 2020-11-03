@@ -3634,7 +3634,7 @@ primary_template_specialization_p (const_tree t)
   if (!t)
     return false;
 
-  if (TREE_CODE (t) == FUNCTION_DECL || VAR_P (t))
+  if (VAR_OR_FUNCTION_DECL_P (t))
     return (DECL_LANG_SPECIFIC (t)
 	    && DECL_USE_TEMPLATE (t)
 	    && DECL_TEMPLATE_INFO (t)
@@ -10755,7 +10755,7 @@ uses_template_parms (tree t)
   else if (t == error_mark_node)
     dependent_p = false;
   else
-    dependent_p = value_dependent_expression_p (t);
+    dependent_p = instantiation_dependent_expression_p (t);
 
   processing_template_decl = saved_processing_template_decl;
 
@@ -14220,8 +14220,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   if (PRIMARY_TEMPLATE_P (t))
     DECL_PRIMARY_TEMPLATE (r) = r;
 
-  if (TREE_CODE (decl) != TYPE_DECL && !VAR_P (decl)
-      && !lambda_fntype)
+  if (TREE_CODE (decl) == FUNCTION_DECL && !lambda_fntype)
     /* Record this non-type partial instantiation.  */
     register_specialization (r, t,
 			     DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),
@@ -18059,11 +18058,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  finish_label_decl (DECL_NAME (decl));
 	else if (TREE_CODE (decl) == USING_DECL)
 	  {
-	    tree scope = USING_DECL_SCOPE (decl);
-	    tree name = DECL_NAME (decl);
+	    /* We cannot have a member-using decl here (until 'using
+	       enum T' is a thing).  */
+	    gcc_checking_assert (!DECL_DEPENDENT_P (decl));
 
-	    scope = tsubst (scope, args, complain, in_decl);
-	    finish_nonmember_using_decl (scope, name);
+	    /* This must be a non-dependent using-decl, and we'll have
+	       used the names it found during template parsing.  We do
+	       not want to do the lookup again, because we might not
+	       find the things we found then.  (Again, using enum T
+	       might mean we have to do things here.)  */
+	    tree scope = USING_DECL_SCOPE (decl);
+	    gcc_checking_assert (scope
+				 == tsubst (scope, args, complain, in_decl));
 	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))
@@ -19081,15 +19087,6 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
   LAMBDA_EXPR_INSTANTIATED (r) = true;
 
-  if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
-    /* A lambda in a default argument outside a class gets no
-       LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
-       tsubst_default_argument calls start_lambda_scope, so we need to
-       specifically ignore it here, and use the global scope.  */
-    record_null_lambda_scope (r);
-  else
-    record_lambda_scope (r);
-
   gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
 
@@ -19167,6 +19164,15 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   tree type = begin_lambda_type (r);
   if (type == error_mark_node)
     return error_mark_node;
+
+  if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
+    /* A lambda in a default argument outside a class gets no
+       LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
+       tsubst_default_argument calls start_lambda_scope, so we need to
+       specifically ignore it here, and use the global scope.  */
+    record_null_lambda_scope (r);
+  else
+    record_lambda_scope (r);
 
   /* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
   determine_visibility (TYPE_NAME (type));
@@ -25571,9 +25577,6 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
 
   if (VAR_P (d))
     {
-      tree init;
-      bool const_init = false;
-
       /* Clear out DECL_RTL; whatever was there before may not be right
 	 since we've reset the type of the declaration.  */
       SET_DECL_RTL (d, NULL);
@@ -25583,7 +25586,8 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
 	 regenerate_decl_from_template so we don't need to
 	 push/pop_access_scope again here.  Pull it out so that
 	 cp_finish_decl can process it.  */
-      init = DECL_INITIAL (d);
+      bool const_init = false;
+      tree init = DECL_INITIAL (d);
       DECL_INITIAL (d) = NULL_TREE;
       DECL_INITIALIZED_P (d) = 0;
 
@@ -27294,7 +27298,8 @@ bool
 instantiation_dependent_expression_p (tree expression)
 {
   return (instantiation_dependent_uneval_expression_p (expression)
-	  || value_dependent_expression_p (expression));
+	  || (potential_constant_expression (expression)
+	      && value_dependent_expression_p (expression)));
 }
 
 /* Like type_dependent_expression_p, but it also works while not processing

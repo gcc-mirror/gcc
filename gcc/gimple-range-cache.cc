@@ -165,6 +165,7 @@ ssa_block_ranges::~ssa_block_ranges ()
 void
 ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
 {
+  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
   irange *m = m_irange_allocator->allocate (r);
   m_tab[bb->index] = m;
 }
@@ -174,6 +175,7 @@ ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
 void
 ssa_block_ranges::set_bb_varying (const basic_block bb)
 {
+  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
   m_tab[bb->index] = m_type_range;
 }
 
@@ -183,6 +185,7 @@ ssa_block_ranges::set_bb_varying (const basic_block bb)
 bool
 ssa_block_ranges::get_bb_range (irange &r, const basic_block bb)
 {
+  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
   irange *m = m_tab[bb->index];
   if (m)
     {
@@ -197,6 +200,7 @@ ssa_block_ranges::get_bb_range (irange &r, const basic_block bb)
 bool
 ssa_block_ranges::bb_range_p (const basic_block bb)
 {
+  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
   return m_tab[bb->index] != NULL;
 }
 
@@ -244,8 +248,8 @@ block_range_cache::~block_range_cache ()
   m_ssa_ranges.release ();
 }
 
-// Return a reference to the m_block_cache for NAME.  If it has not been
-// accessed yet, allocate it.
+// Return a reference to the ssa_block_cache for NAME.  If it has not been
+// accessed yet, allocate it first.
 
 ssa_block_ranges &
 block_range_cache::get_block_ranges (tree name)
@@ -255,9 +259,22 @@ block_range_cache::get_block_ranges (tree name)
     m_ssa_ranges.safe_grow_cleared (num_ssa_names + 1);
 
   if (!m_ssa_ranges[v])
-    m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name), m_irange_allocator);
-
+    m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name),
+					    m_irange_allocator);
   return *(m_ssa_ranges[v]);
+}
+
+
+// Return a pointer to the ssa_block_cache for NAME.  If it has not been
+// accessed yet, return NULL.
+
+ssa_block_ranges *
+block_range_cache::query_block_ranges (tree name)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_ssa_ranges.length () || !m_ssa_ranges[v])
+    return NULL;
+  return m_ssa_ranges[v];
 }
 
 // Set the range for NAME on entry to block BB to R.
@@ -283,7 +300,10 @@ block_range_cache::set_bb_varying (tree name, const basic_block bb)
 bool
 block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 {
-  return get_block_ranges (name).get_bb_range (r, bb);
+  ssa_block_ranges *ptr = query_block_ranges (name);
+  if (ptr)
+    return ptr->get_bb_range (r, bb);
+  return false;
 }
 
 // Return true if NAME has a range set in block BB.
@@ -291,7 +311,10 @@ block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 bool
 block_range_cache::bb_range_p (tree name, const basic_block bb)
 {
-  return get_block_ranges (name).bb_range_p (bb);
+  ssa_block_ranges *ptr = query_block_ranges (name);
+  if (ptr)
+    return ptr->bb_range_p (bb);
+  return false;
 }
 
 // Print all known block caches to file F.
@@ -396,8 +419,9 @@ ssa_global_cache::get_global_range (irange &r, tree name) const
 }
 
 // Set the range for NAME to R in the global cache.
+// Return TRUE if there was already a range set, otherwise false.
 
-void
+bool
 ssa_global_cache::set_global_range (tree name, const irange &r)
 {
   unsigned v = SSA_NAME_VERSION (name);
@@ -409,6 +433,7 @@ ssa_global_cache::set_global_range (tree name, const irange &r)
     *m = r;
   else
     m_tab[v] = m_irange_allocator->allocate (r);
+  return m != NULL;
 }
 
 // Set the range for NAME to R in the glonbal cache.
@@ -453,7 +478,7 @@ ssa_global_cache::dump (FILE *f)
 
 // --------------------------------------------------------------------------
 
-ranger_cache::ranger_cache (range_query &q) : query (q)
+ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
@@ -470,6 +495,57 @@ ranger_cache::~ranger_cache ()
   m_poor_value_list.release ();
   m_workback.release ();
   m_update_list.release ();
+}
+
+// Dump the global caches to file F.  if GORI_DUMP is true, dump the
+// gori map as well.
+
+void
+ranger_cache::dump (FILE *f, bool gori_dump)
+{
+  m_globals.dump (f);
+  if (gori_dump)
+    {
+      fprintf (f, "\nDUMPING GORI MAP\n");
+      gori_compute::dump (f);
+    }
+  fprintf (f, "\n");
+}
+
+// Dump the caches for basic block BB to file F.
+
+void
+ranger_cache::dump (FILE *f, basic_block bb)
+{
+  m_on_entry.dump (f, bb);
+}
+
+// Get the global range for NAME, and return in R.  Return false if the
+// global range is not set.
+
+bool
+ranger_cache::get_global_range (irange &r, tree name) const
+{
+  return m_globals.get_global_range (r, name);
+}
+
+//  Set the global range of NAME to R.
+
+void
+ranger_cache::set_global_range (tree name, const irange &r)
+{
+  if (m_globals.set_global_range (name, r))
+    {
+      // If there was already a range set, propagate the new value.
+      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+      if (!bb)
+	bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+
+      if (DEBUG_RANGE_CACHE)
+	fprintf (dump_file, "   GLOBAL :");
+
+      propagate_updated_value (name, bb);
+    }
 }
 
 // Push a request for a new lookup in block BB of name.  Return true if
@@ -597,11 +673,11 @@ ranger_cache::add_to_update (basic_block bb)
     m_update_list.quick_push (bb);
 }
 
-// If there is anything in the iterative update_list, continue
+// If there is anything in the propagation update_list, continue
 // processing NAME until the list of blocks is empty.
 
 void
-ranger_cache::iterative_cache_update (tree name)
+ranger_cache::propagate_cache (tree name)
 {
   basic_block bb;
   edge_iterator ei;
@@ -689,6 +765,50 @@ ranger_cache::iterative_cache_update (tree name)
 	fprintf (dump_file, "DONE visiting blocks for ");
 	print_generic_expr (dump_file, name, TDF_SLIM);
 	fprintf (dump_file, "\n");
+      }
+}
+
+// Check to see if an update to the value for NAME in BB has any effect
+// on values already in the on-entry cache for successor blocks.
+// If it does, update them.  Don't visit any blocks which dont have a cache
+// entry.
+
+void
+ranger_cache::propagate_updated_value (tree name, basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  // The update work list should be empty at this point.
+  gcc_checking_assert (m_update_list.length () == 0);
+  gcc_checking_assert (bb);
+
+  if (DEBUG_RANGE_CACHE)
+    {
+      fprintf (dump_file, " UPDATE cache for ");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, " in BB %d : successors : ", bb->index);
+    }
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      // Only update active cache entries.
+      if (m_on_entry.bb_range_p (name, e->dest))
+	{
+	  add_to_update (e->dest);
+	  if (DEBUG_RANGE_CACHE)
+	    fprintf (dump_file, " UPDATE: bb%d", e->dest->index);
+	}
+    }
+    if (m_update_list.length () != 0)
+      {
+	if (DEBUG_RANGE_CACHE)
+	  fprintf (dump_file, "\n");
+	propagate_cache (name);
+      }
+    else
+      {
+	if (DEBUG_RANGE_CACHE)
+	  fprintf (dump_file, "  : No updates!\n");
       }
 }
 
@@ -801,13 +921,13 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
     fprintf (dump_file, "\n");
 
   // Now fill in the marked blocks with values.
-  iterative_cache_update (name);
+  propagate_cache (name);
   if (DEBUG_RANGE_CACHE)
-    fprintf (dump_file, "  iterative update done.\n");
+    fprintf (dump_file, "  Propagation update done.\n");
 
   // Now that the cache has been updated, check to see if there were any 
   // SSA_NAMES used in filling the cache which were "poor values".
-  // We can evaluate them, and inject any new values into the iteration 
+  // Evaluate them, and inject any new values into the propagation
   // list, and see if it improves any on-entry values.
   if (poor_list_start !=  m_poor_value_list.length ())
     {
@@ -823,51 +943,25 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  basic_block calc_bb = rec.bb;
 	  int_range_max tmp;
 
-	  // The update work list should be empty at this point.
-	  gcc_checking_assert (m_update_list.length () == 0);
-
 	  if (DEBUG_RANGE_CACHE)
 	    {
 	      fprintf (dump_file, "(%d:%d)Calculating ",
 		       m_poor_value_list.length () + 1, poor_list_start);
 	      print_generic_expr (dump_file, name, TDF_SLIM);
-	      fprintf (dump_file, " used poor value for ");
+	      fprintf (dump_file, " used POOR VALUE for ");
 	      print_generic_expr (dump_file, rec.calc, TDF_SLIM);
 	      fprintf (dump_file, " in bb%d, trying to improve:\n",
 		       calc_bb->index);
 	    }
 
-	  // It must have at least one edge, pick edge 0.  we just want to
-	  // calculate a range at the exit from the block so the caches feeding
-	  // this block will be filled up. 
-	  gcc_checking_assert (EDGE_SUCC (calc_bb, 0));
-	  query.range_on_edge (tmp, EDGE_SUCC (calc_bb, 0), rec.calc);
+	  // Calculate a range at the exit from the block so the caches feeding
+	  // this block will be filled, and we'll get a "better" value.
+	  query.range_on_exit (tmp, calc_bb, rec.calc);
 	  
-	  if (DEBUG_RANGE_CACHE)
-	    fprintf (dump_file, "    Checking successors of bb%d :",
-		     calc_bb->index);
-
-	  // Try recalculating any successor blocks with the new value.
-	  // Note that even if this value is refined from the initial value,
-	  // it may not affect the calculation, but the iterative update
-	  // will resolve that efficently.
-	  FOR_EACH_EDGE (e, ei, calc_bb->succs)
-	    {
-	      if (DEBUG_RANGE_CACHE)
-		fprintf (dump_file, "bb%d: ", e->dest->index);
-	      // Only update active cache entries.
-	      if (m_on_entry.bb_range_p (name, e->dest))
-		{
-		  if (DEBUG_RANGE_CACHE)
-		    fprintf (dump_file, "update ");
-		  add_to_update (e->dest);
-		}
-	    }
-	  if (DEBUG_RANGE_CACHE)
-	    fprintf (dump_file, "\n");
-	  // Now see if there is a new value.
-	  iterative_cache_update (name);
+	  // Then ask for NAME to be re-evaluated on outgoing edges and 
+	  // use any new values.
+	  propagate_updated_value (name, calc_bb);
 	}
     }
- 
 }
+

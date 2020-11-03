@@ -23,6 +23,7 @@ along with this program; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "mkdeps.h"
+#include "internal.h"
 
 /* Not set up to just include std::vector et al, here's a simple
    implementation.  */
@@ -367,8 +368,10 @@ make_write_vec (const mkdeps::vec<const char *> &vec, FILE *fp,
    .PHONY targets for all the dependencies too.  */
 
 static void
-make_write (const class mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
+make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 {
+  const mkdeps *d = pfile->deps;
+
   unsigned column = 0;
   if (colmax && colmax < 34)
     colmax = 34;
@@ -380,7 +383,7 @@ make_write (const class mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
       column++;
       make_write_vec (d->deps, fp, column, colmax);
       fputs ("\n", fp);
-      if (phony)
+      if (CPP_OPTION (pfile, deps.phony_targets))
 	for (unsigned i = 1; i < d->deps.size (); i++)
 	  fprintf (fp, "%s:\n", munge (d->deps[i]));
     }
@@ -388,11 +391,12 @@ make_write (const class mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
 
 /* Write out dependencies according to the selected format (which is
    only Make at the moment).  */
+/* Really we should be opening fp here.  */
 
 void
-deps_write (const class mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
+deps_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 {
-  make_write (d, fp, phony, colmax);
+  make_write (pfile, fp, colmax);
 }
 
 /* Write out a deps buffer to a file, in a form that can be read back

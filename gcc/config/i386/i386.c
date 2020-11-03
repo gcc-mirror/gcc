@@ -939,6 +939,19 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       decl_or_type = type;
     }
 
+  /* If outgoing reg parm stack space changes, we cannot do sibcall.  */
+  if ((OUTGOING_REG_PARM_STACK_SPACE (type)
+       != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl)))
+      || (REG_PARM_STACK_SPACE (decl_or_type)
+	  != REG_PARM_STACK_SPACE (current_function_decl)))
+    {
+      maybe_complain_about_tail_call (exp,
+				      "inconsistent size of stack space"
+				      " allocated for arguments which are"
+				      " passed in registers");
+      return false;
+    }
+
   /* Check that the return value locations are the same.  Like
      if we are returning floats on the 80387 register stack, we cannot
      make a sibcall from a function that doesn't return a float to a
@@ -1410,22 +1423,14 @@ ix86_function_arg_regno_p (int regno)
   enum calling_abi call_abi;
   const int *parm_regs;
 
-  if (!TARGET_64BIT)
-    {
-      if (TARGET_MACHO)
-        return (regno < REGPARM_MAX
-                || (TARGET_SSE && SSE_REGNO_P (regno) && !fixed_regs[regno]));
-      else
-        return (regno < REGPARM_MAX
-	        || (TARGET_MMX && MMX_REGNO_P (regno)
-	  	    && (regno < FIRST_MMX_REG + MMX_REGPARM_MAX))
-	        || (TARGET_SSE && SSE_REGNO_P (regno)
-		    && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX)));
-    }
-
   if (TARGET_SSE && SSE_REGNO_P (regno)
-      && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
+      && regno < FIRST_SSE_REG + SSE_REGPARM_MAX)
     return true;
+
+   if (!TARGET_64BIT)
+     return (regno < REGPARM_MAX
+	     || (TARGET_MMX && MMX_REGNO_P (regno)
+		 && regno < FIRST_MMX_REG + MMX_REGPARM_MAX));
 
   /* TODO: The function should depend on current function ABI but
      builtins.c would need updating then. Therefore we use the
@@ -22472,7 +22477,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %d", clonei->simdlen);
+		  "unsupported simdlen %wd", clonei->simdlen.to_constant ());
       return 0;
     }
 
@@ -22577,7 +22582,8 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	clonei->simdlen = clonei->vecsize_int;
       else
 	clonei->simdlen = clonei->vecsize_float;
-      clonei->simdlen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
+      clonei->simdlen = clonei->simdlen
+			/ GET_MODE_BITSIZE (TYPE_MODE (base_type));
     }
   else if (clonei->simdlen > 16)
     {
@@ -22599,7 +22605,8 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (cnt > (TARGET_64BIT ? 16 : 8))
 	{
 	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "unsupported simdlen %d", clonei->simdlen);
+		      "unsupported simdlen %wd",
+		      clonei->simdlen.to_constant ());
 	  return 0;
 	}
       }

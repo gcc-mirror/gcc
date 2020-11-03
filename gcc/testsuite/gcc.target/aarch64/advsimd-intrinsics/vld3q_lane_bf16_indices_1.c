@@ -1,4 +1,4 @@
-/* { dg-do compile { target { aarch64*-*-* } } } */
+/* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
 /* { dg-add-options arm_v8_2a_bf16_neon }  */

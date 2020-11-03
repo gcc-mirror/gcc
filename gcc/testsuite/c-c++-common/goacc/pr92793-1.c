@@ -54,3 +54,40 @@ reduction(-:sum  ) /* { dg-line sum2 } */ \
       }
   }
 }
+
+
+void
+a_sl() {
+#pragma acc serial loop /* { dg-message "9: enclosing parent compute construct" } */ \
+    gang(num:5) /* { dg-error "5: argument not permitted on 'gang' clause" } */ \
+  worker(num:5) /* { dg-error "3: argument not permitted on 'worker' clause" } */ \
+   vector(length:5) /* { dg-error "4: argument not permitted on 'vector' clause" } */
+  for (int i = 0; i < 10; i++)
+    ;
+}
+
+void
+a_s_l() {
+#pragma acc serial /* { dg-message "9: enclosing parent compute construct" } */
+  {
+#pragma acc loop \
+       gang(num:5) /* { dg-error "8: argument not permitted on 'gang' clause" } */ \
+   worker(num:5) /* { dg-error "4: argument not permitted on 'worker' clause" } */ \
+  vector(length:5) /* { dg-error "3: argument not permitted on 'vector' clause" } */
+    for (int i = 0; i < 10; i++)
+      ;
+  }
+}
+
+void a_r();
+#pragma acc routine(a_r)
+
+void
+a_r() { /* { dg-message "1: enclosing routine" } */
+#pragma acc loop \
+   gang(num:5) /* { dg-error "4: argument not permitted on 'gang' clause" } */ \
+    worker(num:5) /* { dg-error "5: argument not permitted on 'worker' clause" } */ \
+  vector(length:5) /* { dg-error "3: argument not permitted on 'vector' clause" } */
+  for (int i = 0; i < 10; i++)
+    ;
+}

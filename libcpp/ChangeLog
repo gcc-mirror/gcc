@@ -1,3 +1,19 @@
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (_cpp_notify_macro_use): Add location parm.
+	(_cpp_maybe_notify_macro_use): Likewise.
+	* directives.c (_cpp_do_file_change): Check we've not changed file
+	when optimizing a rewind.
+	(do_ifdef): Pass location to _cpp_maybe_notify_macro_use.
+	(do_ifndef): Likewise.  Delete obsolete comment about powerpc.
+	* expr.c (parse_defined): Pass location to
+	_cpp_maybe_notify_macro_use.
+	* macro.c (enter_macro_context): Likewise.
+	(warn_of_redefinition): Break out helper function.  Call it.
+	(compare_macros): New function broken out of warn_of_redefinition.
+	(_cpp_new_macro): Zero all fields.
+	(_cpp_notify_macro_use): Add location parameter.
+
 2020-10-20  Nathan Sidwell  <nathan@acm.org>
 
 	* lex.c (_cpp_lex_direct): Do not complete EOF processing when

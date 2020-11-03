@@ -110,7 +110,7 @@ libstdc___la_DEPENDENCIES = \
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm
 
-libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
+libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS) $(lt_host_flags)
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
 # pass -mlong-double-64.

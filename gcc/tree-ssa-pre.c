@@ -3647,8 +3647,11 @@ insert (void)
 
       changed = false;
       /* Insert expressions for hoisting.  Do a backward walk here since
-	 inserting into BLOCK exposes new opportunities in its predecessors.  */
-      if (flag_code_hoisting)
+	 inserting into BLOCK exposes new opportunities in its predecessors.
+	 Since PRE and hoist insertions can cause back-to-back iteration
+	 limit that on the hoist side.  */
+      if (flag_code_hoisting
+	  && num_iterations <= param_max_pre_hoist_insert_iterations)
 	for (int idx = rpo_num - 1; idx >= 0; --idx)
 	  {
 	    basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);

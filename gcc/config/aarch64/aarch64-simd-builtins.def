@@ -514,24 +514,24 @@
   BUILTIN_VALLDIF (BSL_S, simd_bsl, 0, ALL)
 
   /* Implemented by aarch64_crypto_aes<op><mode>.  */
-  VAR1 (BINOPU, crypto_aese, 0, ALL, v16qi)
-  VAR1 (BINOPU, crypto_aesd, 0, ALL, v16qi)
-  VAR1 (UNOPU, crypto_aesmc, 0, ALL, v16qi)
-  VAR1 (UNOPU, crypto_aesimc, 0, ALL, v16qi)
+  VAR1 (BINOPU, crypto_aese, 0, NONE, v16qi)
+  VAR1 (BINOPU, crypto_aesd, 0, NONE, v16qi)
+  VAR1 (UNOPU, crypto_aesmc, 0, NONE, v16qi)
+  VAR1 (UNOPU, crypto_aesimc, 0, NONE, v16qi)
 
   /* Implemented by aarch64_crypto_sha1<op><mode>.  */
-  VAR1 (UNOPU, crypto_sha1h, 0, ALL, si)
-  VAR1 (BINOPU, crypto_sha1su1, 0, ALL, v4si)
-  VAR1 (TERNOPU, crypto_sha1c, 0, ALL, v4si)
-  VAR1 (TERNOPU, crypto_sha1m, 0, ALL, v4si)
-  VAR1 (TERNOPU, crypto_sha1p, 0, ALL, v4si)
-  VAR1 (TERNOPU, crypto_sha1su0, 0, ALL, v4si)
+  VAR1 (UNOPU, crypto_sha1h, 0, NONE, si)
+  VAR1 (BINOPU, crypto_sha1su1, 0, NONE, v4si)
+  VAR1 (TERNOPU, crypto_sha1c, 0, NONE, v4si)
+  VAR1 (TERNOPU, crypto_sha1m, 0, NONE, v4si)
+  VAR1 (TERNOPU, crypto_sha1p, 0, NONE, v4si)
+  VAR1 (TERNOPU, crypto_sha1su0, 0, NONE, v4si)
 
   /* Implemented by aarch64_crypto_sha256<op><mode>.  */
-  VAR1 (TERNOPU, crypto_sha256h, 0, ALL, v4si)
-  VAR1 (TERNOPU, crypto_sha256h2, 0, ALL, v4si)
-  VAR1 (BINOPU, crypto_sha256su0, 0, ALL, v4si)
-  VAR1 (TERNOPU, crypto_sha256su1, 0, ALL, v4si)
+  VAR1 (TERNOPU, crypto_sha256h, 0, NONE, v4si)
+  VAR1 (TERNOPU, crypto_sha256h2, 0, NONE, v4si)
+  VAR1 (BINOPU, crypto_sha256su0, 0, NONE, v4si)
+  VAR1 (TERNOPU, crypto_sha256su1, 0, NONE, v4si)
 
   /* Implemented by aarch64_crypto_pmull<mode>.  */
   VAR1 (BINOPP, crypto_pmull, 0, NONE, di)
@@ -600,20 +600,20 @@
   BUILTIN_VHSDF (BINOP, faddp, 0, FP)
 
   /* Implemented by aarch64_cm<optab><mode>.  */
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmeq, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmge, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmgt, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmle, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmlt, 0, ALL)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmeq, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmge, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmgt, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmle, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmlt, 0, FP)
 
   /* Implemented by neg<mode>2.  */
   BUILTIN_VHSDF_HSDF (UNOP, neg, 2, ALL)
 
   /* Implemented by aarch64_fac<optab><mode>.  */
-  BUILTIN_VHSDF_HSDF (BINOP_USS, faclt, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facle, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facgt, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facge, 0, ALL)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, faclt, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facle, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facgt, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facge, 0, FP)
 
   /* Implemented by sqrt<mode>2.  */
   VAR1 (UNOP, sqrt, 2, ALL, hf)
@@ -633,27 +633,27 @@
   BUILTIN_GPI (UNOPUS, fixuns_truncdf, 2, FP)
 
   /* Implemented by aarch64_sm3ss1qv4si.  */
-  VAR1 (TERNOPU, sm3ss1q, 0, ALL, v4si)
+  VAR1 (TERNOPU, sm3ss1q, 0, NONE, v4si)
   /* Implemented by aarch64_sm3tt<sm3tt_op>qv4si.  */
-  VAR1 (QUADOPUI, sm3tt1aq, 0, ALL, v4si)
-  VAR1 (QUADOPUI, sm3tt1bq, 0, ALL, v4si)
-  VAR1 (QUADOPUI, sm3tt2aq, 0, ALL, v4si)
-  VAR1 (QUADOPUI, sm3tt2bq, 0, ALL, v4si)
+  VAR1 (QUADOPUI, sm3tt1aq, 0, NONE, v4si)
+  VAR1 (QUADOPUI, sm3tt1bq, 0, NONE, v4si)
+  VAR1 (QUADOPUI, sm3tt2aq, 0, NONE, v4si)
+  VAR1 (QUADOPUI, sm3tt2bq, 0, NONE, v4si)
   /* Implemented by aarch64_sm3partw<sm3part_op>qv4si.  */
-  VAR1 (TERNOPU, sm3partw1q, 0, ALL, v4si)
-  VAR1 (TERNOPU, sm3partw2q, 0, ALL, v4si)
+  VAR1 (TERNOPU, sm3partw1q, 0, NONE, v4si)
+  VAR1 (TERNOPU, sm3partw2q, 0, NONE, v4si)
   /* Implemented by aarch64_sm4eqv4si.  */
-  VAR1 (BINOPU, sm4eq, 0, ALL, v4si)
+  VAR1 (BINOPU, sm4eq, 0, NONE, v4si)
   /* Implemented by aarch64_sm4ekeyqv4si.  */
-  VAR1 (BINOPU, sm4ekeyq, 0, ALL, v4si)
+  VAR1 (BINOPU, sm4ekeyq, 0, NONE, v4si)
   /* Implemented by aarch64_crypto_sha512hqv2di.  */
-  VAR1 (TERNOPU, crypto_sha512hq, 0, ALL, v2di)
+  VAR1 (TERNOPU, crypto_sha512hq, 0, NONE, v2di)
   /* Implemented by aarch64_sha512h2qv2di.  */
-  VAR1 (TERNOPU, crypto_sha512h2q, 0, ALL, v2di)
+  VAR1 (TERNOPU, crypto_sha512h2q, 0, NONE, v2di)
   /* Implemented by aarch64_crypto_sha512su0qv2di.  */
-  VAR1 (BINOPU, crypto_sha512su0q, 0, ALL, v2di)
+  VAR1 (BINOPU, crypto_sha512su0q, 0, NONE, v2di)
   /* Implemented by aarch64_crypto_sha512su1qv2di.  */
-  VAR1 (TERNOPU, crypto_sha512su1q, 0, ALL, v2di)
+  VAR1 (TERNOPU, crypto_sha512su1q, 0, NONE, v2di)
   /* Implemented by eor3q<mode>4.  */
   BUILTIN_VQ_I (TERNOPU, eor3q, 4, ALL)
   BUILTIN_VQ_I (TERNOP, eor3q, 4, ALL)
@@ -722,6 +722,10 @@
   VAR1 (QUADOP_LANE, bfmlalb_lane_q, 0, ALL, v4sf)
   VAR1 (QUADOP_LANE, bfmlalt_lane_q, 0, ALL, v4sf)
 
+  /* Implemented by aarch64_vget_lo/hi_halfv8bf.  */
+  VAR1 (UNOP, vget_lo_half, 0, AUTO_FP, v8bf)
+  VAR1 (UNOP, vget_hi_half, 0, AUTO_FP, v8bf)
+
   /* Implemented by aarch64_simd_<sur>mmlav16qi.  */
   VAR1 (TERNOP, simd_smmla, 0, NONE, v16qi)
   VAR1 (TERNOPU, simd_ummla, 0, NONE, v16qi)
@@ -732,3 +736,8 @@
   VAR1 (UNOP, bfcvtn_q, 0, FP, v8bf)
   VAR1 (BINOP, bfcvtn2, 0, FP, v8bf)
   VAR1 (UNOP, bfcvt, 0, FP, bf)
+
+  /* Implemented by aarch64_{v}bfcvt{_high}<mode>.  */
+  VAR2 (UNOP, vbfcvt, 0, AUTO_FP, v4bf, v8bf)
+  VAR1 (UNOP, vbfcvt_high, 0, AUTO_FP, v8bf)
+  VAR1 (UNOP, bfcvt, 0, AUTO_FP, sf)
