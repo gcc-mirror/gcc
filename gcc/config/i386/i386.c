@@ -1423,22 +1423,14 @@ ix86_function_arg_regno_p (int regno)
   enum calling_abi call_abi;
   const int *parm_regs;
 
-  if (!TARGET_64BIT)
-    {
-      if (TARGET_MACHO)
-        return (regno < REGPARM_MAX
-                || (TARGET_SSE && SSE_REGNO_P (regno) && !fixed_regs[regno]));
-      else
-        return (regno < REGPARM_MAX
-	        || (TARGET_MMX && MMX_REGNO_P (regno)
-	  	    && (regno < FIRST_MMX_REG + MMX_REGPARM_MAX))
-	        || (TARGET_SSE && SSE_REGNO_P (regno)
-		    && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX)));
-    }
-
   if (TARGET_SSE && SSE_REGNO_P (regno)
-      && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
+      && regno < FIRST_SSE_REG + SSE_REGPARM_MAX)
     return true;
+
+   if (!TARGET_64BIT)
+     return (regno < REGPARM_MAX
+	     || (TARGET_MMX && MMX_REGNO_P (regno)
+		 && regno < FIRST_MMX_REG + MMX_REGPARM_MAX));
 
   /* TODO: The function should depend on current function ABI but
      builtins.c would need updating then. Therefore we use the

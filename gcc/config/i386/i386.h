@@ -1950,7 +1950,9 @@ typedef struct ix86_args {
       : X86_64_SSE_REGPARM_MAX)						\
    : X86_32_SSE_REGPARM_MAX)
 
-#define MMX_REGPARM_MAX (TARGET_64BIT ? 0 : (TARGET_MMX ? 3 : 0))
+#define X86_32_MMX_REGPARM_MAX (TARGET_MMX ? (TARGET_MACHO ? 0 : 3) : 0)
+
+#define MMX_REGPARM_MAX (TARGET_64BIT ? 0 : X86_32_MMX_REGPARM_MAX)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
