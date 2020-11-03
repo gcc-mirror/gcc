@@ -15565,11 +15565,6 @@ getbyterep (tree src, unsigned HOST_WIDE_INT *strsize)
      is equal to strlen (A) + 1.  */
   const unsigned HOST_WIDE_INT array_size = tree_to_uhwi (mem_size);
   unsigned HOST_WIDE_INT init_bytes = TREE_STRING_LENGTH (src);
-
-  /* Ideally this would turn into a gcc_checking_assert over time.  */
-  if (init_bytes > array_size)
-    init_bytes = array_size;
-
   const char *string = TREE_STRING_POINTER (src);
 
   /* Ideally this would turn into a gcc_checking_assert over time.  */
