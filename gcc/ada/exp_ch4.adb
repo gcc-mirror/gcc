@@ -9716,16 +9716,6 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  Try to narrow the operation
-
-      if Typ = Universal_Integer then
-         Narrow_Large_Operation (N);
-
-         if Nkind (N) /= N_Op_Multiply then
-            return;
-         end if;
-      end if;
-
       --  Convert x * 2 ** y to Shift_Left (x, y). Note that the fact that
       --  Is_Power_Of_2_For_Shift is set means that we know that our left
       --  operand is an integer, as required for this to work.
@@ -9800,6 +9790,16 @@ package body Exp_Ch4 is
 
          Analyze_And_Resolve (N, Typ);
          return;
+      end if;
+
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Multiply then
+            return;
+         end if;
       end if;
 
       --  Do required fixup of universal fixed operation
