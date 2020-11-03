@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
 #include "symtab-thunks.h"
+#include "symtab-clones.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -695,6 +696,31 @@ preserve_function_body_p (struct cgraph_node *node)
   return false;
 }
 
+/* tree-inline can not recurse; materialize all function bodie we will need
+   during inlining.  This includes inlined functions, but also called functions
+   with param manipulation because IPA param manipulation attaches debug
+   statements to PARM_DECLs of called clone.  Materialize them if needed.
+
+   FIXME: This is somehwat broken by design because it does not play well
+   with partitioning.  */
+
+static void
+maybe_materialize_called_clones (cgraph_node *node)
+{
+  for (cgraph_edge *e = node->callees; e; e = e->next_callee)
+    {
+      clone_info *info;
+
+      if (!e->inline_failed)
+	maybe_materialize_called_clones (e->callee);
+
+      cgraph_node *callee = cgraph_node::get (e->callee->decl);
+      if (callee->clone_of
+	  && (info = clone_info::get (callee)) && info->param_adjustments)
+	callee->get_untransformed_body ();
+    }
+}
+
 /* Apply inline plan to function.  */
 
 unsigned int
@@ -748,6 +774,7 @@ inline_transform (struct cgraph_node *node)
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
     }
 
+  maybe_materialize_called_clones (node);
   for (e = node->callees; e; e = next)
     {
       if (!e->inline_failed)
