@@ -52,7 +52,7 @@ check_vect (void)
     want_level = 1, want_d = bit_SSE2;
 # endif
 
-    if (!__get_cpuid (want_level, &a, &b, &c, &d)
+    if (!__get_cpuid_count (want_level, 0, &a, &b, &c, &d)
 	|| ((b & want_b) | (c & want_c) | (d & want_d)) == 0)
       exit (0);
   }
