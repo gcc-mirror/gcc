@@ -1,3 +1,13 @@
+2020-11-02  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/97267
+	* gcc.target/powerpc/pr97267.c: New test.
+
+2020-11-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97140
+	* gcc.target/i386/pr97140.c: New test.
+
 2020-11-02  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/cpp2a/concepts-complete1.C: Delete test that became

@@ -1,3 +1,24 @@
+2020-11-02  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/97267
+	* calls.h (maybe_complain_about_tail_call): Declare.
+	* calls.c (maybe_complain_about_tail_call): Make global.
+	(can_implement_as_sibling_call_p): Delete reg_parm_stack_space
+	param.  Adjust caller.  Move REG_PARM_STACK_SPACE check to..
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): ..here.
+
+2020-11-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira.c (ira_remove_scratches): Rename to remove_scratches.  Make
+	it static and returning flag of any change.
+	(ira.c): Call ira_expand_reg_equiv in case of removing scratches.
+
+2020-11-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/97140
+	* config/i386/i386-expand.c (ix86_expand_builtin): Require MMX
+	for __builtin_ia32_maskmovq.
+
 2020-11-02  Martin Sebor  <msebor@redhat.com>
 
 	* doc/invoke.texi (-Wstringop-overflow): Correct default setting.
