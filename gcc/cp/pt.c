@@ -18058,11 +18058,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  finish_label_decl (DECL_NAME (decl));
 	else if (TREE_CODE (decl) == USING_DECL)
 	  {
-	    tree scope = USING_DECL_SCOPE (decl);
-	    tree name = DECL_NAME (decl);
+	    /* We cannot have a member-using decl here (until 'using
+	       enum T' is a thing).  */
+	    gcc_checking_assert (!DECL_DEPENDENT_P (decl));
 
-	    scope = tsubst (scope, args, complain, in_decl);
-	    finish_nonmember_using_decl (scope, name);
+	    /* This must be a non-dependent using-decl, and we'll have
+	       used the names it found during template parsing.  We do
+	       not want to do the lookup again, because we might not
+	       find the things we found then.  (Again, using enum T
+	       might mean we have to do things here.)  */
+	    tree scope = USING_DECL_SCOPE (decl);
+	    gcc_checking_assert (scope
+				 == tsubst (scope, args, complain, in_decl));
 	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))
