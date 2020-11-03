@@ -3634,7 +3634,7 @@ primary_template_specialization_p (const_tree t)
   if (!t)
     return false;
 
-  if (TREE_CODE (t) == FUNCTION_DECL || VAR_P (t))
+  if (VAR_OR_FUNCTION_DECL_P (t))
     return (DECL_LANG_SPECIFIC (t)
 	    && DECL_USE_TEMPLATE (t)
 	    && DECL_TEMPLATE_INFO (t)
@@ -14220,8 +14220,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   if (PRIMARY_TEMPLATE_P (t))
     DECL_PRIMARY_TEMPLATE (r) = r;
 
-  if (TREE_CODE (decl) != TYPE_DECL && !VAR_P (decl)
-      && !lambda_fntype)
+  if (TREE_CODE (decl) == FUNCTION_DECL && !lambda_fntype)
     /* Record this non-type partial instantiation.  */
     register_specialization (r, t,
 			     DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)),
