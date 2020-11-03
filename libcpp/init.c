@@ -667,14 +667,9 @@ cpp_post_options (cpp_reader *pfile)
 const char *
 cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 {
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
-    {
-      if (!pfile->deps)
-	pfile->deps = deps_init ();
-
-      /* Set the default target (if there is none already).  */
-      deps_add_default_target (pfile->deps, fname);
-    }
+  if (mkdeps *deps = cpp_get_deps (pfile))
+    /* Set the default target (if there is none already).  */
+    deps_add_default_target (pfile->deps, fname);
 
   pfile->main_file
     = _cpp_find_file (pfile, fname, &pfile->no_search_path, /*angle=*/0,
@@ -813,9 +808,8 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   while (pfile->buffer)
     _cpp_pop_buffer (pfile);
 
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE && deps_stream)
-    deps_write (pfile->deps, deps_stream,
-		CPP_OPTION (pfile, deps.phony_targets), 72);
+  if (deps_stream)
+    deps_write (pfile, deps_stream, 72);
 
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))
