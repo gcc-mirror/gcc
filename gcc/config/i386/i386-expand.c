@@ -11066,19 +11066,19 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
        == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
       && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A)) != 0)
     isa |= (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A);
+
   if (((bisa & (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32))
        == (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32))
       && (isa & (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32)) != 0)
     isa |= (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32);
+
   if (((bisa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
        == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
       && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
 
-  if ((bisa & OPTION_MASK_ISA_MMX)
-      && !TARGET_MMX
-      && TARGET_MMX_WITH_SSE
-      /* NB: __builtin_ia32_maskmovq also requires MMX.  */
+  if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE
+      /* __builtin_ia32_maskmovq requires MMX registers.  */
       && fcode != IX86_BUILTIN_MASKMOVQ)
     {
       bisa &= ~OPTION_MASK_ISA_MMX;
