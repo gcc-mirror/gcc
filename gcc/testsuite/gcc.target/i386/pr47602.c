@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-fPIC" } */
 
 /* Test verifies that %ebx is no longer fixed when generating PIC code on i686.  */
