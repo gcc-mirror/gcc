@@ -3707,7 +3707,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   tree op, type;
   tree vec_oprnd0 = NULL_TREE;
   tree vectype;
-  unsigned int nunits;
+  poly_uint64 nunits;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
   class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
@@ -3859,8 +3859,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       arginfo.quick_push (thisarginfo);
     }
 
-  unsigned HOST_WIDE_INT vf;
-  if (!LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&vf))
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  if (!vf.is_constant ())
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3878,12 +3878,12 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	 n = n->simdclone->next_clone)
       {
 	unsigned int this_badness = 0;
-	if (n->simdclone->simdlen > vf
+	unsigned int num_calls;
+	if (!constant_multiple_p (vf, n->simdclone->simdlen, &num_calls)
 	    || n->simdclone->nargs != nargs)
 	  continue;
-	if (n->simdclone->simdlen < vf)
-	  this_badness += (exact_log2 (vf)
-			   - exact_log2 (n->simdclone->simdlen)) * 1024;
+	if (num_calls != 1)
+	  this_badness += exact_log2 (num_calls) * 1024;
 	if (n->simdclone->inbranch)
 	  this_badness += 2048;
 	int target_badness = targetm.simd_clone.usable (n);
@@ -3964,19 +3964,19 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type,
 							  slp_node);
 	if (arginfo[i].vectype == NULL
-	    || (simd_clone_subparts (arginfo[i].vectype)
-		> bestn->simdclone->simdlen))
+	    || !constant_multiple_p (bestn->simdclone->simdlen,
+				     simd_clone_subparts (arginfo[i].vectype)))
 	  return false;
       }
 
   fndecl = bestn->decl;
   nunits = bestn->simdclone->simdlen;
-  ncopies = vf / nunits;
+  ncopies = vector_unroll_factor (vf, nunits);
 
   /* If the function isn't const, only allow it in simd loops where user
      has asserted that at least nunits consecutive iterations can be
      performed using SIMD instructions.  */
-  if ((loop == NULL || (unsigned) loop->safelen < nunits)
+  if ((loop == NULL || maybe_lt ((unsigned) loop->safelen, nunits))
       && gimple_vuse (stmt))
     return false;
 
@@ -4054,7 +4054,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    {
 	    case SIMD_CLONE_ARG_TYPE_VECTOR:
 	      atype = bestn->simdclone->args[i].vector_type;
-	      o = nunits / simd_clone_subparts (atype);
+	      o = vector_unroll_factor (nunits,
+					simd_clone_subparts (atype));
 	      for (m = j * o; m < (j + 1) * o; m++)
 		{
 		  if (simd_clone_subparts (atype)
@@ -4179,7 +4180,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		      ? POINTER_PLUS_EXPR : PLUS_EXPR;
 		  tree type = POINTER_TYPE_P (TREE_TYPE (op))
 			      ? sizetype : TREE_TYPE (op);
-		  widest_int cst
+		  poly_widest_int cst
 		    = wi::mul (bestn->simdclone->args[i].linear_step,
 			       ncopies * nunits);
 		  tree tcst = wide_int_to_tree (type, cst);
@@ -4200,7 +4201,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		      ? POINTER_PLUS_EXPR : PLUS_EXPR;
 		  tree type = POINTER_TYPE_P (TREE_TYPE (op))
 			      ? sizetype : TREE_TYPE (op);
-		  widest_int cst
+		  poly_widest_int cst
 		    = wi::mul (bestn->simdclone->args[i].linear_step,
 			       j * nunits);
 		  tree tcst = wide_int_to_tree (type, cst);
@@ -4226,7 +4227,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       gcall *new_call = gimple_build_call_vec (fndecl, vargs);
       if (vec_dest)
 	{
-	  gcc_assert (ratype || simd_clone_subparts (rtype) == nunits);
+	  gcc_assert (ratype
+		      || known_eq (simd_clone_subparts (rtype), nunits));
 	  if (ratype)
 	    new_temp = create_tmp_var (ratype);
 	  else if (useless_type_conversion_p (vectype, rtype))
@@ -4240,12 +4242,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
       if (vec_dest)
 	{
-	  if (simd_clone_subparts (vectype) < nunits)
+	  if (!multiple_p (simd_clone_subparts (vectype), nunits))
 	    {
 	      unsigned int k, l;
 	      poly_uint64 prec = GET_MODE_BITSIZE (TYPE_MODE (vectype));
 	      poly_uint64 bytes = GET_MODE_SIZE (TYPE_MODE (vectype));
-	      k = nunits / simd_clone_subparts (vectype);
+	      k = vector_unroll_factor (nunits,
+					simd_clone_subparts (vectype));
 	      gcc_assert ((k & (k - 1)) == 0);
 	      for (l = 0; l < k; l++)
 		{
@@ -4271,7 +4274,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		vect_clobber_variable (vinfo, stmt_info, gsi, new_temp);
 	      continue;
 	    }
-	  else if (simd_clone_subparts (vectype) > nunits)
+	  else if (!multiple_p (nunits, simd_clone_subparts (vectype)))
 	    {
 	      unsigned int k = (simd_clone_subparts (vectype)
 				/ simd_clone_subparts (rtype));
@@ -4280,7 +4283,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		vec_alloc (ret_ctor_elts, k);
 	      if (ratype)
 		{
-		  unsigned int m, o = nunits / simd_clone_subparts (rtype);
+		  unsigned int m, o;
+		  o = vector_unroll_factor (nunits,
+					    simd_clone_subparts (rtype));
 		  for (m = 0; m < o; m++)
 		    {
 		      tree tem = build4 (ARRAY_REF, rtype, new_temp,

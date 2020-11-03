@@ -2044,6 +2044,63 @@ constant_multiple_p (const poly_int_pod<N, Ca> &a,
   return true;
 }
 
+/* Return true if A is a constant multiple of B.  */
+
+template<unsigned int N, typename Ca, typename Cb>
+inline typename if_nonpoly<Cb, bool>::type
+constant_multiple_p (const poly_int_pod<N, Ca> &a, Cb b)
+{
+  typedef POLY_CAST (Ca, Cb) NCa;
+  typedef POLY_CAST (Cb, Ca) NCb;
+
+  /* Do the modulus before the constant check, to catch divide by
+     zero errors.  */
+  if (NCa (a.coeffs[0]) % NCb (b) != 0 || !a.is_constant ())
+    return false;
+  return true;
+}
+
+template<unsigned int N, typename Ca, typename Cb>
+inline typename if_nonpoly<Ca, bool>::type
+constant_multiple_p (Ca a, const poly_int_pod<N, Cb> &b)
+{
+  typedef POLY_CAST (Ca, Cb) NCa;
+  typedef POLY_CAST (Cb, Ca) NCb;
+  typedef POLY_INT_TYPE (Ca) int_type;
+
+  /* Do the modulus before the constant check, to catch divide by
+     zero errors.  */
+  if (NCa (a) % NCb (b.coeffs[0]) != 0
+      || (a != int_type (0) && !b.is_constant ()))
+    return false;
+  return true;
+}
+
+template<unsigned int N, typename Ca, typename Cb>
+inline bool
+constant_multiple_p (const poly_int_pod<N, Ca> &a,
+		     const poly_int_pod<N, Cb> &b)
+{
+  typedef POLY_CAST (Ca, Cb) NCa;
+  typedef POLY_CAST (Cb, Ca) NCb;
+  typedef POLY_INT_TYPE (Ca) ICa;
+  typedef POLY_INT_TYPE (Cb) ICb;
+  typedef POLY_BINARY_COEFF (Ca, Cb) C;
+
+  if (NCa (a.coeffs[0]) % NCb (b.coeffs[0]) != 0)
+    return false;
+
+  C r = NCa (a.coeffs[0]) / NCb (b.coeffs[0]);
+  for (unsigned int i = 1; i < N; ++i)
+    if (b.coeffs[i] == ICb (0)
+	? a.coeffs[i] != ICa (0)
+	: (NCa (a.coeffs[i]) % NCb (b.coeffs[i]) != 0
+	   || NCa (a.coeffs[i]) / NCb (b.coeffs[i]) != r))
+      return false;
+  return true;
+}
+
+
 /* Return true if A is a multiple of B.  */
 
 template<typename Ca, typename Cb>

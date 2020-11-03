@@ -7159,6 +7159,27 @@
   [(set_attr "type" "neon_dot<VDQSF:q>")]
 )
 
+;; vget_low/high_bf16
+(define_expand "aarch64_vget_lo_halfv8bf"
+  [(match_operand:V4BF 0 "register_operand")
+   (match_operand:V8BF 1 "register_operand")]
+  "TARGET_BF16_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (V8BFmode, 8, false);
+  emit_insn (gen_aarch64_get_halfv8bf (operands[0], operands[1], p));
+  DONE;
+})
+
+(define_expand "aarch64_vget_hi_halfv8bf"
+  [(match_operand:V4BF 0 "register_operand")
+   (match_operand:V8BF 1 "register_operand")]
+  "TARGET_BF16_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (V8BFmode, 8, true);
+  emit_insn (gen_aarch64_get_halfv8bf (operands[0], operands[1], p));
+  DONE;
+})
+
 ;; bfmmla
 (define_insn "aarch64_bfmmlaqv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=w")

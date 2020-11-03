@@ -1,5 +1,8 @@
 2020-11-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk a52bf016433
+	c++: using-decl instantiation
+
 	Cleanup unnecessary or stale changes.
 	gcc/cp/
 	* class.c (clone_cdtor): Fix erroneous comment.

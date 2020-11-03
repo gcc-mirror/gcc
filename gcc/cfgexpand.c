@@ -366,7 +366,15 @@ align_local_variable (tree decl, bool really_expand)
   unsigned int align;
 
   if (TREE_CODE (decl) == SSA_NAME)
-    align = TYPE_ALIGN (TREE_TYPE (decl));
+    {
+      tree type = TREE_TYPE (decl);
+      machine_mode mode = TYPE_MODE (type);
+
+      align = TYPE_ALIGN (type);
+      if (mode != BLKmode
+	  && align < GET_MODE_ALIGNMENT (mode))
+	align = GET_MODE_ALIGNMENT (mode);
+    }
   else
     {
       align = LOCAL_DECL_ALIGNMENT (decl);
@@ -999,20 +1007,21 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   x = plus_constant (Pmode, base, offset);
   x = gen_rtx_MEM (TREE_CODE (decl) == SSA_NAME
 		   ? TYPE_MODE (TREE_TYPE (decl))
-		   : DECL_MODE (SSAVAR (decl)), x);
+		   : DECL_MODE (decl), x);
+
+  /* Set alignment we actually gave this decl if it isn't an SSA name.
+     If it is we generate stack slots only accidentally so it isn't as
+     important, we'll simply set the alignment directly on the MEM.  */
+
+  if (base == virtual_stack_vars_rtx)
+    offset -= frame_phase;
+  align = known_alignment (offset);
+  align *= BITS_PER_UNIT;
+  if (align == 0 || align > base_align)
+    align = base_align;
 
   if (TREE_CODE (decl) != SSA_NAME)
     {
-      /* Set alignment we actually gave this decl if it isn't an SSA name.
-         If it is we generate stack slots only accidentally so it isn't as
-	 important, we'll simply use the alignment that is already set.  */
-      if (base == virtual_stack_vars_rtx)
-	offset -= frame_phase;
-      align = known_alignment (offset);
-      align *= BITS_PER_UNIT;
-      if (align == 0 || align > base_align)
-	align = base_align;
-
       /* One would think that we could assert that we're not decreasing
 	 alignment here, but (at least) the i386 port does exactly this
 	 via the MINIMUM_ALIGNMENT hook.  */
@@ -1022,6 +1031,8 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
     }
 
   set_rtl (decl, x);
+
+  set_mem_align (x, align);
 }
 
 class stack_vars_data
@@ -1327,13 +1338,11 @@ expand_one_stack_var_1 (tree var)
     {
       tree type = TREE_TYPE (var);
       size = tree_to_poly_uint64 (TYPE_SIZE_UNIT (type));
-      byte_align = TYPE_ALIGN_UNIT (type);
     }
   else
-    {
-      size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
-      byte_align = align_local_variable (var, true);
-    }
+    size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
+
+  byte_align = align_local_variable (var, true);
 
   /* We handle highly aligned variables in expand_stack_vars.  */
   gcc_assert (byte_align * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT);

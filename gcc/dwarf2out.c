@@ -5974,6 +5974,7 @@ maybe_create_die_with_external_ref (tree decl)
 
   const char *sym = desc->sym;
   unsigned HOST_WIDE_INT off = desc->off;
+  external_die_map->remove (decl);
 
   in_lto_p = false;
   dw_die_ref die = (TREE_CODE (decl) == BLOCK

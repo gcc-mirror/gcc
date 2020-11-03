@@ -897,7 +897,7 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
   // If there is no statement, just get the global value.
   if (!stmt)
     {
-      if (!m_cache.m_globals.get_global_range (r, expr))
+      if (!m_cache.get_global_range (r, expr))
         r = gimple_range_global (expr);
       return true;
     }
@@ -1010,18 +1010,18 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
     return false;
 
   // If this STMT has already been processed, return that value.
-  if (m_cache.m_globals.get_global_range (r, name))
+  if (m_cache.get_global_range (r, name))
     return true;
 
   // Avoid infinite recursion by initializing global cache
   int_range_max tmp = gimple_range_global (name);
-  m_cache.m_globals.set_global_range (name, tmp);
+  m_cache.set_global_range (name, tmp);
 
   calc_stmt (r, s, name);
 
   if (is_a<gphi *> (s))
     r.intersect (tmp);
-  m_cache.m_globals.set_global_range (name, r);
+  m_cache.set_global_range (name, r);
   return true;
 }
 
@@ -1044,7 +1044,7 @@ gimple_ranger::export_global_ranges ()
       tree name = ssa_name (x);
       if (name && !SSA_NAME_IN_FREE_LIST (name)
 	  && gimple_range_ssa_p (name)
-	  && m_cache.m_globals.get_global_range (r, name)
+	  && m_cache.get_global_range (r, name)
 	  && !r.varying_p())
 	{
 	  // Make sure the new range is a subset of the old range.
@@ -1088,7 +1088,7 @@ gimple_ranger::dump (FILE *f)
       edge e;
       int_range_max range;
       fprintf (f, "\n=========== BB %d ============\n", bb->index);
-      m_cache.m_on_entry.dump (f, bb);
+      m_cache.dump (f, bb);
 
       dump_bb (f, bb, 4, TDF_NONE);
 
@@ -1098,7 +1098,7 @@ gimple_ranger::dump (FILE *f)
 	  tree name = ssa_name (x);
 	  if (gimple_range_ssa_p (name) && SSA_NAME_DEF_STMT (name) &&
 	      gimple_bb (SSA_NAME_DEF_STMT (name)) == bb &&
-	      m_cache.m_globals.get_global_range (range, name))
+	      m_cache.get_global_range (range, name))
 	    {
 	      if (!range.varying_p ())
 	       {
@@ -1150,15 +1150,7 @@ gimple_ranger::dump (FILE *f)
 	}
     }
 
-  m_cache.m_globals.dump (dump_file);
-  fprintf (f, "\n");
-
-  if (dump_flags & TDF_DETAILS)
-    {
-      fprintf (f, "\nDUMPING GORI MAP\n");
-      m_cache.dump (f);
-      fprintf (f, "\n");
-    }
+  m_cache.dump (dump_file, (dump_flags & TDF_DETAILS) != 0);
 }
 
 // If SCEV has any information about phi node NAME, return it as a range in R.

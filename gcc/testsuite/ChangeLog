@@ -1,5 +1,15 @@
 2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_get.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_get-be.c: New test.
+	
+2020-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/97205
+	* gcc.c-torture/compile/pr97205.c: New test.
+
+2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
+
 	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-compile.c
 	(test_vcvt_f32_bf16, test_vcvtq_low_f32_bf16): New tests.
 	(test_vcvtq_high_f32_bf16, test_vcvth_f32_bf16): Likewise.
