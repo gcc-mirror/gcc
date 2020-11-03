@@ -19675,9 +19675,8 @@ package body Sem_Prag is
             function Check_No_Return
                (E : Entity_Id;
                 N : Node_Id) return Boolean;
-            --  Check rule 6.5.1 4/3 of the Ada Ref Manual. If the rule is
-            --  violated, emit an error message and return False, otherwise
-            --  return True.
+            --  Check rule 6.5.1(4/3) of the Ada RM. If the rule is violated,
+            --  emit an error message and return False, otherwise return True.
             --  6.5.1 Nonreturning procedures:
             --  4/3 "Aspect No_Return shall not be specified for a null
             --  procedure nor an instance of a generic unit."
@@ -19690,13 +19689,12 @@ package body Sem_Prag is
                (E : Entity_Id;
                 N : Node_Id) return Boolean
             is
-               Ok : Boolean := True;
             begin
                if Ekind (E) = E_Procedure then
 
-                  --  If E is a generic instance, marking it with No_Return is
-                  --  forbidden, but having it inherit the No_Return of the
-                  --  generic is allowed. We check if E is inheriting its
+                  --  If E is a generic instance, marking it with No_Return
+                  --  is forbidden, but having it inherit the No_Return of
+                  --  the generic is allowed. We check if E is inheriting its
                   --  No_Return flag from the generic by checking if No_Return
                   --  is already set.
 
@@ -19707,20 +19705,16 @@ package body Sem_Prag is
                        ("\generic procedure & must be marked No_Return",
                         N,
                         Generic_Parent (Parent (E)));
-                     Ok := False;
+                     return False;
 
-                  else
-                     if Null_Present (Subprogram_Specification (E)) then
-                        Error_Msg_NE
-                          ("null procedure & cannot be marked No_Return",
-                           N,
-                           E);
-                        Ok := False;
-                     end if;
+                  elsif Null_Present (Subprogram_Specification (E)) then
+                     Error_Msg_NE
+                       ("null procedure & cannot be marked No_Return", N, E);
+                     return False;
                   end if;
                end if;
 
-               return Ok;
+               return True;
             end Check_No_Return;
 
             Arg   : Node_Id;
