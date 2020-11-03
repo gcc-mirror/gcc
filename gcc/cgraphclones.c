@@ -648,9 +648,10 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 }
 
 /* callgraph node being removed from symbol table; see if its entry can be
-   replaced by other inline clone.  */
+   replaced by other inline clone. 
+   INFO is clone info to attach to the new root.  */
 cgraph_node *
-cgraph_node::find_replacement (void)
+cgraph_node::find_replacement (clone_info *info)
 {
   cgraph_node *next_inline_clone, *replacement;
 
@@ -690,7 +691,6 @@ cgraph_node::find_replacement (void)
       clones = NULL;
 
       /* Copy clone info.  */
-      clone_info *info = clone_info::get (this);
       if (info)
 	*clone_info::get_create (next_inline_clone) = *info;
 

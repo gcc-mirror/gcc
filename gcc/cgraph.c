@@ -1503,14 +1503,13 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 
   if (symtab->dump_file)
     {
-
       fprintf (symtab->dump_file, "updating call of %s -> %s: ",
 	       e->caller->dump_name (), e->callee->dump_name ());
       print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
       if (callee_info && callee_info->param_adjustments)
 	callee_info->param_adjustments->dump (symtab->dump_file);
       unsigned performed_len
-	= vec_safe_length (caller_info->performed_splits);
+	= caller_info ? vec_safe_length (caller_info->performed_splits) : 0;
       if (performed_len > 0)
 	fprintf (symtab->dump_file, "Performed splits records:\n");
       for (unsigned i = 0; i < performed_len; i++)
@@ -1861,12 +1860,19 @@ cgraph_node::release_body (bool keep_arguments)
 void
 cgraph_node::remove (void)
 {
+  bool clone_info_set = false;
+  clone_info *info, saved_info;
   if (symtab->ipa_clones_dump_file && symtab->cloned_nodes.contains (this))
     fprintf (symtab->ipa_clones_dump_file,
 	     "Callgraph removal;%s;%d;%s;%d;%d\n", asm_name (), order,
 	     DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
 	     DECL_SOURCE_COLUMN (decl));
 
+  if ((info = clone_info::get (this)) != NULL)
+    {
+      saved_info = *info;
+      clone_info_set = true;
+    }
   symtab->call_cgraph_removal_hooks (this);
   remove_callers ();
   remove_callees ();
@@ -1878,7 +1884,7 @@ cgraph_node::remove (void)
   force_output = false;
   forced_by_abi = false;
 
-  unregister ();
+  unregister (clone_info_set ? &saved_info : NULL);
   if (prev_sibling_clone)
     prev_sibling_clone->next_sibling_clone = next_sibling_clone;
   else if (clone_of)

@@ -408,10 +408,11 @@ symtab_node::remove_from_same_comdat_group (void)
 }
 
 /* Remove node from symbol table.  This function is not used directly, but via
-   cgraph/varpool node removal routines.  */
+   cgraph/varpool node removal routines.
+   INFO is a clone info to attach to new root of clone tree (if any).  */
 
 void
-symtab_node::unregister (void)
+symtab_node::unregister (clone_info *info)
 {
   remove_all_references ();
   remove_all_referring ();
@@ -430,7 +431,7 @@ symtab_node::unregister (void)
     {
       symtab_node *replacement_node = NULL;
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (this))
-	replacement_node = cnode->find_replacement ();
+	replacement_node = cnode->find_replacement (info);
       decl->decl_with_vis.symtab_node = replacement_node;
     }
   if (!is_a <varpool_node *> (this) || !DECL_HARD_REGISTER (decl))
