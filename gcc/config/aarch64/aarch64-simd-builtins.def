@@ -722,6 +722,10 @@
   VAR1 (QUADOP_LANE, bfmlalb_lane_q, 0, ALL, v4sf)
   VAR1 (QUADOP_LANE, bfmlalt_lane_q, 0, ALL, v4sf)
 
+  /* Implemented by aarch64_vget_lo/hi_halfv8bf.  */
+  VAR1 (UNOP, vget_lo_half, 0, AUTO_FP, v8bf)
+  VAR1 (UNOP, vget_hi_half, 0, AUTO_FP, v8bf)
+
   /* Implemented by aarch64_simd_<sur>mmlav16qi.  */
   VAR1 (TERNOP, simd_smmla, 0, NONE, v16qi)
   VAR1 (TERNOPU, simd_ummla, 0, NONE, v16qi)
