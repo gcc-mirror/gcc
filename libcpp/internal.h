@@ -702,7 +702,7 @@ enum _cpp_find_file_kind
   { _cpp_FFK_NORMAL, _cpp_FFK_FAKE, _cpp_FFK_PRE_INCLUDE, _cpp_FFK_HAS_INCLUDE };
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
 				  int angle, _cpp_find_file_kind, location_t);
-extern const char *_cpp_found_name (_cpp_file *);
+extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
 extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, include_type, location_t);

@@ -1428,7 +1428,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 
   /* If the SLP node is a PHI (induction or reduction), terminate
      the recursion.  */
-  bool *skip_args = XALLOCAVEC (bool, nops);
+  bool *skip_args = XALLOCAVEC (bool, sizeof (bool) * nops);
   memset (skip_args, 0, nops);
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
@@ -1441,20 +1441,18 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  return NULL;
 
 	vect_def_type def_type = STMT_VINFO_DEF_TYPE (stmt_info);
-	/* Induction from different IVs is not supported.  */
 	if (def_type == vect_induction_def)
 	  {
-	    stmt_vec_info other_info;
-	    FOR_EACH_VEC_ELT (stmts, i, other_info)
-	      if (stmt_info != other_info)
-		return NULL;
-
-	    /* Induction PHIs are leafs.  */
-	    (*tree_size)++;
-	    node = vect_create_new_slp_node (node, stmts, nops);
-	    SLP_TREE_VECTYPE (node) = vectype;
-	    SLP_TREE_CHILDREN (node).quick_grow_cleared (nops);
-	    return node;
+	    /* Induction PHIs are not cycles but walk the initial
+	       value.  Only for inner loops through, for outer loops
+	       we need to pick up the value from the actual PHIs
+	       to more easily support peeling and epilogue vectorization.  */
+	    class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+	    if (!nested_in_vect_loop_p (loop, stmt_info))
+	      skip_args[loop_preheader_edge (loop)->dest_idx] = true;
+	    else
+	      loop = loop->inner;
+	    skip_args[loop_latch_edge (loop)->dest_idx] = true;
 	  }
 	else if (def_type == vect_reduction_def
 		 || def_type == vect_double_reduction_def

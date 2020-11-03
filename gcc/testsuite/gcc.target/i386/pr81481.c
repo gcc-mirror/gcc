@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ssse3 } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fpic -mssse3" } */
 /* { dg-final { scan-assembler-not "pshufb\[ \t\]\\(%esp\\)" } } */
 #include <immintrin.h>

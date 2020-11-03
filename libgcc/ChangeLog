@@ -1,3 +1,10 @@
+2020-10-30  Olivier Hainque  <hainque@adacore.com>
+	    Douglas Rupp  <rupp@adacore.com>
+	    Pat Bernardi  <bernardi@adacore.com>
+
+	* config.host: Adjust the ix86/x86_64-wrs-vxworks filters
+	to apply to VxWorks 7 as well.
+
 2020-10-29  Olivier Hainque  <hainque@adacore.com>
 
 	* config/gthr-vxworks-tls.c: Fix preprocessor logic

@@ -3717,7 +3717,7 @@
 	(vec_select:<VS_scalar>
 	 (match_operand:VSX_EXTRACT_I 1 "gpc_reg_operand" "<VSX_EX>,v")
 	 (parallel [(match_operand:QI 2 "const_int_operand" "n,n")])))
-   (clobber (match_scratch:<VS_scalar> 3 "=<VSX_EX>,&r"))
+   (clobber (match_scratch:<VS_scalar> 3 "=<VSX_EX>,&*r"))
    (clobber (match_scratch:SI 4 "=X,&r"))]
   "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_VEXTRACTUB"
   "#"

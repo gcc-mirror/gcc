@@ -3864,18 +3864,10 @@ cp_tree_equal (tree t1, tree t2)
 				     CHECK_CONSTR_ARGS (t2)));
 
     case TREE_VEC:
-      /* These seem to always be template args.  Really we should be
-	 getting the caller to do this as it knows it to be true.  */
-#if 1
+      /* These are template args.  Really we should be getting the
+	 caller to do this as it knows it to be true.  */
       if (!comp_template_args (t1, t2, NULL, NULL, false))
 	return false;
-#else // Original code
-      if (TREE_VEC_LENGTH (t1) != TREE_VEC_LENGTH (t2))
-	return false;
-      for (unsigned ix = TREE_VEC_LENGTH (t1); ix--;)
-	if (!cp_tree_equal (TREE_VEC_ELT (t1, ix), TREE_VEC_ELT (t2, ix)))
-	  return false;
-#endif
       return true;
 
     case SIZEOF_EXPR:

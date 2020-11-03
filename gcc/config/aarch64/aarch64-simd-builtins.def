@@ -732,3 +732,8 @@
   VAR1 (UNOP, bfcvtn_q, 0, FP, v8bf)
   VAR1 (BINOP, bfcvtn2, 0, FP, v8bf)
   VAR1 (UNOP, bfcvt, 0, FP, bf)
+
+  /* Implemented by aarch64_{v}bfcvt{_high}<mode>.  */
+  VAR2 (UNOP, vbfcvt, 0, AUTO_FP, v4bf, v8bf)
+  VAR1 (UNOP, vbfcvt_high, 0, AUTO_FP, v8bf)
+  VAR1 (UNOP, bfcvt, 0, AUTO_FP, sf)

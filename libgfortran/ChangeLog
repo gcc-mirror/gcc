@@ -1,3 +1,11 @@
+2020-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	* intrinsics/random.c (SZ_IN_INT_4): Define size of state in int32_t.
+	(SZ_IN_INT_8): Define size of state in int64_t.
+	(SZ): Remove.
+	(random_seed_i4): Use size SZ_IN_INT_4 instead of SZ.
+	(random_seed_i8): Use size SZ_IN_INT_8 instead of SZ.
+
 2020-10-18  Harald Anlauf  <anlauf@gmx.de>
 
 	* m4/matmul_internal.m4: Move check for rank-1 times rank-2 before

@@ -680,22 +680,6 @@ is_invisiref_parm (const_tree t)
 	  && DECL_BY_REFERENCE (t));
 }
 
-/* Return true if the decls in both decl tree maps are equal.  */
-
-bool
-cxx_decl_tree_map_hasher::equal (cxx_decl_tree_map *a, cxx_decl_tree_map *b)
-{
-  return (a->decl == b->decl);
-}
-
-/* Hash a UID in a cxx_decl_tree_map.  */
-
-unsigned int
-cxx_decl_tree_map_hasher::hash (cxx_decl_tree_map *item)
-{
-  return DECL_UID (item->decl);
-}
-
 /* A stable comparison routine for use with splay trees and DECLs.  */
 
 static int

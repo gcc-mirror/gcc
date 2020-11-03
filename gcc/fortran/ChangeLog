@@ -1,3 +1,44 @@
+2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* trans.c (gfc_set_backend_locus): Use 'gfc_get_location'.
+	(gfc_restore_backend_locus): Adjust.
+
+2020-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97655
+	* openmp.c (gfc_match_omp_atomic): Fix mem-order handling;
+	reject specifying update + capture together.
+
+2020-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle atomic clauses.
+	(show_omp_node): Call it for atomic.
+	* gfortran.h (enum gfc_omp_atomic_op): Add GFC_OMP_ATOMIC_UNSET,
+	remove GFC_OMP_ATOMIC_SEQ_CST and GFC_OMP_ATOMIC_ACQ_REL.
+	(enum gfc_omp_memorder): Replace OMP_MEMORDER_LAST by
+	OMP_MEMORDER_UNSET, add OMP_MEMORDER_SEQ_CST/OMP_MEMORDER_RELAXED.
+	(gfc_omp_clauses): Add capture and atomic_op.
+	(gfc_code): remove omp_atomic.
+	* openmp.c (enum omp_mask1): Add atomic, capture, memorder clauses.
+	(gfc_match_omp_clauses): Match them.
+	(OMP_ATOMIC_CLAUSES): Add.
+	(gfc_match_omp_flush): Update for 'last' to 'unset' change.
+	(gfc_match_omp_oacc_atomic): Removed and placed content ..
+	(gfc_match_omp_atomic): ... here. Update for OpenMP 5 clauses.
+	(gfc_match_oacc_atomic): Match directly here.
+	(resolve_omp_atomic, gfc_resolve_omp_directive): Update.
+	* parse.c (parse_omp_oacc_atomic): Update for struct gfc_code changes.
+	* resolve.c (gfc_resolve_blocks): Update assert.
+	* st.c (gfc_free_statement): Also call for EXEC_O{ACC,MP}_ATOMIC.
+	* trans-openmp.c (gfc_trans_omp_atomic): Update.
+	(gfc_trans_omp_flush): Update for 'last' to 'unset' change.
+
+2020-10-30  Jan Hubicka  <jh@suse.cz>
+
+	* trans-types.c: Include alias.h
+	(gfc_get_array_type_bounds): Set typeless storage.
+
 2020-10-27  Harald Anlauf  <anlauf@gmx.de>
 
 	* resolve.c (gfc_impure_variable): A dummy argument with the VALUE

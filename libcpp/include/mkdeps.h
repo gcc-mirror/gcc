@@ -57,6 +57,7 @@ extern void deps_add_default_target (class mkdeps *, const char *);
    dependency entered should be the primary source file.  */
 extern void deps_add_dep (class mkdeps *, const char *);
 
+/* Add a module as a dependency.  */
 extern void deps_add_module (struct mkdeps *, const char *,
 			     const char * = NULL, bool = false);
 

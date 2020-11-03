@@ -667,8 +667,9 @@ cpp_post_options (cpp_reader *pfile)
 const char *
 cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 {
-  if (!pfile->deps && CPP_OPTION (pfile, deps.style) != DEPS_NONE)
-    pfile->deps = deps_init ();
+  if (mkdeps *deps = cpp_get_deps (pfile))
+    /* Set the default target (if there is none already).  */
+    deps_add_default_target (deps, fname);
 
   pfile->main_file
     = _cpp_find_file (pfile, fname,
@@ -679,13 +680,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 		      ? pfile->bracket_include : &pfile->no_search_path,
 		      /*angle=*/0, _cpp_FFK_NORMAL, 0);
 
-  const char *found_name = _cpp_found_name (pfile->main_file);
-
-  if (pfile->deps)
-    /* Set the default target (if there is none already).  */
-    deps_add_default_target (pfile->deps, found_name ? found_name : fname);
-
-  if (!found_name)
+  if (_cpp_find_failed (pfile->main_file))
     return NULL;
 
   _cpp_stack_file (pfile, pfile->main_file,

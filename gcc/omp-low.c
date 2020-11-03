@@ -2418,50 +2418,43 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
       if (!tgt || is_oacc_parallel_or_serial (tgt))
 	for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
 	  {
-	    char const *check = NULL;
-
+	    tree c_op0;
 	    switch (OMP_CLAUSE_CODE (c))
 	      {
 	      case OMP_CLAUSE_GANG:
-		check = "gang";
+		c_op0 = OMP_CLAUSE_GANG_EXPR (c);
 		break;
 
 	      case OMP_CLAUSE_WORKER:
-		check = "worker";
+		c_op0 = OMP_CLAUSE_WORKER_EXPR (c);
 		break;
 
 	      case OMP_CLAUSE_VECTOR:
-		check = "vector";
+		c_op0 = OMP_CLAUSE_VECTOR_EXPR (c);
 		break;
 
 	      default:
-		break;
+		continue;
 	      }
 
-	    if (check && OMP_CLAUSE_OPERAND (c, 0))
-	      error_at (gimple_location (stmt),
-			"argument not permitted on %qs clause in"
-			" OpenACC %<parallel%> or %<serial%>", check);
+	    if (c_op0)
+	      {
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "argument not permitted on %qs clause",
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		if (tgt)
+		  inform (gimple_location (outer_ctx->stmt),
+			  "enclosing parent compute construct");
+		else if (oacc_get_fn_attrib (current_function_decl))
+		  inform (DECL_SOURCE_LOCATION (current_function_decl),
+			  "enclosing routine");
+		else
+		  gcc_unreachable ();
+	      }
 	  }
 
       if (tgt && is_oacc_kernels (tgt))
-	{
-	  /* Strip out reductions, as they are not handled yet.  */
-	  tree *prev_ptr = &clauses;
-
-	  while (tree probe = *prev_ptr)
-	    {
-	      tree *next_ptr = &OMP_CLAUSE_CHAIN (probe);
-	      
-	      if (OMP_CLAUSE_CODE (probe) == OMP_CLAUSE_REDUCTION)
-		*prev_ptr = *next_ptr;
-	      else
-		prev_ptr = next_ptr;
-	    }
-
-	  gimple_omp_for_set_clauses (stmt, clauses);
-	  check_oacc_kernel_gwv (stmt, ctx);
-	}
+	check_oacc_kernel_gwv (stmt, ctx);
 
       /* Collect all variables named in reductions on this loop.  Ensure
 	 that, if this loop has a reduction on some variable v, and there is
@@ -2544,6 +2537,24 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
       ctx->outer_reduction_clauses
 	= chainon (unshare_expr (ctx->local_reduction_clauses),
 		   ctx->outer_reduction_clauses);
+
+      if (tgt && is_oacc_kernels (tgt))
+	{
+	  /* Strip out reductions, as they are not handled yet.  */
+	  tree *prev_ptr = &clauses;
+
+	  while (tree probe = *prev_ptr)
+	    {
+	      tree *next_ptr = &OMP_CLAUSE_CHAIN (probe);
+
+	      if (OMP_CLAUSE_CODE (probe) == OMP_CLAUSE_REDUCTION)
+		*prev_ptr = *next_ptr;
+	      else
+		prev_ptr = next_ptr;
+	    }
+
+	  gimple_omp_for_set_clauses (stmt, clauses);
+	}
     }
 
   scan_sharing_clauses (clauses, ctx);

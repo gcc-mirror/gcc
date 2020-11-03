@@ -479,10 +479,10 @@ search_path_exhausted (cpp_reader *pfile, const char *header, _cpp_file *file)
   return false;
 }
 
-const char *
-_cpp_found_name (_cpp_file *file)
+bool
+_cpp_find_failed (_cpp_file *file)
 {
-  return !file->err_no ? file->path : NULL;
+  return file->err_no != 0;
 }
 
 /* Given a filename FNAME search for such a file in the include path

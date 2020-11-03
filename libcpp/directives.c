@@ -2578,7 +2578,7 @@ cpp_set_callbacks (cpp_reader *pfile, cpp_callbacks *cb)
 class mkdeps *
 cpp_get_deps (cpp_reader *pfile)
 {
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE && !pfile->deps)
+  if (!pfile->deps && CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     pfile->deps = deps_init ();
   return pfile->deps;
 }

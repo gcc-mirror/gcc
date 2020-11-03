@@ -1,3 +1,20 @@
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (c_common_post_options): Move var decl to its
+	initialization point.
+
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-lex.c (c_lex_with_flags): When combining '@' with a
+	keyword for Objective-C, combine the location ranges too.
+
+2020-10-30  Qing Zhao  <qing.zhao@oracle.com>
+	    H.J.Lu  <hjl.tools@gmail.com>
+
+	* c-attribs.c (c_common_attribute_table): Add new attribute
+	zero_call_used_regs.
+	(handle_zero_call_used_regs_attribute): New function.
+
 2020-10-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97573

@@ -519,7 +519,7 @@ libstdc___la_DEPENDENCIES = \
 libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm
 
-libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
+libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS) $(lt_host_flags)
 
 # A note on compatibility and static libraries.
 #
