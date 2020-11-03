@@ -14962,6 +14962,14 @@ package body Exp_Ch4 is
          return;
       end if;
 
+      --  If both operands are static, then the comparison has been already
+      --  folded in evaluation.
+
+      pragma Assert
+        (not Is_Static_Expression (Left_Opnd (N))
+           or else
+         not Is_Static_Expression (Right_Opnd (N)));
+
       --  Determine the potential outcome of the comparison assuming that the
       --  operands are valid and emit a warning when the comparison evaluates
       --  to True or False only in the presence of invalid values.
@@ -14977,7 +14985,8 @@ package body Exp_Ch4 is
          True_Result  => True_Result,
          False_Result => False_Result);
 
-      --  The outcome is a decisive False or True, rewrite the operator
+      --  The outcome is a decisive False or True, rewrite the operator into a
+      --  non-static literal.
 
       if False_Result or True_Result then
          Rewrite (N,
@@ -14985,6 +14994,7 @@ package body Exp_Ch4 is
              New_Occurrence_Of (Boolean_Literals (True_Result), Sloc (N))));
 
          Analyze_And_Resolve (N, Typ);
+         Set_Is_Static_Expression (N, False);
          Warn_On_Known_Condition (N);
       end if;
    end Rewrite_Comparison;

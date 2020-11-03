@@ -7458,14 +7458,17 @@ package body Sem_Res is
       Analyze_Dimension (N);
 
       --  Evaluate the relation (note we do this after the above check since
-      --  this Eval call may change N to True/False. Skip this evaluation
+      --  this Eval call may change N to True/False). Skip this evaluation
       --  inside assertions, in order to keep assertions as written by users
       --  for tools that rely on these, e.g. GNATprove for loop invariants.
       --  Except evaluation is still performed even inside assertions for
       --  comparisons between values of universal type, which are useless
       --  for static analysis tools, and not supported even by GNATprove.
+      --  ??? It is suspicious to disable evaluation only for comparison
+      --  operators and not, let's say, for calls to static functions.
 
-      if In_Assertion_Expr = 0
+      if not GNATprove_Mode
+        or else In_Assertion_Expr = 0
         or else (Is_Universal_Numeric_Type (Etype (L))
                    and then
                  Is_Universal_Numeric_Type (Etype (R)))
