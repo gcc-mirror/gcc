@@ -7,4 +7,4 @@ foo (int x)
   return x;
 }
 
-/* { dg-final { scan-assembler "xorl\[ \t\]*%edi, %edi" } } */
+/* { dg-final { scan-assembler "xorl\[ \t\]+%edi, %edi" { target { ! ia32 } } } } */
