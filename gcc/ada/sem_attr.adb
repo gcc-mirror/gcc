@@ -9138,12 +9138,12 @@ package body Sem_Attr is
          --  comparable, and we can figure out the difference between them.
 
          declare
-            Diff : aliased Uint;
+            Diff : Uint;
 
          begin
             case
               Compile_Time_Compare
-                (Lo_Bound, Hi_Bound, Diff'Access, Assume_Valid => False)
+                (Lo_Bound, Hi_Bound, Diff, Assume_Valid => False)
             is
                when EQ =>
                   Fold_Uint (N, Uint_1, Static);
@@ -9631,7 +9631,7 @@ package body Sem_Attr is
       ------------------
 
       when Attribute_Range_Length => Range_Length : declare
-         Diff : aliased Uint;
+         Diff : Uint;
 
       begin
          Set_Bounds;
@@ -9651,7 +9651,7 @@ package body Sem_Attr is
          --  comparable, and we can figure out the difference between them.
 
          case Compile_Time_Compare
-                (Lo_Bound, Hi_Bound, Diff'Access, Assume_Valid => False)
+                (Lo_Bound, Hi_Bound, Diff, Assume_Valid => False)
          is
             when EQ =>
                Fold_Uint (N, Uint_1, Static);
