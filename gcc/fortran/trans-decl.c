@@ -1427,7 +1427,7 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
   tree attr;
 
   for (id = 0; id < EXT_ATTR_NUM; id++)
-    if (sym_attr.ext_attr & (1 << id))
+    if (sym_attr.ext_attr & (1 << id) && ext_attr_list[id].middle_end_name)
       {
 	attr = build_tree_list (
 		 get_identifier (ext_attr_list[id].middle_end_name),
