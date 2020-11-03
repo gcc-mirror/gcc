@@ -600,20 +600,20 @@
   BUILTIN_VHSDF (BINOP, faddp, 0, FP)
 
   /* Implemented by aarch64_cm<optab><mode>.  */
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmeq, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmge, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmgt, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmle, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmlt, 0, ALL)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmeq, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmge, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmgt, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmle, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, cmlt, 0, FP)
 
   /* Implemented by neg<mode>2.  */
   BUILTIN_VHSDF_HSDF (UNOP, neg, 2, ALL)
 
   /* Implemented by aarch64_fac<optab><mode>.  */
-  BUILTIN_VHSDF_HSDF (BINOP_USS, faclt, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facle, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facgt, 0, ALL)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facge, 0, ALL)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, faclt, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facle, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facgt, 0, FP)
+  BUILTIN_VHSDF_HSDF (BINOP_USS, facge, 0, FP)
 
   /* Implemented by sqrt<mode>2.  */
   VAR1 (UNOP, sqrt, 2, ALL, hf)
