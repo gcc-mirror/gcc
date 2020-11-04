@@ -184,16 +184,6 @@
 	* config/arm/arm_neon.h (vld1_lane_bf16, vld1q_lane_bf16): Add
 	intrinsics.
 
-2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* config/aarch64/aarch64-simd-builtins.def(vbfcvt): New entry.
-	(vbfcvt_high, bfcvt): Likewise.
-	* config/aarch64/aarch64-simd.md(aarch64_vbfcvt<mode>): New entry.
-	(aarch64_vbfcvt_highv8bf, aarch64_bfcvtsf): Likewise.
-	* config/aarch64/arm_bf16.h (vcvtah_f32_bf16): New intrinsic.
-	* config/aarch64/arm_neon.h (vcvt_f32_bf16): Likewise.
-	(vcvtq_low_f32_bf16, vcvtq_high_f32_bf16): Likewise.
-
 2020-11-03  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/97666
@@ -259,32 +249,6 @@
 	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely_1):
 	Once any outermost loop gets unrolled, flag cfun pending_TODOs
 	PENDING_TODO_force_next_scalar_cleanup on.
-
-2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* config/aarch64/aarch64-simd-builtins.def (vget_lo_half): New entry.
-	(vget_hi_half): Likewise.
-	* config/aarch64/aarch64-simd.md (aarch64_vget_lo_halfv8bf): New entry.
-	(aarch64_vget_hi_halfv8bf): Likewise.
-	* config/aarch64/arm_neon.h (vget_low_bf16): New intrinsic.
-	(vget_high_bf16): Likewise.
-
-2020-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
-
-	PR target/97205
-	* cfgexpand.c (align_local_variable): Make SSA_NAMEs
-	at least MODE_ALIGNED.
-	(expand_one_stack_var_at): Increase MEM_ALIGN for SSA_NAMEs.
-
-2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* config/aarch64/aarch64-simd-builtins.def(vbfcvt): New entry.
-	(vbfcvt_high, bfcvt): Likewise.
-	* config/aarch64/aarch64-simd.md(aarch64_vbfcvt<mode>): New entry.
-	(aarch64_vbfcvt_highv8bf, aarch64_bfcvtsf): Likewise.
-	* config/aarch64/arm_bf16.h (vcvtah_f32_bf16): New intrinsic.
-	* config/aarch64/arm_neon.h (vcvt_f32_bf16): Likewise.
-	(vcvtq_low_f32_bf16, vcvtq_high_f32_bf16): Likewise.
 
 2020-11-02  Alan Modra  <amodra@gmail.com>
 
@@ -2145,29 +2109,6 @@
 	* vr-values.c (range_fits_type_p): Remove static qualifier.
 	(vrp_simplify_cond_using_ranges): Move...
 	* tree-vrp.c (vrp_simplify_cond_using_ranges): ...to here.
-
-2020-10-22  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* config/arm/mve.md (mve_vmaxq_<supf><mode>): Replace with ...
-	(mve_vmaxq_s<mode>, mve_vmaxq_u<mode>): ... these new insns to
-	use smax/umax instead of VMAXQ.
-	(mve_vminq_<supf><mode>): Replace with ...
-	(mve_vminq_s<mode>, mve_vminq_u<mode>): ... these new insns to
-	use smin/umin instead of VMINQ.
-	(mve_vmaxnmq_f<mode>): Use smax instead of VMAXNMQ_F.
-	(mve_vminnmq_f<mode>): Use smin instead of VMINNMQ_F.
-	* config/arm/vec-common.md (smin<mode>3): Use the new mode macros
-	ARM_HAVE_<MODE>_ARITH.
-	(umin<mode>3, smax<mode>3, umax<mode>3): Likewise.
-
-2020-10-22  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* config/arm/mve.md (mve_vmulq<mode>): New entry for vmul instruction
-	using expression 'mult'.
-	(mve_vmulq_f<mode>): Use mult instead of VMULQ_F.
-	* config/arm/neon.md (mul<mode>3): Removed.
-	* config/arm/vec-common.md (mul<mode>3): Use the new mode macros
-	ARM_HAVE_<MODE>_ARITH. Use mode iterator VDQWH instead of VALLW.
 
 2020-10-20  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -4383,10 +4324,6 @@
 
 	* doc/invoke.texi: Add z15/arch13 to the list of documented
 	-march/-mtune options.
-
-2020-10-05  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* config/arm/arm.c (arm_preferred_simd_mode): Enable MVE SIMD modes.
 
 2020-10-05  Aldy Hernandez  <aldyh@redhat.com>
 

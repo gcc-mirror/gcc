@@ -30,7 +30,7 @@
 	a superflous target test in the dg-do compile
 	directive while at it.
 
-2020-11-03  Dennis Zhang  <denzha01@e124712.cambridge.arm.com>
+2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/bf16_get.c: New test.
 	* gcc.target/aarch64/advsimd-intrinsics/bf16_get-be.c: New test.
@@ -39,11 +39,6 @@
 
 	PR c++/97632
 	* g++.dg/warn/Winit-list4.C: New test.
-
-2020-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
-
-	PR target/97205
-	* gcc.c-torture/compile/pr97205.c: New test.
 
 2020-11-03  Andrea Corallo  <andrea.corallo@arm.com>
 
@@ -97,7 +92,7 @@
 	* gcc.target/arm/simd/vld1_lane_bf16_indices_1.c: Likewise.
 	* gcc.target/arm/simd/vld1q_lane_bf16_indices_1.c: Likewise.
 
-2020-11-03  Dennis Zhang  <denzha01@e124712.cambridge.arm.com>
+2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-compile.c
 	(test_vcvt_f32_bf16, test_vcvtq_low_f32_bf16): New tests.
@@ -229,22 +224,11 @@
 	* gcc.dg/vect/bb-slp-41.c: Likewise.
 	* gcc.dg/tree-ssa/pr96789.c: New test.
 
-2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* gcc.target/aarch64/advsimd-intrinsics/bf16_get.c: New test.
-	* gcc.target/aarch64/advsimd-intrinsics/bf16_get-be.c: New test.
-	
 2020-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/97205
 	* gcc.c-torture/compile/pr97205.c: New test.
 
-2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* gcc.target/aarch64/advsimd-intrinsics/bfcvt-compile.c
-	(test_vcvt_f32_bf16, test_vcvtq_low_f32_bf16): New tests.
-	(test_vcvtq_high_f32_bf16, test_vcvth_f32_bf16): Likewise.
-	
 2020-11-02  Alan Modra  <amodra@gmail.com>
 
 	PR middle-end/97267
@@ -1150,7 +1134,7 @@
 	* gcc.dg/pr43783.c: ... here.  Add dg-do compile, dg-options and
 	dg-error directives.
 
-2020-10-23  Dennis Zhang  <dennis.zh@live.com>
+2020-10-23  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/arm/simd/mve-vsub_1.c: New test.
 
@@ -1161,10 +1145,6 @@
 
 	PR middle-end/97521
 	* gcc.target/i386/pr97521.c: New testcase.
-
-2020-10-23  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* gcc.target/arm/simd/mve-vsub_1.c: New test.
 
 2020-10-22  Alan Modra  <amodra@gmail.com>
 
@@ -1258,15 +1238,11 @@
 
 	* gcc.target/i386/pr97249-1.c: New test.
 
-2020-10-22  Dennis Zhang  <dennis.zh@live.com>
-
-	* gcc.target/arm/simd/mve-vminmax_1.c: New test.
-
 2020-10-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr97520.c: New.
 
-2020-10-22  Dennis Zhang  <dennis.zh@live.com>
+2020-10-22  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/arm/simd/mve-vmul_1.c: New test.
 
@@ -1398,10 +1374,6 @@
 2020-10-22  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* gcc.target/arm/simd/mve-vminmax_1.c: New test.
-
-2020-10-22  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* gcc.target/arm/simd/mve-vmul_1.c: New test.
 
 2020-10-20  Jeff Law  <law@redhat.com>
 
@@ -2488,20 +2460,6 @@
 	* gcc.target/arm/cortex-m55-nomve.fp-flag-hard.c: New test.
 	* gcc.target/arm/cortex-m55-nomve.fp-flag-softfp.c: New test.
 	* gcc.target/arm/multilib.exp: Add tests for -mcpu=cortex-m55.
-
-2020-10-05  Dennis Zhang  <dennis.zhang@arm.com>
-
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_f16.c: Use additional
-	option -fno-ipa-icf and change the instruction count from 8 to 16.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_f32.c: Likewise.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_s16.c: Likewise.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_s32.c: Likewise.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_s64.c: Likewise.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_s8.c: Likewise.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_u16.c: Likewise.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_u32.c: Likewise.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_u64.c: Likewise.
-	* gcc.target/arm/mve/intrinsics/vreinterpretq_u8.c: Likewise.
 
 2020-10-05  Nathan Sidwell  <nathan@acm.org>
 
