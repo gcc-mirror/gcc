@@ -972,6 +972,19 @@ now defaults to zero.
   be used instead.
 </para>
 
+<para>
+  Experimental C++2a support improved, with new headers
+  <filename class="headerfile">&lt;concepts&gt;</filename>,
+  <filename class="headerfile">&lt;ranges&gt;</filename>,
+  <filename class="headerfile">&lt;compare&gt;</filename>,
+  <filename class="headerfile">&lt;coroutine&gt;</filename>,
+  <filename class="headerfile">&lt;numbers&gt;</filename>,
+  <filename class="headerfile">&lt;span&gt;</filename>,
+  and
+  <filename class="headerfile">&lt;stop_token&gt;</filename>
+  added.
+</para>
+
 </section>
 
 </section>
