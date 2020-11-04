@@ -179,15 +179,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       explicit
       basic_stringbuf(__string_type&& __s,
-	              ios_base::openmode __mode = ios_base::in
-						  | ios_base::out )
+		      ios_base::openmode __mode = ios_base::in
+						  | ios_base::out)
       : __streambuf_type(), _M_mode(__mode), _M_string(std::move(__s))
       { _M_stringbuf_init(__mode); }
 
       template<typename _SAlloc>
       basic_stringbuf(const basic_string<_CharT, _Traits, _SAlloc>& __s,
-		      const allocator_type& __a )
-      : basic_stringbuf(__s, ios_base::in | std::ios_base::out, __a )
+		      const allocator_type& __a)
+      : basic_stringbuf(__s, ios_base::in | std::ios_base::out, __a)
       { }
 
       template<typename _SAlloc>
@@ -201,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _SAlloc>
 	explicit
 	basic_stringbuf(const basic_string<_CharT, _Traits, _SAlloc>& __s,
-	                ios_base::openmode __mode = ios_base::in
+			ios_base::openmode __mode = ios_base::in
 						    | ios_base::out)
 	: basic_stringbuf(__s, __mode, allocator_type{})
 	{ }
@@ -584,7 +584,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       explicit
       basic_istringstream(__string_type&& __str,
-	                  ios_base::openmode __mode = ios_base::in )
+			  ios_base::openmode __mode = ios_base::in)
       : __istream_type(), _M_stringbuf(std::move(__str), __mode | ios_base::in)
       { this->init(std::__addressof(_M_stringbuf)); }
 
@@ -606,7 +606,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _SAlloc>
 	explicit
 	basic_istringstream(const basic_string<_CharT, _Traits, _SAlloc>& __str,
-	                    ios_base::openmode __mode = ios_base::in)
+			    ios_base::openmode __mode = ios_base::in)
 	: basic_istringstream(__str, __mode, allocator_type())
 	{ }
 #endif
@@ -782,7 +782,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       explicit
       basic_ostringstream(__string_type&& __str,
-	                  ios_base::openmode __mode = ios_base::out )
+			  ios_base::openmode __mode = ios_base::out)
       : __ostream_type(), _M_stringbuf(std::move(__str), __mode | ios_base::out)
       { this->init(std::__addressof(_M_stringbuf)); }
 
@@ -804,7 +804,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _SAlloc>
 	explicit
 	basic_ostringstream(const basic_string<_CharT, _Traits, _SAlloc>& __str,
-	                    ios_base::openmode __mode = ios_base::out)
+			    ios_base::openmode __mode = ios_base::out)
 	: basic_ostringstream(__str, __mode, allocator_type())
 	{ }
 #endif
@@ -976,7 +976,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       explicit
       basic_stringstream(__string_type&& __str,
-	                 ios_base::openmode __mode = ios_base::in
+			 ios_base::openmode __mode = ios_base::in
 						     | ios_base::out)
       : __iostream_type(), _M_stringbuf(std::move(__str), __mode)
       { this->init(std::__addressof(_M_stringbuf)); }
@@ -989,7 +989,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       template<typename _SAlloc>
 	basic_stringstream(const basic_string<_CharT, _Traits, _SAlloc>& __str,
-			   ios_base::openmode __mode, const allocator_type& __a)
+			   ios_base::openmode __mode,
+			   const allocator_type& __a)
 	: __iostream_type(),
 	_M_stringbuf(__string_type(__str.data(), __str.size()), __mode, __a)
 	{ this->init(std::__addressof(_M_stringbuf)); }
@@ -997,7 +998,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _SAlloc>
 	explicit
 	basic_stringstream(const basic_string<_CharT, _Traits, _SAlloc>& __str,
-	                   ios_base::openmode __mode = ios_base::in
+			   ios_base::openmode __mode = ios_base::in
 						       | ios_base::out)
 	: basic_stringstream(__str, __mode, allocator_type())
 	{ }
