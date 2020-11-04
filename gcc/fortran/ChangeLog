@@ -1,3 +1,21 @@
+2020-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-10-27  Harald Anlauf  <anlauf@gmx.de>
+
+	* resolve.c (gfc_impure_variable): A dummy argument with the VALUE
+	attribute may be redefined without making a procedure impure.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* trans-openmp.c (gfc_trans_omp_clauses): More precise location
+	information for OpenACC 'gang', 'worker', 'vector' clauses with
+	argument.
+
 2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

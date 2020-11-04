@@ -1,3 +1,77 @@
+2020-11-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2020-10-27  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/value_8.f90: New test.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/pr92793-1.c: Extend.
+	* gfortran.dg/goacc/pr92793-1.f90: Likewise.
+
+2020-11-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97688
+	* gcc.dg/vect/tree-vect.h (check_vect): Fix the x86 cpuid
+	check to always specify subleaf zero.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/nested-reductions-1-kernels.c: Extend.
+	* c-c++-common/goacc/nested-reductions-2-kernels.c: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-kernels.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-kernels.f90: Likewise.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/nested-reductions.c: Split file into...
+	* c-c++-common/goacc/nested-reductions-1-kernels.c: ... this...
+	* c-c++-common/goacc/nested-reductions-1-parallel.c: ..., this...
+	* c-c++-common/goacc/nested-reductions-1-routine.c: ..., and this.
+	* c-c++-common/goacc/nested-reductions-warn.c: Split file into...
+	* c-c++-common/goacc/nested-reductions-2-kernels.c: ... this...
+	* c-c++-common/goacc/nested-reductions-2-parallel.c: ..., this...
+	* c-c++-common/goacc/nested-reductions-2-routine.c: ..., and this.
+	* gfortran.dg/goacc/nested-reductions.f90: Split file into...
+	* gfortran.dg/goacc/nested-reductions-1-kernels.f90: ... this...
+	* gfortran.dg/goacc/nested-reductions-1-parallel.f90: ..., this...
+	* gfortran.dg/goacc/nested-reductions-1-routine.f90: ..., and
+	this.
+	* gfortran.dg/goacc/nested-reductions-warn.f90: Split file into...
+	* gfortran.dg/goacc/nested-reductions-2-kernels.f90: ... this...
+	* gfortran.dg/goacc/nested-reductions-2-parallel.f90: ..., this...
+	* gfortran.dg/goacc/nested-reductions-2-routine.f90: ..., and
+	this.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* gfortran.dg/goacc/pr92793-1.f90: Adjust.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/pr92793-1.c: Extend.
+	* gfortran.dg/goacc/pr92793-1.f90: Likewise.
+
 2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

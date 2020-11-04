@@ -1,3 +1,28 @@
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_omp_for) <OpenACC>: Use proper location to
+	'inform' of enclosing parent compute construct.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_omp_for) <OpenACC>: Move earlier inconsistent
+	nested 'reduction' clauses checking.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_omp_for) <OpenACC>: More precise diagnostics for
+	'gang', 'worker', 'vector' clauses with arguments only allowed in
+	'kernels' regions.
+
 2020-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* wide-int.cc (wi::set_bit_large): Call canonize unless setting
