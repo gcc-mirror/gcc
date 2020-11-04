@@ -8568,6 +8568,9 @@ vectorizable_live_operation (vec_info *vinfo,
       gimple_seq stmts = NULL;
       new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree),
 				       &stmts, true, NULL_TREE);
+      if (TREE_CODE (new_tree) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree) = 1;
       if (is_a <gphi *> (vec_stmt))
 	{
 	  gimple_stmt_iterator si = gsi_after_labels (gimple_bb (vec_stmt));
