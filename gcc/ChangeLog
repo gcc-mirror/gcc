@@ -1,3 +1,265 @@
+2020-11-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/97695
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Fix ICE with
+	in dumping code.
+	(cgraph_node::remove): Save clone info before releasing it and pass it
+	to unregister.
+	* cgraph.h (symtab_node::unregister): Add clone_info parameter.
+	(cgraph_clone::unregister): Likewise.
+	* cgraphclones.c (cgraph_node::find_replacement): Copy clone info
+	* symtab-clones.cc (clone_infos_t::duplicate): Remove.
+	(clone_info::get_create): Simplify.
+	* symtab.c (symtab_node::unregister): Pass around clone info.
+	* varpool.c (varpool_node::remove): Update.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_omp_for) <OpenACC>: Use proper location to
+	'inform' of enclosing parent compute construct.
+
+2020-11-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/97698
+	* cgraphclones.c (duplicate_thunk_for_node): Check that info is
+	non-NULL.
+
+2020-11-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_function_arg_regno_p): Use up to
+	SSE_REGPARM_MAX registers to pass function parameters
+	for 32bit Mach-O targets.
+	* config/i386/i386.h (X86_32_MMX_REGPARM_MAX): New macro.
+	(MMX_REGPARM_MAX): Use it.
+
+2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (vget_lo_half): New entry.
+	(vget_hi_half): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_vget_lo_halfv8bf): New entry.
+	(aarch64_vget_hi_halfv8bf): Likewise.
+	* config/aarch64/arm_neon.h (vget_low_bf16): New intrinsic.
+	(vget_high_bf16): Likewise.
+
+2020-11-03  Yang Yang  <yangyang305@huawei.com>
+
+	* cgraph.h (struct cgraph_simd_clone): Change field "simdlen" of
+	struct cgraph_simd_clone from unsigned int to poly_uint64.
+	* config/aarch64/aarch64.c
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): adaptation of
+	operations on "simdlen".
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
+	Printf formats update.
+	* gengtype.c (main): Handle poly_uint64.
+	* omp-simd-clone.c (simd_clone_mangle): Likewise.Re
+	(simd_clone_adjust_return_type): Likewise.
+	(create_tmp_simd_array): Likewise.
+	(simd_clone_adjust_argument_types): Likewise.
+	(simd_clone_init_simd_arrays): Likewise.
+	(ipa_simd_modify_function_body): Likewise.
+	(simd_clone_adjust): Likewise.
+	(expand_simd_clones): Likewise.
+	* poly-int-types.h (vector_unroll_factor): New macro.
+	* poly-int.h (constant_multiple_p): Add two-argument versions.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Likewise.
+
+2020-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* params.opt (-param=max-pre-hoist-insert-iterations): New.
+	* doc/invoke.texi (max-pre-hoist-insert-iterations): Document.
+	* tree-ssa-pre.c (insert): Do at most max-pre-hoist-insert-iterations
+	hoist insert iterations.
+
+2020-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97579
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Use
+	the correct types for the vcond_mask/vec_cmp optab queries.
+
+2020-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_global_cache::get_global_range): Return
+	true if there was a previous range set.
+	(ranger_cache::ranger_cache): Take a gimple_ranger parameter.
+	(ranger_cache::set_global_range): Propagate the value if updating.
+	(ranger_cache::propagate_cache): Renamed from iterative_cache_update.
+	(ranger_cache::propagate_updated_value): New.  Split from:
+	(ranger_cache::fill_block_cache): Split out value propagator.
+	* gimple-range-cache.h (ssa_global_cache): Update prototypes.
+	(ranger_cache): Update prototypes.
+
+2020-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.h (block_range_cache): Add new entry point.
+	(ranger_cache): Privatize global abnd block cache members.
+	* gimple-range-cache.cc (ssa_block_ranges::set_bb_range): Add bounds
+	check.
+	(ssa_block_ranges::set_bb_varying): Ditto.
+	(ssa_block_ranges::get_bb_range): Ditto.
+	(ssa_block_ranges::bb_range_p): Ditto.
+	(block_range_cache::get_block_ranges): Fix formatting.
+	(block_range_cache::query_block_ranges): New.
+	(block_range_cache::get_bb_range): Use Query_block_ranges.
+	(block_range_cache::bb_range_p): Ditto.
+	(ranger_cache::dump): New.
+	(ranger_cache::get_global_range): New.
+	(ranger_cache::set_global_range): New.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Use new API.
+	(gimple_ranger::range_of_stmt): Ditto.
+	(gimple_ranger::export_global_ranges): Ditto.
+	(gimple_ranger::dump): Ditto.
+
+2020-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* fold-const.c (getbyterep): Remove duplicated statement.
+
+2020-11-03  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/97205
+	* cfgexpand.c (align_local_variable): Make SSA_NAMEs
+	at least MODE_ALIGNED.
+	(expand_one_stack_var_at): Increase MEM_ALIGN for SSA_NAMEs.
+
+2020-11-03  Zhiheng Xie  <xiezhiheng@huawei.com>
+	    Nannan Zheng  <zhengnannan@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for AES/SHA/SM3/SM4 intrinsics.
+
+2020-11-03  Zhiheng Xie  <xiezhiheng@huawei.com>
+	    Nannan Zheng  <zhengnannan@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for compare intrinsics.
+
+2020-11-03  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (maybe_create_die_with_external_ref): Remove
+	hashtable entry.
+
+2020-11-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm_neon.h (vst2_lane_bf16, vst2q_lane_bf16)
+	(vst3_lane_bf16, vst3q_lane_bf16, vst4_lane_bf16)
+	(vst4q_lane_bf16): New intrinsics.
+	* config/arm/arm_neon_builtins.def: Touch it for:
+	__builtin_neon_vst2_lanev4bf, __builtin_neon_vst2_lanev8bf,
+	__builtin_neon_vst3_lanev4bf, __builtin_neon_vst3_lanev8bf,
+	__builtin_neon_vst4_lanev4bf,__builtin_neon_vst4_lanev8bf.
+
+2020-11-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm_neon.h (vld2_lane_bf16, vld2q_lane_bf16)
+	(vld3_lane_bf16, vld3q_lane_bf16, vld4_lane_bf16)
+	(vld4q_lane_bf16): Add intrinsics.
+	* config/arm/arm_neon_builtins.def: Touch for:
+	__builtin_neon_vld2_lanev4bf, __builtin_neon_vld2_lanev8bf,
+	__builtin_neon_vld3_lanev4bf, __builtin_neon_vld3_lanev8bf,
+	__builtin_neon_vld4_lanev4bf, __builtin_neon_vld4_lanev8bf.
+	* config/arm/iterators.md (VQ_HS): Add V8BF to the iterator.
+
+2020-11-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm_neon.h (vst1_bf16, vst1q_bf16): Add intrinsics.
+	* config/arm/arm_neon_builtins.def : Touch for:
+	__builtin_neon_vst1v4bf, __builtin_neon_vst1v8bf.
+
+2020-11-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm-builtins.c (VAR14): Define macro.
+	* config/arm/arm_neon_builtins.def: Touch for:
+	__builtin_neon_vld1v4bf, __builtin_neon_vld1v8bf.
+	* config/arm/arm_neon.h (vld1_bf16, vld1q_bf16): Add intrinsics.
+
+2020-11-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm_neon.h (vst1_lane_bf16, vst1q_lane_bf16): Add
+	intrinsics.
+	* config/arm/arm_neon_builtins.def (STORE1LANE): Add v4bf, v8bf.
+
+2020-11-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/arm_neon_builtins.def: Add to LOAD1LANE v4bf, v8bf.
+	* config/arm/arm_neon.h (vld1_lane_bf16, vld1q_lane_bf16): Add
+	intrinsics.
+
+2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def(vbfcvt): New entry.
+	(vbfcvt_high, bfcvt): Likewise.
+	* config/aarch64/aarch64-simd.md(aarch64_vbfcvt<mode>): New entry.
+	(aarch64_vbfcvt_highv8bf, aarch64_bfcvtsf): Likewise.
+	* config/aarch64/arm_bf16.h (vcvtah_f32_bf16): New intrinsic.
+	* config/aarch64/arm_neon.h (vcvt_f32_bf16): Likewise.
+	(vcvtq_low_f32_bf16, vcvtq_high_f32_bf16): Likewise.
+
+2020-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/97666
+	* tree-vect-slp.c (vect_build_slp_tree_2): Scale
+	allocation of skip_args by sizeof (bool).
+
+2020-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80928
+	* tree-vect-loop.c (vectorizable_induction): SLP vectorize
+	nested inductions.
+
+2020-11-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/97578
+	* ipa-inline-transform.c (maybe_materialize_called_clones): New
+	function.
+	(inline_transform): Use it.
+
+2020-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97678
+	* tree-vect-slp.c (vect_build_slp_tree_2): Do not track
+	the initial values of inductions when not nested.
+	* tree-vect-loop.c (vectorizable_induction): Look at
+	PHI node initial values again for SLP and not nested
+	inductions.  Handle LOOP_VINFO_MASK_SKIP_NITERS and cost
+	invariants.
+
+2020-11-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (aes<aeswideklvariant>u8):
+	Do not use xmm_regs array.  Fix whitespace.
+
+2020-11-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_builtin): Fix comment.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_omp_for) <OpenACC>: Move earlier inconsistent
+	nested 'reduction' clauses checking.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_omp_for) <OpenACC>: More precise diagnostics for
+	'gang', 'worker', 'vector' clauses with arguments only allowed in
+	'kernels' regions.
+
+2020-11-03  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/96789
+	* function.h (struct function): New member unsigned pending_TODOs.
+	* passes.c (class pass_pre_slp_scalar_cleanup): New class.
+	(make_pass_pre_slp_scalar_cleanup): New function.
+	(pass_data_pre_slp_scalar_cleanup): New pass data.
+	* passes.def: (pass_pre_slp_scalar_cleanup): New pass, add
+	pass_fre and pass_dse as its children.
+	* timevar.def (TV_SCALAR_CLEANUP): New timevar.
+	* tree-pass.h (PENDING_TODO_force_next_scalar_cleanup): New
+	pending TODO flag.
+	(make_pass_pre_slp_scalar_cleanup): New declare.
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely_1):
+	Once any outermost loop gets unrolled, flag cfun pending_TODOs
+	PENDING_TODO_force_next_scalar_cleanup on.
+
 2020-11-03  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (vget_lo_half): New entry.

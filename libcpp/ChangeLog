@@ -1,3 +1,28 @@
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (cpp_peek_token): Do not peek past CPP_PRAGMA.
+	(_cpp_lex_direct): Handle EOF in pragma when setting need_line,
+	not when needing a line.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (_cpp_clean_line): Fix DOS off-by-one error.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* init.c (cpp_read_main_file): Use cpp_get_deps result.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* include/mkdeps.h: Include cpplib.h
+	(deps_write): Adjust first parm type.
+	* mkdeps.c: Include internal.h
+	(make_write): Adjust first parm type.  Check phony option
+	directly.
+	(deps_write): Adjust first parm type.
+	* init.c (cpp_read_main_file): Use get_deps.
+	* directives.c (cpp_get_deps): Check option before initializing.
+
 2020-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	* internal.h (_cpp_notify_macro_use): Add location parm.
