@@ -447,15 +447,22 @@ package body Exp_Fixd is
      (N       : Node_Id;
       X, Y, Z : Node_Id) return Node_Id
    is
+      X_Size : constant Nat := UI_To_Int (RM_Size (Etype (X)));
       Y_Size : constant Nat := UI_To_Int (RM_Size (Etype (Y)));
       Z_Size : constant Nat := UI_To_Int (RM_Size (Etype (Z)));
+      D_Size : constant Nat := Y_Size + Z_Size;
+      M_Size : constant Nat := Nat'Max (X_Size, Nat'Max (Y_Size, Z_Size));
       Expr   : Node_Id;
 
    begin
       --  If the denominator fits in Max_Integer_Size bits, we can build the
-      --  operations directly without causing any intermediate overflow.
+      --  operations directly without causing any intermediate overflow. But
+      --  for backward compatibility reasons, we use a 128-bit divide only
+      --  if one of the operands is already larger than 64 bits.
 
-      if Y_Size + Z_Size <= System_Max_Integer_Size then
+      if D_Size <= System_Max_Integer_Size
+        and then (D_Size <= 64 or else M_Size > 64)
+      then
          return Build_Divide (N, X, Build_Multiply (N, Y, Z));
 
       --  Otherwise we use the runtime routine
@@ -518,6 +525,7 @@ package body Exp_Fixd is
       X_Size : constant Nat := UI_To_Int (RM_Size (Etype (X)));
       Y_Size : constant Nat := UI_To_Int (RM_Size (Etype (Y)));
       Z_Size : constant Nat := UI_To_Int (RM_Size (Etype (Z)));
+      M_Size : constant Nat := Nat'Max (X_Size, Nat'Max (Y_Size, Z_Size));
 
       QR_Id  : RE_Id;
       QR_Siz : Nat;
@@ -546,16 +554,16 @@ package body Exp_Fixd is
          QR_Typ := Standard_Integer_64;
          QR_Id  := RE_Null;
 
-      elsif QR_Siz <= 128 and then System_Max_Integer_Size = 128 then
-         QR_Typ := Standard_Integer_128;
-         QR_Id  := RE_Null;
+      --  For backward compatibility reasons, we use a 128-bit divide only
+      --  if one of the operands is already larger than 64 bits.
 
-      --  For more than Max_Integer_Size bits, we use the integer defined in
-      --  Interfaces, so that it can be handled by the runtime routine.
-
-      elsif System_Max_Integer_Size < 128 then
+      elsif System_Max_Integer_Size < 128 or else M_Size <= 64 then
          QR_Typ := RTE (RE_Integer_64);
          QR_Id  := RE_Double_Divide64;
+
+      elsif QR_Siz <= 128 then
+         QR_Typ := Standard_Integer_128;
+         QR_Id  := RE_Null;
 
       else
          QR_Typ := RTE (RE_Integer_128);
@@ -571,9 +579,9 @@ package body Exp_Fixd is
       Set_Etype (Qnn, QR_Typ);
       Set_Etype (Rnn, QR_Typ);
 
-      --  Case that we can compute the denominator in Max_Integer_Size bits
+      --  Case where we can compute the denominator in Max_Integer_Size bits
 
-      if QR_Siz <= System_Max_Integer_Size then
+      if QR_Id = RE_Null then
 
          --  Create temporaries for numerator and denominator and set Etypes,
          --  so that New_Occurrence_Of picks them up for Build_xxx calls.
@@ -829,13 +837,20 @@ package body Exp_Fixd is
    is
       X_Size : constant Nat := UI_To_Int (RM_Size (Etype (X)));
       Y_Size : constant Nat := UI_To_Int (RM_Size (Etype (Y)));
+      Z_Size : constant Nat := UI_To_Int (RM_Size (Etype (Z)));
+      N_Size : constant Nat := X_Size + Y_Size;
+      M_Size : constant Nat := Nat'Max (X_Size, Nat'Max (Y_Size, Z_Size));
       Expr   : Node_Id;
 
    begin
       --  If the numerator fits in Max_Integer_Size bits, we can build the
-      --  operations directly without causing any intermediate overflow.
+      --  operations directly without causing any intermediate overflow. But
+      --  for backward compatibility reasons, we use a 128-bit divide only
+      --  if one of the operands is already larger than 64 bits.
 
-      if X_Size + Y_Size <= System_Max_Integer_Size then
+      if N_Size <= System_Max_Integer_Size
+        and then (N_Size <= 64 or else M_Size > 64)
+      then
          return Build_Divide (N, Build_Multiply (N, X, Y), Z);
 
       --  Otherwise we use the runtime routine
@@ -895,6 +910,7 @@ package body Exp_Fixd is
       X_Size : constant Nat := UI_To_Int (RM_Size (Etype (X)));
       Y_Size : constant Nat := UI_To_Int (RM_Size (Etype (Y)));
       Z_Size : constant Nat := UI_To_Int (RM_Size (Etype (Z)));
+      M_Size : constant Nat := Nat'Max (X_Size, Nat'Max (Y_Size, Z_Size));
 
       QR_Id  : RE_Id;
       QR_Siz : Nat;
@@ -923,16 +939,16 @@ package body Exp_Fixd is
          QR_Typ := Standard_Integer_64;
          QR_Id  := RE_Null;
 
-      elsif QR_Siz <= 128 and then System_Max_Integer_Size = 128 then
-         QR_Typ := Standard_Integer_128;
-         QR_Id  := RE_Null;
+      --  For backward compatibility reasons, we use a 128-bit divide only
+      --  if one of the operands is already larger than 64 bits.
 
-      --  For more than Max_Integer_Size bits, we use the integer defined in
-      --  Interfaces, so that it can be handled by the runtime routine.
-
-      elsif System_Max_Integer_Size < 128 then
+      elsif System_Max_Integer_Size < 128 or else M_Size <= 64 then
          QR_Typ := RTE (RE_Integer_64);
          QR_Id  := RE_Scaled_Divide64;
+
+      elsif QR_Siz <= 128 then
+         QR_Typ := Standard_Integer_128;
+         QR_Id  := RE_Null;
 
       else
          QR_Typ := RTE (RE_Integer_128);
@@ -948,9 +964,9 @@ package body Exp_Fixd is
       Set_Etype (Qnn, QR_Typ);
       Set_Etype (Rnn, QR_Typ);
 
-      --  Case that we can compute the numerator in Max_Integer_Size bits
+      --  Case where we can compute the numerator in Max_Integer_Size bits
 
-      if QR_Siz <= System_Max_Integer_Size then
+      if QR_Id = RE_Null then
          Nnn := Make_Temporary (Loc, 'N');
          Dnn := Make_Temporary (Loc, 'D');
 
