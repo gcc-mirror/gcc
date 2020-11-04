@@ -976,7 +976,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       explicit
       basic_stringstream(__string_type&& __str,
-	                 ios_base::openmode __mode = ios_base::out
+	                 ios_base::openmode __mode = ios_base::in
 						     | ios_base::out)
       : __iostream_type(), _M_stringbuf(std::move(__str), __mode)
       { this->init(std::__addressof(_M_stringbuf)); }
