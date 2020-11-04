@@ -2289,13 +2289,36 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    for (c = cclauses[i]; c; c = OMP_CLAUSE_CHAIN (c))
 	      switch (OMP_CLAUSE_CODE (c))
 		{
+		case OMP_CLAUSE_REDUCTION:
+		case OMP_CLAUSE_IN_REDUCTION:
+		case OMP_CLAUSE_TASK_REDUCTION:
+		  if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF)
+		    {
+		      tree t = TREE_OPERAND (OMP_CLAUSE_DECL (c), 0);
+		      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+			t = TREE_OPERAND (t, 0);
+		      if (TREE_CODE (t) == ADDR_EXPR
+			  || TREE_CODE (t) == INDIRECT_REF)
+			t = TREE_OPERAND (t, 0);
+		      if (DECL_P (t))
+			bitmap_clear_bit (&allocate_head, DECL_UID (t));
+		      break;
+		    }
+		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST)
+		    {
+		      tree t;
+		      for (t = OMP_CLAUSE_DECL (c);
+			   TREE_CODE (t) == TREE_LIST; t = TREE_CHAIN (t))
+			;
+		      if (DECL_P (t))
+			bitmap_clear_bit (&allocate_head, DECL_UID (t));
+		      break;
+		    }
+		  /* FALLTHRU */
 		case OMP_CLAUSE_PRIVATE:
 		case OMP_CLAUSE_FIRSTPRIVATE:
 		case OMP_CLAUSE_LASTPRIVATE:
 		case OMP_CLAUSE_LINEAR:
-		case OMP_CLAUSE_REDUCTION:
-		case OMP_CLAUSE_IN_REDUCTION:
-		case OMP_CLAUSE_TASK_REDUCTION:
 		  if (DECL_P (OMP_CLAUSE_DECL (c)))
 		    bitmap_clear_bit (&allocate_head,
 				      DECL_UID (OMP_CLAUSE_DECL (c)));

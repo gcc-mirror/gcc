@@ -15153,13 +15153,26 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	if (allocate_seen)
 	  switch (OMP_CLAUSE_CODE (c))
 	    {
+	    case OMP_CLAUSE_REDUCTION:
+	    case OMP_CLAUSE_IN_REDUCTION:
+	    case OMP_CLAUSE_TASK_REDUCTION:
+	      if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF)
+		{
+		  t = TREE_OPERAND (OMP_CLAUSE_DECL (c), 0);
+		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		    t = TREE_OPERAND (t, 0);
+		  if (TREE_CODE (t) == ADDR_EXPR
+		      || TREE_CODE (t) == INDIRECT_REF)
+		    t = TREE_OPERAND (t, 0);
+		  if (DECL_P (t))
+		    bitmap_clear_bit (&aligned_head, DECL_UID (t));
+		  break;
+		}
+	      /* FALLTHRU */
 	    case OMP_CLAUSE_PRIVATE:
 	    case OMP_CLAUSE_FIRSTPRIVATE:
 	    case OMP_CLAUSE_LASTPRIVATE:
 	    case OMP_CLAUSE_LINEAR:
-	    case OMP_CLAUSE_REDUCTION:
-	    case OMP_CLAUSE_IN_REDUCTION:
-	    case OMP_CLAUSE_TASK_REDUCTION:
 	      if (DECL_P (OMP_CLAUSE_DECL (c)))
 		bitmap_clear_bit (&aligned_head,
 				  DECL_UID (OMP_CLAUSE_DECL (c)));
