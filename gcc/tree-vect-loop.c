@@ -7548,7 +7548,7 @@ vectorizable_lc_phi (loop_vec_info loop_vinfo,
 bool
 vectorizable_phi (vec_info *,
 		  stmt_vec_info stmt_info, gimple **vec_stmt,
-		  slp_tree slp_node)
+		  slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   if (!is_a <gphi *> (stmt_info->stmt) || !slp_node)
     return false;
@@ -7577,6 +7577,8 @@ vectorizable_phi (vec_info *,
 			       "incompatible vector types for invariants\n");
 	    return false;
 	  }
+      record_stmt_cost (cost_vec, SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+			vector_stmt, stmt_info, vectype, 0, vect_body);
       STMT_VINFO_TYPE (stmt_info) = phi_info_type;
       return true;
     }

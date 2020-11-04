@@ -1940,7 +1940,8 @@ extern bool vect_transform_cycle_phi (loop_vec_info, stmt_vec_info,
 				      slp_tree, slp_instance);
 extern bool vectorizable_lc_phi (loop_vec_info, stmt_vec_info,
 				 gimple **, slp_tree);
-extern bool vectorizable_phi (vec_info *, stmt_vec_info, gimple **, slp_tree);
+extern bool vectorizable_phi (vec_info *, stmt_vec_info, gimple **, slp_tree,
+			      stmt_vector_for_cost *);
 extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,
