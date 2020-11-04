@@ -34052,6 +34052,10 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
 	    enum rid keyword;
 	    if (token->type == CPP_NAME)
 	      keyword = C_RID_CODE (token->u.value);
+	    else if (token->type == CPP_KEYWORD
+		     && token->keyword == RID_CLASS)
+	      /* Account for accepting the 'class' keyword in this context.  */
+	      keyword = RID_CLASS;
 	    else
 	      keyword = RID_MAX; /* By definition, an unknown property.  */
 	    cp_lexer_consume_token (parser->lexer);

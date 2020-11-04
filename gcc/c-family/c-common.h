@@ -275,9 +275,11 @@ enum rid
   ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PQ && \
    (unsigned int) (rid) <= (unsigned int) RID_LAST_PQ)
 
+/* Keywords permitted in an @property attribute context.  */
 #define OBJC_IS_PATTR_KEYWORD(rid) \
-  ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PATTR && \
-   (unsigned int) (rid) <= (unsigned int) RID_LAST_PATTR)
+  ((((unsigned int) (rid) >= (unsigned int) RID_FIRST_PATTR && \
+     (unsigned int) (rid) <= (unsigned int) RID_LAST_PATTR)) \
+   || rid == RID_CLASS)
 
 /* OBJC_IS_CXX_KEYWORD recognizes the 'CXX_OBJC' keywords (such as
    'class') which are shared in a subtle way between Objective-C and

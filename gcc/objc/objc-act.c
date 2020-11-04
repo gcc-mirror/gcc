@@ -825,6 +825,7 @@ objc_prop_attr_kind_for_rid (enum rid prop_rid)
       case RID_PROPATOMIC:	return OBJC_PROPERTY_ATTR_ATOMIC;
       case RID_NONATOMIC:	return OBJC_PROPERTY_ATTR_NONATOMIC;
 
+      case RID_CLASS:		return OBJC_PROPERTY_ATTR_CLASS;
     }
 }
 
@@ -985,6 +986,14 @@ objc_add_property_declaration (location_t location, tree decl,
       else
 	gcc_unreachable ();
     }
+
+  /* An attribute that indicates this property manipulates a class variable.
+     In this case, both the variable and the getter/setter must be provided
+     by the user.  */
+  bool property_class = false;
+  if (attrs[OBJC_PROPATTR_GROUP_CLASS])
+    property_nonatomic = attrs[OBJC_PROPATTR_GROUP_CLASS]->prop_kind
+			 == OBJC_PROPERTY_ATTR_CLASS;
 
   /* TODO: Check that the property type is an Objective-C object or a
      "POD".  */
@@ -1273,6 +1282,7 @@ objc_add_property_declaration (location_t location, tree decl,
   PROPERTY_SETTER_NAME (property_decl) = property_setter_ident;
   PROPERTY_READONLY (property_decl) = property_readonly;
   PROPERTY_NONATOMIC (property_decl) = property_nonatomic;
+  PROPERTY_CLASS (property_decl) = property_class;
   PROPERTY_ASSIGN_SEMANTICS (property_decl) = property_assign_semantics;
   PROPERTY_IVAR_NAME (property_decl) = NULL_TREE;
   PROPERTY_DYNAMIC (property_decl) = 0;
