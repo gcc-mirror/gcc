@@ -1,5 +1,8 @@
 2020-11-04  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/builtin-3_[ab].C: Adjust for i686
+
 	gcc/cp/
 	* mapper-resolved.cc: define INCLUDE_ALGORITHM.
 
