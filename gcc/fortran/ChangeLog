@@ -1,3 +1,26 @@
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* cpp.c (gfc_cpp_add_dep): Only add dependency if we're recording
+	them.
+	(gfc_cpp_init): Likewise for target.
+
+2020-11-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* decl.c (ext_attr_list): Add EXT_ATTR_DEPRECATED.
+	* gfortran.h (ext_attr_id_t): Ditto.
+	* gfortran.texi (GCC$ ATTRIBUTES): Document it.
+	* resolve.c (resolve_variable, resolve_function,
+	resolve_call, resolve_values): Show -Wdeprecated-declarations warning.
+	* trans-decl.c (add_attributes_to_decl): Skip those
+	with no middle_end_name.
+
+2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/92793
+	* trans-openmp.c (gfc_trans_omp_clauses): More precise location
+	information for OpenACC 'gang', 'worker', 'vector' clauses with
+	argument.
+
 2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR fortran/92793

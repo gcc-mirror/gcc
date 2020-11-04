@@ -4092,9 +4092,6 @@ ix86_libcall_value (machine_mode mode)
 static bool
 ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-#ifdef SUBTARGET_RETURN_IN_MEMORY
-  return SUBTARGET_RETURN_IN_MEMORY (type, fntype);
-#else
   const machine_mode mode = type_natural_mode (type, NULL, true);
   HOST_WIDE_INT size;
 
@@ -4175,7 +4172,6 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
       return false;
     }
-#endif
 }
 
 

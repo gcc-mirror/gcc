@@ -1,3 +1,11 @@
+2020-11-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_email.py: Add unidiff_supports_renaming check.
+
+2020-11-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/setup.cfg: New file.
+
 2020-10-30  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Handle empty groups in

@@ -4950,7 +4950,8 @@ c_parser_std_attribute (c_parser *parser, bool for_tm)
 	     && attribute_takes_identifier_p (name));
 	bool require_string
 	  = (ns == NULL_TREE
-	     && strcmp (IDENTIFIER_POINTER (name), "deprecated") == 0);
+	     && (strcmp (IDENTIFIER_POINTER (name), "deprecated") == 0
+		 || strcmp (IDENTIFIER_POINTER (name), "nodiscard") == 0));
 	TREE_VALUE (attribute)
 	  = c_parser_attribute_arguments (parser, takes_identifier,
 					  require_string, false);
@@ -4960,13 +4961,12 @@ c_parser_std_attribute (c_parser *parser, bool for_tm)
     parens.require_close (parser);
   }
  out:
-  if (ns == NULL_TREE && !for_tm && !as && !is_attribute_p ("nodiscard", name))
+  if (ns == NULL_TREE && !for_tm && !as)
     {
       /* An attribute with standard syntax and no namespace specified
 	 is a constraint violation if it is not one of the known
-	 standard attributes (of which nodiscard is the only one
-	 without a handler in GCC).  Diagnose it here with a pedwarn
-	 and then discard it to prevent a duplicate warning later.  */
+	 standard attributes.  Diagnose it here with a pedwarn and
+	 then discard it to prevent a duplicate warning later.  */
       pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
 	       name);
       return error_mark_node;

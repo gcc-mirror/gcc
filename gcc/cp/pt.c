@@ -22699,8 +22699,20 @@ get_template_base (tree tparms, tree targs, tree parm, tree arg,
 	     applies.  */
 	  if (rval && !same_type_p (r, rval))
 	    {
-	      *result = NULL_TREE;
-	      return tbr_ambiguous_baseclass;
+	      /* [temp.deduct.call]/4.3: If there is a class C that is a
+		 (direct or indirect) base class of D and derived (directly or
+		 indirectly) from a class B and that would be a valid deduced
+		 A, the deduced A cannot be B or pointer to B, respectively. */
+	      if (DERIVED_FROM_P (r, rval))
+		/* Ignore r.  */
+		continue;
+	      else if (DERIVED_FROM_P (rval, r))
+		/* Ignore rval.  */;
+	      else
+		{
+		  *result = NULL_TREE;
+		  return tbr_ambiguous_baseclass;
+		}
 	    }
 
 	  rval = r;

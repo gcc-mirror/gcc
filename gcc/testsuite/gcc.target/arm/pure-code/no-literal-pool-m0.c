@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-mpure-code -mcpu=cortex-m0 -march=armv6s-m -mthumb" } */
+/* { dg-skip-if "skip override" { *-*-* } { "-mfloat-abi=hard" } { "" } } */
+/* { dg-options "-mpure-code -mcpu=cortex-m0 -march=armv6s-m -mthumb -mfloat-abi=soft" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 /* Does not use thumb1_gen_const_int.

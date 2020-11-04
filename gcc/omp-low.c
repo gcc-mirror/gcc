@@ -2443,7 +2443,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 			  "argument not permitted on %qs clause",
 			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		if (tgt)
-		  inform (gimple_location (outer_ctx->stmt),
+		  inform (gimple_location (tgt->stmt),
 			  "enclosing parent compute construct");
 		else if (oacc_get_fn_attrib (current_function_decl))
 		  inform (DECL_SOURCE_LOCATION (current_function_decl),

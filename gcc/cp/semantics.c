@@ -8190,17 +8190,11 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	}
 
       t = OMP_CLAUSE_DECL (c);
-      if (processing_template_decl
-	  && !VAR_P (t) && TREE_CODE (t) != PARM_DECL)
-	{
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
-	}
-
       switch (c_kind)
 	{
 	case OMP_CLAUSE_LASTPRIVATE:
-	  if (!bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
+	  if (DECL_P (t)
+	      && !bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
 	    {
 	      need_default_ctor = true;
 	      need_dtor = true;
@@ -8210,6 +8204,34 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_REDUCTION:
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
+	  if (allocate_seen)
+	    {
+	      if (TREE_CODE (t) == MEM_REF)
+		{
+		  t = TREE_OPERAND (t, 0);
+		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		    t = TREE_OPERAND (t, 0);
+		  if (TREE_CODE (t) == ADDR_EXPR
+		      || TREE_CODE (t) == INDIRECT_REF)
+		    t = TREE_OPERAND (t, 0);
+		  if (DECL_P (t))
+		    bitmap_clear_bit (&aligned_head, DECL_UID (t));
+		}
+	      else if (TREE_CODE (t) == TREE_LIST)
+		{
+		  while (TREE_CODE (t) == TREE_LIST)
+		    t = TREE_CHAIN (t);
+		  if (DECL_P (t))
+		    bitmap_clear_bit (&aligned_head, DECL_UID (t));
+		  t = OMP_CLAUSE_DECL (c);
+		}
+	      else if (DECL_P (t))
+		bitmap_clear_bit (&aligned_head, DECL_UID (t));
+	      t = OMP_CLAUSE_DECL (c);
+	    }
+	  if (processing_template_decl
+	      && !VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	    break;
 	  if (finish_omp_reduction_clause (c, &need_default_ctor,
 					   &need_dtor))
 	    remove = true;
@@ -8218,6 +8240,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_COPYIN:
+	  if (processing_template_decl
+	      && !VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	    break;
 	  if (!VAR_P (t) || !CP_DECL_THREAD_LOCAL_P (t))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
@@ -8228,6 +8253,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	default:
 	  break;
+	}
+
+      if (processing_template_decl
+	  && !VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+	{
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
 	}
 
       if (need_complete_type || need_copy_assignment)
@@ -8247,8 +8279,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  if (allocate_seen
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_SHARED
 	      && DECL_P (t))
-	    bitmap_clear_bit (&aligned_head,
-			      DECL_UID (OMP_CLAUSE_DECL (c)));
+	    bitmap_clear_bit (&aligned_head, DECL_UID (t));
 	    
 	  if (VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	    share_name = "threadprivate";
@@ -8349,6 +8380,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	bool remove = false;
 	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE
 	    && !OMP_CLAUSE_ALLOCATE_COMBINED (c)
+	    && DECL_P (OMP_CLAUSE_DECL (c))
 	    && bitmap_bit_p (&aligned_head, DECL_UID (OMP_CLAUSE_DECL (c))))
 	  {
 	    error_at (OMP_CLAUSE_LOCATION (c),

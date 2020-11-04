@@ -478,6 +478,140 @@ ssa_global_cache::dump (FILE *f)
 
 // --------------------------------------------------------------------------
 
+
+// This struct provides a timestamp for a global range calculation.
+// it contains the time counter, as well as a limited number of ssa-names
+// that it is dependent upon.  If the timestamp for any of the dependent names
+// Are newer, then this range could need updating.
+
+struct range_timestamp
+{
+  unsigned time;
+  unsigned ssa1;
+  unsigned ssa2;
+};
+
+// This class will manage the timestamps for each ssa_name.
+// When a value is calcualted, its timestamp is set to the current time.
+// The ssanames it is dependent on have already been calculated, so they will
+// have older times.  If one fo those values is ever calculated again, it
+// will get a newer timestamp, and the "current_p" check will fail.
+
+class temporal_cache
+{
+public:
+  temporal_cache ();
+  ~temporal_cache ();
+  bool current_p (tree name) const;
+  void set_timestamp (tree name);
+  void set_dependency (tree name, tree dep);
+  void set_always_current (tree name);
+private:
+  unsigned temporal_value (unsigned ssa) const;
+  const range_timestamp *get_timestamp (unsigned ssa) const;
+  range_timestamp *get_timestamp (unsigned ssa);
+
+  unsigned m_current_time;
+  vec <range_timestamp> m_timestamp;
+};
+
+
+inline
+temporal_cache::temporal_cache ()
+{
+  m_current_time = 1;
+  m_timestamp.create (0);
+  m_timestamp.safe_grow_cleared (num_ssa_names);
+}
+
+inline
+temporal_cache::~temporal_cache ()
+{
+  m_timestamp.release ();
+}
+
+// Return a pointer to the timetamp for ssa-name at index SSA, if there is
+// one, otherwise return NULL.
+
+inline const range_timestamp *
+temporal_cache::get_timestamp (unsigned ssa) const
+{
+  if (ssa >= m_timestamp.length ())
+    return NULL;
+  return &(m_timestamp[ssa]);
+}
+
+// Return a reference to the timetamp for ssa-name at index SSA.  If the index
+// is past the end of the vector, extend the vector.
+
+inline range_timestamp *
+temporal_cache::get_timestamp (unsigned ssa)
+{
+  if (ssa >= m_timestamp.length ())
+    m_timestamp.safe_grow_cleared (num_ssa_names + 20);
+  return &(m_timestamp[ssa]);
+}
+
+// This routine will fill NAME's next operand slot with DEP if DEP is a valid
+// SSA_NAME and there is a free slot.
+
+inline void
+temporal_cache::set_dependency (tree name, tree dep)
+{
+  if (dep && TREE_CODE (dep) == SSA_NAME)
+    {
+      gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
+      range_timestamp& ts = *(get_timestamp (SSA_NAME_VERSION (name)));
+      if (!ts.ssa1)
+	ts.ssa1 = SSA_NAME_VERSION (dep);
+      else if (!ts.ssa2 && ts.ssa1 != SSA_NAME_VERSION (name))
+	ts.ssa2 = SSA_NAME_VERSION (dep);
+    }
+}
+
+// Return the timestamp value for SSA, or 0 if there isnt one.
+inline unsigned
+temporal_cache::temporal_value (unsigned ssa) const
+{
+  const range_timestamp *ts = get_timestamp (ssa);
+  return ts ? ts->time : 0;
+}
+
+// Return TRUE if the timestampe for NAME is newer than any of its dependents.
+
+bool
+temporal_cache::current_p (tree name) const
+{
+  const range_timestamp *ts = get_timestamp (SSA_NAME_VERSION (name));
+  if (!ts || ts->time == 0)
+    return true;
+  // Any non-registered dependencies will have a value of 0 and thus be older.
+  // Return true if time is newer than either dependent.
+  return ts->time > temporal_value (ts->ssa1)
+	 && ts->time > temporal_value (ts->ssa2);
+}
+
+// This increments the global timer and sets the timestamp for NAME.
+
+inline void
+temporal_cache::set_timestamp (tree name)
+{
+  gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
+  get_timestamp (SSA_NAME_VERSION (name))->time = ++m_current_time;
+}
+
+// Set the timestamp to 0, marking it as "always up to date".
+
+inline void
+temporal_cache::set_always_current (tree name)
+{
+  gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
+  get_timestamp (SSA_NAME_VERSION (name))->time = 0;
+}
+
+
+// --------------------------------------------------------------------------
+
 ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
 {
   m_workback.create (0);
@@ -488,10 +622,12 @@ ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
   m_poor_value_list.create (0);
   m_poor_value_list.safe_grow_cleared (20);
   m_poor_value_list.truncate (0);
+  m_temporal = new temporal_cache;
 }
 
 ranger_cache::~ranger_cache ()
 {
+  delete m_temporal;
   m_poor_value_list.release ();
   m_workback.release ();
   m_update_list.release ();
@@ -529,6 +665,32 @@ ranger_cache::get_global_range (irange &r, tree name) const
   return m_globals.get_global_range (r, name);
 }
 
+// Get the global range for NAME, and return in R if the value is not stale.
+// If the range is set, but is stale, mark it current and return false.
+// If it is not set pick up the legacy global value, mark it current, and
+// return false.
+// Note there is always a value returned in R. The return value indicates
+// whether that value is an up-to-date calculated value or not..
+
+bool
+ranger_cache::get_non_stale_global_range (irange &r, tree name)
+{
+  if (m_globals.get_global_range (r, name))
+    {
+      if (m_temporal->current_p (name))
+	return true;
+    }
+  else
+    {
+      // Global has never been accessed, so pickup the legacy global value.
+      r = gimple_range_global (name);
+      m_globals.set_global_range (name, r);
+    }
+  // After a stale check failure, mark the value as always current until a
+  // new one is set.
+  m_temporal->set_always_current (name);
+  return false;
+}
 //  Set the global range of NAME to R.
 
 void
@@ -546,6 +708,18 @@ ranger_cache::set_global_range (tree name, const irange &r)
 
       propagate_updated_value (name, bb);
     }
+  // Mark the value as up-to-date.
+  m_temporal->set_timestamp (name);
+}
+
+// Register a dependency on DEP to name.  If the timestamp for DEP is ever
+// greateer than the timestamp for NAME, then it is newer and NAMEs value
+// becomes stale.
+
+void
+ranger_cache::register_dependency (tree name, tree dep)
+{
+  m_temporal->set_dependency (name, dep);
 }
 
 // Push a request for a new lookup in block BB of name.  Return true if

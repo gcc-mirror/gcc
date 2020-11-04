@@ -1428,8 +1428,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 
   /* If the SLP node is a PHI (induction or reduction), terminate
      the recursion.  */
-  bool *skip_args = XALLOCAVEC (bool, sizeof (bool) * nops);
-  memset (skip_args, 0, nops);
+  bool *skip_args = XALLOCAVEC (bool, nops);
+  memset (skip_args, 0, sizeof (bool) * nops);
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
       {

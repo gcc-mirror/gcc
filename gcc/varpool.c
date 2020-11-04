@@ -186,7 +186,7 @@ varpool_node::remove (void)
 	   && !ctor_useable_for_folding_p ())
     remove_initializer ();
 
-  unregister ();
+  unregister (NULL);
   ggc_free (this);
 }
 

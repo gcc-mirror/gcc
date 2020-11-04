@@ -415,11 +415,19 @@ bool
 gimple_ranger::range_of_range_op (irange &r, gimple *s)
 {
   int_range_max range1, range2;
+  tree lhs = gimple_get_lhs (s);
   tree type = gimple_expr_type (s);
   gcc_checking_assert (irange::supports_type_p (type));
 
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
+
+  if (lhs)
+    {
+      // Register potential dependencies for stale value tracking.
+      m_cache.register_dependency (lhs, op1);
+      m_cache.register_dependency (lhs, op2);
+    }
 
   if (range_of_non_trivial_assignment (r, s))
     return true;
@@ -500,6 +508,9 @@ gimple_ranger::range_of_phi (irange &r, gphi *phi)
     {
       tree arg = gimple_phi_arg_def (phi, x);
       edge e = gimple_phi_arg_edge (phi, x);
+
+      // Register potential dependencies for stale value tracking.
+      m_cache.register_dependency (phi_def, arg);
 
       range_on_edge (arg_range, e, arg);
       r.union_ (arg_range);
@@ -1009,18 +1020,12 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   if (!gimple_range_ssa_p (name))
     return false;
 
-  // If this STMT has already been processed, return that value.
-  if (m_cache.get_global_range (r, name))
+  // Check if the stmt has already been processed, and is not stale.
+  if (m_cache.get_non_stale_global_range (r, name))
     return true;
 
-  // Avoid infinite recursion by initializing global cache
-  int_range_max tmp = gimple_range_global (name);
-  m_cache.set_global_range (name, tmp);
-
+  // Otherwise calculate a new value and save it.
   calc_stmt (r, s, name);
-
-  if (is_a<gphi *> (s))
-    r.intersect (tmp);
   m_cache.set_global_range (name, r);
   return true;
 }

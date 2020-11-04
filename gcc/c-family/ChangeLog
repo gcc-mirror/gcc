@@ -1,3 +1,7 @@
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (MQ,MT): Reword description to be make-agnostic.
+
 2020-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	* c-opts.c (c_common_post_options): Move var decl to its

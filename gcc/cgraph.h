@@ -631,7 +631,7 @@ protected:
 
   /* Remove node from symbol table.  This function is not used directly, but via
      cgraph/varpool node removal routines.  */
-  void unregister (void);
+  void unregister (struct clone_info *);
 
   /* Return the initialization and finalization priority information for
      DECL.  If there is no previous priority information, a freshly
@@ -949,7 +949,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* cgraph node being removed from symbol table; see if its entry can be
    replaced by other inline clone.  */
-  cgraph_node *find_replacement (void);
+  cgraph_node *find_replacement (struct clone_info *);
 
   /* Create a new cgraph node which is the new version of
      callgraph node.  REDIRECT_CALLERS holds the callers

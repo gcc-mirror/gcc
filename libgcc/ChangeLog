@@ -1,3 +1,14 @@
+2020-11-03  Pat Bernardi  <bernardi@adacore.com>
+	    Olivier Hainque   <hainque@adacore.com>
+
+	* config.host (aarch64-vxworks7*, tmake_file): Add
+	${cpu_type}/t-lse and t-slibgcc-libgcc.
+
+2020-11-03  Martin Storsjö  <martin@martin.st>
+
+	* unwind-seh.c (_Unwind_Backtrace): Set the ra and cfa pointers
+	before calling the callback.
+
 2020-10-30  Olivier Hainque  <hainque@adacore.com>
 	    Douglas Rupp  <rupp@adacore.com>
 	    Pat Bernardi  <bernardi@adacore.com>

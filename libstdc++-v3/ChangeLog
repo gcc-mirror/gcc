@@ -1,3 +1,60 @@
+2020-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/syncstream: Include <bits/std_mutex.h>
+	unconditionally.
+
+2020-11-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver:
+	Add __istream_extract and _Safe_local_iterator_base::_M_attach_single
+	symbols.
+
+2020-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/mutex.cc [_GLIBCXX_HAVE_TLS] (__once_proxy): Define
+	separately for TLS targets.
+	[!_GLIBCXX_HAVE_TLS] (__get_once_functor_lock_ptr): Replace with ...
+	(set_lock_ptr): ... this. Set new value and return previous
+	value.
+	[!_GLIBCXX_HAVE_TLS] (__set_once_functor_lock_ptr): Adjust to
+	use set_lock_ptr.
+	[!_GLIBCXX_HAVE_TLS] (__once_proxy): Likewise.
+
+2020-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/55394
+	PR libstdc++/66146
+	PR libstdc++/84323
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Add new symbols.
+	* include/std/mutex [!_GLIBCXX_HAS_GTHREADS] (once_flag): Define
+	even when gthreads is not supported.
+	(once_flag::_M_once) [_GLIBCXX_HAVE_LINUX_FUTEX]: Change type
+	from __gthread_once_t to int.
+	(once_flag::_M_passive(), once_flag::_M_activate())
+	(once_flag::_M_finish(bool), once_flag::_Active_execution):
+	Define new members for futex and non-threaded implementation.
+	[_GLIBCXX_HAS_GTHREADS] (once_flag::_Prepare_execution): New
+	RAII helper type.
+	(call_once): Use new members of once_flag.
+	* src/c++11/mutex.cc (std::once_flag::_M_activate): Define.
+	(std::once_flag::_M_finish): Define.
+	* testsuite/30_threads/call_once/39909.cc: Do not require
+	gthreads.
+	* testsuite/30_threads/call_once/49668.cc: Likewise.
+	* testsuite/30_threads/call_once/60497.cc: Likewise.
+	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
+	* testsuite/30_threads/call_once/dr2442.cc: Likewise.
+	* testsuite/30_threads/call_once/once_flag.cc: Add test for
+	constexpr constructor.
+	* testsuite/30_threads/call_once/66146.cc: New test.
+	* testsuite/30_threads/call_once/constexpr.cc: Removed.
+	* testsuite/30_threads/once_flag/cons/constexpr.cc: Removed.
+
+2020-11-03  Jonathan Yong  <10walls@gmail.com>
+
+	* src/Makefile.am (libstdc___la_LINK): Add lt_host_flags.
+	* src/Makefile.in: Regenerate.
+
 2020-11-02  Thomas Rodgers  <trodgers@redhat.com>
 
 	* doc/doxygen/user.cfg.in (INPUT): Add new header.

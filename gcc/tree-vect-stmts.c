@@ -10727,7 +10727,7 @@ vect_analyze_stmt (vec_info *vinfo,
 					 NULL, NULL, node, cost_vec)
 	      || vectorizable_comparison (vinfo, stmt_info, NULL, NULL, node,
 					  cost_vec)
-	      || vectorizable_phi (vinfo, stmt_info, NULL, node));
+	      || vectorizable_phi (vinfo, stmt_info, NULL, node, cost_vec));
     }
 
   if (!ok)
@@ -10868,7 +10868,7 @@ vect_transform_stmt (vec_info *vinfo,
       break;
 
     case phi_info_type:
-      done = vectorizable_phi (vinfo, stmt_info, &vec_stmt, slp_node);
+      done = vectorizable_phi (vinfo, stmt_info, &vec_stmt, slp_node, NULL);
       gcc_assert (done);
       break;
 

@@ -239,7 +239,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
-  if (info->param_adjustments)
+  if (info && info->param_adjustments)
     clone_info::get_create (new_thunk)->param_adjustments
 	   = info->param_adjustments;
   new_thunk->unit_id = thunk->unit_id;
@@ -648,9 +648,10 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 }
 
 /* callgraph node being removed from symbol table; see if its entry can be
-   replaced by other inline clone.  */
+   replaced by other inline clone. 
+   INFO is clone info to attach to the new root.  */
 cgraph_node *
-cgraph_node::find_replacement (void)
+cgraph_node::find_replacement (clone_info *info)
 {
   cgraph_node *next_inline_clone, *replacement;
 
@@ -690,7 +691,6 @@ cgraph_node::find_replacement (void)
       clones = NULL;
 
       /* Copy clone info.  */
-      clone_info *info = clone_info::get (this);
       if (info)
 	*clone_info::get_create (next_inline_clone) = *info;
 

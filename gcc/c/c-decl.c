@@ -4400,6 +4400,31 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 }
 
 
+/* Handle the standard [[nodiscard]] attribute.  */
+
+static tree
+handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
+			    int /*flags*/, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
+	warning_at (DECL_SOURCE_LOCATION (*node),
+		    OPT_Wattributes, "%qE attribute applied to %qD with void "
+		    "return type", name, *node);
+    }
+  else if (RECORD_OR_UNION_TYPE_P (*node)
+	   || TREE_CODE (*node) == ENUMERAL_TYPE)
+    /* OK */;
+  else
+    {
+      pedwarn (input_location,
+	       OPT_Wattributes, "%qE attribute can only be applied to "
+	       "functions or to structure, union or enumeration types", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
 /* Table of supported standard (C2x) attributes.  */
 const struct attribute_spec std_attribute_table[] =
 {
@@ -4411,6 +4436,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_fallthrough_attribute, NULL },
   { "maybe_unused", 0, 0, false, false, false, false,
     handle_unused_attribute, NULL },
+  { "nodiscard", 0, 1, false, false, false, false,
+    handle_nodiscard_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
