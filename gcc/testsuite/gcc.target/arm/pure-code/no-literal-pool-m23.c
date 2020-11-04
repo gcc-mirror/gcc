@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-mpure-code -mcpu=cortex-m23 -march=armv8-m.base -mthumb" } */
+/* { dg-skip-if "skip override" { *-*-* } { "-mfloat-abi=hard" } { "" } } */
+/* { dg-options "-mpure-code -mcpu=cortex-m23 -march=armv8-m.base -mthumb -mfloat-abi=soft" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 /*
