@@ -1,3 +1,8 @@
+2020-11-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* mapper-resolved.cc: define INCLUDE_ALGORITHM.
+
 2020-11-03  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk a52bf016433
