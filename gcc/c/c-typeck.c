@@ -5490,6 +5490,82 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
   return ret;
 }
 
+/* EXPR is an expression, location LOC, whose result is discarded.
+   Warn if it is a call to a nodiscard function (or a COMPOUND_EXPR
+   whose right-hand operand is such a call, possibly recursively).  */
+
+static void
+maybe_warn_nodiscard (location_t loc, tree expr)
+{
+  if (VOID_TYPE_P (TREE_TYPE (expr)))
+    return;
+  while (TREE_CODE (expr) == COMPOUND_EXPR)
+    {
+      expr = TREE_OPERAND (expr, 1);
+      if (EXPR_HAS_LOCATION (expr))
+	loc = EXPR_LOCATION (expr);
+    }
+  if (TREE_CODE (expr) != CALL_EXPR)
+    return;
+  tree fn = CALL_EXPR_FN (expr);
+  if (!fn)
+    return;
+  tree attr;
+  if (TREE_CODE (fn) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
+      && (attr = lookup_attribute ("nodiscard",
+				   DECL_ATTRIBUTES (TREE_OPERAND (fn, 0)))))
+    {
+      fn = TREE_OPERAND (fn, 0);
+      tree args = TREE_VALUE (attr);
+      if (args)
+	args = TREE_VALUE (args);
+      auto_diagnostic_group d;
+      int warned;
+      if (args)
+	warned = warning_at (loc, OPT_Wunused_result,
+			     "ignoring return value of %qD, declared with "
+			     "attribute %<nodiscard%>: %E", fn, args);
+      else
+	warned = warning_at (loc, OPT_Wunused_result,
+			     "ignoring return value of %qD, declared with "
+			     "attribute %<nodiscard%>", fn);
+      if (warned)
+	inform (DECL_SOURCE_LOCATION (fn), "declared here");
+    }
+  else
+    {
+      tree rettype = TREE_TYPE (TREE_TYPE (TREE_TYPE (fn)));
+      attr = lookup_attribute ("nodiscard", TYPE_ATTRIBUTES (rettype));
+      if (!attr)
+	return;
+      tree args = TREE_VALUE (attr);
+      if (args)
+	args = TREE_VALUE (args);
+      auto_diagnostic_group d;
+      int warned;
+      if (args)
+	warned = warning_at (loc, OPT_Wunused_result,
+			     "ignoring return value of type %qT, declared "
+			     "with attribute %<nodiscard%>: %E",
+			     rettype, args);
+      else
+	warned = warning_at (loc, OPT_Wunused_result,
+			     "ignoring return value of type %qT, declared "
+			     "with attribute %<nodiscard%>", rettype);
+      if (warned)
+	{
+	  if (TREE_CODE (fn) == ADDR_EXPR)
+	    {
+	      fn = TREE_OPERAND (fn, 0);
+	      if (TREE_CODE (fn) == FUNCTION_DECL)
+		inform (DECL_SOURCE_LOCATION (fn),
+			"in call to %qD, declared here", fn);
+	    }
+	}
+    }
+}
+
 /* Return a compound expression that performs two expressions and
    returns the value of the second of them.
 
@@ -5560,6 +5636,8 @@ build_compound_expr (location_t loc, tree expr1, tree expr2)
      so we should issue a warning.  */
   else if (warn_unused_value)
     warn_if_unused_value (expr1, loc);
+
+  maybe_warn_nodiscard (loc, expr1);
 
   if (expr2 == error_mark_node)
     return error_mark_node;
@@ -11072,6 +11150,9 @@ c_finish_bc_stmt (location_t loc, tree label, bool is_break)
 static void
 emit_side_effect_warnings (location_t loc, tree expr)
 {
+  maybe_warn_nodiscard (loc, expr);
+  if (!warn_unused_value)
+    return;
   if (expr == error_mark_node)
     ;
   else if (!TREE_SIDE_EFFECTS (expr))
@@ -11127,7 +11208,7 @@ c_process_expr_stmt (location_t loc, tree expr)
      Warnings for statement expressions will be emitted later, once we figure
      out which is the result.  */
   if (!STATEMENT_LIST_STMT_EXPR (cur_stmt_list)
-      && warn_unused_value)
+      && (warn_unused_value || warn_unused_result))
     emit_side_effect_warnings (EXPR_LOC_OR_LOC (expr, loc), expr);
 
   exprv = expr;
@@ -11221,7 +11302,7 @@ c_finish_stmt_expr (location_t loc, tree body)
 
       /* If we're supposed to generate side effects warnings, process
 	 all of the statements except the last.  */
-      if (warn_unused_value)
+      if (warn_unused_value || warn_unused_result)
 	{
 	  for (tree_stmt_iterator i = tsi_start (last);
 	       tsi_stmt (i) != tsi_stmt (l); tsi_next (&i))
