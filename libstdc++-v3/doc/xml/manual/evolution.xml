@@ -973,6 +973,15 @@ now defaults to zero.
 </para>
 
 <para>
+  The type of the <classname>std::iterator</classname> base class of
+  <classname>std::istreambuf_iterator</classname> was changed to be
+  consistent for all <option>-std</option> modes.
+  Before GCC 10.1 the base class had one type in C++98 mode and a
+  different type in C++11 and later modes. The type in C++98 mode
+  was changed to be the same as for C++11 and later.
+</para>
+
+<para>
   Experimental C++2a support improved, with new headers
   <filename class="headerfile">&lt;concepts&gt;</filename>,
   <filename class="headerfile">&lt;ranges&gt;</filename>,
