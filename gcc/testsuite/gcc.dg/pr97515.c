@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fdump-tree-evrp" } */
 
 int
 e7 (int gg)
@@ -19,3 +19,7 @@ e7 (int gg)
 
   return xe;
 }
+
+/* EVRP should be able to reduce this to a single goto.  */
+ 
+/* { dg-final { scan-tree-dump-times "goto" 1 "evrp" } } */
