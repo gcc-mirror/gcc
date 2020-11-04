@@ -7874,8 +7874,16 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       if (nested_in_vect_loop)
 	nivs = nvects;
       else
-	nivs = least_common_multiple (group_size,
-				      const_nunits) / const_nunits;
+	{
+	  /* Compute the number of distinct IVs we need.  First reduce
+	     group_size if it is a multiple of const_nunits so we get
+	     one IV for a group_size of 4 but const_nunits 2.  */
+	  unsigned group_sizep = group_size;
+	  if (group_sizep % const_nunits == 0)
+	    group_sizep = group_sizep / const_nunits;
+	  nivs = least_common_multiple (group_sizep,
+					const_nunits) / const_nunits;
+	}
       tree stept = TREE_TYPE (step_vectype);
       tree lupdate_mul = NULL_TREE;
       if (!nested_in_vect_loop)
@@ -7974,6 +7982,15 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
 
 	  SLP_TREE_VEC_STMTS (slp_node).quick_push (induction_phi);
+	}
+      if (!nested_in_vect_loop)
+	{
+	  /* Fill up to the number of vectors we need for the whole group.  */
+	  nivs = least_common_multiple (group_size,
+					const_nunits) / const_nunits;
+	  for (; ivn < nivs; ++ivn)
+	    SLP_TREE_VEC_STMTS (slp_node)
+	      .quick_push (SLP_TREE_VEC_STMTS (slp_node)[0]);
 	}
 
       /* Re-use IVs when we can.  We are generating further vector
