@@ -864,6 +864,7 @@ tree_code_size (enum tree_code code)
 	case BOOLEAN_TYPE:
 	case INTEGER_TYPE:
 	case REAL_TYPE:
+	case OPAQUE_TYPE:
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
 	case NULLPTR_TYPE:

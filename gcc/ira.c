@@ -4666,7 +4666,9 @@ find_moveable_pseudos (void)
 		|| !DF_REF_INSN_INFO (def)
 		|| HARD_REGISTER_NUM_P (regno)
 		|| DF_REG_EQ_USE_COUNT (regno) > 0
-		|| (!INTEGRAL_MODE_P (mode) && !FLOAT_MODE_P (mode)))
+		|| (!INTEGRAL_MODE_P (mode)
+		    && !FLOAT_MODE_P (mode)
+		    && !OPAQUE_MODE_P (mode)))
 	      continue;
 	    def_insn = DF_REF_INSN (def);
 

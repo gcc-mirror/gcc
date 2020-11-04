@@ -36,4 +36,5 @@ along with GCC; see the file COPYING3.  If not see
   DEF_MODE_CLASS (MODE_VECTOR_UFRACT),	/* SIMD vectors */		   \
   DEF_MODE_CLASS (MODE_VECTOR_ACCUM),	/* SIMD vectors */		   \
   DEF_MODE_CLASS (MODE_VECTOR_UACCUM),	/* SIMD vectors */		   \
-  DEF_MODE_CLASS (MODE_VECTOR_FLOAT)
+  DEF_MODE_CLASS (MODE_VECTOR_FLOAT),                                      \
+  DEF_MODE_CLASS (MODE_OPAQUE)          /* opaque modes */
