@@ -2263,54 +2263,6 @@ vect_build_slp_instance (vec_info *vinfo,
 			     "SLP size %u vs. limit %u.\n",
 			     tree_size, max_tree_size);
 
-	  /* Check whether any load is possibly permuted.  */
-	  slp_tree load_node;
-	  bool loads_permuted = false;
-	  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (new_instance), i, load_node)
-	    {
-	      if (!SLP_TREE_LOAD_PERMUTATION (load_node).exists ())
-		continue;
-	      unsigned j;
-	      stmt_vec_info load_info;
-	      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load_info)
-		if (SLP_TREE_LOAD_PERMUTATION (load_node)[j] != j)
-		  {
-		    loads_permuted = true;
-		    break;
-		  }
-	    }
-
-	  /* If the loads and stores can be handled with load/store-lane
-	     instructions do not generate this SLP instance.  */
-	  if (is_a <loop_vec_info> (vinfo)
-	      && loads_permuted
-	      && kind == slp_inst_kind_store
-	      && vect_store_lanes_supported
-		   (STMT_VINFO_VECTYPE (scalar_stmts[0]), group_size, false))
-	    {
-	      slp_tree load_node;
-	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (new_instance), i, load_node)
-		{
-		  stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
-		      (SLP_TREE_SCALAR_STMTS (load_node)[0]);
-		  /* Use SLP for strided accesses (or if we can't load-lanes).  */
-		  if (STMT_VINFO_STRIDED_P (stmt_vinfo)
-		      || ! vect_load_lanes_supported
-		      (STMT_VINFO_VECTYPE (stmt_vinfo),
-		       DR_GROUP_SIZE (stmt_vinfo), false))
-		    break;
-		}
-	      if (i == SLP_INSTANCE_LOADS (new_instance).length ())
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Built SLP cancelled: can use "
-				     "load/store-lanes\n");
-		  vect_free_slp_instance (new_instance);
-		  return false;
-		}
-	    }
-
 	  /* Fixup SLP reduction chains.  */
 	  if (kind == slp_inst_kind_reduc_chain)
 	    {

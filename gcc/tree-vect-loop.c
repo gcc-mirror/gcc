@@ -2365,6 +2365,78 @@ start_over:
 				       "unsupported SLP instances\n");
 	  goto again;
 	}
+
+      /* Check whether any load in ALL SLP instances is possibly permuted.  */
+      slp_tree load_node, slp_root;
+      unsigned i, x;
+      slp_instance instance;
+      bool can_use_lanes = true;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), x, instance)
+	{
+	  slp_root = SLP_INSTANCE_TREE (instance);
+	  int group_size = SLP_TREE_LANES (slp_root);
+	  tree vectype = SLP_TREE_VECTYPE (slp_root);
+	  bool loads_permuted = false;
+	  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
+	    {
+	      if (!SLP_TREE_LOAD_PERMUTATION (load_node).exists ())
+		continue;
+	      unsigned j;
+	      stmt_vec_info load_info;
+	      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load_info)
+		if (SLP_TREE_LOAD_PERMUTATION (load_node)[j] != j)
+		  {
+		    loads_permuted = true;
+		    break;
+		  }
+	    }
+
+	  /* If the loads and stores can be handled with load/store-lane
+	     instructions record it and move on to the next instance.  */
+	  if (loads_permuted
+	      && vect_store_lanes_supported (vectype, group_size, false))
+	    {
+	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
+		{
+		  stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
+		      (SLP_TREE_SCALAR_STMTS (load_node)[0]);
+		  /* Use SLP for strided accesses (or if we can't
+		     load-lanes).  */
+		  if (STMT_VINFO_STRIDED_P (stmt_vinfo)
+		      || ! vect_load_lanes_supported
+			    (STMT_VINFO_VECTYPE (stmt_vinfo),
+			     DR_GROUP_SIZE (stmt_vinfo), false))
+		    break;
+		}
+
+	      can_use_lanes
+		= can_use_lanes && i == SLP_INSTANCE_LOADS (instance).length ();
+
+	      if (can_use_lanes && dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "SLP instance %p can use load/store-lanes\n",
+				 instance);
+	    }
+	  else
+	    {
+	      can_use_lanes = false;
+	      break;
+	    }
+	}
+
+      /* If all SLP instances can use load/store-lanes abort SLP and try again
+	 with SLP disabled.  */
+      if (can_use_lanes)
+	{
+	  ok = opt_result::failure_at (vect_location,
+				       "Built SLP cancelled: can use "
+				       "load/store-lanes\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Built SLP cancelled: all SLP instances support "
+			     "load/store-lanes\n");
+	  goto again;
+	}
     }
 
   /* Dissolve SLP-only groups.  */
