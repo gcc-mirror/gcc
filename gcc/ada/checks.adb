@@ -10585,10 +10585,10 @@ package body Checks is
    begin
       --  Checks will be applied only when generating code. In GNATprove mode,
       --  we do not apply the checks, but we still call Selected_Range_Checks
-      --  to possibly issue errors on SPARK code when a run-time error can be
-      --  detected at compile time.
+      --  outside of generics to possibly issue errors on SPARK code when a
+      --  run-time error can be detected at compile time.
 
-      if not Expander_Active and not GNATprove_Mode then
+      if Inside_A_Generic or (not GNATprove_Mode and not Expander_Active) then
          return Ret_Result;
       end if;
 
