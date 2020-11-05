@@ -12903,30 +12903,31 @@ package body Sem_Prag is
 
          --  ASSERTION_KIND ::= RM_ASSERTION_KIND | ID_ASSERTION_KIND
 
-         --  RM_ASSERTION_KIND ::= Assert               |
-         --                        Static_Predicate     |
-         --                        Dynamic_Predicate    |
-         --                        Pre                  |
-         --                        Pre'Class            |
-         --                        Post                 |
-         --                        Post'Class           |
-         --                        Type_Invariant       |
-         --                        Type_Invariant'Class
+         --  RM_ASSERTION_KIND ::= Assert                     |
+         --                        Static_Predicate           |
+         --                        Dynamic_Predicate          |
+         --                        Pre                        |
+         --                        Pre'Class                  |
+         --                        Post                       |
+         --                        Post'Class                 |
+         --                        Type_Invariant             |
+         --                        Type_Invariant'Class       |
+         --                        Default_Initial_Condition
 
-         --  ID_ASSERTION_KIND ::= Assert_And_Cut            |
-         --                        Assume                    |
-         --                        Contract_Cases            |
-         --                        Debug                     |
-         --                        Default_Initial_Condition |
-         --                        Ghost                     |
-         --                        Initial_Condition         |
-         --                        Loop_Invariant            |
-         --                        Loop_Variant              |
-         --                        Postcondition             |
-         --                        Precondition              |
-         --                        Predicate                 |
-         --                        Refined_Post              |
-         --                        Statement_Assertions
+         --  ID_ASSERTION_KIND ::= Assert_And_Cut       |
+         --                        Assume               |
+         --                        Contract_Cases       |
+         --                        Debug                |
+         --                        Ghost                |
+         --                        Initial_Condition    |
+         --                        Loop_Invariant       |
+         --                        Loop_Variant         |
+         --                        Postcondition        |
+         --                        Precondition         |
+         --                        Predicate            |
+         --                        Refined_Post         |
+         --                        Statement_Assertions |
+         --                        Subprogram_Variant
 
          --  Note: The RM_ASSERTION_KIND list is language-defined, and the
          --  ID_ASSERTION_KIND list contains implementation-defined additions
