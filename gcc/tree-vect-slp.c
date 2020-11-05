@@ -2941,6 +2941,18 @@ vect_optimize_slp (vec_info *vinfo)
 	    /* For loads simply drop the permutation, the load permutation
 	       already performs the desired permutation.  */
 	    ;
+	  else if (SLP_TREE_LANE_PERMUTATION (node).exists ())
+	    {
+	      /* If the node if already a permute node we just need to apply
+		 the permutation to the permute node itself.  */
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "simplifying permute node %p\n",
+				 node);
+
+	      vect_slp_permute (perms[perm], SLP_TREE_LANE_PERMUTATION (node),
+				true);
+	    }
 	  else
 	    {
 	      if (dump_enabled_p ())
@@ -5152,7 +5164,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "permutation requires at "
-			     "least three vectors");
+			     "least three vectors\n");
 	  gcc_assert (!gsi);
 	  return false;
 	}
