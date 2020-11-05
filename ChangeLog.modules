@@ -1,6 +1,18 @@
 2020-11-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::fini_partial_redirect): Delete.
+	(depset::hash::add_partial_redirect): Delete.
+	(depset::hash::init_partial_redirect): Delete.
+	(enum merge_kind): Delete MK_tmpl_partial_mask,
+	MK_type_partial_spec.
+	(trees_out::get_merge_kind): Adjust.
+	(trees_{in,out}::key_mergeable): Delete tmpl_partial case.
+	(depset::hash::make_dependency): Directly create the redirect here.
+	(depset::hash::add_specializations): Do not detect partial
+	specializations here.
+
+	gcc/cp/
 	* module.cc (enum depset::entity_kind): Add EK_PARTIAL,
 	EK_DIRECT_HWM.
 	(enum depset::disc_bits): Delete DB_PARTIAL_BIT.

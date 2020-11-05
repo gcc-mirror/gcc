@@ -2426,13 +2426,6 @@ public:
   }
 
 public:
-  void fini_partial_redirect (depset *partial)
-  {
-    gcc_checking_assert (partial->get_entity_kind () == EK_PARTIAL);
-    deps.safe_push (partial);
-  }
-
-public:
   /* Traits for a hash table of pointers to bindings.  */
   struct traits {
     /* Each entry is a pointer to a depset. */
@@ -2539,8 +2532,6 @@ public:
     void add_namespace_context (depset *, tree ns);
 
   private:
-    depset *add_partial_redirect (depset *partial);
-    depset *init_partial_redirect (tree inner);
     static bool add_binding_entity (tree, WMB_Flags, void *);
 
   public:
@@ -2875,17 +2866,15 @@ enum merge_kind
      primary template and specialization args.  */
   MK_template_mask = 0x10,  /* A template specialization.  */
 
+  // FIXME: We might be able to clean up a bit more
   MK_tmpl_decl_mask = 0x8, /* In decl table (not a type specialization).  */
 
-  /* Following bit has meaning dependent on MK_tmpl_decl_mask. */
   MK_tmpl_alias_mask = 0x2, /* An alias specialization (in both).  */
-  MK_tmpl_partial_mask = 0x2, /* A partial type specialization.  */
   
   MK_tmpl_tmpl_mask = 0x1, /* We want TEMPLATE_DECL.  */
 
   MK_type_spec = MK_template_mask,
   MK_type_tmpl_spec = MK_type_spec | MK_tmpl_tmpl_mask,
-  MK_type_partial_spec = MK_type_tmpl_spec | MK_tmpl_partial_mask,
 
   MK_decl_spec = MK_template_mask | MK_tmpl_decl_mask,
   MK_decl_tmpl_spec = MK_decl_spec | MK_tmpl_tmpl_mask,
@@ -10273,8 +10262,6 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 		 streaming.  */
 	      mk = merge_kind (mk | MK_tmpl_tmpl_mask);
 	  }
-	else
-	  gcc_checking_assert (mk != MK_type_partial_spec);
       }
       break;
     }
@@ -10373,18 +10360,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    {
 	      if (!(mk & MK_tmpl_tmpl_mask))
 		existing = TYPE_NAME (existing);
-	      else if (mk & MK_tmpl_partial_mask)
-		{
-		  /* A partial specialization.  */
-		  for (tree partial
-			 = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
-		       partial; partial = TREE_CHAIN (partial))
-		    if (TREE_TYPE (partial) == existing)
-		      {
-			existing = TREE_VALUE (partial);
-			break;
-		      }
-		}
 	      else
 		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
 		  existing = TI_TEMPLATE (ti);
@@ -10730,25 +10705,12 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	  /* A type specialization.  */
 	  if (!(mk & MK_tmpl_tmpl_mask))
 	    existing = TYPE_NAME (existing);
-	  else if (mk & MK_tmpl_partial_mask)
+	  else if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
 	    {
-	      /* A partial specialization.  */
-	      for (tree partial = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
-		   partial; partial = TREE_CHAIN (partial))
-		if (TREE_TYPE (partial) == existing)
-		  {
-		    existing = TREE_VALUE (partial);
-		    break;
-		  }
-	      gcc_assert (TREE_CODE (existing) == TEMPLATE_DECL);
+	      tree tmpl = TI_TEMPLATE (ti);
+	      if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
+		existing = tmpl;
 	    }
-	  else
-	    if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
-	      {
-		tree tmpl = TI_TEMPLATE (ti);
-		if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
-		  existing = tmpl;
-	      }
 	}
     }
   else if (mk == MK_unique)
@@ -12474,13 +12436,17 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	      /* Eagerly create an empty redirect.  The following
 	         make_dependency call could cause hash reallocation,
 	         and invalidate slot's value.  */
-	      depset *redirect = init_partial_redirect (decl);
+	      depset *redirect = make_entity (decl, EK_REDIRECT);
+
+	      /* Redirects are never reached -- always snap to their target.  */
+	      redirect->set_flag_bit<DB_UNREACHED_BIT> ();
+
 	      *slot = redirect;
 
 	      depset *tmpl_dep = make_dependency (partial, EK_PARTIAL);
-
 	      gcc_checking_assert (tmpl_dep->get_entity_kind () == EK_PARTIAL);
-	      redirect->fini_partial_redirect (tmpl_dep);
+
+	      redirect->deps.safe_push (tmpl_dep);
 
 	      return redirect;
 	    }
@@ -12914,37 +12880,6 @@ specialization_cmp (const void *a_, const void *b_)
   return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
 }
 
-depset *
-depset::hash::init_partial_redirect (tree inner)
-{
-  depset *redirect = make_entity (inner, EK_REDIRECT);
-
-  /* Redirects are never reached -- always snap to their target.  */
-  redirect->set_flag_bit<DB_UNREACHED_BIT> ();
-
-  return redirect;
-}
-
-/* Insert a redirect for the DECL_TEMPLATE_RESULT of a partial
-   specialization, as we're unable to go from there to here (without
-   repeating the DECL_TEMPLATE_SPECIALIZATIONS walk for *every*
-   dependency add.  */
-
-depset *
-depset::hash::add_partial_redirect (depset *partial)
-{
-  tree inner = DECL_TEMPLATE_RESULT (partial->get_entity ());
-  depset *redirect = init_partial_redirect (inner);
-
-  depset **slot = entity_slot (inner, true);
-  gcc_checking_assert (!*slot);
-  *slot = redirect;
-
-  redirect->fini_partial_redirect (partial);
-
-  return redirect;
-}
-
 /* We add all kinds of specialializations.  Implicit specializations
    should only streamed and walked if they are reachable from
    elsewhere.  Hence the UNREACHED flag.  This is making the
@@ -12965,7 +12900,6 @@ depset::hash::add_specializations (bool decl_p)
     {
       spec_entry *entry = data.pop ();
       tree spec = entry->spec;
-      bool is_partial = false;
       int use_tpl = 0;
       bool is_alias = false;
       bool is_friend = false;
@@ -13023,37 +12957,16 @@ depset::hash::add_specializations (bool decl_p)
 		use_tpl = DECL_USE_TEMPLATE (ctx);
 	    }
 	  else
+	    use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
+
+	  tree ti = TYPE_TEMPLATE_INFO (spec);
+	  tree tmpl = TI_TEMPLATE (ti);
+
+	  spec = TYPE_NAME (spec);
+	  if (spec == DECL_TEMPLATE_RESULT (tmpl))
 	    {
-	      use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
-
-	      tree partial = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
-	      for (; partial; partial = TREE_CHAIN (partial))
-		if (TREE_TYPE (partial) == spec)
-		  break;
-
-	      if (partial)
-		{
-		  gcc_checking_assert (use_tpl == 2);
-		  gcc_checking_assert (entry->args == TREE_PURPOSE (partial));
-		  is_partial = true;
-		  /* Get the TEMPLATE_DECL for the partial
-		     specialization.  */
-		  spec = TREE_VALUE (partial);
-		  gcc_assert (DECL_USE_TEMPLATE (spec) == use_tpl);
-		}
-	    }
-
-	  if (!is_partial)
-	    {
-	      tree ti = TYPE_TEMPLATE_INFO (spec);
-	      tree tmpl = TI_TEMPLATE (ti);
-
-	      spec = TYPE_NAME (spec);
-	      if (spec == DECL_TEMPLATE_RESULT (tmpl))
-		{
-		  spec = tmpl;
-		  use_tpl = DECL_USE_TEMPLATE (spec);
-		}
+	      spec = tmpl;
+	      use_tpl = DECL_USE_TEMPLATE (spec);
 	    }
 	}
 
@@ -13083,9 +12996,7 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
-      // FIXME: Use make_dependency's EK_PARTIAL detection
-      depset *dep = make_dependency (spec, (is_partial ? depset::EK_PARTIAL
-					    : depset::EK_SPECIALIZATION));
+      depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
       if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be the TYPE
@@ -13101,16 +13012,15 @@ depset::hash::add_specializations (bool decl_p)
       else
 	{
 	  gcc_checking_assert (decl_p || !is_alias);
-	  if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
+	  if (dep->get_entity_kind () == depset::EK_REDIRECT)
+	    dep = dep->deps[0];
+	  else if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
 	    {
 	      dep->set_special ();
 	      dep->deps.safe_push (reinterpret_cast<depset *> (entry));
-	      gcc_checking_assert (!is_partial);
 	      if (!decl_p)
 		dep->set_flag_bit<DB_TYPE_SPEC_BIT> ();
 	    }
-	  else if (is_partial)
-	    add_partial_redirect (dep);
 
 	  if (needs_reaching)
 	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
