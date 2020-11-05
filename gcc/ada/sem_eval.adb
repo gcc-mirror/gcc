@@ -4805,6 +4805,8 @@ package body Sem_Eval is
          end if;
       end Check_Elab_Call;
 
+      Modulus : Uint;
+
    begin
       if Compile_Time_Known_Value (Left)
         and then Compile_Time_Known_Value (Right)
@@ -4835,19 +4837,34 @@ package body Sem_Eval is
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
 
-            --  Fold Shift_Right (X, Y) by computing abs X / 2**Y
+            --  X >> 0 is a no-op
 
-            Fold_Uint
-              (N,
-               abs Expr_Value (Left) / (Uint_2 ** Expr_Value (Right)),
-               Static => Static);
+            if Expr_Value (Right) = Uint_0 then
+               Fold_Uint (N, Expr_Value (Left), Static => Static);
+            else
+               if Is_Modular_Integer_Type (Typ) then
+                  Modulus := Einfo.Modulus (Typ);
+               else
+                  Modulus := Uint_2 ** RM_Size (Typ);
+               end if;
 
+               --  Fold X >> Y by computing (X [+ Modulus]) / 2**Y
+               --  Note that after a Shift_Right operation (with Y > 0), the
+               --  result is always positive, even if the original operand was
+               --  negative.
+
+               Fold_Uint
+                 (N,
+                  (Expr_Value (Left) +
+                     (if Expr_Value (Left) >= Uint_0 then Uint_0 else Modulus))
+                  / (Uint_2 ** Expr_Value (Right)),
+                  Static => Static);
+            end if;
          elsif Op = N_Op_Shift_Right_Arithmetic then
             Check_Elab_Call;
 
             declare
                Two_Y   : constant Uint := Uint_2 ** Expr_Value (Right);
-               Modulus : Uint;
             begin
                if Is_Modular_Integer_Type (Typ) then
                   Modulus := Einfo.Modulus (Typ);
