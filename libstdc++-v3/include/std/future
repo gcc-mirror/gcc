@@ -709,7 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         _State_base::_S_check(_M_state);
         _Result_base& __res = _M_state->wait();
-        if (!(__res._M_error == 0))
+        if (!(__res._M_error == nullptr))
           rethrow_exception(__res._M_error);
         return static_cast<__result_type>(__res);
       }

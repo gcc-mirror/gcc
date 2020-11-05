@@ -39,6 +39,12 @@
 #include <typeinfo>
 #include <new>
 
+#ifdef _GLIBCXX_EH_PTR_COMPAT
+# define _GLIBCXX_EH_PTR_USED __attribute__((__used__))
+#else
+# define _GLIBCXX_EH_PTR_USED
+#endif
+
 extern "C++" {
 
 namespace std 
@@ -146,20 +152,17 @@ namespace std
       { return _M_exception_object; }
 #endif
 
-#ifdef _GLIBCXX_EH_PTR_COMPAT
-      friend bool
-      operator==(const exception_ptr&, const exception_ptr&)
-	_GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
-#elif __cpp_impl_three_way_comparison >= 201907L
+#if __cpp_impl_three_way_comparison >= 201907L \
+      && ! defined _GLIBCXX_EH_PTR_COMPAT
       friend bool
       operator==(const exception_ptr&, const exception_ptr&) noexcept = default;
 #else
-      friend bool
+      friend _GLIBCXX_EH_PTR_USED bool
       operator==(const exception_ptr& __x, const exception_ptr& __y)
       _GLIBCXX_USE_NOEXCEPT
       { return __x._M_exception_object == __y._M_exception_object; }
 
-      friend bool
+      friend _GLIBCXX_EH_PTR_USED bool
       operator!=(const exception_ptr& __x, const exception_ptr& __y)
       _GLIBCXX_USE_NOEXCEPT
       { return __x._M_exception_object != __y._M_exception_object; }
@@ -170,25 +173,30 @@ namespace std
 	__attribute__ ((__pure__));
     };
 
-#ifndef _GLIBCXX_EH_PTR_COMPAT
+    _GLIBCXX_EH_PTR_USED
+#ifndef  _GLIBCXX_EH_PTR_COMPAT
+    __attribute__((__always_inline__)) // XXX see PR 97729
     inline
 #endif
     exception_ptr::exception_ptr() _GLIBCXX_NOEXCEPT
     : _M_exception_object(0)
     { }
 
-#ifndef _GLIBCXX_EH_PTR_COMPAT
+    _GLIBCXX_EH_PTR_USED
+#ifndef  _GLIBCXX_EH_PTR_COMPAT
+    __attribute__((__always_inline__))
     inline
 #endif
-    exception_ptr::exception_ptr(const exception_ptr& __other)
-      _GLIBCXX_NOEXCEPT
+    exception_ptr::exception_ptr(const exception_ptr& __other) _GLIBCXX_NOEXCEPT
     : _M_exception_object(__other._M_exception_object)
     {
       if (_M_exception_object)
 	_M_addref();
     }
 
-#ifndef _GLIBCXX_EH_PTR_COMPAT
+    _GLIBCXX_EH_PTR_USED
+#ifndef  _GLIBCXX_EH_PTR_COMPAT
+    __attribute__((__always_inline__))
     inline
 #endif
     exception_ptr::~exception_ptr() _GLIBCXX_USE_NOEXCEPT
@@ -197,36 +205,22 @@ namespace std
 	_M_release();
     }
 
-#ifndef _GLIBCXX_EH_PTR_COMPAT
-    inline
-#endif
-    exception_ptr&
+    _GLIBCXX_EH_PTR_USED
+    inline exception_ptr&
     exception_ptr::operator=(const exception_ptr& __other) _GLIBCXX_USE_NOEXCEPT
     {
       exception_ptr(__other).swap(*this);
       return *this;
     }
 
-#ifndef _GLIBCXX_EH_PTR_COMPAT
-    inline
-#endif
-    void
+    _GLIBCXX_EH_PTR_USED
+    inline void
     exception_ptr::swap(exception_ptr &__other) _GLIBCXX_USE_NOEXCEPT
     {
       void *__tmp = _M_exception_object;
       _M_exception_object = __other._M_exception_object;
       __other._M_exception_object = __tmp;
     }
-
-#ifdef _GLIBCXX_EH_PTR_COMPAT
-    bool 
-    operator==(const exception_ptr&, const exception_ptr&)
-      _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
-
-    bool 
-    operator!=(const exception_ptr&, const exception_ptr&)
-      _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
-#endif
 
     /// @relates exception_ptr
     inline void
@@ -275,6 +269,8 @@ namespace std
       return exception_ptr();
 #endif
     }
+
+#undef _GLIBCXX_EH_PTR_USED
 
   // @} group exceptions
 } // namespace std
