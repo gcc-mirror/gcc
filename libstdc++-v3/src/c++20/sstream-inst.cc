@@ -43,7 +43,7 @@ template basic_stringbuf<char>::basic_stringbuf(basic_stringbuf&&,
 						const allocator_type&);
 template basic_stringbuf<char>::allocator_type
 basic_stringbuf<char>::get_allocator() const noexcept;
-template basic_stringbuf<char>::__sv_type
+template string_view
 basic_stringbuf<char>::view() const noexcept;
 
 template basic_istringstream<char>::basic_istringstream(ios_base::openmode,
@@ -68,8 +68,6 @@ template string_view
 basic_stringstream<char>::view() const noexcept;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-using wsv_type = basic_string_view<wchar_t>;
-
 template basic_stringbuf<wchar_t>::basic_stringbuf(const allocator_type&);
 template basic_stringbuf<wchar_t>::basic_stringbuf(ios_base::openmode,
 						   const allocator_type&);
@@ -80,7 +78,7 @@ template basic_stringbuf<wchar_t>::basic_stringbuf(basic_stringbuf&&,
 template basic_stringbuf<wchar_t>::allocator_type
 basic_stringbuf<wchar_t>::get_allocator() const noexcept;
 
-template basic_istringstream<wchar_t>::__stringbuf_type::__sv_type
+template wstring_view
 basic_stringbuf<wchar_t>::view() const noexcept;
 
 template basic_istringstream<wchar_t>::basic_istringstream(ios_base::openmode,

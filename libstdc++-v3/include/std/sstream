@@ -166,8 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-      using __sv_type = basic_string_view<char_type, traits_type>;
-
+      explicit
       basic_stringbuf(const allocator_type& __a)
       : basic_stringbuf(ios_base::in | std::ios_base::out, __a)
       { }
@@ -185,18 +184,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { _M_stringbuf_init(__mode); }
 
       template<typename _SAlloc>
-      basic_stringbuf(const basic_string<_CharT, _Traits, _SAlloc>& __s,
-		      const allocator_type& __a)
-      : basic_stringbuf(__s, ios_base::in | std::ios_base::out, __a)
-      { }
+	basic_stringbuf(const basic_string<_CharT, _Traits, _SAlloc>& __s,
+			const allocator_type& __a)
+	: basic_stringbuf(__s, ios_base::in | std::ios_base::out, __a)
+	{ }
 
       template<typename _SAlloc>
-      basic_stringbuf(const basic_string<_CharT, _Traits, _SAlloc>& __s,
-		      ios_base::openmode __mode,
-		      const allocator_type& __a)
-      : __streambuf_type(), _M_mode(__mode),
-      _M_string(static_cast<__sv_type>(__s), __a)
-      { }
+	basic_stringbuf(const basic_string<_CharT, _Traits, _SAlloc>& __s,
+			ios_base::openmode __mode,
+			const allocator_type& __a)
+	: __streambuf_type(), _M_mode(__mode),
+	  _M_string(__s.data(), __s.size(), __a)
+	{ _M_stringbuf_init(__mode); }
 
       template<typename _SAlloc>
 	explicit
@@ -258,9 +257,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-      __sv_type
+      basic_string_view<char_type, traits_type>
       view() const noexcept
       {
+	using __sv_type = basic_string_view<char_type, traits_type>;
+
 	if (this->pptr())
 	  {
 	    // The current egptr() may not be the actual string end.
@@ -598,9 +599,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	basic_istringstream(const basic_string<_CharT, _Traits, _SAlloc>& __str,
 			    ios_base::openmode __mode,
 			    const allocator_type& __a)
-	: __istream_type(),
-	_M_stringbuf(__string_type(__str.data(), __str.size()),
-		     __mode | ios_base::in, __a)
+	: __istream_type(), _M_stringbuf(__str, __mode | ios_base::in, __a)
 	{ this->init(std::__addressof(_M_stringbuf)); }
 
       template<typename _SAlloc>
@@ -796,9 +795,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	basic_ostringstream(const basic_string<_CharT, _Traits, _SAlloc>& __str,
 			    ios_base::openmode __mode,
 			    const allocator_type& __a)
-	: __ostream_type(),
-	_M_stringbuf(__string_type(__str.data(), __str.size()),
-		     __mode | ios_base::out, __a)
+	: __ostream_type(), _M_stringbuf(__str, __mode | ios_base::out, __a)
 	{ this->init(std::__addressof(_M_stringbuf)); }
 
       template<typename _SAlloc>
@@ -991,8 +988,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	basic_stringstream(const basic_string<_CharT, _Traits, _SAlloc>& __str,
 			   ios_base::openmode __mode,
 			   const allocator_type& __a)
-	: __iostream_type(),
-	_M_stringbuf(__string_type(__str.data(), __str.size()), __mode, __a)
+	: __iostream_type(), _M_stringbuf(__str, __mode, __a)
 	{ this->init(std::__addressof(_M_stringbuf)); }
 
       template<typename _SAlloc>
