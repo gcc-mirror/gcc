@@ -1,6 +1,24 @@
 2020-11-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum depset::entity_kind): Add EK_PARTIAL,
+	EK_DIRECT_HWM.
+	(enum depset::disc_bits): Delete DB_PARTIAL_BIT.
+	(depset::is_partial): Delete.
+	(depset::fini_partial_redirect): Assert EK_PARTIAL.
+	(depset::entity_kind_name): Add EK_PARTIAL.
+	(trees_out::decl_node): Adjust redirect asserts.
+	(trees_out::get_merge_kind): No partial template.
+	(depset::hash::make_dependency): Partials create EK_PARTIAL.
+	(depset::hash::add_partial_entities): Adjust,
+	(depset::hash::add_specializations): Adjust.
+	(depset::hash::add_mergeable): Adjust.
+	(sort_cluster, module_state::write_cluster): Likewise.
+	(module_state::write_{entities,pendings}): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-spec-5_a.C: Adjust scan.
+
+	gcc/cp/
 	* module.cc (depset::hash::add_partial_redirect): Break out
 	helpers ...
 	(depset::fini_partial_redirect): ... this and ...

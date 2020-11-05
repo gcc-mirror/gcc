@@ -204,6 +204,7 @@ Classes used:
 #error "This is not the version I was looking for."
 #endif
 
+// FIXME: Joseph pointed me at SOURCE_DATE_EPOCH via libcpp callback
 #define _DEFAULT_SOURCE 1 /* To get TZ field of struct tm, if available.  */
 #include "config.h"
 
@@ -2245,6 +2246,7 @@ public:
   {
     EK_DECL,		/* A decl.  */
     EK_SPECIALIZATION,  /* A specialization.  */
+    EK_PARTIAL,		/* A partial specialization.  */
     EK_USING,		/* A using declaration (at namespace scope).  */
     EK_NAMESPACE,	/* A namespace.  */
     EK_REDIRECT,	/* Redirect to a template_decl.  */
@@ -2253,6 +2255,7 @@ public:
     EK_FOR_BINDING,	/* A decl being inserted for a binding.  */
     EK_INNER_DECL,	/* A decl defined outside of it's imported
 			   context.  */
+    EK_DIRECT_HWM = EK_PARTIAL + 1,
 
     EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
   };
@@ -2277,8 +2280,6 @@ private:
     /* The following bits are not independent, but enumerating them is
        awkward.  */
     DB_ALIAS_TMPL_INST_BIT,	/* An alias template instantiation. */
-    DB_PARTIAL_BIT,		/* A partial instantiation or
-				   specialization.  */
     DB_ALIAS_SPEC_BIT,		/* Specialization of an alias template
 				   (in both spec tables).  */
     DB_TYPE_SPEC_BIT,		/* Specialization in the type table.
@@ -2371,10 +2372,6 @@ public:
   {
     return get_flag_bit<DB_UNREACHED_BIT> ();
   }
-  bool is_partial () const
-  {
-    return get_flag_bit<DB_PARTIAL_BIT> ();
-  }
   bool is_alias_tmpl_inst () const
   {
     return get_flag_bit<DB_ALIAS_TMPL_INST_BIT> ();
@@ -2431,7 +2428,7 @@ public:
 public:
   void fini_partial_redirect (depset *partial)
   {
-    partial->set_flag_bit<DB_PARTIAL_BIT> ();
+    gcc_checking_assert (partial->get_entity_kind () == EK_PARTIAL);
     deps.safe_push (partial);
   }
 
@@ -2599,7 +2596,8 @@ depset::entity_kind_name () const
 {
   /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"decl", "specialization", "using", "namespace", "redirect", "binding"};
+    {"decl", "specialization", "partial", "using",
+     "namespace", "redirect", "binding"};
   entity_kind kind = get_entity_kind ();
   gcc_checking_assert (kind < sizeof (names) / sizeof(names[0]));
   return names[kind];
@@ -8574,7 +8572,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
       /* The DECL_TEMPLATE_RESULT of a partial specialization.
 	 Write the partial specialization's template.  */
       depset *redirect = dep->deps[0];
-      gcc_checking_assert (redirect->is_partial ());
+      gcc_checking_assert (redirect->get_entity_kind () == depset::EK_PARTIAL);
       tpl = redirect->get_entity ();
       goto partial_template;
     }
@@ -10179,13 +10177,12 @@ trees_out::get_merge_kind (tree decl, depset *dep)
     default:
       gcc_unreachable ();
 
+    case depset::EK_PARTIAL:
+      mk = MK_partial;
+      break;
+
     case depset::EK_DECL:
       {
-	if (dep->is_partial ())
-	  {
-	    mk = MK_partial;
-	    break;
-	  }
 	tree ctx = CP_DECL_CONTEXT (decl);
 
 	switch (TREE_CODE (ctx))
@@ -10259,9 +10256,11 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	if (dep->is_friend_spec ())
 	  mk = MK_friend_spec;
 	else if (dep->is_type_spec ())
-	  mk = dep->is_partial () ? MK_type_partial_spec : MK_type_spec;
+	  mk = MK_type_spec;
+	else if (dep->is_alias ())
+	  mk = MK_alias_spec;
 	else
-	  mk = dep->is_alias () ? MK_alias_spec : MK_decl_spec;
+	  mk = MK_decl_spec;
 
 	if (TREE_CODE (decl) == TEMPLATE_DECL)
 	  {
@@ -12478,9 +12477,9 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	      depset *redirect = init_partial_redirect (decl);
 	      *slot = redirect;
 
-	      depset *tmpl_dep = make_dependency (partial, EK_DECL);
+	      depset *tmpl_dep = make_dependency (partial, EK_PARTIAL);
 
-	      gcc_checking_assert (tmpl_dep->get_entity_kind () == EK_DECL);
+	      gcc_checking_assert (tmpl_dep->get_entity_kind () == EK_PARTIAL);
 	      redirect->fini_partial_redirect (tmpl_dep);
 
 	      return redirect;
@@ -12827,7 +12826,8 @@ depset::hash::add_partial_entities (vec<tree, va_gc> *partial_classes)
       if (dep->get_entity_kind () == depset::EK_REDIRECT)
 	/* We should have recorded the template as a partial
 	   specialization.  */
-	gcc_checking_assert (dep->deps[0]->is_partial ());
+	gcc_checking_assert (dep->deps[0]->get_entity_kind ()
+			     == depset::EK_PARTIAL);
       else
 	/* It was an explicit specialization, not a partial one.  */
 	gcc_checking_assert (dep->get_entity_kind ()
@@ -13025,7 +13025,7 @@ depset::hash::add_specializations (bool decl_p)
 	  else
 	    {
 	      use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
-	      // FIXME: Do I need this?
+
 	      tree partial = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
 	      for (; partial; partial = TREE_CHAIN (partial))
 		if (TREE_TYPE (partial) == spec)
@@ -13083,7 +13083,9 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
-      depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
+      // FIXME: Use make_dependency's EK_PARTIAL detection
+      depset *dep = make_dependency (spec, (is_partial ? depset::EK_PARTIAL
+					    : depset::EK_SPECIALIZATION));
       if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be the TYPE
@@ -13103,11 +13105,13 @@ depset::hash::add_specializations (bool decl_p)
 	    {
 	      dep->set_special ();
 	      dep->deps.safe_push (reinterpret_cast<depset *> (entry));
-	      if (is_partial)
-		add_partial_redirect (dep);
+	      gcc_checking_assert (!is_partial);
 	      if (!decl_p)
 		dep->set_flag_bit<DB_TYPE_SPEC_BIT> ();
 	    }
+	  else if (is_partial)
+	    add_partial_redirect (dep);
+
 	  if (needs_reaching)
 	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
 	  if (is_friend)
@@ -13125,7 +13129,7 @@ depset::hash::add_mergeable (depset *mergeable)
   gcc_checking_assert (is_key_order ());
   entity_kind ek = mergeable->get_entity_kind ();
   tree decl = mergeable->get_entity ();
-  gcc_checking_assert (ek == EK_DECL || ek == EK_SPECIALIZATION);
+  gcc_checking_assert (ek < EK_DIRECT_HWM);
 
   depset **slot = entity_slot (decl, true);
   gcc_checking_assert (!*slot);
@@ -13212,8 +13216,6 @@ depset::hash::find_dependencies ()
 			depset *spec_dep = find_dependency (spec);
 			if (spec_dep->get_entity_kind () == EK_REDIRECT)
 			  spec_dep = spec_dep->deps[0];
-			gcc_checking_assert (spec_dep->get_entity_kind ()
-					     == EK_SPECIALIZATION);
 			if (spec_dep->is_unreached ())
 			  {
 			    reached_unreached = true;
@@ -13521,6 +13523,7 @@ sort_cluster (depset::hash *original, depset *scc[], unsigned size)
 
 	case depset::EK_DECL:
 	case depset::EK_SPECIALIZATION:
+	case depset::EK_PARTIAL:
 	  table.add_mergeable (dep);
 	  ix++;
 	  break;
@@ -14552,9 +14555,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_DECL:
-	  if (b->is_member () || b->is_partial ())
+	  if (b->is_member ())
 	    {
 	    case depset::EK_SPECIALIZATION:  /* Yowzer! */
+	    case depset::EK_PARTIAL:  /* Hey, let's do it again! */
 	      counts[MSC_pendings]++;
 	    }
 	  b->cluster = counts[MSC_entities]++;
@@ -14674,6 +14678,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
+	case depset::EK_PARTIAL:
 	case depset::EK_DECL:
 	  dump () && dump ("Depset:%u %s entity:%u %C:%N", ix,
 			   b->entity_kind_name (), b->cluster,
@@ -14701,6 +14706,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
+	case depset::EK_PARTIAL:
 	case depset::EK_DECL:
 	  if (!namer)
 	    namer = b;
@@ -15222,6 +15228,7 @@ module_state::write_entities (elf_out *to, vec<depset *> depsets,
 
 	case depset::EK_DECL:
 	case depset::EK_SPECIALIZATION:
+	case depset::EK_PARTIAL:
 	  gcc_checking_assert (!d->is_unreached ()
 			       && !d->is_import ()
 			       && d->cluster == current
@@ -15304,7 +15311,7 @@ module_state::write_pendings (elf_out *to, vec<depset *> depsets,
 	  is_spec = true;
 	  key = reinterpret_cast <spec_entry *> (d->deps[0])->tmpl;
 	}
-      else if (kind == depset::EK_DECL && d->is_partial ())
+      else if (kind == depset::EK_PARTIAL)
 	{
 	  is_spec = true;
 	  key = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d->get_entity ()));
