@@ -7,7 +7,7 @@
 
 2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
 
-	* testsuite/18_support/96817.cc: Fail fail if the library is
+	* testsuite/18_support/96817.cc: Fail fast if the library is
 	configured to not use futexes.
 
 2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
