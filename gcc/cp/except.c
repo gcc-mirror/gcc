@@ -975,6 +975,7 @@ check_handlers_1 (tree master, tree_stmt_iterator i)
       tree handler = tsi_stmt (i);
       if (TREE_TYPE (handler) && can_convert_eh (type, TREE_TYPE (handler)))
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (EXPR_LOCATION (handler), OPT_Wexceptions,
 			  "exception of type %qT will be caught by earlier "
 			  "handler", TREE_TYPE (handler)))
