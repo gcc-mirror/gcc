@@ -1,3 +1,63 @@
+2020-11-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(hbfloat16_t): Define type.
+	(CHECK_FP): Make it working for bfloat types.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstN_lane_1.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstN_lane_2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_bf16_indices_1.c:
+	Likewise.
+
+2020-11-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vldN_lane_1.c: New
+	testcase.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vldN_lane_2.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_bf16_indices_1.c:
+	Likewise.
+
+2020-11-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vect_copy_lane_1.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopy_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopy_lane_bf16_indices_2.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopy_laneq_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopy_laneq_bf16_indices_2.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopyq_lane_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopyq_lane_bf16_indices_2.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopyq_laneq_bf16_indices_1.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcopyq_laneq_bf16_indices_2.c:
+	Likewise.
+
 2020-11-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

@@ -1,3 +1,26 @@
+2020-11-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/arm_neon.h (__ST2_LANE_FUNC, __ST3_LANE_FUNC)
+	(__ST4_LANE_FUNC): Rename the macro generating the 'q' variants
+	into __ST2Q_LANE_FUNC, __ST2Q_LANE_FUNC, __ST2Q_LANE_FUNC so they
+	all can be undefed at the and of the file.
+	(vst2_lane_bf16, vst2q_lane_bf16, vst3_lane_bf16, vst3q_lane_bf16)
+	(vst4_lane_bf16, vst4q_lane_bf16): Add new intrinsics.
+
+2020-11-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/arm_neon.h (__LD2_LANE_FUNC, __LD3_LANE_FUNC)
+	(__LD4_LANE_FUNC): Rename the macro geneating the 'q' variants
+	into __LD2Q_LANE_FUNC, __LD2Q_LANE_FUNC, __LD2Q_LANE_FUNC so they
+	all can be undefed at the and of the file.
+	(vld2_lane_bf16, vld2q_lane_bf16, vld3_lane_bf16, vld3q_lane_bf16)
+	(vld4_lane_bf16, vld4q_lane_bf16): Add new intrinsics.
+
+2020-11-04  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/arm_neon.h (vcopy_lane_bf16, vcopyq_lane_bf16)
+	(vcopyq_laneq_bf16, vcopy_laneq_bf16): New intrinsics.
+
 2020-11-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
