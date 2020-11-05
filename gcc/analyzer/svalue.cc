@@ -291,6 +291,10 @@ cmp_cst (const_tree cst1, const_tree cst2)
       return memcmp (TREE_REAL_CST_PTR (cst1),
 		     TREE_REAL_CST_PTR (cst2),
 		     sizeof (real_value));
+    case COMPLEX_CST:
+      if (int cmp_real = cmp_cst (TREE_REALPART (cst1), TREE_REALPART (cst2)))
+	return cmp_real;
+      return cmp_cst (TREE_IMAGPART (cst1), TREE_IMAGPART (cst2));
     case VECTOR_CST:
       if (int cmp_log2_npatterns
 	    = ((int)VECTOR_CST_LOG2_NPATTERNS (cst1)
