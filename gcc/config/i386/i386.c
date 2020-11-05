@@ -3640,6 +3640,11 @@ zero_all_vector_registers (HARD_REG_SET need_zeroed_hardregs)
 static bool
 zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
 {
+
+  /* If the FPU is disabled, no need to zero all st registers.  */
+  if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
+    return false;
+
   unsigned int num_of_st = 0;
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if ((STACK_REGNO_P (regno) || MMX_REGNO_P (regno))
