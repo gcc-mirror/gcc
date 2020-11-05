@@ -41,6 +41,9 @@ template basic_stringbuf<char>::basic_stringbuf(__string_type&&,
 						ios_base::openmode);
 template basic_stringbuf<char>::basic_stringbuf(basic_stringbuf&&,
 						const allocator_type&);
+template basic_stringbuf<char>::basic_stringbuf(basic_stringbuf&&,
+						const allocator_type&,
+						__xfer_bufptrs&&);
 template basic_stringbuf<char>::allocator_type
 basic_stringbuf<char>::get_allocator() const noexcept;
 template string_view
@@ -75,6 +78,9 @@ template basic_stringbuf<wchar_t>::basic_stringbuf(__string_type&&,
 						   ios_base::openmode);
 template basic_stringbuf<wchar_t>::basic_stringbuf(basic_stringbuf&&,
 						   const allocator_type&);
+template basic_stringbuf<wchar_t>::basic_stringbuf(basic_stringbuf&&,
+						   const allocator_type&,
+						   __xfer_bufptrs&&);
 template basic_stringbuf<wchar_t>::allocator_type
 basic_stringbuf<wchar_t>::get_allocator() const noexcept;
 

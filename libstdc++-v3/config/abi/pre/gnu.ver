@@ -2346,6 +2346,7 @@ GLIBCXX_3.4.29 {
 
     # basic_stringbuf::basic_stringbuf(basic_stringbuf&&, allocator const&)
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_RKS3_;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_RKS3_ONS4_14__xfer_bufptrsE;
 
     # basic_stringbuf::get_allocator()
     _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE13get_allocatorEv;
