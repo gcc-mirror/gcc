@@ -174,6 +174,15 @@ struct _slp_tree {
   static void operator delete (void *, size_t);
 };
 
+/* The enum describes the type of operations that an SLP instance
+   can perform. */
+
+enum slp_instance_kind {
+    slp_inst_kind_store,
+    slp_inst_kind_reduc_group,
+    slp_inst_kind_reduc_chain,
+    slp_inst_kind_ctor
+};
 
 /* SLP instance is a sequence of stmts in a loop that can be packed into
    SIMD stmts.  */
@@ -202,6 +211,9 @@ public:
      entries into the same subgraph, including itself.  */
   vec<_slp_instance *> subgraph_entries;
 
+  /* The type of operation the SLP instance is performing.  */
+  slp_instance_kind kind;
+
   dump_user_location_t location () const;
 } *slp_instance;
 
@@ -211,6 +223,7 @@ public:
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_ROOT_STMT(S)                (S)->root_stmt
+#define SLP_INSTANCE_KIND(S)                     (S)->kind
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts

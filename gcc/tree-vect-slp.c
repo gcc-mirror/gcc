@@ -2171,13 +2171,6 @@ calculate_unrolling_factor (poly_uint64 nunits, unsigned int group_size)
   return exact_div (common_multiple (nunits, group_size), group_size);
 }
 
-enum slp_instance_kind {
-    slp_inst_kind_store,
-    slp_inst_kind_reduc_group,
-    slp_inst_kind_reduc_chain,
-    slp_inst_kind_ctor
-};
-
 static bool
 vect_analyze_slp_instance (vec_info *vinfo,
 			   scalar_stmts_to_slp_tree_map_t *bst_map,
@@ -2253,6 +2246,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  SLP_INSTANCE_ROOT_STMT (new_instance) = root_stmt_info;
+	  SLP_INSTANCE_KIND (new_instance) = kind;
 	  new_instance->reduc_phis = NULL;
 	  new_instance->cost_vec = vNULL;
 	  new_instance->subgraph_entries = vNULL;
@@ -2262,54 +2256,6 @@ vect_build_slp_instance (vec_info *vinfo,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "SLP size %u vs. limit %u.\n",
 			     tree_size, max_tree_size);
-
-	  /* Check whether any load is possibly permuted.  */
-	  slp_tree load_node;
-	  bool loads_permuted = false;
-	  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (new_instance), i, load_node)
-	    {
-	      if (!SLP_TREE_LOAD_PERMUTATION (load_node).exists ())
-		continue;
-	      unsigned j;
-	      stmt_vec_info load_info;
-	      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load_info)
-		if (SLP_TREE_LOAD_PERMUTATION (load_node)[j] != j)
-		  {
-		    loads_permuted = true;
-		    break;
-		  }
-	    }
-
-	  /* If the loads and stores can be handled with load/store-lane
-	     instructions do not generate this SLP instance.  */
-	  if (is_a <loop_vec_info> (vinfo)
-	      && loads_permuted
-	      && kind == slp_inst_kind_store
-	      && vect_store_lanes_supported
-		   (STMT_VINFO_VECTYPE (scalar_stmts[0]), group_size, false))
-	    {
-	      slp_tree load_node;
-	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (new_instance), i, load_node)
-		{
-		  stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
-		      (SLP_TREE_SCALAR_STMTS (load_node)[0]);
-		  /* Use SLP for strided accesses (or if we can't load-lanes).  */
-		  if (STMT_VINFO_STRIDED_P (stmt_vinfo)
-		      || ! vect_load_lanes_supported
-		      (STMT_VINFO_VECTYPE (stmt_vinfo),
-		       DR_GROUP_SIZE (stmt_vinfo), false))
-		    break;
-		}
-	      if (i == SLP_INSTANCE_LOADS (new_instance).length ())
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Built SLP cancelled: can use "
-				     "load/store-lanes\n");
-		  vect_free_slp_instance (new_instance);
-		  return false;
-		}
-	    }
 
 	  /* Fixup SLP reduction chains.  */
 	  if (kind == slp_inst_kind_reduc_chain)
@@ -2995,6 +2941,18 @@ vect_optimize_slp (vec_info *vinfo)
 	    /* For loads simply drop the permutation, the load permutation
 	       already performs the desired permutation.  */
 	    ;
+	  else if (SLP_TREE_LANE_PERMUTATION (node).exists ())
+	    {
+	      /* If the node if already a permute node we just need to apply
+		 the permutation to the permute node itself.  */
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "simplifying permute node %p\n",
+				 node);
+
+	      vect_slp_permute (perms[perm], SLP_TREE_LANE_PERMUTATION (node),
+				true);
+	    }
 	  else
 	    {
 	      if (dump_enabled_p ())
@@ -4077,6 +4035,48 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
     }
 }
 
+/* Walk the grouped store chains and replace entries with their
+   pattern variant if any.  */
+
+static void
+vect_fixup_store_groups_with_patterns (vec_info *vinfo)
+{
+  stmt_vec_info first_element;
+  unsigned i;
+
+  FOR_EACH_VEC_ELT (vinfo->grouped_stores, i, first_element)
+    {
+      /* We also have CTORs in this array.  */
+      if (!STMT_VINFO_GROUPED_ACCESS (first_element))
+	continue;
+      if (STMT_VINFO_IN_PATTERN_P (first_element))
+	{
+	  stmt_vec_info orig = first_element;
+	  first_element = STMT_VINFO_RELATED_STMT (first_element);
+	  DR_GROUP_FIRST_ELEMENT (first_element) = first_element;
+	  DR_GROUP_SIZE (first_element) = DR_GROUP_SIZE (orig);
+	  DR_GROUP_GAP (first_element) = DR_GROUP_GAP (orig);
+	  DR_GROUP_NEXT_ELEMENT (first_element) = DR_GROUP_NEXT_ELEMENT (orig);
+	  vinfo->grouped_stores[i] = first_element;
+	}
+      stmt_vec_info prev = first_element;
+      while (DR_GROUP_NEXT_ELEMENT (prev))
+	{
+	  stmt_vec_info elt = DR_GROUP_NEXT_ELEMENT (prev);
+	  if (STMT_VINFO_IN_PATTERN_P (elt))
+	    {
+	      stmt_vec_info orig = elt;
+	      elt = STMT_VINFO_RELATED_STMT (elt);
+	      DR_GROUP_NEXT_ELEMENT (prev) = elt;
+	      DR_GROUP_GAP (elt) = DR_GROUP_GAP (orig);
+	      DR_GROUP_NEXT_ELEMENT (elt) = DR_GROUP_NEXT_ELEMENT (orig);
+	    }
+	  DR_GROUP_FIRST_ELEMENT (elt) = first_element;
+	  prev = elt;
+	}
+    }
+}
+
 /* Check if the region described by BB_VINFO can be vectorized, returning
    true if so.  When returning false, set FATAL to true if the same failure
    would prevent vectorization at other vector sizes, false if it is still
@@ -4134,6 +4134,9 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
   fatal = false;
 
   vect_pattern_recog (bb_vinfo);
+
+  /* Update store groups from pattern processing.  */
+  vect_fixup_store_groups_with_patterns (bb_vinfo);
 
   /* Check the SLP opportunities in the basic block, analyze and build SLP
      trees.  */
@@ -5206,7 +5209,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "permutation requires at "
-			     "least three vectors");
+			     "least three vectors\n");
 	  gcc_assert (!gsi);
 	  return false;
 	}

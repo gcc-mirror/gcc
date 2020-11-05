@@ -26,6 +26,12 @@
 #ifndef _OMP_H
 #define _OMP_H 1
 
+#if defined(__GNUC__) && _OPENMP >= 201811
+# define __GOMP_DEPRECATED_5_0 __attribute__((__deprecated__))
+#else
+# define __GOMP_DEPRECATED_5_0
+#endif
+
 #ifndef _LIBGOMP_OMP_LOCK_DEFINED
 #define _LIBGOMP_OMP_LOCK_DEFINED 1
 /* These two structures get edited by the libgomp build process to 
@@ -66,18 +72,19 @@ typedef enum omp_proc_bind_t
 typedef enum omp_sync_hint_t
 {
   omp_sync_hint_none = 0,
-  omp_lock_hint_none = omp_sync_hint_none,
+  omp_lock_hint_none __GOMP_DEPRECATED_5_0 = omp_sync_hint_none,
   omp_sync_hint_uncontended = 1,
-  omp_lock_hint_uncontended = omp_sync_hint_uncontended,
+  omp_lock_hint_uncontended __GOMP_DEPRECATED_5_0 = omp_sync_hint_uncontended,
   omp_sync_hint_contended = 2,
-  omp_lock_hint_contended = omp_sync_hint_contended,
+  omp_lock_hint_contended __GOMP_DEPRECATED_5_0 = omp_sync_hint_contended,
   omp_sync_hint_nonspeculative = 4,
-  omp_lock_hint_nonspeculative = omp_sync_hint_nonspeculative,
+  omp_lock_hint_nonspeculative __GOMP_DEPRECATED_5_0
+    = omp_sync_hint_nonspeculative,
   omp_sync_hint_speculative = 8,
-  omp_lock_hint_speculative = omp_sync_hint_speculative
+  omp_lock_hint_speculative __GOMP_DEPRECATED_5_0 = omp_sync_hint_speculative
 } omp_sync_hint_t;
 
-typedef omp_sync_hint_t omp_lock_hint_t;
+typedef __GOMP_DEPRECATED_5_0 omp_sync_hint_t omp_lock_hint_t;
 
 typedef struct __attribute__((__aligned__ (sizeof (void *)))) omp_depend_t
 {
@@ -184,8 +191,8 @@ extern int omp_in_parallel (void) __GOMP_NOTHROW;
 extern void omp_set_dynamic (int) __GOMP_NOTHROW;
 extern int omp_get_dynamic (void) __GOMP_NOTHROW;
 
-extern void omp_set_nested (int) __GOMP_NOTHROW;
-extern int omp_get_nested (void) __GOMP_NOTHROW;
+extern void omp_set_nested (int) __GOMP_NOTHROW __GOMP_DEPRECATED_5_0;
+extern int omp_get_nested (void) __GOMP_NOTHROW __GOMP_DEPRECATED_5_0;
 
 extern void omp_init_lock (omp_lock_t *) __GOMP_NOTHROW;
 extern void omp_init_lock_with_hint (omp_lock_t *, omp_sync_hint_t)

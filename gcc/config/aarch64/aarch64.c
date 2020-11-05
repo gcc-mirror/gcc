@@ -6272,10 +6272,6 @@ aarch64_libgcc_cmp_return_mode (void)
 #error Cannot use simple address calculation for stack probing
 #endif
 
-/* The pair of scratch registers used for stack probing.  */
-#define PROBE_STACK_FIRST_REG  R9_REGNUM
-#define PROBE_STACK_SECOND_REG R10_REGNUM
-
 /* Emit code to probe a range of stack addresses from FIRST to FIRST+POLY_SIZE,
    inclusive.  These are offsets from the current stack pointer.  */
 
@@ -6289,7 +6285,7 @@ aarch64_emit_probe_stack_range (HOST_WIDE_INT first, poly_int64 poly_size)
       return;
     }
 
-  rtx reg1 = gen_rtx_REG (Pmode, PROBE_STACK_FIRST_REG);
+  rtx reg1 = gen_rtx_REG (Pmode, PROBE_STACK_FIRST_REGNUM);
 
   /* See the same assertion on PROBE_INTERVAL above.  */
   gcc_assert ((first % ARITH_FACTOR) == 0);
@@ -6347,7 +6343,7 @@ aarch64_emit_probe_stack_range (HOST_WIDE_INT first, poly_int64 poly_size)
      equality test for the loop condition.  */
   else
     {
-      rtx reg2 = gen_rtx_REG (Pmode, PROBE_STACK_SECOND_REG);
+      rtx reg2 = gen_rtx_REG (Pmode, PROBE_STACK_SECOND_REGNUM);
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 

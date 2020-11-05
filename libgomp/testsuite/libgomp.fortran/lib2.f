@@ -1,4 +1,5 @@
 C { dg-do run }
+C { dg-additional-options "-Wno-deprecated-declarations" }
 
       USE OMP_LIB
 

@@ -688,7 +688,8 @@ vect_slp_analyze_node_dependences (vec_info *vinfo, slp_tree node,
       stmt_vec_info last_access_info = vect_find_last_scalar_stmt_in_slp (node);
       for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
 	{
-	  stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
+	  stmt_vec_info access_info
+	    = vect_orig_stmt (SLP_TREE_SCALAR_STMTS (node)[k]);
 	  if (access_info == last_access_info)
 	    continue;
 	  data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
@@ -759,7 +760,8 @@ vect_slp_analyze_node_dependences (vec_info *vinfo, slp_tree node,
 	= vect_find_first_scalar_stmt_in_slp (node);
       for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
 	{
-	  stmt_vec_info access_info = SLP_TREE_SCALAR_STMTS (node)[k];
+	  stmt_vec_info access_info
+	    = vect_orig_stmt (SLP_TREE_SCALAR_STMTS (node)[k]);
 	  if (access_info == first_access_info)
 	    continue;
 	  data_reference *dr_a = STMT_VINFO_DATA_REF (access_info);
@@ -2444,7 +2446,8 @@ vect_slp_analyze_node_alignment (vec_info *vinfo, slp_tree node)
 
   /* For creating the data-ref pointer we need alignment of the
      first element as well.  */
-  first_stmt_info = vect_find_first_scalar_stmt_in_slp (node);
+  first_stmt_info
+    = vect_stmt_to_vectorize (vect_find_first_scalar_stmt_in_slp (node));
   if (first_stmt_info != SLP_TREE_SCALAR_STMTS (node)[0])
     {
       first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);

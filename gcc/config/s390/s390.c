@@ -8621,8 +8621,7 @@ replace_constant_pool_ref (rtx_insn *insn, rtx ref, rtx offset)
 /* We keep a list of constants which we have to add to internal
    constant tables in the middle of large functions.  */
 
-#define NR_C_MODES 32
-machine_mode constant_modes[NR_C_MODES] =
+static machine_mode constant_modes[] =
 {
   TFmode, TImode, TDmode,
   V16QImode, V8HImode, V4SImode, V2DImode, V1TImode,
@@ -8636,6 +8635,7 @@ machine_mode constant_modes[NR_C_MODES] =
   QImode,
   V1QImode
 };
+#define NR_C_MODES (sizeof (constant_modes) / sizeof (constant_modes[0]))
 
 struct constant
 {
@@ -8664,7 +8664,7 @@ static struct constant_pool *
 s390_alloc_pool (void)
 {
   struct constant_pool *pool;
-  int i;
+  size_t i;
 
   pool = (struct constant_pool *) xmalloc (sizeof *pool);
   pool->next = NULL;
@@ -8743,7 +8743,7 @@ static void
 s390_add_constant (struct constant_pool *pool, rtx val, machine_mode mode)
 {
   struct constant *c;
-  int i;
+  size_t i;
 
   for (i = 0; i < NR_C_MODES; i++)
     if (constant_modes[i] == mode)
@@ -8788,7 +8788,7 @@ s390_find_constant (struct constant_pool *pool, rtx val,
 		    machine_mode mode)
 {
   struct constant *c;
-  int i;
+  size_t i;
 
   for (i = 0; i < NR_C_MODES; i++)
     if (constant_modes[i] == mode)
@@ -8895,7 +8895,7 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
 {
   struct constant *c;
   rtx_insn *insn = pool->pool_insn;
-  int i;
+  size_t i;
 
   /* Switch to rodata section.  */
   insn = emit_insn_after (gen_pool_section_start (), insn);
@@ -8966,7 +8966,7 @@ static void
 s390_free_pool (struct constant_pool *pool)
 {
   struct constant *c, *next;
-  int i;
+  size_t i;
 
   for (i = 0; i < NR_C_MODES; i++)
     for (c = pool->constants[i]; c; c = next)

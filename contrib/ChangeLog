@@ -1,3 +1,17 @@
+2020-11-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_repository.py: Set strict=True
+	for parse_git_revisions as a default.
+
+2020-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (item_parenthesis_empty_regex,
+	item_parenthesis_regex): Add.
+	(check_for_empty_description): Use them.
+	* gcc-changelog/test_email.py (test_emptry_entry_desc,
+	test_emptry_entry_desc_2): Add.
+	* gcc-changelog/test_patches.txt: Add two testcases for it.
+
 2020-11-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gcc-changelog/git_email.py: Add unidiff_supports_renaming check.

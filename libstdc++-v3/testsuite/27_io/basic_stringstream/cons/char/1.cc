@@ -33,7 +33,7 @@ test01()
   std::stringstream stm(std::ios_base::in, a);
 }
 
-auto const cstr = "This is a test";
+auto const cstr = "This is a test string";
 
 void
 test02()
@@ -57,22 +57,57 @@ test03()
 
   {
     std::stringstream::allocator_type a;
-    std::stringstream sbuf(s1, mode, a);
+    std::stringstream ss(s1, mode, a);
     std::string s2(cstr);
-    VERIFY( sbuf.str() == s2 );
+    VERIFY( ss.str() == s2 );
   }
 
   {
-    std::stringstream sbuf(s1, mode);
+    std::stringstream ss(s1, mode);
     std::string s2(cstr);
-    VERIFY( sbuf.str() == s2 );
+    VERIFY( ss.str() == s2 );
   }
 
   {
-    std::stringstream sbuf(s1);
+    std::stringstream ss(s1);
     std::string s2(cstr);
-    VERIFY( sbuf.str() == s2 );
+    VERIFY( ss.str() == s2 );
   }
+}
+
+// A minimal allocator with no default constructor
+template<typename T>
+  struct NoDefaultCons : __gnu_test::SimpleAllocator<T>
+  {
+    using __gnu_test::SimpleAllocator<T>::SimpleAllocator;
+
+    NoDefaultCons() = delete;
+
+    NoDefaultCons(int) { }
+  };
+
+void
+test04()
+{
+  using sstream = std::basic_stringstream<char, std::char_traits<char>,
+					  NoDefaultCons<char>>;
+
+  NoDefaultCons<char> a(1);
+  const std::string str(cstr);
+
+  sstream ss1(str, a);
+  VERIFY( ss1.str() == cstr );
+  VERIFY( ss1.get() == cstr[0] );
+
+  sstream ss2(str, std::ios::in, a);
+  VERIFY( ss2.str() == cstr );
+  VERIFY( ss2.get() == cstr[0] );
+  VERIFY( !bool(ss2 << 1) );
+
+  sstream ss3(std::string(str), std::ios::out, a);
+  VERIFY( ss3.str() == cstr );
+  VERIFY( bool(ss3 << 1) );
+  VERIFY( ss3.get() == std::wstringbuf::traits_type::eof() );
 }
 
 int
@@ -81,5 +116,5 @@ main()
   test01();
   test02();
   test03();
-  return 0;
+  test04();
 }

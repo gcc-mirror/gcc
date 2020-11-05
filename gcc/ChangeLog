@@ -1,3 +1,114 @@
+2020-11-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp.c (vect_analyze_slp_instance): Moved load/store lanes
+	check to ...
+	* tree-vect-loop.c (vect_analyze_loop_2): ..Here
+
+2020-11-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (NR_C_MODES): Unhardcode.
+	(s390_alloc_pool): Use size_t for iterating from 0 to
+	NR_C_MODES.
+	(s390_add_constant): Likewise.
+	(s390_find_constant): Likewise.
+	(s390_dump_pool): Likewise.
+	(s390_free_pool): Likewise.
+
+2020-11-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.md (RRe): Remove.
+	(RXe): Remove.
+
+2020-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97515
+	* gimple-range-cache.h (class ranger_cache): New prototypes plus
+	temporal cache pointer.
+	* gimple-range-cache.cc (struct range_timestamp): New.
+	(class temporal_cache): New.
+	(temporal_cache::temporal_cache): New.
+	(temporal_cache::~temporal_cache): New.
+	(temporal_cache::get_timestamp): New.
+	(temporal_cache::set_dependency): New.
+	(temporal_cache::temporal_value): New.
+	(temporal_cache::current_p): New.
+	(temporal_cache::set_timestamp): New.
+	(temporal_cache::set_always_current): New.
+	(ranger_cache::ranger_cache): Allocate the temporal cache.
+	(ranger_cache::~ranger_cache): Free temporal cache.
+	(ranger_cache::get_non_stale_global_range): New.
+	(ranger_cache::set_global_range): Add a timestamp.
+	(ranger_cache::register_dependency): New.  Add timestamp dependency.
+	* gimple-range.cc (gimple_ranger::range_of_range_op): Add operand
+	dependencies.
+	(gimple_ranger::range_of_phi): Ditto.
+	(gimple_ranger::range_of_stmt): Check if global range is stale, and
+	recalculate if so.
+
+2020-11-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* targhooks.c (default_zero_call_used_regs): Fix flag-name typo
+	in sorry.
+
+2020-11-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vectorizable_phi): Adjust prototype.
+	* tree-vect-stmts.c (vect_transform_stmt): Adjust.
+	(vect_analyze_stmt): Pass cost_vec to vectorizable_phi.
+	* tree-vect-loop.c (vectorizable_phi): Do costing.
+
+2020-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97709
+	* tree-vect-loop.c (vectorizable_live_operation): Set
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI when necessary.
+
+2020-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97690
+	* tree-ssa-phiopt.c (conditional_replacement): Also optimize
+	cond ? pow2p_cst : 0 as ((type) cond) << cst.
+
+2020-11-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vectorizable_induction): Re-instantiate
+	previously removed CSE of SLP IVs.
+
+2020-11-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-options.c (ix86_recompute_optlev_based_flags):
+	Fix Intel MCU psABI comment w.r.t DEFAULT_PCC_STRUCT_RETURN.
+
+2020-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/97666
+	* tree-vect-slp.c (vect_build_slp_tree_2): Revert previous
+	fix and instead adjust the memset.
+
+2020-11-04  Pat Bernardi  <bernardi@adacore.com>
+
+	* config/i386/i386elf.h (SUBTARGET_RETURN_IN_MEMORY): Remove.
+	(ASM_OUTPUT_ASCII): Likewise.
+	(DEFAULT_PCC_STRUCT_RETURN): Define.
+	* config/i386/i386.c (ix86_return_in_memory): Remove
+	SUBTARGET_RETURN_IN_MEMORY.
+
+2020-11-04  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/97540
+	* ira.c: (ira_setup_alts): Extract memory from operand only
+	for special memory constraint.
+	* recog.c (asm_operand_ok): Ditto.
+	* lra-constraints.c (process_alt_operands): MEM_P is
+	required for normal memory constraint.
+
+2020-11-04  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/97532
+	* lra-constraints.c (valid_address_p): Handle operand of
+	special memory constraint.
+	(process_address_1): Ditto.
+
 2020-11-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/97695
