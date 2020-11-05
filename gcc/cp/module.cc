@@ -2866,11 +2866,9 @@ enum merge_kind
      primary template and specialization args.  */
   MK_template_mask = 0x10,  /* A template specialization.  */
 
-  // FIXME: We might be able to clean up a bit more
-  MK_tmpl_decl_mask = 0x8, /* In decl table (not a type specialization).  */
+  MK_tmpl_decl_mask = 0x4, /* In decl table.  */
+  MK_tmpl_alias_mask = 0x2, /* Also in type table  */
 
-  MK_tmpl_alias_mask = 0x2, /* An alias specialization (in both).  */
-  
   MK_tmpl_tmpl_mask = 0x1, /* We want TEMPLATE_DECL.  */
 
   MK_type_spec = MK_template_mask,
@@ -2894,11 +2892,11 @@ static char const *const merge_kind_name[MK_hwm] =
     NULL, NULL, NULL, NULL,
 
     "type spec", "type tmpl spec",	/* 16,17 type (template).  */
-    NULL, "type partial spec",		/* 18,19 partial template. */
-    NULL, NULL, NULL, NULL,
+    NULL, NULL,
 
-    "decl spec", "decl tmpl spec",	/* 24,25 decl (template).  */
-    "alias spec", NULL,			/* 26,27 alias. */
+    "decl spec", "decl tmpl spec",	/* 20,21 decl (template).  */
+    "alias spec", NULL,			/* 22,23 alias. */
+    NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL,
   };
 
@@ -10360,10 +10358,10 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    {
 	      if (!(mk & MK_tmpl_tmpl_mask))
 		existing = TYPE_NAME (existing);
-	      else
-		if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
-		  existing = TI_TEMPLATE (ti);
+	      else if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
+		existing = TI_TEMPLATE (ti);
 	    }
+
 	  /* The walkabout should have found ourselves.  */
 	  gcc_assert (existing == decl);
 	}
