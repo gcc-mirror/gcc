@@ -21293,7 +21293,16 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
      here.  */
 
   if (origin_die)
-    add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
+    {
+      dw_attr_node *a;
+      /* Like above, if we already created a concrete instance DIE
+	 do not use that for the abstract origin but the early DIE
+	 if present.  */
+      if (in_lto_p
+	  && (a = get_AT (origin_die, DW_AT_abstract_origin)))
+	origin_die = AT_ref (a);
+      add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
+    }
 }
 
 /* We do not currently support the pure_virtual attribute.  */
