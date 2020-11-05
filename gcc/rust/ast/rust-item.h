@@ -434,30 +434,44 @@ public:
 // A function parameter
 struct FunctionParam
 {
+private:
+  std::vector<Attribute> outer_attrs;
+  Location locus;
+
 public:
   std::unique_ptr<Pattern> param_name;
   std::unique_ptr<Type> type;
 
-  Location locus;
-
   FunctionParam (std::unique_ptr<Pattern> param_name,
-		 std::unique_ptr<Type> param_type, Location locus)
-    : param_name (std::move (param_name)), type (std::move (param_type)),
-      locus (locus)
+		 std::unique_ptr<Type> param_type, std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)), locus (locus), 
+      param_name (std::move (param_name)), type (std::move (param_type))
   {}
 
   // Copy constructor uses clone
-  FunctionParam (FunctionParam const &other)
-    : param_name (other.param_name->clone_pattern ()),
-      type (other.type->clone_type ()), locus (other.locus)
-  {}
+  FunctionParam (FunctionParam const &other) : locus (other.locus)
+  {
+    // guard to prevent nullptr dereference
+    if (other.param_name != nullptr)
+      param_name = other.param_name->clone_pattern ();
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+  }
 
   // Overload assignment operator to use clone
   FunctionParam &operator= (FunctionParam const &other)
   {
-    param_name = other.param_name->clone_pattern ();
-    type = other.type->clone_type ();
     locus = other.locus;
+
+    // guard to prevent nullptr dereference
+    if (other.param_name != nullptr)
+      param_name = other.param_name->clone_pattern ();
+    else
+      param_name = nullptr;
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
 
     return *this;
   }
@@ -472,12 +486,16 @@ public:
   // Creates an error FunctionParam.
   static FunctionParam create_error ()
   {
-    return FunctionParam (nullptr, nullptr, Location ());
+    return FunctionParam (nullptr, nullptr, {}, Location ());
   }
 
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+
+  // TODO: seems kinda dodgy. Think of better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 };
 
 // Visibility of item - if the item has it, then it is some form of public
@@ -596,7 +614,7 @@ class Method : public InherentImplItem, public TraitImplItem
   // bool has_where_clause;
   WhereClause where_clause;
 
-  std::unique_ptr<BlockExpr> expr;
+  std::unique_ptr<BlockExpr> function_body;
 
   Location locus;
 
@@ -604,7 +622,7 @@ public:
   // Returns whether the method is in an error state.
   bool is_error () const
   {
-    return expr == nullptr || method_name.empty () || self_param.is_error ();
+    return function_body == nullptr || method_name.empty () || self_param.is_error ();
   }
 
   // Creates an error state method.
@@ -614,7 +632,7 @@ public:
 		   std::vector<std::unique_ptr<GenericParam>> (),
 		   SelfParam::create_error (), std::vector<FunctionParam> (),
 		   nullptr, WhereClause::create_empty (), nullptr,
-		   Visibility::create_error (), std::vector<Attribute> ());
+		   Visibility::create_error (), std::vector<Attribute> (), {});
   }
 
   // Returns whether the method has generic parameters.
@@ -638,7 +656,7 @@ public:
 	  SelfParam self_param, std::vector<FunctionParam> function_params,
 	  std::unique_ptr<Type> return_type, WhereClause where_clause,
 	  std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	  std::vector<Attribute> outer_attrs, Location locus = Location ())
+	  std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)), vis (std::move (vis)),
       qualifiers (std::move (qualifiers)),
       method_name (std::move (method_name)),
@@ -646,7 +664,7 @@ public:
       self_param (std::move (self_param)),
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)), expr (std::move (function_body)),
+      where_clause (std::move (where_clause)), function_body (std::move (function_body)),
       locus (locus)
   {}
 
@@ -657,10 +675,16 @@ public:
     : outer_attrs (other.outer_attrs), vis (other.vis),
       qualifiers (other.qualifiers), method_name (other.method_name),
       self_param (other.self_param), function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause), expr (other.expr->clone_block_expr ()),
-      locus (other.locus)
+      where_clause (other.where_clause), locus (other.locus)
   {
+    // guard to prevent null dereference (always required)
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    
+    // guard to prevent null dereference (only required if error state)
+    if (other.function_body != nullptr)
+      function_body = other.function_body->clone_block_expr ();
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -675,10 +699,20 @@ public:
     qualifiers = other.qualifiers;
     self_param = other.self_param;
     function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
     where_clause = other.where_clause;
-    expr = other.expr->clone_block_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference (always required)
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.function_body != nullptr)
+      function_body = other.function_body->clone_block_expr ();
+    else
+      function_body = nullptr;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -694,6 +728,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if block is null, so base stripping on that.
+  void mark_for_strip () override { function_body = nullptr; }
+  bool is_marked_for_strip () const override { return function_body == nullptr; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2268,9 +2306,12 @@ public:
   TraitFunctionDecl (TraitFunctionDecl const &other)
     : qualifiers (other.qualifiers), function_name (other.function_name),
       function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
       where_clause (other.where_clause)
   {
+    // guard to prevent nullptr dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -2284,8 +2325,13 @@ public:
     function_name = other.function_name;
     qualifiers = other.qualifiers;
     function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
     where_clause = other.where_clause;
+
+    // guard to prevent nullptr dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2299,6 +2345,14 @@ public:
   TraitFunctionDecl &operator= (TraitFunctionDecl &&other) = default;
 
   std::string as_string () const;
+
+  // Invalid if function name is empty, so base stripping on that.
+  void mark_for_strip () { function_name = ""; }
+  bool is_marked_for_strip () const { return function_name.empty (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<FunctionParam> &get_function_params () { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const { return function_params; }
 };
 
 // Actual trait item function declaration within traits
@@ -2323,6 +2377,7 @@ public:
   TraitItemFunc (TraitItemFunc const &other)
     : outer_attrs (other.outer_attrs), decl (other.decl), locus (other.locus)
   {
+    // guard to prevent null dereference
     if (other.block_expr != nullptr)
       block_expr = other.block_expr->clone_block_expr ();
   }
@@ -2334,8 +2389,12 @@ public:
     outer_attrs = other.outer_attrs;
     decl = other.decl;
     locus = other.locus;
+
+    // guard to prevent null dereference
     if (other.block_expr != nullptr)
       block_expr = other.block_expr->clone_block_expr ();
+    else
+      block_expr = nullptr;
 
     return *this;
   }
@@ -2349,6 +2408,17 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if trait decl is empty, so base stripping on that.
+  void mark_for_strip () override { decl.mark_for_strip (); }
+  bool is_marked_for_strip () const override { return decl.is_marked_for_strip (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  std::vector<FunctionParam> &get_function_params () { return decl.get_function_params (); }
+  const std::vector<FunctionParam> &get_function_params () const { return decl.get_function_params (); }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2416,9 +2486,12 @@ public:
   TraitMethodDecl (TraitMethodDecl const &other)
     : qualifiers (other.qualifiers), function_name (other.function_name),
       self_param (other.self_param), function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
       where_clause (other.where_clause)
   {
+    // guard to prevent nullptr dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -2433,8 +2506,13 @@ public:
     qualifiers = other.qualifiers;
     self_param = other.self_param;
     function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
     where_clause = other.where_clause;
+
+    // guard to prevent nullptr dereference
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2448,6 +2526,14 @@ public:
   TraitMethodDecl &operator= (TraitMethodDecl &&other) = default;
 
   std::string as_string () const;
+
+  // Invalid if method name is empty, so base stripping on that.
+  void mark_for_strip () { function_name = ""; }
+  bool is_marked_for_strip () const { return function_name.empty (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<FunctionParam> &get_function_params () { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const { return function_params; }
 };
 
 // Actual trait item method declaration within traits
@@ -2471,8 +2557,12 @@ public:
   // Copy constructor with clone
   TraitItemMethod (TraitItemMethod const &other)
     : outer_attrs (other.outer_attrs), decl (other.decl),
-      block_expr (other.block_expr->clone_block_expr ()), locus (other.locus)
-  {}
+      locus (other.locus)
+  {
+    // guard to prevent null dereference
+    if (other.block_expr != nullptr)
+      block_expr = other.block_expr->clone_block_expr ();
+  }
 
   // Overloaded assignment operator to clone
   TraitItemMethod &operator= (TraitItemMethod const &other)
@@ -2480,8 +2570,13 @@ public:
     TraitItem::operator= (other);
     outer_attrs = other.outer_attrs;
     decl = other.decl;
-    block_expr = other.block_expr->clone_block_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference
+    if (other.block_expr != nullptr)
+      block_expr = other.block_expr->clone_block_expr ();
+    else
+      block_expr = nullptr;
 
     return *this;
   }
@@ -2495,6 +2590,17 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if trait decl is empty, so base stripping on that.
+  void mark_for_strip () override { decl.mark_for_strip (); }
+  bool is_marked_for_strip () const override { return decl.is_marked_for_strip (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  std::vector<FunctionParam> &get_function_params () { return decl.get_function_params (); }
+  const std::vector<FunctionParam> &get_function_params () const { return decl.get_function_params (); }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2529,10 +2635,16 @@ public:
 
   // Copy constructor with clones
   TraitItemConst (TraitItemConst const &other)
-    : outer_attrs (other.outer_attrs), name (other.name),
-      type (other.type->clone_type ()), expr (other.expr->clone_expr ()),
-      locus (other.locus)
-  {}
+    : outer_attrs (other.outer_attrs), name (other.name), locus (other.locus)
+  {
+    // guard to prevent null dereference
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr ();
+    
+    // guard to prevent null dereference (only for error state)
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+  }
 
   // Overloaded assignment operator to clone
   TraitItemConst &operator= (TraitItemConst const &other)
@@ -2540,9 +2652,19 @@ public:
     TraitItem::operator= (other);
     outer_attrs = other.outer_attrs;
     name = other.name;
-    type = other.type->clone_type ();
-    expr = other.expr->clone_expr ();
     locus = other.locus;
+
+    // guard to prevent null dereference
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr ();
+    else
+      expr = nullptr;
+
+    // guard to prevent null dereference (only for error state)
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
 
     return *this;
   }
@@ -2556,6 +2678,14 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // Invalid if type is null, so base stripping on that.
+  void mark_for_strip () override { type = nullptr; }
+  bool is_marked_for_strip () const override { return type == nullptr; }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2625,6 +2755,14 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // Invalid if name is empty, so base stripping on that.
+  void mark_for_strip () override { name = ""; }
+  bool is_marked_for_strip () const override { return name.empty (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemType *clone_trait_item_impl () const override
@@ -2651,6 +2789,8 @@ class Trait : public VisItem
   // bool has_where_clause;
   WhereClause where_clause;
 
+  std::vector<Attribute> inner_attrs;
+
   // bool has_trait_items;
   std::vector<std::unique_ptr<TraitItem>> trait_items;
 
@@ -2671,25 +2811,28 @@ public:
   // Returns whether trait has trait items.
   bool has_trait_items () const { return !trait_items.empty (); }
 
+  // Returns whether trait has inner attributes.
+  bool has_inner_attrs () const { return !inner_attrs.empty (); }
+
   // Mega-constructor
   Trait (Identifier name, bool is_unsafe,
 	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 	 WhereClause where_clause,
 	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
-	 std::vector<Attribute> outer_attrs, Location locus)
+	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       has_unsafe (is_unsafe), name (std::move (name)),
       generic_params (std::move (generic_params)),
       type_param_bounds (std::move (type_param_bounds)),
-      where_clause (std::move (where_clause)),
+      where_clause (std::move (where_clause)), inner_attrs (std::move (inner_attrs)),
       trait_items (std::move (trait_items)), locus (locus)
   {}
 
   // Copy constructor with vector clone
   Trait (Trait const &other)
     : VisItem (other), has_unsafe (other.has_unsafe), name (other.name),
-      where_clause (other.where_clause), locus (other.locus)
+      where_clause (other.where_clause), inner_attrs (other.inner_attrs), locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2711,6 +2854,7 @@ public:
     name = other.name;
     has_unsafe = other.has_unsafe;
     where_clause = other.where_clause;
+    inner_attrs = other.inner_attrs;
     locus = other.locus;
 
     generic_params.reserve (other.generic_params.size ());
@@ -2739,6 +2883,13 @@ public:
   // Invalid if trait name is empty, so base stripping on that.
   void mark_for_strip () override { name = ""; }
   bool is_marked_for_strip () const override { return name.empty (); }
+
+  // TODO: think of better way to do this
+  const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
+
+  const std::vector<std::unique_ptr<TraitItem>>& get_trait_items () const { return trait_items; }
+  std::vector<std::unique_ptr<TraitItem>>& get_trait_items () { return trait_items; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2782,6 +2933,10 @@ public:
   // Invalid if trait type is null, so base stripping on that.
   void mark_for_strip () override { trait_type = nullptr; }
   bool is_marked_for_strip () const override { return trait_type == nullptr; }
+
+  // TODO: think of better way to do this
+  const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
 
 protected:
   // Mega-constructor
@@ -2886,6 +3041,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: think of better way to do this
+  const std::vector<std::unique_ptr<InherentImplItem>>& get_impl_items () const { return impl_items; }
+  std::vector<std::unique_ptr<InherentImplItem>>& get_impl_items () { return impl_items; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2957,6 +3116,10 @@ public:
   TraitImpl &operator= (TraitImpl &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: think of better way to do this
+  const std::vector<std::unique_ptr<TraitImplItem>>& get_impl_items () const { return impl_items; }
+  std::vector<std::unique_ptr<TraitImplItem>>& get_impl_items () { return impl_items; }
 
 protected:
   /* Use covariance to implement clone function as returning this object

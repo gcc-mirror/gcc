@@ -173,10 +173,10 @@ Compilation::visit (AST::IdentifierExpr &ident_expr)
   Bvariable *var = NULL;
   if (!scope.LookupVar (ident_expr.as_string (), &var))
     {
-      rust_fatal_error (ident_expr.locus, "unknown var");
+      rust_fatal_error (ident_expr.get_locus (), "unknown var");
       return;
     }
-  exprs.push_back (backend->var_expression (var, ident_expr.locus));
+  exprs.push_back (backend->var_expression (var, ident_expr.get_locus ()));
 }
 
 void
@@ -199,7 +199,7 @@ Compilation::visit (AST::PathInExpression &path)
   if (scope.LookupFunction (path.as_string (), &fn))
     {
       auto expr
-	= backend->function_code_expression (fn, path.get_locus_slow ());
+	= backend->function_code_expression (fn, path.get_locus ());
       exprs.push_back (expr);
       translatedType = scope.GetFnRetType (fn);
       return;
@@ -221,14 +221,14 @@ Compilation::visit (AST::TypePath &path)
 {
   if (path.segments.size () > 1)
     {
-      rust_error_at (path.locus, "unable to compile multi segment types yet");
+      rust_error_at (path.get_locus (), "unable to compile multi segment types yet");
       return;
     }
 
   Btype *type = NULL;
   if (!scope.LookupType (path.as_string (), &type))
     {
-      rust_error_at (path.locus, "unknown type");
+      rust_error_at (path.get_locus (), "unknown type");
       return;
     }
   translatedType = type;
@@ -254,16 +254,16 @@ Compilation::visit (AST::LiteralExpr &expr)
 
     case AST::Literal::FLOAT:
       compiled
-	= compileFloatLiteral (expr.as_string (), expr.get_locus_slow ());
+	= compileFloatLiteral (expr.as_string (), expr.get_locus ());
       break;
 
     case AST::Literal::INT:
       compiled
-	= compileIntegerLiteral (expr.as_string (), expr.get_locus_slow ());
+	= compileIntegerLiteral (expr.as_string (), expr.get_locus ());
       break;
 
     default:
-      rust_fatal_error (expr.get_locus_slow (), "unknown literal");
+      rust_fatal_error (expr.get_locus (), "unknown literal");
       return;
     }
 
@@ -311,11 +311,11 @@ Compilation::visit (AST::NegationExpr &expr)
       op = OPERATOR_NOT;
       break;
     default:
-      rust_fatal_error (expr.get_locus_slow (), "failed to compile operator");
+      rust_fatal_error (expr.get_locus (), "failed to compile operator");
       return;
     }
 
-  auto unary = backend->unary_expression (op, root, expr.get_locus_slow ());
+  auto unary = backend->unary_expression (op, root, expr.get_locus ());
   exprs.push_back (unary);
 }
 
@@ -372,12 +372,12 @@ Compilation::visit (AST::ArithmeticOrLogicalExpr &expr)
       op = OPERATOR_RSHIFT;
       break;
     default:
-      rust_fatal_error (expr.get_locus_slow (), "failed to compile operator");
+      rust_fatal_error (expr.get_locus (), "failed to compile operator");
       return;
     }
 
   auto binExpr
-    = backend->binary_expression (op, lhs, rhs, expr.get_locus_slow ());
+    = backend->binary_expression (op, lhs, rhs, expr.get_locus ());
   exprs.push_back (binExpr);
 }
 
@@ -422,12 +422,12 @@ Compilation::visit (AST::ComparisonExpr &expr)
       op = OPERATOR_LE;
       break;
     default:
-      rust_fatal_error (expr.get_locus_slow (), "failed to compile operator");
+      rust_fatal_error (expr.get_locus (), "failed to compile operator");
       return;
     }
 
   auto compExpr
-    = backend->binary_expression (op, lhs, rhs, expr.get_locus_slow ());
+    = backend->binary_expression (op, lhs, rhs, expr.get_locus ());
   exprs.push_back (compExpr);
 }
 
@@ -460,12 +460,12 @@ Compilation::visit (AST::LazyBooleanExpr &expr)
       op = OPERATOR_ANDAND;
       break;
     default:
-      rust_fatal_error (expr.get_locus_slow (), "failed to compile operator");
+      rust_fatal_error (expr.get_locus (), "failed to compile operator");
       return;
     }
 
   auto compExpr
-    = backend->binary_expression (op, lhs, rhs, expr.get_locus_slow ());
+    = backend->binary_expression (op, lhs, rhs, expr.get_locus ());
   exprs.push_back (compExpr);
 }
 
@@ -493,7 +493,7 @@ Compilation::visit (AST::AssignmentExpr &expr)
     }
 
   auto s = backend->assignment_statement (scope.GetCurrentFndecl (), lhs, rhs,
-					  expr.get_locus_slow ());
+					  expr.get_locus ());
   scope.AddStatement (s);
 }
 
@@ -582,14 +582,14 @@ Compilation::visit (AST::StructExprStructFields &expr)
   AST::StructStruct *decl = NULL;
   if (!scope.LookupStructDecl (expr.get_struct_name ().as_string (), &decl))
     {
-      rust_error_at (expr.get_locus_slow (), "unknown type");
+      rust_error_at (expr.get_locus (), "unknown type");
       return;
     }
 
   Btype *structType = NULL;
   if (!scope.LookupType (expr.get_struct_name ().as_string (), &structType))
     {
-      rust_fatal_error (expr.get_locus_slow (), "unknown type");
+      rust_fatal_error (expr.get_locus (), "unknown type");
       return;
     }
 
@@ -601,10 +601,10 @@ Compilation::visit (AST::StructExprStructFields &expr)
   for (auto &field : expr.fields)
     {
       Bexpression *value = NULL;
-      VISIT_POP (expr.get_locus_slow (), field, value, exprs);
+      VISIT_POP (expr.get_locus (), field, value, exprs);
       if (value == NULL)
 	{
-	  rust_fatal_error (expr.get_locus_slow (),
+	  rust_fatal_error (expr.get_locus (),
 			    "failed to compile value to struct");
 	  return;
 	}
@@ -614,7 +614,7 @@ Compilation::visit (AST::StructExprStructFields &expr)
 
   structBuffer.pop_back ();
   auto cons = backend->constructor_expression (structType, constructor,
-					       expr.get_locus_slow ());
+					       expr.get_locus ());
   exprs.push_back (cons);
 }
 
@@ -674,7 +674,7 @@ Compilation::visit (AST::CallExpr &expr)
     }
 
   auto call = backend->call_expression (scope.GetCurrentFndecl (), fn, args,
-					NULL, expr.locus);
+					NULL, expr.get_locus ());
   exprs.push_back (call);
 }
 
@@ -751,7 +751,7 @@ Compilation::visit (AST::ReturnExpr &expr)
   std::vector<Bexpression *> retstmts;
   retstmts.push_back (ret);
   auto s = backend->return_statement (scope.GetCurrentFndecl (), retstmts,
-				      expr.locus);
+				      expr.get_locus ());
   scope.AddStatement (s);
 }
 
@@ -791,7 +791,7 @@ Compilation::visit (AST::IfExpr &expr)
   Bblock *then_block = scope.PopBlock ();
 
   auto stmt = backend->if_statement (scope.GetCurrentFndecl (), cond,
-				     then_block, NULL, expr.get_locus_slow ());
+				     then_block, NULL, expr.get_locus ());
   stmts.push_back (stmt);
 }
 
@@ -816,7 +816,7 @@ Compilation::visit (AST::IfExprConseqElse &expr)
 
   auto stmt
     = backend->if_statement (scope.GetCurrentFndecl (), cond, then_block,
-			     else_block, expr.get_locus_slow ());
+			     else_block, expr.get_locus ());
   stmts.push_back (stmt);
 }
 
@@ -856,7 +856,7 @@ Compilation::visit (AST::IfExprConseqIf &expr)
 
   auto stmt
     = backend->if_statement (scope.GetCurrentFndecl (), cond, then_block,
-			     else_block, expr.get_locus_slow ());
+			     else_block, expr.get_locus ());
   stmts.push_back (stmt);
 }
 
@@ -956,7 +956,7 @@ Compilation::visit (AST::Function &function)
       param.type->accept_vis (*this);
       if (translatedType == NULL)
 	{
-	  rust_error_at (param.locus, "failed to generate type for parameter");
+	  rust_error_at (param.get_locus (), "failed to generate type for parameter");
 	  return;
 	}
 
@@ -964,7 +964,7 @@ Compilation::visit (AST::Function &function)
       param.param_name->accept_vis (*this);
       if (patternBuffer.size () <= before)
 	{
-	  rust_error_at (param.locus, "failed to analyse parameter name");
+	  rust_error_at (param.get_locus (), "failed to analyse parameter name");
 	  return;
 	}
 
@@ -975,7 +975,7 @@ Compilation::visit (AST::Function &function)
 	  patternBuffer.pop_back ();
 	  parameters.push_back (
 	    Backend::Btyped_identifier (paramName.variable_ident,
-					translatedType, param.locus));
+					translatedType, param.get_locus ()));
 	}
     }
 
@@ -986,7 +986,7 @@ Compilation::visit (AST::Function &function)
       function.return_type->accept_vis (*this);
       if (translatedType == NULL)
 	{
-	  rust_fatal_error (function.locus,
+	  rust_fatal_error (function.get_locus (),
 			    "failed to generate type for function");
 	  return;
 	}
@@ -998,10 +998,10 @@ Compilation::visit (AST::Function &function)
     }
 
   Btype *fntype = backend->function_type (receiver, parameters, results, NULL,
-					  function.locus);
+					  function.get_locus ());
   Bfunction *fndecl
     = backend->function (fntype, function.function_name, "" /* asm_name */,
-			 0 /* flags */, function.locus);
+			 0 /* flags */, function.get_locus ());
 
   scope.InsertFunction (function.function_name, fndecl, returnType);
   scope.Push ();
@@ -1020,7 +1020,7 @@ Compilation::visit (AST::Function &function)
 
   if (!backend->function_set_parameters (fndecl, param_vars))
     {
-      rust_error_at (function.locus, "failed to setup parameter variables");
+      rust_error_at (function.get_locus (), "failed to setup parameter variables");
       return;
     }
 
@@ -1029,7 +1029,7 @@ Compilation::visit (AST::Function &function)
     {
       if (!compileVarDecl (fndecl, decl, vars))
 	{
-	  rust_error_at (decl->locus, "failed to compile var decl");
+	  rust_error_at (decl->get_locus (), "failed to compile var decl");
 	  return;
 	}
     }
@@ -1037,7 +1037,7 @@ Compilation::visit (AST::Function &function)
   // is null for top level functions - nested functions will have an enclosing
   // scope
   Bblock *enclosingScope = NULL;
-  Location start_location = function.locus;
+  Location start_location = function.get_locus ();
   Location end_location;
   if (function.function_body->statements.size () > 0)
     {
@@ -1057,7 +1057,7 @@ Compilation::visit (AST::Function &function)
       Bstatement *ret_var_stmt = NULL;
       retDecl = backend->temporary_variable (fndecl, code_block, returnType,
 					     NULL, address_is_taken,
-					     function.locus, &ret_var_stmt);
+					     function.get_locus (), &ret_var_stmt);
       scope.AddStatement (ret_var_stmt);
     }
   scope.PushCurrentFunction (function.function_name, fndecl, returnType,
@@ -1071,7 +1071,7 @@ Compilation::visit (AST::Function &function)
   auto body = backend->block_statement (code_block);
   if (!backend->function_set_body (fndecl, body))
     {
-      rust_error_at (function.locus, "failed to set body to function");
+      rust_error_at (function.get_locus (), "failed to set body to function");
       return;
     }
 
@@ -1096,23 +1096,23 @@ Compilation::visit (AST::StructStruct &struct_item)
       if (translatedType == NULL)
 	{
 	  rust_fatal_error (
-	    struct_item.locus /* StructField is mi sing locus */,
+	    struct_item.get_locus () /* StructField is mi sing locus */,
 	    "failed to compile struct field");
 	  return;
 	}
 
       fields.push_back (Backend::Btyped_identifier (
 	field.field_name, translatedType,
-	struct_item.locus /* StructField is mi sing locus */));
+	struct_item.get_locus () /* StructField is mi sing locus */));
     }
 
   auto compiledStruct
     = backend->placeholder_struct_type (struct_item.struct_name,
-					struct_item.locus);
+					struct_item.get_locus ());
   bool ok = backend->set_placeholder_struct_type (compiledStruct, fields);
   if (!ok)
     {
-      rust_fatal_error (struct_item.locus, "failed to compile struct");
+      rust_fatal_error (struct_item.get_locus (), "failed to compile struct");
       return;
     }
 
@@ -1304,7 +1304,7 @@ Compilation::visit (AST::LetStmt &stmt)
       Bvariable *var = NULL;
       if (!scope.LookupVar (pattern.variable_ident, &var))
 	{
-	  rust_error_at (stmt.locus, "failed to find var decl for %s",
+	  rust_error_at (stmt.get_locus (), "failed to find var decl for %s",
 			 pattern.variable_ident.c_str ());
 	  return;
 	}

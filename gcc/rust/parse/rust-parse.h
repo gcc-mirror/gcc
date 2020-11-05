@@ -164,7 +164,8 @@ private:
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::TypeParam> > parse_type_params (EndTokenPred is_end_token);
   std::unique_ptr<AST::TypeParam> parse_type_param ();
-  std::vector<AST::FunctionParam> parse_function_params ();
+  template <typename EndTokenPred>
+  std::vector<AST::FunctionParam> parse_function_params (EndTokenPred is_end_token);
   AST::FunctionParam parse_function_param ();
   std::unique_ptr<AST::Type> parse_function_return_type ();
   AST::WhereClause parse_where_clause ();

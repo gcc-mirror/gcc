@@ -1221,20 +1221,11 @@ class TraitItem
   // NOTE: all children should have outer attributes
 
 protected:
-  // Constructor
-  /*TraitItem(std::vector<Attribute> outer_attrs = std::vector<Attribute>())
-    : outer_attrs(std::move(outer_attrs)) {}*/
-
   // Clone function implementation as pure virtual method
   virtual TraitItem *clone_trait_item_impl () const = 0;
 
 public:
   virtual ~TraitItem () {}
-
-  // Returns whether TraitItem has outer attributes.
-  /*bool has_outer_attrs() const {
-      return !outer_attrs.empty();
-  }*/
 
   // Unique pointer custom clone function
   std::unique_ptr<TraitItem> clone_trait_item () const
@@ -1245,6 +1236,9 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual void mark_for_strip () = 0;
+  virtual bool is_marked_for_strip () const = 0;
 };
 
 /* Abstract base class for items used within an inherent impl block (the impl
@@ -1267,6 +1261,9 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual void mark_for_strip () = 0;
+  virtual bool is_marked_for_strip () const = 0;
 };
 
 // Abstract base class for items used in a trait impl
@@ -1276,7 +1273,7 @@ protected:
   virtual TraitImplItem *clone_trait_impl_item_impl () const = 0;
 
 public:
-  virtual ~TraitImplItem (){};
+  virtual ~TraitImplItem () {};
 
   // Unique pointer custom clone function
   std::unique_ptr<TraitImplItem> clone_trait_impl_item () const
@@ -1287,6 +1284,9 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual void mark_for_strip () = 0;
+  virtual bool is_marked_for_strip () const = 0;
 };
 
 // Abstract base class for an item used inside an extern block

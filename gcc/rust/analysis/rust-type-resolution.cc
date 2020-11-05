@@ -161,7 +161,7 @@ TypeResolution::visit (AST::IdentifierExpr &ident_expr)
   bool ok = scope.LookupType (ident_expr.ident, &type);
   if (!ok)
     {
-      rust_error_at (ident_expr.locus, "unknown identifier");
+      rust_error_at (ident_expr.get_locus (), "unknown identifier");
       return;
     }
 
@@ -272,7 +272,7 @@ TypeResolution::visit (AST::LiteralExpr &expr)
 
   if (type.empty ())
     {
-      rust_error_at (expr.locus, "unknown literal: %s",
+      rust_error_at (expr.get_locus (), "unknown literal: %s",
 		     expr.literal.as_string ().c_str ());
       return;
     }
@@ -282,7 +282,7 @@ TypeResolution::visit (AST::LiteralExpr &expr)
   if (ok)
     typeBuffer.push_back (val);
   else
-    rust_error_at (expr.locus, "unknown literal type: %s", type.c_str ());
+    rust_error_at (expr.get_locus (), "unknown literal type: %s", type.c_str ());
 }
 
 void
@@ -318,7 +318,7 @@ TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
   expr.visit_lhs (*this);
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.locus, "unable to determine lhs type");
+      rust_error_at (expr.get_locus (), "unable to determine lhs type");
       return;
     }
 
@@ -329,7 +329,7 @@ TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
   expr.visit_rhs (*this);
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.locus, "unable to determine rhs type");
+      rust_error_at (expr.get_locus (), "unable to determine rhs type");
       return;
     }
 
@@ -361,7 +361,7 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
   expr.visit_lhs (*this);
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.locus, "unable to determine lhs type");
+      rust_error_at (expr.get_locus (), "unable to determine lhs type");
       return;
     }
 
@@ -372,7 +372,7 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
   expr.visit_rhs (*this);
   if (typeBuffer.size () <= before)
     {
-      rust_error_at (expr.locus, "unable to determine rhs type");
+      rust_error_at (expr.get_locus (), "unable to determine rhs type");
       return;
     }
 
@@ -583,7 +583,7 @@ TypeResolution::visit (AST::CallExpr &expr)
   auto numInferedParams = typeBuffer.size () - before;
   if (numInferedParams != expr.params.size ())
     {
-      rust_error_at (expr.locus, "Failed to infer all parameters");
+      rust_error_at (expr.get_locus (), "Failed to infer all parameters");
       return;
     }
 
@@ -768,14 +768,14 @@ TypeResolution::visit (AST::Function &function)
 
   for (auto &param : function.function_params)
     {
-      if (!isTypeInScope (param.type.get (), param.locus))
+      if (!isTypeInScope (param.type.get (), param.get_locus ()))
 	return;
 
       auto before = letPatternBuffer.size ();
       param.param_name->accept_vis (*this);
       if (letPatternBuffer.size () <= before)
 	{
-	  rust_error_at (param.locus, "failed to analyse parameter name");
+	  rust_error_at (param.get_locus (), "failed to analyse parameter name");
 	  return;
 	}
 
@@ -787,7 +787,7 @@ TypeResolution::visit (AST::Function &function)
   // ensure the return type is resolved
   if (function.has_function_return_type ())
     {
-      if (!isTypeInScope (function.return_type.get (), function.locus))
+      if (!isTypeInScope (function.return_type.get (), function.get_locus ()))
 	return;
     }
 
@@ -1006,7 +1006,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
   scope.InsertLocal (stmt.as_string (), &stmt);
   if (!stmt.has_init_expr () && !stmt.has_type ())
     {
-      rust_error_at (stmt.locus,
+      rust_error_at (stmt.get_locus (),
 		     "E0282: type annotations or init expression needed");
       return;
     }

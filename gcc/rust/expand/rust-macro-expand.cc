@@ -105,7 +105,14 @@ namespace Rust {
         void visit(AST::UseTreeGlob& use_tree) override {}
         void visit(AST::UseTreeList& use_tree) override {}
         void visit(AST::UseTreeRebind& use_tree) override {}
-        void visit(AST::UseDeclaration& use_decl) override {}
+        void visit(AST::UseDeclaration& use_decl) override {
+            // strip test based on outer attrs
+            expander.expand_cfg_attrs(use_decl.get_outer_attrs());
+            if (expander.fails_cfg(use_decl.get_outer_attrs())) {
+                use_decl.mark_for_strip();
+                return;
+            }
+        }
         void visit(AST::Function& function) override {}
         void visit(AST::TypeAlias& type_alias) override {}
         void visit(AST::StructStruct& struct_item) override {}
@@ -117,14 +124,158 @@ namespace Rust {
         void visit(AST::Enum& enum_item) override {}
         void visit(AST::Union& union_item) override {}
         void visit(AST::ConstantItem& const_item) override {}
-        void visit(AST::StaticItem& static_item) override {}
-        void visit(AST::TraitItemFunc& item) override {}
-        void visit(AST::TraitItemMethod& item) override {}
-        void visit(AST::TraitItemConst& item) override {}
-        void visit(AST::TraitItemType& item) override {}
-        void visit(AST::Trait& trait) override {}
-        void visit(AST::InherentImpl& impl) override {}
-        void visit(AST::TraitImpl& impl) override {}
+        void visit(AST::StaticItem& static_item) override {
+            
+        }
+        void visit(AST::TraitItemFunc& item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+
+            /* strip function parameters if required - this is specifically 
+             * allowed by spec */
+            auto& params = item.get_function_params();
+            for (int i = 0; i < params.size(); ) {
+                auto& param_attrs = params[i].get_outer_attrs ();
+                expander.expand_cfg_attrs(param_attrs);
+                if (expander.fails_cfg (param_attrs))
+                    params.erase (params.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::TraitItemMethod& item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+
+            /* assuming you can't strip self param - wouldn't be a method 
+             * anymore. spec allows outer attrs on self param, but doesn't
+             * specify whether cfg is used. */
+
+            /* strip function parameters if required - this is specifically 
+             * allowed by spec */
+            auto& params = item.get_function_params();
+            for (int i = 0; i < params.size(); ) {
+                auto& param_attrs = params[i].get_outer_attrs ();
+                expander.expand_cfg_attrs(param_attrs);
+                if (expander.fails_cfg (param_attrs))
+                    params.erase (params.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::TraitItemConst& item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+            /* TODO: is there any way to invalidate the expr? Are attributes 
+             * even allowed on it? */
+        }
+        void visit(AST::TraitItemType& item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::Trait& trait) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(trait.get_outer_attrs());
+            if (expander.fails_cfg(trait.get_outer_attrs())) {
+                trait.mark_for_strip();
+                return;
+            }
+
+            // strip test based on inner attrs
+            expander.expand_cfg_attrs(trait.get_inner_attrs());
+            if (expander.fails_cfg(trait.get_inner_attrs())) {
+                trait.mark_for_strip();
+                return;
+            }
+
+            // strip trait items if required
+            auto& trait_items = trait.get_trait_items();
+            for (int i = 0; i < trait_items.size(); ) {
+                auto& item = trait_items[i];
+
+                // mark for stripping if required
+                item->accept_vis(*this);
+
+                if (item->is_marked_for_strip ())
+                    trait_items.erase (trait_items.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::InherentImpl& impl) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(impl.get_outer_attrs());
+            if (expander.fails_cfg(impl.get_outer_attrs())) {
+                impl.mark_for_strip();
+                return;
+            }
+
+            // strip test based on inner attrs
+            expander.expand_cfg_attrs(impl.get_inner_attrs());
+            if (expander.fails_cfg(impl.get_inner_attrs())) {
+                impl.mark_for_strip();
+                return;
+            }
+
+            // strip external items if required
+            auto& impl_items = impl.get_impl_items();
+            for (int i = 0; i < impl_items.size(); ) {
+                auto& item = impl_items[i];
+
+                // mark for stripping if required
+                item->accept_vis(*this);
+
+                if (item->is_marked_for_strip ())
+                    impl_items.erase (impl_items.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::TraitImpl& impl) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(impl.get_outer_attrs());
+            if (expander.fails_cfg(impl.get_outer_attrs())) {
+                impl.mark_for_strip();
+                return;
+            }
+
+            // strip test based on inner attrs
+            expander.expand_cfg_attrs(impl.get_inner_attrs());
+            if (expander.fails_cfg(impl.get_inner_attrs())) {
+                impl.mark_for_strip();
+                return;
+            }
+
+            // strip external items if required
+            auto& impl_items = impl.get_impl_items();
+            for (int i = 0; i < impl_items.size(); ) {
+                auto& item = impl_items[i];
+
+                // mark for stripping if required
+                item->accept_vis(*this);
+
+                if (item->is_marked_for_strip ())
+                    impl_items.erase (impl_items.begin() + i);
+                else
+                    i++;
+            }
+        }
         void visit(AST::ExternalStaticItem& item) override {
             // strip test based on outer attrs
             expander.expand_cfg_attrs(item.get_outer_attrs());
@@ -144,8 +295,10 @@ namespace Rust {
             /* strip function parameters if required - this is specifically 
              * allowed by spec */
             auto& params = item.get_function_params();
-            for (auto i = 0; i < params.size(); ) {
-                if (expander.fails_cfg (params[i].get_outer_attrs ()))
+            for (int i = 0; i < params.size(); ) {
+                auto& param_attrs = params[i].get_outer_attrs ();
+                expander.expand_cfg_attrs(param_attrs);
+                if (expander.fails_cfg (param_attrs))
                     params.erase (params.begin() + i);
                 else
                     i++;
@@ -171,7 +324,7 @@ namespace Rust {
 
             // strip external items if required
             auto& extern_items = block.get_extern_items();
-            for (auto i = 0; i < extern_items.size(); ) {
+            for (int i = 0; i < extern_items.size(); ) {
                 auto& item = extern_items[i];
 
                 // mark for stripping if required

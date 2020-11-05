@@ -464,6 +464,7 @@ Parser<ManagedTokenSource>::parse_inner_attributes ()
 	}
     }
 
+  inner_attributes.shrink_to_fit ();
   return inner_attributes;
 }
 
@@ -962,6 +963,7 @@ Parser<ManagedTokenSource>::parse_items ()
 	}
     }
 
+  items.shrink_to_fit ();
   return items;
 }
 
@@ -1073,6 +1075,7 @@ Parser<ManagedTokenSource>::parse_outer_attributes ()
 	}
     }
 
+  outer_attributes.shrink_to_fit ();
   return outer_attributes;
 
   /* TODO: this shares basically all code with parse_inner_attributes except
@@ -2442,9 +2445,7 @@ Parser<ManagedTokenSource>::parse_function (
   // parse function parameters (only if next token isn't right paren)
   std::vector<AST::FunctionParam> function_params;
   if (lexer.peek_token ()->get_id () != RIGHT_PAREN)
-    {
-      function_params = parse_function_params ();
-    }
+      function_params = parse_function_params ([](TokenId id) { return id == RIGHT_PAREN; });
 
   if (!skip_token (RIGHT_PAREN))
     {
@@ -2745,6 +2746,7 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 	std::make_move_iterator(type_params.end()));
   }*/
 
+  generic_params.shrink_to_fit ();
   return generic_params;
 }
 
@@ -2902,6 +2904,7 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
 	std::make_move_iterator(type_params.end()));
   }*/
 
+  generic_params.shrink_to_fit ();
   return generic_params;
 }
 
@@ -3149,6 +3152,7 @@ Parser<ManagedTokenSource>::parse_type_params ()
       lexer.skip_token ();
     }
 
+  type_params.shrink_to_fit ();
   return type_params;
 }
 
@@ -3180,6 +3184,7 @@ Parser<ManagedTokenSource>::parse_type_params (EndTokenPred is_end_token)
       lexer.skip_token ();
     }
 
+  type_params.shrink_to_fit ();
   return type_params;
   /* TODO: this shares most code with parse_lifetime_params - good place to use
    * template (i.e. parse_non_ptr_sequence if doable) */
@@ -3236,24 +3241,24 @@ Parser<ManagedTokenSource>::parse_type_param ()
 			std::move (outer_attr)));
 }
 
-// Parses regular (i.e. non-generic) parameters in functions or methods.
+/* Parses regular (i.e. non-generic) parameters in functions or methods. Also 
+ * has end token handling. */
 template <typename ManagedTokenSource>
+template <typename EndTokenPred>
 std::vector<AST::FunctionParam>
-Parser<ManagedTokenSource>::parse_function_params ()
+Parser<ManagedTokenSource>::parse_function_params (EndTokenPred is_end_token)
 {
   std::vector<AST::FunctionParam> params;
 
-  // HACK: return early if RIGHT_PAREN is found
-  if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
-    {
+  if (is_end_token (lexer.peek_token ()->get_id ()))
       return params;
-    }
 
   AST::FunctionParam initial_param = parse_function_param ();
 
   // Return empty parameter list if no parameter there
-  if (initial_param.is_error ())
+  if (initial_param.is_error ()) 
     {
+      // TODO: is this an error?
       return params;
     }
 
@@ -3268,13 +3273,9 @@ Parser<ManagedTokenSource>::parse_function_params ()
       // skip comma if applies
       lexer.skip_token ();
 
-      /* HACK: break if next token is a right (closing) paren - this is not
-       * strictly true via grammar rule but seems to be true in practice (i.e.
-       * with trailing comma). */
-      if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
-	{
+      // TODO: strictly speaking, shouldn't there be no trailing comma?
+      if (is_end_token (lexer.peek_token ()->get_id ()))
 	  break;
-	}
 
       // now, as right paren would break, function param is required
       AST::FunctionParam param = parse_function_param ();
@@ -3291,6 +3292,7 @@ Parser<ManagedTokenSource>::parse_function_params ()
       t = lexer.peek_token ();
     }
 
+  params.shrink_to_fit ();
   return params;
 }
 
@@ -3300,6 +3302,10 @@ template <typename ManagedTokenSource>
 AST::FunctionParam
 Parser<ManagedTokenSource>::parse_function_param ()
 {
+  // parse outer attributes if they exist
+  std::vector<AST::Attribute> outer_attrs = parse_outer_attributes ();
+
+  // TODO: should saved location be at start of outer attributes or pattern?
   Location locus = lexer.peek_token ()->get_locus ();
   std::unique_ptr<AST::Pattern> param_pattern = parse_pattern ();
 
@@ -3324,7 +3330,7 @@ Parser<ManagedTokenSource>::parse_function_param ()
     }
 
   return AST::FunctionParam (std::move (param_pattern), std::move (param_type),
-			     locus);
+			     std::move (outer_attrs), locus);
 }
 
 /* Parses a function or method return type syntactical construction. Also
@@ -3334,9 +3340,8 @@ std::unique_ptr<AST::Type>
 Parser<ManagedTokenSource>::parse_function_return_type ()
 {
   if (lexer.peek_token ()->get_id () != RETURN_TYPE)
-    {
       return nullptr;
-    }
+
   // skip return type, as it now obviously exists
   lexer.skip_token ();
 
@@ -3391,6 +3396,7 @@ Parser<ManagedTokenSource>::parse_where_clause ()
       t = lexer.peek_token ();
     }
 
+  where_clause_items.shrink_to_fit ();
   return AST::WhereClause (std::move (where_clause_items));
 }
 
@@ -3542,8 +3548,8 @@ Parser<ManagedTokenSource>::parse_type_param_bounds ()
   return type_param_bounds;
 }
 
-// Parses type parameter bounds in where clause or generic arguments, with end
-// token handling.
+/* Parses type parameter bounds in where clause or generic arguments, with end
+ * token handling. */
 template <typename ManagedTokenSource>
 template <typename EndTokenPred>
 std::vector<std::unique_ptr<AST::TypeParamBound> >
@@ -4092,6 +4098,7 @@ Parser<ManagedTokenSource>::parse_tuple_fields ()
       t = lexer.peek_token ();
     }
 
+  fields.shrink_to_fit ();
   return fields;
 
   // TODO: this shares basically all code with function params and struct fields
@@ -4196,6 +4203,7 @@ Parser<ManagedTokenSource>::parse_enum_items ()
       items.push_back (std::move (item));
     }
 
+  items.shrink_to_fit ();
   return items;
 
   /* TODO: use template if doable (parse_non_ptr_sequence) */
@@ -4237,6 +4245,7 @@ Parser<ManagedTokenSource>::parse_enum_items (EndTokenPred is_end_tok)
       items.push_back (std::move (item));
     }
 
+  items.shrink_to_fit ();
   return items;
 
   /* TODO: use template if doable (parse_non_ptr_sequence) */
@@ -4530,6 +4539,9 @@ Parser<ManagedTokenSource>::parse_trait (
       return nullptr;
     }
 
+  // parse inner attrs (if they exist)
+  std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
+
   // parse trait items
   std::vector<std::unique_ptr<AST::TraitItem> > trait_items;
 
@@ -4555,11 +4567,12 @@ Parser<ManagedTokenSource>::parse_trait (
       return nullptr;
     }
 
+  trait_items.shrink_to_fit ();
   return std::unique_ptr<AST::Trait> (
     new AST::Trait (std::move (ident), is_unsafe, std::move (generic_params),
 		    std::move (type_param_bounds), std::move (where_clause),
 		    std::move (trait_items), std::move (vis),
-		    std::move (outer_attrs), locus));
+		    std::move (outer_attrs), std::move (inner_attrs), locus));
 }
 
 // Parses a trait item used inside traits (not trait, the Item).
@@ -4613,27 +4626,25 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 	    return nullptr;
 	  }
 
-	// now for function vs method disambiguation - method has opening "self"
-	// param
+	/* now for function vs method disambiguation - method has opening "self"
+	 * param */
 	AST::SelfParam self_param = parse_self_param ();
-	// FIXME: ensure that self param doesn't accidently consume tokens for a
-	// function
+	/* FIXME: ensure that self param doesn't accidently consume tokens for a
+	 * function */
 	bool is_method = false;
 	if (!self_param.is_error ())
 	  {
 	    is_method = true;
 
-	    // skip comma so function and method regular params can be parsed in
-	    // same way
+	    /* skip comma so function and method regular params can be parsed in
+	     * same way */
 	    if (lexer.peek_token ()->get_id () == COMMA)
-	      {
 		lexer.skip_token ();
-	      }
 	  }
 
 	// parse trait function params
 	std::vector<AST::FunctionParam> function_params
-	  = parse_function_params ();
+	  = parse_function_params ([](TokenId id) { return id == RIGHT_PAREN; });
 
 	if (!skip_token (RIGHT_PAREN))
 	  {
@@ -4914,6 +4925,8 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
       // DEBUG
       fprintf (stderr, "successfully parsed inherent impl\n");
 
+      impl_items.shrink_to_fit ();
+
       return std::unique_ptr<AST::InherentImpl> (new AST::InherentImpl (
 	std::move (impl_items), std::move (generic_params), std::move (type),
 	std::move (where_clause), std::move (vis), std::move (inner_attrs),
@@ -4986,6 +4999,8 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
 
       // DEBUG
       fprintf (stderr, "successfully parsed trait impl\n");
+
+      impl_items.shrink_to_fit ();
 
       return std::unique_ptr<AST::TraitImpl> (
 	new AST::TraitImpl (std::move (type_path), is_unsafe, has_exclam,
@@ -5138,24 +5153,22 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
 
   // now for function vs method disambiguation - method has opening "self" param
   AST::SelfParam self_param = parse_self_param ();
-  // FIXME: ensure that self param doesn't accidently consume tokens for a
-  // function one idea is to lookahead up to 4 tokens to see whether self is one
-  // of them
+  /* FIXME: ensure that self param doesn't accidently consume tokens for a
+   * function one idea is to lookahead up to 4 tokens to see whether self is one
+   * of them */
   bool is_method = false;
   if (!self_param.is_error ())
     {
       is_method = true;
 
-      // skip comma so function and method regular params can be parsed in same
-      // way
+      /* skip comma so function and method regular params can be parsed in same
+       * way */
       if (lexer.peek_token ()->get_id () == COMMA)
-	{
 	  lexer.skip_token ();
-	}
     }
 
   // parse trait function params
-  std::vector<AST::FunctionParam> function_params = parse_function_params ();
+  std::vector<AST::FunctionParam> function_params = parse_function_params ([](TokenId id) { return id == RIGHT_PAREN; });
 
   if (!skip_token (RIGHT_PAREN))
     {
@@ -5400,7 +5413,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   std::vector<AST::FunctionParam> function_params;
   if (lexer.peek_token ()->get_id () != RIGHT_PAREN)
     {
-      function_params = parse_function_params ();
+      function_params = parse_function_params ([](TokenId id) { return id == RIGHT_PAREN; });
 
       if (function_params.empty ())
 	{
@@ -5534,6 +5547,8 @@ Parser<ManagedTokenSource>::parse_extern_block (
       // skip somewhere
       return nullptr;
     }
+  
+  extern_items.shrink_to_fit ();
 
   return std::unique_ptr<AST::ExternBlock> (
     new AST::ExternBlock (std::move (abi), std::move (extern_items),
@@ -5689,6 +5704,8 @@ Parser<ManagedTokenSource>::parse_external_item ()
 	    // skip somewhere?
 	    return nullptr;
 	  }
+  
+  function_params.shrink_to_fit ();
 
 	return std::unique_ptr<AST::ExternalFunctionItem> (
 	  new AST::ExternalFunctionItem (
@@ -6220,6 +6237,7 @@ Parser<ManagedTokenSource>::parse_type_path_function ()
   // parse optional return type
   std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
 
+  inputs.shrink_to_fit ();
   return AST::TypePathFunction (std::move (inputs), std::move (return_type));
 }
 
@@ -6391,6 +6409,8 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_expression (
 
       t = lexer.peek_token ();
     }
+
+  segments.shrink_to_fit ();
 
   // FIXME: outer attr parsing
   return AST::QualifiedPathInExpression (std::move (qual_path_type),
@@ -6667,7 +6687,7 @@ Parser<ManagedTokenSource>::parse_method ()
     lexer.skip_token ();
 
   // parse function parameters
-  std::vector<AST::FunctionParam> function_params = parse_function_params ();
+  std::vector<AST::FunctionParam> function_params = parse_function_params ([](TokenId id) { return id == RIGHT_PAREN; });
 
   if (!skip_token (RIGHT_PAREN))
     {
@@ -7066,6 +7086,8 @@ Parser<ManagedTokenSource>::parse_block_expr (
 
   // grammar allows for empty block expressions
 
+  stmts.shrink_to_fit ();
+
   return std::unique_ptr<AST::BlockExpr> (
     new AST::BlockExpr (std::move (stmts), std::move (expr),
 			std::move (inner_attrs), std::move (outer_attrs),
@@ -7154,6 +7176,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (
 
 	  t = lexer.peek_token ();
 	}
+      params.shrink_to_fit ();
       break;
     default:
       rust_error_at (t->get_locus (),

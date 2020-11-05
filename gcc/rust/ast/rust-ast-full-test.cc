@@ -678,33 +678,23 @@ Method::as_string () const
   else
     {
       for (const auto &param : function_params)
-	{
 	  str += "\n  " + param.as_string ();
-	}
     }
 
   str += "\n Return type: ";
   if (has_return_type ())
-    {
       str += return_type->as_string ();
-    }
   else
-    {
       str += "none (void)";
-    }
 
   str += "\n Where clause: ";
   if (has_where_clause ())
-    {
       str += where_clause.as_string ();
-    }
   else
-    {
       str += "none";
-    }
 
   str += "\n Block expr (body): \n  ";
-  str += expr->as_string ();
+  str += function_body->as_string ();
 
   return str;
 }
