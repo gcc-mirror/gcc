@@ -4035,6 +4035,48 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
     }
 }
 
+/* Walk the grouped store chains and replace entries with their
+   pattern variant if any.  */
+
+static void
+vect_fixup_store_groups_with_patterns (vec_info *vinfo)
+{
+  stmt_vec_info first_element;
+  unsigned i;
+
+  FOR_EACH_VEC_ELT (vinfo->grouped_stores, i, first_element)
+    {
+      /* We also have CTORs in this array.  */
+      if (!STMT_VINFO_GROUPED_ACCESS (first_element))
+	continue;
+      if (STMT_VINFO_IN_PATTERN_P (first_element))
+	{
+	  stmt_vec_info orig = first_element;
+	  first_element = STMT_VINFO_RELATED_STMT (first_element);
+	  DR_GROUP_FIRST_ELEMENT (first_element) = first_element;
+	  DR_GROUP_SIZE (first_element) = DR_GROUP_SIZE (orig);
+	  DR_GROUP_GAP (first_element) = DR_GROUP_GAP (orig);
+	  DR_GROUP_NEXT_ELEMENT (first_element) = DR_GROUP_NEXT_ELEMENT (orig);
+	  vinfo->grouped_stores[i] = first_element;
+	}
+      stmt_vec_info prev = first_element;
+      while (DR_GROUP_NEXT_ELEMENT (prev))
+	{
+	  stmt_vec_info elt = DR_GROUP_NEXT_ELEMENT (prev);
+	  if (STMT_VINFO_IN_PATTERN_P (elt))
+	    {
+	      stmt_vec_info orig = elt;
+	      elt = STMT_VINFO_RELATED_STMT (elt);
+	      DR_GROUP_NEXT_ELEMENT (prev) = elt;
+	      DR_GROUP_GAP (elt) = DR_GROUP_GAP (orig);
+	      DR_GROUP_NEXT_ELEMENT (elt) = DR_GROUP_NEXT_ELEMENT (orig);
+	    }
+	  DR_GROUP_FIRST_ELEMENT (elt) = first_element;
+	  prev = elt;
+	}
+    }
+}
+
 /* Check if the region described by BB_VINFO can be vectorized, returning
    true if so.  When returning false, set FATAL to true if the same failure
    would prevent vectorization at other vector sizes, false if it is still
@@ -4092,6 +4134,9 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
   fatal = false;
 
   vect_pattern_recog (bb_vinfo);
+
+  /* Update store groups from pattern processing.  */
+  vect_fixup_store_groups_with_patterns (bb_vinfo);
 
   /* Check the SLP opportunities in the basic block, analyze and build SLP
      trees.  */
