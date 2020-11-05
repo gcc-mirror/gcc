@@ -165,6 +165,8 @@ get_tree_range (irange &r, tree expr)
   switch (TREE_CODE (expr))
     {
       case INTEGER_CST:
+	if (TREE_OVERFLOW_P (expr))
+	  expr = drop_tree_overflow (expr);
 	r.set (expr, expr);
 	return true;
 
