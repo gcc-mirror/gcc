@@ -2394,6 +2394,7 @@ start_over:
 	  /* If the loads and stores can be handled with load/store-lane
 	     instructions record it and move on to the next instance.  */
 	  if (loads_permuted
+	      && SLP_INSTANCE_KIND (instance) == slp_inst_kind_store
 	      && vect_store_lanes_supported (vectype, group_size, false))
 	    {
 	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)

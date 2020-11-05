@@ -2171,13 +2171,6 @@ calculate_unrolling_factor (poly_uint64 nunits, unsigned int group_size)
   return exact_div (common_multiple (nunits, group_size), group_size);
 }
 
-enum slp_instance_kind {
-    slp_inst_kind_store,
-    slp_inst_kind_reduc_group,
-    slp_inst_kind_reduc_chain,
-    slp_inst_kind_ctor
-};
-
 static bool
 vect_analyze_slp_instance (vec_info *vinfo,
 			   scalar_stmts_to_slp_tree_map_t *bst_map,
@@ -2253,6 +2246,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  SLP_INSTANCE_ROOT_STMT (new_instance) = root_stmt_info;
+	  SLP_INSTANCE_KIND (new_instance) = kind;
 	  new_instance->reduc_phis = NULL;
 	  new_instance->cost_vec = vNULL;
 	  new_instance->subgraph_entries = vNULL;
