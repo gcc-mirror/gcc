@@ -204,7 +204,6 @@ Classes used:
 #error "This is not the version I was looking for."
 #endif
 
-// FIXME: Joseph pointed me at SOURCE_DATE_EPOCH via libcpp callback
 #define _DEFAULT_SOURCE 1 /* To get TZ field of struct tm, if available.  */
 #include "config.h"
 
@@ -3623,7 +3622,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* The README, for human consumption.  */
-  void write_readme (elf_out *to, const char *dialect, unsigned extensions);
+  void write_readme (elf_out *to, cpp_reader *,
+		     const char *dialect, unsigned extensions);
   void write_env (elf_out *to);
 
  private:
@@ -13932,8 +13932,8 @@ module_state::announce (const char *what) const
      readelf -pgnu.c++.README $(module).gcm */
 
 void
-module_state::write_readme (elf_out *to, const char *dialect,
-			    unsigned extensions)
+module_state::write_readme (elf_out *to, cpp_reader *reader,
+			    const char *dialect, unsigned extensions)
 {
   bytes_out readme (to);
 
@@ -13963,7 +13963,7 @@ module_state::write_readme (elf_out *to, const char *dialect,
 
   /* The following fields could be expected to change between
      otherwise identical compilations.  Consider a distributed build
-     system.  */
+     system.  We should have a way of overriding that.  */
   if (char *cwd = getcwd (NULL, 0))
     {
       readme.printf ("cwd: %s", cwd);
@@ -13979,18 +13979,28 @@ module_state::write_readme (elf_out *to, const char *dialect,
 #endif
   {
     /* This of course will change!  */
-    time_t now = time (NULL);
-    if (now != time_t (-1))
+    time_t stampy = cb_get_source_date_epoch (reader);
+    bool epoched = stampy != time_t (-1);
+    if (!epoched)
+      stampy = time (nullptr);
+    if (stampy != time_t (-1))
       {
 	struct tm *time;
 
-	time = gmtime (&now);
+	time = gmtime (&stampy);
 	readme.print_time ("build", time, "UTC");
 
+	if (!epoched)
+	  {
+	    time = localtime (&stampy);
+	    readme.print_time ("local", time,
 #if defined (__USE_MISC) || defined (__USE_BSD) /* Is there a better way?  */
-	time = localtime (&now);
-	readme.print_time ("local", time, time->tm_zone);
+			       time->tm_zone
+#else
+			       ""
 #endif
+			       );
+	  }
       }
   }
 
@@ -17637,7 +17647,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   sccs.release ();
 
   /* Human-readable info.  */
-  write_readme (to, config.dialect_str, extensions);
+  write_readme (to, reader, config.dialect_str, extensions);
 
   // FIXME:QOI:  Have a command line switch to control more detailed
   // information (which might leak data you do not want to leak).

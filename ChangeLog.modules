@@ -1,6 +1,10 @@
 2020-11-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::write_Readme): Add cpp_reader parm, use
+	cb_get_source_date_epoch to see if the time is locked.
+
+	gcc/cp/
 	* module.cc (enum merge_kind): Minor remapping.
 	(merge_kind_name): Adjust.
 
