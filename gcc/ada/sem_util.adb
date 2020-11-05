@@ -6454,11 +6454,7 @@ package body Sem_Util is
                        and then Etype (First_Formal (Id)) =
                                 Etype (Next_Formal (First_Formal (Id)))
                      then
-                        if No (Eq_Prims_List) then
-                           Eq_Prims_List := New_Elmt_List;
-                        end if;
-
-                        Append_Elmt (Id, Eq_Prims_List);
+                        Append_New_Elmt (Id, Eq_Prims_List);
                      end if;
                   end if;
                end if;
@@ -22455,11 +22451,7 @@ package body Sem_Util is
       function Search_Decl (N : Node_Id) return Traverse_Result is
       begin
          if Nkind (N) in N_Declaration then
-            if No (Decls) then
-               Decls := New_Elmt_List;
-            end if;
-
-            Append_Elmt (N, Decls);
+            Append_New_Elmt (N, Decls);
          end if;
 
          return OK;
