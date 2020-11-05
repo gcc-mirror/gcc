@@ -3160,6 +3160,35 @@ index 823eb539993..4ec22162c12 100644
 -- 
 2.27.0
 
+=== double-cherry-pick.patch ===
+From e1d68582022cfa2b1dc76646724b397ba2739439 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Thu, 11 Jun 2020 09:34:41 +0200
+Subject: [PATCH] asan: fix RTX emission for ilp32
+
+gcc/ChangeLog:
+
+	PR sanitizer/95634
+	* asan.c (asan_emit_stack_protection): Fix emission for ilp32
+	by using Pmode instead of ptr_mode.
+
+Co-Authored-By: Jakub Jelinek <jakub@redhat.com>
+(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80)
+(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80)
+---
+ gcc/asan.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/asan.c b/gcc/asan.c
+index 823eb539993..4ec22162c12 100644
+--- a/gcc/asan.c
++++ b/gcc/asan.c
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.27.0
+
 === 0001-Check-for-more-missing-math-decls-on-vxworks.patch ===
 From 0edfc1fd22405ee8e946101e44cd8edc0ee12047 Mon Sep 17 00:00:00 2001
 From: Douglas B Rupp <douglas.b.rupp@gmail.com>

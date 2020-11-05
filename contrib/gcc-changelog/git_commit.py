@@ -423,7 +423,11 @@ class GitCommit:
                     continue
                 elif line.startswith(CHERRY_PICK_PREFIX):
                     commit = line[len(CHERRY_PICK_PREFIX):].rstrip(')')
-                    self.cherry_pick_commit = commit
+                    if self.cherry_pick_commit:
+                        self.errors.append(Error('multiple cherry pick lines',
+                                                 line))
+                    else:
+                        self.cherry_pick_commit = commit
                     continue
 
                 # ChangeLog name will be deduced later
