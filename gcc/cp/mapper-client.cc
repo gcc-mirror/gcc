@@ -50,6 +50,16 @@ spawn_mapper_program (char const **errmsg, std::string &name,
 	ptr++;
       if (!*ptr)
 	break;
+
+      if (!arg_no)
+	{
+	  /* @name means look in the compiler's install dir.  */
+	  if (ptr[0] == '@')
+	    ptr++;
+	  else
+	    full_program_name = nullptr;
+	}
+
       argv[arg_no++] = ptr;
       while (*ptr && *ptr != ' ')
 	ptr++;
@@ -67,10 +77,11 @@ spawn_mapper_program (char const **errmsg, std::string &name,
   else
     {
       int flags = PEX_SEARCH;
-	  
+
       if (full_program_name)
 	{
-	  /* Prepend the invoking path.  */
+	  /* Prepend the invoking path, if the mapper is a simple
+	     file name.  */
 	  size_t dir_len = progname - full_program_name;
 	  std::string argv0;
 	  argv0.reserve (dir_len + name.size ());

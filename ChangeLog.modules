@@ -1,3 +1,16 @@
+2020-11-05  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* mapper-client.cc (spawn_mapper_program): Use @ to indicate
+	looking in install dir.
+	gcc/
+	* doc/invoke.texi (fmodule-mapper): Document behaviour.
+	gcc/testsuite/
+	* g++.dg/modules/extern-tpl-1_b.C: Adjust options.
+	* g++.dg/modules/inc-xlate-1_e.C: Adjust options.
+	* g++.dg/modules/legacy-2_b.H: Adjust options.
+	* g++.dg/modules/legacy-6_[cdef].C: Adjust options.
+
 2020-11-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/

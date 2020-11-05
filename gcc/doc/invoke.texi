@@ -32453,7 +32453,11 @@ form is non-functional.
 A program to spawn, and communicate with on its stdin/stdout streams.
 Your @var{PATH} environment variable is searched for the program.
 Arguments are separated by space characters, (it is not possible for
-one of the arguments delivered to the program to contain a space).
+one of the arguments delivered to the program to contain a space).  An
+exception is if @var{program} begins with @@.  In that case
+@var{program} (sans @@) is looked for in the compiler's internal
+binary directory.  Thus the default mapper-server can be specified
+with @code{@@mapper-server}.
 
 @item <>@r{[}?@var{ident}@r{]}
 @item <>@var{fdinout}@r{[}?@var{ident}@r{]}
