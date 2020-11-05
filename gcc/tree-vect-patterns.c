@@ -5007,6 +5007,8 @@ possible_vector_mask_operation_p (stmt_vec_info stmt_info)
 	  return TREE_CODE_CLASS (rhs_code) == tcc_comparison;
 	}
     }
+  else if (is_a <gphi *> (stmt_info->stmt))
+    return true;
   return false;
 }
 
@@ -5049,41 +5051,63 @@ vect_determine_mask_precision (vec_info *vinfo, stmt_vec_info stmt_info)
      The number of operations are equal, but M16 would have given
      a shorter dependency chain and allowed more ILP.  */
   unsigned int precision = ~0U;
-  gassign *assign = as_a <gassign *> (stmt_info->stmt);
-  unsigned int nops = gimple_num_ops (assign);
-  for (unsigned int i = 1; i < nops; ++i)
+  if (gassign *assign = dyn_cast <gassign *> (stmt_info->stmt))
     {
-      tree rhs = gimple_op (assign, i);
-      if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (rhs)))
-	continue;
-
-      stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
-      if (!def_stmt_info)
-	/* Don't let external or constant operands influence the choice.
-	   We can convert them to whichever vector type we pick.  */
-	continue;
-
-      if (def_stmt_info->mask_precision)
+      unsigned int nops = gimple_num_ops (assign);
+      for (unsigned int i = 1; i < nops; ++i)
 	{
-	  if (precision > def_stmt_info->mask_precision)
-	    precision = def_stmt_info->mask_precision;
+	  tree rhs = gimple_op (assign, i);
+	  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (rhs)))
+	    continue;
+
+	  stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
+	  if (!def_stmt_info)
+	    /* Don't let external or constant operands influence the choice.
+	       We can convert them to whichever vector type we pick.  */
+	    continue;
+
+	  if (def_stmt_info->mask_precision)
+	    {
+	      if (precision > def_stmt_info->mask_precision)
+		precision = def_stmt_info->mask_precision;
+	    }
+	}
+
+      /* If the statement compares two values that shouldn't use vector masks,
+	 try comparing the values as normal scalars instead.  */
+      tree_code rhs_code = gimple_assign_rhs_code (assign);
+      if (precision == ~0U
+	  && TREE_CODE_CLASS (rhs_code) == tcc_comparison)
+	{
+	  tree rhs1_type = TREE_TYPE (gimple_assign_rhs1 (assign));
+	  scalar_mode mode;
+	  tree vectype, mask_type;
+	  if (is_a <scalar_mode> (TYPE_MODE (rhs1_type), &mode)
+	      && (vectype = get_vectype_for_scalar_type (vinfo, rhs1_type))
+	      && (mask_type = get_mask_type_for_scalar_type (vinfo, rhs1_type))
+	      && expand_vec_cmp_expr_p (vectype, mask_type, rhs_code))
+	    precision = GET_MODE_BITSIZE (mode);
 	}
     }
-
-  /* If the statement compares two values that shouldn't use vector masks,
-     try comparing the values as normal scalars instead.  */
-  tree_code rhs_code = gimple_assign_rhs_code (assign);
-  if (precision == ~0U
-      && TREE_CODE_CLASS (rhs_code) == tcc_comparison)
+  else
     {
-      tree rhs1_type = TREE_TYPE (gimple_assign_rhs1 (assign));
-      scalar_mode mode;
-      tree vectype, mask_type;
-      if (is_a <scalar_mode> (TYPE_MODE (rhs1_type), &mode)
-	  && (vectype = get_vectype_for_scalar_type (vinfo, rhs1_type))
-	  && (mask_type = get_mask_type_for_scalar_type (vinfo, rhs1_type))
-	  && expand_vec_cmp_expr_p (vectype, mask_type, rhs_code))
-	precision = GET_MODE_BITSIZE (mode);
+      gphi *phi = as_a <gphi *> (stmt_info->stmt);
+      for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	{
+	  tree rhs = gimple_phi_arg_def (phi, i);
+
+	  stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
+	  if (!def_stmt_info)
+	    /* Don't let external or constant operands influence the choice.
+	       We can convert them to whichever vector type we pick.  */
+	    continue;
+
+	  if (def_stmt_info->mask_precision)
+	    {
+	      if (precision > def_stmt_info->mask_precision)
+		precision = def_stmt_info->mask_precision;
+	    }
+	}
     }
 
   if (dump_enabled_p ())
@@ -5164,15 +5188,30 @@ vect_determine_precisions (vec_info *vinfo)
 	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
 		vect_determine_mask_precision (vinfo, stmt_info);
 	    }
+	  for (auto gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi.phi ());
+	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
+		vect_determine_mask_precision (vinfo, stmt_info);
+	    }
 	}
       for (int i = bb_vinfo->bbs.length () - 1; i != -1; --i)
-	for (gimple_stmt_iterator gsi = gsi_last_bb (bb_vinfo->bbs[i]);
-	     !gsi_end_p (gsi); gsi_prev (&gsi))
-	  {
-	    stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (gsi));
-	    if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
-	      vect_determine_stmt_precisions (vinfo, stmt_info);
-	  }
+	{
+	  for (gimple_stmt_iterator gsi = gsi_last_bb (bb_vinfo->bbs[i]);
+	       !gsi_end_p (gsi); gsi_prev (&gsi))
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (gsi));
+	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
+		vect_determine_stmt_precisions (vinfo, stmt_info);
+	    }
+	  for (auto gsi = gsi_start_phis (bb_vinfo->bbs[i]);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi.phi ());
+	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
+		vect_determine_stmt_precisions (vinfo, stmt_info);
+	    }
+	}
     }
 }
 
