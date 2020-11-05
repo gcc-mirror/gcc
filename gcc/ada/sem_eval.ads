@@ -194,16 +194,16 @@ package Sem_Eval is
 
    function Compile_Time_Compare
      (L, R         : Node_Id;
-      Diff         : out Uint;
+      Diff         : access Uint;
       Assume_Valid : Boolean;
       Rec          : Boolean := False) return Compare_Result;
    --  This version of Compile_Time_Compare returns extra information if the
    --  result is GT or LT. In these cases, if the magnitude of the difference
    --  can be determined at compile time, this (positive) magnitude is returned
-   --  in Diff. If the magnitude of the difference cannot be determined then
-   --  Diff contains No_Uint on return. Rec is a parameter that is set True for
-   --  a recursive call from within Compile_Time_Compare to avoid some infinite
-   --  recursion cases. It should never be set by a client.
+   --  in Diff.all. If the magnitude of the difference cannot be determined
+   --  then Diff.all contains No_Uint on return. Rec is a parameter that is set
+   --  True for a recursive call from within Compile_Time_Compare to avoid some
+   --  infinite recursion cases. It should never be set by a client.
 
    function Compile_Time_Known_Bounds (T : Entity_Id) return Boolean;
    --  If T is an array whose index bounds are all known at compile time, then

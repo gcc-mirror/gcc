@@ -864,21 +864,21 @@ package body Sem_Eval is
      (L, R         : Node_Id;
       Assume_Valid : Boolean) return Compare_Result
    is
-      Discard : Uint;
+      Discard : aliased Uint;
    begin
-      return Compile_Time_Compare (L, R, Discard, Assume_Valid);
+      return Compile_Time_Compare (L, R, Discard'Access, Assume_Valid);
    end Compile_Time_Compare;
 
    function Compile_Time_Compare
      (L, R         : Node_Id;
-      Diff         : out Uint;
+      Diff         : access Uint;
       Assume_Valid : Boolean;
       Rec          : Boolean := False) return Compare_Result
    is
       Ltyp : Entity_Id := Etype (L);
       Rtyp : Entity_Id := Etype (R);
 
-      Discard : Uint;
+      Discard : aliased Uint;
 
       procedure Compare_Decompose
         (N : Node_Id;
@@ -1197,7 +1197,7 @@ package body Sem_Eval is
    --  Start of processing for Compile_Time_Compare
 
    begin
-      Diff := No_Uint;
+      Diff.all := No_Uint;
 
       --  In preanalysis mode, always return Unknown unless the expression
       --  is static. It is too early to be thinking we know the result of a
@@ -1354,12 +1354,12 @@ package body Sem_Eval is
                Hi : constant Uint := Expr_Value (R);
             begin
                if Lo < Hi then
-                  Diff := Hi - Lo;
+                  Diff.all := Hi - Lo;
                   return LT;
                elsif Lo = Hi then
                   return EQ;
                else
-                  Diff := Lo - Hi;
+                  Diff.all := Lo - Hi;
                   return GT;
                end if;
             end;
@@ -1463,10 +1463,10 @@ package body Sem_Eval is
                  and then not Is_Modular_Integer_Type (Rtyp)
                then
                   if Loffs < Roffs then
-                     Diff := Roffs - Loffs;
+                     Diff.all := Roffs - Loffs;
                      return LT;
                   else
-                     Diff := Loffs - Roffs;
+                     Diff.all := Loffs - Roffs;
                      return GT;
                   end if;
                end if;
@@ -1492,14 +1492,14 @@ package body Sem_Eval is
 
                if LHi < RLo then
                   if Single and Assume_Valid then
-                     Diff := RLo - LLo;
+                     Diff.all := RLo - LLo;
                   end if;
 
                   return LT;
 
                elsif RHi < LLo then
                   if Single and Assume_Valid then
-                     Diff := LLo - RLo;
+                     Diff.all := LLo - RLo;
                   end if;
 
                   return GT;
@@ -1562,7 +1562,7 @@ package body Sem_Eval is
 
             if not Is_Generic_Type (Rtyp) then
                case Compile_Time_Compare (L, Type_Low_Bound (Rtyp),
-                                          Discard,
+                                          Discard'Access,
                                           Assume_Valid, Rec => True)
                is
                   when LT => return LT;
@@ -1572,7 +1572,7 @@ package body Sem_Eval is
                end case;
 
                case Compile_Time_Compare (L, Type_High_Bound (Rtyp),
-                                          Discard,
+                                          Discard'Access,
                                           Assume_Valid, Rec => True)
                is
                   when GT => return GT;
@@ -1584,7 +1584,7 @@ package body Sem_Eval is
 
             if not Is_Generic_Type (Ltyp) then
                case Compile_Time_Compare (Type_Low_Bound (Ltyp), R,
-                                          Discard,
+                                          Discard'Access,
                                           Assume_Valid, Rec => True)
                is
                   when GT => return GT;
@@ -1594,7 +1594,7 @@ package body Sem_Eval is
                end case;
 
                case Compile_Time_Compare (Type_High_Bound (Ltyp), R,
-                                          Discard,
+                                          Discard'Access,
                                           Assume_Valid, Rec => True)
                is
                   when LT => return LT;
