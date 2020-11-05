@@ -1,3 +1,49 @@
+2020-11-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/slp-11b.c: Update output scan.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+
+2020-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97515.c: Check listing for folding of entire function.
+
+2020-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97709
+	* gcc.dg/vect/bb-slp-pr97709.c: New testcase.
+
+2020-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97690
+	* gcc.dg/tree-ssa/phi-opt-22.c: New test.
+	* gcc.dg/tree-ssa/ssa-ccp-11.c: Use -O2 instead of -O1.
+	* gcc.dg/vect/bb-slp-pattern-2.c (foo): Use ? 2 : 7, ? 4 : 7 and
+	? 8 : 7 instead of ? 2 : 0, ? 4 : 0, ? 8 : 0.
+
+2020-11-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/pure-code/no-literal-pool-m0.c: Add dg-skip-if
+	and -mfloat-abi=soft option.
+	* gcc.target/arm/pure-code/no-literal-pool-m23.c: Likewise.
+
+2020-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97670
+	* c-c++-common/gomp/allocate-4.c: New test.
+	* g++.dg/gomp/allocate-2.C: New test.
+	* g++.dg/gomp/allocate-3.C: New test.
+
+2020-11-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-attr-nodiscard-1.c, gcc.dg/c2x-attr-nodiscard-2.c,
+	gcc.dg/c2x-attr-nodiscard-3.c, gcc.dg/c2x-attr-nodiscard-4.c: New
+	tests.
+	* gcc.dg/c2x-attr-syntax-5.c: Remove nodiscard test.
+
+2020-11-04  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr97540.c: New test.
+
 2020-11-03  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/pr97695.c: New test.

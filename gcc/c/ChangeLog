@@ -1,3 +1,22 @@
+2020-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97670
+	* c-typeck.c (c_finish_omp_clauses): Look through array reductions to
+	find underlying decl to clear in the aligned_head bitmap.
+
+2020-11-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (handle_nodiscard_attribute): New.
+	(std_attribute_table): Add nodiscard.
+	* c-parser.c (c_parser_std_attribute): Expect argument to
+	nodiscard attribute to be a string.  Do not special-case ignoring
+	nodiscard.
+	* c-typeck.c (maybe_warn_nodiscard): New.
+	(build_compound_expr, emit_side_effect_warnings): Call
+	maybe_warn_nodiscard.
+	(c_process_expr_stmt, c_finish_stmt_expr): Also call
+	emit_side_effect_warnings if warn_unused_result.
+
 2020-10-29  Asher Gordon  <AsDaGo@posteo.net>
 
 	* c-typeck.c (free_all_tagged_tu_seen_up_to): Replace free

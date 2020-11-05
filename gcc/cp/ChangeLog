@@ -1,3 +1,18 @@
+2020-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97670
+	* semantics.c (finish_omp_clauses): Look through array reductions to
+	find underlying decl to clear in the aligned_head bitmap.  Use
+	DECL_UID (t) instead of DECL_UID (OMP_CLAUSE_DECL (c)) when clearing
+	in the bitmap.  Only diagnose errors about allocate vars not being
+	privatized on the same construct on allocate clause if it has
+	a DECL_P OMP_CLAUSE_DECL.
+
+2020-11-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* constexpr.c (potential_constant_expression_1): Handle
+	expressions known to be non-constant for Objective-C.
+
 2020-11-03  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (is_byte_access_type): Don't use char_type_p.

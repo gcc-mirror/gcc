@@ -1,3 +1,34 @@
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97719
+	* include/std/sstream (basic_stringstream(string_type&&, openmode)):
+	Fix default argument.
+	* testsuite/27_io/basic_stringstream/cons/char/97719.cc: New test.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/96817.cc: Fail fail if the library is
+	configured to not use futexes.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94971
+	* include/bits/stl_algo.h (search(FIter, FIter, const Searcher):
+	Adjust #if condition.
+	* include/parallel/algo.h (search(FIter, FIter, const Searcher&):
+	Define new overload for C++17.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92285
+	* doc/xml/manual/evolution.xml: Document change to base class.
+	* doc/html/manual/api.html: Regenerate.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uniform_int_dist.h (uniform_int_distribution::_S_nd):
+	Use qualified-id to refer to static member functions.
+
 2020-11-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/syncstream: Include <bits/std_mutex.h>
