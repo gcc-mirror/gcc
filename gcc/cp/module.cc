@@ -2429,6 +2429,13 @@ public:
   }
 
 public:
+  void fini_partial_redirect (depset *partial)
+  {
+    partial->set_flag_bit<DB_PARTIAL_BIT> ();
+    deps.safe_push (partial);
+  }
+
+public:
   /* Traits for a hash table of pointers to bindings.  */
   struct traits {
     /* Each entry is a pointer to a depset. */
@@ -2535,12 +2542,14 @@ public:
     void add_namespace_context (depset *, tree ns);
 
   private:
-    depset *add_partial_redirect (depset *partial, depset **slot = nullptr);
+    depset *add_partial_redirect (depset *partial);
+    depset *init_partial_redirect (tree inner);
     static bool add_binding_entity (tree, WMB_Flags, void *);
 
   public:
     bool add_namespace_entities (tree ns, bitmap partitions);
     void add_specializations (bool decl_p);
+    void add_partial_entities (vec<tree, va_gc> *);
     void add_class_entities (vec<tree, va_gc> *);
 
   public:    
@@ -3914,11 +3923,17 @@ static vec<mc_slot, va_heap, vl_embed> *entity_ary;
    We could find these by walking ALL the imported classes that we
    could provide a member definition.  But that's expensive,
    especially when you consider lazy implicit member declarations,
-   which could be ANY imported class.
-
-   Template instantiations are in the template table, so we don't
-   need to record those here.  */
+   which could be ANY imported class.  */
 static GTY(()) vec<tree, va_gc> *class_members;
+
+/* The same problem exists for class template partial
+   specializations.  Now that we have constraints, the invariant of
+   expecting them in the instantiation table no longer holds.  One of
+   the constrained partial specializations will be there, but the
+   others not so much.  It's not even an unconstrained partial
+   spacialization in the table :(  so any partial template declaration
+   is added to this list too.  */
+static GTY(()) vec<tree, va_gc> *partial_specializations;
 
 /********************************************************************/
 
@@ -12427,10 +12442,6 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 
   if (!dep)
     {
-      /* We should only be creating dependencies when initializing
-	 non-DECL entries, or when discovering dependencies.  */
-      gcc_checking_assert (ek != EK_DECL || current);
-
       if (DECL_IMPLICIT_TYPEDEF_P (decl)
 	  /* ... not an enum, for instance.  */
 	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
@@ -12438,9 +12449,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	  && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)) == 2)
 	{
 	  /* A partial or explicit specialization. Partial
-	     specializations constrained by requires clauses are not
-	     in the hash table, because they have the same set of
-	     template parameters as their general template:
+	     specializations might not be in the hash table, because
+	     there can be multiple differently-constrained variants.
 
 	     template<typename T> class silly;
 	     template<typename T> requires true class silly {};
@@ -12462,10 +12472,18 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 
 	  if (partial)
 	    {
+	      /* Eagerly create an empty redirect.  The following
+	         make_dependency call could cause hash reallocation,
+	         and invalidate slot's value.  */
+	      depset *redirect = init_partial_redirect (decl);
+	      *slot = redirect;
+
 	      depset *tmpl_dep = make_dependency (partial, EK_DECL);
-	      
+
 	      gcc_checking_assert (tmpl_dep->get_entity_kind () == EK_DECL);
-	      return add_partial_redirect (tmpl_dep, slot);
+	      redirect->fini_partial_redirect (tmpl_dep);
+
+	      return redirect;
 	    }
 	}
 
@@ -12481,11 +12499,12 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	{
 	  if (DECL_ALIAS_TEMPLATE_P (decl) && DECL_TEMPLATE_INFO (decl))
 	    dep->set_flag_bit<DB_ALIAS_TMPL_INST_BIT> ();
-	  else 
+	  else if (CHECKING_P)
 	    /* The template_result should otherwise not be in the
-	       table.  */
-	    gcc_checking_assert
-	      (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
+	       table, or be an empty redirect (created above).  */
+	    if (auto *eslot = entity_slot (DECL_TEMPLATE_RESULT (decl), false))
+	      gcc_checking_assert ((*eslot)->get_entity_kind () == EK_REDIRECT
+				   && !(*eslot)->deps.length ());
 	}
 
       if (ek != EK_USING
@@ -12496,8 +12515,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	     we don't have to look them up again.  */
 	  unsigned index = import_entity_index (decl);
 	  module_state *from = import_entity_module (index);
-	  // Remap will be zero for imports from partitions, which we
-	  // want to treat asif declared in this TU.
+	  /* Remap will be zero for imports from partitions, which we
+	     want to treat as-if declared in this TU.  */
 	  if (from->remap)
 	    {
 	      dep->cluster = index - from->entity_lwm;
@@ -12796,6 +12815,26 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
   return count != 0;
 }
 
+void
+depset::hash::add_partial_entities (vec<tree, va_gc> *partial_classes)
+{
+  for (unsigned ix = 0; ix != partial_classes->length (); ix++)
+    {
+      tree inner = (*partial_classes)[ix];
+
+      depset *dep = make_dependency (inner, depset::EK_DECL);
+
+      if (dep->get_entity_kind () == depset::EK_REDIRECT)
+	/* We should have recorded the template as a partial
+	   specialization.  */
+	gcc_checking_assert (dep->deps[0]->is_partial ());
+      else
+	/* It was an explicit specialization, not a partial one.  */
+	gcc_checking_assert (dep->get_entity_kind ()
+			     == depset::EK_SPECIALIZATION);
+    }
+}
+
 /* Add the members of imported classes that we defined in this TU.
    This will also include lazily created implicit member function
    declarations.  (All others will be definitions.)  */
@@ -12875,27 +12914,33 @@ specialization_cmp (const void *a_, const void *b_)
   return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
 }
 
+depset *
+depset::hash::init_partial_redirect (tree inner)
+{
+  depset *redirect = make_entity (inner, EK_REDIRECT);
+
+  /* Redirects are never reached -- always snap to their target.  */
+  redirect->set_flag_bit<DB_UNREACHED_BIT> ();
+
+  return redirect;
+}
+
 /* Insert a redirect for the DECL_TEMPLATE_RESULT of a partial
    specialization, as we're unable to go from there to here (without
    repeating the DECL_TEMPLATE_SPECIALIZATIONS walk for *every*
    dependency add.  */
 
 depset *
-depset::hash::add_partial_redirect (depset *partial, depset **slot)
+depset::hash::add_partial_redirect (depset *partial)
 {
-  partial->set_flag_bit<DB_PARTIAL_BIT> ();
-
   tree inner = DECL_TEMPLATE_RESULT (partial->get_entity ());
-  depset *redirect = make_entity (inner, EK_REDIRECT);
+  depset *redirect = init_partial_redirect (inner);
 
-  /* Redirects are never reached -- always snap to their target.  */
-  redirect->set_flag_bit<DB_UNREACHED_BIT> ();
-
-  if (!slot)
-    slot = entity_slot (inner, true);
+  depset **slot = entity_slot (inner, true);
   gcc_checking_assert (!*slot);
   *slot = redirect;
-  redirect->deps.safe_push (partial);
+
+  redirect->fini_partial_redirect (partial);
 
   return redirect;
 }
@@ -12980,7 +13025,7 @@ depset::hash::add_specializations (bool decl_p)
 	  else
 	    {
 	      use_tpl = CLASSTYPE_USE_TEMPLATE (spec);
-
+	      // FIXME: Do I need this?
 	      tree partial = DECL_TEMPLATE_SPECIALIZATIONS (entry->tmpl);
 	      for (; partial; partial = TREE_CHAIN (partial))
 		if (TREE_TYPE (partial) == spec)
@@ -12988,6 +13033,7 @@ depset::hash::add_specializations (bool decl_p)
 
 	      if (partial)
 		{
+		  gcc_checking_assert (use_tpl == 2);
 		  gcc_checking_assert (entry->args == TREE_PURPOSE (partial));
 		  is_partial = true;
 		  /* Get the TEMPLATE_DECL for the partial
@@ -13053,14 +13099,17 @@ depset::hash::add_specializations (bool decl_p)
       else
 	{
 	  gcc_checking_assert (decl_p || !is_alias);
-	  dep->set_special ();
-	  dep->deps.safe_push (reinterpret_cast<depset *> (entry));
+	  if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
+	    {
+	      dep->set_special ();
+	      dep->deps.safe_push (reinterpret_cast<depset *> (entry));
+	      if (is_partial)
+		add_partial_redirect (dep);
+	      if (!decl_p)
+		dep->set_flag_bit<DB_TYPE_SPEC_BIT> ();
+	    }
 	  if (needs_reaching)
 	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
-	  if (is_partial)
-	    add_partial_redirect (dep);
-	  if (!decl_p)
-	    dep->set_flag_bit<DB_TYPE_SPEC_BIT> ();
 	  if (is_friend)
 	    dep->set_flag_bit<DB_FRIEND_SPEC_BIT> ();
 	}
@@ -14503,7 +14552,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_DECL:
-	  if (b->is_member ())
+	  if (b->is_member () || b->is_partial ())
 	    {
 	    case depset::EK_SPECIALIZATION:  /* Yowzer! */
 	      counts[MSC_pendings]++;
@@ -15224,11 +15273,12 @@ module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
 
 /* Write the pending table to MOD_SNAME_PFX.pnd
 
-   Specializations are keyed to their primary template.
+   Specializations & partials are keyed to their primary template.
    Members are keyed to their context.
 
-   For specializations, primary templates are keyed to the (namespace
-   name) of their originating decl.  */
+   For specializations & partials, primary templates are keyed to the
+   (namespace name) of their originating decl (because that's the only
+   handle we have).  */
 
 void
 module_state::write_pendings (elf_out *to, vec<depset *> depsets,
@@ -15246,10 +15296,19 @@ module_state::write_pendings (elf_out *to, vec<depset *> depsets,
       depset *d = depsets[ix];
       depset::entity_kind kind = d->get_entity_kind ();
       tree key = NULL_TREE;
-      bool is_spec = kind == depset::EK_SPECIALIZATION;
+      bool is_spec = false;
+      
 
-      if (is_spec)
-	key = reinterpret_cast <spec_entry *> (d->deps[0])->tmpl;
+      if (kind == depset::EK_SPECIALIZATION)
+	{
+	  is_spec = true;
+	  key = reinterpret_cast <spec_entry *> (d->deps[0])->tmpl;
+	}
+      else if (kind == depset::EK_DECL && d->is_partial ())
+	{
+	  is_spec = true;
+	  key = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d->get_entity ()));
+	}
       else if (kind == depset::EK_DECL && d->is_member ())
 	{
 	  tree ctx = DECL_CONTEXT (d->get_entity ());
@@ -17470,6 +17529,11 @@ module_state::write (elf_out *to, cpp_reader *reader)
      detect injected friend specializations.  */
   table.add_specializations (true);
   table.add_specializations (false);
+  if (partial_specializations)
+    {
+      table.add_partial_entities (partial_specializations);
+      partial_specializations = NULL;
+    }
   table.add_namespace_entities (global_namespace, partitions);
   if (class_members)
     {
@@ -18378,6 +18442,10 @@ set_defining_module (tree decl)
 	      vec_safe_push (class_members, decl);
 	    }
 	}
+      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
+	       && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
+	/* This is a partial or explicit specialization.  */
+	vec_safe_push (partial_specializations, decl);
     }
 }
 

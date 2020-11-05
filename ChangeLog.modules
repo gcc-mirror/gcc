@@ -1,6 +1,23 @@
 2020-11-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_partial_redirect): Break out
+	helpers ...
+	(depset::fini_partial_redirect): ... this and ...
+	(depset::hash::init_partial_redirect): ... this.  Call them.
+	(partial_specializations): New vector.
+	(depset::hash::make_dependency): Deal with partial
+	specializations.
+	(depset::hash::add_partial_entities): New.
+	(deset::hash::add_specializations): We may have added a partial.
+	(module_state::write_cluster): Count partials.
+	(module_state::write_pendings): Likewise.
+	(module_state::write): Add partials.
+	(set_defining_module): Append explicit specializations.
+	gcc/testsuite/
+	* g++.dg/modules/constrained-partial-1_[ab].C: New.
+
+	gcc/cp/
 	* mapper-client.cc (spawn_mapper_program): Use @ to indicate
 	looking in install dir.
 	gcc/
