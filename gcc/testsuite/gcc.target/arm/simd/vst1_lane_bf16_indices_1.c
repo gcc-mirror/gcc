@@ -1,6 +1,8 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
+/* { dg-require-effective-target arm_hard_ok } */
 /* { dg-add-options arm_v8_2a_bf16_neon } */
+/* { dg-additional-options "-mfloat-abi=hard" } */
 
 #include "arm_neon.h"
 
