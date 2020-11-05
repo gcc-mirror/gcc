@@ -525,6 +525,9 @@ parm_map_for_arg (gimple *stmt, int i)
   poly_int64 offset;
   struct modref_parm_map parm_map;
 
+  parm_map.parm_offset_known = false;
+  parm_map.parm_offset = 0;
+
   offset_known = unadjusted_ptr_and_unit_offset (op, &op, &offset);
   if (TREE_CODE (op) == SSA_NAME
       && SSA_NAME_IS_DEFAULT_DEF (op)
@@ -1533,9 +1536,11 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
       modref_summary_lto *modref_sum_lto = summaries_lto
 					   ? summaries_lto->get_create (node)
 					   : NULL;
-
       if (optimization_summaries)
 	modref_sum = optimization_summaries->get_create (node);
+
+      if (modref_sum)
+	modref_sum->writes_errno = false;
 
       gcc_assert (!modref_sum || (!modref_sum->loads
 				  && !modref_sum->stores));
