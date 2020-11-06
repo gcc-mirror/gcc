@@ -8001,6 +8001,10 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 		{
 		  /* The scalar inits of the IVs if not vectorized.  */
 		  elt = inits[(ivn*const_nunits + eltn) % group_size];
+		  if (!useless_type_conversion_p (TREE_TYPE (vectype),
+						  TREE_TYPE (elt)))
+		    elt = gimple_build (&init_stmts, VIEW_CONVERT_EXPR,
+					TREE_TYPE (vectype), elt);
 		  init_elts.quick_push (elt);
 		}
 	      /* The number of steps to add to the initial values.  */
