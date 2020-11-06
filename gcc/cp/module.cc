@@ -13979,18 +13979,16 @@ module_state::write_readme (elf_out *to, cpp_reader *reader,
 #endif
   {
     /* This of course will change!  */
-    time_t stampy = cb_get_source_date_epoch (reader);
-    bool epoched = stampy != time_t (-1);
-    if (!epoched)
-      stampy = time (nullptr);
-    if (stampy != time_t (-1))
+    time_t stampy;
+    auto kind = cpp_get_date (reader, &stampy);
+    if (kind != CPP_time_kind::UNKNOWN)
       {
 	struct tm *time;
 
 	time = gmtime (&stampy);
 	readme.print_time ("build", time, "UTC");
 
-	if (!epoched)
+	if (kind == CPP_time_kind::DYNAMIC)
 	  {
 	    time = localtime (&stampy);
 	    readme.print_time ("local", time,

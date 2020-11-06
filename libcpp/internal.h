@@ -524,10 +524,9 @@ struct cpp_reader
   const unsigned char *date;
   const unsigned char *time;
 
-  /* Externally set timestamp to replace current date and time useful for
-     reproducibility.  It should be initialized to -2 (not yet set) and
-     set to -1 to disable it or to a non-negative value to enable it.  */
-  time_t source_date_epoch;
+  /* Time stamp, set idempotently lazily.  */
+  time_t time_stamp;
+  CPP_time_kind time_stamp_kind;
 
   /* A token forcing paste avoidance, and one demarking macro arguments.  */
   cpp_token avoid_paste;

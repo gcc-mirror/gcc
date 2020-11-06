@@ -602,29 +602,21 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	     at init time, because time() and localtime() are very
 	     slow on some systems.  */
 	  time_t tt;
-	  struct tm *tb = NULL;
+	  auto kind = cpp_get_date (pfile,&tt);
 
-	  /* Set a reproducible timestamp for __DATE__ and __TIME__ macro
-	     if SOURCE_DATE_EPOCH is defined.  */
-	  if (pfile->source_date_epoch == (time_t) -2
-	      && pfile->cb.get_source_date_epoch != NULL)
-	    pfile->source_date_epoch = pfile->cb.get_source_date_epoch (pfile);
-
-	  if (pfile->source_date_epoch >= (time_t) 0)
-	    tb = gmtime (&pfile->source_date_epoch);
+	  if (kind == CPP_time_kind::UNKNOWN)
+	    {
+	      cpp_errno (pfile, CPP_DL_WARNING,
+			 "could not determine date and time");
+		
+	      pfile->date = UC"\"??? ?? ????\"";
+	      pfile->time = UC"\"??:??:??\"";
+	    }
 	  else
 	    {
-	      /* (time_t) -1 is a legitimate value for "number of seconds
-		 since the Epoch", so we have to do a little dance to
-		 distinguish that from a genuine error.  */
-	      errno = 0;
-	      tt = time (NULL);
-	      if (tt != (time_t)-1 || errno == 0)
-		tb = localtime (&tt);
-	    }
+	      struct tm *tb = (kind == CPP_time_kind::FIXED
+			       ? gmtime : localtime) (&tt);
 
-	  if (tb)
-	    {
 	      pfile->date = _cpp_unaligned_alloc (pfile,
 						  sizeof ("\"Oct 11 1347\""));
 	      sprintf ((char *) pfile->date, "\"%s %2d %4d\"",
@@ -635,14 +627,6 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 						  sizeof ("\"12:34:56\""));
 	      sprintf ((char *) pfile->time, "\"%02d:%02d:%02d\"",
 		       tb->tm_hour, tb->tm_min, tb->tm_sec);
-	    }
-	  else
-	    {
-	      cpp_errno (pfile, CPP_DL_WARNING,
-			 "could not determine date and time");
-		
-	      pfile->date = UC"\"??? ?? ????\"";
-	      pfile->time = UC"\"??:??:??\"";
 	    }
 	}
 
@@ -682,6 +666,45 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
     }
 
   return result;      
+}
+
+/* Get an idempotent date.  Either the cached value, the value from
+   source epoch, or failing that, the value from time(2).  Use this
+   during compilation so that every time stamp is the same.  */
+CPP_time_kind
+cpp_get_date (cpp_reader *pfile, time_t *result)
+{
+  if (pfile->time_stamp_kind != CPP_time_kind::UNSET)
+    ;
+  else if (pfile->cb.get_source_date_epoch)
+    {
+      pfile->time_stamp= pfile->cb.get_source_date_epoch (pfile);
+      pfile->time_stamp_kind = (pfile->time_stamp == time_t (-1)
+				? CPP_time_kind::UNKNOWN
+				: CPP_time_kind::FIXED);
+    }
+  else
+    {
+      /* Pedantically time_t (-1) is a legitimate value for "number of
+	 seconds since the Epoch".  But it is a stupid time, so let's
+	 just not permit it to exist.  Besides, (a) it's
+	 unrepresentable in our source_epoch API, and (b) glibc never
+	 sets errno anyway, because of precisely this problem, so we
+	 can't distinguish the valid from the invalid anyway.  But
+	 then again, it never fails if passed nullptr.  Yes, other C
+	 libraries exist, whose behaviour in this regard is not known.
+	 It's a confused situation, so let's just be conservative and
+	 users claiming it is 1969-12-31 23:59:59 will be
+	 disappointed.  They're being anachronistic using a compiler
+	 that didn't exist then.  At least get into the seventies!  */
+      pfile->time_stamp = time (nullptr);
+      pfile->time_stamp_kind = (pfile->time_stamp == time_t (-1)
+				? CPP_time_kind::UNKNOWN
+				: CPP_time_kind::DYNAMIC);
+    }
+
+  *result = pfile->time_stamp;
+  return pfile->time_stamp_kind;
 }
 
 /* Convert builtin macros like __FILE__ to a token and push it on the
