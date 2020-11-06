@@ -3430,7 +3430,6 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	}
       else
 	error_at (location, "%qE does not name a type", id);
-
       /* If we're in a template class, it's possible that the user was
 	 referring to a type from a base class.  For example:
 
@@ -3438,10 +3437,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	   template <typename T> struct B : public A<T> { X x; };
 
 	 The user should have said "typename A<T>::X".  */
-      if (cxx_dialect < cxx11 && C_RID_CODE (id) == RID_CONSTEXPR)
+      if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_CONSTEXPR])
 	inform (location, "C++11 %<constexpr%> only available with "
 		"%<-std=c++11%> or %<-std=gnu++11%>");
-      else if (cxx_dialect < cxx11 && C_RID_CODE (id) == RID_NOEXCEPT)
+      else if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_NOEXCEPT])
 	inform (location, "C++11 %<noexcept%> only available with "
 		"%<-std=c++11%> or %<-std=gnu++11%>");
       else if (TREE_CODE (id) == IDENTIFIER_NODE
@@ -3453,8 +3452,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	    inform (location, "%qE was not recognized as a module control-line",
 		    id);
 	}
-      else if (TREE_CODE (id) == IDENTIFIER_NODE
-	       && cxx_dialect < cxx11
+      else if (cxx_dialect < cxx11
+	       && TREE_CODE (id) == IDENTIFIER_NODE
 	       && id_equal (id, "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"%<-std=c++11%> or %<-std=gnu++11%>");

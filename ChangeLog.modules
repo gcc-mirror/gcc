@@ -1,5 +1,9 @@
 2020-11-06  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_parser_diagnose_invalid_type_name): Revert local
+	changes.
+
 	libcpp/
 	* include/cpplib.h (enum CPP_time_kind): New.
 	(cpp_get_date): Declare.
