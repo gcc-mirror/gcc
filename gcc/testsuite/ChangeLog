@@ -1,3 +1,12 @@
+2020-11-05  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2020-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/97392
+	* g++.dg/asan/asan_test.C: Disable -Wstringop-overflow.
+	* gcc.dg/asan/pr80166.c: Likewise.
+
 2020-11-03  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
