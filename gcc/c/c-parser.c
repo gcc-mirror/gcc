@@ -17304,7 +17304,7 @@ c_parser_oacc_wait (location_t loc, c_parser *parser, char *p_name)
   LOC is the location of the #pragma token.  */
 
 static void
-c_parser_omp_atomic (location_t loc, c_parser *parser)
+c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 {
   tree lhs = NULL_TREE, rhs = NULL_TREE, v = NULL_TREE;
   tree lhs1 = NULL_TREE, rhs1 = NULL_TREE;
@@ -17343,6 +17343,12 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	    new_code = OMP_ATOMIC;
 	  else if (!strcmp (p, "capture"))
 	    new_code = OMP_ATOMIC_CAPTURE_NEW;
+	  else if (openacc)
+	    {
+	      p = NULL;
+	      error_at (cloc, "expected %<read%>, %<write%>, %<update%>, "
+			      "or %<capture%> clause");
+	    }
 	  else if (!strcmp (p, "seq_cst"))
 	    new_memory_order = OMP_MEMORY_ORDER_SEQ_CST;
 	  else if (!strcmp (p, "acq_rel"))
@@ -17370,7 +17376,12 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	    {
 	      if (new_code != ERROR_MARK)
 		{
-		  if (code != ERROR_MARK)
+		  /* OpenACC permits 'update capture'.  */
+		  if (openacc
+		      && code == OMP_ATOMIC
+		      && new_code == OMP_ATOMIC_CAPTURE_NEW)
+		    code = new_code;
+		  else if (code != ERROR_MARK)
 		    error_at (cloc, "too many atomic clauses");
 		  else
 		    code = new_code;
@@ -17392,7 +17403,9 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 
   if (code == ERROR_MARK)
     code = OMP_ATOMIC;
-  if (memory_order == OMP_MEMORY_ORDER_UNSPECIFIED)
+  if (openacc)
+    memory_order = OMP_MEMORY_ORDER_RELAXED;
+  else if (memory_order == OMP_MEMORY_ORDER_UNSPECIFIED)
     {
       omp_requires_mask
 	= (enum omp_requires) (omp_requires_mask
@@ -17448,6 +17461,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
 	  }
 	break;
       case OMP_ATOMIC:
+     /* case OMP_ATOMIC_CAPTURE_NEW: - or update to OpenMP 5.1 */
 	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
 	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
 	  {
@@ -21489,7 +21503,7 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
   switch (p_kind)
     {
     case PRAGMA_OACC_ATOMIC:
-      c_parser_omp_atomic (loc, parser);
+      c_parser_omp_atomic (loc, parser, true);
       return;
     case PRAGMA_OACC_CACHE:
       strcpy (p_name, "#pragma acc");
@@ -21516,7 +21530,7 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       stmt = c_parser_oacc_wait (loc, parser, p_name);
       break;
     case PRAGMA_OMP_ATOMIC:
-      c_parser_omp_atomic (loc, parser);
+      c_parser_omp_atomic (loc, parser, false);
       return;
     case PRAGMA_OMP_CRITICAL:
       stmt = c_parser_omp_critical (loc, parser, if_p);
