@@ -5752,9 +5752,10 @@ attribute_fallthrough_p (tree attr)
   tree t = lookup_attribute ("fallthrough", attr);
   if (t == NULL_TREE)
     return false;
-  /* This attribute shall appear at most once in each attribute-list.  */
+  /* It is no longer true that "this attribute shall appear at most once in
+     each attribute-list", but we still give a warning.  */
   if (lookup_attribute ("fallthrough", TREE_CHAIN (t)))
-    warning (OPT_Wattributes, "%<fallthrough%> attribute specified multiple "
+    warning (OPT_Wattributes, "attribute %<fallthrough%> specified multiple "
 	     "times");
   /* No attribute-argument-clause shall be present.  */
   else if (TREE_VALUE (t) != NULL_TREE)

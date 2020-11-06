@@ -14,7 +14,7 @@ f (int i)
       [[fallthrough]];
     case 3:
       bar (1);
-      [[gnu::fallthrough, gnu::fallthrough]]; // { dg-warning ".fallthrough. attribute specified multiple times" }
+      [[gnu::fallthrough, gnu::fallthrough]]; // { dg-warning ".fallthrough. specified multiple times" }
     case 2:
       bar (2);
     }

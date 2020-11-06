@@ -27280,30 +27280,30 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
   return attribute;
 }
 
-/* Check that the attribute ATTRIBUTE appears at most once in the
-   attribute-list ATTRIBUTES.  This is enforced for noreturn (7.6.3),
-   nodiscard, and deprecated (7.6.5).  Note that
-   carries_dependency (7.6.4) isn't implemented yet in GCC.  */
+/* Warn if the attribute ATTRIBUTE appears more than once in the
+   attribute-list ATTRIBUTES.  This used to be enforced for certain
+   attributes, but the restriction was removed in P2156.  Note that
+   carries_dependency ([dcl.attr.depend]) isn't implemented yet in GCC.
+   LOC is the location of ATTRIBUTE.  Returns true if ATTRIBUTE was not
+   found in ATTRIBUTES.  */
 
-static void
-cp_parser_check_std_attribute (tree attributes, tree attribute)
+static bool
+cp_parser_check_std_attribute (location_t loc, tree attributes, tree attribute)
 {
+  static auto alist = { "noreturn", "deprecated", "nodiscard", "maybe_unused",
+			"likely", "unlikely", "fallthrough",
+			"no_unique_address" };
   if (attributes)
-    {
-      tree name = get_attribute_name (attribute);
-      if (is_attribute_p ("noreturn", name)
-	  && lookup_attribute ("noreturn", attributes))
-	error ("attribute %<noreturn%> can appear at most once "
-	       "in an attribute-list");
-      else if (is_attribute_p ("deprecated", name)
-	       && lookup_attribute ("deprecated", attributes))
-	error ("attribute %<deprecated%> can appear at most once "
-	       "in an attribute-list");
-      else if (is_attribute_p ("nodiscard", name)
-	       && lookup_attribute ("nodiscard", attributes))
-	error ("attribute %<nodiscard%> can appear at most once "
-	       "in an attribute-list");
-    }
+    for (const auto &a : alist)
+      if (is_attribute_p (a, get_attribute_name (attribute))
+	  && lookup_attribute (a, attributes))
+	{
+	  if (!from_macro_expansion_at (loc))
+	    warning_at (loc, OPT_Wattributes, "attribute %qs specified "
+			"multiple times", a);
+	  return false;
+	}
+  return true;
 }
 
 /* Parse a list of standard C++-11 attributes.
@@ -27323,14 +27323,17 @@ cp_parser_std_attribute_list (cp_parser *parser, tree attr_ns)
 
   while (true)
     {
+      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
       attribute = cp_parser_std_attribute (parser, attr_ns);
       if (attribute == error_mark_node)
 	break;
       if (attribute != NULL_TREE)
 	{
-	  cp_parser_check_std_attribute (attributes, attribute);
-	  TREE_CHAIN (attribute) = attributes;
-	  attributes = attribute;
+	  if (cp_parser_check_std_attribute (loc, attributes, attribute))
+	    {
+	      TREE_CHAIN (attribute) = attributes;
+	      attributes = attribute;
+	    }
 	}
       token = cp_lexer_peek_token (parser->lexer);
       if (token->type == CPP_ELLIPSIS)
