@@ -1,3 +1,13 @@
+2021-01-13  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Adjust for loop
+	lowering changes.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Likewise.
+
 2020-07-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/firstprivate-int.f90: Use
