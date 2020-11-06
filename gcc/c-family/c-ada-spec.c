@@ -713,7 +713,7 @@ collect_ada_nodes (tree t, const char *source_file)
      in the context of bindings) and namespaces (we do not handle them properly
      yet).  */
   for (n = t; n; n = TREE_CHAIN (n))
-    if (!DECL_IS_BUILTIN (n)
+    if (!DECL_IS_UNDECLARED_BUILTIN (n)
 	&& TREE_CODE (n) != NAMESPACE_DECL
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
       to_dump_count++;
@@ -723,7 +723,7 @@ collect_ada_nodes (tree t, const char *source_file)
 
   /* Store the relevant nodes.  */
   for (n = t; n; n = TREE_CHAIN (n))
-    if (!DECL_IS_BUILTIN (n)
+    if (!DECL_IS_UNDECLARED_BUILTIN (n)
 	&& TREE_CODE (n) != NAMESPACE_DECL
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
       to_dump[i++] = n;
@@ -2321,7 +2321,7 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
       return 0;
 
     case TYPE_DECL:
-      if (DECL_IS_BUILTIN (node))
+      if (DECL_IS_UNDECLARED_BUILTIN (node))
 	{
 	  /* Don't print the declaration of built-in types.  */
 	  if (name_only)
@@ -2444,7 +2444,7 @@ dump_forward_type (pretty_printer *buffer, tree type, tree t, int spc)
       return;
     }
 
-  if (DECL_IS_BUILTIN (decl) || TREE_VISITED (decl))
+  if (DECL_IS_UNDECLARED_BUILTIN (decl) || TREE_VISITED (decl))
     return;
 
   /* Forward declarations are only needed within a given file.  */

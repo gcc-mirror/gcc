@@ -4062,7 +4062,7 @@ error_args_num (location_t loc, tree fndecl, bool too_many_p)
 		  ? G_("too many arguments to function %q#D")
 		  : G_("too few arguments to function %q#D"),
 		  fndecl);
-      if (!DECL_IS_BUILTIN (fndecl))
+      if (!DECL_IS_UNDECLARED_BUILTIN (fndecl))
 	inform (DECL_SOURCE_LOCATION (fndecl), "declared here");
     }
   else

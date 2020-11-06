@@ -7839,7 +7839,7 @@ set_underlying_type (tree x)
 {
   if (x == error_mark_node)
     return;
-  if (DECL_IS_BUILTIN (x) && TREE_CODE (TREE_TYPE (x)) != ARRAY_TYPE)
+  if (DECL_IS_UNDECLARED_BUILTIN (x) && TREE_CODE (TREE_TYPE (x)) != ARRAY_TYPE)
     {
       if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	TYPE_NAME (TREE_TYPE (x)) = x;
@@ -7873,7 +7873,7 @@ user_facing_original_type_p (const_tree type)
   tree decl = TYPE_NAME (type);
 
   /* Look through any typedef in "user" code.  */
-  if (!DECL_IN_SYSTEM_HEADER (decl) && !DECL_IS_BUILTIN (decl))
+  if (!DECL_IN_SYSTEM_HEADER (decl) && !DECL_IS_UNDECLARED_BUILTIN (decl))
     return true;
 
   /* If the original type is also named and is in the user namespace,
@@ -8369,13 +8369,13 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
   if (TREE_TYPE (expr)
       && TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
       && TREE_CODE (expr) == FUNCTION_DECL
-      /* The intersection of DECL_BUILT_IN and DECL_IS_BUILTIN avoids
+      /* The intersection of DECL_BUILT_IN and DECL_IS_UNDECLARED_BUILTIN avoids
 	 false positives for user-declared built-ins such as abs or
 	 strlen, and for C++ operators new and delete.
 	 The c_decl_implicit() test avoids false positives for implicitly
 	 declared built-ins with library fallbacks (such as abs).  */
       && fndecl_built_in_p (expr)
-      && DECL_IS_BUILTIN (expr)
+      && DECL_IS_UNDECLARED_BUILTIN (expr)
       && !c_decl_implicit (expr)
       && !DECL_ASSEMBLER_NAME_SET_P (expr))
     {
@@ -9137,7 +9137,8 @@ c_common_finalize_early_debug (void)
   struct cgraph_node *cnode;
   FOR_EACH_FUNCTION (cnode)
     if (!cnode->alias && !cnode->thunk
-	&& (cnode->has_gimple_body_p () || !DECL_IS_BUILTIN (cnode->decl)))
+	&& (cnode->has_gimple_body_p ()
+	    || !DECL_IS_UNDECLARED_BUILTIN (cnode->decl)))
       (*debug_hooks->early_global_decl) (cnode->decl);
 }
 

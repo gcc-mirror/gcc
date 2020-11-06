@@ -484,7 +484,7 @@ static void
 go_decl (tree decl)
 {
   if (!TREE_PUBLIC (decl)
-      || DECL_IS_BUILTIN (decl)
+      || DECL_IS_UNDECLARED_BUILTIN (decl)
       || DECL_NAME (decl) == NULL_TREE)
     return;
   vec_safe_push (queue, decl);
@@ -522,7 +522,7 @@ go_type_decl (tree decl, int local)
 {
   real_debug_hooks->type_decl (decl, local);
 
-  if (local || DECL_IS_BUILTIN (decl))
+  if (local || DECL_IS_UNDECLARED_BUILTIN (decl))
     return;
   if (DECL_NAME (decl) == NULL_TREE
       && (TYPE_NAME (TREE_TYPE (decl)) == NULL_TREE

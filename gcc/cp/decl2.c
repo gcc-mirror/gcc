@@ -4347,7 +4347,7 @@ collect_source_refs (tree namespc)
 {
   /* Iterate over names in this name space.  */
   for (tree t = NAMESPACE_LEVEL (namespc)->names; t; t = TREE_CHAIN (t))
-    if (DECL_IS_BUILTIN (t))
+    if (DECL_IS_UNDECLARED_BUILTIN (t))
       ;
     else if (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (t))
       collect_source_refs (t);

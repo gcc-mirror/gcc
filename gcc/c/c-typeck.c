@@ -3014,7 +3014,8 @@ build_function_call (location_t loc, tree function, tree params)
 static void
 inform_declaration (tree decl)
 {
-  if (decl && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_IS_BUILTIN (decl)))
+  if (decl && (TREE_CODE (decl) != FUNCTION_DECL
+	       || !DECL_IS_UNDECLARED_BUILTIN (decl)))
     inform (DECL_SOURCE_LOCATION (decl), "declared here");
 }
 
@@ -6578,7 +6579,7 @@ inform_for_arg (tree fundecl, location_t ploc, int parmnum,
 		tree expected_type, tree actual_type)
 {
   location_t loc;
-  if (fundecl && !DECL_IS_BUILTIN (fundecl))
+  if (fundecl && !DECL_IS_UNDECLARED_BUILTIN (fundecl))
     loc = get_fndecl_argument_location (fundecl, parmnum - 1);
   else
     loc = ploc;
@@ -6828,7 +6829,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	    if (pedwarn (expr_loc, OPT_Wc___compat, "enum conversion when "
 			 "passing argument %d of %qE is invalid in C++",
 			 parmnum, rname))
-	      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+	      inform ((fundecl && !DECL_IS_UNDECLARED_BUILTIN (fundecl))
 		      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
 		      "expected %qT but argument is of type %qT",
 		      type, rhstype);
@@ -7239,7 +7240,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  case ic_argpass:
 	    /* Do not warn for built-in functions, for example memcpy, since we
 	       control how they behave and they can be useful in this area.  */
-	    if (TREE_CODE (rname) != FUNCTION_DECL || !DECL_IS_BUILTIN (rname))
+	    if (TREE_CODE (rname) != FUNCTION_DECL
+		|| !DECL_IS_UNDECLARED_BUILTIN (rname))
 	      warning_at (location, OPT_Wscalar_storage_order,
 			  "passing argument %d of %qE from incompatible "
 			  "scalar storage order", parmnum, rname);

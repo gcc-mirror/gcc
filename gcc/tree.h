@@ -2456,11 +2456,12 @@ extern tree vector_element_bits_tree (const_tree);
 #define DECL_SOURCE_FILE(NODE) LOCATION_FILE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_LINE(NODE) LOCATION_LINE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_COLUMN(NODE) LOCATION_COLUMN (DECL_SOURCE_LOCATION (NODE))
-/* This accessor returns TRUE if the decl it operates on was created
-   by a front-end or back-end rather than by user code.  In this case
-   builtin-ness is indicated by source location.  */
-#define DECL_IS_BUILTIN(DECL) \
-  (LOCATION_LOCUS (DECL_SOURCE_LOCATION (DECL)) <= BUILTINS_LOCATION)
+/* This decl was created by a front-end or back-end rather than by
+   user code, and has not been explicitly declared by the user -- when
+   that happens the source location is updated to the user's
+   source.  This includes decls with no location (!).  */
+#define DECL_IS_UNDECLARED_BUILTIN(DECL) \
+  (DECL_SOURCE_LOCATION (DECL) <= BUILTINS_LOCATION)
 
 /*  For FIELD_DECLs, this is the RECORD_TYPE, UNION_TYPE, or
     QUAL_UNION_TYPE node that the field is a member of.  For VAR_DECL,
@@ -6278,9 +6279,8 @@ type_has_mode_precision_p (const_tree t)
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function.
 
-   Note that it is different from the DECL_IS_BUILTIN accessor.  For
-   instance, user declared prototypes of C library functions are not
-   DECL_IS_BUILTIN but may be fndecl_built_in_p.  */
+   Note that it is different from the DECL_IS_UNDECLARED_BUILTIN
+   accessor, as this is impervious to user declaration.  */
 
 inline bool
 fndecl_built_in_p (const_tree node)
