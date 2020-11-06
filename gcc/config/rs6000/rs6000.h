@@ -776,8 +776,10 @@ extern unsigned rs6000_pointer_size;
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
 
-/* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT (TARGET_MMA ? 512 : 128)
+/* No data type is required to be aligned rounder than this.  Warning, if
+   BIGGEST_ALIGNMENT is changed, then this may be an ABI break.  An example
+   of where this can break an ABI is in GLIBC's struct _Unwind_Exception.  */
+#define BIGGEST_ALIGNMENT 128
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
