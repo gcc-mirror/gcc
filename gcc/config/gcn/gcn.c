@@ -4575,6 +4575,8 @@ gcn_md_reorg (void)
       df_insn_rescan_all ();
     }
 
+  df_live_add_problem ();
+  df_live_set_all_dirty ();
   df_analyze ();
 
   /* This pass ensures that the EXEC register is set correctly, according
@@ -4595,6 +4597,17 @@ gcn_md_reorg (void)
       bool curr_exec_known = true;
       int64_t curr_exec = 0;	/* 0 here means 'the value is that of EXEC
 				   after last_exec_def is executed'.  */
+
+      bitmap live_in = DF_LR_IN (bb);
+      bool exec_live_on_entry = false;
+      if (bitmap_bit_p (live_in, EXEC_LO_REG)
+	  || bitmap_bit_p (live_in, EXEC_HI_REG))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "EXEC reg is live on entry to block %d\n",
+		     (int) bb->index);
+	  exec_live_on_entry = true;
+	}
 
       FOR_BB_INSNS_SAFE (bb, insn, curr)
 	{
@@ -4734,6 +4747,8 @@ gcn_md_reorg (void)
 			 exec_lo_def_p == exec_hi_def_p ? "full" : "partial",
 			 INSN_UID (insn));
 	    }
+
+	  exec_live_on_entry = false;
 	}
 
       COPY_REG_SET (&live, DF_LR_OUT (bb));
@@ -4743,7 +4758,7 @@ gcn_md_reorg (void)
 	 at the end of the block.  */
       if ((REGNO_REG_SET_P (&live, EXEC_LO_REG)
 	   || REGNO_REG_SET_P (&live, EXEC_HI_REG))
-	  && (!curr_exec_known || !curr_exec_explicit))
+	  && (!curr_exec_known || !curr_exec_explicit || exec_live_on_entry))
 	{
 	  rtx_insn *end_insn = BB_END (bb);
 
