@@ -1,6 +1,11 @@
 2020-11-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* Make-lang.in: Drop git hash collection.
+	gcc/
+	* REVISION: New.
+
+	gcc/cp/
 	* parser.c (cp_parser_diagnose_invalid_type_name): Revert local
 	changes.
 
