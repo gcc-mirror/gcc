@@ -2921,6 +2921,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	snode->remove ();
     }
 
+  if (TREE_CODE (olddecl) == FUNCTION_DECL)
+    {
+      tree clone;
+      FOR_EACH_CLONE (clone, olddecl)
+	{
+	  DECL_ATTRIBUTES (clone) = DECL_ATTRIBUTES (olddecl);
+	  DECL_PRESERVE_P (clone) |= DECL_PRESERVE_P (olddecl);
+	}
+    }
+
   /* Remove the associated constraints for newdecl, if any, before
      reclaiming memory. */
   if (flag_concepts)
