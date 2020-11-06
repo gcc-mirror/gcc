@@ -5494,6 +5494,9 @@ symbolic_reference_mentioned_p (rtx op)
 bool
 ix86_can_use_return_insn_p (void)
 {
+  if (ix86_function_ms_hook_prologue (current_function_decl))
+    return false;
+
   if (ix86_function_naked (current_function_decl))
     return false;
 

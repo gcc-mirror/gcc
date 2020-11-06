@@ -26,6 +26,7 @@ extern bool ix86_handle_option (struct gcc_options *opts,
 /* Functions in i386.c */
 extern bool ix86_target_stack_probe (void);
 extern bool ix86_can_use_return_insn_p (void);
+extern bool ix86_function_ms_hook_prologue (const_tree fn);
 extern void ix86_setup_frame_addresses (void);
 extern bool ix86_rip_relative_addr_p (struct ix86_address *parts);
 

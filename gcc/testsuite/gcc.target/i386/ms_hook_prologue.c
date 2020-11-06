@@ -4,6 +4,8 @@
 /* { dg-require-effective-target ms_hook_prologue } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
+#include <stdio.h>
+
 int __attribute__ ((__ms_hook_prologue__)) foo ()
 {
   unsigned char *ptr = (unsigned char *) foo;
@@ -32,7 +34,16 @@ int __attribute__ ((__ms_hook_prologue__)) foo ()
   return 0;
 }
 
+unsigned int __attribute__ ((noinline, __ms_hook_prologue__)) test_func()
+{
+  static int value;
+
+  if (value++) puts("");
+
+  return 0;
+}
+
 int main ()
 {
-  return foo();
+  return foo() || test_func();
 }
