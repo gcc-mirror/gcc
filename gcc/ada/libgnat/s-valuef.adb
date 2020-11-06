@@ -227,8 +227,9 @@ package body System.Value_F is
             Z := N;
 
             for J in 1 .. LS loop
-               if V <= Uns'Last / Uns (B) then
-                  V := V * Uns (B);
+               if V <= (Uns'Last - E) / Uns (B) then
+                  V := V * Uns (B) + E;
+                  E := 0;
                else
                   Bad_Value (Str);
                end if;

@@ -188,11 +188,13 @@ package body System.Value_R is
 
          --  If precision limit has been reached, just ignore any remaining
          --  digits for the computation of Value and Scale, but store the
-         --  first in Extra and use the second to round Extra. The scanning
-         --  should continue only to assess the validity of the string.
+         --  first in Extra and use the second to round Extra if this is for
+         --  a fixed-point type (we skip the rounding for a floating-point
+         --  type to preserve backward compatibility). The scanning should
+         --  continue only to assess the validity of the string.
 
          if Precision_Limit_Reached then
-            if Precision_Limit_Just_Reached then
+            if Precision_Limit_Just_Reached and then not Floating then
                if Digit >= Base / 2 then
                   if Extra = Base - 1 then
                      Extra := 0;
@@ -343,14 +345,16 @@ package body System.Value_R is
          end if;
 
          --  If precision limit has been reached, just ignore any remaining
-         --  digits for the computation of Value, but update Scale and store
-         --  the first in Extra and use the second to round Extra. The scanning
-         --  should continue only to assess the validity of the string.
+         --  digits for the computation of Value and Scale, but store the
+         --  first in Extra and use the second to round Extra if this is for
+         --  a fixed-point type (we skip the rounding for a floating-point
+         --  type to preserve backward compatibility). The scanning should
+         --  continue only to assess the validity of the string.
 
          if Precision_Limit_Reached then
             Scale := Scale + 1;
 
-            if Precision_Limit_Just_Reached then
+            if Precision_Limit_Just_Reached and then not Floating then
                if Digit >= Base / 2 then
                   if Extra = Base - 1 then
                      Extra := 0;
