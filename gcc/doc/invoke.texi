@@ -7630,7 +7630,7 @@ except when the same as the default promotion.
 @opindex Wno-declaration-after-statement
 Warn when a declaration is found after a statement in a block.  This
 construct, known from C++, was introduced with ISO C99 and is by default
-allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Declarations}.
+allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Labels and Declarations}.
 
 @item -Wshadow
 @opindex Wshadow

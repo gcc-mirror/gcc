@@ -1521,7 +1521,7 @@ static void c_parser_initval (c_parser *, struct c_expr *,
 			      struct obstack *);
 static tree c_parser_compound_statement (c_parser *, location_t * = NULL);
 static location_t c_parser_compound_statement_nostart (c_parser *);
-static void c_parser_label (c_parser *);
+static void c_parser_label (c_parser *, tree);
 static void c_parser_statement (c_parser *, bool *, location_t * = NULL);
 static void c_parser_statement_after_labels (c_parser *, bool *,
 					     vec<tree> * = NULL);
@@ -5523,7 +5523,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 }
 
 /* Parse a compound statement (possibly a function body) (C90 6.6.2,
-   C99 6.8.2, C11 6.8.2).
+   C99 6.8.2, C11 6.8.2, C2X 6.8.2).
 
    compound-statement:
      { block-item-list[opt] }
@@ -5534,6 +5534,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
      block-item-list block-item
 
    block-item:
+     label
      nested-declaration
      statement
 
@@ -5674,7 +5675,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
     {
       location_t loc = c_parser_peek_token (parser)->location;
       loc = expansion_point_location_if_in_system_header (loc);
-      /* Standard attributes may start a statement or a declaration.  */
+      /* Standard attributes may start a label, statement or declaration.  */
       bool have_std_attrs
 	= c_parser_nth_token_starts_std_attributes (parser, 1);
       tree std_attrs = NULL_TREE;
@@ -5685,7 +5686,6 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  || (c_parser_next_token_is (parser, CPP_NAME)
 	      && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
 	{
-	  c_warn_unused_attributes (std_attrs);
 	  if (c_parser_next_token_is_keyword (parser, RID_CASE))
 	    label_loc = c_parser_peek_2nd_token (parser)->location;
 	  else
@@ -5693,27 +5693,31 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  last_label = true;
 	  last_stmt = false;
 	  mark_valid_location_for_stdc_pragma (false);
-	  c_parser_label (parser);
+	  c_parser_label (parser, std_attrs);
 	}
-      else if (!last_label
-	       && (c_parser_next_tokens_start_declaration (parser)
-		   || (have_std_attrs
-		       && c_parser_next_token_is (parser, CPP_SEMICOLON))))
+      else if (c_parser_next_tokens_start_declaration (parser)
+	       || (have_std_attrs
+		   && c_parser_next_token_is (parser, CPP_SEMICOLON)))
 	{
-	  last_label = false;
+	  if (last_label)
+	    pedwarn_c11 (c_parser_peek_token (parser)->location, OPT_Wpedantic,
+			 "a label can only be part of a statement and "
+			 "a declaration is not a statement");
+
 	  mark_valid_location_for_stdc_pragma (false);
 	  bool fallthru_attr_p = false;
 	  c_parser_declaration_or_fndef (parser, true, !have_std_attrs,
 					 true, true, true, NULL,
 					 vNULL, have_std_attrs, std_attrs,
 					 NULL, &fallthru_attr_p);
+
 	  if (last_stmt && !fallthru_attr_p)
 	    pedwarn_c90 (loc, OPT_Wdeclaration_after_statement,
 			 "ISO C90 forbids mixed declarations and code");
 	  last_stmt = fallthru_attr_p;
+	  last_label = false;
 	}
-      else if (!last_label
-	       && c_parser_next_token_is_keyword (parser, RID_EXTENSION))
+      else if (c_parser_next_token_is_keyword (parser, RID_EXTENSION))
 	{
 	  /* __extension__ can start a declaration, but is also an
 	     unary operator that can start an expression.  Consume all
@@ -5796,7 +5800,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
       parser->error = false;
     }
   if (last_label)
-    error_at (label_loc, "label at end of compound statement");
+    pedwarn_c11 (label_loc, OPT_Wpedantic, "label at end of compound statement");
   location_t endloc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
   /* Restore the value we started with.  */
@@ -5812,19 +5816,29 @@ c_parser_compound_statement_nostart (c_parser *parser)
 static void
 c_parser_all_labels (c_parser *parser)
 {
+  tree std_attrs = NULL;
   if (c_parser_nth_token_starts_std_attributes (parser, 1))
     {
-      tree std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+      std_attrs = c_parser_std_attribute_specifier_sequence (parser);
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	c_parser_error (parser, "expected statement");
-      else
-	c_warn_unused_attributes (std_attrs);
     }
   while (c_parser_next_token_is_keyword (parser, RID_CASE)
 	 || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
 	 || (c_parser_next_token_is (parser, CPP_NAME)
 	     && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
-    c_parser_label (parser);
+    {
+      c_parser_label (parser, std_attrs);
+      std_attrs = NULL;
+      if (c_parser_nth_token_starts_std_attributes (parser, 1))
+	{
+	  std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+	    c_parser_error (parser, "expected statement");
+	}
+    }
+   if (std_attrs)
+     c_warn_unused_attributes (std_attrs);
 }
 
 /* Parse a label (C90 6.6.1, C99 6.8.1, C11 6.8.1).
@@ -5846,9 +5860,8 @@ c_parser_all_labels (c_parser *parser)
    in the caller, to distinguish statements from declarations.  Any
    attribute-specifier-sequence after the label is parsed in this
    function.  */
-
 static void
-c_parser_label (c_parser *parser)
+c_parser_label (c_parser *parser, tree std_attrs)
 {
   location_t loc1 = c_parser_peek_token (parser)->location;
   tree label = NULL_TREE;
@@ -5898,8 +5911,13 @@ c_parser_label (c_parser *parser)
       if (tlab)
 	{
 	  decl_attributes (&tlab, attrs, 0);
+	  decl_attributes (&tlab, std_attrs, 0);
 	  label = add_stmt (build_stmt (loc1, LABEL_EXPR, tlab));
 	}
+      if (attrs
+	  && c_parser_next_tokens_start_declaration (parser))
+	  warning_at (loc2, OPT_Wattributes, "GNU-style attribute between"
+		      " label and declaration appertains to the label");
     }
   if (label)
     {
@@ -5907,55 +5925,6 @@ c_parser_label (c_parser *parser)
 	FALLTHROUGH_LABEL_P (LABEL_EXPR_LABEL (label)) = fallthrough_p;
       else
 	FALLTHROUGH_LABEL_P (CASE_LABEL (label)) = fallthrough_p;
-
-      /* Standard attributes are only allowed here if they start a
-	 statement, not a declaration (including the case of an
-	 attribute-declaration with only attributes).  */
-      bool have_std_attrs
-	= c_parser_nth_token_starts_std_attributes (parser, 1);
-      tree std_attrs = NULL_TREE;
-      if (have_std_attrs)
-	std_attrs = c_parser_std_attribute_specifier_sequence (parser);
-
-      /* Allow '__attribute__((fallthrough));'.  */
-      if (!have_std_attrs
-	  && c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
-	{
-	  location_t loc = c_parser_peek_token (parser)->location;
-	  tree attrs = c_parser_gnu_attributes (parser);
-	  if (attribute_fallthrough_p (attrs))
-	    {
-	      if (c_parser_next_token_is (parser, CPP_SEMICOLON))
-		{
-		  tree fn = build_call_expr_internal_loc (loc,
-							  IFN_FALLTHROUGH,
-							  void_type_node, 0);
-		  add_stmt (fn);
-		}
-	      else
-		warning_at (loc, OPT_Wattributes, "%<fallthrough%> attribute "
-			    "not followed by %<;%>");
-	    }
-	  else if (attrs != NULL_TREE)
-	    warning_at (loc, OPT_Wattributes, "only attribute %<fallthrough%>"
-			" can be applied to a null statement");
-	}
-      if (c_parser_next_tokens_start_declaration (parser)
-	  || (have_std_attrs
-	      && c_parser_next_token_is (parser, CPP_SEMICOLON)))
-	{
-	  error_at (c_parser_peek_token (parser)->location,
-		    "a label can only be part of a statement and "
-		    "a declaration is not a statement");
-	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false,
-					 /*static_assert_ok*/ true,
-					 /*empty_ok*/ true, /*nested*/ true,
-					 /*start_attr_ok*/ true, NULL,
-					 vNULL, have_std_attrs, std_attrs);
-	}
-      else if (std_attrs)
-	/* Nonempty attributes on the following statement are ignored.  */
-	c_warn_unused_attributes (std_attrs);
     }
 }
 

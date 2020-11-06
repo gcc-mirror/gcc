@@ -55,7 +55,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Designated Inits::    Labeling elements of initializers.
 * Case Ranges::         `case 1 ... 9' and such.
 * Cast to Union::       Casting to union type from any member of the union.
-* Mixed Declarations::  Mixing declarations and code.
+* Mixed Labels and Declarations::  Mixing declarations, labels and code.
 * Function Attributes:: Declaring that functions have no side effects,
                         or that they can never return.
 * Variable Attributes:: Specifying attributes of variables.
@@ -2353,15 +2353,17 @@ void hack (union foo);
 hack ((union foo) x);
 @end smallexample
 
-@node Mixed Declarations
-@section Mixed Declarations and Code
+@node Mixed Labels and Declarations
+@section Mixed Declarations, Labels and Code
 @cindex mixed declarations and code
 @cindex declarations, mixed with code
 @cindex code, mixed with declarations
 
 ISO C99 and ISO C++ allow declarations and code to be freely mixed
-within compound statements.  As an extension, GNU C also allows this in
-C90 mode.  For example, you could do:
+within compound statements.  ISO C2X allows labels to be
+placed before declarations and at the end of a compound statement.
+As an extension, GNU C also allows all this in C90 mode.  For example,
+you could do:
 
 @smallexample
 int i;
@@ -8630,7 +8632,8 @@ details of the exact syntax for using attributes.  Other attributes are
 available for functions (@pxref{Function Attributes}), variables 
 (@pxref{Variable Attributes}), enumerators (@pxref{Enumerator Attributes}),
 statements (@pxref{Statement Attributes}), and for types
-(@pxref{Type Attributes}).
+(@pxref{Type Attributes}). A label attribute followed
+by a declaration appertains to the label and not the declaration.
 
 This example uses the @code{cold} label attribute to indicate the 
 @code{ErrorHandling} branch is unlikely to be taken and that the

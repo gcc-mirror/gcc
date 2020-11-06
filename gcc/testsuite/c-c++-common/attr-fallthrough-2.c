@@ -1,6 +1,6 @@
 /* PR c/7652 */
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wextra -Wpedantic -Wno-unused -Wno-implicit-fallthrough" } */
+/* { dg-options "-Wall -Wextra -Wno-unused -Wno-implicit-fallthrough" } */
 
 extern void bar (int);
 void
