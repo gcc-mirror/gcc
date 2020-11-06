@@ -4411,6 +4411,9 @@ mio_symbol (gfc_symbol *sym)
 
   mio_symbol_attribute (&sym->attr);
 
+  if (sym->attr.pdt_type)
+    sym->name = gfc_dt_upper_string (sym->name);
+
   /* Note that components are always saved, even if they are supposed
      to be private.  Component access is checked during searching.  */
   mio_component_list (&sym->components, sym->attr.vtype);
