@@ -1870,10 +1870,15 @@ package body Sem_Aggr is
       --  Test for the validity of an others choice if present
 
       if Others_Present and then not Others_Allowed then
-         Error_Msg_N
-           ("OTHERS choice not allowed here",
-            First (Choice_List (First (Component_Associations (N)))));
-         return Failure;
+         declare
+            Others_N : constant Node_Id :=
+              First (Choice_List (First (Component_Associations (N))));
+         begin
+            Error_Msg_N ("OTHERS choice not allowed here", Others_N);
+            Error_Msg_N ("\qualify the aggregate with a constrained subtype "
+                         & "to provide bounds for it", Others_N);
+            return Failure;
+         end;
       end if;
 
       --  Protect against cascaded errors
