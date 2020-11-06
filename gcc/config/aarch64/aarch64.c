@@ -2226,6 +2226,9 @@ aarch64_classify_vector_mode (machine_mode mode)
     /* Partial SVE HF vectors.  */
     case E_VNx2HFmode:
     case E_VNx4HFmode:
+    /* Partial SVE BF vectors.  */
+    case E_VNx2BFmode:
+    case E_VNx4BFmode:
     /* Partial SVE SF vector.  */
     case E_VNx2SFmode:
       return TARGET_SVE ? VEC_SVE_DATA | VEC_PARTIAL : 0;
@@ -20468,18 +20471,21 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
       || !diff)
     return false;
 
-  size = (diff + 1) * GET_MODE_UNIT_SIZE (d->vmode);
-  if (size == 8)
+  if (d->vec_flags & VEC_SVE_DATA)
+    size = (diff + 1) * aarch64_sve_container_bits (d->vmode);
+  else
+    size = (diff + 1) * GET_MODE_UNIT_BITSIZE (d->vmode);
+  if (size == 64)
     {
       unspec = UNSPEC_REV64;
       pred_mode = VNx2BImode;
     }
-  else if (size == 4)
+  else if (size == 32)
     {
       unspec = UNSPEC_REV32;
       pred_mode = VNx4BImode;
     }
-  else if (size == 2)
+  else if (size == 16)
     {
       unspec = UNSPEC_REV16;
       pred_mode = VNx8BImode;
@@ -20496,28 +20502,11 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  if (d->vec_flags == VEC_SVE_DATA)
+  if (d->vec_flags & VEC_SVE_DATA)
     {
-      machine_mode int_mode = aarch64_sve_int_mode (pred_mode);
-      rtx target = gen_reg_rtx (int_mode);
-      if (BYTES_BIG_ENDIAN)
-	/* The act of taking a subreg between INT_MODE and d->vmode
-	   is itself a reversing operation on big-endian targets;
-	   see the comment at the head of aarch64-sve.md for details.
-	   First reinterpret OP0 as INT_MODE without using a subreg
-	   and without changing the contents.  */
-	emit_insn (gen_aarch64_sve_reinterpret (int_mode, target, d->op0));
-      else
-	{
-	  /* For SVE we use REV[BHW] unspecs derived from the element size
-	     of v->mode and vector modes whose elements have SIZE bytes.
-	     This ensures that the vector modes match the predicate modes.  */
-	  int unspec = aarch64_sve_rev_unspec (d->vmode);
-	  rtx pred = aarch64_ptrue_reg (pred_mode);
-	  emit_insn (gen_aarch64_pred (unspec, int_mode, target, pred,
-				       gen_lowpart (int_mode, d->op0)));
-	}
-      emit_move_insn (d->target, gen_lowpart (d->vmode, target));
+      rtx pred = aarch64_ptrue_reg (pred_mode);
+      emit_insn (gen_aarch64_sve_revbhw (d->vmode, pred_mode,
+					 d->target, pred, d->op0));
       return true;
     }
   rtx src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0), unspec);
@@ -20562,7 +20551,8 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
       || !d->perm[0].is_constant (&elt))
     return false;
 
-  if (d->vec_flags == VEC_SVE_DATA && elt >= 64 * GET_MODE_UNIT_SIZE (vmode))
+  if ((d->vec_flags & VEC_SVE_DATA)
+      && elt * (aarch64_sve_container_bits (vmode) / 8) >= 64)
     return false;
 
   /* Success! */
@@ -20782,6 +20772,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 
   if ((d->vec_flags == VEC_ADVSIMD
        || d->vec_flags == VEC_SVE_DATA
+       || d->vec_flags == (VEC_SVE_DATA | VEC_PARTIAL)
        || d->vec_flags == VEC_SVE_PRED)
       && known_gt (nelt, 1))
     {
