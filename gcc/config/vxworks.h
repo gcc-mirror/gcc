@@ -143,11 +143,21 @@ along with GCC; see the file COPYING3.  If not see
    tlsLib, responsible for TLS support by the OS.  */
 
 #if TARGET_VXWORKS7
+
+/* For static links, /usr/lib/common has everything. For dynamic links,
+   /usr/lib/common/PIC has the static libs and objects that might be needed
+   in the closure (e.g. crt0.o), while the shared version of standard deps
+   (e.g. libc.so) are still in /usr/lib/common.  */
 #undef  STARTFILE_PREFIX_SPEC
-#define STARTFILE_PREFIX_SPEC "/usr/lib/common"
+#define STARTFILE_PREFIX_SPEC \
+  "%{shared|non-static:/usr/lib/common/PIC} /usr/lib/common"
+
 #define TLS_SYM "-u __tls__"
+
 #else
+
 #define TLS_SYM ""
+
 #endif
 
 #undef VXWORKS_LIB_SPEC
@@ -177,7 +187,14 @@ along with GCC; see the file COPYING3.  If not see
  		  %{non-static:--force-dynamic --export-dynamic}}}"
 
 #undef VXWORKS_LIBGCC_SPEC
+#if defined(ENABLE_SHARED_LIBGCC)
+#define VXWORKS_LIBGCC_SPEC                                             \
+"%{!mrtp:-lgcc -lgcc_eh}                                                \
+ %{mrtp:%{!static-libgcc:%{shared|non-static:-lgcc_s;:-lgcc -lgcc_eh}}  \
+         %{static-libgcc:-lgcc -lgcc_eh}}"
+#else
 #define VXWORKS_LIBGCC_SPEC "-lgcc"
+#endif
 
 /* Setup the crtstuff begin/end we might need for dwarf EH registration.  */
 
