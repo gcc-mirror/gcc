@@ -4181,8 +4181,7 @@ gfc_match_omp_atomic (void)
 }
 
 
-/* acc atomic [ read | write | update | capture]
-   acc atomic update capture.  */
+/* acc atomic [ read | write | update | capture]  */
 
 match
 gfc_match_oacc_atomic (void)
@@ -4191,9 +4190,7 @@ gfc_match_oacc_atomic (void)
   c->atomic_op = GFC_OMP_ATOMIC_UPDATE;
   c->memorder = OMP_MEMORDER_RELAXED;
   gfc_gobble_whitespace ();
-  if (gfc_match ("update capture") == MATCH_YES)
-    c->capture = true;
-  else if (gfc_match ("update") == MATCH_YES)
+  if (gfc_match ("update") == MATCH_YES)
     ;
   else if (gfc_match ("read") == MATCH_YES)
     c->atomic_op = GFC_OMP_ATOMIC_READ;
