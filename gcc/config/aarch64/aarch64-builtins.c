@@ -1862,10 +1862,10 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
      only need to know the order in a V2mode.  */
   lane_idx = aarch64_endian_lane_rtx (V2DImode, lane);
 
-  if (!target)
+  if (!target
+      || !REG_P (target)
+      || GET_MODE (target) != d->mode)
     target = gen_reg_rtx (d->mode);
-  else
-    target = force_reg (d->mode, target);
 
   rtx pat = NULL_RTX;
 
