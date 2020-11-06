@@ -1,3 +1,166 @@
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/25814
+	* testsuite/20_util/reference_wrapper/lwg2993.cc: Add a dg-warning.
+	* testsuite/25_algorithms/generate_n/87982_neg.cc: Likewise.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96269
+	* include/std/optional (operator==, operator!=, operator<)
+	(operator>, operator<=, operator>=): Fix types used in
+	SFINAE constraints.
+	* testsuite/20_util/optional/relops/96269.cc: New test.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97731
+	* src/filesystem/dir.cc (recursive_directory_iterator): Call the
+	right overload of _Dir::advance.
+	* testsuite/experimental/filesystem/iterators/97731.cc: New test.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97729
+	* include/std/future (__basic_future::_M_get_result): Use
+	nullptr for null pointer constant.
+	* libsupc++/eh_ptr.cc (operator==, operator!=): Remove
+	definitions.
+	* libsupc++/exception_ptr.h (_GLIBCXX_EH_PTR_USED): Define
+	macro to conditionally add __attribute__((__used__)).
+	(operator==, operator!=, exception_ptr::exception_ptr())
+	(exception_ptr::exception_ptr(const exception_ptr&))
+	(exception_ptr::~exception_ptr())
+	(exception_ptr::operator=(const exception_ptr&))
+	(exception_ptr::swap(exception_ptr&)): Always define as
+	inline. Add macro to be conditionally "used".
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97729
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Add exports.
+	* src/c++20/sstream-inst.cc (basic_stringbuf): Instantiate
+	private constructor taking __xfer_bufptrs.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream (basic_stringbuf(const allocator_type&):
+	Add explicit.
+	(basic_stringbuf(const basic_string<C,T,SA>&, openmode, const A&)):
+	Call _M_stringbuf_init. Construct _M_string from pointer and length
+	to avoid constraint checks for string view.
+	(basic_stringbuf::view()): Make __sv_type alias local to the
+	function.
+	(basic_istringstream(const basic_string<C,T,SA>&, openmode, const A&)):
+	Pass string to _M_streambuf instead of constructing a temporary
+	with the wrong allocator.
+	(basic_ostringstream(const basic_string<C,T,SA>&, openmode, const A&)):
+	Likewise.
+	(basic_stringstream(const basic_string<C,T,SA>&, openmode, const A&)):
+	Likewise.
+	* src/c++20/sstream-inst.cc: Use string_view and wstring_view
+	typedefs in explicit instantiations.
+	* testsuite/27_io/basic_istringstream/cons/char/1.cc: Add more
+	tests for constructors.
+	* testsuite/27_io/basic_ostringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/cons/char/1.cc: Likewise.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream: Adjust whitespace.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97719
+	* include/std/sstream (basic_stringstream(string_type&&, openmode)):
+	Fix default argument.
+	* testsuite/27_io/basic_stringstream/cons/char/97719.cc: New test.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/96817.cc: Fail fast if the library is
+	configured to not use futexes.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94971
+	* include/bits/stl_algo.h (search(FIter, FIter, const Searcher):
+	Adjust #if condition.
+	* include/parallel/algo.h (search(FIter, FIter, const Searcher&):
+	Define new overload for C++17.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92285
+	* doc/xml/manual/evolution.xml: Document change to base class.
+	* doc/html/manual/api.html: Regenerate.
+
+2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uniform_int_dist.h (uniform_int_distribution::_S_nd):
+	Use qualified-id to refer to static member functions.
+
+2020-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/syncstream: Include <bits/std_mutex.h>
+	unconditionally.
+
+2020-11-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver:
+	Add __istream_extract and _Safe_local_iterator_base::_M_attach_single
+	symbols.
+
+2020-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/mutex.cc [_GLIBCXX_HAVE_TLS] (__once_proxy): Define
+	separately for TLS targets.
+	[!_GLIBCXX_HAVE_TLS] (__get_once_functor_lock_ptr): Replace with ...
+	(set_lock_ptr): ... this. Set new value and return previous
+	value.
+	[!_GLIBCXX_HAVE_TLS] (__set_once_functor_lock_ptr): Adjust to
+	use set_lock_ptr.
+	[!_GLIBCXX_HAVE_TLS] (__once_proxy): Likewise.
+
+2020-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/55394
+	PR libstdc++/66146
+	PR libstdc++/84323
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Add new symbols.
+	* include/std/mutex [!_GLIBCXX_HAS_GTHREADS] (once_flag): Define
+	even when gthreads is not supported.
+	(once_flag::_M_once) [_GLIBCXX_HAVE_LINUX_FUTEX]: Change type
+	from __gthread_once_t to int.
+	(once_flag::_M_passive(), once_flag::_M_activate())
+	(once_flag::_M_finish(bool), once_flag::_Active_execution):
+	Define new members for futex and non-threaded implementation.
+	[_GLIBCXX_HAS_GTHREADS] (once_flag::_Prepare_execution): New
+	RAII helper type.
+	(call_once): Use new members of once_flag.
+	* src/c++11/mutex.cc (std::once_flag::_M_activate): Define.
+	(std::once_flag::_M_finish): Define.
+	* testsuite/30_threads/call_once/39909.cc: Do not require
+	gthreads.
+	* testsuite/30_threads/call_once/49668.cc: Likewise.
+	* testsuite/30_threads/call_once/60497.cc: Likewise.
+	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
+	* testsuite/30_threads/call_once/dr2442.cc: Likewise.
+	* testsuite/30_threads/call_once/once_flag.cc: Add test for
+	constexpr constructor.
+	* testsuite/30_threads/call_once/66146.cc: New test.
+	* testsuite/30_threads/call_once/constexpr.cc: Removed.
+	* testsuite/30_threads/once_flag/cons/constexpr.cc: Removed.
+
+2020-11-03  Jonathan Yong  <10walls@gmail.com>
+
+	* src/Makefile.am (libstdc___la_LINK): Add lt_host_flags.
+	* src/Makefile.in: Regenerate.
+
 2020-11-02  Thomas Rodgers  <trodgers@redhat.com>
 
 	* doc/doxygen/user.cfg.in (INPUT): Add new header.

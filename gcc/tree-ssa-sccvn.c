@@ -288,7 +288,6 @@ vn_constant_hasher::equal (const vn_constant_s *vc1, const vn_constant_s *vc2)
 }
 
 static hash_table<vn_constant_hasher> *constant_to_value_id;
-static bitmap constant_value_ids;
 
 
 /* Obstack we allocate the vn-tables elements from.  */
@@ -322,6 +321,7 @@ tree VN_TOP;
 /* Unique counter for our value ids.  */
 
 static unsigned int next_value_id;
+static int next_constant_value_id;
 
 
 /* Table of vn_ssa_aux_t's, one per ssa_name.  The vn_ssa_aux_t objects
@@ -611,18 +611,9 @@ get_or_alloc_constant_value_id (tree constant)
   vcp = XNEW (struct vn_constant_s);
   vcp->hashcode = vc.hashcode;
   vcp->constant = constant;
-  vcp->value_id = get_next_value_id ();
+  vcp->value_id = get_next_constant_value_id ();
   *slot = vcp;
-  bitmap_set_bit (constant_value_ids, vcp->value_id);
   return vcp->value_id;
-}
-
-/* Return true if V is a value id for a constant.  */
-
-bool
-value_id_constant_p (unsigned int v)
-{
-  return bitmap_bit_p (constant_value_ids, v);
 }
 
 /* Compute the hash for a reference operand VRO1.  */
@@ -5578,12 +5569,30 @@ get_max_value_id (void)
   return next_value_id;
 }
 
+/* Return the maximum constant value id we have ever seen.  */
+
+unsigned int
+get_max_constant_value_id (void)
+{
+  return -next_constant_value_id;
+}
+
 /* Return the next unique value id.  */
 
 unsigned int
 get_next_value_id (void)
 {
+  gcc_checking_assert ((int)next_value_id > 0);
   return next_value_id++;
+}
+
+/* Return the next unique value id for constants.  */
+
+unsigned int
+get_next_constant_value_id (void)
+{
+  gcc_checking_assert (next_constant_value_id < 0);
+  return next_constant_value_id--;
 }
 
 
@@ -6654,7 +6663,6 @@ run_rpo_vn (vn_lookup_kind kind)
 
   /* ???  Prune requirement of these.  */
   constant_to_value_id = new hash_table<vn_constant_hasher> (23);
-  constant_value_ids = BITMAP_ALLOC (NULL);
 
   /* Initialize the value ids and prune out remaining VN_TOPs
      from dead code.  */
@@ -6721,7 +6729,6 @@ free_rpo_vn (void)
 
   delete constant_to_value_id;
   constant_to_value_id = NULL;
-  BITMAP_FREE (constant_value_ids);
 }
 
 /* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
@@ -7446,6 +7453,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 			  / (n_basic_blocks_for_fn (fn) - NUM_FIXED_BLOCKS));
   VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
   next_value_id = 1;
+  next_constant_value_id = -1;
 
   vn_ssa_aux_hash = new hash_table <vn_ssa_aux_hasher> (region_size * 2);
   gcc_obstack_init (&vn_ssa_aux_obstack);

@@ -4181,8 +4181,7 @@ gfc_match_omp_atomic (void)
 }
 
 
-/* acc atomic [ read | write | update | capture]
-   acc atomic update capture.  */
+/* acc atomic [ read | write | update | capture]  */
 
 match
 gfc_match_oacc_atomic (void)
@@ -4191,9 +4190,7 @@ gfc_match_oacc_atomic (void)
   c->atomic_op = GFC_OMP_ATOMIC_UPDATE;
   c->memorder = OMP_MEMORDER_RELAXED;
   gfc_gobble_whitespace ();
-  if (gfc_match ("update capture") == MATCH_YES)
-    c->capture = true;
-  else if (gfc_match ("update") == MATCH_YES)
+  if (gfc_match ("update") == MATCH_YES)
     ;
   else if (gfc_match ("read") == MATCH_YES)
     c->atomic_op = GFC_OMP_ATOMIC_READ;
@@ -6406,11 +6403,6 @@ resolve_omp_do (gfc_code *code)
     }
 }
 
-static bool
-oacc_is_parallel (gfc_code *code)
-{
-  return code->op == EXEC_OACC_PARALLEL || code->op == EXEC_OACC_PARALLEL_LOOP;
-}
 
 static gfc_statement
 omp_code_to_statement (gfc_code *code)
@@ -6670,26 +6662,6 @@ resolve_oacc_nested_loops (gfc_code *code, gfc_code* do_code, int collapse,
 
 
 static void
-resolve_oacc_params_in_parallel (gfc_code *code, const char *clause,
-				 const char *arg)
-{
-  fortran_omp_context *c;
-
-  if (oacc_is_parallel (code))
-    gfc_error ("!$ACC LOOP %s in PARALLEL region doesn't allow "
-	       "%s arguments at %L", clause, arg, &code->loc);
-  for (c = omp_current_ctx; c; c = c->previous)
-    {
-      if (oacc_is_loop (c->code))
-	break;
-      if (oacc_is_parallel (c->code))
-	gfc_error ("!$ACC LOOP %s in PARALLEL region doesn't allow "
-		   "%s arguments at %L", clause, arg, &code->loc);
-    }
-}
-
-
-static void
 resolve_oacc_loop_blocks (gfc_code *code)
 {
   if (!oacc_is_loop (code))
@@ -6699,18 +6671,6 @@ resolve_oacc_loop_blocks (gfc_code *code)
       && code->ext.omp_clauses->worker && code->ext.omp_clauses->vector)
     gfc_error ("Tiled loop cannot be parallelized across gangs, workers and "
 	       "vectors at the same time at %L", &code->loc);
-
-  if (code->ext.omp_clauses->gang
-      && code->ext.omp_clauses->gang_num_expr)
-    resolve_oacc_params_in_parallel (code, "GANG", "num");
-
-  if (code->ext.omp_clauses->worker
-      && code->ext.omp_clauses->worker_expr)
-    resolve_oacc_params_in_parallel (code, "WORKER", "num");
-
-  if (code->ext.omp_clauses->vector
-      && code->ext.omp_clauses->vector_expr)
-    resolve_oacc_params_in_parallel (code, "VECTOR", "length");
 
   if (code->ext.omp_clauses->tile_list)
     {

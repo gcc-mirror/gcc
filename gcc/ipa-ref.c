@@ -32,7 +32,6 @@ ipa_ref::remove_reference ()
 {
   struct ipa_ref_list *list = referred_ref_list ();
   struct ipa_ref_list *list2 = referring_ref_list ();
-  vec<ipa_ref_t, va_gc> *old_references = list2->references;
   struct ipa_ref *last;
 
   gcc_assert (list->referring[referred_index] == this);
@@ -66,7 +65,7 @@ ipa_ref::remove_reference ()
     }
   list->referring.pop ();
 
-  last = &list2->references->last ();
+  last = &list2->references.last ();
 
   struct ipa_ref *ref = this;
 
@@ -75,8 +74,7 @@ ipa_ref::remove_reference ()
       *ref = *last;
       ref->referred_ref_list ()->referring[referred_index] = ref;
     }
-  list2->references->pop ();
-  gcc_assert (list2->references == old_references);
+  list2->references.pop ();
 }
 
 /* Return true when execution of reference can lead to return from

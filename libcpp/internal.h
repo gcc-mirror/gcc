@@ -526,7 +526,7 @@ struct cpp_reader
 
   /* Time stamp, set idempotently lazily.  */
   time_t time_stamp;
-  CPP_time_kind time_stamp_kind;
+  int time_stamp_kind; /* Or errno.  */
 
   /* A token forcing paste avoidance, and one demarking macro arguments.  */
   cpp_token avoid_paste;

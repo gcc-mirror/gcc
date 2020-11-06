@@ -43,7 +43,7 @@ test01()
 void
 test02()
 {
-  std::reference_wrapper<int> purr();
+  std::reference_wrapper<int> purr(); // { dg-warning "empty parentheses" }
 
   // error, ambiguous: ICS exists from int prvalue to
   // reference_wrapper<int> and from reference_wrapper<int> to int

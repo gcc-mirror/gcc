@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-require-effective-target mfentry } */
+/* { dg-require-profiling "-pg" } */
 /* { dg-options "-pg -mfentry -minstrument-return=call" } */
 /* { dg-final { scan-assembler-not "call.*__return__" } } */
 

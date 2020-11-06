@@ -24,6 +24,10 @@
 #include <exception>
 #include <stdlib.h>
 
+#ifndef _GLIBCXX_HAVE_LINUX_FUTEX
+# error "This test requries futex support in the library"
+#endif
+
 int init()
 {
 #if __has_include(<sys/single_threaded.h>)

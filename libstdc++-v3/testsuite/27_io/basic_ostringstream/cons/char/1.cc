@@ -33,7 +33,7 @@ test01()
   std::ostringstream stm(std::ios_base::in, a);
 }
 
-auto const cstr = "This is a test";
+auto const cstr = "This is a test string";
 
 void
 test02()
@@ -75,11 +75,45 @@ test03()
   }
 }
 
+// A minimal allocator with no default constructor
+template<typename T>
+  struct NoDefaultCons : __gnu_test::SimpleAllocator<T>
+  {
+    using __gnu_test::SimpleAllocator<T>::SimpleAllocator;
+
+    NoDefaultCons() = delete;
+
+    NoDefaultCons(int) { }
+  };
+
+void
+test04()
+{
+  using sstream = std::basic_ostringstream<char, std::char_traits<char>,
+					   NoDefaultCons<char>>;
+
+  NoDefaultCons<char> a(1);
+  const std::string str(cstr);
+
+  sstream ss1(str, a);
+  VERIFY( ss1.str() == cstr );
+
+  sstream ss2(str, std::ios::in, a);
+  VERIFY( ss2.str() == cstr );
+  VERIFY( bool(ss2 << "That") );
+  VERIFY( ss2.str() == "That is a test string" );
+
+  sstream ss3(std::string(str), std::ios::ate, a);
+  VERIFY( ss3.str() == cstr );
+  VERIFY( bool(ss3 << "y thing") );
+  VERIFY( ss3.str() == "This is a test stringy thing" );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
-  return 0;
+  test04();
 }

@@ -602,7 +602,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	     at init time, because time() and localtime() are very
 	     slow on some systems.  */
 	  time_t tt;
-	  auto kind = cpp_get_date (pfile,&tt);
+	  auto kind = cpp_get_date (pfile, &tt);
 
 	  if (kind == CPP_time_kind::UNKNOWN)
 	    {
@@ -674,37 +674,43 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 CPP_time_kind
 cpp_get_date (cpp_reader *pfile, time_t *result)
 {
-  if (pfile->time_stamp_kind != CPP_time_kind::UNSET)
-    ;
-  else if (pfile->cb.get_source_date_epoch)
+  if (!pfile->time_stamp_kind)
     {
-      pfile->time_stamp= pfile->cb.get_source_date_epoch (pfile);
-      pfile->time_stamp_kind = (pfile->time_stamp == time_t (-1)
-				? CPP_time_kind::UNKNOWN
-				: CPP_time_kind::FIXED);
-    }
-  else
-    {
-      /* Pedantically time_t (-1) is a legitimate value for "number of
-	 seconds since the Epoch".  But it is a stupid time, so let's
-	 just not permit it to exist.  Besides, (a) it's
-	 unrepresentable in our source_epoch API, and (b) glibc never
-	 sets errno anyway, because of precisely this problem, so we
-	 can't distinguish the valid from the invalid anyway.  But
-	 then again, it never fails if passed nullptr.  Yes, other C
-	 libraries exist, whose behaviour in this regard is not known.
-	 It's a confused situation, so let's just be conservative and
-	 users claiming it is 1969-12-31 23:59:59 will be
-	 disappointed.  They're being anachronistic using a compiler
-	 that didn't exist then.  At least get into the seventies!  */
-      pfile->time_stamp = time (nullptr);
-      pfile->time_stamp_kind = (pfile->time_stamp == time_t (-1)
-				? CPP_time_kind::UNKNOWN
-				: CPP_time_kind::DYNAMIC);
+      int kind = 0;
+      if (pfile->cb.get_source_date_epoch)
+	{
+	  /* Try reading the fixed epoch.  */
+	  pfile->time_stamp = pfile->cb.get_source_date_epoch (pfile);
+	  if (pfile->time_stamp != time_t (-1))
+	    kind = int (CPP_time_kind::FIXED);
+	}
+
+      if (!kind)
+	{
+	  /* Pedantically time_t (-1) is a legitimate value for
+	     "number of seconds since the Epoch".  It is a silly
+	     time.   */
+	  errno = 0;
+	  pfile->time_stamp = time (nullptr);
+	  /* Annoyingly a library could legally set errno and return a
+	     valid time!  Bad library!  */
+	  if (pfile->time_stamp == time_t (-1) && errno)
+	    kind = errno;
+	  else
+	    kind = int (CPP_time_kind::DYNAMIC);
+	}
+
+      pfile->time_stamp_kind = kind;
     }
 
   *result = pfile->time_stamp;
-  return pfile->time_stamp_kind;
+  if (pfile->time_stamp_kind >= 0)
+    {
+      errno = pfile->time_stamp_kind;
+      return CPP_time_kind::UNKNOWN;
+    }
+
+  return CPP_time_kind (pfile->time_stamp_kind);
 }
 
 /* Convert builtin macros like __FILE__ to a token and push it on the

@@ -98,6 +98,9 @@ GLIBCXX_8.0 {
     _ZNSt3__817__copy_streambufsI*;
     _ZNSt3__821__copy_streambufs_eofI*;
 
+    # std::__istream_extract(wistream&, wchar_t*, streamsize)
+    _ZNSt3__817__istream_extractIwNS_11char_traitsIwEEEEvRNS_13basic_istreamIT_T0_EEPS4_[ilx];
+
     # __gnu_cxx::__atomic_add
     # __gnu_cxx::__exchange_and_add
     _ZN9__gnu_cxx3__812__atomic_addEPV[il][il];
@@ -145,6 +148,7 @@ GLIBCXX_8.0 {
     _ZN11__gnu_debug30_Safe_unordered_container_base13_M_detach_allEv;
     _ZN11__gnu_debug25_Safe_local_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
     _ZN11__gnu_debug25_Safe_local_iterator_base9_M_detachEv;
+    _ZN11__gnu_debug25_Safe_local_iterator_base16_M_attach_singleEPNS_19_Safe_sequence_baseEb;
 
     # parallel mode
     _ZN14__gnu_parallel9_Settings3getEv;

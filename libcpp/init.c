@@ -275,7 +275,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
 
   /* Note the timestamp is unset.  */
   pfile->time_stamp = time_t (-1);
-  pfile->time_stamp_kind = CPP_time_kind::UNSET;
+  pfile->time_stamp_kind = 0;
 
   /* The expression parser stack.  */
   _cpp_expand_op_stack (pfile);

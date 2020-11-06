@@ -2346,6 +2346,7 @@ GLIBCXX_3.4.29 {
 
     # basic_stringbuf::basic_stringbuf(basic_stringbuf&&, allocator const&)
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_RKS3_;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_RKS3_ONS4_14__xfer_bufptrsE;
 
     # basic_stringbuf::get_allocator()
     _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE13get_allocatorEv;
@@ -2370,6 +2371,11 @@ GLIBCXX_3.4.29 {
 
     # basic_stringstream::view()
     _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+
+    # std::once_flag::_M_activate()
+    _ZNSt9once_flag11_M_activateEv;
+    # std::once_flag::_M_finish(bool)
+    _ZNSt9once_flag9_M_finishEb;
 
 } GLIBCXX_3.4.28;
 

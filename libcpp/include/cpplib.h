@@ -1095,10 +1095,9 @@ inline location_t cpp_macro_definition_location (cpp_hashnode *node)
 /* Return an idempotent time stamp (possibly from SOURCE_DATE_EPOCH).  */
 enum class CPP_time_kind 
 {
-  UNSET,	/* Internal use, never returned.  */
-  FIXED,	/* Fixed time via source epoch.  */
-  DYNAMIC,	/* Dynamic via time(2).  */
-  UNKNOWN	/* Wibbly wobbly, timey wimey.  */
+  FIXED = -1,	/* Fixed time via source epoch.  */
+  DYNAMIC = -2,	/* Dynamic via time(2).  */
+  UNKNOWN = -3	/* Wibbly wobbly, timey wimey.  */
 };
 extern CPP_time_kind cpp_get_date (cpp_reader *, time_t *);
 

@@ -1510,6 +1510,19 @@ gimple_call_fnspec (const gcall *stmt)
     }
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     return builtin_fnspec (gimple_call_fndecl (stmt));
+  tree fndecl = gimple_call_fndecl (stmt);
+  /* If the call is to a replaceable operator delete and results
+     from a delete expression as opposed to a direct call to
+     such operator, then we can treat it as free.  */
+  if (fndecl
+      && DECL_IS_OPERATOR_DELETE_P (fndecl)
+      && gimple_call_from_new_or_delete (stmt))
+    return ".co ";
+  /* Similarly operator new can be treated as malloc.  */
+  if (fndecl
+      && DECL_IS_OPERATOR_NEW_P (fndecl)
+      && gimple_call_from_new_or_delete (stmt))
+    return "mC";
   return "";
 }
 

@@ -23,6 +23,10 @@ typedef unsigned char byte;
 #endif
 }
 
+#if __cplusplus < 201103L
+typedef unsigned short char16_t;
+#endif
+
 /* Ordinary bzcopy and bzero aren't recognized as special.  */
 #define bcopy __builtin_bcopy
 #define bzero __builtin_bzero
@@ -190,6 +194,7 @@ struct HasDefault { char a[4]; HasDefault (); };
 
 void test (HasDefault *p, const HasDefault &x,
 	   void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -247,6 +252,8 @@ void test (HasDefault *p, const HasDefault &x,
   T (memcpy, (p, ia, sizeof *p));  // { dg-warning ".void\\* memcpy(\[^\n\r\]*). copying an object of non-trivial type .struct HasDefault. from an array of .const int." }
   extern long *ip;
   T (memcpy, (p, ip, sizeof *p));  // { dg-warning ".void\\* memcpy(\[^\n\r\]*). copying an object of non-trivial type .struct HasDefault. from an array of .long." }
+  T (memcpy, (p, ss, sizeof *p));  // { dg-warning ".void\\* memcpy(\[^\n\r\]*). copying an object of non-trivial type .struct HasDefault. from an array of .const signed char." }
+  T (memcpy, (p, ws, sizeof *p));  // { dg-warning ".void\\* memcpy(\[^\n\r\]*). copying an object of non-trivial type .struct HasDefault. from an array of .const \(char16_t\|unsigned short\)." }
 
   T (memmove, (p, ia, sizeof *p)); // { dg-warning ".void\\* memmove(\[^\n\r\]*). copying an object of non-trivial type .struct HasDefault. from an array of .const int." }
 
@@ -274,6 +281,7 @@ struct HasTemplateDefault
 
 void test (HasTemplateDefault *p, const HasTemplateDefault &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -291,24 +299,32 @@ void test (HasTemplateDefault *p, const HasTemplateDefault &x,
   T (bcopy, (q, p, sizeof *p));
   T (bcopy, (s, p, sizeof *p));
   T (bcopy, (b, p, sizeof *p));
+  T (bcopy, (ss, p, sizeof *p));    // { dg-warning "bcopy" }
+  T (bcopy, (ws, p, sizeof *p));    // { dg-warning "bcopy" }
   T (bcopy, (ia, p, sizeof *p));    // { dg-warning "bcopy" }
 
   T (memcpy, (p, &x, sizeof *p));
   T (memcpy, (p, q, sizeof *p));
   T (memcpy, (p, s, sizeof *p));
   T (memcpy, (p, b, sizeof *p));
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));
   T (mempcpy, (p, q, sizeof *p));
   T (mempcpy, (p, s, sizeof *p));
   T (mempcpy, (p, b, sizeof *p));
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -329,6 +345,7 @@ struct HasCopy { int i; HasCopy (const HasCopy&); };
 
 void test (HasCopy *p, const HasCopy &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -348,24 +365,32 @@ void test (HasCopy *p, const HasCopy &x,
   T (bcopy, (q, p, sizeof *p));     // { dg-warning "bcopy" }
   T (bcopy, (s, p, sizeof *p));     // { dg-warning "bcopy" }
   T (bcopy, (b, p, sizeof *p));     // { dg-warning "bcopy" }
+  T (bcopy, (ss, p, sizeof *p));    // { dg-warning "bcopy" }
+  T (bcopy, (ws, p, sizeof *p));    // { dg-warning "bcopy" }
   T (bcopy, (ia, p, sizeof *p));    // { dg-warning "bcopy" }
 
   T (memcpy, (p, &x, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -410,6 +435,7 @@ private:
 
 void test (HasPrivateCopy *p, const HasPrivateCopy &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -429,18 +455,24 @@ void test (HasPrivateCopy *p, const HasPrivateCopy &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -459,6 +491,7 @@ struct HasDtor { int i; ~HasDtor (); };
 
 void test (HasDtor *p, const HasDtor &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -479,18 +512,24 @@ void test (HasDtor *p, const HasDtor &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -503,7 +542,7 @@ void test (HasDtor *p, const HasDtor &x,
 
 #if !defined TEST || TEST == TEST_HAS_DELETED_DTOR
 
-// HasDeletedDtor is trivial so clearing and cpying it is okay.
+// HasDeletedDtor is trivial so clearing and copying it is okay.
 // Relocation would bypass the deleted dtor and so it's diagnosed.
 
 struct HasDeletedDtor
@@ -514,6 +553,7 @@ struct HasDeletedDtor
 
 void test (HasDeletedDtor *p, const HasDeletedDtor &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -528,18 +568,24 @@ void test (HasDeletedDtor *p, const HasDeletedDtor &x,
   T (memcpy, (p, q, sizeof *p));
   T (memcpy, (p, s, sizeof *p));
   T (memcpy, (p, b, sizeof *p));
+  T (memcpy, (p, ss, sizeof *p));
+  T (memcpy, (p, ws, sizeof *p));
   T (memcpy, (p, ia, sizeof *p));
 
   T (memmove, (p, &x, sizeof *p));
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));
+  T (memmove, (p, ws, sizeof *p));
   T (memmove, (p, ia, sizeof *p));
 
   T (mempcpy, (p, &x, sizeof *p));
   T (mempcpy, (p, q, sizeof *p));
   T (mempcpy, (p, s, sizeof *p));
   T (mempcpy, (p, b, sizeof *p));
+  T (mempcpy, (p, ss, sizeof *p));
+  T (mempcpy, (p, ws, sizeof *p));
   T (mempcpy, (p, ia, sizeof *p));
 
   // Reallocating is diagnosed.
@@ -564,6 +610,7 @@ private:
 
 void test (HasPrivateDtor *p, const HasPrivateDtor &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -578,18 +625,24 @@ void test (HasPrivateDtor *p, const HasPrivateDtor &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is diagnosed.
@@ -608,6 +661,7 @@ struct HasCopyAssign { void operator= (HasCopyAssign&); };
 
 void test (HasCopyAssign *p, const HasCopyAssign &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -626,18 +680,24 @@ void test (HasCopyAssign *p, const HasCopyAssign &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -665,6 +725,7 @@ struct HasMoveAssign
 
 void test (HasMoveAssign *p, const HasMoveAssign &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -683,18 +744,24 @@ void test (HasMoveAssign *p, const HasMoveAssign &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -727,6 +794,7 @@ struct TrivialCopyHasMoveAssign
 
 void test (TrivialCopyHasMoveAssign *p, const TrivialCopyHasMoveAssign &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -745,18 +813,24 @@ void test (TrivialCopyHasMoveAssign *p, const TrivialCopyHasMoveAssign &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -786,6 +860,7 @@ struct TrivialMoveNontrivialCopyAssign
 void test (TrivialMoveNontrivialCopyAssign *p,
 	   const TrivialMoveNontrivialCopyAssign &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -804,18 +879,24 @@ void test (TrivialMoveNontrivialCopyAssign *p,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -841,6 +922,7 @@ struct TrivialAssignRefOverload {
 
 void test (TrivialAssignRefOverload *p, const TrivialAssignRefOverload &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -855,18 +937,24 @@ void test (TrivialAssignRefOverload *p, const TrivialAssignRefOverload &x,
   T (memcpy, (p, q, sizeof *p));
   T (memcpy, (p, s, sizeof *p));
   T (memcpy, (p, b, sizeof *p));
+  T (memcpy, (p, ss, sizeof *p));
+  T (memcpy, (p, ws, sizeof *p));
   T (memcpy, (p, ia, sizeof *p));
 
   T (memmove, (p, &x, sizeof *p));
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));
+  T (memmove, (p, ws, sizeof *p));
   T (memmove, (p, ia, sizeof *p));
 
   T (mempcpy, (p, &x, sizeof *p));
   T (mempcpy, (p, q, sizeof *p));
   T (mempcpy, (p, s, sizeof *p));
   T (mempcpy, (p, b, sizeof *p));
+  T (mempcpy, (p, ss, sizeof *p));
+  T (mempcpy, (p, ws, sizeof *p));
   T (mempcpy, (p, ia, sizeof *p));
 
   T (q = realloc, (p, 1));
@@ -892,6 +980,7 @@ struct TrivialAssignCstRefOverload {
 void test (TrivialAssignCstRefOverload *p,
 	   const TrivialAssignCstRefOverload &x,
 	   const void *q, const unsigned char *s, std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -906,18 +995,24 @@ void test (TrivialAssignCstRefOverload *p,
   T (memcpy, (p, q, sizeof *p));
   T (memcpy, (p, s, sizeof *p));
   T (memcpy, (p, b, sizeof *p));
+  T (memcpy, (p, ss, sizeof *p));
+  T (memcpy, (p, ws, sizeof *p));
   T (memcpy, (p, ia, sizeof *p));
 
   T (memmove, (p, &x, sizeof *p));
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));
+  T (memmove, (p, ws, sizeof *p));
   T (memmove, (p, ia, sizeof *p));
 
   T (mempcpy, (p, &x, sizeof *p));
   T (mempcpy, (p, q, sizeof *p));
   T (mempcpy, (p, s, sizeof *p));
   T (mempcpy, (p, b, sizeof *p));
+  T (mempcpy, (p, ss, sizeof *p));
+  T (mempcpy, (p, ws, sizeof *p));
   T (mempcpy, (p, ia, sizeof *p));
 
   T (q = realloc, (p, 1));
@@ -940,6 +1035,7 @@ struct TrivialRefHasVolRefAssign
 void test (TrivialRefHasVolRefAssign *p,
 	   const TrivialRefHasVolRefAssign &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -958,18 +1054,24 @@ void test (TrivialRefHasVolRefAssign *p,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -991,6 +1093,7 @@ struct HasVolRefAssign {
 
 void test (HasVolRefAssign *p, const HasVolRefAssign &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1009,18 +1112,24 @@ void test (HasVolRefAssign *p, const HasVolRefAssign &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -1040,6 +1149,7 @@ struct HasVirtuals { int i; virtual void foo (); };
 
 void test (HasVirtuals *p, const HasVirtuals &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1057,18 +1167,24 @@ void test (HasVirtuals *p, const HasVirtuals &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -1089,6 +1205,7 @@ struct HasConstData { const char a[4]; };
 
 void test (HasConstData *p, const HasConstData &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1115,18 +1232,24 @@ void test (HasConstData *p, const HasConstData &x,
   T (memcpy, (p, q, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, s, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
 
   T (memmove, (p, &x, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is not diagnosed except in C++ 98 due to a bug.
@@ -1147,6 +1270,7 @@ struct HasReference { int &ci; };
 
 void test (HasReference *p, const HasReference &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1181,6 +1305,10 @@ void test (HasReference *p, const HasReference &x,
   T (memcpy, (p, s, n));            // { dg-warning "memcpy" }
   T (memcpy, (p, b, sizeof *p));    // { dg-warning "memcpy" }
   T (memcpy, (p, b, n));            // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, n));           // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, n));           // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, n));           // { dg-warning "memcpy" }
 
@@ -1188,12 +1316,16 @@ void test (HasReference *p, const HasReference &x,
   T (memmove, (p, q, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, s, sizeof *p));   // { dg-warning "memmove" }
   T (memmove, (p, b, sizeof *p));   // { dg-warning "memmove" }
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
 
   T (mempcpy, (p, &x, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, q, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, s, sizeof *p));   // { dg-warning "mempcpy" }
   T (mempcpy, (p, b, sizeof *p));   // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
 
   // Reallocating is not diagnosed because a type with a reference
@@ -1218,6 +1350,7 @@ struct HasMemDataPtr { int HasMemDataPtr::*p; };
 
 void test (HasMemDataPtr *p, const HasMemDataPtr &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1243,6 +1376,10 @@ void test (HasMemDataPtr *p, const HasMemDataPtr &x,
   T (memcpy, (p, s, n));
   T (memcpy, (p, b, sizeof *p));
   T (memcpy, (p, b, n));
+  T (memcpy, (p, ss, sizeof *p));
+  T (memcpy, (p, ss, n));
+  T (memcpy, (p, ws, sizeof *p));
+  T (memcpy, (p, ws, n));
   T (memcpy, (p, ia, sizeof *p));
   T (memcpy, (p, ia, n));
 
@@ -1250,12 +1387,16 @@ void test (HasMemDataPtr *p, const HasMemDataPtr &x,
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));
+  T (memmove, (p, ws, sizeof *p));
   T (memmove, (p, ia, sizeof *p));
 
   T (mempcpy, (p, &x, sizeof *p));
   T (mempcpy, (p, q, sizeof *p));
   T (mempcpy, (p, s, sizeof *p));
   T (mempcpy, (p, b, sizeof *p));
+  T (mempcpy, (p, ss, sizeof *p));
+  T (mempcpy, (p, ws, sizeof *p));
   T (mempcpy, (p, ia, sizeof *p));
 
   // Reallocating is the same as calling memcpy.
@@ -1276,6 +1417,7 @@ struct HasSomePrivateData { char a[2]; private: char b[2]; };
 
 void test (HasSomePrivateData *p, const HasSomePrivateData &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1298,6 +1440,10 @@ void test (HasSomePrivateData *p, const HasSomePrivateData &x,
   T (memcpy, (p, q, sizeof *p));
   T (memcpy, (p, s, sizeof *p));
   T (memcpy, (p, b, sizeof *p));
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, n));           // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, n));           // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, n));           // { dg-warning "memcpy" }
 
@@ -1307,6 +1453,10 @@ void test (HasSomePrivateData *p, const HasSomePrivateData &x,
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ss, n));          // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, n));          // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, n));          // { dg-warning "memmove" }
 
@@ -1319,6 +1469,10 @@ void test (HasSomePrivateData *p, const HasSomePrivateData &x,
   T (mempcpy, (p, s, n));
   T (mempcpy, (p, b, sizeof *p));
   T (mempcpy, (p, b, n));
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, n));          // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, n));          // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, n));          // { dg-warning "mempcpy" }
 
@@ -1342,6 +1496,7 @@ struct HasSomeProtectedData { char a[2]; protected: char b[2]; };
 
 void test (HasSomeProtectedData *p, const HasSomeProtectedData &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1364,6 +1519,10 @@ void test (HasSomeProtectedData *p, const HasSomeProtectedData &x,
   T (memcpy, (p, q, sizeof *p));
   T (memcpy, (p, s, sizeof *p));
   T (memcpy, (p, b, sizeof *p));
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, n));           // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, n));           // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, n));           // { dg-warning "memcpy" }
 
@@ -1373,6 +1532,10 @@ void test (HasSomeProtectedData *p, const HasSomeProtectedData &x,
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ss, n));          // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, n));          // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, n));          // { dg-warning "memmove" }
 
@@ -1385,6 +1548,10 @@ void test (HasSomeProtectedData *p, const HasSomeProtectedData &x,
   T (mempcpy, (p, s, n));
   T (mempcpy, (p, b, sizeof *p));
   T (mempcpy, (p, b, n));
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, n));          // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, n));          // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, n));          // { dg-warning "mempcpy" }
 
@@ -1408,6 +1575,7 @@ struct HasAllPrivateData { private: char a[4]; };
 
 void test (HasAllPrivateData *p, const HasAllPrivateData &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1430,6 +1598,10 @@ void test (HasAllPrivateData *p, const HasAllPrivateData &x,
   T (memcpy, (p, q, sizeof *p));
   T (memcpy, (p, s, sizeof *p));
   T (memcpy, (p, b, sizeof *p));
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, n));           // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, n));           // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, n));           // { dg-warning "memcpy" }
 
@@ -1439,6 +1611,10 @@ void test (HasAllPrivateData *p, const HasAllPrivateData &x,
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ss, n));          // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, n));          // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, n));          // { dg-warning "memmove" }
 
@@ -1451,6 +1627,10 @@ void test (HasAllPrivateData *p, const HasAllPrivateData &x,
   T (mempcpy, (p, s, n));
   T (mempcpy, (p, b, sizeof *p));
   T (mempcpy, (p, b, n));
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, n));          // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, n));          // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, n));          // { dg-warning "mempcpy" }
 
@@ -1474,6 +1654,7 @@ struct HasAllProtectedData { protected: char a[4]; };
 
 void test (HasAllProtectedData *p, const HasAllProtectedData &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1496,6 +1677,10 @@ void test (HasAllProtectedData *p, const HasAllProtectedData &x,
   T (memcpy, (p, q, sizeof *p));
   T (memcpy, (p, s, sizeof *p));
   T (memcpy, (p, b, sizeof *p));
+  T (memcpy, (p, ss, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ss, n));           // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, sizeof *p));   // { dg-warning "memcpy" }
+  T (memcpy, (p, ws, n));           // { dg-warning "memcpy" }
   T (memcpy, (p, ia, sizeof *p));   // { dg-warning "memcpy" }
   T (memcpy, (p, ia, n));           // { dg-warning "memcpy" }
 
@@ -1505,6 +1690,10 @@ void test (HasAllProtectedData *p, const HasAllProtectedData &x,
   T (memmove, (p, q, sizeof *p));
   T (memmove, (p, s, sizeof *p));
   T (memmove, (p, b, sizeof *p));
+  T (memmove, (p, ss, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ss, n));          // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p));  // { dg-warning "memmove" }
+  T (memmove, (p, ws, n));          // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p));  // { dg-warning "memmove" }
   T (memmove, (p, ia, n));          // { dg-warning "memmove" }
 
@@ -1517,6 +1706,10 @@ void test (HasAllProtectedData *p, const HasAllProtectedData &x,
   T (mempcpy, (p, s, n));
   T (mempcpy, (p, b, sizeof *p));
   T (mempcpy, (p, b, n));
+  T (mempcpy, (p, ss, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ss, n));          // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p));  // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, n));          // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p));  // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, n));          // { dg-warning "mempcpy" }
 
@@ -1543,6 +1736,7 @@ private:
 
 void test (HasDefaultPrivateAssign *p, const HasDefaultPrivateAssign &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1596,8 +1790,14 @@ void test (HasDefaultPrivateAssign *p, const HasDefaultPrivateAssign &x,
   T (mempcpy, (p, q, 3));   // { dg-warning "mempcpy" } */
 
   // Otherwise, copying from an object of an unrelated type is diagnosed.
+  T (memcpy, (p, ss, sizeof *p));  // { dg-warning "writing to an object of type .struct HasDefaultPrivateAssign. with (deleted|no trivial) copy-assignment." }
+  T (memcpy, (p, ws, sizeof *p));  // { dg-warning "writing to an object of type .struct HasDefaultPrivateAssign. with (deleted|no trivial) copy-assignment." }
   T (memcpy, (p, ia, sizeof *p));  // { dg-warning "writing to an object of type .struct HasDefaultPrivateAssign. with (deleted|no trivial) copy-assignment." }
+  T (memmove, (p, ss, sizeof *p)); // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p)); // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p)); // { dg-warning "memmove" }
+  T (mempcpy, (p, ss, sizeof *p)); // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p)); // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p)); // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.
@@ -1621,6 +1821,7 @@ private:
 
 void test (HasDefaultDeletedAssign *p, const HasDefaultDeletedAssign &x,
 	   const void *q, const unsigned char *s, const std::byte *b,
+	   const signed char *ss, const char16_t *ws,
 	   const int ia[])
 {
   const int i = *ia;
@@ -1674,8 +1875,14 @@ void test (HasDefaultDeletedAssign *p, const HasDefaultDeletedAssign &x,
   T (mempcpy, (p, q, 3));   // { dg-warning "mempcpy" } */
 
   // Otherwise, copying from an object of an unrelated type is diagnosed.
+  T (memcpy, (p, ss, sizeof *p));  // { dg-warning "writing to an object of type .struct HasDefaultDeletedAssign. with (deleted|no trivial) copy-assignment." }
+  T (memcpy, (p, ws, sizeof *p));  // { dg-warning "writing to an object of type .struct HasDefaultDeletedAssign. with (deleted|no trivial) copy-assignment." }
   T (memcpy, (p, ia, sizeof *p));  // { dg-warning "writing to an object of type .struct HasDefaultDeletedAssign. with (deleted|no trivial) copy-assignment." }
+  T (memmove, (p, ss, sizeof *p)); // { dg-warning "memmove" }
+  T (memmove, (p, ws, sizeof *p)); // { dg-warning "memmove" }
   T (memmove, (p, ia, sizeof *p)); // { dg-warning "memmove" }
+  T (mempcpy, (p, ss, sizeof *p)); // { dg-warning "mempcpy" }
+  T (mempcpy, (p, ws, sizeof *p)); // { dg-warning "mempcpy" }
   T (mempcpy, (p, ia, sizeof *p)); // { dg-warning "mempcpy" }
 
   // Reallocating is the same as calling memcpy.

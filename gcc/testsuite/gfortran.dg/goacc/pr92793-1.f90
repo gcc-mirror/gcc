@@ -47,7 +47,7 @@ subroutine check ()
 end subroutine check
 
 
-subroutine gwv_sl ()
+subroutine gwv_sl_1 ()
   implicit none (type, external)
   integer :: i
 
@@ -59,11 +59,30 @@ subroutine gwv_sl ()
   do i = 0, 10
   end do
   !$acc end serial loop
-end subroutine gwv_sl
+end subroutine gwv_sl_1
+
+subroutine gwv_sl_2 ()
+  implicit none (type, external)
+  integer :: i, j, k
+
+  !$acc serial loop ! { dg-message "77: enclosing parent compute construct" }
+  do i = 0, 10
+     !$acc loop ! { dg-bogus "enclosing parent compute construct" }
+     do j = 0, 10
+        !$acc loop &
+        !$acc &           gang(num:5) & ! { dg-error "35: argument not permitted on 'gang' clause" }
+        !$acc &      worker(num:5) & ! { dg-error "32: argument not permitted on 'worker' clause" }
+        !$acc &    vector(length:5) ! { dg-error "33: argument not permitted on 'vector' clause" }
+        do k = 0, 10
+        end do
+     end do
+  end do
+  !$acc end serial loop
+end subroutine gwv_sl_2
 
 subroutine gwv_s_l ()
   implicit none (type, external)
-  integer :: i
+  integer :: i, j, k
 
   !$acc serial ! { dg-message "72: enclosing parent compute construct" }
   !$acc loop &
@@ -72,12 +91,25 @@ subroutine gwv_s_l ()
   !$acc &      vector(length:5) ! { dg-error "29: argument not permitted on 'vector' clause" }
   do i = 0, 10
   end do
-  !$acc end serial
+
+  !$acc loop
+  do i = 0, 10
+     !$acc loop ! { dg-bogus "enclosing parent compute construct" }
+     do j = 0, 10
+        !$acc loop &
+        !$acc &           gang(num:5) & ! { dg-error "35: argument not permitted on 'gang' clause" }
+        !$acc &      worker(num:5) & ! { dg-error "32: argument not permitted on 'worker' clause" }
+        !$acc &        vector(length:5) ! { dg-error "37: argument not permitted on 'vector' clause" }
+        do k = 0, 10
+        end do
+     end do
+  end do
+!$acc end serial
 end subroutine gwv_s_l
 
 subroutine gwv_r () ! { dg-message "16: enclosing routine" }
   implicit none (type, external)
-  integer :: i
+  integer :: i, j, k
 
   !$acc routine(gwv_r)
 
@@ -86,5 +118,18 @@ subroutine gwv_r () ! { dg-message "16: enclosing routine" }
   !$acc &      worker(num:5) & ! { dg-error "26: argument not permitted on 'worker' clause" }
   !$acc &    vector(length:5) ! { dg-error "27: argument not permitted on 'vector' clause" }
   do i = 0, 10
+  end do
+
+  !$acc loop
+  do i = 0, 10
+     !$acc loop
+     do j = 0, 10
+        !$acc loop &
+        !$acc &       gang(num:5) & ! { dg-error "31: argument not permitted on 'gang' clause" }
+        !$acc &     worker(num:5) & ! { dg-error "31: argument not permitted on 'worker' clause" }
+        !$acc &       vector(length:5) ! { dg-error "36: argument not permitted on 'vector' clause" }
+        do k = 0, 10
+        end do
+     end do
   end do
 end subroutine gwv_r

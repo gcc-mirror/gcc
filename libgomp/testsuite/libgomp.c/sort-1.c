@@ -15,6 +15,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* { dg-additional-options "-Wno-deprecated-declarations" } */
+
 #include <limits.h>
 #include <omp.h>
 #include <stdbool.h>

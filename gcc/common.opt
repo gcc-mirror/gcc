@@ -1940,6 +1940,10 @@ fjump-tables
 Common Var(flag_jump_tables) Init(1) Optimization
 Use jump tables for sufficiently large switch statements.
 
+fbit-tests
+Common Var(flag_bit_tests) Init(1) Optimization
+Use bit tests for sufficiently large switch statements.
+
 fkeep-inline-functions
 Common Report Var(flag_keep_inline_functions)
 Generate code for functions even if they are fully inlined.

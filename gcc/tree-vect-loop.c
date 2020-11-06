@@ -2365,6 +2365,79 @@ start_over:
 				       "unsupported SLP instances\n");
 	  goto again;
 	}
+
+      /* Check whether any load in ALL SLP instances is possibly permuted.  */
+      slp_tree load_node, slp_root;
+      unsigned i, x;
+      slp_instance instance;
+      bool can_use_lanes = true;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), x, instance)
+	{
+	  slp_root = SLP_INSTANCE_TREE (instance);
+	  int group_size = SLP_TREE_LANES (slp_root);
+	  tree vectype = SLP_TREE_VECTYPE (slp_root);
+	  bool loads_permuted = false;
+	  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
+	    {
+	      if (!SLP_TREE_LOAD_PERMUTATION (load_node).exists ())
+		continue;
+	      unsigned j;
+	      stmt_vec_info load_info;
+	      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load_info)
+		if (SLP_TREE_LOAD_PERMUTATION (load_node)[j] != j)
+		  {
+		    loads_permuted = true;
+		    break;
+		  }
+	    }
+
+	  /* If the loads and stores can be handled with load/store-lane
+	     instructions record it and move on to the next instance.  */
+	  if (loads_permuted
+	      && SLP_INSTANCE_KIND (instance) == slp_inst_kind_store
+	      && vect_store_lanes_supported (vectype, group_size, false))
+	    {
+	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
+		{
+		  stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
+		      (SLP_TREE_SCALAR_STMTS (load_node)[0]);
+		  /* Use SLP for strided accesses (or if we can't
+		     load-lanes).  */
+		  if (STMT_VINFO_STRIDED_P (stmt_vinfo)
+		      || ! vect_load_lanes_supported
+			    (STMT_VINFO_VECTYPE (stmt_vinfo),
+			     DR_GROUP_SIZE (stmt_vinfo), false))
+		    break;
+		}
+
+	      can_use_lanes
+		= can_use_lanes && i == SLP_INSTANCE_LOADS (instance).length ();
+
+	      if (can_use_lanes && dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "SLP instance %p can use load/store-lanes\n",
+				 instance);
+	    }
+	  else
+	    {
+	      can_use_lanes = false;
+	      break;
+	    }
+	}
+
+      /* If all SLP instances can use load/store-lanes abort SLP and try again
+	 with SLP disabled.  */
+      if (can_use_lanes)
+	{
+	  ok = opt_result::failure_at (vect_location,
+				       "Built SLP cancelled: can use "
+				       "load/store-lanes\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Built SLP cancelled: all SLP instances support "
+			     "load/store-lanes\n");
+	  goto again;
+	}
     }
 
   /* Dissolve SLP-only groups.  */
@@ -7548,7 +7621,7 @@ vectorizable_lc_phi (loop_vec_info loop_vinfo,
 bool
 vectorizable_phi (vec_info *,
 		  stmt_vec_info stmt_info, gimple **vec_stmt,
-		  slp_tree slp_node)
+		  slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   if (!is_a <gphi *> (stmt_info->stmt) || !slp_node)
     return false;
@@ -7577,6 +7650,8 @@ vectorizable_phi (vec_info *,
 			       "incompatible vector types for invariants\n");
 	    return false;
 	  }
+      record_stmt_cost (cost_vec, SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node),
+			vector_stmt, stmt_info, vectype, 0, vect_body);
       STMT_VINFO_TYPE (stmt_info) = phi_info_type;
       return true;
     }
@@ -7874,8 +7949,16 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       if (nested_in_vect_loop)
 	nivs = nvects;
       else
-	nivs = least_common_multiple (group_size,
-				      const_nunits) / const_nunits;
+	{
+	  /* Compute the number of distinct IVs we need.  First reduce
+	     group_size if it is a multiple of const_nunits so we get
+	     one IV for a group_size of 4 but const_nunits 2.  */
+	  unsigned group_sizep = group_size;
+	  if (group_sizep % const_nunits == 0)
+	    group_sizep = group_sizep / const_nunits;
+	  nivs = least_common_multiple (group_sizep,
+					const_nunits) / const_nunits;
+	}
       tree stept = TREE_TYPE (step_vectype);
       tree lupdate_mul = NULL_TREE;
       if (!nested_in_vect_loop)
@@ -7918,6 +8001,10 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 		{
 		  /* The scalar inits of the IVs if not vectorized.  */
 		  elt = inits[(ivn*const_nunits + eltn) % group_size];
+		  if (!useless_type_conversion_p (TREE_TYPE (vectype),
+						  TREE_TYPE (elt)))
+		    elt = gimple_build (&init_stmts, VIEW_CONVERT_EXPR,
+					TREE_TYPE (vectype), elt);
 		  init_elts.quick_push (elt);
 		}
 	      /* The number of steps to add to the initial values.  */
@@ -7974,6 +8061,15 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
 
 	  SLP_TREE_VEC_STMTS (slp_node).quick_push (induction_phi);
+	}
+      if (!nested_in_vect_loop)
+	{
+	  /* Fill up to the number of vectors we need for the whole group.  */
+	  nivs = least_common_multiple (group_size,
+					const_nunits) / const_nunits;
+	  for (; ivn < nivs; ++ivn)
+	    SLP_TREE_VEC_STMTS (slp_node)
+	      .quick_push (SLP_TREE_VEC_STMTS (slp_node)[0]);
 	}
 
       /* Re-use IVs when we can.  We are generating further vector
@@ -8551,6 +8647,9 @@ vectorizable_live_operation (vec_info *vinfo,
       gimple_seq stmts = NULL;
       new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree),
 				       &stmts, true, NULL_TREE);
+      if (TREE_CODE (new_tree) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree) = 1;
       if (is_a <gphi *> (vec_stmt))
 	{
 	  gimple_stmt_iterator si = gsi_after_labels (gimple_bb (vec_stmt));

@@ -1,3 +1,155 @@
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	* except.c (check_handlers_1): Add auto_diagnostic_group.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78209
+	* pt.c (do_auto_deduction): If init is REFERENCE_REF_P, use its
+	first operand.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97675
+	* except.c (check_handlers_1): Use OPT_Wexceptions for the
+	warning.  Use inform for the second part of the warning.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/25814
+	* cp-tree.h (enum cp_tree_index): Add CPTI_EXPLICIT_VOID_LIST.
+	(explicit_void_list_node): Define.
+	(PARENTHESIZED_LIST_P): New macro.
+	(struct cp_declarator): Add function::parens_loc.
+	* decl.c (cxx_init_decl_processing): Initialize explicit_void_list_node.
+	(grokparms): Also break when explicit_void_list_node.
+	* parser.c (make_call_declarator): New location_t parameter.  Use it
+	to set declarator->u.function.parens_loc.
+	(cp_parser_lambda_declarator_opt): Pass UNKNOWN_LOCATION to
+	make_call_declarator.
+	(warn_about_ambiguous_parse): New function.
+	(cp_parser_init_declarator): Call warn_about_ambiguous_parse.
+	(cp_parser_declarator): Set *parenthesized_p to false rather than to
+	true.
+	(cp_parser_direct_declarator): Create a location for the function's
+	parentheses and pass it to make_call_declarator.
+	(cp_parser_parameter_declaration_clause): Return explicit_void_list_node
+	for (void).
+	(cp_parser_parameter_declaration_list): Set PARENTHESIZED_LIST_P
+	in the parameters tree.
+
+2020-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97670
+	* semantics.c (finish_omp_clauses): Look through array reductions to
+	find underlying decl to clear in the aligned_head bitmap.  Use
+	DECL_UID (t) instead of DECL_UID (OMP_CLAUSE_DECL (c)) when clearing
+	in the bitmap.  Only diagnose errors about allocate vars not being
+	privatized on the same construct on allocate clause if it has
+	a DECL_P OMP_CLAUSE_DECL.
+
+2020-11-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* constexpr.c (potential_constant_expression_1): Handle
+	expressions known to be non-constant for Objective-C.
+
+2020-11-03  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (is_byte_access_type): Don't use char_type_p.
+
+2020-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97663
+	* parser.c (cp_parser_init_declarator): Don't try to parse
+	C++17 deduction guides if there are any type specifiers even when
+	type is NULL.
+
+2020-11-03  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/97453
+	DR2303
+	* pt.c (get_template_base): Consider closest base in template
+	deduction when base of base also matches.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (tsubst_expr): Simplify using decl instantiation, add
+	asserts.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (copy_fndecl_with_name):  Always not top level.
+	(build_cdtor_clones): Add update_methods parm, use it to
+	conditionally update the method vec.  Return void
+	(clone_cdtor): Adjust.
+	(clone_constructors_and_destructors): Adjust comment.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (primary_template_specialization_p): Use
+	VAR_OR_FUNCTION_DECL_P.
+	(tsubst_template_decl): Check for FUNCTION_DECL, not !TYPE && !VAR
+	for registering a specialization.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (fixup_deferred_exception_variants): Declare.
+	* parser.c (cp_parser_class_specifier_1): Call it when
+	completing deferred parses rather than creating a variant.
+	(cp_parser_member_declaration): Move comment from ...
+	(cp_parser_noexcept_specification_opt): ... here.  Refactor the
+	deferred parse.
+	* tree.c (fixup_deferred_exception_variants): New.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (tsubst_lambda_expr): Reorder extra-scope handling to match
+	the non-template case.
+	(instantiate_body): Move a couple of declarations to their
+	initializers.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Return error_mark_node fo extern-c
+	mismatch.
+
+2020-11-03  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.c (potential_constant_expression_1): Treat
+	__PRETTY_FUNCTION__ inside a template function as
+	potentially-constant.
+	* pt.c (uses_template_parms): Call
+	instantiation_dependent_expression_p instead of
+	value_dependent_expression_p.
+	(instantiation_dependent_expression_p): Check
+	potential_constant_expression before calling
+	value_dependent_expression_p.
+
+2020-11-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97632
+	* init.c (build_new_1): Disable -Winit-list-lifetime for an unevaluated
+	operand.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.c (bind_template_template_parm): Mark the parm as a
+	template parm.
+	(cp_tree_equal): Refactor CALL_EXPR.  Use comp_template_args for
+	TREE_VECs.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* rtti.c (init_rtti_processing): Move var decl to its init.
+	(get_tinfo_decl): Likewise.  Break out creation to called helper
+	...
+	(get_tinfo_decl_direct): ... here.
+	(build_dynamic_cast_1): Move var decls to their initializers.
+	(tinfo_base_init): Set decl's location to BUILTINS_LOCATION.
+	(get_tinfo_desc): Only push ABI namespace when needed.  Set type's
+	context.
+
 2020-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (start_decl_1): Refactor declarations.  Fixup some

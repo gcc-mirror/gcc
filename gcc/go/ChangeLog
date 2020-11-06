@@ -1,3 +1,8 @@
+2020-11-04  Ian Lance Taylor  <iant@golang.org>
+
+	* go-lang.c (go_langhook_post_options): Disable
+	-fipa-icf-functions if it was not explicitly enabled.
+
 2020-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* go-gcc.cc (Gcc_backend::function): Adjust

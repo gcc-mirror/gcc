@@ -97,7 +97,9 @@ public:
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
 
   bool get_global_range (irange &r, tree name) const;
+  bool get_non_stale_global_range (irange &r, tree name);
   void set_global_range (tree name, const irange &r);
+  void register_dependency (tree name, tree dep);
 
   non_null_ref m_non_null;
 
@@ -106,6 +108,7 @@ public:
 private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;
+  class temporal_cache *m_temporal;
   void add_to_update (basic_block bb);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void propagate_cache (tree name);

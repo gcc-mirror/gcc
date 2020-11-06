@@ -1011,7 +1011,7 @@ default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 	      {
 		issued_error = true;
 		sorry ("%qs not supported on this target",
-			"-fzero-call-used_regs");
+			"-fzero-call-used-regs");
 	      }
 	    delete_insns_since (last_insn);
 	  }

@@ -1845,6 +1845,7 @@ ira_setup_alts (rtx_insn *insn)
 		  default:
 		    {
 		      enum constraint_num cn = lookup_constraint (p);
+		      rtx mem = NULL;
 		      switch (get_constraint_type (cn))
 			{
 			case CT_REGISTER:
@@ -1867,8 +1868,12 @@ ira_setup_alts (rtx_insn *insn)
 			  goto op_success;
 
 			case CT_MEMORY:
+			  mem = op;
+			  /* Fall through.  */
 			case CT_SPECIAL_MEMORY:
-			  if (MEM_P (extract_mem_from_operand (op)))
+			  if (!mem)
+			    mem = extract_mem_from_operand (op);
+			  if (MEM_P (mem))
 			    goto op_success;
 			  win_p = true;
 			  break;

@@ -1,5 +1,6 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-require-effective-target mfentry } */
+/* { dg-require-profiling "-pg" } */
 /* { dg-options "-pg -mfentry -minstrument-return=nop5 -mrecord-return" } */
 /* { dg-final { scan-assembler-times "0x0f, 0x1f, 0x44, 0x00, 0x00" 3 } } */
 /* { dg-final { scan-assembler "section.*return_loc" } } */

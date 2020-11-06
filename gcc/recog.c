@@ -1794,6 +1794,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  /* FALLTHRU */
 	default:
 	  cn = lookup_constraint (constraint);
+	  rtx mem = NULL;
 	  switch (get_constraint_type (cn))
 	    {
 	    case CT_REGISTER:
@@ -1812,10 +1813,13 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	      break;
 
 	    case CT_MEMORY:
+	      mem = op;
+	      /* Fall through.  */
 	    case CT_SPECIAL_MEMORY:
 	      /* Every memory operand can be reloaded to fit.  */
-	      result = result || memory_operand (extract_mem_from_operand (op),
-						 VOIDmode);
+	      if (!mem)
+		mem = extract_mem_from_operand (op);
+	      result = result || memory_operand (mem, VOIDmode);
 	      break;
 
 	    case CT_ADDRESS:

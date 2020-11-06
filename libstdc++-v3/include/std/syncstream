@@ -44,10 +44,7 @@
 #include <bits/allocator.h>
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
-
-#if _GLIBCXX_HAS_GTHREADS
-# include <bits/std_mutex.h>
-#endif
+#include <bits/std_mutex.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

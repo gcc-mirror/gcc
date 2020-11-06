@@ -428,9 +428,9 @@ operator_equal::fold_range (irange &r, tree type,
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
-      r = op1;
-      r.intersect (op2);
-      if (r.undefined_p ())
+      int_range_max tmp = op1;
+      tmp.intersect (op2);
+      if (tmp.undefined_p ())
 	r = range_false (type);
       else
 	r = range_true_and_false (type);
@@ -513,9 +513,9 @@ operator_not_equal::fold_range (irange &r, tree type,
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
-      r = op1;
-      r.intersect (op2);
-      if (r.undefined_p ())
+      int_range_max tmp = op1;
+      tmp.intersect (op2);
+      if (tmp.undefined_p ())
 	r = range_true (type);
       else
 	r = range_true_and_false (type);

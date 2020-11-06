@@ -1734,7 +1734,7 @@ ix86_recompute_optlev_based_flags (struct gcc_options *opts,
       if (opts->x_flag_pcc_struct_return == 2)
 	{
 	  /* Intel MCU psABI specifies that -freg-struct-return should
-	     be on.  Instead of setting DEFAULT_PCC_STRUCT_RETURN to 1,
+	     be on.  Instead of setting DEFAULT_PCC_STRUCT_RETURN to 0,
 	     we check -miamcu so that -freg-struct-return is always
 	     turned on if -miamcu is used.  */
 	  if (TARGET_IAMCU_P (opts->x_target_flags))

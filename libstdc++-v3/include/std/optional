@@ -1002,11 +1002,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __optional_relop_t =
       enable_if_t<is_convertible<_Tp, bool>::value, bool>;
 
+  template<typename _Tp, typename _Up>
+    using __optional_eq_t = __optional_relop_t<
+      decltype(std::declval<const _Tp&>() == std::declval<const _Up&>())
+      >;
+
+  template<typename _Tp, typename _Up>
+    using __optional_ne_t = __optional_relop_t<
+      decltype(std::declval<const _Tp&>() != std::declval<const _Up&>())
+      >;
+
+  template<typename _Tp, typename _Up>
+    using __optional_lt_t = __optional_relop_t<
+      decltype(std::declval<const _Tp&>() < std::declval<const _Up&>())
+      >;
+
+  template<typename _Tp, typename _Up>
+    using __optional_gt_t = __optional_relop_t<
+      decltype(std::declval<const _Tp&>() > std::declval<const _Up&>())
+      >;
+
+  template<typename _Tp, typename _Up>
+    using __optional_le_t = __optional_relop_t<
+      decltype(std::declval<const _Tp&>() <= std::declval<const _Up&>())
+      >;
+
+  template<typename _Tp, typename _Up>
+    using __optional_ge_t = __optional_relop_t<
+      decltype(std::declval<const _Tp&>() >= std::declval<const _Up&>())
+      >;
+
   // Comparisons between optional values.
   template<typename _Tp, typename _Up>
     constexpr auto
     operator==(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() == declval<_Up>())>
+    -> __optional_eq_t<_Tp, _Up>
     {
       return static_cast<bool>(__lhs) == static_cast<bool>(__rhs)
 	     && (!__lhs || *__lhs == *__rhs);
@@ -1015,7 +1045,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     constexpr auto
     operator!=(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() != declval<_Up>())>
+    -> __optional_ne_t<_Tp, _Up>
     {
       return static_cast<bool>(__lhs) != static_cast<bool>(__rhs)
 	|| (static_cast<bool>(__lhs) && *__lhs != *__rhs);
@@ -1024,7 +1054,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     constexpr auto
     operator<(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() < declval<_Up>())>
+    -> __optional_lt_t<_Tp, _Up>
     {
       return static_cast<bool>(__rhs) && (!__lhs || *__lhs < *__rhs);
     }
@@ -1032,7 +1062,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     constexpr auto
     operator>(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() > declval<_Up>())>
+    -> __optional_gt_t<_Tp, _Up>
     {
       return static_cast<bool>(__lhs) && (!__rhs || *__lhs > *__rhs);
     }
@@ -1040,7 +1070,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     constexpr auto
     operator<=(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Up>())>
+    -> __optional_le_t<_Tp, _Up>
     {
       return !__lhs || (static_cast<bool>(__rhs) && *__lhs <= *__rhs);
     }
@@ -1048,7 +1078,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     constexpr auto
     operator>=(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Up>())>
+    -> __optional_ge_t<_Tp, _Up>
     {
       return !__rhs || (static_cast<bool>(__lhs) && *__lhs >= *__rhs);
     }
@@ -1134,73 +1164,73 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     constexpr auto
     operator==(const optional<_Tp>& __lhs, const _Up& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() == declval<_Up>())>
+    -> __optional_eq_t<_Tp, _Up>
     { return __lhs && *__lhs == __rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator==(const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Up>() == declval<_Tp>())>
+    -> __optional_eq_t<_Up, _Tp>
     { return __rhs && __lhs == *__rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator!=(const optional<_Tp>& __lhs, const _Up& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() != declval<_Up>())>
+    -> __optional_ne_t<_Tp, _Up>
     { return !__lhs || *__lhs != __rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator!=(const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Up>() != declval<_Tp>())>
+    -> __optional_ne_t<_Up, _Tp>
     { return !__rhs || __lhs != *__rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator<(const optional<_Tp>& __lhs, const _Up& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() < declval<_Up>())>
+    -> __optional_lt_t<_Tp, _Up>
     { return !__lhs || *__lhs < __rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator<(const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Up>() < declval<_Tp>())>
+    -> __optional_lt_t<_Up, _Tp>
     { return __rhs && __lhs < *__rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator>(const optional<_Tp>& __lhs, const _Up& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() > declval<_Up>())>
+    -> __optional_gt_t<_Tp, _Up>
     { return __lhs && *__lhs > __rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator>(const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Up>() > declval<_Tp>())>
+    -> __optional_gt_t<_Up, _Tp>
     { return !__rhs || __lhs > *__rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator<=(const optional<_Tp>& __lhs, const _Up& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() <= declval<_Up>())>
+    -> __optional_le_t<_Tp, _Up>
     { return !__lhs || *__lhs <= __rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator<=(const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Up>() <= declval<_Tp>())>
+    -> __optional_le_t<_Up, _Tp>
     { return __rhs && __lhs <= *__rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator>=(const optional<_Tp>& __lhs, const _Up& __rhs)
-    -> __optional_relop_t<decltype(declval<_Tp>() >= declval<_Up>())>
+    -> __optional_ge_t<_Tp, _Up>
     { return __lhs && *__lhs >= __rhs; }
 
   template<typename _Tp, typename _Up>
     constexpr auto
     operator>=(const _Up& __lhs, const optional<_Tp>& __rhs)
-    -> __optional_relop_t<decltype(declval<_Up>() >= declval<_Tp>())>
+    -> __optional_ge_t<_Up, _Tp>
     { return !__rhs || __lhs >= *__rhs; }
 
 #ifdef __cpp_lib_three_way_comparison

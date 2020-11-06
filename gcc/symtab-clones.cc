@@ -42,21 +42,7 @@ class GTY((user)) clone_infos_t: public function_summary <clone_info *>
 public:
   clone_infos_t (symbol_table *table, bool ggc):
     function_summary<clone_info *> (table, ggc) { }
-
-  /* Hook that is called by summary when a node is duplicated.  */
-  virtual void duplicate (cgraph_node *node,
-			  cgraph_node *node2,
-			  clone_info *data,
-			  clone_info *data2);
 };
-
-/* Duplication hook.  */
-void
-clone_infos_t::duplicate (cgraph_node *, cgraph_node *,
-			  clone_info *src, clone_info *dst)
-{
-  *dst = *src;
-}
 
 }  /* anon namespace  */
 
@@ -67,8 +53,8 @@ clone_info::get_create (cgraph_node *node)
   if (!symtab->m_clones)
     {
       symtab->m_clones
-	 = new (ggc_alloc_no_dtor <clone_infos_t> ())
-	     clone_infos_t (symtab, true);
+	 = new (ggc_alloc_no_dtor <function_summary <clone_info *>> ())
+	     function_summary <clone_info *> (symtab, true);
       symtab->m_clones->disable_insertion_hook ();
       symtab->m_clones->disable_duplication_hook ();
     }

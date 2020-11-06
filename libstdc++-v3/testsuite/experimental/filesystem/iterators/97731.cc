@@ -1,7 +1,4 @@
-// { dg-do compile { target c++11 } }
-// { dg-require-gthreads "" }
-
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,12 +15,35 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <mutex>
-#include <testsuite_common_types.h>
+// { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
+// { dg-do run { target c++11 } }
+// { dg-require-filesystem-ts "" }
 
-int main()
+#include <experimental/filesystem>
+#include <cerrno>
+#include <testsuite_hooks.h>
+
+bool used_custom_readdir = false;
+
+extern "C" void* readdir(void*)
 {
-  __gnu_test::constexpr_default_constructible test;
-  test.operator()<std::once_flag>();
-  return 0;
+  used_custom_readdir = true;
+  errno = EIO;
+  return nullptr;
+}
+
+void
+test01()
+{
+  using std::experimental::filesystem::recursive_directory_iterator;
+  std::error_code ec;
+  recursive_directory_iterator it(".", ec);
+  if (used_custom_readdir)
+    VERIFY( ec.value() == EIO );
+}
+
+int
+main()
+{
+  test01();
 }

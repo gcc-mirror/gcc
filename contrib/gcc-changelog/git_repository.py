@@ -29,7 +29,7 @@ except ImportError:
 from git_commit import GitCommit, GitInfo
 
 
-def parse_git_revisions(repo_path, revisions, strict=False):
+def parse_git_revisions(repo_path, revisions, strict=True):
     repo = Repo(repo_path)
 
     def commit_to_info(commit):
