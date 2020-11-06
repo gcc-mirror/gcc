@@ -3642,7 +3642,7 @@ plugin_add_static_assert (cc1_plugin::connection *self,
 
   bool member_p = at_class_scope_p ();
 
-  finish_static_assert (condition, message, loc, member_p);
+  finish_static_assert (condition, message, loc, member_p, false);
 
   return 1;
 }
