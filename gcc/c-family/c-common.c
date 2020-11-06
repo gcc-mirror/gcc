@@ -2041,7 +2041,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 /* Try to warn for undefined behavior in EXPR due to missing sequence
    points.  */
 
-DEBUG_FUNCTION void
+void
 verify_sequence_points (tree expr)
 {
   struct tlist *before_sp = 0, *after_sp = 0;
