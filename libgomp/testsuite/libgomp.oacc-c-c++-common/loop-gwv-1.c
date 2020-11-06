@@ -67,12 +67,23 @@ int main ()
       int expected = ix;
       if(ondev)
 	{
-	  int chunk_size = (N + gangsize * workersize * vectorsize - 1)
-			   / (gangsize * workersize * vectorsize);
+#if defined (ACC_DEVICE_TYPE_radeon) && defined (__OPTIMIZE__)
+	  int use_vectorsize = 64;
+#else
+	  int use_vectorsize = vectorsize;
+#endif
+	  int chunk_size = (N + gangsize * workersize * use_vectorsize - 1)
+			   / (gangsize * workersize * use_vectorsize);
 	  
+#ifdef ACC_DEVICE_TYPE_radeon
+	  int g = ix / (chunk_size * workersize * use_vectorsize);
+	  int w = (ix / (chunk_size * use_vectorsize)) % workersize;
+	  int v = 0;
+#else
 	  int g = ix / (chunk_size * workersize * vectorsize);
 	  int w = (ix / vectorsize) % workersize;
 	  int v = ix % vectorsize;
+#endif
 
 	  expected = (g << 16) | (w << 8) | v;
 	}
