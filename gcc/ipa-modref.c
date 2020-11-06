@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
    described in ipa-modref-tree.h.
 
    This file contains a tree pass and an IPA pass.  Both performs the same
-   analys however tree pass is executed during early and late optimization
+   analysis however tree pass is executed during early and late optimization
    passes to propagate info downwards in the compilation order.  IPA pass
    propagates across the callgraph and is able to handle recursion and works on
    whole program during link-time analysis.
@@ -152,7 +152,7 @@ public:
 static GTY(()) fast_function_summary <modref_summary *, va_gc>
 	 *summaries;
 
-/* Global variable holding all modref optimizaiton summaries
+/* Global variable holding all modref optimization summaries
    (from IPA propagation time or used by local optimization pass).  */
 
 static GTY(()) fast_function_summary <modref_summary *, va_gc>
@@ -924,7 +924,7 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
   return true;
 }
 
-/* Support analyzis in non-lto and lto mode in parallel.  */
+/* Support analysis in non-lto and lto mode in parallel.  */
 
 struct summary_ptrs
 {
@@ -995,10 +995,10 @@ static bool
 analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
 	      gimple *stmt, bool ipa, vec <gimple *> *recursive_calls)
 {
-  /* In general we can not ignore clobbers because they are barries for code
-     motion, however after inlining it is safe to do becuase local optimization
+  /* In general we can not ignore clobbers because they are barriers for code
+     motion, however after inlining it is safe to do because local optimization
      passes do not consider clobbers from other functions.
-     Similar logic is in ipa-pure-consts.  */
+     Similar logic is in ipa-pure-const.c.  */
   if ((ipa || cfun->after_inlining) && gimple_clobber_p (stmt))
     return true;
 
@@ -1121,7 +1121,7 @@ analyze_function (function *f, bool ipa)
       summary = optimization_summaries->get_create (cgraph_node::get (f->decl));
       gcc_checking_assert (nolto && !lto);
     }
-  /* In IPA mode we analyze every function precisely once.  Asser that.  */
+  /* In IPA mode we analyze every function precisely once.  Assert that.  */
   else
     {
       if (nolto)
@@ -1309,7 +1309,7 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
 			     modref_summary *src_data,
 			     modref_summary *dst_data)
 {
-  /* Do not duplicte optimization summaries; we do not handle parameter
+  /* Do not duplicate optimization summaries; we do not handle parameter
      transforms on them.  */
   if (this == optimization_summaries)
     {
@@ -1336,7 +1336,7 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
 				 modref_summary_lto *src_data,
 				 modref_summary_lto *dst_data)
 {
-  /* Be sure that no furhter cloning happens after ipa-modref.  If it does
+  /* Be sure that no further cloning happens after ipa-modref.  If it does
      we will need to update signatures for possible param changes.  */
   gcc_checking_assert (!((modref_summaries_lto *)summaries_lto)->propagated);
   dst_data->stores = modref_records_lto::create_ggc
@@ -1934,7 +1934,7 @@ ignore_edge (struct cgraph_edge *e)
 	     & (ECF_CONST | ECF_NOVOPS));
 }
 
-/* Compute parm_map for CALLE_EDGE.  */
+/* Compute parm_map for CALLEE_EDGE.  */
 
 static bool
 compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
