@@ -28633,11 +28633,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 					  prefer_type_arg (tag_type),
 					  /*complain=*/true);
 
-	  /* If we have a single function from a using decl, pull it out.  */
-	  if (TREE_CODE (decl) == OVERLOAD
-	      && !really_overloaded_fn (decl))
-	    decl = OVL_FUNCTION (decl);
-
 	  if (pushed_scope)
 	    pop_scope (pushed_scope);
 	}
