@@ -492,11 +492,13 @@ oacc_dim_call (bool pos, int dim, gimple_seq *seq)
 }
 
 /* Find the number of threads (POS = false), or thread number (POS =
-   true) for an OpenACC region partitioned as MASK.  Setup code
+   true) for an OpenACC region partitioned as MASK.  If VF_BY_VECTORIZER is
+   true, use that as the vectorization factor for the auto-vectorized
+   dimension size, instead of calling the builtin function.  Setup code
    required for the calculation is added to SEQ.  */
 
 static tree
-oacc_thread_numbers (bool pos, int mask, gimple_seq *seq)
+oacc_thread_numbers (bool pos, int mask, tree vf_by_vectorizer, gimple_seq *seq)
 {
   tree res = pos ? NULL_TREE : build_int_cst (unsigned_type_node, 1);
   unsigned ix;
@@ -509,13 +511,15 @@ oacc_thread_numbers (bool pos, int mask, gimple_seq *seq)
 	  {
 	    /* We had an outer index, so scale that by the size of
 	       this dimension.  */
-	    tree n = oacc_dim_call (false, ix, seq);
+	    tree n = (ix == GOMP_DIM_VECTOR && vf_by_vectorizer)
+		     ? vf_by_vectorizer : oacc_dim_call (false, ix, seq);
 	    res = fold_build2 (MULT_EXPR, integer_type_node, res, n);
 	  }
 	if (pos)
 	  {
 	    /* Determine index in this dimension.  */
-	    tree id = oacc_dim_call (true, ix, seq);
+	    tree id = (ix == GOMP_DIM_VECTOR && vf_by_vectorizer)
+		      ? integer_zero_node :  oacc_dim_call (true, ix, seq);
 	    if (res)
 	      res = fold_build2 (PLUS_EXPR, integer_type_node, res, id);
 	    else
@@ -527,6 +531,12 @@ oacc_thread_numbers (bool pos, int mask, gimple_seq *seq)
     res = integer_zero_node;
 
   return res;
+}
+
+static tree
+oacc_thread_numbers (bool pos, int mask, gimple_seq *seq)
+{
+  return oacc_thread_numbers (pos, mask, NULL_TREE, seq);
 }
 
 /* Transform IFN_GOACC_LOOP calls to actual code.  See
@@ -556,6 +566,7 @@ oacc_xform_loop (gcall *call)
   bool chunking = false, striding = true;
   unsigned outer_mask = mask & (~mask + 1); // Outermost partitioning
   unsigned inner_mask = mask & ~outer_mask; // Inner partitioning (if any)
+  tree vf_by_vectorizer = NULL_TREE;
 
   /* Skip lowering if return value of IFN_GOACC_LOOP call is not used.  */
   if (!lhs)
@@ -583,16 +594,39 @@ oacc_xform_loop (gcall *call)
       striding = integer_onep (chunk_size);
       chunking = !striding;
     }
+
+  if (!chunking
+      && !targetm.simt.vf
+      && (mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR)))
+    {
+      poly_uint64 max_vf = omp_max_vf ();
+      vf_by_vectorizer = build_int_cst (integer_type_node, max_vf);
+    }
+
 #endif
 
-  /* striding=true, chunking=true
+  /* For SIMT targets:
+
+     striding=true, chunking=true
        -> invalid.
      striding=true, chunking=false
        -> chunks=1
      striding=false,chunking=true
        -> chunks=ceil (range/(chunksize*threads*step))
      striding=false,chunking=false
-       -> chunk_size=ceil(range/(threads*step)),chunks=1  */
+       -> chunk_size=ceil(range/(threads*step)),chunks=1
+
+     For non-SIMT targets:
+
+      striding=N/A, chunking=true
+	-> as above, for now.
+      striding=N/A, chunking=false
+	-> chunks=1
+	   threads=gangs*workers*vf
+	   chunk_size=ceil(range/(threads*step))
+	   inner chunking loop steps by "step", vf*chunk_size times.
+  */
+
   push_gimplify_context (true);
 
   switch (code)
@@ -611,49 +645,83 @@ oacc_xform_loop (gcall *call)
 	  chunk_size = fold_convert (type, chunk_size);
 	  per = fold_build2 (MULT_EXPR, type, per, chunk_size);
 	  per = fold_build2 (MULT_EXPR, type, per, step);
-	  r = build2 (MINUS_EXPR, type, range, dir);
-	  r = build2 (PLUS_EXPR, type, r, per);
+	  r = fold_build2 (MINUS_EXPR, type, range, dir);
+	  r = fold_build2 (PLUS_EXPR, type, r, per);
 	  r = build2 (TRUNC_DIV_EXPR, type, r, per);
 	}
       break;
 
     case IFN_GOACC_LOOP_STEP:
       {
-	/* If striding, step by the entire compute volume, otherwise
-	   step by the inner volume.  */
-	unsigned volume = striding ? mask : inner_mask;
+	if (vf_by_vectorizer)
+	  r = step;
+	else
+	  {
+	    /* If striding, step by the entire compute volume, otherwise
+	       step by the inner volume.  */
+	    unsigned volume = striding ? mask : inner_mask;
 
-	r = oacc_thread_numbers (false, volume, &seq);
-	r = build2 (MULT_EXPR, type, fold_convert (type, r), step);
+	    r = oacc_thread_numbers (false, volume, &seq);
+	    r = build2 (MULT_EXPR, type, fold_convert (type, r), step);
+	  }
       }
       break;
 
     case IFN_GOACC_LOOP_OFFSET:
-      /* Enable vectorization on non-SIMT targets.  */
-      if (!targetm.simt.vf
-	  && outer_mask == GOMP_DIM_MASK (GOMP_DIM_VECTOR)
+      if (vf_by_vectorizer)
+	{
 	  /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
 	     the loop.  */
-	  && (flag_tree_loop_vectorize
-	      || !OPTION_SET_P (flag_tree_loop_vectorize)))
-	{
-	  basic_block bb = gsi_bb (gsi);
-	  class loop *parent = bb->loop_father;
-	  class loop *body = parent->inner;
-
-	  parent->force_vectorize = true;
-	  parent->safelen = INT_MAX;
-
-	  /* "Chunking loops" may have inner loops.  */
-	  if (parent->inner)
+	  if (flag_tree_loop_vectorize
+	      || !OPTION_SET_P (flag_tree_loop_vectorize))
 	    {
-	      body->force_vectorize = true;
-	      body->safelen = INT_MAX;
+	      /* Enable vectorization on non-SIMT targets.  */
+	      basic_block bb = gsi_bb (gsi);
+	      class loop *chunk_loop = bb->loop_father;
+	      class loop *inner_loop = chunk_loop->inner;
+
+	      /* Chunking isn't supported for VF_BY_VECTORIZER loops yet,
+		 so we know that the outer chunking loop will be executed just
+		 once and the inner loop is the one which must be
+		 vectorized (unless it has been optimized out for some
+		 reason).  */
+	      gcc_assert (!chunking);
+
+	      if (inner_loop)
+		{
+		  inner_loop->force_vectorize = true;
+		  inner_loop->safelen = INT_MAX;
+
+		  cfun->has_force_vectorize_loops = true;
+		}
 	    }
 
-	  cfun->has_force_vectorize_loops = true;
+	  /* ...and expand the abstract loops such that the vectorizer can
+	     work on them more effectively.
+
+	     It might be nicer to merge this code with the "!striding" case
+	     below, particularly if chunking support is added.  */
+	  tree warppos
+	    = oacc_thread_numbers (true, mask, vf_by_vectorizer, &seq);
+	  warppos = fold_convert (diff_type, warppos);
+
+	  tree volume
+	    = oacc_thread_numbers (false, mask, vf_by_vectorizer, &seq);
+	  volume = fold_convert (diff_type, volume);
+
+	  tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
+	  chunk_size = fold_build2 (PLUS_EXPR, diff_type, range, per);
+	  chunk_size = fold_build2 (MINUS_EXPR, diff_type, chunk_size, dir);
+	  chunk_size = fold_build2 (TRUNC_DIV_EXPR, diff_type, chunk_size,
+				    per);
+
+	  warppos = fold_build2 (MULT_EXPR, diff_type, warppos, chunk_size);
+
+	  tree chunk = fold_convert (diff_type, gimple_call_arg (call, 6));
+	  chunk = fold_build2 (MULT_EXPR, diff_type, chunk, volume);
+	  r = fold_build2 (PLUS_EXPR, diff_type, chunk, warppos);
 	}
-      if (striding)
+      else if (striding)
 	{
 	  r = oacc_thread_numbers (true, mask, &seq);
 	  r = fold_convert (diff_type, r);
@@ -671,7 +739,7 @@ oacc_xform_loop (gcall *call)
 	  else
 	    {
 	      tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
-
+	      /* chunk_size = (range + per - 1) / per.  */
 	      chunk_size = build2 (MINUS_EXPR, diff_type, range, dir);
 	      chunk_size = build2 (PLUS_EXPR, diff_type, chunk_size, per);
 	      chunk_size = build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
@@ -703,7 +771,28 @@ oacc_xform_loop (gcall *call)
       break;
 
     case IFN_GOACC_LOOP_BOUND:
-      if (striding)
+      if (vf_by_vectorizer)
+	{
+	  tree volume
+	    = oacc_thread_numbers (false, mask, vf_by_vectorizer, &seq);
+	  volume = fold_convert (diff_type, volume);
+
+	  tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
+	  chunk_size = fold_build2 (PLUS_EXPR, diff_type, range, per);
+	  chunk_size = fold_build2 (MINUS_EXPR, diff_type, chunk_size, dir);
+	  chunk_size = fold_build2 (TRUNC_DIV_EXPR, diff_type, chunk_size,
+				    per);
+
+	  vf_by_vectorizer = fold_convert (diff_type, vf_by_vectorizer);
+	  tree vecsize = fold_build2 (MULT_EXPR, diff_type, chunk_size,
+				      vf_by_vectorizer);
+	  vecsize = fold_build2 (MULT_EXPR, diff_type, vecsize, step);
+	  tree vecend = fold_convert (diff_type, gimple_call_arg (call, 6));
+	  vecend = fold_build2 (PLUS_EXPR, diff_type, vecend, vecsize);
+	  r = fold_build2 (integer_onep (dir) ? MIN_EXPR : MAX_EXPR, diff_type,
+			   range, vecend);
+	}
+      else if (striding)
 	r = range;
       else
 	{
@@ -718,7 +807,7 @@ oacc_xform_loop (gcall *call)
 	  else
 	    {
 	      tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
-
+	      /* chunk_size = (range + per - 1) / per.  */
 	      chunk_size = build2 (MINUS_EXPR, diff_type, range, dir);
 	      chunk_size = build2 (PLUS_EXPR, diff_type, chunk_size, per);
 	      chunk_size = build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);

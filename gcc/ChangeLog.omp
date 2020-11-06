@@ -1,3 +1,10 @@
+2021-01-13  Julian Brown  <julian@codesourcery.com>
+
+	* omp-offload.cc (oacc_thread_numbers): Add VF_BY_VECTORIZER parameter.
+	Add overloaded wrapper for previous arguments & behaviour.
+	(oacc_xform_loop): Lower vector loops to iterate a multiple of
+	omp_max_vf times over contiguous steps on non-SIMT targets.
+
 2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Add a "combined" flag for "acc kernels loop" etc directives.
