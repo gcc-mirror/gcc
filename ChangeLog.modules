@@ -1,5 +1,8 @@
 2020-11-06  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	tree.c (cache_integer_cst): Document API.
+
 	gcc/cp/
 	* Make-lang.in: Drop git hash collection.
 	gcc/
