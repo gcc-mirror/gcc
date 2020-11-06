@@ -4720,6 +4720,17 @@
   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
+(define_insn "aarch64_<sur>q<r>shr<u>n2_n<mode>"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+        (unspec:<VNARROWQ2> [(match_operand:<VNARROWQ> 1 "register_operand" "0")
+			     (match_operand:VQN 2 "register_operand" "w")
+			     (match_operand:SI 3 "aarch64_simd_shift_imm_offset_<ve_mode>" "i")]
+                            VQSHRN_N))]
+  "TARGET_SIMD"
+  "<sur>q<r>shr<u>n2\\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+)
+
 
 ;; cm(eq|ge|gt|lt|le)
 ;; Note, we have constraints for Dz and Z as different expanders

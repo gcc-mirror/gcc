@@ -266,6 +266,11 @@ static enum aarch64_type_qualifiers
 aarch64_types_unsigned_shift_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate };
 #define TYPES_USHIFTIMM (aarch64_types_unsigned_shift_qualifiers)
+#define TYPES_USHIFT2IMM (aarch64_types_ternopu_imm_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_shift2_to_unsigned_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_none, qualifier_immediate };
+#define TYPES_SHIFT2IMM_UUSS (aarch64_types_shift2_to_unsigned_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_ternop_s_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -277,6 +282,7 @@ aarch64_types_ternop_s_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_SETREG (aarch64_types_ternop_s_imm_qualifiers)
 #define TYPES_SHIFTINSERT (aarch64_types_ternop_s_imm_qualifiers)
 #define TYPES_SHIFTACC (aarch64_types_ternop_s_imm_qualifiers)
+#define TYPES_SHIFT2IMM (aarch64_types_ternop_s_imm_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_ternop_p_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
