@@ -13865,6 +13865,18 @@ to be a signaling NaN@.  The @code{nans} function is proposed by
 @uref{http://www.open-std.org/jtc1/sc22/wg14/www/docs/n965.htm,,WG14 N965}.
 @end deftypefn
 
+@deftypefn {Built-in Function} _Decimal32 __builtin_nansd32 (const char *str)
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal32}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Decimal64 __builtin_nansd64 (const char *str)
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal64}.
+@end deftypefn
+
+@deftypefn {Built-in Function} _Decimal128 __builtin_nansd128 (const char *str)
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal128}.
+@end deftypefn
+
 @deftypefn {Built-in Function} float __builtin_nansf (const char *str)
 Similar to @code{__builtin_nans}, except the return type is @code{float}.
 @end deftypefn
