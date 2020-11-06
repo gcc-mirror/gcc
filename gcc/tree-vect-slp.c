@@ -2539,6 +2539,9 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	if (STMT_VINFO_RELEVANT_P (next_info)
 	    || STMT_VINFO_LIVE_P (next_info))
 	  scalar_stmts.quick_push (next_info);
+      /* If less than two were relevant/live there's nothing to SLP.  */
+      if (scalar_stmts.length () < 2)
+	return false;
     }
 
   /* Build the tree for the SLP instance.  */
