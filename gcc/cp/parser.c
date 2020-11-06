@@ -16031,8 +16031,13 @@ cp_parser_template_declaration (cp_parser* parser, bool member_p)
     {
       /* Consume the `export' token.  */
       cp_lexer_consume_token (parser->lexer);
-      /* Warn that we do not support `export'.  */
-      warning (0, "keyword %<export%> not implemented, and will be ignored");
+      /* Warn that this use of export is deprecated.  */
+      if (cxx_dialect < cxx11)
+	warning (0, "keyword %<export%> not implemented, and will be ignored");
+      else if (cxx_dialect < cxx20)
+	warning (0, "keyword %<export%> is deprecated, and is ignored");
+      else
+	warning (0, "keyword %<export%> not implemented, and will be ignored");
     }
 
   cp_parser_template_declaration_after_export (parser, member_p);
@@ -17753,7 +17758,6 @@ cp_parser_explicit_specialization (cp_parser* parser)
       /* Give it C++ linkage to avoid confusing other parts of the
 	 front end.  */
       push_lang_context (lang_name_cplusplus);
-      need_lang_pop = true;
     }
 
   /* Let the front end know that we are beginning a specialization.  */
