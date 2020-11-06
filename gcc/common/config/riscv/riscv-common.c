@@ -54,7 +54,7 @@ struct riscv_implied_info_t
 };
 
 /* Implied ISA info, must end with NULL sentinel.  */
-riscv_implied_info_t riscv_implied_info[] =
+static const riscv_implied_info_t riscv_implied_info[] =
 {
   {"d", "f"},
   {NULL, NULL}
@@ -459,7 +459,7 @@ riscv_subset_list::handle_implied_ext (const char *ext,
 				       int minor_version,
 				       bool explicit_version_p)
 {
-  riscv_implied_info_t *implied_info;
+  const riscv_implied_info_t *implied_info;
   for (implied_info = &riscv_implied_info[0];
        implied_info->ext;
        ++implied_info)

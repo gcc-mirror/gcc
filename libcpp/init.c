@@ -273,8 +273,9 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   /* Do not force token locations by default.  */
   pfile->forced_token_location = 0;
 
-  /* Initialize source_date_epoch to -2 (not yet set).  */
-  pfile->source_date_epoch = (time_t) -2;
+  /* Note the timestamp is unset.  */
+  pfile->time_stamp = time_t (-1);
+  pfile->time_stamp_kind = 0;
 
   /* The expression parser stack.  */
   _cpp_expand_op_stack (pfile);

@@ -285,6 +285,13 @@
   BUILTIN_VSQN_HSDI (USHIFTIMM, uqshrn_n, 0, ALL)
   BUILTIN_VSQN_HSDI (SHIFTIMM, sqrshrn_n, 0, ALL)
   BUILTIN_VSQN_HSDI (USHIFTIMM, uqrshrn_n, 0, ALL)
+  /* Implemented by aarch64_<sur>q<r>shr<u>n2_n<mode>.  */
+  BUILTIN_VQN (SHIFT2IMM_UUSS, sqshrun2_n, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM_UUSS, sqrshrun2_n, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, sqshrn2_n, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, uqshrn2_n, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, sqrshrn2_n, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, uqrshrn2_n, 0, NONE)
   /* Implemented by aarch64_<sur>s<lr>i_n<mode>.  */
   BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssri_n, 0, ALL)
   BUILTIN_VSDQ_I_DI (USHIFTACC, usri_n, 0, ALL)

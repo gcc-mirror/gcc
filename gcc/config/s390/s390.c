@@ -15469,13 +15469,6 @@ s390_option_override_internal (struct gcc_options *opts,
   SET_OPTION_IF_UNSET (opts, opts_set, param_sched_pressure_algorithm, 2);
   SET_OPTION_IF_UNSET (opts, opts_set, param_min_vect_loop_bound, 2);
 
-  /* Use aggressive inlining parameters.  */
-  if (opts->x_s390_tune >= PROCESSOR_2964_Z13)
-    {
-      SET_OPTION_IF_UNSET (opts, opts_set, param_inline_min_speedup, 2);
-      SET_OPTION_IF_UNSET (opts, opts_set, param_max_inline_insns_auto, 80);
-    }
-
   /* Set the default alignment.  */
   s390_default_align (opts);
 

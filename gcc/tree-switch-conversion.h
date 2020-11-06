@@ -411,6 +411,12 @@ public:
 						    basic_block case_bb,
 						    profile_probability prob);
 
+  /* Return whether bit test expansion is allowed.  */
+  static inline bool is_enabled (void)
+  {
+    return flag_bit_tests;
+  }
+
   /* True when the jump table handles an entire switch statement.  */
   bool m_handles_entire_switch;
 

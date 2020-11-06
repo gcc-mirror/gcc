@@ -1548,7 +1548,7 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
     {
       location_t fnloc = DECL_SOURCE_LOCATION (fn);
 
-      if (DECL_IS_BUILTIN (fn))
+      if (DECL_IS_UNDECLARED_BUILTIN (fn))
 	inform (loc,
 		"in a call to built-in allocation function %qD", fn);
       else

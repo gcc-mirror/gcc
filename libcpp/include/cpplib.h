@@ -1040,6 +1040,15 @@ inline location_t cpp_macro_definition_location (cpp_hashnode *node)
 {
   return node->value.macro->line;
 }
+/* Return an idempotent time stamp (possibly from SOURCE_DATE_EPOCH).  */
+enum class CPP_time_kind 
+{
+  FIXED = -1,	/* Fixed time via source epoch.  */
+  DYNAMIC = -2,	/* Dynamic via time(2).  */
+  UNKNOWN = -3	/* Wibbly wobbly, timey wimey.  */
+};
+extern CPP_time_kind cpp_get_date (cpp_reader *, time_t *);
+
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 

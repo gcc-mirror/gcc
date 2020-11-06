@@ -246,6 +246,13 @@ public:
 
   /* Check validity of the string.  */
   void verify ();
+
+  /* Return the fnspec string.  */
+  const char *
+  get_str ()
+  {
+    return str;
+  }
 };
 
 extern attr_fnspec gimple_call_fnspec (const gcall *stmt);

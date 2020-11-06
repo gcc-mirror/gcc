@@ -27,14 +27,14 @@
 
 /* Now test various problems.  */
 
-@property (readonly, readwrite) int a;    /* { dg-error ".readonly. attribute conflicts with .readwrite. attribute" } */
+@property (readonly, readwrite) int a;    /* { dg-error ".readwrite. attribute conflicts with .readonly. attribute" } */
 @property (readonly, setter=mySetterB:) int b; /* { dg-error ".readonly. attribute conflicts with .setter. attribute" } */
 
-@property (assign, retain) id c;          /* { dg-error ".assign. attribute conflicts with .retain. attribute" } */
-@property (assign, copy) id d;            /* { dg-error ".assign. attribute conflicts with .copy. attribute" } */
+@property (assign, retain) id c;          /* { dg-error ".retain. attribute conflicts with .assign. attribute" } */
+@property (assign, copy) id d;            /* { dg-error ".copy. attribute conflicts with .assign. attribute" } */
 @property (copy, retain) id e;            /* { dg-error ".retain. attribute conflicts with .copy. attribute" } */
 
-@property (setter=mySetter:,setter=mySetter2:)  int f; /* { dg-error ".setter. attribute may only be specified once" } */
-@property (getter=myGetter, getter=myGetter2 )  int g; /* { dg-error ".getter. attribute may only be specified once" } */
+@property (setter=mySetter:,setter=mySetter2:)  int f; /* { dg-warning {multiple property 'setter' methods specified, the latest one will be used} } */
+@property (getter=myGetter, getter=myGetter2 )  int g; /* { dg-warning {multiple property 'getter' methods specified, the latest one will be used} } */
 
 @end

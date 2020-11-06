@@ -5,12 +5,12 @@ struct Foo
 {
   Foo()
   {
-    int t(int()); // Error
+    int t(int()); // { dg-warning "parentheses were disambiguated" }
   }
 };
 
 int main()
 {
-  int t(int()); // OK
+  int t(int()); // { dg-warning "parentheses were disambiguated" }
   Foo<> a; // Error
 }

@@ -1002,7 +1002,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 
       /* A new declaration doesn't match a built-in one unless it
 	 is also extern "C".  */
-      if (DECL_IS_BUILTIN (olddecl)
+      if (DECL_IS_UNDECLARED_BUILTIN (olddecl)
 	  && DECL_EXTERN_C_P (olddecl) && !DECL_EXTERN_C_P (newdecl))
 	return 0;
 
@@ -1205,7 +1205,7 @@ check_redeclaration_exception_specification (tree new_decl,
      all declarations, including the definition and an explicit
      specialization, of that function shall have an
      exception-specification with the same set of type-ids.  */
-  if (! DECL_IS_BUILTIN (old_decl)
+  if (! DECL_IS_UNDECLARED_BUILTIN (old_decl)
       && !comp_except_specs (new_exceptions, old_exceptions, ce_normal))
     {
       const char *const msg
@@ -1465,7 +1465,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
   /* Check for redeclaration and other discrepancies.  */
   if (TREE_CODE (olddecl) == FUNCTION_DECL
-      && DECL_UNDECLARED_BUILTIN_P (olddecl))
+      && DECL_IS_UNDECLARED_BUILTIN (olddecl))
     {
       if (TREE_CODE (newdecl) != FUNCTION_DECL)
 	{
@@ -1517,7 +1517,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
 	      /* A new declaration doesn't match a built-in one unless it
 		 is also extern "C".  */
-	      gcc_assert (DECL_IS_BUILTIN (olddecl));
+	      gcc_assert (DECL_IS_UNDECLARED_BUILTIN (olddecl));
 	      gcc_assert (DECL_EXTERN_C_P (olddecl));
 	      if (!DECL_EXTERN_C_P (newdecl))
 		return NULL_TREE;
@@ -1627,11 +1627,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  /* Replace the old RTL to avoid problems with inlining.  */
 	  COPY_DECL_RTL (newdecl, olddecl);
 	}
-      /* Even if the types match, prefer the new declarations type for
-	 built-ins which have not been explicitly declared, for
-	 exception lists, etc...  */
-      else if (DECL_IS_BUILTIN (olddecl))
+      else 
 	{
+	  /* Even if the types match, prefer the new declarations type
+	     for built-ins which have not been explicitly declared,
+	     for exception lists, etc...  */
 	  tree type = TREE_TYPE (newdecl);
 	  tree attribs = (*targetm.merge_type_attributes)
 	    (TREE_TYPE (olddecl), type);
@@ -2919,6 +2919,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       struct symtab_node *snode = symtab_node::get (newdecl);
       if (snode)
 	snode->remove ();
+    }
+
+  if (TREE_CODE (olddecl) == FUNCTION_DECL)
+    {
+      tree clone;
+      FOR_EACH_CLONE (clone, olddecl)
+	{
+	  DECL_ATTRIBUTES (clone) = DECL_ATTRIBUTES (olddecl);
+	  DECL_PRESERVE_P (clone) |= DECL_PRESERVE_P (olddecl);
+	}
     }
 
   /* Remove the associated constraints for newdecl, if any, before
@@ -4383,6 +4393,9 @@ cxx_init_decl_processing (void)
 
   init_list_type_node = make_node (LANG_TYPE);
   record_unknown_type (init_list_type_node, "init list");
+
+  /* Used when parsing to distinguish parameter-lists () and (void).  */
+  explicit_void_list_node = build_void_list_node ();
 
   {
     /* Make sure we get a unique function type, so we can give
@@ -14037,7 +14050,7 @@ grokparms (tree parmlist, tree *parms)
       tree init = TREE_PURPOSE (parm);
       tree decl = TREE_VALUE (parm);
 
-      if (parm == void_list_node)
+      if (parm == void_list_node || parm == explicit_void_list_node)
 	break;
 
       if (! decl || TREE_TYPE (decl) == error_mark_node)

@@ -20,7 +20,13 @@ static const fun_t funs[2] = { f1, f2, };
 
 static void * malloc_impl(size_t size) {
     void * r = &memory[memory_p];
-    memory_p += size;
+    /* The malloc() and calloc() functions return a pointer to the allocated
+     * memory, which is suitably aligned for any built-in type.  Use 16
+     * bytes here as the basic alignment requirement for user-defined malloc
+     * and calloc.  See PR97594 for the details.  */
+    #define ROUND_UP_FOR_16B_ALIGNMENT(x) ((x + 15) & (-16))
+
+    memory_p += ROUND_UP_FOR_16B_ALIGNMENT(size);
 
     // force TOPN profile
     funs[size % 2]();

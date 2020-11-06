@@ -1,3 +1,43 @@
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	* except.c (check_handlers_1): Add auto_diagnostic_group.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78209
+	* pt.c (do_auto_deduction): If init is REFERENCE_REF_P, use its
+	first operand.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97675
+	* except.c (check_handlers_1): Use OPT_Wexceptions for the
+	warning.  Use inform for the second part of the warning.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/25814
+	* cp-tree.h (enum cp_tree_index): Add CPTI_EXPLICIT_VOID_LIST.
+	(explicit_void_list_node): Define.
+	(PARENTHESIZED_LIST_P): New macro.
+	(struct cp_declarator): Add function::parens_loc.
+	* decl.c (cxx_init_decl_processing): Initialize explicit_void_list_node.
+	(grokparms): Also break when explicit_void_list_node.
+	* parser.c (make_call_declarator): New location_t parameter.  Use it
+	to set declarator->u.function.parens_loc.
+	(cp_parser_lambda_declarator_opt): Pass UNKNOWN_LOCATION to
+	make_call_declarator.
+	(warn_about_ambiguous_parse): New function.
+	(cp_parser_init_declarator): Call warn_about_ambiguous_parse.
+	(cp_parser_declarator): Set *parenthesized_p to false rather than to
+	true.
+	(cp_parser_direct_declarator): Create a location for the function's
+	parentheses and pass it to make_call_declarator.
+	(cp_parser_parameter_declaration_clause): Return explicit_void_list_node
+	for (void).
+	(cp_parser_parameter_declaration_list): Set PARENTHESIZED_LIST_P
+	in the parameters tree.
+
 2020-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/97670

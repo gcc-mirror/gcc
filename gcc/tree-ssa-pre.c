@@ -444,6 +444,9 @@ public:
 
 /* Mapping from value id to expressions with that value_id.  */
 static vec<bitmap> value_expressions;
+/* ???  We want to just record a single expression for each constant
+   value, one of kind CONSTANT.  */
+static vec<bitmap> constant_value_expressions;
 
 /* Sets that we need to keep track of.  */
 typedef struct bb_bitmap_sets
@@ -542,45 +545,74 @@ static bitmap_obstack grand_bitmap_obstack;
 /* A three tuple {e, pred, v} used to cache phi translations in the
    phi_translate_table.  */
 
-typedef struct expr_pred_trans_d : free_ptr_hash<expr_pred_trans_d>
+typedef struct expr_pred_trans_d : public typed_noop_remove <expr_pred_trans_d>
 {
-  /* The expression.  */
-  pre_expr e;
+  typedef expr_pred_trans_d value_type;
+  typedef expr_pred_trans_d compare_type;
 
-  /* The predecessor block along which we translated the expression.  */
-  basic_block pred;
+  /* The expression ID.  */
+  unsigned e;
 
-  /* The value that resulted from the translation.  */
-  pre_expr v;
+  /* The predecessor block index along which we translated the expression.  */
+  int pred;
 
-  /* The hashcode for the expression, pred pair. This is cached for
-     speed reasons.  */
-  hashval_t hashcode;
+  /* The value expression ID that resulted from the translation.  */
+  unsigned v;
 
   /* hash_table support.  */
-  static inline hashval_t hash (const expr_pred_trans_d *);
-  static inline int equal (const expr_pred_trans_d *, const expr_pred_trans_d *);
+  static inline void mark_empty (expr_pred_trans_d &);
+  static inline bool is_empty (const expr_pred_trans_d &);
+  static inline void mark_deleted (expr_pred_trans_d &);
+  static inline bool is_deleted (const expr_pred_trans_d &);
+  static const bool empty_zero_p = true;
+  static inline hashval_t hash (const expr_pred_trans_d &);
+  static inline int equal (const expr_pred_trans_d &, const expr_pred_trans_d &);
 } *expr_pred_trans_t;
 typedef const struct expr_pred_trans_d *const_expr_pred_trans_t;
 
-inline hashval_t
-expr_pred_trans_d::hash (const expr_pred_trans_d *e)
+inline bool
+expr_pred_trans_d::is_empty (const expr_pred_trans_d &e)
 {
-  return e->hashcode;
+  return e.e == 0;
+}
+
+inline bool
+expr_pred_trans_d::is_deleted (const expr_pred_trans_d &e)
+{
+  return e.e == -1u;
+}
+
+inline void
+expr_pred_trans_d::mark_empty (expr_pred_trans_d &e)
+{
+  e.e = 0;
+}
+
+inline void
+expr_pred_trans_d::mark_deleted (expr_pred_trans_d &e)
+{
+  e.e = -1u;
+}
+
+inline hashval_t
+expr_pred_trans_d::hash (const expr_pred_trans_d &e)
+{
+  return iterative_hash_hashval_t (e.e, e.pred);
 }
 
 inline int
-expr_pred_trans_d::equal (const expr_pred_trans_d *ve1,
-			  const expr_pred_trans_d *ve2)
+expr_pred_trans_d::equal (const expr_pred_trans_d &ve1,
+			  const expr_pred_trans_d &ve2)
 {
-  basic_block b1 = ve1->pred;
-  basic_block b2 = ve2->pred;
+  int b1 = ve1.pred;
+  int b2 = ve2.pred;
 
   /* If they are not translations for the same basic block, they can't
      be equal.  */
   if (b1 != b2)
     return false;
-  return pre_expr_d::equal (ve1->e, ve2->e);
+
+  return ve1.e == ve2.e;
 }
 
 /* The phi_translate_table caches phi translations for a given
@@ -593,24 +625,22 @@ static hash_table<expr_pred_trans_d> *phi_translate_table;
 static inline bool
 phi_trans_add (expr_pred_trans_t *entry, pre_expr e, basic_block pred)
 {
-  expr_pred_trans_t *slot;
+  expr_pred_trans_t slot;
   expr_pred_trans_d tem;
-  hashval_t hash = iterative_hash_hashval_t (pre_expr_d::hash (e),
-					     pred->index);
-  tem.e = e;
-  tem.pred = pred;
-  tem.hashcode = hash;
-  slot = phi_translate_table->find_slot_with_hash (&tem, hash, INSERT);
-  if (*slot)
+  unsigned id = get_expression_id (e);
+  hashval_t hash = iterative_hash_hashval_t (id, pred->index);
+  tem.e = id;
+  tem.pred = pred->index;
+  slot = phi_translate_table->find_slot_with_hash (tem, hash, INSERT);
+  if (slot->e)
     {
-      *entry = *slot;
+      *entry = slot;
       return true;
     }
 
-  *entry = *slot = XNEW (struct expr_pred_trans_d);
-  (*entry)->e = e;
-  (*entry)->pred = pred;
-  (*entry)->hashcode = hash;
+  *entry = slot;
+  slot->e = id;
+  slot->pred = pred->index;
   return false;
 }
 
@@ -624,18 +654,30 @@ add_to_value (unsigned int v, pre_expr e)
 
   gcc_checking_assert (get_expr_value_id (e) == v);
 
-  if (v >= value_expressions.length ())
+  if (value_id_constant_p (v))
     {
-      value_expressions.safe_grow_cleared (v + 1, true);
-    }
+      if (-v >= constant_value_expressions.length ())
+	constant_value_expressions.safe_grow_cleared (-v + 1);
 
-  set = value_expressions[v];
-  if (!set)
+      set = constant_value_expressions[-v];
+      if (!set)
+	{
+	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
+	  constant_value_expressions[-v] = set;
+	}
+    }
+  else
     {
-      set = BITMAP_ALLOC (&grand_bitmap_obstack);
-      value_expressions[v] = set;
-    }
+      if (v >= value_expressions.length ())
+	value_expressions.safe_grow_cleared (v + 1);
 
+      set = value_expressions[v];
+      if (!set)
+	{
+	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
+	  value_expressions[v] = set;
+	}
+    }
   bitmap_set_bit (set, get_or_alloc_expression_id (e));
 }
 
@@ -687,7 +729,11 @@ vn_valnum_from_value_id (unsigned int val)
 {
   bitmap_iterator bi;
   unsigned int i;
-  bitmap exprset = value_expressions[val];
+  bitmap exprset;
+  if (value_id_constant_p (val))
+    exprset = constant_value_expressions[-val];
+  else
+    exprset = value_expressions[val];
   EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
     {
       pre_expr vexpr = expression_for_id (i);
@@ -1451,8 +1497,6 @@ phi_translate_1 (bitmap_set_t dest,
 	    else
 	      {
 		new_val_id = get_next_value_id ();
-		value_expressions.safe_grow_cleared (get_max_value_id () + 1,
-						     true);
 		nary = vn_nary_op_insert_pieces (newnary->length,
 						 newnary->opcode,
 						 newnary->type,
@@ -1603,11 +1647,7 @@ phi_translate_1 (bitmap_set_t dest,
 	    else
 	      {
 		if (changed || !same_valid)
-		  {
-		    new_val_id = get_next_value_id ();
-		    value_expressions.safe_grow_cleared
-		      (get_max_value_id () + 1, true);
-		  }
+		  new_val_id = get_next_value_id ();
 		else
 		  new_val_id = ref->value_id;
 		if (!newoperands.exists ())
@@ -1662,6 +1702,7 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
 	       bitmap_set_t set1, bitmap_set_t set2, edge e)
 {
   expr_pred_trans_t slot = NULL;
+  size_t slot_size = 0;
   pre_expr phitrans;
 
   if (!expr)
@@ -1678,10 +1719,11 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
   if (expr->kind != NAME)
     {
       if (phi_trans_add (&slot, expr, e->src))
-	return slot->v;
+	return slot->v == 0 ? NULL : expression_for_id (slot->v);
       /* Store NULL for the value we want to return in the case of
 	 recursing.  */
-      slot->v = NULL;
+      slot->v = 0;
+      slot_size = phi_translate_table->size ();
     }
 
   /* Translate.  */
@@ -1692,12 +1734,15 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
 
   if (slot)
     {
+      /* Check for reallocation.  */
+      if (phi_translate_table->size () != slot_size)
+	phi_trans_add (&slot, expr, e->src);
       if (phitrans)
-	slot->v = phitrans;
+	slot->v = get_expression_id (phitrans);
       else
 	/* Remove failed translations again, they cause insert
 	   iteration to not pick up new opportunities reliably.  */
-	phi_translate_table->remove_elt_with_hash (slot, slot->hashcode);
+	phi_translate_table->clear_slot (slot);
     }
 
   return phitrans;
@@ -1745,7 +1790,7 @@ bitmap_find_leader (bitmap_set_t set, unsigned int val)
     {
       unsigned int i;
       bitmap_iterator bi;
-      bitmap exprset = value_expressions[val];
+      bitmap exprset = constant_value_expressions[-val];
 
       EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
 	{
@@ -1753,6 +1798,7 @@ bitmap_find_leader (bitmap_set_t set, unsigned int val)
 	  if (expr->kind == CONSTANT)
 	    return expr;
 	}
+      gcc_unreachable ();
     }
   if (bitmap_set_contains_value (set, val))
     {
@@ -3190,7 +3236,7 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  auto_vec<pre_expr> avail;
+  auto_vec<pre_expr, 2> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
@@ -3357,7 +3403,7 @@ do_pre_partial_partial_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  auto_vec<pre_expr> avail;
+  auto_vec<pre_expr, 2> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (PA_IN (block));
@@ -4111,7 +4157,9 @@ init_pre (void)
   expressions.create (0);
   expressions.safe_push (NULL);
   value_expressions.create (get_max_value_id () + 1);
-  value_expressions.safe_grow_cleared (get_max_value_id () + 1, true);
+  value_expressions.quick_grow_cleared (get_max_value_id () + 1);
+  constant_value_expressions.create (get_max_constant_value_id () + 1);
+  constant_value_expressions.quick_grow_cleared (get_max_constant_value_id () + 1);
   name_to_id.create (0);
 
   inserted_exprs = BITMAP_ALLOC (NULL);
@@ -4142,6 +4190,7 @@ static void
 fini_pre ()
 {
   value_expressions.release ();
+  constant_value_expressions.release ();
   expressions.release ();
   BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);

@@ -23,17 +23,17 @@ along with GCC; see the file COPYING3.  If not see
    call.  For every function we collect two trees, one for loads and other
    for stores.  Tree consist of following levels:
 
-   1) Base: this level represent base alias set of the acecess and refers
+   1) Base: this level represent base alias set of the access and refers
       to sons (ref nodes). Flag all_refs means that all possible references
       are aliasing.
 
-      Because for LTO streaming we need to stream types rahter than alias sets
+      Because for LTO streaming we need to stream types rather than alias sets
       modref_base_node is implemented as a template.
-   2) Ref: this level represent ref alias set and links to acesses unless
-      all_refs flag is et.
+   2) Ref: this level represent ref alias set and links to accesses unless
+      all_refs flag is set.
       Again ref is an template to allow LTO streaming.
    3) Access: this level represent info about individual accesses.  Presently
-      we record whether access is trhough a dereference of a function parameter
+      we record whether access is through a dereference of a function parameter
 */
 
 #ifndef GCC_MODREF_TREE_H
@@ -50,7 +50,7 @@ struct GTY(()) modref_access_node
   poly_int64 size;
   poly_int64 max_size;
 
-  /* Offset from parmeter pointer to the base of the access (in bytes).  */
+  /* Offset from parameter pointer to the base of the access (in bytes).  */
   poly_int64 parm_offset;
 
   /* Index of parameter which specifies the base of access. -1 if base is not
@@ -240,7 +240,7 @@ struct modref_parm_map
 {
   /* Index of parameter we translate to.
      -1 indicates that parameter is unknown
-     -2 indicates that parmaeter points to local memory and access can be
+     -2 indicates that parameter points to local memory and access can be
 	discarded.  */
   int parm_index;
   bool parm_offset_known;
@@ -333,7 +333,7 @@ struct GTY((user)) modref_tree
     /* If we failed to insert ref, just see if there is a cleanup possible.  */
     if (!ref_node)
       {
-	/* No useful ref information and no useful base; collapse everyting.  */
+	/* No useful ref information and no useful base; collapse everything.  */
 	if (!base && base_node->every_ref)
 	  {
 	    collapse ();
@@ -367,7 +367,7 @@ struct GTY((user)) modref_tree
     return changed;
   }
 
- /* Remove tree branches that are not useful (i.e. they will allways pass).  */
+ /* Remove tree branches that are not useful (i.e. they will always pass).  */
 
  void cleanup ()
  {

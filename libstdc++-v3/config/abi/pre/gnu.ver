@@ -1774,7 +1774,8 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKNS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_Openmode;
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
-    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]*__xfer_bufptrs*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_ONS4_14__xfer_bufptrsE;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]14__xfer_bufptrs[CD][12]*;
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[a1346789]*;
 #   _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]*;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_;

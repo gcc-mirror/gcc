@@ -13,8 +13,8 @@ void g()
   catch (A*) { }
 
   try { f(); }
-  catch (A*) { }		// { dg-warning "" } A* before B*
-  catch (B*) { }		// { dg-warning "" } A* before B*
+  catch (A*) { }		// { dg-message "for type" } A* before B*
+  catch (B*) { }		// { dg-warning "will be caught" } A* before B*
 
   try { f(); }
   catch (A*) { }

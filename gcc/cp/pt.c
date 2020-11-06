@@ -3767,7 +3767,7 @@ builtin_pack_fn_p (tree fn)
 {
   if (!fn
       || TREE_CODE (fn) != FUNCTION_DECL
-      || !DECL_IS_BUILTIN (fn))
+      || !DECL_IS_UNDECLARED_BUILTIN (fn))
     return false;
 
   if (id_equal (DECL_NAME (fn), "__integer_pack"))
@@ -29278,6 +29278,8 @@ do_auto_deduction (tree type, tree init, tree auto_node,
   else if (AUTO_IS_DECLTYPE (auto_node))
     {
       tree stripped_init = tree_strip_any_location_wrapper (init);
+      if (REFERENCE_REF_P (stripped_init))
+	stripped_init = TREE_OPERAND (stripped_init, 0);
       bool id = (DECL_P (stripped_init)
 		 || ((TREE_CODE (init) == COMPONENT_REF
 		      || TREE_CODE (init) == SCOPE_REF)
