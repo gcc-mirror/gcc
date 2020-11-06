@@ -155,6 +155,8 @@ pr_regex = re.compile(r'\tPR (?P<component>[a-z+-]+\/)?([0-9]+)$')
 dr_regex = re.compile(r'\tDR ([0-9]+)$')
 star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 end_of_location_regex = re.compile(r'[\[<(:]')
+item_empty_regex = re.compile(r'\t(\* \S+ )?\(\S+\):\s*$')
+item_parenthesis_regex = re.compile(r'\t(\*|\(\S+\):)')
 
 LINE_LIMIT = 100
 TAB_WIDTH = 8
@@ -421,7 +423,11 @@ class GitCommit:
                     continue
                 elif line.startswith(CHERRY_PICK_PREFIX):
                     commit = line[len(CHERRY_PICK_PREFIX):].rstrip(')')
-                    self.cherry_pick_commit = commit
+                    if self.cherry_pick_commit:
+                        self.errors.append(Error('multiple cherry pick lines',
+                                                 line))
+                    else:
+                        self.cherry_pick_commit = commit
                     continue
 
                 # ChangeLog name will be deduced later
@@ -459,6 +465,13 @@ class GitCommit:
                             msg = 'one space should follow asterisk'
                             self.errors.append(Error(msg, line))
                         else:
+                            content = m.group('content')
+                            parts = content.split(':')
+                            if len(parts) > 1:
+                                for needle in ('()', '[]', '<>'):
+                                    if ' ' + needle in parts[0]:
+                                        msg = f'empty group "{needle}" found'
+                                        self.errors.append(Error(msg, line))
                             last_entry.lines.append(line)
                     else:
                         if last_entry.is_empty:
@@ -483,9 +496,10 @@ class GitCommit:
     def check_for_empty_description(self):
         for entry in self.changelog_entries:
             for i, line in enumerate(entry.lines):
-                if (star_prefix_regex.match(line) and line.endswith(':') and
+                if (item_empty_regex.match(line) and
                     (i == len(entry.lines) - 1
-                     or star_prefix_regex.match(entry.lines[i + 1]))):
+                     or not entry.lines[i+1].strip()
+                     or item_parenthesis_regex.match(entry.lines[i+1]))):
                     msg = 'missing description of a change'
                     self.errors.append(Error(msg, line))
 
