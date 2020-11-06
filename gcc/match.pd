@@ -4945,18 +4945,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with
    ADD_OVERFLOW detection in tree-ssa-math-opts.c.
-   A + CST CMP A  ->  A CMP' CST' */
+   CONVERT?(CONVERT?(A) + CST) CMP A  ->  A CMP' CST' */
 (for cmp (lt le ge gt)
      out (gt gt le le)
  (simplify
-  (cmp:c (plus@2 @0 INTEGER_CST@1) @0)
-  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
-       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
+  (cmp:c (convert?@3 (plus@2 (convert?@4 @0) INTEGER_CST@1)) @0)
+  (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@2))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@3))
+       && tree_nop_conversion_p (TREE_TYPE (@4), TREE_TYPE (@0))
        && wi::to_wide (@1) != 0
        && single_use (@2))
-   (with { unsigned int prec = TYPE_PRECISION (TREE_TYPE (@0)); }
+   (with {
+     unsigned int prec = TYPE_PRECISION (TREE_TYPE (@0));
+     signop sign = TYPE_SIGN (TREE_TYPE (@0));
+    }
     (out @0 { wide_int_to_tree (TREE_TYPE (@0),
-			        wi::max_value (prec, UNSIGNED)
+			        wi::max_value (prec, sign)
 				- wi::to_wide (@1)); })))))
 
 /* To detect overflow in unsigned A - B, A < B is simpler than A - B > A.
