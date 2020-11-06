@@ -8288,6 +8288,13 @@ package body Sem_Util is
                   else
                      Set_Name_Entity_Id (Chars (E), Homonym (E));
                   end if;
+
+                  --  The inherited operation cannot be retrieved
+                  --  by name, even though it may remain accesssible
+                  --  in some cases involving subprogram bodies without
+                  --  specs appearing in with_clauses..
+
+                  Set_Is_Immediately_Visible (E, False);
                end if;
             end;
 
