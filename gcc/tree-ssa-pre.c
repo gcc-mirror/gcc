@@ -444,6 +444,9 @@ public:
 
 /* Mapping from value id to expressions with that value_id.  */
 static vec<bitmap> value_expressions;
+/* ???  We want to just record a single expression for each constant
+   value, one of kind CONSTANT.  */
+static vec<bitmap> constant_value_expressions;
 
 /* Sets that we need to keep track of.  */
 typedef struct bb_bitmap_sets
@@ -624,18 +627,30 @@ add_to_value (unsigned int v, pre_expr e)
 
   gcc_checking_assert (get_expr_value_id (e) == v);
 
-  if (v >= value_expressions.length ())
+  if (value_id_constant_p (v))
     {
-      value_expressions.safe_grow_cleared (v + 1, true);
-    }
+      if (-v >= constant_value_expressions.length ())
+	constant_value_expressions.safe_grow_cleared (-v + 1);
 
-  set = value_expressions[v];
-  if (!set)
+      set = constant_value_expressions[-v];
+      if (!set)
+	{
+	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
+	  constant_value_expressions[-v] = set;
+	}
+    }
+  else
     {
-      set = BITMAP_ALLOC (&grand_bitmap_obstack);
-      value_expressions[v] = set;
-    }
+      if (v >= value_expressions.length ())
+	value_expressions.safe_grow_cleared (v + 1);
 
+      set = value_expressions[v];
+      if (!set)
+	{
+	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
+	  value_expressions[v] = set;
+	}
+    }
   bitmap_set_bit (set, get_or_alloc_expression_id (e));
 }
 
@@ -687,7 +702,11 @@ vn_valnum_from_value_id (unsigned int val)
 {
   bitmap_iterator bi;
   unsigned int i;
-  bitmap exprset = value_expressions[val];
+  bitmap exprset;
+  if (value_id_constant_p (val))
+    exprset = constant_value_expressions[-val];
+  else
+    exprset = value_expressions[val];
   EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
     {
       pre_expr vexpr = expression_for_id (i);
@@ -1451,8 +1470,6 @@ phi_translate_1 (bitmap_set_t dest,
 	    else
 	      {
 		new_val_id = get_next_value_id ();
-		value_expressions.safe_grow_cleared (get_max_value_id () + 1,
-						     true);
 		nary = vn_nary_op_insert_pieces (newnary->length,
 						 newnary->opcode,
 						 newnary->type,
@@ -1603,11 +1620,7 @@ phi_translate_1 (bitmap_set_t dest,
 	    else
 	      {
 		if (changed || !same_valid)
-		  {
-		    new_val_id = get_next_value_id ();
-		    value_expressions.safe_grow_cleared
-		      (get_max_value_id () + 1, true);
-		  }
+		  new_val_id = get_next_value_id ();
 		else
 		  new_val_id = ref->value_id;
 		if (!newoperands.exists ())
@@ -1745,7 +1758,7 @@ bitmap_find_leader (bitmap_set_t set, unsigned int val)
     {
       unsigned int i;
       bitmap_iterator bi;
-      bitmap exprset = value_expressions[val];
+      bitmap exprset = constant_value_expressions[-val];
 
       EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
 	{
@@ -1753,6 +1766,7 @@ bitmap_find_leader (bitmap_set_t set, unsigned int val)
 	  if (expr->kind == CONSTANT)
 	    return expr;
 	}
+      gcc_unreachable ();
     }
   if (bitmap_set_contains_value (set, val))
     {
@@ -3190,7 +3204,7 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  auto_vec<pre_expr> avail;
+  auto_vec<pre_expr, 2> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
@@ -3357,7 +3371,7 @@ do_pre_partial_partial_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  auto_vec<pre_expr> avail;
+  auto_vec<pre_expr, 2> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (PA_IN (block));
@@ -4111,7 +4125,9 @@ init_pre (void)
   expressions.create (0);
   expressions.safe_push (NULL);
   value_expressions.create (get_max_value_id () + 1);
-  value_expressions.safe_grow_cleared (get_max_value_id () + 1, true);
+  value_expressions.quick_grow_cleared (get_max_value_id () + 1);
+  constant_value_expressions.create (get_max_constant_value_id () + 1);
+  constant_value_expressions.quick_grow_cleared (get_max_constant_value_id () + 1);
   name_to_id.create (0);
 
   inserted_exprs = BITMAP_ALLOC (NULL);
@@ -4142,6 +4158,7 @@ static void
 fini_pre ()
 {
   value_expressions.release ();
+  constant_value_expressions.release ();
   expressions.release ();
   BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
