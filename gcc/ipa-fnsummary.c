@@ -4301,7 +4301,11 @@ read_ipa_call_summary (class lto_input_block *ib, struct cgraph_edge *e,
   if (es)
     edge_set_predicate (e, &p);
   length = streamer_read_uhwi (ib);
-  if (length && es && e->possibly_call_in_translation_unit_p ())
+  if (length && es
+      && (e->possibly_call_in_translation_unit_p ()
+	  /* Also stream in jump functions to builtins in hope that they
+	     will get fnspecs.  */
+	  || fndecl_built_in_p (e->callee->decl, BUILT_IN_NORMAL)))
     {
       es->param.safe_grow_cleared (length, true);
       for (i = 0; i < length; i++)
