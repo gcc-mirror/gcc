@@ -1,3 +1,89 @@
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/78209
+	* g++.dg/cpp1y/decltype-auto1.C: New test.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97675
+	* g++.old-deja/g++.eh/catch10.C: Adjust dg-warning.
+	* g++.dg/warn/Wexceptions1.C: New test.
+	* g++.dg/warn/Wexceptions2.C: New test.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/25814
+	* g++.dg/cpp2a/fn-template16.C: Add a dg-warning.
+	* g++.dg/cpp2a/fn-template7.C: Likewise.
+	* g++.dg/lookup/pr80891-5.C: Likewise.
+	* g++.dg/lto/pr79050_0.C: Add extern.
+	* g++.dg/lto/pr84805_0.C: Likewise.
+	* g++.dg/parse/pr58898.C: Add a dg-warning.
+	* g++.dg/template/scope5.C: Likewise.
+	* g++.old-deja/g++.brendan/recurse.C: Likewise.
+	* g++.old-deja/g++.jason/template4.C: Likewise.
+	* g++.old-deja/g++.law/arm4.C: Likewise.
+	* g++.old-deja/g++.mike/for2.C: Likewise.
+	* g++.old-deja/g++.other/local4.C: Likewise.
+	* g++.old-deja/g++.pt/crash3.C: Likewise.
+	* g++.dg/warn/Wvexing-parse.C: New test.
+	* g++.dg/warn/Wvexing-parse2.C: New test.
+	* g++.dg/warn/Wvexing-parse3.C: New test.
+	* g++.dg/warn/Wvexing-parse4.C: New test.
+	* g++.dg/warn/Wvexing-parse5.C: New test.
+	* g++.dg/warn/Wvexing-parse6.C: New test.
+	* g++.dg/warn/Wvexing-parse7.C: New test.
+
+2020-11-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97725.c: New.
+
+2020-11-05  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.dg/sms-12.c: Add dg-require-effective-target fpic.
+
+2020-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-24.C: Update template.
+
+2020-11-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/slp-11b.c: Guard statements.
+
+2020-11-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr97721.c: New test.
+
+2020-11-05  qing zhao  <qinzhao@gcc.gnu.org>
+
+	PR target/97715
+	* gcc.target/i386/zero-scratch-regs-32.c: New test.
+
+2020-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97668
+	* gcc.dg/analyzer/pr97668.c: New test.
+	* gfortran.dg/analyzer/pr97668.f: New test.
+
+2020-11-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-69.c: New testcase.
+
+2020-11-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/slp-11b.c: Update testcase.
+	* gcc.dg/vect/slp-perm-6.c: Update target selector.
+
+2020-11-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96933
+	* gcc.target/powerpc/pr96933-1.c: New test.
+	* gcc.target/powerpc/pr96933-2.c: New test.
+	* gcc.target/powerpc/pr96933-3.c: New test.
+	* gcc.target/powerpc/pr96933-4.c: New test.
+	* gcc.target/powerpc/pr96933.h: New test.
+	* gcc.target/powerpc/pr96933-run.h: New test.
+
 2020-11-04  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/vect/slp-11b.c: Update output scan.

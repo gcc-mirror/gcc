@@ -1,3 +1,117 @@
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97675
+	* doc/invoke.texi: Document -Wexceptions.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/25814
+	* doc/invoke.texi: Document -Wvexing-parse.
+
+2020-11-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97725
+	* range-op.cc (operator_equal::fold_range): Use new tmp value.
+	(operator_not_equal::fold_range): Ditto.
+	* value-query.cc (range_query::value_of_expr): Use int_range_max
+	not a value_range.
+	(range_query::value_on_edge): Ditto.
+	(range_query::value_of_stmt): Ditto.
+
+2020-11-05  Olivier Hainque  <hainque@adacore.com>
+
+	* config/aarch64/aarch64-vxworks.h (TARGET_OS_USES_R18):
+	Remove definition.
+	(STATIC_CHAIN_REGNUM): Redefine to 9.
+
+2020-11-05  Olivier Hainque  <hainque@adacore.com>
+
+	* config/aarch64/aarch64.md: Define PROBE_STACK_FIRST_REGNUM
+	and PROBE_STACK_SECOND_REGNUM constants, designating r10/r11.
+	Replacements for the PROBE_STACK_FIRST/SECOND_REG constants in
+	aarch64.c.
+	* config/aarch64/aarch64.c (PROBE_STACK_FIRST_REG): Remove.
+	(PROBE_STACK_SECOND_REG): Remove.
+	(aarch64_emit_probe_stack_range): Adjust to the _REG -> _REGNUM
+	suffix update for PROBE_STACK register numbers.
+
+2020-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* gimple.c (gimple_call_fnspec): Handle C++ new and delete.
+	* gimple.h (gimple_call_from_new_or_delete): Constify parameter.
+
+2020-11-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97721
+	* gimple-range.cc (get_tree_range): Drop overflow from constants.
+
+2020-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-diagnostic-path.cc (struct path_summary::event_range): Move
+	out of path_summary to...
+	(struct event_range): ...here.
+	(class path_summary): Convert to...
+	(struct path_summary): ...this.
+	(path_summary::m_ranges): Drop "private".
+	(path_summary::print): Convert to...
+	(print_path_summary_as_text): ...this, passing in the path_summary
+	explicitly.
+	(default_tree_diagnostic_path_printer): Update for above change.
+	(selftest::test_empty_path): Likewise.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+
+2020-11-05  qing zhao  <qinzhao@gcc.gnu.org>
+
+	PR target/97715
+	* config/i386/i386.c (zero_all_st_registers): Return
+	earlier when the FPU is disabled.
+
+2020-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (parm_map_for_arg): Initialize parm_offset and
+	parm_offset_knonw.
+	(read_section): Set writes_errno to false.
+
+2020-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences):
+	Use the original stmts.
+	(vect_slp_analyze_node_alignment): Use the pattern stmt.
+	* tree-vect-slp.c (vect_fixup_store_groups_with_patterns):
+	New function.
+	(vect_slp_analyze_bb_1): Call it.
+
+2020-11-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp.c (vect_slp_tree_permute_noop_p): New.
+	(vect_optimize_slp): Optimize permutes.
+	(vectorizable_slp_permutation): Fix typo.
+
+2020-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR debug/97718
+	* dwarf2out.c (add_abstract_origin_attribute): Make sure to
+	point to the abstract instance.
+
+2020-11-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Check kind.
+	* tree-vect-slp.c (vect_build_slp_instance): New.
+	(enum slp_instance_kind): Move to...
+	* tree-vectorizer.h (enum slp_instance_kind): .. Here
+	(SLP_INSTANCE_KIND): New.
+
+2020-11-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/96933
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Use direct move
+	instructions for vector construction with char/short types.
+	* config/rs6000/rs6000.md (p8_mtvsrwz_v16qisi2): New define_insn.
+	(p8_mtvsrd_v16qidi2): Likewise.
+
 2020-11-04  Tamar Christina  <tamar.christina@arm.com>
 
 	* tree-vect-slp.c (vect_analyze_slp_instance): Moved load/store lanes

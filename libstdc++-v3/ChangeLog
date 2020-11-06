@@ -1,3 +1,78 @@
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/25814
+	* testsuite/20_util/reference_wrapper/lwg2993.cc: Add a dg-warning.
+	* testsuite/25_algorithms/generate_n/87982_neg.cc: Likewise.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96269
+	* include/std/optional (operator==, operator!=, operator<)
+	(operator>, operator<=, operator>=): Fix types used in
+	SFINAE constraints.
+	* testsuite/20_util/optional/relops/96269.cc: New test.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97731
+	* src/filesystem/dir.cc (recursive_directory_iterator): Call the
+	right overload of _Dir::advance.
+	* testsuite/experimental/filesystem/iterators/97731.cc: New test.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97729
+	* include/std/future (__basic_future::_M_get_result): Use
+	nullptr for null pointer constant.
+	* libsupc++/eh_ptr.cc (operator==, operator!=): Remove
+	definitions.
+	* libsupc++/exception_ptr.h (_GLIBCXX_EH_PTR_USED): Define
+	macro to conditionally add __attribute__((__used__)).
+	(operator==, operator!=, exception_ptr::exception_ptr())
+	(exception_ptr::exception_ptr(const exception_ptr&))
+	(exception_ptr::~exception_ptr())
+	(exception_ptr::operator=(const exception_ptr&))
+	(exception_ptr::swap(exception_ptr&)): Always define as
+	inline. Add macro to be conditionally "used".
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97729
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.29): Add exports.
+	* src/c++20/sstream-inst.cc (basic_stringbuf): Instantiate
+	private constructor taking __xfer_bufptrs.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream (basic_stringbuf(const allocator_type&):
+	Add explicit.
+	(basic_stringbuf(const basic_string<C,T,SA>&, openmode, const A&)):
+	Call _M_stringbuf_init. Construct _M_string from pointer and length
+	to avoid constraint checks for string view.
+	(basic_stringbuf::view()): Make __sv_type alias local to the
+	function.
+	(basic_istringstream(const basic_string<C,T,SA>&, openmode, const A&)):
+	Pass string to _M_streambuf instead of constructing a temporary
+	with the wrong allocator.
+	(basic_ostringstream(const basic_string<C,T,SA>&, openmode, const A&)):
+	Likewise.
+	(basic_stringstream(const basic_string<C,T,SA>&, openmode, const A&)):
+	Likewise.
+	* src/c++20/sstream-inst.cc: Use string_view and wstring_view
+	typedefs in explicit instantiations.
+	* testsuite/27_io/basic_istringstream/cons/char/1.cc: Add more
+	tests for constructors.
+	* testsuite/27_io/basic_ostringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/cons/char/1.cc: Likewise.
+
+2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream: Adjust whitespace.
+
 2020-11-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/97719
