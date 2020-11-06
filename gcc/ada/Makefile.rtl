@@ -1194,6 +1194,13 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
     GCC_SPEC_FILES+=vxworks-cert-$(ARCH_STR)-link.spec
     GCC_SPEC_FILES+=vxworks-smp-$(ARCH_STR)-link.spec
   endif
+
+  ifeq ($(strip $(filter-out vxworks7r2 powerpc64 rtp rtp-smp, $(target_os) $(target_cpu) $(THREAD_KIND))),)
+    # Shared libraries are only supported on PowerPC64, VxWorks7r2
+    # ATM.  Also this is disabled for kernel runtimes.
+    GNATLIB_SHARED = gnatlib-shared-dual
+    LIBRARY_VERSION := $(LIB_VERSION)
+  endif
 endif
 
 # PowerPC and e500v2 VxWorks 653
