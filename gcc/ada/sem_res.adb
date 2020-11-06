@@ -10245,8 +10245,6 @@ package body Sem_Res is
    --------------------
 
    procedure Resolve_Op_Not (N : Node_Id; Typ : Entity_Id) is
-      B_Typ : Entity_Id;
-
       function Parent_Is_Boolean return Boolean;
       --  This function determines if the parent node is a boolean operator or
       --  operation (comparison op, membership test, or short circuit form) and
@@ -10259,32 +10257,16 @@ package body Sem_Res is
 
       function Parent_Is_Boolean return Boolean is
       begin
-         if Paren_Count (N) /= 0 then
-            return False;
-
-         else
-            case Nkind (Parent (N)) is
-               when N_And_Then
-                  | N_In
-                  | N_Not_In
-                  | N_Op_And
-                  | N_Op_Eq
-                  | N_Op_Ge
-                  | N_Op_Gt
-                  | N_Op_Le
-                  | N_Op_Lt
-                  | N_Op_Ne
-                  | N_Op_Or
-                  | N_Op_Xor
-                  | N_Or_Else
-               =>
-                  return Left_Opnd (Parent (N)) = N;
-
-               when others =>
-                  return False;
-            end case;
-         end if;
+         return Paren_Count (N) = 0
+           and then Nkind (Parent (N)) in N_Membership_Test
+                                        | N_Op_Boolean
+                                        | N_Short_Circuit
+            and then Left_Opnd (Parent (N)) = N;
       end Parent_Is_Boolean;
+
+      --  Local variables
+
+      B_Typ : Entity_Id;
 
    --  Start of processing for Resolve_Op_Not
 
