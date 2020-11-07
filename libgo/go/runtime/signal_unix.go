@@ -347,6 +347,10 @@ func doSigPreempt(gp *g, ctxt *sigctxt, sigpc uintptr) {
 	// Acknowledge the preemption.
 	atomic.Xadd(&gp.m.preemptGen, 1)
 	atomic.Store(&gp.m.signalPending, 0)
+
+	if GOOS == "darwin" {
+		atomic.Xadd(&pendingPreemptSignals, -1)
+	}
 }
 
 // This is false for gccgo.
@@ -404,6 +408,9 @@ func sigtrampgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 			// no non-Go signal handler for sigPreempt.
 			// The default behavior for sigPreempt is to ignore
 			// the signal, so badsignal will be a no-op anyway.
+			if GOOS == "darwin" {
+				atomic.Xadd(&pendingPreemptSignals, -1)
+			}
 			return
 		}
 		badsignal(uintptr(sig), &c)
