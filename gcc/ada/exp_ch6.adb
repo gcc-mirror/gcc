@@ -3637,9 +3637,9 @@ package body Exp_Ch6 is
                --  For internally generated calls ensure that they reference
                --  the entity of the spec of the called function (needed since
                --  the expander may generate calls using the entity of their
-               --  body). See for example Expand_Boolean_Operator().
+               --  body).
 
-               if not (Comes_From_Source (Call_Node))
+               if not Comes_From_Source (Call_Node)
                  and then Nkind (Unit_Declaration_Node (Func_Id)) =
                             N_Subprogram_Body
                then
