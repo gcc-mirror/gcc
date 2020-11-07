@@ -1,3 +1,51 @@
+2020-11-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81660
+	* except.c (can_convert_eh): Change the return type to bool.  If
+	the type TO and FROM are the same, return true.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_objc_at_property_declaration):
+	Improve parsing fidelity. Associate better location info
+	with @property attributes.  Clean up the interface to
+	objc_add_property_declaration ().
+
+2020-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67453
+	* decl.c (duplicate_decls): Propagate DECL_ATTRIBUTES and
+	DECL_PRESERVE_P from olddecl to its clones if any.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_UNDECLARED_BUILTIN_P): Delete.
+	* cp-objcp-common.c (names_bultin_p): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	* decl.c (decls_match): Likewise.  Replace
+	DECL_UNDECLARED_BUILTIN_P with DECL_IS_UNDECLARED_BUILTIN.
+	(duplicate_decls): Likewise.
+	* decl2.c (collect_source_refs): Likewise.
+	* name-lookup.c (anticipated_builtin_p, print_binding_level)
+	(do_nonmember_using_decl): Likewise.
+	* pt.c (builtin_pack_fn_p): Likewise.
+	* typeck.c (error_args_num): Likewise.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_template_declaration): Adjust 'export' warning.
+	(cp_parser_explicit_specialization): Remove unneeded bool setting.
+
+2020-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (cp_fix_function_decl_p): Do not access ipa_ref_list dirrectly.
+
+2020-11-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.c (cp_parser_omp_atomic): Add openacc parameter and update
+	OpenACC matching.
+	(cp_parser_omp_construct): Update call.
+
 2020-11-05  Marek Polacek  <polacek@redhat.com>
 
 	* except.c (check_handlers_1): Add auto_diagnostic_group.

@@ -1,3 +1,316 @@
+2020-11-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (@tablejump<mode>_normal): Don't abuse
+	operands[].
+	(@tablejump<mode>_nospec): Ditto.
+
+2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000.h (BIGGEST_ALIGNMENT): Revert previous commit
+	so as not to break the ABI.
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Set the ABI
+	mandated alignment for __vector_pair and __vector_quad types.
+
+2020-11-06  Jeff Law  <law@torsion.usersys.redhat.com>
+
+	PR target/91489
+	* config/i386/i386.md (simple_return): Also check
+	for ms_hook_prologue function attribute.
+	* config/i386/i386.c (ix86_can_use_return_insn_p):
+	Also check for ms_hook_prologue function attribute.
+	* config/i386/i386-protos.h (ix86_function_ms_hook_prologue): Declare.
+
+2020-11-06  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/96933
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Use
+	TARGET_POWERPC64 instead of TARGET_64BIT.
+
+2020-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* builtins.def (BUILT_IN_NANSD32, BUILT_IN_NANSD64)
+	(BUILT_IN_NANSD128): New built-in functions.
+	* fold-const-call.c (fold_const_call): Handle the new built-in
+	functions.
+	* doc/extend.texi (__builtin_nansd32, __builtin_nansd64)
+	(__builtin_nansd128): Document.
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	fenv_exceptions_dfp.
+
+2020-11-06  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* tree-ssa-uninit.c (find_var_cmp_const): New function.
+	(use_pred_not_overlap_with_undef_path_pred): Call above.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c: Allow for Darwin20 to correspond to macOS 11.
+	* config/darwin-driver.c: Likewise.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (expr_pred_trans_d): Modify so elements
+	are embedded rather than allocated.  Remove hashval member,
+	make all members integers.
+	(phi_trans_add): Adjust accordingly.
+	(phi_translate): Likewise.  Deal with re-allocation
+	of the table.
+
+2020-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97737
+	PR tree-optimization/97741
+	* gimple-range.cc: (gimple_ranger::range_of_stmt): Intersect newly
+	calculated ranges with the existing known global range.
+
+2020-11-06  Darius Galis  <darius.galis@cyberthorstudios.com>
+
+	* config/rx/rx.md (CTRLREG_PC): Add.
+	* config/rx/rx.c (CTRLREG_PC): Add
+	(rx_expand_builtin_mvtc): Add warning: PC register cannot
+	be used as dest.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (DECL_IS_BUILTIN): Rename to ...
+	(DECL_IS_UNDECLARED_BUILTIN): ... here.  No need to use SOURCE_LOCUS.
+	* calls.c (maybe_warn_alloc_args_overflow): Adjust for rename.
+	* cfgexpand.c (pass_expand::execute): Likewise.
+	* dwarf2out.c (base_type_die, is_naming_typedef_decl): Likewise.
+	* godump.c (go_decl, go_type_decl): Likewise.
+	* print-tree.c (print_decl_identifier): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Likewise.
+	* xcoffout.c (xcoff_assign_fundamental_type_number): Likewise.
+
+2020-11-06  David Candler  <david.candler@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(TYPES_SHIFT2IMM): Add define.
+	(TYPES_SHIFT2IMM_UUSS): Add define.
+	(TYPES_USHIFT2IMM): Add define.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<sur>q<r>shr<u>n2_n<mode>): Add new insn for upper saturating shift right.
+	* config/aarch64/aarch64-simd-builtins.def: Add intrinsics.
+	* config/aarch64/arm_neon.h:
+	(vqrshrn_high_n_s16): Expand using intrinsic rather than inline asm.
+	(vqrshrn_high_n_s32): Likewise.
+	(vqrshrn_high_n_s64): Likewise.
+	(vqrshrn_high_n_u16): Likewise.
+	(vqrshrn_high_n_u32): Likewise.
+	(vqrshrn_high_n_u64): Likewise.
+	(vqrshrun_high_n_s16): Likewise.
+	(vqrshrun_high_n_s32): Likewise.
+	(vqrshrun_high_n_s64): Likewise.
+	(vqshrn_high_n_s16): Likewise.
+	(vqshrn_high_n_s32): Likewise.
+	(vqshrn_high_n_s64): Likewise.
+	(vqshrn_high_n_u16): Likewise.
+	(vqshrn_high_n_u32): Likewise.
+	(vqshrn_high_n_u64): Likewise.
+	(vqshrun_high_n_s16): Likewise.
+	(vqshrun_high_n_s32): Likewise.
+	(vqshrun_high_n_s64): Likewise.
+
+2020-11-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-modes.def (VNx2BF, VNx4BF): Adjust nunits
+	and alignment based on the current VG.
+	* config/aarch64/iterators.md (SVE_ALL, SVE_24, SVE_2, SVE_4): Add
+	partial SVE BF modes.
+	(UNSPEC_REVBHW): New unspec.
+	(Vetype, Vesize, Vctype, VEL, Vel, vwcore, V_INT_CONTAINER)
+	(v_int_container, VPRED, vpred): Handle partial SVE BF modes.
+	(container_bits, Vcwtype): New mode attributes.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_sve_revbhw_<SVE_ALL:mode><PRED_HSD:mode>): New pattern.
+	(@aarch64_sve_dup_lane<mode>): Extended from SVE_FULL to SVE_ALL.
+	(@aarch64_sve_rev<mode>, @aarch64_sve_<perm_insn><mode>): Likewise.
+	(@aarch64_sve_ext<mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_classify_vector_mode): Handle
+	E_VNx2BFmode and E_VNx4BFmode.
+	(aarch64_evpc_rev_local): Base the analysis on the container size
+	instead of the element size.  Use the new aarch64_sve_revbhw
+	patterns for SVE.
+	(aarch64_evpc_dup): Handle partial SVE data modes.  Use the
+	container size instead of the element size when applying the
+	SVE immediate limit.  Fix a previously incorrect bounds check.
+	(aarch64_expand_vec_perm_const_1): Handle partial SVE data modes.
+
+2020-11-06  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Add new -fbit-tests option.
+	* doc/invoke.texi: Document the option.
+	* tree-switch-conversion.c (bit_test_cluster::find_bit_tests):
+	Use the option.
+	* tree-switch-conversion.h (is_enabled): New function.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (get_max_constant_value_id): Declare.
+	(get_next_constant_value_id): Likewise.
+	(value_id_constant_p): Inline and simplify.
+	* tree-ssa-sccvn.c (constant_value_ids): Remove.
+	(next_constant_value_id): Add.
+	(get_or_alloc_constant_value_id): Adjust.
+	(value_id_constant_p): Remove definition.
+	(get_max_constant_value_id): Define.
+	(get_next_value_id): Add assert for overflow.
+	(get_next_constant_value_id): Define.
+	(run_rpo_vn): Adjust.
+	(free_rpo_vn): Likewise.
+	(do_rpo_vn): Initialize next_constant_value_id.
+	* tree-ssa-pre.c (constant_value_expressions): New.
+	(add_to_value): Split into constant/non-constant value
+	handling.  Avoid exact re-allocation.
+	(vn_valnum_from_value_id): Adjust.
+	(phi_translate_1): Remove spurious exact re-allocation.
+	(bitmap_find_leader): Adjust.  Make sure we return
+	a CONSTANT value for a constant value id.
+	(do_pre_regular_insertion): Use 2 auto-elements for avail.
+	(do_pre_partial_partial_insertion): Likewise.
+	(init_pre): Allocate constant_value_expressions.
+	(fini_pre): Release constant_value_expressions.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97706
+	* tree-vect-patterns.c (possible_vector_mask_operation_p):
+	PHIs are possible mask operations.
+	(vect_determine_mask_precision): Handle PHIs.
+	(vect_determine_precisions): Walk PHIs in BB analysis.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_analyze_slp): Pass down the
+	SLP graph entry kind.
+	(vect_analyze_slp_instance): Simplify.
+	(vect_build_slp_instance): Adjust.
+	(vect_slp_check_for_constructors): Perform more
+	eligibility checks here.
+
+2020-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-ref.h (enum ipa_ref_use): Remove GTY marker.
+	(struct ipa_ref): Remove GTY marker; reorder for better packing.
+	(struct ipa_ref_list): Remove GTY marker; turn references
+	nad referring to va_heap, vl_ptr vectors; update accesors.
+	* cgraph.h (symtab_node::iterate_reference): Update.
+	* ipa-ref.c (ipa_ref::remove_reference): Update.
+	* symtab.c (symtab_node::create_reference): Update.
+	(symtab_node::remove_all_references): Update.
+	(symtab_node::resolve_alias): Update.
+
+2020-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-modref-tree.h: Fix comment typos.
+	* ipa-modref.c: Likewise.
+
+2020-11-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_option_override_internal): Remove
+	override of inline params.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97706
+	* tree-vect-patterns.c (vect_determine_mask_precision):
+	Remove worklist operation.
+	(vect_determine_stmt_precisions): Do not call
+	vect_determine_mask_precision here.
+	(vect_determine_precisions): Compute mask precision
+	in a forward walk.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97732
+	* tree-vect-loop.c (vectorizable_induction): Convert the
+	init elements to the vector component type.
+	* gimple-fold.c (gimple_build_vector): Use CONSTANT_CLASS_P
+	rather than TREE_CONSTANT to determine if elements are
+	eligible for VECTOR_CSTs.
+
+2020-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* attr-fnspec.h (attr_fnspec::get_str): New accessor
+	* ipa-fnsummary.c (read_ipa_call_summary): Store also parm info
+	for builtins.
+	* ipa-modref.c (class fnspec_summary): New type.
+	(class fnspec_summaries_t): New type.
+	(modref_summary::modref_summary): Initialize writes_errno.
+	(struct modref_summary_lto): Add writes_errno.
+	(modref_summary_lto::modref_summary_lto): Initialize writes_errno.
+	(modref_summary::dump): Check for NULL pointers.
+	(modref_summary_lto::dump): Dump writes_errno.
+	(collapse_loads): Move up in source file.
+	(collapse_stores): New function.
+	(process_fnspec): Handle also internal calls.
+	(analyze_call): Likewise.
+	(analyze_stmt): Store fnspec string if needed.
+	(analyze_function): Initialize fnspec_sumarries.
+	(modref_summaries_lto::duplicate): Copy writes_errno.
+	(modref_write): Store writes_errno and fnspec summaries.
+	(read_section): Read writes_errno and fnspec summaries.
+	(modref_read): Initialize fnspec summaries.
+	(update_signature): Fix formating.
+	(compute_parm_map): Return true if sucessful.
+	(get_parm_type): New function.
+	(get_access_for_fnspec): New function.
+	(propagate_unknown_call): New function.
+	(modref_propagate_in_scc): Use it.
+	(pass_ipa_modref::execute): Delete fnspec_summaries.
+	(ipa_modref_c_finalize): Delete fnspec_summaries.
+	* ipa-prop.c: Include attr-fnspec.h.
+	(ipa_compute_jump_functions_for_bb):  Also compute jump functions
+	for functions with fnspecs.
+	(ipa_read_edge_info): Read jump functions for builtins.
+
+2020-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.h (class size_time_entry): Do not GTY annotate.
+	(class ipa_fnsummary): Turn size_time_table to auto_vec and
+	call_size_time_table to effecient vec; update constructors.
+	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Update.
+	(ipa_fn_summary::~ipa_fn_summary): Update.
+	(ipa_fn_summary_t::duplicate): Update.
+	(ipa_dump_fn_summary): Update.
+	(set_switch_stmt_execution_predicate): Update.
+	(analyze_function_body): Update.
+	(estimate_calls_size_and_time): Update.
+	(ipa_call_context::estimate_size_and_time): Update.
+	(ipa_merge_fn_summary_after_inlining): Update.
+	(ipa_update_overall_fn_summary): Update.
+	(inline_read_section): Update.
+	(ipa_fn_summary_write): Update.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97733
+	* tree-vect-slp.c (vect_analyze_slp_instance): If less
+	than two reductions were relevant or live do nothing.
+
+2020-11-06  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/97223
+	* match.pd (overflow detection and optimization): Handle conversions.
+
+2020-11-06  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* match.pd (x >> x): New pattern.
+
+2020-11-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_implied_info):
+	Add static and const.
+	(riscv_subset_list::handle_implied_ext): Add const due to
+	riscv_implied_info changed to const.
+
+2020-11-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96307
+	* toplev.c (process_options): Remove param_asan_stack checking for kasan
+	option checking.
+
 2020-11-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97675

@@ -1,3 +1,8 @@
+2020-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Tighten up patterns
+	for basic_stringbuf that refer to __xfer_bufptrs.
+
 2020-11-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/25814

@@ -1,3 +1,30 @@
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-objc.h (enum objc_property_attribute_group): New
+	(enum objc_property_attribute_kind): New.
+	(OBJC_PROPATTR_GROUP_MASK): New.
+	(struct property_attribute_info): Small class encapsulating
+	parser output from property attributes.
+	(objc_prop_attr_kind_for_rid): New
+	(objc_add_property_declaration): Simplify interface.
+	* stub-objc.c (enum rid): Dummy type.
+	(objc_add_property_declaration): Simplify interface.
+	(objc_prop_attr_kind_for_rid): New.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (collect_ada_nodes): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	(collect_ada_node): Likewise.
+	(dump_forward_type): Likewise.
+	* c-common.c (set_underlying_type): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	(user_facing_original_type, c_common_finalize_early_debug): Likewise.
+
+2020-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (verify_sequence_points): Remove DEBUG_FUNCTION.
+
 2020-11-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97675

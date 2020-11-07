@@ -1,3 +1,14 @@
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (enum class CPP_time_kind): New.
+	(cpp_get_date): Declare.
+	* internal.h (struct cpp_reader): Replace source_date_epoch with
+	time_stamp and time_stamp_kind.
+	* init.c (cpp_create_reader): Initialize them.
+	* macro.c (_cpp_builtin_macro_text): Use cpp_get_date.
+	(cpp_get_date): Broken out from _cpp_builtin_macro_text and
+	genericized.
+
 2020-11-03  Nathan Sidwell  <nathan@acm.org>
 
 	* lex.c (cpp_peek_token): Do not peek past CPP_PRAGMA.

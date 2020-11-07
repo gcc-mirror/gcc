@@ -1,3 +1,25 @@
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-parser.c (c_parser_objc_at_property_declaration):
+	Improve parsing fidelity. Associate better location info
+	with @property attributes.  Clean up the interface to
+	objc_add_property_declaration ().
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (diagnose_mismatched_decls): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	(warn_if_shadowing, implicitly_declare, names_builtin_p)
+	(collect_source_refs): Likewise.
+	* c-typeck.c (inform_declaration, inform_for_arg)
+	(convert_for_assignment): Likewise.
+
+2020-11-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_atomic): Add openacc parameter and update
+	OpenACC matching.
+	(c_parser_omp_construct): Update call.
+
 2020-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/97670

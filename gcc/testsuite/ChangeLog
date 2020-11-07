@@ -1,3 +1,168 @@
+2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/pr64505.c: Run everywhere.  Use correct minimized
+	test case.
+
+2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-alignment.c: New test.
+
+2020-11-06  Jeff Law  <law@torsion.usersys.redhat.com>
+
+	PR target/91489
+	* gcc.target/i386/ms_hook_prologue.c: Expand testcase
+	to reproduce PR target/91489 issue.
+
+2020-11-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_fenv_exceptions_dfp): New.
+	* gcc.dg/dfp/builtin-snan-1.c, gcc.dg/dfp/builtin-snan-2.c: New
+	tests.
+
+2020-11-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81660
+	* g++.dg/warn/Wexceptions3.C: New test.
+	* g++.dg/eh/pr42859.C: Add dg-warning.
+	* g++.dg/torture/pr81659.C: Likewise.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/property/at-property-1.mm: Adjust expected
+	diagnostics.
+	* obj-c++.dg/property/at-property-29.mm: Likewise.
+	* obj-c++.dg/property/at-property-4.mm: Likewise.
+	* obj-c++.dg/property/property-neg-2.mm: Likewise.
+	* objc.dg/property/at-property-1.m: Likewise.
+	* objc.dg/property/at-property-29.m: Likewise.
+	* objc.dg/property/at-property-4.m: Likewise.
+	* objc.dg/property/at-property-5.m: Likewise.
+	* objc.dg/property/property-neg-2.m: Likewise.
+
+2020-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67453
+	* g++.dg/ext/attr-used-2.C: New test.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-minversion-link.c: Allow for Darwin19 (macOS 10.15)
+	and Darwin20 (macOS 11.0).
+
+2020-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97737.c: New.
+	* gcc.dg/pr97741.c: New.
+
+2020-11-06  David Candler  <david.candler@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqrshrn_high_n.c: New testcase.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrshrun_high_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshrn_high_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshrun_high_n.c: Likewise.
+	* gcc.target/aarch64/narrow_high-intrinsics.c: Update expected assembler
+	for sqshrun2, sqrshrun2, sqshrn2, uqshrn2, sqrshrn2 and uqrshrn2.
+
+2020-11-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/dup_lane_2.c: New test.
+	* gcc.target/aarch64/sve/dup_lane_3.c: Likewise.
+	* gcc.target/aarch64/sve/ext_4.c: Likewise.
+	* gcc.target/aarch64/sve/rev_2.c: Likewise.
+	* gcc.target/aarch64/sve/revhw_1.c: Likewise.
+	* gcc.target/aarch64/sve/revhw_2.c: Likewise.
+	* gcc.target/aarch64/sve/slp_perm_8.c: Likewise.
+	* gcc.target/aarch64/sve/trn1_2.c: Likewise.
+	* gcc.target/aarch64/sve/trn2_2.c: Likewise.
+	* gcc.target/aarch64/sve/uzp1_2.c: Likewise.
+	* gcc.target/aarch64/sve/uzp2_2.c: Likewise.
+	* gcc.target/aarch64/sve/zip1_2.c: Likewise.
+	* gcc.target/aarch64/sve/zip2_2.c: Likewise.
+
+2020-11-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/switch-4.c: New test.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97706
+	* gcc.dg/vect/bb-slp-pr97706.c: New testcase.
+
+2020-11-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR gcov-profile/97461
+	* gcc.dg/tree-prof/pr97461.c: Return aligned memory.
+
+2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/loop-2-parallel-3.f95: Adjust.
+
+2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/loop-6.f95: Remove.
+
+2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/loop-5.f95: Remove.
+
+2020-11-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc-gomp/goacc-gomp.exp: New.
+	* gfortran.dg/goacc-gomp/atomic.f90: New test.
+	* gfortran.dg/goacc/atomic.f90: New test.
+
+2020-11-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/goacc-gomp/atomic.c: New test.
+	* c-c++-common/goacc/atomic.c: New test.
+
+2020-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97732
+	* gcc.dg/vect/bb-slp-pr97732.c: New testcase.
+
+2020-11-06  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.target/i386/fentryname1.c: Add dg-require-profiling.
+	* gcc.target/i386/fentryname2.c: Likewise.
+	* gcc.target/i386/fentryname3.c: Likewise.
+	* gcc.target/i386/returninst1.c: Likewise.
+	* gcc.target/i386/returninst2.c: Likewise.
+	* gcc.target/i386/returninst3.c: Likewise.
+
+2020-11-06  Olivier Hainque  <hainque@adacore.com>
+
+	* g++.dg/pr57878.C: Add dg-require-effective-target fpic.
+	* g++.dg/pr65032.C: Likewise.
+	* g++.dg/pr84279.C: Likewise.
+	* g++.dg/inherit/thunk8.C: Likewise.
+	* g++.dg/opt/pr64411.C: Likewise.
+
+2020-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/modref-2.c: New test.
+	* gcc.dg/lto/modref-2_0.c: New test.
+
+2020-11-06  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/no-strict-overflow-4.c: Adjust expected output.
+
+2020-11-06  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* gcc.dg/self-right-shift.c: New test.
+
+2020-11-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/96307
+	* gcc.dg/pr96307.c: New.
+	* gcc.target/riscv/pr96260.c: Move this test case from here to ...
+	* gcc.dg/pr96260.c: ... here.
+	* gcc.target/riscv/pr91441.c: Move this test case from here to ...
+	* gcc.dg/pr91441.c: ... here.
+	* lib/target-supports.exp (check_effective_target_no_fsanitize_address):
+	New proc.
+
 2020-11-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/78209

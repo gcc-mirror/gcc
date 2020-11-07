@@ -1,3 +1,8 @@
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* lto-symtab.c (lto_symtab_merge_decls_1): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+
 2020-10-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/96680

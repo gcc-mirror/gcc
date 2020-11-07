@@ -1,3 +1,14 @@
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (start_class): Accept visibility attributes
+	without warning.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_prop_attr_kind_for_rid): New.
+	(objc_add_property_declaration): Adjust to consume the
+	parser output using a vector of parsed attributes.
+
 2020-11-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-act.c (objc_non_constant_expr_p): New.
