@@ -30,6 +30,33 @@
 ------------------------------------------------------------------------------
 
 --  This is the GNU/Linux implementation of this package
+--
+--  Testing on GNU/Linux can be done with socat & stty tools.
+--
+--  First in a terminal create a virtual serial port:
+--
+--  * First solution, the terminal is one of the side of the channel
+--    characters written with Write into the port will be displayed
+--    there and characters typed into the terminal will be send to the
+--    channel and will be received by a Read call.
+--
+--     $ socat PTY,link=/tmp/virtual-tty,raw,echo=1 -
+--
+--  * Second solution, the virtual channel contains two side and the
+--    program can Read and Write date to it.
+--
+--     $ socat PTY,link=/tmp/virtual-tty,raw,echo=1 \
+--         PTY,link=/tmp/virtual-tty,raw,echo=1
+--
+--  Connect to this virtual serial port with:
+--
+--     Open (Port => P, Name => "/tmp/virtual-tty");
+--
+--  Do any settings using the Set routine below, then you can check
+--  the serial port configuration with:
+--
+--     $ stty --file /tmp/virtual-tty
+--
 
 with Ada.Streams;          use Ada.Streams;
 
@@ -51,6 +78,34 @@ package body GNAT.Serial_Communications is
 
    function fcntl (fd : int; cmd : int; value : int) return int;
    pragma Import (C, fcntl, "fcntl");
+
+   C_Data_Rate : constant array (Data_Rate) of unsigned :=
+                   (B75      => OSC.B75,
+                    B110     => OSC.B110,
+                    B150     => OSC.B150,
+                    B300     => OSC.B300,
+                    B600     => OSC.B600,
+                    B1200    => OSC.B1200,
+                    B2400    => OSC.B2400,
+                    B4800    => OSC.B4800,
+                    B9600    => OSC.B9600,
+                    B19200   => OSC.B19200,
+                    B38400   => OSC.B38400,
+                    B57600   => OSC.B57600,
+                    B115200  => OSC.B115200,
+                    B230400  => OSC.B230400,
+                    B460800  => OSC.B460800,
+                    B500000  => OSC.B500000,
+                    B576000  => OSC.B576000,
+                    B921600  => OSC.B921600,
+                    B1000000 => OSC.B1000000,
+                    B1152000 => OSC.B1152000,
+                    B1500000 => OSC.B1500000,
+                    B2000000 => OSC.B2000000,
+                    B2500000 => OSC.B2500000,
+                    B3000000 => OSC.B3000000,
+                    B3500000 => OSC.B3500000,
+                    B4000000 => OSC.B4000000);
 
    C_Bits      : constant array (Data_Bits) of unsigned :=
                    (CS7 => OSC.CS7, CS8 => OSC.CS8);
@@ -162,6 +217,8 @@ package body GNAT.Serial_Communications is
    is
       use OSC;
 
+      subtype speed_t is unsigned;
+
       type termios is record
          c_iflag  : unsigned;
          c_oflag  : unsigned;
@@ -169,8 +226,8 @@ package body GNAT.Serial_Communications is
          c_lflag  : unsigned;
          c_line   : unsigned_char;
          c_cc     : Interfaces.C.char_array (0 .. 31);
-         c_ispeed : unsigned;
-         c_ospeed : unsigned;
+         c_ispeed : speed_t;
+         c_ospeed : speed_t;
       end record;
       pragma Convention (C, termios);
 
@@ -184,9 +241,15 @@ package body GNAT.Serial_Communications is
       function tcflush (fd : int; queue_selector : int) return int;
       pragma Import (C, tcflush, "tcflush");
 
+      function cfsetospeed (termios_p : Address; speed : speed_t) return int;
+      pragma Import (C, cfsetospeed, "cfsetospeed");
+
+      function cfsetispeed (termios_p : Address; speed : speed_t) return int;
+      pragma Import (C, cfsetispeed, "cfsetispeed");
+
       Current : termios;
 
-      Res : int;
+      Res : int := 0;
       pragma Warnings (Off, Res);
       --  Warnings off, since we don't always test the result
 
@@ -205,6 +268,7 @@ package body GNAT.Serial_Communications is
                            or C_Stop_Bits (Stop_Bits)
                            or C_Parity (Parity)
                            or CREAD;
+
       Current.c_iflag := 0;
       Current.c_lflag := 0;
       Current.c_oflag := 0;
@@ -224,10 +288,36 @@ package body GNAT.Serial_Communications is
             Current.c_iflag := Current.c_iflag or IXON;
       end case;
 
-      Current.c_ispeed     := Data_Rate_Value (Rate);
-      Current.c_ospeed     := Data_Rate_Value (Rate);
-      Current.c_cc (VMIN)  := char'Val (0);
-      Current.c_cc (VTIME) := char'Val (Natural (Timeout * 10));
+      Current.c_ispeed := Data_Rate_Value (Rate);
+      Current.c_ospeed := Data_Rate_Value (Rate);
+
+      --  See man termios for descriptions about the different modes
+
+      if Block and then Timeout = 0.0 then
+         --  MIN > 0, TIME == 0 (blocking read)
+         Current.c_cc (VMIN)  := char'Val (1);
+         Current.c_cc (VTIME) := char'Val (0);
+
+      else
+         --  MIN == 0, TIME > 0  (read with timeout)
+         --  MIN == 0, TIME == 0 (polling read)
+         Current.c_cc (VMIN)  := char'Val (0);
+         Current.c_cc (VTIME) := char'Val (Natural (Timeout * 10));
+
+         Current.c_lflag := Current.c_lflag or (not ICANON);
+      end if;
+
+      Res := cfsetispeed (Current'Address, C_Data_Rate (Rate));
+
+      if Res = -1 then
+         Raise_Error ("set: cfsetispeed failed");
+      end if;
+
+      Res := cfsetospeed (Current'Address, C_Data_Rate (Rate));
+
+      if Res = -1 then
+         Raise_Error ("set: cfsetospeed failed");
+      end if;
 
       --  Set port settings
 
@@ -236,7 +326,11 @@ package body GNAT.Serial_Communications is
 
       --  Block
 
-      Res := fcntl (int (Port.H), F_SETFL, (if Block then 0 else FNDELAY));
+      if Block then
+         --  In blocking mode, remove the non-blocking flags set while
+         --  opening the serial port (see Open).
+         Res := fcntl (int (Port.H), F_SETFL, 0);
+      end if;
 
       if Res = -1 then
          Raise_Error ("set: fcntl failed");
