@@ -31,14 +31,13 @@
 
 --  This is the GNU/Linux implementation of this package
 
-with Ada.Streams;                use Ada.Streams;
-with Ada;                        use Ada;
+with Ada.Streams;          use Ada.Streams;
 
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
+with GNAT.OS_Lib;          use GNAT.OS_Lib;
 
 package body GNAT.Serial_Communications is
 
