@@ -1,3 +1,32 @@
+2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/pr64505.c: Run everywhere.  Use correct minimized
+	test case.
+
+2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/loop-2-parallel-3.f95: Adjust.
+
+2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/loop-6.f95: Remove.
+
+2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/goacc/loop-5.f95: Remove.
+
 2020-11-05  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:
