@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-xfail-if "not implemented" { powerpc*-*-darwin* } } */
 /* { dg-options "-O2" } */
 
 #include <assert.h>
