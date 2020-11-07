@@ -12,6 +12,28 @@ namespace Rust {
       public:
         AttrVisitor(MacroExpander& expander) : expander(expander) {}
 
+        void expand_struct_fields(std::vector<AST::StructField>& fields) {
+            for (int i = 0; i < fields.size(); ) {
+                auto& field_attrs = fields[i].get_outer_attrs ();
+                expander.expand_cfg_attrs(field_attrs);
+                if (expander.fails_cfg (field_attrs))
+                    fields.erase (fields.begin() + i);
+                else
+                    i++;
+            }
+        }
+
+        void expand_function_params(std::vector<AST::FunctionParam>& params) {
+            for (int i = 0; i < params.size(); ) {
+                auto& param_attrs = params[i].get_outer_attrs ();
+                expander.expand_cfg_attrs(param_attrs);
+                if (expander.fails_cfg (param_attrs))
+                    params.erase (params.begin() + i);
+                else
+                    i++;
+            }
+        }
+
         void visit(AST::Token& tok) override {}
         void visit(AST::DelimTokenTree& delim_tok_tree) override {}
         void visit(AST::AttrInputMetaItemContainer& input) override {}
@@ -122,10 +144,37 @@ namespace Rust {
         void visit(AST::EnumItemStruct& item) override {}
         void visit(AST::EnumItemDiscriminant& item) override {}
         void visit(AST::Enum& enum_item) override {}
-        void visit(AST::Union& union_item) override {}
-        void visit(AST::ConstantItem& const_item) override {}
-        void visit(AST::StaticItem& static_item) override {
+        void visit(AST::Union& union_item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(union_item.get_outer_attrs());
+            if (expander.fails_cfg(union_item.get_outer_attrs())) {
+                union_item.mark_for_strip();
+                return;
+            }
             
+            /* strip union fields if required - this is presumably
+             * allowed by spec */
+            expand_struct_fields(union_item.get_variants());
+        }
+        void visit(AST::ConstantItem& const_item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(const_item.get_outer_attrs());
+            if (expander.fails_cfg(const_item.get_outer_attrs())) {
+                const_item.mark_for_strip();
+                return;
+            }
+            /* TODO: is there any way to invalidate the expr? Are attributes 
+             * even allowed on it? */
+        }
+        void visit(AST::StaticItem& static_item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(static_item.get_outer_attrs());
+            if (expander.fails_cfg(static_item.get_outer_attrs())) {
+                static_item.mark_for_strip();
+                return;
+            }
+            /* TODO: is there any way to invalidate the expr? Are attributes 
+             * even allowed on it? */
         }
         void visit(AST::TraitItemFunc& item) override {
             // initial test based on outer attrs
@@ -137,14 +186,11 @@ namespace Rust {
 
             /* strip function parameters if required - this is specifically 
              * allowed by spec */
-            auto& params = item.get_function_params();
-            for (int i = 0; i < params.size(); ) {
-                auto& param_attrs = params[i].get_outer_attrs ();
-                expander.expand_cfg_attrs(param_attrs);
-                if (expander.fails_cfg (param_attrs))
-                    params.erase (params.begin() + i);
-                else
-                    i++;
+            expand_function_params(item.get_function_params());
+
+            if (item.has_definition()) {
+                item.get_definition()->accept_vis(*this);
+                // TODO: can block as a whole be invalidated here? Assuming no
             }
         }
         void visit(AST::TraitItemMethod& item) override {
@@ -161,14 +207,11 @@ namespace Rust {
 
             /* strip function parameters if required - this is specifically 
              * allowed by spec */
-            auto& params = item.get_function_params();
-            for (int i = 0; i < params.size(); ) {
-                auto& param_attrs = params[i].get_outer_attrs ();
-                expander.expand_cfg_attrs(param_attrs);
-                if (expander.fails_cfg (param_attrs))
-                    params.erase (params.begin() + i);
-                else
-                    i++;
+            expand_function_params(item.get_function_params());
+
+            if (item.has_definition()) {
+                item.get_definition()->accept_vis(*this);
+                // TODO: can block as a whole be invalidated here? Assuming no
             }
         }
         void visit(AST::TraitItemConst& item) override {
@@ -303,6 +346,9 @@ namespace Rust {
                 else
                     i++;
             }
+            /* NOTE: these are extern function params, which may have different 
+             * rules and restrictions to "normal" function params. So expansion 
+             * handled separately. */
 
             /* TODO: assuming that variadic nature cannot be stripped. If this 
              * is not true, then have code here to do so. */

@@ -1585,9 +1585,12 @@ public:
   // Copy constructor
   StructField (StructField const &other)
     : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      field_name (other.field_name),
-      field_type (other.field_type->clone_type ())
-  {}
+      field_name (other.field_name)
+  {
+    // guard to prevent null dereference
+    if (other.field_type != nullptr)
+      field_type = other.field_type->clone_type ();
+  }
 
   ~StructField () = default;
 
@@ -1595,9 +1598,14 @@ public:
   StructField &operator= (StructField const &other)
   {
     field_name = other.field_name;
-    field_type = other.field_type->clone_type ();
     visibility = other.visibility;
     outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference
+    if (other.field_type != nullptr)
+      field_type = other.field_type->clone_type ();
+    else
+      field_type = nullptr;
 
     return *this;
   }
@@ -1620,6 +1628,10 @@ public:
   }
 
   std::string as_string () const;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 };
 
 // Rust struct declaration with true struct type AST node
@@ -2074,6 +2086,10 @@ public:
   void mark_for_strip () override { union_name = ""; }
   bool is_marked_for_strip () const override { return union_name.empty (); }
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<StructField> &get_variants () { return variants; }
+  const std::vector<StructField> &get_variants () const { return variants; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2420,6 +2436,12 @@ public:
   std::vector<FunctionParam> &get_function_params () { return decl.get_function_params (); }
   const std::vector<FunctionParam> &get_function_params () const { return decl.get_function_params (); }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_definition () {
+    rust_assert (has_definition());
+    return block_expr;
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemFunc *clone_trait_item_impl () const override
@@ -2601,6 +2623,12 @@ public:
 
   std::vector<FunctionParam> &get_function_params () { return decl.get_function_params (); }
   const std::vector<FunctionParam> &get_function_params () const { return decl.get_function_params (); }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_definition () {
+    rust_assert (has_definition());
+    return block_expr;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
