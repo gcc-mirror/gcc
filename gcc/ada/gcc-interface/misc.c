@@ -559,7 +559,7 @@ gnat_printable_name (tree decl, int verbosity)
 
   __gnat_decode (coded_name, ada_name, 0);
 
-  if (verbosity == 2 && !DECL_IS_BUILTIN (decl))
+  if (verbosity == 2 && !DECL_IS_UNDECLARED_BUILTIN (decl))
     {
       Set_Identifier_Casing (ada_name, DECL_SOURCE_FILE (decl));
       return ggc_strdup (Name_Buffer);
