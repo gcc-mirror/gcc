@@ -17,9 +17,9 @@ struct C
     int next;
 };
 
-struct D : A, B, C // { dg-error "context" }
+struct D : A, B, C
 {
-    using B::next;
+    using B::next; // { dg-error "context" }
     void f()
     {
 	next = 12;
