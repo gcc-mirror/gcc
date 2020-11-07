@@ -1,3 +1,11 @@
+2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/pr64505.c: Run everywhere.  Use correct minimized
+	test case.
+
 2020-11-03  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

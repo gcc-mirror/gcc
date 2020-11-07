@@ -1,3 +1,12 @@
+2020-11-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Sync.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* gcc-changelog/test_patches.txt: Likewise.
+	* gcc-changelog/setup.cfg: New file.
+
 2020-07-29  Martin Liska  <mliska@suse.cz>
 
 	* git-backport.py: fix how are ChangeLog paths combined.
