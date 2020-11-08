@@ -1,3 +1,8 @@
+2020-11-07  Martin Uecker  <muecker@gwdg.de>
+
+	* c-parser.c (c_parser_label): Implement mixing of labels and code.
+	(c_parser_all_labels): Likewise.
+
 2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-parser.c (c_parser_objc_at_property_declaration):

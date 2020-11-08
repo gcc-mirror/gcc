@@ -1,3 +1,7 @@
+2020-11-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* generated_cpp_wcwidth.h: Regenerated from Unicode 13.0.0 data.
+
 2020-11-06  Nathan Sidwell  <nathan@acm.org>
 
 	* include/cpplib.h (enum class CPP_time_kind): New.

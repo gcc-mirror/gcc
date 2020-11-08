@@ -1,3 +1,12 @@
+2020-11-07  Liu Hao  <lh_mouse@126.com>
+
+	* libsupc++/cxxabi.h: (__cxa_atexit): mark with _GLIBCXX_CDTOR_CALLABI
+	(__cxa_thread_atexit): ditto
+	* libsupc++/atexit_thread.cc: (__cxa_atexit): mark with
+	_GLIBCXX_CDTOR_CALLABI
+	(__cxa_thread_atexit): ditto
+	(elt): ditto
+
 2020-11-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Tighten up patterns

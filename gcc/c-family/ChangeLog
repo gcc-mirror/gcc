@@ -1,3 +1,15 @@
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-common.c (c_common_reswords): Add 'atomic' property
+	attribute.
+	* c-common.h (enum rid): Add RID_PROPATOMIC for atomic
+	property attributes.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-attribs.c (handle_nsobject_attribute): New.
+	* c.opt: Add WNSObject-attribute.
+
 2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-objc.h (enum objc_property_attribute_group): New

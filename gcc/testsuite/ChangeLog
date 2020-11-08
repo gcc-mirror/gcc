@@ -1,3 +1,45 @@
+2020-11-07  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/Wimplicit-fallthrough-20.c: Adjust dg-warning.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/property/at-property-4.mm: Test atomic property
+	attribute.
+	* objc.dg/property/at-property-4.m: Likewise.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/attributes/nsobject-01.mm: New test.
+	* objc.dg/attributes/nsobject-01.m: New test.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/zero-scratch-regs-10.c: XFAIL for
+	powerpc-darwin.
+	* c-c++-common/zero-scratch-regs-11.c: Likewise.
+	* c-c++-common/zero-scratch-regs-8.c: Likewise.
+	* c-c++-common/zero-scratch-regs-9.c: Likewise.
+
+2020-11-07  Martin Uecker  <muecker@gwdg.de>
+
+	* c-c++-common/attr-fallthrough-2.c: Update compiler flags.
+	* c-c++-common/Wimplicit-fallthrough-20.c: Adapt test.
+	* gcc.dg/20031223-1.c: Update compiler flags and adapt test.
+	* gcc.dg/c11-labels-1.c: New test.
+	* gcc.dg/c11-labels-2.c: New test.
+	* gcc.dg/c11-labels-3.c: New test.
+	* gcc.dg/c2x-attr-syntax-3.c: Adapt test.
+	* gcc.dg/c2x-labels-1.c: New test.
+	* gcc.dg/c2x-labels-2.c: New test.
+	* gcc.dg/c2x-labels-3.c: New test.
+	* gcc.dg/decl-9.c: Update compiler flags and add error.
+	* gcc.dg/gomp/barrier-2.c: Update compiler flags and add warning.
+	* gcc.dg/gomp/declare-simd-5.c: Update compiler flags and adapt test.
+	* gcc.dg/gomp/declare-variant-2.c: Update compiler flags and add error.
+	* gcc.dg/label-compound-stmt-1.c: Update compiler flags.
+	* gcc.dg/parse-decl-after-label.c: Update compiler flags.
+
 2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
 
 	* gcc.target/powerpc/pr64505.c: Run everywhere.  Use correct minimized

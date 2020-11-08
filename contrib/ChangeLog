@@ -1,3 +1,12 @@
+2020-11-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/EastAsianWidth.txt: Update to Unicode 13.0.0.
+	* unicode/PropList.txt: Likewise.
+	* unicode/README: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+	* unicode/from_glibc/unicode_utils.py: Update to latest glibc version.
+	* unicode/from_glibc/utf8_gen.py: Likewise.
+
 2020-11-06  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Add new check.
