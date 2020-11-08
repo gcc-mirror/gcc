@@ -175,40 +175,26 @@ package body System.Value_F is
 
       B : constant Int := Int (Base);
 
-      V : Uns     := Val;
-      S : Integer := ScaleB;
-      E : Uns     := Uns (Extra);
-      N : Int     := Num;
-      D : Int     := Den;
+      V : Uns := Val;
+      E : Uns := Uns (Extra);
 
       Y, Z, Q1, R1, Q2, R2 : Int;
 
    begin
       --  We will use a scaled divide operation for which we must control the
       --  magnitude of operands so that an overflow exception is not unduly
-      --  raised during the computation. The only real concern is the exponent
-      --  ScaleB so first try to reduce its magnitude in an exact manner.
+      --  raised during the computation. The only real concern is the exponent.
 
-      while S < 0 and then (D rem B) = 0 loop
-         D := D / B;
-         S := S + 1;
-      end loop;
-
-      while S > 0 and then (N rem B) = 0 loop
-         N := N / B;
-         S := S - 1;
-      end loop;
-
-      --  If S is still too negative, then drop trailing digits, but preserve
+      --  If ScaleB is too negative, then drop trailing digits, but preserve
       --  the last dropped digit.
 
-      if S < 0 then
+      if ScaleB < 0 then
          declare
-            LS : Integer := -S;
+            LS : Integer := -ScaleB;
 
          begin
-            Y := D;
-            Z := Safe_Expont (B, LS, N);
+            Y := Den;
+            Z := Safe_Expont (B, LS, Num);
 
             for J in 1 .. LS loop
                E := V rem Uns (B);
@@ -216,15 +202,15 @@ package body System.Value_F is
             end loop;
          end;
 
-      --  If S is still too positive, then scale V up, which may then overflow
+      --  If ScaleB is too positive, then scale V up, which may then overflow
 
-      elsif S > 0 then
+      elsif ScaleB > 0 then
          declare
-            LS  : Integer := S;
+            LS  : Integer := ScaleB;
 
          begin
-            Y := Safe_Expont (B, LS, D);
-            Z := N;
+            Y := Safe_Expont (B, LS, Den);
+            Z := Num;
 
             for J in 1 .. LS loop
                if V <= (Uns'Last - E) / Uns (B) then
@@ -236,11 +222,11 @@ package body System.Value_F is
             end loop;
          end;
 
-      --  If S is zero, then proceed directly
+      --  If ScaleB is zero, then proceed directly
 
       else
-         Y := D;
-         Z := N;
+         Y := Den;
+         Z := Num;
       end if;
 
       --  Perform a scaled divide operation with final rounding to match Image
