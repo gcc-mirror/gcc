@@ -123,6 +123,8 @@ static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_attribute (tree *, tree, tree, int, bool *);
 static tree handle_tm_wrap_attribute (tree *, tree, tree, int, bool *);
 static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
+static tree handle_unavailable_attribute (tree *, tree, tree, int,
+					  bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
 					  bool *) ATTRIBUTE_NONNULL(3);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
@@ -406,6 +408,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_novops_attribute, NULL },
   { "deprecated",             0, 1, false, false, false, false,
 			      handle_deprecated_attribute, NULL },
+  { "unavailable",            0, 1, false, false, false, false,
+			      handle_unavailable_attribute, NULL },
   { "vector_size",	      1, 1, false, true, false, true,
 			      handle_vector_size_attribute, NULL },
   { "visibility",	      1, 1, false, false, false, false,
@@ -4097,6 +4101,71 @@ handle_deprecated_attribute (tree *node, tree name,
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	*node = build_variant_type_copy (*node);
       TREE_DEPRECATED (*node) = 1;
+      type = *node;
+    }
+  else
+    warn = 1;
+
+  if (warn)
+    {
+      *no_add_attrs = true;
+      if (type && TYPE_NAME (type))
+	{
+	  if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+	    what = TYPE_NAME (*node);
+	  else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+		   && DECL_NAME (TYPE_NAME (type)))
+	    what = DECL_NAME (TYPE_NAME (type));
+	}
+      if (what)
+	warning (OPT_Wattributes, "%qE attribute ignored for %qE", name, what);
+      else
+	warning (OPT_Wattributes, "%qE attribute ignored", name);
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "unavailable" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_unavailable_attribute (tree *node, tree name,
+			     tree args, int flags,
+			     bool *no_add_attrs)
+{
+  tree type = NULL_TREE;
+  int warn = 0;
+  tree what = NULL_TREE;
+
+  if (!args)
+    *no_add_attrs = true;
+  else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      error ("the message attached to %<unavailable%> is not a string");
+      *no_add_attrs = true;
+    }
+
+  if (DECL_P (*node))
+    {
+      tree decl = *node;
+      type = TREE_TYPE (decl);
+
+      if (TREE_CODE (decl) == TYPE_DECL
+	  || TREE_CODE (decl) == PARM_DECL
+	  || VAR_OR_FUNCTION_DECL_P (decl)
+	  || TREE_CODE (decl) == FIELD_DECL
+	  || TREE_CODE (decl) == CONST_DECL
+	  || objc_method_decl (TREE_CODE (decl)))
+	TREE_UNAVAILABLE (decl) = 1;
+      else
+	warn = 1;
+    }
+  else if (TYPE_P (*node))
+    {
+      if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+	*node = build_variant_type_copy (*node);
+      TREE_UNAVAILABLE (*node) = 1;
       type = *node;
     }
   else

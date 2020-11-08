@@ -12154,6 +12154,78 @@ warn_deprecated_use (tree node, tree attr)
   return w;
 }
 
+/* Error out with an identifier which was marked 'unavailable'. */
+void
+error_unavailable_use (tree node, tree attr)
+{
+  escaped_string msg;
+
+  if (node == 0)
+    return;
+
+  if (!attr)
+    {
+      if (DECL_P (node))
+	attr = DECL_ATTRIBUTES (node);
+      else if (TYPE_P (node))
+	{
+	  tree decl = TYPE_STUB_DECL (node);
+	  if (decl)
+	    attr = lookup_attribute ("unavailable",
+				     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
+	}
+    }
+
+  if (attr)
+    attr = lookup_attribute ("unavailable", attr);
+
+  if (attr)
+    msg.escape (TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
+
+  if (DECL_P (node))
+    {
+      auto_diagnostic_group d;
+      if (msg)
+	error ("%qD is unavailable: %s", node, (const char *) msg);
+      else
+	error ("%qD is unavailable", node);
+      inform (DECL_SOURCE_LOCATION (node), "declared here");
+    }
+  else if (TYPE_P (node))
+    {
+      tree what = NULL_TREE;
+      tree decl = TYPE_STUB_DECL (node);
+
+      if (TYPE_NAME (node))
+	{
+	  if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
+	    what = TYPE_NAME (node);
+	  else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
+		   && DECL_NAME (TYPE_NAME (node)))
+	    what = DECL_NAME (TYPE_NAME (node));
+	}
+
+      auto_diagnostic_group d;
+      if (what)
+	{
+	  if (msg)
+	    error ("%qE is unavailable: %s", what, (const char *) msg);
+	  else
+	    error ("%qE is unavailable", what);
+	}
+      else
+	{
+	  if (msg)
+	    error ("type is unavailable: %s", (const char *) msg);
+	  else
+	    error ("type is unavailable");
+	}
+
+      if (decl)
+	inform (DECL_SOURCE_LOCATION (decl), "declared here");
+    }
+}
+
 /* Return true if REF has a COMPONENT_REF with a bit-field field declaration
    somewhere in it.  */
 

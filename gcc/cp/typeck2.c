@@ -2163,7 +2163,7 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
       type = TREE_TYPE (exp);
 
       if (DECL_ARTIFICIAL (exp))
-	cp_warn_deprecated_use (type);
+	cp_handle_deprecated_or_unavailable (type);
     }
   else
     type = exp;

@@ -956,6 +956,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_DEPRECATED(NODE) \
   ((NODE)->base.deprecated_flag)
 
+/* Nonzero in a _DECL if the use of the name is defined as an
+   unavailable feature by __attribute__((unavailable)).  */
+#define TREE_UNAVAILABLE(NODE) \
+  ((NODE)->base.u.bits.unavailable_flag)
+
 /* Nonzero indicates an IDENTIFIER_NODE that names an anonymous
    aggregate, (as created by anon_aggr_name_format).  */
 #define IDENTIFIER_ANON_P(NODE) \
@@ -5207,6 +5212,7 @@ extern const_tree strip_invariant_refs (const_tree);
 extern tree lhd_gcc_personality (void);
 extern void assign_assembler_name_if_needed (tree);
 extern bool warn_deprecated_use (tree, tree);
+extern void error_unavailable_use (tree, tree);
 extern tree cache_integer_cst (tree, bool might_duplicate = false);
 extern const char *combined_fn_name (combined_fn);
 

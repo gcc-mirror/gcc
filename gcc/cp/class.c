@@ -5719,6 +5719,7 @@ type_build_ctor_call (tree t)
       tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  || TREE_DEPRECATED (fn)
+	  || TREE_UNAVAILABLE (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
     }
@@ -5747,6 +5748,7 @@ type_build_dtor_call (tree t)
       tree fn = *iter;
       if (!DECL_ARTIFICIAL (fn)
 	  || TREE_DEPRECATED (fn)
+	  || TREE_UNAVAILABLE (fn)
 	  || DECL_DELETED_FN (fn))
 	return true;
     }
