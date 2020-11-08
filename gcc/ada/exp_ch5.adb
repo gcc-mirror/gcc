@@ -1469,7 +1469,7 @@ package body Exp_Ch5 is
       --  there are volatile or independent components. If the Prefix of the
       --  slice is a component or slice, then it might be a part of an object
       --  with some other volatile or independent components, so we disable the
-      --  optimization in that case as well.  We could complicate this code by
+      --  optimization in that case as well. We could complicate this code by
       --  actually looking for such volatile and independent components.
 
       if Is_Bit_Packed_Array (L_Type)

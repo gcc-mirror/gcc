@@ -5622,7 +5622,10 @@ package body Sem_Ch8 is
          --  undefined reference. The entry is not added if we are ignoring
          --  errors.
 
-         if not All_Errors_Mode and then Ignore_Errors_Enable = 0 then
+         if not All_Errors_Mode
+           and then Ignore_Errors_Enable = 0
+           and then not Get_Ignore_Errors
+         then
             Urefs.Append (
               (Node => N,
                Err  => Emsg,
@@ -5751,12 +5754,6 @@ package body Sem_Ch8 is
 
          E := Homonym (E);
       end loop;
-
-      --  If we are ignoring errors, skip the error processing
-
-      if Get_Ignore_Errors then
-         return;
-      end if;
 
       --  If no entries on homonym chain that were potentially visible,
       --  and no entities reasonably considered as non-visible, then
