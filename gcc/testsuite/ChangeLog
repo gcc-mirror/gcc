@@ -1,3 +1,12 @@
+2020-11-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-10-21  Martin Liska  <mliska@suse.cz>
+		    Andrew MacLeod  <amacleod@redhat.com>
+
+	PR target/97360
+	* gcc.target/powerpc/pr97360.c: New test.
+
 2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

@@ -1,3 +1,14 @@
+2020-11-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-10-21  Richard Biener  <rguenther@suse.de>
+		    Andrew MacLeod  <amacleod@redhat.com>
+		    Martin Liska  <mliska@suse.cz>
+
+	PR target/97360
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Remove call to
+	build_distinct_type_copy().
+
 2020-11-04  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* config/aarch64/arm_neon.h (__ST2_LANE_FUNC, __ST3_LANE_FUNC)
