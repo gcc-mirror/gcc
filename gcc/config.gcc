@@ -3542,7 +3542,9 @@ esac
 case ${target} in
 *-*-linux*android*|*-*-linux*uclibc*|*-*-linux*musl*)
         ;;
-*-*-linux*)
+*-*-kfreebsd*-gnu | *-*-kopensolaris*-gnu)
+        ;;
+*-*-linux* | *-*-gnu*)
 	case ${target} in
 	aarch64*-* | arm*-* | i[34567]86-* | powerpc*-* | s390*-* | sparc*-* | x86_64-*)
 		default_gnu_indirect_function=yes
