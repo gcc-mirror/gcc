@@ -35,9 +35,7 @@ export_proto(cas_collsub_'$1`_scalar_'rtype_code`);
 
 void
 cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
-			   int *stat __attribute__ ((unused)),
-			   char *errmsg __attribute__ ((unused)),
-			   index_type errmsg_len __attribute__ ((unused)))
+			      	       int *stat, char *errmsg, index_type errmsg_len)
 {
   int cbit = 0;
   int imoffset;
@@ -45,17 +43,21 @@ cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
   'rtype_name` *buffer, *this_image_buf;
   collsub_iface *ci;
 
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
+
+  error_on_missing_images();
+
   ci = &local->ci;
 
-  buffer = get_collsub_buf (ci, sizeof('rtype_name`) * local->num_images);
+  buffer = get_collsub_buf (ci, sizeof('rtype_name`) * local->total_num_images);
   this_image_buf = buffer + this_image.image_num;
   *this_image_buf = *obj;
 
   collsub_sync (ci);
-  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->num_images >> cbit) != 0; cbit++)
+  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->total_num_images >> cbit) != 0; cbit++)
     {
       imoffset = 1 << cbit;
-      if (this_image.image_num + imoffset < local->num_images)
+      if (this_image.image_num + imoffset < local->total_num_images)
 	{
 	  a = this_image_buf;
 	  b = this_image_buf + imoffset;
@@ -63,7 +65,7 @@ cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 	}
       collsub_sync (ci);
     }
-  for ( ; (local->num_images >> cbit) != 0; cbit++)
+  for ( ; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
   if (!result_image || (*result_image - 1) == this_image.image_num)
@@ -81,9 +83,7 @@ export_proto (cas_collsub_'$1`_array_'rtype_code`);
 
 void
 cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
-			   int *stat __attribute__ ((unused)),
-			   char *errmsg __attribute__ ((unused)),
-			   index_type errmsg_len __attribute__ ((unused)))
+			   	      int *stat, char *errmsg, index_type errmsg_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];
@@ -97,6 +97,10 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
   int cbit = 0;
   int imoffset;
   collsub_iface *ci;
+
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
+
+  error_on_missing_images();
 
   ci = &local->ci;
 
@@ -122,7 +126,7 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
 
   num_elems = ssize / sizeof ('rtype_name`);
 
-  buffer = get_collsub_buf (ci, ssize * local->num_images);
+  buffer = get_collsub_buf (ci, ssize * local->total_num_images);
   this_shared_ptr = buffer + this_image.image_num * num_elems;
   
   if (packed)
@@ -171,10 +175,10 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
       a_______b___
       r___________
   */
-  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->num_images >> cbit) != 0; cbit++)
+  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->total_num_images >> cbit) != 0; cbit++)
     {
       imoffset = 1 << cbit;
-      if (this_image.image_num + imoffset < local->num_images)
+      if (this_image.image_num + imoffset < local->total_num_images)
 	{
 	  'rtype_name` * other_shared_ptr;  /* Points to the shared memory
 						allocated to another image.  */
@@ -191,7 +195,7 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
 	}
       collsub_sync (ci);
     }
-  for ( ; (local->num_images >> cbit) != 0; cbit++)
+  for ( ; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
   if (!result_image || (*result_image - 1) == this_image.image_num)

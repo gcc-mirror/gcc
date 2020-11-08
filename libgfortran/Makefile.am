@@ -82,12 +82,12 @@ mylibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libcaf_shared_la_SOURCES = nca/alloc.c nca/allocator.c nca/coarraynative.c \
 	nca/hashmap.c  \
 	nca/sync.c nca/util.c nca/wrapper.c nca/collective_subroutine.c \
-	nca/shared_memory.c \
+	nca/shared_memory.c nca/counter_barrier.c \
 	$(i_nca_minmax_c) $(i_nca_minmax_s_c)
 libcaf_shared_la_DEPENDENCIES = nca/alloc.h nca/allocator.h nca/hashmap.h
 	nca/libcoarraynative.h nca/sync.h shared_memory.h \
 	nca/util.h nca/lock.h nca/collective_subroutine.h\
-	nca/collective_inline.h
+	nca/collective_inline.h nca/counter_barrier.h
 libcaf_shared_la_LINK = $(LINK) $(libcaf_shared_la_LDFLAGS)
 endif
 

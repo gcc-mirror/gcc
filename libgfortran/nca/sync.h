@@ -25,10 +25,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef IPSYNC_HDR
 #define IPSYNC_HDR
 
+#include "shared_memory.h"
+#include "alloc.h"
+#include "counter_barrier.h"
 #include <pthread.h>
 
 typedef struct {
-  pthread_barrier_t sync_all;
+  counter_barrier sync_all;
   pthread_mutex_t table_lock;
   shared_mem_ptr table;
   shared_mem_ptr triggers;

@@ -11098,34 +11098,42 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
     }
 }
 
-/* Helper function - translate an argument and advance to the next.  
-   Coarrays are irrelevant here, since we just translate normal arguments.  */
+/* Helper function - translate an argument and advance to the next.
+   Coarrays are irrelevant here, since we just translate normal
+   arguments.  */
 
 static tree
 trans_argument (gfc_actual_arglist **curr_al, stmtblock_t *blk,
 	        stmtblock_t *postblk, gfc_se *argse, tree def)
 {
-  if (!(*curr_al)->expr)
+  gfc_expr *expr = (*curr_al)->expr;
+
+  *curr_al = (*curr_al)->next;
+
+  if (expr == NULL)
     return def;
-  if ((*curr_al)->expr->rank > 0)
-    gfc_conv_expr_descriptor (argse, (*curr_al)->expr);
+
+  if (expr->rank > 0)
+    gfc_conv_expr_descriptor (argse, expr);
   else
-    gfc_conv_expr (argse, (*curr_al)->expr);
+    gfc_conv_expr (argse, expr);
+
   gfc_add_block_to_block (blk, &argse->pre);
   gfc_add_block_to_block (postblk, &argse->post);
-  *curr_al = (*curr_al)->next;
+
   return argse->expr;
 }
 
-/* Convert CO_REDUCE for native coarrays.  */
+/* Convert CO_REDUCE for shared coarrays.  */
 
 static tree
 conv_cas_reduce (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
 {
   gfc_actual_arglist *curr_al;
-  tree var, reduce_op, result_image, elem_size;
+  tree var, reduce_op, result_image, elem_size, stat, errmsg, errmsg_len;
   gfc_se argse;
   int is_array;
+  bool has_errmsg;
 
   curr_al = code->ext.actual;
 
@@ -11144,14 +11152,34 @@ conv_cas_reduce (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
   argse.want_pointer = 1;
   result_image = trans_argument (&curr_al, blk, postblk, &argse,
 				 null_pointer_node);
-  
+
+  gfc_init_se (&argse, NULL);
+  argse.want_pointer = 1;
+  stat = trans_argument (&curr_al, blk, postblk, &argse, null_pointer_node);
+
+  has_errmsg = curr_al->expr != NULL;
+  gfc_init_se (&argse, NULL);
+  argse.want_pointer = 1;
+  errmsg = trans_argument (&curr_al, blk, postblk, &argse, null_pointer_node);
+
+  if (has_errmsg)
+    {
+      errmsg_len = fold_convert (size_type_node, argse.string_length);
+    }
+  else
+    {
+      errmsg_len = build_zero_cst (size_type_node);
+    }
+
   if (is_array)
     return build_call_expr_loc (input_location, gfor_fndecl_cas_reduce_array,
-				3, var, reduce_op, result_image);
+				6, var, reduce_op, result_image, stat, errmsg,
+				errmsg_len);
 
   elem_size = size_in_bytes(TREE_TYPE(TREE_TYPE(var)));
-  return build_call_expr_loc (input_location, gfor_fndecl_cas_reduce_scalar, 4,
-			      var, elem_size, reduce_op, result_image);
+  return build_call_expr_loc (input_location, gfor_fndecl_cas_reduce_scalar, 7,
+			      var, elem_size, reduce_op, result_image, stat,
+			      errmsg, errmsg_len);
 }
 
 static tree
@@ -11184,7 +11212,7 @@ conv_cas_broadcast (gfc_code *code, stmtblock_t *blk, stmtblock_t *postblk)
 
 static tree conv_co_collective (gfc_code *);
 
-/* Convert collective subroutines for native coarrays.  */
+/* Convert collective subroutines for shared coarrays.  */
 
 static tree
 conv_cas_collective (gfc_code *code)
@@ -11336,7 +11364,7 @@ conv_co_collective (gfc_code *code)
       errmsg_len = build_zero_cst (size_type_node);
     }
 
-  /* For native coarrays, we only come here for CO_BROADCAST.  */
+  /* For shared coarrays, we only come here for CO_BROADCAST.  */
 
   gcc_assert (code->resolved_isym->id == GFC_ISYM_CO_BROADCAST
 	      || flag_coarray != GFC_FCOARRAY_SHARED);

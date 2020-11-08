@@ -29,13 +29,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 
 static void
-sync_all_init (pthread_barrier_t *b)
+sync_all_init (counter_barrier *b)
 {
-  pthread_barrierattr_t battr;
-  pthread_barrierattr_init (&battr);
-  pthread_barrierattr_setpshared (&battr, PTHREAD_PROCESS_SHARED);
-  pthread_barrier_init (b, &battr, local->num_images);
-  pthread_barrierattr_destroy (&battr);
+  master_bind_active_image_barrier(this_image.m, b);
 }
 
 static inline void
@@ -76,17 +72,18 @@ sync_iface_init (sync_iface *si, alloc_iface *ai, shared_memory *sm)
   si->a = get_allocator(ai);
 
   si->cis->table = 
-  	shared_malloc(si->a, sizeof(int)*local->num_images * local->num_images);
+  	shared_malloc(si->a, sizeof(int)*local->total_num_images * local->total_num_images);
   si->cis->triggers = 
-	shared_malloc(si->a, sizeof(pthread_cond_t)*local->num_images);
+	shared_malloc(si->a, sizeof(pthread_cond_t)*local->total_num_images);
 
   si->table = SHMPTR_AS(int *, si->cis->table, si->sm);
   si->triggers = SHMPTR_AS(pthread_cond_t *, si->cis->triggers, si->sm);
 
-  for (int i = 0; i < local->num_images; i++)
+  for (int i = 0; i < local->total_num_images; i++)
     initialize_shared_condition (&si->triggers[i]);
 }
 
+/* TODO: Maybe check whether synchronizing image is still alive.  */
 void
 sync_table (sync_iface *si, int *images, size_t size)
 {
@@ -101,15 +98,15 @@ sync_table (sync_iface *si, int *images, size_t size)
   int *table = get_locked_table(si);
   for (i = 0; i < size; i++)
     {
-      table[images[i] - 1 + local->num_images*this_image.image_num]++;
+      table[images[i] - 1 + local->total_num_images*this_image.image_num]++;
       pthread_cond_signal (&si->triggers[images[i] - 1]);
     }
   for (;;)
     {
       done = 1;
       for (i = 0; i < size; i++)
-	done &= si->table[images[i] - 1 + this_image.image_num*local->num_images]
-	  == si->table[this_image.image_num + (images[i] - 1)*local->num_images];
+	done &= si->table[images[i] - 1 + this_image.image_num*local->total_num_images]
+	  == si->table[this_image.image_num + (images[i] - 1)*local->total_num_images];
       if (done)
 	break;
       wait_table_cond (si, &si->triggers[this_image.image_num]);
@@ -120,6 +117,5 @@ sync_table (sync_iface *si, int *images, size_t size)
 void
 sync_all (sync_iface *si)
 {
-
-  pthread_barrier_wait (&si->cis->sync_all);
+  counter_barrier_wait(&si->cis->sync_all);
 }

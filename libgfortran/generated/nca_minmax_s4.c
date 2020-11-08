@@ -70,19 +70,23 @@ cas_collsub_max_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
   collsub_iface *ci;
   index_type type_size;
 
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
+
+  error_on_missing_images();
+
   ci = &local->ci;
 
   type_size = char_len * sizeof (GFC_UINTEGER_4);
-  buffer = get_collsub_buf (ci, type_size * local->num_images);
+  buffer = get_collsub_buf (ci, type_size * local->total_num_images);
   this_image_buf = buffer + this_image.image_num * char_len;
   memcpy (this_image_buf, obj, type_size);
 
   collsub_sync (ci);
   for (; ((this_image.image_num >> cbit) & 1) == 0
-    && (local->num_images >> cbit) != 0; cbit++)
+    && (local->total_num_images >> cbit) != 0; cbit++)
     {
       imoffset = 1 << cbit;
-      if (this_image.image_num + imoffset < local->num_images)
+      if (this_image.image_num + imoffset < local->total_num_images)
 	{
 	  a = this_image_buf;
 	  b = this_image_buf + imoffset * char_len;
@@ -94,7 +98,7 @@ cas_collsub_max_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
   /* All images have to execute the same number of collsub_sync, otherwise
      some images will hang.  Here, we execute the missing ones for images
      that are not needed anymore in the main loop.  */
-  for ( ; (local->num_images >> cbit) != 0; cbit++)
+  for ( ; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
   if (!result_image || (*result_image - 1) == this_image.image_num)
@@ -125,19 +129,23 @@ cas_collsub_min_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
   collsub_iface *ci;
   index_type type_size;
 
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
+
+  error_on_missing_images();
+
   ci = &local->ci;
 
   type_size = char_len * sizeof (GFC_UINTEGER_4);
-  buffer = get_collsub_buf (ci, type_size * local->num_images);
+  buffer = get_collsub_buf (ci, type_size * local->total_num_images);
   this_image_buf = buffer + this_image.image_num * char_len;
   memcpy (this_image_buf, obj, type_size);
 
   collsub_sync (ci);
   for (; ((this_image.image_num >> cbit) & 1) == 0
-    && (local->num_images >> cbit) != 0; cbit++)
+    && (local->total_num_images >> cbit) != 0; cbit++)
     {
       imoffset = 1 << cbit;
-      if (this_image.image_num + imoffset < local->num_images)
+      if (this_image.image_num + imoffset < local->total_num_images)
 	{
 	  a = this_image_buf;
 	  b = this_image_buf + imoffset * char_len;
@@ -149,7 +157,7 @@ cas_collsub_min_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
   /* All images have to execute the same number of collsub_sync, otherwise
      some images will hang.  Here, we execute the missing ones for images
      that are not needed anymore in the main loop.  */
-  for ( ; (local->num_images >> cbit) != 0; cbit++)
+  for ( ; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
   if (!result_image || (*result_image - 1) == this_image.image_num)
@@ -169,10 +177,8 @@ export_proto (cas_collsub_max_array_s4);
 
 void
 cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
-			  int *stat __attribute__ ((unused)),
-			  char *errmsg __attribute__ ((unused)),
-			  index_type char_len,
-			  index_type errmsg_len __attribute__ ((unused)))
+			  	     int *stat, char *errmsg, index_type char_len, 
+				     index_type errmsg_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];  /* Store byte-based strides here.  */
@@ -187,6 +193,10 @@ cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
   int imoffset;
   index_type type_size;
   collsub_iface *ci;
+
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
+
+  error_on_missing_images();
 
   ci = &local->ci;
 
@@ -212,7 +222,7 @@ cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
     }
 
   ssize = num_elems * type_size;
-  buffer = get_collsub_buf (ci, ssize * local->num_images);
+  buffer = get_collsub_buf (ci, ssize * local->total_num_images);
   this_shared_ptr = buffer + this_image.image_num * ssize;
 
   if (packed)
@@ -264,10 +274,10 @@ cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
       r___________
   */
   for (; ((this_image.image_num >> cbit) & 1) == 0
-    && (local->num_images >> cbit) != 0; cbit++)
+    && (local->total_num_images >> cbit) != 0; cbit++)
     {
       imoffset = 1 << cbit;
-      if (this_image.image_num + imoffset < local->num_images)
+      if (this_image.image_num + imoffset < local->total_num_images)
 	{
 	  char *other_shared_ptr;  /* Points to the shared memory
 				      allocated to another image.  */
@@ -285,7 +295,7 @@ cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
 	}
       collsub_sync (ci);
     }
-  for ( ; (local->num_images >> cbit) != 0; cbit++)
+  for ( ; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
   if (!result_image || (*result_image - 1) == this_image.image_num)
@@ -336,10 +346,8 @@ export_proto (cas_collsub_min_array_s4);
 
 void
 cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
-			  int *stat __attribute__ ((unused)),
-			  char *errmsg __attribute__ ((unused)),
-			  index_type char_len,
-			  index_type errmsg_len __attribute__ ((unused)))
+			  	     int *stat, char *errmsg, index_type char_len, 
+				     index_type errmsg_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];  /* Store byte-based strides here.  */
@@ -354,6 +362,10 @@ cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
   int imoffset;
   index_type type_size;
   collsub_iface *ci;
+
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
+
+  error_on_missing_images();
 
   ci = &local->ci;
 
@@ -379,7 +391,7 @@ cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
     }
 
   ssize = num_elems * type_size;
-  buffer = get_collsub_buf (ci, ssize * local->num_images);
+  buffer = get_collsub_buf (ci, ssize * local->total_num_images);
   this_shared_ptr = buffer + this_image.image_num * ssize;
 
   if (packed)
@@ -431,10 +443,10 @@ cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
       r___________
   */
   for (; ((this_image.image_num >> cbit) & 1) == 0
-    && (local->num_images >> cbit) != 0; cbit++)
+    && (local->total_num_images >> cbit) != 0; cbit++)
     {
       imoffset = 1 << cbit;
-      if (this_image.image_num + imoffset < local->num_images)
+      if (this_image.image_num + imoffset < local->total_num_images)
 	{
 	  char *other_shared_ptr;  /* Points to the shared memory
 				      allocated to another image.  */
@@ -452,7 +464,7 @@ cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
 	}
       collsub_sync (ci);
     }
-  for ( ; (local->num_images >> cbit) != 0; cbit++)
+  for ( ; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
   if (!result_image || (*result_image - 1) == this_image.image_num)

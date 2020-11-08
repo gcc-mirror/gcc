@@ -69,19 +69,19 @@ void cas_unlock (void *);
 export_proto (cas_unlock);
 
 void cas_collsub_reduce_array (gfc_array_char *, void (*) (void *, void *),
-			       int *);
+			       int *, int*, char *, size_t);
 export_proto (cas_collsub_reduce_array);
 
 void cas_collsub_reduce_scalar (void *, index_type, void (*) (void *, void *),
-				int *);
+				int *, int*, char *, size_t);
 export_proto (cas_collsub_reduce_scalar);
 
-void cas_collsub_broadcast_array (gfc_array_char * restrict, int/*, int *, char *, 
-			     size_t*/);
+void cas_collsub_broadcast_array (gfc_array_char * restrict, int, int *, char *, 
+			     	  size_t);
 export_proto (cas_collsub_broadcast_array);
 
-void cas_collsub_broadcast_scalar (void * restrict, size_t, int/*, int *, char *, 
-			      size_t*/);
+void cas_collsub_broadcast_scalar (void * restrict, size_t, int, int *, char *, 
+			      	   size_t);
 export_proto(cas_collsub_broadcast_scalar);
 
 void
@@ -115,7 +115,7 @@ cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
       num_coarray_elems *= GFC_DESCRIPTOR_EXTENT(desc, i);
     }
 
-  extent_last_codimen = div_ru (local->num_images, num_coarray_elems);
+  extent_last_codimen = div_ru (local->total_num_images, num_coarray_elems);
 
   last_lbound = GFC_DIMENSION_LBOUND(desc->dim[last_rank_index]);
   GFC_DIMENSION_SET(desc->dim[last_rank_index], last_lbound,
@@ -143,7 +143,7 @@ cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
 					   __ATOMIC_SEQ_CST));
       if (!addr->initialized++)
 	{
-	  for (i = 0; i < local->num_images; i++)
+	  for (i = 0; i < local->total_num_images; i++)
 	    initialize_shared_mutex (&addr->arr[i]);
 	}
       __atomic_store_n (&addr->owner, 0, __ATOMIC_SEQ_CST);
@@ -165,6 +165,7 @@ cas_coarray_free (gfc_array_void *desc, int alloc_type)
       lock_array *la;
       int expected = 0;
       la = desc->base_addr - offsetof (lock_array, arr);
+      /* TODO: Fix this, replace with some kind of atomic initilization.  */
       while (!__atomic_compare_exchange_n (&la->owner, &expected,
 					   this_image.image_num+1,
 					   false, __ATOMIC_SEQ_CST,
@@ -173,7 +174,7 @@ cas_coarray_free (gfc_array_void *desc, int alloc_type)
 	 {
 	  /* Coarray locks can be removed and just normal
 	     pthread_mutex can be used.	 */
-	   for (i = 0; i < local->num_images; i++)
+	   for (i = 0; i < local->total_num_images; i++)
 	     pthread_mutex_destroy (&la->arr[i]);
 	 }
       __atomic_store_n (&la->owner, 0, __ATOMIC_SEQ_CST);
@@ -194,21 +195,20 @@ cas_coarray_this_image (int distance __attribute__((unused)))
 int
 cas_coarray_num_images (int distance __attribute__((unused)))
 {
-  return local->num_images;
+  return local->total_num_images;
 }
 
 void
-cas_coarray_sync_all (int *stat __attribute__((unused)))
+cas_coarray_sync_all (int *stat)
 {
+  STAT_ERRMSG_ENTRY_CHECK(stat, NULL, 0);
   sync_all (&local->si);
 }
 
 void
-cas_sync_images (size_t s, int *images,
-			  int *stat __attribute__((unused)),
-			  char *error __attribute__((unused)),
-			  size_t err_size __attribute__((unused)))
+cas_sync_images (size_t s, int *images, int *stat, char *error, size_t err_size)
 {
+  STAT_ERRMSG_ENTRY_CHECK(stat, error, err_size); 
   sync_table (&local->si, images, s);
 }
 
@@ -226,33 +226,34 @@ cas_unlock (void *lock)
 
 void
 cas_collsub_reduce_array (gfc_array_char *desc, void (*assign_function) (void *, void *),
-			  int *result_image)
+			  int *result_image, int *stat, char *errmsg, size_t errmsg_len)
 {
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
   collsub_reduce_array (&local->ci, desc, result_image, assign_function);
 }
 
 void
 cas_collsub_reduce_scalar (void *obj, index_type elem_size,
 			   void (*assign_function) (void *, void *),
-			   int *result_image)
+			   int *result_image,
+			   int *stat, char *errmsg, size_t errmsg_len)
 {
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
   collsub_reduce_scalar (&local->ci, obj, elem_size, result_image, assign_function);
 }
 
 void
-cas_collsub_broadcast_array (gfc_array_char * restrict a, int source_image 
-		  /* , int *stat __attribute__ ((unused)), 
-		  char *errmsg __attribute__ ((unused)),
-		  size_t errmsg_len __attribute__ ((unused))*/)
+cas_collsub_broadcast_array (gfc_array_char * restrict a, int source_image,
+		  	     int *stat, char *errmsg, size_t errmsg_len)
 {
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
   collsub_broadcast_array (&local->ci, a, source_image - 1);
 }
 
 void
-cas_collsub_broadcast_scalar (void * restrict obj, size_t size, int source_image/*,
-		  int *stat __attribute__((unused)),
-		   char *errmsg __attribute__ ((unused)),
-		  size_t errmsg_len __attribute__ ((unused))*/)
+cas_collsub_broadcast_scalar (void * restrict obj, size_t size, int source_image,
+		    	      int *stat, char *errmsg, size_t errmsg_len)
 {
+  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len); 
   collsub_broadcast_scalar (&local->ci, obj, size, source_image - 1);
 }

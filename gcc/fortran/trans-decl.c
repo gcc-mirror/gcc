@@ -460,7 +460,7 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
     return get_identifier (sym->binding_label);
 
   if ((sym->module == NULL || sym->attr.proc == PROC_EXTERNAL
-      || (sym->module != NULL && (sym->attr.external
+       || (sym->module != NULL && (sym->attr.external
 	    || sym->attr.if_source == IFSRC_IFBODY)))
       && !sym->attr.module_procedure)
     {
@@ -4141,39 +4141,52 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("cas_coarray_sync_all")), ". X ", void_type_node, 1,
 	build_pointer_type (integer_type_node), NULL_TREE);
       gfor_fndecl_cas_sync_images = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("cas_sync_images")), ". R R X X X ",
+	get_identifier (PREFIX("cas_sync_images")), ". R R w w . ",
 	void_type_node,
 	5, integer_type_node, pint_type, pint_type,
-	pchar_type_node, size_type_node, NULL_TREE);
+	pchar_type_node, size_type_node);
       gfor_fndecl_cas_lock = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("cas_lock")), ". w ", void_type_node, 1,
-	pvoid_type_node, NULL_TREE);
+	pvoid_type_node);
       gfor_fndecl_cas_unlock = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("cas_unlock")), ". w ", void_type_node, 1,
-	pvoid_type_node, NULL_TREE);
+	pvoid_type_node);
 
       gfor_fndecl_cas_reduce_scalar =
 	gfc_build_library_function_decl_with_spec (
-	  get_identifier (PREFIX("cas_collsub_reduce_scalar")), ". w r W ",
-	  void_type_node, 3, pvoid_type_node,
+	  get_identifier (PREFIX("cas_collsub_reduce_scalar")), ". w . r r w w . ",
+	  void_type_node, 7, pvoid_type_node,  /* object.  */
+	  size_type_node,	/* elem_size.  */
 	  build_pointer_type (build_function_type_list (void_type_node,
-	      pvoid_type_node, pvoid_type_node, NULL_TREE)),
-	  pint_type, NULL_TREE);
+	      pvoid_type_node, pvoid_type_node, NULL_TREE)), /* assign function.  */
+	  pint_type,	/* result_image.  */
+	  pint_type,	/* stat.  */
+	  pchar_type_node,	/* errmsg.  */
+	  size_type_node	/* errmsg_len.  */);
 
       gfor_fndecl_cas_reduce_array = 
 	gfc_build_library_function_decl_with_spec (
-	  get_identifier (PREFIX("cas_collsub_reduce_array")), ". w r W R ",
-	  void_type_node, 4, pvoid_type_node,
+	  get_identifier (PREFIX("cas_collsub_reduce_array")), ". W r r w w . ",
+	  void_type_node, 6, pvoid_type_node /* desc.  */,
 	  build_pointer_type (build_function_type_list (void_type_node,
-	      pvoid_type_node, pvoid_type_node, NULL_TREE)),
-	  pint_type, integer_type_node, NULL_TREE);
+	      pvoid_type_node, pvoid_type_node, NULL_TREE)) /* assign function.  */,
+	  pint_type,	/* result_image.  */ 
+	  pint_type,	/* stat.  */
+	  pchar_type_node,	/* errmsg.  */
+	  size_type_node	/* errmsg_len.  */  );
 
       gfor_fndecl_cas_broadcast_scalar = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX ("cas_collsub_broadcast_scalar")), ". w . . ",
-	void_type_node, 3, pvoid_type_node, size_type_node, integer_type_node);
+	get_identifier (PREFIX ("cas_collsub_broadcast_scalar")), ". w . . w w . ",
+	void_type_node, 6, pvoid_type_node, size_type_node, integer_type_node,
+	  pint_type,	/* stat.  */
+	  pchar_type_node,	/* errmsg.  */
+	  size_type_node	/* errmsg_len.  */  );
       gfor_fndecl_cas_broadcast_array = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX ("cas_collsub_broadcast_array")), ". W . ",
-	void_type_node, 2, pvoid_type_node, integer_type_node);
+	get_identifier (PREFIX ("cas_collsub_broadcast_array")), ". W . w w . ",
+	void_type_node, 5, pvoid_type_node, integer_type_node,
+	  pint_type,	/* stat.  */
+	  pchar_type_node,	/* errmsg.  */
+	  size_type_node	/* errmsg_len.  */  );
     }
 
 

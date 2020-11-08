@@ -83,4 +83,6 @@ internal_proto (pack_array_finish);
 
 void unpack_array_finish (pack_info * const restrict, const gfc_array_char * const,
 			  const char * restrict);
+internal_proto (unpack_array_finish);
+
 #endif

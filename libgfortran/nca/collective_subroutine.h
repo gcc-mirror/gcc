@@ -8,7 +8,7 @@ typedef struct collsub_iface_shared
 {
   size_t curr_size;
   shared_mem_ptr collsub_buf;
-  pthread_barrier_t barrier;
+  counter_barrier barrier;
   pthread_mutex_t mutex;
 } collsub_iface_shared;
 

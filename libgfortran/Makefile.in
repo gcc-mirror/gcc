@@ -230,8 +230,9 @@ am__objects_2 = nca_minmax_s1.lo nca_minmax_s4.lo
 @LIBGFOR_NATIVE_COARRAY_TRUE@	hashmap.lo sync.lo util.lo \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	wrapper.lo \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	collective_subroutine.lo \
-@LIBGFOR_NATIVE_COARRAY_TRUE@	shared_memory.lo $(am__objects_1) \
-@LIBGFOR_NATIVE_COARRAY_TRUE@	$(am__objects_2)
+@LIBGFOR_NATIVE_COARRAY_TRUE@	shared_memory.lo \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	counter_barrier.lo \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	$(am__objects_1) $(am__objects_2)
 libcaf_shared_la_OBJECTS = $(am_libcaf_shared_la_OBJECTS)
 @LIBGFOR_NATIVE_COARRAY_TRUE@am_libcaf_shared_la_rpath = -rpath \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	$(mylibdir)
@@ -788,7 +789,7 @@ i_nca_minmax_s_c = \
 @LIBGFOR_NATIVE_COARRAY_TRUE@libcaf_shared_la_SOURCES = nca/alloc.c nca/allocator.c nca/coarraynative.c \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	nca/hashmap.c  \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	nca/sync.c nca/util.c nca/wrapper.c nca/collective_subroutine.c \
-@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/shared_memory.c \
+@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/shared_memory.c nca/counter_barrier.c \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	$(i_nca_minmax_c) $(i_nca_minmax_s_c)
 
 @LIBGFOR_NATIVE_COARRAY_TRUE@libcaf_shared_la_DEPENDENCIES = nca/alloc.h nca/allocator.h nca/hashmap.h
@@ -1840,6 +1841,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_2_l.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_4_l.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_8_l.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/counter_barrier.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu_time.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0_c10.Plo@am__quote@
@@ -2900,6 +2902,13 @@ shared_memory.lo: nca/shared_memory.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/shared_memory.c' object='shared_memory.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shared_memory.lo `test -f 'nca/shared_memory.c' || echo '$(srcdir)/'`nca/shared_memory.c
+
+counter_barrier.lo: nca/counter_barrier.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT counter_barrier.lo -MD -MP -MF $(DEPDIR)/counter_barrier.Tpo -c -o counter_barrier.lo `test -f 'nca/counter_barrier.c' || echo '$(srcdir)/'`nca/counter_barrier.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/counter_barrier.Tpo $(DEPDIR)/counter_barrier.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nca/counter_barrier.c' object='counter_barrier.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o counter_barrier.lo `test -f 'nca/counter_barrier.c' || echo '$(srcdir)/'`nca/counter_barrier.c
 
 nca_minmax_i1.lo: $(srcdir)/generated/nca_minmax_i1.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT nca_minmax_i1.lo -MD -MP -MF $(DEPDIR)/nca_minmax_i1.Tpo -c -o nca_minmax_i1.lo `test -f '$(srcdir)/generated/nca_minmax_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/nca_minmax_i1.c
@@ -7235,7 +7244,7 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 @LIBGFOR_NATIVE_COARRAY_TRUE@	nca/libcoarraynative.h nca/sync.h shared_memory.h \
 @LIBGFOR_NATIVE_COARRAY_TRUE@	nca/util.h nca/lock.h nca/collective_subroutine.h\
-@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/collective_inline.h
+@LIBGFOR_NATIVE_COARRAY_TRUE@	nca/collective_inline.h nca/counter_barrier.h
 
 # Turn on vectorization and loop unrolling for matmul.
 $(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ffast-math -ftree-vectorize -funroll-loops --param max-unroll-times=4

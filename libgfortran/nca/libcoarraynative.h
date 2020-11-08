@@ -38,11 +38,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "sync.h"
 #include "util.h"
 #include "collective_subroutine.h"
+#include "counter_barrier.h"
 
-typedef struct {
-  pthread_barrier_t barrier;
-  int maximg;
-} ipcollsub;
+/* Defnitions of the Fortran 2008 standard; need to be kept in sync
+   with ISO_FORTRAN_ENV, cf. gcc/fortran/libgfortran.h.  */
+typedef enum
+{
+  CAS_STAT_UNLOCKED = 0,
+  CAS_STAT_LOCKED,
+  CAS_STAT_LOCKED_OTHER_IMAGE,
+  CAS_STAT_STOPPED_IMAGE = 6000,
+  CAS_STAT_FAILED_IMAGE  = 6001
+} stat_constants;
 
 typedef enum {
   IMAGE_UNKNOWN = 0,
@@ -52,14 +59,17 @@ typedef enum {
 } image_status;
 
 typedef struct {
-  image_status status;
   pid_t pid;
+  image_status status;
+  int active_image_index;
 } image_tracker;
 
 typedef struct {
-  int has_failed_image;
-  int finished_images;
-  image_tracker images[];
+  volatile int has_failed_image;
+  volatile int finished_images;
+  waitable_counter num_active_images;
+  pthread_mutex_t image_tracker_lock;
+  volatile image_tracker images[];
 } master;
 
 typedef struct {
@@ -70,7 +80,7 @@ typedef struct {
 extern image this_image;
 
 typedef struct {
-  int num_images;
+  int total_num_images;
   shared_memory sm;
   alloc_iface ai;
   collsub_iface ci;
@@ -81,6 +91,33 @@ extern nca_local_data *local;
 internal_proto (local);
 void ensure_initialization(void);
 internal_proto(ensure_initialization);
+
+int test_for_cas_errors(int *, char *, size_t);
+internal_proto(test_for_cas_errors);
+
+int master_get_num_active_images(master *m);
+internal_proto(master_get_num_active_images);
+
+void master_bind_active_image_barrier (master *m, counter_barrier *);
+internal_proto(master_bind_active_image_barrier);
+
+int master_is_image_active(master *m, int image_num);
+internal_proto(master_is_image_active);
+
+void error_on_missing_images(void);
+internal_proto(error_on_missing_images);
+
+#define STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len) \
+	do { \
+	  if (test_for_cas_errors(stat, errmsg, errmsg_len))\
+	    return;\
+  	} while(0)
+
+#define STAT_ERRMSG_ENTRY_CHECK_RET(stat, errmsg, errmsg_len, retval) \
+	do { \
+	  if (test_for_cas_errors(stat, errmsg, errmsg_len))\
+	    return retval;\
+  	} while(0)
 
 void cas_master(void (*)(void));
 export_proto (cas_master);

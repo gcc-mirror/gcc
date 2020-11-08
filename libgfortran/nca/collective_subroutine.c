@@ -23,9 +23,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
+#include <string.h>
 #include "libcoarraynative.h"
 #include "collective_subroutine.h"
 #include "allocator.h"
+#include "counter_barrier.h"
 
 #include <string.h>
 
@@ -56,7 +58,7 @@ get_collsub_buf (collsub_iface *ci, size_t size)
 void
 collsub_sync (collsub_iface *ci)
 {
-  pthread_barrier_wait (&ci->s->barrier);
+  counter_barrier_wait (&ci->s->barrier);
 }
 
 
@@ -83,6 +85,8 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image
   index_type this_image_size_bytes;
   char *this_image_buf;
 
+  error_on_missing_images();
+
   packed = pack_array_prepare (&pi, desc);
   if (pi.num_elem == 0)
     return;
@@ -90,7 +94,7 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image
   elem_size = GFC_DESCRIPTOR_SIZE (desc);
   this_image_size_bytes = elem_size * pi.num_elem;
 
-  buffer = get_collsub_buf (ci, this_image_size_bytes * local->num_images);
+  buffer = get_collsub_buf (ci, this_image_size_bytes * local->total_num_images);
   this_image_buf = buffer + this_image_size_bytes * this_image.image_num;
 
   if (packed)
@@ -99,10 +103,12 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image
     pack_array_finish (&pi, desc, this_image_buf);
 
   collsub_sync (ci);
-  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->num_images >> cbit) != 0; cbit++) 
+  
+
+  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->total_num_images >> cbit) != 0; cbit++) 
     {
       imoffset = 1 << cbit;
-      if (this_image.image_num + imoffset < local->num_images)
+      if (this_image.image_num + imoffset < local->total_num_images)
 	/* Reduce arrays elementwise.  */
 	for (ssize_t i = 0; i < pi.num_elem; i++) 
 	  assign_function (this_image_buf + elem_size * i,
@@ -110,7 +116,7 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image
  
       collsub_sync (ci);
     }
-  for ( ; (local->num_images >> cbit) != 0; cbit++)
+  for ( ; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
   
   if (!result_image || *result_image == this_image.image_num)
@@ -134,22 +140,26 @@ collsub_reduce_scalar (collsub_iface *ci, void *obj, index_type elem_size,
   int imoffset;
   char *this_image_buf;
 
-  buffer = get_collsub_buf (ci, elem_size * local->num_images);
+  error_on_missing_images();
+
+  buffer = get_collsub_buf (ci, elem_size * master_get_num_active_images(this_image.m));
   this_image_buf = buffer + elem_size * this_image.image_num;
 
   memcpy (this_image_buf, obj, elem_size);
+  
 
   collsub_sync (ci);
-  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->num_images >> cbit) != 0; cbit++) 
+  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->total_num_images >> cbit) != 0; cbit++) 
     {
       imoffset = 1 << cbit;
-      if (this_image.image_num + imoffset < local->num_images)
+       
+      if (this_image.image_num + imoffset < local->total_num_images) {
 	/* Reduce arrays elementwise.  */
-	assign_function (this_image_buf, this_image_buf + elem_size*imoffset);
- 
+	  assign_function (this_image_buf, this_image_buf + elem_size*imoffset);
+      }
       collsub_sync (ci);
     }
-  for ( ; (local->num_images >> cbit) != 0; cbit++)
+  for ( ; (master_get_num_active_images(this_image.m) >> cbit) != 0; cbit++)
     collsub_sync (ci);
   
   if (!result_image || *result_image == this_image.image_num)
@@ -165,19 +175,15 @@ collsub_reduce_scalar (collsub_iface *ci, void *obj, index_type elem_size,
 void
 collsub_iface_init (collsub_iface *ci, alloc_iface *ai, shared_memory *sm)
 {
-  pthread_barrierattr_t attr;
   ci->s = SHARED_MEMORY_RAW_ALLOC_PTR(sm, collsub_iface_shared);
 
-  ci->s->collsub_buf = shared_malloc(get_allocator(ai), sizeof(double)*local->num_images);
-  ci->s->curr_size = sizeof(double)*local->num_images;
+  ci->s->collsub_buf = shared_malloc(get_allocator(ai),
+				     sizeof(double)*local->total_num_images);
+  ci->s->curr_size = sizeof(double)*local->total_num_images;
   ci->sm = sm;
   ci->a = get_allocator(ai);
 
-  pthread_barrierattr_init (&attr);
-  pthread_barrierattr_setpshared (&attr, PTHREAD_PROCESS_SHARED);
-  pthread_barrier_init (&ci->s->barrier, &attr, local->num_images);
-  pthread_barrierattr_destroy(&attr);
-
+  master_bind_active_image_barrier (this_image.m, &ci->s->barrier);
   initialize_shared_mutex (&ci->s->mutex);
 }
 
