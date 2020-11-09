@@ -2310,17 +2310,37 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 {
   static hashval_t hash (sat_entry *e)
   {
-    /* Since normalize_atom caches the ATOMIC_CONSTRs it returns,
-       we can assume pointer-based identity for fast hashing and
-       comparison.  Even if this assumption is violated, that's
-       okay, we'll just get a cache miss.  */
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e->constr))
+      {
+	/* Atoms with instantiated mappings are built during satisfaction.
+	   They live only inside the sat_cache, and we build one to query
+	   the cache with each time we instantiate a mapping.  */
+	gcc_assert (!e->args);
+	return hash_atomic_constraint (e->constr);
+      }
+
+    /* Atoms with uninstantiated mappings are built during normalization.
+       Since normalize_atom caches the atoms it returns, we can assume
+       pointer-based identity for fast hashing and comparison.  Even if this
+       assumption is violated, that's okay, we'll just get a cache miss.  */
     hashval_t value = htab_hash_pointer (e->constr);
+
     return iterative_hash_template_arg (e->args, value);
   }
 
   static bool equal (sat_entry *e1, sat_entry *e2)
   {
-    /* As in sat_hasher::hash.  */
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->constr)
+	!= ATOMIC_CONSTR_MAP_INSTANTIATED_P (e2->constr))
+      return false;
+
+    /* See sat_hasher::hash.  */
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->constr))
+      {
+	gcc_assert (!e1->args && !e2->args);
+	return atomic_constraints_identical_p (e1->constr, e2->constr);
+      }
+
     if (e1->constr != e2->constr)
       return false;
     return template_args_equal (e1->args, e2->args);
@@ -2614,6 +2634,18 @@ satisfy_atom (tree t, tree args, subst_info info)
       return cache.save (boolean_false_node);
     }
 
+  /* Now build a new atom using the instantiated mapping.  We use
+     this atom as a second key to the satisfaction cache, and we
+     also pass it to diagnose_atomic_constraint so that diagnostics
+     which refer to the atom display the instantiated mapping.  */
+  t = copy_node (t);
+  ATOMIC_CONSTR_MAP (t) = map;
+  gcc_assert (!ATOMIC_CONSTR_MAP_INSTANTIATED_P (t));
+  ATOMIC_CONSTR_MAP_INSTANTIATED_P (t) = true;
+  satisfaction_cache inst_cache (t, /*args=*/NULL_TREE, info.complain);
+  if (tree r = inst_cache.get ())
+    return cache.save (r);
+
   /* Rebuild the argument vector from the parameter mapping.  */
   args = get_mapped_args (map);
 
@@ -2626,19 +2658,19 @@ satisfy_atom (tree t, tree args, subst_info info)
 	 is not satisfied. Replay the substitution.  */
       if (info.noisy ())
 	tsubst_expr (expr, args, info.complain, info.in_decl, false);
-      return cache.save (boolean_false_node);
+      return cache.save (inst_cache.save (boolean_false_node));
     }
 
   /* [17.4.1.2] ... lvalue-to-rvalue conversion is performed as necessary,
      and EXPR shall be a constant expression of type bool.  */
   result = force_rvalue (result, info.complain);
   if (result == error_mark_node)
-    return cache.save (error_mark_node);
+    return cache.save (inst_cache.save (error_mark_node));
   if (!same_type_p (TREE_TYPE (result), boolean_type_node))
     {
       if (info.noisy ())
 	diagnose_atomic_constraint (t, map, result, info);
-      return cache.save (error_mark_node);
+      return cache.save (inst_cache.save (error_mark_node));
     }
 
   /* Compute the value of the constraint.  */
@@ -2655,7 +2687,7 @@ satisfy_atom (tree t, tree args, subst_info info)
   if (result == boolean_false_node && info.noisy ())
     diagnose_atomic_constraint (t, map, result, info);
 
-  return cache.save (result);
+  return cache.save (inst_cache.save (result));
 }
 
 /* Determine if the normalized constraint T is satisfied.
@@ -3495,14 +3527,11 @@ diagnose_atomic_constraint (tree t, tree map, tree result, subst_info info)
       diagnose_requires_expr (expr, map, info.in_decl);
       break;
     default:
-      tree a = copy_node (t);
-      ATOMIC_CONSTR_MAP (a) = map;
       if (!same_type_p (TREE_TYPE (result), boolean_type_node))
 	error_at (loc, "constraint %qE has type %qT, not %<bool%>",
-		  a, TREE_TYPE (result));
+		  t, TREE_TYPE (result));
       else
-	inform (loc, "the expression %qE evaluated to %<false%>", a);
-      ggc_free (a);
+	inform (loc, "the expression %qE evaluated to %<false%>", t);
     }
 }
 
