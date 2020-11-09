@@ -6360,6 +6360,17 @@ package body Exp_Util is
          return;
       end if;
 
+      --  In GNATprove mode we don't want to use current value optimizer, in
+      --  particular for loop invariant expressions and other assertions that
+      --  act as cut points for proof. The optimizer often folds expressions
+      --  into True/False where they trivially follow from the previous
+      --  assignments, but this deprives proof from the information needed to
+      --  discharge checks that are beyond the scope of the value optimizer.
+
+      if GNATprove_Mode then
+         return;
+      end if;
+
       --  Otherwise examine current value
 
       declare
