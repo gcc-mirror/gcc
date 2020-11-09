@@ -3549,12 +3549,10 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
   unsigned i;
   stmt_vec_info stmt_info;
   stmt_vec_info last_stmt = vect_find_last_scalar_stmt_in_slp (node);
-  bool all_visited = true;
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
       if (svisited.contains (stmt_info))
 	continue;
-      all_visited = false;
       stmt_vec_info orig_stmt_info = vect_orig_stmt (stmt_info);
       if (STMT_VINFO_IN_PATTERN_P (orig_stmt_info)
 	  && STMT_VINFO_RELATED_STMT (orig_stmt_info) != stmt_info)
@@ -3628,8 +3626,6 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
       if (mark_visited)
 	svisited.add (stmt_info);
     }
-  if (all_visited)
-    return;
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
