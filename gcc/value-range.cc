@@ -1866,12 +1866,17 @@ static void
 dump_bound_with_infinite_markers (FILE *file, tree bound)
 {
   tree type = TREE_TYPE (bound);
+  wide_int type_min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+  wide_int type_max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+
   if (INTEGRAL_TYPE_P (type)
       && !TYPE_UNSIGNED (type)
-      && vrp_val_is_min (bound)
+      && TREE_CODE (bound) == INTEGER_CST
+      && wi::to_wide (bound) == type_min
       && TYPE_PRECISION (type) != 1)
     fprintf (file, "-INF");
-  else if (vrp_val_is_max (bound)
+  else if (TREE_CODE (bound) == INTEGER_CST
+	   && wi::to_wide (bound) == type_max
 	   && TYPE_PRECISION (type) != 1)
     fprintf (file, "+INF");
   else
@@ -2241,6 +2246,38 @@ range_tests_legacy ()
   }
 }
 
+// Simulate -fstrict-enums where the domain of a type is less than the
+// underlying type.
+
+static void
+range_tests_strict_enum ()
+{
+  // The enum can only hold [0, 3].
+  tree rtype = copy_node (unsigned_type_node);
+  TYPE_MIN_VALUE (rtype) = build_int_cstu (rtype, 0);
+  TYPE_MAX_VALUE (rtype) = build_int_cstu (rtype, 3);
+
+  // Test that even though vr1 covers the strict enum domain ([0, 3]),
+  // it does not cover the domain of the underlying type.
+  int_range<1> vr1 (build_int_cstu (rtype, 0), build_int_cstu (rtype, 1));
+  int_range<1> vr2 (build_int_cstu (rtype, 2), build_int_cstu (rtype, 3));
+  vr1.union_ (vr2);
+  ASSERT_TRUE (vr1 == int_range<1> (build_int_cstu (rtype, 0),
+				    build_int_cstu (rtype, 3)));
+  ASSERT_FALSE (vr1.varying_p ());
+
+  // Test that copying to a multi-range does not change things.
+  int_range<2> ir1 (vr1);
+  ASSERT_TRUE (ir1 == vr1);
+  ASSERT_FALSE (ir1.varying_p ());
+
+  // The same test as above, but using TYPE_{MIN,MAX}_VALUE instead of [0,3].
+  vr1 = int_range<1> (TYPE_MIN_VALUE (rtype), TYPE_MAX_VALUE (rtype));
+  ir1 = vr1;
+  ASSERT_TRUE (ir1 == vr1);
+  ASSERT_FALSE (ir1.varying_p ());
+}
+
 static void
 range_tests_misc ()
 {
@@ -2442,6 +2479,7 @@ range_tests ()
   range_tests_legacy ();
   range_tests_irange3 ();
   range_tests_int_range_max ();
+  range_tests_strict_enum ();
   range_tests_misc ();
 }
 
