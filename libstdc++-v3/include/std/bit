@@ -184,9 +184,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __gnu_cxx::__int_traits;
       constexpr auto _Nd = __int_traits<_Tp>::__digits;
 
-      if (__x == 0)
-        return 0;
-
       constexpr auto _Nd_ull = __int_traits<unsigned long long>::__digits;
       constexpr auto _Nd_ul = __int_traits<unsigned long>::__digits;
       constexpr auto _Nd_u = __int_traits<unsigned>::__digits;
