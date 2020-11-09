@@ -10617,6 +10617,16 @@ keep_template_parm (tree t, void* data)
   if (!ftpi->parms.add (t))
     ftpi->parm_list = tree_cons (NULL_TREE, t, ftpi->parm_list);
 
+  /* Verify the parameter we found has a valid index.  */
+  if (flag_checking)
+    {
+      tree parms = ftpi->ctx_parms;
+      while (TMPL_PARMS_DEPTH (parms) > level)
+	parms = TREE_CHAIN (parms);
+      if (int len = TREE_VEC_LENGTH (TREE_VALUE (parms)))
+	gcc_assert (index < len);
+    }
+
   return 0;
 }
 

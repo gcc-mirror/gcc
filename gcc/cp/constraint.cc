@@ -616,7 +616,8 @@ struct norm_info : subst_info
 
   norm_info (tree in_decl, tsubst_flags_t complain)
     : subst_info (tf_warning_or_error | complain, in_decl),
-      context (make_context (in_decl))
+      context (make_context (in_decl)),
+      orig_decl (in_decl)
   {}
 
   bool generate_diagnostics() const
@@ -647,6 +648,12 @@ struct norm_info : subst_info
      for that check.  */
 
   tree context;
+
+  /* The declaration whose constraints we're normalizing.  The targets
+     of the parameter mapping of each atom will be in terms of the
+     template parameters of ORIG_DECL.  */
+
+  tree orig_decl = NULL_TREE;
 };
 
 static tree normalize_expression (tree, tree, norm_info);
@@ -743,6 +750,28 @@ normalize_atom (tree t, tree args, norm_info info)
       tree *slot = atom_cache->find_slot (atom, INSERT);
       if (*slot)
 	return *slot;
+
+      /* Find all template parameters used in the targets of the parameter
+	 mapping, and store a list of them in the TREE_TYPE of the mapping.
+	 This list will be used by sat_hasher to determine the subset of
+	 supplied template arguments that the satisfaction value of the atom
+	 depends on.  */
+      if (map)
+	{
+	  tree targets = make_tree_vec (list_length (map));
+	  int i = 0;
+	  for (tree node = map; node; node = TREE_CHAIN (node))
+	    {
+	      tree target = TREE_PURPOSE (node);
+	      TREE_VEC_ELT (targets, i++) = target;
+	    }
+	  tree ctx_parms = (info.orig_decl
+			    ? DECL_TEMPLATE_PARMS (info.orig_decl)
+			    : current_template_parms);
+	  tree target_parms = find_template_parameters (targets, ctx_parms);
+	  TREE_TYPE (map) = target_parms;
+	}
+
       *slot = atom;
     }
   return atom;
@@ -854,10 +883,17 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
     if (tree *p = hash_map_safe_get (normalized_map, tmpl))
       return *p;
 
-  push_nested_class_guard pncs (DECL_CONTEXT (d));
+  tree norm = NULL_TREE;
+  if (tree ci = get_constraints (decl))
+    {
+      push_nested_class_guard pncs (DECL_CONTEXT (d));
 
-  tree ci = get_constraints (decl);
-  tree norm = get_normalized_constraints_from_info (ci, tmpl, diag);
+      temp_override<tree> ovr (current_function_decl);
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	current_function_decl = decl;
+
+      norm = get_normalized_constraints_from_info (ci, tmpl, diag);
+    }
 
   if (!diag)
     hash_map_safe_put<hm_ggc> (normalized_map, tmpl, norm);
@@ -2325,7 +2361,21 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
        assumption is violated, that's okay, we'll just get a cache miss.  */
     hashval_t value = htab_hash_pointer (e->constr);
 
-    return iterative_hash_template_arg (e->args, value);
+    if (tree map = ATOMIC_CONSTR_MAP (e->constr))
+      /* Only the parameters that are used in the targets of the mapping
+	 affect the satisfaction value of the atom.  So we consider only
+	 the arguments for these parameters, and ignore the rest.  */
+      for (tree target_parms = TREE_TYPE (map);
+	   target_parms;
+	   target_parms = TREE_CHAIN (target_parms))
+	{
+	  int level, index;
+	  tree parm = TREE_VALUE (target_parms);
+	  template_parm_level_and_index (parm, &level, &index);
+	  tree arg = TMPL_ARG (e->args, level, index);
+	  value = iterative_hash_template_arg (arg, value);
+	}
+    return value;
   }
 
   static bool equal (sat_entry *e1, sat_entry *e2)
@@ -2343,7 +2393,21 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 
     if (e1->constr != e2->constr)
       return false;
-    return template_args_equal (e1->args, e2->args);
+
+    if (tree map = ATOMIC_CONSTR_MAP (e1->constr))
+      for (tree target_parms = TREE_TYPE (map);
+	   target_parms;
+	   target_parms = TREE_CHAIN (target_parms))
+	{
+	  int level, index;
+	  tree parm = TREE_VALUE (target_parms);
+	  template_parm_level_and_index (parm, &level, &index);
+	  tree arg1 = TMPL_ARG (e1->args, level, index);
+	  tree arg2 = TMPL_ARG (e2->args, level, index);
+	  if (!template_args_equal (arg1, arg2))
+	    return false;
+	}
+    return true;
   }
 };
 
