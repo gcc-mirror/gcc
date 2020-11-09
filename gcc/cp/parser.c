@@ -20652,13 +20652,24 @@ warn_about_ambiguous_parse (const cp_decl_specifier_seq *decl_specifiers,
   if (declarator->parenthesized != UNKNOWN_LOCATION)
     return;
 
-  tree type = decl_specifiers->type;
-  if (TREE_CODE (type) == TYPE_DECL)
-   type = TREE_TYPE (type);
+  tree type;
+  if (decl_specifiers->type)
+    {
+      type = decl_specifiers->type;
+      if (TREE_CODE (type) == TYPE_DECL)
+	type = TREE_TYPE (type);
 
-  /* If the return type is void there is no ambiguity.  */
-  if (same_type_p (type, void_type_node))
-    return;
+      /* If the return type is void there is no ambiguity.  */
+      if (same_type_p (type, void_type_node))
+	return;
+    }
+  else
+    {
+      /* Code like long f(); will have null ->type.  If we have any
+	 type-specifiers, pretend we've seen int.  */
+      gcc_checking_assert (decl_specifiers->any_type_specifiers_p);
+      type = integer_type_node;
+    }
 
   auto_diagnostic_group d;
   location_t loc = declarator->u.function.parens_loc;
