@@ -1343,10 +1343,11 @@ get_representative_for (const pre_expr e, basic_block b = NULL)
      ???  We should be able to re-use this when we insert the statement
      to compute it.  */
   name = make_temp_ssa_name (get_expr_type (e), gimple_build_nop (), "pretmp");
-  VN_INFO (name)->value_id = value_id;
-  VN_INFO (name)->valnum = valnum ? valnum : name;
+  vn_ssa_aux_t vn_info = VN_INFO (name);
+  vn_info->value_id = value_id;
+  vn_info->valnum = valnum ? valnum : name;
   /* ???  For now mark this SSA name for release by VN.  */
-  VN_INFO (name)->needs_insertion = true;
+  vn_info->needs_insertion = true;
   add_to_value (value_id, get_or_alloc_expr_for_name (name));
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2990,10 +2991,11 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 
 	  if (forcedname != folded)
 	    {
-	      VN_INFO (forcedname)->valnum = forcedname;
-	      VN_INFO (forcedname)->value_id = get_next_value_id ();
+	      vn_ssa_aux_t vn_info = VN_INFO (forcedname);
+	      vn_info->valnum = forcedname;
+	      vn_info->value_id = get_next_value_id ();
 	      nameexpr = get_or_alloc_expr_for_name (forcedname);
-	      add_to_value (VN_INFO (forcedname)->value_id, nameexpr);
+	      add_to_value (vn_info->value_id, nameexpr);
 	      bitmap_value_replace_in_set (NEW_SETS (block), nameexpr);
 	      bitmap_value_replace_in_set (AVAIL_OUT (block), nameexpr);
 	    }
@@ -3016,11 +3018,12 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
      the expression may have been represented.  There is no harm in replacing
      here.  */
   value_id = get_expr_value_id (expr);
-  VN_INFO (name)->value_id = value_id;
-  VN_INFO (name)->valnum = vn_valnum_from_value_id (value_id);
-  if (VN_INFO (name)->valnum == NULL_TREE)
-    VN_INFO (name)->valnum = name;
-  gcc_assert (VN_INFO (name)->valnum != NULL_TREE);
+  vn_ssa_aux_t vn_info = VN_INFO (name);
+  vn_info->value_id = value_id;
+  vn_info->valnum = vn_valnum_from_value_id (value_id);
+  if (vn_info->valnum == NULL_TREE)
+    vn_info->valnum = name;
+  gcc_assert (vn_info->valnum != NULL_TREE);
   nameexpr = get_or_alloc_expr_for_name (name);
   add_to_value (value_id, nameexpr);
   if (NEW_SETS (block))
@@ -3122,10 +3125,11 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   temp = make_temp_ssa_name (type, NULL, "prephitmp");
   phi = create_phi_node (temp, block);
 
-  VN_INFO (temp)->value_id = val;
-  VN_INFO (temp)->valnum = vn_valnum_from_value_id (val);
-  if (VN_INFO (temp)->valnum == NULL_TREE)
-    VN_INFO (temp)->valnum = temp;
+  vn_ssa_aux_t vn_info = VN_INFO (temp);
+  vn_info->value_id = val;
+  vn_info->valnum = vn_valnum_from_value_id (val);
+  if (vn_info->valnum == NULL_TREE)
+    vn_info->valnum = temp;
   bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (temp));
   FOR_EACH_EDGE (pred, ei, block->preds)
     {
@@ -3367,10 +3371,11 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
 	      gimple_stmt_iterator gsi = gsi_after_labels (block);
 	      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
 
-	      VN_INFO (temp)->value_id = val;
-	      VN_INFO (temp)->valnum = vn_valnum_from_value_id (val);
-	      if (VN_INFO (temp)->valnum == NULL_TREE)
-		VN_INFO (temp)->valnum = temp;
+	      vn_ssa_aux_t vn_info = VN_INFO (temp);
+	      vn_info->value_id = val;
+	      vn_info->valnum = vn_valnum_from_value_id (val);
+	      if (vn_info->valnum == NULL_TREE)
+		vn_info->valnum = temp;
 	      bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (temp));
 	      pre_expr newe = get_or_alloc_expr_for_name (temp);
 	      add_to_value (val, newe);

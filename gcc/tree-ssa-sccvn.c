@@ -5843,8 +5843,9 @@ eliminate_dom_walker::eliminate_insert (basic_block bb,
   else
     {
       gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-      VN_INFO (res)->valnum = val;
-      VN_INFO (res)->visited = true;
+      vn_ssa_aux_t vn_info = VN_INFO (res);
+      vn_info->valnum = val;
+      vn_info->visited = true;
     }
 
   insertions++;
@@ -5884,10 +5885,12 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	     it has an expression it wants to use as replacement,
 	     insert that.  */
 	  tree val = VN_INFO (lhs)->valnum;
+	  vn_ssa_aux_t vn_info;
 	  if (val != VN_TOP
 	      && TREE_CODE (val) == SSA_NAME
-	      && VN_INFO (val)->needs_insertion
-	      && VN_INFO (val)->expr != NULL
+	      && (vn_info = VN_INFO (val), true)
+	      && vn_info->needs_insertion
+	      && vn_info->expr != NULL
 	      && (sprime = eliminate_insert (b, gsi, val)) != NULL_TREE)
 	    eliminate_push_avail (b, sprime);
 	}
@@ -6274,8 +6277,9 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 		       only process new ones.  */
 		    if (! has_VN_INFO (def))
 		      {
-			VN_INFO (def)->valnum = def;
-			VN_INFO (def)->visited = true;
+			vn_ssa_aux_t vn_info = VN_INFO (def);
+			vn_info->valnum = def;
+			vn_info->visited = true;
 		      }
 		if (gsi_stmt (prev) == gsi_stmt (*gsi))
 		  break;
