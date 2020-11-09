@@ -1,3 +1,11 @@
+2020-11-09  Nathan Sidwell  <nathan@acm.org>
+
+	Address review comments
+	libcpp/
+	* lex.c (cpp_maybe_module_directive): Add asserts and comments
+	about initial and final state.  Remove __builtin_expects.
+	(_cpp_lex_token): Remove __builtin_expect.
+
 2020-11-06  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk 4b5f564a5d9

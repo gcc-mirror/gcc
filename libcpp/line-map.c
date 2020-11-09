@@ -427,7 +427,6 @@ line_map_new_raw (line_maps *set, bool macro_p, unsigned num)
 	      (num_maps - num_maps_used) * size_of_a_map);
       if (macro_p)
 	set->info_macro.maps = (line_map_macro *)buffer;
-
       else
 	set->info_ordinary.maps = (line_map_ordinary *)buffer;
       LINEMAPS_ALLOCATED (set, macro_p) = num_maps;

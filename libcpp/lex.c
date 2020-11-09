@@ -2622,8 +2622,10 @@ _cpp_temp_token (cpp_reader *pfile)
   return result;
 }
 
-/* RESULT is a CPP_NAME with NODE_MODULE set.  See if we should enter
-   deferred_pragma mode to tokenize the rest of the line.  */
+/* We're at the beginning of a logical line (so not in
+  directives-mode) and RESULT is a CPP_NAME with NODE_MODULE set.  See
+  if we should enter deferred_pragma mode to tokenize the rest of the
+  line as a module control-line.  */
 
 static void
 cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
@@ -2635,11 +2637,27 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
   cpp_hashnode *(&n_modules)[spec_nodes::M_HWM][2] = pfile->spec_nodes.n_modules;
   int header_count = 0;
 
-  /* Enter directives mode for the peeking.  */
+  /* Make sure the incoming state is as we expect it.  This way we
+     can restore it using constants.  */
+  gcc_checking_assert (!pfile->state.in_deferred_pragma
+		       && !pfile->state.skipping
+		       && !pfile->state.parsing_args
+		       && !pfile->state.angled_headers
+		       && (pfile->state.save_comments
+			   == !CPP_OPTION (pfile, discard_comments)));
+
+  /* Enter directives mode sufficiently for peeking.  We don't have
+     to actually set in_directive.  */
   pfile->state.in_deferred_pragma = true;
+
+  /* These two fields are needed to process tokenization in deferred
+     pragma mode.  They are not used outside deferred pragma mode or
+     directives mode.  */
   pfile->state.pragma_allow_expansion = true;
-  pfile->state.save_comments = 0;
   pfile->directive_line = result->src_loc;
+
+  /* Saving comments is incompatible with directives mode.   */
+  pfile->state.save_comments = 0;
 
   if (node == n_modules[spec_nodes::M_EXPORT][0])
     {
@@ -2653,13 +2671,13 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 	goto not_module;
     }
 
-  if (__builtin_expect (node == n_modules[spec_nodes::M__IMPORT][0], false))
+  if (node == n_modules[spec_nodes::M__IMPORT][0])
     /* __import  */
     header_count = backup + 2 + 16;
-  else if (__builtin_expect (node == n_modules[spec_nodes::M_IMPORT][0], false))
+  else if (node == n_modules[spec_nodes::M_IMPORT][0])
     /* import  */
     header_count = backup + 2 + (CPP_OPTION (pfile, preprocessed) ? 16 : 0);
-  else if (__builtin_expect (node == n_modules[spec_nodes::M_MODULE][0], false))
+  else if (node == n_modules[spec_nodes::M_MODULE][0])
     ; /* module  */
   else
     goto not_module;
@@ -2724,9 +2742,11 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
     {
     not_module:
       /* Drop out of directive mode.  */
+      /* We aaserted save_comments had this value upon entry.  */
       pfile->state.save_comments
 	= !CPP_OPTION (pfile, discard_comments);
       pfile->state.in_deferred_pragma = false;
+      /* Do not let this remain on.  */
       pfile->state.angled_headers = false;
     }
 
@@ -2796,8 +2816,7 @@ _cpp_lex_token (cpp_reader *pfile)
 	  else if (pfile->state.in_deferred_pragma)
 	    result = &pfile->directive_result;
 	  else if (result->type == CPP_NAME
-		   && __builtin_expect
-		   (result->val.node.node->flags & NODE_MODULE, 0)
+		   && (result->val.node.node->flags & NODE_MODULE)
 		   && !pfile->state.skipping
 		   /* Unlike regular directives, we do not deal with
 		      tokenizing module directives as macro arguments.
