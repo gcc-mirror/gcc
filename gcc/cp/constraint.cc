@@ -2252,6 +2252,16 @@ tsubst_parameter_mapping (tree map, tree args, subst_info info)
 	  new_arg = tsubst_template_arg (arg, args, complain, in_decl);
 	  if (TYPE_P (new_arg))
 	    new_arg = canonicalize_type_argument (new_arg, complain);
+	  if (TREE_CODE (new_arg) == TYPE_ARGUMENT_PACK)
+	    {
+	      tree pack_args = ARGUMENT_PACK_ARGS (new_arg);
+	      for (int i = 0; i < TREE_VEC_LENGTH (pack_args); i++)
+		{
+		  tree& pack_arg = TREE_VEC_ELT (pack_args, i);
+		  if (TYPE_P (pack_arg))
+		    pack_arg = canonicalize_type_argument (pack_arg, complain);
+		}
+	    }
 	}
       if (new_arg == error_mark_node)
 	return error_mark_node;
