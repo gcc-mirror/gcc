@@ -2110,7 +2110,7 @@ Gcc_backend::call_expression(Bfunction*, // containing fcn for call
   if (optimize
       && TREE_CODE(fndecl) == FUNCTION_DECL
       && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
-      && DECL_IS_BUILTIN (fndecl)
+      && DECL_IS_UNDECLARED_BUILTIN (fndecl)
       && nargs > 0
       && ((SCALAR_FLOAT_TYPE_P(rettype)
 	   && SCALAR_FLOAT_TYPE_P(TREE_TYPE(args[0])))

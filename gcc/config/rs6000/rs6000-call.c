@@ -13191,12 +13191,14 @@ rs6000_init_builtins (void)
   if (TARGET_EXTRA_BUILTINS)
     {
       vector_pair_type_node = make_unsigned_type (256);
+      SET_TYPE_ALIGN (vector_pair_type_node, 256);
       SET_TYPE_MODE (vector_pair_type_node, POImode);
       layout_type (vector_pair_type_node);
       lang_hooks.types.register_builtin_type (vector_pair_type_node,
 					      "__vector_pair");
 
       vector_quad_type_node = make_unsigned_type (512);
+      SET_TYPE_ALIGN (vector_quad_type_node, 512);
       SET_TYPE_MODE (vector_quad_type_node, PXImode);
       layout_type (vector_quad_type_node);
       lang_hooks.types.register_builtin_type (vector_quad_type_node,

@@ -6412,7 +6412,7 @@ pass_expand::execute (function *fun)
   rtl_profile_for_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   insn_locations_init ();
-  if (!DECL_IS_BUILTIN (current_function_decl))
+  if (!DECL_IS_UNDECLARED_BUILTIN (current_function_decl))
     {
       /* Eventually, all FEs should explicitly set function_start_locus.  */
       if (LOCATION_LOCUS (fun->function_start_locus) == UNKNOWN_LOCATION)

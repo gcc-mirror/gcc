@@ -520,6 +520,8 @@ private:
 
 private:
   void add_fns (tree);
+
+ private:
   void adl_expr (tree);
   void adl_type (tree);
   void adl_template_arg (tree);
@@ -2575,7 +2577,7 @@ anticipated_builtin_p (tree ovl)
 {
   return (TREE_CODE (ovl) == OVERLOAD
 	  && OVL_HIDDEN_P (ovl)
-	  && DECL_UNDECLARED_BUILTIN_P (OVL_FUNCTION (ovl)));
+	  && DECL_IS_UNDECLARED_BUILTIN (OVL_FUNCTION (ovl)));
 }
 
 /* BINDING records an existing declaration for a name in the current scope.
@@ -3976,7 +3978,7 @@ walk_module_binding (tree binding, bitmap partitions,
     {
       if (iter.hidden_p ())
 	decl_hidden = true;
-      if (!(decl_hidden && DECL_UNDECLARED_BUILTIN_P (*iter)))
+      if (!(decl_hidden && DECL_IS_UNDECLARED_BUILTIN (*iter)))
 	{
 	  WMB_Flags flags = WMB_None;
 	  if (decl_hidden)
@@ -4047,7 +4049,7 @@ walk_module_binding (tree binding, bitmap partitions,
 			if (iter.hidden_p ())
 			  hidden = true;
 			gcc_checking_assert
-			  (!(hidden && DECL_UNDECLARED_BUILTIN_P (*iter)));
+			  (!(hidden && DECL_IS_UNDECLARED_BUILTIN (*iter)));
 
 			WMB_Flags flags = WMB_None;
 			if (maybe_dups)
@@ -4647,7 +4649,7 @@ print_binding_level (cp_binding_level* lvl)
 	    continue;
 	  if (no_print_builtins
 	      && (TREE_CODE (t) == TYPE_DECL)
-	      && DECL_IS_BUILTIN (t))
+	      && DECL_IS_UNDECLARED_BUILTIN (t))
 	    continue;
 
 	  /* Function decls tend to have longer names.  */
@@ -5006,7 +5008,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		}
 	      else if (old.using_p ())
 		continue; /* This is a using decl. */
-	      else if (old.hidden_p () && DECL_UNDECLARED_BUILTIN_P (old_fn))
+	      else if (old.hidden_p () && DECL_IS_UNDECLARED_BUILTIN (old_fn))
 		continue; /* This is an anticipated builtin.  */
 	      else if (!matching_fn_p (new_fn, old_fn))
 		continue; /* Parameters do not match.  */
@@ -7851,7 +7853,7 @@ lookup_name_1 (tree name, LOOK_where where, LOOK_want want)
   /* If we have a known type overload, pull it out.  This can happen
      for both using decls and unhidden functions.  */
   if (val && TREE_CODE (val) == OVERLOAD && TREE_TYPE (val) != unknown_type_node)
-    val = OVL_FIRST (val);
+    val = OVL_FUNCTION (val);
 
   return val;
 }

@@ -3583,7 +3583,7 @@ pass_post_ipa_warn::execute (function *fun)
 		continue;
 
 	      tree fndecl = gimple_call_fndecl (stmt);
-	      if (fndecl && DECL_IS_BUILTIN (fndecl))
+	      if (fndecl && DECL_IS_UNDECLARED_BUILTIN (fndecl))
 		inform (loc, "in a call to built-in function %qD",
 			fndecl);
 	      else if (fndecl)

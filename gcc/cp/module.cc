@@ -10607,7 +10607,7 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 		&& compparms (key.args, TYPE_ARG_TYPES (m_type))
 		/* Reject if old is a "C" builtin and new is not "C".
 		   Matches decls_match behaviour.  */
-		&& (!DECL_IS_BUILTIN (m_inner)
+		&& (!DECL_IS_UNDECLARED_BUILTIN (m_inner)
 		    || !DECL_EXTERN_C_P (m_inner)
 		    || DECL_EXTERN_C_P (d_inner)))
 	      {
@@ -11082,7 +11082,7 @@ trees_in::is_matching_decl (tree existing, tree decl)
   else if (!cp_tree_equal (TREE_TYPE (existing), TREE_TYPE (decl)))
     {
     mismatch:
-      if (DECL_UNDECLARED_BUILTIN_P (existing))
+      if (DECL_IS_UNDECLARED_BUILTIN (existing))
 	/* Just like duplicate_decls, presum the user knows what
 	   they're doing in overriding a builtin.   */
 	TREE_TYPE (existing) = TREE_TYPE (decl);
@@ -11098,8 +11098,8 @@ trees_in::is_matching_decl (tree existing, tree decl)
 	}
     }
 
-  if (DECL_UNDECLARED_BUILTIN_P (existing)
-      && !DECL_UNDECLARED_BUILTIN_P (decl))
+  if (DECL_IS_UNDECLARED_BUILTIN (existing)
+      && !DECL_IS_UNDECLARED_BUILTIN (decl))
     {
       /* We're matching a builtin that the user has yet to declare.
 	 We are the one!  This is very much duplicate-decl

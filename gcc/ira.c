@@ -5526,8 +5526,26 @@ ira (FILE *f)
   end_alias_analysis ();
   free (reg_equiv);
 
+  /* Once max_regno changes, we need to free and re-init/re-compute
+     some data structures like regstat_n_sets_and_refs and reg_info_p.  */
+  auto regstat_recompute_for_max_regno = []() {
+    regstat_free_n_sets_and_refs ();
+    regstat_free_ri ();
+    regstat_init_n_sets_and_refs ();
+    regstat_compute_ri ();
+  };
+
+  int max_regno_before_rm = max_reg_num ();
   if (ira_use_lra_p && remove_scratches ())
-    ira_expand_reg_equiv ();
+    {
+      ira_expand_reg_equiv ();
+      /* For now remove_scatches is supposed to create pseudos when it
+	 succeeds, assert this happens all the time.  Once it doesn't
+	 hold, we should guard the regstat recompute for the case
+	 max_regno changes.  */
+      gcc_assert (max_regno_before_rm != max_reg_num ());
+      regstat_recompute_for_max_regno ();
+    }
 
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);
@@ -5654,12 +5672,7 @@ ira (FILE *f)
 #endif
 
   if (max_regno != max_regno_before_ira)
-    {
-      regstat_free_n_sets_and_refs ();
-      regstat_free_ri ();
-      regstat_init_n_sets_and_refs ();
-      regstat_compute_ri ();
-    }
+    regstat_recompute_for_max_regno ();
 
   overall_cost_before = ira_overall_cost;
   if (! ira_conflicts_p)

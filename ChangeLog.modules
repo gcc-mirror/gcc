@@ -1,5 +1,8 @@
 2020-11-09  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk e38cd64ac6c
+	c++: ADL refactor
+
 	Address review comments
 	libcpp/
 	* lex.c (cpp_maybe_module_directive): Add asserts and comments

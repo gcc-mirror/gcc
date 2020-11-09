@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target tls_native } */
 /* { dg-options "-mtls-direct-seg-refs -O2 -masm=att" } */
 
 int*

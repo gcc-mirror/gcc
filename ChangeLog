@@ -1,3 +1,11 @@
+2020-11-06  Martin Uecker  <muecker@gwdg.de>
+
+	* MAINTAINERS: Update my email address.
+
+2020-11-06  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2020-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR target/97302

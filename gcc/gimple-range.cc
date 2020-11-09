@@ -1026,8 +1026,14 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   if (m_cache.get_non_stale_global_range (r, name))
     return true;
 
-  // Otherwise calculate a new value and save it.
-  calc_stmt (r, s, name);
+  // Otherwise calculate a new value.
+  int_range_max tmp;
+  calc_stmt (tmp, s, name);
+
+  // Combine the new value with the old value.  This is required because
+  // the way value propagation works, when the IL changes on the fly we
+  // can sometimes get different results.  See PR 97741.
+  r.intersect (tmp);
   m_cache.set_global_range (name, r);
   return true;
 }

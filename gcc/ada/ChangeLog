@@ -1,3 +1,13 @@
+2020-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in: Force target_cpu to powerpc if the
+	nominal target is powerpc64-suse-linux.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc-interface/misc.c (gnat_printable_name): Change
+	DECL_IS_BUILTIN -> DECL_IS_UNDECLARED_BUILTIN.
+
 2020-10-28  Alexandre Oliva  <oliva@adacore.com>
 
 	PR ada/97504

@@ -757,10 +757,10 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && flag_hosted)
 
 /* Lookup walker marking.  */
-#define LOOKUP_SEEN_P(NODE) TREE_VISITED(NODE)
+#define LOOKUP_SEEN_P(NODE) TREE_VISITED (NODE)
 #define LOOKUP_FOUND_P(NODE) \
-  TREE_LANG_FLAG_4 (TREE_CHECK4(NODE,RECORD_TYPE,UNION_TYPE,ENUMERAL_TYPE, \
-				NAMESPACE_DECL))
+  TREE_LANG_FLAG_4 (TREE_CHECK4 (NODE,RECORD_TYPE,UNION_TYPE,ENUMERAL_TYPE,\
+				 NAMESPACE_DECL))
 
 /* These two accessors should only be used by OVL manipulators.
    Other users should use iterators and convenience functions.  */
@@ -4209,11 +4209,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    DECL_SAVED_AUTO_RETURN_TYPE (NODE).   */
 #define FNDECL_USED_AUTO(NODE) \
   TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (NODE))
-
-/* True if NODE is an undeclared builtin decl.  As soon as the user
-   declares it, the location will be updated.  */
-#define DECL_UNDECLARED_BUILTIN_P(NODE) \
-  (DECL_SOURCE_LOCATION(NODE) == BUILTINS_LOCATION)
 
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */

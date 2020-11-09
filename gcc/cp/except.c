@@ -41,7 +41,6 @@ static tree do_allocate_exception (tree);
 static tree wrap_cleanups_r (tree *, int *, void *);
 static int complete_ptr_ref_or_void_ptr_p (tree, tree);
 static bool is_admissible_throw_operand_or_catch_parameter (tree, bool);
-static int can_convert_eh (tree, tree);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
@@ -932,11 +931,14 @@ nothrow_libfn_p (const_tree fn)
 /* Returns nonzero if an exception of type FROM will be caught by a
    handler for type TO, as per [except.handle].  */
 
-static int
+static bool
 can_convert_eh (tree to, tree from)
 {
   to = non_reference (to);
   from = non_reference (from);
+
+  if (same_type_ignoring_top_level_qualifiers_p (to, from))
+    return true;
 
   if (TYPE_PTR_P (to) && TYPE_PTR_P (from))
     {
@@ -944,19 +946,19 @@ can_convert_eh (tree to, tree from)
       from = TREE_TYPE (from);
 
       if (! at_least_as_qualified_p (to, from))
-	return 0;
+	return false;
 
       if (VOID_TYPE_P (to))
-	return 1;
+	return true;
 
       /* Else fall through.  */
     }
 
   if (CLASS_TYPE_P (to) && CLASS_TYPE_P (from)
       && publicly_uniquely_derived_p (to, from))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Check whether any of the handlers in I are shadowed by another handler

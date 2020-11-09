@@ -366,7 +366,8 @@ names_builtin_p (const char *name)
   tree id = get_identifier (name);
   if (tree binding = get_global_binding (id))
     {
-      if (TREE_CODE (binding) == FUNCTION_DECL && DECL_IS_BUILTIN (binding))
+      if (TREE_CODE (binding) == FUNCTION_DECL
+	  && DECL_IS_UNDECLARED_BUILTIN (binding))
 	return true;
 
       /* Handle the case when an overload for a  built-in name exists.  */
@@ -376,7 +377,7 @@ names_builtin_p (const char *name)
       for (ovl_iterator it (binding); it; ++it)
 	{
 	  tree decl = *it;
-	  if (DECL_IS_BUILTIN (decl))
+	  if (DECL_IS_UNDECLARED_BUILTIN (decl))
 	    return true;
 	}
     }

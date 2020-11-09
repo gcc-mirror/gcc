@@ -13,8 +13,9 @@
 /* { dg-additional-options "-mmacosx-version-min=010.011.06 -DCHECK=101106" { target *-*-darwin15* } } */
 /* { dg-additional-options "-mmacosx-version-min=010.012.06 -DCHECK=101206" { target *-*-darwin16* } } */
 /* { dg-additional-options "-mmacosx-version-min=010.013.06 -DCHECK=101306" { target *-*-darwin17* } } */
-/* This next test covers 10.18 and (currently unreleased) 10.19 for now. */  
-/* { dg-additional-options "-mmacosx-version-min=010.014.05 -DCHECK=101405" { target *-*-darwin1[89]* } } */
+/* { dg-additional-options "-mmacosx-version-min=010.014.05 -DCHECK=101405" { target *-*-darwin18* } } */
+/* { dg-additional-options "-mmacosx-version-min=010.015.06 -DCHECK=101506" { target *-*-darwin19* } } */
+/* { dg-additional-options "-mmacosx-version-min=011.000.00 -DCHECK=110000" { target *-*-darwin20 } } */
 
 int
 main ()

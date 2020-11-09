@@ -1,3 +1,18 @@
+2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (oacc_is_parallel, resolve_oacc_params_in_parallel):
+	Remove.
+	(resolve_oacc_loop_blocks): Don't call the former.
+
+2020-11-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_oacc_atomic): No longer accept 'update capture'.
+
+2020-11-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97652
+	* module.c (mio_symbol): Fix symbol name for pdt_type.
+
 2020-11-03  Nathan Sidwell  <nathan@acm.org>
 
 	* cpp.c (gfc_cpp_add_dep): Only add dependency if we're recording

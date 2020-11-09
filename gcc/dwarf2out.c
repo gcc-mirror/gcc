@@ -12855,7 +12855,7 @@ base_type_die (tree type, bool reverse)
       if ((dwarf_version >= 4 || !dwarf_strict)
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && DECL_IS_BUILTIN (TYPE_NAME (type))
+	  && DECL_IS_UNDECLARED_BUILTIN (TYPE_NAME (type))
 	  && DECL_NAME (TYPE_NAME (type)))
 	{
 	  const char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
@@ -26046,7 +26046,7 @@ is_naming_typedef_decl (const_tree decl)
       || TREE_CODE (decl) != TYPE_DECL
       || DECL_NAMELESS (decl)
       || !is_tagged_type (TREE_TYPE (decl))
-      || DECL_IS_BUILTIN (decl)
+      || DECL_IS_UNDECLARED_BUILTIN (decl)
       || is_redundant_typedef (decl)
       /* It looks like Ada produces TYPE_DECLs that are very similar
          to C++ naming typedefs but that have different
@@ -26958,7 +26958,7 @@ dwarf2out_decl (tree decl)
 
       /* Don't bother trying to generate any DIEs to represent any of the
 	 normal built-in types for the language we are compiling.  */
-      if (DECL_IS_BUILTIN (decl))
+      if (DECL_IS_UNDECLARED_BUILTIN (decl))
 	return;
 
       /* If we are in terse mode, don't generate any DIEs for types.  */

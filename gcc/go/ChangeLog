@@ -1,3 +1,8 @@
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+
 2020-11-04  Ian Lance Taylor  <iant@golang.org>
 
 	* go-lang.c (go_langhook_post_options): Disable
