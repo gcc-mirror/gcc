@@ -171,8 +171,13 @@ public:
 
 public:
   tree name;	/* The identifier being looked for.  */
+
+  /* Usually we just add things to the VALUE binding, but we record
+     (hidden) IMPLICIT_TYPEDEFs on the type binding, which is used for
+     using-decl resolution.  */
   tree value;	/* A (possibly ambiguous) set of things found.  */
   tree type;	/* A type that has been found.  */
+
   LOOK_want want;  /* What kind of entity we want.  */
 
   bool deduping; /* Full deduping is needed because using declarations
@@ -263,14 +268,17 @@ private:
 private:
   void add_fns (tree);
 
+ private:
   void adl_expr (tree);
   void adl_type (tree);
   void adl_template_arg (tree);
   void adl_class (tree);
+  void adl_enum (tree);
   void adl_bases (tree);
   void adl_class_only (tree);
   void adl_namespace (tree);
-  void adl_namespace_only (tree);
+  void adl_class_fns (tree);
+  void adl_namespace_fns (tree);
 
 public:
   /* Search namespace + inlines + maybe usings as qualified lookup.  */
@@ -433,8 +441,8 @@ name_lookup::add_overload (tree fns)
       if (probe && TREE_CODE (probe) == OVERLOAD
 	  && OVL_DEDUP_P (probe))
 	{
-	  /* We're about to add something found by a using
-	     declaration, so need to engage deduping mode.  */
+	  /* We're about to add something found by multiple paths, so
+	     need to engage deduping mode.  */
 	  lookup_mark (value, true);
 	  deduping = true;
 	}
@@ -777,20 +785,56 @@ name_lookup::add_fns (tree fns)
   add_overload (fns);
 }
 
-/* Add functions of a namespace to the lookup structure.  */
+/* Add the overloaded fns of SCOPE.  */
 
 void
-name_lookup::adl_namespace_only (tree scope)
+name_lookup::adl_namespace_fns (tree scope)
 {
-  mark_seen (scope);
+  if (tree *binding = find_namespace_slot (scope, name))
+    {
+      tree val = *binding;
+      add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (val)));
+    }
+}
 
-  /* Look down into inline namespaces.  */
-  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
-    for (unsigned ix = inlinees->length (); ix--;)
-      adl_namespace_only ((*inlinees)[ix]);
+/* Add the hidden friends of SCOPE.  */
 
-  if (tree fns = find_namespace_value (scope, name))
-    add_fns (ovl_skip_hidden (fns));
+void
+name_lookup::adl_class_fns (tree type)
+{
+  /* Add friends.  */
+  for (tree list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type));
+       list; list = TREE_CHAIN (list))
+    if (name == FRIEND_NAME (list))
+      {
+	tree context = NULL_TREE; /* Lazily computed.  */
+	for (tree friends = FRIEND_DECLS (list); friends;
+	     friends = TREE_CHAIN (friends))
+	  {
+	    tree fn = TREE_VALUE (friends);
+
+	    /* Only interested in global functions with potentially hidden
+	       (i.e. unqualified) declarations.  */
+	    if (!context)
+	      context = decl_namespace_context (type);
+	    if (CP_DECL_CONTEXT (fn) != context)
+	      continue;
+
+	    if (!deduping)
+	      {
+		lookup_mark (value, true);
+		deduping = true;
+	      }
+
+	    /* Template specializations are never found by name lookup.
+	       (Templates themselves can be found, but not template
+	       specializations.)  */
+	    if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
+	      continue;
+
+	    add_fns (fn);
+	  }
+      }
 }
 
 /* Find the containing non-inlined namespace, add it and all its
@@ -799,14 +843,17 @@ name_lookup::adl_namespace_only (tree scope)
 void
 name_lookup::adl_namespace (tree scope)
 {
-  if (seen_p (scope))
+  if (see_and_mark (scope))
     return;
 
-  /* Find the containing non-inline namespace.  */
-  while (DECL_NAMESPACE_INLINE_P (scope))
-    scope = CP_DECL_CONTEXT (scope);
+  /* Look down into inline namespaces.  */
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      adl_namespace ((*inlinees)[ix]);
 
-  adl_namespace_only (scope);
+  if (DECL_NAMESPACE_INLINE_P (scope))
+    /* Mark parent.  */
+    adl_namespace (CP_DECL_CONTEXT (scope));
 }
 
 /* Adds the class and its friends to the lookup structure.  */
@@ -826,31 +873,6 @@ name_lookup::adl_class_only (tree type)
 
   tree context = decl_namespace_context (type);
   adl_namespace (context);
-
-  complete_type (type);
-
-  /* Add friends.  */
-  for (tree list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list;
-       list = TREE_CHAIN (list))
-    if (name == FRIEND_NAME (list))
-      for (tree friends = FRIEND_DECLS (list); friends;
-	   friends = TREE_CHAIN (friends))
-	{
-	  tree fn = TREE_VALUE (friends);
-
-	  /* Only interested in global functions with potentially hidden
-	     (i.e. unqualified) declarations.  */
-	  if (CP_DECL_CONTEXT (fn) != context)
-	    continue;
-
-	  /* Template specializations are never found by name lookup.
-	     (Templates themselves can be found, but not template
-	     specializations.)  */
-	  if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
-	    continue;
-
-	  add_fns (fn);
-	}
 }
 
 /* Adds the class and its bases to the lookup structure.
@@ -873,7 +895,7 @@ name_lookup::adl_bases (tree type)
 }
 
 /* Adds everything associated with a class argument type to the lookup
-   structure.  Returns true on error.
+   structure.
 
    If T is a class type (including unions), its associated classes are: the
    class itself; the class of which it is a member, if any; and its direct
@@ -897,11 +919,13 @@ name_lookup::adl_class (tree type)
     return;
 
   type = TYPE_MAIN_VARIANT (type);
+
   /* We don't set found here because we have to have set seen first,
      which is done in the adl_bases walk.  */
   if (found_p (type))
     return;
 
+  complete_type (type);
   adl_bases (type);
   mark_found (type);
 
@@ -916,6 +940,19 @@ name_lookup::adl_class (tree type)
       for (int i = 0; i < TREE_VEC_LENGTH (list); ++i)
 	adl_template_arg (TREE_VEC_ELT (list, i));
     }
+}
+
+void
+name_lookup::adl_enum (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  if (see_and_mark (type))
+    return;
+
+  if (TYPE_CLASS_SCOPE_P (type))
+    adl_class_only (TYPE_CONTEXT (type));
+  else
+    adl_namespace (decl_namespace_context (type));
 }
 
 void
@@ -1003,9 +1040,7 @@ name_lookup::adl_type (tree type)
       return;
 
     case ENUMERAL_TYPE:
-      if (TYPE_CLASS_SCOPE_P (type))
-	adl_class_only (TYPE_CONTEXT (type));
-      adl_namespace (decl_namespace_context (type));
+      adl_enum (type);
       return;
 
     case LANG_TYPE:
@@ -1074,10 +1109,9 @@ name_lookup::adl_template_arg (tree arg)
 tree
 name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 {
-  deduping = true;
-  lookup_mark (fns, true);
-  value = fns;
-
+  gcc_checking_assert (!vec_safe_length (scopes));
+  
+  /* Gather each associated entity onto the lookup's scope list.  */
   unsigned ix;
   tree arg;
 
@@ -1089,7 +1123,27 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
     else
       adl_expr (arg);
 
-  fns = value;
+  if (vec_safe_length (scopes))
+    {
+      /* Now do the lookups.  */
+      if (fns)
+	{
+	  deduping = true;
+	  lookup_mark (fns, true);
+	}
+      value = fns;
+
+      for (unsigned ix = scopes->length (); ix--;)
+	{
+	  tree scope = (*scopes)[ix];
+	  if (TREE_CODE (scope) == NAMESPACE_DECL)
+	    adl_namespace_fns (scope);
+	  else if (RECORD_OR_UNION_TYPE_P (scope))
+	    adl_class_fns (scope);
+	}
+
+      fns = value;
+    }
 
   return fns;
 }
