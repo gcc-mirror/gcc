@@ -145,7 +145,7 @@ shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,
   /* We need to enlarge the memory segment.  Double the size if that
      is big enough, otherwise get what's needed.  */
   
-  if (mem->meta->size * 2 < used_wa + size)
+  if (mem->meta->size * 2 > used_wa + size)
     new_size = mem->meta->size * 2;
   else
     new_size = round_to_pagesize (used_wa + size);
