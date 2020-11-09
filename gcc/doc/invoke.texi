@@ -1392,7 +1392,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-symbol=@var{symbol} @gol
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
--mindirect-branch-register}
+-mindirect-branch-register -mneeded}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -31377,6 +31377,12 @@ environments.
 Generate code for short address mode.  This is only supported for 32-bit
 and x32 environments.  It is the default address mode for 32-bit and
 x32 environments.
+
+@item -mneeded
+@itemx -mno-needed
+@opindex mneeded
+Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property for Linux target to
+indicate the micro-architecture ISA level required to execute the binary.
 @end table
 
 @node x86 Windows Options
