@@ -710,6 +710,10 @@ normalize_concept_check (tree check, tree args, norm_info info)
   return normalize_expression (def, subst, info);
 }
 
+/* Used by normalize_atom to cache ATOMIC_CONSTRs.  */
+
+static GTY((deletable)) hash_table<atom_hasher> *atom_cache;
+
 /* The normal form of an atom depends on the expression. The normal
    form of a function call to a function concept is a check constraint
    for that concept. The normal form of a reference to a variable
@@ -729,7 +733,19 @@ normalize_atom (tree t, tree args, norm_info info)
   /* Build a new info object for the atom.  */
   tree ci = build_tree_list (t, info.context);
 
-  return build1 (ATOMIC_CONSTR, ci, map);
+  tree atom = build1 (ATOMIC_CONSTR, ci, map);
+  if (!info.generate_diagnostics ())
+    {
+      /* Cache the ATOMIC_CONSTRs that we return, so that sat_hasher::equal
+	 later can cheaply compare two atoms using just pointer equality.  */
+      if (!atom_cache)
+	atom_cache = hash_table<atom_hasher>::create_ggc (31);
+      tree *slot = atom_cache->find_slot (atom, INSERT);
+      if (*slot)
+	return *slot;
+      *slot = atom;
+    }
+  return atom;
 }
 
 /* Returns the normal form of an expression. */
@@ -2294,13 +2310,18 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 {
   static hashval_t hash (sat_entry *e)
   {
-    hashval_t value = hash_atomic_constraint (e->constr);
+    /* Since normalize_atom caches the ATOMIC_CONSTRs it returns,
+       we can assume pointer-based identity for fast hashing and
+       comparison.  Even if this assumption is violated, that's
+       okay, we'll just get a cache miss.  */
+    hashval_t value = htab_hash_pointer (e->constr);
     return iterative_hash_template_arg (e->args, value);
   }
 
   static bool equal (sat_entry *e1, sat_entry *e2)
   {
-    if (!atomic_constraints_identical_p (e1->constr, e2->constr))
+    /* As in sat_hasher::hash.  */
+    if (e1->constr != e2->constr)
       return false;
     return template_args_equal (e1->args, e2->args);
   }
