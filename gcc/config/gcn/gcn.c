@@ -4363,7 +4363,8 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		      || unspec == UNSPEC_SMAX_DPP_SHR
 		      || unspec == UNSPEC_UMIN_DPP_SHR
 		      || unspec == UNSPEC_UMAX_DPP_SHR)
-		     && mode == V64DImode)
+		     && (mode == V64DImode
+			 || mode == V64DFmode))
 		    || (unspec == UNSPEC_PLUS_DPP_SHR
 			&& mode == V64DFmode));
   rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
