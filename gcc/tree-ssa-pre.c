@@ -448,63 +448,6 @@ static vec<bitmap> value_expressions;
    value, one of kind CONSTANT.  */
 static vec<bitmap> constant_value_expressions;
 
-/* Sets that we need to keep track of.  */
-typedef struct bb_bitmap_sets
-{
-  /* The EXP_GEN set, which represents expressions/values generated in
-     a basic block.  */
-  bitmap_set_t exp_gen;
-
-  /* The PHI_GEN set, which represents PHI results generated in a
-     basic block.  */
-  bitmap_set_t phi_gen;
-
-  /* The TMP_GEN set, which represents results/temporaries generated
-     in a basic block. IE the LHS of an expression.  */
-  bitmap_set_t tmp_gen;
-
-  /* The AVAIL_OUT set, which represents which values are available in
-     a given basic block.  */
-  bitmap_set_t avail_out;
-
-  /* The ANTIC_IN set, which represents which values are anticipatable
-     in a given basic block.  */
-  bitmap_set_t antic_in;
-
-  /* The PA_IN set, which represents which values are
-     partially anticipatable in a given basic block.  */
-  bitmap_set_t pa_in;
-
-  /* The NEW_SETS set, which is used during insertion to augment the
-     AVAIL_OUT set of blocks with the new insertions performed during
-     the current iteration.  */
-  bitmap_set_t new_sets;
-
-  /* A cache for value_dies_in_block_x.  */
-  bitmap expr_dies;
-
-  /* The live virtual operand on successor edges.  */
-  tree vop_on_exit;
-
-  /* True if we have visited this block during ANTIC calculation.  */
-  unsigned int visited : 1;
-
-  /* True when the block contains a call that might not return.  */
-  unsigned int contains_may_not_return_call : 1;
-} *bb_value_sets_t;
-
-#define EXP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->exp_gen
-#define PHI_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->phi_gen
-#define TMP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->tmp_gen
-#define AVAIL_OUT(BB)	((bb_value_sets_t) ((BB)->aux))->avail_out
-#define ANTIC_IN(BB)	((bb_value_sets_t) ((BB)->aux))->antic_in
-#define PA_IN(BB)	((bb_value_sets_t) ((BB)->aux))->pa_in
-#define NEW_SETS(BB)	((bb_value_sets_t) ((BB)->aux))->new_sets
-#define EXPR_DIES(BB)	((bb_value_sets_t) ((BB)->aux))->expr_dies
-#define BB_VISITED(BB)	((bb_value_sets_t) ((BB)->aux))->visited
-#define BB_MAY_NOTRETURN(BB) ((bb_value_sets_t) ((BB)->aux))->contains_may_not_return_call
-#define BB_LIVE_VOP_ON_EXIT(BB) ((bb_value_sets_t) ((BB)->aux))->vop_on_exit
-
 
 /* This structure is used to keep track of statistics on what
    optimization PRE was able to perform.  */
@@ -553,9 +496,6 @@ typedef struct expr_pred_trans_d : public typed_noop_remove <expr_pred_trans_d>
   /* The expression ID.  */
   unsigned e;
 
-  /* The predecessor block index along which we translated the expression.  */
-  int pred;
-
   /* The value expression ID that resulted from the translation.  */
   unsigned v;
 
@@ -597,27 +537,77 @@ expr_pred_trans_d::mark_deleted (expr_pred_trans_d &e)
 inline hashval_t
 expr_pred_trans_d::hash (const expr_pred_trans_d &e)
 {
-  return iterative_hash_hashval_t (e.e, e.pred);
+  return e.e;
 }
 
 inline int
 expr_pred_trans_d::equal (const expr_pred_trans_d &ve1,
 			  const expr_pred_trans_d &ve2)
 {
-  int b1 = ve1.pred;
-  int b2 = ve2.pred;
-
-  /* If they are not translations for the same basic block, they can't
-     be equal.  */
-  if (b1 != b2)
-    return false;
-
   return ve1.e == ve2.e;
 }
 
-/* The phi_translate_table caches phi translations for a given
-   expression and predecessor.  */
-static hash_table<expr_pred_trans_d> *phi_translate_table;
+/* Sets that we need to keep track of.  */
+typedef struct bb_bitmap_sets
+{
+  /* The EXP_GEN set, which represents expressions/values generated in
+     a basic block.  */
+  bitmap_set_t exp_gen;
+
+  /* The PHI_GEN set, which represents PHI results generated in a
+     basic block.  */
+  bitmap_set_t phi_gen;
+
+  /* The TMP_GEN set, which represents results/temporaries generated
+     in a basic block. IE the LHS of an expression.  */
+  bitmap_set_t tmp_gen;
+
+  /* The AVAIL_OUT set, which represents which values are available in
+     a given basic block.  */
+  bitmap_set_t avail_out;
+
+  /* The ANTIC_IN set, which represents which values are anticipatable
+     in a given basic block.  */
+  bitmap_set_t antic_in;
+
+  /* The PA_IN set, which represents which values are
+     partially anticipatable in a given basic block.  */
+  bitmap_set_t pa_in;
+
+  /* The NEW_SETS set, which is used during insertion to augment the
+     AVAIL_OUT set of blocks with the new insertions performed during
+     the current iteration.  */
+  bitmap_set_t new_sets;
+
+  /* A cache for value_dies_in_block_x.  */
+  bitmap expr_dies;
+
+  /* The live virtual operand on successor edges.  */
+  tree vop_on_exit;
+
+  /* PHI translate cache for the single successor edge.  */
+  hash_table<expr_pred_trans_d> *phi_translate_table;
+
+  /* True if we have visited this block during ANTIC calculation.  */
+  unsigned int visited : 1;
+
+  /* True when the block contains a call that might not return.  */
+  unsigned int contains_may_not_return_call : 1;
+} *bb_value_sets_t;
+
+#define EXP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->exp_gen
+#define PHI_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->phi_gen
+#define TMP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->tmp_gen
+#define AVAIL_OUT(BB)	((bb_value_sets_t) ((BB)->aux))->avail_out
+#define ANTIC_IN(BB)	((bb_value_sets_t) ((BB)->aux))->antic_in
+#define PA_IN(BB)	((bb_value_sets_t) ((BB)->aux))->pa_in
+#define NEW_SETS(BB)	((bb_value_sets_t) ((BB)->aux))->new_sets
+#define EXPR_DIES(BB)	((bb_value_sets_t) ((BB)->aux))->expr_dies
+#define PHI_TRANS_TABLE(BB) ((bb_value_sets_t) ((BB)->aux))->phi_translate_table
+#define BB_VISITED(BB)	((bb_value_sets_t) ((BB)->aux))->visited
+#define BB_MAY_NOTRETURN(BB) ((bb_value_sets_t) ((BB)->aux))->contains_may_not_return_call
+#define BB_LIVE_VOP_ON_EXIT(BB) ((bb_value_sets_t) ((BB)->aux))->vop_on_exit
+
 
 /* Add the tuple mapping from {expression E, basic block PRED} to
    the phi translation table and return whether it pre-existed.  */
@@ -625,13 +615,14 @@ static hash_table<expr_pred_trans_d> *phi_translate_table;
 static inline bool
 phi_trans_add (expr_pred_trans_t *entry, pre_expr e, basic_block pred)
 {
+  if (!PHI_TRANS_TABLE (pred))
+    PHI_TRANS_TABLE (pred) = new hash_table<expr_pred_trans_d> (11);
+
   expr_pred_trans_t slot;
   expr_pred_trans_d tem;
   unsigned id = get_expression_id (e);
-  hashval_t hash = iterative_hash_hashval_t (id, pred->index);
   tem.e = id;
-  tem.pred = pred->index;
-  slot = phi_translate_table->find_slot_with_hash (tem, hash, INSERT);
+  slot = PHI_TRANS_TABLE (pred)->find_slot_with_hash (tem, id, INSERT);
   if (slot->e)
     {
       *entry = slot;
@@ -640,7 +631,6 @@ phi_trans_add (expr_pred_trans_t *entry, pre_expr e, basic_block pred)
 
   *entry = slot;
   slot->e = id;
-  slot->pred = pred->index;
   return false;
 }
 
@@ -1702,7 +1692,6 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
 	       bitmap_set_t set1, bitmap_set_t set2, edge e)
 {
   expr_pred_trans_t slot = NULL;
-  size_t slot_size = 0;
   pre_expr phitrans;
 
   if (!expr)
@@ -1723,7 +1712,6 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
       /* Store NULL for the value we want to return in the case of
 	 recursing.  */
       slot->v = 0;
-      slot_size = phi_translate_table->size ();
     }
 
   /* Translate.  */
@@ -1734,15 +1722,14 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
 
   if (slot)
     {
-      /* Check for reallocation.  */
-      if (phi_translate_table->size () != slot_size)
-	phi_trans_add (&slot, expr, e->src);
+      /* We may have reallocated.  */
+      phi_trans_add (&slot, expr, e->src);
       if (phitrans)
 	slot->v = get_expression_id (phitrans);
       else
 	/* Remove failed translations again, they cause insert
 	   iteration to not pick up new opportunities reliably.  */
-	phi_translate_table->clear_slot (slot);
+	PHI_TRANS_TABLE (e->src)->clear_slot (slot);
     }
 
   return phitrans;
@@ -1767,6 +1754,13 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, edge e)
     }
 
   exprs = sorted_array_from_bitmap_set (set);
+  /* Allocate the phi-translation cache where we have an idea about
+     its size.  hash-table implementation internals tell us that
+     allocating the table to fit twice the number of elements will
+     make sure we do not usually re-allocate.  */
+  if (!PHI_TRANS_TABLE (e->src))
+    PHI_TRANS_TABLE (e->src)
+      = new hash_table<expr_pred_trans_d> (2 * exprs.length ());
   FOR_EACH_VEC_ELT (exprs, i, expr)
     {
       pre_expr translated;
@@ -4172,7 +4166,6 @@ init_pre (void)
   calculate_dominance_info (CDI_DOMINATORS);
 
   bitmap_obstack_initialize (&grand_bitmap_obstack);
-  phi_translate_table = new hash_table<expr_pred_trans_d> (5110);
   expression_to_id = new hash_table<pre_expr_d> (num_ssa_names * 3);
   FOR_ALL_BB_FN (bb, cfun)
     {
@@ -4180,6 +4173,7 @@ init_pre (void)
       PHI_GEN (bb) = bitmap_set_new ();
       TMP_GEN (bb) = bitmap_set_new ();
       AVAIL_OUT (bb) = bitmap_set_new ();
+      PHI_TRANS_TABLE (bb) = NULL;
     }
 }
 
@@ -4196,12 +4190,14 @@ fini_pre ()
   bitmap_obstack_release (&grand_bitmap_obstack);
   bitmap_set_pool.release ();
   pre_expr_pool.release ();
-  delete phi_translate_table;
-  phi_translate_table = NULL;
   delete expression_to_id;
   expression_to_id = NULL;
   name_to_id.release ();
 
+  basic_block bb;
+  FOR_ALL_BB_FN (bb, cfun)
+    if (PHI_TRANS_TABLE (bb))
+      delete PHI_TRANS_TABLE (bb);
   free_aux_for_blocks ();
 }
 
