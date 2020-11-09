@@ -7339,7 +7339,7 @@ gfc_trans_deallocate (gfc_code *code)
 	  if (ref && ref->type == REF_ARRAY && ref->u.ar.codimen)
 	    {
 	      gfc_symbol *sym = expr->symtree->n.sym;
-	      int alloc_type = gfc_native_coarray_get_allocation_type (sym);
+	      int alloc_type = gfc_cas_get_allocation_type (sym);
 	       tmp = build_call_expr_loc (input_location,
 					gfor_fndecl_cas_coarray_free,
 					2, gfc_build_addr_expr (pvoid_type_node, se.expr),

@@ -3614,7 +3614,6 @@ fixup_shared_coarray_args (gfc_symbol *sym, gfc_actual_arglist *actual)
       if (a->expr == NULL || f->sym == NULL)
 	continue;
       if (a->expr->expr_type == EXPR_VARIABLE
-	  && a->expr->symtree->n.sym->attr.codimension
 	  && f->sym->attr.codimension)
 	{
 	  gfc_ref *r;

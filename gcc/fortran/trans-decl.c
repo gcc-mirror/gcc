@@ -4666,7 +4666,7 @@ get_proc_result (gfc_symbol* sym)
 
 
 void
-gfc_trans_native_coarray (stmtblock_t * init, stmtblock_t *cleanup, gfc_symbol * sym)
+gfc_trans_shared_coarray (stmtblock_t * init, stmtblock_t *cleanup, gfc_symbol * sym)
 {
   tree tmp, decl;
   /* All unused, but needed as arguments.  */
@@ -4680,7 +4680,7 @@ gfc_trans_native_coarray (stmtblock_t * init, stmtblock_t *cleanup, gfc_symbol *
   TREE_STATIC(decl) = 1;
 
   /* Tell the library to handle arrays of locks and event types seperatly.  */
-  alloc_type = gfc_native_coarray_get_allocation_type (sym);
+  alloc_type = gfc_cas_get_allocation_type (sym);
 
   if (init)
     {
@@ -4691,7 +4691,7 @@ gfc_trans_native_coarray (stmtblock_t * init, stmtblock_t *cleanup, gfc_symbol *
 			   NULL_TREE, true, NULL, &element_size);
       gfc_conv_descriptor_offset_set (init, decl, offset);
       elem_size = size_in_bytes (gfc_get_element_type (TREE_TYPE(decl)));
-      gfc_allocate_native_coarray (init, decl, elem_size, sym->as->corank,
+      gfc_allocate_shared_coarray (init, decl, elem_size, sym->as->corank,
 				  alloc_type);
     }
 
@@ -4711,23 +4711,23 @@ static void
 generate_coarray_constructor_function (tree *, tree *);
 
 static void
-gfc_trans_native_coarray_static (gfc_symbol * sym)
+gfc_trans_shared_coarray_static (gfc_symbol * sym)
 {
   tree save_fn_decl, fndecl;
   generate_coarray_constructor_function (&save_fn_decl, &fndecl);
-  gfc_trans_native_coarray (&caf_init_block, NULL, sym);
+  gfc_trans_shared_coarray (&caf_init_block, NULL, sym);
   finish_coarray_constructor_function (&save_fn_decl, &fndecl);
 }
 
 static void
-gfc_trans_native_coarray_inline (gfc_wrapped_block * block, gfc_symbol * sym)
+gfc_trans_shared_coarray_inline (gfc_wrapped_block * block, gfc_symbol * sym)
 {
   stmtblock_t init, cleanup;
 
   gfc_init_block (&init);
   gfc_init_block (&cleanup);
 
-  gfc_trans_native_coarray (&init, &cleanup, sym);
+  gfc_trans_shared_coarray (&init, &cleanup, sym);
 
   gfc_add_init_cleanup (block, gfc_finish_block (&init), gfc_finish_block (&cleanup));
 }
@@ -5043,7 +5043,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      else if (flag_coarray == GFC_FCOARRAY_SHARED
 		       && sym->attr.codimension)
 		{
-		  gfc_trans_native_coarray_inline (block, sym);
+		  gfc_trans_shared_coarray_inline (block, sym);
 		}
 	      else
 		{
@@ -5538,7 +5538,7 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   if (flag_coarray == GFC_FCOARRAY_SHARED && sym->attr.codimension
       && !sym->attr.allocatable)
-    gfc_trans_native_coarray_static (sym);
+    gfc_trans_shared_coarray_static (sym);
 
   gfc_module_add_decl (cur_module, decl);
 
