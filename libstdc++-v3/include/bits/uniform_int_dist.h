@@ -56,7 +56,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
-    /* Determine whether number is a power of 2.  */
+    // Determine whether number is a power of two.
+    // This is true for zero, which is OK because we want _Power_of_2(n+1)
+    // to be true if n==numeric_limits<_Tp>::max() and so n+1 wraps around.
     template<typename _Tp>
       constexpr bool
       _Power_of_2(_Tp __x)
