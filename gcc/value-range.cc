@@ -131,13 +131,14 @@ irange::copy_to_legacy (const irange &src)
     set (src.tree_lower_bound (), src.tree_upper_bound ());
 }
 
-// Swap min/max if they are out of order.  Return TRUE if further
-// processing of the range is necessary, FALSE otherwise.
+// Swap MIN/MAX if they are out of order and adjust KIND appropriately.
 
-bool
-irange::swap_out_of_order_endpoints (tree &min, tree &max,
-					  value_range_kind &kind)
+static void
+swap_out_of_order_endpoints (tree &min, tree &max, value_range_kind &kind)
 {
+  gcc_checking_assert (kind != VR_UNDEFINED);
+  if (kind == VR_VARYING)
+    return;
   /* Wrong order for min and max, to swap them and the VR type we need
      to adjust them.  */
   if (tree_int_cst_lt (max, min))
@@ -149,8 +150,8 @@ irange::swap_out_of_order_endpoints (tree &min, tree &max,
 	 for VR_ANTI_RANGE empty range, so drop to varying as well.  */
       if (TYPE_PRECISION (TREE_TYPE (min)) == 1)
 	{
-	  set_varying (TREE_TYPE (min));
-	  return false;
+	  kind = VR_VARYING;
+	  return;
 	}
 
       one = build_int_cst (TREE_TYPE (min), 1);
@@ -163,12 +164,11 @@ irange::swap_out_of_order_endpoints (tree &min, tree &max,
 	 to varying in this case.  */
       if (tree_int_cst_lt (max, min))
 	{
-	  set_varying (TREE_TYPE (min));
-	  return false;
+	  kind = VR_VARYING;
+	  return;
 	}
       kind = kind == VR_RANGE ? VR_ANTI_RANGE : VR_RANGE;
     }
-  return true;
 }
 
 void
@@ -253,13 +253,6 @@ irange::set (tree min, tree max, value_range_kind kind)
       && (POLY_INT_CST_P (min) || POLY_INT_CST_P (max)))
     kind = VR_VARYING;
 
-  if (kind == VR_VARYING)
-    {
-      set_varying (TREE_TYPE (min));
-      return;
-    }
-
-  tree type = TREE_TYPE (min);
   // Nothing to canonicalize for symbolic ranges.
   if (TREE_CODE (min) != INTEGER_CST
       || TREE_CODE (max) != INTEGER_CST)
@@ -270,8 +263,13 @@ irange::set (tree min, tree max, value_range_kind kind)
       m_num_ranges = 1;
       return;
     }
-  if (!swap_out_of_order_endpoints (min, max, kind))
-    goto cleanup_set;
+
+  swap_out_of_order_endpoints (min, max, kind);
+  if (kind == VR_VARYING)
+    {
+      set_varying (TREE_TYPE (min));
+      return;
+    }
 
   // Anti-ranges that can be represented as ranges should be so.
   if (kind == VR_ANTI_RANGE)
@@ -280,6 +278,7 @@ irange::set (tree min, tree max, value_range_kind kind)
          values < -INF and values > INF as -INF/INF as well.  */
       bool is_min = vrp_val_is_min (min);
       bool is_max = vrp_val_is_max (max);
+      tree type = TREE_TYPE (min);
 
       if (is_min && is_max)
 	{
@@ -314,38 +313,17 @@ irange::set (tree min, tree max, value_range_kind kind)
 	  kind = VR_RANGE;
         }
     }
-  else if (!swap_out_of_order_endpoints (min, max, kind))
-    goto cleanup_set;
 
-  /* Do not drop [-INF(OVF), +INF(OVF)] to varying.  (OVF) has to be sticky
-     to make sure VRP iteration terminates, otherwise we can get into
-     oscillations.  */
-  if (!normalize_min_max (type, min, max, kind))
-    {
-      m_kind = kind;
-      m_base[0] = min;
-      m_base[1] = max;
-      m_num_ranges = 1;
-      if (flag_checking)
-	verify_range ();
-    }
-
- cleanup_set:
-  // Avoid using TYPE_{MIN,MAX}_VALUE because -fstrict-enums can
-  // restrict those to a subset of what actually fits in the type.
-  // Instead use the extremes of the type precision
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (type);
-  if (wi::eq_p (wi::to_wide (min), wi::min_value (prec, sign))
-      && wi::eq_p (wi::to_wide (max), wi::max_value (prec, sign)))
-    m_kind = VR_VARYING;
-  else if (undefined_p ())
-    m_kind = VR_UNDEFINED;
+  m_kind = kind;
+  m_base[0] = min;
+  m_base[1] = max;
+  m_num_ranges = 1;
+  normalize_min_max ();
   if (flag_checking)
     verify_range ();
 }
 
-/* Check the validity of the range.  */
+// Check the validity of the range.
 
 void
 irange::verify_range ()
