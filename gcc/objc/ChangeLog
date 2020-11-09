@@ -1,3 +1,10 @@
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_prop_attr_kind_for_rid): Handle class
+	attribute.
+	(objc_add_property_declaration): Likewise.
+	* objc-act.h (PROPERTY_CLASS): Record class attribute state.
+
 2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-act.c (objc_prop_attr_kind_for_rid): Handle

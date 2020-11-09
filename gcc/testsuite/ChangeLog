@@ -1,3 +1,21 @@
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/property/at-property-4.mm: Test handling class
+	attributes.
+	* objc.dg/property/at-property-4.m: Likewise.
+
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/zero-scratch-regs-10.c: Skip for powerpc
+	Darwin.
+	* c-c++-common/zero-scratch-regs-11.c: Likewise.
+	* c-c++-common/zero-scratch-regs-8.c: Likewise.
+	* c-c++-common/zero-scratch-regs-9.c: Likewise.
+
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/builtin_thread_pointer.c: Require native TLS.
+
 2020-11-07  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/Wimplicit-fallthrough-20.c: Adjust dg-warning.

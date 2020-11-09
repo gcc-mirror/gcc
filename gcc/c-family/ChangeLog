@@ -1,3 +1,12 @@
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-common.h (OBJC_IS_PATTR_KEYWORD): Add class to the list
+	of keywords accepted in @property attribute contexts.
+	* c-objc.h (enum objc_property_attribute_group): Add
+	OBJC_PROPATTR_GROUP_CLASS.
+	(enum objc_property_attribute_kind): Add
+	OBJC_PROPERTY_ATTR_CLASS.
+
 2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-common.c (c_common_reswords): Add 'atomic' property

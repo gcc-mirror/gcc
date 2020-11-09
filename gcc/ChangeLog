@@ -1,3 +1,8 @@
+2020-11-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_mangle_decl_assembler_name): Change
+	DECL_IS_BUILTIN -> DECL_IS_UNDECLARED_BUILTIN.
+
 2020-11-07  Martin Uecker  <muecker@gwdg.de>
 
 	* doc/extend.texi: Document mixing labels and code.

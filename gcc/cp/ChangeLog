@@ -1,3 +1,8 @@
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_objc_at_property_declaration): Handle
+	class keywords in @property attribute context.
+
 2020-11-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81660
