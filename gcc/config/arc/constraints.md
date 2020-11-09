@@ -493,6 +493,11 @@
   Condition Codes"
   (and (match_code "reg") (match_test "cc_register (op, VOIDmode)")))
 
+(define_constraint "Ral"
+  "@internal
+   Accumulator register @code{ACCL} - do not reload into its class"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == ACCL_REGNO")))
 
 (define_constraint "Q"
   "@internal

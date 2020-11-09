@@ -1322,8 +1322,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   ")
 
 (define_insn_and_split "*movdi_insn"
-  [(set (match_operand:DI 0 "move_dest_operand"      "=w, w,r,   m")
-	(match_operand:DI 1 "move_double_src_operand" "c,Hi,m,cCm3"))]
+  [(set (match_operand:DI 0 "move_dest_operand"      "=r, r,r,   m")
+	(match_operand:DI 1 "move_double_src_operand" "r,Hi,m,rCm3"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)
    || (satisfies_constraint_Cm3 (operands[1])
@@ -1334,6 +1334,13 @@ core_3, archs4x, archs4xd, archs4xd_slow"
     {
     default:
       return \"#\";
+
+    case 0:
+    if (TARGET_PLUS_QMACW
+	&& even_register_operand (operands[0], DImode)
+	&& even_register_operand (operands[1], DImode))
+      return \"vadd2\\t%0,%1,0\";
+    return \"#\";
 
     case 2:
     if (TARGET_LL64
@@ -1351,7 +1358,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
     return \"#\";
     }
 }"
-  "reload_completed"
+  "&& reload_completed"
   [(const_int 0)]
   {
    arc_split_move (operands);
@@ -1397,15 +1404,24 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "if (prepare_move_operands (operands, DFmode)) DONE;")
 
 (define_insn_and_split "*movdf_insn"
-  [(set (match_operand:DF 0 "move_dest_operand"      "=D,r,c,c,r,m")
-	(match_operand:DF 1 "move_double_src_operand" "r,D,c,E,m,c"))]
-  "register_operand (operands[0], DFmode) || register_operand (operands[1], DFmode)"
+  [(set (match_operand:DF 0 "move_dest_operand"      "=D,r,r,r,r,m")
+	(match_operand:DF 1 "move_double_src_operand" "r,D,r,E,m,r"))]
+  "register_operand (operands[0], DFmode)
+   || register_operand (operands[1], DFmode)"
   "*
 {
  switch (which_alternative)
    {
     default:
       return \"#\";
+
+    case 2:
+    if (TARGET_PLUS_QMACW
+	&& even_register_operand (operands[0], DFmode)
+	&& even_register_operand (operands[1], DFmode))
+      return \"vadd2\\t%0,%1,0\";
+    return \"#\";
+
     case 4:
     if (TARGET_LL64
 	&& ((even_register_operand (operands[0], DFmode)
@@ -6126,6 +6142,49 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set_attr "length" "0")])
 
 ;; MAC and DMPY instructions
+
+; Use MAC instruction to emulate 16bit mac.
+(define_expand "maddhisi4"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:HI 1 "register_operand" "")
+   (match_operand:HI 2 "extend_operand"   "")
+   (match_operand:SI 3 "register_operand" "")]
+  "TARGET_PLUS_DMPY"
+  "{
+   rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
+   rtx tmp1 = gen_reg_rtx (SImode);
+   rtx tmp2 = gen_reg_rtx (SImode);
+   rtx accl = gen_lowpart (SImode, acc_reg);
+
+   emit_move_insn (accl, operands[3]);
+   emit_insn (gen_rtx_SET (tmp1, gen_rtx_SIGN_EXTEND (SImode, operands[1])));
+   emit_insn (gen_rtx_SET (tmp2, gen_rtx_SIGN_EXTEND (SImode, operands[2])));
+   emit_insn (gen_mac (tmp1, tmp2));
+   emit_move_insn (operands[0], accl);
+   DONE;
+  }")
+
+; The same for the unsigned variant, but using MACU instruction.
+(define_expand "umaddhisi4"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:HI 1 "register_operand" "")
+   (match_operand:HI 2 "extend_operand"   "")
+   (match_operand:SI 3 "register_operand" "")]
+  "TARGET_PLUS_DMPY"
+  "{
+   rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
+   rtx tmp1 = gen_reg_rtx (SImode);
+   rtx tmp2 = gen_reg_rtx (SImode);
+   rtx accl = gen_lowpart (SImode, acc_reg);
+
+   emit_move_insn (accl, operands[3]);
+   emit_insn (gen_rtx_SET (tmp1, gen_rtx_ZERO_EXTEND (SImode, operands[1])));
+   emit_insn (gen_rtx_SET (tmp2, gen_rtx_ZERO_EXTEND (SImode, operands[2])));
+   emit_insn (gen_macu (tmp1, tmp2));
+   emit_move_insn (operands[0], accl);
+   DONE;
+  }")
+
 (define_expand "maddsidi4"
   [(match_operand:DI 0 "register_operand" "")
    (match_operand:SI 1 "register_operand" "")

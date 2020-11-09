@@ -25,13 +25,14 @@ f2 (void)
 }
 
 /* Declarations, including attribute declarations, cannot appear after
-   labels.  */
+   labels when a statement is expected.  */
 
 void
 f3 (void)
 {
- x: [[]];; /* { dg-error "can only be part of a statement" } */
-}
+  if (1)
+    x: [[]]; /* { dg-error "expected" } */
+} 
 
 /* Prefix attributes cannot appear on type names.  */
 

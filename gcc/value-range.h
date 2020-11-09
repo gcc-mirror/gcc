@@ -111,8 +111,7 @@ protected:
   void irange_set (tree, tree);
   void irange_set_anti_range (tree, tree);
 
-  bool swap_out_of_order_endpoints (tree &min, tree &max, value_range_kind &);
-  bool normalize_min_max (tree type, tree min, tree max, value_range_kind);
+  void normalize_min_max ();
 
   bool legacy_mode_p () const;
   bool legacy_equal_p (const irange &) const;
@@ -566,7 +565,7 @@ irange::set_zero (tree type)
     irange_set (z, z);
 }
 
-// Normalize [MIN, MAX] into VARYING and ~[MIN, MAX] into UNDEFINED.
+// Normalize a range to VARYING or UNDEFINED if possible.
 //
 // Avoid using TYPE_{MIN,MAX}_VALUE because -fstrict-enums can
 // restrict those to a subset of what actually fits in the type.
@@ -575,24 +574,23 @@ irange::set_zero (tree type)
 // whereas if we used TYPE_*_VAL, said function would just punt upon
 // seeing a VARYING.
 
-inline bool
-irange::normalize_min_max (tree type, tree min, tree max,
-			   value_range_kind kind)
+inline void
+irange::normalize_min_max ()
 {
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (type);
-  if (wi::eq_p (wi::to_wide (min), wi::min_value (prec, sign))
-      && wi::eq_p (wi::to_wide (max), wi::max_value (prec, sign)))
+  gcc_checking_assert (legacy_mode_p ());
+  gcc_checking_assert (!undefined_p ());
+  unsigned prec = TYPE_PRECISION (type ());
+  signop sign = TYPE_SIGN (type ());
+  if (wi::eq_p (wi::to_wide (min ()), wi::min_value (prec, sign))
+      && wi::eq_p (wi::to_wide (max ()), wi::max_value (prec, sign)))
     {
-      if (kind == VR_RANGE)
-	set_varying (type);
-      else if (kind == VR_ANTI_RANGE)
+      if (m_kind == VR_RANGE)
+	set_varying (type ());
+      else if (m_kind == VR_ANTI_RANGE)
 	set_undefined ();
       else
 	gcc_unreachable ();
-      return true;
     }
-  return false;
 }
 
 // Return the maximum value for TYPE.

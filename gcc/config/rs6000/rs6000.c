@@ -6799,7 +6799,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
       for (i = 0; i < n_elts; i++)
 	{
 	  rtx tmp = force_reg (GET_MODE_INNER (mode), XVECEXP (vals, 0, i));
-	  if (TARGET_64BIT)
+	  if (TARGET_POWERPC64)
 	    {
 	      op[i] = gen_reg_rtx (DImode);
 	      emit_insn (gen_zero_extendqidi2 (op[i], tmp));
@@ -6909,7 +6909,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	  for (i = 0; i < n_elts; i++)
 	    {
 	      vr_qi[i] = gen_reg_rtx (V16QImode);
-	      if (TARGET_64BIT)
+	      if (TARGET_POWERPC64)
 		emit_insn (gen_p8_mtvsrd_v16qidi2 (vr_qi[i], op[i]));
 	      else
 		emit_insn (gen_p8_mtvsrwz_v16qisi2 (vr_qi[i], op[i]));
@@ -27084,7 +27084,8 @@ static tree
 rs6000_mangle_decl_assembler_name (tree decl, tree id)
 {
   if (!TARGET_IEEEQUAD_DEFAULT && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
-      && TREE_CODE (decl) == FUNCTION_DECL && DECL_IS_BUILTIN (decl) )
+      && TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_IS_UNDECLARED_BUILTIN (decl))
     {
       size_t len = IDENTIFIER_LENGTH (id);
       const char *name = IDENTIFIER_POINTER (id);

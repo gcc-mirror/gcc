@@ -157,6 +157,7 @@ static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
 static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
 static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nsobject_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -509,6 +510,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_noinit_attribute, attr_noinit_exclusions },
   { "access",		      1, 3, false, true, true, false,
 			      handle_access_attribute, NULL },
+  /* Attributes used by Objective-C.  */
+  { "NSObject",		      0, 0, true, false, false, false,
+			      handle_nsobject_attribute, NULL },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -5121,6 +5125,41 @@ handle_patchable_function_entry_attribute (tree *, tree name, tree args,
 	  return NULL_TREE;
 	}
     }
+  return NULL_TREE;
+}
+
+/* Handle a "NSObject" attributes; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nsobject_attribute (tree *node, tree name, tree args,
+			   int /*flags*/, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+
+  /* This attribute only applies to typedefs (or field decls for properties),
+     we drop it otherwise - but warn about this if enabled.  */
+  if (TREE_CODE (*node) != TYPE_DECL && TREE_CODE (*node) != FIELD_DECL)
+    {
+      warning (OPT_WNSObject_attribute, "%qE attribute may be put on a"
+	       " typedef only; attribute is ignored", name);
+      return NULL_TREE;
+    }
+
+  /* The original implementation only allowed pointers to records, however
+     recent implementations also allow void *.  */
+  tree type = TREE_TYPE (*node);
+  if (!type || !POINTER_TYPE_P (type)
+      || (TREE_CODE (TREE_TYPE (type)) != RECORD_TYPE
+          && !VOID_TYPE_P (TREE_TYPE (type))))
+    {
+      error ("%qE attribute is for pointer types only", name);
+      return NULL_TREE;
+    }
+
+  tree t = tree_cons (name, args, TYPE_ATTRIBUTES (type));
+  TREE_TYPE (*node) = build_type_attribute_variant (type, t);
+
   return NULL_TREE;
 }
 

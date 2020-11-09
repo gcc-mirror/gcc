@@ -1,7 +1,8 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
+/* { dg-require-effective-target arm_hard_ok } */
 /* { dg-add-options arm_v8_2a_bf16_neon } */
-/* { dg-additional-options "-O3 --save-temps" } */
+/* { dg-additional-options "-O3 --save-temps -mfloat-abi=hard" } */
 
 #include "arm_neon.h"
 

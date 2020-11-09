@@ -174,19 +174,13 @@ namespace std
     };
 
     _GLIBCXX_EH_PTR_USED
-#ifndef  _GLIBCXX_EH_PTR_COMPAT
-    __attribute__((__always_inline__)) // XXX see PR 97729
     inline
-#endif
     exception_ptr::exception_ptr() _GLIBCXX_NOEXCEPT
     : _M_exception_object(0)
     { }
 
     _GLIBCXX_EH_PTR_USED
-#ifndef  _GLIBCXX_EH_PTR_COMPAT
-    __attribute__((__always_inline__))
     inline
-#endif
     exception_ptr::exception_ptr(const exception_ptr& __other) _GLIBCXX_NOEXCEPT
     : _M_exception_object(__other._M_exception_object)
     {
@@ -195,10 +189,7 @@ namespace std
     }
 
     _GLIBCXX_EH_PTR_USED
-#ifndef  _GLIBCXX_EH_PTR_COMPAT
-    __attribute__((__always_inline__))
     inline
-#endif
     exception_ptr::~exception_ptr() _GLIBCXX_USE_NOEXCEPT
     {
       if (_M_exception_object)

@@ -36,9 +36,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#if __cpp_rtti
-# include <typeinfo>
-#endif
+#include <typeinfo>
 #include <bits/stl_function.h>
 #include <bits/invoke.h>
 #include <bits/refwrap.h>

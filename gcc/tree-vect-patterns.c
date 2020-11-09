@@ -5182,15 +5182,15 @@ vect_determine_precisions (vec_info *vinfo)
       for (unsigned i = 0; i < bb_vinfo->bbs.length (); ++i)
 	{
 	  basic_block bb = bb_vinfo->bbs[i];
-	  for (auto gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	    {
-	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (gsi));
-	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
-		vect_determine_mask_precision (vinfo, stmt_info);
-	    }
 	  for (auto gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi.phi ());
+	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
+		vect_determine_mask_precision (vinfo, stmt_info);
+	    }
+	  for (auto gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (gsi));
 	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
 		vect_determine_mask_precision (vinfo, stmt_info);
 	    }

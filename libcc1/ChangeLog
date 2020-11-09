@@ -1,3 +1,9 @@
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* libcc1plugin.cc (address_rewriter): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	* libcp1plugin.cc (supplement_binding): Likewise.
+
 2020-10-14  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_add_friend): Set DECL_UNIQUE_FRIEND_P.

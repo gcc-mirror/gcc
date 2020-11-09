@@ -137,6 +137,10 @@ enum objc_property_assign_semantics {
 #define PROPERTY_OPTIONAL(DECL) \
   DECL_LANG_FLAG_5 (PROPERTY_DECL_CHECK (DECL))
 
+/* PROPERTY_CLASS can be 0 or 1.  */
+#define PROPERTY_CLASS(DECL) \
+   DECL_LANG_FLAG_6 (PROPERTY_DECL_CHECK (DECL))
+
 /* PROPERTY_REF.  A PROPERTY_REF represents an 'object.property'
    expression.  It is normally used for property access, but when
    the Objective-C 2.0 "dot-syntax" (object.component) is used

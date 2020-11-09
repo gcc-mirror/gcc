@@ -822,8 +822,10 @@ objc_prop_attr_kind_for_rid (enum rid prop_rid)
       case RID_RETAIN:		return OBJC_PROPERTY_ATTR_RETAIN;
       case RID_COPY:		return OBJC_PROPERTY_ATTR_COPY;
 
+      case RID_PROPATOMIC:	return OBJC_PROPERTY_ATTR_ATOMIC;
       case RID_NONATOMIC:	return OBJC_PROPERTY_ATTR_NONATOMIC;
 
+      case RID_CLASS:		return OBJC_PROPERTY_ATTR_CLASS;
     }
 }
 
@@ -984,6 +986,14 @@ objc_add_property_declaration (location_t location, tree decl,
       else
 	gcc_unreachable ();
     }
+
+  /* An attribute that indicates this property manipulates a class variable.
+     In this case, both the variable and the getter/setter must be provided
+     by the user.  */
+  bool property_class = false;
+  if (attrs[OBJC_PROPATTR_GROUP_CLASS])
+    property_nonatomic = attrs[OBJC_PROPATTR_GROUP_CLASS]->prop_kind
+			 == OBJC_PROPERTY_ATTR_CLASS;
 
   /* TODO: Check that the property type is an Objective-C object or a
      "POD".  */
@@ -1272,6 +1282,7 @@ objc_add_property_declaration (location_t location, tree decl,
   PROPERTY_SETTER_NAME (property_decl) = property_setter_ident;
   PROPERTY_READONLY (property_decl) = property_readonly;
   PROPERTY_NONATOMIC (property_decl) = property_nonatomic;
+  PROPERTY_CLASS (property_decl) = property_class;
   PROPERTY_ASSIGN_SEMANTICS (property_decl) = property_assign_semantics;
   PROPERTY_IVAR_NAME (property_decl) = NULL_TREE;
   PROPERTY_DYNAMIC (property_decl) = 0;
@@ -2476,9 +2487,14 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
   if (!POINTER_TYPE_P (ltyp) || !POINTER_TYPE_P (rtyp))
     return false;
 
+  tree ltyp_attr, rtyp_attr;
   do
     {
-      ltyp = TREE_TYPE (ltyp);  /* Remove indirections.  */
+      /* Remove indirections, but keep the type attributes from the innermost
+	 pointer type, to check for NSObject.  */
+      ltyp_attr = TYPE_ATTRIBUTES (ltyp);
+      ltyp = TREE_TYPE (ltyp);
+      rtyp_attr = TYPE_ATTRIBUTES (rtyp);
       rtyp = TREE_TYPE (rtyp);
     }
   while (POINTER_TYPE_P (ltyp) && POINTER_TYPE_P (rtyp));
@@ -2523,17 +2539,23 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
       return true;
     }
 
+  /* We might have void * with NSObject type attr.  */
+  bool l_NSObject_p = ltyp_attr && lookup_attribute ("NSObject", ltyp_attr);
+  bool r_NSObject_p = rtyp_attr && lookup_attribute ("NSObject", rtyp_attr);
+
   /* Past this point, we are only interested in ObjC class instances,
-     or 'id' or 'Class'.  */
-  if (TREE_CODE (ltyp) != RECORD_TYPE || TREE_CODE (rtyp) != RECORD_TYPE)
+     or 'id' or 'Class' (except if the user applied the NSObject type
+     attribute).  */
+  if ((TREE_CODE (ltyp) != RECORD_TYPE && !l_NSObject_p)
+      || (TREE_CODE (rtyp) != RECORD_TYPE && !r_NSObject_p))
     return false;
 
   if (!objc_is_object_id (ltyp) && !objc_is_class_id (ltyp)
-      && !TYPE_HAS_OBJC_INFO (ltyp))
+      && !TYPE_HAS_OBJC_INFO (ltyp) && !l_NSObject_p)
     return false;
 
   if (!objc_is_object_id (rtyp) && !objc_is_class_id (rtyp)
-      && !TYPE_HAS_OBJC_INFO (rtyp))
+      && !TYPE_HAS_OBJC_INFO (rtyp) && !r_NSObject_p)
     return false;
 
   /* Past this point, we are committed to returning 'true' to the caller
@@ -2567,11 +2589,14 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
     rcls = NULL_TREE;
 
   /* If either type is an unqualified 'id', we're done.  This is because
-     an 'id' can be assigned to or from any type with no warnings.  */
+     an 'id' can be assigned to or from any type with no warnings.  When
+     the pointer has NSObject attribute, consider that to be equivalent.  */
   if (argno != -5)
     {
       if ((!lproto && objc_is_object_id (ltyp))
 	  || (!rproto && objc_is_object_id (rtyp)))
+	return true;
+      if (l_NSObject_p || r_NSObject_p)
 	return true;
     }
   else
@@ -2580,7 +2605,7 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
 	 general type of object, hence if you try to specialize an
 	 'NSArray *' (ltyp) property with an 'id' (rtyp) one, we need
 	 to warn.  */
-      if (!lproto && objc_is_object_id (ltyp))
+      if (!lproto && (objc_is_object_id (ltyp) || l_NSObject_p))
 	return true;
     }
 
@@ -8659,10 +8684,18 @@ objc_type_valid_for_messaging (tree type, bool accept_classes)
   if (!POINTER_TYPE_P (type))
     return false;
 
+  /* We will check for an NSObject type attribute  on the pointer if other
+     tests fail.  */
+  tree type_attr = TYPE_ATTRIBUTES (type);
+
   /* Remove the pointer indirection; don't remove more than one
      otherwise we'd consider "NSObject **" a valid type for messaging,
      which it isn't.  */
   type = TREE_TYPE (type);
+
+  /* We allow void * to have an NSObject type attr.  */
+  if (VOID_TYPE_P (type) && type_attr)
+    return lookup_attribute ("NSObject", type_attr) != NULL_TREE;
 
   if (TREE_CODE (type) != RECORD_TYPE)
     return false;
@@ -8675,6 +8708,9 @@ objc_type_valid_for_messaging (tree type, bool accept_classes)
 
   if (TYPE_HAS_OBJC_INFO (type))
     return true;
+
+  if (type_attr)
+    return lookup_attribute ("NSObject", type_attr) != NULL_TREE;
 
   return false;
 }
