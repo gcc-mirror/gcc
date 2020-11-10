@@ -730,10 +730,10 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
         if (lhs.zero_p ())
 	  {
 	    // An OR operation will only take the FALSE path if both
-	    // operands are false, so either [20, 255] or [0, 5] is the
-	    // union: [0,5][20,255].
+	    // operands are false simlulateously, which means they should
+	    // be intersected.  !(x || y) == !x && !y
 	    r = op1.false_range;
-	    r.union_ (op2.false_range);
+	    r.intersect (op2.false_range);
 	  }
 	else
 	  {
@@ -804,9 +804,12 @@ gori_compute::compute_logical_operands_in_chain (tf_range &range,
 						 tree name,
 						 tree op, bool op_in_chain)
 {
-  if (!op_in_chain)
+  gimple *src_stmt = gimple_range_ssa_p (op) ? SSA_NAME_DEF_STMT (op) : NULL;
+  basic_block bb = gimple_bb (stmt);
+  if (!op_in_chain || (src_stmt != NULL && bb != gimple_bb (src_stmt)))
     {
-      // If op is not in chain, use its known value.
+      // If op is not in the def chain, or defined in this block,
+      // use its known value on entry to the block.
       expr_range_in_bb (range.true_range, name, gimple_bb (stmt));
       range.false_range = range.true_range;
       return;
@@ -814,14 +817,12 @@ gori_compute::compute_logical_operands_in_chain (tf_range &range,
   if (optimize_logical_operands (range, stmt, lhs, name, op))
     return;
 
-  // Calulate ranges for true and false on both sides, since the false
+  // Calculate ranges for true and false on both sides, since the false
   // path is not always a simple inversion of the true side.
-  if (!compute_operand_range (range.true_range, SSA_NAME_DEF_STMT (op),
-			      m_bool_one, name))
-    expr_range_in_bb (range.true_range, name, gimple_bb (stmt));
-  if (!compute_operand_range (range.false_range, SSA_NAME_DEF_STMT (op),
-			      m_bool_zero, name))
-    expr_range_in_bb (range.false_range, name, gimple_bb (stmt));
+  if (!compute_operand_range (range.true_range, src_stmt, m_bool_one, name))
+    expr_range_in_bb (range.true_range, name, bb);
+  if (!compute_operand_range (range.false_range, src_stmt, m_bool_zero, name))
+    expr_range_in_bb (range.false_range, name, bb);
 }
 
 // Given a logical STMT, calculate true and false for each potential
