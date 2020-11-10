@@ -4058,6 +4058,15 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_PTWRITE) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_PTWRITE))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PTWRITE;
+	if (((processor_alias_table[i].flags & PTA_MOVDIRI) != 0)
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVDIRI))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVDIRI;
+	if (((processor_alias_table[i].flags & PTA_MOVDIR64B) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MOVDIR64B))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MOVDIR64B;
+	if (((processor_alias_table[i].flags & PTA_CLDEMOTE) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_CLDEMOTE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CLDEMOTE;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
