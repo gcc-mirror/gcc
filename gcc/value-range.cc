@@ -249,9 +249,11 @@ irange::set (tree min, tree max, value_range_kind kind)
       return;
     }
 
-  if (kind != VR_VARYING
-      && (POLY_INT_CST_P (min) || POLY_INT_CST_P (max)))
-    kind = VR_VARYING;
+  if (POLY_INT_CST_P (min) || POLY_INT_CST_P (max))
+    {
+      set_varying (TREE_TYPE (min));
+      return;
+    }
 
   // Nothing to canonicalize for symbolic ranges.
   if (TREE_CODE (min) != INTEGER_CST
