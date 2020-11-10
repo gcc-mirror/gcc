@@ -77,7 +77,7 @@ __addvSI3 (Wtype a, Wtype b)
 {
   Wtype w;
 
-  if (__builtin_add_overflow(a, b, &w))
+  if (__builtin_add_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -88,7 +88,7 @@ __addvsi3 (SItype a, SItype b)
 {
   SItype w;
 
-  if (__builtin_add_overflow(a, b, &w))
+  if (__builtin_add_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -102,7 +102,7 @@ __addvDI3 (DWtype a, DWtype b)
 {
   DWtype w;
 
-  if (__builtin_add_overflow(a, b, &w))
+  if (__builtin_add_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -115,7 +115,7 @@ __subvSI3 (Wtype a, Wtype b)
 {
   Wtype w;
 
-  if (__builtin_sub_overflow(a, b, &w))
+  if (__builtin_sub_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -126,7 +126,7 @@ __subvsi3 (SItype a, SItype b)
 {
   SItype w;
 
-  if (__builtin_sub_overflow(a, b, &w))
+  if (__builtin_sub_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -140,7 +140,7 @@ __subvDI3 (DWtype a, DWtype b)
 {
   DWtype w;
 
-  if (__builtin_sub_overflow(a, b, &w))
+  if (__builtin_sub_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -153,7 +153,7 @@ __mulvSI3 (Wtype a, Wtype b)
 {
   Wtype w;
 
-  if (__builtin_mul_overflow(a, b, &w))
+  if (__builtin_mul_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -164,7 +164,7 @@ __mulvsi3 (SItype a, SItype b)
 {
   SItype w;
 
-  if (__builtin_mul_overflow(a, b, &w))
+  if (__builtin_mul_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -178,7 +178,7 @@ __negvSI2 (Wtype a)
 {
   Wtype w;
 
-  if (__builtin_sub_overflow(0, a, &w))
+  if (__builtin_sub_overflow (0, a, &w))
     abort ();
 
   return w;
@@ -189,7 +189,7 @@ __negvsi2 (SItype a)
 {
   SItype w;
 
-  if (__builtin_sub_overflow(0, a, &w))
+  if (__builtin_sub_overflow (0, a, &w))
     abort ();
 
   return w;
@@ -203,7 +203,7 @@ __negvDI2 (DWtype a)
 {
   DWtype w;
 
-  if (__builtin_sub_overflow(0, a, &w))
+  if (__builtin_sub_overflow (0, a, &w))
     abort ();
 
   return w;
