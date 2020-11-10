@@ -808,6 +808,14 @@ make_location (location_t caret, location_t start, cp_lexer *lexer)
   return make_location (caret, start, t->location);
 }
 
+/* Overload for make_location taking tokens instead of locations.  */
+
+static inline location_t
+make_location (cp_token *caret, cp_token *start, cp_token *end)
+{
+  return make_location (caret->location, start->location, end->location);
+}
+
 /* nonzero if we are presently saving tokens.  */
 
 static inline int
@@ -2232,6 +2240,8 @@ static void cp_parser_namespace_alias_definition
 static bool cp_parser_using_declaration
   (cp_parser *, bool);
 static void cp_parser_using_directive
+  (cp_parser *);
+static void cp_parser_using_enum
   (cp_parser *);
 static tree cp_parser_alias_declaration
   (cp_parser *);
@@ -13726,6 +13736,8 @@ cp_parser_block_declaration (cp_parser *parser,
       token2 = cp_lexer_peek_nth_token (parser->lexer, 2);
       if (token2->keyword == RID_NAMESPACE)
 	cp_parser_using_directive (parser);
+      else if (token2->keyword == RID_ENUM)
+	cp_parser_using_enum (parser);
       /* If the second token after 'using' is '=', then we have an
 	 alias-declaration.  */
       else if (cxx_dialect >= cxx11
@@ -20010,6 +20022,31 @@ cp_parser_qualified_namespace_specifier (cp_parser* parser)
   return cp_parser_namespace_name (parser);
 }
 
+/* Subroutine of cp_parser_using_declaration.  */
+
+static tree
+finish_using_decl (tree qscope, tree identifier, bool typename_p = false)
+{
+  tree decl = NULL_TREE;
+  if (at_class_scope_p ())
+    {
+      /* Create the USING_DECL.  */
+      decl = do_class_using_decl (qscope, identifier);
+
+      if (check_for_bare_parameter_packs (decl))
+	return error_mark_node;
+
+      if (decl && typename_p)
+	USING_DECL_TYPENAME_P (decl) = 1;
+
+      /* Add it to the list of members in this class.  */
+      finish_member_declaration (decl);
+    }
+  else
+    finish_nonmember_using_decl (qscope, identifier);
+  return decl;
+}
+
 /* Parse a using-declaration, or, if ACCESS_DECLARATION_P is true, an
    access declaration.
 
@@ -20029,7 +20066,6 @@ cp_parser_using_declaration (cp_parser* parser,
   cp_token *token;
   bool typename_p = false;
   bool global_scope_p;
-  tree decl;
   tree identifier;
   tree qscope;
   int oldcount = errorcount;
@@ -20088,9 +20124,6 @@ cp_parser_using_declaration (cp_parser* parser,
 						  /*is_declaration=*/true);
   if (!qscope)
     qscope = global_namespace;
-  else if (UNSCOPED_ENUM_P (qscope)
-	   && !TYPE_FUNCTION_SCOPE_P (qscope))
-    qscope = CP_TYPE_CONTEXT (qscope);
 
   cp_warn_deprecated_use_scopes (qscope);
 
@@ -20138,25 +20171,13 @@ cp_parser_using_declaration (cp_parser* parser,
 	      "a template-id may not appear in a using-declaration");
   else
     {
-      if (at_class_scope_p ())
+      tree decl = finish_using_decl (qscope, identifier, typename_p);
+
+      if (decl == error_mark_node)
 	{
-	  /* Create the USING_DECL.  */
-	  decl = do_class_using_decl (qscope, identifier);
-
-	  if (decl && typename_p)
-	    USING_DECL_TYPENAME_P (decl) = 1;
-
-	  if (check_for_bare_parameter_packs (decl))
-	    {
-	      cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-	      return false;
-	    }
-	  else
-	    /* Add it to the list of members in this class.  */
-	    finish_member_declaration (decl);
+	  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+	  return false;
 	}
-      else
-	finish_nonmember_using_decl (qscope, identifier);
     }
 
   if (!access_declaration_p
@@ -20180,6 +20201,76 @@ cp_parser_using_declaration (cp_parser* parser,
 		"suggestion: add the %<using%> keyword");
 
   return true;
+}
+
+/* C++20 using enum declaration.
+
+   using-enum-declaration :
+       using elaborated-enum-specifier ;  */
+
+static void
+cp_parser_using_enum (cp_parser *parser)
+{
+  cp_parser_require_keyword (parser, RID_USING, RT_USING);
+
+  /* Using cp_parser_elaborated_type_specifier rejects typedef-names, which
+     breaks one of the motivating examples in using-enum-5.C.
+     cp_parser_simple_type_specifier seems to be closer to what we actually
+     want, though that hasn't been properly specified yet.  */
+
+  /* Consume 'enum'.  */
+  gcc_checking_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_ENUM));
+  cp_lexer_consume_token (parser->lexer);
+
+  cp_token *start = cp_lexer_peek_token (parser->lexer);
+
+  tree type = (cp_parser_simple_type_specifier
+	       (parser, NULL, CP_PARSER_FLAGS_TYPENAME_OPTIONAL));
+
+  cp_token *end = cp_lexer_previous_token (parser->lexer);
+
+  if (type == error_mark_node
+      || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+    {
+      cp_parser_skip_to_end_of_block_or_statement (parser);
+      return;
+    }
+  if (TREE_CODE (type) == TYPE_DECL)
+    type = TREE_TYPE (type);
+
+  /* The elaborated-enum-specifier shall not name a dependent type and the type
+     shall have a reachable enum-specifier.  */
+  const char *msg = nullptr;
+  if (cxx_dialect < cxx20)
+    msg = _("%<using enum%> "
+	    "only available with %<-std=c++20%> or %<-std=gnu++20%>");
+  else if (dependent_type_p (type))
+    msg = _("%<using enum%> of dependent type %qT");
+  else if (TREE_CODE (type) != ENUMERAL_TYPE)
+    msg = _("%<using enum%> of non-enumeration type %q#T");
+  else if (!COMPLETE_TYPE_P (type))
+    msg = _("%<using enum%> of incomplete type %qT");
+  else if (OPAQUE_ENUM_P (type))
+    msg = _("%<using enum%> of %qT before its enum-specifier");
+  if (msg)
+    {
+      location_t loc = make_location (start, start, end);
+      auto_diagnostic_group g;
+      error_at (loc, msg, type);
+      loc = location_of (type);
+      if (cxx_dialect < cxx20 || loc == input_location)
+	;
+      else if (OPAQUE_ENUM_P (type))
+	inform (loc, "opaque-enum-declaration here");
+      else
+	inform (loc, "declared here");
+    }
+
+  /* A using-enum-declaration introduces the enumerator names of the named
+     enumeration as if by a using-declaration for each enumerator.  */
+  if (TREE_CODE (type) == ENUMERAL_TYPE)
+    for (tree v = TYPE_VALUES (type); v; v = TREE_CHAIN (v))
+      finish_using_decl (type, DECL_NAME (TREE_VALUE (v)));
 }
 
 /* Parse an alias-declaration.
@@ -25279,12 +25370,10 @@ cp_parser_member_declaration (cp_parser* parser)
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
     {
       if (cxx_dialect < cxx11)
-	{
-	  /* Parse the using-declaration.  */
-	  cp_parser_using_declaration (parser,
-				       /*access_declaration_p=*/false);
-	  return;
-	}
+	/* Parse the using-declaration.  */
+	cp_parser_using_declaration (parser, /*access_declaration_p=*/false);
+      else if (cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_ENUM))
+	cp_parser_using_enum (parser);
       else
 	{
 	  tree decl;
@@ -25305,8 +25394,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	  else
 	    cp_parser_using_declaration (parser,
 					 /*access_declaration_p=*/false);
-	  return;
 	}
+      return;
     }
 
   /* Check for @defs.  */

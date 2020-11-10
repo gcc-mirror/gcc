@@ -4019,9 +4019,17 @@ finish_id_expression_1 (tree id_expression,
 	      if (context != current_class_type)
 		{
 		  tree path = currently_open_derived_class (context);
-		  perform_or_defer_access_check (TYPE_BINFO (path),
-						 decl, decl,
-						 tf_warning_or_error);
+		  if (!path)
+		    /* PATH can be null for using an enum of an unrelated
+		       class; we checked its access in lookup_using_decl.
+
+		       ??? Should this case make a clone instead, like
+		       handle_using_decl?  */
+		    gcc_assert (TREE_CODE (decl) == CONST_DECL);
+		  else
+		    perform_or_defer_access_check (TYPE_BINFO (path),
+						   decl, decl,
+						   tf_warning_or_error);
 		}
 	    }
 
