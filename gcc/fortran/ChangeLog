@@ -1,3 +1,10 @@
+2020-11-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/90111
+	* parse.c (case_decl): Move ST_OACC_ROUTINE and ST_OACC_DECLARE to ...
+	(case_omp_decl): ... here.
+	(verify_st_order): Update comment.
+
 2020-11-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* openmp.c (oacc_is_parallel, resolve_oacc_params_in_parallel):

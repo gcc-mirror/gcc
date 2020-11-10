@@ -1,3 +1,30 @@
+2020-11-09  Marek Polacek  <polacek@redhat.com>
+
+	DR 1914
+	* c-common.c (attribute_fallthrough_p): Tweak the warning
+	message.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* c-pragma.c (handle_pragma_diagnostic): Split the
+	unknown-option -Wpragmas diagnostic into a warning and a
+	subsequent note containing a spelling suggestion.  Avoid
+	computing the suggestion if -Wpragmas warnings are being
+	suppressed.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR testsuite/97117
+	* c-indentation.c (get_visual_column): Remove location_t
+	parameter.  Move the column-tracking diagnostic code from here
+	to ...
+	(should_warn_for_misleading_indentation): ... here, before the
+	early exit for when the loci are not all distinct.  Don't pass a
+	location_t argument to get_visual_column.
+	(assert_get_visual_column_succeeds): Don't pass a location_t
+	argument to get_visual_column.
+	(assert_get_visual_column_fails): Likewise.
+
 2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-common.h (OBJC_IS_PATTR_KEYWORD): Add class to the list
