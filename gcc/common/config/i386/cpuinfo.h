@@ -713,6 +713,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX512BF16);
 	  if (eax & bit_HRESET)
 	    set_feature (FEATURE_HRESET);
+	  if (eax & bit_AVXVNNI)
+	    set_feature (FEATURE_AVXVNNI);
 
 	}
     }

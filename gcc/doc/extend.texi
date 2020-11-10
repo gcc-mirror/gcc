@@ -6750,6 +6750,11 @@ Enable/disable the generation of the KEYLOCKER instructions.
 @cindex @code{target("widekl")} function attribute, x86
 Enable/disable the generation of the WIDEKL instructions.
 
+@item avxvnni
+@itemx no-avxvnni
+@cindex @code{target("avxvnni")} function attribute, x86
+Enable/disable the generation of the AVXVNNI instructions.
+
 @item cld
 @itemx no-cld
 @cindex @code{target("cld")} function attribute, x86
