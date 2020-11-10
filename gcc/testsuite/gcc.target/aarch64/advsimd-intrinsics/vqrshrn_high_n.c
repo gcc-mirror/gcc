@@ -1,3 +1,6 @@
+/* { dg-do run } */
+/* { dg-skip-if "" { arm*-*-* } } */
+
 #include <arm_neon.h>
 #include "arm-neon-ref.h"
 #include "compute-ref-data.h"

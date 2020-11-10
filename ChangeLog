@@ -1,3 +1,12 @@
+2020-11-09  Pat Bernardi  <bernardi@adacore.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config-ml.in (multi-do, multi-clean): Add @ to silence recipes.
+	Remove FIXME comments.
+
 2020-11-06  Martin Uecker  <muecker@gwdg.de>
 
 	* MAINTAINERS: Update my email address.

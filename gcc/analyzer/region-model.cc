@@ -836,7 +836,7 @@ region_model::handle_unrecognized_call (const gcall *call,
 {
   tree fndecl = get_fndecl_for_call (call, ctxt);
 
-  reachable_regions reachable_regs (this, m_mgr);
+  reachable_regions reachable_regs (this);
 
   /* Determine the reachable regions and their mutability.  */
   {
@@ -904,7 +904,7 @@ void
 region_model::get_reachable_svalues (svalue_set *out,
 				     const svalue *extra_sval)
 {
-  reachable_regions reachable_regs (this, m_mgr);
+  reachable_regions reachable_regs (this);
 
   /* Add globals and regions that already escaped in previous
      unknown calls.  */
@@ -2857,8 +2857,7 @@ region_model::can_merge_with_p (const region_model &other_model,
   /* Merge constraints.  */
   constraint_manager::merge (*m_constraints,
 			      *other_model.m_constraints,
-			      out_model->m_constraints,
-			      m);
+			      out_model->m_constraints);
 
   return true;
 }

@@ -1,3 +1,125 @@
+2020-11-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_split_move): Recognize vadd2 instructions.
+	* config/arc/arc.md (movdi_insn): Update pattern to use vadd2
+	instructions.
+	(movdf_insn): Likewise.
+	(maddhisi4): New pattern.
+	(umaddhisi4): Likewise.
+	* config/arc/simdext.md (mov<mode>_int): Update pattern to use
+	vadd2.
+	(sdot_prodv4hi): New pattern.
+	(udot_prodv4hi): Likewise.
+	(arc_vec_<V_US>mac_hi_v4hi): Update/renamed to
+	arc_vec_<V_US>mac_v2hiv2si.
+	(arc_vec_<V_US>mac_v2hiv2si_zero): New pattern.
+	* config/arc/constraints.md (Ral): Accumulator register
+	constraint.
+
+2020-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* function-tests.c (test_ranges): Call range_op_tests.
+	* range-op.cc (build_range3): Move to value-range.cc.
+	(range3_tests): Same.
+	(int_range_max_tests): Same.
+	(multi_precision_range_tests): Same.
+	(range_tests): Same.
+	(operator_tests): Split up...
+	(range_op_tests): Split up...
+	(range_op_cast_tests): ...here.
+	(range_op_lshift_tests): ...here.
+	(range_op_rshift_tests): ...here.
+	(range_op_bitwise_and_tests): ...here.
+	* selftest.h (range_op_tests): New.
+	* value-range.cc (build_range3): New.
+	(range_tests_irange3): New.
+	(range_tests_int_range_max): New.
+	(range_tests_legacy): New.
+	(range_tests_misc): New.
+	(range_tests): New.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97761
+	* tree-vect-slp.c (vect_bb_slp_mark_live_stmts): Remove
+	premature end of DFS walk.
+
+2020-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::swap_out_of_order_endpoints): Rewrite
+	into static function.
+	(irange::set): Cleanup redundant manipulations.
+	* value-range.h (irange::normalize_min_max): Modify object
+	in-place instead of modifying arguments.
+
+2020-11-09  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_expand_fcmla_builtin): Do not alter force_reg returned
+	register.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97753
+	* tree-vect-loop.c (vectorizable_induction): Fill vec_steps
+	when CSEing inside the group.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97746
+	* tree-vect-patterns.c (vect_determine_precisions): First walk PHIs.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_representative_for): CSE VN_INFO calls.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewsie.
+	(do_pre_regular_insertion): Likewsie.
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_insert):
+	Likewise.
+	(eliminate_dom_walker::eliminate_stmt): Likewise.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97765
+	* tree-ssa-pre.c (bb_bitmap_sets::phi_translate_table): Add.
+	(PHI_TRANS_TABLE): New macro.
+	(phi_translate_table): Remove.
+	(expr_pred_trans_d::pred): Remove.
+	(expr_pred_trans_d::hash): Simplify.
+	(expr_pred_trans_d::equal): Likewise.
+	(phi_trans_add): Adjust.
+	(phi_translate): Likewise.  Remove hash-table expansion
+	detection and optimization.
+	(phi_translate_set): Allocate PHI_TRANS_TABLE here.
+	(init_pre): Adjsust.
+	(fini_pre): Free PHI_TRANS_TABLE.
+
+2020-11-09  Lili Cui  <lili.cui@intel.com>
+
+	PR target/97685
+	* config/i386/i386.h:
+	(PTA_BROADWELL): Delete PTA_PRFCHW.
+	(PTA_SILVERMONT): Add PTA_PRFCHW.
+	(PTA_KNL): Add PTA_PREFETCHWT1.
+	(PTA_TREMONT): Add PTA_MOVDIRI, PTA_MOVDIR64B, PTA_CLDEMOTE and PTA_WAITPKG.
+	* doc/invoke.texi: Delete PREFETCHW for broadwell, skylake, knl, knm,
+	skylake-avx512, cannonlake, icelake-client, icelake-server, cascadelake,
+	cooperlake, tigerlake and sapphirerapids.
+	Add PREFETCHW for silvermont, goldmont, goldmont-plus and tremont.
+	Add XSAVEC and XSAVES for goldmont, goldmont-plus and tremont.
+	Add MOVDIRI, MOVDIR64B, CLDEMOTE and WAITPKG for tremont.
+	Add KEYLOCKER and HREST for alderlake.
+	Add AMX-BF16, AMX-TILE, AMX-INT8 and UINTR for sapphirerapids.
+	Add KEYLOCKER for tigerlake.
+
+2020-11-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/97705
+	* ira.c (ira): Refactor some regstat free/init/compute invocation
+	into lambda function regstat_recompute_for_max_regno, and call it
+	when max_regno increases as remove_scratches succeeds.
+
 2020-11-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_mangle_decl_assembler_name): Change

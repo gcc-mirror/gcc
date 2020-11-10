@@ -10617,6 +10617,16 @@ keep_template_parm (tree t, void* data)
   if (!ftpi->parms.add (t))
     ftpi->parm_list = tree_cons (NULL_TREE, t, ftpi->parm_list);
 
+  /* Verify the parameter we found has a valid index.  */
+  if (flag_checking)
+    {
+      tree parms = ftpi->ctx_parms;
+      while (TMPL_PARMS_DEPTH (parms) > level)
+	parms = TREE_CHAIN (parms);
+      if (int len = TREE_VEC_LENGTH (TREE_VALUE (parms)))
+	gcc_assert (index < len);
+    }
+
   return 0;
 }
 
@@ -16060,20 +16070,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
-      {
-        tree r;
-
-	if (code == NONTYPE_ARGUMENT_PACK)
-	  r = make_node (code);
-	else
-	  r = cxx_make_type (code);
-
-	tree pack_args = ARGUMENT_PACK_ARGS (t);
-	pack_args = tsubst_template_args (pack_args, args, complain, in_decl);
-	SET_ARGUMENT_PACK_ARGS (r, pack_args);
-
-	return r;
-      }
+      return tsubst_argument_pack (t, args, complain, in_decl);
 
     case VOID_CST:
     case INTEGER_CST:

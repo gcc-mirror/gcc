@@ -27,10 +27,14 @@
    V2SF V4SF V1DF V2DF V1TF V1TI TI])
 
 ; All modes directly supported by the hardware having full vector reg size
-; V_HW2 is duplicate of V_HW for having two iterators expanding
-; independently e.g. vcond
-(define_mode_iterator V_HW  [V16QI V8HI V4SI V2DI (V1TI "TARGET_VXE") V2DF (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
-(define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
+; V_HW2 is for having two iterators expanding independently e.g. vcond.
+; It's similar to V_HW, but not fully identical: V1TI is not included, because
+; there are no 128-bit compares.
+(define_mode_iterator V_HW  [V16QI V8HI V4SI V2DI (V1TI "TARGET_VXE") V2DF
+			     (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")
+			     (TF "TARGET_VXE")])
+(define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")
+			     (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
 
 (define_mode_iterator V_HW_64 [V2DI V2DF])
 (define_mode_iterator VT_HW_HSDT [V8HI V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
@@ -55,19 +59,20 @@
 
 (define_mode_iterator VFT [(V1SF "TARGET_VXE") (V2SF "TARGET_VXE") (V4SF "TARGET_VXE")
 			   V1DF V2DF
-			   (V1TF "TARGET_VXE")])
+			   (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
 
 ; FP vector modes directly supported by the HW.  This does not include
 ; vector modes using only part of a vector register and should be used
 ; for instructions which might trigger IEEE exceptions.
-(define_mode_iterator VF_HW [(V4SF "TARGET_VXE") V2DF (V1TF "TARGET_VXE")])
+(define_mode_iterator VF_HW [(V4SF "TARGET_VXE") V2DF (V1TF "TARGET_VXE")
+			     (TF "TARGET_VXE")])
 
 (define_mode_iterator V_8   [V1QI])
 (define_mode_iterator V_16  [V2QI  V1HI])
 (define_mode_iterator V_32  [V4QI  V2HI V1SI V1SF])
 (define_mode_iterator V_64  [V8QI  V4HI V2SI V2SF V1DI V1DF])
-(define_mode_iterator V_128 [V16QI V8HI V4SI V4SF V2DI V2DF V1TI V1TF])
-
+(define_mode_iterator V_128 [V16QI V8HI V4SI V4SF V2DI V2DF V1TI V1TF
+			     (TF "TARGET_VXE")])
 (define_mode_iterator V_128_NOSINGLE [V16QI V8HI V4SI V4SF V2DI V2DF])
 
 ; 32 bit int<->fp vector conversion instructions are available since VXE2 (z15).
@@ -85,6 +90,11 @@
 		       (V1SF "")  (V2SF "") (V4SF "")
 		       (V1DF "")  (V2DF "")
 		       (V1TF "")  (TF "")])
+
+;; Facilitate dispatching TFmode expanders on z14+.
+(define_mode_attr tf_vr [(TF "_vr") (V4SF "") (V2DF "") (V1TF "") (V1SF "")
+			 (V2SF "") (V1DF "") (V16QI "") (V8HI "") (V4SI "")
+			 (V2DI "") (V1TI "")])
 
 ; The element type of the vector.
 (define_mode_attr non_vec[(V1QI "QI") (V2QI "QI") (V4QI "QI") (V8QI "QI") (V16QI "QI")
@@ -134,7 +144,7 @@
 			    (V1TI "V1TI")
 			    (V1SF "V1SI") (V2SF "V2SI") (V4SF "V4SI")
 			    (V1DF "V1DI") (V2DF "V2DI")
-			    (V1TF "V1TI")])
+			    (V1TF "V1TI") (TF "V1TI")])
 (define_mode_attr vw [(SF "w") (V1SF "w") (V2SF "v") (V4SF "v")
 		      (DF "w") (V1DF "w") (V2DF "v")
 		      (TF "w") (V1TF "w")])
@@ -194,7 +204,7 @@
 ; for TImode (use double-int for the calculations)
 
 ; vgmb, vgmh, vgmf, vgmg, vrepib, vrepih, vrepif, vrepig
-(define_insn "mov<mode>"
+(define_insn "mov<mode><tf_vr>"
   [(set (match_operand:V_128 0 "nonimmediate_operand" "=v,v,R,  v,  v,  v,  v,  v,v,*d,*d,?o")
 	(match_operand:V_128 1 "general_operand"      " v,R,v,j00,jm1,jyy,jxx,jKK,d, v,dT,*d"))]
   ""
@@ -213,6 +223,12 @@
    #"
   [(set_attr "cpu_facility" "vx,vx,vx,vx,vx,vx,vx,vx,vx,vx,*,*")
    (set_attr "op_type"      "VRR,VRX,VRX,VRI,VRI,VRI,VRI,VRI,VRR,*,*,*")])
+
+(define_expand "movtf"
+  [(match_operand:TF 0 "nonimmediate_operand" "")
+   (match_operand:TF 1 "general_operand"      "")]
+  ""
+  { EXPAND_MOVTF(movtf); })
 
 ; VR -> GPR, no instruction so split it into 64 element sets.
 (define_split
@@ -565,10 +581,10 @@
 
 ; A TFmode operand resides in FPR register pairs while V1TF is in a
 ; single vector register.
-(define_insn "*vec_tf_to_v1tf"
+(define_insn "*vec_tf_to_v1tf_fpr"
   [(set (match_operand:V1TF                   0 "nonimmediate_operand" "=v,v,R,v,v")
 	(vec_duplicate:V1TF (match_operand:TF 1 "general_operand"       "f,R,f,G,d")))]
-  "TARGET_VX"
+  "TARGET_VX && !TARGET_VXE"
   "@
    vmrhg\t%v0,%1,%N1
    vl\t%v0,%1%A1
@@ -576,6 +592,26 @@
    vzero\t%v0
    vlvgp\t%v0,%1,%N1"
   [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRR")])
+
+; Both TFmode and V1TFmode operands reside in vector registers.
+(define_insn "*vec_tf_to_v1tf_vr"
+  [(set (match_operand:V1TF                   0 "nonimmediate_operand" "=v,v,R,v,v")
+	(vec_duplicate:V1TF (match_operand:TF 1 "general_operand"       "v,R,v,G,d")))]
+  "TARGET_VXE"
+  "@
+   vlr\t%v0,%1
+   vl\t%v0,%1%A1
+   vst\t%v1,%0%A0
+   vzero\t%v0
+   vlvgp\t%v0,%1,%N1"
+  [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRR")])
+
+(define_insn "*fprx2_to_tf"
+  [(set (match_operand:TF               0 "nonimmediate_operand" "=v")
+	(subreg:TF (match_operand:FPRX2 1 "general_operand"       "f") 0))]
+  "TARGET_VXE"
+  "vmrhg\t%v0,%1,%N1"
+  [(set_attr "op_type" "VRR")])
 
 (define_insn "*vec_ti_to_v1ti"
   [(set (match_operand:V1TI                   0 "nonimmediate_operand" "=v,v,R,  v,  v,v")
@@ -691,6 +727,21 @@
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
+(define_insn "*mov_tf_to_fprx2_0"
+  [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "=f") 0)
+	(subreg:DF (match_operand:TF    1 "general_operand"       "v") 0))]
+  "TARGET_VXE"
+  ; M4 == 1 corresponds to %v0[0] = %v1[0]; %v0[1] = %v0[1];
+  "vpdi\t%v0,%v1,%v0,1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "*mov_tf_to_fprx2_1"
+  [(set (subreg:DF (match_operand:FPRX2 0 "nonimmediate_operand" "=f") 8)
+	(subreg:DF (match_operand:TF    1 "general_operand"       "v") 8))]
+  "TARGET_VXE"
+  ; M4 == 5 corresponds to %V0[0] = %v1[1]; %V0[1] = %V0[1];
+  "vpdi\t%V0,%v1,%V0,5"
+  [(set_attr "op_type" "VRR")])
 
 ; vec_perm_const for V2DI using vpdi?
 
@@ -1253,7 +1304,7 @@
 ;;
 
 ; vfasb, vfadb, wfasb, wfadb, wfaxb
-(define_insn "add<mode>3"
+(define_insn "add<mode>3<tf_vr>"
   [(set (match_operand:VF_HW             0 "register_operand" "=v")
 	(plus:VF_HW (match_operand:VF_HW 1 "register_operand"  "v")
 		    (match_operand:VF_HW 2 "register_operand"  "v")))]
@@ -1261,8 +1312,15 @@
   "<vw>fa<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+(define_expand "addtf3"
+  [(match_operand:TF 0 "register_operand"     "")
+   (match_operand:TF 1 "nonimmediate_operand" "")
+   (match_operand:TF 2 "general_operand"      "")]
+  "HAVE_TF (addtf3)"
+  { EXPAND_TF (addtf3, 3); })
+
 ; vfssb, vfsdb, wfssb, wfsdb, wfsxb
-(define_insn "sub<mode>3"
+(define_insn "sub<mode>3<tf_vr>"
   [(set (match_operand:VF_HW              0 "register_operand" "=v")
 	(minus:VF_HW (match_operand:VF_HW 1 "register_operand"  "v")
 		     (match_operand:VF_HW 2 "register_operand"  "v")))]
@@ -1270,8 +1328,15 @@
   "<vw>fs<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+(define_expand "subtf3"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")
+   (match_operand:TF 2 "general_operand"  "")]
+  "HAVE_TF (subtf3)"
+  { EXPAND_TF (subtf3, 3); })
+
 ; vfmsb, vfmdb, wfmsb, wfmdb, wfmxb
-(define_insn "mul<mode>3"
+(define_insn "mul<mode>3<tf_vr>"
   [(set (match_operand:VF_HW             0 "register_operand" "=v")
 	(mult:VF_HW (match_operand:VF_HW 1 "register_operand"  "v")
 		    (match_operand:VF_HW 2 "register_operand"  "v")))]
@@ -1279,8 +1344,15 @@
   "<vw>fm<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+(define_expand "multf3"
+  [(match_operand:TF 0 "register_operand"     "")
+   (match_operand:TF 1 "nonimmediate_operand" "")
+   (match_operand:TF 2 "general_operand"      "")]
+  "HAVE_TF (multf3)"
+  { EXPAND_TF (multf3, 3); })
+
 ; vfdsb, vfddb, wfdsb, wfddb, wfdxb
-(define_insn "div<mode>3"
+(define_insn "div<mode>3<tf_vr>"
   [(set (match_operand:VF_HW            0 "register_operand" "=v")
 	(div:VF_HW (match_operand:VF_HW 1 "register_operand"  "v")
 		   (match_operand:VF_HW 2 "register_operand"  "v")))]
@@ -1288,13 +1360,26 @@
   "<vw>fd<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+(define_expand "divtf3"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")
+   (match_operand:TF 2 "general_operand"  "")]
+  "HAVE_TF (divtf3)"
+  { EXPAND_TF (divtf3, 3); })
+
 ; vfsqsb, vfsqdb, wfsqsb, wfsqdb, wfsqxb
-(define_insn "sqrt<mode>2"
-  [(set (match_operand:VF_HW           0 "register_operand" "=v")
+(define_insn "sqrt<mode>2<tf_vr>"
+  [(set (match_operand:VF_HW             0 "register_operand" "=v")
 	(sqrt:VF_HW (match_operand:VF_HW 1 "register_operand"  "v")))]
   "TARGET_VX"
   "<vw>fsq<sdx>b\t%v0,%v1"
   [(set_attr "op_type" "VRR")])
+
+(define_expand "sqrttf2"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:TF 1 "general_operand"  "")]
+  "HAVE_TF (sqrttf2)"
+  { EXPAND_TF (sqrttf2, 2); })
 
 ; vfmasb, vfmadb, wfmasb, wfmadb, wfmaxb
 (define_insn "fma<mode>4"
@@ -1302,7 +1387,7 @@
 	(fma:VF_HW (match_operand:VF_HW 1 "register_operand"  "v")
 		   (match_operand:VF_HW 2 "register_operand"  "v")
 		   (match_operand:VF_HW 3 "register_operand"  "v")))]
-  "TARGET_VX"
+  "TARGET_VX && s390_fma_allowed_p (<MODE>mode)"
   "<vw>fma<sdx>b\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
@@ -1312,7 +1397,7 @@
 	(fma:VF_HW (match_operand:VF_HW          1 "register_operand"  "v")
 		   (match_operand:VF_HW          2 "register_operand"  "v")
 		 (neg:VF_HW (match_operand:VF_HW 3 "register_operand"  "v"))))]
-  "TARGET_VX"
+  "TARGET_VX && s390_fma_allowed_p (<MODE>mode)"
   "<vw>fms<sdx>b\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
@@ -1323,7 +1408,7 @@
 	 (fma:VF_HW (match_operand:VF_HW 1 "register_operand"  "v")
 		    (match_operand:VF_HW 2 "register_operand"  "v")
 		    (match_operand:VF_HW 3 "register_operand"  "v"))))]
-  "TARGET_VXE"
+  "TARGET_VXE && s390_fma_allowed_p (<MODE>mode)"
   "<vw>fnma<sdx>b\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
@@ -1334,25 +1419,37 @@
 	 (fma:VF_HW (match_operand:VF_HW          1 "register_operand"  "v")
 		    (match_operand:VF_HW          2 "register_operand"  "v")
 		  (neg:VF_HW (match_operand:VF_HW 3 "register_operand"  "v")))))]
-  "TARGET_VXE"
+  "TARGET_VXE && s390_fma_allowed_p (<MODE>mode)"
   "<vw>fnms<sdx>b\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
 ; vflcsb, vflcdb, wflcsb, wflcdb, wflcxb
-(define_insn "neg<mode>2"
+(define_insn "neg<mode>2<tf_vr>"
   [(set (match_operand:VFT          0 "register_operand" "=v")
 	(neg:VFT (match_operand:VFT 1 "register_operand"  "v")))]
   "TARGET_VX"
   "<vw>flc<sdx>b\t%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
+(define_expand "negtf2"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")]
+  "HAVE_TF (negtf2)"
+  { EXPAND_TF (negtf2, 2); })
+
 ; vflpsb, vflpdb, wflpsb, wflpdb, wflpxb
-(define_insn "abs<mode>2"
+(define_insn "abs<mode>2<tf_vr>"
   [(set (match_operand:VFT          0 "register_operand" "=v")
 	(abs:VFT (match_operand:VFT 1 "register_operand"  "v")))]
   "TARGET_VX"
   "<vw>flp<sdx>b\t%v0,%v1"
   [(set_attr "op_type" "VRR")])
+
+(define_expand "abstf2"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")]
+  "HAVE_TF (abstf2)"
+  { EXPAND_TF (abstf2, 2); })
 
 ; vflnsb, vflndb, wflnsb, wflndb, wflnxb
 (define_insn "negabs<mode>2"
@@ -2152,6 +2249,24 @@
   "vc<VX_VEC_CONV_BFP:xde><VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
 
+; There is no instruction for loading a signed integer into an extended BFP
+; operand in a VR, therefore we need to load it into a FPR pair first.
+(define_expand "float<mode>tf2_vr"
+  [(set (match_dup 2)
+	(float:FPRX2 (match_operand:DSI 1 "register_operand" "")))
+   (set (match_operand:TF               0 "register_operand" "")
+	(subreg:TF (match_dup 2) 0))]
+  "TARGET_VXE"
+{
+  operands[2] = gen_reg_rtx (FPRX2mode);
+})
+
+(define_expand "float<mode>tf2"
+  [(match_operand:TF  0 "register_operand" "")
+   (match_operand:DSI 1 "register_operand" "")]
+  "HAVE_TF (float<mode>tf2)"
+  { EXPAND_TF (float<mode>tf2, 2); })
+
 ; unsigned integer to floating point
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
@@ -2164,6 +2279,24 @@
    && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
   "vc<VX_VEC_CONV_BFP:xde>l<VX_VEC_CONV_INT:bhfgq>b\t%v0,%v1,0,0"
   [(set_attr "op_type" "VRR")])
+
+; There is no instruction for loading an unsigned integer into an extended BFP
+; operand in a VR, therefore load it into a FPR pair first.
+(define_expand "floatuns<mode>tf2_vr"
+  [(set (match_dup 2)
+	(unsigned_float:FPRX2 (match_operand:GPR 1 "register_operand" "")))
+   (set (match_operand:TF                        0 "register_operand" "")
+	(subreg:TF (match_dup 2) 0))]
+  "TARGET_VXE"
+{
+  operands[2] = gen_reg_rtx (FPRX2mode);
+})
+
+(define_expand "floatuns<mode>tf2"
+  [(match_operand:TF  0 "register_operand" "")
+   (match_operand:GPR 1 "register_operand" "")]
+  "HAVE_TF (floatuns<mode>tf2)"
+  { EXPAND_TF (floatuns<mode>tf2, 2); })
 
 ; floating point to signed integer
 
@@ -2178,6 +2311,27 @@
   "vc<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
 
+; There is no instruction for rounding an extended BFP operand in a VR into
+; a signed integer, therefore copy it into a FPR pair first.
+(define_expand "fix_trunctf<mode>2_vr"
+  [(set (subreg:DF (match_dup 2) 0)
+	(subreg:DF (match_operand:TF 1 "register_operand" "") 0))
+   (set (subreg:DF (match_dup 2) 8) (subreg:DF (match_dup 1) 8))
+   (parallel [(set (match_operand:GPR 0 "register_operand" "")
+		   (fix:GPR (match_dup 2)))
+	      (unspec:GPR [(const_int BFP_RND_TOWARD_0)] UNSPEC_ROUND)
+	      (clobber (reg:CC CC_REGNUM))])]
+  "TARGET_VXE"
+{
+  operands[2] = gen_reg_rtx (FPRX2mode);
+})
+
+(define_expand "fix_trunctf<mode>2"
+  [(match_operand:GPR 0 "register_operand" "")
+   (match_operand:TF  1 "register_operand" "")]
+  "HAVE_TF (fix_trunctf<mode>2)"
+  { EXPAND_TF (fix_trunctf<mode>2, 2); })
+
 ; floating point to unsigned integer
 
 ; op2: inexact exception not suppressed (IEEE 754 2008)
@@ -2190,6 +2344,186 @@
    && GET_MODE_UNIT_SIZE (<VX_VEC_CONV_INT:MODE>mode) == GET_MODE_UNIT_SIZE (<VX_VEC_CONV_BFP:MODE>mode)"
   "vcl<VX_VEC_CONV_INT:bhfgq><VX_VEC_CONV_BFP:xde>b\t%v0,%v1,0,5"
   [(set_attr "op_type" "VRR")])
+
+; There is no instruction for rounding an extended BFP operand in a VR into
+; an unsigned integer, therefore copy it into a FPR pair first.
+(define_expand "fixuns_trunctf<mode>2_vr"
+  [(set (subreg:DF (match_dup 2) 0)
+	(subreg:DF (match_operand:TF 1 "register_operand" "") 0))
+   (set (subreg:DF (match_dup 2) 8) (subreg:DF (match_dup 1) 8))
+   (parallel [(set (match_operand:GPR 0 "register_operand" "")
+		   (unsigned_fix:GPR (match_dup 2)))
+	      (unspec:GPR [(const_int BFP_RND_TOWARD_0)] UNSPEC_ROUND)
+	      (clobber (reg:CC CC_REGNUM))])]
+  "TARGET_VXE"
+{
+  operands[2] = gen_reg_rtx (FPRX2mode);
+})
+
+(define_expand "fixuns_trunctf<mode>2"
+  [(match_operand:GPR 0 "register_operand" "")
+   (match_operand:TF  1 "register_operand" "")]
+  "HAVE_TF (fixuns_trunctf<mode>2)"
+  { EXPAND_TF (fixuns_trunctf<mode>2, 2); })
+
+; load fp integer
+
+; vfisb, wfisb, vfidb, wfidb, wfixb; suppress inexact exceptions
+(define_insn "<FPINT:fpint_name><VF_HW:mode>2<VF_HW:tf_vr>"
+  [(set (match_operand:VF_HW                0 "register_operand" "=v")
+	(unspec:VF_HW [(match_operand:VF_HW 1 "register_operand"  "v")]
+		      FPINT))]
+  "TARGET_VX"
+  "<vw>fi<VF_HW:sdx>b\t%v0,%v1,4,<FPINT:fpint_roundingmode>"
+  [(set_attr "op_type" "VRR")])
+
+(define_expand "<FPINT:fpint_name>tf2"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")
+   ; recognize FPINT as an iterator
+   (unspec:TF [(match_dup 1)] FPINT)]
+  "HAVE_TF (<FPINT:fpint_name>tf2)"
+  { EXPAND_TF (<FPINT:fpint_name>tf2, 2); })
+
+; vfisb, wfisb, vfidb, wfidb, wfixb; raise inexact exceptions
+(define_insn "rint<mode>2<tf_vr>"
+  [(set (match_operand:VF_HW                0 "register_operand" "=v")
+	(unspec:VF_HW [(match_operand:VF_HW 1 "register_operand"  "v")]
+		      UNSPEC_FPINT_RINT))]
+  "TARGET_VX"
+  "<vw>fi<sdx>b\t%v0,%v1,0,0"
+  [(set_attr "op_type" "VRR")])
+
+(define_expand "rinttf2"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")]
+  "HAVE_TF (rinttf2)"
+  { EXPAND_TF (rinttf2, 2); })
+
+; load rounded
+
+; wflrx
+(define_insn "*trunctfdf2_vr"
+  [(set (match_operand:DF                    0 "register_operand" "=f")
+	(float_truncate:DF (match_operand:TF 1 "register_operand"  "v")))
+   (unspec:DF [(match_operand                2 "const_int_operand" "")]
+	       UNSPEC_ROUND)]
+  "TARGET_VXE"
+  "wflrx\t%v0,%v1,0,%2"
+  [(set_attr "op_type" "VRR")])
+
+(define_expand "trunctfdf2_vr"
+  [(parallel [
+     (set (match_operand:DF                    0 "register_operand" "")
+	  (float_truncate:DF (match_operand:TF 1 "register_operand" "")))
+     (unspec:DF [(const_int BFP_RND_CURRENT)] UNSPEC_ROUND)])]
+  "TARGET_VXE")
+
+(define_expand "trunctfdf2"
+  [(match_operand:DF 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")]
+  "HAVE_TF (trunctfdf2)"
+  { EXPAND_TF (trunctfdf2, 2); })
+
+; wflrx + (ledbr|wledb)
+(define_expand "trunctfsf2_vr"
+  [(parallel [
+     (set (match_dup 2)
+	  (float_truncate:DF (match_operand:TF 1 "register_operand" "")))
+     (unspec:DF [(const_int BFP_RND_PREP_FOR_SHORT_PREC)] UNSPEC_ROUND)])
+   (set (match_operand:SF                    0 "register_operand" "")
+	(float_truncate:SF (match_dup 2)))]
+  "TARGET_VXE"
+{
+  operands[2] = gen_reg_rtx(DFmode);
+})
+
+(define_expand "trunctfsf2"
+  [(match_operand:SF 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")]
+  "HAVE_TF (trunctfsf2)"
+  { EXPAND_TF (trunctfsf2, 2); })
+
+; load lengthened
+
+(define_insn "extenddftf2_vr"
+  [(set (match_operand:TF                  0 "register_operand" "=v")
+	(float_extend:TF (match_operand:DF 1 "register_operand"  "f")))]
+  "TARGET_VXE"
+  "wflld\t%v0,%v1"
+  [(set_attr "op_type" "VRR")])
+
+(define_expand "extenddftf2"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:DF 1 "nonimmediate_operand" "")]
+  "HAVE_TF (extenddftf2)"
+  { EXPAND_TF (extenddftf2, 2); })
+
+(define_expand "extendsftf2_vr"
+  [(set (match_dup 2)
+	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "")))
+   (set (match_operand:TF                  0 "register_operand"     "")
+	(float_extend:TF (match_dup 2)))]
+  "TARGET_VXE"
+{
+  operands[2] = gen_reg_rtx(DFmode);
+})
+
+(define_expand "extendsftf2"
+  [(match_operand:TF 0 "register_operand" "")
+   (match_operand:SF 1 "nonimmediate_operand" "")]
+  "HAVE_TF (extendsftf2)"
+  { EXPAND_TF (extendsftf2, 2); })
+
+; test data class
+
+(define_expand "signbittf2_vr"
+  [(parallel
+    [(set (reg:CCRAW CC_REGNUM)
+	  (unspec:CCRAW [(match_operand:TF 1 "register_operand" "")
+			 (match_dup        2)]
+			UNSPEC_VEC_VFTCICC))
+     (clobber (scratch:V1TI))])
+   (set (match_operand:SI                  0 "register_operand" "")
+	(const_int 0))
+   (set (match_dup                         0)
+	(if_then_else:SI (eq (reg:CCRAW CC_REGNUM) (const_int 8))
+			 (const_int 1)
+			 (match_dup        0)))]
+  "TARGET_VXE"
+{
+  operands[2] = GEN_INT (S390_TDC_SIGNBIT_SET);
+})
+
+(define_expand "signbittf2"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")]
+  "HAVE_TF (signbittf2)"
+  { EXPAND_TF (signbittf2, 2); })
+
+(define_expand "isinftf2_vr"
+  [(parallel
+    [(set (reg:CCRAW CC_REGNUM)
+	  (unspec:CCRAW [(match_operand:TF 1 "register_operand" "")
+			 (match_dup        2)]
+			UNSPEC_VEC_VFTCICC))
+     (clobber (scratch:V1TI))])
+   (set (match_operand:SI                  0 "register_operand" "")
+	(const_int 0))
+   (set (match_dup                         0)
+	(if_then_else:SI (eq (reg:CCRAW CC_REGNUM) (const_int 8))
+			 (const_int 1)
+			 (match_dup        0)))]
+  "TARGET_VXE"
+{
+  operands[2] = GEN_INT (S390_TDC_INFINITY);
+})
+
+(define_expand "isinftf2"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:TF 1 "register_operand" "")]
+  "HAVE_TF (isinftf2)"
+  { EXPAND_TF (isinftf2, 2); })
 
 ;
 ; Vector byte swap patterns

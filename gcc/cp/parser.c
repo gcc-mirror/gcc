@@ -20652,13 +20652,24 @@ warn_about_ambiguous_parse (const cp_decl_specifier_seq *decl_specifiers,
   if (declarator->parenthesized != UNKNOWN_LOCATION)
     return;
 
-  tree type = decl_specifiers->type;
-  if (TREE_CODE (type) == TYPE_DECL)
-   type = TREE_TYPE (type);
+  tree type;
+  if (decl_specifiers->type)
+    {
+      type = decl_specifiers->type;
+      if (TREE_CODE (type) == TYPE_DECL)
+	type = TREE_TYPE (type);
 
-  /* If the return type is void there is no ambiguity.  */
-  if (same_type_p (type, void_type_node))
-    return;
+      /* If the return type is void there is no ambiguity.  */
+      if (same_type_p (type, void_type_node))
+	return;
+    }
+  else
+    {
+      /* Code like long f(); will have null ->type.  If we have any
+	 type-specifiers, pretend we've seen int.  */
+      gcc_checking_assert (decl_specifiers->any_type_specifiers_p);
+      type = integer_type_node;
+    }
 
   auto_diagnostic_group d;
   location_t loc = declarator->u.function.parens_loc;
@@ -27269,30 +27280,30 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
   return attribute;
 }
 
-/* Check that the attribute ATTRIBUTE appears at most once in the
-   attribute-list ATTRIBUTES.  This is enforced for noreturn (7.6.3),
-   nodiscard, and deprecated (7.6.5).  Note that
-   carries_dependency (7.6.4) isn't implemented yet in GCC.  */
+/* Warn if the attribute ATTRIBUTE appears more than once in the
+   attribute-list ATTRIBUTES.  This used to be enforced for certain
+   attributes, but the restriction was removed in P2156.  Note that
+   carries_dependency ([dcl.attr.depend]) isn't implemented yet in GCC.
+   LOC is the location of ATTRIBUTE.  Returns true if ATTRIBUTE was not
+   found in ATTRIBUTES.  */
 
-static void
-cp_parser_check_std_attribute (tree attributes, tree attribute)
+static bool
+cp_parser_check_std_attribute (location_t loc, tree attributes, tree attribute)
 {
+  static auto alist = { "noreturn", "deprecated", "nodiscard", "maybe_unused",
+			"likely", "unlikely", "fallthrough",
+			"no_unique_address" };
   if (attributes)
-    {
-      tree name = get_attribute_name (attribute);
-      if (is_attribute_p ("noreturn", name)
-	  && lookup_attribute ("noreturn", attributes))
-	error ("attribute %<noreturn%> can appear at most once "
-	       "in an attribute-list");
-      else if (is_attribute_p ("deprecated", name)
-	       && lookup_attribute ("deprecated", attributes))
-	error ("attribute %<deprecated%> can appear at most once "
-	       "in an attribute-list");
-      else if (is_attribute_p ("nodiscard", name)
-	       && lookup_attribute ("nodiscard", attributes))
-	error ("attribute %<nodiscard%> can appear at most once "
-	       "in an attribute-list");
-    }
+    for (const auto &a : alist)
+      if (is_attribute_p (a, get_attribute_name (attribute))
+	  && lookup_attribute (a, attributes))
+	{
+	  if (!from_macro_expansion_at (loc))
+	    warning_at (loc, OPT_Wattributes, "attribute %qs specified "
+			"multiple times", a);
+	  return false;
+	}
+  return true;
 }
 
 /* Parse a list of standard C++-11 attributes.
@@ -27312,14 +27323,17 @@ cp_parser_std_attribute_list (cp_parser *parser, tree attr_ns)
 
   while (true)
     {
+      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
       attribute = cp_parser_std_attribute (parser, attr_ns);
       if (attribute == error_mark_node)
 	break;
       if (attribute != NULL_TREE)
 	{
-	  cp_parser_check_std_attribute (attributes, attribute);
-	  TREE_CHAIN (attribute) = attributes;
-	  attributes = attribute;
+	  if (cp_parser_check_std_attribute (loc, attributes, attribute))
+	    {
+	      TREE_CHAIN (attribute) = attributes;
+	      attributes = attribute;
+	    }
 	}
       token = cp_lexer_peek_token (parser->lexer);
       if (token->type == CPP_ELLIPSIS)
@@ -40771,6 +40785,7 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
 				 "#pragma omp target data", pragma_tok);
+  c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
     {
@@ -40789,6 +40804,7 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -40872,6 +40888,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
 				 "#pragma omp target enter data", pragma_tok);
+  c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
     {
@@ -40886,6 +40903,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -40960,6 +40978,7 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_EXIT_DATA_CLAUSE_MASK,
 				 "#pragma omp target exit data", pragma_tok);
+  c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
     {
@@ -40975,6 +40994,7 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -41224,6 +41244,8 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
   OMP_TARGET_CLAUSES (stmt)
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_CLAUSE_MASK,
 				 "#pragma omp target", pragma_tok);
+  c_omp_adjust_map_clauses (OMP_TARGET_CLAUSES (stmt), true);
+
   pc = &OMP_TARGET_CLAUSES (stmt);
   keep_next_level (true);
   OMP_TARGET_BODY (stmt) = cp_parser_omp_structured_block (parser, if_p);
@@ -41247,6 +41269,7 @@ check_clauses:
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
 	    break;
 	  default:
 	    error_at (OMP_CLAUSE_LOCATION (*pc),

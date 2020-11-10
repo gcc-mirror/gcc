@@ -1,3 +1,69 @@
+2020-11-09  Marek Polacek  <polacek@redhat.com>
+
+	DR 1914
+	* c-c++-common/attr-fallthrough-2.c: Adjust dg-warning.
+	* g++.dg/cpp0x/fallthrough2.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-60.C: Turn dg-error into dg-warning.
+	* g++.dg/cpp1y/attr-deprecated-2.C: Likewise.
+	* g++.dg/cpp2a/attr-likely2.C: Adjust dg-warning.
+	* g++.dg/cpp2a/nodiscard-once.C: Turn dg-error into dg-warning.
+	* g++.dg/cpp0x/gen-attrs-72.C: New test.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-decltype2.C: New file.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93907
+	* g++.dg/cpp2a/concepts-using3.C: New test, based off of
+	concepts-using2.C.
+
+2020-11-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/lookup/using26.C: Adjust location.
+	* g++.old-deja/g++.other/using1.C: Adjust location.
+
+2020-11-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97762
+	* g++.dg/warn/Wvexing-parse8.C: New test.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* gcc.dg/pragma-diag-6.c: Adjust expected diagnostics
+	accordingly.
+
+2020-11-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/90111
+	* gfortran.dg/goacc/specification-part.f90: New test.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97761
+	* gfortran.dg/vect/pr97761.f90: New testcase.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97753
+	* gcc.dg/vect/pr97753.c: New testcase.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97746
+	* gcc.dg/vect/bb-slp-pr97746.c: New testcase.
+
+2020-11-09  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/simd/vld1_lane_bf16_1.c: Require target to
+	support and add -mfloat-abi=hard flag.
+	* gcc.target/arm/simd/vld1_lane_bf16_indices_1.c: Likewise.
+	* gcc.target/arm/simd/vld1q_lane_bf16_indices_1.c: Likewise.
+	* gcc.target/arm/simd/vst1_lane_bf16_1.c: Likewise.
+	* gcc.target/arm/simd/vst1_lane_bf16_indices_1.c: Likewise.
+	* gcc.target/arm/simd/vstq1_lane_bf16_indices_1.c: Likewise.
+
 2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* obj-c++.dg/property/at-property-4.mm: Test handling class

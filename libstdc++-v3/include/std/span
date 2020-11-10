@@ -67,12 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __is_std_array : false_type { };
 
     template<typename _Tp, size_t _Num>
-      struct __is_std_array<_GLIBCXX_STD_C::array<_Tp, _Num>> : true_type { };
-
-#ifdef _GLIBCXX_DEBUG
-    template<typename _Tp, size_t _Num>
-      struct __is_std_array<__debug::array<_Tp, _Num>> : true_type { };
-#endif
+      struct __is_std_array<std::array<_Tp, _Num>> : true_type { };
 
     template<size_t _Extent>
       class __extent_storage

@@ -280,12 +280,14 @@ irange::varying_p () const
   tree l = m_base[0];
   tree u = m_base[1];
   tree t = TREE_TYPE (l);
+  unsigned prec = TYPE_PRECISION (t);
+  signop sign = TYPE_SIGN (t);
   if (INTEGRAL_TYPE_P (t))
-    return l == TYPE_MIN_VALUE (t) && u == TYPE_MAX_VALUE (t);
+    return (wi::to_wide (l) == wi::min_value (prec, sign)
+	    && wi::to_wide (u) == wi::max_value (prec, sign));
   if (POINTER_TYPE_P (t))
-    return wi::to_wide (l) == 0
-	   && wi::to_wide (u) == wi::max_value (TYPE_PRECISION (t),
-						TYPE_SIGN (t));
+    return (wi::to_wide (l) == 0
+	    && wi::to_wide (u) == wi::max_value (prec, sign));
   return true;
 
 }
@@ -469,8 +471,10 @@ irange::set_varying (tree type)
   m_num_ranges = 1;
   if (INTEGRAL_TYPE_P (type))
     {
-      m_base[0] = TYPE_MIN_VALUE (type);
-      m_base[1] = TYPE_MAX_VALUE (type);
+      wide_int min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+      wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+      m_base[0] = wide_int_to_tree (type, min);
+      m_base[1] = wide_int_to_tree (type, max);
     }
   else if (POINTER_TYPE_P (type))
     {
@@ -566,13 +570,6 @@ irange::set_zero (tree type)
 }
 
 // Normalize a range to VARYING or UNDEFINED if possible.
-//
-// Avoid using TYPE_{MIN,MAX}_VALUE because -fstrict-enums can
-// restrict those to a subset of what actually fits in the type.
-// Instead use the extremes of the type precision which will allow
-// compare_range_with_value() to check if a value is inside a range,
-// whereas if we used TYPE_*_VAL, said function would just punt upon
-// seeing a VARYING.
 
 inline void
 irange::normalize_min_max ()

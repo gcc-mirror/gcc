@@ -1,3 +1,99 @@
+2020-11-09  Marek Polacek  <polacek@redhat.com>
+
+	DR 1914
+	* parser.c (cp_parser_check_std_attribute): Return bool.  Add a
+	location_t parameter.  Return true if the attribute wasn't duplicated.
+	Give a warning instead of an error.  Check more attributes.
+	(cp_parser_std_attribute_list): Don't add duplicated attributes to
+	the list.  Pass location to cp_parser_check_std_attribute.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (norm_info::norm_info): Initialize orig_decl.
+	(norm_info::orig_decl): New data member.
+	(normalize_atom): When caching an atom for the first time,
+	compute a list of template parameters used in the targets of the
+	parameter mapping and store it in the TREE_TYPE of the mapping.
+	(get_normalized_constraints_from_decl): Set current_function_decl
+	appropriately when normalizing.  As an optimization, don't
+	set up a push_nested_class_guard when decl has no constraints.
+	(sat_hasher::hash): Use this list to hash only the template
+	arguments that are relevant to the atom.
+	(satisfy_atom): Use this list to compare only the template
+	arguments that are relevant to the atom.
+	* pt.c (keep_template_parm): Do a sanity check on the parameter's
+	index when flag_checking.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (ATOMIC_CONSTR_MAP_INSTANTIATED_P): Define this flag
+	for ATOMIC_CONSTRs.
+	* constraint.cc (sat_hasher::hash): Use hash_atomic_constraint
+	if the flag is set, otherwise keep using a pointer hash.
+	(sat_hasher::equal): Return false if the flag's setting differs
+	on two atoms.  Call atomic_constraints_identical_p if the flag
+	is set, otherwise keep using a pointer equality test.
+	(satisfy_atom): After instantiating the parameter mapping, form
+	another ATOMIC_CONSTR using the instantiated mapping and query
+	the cache again.  Cache the satisfaction value of both atoms.
+	(diagnose_atomic_constraint): Simplify now that the supplied
+	atom has an instantiated mapping.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (atom_cache): Define this deletable hash_table.
+	(normalize_atom): Use it to cache ATOMIC_CONSTRs when not
+	generating diagnostics.
+	(sat_hasher::hash): Use htab_hash_pointer instead of
+	hash_atomic_constraint.
+	(sat_hasher::equal): Test for pointer equality instead of
+	atomic_constraints_identical_p.
+	* cp-tree.h (struct atom_hasher): Moved and renamed from ...
+	* logic.cc (struct constraint_hash): ... here.
+	(clause::m_set): Adjust accordingly.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93907
+	* constraint.cc (tsubst_parameter_mapping): Also canonicalize
+	the type arguments of a TYPE_ARGUMENT_PACk.
+
+2020-11-09  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst): Replace *_ARGUMENT_PACK code with
+	a call to tsubst_argument_pack.
+
+2020-11-09  Jason Merrill  <jason@redhat.com>
+
+	* class.c (handle_using_decl): Add an iloc_sentinel.
+
+2020-11-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97762
+	* parser.c (warn_about_ambiguous_parse): Handle the case when
+	there is no type in the decl-specifiers.
+
+2020-11-09  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (LOOKUP_FOUND_P): Add ENUMERAL_TYPE.
+	* name-lookup.c (class name_lookup): Add comments.
+	(name_lookup::adl_namespace_only): Replace with ...
+	(name_lookup::adl_class_fns): ... this and ...
+	(name_lookup::adl_namespace_fns): ... this.
+	(name_lookup::adl_namespace): Deal with inline nests here.
+	(name_lookup::adl_class): Complete the type here.
+	(name_lookup::adl_type): Call broken-out enum ..
+	(name_lookup::adl_enum): New.  No need to call the namespace adl
+	if it is class-scope.
+	(name_lookup::search_adl): Iterate over collected scopes here.
+
+2020-11-09  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (lookup_qualified_name): Expose an overload of a
+	singleton with known type.
+	(lookup_name_1): Just check the overload's type to expose it.
+	* parser.c (cp_parser_lookup_name): Do not do that check here.
+
 2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* parser.c (cp_parser_objc_at_property_declaration): Handle

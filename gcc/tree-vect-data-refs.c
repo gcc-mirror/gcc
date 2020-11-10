@@ -1186,14 +1186,9 @@ static void
 vect_update_misalignment_for_peel (dr_vec_info *dr_info,
 				   dr_vec_info *dr_peel_info, int npeel)
 {
-  /* It can be assumed that if dr_info has the same alignment as dr_peel,
-     it is aligned in the vector loop.  */
+  /* If dr_info is aligned of dr_peel_info is, then mark it so.  */
   if (vect_dr_aligned_if_peeled_dr_is (dr_info, dr_peel_info))
     {
-      gcc_assert (!known_alignment_for_access_p (dr_info)
-		  || !known_alignment_for_access_p (dr_peel_info)
-		  || (DR_MISALIGNMENT (dr_info)
-		      == DR_MISALIGNMENT (dr_peel_info)));
       SET_DR_MISALIGNMENT (dr_info, 0);
       return;
     }

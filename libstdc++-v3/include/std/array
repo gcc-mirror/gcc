@@ -39,10 +39,11 @@
 #include <bits/functexcept.h>
 #include <bits/stl_algobase.h>
 #include <bits/range_access.h>
+#include <debug/assertions.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, std::size_t _Nm>
     struct __array_traits
@@ -106,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
 
       // Support for zero-sized arrays mandatory.
-      typedef _GLIBCXX_STD_C::__array_traits<_Tp, _Nm> _AT_Type;
+      typedef __array_traits<_Tp, _Nm> _AT_Type;
       typename _AT_Type::_Type                         _M_elems;
 
       // No explicit construct/copy/destroy for aggregate type.
@@ -183,11 +184,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // Element access.
       _GLIBCXX17_CONSTEXPR reference
       operator[](size_type __n) noexcept
-      { return _AT_Type::_S_ref(_M_elems, __n); }
+      {
+	__glibcxx_requires_subscript(__n);
+	return _AT_Type::_S_ref(_M_elems, __n);
+      }
 
       constexpr const_reference
       operator[](size_type __n) const noexcept
-      { return _AT_Type::_S_ref(_M_elems, __n); }
+      {
+	__glibcxx_requires_subscript(__n);
+	return _AT_Type::_S_ref(_M_elems, __n);
+      }
 
       _GLIBCXX17_CONSTEXPR reference
       at(size_type __n)
@@ -213,19 +220,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _GLIBCXX17_CONSTEXPR reference
       front() noexcept
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       constexpr const_reference
       front() const noexcept
-      { return _AT_Type::_S_ref(_M_elems, 0); }
+      {
+	__glibcxx_requires_nonempty();
+	return _AT_Type::_S_ref(_M_elems, 0);
+      }
 
       _GLIBCXX17_CONSTEXPR reference
       back() noexcept
-      { return _Nm ? *(end() - 1) : *end(); }
+      {
+	__glibcxx_requires_nonempty();
+	return _Nm ? *(end() - 1) : *end();
+      }
 
       constexpr const_reference
       back() const noexcept
       {
+	__glibcxx_requires_nonempty();
 	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1)
  	           : _AT_Type::_S_ref(_M_elems, 0);
       }
@@ -317,7 +334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
     // Constrained free swap overload, see p0185r1
     typename enable_if<
-      _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::_Is_swappable::value
+      __array_traits<_Tp, _Nm>::_Is_swappable::value
     >::type
 #else
     void
@@ -329,7 +346,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
   template<typename _Tp, std::size_t _Nm>
     typename enable_if<
-      !_GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::_Is_swappable::value>::type
+      !__array_traits<_Tp, _Nm>::_Is_swappable::value>::type
     swap(array<_Tp, _Nm>&, array<_Tp, _Nm>&) = delete;
 #endif
 
@@ -338,8 +355,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     get(array<_Tp, _Nm>& __arr) noexcept
     {
       static_assert(_Int < _Nm, "array index is within bounds");
-      return _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::
-	_S_ref(__arr._M_elems, _Int);
+      return __array_traits<_Tp, _Nm>::_S_ref(__arr._M_elems, _Int);
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
@@ -347,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     get(array<_Tp, _Nm>&& __arr) noexcept
     {
       static_assert(_Int < _Nm, "array index is within bounds");
-      return std::move(_GLIBCXX_STD_C::get<_Int>(__arr));
+      return std::move(std::get<_Int>(__arr));
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
@@ -355,8 +371,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     get(const array<_Tp, _Nm>& __arr) noexcept
     {
       static_assert(_Int < _Nm, "array index is within bounds");
-      return _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::
-	_S_ref(__arr._M_elems, _Int);
+      return __array_traits<_Tp, _Nm>::_S_ref(__arr._M_elems, _Int);
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
@@ -364,7 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     get(const array<_Tp, _Nm>&& __arr) noexcept
     {
       static_assert(_Int < _Nm, "array index is within bounds");
-      return std::move(_GLIBCXX_STD_C::get<_Int>(__arr));
+      return std::move(std::get<_Int>(__arr));
     }
 
 #if __cplusplus > 201703L
@@ -388,7 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static_assert(!is_array_v<_Tp>);
       static_assert(is_constructible_v<_Tp, _Tp&>);
       if constexpr (is_constructible_v<_Tp, _Tp&>)
-	return _GLIBCXX_STD_C::__to_array(__a, make_index_sequence<_Nm>{});
+	return __to_array(__a, make_index_sequence<_Nm>{});
       __builtin_unreachable(); // FIXME: see PR c++/91388
     }
 
@@ -400,17 +415,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static_assert(!is_array_v<_Tp>);
       static_assert(is_move_constructible_v<_Tp>);
       if constexpr (is_move_constructible_v<_Tp>)
-	return _GLIBCXX_STD_C::__to_array<1>(__a, make_index_sequence<_Nm>{});
+	return __to_array<1>(__a, make_index_sequence<_Nm>{});
       __builtin_unreachable(); // FIXME: see PR c++/91388
     }
 #endif // C++20
-
-_GLIBCXX_END_NAMESPACE_CONTAINER
-} // namespace std
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Tuple interface to class template array.
 
@@ -420,7 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Partial specialization for std::array
   template<typename _Tp, std::size_t _Nm>
-    struct tuple_size<_GLIBCXX_STD_C::array<_Tp, _Nm>>
+    struct tuple_size<array<_Tp, _Nm>>
     : public integral_constant<std::size_t, _Nm> { };
 
   /// tuple_element
@@ -429,22 +437,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Partial specialization for std::array
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    struct tuple_element<_Int, _GLIBCXX_STD_C::array<_Tp, _Nm>>
+    struct tuple_element<_Int, array<_Tp, _Nm>>
     {
       static_assert(_Int < _Nm, "index is out of bounds");
       typedef _Tp type;
     };
 
   template<typename _Tp, std::size_t _Nm>
-    struct __is_tuple_like_impl<_GLIBCXX_STD_C::array<_Tp, _Nm>> : true_type
+    struct __is_tuple_like_impl<array<_Tp, _Nm>> : true_type
     { };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-#ifdef _GLIBCXX_DEBUG
-# include <debug/array>
-#endif
 
 #endif // C++11
 

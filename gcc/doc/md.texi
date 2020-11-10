@@ -1634,7 +1634,7 @@ constraints with multiple alternatives, sometimes one alternative
 requires @samp{&} while others do not.  See, for example, the
 @samp{movdf} insn of the 68000.
 
-A operand which is read by the instruction can be tied to an earlyclobber
+An operand which is read by the instruction can be tied to an earlyclobber
 operand if its only use as an input occurs before the early result is
 written.  Adding alternatives of this form often allows GCC to produce
 better code when only some of the read operands can be affected by the

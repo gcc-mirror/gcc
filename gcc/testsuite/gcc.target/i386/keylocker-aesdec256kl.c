@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-mkl -O2" } */
-/* { dg-final { scan-assembler "movdqa\[ \\t\]+\[^\n\]*k2\[^\n\r]*%xmm0" } } */
-/* { dg-final { scan-assembler "aesdec256kl\[ \\t\]+\[^\n\]*h1\[^\n\r]*%xmm0" } } */
+/* { dg-final { scan-assembler "movdqa\[ \\t\]+\[^\\n\\r\]*, %xmm0" } } */
+/* { dg-final { scan-assembler "aesdec256kl\[ \\t\]+\[^\\n\\r\]*, %xmm0" } } */
 /* { dg-final { scan-assembler "sete" } } */
-/* { dg-final { scan-assembler "(?:movdqu|movups)\[ \\t\]+\[^\n\]*%xmm0\[^\n\r]*k1" } } */
+/* { dg-final { scan-assembler "(?:movdqu|movups)\[ \\t\]+\[^\\n\\r\]*%xmm0,\[^\\n\\r\]*" } } */
 
 #include <immintrin.h>
 

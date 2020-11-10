@@ -1,3 +1,89 @@
+2020-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/array: Remove.
+	* include/Makefile.am: Remove <debug/array>.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/functional: Adapt.
+	* include/std/array: Move to _GLIBCXX_INLINE_VERSION namespace.
+	* include/std/functional: Adapt.
+	* include/std/span: Adapt.
+	* testsuite/23_containers/array/debug/back1_neg.cc:
+	Remove dg-require-debug-mode. Add -D_GLIBCXX_ASSERTIONS option.
+	* testsuite/23_containers/array/debug/back2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/front1_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/front2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/square_brackets_operator1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/debug/square_brackets_operator2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/element_access/60497.cc
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Remove.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc
+	* testsuite/23_containers/array/tuple_interface/tuple_element_debug_neg.cc
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc
+
+2020-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/assertions.h (__glibcxx_requires_non_empty_range):
+	Remove __builtin_expect.
+	(__glibcxx_requires_subscript): Likewise.
+	(__glibcxx_requires_nonempty): Likewise.
+	* include/debug/formatter.h (__check_singular): Add C++11 constexpr
+	qualification.
+	* include/debug/helper_functions.h (__check_singular): Likewise. Skip
+	check if constant evaluated.
+	(__valid_range): Do not skip check if constant evaluated.
+	* include/debug/macros.h (_GLIBCXX_DEBUG_VERIFY_COND_AT): Add
+	__builtin_expect.
+	(_GLIBCXX_DEBUG_VERIFY_AT_F): Use __glibcxx_assert_1.
+	* testsuite/21_strings/basic_string_view/element_access/char/back_constexpr_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/element_access/char/constexpr.cc: New test.
+	* testsuite/21_strings/basic_string_view/element_access/char/constexpr_neg.cc: New test.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_back_constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_constexpr_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/back_constexpr_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/constexpr.cc: New test.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/constexpr_neg.cc: New test.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/front_constexpr_neg.cc:
+	New test.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_neg.cc: New test.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_pred_neg.cc: New test.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_valid_range_neg.cc: New test.
+	* testsuite/25_algorithms/lower_bound/debug/partitioned_neg.cc: New test.
+	* testsuite/25_algorithms/lower_bound/debug/partitioned_pred_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_pred_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_valid_range_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/partitioned_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/partitioned_pred_neg.cc: New test.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uniform_int_dist.h (__detail::_Power_of_2):
+	Document that true result for zero is intentional.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__popcount): Remove redundant check for zero.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97729
+	* libsupc++/exception_ptr.h (exception_ptr::exception_ptr())
+	(exception_ptr::exception_ptr(const exception_ptr&))
+	(exception_ptr::~exception_ptr()): Remove 'always_inline'
+	attributes. Use 'inline' unconditionally.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97758
+	* include/bits/std_function.h [!__cpp_rtti]: Include <typeinfo>.
+
 2020-11-07  Liu Hao  <lh_mouse@126.com>
 
 	* libsupc++/cxxabi.h: (__cxa_atexit): mark with _GLIBCXX_CDTOR_CALLABI

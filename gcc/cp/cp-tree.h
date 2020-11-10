@@ -438,6 +438,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       REINTERPRET_CAST_P (in NOP_EXPR)
       ALIGNOF_EXPR_STD_P (in ALIGNOF_EXPR)
       OVL_DEDUP_P (in OVERLOAD)
+      ATOMIC_CONSTR_MAP_INSTANTIATED_P (in ATOMIC_CONSTR)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -1596,6 +1597,12 @@ check_constraint_info (tree t)
 /* The parameter mapping for an atomic constraint. */
 #define ATOMIC_CONSTR_MAP(NODE) \
   TREE_OPERAND (TREE_CHECK (NODE, ATOMIC_CONSTR), 0)
+
+/* Whether the parameter mapping of this atomic constraint
+   is already instantiated with concrete template arguments.
+   Used only in satisfy_atom and in the satisfaction cache.  */
+#define ATOMIC_CONSTR_MAP_INSTANTIATED_P(NODE) \
+  TREE_LANG_FLAG_0 (ATOMIC_CONSTR_CHECK (NODE))
 
 /* The expression of an atomic constraint. */
 #define ATOMIC_CONSTR_EXPR(NODE) \
@@ -7838,6 +7845,21 @@ extern bool atomic_constraints_identical_p	(tree, tree);
 extern hashval_t iterative_hash_constraint      (tree, hashval_t);
 extern hashval_t hash_atomic_constraint         (tree);
 extern void diagnose_constraints                (location_t, tree, tree);
+
+/* A structural hasher for ATOMIC_CONSTRs.  */
+
+struct atom_hasher : default_hash_traits<tree>
+{
+  static hashval_t hash (tree t)
+  {
+    return hash_atomic_constraint (t);
+  }
+
+  static bool equal (tree t1, tree t2)
+  {
+    return atomic_constraints_identical_p (t1, t2);
+  }
+};
 
 /* in logic.cc */
 extern bool subsumes                            (tree, tree);
