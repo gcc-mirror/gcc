@@ -4196,7 +4196,7 @@ fini_pre ()
 
   basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
-    if (PHI_TRANS_TABLE (bb))
+    if (bb->aux && PHI_TRANS_TABLE (bb))
       delete PHI_TRANS_TABLE (bb);
   free_aux_for_blocks ();
 }
