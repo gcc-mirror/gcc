@@ -37,6 +37,13 @@
 
 #include <istream>
 #include <ostream>
+#include <bits/alloc_traits.h> // allocator_traits, __allocator_like
+
+#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+# define _GLIBCXX_LVAL_REF_QUAL &
+#else
+# define _GLIBCXX_LVAL_REF_QUAL
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -65,6 +72,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     class basic_stringbuf : public basic_streambuf<_CharT, _Traits>
     {
       struct __xfer_bufptrs;
+
+#if __cplusplus >= 201103L
+      using allocator_traits = std::allocator_traits<_Alloc>;
+      using _Noexcept_swap
+	= __or_<typename allocator_traits::propagate_on_container_swap,
+		typename allocator_traits::is_always_equal>;
+#endif
+
     public:
       // Types:
       typedef _CharT 					char_type;
@@ -153,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
       void
-      swap(basic_stringbuf& __rhs)
+      swap(basic_stringbuf& __rhs) noexcept(_Noexcept_swap::value)
       {
 	__xfer_bufptrs __l_st{*this, std::__addressof(__rhs)};
 	__xfer_bufptrs __r_st{__rhs, this};
@@ -161,9 +176,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__streambuf_type::swap(__base);
 	__rhs.pubimbue(this->pubimbue(__rhs.getloc()));
 	std::swap(_M_mode, __rhs._M_mode);
-	std::swap(_M_string, __rhs._M_string);
+	std::swap(_M_string, __rhs._M_string); // XXX not exception safe
       }
-#endif
+#endif // C++11
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
       explicit
@@ -213,7 +228,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { return _M_string.get_allocator(); }
 #endif
 
-      // Get and set:
+      // Getters and setters:
+
       /**
        *  @brief  Copying out the string buffer.
        *  @return  A copy of one of the underlying sequences.
@@ -223,22 +239,50 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  is equal to the output sequence.</em> [27.7.1.2]/1
       */
       __string_type
-      str() const
+      str() const _GLIBCXX_LVAL_REF_QUAL
       {
 	__string_type __ret(_M_string.get_allocator());
-	if (char_type* __pptr = this->pptr())
-	  {
-	    char_type* __egptr = this->egptr();
-	    // The current egptr() may not be the actual string end.
-	    if (!__egptr || __pptr > __egptr)
-	      __ret.assign(this->pbase(), __pptr);
-	    else
-	      __ret.assign(this->pbase(), __egptr);
-	  }
+	if (char_type* __hi = _M_high_mark())
+	  __ret.assign(this->pbase(), __hi);
 	else
 	  __ret = _M_string;
 	return __ret;
       }
+
+#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#if __cpp_concepts
+      template<__allocator_like _SAlloc>
+	basic_string<_CharT, _Traits, _SAlloc>
+	str(const _SAlloc& __sa) const
+	{
+	  auto __sv = view();
+	  return { __sv.data(), __sv.size(), __sa };
+	}
+#endif
+
+      __string_type
+      str() &&
+      {
+	if (char_type* __hi = _M_high_mark())
+	  {
+	    // Set length to end of character sequence and add null terminator.
+	    _M_string._M_set_length(_M_high_mark() - this->pbase());
+	  }
+	auto __str = std::move(_M_string);
+	_M_string.clear();
+	_M_sync(_M_string.data(), 0, 0);
+	return __str;
+      }
+
+      basic_string_view<char_type, traits_type>
+      view() const noexcept
+      {
+	if (char_type* __hi = _M_high_mark())
+	  return { this->pbase(), __hi };
+	else
+	  return _M_string;
+      }
+#endif
 
       /**
        *  @brief  Setting a new buffer.
@@ -257,21 +301,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-      basic_string_view<char_type, traits_type>
-      view() const noexcept
-      {
-	using __sv_type = basic_string_view<char_type, traits_type>;
+#if __cpp_concepts
+      template<__allocator_like _SAlloc>
+	requires (!is_same_v<_SAlloc, _Alloc>)
+	void
+	str(const basic_string<_CharT, _Traits, _SAlloc>& __s)
+	{
+	  _M_string.assign(__s.data(), __s.size());
+	  _M_stringbuf_init(_M_mode);
+	}
+#endif
 
-	if (this->pptr())
-	  {
-	    // The current egptr() may not be the actual string end.
-	    if (this->pptr() > this->egptr())
-	      return __sv_type(this->pbase(), this->pptr());
-	    else
-	      return __sv_type(this->pbase(), this->egptr());
-	  }
-	else
-	  return static_cast<__sv_type>(_M_string);
+      void
+      str(__string_type&& __s)
+      {
+	_M_string = std::move(__s);
+	_M_stringbuf_init(_M_mode);
       }
 #endif
 
@@ -376,6 +421,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_pbump(char_type* __pbeg, char_type* __pend, off_type __off);
 
     private:
+      // Return a pointer to the end of the underlying character sequence.
+      // This might not be the same character as _M_string.end() because
+      // basic_stringbuf::overflow might have written to unused capacity
+      // in _M_string without updating its length.
+      char_type*
+      _M_high_mark() const _GLIBCXX_NOEXCEPT
+      {
+	if (char_type* __pptr = this->pptr())
+	  {
+	    char_type* __egptr = this->egptr();
+	    if (!__egptr || __pptr > __egptr)
+	      return __pptr;  // Underlying sequence is [pbase, pptr).
+	    else
+	      return __egptr; // Underlying sequence is [pbase, egptr).
+	  }
+	return 0; // Underlying character sequence is just _M_string.
+      }
+
 #if __cplusplus >= 201103L
 #if _GLIBCXX_USE_CXX11_ABI
       // This type captures the state of the gptr / pptr pointers as offsets
@@ -629,8 +692,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  @c rdbuf()->str()
       */
       __string_type
-      str() const
+      str() const _GLIBCXX_LVAL_REF_QUAL
       { return _M_stringbuf.str(); }
+
+#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#if __cpp_concepts
+      template<__allocator_like _SAlloc>
+	basic_string<_CharT, _Traits, _SAlloc>
+	str(const _SAlloc& __sa) const
+	{ return _M_stringbuf.str(__sa); }
+#endif
+
+      __string_type
+      str() &&
+      { return std::move(_M_stringbuf).str(); }
+
+      basic_string_view<char_type, traits_type>
+      view() const noexcept
+      { return _M_stringbuf.view(); }
+#endif
 
       /**
        *  @brief  Setting a new buffer.
@@ -643,9 +723,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { _M_stringbuf.str(__s); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-      basic_string_view<char_type, traits_type>
-      view() const noexcept
-      { return _M_stringbuf.view(); }
+#if __cpp_concepts
+      template<__allocator_like _SAlloc>
+	requires (!is_same_v<_SAlloc, _Alloc>)
+	void
+	str(const basic_string<_CharT, _Traits, _SAlloc>& __s)
+	{ _M_stringbuf.str(__s); }
+#endif
+
+      void
+      str(__string_type&& __s)
+      { _M_stringbuf.str(std::move(__s)); }
 #endif
     };
 
@@ -825,8 +913,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  @c rdbuf()->str()
       */
       __string_type
-      str() const
+      str() const _GLIBCXX_LVAL_REF_QUAL
       { return _M_stringbuf.str(); }
+
+#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#if __cpp_concepts
+      template<__allocator_like _SAlloc>
+	basic_string<_CharT, _Traits, _SAlloc>
+	str(const _SAlloc& __sa) const
+	{ return _M_stringbuf.str(__sa); }
+#endif
+
+      __string_type
+      str() &&
+      { return std::move(_M_stringbuf).str(); }
+
+      basic_string_view<char_type, traits_type>
+      view() const noexcept
+      { return _M_stringbuf.view(); }
+#endif
 
       /**
        *  @brief  Setting a new buffer.
@@ -839,9 +944,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { _M_stringbuf.str(__s); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-      basic_string_view<char_type, traits_type>
-      view() const noexcept
-      { return _M_stringbuf.view(); }
+#if __cpp_concepts
+      template<__allocator_like _SAlloc>
+	requires (!is_same_v<_SAlloc, _Alloc>)
+	void
+	str(const basic_string<_CharT, _Traits, _SAlloc>& __s)
+	{ _M_stringbuf.str(__s); }
+#endif
+
+      void
+      str(__string_type&& __s)
+      { _M_stringbuf.str(std::move(__s)); }
 #endif
     };
 
@@ -1019,8 +1132,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @return  @c rdbuf()->str()
       */
       __string_type
-      str() const
+      str() const _GLIBCXX_LVAL_REF_QUAL
       { return _M_stringbuf.str(); }
+
+#if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
+#if __cpp_concepts
+      template<__allocator_like _SAlloc>
+	basic_string<_CharT, _Traits, _SAlloc>
+	str(const _SAlloc& __sa) const
+	{ return _M_stringbuf.str(__sa); }
+#endif
+
+      __string_type
+      str() &&
+      { return std::move(_M_stringbuf).str(); }
+
+      basic_string_view<char_type, traits_type>
+      view() const noexcept
+      { return _M_stringbuf.view(); }
+#endif
 
       /**
        *  @brief  Setting a new buffer.
@@ -1033,9 +1163,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { _M_stringbuf.str(__s); }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
-      basic_string_view<char_type, traits_type>
-      view() const noexcept
-      { return _M_stringbuf.view(); }
+#if __cpp_concepts
+      template<__allocator_like _SAlloc>
+	requires (!is_same_v<_SAlloc, _Alloc>)
+	void
+	str(const basic_string<_CharT, _Traits, _SAlloc>& __s)
+	{ _M_stringbuf.str(__s); }
+#endif
+
+      void
+      str(__string_type&& __s)
+      { _M_stringbuf.str(std::move(__s)); }
 #endif
     };
 
@@ -1045,6 +1183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     inline void
     swap(basic_stringbuf<_CharT, _Traits, _Allocator>& __x,
 	 basic_stringbuf<_CharT, _Traits, _Allocator>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   /// Swap specialization for istringstreams.
@@ -1067,11 +1206,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     swap(basic_stringstream<_CharT, _Traits, _Allocator>& __x,
 	 basic_stringstream<_CharT, _Traits, _Allocator>& __y)
     { __x.swap(__y); }
-#endif
+#endif // C++11
 
 _GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+
+#undef _GLIBCXX_LVAL_REF_QUAL
 
 #include <bits/sstream.tcc>
 

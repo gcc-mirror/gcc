@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.7.1.1  basic_stringbuf constructors  [lib.stringbuf.cons]
+// 29.8.4.4  basic_ostringstream member functions  [ostringstream.members]
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
@@ -31,5 +31,13 @@ main()
   std::wstring s(L"This is a test");
   std::wostringstream stm(s);
   VERIFY( stm.view() == s );
-  return 0;
+  VERIFY( stm.view() == const_cast<const std::wostringstream&>(stm).view() );
+
+  s += L" with a longer string";
+  stm << s;
+  VERIFY( stm.view() == s );
+
+  s = L"This is a shorter string";
+  stm.str(s);
+  VERIFY( stm.view() == s );
 }
