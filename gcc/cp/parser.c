@@ -12679,8 +12679,15 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
 
      for (const auto &x : range)
 
-   if this version doesn't make a copy.  DECL is the RANGE_DECL; EXPR is the
-   *__for_begin expression.
+   if this version doesn't make a copy.
+
+  This function also warns when the loop variable is initialized with
+  a value of a different type resulting in a copy:
+
+     int arr[10];
+     for (const double &x : arr)
+
+   DECL is the RANGE_DECL; EXPR is the *__for_begin expression.
    This function is never called when processing_template_decl is on.  */
 
 static void
@@ -12698,7 +12705,22 @@ warn_for_range_copy (tree decl, tree expr)
 
   if (TYPE_REF_P (type))
     {
-      /* TODO: Implement reference warnings.  */
+      if (glvalue_p (expr) && !ref_conv_binds_directly_p (type, expr))
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (loc, OPT_Wrange_loop_construct,
+			  "loop variable %qD of type %qT binds to a temporary "
+			  "constructed from type %qT", decl, type,
+			  TREE_TYPE (expr)))
+	    {
+	      tree ref = cp_build_qualified_type (TREE_TYPE (expr),
+						  TYPE_QUAL_CONST);
+	      ref = cp_build_reference_type (ref, /*rval*/false);
+	      inform (loc, "use non-reference type %qT to make the copy "
+		      "explicit or %qT to prevent copying",
+		      non_reference (type), ref);
+	    }
+	}
       return;
     }
   else if (!CP_TYPE_CONST_P (type))
