@@ -256,6 +256,7 @@ typedef struct pre_expr_d : nofree_ptr_hash <pre_expr_d>
 {
   enum pre_expr_kind kind;
   unsigned int id;
+  unsigned value_id;
   location_t loc;
   pre_expr_union u;
 
@@ -422,10 +423,64 @@ get_or_alloc_expr_for_name (tree name)
   result = pre_expr_pool.allocate ();
   result->kind = NAME;
   result->loc = UNKNOWN_LOCATION;
+  result->value_id = VN_INFO (name)->value_id;
   PRE_EXPR_NAME (result) = name;
   alloc_expression_id (result);
   return result;
 }
+
+/* Given an NARY, get or create a pre_expr to represent it.  */
+
+static pre_expr
+get_or_alloc_expr_for_nary (vn_nary_op_t nary,
+			    location_t loc = UNKNOWN_LOCATION)
+{
+  struct pre_expr_d expr;
+  pre_expr result;
+  unsigned int result_id;
+
+  expr.kind = NARY;
+  expr.id = 0;
+  PRE_EXPR_NARY (&expr) = nary;
+  result_id = lookup_expression_id (&expr);
+  if (result_id != 0)
+    return expression_for_id (result_id);
+
+  result = pre_expr_pool.allocate ();
+  result->kind = NARY;
+  result->loc = loc;
+  result->value_id = nary->value_id;
+  PRE_EXPR_NARY (result) = nary;
+  alloc_expression_id (result);
+  return result;
+}
+
+/* Given an REFERENCE, get or create a pre_expr to represent it.  */
+
+static pre_expr
+get_or_alloc_expr_for_reference (vn_reference_t reference,
+				 location_t loc = UNKNOWN_LOCATION)
+{
+  struct pre_expr_d expr;
+  pre_expr result;
+  unsigned int result_id;
+
+  expr.kind = REFERENCE;
+  expr.id = 0;
+  PRE_EXPR_REFERENCE (&expr) = reference;
+  result_id = lookup_expression_id (&expr);
+  if (result_id != 0)
+    return expression_for_id (result_id);
+
+  result = pre_expr_pool.allocate ();
+  result->kind = REFERENCE;
+  result->loc = loc;
+  result->value_id = reference->value_id;
+  PRE_EXPR_REFERENCE (result) = reference;
+  alloc_expression_id (result);
+  return result;
+}
+
 
 /* An unordered bitmap set.  One bitmap tracks values, the other,
    expressions.  */
@@ -444,9 +499,9 @@ public:
 
 /* Mapping from value id to expressions with that value_id.  */
 static vec<bitmap> value_expressions;
-/* ???  We want to just record a single expression for each constant
-   value, one of kind CONSTANT.  */
-static vec<bitmap> constant_value_expressions;
+/* We just record a single expression for each constant value,
+   one of kind CONSTANT.  */
+static vec<pre_expr> constant_value_expressions;
 
 
 /* This structure is used to keep track of statistics on what
@@ -640,35 +695,33 @@ phi_trans_add (expr_pred_trans_t *entry, pre_expr e, basic_block pred)
 static void
 add_to_value (unsigned int v, pre_expr e)
 {
-  bitmap set;
-
   gcc_checking_assert (get_expr_value_id (e) == v);
 
   if (value_id_constant_p (v))
     {
+      if (e->kind != CONSTANT)
+	return;
+
       if (-v >= constant_value_expressions.length ())
 	constant_value_expressions.safe_grow_cleared (-v + 1);
 
-      set = constant_value_expressions[-v];
-      if (!set)
-	{
-	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
-	  constant_value_expressions[-v] = set;
-	}
+      pre_expr leader = constant_value_expressions[-v];
+      if (!leader)
+	constant_value_expressions[-v] = e;
     }
   else
     {
       if (v >= value_expressions.length ())
 	value_expressions.safe_grow_cleared (v + 1);
 
-      set = value_expressions[v];
+      bitmap set = value_expressions[v];
       if (!set)
 	{
 	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
 	  value_expressions[v] = set;
 	}
+      bitmap_set_bit (set, get_or_alloc_expression_id (e));
     }
-  bitmap_set_bit (set, get_or_alloc_expression_id (e));
 }
 
 /* Create a new bitmap set and return it.  */
@@ -687,29 +740,10 @@ bitmap_set_new (void)
 static unsigned int
 get_expr_value_id (pre_expr expr)
 {
-  unsigned int id;
-  switch (expr->kind)
-    {
-    case CONSTANT:
-      id = get_constant_value_id (PRE_EXPR_CONSTANT (expr));
-      break;
-    case NAME:
-      id = VN_INFO (PRE_EXPR_NAME (expr))->value_id;
-      break;
-    case NARY:
-      gcc_assert (!PRE_EXPR_NARY (expr)->predicated_values);
-      id = PRE_EXPR_NARY (expr)->value_id;
-      break;
-    case REFERENCE:
-      id = PRE_EXPR_REFERENCE (expr)->value_id;
-      break;
-    default:
-      gcc_unreachable ();
-    }
   /* ???  We cannot assert that expr has a value-id (it can be 0), because
      we assign value-ids only to expressions that have a result
      in set_hashtable_value_ids.  */
-  return id;
+  return expr->value_id;
 }
 
 /* Return a VN valnum (SSA name or constant) for the PRE value-id VAL.  */
@@ -717,20 +751,22 @@ get_expr_value_id (pre_expr expr)
 static tree
 vn_valnum_from_value_id (unsigned int val)
 {
+  if (value_id_constant_p (val))
+    {
+      pre_expr vexpr = constant_value_expressions[-val];
+      if (vexpr)
+	return PRE_EXPR_CONSTANT (vexpr);
+      return NULL_TREE;
+    }
+
+  bitmap exprset = value_expressions[val];
   bitmap_iterator bi;
   unsigned int i;
-  bitmap exprset;
-  if (value_id_constant_p (val))
-    exprset = constant_value_expressions[-val];
-  else
-    exprset = value_expressions[val];
   EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
     {
       pre_expr vexpr = expression_for_id (i);
       if (vexpr->kind == NAME)
 	return VN_INFO (PRE_EXPR_NAME (vexpr))->valnum;
-      else if (vexpr->kind == CONSTANT)
-	return PRE_EXPR_CONSTANT (vexpr);
     }
   return NULL_TREE;
 }
@@ -1102,7 +1138,6 @@ static pre_expr
 get_or_alloc_expr_for_constant (tree constant)
 {
   unsigned int result_id;
-  unsigned int value_id;
   struct pre_expr_d expr;
   pre_expr newexpr;
 
@@ -1117,8 +1152,8 @@ get_or_alloc_expr_for_constant (tree constant)
   newexpr->loc = UNKNOWN_LOCATION;
   PRE_EXPR_CONSTANT (newexpr) = constant;
   alloc_expression_id (newexpr);
-  value_id = get_or_alloc_constant_value_id (constant);
-  add_to_value (value_id, newexpr);
+  newexpr->value_id = get_or_alloc_constant_value_id (constant);
+  add_to_value (newexpr->value_id, newexpr);
   return newexpr;
 }
 
@@ -1475,17 +1510,7 @@ phi_translate_1 (bitmap_set_t dest,
 	    if (result && is_gimple_min_invariant (result))
 	      return get_or_alloc_expr_for_constant (result);
 
-	    expr = pre_expr_pool.allocate ();
-	    expr->kind = NARY;
-	    expr->id = 0;
-	    expr->loc = expr_loc;
-	    if (nary && !nary->predicated_values)
-	      {
-		PRE_EXPR_NARY (expr) = nary;
-		new_val_id = nary->value_id;
-		get_or_alloc_expression_id (expr);
-	      }
-	    else
+	    if (!nary || nary->predicated_values)
 	      {
 		new_val_id = get_next_value_id ();
 		nary = vn_nary_op_insert_pieces (newnary->length,
@@ -1493,10 +1518,9 @@ phi_translate_1 (bitmap_set_t dest,
 						 newnary->type,
 						 &newnary->op[0],
 						 result, new_val_id);
-		PRE_EXPR_NARY (expr) = nary;
-		get_or_alloc_expression_id (expr);
 	      }
-	    add_to_value (new_val_id, expr);
+	    expr = get_or_alloc_expr_for_nary (nary, expr_loc);
+	    add_to_value (get_expr_value_id (expr), expr);
 	  }
 	return expr;
       }
@@ -1628,11 +1652,6 @@ phi_translate_1 (bitmap_set_t dest,
 		return NULL;
 	      }
 
-	    expr = pre_expr_pool.allocate ();
-	    expr->kind = REFERENCE;
-	    expr->id = 0;
-	    expr->loc = expr_loc;
-
 	    if (newref)
 	      new_val_id = newref->value_id;
 	    else
@@ -1649,8 +1668,7 @@ phi_translate_1 (bitmap_set_t dest,
 						     result, new_val_id);
 		newoperands = vNULL;
 	      }
-	    PRE_EXPR_REFERENCE (expr) = newref;
-	    get_or_alloc_expression_id (expr);
+	    expr = get_or_alloc_expr_for_reference (newref, expr_loc);
 	    add_to_value (new_val_id, expr);
 	  }
 	newoperands.release ();
@@ -1782,19 +1800,8 @@ static pre_expr
 bitmap_find_leader (bitmap_set_t set, unsigned int val)
 {
   if (value_id_constant_p (val))
-    {
-      unsigned int i;
-      bitmap_iterator bi;
-      bitmap exprset = constant_value_expressions[-val];
+    return constant_value_expressions[-val];
 
-      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
-	{
-	  pre_expr expr = expression_for_id (i);
-	  if (expr->kind == CONSTANT)
-	    return expr;
-	}
-      gcc_unreachable ();
-    }
   if (bitmap_set_contains_value (set, val))
     {
       /* Rather than walk the entire bitmap of expressions, and see
@@ -3932,13 +3939,8 @@ compute_avail (void)
 		    || gimple_bb (SSA_NAME_DEF_STMT
 				    (gimple_vuse (stmt))) != block)
 		  {
-		    result = pre_expr_pool.allocate ();
-		    result->kind = REFERENCE;
-		    result->id = 0;
-		    result->loc = gimple_location (stmt);
-		    PRE_EXPR_REFERENCE (result) = ref;
-
-		    get_or_alloc_expression_id (result);
+		    result = get_or_alloc_expr_for_reference
+			       (ref, gimple_location (stmt));
 		    add_to_value (get_expr_value_id (result), result);
 		    bitmap_value_insert_into_set (EXP_GEN (block), result);
 		  }
@@ -3973,11 +3975,8 @@ compute_avail (void)
 			  && vn_nary_may_trap (nary))
 			continue;
 
-		      result = pre_expr_pool.allocate ();
-		      result->kind = NARY;
-		      result->id = 0;
-		      result->loc = gimple_location (stmt);
-		      PRE_EXPR_NARY (result) = nary;
+		      result = get_or_alloc_expr_for_nary
+				 (nary, gimple_location (stmt));
 		      break;
 		    }
 
@@ -4098,11 +4097,8 @@ compute_avail (void)
 			}
 		      operands.release ();
 
-		      result = pre_expr_pool.allocate ();
-		      result->kind = REFERENCE;
-		      result->id = 0;
-		      result->loc = gimple_location (stmt);
-		      PRE_EXPR_REFERENCE (result) = ref;
+		      result = get_or_alloc_expr_for_reference
+				 (ref, gimple_location (stmt));
 		      break;
 		    }
 
@@ -4110,7 +4106,6 @@ compute_avail (void)
 		    continue;
 		  }
 
-		get_or_alloc_expression_id (result);
 		add_to_value (get_expr_value_id (result), result);
 		bitmap_value_insert_into_set (EXP_GEN (block), result);
 		continue;
