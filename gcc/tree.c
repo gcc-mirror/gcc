@@ -15041,6 +15041,10 @@ maybe_wrap_with_location (tree expr, location_t loc)
   if (EXCEPTIONAL_CLASS_P (expr))
     return expr;
 
+  /* Compiler-generated temporary variables don't need a wrapper.  */
+  if (DECL_P (expr) && DECL_ARTIFICIAL (expr) && DECL_IGNORED_P (expr))
+    return expr;
+
   /* If any auto_suppress_location_wrappers are active, don't create
      wrappers.  */
   if (suppress_location_wrappers > 0)

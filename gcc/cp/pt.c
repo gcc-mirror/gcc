@@ -16214,7 +16214,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
   tree name;
   bool is_template;
   tree template_args;
-  location_t loc = UNKNOWN_LOCATION;
+  location_t loc = EXPR_LOCATION (qualified_id);
 
   gcc_assert (TREE_CODE (qualified_id) == SCOPE_REF);
 
@@ -16223,7 +16223,6 @@ tsubst_qualified_id (tree qualified_id, tree args,
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
       is_template = true;
-      loc = EXPR_LOCATION (name);
       template_args = TREE_OPERAND (name, 1);
       if (template_args)
 	template_args = tsubst_template_args (template_args, args,
@@ -16350,6 +16349,8 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
   if (REF_PARENTHESIZED_P (qualified_id))
     expr = force_paren_expr (expr);
+
+  expr = maybe_wrap_with_location (expr, loc);
 
   return expr;
 }
