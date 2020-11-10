@@ -1,3 +1,13 @@
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97731
+	* src/filesystem/dir.cc (recursive_directory_iterator): Call the
+	right overload of _Dir::advance.
+	* testsuite/experimental/filesystem/iterators/97731.cc: New test.
+
 2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
