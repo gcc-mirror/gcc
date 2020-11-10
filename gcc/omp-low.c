@@ -214,6 +214,21 @@ is_oacc_kernels (omp_context *ctx)
 	      == GF_OMP_TARGET_KIND_OACC_KERNELS));
 }
 
+/* Return true if STMT corresponds to an OpenMP target region.  */
+static bool
+is_omp_target (gimple *stmt)
+{
+  if (gimple_code (stmt) == GIMPLE_OMP_TARGET)
+    {
+      int kind = gimple_omp_target_kind (stmt);
+      return (kind == GF_OMP_TARGET_KIND_REGION
+	      || kind == GF_OMP_TARGET_KIND_DATA
+	      || kind == GF_OMP_TARGET_KIND_ENTER_DATA
+	      || kind == GF_OMP_TARGET_KIND_EXIT_DATA);
+    }
+  return false;
+}
+
 /* If DECL is the artificial dummy VAR_DECL created for non-static
    data member privatization, return the underlying "this" parameter,
    otherwise return NULL.  */
@@ -1346,7 +1361,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      && DECL_P (decl)
 	      && ((OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FIRSTPRIVATE_POINTER
 		   && (OMP_CLAUSE_MAP_KIND (c)
-		       != GOMP_MAP_FIRSTPRIVATE_REFERENCE))
+		       != GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
+		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH)
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_TO
 	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_FROM
@@ -1366,6 +1383,40 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		  && !POINTER_TYPE_P (TREE_TYPE (decl))
 		  && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c))
 		break;
+	    }
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	      && DECL_P (decl)
+	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+	      && is_omp_target (ctx->stmt))
+	    {
+	      /* If this is an offloaded region, an attach operation should
+		 only exist when the pointer variable is mapped in a prior
+		 clause.  */
+	      if (is_gimple_omp_offloaded (ctx->stmt))
+		gcc_assert
+		  (maybe_lookup_decl (decl, ctx)
+		   || (is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
+		       && lookup_attribute ("omp declare target",
+					    DECL_ATTRIBUTES (decl))));
+
+	      /* By itself, attach/detach is generated as part of pointer
+		 variable mapping and should not create new variables in the
+		 offloaded region, however sender refs for it must be created
+		 for its address to be passed to the runtime.  */
+	      tree field
+		= build_decl (OMP_CLAUSE_LOCATION (c),
+			      FIELD_DECL, NULL_TREE, ptr_type_node);
+	      SET_DECL_ALIGN (field, TYPE_ALIGN (ptr_type_node));
+	      insert_field_into_struct (ctx->record_type, field);
+	      /* To not clash with a map of the pointer variable itself,
+		 attach/detach maps have their field looked up by the *clause*
+		 tree expression, not the decl.  */
+	      gcc_assert (!splay_tree_lookup (ctx->field_map,
+					      (splay_tree_key) c));
+	      splay_tree_insert (ctx->field_map, (splay_tree_key) c,
+				 (splay_tree_value) field);
+	      break;
 	    }
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
@@ -1606,6 +1657,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	      && is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
 	      && varpool_node::get_create (decl)->offloadable)
+	    break;
+	  if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+	       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+	      && is_omp_target (ctx->stmt)
+	      && !is_gimple_omp_offloaded (ctx->stmt))
 	    break;
 	  if (DECL_P (decl))
 	    {
@@ -11471,6 +11527,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_STRUCT:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH:
+	  case GOMP_MAP_DETACH:
 	    break;
 	  case GOMP_MAP_IF_PRESENT:
 	  case GOMP_MAP_FORCE_ALLOC:
@@ -11481,8 +11539,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FORCE_DEVICEPTR:
 	  case GOMP_MAP_DEVICE_RESIDENT:
 	  case GOMP_MAP_LINK:
-	  case GOMP_MAP_ATTACH:
-	  case GOMP_MAP_DETACH:
 	  case GOMP_MAP_FORCE_DETACH:
 	    gcc_assert (is_gimple_omp_oacc (stmt));
 	    break;
@@ -11534,6 +11590,16 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		SET_DECL_VALUE_EXPR (new_var, x);
 		DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 	      }
+	    continue;
+	  }
+
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	    && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		|| OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+	    && is_omp_target (stmt))
+	  {
+	    gcc_assert (maybe_lookup_field (c, ctx));
+	    map_cnt++;
 	    continue;
 	  }
 
@@ -11769,14 +11835,28 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    gcc_assert (DECL_P (ovar2));
 		    ovar = ovar2;
 		  }
-		if (!maybe_lookup_field (ovar, ctx))
+		if (!maybe_lookup_field (ovar, ctx)
+		    && !(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+			 && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+			     || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)))
 		  continue;
 	      }
 
 	    talign = TYPE_ALIGN_UNIT (TREE_TYPE (ovar));
 	    if (DECL_P (ovar) && DECL_ALIGN_UNIT (ovar) > talign)
 	      talign = DECL_ALIGN_UNIT (ovar);
-	    if (nc)
+
+	    if (nc
+		&& OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		&& (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		    || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+		&& is_omp_target (stmt))
+	      {
+		var = lookup_decl_in_outer_ctx (ovar, ctx);
+		x = build_sender_ref (c, ctx);
+		gimplify_assign (x, build_fold_addr_expr (var), &ilist);
+	      }
+	    else if (nc)
 	      {
 		var = lookup_decl_in_outer_ctx (ovar, ctx);
 		x = build_sender_ref (ovar, ctx);

@@ -1162,10 +1162,10 @@ struct gomp_device_descr
 /* Kind of the pragma, for which gomp_map_vars () is called.  */
 enum gomp_map_vars_kind
 {
-  GOMP_MAP_VARS_OPENACC,
-  GOMP_MAP_VARS_TARGET,
-  GOMP_MAP_VARS_DATA,
-  GOMP_MAP_VARS_ENTER_DATA
+  GOMP_MAP_VARS_OPENACC    = 1,
+  GOMP_MAP_VARS_TARGET     = 2,
+  GOMP_MAP_VARS_DATA       = 4,
+  GOMP_MAP_VARS_ENTER_DATA = 8
 };
 
 extern void gomp_acc_declare_allocate (bool, size_t, void **, size_t *,
