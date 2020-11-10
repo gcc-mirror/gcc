@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options "-fmodules-ts -fmodule-mapper=|@mapper-server\\ -mt\\ [srcdir]/legacy-6.map" }
+// { dg-additional-options "-fmodules-ts -fmodule-mapper=|@g++-mapper-server\\ -mt\\ [srcdir]/legacy-6.map" }
 
 #include "legacy-6_a.H"
 #include "legacy-6_b.H"

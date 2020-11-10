@@ -228,7 +228,6 @@ Classes used:
 #include "attribs.h"
 #include "intl.h"
 #include "langhooks.h"
-#define MAPPER_FOR_GCC 1
 #include "mapper.h"
 
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0

@@ -134,12 +134,13 @@ host_modules= { module= libtermcap; no_check=true;
                 missing=distclean;
                 missing=maintainer-clean; };
 host_modules= { module= utils; no_check=true; };
+host_modules= { module= c++tools; };
 host_modules= { module= gnattools; };
+host_modules= { module= gotools; };
 host_modules= { module= lto-plugin; bootstrap=true;
 		extra_configure_flags='--enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
 		extra_make_flags='@extra_linker_plugin_flags@'; };
 host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
-host_modules= { module= gotools; };
 host_modules= { module= libctf; no_install=true; no_check=true;
 		bootstrap=true; };
 
@@ -391,6 +392,7 @@ dependencies = { module=all-lto-plugin; on=all-libiberty-linker-plugin; };
 dependencies = { module=configure-libcc1; on=configure-gcc; };
 dependencies = { module=all-libcc1; on=all-gcc; };
 
+dependencies = { module=all-c++tools; on=all-libcody; };
 dependencies = { module=all-gotools; on=all-target-libgo; };
 
 dependencies = { module=all-utils; on=all-libiberty; };
@@ -635,7 +637,8 @@ languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;
 				lib-check-target=check-target-libstdc++-v3;
 				lib-check-target=check-target-libitm-c++;
-				lib-check-target=check-target-libgomp-c++; };
+				lib-check-target=check-target-libgomp-c++;
+				lib-check-target=check-gotools; };
 languages = { language=fortran;	gcc-check-target=check-fortran;
 				lib-check-target=check-target-libquadmath;
 				lib-check-target=check-target-libgfortran;

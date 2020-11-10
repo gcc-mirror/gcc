@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "line-map.h"
 #include "diagnostic-core.h"
-#define MAPPER_FOR_GCC 1
 #include "mapper.h"
 #include "intl.h"
 

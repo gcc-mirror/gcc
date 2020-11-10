@@ -24,10 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 // C++
 #include <set>
 #include <vector>
-// GCC
-#define INCLUDE_VECTOR
-#define INCLUDE_MAP
-#define INCLUDE_SET
+#include <map>
+// C
+#include <csignal>
+#include <cstring>
+#include <cstdarg>
+// OS
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 // Network
 /* Include network stuff first.  Excitingly OSX10.14 uses bcmp here, which
@@ -54,11 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 # define gai_strerror(X) ""
 #endif
 
-// Excitingly Darwin uses bcmp in its network headers, and we poison
-// that in our setup.
-#include "system.h"
-#include "version.h"
-#include "intl.h"
 #include <getopt.h>
 
 // Select or epoll
@@ -73,12 +74,14 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
+// GCC
+#include "version.h"
+#include "ansidecl.h"
+#define HAVE_DECL_BASENAME 1 /* See comment in gcc/configure.ac.  */
+#include "libiberty.h"
+
 #if !HOST_HAS_O_CLOEXEC
 #define O_CLOEXEC 0
-#endif
-
-#ifndef HAVE_SIGHANDLER_T
-typedef void (*sighandler_t) (int);
 #endif
 
 #ifdef NETWORKING
@@ -186,7 +189,7 @@ internal_error (const char *fmt, ...)
   va_end (args);
   fprintf (stderr, "\n");
 
-  exit (FATAL_EXIT_CODE);
+  exit (2);
 }
 
 /* Hooked to from gcc_assert & gcc_unreachable.  */
@@ -246,7 +249,7 @@ fnotice (FILE *file, const char *fmt, ...)
   va_list args;
 
   va_start (args, fmt);
-  vfprintf (file, _(fmt), args);
+  vfprintf (file, fmt, args);
   va_end (args);
 }
 
@@ -254,9 +257,10 @@ static void ATTRIBUTE_NORETURN
 print_usage (int error_p)
 {
   FILE *file = error_p ? stderr : stdout;
-  int status = error_p ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
+  int status = error_p ? 1 : 0;
 
-  fnotice (file, "Usage: cxx-mapper [OPTION...] [CONNECTION] [MAPPINGS...] \n\n");
+  fnotice (file, "Usage: %s [OPTION...] [CONNECTION] [MAPPINGS...] \n\n",
+	   progname);
   fnotice (file, "C++ Module Mapper.\n\n");
   fnotice (file, "  -a, --accept     Netmask to accept from\n");
   fnotice (file, "  -f, --fallback   Use fallback for missing mappings\n");
@@ -277,14 +281,14 @@ print_usage (int error_p)
 static void ATTRIBUTE_NORETURN
 print_version (void)
 {
-  fnotice (stdout, "cxx-mapper %s%s\n", pkgversion_string, version_string);
+  fnotice (stdout, "%s %s%s\n", progname, pkgversion_string, version_string);
   fprintf (stdout, "Copyright %s 2018-2020 Free Software Foundation, Inc.\n",
-	   _("(C)"));
+	   ("(C)"));
   fnotice (stdout,
-	   _("This is free software; see the source for copying conditions.\n"
-	     "There is NO warranty; not even for MERCHANTABILITY or \n"
-	     "FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
-  exit (SUCCESS_EXIT_CODE);
+	   ("This is free software; see the source for copying conditions.\n"
+	    "There is NO warranty; not even for MERCHANTABILITY or \n"
+	    "FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
+  exit (0);
 }
 
 /* ARG is a netmask to accept from.  Add it to the table.  Return
@@ -840,8 +844,6 @@ main (int argc, char *argv[])
     --p;
   progname = p;
 
-  xmalloc_set_program_name (progname);
-
 #ifdef SIGSEGV
   signal (SIGSEGV, crash_signal);
 #endif
@@ -935,7 +937,6 @@ main (int argc, char *argv[])
   else
 #endif
     {
-      gcc_assert (sock_fd < 0);
       auto server = Cody::Server (&r, 0, 1);
 
       int err = 0;

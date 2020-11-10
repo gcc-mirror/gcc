@@ -1,3 +1,37 @@
+2020-11-10  Nathan Sidwell  <nathan@acm.org>
+
+	Create c++tools dir
+	* Makefile.def: Add c++tools
+	* Makefile.tpl: Likewise.
+	* configure.ac: Likewise.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+	c++tools/
+	* Makefile.in: New.
+	* configure.ac: New.
+	* config.h.in: Generated
+	* configure: Generated
+	* mapper.h: Moved from gcc/cp.
+	* resolver.cc: Moved from gcc/cp/mapper-resolver.cc
+	* server.cc: Moved from gcc/cp/mapper-server.cc
+	gcc/
+	* configure.ac: Remove mapper-server-specific checks
+	* config.in: Rebuilt.
+	* configure: Rebuilt.
+	gcc/cp/
+	* Make-lang.in: Remove mapper-server.
+	* mapper-client.cc: Adjusted.
+	* mapper-resolver.cc: Moved to c++tools/resolver.cc, replaced with
+	stub here.
+	* mapper.h: Moved to c++tools, replaced with stub here.
+	* module.cc: Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/extern-tpl-1_b.C: Adjust invocation.
+	* g++.dg/modules/inc-xlate-1_e.C: Likewise.
+	* g++.dg/modules/legacy-2_b.H: Likewise.
+	* g++.dg/modules/legacy-6_c.C: Likewise.
+	* g++.dg/modules/legacy-6_d.C: Likewise.
+
 2020-11-09  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk e38cd64ac6c

@@ -12078,195 +12078,6 @@ $as_echo "#define HAVE_AF_INET6 1" >>confdefs.h
 
 fi
 
-# Efficient server response wants epoll
-# Check for epoll_create, epoll_ctl, epoll_pwait
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for epoll" >&5
-$as_echo_n "checking for epoll... " >&6; }
-if ${ac_cv_epoll+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <sys/epoll.h>
-int
-main ()
-{
-
-int fd = epoll_create (1);
-epoll_event ev;
-ev.events = EPOLLIN;
-ev.data.fd = 0;
-epoll_ctl (fd, EPOLL_CTL_ADD, 0, &ev);
-epoll_pwait (fd, 0, 0, -1, 0);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_cv_epoll=yes
-else
-  ac_cv_epoll=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_epoll" >&5
-$as_echo "$ac_cv_epoll" >&6; }
-if test $ac_cv_epoll = yes; then
-
-$as_echo "#define HAVE_EPOLL 1" >>confdefs.h
-
-fi
-
-# If we can't use epoll, try pselect.
-# Check for pselect
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pselect" >&5
-$as_echo_n "checking for pselect... " >&6; }
-if ${ac_cv_pselect+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <sys/select.h>
-int
-main ()
-{
-
-pselect (0, 0, 0, 0, 0, 0);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_cv_pselect=yes
-else
-  ac_cv_pselect=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_pselect" >&5
-$as_echo "$ac_cv_pselect" >&6; }
-if test $ac_cv_pselect = yes; then
-
-$as_echo "#define HAVE_PSELECT 1" >>confdefs.h
-
-fi
-
-# And failing that, use good old select.
-# If we can't even use this, the server is serialized.
-# Check for select
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for select" >&5
-$as_echo_n "checking for select... " >&6; }
-if ${ac_cv_select+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <sys/select.h>
-int
-main ()
-{
-
-select (0, 0, 0, 0, 0);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_cv_select=yes
-else
-  ac_cv_select=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_select" >&5
-$as_echo "$ac_cv_select" >&6; }
-if test $ac_cv_select = yes; then
-
-$as_echo "#define HAVE_SELECT 1" >>confdefs.h
-
-fi
-
-# Avoid some fnctl calls by using accept4, when available.
-# Check for accept4
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for accept4" >&5
-$as_echo_n "checking for accept4... " >&6; }
-if ${ac_cv_accept4+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <sys/socket.h>
-int
-main ()
-{
-
-int err = accept4 (1, 0, 0, SOCK_NONBLOCK);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_cv_accept4=yes
-else
-  ac_cv_accept4=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_accept4" >&5
-$as_echo "$ac_cv_accept4" >&6; }
-if test $ac_cv_accept4 = yes; then
-
-$as_echo "#define HAVE_ACCEPT4 1" >>confdefs.h
-
-fi
-
-# For better server messages, look for a way to stringize network addresses
-# Check for inet_ntop
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for inet_ntop" >&5
-$as_echo_n "checking for inet_ntop... " >&6; }
-if ${ac_cv_inet_ntop+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <arpa/inet.h>
-#include <netinet/in.h>
-int
-main ()
-{
-
-sockaddr_in6 in6;
-char buf[INET6_ADDRSTRLEN];
-const char *str = inet_ntop (AF_INET6, &in6, buf, sizeof (buf));
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_cv_inet_ntop=yes
-else
-  ac_cv_inet_ntop=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_inet_ntop" >&5
-$as_echo "$ac_cv_inet_ntop" >&6; }
-if test $ac_cv_inet_ntop = yes; then
-
-$as_echo "#define HAVE_INET_NTOP 1" >>confdefs.h
-
-fi
-
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"
 CXXFLAGS="$saved_CXXFLAGS"
@@ -19365,7 +19176,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19368 "configure"
+#line 19179 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19471,7 +19282,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19474 "configure"
+#line 19285 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
