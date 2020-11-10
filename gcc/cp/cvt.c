@@ -1569,12 +1569,13 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	  && warn_unused_value
 	  && !TREE_NO_WARNING (expr)
 	  && !processing_template_decl
-	  && !cp_unevaluated_operand)
+	  && !cp_unevaluated_operand
+	  && (complain & tf_warning))
 	{
 	  /* The middle end does not warn about expressions that have
 	     been explicitly cast to void, so we must do so here.  */
-	  if (!TREE_SIDE_EFFECTS (expr)) {
-            if (complain & tf_warning)
+	  if (!TREE_SIDE_EFFECTS (expr))
+	    {
 	      switch (implicit)
 		{
 		  case ICV_SECOND_OF_COND:
@@ -1606,14 +1607,10 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 		  default:
 		    gcc_unreachable ();
 		}
-          }
+	    }
 	  else
 	    {
-	      tree e;
-	      enum tree_code code;
-	      enum tree_code_class tclass;
-
-	      e = expr;
+	      tree e = expr;
 	      /* We might like to warn about (say) "(int) f()", as the
 		 cast has no effect, but the compiler itself will
 		 generate implicit conversions under some
@@ -1627,21 +1624,14 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	      while (TREE_CODE (e) == NOP_EXPR)
 		e = TREE_OPERAND (e, 0);
 
-	      code = TREE_CODE (e);
-	      tclass = TREE_CODE_CLASS (code);
-	      if ((tclass == tcc_comparison
-		   || tclass == tcc_unary
-		   || (tclass == tcc_binary
-		       && !(code == MODIFY_EXPR
-			    || code == INIT_EXPR
-			    || code == PREDECREMENT_EXPR
-			    || code == PREINCREMENT_EXPR
-			    || code == POSTDECREMENT_EXPR
-			    || code == POSTINCREMENT_EXPR))
-		   || code == VEC_PERM_EXPR
-		   || code == VEC_COND_EXPR)
-                  && (complain & tf_warning))
-		warning_at (loc, OPT_Wunused_value, "value computed is not used");
+	      enum tree_code code = TREE_CODE (e);
+	      enum tree_code_class tclass = TREE_CODE_CLASS (code);
+	      if (tclass == tcc_comparison
+		  || tclass == tcc_unary
+		  || tclass == tcc_binary
+		  || code == VEC_PERM_EXPR
+		  || code == VEC_COND_EXPR)
+		warn_if_unused_value (e, loc);
 	    }
 	}
       expr = build1 (CONVERT_EXPR, void_type_node, expr);
