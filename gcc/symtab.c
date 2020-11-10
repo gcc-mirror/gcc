@@ -1484,8 +1484,7 @@ symtab_node::copy_visibility_from (symtab_node *n)
   DECL_DLLIMPORT_P (decl) = DECL_DLLIMPORT_P (n->decl);
   resolution = n->resolution;
   set_comdat_group (n->get_comdat_group ());
-  call_for_symbol_and_aliases (symtab_node::set_section,
-			     const_cast<char *>(n->get_section ()), true);
+  set_section (*n);
   externally_visible = n->externally_visible;
   if (!DECL_RTL_SET_P (decl))
     return;
@@ -1671,6 +1670,14 @@ symtab_node::set_section (const char *section)
     (symtab_node::set_section, const_cast<char *>(section), true);
 }
 
+void
+symtab_node::set_section (const symtab_node &other)
+{
+  const char *section = other.get_section ();
+  call_for_symbol_and_aliases
+    (symtab_node::set_section, const_cast<char *>(section), true);
+}
+
 /* Return the initialization priority.  */
 
 priority_type
@@ -1814,8 +1821,7 @@ symtab_node::resolve_alias (symtab_node *target, bool transparent)
     {
       error ("section of alias %q+D must match section of its target", decl);
     }
-  call_for_symbol_and_aliases (symtab_node::set_section,
-			     const_cast<char *>(target->get_section ()), true);
+  set_section (*target);
   if (target->implicit_section)
     call_for_symbol_and_aliases (set_implicit_section, NULL, true);
 

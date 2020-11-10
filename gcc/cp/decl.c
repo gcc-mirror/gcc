@@ -2866,7 +2866,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     done later in decl_attributes since we are called before attributes
 	     are assigned.  */
 	  if (DECL_SECTION_NAME (newdecl) != NULL)
-	    set_decl_section_name (olddecl, DECL_SECTION_NAME (newdecl));
+	    set_decl_section_name (olddecl, newdecl);
 
 	  if (DECL_ONE_ONLY (newdecl))
 	    {

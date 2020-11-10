@@ -1663,7 +1663,7 @@ finish_thunk (tree thunk, tree function)
 	  resolve_unique_section (thunk, 0, flag_function_sections);
 
 	  /* Output the thunk into the same section as function.  */
-	  set_decl_section_name (thunk, DECL_SECTION_NAME (fn));
+	  set_decl_section_name (thunk, fn);
 	  symtab_node::get (thunk)->implicit_section
 	    = symtab_node::get (fn)->implicit_section;
 	}

@@ -263,7 +263,7 @@ public:
     }
 
   /* Return section as string.  */
-  const char * get_section ()
+  const char * get_section () const
     {
       if (!x_section)
 	return NULL;
@@ -321,6 +321,9 @@ public:
 
   /* Set section for symbol and its aliases.  */
   void set_section (const char *section);
+
+  /* Like set_section, but copying the section name from another node.  */
+  void set_section (const symtab_node &other);
 
   /* Set section, do not recurse into aliases.
      When one wants to change section of symbol and its aliases,
