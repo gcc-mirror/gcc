@@ -1,3 +1,11 @@
+2020-11-09  Sudakshina Das  <sudi.das@arm.com>
+
+	Backported from master:
+	2020-11-02  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/97638
+	* gcc.target/aarch64/pr97638.c: New test.a
+
 2020-11-07  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
