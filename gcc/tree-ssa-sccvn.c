@@ -2047,12 +2047,12 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 	}
       else
 	{
-	  size = MIN (size, (HOST_WIDE_INT) needed_len * BITS_PER_UNIT);
 	  if (pd.offset >= 0)
 	    {
 	      /* LSB of this_buffer[0] byte should be at pd.offset bits
 		 in buffer.  */
 	      unsigned int msk;
+	      size = MIN (size, (HOST_WIDE_INT) needed_len * BITS_PER_UNIT);
 	      amnt = pd.offset % BITS_PER_UNIT;
 	      if (amnt)
 		shift_bytes_in_array_left (this_buffer, len + 1, amnt);
@@ -2081,6 +2081,9 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 	  else
 	    {
 	      amnt = (unsigned HOST_WIDE_INT) pd.offset % BITS_PER_UNIT;
+	      if (amnt)
+		size -= BITS_PER_UNIT - amnt;
+	      size = MIN (size, (HOST_WIDE_INT) needed_len * BITS_PER_UNIT);
 	      if (amnt)
 		shift_bytes_in_array_left (this_buffer, len + 1, amnt);
 	    }
