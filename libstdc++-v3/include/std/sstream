@@ -149,37 +149,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       : basic_stringbuf(std::move(__rhs), __xfer_bufptrs(__rhs, this))
       { __rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0); }
 
-      // 27.8.2.2 Assign and swap:
-
-      basic_stringbuf&
-      operator=(const basic_stringbuf&) = delete;
-
-      basic_stringbuf&
-      operator=(basic_stringbuf&& __rhs)
-      {
-	__xfer_bufptrs __st{__rhs, this};
-	const __streambuf_type& __base = __rhs;
-	__streambuf_type::operator=(__base);
-	this->pubimbue(__rhs.getloc());
-	_M_mode = __rhs._M_mode;
-	_M_string = std::move(__rhs._M_string);
-	__rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0);
-	return *this;
-      }
-
-      void
-      swap(basic_stringbuf& __rhs) noexcept(_Noexcept_swap::value)
-      {
-	__xfer_bufptrs __l_st{*this, std::__addressof(__rhs)};
-	__xfer_bufptrs __r_st{__rhs, this};
-	__streambuf_type& __base = __rhs;
-	__streambuf_type::swap(__base);
-	__rhs.pubimbue(this->pubimbue(__rhs.getloc()));
-	std::swap(_M_mode, __rhs._M_mode);
-	std::swap(_M_string, __rhs._M_string); // XXX not exception safe
-      }
-#endif // C++11
-
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
       explicit
       basic_stringbuf(const allocator_type& __a)
@@ -226,7 +195,38 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       allocator_type get_allocator() const noexcept
       { return _M_string.get_allocator(); }
-#endif
+#endif // C++20
+
+      // 27.8.2.2 Assign and swap:
+
+      basic_stringbuf&
+      operator=(const basic_stringbuf&) = delete;
+
+      basic_stringbuf&
+      operator=(basic_stringbuf&& __rhs)
+      {
+	__xfer_bufptrs __st{__rhs, this};
+	const __streambuf_type& __base = __rhs;
+	__streambuf_type::operator=(__base);
+	this->pubimbue(__rhs.getloc());
+	_M_mode = __rhs._M_mode;
+	_M_string = std::move(__rhs._M_string);
+	__rhs._M_sync(const_cast<char_type*>(__rhs._M_string.data()), 0, 0);
+	return *this;
+      }
+
+      void
+      swap(basic_stringbuf& __rhs) noexcept(_Noexcept_swap::value)
+      {
+	__xfer_bufptrs __l_st{*this, std::__addressof(__rhs)};
+	__xfer_bufptrs __r_st{__rhs, this};
+	__streambuf_type& __base = __rhs;
+	__streambuf_type::swap(__base);
+	__rhs.pubimbue(this->pubimbue(__rhs.getloc()));
+	std::swap(_M_mode, __rhs._M_mode);
+	std::swap(_M_string, __rhs._M_string); // XXX not exception safe
+      }
+#endif // C++11
 
       // Getters and setters:
 
@@ -282,7 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	else
 	  return _M_string;
       }
-#endif
+#endif // C++20
 
       /**
        *  @brief  Setting a new buffer.
@@ -513,7 +513,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_mode(__rhs._M_mode), _M_string(std::move(__rhs._M_string), __a)
       { }
 #endif
-#endif
+#endif // C++11
     };
 
 
@@ -623,27 +623,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_stringbuf(std::move(__rhs._M_stringbuf))
       { __istream_type::set_rdbuf(&_M_stringbuf); }
 
-      // 27.8.3.2 Assign and swap:
-
-      basic_istringstream&
-      operator=(const basic_istringstream&) = delete;
-
-      basic_istringstream&
-      operator=(basic_istringstream&& __rhs)
-      {
-	__istream_type::operator=(std::move(__rhs));
-	_M_stringbuf = std::move(__rhs._M_stringbuf);
-	return *this;
-      }
-
-      void
-      swap(basic_istringstream& __rhs)
-      {
-	__istream_type::swap(__rhs);
-	_M_stringbuf.swap(__rhs._M_stringbuf);
-      }
-#endif
-
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
       basic_istringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __istream_type(), _M_stringbuf(__mode | ios_base::in, __a)
@@ -674,7 +653,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			    ios_base::openmode __mode = ios_base::in)
 	: basic_istringstream(__str, __mode, allocator_type())
 	{ }
-#endif
+#endif // C++20
+
+      // 27.8.3.2 Assign and swap:
+
+      basic_istringstream&
+      operator=(const basic_istringstream&) = delete;
+
+      basic_istringstream&
+      operator=(basic_istringstream&& __rhs)
+      {
+	__istream_type::operator=(std::move(__rhs));
+	_M_stringbuf = std::move(__rhs._M_stringbuf);
+	return *this;
+      }
+
+      void
+      swap(basic_istringstream& __rhs)
+      {
+	__istream_type::swap(__rhs);
+	_M_stringbuf.swap(__rhs._M_stringbuf);
+      }
+#endif // C++11
 
       // Members:
       /**
@@ -844,27 +844,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_stringbuf(std::move(__rhs._M_stringbuf))
       { __ostream_type::set_rdbuf(&_M_stringbuf); }
 
-      // 27.8.3.2 Assign and swap:
-
-      basic_ostringstream&
-      operator=(const basic_ostringstream&) = delete;
-
-      basic_ostringstream&
-      operator=(basic_ostringstream&& __rhs)
-      {
-	__ostream_type::operator=(std::move(__rhs));
-	_M_stringbuf = std::move(__rhs._M_stringbuf);
-	return *this;
-      }
-
-      void
-      swap(basic_ostringstream& __rhs)
-      {
-	__ostream_type::swap(__rhs);
-	_M_stringbuf.swap(__rhs._M_stringbuf);
-      }
-#endif
-
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
       basic_ostringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __ostream_type(), _M_stringbuf(__mode | ios_base::out, __a)
@@ -895,7 +874,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			    ios_base::openmode __mode = ios_base::out)
 	: basic_ostringstream(__str, __mode, allocator_type())
 	{ }
-#endif
+#endif // C++20
+
+      // 27.8.3.2 Assign and swap:
+
+      basic_ostringstream&
+      operator=(const basic_ostringstream&) = delete;
+
+      basic_ostringstream&
+      operator=(basic_ostringstream&& __rhs)
+      {
+	__ostream_type::operator=(std::move(__rhs));
+	_M_stringbuf = std::move(__rhs._M_stringbuf);
+	return *this;
+      }
+
+      void
+      swap(basic_ostringstream& __rhs)
+      {
+	__ostream_type::swap(__rhs);
+	_M_stringbuf.swap(__rhs._M_stringbuf);
+      }
+#endif // C++11
 
       // Members:
       /**
@@ -1061,27 +1061,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_stringbuf(std::move(__rhs._M_stringbuf))
       { __iostream_type::set_rdbuf(&_M_stringbuf); }
 
-      // 27.8.3.2 Assign and swap:
-
-      basic_stringstream&
-      operator=(const basic_stringstream&) = delete;
-
-      basic_stringstream&
-      operator=(basic_stringstream&& __rhs)
-      {
-	__iostream_type::operator=(std::move(__rhs));
-	_M_stringbuf = std::move(__rhs._M_stringbuf);
-	return *this;
-      }
-
-      void
-      swap(basic_stringstream& __rhs)
-      {
-	__iostream_type::swap(__rhs);
-	_M_stringbuf.swap(__rhs._M_stringbuf);
-      }
-#endif
-
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI
       basic_stringstream(ios_base::openmode __mode, const allocator_type& __a)
       : __iostream_type(), _M_stringbuf(__mode, __a)
@@ -1114,7 +1093,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 						       | ios_base::out)
 	: basic_stringstream(__str, __mode, allocator_type())
 	{ }
-#endif
+#endif // C++20
+
+      // 27.8.3.2 Assign and swap:
+
+      basic_stringstream&
+      operator=(const basic_stringstream&) = delete;
+
+      basic_stringstream&
+      operator=(basic_stringstream&& __rhs)
+      {
+	__iostream_type::operator=(std::move(__rhs));
+	_M_stringbuf = std::move(__rhs._M_stringbuf);
+	return *this;
+      }
+
+      void
+      swap(basic_stringstream& __rhs)
+      {
+	__iostream_type::swap(__rhs);
+	_M_stringbuf.swap(__rhs._M_stringbuf);
+      }
+#endif // C++11
 
       // Members:
       /**
