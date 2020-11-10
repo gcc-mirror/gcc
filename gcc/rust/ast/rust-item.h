@@ -733,6 +733,19 @@ public:
   void mark_for_strip () override { function_body = nullptr; }
   bool is_marked_for_strip () const override { return function_body == nullptr; }
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  std::vector<FunctionParam> &get_function_params () { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const { return function_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_definition () {
+    rust_assert (function_body != nullptr);
+    return function_body;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -878,6 +891,13 @@ public:
   /* Override that runs the function recursively on all items contained within
    * the module. */
   void add_crate_name (std::vector<std::string> &names) const override;
+
+  // TODO: think of better way to do this - mutable getter seems dodgy
+  const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
+
+  const std::vector<std::unique_ptr<Item>>& get_items () const { return items; }
+  std::vector<std::unique_ptr<Item>>& get_items () { return items; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1366,6 +1386,16 @@ public:
   void mark_for_strip () override { function_body = nullptr; }
   bool is_marked_for_strip () const override { return function_body == nullptr; }
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<FunctionParam> &get_function_params () { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const { return function_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_definition () {
+    rust_assert (function_body != nullptr);
+    return function_body;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1637,10 +1667,10 @@ public:
 // Rust struct declaration with true struct type AST node
 class StructStruct : public Struct
 {
-public:
   std::vector<StructField> fields;
   bool is_unit;
 
+public:
   std::string as_string () const override;
 
   // Mega-constructor with all possible fields
@@ -1671,6 +1701,10 @@ public:
   bool is_unit_struct () const { return is_unit; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<StructField> &get_fields () { return fields; }
+  const std::vector<StructField> &get_fields () const { return fields; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1712,18 +1746,26 @@ public:
 
   // Copy constructor with clone
   TupleField (TupleField const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      field_type (other.field_type->clone_type ())
-  {}
+    : outer_attrs (other.outer_attrs), visibility (other.visibility)
+  {
+    // guard to prevent null dereference (only required if error)
+    if (other.field_type != nullptr)
+      field_type = other.field_type->clone_type ();
+  }
 
   ~TupleField () = default;
 
   // Overloaded assignment operator to clone
   TupleField &operator= (TupleField const &other)
   {
-    field_type = other.field_type->clone_type ();
     visibility = other.visibility;
     outer_attrs = other.outer_attrs;
+
+    // guard to prevent null dereference (only required if error)
+    if (other.field_type != nullptr)
+      field_type = other.field_type->clone_type ();
+    else
+      field_type = nullptr;
 
     return *this;
   }
@@ -1742,6 +1784,10 @@ public:
   }
 
   std::string as_string () const;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 };
 
 // Rust tuple declared using struct keyword AST node
@@ -1764,6 +1810,10 @@ public:
   {}
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<TupleField> &get_fields () { return fields; }
+  const std::vector<TupleField> &get_fields () const { return fields; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1808,6 +1858,14 @@ public:
   // not pure virtual as not abstract
   virtual void accept_vis (ASTVisitor &vis);
 
+  // Based on idea that name is never empty.
+  void mark_for_strip () { variant_name = ""; }
+  bool is_marked_for_strip () const { return variant_name.empty (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   virtual EnumItem *clone_enum_item_impl () const
@@ -1835,6 +1893,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<TupleField> &get_tuple_fields () { return tuple_fields; }
+  const std::vector<TupleField> &get_tuple_fields () const { return tuple_fields; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -1864,6 +1926,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<StructField> &get_struct_fields () { return struct_fields; }
+  const std::vector<StructField> &get_struct_fields () const { return struct_fields; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -1908,6 +1974,12 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_expr () {
+    rust_assert (expression != nullptr);
+    return expression;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2004,6 +2076,10 @@ public:
   // Invalid if name is empty, so base stripping on that.
   void mark_for_strip () override { enum_name = ""; }
   bool is_marked_for_strip () const override { return enum_name.empty (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<std::unique_ptr<EnumItem>> &get_variants () { return items; }
+  const std::vector<std::unique_ptr<EnumItem>> &get_variants () const { return items; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2169,6 +2245,12 @@ public:
   void mark_for_strip () override { type = nullptr; const_expr = nullptr; }
   bool is_marked_for_strip () const override { return type == nullptr && const_expr == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_expr () {
+    rust_assert (const_expr != nullptr);
+    return const_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2257,6 +2339,12 @@ public:
   // Invalid if type or expression are null, so base stripping on that.
   void mark_for_strip () override { type = nullptr; expr = nullptr; }
   bool is_marked_for_strip () const override { return type == nullptr && expr == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_expr () {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2714,6 +2802,12 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_expr () {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method

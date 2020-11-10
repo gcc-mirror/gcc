@@ -328,7 +328,6 @@ class TypePathSegment
    * GenericArgs are, so could disallow that in constructor, which won't give
    * that much size overhead. */
   PathIdentSegment ident_segment;
-
   Location locus;
 
 protected:

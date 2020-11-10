@@ -810,7 +810,9 @@ class Expr
   std::vector<Attribute> outer_attrs;
 
 public:
+  // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
   // Unique pointer custom clone function
   std::unique_ptr<Expr> clone_expr () const
@@ -905,11 +907,10 @@ public:
  */
 class IdentifierExpr : public ExprWithoutBlock
 {
-public:
   Identifier ident;
-
   Location locus;
 
+public:
   IdentifierExpr (Identifier ident, Location locus = Location (),
 		  std::vector<Attribute> outer_attrs
 		  = std::vector<Attribute> ())
@@ -921,6 +922,8 @@ public:
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
+
+  Identifier get_ident () const { return ident; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1384,6 +1387,10 @@ public:
   // Invalid if path is empty, so base stripping on that.
   void mark_for_strip () override { path = SimplePath::create_empty (); }
   bool is_marked_for_strip () const override { return path.is_empty (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
 protected:
   MacroInvocationSemi *clone_macro_invocation_semi_impl () const

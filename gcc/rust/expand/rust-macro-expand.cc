@@ -13,62 +13,338 @@ namespace Rust {
         AttrVisitor(MacroExpander& expander) : expander(expander) {}
 
         void expand_struct_fields(std::vector<AST::StructField>& fields) {
-            for (int i = 0; i < fields.size(); ) {
-                auto& field_attrs = fields[i].get_outer_attrs ();
+            for (int i = 0; i < fields.size();) {
+                auto& field_attrs = fields[i].get_outer_attrs();
                 expander.expand_cfg_attrs(field_attrs);
-                if (expander.fails_cfg (field_attrs))
-                    fields.erase (fields.begin() + i);
+                if (expander.fails_cfg(field_attrs))
+                    fields.erase(fields.begin() + i);
+                else
+                    i++;
+            }
+        }
+
+        void expand_tuple_fields(std::vector<AST::TupleField>& fields) {
+            for (int i = 0; i < fields.size();) {
+                auto& field_attrs = fields[i].get_outer_attrs();
+                expander.expand_cfg_attrs(field_attrs);
+                if (expander.fails_cfg(field_attrs))
+                    fields.erase(fields.begin() + i);
                 else
                     i++;
             }
         }
 
         void expand_function_params(std::vector<AST::FunctionParam>& params) {
-            for (int i = 0; i < params.size(); ) {
-                auto& param_attrs = params[i].get_outer_attrs ();
+            for (int i = 0; i < params.size();) {
+                auto& param_attrs = params[i].get_outer_attrs();
                 expander.expand_cfg_attrs(param_attrs);
-                if (expander.fails_cfg (param_attrs))
-                    params.erase (params.begin() + i);
+                if (expander.fails_cfg(param_attrs))
+                    params.erase(params.begin() + i);
                 else
                     i++;
             }
         }
 
-        void visit(AST::Token& tok) override {}
-        void visit(AST::DelimTokenTree& delim_tok_tree) override {}
-        void visit(AST::AttrInputMetaItemContainer& input) override {}
-        void visit(AST::IdentifierExpr& ident_expr) override {}
-        void visit(AST::Lifetime& lifetime) override {}
-        void visit(AST::LifetimeParam& lifetime_param) override {}
-        void visit(AST::MacroInvocationSemi& macro) override {}
+        void visit(AST::Token& tok) override {
+            // shouldn't require?
+        }
+        void visit(AST::DelimTokenTree& delim_tok_tree) override {
+            // shouldn't require?
+        }
+        void visit(AST::AttrInputMetaItemContainer& input) override {
+            // shouldn't require?
+        }
+        void visit(AST::IdentifierExpr& ident_expr) override {
+            // strip test based on outer attrs
+            expander.expand_cfg_attrs(ident_expr.get_outer_attrs());
+            if (expander.fails_cfg(ident_expr.get_outer_attrs())) {
+                ident_expr.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::Lifetime& lifetime) override {
+            // shouldn't require?
+        }
+        void visit(AST::LifetimeParam& lifetime_param) override {
+            // supposedly does not require - cfg does nothing
+        }
+        void visit(AST::MacroInvocationSemi& macro_invoc) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(macro_invoc.get_outer_attrs());
+            if (expander.fails_cfg(macro_invoc.get_outer_attrs())) {
+                macro_invoc.mark_for_strip();
+                return;
+            }
 
-        void visit(AST::PathInExpression& path) override {}
-        void visit(AST::TypePathSegment& segment) override {}
-        void visit(AST::TypePathSegmentGeneric& segment) override {}
-        void visit(AST::TypePathSegmentFunction& segment) override {}
-        void visit(AST::TypePath& path) override {}
-        void visit(AST::QualifiedPathInExpression& path) override {}
-        void visit(AST::QualifiedPathInType& path) override {}
+            // I don't think any macro token trees can be stripped in any way
+        }
 
-        void visit(AST::LiteralExpr& expr) override {}
-        void visit(AST::AttrInputLiteral& attr_input) override {}
-        void visit(AST::MetaItemLitExpr& meta_item) override {}
-        void visit(AST::MetaItemPathLit& meta_item) override {}
-        void visit(AST::BorrowExpr& expr) override {}
-        void visit(AST::DereferenceExpr& expr) override {}
-        void visit(AST::ErrorPropagationExpr& expr) override {}
-        void visit(AST::NegationExpr& expr) override {}
-        void visit(AST::ArithmeticOrLogicalExpr& expr) override {}
-        void visit(AST::ComparisonExpr& expr) override {}
-        void visit(AST::LazyBooleanExpr& expr) override {}
-        void visit(AST::TypeCastExpr& expr) override {}
-        void visit(AST::AssignmentExpr& expr) override {}
-        void visit(AST::CompoundAssignmentExpr& expr) override {}
-        void visit(AST::GroupedExpr& expr) override {}
-        void visit(AST::ArrayElemsValues& elems) override {}
-        void visit(AST::ArrayElemsCopied& elems) override {}
-        void visit(AST::ArrayExpr& expr) override {}
-        void visit(AST::ArrayIndexExpr& expr) override {}
+        void visit(AST::PathInExpression& path) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(path.get_outer_attrs());
+            if (expander.fails_cfg(path.get_outer_attrs())) {
+                path.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::TypePathSegment& segment) override {
+            // shouldn't require?
+        }
+        void visit(AST::TypePathSegmentGeneric& segment) override {
+            // shouldn't require?
+        }
+        void visit(AST::TypePathSegmentFunction& segment) override {
+            // shouldn't require?
+        }
+        void visit(AST::TypePath& path) override {
+            // shouldn't require?
+        }
+        void visit(AST::QualifiedPathInExpression& path) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(path.get_outer_attrs());
+            if (expander.fails_cfg(path.get_outer_attrs())) {
+                path.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::QualifiedPathInType& path) override {
+            // shouldn't require?
+        }
+
+        void visit(AST::LiteralExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::AttrInputLiteral& attr_input) override {
+            // shouldn't require?
+        }
+        void visit(AST::MetaItemLitExpr& meta_item) override {
+            // shouldn't require?
+        }
+        void visit(AST::MetaItemPathLit& meta_item) override {
+            // shouldn't require?
+        }
+        void visit(AST::BorrowExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            expr.get_borrowed_expr()->accept_vis(*this);
+        }
+        void visit(AST::DereferenceExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            expr.get_dereferenced_expr()->accept_vis(*this);
+        }
+        void visit(AST::ErrorPropagationExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            expr.get_propagating_expr()->accept_vis(*this);
+        }
+        void visit(AST::NegationExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            expr.get_negated_expr()->accept_vis(*this);
+        }
+        void visit(AST::ArithmeticOrLogicalExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * two direct descendant expressions, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            expr.get_left_expr()->accept_vis(*this);
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            expr.get_right_expr()->accept_vis(*this);
+
+            // ensure that they are not marked for strip
+            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
+            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+        }
+        void visit(AST::ComparisonExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * two direct descendant expressions, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            expr.get_left_expr()->accept_vis(*this);
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            expr.get_right_expr()->accept_vis(*this);
+
+            // ensure that they are not marked for strip
+            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
+            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+        }
+        void visit(AST::LazyBooleanExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * two direct descendant expressions, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            expr.get_left_expr()->accept_vis(*this);
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            expr.get_right_expr()->accept_vis(*this);
+
+            // ensure that they are not marked for strip
+            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
+            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+        }
+        void visit(AST::TypeCastExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * two direct descendant expressions, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            expr.get_casted_expr()->accept_vis(*this);
+
+            // ensure that they are not marked for strip
+            rust_assert(!expr.get_casted_expr()->is_marked_for_strip());
+        }
+        void visit(AST::AssignmentExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * two direct descendant expressions, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            expr.get_left_expr()->accept_vis(*this);
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            expr.get_right_expr()->accept_vis(*this);
+
+            // ensure that they are not marked for strip
+            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
+            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+        }
+        void visit(AST::CompoundAssignmentExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * two direct descendant expressions, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            expr.get_left_expr()->accept_vis(*this);
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            expr.get_right_expr()->accept_vis(*this);
+
+            // ensure that they are not marked for strip
+            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
+            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+        }
+        void visit(AST::GroupedExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip test based on inner attrs - spec says these are inner 
+             * attributes, not outer attributes of inner expr */
+            expander.expand_cfg_attrs(expr.get_inner_attrs());
+            if (expander.fails_cfg(expr.get_inner_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            expr.get_expr_in_parens()->accept_vis(*this);
+        }
+        void visit(AST::ArrayElemsValues& elems) override {
+            /* apparently outer attributes are allowed in "elements of array 
+             * expressions" according to spec */
+            auto& values = elems.get_values();
+            for (int i = 0; i < values.size();) {
+                auto& value = values[i];
+
+                // mark for stripping if required
+                value->accept_vis(*this);
+
+                if (value->is_marked_for_strip())
+                    values.erase(values.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::ArrayElemsCopied& elems) override {
+            /* apparently outer attributes are allowed in "elements of array 
+             * expressions" according to spec. on the other hand, it would not
+             * make conceptual sense to be able to remove either expression. As
+             * such, not implementing. TODO clear up the ambiguity here */
+
+            // only intend stripping for internal sub-expressions
+            elems.get_elem_to_copy()->accept_vis(*this);
+            elems.get_num_copies()->accept_vis(*this);
+        }
+        void visit(AST::ArrayExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip test based on inner attrs - spec says there are separate 
+             * inner attributes, not just outer attributes of inner exprs */
+            expander.expand_cfg_attrs(expr.get_inner_attrs());
+            if (expander.fails_cfg(expr.get_inner_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* assuming you can't strip away the ArrayElems type, but can strip 
+             * internal expressions and whatever */
+            if (expr.has_array_elems())
+                expr.get_array_elems()->accept_vis(*this);
+        }
+        void visit(AST::ArrayIndexExpr& expr) override {
+            /* it is unclear whether outer attributes are supposed to be 
+             * allowed, but conceptually it wouldn't make much sense, so 
+             * assuming no. TODO */
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            expr.get_array_expr()->accept_vis(*this);
+            expr.get_index_expr()->accept_vis(*this);
+        }
         void visit(AST::TupleExpr& expr) override {}
         void visit(AST::TupleIndexExpr& expr) override {}
         void visit(AST::StructExprStruct& expr) override {}
@@ -117,16 +393,90 @@ namespace Rust {
         void visit(AST::AwaitExpr& expr) override {}
         void visit(AST::AsyncBlockExpr& expr) override {}
 
-        void visit(AST::TypeParam& param) override {}
-        void visit(AST::LifetimeWhereClauseItem& item) override {}
-        void visit(AST::TypeBoundWhereClauseItem& item) override {}
-        void visit(AST::Method& method) override {}
-        void visit(AST::ModuleBodied& module) override {}
-        void visit(AST::ModuleNoBody& module) override {}
-        void visit(AST::ExternCrate& crate) override {}
-        void visit(AST::UseTreeGlob& use_tree) override {}
-        void visit(AST::UseTreeList& use_tree) override {}
-        void visit(AST::UseTreeRebind& use_tree) override {}
+        void visit(AST::TypeParam& param) override {
+            // shouldn't require?
+        }
+        void visit(AST::LifetimeWhereClauseItem& item) override {
+            // shouldn't require?
+        }
+        void visit(AST::TypeBoundWhereClauseItem& item) override {
+            // shouldn't require?
+        }
+        void visit(AST::Method& method) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(method.get_outer_attrs());
+            if (expander.fails_cfg(method.get_outer_attrs())) {
+                method.mark_for_strip();
+                return;
+            }
+
+            /* assuming you can't strip self param - wouldn't be a method
+             * anymore. spec allows outer attrs on self param, but doesn't
+             * specify whether cfg is used. */
+
+            /* strip method parameters if required - this is specifically
+             * allowed by spec */
+            expand_function_params(method.get_function_params());
+
+            /* body should always exist - if error state, should have returned
+             * before now */
+            method.get_definition()->accept_vis(*this);
+            // TODO: can block as a whole be invalidated here? Assuming no
+        }
+        void visit(AST::ModuleBodied& module) override {
+            // strip test based on outer attrs
+            expander.expand_cfg_attrs(module.get_outer_attrs());
+            if (expander.fails_cfg(module.get_outer_attrs())) {
+                module.mark_for_strip();
+                return;
+            }
+
+            // strip test based on inner attrs
+            expander.expand_cfg_attrs(module.get_inner_attrs());
+            if (expander.fails_cfg(module.get_inner_attrs())) {
+                module.mark_for_strip();
+                return;
+            }
+
+            // strip items if required
+            auto& items = module.get_items();
+            for (int i = 0; i < items.size();) {
+                auto& item = items[i];
+
+                // mark for stripping if required
+                item->accept_vis(*this);
+
+                if (item->is_marked_for_strip())
+                    items.erase(items.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::ModuleNoBody& module) override {
+            // strip test based on outer attrs
+            expander.expand_cfg_attrs(module.get_outer_attrs());
+            if (expander.fails_cfg(module.get_outer_attrs())) {
+                module.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::ExternCrate& crate) override {
+            // strip test based on outer attrs
+            expander.expand_cfg_attrs(crate.get_outer_attrs());
+            if (expander.fails_cfg(crate.get_outer_attrs())) {
+                crate.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::UseTreeGlob& use_tree) override {
+            // shouldn't require?
+        }
+        void visit(AST::UseTreeList& use_tree) override {
+            // shouldn't require?
+        }
+        void visit(AST::UseTreeRebind& use_tree) override {
+            // shouldn't require?
+        }
         void visit(AST::UseDeclaration& use_decl) override {
             // strip test based on outer attrs
             expander.expand_cfg_attrs(use_decl.get_outer_attrs());
@@ -135,15 +485,123 @@ namespace Rust {
                 return;
             }
         }
-        void visit(AST::Function& function) override {}
-        void visit(AST::TypeAlias& type_alias) override {}
-        void visit(AST::StructStruct& struct_item) override {}
-        void visit(AST::TupleStruct& tuple_struct) override {}
-        void visit(AST::EnumItem& item) override {}
-        void visit(AST::EnumItemTuple& item) override {}
-        void visit(AST::EnumItemStruct& item) override {}
-        void visit(AST::EnumItemDiscriminant& item) override {}
-        void visit(AST::Enum& enum_item) override {}
+        void visit(AST::Function& function) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(function.get_outer_attrs());
+            if (expander.fails_cfg(function.get_outer_attrs())) {
+                function.mark_for_strip();
+                return;
+            }
+
+            /* strip function parameters if required - this is specifically
+             * allowed by spec */
+            expand_function_params(function.get_function_params());
+
+            /* body should always exist - if error state, should have returned
+             * before now */
+            function.get_definition()->accept_vis(*this);
+            // TODO: can block as a whole be invalidated here? Assuming no
+        }
+        void visit(AST::TypeAlias& type_alias) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(type_alias.get_outer_attrs());
+            if (expander.fails_cfg(type_alias.get_outer_attrs())) {
+                type_alias.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::StructStruct& struct_item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(struct_item.get_outer_attrs());
+            if (expander.fails_cfg(struct_item.get_outer_attrs())) {
+                struct_item.mark_for_strip();
+                return;
+            }
+
+            /* strip struct fields if required - this is presumably
+             * allowed by spec */
+            expand_struct_fields(struct_item.get_fields());
+        }
+        void visit(AST::TupleStruct& tuple_struct) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(tuple_struct.get_outer_attrs());
+            if (expander.fails_cfg(tuple_struct.get_outer_attrs())) {
+                tuple_struct.mark_for_strip();
+                return;
+            }
+
+            /* strip struct fields if required - this is presumably
+             * allowed by spec */
+            expand_tuple_fields(tuple_struct.get_fields());
+        }
+        void visit(AST::EnumItem& item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::EnumItemTuple& item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+
+            /* strip item fields if required - this is presumably
+             * allowed by spec */
+            expand_tuple_fields(item.get_tuple_fields());
+        }
+        void visit(AST::EnumItemStruct& item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+
+            /* strip item fields if required - this is presumably
+             * allowed by spec */
+            expand_struct_fields(item.get_struct_fields());
+        }
+        void visit(AST::EnumItemDiscriminant& item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(item.get_outer_attrs());
+            if (expander.fails_cfg(item.get_outer_attrs())) {
+                item.mark_for_strip();
+                return;
+            }
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            item.get_expr()->accept_vis(*this);
+        }
+        void visit(AST::Enum& enum_item) override {
+            // initial test based on outer attrs
+            expander.expand_cfg_attrs(enum_item.get_outer_attrs());
+            if (expander.fails_cfg(enum_item.get_outer_attrs())) {
+                enum_item.mark_for_strip();
+                return;
+            }
+
+            /* strip enum fields if required - this is presumably
+             * allowed by spec */
+            auto& variants = enum_item.get_variants();
+            for (int i = 0; i < variants.size();) {
+                auto& variant = variants[i];
+
+                // mark for stripping if required
+                variant->accept_vis(*this);
+
+                if (variant->is_marked_for_strip())
+                    variants.erase(variants.begin() + i);
+                else
+                    i++;
+            }
+        }
         void visit(AST::Union& union_item) override {
             // initial test based on outer attrs
             expander.expand_cfg_attrs(union_item.get_outer_attrs());
@@ -151,7 +609,7 @@ namespace Rust {
                 union_item.mark_for_strip();
                 return;
             }
-            
+
             /* strip union fields if required - this is presumably
              * allowed by spec */
             expand_struct_fields(union_item.get_variants());
@@ -163,8 +621,11 @@ namespace Rust {
                 const_item.mark_for_strip();
                 return;
             }
-            /* TODO: is there any way to invalidate the expr? Are attributes 
-             * even allowed on it? */
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            const_item.get_expr()->accept_vis(*this);
         }
         void visit(AST::StaticItem& static_item) override {
             // initial test based on outer attrs
@@ -173,8 +634,11 @@ namespace Rust {
                 static_item.mark_for_strip();
                 return;
             }
-            /* TODO: is there any way to invalidate the expr? Are attributes 
-             * even allowed on it? */
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped. */
+            static_item.get_expr()->accept_vis(*this);
         }
         void visit(AST::TraitItemFunc& item) override {
             // initial test based on outer attrs
@@ -184,7 +648,7 @@ namespace Rust {
                 return;
             }
 
-            /* strip function parameters if required - this is specifically 
+            /* strip function parameters if required - this is specifically
              * allowed by spec */
             expand_function_params(item.get_function_params());
 
@@ -201,11 +665,11 @@ namespace Rust {
                 return;
             }
 
-            /* assuming you can't strip self param - wouldn't be a method 
+            /* assuming you can't strip self param - wouldn't be a method
              * anymore. spec allows outer attrs on self param, but doesn't
              * specify whether cfg is used. */
 
-            /* strip function parameters if required - this is specifically 
+            /* strip function parameters if required - this is specifically
              * allowed by spec */
             expand_function_params(item.get_function_params());
 
@@ -221,8 +685,12 @@ namespace Rust {
                 item.mark_for_strip();
                 return;
             }
-            /* TODO: is there any way to invalidate the expr? Are attributes 
-             * even allowed on it? */
+
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped */
+            if (item.has_expression())
+                item.get_expr()->accept_vis(*this);
         }
         void visit(AST::TraitItemType& item) override {
             // initial test based on outer attrs
@@ -249,14 +717,14 @@ namespace Rust {
 
             // strip trait items if required
             auto& trait_items = trait.get_trait_items();
-            for (int i = 0; i < trait_items.size(); ) {
+            for (int i = 0; i < trait_items.size();) {
                 auto& item = trait_items[i];
 
                 // mark for stripping if required
                 item->accept_vis(*this);
 
-                if (item->is_marked_for_strip ())
-                    trait_items.erase (trait_items.begin() + i);
+                if (item->is_marked_for_strip())
+                    trait_items.erase(trait_items.begin() + i);
                 else
                     i++;
             }
@@ -276,16 +744,16 @@ namespace Rust {
                 return;
             }
 
-            // strip external items if required
+            // strip inherent impl items if required
             auto& impl_items = impl.get_impl_items();
-            for (int i = 0; i < impl_items.size(); ) {
+            for (int i = 0; i < impl_items.size();) {
                 auto& item = impl_items[i];
 
                 // mark for stripping if required
                 item->accept_vis(*this);
 
-                if (item->is_marked_for_strip ())
-                    impl_items.erase (impl_items.begin() + i);
+                if (item->is_marked_for_strip())
+                    impl_items.erase(impl_items.begin() + i);
                 else
                     i++;
             }
@@ -305,16 +773,16 @@ namespace Rust {
                 return;
             }
 
-            // strip external items if required
+            // strip trait impl items if required
             auto& impl_items = impl.get_impl_items();
-            for (int i = 0; i < impl_items.size(); ) {
+            for (int i = 0; i < impl_items.size();) {
                 auto& item = impl_items[i];
 
                 // mark for stripping if required
                 item->accept_vis(*this);
 
-                if (item->is_marked_for_strip ())
-                    impl_items.erase (impl_items.begin() + i);
+                if (item->is_marked_for_strip())
+                    impl_items.erase(impl_items.begin() + i);
                 else
                     i++;
             }
@@ -335,22 +803,22 @@ namespace Rust {
                 return;
             }
 
-            /* strip function parameters if required - this is specifically 
+            /* strip function parameters if required - this is specifically
              * allowed by spec */
             auto& params = item.get_function_params();
-            for (int i = 0; i < params.size(); ) {
-                auto& param_attrs = params[i].get_outer_attrs ();
+            for (int i = 0; i < params.size();) {
+                auto& param_attrs = params[i].get_outer_attrs();
                 expander.expand_cfg_attrs(param_attrs);
-                if (expander.fails_cfg (param_attrs))
-                    params.erase (params.begin() + i);
+                if (expander.fails_cfg(param_attrs))
+                    params.erase(params.begin() + i);
                 else
                     i++;
             }
-            /* NOTE: these are extern function params, which may have different 
-             * rules and restrictions to "normal" function params. So expansion 
+            /* NOTE: these are extern function params, which may have different
+             * rules and restrictions to "normal" function params. So expansion
              * handled separately. */
 
-            /* TODO: assuming that variadic nature cannot be stripped. If this 
+            /* TODO: assuming that variadic nature cannot be stripped. If this
              * is not true, then have code here to do so. */
         }
         void visit(AST::ExternBlock& block) override {
@@ -370,14 +838,14 @@ namespace Rust {
 
             // strip external items if required
             auto& extern_items = block.get_extern_items();
-            for (int i = 0; i < extern_items.size(); ) {
+            for (int i = 0; i < extern_items.size();) {
                 auto& item = extern_items[i];
 
                 // mark for stripping if required
                 item->accept_vis(*this);
 
-                if (item->is_marked_for_strip ())
-                    extern_items.erase (extern_items.begin() + i);
+                if (item->is_marked_for_strip())
+                    extern_items.erase(extern_items.begin() + i);
                 else
                     i++;
             }
@@ -386,8 +854,26 @@ namespace Rust {
         void visit(AST::MacroMatchFragment& match) override {}
         void visit(AST::MacroMatchRepetition& match) override {}
         void visit(AST::MacroMatcher& matcher) override {}
-        void visit(AST::MacroRulesDefinition& rules_def) override {}
-        void visit(AST::MacroInvocation& macro_invoc) override {}
+        void visit(AST::MacroRulesDefinition& rules_def) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(rules_def.get_outer_attrs());
+            if (expander.fails_cfg(rules_def.get_outer_attrs())) {
+                rules_def.mark_for_strip();
+                return;
+            }
+
+            // I don't think any macro rules can be stripped in any way
+        }
+        void visit(AST::MacroInvocation& macro_invoc) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(macro_invoc.get_outer_attrs());
+            if (expander.fails_cfg(macro_invoc.get_outer_attrs())) {
+                macro_invoc.mark_for_strip();
+                return;
+            }
+
+            // I don't think any macro token trees can be stripped in any way
+        }
         void visit(AST::MetaItemPath& meta_item) override {}
         void visit(AST::MetaItemSeq& meta_item) override {}
         void visit(AST::MetaWord& meta_item) override {}
@@ -395,6 +881,7 @@ namespace Rust {
         void visit(AST::MetaListPaths& meta_item) override {}
         void visit(AST::MetaListNameValueStr& meta_item) override {}
 
+        // stripping shouldn't be required or possible for patterns
         void visit(AST::LiteralPattern& pattern) override {}
         void visit(AST::IdentifierPattern& pattern) override {}
         void visit(AST::WildcardPattern& pattern) override {}
@@ -416,11 +903,55 @@ namespace Rust {
         void visit(AST::GroupedPattern& pattern) override {}
         void visit(AST::SlicePattern& pattern) override {}
 
-        void visit(AST::EmptyStmt& stmt) override {}
-        void visit(AST::LetStmt& stmt) override {}
-        void visit(AST::ExprStmtWithoutBlock& stmt) override {}
-        void visit(AST::ExprStmtWithBlock& stmt) override {}
+        void visit(AST::EmptyStmt& stmt) override {
+            // assuming no outer attributes, so nothing can happen
+        }
+        void visit(AST::LetStmt& stmt) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(stmt.get_outer_attrs());
+            if (expander.fails_cfg(stmt.get_outer_attrs())) {
+                stmt.mark_for_strip();
+                return;
+            }
 
+            /* strip any internal sub-expressions - expression itself isn't
+             * allowed to have external attributes in this position so can't be
+             * stripped */
+            if (stmt.has_init_expr())
+                stmt.get_init_expr()->accept_vis(*this);
+        }
+        void visit(AST::ExprStmtWithoutBlock& stmt) override {
+            // outer attributes associated with expr, so rely on expr
+
+            // guard - should prevent null pointer expr
+            if (stmt.is_marked_for_strip())
+                return;
+
+            // strip if expr is to be stripped
+            auto& expr = stmt.get_expr();
+            expr->accept_vis(*this);
+            if (expr->is_marked_for_strip()) {
+                stmt.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::ExprStmtWithBlock& stmt) override {
+            // outer attributes associated with expr, so rely on expr
+
+            // guard - should prevent null pointer expr
+            if (stmt.is_marked_for_strip())
+                return;
+
+            // strip if expr is to be stripped
+            auto& expr = stmt.get_expr();
+            expr->accept_vis(*this);
+            if (expr->is_marked_for_strip()) {
+                stmt.mark_for_strip();
+                return;
+            }
+        }
+
+        // stripping shouldn't be required or possible for types
         void visit(AST::TraitBound& bound) override {}
         void visit(AST::ImplTraitType& type) override {}
         void visit(AST::TraitObjectType& type) override {}
@@ -515,10 +1046,19 @@ namespace Rust {
         }
         // expand module attributes?
 
-        // expand attributes recursively
+        // expand attributes recursively and strip items if required
         AttrVisitor attr_visitor(*this);
-        for (auto& i : crate.items) {
-            i->accept_vis(attr_visitor);
+        auto& items = crate.items;
+        for (int i = 0; i < items.size();) {
+            auto& item = items[i];
+
+            // mark for stripping if required
+            item->accept_vis(attr_visitor);
+
+            if (item->is_marked_for_strip())
+                items.erase(items.begin() + i);
+            else
+                i++;
         }
         // TODO: should recursive attribute and macro expansion be done in the same transversal? Or in
         // separate ones like currently?

@@ -315,6 +315,10 @@ public:
   void mark_for_strip () override { rule_name = ""; }
   bool is_marked_for_strip () const override { return rule_name.empty (); }
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

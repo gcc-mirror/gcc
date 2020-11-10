@@ -38,10 +38,10 @@ protected:
  * introduces new name into scope */
 class LetStmt : public Stmt
 {
-public:
   // bool has_outer_attrs;
   std::vector<Attribute> outer_attrs;
 
+public:
   std::unique_ptr<Pattern> variables_pattern;
 
   // bool has_type;
@@ -125,6 +125,16 @@ public:
   void mark_for_strip () override { variables_pattern = nullptr; }
   bool is_marked_for_strip () const override { return variables_pattern == nullptr; }
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_init_expr () {
+    rust_assert (init_expr != nullptr);
+    return init_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -204,6 +214,12 @@ public:
   void mark_for_strip () override { expr = nullptr; }
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<ExprWithoutBlock> &get_expr () {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -259,6 +275,12 @@ public:
   // Invalid if expr is null, so base stripping on that.
   void mark_for_strip () override { expr = nullptr; }
   bool is_marked_for_strip () const override { return expr == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<ExprWithBlock> &get_expr () {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

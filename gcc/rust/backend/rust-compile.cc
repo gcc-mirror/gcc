@@ -246,7 +246,7 @@ void
 Compilation::visit (AST::LiteralExpr &expr)
 {
   Bexpression *compiled;
-  switch (expr.literal.get_lit_type ())
+  switch (expr.get_lit_type ())
     {
     case AST::Literal::BOOL:
       compiled = compileBooleanLiteral (expr.as_string ());
@@ -293,16 +293,16 @@ void
 Compilation::visit (AST::NegationExpr &expr)
 {
   Bexpression *root = NULL;
-  VISIT_POP (expr.get_expr ()->get_locus_slow (), expr.get_expr (), root,
+  VISIT_POP (expr.get_negated_expr ()->get_locus_slow (), expr.get_negated_expr ().get (), root,
 	     exprs);
   if (root == NULL)
     {
-      rust_error_at (expr.get_expr ()->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_negated_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
   Operator op;
-  switch (expr.negation_type)
+  switch (expr.get_negation_type ())
     {
     case AST::NegationExpr::NEGATE:
       op = OPERATOR_MINUS;
@@ -323,23 +323,23 @@ void
 Compilation::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
   Bexpression *lhs = NULL;
-  VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
+  VISIT_POP (expr.get_left_expr ()->get_locus_slow (), expr.get_left_expr ().get (), lhs, exprs);
   if (lhs == NULL)
     {
-      rust_error_at (expr.get_lhs ()->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_left_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
   Bexpression *rhs = NULL;
-  VISIT_POP (expr.right_expr->get_locus_slow (), expr.right_expr, rhs, exprs);
+  VISIT_POP (expr.get_right_expr ()->get_locus_slow (), expr.get_right_expr ().get (), rhs, exprs);
   if (rhs == NULL)
     {
-      rust_error_at (expr.right_expr->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_right_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
   Operator op;
-  switch (expr.expr_type)
+  switch (expr.get_expr_type ())
     {
     case AST::ArithmeticOrLogicalExpr::ADD:
       op = OPERATOR_PLUS;
@@ -385,23 +385,23 @@ void
 Compilation::visit (AST::ComparisonExpr &expr)
 {
   Bexpression *lhs = NULL;
-  VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
+  VISIT_POP (expr.get_left_expr ()->get_locus_slow (), expr.get_left_expr ().get (), lhs, exprs);
   if (lhs == NULL)
     {
-      rust_error_at (expr.get_lhs ()->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_left_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
   Bexpression *rhs = NULL;
-  VISIT_POP (expr.right_expr->get_locus_slow (), expr.right_expr, rhs, exprs);
+  VISIT_POP (expr.get_right_expr ()->get_locus_slow (), expr.get_right_expr ().get (), rhs, exprs);
   if (rhs == NULL)
     {
-      rust_error_at (expr.right_expr->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_right_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
   Operator op;
-  switch (expr.expr_type)
+  switch (expr.get_expr_type ())
     {
     case AST::ComparisonExpr::EQUAL:
       op = OPERATOR_EQEQ;
@@ -435,23 +435,23 @@ void
 Compilation::visit (AST::LazyBooleanExpr &expr)
 {
   Bexpression *lhs = NULL;
-  VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
+  VISIT_POP (expr.get_left_expr ()->get_locus_slow (), expr.get_left_expr ().get (), lhs, exprs);
   if (lhs == NULL)
     {
-      rust_error_at (expr.get_lhs ()->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_left_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
   Bexpression *rhs = NULL;
-  VISIT_POP (expr.right_expr->get_locus_slow (), expr.right_expr, rhs, exprs);
+  VISIT_POP (expr.get_right_expr ()->get_locus_slow (), expr.get_right_expr ().get (), rhs, exprs);
   if (rhs == NULL)
     {
-      rust_error_at (expr.right_expr->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_right_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
   Operator op;
-  switch (expr.expr_type)
+  switch (expr.get_expr_type ())
     {
     case AST::LazyBooleanExpr::LOGICAL_OR:
       op = OPERATOR_OROR;
@@ -477,18 +477,18 @@ void
 Compilation::visit (AST::AssignmentExpr &expr)
 {
   Bexpression *lhs = NULL;
-  VISIT_POP (expr.get_lhs ()->get_locus_slow (), expr.get_lhs (), lhs, exprs);
+  VISIT_POP (expr.get_left_expr ()->get_locus_slow (), expr.get_left_expr ().get (), lhs, exprs);
   if (lhs == NULL)
     {
-      rust_error_at (expr.get_lhs ()->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_left_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
   Bexpression *rhs = NULL;
-  VISIT_POP (expr.right_expr->get_locus_slow (), expr.right_expr, rhs, exprs);
+  VISIT_POP (expr.get_right_expr ()->get_locus_slow (), expr.get_right_expr ().get (), rhs, exprs);
   if (rhs == NULL)
     {
-      rust_error_at (expr.right_expr->get_locus_slow (), "failed to compile");
+      rust_error_at (expr.get_right_expr ()->get_locus_slow (), "failed to compile");
       return;
     }
 
@@ -536,7 +536,7 @@ Compilation::visit (AST::StructExprFieldIdentifierValue &field)
   AST::StructStruct *decl = structBuffer.back ();
   size_t index = 0;
   bool found = false;
-  for (auto &df : decl->fields)
+  for (auto &df : decl->get_fields ())
     {
       if (field.field_name.compare (df.field_name) == 0)
 	{
@@ -1089,7 +1089,7 @@ void
 Compilation::visit (AST::StructStruct &struct_item)
 {
   std::vector<Backend::Btyped_identifier> fields;
-  for (auto &field : struct_item.fields)
+  for (auto &field : struct_item.get_fields ())
     {
       translatedType = NULL;
       field.field_type->accept_vis (*this);

@@ -158,7 +158,7 @@ void
 TypeResolution::visit (AST::IdentifierExpr &ident_expr)
 {
   AST::Type *type = NULL;
-  bool ok = scope.LookupType (ident_expr.ident, &type);
+  bool ok = scope.LookupType (ident_expr.get_ident (), &type);
   if (!ok)
     {
       rust_error_at (ident_expr.get_locus (), "unknown identifier");
@@ -235,7 +235,7 @@ void
 TypeResolution::visit (AST::LiteralExpr &expr)
 {
   std::string type;
-  switch (expr.literal.get_lit_type ())
+  switch (expr.get_lit_type ())
     {
     case AST::Literal::CHAR:
       type = "char";
@@ -273,7 +273,7 @@ TypeResolution::visit (AST::LiteralExpr &expr)
   if (type.empty ())
     {
       rust_error_at (expr.get_locus (), "unknown literal: %s",
-		     expr.literal.as_string ().c_str ());
+		     expr.get_literal ().as_string ().c_str ());
       return;
     }
 
@@ -338,7 +338,7 @@ TypeResolution::visit (AST::ArithmeticOrLogicalExpr &expr)
   // scope will require knowledge of the type
 
   // do the lhsType and the rhsType match
-  typesAreCompatible (lhsType, rhsType, expr.right_expr->get_locus_slow ());
+  typesAreCompatible (lhsType, rhsType, expr.get_right_expr ()->get_locus_slow ());
 }
 
 void
@@ -382,7 +382,7 @@ TypeResolution::visit (AST::AssignmentExpr &expr)
 
   // do the lhsType and the rhsType match
   if (!typesAreCompatible (lhsType, rhsType,
-			   expr.right_expr->get_locus_slow ()))
+			   expr.get_right_expr ()->get_locus_slow ()))
     return;
 
   // is the lhs mutable?
@@ -469,7 +469,7 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
       if (identifierBuffer != NULL)
 	{
 	  AST::StructField *declField = NULL;
-	  for (auto &df : decl->fields)
+	  for (auto &df : decl->get_fields ())
 	    {
 	      if (identifierBuffer->compare (df.field_name) == 0)
 		{
@@ -493,9 +493,9 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
       else if (tupleIndexBuffer != NULL)
 	{
 	  AST::StructField *declField = NULL;
-	  if (*tupleIndexBuffer < decl->fields.size ())
+	  if (*tupleIndexBuffer < decl->get_fields ().size ())
 	    {
-	      declField = &decl->fields[*tupleIndexBuffer];
+	      declField = &decl->get_fields ()[*tupleIndexBuffer];
 	    }
 	  tupleIndexBuffer = NULL;
 
@@ -811,7 +811,7 @@ TypeResolution::visit (AST::TypeAlias &type_alias)
 void
 TypeResolution::visit (AST::StructStruct &struct_item)
 {
-  for (auto &field : struct_item.fields)
+  for (auto &field : struct_item.get_fields ())
     {
       if (!isTypeInScope (field.field_type.get (),
 			  Linemap::unknown_location ()))

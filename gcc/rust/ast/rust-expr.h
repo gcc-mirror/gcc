@@ -41,10 +41,10 @@ public:
 // Literals? Or literal base?
 class LiteralExpr : public ExprWithoutBlock
 {
-public:
   Literal literal;
   Location locus;
 
+public:
   std::string as_string () const override { return literal.as_string (); }
 
   Literal::LitType get_lit_type () const { return literal.get_lit_type (); }
@@ -70,6 +70,8 @@ public:
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
+
+  Literal get_literal () const { return literal; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -118,10 +120,7 @@ public:
   /* this can never be a cfg predicate - cfg and cfg_attr require a token-tree
    * cfg */
   bool
-  check_cfg_predicate (const Session&) const override
-  {
-    return false;
-  }
+  check_cfg_predicate (const Session&) const override { return false; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -264,6 +263,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_borrowed_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -286,6 +291,12 @@ public:
   {}
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_dereferenced_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -311,6 +322,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_propagating_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -330,6 +347,7 @@ public:
     NOT
   };
 
+private:
   /* Note: overload negation via std::ops::Neg and not via std::ops::Not
    * Negation only works for signed integer and floating-point types, NOT only
    * works for boolean and integer types (via bitwise NOT) */
@@ -350,7 +368,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  Expr *get_expr () { return main_or_left_expr.get (); }
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_negated_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -379,6 +401,7 @@ public:
     RIGHT_SHIFT	 // std::ops::Shr
   };
 
+private:
   // Note: overloading trait specified in comments
   ExprType expr_type;
 
@@ -422,7 +445,17 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  Expr *get_lhs () { return main_or_left_expr.get (); }
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_left_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_right_expr () {
+    rust_assert (right_expr != nullptr);
+    return right_expr;
+  }
 
   void visit_lhs (ASTVisitor &vis) { main_or_left_expr->accept_vis (vis); }
   void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
@@ -450,6 +483,7 @@ public:
     LESS_OR_EQUAL     // std::cmp::PartialEq::le
   };
 
+private:
   // Note: overloading trait specified in comments
   ExprType expr_type;
 
@@ -493,7 +527,17 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  Expr *get_lhs () { return main_or_left_expr.get (); }
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_left_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_right_expr () {
+    rust_assert (right_expr != nullptr);
+    return right_expr;
+  }
 
   /* TODO: implement via a function call to std::cmp::PartialEq::eq(&op1, &op2)
    * maybe? */
@@ -516,6 +560,7 @@ public:
     LOGICAL_AND
   };
 
+private:
   ExprType expr_type;
 
   std::unique_ptr<Expr> right_expr;
@@ -558,7 +603,17 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  Expr *get_lhs () { return main_or_left_expr.get (); }
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_left_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_right_expr () {
+    rust_assert (right_expr != nullptr);
+    return right_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -602,11 +657,17 @@ public:
     return *this;
   }
 
-  // move constructors as not supported in c++03
+  // move constructors 
   TypeCastExpr (TypeCastExpr &&other) = default;
   TypeCastExpr &operator= (TypeCastExpr &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_casted_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -620,9 +681,9 @@ protected:
 // Binary assignment expression.
 class AssignmentExpr : public OperatorExpr
 {
-public:
   std::unique_ptr<Expr> right_expr;
 
+public:
   std::string as_string () const override;
 
   // Call OperatorExpr constructor to initialise left_expr
@@ -659,7 +720,17 @@ public:
   void visit_lhs (ASTVisitor &vis) { main_or_left_expr->accept_vis (vis); }
   void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
 
-  Expr *get_lhs () { return main_or_left_expr.get (); }
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_left_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_right_expr () {
+    rust_assert (right_expr != nullptr);
+    return right_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -733,6 +804,18 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_left_expr () {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_right_expr () {
+    rust_assert (right_expr != nullptr);
+    return right_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -753,7 +836,8 @@ class GroupedExpr : public ExprWithoutBlock
 public:
   std::string as_string () const override;
 
-  std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   GroupedExpr (std::unique_ptr<Expr> parenthesised_expr,
 	       std::vector<Attribute> inner_attribs,
@@ -802,6 +886,12 @@ public:
   // Invalid if inner expr is null, so base stripping on that.
   void mark_for_strip () override { expr_in_parens = nullptr; }
   bool is_marked_for_strip () const override { return expr_in_parens == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_expr_in_parens () {
+    rust_assert (expr_in_parens != nullptr);
+    return expr_in_parens;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -872,6 +962,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<std::unique_ptr<Expr> > &get_values () const { return values; }
+  std::vector<std::unique_ptr<Expr> > &get_values () { return values; }
+
 protected:
   ArrayElemsValues *clone_array_elems_impl () const override
   {
@@ -918,6 +1012,18 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_elem_to_copy () {
+    rust_assert (elem_to_copy != nullptr);
+    return elem_to_copy;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_num_copies () {
+    rust_assert (num_copies != nullptr);
+    return num_copies;
+  }
+
 protected:
   ArrayElemsCopied *clone_array_elems_impl () const override
   {
@@ -939,7 +1045,8 @@ class ArrayExpr : public ExprWithoutBlock
 public:
   std::string as_string () const override;
 
-  std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   // Returns whether array expr has array elems or if it is just empty.
   bool has_array_elems () const { return internal_elements != nullptr; }
@@ -991,6 +1098,12 @@ public:
   // Can't think of any invalid invariants, so store boolean.
   void mark_for_strip () override { marked_for_strip = true; }
   bool is_marked_for_strip () const override { return marked_for_strip; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<ArrayElems> &get_array_elems () {
+    rust_assert (internal_elements != nullptr);
+    return internal_elements;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1067,6 +1180,18 @@ public:
   // Invalid if either expr is null, so base stripping on that.
   void mark_for_strip () override { array_expr = nullptr; index_expr = nullptr; }
   bool is_marked_for_strip () const override { return array_expr == nullptr && index_expr == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_array_expr () {
+    rust_assert (array_expr != nullptr);
+    return array_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_index_expr () {
+    rust_assert (index_expr != nullptr);
+    return index_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
