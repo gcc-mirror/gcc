@@ -762,6 +762,8 @@ enum omp_mask1
   OMP_CLAUSE_SHARED,
   OMP_CLAUSE_COPYIN,
   OMP_CLAUSE_REDUCTION,
+  OMP_CLAUSE_IN_REDUCTION,
+  OMP_CLAUSE_TASK_REDUCTION,
   OMP_CLAUSE_IF,
   OMP_CLAUSE_NUM_THREADS,
   OMP_CLAUSE_SCHEDULE,
@@ -957,6 +959,163 @@ gfc_match_omp_map_clause (gfc_omp_namelist **list, gfc_omp_map_op map_op,
     }
 
   return false;
+}
+
+/* reduction ( reduction-modifier, reduction-operator : variable-list )
+   in_reduction ( reduction-operator : variable-list )
+   task_reduction ( reduction-operator : variable-list )  */
+
+static match
+gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
+				bool allow_derived)
+{
+  if (pc == 'r' && gfc_match ("reduction ( ") != MATCH_YES)
+    return MATCH_NO;
+  else if (pc == 'i' && gfc_match ("in_reduction ( ") != MATCH_YES)
+    return MATCH_NO;
+  else if (pc == 't' && gfc_match ("task_reduction ( ") != MATCH_YES)
+    return MATCH_NO;
+
+  locus old_loc = gfc_current_locus;
+  int list_idx = 0;
+
+  if (pc == 'r' && !openacc)
+    {
+      if (gfc_match ("inscan") == MATCH_YES)
+	list_idx = OMP_LIST_REDUCTION_INSCAN;
+      else if (gfc_match ("task") == MATCH_YES)
+	list_idx = OMP_LIST_REDUCTION_TASK;
+      else if (gfc_match ("default") == MATCH_YES)
+	list_idx = OMP_LIST_REDUCTION;
+      if (list_idx != 0 && gfc_match (", ") != MATCH_YES)
+	{
+	  gfc_error ("Comma expected at %C");
+	  gfc_current_locus = old_loc;
+	  return MATCH_NO;
+	}
+      if (list_idx == 0)
+	list_idx = OMP_LIST_REDUCTION;
+    }
+  else if (pc == 'i')
+    list_idx = OMP_LIST_IN_REDUCTION;
+  else if (pc == 't')
+    list_idx = OMP_LIST_TASK_REDUCTION;
+  else
+    list_idx = OMP_LIST_REDUCTION;
+
+  gfc_omp_reduction_op rop = OMP_REDUCTION_NONE;
+  char buffer[GFC_MAX_SYMBOL_LEN + 3];
+  if (gfc_match_char ('+') == MATCH_YES)
+    rop = OMP_REDUCTION_PLUS;
+  else if (gfc_match_char ('*') == MATCH_YES)
+    rop = OMP_REDUCTION_TIMES;
+  else if (gfc_match_char ('-') == MATCH_YES)
+    rop = OMP_REDUCTION_MINUS;
+  else if (gfc_match (".and.") == MATCH_YES)
+    rop = OMP_REDUCTION_AND;
+  else if (gfc_match (".or.") == MATCH_YES)
+    rop = OMP_REDUCTION_OR;
+  else if (gfc_match (".eqv.") == MATCH_YES)
+    rop = OMP_REDUCTION_EQV;
+  else if (gfc_match (".neqv.") == MATCH_YES)
+    rop = OMP_REDUCTION_NEQV;
+  if (rop != OMP_REDUCTION_NONE)
+    snprintf (buffer, sizeof buffer, "operator %s",
+	      gfc_op2string ((gfc_intrinsic_op) rop));
+  else if (gfc_match_defined_op_name (buffer + 1, 1) == MATCH_YES)
+    {
+      buffer[0] = '.';
+      strcat (buffer, ".");
+    }
+  else if (gfc_match_name (buffer) == MATCH_YES)
+    {
+      gfc_symbol *sym;
+      const char *n = buffer;
+
+      gfc_find_symbol (buffer, NULL, 1, &sym);
+      if (sym != NULL)
+	{
+	  if (sym->attr.intrinsic)
+	    n = sym->name;
+	  else if ((sym->attr.flavor != FL_UNKNOWN
+		    && sym->attr.flavor != FL_PROCEDURE)
+		   || sym->attr.external
+		   || sym->attr.generic
+		   || sym->attr.entry
+		   || sym->attr.result
+		   || sym->attr.dummy
+		   || sym->attr.subroutine
+		   || sym->attr.pointer
+		   || sym->attr.target
+		   || sym->attr.cray_pointer
+		   || sym->attr.cray_pointee
+		   || (sym->attr.proc != PROC_UNKNOWN
+		       && sym->attr.proc != PROC_INTRINSIC)
+		   || sym->attr.if_source != IFSRC_UNKNOWN
+		   || sym == sym->ns->proc_name)
+		{
+		  sym = NULL;
+		  n = NULL;
+		}
+	      else
+		n = sym->name;
+	    }
+	  if (n == NULL)
+	    rop = OMP_REDUCTION_NONE;
+	  else if (strcmp (n, "max") == 0)
+	    rop = OMP_REDUCTION_MAX;
+	  else if (strcmp (n, "min") == 0)
+	    rop = OMP_REDUCTION_MIN;
+	  else if (strcmp (n, "iand") == 0)
+	    rop = OMP_REDUCTION_IAND;
+	  else if (strcmp (n, "ior") == 0)
+	    rop = OMP_REDUCTION_IOR;
+	  else if (strcmp (n, "ieor") == 0)
+	    rop = OMP_REDUCTION_IEOR;
+	  if (rop != OMP_REDUCTION_NONE
+	      && sym != NULL
+	      && ! sym->attr.intrinsic
+	      && ! sym->attr.use_assoc
+	      && ((sym->attr.flavor == FL_UNKNOWN
+		   && !gfc_add_flavor (&sym->attr, FL_PROCEDURE,
+					      sym->name, NULL))
+		  || !gfc_add_intrinsic (&sym->attr, NULL)))
+	    rop = OMP_REDUCTION_NONE;
+    }
+  else
+    buffer[0] = '\0';
+  gfc_omp_udr *udr = (buffer[0] ? gfc_find_omp_udr (gfc_current_ns, buffer, NULL)
+				: NULL);
+  gfc_omp_namelist **head = NULL;
+  if (rop == OMP_REDUCTION_NONE && udr)
+    rop = OMP_REDUCTION_USER;
+
+  if (gfc_match_omp_variable_list (" :", &c->lists[list_idx], false, NULL,
+				   &head, openacc, allow_derived) != MATCH_YES)
+    {
+      gfc_current_locus = old_loc;
+      return MATCH_NO;
+    }
+  gfc_omp_namelist *n;
+  if (rop == OMP_REDUCTION_NONE)
+    {
+      n = *head;
+      *head = NULL;
+      gfc_error_now ("!$OMP DECLARE REDUCTION %s not found at %L",
+		     buffer, &old_loc);
+      gfc_free_omp_namelist (n);
+    }
+  else
+    for (n = *head; n; n = n->next)
+      {
+	n->u.reduction_op = rop;
+	if (udr)
+	  {
+	    n->udr = gfc_get_omp_namelist_udr ();
+	    n->udr->udr = udr;
+	  }
+     }
+  return MATCH_YES;
 }
 
 /* Match OpenMP and OpenACC directive clauses. MASK is a bitmask of
@@ -1379,6 +1538,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_IN_REDUCTION)
+	      && gfc_match_omp_clause_reduction (pc, c, openacc,
+						 allow_derived) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_INBRANCH)
 	      && !c->inbranch
 	      && !c->notinbranch
@@ -1717,124 +1880,24 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_REDUCTION)
-	      && gfc_match ("reduction ( ") == MATCH_YES)
+	      && gfc_match_omp_clause_reduction (pc, c, openacc,
+						 allow_derived) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_MEMORDER)
+	      && c->memorder == OMP_MEMORDER_UNSET
+	      && gfc_match ("relaxed") == MATCH_YES)
 	    {
-	      gfc_omp_reduction_op rop = OMP_REDUCTION_NONE;
-	      char buffer[GFC_MAX_SYMBOL_LEN + 3];
-	      if (gfc_match_char ('+') == MATCH_YES)
-		rop = OMP_REDUCTION_PLUS;
-	      else if (gfc_match_char ('*') == MATCH_YES)
-		rop = OMP_REDUCTION_TIMES;
-	      else if (gfc_match_char ('-') == MATCH_YES)
-		rop = OMP_REDUCTION_MINUS;
-	      else if (gfc_match (".and.") == MATCH_YES)
-		rop = OMP_REDUCTION_AND;
-	      else if (gfc_match (".or.") == MATCH_YES)
-		rop = OMP_REDUCTION_OR;
-	      else if (gfc_match (".eqv.") == MATCH_YES)
-		rop = OMP_REDUCTION_EQV;
-	      else if (gfc_match (".neqv.") == MATCH_YES)
-		rop = OMP_REDUCTION_NEQV;
-	      if (rop != OMP_REDUCTION_NONE)
-		snprintf (buffer, sizeof buffer, "operator %s",
-			  gfc_op2string ((gfc_intrinsic_op) rop));
-	      else if (gfc_match_defined_op_name (buffer + 1, 1) == MATCH_YES)
-		{
-		  buffer[0] = '.';
-		  strcat (buffer, ".");
-		}
-	      else if (gfc_match_name (buffer) == MATCH_YES)
-		{
-		  gfc_symbol *sym;
-		  const char *n = buffer;
-
-		  gfc_find_symbol (buffer, NULL, 1, &sym);
-		  if (sym != NULL)
-		    {
-		      if (sym->attr.intrinsic)
-			n = sym->name;
-		      else if ((sym->attr.flavor != FL_UNKNOWN
-				&& sym->attr.flavor != FL_PROCEDURE)
-			       || sym->attr.external
-			       || sym->attr.generic
-			       || sym->attr.entry
-			       || sym->attr.result
-			       || sym->attr.dummy
-			       || sym->attr.subroutine
-			       || sym->attr.pointer
-			       || sym->attr.target
-			       || sym->attr.cray_pointer
-			       || sym->attr.cray_pointee
-			       || (sym->attr.proc != PROC_UNKNOWN
-				   && sym->attr.proc != PROC_INTRINSIC)
-			       || sym->attr.if_source != IFSRC_UNKNOWN
-			       || sym == sym->ns->proc_name)
-			{
-			  sym = NULL;
-			  n = NULL;
-			}
-		      else
-			n = sym->name;
-		    }
-		  if (n == NULL)
-		    rop = OMP_REDUCTION_NONE;
-		  else if (strcmp (n, "max") == 0)
-		    rop = OMP_REDUCTION_MAX;
-		  else if (strcmp (n, "min") == 0)
-		    rop = OMP_REDUCTION_MIN;
-		  else if (strcmp (n, "iand") == 0)
-		    rop = OMP_REDUCTION_IAND;
-		  else if (strcmp (n, "ior") == 0)
-		    rop = OMP_REDUCTION_IOR;
-		  else if (strcmp (n, "ieor") == 0)
-		    rop = OMP_REDUCTION_IEOR;
-		  if (rop != OMP_REDUCTION_NONE
-		      && sym != NULL
-		      && ! sym->attr.intrinsic
-		      && ! sym->attr.use_assoc
-		      && ((sym->attr.flavor == FL_UNKNOWN
-			  && !gfc_add_flavor (&sym->attr, FL_PROCEDURE,
-					      sym->name, NULL))
-			  || !gfc_add_intrinsic (&sym->attr, NULL)))
-		    rop = OMP_REDUCTION_NONE;
-		}
-	      else
-		buffer[0] = '\0';
-	      gfc_omp_udr *udr
-		= (buffer[0]
-		   ? gfc_find_omp_udr (gfc_current_ns, buffer, NULL) : NULL);
-	      gfc_omp_namelist **head = NULL;
-	      if (rop == OMP_REDUCTION_NONE && udr)
-		rop = OMP_REDUCTION_USER;
-
-	      if (gfc_match_omp_variable_list (" :",
-					       &c->lists[OMP_LIST_REDUCTION],
-					       false, NULL, &head, openacc,
-					       allow_derived) == MATCH_YES)
-		{
-		  gfc_omp_namelist *n;
-		  if (rop == OMP_REDUCTION_NONE)
-		    {
-		      n = *head;
-		      *head = NULL;
-		      gfc_error_now ("!$OMP DECLARE REDUCTION %s not found "
-				     "at %L", buffer, &old_loc);
-		      gfc_free_omp_namelist (n);
-		    }
-		  else
-		    for (n = *head; n; n = n->next)
-		      {
-			n->u.reduction_op = rop;
-			if (udr)
-			  {
-			    n->udr = gfc_get_omp_namelist_udr ();
-			    n->udr->udr = udr;
-			  }
-		      }
-		  continue;
-		}
-	      else
-		gfc_current_locus = old_loc;
+	      c->memorder = OMP_MEMORDER_RELAXED;
+	      needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_MEMORDER)
+	      && c->memorder == OMP_MEMORDER_UNSET
+	      && gfc_match ("release") == MATCH_YES)
+	    {
+	      c->memorder = OMP_MEMORDER_RELEASE;
+	      needs_space = true;
+	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_MEMORDER)
 	      && c->memorder == OMP_MEMORDER_UNSET
@@ -1962,6 +2025,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  break;
 	case 't':
+	  if ((mask & OMP_CLAUSE_TASK_REDUCTION)
+	      && gfc_match_omp_clause_reduction (pc, c, openacc,
+						 allow_derived) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_THREAD_LIMIT)
 	      && c->thread_limit == NULL
 	      && gfc_match ("thread_limit ( %e )",
@@ -2696,18 +2763,19 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
    | OMP_CLAUSE_UNTIED | OMP_CLAUSE_FINAL | OMP_CLAUSE_MERGEABLE	\
-   | OMP_CLAUSE_DEPEND | OMP_CLAUSE_PRIORITY)
+   | OMP_CLAUSE_DEPEND | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_IN_REDUCTION)
 #define OMP_TASKLOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF		\
    | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_UNTIED | OMP_CLAUSE_FINAL		\
    | OMP_CLAUSE_MERGEABLE | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_GRAINSIZE	\
-   | OMP_CLAUSE_NUM_TASKS | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_NOGROUP)
+   | OMP_CLAUSE_NUM_TASKS | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_NOGROUP	\
+   | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_IN_REDUCTION)
 #define OMP_TARGET_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_DEPEND | OMP_CLAUSE_NOWAIT | OMP_CLAUSE_PRIVATE		\
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULTMAP			\
-   | OMP_CLAUSE_IS_DEVICE_PTR)
+   | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -4228,12 +4296,12 @@ gfc_match_omp_barrier (void)
 match
 gfc_match_omp_taskgroup (void)
 {
-  if (gfc_match_omp_eos () != MATCH_YES)
-    {
-      gfc_error ("Unexpected junk after $OMP TASKGROUP statement at %C");
-      return MATCH_ERROR;
-    }
+  gfc_omp_clauses *c;
+  if (gfc_match_omp_clauses (&c, OMP_CLAUSE_TASK_REDUCTION, true, true)
+      != MATCH_YES)
+    return MATCH_ERROR;
   new_st.op = EXEC_OMP_TASKGROUP;
+  new_st.ext.omp_clauses = c;
   return MATCH_YES;
 }
 
@@ -4560,7 +4628,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   static const char *clause_names[]
     = { "PRIVATE", "FIRSTPRIVATE", "LASTPRIVATE", "COPYPRIVATE", "SHARED",
 	"COPYIN", "UNIFORM", "ALIGNED", "LINEAR", "DEPEND", "MAP",
-	"TO", "FROM", "REDUCTION", "DEVICE_RESIDENT", "LINK", "USE_DEVICE",
+	"TO", "FROM", "REDUCTION", "REDUCTION" /*inscan*/, "REDUCTION" /*task*/,
+	"IN_REDUCTION", "TASK_REDUCTION",
+	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
 	"NONTEMPORAL" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
@@ -4727,21 +4797,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->sched_kind != OMP_SCHED_NONE
       && omp_clauses->sched_nonmonotonic)
     {
-      if (omp_clauses->sched_kind != OMP_SCHED_DYNAMIC
-	  && omp_clauses->sched_kind != OMP_SCHED_GUIDED)
-	{
-	  const char *p;
-	  switch (omp_clauses->sched_kind)
-	    {
-	    case OMP_SCHED_STATIC: p = "STATIC"; break;
-	    case OMP_SCHED_RUNTIME: p = "RUNTIME"; break;
-	    case OMP_SCHED_AUTO: p = "AUTO"; break;
-	    default: gcc_unreachable ();
-	    }
-	  gfc_error ("NONMONOTONIC modifier specified for %s schedule kind "
-		     "at %L", p, &code->loc);
-	}
-      else if (omp_clauses->sched_monotonic)
+      if (omp_clauses->sched_monotonic)
 	gfc_error ("Both MONOTONIC and NONMONOTONIC schedule modifiers "
 		   "specified at %L", &code->loc);
       else if (omp_clauses->ordered)
@@ -4818,7 +4874,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	&& (list != OMP_LIST_MAP || openacc)
 	&& list != OMP_LIST_FROM
 	&& list != OMP_LIST_TO
-	&& (list != OMP_LIST_REDUCTION || !openacc))
+	&& (list != OMP_LIST_REDUCTION || !openacc)
+	&& list != OMP_LIST_REDUCTION_INSCAN
+	&& list != OMP_LIST_REDUCTION_TASK
+	&& list != OMP_LIST_IN_REDUCTION
+	&& list != OMP_LIST_TASK_REDUCTION)
       for (n = omp_clauses->lists[list]; n; n = n->next)
 	{
 	  bool component_ref_p = false;
@@ -5224,6 +5284,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    for (; n != NULL; n = n->next)
 	      {
 		bool bad = false;
+		bool is_reduction = (list == OMP_LIST_REDUCTION
+				     || list == OMP_LIST_REDUCTION_INSCAN
+				     || list == OMP_LIST_REDUCTION_TASK
+				     || list == OMP_LIST_IN_REDUCTION
+				     || list == OMP_LIST_TASK_REDUCTION);
 		if (n->sym->attr.threadprivate)
 		  gfc_error ("THREADPRIVATE object %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
@@ -5233,15 +5298,15 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		if (n->sym->attr.associate_var)
 		  gfc_error ("ASSOCIATE name %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
-		if (list != OMP_LIST_PRIVATE)
+		if (list != OMP_LIST_PRIVATE && is_reduction)
 		  {
-		    if (n->sym->attr.proc_pointer && list == OMP_LIST_REDUCTION)
+		    if (n->sym->attr.proc_pointer)
 		      gfc_error ("Procedure pointer %qs in %s clause at %L",
 				 n->sym->name, name, &n->where);
-		    if (n->sym->attr.pointer && list == OMP_LIST_REDUCTION)
+		    if (n->sym->attr.pointer)
 		      gfc_error ("POINTER object %qs in %s clause at %L",
 				 n->sym->name, name, &n->where);
-		    if (n->sym->attr.cray_pointer && list == OMP_LIST_REDUCTION)
+		    if (n->sym->attr.cray_pointer)
 		      gfc_error ("Cray pointer %qs in %s clause at %L",
 				 n->sym->name, name, &n->where);
 		  }
@@ -5253,7 +5318,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		else if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
-		if (n->sym->attr.in_namelist && list != OMP_LIST_REDUCTION)
+		if (n->sym->attr.in_namelist && !is_reduction)
 		  gfc_error ("Variable %qs in %s clause is used in "
 			     "NAMELIST statement at %L",
 			     n->sym->name, name, &n->where);
@@ -5273,7 +5338,21 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 		switch (list)
 		  {
+		  case OMP_LIST_REDUCTION_INSCAN:
+		  case OMP_LIST_REDUCTION_TASK:
+		    if (code && (code->op == EXEC_OMP_TASKLOOP
+				 || code->op == EXEC_OMP_TEAMS
+				 || code->op == EXEC_OMP_TEAMS_DISTRIBUTE))
+		      {
+			gfc_error ("Only DEFAULT permitted as reduction-"
+				   "modifier in REDUCTION clause at %L",
+				   &n->where);
+			break;
+		      }
+		    gcc_fallthrough ();
 		  case OMP_LIST_REDUCTION:
+		  case OMP_LIST_IN_REDUCTION:
+		  case OMP_LIST_TASK_REDUCTION:
 		    switch (n->u.reduction_op)
 		      {
 		      case OMP_REDUCTION_PLUS:
@@ -6102,6 +6181,10 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
       case OMP_LIST_FIRSTPRIVATE:
       case OMP_LIST_LASTPRIVATE:
       case OMP_LIST_REDUCTION:
+      case OMP_LIST_REDUCTION_INSCAN:
+      case OMP_LIST_REDUCTION_TASK:
+      case OMP_LIST_IN_REDUCTION:
+      case OMP_LIST_TASK_REDUCTION:
       case OMP_LIST_LINEAR:
 	for (n = omp_clauses->lists[list]; n; n = n->next)
 	  ctx.sharing_clauses->add (n->sym);

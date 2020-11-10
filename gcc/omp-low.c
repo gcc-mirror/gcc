@@ -2937,7 +2937,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		    {
 		      error_at (gimple_location (stmt),
 				"%<ordered simd threads%> must be closely "
-				"nested inside of %<for simd%> region");
+				"nested inside of %<%s simd%> region",
+				lang_GNU_Fortran () ? "do" : "for");
 		      return false;
 		    }
 		  return true;

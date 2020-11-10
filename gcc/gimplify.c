@@ -8672,7 +8672,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "invalid %<task%> reduction modifier on construct "
-			    "other than %<parallel%>, %<for%> or %<sections%>");
+			    "other than %<parallel%>, %qs or %<sections%>",
+			    lang_GNU_Fortran () ? "do" : "for");
 		  OMP_CLAUSE_REDUCTION_TASK (c) = 0;
 		}
 	    }
@@ -12703,7 +12704,8 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 	  {
 	    error_at (OMP_CLAUSE_LOCATION (*pc),
 		      "invalid %<task%> reduction modifier on construct "
-		      "other than %<parallel%>, %<for%> or %<sections%>");
+		      "other than %<parallel%>, %qs or %<sections%>",
+		      lang_GNU_Fortran () ? "do" : "for");
 	    OMP_CLAUSE_REDUCTION_TASK (*pc) = 0;
 	  }
 	pc = &OMP_CLAUSE_CHAIN (*pc);
