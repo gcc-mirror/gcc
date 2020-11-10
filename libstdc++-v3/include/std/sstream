@@ -357,13 +357,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_update_egptr()
       {
-	const bool __testin = _M_mode & ios_base::in;
-	if (this->pptr() && this->pptr() > this->egptr())
+	if (char_type* __pptr = this->pptr())
 	  {
-	    if (__testin)
-	      this->setg(this->eback(), this->gptr(), this->pptr());
-	    else
-	      this->setg(this->pptr(), this->pptr(), this->pptr());
+	    char_type* __egptr = this->egptr();
+	    if (!__egptr || __pptr > __egptr)
+	      {
+		if (_M_mode & ios_base::in)
+		  this->setg(this->eback(), this->gptr(), __pptr);
+		else
+		  this->setg(__pptr, __pptr, __pptr);
+	      }
 	  }
       }
 
@@ -396,7 +399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	      _M_poff[0] = __from.pbase() - __str;
 	      _M_poff[1] = __from.pptr() - __from.pbase();
 	      _M_poff[2] = __from.epptr() - __str;
-	      if (__from.pptr() > __end)
+	      if (!__end || __from.pptr() > __end)
 		__end = __from.pptr();
 	    }
 
