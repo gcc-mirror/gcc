@@ -2706,27 +2706,21 @@ operator_logical_not::fold_range (irange &r, tree type,
   if (empty_range_varying (r, type, lh, rh))
     return true;
 
-  if (lh.varying_p () || lh.undefined_p ())
-    r = lh;
-  else
-    {
-      r = lh;
-      r.invert ();
-    }
-  gcc_checking_assert (lh.type() == type);
+  r = lh;
+  if (!lh.varying_p () && !lh.undefined_p ())
+    r.invert ();
+
   return true;
 }
 
 bool
 operator_logical_not::op1_range (irange &r,
-				 tree type ATTRIBUTE_UNUSED,
+				 tree type,
 				 const irange &lhs,
-				 const irange &op2 ATTRIBUTE_UNUSED) const
+				 const irange &op2) const
 {
-  r = lhs;
-  if (!lhs.varying_p () && !lhs.undefined_p ())
-    r.invert ();
-  return true;
+  // Logical NOT is involutary...do it again.
+  return fold_range (r, type, lhs, op2);
 }
 
 
@@ -2749,6 +2743,9 @@ operator_bitwise_not::fold_range (irange &r, tree type,
   if (empty_range_varying (r, type, lh, rh))
     return true;
 
+  if (types_compatible_p (type, boolean_type_node))
+    return op_logical_not.fold_range (r, type, lh, rh);
+
   // ~X is simply -1 - X.
   int_range<1> minusone (type, wi::minus_one (TYPE_PRECISION (type)),
 			 wi::minus_one (TYPE_PRECISION (type)));
@@ -2761,6 +2758,9 @@ operator_bitwise_not::op1_range (irange &r, tree type,
 				 const irange &lhs,
 				 const irange &op2) const
 {
+  if (types_compatible_p (type, boolean_type_node))
+    return op_logical_not.op1_range (r, type, lhs, op2);
+
   // ~X is -1 - X and since bitwise NOT is involutary...do it again.
   return fold_range (r, type, lhs, op2);
 }
