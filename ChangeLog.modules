@@ -1,5 +1,8 @@
 2020-11-10  Nathan Sidwell  <nathan@acm.org>
 
+	libcody/
+	Rebase on upstream -- $flag support.
+
 	Create c++tools dir
 	* Makefile.def: Add c++tools
 	* Makefile.tpl: Likewise.

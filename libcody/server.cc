@@ -159,6 +159,18 @@ void Server::ProcessRequests (void)
     }
 }
 
+// Return numeric value of STR as an unsigned.  Returns ~0u on error
+// (so that value is not representable).
+static unsigned ParseUnsigned (std::string &str)
+{
+  char *eptr;
+  unsigned long val = strtoul (str.c_str (), &eptr, 10);
+  if (*eptr || unsigned (val) != val)
+    return ~0u;
+
+  return unsigned (val);
+}
+
 Resolver *ConnectRequest (Server *s, Resolver *r,
 			  std::vector<std::string> &words)
 {
@@ -167,12 +179,11 @@ Resolver *ConnectRequest (Server *s, Resolver *r,
 
   if (words.size () == 3)
     words.emplace_back (u8"");
-  char *eptr;
-  unsigned long version = strtoul (words[1].c_str (), &eptr, 10);
-  if (*eptr)
+  unsigned version = ParseUnsigned (words[1]);
+  if (version == ~0u)
     return nullptr;
 
-  return r->ConnectRequest (s, unsigned (version), words[2], words[3]);
+  return r->ConnectRequest (s, version, words[2], words[3]);
 }
 
 int ModuleRepoRequest (Server *s, Resolver *r,std::vector<std::string> &words)
@@ -185,36 +196,72 @@ int ModuleRepoRequest (Server *s, Resolver *r,std::vector<std::string> &words)
 
 int ModuleExportRequest (Server *s, Resolver *r, std::vector<std::string> &words)
 {
-  if (words.size () != 2 || words[1].empty ())
-    return EINVAL;
+  if (words.size () < 2 || words.size () > 3 || words[1].empty ())
+    return -1;
 
-  return r->ModuleExportRequest (s, words[1]);
+  Flags flags = Flags::None;
+  if (words.size () == 3)
+    {
+      unsigned val = ParseUnsigned (words[2]);
+      if (val == ~0u)
+	return -1;
+      flags = Flags (val);
+    }
+
+  return r->ModuleExportRequest (s, flags, words[1]);
 }
 
 int ModuleImportRequest (Server *s, Resolver *r, std::vector<std::string> &words)
 {
-  if (words.size () != 2 || words[1].empty ())
+  if (words.size () < 2 || words.size () > 3 || words[1].empty ())
     return -1;
 
-  return r->ModuleExportRequest (s, words[1]);
+  Flags flags = Flags::None;
+  if (words.size () == 3)
+    {
+      unsigned val = ParseUnsigned (words[2]);
+      if (val == ~0u)
+	return -1;
+      flags = Flags (val);
+    }
+
+  return r->ModuleImportRequest (s, flags, words[1]);
 }
 
 int ModuleCompiledRequest (Server *s, Resolver *r,
 			   std::vector<std::string> &words)
 {
-  if (words.size () != 2 || words[1].empty ())
+  if (words.size () < 2 || words.size () > 3 || words[1].empty ())
     return -1;
 
-  return r->ModuleCompiledRequest (s, words[1]);
+  Flags flags = Flags::None;
+  if (words.size () == 3)
+    {
+      unsigned val = ParseUnsigned (words[2]);
+      if (val == ~0u)
+	return -1;
+      flags = Flags (val);
+    }
+
+  return r->ModuleCompiledRequest (s, flags, words[1]);
 }
 
 int IncludeTranslateRequest (Server *s, Resolver *r,
 			     std::vector<std::string> &words)
 {
-  if (words.size () != 2 || words[1].empty ())
+  if (words.size () < 2 || words.size () > 3 || words[1].empty ())
     return -1;
 
-  return r->IncludeTranslateRequest (s, words[1]);
+  Flags flags = Flags::None;
+  if (words.size () == 3)
+    {
+      unsigned val = ParseUnsigned (words[2]);
+      if (val == ~0u)
+	return -1;
+      flags = Flags (val);
+    }
+
+  return r->IncludeTranslateRequest (s, flags, words[1]);
 }
 
 int InvokeSubProcessRequest (Server *s, Resolver *r,

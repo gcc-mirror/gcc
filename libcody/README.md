@@ -8,10 +8,10 @@ compilers and build systems.
 **WARNING:**  This is preliminary software.
 
 In addition to supporting C++modules, this may also support LTO
-requirements and could also feed deal with generated #include files
+requirements and could also deal with generated #include files
 and feed the compiler with prepruned include paths and whatnot.  (The
 system calls involved in include searches can be quite expensive on
-some build infrastuctures.)
+some build infrastructures.)
 
 * Client and Server objects
 * Direct connection for in-process use
@@ -47,11 +47,15 @@ The protocol is turn-based.  The compiler sends a block of one or more
 requests to the builder, then waits for a block of responses to all of
 those requests.  If the builder needs to compile something to satisfy
 a request, there may be some time before the response.  A builder may
-service multiple compilers concurrently, and it'll need some buffering
-scheme to deal with that.
+service multiple compilers concurrently, each as a separate connection.
 
 When multiple requests are in a block, the responses are also in a
-block, and in corresponding order.
+block, and in corresponding order.  The responses must not be
+commenced eagerly -- they must wait until the incoming block has ended
+(as mentioned above, it is turn-based).  To do otherwise risks
+deadlock, as there is no requirement for a sending end of the
+communication to listen for incoming responses (or new requests) until
+it has completed sending its current block.
 
 Every request has a response.
 
@@ -62,7 +66,7 @@ system, for that kind of thing.<sup><a href="#3">3</a></sup>
 
 Messages characters are encoded in UTF8.
 
-Messages are a sequenc of octets ending with a NEWLINE (0xa).  The lines
+Messages are a sequence of octets ending with a NEWLINE (0xa).  The lines
 consist of a sequence of words, separated by WHITESPACE (0x20 or 0x9).
 Words themselves do not contain WHITESPACE.  Lines consisting solely
 of WHITESPACE (or empty) are ignored.
@@ -106,10 +110,10 @@ It is recommended that words are separated by single SPACE characters.
 
 The message descriptions use `$metavariable` examples.
 
-The request messages are specific to a particlar action.  The response
+The request messages are specific to a particular action.  The response
 messages are more generic, describing their value types, but not their
 meaning.  Message consumers need to know the response to decode them.
-Notice the `Packet::GetRequest()` method records in response packates
+Notice the `Packet::GetRequest()` method records in response packets
 what the request being responded to was.  Do not confuse this with the
 `Packet::GetCode ()` method.
 
@@ -144,45 +148,70 @@ The first message is a handshake:
 
 The `$version` is a numeric value, currently `1`.  `$compiler` identifies
 the compiler &mdash; builders may need to keep compiled modules from
-different compilers separate.  `$ident` is an identifer the builder
-might use to identify the compilation it is communicting with.
+different compilers separate.  `$ident` is an identifier the builder
+might use to identify the compilation it is communicating with.
 
 Responses are:
 
-`HELLO $version $builder`
+`HELLO $version $builder [$flags]`
 
 A successful handshake.  The communication is now connected and other
-messages may be exchanged.  An ERROR response indicates an unsuccesful
+messages may be exchanged.  An ERROR response indicates an unsuccessful
 handshake.  The communication remains unconnected.
 
 There is nothing restricting a handshake to its own message block.  Of
 course, if the handshake fails, subsequent non-handshake messages in
 the block will fail (producing error responses).
 
+The `$flags` word, if present allows a server to control what requests
+might be given.  See below.
+
 ### C++ Module Requests
 
-A set of requests are specific to C++ modules
+A set of requests are specific to C++ modules:
+
+#### Flags
+
+Several requests and one response have an optional `$flags` word.
+These are the `Cody::Flags` value pertaining to that request.  If
+omitted the value 0 is implied.  The following flags are available:
+
+* `0`, `None`: No flags.
+
+* `1<<0`, `NameOnly`: The request is for the name only, and not the
+  CMI contents.
+
+The `NameOnly` flag may be provded in a handshake response, and
+indicates that the server is interested in requests only for their
+implied dependency information.  It may be provided on a request to
+indicate that only the CMI name is required, not its contents (for
+instance, when preprocessing).  Note that a compiler may still make
+`NameOnly` requests even if the server did not ask for such.
 
 #### Repository
 
 All relative CMI file names are relative to a repository.  (There are
-usually no abosolute CMI files).  The respository may be determined
+usually no absolute CMI files).  The repository may be determined
 with:
 
 `MODULE-REPO`
 
 A PATHNAME response is expected.  The `$pathname` may be an empty
-word, which is equivalent to `.`.
+word, which is equivalent to `.`.  When the response is a relative
+pathname, it must be relative to the client's current working
+directory (which might be a process on a different host to the
+server).  You may set the repository to `/`, if you with to use paths
+relative to the root directory.
 
 #### Exporting
 
 A compilation of a module interface, partition or header unit can
 inform the builder with:
 
-`MODULE-EXPORT $module`
+`MODULE-EXPORT $module [$flags]`
 
-This will result in a PATHNAME response naming the Compiled Module Interface
-pathname to write.
+This will result in a PATHNAME response naming the Compiled Module
+Interface pathname to write.
 
 The `MODULE-EXPORT` request does not indicate the module has been
 successfully compiled.  At most one `MODULE-EXPORT` is to be made, and
@@ -213,9 +242,7 @@ spelling a particular header-unit to a unique CMI file.
 
 Successful compilation of an interface is indicated with a subsequent:
 
-`MODULE-COMPILED $module`
-
-FIXME: do we need the module here?
+`MODULE-COMPILED $module [$flags]`
 
 request.  This indicates the CMI file has been written to disk, so
 that any other compilations waiting on it may proceed.  Depending on
@@ -229,9 +256,9 @@ themselves.
 
 #### Importing
 
-Importation, inculding that of header-units, uses:
+Importation, including that of header-units, uses:
 
-`MODULE-IMPORT $module`
+`MODULE-IMPORT $module [$flags]`
 
 A PATHNAME response names the CMI file to be read.  Should the builder
 have to invoke a compilation to produce the CMI, the response should
@@ -243,10 +270,10 @@ presumably fail in some manner.
 
 Include translation can be determined with:
 
-`INCLUDE-TRANSLATE $header`
+`INCLUDE-TRANSLATE $header [$flags]`
 
 The header name, `$header`, is the fully resolved header name, in the
-above-mentioned unambigous filename form.  The response will either be
+above-mentioned unambiguous filename form.  The response will either be
 a BOOL response indicating translation (TRUE) or textual inclusion
 (FALSE).  Alternatively a PATHNAME response can directly name the CMI,
 and implies translation, this possibly elides a subsequent
@@ -266,12 +293,12 @@ A successful invocation provides an OK response.  A failed
 invocation's produces an ERROR response.
 
 FIXME: Note for generalization this command needs to indicate which
-files may need transfering to and from a remote build system.
+files may need transferring to and from a remote build system.
 
 ## Building libCody
 
 Libcody is written in C++11.  (It's a intended for compilers, so
-there'd be a boostrapping problem if it used the latest and greatest.)
+there'd be a bootstrapping problem if it used the latest and greatest.)
 
 ### Using configure and make.
 

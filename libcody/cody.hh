@@ -207,6 +207,22 @@ struct FD
 
 }
 
+// Flags for various requests
+enum class Flags : unsigned
+{
+  None,
+  NameOnly = 1<<0,  // Only querying for CMI names, not contents
+};
+
+inline Flags operator& (Flags a, Flags b)
+{
+  return Flags (unsigned (a) & unsigned (b));
+}
+inline Flags operator| (Flags a, Flags b)
+{
+  return Flags (unsigned (a) | unsigned (b));
+}
+
 ///
 /// Response data for a request.  Returned by Client's request calls,
 /// which return a single Packet.  When the connection is Corked, the
@@ -226,7 +242,7 @@ private:
     std::string string; ///< String value
     std::vector<std::string> vector;  ///< Vector of string value
   };
-  Category cat : 2;  ///< Discriminatory
+  Category cat : 2;  ///< Discriminator
 
 private:
   unsigned short code = 0;  ///< Packet type
@@ -435,7 +451,8 @@ public:
   /// @param ident compilation identifiation (maybe nullptr)
   /// @param alen length of agent string, if known
   /// @param ilen length of ident string, if known
-  /// @result packet indicating success (or deferrment) of the connection.
+  /// @result packet indicating success (or deferrment) of the
+  /// connection, payload is optional flags
   Packet Connect (char const *agent, char const *ident,
 		 size_t alen = ~size_t (0), size_t ilen = ~size_t (0));
   /// std::string wrapper for connection
@@ -463,37 +480,73 @@ public:
   /// @result packet indicating repo
   Packet ModuleRepo ();
 
+public:
   /// Inform of compilation of a named module interface or partition,
   /// or a header unit
   /// @param str module or header-unit
   /// @param len name length, if known
   /// @result CMI name (or deferrment/error)
-  Packet ModuleExport (char const *str, size_t len = ~size_t (0));
-  Packet ModuleExport (std::string const &s)
+  Packet ModuleExport (char const *str, Flags flags, size_t len = ~size_t (0));
+
+  Packet ModuleExport (char const *str)
   {
-    return ModuleExport (s.c_str (), s.size ());
+    return ModuleExport (str, Flags::None, ~size_t (0));
+  }
+  Packet ModuleExport
+    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
+    (char const *str, size_t len)
+  {
+    return ModuleExport (str, Flags::None, len);
+  }
+  Packet ModuleExport (std::string const &s, Flags flags = Flags::None)
+  {
+    return ModuleExport (s.c_str (), flags, s.size ());
   }
 
+public:
   /// Importation of a module, partition or header-unit
   /// @param str module or header-unit
   /// @param len name length, if known
   /// @result CMI name (or deferrment/error)
-  Packet ModuleImport (char const *str, size_t len = ~size_t (0));
-  Packet ModuleImport (std::string const &s)
+  Packet ModuleImport (char const *str, Flags flags, size_t len = ~size_t (0));
+
+  Packet ModuleImport (char const *str)
   {
-    return ModuleImport (s.c_str (), s.size ());
+    return ModuleImport (str, Flags::None, ~size_t (0));
+  }
+  Packet ModuleImport
+    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
+    (char const *str, size_t len)
+  {
+    return ModuleImport (str, Flags::None, len);
+  }
+  Packet ModuleImport (std::string const &s, Flags flags = Flags::None)
+  {
+    return ModuleImport (s.c_str (), flags, s.size ());
   }
 
+public:
   /// Successful compilation of a module interface, partition or
   /// header-unit.  Must have been preceeded by a ModuleExport
   /// request.
   /// @param str module or header-unit
   /// @param len name length, if known
   /// @result  OK (or deferment/error)
-  Packet ModuleCompiled (char const *str, size_t len = ~size_t (0));
-  Packet ModuleCompiled (std::string const &s)
+  Packet ModuleCompiled (char const *str, Flags flags, size_t len = ~size_t (0));
+
+  Packet ModuleCompiled (char const *str)
   {
-    return ModuleCompiled (s.c_str (), s.size ());
+    return ModuleCompiled (str, Flags::None, ~size_t (0));
+  }
+  Packet ModuleCompiled
+    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
+    (char const *str, size_t len)
+  {
+    return ModuleCompiled (str, Flags::None, len);
+  }
+  Packet ModuleCompiled (std::string const &s, Flags flags = Flags::None)
+  {
+    return ModuleCompiled (s.c_str (), flags, s.size ());
   }
 
   /// Include translation query.
@@ -501,10 +554,22 @@ public:
   /// @param len name length, if known
   /// @result  Packet indicating include translation boolean, or CMI
   /// name (or deferment/error)
-  Packet IncludeTranslate (char const *str, size_t len = ~size_t (0));
-  Packet IncludeTranslate (std::string const &s)
+  Packet IncludeTranslate (char const *str, Flags flags,
+			   size_t len = ~size_t (0));
+
+  Packet IncludeTranslate (char const *str)
   {
-    return IncludeTranslate (s.c_str (), s.size ());
+    return IncludeTranslate (str, Flags::None, ~size_t (0));
+  }
+  Packet IncludeTranslate
+    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
+    (char const *str, size_t len)
+  {
+    return IncludeTranslate (str, Flags::None, len);
+  }
+  Packet IncludeTranslate (std::string const &s, Flags flags = Flags::None)
+  {
+    return IncludeTranslate (s.c_str (), flags, s.size ());
   }
 
 public:
@@ -582,13 +647,31 @@ public:
 public:
   // return 0 on ok, ERRNO on failure, -1 on unspecific error
   virtual int ModuleRepoRequest (Server *s);
-  virtual int ModuleExportRequest (Server *s, std::string &module);
-  virtual int ModuleImportRequest (Server *s, std::string &module);
-  virtual int ModuleCompiledRequest (Server *s, std::string &module);
-  virtual int IncludeTranslateRequest (Server *s, std::string &include);
+  virtual int ModuleExportRequest
+    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
+    (Server *s, std::string &module);
+  virtual int ModuleImportRequest
+    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
+    (Server *s, std::string &module);
+  virtual int ModuleCompiledRequest
+    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
+    (Server *s, std::string &module);
+  virtual int IncludeTranslateRequest
+    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
+    (Server *s, std::string &include);
+
+  virtual int ModuleExportRequest (Server *s, Flags flags,
+				   std::string &module);
+  virtual int ModuleImportRequest (Server *s, Flags flags,
+				   std::string &module);
+  virtual int ModuleCompiledRequest (Server *s, Flags flags,
+				     std::string &module);
+  virtual int IncludeTranslateRequest (Server *s, Flags flags,
+				       std::string &include);
 
 public:
-  virtual int InvokeSubProcessRequest (Server *s, std::vector<std::string> &args);
+  virtual int InvokeSubProcessRequest (Server *s,
+				       std::vector<std::string> &args);
 };
 
 
