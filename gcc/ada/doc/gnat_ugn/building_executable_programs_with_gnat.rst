@@ -6704,6 +6704,9 @@ be presented in subsequent sections.
   Use the target-independent XDR protocol for stream oriented attributes
   instead of the default implementation which is based on direct binary
   representations and is therefore target-and endianness-dependent.
+  However it does not support 128-bit integer types and the exception
+  ``Ada.IO_Exceptions.Device_Error`` is raised if any attempt is made
+  at streaming 128-bit integer types with it.
 
 
   .. index:: -Xnnn  (gnatbind)

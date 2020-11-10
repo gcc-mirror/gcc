@@ -44,7 +44,8 @@ package body System.Stream_Attributes is
 
    function XDR_Support return Boolean;
    pragma Inline (XDR_Support);
-   --  Return True if XDR streaming should be used
+   --  Return True if XDR streaming should be used. Note that 128-bit integers
+   --  are not supported by the XDR protocol and will raise Device_Error.
 
    Err : exception renames Ada.IO_Exceptions.End_Error;
    --  Exception raised if insufficient data read (note that the RM implies
@@ -64,74 +65,81 @@ package body System.Stream_Attributes is
    Thin_Pointer_Size : constant := System.Address'Size;
    Fat_Pointer_Size  : constant := System.Address'Size * 2;
 
-   subtype S_AD  is SEA (1 .. (Fat_Pointer_Size              + SU - 1) / SU);
-   subtype S_AS  is SEA (1 .. (Thin_Pointer_Size             + SU - 1) / SU);
-   subtype S_B   is SEA (1 .. (Boolean'Size                  + SU - 1) / SU);
-   subtype S_C   is SEA (1 .. (Character'Size                + SU - 1) / SU);
-   subtype S_F   is SEA (1 .. (Float'Size                    + SU - 1) / SU);
-   subtype S_I   is SEA (1 .. (Integer'Size                  + SU - 1) / SU);
-   subtype S_I24 is SEA (1 .. (Integer_24'Size               + SU - 1) / SU);
-   subtype S_LF  is SEA (1 .. (Long_Float'Size               + SU - 1) / SU);
-   subtype S_LI  is SEA (1 .. (Long_Integer'Size             + SU - 1) / SU);
-   subtype S_LLF is SEA (1 .. (Long_Long_Float'Size          + SU - 1) / SU);
-   subtype S_LLI is SEA (1 .. (Long_Long_Integer'Size        + SU - 1) / SU);
-   subtype S_LLU is SEA (1 .. (UST.Long_Long_Unsigned'Size   + SU - 1) / SU);
-   subtype S_LU  is SEA (1 .. (UST.Long_Unsigned'Size        + SU - 1) / SU);
-   subtype S_SF  is SEA (1 .. (Short_Float'Size              + SU - 1) / SU);
-   subtype S_SI  is SEA (1 .. (Short_Integer'Size            + SU - 1) / SU);
-   subtype S_SSI is SEA (1 .. (Short_Short_Integer'Size      + SU - 1) / SU);
-   subtype S_SSU is SEA (1 .. (UST.Short_Short_Unsigned'Size + SU - 1) / SU);
-   subtype S_SU  is SEA (1 .. (UST.Short_Unsigned'Size       + SU - 1) / SU);
-   subtype S_U   is SEA (1 .. (UST.Unsigned'Size             + SU - 1) / SU);
-   subtype S_U24 is SEA (1 .. (Unsigned_24'Size              + SU - 1) / SU);
-   subtype S_WC  is SEA (1 .. (Wide_Character'Size           + SU - 1) / SU);
-   subtype S_WWC is SEA (1 .. (Wide_Wide_Character'Size      + SU - 1) / SU);
+   subtype S_AD   is SEA (1 .. (Fat_Pointer_Size              + SU - 1) / SU);
+   subtype S_AS   is SEA (1 .. (Thin_Pointer_Size             + SU - 1) / SU);
+   subtype S_B    is SEA (1 .. (Boolean'Size                  + SU - 1) / SU);
+   subtype S_C    is SEA (1 .. (Character'Size                + SU - 1) / SU);
+   subtype S_F    is SEA (1 .. (Float'Size                    + SU - 1) / SU);
+   subtype S_I    is SEA (1 .. (Integer'Size                  + SU - 1) / SU);
+   subtype S_I24  is SEA (1 .. (Integer_24'Size               + SU - 1) / SU);
+   subtype S_LF   is SEA (1 .. (Long_Float'Size               + SU - 1) / SU);
+   subtype S_LI   is SEA (1 .. (Long_Integer'Size             + SU - 1) / SU);
+   subtype S_LLF  is SEA (1 .. (Long_Long_Float'Size          + SU - 1) / SU);
+   subtype S_LLI  is SEA (1 .. (Long_Long_Integer'Size        + SU - 1) / SU);
+   subtype S_LLLI is SEA (1 .. (Long_Long_Long_Integer'Size   + SU - 1) / SU);
+   subtype S_LLLU is
+                  SEA (1 .. (UST.Long_Long_Long_Unsigned'Size + SU - 1) / SU);
+   subtype S_LLU  is SEA (1 .. (UST.Long_Long_Unsigned'Size   + SU - 1) / SU);
+   subtype S_LU   is SEA (1 .. (UST.Long_Unsigned'Size        + SU - 1) / SU);
+   subtype S_SF   is SEA (1 .. (Short_Float'Size              + SU - 1) / SU);
+   subtype S_SI   is SEA (1 .. (Short_Integer'Size            + SU - 1) / SU);
+   subtype S_SSI  is SEA (1 .. (Short_Short_Integer'Size      + SU - 1) / SU);
+   subtype S_SSU  is SEA (1 .. (UST.Short_Short_Unsigned'Size + SU - 1) / SU);
+   subtype S_SU   is SEA (1 .. (UST.Short_Unsigned'Size       + SU - 1) / SU);
+   subtype S_U    is SEA (1 .. (UST.Unsigned'Size             + SU - 1) / SU);
+   subtype S_U24  is SEA (1 .. (Unsigned_24'Size              + SU - 1) / SU);
+   subtype S_WC   is SEA (1 .. (Wide_Character'Size           + SU - 1) / SU);
+   subtype S_WWC  is SEA (1 .. (Wide_Wide_Character'Size      + SU - 1) / SU);
 
    --  Unchecked conversions from the elementary type to the stream type
 
-   function From_AD  is new UC (Fat_Pointer,              S_AD);
-   function From_AS  is new UC (Thin_Pointer,             S_AS);
-   function From_F   is new UC (Float,                    S_F);
-   function From_I   is new UC (Integer,                  S_I);
-   function From_I24 is new UC (Integer_24,               S_I24);
-   function From_LF  is new UC (Long_Float,               S_LF);
-   function From_LI  is new UC (Long_Integer,             S_LI);
-   function From_LLF is new UC (Long_Long_Float,          S_LLF);
-   function From_LLI is new UC (Long_Long_Integer,        S_LLI);
-   function From_LLU is new UC (UST.Long_Long_Unsigned,   S_LLU);
-   function From_LU  is new UC (UST.Long_Unsigned,        S_LU);
-   function From_SF  is new UC (Short_Float,              S_SF);
-   function From_SI  is new UC (Short_Integer,            S_SI);
-   function From_SSI is new UC (Short_Short_Integer,      S_SSI);
-   function From_SSU is new UC (UST.Short_Short_Unsigned, S_SSU);
-   function From_SU  is new UC (UST.Short_Unsigned,       S_SU);
-   function From_U   is new UC (UST.Unsigned,             S_U);
-   function From_U24 is new UC (Unsigned_24,              S_U24);
-   function From_WC  is new UC (Wide_Character,           S_WC);
-   function From_WWC is new UC (Wide_Wide_Character,      S_WWC);
+   function From_AD   is new UC (Fat_Pointer,                 S_AD);
+   function From_AS   is new UC (Thin_Pointer,                S_AS);
+   function From_F    is new UC (Float,                       S_F);
+   function From_I    is new UC (Integer,                     S_I);
+   function From_I24  is new UC (Integer_24,                  S_I24);
+   function From_LF   is new UC (Long_Float,                  S_LF);
+   function From_LI   is new UC (Long_Integer,                S_LI);
+   function From_LLF  is new UC (Long_Long_Float,             S_LLF);
+   function From_LLI  is new UC (Long_Long_Integer,           S_LLI);
+   function From_LLLI is new UC (Long_Long_Long_Integer,      S_LLLI);
+   function From_LLLU is new UC (UST.Long_Long_Long_Unsigned, S_LLLU);
+   function From_LLU  is new UC (UST.Long_Long_Unsigned,      S_LLU);
+   function From_LU   is new UC (UST.Long_Unsigned,           S_LU);
+   function From_SF   is new UC (Short_Float,                 S_SF);
+   function From_SI   is new UC (Short_Integer,               S_SI);
+   function From_SSI  is new UC (Short_Short_Integer,         S_SSI);
+   function From_SSU  is new UC (UST.Short_Short_Unsigned,    S_SSU);
+   function From_SU   is new UC (UST.Short_Unsigned,          S_SU);
+   function From_U    is new UC (UST.Unsigned,                S_U);
+   function From_U24  is new UC (Unsigned_24,                 S_U24);
+   function From_WC   is new UC (Wide_Character,              S_WC);
+   function From_WWC  is new UC (Wide_Wide_Character,         S_WWC);
 
    --  Unchecked conversions from the stream type to elementary type
 
-   function To_AD  is new UC (S_AD,  Fat_Pointer);
-   function To_AS  is new UC (S_AS,  Thin_Pointer);
-   function To_F   is new UC (S_F,   Float);
-   function To_I   is new UC (S_I,   Integer);
-   function To_I24 is new UC (S_I24, Integer_24);
-   function To_LF  is new UC (S_LF,  Long_Float);
-   function To_LI  is new UC (S_LI,  Long_Integer);
-   function To_LLF is new UC (S_LLF, Long_Long_Float);
-   function To_LLI is new UC (S_LLI, Long_Long_Integer);
-   function To_LLU is new UC (S_LLU, UST.Long_Long_Unsigned);
-   function To_LU  is new UC (S_LU,  UST.Long_Unsigned);
-   function To_SF  is new UC (S_SF,  Short_Float);
-   function To_SI  is new UC (S_SI,  Short_Integer);
-   function To_SSI is new UC (S_SSI, Short_Short_Integer);
-   function To_SSU is new UC (S_SSU, UST.Short_Short_Unsigned);
-   function To_SU  is new UC (S_SU,  UST.Short_Unsigned);
-   function To_U   is new UC (S_U,   UST.Unsigned);
-   function To_U24 is new UC (S_U24, Unsigned_24);
-   function To_WC  is new UC (S_WC,  Wide_Character);
-   function To_WWC is new UC (S_WWC, Wide_Wide_Character);
+   function To_AD   is new UC (S_AD,   Fat_Pointer);
+   function To_AS   is new UC (S_AS,   Thin_Pointer);
+   function To_F    is new UC (S_F,    Float);
+   function To_I    is new UC (S_I,    Integer);
+   function To_I24  is new UC (S_I24,  Integer_24);
+   function To_LF   is new UC (S_LF,   Long_Float);
+   function To_LI   is new UC (S_LI,   Long_Integer);
+   function To_LLF  is new UC (S_LLF,  Long_Long_Float);
+   function To_LLI  is new UC (S_LLI,  Long_Long_Integer);
+   function To_LLLI is new UC (S_LLLI, Long_Long_Long_Integer);
+   function To_LLLU is new UC (S_LLLU, UST.Long_Long_Long_Unsigned);
+   function To_LLU  is new UC (S_LLU,  UST.Long_Long_Unsigned);
+   function To_LU   is new UC (S_LU,   UST.Long_Unsigned);
+   function To_SF   is new UC (S_SF,   Short_Float);
+   function To_SI   is new UC (S_SI,   Short_Integer);
+   function To_SSI  is new UC (S_SSI,  Short_Short_Integer);
+   function To_SSU  is new UC (S_SSU,  UST.Short_Short_Unsigned);
+   function To_SU   is new UC (S_SU,   UST.Short_Unsigned);
+   function To_U    is new UC (S_U,    UST.Unsigned);
+   function To_U24  is new UC (S_U24,  Unsigned_24);
+   function To_WC   is new UC (S_WC,   Wide_Character);
+   function To_WWC  is new UC (S_WWC,  Wide_Wide_Character);
 
    -----------------
    -- XDR_Support --
@@ -392,6 +400,53 @@ package body System.Stream_Attributes is
          return To_LLI (T);
       end if;
    end I_LLI;
+
+   ------------
+   -- I_LLLI --
+   ------------
+
+   function I_LLLI (Stream : not null access RST) return Long_Long_Long_Integer
+   is
+      T : S_LLLI;
+      L : SEO;
+
+   begin
+      if XDR_Support then
+         raise Ada.IO_Exceptions.Device_Error;
+      end if;
+
+      Ada.Streams.Read (Stream.all, T, L);
+
+      if L < T'Last then
+         raise Err;
+      else
+         return To_LLLI (T);
+      end if;
+   end I_LLLI;
+
+   ------------
+   -- I_LLLU --
+   ------------
+
+   function I_LLLU
+     (Stream : not null access RST) return UST.Long_Long_Long_Unsigned
+   is
+      T : S_LLLU;
+      L : SEO;
+
+   begin
+      if XDR_Support then
+         raise Ada.IO_Exceptions.Device_Error;
+      end if;
+
+      Ada.Streams.Read (Stream.all, T, L);
+
+      if L < T'Last then
+         raise Err;
+      else
+         return To_LLLU (T);
+      end if;
+   end I_LLLU;
 
    -----------
    -- I_LLU --
@@ -798,6 +853,35 @@ package body System.Stream_Attributes is
 
       Ada.Streams.Write (Stream.all, From_LLI (Item));
    end W_LLI;
+
+   ------------
+   -- W_LLLI --
+   ------------
+
+   procedure W_LLLI
+     (Stream : not null access RST; Item : Long_Long_Long_Integer) is
+   begin
+      if XDR_Support then
+         raise Ada.IO_Exceptions.Device_Error;
+      end if;
+
+      Ada.Streams.Write (Stream.all, From_LLLI (Item));
+   end W_LLLI;
+
+   ------------
+   -- W_LLLU --
+   ------------
+
+   procedure W_LLLU
+     (Stream : not null access RST; Item : UST.Long_Long_Long_Unsigned)
+   is
+   begin
+      if XDR_Support then
+         raise Ada.IO_Exceptions.Device_Error;
+      end if;
+
+      Ada.Streams.Write (Stream.all, From_LLLU (Item));
+   end W_LLLU;
 
    -----------
    -- W_LLU --
