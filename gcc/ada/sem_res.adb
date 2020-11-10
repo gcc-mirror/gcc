@@ -2097,7 +2097,8 @@ package body Sem_Res is
          then
             Error_Msg_NE ("ambiguous call to&", Arg, Name (Arg));
 
-            --  Could use comments on what is going on here???
+            --  Examine possible interpretations, and adapt the message
+            --  for inherited subprograms declared by a type derivation.
 
             Get_First_Interp (Name (Arg), I, It);
             while Present (It.Nam) loop
@@ -2112,6 +2113,11 @@ package body Sem_Res is
                Get_Next_Interp (I, It);
             end loop;
          end if;
+
+         --  Additional message and hint if the ambiguity involves an Ada2020
+         --  container aggregate.
+
+         Check_Ambiguous_Aggregate (N);
       end Report_Ambiguous_Argument;
 
       -----------------------
@@ -3428,7 +3434,7 @@ package body Sem_Res is
 
       procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id);
       --  Emit an error concerning the illegal usage of an effectively volatile
-      --  object in interfering context (SPARK RM 7.1.3(10)).
+      --  object for reading in interfering context (SPARK RM 7.1.3(10)).
 
       procedure Insert_Default;
       --  If the actual is missing in a call, insert in the actuals list
@@ -3473,13 +3479,13 @@ package body Sem_Res is
 
                elsif Has_Discriminants (F_Typ)
                  and then not Is_Constrained (F_Typ)
-                 and then not Has_Constrained_Partial_View (F_Typ)
-                 and then not Is_Generic_Type (F_Typ)
+                 and then not Object_Type_Has_Constrained_Partial_View
+                                (Typ => F_Typ, Scop => Current_Scope)
                then
                   null;
 
                else
-                  Error_Msg_NE ("untagged actual does not match "
+                  Error_Msg_NE ("untagged actual does not statically match "
                                 & "aliased formal&", A, F);
                end if;
 
@@ -3493,16 +3499,16 @@ package body Sem_Res is
 
             elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type then
                if Nkind (Parent (N)) = N_Type_Conversion
-                 and then Type_Access_Level (Etype (Parent (N))) <
-                                                        Object_Access_Level (A)
+                 and then Type_Access_Level (Etype (Parent (N)))
+                            < Static_Accessibility_Level (A, Object_Decl_Level)
                then
                   Error_Msg_N ("aliased actual has wrong accessibility", A);
                end if;
 
             elsif Nkind (Parent (N)) = N_Qualified_Expression
               and then Nkind (Parent (Parent (N))) = N_Allocator
-              and then Type_Access_Level (Etype (Parent (Parent (N)))) <
-                                                        Object_Access_Level (A)
+              and then Type_Access_Level (Etype (Parent (Parent (N))))
+                         < Static_Accessibility_Level (A, Object_Decl_Level)
             then
                Error_Msg_N
                  ("aliased actual in allocator has wrong accessibility", A);
@@ -3687,7 +3693,7 @@ package body Sem_Res is
       procedure Flag_Effectively_Volatile_Objects (Expr : Node_Id) is
          function Flag_Object (N : Node_Id) return Traverse_Result;
          --  Determine whether arbitrary node N denotes an effectively volatile
-         --  object and if it does, emit an error.
+         --  object for reading and if it does, emit an error.
 
          -----------------
          -- Flag_Object --
@@ -3707,9 +3713,7 @@ package body Sem_Res is
                Id := Entity (N);
 
                if Is_Object (Id)
-                 and then Is_Effectively_Volatile (Id)
-                 and then (Async_Writers_Enabled (Id)
-                            or else Effective_Reads_Enabled (Id))
+                 and then Is_Effectively_Volatile_For_Reading (Id)
                then
                   Error_Msg_N
                     ("volatile object cannot appear in this context (SPARK "
@@ -4145,11 +4149,11 @@ package body Sem_Res is
                         --  types.
 
                         if Is_By_Reference_Type (Etype (F))
-                           or else Is_By_Reference_Type (Expr_Typ)
+                          or else Is_By_Reference_Type (Expr_Typ)
                         then
                            Error_Msg_N
                              ("view conversion between unrelated by reference "
-                              & "array types not allowed (\'A'I-00246)", A);
+                              & "array types not allowed ('A'I-00246)", A);
 
                         --  In Ada 2005 mode, check view conversion component
                         --  type cannot be private, tagged, or volatile. Note
@@ -4722,7 +4726,7 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  Check illegal cases of atomic/volatile actual (RM C.6(12,13))
+            --  Check illegal cases of atomic/volatile/VFA actual (RM C.6(12))
 
             if (Is_By_Reference_Type (Etype (F)) or else Is_Aliased (F))
               and then Comes_From_Source (N)
@@ -4744,17 +4748,29 @@ package body Sem_Res is
                      A, F);
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
+
+               elsif Is_Volatile_Full_Access_Object (A)
+                 and then not Is_Volatile_Full_Access (Etype (F))
+               then
+                  Error_Msg_NE
+                    ("cannot pass full access object to nonfull access "
+                     & "formal&", A, F);
+                  Error_Msg_N
+                    ("\which is passed by reference (RM C.6(12))", A);
                end if;
 
+               --  Check for nonatomic subcomponent of a full access object
+               --  in Ada 2020 (RM C.6 (12)).
+
                if Ada_Version >= Ada_2020
-                 and then Is_Subcomponent_Of_Atomic_Object (A)
+                 and then Is_Subcomponent_Of_Full_Access_Object (A)
                  and then not Is_Atomic_Object (A)
                then
                   Error_Msg_N
-                    ("cannot pass nonatomic subcomponent of atomic object",
-                     A);
+                    ("cannot pass nonatomic subcomponent of full access "
+                     & "object", A);
                   Error_Msg_NE
-                    ("\to formal & which is passed by reference (RM C.6(13))",
+                    ("\to formal & which is passed by reference (RM C.6(12))",
                      A, F);
                end if;
             end if;
@@ -4876,17 +4892,17 @@ package body Sem_Res is
 
             if SPARK_Mode = On and then Comes_From_Source (A) then
 
-               --  An effectively volatile object may act as an actual when the
-               --  corresponding formal is of a non-scalar effectively volatile
-               --  type (SPARK RM 7.1.3(10)).
+               --  An effectively volatile object for reading may act as an
+               --  actual when the corresponding formal is of a non-scalar
+               --  effectively volatile type for reading (SPARK RM 7.1.3(10)).
 
                if not Is_Scalar_Type (Etype (F))
-                 and then Is_Effectively_Volatile (Etype (F))
+                 and then Is_Effectively_Volatile_For_Reading (Etype (F))
                then
                   null;
 
-               --  An effectively volatile object may act as an actual in a
-               --  call to an instance of Unchecked_Conversion.
+               --  An effectively volatile object for reading may act as an
+               --  actual in a call to an instance of Unchecked_Conversion.
                --  (SPARK RM 7.1.3(10)).
 
                elsif Is_Unchecked_Conversion_Instance (Nam) then
@@ -4894,18 +4910,18 @@ package body Sem_Res is
 
                --  The actual denotes an object
 
-               elsif Is_Effectively_Volatile_Object (A) then
+               elsif Is_Effectively_Volatile_Object_For_Reading (A) then
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call (SPARK "
                      & "RM 7.1.3(10))", A);
 
                --  Otherwise the actual denotes an expression. Inspect the
-               --  expression and flag each effectively volatile object with
-               --  enabled property Async_Writers or Effective_Reads as illegal
-               --  because it apprears within an interfering context. Note that
-               --  this is usually done in Resolve_Entity_Name, but when the
-               --  effectively volatile object appears as an actual in a call,
-               --  the call must be resolved first.
+               --  expression and flag each effectively volatile object
+               --  for reading as illegal because it apprears within an
+               --  interfering context. Note that this is usually done in
+               --  Resolve_Entity_Name, but when the effectively volatile
+               --  object for reading appears as an actual in a call, the
+               --  call must be resolved first.
 
                else
                   Flag_Effectively_Volatile_Objects (A);
@@ -4923,7 +4939,7 @@ package body Sem_Res is
                   A_Id := Entity (A);
 
                   if Ekind (A_Id) = E_Variable
-                    and then Is_Effectively_Volatile (Etype (A_Id))
+                    and then Is_Effectively_Volatile_For_Reading (Etype (A_Id))
                     and then Effective_Reads_Enabled (A_Id)
                   then
                      Error_Msg_NE
@@ -5045,8 +5061,9 @@ package body Sem_Res is
          elsif Nkind (Disc_Exp) = N_Attribute_Reference
            and then Get_Attribute_Id (Attribute_Name (Disc_Exp)) =
                       Attribute_Access
-           and then Object_Access_Level (Prefix (Disc_Exp)) >
-                      Deepest_Type_Access_Level (Alloc_Typ)
+           and then Static_Accessibility_Level
+                      (Disc_Exp, Zero_On_Dynamic_Level)
+                        > Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("prefix of attribute has deeper level than allocator type",
@@ -5057,8 +5074,9 @@ package body Sem_Res is
 
          elsif Ekind (Etype (Disc_Exp)) = E_Anonymous_Access_Type
            and then Nkind (Disc_Exp) = N_Selected_Component
-           and then Object_Access_Level (Prefix (Disc_Exp)) >
-                      Deepest_Type_Access_Level (Alloc_Typ)
+           and then Static_Accessibility_Level
+                      (Disc_Exp, Zero_On_Dynamic_Level)
+                        > Deepest_Type_Access_Level (Alloc_Typ)
          then
             Error_Msg_N
               ("access discriminant has deeper level than allocator type",
@@ -6126,27 +6144,6 @@ package body Sem_Res is
    ------------------
 
    procedure Resolve_Call (N : Node_Id; Typ : Entity_Id) is
-      function Same_Or_Aliased_Subprograms
-        (S : Entity_Id;
-         E : Entity_Id) return Boolean;
-      --  Returns True if the subprogram entity S is the same as E or else
-      --  S is an alias of E.
-
-      ---------------------------------
-      -- Same_Or_Aliased_Subprograms --
-      ---------------------------------
-
-      function Same_Or_Aliased_Subprograms
-        (S : Entity_Id;
-         E : Entity_Id) return Boolean
-      is
-         Subp_Alias : constant Entity_Id := Alias (S);
-      begin
-         return S = E or else (Present (Subp_Alias) and then Subp_Alias = E);
-      end Same_Or_Aliased_Subprograms;
-
-      --  Local variables
-
       Loc      : constant Source_Ptr := Sloc (N);
       Subp     : constant Node_Id    := Name (N);
       Body_Id  : Entity_Id;
@@ -6158,8 +6155,6 @@ package body Sem_Res is
       Norm_OK  : Boolean;
       Rtype    : Entity_Id;
       Scop     : Entity_Id;
-
-   --  Start of processing for Resolve_Call
 
    begin
       --  Preserve relevant elaboration-related attributes of the context which
@@ -7042,6 +7037,7 @@ package body Sem_Res is
 
       if not Checking_Potentially_Static_Expression
         and then Is_Static_Function_Call (N)
+        and then not Is_Intrinsic_Subprogram (Ultimate_Alias (Nam))
         and then not Error_Posted (Ultimate_Alias (Nam))
       then
          Inline_Static_Function_Call (N, Ultimate_Alias (Nam));
@@ -7442,11 +7438,14 @@ package body Sem_Res is
       --  Install the scope created for local declarations, if
       --  any. The syntax allows a Declare_Expression with no
       --  declarations, in analogy with block statements.
+      --  Note that that scope has no explicit declaration, but
+      --  appears as the scope of all entities declared therein.
 
       Decl := First (Actions (N));
 
       while Present (Decl) loop
-         exit when Nkind (Decl) = N_Object_Declaration;
+         exit when Nkind (Decl)
+                     in N_Object_Declaration | N_Object_Renaming_Declaration;
          Next (Decl);
       end loop;
 
@@ -7769,14 +7768,11 @@ package body Sem_Res is
 
          if SPARK_Mode = On then
 
-            --  An effectively volatile object subject to enabled properties
-            --  Async_Writers or Effective_Reads must appear in non-interfering
-            --  context (SPARK RM 7.1.3(10)).
+            --  An effectively volatile object for reading must appear in
+            --  non-interfering context (SPARK RM 7.1.3(10)).
 
             if Is_Object (E)
-              and then Is_Effectively_Volatile (E)
-              and then (Async_Writers_Enabled (E)
-                         or else Effective_Reads_Enabled (E))
+              and then Is_Effectively_Volatile_For_Reading (E)
               and then not Is_OK_Volatile_Context (Par, N)
             then
                SPARK_Msg_N
@@ -11642,12 +11638,12 @@ package body Sem_Res is
       --  to apply checks required for a subtype conversion.
 
       --  Skip these type conversion checks if universal fixed operands
-      --  operands involved, since range checks are handled separately for
+      --  are involved, since range checks are handled separately for
       --  these cases (in the appropriate Expand routines in unit Exp_Fixd).
 
       if Nkind (N) = N_Type_Conversion
         and then not Is_Generic_Type (Root_Type (Target_Typ))
-        and then Target_Typ  /= Universal_Fixed
+        and then Target_Typ /= Universal_Fixed
         and then Operand_Typ /= Universal_Fixed
       then
          Apply_Type_Conversion_Checks (N);
@@ -11887,19 +11883,13 @@ package body Sem_Res is
            (N, Target_Typ, Static_Failure_Is_Error => True);
       end if;
 
-      --  If at this stage we have a real to integer conversion, make sure that
-      --  the Do_Range_Check flag is set, because such conversions in general
-      --  need a range check. We only need this if expansion is off.
-      --  In GNATprove mode, we only do that when converting from fixed-point
-      --  (as floating-point to integer conversions are now handled in
-      --  GNATprove mode).
+      --  If at this stage we have a fixed point to integer conversion, make
+      --  sure that the Do_Range_Check flag is set which is not always done
+      --  by exp_fixd.adb.
 
       if Nkind (N) = N_Type_Conversion
-        and then not Expander_Active
         and then Is_Integer_Type (Target_Typ)
-        and then (Is_Fixed_Point_Type (Operand_Typ)
-                   or else (not GNATprove_Mode
-                             and then Is_Floating_Point_Type (Operand_Typ)))
+        and then Is_Fixed_Point_Type (Operand_Typ)
         and then not Range_Checks_Suppressed (Target_Typ)
         and then not Range_Checks_Suppressed (Operand_Typ)
       then
@@ -13363,12 +13353,13 @@ package body Sem_Res is
             then
                --  When the operand is a selected access discriminant the check
                --  needs to be made against the level of the object denoted by
-               --  the prefix of the selected name (Object_Access_Level handles
+               --  the prefix of the selected name (Accessibility_Level handles
                --  checking the prefix of the operand for this case).
 
                if Nkind (Operand) = N_Selected_Component
-                 and then Object_Access_Level (Operand) >
-                   Deepest_Type_Access_Level (Target_Type)
+                 and then Static_Accessibility_Level
+                            (Operand, Zero_On_Dynamic_Level)
+                              > Deepest_Type_Access_Level (Target_Type)
                then
                   --  In an instance, this is a run-time check, but one we know
                   --  will fail, so generate an appropriate warning. The raise
@@ -13452,11 +13443,21 @@ package body Sem_Res is
             --  rewritten. The Comes_From_Source test isn't sufficient because
             --  nodes in inlined calls to predefined library routines can have
             --  Comes_From_Source set to False. (Is there a better way to test
-            --  for implicit conversions???)
+            --  for implicit conversions???).
+            --
+            --  Do not treat a rewritten 'Old attribute reference like other
+            --  rewrite substitutions. This makes a difference, for example,
+            --  in the case where we are generating the expansion of a
+            --  membership test of the form
+            --     Saooaaat'Old in Named_Access_Type
+            --  because in this case Valid_Conversion needs to return True
+            --  (otherwise the expansion will be False - see the call site
+            --  in exp_ch4.adb).
 
             if Ada_Version >= Ada_2012
               and then not Comes_From_Source (N)
               and then Is_Rewrite_Substitution (N)
+              and then not Is_Attribute_Old (Original_Node (N))
               and then Ekind (Base_Type (Target_Type)) = E_General_Access_Type
               and then Ekind (Opnd_Type) = E_Anonymous_Access_Type
             then
@@ -13526,6 +13527,13 @@ package body Sem_Res is
                          N_Function_Specification
                         or else Ekind (Target_Type) in
                                   Anonymous_Access_Kind)
+
+              --  Check we are not in a return value ???
+
+              and then (not In_Return_Value (N)
+                         or else
+                           Nkind (Associated_Node_For_Itype (Target_Type))
+                             = N_Component_Declaration)
             then
                --  In an instance, this is a run-time check, but one we know
                --  will fail, so generate an appropriate warning. The raise
@@ -13560,12 +13568,13 @@ package body Sem_Res is
             then
                --  When the operand is a selected access discriminant the check
                --  needs to be made against the level of the object denoted by
-               --  the prefix of the selected name (Object_Access_Level handles
+               --  the prefix of the selected name (Accessibility_Level handles
                --  checking the prefix of the operand for this case).
 
                if Nkind (Operand) = N_Selected_Component
-                 and then Object_Access_Level (Operand) >
-                          Deepest_Type_Access_Level (Target_Type)
+                 and then Static_Accessibility_Level
+                            (Operand, Zero_On_Dynamic_Level)
+                              > Deepest_Type_Access_Level (Target_Type)
                then
                   --  In an instance, this is a run-time check, but one we know
                   --  will fail, so generate an appropriate warning. The raise

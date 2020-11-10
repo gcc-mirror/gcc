@@ -1633,14 +1633,15 @@ next_statement (void)
 
 #define case_decl case ST_ATTR_DECL: case ST_COMMON: case ST_DATA_DECL: \
   case ST_EQUIVALENCE: case ST_NAMELIST: case ST_STATEMENT_FUNCTION: \
-  case ST_TYPE: case ST_INTERFACE: case ST_PROCEDURE: case ST_OACC_ROUTINE: \
-  case ST_OACC_DECLARE
+  case ST_TYPE: case ST_INTERFACE: case ST_PROCEDURE
 
-/* OpenMP declaration statements.  */
+/* OpenMP and OpenACC declaration statements, which may appear anywhere in
+   the specification part.  */
 
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
-  case ST_OMP_REQUIRES
+  case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
+
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -2813,7 +2814,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
       break;
 
     case_omp_decl:
-      /* The OpenMP directives have to be somewhere in the specification
+      /* The OpenMP/OpenACC directives have to be somewhere in the specification
 	 part, but there are no further requirements on their ordering.
 	 Thus don't adjust p->state, just ignore them.  */
       if (p->state >= ORDER_EXEC)
@@ -5062,9 +5063,9 @@ parse_omp_oacc_atomic (bool omp_p)
   np = new_level (cp);
   np->op = cp->op;
   np->block = NULL;
-  np->ext.omp_atomic = cp->ext.omp_atomic;
-  count = 1 + ((cp->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
-	       == GFC_OMP_ATOMIC_CAPTURE);
+  np->ext.omp_clauses = cp->ext.omp_clauses;
+  cp->ext.omp_clauses = NULL;
+  count = 1 + np->ext.omp_clauses->capture;
 
   while (count)
     {
@@ -5090,8 +5091,7 @@ parse_omp_oacc_atomic (bool omp_p)
       gfc_warning_check ();
       st = next_statement ();
     }
-  else if ((cp->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
-	   == GFC_OMP_ATOMIC_CAPTURE)
+  else if (np->ext.omp_clauses->capture)
     gfc_error ("Missing !$OMP END ATOMIC after !$OMP ATOMIC CAPTURE at %C");
   return st;
 }

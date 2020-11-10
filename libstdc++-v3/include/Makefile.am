@@ -73,6 +73,7 @@ std_headers = \
 	${std_srcdir}/shared_mutex \
 	${std_srcdir}/span \
 	${std_srcdir}/sstream \
+	${std_srcdir}/syncstream \
 	${std_srcdir}/stack \
 	${std_srcdir}/stdexcept \
 	${std_srcdir}/stop_token \
@@ -222,6 +223,7 @@ bits_headers = \
 	${bits_srcdir}/unordered_map.h \
 	${bits_srcdir}/unordered_set.h \
 	${bits_srcdir}/uses_allocator.h \
+	${bits_srcdir}/uses_allocator_args.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \
@@ -854,7 +856,6 @@ endif
 debug_srcdir = ${glibcxx_srcdir}/include/debug
 debug_builddir = ./debug
 debug_headers = \
-	${debug_srcdir}/array \
 	${debug_srcdir}/assertions.h \
 	${debug_srcdir}/bitset \
 	${debug_srcdir}/debug.h \

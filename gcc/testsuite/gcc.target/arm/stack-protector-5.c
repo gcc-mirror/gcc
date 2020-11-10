@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fstack-protector-all -O2" } */
+/* { dg-options "-fstack-protector-all -Os" } */
 
 void __attribute__ ((noipa))
 f (void)

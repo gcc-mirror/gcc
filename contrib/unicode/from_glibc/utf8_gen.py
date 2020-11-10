@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-# Copyright (C) 2014-2019 Free Software Foundation, Inc.
+# Copyright (C) 2014-2020 Free Software Foundation, Inc.
 # This file is part of the GNU C Library.
 #
 # The GNU C Library is free software; you can redistribute it and/or
@@ -258,7 +258,13 @@ def process_width(outfile, ulines, elines, plines):
         if key in width_dict:
             del width_dict[key] # default width is 1
     for key in list(range(0x1160, 0x1200)):
-        width_dict[key] = 0
+        # Hangul jungseong and jongseong:
+        if key in unicode_utils.UNICODE_ATTRIBUTES:
+            width_dict[key] = 0
+    for key in list(range(0xD7B0, 0xD800)):
+        # Hangul jungseong and jongseong:
+        if key in unicode_utils.UNICODE_ATTRIBUTES:
+            width_dict[key] = 0
     for key in list(range(0x3248, 0x3250)):
         # These are “A” which means we can decide whether to treat them
         # as “W” or “N” based on context:
@@ -327,6 +333,7 @@ if __name__ == "__main__":
         help='The Unicode version of the input files used.')
     ARGS = PARSER.parse_args()
 
+    unicode_utils.fill_attributes(ARGS.unicode_data_file)
     with open(ARGS.unicode_data_file, mode='r') as UNIDATA_FILE:
         UNICODE_DATA_LINES = UNIDATA_FILE.readlines()
     with open(ARGS.east_asian_with_file, mode='r') as EAST_ASIAN_WIDTH_FILE:

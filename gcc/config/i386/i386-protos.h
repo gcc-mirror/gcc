@@ -26,6 +26,7 @@ extern bool ix86_handle_option (struct gcc_options *opts,
 /* Functions in i386.c */
 extern bool ix86_target_stack_probe (void);
 extern bool ix86_can_use_return_insn_p (void);
+extern bool ix86_function_ms_hook_prologue (const_tree fn);
 extern void ix86_setup_frame_addresses (void);
 extern bool ix86_rip_relative_addr_p (struct ix86_address *parts);
 
@@ -71,6 +72,7 @@ extern int avx_vperm2f128_parallel (rtx par, machine_mode mode);
 extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 extern bool ix86_expand_set_or_cpymem (rtx, rtx, rtx, rtx, rtx, rtx,
 				       rtx, rtx, rtx, rtx, bool);
+extern bool ix86_expand_cmpstrn_or_cmpmem (rtx, rtx, rtx, rtx, rtx, bool);
 
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);

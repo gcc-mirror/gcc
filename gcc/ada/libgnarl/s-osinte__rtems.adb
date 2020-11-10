@@ -40,11 +40,8 @@
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
-
 with Interfaces.C; use Interfaces.C;
+
 package body System.OS_Interface is
 
    -----------------

@@ -408,10 +408,11 @@ symtab_node::remove_from_same_comdat_group (void)
 }
 
 /* Remove node from symbol table.  This function is not used directly, but via
-   cgraph/varpool node removal routines.  */
+   cgraph/varpool node removal routines.
+   INFO is a clone info to attach to new root of clone tree (if any).  */
 
 void
-symtab_node::unregister (void)
+symtab_node::unregister (clone_info *info)
 {
   remove_all_references ();
   remove_all_referring ();
@@ -430,7 +431,7 @@ symtab_node::unregister (void)
     {
       symtab_node *replacement_node = NULL;
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (this))
-	replacement_node = cnode->find_replacement ();
+	replacement_node = cnode->find_replacement (info);
       decl->decl_with_vis.symtab_node = replacement_node;
     }
   if (!is_a <varpool_node *> (this) || !DECL_HARD_REGISTER (decl))
@@ -591,10 +592,9 @@ symtab_node::create_reference (symtab_node *referred_node,
   gcc_checking_assert (use_type != IPA_REF_ALIAS || !stmt);
 
   list = &ref_list;
-  old_references = vec_safe_address (list->references);
-  vec_safe_grow (list->references, vec_safe_length (list->references) + 1,
-		 true);
-  ref = &list->references->last ();
+  old_references = list->references.address ();
+  list->references.safe_grow (list->references.length () + 1, false);
+  ref = &list->references.last ();
 
   list2 = &referred_node->ref_list;
 
@@ -622,7 +622,7 @@ symtab_node::create_reference (symtab_node *referred_node,
   ref->speculative = 0;
 
   /* If vector was moved in memory, update pointers.  */
-  if (old_references != list->references->address ())
+  if (old_references != list->references.address ())
     {
       int i;
       for (i = 0; iterate_reference(i, ref2); i++)
@@ -752,7 +752,8 @@ symtab_node::remove_stmt_references (gimple *stmt)
       i++;
 }
 
-/* Remove all stmt references in non-speculative references.
+/* Remove all stmt references in non-speculative references in THIS
+   and all clones.
    Those are not maintained during inlining & cloning.
    The exception are speculative references that are updated along
    with callgraph edges associated with them.  */
@@ -770,6 +771,13 @@ symtab_node::clear_stmts_in_references (void)
 	r->lto_stmt_uid = 0;
 	r->speculative_id = 0;
       }
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (this);
+  if (cnode)
+    {
+      if (cnode->clones)
+	for (cnode = cnode->clones; cnode; cnode = cnode->next_sibling_clone)
+	  cnode->clear_stmts_in_references ();
+    }
 }
 
 /* Remove all references in ref list.  */
@@ -777,9 +785,9 @@ symtab_node::clear_stmts_in_references (void)
 void
 symtab_node::remove_all_references (void)
 {
-  while (vec_safe_length (ref_list.references))
-    ref_list.references->last ().remove_reference ();
-  vec_free (ref_list.references);
+  while (ref_list.references.length ())
+    ref_list.references.last ().remove_reference ();
+  ref_list.references.release ();
 }
 
 /* Remove all referring items in ref list.  */
@@ -1765,7 +1773,7 @@ symtab_node::resolve_alias (symtab_node *target, bool transparent)
 {
   symtab_node *n;
 
-  gcc_assert (!analyzed && !vec_safe_length (ref_list.references));
+  gcc_assert (!analyzed && !ref_list.references.length ());
 
   /* Never let cycles to creep into the symbol table alias references;
      those will make alias walkers to be infinite.  */
@@ -1998,7 +2006,7 @@ symtab_node::get_partitioning_class (void)
   if (DECL_ABSTRACT_P (decl))
     return SYMBOL_EXTERNAL;
 
-  if (cnode && cnode->inlined_to)
+  if (cnode && (cnode->inlined_to || cnode->declare_variant_alt))
     return SYMBOL_DUPLICATE;
 
   /* Transparent aliases are always duplicated.  */
@@ -2391,7 +2399,7 @@ symbol_table::symbol_suffix_separator ()
 bool
 symtab_node::binds_to_current_def_p (symtab_node *ref)
 {
-  if (!definition)
+  if (!definition && !in_other_partition)
     return false;
   if (transparent_alias)
     return definition

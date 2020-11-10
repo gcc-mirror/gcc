@@ -29,46 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Exn_LLI is
+--  This package does not require a body, since it is an instantiation. We
+--  provide a dummy file containing a No_Body pragma so that previous versions
+--  of the body (which did exist) will not interfere.
 
-   ---------------------------
-   -- Exn_Long_Long_Integer --
-   ---------------------------
-
-   function Exn_Long_Long_Integer
-     (Left  : Long_Long_Integer;
-      Right : Natural)
-      return  Long_Long_Integer
-   is
-      pragma Suppress (Division_Check);
-      pragma Suppress (Overflow_Check);
-
-      Result : Long_Long_Integer := 1;
-      Factor : Long_Long_Integer := Left;
-      Exp    : Natural := Right;
-
-   begin
-      --  We use the standard logarithmic approach, Exp gets shifted right
-      --  testing successive low order bits and Factor is the value of the
-      --  base raised to the next power of 2.
-
-      --  Note: it is not worth special casing base values -1, 0, +1 since
-      --  the expander does this when the base is a literal, and other cases
-      --  will be extremely rare.
-
-      if Exp /= 0 then
-         loop
-            if Exp rem 2 /= 0 then
-               Result := Result * Factor;
-            end if;
-
-            Exp := Exp / 2;
-            exit when Exp = 0;
-            Factor := Factor * Factor;
-         end loop;
-      end if;
-
-      return Result;
-   end Exn_Long_Long_Integer;
-
-end System.Exn_LLI;
+pragma No_Body;

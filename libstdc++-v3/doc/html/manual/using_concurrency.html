@@ -117,7 +117,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
          <code class="code">begin</code>, <code class="code">end</code>, <code class="code">rbegin</code>, <code class="code">rend</code>,
          <code class="code">front</code>, <code class="code">back</code>, <code class="code">data</code>,
          <code class="code">find</code>, <code class="code">lower_bound</code>, <code class="code">upper_bound</code>,
-         <code class="code">equal_range</code>, <code class="code">at</code> 
+         <code class="code">equal_range</code>, <code class="code">at</code>
          and, except in associative or unordered associative containers,
          <code class="code">operator[]</code>. In other words, although they are non-const
          so that they can return mutable iterators, those member functions
@@ -142,8 +142,8 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       int i = *global_sp;         // OK, operator* is const
       int j = *local_sp;          // OK, does not operate on global_sp
 
-      // *global_sp = 2;          // NOT OK, modifies int visible to other threads      
-      // *local_sp = 2;           // NOT OK, modifies int visible to other threads      
+      // *global_sp = 2;          // NOT OK, modifies int visible to other threads
+      // *local_sp = 2;           // NOT OK, modifies int visible to other threads
 
       // global_sp.reset();       // NOT OK, reset is non-const
       local_sp.reset();           // OK, does not operate on global_sp
@@ -158,7 +158,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
     }
       </pre><p>For further details of the C++11 memory model see Hans-J. Boehm's
       <a class="link" href="https://www.hboehm.info/c++mm/" target="_top">Threads
-      and memory model for C++</a> pages, particularly the <a class="link" href="https://www.hboehm.info/c++mm/threadsintro.html" target="_top">introduction</a> 
+      and memory model for C++</a> pages, particularly the <a class="link" href="https://www.hboehm.info/c++mm/threadsintro.html" target="_top">introduction</a>
       and <a class="link" href="https://www.hboehm.info/c++mm/user-faq.html" target="_top">FAQ</a>.
       </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.atomics"></a>Atomics</h3></div></div></div><p>
     </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.io"></a>IO</h3></div></div></div><p>This gets a bit tricky.  Please read carefully, and bear with me.

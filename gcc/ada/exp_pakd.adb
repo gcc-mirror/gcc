@@ -233,8 +233,11 @@ package body Exp_Pakd is
          elsif T_Size <= 32 then
             Swap_RE := RE_Bswap_32;
 
-         else pragma Assert (T_Size <= 64);
+         elsif T_Size <= 64 then
             Swap_RE := RE_Bswap_64;
+
+         else pragma Assert (T_Size <= 128);
+            Swap_RE := RE_Bswap_128;
          end if;
 
          Swap_F := RTE (Swap_RE);
@@ -316,7 +319,7 @@ package body Exp_Pakd is
 
             --  Integer (subscript) - Integer (Styp'First)
 
-            if Esize (Styp) < Esize (Standard_Integer) then
+            if Esize (Styp) < Standard_Integer_Size then
                Newsub :=
                  Make_Op_Subtract (Loc,
                    Left_Opnd => Convert_To (Standard_Integer, Newsub),
@@ -917,22 +920,7 @@ package body Exp_Pakd is
                --  The bounds are statically known, and btyp is one of the
                --  unsigned types, depending on the length.
 
-               if Len_Bits <= Standard_Short_Short_Integer_Size then
-                  Btyp := RTE (RE_Short_Short_Unsigned);
-
-               elsif Len_Bits <= Standard_Short_Integer_Size then
-                  Btyp := RTE (RE_Short_Unsigned);
-
-               elsif Len_Bits <= Standard_Integer_Size then
-                  Btyp := RTE (RE_Unsigned);
-
-               elsif Len_Bits <= Standard_Long_Integer_Size then
-                  Btyp := RTE (RE_Long_Unsigned);
-
-               else
-                  Btyp := RTE (RE_Long_Long_Unsigned);
-               end if;
-
+               Btyp := Small_Integer_Type_For (Len_Bits, Uns => True);
                Lit := Make_Integer_Literal (Loc, 2 ** Len_Bits - 1);
                Set_Print_In_Hex (Lit);
 

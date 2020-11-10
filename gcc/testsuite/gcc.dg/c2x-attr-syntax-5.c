@@ -49,8 +49,3 @@ func (void) [[unknown_attribute]] { /* { dg-error "attribute ignored" } */
   [[unknown_attribute]] x: var = 2; /* { dg-error "attribute ignored" } */
   for ([[unknown_attribute]] int zz = 1; zz < 10; zz++) ; /* { dg-error "attribute ignored" } */
 }
-
-/* nodiscard is not yet implemented, but is a standard attribute, so
-   its use is not a constraint violation and should only receive a
-   warning.  */
-[[nodiscard]] int ndfunc (void); /* { dg-warning "attribute directive ignored" } */

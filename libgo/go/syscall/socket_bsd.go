@@ -13,6 +13,7 @@ import "unsafe"
 const SizeofSockaddrInet4 = 16
 const SizeofSockaddrInet6 = 28
 const SizeofSockaddrUnix = 110
+const SizeofSockaddrDatalink = 20
 
 type RawSockaddrInet4 struct {
 	Len    uint8
@@ -52,13 +53,19 @@ func (sa *RawSockaddrUnix) setLen(n int) {
 }
 
 func (sa *RawSockaddrUnix) getLen() (int, error) {
-	if sa.Len < 3 || sa.Len > SizeofSockaddrUnix {
+	if sa.Len < 2 || sa.Len > SizeofSockaddrUnix {
 		return 0, EINVAL
 	}
-	n := int(sa.Len) - 3 // subtract leading Family, Len, terminating NUL.
+
+	// Some BSDs include the trailing NUL in the length, whereas
+	// others do not. Work around this by subtracting the leading
+	// family and len. The path is then scanned to see if a NUL
+	// terminator still exists within the length.
+	n := int(sa.Len) - 2 // subtract leading Family, Len
 	for i := 0; i < n; i++ {
 		if sa.Path[i] == 0 {
-			// found early NUL; assume Len is overestimating.
+			// found early NUL; assume Len included the NUL
+			// or was overestimating.
 			n = i
 			break
 		}
@@ -68,6 +75,46 @@ func (sa *RawSockaddrUnix) getLen() (int, error) {
 
 func (sa *RawSockaddrUnix) adjustAbstract(sl Socklen_t) Socklen_t {
 	return sl
+}
+
+type SockaddrDatalink struct {
+	Len    uint8
+	Family uint8
+	Index  uint16
+	Type   uint8
+	Nlen   uint8
+	Alen   uint8
+	Slen   uint8
+	Data   [12]int8
+	raw    RawSockaddrDatalink
+}
+
+func (sa *SockaddrDatalink) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
+	if sa.Index == 0 {
+		return nil, 0, EINVAL
+	}
+	sa.raw.Len = sa.Len
+	sa.raw.Family = AF_LINK
+	sa.raw.Index = sa.Index
+	sa.raw.Type = sa.Type
+	sa.raw.Nlen = sa.Nlen
+	sa.raw.Alen = sa.Alen
+	sa.raw.Slen = sa.Slen
+	for i := 0; i < len(sa.raw.Data); i++ {
+		sa.raw.Data[i] = sa.Data[i]
+	}
+	return (*RawSockaddrAny)(unsafe.Pointer(&sa.raw)), SizeofSockaddrDatalink, nil
+}
+
+type RawSockaddrDatalink struct {
+	Len    uint8
+	Family uint8
+	Index  uint16
+	Type   uint8
+	Nlen   uint8
+	Alen   uint8
+	Slen   uint8
+	Data   [12]int8
 }
 
 type RawSockaddr struct {

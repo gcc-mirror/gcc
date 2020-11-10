@@ -475,7 +475,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		}
 
 	    }
-	  else if (cnode->thunk.thunk_p)
+	  else if (cnode->thunk)
 	    enqueue_node (cnode->callees->callee, &first, &reachable);
 
 	  /* If any reachable function has simd clones, mark them as
@@ -525,7 +525,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  /* We keep definitions of thunks and aliases in the boundary so
 	     we can walk to the ultimate alias targets and function symbols
 	     reliably.  */
-	  if (node->alias || node->thunk.thunk_p)
+	  if (node->alias || node->thunk)
 	    ;
 	  else if (!body_needed_for_clonning.contains (node->decl))
 	    {
@@ -537,7 +537,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	    }
 	  else if (!node->clone_of)
 	    gcc_assert (in_lto_p || DECL_RESULT (node->decl));
-	  if (node->definition && !node->alias && !node->thunk.thunk_p)
+	  if (node->definition && !node->alias && !node->thunk)
 	    {
 	      if (file)
 		fprintf (file, " %s", node->dump_name ());
@@ -547,7 +547,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      node->cpp_implicit_alias = false;
 	      node->alias = false;
 	      node->transparent_alias = false;
-	      node->thunk.thunk_p = false;
+	      node->thunk = false;
 	      node->weakref = false;
 	      /* After early inlining we drop always_inline attributes on
 		 bodies of functions that are still referenced (have their
@@ -1386,43 +1386,3 @@ make_pass_ipa_single_use (gcc::context *ctxt)
   return new pass_ipa_single_use (ctxt);
 }
 
-/* Materialize all clones.  */
-
-namespace {
-
-const pass_data pass_data_materialize_all_clones =
-{
-  SIMPLE_IPA_PASS, /* type */
-  "materialize-all-clones", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_IPA_OPT, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_materialize_all_clones : public simple_ipa_opt_pass
-{
-public:
-  pass_materialize_all_clones (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_materialize_all_clones, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual unsigned int execute (function *)
-    {
-      symtab->materialize_all_clones ();
-      return 0;
-    }
-
-}; // class pass_materialize_all_clones
-
-} // anon namespace
-
-simple_ipa_opt_pass *
-make_pass_materialize_all_clones (gcc::context *ctxt)
-{
-  return new pass_materialize_all_clones (ctxt);
-}

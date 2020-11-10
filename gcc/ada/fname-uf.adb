@@ -598,7 +598,7 @@ package body Fname.UF is
 
    function SFN_Hash (F : Unit_Name_Type) return SFN_Header_Num is
    begin
-      return SFN_Header_Num (Int (F) rem SFN_Header_Num'Range_Length);
+      return SFN_Header_Num (Int (F) mod SFN_Header_Num'Range_Length);
    end SFN_Hash;
 
 begin

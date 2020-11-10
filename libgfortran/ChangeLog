@@ -1,3 +1,42 @@
+2020-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	* intrinsics/random.c (SZ_IN_INT_4): Define size of state in int32_t.
+	(SZ_IN_INT_8): Define size of state in int64_t.
+	(SZ): Remove.
+	(random_seed_i4): Use size SZ_IN_INT_4 instead of SZ.
+	(random_seed_i8): Use size SZ_IN_INT_8 instead of SZ.
+
+2020-10-18  Harald Anlauf  <anlauf@gmx.de>
+
+	* m4/matmul_internal.m4: Move check for rank-1 times rank-2 before
+	checks on strides for rank-2 times rank-2.
+	* generated/matmul_c10.c: Regenerated.
+	* generated/matmul_c16.c: Likewise.
+	* generated/matmul_c4.c: Likewise.
+	* generated/matmul_c8.c: Likewise.
+	* generated/matmul_i1.c: Likewise.
+	* generated/matmul_i16.c: Likewise.
+	* generated/matmul_i2.c: Likewise.
+	* generated/matmul_i4.c: Likewise.
+	* generated/matmul_i8.c: Likewise.
+	* generated/matmul_r10.c: Likewise.
+	* generated/matmul_r16.c: Likewise.
+	* generated/matmul_r4.c: Likewise.
+	* generated/matmul_r8.c: Likewise.
+	* generated/matmulavx128_c10.c: Likewise.
+	* generated/matmulavx128_c16.c: Likewise.
+	* generated/matmulavx128_c4.c: Likewise.
+	* generated/matmulavx128_c8.c: Likewise.
+	* generated/matmulavx128_i1.c: Likewise.
+	* generated/matmulavx128_i16.c: Likewise.
+	* generated/matmulavx128_i2.c: Likewise.
+	* generated/matmulavx128_i4.c: Likewise.
+	* generated/matmulavx128_i8.c: Likewise.
+	* generated/matmulavx128_r10.c: Likewise.
+	* generated/matmulavx128_r16.c: Likewise.
+	* generated/matmulavx128_r4.c: Likewise.
+	* generated/matmulavx128_r8.c: Likewise.
+
 2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* m4/unpack.m4 (unpack0_'rtype_code`,

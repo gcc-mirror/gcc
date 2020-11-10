@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fpic -fexceptions -fasynchronous-unwind-tables" } */
 /* { dg-final { scan-assembler "movl\[ \\t\].+, %ebx" } } */
 extern int foo (int);

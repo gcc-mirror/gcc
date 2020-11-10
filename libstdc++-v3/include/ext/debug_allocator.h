@@ -112,10 +112,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc2>
 	debug_allocator(const debug_allocator<_Alloc2>& __a2,
 			typename __convertible<_Alloc2>::__type = 0)
-	: _M_allocator(__a2._M_allocator), _M_extra(_S_extra()) { }
+	: _M_extra(_S_extra()), _M_allocator(__a2._M_allocator)  { }
 
       debug_allocator(const _Alloc& __a)
-      : _M_allocator(__a), _M_extra(_S_extra()) { }
+      : _M_extra(_S_extra()), _M_allocator(__a)  { }
 
       _GLIBCXX_NODISCARD pointer
       allocate(size_type __n)

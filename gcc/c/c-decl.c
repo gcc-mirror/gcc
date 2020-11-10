@@ -2051,7 +2051,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	    }
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
-	       && DECL_IS_BUILTIN (olddecl))
+	       && DECL_IS_UNDECLARED_BUILTIN (olddecl))
 	{
 	  /* A conflicting function declaration for a predeclared
 	     function that isn't actually built in.  Objective C uses
@@ -2265,7 +2265,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	     built in, newdecl silently overrides olddecl.  The latter
 	     occur only in Objective C; see also above.  (FIXME: Make
 	     Objective C use normal builtins.)  */
-	  if (!DECL_IS_BUILTIN (olddecl)
+	  if (!DECL_IS_UNDECLARED_BUILTIN (olddecl)
 	      && !DECL_EXTERN_INLINE (olddecl))
 	    {
 	      auto_diagnostic_group d;
@@ -2978,7 +2978,7 @@ warn_if_shadowing (tree new_decl)
         || warn_shadow_local
         || warn_shadow_compatible_local)
       /* No shadow warnings for internally generated vars.  */
-      || DECL_IS_BUILTIN (new_decl))
+      || DECL_IS_UNDECLARED_BUILTIN (new_decl))
     return;
 
   /* Is anything being shadowed?  Invisible decls do not count.  */
@@ -3631,7 +3631,7 @@ implicitly_declare (location_t loc, tree functionid)
 	 in the external scope because they're pushed before the file
 	 scope gets created.  Catch this here and rebind them into the
 	 file scope.  */
-      if (!fndecl_built_in_p (decl) && DECL_IS_BUILTIN (decl))
+      if (!fndecl_built_in_p (decl) && DECL_IS_UNDECLARED_BUILTIN (decl))
 	{
 	  bind (functionid, decl, file_scope,
 		/*invisible=*/false, /*nested=*/true,
@@ -4400,6 +4400,31 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 }
 
 
+/* Handle the standard [[nodiscard]] attribute.  */
+
+static tree
+handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
+			    int /*flags*/, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
+	warning_at (DECL_SOURCE_LOCATION (*node),
+		    OPT_Wattributes, "%qE attribute applied to %qD with void "
+		    "return type", name, *node);
+    }
+  else if (RECORD_OR_UNION_TYPE_P (*node)
+	   || TREE_CODE (*node) == ENUMERAL_TYPE)
+    /* OK */;
+  else
+    {
+      pedwarn (input_location,
+	       OPT_Wattributes, "%qE attribute can only be applied to "
+	       "functions or to structure, union or enumeration types", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
 /* Table of supported standard (C2x) attributes.  */
 const struct attribute_spec std_attribute_table[] =
 {
@@ -4411,6 +4436,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_fallthrough_attribute, NULL },
   { "maybe_unused", 0, 0, false, false, false, false,
     handle_unused_attribute, NULL },
+  { "nodiscard", 0, 1, false, false, false, false,
+    handle_nodiscard_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -5784,6 +5811,9 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	  continue;
 	}
 
+      if (pd->u.array.static_p)
+	spec += 's';
+
       if (TREE_CODE (nelts) == INTEGER_CST)
 	{
 	  /* Skip all constant bounds except the most significant one.
@@ -5796,9 +5826,8 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	    return attrs;
 
 	  char buf[40];
-	  const char *code = pd->u.array.static_p ? "s" : "";
 	  unsigned HOST_WIDE_INT n = tree_to_uhwi (nelts);
-	  sprintf (buf, "%s%llu", code, (unsigned long long)n);
+	  sprintf (buf, "%llu", (unsigned long long)n);
 	  spec += buf;
 	  break;
 	}
@@ -9628,7 +9657,9 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
 	    warn_if_shadowing (decl);
 	}
       else
-	error_at (DECL_SOURCE_LOCATION (decl), "parameter name omitted");
+	pedwarn_c11 (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+		     "ISO C does not support omitting parameter names in "
+		     "function definitions before C2X");
     }
 
   /* Record the parameter list in the function declaration.  */
@@ -10469,7 +10500,7 @@ names_builtin_p (const char *name)
 {
   tree id = get_identifier (name);
   if (tree decl = identifier_global_value (id))
-    return TREE_CODE (decl) == FUNCTION_DECL && DECL_IS_BUILTIN (decl);
+    return TREE_CODE (decl) == FUNCTION_DECL && DECL_IS_UNDECLARED_BUILTIN (decl);
 
   /* Also detect common reserved C words that aren't strictly built-in
      functions.  */
@@ -12103,12 +12134,12 @@ collect_source_refs (void)
     { 
       decls = DECL_INITIAL (t);
       for (decl = BLOCK_VARS (decls); decl; decl = TREE_CHAIN (decl))
-	if (!DECL_IS_BUILTIN (decl))
+	if (!DECL_IS_UNDECLARED_BUILTIN (decl))
 	  collect_source_ref (DECL_SOURCE_FILE (decl));
     }
 
   for (decl = BLOCK_VARS (ext_block); decl; decl = TREE_CHAIN (decl))
-    if (!DECL_IS_BUILTIN (decl))
+    if (!DECL_IS_UNDECLARED_BUILTIN (decl))
       collect_source_ref (DECL_SOURCE_FILE (decl));
 }
 

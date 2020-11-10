@@ -322,6 +322,60 @@ package body Ada.Text_IO.Generic_Aux is
       Load_Extended_Digits (File, Buf, Ptr, Junk);
    end Load_Extended_Digits;
 
+   ------------------
+   -- Load_Integer --
+   ------------------
+
+   procedure Load_Integer
+     (File : File_Type;
+      Buf  : out String;
+      Ptr  : in out Natural)
+   is
+      Hash_Loc : Natural;
+      Loaded   : Boolean;
+
+   begin
+      Load_Skip (File);
+
+      --  Note: it is a bit strange to allow a minus sign here, but it seems
+      --  consistent with the general behavior expected by the ACVC tests
+      --  which is to scan past junk and then signal data error, see ACVC
+      --  test CE3704F, case (6), which is for signed integer exponents,
+      --  which seems a similar case.
+
+      Load (File, Buf, Ptr, '+', '-');
+      Load_Digits (File, Buf, Ptr, Loaded);
+
+      if Loaded then
+
+         --  Deal with based literal. We recognize either the standard '#' or
+         --  the allowed alternative replacement ':' (see RM J.2(3)).
+
+         Load (File, Buf, Ptr, '#', ':', Loaded);
+
+         if Loaded then
+            Hash_Loc := Ptr;
+            Load_Extended_Digits (File, Buf, Ptr);
+            Load (File, Buf, Ptr, Buf (Hash_Loc));
+         end if;
+
+         --  Deal with exponent
+
+         Load (File, Buf, Ptr, 'E', 'e', Loaded);
+
+         if Loaded then
+
+            --  Note: it is strange to allow a minus sign, since the syntax
+            --  does not, but that is what ACVC test CE3704F, case (6) wants
+            --  for the signed case, and there seems no good reason to treat
+            --  exponents differently for the signed and unsigned cases.
+
+            Load (File, Buf, Ptr, '+', '-');
+            Load_Digits (File, Buf, Ptr);
+         end if;
+      end if;
+   end Load_Integer;
+
    ---------------
    -- Load_Skip --
    ---------------

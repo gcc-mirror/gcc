@@ -1362,6 +1362,32 @@ static const struct tune_params neoversev1_tunings =
   &generic_prefetch_tune
 };
 
+static const struct tune_params neoversen2_tunings =
+{
+  &cortexa57_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &cortexa57_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  SVE_128, /* sve_width  */
+  4, /* memmov_cost  */
+  3, /* issue_rate  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  "32:16",	/* function_align.  */
+  "4",		/* jump_align.  */
+  "32:16",	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  2,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  &generic_prefetch_tune
+};
+
 static const struct tune_params a64fx_tunings =
 {
   &generic_extra_costs,
@@ -2200,6 +2226,9 @@ aarch64_classify_vector_mode (machine_mode mode)
     /* Partial SVE HF vectors.  */
     case E_VNx2HFmode:
     case E_VNx4HFmode:
+    /* Partial SVE BF vectors.  */
+    case E_VNx2BFmode:
+    case E_VNx4BFmode:
     /* Partial SVE SF vector.  */
     case E_VNx2SFmode:
       return TARGET_SVE ? VEC_SVE_DATA | VEC_PARTIAL : 0;
@@ -2855,33 +2884,6 @@ aarch64_is_noplt_call_p (rtx sym)
       && (!flag_plt
 	  || lookup_attribute ("noplt", DECL_ATTRIBUTES (decl)))
       && !targetm.binds_local_p (decl))
-    return true;
-
-  return false;
-}
-
-/* Return true if the offsets to a zero/sign-extract operation
-   represent an expression that matches an extend operation.  The
-   operands represent the parameters from
-
-   (extract:MODE (mult (reg) (MULT_IMM)) (EXTRACT_IMM) (const_int 0)).  */
-bool
-aarch64_is_extend_from_extract (scalar_int_mode mode, rtx mult_imm,
-				rtx extract_imm)
-{
-  HOST_WIDE_INT mult_val, extract_val;
-
-  if (! CONST_INT_P (mult_imm) || ! CONST_INT_P (extract_imm))
-    return false;
-
-  mult_val = INTVAL (mult_imm);
-  extract_val = INTVAL (extract_imm);
-
-  if (extract_val > 8
-      && extract_val < GET_MODE_BITSIZE (mode)
-      && exact_log2 (extract_val & ~7) > 0
-      && (extract_val & 7) <= 4
-      && mult_val == (1 << (extract_val & 7)))
     return true;
 
   return false;
@@ -6273,10 +6275,6 @@ aarch64_libgcc_cmp_return_mode (void)
 #error Cannot use simple address calculation for stack probing
 #endif
 
-/* The pair of scratch registers used for stack probing.  */
-#define PROBE_STACK_FIRST_REG  R9_REGNUM
-#define PROBE_STACK_SECOND_REG R10_REGNUM
-
 /* Emit code to probe a range of stack addresses from FIRST to FIRST+POLY_SIZE,
    inclusive.  These are offsets from the current stack pointer.  */
 
@@ -6290,7 +6288,7 @@ aarch64_emit_probe_stack_range (HOST_WIDE_INT first, poly_int64 poly_size)
       return;
     }
 
-  rtx reg1 = gen_rtx_REG (Pmode, PROBE_STACK_FIRST_REG);
+  rtx reg1 = gen_rtx_REG (Pmode, PROBE_STACK_FIRST_REGNUM);
 
   /* See the same assertion on PROBE_INTERVAL above.  */
   gcc_assert ((first % ARITH_FACTOR) == 0);
@@ -6348,7 +6346,7 @@ aarch64_emit_probe_stack_range (HOST_WIDE_INT first, poly_int64 poly_size)
      equality test for the loop condition.  */
   else
     {
-      rtx reg2 = gen_rtx_REG (Pmode, PROBE_STACK_SECOND_REG);
+      rtx reg2 = gen_rtx_REG (Pmode, PROBE_STACK_SECOND_REGNUM);
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
@@ -8910,22 +8908,6 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
       index = XEXP (XEXP (x, 0), 0);
       shift = INTVAL (XEXP (x, 1));
     }
-  /* (sign_extract:DI (mult:DI (reg:DI) (const_int scale)) 32+shift 0) */
-  else if ((GET_CODE (x) == SIGN_EXTRACT
-	    || GET_CODE (x) == ZERO_EXTRACT)
-	   && GET_MODE (x) == DImode
-	   && GET_CODE (XEXP (x, 0)) == MULT
-	   && GET_MODE (XEXP (XEXP (x, 0), 0)) == DImode
-	   && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
-    {
-      type = (GET_CODE (x) == SIGN_EXTRACT)
-	? ADDRESS_REG_SXTW : ADDRESS_REG_UXTW;
-      index = XEXP (XEXP (x, 0), 0);
-      shift = exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)));
-      if (INTVAL (XEXP (x, 1)) != 32 + shift
-	  || INTVAL (XEXP (x, 2)) != 0)
-	shift = -1;
-    }
   /* (and:DI (mult:DI (reg:DI) (const_int scale))
      (const_int 0xffffffff<<shift)) */
   else if (GET_CODE (x) == AND
@@ -8939,22 +8921,6 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
       index = XEXP (XEXP (x, 0), 0);
       shift = exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)));
       if (INTVAL (XEXP (x, 1)) != (HOST_WIDE_INT)0xffffffff << shift)
-	shift = -1;
-    }
-  /* (sign_extract:DI (ashift:DI (reg:DI) (const_int shift)) 32+shift 0) */
-  else if ((GET_CODE (x) == SIGN_EXTRACT
-	    || GET_CODE (x) == ZERO_EXTRACT)
-	   && GET_MODE (x) == DImode
-	   && GET_CODE (XEXP (x, 0)) == ASHIFT
-	   && GET_MODE (XEXP (XEXP (x, 0), 0)) == DImode
-	   && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
-    {
-      type = (GET_CODE (x) == SIGN_EXTRACT)
-	? ADDRESS_REG_SXTW : ADDRESS_REG_UXTW;
-      index = XEXP (XEXP (x, 0), 0);
-      shift = INTVAL (XEXP (XEXP (x, 0), 1));
-      if (INTVAL (XEXP (x, 1)) != 32 + shift
-	  || INTVAL (XEXP (x, 2)) != 0)
 	shift = -1;
     }
   /* (and:DI (ashift:DI (reg:DI) (const_int shift))
@@ -11334,16 +11300,6 @@ aarch64_strip_extend (rtx x, bool strip_shift)
   if (!is_a <scalar_int_mode> (GET_MODE (op), &mode))
     return op;
 
-  /* Zero and sign extraction of a widened value.  */
-  if ((GET_CODE (op) == ZERO_EXTRACT || GET_CODE (op) == SIGN_EXTRACT)
-      && XEXP (op, 2) == const0_rtx
-      && GET_CODE (XEXP (op, 0)) == MULT
-      && aarch64_is_extend_from_extract (mode, XEXP (XEXP (op, 0), 1),
-					 XEXP (op, 1)))
-    return XEXP (XEXP (op, 0), 0);
-
-  /* It can also be represented (for zero-extend) as an AND with an
-     immediate.  */
   if (GET_CODE (op) == AND
       && GET_CODE (XEXP (op, 0)) == MULT
       && CONST_INT_P (XEXP (XEXP (op, 0), 1))
@@ -11678,35 +11634,15 @@ aarch64_branch_cost (bool speed_p, bool predictable_p)
     return branch_costs->unpredictable;
 }
 
-/* Return true if the RTX X in mode MODE is a zero or sign extract
+/* Return true if X is a zero or sign extract
    usable in an ADD or SUB (extended register) instruction.  */
 static bool
-aarch64_rtx_arith_op_extract_p (rtx x, scalar_int_mode mode)
+aarch64_rtx_arith_op_extract_p (rtx x)
 {
-  /* Catch add with a sign extract.
-     This is add_<optab><mode>_multp2.  */
-  if (GET_CODE (x) == SIGN_EXTRACT
-      || GET_CODE (x) == ZERO_EXTRACT)
-    {
-      rtx op0 = XEXP (x, 0);
-      rtx op1 = XEXP (x, 1);
-      rtx op2 = XEXP (x, 2);
-
-      if (GET_CODE (op0) == MULT
-	  && CONST_INT_P (op1)
-	  && op2 == const0_rtx
-	  && CONST_INT_P (XEXP (op0, 1))
-	  && aarch64_is_extend_from_extract (mode,
-					     XEXP (op0, 1),
-					     op1))
-	{
-	  return true;
-	}
-    }
   /* The simple case <ARITH>, XD, XN, XM, [us]xt.
      No shift.  */
-  else if (GET_CODE (x) == SIGN_EXTEND
-	   || GET_CODE (x) == ZERO_EXTEND)
+  if (GET_CODE (x) == SIGN_EXTEND
+      || GET_CODE (x) == ZERO_EXTEND)
     return REG_P (XEXP (x, 0));
 
   return false;
@@ -12393,8 +12329,8 @@ cost_minus:
 	  }
 
 	/* Look for SUB (extended register).  */
-	if (is_a <scalar_int_mode> (mode, &int_mode)
-	    && aarch64_rtx_arith_op_extract_p (op1, int_mode))
+	if (is_a <scalar_int_mode> (mode)
+	    && aarch64_rtx_arith_op_extract_p (op1))
 	  {
 	    if (speed)
 	      *cost += extra_cost->alu.extend_arith;
@@ -12473,8 +12409,8 @@ cost_plus:
 	*cost += rtx_cost (op1, mode, PLUS, 1, speed);
 
 	/* Look for ADD (extended register).  */
-	if (is_a <scalar_int_mode> (mode, &int_mode)
-	    && aarch64_rtx_arith_op_extract_p (op0, int_mode))
+	if (is_a <scalar_int_mode> (mode)
+	    && aarch64_rtx_arith_op_extract_p (op0))
 	  {
 	    if (speed)
 	      *cost += extra_cost->alu.extend_arith;
@@ -20535,18 +20471,21 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
       || !diff)
     return false;
 
-  size = (diff + 1) * GET_MODE_UNIT_SIZE (d->vmode);
-  if (size == 8)
+  if (d->vec_flags & VEC_SVE_DATA)
+    size = (diff + 1) * aarch64_sve_container_bits (d->vmode);
+  else
+    size = (diff + 1) * GET_MODE_UNIT_BITSIZE (d->vmode);
+  if (size == 64)
     {
       unspec = UNSPEC_REV64;
       pred_mode = VNx2BImode;
     }
-  else if (size == 4)
+  else if (size == 32)
     {
       unspec = UNSPEC_REV32;
       pred_mode = VNx4BImode;
     }
-  else if (size == 2)
+  else if (size == 16)
     {
       unspec = UNSPEC_REV16;
       pred_mode = VNx8BImode;
@@ -20563,28 +20502,11 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  if (d->vec_flags == VEC_SVE_DATA)
+  if (d->vec_flags & VEC_SVE_DATA)
     {
-      machine_mode int_mode = aarch64_sve_int_mode (pred_mode);
-      rtx target = gen_reg_rtx (int_mode);
-      if (BYTES_BIG_ENDIAN)
-	/* The act of taking a subreg between INT_MODE and d->vmode
-	   is itself a reversing operation on big-endian targets;
-	   see the comment at the head of aarch64-sve.md for details.
-	   First reinterpret OP0 as INT_MODE without using a subreg
-	   and without changing the contents.  */
-	emit_insn (gen_aarch64_sve_reinterpret (int_mode, target, d->op0));
-      else
-	{
-	  /* For SVE we use REV[BHW] unspecs derived from the element size
-	     of v->mode and vector modes whose elements have SIZE bytes.
-	     This ensures that the vector modes match the predicate modes.  */
-	  int unspec = aarch64_sve_rev_unspec (d->vmode);
-	  rtx pred = aarch64_ptrue_reg (pred_mode);
-	  emit_insn (gen_aarch64_pred (unspec, int_mode, target, pred,
-				       gen_lowpart (int_mode, d->op0)));
-	}
-      emit_move_insn (d->target, gen_lowpart (d->vmode, target));
+      rtx pred = aarch64_ptrue_reg (pred_mode);
+      emit_insn (gen_aarch64_sve_revbhw (d->vmode, pred_mode,
+					 d->target, pred, d->op0));
       return true;
     }
   rtx src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0), unspec);
@@ -20629,7 +20551,8 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
       || !d->perm[0].is_constant (&elt))
     return false;
 
-  if (d->vec_flags == VEC_SVE_DATA && elt >= 64 * GET_MODE_UNIT_SIZE (vmode))
+  if ((d->vec_flags & VEC_SVE_DATA)
+      && elt * (aarch64_sve_container_bits (vmode) / 8) >= 64)
     return false;
 
   /* Success! */
@@ -20849,6 +20772,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 
   if ((d->vec_flags == VEC_ADVSIMD
        || d->vec_flags == VEC_SVE_DATA
+       || d->vec_flags == (VEC_SVE_DATA | VEC_PARTIAL)
        || d->vec_flags == VEC_SVE_PRED)
       && known_gt (nelt, 1))
     {
@@ -21273,6 +21197,8 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 bool
 aarch64_expand_cpymem (rtx *operands)
 {
+  /* These need to be signed as we need to perform arithmetic on n as
+     signed operations.  */
   int n, mode_bits;
   rtx dst = operands[0];
   rtx src = operands[1];
@@ -21283,20 +21209,23 @@ aarch64_expand_cpymem (rtx *operands)
   /* When optimizing for size, give a better estimate of the length of a
      memcpy call, but use the default otherwise.  Moves larger than 8 bytes
      will always require an even number of instructions to do now.  And each
-     operation requires both a load+store, so devide the max number by 2.  */
-  int max_num_moves = (speed_p ? 16 : AARCH64_CALL_RATIO) / 2;
+     operation requires both a load+store, so divide the max number by 2.  */
+  unsigned int max_num_moves = (speed_p ? 16 : AARCH64_CALL_RATIO) / 2;
 
   /* We can't do anything smart if the amount to copy is not constant.  */
   if (!CONST_INT_P (operands[2]))
     return false;
 
-  n = INTVAL (operands[2]);
+  unsigned HOST_WIDE_INT tmp = INTVAL (operands[2]);
 
   /* Try to keep the number of instructions low.  For all cases we will do at
      most two moves for the residual amount, since we'll always overlap the
      remainder.  */
-  if (((n / 16) + (n % 16 ? 2 : 0)) > max_num_moves)
+  if (((tmp / 16) + (tmp % 16 ? 2 : 0)) > max_num_moves)
     return false;
+
+  /* At this point tmp is known to have to fit inside an int.  */
+  n = tmp;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);
@@ -23018,18 +22947,23 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					tree base_type, int num)
 {
   tree t, ret_type, arg_type;
-  unsigned int elt_bits, vec_bits, count;
+  unsigned int elt_bits, count;
+  unsigned HOST_WIDE_INT const_simdlen;
+  poly_uint64 vec_bits;
 
   if (!TARGET_SIMD)
     return 0;
 
-  if (clonei->simdlen
-      && (clonei->simdlen < 2
-	  || clonei->simdlen > 1024
-	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
+  /* For now, SVE simdclones won't produce illegal simdlen, So only check
+     const simdlens here.  */
+  if (maybe_ne (clonei->simdlen, 0U)
+      && clonei->simdlen.is_constant (&const_simdlen)
+      && (const_simdlen < 2
+	  || const_simdlen > 1024
+	  || (const_simdlen & (const_simdlen - 1)) != 0))
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %d", clonei->simdlen);
+		  "unsupported simdlen %wd", const_simdlen);
       return 0;
     }
 
@@ -23073,21 +23007,24 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   clonei->vecsize_mangle = 'n';
   clonei->mask_mode = VOIDmode;
   elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
-  if (clonei->simdlen == 0)
+  if (known_eq (clonei->simdlen, 0U))
     {
       count = 2;
       vec_bits = (num == 0 ? 64 : 128);
-      clonei->simdlen = vec_bits / elt_bits;
+      clonei->simdlen = exact_div (vec_bits, elt_bits);
     }
   else
     {
       count = 1;
       vec_bits = clonei->simdlen * elt_bits;
-      if (vec_bits != 64 && vec_bits != 128)
+      /* For now, SVE simdclones won't produce illegal simdlen, So only check
+	 const simdlens here.  */
+      if (clonei->simdlen.is_constant (&const_simdlen)
+	  && maybe_ne (vec_bits, 64U) && maybe_ne (vec_bits, 128U))
 	{
 	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "GCC does not currently support simdlen %d for type %qT",
-		      clonei->simdlen, base_type);
+		      "GCC does not currently support simdlen %wd for type %qT",
+		      const_simdlen, base_type);
 	  return 0;
 	}
     }

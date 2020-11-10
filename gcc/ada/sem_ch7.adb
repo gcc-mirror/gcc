@@ -40,6 +40,7 @@ with Exp_Dist;  use Exp_Dist;
 with Exp_Dbug;  use Exp_Dbug;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
+with GNAT_CUDA; use GNAT_CUDA;
 with Lib;       use Lib;
 with Lib.Xref;  use Lib.Xref;
 with Namet;     use Namet;
@@ -998,6 +999,13 @@ package body Sem_Ch7 is
          Append_RACW_Bodies (Declarations (N), Spec_Id);
          Analyze_List (Declarations (N));
       end if;
+
+      --  If procedures marked with CUDA_Global have been defined within N, we
+      --  need to register them with the CUDA runtime at program startup. This
+      --  requires multiple declarations and function calls which need to be
+      --  appended to N's declarations.
+
+      Build_And_Insert_CUDA_Initialization (N);
 
       HSS := Handled_Statement_Sequence (N);
 
@@ -2725,6 +2733,7 @@ package body Sem_Ch7 is
          Set_Has_Pragma_Unreferenced_Objects
                                      (Priv, Has_Pragma_Unreferenced_Objects
                                                                        (Full));
+         Set_Predicates_Ignored      (Priv, Predicates_Ignored         (Full));
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
          end if;
@@ -3183,6 +3192,25 @@ package body Sem_Ch7 is
                   Next_Elmt (Elmt);
                end loop;
             end;
+
+         --  For subtypes of private types the frontend generates two entities:
+         --  one associated with the partial view and the other associated with
+         --  the full view. When the subtype declaration is public the frontend
+         --  places the former entity in the list of public entities of the
+         --  package and the latter entity in the private part of the package.
+         --  When the subtype declaration is private it generates these two
+         --  entities but both are placed in the private part of the package
+         --  (and the full view has the same source location as the partial
+         --  view and no parent; see Prepare_Private_Subtype_Completion).
+
+         elsif Ekind (Id) in E_Private_Subtype
+                           | E_Limited_Private_Subtype
+           and then Present (Full_View (Id))
+           and then Sloc (Id) = Sloc (Full_View (Id))
+           and then No (Parent (Full_View (Id)))
+         then
+            Set_Is_Hidden (Id);
+            Set_Is_Potentially_Use_Visible (Id, False);
 
          elsif not Is_Child_Unit (Id)
            and then (not Is_Private_Type (Id) or else No (Full_View (Id)))

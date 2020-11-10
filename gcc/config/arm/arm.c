@@ -3429,8 +3429,9 @@ arm_option_override (void)
 {
   static const enum isa_feature fpu_bitlist_internal[]
     = { ISA_ALL_FPU_INTERNAL, isa_nobit };
+  /* isa_bit_mve_float is also part of FP bit list for arch v8.1-m.main.  */
   static const enum isa_feature fp_bitlist[]
-    = { ISA_ALL_FP, isa_nobit };
+    = { ISA_ALL_FP, isa_bit_mve_float, isa_nobit };
   static const enum isa_feature quirk_bitlist[] = { ISA_ALL_QUIRKS, isa_nobit};
   cl_target_option opts;
 
@@ -4525,38 +4526,6 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
     default:
       return 0;
     }
-}
-
-/* Emit a sequence of movs/adds/shift to produce a 32-bit constant.
-   Avoid generating useless code when one of the bytes is zero.  */
-void
-thumb1_gen_const_int (rtx op0, HOST_WIDE_INT op1)
-{
-  bool mov_done_p = false;
-  int i;
-
-  /* Emit upper 3 bytes if needed.  */
-  for (i = 0; i < 3; i++)
-    {
-      int byte = (op1 >> (8 * (3 - i))) & 0xff;
-
-      if (byte)
-	{
-	  emit_set_insn (op0, mov_done_p
-			 ? gen_rtx_PLUS (SImode,op0, GEN_INT (byte))
-			 : GEN_INT (byte));
-	  mov_done_p = true;
-	}
-
-      if (mov_done_p)
-	emit_set_insn (op0, gen_rtx_ASHIFT (SImode, op0, GEN_INT (8)));
-    }
-
-  /* Emit lower byte if needed.  */
-  if (!mov_done_p)
-    emit_set_insn (op0, GEN_INT (op1 & 0xff));
-  else if (op1 & 0xff)
-    emit_set_insn (op0, gen_rtx_PLUS (SImode, op0, GEN_INT (op1 & 0xff)));
 }
 
 /* Emit a sequence of insns to handle a large constant.
@@ -9499,6 +9468,13 @@ thumb_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	  || CONST_DOUBLE_P (x)
 	  || CONSTANT_ADDRESS_P (x)
 	  || (TARGET_HAVE_MOVT && GET_CODE (x) == SYMBOL_REF)
+	  /* On Thumb-1 without MOVT/MOVW and literal pool disabled,
+	     we build the symbol address with upper/lower
+	     relocations.  */
+	  || (TARGET_THUMB1
+	      && !label_mentioned_p (x)
+	      && arm_valid_symbolic_address_p (x)
+	      && arm_disable_literal_pool)
 	  || flag_pic);
 }
 
@@ -28255,6 +28231,205 @@ arm_internal_label (FILE *stream, const char *prefix, unsigned long labelno)
   default_internal_label (stream, prefix, labelno);
 }
 
+/* Define classes to generate code as RTL or output asm to a file.
+   Using templates then allows to use the same code to output code
+   sequences in the two formats.  */
+class thumb1_const_rtl
+{
+ public:
+  thumb1_const_rtl (rtx dst) : dst (dst) {}
+
+  void mov (HOST_WIDE_INT val)
+  {
+    emit_set_insn (dst, GEN_INT (val));
+  }
+
+  void add (HOST_WIDE_INT val)
+  {
+    emit_set_insn (dst, gen_rtx_PLUS (SImode, dst, GEN_INT (val)));
+  }
+
+  void ashift (HOST_WIDE_INT shift)
+  {
+    emit_set_insn (dst, gen_rtx_ASHIFT (SImode, dst, GEN_INT (shift)));
+  }
+
+  void neg ()
+  {
+    emit_set_insn (dst, gen_rtx_NEG (SImode, dst));
+  }
+
+ private:
+  rtx dst;
+};
+
+class thumb1_const_print
+{
+ public:
+  thumb1_const_print (FILE *f, int regno)
+  {
+    t_file = f;
+    dst_regname = reg_names[regno];
+  }
+
+  void mov (HOST_WIDE_INT val)
+  {
+    asm_fprintf (t_file, "\tmovs\t%s, #" HOST_WIDE_INT_PRINT_DEC "\n",
+		 dst_regname, val);
+  }
+
+  void add (HOST_WIDE_INT val)
+  {
+    asm_fprintf (t_file, "\tadds\t%s, #" HOST_WIDE_INT_PRINT_DEC "\n",
+		 dst_regname, val);
+  }
+
+  void ashift (HOST_WIDE_INT shift)
+  {
+    asm_fprintf (t_file, "\tlsls\t%s, #" HOST_WIDE_INT_PRINT_DEC "\n",
+		 dst_regname, shift);
+  }
+
+  void neg ()
+  {
+    asm_fprintf (t_file, "\trsbs\t%s, #0\n", dst_regname);
+  }
+
+ private:
+  FILE *t_file;
+  const char *dst_regname;
+};
+
+/* Emit a sequence of movs/adds/shift to produce a 32-bit constant.
+   Avoid generating useless code when one of the bytes is zero.  */
+template <class T>
+void
+thumb1_gen_const_int_1 (T dst, HOST_WIDE_INT op1)
+{
+  bool mov_done_p = false;
+  unsigned HOST_WIDE_INT val = op1;
+  int shift = 0;
+  int i;
+
+  gcc_assert (op1 == trunc_int_for_mode (op1, SImode));
+
+  if (val <= 255)
+    {
+      dst.mov (val);
+      return;
+    }
+
+  /* For negative numbers with the first nine bits set, build the
+     opposite of OP1, then negate it, it's generally shorter and not
+     longer.  */
+  if ((val & 0xFF800000) == 0xFF800000)
+    {
+      thumb1_gen_const_int_1 (dst, -op1);
+      dst.neg ();
+      return;
+    }
+
+  /* In the general case, we need 7 instructions to build
+     a 32 bits constant (1 movs, 3 lsls, 3 adds). We can
+     do better if VAL is small enough, or
+     right-shiftable by a suitable amount.  If the
+     right-shift enables to encode at least one less byte,
+     it's worth it: we save a adds and a lsls at the
+     expense of a final lsls.  */
+  int final_shift = number_of_first_bit_set (val);
+
+  int leading_zeroes = clz_hwi (val);
+  int number_of_bytes_needed
+    = ((HOST_BITS_PER_WIDE_INT - 1 - leading_zeroes)
+       / BITS_PER_UNIT) + 1;
+  int number_of_bytes_needed2
+    = ((HOST_BITS_PER_WIDE_INT - 1 - leading_zeroes - final_shift)
+       / BITS_PER_UNIT) + 1;
+
+  if (number_of_bytes_needed2 < number_of_bytes_needed)
+    val >>= final_shift;
+  else
+    final_shift = 0;
+
+  /* If we are in a very small range, we can use either a single movs
+     or movs+adds.  */
+  if (val <= 510)
+    {
+      if (val > 255)
+	{
+	  unsigned HOST_WIDE_INT high = val - 255;
+
+	  dst.mov (high);
+	  dst.add (255);
+	}
+      else
+	dst.mov (val);
+
+      if (final_shift > 0)
+	dst.ashift (final_shift);
+    }
+  else
+    {
+      /* General case, emit upper 3 bytes as needed.  */
+      for (i = 0; i < 3; i++)
+	{
+	  unsigned HOST_WIDE_INT byte = (val >> (8 * (3 - i))) & 0xff;
+
+	  if (byte)
+	    {
+	      /* We are about to emit new bits, stop accumulating a
+		 shift amount, and left-shift only if we have already
+		 emitted some upper bits.  */
+	      if (mov_done_p)
+		{
+		  dst.ashift (shift);
+		  dst.add (byte);
+		}
+	      else
+		dst.mov (byte);
+
+	      /* Stop accumulating shift amount since we've just
+		 emitted some bits.  */
+	      shift = 0;
+
+	      mov_done_p = true;
+	    }
+
+	  if (mov_done_p)
+	    shift += 8;
+	}
+
+      /* Emit lower byte.  */
+      if (!mov_done_p)
+	dst.mov (val & 0xff);
+      else
+	{
+	  dst.ashift (shift);
+	  if (val & 0xff)
+	    dst.add (val & 0xff);
+	}
+
+      if (final_shift > 0)
+	dst.ashift (final_shift);
+    }
+}
+
+/* Proxies for thumb1.md, since the thumb1_const_print and
+   thumb1_const_rtl classes are not exported.  */
+void
+thumb1_gen_const_int_rtl (rtx dst, HOST_WIDE_INT op1)
+{
+  thumb1_const_rtl t (dst);
+  thumb1_gen_const_int_1 (t, op1);
+}
+
+void
+thumb1_gen_const_int_print (rtx dst, HOST_WIDE_INT op1)
+{
+  thumb1_const_print t (asm_out_file, REGNO (dst));
+  thumb1_gen_const_int_1 (t, op1);
+}
+
 /* Output code to add DELTA to the first argument, and then jump
    to FUNCTION.  Used for C++ multiple inheritance.  */
 
@@ -28353,9 +28528,19 @@ arm_thumb1_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
     {
       if (mi_delta > 255)
 	{
-	  fputs ("\tldr\tr3, ", file);
-	  assemble_name (file, label);
-	  fputs ("+4\n", file);
+	  /* With -mpure-code, we cannot load MI_DELTA from the
+	     constant pool: we build it explicitly.  */
+	  if (target_pure_code)
+	    {
+	      thumb1_const_print r3 (file, 3);
+	      thumb1_gen_const_int_1 (r3, mi_delta);
+	    }
+	  else
+	    {
+	      fputs ("\tldr\tr3, ", file);
+	      assemble_name (file, label);
+	      fputs ("+4\n", file);
+	    }
 	  asm_fprintf (file, "\t%ss\t%r, %r, r3\n",
 		       mi_op, this_regno, this_regno);
 	}
@@ -28391,30 +28576,37 @@ arm_thumb1_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 	fputs ("\tpop\t{r3}\n", file);
 
       fprintf (file, "\tbx\tr12\n");
-      ASM_OUTPUT_ALIGN (file, 2);
-      assemble_name (file, label);
-      fputs (":\n", file);
-      if (flag_pic)
-	{
-	  /* Output ".word .LTHUNKn-[3,7]-.LTHUNKPCn".  */
-	  rtx tem = XEXP (DECL_RTL (function), 0);
-	  /* For TARGET_THUMB1_ONLY the thunk is in Thumb mode, so the PC
-	     pipeline offset is four rather than eight.  Adjust the offset
-	     accordingly.  */
-	  tem = plus_constant (GET_MODE (tem), tem,
-			       TARGET_THUMB1_ONLY ? -3 : -7);
-	  tem = gen_rtx_MINUS (GET_MODE (tem),
-			       tem,
-			       gen_rtx_SYMBOL_REF (Pmode,
-						   ggc_strdup (labelpc)));
-	  assemble_integer (tem, 4, BITS_PER_WORD, 1);
-	}
-      else
-	/* Output ".word .LTHUNKn".  */
-	assemble_integer (XEXP (DECL_RTL (function), 0), 4, BITS_PER_WORD, 1);
 
-      if (TARGET_THUMB1_ONLY && mi_delta > 255)
-	assemble_integer (GEN_INT(mi_delta), 4, BITS_PER_WORD, 1);
+      /* With -mpure-code, we don't need to emit literals for the
+	 function address and delta since we emitted code to build
+	 them.  */
+      if (!target_pure_code)
+	{
+	  ASM_OUTPUT_ALIGN (file, 2);
+	  assemble_name (file, label);
+	  fputs (":\n", file);
+	  if (flag_pic)
+	    {
+	      /* Output ".word .LTHUNKn-[3,7]-.LTHUNKPCn".  */
+	      rtx tem = XEXP (DECL_RTL (function), 0);
+	      /* For TARGET_THUMB1_ONLY the thunk is in Thumb mode, so the PC
+		 pipeline offset is four rather than eight.  Adjust the offset
+		 accordingly.  */
+	      tem = plus_constant (GET_MODE (tem), tem,
+				   TARGET_THUMB1_ONLY ? -3 : -7);
+	      tem = gen_rtx_MINUS (GET_MODE (tem),
+				   tem,
+				   gen_rtx_SYMBOL_REF (Pmode,
+						       ggc_strdup (labelpc)));
+	      assemble_integer (tem, 4, BITS_PER_WORD, 1);
+	    }
+	  else
+	    /* Output ".word .LTHUNKn".  */
+	    assemble_integer (XEXP (DECL_RTL (function), 0), 4, BITS_PER_WORD, 1);
+
+	  if (TARGET_THUMB1_ONLY && mi_delta > 255)
+	    assemble_integer (GEN_INT (mi_delta), 4, BITS_PER_WORD, 1);
+	}
     }
   else
     {
@@ -31652,7 +31844,12 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
    According to the ARM ELF ABI, the initial addend of REL-type relocations
    processing MOVW and MOVT instructions is formed by interpreting the 16-bit
    literal field of the instruction as a 16-bit signed value in the range
-   -32768 <= A < 32768.  */
+   -32768 <= A < 32768.
+
+   In Thumb-1 mode, we use upper/lower relocations which have an 8-bit
+   unsigned range of 0 <= A < 256 as described in the AAELF32
+   relocation handling documentation: REL-type relocations are encoded
+   as unsigned in this case.  */
 
 bool
 arm_valid_symbolic_address_p (rtx addr)
@@ -31676,7 +31873,12 @@ arm_valid_symbolic_address_p (rtx addr)
       xop1 = XEXP (tmp, 1);
 
       if (GET_CODE (xop0) == SYMBOL_REF && CONST_INT_P (xop1))
-	  return IN_RANGE (INTVAL (xop1), -0x8000, 0x7fff);
+	{
+	  if (TARGET_THUMB1 && !TARGET_HAVE_MOVT)
+	    return IN_RANGE (INTVAL (xop1), 0, 0xff);
+	  else
+	    return IN_RANGE (INTVAL (xop1), -0x8000, 0x7fff);
+	}
     }
 
   return false;

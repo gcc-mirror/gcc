@@ -52,6 +52,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "builtins.h"
 #include "tree-cfgcleanup.h"
+#include "options.h"
+#include "symtab-clones.h"
+#include "attr-fnspec.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -122,7 +125,8 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   static bool
   equal (const value_range *a, const value_range *b)
     {
-      return a->equal_p (*b);
+      return (a->equal_p (*b)
+	      && types_compatible_p (a->type (), b->type ()));
     }
   static const bool empty_zero_p = true;
   static void
@@ -1222,6 +1226,73 @@ load_from_unmodified_param_or_agg (struct ipa_func_body_info *fbi,
   return index;
 }
 
+/* Walk pointer adjustemnts from OP (such as POINTER_PLUS and ADDR_EXPR)
+   to find original pointer.  Initialize RET to the pointer which results from
+   the walk.
+   If offset is known return true and initialize OFFSET_RET.  */
+
+bool
+unadjusted_ptr_and_unit_offset (tree op, tree *ret, poly_int64 *offset_ret)
+{
+  poly_int64 offset = 0;
+  bool offset_known = true;
+  int i;
+
+  for (i = 0; i < param_ipa_jump_function_lookups; i++)
+    {
+      if (TREE_CODE (op) == ADDR_EXPR)
+	{
+	  poly_int64 extra_offset = 0;
+	  tree base = get_addr_base_and_unit_offset (TREE_OPERAND (op, 0),
+						     &offset);
+	  if (!base)
+	    {
+	      base = get_base_address (TREE_OPERAND (op, 0));
+	      if (TREE_CODE (base) != MEM_REF)
+		break;
+	      offset_known = false;
+	    }
+	  else
+	    {
+	      if (TREE_CODE (base) != MEM_REF)
+		break;
+	      offset += extra_offset;
+	    }
+	  op = TREE_OPERAND (base, 0);
+	  if (mem_ref_offset (base).to_shwi (&extra_offset))
+	    offset += extra_offset;
+	  else
+	    offset_known = false;
+	}
+      else if (TREE_CODE (op) == SSA_NAME
+	       && !SSA_NAME_IS_DEFAULT_DEF (op))
+	{
+	  gimple *pstmt = SSA_NAME_DEF_STMT (op);
+
+	  if (gimple_assign_single_p (pstmt))
+	    op = gimple_assign_rhs1 (pstmt);
+	  else if (is_gimple_assign (pstmt)
+		   && gimple_assign_rhs_code (pstmt) == POINTER_PLUS_EXPR)
+	    {
+	      poly_int64 extra_offset = 0;
+	      if (ptrdiff_tree_p (gimple_assign_rhs2 (pstmt),
+		  &extra_offset))
+		offset += extra_offset;
+	      else
+		offset_known = false;
+	      op = gimple_assign_rhs1 (pstmt);
+	    }
+	  else
+	    break;
+	}
+      else
+	break;
+    }
+  *ret = op;
+  *offset_ret = offset;
+  return offset_known;
+}
+
 /* Given that an actual argument is an SSA_NAME (given in NAME) and is a result
    of an assignment statement STMT, try to determine whether we are actually
    handling any of the following cases and construct an appropriate jump
@@ -2294,7 +2365,8 @@ ipa_compute_jump_functions_for_bb (struct ipa_func_body_info *fbi, basic_block b
 	  callee = callee->ultimate_alias_target ();
 	  /* We do not need to bother analyzing calls to unknown functions
 	     unless they may become known during lto/whopr.  */
-	  if (!callee->definition && !flag_lto)
+	  if (!callee->definition && !flag_lto
+	      && !gimple_call_fnspec (cs->call_stmt).known_p ())
 	    continue;
 	}
       ipa_compute_jump_functions_for_edge (fbi, cs);
@@ -4142,7 +4214,10 @@ ipcp_transformation_initialize (void)
   if (!ipa_vr_hash_table)
     ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
   if (ipcp_transformation_sum == NULL)
-    ipcp_transformation_sum = ipcp_transformation_t::create_ggc (symtab);
+    {
+      ipcp_transformation_sum = ipcp_transformation_t::create_ggc (symtab);
+      ipcp_transformation_sum->disable_insertion_hook ();
+    }
 }
 
 /* Release the IPA CP transformation summary.  */
@@ -4901,7 +4976,11 @@ ipa_read_edge_info (class lto_input_block *ib,
   count /= 2;
   if (!count)
     return;
-  if (prevails && e->possibly_call_in_translation_unit_p ())
+  if (prevails
+      && (e->possibly_call_in_translation_unit_p ()
+	  /* Also stream in jump functions to builtins in hope that they
+	     will get fnspecs.  */
+	  || fndecl_built_in_p (e->callee->decl, BUILT_IN_NORMAL)))
     {
       class ipa_edge_args *args = IPA_EDGE_REF_GET_CREATE (e);
       vec_safe_grow_cleared (args->jump_functions, count, true);
@@ -5347,12 +5426,13 @@ adjust_agg_replacement_values (struct cgraph_node *node,
 			       struct ipa_agg_replacement_value *aggval)
 {
   struct ipa_agg_replacement_value *v;
+  clone_info *cinfo = clone_info::get (node);
 
-  if (!node->clone.param_adjustments)
+  if (!cinfo || !cinfo->param_adjustments)
     return;
 
   auto_vec<int, 16> new_indices;
-  node->clone.param_adjustments->get_updated_indices (&new_indices);
+  cinfo->param_adjustments->get_updated_indices (&new_indices);
   for (v = aggval; v; v = v->next)
     {
       gcc_checking_assert (v->index >= 0);
@@ -5505,9 +5585,10 @@ ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
 	return false;
     }
 
-  if (cnode->clone.param_adjustments)
+  clone_info *cinfo = clone_info::get (cnode);
+  if (cinfo && cinfo->param_adjustments)
     {
-      i = cnode->clone.param_adjustments->get_original_index (i);
+      i = cinfo->param_adjustments->get_original_index (i);
       if (i < 0)
 	return false;
     }
@@ -5538,9 +5619,10 @@ ipcp_update_bits (struct cgraph_node *node)
 
   auto_vec<int, 16> new_indices;
   bool need_remapping = false;
-  if (node->clone.param_adjustments)
+  clone_info *cinfo = clone_info::get (node);
+  if (cinfo && cinfo->param_adjustments)
     {
-      node->clone.param_adjustments->get_updated_indices (&new_indices);
+      cinfo->param_adjustments->get_updated_indices (&new_indices);
       need_remapping = true;
     }
   auto_vec <tree, 16> parm_decls;
@@ -5659,9 +5741,10 @@ ipcp_update_vr (struct cgraph_node *node)
 
   auto_vec<int, 16> new_indices;
   bool need_remapping = false;
-  if (node->clone.param_adjustments)
+  clone_info *cinfo = clone_info::get (node);
+  if (cinfo && cinfo->param_adjustments)
     {
-      node->clone.param_adjustments->get_updated_indices (&new_indices);
+      cinfo->param_adjustments->get_updated_indices (&new_indices);
       need_remapping = true;
     }
   auto_vec <tree, 16> parm_decls;

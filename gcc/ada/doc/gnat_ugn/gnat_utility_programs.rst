@@ -1921,11 +1921,12 @@ building specialized scripts.
 
    :switch:`--comments-fill`
      Fill comment blocks.
+     The default is :switch:`--no-comments-fill`.
 
 
    :switch:`--comments-special`
      Keep unchanged special form comments.
-     This is the default.
+     The default is :switch:`--no-comments-special`.
 
 
    .. index:: --comments-only (gnatpp)
@@ -2153,18 +2154,18 @@ building specialized scripts.
            A_Very_Very_Very_Very_Very_Very_Very_Very_Long_One);
 
 
-   .. index:: --call_threshold (gnatpp)
+   .. index:: --call-threshold (gnatpp)
 
-   :switch:`--call_threshold={nnn}`
+   :switch:`--call-threshold={nnn}`
      If the number of parameter associations is greater than ``nnn`` and if at
      least one association uses named notation, start each association from
      a new line. If ``nnn`` is 0, no check for the number of associations
      is made; this is the default.
 
 
-   .. index:: --par_threshold (gnatpp)
+   .. index:: --par-threshold (gnatpp)
 
-   :switch:`--par_threshold={nnn}`
+   :switch:`--par-threshold={nnn}`
      If the number of parameter specifications is greater than ``nnn``
      (or equal to ``nnn`` in case of a function), start each specification from
      a new line. If ``nnn`` is 0, and :switch:`--no-separate-is` was not specified, then

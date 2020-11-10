@@ -133,6 +133,23 @@ target_run $dir/support/impbit > $dir/support/impbit.out 2>&1
 target_bit=`cat $dir/support/impbit.out`
 echo target_bit="$target_bit" >> $dir/acats.log
 
+case "$target_bit" in
+  *32*)
+    target_max_int="9223372036854775807"
+    target_min_int="-9223372036854775808"
+    ;;
+  *64*)
+    target_max_int="170141183460469231731687303715884105727"
+    target_min_int="-170141183460469231731687303715884105728"
+    ;;
+  *)
+    display "**** Unsupported bits per word"
+    exit 1
+esac
+
+echo target_max_insn="$target_max_int" >> $dir/acats.log
+echo target_min_insn="$target_min_int" >> $dir/acats.log
+
 # Find out a suitable asm statement
 # Adapted from configure.ac gcc_cv_as_dwarf2_debug_line
 case "$target" in
@@ -153,6 +170,8 @@ sed -e "s,ACATS4GNATDIR,$dir,g" \
 sed -e "s,ACATS4GNATDIR,$dir,g" \
   -e "s,ACATS4GNATBIT,$target_bit,g" \
   -e "s,ACATS4GNATINSN,$target_insn,g" \
+  -e "s,ACATS4GNATMAXINT,$target_max_int,g" \
+  -e "s,ACATS4GNATMININT,$target_min_int,g" \
   < $testdir/support/macro.dfs > $dir/support/MACRO.DFS
 sed -e "s,ACATS4GNATDIR,$dir,g" \
   < $testdir/support/tsttests.dat > $dir/support/TSTTESTS.DAT

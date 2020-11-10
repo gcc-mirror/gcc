@@ -92,6 +92,7 @@ is
        and then (if Left  = 0.0 then "**"'Result = 0.0);
 
    function Sin (X : Float_Type'Base) return Float_Type'Base with
+     Inline,
      Post => Sin'Result in -1.0 .. 1.0
        and then (if X = 0.0 then Sin'Result = 0.0);
 
@@ -101,6 +102,7 @@ is
        and then (if X = 0.0 then Sin'Result = 0.0);
 
    function Cos (X : Float_Type'Base) return Float_Type'Base with
+     Inline,
      Post => Cos'Result in -1.0 .. 1.0
        and then (if X = 0.0 then Cos'Result = 1.0);
 

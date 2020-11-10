@@ -523,6 +523,8 @@ get_available_features (struct __processor_model *cpu_model,
   int avx_usable = 0;
   int avx512_usable = 0;
   int amx_usable = 0;
+  /* Check if KL is usable.  */
+  int has_kl = 0;
   if ((ecx & bit_OSXSAVE))
     {
       /* Check if XMM, YMM, OPMASK, upper 256 bits of ZMM0-ZMM15 and
@@ -667,6 +669,8 @@ get_available_features (struct __processor_model *cpu_model,
 	  if (edx & bit_AMX_BF16)
 	    set_feature (FEATURE_AMX_BF16);
 	}
+      if (ecx & bit_KL)
+	has_kl = 1;
       if (avx512_usable)
 	{
 	  if (ebx & bit_AVX512F)
@@ -701,10 +705,15 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX5124FMAPS);
 	  if (edx & bit_AVX512VP2INTERSECT)
 	    set_feature (FEATURE_AVX512VP2INTERSECT);
+	  if (edx & bit_UINTR)
+	    set_feature (FEATURE_UINTR);
 
 	  __cpuid_count (7, 1, eax, ebx, ecx, edx);
 	  if (eax & bit_AVX512BF16)
 	    set_feature (FEATURE_AVX512BF16);
+	  if (eax & bit_HRESET)
+	    set_feature (FEATURE_HRESET);
+
 	}
     }
 
@@ -726,6 +735,21 @@ get_available_features (struct __processor_model *cpu_model,
       __cpuid_count (0x14, 0, eax, ebx, ecx, edx);
       if (ebx & bit_PTWRITE)
 	set_feature (FEATURE_PTWRITE);
+    }
+
+  /* Get Advanced Features at level 0x19 (eax = 0x19).  */
+  if (max_cpuid_level >= 0x19)
+    {
+      set_feature (FEATURE_AESKLE);
+      __cpuid (19, eax, ebx, ecx, edx);
+      /* Check if OS support keylocker.  */
+      if (ebx & bit_AESKLE)
+	{
+	  if (ebx & bit_WIDEKL)
+	    set_feature (FEATURE_WIDEKL);
+	  if (has_kl)
+	    set_feature (FEATURE_KL);
+	}
     }
 
   /* Check cpuid level of extended features.  */

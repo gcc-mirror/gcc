@@ -60,6 +60,7 @@ public:
 private:
   vec<class ssa_block_ranges *> m_ssa_ranges;
   ssa_block_ranges &get_block_ranges (tree name);
+  ssa_block_ranges *query_block_ranges (tree name);
   irange_allocator *m_irange_allocator;
 };
 
@@ -73,7 +74,7 @@ public:
   ssa_global_cache ();
   ~ssa_global_cache ();
   bool get_global_range (irange &r, tree name) const;
-  void set_global_range (tree name, const irange &r);
+  bool set_global_range (tree name, const irange &r);
   void clear_global_range (tree name);
   void clear ();
   void dump (FILE *f = stderr);
@@ -89,19 +90,30 @@ private:
 class ranger_cache : public gori_compute_cache
 {
 public:
-  ranger_cache (class range_query &q);
+  ranger_cache (class gimple_ranger &q);
   ~ranger_cache ();
 
   virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
 
+  bool get_global_range (irange &r, tree name) const;
+  bool get_non_stale_global_range (irange &r, tree name);
+  void set_global_range (tree name, const irange &r);
+  void register_dependency (tree name, tree dep);
+
+  non_null_ref m_non_null;
+
+  void dump (FILE *f, bool dump_gori = true);
+  void dump (FILE *f, basic_block bb);
+private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;
-  non_null_ref m_non_null;
-private:
+  class temporal_cache *m_temporal;
   void add_to_update (basic_block bb);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
-  void iterative_cache_update (tree name);
+  void propagate_cache (tree name);
+
+  void propagate_updated_value (tree name, basic_block bb);
 
   vec<basic_block> m_workback;
   vec<basic_block> m_update_list;
@@ -114,7 +126,7 @@ private:
   };
   bool push_poor_value (basic_block bb, tree name);
   vec<update_record> m_poor_value_list;
-  class range_query &query;
+  class gimple_ranger &query;
 };
 
 #endif // GCC_SSA_RANGE_CACHE_H

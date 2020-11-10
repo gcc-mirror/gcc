@@ -227,7 +227,7 @@ MACHINE_CODE_STATEMENT     Asm_Insn'(Asm ("ACATS4GNATINSN"));
 -- THE LITERAL MUST NOT INCLUDE UNDERSCORES OR LEADING OR TRAILING
 -- BLANKS.                                                      
 -- USED IN:  C35503D  C35503F  C4A007A 
-MAX_INT                  9223372036854775807                   
+MAX_INT                  ACATS4GNATMAXINT
 
 					
 -- $MIN_INT                                     
@@ -235,7 +235,7 @@ MAX_INT                  9223372036854775807
 -- THE LITERAL MUST NOT CONTAIN UNDERSCORES OR LEADING OR TRAILING
 -- BLANKS.                                                    
 -- USED IN:  C35503D  C35503F  
-MIN_INT                  -9223372036854775808                
+MIN_INT                  ACATS4GNATMININT
 						
 -- $NAME                                               
 -- THE NAME OF A PREDEFINED INTEGER TYPE OTHER THAN INTEGER,

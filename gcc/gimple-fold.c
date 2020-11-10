@@ -7855,7 +7855,7 @@ gimple_build_vector (gimple_seq *seq, location_t loc,
   gcc_assert (builder->nelts_per_pattern () <= 2);
   unsigned int encoded_nelts = builder->encoded_nelts ();
   for (unsigned int i = 0; i < encoded_nelts; ++i)
-    if (!TREE_CONSTANT ((*builder)[i]))
+    if (!CONSTANT_CLASS_P ((*builder)[i]))
       {
 	tree type = builder->type ();
 	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();

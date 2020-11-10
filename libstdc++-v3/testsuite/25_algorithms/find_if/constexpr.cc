@@ -24,12 +24,12 @@
 constexpr bool
 test()
 {
-  constexpr std::array<int, 12> ca0{{0, 1, 2, 3, 4, 5,  6, 7, 8,  9, 10, 11}};
+  constexpr std::array<int, 12> ca0{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
 
   const auto outj = std::find_if(ca0.begin(), ca0.end(),
 				 [](int i){ return i == 6; });
 
-  return true;
+  return outj == (ca0.begin() + 6);
 }
 
 static_assert(test());

@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.intro.setup.configure" xreflabel="Configuring">
 <?dbhtml filename="configure.html"?>
 
@@ -322,7 +322,7 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-libstdcxx-visibility</code></term>
- <listitem><para> In 4.2 and later, enables or disables visibility 
+ <listitem><para> In 4.2 and later, enables or disables visibility
         attributes. If enabled (as by default), and the compiler seems
         capable of passing the simple sanity checks thrown at it, adjusts
         items in namespace std, namespace std::tr1, namespace std::tr2,
@@ -348,10 +348,10 @@
 
  <varlistentry><term><code>--enable-extern-template</code>[default]</term>
  <listitem><para>Use extern template to pre-instantiate all required
- 	specializations for certain types defined in the standard libraries. 
+ 	specializations for certain types defined in the standard libraries.
 	These types include <classname>string</classname> and dependents like
 	<classname>char_traits</classname>, the templatized IO classes,
-	<classname>allocator</classname>, and others.  
+	<classname>allocator</classname>, and others.
 	Disabling means that implicit
 	template generation will be used when compiling these types.  By
 	default, this option is on. This option can change the library ABI.

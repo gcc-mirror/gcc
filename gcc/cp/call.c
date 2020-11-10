@@ -5643,17 +5643,40 @@ build_conditional_expr_1 (const op_location_t &loc,
 			"in conditional expression: %qT vs %qT",
 			arg2_type, arg3_type);
         }
-      else if (extra_warnings
+      else if ((complain & tf_warning)
+	       && warn_deprecated_enum_float_conv
+	       && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
+		    && TREE_CODE (arg3_type) == REAL_TYPE)
+		   || (TREE_CODE (arg2_type) == REAL_TYPE
+		       && TREE_CODE (arg3_type) == ENUMERAL_TYPE)))
+	{
+	  if (TREE_CODE (arg2_type) == ENUMERAL_TYPE)
+	    warning_at (loc, OPT_Wdeprecated_enum_float_conversion,
+			"conditional expression between enumeration type "
+			"%qT and floating-point type %qT is deprecated",
+			arg2_type, arg3_type);
+	  else
+	    warning_at (loc, OPT_Wdeprecated_enum_float_conversion,
+			"conditional expression between floating-point "
+			"type %qT and enumeration type %qT is deprecated",
+			arg2_type, arg3_type);
+	}
+      else if ((extra_warnings || warn_enum_conversion)
 	       && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
 		    && !same_type_p (arg3_type, type_promotes_to (arg2_type)))
 		   || (TREE_CODE (arg3_type) == ENUMERAL_TYPE
 		       && !same_type_p (arg2_type,
 					type_promotes_to (arg3_type)))))
-        {
-          if (complain & tf_warning)
-	    warning_at (loc, OPT_Wextra, "enumerated and non-enumerated "
-			"type in conditional expression");
-        }
+	{
+	  if (complain & tf_warning)
+	    {
+	      enum opt_code opt = (warn_enum_conversion
+				   ? OPT_Wenum_conversion
+				   : OPT_Wextra);
+	      warning_at (loc, opt, "enumerated and "
+			  "non-enumerated type in conditional expression");
+	    }
+	}
 
       arg2 = perform_implicit_conversion (result_type, arg2, complain);
       arg3 = perform_implicit_conversion (result_type, arg3, complain);

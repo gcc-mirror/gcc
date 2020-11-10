@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -march=i686 -fpic -fstack-clash-protection" } */
 /* { dg-require-effective-target ia32 } */
 

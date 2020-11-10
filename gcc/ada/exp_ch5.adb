@@ -523,11 +523,11 @@ package body Exp_Ch5 is
       elsif Has_Controlled_Component (L_Type) then
          Loop_Required := True;
 
-      --  If object is atomic/VFA, we cannot tolerate a loop
+      --  If object is full access, we cannot tolerate a loop
 
-      elsif Is_Atomic_Or_VFA_Object (Act_Lhs)
+      elsif Is_Full_Access_Object (Act_Lhs)
               or else
-            Is_Atomic_Or_VFA_Object (Act_Rhs)
+            Is_Full_Access_Object (Act_Rhs)
       then
          return;
 
@@ -536,8 +536,8 @@ package body Exp_Ch5 is
 
       elsif Has_Atomic_Components (L_Type)
         or else Has_Atomic_Components (R_Type)
-        or else Is_Atomic_Or_VFA (Component_Type (L_Type))
-        or else Is_Atomic_Or_VFA (Component_Type (R_Type))
+        or else Is_Full_Access (Component_Type (L_Type))
+        or else Is_Full_Access (Component_Type (R_Type))
       then
          Loop_Required := True;
 
@@ -2518,7 +2518,7 @@ package body Exp_Ch5 is
                                Condition =>
                                  Make_Op_Gt (Loc,
                                    Left_Opnd  =>
-                                     Dynamic_Accessibility_Level (Rhs),
+                                     Accessibility_Level (Rhs, Dynamic_Level),
                                    Right_Opnd =>
                                      Make_Integer_Literal (Loc,
                                        Intval =>
@@ -2534,7 +2534,8 @@ package body Exp_Ch5 is
                                          (Effective_Extra_Accessibility
                                             (Entity (Lhs)), Loc),
                                      Expression =>
-                                        Dynamic_Accessibility_Level (Rhs));
+                                       Accessibility_Level
+                                         (Rhs, Dynamic_Level));
 
          begin
             if not Accessibility_Checks_Suppressed (Entity (Lhs)) then
@@ -3115,7 +3116,35 @@ package body Exp_Ch5 is
          if Validity_Check_Default
            and then not Predicates_Ignored (Etype (Expr))
          then
-            Ensure_Valid (Expr);
+            --  Recognize the simple case where Expr is an object reference
+            --  and the case statement is directly preceded by an
+            --  "if Obj'Valid then": in this case, do not emit another validity
+            --  check.
+
+            declare
+               Check_Validity : Boolean := True;
+               Attr           : Node_Id;
+            begin
+               if Nkind (Expr) = N_Identifier
+                 and then Nkind (Parent (N)) = N_If_Statement
+                 and then Nkind (Original_Node (Condition (Parent (N))))
+                           = N_Attribute_Reference
+                 and then No (Prev (N))
+               then
+                  Attr := Original_Node (Condition (Parent (N)));
+
+                  if Attribute_Name (Attr) = Name_Valid
+                    and then Nkind (Prefix (Attr)) = N_Identifier
+                    and then Entity (Prefix (Attr)) = Entity (Expr)
+                  then
+                     Check_Validity := False;
+                  end if;
+               end if;
+
+               if Check_Validity then
+                  Ensure_Valid (Expr);
+               end if;
+            end;
          end if;
 
          --  If there is only a single alternative, just replace it with the
@@ -3509,17 +3538,6 @@ package body Exp_Ch5 is
       Rewrite (N, New_Loop);
       Analyze (N);
    end Expand_Formal_Container_Element_Loop;
-
-   -----------------------------
-   -- Expand_N_Goto_Statement --
-   -----------------------------
-
-   --  Add poll before goto if polling active
-
-   procedure Expand_N_Goto_Statement (N : Node_Id) is
-   begin
-      Generate_Poll_Call (N);
-   end Expand_N_Goto_Statement;
 
    ---------------------------
    -- Expand_N_If_Statement --
@@ -4608,7 +4626,6 @@ package body Exp_Ch5 is
    --  4. Deal with while loops where Condition_Actions is set
    --  5. Deal with loops over predicated subtypes
    --  6. Deal with loops with iterators over arrays and containers
-   --  7. Insert polling call if required
 
    procedure Expand_N_Loop_Statement (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
@@ -4627,12 +4644,6 @@ package body Exp_Ch5 is
 
       if Present (Scheme) then
          Adjust_Condition (Condition (Scheme));
-      end if;
-
-      --  Generate polling call
-
-      if Is_Non_Empty_List (Statements (N)) then
-         Generate_Poll_Call (First (Statements (N)));
       end if;
 
       --  Nothing more to do for plain loop with no iteration scheme

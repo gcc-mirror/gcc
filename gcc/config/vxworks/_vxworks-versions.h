@@ -22,17 +22,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef _VXWORKS_VERSIONS_H
 #define _VXWORKS_VERSIONS_H  1
 
-/* All we need is access to the bare _WRS_VXWORKS_MAJOR/MINOR macros
-   exposed by version.h.  Cheat a bit to make sure we don't drag additional
-   header files, which can easily cause #include ordering nightmares.  */
+/* All we need is access to the bare _WRS_VXWORKS_MAJOR/MINOR macros,
+   exposed by version.h or already provided somehow (e.g. with a self
+   spec for some reason).  When resorting to system headers, cheat a
+   bit to make sure we don't drag additional header files, which can
+   easily cause #include ordering nightmares.  */
 
+#if !defined(_WRS_VXWORKS_MAJOR)
 #pragma push_macro("_WRS_KERNEL")
 #undef _WRS_KERNEL
 #include <version.h>
 #pragma pop_macro("_WRS_KERNEL")
+#endif
+
+/* A lot depends on the MAJOR so we really need to make sure we have
+   that.  MINOR is less critical and many environments don't actually
+   define it unless it is really meaningful (e.g. 6.4 through 6.9).  */
 
 #if !defined(_WRS_VXWORKS_MAJOR)
-#error "VxWorks version macros needed but not defined"
+#error "_WRS_VXWORKS_MAJOR undefined"
+#endif
+
+#if !defined(_WRS_VXWORKS_MINOR)
+#define _WRS_VXWORKS_MINOR 0
 #endif
 
 #define _VXWORKS_MAJOR_GT(MAJOR) (_WRS_VXWORKS_MAJOR > (MAJOR))

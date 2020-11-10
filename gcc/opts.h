@@ -444,6 +444,12 @@ extern const struct sanitizer_opts_s
   bool can_recover;
 } sanitizer_opts[];
 
+extern const struct zero_call_used_regs_opts_s
+{
+  const char *const name;
+  unsigned int flag;
+} zero_call_used_regs_opts[];
+
 extern vec<const char *> help_option_arguments;
 
 extern void add_misspelling_candidates (auto_vec<char *> *candidates,

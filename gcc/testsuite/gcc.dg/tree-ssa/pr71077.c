@@ -1,5 +1,6 @@
 /* PR c++/71077  */
 /* { dg-do link { target { i?86-*-* x86_64-*-* } } }  */
+/* { dg-require-effective-target lto } */
 /* { dg-options "-O3 -flto -march=core-avx2" }  */
 
 int *a;

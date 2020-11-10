@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc64*-*-* } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O1 -mvsx" } */
 /* { dg-final { scan-assembler {\m(lxvd2x|lxv)\M} } } */

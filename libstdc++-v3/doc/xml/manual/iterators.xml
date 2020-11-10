@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.iterators" xreflabel="Iterators">
 <?dbhtml filename="iterators.html"?>
 
@@ -16,10 +16,10 @@
 
 <!-- Sect1 01 : Predefined -->
 <section xml:id="std.iterators.predefined" xreflabel="Predefined"><info><title>Predefined</title></info>
-  
+
 
   <section xml:id="iterators.predefined.vs_pointers" xreflabel="Versus Pointers"><info><title>Iterators vs. Pointers</title></info>
-    
+
    <para>
      The following
 FAQ <link linkend="faq.iterator_as_pod">entry</link> points out that
@@ -66,7 +66,7 @@ classes.
   </section>
 
   <section xml:id="iterators.predefined.end" xreflabel="end() Is One Past the End"><info><title>One Past the End</title></info>
-    
+
 
    <para>This starts off sounding complicated, but is actually very easy,
       especially towards the end.  Trust me.

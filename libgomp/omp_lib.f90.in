@@ -394,6 +394,12 @@
         end interface
 
         interface
+          function omp_get_supported_active_levels ()
+            integer (4) :: omp_get_supported_active_levels
+          end function omp_get_supported_active_levels
+        end interface
+
+        interface
           function omp_get_level ()
             integer (4) :: omp_get_level
           end function omp_get_level
@@ -637,5 +643,9 @@
                omp_get_default_allocator
           end function
         end interface
+
+#if _OPENMP >= 201811
+!GCC$ ATTRIBUTES DEPRECATED :: omp_get_nested, omp_set_nested
+#endif
 
       end module omp_lib

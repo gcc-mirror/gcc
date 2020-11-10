@@ -423,26 +423,12 @@ equiv_class::get_representative () const
   return m_vars[0];
 }
 
-/* Comparator for use by equiv_class::canonicalize.  */
-
-static int
-svalue_cmp_by_ptr (const void *p1, const void *p2)
-{
-  const svalue *sval1 = *(const svalue * const *)p1;
-  const svalue *sval2 = *(const svalue * const *)p2;
-  if (sval1 < sval2)
-    return 1;
-  if (sval1 > sval2)
-    return -1;
-  return 0;
-}
-
 /* Sort the svalues within this equiv_class.  */
 
 void
 equiv_class::canonicalize ()
 {
-  m_vars.qsort (svalue_cmp_by_ptr);
+  m_vars.qsort (svalue::cmp_ptr_ptr);
 }
 
 /* Get a debug string for C_OP.  */
@@ -1693,11 +1679,7 @@ equiv_class_cmp (const void *p1, const void *p2)
   gcc_assert (rep1);
   gcc_assert (rep2);
 
-  if (rep1 < rep2)
-    return 1;
-  if (rep1 > rep2)
-    return -1;
-  return 0;
+  return svalue::cmp_ptr (rep1, rep2);
 }
 
 /* Comparator for use by constraint_manager::canonicalize.

@@ -229,6 +229,8 @@ getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.jmp_context.iar;
 #elif defined(__aarch64__) && defined(__linux__)
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.pc;
+#elif defined(__NetBSD__)
+	ret.sigpc = _UC_MACHINE_PC(((ucontext_t*)(context)));
 #endif
 
 	if (ret.sigpc == 0) {

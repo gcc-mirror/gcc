@@ -366,7 +366,15 @@ align_local_variable (tree decl, bool really_expand)
   unsigned int align;
 
   if (TREE_CODE (decl) == SSA_NAME)
-    align = TYPE_ALIGN (TREE_TYPE (decl));
+    {
+      tree type = TREE_TYPE (decl);
+      machine_mode mode = TYPE_MODE (type);
+
+      align = TYPE_ALIGN (type);
+      if (mode != BLKmode
+	  && align < GET_MODE_ALIGNMENT (mode))
+	align = GET_MODE_ALIGNMENT (mode);
+    }
   else
     {
       align = LOCAL_DECL_ALIGNMENT (decl);
@@ -999,20 +1007,21 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   x = plus_constant (Pmode, base, offset);
   x = gen_rtx_MEM (TREE_CODE (decl) == SSA_NAME
 		   ? TYPE_MODE (TREE_TYPE (decl))
-		   : DECL_MODE (SSAVAR (decl)), x);
+		   : DECL_MODE (decl), x);
+
+  /* Set alignment we actually gave this decl if it isn't an SSA name.
+     If it is we generate stack slots only accidentally so it isn't as
+     important, we'll simply set the alignment directly on the MEM.  */
+
+  if (base == virtual_stack_vars_rtx)
+    offset -= frame_phase;
+  align = known_alignment (offset);
+  align *= BITS_PER_UNIT;
+  if (align == 0 || align > base_align)
+    align = base_align;
 
   if (TREE_CODE (decl) != SSA_NAME)
     {
-      /* Set alignment we actually gave this decl if it isn't an SSA name.
-         If it is we generate stack slots only accidentally so it isn't as
-	 important, we'll simply use the alignment that is already set.  */
-      if (base == virtual_stack_vars_rtx)
-	offset -= frame_phase;
-      align = known_alignment (offset);
-      align *= BITS_PER_UNIT;
-      if (align == 0 || align > base_align)
-	align = base_align;
-
       /* One would think that we could assert that we're not decreasing
 	 alignment here, but (at least) the i386 port does exactly this
 	 via the MINIMUM_ALIGNMENT hook.  */
@@ -1022,6 +1031,8 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
     }
 
   set_rtl (decl, x);
+
+  set_mem_align (x, align);
 }
 
 class stack_vars_data
@@ -1327,13 +1338,11 @@ expand_one_stack_var_1 (tree var)
     {
       tree type = TREE_TYPE (var);
       size = tree_to_poly_uint64 (TYPE_SIZE_UNIT (type));
-      byte_align = TYPE_ALIGN_UNIT (type);
     }
   else
-    {
-      size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
-      byte_align = align_local_variable (var, true);
-    }
+    size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
+
+  byte_align = align_local_variable (var, true);
 
   /* We handle highly aligned variables in expand_stack_vars.  */
   gcc_assert (byte_align * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT);
@@ -1762,13 +1771,6 @@ clear_tree_used (tree block)
     clear_tree_used (t);
 }
 
-enum {
-  SPCT_FLAG_DEFAULT = 1,
-  SPCT_FLAG_ALL = 2,
-  SPCT_FLAG_STRONG = 3,
-  SPCT_FLAG_EXPLICIT = 4
-};
-
 /* Examine TYPE and determine a bit mask of the following features.  */
 
 #define SPCT_HAS_LARGE_CHAR_ARRAY	1
@@ -1838,11 +1840,12 @@ stack_protect_decl_phase (tree decl)
   if (bits & SPCT_HAS_SMALL_CHAR_ARRAY)
     has_short_buffer = true;
 
-  if (flag_stack_protect == SPCT_FLAG_ALL
-      || flag_stack_protect == SPCT_FLAG_STRONG
-      || (flag_stack_protect == SPCT_FLAG_EXPLICIT
-	  && lookup_attribute ("stack_protect",
-			       DECL_ATTRIBUTES (current_function_decl))))
+  tree attribs = DECL_ATTRIBUTES (current_function_decl);
+  if (!lookup_attribute ("no_stack_protector", attribs)
+      && (flag_stack_protect == SPCT_FLAG_ALL
+	  || flag_stack_protect == SPCT_FLAG_STRONG
+	  || (flag_stack_protect == SPCT_FLAG_EXPLICIT
+	      && lookup_attribute ("stack_protect", attribs))))
     {
       if ((bits & (SPCT_HAS_SMALL_CHAR_ARRAY | SPCT_HAS_LARGE_CHAR_ARRAY))
 	  && !(bits & SPCT_HAS_AGGREGATE))
@@ -2143,6 +2146,7 @@ expand_used_vars (void)
      set are actually used by the optimized function.  Lay them out.  */
   expand_used_vars_for_block (outer_block, true);
 
+  tree attribs = DECL_ATTRIBUTES (current_function_decl);
   if (stack_vars_num > 0)
     {
       bool has_addressable_vars = false;
@@ -2152,10 +2156,10 @@ expand_used_vars (void)
       /* If stack protection is enabled, we don't share space between
 	 vulnerable data and non-vulnerable data.  */
       if (flag_stack_protect != 0
+	  && !lookup_attribute ("no_stack_protector", attribs)
 	  && (flag_stack_protect != SPCT_FLAG_EXPLICIT
 	      || (flag_stack_protect == SPCT_FLAG_EXPLICIT
-		  && lookup_attribute ("stack_protect",
-				       DECL_ATTRIBUTES (current_function_decl)))))
+		  && lookup_attribute ("stack_protect", attribs))))
 	has_addressable_vars = add_stack_protection_conflicts ();
 
       if (flag_stack_protect == SPCT_FLAG_STRONG && has_addressable_vars)
@@ -2168,38 +2172,40 @@ expand_used_vars (void)
 	dump_stack_var_partition ();
     }
 
-  switch (flag_stack_protect)
-    {
-    case SPCT_FLAG_ALL:
-      create_stack_guard ();
-      break;
 
-    case SPCT_FLAG_STRONG:
-      if (gen_stack_protect_signal
-	  || cfun->calls_alloca
-	  || has_protected_decls
-	  || lookup_attribute ("stack_protect",
-			       DECL_ATTRIBUTES (current_function_decl)))
+  if (!lookup_attribute ("no_stack_protector", attribs))
+    switch (flag_stack_protect)
+      {
+      case SPCT_FLAG_ALL:
 	create_stack_guard ();
-      break;
+	break;
 
-    case SPCT_FLAG_DEFAULT:
-      if (cfun->calls_alloca
-	  || has_protected_decls
-	  || lookup_attribute ("stack_protect",
-			       DECL_ATTRIBUTES (current_function_decl)))
-	create_stack_guard ();
-      break;
+      case SPCT_FLAG_STRONG:
+	if (gen_stack_protect_signal
+	    || cfun->calls_alloca
+	    || has_protected_decls
+	    || lookup_attribute ("stack_protect",
+				 DECL_ATTRIBUTES (current_function_decl)))
+	  create_stack_guard ();
+	break;
 
-    case SPCT_FLAG_EXPLICIT:
-      if (lookup_attribute ("stack_protect",
-			    DECL_ATTRIBUTES (current_function_decl)))
-	create_stack_guard ();
-      break;
+      case SPCT_FLAG_DEFAULT:
+	if (cfun->calls_alloca
+	    || has_protected_decls
+	    || lookup_attribute ("stack_protect",
+				 DECL_ATTRIBUTES (current_function_decl)))
+	  create_stack_guard ();
+	break;
 
-    default:
-      break;
-    }
+      case SPCT_FLAG_EXPLICIT:
+	if (lookup_attribute ("stack_protect",
+			      DECL_ATTRIBUTES (current_function_decl)))
+	  create_stack_guard ();
+	break;
+
+      default:
+	break;
+      }
 
   /* Assign rtl to each variable based on these partitions.  */
   if (stack_vars_num > 0)
@@ -2220,11 +2226,11 @@ expand_used_vars (void)
 	  expand_stack_vars (stack_protect_decl_phase_1, &data);
 
 	  /* Phase 2 contains other kinds of arrays.  */
-	  if (flag_stack_protect == SPCT_FLAG_ALL
-	      || flag_stack_protect == SPCT_FLAG_STRONG
-	      || (flag_stack_protect == SPCT_FLAG_EXPLICIT
-		  && lookup_attribute ("stack_protect",
-				       DECL_ATTRIBUTES (current_function_decl))))
+	  if (!lookup_attribute ("no_stack_protector", attribs)
+	      && (flag_stack_protect == SPCT_FLAG_ALL
+		  || flag_stack_protect == SPCT_FLAG_STRONG
+		  || (flag_stack_protect == SPCT_FLAG_EXPLICIT
+		      && lookup_attribute ("stack_protect", attribs))))
 	    expand_stack_vars (stack_protect_decl_phase_2, &data);
 	}
 
@@ -6406,7 +6412,7 @@ pass_expand::execute (function *fun)
   rtl_profile_for_bb (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   insn_locations_init ();
-  if (!DECL_IS_BUILTIN (current_function_decl))
+  if (!DECL_IS_UNDECLARED_BUILTIN (current_function_decl))
     {
       /* Eventually, all FEs should explicitly set function_start_locus.  */
       if (LOCATION_LOCUS (fun->function_start_locus) == UNKNOWN_LOCATION)

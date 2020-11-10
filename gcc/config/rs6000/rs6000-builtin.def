@@ -696,6 +696,14 @@
 /* Miscellaneous builtins for instructions added in ISA 2.07.  These
    instructions do require the ISA 2.07 vector support, but they aren't vector
    instructions.  */
+#define BU_P8V_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #define BU_P8V_MISC_3(ENUM, NAME, ATTR, ICODE)				\
   RS6000_BUILTIN_3 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
 		    "__builtin_" NAME,			/* NAME */	\
@@ -1145,6 +1153,14 @@
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 #endif
 
+#define BU_P10V_OVERLOAD_X(ENUM, NAME)				\
+  RS6000_BUILTIN_X (P10_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 /* Power 10 Altivec builtins  */
 
 #define BU_P10V_AV_0(ENUM, NAME, ATTR, ICODE)				\
@@ -1178,6 +1194,15 @@
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P10V_AV_X(ENUM, NAME, ATTR)					\
+  RS6000_BUILTIN_X (P10_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 
 
 /* Insure 0 is not a legitimate index.  */
@@ -1474,6 +1499,18 @@ BU_ALTIVEC_X (LVSR,		"lvsr",		    PURE)
 BU_ALTIVEC_X (LVEBX,		"lvebx",	    PURE)
 BU_ALTIVEC_X (LVEHX,		"lvehx",	    PURE)
 BU_ALTIVEC_X (LVEWX,		"lvewx",	    PURE)
+BU_P10V_AV_X (SE_LXVRBX,	"se_lxvrbx",	    PURE)
+BU_P10V_AV_X (SE_LXVRHX,	"se_lxvrhx",	    PURE)
+BU_P10V_AV_X (SE_LXVRWX,	"se_lxvrwx",	    PURE)
+BU_P10V_AV_X (SE_LXVRDX,	"se_lxvrdx",	    PURE)
+BU_P10V_AV_X (ZE_LXVRBX,	"ze_lxvrbx",	    PURE)
+BU_P10V_AV_X (ZE_LXVRHX,	"ze_lxvrhx",	    PURE)
+BU_P10V_AV_X (ZE_LXVRWX,	"ze_lxvrwx",	    PURE)
+BU_P10V_AV_X (ZE_LXVRDX,	"ze_lxvrdx",	    PURE)
+BU_P10V_AV_X (TR_STXVRBX,	"tr_stxvrbx",	    MEM)
+BU_P10V_AV_X (TR_STXVRHX,	"tr_stxvrhx",	    MEM)
+BU_P10V_AV_X (TR_STXVRWX,	"tr_stxvrwx",	    MEM)
+BU_P10V_AV_X (TR_STXVRDX,	"tr_stxvrdx",	    MEM)
 BU_ALTIVEC_X (LVXL,		"lvxl",		    PURE)
 BU_ALTIVEC_X (LVXL_V2DF,	"lvxl_v2df",	    PURE)
 BU_ALTIVEC_X (LVXL_V2DI,	"lvxl_v2di",	    PURE)
@@ -1740,6 +1777,9 @@ BU_ALTIVEC_OVERLOAD_X (LDL,	   "ldl")
 BU_ALTIVEC_OVERLOAD_X (LVEBX,	   "lvebx")
 BU_ALTIVEC_OVERLOAD_X (LVEHX,	   "lvehx")
 BU_ALTIVEC_OVERLOAD_X (LVEWX,	   "lvewx")
+BU_P10V_OVERLOAD_X (SE_LXVRX,   "se_lxvrx")
+BU_P10V_OVERLOAD_X (ZE_LXVRX,   "ze_lxvrx")
+BU_P10V_OVERLOAD_X (TR_STXVRX,  "tr_stxvrx")
 BU_ALTIVEC_OVERLOAD_X (LVLX,	   "lvlx")
 BU_ALTIVEC_OVERLOAD_X (LVLXL,	   "lvlxl")
 BU_ALTIVEC_OVERLOAD_X (LVRX,	   "lvrx")
@@ -2636,16 +2676,55 @@ BU_P7_MISC_1 (CBCDTD,		"cbcdtd",	CONST,	cbcdtd)
 BU_P7_MISC_2 (ADDG6S,		"addg6s",	CONST,	addg6s)
 
 /* 3 argument BCD functions added in ISA 2.07.  */
-BU_P8V_MISC_3 (BCDADD,		"bcdadd",	CONST,	bcdadd)
-BU_P8V_MISC_3 (BCDADD_LT,	"bcdadd_lt",	CONST,	bcdadd_lt)
-BU_P8V_MISC_3 (BCDADD_EQ,	"bcdadd_eq",	CONST,	bcdadd_eq)
-BU_P8V_MISC_3 (BCDADD_GT,	"bcdadd_gt",	CONST,	bcdadd_gt)
-BU_P8V_MISC_3 (BCDADD_OV,	"bcdadd_ov",	CONST,	bcdadd_unordered)
-BU_P8V_MISC_3 (BCDSUB,		"bcdsub",	CONST,	bcdsub)
-BU_P8V_MISC_3 (BCDSUB_LT,	"bcdsub_lt",	CONST,	bcdsub_lt)
-BU_P8V_MISC_3 (BCDSUB_EQ,	"bcdsub_eq",	CONST,	bcdsub_eq)
-BU_P8V_MISC_3 (BCDSUB_GT,	"bcdsub_gt",	CONST,	bcdsub_gt)
-BU_P8V_MISC_3 (BCDSUB_OV,	"bcdsub_ov",	CONST,	bcdsub_unordered)
+BU_P8V_MISC_3 (BCDADD_V1TI,	"bcdadd_v1ti",	CONST,	bcdadd_v1ti)
+BU_P8V_MISC_3 (BCDADD_V16QI,	"bcdadd_v16qi",	CONST,	bcdadd_v16qi)
+BU_P8V_MISC_3 (BCDADD_LT_V1TI,	"bcdadd_lt_v1ti",  CONST, bcdadd_lt_v1ti)
+BU_P8V_MISC_3 (BCDADD_LT_V16QI,	"bcdadd_lt_v16qi", CONST, bcdadd_lt_v16qi)
+BU_P8V_MISC_3 (BCDADD_EQ_V1TI,	"bcdadd_eq_v1ti",  CONST, bcdadd_eq_v1ti)
+BU_P8V_MISC_3 (BCDADD_EQ_V16QI,	"bcdadd_eq_v16qi", CONST, bcdadd_eq_v16qi)
+BU_P8V_MISC_3 (BCDADD_GT_V1TI,	"bcdadd_gt_v1ti",  CONST, bcdadd_gt_v1ti)
+BU_P8V_MISC_3 (BCDADD_GT_V16QI,	"bcdadd_gt_v16qi", CONST, bcdadd_gt_v16qi)
+BU_P8V_MISC_3 (BCDADD_OV_V1TI,	"bcdadd_ov_v1ti",  CONST, bcdadd_unordered_v1ti)
+BU_P8V_MISC_3 (BCDADD_OV_V16QI,	"bcdadd_ov_v16qi", CONST, bcdadd_unordered_v16qi)
+
+BU_P8V_MISC_3 (BCDSUB_V1TI,	"bcdsub_v1ti",	CONST,	bcdsub_v1ti)
+BU_P8V_MISC_3 (BCDSUB_V16QI,	"bcdsub_v16qi",	CONST,	bcdsub_v16qi)
+BU_P8V_MISC_3 (BCDSUB_LT_V1TI,	"bcdsub_lt_v1ti",  CONST, bcdsub_lt_v1ti)
+BU_P8V_MISC_3 (BCDSUB_LT_V16QI,	"bcdsub_lt_v16qi", CONST, bcdsub_lt_v16qi)
+BU_P8V_MISC_3 (BCDSUB_LE_V1TI,	"bcdsub_le_v1ti",  CONST, bcdsub_le_v1ti)
+BU_P8V_MISC_3 (BCDSUB_LE_V16QI,	"bcdsub_le_v16qi", CONST, bcdsub_le_v16qi)
+BU_P8V_MISC_3 (BCDSUB_EQ_V1TI,	"bcdsub_eq_v1ti",  CONST, bcdsub_eq_v1ti)
+BU_P8V_MISC_3 (BCDSUB_EQ_V16QI,	"bcdsub_eq_v16qi", CONST, bcdsub_eq_v16qi)
+BU_P8V_MISC_3 (BCDSUB_GT_V1TI,	"bcdsub_gt_v1ti",  CONST, bcdsub_gt_v1ti)
+BU_P8V_MISC_3 (BCDSUB_GT_V16QI,	"bcdsub_gt_v16qi", CONST, bcdsub_gt_v16qi)
+BU_P8V_MISC_3 (BCDSUB_GE_V1TI,	"bcdsub_ge_v1ti",  CONST, bcdsub_ge_v1ti)
+BU_P8V_MISC_3 (BCDSUB_GE_V16QI,	"bcdsub_ge_v16qi", CONST, bcdsub_ge_v16qi)
+BU_P8V_MISC_3 (BCDSUB_OV_V1TI,	"bcdsub_ov_v1ti",  CONST, bcdsub_unordered_v1ti)
+BU_P8V_MISC_3 (BCDSUB_OV_V16QI,	"bcdsub_ov_v16qi", CONST, bcdsub_unordered_v16qi)
+
+BU_P8V_MISC_1 (BCDINVALID_V1TI,	"bcdinvalid_v1ti",  CONST, bcdinvalid_v1ti)
+BU_P8V_MISC_1 (BCDINVALID_V16QI, "bcdinvalid_v16qi", CONST, bcdinvalid_v16qi)
+
+BU_P9V_AV_1 (BCDMUL10_V16QI, "bcdmul10_v16qi", CONST, bcdmul10_v16qi)
+BU_P9V_AV_1 (BCDDIV10_V16QI, "bcddiv10_v16qi", CONST, bcddiv10_v16qi)
+BU_P8V_MISC_1 (DENBCD_V16QI,	"denb2dfp_v16qi", CONST, dfp_denbcd_v16qi)
+
+BU_P8V_OVERLOAD_3 (BCDADD,	"bcdadd")
+BU_P8V_OVERLOAD_3 (BCDADD_LT,	"bcdadd_lt")
+BU_P8V_OVERLOAD_3 (BCDADD_EQ,	"bcdadd_eq")
+BU_P8V_OVERLOAD_3 (BCDADD_GT,	"bcdadd_gt")
+BU_P8V_OVERLOAD_3 (BCDADD_OV,	"bcdadd_ov")
+BU_P8V_OVERLOAD_3 (BCDSUB,	"bcdsub")
+BU_P8V_OVERLOAD_3 (BCDSUB_LT,	"bcdsub_lt")
+BU_P8V_OVERLOAD_3 (BCDSUB_LE,	"bcdsub_le")
+BU_P8V_OVERLOAD_3 (BCDSUB_EQ,	"bcdsub_eq")
+BU_P8V_OVERLOAD_3 (BCDSUB_GT,	"bcdsub_gt")
+BU_P8V_OVERLOAD_3 (BCDSUB_GE,	"bcdsub_ge")
+BU_P8V_OVERLOAD_3 (BCDSUB_OV,	"bcdsub_ov")
+BU_P8V_OVERLOAD_1 (BCDINVALID,	"bcdinvalid")
+BU_P9V_OVERLOAD_1 (BCDMUL10,	"bcdmul10")
+BU_P9V_OVERLOAD_1 (BCDDIV10,	"bcddiv10")
+BU_P8V_OVERLOAD_1 (DENBCD,	"denb2dfp")
 
 /* 2 argument pack/unpack 128-bit floating point types.  */
 BU_DFP_MISC_2 (PACK_TD,		"pack_dec128",		CONST,	packtd)

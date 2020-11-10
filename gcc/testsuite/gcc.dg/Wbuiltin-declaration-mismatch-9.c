@@ -12,4 +12,5 @@ void a (void)
 }
 
 /* The invalid scanf call may also trigger:
-   { dg-prune-output "accessing 4 bytes in a region of size 1" } */
+   { dg-prune-output "accessing 4 bytes in a region of size 1" }
+   { dg-prune-output "accessing 2 bytes in a region of size 1" } */

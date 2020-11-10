@@ -13,6 +13,6 @@ void foo(int i)
 
 /* We should not use vector operations for i + 1 and (i + 1) & 31 but
    instead use { j, j, j, j }.  */ 
-/* { dg-final { scan-tree-dump-times "Building parent vector operands from scalars" 2 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "Using a splat of the uniform operand" 2 "slp2" } } */
 /* { dg-final { scan-tree-dump-not " = \{i_" "slp2" } } */
 /* { dg-final { scan-tree-dump-times " = \{j_" 1 "slp2" } } */

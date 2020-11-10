@@ -40,7 +40,7 @@ is
    --  When growing a container, multiply current capacity by this. Doubling
    --  leads to amortized linear-time copying.
 
-   type Int is range System.Min_Int .. System.Max_Int;
+   subtype Int is Long_Long_Integer;
 
    procedure Free is
      new Ada.Unchecked_Deallocation (Elements_Array, Elements_Array_Ptr);

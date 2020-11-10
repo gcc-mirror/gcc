@@ -1,4 +1,4 @@
-/* Functions related to building classes and their related objects.
+/* Functions related to building -*- C++ -*- classes and their related objects.
    Copyright (C) 1987-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -1321,6 +1321,8 @@ handle_using_decl (tree using_decl, tree t)
 	      "local member %q#D declared here", old_value);
       return;
     }
+
+  iloc_sentinel ils (DECL_SOURCE_LOCATION (using_decl));
 
   /* Make type T see field decl FDECL with access ACCESS.  */
   if (flist)
@@ -3283,7 +3285,8 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       {
 	tree eq = implicitly_declare_fn (sfk_comparison, t, false, space,
 					 NULL_TREE);
-	if (DECL_FRIEND_P (space))
+	bool is_friend = DECL_CONTEXT (space) != t;
+	if (is_friend)
 	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
 		     NULL_TREE, NO_SPECIAL, true);
 	else
@@ -3292,7 +3295,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	    DECL_CHAIN (eq) = TYPE_FIELDS (t);
 	    TYPE_FIELDS (t) = eq;
 	  }
-	maybe_add_class_template_decl_list (t, eq, DECL_FRIEND_P (space));
+	maybe_add_class_template_decl_list (t, eq, is_friend);
       }
 
   while (*access_decls)
@@ -4837,7 +4840,10 @@ copy_fndecl_with_name (tree fn, tree name, tree_code code,
 
   /* Create the RTL for this function.  */
   SET_DECL_RTL (clone, NULL);
-  rest_of_decl_compilation (clone, namespace_bindings_p (), at_eof);
+
+  /* Regardless of the current scope, this is a member function, so
+     not at namespace scope.  */
+  rest_of_decl_compilation (clone, /*top_level=*/0, at_eof);
 
   return clone;
 }
@@ -4897,8 +4903,9 @@ build_clone (tree fn, tree name, bool need_vtt_parm_p,
 /* Build the clones of FN, return the number of clones built.  These
    will be inserted onto DECL_CHAIN of FN.  */
 
-static unsigned
-build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p)
+static void
+build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p,
+		    bool update_methods)
 {
   unsigned count = 0;
 
@@ -4934,7 +4941,16 @@ build_cdtor_clones (tree fn, bool needs_vtt_p, bool base_omits_inherited_p)
       count += 2;
     }
 
-  return count;
+  /* The original is now an abstract function that is never
+     emitted.  */
+  DECL_ABSTRACT_P (fn) = true;
+
+  if (update_methods)
+    for (tree clone = fn; count--;)
+      {
+	clone = DECL_CHAIN (clone);
+	add_method (DECL_CONTEXT (clone), clone, false);
+      }
 }
 
 /* Produce declarations for all appropriate clones of FN.  If
@@ -4957,17 +4973,7 @@ clone_cdtor (tree fn, bool update_methods)
   bool base_omits_inherited = (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
 			       && base_ctor_omit_inherited_parms (fn));
 
-  unsigned count = build_cdtor_clones (fn, vtt, base_omits_inherited);
-
-  /* Note that this is an abstract function that is never emitted.  */
-  DECL_ABSTRACT_P (fn) = true;
-
-  if (update_methods)
-    for (tree clone = fn; count--;)
-      {
-	clone = DECL_CHAIN (clone);
-	add_method (DECL_CONTEXT (clone), clone, false);
-      }
+  build_cdtor_clones (fn, vtt, base_omits_inherited, update_methods);
 }
 
 /* DECL is an in charge constructor, which is being defined. This will
@@ -5054,8 +5060,8 @@ adjust_clone_args (tree decl)
 static void
 clone_constructors_and_destructors (tree t)
 {
-  /* While constructors can be via a using declaration, at this point
-     we no longer need to know that.  */
+  /* We do not need to propagate the usingness to the clone, at this
+     point that is not needed.  */
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     clone_cdtor (*iter, /*update_methods=*/true);
 
@@ -7470,9 +7476,6 @@ finish_struct_1 (tree t)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, ! LOCAL_CLASS_P (t));
-
-  /* Recalculate satisfaction that might depend on completeness.  */
-  clear_satisfaction_cache ();
 
   if (TYPE_TRANSPARENT_AGGR (t))
     {

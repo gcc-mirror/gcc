@@ -38,6 +38,7 @@ pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Keys);
 with Ada.Containers.Helpers; use Ada.Containers.Helpers;
 
 with System; use type System.Address;
+with System.Put_Images;
 
 package body Ada.Containers.Hashed_Maps with
   SPARK_Mode => Off
@@ -335,6 +336,8 @@ is
 
       Free (Position.Node);
       Position.Container := null;
+      Position.Position := No_Element.Position;
+      pragma Assert (Position = No_Element);
    end Delete;
 
    -------------
@@ -365,6 +368,17 @@ is
 
       return Position.Node.Element;
    end Element;
+
+   -----------
+   -- Empty --
+   -----------
+
+   function Empty (Capacity : Count_Type := 1000) return Map is
+   begin
+      return Result : Map do
+         Reserve_Capacity (Result, Capacity);
+      end return;
+   end Empty;
 
    -------------------------
    -- Equivalent_Key_Node --
@@ -869,6 +883,36 @@ is
          Process (K, E);
       end;
    end Query_Element;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map)
+   is
+      First_Time : Boolean := True;
+      use System.Put_Images;
+
+      procedure Put_Key_Value (Position : Cursor);
+      procedure Put_Key_Value (Position : Cursor) is
+      begin
+         if First_Time then
+            First_Time := False;
+         else
+            Simple_Array_Between (S);
+         end if;
+
+         Key_Type'Put_Image (S, Key (Position));
+         Put_Arrow (S);
+         Element_Type'Put_Image (S, Element (Position));
+      end Put_Key_Value;
+
+   begin
+      Array_Before (S);
+      Iterate (V, Put_Key_Value'Access);
+      Array_After (S);
+   end Put_Image;
 
    ----------
    -- Read --

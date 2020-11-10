@@ -160,6 +160,7 @@ extern unsigned int default_function_arg_round_boundary (machine_mode,
 							 const_tree);
 extern bool hook_bool_const_rtx_commutative_p (const_rtx, int);
 extern rtx default_function_value (const_tree, const_tree, bool);
+extern HARD_REG_SET default_zero_call_used_regs (HARD_REG_SET);
 extern rtx default_libcall_value (machine_mode, const_rtx);
 extern bool default_function_value_regno_p (const unsigned int);
 extern rtx default_internal_arg_pointer (void);

@@ -5182,7 +5182,11 @@ Function_type::do_export(Export* exp) const
 	    first = false;
 	  else
 	    exp->write_c_string(", ");
-	  exp->write_name(p->name());
+	  // The hash for a function type ignores parameter names, so
+	  // we don't want to write them out here.  If we did write
+	  // them out, we could get spurious changes in export data
+	  // when recompiling a package.
+	  exp->write_name("");
 	  exp->write_c_string(" ");
 	  if (!is_varargs || p + 1 != this->parameters_->end())
 	    exp->write_type(p->type());
@@ -5213,7 +5217,7 @@ Function_type::do_export(Export* exp) const
 		first = false;
 	      else
 		exp->write_c_string(", ");
-	      exp->write_name(p->name());
+	      exp->write_name("");
 	      exp->write_c_string(" ");
 	      exp->write_type(p->type());
 	    }
@@ -6044,7 +6048,7 @@ Struct_type::do_hash_might_panic()
 // Return whether this struct type is permitted to be in the heap.
 
 bool
-Struct_type::do_in_heap()
+Struct_type::do_in_heap() const
 {
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)

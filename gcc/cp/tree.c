@@ -2676,6 +2676,52 @@ build_cp_fntype_variant (tree type, cp_ref_qualifier rqual,
   return v;
 }
 
+/* TYPE is a function or method type with a deferred exception
+   specification that has been parsed to RAISES.  Fixup all the type
+   variants that are affected in place.  Via decltype &| noexcept
+   tricks, the unparsed spec could have escaped into the type system.
+   The general case is hard to fixup canonical types for.  */
+
+void
+fixup_deferred_exception_variants (tree type, tree raises)
+{
+  tree original = TYPE_RAISES_EXCEPTIONS (type);
+  tree cr = flag_noexcept_type ? canonical_eh_spec (raises) : NULL_TREE;
+
+  gcc_checking_assert (TREE_CODE (TREE_PURPOSE (original))
+		       == DEFERRED_PARSE);
+
+  /* Though sucky, this walk will process the canonical variants
+     first.  */
+  for (tree variant = TYPE_MAIN_VARIANT (type);
+       variant; variant = TYPE_NEXT_VARIANT (variant))
+    if (TYPE_RAISES_EXCEPTIONS (variant) == original)
+      {
+	gcc_checking_assert (variant != TYPE_MAIN_VARIANT (type));
+
+	if (!TYPE_STRUCTURAL_EQUALITY_P (variant))
+	  {
+	    cp_cv_quals var_quals = TYPE_QUALS (variant);
+	    cp_ref_qualifier rqual = type_memfn_rqual (variant);
+
+	    tree v = TYPE_MAIN_VARIANT (type);
+	    for (; v; v = TYPE_NEXT_VARIANT (v))
+	      if (TYPE_CANONICAL (v) == v
+		  && cp_check_qualified_type (v, variant, var_quals,
+					      rqual, cr, false))
+		break;
+	    TYPE_RAISES_EXCEPTIONS (variant) = raises;
+
+	    if (!v)
+	      v = build_cp_fntype_variant (TYPE_CANONICAL (variant),
+					   rqual, cr, false);
+	    TYPE_CANONICAL (variant) = v;
+	  }
+	else
+	  TYPE_RAISES_EXCEPTIONS (variant) = raises;
+      }
+}
+
 /* Build the FUNCTION_TYPE or METHOD_TYPE which may throw exceptions
    listed in RAISES.  */
 
@@ -2700,6 +2746,7 @@ bind_template_template_parm (tree t, tree newargs)
   t2 = cxx_make_type (BOUND_TEMPLATE_TEMPLATE_PARM);
   decl = build_decl (input_location,
 		     TYPE_DECL, DECL_NAME (decl), NULL_TREE);
+  SET_DECL_TEMPLATE_PARM_P (decl);
 
   /* These nodes have to be created to reflect new TYPE_DECL and template
      arguments.  */
@@ -3671,20 +3718,28 @@ cp_tree_equal (tree t1, tree t2)
 
     case CALL_EXPR:
       {
-	tree arg1, arg2;
+	if (KOENIG_LOOKUP_P (t1) != KOENIG_LOOKUP_P (t2))
+	  return false;
+
+	if (!called_fns_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	  return false;
+
 	call_expr_arg_iterator iter1, iter2;
-	if (KOENIG_LOOKUP_P (t1) != KOENIG_LOOKUP_P (t2)
-	    || !called_fns_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	init_call_expr_arg_iterator (t1, &iter1);
+	init_call_expr_arg_iterator (t2, &iter2);
+	if (iter1.n != iter2.n)
 	  return false;
-	for (arg1 = first_call_expr_arg (t1, &iter1),
-	       arg2 = first_call_expr_arg (t2, &iter2);
-	     arg1 && arg2;
-	     arg1 = next_call_expr_arg (&iter1),
-	       arg2 = next_call_expr_arg (&iter2))
-	  if (!cp_tree_equal (arg1, arg2))
-	    return false;
-	if (arg1 || arg2)
-	  return false;
+
+	while (more_call_expr_args_p (&iter1))
+	  {
+	    tree arg1 = next_call_expr_arg (&iter1);
+	    tree arg2 = next_call_expr_arg (&iter2);
+
+	    gcc_checking_assert (arg1 && arg2);
+	    if (!cp_tree_equal (arg1, arg2))
+	      return false;
+	  }
+
 	return true;
       }
 
@@ -3779,16 +3834,11 @@ cp_tree_equal (tree t1, tree t2)
 				     CHECK_CONSTR_ARGS (t2)));
 
     case TREE_VEC:
-      {
-	unsigned ix;
-	if (TREE_VEC_LENGTH (t1) != TREE_VEC_LENGTH (t2))
-	  return false;
-	for (ix = TREE_VEC_LENGTH (t1); ix--;)
-	  if (!cp_tree_equal (TREE_VEC_ELT (t1, ix),
-			      TREE_VEC_ELT (t2, ix)))
-	    return false;
-	return true;
-      }
+      /* These are template args.  Really we should be getting the
+	 caller to do this as it knows it to be true.  */
+      if (!comp_template_args (t1, t2, NULL, NULL, false))
+	return false;
+      return true;
 
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
@@ -4050,13 +4100,14 @@ is_dummy_object (const_tree ob)
 	  && TREE_OPERAND (ob, 0) == void_node);
 }
 
-/* Returns true if TYPE is a character type or std::byte.  */
+/* Returns true if TYPE is char, unsigned char, or std::byte.  */
 
 bool
 is_byte_access_type (tree type)
 {
   type = TYPE_MAIN_VARIANT (type);
-  if (char_type_p (type))
+  if (type == char_type_node
+      || type == unsigned_char_type_node)
     return true;
 
   return (TREE_CODE (type) == ENUMERAL_TYPE
@@ -5668,8 +5719,7 @@ cp_fix_function_decl_p (tree decl)
 
       /* Don't fix same_body aliases.  Although they don't have their own
 	 CFG, they share it with what they alias to.  */
-      if (!node || !node->alias
-	  || !vec_safe_length (node->ref_list.references))
+      if (!node || !node->alias || !node->num_references ())
 	return true;
     }
 

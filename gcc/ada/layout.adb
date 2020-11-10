@@ -378,12 +378,12 @@ package body Layout is
                         Init_Esize (E, S);
                         exit;
 
-                     --  If the RM_Size is greater than 64 (happens only when
-                     --  strange values are specified by the user, then Esize
-                     --  is simply a copy of RM_Size, it will be further
-                     --  refined later on)
+                     --  If the RM_Size is greater than System_Max_Integer_Size
+                     --  (happens only when strange values are specified by the
+                     --  user), then Esize is simply a copy of RM_Size, it will
+                     --  be further refined later on).
 
-                     elsif S = 64 then
+                     elsif S = System_Max_Integer_Size then
                         Set_Esize (E, RM_Size (E));
                         exit;
 
@@ -436,11 +436,11 @@ package body Layout is
          end if;
 
          --  For array base types, set the component size if object size of the
-         --  component type is known and is a small power of 2 (8, 16, 32, 64),
-         --  since this is what will always be used, except if a very large
-         --  alignment was specified and so Adjust_Esize_For_Alignment gave up
-         --  because, in this case, the object size is not a multiple of the
-         --  alignment and, therefore, cannot be the component size.
+         --  component type is known and is a small power of 2 (8, 16, 32, 64
+         --  or 128), since this is what will always be used, except if a very
+         --  large alignment was specified and so Adjust_Esize_For_Alignment
+         --  gave up because, in this case, the object size is not a multiple
+         --  of the alignment and, therefore, cannot be the component size.
 
          if Ekind (E) = E_Array_Type and then Unknown_Component_Size (E) then
             declare
@@ -455,7 +455,7 @@ package body Layout is
                  and then Known_Static_Esize (CT)
                  and then not (Known_Alignment (CT)
                                 and then Alignment_In_Bits (CT) >
-                                           Standard_Long_Long_Integer_Size)
+                                           System_Max_Integer_Size)
                then
                   declare
                      S : constant Uint := Esize (CT);
@@ -470,7 +470,7 @@ package body Layout is
 
          --  For non-packed arrays set the alignment of the array to the
          --  alignment of the component type if it is unknown. Skip this
-         --  in atomic/VFA case since a larger alignment may be needed.
+         --  in full access case since a larger alignment may be needed.
 
          if Is_Array_Type (E)
            and then not Is_Packed (E)
@@ -479,7 +479,7 @@ package body Layout is
            and then Known_Static_Component_Size (E)
            and then Known_Static_Esize (Component_Type (E))
            and then Component_Size (E) = Esize (Component_Type (E))
-           and then not Is_Atomic_Or_VFA (E)
+           and then not Is_Full_Access (E)
          then
             Set_Alignment (E, Alignment (Component_Type (E)));
          end if;
@@ -505,11 +505,11 @@ package body Layout is
 
       elsif Is_Array_Type (E) then
 
-         --  For arrays that are required to be atomic/VFA, we do the same
-         --  processing as described above for short records, since we
-         --  really need to have the alignment set for the whole array.
+         --  For arrays that are required to be full access, we do the same
+         --  processing as described above for short records, since we really
+         --  need to have the alignment set for the whole array.
 
-         if Is_Atomic_Or_VFA (E) and then not Debug_Flag_Q then
+         if Is_Full_Access (E) and then not Debug_Flag_Q then
             Set_Composite_Alignment (E);
          end if;
 
@@ -615,9 +615,9 @@ package body Layout is
         and then Is_Record_Type (E)
         and then Is_Packed (E)
       then
-         --  No effect for record with atomic/VFA components
+         --  No effect for record with full access components
 
-         if Is_Atomic_Or_VFA (E) then
+         if Is_Full_Access (E) then
             Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
 
             if Is_Atomic (E) then
@@ -640,7 +640,7 @@ package body Layout is
             return;
          end if;
 
-         --  No effect if any component is atomic/VFA or is a by-reference type
+         --  No effect if a component is full access or of a by-reference type
 
          declare
             Ent : Entity_Id;
@@ -649,8 +649,8 @@ package body Layout is
             Ent := First_Component_Or_Discriminant (E);
             while Present (Ent) loop
                if Is_By_Reference_Type (Etype (Ent))
-                 or else Is_Atomic_Or_VFA (Etype (Ent))
-                 or else Is_Atomic_Or_VFA (Ent)
+                 or else Is_Full_Access (Etype (Ent))
+                 or else Is_Full_Access (Ent)
                then
                   Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
 
@@ -660,7 +660,7 @@ package body Layout is
                         & "components present??", E);
                   else
                      Error_Msg_N
-                       ("\pragma is ignored if bolatile full access "
+                       ("\pragma is ignored if volatile full access "
                         & "components present??", E);
                   end if;
 
@@ -756,9 +756,9 @@ package body Layout is
 
       --  Further processing for record types only to reduce the alignment
       --  set by the above processing in some specific cases. We do not
-      --  do this for atomic/VFA records, since we need max alignment there,
+      --  do this for full access records, since we need max alignment there,
 
-      if Is_Record_Type (E) and then not Is_Atomic_Or_VFA (E) then
+      if Is_Record_Type (E) and then not Is_Full_Access (E) then
 
          --  For records, there is generally no point in setting alignment
          --  higher than word size since we cannot do better than move by

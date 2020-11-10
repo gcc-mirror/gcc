@@ -17,8 +17,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Exit immediately if this isn't a PowerPC target or if the target is aix.
-if { (![istarget powerpc*-*-*] && ![istarget rs6000-*-*])
-     || [istarget "powerpc*-*-aix*"] } then {
+if { (![istarget powerpc*-*-*] && ![istarget rs6000-*-*]) } then {
   return
 }
 

@@ -471,7 +471,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __last == _GLIBCXX_STD_A::find_if(__first, __last, __pred); }
 
   /**
-   *  @brief  Checks that a predicate is false for at least an element
+   *  @brief  Checks that a predicate is true for at least one element
    *          of a sequence.
    *  @ingroup non_mutating_algorithms
    *  @param  __first   An input iterator.
@@ -4243,7 +4243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 		__gnu_cxx::__ops::__iter_comp_val(__binary_pred, __val));
     }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
   /** @brief Search a sequence using a Searcher object.
    *
    *  @param  __first        A forward iterator.

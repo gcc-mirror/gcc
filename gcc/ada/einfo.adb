@@ -13,24 +13,15 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-pragma Style_Checks (All_Checks);
---  Turn off subprogram ordering, not used for this unit
 
 with Atree;   use Atree;
 with Elists;  use Elists;
@@ -1526,7 +1517,7 @@ package body Einfo is
    function Has_Constrained_Partial_View (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
-      return Flag187 (Id);
+      return Flag187 (Base_Type (Id));
    end Has_Constrained_Partial_View;
 
    function Has_Controlled_Component (Id : E) return B is
@@ -2867,7 +2858,7 @@ package body Einfo is
 
    function Minimum_Accessibility (Id : E) return E is
    begin
-      pragma Assert (Ekind (Id) in Formal_Kind);
+      pragma Assert (Is_Formal (Id));
       return Node24 (Id);
    end Minimum_Accessibility;
 
@@ -3311,6 +3302,13 @@ package body Einfo is
 
    function Scope_Depth_Value (Id : E) return U is
    begin
+      pragma Assert
+        (Ekind (Id) in
+           Concurrent_Kind | Entry_Kind        | Generic_Unit_Kind |
+           E_Package       | E_Package_Body    | Subprogram_Kind   |
+           E_Block         | E_Subprogram_Body |
+           E_Private_Type .. E_Limited_Private_Subtype             |
+           E_Void          | E_Loop            | E_Return_Statement);
       return Uint22 (Id);
    end Scope_Depth_Value;
 
@@ -6067,7 +6065,8 @@ package body Einfo is
 
    procedure Set_Limited_View (Id : E; V : E) is
    begin
-      pragma Assert (Ekind (Id) = E_Package);
+      pragma Assert (Ekind (Id) = E_Package
+        and then not Is_Generic_Instance (Id));
       Set_Node23 (Id, V);
    end Set_Limited_View;
 
@@ -6126,7 +6125,7 @@ package body Einfo is
 
    procedure Set_Minimum_Accessibility (Id : E; V : E) is
    begin
-      pragma Assert (Ekind (Id) in Formal_Kind);
+      pragma Assert (Is_Formal (Id));
       Set_Node24 (Id, V);
    end Set_Minimum_Accessibility;
 
@@ -6582,7 +6581,13 @@ package body Einfo is
 
    procedure Set_Scope_Depth_Value (Id : E; V : U) is
    begin
-      pragma Assert (not Is_Record_Type (Id));
+      pragma Assert
+        (Ekind (Id) in
+           Concurrent_Kind | Entry_Kind        | Generic_Unit_Kind |
+           E_Package       | E_Package_Body    | Subprogram_Kind   |
+           E_Block         | E_Subprogram_Body |
+           E_Private_Type .. E_Limited_Private_Subtype             |
+           E_Void          | E_Loop            | E_Return_Statement);
       Set_Uint22 (Id, V);
    end Set_Scope_Depth_Value;
 
@@ -7647,10 +7652,11 @@ package body Einfo is
                  Id = Pragma_Refined_State              or else
                  Id = Pragma_Volatile_Function;
 
-      --  Contract / test case pragmas
+      --  Contract / subprogram variant / test case pragmas
 
       Is_CTC : constant Boolean :=
                   Id = Pragma_Contract_Cases            or else
+                  Id = Pragma_Subprogram_Variant        or else
                   Id = Pragma_Test_Case;
 
       --  Pre / postcondition pragmas
@@ -7834,6 +7840,17 @@ package body Einfo is
    begin
       return Has_Own_Invariants (Id) or else Has_Inherited_Invariants (Id);
    end Has_Invariants;
+
+   --------------------------
+   -- Has_Limited_View --
+   --------------------------
+
+   function Has_Limited_View (Id : E) return B is
+   begin
+      return Ekind (Id) = E_Package
+        and then not Is_Generic_Instance (Id)
+        and then Present (Limited_View (Id));
+   end Has_Limited_View;
 
    --------------------------
    -- Has_Non_Limited_View --
@@ -8029,15 +8046,6 @@ package body Einfo is
       return Empty;
    end Invariant_Procedure;
 
-   ----------------------
-   -- Is_Atomic_Or_VFA --
-   ----------------------
-
-   function Is_Atomic_Or_VFA (Id : E) return B is
-   begin
-      return Is_Atomic (Id) or else Is_Volatile_Full_Access (Id);
-   end Is_Atomic_Or_VFA;
-
    ------------------
    -- Is_Base_Type --
    ------------------
@@ -8195,6 +8203,15 @@ package body Einfo is
    begin
       return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
    end Is_Finalizer;
+
+   ----------------------
+   -- Is_Full_Access --
+   ----------------------
+
+   function Is_Full_Access (Id : E) return B is
+   begin
+      return Is_Atomic (Id) or else Is_Volatile_Full_Access (Id);
+   end Is_Full_Access;
 
    -------------------
    -- Is_Null_State --
@@ -10873,21 +10890,18 @@ package body Einfo is
          when Formal_Kind =>
             Write_Str ("Protected_Formal");
 
-         when E_Block
-            | E_Entry
-            | E_Entry_Family
-            | E_Function
-            | E_Generic_Function
-            | E_Generic_Package
-            | E_Generic_Procedure
-            | E_Loop
+         when Concurrent_Kind
+            | Entry_Kind
+            | Generic_Unit_Kind
             | E_Package
             | E_Package_Body
-            | E_Procedure
-            | E_Protected_Type
-            | E_Return_Statement
+            | Subprogram_Kind
+            | E_Block
             | E_Subprogram_Body
-            | E_Task_Type
+            | E_Private_Type .. E_Limited_Private_Subtype
+            | E_Void
+            | E_Loop
+            | E_Return_Statement
          =>
             Write_Str ("Scope_Depth_Value");
 

@@ -1211,6 +1211,9 @@ Export::write_type_definition(const Type* type, int index)
       this->write_string(nt->named_object()->name());
       this->write_c_string("\" ");
 
+      if (!nt->in_heap())
+	this->write_c_string("notinheap ");
+
       if (nt->is_alias())
 	this->write_c_string("= ");
     }

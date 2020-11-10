@@ -38,8 +38,8 @@
 
 #if __cplusplus > 201703L
 
-#include <type_traits>
 #include <array>
+#include <cstddef>
 #include <bits/stl_iterator.h>
 #include <bits/ranges_base.h>
 
@@ -67,12 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __is_std_array : false_type { };
 
     template<typename _Tp, size_t _Num>
-      struct __is_std_array<_GLIBCXX_STD_C::array<_Tp, _Num>> : true_type { };
-
-#ifdef _GLIBCXX_DEBUG
-    template<typename _Tp, size_t _Num>
-      struct __is_std_array<__debug::array<_Tp, _Num>> : true_type { };
-#endif
+      struct __is_std_array<std::array<_Tp, _Num>> : true_type { };
 
     template<size_t _Extent>
       class __extent_storage
@@ -151,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr
       span() noexcept
       requires ((_Extent + 1u) <= 1u)
-      : _M_extent(0), _M_ptr(nullptr)
+      : _M_ptr(nullptr), _M_extent(0)
       { }
 
       template<contiguous_iterator _It>
@@ -159,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr explicit(extent != dynamic_extent)
 	span(_It __first, size_type __count)
 	noexcept
-	: _M_extent(__count), _M_ptr(std::to_address(__first))
+	: _M_ptr(std::to_address(__first)), _M_extent(__count)
 	{
 	  if constexpr (_Extent != dynamic_extent)
 	    {
@@ -173,8 +168,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr explicit(extent != dynamic_extent)
 	span(_It __first, _End __last)
 	noexcept(noexcept(__last - __first))
-	: _M_extent(static_cast<size_type>(__last - __first)),
-	  _M_ptr(std::to_address(__first))
+	: _M_ptr(std::to_address(__first)),
+	  _M_extent(static_cast<size_type>(__last - __first))
 	{
 	  if constexpr (_Extent != dynamic_extent)
 	    {
@@ -392,8 +387,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-      [[no_unique_address]] __detail::__extent_storage<extent> _M_extent;
       pointer _M_ptr;
+      [[no_unique_address]] __detail::__extent_storage<extent> _M_extent;
     };
 
   // deduction guides

@@ -2,6 +2,10 @@
 // { dg-do compile }
 // { dg-additional-options "-Wno-return-type" }
 
+// VRP jump threading will create additional __builtin___memcpy_chk calls that
+// may be out of bounds.
+// { dg-additional-options "-Wno-stringop-overflow" }
+
 typedef long a;
 void *b, *c;
 template <typename, typename> class d {};

@@ -27,3 +27,6 @@ test01()
   return s.compare((const char*)nullptr);	// { dg-warning "\\\[-Wnonnull" }
   return s.compare(0, 2, (const char*)nullptr);	// { dg-warning "\\\[-Wnonnull" }
 }
+
+// Ignore additional diagnostic given with -Wsystem-headers:
+// { dg-prune-output "argument 1 null where non-null expected" }

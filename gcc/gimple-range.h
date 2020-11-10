@@ -64,7 +64,6 @@ private:
   bool range_of_phi (irange &r, gphi *phi);
   bool range_of_non_trivial_assignment (irange &r, gimple *s);
   bool range_of_builtin_call (irange &r, gcall *call);
-  void range_of_builtin_ubsan_call (irange &r, gcall *call, tree_code code);
   bool range_with_loop_info (irange &r, tree name);
   void range_of_ssa_name_with_loop_info (irange &, tree, class loop *,
 					 gphi *);
@@ -113,6 +112,18 @@ gimple_range_ssa_p (tree exp)
       irange::supports_type_p (TREE_TYPE (exp)))
     return exp;
   return NULL_TREE;
+}
+
+// Return true if TYPE1 and TYPE2 are compatible range types.
+
+static inline bool
+range_compatible_p (tree type1, tree type2)
+{
+  // types_compatible_p requires conversion in both directions to be useless.
+  // GIMPLE only requires a cast one way in order to be compatible.
+  // Ranges really only need the sign and precision to be the same.
+  return (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
+	  && TYPE_SIGN (type1) == TYPE_SIGN (type2));
 }
 
 // Return the legacy GCC global range for NAME if it has one, otherwise
@@ -166,5 +177,8 @@ private:
 
 // Flag to enable debugging the various internal Caches.
 #define DEBUG_RANGE_CACHE (dump_file && (param_evrp_mode & EVRP_MODE_DEBUG))
+
+// Temporary external interface to share with vr_values.
+bool range_of_builtin_call (range_query &query, irange &r, gcall *call);
 
 #endif // GCC_GIMPLE_RANGE_STMT_H

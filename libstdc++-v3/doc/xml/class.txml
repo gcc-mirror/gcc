@@ -2,7 +2,7 @@
 
 <section xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="manual.util.memory.allocator" xreflabel="allocator">
 <?dbhtml filename="allocator.html"?>
- 
+
 <info><title>allocator</title>
   <keywordset>
     <keyword>ISO C++</keyword>
@@ -31,7 +31,7 @@
     </listitem>
   </itemizedlist>
 
-  <para> 
+  <para>
   </para>
 </section>
 
@@ -41,7 +41,7 @@
   <para>
   </para>
 
-  <para> 
+  <para>
   </para>
 </section>
 
@@ -49,19 +49,19 @@
 
 
   <section><info><title>Interface Design</title></info>
-    
+
 
     <para>
     </para>
-    
-    <para> 
+
+    <para>
     </para>
   </section>
 
   <section><info><title>Selecting Default Allocation Strategy</title></info>
-    
 
-    <para> 
+
+    <para>
     </para>
 
    <orderedlist>
@@ -77,12 +77,12 @@
   </section>
 
   <section><info><title>Disabling Memory Caching</title></info>
-    
 
-    <para> 
+
+    <para>
     </para>
 
-   <para> 
+   <para>
    </para>
   </section>
 </section>
@@ -97,22 +97,22 @@
 <section xml:id="allocator.custom" xreflabel="allocator.custom"><info><title>Custom Allocators</title></info>
 
 
-  <para> 
+  <para>
   </para>
 
-   <para> 
+   <para>
    </para>
 </section>
 
 <bibliography xml:id="allocator.biblio" xreflabel="allocator.biblio">
-<info>	      
+<info>	
 	<title>
 	Bibliography
 	</title>	
 </info>
 
 
-<!-- 
+<!--
     <biblioentry xml:id="biblio.xxx">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -121,7 +121,7 @@
 	</link>
       </title>
       <date>
-      
+
       </date>
 
      <authorgroup>

@@ -54,10 +54,18 @@ struct riscv_implied_info_t
 };
 
 /* Implied ISA info, must end with NULL sentinel.  */
-riscv_implied_info_t riscv_implied_info[] =
+static const riscv_implied_info_t riscv_implied_info[] =
 {
   {"d", "f"},
   {NULL, NULL}
+};
+
+static const riscv_cpu_info riscv_cpu_tables[] =
+{
+#define RISCV_CORE(CORE_NAME, ARCH, TUNE) \
+    {CORE_NAME, ARCH, TUNE},
+#include "../../../config/riscv/riscv-cores.def"
+    {NULL, NULL, NULL}
 };
 
 /* Subset list.  */
@@ -451,7 +459,7 @@ riscv_subset_list::handle_implied_ext (const char *ext,
 				       int minor_version,
 				       bool explicit_version_p)
 {
-  riscv_implied_info_t *implied_info;
+  const riscv_implied_info_t *implied_info;
   for (implied_info = &riscv_implied_info[0];
        implied_info->ext;
        ++implied_info)
@@ -515,6 +523,14 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
 				  &explicit_version_p);
 
       *q = '\0';
+
+      if (strlen (subset) == 1)
+	{
+	  error_at (m_loc, "%<-march=%s%>: name of %s must be more than 1 letter",
+		    m_arch, ext_type_str);
+	  free (subset);
+	  return NULL;
+	}
 
       add (subset, major_version, minor_version, explicit_version_p);
       free (subset);
@@ -604,53 +620,90 @@ fail:
 std::string
 riscv_arch_str (bool version_p)
 {
-  gcc_assert (current_subset_list);
-  return current_subset_list->to_string (version_p);
+  if (current_subset_list)
+    return current_subset_list->to_string (version_p);
+  else
+    return std::string();
 }
+
+/* Type for pointer to member of gcc_options.  */
+typedef int (gcc_options::*opt_var_ref_t);
+
+/* Types for recording extension to internal flag.  */
+struct riscv_ext_flag_table_t {
+  const char *ext;
+  opt_var_ref_t var_ref;
+  int mask;
+};
+
+/* Mapping table between extension to internal flag.  */
+static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
+{
+  {"e", &gcc_options::x_target_flags, MASK_RVE},
+  {"m", &gcc_options::x_target_flags, MASK_MUL},
+  {"a", &gcc_options::x_target_flags, MASK_ATOMIC},
+  {"f", &gcc_options::x_target_flags, MASK_HARD_FLOAT},
+  {"d", &gcc_options::x_target_flags, MASK_DOUBLE_FLOAT},
+  {"c", &gcc_options::x_target_flags, MASK_RVC},
+  {NULL, NULL, 0}
+};
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
    dependent mask bits, in case more than one -march string is passed.  */
 
 static void
-riscv_parse_arch_string (const char *isa, int *flags, location_t loc)
+riscv_parse_arch_string (const char *isa,
+			 struct gcc_options *opts,
+			 location_t loc)
 {
   riscv_subset_list *subset_list;
   subset_list = riscv_subset_list::parse (isa, loc);
   if (!subset_list)
     return;
 
-  if (subset_list->xlen () == 32)
-    *flags &= ~MASK_64BIT;
-  else if (subset_list->xlen () == 64)
-    *flags |= MASK_64BIT;
+  if (opts)
+    {
+      const riscv_ext_flag_table_t *arch_ext_flag_tab;
+      /* Clean up target flags before we set.  */
+      for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
+	   arch_ext_flag_tab->ext;
+	   ++arch_ext_flag_tab)
+	opts->*arch_ext_flag_tab->var_ref &= ~arch_ext_flag_tab->mask;
 
-  *flags &= ~MASK_RVE;
-  if (subset_list->lookup ("e"))
-    *flags |= MASK_RVE;
+      if (subset_list->xlen () == 32)
+	opts->x_target_flags &= ~MASK_64BIT;
+      else if (subset_list->xlen () == 64)
+	opts->x_target_flags |= MASK_64BIT;
 
-  *flags &= ~MASK_MUL;
-  if (subset_list->lookup ("m"))
-    *flags |= MASK_MUL;
 
-  *flags &= ~MASK_ATOMIC;
-  if (subset_list->lookup ("a"))
-    *flags |= MASK_ATOMIC;
-
-  *flags &= ~(MASK_HARD_FLOAT | MASK_DOUBLE_FLOAT);
-  if (subset_list->lookup ("f"))
-    *flags |= MASK_HARD_FLOAT;
-
-  if (subset_list->lookup ("d"))
-    *flags |= MASK_DOUBLE_FLOAT;
-
-  *flags &= ~MASK_RVC;
-  if (subset_list->lookup ("c"))
-    *flags |= MASK_RVC;
+      for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
+	   arch_ext_flag_tab->ext;
+	   ++arch_ext_flag_tab)
+	{
+	  if (subset_list->lookup (arch_ext_flag_tab->ext))
+	    opts->*arch_ext_flag_tab->var_ref |= arch_ext_flag_tab->mask;
+	}
+    }
 
   if (current_subset_list)
     delete current_subset_list;
 
   current_subset_list = subset_list;
+}
+
+/* Return the riscv_cpu_info entry for CPU, NULL if not found.  */
+
+const riscv_cpu_info *
+riscv_find_cpu (const char *cpu)
+{
+  const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
+  for (;cpu_info->name != NULL; ++cpu_info)
+    {
+      const char *name = cpu_info->name;
+      if (strcmp (cpu, name) == 0)
+	return cpu_info;
+    }
+  return NULL;
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -664,7 +717,13 @@ riscv_handle_option (struct gcc_options *opts,
   switch (decoded->opt_index)
     {
     case OPT_march_:
-      riscv_parse_arch_string (decoded->arg, &opts->x_target_flags, loc);
+      riscv_parse_arch_string (decoded->arg, opts, loc);
+      return true;
+
+    case OPT_mcpu_:
+      if (riscv_find_cpu (decoded->arg) == NULL)
+	error_at (loc, "%<-mcpu=%s%>: unknown CPU",
+		  decoded->arg);
       return true;
 
     default:
@@ -678,14 +737,62 @@ const char *
 riscv_expand_arch (int argc ATTRIBUTE_UNUSED,
 		   const char **argv)
 {
-  static char *_arch_buf;
   gcc_assert (argc == 1);
-  int flags;
   location_t loc = UNKNOWN_LOCATION;
-  riscv_parse_arch_string (argv[0], &flags, loc);
-  _arch_buf = xstrdup (riscv_arch_str (false).c_str ());
-  return _arch_buf;
+  riscv_parse_arch_string (argv[0], NULL, loc);
+  const std::string arch = riscv_arch_str (false);
+  if (arch.length())
+    return xasprintf ("-march=%s", arch.c_str());
+  else
+    return "";
 }
+
+/* Expand default -mtune option from -mcpu option, use default --with-tune value
+   if -mcpu don't have valid value.  */
+
+const char *
+riscv_default_mtune (int argc, const char **argv)
+{
+  gcc_assert (argc == 2);
+  const riscv_cpu_info *cpu = riscv_find_cpu (argv[0]);
+  const char *default_mtune = argv[1];
+  if (cpu)
+    return cpu->tune;
+  else
+    return default_mtune;
+}
+
+/* Expand arch string with implied extensions from -mcpu option.  */
+
+const char *
+riscv_expand_arch_from_cpu (int argc ATTRIBUTE_UNUSED,
+			    const char **argv)
+{
+  gcc_assert (argc > 0 && argc <= 2);
+  const char *default_arch_str = NULL;
+  const char *arch_str = NULL;
+  if (argc >= 2)
+    default_arch_str = argv[1];
+
+  const riscv_cpu_info *cpu = riscv_find_cpu (argv[0]);
+
+  if (cpu == NULL)
+    {
+      if (default_arch_str == NULL)
+	return "";
+      else
+	arch_str = default_arch_str;
+    }
+  else
+    arch_str = cpu->arch;
+
+  location_t loc = UNKNOWN_LOCATION;
+
+  riscv_parse_arch_string (arch_str, NULL, loc);
+  const std::string arch = riscv_arch_str (false);
+  return xasprintf ("-march=%s", arch.c_str());
+}
+
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options riscv_option_optimization_table[] =

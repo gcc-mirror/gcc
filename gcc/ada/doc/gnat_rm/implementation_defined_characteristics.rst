@@ -13,8 +13,7 @@ Manual, and are summarized in Annex M.
 A requirement for conforming Ada compilers is that they provide
 documentation describing how the implementation deals with each of these
 issues.  In this chapter you will find each point in Annex M listed,
-followed by a description of how GNAT
-handles the implementation dependence.
+followed by a description of how GNAT handles the implementation dependence.
 
 You can use this chapter as a guide to minimizing implementation
 dependent features in your programs if portability to other compilers
@@ -100,17 +99,19 @@ further details.
   "The predefined integer types declared in
   ``Standard``.  See 3.5.4(25)."
 
-====================== =======================================
-Type                   Representation
-====================== =======================================
-*Short_Short_Integer*  8 bit signed
-*Short_Integer*        (Short) 16 bit signed
-*Integer*              32 bit signed
-*Long_Integer*         64 bit signed (on most 64 bit targets,
-                       depending on the C definition of long).
-                       32 bit signed (all other targets)
-*Long_Long_Integer*    64 bit signed
-====================== =======================================
+========================= =======================================
+Type                       Representation
+========================= =======================================
+*Short_Short_Integer*      8-bit signed
+*Short_Integer*            16-bit signed
+*Integer*                  32-bit signed
+*Long_Integer*             64-bit signed (on most 64-bit targets,
+                           depending on the C definition of long)
+                           32-bit signed (on all other targets)
+*Long_Long_Integer*        64-bit signed
+*Long_Long_Long_Integer*   128-bit signed (on 64-bit targets)
+                           64-bit signed (on 32-bit targets)
+========================= =======================================
 
 *
   "Any nonstandard integer types and the operators defined
@@ -146,18 +147,19 @@ Type                   Representation
 *
   "The small of an ordinary fixed point type.  See 3.5.9(8)."
 
-``Fine_Delta`` is 2**(-63)
+The small is the largest power of two that does not exceed the delta.
 
 *
   "What combinations of small, range, and digits are
   supported for fixed point types.  See 3.5.9(10)."
 
-Any combinations are permitted that do not result in a small less than
-``Fine_Delta`` and do not result in a mantissa larger than 63 bits.
-If the mantissa is larger than 53 bits on machines where Long_Long_Float
-is 64 bits (true of all architectures except ia32), then the output from
-Text_IO is accurate to only 53 bits, rather than the full mantissa.  This
-is because floating-point conversions are used to convert fixed point.
+For an ordinary fixed point type, the small must lie in 2**(-80) .. 2**80
+and the range in -10.0**36 .. 10.0**36; any combination is permitted that
+does not result in a mantissa larger than 63 bits. However, if the mantissa
+is larger than 53 bits on machines where Long_Long_Float is 64 bits (true
+of all architectures except x86), then the output from Text_IO may be
+accurate to only 53 bits, rather than the full mantissa.  This is because
+floating-point conversions may be used to convert fixed point.
 
 
 *
@@ -1220,7 +1222,7 @@ is converted to the target type.
 
 The result is only defined to be in the perfect result set if the result
 can be computed by a single scaling operation involving a scale factor
-representable in 64-bits.
+representable in 64 bits.
 
 *
   "The result of a fixed point arithmetic operation in

@@ -5164,11 +5164,11 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibc_version_major.$glibc_version_minor" >&5
 $as_echo "$glibc_version_major.$glibc_version_minor" >&6; }
 
-# Determine floating-point type for powerpc*-*-linux*.
+# Determine floating-point type for powerpc*-*-linux* or vxworks7*.
 # Single-precision-only FPRs are not a supported configuration for
 # this target, so are not allowed for in this test.
 case ${host} in
-powerpc*-*-linux*)
+powerpc*-*-linux* | powerpc*-*-vxworks7*)
   cat > conftest.c <<EOF
 #ifdef __powerpc64__
 ppc_fp_type=64

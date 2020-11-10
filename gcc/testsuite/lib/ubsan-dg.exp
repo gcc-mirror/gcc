@@ -141,7 +141,9 @@ proc ubsan_finish { args } {
 	    unset TEST_ALWAYS_FLAGS
 	}
     }
-    set ld_library_path $ubsan_saved_library_path
-    set_ld_library_path_env_vars
+    if [info exists ubsan_saved_library_path ] {
+	set ld_library_path $ubsan_saved_library_path
+	set_ld_library_path_env_vars
+    }
     clear_effective_target_cache
 }

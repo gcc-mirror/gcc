@@ -31,9 +31,6 @@ func Futimes(fd int, tv []Timeval) (err error) {
 	return Utimes("/proc/self/fd/"+itoa(fd), tv)
 }
 
-//sys	ptrace(request int, pid int, addr uintptr, data uintptr) (err error)
-//__go_ptrace(request _C_int, pid Pid_t, addr *byte, data *byte) _C_long
-
 //sys	accept4(fd int, sa *RawSockaddrAny, len *Socklen_t, flags int) (nfd int, err error)
 //accept4(fd _C_int, sa *RawSockaddrAny, len *Socklen_t, flags _C_int) _C_int
 

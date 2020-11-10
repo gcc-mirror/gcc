@@ -68,6 +68,9 @@ package Get_Targ is
    function Get_Long_Long_Size             return Pos;
    --  Size of Standard.Long_Long_Integer
 
+   function Get_Long_Long_Long_Size        return Pos;
+   --  Size of Standard.Long_Long_Long_Integer
+
    function Get_Pointer_Size               return Pos;
    --  Size of System.Address
 
@@ -111,10 +114,6 @@ package Get_Targ is
    function Get_Max_Unaligned_Field return Pos;
    --  Returns the maximum supported size in bits for a field that is
    --  not aligned on a storage unit boundary.
-
-   function Width_From_Size  (Size : Pos) return Pos;
-   function Digits_From_Size (Size : Pos) return Pos;
-   --  Calculate values for 'Width or 'Digits from 'Size
 
    type C_String is array (0 .. 255) of aliased Character;
    pragma Convention (C, C_String);

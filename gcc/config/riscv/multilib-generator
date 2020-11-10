@@ -22,14 +22,26 @@
 
 # Each argument to this script is of the form
 #  <primary arch>-<abi>-<additional arches>-<extensions>
-# For example,
+# Example 1:
 #  rv32imafd-ilp32d-rv32g-c,v
 # means that, in addition to rv32imafd, these configurations can also use the
 # rv32imafd-ilp32d libraries: rv32imafdc, rv32imafdv, rv32g, rv32gc, rv32gv
+#
+# Example 2:
+#  rv32imafd-ilp32d--c*b
+# means that, in addition to rv32imafd, these configurations can also use the
+# rv32imafd-ilp32d libraries: rv32imafdc-ilp32d, rv32imafdb-ilp32d,
+#                             rv32imafdcb-ilp32d
 
 from __future__ import print_function
 import sys
 import collections
+import itertools
+from functools import reduce
+
+#
+# TODO: Add test for this script.
+#
 
 arches = collections.OrderedDict()
 abis = collections.OrderedDict()
@@ -37,37 +49,53 @@ required = []
 reuse = []
 
 canonical_order = "mafdgqlcbjtpvn"
+LONG_EXT_PREFIXES = ['z', 's', 'h', 'x']
+
+#
+# IMPLIED_EXT(ext) -> implied extension list.
+#
+IMPLIED_EXT = {
+  "d" : ["f"],
+}
 
 def arch_canonicalize(arch):
-  # TODO: Support implied extensions, e.g. D implied F in latest spec.
   # TODO: Support extension version.
   new_arch = ""
   if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64i', 'rv64g']:
-    # TODO: We should expand g to imadzifencei once we support newer spec.
+    # TODO: We should expand g to imad_zifencei once we support newer spec.
     new_arch = arch[:5].replace("g", "imafd")
   else:
     raise Exception("Unexpected arch: `%s`" % arch[:5])
 
   # Find any Z, S, H or X
-  long_ext_prefixes = ['z', 's', 'h', 'x']
-  long_ext_prefixes_idx = map(lambda x: arch.find(x), long_ext_prefixes)
+  long_ext_prefixes_idx = map(lambda x: arch.find(x), LONG_EXT_PREFIXES)
 
   # Filter out any non-existent index.
   long_ext_prefixes_idx = list(filter(lambda x: x != -1, long_ext_prefixes_idx))
   if long_ext_prefixes_idx:
     first_long_ext_idx = min(long_ext_prefixes_idx)
     long_exts = arch[first_long_ext_idx:].split("_")
-    std_exts = arch[5:first_long_ext_idx]
+    std_exts = list(arch[5:first_long_ext_idx])
   else:
     long_exts = []
-    std_exts = arch[5:]
+    std_exts = list(arch[5:])
+
+  #
+  # Handle implied extensions.
+  #
+  for ext in std_exts + long_exts:
+    if ext in IMPLIED_EXT:
+      implied_exts = IMPLIED_EXT[ext]
+      for implied_ext in implied_exts:
+        if implied_ext not in std_exts + long_exts:
+          long_exts.append(implied_ext)
 
   # Single letter extension might appear in the long_exts list,
   # becasue we just append extensions list to the arch string.
-  std_exts += "".join(filter(lambda x:len(x) == 1, long_exts))
+  std_exts += list(filter(lambda x:len(x) == 1, long_exts))
 
   # Multi-letter extension must be in lexicographic order.
-  long_exts = sorted(filter(lambda x:len(x) != 1, long_exts))
+  long_exts = list(sorted(filter(lambda x:len(x) != 1, long_exts)))
 
   # Put extensions in canonical order.
   for ext in canonical_order:
@@ -86,15 +114,105 @@ def arch_canonicalize(arch):
     new_arch += "_" + "_".join(long_exts)
   return new_arch
 
+#
+# add underline for each multi-char extensions.
+# e.g. ["a", "zfh"] -> ["a", "_zfh"]
+#
+def add_underline_prefix(ext):
+  for long_ext_prefix in LONG_EXT_PREFIXES:
+    if ext.startswith(long_ext_prefix):
+      return "_" + ext
+
+  return ext
+
+#
+# Handle expansion operation.
+#
+# e.g. "a*b" -> [("a",), ("b",), ("a", "b")]
+#      "a"   -> [("a",)]
+#
+def _expand_combination(ext):
+  exts = list(ext.split("*"))
+
+  # No need to expand if there is no `*`.
+  if len(exts) == 1:
+    return [(exts[0],)]
+
+  # Add underline to every extension.
+  # e.g.
+  #  _b * zvamo => _b * _zvamo
+  exts = list(map(lambda x: '_' + x, exts))
+
+  # Generate combination!
+  ext_combs = []
+  for comb_len in range(1, len(exts)+1):
+    for ext_comb in itertools.combinations(exts, comb_len):
+      ext_combs.append(ext_comb)
+
+  return ext_combs
+
+#
+# Input a list and drop duplicated entry.
+# e.g.
+#   ["a", "b", "ab", "a"] -> ["a", "b", "ab"]
+#
+def unique(x):
+  #
+  # Drop duplicated entry.
+  # Convert list to set and then convert back to list.
+  #
+  # Add sorted to prevent non-deterministic results in different env.
+  #
+  return list(sorted(list(set(x))))
+
+#
+# Expand EXT string if there is any expansion operator (*).
+# e.g.
+#   "a*b,c" -> ["a", "b", "ab", "c"]
+#
+def expand_combination(ext):
+  ext = list(filter(None, ext.split(',')))
+
+  # Expand combination for EXT, got lots of list.
+  # e.g.
+  #   a * b => [[("a",), ("b",)], [("a", "b")]]
+  ext_combs = list(map(_expand_combination, ext))
+
+  # Then fold to single list.
+  # e.g.
+  #   [[("a",), ("b",)], [("a", "b")]] => [("a",), ("b",), ("a", "b")]
+  ext = list(reduce(lambda x, y: x + y, ext_combs, []))
+
+  # Fold the tuple to string.
+  # e.g.
+  #   [("a",), ("b",), ("a", "b")] => ["a", "b", "ab"]
+  ext = map(lambda e : reduce(lambda x, y: x + y, e), ext)
+
+  # Drop duplicated entry.
+  ext = unique(ext)
+
+  return ext
+
 for cfg in sys.argv[1:]:
-  (arch, abi, extra, ext) = cfg.split('-')
+  try:
+    (arch, abi, extra, ext) = cfg.split('-')
+  except:
+    print ("Invalid configure string %s, <arch>-<abi>-<extra>-<extensions>\n"
+           "<extra> and <extensions> can be empty, "
+           "e.g. rv32imafd-ilp32--" % cfg)
+    sys.exit(1)
+
   arch = arch_canonicalize (arch)
   arches[arch] = 1
   abis[abi] = 1
   extra = list(filter(None, extra.split(',')))
-  ext = list(filter(None, ext.split(',')))
-  alts = sum([[x] + [x + "_" + y for y in ext] for x in [arch] + extra], [])
+  ext_combs = expand_combination(ext)
+  alts = sum([[x] + [x + y for y in ext_combs] for x in [arch] + extra], [])
   alts = list(map(arch_canonicalize, alts))
+
+  # Drop duplicated entry.
+  alts = unique(alts)
+
   for alt in alts[1:]:
     arches[alt] = 1
     reuse.append('march.%s/mabi.%s=march.%s/mabi.%s' % (arch, abi, alt, abi))

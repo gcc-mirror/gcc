@@ -6007,7 +6007,7 @@ get_bind_c_idents (void)
       found_id = MATCH_YES;
       gfc_get_ha_symbol (name, &tmp_sym);
     }
-  else if (match_common_name (name) == MATCH_YES)
+  else if (gfc_match_common_name (name) == MATCH_YES)
     {
       found_id = MATCH_YES;
       com_block = gfc_get_common (name, 0);
@@ -6052,7 +6052,7 @@ get_bind_c_idents (void)
 	      found_id = MATCH_YES;
 	      gfc_get_ha_symbol (name, &tmp_sym);
 	    }
-	  else if (match_common_name (name) == MATCH_YES)
+	  else if (gfc_match_common_name (name) == MATCH_YES)
 	    {
 	      found_id = MATCH_YES;
 	      com_block = gfc_get_common (name, 0);
@@ -11585,6 +11585,7 @@ const ext_attr_t ext_attr_list[] = {
   { "stdcall",      EXT_ATTR_STDCALL,      "stdcall"   },
   { "fastcall",     EXT_ATTR_FASTCALL,     "fastcall"  },
   { "no_arg_check", EXT_ATTR_NO_ARG_CHECK, NULL        },
+  { "deprecated",   EXT_ATTR_DEPRECATED,   NULL	       },
   { NULL,           EXT_ATTR_LAST,         NULL        }
 };
 

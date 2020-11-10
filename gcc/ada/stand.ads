@@ -13,16 +13,10 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- As a special exception under Section 7 of GPL version 3, you are granted --
--- additional permissions described in the GCC Runtime Library Exception,   --
--- version 3.1, as published by the Free Software Foundation.               --
---                                                                          --
--- You should have received a copy of the GNU General Public License and    --
--- a copy of the GCC Runtime Library Exception along with this program;     --
--- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -440,8 +434,8 @@ package Stand is
 
    Universal_Integer : Entity_Id;
    --  Entity for universal integer type. The bounds of this type correspond
-   --  to the largest supported integer type (i.e. Long_Long_Integer). It is
-   --  the type used for runtime calculations in type universal integer.
+   --  to the largest supported integer type (i.e. Long_Long_Long_Integer).
+   --  It is the type used for runtime calculations in type universal integer.
 
    Universal_Real : Entity_Id;
    --  Entity for universal real type. The bounds of this type correspond to
@@ -464,11 +458,12 @@ package Stand is
    --  These are signed integer types with the indicated sizes. Used for the
    --  underlying implementation types for fixed-point and enumeration types.
 
-   Standard_Short_Short_Unsigned : Entity_Id;
-   Standard_Short_Unsigned       : Entity_Id;
-   Standard_Unsigned             : Entity_Id;
-   Standard_Long_Unsigned        : Entity_Id;
-   Standard_Long_Long_Unsigned   : Entity_Id;
+   Standard_Short_Short_Unsigned    : Entity_Id;
+   Standard_Short_Unsigned          : Entity_Id;
+   Standard_Unsigned                : Entity_Id;
+   Standard_Long_Unsigned           : Entity_Id;
+   Standard_Long_Long_Unsigned      : Entity_Id;
+   Standard_Long_Long_Long_Unsigned : Entity_Id;
    --  Unsigned types with same Esize as corresponding signed integer types
 
    Standard_Unsigned_64 : Entity_Id;

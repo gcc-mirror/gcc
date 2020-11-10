@@ -811,23 +811,23 @@ arm_ldrgbwbu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 
 static enum arm_type_qualifiers
 arm_strsbwbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_unsigned, qualifier_const, qualifier_none};
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_const, qualifier_none};
 #define STRSBWBS_QUALIFIERS (arm_strsbwbs_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strsbwbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_unsigned, qualifier_const, qualifier_unsigned};
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_const, qualifier_unsigned};
 #define STRSBWBU_QUALIFIERS (arm_strsbwbu_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strsbwbs_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_unsigned, qualifier_const,
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_const,
       qualifier_none, qualifier_unsigned};
 #define STRSBWBS_P_QUALIFIERS (arm_strsbwbs_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strsbwbu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_unsigned, qualifier_const,
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_const,
       qualifier_unsigned, qualifier_unsigned};
 #define STRSBWBU_P_QUALIFIERS (arm_strsbwbu_p_qualifiers)
 
@@ -946,6 +946,9 @@ typedef struct {
 #define VAR13(T, N, A, B, C, D, E, F, G, H, I, J, K, L, M) \
   VAR12 (T, N, A, B, C, D, E, F, G, H, I, J, K, L) \
   VAR1 (T, N, M)
+#define VAR14(T, N, A, B, C, D, E, F, G, H, I, J, K, L, M, O) \
+  VAR13 (T, N, A, B, C, D, E, F, G, H, I, J, K, L, M) \
+  VAR1 (T, N, O)
 
 /* The builtin data can be found in arm_neon_builtins.def, arm_vfp_builtins.def
    and arm_acle_builtins.def.  The entries in arm_neon_builtins.def require

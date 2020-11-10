@@ -1416,8 +1416,14 @@ package body Sem_Warn is
                           and then not Warnings_Off_E1
                           and then not Has_Junk_Name (E1)
                         then
-                           Output_Reference_Error
-                             ("?v?variable& is read but never assigned!");
+                           if Is_Access_Type (E1T)
+                             or else
+                               not Is_Partially_Initialized_Type (E1T, False)
+                           then
+                              Output_Reference_Error
+                                ("?v?variable& is read but never assigned!");
+                           end if;
+
                            May_Need_Initialized_Actual (E1);
                         end if;
 
@@ -2248,10 +2254,6 @@ package body Sem_Warn is
    ------------------------
 
    procedure Check_Unused_Withs (Spec_Unit : Unit_Number_Type := No_Unit) is
-      Cnode : Node_Id;
-      Item  : Node_Id;
-      Lunit : Node_Id;
-      Ent   : Entity_Id;
 
       Munite : constant Entity_Id := Cunit_Entity (Main_Unit);
       --  This is needed for checking the special renaming case
@@ -2264,8 +2266,9 @@ package body Sem_Warn is
       --------------------
 
       procedure Check_One_Unit (Unit : Unit_Number_Type) is
+         Cnode : constant Node_Id := Cunit (Unit);
+
          Is_Visible_Renaming : Boolean := False;
-         Pack                : Entity_Id;
 
          procedure Check_Inner_Package (Pack : Entity_Id);
          --  Pack is a package local to a unit in a with_clause. Both the unit
@@ -2273,7 +2276,7 @@ package body Sem_Warn is
          --  referenced, then the only occurrence of Pack is in a USE clause
          --  or a pragma, and a warning is worthwhile as well.
 
-         function Check_System_Aux return Boolean;
+         function Check_System_Aux (Lunit : Entity_Id) return Boolean;
          --  Before giving a warning on a with_clause for System, check whether
          --  a system extension is present.
 
@@ -2352,7 +2355,7 @@ package body Sem_Warn is
          -- Check_System_Aux --
          ----------------------
 
-         function Check_System_Aux return Boolean is
+         function Check_System_Aux (Lunit : Entity_Id) return Boolean is
             Ent : Entity_Id;
 
          begin
@@ -2447,11 +2450,16 @@ package body Sem_Warn is
             return False;
          end Has_Visible_Entities;
 
+         --  Local variables
+
+         Ent   : Entity_Id;
+         Item  : Node_Id;
+         Lunit : Entity_Id;
+         Pack  : Entity_Id;
+
       --  Start of processing for Check_One_Unit
 
       begin
-         Cnode := Cunit (Unit);
-
          --  Only do check in units that are part of the extended main unit.
          --  This is actually a necessary restriction, because in the case of
          --  subprogram acting as its own specification, there can be with's in
@@ -2501,7 +2509,7 @@ package body Sem_Warn is
                      --  package with only a linker options pragma and nothing
                      --  else or a pragma elaborate with a body library task).
 
-                     elsif Has_Visible_Entities (Entity (Name (Item))) then
+                     elsif Has_Visible_Entities (Lunit) then
                         Error_Msg_N -- CODEFIX
                           ("?u?unit& is not referenced!", Name (Item));
                      end if;
@@ -2570,64 +2578,56 @@ package body Sem_Warn is
                            if Unit = Spec_Unit then
                               Set_No_Entities_Ref_In_Spec (Item);
 
-                           elsif Check_System_Aux then
+                           elsif Check_System_Aux (Lunit) then
                               null;
 
                            --  Else the warning may be needed
 
                            else
-                              declare
-                                 Eitem : constant Entity_Id :=
-                                           Entity (Name (Item));
+                              --  Warn if we unreferenced flag set and we have
+                              --  not had serious errors. The reason we inhibit
+                              --  the message if there are errors is to prevent
+                              --  false positives from disabling expansion.
 
-                              begin
-                                 --  Warn if we unreferenced flag set and we
-                                 --  have not had serious errors. The reason we
-                                 --  inhibit the message if there are errors is
-                                 --  to prevent false positives from disabling
-                                 --  expansion.
+                              if not Has_Unreferenced (Lunit)
+                                and then Serious_Errors_Detected = 0
+                              then
+                                 --  Get possible package renaming
 
-                                 if not Has_Unreferenced (Eitem)
-                                   and then Serious_Errors_Detected = 0
+                                 Pack := Find_Package_Renaming (Munite, Lunit);
+
+                                 --  No warning if either the package or its
+                                 --  renaming is used as a generic actual.
+
+                                 if Used_As_Generic_Actual (Lunit)
+                                   or else
+                                     (Present (Pack)
+                                       and then
+                                         Used_As_Generic_Actual (Pack))
                                  then
-                                    --  Get possible package renaming
-
-                                    Pack :=
-                                      Find_Package_Renaming (Munite, Lunit);
-
-                                    --  No warning if either the package or its
-                                    --  renaming is used as a generic actual.
-
-                                    if Used_As_Generic_Actual (Eitem)
-                                      or else
-                                        (Present (Pack)
-                                          and then
-                                            Used_As_Generic_Actual (Pack))
-                                    then
-                                       exit;
-                                    end if;
-
-                                    --  Here we give the warning
-
-                                    Error_Msg_N -- CODEFIX
-                                      ("?u?no entities of & are referenced!",
-                                       Name (Item));
-
-                                    --  Flag renaming of package as well. If
-                                    --  the original package has warnings off,
-                                    --  we suppress the warning on the renaming
-                                    --  as well.
-
-                                    if Present (Pack)
-                                      and then not Has_Warnings_Off (Lunit)
-                                      and then not Has_Unreferenced (Pack)
-                                    then
-                                       Error_Msg_NE -- CODEFIX
-                                         ("?u?no entities of& are referenced!",
-                                          Unit_Declaration_Node (Pack), Pack);
-                                    end if;
+                                    exit;
                                  end if;
-                              end;
+
+                                 --  Here we give the warning
+
+                                 Error_Msg_N -- CODEFIX
+                                   ("?u?no entities of & are referenced!",
+                                    Name (Item));
+
+                                 --  Flag renaming of package as well. If
+                                 --  the original package has warnings off,
+                                 --  we suppress the warning on the renaming
+                                 --  as well.
+
+                                 if Present (Pack)
+                                   and then not Has_Warnings_Off (Lunit)
+                                   and then not Has_Unreferenced (Pack)
+                                 then
+                                    Error_Msg_NE -- CODEFIX
+                                      ("?u?no entities of& are referenced!",
+                                       Unit_Declaration_Node (Pack), Pack);
+                                 end if;
+                              end if;
                            end if;
 
                            exit;
@@ -4421,23 +4421,30 @@ package body Sem_Warn is
                      end if;
 
                      declare
-                        B : constant Node_Id := Parent (Parent (Scope (E)));
-                        S : Entity_Id := Empty;
+                        S : Node_Id := Scope (E);
                      begin
-                        if Nkind (B) in
-                             N_Expression_Function |
-                             N_Subprogram_Body     |
-                             N_Subprogram_Renaming_Declaration
-                        then
-                           S := Corresponding_Spec (B);
+                        if Ekind (S) = E_Subprogram_Body then
+                           S := Parent (S);
+
+                           while Nkind (S) not in
+                             N_Expression_Function             |
+                             N_Subprogram_Body                 |
+                             N_Subprogram_Renaming_Declaration |
+                             N_Empty
+                           loop
+                              S := Parent (S);
+                           end loop;
+
+                           if Present (S) then
+                              S := Corresponding_Spec (S);
+                           end if;
                         end if;
 
                         --  Do not warn for dispatching operations, because
                         --  that causes too much noise. Also do not warn for
-                        --  trivial subprograms.
+                        --  trivial subprograms (e.g. stubs).
 
-                        if (not Present (S)
-                            or else not Is_Dispatching_Operation (S))
+                        if (No (S) or else not Is_Dispatching_Operation (S))
                           and then not Is_Trivial_Subprogram (Scope (E))
                         then
                            Error_Msg_NE -- CODEFIX

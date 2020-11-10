@@ -154,8 +154,10 @@ vxworks_override_options (void)
   targetm.have_ctors_dtors = 
     TARGET_VXWORKS_HAVE_CTORS_DTORS || HAVE_INITFINI_ARRAY_SUPPORT;
 
-  /* PIC is only supported for RTPs.  */
-  if (flag_pic && !TARGET_VXWORKS_RTP)
+  /* PIC is only supported for RTPs.  flags_pic might be < 0 here, in
+     contexts where the corresponding switches are not processed,
+     e.g. from --help.  We are not generating code in such cases.  */
+  if (flag_pic > 0 && !TARGET_VXWORKS_RTP)
     error ("PIC is only supported for RTPs");
 
   /* VxWorks comes with non-gdb debuggers which only support strict

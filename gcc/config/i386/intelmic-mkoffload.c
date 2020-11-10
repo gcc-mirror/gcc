@@ -231,7 +231,7 @@ compile_for_target (struct obstack *argv_obstack)
   unsetenv ("LIBRARY_PATH");
   unsetenv ("LD_RUN_PATH");
 
-  fork_execute (argv[0], argv, false);
+  fork_execute (argv[0], argv, false, NULL);
   obstack_free (argv_obstack, NULL);
 
   /* Restore environment variables.  */
@@ -455,7 +455,7 @@ generate_host_descr_file (const char *host_compiler)
   obstack_ptr_grow (&argv_obstack, NULL);
 
   char **argv = XOBFINISH (&argv_obstack, char **);
-  fork_execute (argv[0], argv, false);
+  fork_execute (argv[0], argv, false, NULL);
   obstack_free (&argv_obstack, NULL);
 
   return obj_filename;
@@ -538,7 +538,7 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   obstack_ptr_grow (&argv_obstack, rename_section_opt);
   obstack_ptr_grow (&argv_obstack, NULL);
   char **new_argv = XOBFINISH (&argv_obstack, char **);
-  fork_execute (new_argv[0], new_argv, false);
+  fork_execute (new_argv[0], new_argv, false, NULL);
   obstack_free (&argv_obstack, NULL);
 
   /* Objcopy has created symbols, containing the input file name with
@@ -580,7 +580,7 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   obstack_ptr_grow (&argv_obstack, opt_for_objcopy[2]);
   obstack_ptr_grow (&argv_obstack, NULL);
   new_argv = XOBFINISH (&argv_obstack, char **);
-  fork_execute (new_argv[0], new_argv, false);
+  fork_execute (new_argv[0], new_argv, false, NULL);
   obstack_free (&argv_obstack, NULL);
 
   return target_so_filename;
@@ -672,7 +672,7 @@ main (int argc, char **argv)
   obstack_ptr_grow (&argv_obstack, out_obj_filename);
   obstack_ptr_grow (&argv_obstack, NULL);
   char **new_argv = XOBFINISH (&argv_obstack, char **);
-  fork_execute (new_argv[0], new_argv, false);
+  fork_execute (new_argv[0], new_argv, false, NULL);
   obstack_free (&argv_obstack, NULL);
 
   /* Run objcopy on the resultant object file to localize generated symbols
@@ -688,7 +688,7 @@ main (int argc, char **argv)
   obstack_ptr_grow (&argv_obstack, out_obj_filename);
   obstack_ptr_grow (&argv_obstack, NULL);
   new_argv = XOBFINISH (&argv_obstack, char **);
-  fork_execute (new_argv[0], new_argv, false);
+  fork_execute (new_argv[0], new_argv, false, NULL);
   obstack_free (&argv_obstack, NULL);
 
   return 0;

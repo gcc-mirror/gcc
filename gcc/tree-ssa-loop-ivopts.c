@@ -7947,6 +7947,9 @@ analyze_and_mark_doloop_use (struct ivopts_data *data)
   if (!flag_branch_on_count_reg)
     return;
 
+  if (data->current_loop->unroll == USHRT_MAX)
+    return;
+
   if (!generic_predict_doloop_p (data))
     return;
 

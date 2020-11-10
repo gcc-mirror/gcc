@@ -2957,7 +2957,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       return error_mark_node;
     }
 
-  if (is_std_init_list (elt_type))
+  if (is_std_init_list (elt_type) && !cp_unevaluated_operand)
     warning (OPT_Winit_list_lifetime,
 	     "%<new%> of %<initializer_list%> does not "
 	     "extend the lifetime of the underlying array");

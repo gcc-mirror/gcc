@@ -242,11 +242,11 @@ Generate phony targets for all headers.
 
 MQ
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
--MQ <target>	Add a MAKE-quoted target.
+-MQ <target>	Add a target that may require quoting.
 
 MT
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
--MT <target>	Add an unquoted target.
+-MT <target>	Add a target that does not require quoting.
 
 P
 C ObjC C++ ObjC++
@@ -255,6 +255,10 @@ Do not generate #line directives.
 U
 C ObjC C++ ObjC++ Joined Separate MissingArgError(macro name missing after %qs)
 -U<macro>	Undefine <macro>.
+
+WNSObject-attribute
+C ObjC C++ ObjC++ LTO Var(warn_nsobject_attribute) Warning Init(1)
+Warn if the NSObject attribute is applied to a non-typedef.
 
 Wabi
 C ObjC C++ ObjC++ LTO Var(warn_abi) Warning
@@ -518,6 +522,15 @@ C++ ObjC++ Var(warn_deprecated_copy, 2) Warning
 Mark implicitly-declared copy operations as deprecated if the class has a
 user-provided copy operation or destructor.
 
+Wdeprecated-enum-enum-conversion
+C++ ObjC++ Var(warn_deprecated_enum_enum_conv) Warning
+Warn about deprecated arithmetic conversions on operands of enumeration types.
+
+Wdeprecated-enum-float-conversion
+C++ ObjC++ Var(warn_deprecated_enum_float_conv) Warning
+Warn about deprecated arithmetic conversions on operands where one is of enumeration
+type and the other is of a floating-point type.
+
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers.
@@ -559,7 +572,7 @@ C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,W
 Warn about comparison of different enum types.
 
 Wenum-conversion
-C ObjC Var(warn_enum_conversion) Init(0) Warning LangEnabledBy(C ObjC,Wextra)
+C ObjC C++ ObjC++ Var(warn_enum_conversion) Init(0) Warning LangEnabledBy(C ObjC,Wextra)
 Warn about implicit conversion of enum types.
 
 Werror
@@ -569,6 +582,10 @@ C ObjC C++ ObjC++
 Werror-implicit-function-declaration
 C ObjC RejectNegative Warning Alias(Werror=, implicit-function-declaration)
 This switch is deprecated; use -Werror=implicit-function-declaration instead.
+
+Wexceptions
+C++ ObjC++ Var(warn_exceptions) Init(1)
+Warn when an exception handler is shadowed by another handler.
 
 Wextra
 C ObjC C++ ObjC++ Warning
@@ -815,6 +832,11 @@ Warn about missing sized deallocation functions.
 Wsizeof-pointer-div
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers.
+
+Wsizeof-array-div
+C ObjC C++ ObjC++ Var(warn_sizeof_array_div) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about divisions of two sizeof operators when the first one is applied
+to an array and the divisor does not equal the size of the array element.
 
 Wsizeof-pointer-memaccess
 C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -1259,6 +1281,10 @@ Warn about using variadic macros.
 Wvarargs
 C ObjC C++ ObjC++ Warning Var(warn_varargs) Init(1)
 Warn about questionable usage of the macros used to retrieve variable arguments.
+
+Wvexing-parse
+C++ ObjC++ Warning Var(warn_vexing_parse) Init(1)
+Warn about the most vexing parse syntactic ambiguity.
 
 Wvla
 C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning

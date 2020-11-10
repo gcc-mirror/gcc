@@ -127,6 +127,9 @@ initialize_growth_caches ()
     = new fast_call_summary<edge_growth_cache_entry *, va_heap> (symtab);
   node_context_cache
     = new fast_function_summary<node_context_summary *, va_heap> (symtab);
+  edge_growth_cache->disable_duplication_hook ();
+  node_context_cache->disable_insertion_hook ();
+  node_context_cache->disable_duplication_hook ();
 }
 
 /* Free growth caches.  */

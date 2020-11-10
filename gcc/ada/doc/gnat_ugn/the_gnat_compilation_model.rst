@@ -1445,7 +1445,6 @@ recognized by GNAT::
      Overriding_Renamings
      Partition_Elaboration_Policy
      Persistent_BSS
-     Polling
      Prefix_Exception_Messages
      Priority_Specific_Dispatching
      Profile

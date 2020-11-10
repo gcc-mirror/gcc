@@ -37,7 +37,21 @@ This pragma must appear at the start of the statement sequence of a
 handled sequence of statements (right after the ``begin``).  It has
 the effect of deferring aborts for the sequence of statements (but not
 for the declarations or handlers, if any, associated with this statement
-sequence).
+sequence). This can also be useful for adding a polling point in Ada code,
+where asynchronous abort of tasks is checked when leaving the statement
+sequence, and is lighter than, for example, using ``delay 0.0;``, since with
+zero-cost exception handling, propagating exceptions (implicitly used to
+implement task abort) cannot be done reliably in an asynchronous way.
+
+An example of usage would be:
+
+.. code-block:: ada
+
+  --  Add a polling point to check for task aborts
+
+  begin
+     pragma Abort_Defer;
+  end;
 
 .. _Pragma-Abstract_State:
 
@@ -4525,48 +4539,6 @@ type is potentially persistent.
 If this pragma is used on a target where this feature is not supported,
 then the pragma will be ignored. See also ``pragma Linker_Section``.
 
-Pragma Polling
-==============
-
-Syntax:
-
-
-.. code-block:: ada
-
-  pragma Polling (ON | OFF);
-
-
-This pragma controls the generation of polling code.  This is normally off.
-If ``pragma Polling (ON)`` is used then periodic calls are generated to
-the routine ``Ada.Exceptions.Poll``.  This routine is a separate unit in the
-runtime library, and can be found in file :file:`a-excpol.adb`.
-
-Pragma ``Polling`` can appear as a configuration pragma (for example it
-can be placed in the :file:`gnat.adc` file) to enable polling globally, or it
-can be used in the statement or declaration sequence to control polling
-more locally.
-
-A call to the polling routine is generated at the start of every loop and
-at the start of every subprogram call.  This guarantees that the ``Poll``
-routine is called frequently, and places an upper bound (determined by
-the complexity of the code) on the period between two ``Poll`` calls.
-
-The primary purpose of the polling interface is to enable asynchronous
-aborts on targets that cannot otherwise support it (for example Windows
-NT), but it may be used for any other purpose requiring periodic polling.
-The standard version is null, and can be replaced by a user program.  This
-will require re-compilation of the ``Ada.Exceptions`` package that can
-be found in files :file:`a-except.ads` and :file:`a-except.adb`.
-
-A standard alternative unit (in file :file:`4wexcpol.adb` in the standard GNAT
-distribution) is used to enable the asynchronous abort capability on
-targets that do not normally support the capability.  The version of
-``Poll`` in this file makes a call to the appropriate runtime routine
-to test for an abort condition.
-
-Note that polling can also be enabled by use of the *-gnatP* switch.
-See the section on switches for gcc in the :title:`GNAT User's Guide`.
-
 Pragma Post
 ===========
 .. index:: Post
@@ -5107,7 +5079,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Profile (Ravenscar | Restricted | Rational |
+  pragma Profile (Ravenscar | Restricted | Rational | Jorvik |
                   GNAT_Extended_Ravenscar | GNAT_Ravenscar_EDF );
 
 
@@ -5115,10 +5087,12 @@ This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma. This is a
 configuration pragma that establishes a set of configuration pragmas
 that depend on the argument. ``Ravenscar`` is standard in Ada 2005.
+``Jorvik`` is standard in Ada 202x.
 The other possibilities (``Restricted``, ``Rational``,
 ``GNAT_Extended_Ravenscar``, ``GNAT_Ravenscar_EDF``)
-are implementation-defined. The set of configuration pragmas
-is defined in the following sections.
+are implementation-defined.  ``GNAT_Extended_Ravenscar`` is an alias for ``Jorvik``.
+
+The set of configuration pragmas is defined in the following sections.
 
 
 * Pragma Profile (Ravenscar)
@@ -5188,7 +5162,7 @@ is defined in the following sections.
   * ``Simple_Barriers``
 
   The Ravenscar profile also includes the following restrictions that specify
-  that there are no semantic dependences on the corresponding predefined
+  that there are no semantic dependencies on the corresponding predefined
   packages:
 
   * ``No_Dependence => Ada.Asynchronous_Task_Control``
@@ -5229,12 +5203,10 @@ is defined in the following sections.
   automatically causes the use of a simplified,
   more efficient version of the tasking run-time library.
 
-* Pragma Profile (GNAT_Extended_Ravenscar)
+* Pragma Profile (Jorvik)
 
-  This profile corresponds to a GNAT specific extension of the
-  Ravenscar profile. The profile may change in the future although
-  only in a compatible way: some restrictions may be removed or
-  relaxed. It is defined as a variation of the Ravenscar profile.
+  ``Jorvik`` is the new profile added to the Ada 202x draft standard,
+  previously implemented under the name ``GNAT_Extended_Ravenscar``.
 
   The ``No_Implicit_Heap_Allocations`` restriction has been replaced
   by ``No_Implicit_Task_Allocations`` and
@@ -5245,6 +5217,13 @@ is defined in the following sections.
 
   The ``Max_Protected_Entries``, ``Max_Entry_Queue_Length``, and
   ``No_Relative_Delay`` restrictions have been removed.
+
+  Details on the rationale for ``Jorvik`` and implications for use may be
+  found in :title:`A New Ravenscar-Based Profile` by P. Rogers, J. Ruiz,
+  T. Gingold and P. Bernardi, in :title:`Reliable Software Technologies --
+  Ada Europe 2017`, Springer-Verlag Lecture Notes in Computer Science,
+  Number 10300.
+
 
 * Pragma Profile (GNAT_Ravenscar_EDF)
 
@@ -7312,12 +7291,6 @@ not create a synchronization point. Second, in the case of ``pragma Atomic``,
 there is no guarantee that all the bits will be accessed if the reference
 is not to the whole object; the compiler is allowed (and generally will)
 access only part of the object in this case.
-
-It is not permissible to specify ``Atomic`` and ``Volatile_Full_Access`` for
-the same type or object.
-
-It is not permissible to specify ``Volatile_Full_Access`` for a composite
-(record or array) type or object that has an ``Aliased`` subcomponent.
 
 .. _Pragma-Volatile_Function:
 

@@ -143,6 +143,23 @@ impl_region_model_context::on_unknown_change (const svalue *sval,
     smap->on_unknown_change (sval, is_mutable, m_ext_state);
 }
 
+void
+impl_region_model_context::on_escaped_function (tree fndecl)
+{
+  m_eg->on_escaped_function (fndecl);
+}
+
+/* struct setjmp_record.  */
+
+int
+setjmp_record::cmp (const setjmp_record &rec1, const setjmp_record &rec2)
+{
+  if (int cmp_enode = rec1.m_enode->m_index - rec2.m_enode->m_index)
+    return cmp_enode;
+  gcc_assert (&rec1 == &rec2);
+  return 0;
+}
+
 /* class setjmp_svalue : public svalue.  */
 
 /* Implementation of svalue::accept vfunc for setjmp_svalue.  */
@@ -499,6 +516,29 @@ readability_comparator (const void *p1, const void *p2)
      this also favors locals over globals.  */
   if (int cmp = pv2.m_stack_depth - pv1.m_stack_depth)
     return cmp;
+
+  /* Otherwise, if they have the same readability, then impose an
+     arbitrary deterministic ordering on them.  */
+
+  if (int cmp = TREE_CODE (pv1.m_tree) - TREE_CODE (pv2.m_tree))
+    return cmp;
+
+  switch (TREE_CODE (pv1.m_tree))
+    {
+    default:
+      break;
+    case SSA_NAME:
+      if (int cmp = (SSA_NAME_VERSION (pv1.m_tree)
+		     - SSA_NAME_VERSION (pv2.m_tree)))
+	return cmp;
+      break;
+    case PARM_DECL:
+    case VAR_DECL:
+    case RESULT_DECL:
+      if (int cmp = DECL_UID (pv1.m_tree) - DECL_UID (pv2.m_tree))
+	return cmp;
+      break;
+    }
 
   /* TODO: We ought to find ways of sorting such cases.  */
   return 0;
@@ -1807,8 +1847,9 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
       && point_b.get_function () != NULL
       && point_a.get_function () != point_b.get_function ())
     {
-      return ka.m_worklist.m_plan.cmp_function (point_a.get_function (),
-						point_b.get_function ());
+      if (int cmp = ka.m_worklist.m_plan.cmp_function (point_a.get_function (),
+						       point_b.get_function ()))
+	return cmp;
     }
 
   /* First, order by SCC.  */
@@ -1859,20 +1900,15 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
   const program_state &state_b = kb.m_enode->get_state ();
 
   /* Sort by sm-state, so that identical sm-states are grouped
-     together in the worklist.
-     For now, sort by the hash value (might not be deterministic).  */
+     together in the worklist.  */
   for (unsigned sm_idx = 0; sm_idx < state_a.m_checker_states.length ();
        ++sm_idx)
     {
       sm_state_map *smap_a = state_a.m_checker_states[sm_idx];
       sm_state_map *smap_b = state_b.m_checker_states[sm_idx];
 
-      hashval_t hash_a = smap_a->hash ();
-      hashval_t hash_b = smap_b->hash ();
-      if (hash_a < hash_b)
-	return -1;
-      else if (hash_a > hash_b)
-	return 1;
+      if (int smap_cmp = sm_state_map::cmp (*smap_a, *smap_b))
+	return smap_cmp;
     }
 
   /* Otherwise, we have two enodes at the same program point but with
@@ -1931,6 +1967,17 @@ exploded_graph::~exploded_graph ()
 exploded_node *
 exploded_graph::add_function_entry (function *fun)
 {
+  gcc_assert (gimple_has_body_p (fun->decl));
+
+  /* Be idempotent.  */
+  if (m_functions_with_enodes.contains (fun))
+    {
+      logger * const logger = get_logger ();
+       if (logger)
+	logger->log ("entrypoint for %qE already exists", fun->decl);
+      return NULL;
+    }
+
   program_point point = program_point::from_function_entry (m_sg, fun);
   program_state state (m_ext_state);
   state.push_frame (m_ext_state, fun);
@@ -1939,9 +1986,13 @@ exploded_graph::add_function_entry (function *fun)
     return NULL;
 
   exploded_node *enode = get_or_create_node (point, state, NULL);
-  /* We should never fail to add such a node.  */
-  gcc_assert (enode);
+  if (!enode)
+    return NULL;
+
   add_edge (m_origin, enode, NULL);
+
+  m_functions_with_enodes.add (fun);
+
   return enode;
 }
 
@@ -2079,7 +2130,7 @@ exploded_graph::get_or_create_node (const program_point &point,
   /* Impose a limit on the number of enodes per program point, and
      simply stop if we exceed it.  */
   if ((int)per_point_data->m_enodes.length ()
-      > param_analyzer_max_enodes_per_program_point)
+      >= param_analyzer_max_enodes_per_program_point)
     {
       pretty_printer pp;
       point.print (&pp, format (false));
@@ -2261,6 +2312,18 @@ toplevel_function_p (cgraph_node *node, function *fun, logger *logger)
   return true;
 }
 
+/* Callback for walk_tree for finding callbacks within initializers;
+   ensure they are treated as possible entrypoints to the analysis.  */
+
+static tree
+add_any_callbacks (tree *tp, int *, void *data)
+{
+  exploded_graph *eg = (exploded_graph *)data;
+  if (TREE_CODE (*tp) == FUNCTION_DECL)
+    eg->on_escaped_function (*tp);
+  return NULL_TREE;
+}
+
 /* Add initial nodes to EG, with entrypoints for externally-callable
    functions.  */
 
@@ -2286,6 +2349,19 @@ exploded_graph::build_initial_worklist ()
 	  logger->log ("did not create enode for %qE entrypoint", fun->decl);
       }
   }
+
+  /* Find callbacks that are reachable from global initializers.  */
+  varpool_node *vpnode;
+  FOR_EACH_VARIABLE (vpnode)
+    {
+      tree decl = vpnode->decl;
+      if (!TREE_PUBLIC (decl))
+	continue;
+      tree init = DECL_INITIAL (decl);
+      if (!init)
+	continue;
+      walk_tree (&init, add_any_callbacks, this, NULL);
+    }
 }
 
 /* The main loop of the analysis.
@@ -3460,8 +3536,7 @@ public:
 
   void dump_dot (graphviz_out *gv, const dump_args_t &args) const FINAL OVERRIDE
   {
-    gv->println ("subgraph \"cluster_supernode_%p\" {",
-		 (const void *)this);
+    gv->println ("subgraph \"cluster_supernode_%i\" {", m_supernode->m_index);
     gv->indent ();
     gv->println ("style=\"dashed\";");
     gv->println ("label=\"SN: %i (bb: %i; scc: %i)\";",
@@ -3481,6 +3556,17 @@ public:
   void add_node (exploded_node *en) FINAL OVERRIDE
   {
     m_enodes.safe_push (en);
+  }
+
+  /* Comparator for use by auto_vec<supernode_cluster *>::qsort.  */
+
+  static int cmp_ptr_ptr (const void *p1, const void *p2)
+  {
+    const supernode_cluster *c1
+      = *(const supernode_cluster * const *)p1;
+    const supernode_cluster *c2
+      = *(const supernode_cluster * const *)p2;
+    return c1->m_supernode->m_index - c2->m_supernode->m_index;
   }
 
 private:
@@ -3509,7 +3595,8 @@ public:
   {
     const char *funcname = function_name (m_fun);
 
-    gv->println ("subgraph \"cluster_function_%p\" {", (const void *)this);
+    gv->println ("subgraph \"cluster_function_%s\" {",
+		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (m_fun->decl)));
     gv->indent ();
     gv->write_indent ();
     gv->print ("label=\"call string: ");
@@ -3517,10 +3604,19 @@ public:
     gv->print (" function: %s \";", funcname);
     gv->print ("\n");
 
+    /* Dump m_map, sorting it to avoid churn when comparing dumps.  */
+    auto_vec<supernode_cluster *> child_clusters (m_map.elements ());
     for (map_t::iterator iter = m_map.begin ();
 	 iter != m_map.end ();
 	 ++iter)
-      (*iter).second->dump_dot (gv, args);
+      child_clusters.quick_push ((*iter).second);
+
+    child_clusters.qsort (supernode_cluster::cmp_ptr_ptr);
+
+    unsigned i;
+    supernode_cluster *child_cluster;
+    FOR_EACH_VEC_ELT (child_clusters, i, child_cluster)
+      child_cluster->dump_dot (gv, args);
 
     /* Terminate subgraph.  */
     gv->outdent ();
@@ -3540,6 +3636,21 @@ public:
 	m_map.put (supernode, child);
 	child->add_node (en);
       }
+  }
+
+  /* Comparator for use by auto_vec<function_call_string_cluster *>.  */
+
+  static int cmp_ptr_ptr (const void *p1, const void *p2)
+  {
+    const function_call_string_cluster *c1
+      = *(const function_call_string_cluster * const *)p1;
+    const function_call_string_cluster *c2
+      = *(const function_call_string_cluster * const *)p2;
+    if (int cmp_names
+	= strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (c1->m_fun->decl)),
+		  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (c2->m_fun->decl))))
+      return cmp_names;
+    return call_string::cmp (c1->m_cs, c2->m_cs);
   }
 
 private:
@@ -3634,10 +3745,18 @@ public:
     FOR_EACH_VEC_ELT (m_functionless_enodes, i, enode)
       enode->dump_dot (gv, args);
 
+    /* Dump m_map, sorting it to avoid churn when comparing dumps.  */
+    auto_vec<function_call_string_cluster *> child_clusters (m_map.elements ());
     for (map_t::iterator iter = m_map.begin ();
 	 iter != m_map.end ();
 	 ++iter)
-      (*iter).second->dump_dot (gv, args);
+      child_clusters.quick_push ((*iter).second);
+
+    child_clusters.qsort (function_call_string_cluster::cmp_ptr_ptr);
+
+    function_call_string_cluster *child_cluster;
+    FOR_EACH_VEC_ELT (child_clusters, i, child_cluster)
+      child_cluster->dump_dot (gv, args);
   }
 
   void add_node (exploded_node *en) FINAL OVERRIDE
@@ -3921,6 +4040,36 @@ exploded_graph::get_node_by_index (int idx) const
   exploded_node *enode = m_nodes[idx];
   gcc_assert (enode->m_index == idx);
   return enode;
+}
+
+/* Ensure that there is an exploded_node for a top-level call to FNDECL.  */
+
+void
+exploded_graph::on_escaped_function (tree fndecl)
+{
+  logger * const logger = get_logger ();
+  LOG_FUNC_1 (logger, "%qE", fndecl);
+
+  cgraph_node *cgnode = cgraph_node::get (fndecl);
+  if (!cgnode)
+    return;
+
+  function *fun = cgnode->get_fun ();
+  if (!fun)
+    return;
+
+  if (!gimple_has_body_p (fndecl))
+    return;
+
+  exploded_node *enode = add_function_entry (fun);
+  if (logger)
+    {
+      if (enode)
+	logger->log ("created EN %i for %qE entrypoint",
+		     enode->m_index, fun->decl);
+      else
+	logger->log ("did not create enode for %qE entrypoint", fun->decl);
+    }
 }
 
 /* A collection of classes for visualizing the callgraph in .dot form

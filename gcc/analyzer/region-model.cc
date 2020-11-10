@@ -836,7 +836,7 @@ region_model::handle_unrecognized_call (const gcall *call,
 {
   tree fndecl = get_fndecl_for_call (call, ctxt);
 
-  reachable_regions reachable_regs (&m_store, m_mgr);
+  reachable_regions reachable_regs (this, m_mgr);
 
   /* Determine the reachable regions and their mutability.  */
   {
@@ -884,7 +884,7 @@ region_model::handle_unrecognized_call (const gcall *call,
     }
 
   /* Mark any clusters that have escaped.  */
-  reachable_regs.mark_escaped_clusters ();
+  reachable_regs.mark_escaped_clusters (ctxt);
 
   /* Update bindings for all clusters that have escaped, whether above,
      or previously.  */
@@ -904,7 +904,7 @@ void
 region_model::get_reachable_svalues (svalue_set *out,
 				     const svalue *extra_sval)
 {
-  reachable_regions reachable_regs (&m_store, m_mgr);
+  reachable_regions reachable_regs (this, m_mgr);
 
   /* Add globals and regions that already escaped in previous
      unknown calls.  */
@@ -1333,35 +1333,38 @@ region_model::get_initial_value_for_global (const region *reg) const
      an unknown value if an unknown call has occurred, unless this is
      static to-this-TU and hasn't escaped.  Globals that have escaped
      are explicitly tracked, so we shouldn't hit this case for them.  */
-  if (m_store.called_unknown_fn_p () && TREE_PUBLIC (decl))
+  if (m_store.called_unknown_fn_p ()
+      && TREE_PUBLIC (decl)
+      && !TREE_READONLY (decl))
     return m_mgr->get_or_create_unknown_svalue (reg->get_type ());
 
   /* If we are on a path from the entrypoint from "main" and we have a
      global decl defined in this TU that hasn't been touched yet, then
      the initial value of REG can be taken from the initialization value
      of the decl.  */
-  if (called_from_main_p () && !DECL_EXTERNAL (decl))
+  if (called_from_main_p () || TREE_READONLY (decl))
     {
-      /* Get the initializer value for base_reg.  */
-      const svalue *base_reg_init
-	= base_reg->get_svalue_for_initializer (m_mgr);
-      gcc_assert (base_reg_init);
-      if (reg == base_reg)
-	return base_reg_init;
-      else
+      /* Attempt to get the initializer value for base_reg.  */
+      if (const svalue *base_reg_init
+	    = base_reg->get_svalue_for_initializer (m_mgr))
 	{
-	  /* Get the value for REG within base_reg_init.  */
-	  binding_cluster c (base_reg);
-	  c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init,
-		  BK_direct);
-	  const svalue *sval
-	    = c.get_any_binding (m_mgr->get_store_manager (), reg);
-	  if (sval)
+	  if (reg == base_reg)
+	    return base_reg_init;
+	  else
 	    {
-	      if (reg->get_type ())
-		sval = m_mgr->get_or_create_cast (reg->get_type (),
-						  sval);
-	      return sval;
+	      /* Get the value for REG within base_reg_init.  */
+	      binding_cluster c (base_reg);
+	      c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init,
+		      BK_direct);
+	      const svalue *sval
+		= c.get_any_binding (m_mgr->get_store_manager (), reg);
+	      if (sval)
+		{
+		  if (reg->get_type ())
+		    sval = m_mgr->get_or_create_cast (reg->get_type (),
+						      sval);
+		  return sval;
+		}
 	    }
 	}
     }
@@ -2188,7 +2191,10 @@ region_model::get_representative_path_var (const region *reg,
 	return path_var (function_reg->get_fndecl (), 0);
       }
     case RK_LABEL:
-      gcc_unreachable (); // TODO
+      {
+	const label_region *label_reg = as_a <const label_region *> (reg);
+	return path_var (label_reg->get_label (), 0);
+      }
 
     case RK_SYMBOLIC:
       {

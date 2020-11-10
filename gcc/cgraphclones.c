@@ -85,6 +85,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "symtab-thunks.h"
+#include "symtab-clones.h"
 
 /* Create clone of edge in the node N represented by CALL_EXPR
    the callgraph.  */
@@ -183,33 +185,34 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   cgraph_node *new_thunk, *thunk_of;
   thunk_of = thunk->callees->callee->ultimate_alias_target ();
 
-  if (thunk_of->thunk.thunk_p)
+  if (thunk_of->thunk)
     node = duplicate_thunk_for_node (thunk_of, node);
 
   if (!DECL_ARGUMENTS (thunk->decl))
     thunk->get_untransformed_body ();
 
+  thunk_info *i = thunk_info::get (thunk);
   cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (cs->caller->thunk.thunk_p
-	&& cs->caller->thunk.fixed_offset == thunk->thunk.fixed_offset
-	&& cs->caller->thunk.virtual_value == thunk->thunk.virtual_value
-	&& cs->caller->thunk.indirect_offset == thunk->thunk.indirect_offset
-	&& cs->caller->thunk.this_adjusting == thunk->thunk.this_adjusting
-	&& cs->caller->thunk.virtual_offset_p == thunk->thunk.virtual_offset_p)
-      return cs->caller;
+    if (cs->caller->thunk)
+      {
+	thunk_info *i2 = thunk_info::get (cs->caller);
+	if (*i2 == *i)
+	  return cs->caller;
+      }
 
   tree new_decl;
-  if (node->clone.param_adjustments)
+  clone_info *info = clone_info::get (node);
+  if (info && info->param_adjustments)
     {
       /* We do not need to duplicate this_adjusting thunks if we have removed
 	 this.  */
-      if (thunk->thunk.this_adjusting
-	  && !node->clone.param_adjustments->first_param_intact_p ())
+      if (i->this_adjusting
+	  && !info->param_adjustments->first_param_intact_p ())
 	return node;
 
       new_decl = copy_node (thunk->decl);
-      ipa_param_body_adjustments body_adj (node->clone.param_adjustments,
+      ipa_param_body_adjustments body_adj (info->param_adjustments,
 					   new_decl);
       body_adj.modify_formal_parameters ();
     }
@@ -236,7 +239,9 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
-  new_thunk->clone.param_adjustments = node->clone.param_adjustments;
+  if (info && info->param_adjustments)
+    clone_info::get_create (new_thunk)->param_adjustments
+	   = info->param_adjustments;
   new_thunk->unit_id = thunk->unit_id;
   new_thunk->merged_comdat = thunk->merged_comdat;
   new_thunk->merged_extern_inline = thunk->merged_extern_inline;
@@ -256,7 +261,7 @@ void
 cgraph_edge::redirect_callee_duplicating_thunks (cgraph_node *n)
 {
   cgraph_node *orig_to = callee->ultimate_alias_target ();
-  if (orig_to->thunk.thunk_p)
+  if (orig_to->thunk)
     n = duplicate_thunk_for_node (orig_to, n);
 
   redirect_callee (n);
@@ -270,14 +275,14 @@ cgraph_node::expand_all_artificial_thunks ()
 {
   cgraph_edge *e;
   for (e = callers; e;)
-    if (e->caller->thunk.thunk_p)
+    if (e->caller->thunk)
       {
 	cgraph_node *thunk = e->caller;
 
 	e = e->next_caller;
-	if (thunk->expand_thunk (false, false))
+	if (expand_thunk (thunk, false, false))
 	  {
-	    thunk->thunk.thunk_p = false;
+	    thunk->thunk = false;
 	    thunk->analyze ();
 	    ipa_analyze_node (thunk);
 	    inline_analyze_function (thunk);
@@ -382,13 +387,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
     }
   new_node->decl = new_decl;
   new_node->register_symbol ();
-  new_node->origin = origin;
   new_node->lto_file_data = lto_file_data;
-  if (new_node->origin)
-    {
-      new_node->next_nested = new_node->origin->nested;
-      new_node->origin->nested = new_node;
-    }
   new_node->analyzed = analyzed;
   new_node->definition = definition;
   new_node->versionable = versionable;
@@ -408,13 +407,16 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->unit_id = unit_id;
   new_node->merged_comdat = merged_comdat;
   new_node->merged_extern_inline = merged_extern_inline;
+  clone_info *info = clone_info::get (this);
 
   if (param_adjustments)
-    new_node->clone.param_adjustments = param_adjustments;
-  else
-    new_node->clone.param_adjustments = clone.param_adjustments;
-  new_node->clone.tree_map = NULL;
-  new_node->clone.performed_splits = vec_safe_copy (clone.performed_splits);
+    clone_info::get_create (new_node)->param_adjustments = param_adjustments;
+  else if (info && info->param_adjustments)
+    clone_info::get_create (new_node)->param_adjustments
+	 = info->param_adjustments;
+  if (info && info->performed_splits)
+    clone_info::get_create (new_node)->performed_splits
+	 = vec_safe_copy (info->performed_splits);
   new_node->split_part = split_part;
 
   FOR_EACH_VEC_ELT (redirect_callers, i, e)
@@ -621,7 +623,8 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
      ABI support for this.  */
   set_new_clone_decl_and_node_flags (new_node);
   new_node->ipcp_clone = ipcp_clone;
-  new_node->clone.tree_map = tree_map;
+  if (tree_map)
+    clone_info::get_create (new_node)->tree_map = tree_map;
   if (!implicit_section)
     new_node->set_section (get_section ());
 
@@ -645,9 +648,10 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 }
 
 /* callgraph node being removed from symbol table; see if its entry can be
-   replaced by other inline clone.  */
+   replaced by other inline clone. 
+   INFO is clone info to attach to the new root.  */
 cgraph_node *
-cgraph_node::find_replacement (void)
+cgraph_node::find_replacement (clone_info *info)
 {
   cgraph_node *next_inline_clone, *replacement;
 
@@ -687,7 +691,8 @@ cgraph_node::find_replacement (void)
       clones = NULL;
 
       /* Copy clone info.  */
-      next_inline_clone->clone = clone;
+      if (info)
+	*clone_info::get_create (next_inline_clone) = *info;
 
       /* Now place it into clone tree at same level at NODE.  */
       next_inline_clone->clone_of = clone_of;
@@ -818,7 +823,7 @@ cgraph_node::create_edge_including_clones (cgraph_node *callee,
   if (node)
     while (node != this)
       /* Thunk clones do not get updated while copying inline function body.  */
-      if (!node->thunk.thunk_p)
+      if (!node->thunk)
 	{
 	  cgraph_edge *edge = node->get_edge (old_stmt);
 
@@ -1089,114 +1094,60 @@ void cgraph_node::remove_from_clone_tree ()
 
 /* Given virtual clone, turn it into actual clone.  */
 
-static void
-cgraph_materialize_clone (cgraph_node *node)
+void
+cgraph_node::materialize_clone ()
 {
-  bitmap_obstack_initialize (NULL);
-  node->former_clone_of = node->clone_of->decl;
-  if (node->clone_of->former_clone_of)
-    node->former_clone_of = node->clone_of->former_clone_of;
+  clone_info *info = clone_info::get (this);
+  clone_of->get_untransformed_body ();
+  former_clone_of = clone_of->decl;
+  if (clone_of->former_clone_of)
+    former_clone_of = clone_of->former_clone_of;
+  if (symtab->dump_file)
+    {
+      fprintf (symtab->dump_file, "cloning %s to %s\n",
+	       clone_of->dump_name (),
+	       dump_name ());
+      if (info->tree_map)
+        {
+	  fprintf (symtab->dump_file, "    replace map:");
+	  for (unsigned int i = 0;
+	       i < vec_safe_length (info->tree_map);
+	       i++)
+	    {
+	      ipa_replace_map *replace_info;
+	      replace_info = (*info->tree_map)[i];
+	      fprintf (symtab->dump_file, "%s %i -> ",
+		       i ? "," : "", replace_info->parm_num);
+	      print_generic_expr (symtab->dump_file,
+				  replace_info->new_tree);
+	    }
+	  fprintf (symtab->dump_file, "\n");
+	}
+      if (info->param_adjustments)
+	info->param_adjustments->dump (symtab->dump_file);
+    }
+  clear_stmts_in_references ();
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (node->clone_of->decl, node->decl,
-			    node->clone.tree_map, node->clone.param_adjustments,
+  tree_function_versioning (clone_of->decl, decl,
+			    info ? info->tree_map : NULL,
+			    info ? info->param_adjustments : NULL,
 			    true, NULL, NULL);
   if (symtab->dump_file)
     {
-      dump_function_to_file (node->clone_of->decl, symtab->dump_file,
+      dump_function_to_file (clone_of->decl, symtab->dump_file,
 			     dump_flags);
-      dump_function_to_file (node->decl, symtab->dump_file, dump_flags);
+      dump_function_to_file (decl, symtab->dump_file, dump_flags);
     }
 
-  cgraph_node *clone_of = node->clone_of;
+  cgraph_node *this_clone_of = clone_of;
   /* Function is no longer clone.  */
-  node->remove_from_clone_tree ();
-  if (!clone_of->analyzed && !clone_of->clones)
+  remove_from_clone_tree ();
+  if (!this_clone_of->analyzed && !this_clone_of->clones)
     {
-      clone_of->release_body ();
-      clone_of->remove_callees ();
-      clone_of->remove_all_references ();
+      this_clone_of->release_body ();
+      this_clone_of->remove_callees ();
+      this_clone_of->remove_all_references ();
     }
-  bitmap_obstack_release (NULL);
-}
-
-/* Once all functions from compilation unit are in memory, produce all clones
-   and update all calls.  We might also do this on demand if we don't want to
-   bring all functions to memory prior compilation, but current WHOPR
-   implementation does that and it is a bit easier to keep everything right in
-   this order.  */
-
-void
-symbol_table::materialize_all_clones (void)
-{
-  cgraph_node *node;
-  bool stabilized = false;
-  
-
-  if (symtab->dump_file)
-    fprintf (symtab->dump_file, "Materializing clones\n");
-
-  cgraph_node::checking_verify_cgraph_nodes ();
-
-  /* We can also do topological order, but number of iterations should be
-     bounded by number of IPA passes since single IPA pass is probably not
-     going to create clones of clones it created itself.  */
-  while (!stabilized)
-    {
-      stabilized = true;
-      FOR_EACH_FUNCTION (node)
-        {
-	  if (node->clone_of && node->decl != node->clone_of->decl
-	      && !gimple_has_body_p (node->decl))
-	    {
-	      if (!node->clone_of->clone_of)
-		node->clone_of->get_untransformed_body ();
-	      if (gimple_has_body_p (node->clone_of->decl))
-	        {
-		  if (symtab->dump_file)
-		    {
-		      fprintf (symtab->dump_file, "cloning %s to %s\n",
-			       node->clone_of->dump_name (),
-			       node->dump_name ());
-		      if (node->clone.tree_map)
-		        {
-			  unsigned int i;
-			  fprintf (symtab->dump_file, "    replace map:");
-			  for (i = 0;
-			       i < vec_safe_length (node->clone.tree_map);
-			       i++)
-			    {
-			      ipa_replace_map *replace_info;
-			      replace_info = (*node->clone.tree_map)[i];
-			      fprintf (symtab->dump_file, "%s %i -> ",
-				       i ? "," : "", replace_info->parm_num);
-			      print_generic_expr (symtab->dump_file,
-						  replace_info->new_tree);
-			    }
-			  fprintf (symtab->dump_file, "\n");
-			}
-		      if (node->clone.param_adjustments)
-			node->clone.param_adjustments->dump (symtab->dump_file);
-		    }
-		  cgraph_materialize_clone (node);
-		  stabilized = false;
-	        }
-	    }
-	}
-    }
-  FOR_EACH_FUNCTION (node)
-    if (!node->analyzed && node->callees)
-      {
-	node->remove_callees ();
-	node->remove_all_references ();
-      }
-    else
-      node->clear_stmts_in_references ();
-  if (symtab->dump_file)
-    fprintf (symtab->dump_file, "Materialization Call site updates done.\n");
-
-  cgraph_node::checking_verify_cgraph_nodes ();
-
-  symtab->remove_unreachable_nodes (symtab->dump_file);
 }
 
 #include "gt-cgraphclones.h"

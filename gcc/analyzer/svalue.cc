@@ -52,41 +52,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
+#include "analyzer/svalue.h"
 #include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
 namespace ana {
-
-/* struct complexity.  */
-
-/* Get complexity for a new node that references REG
-   (the complexity of REG, plus one for the new node).  */
-
-complexity::complexity (const region *reg)
-: m_num_nodes (reg->get_complexity ().m_num_nodes + 1),
-  m_max_depth (reg->get_complexity ().m_max_depth + 1)
-{
-}
-
-/* Get complexity for a new node that references SVAL.
-   (the complexity of SVAL, plus one for the new node).  */
-
-complexity::complexity (const svalue *sval)
-: m_num_nodes (sval->get_complexity ().m_num_nodes + 1),
-  m_max_depth (sval->get_complexity ().m_max_depth + 1)
-{
-}
-
-/* Get complexity for a new node that references nodes with complexity
-   C1 and C2.  */
-
-complexity
-complexity::from_pair (const complexity &c1, const complexity &c2)
-{
-  return complexity (c1.m_num_nodes + c2.m_num_nodes + 1,
-		     MAX (c1.m_max_depth, c2.m_max_depth) + 1);
-}
 
 /* class svalue and its various subclasses.  */
 
@@ -296,6 +267,215 @@ bool
 svalue::implicitly_live_p (const svalue_set &, const region_model *) const
 {
   return false;
+}
+
+/* Comparator for imposing a deterministic order on constants that are
+   of the same type.  */
+
+static int
+cmp_cst (const_tree cst1, const_tree cst2)
+{
+  gcc_assert (TREE_TYPE (cst1) == TREE_TYPE (cst2));
+  gcc_assert (TREE_CODE (cst1) == TREE_CODE (cst2));
+  switch (TREE_CODE (cst1))
+    {
+    default:
+      gcc_unreachable ();
+    case INTEGER_CST:
+      return tree_int_cst_compare (cst1, cst2);
+    case STRING_CST:
+      return strcmp (TREE_STRING_POINTER (cst1),
+		     TREE_STRING_POINTER (cst2));
+    case REAL_CST:
+      /* Impose an arbitrary but deterministic order.  */
+      return memcmp (TREE_REAL_CST_PTR (cst1),
+		     TREE_REAL_CST_PTR (cst2),
+		     sizeof (real_value));
+    case COMPLEX_CST:
+      if (int cmp_real = cmp_cst (TREE_REALPART (cst1), TREE_REALPART (cst2)))
+	return cmp_real;
+      return cmp_cst (TREE_IMAGPART (cst1), TREE_IMAGPART (cst2));
+    case VECTOR_CST:
+      if (int cmp_log2_npatterns
+	    = ((int)VECTOR_CST_LOG2_NPATTERNS (cst1)
+	       - (int)VECTOR_CST_LOG2_NPATTERNS (cst2)))
+	return cmp_log2_npatterns;
+      if (int cmp_nelts_per_pattern
+	    = ((int)VECTOR_CST_NELTS_PER_PATTERN (cst1)
+	       - (int)VECTOR_CST_NELTS_PER_PATTERN (cst2)))
+	return cmp_nelts_per_pattern;
+      unsigned encoded_nelts = vector_cst_encoded_nelts (cst1);
+      for (unsigned i = 0; i < encoded_nelts; i++)
+	if (int el_cmp = cmp_cst (VECTOR_CST_ENCODED_ELT (cst1, i),
+				  VECTOR_CST_ENCODED_ELT (cst2, i)))
+	  return el_cmp;
+      return 0;
+    }
+}
+
+/* Comparator for imposing a deterministic order on svalues.  */
+
+int
+svalue::cmp_ptr (const svalue *sval1, const svalue *sval2)
+{
+  if (sval1 == sval2)
+    return 0;
+  if (int cmp_kind = sval1->get_kind () - sval2->get_kind ())
+    return cmp_kind;
+  int t1 = sval1->get_type () ? TYPE_UID (sval1->get_type ()) : -1;
+  int t2 = sval2->get_type () ? TYPE_UID (sval2->get_type ()) : -1;
+  if (int cmp_type = t1 - t2)
+    return cmp_type;
+  switch (sval1->get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case SK_REGION:
+      {
+	const region_svalue *region_sval1 = (const region_svalue *)sval1;
+	const region_svalue *region_sval2 = (const region_svalue *)sval2;
+	return region::cmp_ids (region_sval1->get_pointee (),
+				region_sval2->get_pointee ());
+      }
+      break;
+    case SK_CONSTANT:
+      {
+	const constant_svalue *constant_sval1 = (const constant_svalue *)sval1;
+	const constant_svalue *constant_sval2 = (const constant_svalue *)sval2;
+	const_tree cst1 = constant_sval1->get_constant ();
+	const_tree cst2 = constant_sval2->get_constant ();
+	return cmp_cst (cst1, cst2);
+      }
+      break;
+    case SK_UNKNOWN:
+      {
+	gcc_assert (sval1 == sval2);
+	return 0;
+      }
+      break;
+    case SK_POISONED:
+      {
+	const poisoned_svalue *poisoned_sval1 = (const poisoned_svalue *)sval1;
+	const poisoned_svalue *poisoned_sval2 = (const poisoned_svalue *)sval2;
+	return (poisoned_sval1->get_poison_kind ()
+		- poisoned_sval2->get_poison_kind ());
+      }
+      break;
+    case SK_SETJMP:
+      {
+	const setjmp_svalue *setjmp_sval1 = (const setjmp_svalue *)sval1;
+	const setjmp_svalue *setjmp_sval2 = (const setjmp_svalue *)sval2;
+	const setjmp_record &rec1 = setjmp_sval1->get_setjmp_record ();
+	const setjmp_record &rec2 = setjmp_sval2->get_setjmp_record ();
+	return setjmp_record::cmp (rec1, rec2);
+      }
+      break;
+    case SK_INITIAL:
+      {
+	const initial_svalue *initial_sval1 = (const initial_svalue *)sval1;
+	const initial_svalue *initial_sval2 = (const initial_svalue *)sval2;
+	return region::cmp_ids (initial_sval1->get_region (),
+				initial_sval2->get_region ());
+      }
+      break;
+    case SK_UNARYOP:
+      {
+	const unaryop_svalue *unaryop_sval1 = (const unaryop_svalue *)sval1;
+	const unaryop_svalue *unaryop_sval2 = (const unaryop_svalue *)sval2;
+	if (int op_cmp = unaryop_sval1->get_op () - unaryop_sval2->get_op ())
+	  return op_cmp;
+	return svalue::cmp_ptr (unaryop_sval1->get_arg (),
+				unaryop_sval2->get_arg ());
+      }
+      break;
+    case SK_BINOP:
+      {
+	const binop_svalue *binop_sval1 = (const binop_svalue *)sval1;
+	const binop_svalue *binop_sval2 = (const binop_svalue *)sval2;
+	if (int op_cmp = binop_sval1->get_op () - binop_sval2->get_op ())
+	  return op_cmp;
+	if (int arg0_cmp = svalue::cmp_ptr (binop_sval1->get_arg0 (),
+					    binop_sval2->get_arg0 ()))
+	  return arg0_cmp;
+	return svalue::cmp_ptr (binop_sval1->get_arg1 (),
+				binop_sval2->get_arg1 ());
+      }
+      break;
+    case SK_SUB:
+      {
+	const sub_svalue *sub_sval1 = (const sub_svalue *)sval1;
+	const sub_svalue *sub_sval2 = (const sub_svalue *)sval2;
+	if (int parent_cmp = svalue::cmp_ptr (sub_sval1->get_parent (),
+					      sub_sval2->get_parent ()))
+	  return parent_cmp;
+	return region::cmp_ids (sub_sval1->get_subregion (),
+				sub_sval2->get_subregion ());
+      }
+      break;
+    case SK_UNMERGEABLE:
+      {
+	const unmergeable_svalue *unmergeable_sval1
+	  = (const unmergeable_svalue *)sval1;
+	const unmergeable_svalue *unmergeable_sval2
+	  = (const unmergeable_svalue *)sval2;
+	return svalue::cmp_ptr (unmergeable_sval1->get_arg (),
+				unmergeable_sval2->get_arg ());
+      }
+      break;
+    case SK_PLACEHOLDER:
+      {
+	const placeholder_svalue *placeholder_sval1
+	  = (const placeholder_svalue *)sval1;
+	const placeholder_svalue *placeholder_sval2
+	  = (const placeholder_svalue *)sval2;
+	return strcmp (placeholder_sval1->get_name (),
+		       placeholder_sval2->get_name ());
+      }
+      break;
+    case SK_WIDENING:
+      {
+	const widening_svalue *widening_sval1 = (const widening_svalue *)sval1;
+	const widening_svalue *widening_sval2 = (const widening_svalue *)sval2;
+	if (int point_cmp = function_point::cmp (widening_sval1->get_point (),
+						 widening_sval2->get_point ()))
+	  return point_cmp;
+	if (int base_cmp = svalue::cmp_ptr (widening_sval1->get_base_svalue (),
+					    widening_sval2->get_base_svalue ()))
+	  return base_cmp;
+	return svalue::cmp_ptr (widening_sval1->get_iter_svalue (),
+				widening_sval2->get_iter_svalue ());
+      }
+      break;
+    case SK_COMPOUND:
+      {
+	const compound_svalue *compound_sval1 = (const compound_svalue *)sval1;
+	const compound_svalue *compound_sval2 = (const compound_svalue *)sval2;
+	return binding_map::cmp (compound_sval1->get_map (),
+				 compound_sval2->get_map ());
+      }
+      break;
+    case SK_CONJURED:
+      {
+	const conjured_svalue *conjured_sval1 = (const conjured_svalue *)sval1;
+	const conjured_svalue *conjured_sval2 = (const conjured_svalue *)sval2;
+	if (int stmt_cmp = (conjured_sval1->get_stmt ()->uid
+			    - conjured_sval2->get_stmt ()->uid))
+	  return stmt_cmp;
+	return region::cmp_ids (conjured_sval1->get_id_region (),
+				conjured_sval2->get_id_region ());
+      }
+      break;
+    }
+}
+
+/* Comparator for use by vec<const svalue *>::qsort.  */
+
+int
+svalue::cmp_ptr_ptr (const void *p1, const void *p2)
+{
+  const svalue *sval1 = *(const svalue * const *)p1;
+  const svalue *sval2 = *(const svalue * const *)p2;
+  return cmp_ptr (sval1, sval2);
 }
 
 /* class region_svalue : public svalue.  */

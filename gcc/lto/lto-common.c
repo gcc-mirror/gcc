@@ -2592,7 +2592,6 @@ lto_fixup_prevailing_decls (tree t)
 	case TREE_LIST:
 	  LTO_SET_PREVAIL (TREE_VALUE (t));
 	  LTO_SET_PREVAIL (TREE_PURPOSE (t));
-	  LTO_NO_PREVAIL (TREE_PURPOSE (t));
 	  break;
 	default:
 	  gcc_unreachable ();

@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "dwarf2out.h"	/* For struct array_descr_info.  */
 #include "attribs.h"
+#include "alias.h"
 
 
 #if (GFC_MAX_DIMENSIONS < 10)
@@ -1903,6 +1904,10 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   base_type = gfc_get_array_descriptor_base (dimen, codimen, false);
   TYPE_CANONICAL (fat_type) = base_type;
   TYPE_STUB_DECL (fat_type) = TYPE_STUB_DECL (base_type);
+  /* Arrays of unknown type must alias with all array descriptors.  */
+  TYPE_TYPELESS_STORAGE (base_type) = 1;
+  TYPE_TYPELESS_STORAGE (fat_type) = 1;
+  gcc_checking_assert (!get_alias_set (base_type) && !get_alias_set (fat_type));
 
   tmp = TYPE_NAME (etype);
   if (tmp && TREE_CODE (tmp) == TYPE_DECL)
@@ -2246,7 +2251,8 @@ gfc_sym_type (gfc_symbol * sym)
   else
     type = gfc_typenode_for_spec (&sym->ts, sym->attr.codimension);
 
-  if (sym->attr.dummy && !sym->attr.function && !sym->attr.value)
+  if (sym->attr.dummy && !sym->attr.function && !sym->attr.value
+      && !sym->pass_as_value)
     byref = 1;
   else
     byref = 0;

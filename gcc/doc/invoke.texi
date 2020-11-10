@@ -239,7 +239,8 @@ in the following sections.
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
--Weffc++  -Wextra-semi  -Wno-inaccessible-base @gol
+-Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
+-Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
 -Wno-invalid-offsetof  -Wno-literal-suffix  -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
@@ -252,7 +253,8 @@ in the following sections.
 -Woverloaded-virtual  -Wno-pmf-conversions -Wsign-promo @gol
 -Wsized-deallocation  -Wsuggest-final-methods @gol
 -Wsuggest-final-types  -Wsuggest-override  @gol
--Wno-terminate  -Wuseless-cast  -Wvirtual-inheritance  @gol
+-Wno-terminate  -Wuseless-cast  -Wno-vexing-parse  @gol
+-Wvirtual-inheritance  @gol
 -Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
 @item Objective-C and Objective-C++ Language Options
@@ -363,6 +365,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-shift-overflow  -Wshift-overflow=@var{n} @gol
 -Wsign-compare  -Wsign-conversion @gol
 -Wno-sizeof-array-argument @gol
+-Wsizeof-array-div @gol
 -Wsizeof-pointer-div  -Wsizeof-pointer-memaccess @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
@@ -552,7 +555,7 @@ Objective-C and Objective-C++ Dialects}.
 -funit-at-a-time  -funroll-all-loops  -funroll-loops @gol
 -funsafe-math-optimizations  -funswitch-loops @gol
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt @gol
--fweb  -fwhole-program  -fwpa  -fuse-linker-plugin @gol
+-fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os  -Ofast  -Og}
 
@@ -635,7 +638,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-gnu-unique @gol
 -finhibit-size-directive  -fcommon  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC  -fpie  -fPIE  -fno-plt @gol
--fno-jump-tables @gol
+-fno-jump-tables -fno-bit-tests @gol
 -frecord-gcc-switches @gol
 -freg-struct-return  -fshort-enums  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  @gol
@@ -1109,7 +1112,7 @@ Objective-C and Objective-C++ Dialects}.
 -march=@var{arch}  -mbmx  -mno-bmx  -mcdx  -mno-cdx}
 
 @emph{Nvidia PTX Options}
-@gccoptlist{-m32  -m64  -mmainkernel  -moptimize}
+@gccoptlist{-m64  -mmainkernel  -moptimize}
 
 @emph{OpenRISC Options}
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div @gol
@@ -1364,9 +1367,10 @@ See RS/6000 and PowerPC Options.
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
--mamx-tile  -mamx-int8  -mamx-bf16@gol
+-mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset@gol
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
+-mkl -mwidekl @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mlong-double-64  -mlong-double-80  -mlong-double-128 @gol
@@ -3357,6 +3361,42 @@ warning is enabled by @option{-Wextra}.  With
 @option{-Wdeprecated-copy-dtor}, also deprecate if the class has a
 user-provided destructor.
 
+@item -Wno-deprecated-enum-enum-conversion @r{(C++ and Objective-C++ only)}
+@opindex Wdeprecated-enum-enum-conversion
+@opindex Wno-deprecated-enum-enum-conversion
+Disable the warning about the case when the usual arithmetic conversions
+are applied on operands where one is of enumeration type and the other is
+of a different enumeration type.  This conversion was deprecated in C++20.
+For example:
+
+@smallexample
+enum E1 @{ e @};
+enum E2 @{ f @};
+int k = f - e;
+@end smallexample
+
+@option{-Wdeprecated-enum-enum-conversion} is enabled by default with
+@option{-std=c++20}.  In pre-C++20 dialects, this warning can be enabled
+by @option{-Wenum-conversion}.
+
+@item -Wno-deprecated-enum-float-conversion @r{(C++ and Objective-C++ only)}
+@opindex Wdeprecated-enum-float-conversion
+@opindex Wno-deprecated-enum-float-conversion
+Disable the warning about the case when the usual arithmetic conversions
+are applied on operands where one is of enumeration type and the other is
+of a floating-point type.  This conversion was deprecated in C++20.  For
+example:
+
+@smallexample
+enum E1 @{ e @};
+enum E2 @{ f @};
+bool b = e <= 3.7;
+@end smallexample
+
+@option{-Wdeprecated-enum-float-conversion} is enabled by default with
+@option{-std=c++20}.  In pre-C++20 dialects, this warning can be enabled
+by @option{-Wenum-conversion}.
+
 @item -Wno-init-list-lifetime @r{(C++ and Objective-C++ only)}
 @opindex Winit-list-lifetime
 @opindex Wno-init-list-lifetime
@@ -3699,6 +3739,12 @@ When selecting this option, be aware that the standard library
 headers do not obey all of these guidelines; use @samp{grep -v}
 to filter out those warnings.
 
+@item -Wno-exceptions @r{(C++ and Objective-C++ only)}
+@opindex Wexceptions
+@opindex Wno-exceptions
+Disable the warning about the case when an exception handler is shadowed by
+another handler, which can point out a wrong ordering of exception handlers.
+
 @item -Wstrict-null-sentinel @r{(C++ and Objective-C++ only)}
 @opindex Wstrict-null-sentinel
 @opindex Wno-strict-null-sentinel
@@ -3846,6 +3892,37 @@ use the STL.  One may also use using directives and qualified names.
 @opindex Wno-terminate
 Disable the warning about a throw-expression that will immediately
 result in a call to @code{terminate}.
+
+@item -Wno-vexing-parse @r{(C++ and Objective-C++ only)}
+@opindex Wvexing-parse
+@opindex Wno-vexing-parse
+Warn about the most vexing parse syntactic ambiguity.  This warns about
+the cases when a declaration looks like a variable definition, but the
+C++ language requires it to be interpreted as a function declaration.
+For instance:
+
+@smallexample
+void f(double a) @{
+  int i();        // extern int i (void);
+  int n(int(a));  // extern int n (int);
+@}
+@end smallexample
+
+Another example:
+
+@smallexample
+struct S @{ S(int); @};
+void f(double a) @{
+  S x(int(a));   // extern struct S x (int);
+  S y(int());    // extern struct S y (int (*) (void));
+  S z();         // extern struct S z (void);
+@}
+@end smallexample
+
+The warning will suggest options how to deal with such an ambiguity; e.g.,
+it can suggest removing the parentheses or using braces instead.
+
+This warning is enabled by default.
 
 @item -Wno-class-conversion @r{(C++ and Objective-C++ only)}
 @opindex Wno-class-conversion
@@ -5270,7 +5347,6 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wcomment  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
--Wenum-conversion @r{in C/ObjC;} @gol
 -Wformat   @gol
 -Wformat-overflow  @gol
 -Wformat-truncation  @gol
@@ -5301,6 +5377,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wreturn-type  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
+-Wsizeof-array-div @gol
 -Wsizeof-pointer-div @gol
 -Wsizeof-pointer-memaccess @gol
 -Wstrict-aliasing  @gol
@@ -5338,6 +5415,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wcast-function-type  @gol
 -Wdeprecated-copy @r{(C++ only)} @gol
 -Wempty-body  @gol
+-Wenum-conversion @r{(C only)} @gol
 -Wignored-qualifiers @gol
 -Wimplicit-fallthrough=3 @gol
 -Wmissing-field-initializers  @gol
@@ -6859,37 +6937,28 @@ const char* f (enum Color clr)
 
 Option @option{-Wstringop-overflow=2} is enabled by default.
 
-@item -Wno-stringop-overread
-@opindex Wstringop-overread
-@opindex Wno-stringop-overread
-Warn for calls to string manipulation functions such as @code{memchr},
-@code{strcpy} that are determined to read past the end of the source
-sequence. 
-
-Option @option{-Wstringop-overread} is enabled by default.
-
 @table @gcctabopt
 @item -Wstringop-overflow
 @itemx -Wstringop-overflow=1
 @opindex Wstringop-overflow
 @opindex Wno-stringop-overflow
 The @option{-Wstringop-overflow=1} option uses type-zero Object Size Checking
-to determine the sizes of destination objects.  This is the default setting
-of the option.  At this setting the option does not warn for writes past
-the end of subobjects of larger objects accessed by pointers unless the
-size of the largest surrounding object is known.  When the destination may
-be one of several objects it is assumed to be the largest one of them.  On
-Linux systems, when optimization is enabled at this setting the option warns
-for the same code as when the @code{_FORTIFY_SOURCE} macro is defined to
-a non-zero value.
+to determine the sizes of destination objects.  At this setting the option
+does not warn for writes past the end of subobjects of larger objects accessed
+by pointers unless the size of the largest surrounding object is known.  When
+the destination may be one of several objects it is assumed to be the largest
+one of them.  On Linux systems, when optimization is enabled at this setting
+the option warns for the same code as when the @code{_FORTIFY_SOURCE} macro
+is defined to a non-zero value.
 
 @item -Wstringop-overflow=2
 The @option{-Wstringop-overflow=2} option uses type-one Object Size Checking
 to determine the sizes of destination objects.  At this setting the option
-warna about overflows when writing to members of the largest complete
+warns about overflows when writing to members of the largest complete
 objects whose exact size is known.  However, it does not warn for excessive
 writes to the same members of unknown objects referenced by pointers since
-they may point to arrays containing unknown numbers of elements.
+they may point to arrays containing unknown numbers of elements.  This is
+the default setting of the option.
 
 @item -Wstringop-overflow=3
 The @option{-Wstringop-overflow=3} option uses type-two Object Size Checking
@@ -6906,6 +6975,15 @@ one of several objects it uses the size of the largest of them to decide
 whether to issue a warning.  Similarly to @option{-Wstringop-overflow=3} this
 setting of the option may result in warnings for benign code.
 @end table
+
+@item -Wno-stringop-overread
+@opindex Wstringop-overread
+@opindex Wno-stringop-overread
+Warn for calls to string manipulation functions such as @code{memchr}, or
+@code{strcpy} that are determined to read past the end of the source
+sequence.
+
+Option @option{-Wstringop-overread} is enabled by default.
 
 @item -Wno-stringop-truncation
 @opindex Wstringop-truncation
@@ -7552,7 +7630,7 @@ except when the same as the default promotion.
 @opindex Wno-declaration-after-statement
 Warn when a declaration is found after a statement in a block.  This
 construct, known from C++, was introduced with ISO C99 and is by default
-allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Declarations}.
+allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Labels and Declarations}.
 
 @item -Wshadow
 @opindex Wshadow
@@ -8004,11 +8082,12 @@ In C++ enumerated type mismatches in conditional expressions are also
 diagnosed and the warning is enabled by default.  In C this warning is 
 enabled by @option{-Wall}.
 
-@item -Wenum-conversion @r{(C, Objective-C only)}
+@item -Wenum-conversion
 @opindex Wenum-conversion
 @opindex Wno-enum-conversion
 Warn when a value of enumerated type is implicitly converted to a 
-different enumerated type.  This warning is enabled by @option{-Wextra}.
+different enumerated type.  This warning is enabled by @option{-Wextra}
+in C@.
 
 @item -Wjump-misses-init @r{(C, Objective-C only)}
 @opindex Wjump-misses-init
@@ -8054,6 +8133,23 @@ real to lower precision real values.  This option is also enabled by
 @opindex Wno-scalar-storage-order
 @opindex Wscalar-storage-order
 Do not warn on suspicious constructs involving reverse scalar storage order.
+
+@item -Wsizeof-array-div
+@opindex Wsizeof-array-div
+@opindex Wno-sizeof-array-div
+Warn about divisions of two sizeof operators when the first one is applied
+to an array and the divisor does not equal the size of the array element.
+In such a case, the computation will not yield the number of elements in the
+array, which is likely what the user intended.  This warning warns e.g. about
+@smallexample
+int fn ()
+@{
+  int arr[10];
+  return sizeof (arr) / sizeof (short);
+@}
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wsizeof-pointer-div
 @opindex Wsizeof-pointer-div
@@ -11774,7 +11870,7 @@ to more aggressive optimization decisions.
 When a file is compiled with @option{-flto} without
 @option{-fuse-linker-plugin}, the generated object file is larger than
 a regular object file because it contains GIMPLE bytecodes and the usual
-final code (see @option{-ffat-lto-objects}.  This means that
+final code (see @option{-ffat-lto-objects}).  This means that
 object files with LTO information can be linked as normal object
 files; if @option{-fno-lto} is passed to the linker, no
 interprocedural optimizations are applied.  Note that when
@@ -12590,6 +12686,19 @@ int foo (void)
 
 Not all targets support this option.
 
+@item -fzero-call-used-regs=@var{choice}
+@opindex fzero-call-used-regs
+Zero call-used registers at function return to increase program
+security by either mitigating Return-Oriented Programming (ROP)
+attacks or preventing information leakage through registers.
+
+The possible values of @var{choice} are the same as for the
+@code{zero_call_used_regs} attribute (@pxref{Function Attributes}).
+The default is @samp{skip}.
+
+You can control this behavior for a specific function by using the function
+attribute @code{zero_call_used_regs} (@pxref{Function Attributes}).
+
 @item --param @var{name}=@var{value}
 @opindex param
 In some places, GCC uses various constants to control the amount of
@@ -13337,6 +13446,11 @@ is aborted and the load or store is not considered redundant.  The
 number of queries is algorithmically limited to the number of
 stores on all paths from the load to the function entry.
 
+@item max-pre-hoist-insert-iterations
+The maximum number of iterations doing insertion during code
+hoisting which is done as part of the partial redundancy elimination
+insertion phase.
+
 @item ira-max-loops-num
 IRA uses regional register allocation by default.  If a function
 contains more loops than the number given by this parameter, only at most
@@ -13455,6 +13569,9 @@ Loop blocking or strip mining transforms, enabled with
 loop in the loop nest by a given number of iterations.  The strip
 length can be changed using the @option{loop-block-tile-size}
 parameter.
+
+@item ipa-jump-function-lookups
+Specifies number of statements visited during jump function offset discovery.
 
 @item ipa-cp-value-list-size
 IPA-CP attempts to track all possible values and types passed to a function's
@@ -13726,10 +13843,6 @@ partial vector loads and stores if vectorization removes the need for the
 code to iterate.  2 allows partial vector loads and stores in all loops.
 The parameter only has an effect on targets that support partial
 vector loads and stores.
-
-@item slp-max-insns-in-bb
-Maximum number of instructions in basic block to be
-considered for SLP vectorization.
 
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
@@ -15875,6 +15988,12 @@ of use in conjunction with @option{-fpic} or @option{-fPIC} for
 building code that forms part of a dynamic linker and cannot
 reference the address of a jump table.  On some targets, jump tables
 do not require a GOT and this option is not needed.
+
+@item -fno-bit-tests
+@opindex fno-bit-tests
+@opindex fbit-tests
+Do not use bit tests for switch statements even where it would be
+more efficient than other code generation strategies.
 
 @item -ffixed-@var{reg}
 @opindex ffixed
@@ -25611,11 +25730,10 @@ These options are defined for Nvidia PTX:
 
 @table @gcctabopt
 
-@item -m32
-@itemx -m64
-@opindex m32
+@item -m64
 @opindex m64
-Generate code for 32-bit or 64-bit ABI.
+Ignored, but preserved for backward compatibility.  Only 64-bit ABI is
+supported.
 
 @item -misa=@var{ISA-string}
 @opindex march
@@ -25998,14 +26116,30 @@ Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
 lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
 @samp{rv32imaf}.
 
+When @option{-march=} is not specified, use the setting from @option{-mcpu}.
+
+If both @option{-march} and @option{-mcpu=} are not specified, the default for
+this argument is system dependent, users who want a specific architecture
+extensions should specify one explicitly.
+
+@item -mcpu=@var{processor-string}
+@opindex mcpu
+Use architecture of and optimize the output for the given processor, specified
+by particular CPU name.
+Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
+@samp{sifive-e24}, @samp{sifive-e31}, @samp{sifive-e34}, @samp{sifive-e76},
+@samp{sifive-s21}, @samp{sifive-s51}, @samp{sifive-s54}, @samp{sifive-s76},
+@samp{sifive-u54}, and @samp{sifive-u74}.
+
 @item -mtune=@var{processor-string}
 @opindex mtune
-Optimize the output for the given processor, specified by microarchitecture
-name.  Permissible values for this option are: @samp{rocket},
+Optimize the output for the given processor, specified by microarchitecture or
+particular CPU name.  Permissible values for this option are: @samp{rocket},
 @samp{sifive-3-series}, @samp{sifive-5-series}, @samp{sifive-7-series},
-and @samp{size}.
+@samp{size}, and all valid options for @option{-mcpu=}.
 
-When @option{-mtune=} is not specified, the default is @samp{rocket}.
+When @option{-mtune=} is not specified, use the setting from @option{-mcpu},
+the default is @samp{rocket} if both are not specified.
 
 The @samp{size} choice is not intended for use by end-users.  This is used
 when @option{-Os} is specified.  It overrides the instruction cost info
@@ -29394,14 +29528,14 @@ BMI, BMI2 and F16C instruction set support.
 
 @item broadwell
 Intel Broadwell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX and PREFETCHW instruction set support.
+SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI, BMI2,
+F16C, RDSEED and ADCX instruction set support.
 
 @item skylake
 Intel Skylake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC and
-XSAVES instruction set support.
+BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC and XSAVES instruction set
+support.
 
 @item bonnell
 Intel Bonnell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
@@ -29409,52 +29543,53 @@ instruction set support.
 
 @item silvermont
 Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, AES, PCLMUL and RDRND instruction set support.
+SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL and RDRND instruction set support.
 
 @item goldmont
 Intel Goldmont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT and FSGSBASE
-instruction set support.
+SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC, XSAVES,
+XSAVEOPT and FSGSBASE instruction set support.
 
 @item goldmont-plus
 Intel Goldmont Plus CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE,
-PTWRITE, RDPID, SGX and UMIP instruction set support.
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
+XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX and UMIP instruction set support.
 
 @item tremont
 Intel Tremont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, PTWRITE,
-RDPID, SGX, UMIP, GFNI-SSE, CLWB and ENCLV instruction set support.
+SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC, XSAVES,
+XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, UMIP, GFNI-SSE, CLWB, MOVDIRI,
+MOVDIR64B, CLDEMOTE and WAITPKG instruction set support.
 
 @item knl
 Intel Knight's Landing CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, AVX512F, AVX512PF, AVX512ER and
+BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHWT1, AVX512F, AVX512PF, AVX512ER and
 AVX512CD instruction set support.
 
 @item knm
 Intel Knights Mill CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, AVX512F, AVX512PF, AVX512ER, AVX512CD,
+BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHWT1, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 AVX5124VNNIW, AVX5124FMAPS and AVX512VPOPCNTDQ instruction set support.
 
 @item skylake-avx512
 Intel Skylake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
-BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
+BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
 CLWB, AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
 
 @item cannonlake
 Intel Cannonlake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
-RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
 AVX512IFMA, SHA and UMIP instruction set support.
 
 @item icelake-client
 Intel Icelake Client CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
-RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
 AVX512IFMA, SHA, CLWB, UMIP, RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ,
 AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES instruction set support.
@@ -29462,7 +29597,7 @@ AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES instruction set support.
 @item icelake-server
 Intel Icelake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE,
-RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC,
+RDRND, FMA, BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC,
 XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI,
 AVX512IFMA, SHA, CLWB, UMIP, RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ,
 AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES, PCONFIG and WBNOINVD instruction
@@ -29471,37 +29606,37 @@ set support.
 @item cascadelake
 Intel Cascadelake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI,
-BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
+BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
 AVX512VL, AVX512BW, AVX512DQ, AVX512CD and AVX512VNNI instruction set support.
 
 @item cooperlake
 Intel cooperlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI,
-BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
+BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
 AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VNNI and AVX512BF16 instruction
 set support.
 
 @item tigerlake
 Intel Tigerlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI,
-BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
-AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI, AVX512IFMA, SHA, CLWB, UMIP,
-RDPID, GFNI, AVX512VBMI2, AVX512VPOPCNTDQ, AVX512BITALG, AVX512VNNI, VPCLMULQDQ,
-VAES, PCONFIG, WBNOINVD, MOVDIRI, MOVDIR64B and  AVX512VP2INTERSECT instruction
-set support.
+BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, AVX512VL,
+AVX512BW, AVX512DQ, AVX512CD, AVX512VBMI, AVX512IFMA, SHA, CLWB, UMIP, RDPID,
+GFNI, AVX512VBMI2, AVX512VPOPCNTDQ, AVX512BITALG, AVX512VNNI, VPCLMULQDQ, VAES,
+PCONFIG, WBNOINVD, MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT and KEYLOCKER
+instruction set support.
 
 @item sapphirerapids
 Intel sapphirerapids CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND,
-FMA, BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES,
-AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VNNI, AVX512BF16,
-MOVDIRI, MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG,
-SERIALIZE and TSXLDTRK instruction set support.
+FMA, BMI, BMI2, F16C, RDSEED, ADCX, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, CLWB,
+AVX512VL, AVX512BW, AVX512DQ, AVX512CD, AVX512VNNI, AVX512BF16, MOVDIRI,
+MOVDIR64B, AVX512VP2INTERSECT, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE,
+TSXLDTRK, UINTR, AMX-BF16, AMX-TILE and AMX-INT8 instruction set support.
 
 @item alderlake
 Intel Alderlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, CLDEMOTE,
-PTWRITE, WAITPKG and SERIALIZE instruction set support.
+PTWRITE, WAITPKG, SERIALIZE, KEYLOCKER and HRESET instruction set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -30256,6 +30391,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -menqcmd
 @opindex menqcmd
+@itemx -muintr
+@opindex muintr
 @need 200
 @itemx -mtsxldtrk
 @opindex mtsxldtrk
@@ -30289,6 +30426,14 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mamx-bf16
 @opindex mamx-bf16
+@need 200
+@itemx -mhreset
+@opindex mhreset
+@itemx -mkl
+@opindex mkl
+@need 200
+@itemx -mwidekl
+@opindex mwidekl
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4, SSE4A, SSE4.1, SSE4.2, AVX, AVX2, AVX512F, AVX512PF,
 AVX512ER, AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA,
@@ -30297,9 +30442,10 @@ WBNOINVD, FMA4, PREFETCHW, RDPID, PREFETCHWT1, RDSEED, SGX, XOP, LWP,
 3DNow!@:, enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE,
 XSAVEOPT, XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2,
 GFNI, VAES, WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16,
-ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE
-or CLDEMOTE extended instruction sets.  Each has a corresponding
-@option{-mno-} option to disable use of these instructions.
+ENQCMD, AVX512VPOPCNTDQ, AVX5124FMAPS, AVX512VNNI, AVX5124VNNIW, SERIALIZE,
+UINTR, HRESET, AMXTILE, AMXINT8, AMXBF16, KL, WIDEKL or CLDEMOTE extended
+instruction sets. Each has a corresponding @option{-mno-} option to disable
+use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
@@ -31660,6 +31806,19 @@ based on the existence of the first.  Here is a small example of its usage:
 *startfile:
 crt0%O%s %:if-exists(crti%O%s) \
 %:if-exists-else(crtbeginT%O%s crtbegin%O%s)
+@end smallexample
+
+@item @code{if-exists-then-else}
+The @code{if-exists-then-else} spec function takes at least two arguments
+and an optional third one. The first argument is an absolute pathname to a
+file.  If the file exists, the function returns the second argument.
+If the file does not exist, the function returns the third argument if there
+is one, or NULL otherwise. This can be used to expand one text, or optionally
+another, based on the existence of a file.  Here is a small example of its
+usage:
+
+@smallexample
+-l%:if-exists-then-else(%:getenv(VSB_DIR rtnet.h) rtnet net)
 @end smallexample
 
 @item @code{replace-outfile}

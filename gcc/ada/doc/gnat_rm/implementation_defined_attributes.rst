@@ -657,6 +657,14 @@ target.  This is a static value that can be used to specify the alignment
 for an object, guaranteeing that it is properly aligned in all
 cases.
 
+Attribute Max_Integer_Size
+==========================
+.. index:: Max_Integer_Size
+
+``Standard'Max_Integer_Size`` (``Standard`` is the only permissible
+prefix) provides the size of the largest supported integer type for
+the target. The result is a static constant.
+
 Attribute Mechanism_Code
 ========================
 .. index:: Return values, passing mechanism

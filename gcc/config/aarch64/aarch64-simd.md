@@ -4720,6 +4720,17 @@
   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
+(define_insn "aarch64_<sur>q<r>shr<u>n2_n<mode>"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+        (unspec:<VNARROWQ2> [(match_operand:<VNARROWQ> 1 "register_operand" "0")
+			     (match_operand:VQN 2 "register_operand" "w")
+			     (match_operand:SI 3 "aarch64_simd_shift_imm_offset_<ve_mode>" "i")]
+                            VQSHRN_N))]
+  "TARGET_SIMD"
+  "<sur>q<r>shr<u>n2\\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+)
+
 
 ;; cm(eq|ge|gt|lt|le)
 ;; Note, we have constraints for Dz and Z as different expanders
@@ -7159,6 +7170,27 @@
   [(set_attr "type" "neon_dot<VDQSF:q>")]
 )
 
+;; vget_low/high_bf16
+(define_expand "aarch64_vget_lo_halfv8bf"
+  [(match_operand:V4BF 0 "register_operand")
+   (match_operand:V8BF 1 "register_operand")]
+  "TARGET_BF16_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (V8BFmode, 8, false);
+  emit_insn (gen_aarch64_get_halfv8bf (operands[0], operands[1], p));
+  DONE;
+})
+
+(define_expand "aarch64_vget_hi_halfv8bf"
+  [(match_operand:V4BF 0 "register_operand")
+   (match_operand:V8BF 1 "register_operand")]
+  "TARGET_BF16_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (V8BFmode, 8, true);
+  emit_insn (gen_aarch64_get_halfv8bf (operands[0], operands[1], p));
+  DONE;
+})
+
 ;; bfmmla
 (define_insn "aarch64_bfmmlaqv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=w")
@@ -7237,4 +7269,32 @@
   "TARGET_BF16_FP"
   "bfcvt\\t%h0, %s1"
   [(set_attr "type" "f_cvt")]
+)
+
+;; Use shl/shll/shll2 to convert BF scalar/vector modes to SF modes.
+(define_insn "aarch64_vbfcvt<mode>"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+	(unspec:V4SF [(match_operand:VBF 1 "register_operand" "w")]
+		      UNSPEC_BFCVTN))]
+  "TARGET_BF16_SIMD"
+  "shll\\t%0.4s, %1.4h, #16"
+  [(set_attr "type" "neon_shift_imm_long")]
+)
+
+(define_insn "aarch64_vbfcvt_highv8bf"
+  [(set (match_operand:V4SF 0 "register_operand" "=w")
+	(unspec:V4SF [(match_operand:V8BF 1 "register_operand" "w")]
+		      UNSPEC_BFCVTN2))]
+  "TARGET_BF16_SIMD"
+  "shll2\\t%0.4s, %1.8h, #16"
+  [(set_attr "type" "neon_shift_imm_long")]
+)
+
+(define_insn "aarch64_bfcvtsf"
+  [(set (match_operand:SF 0 "register_operand" "=w")
+	(unspec:SF [(match_operand:BF 1 "register_operand" "w")]
+		    UNSPEC_BFCVT))]
+  "TARGET_BF16_FP"
+  "shl\\t%d0, %d1, #16"
+  [(set_attr "type" "neon_shift_imm")]
 )

@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
-static tree do_pushdecl_with_scope (tree x, cp_binding_level *, bool hiding);
+static tree do_pushdecl (tree decl, bool hiding);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
 static name_hint maybe_suggest_missing_std_header (location_t location,
@@ -171,8 +171,13 @@ public:
 
 public:
   tree name;	/* The identifier being looked for.  */
+
+  /* Usually we just add things to the VALUE binding, but we record
+     (hidden) IMPLICIT_TYPEDEFs on the type binding, which is used for
+     using-decl resolution.  */
   tree value;	/* A (possibly ambiguous) set of things found.  */
   tree type;	/* A type that has been found.  */
+
   LOOK_want want;  /* What kind of entity we want.  */
 
   bool deduping; /* Full deduping is needed because using declarations
@@ -263,14 +268,17 @@ private:
 private:
   void add_fns (tree);
 
+ private:
   void adl_expr (tree);
   void adl_type (tree);
   void adl_template_arg (tree);
   void adl_class (tree);
+  void adl_enum (tree);
   void adl_bases (tree);
   void adl_class_only (tree);
   void adl_namespace (tree);
-  void adl_namespace_only (tree);
+  void adl_class_fns (tree);
+  void adl_namespace_fns (tree);
 
 public:
   /* Search namespace + inlines + maybe usings as qualified lookup.  */
@@ -433,8 +441,8 @@ name_lookup::add_overload (tree fns)
       if (probe && TREE_CODE (probe) == OVERLOAD
 	  && OVL_DEDUP_P (probe))
 	{
-	  /* We're about to add something found by a using
-	     declaration, so need to engage deduping mode.  */
+	  /* We're about to add something found by multiple paths, so
+	     need to engage deduping mode.  */
 	  lookup_mark (value, true);
 	  deduping = true;
 	}
@@ -777,20 +785,56 @@ name_lookup::add_fns (tree fns)
   add_overload (fns);
 }
 
-/* Add functions of a namespace to the lookup structure.  */
+/* Add the overloaded fns of SCOPE.  */
 
 void
-name_lookup::adl_namespace_only (tree scope)
+name_lookup::adl_namespace_fns (tree scope)
 {
-  mark_seen (scope);
+  if (tree *binding = find_namespace_slot (scope, name))
+    {
+      tree val = *binding;
+      add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (val)));
+    }
+}
 
-  /* Look down into inline namespaces.  */
-  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
-    for (unsigned ix = inlinees->length (); ix--;)
-      adl_namespace_only ((*inlinees)[ix]);
+/* Add the hidden friends of SCOPE.  */
 
-  if (tree fns = find_namespace_value (scope, name))
-    add_fns (ovl_skip_hidden (fns));
+void
+name_lookup::adl_class_fns (tree type)
+{
+  /* Add friends.  */
+  for (tree list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type));
+       list; list = TREE_CHAIN (list))
+    if (name == FRIEND_NAME (list))
+      {
+	tree context = NULL_TREE; /* Lazily computed.  */
+	for (tree friends = FRIEND_DECLS (list); friends;
+	     friends = TREE_CHAIN (friends))
+	  {
+	    tree fn = TREE_VALUE (friends);
+
+	    /* Only interested in global functions with potentially hidden
+	       (i.e. unqualified) declarations.  */
+	    if (!context)
+	      context = decl_namespace_context (type);
+	    if (CP_DECL_CONTEXT (fn) != context)
+	      continue;
+
+	    if (!deduping)
+	      {
+		lookup_mark (value, true);
+		deduping = true;
+	      }
+
+	    /* Template specializations are never found by name lookup.
+	       (Templates themselves can be found, but not template
+	       specializations.)  */
+	    if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
+	      continue;
+
+	    add_fns (fn);
+	  }
+      }
 }
 
 /* Find the containing non-inlined namespace, add it and all its
@@ -799,14 +843,17 @@ name_lookup::adl_namespace_only (tree scope)
 void
 name_lookup::adl_namespace (tree scope)
 {
-  if (seen_p (scope))
+  if (see_and_mark (scope))
     return;
 
-  /* Find the containing non-inline namespace.  */
-  while (DECL_NAMESPACE_INLINE_P (scope))
-    scope = CP_DECL_CONTEXT (scope);
+  /* Look down into inline namespaces.  */
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      adl_namespace ((*inlinees)[ix]);
 
-  adl_namespace_only (scope);
+  if (DECL_NAMESPACE_INLINE_P (scope))
+    /* Mark parent.  */
+    adl_namespace (CP_DECL_CONTEXT (scope));
 }
 
 /* Adds the class and its friends to the lookup structure.  */
@@ -826,31 +873,6 @@ name_lookup::adl_class_only (tree type)
 
   tree context = decl_namespace_context (type);
   adl_namespace (context);
-
-  complete_type (type);
-
-  /* Add friends.  */
-  for (tree list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list;
-       list = TREE_CHAIN (list))
-    if (name == FRIEND_NAME (list))
-      for (tree friends = FRIEND_DECLS (list); friends;
-	   friends = TREE_CHAIN (friends))
-	{
-	  tree fn = TREE_VALUE (friends);
-
-	  /* Only interested in global functions with potentially hidden
-	     (i.e. unqualified) declarations.  */
-	  if (CP_DECL_CONTEXT (fn) != context)
-	    continue;
-
-	  /* Template specializations are never found by name lookup.
-	     (Templates themselves can be found, but not template
-	     specializations.)  */
-	  if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
-	    continue;
-
-	  add_fns (fn);
-	}
 }
 
 /* Adds the class and its bases to the lookup structure.
@@ -873,7 +895,7 @@ name_lookup::adl_bases (tree type)
 }
 
 /* Adds everything associated with a class argument type to the lookup
-   structure.  Returns true on error.
+   structure.
 
    If T is a class type (including unions), its associated classes are: the
    class itself; the class of which it is a member, if any; and its direct
@@ -897,11 +919,13 @@ name_lookup::adl_class (tree type)
     return;
 
   type = TYPE_MAIN_VARIANT (type);
+
   /* We don't set found here because we have to have set seen first,
      which is done in the adl_bases walk.  */
   if (found_p (type))
     return;
 
+  complete_type (type);
   adl_bases (type);
   mark_found (type);
 
@@ -916,6 +940,19 @@ name_lookup::adl_class (tree type)
       for (int i = 0; i < TREE_VEC_LENGTH (list); ++i)
 	adl_template_arg (TREE_VEC_ELT (list, i));
     }
+}
+
+void
+name_lookup::adl_enum (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  if (see_and_mark (type))
+    return;
+
+  if (TYPE_CLASS_SCOPE_P (type))
+    adl_class_only (TYPE_CONTEXT (type));
+  else
+    adl_namespace (decl_namespace_context (type));
 }
 
 void
@@ -1003,9 +1040,7 @@ name_lookup::adl_type (tree type)
       return;
 
     case ENUMERAL_TYPE:
-      if (TYPE_CLASS_SCOPE_P (type))
-	adl_class_only (TYPE_CONTEXT (type));
-      adl_namespace (decl_namespace_context (type));
+      adl_enum (type);
       return;
 
     case LANG_TYPE:
@@ -1074,10 +1109,9 @@ name_lookup::adl_template_arg (tree arg)
 tree
 name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 {
-  deduping = true;
-  lookup_mark (fns, true);
-  value = fns;
-
+  gcc_checking_assert (!vec_safe_length (scopes));
+  
+  /* Gather each associated entity onto the lookup's scope list.  */
   unsigned ix;
   tree arg;
 
@@ -1089,7 +1123,27 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
     else
       adl_expr (arg);
 
-  fns = value;
+  if (vec_safe_length (scopes))
+    {
+      /* Now do the lookups.  */
+      if (fns)
+	{
+	  deduping = true;
+	  lookup_mark (fns, true);
+	}
+      value = fns;
+
+      for (unsigned ix = scopes->length (); ix--;)
+	{
+	  tree scope = (*scopes)[ix];
+	  if (TREE_CODE (scope) == NAMESPACE_DECL)
+	    adl_namespace_fns (scope);
+	  else if (RECORD_OR_UNION_TYPE_P (scope))
+	    adl_class_fns (scope);
+	}
+
+      fns = value;
+    }
 
   return fns;
 }
@@ -1738,16 +1792,6 @@ insert_late_enum_def_bindings (tree klass, tree enumtype)
     }
 }
 
-/* Compute the chain index of a binding_entry given the HASH value of its
-   name and the total COUNT of chains.  COUNT is assumed to be a power
-   of 2.  */
-
-#define ENTRY_INDEX(HASH, COUNT) (((HASH) >> 3) & ((COUNT) - 1))
-
-/* A free list of "binding_entry"s awaiting for re-use.  */
-
-static GTY((deletable)) binding_entry free_binding_entry = NULL;
-
 /* The binding oracle; see cp-tree.h.  */
 
 cp_binding_oracle_function *cp_binding_oracle;
@@ -1770,180 +1814,6 @@ query_oracle (tree name)
   cp_binding_oracle (CP_ORACLE_IDENTIFIER, name);
 }
 
-/* Create a binding_entry object for (NAME, TYPE).  */
-
-static inline binding_entry
-binding_entry_make (tree name, tree type)
-{
-  binding_entry entry;
-
-  if (free_binding_entry)
-    {
-      entry = free_binding_entry;
-      free_binding_entry = entry->chain;
-    }
-  else
-    entry = ggc_alloc<binding_entry_s> ();
-
-  entry->name = name;
-  entry->type = type;
-  entry->chain = NULL;
-
-  return entry;
-}
-
-/* Put ENTRY back on the free list.  */
-#if 0
-static inline void
-binding_entry_free (binding_entry entry)
-{
-  entry->name = NULL;
-  entry->type = NULL;
-  entry->chain = free_binding_entry;
-  free_binding_entry = entry;
-}
-#endif
-
-/* The datatype used to implement the mapping from names to types at
-   a given scope.  */
-struct GTY(()) binding_table_s {
-  /* Array of chains of "binding_entry"s  */
-  binding_entry * GTY((length ("%h.chain_count"))) chain;
-
-  /* The number of chains in this table.  This is the length of the
-     member "chain" considered as an array.  */
-  size_t chain_count;
-
-  /* Number of "binding_entry"s in this table.  */
-  size_t entry_count;
-};
-
-/* Construct TABLE with an initial CHAIN_COUNT.  */
-
-static inline void
-binding_table_construct (binding_table table, size_t chain_count)
-{
-  table->chain_count = chain_count;
-  table->entry_count = 0;
-  table->chain = ggc_cleared_vec_alloc<binding_entry> (table->chain_count);
-}
-
-/* Make TABLE's entries ready for reuse.  */
-#if 0
-static void
-binding_table_free (binding_table table)
-{
-  size_t i;
-  size_t count;
-
-  if (table == NULL)
-    return;
-
-  for (i = 0, count = table->chain_count; i < count; ++i)
-    {
-      binding_entry temp = table->chain[i];
-      while (temp != NULL)
-	{
-	  binding_entry entry = temp;
-	  temp = entry->chain;
-	  binding_entry_free (entry);
-	}
-      table->chain[i] = NULL;
-    }
-  table->entry_count = 0;
-}
-#endif
-
-/* Allocate a table with CHAIN_COUNT, assumed to be a power of two.  */
-
-static inline binding_table
-binding_table_new (size_t chain_count)
-{
-  binding_table table = ggc_alloc<binding_table_s> ();
-  table->chain = NULL;
-  binding_table_construct (table, chain_count);
-  return table;
-}
-
-/* Expand TABLE to twice its current chain_count.  */
-
-static void
-binding_table_expand (binding_table table)
-{
-  const size_t old_chain_count = table->chain_count;
-  const size_t old_entry_count = table->entry_count;
-  const size_t new_chain_count = 2 * old_chain_count;
-  binding_entry *old_chains = table->chain;
-  size_t i;
-
-  binding_table_construct (table, new_chain_count);
-  for (i = 0; i < old_chain_count; ++i)
-    {
-      binding_entry entry = old_chains[i];
-      for (; entry != NULL; entry = old_chains[i])
-	{
-	  const unsigned int hash = IDENTIFIER_HASH_VALUE (entry->name);
-	  const size_t j = ENTRY_INDEX (hash, new_chain_count);
-
-	  old_chains[i] = entry->chain;
-	  entry->chain = table->chain[j];
-	  table->chain[j] = entry;
-	}
-    }
-  table->entry_count = old_entry_count;
-}
-
-/* Insert a binding for NAME to TYPE into TABLE.  */
-
-static void
-binding_table_insert (binding_table table, tree name, tree type)
-{
-  const unsigned int hash = IDENTIFIER_HASH_VALUE (name);
-  const size_t i = ENTRY_INDEX (hash, table->chain_count);
-  binding_entry entry = binding_entry_make (name, type);
-
-  entry->chain = table->chain[i];
-  table->chain[i] = entry;
-  ++table->entry_count;
-
-  if (3 * table->chain_count < 5 * table->entry_count)
-    binding_table_expand (table);
-}
-
-/* Return the binding_entry, if any, that maps NAME.  */
-
-binding_entry
-binding_table_find (binding_table table, tree name)
-{
-  const unsigned int hash = IDENTIFIER_HASH_VALUE (name);
-  binding_entry entry = table->chain[ENTRY_INDEX (hash, table->chain_count)];
-
-  while (entry != NULL && entry->name != name)
-    entry = entry->chain;
-
-  return entry;
-}
-
-/* Apply PROC -- with DATA -- to all entries in TABLE.  */
-
-void
-binding_table_foreach (binding_table table, bt_foreach_proc proc, void *data)
-{
-  size_t chain_count;
-  size_t i;
-
-  if (!table)
-    return;
-
-  chain_count = table->chain_count;
-  for (i = 0; i < chain_count; ++i)
-    {
-      binding_entry entry = table->chain[i];
-      for (; entry != NULL; entry = entry->chain)
-	proc (entry, data);
-    }
-}
-
 #ifndef ENABLE_SCOPE_CHECKING
 #  define ENABLE_SCOPE_CHECKING 0
 #else
@@ -2130,7 +2000,7 @@ anticipated_builtin_p (tree ovl)
 {
   return (TREE_CODE (ovl) == OVERLOAD
 	  && OVL_HIDDEN_P (ovl)
-	  && DECL_UNDECLARED_BUILTIN_P (OVL_FUNCTION (ovl)));
+	  && DECL_IS_UNDECLARED_BUILTIN (OVL_FUNCTION (ovl)));
 }
 
 /* BINDING records an existing declaration for a name in the current scope.
@@ -2969,14 +2839,61 @@ push_local_extern_decl_alias (tree decl)
 	{
 	  /* No existing namespace-scope decl.  Make one.  */
 	  alias = copy_decl (decl);
+	  if (TREE_CODE (alias) == FUNCTION_DECL)
+	    {
+	      /* Recontextualize the parms.  */
+	      for (tree *chain = &DECL_ARGUMENTS (alias);
+		   *chain; chain = &DECL_CHAIN (*chain))
+		{
+		  *chain = copy_decl (*chain);
+		  DECL_CONTEXT (*chain) = alias;
+		}
+
+	      tree type = TREE_TYPE (alias);
+	      for (tree args = TYPE_ARG_TYPES (type);
+		   args; args = TREE_CHAIN (args))
+		if (TREE_PURPOSE (args))
+		  {
+		    /* There are default args.  Lose them.  */
+		    tree nargs = NULL_TREE;
+		    tree *chain = &nargs;
+		    for (args = TYPE_ARG_TYPES (type);
+			 args; args = TREE_CHAIN (args))
+		      if (args == void_list_node)
+			{
+			  *chain = args;
+			  break;
+			}
+		      else
+			{
+			  *chain
+			    = build_tree_list (NULL_TREE, TREE_VALUE (args));
+			  chain = &TREE_CHAIN (*chain);
+			}
+
+		    tree fn_type = build_function_type (TREE_TYPE (type), nargs);
+
+		    fn_type = apply_memfn_quals
+		      (fn_type, type_memfn_quals (type));
+
+		    fn_type = build_cp_fntype_variant
+		      (fn_type, type_memfn_rqual (type),
+		       TYPE_RAISES_EXCEPTIONS (type),
+		       TYPE_HAS_LATE_RETURN_TYPE (type));
+
+		    TREE_TYPE (alias) = fn_type;
+		    break;
+		  }
+	    }
 
 	  /* This is the real thing.  */
 	  DECL_LOCAL_DECL_P (alias) = false;
 
 	  /* Expected default linkage is from the namespace.  */
 	  TREE_PUBLIC (alias) = TREE_PUBLIC (ns);
-	  alias = do_pushdecl_with_scope (alias, NAMESPACE_LEVEL (ns),
-					  /* hiding= */true);
+	  push_nested_namespace (ns);
+	  alias = do_pushdecl (alias, /* hiding= */true);
+	  pop_nested_namespace (ns);
 	}
     }
 
@@ -3645,7 +3562,7 @@ print_binding_level (cp_binding_level* lvl)
 	    continue;
 	  if (no_print_builtins
 	      && (TREE_CODE (t) == TYPE_DECL)
-	      && DECL_IS_BUILTIN (t))
+	      && DECL_IS_UNDECLARED_BUILTIN (t))
 	    continue;
 
 	  /* Function decls tend to have longer names.  */
@@ -3848,10 +3765,17 @@ constructor_name_p (tree name, tree type)
 /* Same as pushdecl, but define X in binding-level LEVEL.  We rely on the
    caller to set DECL_CONTEXT properly.
 
-   Note that this must only be used when X will be the new innermost
-   binding for its name, as we tack it onto the front of IDENTIFIER_BINDING
-   without checking to see if the current IDENTIFIER_BINDING comes from a
-   closer binding level than LEVEL.  */
+   Warning: For class and block-scope this must only be used when X
+   will be the new innermost binding for its name, as we tack it onto
+   the front of IDENTIFIER_BINDING without checking to see if the
+   current IDENTIFIER_BINDING comes from a closer binding level than
+   LEVEL.
+
+   Warning: For namespace scope, this will look in LEVEL for an
+   existing binding to match, but if not found will push the decl into
+   CURRENT_NAMESPACE.  Use push_nested_namespace/pushdecl/
+   pop_nested_namespace if you really need to push it into a foreign
+   namespace.  */
 
 static tree
 do_pushdecl_with_scope (tree x, cp_binding_level *level, bool hiding = false)
@@ -3956,7 +3880,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		}
 	      else if (old.using_p ())
 		continue; /* This is a using decl. */
-	      else if (old.hidden_p () && DECL_UNDECLARED_BUILTIN_P (old_fn))
+	      else if (old.hidden_p () && DECL_IS_UNDECLARED_BUILTIN (old_fn))
 		continue; /* This is an anticipated builtin.  */
 	      else if (!matching_fn_p (new_fn, old_fn))
 		continue; /* Parameters do not match.  */
@@ -6015,7 +5939,14 @@ lookup_qualified_name (tree scope, tree name, LOOK_want want, bool complain)
       name_lookup lookup (name, want);
 
       if (qualified_namespace_lookup (scope, &lookup))
-	t = lookup.value;
+	{
+	  t = lookup.value;
+
+	  /* If we have a known type overload, pull it out.  This can happen
+	     for using decls.  */
+	  if (TREE_CODE (t) == OVERLOAD && TREE_TYPE (t) != unknown_type_node)
+	    t = OVL_FUNCTION (t);
+	}
     }
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)
     t = lookup_enumerator (scope, name);
@@ -6645,8 +6576,9 @@ lookup_name_1 (tree name, LOOK_where where, LOOK_want want)
 
  found:;
 
-  /* If we have a single function from a using decl, pull it out.  */
-  if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))
+  /* If we have a known type overload, pull it out.  This can happen
+     for both using decls and unhidden functions.  */
+  if (val && TREE_CODE (val) == OVERLOAD && TREE_TYPE (val) != unknown_type_node)
     val = OVL_FUNCTION (val);
 
   return val;
@@ -6711,8 +6643,6 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 	     typedef struct C {} C;
 	   correctly.  */
 
-	tree found = NULL_TREE;
-	bool reveal = false;
 	if (tree type = iter->type)
 	  {
 	    if (qualify_lookup (type, LOOK_want::TYPE)
@@ -6720,9 +6650,11 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		    || LOCAL_BINDING_P (iter)
 		    || DECL_CONTEXT (type) == iter->scope->this_entity))
 	      {
-		found = type;
 		if (how != TAG_how::HIDDEN_FRIEND)
-		  reveal = HIDDEN_TYPE_BINDING_P (iter);
+		  /* It is no longer a hidden binding.  */
+		  HIDDEN_TYPE_BINDING_P (iter) = false;
+
+		return type;
 	      }
 	  }
 	else
@@ -6731,32 +6663,12 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 		&& (how != TAG_how::CURRENT_ONLY
 		    || !INHERITED_VALUE_BINDING_P (iter)))
 	      {
-		found = iter->value;
-		if (how != TAG_how::HIDDEN_FRIEND)
-		  reveal = !iter->type && HIDDEN_TYPE_BINDING_P (iter);
+		if (how != TAG_how::HIDDEN_FRIEND && !iter->type)
+		  /* It is no longer a hidden binding.  */
+		  HIDDEN_TYPE_BINDING_P (iter) = false;
+
+		return iter->value;
 	      }
-	  }
-
-	if (found)
-	  {
-	    if (reveal)
-	      {
-		/* It is no longer a hidden binding.  */
-		HIDDEN_TYPE_BINDING_P (iter) = false;
-
-		/* Unanticipate the decl itself.  */
-		DECL_FRIEND_P (found) = false;
-
-		gcc_checking_assert (TREE_CODE (found) != TEMPLATE_DECL);
-
-		if (tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found)))
-		  {
-		    tree tmpl = TI_TEMPLATE (ti);
-		    DECL_FRIEND_P (tmpl) = false;
-		  }
-	      }
-
-	    return found;
 	  }
       }
 
@@ -6773,61 +6685,31 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
   if (tree *slot = find_namespace_slot (ns, name))
     {
       /* If this is the kind of thing we're looking for, we're done.  */
-      tree found = NULL_TREE;
-      bool reveal = false;
-
       if (tree type = MAYBE_STAT_TYPE (*slot))
 	{
-	  found = type;
 	  if (how != TAG_how::HIDDEN_FRIEND)
-	    {
-	      reveal = STAT_TYPE_HIDDEN_P (*slot);
-	      STAT_TYPE_HIDDEN_P (*slot) = false;
-	    }
+	    /* No longer hidden.  */
+	    STAT_TYPE_HIDDEN_P (*slot) = false;
+
+	  return type;
 	}
       else if (tree decl = MAYBE_STAT_DECL (*slot))
 	{
 	  if (qualify_lookup (decl, LOOK_want::TYPE))
 	    {
-	      found = decl;
-
-	      if (how != TAG_how::HIDDEN_FRIEND  && STAT_HACK_P (*slot))
+	      if (how != TAG_how::HIDDEN_FRIEND && STAT_HACK_P (*slot)
+		  && STAT_DECL_HIDDEN_P (*slot))
 		{
-		  reveal = STAT_DECL_HIDDEN_P (*slot);
-		  if (reveal)
-		    {
-		      if (STAT_TYPE (*slot))
-			STAT_DECL_HIDDEN_P (*slot) = false;
-		      else
-			/* There is no type, just remove the stat
-			   hack.  */
-			*slot = decl;
-		    }
+		  if (STAT_TYPE (*slot))
+		    STAT_DECL_HIDDEN_P (*slot) = false;
+		  else
+		    /* There is no type, just remove the stat
+		       hack.  */
+		    *slot = decl;
 		}
+
+	      return decl;
 	    }
-	}
-
-      if (found)
-	{
-	  if (reveal)
-	    {
-	      /* Reveal the previously hidden thing.  */
-	      DECL_FRIEND_P (found) = false;
-
-	      if (TREE_CODE (found) == TEMPLATE_DECL)
-		{
-		  tree res = DECL_TEMPLATE_RESULT (found);
-		  if (DECL_LANG_SPECIFIC (res))
-		    DECL_FRIEND_P (res) = false;
-		}
-	      else if (tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (found)))
-		{
-		  tree tmpl = TI_TEMPLATE (ti);
-		  DECL_FRIEND_P (tmpl) = false;
-		}
-	    }
-
-	  return found;
 	}
     }
 
@@ -6880,10 +6762,6 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 
       if (processing_template_decl)
 	{
-	  /* This may change after the call to push_template_decl, but
-	     we want the original value.  */
-	  tree name = DECL_NAME (decl);
-
 	  decl = push_template_decl (decl, is_friend);
 	  if (decl == error_mark_node)
 	    return error_mark_node;
@@ -6902,17 +6780,8 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 	      finish_member_declaration (CLASSTYPE_TI_TEMPLATE (type));
 
 	      if (!COMPLETE_TYPE_P (current_class_type))
-		{
-		  maybe_add_class_template_decl_list (current_class_type,
-						      type, /*friend_p=*/0);
-		  /* Put this UTD in the table of UTDs for the class.  */
-		  if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
-		    CLASSTYPE_NESTED_UTDS (current_class_type) =
-		      binding_table_new (SCOPE_DEFAULT_HT_SIZE);
-
-		  binding_table_insert
-		    (CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
-		}
+		maybe_add_class_template_decl_list (current_class_type,
+						    type, /*friend_p=*/0);
 	    }
 	}
     }
@@ -7009,18 +6878,8 @@ do_pushtag (tree name, tree type, TAG_how how)
 
       tdef = create_implicit_typedef (name, type);
       DECL_CONTEXT (tdef) = FROB_CONTEXT (context);
-      bool is_friend = how == TAG_how::HIDDEN_FRIEND;
-      if (is_friend)
-	{
-	  // FIXME: can go away
-	  /* This is a friend.  Make this TYPE_DECL node hidden from
-	     ordinary name lookup.  Its corresponding TEMPLATE_DECL
-	     will be marked in push_template_decl.  */
-	  retrofit_lang_decl (tdef);
-	  DECL_FRIEND_P (tdef) = 1;
-	}
-
-      decl = maybe_process_template_type_declaration (type, is_friend, b);
+      decl = maybe_process_template_type_declaration
+	(type, how == TAG_how::HIDDEN_FRIEND, b);
       if (decl == error_mark_node)
 	return decl;
 
@@ -7083,17 +6942,8 @@ do_pushtag (tree name, tree type, TAG_how how)
 
   if (b->kind == sk_class
       && !COMPLETE_TYPE_P (current_class_type))
-    {
-      maybe_add_class_template_decl_list (current_class_type,
-					  type, /*friend_p=*/0);
-
-      if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
-	CLASSTYPE_NESTED_UTDS (current_class_type)
-	  = binding_table_new (SCOPE_DEFAULT_HT_SIZE);
-
-      binding_table_insert
-	(CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
-    }
+    maybe_add_class_template_decl_list (current_class_type,
+					type, /*friend_p=*/0);
 
   decl = TYPE_NAME (type);
   gcc_assert (TREE_CODE (decl) == TYPE_DECL);

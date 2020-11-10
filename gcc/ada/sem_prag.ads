@@ -265,6 +265,13 @@ package Sem_Prag is
    --  the entity of [generic] package body or [generic] subprogram body which
    --  caused "freezing" of the related contract where the pragma resides.
 
+   procedure Analyze_Subprogram_Variant_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty);
+   --  Perform full analysis of delayed pragma Subprogram_Variant. Freeze_Id is
+   --  the entity of [generic] package body or [generic] subprogram body which
+   --  caused "freezing" of the related contract where the pragma resides.
+
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id);
    --  Perform preanalysis of pragma Test_Case
 

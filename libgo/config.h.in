@@ -138,6 +138,9 @@
 /* Define to 1 if you have the `logl' function. */
 #undef HAVE_LOGL
 
+/* Define to 1 if you have the <lwp.h> header file. */
+#undef HAVE_LWP_H
+
 /* Define to 1 if you have the `matherr' function. */
 #undef HAVE_MATHERR
 
@@ -173,6 +176,9 @@
 
 /* Define to 1 if you have the <netpacket/packet.h> header file. */
 #undef HAVE_NETPACKET_PACKET_H
+
+/* Define to 1 if you have the <net/bpf.h> header file. */
+#undef HAVE_NET_BPF_H
 
 /* Define to 1 if you have the <net/if_arp.h> header file. */
 #undef HAVE_NET_IF_ARP_H
@@ -293,6 +299,9 @@
 
 /* Define to 1 if you have the <sys/syscall.h> header file. */
 #undef HAVE_SYS_SYSCALL_H
+
+/* Define to 1 if you have the <sys/sysctl.h> header file. */
+#undef HAVE_SYS_SYSCTL_H
 
 /* Define to 1 if you have the <sys/sysinfo.h> header file. */
 #undef HAVE_SYS_SYSINFO_H

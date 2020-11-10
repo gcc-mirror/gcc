@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_extract() with long long
-   inputs produce the right code for a P9 (LE) target.  */
+   inputs produce the right code for a P9 target.  */
 
-/* { dg-do compile { target { powerpc*-*-linux* && le } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2" } */
 
@@ -10,11 +10,13 @@
 // p9 vars:  xori, rldic, mtvsrdd, vslo, mfvsrd
 
 /* results. */
-/* { dg-final { scan-assembler-times {\mxori\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mxori\M} 3 { target le } } } */
 /* { dg-final { scan-assembler-times {\mrldic\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mmtvsrdd\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mvslo\M} 3 } } */
-/* { dg-final { scan-assembler-times {\mmfvsrd\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mmfvsrd\M} 6 { target le } } } */
+/* { dg-final { scan-assembler-times {\mmfvsrd\M} 3 { target be } } } */
+/* { dg-final { scan-assembler-times {\mmfvsrld\M} 3 { target be } } } */
 
 #include <altivec.h>
 

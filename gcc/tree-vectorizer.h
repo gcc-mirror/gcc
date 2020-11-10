@@ -26,6 +26,7 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
 #include "target.h"
+#include "alloc-pool.h"
 
 
 /* Used for naming of new temporaries.  */
@@ -115,6 +116,8 @@ typedef hash_map<tree_operand_hash,
  ************************************************************************/
 typedef struct _slp_tree *slp_tree;
 
+extern object_allocator<_slp_tree> *slp_tree_pool;
+
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
 struct _slp_tree {
@@ -163,8 +166,23 @@ struct _slp_tree {
   enum tree_code code;
 
   int vertex;
+
+  /* Allocate from slp_tree_pool.  */
+  static void *operator new (size_t);
+
+  /* Return memory to slp_tree_pool.  */
+  static void operator delete (void *, size_t);
 };
 
+/* The enum describes the type of operations that an SLP instance
+   can perform. */
+
+enum slp_instance_kind {
+    slp_inst_kind_store,
+    slp_inst_kind_reduc_group,
+    slp_inst_kind_reduc_chain,
+    slp_inst_kind_ctor
+};
 
 /* SLP instance is a sequence of stmts in a loop that can be packed into
    SIMD stmts.  */
@@ -193,6 +211,9 @@ public:
      entries into the same subgraph, including itself.  */
   vec<_slp_instance *> subgraph_entries;
 
+  /* The type of operation the SLP instance is performing.  */
+  slp_instance_kind kind;
+
   dump_user_location_t location () const;
 } *slp_instance;
 
@@ -202,6 +223,7 @@ public:
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_ROOT_STMT(S)                (S)->root_stmt
+#define SLP_INSTANCE_KIND(S)                     (S)->kind
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts
@@ -872,6 +894,7 @@ enum stmt_vec_info_type {
   type_conversion_vec_info_type,
   cycle_phi_info_type,
   lc_phi_info_type,
+  phi_info_type,
   loop_exit_ctrl_vec_info_type
 };
 
@@ -1057,10 +1080,6 @@ public:
      The sequence is attached to the original statement rather than the
      pattern statement.  */
   gimple_seq pattern_def_seq;
-
-  /* List of datarefs that are known to have the same alignment as the dataref
-     of this stmt.  */
-  vec<dr_p> same_align_refs;
 
   /* Selected SIMD clone's function info.  First vector element
      is SIMD clone's function decl, followed by a pair of trees (base + step)
@@ -1251,7 +1270,6 @@ struct gather_scatter_info {
 #define STMT_VINFO_IN_PATTERN_P(S)         (S)->in_pattern_p
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
 #define STMT_VINFO_PATTERN_DEF_SEQ(S)      (S)->pattern_def_seq
-#define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
 #define STMT_VINFO_SIMD_CLONE_INFO(S)	   (S)->simd_clone_info
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
 #define STMT_VINFO_GROUPED_ACCESS(S) \
@@ -1935,6 +1953,8 @@ extern bool vect_transform_cycle_phi (loop_vec_info, stmt_vec_info,
 				      slp_tree, slp_instance);
 extern bool vectorizable_lc_phi (loop_vec_info, stmt_vec_info,
 				 gimple **, slp_tree);
+extern bool vectorizable_phi (vec_info *, stmt_vec_info, gimple **, slp_tree,
+			      stmt_vector_for_cost *);
 extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,
@@ -1946,7 +1966,8 @@ extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, vec<tree>,
 					  gimple_stmt_iterator *, poly_uint64,
-					  bool, unsigned *);
+					  bool, unsigned *,
+					  unsigned * = nullptr);
 extern bool vect_slp_analyze_operations (vec_info *);
 extern void vect_schedule_slp (vec_info *, vec<slp_instance>);
 extern opt_result vect_analyze_slp (vec_info *, unsigned);

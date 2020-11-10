@@ -1,3 +1,185 @@
+2020-11-09  Marek Polacek  <polacek@redhat.com>
+
+	DR 1914
+	* c-common.c (attribute_fallthrough_p): Tweak the warning
+	message.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* c-pragma.c (handle_pragma_diagnostic): Split the
+	unknown-option -Wpragmas diagnostic into a warning and a
+	subsequent note containing a spelling suggestion.  Avoid
+	computing the suggestion if -Wpragmas warnings are being
+	suppressed.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR testsuite/97117
+	* c-indentation.c (get_visual_column): Remove location_t
+	parameter.  Move the column-tracking diagnostic code from here
+	to ...
+	(should_warn_for_misleading_indentation): ... here, before the
+	early exit for when the loci are not all distinct.  Don't pass a
+	location_t argument to get_visual_column.
+	(assert_get_visual_column_succeeds): Don't pass a location_t
+	argument to get_visual_column.
+	(assert_get_visual_column_fails): Likewise.
+
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-common.h (OBJC_IS_PATTR_KEYWORD): Add class to the list
+	of keywords accepted in @property attribute contexts.
+	* c-objc.h (enum objc_property_attribute_group): Add
+	OBJC_PROPATTR_GROUP_CLASS.
+	(enum objc_property_attribute_kind): Add
+	OBJC_PROPERTY_ATTR_CLASS.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-common.c (c_common_reswords): Add 'atomic' property
+	attribute.
+	* c-common.h (enum rid): Add RID_PROPATOMIC for atomic
+	property attributes.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-attribs.c (handle_nsobject_attribute): New.
+	* c.opt: Add WNSObject-attribute.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-objc.h (enum objc_property_attribute_group): New
+	(enum objc_property_attribute_kind): New.
+	(OBJC_PROPATTR_GROUP_MASK): New.
+	(struct property_attribute_info): Small class encapsulating
+	parser output from property attributes.
+	(objc_prop_attr_kind_for_rid): New
+	(objc_add_property_declaration): Simplify interface.
+	* stub-objc.c (enum rid): Dummy type.
+	(objc_add_property_declaration): Simplify interface.
+	(objc_prop_attr_kind_for_rid): New.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (collect_ada_nodes): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	(collect_ada_node): Likewise.
+	(dump_forward_type): Likewise.
+	* c-common.c (set_underlying_type): Rename
+	DECL_IS_BUILTIN->DECL_IS_UNDECLARED_BUILTIN.
+	(user_facing_original_type, c_common_finalize_early_debug): Likewise.
+
+2020-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (verify_sequence_points): Remove DEBUG_FUNCTION.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97675
+	* c.opt (Wexceptions): New option.
+
+2020-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/25814
+	* c.opt (Wvexing-parse): New option.
+
+2020-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97670
+	* c-omp.c (c_omp_split_clauses): Look through array reductions to find
+	underlying decl to clear in the allocate_head bitmap.
+
+2020-11-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-objc.h (objc_non_constant_expr_p): New.
+	* stub-objc.c (objc_non_constant_expr_p): New.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (MQ,MT): Reword description to be make-agnostic.
+
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (c_common_post_options): Move var decl to its
+	initialization point.
+
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-lex.c (c_lex_with_flags): When combining '@' with a
+	keyword for Objective-C, combine the location ranges too.
+
+2020-10-30  Qing Zhao  <qing.zhao@oracle.com>
+	    H.J.Lu  <hjl.tools@gmail.com>
+
+	* c-attribs.c (c_common_attribute_table): Add new attribute
+	zero_call_used_regs.
+	(handle_zero_call_used_regs_attribute): New function.
+
+2020-10-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* c-opts.c (c_common_post_options): In C++20, turn on
+	-Wdeprecated-enum-enum-conversion and
+	-Wdeprecated-enum-float-conversion.
+	* c.opt (Wdeprecated-enum-enum-conversion,
+	Wdeprecated-enum-float-conversion): New options.
+	(Wenum-conversion): Allow for C++ too.
+
+2020-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_ALLOCATE.
+	* c-omp.c: Include bitmap.h.
+	(c_omp_split_clauses): Handle OMP_CLAUSE_ALLOCATE.
+
+2020-10-26  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* c-common.c (__is_nothrow_assignable): New.
+	(__is_nothrow_constructible): Likewise.
+	* c-common.h (RID_IS_NOTHROW_ASSIGNABLE): New.
+	(RID_IS_NOTHROW_CONSTRUCTIBLE): Likewise.
+
+2020-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-common.c (c_common_finalize_early_debug): Update for new thunk api.
+
+2020-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91741
+	* c-common.c (verify_tree): Handle PAREN_SIZEOF_EXPR.
+	(c_common_init_ts): Likewise.
+	* c-common.def (PAREN_SIZEOF_EXPR): New tree code.
+	* c-common.h (maybe_warn_sizeof_array_div): Declare.
+	* c-warn.c (sizeof_pointer_memaccess_warning): Unwrap NOP_EXPRs.
+	(maybe_warn_sizeof_array_div): New function.
+	* c.opt (Wsizeof-array-div): New option.
+
+2020-10-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97463
+	* c-warn.c (warn_parm_ptrarray_mismatch): Move null test earlier.
+
+2020-10-22  Martin Liska  <mliska@suse.cz>
+
+	PR c/94722
+	* c-attribs.c (handle_no_stack_protect_function_attribute): New.
+	(handle_stack_protect_attribute): Add error message for a
+	no_stack_protector function.
+
+2020-10-22  Martin Liska  <mliska@suse.cz>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use the stack_protector enum.
+
+2020-10-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-gimplify.c: Include tree-nested.h
+	(c_genericize): Update for new nested function info.
+
+2020-10-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/97413
+	* c-attribs.c (build_attr_access_from_parms): Wrap chain of VLA
+	bounds in an extra list.
+
 2020-10-05  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 

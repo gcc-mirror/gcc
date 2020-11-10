@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Streams;
 private with Ada.Finalization;
+private with Ada.Strings.Text_Output;
 
 generic
    type Key_Type is private;
@@ -57,7 +58,9 @@ is
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
-      Iterator_Element  => Element_Type;
+      Iterator_Element  => Element_Type,
+      Aggregate         => (Empty     => Empty,
+                            Add_Named => Insert);
 
    pragma Preelaborable_Initialization (Map);
 
@@ -65,6 +68,8 @@ is
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_Map : constant Map;
+
+   function Empty (Capacity : Count_Type := 10) return Map;
 
    No_Element : constant Cursor;
 
@@ -248,7 +253,11 @@ private
      new Red_Black_Trees.Generic_Bounded_Tree_Types (Node_Type);
 
    type Map (Capacity : Count_Type) is
-     new Tree_Types.Tree_Type (Capacity) with null record;
+     new Tree_Types.Tree_Type (Capacity)
+      with null record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map);
 
    use Red_Black_Trees;
    use Tree_Types, Tree_Types.Implementation;

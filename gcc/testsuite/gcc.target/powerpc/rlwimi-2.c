@@ -6,9 +6,10 @@
 /* { dg-final { scan-assembler-times {(?n)^\s+blr} 6750 } } */
 /* { dg-final { scan-assembler-times {(?n)^\s+mr} 643 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {(?n)^\s+mr} 11 { target lp64 } } } */
-/* { dg-final { scan-assembler-times {(?n)^\s+rldicl} 6728 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {(?n)^\s+rldicl} 7790 { target lp64 } } } */
 
-/* { dg-final { scan-assembler-times {(?n)^\s+rlwimi} 1692 } } */
+/* { dg-final { scan-assembler-times {(?n)^\s+rlwimi} 1692 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {(?n)^\s+rlwimi} 1666 { target lp64 } } } */
 
 /* { dg-final { scan-assembler-times {(?n)^\s+mulli} 5036 } } */
 

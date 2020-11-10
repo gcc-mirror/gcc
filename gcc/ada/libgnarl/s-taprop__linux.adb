@@ -34,10 +34,6 @@
 --  This package contains all the GNULL primitives that interface directly with
 --  the underlying OS.
 
-pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during tasking
---  operations. It causes infinite loops and other problems.
-
 with Interfaces.C; use Interfaces; use type Interfaces.C.int;
 
 with System.Task_Info;

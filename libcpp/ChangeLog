@@ -1,3 +1,74 @@
+2020-11-07  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* generated_cpp_wcwidth.h: Regenerated from Unicode 13.0.0 data.
+
+2020-11-06  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (enum class CPP_time_kind): New.
+	(cpp_get_date): Declare.
+	* internal.h (struct cpp_reader): Replace source_date_epoch with
+	time_stamp and time_stamp_kind.
+	* init.c (cpp_create_reader): Initialize them.
+	* macro.c (_cpp_builtin_macro_text): Use cpp_get_date.
+	(cpp_get_date): Broken out from _cpp_builtin_macro_text and
+	genericized.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (cpp_peek_token): Do not peek past CPP_PRAGMA.
+	(_cpp_lex_direct): Handle EOF in pragma when setting need_line,
+	not when needing a line.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (_cpp_clean_line): Fix DOS off-by-one error.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* init.c (cpp_read_main_file): Use cpp_get_deps result.
+
+2020-11-03  Nathan Sidwell  <nathan@acm.org>
+
+	* include/mkdeps.h: Include cpplib.h
+	(deps_write): Adjust first parm type.
+	* mkdeps.c: Include internal.h
+	(make_write): Adjust first parm type.  Check phony option
+	directly.
+	(deps_write): Adjust first parm type.
+	* init.c (cpp_read_main_file): Use get_deps.
+	* directives.c (cpp_get_deps): Check option before initializing.
+
+2020-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (_cpp_notify_macro_use): Add location parm.
+	(_cpp_maybe_notify_macro_use): Likewise.
+	* directives.c (_cpp_do_file_change): Check we've not changed file
+	when optimizing a rewind.
+	(do_ifdef): Pass location to _cpp_maybe_notify_macro_use.
+	(do_ifndef): Likewise.  Delete obsolete comment about powerpc.
+	* expr.c (parse_defined): Pass location to
+	_cpp_maybe_notify_macro_use.
+	* macro.c (enter_macro_context): Likewise.
+	(warn_of_redefinition): Break out helper function.  Call it.
+	(compare_macros): New function broken out of warn_of_redefinition.
+	(_cpp_new_macro): Zero all fields.
+	(_cpp_notify_macro_use): Add location parameter.
+
+2020-10-20  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (_cpp_lex_direct): Do not complete EOF processing when
+	parsing_args.
+	* macro.c (collect_args): Do not unwind fake EOF.
+	(funlike_invocation_p): Do not unwind fake EOF.
+	(cpp_context): Replace abort with gcc_assert.
+
+2020-10-19  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (struct cpp_reader): Rename 'eof' field to 'endarg'.
+	* init.c (cpp_create_reader): Adjust.
+	* macro.c (collect_args): Use endarg for separator.  Always rewind
+	in the not-fn case.
+
 2020-10-08  Nathan Sidwell  <nathan@acm.org>
 
 	* internal.h (enum include_type): Rename IT_MAIN_INJECT to

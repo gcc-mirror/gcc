@@ -47,8 +47,8 @@ typedef __SIZE_TYPE__    size_t;
 
 /* The following tests fail because of missing range information.  The xfail
    exclusions are PR79356.  */
-TEST (signed char, SCHAR_MIN + 2, ALLOC_MAX);   /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for signed char" { xfail { ! { aarch64*-*-* arm*-*-* avr-*-* alpha*-*-* ia64-*-* mips*-*-* or1k*-*-* pdp11*-*-* powerpc*-*-* sparc*-*-* s390*-*-* visium-*-* msp430-*-* } } } } */
-TEST (short, SHRT_MIN + 2, ALLOC_MAX); /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for short" { xfail { ! { aarch64*-*-* arm*-*-* alpha*-*-* avr-*-* ia64-*-* mips*-*-* or1k*-*-* pdp11*-*-* powerpc*-*-* sparc*-*-* s390x-*-* visium-*-* msp430-*-* } } } } */
+TEST (signed char, SCHAR_MIN + 2, ALLOC_MAX);   /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for signed char" { xfail { ! { aarch64*-*-* arm*-*-* avr-*-* alpha*-*-* ia64-*-* mips*-*-* or1k*-*-* pdp11*-*-* powerpc*-*-* sparc*-*-* s390*-*-* visium-*-* msp430-*-* nvptx*-*-*} } } } */
+TEST (short, SHRT_MIN + 2, ALLOC_MAX); /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for short" { xfail { ! { aarch64*-*-* arm*-*-* alpha*-*-* avr-*-* ia64-*-* mips*-*-* or1k*-*-* pdp11*-*-* powerpc*-*-* sparc*-*-* s390x-*-* visium-*-* msp430-*-* nvptx*-*-* } } } } */
 TEST (int, INT_MIN + 2, ALLOC_MAX);    /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */
 TEST (int, -3, ALLOC_MAX);             /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */
 TEST (int, -2, ALLOC_MAX);             /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */

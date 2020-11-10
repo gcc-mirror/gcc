@@ -317,6 +317,7 @@ package body Inline is
    --    Refined_Global
    --    Refined_Depends
    --    Refined_Post
+   --    Subprogram_Variant
    --    Test_Case
    --    Unmodified
    --    Unreferenced
@@ -2916,7 +2917,24 @@ package body Inline is
          --  formal in the inlined code.
 
          if Is_Entity_Name (A) and then Ekind (F) /= E_In_Parameter then
-            Set_Last_Assignment (Entity (A), Empty);
+
+            --  In GNATprove mode a protected component acting as an actual
+            --  subprogram parameter will appear as inlined-for-proof. However,
+            --  its E_Component entity is not an assignable object, so the
+            --  assertion in Set_Last_Assignment will fail. We just omit the
+            --  call to Set_Last_Assignment, because GNATprove flags useless
+            --  assignments with its own flow analysis.
+            --
+            --  In GNAT mode such a problem does not occur, because protected
+            --  components are inlined via object renamings whose entity kind
+            --  E_Variable is assignable.
+
+            if Is_Assignable (Entity (A)) then
+               Set_Last_Assignment (Entity (A), Empty);
+            else
+               pragma Assert
+                 (GNATprove_Mode and then Is_Protected_Component (Entity (A)));
+            end if;
          end if;
 
          --  If the argument may be a controlling argument in a call within
@@ -3728,8 +3746,8 @@ package body Inline is
          return;
       end if;
 
-      if Nkind (Orig_Bod) = N_Defining_Identifier
-        or else Nkind (Orig_Bod) = N_Defining_Operator_Symbol
+      if Nkind (Orig_Bod) in N_Defining_Identifier
+                           | N_Defining_Operator_Symbol
       then
          --  Subprogram is renaming_as_body. Calls occurring after the renaming
          --  can be replaced with calls to the renamed entity directly, because
@@ -5119,6 +5137,7 @@ package body Inline is
                                         | Name_Refined_Global
                                         | Name_Refined_Depends
                                         | Name_Refined_Post
+                                        | Name_Subprogram_Variant
                                         | Name_Test_Case
                                         | Name_Unmodified
                                         | Name_Unreferenced

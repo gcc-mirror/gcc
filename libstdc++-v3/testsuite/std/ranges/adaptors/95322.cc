@@ -26,7 +26,7 @@ using __gnu_test::test_forward_range;
 void
 test01()
 {
-  // PR libstdc++/95322 and LWG 3488
+  // PR libstdc++/95322 and LWG 3448
   int a[2]{1, 2};
   test_forward_range<int> v{a};
   auto view1 = v | std::views::take(2);
@@ -51,8 +51,34 @@ test02()
   VERIFY( !eq );
 }
 
+void
+test03()
+{
+  // LWG 3449, for take_view
+  int a[2]{1, 2};
+  test_forward_range<int> v{a};
+  auto view1 = v | std::views::transform(std::identity{});
+  auto view2 = view1 | std::views::take(2);
+  const bool eq = std::ranges::cbegin(view2) == std::ranges::end(view2);
+  VERIFY( !eq );
+}
+
+void
+test04()
+{
+  // LWG 3449, for take_while_view
+  int a[2]{1, 2};
+  test_forward_range<int> v{a};
+  auto view1 = v | std::views::transform(std::identity{});
+  auto view2 = view1 | std::views::take_while([] (int i) { return true; });
+  const bool eq = std::ranges::cbegin(view2) == std::ranges::end(view2);
+  VERIFY( !eq );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
+  test04();
 }

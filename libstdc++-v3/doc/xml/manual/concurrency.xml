@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.concurrency" xreflabel="Concurrency">
 <?dbhtml filename="concurrency.html"?>
 
@@ -25,7 +25,7 @@
 
 <!-- Sect1 01 : API -->
 <section xml:id="std.concurrency.api"><info><title>API Reference</title></info>
-  
+
 
   <para>
     All items are declared in one of four standard header files.

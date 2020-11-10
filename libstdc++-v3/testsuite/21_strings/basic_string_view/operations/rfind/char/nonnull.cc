@@ -27,3 +27,6 @@ test01()
   return s.rfind((const char*)nullptr);		// { dg-warning "\\\[-Wnonnull" }
   return s.rfind((const char*)nullptr, 1);	// { dg-warning "\\\[-Wnonnull" }
 }
+
+// Ignore additional diagnostic given with -Wsystem-headers:
+// { dg-prune-output "argument . null where non-null expected" }

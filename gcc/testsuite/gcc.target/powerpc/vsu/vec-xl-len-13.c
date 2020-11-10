@@ -10,8 +10,8 @@
    error should be issued because this built-in function is not
    available on 32-bit configurations. */
 
-__vector float
+int
 fetch_data (float *address, size_t length)
 {
-  return __builtin_vec_lxvl (address, length);	/* { dg-error "'__builtin_vec_lxvl' is not supported in this compiler configuration" } */
+  return __builtin_vec_lxvl (address, length);	/* { dg-warning "'__builtin_vec_lxvl'" } */
 }

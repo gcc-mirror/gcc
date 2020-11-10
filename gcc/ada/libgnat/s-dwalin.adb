@@ -29,10 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we can get
---  elaboration circularities when polling is turned on
-
 with Ada.Characters.Handling;
 with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;
 with Ada.Unchecked_Deallocation;
@@ -1586,6 +1582,13 @@ package body System.Dwarf_Lines is
             Subprg_Name,
             Line_Num);
 
+         --  If we're not requested to suppress hex addresses, emit it now.
+
+         if not Suppress_Hex then
+            Append_Address (Res, Addr_In_Traceback);
+            Append (Res, ' ');
+         end if;
+
          if File_Name /= null then
             declare
                Last   : constant Natural := String_Length (File_Name);
@@ -1630,26 +1633,22 @@ package body System.Dwarf_Lines is
                        (Res,
                         String (Subprg_Name.Ptr (Off .. Subprg_Name.Len)));
                   end if;
-                  Append (Res, ' ');
+               else
+                  Append (Res, "???");
                end if;
 
-               Append (Res, "at ");
+               Append (Res, " at ");
                Append (Res, String (File_Name (1 .. Last)));
                Append (Res, ':');
                Append (Res, Line_Image (2 .. Line_Image'Last));
             end;
          else
-            if Suppress_Hex then
-               Append (Res, "...");
-            else
-               Append_Address (Res, Addr_In_Traceback);
-            end if;
-
             if Subprg_Name.Len > 0 then
                Off := Strip_Leading_Char (C.Obj.all, Subprg_Name);
 
-               Append (Res, ' ');
                Append (Res, String (Subprg_Name.Ptr (Off .. Subprg_Name.Len)));
+            else
+               Append (Res, "???");
             end if;
 
             Append (Res, " at ???");

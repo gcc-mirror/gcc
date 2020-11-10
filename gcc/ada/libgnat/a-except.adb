@@ -32,10 +32,6 @@
 pragma Style_Checks (All_Checks);
 --  No subprogram ordering check, due to logical grouping
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we get
---  elaboration circularities with System.Exception_Tables.
-
 with System;                  use System;
 with System.Exceptions;       use System.Exceptions;
 with System.Exceptions_Debug; use System.Exceptions_Debug;
@@ -667,21 +663,6 @@ package body Ada.Exceptions is
    Rmsg_35 : constant String := "object too large"                 & NUL;
    Rmsg_36 : constant String := "stream operation not allowed"     & NUL;
    Rmsg_37 : constant String := "build-in-place mismatch"          & NUL;
-
-   -----------------------
-   -- Polling Interface --
-   -----------------------
-
-   type Unsigned is mod 2 ** 32;
-
-   Counter : Unsigned := 0;
-   pragma Warnings (Off, Counter);
-   --  This counter is provided for convenience. It can be used in Poll to
-   --  perform periodic but not systematic operations.
-
-   procedure Poll is separate;
-   --  The actual polling routine is separate, so that it can easily be
-   --  replaced with a target dependent version.
 
    --------------------------
    -- Code_Address_For_AAA --

@@ -256,6 +256,7 @@ typedef struct pre_expr_d : nofree_ptr_hash <pre_expr_d>
 {
   enum pre_expr_kind kind;
   unsigned int id;
+  unsigned value_id;
   location_t loc;
   pre_expr_union u;
 
@@ -422,10 +423,64 @@ get_or_alloc_expr_for_name (tree name)
   result = pre_expr_pool.allocate ();
   result->kind = NAME;
   result->loc = UNKNOWN_LOCATION;
+  result->value_id = VN_INFO (name)->value_id;
   PRE_EXPR_NAME (result) = name;
   alloc_expression_id (result);
   return result;
 }
+
+/* Given an NARY, get or create a pre_expr to represent it.  */
+
+static pre_expr
+get_or_alloc_expr_for_nary (vn_nary_op_t nary,
+			    location_t loc = UNKNOWN_LOCATION)
+{
+  struct pre_expr_d expr;
+  pre_expr result;
+  unsigned int result_id;
+
+  expr.kind = NARY;
+  expr.id = 0;
+  PRE_EXPR_NARY (&expr) = nary;
+  result_id = lookup_expression_id (&expr);
+  if (result_id != 0)
+    return expression_for_id (result_id);
+
+  result = pre_expr_pool.allocate ();
+  result->kind = NARY;
+  result->loc = loc;
+  result->value_id = nary->value_id;
+  PRE_EXPR_NARY (result) = nary;
+  alloc_expression_id (result);
+  return result;
+}
+
+/* Given an REFERENCE, get or create a pre_expr to represent it.  */
+
+static pre_expr
+get_or_alloc_expr_for_reference (vn_reference_t reference,
+				 location_t loc = UNKNOWN_LOCATION)
+{
+  struct pre_expr_d expr;
+  pre_expr result;
+  unsigned int result_id;
+
+  expr.kind = REFERENCE;
+  expr.id = 0;
+  PRE_EXPR_REFERENCE (&expr) = reference;
+  result_id = lookup_expression_id (&expr);
+  if (result_id != 0)
+    return expression_for_id (result_id);
+
+  result = pre_expr_pool.allocate ();
+  result->kind = REFERENCE;
+  result->loc = loc;
+  result->value_id = reference->value_id;
+  PRE_EXPR_REFERENCE (result) = reference;
+  alloc_expression_id (result);
+  return result;
+}
+
 
 /* An unordered bitmap set.  One bitmap tracks values, the other,
    expressions.  */
@@ -444,63 +499,9 @@ public:
 
 /* Mapping from value id to expressions with that value_id.  */
 static vec<bitmap> value_expressions;
-
-/* Sets that we need to keep track of.  */
-typedef struct bb_bitmap_sets
-{
-  /* The EXP_GEN set, which represents expressions/values generated in
-     a basic block.  */
-  bitmap_set_t exp_gen;
-
-  /* The PHI_GEN set, which represents PHI results generated in a
-     basic block.  */
-  bitmap_set_t phi_gen;
-
-  /* The TMP_GEN set, which represents results/temporaries generated
-     in a basic block. IE the LHS of an expression.  */
-  bitmap_set_t tmp_gen;
-
-  /* The AVAIL_OUT set, which represents which values are available in
-     a given basic block.  */
-  bitmap_set_t avail_out;
-
-  /* The ANTIC_IN set, which represents which values are anticipatable
-     in a given basic block.  */
-  bitmap_set_t antic_in;
-
-  /* The PA_IN set, which represents which values are
-     partially anticipatable in a given basic block.  */
-  bitmap_set_t pa_in;
-
-  /* The NEW_SETS set, which is used during insertion to augment the
-     AVAIL_OUT set of blocks with the new insertions performed during
-     the current iteration.  */
-  bitmap_set_t new_sets;
-
-  /* A cache for value_dies_in_block_x.  */
-  bitmap expr_dies;
-
-  /* The live virtual operand on successor edges.  */
-  tree vop_on_exit;
-
-  /* True if we have visited this block during ANTIC calculation.  */
-  unsigned int visited : 1;
-
-  /* True when the block contains a call that might not return.  */
-  unsigned int contains_may_not_return_call : 1;
-} *bb_value_sets_t;
-
-#define EXP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->exp_gen
-#define PHI_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->phi_gen
-#define TMP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->tmp_gen
-#define AVAIL_OUT(BB)	((bb_value_sets_t) ((BB)->aux))->avail_out
-#define ANTIC_IN(BB)	((bb_value_sets_t) ((BB)->aux))->antic_in
-#define PA_IN(BB)	((bb_value_sets_t) ((BB)->aux))->pa_in
-#define NEW_SETS(BB)	((bb_value_sets_t) ((BB)->aux))->new_sets
-#define EXPR_DIES(BB)	((bb_value_sets_t) ((BB)->aux))->expr_dies
-#define BB_VISITED(BB)	((bb_value_sets_t) ((BB)->aux))->visited
-#define BB_MAY_NOTRETURN(BB) ((bb_value_sets_t) ((BB)->aux))->contains_may_not_return_call
-#define BB_LIVE_VOP_ON_EXIT(BB) ((bb_value_sets_t) ((BB)->aux))->vop_on_exit
+/* We just record a single expression for each constant value,
+   one of kind CONSTANT.  */
+static vec<pre_expr> constant_value_expressions;
 
 
 /* This structure is used to keep track of statistics on what
@@ -542,50 +543,126 @@ static bitmap_obstack grand_bitmap_obstack;
 /* A three tuple {e, pred, v} used to cache phi translations in the
    phi_translate_table.  */
 
-typedef struct expr_pred_trans_d : free_ptr_hash<expr_pred_trans_d>
+typedef struct expr_pred_trans_d : public typed_noop_remove <expr_pred_trans_d>
 {
-  /* The expression.  */
-  pre_expr e;
+  typedef expr_pred_trans_d value_type;
+  typedef expr_pred_trans_d compare_type;
 
-  /* The predecessor block along which we translated the expression.  */
-  basic_block pred;
+  /* The expression ID.  */
+  unsigned e;
 
-  /* The value that resulted from the translation.  */
-  pre_expr v;
-
-  /* The hashcode for the expression, pred pair. This is cached for
-     speed reasons.  */
-  hashval_t hashcode;
+  /* The value expression ID that resulted from the translation.  */
+  unsigned v;
 
   /* hash_table support.  */
-  static inline hashval_t hash (const expr_pred_trans_d *);
-  static inline int equal (const expr_pred_trans_d *, const expr_pred_trans_d *);
+  static inline void mark_empty (expr_pred_trans_d &);
+  static inline bool is_empty (const expr_pred_trans_d &);
+  static inline void mark_deleted (expr_pred_trans_d &);
+  static inline bool is_deleted (const expr_pred_trans_d &);
+  static const bool empty_zero_p = true;
+  static inline hashval_t hash (const expr_pred_trans_d &);
+  static inline int equal (const expr_pred_trans_d &, const expr_pred_trans_d &);
 } *expr_pred_trans_t;
 typedef const struct expr_pred_trans_d *const_expr_pred_trans_t;
 
-inline hashval_t
-expr_pred_trans_d::hash (const expr_pred_trans_d *e)
+inline bool
+expr_pred_trans_d::is_empty (const expr_pred_trans_d &e)
 {
-  return e->hashcode;
+  return e.e == 0;
+}
+
+inline bool
+expr_pred_trans_d::is_deleted (const expr_pred_trans_d &e)
+{
+  return e.e == -1u;
+}
+
+inline void
+expr_pred_trans_d::mark_empty (expr_pred_trans_d &e)
+{
+  e.e = 0;
+}
+
+inline void
+expr_pred_trans_d::mark_deleted (expr_pred_trans_d &e)
+{
+  e.e = -1u;
+}
+
+inline hashval_t
+expr_pred_trans_d::hash (const expr_pred_trans_d &e)
+{
+  return e.e;
 }
 
 inline int
-expr_pred_trans_d::equal (const expr_pred_trans_d *ve1,
-			  const expr_pred_trans_d *ve2)
+expr_pred_trans_d::equal (const expr_pred_trans_d &ve1,
+			  const expr_pred_trans_d &ve2)
 {
-  basic_block b1 = ve1->pred;
-  basic_block b2 = ve2->pred;
-
-  /* If they are not translations for the same basic block, they can't
-     be equal.  */
-  if (b1 != b2)
-    return false;
-  return pre_expr_d::equal (ve1->e, ve2->e);
+  return ve1.e == ve2.e;
 }
 
-/* The phi_translate_table caches phi translations for a given
-   expression and predecessor.  */
-static hash_table<expr_pred_trans_d> *phi_translate_table;
+/* Sets that we need to keep track of.  */
+typedef struct bb_bitmap_sets
+{
+  /* The EXP_GEN set, which represents expressions/values generated in
+     a basic block.  */
+  bitmap_set_t exp_gen;
+
+  /* The PHI_GEN set, which represents PHI results generated in a
+     basic block.  */
+  bitmap_set_t phi_gen;
+
+  /* The TMP_GEN set, which represents results/temporaries generated
+     in a basic block. IE the LHS of an expression.  */
+  bitmap_set_t tmp_gen;
+
+  /* The AVAIL_OUT set, which represents which values are available in
+     a given basic block.  */
+  bitmap_set_t avail_out;
+
+  /* The ANTIC_IN set, which represents which values are anticipatable
+     in a given basic block.  */
+  bitmap_set_t antic_in;
+
+  /* The PA_IN set, which represents which values are
+     partially anticipatable in a given basic block.  */
+  bitmap_set_t pa_in;
+
+  /* The NEW_SETS set, which is used during insertion to augment the
+     AVAIL_OUT set of blocks with the new insertions performed during
+     the current iteration.  */
+  bitmap_set_t new_sets;
+
+  /* A cache for value_dies_in_block_x.  */
+  bitmap expr_dies;
+
+  /* The live virtual operand on successor edges.  */
+  tree vop_on_exit;
+
+  /* PHI translate cache for the single successor edge.  */
+  hash_table<expr_pred_trans_d> *phi_translate_table;
+
+  /* True if we have visited this block during ANTIC calculation.  */
+  unsigned int visited : 1;
+
+  /* True when the block contains a call that might not return.  */
+  unsigned int contains_may_not_return_call : 1;
+} *bb_value_sets_t;
+
+#define EXP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->exp_gen
+#define PHI_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->phi_gen
+#define TMP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->tmp_gen
+#define AVAIL_OUT(BB)	((bb_value_sets_t) ((BB)->aux))->avail_out
+#define ANTIC_IN(BB)	((bb_value_sets_t) ((BB)->aux))->antic_in
+#define PA_IN(BB)	((bb_value_sets_t) ((BB)->aux))->pa_in
+#define NEW_SETS(BB)	((bb_value_sets_t) ((BB)->aux))->new_sets
+#define EXPR_DIES(BB)	((bb_value_sets_t) ((BB)->aux))->expr_dies
+#define PHI_TRANS_TABLE(BB) ((bb_value_sets_t) ((BB)->aux))->phi_translate_table
+#define BB_VISITED(BB)	((bb_value_sets_t) ((BB)->aux))->visited
+#define BB_MAY_NOTRETURN(BB) ((bb_value_sets_t) ((BB)->aux))->contains_may_not_return_call
+#define BB_LIVE_VOP_ON_EXIT(BB) ((bb_value_sets_t) ((BB)->aux))->vop_on_exit
+
 
 /* Add the tuple mapping from {expression E, basic block PRED} to
    the phi translation table and return whether it pre-existed.  */
@@ -593,24 +670,22 @@ static hash_table<expr_pred_trans_d> *phi_translate_table;
 static inline bool
 phi_trans_add (expr_pred_trans_t *entry, pre_expr e, basic_block pred)
 {
-  expr_pred_trans_t *slot;
+  if (!PHI_TRANS_TABLE (pred))
+    PHI_TRANS_TABLE (pred) = new hash_table<expr_pred_trans_d> (11);
+
+  expr_pred_trans_t slot;
   expr_pred_trans_d tem;
-  hashval_t hash = iterative_hash_hashval_t (pre_expr_d::hash (e),
-					     pred->index);
-  tem.e = e;
-  tem.pred = pred;
-  tem.hashcode = hash;
-  slot = phi_translate_table->find_slot_with_hash (&tem, hash, INSERT);
-  if (*slot)
+  unsigned id = get_expression_id (e);
+  tem.e = id;
+  slot = PHI_TRANS_TABLE (pred)->find_slot_with_hash (tem, id, INSERT);
+  if (slot->e)
     {
-      *entry = *slot;
+      *entry = slot;
       return true;
     }
 
-  *entry = *slot = XNEW (struct expr_pred_trans_d);
-  (*entry)->e = e;
-  (*entry)->pred = pred;
-  (*entry)->hashcode = hash;
+  *entry = slot;
+  slot->e = id;
   return false;
 }
 
@@ -620,23 +695,33 @@ phi_trans_add (expr_pred_trans_t *entry, pre_expr e, basic_block pred)
 static void
 add_to_value (unsigned int v, pre_expr e)
 {
-  bitmap set;
-
   gcc_checking_assert (get_expr_value_id (e) == v);
 
-  if (v >= value_expressions.length ())
+  if (value_id_constant_p (v))
     {
-      value_expressions.safe_grow_cleared (v + 1, true);
-    }
+      if (e->kind != CONSTANT)
+	return;
 
-  set = value_expressions[v];
-  if (!set)
+      if (-v >= constant_value_expressions.length ())
+	constant_value_expressions.safe_grow_cleared (-v + 1);
+
+      pre_expr leader = constant_value_expressions[-v];
+      if (!leader)
+	constant_value_expressions[-v] = e;
+    }
+  else
     {
-      set = BITMAP_ALLOC (&grand_bitmap_obstack);
-      value_expressions[v] = set;
-    }
+      if (v >= value_expressions.length ())
+	value_expressions.safe_grow_cleared (v + 1);
 
-  bitmap_set_bit (set, get_or_alloc_expression_id (e));
+      bitmap set = value_expressions[v];
+      if (!set)
+	{
+	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
+	  value_expressions[v] = set;
+	}
+      bitmap_set_bit (set, get_or_alloc_expression_id (e));
+    }
 }
 
 /* Create a new bitmap set and return it.  */
@@ -655,29 +740,10 @@ bitmap_set_new (void)
 static unsigned int
 get_expr_value_id (pre_expr expr)
 {
-  unsigned int id;
-  switch (expr->kind)
-    {
-    case CONSTANT:
-      id = get_constant_value_id (PRE_EXPR_CONSTANT (expr));
-      break;
-    case NAME:
-      id = VN_INFO (PRE_EXPR_NAME (expr))->value_id;
-      break;
-    case NARY:
-      gcc_assert (!PRE_EXPR_NARY (expr)->predicated_values);
-      id = PRE_EXPR_NARY (expr)->value_id;
-      break;
-    case REFERENCE:
-      id = PRE_EXPR_REFERENCE (expr)->value_id;
-      break;
-    default:
-      gcc_unreachable ();
-    }
   /* ???  We cannot assert that expr has a value-id (it can be 0), because
      we assign value-ids only to expressions that have a result
      in set_hashtable_value_ids.  */
-  return id;
+  return expr->value_id;
 }
 
 /* Return a VN valnum (SSA name or constant) for the PRE value-id VAL.  */
@@ -685,16 +751,22 @@ get_expr_value_id (pre_expr expr)
 static tree
 vn_valnum_from_value_id (unsigned int val)
 {
+  if (value_id_constant_p (val))
+    {
+      pre_expr vexpr = constant_value_expressions[-val];
+      if (vexpr)
+	return PRE_EXPR_CONSTANT (vexpr);
+      return NULL_TREE;
+    }
+
+  bitmap exprset = value_expressions[val];
   bitmap_iterator bi;
   unsigned int i;
-  bitmap exprset = value_expressions[val];
   EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
     {
       pre_expr vexpr = expression_for_id (i);
       if (vexpr->kind == NAME)
 	return VN_INFO (PRE_EXPR_NAME (vexpr))->valnum;
-      else if (vexpr->kind == CONSTANT)
-	return PRE_EXPR_CONSTANT (vexpr);
     }
   return NULL_TREE;
 }
@@ -1066,7 +1138,6 @@ static pre_expr
 get_or_alloc_expr_for_constant (tree constant)
 {
   unsigned int result_id;
-  unsigned int value_id;
   struct pre_expr_d expr;
   pre_expr newexpr;
 
@@ -1081,8 +1152,8 @@ get_or_alloc_expr_for_constant (tree constant)
   newexpr->loc = UNKNOWN_LOCATION;
   PRE_EXPR_CONSTANT (newexpr) = constant;
   alloc_expression_id (newexpr);
-  value_id = get_or_alloc_constant_value_id (constant);
-  add_to_value (value_id, newexpr);
+  newexpr->value_id = get_or_alloc_constant_value_id (constant);
+  add_to_value (newexpr->value_id, newexpr);
   return newexpr;
 }
 
@@ -1307,10 +1378,11 @@ get_representative_for (const pre_expr e, basic_block b = NULL)
      ???  We should be able to re-use this when we insert the statement
      to compute it.  */
   name = make_temp_ssa_name (get_expr_type (e), gimple_build_nop (), "pretmp");
-  VN_INFO (name)->value_id = value_id;
-  VN_INFO (name)->valnum = valnum ? valnum : name;
+  vn_ssa_aux_t vn_info = VN_INFO (name);
+  vn_info->value_id = value_id;
+  vn_info->valnum = valnum ? valnum : name;
   /* ???  For now mark this SSA name for release by VN.  */
-  VN_INFO (name)->needs_insertion = true;
+  vn_info->needs_insertion = true;
   add_to_value (value_id, get_or_alloc_expr_for_name (name));
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1438,30 +1510,17 @@ phi_translate_1 (bitmap_set_t dest,
 	    if (result && is_gimple_min_invariant (result))
 	      return get_or_alloc_expr_for_constant (result);
 
-	    expr = pre_expr_pool.allocate ();
-	    expr->kind = NARY;
-	    expr->id = 0;
-	    expr->loc = expr_loc;
-	    if (nary && !nary->predicated_values)
-	      {
-		PRE_EXPR_NARY (expr) = nary;
-		new_val_id = nary->value_id;
-		get_or_alloc_expression_id (expr);
-	      }
-	    else
+	    if (!nary || nary->predicated_values)
 	      {
 		new_val_id = get_next_value_id ();
-		value_expressions.safe_grow_cleared (get_max_value_id () + 1,
-						     true);
 		nary = vn_nary_op_insert_pieces (newnary->length,
 						 newnary->opcode,
 						 newnary->type,
 						 &newnary->op[0],
 						 result, new_val_id);
-		PRE_EXPR_NARY (expr) = nary;
-		get_or_alloc_expression_id (expr);
 	      }
-	    add_to_value (new_val_id, expr);
+	    expr = get_or_alloc_expr_for_nary (nary, expr_loc);
+	    add_to_value (get_expr_value_id (expr), expr);
 	  }
 	return expr;
       }
@@ -1593,21 +1652,12 @@ phi_translate_1 (bitmap_set_t dest,
 		return NULL;
 	      }
 
-	    expr = pre_expr_pool.allocate ();
-	    expr->kind = REFERENCE;
-	    expr->id = 0;
-	    expr->loc = expr_loc;
-
 	    if (newref)
 	      new_val_id = newref->value_id;
 	    else
 	      {
 		if (changed || !same_valid)
-		  {
-		    new_val_id = get_next_value_id ();
-		    value_expressions.safe_grow_cleared
-		      (get_max_value_id () + 1, true);
-		  }
+		  new_val_id = get_next_value_id ();
 		else
 		  new_val_id = ref->value_id;
 		if (!newoperands.exists ())
@@ -1618,8 +1668,7 @@ phi_translate_1 (bitmap_set_t dest,
 						     result, new_val_id);
 		newoperands = vNULL;
 	      }
-	    PRE_EXPR_REFERENCE (expr) = newref;
-	    get_or_alloc_expression_id (expr);
+	    expr = get_or_alloc_expr_for_reference (newref, expr_loc);
 	    add_to_value (new_val_id, expr);
 	  }
 	newoperands.release ();
@@ -1678,10 +1727,10 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
   if (expr->kind != NAME)
     {
       if (phi_trans_add (&slot, expr, e->src))
-	return slot->v;
+	return slot->v == 0 ? NULL : expression_for_id (slot->v);
       /* Store NULL for the value we want to return in the case of
 	 recursing.  */
-      slot->v = NULL;
+      slot->v = 0;
     }
 
   /* Translate.  */
@@ -1692,12 +1741,14 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
 
   if (slot)
     {
+      /* We may have reallocated.  */
+      phi_trans_add (&slot, expr, e->src);
       if (phitrans)
-	slot->v = phitrans;
+	slot->v = get_expression_id (phitrans);
       else
 	/* Remove failed translations again, they cause insert
 	   iteration to not pick up new opportunities reliably.  */
-	phi_translate_table->remove_elt_with_hash (slot, slot->hashcode);
+	PHI_TRANS_TABLE (e->src)->clear_slot (slot);
     }
 
   return phitrans;
@@ -1722,6 +1773,13 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, edge e)
     }
 
   exprs = sorted_array_from_bitmap_set (set);
+  /* Allocate the phi-translation cache where we have an idea about
+     its size.  hash-table implementation internals tell us that
+     allocating the table to fit twice the number of elements will
+     make sure we do not usually re-allocate.  */
+  if (!PHI_TRANS_TABLE (e->src))
+    PHI_TRANS_TABLE (e->src)
+      = new hash_table<expr_pred_trans_d> (2 * exprs.length ());
   FOR_EACH_VEC_ELT (exprs, i, expr)
     {
       pre_expr translated;
@@ -1742,18 +1800,8 @@ static pre_expr
 bitmap_find_leader (bitmap_set_t set, unsigned int val)
 {
   if (value_id_constant_p (val))
-    {
-      unsigned int i;
-      bitmap_iterator bi;
-      bitmap exprset = value_expressions[val];
+    return constant_value_expressions[-val];
 
-      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
-	{
-	  pre_expr expr = expression_for_id (i);
-	  if (expr->kind == CONSTANT)
-	    return expr;
-	}
-    }
   if (bitmap_set_contains_value (set, val))
     {
       /* Rather than walk the entire bitmap of expressions, and see
@@ -2950,10 +2998,11 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 
 	  if (forcedname != folded)
 	    {
-	      VN_INFO (forcedname)->valnum = forcedname;
-	      VN_INFO (forcedname)->value_id = get_next_value_id ();
+	      vn_ssa_aux_t vn_info = VN_INFO (forcedname);
+	      vn_info->valnum = forcedname;
+	      vn_info->value_id = get_next_value_id ();
 	      nameexpr = get_or_alloc_expr_for_name (forcedname);
-	      add_to_value (VN_INFO (forcedname)->value_id, nameexpr);
+	      add_to_value (vn_info->value_id, nameexpr);
 	      bitmap_value_replace_in_set (NEW_SETS (block), nameexpr);
 	      bitmap_value_replace_in_set (AVAIL_OUT (block), nameexpr);
 	    }
@@ -2976,11 +3025,12 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
      the expression may have been represented.  There is no harm in replacing
      here.  */
   value_id = get_expr_value_id (expr);
-  VN_INFO (name)->value_id = value_id;
-  VN_INFO (name)->valnum = vn_valnum_from_value_id (value_id);
-  if (VN_INFO (name)->valnum == NULL_TREE)
-    VN_INFO (name)->valnum = name;
-  gcc_assert (VN_INFO (name)->valnum != NULL_TREE);
+  vn_ssa_aux_t vn_info = VN_INFO (name);
+  vn_info->value_id = value_id;
+  vn_info->valnum = vn_valnum_from_value_id (value_id);
+  if (vn_info->valnum == NULL_TREE)
+    vn_info->valnum = name;
+  gcc_assert (vn_info->valnum != NULL_TREE);
   nameexpr = get_or_alloc_expr_for_name (name);
   add_to_value (value_id, nameexpr);
   if (NEW_SETS (block))
@@ -3082,10 +3132,11 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   temp = make_temp_ssa_name (type, NULL, "prephitmp");
   phi = create_phi_node (temp, block);
 
-  VN_INFO (temp)->value_id = val;
-  VN_INFO (temp)->valnum = vn_valnum_from_value_id (val);
-  if (VN_INFO (temp)->valnum == NULL_TREE)
-    VN_INFO (temp)->valnum = temp;
+  vn_ssa_aux_t vn_info = VN_INFO (temp);
+  vn_info->value_id = val;
+  vn_info->valnum = vn_valnum_from_value_id (val);
+  if (vn_info->valnum == NULL_TREE)
+    vn_info->valnum = temp;
   bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (temp));
   FOR_EACH_EDGE (pred, ei, block->preds)
     {
@@ -3190,7 +3241,7 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  auto_vec<pre_expr> avail;
+  auto_vec<pre_expr, 2> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
@@ -3327,10 +3378,11 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
 	      gimple_stmt_iterator gsi = gsi_after_labels (block);
 	      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
 
-	      VN_INFO (temp)->value_id = val;
-	      VN_INFO (temp)->valnum = vn_valnum_from_value_id (val);
-	      if (VN_INFO (temp)->valnum == NULL_TREE)
-		VN_INFO (temp)->valnum = temp;
+	      vn_ssa_aux_t vn_info = VN_INFO (temp);
+	      vn_info->value_id = val;
+	      vn_info->valnum = vn_valnum_from_value_id (val);
+	      if (vn_info->valnum == NULL_TREE)
+		vn_info->valnum = temp;
 	      bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (temp));
 	      pre_expr newe = get_or_alloc_expr_for_name (temp);
 	      add_to_value (val, newe);
@@ -3357,7 +3409,7 @@ do_pre_partial_partial_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  auto_vec<pre_expr> avail;
+  auto_vec<pre_expr, 2> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (PA_IN (block));
@@ -3646,6 +3698,18 @@ insert (void)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
 
       changed = false;
+      /* Insert expressions for hoisting.  Do a backward walk here since
+	 inserting into BLOCK exposes new opportunities in its predecessors.
+	 Since PRE and hoist insertions can cause back-to-back iteration
+	 limit that on the hoist side.  */
+      if (flag_code_hoisting
+	  && num_iterations <= param_max_pre_hoist_insert_iterations)
+	for (int idx = rpo_num - 1; idx >= 0; --idx)
+	  {
+	    basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
+	    if (EDGE_COUNT (block->succs) >= 2)
+	      changed |= do_hoist_insertion (block);
+	  }
       for (int idx = 0; idx < rpo_num; ++idx)
 	{
 	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
@@ -3680,10 +3744,6 @@ insert (void)
 		  if (do_partial_partial)
 		    changed |= do_pre_partial_partial_insertion (block, dom);
 		}
-
-	      /* Insert expressions for hoisting.  */
-	      if (flag_code_hoisting && EDGE_COUNT (block->succs) >= 2)
-		changed |= do_hoist_insertion (block);
 	    }
 	}
 
@@ -3879,13 +3939,8 @@ compute_avail (void)
 		    || gimple_bb (SSA_NAME_DEF_STMT
 				    (gimple_vuse (stmt))) != block)
 		  {
-		    result = pre_expr_pool.allocate ();
-		    result->kind = REFERENCE;
-		    result->id = 0;
-		    result->loc = gimple_location (stmt);
-		    PRE_EXPR_REFERENCE (result) = ref;
-
-		    get_or_alloc_expression_id (result);
+		    result = get_or_alloc_expr_for_reference
+			       (ref, gimple_location (stmt));
 		    add_to_value (get_expr_value_id (result), result);
 		    bitmap_value_insert_into_set (EXP_GEN (block), result);
 		  }
@@ -3920,11 +3975,8 @@ compute_avail (void)
 			  && vn_nary_may_trap (nary))
 			continue;
 
-		      result = pre_expr_pool.allocate ();
-		      result->kind = NARY;
-		      result->id = 0;
-		      result->loc = gimple_location (stmt);
-		      PRE_EXPR_NARY (result) = nary;
+		      result = get_or_alloc_expr_for_nary
+				 (nary, gimple_location (stmt));
 		      break;
 		    }
 
@@ -3953,7 +4005,10 @@ compute_avail (void)
 			 adding the reference to EXP_GEN.  */
 		      if (BB_MAY_NOTRETURN (block)
 			  && vn_reference_may_trap (ref))
-			continue;
+			{
+			  operands.release ();
+			  continue;
+			}
 
 		      /* If the value of the reference is not invalidated in
 			 this block until it is computed, add the expression
@@ -4042,11 +4097,8 @@ compute_avail (void)
 			}
 		      operands.release ();
 
-		      result = pre_expr_pool.allocate ();
-		      result->kind = REFERENCE;
-		      result->id = 0;
-		      result->loc = gimple_location (stmt);
-		      PRE_EXPR_REFERENCE (result) = ref;
+		      result = get_or_alloc_expr_for_reference
+				 (ref, gimple_location (stmt));
 		      break;
 		    }
 
@@ -4054,7 +4106,6 @@ compute_avail (void)
 		    continue;
 		  }
 
-		get_or_alloc_expression_id (result);
 		add_to_value (get_expr_value_id (result), result);
 		bitmap_value_insert_into_set (EXP_GEN (block), result);
 		continue;
@@ -4100,7 +4151,9 @@ init_pre (void)
   expressions.create (0);
   expressions.safe_push (NULL);
   value_expressions.create (get_max_value_id () + 1);
-  value_expressions.safe_grow_cleared (get_max_value_id () + 1, true);
+  value_expressions.quick_grow_cleared (get_max_value_id () + 1);
+  constant_value_expressions.create (get_max_constant_value_id () + 1);
+  constant_value_expressions.quick_grow_cleared (get_max_constant_value_id () + 1);
   name_to_id.create (0);
 
   inserted_exprs = BITMAP_ALLOC (NULL);
@@ -4113,7 +4166,6 @@ init_pre (void)
   calculate_dominance_info (CDI_DOMINATORS);
 
   bitmap_obstack_initialize (&grand_bitmap_obstack);
-  phi_translate_table = new hash_table<expr_pred_trans_d> (5110);
   expression_to_id = new hash_table<pre_expr_d> (num_ssa_names * 3);
   FOR_ALL_BB_FN (bb, cfun)
     {
@@ -4121,6 +4173,7 @@ init_pre (void)
       PHI_GEN (bb) = bitmap_set_new ();
       TMP_GEN (bb) = bitmap_set_new ();
       AVAIL_OUT (bb) = bitmap_set_new ();
+      PHI_TRANS_TABLE (bb) = NULL;
     }
 }
 
@@ -4131,17 +4184,20 @@ static void
 fini_pre ()
 {
   value_expressions.release ();
+  constant_value_expressions.release ();
   expressions.release ();
   BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
   bitmap_set_pool.release ();
   pre_expr_pool.release ();
-  delete phi_translate_table;
-  phi_translate_table = NULL;
   delete expression_to_id;
   expression_to_id = NULL;
   name_to_id.release ();
 
+  basic_block bb;
+  FOR_ALL_BB_FN (bb, cfun)
+    if (bb->aux && PHI_TRANS_TABLE (bb))
+      delete PHI_TRANS_TABLE (bb);
   free_aux_for_blocks ();
 }
 

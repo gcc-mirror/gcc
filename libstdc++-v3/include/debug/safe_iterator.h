@@ -170,7 +170,7 @@ namespace __gnu_debug
        * @brief Copy construction.
        */
       _Safe_iterator(const _Safe_iterator& __x) _GLIBCXX_NOEXCEPT
-      : _Iter_base(__x.base())
+      : _Iter_base(__x.base()), _Safe_base()
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// DR 408. Is vector<reverse_iterator<char*> > forbidden?

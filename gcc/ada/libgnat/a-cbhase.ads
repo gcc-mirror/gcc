@@ -36,7 +36,8 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Hash_Tables;
 with Ada.Containers.Helpers;
 private with Ada.Streams;
-private with Ada.Finalization; use Ada.Finalization;
+private with Ada.Finalization;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type is private;
@@ -58,7 +59,9 @@ is
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is tagged private
      with Constant_Indexing => Constant_Reference,
           Default_Iterator  => Iterate,
-          Iterator_Element  => Element_Type;
+          Iterator_Element  => Element_Type,
+          Aggregate         => (Empty       => Empty,
+                                Add_Unnamed => Include);
 
    pragma Preelaborable_Initialization (Set);
 
@@ -68,6 +71,8 @@ is
    Empty_Set : constant Set;
    --  Set objects declared without an initialization expression are
    --  initialized to the value Empty_Set.
+
+   function Empty (Capacity : Count_Type := 10) return Set;
 
    No_Element : constant Cursor;
    --  Cursor objects declared without an initialization expression are
@@ -498,7 +503,11 @@ private
      new Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is
-     new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+     new HT_Types.Hash_Table_Type (Capacity, Modulus)
+      with null record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Set);
 
    use HT_Types, HT_Types.Implementation;
    use Ada.Streams;
@@ -590,7 +599,7 @@ private
 
    No_Element : constant Cursor := (Container => null, Node => 0);
 
-   type Iterator is new Limited_Controlled and
+   type Iterator is new Ada.Finalization.Limited_Controlled and
      Set_Iterator_Interfaces.Forward_Iterator with
    record
       Container : Set_Access;

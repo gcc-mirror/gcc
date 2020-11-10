@@ -1,17 +1,18 @@
 /* Verify that overloaded built-ins for vec_extract() with short
-   inputs produce the right code for a P9 (LE) target.  */
+   inputs produce the right code for a P9 target.  */
 
-/* { dg-do compile { target { powerpc*-*-linux* && le } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2" } */
 
-// six tests total. Targeting P9 LE.
+// six tests total. Targeting P9.
 // p9 (le) variable offset: slwi, vextuhlx, extsh
 // p9 (le) const offset:  li, vextuhlx, extsh
 
 /* { dg-final { scan-assembler-times {\mslwi\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mli\M} 3 } } */
-/* { dg-final { scan-assembler-times "vextuhrx" 6 } } */
+/* { dg-final { scan-assembler-times "vextuhrx" 6 { target le } } } */
+/* { dg-final { scan-assembler-times "vextuhlx" 6 { target be } } } */
 /* { dg-final { scan-assembler-times {\mextsh\M} 2 } } */
 
 #include <altivec.h>

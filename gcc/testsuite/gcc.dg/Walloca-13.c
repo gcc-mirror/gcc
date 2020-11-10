@@ -8,5 +8,5 @@ void g (int *p, int *q)
 {
   __SIZE_TYPE__ n = (__SIZE_TYPE__)(p - q);
   if (n < 100)
-    f (__builtin_alloca (n)); // { dg-bogus "may be too large due to conversion" "" { xfail { *-*-* } } }
+    f (__builtin_alloca (n)); // { dg-bogus "may be too large" "" { xfail { *-*-* } } }
 }

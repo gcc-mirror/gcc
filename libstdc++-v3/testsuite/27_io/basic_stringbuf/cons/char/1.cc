@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.7.1.1  basic_stringbuf constructors  [lib.stringbuf.cons]
+// C++03 27.7.1.1  basic_stringbuf constructors  [lib.stringbuf.cons]
 
 #include <sstream>
 #include <testsuite_hooks.h>
@@ -30,8 +30,41 @@ void test01()
   VERIFY( sbuf.check_pointers() );
 }
 
-int main() 
+void test02()
+{
+  std::stringbuf sbuf;
+  VERIFY( sbuf.str().empty() );
+
+  std::stringbuf sbuf1(std::ios::in);
+  VERIFY( sbuf1.str().empty() );
+
+  const std::string str = "This is my boomstick!";
+
+  std::stringbuf sbuf2(str);
+  VERIFY( sbuf2.str() == str );
+
+  std::stringbuf sbuf3(str, std::ios::in);
+  VERIFY( sbuf3.str() == str );
+  VERIFY( sbuf3.sgetc() == str[0] );
+  VERIFY( sbuf3.sputc('X') == std::stringbuf::traits_type::eof() );
+
+  std::stringbuf sbuf4(str, std::ios::out);
+  VERIFY( sbuf4.str() == str );
+  VERIFY( sbuf4.sputc('Y') == 'Y' );
+  VERIFY( sbuf4.sgetc() == std::stringbuf::traits_type::eof() );
+
+#if __cplusplus >= 201103L
+  static_assert( ! std::is_convertible<std::ios::openmode, std::stringbuf>(),
+		  "stringbuf(ios::openmode) is explicit");
+
+  static_assert( ! std::is_convertible<const std::string&, std::stringbuf>(),
+		  "stringbuf(string, ios::openmode) is explicit");
+#endif
+}
+
+int main()
 {
   test01();
+  test02();
   return 0;
 }

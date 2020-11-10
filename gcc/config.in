@@ -719,10 +719,10 @@
 #endif
 
 
-/* Define if your assembler supports --gdwarf-4 even with compiler generated
-   .debug_line */
+/* Define if your assembler supports --gdwarf-4/--gdwarf-5 even with compiler
+   generated .debug_line. */
 #ifndef USED_FOR_TARGET
-#undef HAVE_AS_WORKING_DWARF_4_FLAG
+#undef HAVE_AS_WORKING_DWARF_N_FLAG
 #endif
 
 

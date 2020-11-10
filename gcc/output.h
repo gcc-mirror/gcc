@@ -523,7 +523,8 @@ extern GTY(()) bool in_cold_section_p;
 
 extern section *get_unnamed_section (unsigned int, void (*) (const void *),
 				     const void *);
-extern section *get_section (const char *, unsigned int, tree);
+extern section *get_section (const char *, unsigned int, tree,
+			     bool not_existing = false);
 extern section *get_named_section (tree, const char *, int);
 extern section *get_variable_section (tree, bool);
 extern void place_block_symbol (rtx);

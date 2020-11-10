@@ -2356,6 +2356,11 @@ Target provides @file{fenv.h} include file.
 Target supports @file{fenv.h} with all the standard IEEE exceptions
 and floating-point exceptions are raised by arithmetic operations.
 
+@item fenv_exceptions_dfp
+Target supports @file{fenv.h} with all the standard IEEE exceptions
+and floating-point exceptions are raised by arithmetic operations for
+decimal floating point.
+
 @item fileio
 Target offers such file I/O library functions as @code{fopen},
 @code{fclose}, @code{tmpnam}, and @code{remove}.  This is a link-time

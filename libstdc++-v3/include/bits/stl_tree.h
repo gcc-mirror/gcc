@@ -691,6 +691,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Rb_tree_impl(const _Rb_tree_impl& __x)
 	  : _Node_allocator(_Alloc_traits::_S_select_on_copy(__x))
 	  , _Base_key_compare(__x._M_key_compare)
+	  , _Rb_tree_header()
 	  { }
 
 #if __cplusplus < 201103L

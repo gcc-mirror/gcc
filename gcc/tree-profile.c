@@ -55,6 +55,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "stor-layout.h"
 #include "xregex.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "symtab-thunks.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
@@ -726,7 +729,7 @@ tree_profiling (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       bool thunk = false;
-      if (!gimple_has_body_p (node->decl) && !node->thunk.thunk_p)
+      if (!gimple_has_body_p (node->decl) && !node->thunk)
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
@@ -747,7 +750,7 @@ tree_profiling (void)
       if (!include_source_file_for_profile (file))
 	continue;
 
-      if (node->thunk.thunk_p)
+      if (node->thunk)
 	{
 	  /* We cannot expand variadic thunks to Gimple.  */
 	  if (stdarg_p (TREE_TYPE (node->decl)))
@@ -756,7 +759,7 @@ tree_profiling (void)
 	  /* When generate profile, expand thunk to gimple so it can be
 	     instrumented same way as other functions.  */
 	  if (profile_arc_flag)
-	    node->expand_thunk (false, true);
+	    expand_thunk (node, false, true);
 	  /* Read cgraph profile but keep function as thunk at profile-use
 	     time.  */
 	  else

@@ -78,7 +78,7 @@ is
          First, Last : Count_Type := 0;
          Length      : Count_Type := 0;
          Max_Length  : Count_Type := 0;
-         Elements    : Element_Array (1 .. Capacity) := (others => <>);
+         Elements    : Element_Array (1 .. Capacity);
       end record;
 
    end Implementation;

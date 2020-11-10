@@ -90,7 +90,8 @@ supergraph_call_edge (function *fun, gimple *stmt)
 /* supergraph's ctor.  Walk the callgraph, building supernodes for each
    CFG basic block, splitting the basic blocks at callsites.  Join
    together the supernodes with interprocedural and intraprocedural
-   superedges as appropriate.  */
+   superedges as appropriate.
+   Assign UIDs to the gimple stmts.  */
 
 supergraph::supergraph (logger *logger)
 {
@@ -98,8 +99,10 @@ supergraph::supergraph (logger *logger)
 
   LOG_FUNC (logger);
 
-  /* First pass: make supernodes.  */
+  /* First pass: make supernodes (and assign UIDs to the gimple stmts).  */
   {
+    unsigned next_uid = 0;
+
     /* Sort the cgraph_nodes?  */
     cgraph_node *node;
     FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
@@ -124,6 +127,7 @@ supergraph::supergraph (logger *logger)
 	    {
 	      gimple *stmt = gsi_stmt (gpi);
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
+	      stmt->uid = next_uid++;
 	    }
 
 	  /* Append statements from BB to the current supernode, splitting
@@ -135,6 +139,7 @@ supergraph::supergraph (logger *logger)
 	      gimple *stmt = gsi_stmt (gsi);
 	      node_for_stmts->m_stmts.safe_push (stmt);
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
+	      stmt->uid = next_uid++;
 	      if (cgraph_edge *edge = supergraph_call_edge (fun, stmt))
 		{
 		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);

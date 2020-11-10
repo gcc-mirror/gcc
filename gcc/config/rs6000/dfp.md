@@ -273,6 +273,28 @@
   "denbcd<q> %1,%0,%2"
   [(set_attr "type" "dfp")])
 
+(define_insn "dfp_denbcd_v16qi_inst"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
+	(unspec:TD [(match_operand:QI 1 "const_0_to_1_operand" "i")
+		    (match_operand:V16QI 2 "register_operand" "d")]
+		   UNSPEC_DENBCD))]
+  "TARGET_DFP"
+  "denbcdq %1,%0,%2"
+  [(set_attr "type" "dfp")])
+
+(define_expand "dfp_denbcd_v16qi"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
+	(unspec:TD [(match_operand:V16QI 1 "register_operand" "v")]
+		   UNSPEC_DENBCD))]
+  "TARGET_DFP"
+ {
+   // Move vs128 upper 64-bits and lower 64-bits to fp register pair
+   convert_move (operands[0], operands[1], true);
+   emit_insn (gen_dfp_denbcd_v16qi_inst (operands[0], GEN_INT(1),
+					 operands[0]));
+   DONE;
+ })
+
 (define_insn "dfp_dxex_<mode>"
   [(set (match_operand:DI 0 "gpc_reg_operand" "=d")
 	(unspec:DI [(match_operand:DDTD 1 "gpc_reg_operand" "d")]

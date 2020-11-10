@@ -30,7 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Calendar;               use Ada.Calendar;
-with Ada.Calendar.Formatting;    use Ada.Calendar.Formatting;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
 with Ada.Directories.Hierarchical_File_Names;
@@ -69,6 +68,15 @@ package body Ada.Directories is
    Max_Path : Integer;
    pragma Import (C, Max_Path, "__gnat_max_path_len");
    --  The maximum length of a path
+
+   function C_Modification_Time (N : System.Address) return Ada.Calendar.Time;
+   pragma Import (C, C_Modification_Time, "__gnat_file_time");
+   --  Get modification time for file with name referenced by N
+
+   Invalid_Time : constant Ada.Calendar.Time :=
+                    C_Modification_Time (System.Null_Address);
+   --  Result returned from C_Modification_Time call when routine unable to get
+   --  file modification time.
 
    type Search_Data is record
       Is_Valid      : Boolean := False;
@@ -991,14 +999,9 @@ package body Ada.Directories is
    -----------------------
 
    function Modification_Time (Name : String) return Time is
-      Date   : OS_Time;
-      Year   : Year_Type;
-      Month  : Month_Type;
-      Day    : Day_Type;
-      Hour   : Hour_Type;
-      Minute : Minute_Type;
-      Second : Second_Type;
 
+      Date   : Time;
+      C_Name : aliased String (1 .. Name'Length + 1);
    begin
       --  First, the invalid cases
 
@@ -1006,19 +1009,15 @@ package body Ada.Directories is
          raise Name_Error with '"' & Name & """ not a file or directory";
 
       else
-         Date := File_Time_Stamp (Name);
+         C_Name := Name & ASCII.NUL;
+         Date := C_Modification_Time (C_Name'Address);
 
-         --  Break down the time stamp into its constituents relative to GMT.
-         --  This version of Split does not recognize leap seconds or buffer
-         --  space for time zone processing.
+         if Date = Invalid_Time then
+            raise Use_Error with
+              "Unable to get modification time of the file """ & Name & '"';
+         end if;
 
-         GM_Split (Date, Year, Month, Day, Hour, Minute, Second);
-
-         --  The result must be in GMT. Ada.Calendar.
-         --  Formatting.Time_Of with default time zone of zero (0) is the
-         --  routine of choice.
-
-         return Time_Of (Year, Month, Day, Hour, Minute, Second, 0.0);
+         return Date;
       end if;
    end Modification_Time;
 

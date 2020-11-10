@@ -1,7 +1,6 @@
 /* PR tree-optimization/68671 */
 /* { dg-do run } */
 /* { dg-options " -O2 -fno-tree-dce" } */
-/* { dg-xfail-if "ptxas crashes" { nvptx-*-* } } */
 
 volatile int a = -1;
 volatile int b;

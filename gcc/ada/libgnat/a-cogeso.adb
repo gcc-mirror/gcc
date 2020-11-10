@@ -29,10 +29,8 @@
 
 --  This algorithm was adapted from GNAT.Heap_Sort (see g-heasor.ad[sb])
 
-with System;
-
 procedure Ada.Containers.Generic_Sort (First, Last : Index_Type'Base) is
-   type T is range System.Min_Int .. System.Max_Int;
+   subtype T is Long_Long_Integer;
 
    function To_Index (J : T) return Index_Type;
    pragma Inline (To_Index);

@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="appendix.porting.abi" xreflabel="abi">
 <?dbhtml filename="abi.html"?>
 
@@ -103,7 +103,7 @@ as to give distinct versions to the C++ interface.
 </para>
 
   <section xml:id="abi.versioning.goals"><info><title>Goals</title></info>
-    
+
 
 <para>Extending existing, stable ABIs. Versioning gives subsequent
 releases of library binaries the ability to add new symbols and add
@@ -126,7 +126,7 @@ compatible.
   </section>
 
   <section xml:id="abi.versioning.history"><info><title>History</title></info>
-    
+
 
 <para>
  How can this complexity be managed? What does C++ versioning mean?
@@ -600,7 +600,7 @@ compatible.
   </section>
 
   <section xml:id="abi.versioning.prereq"><info><title>Prerequisites</title></info>
-    
+
     <para>
       Minimum environment that supports a versioned ABI: A supported
       dynamic linker, a GNU linker of sufficient vintage to understand
@@ -624,7 +624,7 @@ compatible.
   </section>
 
   <section xml:id="abi.versioning.config"><info><title>Configuring</title></info>
-    
+
 
     <para>
       It turns out that most of the configure options that change
@@ -654,7 +654,7 @@ compatible.
   </section>
 
   <section xml:id="abi.versioning.active"><info><title>Checking Active</title></info>
-    
+
 
     <para>
       When the GNU C++ library is being built with symbol versioning
@@ -907,7 +907,7 @@ standard includes.</para>
 
 
   <section xml:id="abi.testing.single"><info><title>Single ABI Testing</title></info>
-    
+
 
     <para>
       Testing for GNU C++ ABI changes is composed of two distinct
@@ -1005,7 +1005,7 @@ us. We'd like to know about them!
 
   </section>
   <section xml:id="abi.testing.multi"><info><title>Multiple ABI Testing</title></info>
-    
+
 <para>
 A "C" application, dynamically linked to two shared libraries, liba,
 libb. The dependent library liba is a C++ shared library compiled with

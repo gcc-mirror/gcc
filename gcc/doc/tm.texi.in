@@ -7351,8 +7351,6 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_D_OS_VERSIONS
 
-@hook TARGET_D_CRITSEC_SIZE
-
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces
@@ -8110,6 +8108,8 @@ and the associated definitions of those functions.
 @hook TARGET_UPDATE_STACK_BOUNDARY
 
 @hook TARGET_GET_DRAP_RTX
+
+@hook TARGET_ZERO_CALL_USED_REGS
 
 @hook TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
 

@@ -1843,7 +1843,6 @@ process_options (void)
 
   if ((flag_sanitize & SANITIZE_KERNEL_ADDRESS)
       && (targetm.asan_shadow_offset == NULL
-	  && param_asan_stack
 	  && !asan_shadow_offset_set_p ()))
     {
       warning_at (UNKNOWN_LOCATION, 0,
@@ -2507,6 +2506,7 @@ toplev::finalize (void)
 
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();
+  symtab_thunks_cc_finalize ();
   dwarf2out_c_finalize ();
   gcse_c_finalize ();
   ipa_cp_c_finalize ();

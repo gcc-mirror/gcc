@@ -1617,7 +1617,7 @@ private
       Length : Count_Type := 0;
       First  : Count_Type := 0;
       Last   : Count_Type := 0;
-      Nodes  : Node_Array (1 .. Capacity) := (others => <>);
+      Nodes  : Node_Array (1 .. Capacity);
    end record;
 
    Empty_List : constant List := (0, others => <>);

@@ -616,7 +616,8 @@ struct norm_info : subst_info
 
   norm_info (tree in_decl, tsubst_flags_t complain)
     : subst_info (tf_warning_or_error | complain, in_decl),
-      context (make_context (in_decl))
+      context (make_context (in_decl)),
+      orig_decl (in_decl)
   {}
 
   bool generate_diagnostics() const
@@ -647,6 +648,12 @@ struct norm_info : subst_info
      for that check.  */
 
   tree context;
+
+  /* The declaration whose constraints we're normalizing.  The targets
+     of the parameter mapping of each atom will be in terms of the
+     template parameters of ORIG_DECL.  */
+
+  tree orig_decl = NULL_TREE;
 };
 
 static tree normalize_expression (tree, tree, norm_info);
@@ -686,7 +693,8 @@ normalize_concept_check (tree check, tree args, norm_info info)
     }
 
   /* Substitute through the arguments of the concept check. */
-  targs = tsubst_template_args (targs, args, info.complain, info.in_decl);
+  if (args)
+    targs = tsubst_template_args (targs, args, info.complain, info.in_decl);
   if (targs == error_mark_node)
     return error_mark_node;
 
@@ -709,6 +717,10 @@ normalize_concept_check (tree check, tree args, norm_info info)
   return normalize_expression (def, subst, info);
 }
 
+/* Used by normalize_atom to cache ATOMIC_CONSTRs.  */
+
+static GTY((deletable)) hash_table<atom_hasher> *atom_cache;
+
 /* The normal form of an atom depends on the expression. The normal
    form of a function call to a function concept is a check constraint
    for that concept. The normal form of a reference to a variable
@@ -728,7 +740,41 @@ normalize_atom (tree t, tree args, norm_info info)
   /* Build a new info object for the atom.  */
   tree ci = build_tree_list (t, info.context);
 
-  return build1 (ATOMIC_CONSTR, ci, map);
+  tree atom = build1 (ATOMIC_CONSTR, ci, map);
+  if (!info.generate_diagnostics ())
+    {
+      /* Cache the ATOMIC_CONSTRs that we return, so that sat_hasher::equal
+	 later can cheaply compare two atoms using just pointer equality.  */
+      if (!atom_cache)
+	atom_cache = hash_table<atom_hasher>::create_ggc (31);
+      tree *slot = atom_cache->find_slot (atom, INSERT);
+      if (*slot)
+	return *slot;
+
+      /* Find all template parameters used in the targets of the parameter
+	 mapping, and store a list of them in the TREE_TYPE of the mapping.
+	 This list will be used by sat_hasher to determine the subset of
+	 supplied template arguments that the satisfaction value of the atom
+	 depends on.  */
+      if (map)
+	{
+	  tree targets = make_tree_vec (list_length (map));
+	  int i = 0;
+	  for (tree node = map; node; node = TREE_CHAIN (node))
+	    {
+	      tree target = TREE_PURPOSE (node);
+	      TREE_VEC_ELT (targets, i++) = target;
+	    }
+	  tree ctx_parms = (info.orig_decl
+			    ? DECL_TEMPLATE_PARMS (info.orig_decl)
+			    : current_template_parms);
+	  tree target_parms = find_template_parameters (targets, ctx_parms);
+	  TREE_TYPE (map) = target_parms;
+	}
+
+      *slot = atom;
+    }
+  return atom;
 }
 
 /* Returns the normal form of an expression. */
@@ -758,20 +804,18 @@ normalize_expression (tree t, tree args, norm_info info)
 static GTY((deletable)) hash_map<tree,tree> *normalized_map;
 
 static tree
-get_normalized_constraints (tree t, tree args, norm_info info)
+get_normalized_constraints (tree t, norm_info info)
 {
   auto_timevar time (TV_CONSTRAINT_NORM);
-  return normalize_expression (t, args, info);
+  return normalize_expression (t, NULL_TREE, info);
 }
 
 /* Returns the normalized constraints from a constraint-info object
-   or NULL_TREE if the constraints are null. ARGS provide the initial
-   arguments for normalization and IN_DECL provides the declaration
-   to which the constraints belong.  */
+   or NULL_TREE if the constraints are null. IN_DECL provides the
+   declaration to which the constraints belong.  */
 
 static tree
-get_normalized_constraints_from_info (tree ci, tree args, tree in_decl,
-				      bool diag = false)
+get_normalized_constraints_from_info (tree ci, tree in_decl, bool diag = false)
 {
   if (ci == NULL_TREE)
     return NULL_TREE;
@@ -779,8 +823,7 @@ get_normalized_constraints_from_info (tree ci, tree args, tree in_decl,
   /* Substitution errors during normalization are fatal.  */
   ++processing_template_decl;
   norm_info info (in_decl, diag ? tf_norm : tf_none);
-  tree t = get_normalized_constraints (CI_ASSOCIATED_CONSTRAINTS (ci),
-				       args, info);
+  tree t = get_normalized_constraints (CI_ASSOCIATED_CONSTRAINTS (ci), info);
   --processing_template_decl;
 
   return t;
@@ -840,11 +883,17 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
     if (tree *p = hash_map_safe_get (normalized_map, tmpl))
       return *p;
 
-  push_nested_class_guard pncs (DECL_CONTEXT (d));
+  tree norm = NULL_TREE;
+  if (tree ci = get_constraints (decl))
+    {
+      push_nested_class_guard pncs (DECL_CONTEXT (d));
 
-  tree args = generic_targs_for (tmpl);
-  tree ci = get_constraints (decl);
-  tree norm = get_normalized_constraints_from_info (ci, args, tmpl, diag);
+      temp_override<tree> ovr (current_function_decl);
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	current_function_decl = decl;
+
+      norm = get_normalized_constraints_from_info (ci, tmpl, diag);
+    }
 
   if (!diag)
     hash_map_safe_put<hm_ggc> (normalized_map, tmpl, norm);
@@ -865,11 +914,10 @@ normalize_concept_definition (tree tmpl, bool diag = false)
   if (OVL_P (tmpl))
     tmpl = OVL_FIRST (tmpl);
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
-  tree args = generic_targs_for (tmpl);
   tree def = get_concept_definition (DECL_TEMPLATE_RESULT (tmpl));
   ++processing_template_decl;
   norm_info info (tmpl, diag ? tf_norm : tf_none);
-  tree norm = get_normalized_constraints (def, args, info);
+  tree norm = get_normalized_constraints (def, info);
   --processing_template_decl;
 
   if (!diag)
@@ -894,40 +942,18 @@ normalize_nontemplate_requirements (tree decl, bool diag = false)
   return get_normalized_constraints_from_decl (decl, diag);
 }
 
-/* Normalize an EXPR as a constraint using ARGS.  */
+/* Normalize an EXPR as a constraint.  */
 
 static tree
-normalize_constraint_expression (tree expr, tree args, bool diag = false)
+normalize_constraint_expression (tree expr, bool diag)
 {
   if (!expr || expr == error_mark_node)
     return expr;
   ++processing_template_decl;
   norm_info info (diag ? tf_norm : tf_none);
-  tree norm = get_normalized_constraints (expr, args, info);
+  tree norm = get_normalized_constraints (expr, info);
   --processing_template_decl;
   return norm;
-}
-
-/* Normalize an EXPR as a constraint.  */
-
-static tree
-normalize_constraint_expression (tree expr, bool diag = false)
-{
-  if (!expr || expr == error_mark_node)
-    return expr;
-
-  /* For concept checks, use the supplied template arguments as those used
-     for normalization. Otherwise, there are no template arguments.  */
-  tree args;
-  if (concept_check_p (expr))
-    {
-      tree id = unpack_concept_check (expr);
-      args = TREE_OPERAND (id, 1);
-    }
-  else
-    args = NULL_TREE;
-
-  return normalize_constraint_expression (expr, args, diag);
 }
 
 /* 17.4.1.2p2. Two constraints are identical if they are formed
@@ -1201,7 +1227,7 @@ set_constraints (tree t, tree ci)
 void
 remove_constraints (tree t)
 {
-  gcc_assert (DECL_P (t));
+  gcc_checking_assert (DECL_P (t));
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
@@ -1217,11 +1243,16 @@ maybe_substitute_reqs_for (tree reqs, const_tree decl_)
 {
   if (reqs == NULL_TREE)
     return NULL_TREE;
+
   tree decl = CONST_CAST_TREE (decl_);
   tree result = STRIP_TEMPLATE (decl);
-  if (DECL_FRIEND_P (result))
+
+  if (DECL_UNIQUE_FRIEND_P (result))
     {
-      tree tmpl = decl == result ? DECL_TI_TEMPLATE (result) : decl;
+      tree tmpl = decl;
+      if (TREE_CODE (decl) != TEMPLATE_DECL)
+	tmpl = DECL_TI_TEMPLATE (result);
+
       tree gargs = generic_targs_for (tmpl);
       processing_template_decl_sentinel s;
       if (uses_template_parms (gargs))
@@ -2273,6 +2304,16 @@ tsubst_parameter_mapping (tree map, tree args, subst_info info)
 	  new_arg = tsubst_template_arg (arg, args, complain, in_decl);
 	  if (TYPE_P (new_arg))
 	    new_arg = canonicalize_type_argument (new_arg, complain);
+	  if (TREE_CODE (new_arg) == TYPE_ARGUMENT_PACK)
+	    {
+	      tree pack_args = ARGUMENT_PACK_ARGS (new_arg);
+	      for (int i = 0; i < TREE_VEC_LENGTH (pack_args); i++)
+		{
+		  tree& pack_arg = TREE_VEC_ELT (pack_args, i);
+		  if (TYPE_P (pack_arg))
+		    pack_arg = canonicalize_type_argument (pack_arg, complain);
+		}
+	    }
 	}
       if (new_arg == error_mark_node)
 	return error_mark_node;
@@ -2305,15 +2346,68 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 {
   static hashval_t hash (sat_entry *e)
   {
-    hashval_t value = hash_atomic_constraint (e->constr);
-    return iterative_hash_template_arg (e->args, value);
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e->constr))
+      {
+	/* Atoms with instantiated mappings are built during satisfaction.
+	   They live only inside the sat_cache, and we build one to query
+	   the cache with each time we instantiate a mapping.  */
+	gcc_assert (!e->args);
+	return hash_atomic_constraint (e->constr);
+      }
+
+    /* Atoms with uninstantiated mappings are built during normalization.
+       Since normalize_atom caches the atoms it returns, we can assume
+       pointer-based identity for fast hashing and comparison.  Even if this
+       assumption is violated, that's okay, we'll just get a cache miss.  */
+    hashval_t value = htab_hash_pointer (e->constr);
+
+    if (tree map = ATOMIC_CONSTR_MAP (e->constr))
+      /* Only the parameters that are used in the targets of the mapping
+	 affect the satisfaction value of the atom.  So we consider only
+	 the arguments for these parameters, and ignore the rest.  */
+      for (tree target_parms = TREE_TYPE (map);
+	   target_parms;
+	   target_parms = TREE_CHAIN (target_parms))
+	{
+	  int level, index;
+	  tree parm = TREE_VALUE (target_parms);
+	  template_parm_level_and_index (parm, &level, &index);
+	  tree arg = TMPL_ARG (e->args, level, index);
+	  value = iterative_hash_template_arg (arg, value);
+	}
+    return value;
   }
 
   static bool equal (sat_entry *e1, sat_entry *e2)
   {
-    if (!atomic_constraints_identical_p (e1->constr, e2->constr))
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->constr)
+	!= ATOMIC_CONSTR_MAP_INSTANTIATED_P (e2->constr))
       return false;
-    return template_args_equal (e1->args, e2->args);
+
+    /* See sat_hasher::hash.  */
+    if (ATOMIC_CONSTR_MAP_INSTANTIATED_P (e1->constr))
+      {
+	gcc_assert (!e1->args && !e2->args);
+	return atomic_constraints_identical_p (e1->constr, e2->constr);
+      }
+
+    if (e1->constr != e2->constr)
+      return false;
+
+    if (tree map = ATOMIC_CONSTR_MAP (e1->constr))
+      for (tree target_parms = TREE_TYPE (map);
+	   target_parms;
+	   target_parms = TREE_CHAIN (target_parms))
+	{
+	  int level, index;
+	  tree parm = TREE_VALUE (target_parms);
+	  template_parm_level_and_index (parm, &level, &index);
+	  tree arg1 = TMPL_ARG (e1->args, level, index);
+	  tree arg2 = TMPL_ARG (e2->args, level, index);
+	  if (!template_args_equal (arg1, arg2))
+	    return false;
+	}
+    return true;
   }
 };
 
@@ -2346,15 +2440,6 @@ save_satisfaction (tree constr, tree args, tree result)
   sat_entry* entry = ggc_alloc<sat_entry> ();
   *entry = elt;
   *slot = entry;
-}
-
-void
-clear_satisfaction_cache ()
-{
-  if (sat_cache)
-    sat_cache->empty ();
-  if (decl_satisfied_cache)
-    decl_satisfied_cache->empty ();
 }
 
 /* A tool to help manage satisfaction caching in satisfy_constraint_r.
@@ -2613,6 +2698,18 @@ satisfy_atom (tree t, tree args, subst_info info)
       return cache.save (boolean_false_node);
     }
 
+  /* Now build a new atom using the instantiated mapping.  We use
+     this atom as a second key to the satisfaction cache, and we
+     also pass it to diagnose_atomic_constraint so that diagnostics
+     which refer to the atom display the instantiated mapping.  */
+  t = copy_node (t);
+  ATOMIC_CONSTR_MAP (t) = map;
+  gcc_assert (!ATOMIC_CONSTR_MAP_INSTANTIATED_P (t));
+  ATOMIC_CONSTR_MAP_INSTANTIATED_P (t) = true;
+  satisfaction_cache inst_cache (t, /*args=*/NULL_TREE, info.complain);
+  if (tree r = inst_cache.get ())
+    return cache.save (r);
+
   /* Rebuild the argument vector from the parameter mapping.  */
   args = get_mapped_args (map);
 
@@ -2625,19 +2722,19 @@ satisfy_atom (tree t, tree args, subst_info info)
 	 is not satisfied. Replay the substitution.  */
       if (info.noisy ())
 	tsubst_expr (expr, args, info.complain, info.in_decl, false);
-      return cache.save (boolean_false_node);
+      return cache.save (inst_cache.save (boolean_false_node));
     }
 
   /* [17.4.1.2] ... lvalue-to-rvalue conversion is performed as necessary,
      and EXPR shall be a constant expression of type bool.  */
   result = force_rvalue (result, info.complain);
   if (result == error_mark_node)
-    return cache.save (error_mark_node);
+    return cache.save (inst_cache.save (error_mark_node));
   if (!same_type_p (TREE_TYPE (result), boolean_type_node))
     {
       if (info.noisy ())
 	diagnose_atomic_constraint (t, map, result, info);
-      return cache.save (error_mark_node);
+      return cache.save (inst_cache.save (error_mark_node));
     }
 
   /* Compute the value of the constraint.  */
@@ -2654,7 +2751,7 @@ satisfy_atom (tree t, tree args, subst_info info)
   if (result == boolean_false_node && info.noisy ())
     diagnose_atomic_constraint (t, map, result, info);
 
-  return cache.save (result);
+  return cache.save (inst_cache.save (result));
 }
 
 /* Determine if the normalized constraint T is satisfied.
@@ -2992,9 +3089,7 @@ finish_compound_requirement (location_t loc, tree expr, tree type, bool noexcept
 tree
 finish_nested_requirement (location_t loc, tree expr)
 {
-  /* Currently open template headers have dummy arg vectors, so don't
-     pass into normalization.  */
-  tree norm = normalize_constraint_expression (expr, NULL_TREE, false);
+  tree norm = normalize_constraint_expression (expr, false);
 
   /* Build the constraint, saving its normalization as its type.  */
   tree r = build1 (NESTED_REQ, norm, expr);
@@ -3099,25 +3194,25 @@ subsumes_constraints (tree a, tree b)
   return subsumes (a, b);
 }
 
-/* Returns true when the constraints in CI (with arguments
-   ARGS) strictly subsume the associated constraints of TMPL.  */
+/* Returns true when the constraints in CI strictly subsume
+   the associated constraints of TMPL.  */
 
 bool
-strictly_subsumes (tree ci, tree args, tree tmpl)
+strictly_subsumes (tree ci, tree tmpl)
 {
-  tree n1 = get_normalized_constraints_from_info (ci, args, NULL_TREE);
+  tree n1 = get_normalized_constraints_from_info (ci, NULL_TREE);
   tree n2 = get_normalized_constraints_from_decl (tmpl);
 
   return subsumes (n1, n2) && !subsumes (n2, n1);
 }
 
-/* REturns true when the constraints in CI (with arguments ARGS) subsume
-   the associated constraints of TMPL.  */
+/* Returns true when the constraints in CI subsume the
+   associated constraints of TMPL.  */
 
 bool
-weakly_subsumes (tree ci, tree args, tree tmpl)
+weakly_subsumes (tree ci, tree tmpl)
 {
-  tree n1 = get_normalized_constraints_from_info (ci, args, NULL_TREE);
+  tree n1 = get_normalized_constraints_from_info (ci, NULL_TREE);
   tree n2 = get_normalized_constraints_from_decl (tmpl);
 
   return subsumes (n1, n2);
@@ -3496,14 +3591,11 @@ diagnose_atomic_constraint (tree t, tree map, tree result, subst_info info)
       diagnose_requires_expr (expr, map, info.in_decl);
       break;
     default:
-      tree a = copy_node (t);
-      ATOMIC_CONSTR_MAP (a) = map;
       if (!same_type_p (TREE_TYPE (result), boolean_type_node))
 	error_at (loc, "constraint %qE has type %qT, not %<bool%>",
-		  a, TREE_TYPE (result));
+		  t, TREE_TYPE (result));
       else
-	inform (loc, "the expression %qE evaluated to %<false%>", a);
-      ggc_free (a);
+	inform (loc, "the expression %qE evaluated to %<false%>", t);
     }
 }
 

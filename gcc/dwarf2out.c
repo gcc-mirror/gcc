@@ -5974,6 +5974,7 @@ maybe_create_die_with_external_ref (tree decl)
 
   const char *sym = desc->sym;
   unsigned HOST_WIDE_INT off = desc->off;
+  external_die_map->remove (decl);
 
   in_lto_p = false;
   dw_die_ref die = (TREE_CODE (decl) == BLOCK
@@ -11884,7 +11885,7 @@ asm_outputs_debug_line_str (void)
     return true;
   else
     {
-#if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+#if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_N_FLAG)
       return !dwarf_split_debug_info && dwarf_version >= 5;
 #else
       return false;
@@ -12854,7 +12855,7 @@ base_type_die (tree type, bool reverse)
       if ((dwarf_version >= 4 || !dwarf_strict)
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && DECL_IS_BUILTIN (TYPE_NAME (type))
+	  && DECL_IS_UNDECLARED_BUILTIN (TYPE_NAME (type))
 	  && DECL_NAME (TYPE_NAME (type)))
 	{
 	  const char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
@@ -21292,7 +21293,16 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
      here.  */
 
   if (origin_die)
-    add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
+    {
+      dw_attr_node *a;
+      /* Like above, if we already created a concrete instance DIE
+	 do not use that for the abstract origin but the early DIE
+	 if present.  */
+      if (in_lto_p
+	  && (a = get_AT (origin_die, DW_AT_abstract_origin)))
+	origin_die = AT_ref (a);
+      add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
+    }
 }
 
 /* We do not currently support the pure_virtual attribute.  */
@@ -26036,7 +26046,7 @@ is_naming_typedef_decl (const_tree decl)
       || TREE_CODE (decl) != TYPE_DECL
       || DECL_NAMELESS (decl)
       || !is_tagged_type (TREE_TYPE (decl))
-      || DECL_IS_BUILTIN (decl)
+      || DECL_IS_UNDECLARED_BUILTIN (decl)
       || is_redundant_typedef (decl)
       /* It looks like Ada produces TYPE_DECLs that are very similar
          to C++ naming typedefs but that have different
@@ -26948,7 +26958,7 @@ dwarf2out_decl (tree decl)
 
       /* Don't bother trying to generate any DIEs to represent any of the
 	 normal built-in types for the language we are compiling.  */
-      if (DECL_IS_BUILTIN (decl))
+      if (DECL_IS_UNDECLARED_BUILTIN (decl))
 	return;
 
       /* If we are in terse mode, don't generate any DIEs for types.  */

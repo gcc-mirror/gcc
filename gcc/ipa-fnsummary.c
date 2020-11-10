@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-into-ssa.h"
+#include "symtab-clones.h"
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
@@ -141,6 +142,11 @@ ipa_dump_hints (FILE *f, ipa_hints hints)
       hints &= ~INLINE_HINT_known_hot;
       fprintf (f, " known_hot");
     }
+  if (hints & INLINE_HINT_builtin_constant_p)
+    {
+      hints &= ~INLINE_HINT_builtin_constant_p;
+      fprintf (f, " builtin_constant_p");
+    }
   gcc_assert (!hints);
 }
 
@@ -162,8 +168,7 @@ ipa_fn_summary::account_size_time (int size, sreal time,
   bool found = false;
   int i;
   predicate nonconst_pred;
-  vec<size_time_entry, va_gc> *table = call
-	 			       ? call_size_time_table : size_time_table;
+  vec<size_time_entry> *table = call ? &call_size_time_table : &size_time_table;
 
   if (exec_pred == false)
     return;
@@ -175,13 +180,13 @@ ipa_fn_summary::account_size_time (int size, sreal time,
 
   /* We need to create initial empty unconditional clause, but otherwise
      we don't need to account empty times and sizes.  */
-  if (!size && time == 0 && table)
+  if (!size && time == 0 && table->length ())
     return;
 
   /* Only for calls we are unaccounting what we previously recorded.  */
   gcc_checking_assert (time >= 0 || call);
 
-  for (i = 0; vec_safe_iterate (table, i, &e); i++)
+  for (i = 0; table->iterate (i, &e); i++)
     if (e->exec_predicate == exec_pred
 	&& e->nonconst_predicate == nonconst_pred)
       {
@@ -221,9 +226,9 @@ ipa_fn_summary::account_size_time (int size, sreal time,
       new_entry.exec_predicate = exec_pred;
       new_entry.nonconst_predicate = nonconst_pred;
       if (call)
-        vec_safe_push (call_size_time_table, new_entry);
+	call_size_time_table.safe_push (new_entry);
       else
-        vec_safe_push (size_time_table, new_entry);
+	size_time_table.safe_push (new_entry);
     }
   else
     {
@@ -694,7 +699,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	       }
 	  }
 	else
-	  gcc_assert (!count || callee->thunk.thunk_p);
+	  gcc_assert (!count || callee->thunk);
     }
   else if (e->call_stmt && !e->call_stmt_cannot_inline_p && info->conds)
     {
@@ -747,10 +752,10 @@ ipa_fn_summary::~ipa_fn_summary ()
   for (unsigned i = 0; i < len; i++)
     edge_predicate_pool.remove ((*loop_strides)[i].predicate);
   vec_free (conds);
-  vec_free (size_time_table);
-  vec_free (call_size_time_table);
+  call_size_time_table.release ();
   vec_free (loop_iterations);
   vec_free (loop_strides);
+  builtin_constant_p_parms.release ();
 }
 
 void
@@ -797,19 +802,19 @@ remap_freqcounting_preds_after_dup (vec<ipa_freqcounting_predicate, va_gc> *v,
 void
 ipa_fn_summary_t::duplicate (cgraph_node *src,
 			     cgraph_node *dst,
-			     ipa_fn_summary *,
+			     ipa_fn_summary *src_info,
 			     ipa_fn_summary *info)
 {
-  new (info) ipa_fn_summary (*ipa_fn_summaries->get (src));
+  new (info) ipa_fn_summary (*src_info);
   /* TODO: as an optimization, we may avoid copying conditions
      that are known to be false or true.  */
   info->conds = vec_safe_copy (info->conds);
 
+  clone_info *cinfo = clone_info::get (dst);
   /* When there are any replacements in the function body, see if we can figure
      out that something was optimized out.  */
-  if (ipa_node_params_sum && dst->clone.tree_map)
+  if (ipa_node_params_sum && cinfo && cinfo->tree_map)
     {
-      vec<size_time_entry, va_gc> *entry = info->size_time_table;
       /* Use SRC parm info since it may not be copied yet.  */
       class ipa_node_params *parms_info = IPA_NODE_REF (src);
       ipa_auto_call_arg_values avals;
@@ -822,13 +827,13 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
       bool inlined_to_p = false;
       struct cgraph_edge *edge, *next;
 
-      info->size_time_table = 0;
+      info->size_time_table.release ();
       avals.m_known_vals.safe_grow_cleared (count, true);
       for (i = 0; i < count; i++)
 	{
 	  struct ipa_replace_map *r;
 
-	  for (j = 0; vec_safe_iterate (dst->clone.tree_map, j, &r); j++)
+	  for (j = 0; vec_safe_iterate (cinfo->tree_map, j, &r); j++)
 	    {
 	      if (r->parm_num == i)
 		{
@@ -851,7 +856,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
          to be false.
          TODO: as on optimization, we can also eliminate conditions known
          to be true.  */
-      for (i = 0; vec_safe_iterate (entry, i, &e); i++)
+      for (i = 0; src_info->size_time_table.iterate (i, &e); i++)
 	{
 	  predicate new_exec_pred;
 	  predicate new_nonconst_pred;
@@ -899,7 +904,8 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	  new_predicate = es->predicate->remap_after_duplication
 				 (possible_truths);
 	  if (new_predicate == false && *es->predicate != false)
-	    optimized_out_size += es->call_stmt_size * ipa_fn_summary::size_scale;
+	    optimized_out_size
+		 += es->call_stmt_size * ipa_fn_summary::size_scale;
 	  edge_set_predicate (edge, &new_predicate);
 	}
       info->loop_iterations
@@ -908,6 +914,15 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
       info->loop_strides
 	= remap_freqcounting_preds_after_dup (info->loop_strides,
 					      possible_truths);
+      if (info->builtin_constant_p_parms.length())
+	{
+	  vec <int, va_heap, vl_ptr> parms = info->builtin_constant_p_parms;
+	  int ip;
+	  info->builtin_constant_p_parms = vNULL;
+	  for (i = 0; parms.iterate (i, &ip); i++)
+	    if (!avals.m_known_vals[ip])
+	      info->builtin_constant_p_parms.safe_push (ip);
+	}
 
       /* If inliner or someone after inliner will ever start producing
          non-trivial clones, we will get trouble with lack of information
@@ -917,9 +932,12 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
     }
   else
     {
-      info->size_time_table = vec_safe_copy (info->size_time_table);
-      info->loop_iterations = vec_safe_copy (info->loop_iterations);
+      info->size_time_table = src_info->size_time_table.copy ();
+      info->loop_iterations = vec_safe_copy (src_info->loop_iterations);
       info->loop_strides = vec_safe_copy (info->loop_strides);
+
+      info->builtin_constant_p_parms
+	     = info->builtin_constant_p_parms.copy ();
 
       ipa_freqcounting_predicate *f;
       for (int i = 0; vec_safe_iterate (info->loop_iterations, i, &f); i++)
@@ -1066,6 +1084,13 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	    fprintf (f, " inlinable");
 	  if (s->fp_expressions)
 	    fprintf (f, " fp_expression");
+	  if (s->builtin_constant_p_parms.length ())
+	    {
+	      fprintf (f, " builtin_constant_p_parms");
+	      for (unsigned int i = 0;
+		   i < s->builtin_constant_p_parms.length (); i++)
+		fprintf (f, " %i", s->builtin_constant_p_parms[i]);
+	    }
 	  fprintf (f, "\n  global time:     %f\n", s->time.to_double ());
 	  fprintf (f, "  self size:       %i\n", ss->self_size);
 	  fprintf (f, "  global size:     %i\n", ss->size);
@@ -1077,7 +1102,7 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	    fprintf (f, "  estimated growth:%i\n", (int) s->growth);
 	  if (s->scc_no)
 	    fprintf (f, "  In SCC:          %i\n", (int) s->scc_no);
-	  for (i = 0; vec_safe_iterate (s->size_time_table, i, &e); i++)
+	  for (i = 0; s->size_time_table.iterate (i, &e); i++)
 	    {
 	      fprintf (f, "    size:%f, time:%f",
 		       (double) e->size / ipa_fn_summary::size_scale,
@@ -1517,6 +1542,21 @@ fail:
   return false;
 }
 
+/* Record to SUMMARY that PARM is used by builtin_constant_p.  */
+
+static void
+add_builtin_constant_p_parm (class ipa_fn_summary *summary, int parm)
+{
+  int ip;
+
+  /* Avoid duplicates.  */
+  for (unsigned int i = 0;
+       summary->builtin_constant_p_parms.iterate (i, &ip); i++)
+    if (ip == parm)
+      return;
+  summary->builtin_constant_p_parms.safe_push (parm);
+}
+
 /* If BB ends by a conditional we can turn into predicates, attach corresponding
    predicates to the CFG edges.   */
 
@@ -1598,6 +1638,8 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   op2 = gimple_call_arg (set_stmt, 0);
   if (!decompose_param_expr (fbi, set_stmt, op2, &index, &param_type, &aggpos))
     return;
+  if (!aggpos.by_ref)
+    add_builtin_constant_p_parm (summary, index);
   FOR_EACH_EDGE (e, ei, bb->succs) if (e->flags & EDGE_FALSE_VALUE)
     {
       predicate p = add_condition (summary, params_summary, index,
@@ -1799,7 +1841,7 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	    }
 
 	  p_seg = add_condition (summary, params_summary, index,
-			 	 param_type, &aggpos, GT_EXPR,
+				 param_type, &aggpos, GT_EXPR,
 				 max, param_ops);
 	}
     }
@@ -2550,8 +2592,8 @@ analyze_function_body (struct cgraph_node *node, bool early)
   memset(&fbi, 0, sizeof(fbi));
   vec_free (info->conds);
   info->conds = NULL;
-  vec_free (info->size_time_table);
-  info->size_time_table = NULL;
+  info->size_time_table.release ();
+  info->call_size_time_table.release ();
 
   /* When optimizing and analyzing for IPA inliner, initialize loop optimizer
      so we can produce proper inline hints.
@@ -3008,12 +3050,12 @@ compute_fn_summary (struct cgraph_node *node, bool early)
   class ipa_size_summary *size_info = ipa_size_summaries->get_create (node);
 
   /* Estimate the stack size for the function if we're optimizing.  */
-  self_stack_size = optimize && !node->thunk.thunk_p
+  self_stack_size = optimize && !node->thunk
 		    ? estimated_stack_frame_size (node) : 0;
   size_info->estimated_self_stack_size = self_stack_size;
   info->estimated_stack_size = self_stack_size;
 
-  if (node->thunk.thunk_p)
+  if (node->thunk)
     {
       ipa_call_summary *es = ipa_call_summaries->get_create (node->callees);
       predicate t = true;
@@ -3329,7 +3371,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
   if (use_table)
     {
       /* Build summary if it is absent.  */
-      if (!sum->call_size_time_table)
+      if (!sum->call_size_time_table.length ())
 	{
 	  predicate true_pred = true;
 	  sum->account_size_time (0, 0, true_pred, true_pred, true);
@@ -3340,13 +3382,13 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
       sreal old_time = time ? *time : 0;
 
       if (min_size)
-	*min_size += (*sum->call_size_time_table)[0].size;
+	*min_size += sum->call_size_time_table[0].size;
 
       unsigned int i;
       size_time_entry *e;
 
       /* Walk the table and account sizes and times.  */
-      for (i = 0; vec_safe_iterate (sum->call_size_time_table, i, &e);
+      for (i = 0; sum->call_size_time_table.iterate (i, &e);
 	   i++)
 	if (e->exec_predicate.evaluate (possible_truths))
 	  {
@@ -3359,7 +3401,7 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
       if ((flag_checking || dump_file)
 	  /* Do not try to sanity check when we know we lost some
 	     precision.  */
-	  && sum->call_size_time_table->length ()
+	  && sum->call_size_time_table.length ()
 	     < ipa_fn_summary::max_size_time_table_size)
 	{
 	  estimate_calls_size_and_time_1 (node, &old_size, NULL, &old_time, NULL,
@@ -3649,8 +3691,8 @@ ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
 
   sreal nonspecialized_time = time;
 
-  min_size += (*info->size_time_table)[0].size;
-  for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
+  min_size += info->size_time_table[0].size;
+  for (i = 0; info->size_time_table.iterate (i, &e); i++)
     {
       bool exec = e->exec_predicate.evaluate (m_nonspec_possible_truths);
 
@@ -3696,8 +3738,8 @@ ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
 	  gcc_checking_assert (time >= 0);
         }
      }
-  gcc_checking_assert ((*info->size_time_table)[0].exec_predicate == true);
-  gcc_checking_assert ((*info->size_time_table)[0].nonconst_predicate == true);
+  gcc_checking_assert (info->size_time_table[0].exec_predicate == true);
+  gcc_checking_assert (info->size_time_table[0].nonconst_predicate == true);
   gcc_checking_assert (min_size >= 0);
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
@@ -3717,6 +3759,9 @@ ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
 	hints |= INLINE_HINT_in_scc;
       if (DECL_DECLARED_INLINE_P (m_node->decl))
 	hints |= INLINE_HINT_declared_inline;
+      if (info->builtin_constant_p_parms.length ()
+	  && DECL_DECLARED_INLINE_P (m_node->decl))
+	hints |= INLINE_HINT_builtin_constant_p;
 
       ipa_freqcounting_predicate *fcp;
       for (i = 0; vec_safe_iterate (info->loop_iterations, i, &fcp); i++)
@@ -3896,7 +3941,7 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 		      class ipa_node_params *params_summary,
 		      class ipa_fn_summary *callee_info,
 		      vec<int> operand_map,
-		      vec<int> offset_map,
+		      vec<HOST_WIDE_INT> offset_map,
 		      clause_t possible_truths,
 		      predicate *toplev_predicate)
 {
@@ -3957,7 +4002,7 @@ remap_freqcounting_predicate (class ipa_fn_summary *info,
 			      class ipa_fn_summary *callee_info,
 			      vec<ipa_freqcounting_predicate, va_gc> *v,
 			      vec<int> operand_map,
-			      vec<int> offset_map,
+			      vec<HOST_WIDE_INT> offset_map,
 			      clause_t possible_truths,
 			      predicate *toplev_predicate)
 
@@ -3987,7 +4032,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   clause_t clause = 0;	/* not_inline is known to be false.  */
   size_time_entry *e;
   auto_vec<int, 8> operand_map;
-  auto_vec<int, 8> offset_map;
+  auto_vec<HOST_WIDE_INT, 8> offset_map;
   int i;
   predicate toplev_predicate;
   class ipa_call_summary *es = ipa_call_summaries->get (edge);
@@ -4044,9 +4089,14 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
 	  operand_map[i] = map;
 	  gcc_assert (map < ipa_get_param_count (params_summary));
 	}
+
+      int ip;
+      for (i = 0; callee_info->builtin_constant_p_parms.iterate (i, &ip); i++)
+	if (ip < count && operand_map[ip] >= 0)
+	  add_builtin_constant_p_parm (info, operand_map[ip]);
     }
-  sreal freq =  edge->sreal_frequency ();
-  for (i = 0; vec_safe_iterate (callee_info->size_time_table, i, &e); i++)
+  sreal freq = edge->sreal_frequency ();
+  for (i = 0; callee_info->size_time_table.iterate (i, &e); i++)
     {
       predicate p;
       p = e->exec_predicate.remap_after_inlining
@@ -4093,7 +4143,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
     info->estimated_stack_size = peak;
 
   inline_update_callee_summaries (edge->callee, es->loop_depth);
-  if (info->call_size_time_table)
+  if (info->call_size_time_table.length ())
     {
       int edge_size = 0;
       sreal edge_time = 0;
@@ -4128,14 +4178,14 @@ ipa_update_overall_fn_summary (struct cgraph_node *node, bool reset)
 
   size_info->size = 0;
   info->time = 0;
-  for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
+  for (i = 0; info->size_time_table.iterate (i, &e); i++)
     {
       size_info->size += e->size;
       info->time += e->time;
     }
-  info->min_size = (*info->size_time_table)[0].size;
+  info->min_size = info->size_time_table[0].size;
   if (reset)
-    vec_free (info->call_size_time_table);
+    info->call_size_time_table.release ();
   if (node->callees || node->indirect_calls)
     estimate_calls_size_and_time (node, &size_info->size, &info->min_size,
 				  &info->time, NULL,
@@ -4170,7 +4220,7 @@ inline_analyze_function (struct cgraph_node *node)
 
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function: %s\n", node->dump_name ());
-  if (opt_for_fn (node->decl, optimize) && !node->thunk.thunk_p)
+  if (opt_for_fn (node->decl, optimize) && !node->thunk)
     inline_indirect_intraprocedural_analysis (node);
   compute_fn_summary (node, false);
   if (!optimize)
@@ -4251,7 +4301,11 @@ read_ipa_call_summary (class lto_input_block *ib, struct cgraph_edge *e,
   if (es)
     edge_set_predicate (e, &p);
   length = streamer_read_uhwi (ib);
-  if (length && es && e->possibly_call_in_translation_unit_p ())
+  if (length && es
+      && (e->possibly_call_in_translation_unit_p ()
+	  /* Also stream in jump functions to builtins in hope that they
+	     will get fnspecs.  */
+	  || fndecl_built_in_p (e->callee->decl, BUILT_IN_NORMAL)))
     {
       es->param.safe_grow_cleared (length, true);
       for (i = 0; i < length; i++)
@@ -4399,9 +4453,9 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	    info->conds->quick_push (c);
 	}
       count2 = streamer_read_uhwi (&ib);
-      gcc_assert (!info || !info->size_time_table);
+      gcc_assert (!info || !info->size_time_table.length ());
       if (info && count2)
-        vec_safe_reserve_exact (info->size_time_table, count2);
+	info->size_time_table.reserve_exact (count2);
       for (j = 0; j < count2; j++)
 	{
 	  class size_time_entry e;
@@ -4412,7 +4466,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  e.nonconst_predicate.stream_in (&ib);
 
 	  if (info)
-	    info->size_time_table->quick_push (e);
+	    info->size_time_table.quick_push (e);
 	}
 
       count2 = streamer_read_uhwi (&ib);
@@ -4443,6 +4497,15 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	      vec_safe_push (info->loop_strides, fcp);
 	    }
 	}
+      count2 = streamer_read_uhwi (&ib);
+      if (info && count2)
+	info->builtin_constant_p_parms.reserve_exact (count2);
+      for (j = 0; j < count2; j++)
+	{
+	  int parm = streamer_read_uhwi (&ib);
+	  if (info)
+	    info->builtin_constant_p_parms.quick_push (parm);
+	}
       for (e = node->callees; e; e = e->next_callee)
 	read_ipa_call_summary (&ib, e, info != NULL);
       for (e = node->indirect_calls; e; e = e->next_callee)
@@ -4466,6 +4529,7 @@ ipa_fn_summary_read (void)
   struct lto_file_decl_data *file_data;
   unsigned int j = 0;
 
+  ipa_prop_read_jump_functions ();
   ipa_fn_summary_alloc ();
 
   while ((file_data = file_data_vec[j++]))
@@ -4484,8 +4548,6 @@ ipa_fn_summary_read (void)
 		     "ipa inline summary is missing in input file");
     }
   ipa_register_cgraph_hooks ();
-  if (!flag_ipa_cp)
-    ipa_prop_read_jump_functions ();
 
   gcc_assert (ipa_fn_summaries);
   ipa_fn_summaries->enable_insertion_hook ();
@@ -4597,8 +4659,8 @@ ipa_fn_summary_write (void)
 		    }
 		}
 	    }
-	  streamer_write_uhwi (ob, vec_safe_length (info->size_time_table));
-	  for (i = 0; vec_safe_iterate (info->size_time_table, i, &e); i++)
+	  streamer_write_uhwi (ob, info->size_time_table.length ());
+	  for (i = 0; info->size_time_table.iterate (i, &e); i++)
 	    {
 	      streamer_write_uhwi (ob, e->size);
 	      e->time.stream_out (ob);
@@ -4618,6 +4680,11 @@ ipa_fn_summary_write (void)
 	      fcp->predicate->stream_out (ob);
 	      fcp->freq.stream_out (ob);
 	    }
+	  streamer_write_uhwi (ob, info->builtin_constant_p_parms.length ());
+	  int ip;
+	  for (i = 0; info->builtin_constant_p_parms.iterate (i, &ip);
+	       i++)
+	    streamer_write_uhwi (ob, ip);
 	  for (edge = cnode->callees; edge; edge = edge->next_callee)
 	    write_ipa_call_summary (ob, edge);
 	  for (edge = cnode->indirect_calls; edge; edge = edge->next_callee)
@@ -4628,8 +4695,7 @@ ipa_fn_summary_write (void)
   produce_asm (ob, NULL);
   destroy_output_block (ob);
 
-  if (!flag_ipa_cp)
-    ipa_prop_write_jump_functions ();
+  ipa_prop_write_jump_functions ();
 }
 
 

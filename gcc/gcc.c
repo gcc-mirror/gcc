@@ -416,6 +416,7 @@ static void try_generate_repro (const char **argv);
 static const char *getenv_spec_function (int, const char **);
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
+static const char *if_exists_then_else_spec_function (int, const char **);
 static const char *sanitize_spec_function (int, const char **);
 static const char *replace_outfile_spec_function (int, const char **);
 static const char *remove_outfile_spec_function (int, const char **);
@@ -879,7 +880,7 @@ proper position among the other output files.  */
 /* Define ASM_DEBUG_SPEC to be a spec suitable for translating '-g'
    to the assembler, when compiling assembly sources only.  */
 #ifndef ASM_DEBUG_SPEC
-# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_N_FLAG)
 /* If --gdwarf-N is supported and as can handle even compiler generated
    .debug_line with it, supply --gdwarf-N in ASM_DEBUG_OPTION_SPEC rather
    than in ASM_DEBUG_SPEC, so that it applies to both .s and .c etc.
@@ -920,7 +921,7 @@ proper position among the other output files.  */
 /* Define ASM_DEBUG_OPTION_SPEC to be a spec suitable for translating '-g'
    to the assembler when compiling all sources.  */
 #ifndef ASM_DEBUG_OPTION_SPEC
-# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_4_FLAG)
+# if defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && defined(HAVE_AS_WORKING_DWARF_N_FLAG)
 #  define ASM_DEBUG_OPTION_DWARF_OPT					\
 	"%{%:dwarf-version-gt(4):--gdwarf-5 ;"				\
 	"%:dwarf-version-gt(3):--gdwarf-4 ;"				\
@@ -1723,6 +1724,7 @@ static const struct spec_function static_spec_functions[] =
   { "getenv",                   getenv_spec_function },
   { "if-exists",		if_exists_spec_function },
   { "if-exists-else",		if_exists_else_spec_function },
+  { "if-exists-then-else",	if_exists_then_else_spec_function },
   { "sanitize",			sanitize_spec_function },
   { "replace-outfile",		replace_outfile_spec_function },
   { "remove-outfile",		remove_outfile_spec_function },
@@ -10085,6 +10087,29 @@ if_exists_else_spec_function (int argc, const char **argv)
     return argv[0];
 
   return argv[1];
+}
+
+/* if-exists-then-else built-in spec function.
+
+   Checks to see if the file specified by the absolute pathname in
+   the first arg exists.  Returns the second arg if so, otherwise returns
+   the third arg if it is present.  */
+
+static const char *
+if_exists_then_else_spec_function (int argc, const char **argv)
+{
+
+  /* Must have two or three arguments.  */
+  if (argc != 2 && argc != 3)
+    return NULL;
+
+  if (IS_ABSOLUTE_PATH (argv[0]) && ! access (argv[0], R_OK))
+    return argv[1];
+
+  if (argc == 3)
+    return argv[2];
+
+  return NULL;
 }
 
 /* sanitize built-in spec function.

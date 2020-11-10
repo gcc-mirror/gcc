@@ -30,7 +30,7 @@ test()
   const auto out7 = std::copy_backward(ca0.begin(), ca0.begin() + 8,
 				       ma0.begin() + 10);
 
-  return true;
+  return out7 == ma0.begin() + 2 && ma0[3] == 1;
 }
 
 static_assert(test());

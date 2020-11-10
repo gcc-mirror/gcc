@@ -456,6 +456,16 @@ s390_return_addr_from_memory ()
   return cfun_gpr_save_slot(RETURN_REGNUM) == SAVE_SLOT_STACK;
 }
 
+/* Return nonzero if it's OK to use fused multiply-add for MODE.  */
+bool
+s390_fma_allowed_p (machine_mode mode)
+{
+  if (TARGET_VXE && mode == TFmode)
+    return flag_vx_long_double_fma;
+
+  return true;
+}
+
 /* Indicate which ABI has been used for passing vector args.
    0 - no vector type arguments have been passed where the ABI is relevant
    1 - the old ABI has been used
@@ -1849,6 +1859,10 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
 {
   machine_mode mode = s390_select_ccmode (code, op0, op1);
   rtx cc;
+
+  /* Force OP1 into register in order to satisfy VXE TFmode patterns.  */
+  if (TARGET_VXE && GET_MODE (op1) == TFmode)
+    op1 = force_reg (TFmode, op1);
 
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
     {
@@ -5955,6 +5969,7 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   rtx temp;
   rtx len = gen_reg_rtx (QImode);
   rtx cond;
+  rtx mem;
 
   s390_load_address (str_addr_base_reg, XEXP (string, 0));
   emit_move_insn (str_idx_reg, const0_rtx);
@@ -5996,10 +6011,10 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   LABEL_NUSES (loop_start_label) = 1;
 
   /* Load 16 bytes of the string into VR.  */
-  emit_move_insn (str_reg,
-		  gen_rtx_MEM (V16QImode,
-			       gen_rtx_PLUS (Pmode, str_idx_reg,
-					     str_addr_base_reg)));
+  mem = gen_rtx_MEM (V16QImode,
+		     gen_rtx_PLUS (Pmode, str_idx_reg, str_addr_base_reg));
+  set_mem_align (mem, 128);
+  emit_move_insn (str_reg, mem);
   if (into_loop_label != NULL_RTX)
     {
       emit_label (into_loop_label);
@@ -6958,6 +6973,13 @@ s390_expand_vec_init (rtx target, rtx vals)
 extern rtx
 s390_build_signbit_mask (machine_mode mode)
 {
+  if (mode == TFmode && TARGET_VXE)
+    {
+      wide_int mask_val = wi::set_bit_in_zero (127, 128);
+      rtx mask = immed_wide_int_const (mask_val, TImode);
+      return gen_lowpart (TFmode, mask);
+    }
+
   /* Generate the integral element mask value.  */
   machine_mode inner_mode = GET_MODE_INNER (mode);
   int inner_bitsize = GET_MODE_BITSIZE (inner_mode);
@@ -7901,6 +7923,7 @@ print_operand_address (FILE *file, rtx addr)
 	 CONST_VECTOR: Generate a bitmask for vgbm instruction.
     'x': print integer X as if it's an unsigned halfword.
     'v': print register number as vector register (v1 instead of f1).
+    'V': print the second word of a TFmode operand as vector register.
 */
 
 void
@@ -8070,13 +8093,13 @@ print_operand (FILE *file, rtx x, int code)
     case REG:
       /* Print FP regs as fx instead of vx when they are accessed
 	 through non-vector mode.  */
-      if (code == 'v'
+      if ((code == 'v' || code == 'V')
 	  || VECTOR_NOFP_REG_P (x)
 	  || (FP_REG_P (x) && VECTOR_MODE_P (GET_MODE (x)))
 	  || (VECTOR_REG_P (x)
 	      && (GET_MODE_SIZE (GET_MODE (x)) /
 		  s390_class_max_nregs (FP_REGS, GET_MODE (x))) > 8))
-	fprintf (file, "%%v%s", reg_names[REGNO (x)] + 2);
+	fprintf (file, "%%v%s", reg_names[REGNO (x) + (code == 'V')] + 2);
       else
 	fprintf (file, "%s", reg_names[REGNO (x)]);
       break;
@@ -8620,10 +8643,9 @@ replace_constant_pool_ref (rtx_insn *insn, rtx ref, rtx offset)
 /* We keep a list of constants which we have to add to internal
    constant tables in the middle of large functions.  */
 
-#define NR_C_MODES 32
-machine_mode constant_modes[NR_C_MODES] =
+static machine_mode constant_modes[] =
 {
-  TFmode, TImode, TDmode,
+  TFmode, FPRX2mode, TImode, TDmode,
   V16QImode, V8HImode, V4SImode, V2DImode, V1TImode,
   V4SFmode, V2DFmode, V1TFmode,
   DFmode, DImode, DDmode,
@@ -8635,6 +8657,7 @@ machine_mode constant_modes[NR_C_MODES] =
   QImode,
   V1QImode
 };
+#define NR_C_MODES (sizeof (constant_modes) / sizeof (constant_modes[0]))
 
 struct constant
 {
@@ -8663,7 +8686,7 @@ static struct constant_pool *
 s390_alloc_pool (void)
 {
   struct constant_pool *pool;
-  int i;
+  size_t i;
 
   pool = (struct constant_pool *) xmalloc (sizeof *pool);
   pool->next = NULL;
@@ -8742,7 +8765,7 @@ static void
 s390_add_constant (struct constant_pool *pool, rtx val, machine_mode mode)
 {
   struct constant *c;
-  int i;
+  size_t i;
 
   for (i = 0; i < NR_C_MODES; i++)
     if (constant_modes[i] == mode)
@@ -8787,7 +8810,7 @@ s390_find_constant (struct constant_pool *pool, rtx val,
 		    machine_mode mode)
 {
   struct constant *c;
-  int i;
+  size_t i;
 
   for (i = 0; i < NR_C_MODES; i++)
     if (constant_modes[i] == mode)
@@ -8894,7 +8917,7 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
 {
   struct constant *c;
   rtx_insn *insn = pool->pool_insn;
-  int i;
+  size_t i;
 
   /* Switch to rodata section.  */
   insn = emit_insn_after (gen_pool_section_start (), insn);
@@ -8965,7 +8988,7 @@ static void
 s390_free_pool (struct constant_pool *pool)
 {
   struct constant *c, *next;
-  int i;
+  size_t i;
 
   for (i = 0; i < NR_C_MODES; i++)
     for (c = pool->constants[i]; c; c = next)
@@ -10375,9 +10398,16 @@ static bool
 s390_hard_regno_call_part_clobbered (unsigned int, unsigned int regno,
 				     machine_mode mode)
 {
+  /* For r12 we know that the only bits we actually care about are
+     preserved across function calls.  Since r12 is a fixed reg all
+     accesses to r12 are generated by the backend.
+
+     This workaround is necessary until gcse implements proper
+     tracking of partially clobbered registers.  */
   if (!TARGET_64BIT
       && TARGET_ZARCH
       && GET_MODE_SIZE (mode) > 4
+      && (!flag_pic || regno != PIC_OFFSET_TABLE_REGNUM)
       && ((regno >= 6 && regno <= 15) || regno == 32))
     return true;
 
@@ -10410,7 +10440,8 @@ s390_class_max_nregs (enum reg_class rclass, machine_mode mode)
 	 full VRs.  */
       if (TARGET_VX
 	  && SCALAR_FLOAT_MODE_P (mode)
-	  && GET_MODE_SIZE (mode) >= 16)
+	  && GET_MODE_SIZE (mode) >= 16
+	  && !(TARGET_VXE && mode == TFmode))
 	reg_pair_required_p = true;
 
       /* Even if complex types would fit into a single FPR/VR we force
@@ -10433,6 +10464,24 @@ s390_class_max_nregs (enum reg_class rclass, machine_mode mode)
   return (GET_MODE_SIZE (mode) + reg_size - 1) / reg_size;
 }
 
+/* Return nonzero if mode M describes a 128-bit float in a floating point
+   register pair.  */
+
+static bool
+s390_is_fpr128 (machine_mode m)
+{
+  return m == FPRX2mode || (!TARGET_VXE && m == TFmode);
+}
+
+/* Return nonzero if mode M describes a 128-bit float in a vector
+   register.  */
+
+static bool
+s390_is_vr128 (machine_mode m)
+{
+  return m == V1TFmode || (TARGET_VXE && m == TFmode);
+}
+
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
 static bool
@@ -10443,11 +10492,11 @@ s390_can_change_mode_class (machine_mode from_mode,
   machine_mode small_mode;
   machine_mode big_mode;
 
-  /* V1TF and TF have different representations in vector
-     registers.  */
+  /* 128-bit values have different representations in floating point and
+     vector registers.  */
   if (reg_classes_intersect_p (VEC_REGS, rclass)
-      && ((from_mode == V1TFmode && to_mode == TFmode)
-	  || (from_mode == TFmode && to_mode == V1TFmode)))
+      && ((s390_is_fpr128 (from_mode) && s390_is_vr128 (to_mode))
+	  || (s390_is_vr128 (from_mode) && s390_is_fpr128 (to_mode))))
     return false;
 
   if (GET_MODE_SIZE (from_mode) == GET_MODE_SIZE (to_mode))
@@ -15460,13 +15509,6 @@ s390_option_override_internal (struct gcc_options *opts,
   /* Use the alternative scheduling-pressure algorithm by default.  */
   SET_OPTION_IF_UNSET (opts, opts_set, param_sched_pressure_algorithm, 2);
   SET_OPTION_IF_UNSET (opts, opts_set, param_min_vect_loop_bound, 2);
-
-  /* Use aggressive inlining parameters.  */
-  if (opts->x_s390_tune >= PROCESSOR_2964_Z13)
-    {
-      SET_OPTION_IF_UNSET (opts, opts_set, param_inline_min_speedup, 2);
-      SET_OPTION_IF_UNSET (opts, opts_set, param_max_inline_insns_auto, 80);
-    }
 
   /* Set the default alignment.  */
   s390_default_align (opts);

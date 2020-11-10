@@ -896,13 +896,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  gnu_size = bitsize_unit_node;
 
 	/* If this is an object with no specified size and alignment, and
-	   if either it is atomic or we are not optimizing alignment for
+	   if either it is full access or we are not optimizing alignment for
 	   space and it is composite and not an exception, an Out parameter
 	   or a reference to another object, and the size of its type is a
 	   constant, set the alignment to the smallest one which is not
 	   smaller than the size, with an appropriate cap.  */
 	if (!gnu_size && align == 0
-	    && (Is_Atomic_Or_VFA (gnat_entity)
+	    && (Is_Full_Access (gnat_entity)
 		|| (!Optimize_Alignment_Space (gnat_entity)
 		    && kind != E_Exception
 		    && kind != E_Out_Parameter
@@ -1014,7 +1014,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Now check if the type of the object allows atomic access.  */
-	if (Is_Atomic_Or_VFA (gnat_entity))
+	if (Is_Full_Access (gnat_entity))
 	  check_ok_for_atomic_type (gnu_type, gnat_entity, false);
 
 	/* If this is a renaming, avoid as much as possible to create a new
@@ -2876,7 +2876,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		{
 		  const int quals
 		    = TYPE_QUAL_VOLATILE
-		      | (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+		      | (Is_Full_Access (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
 		  gnu_type = change_qualified_type (gnu_type, quals);
 		}
 	      /* Make it artificial only if the base type was artificial too.
@@ -4362,12 +4362,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			       gnat_entity);
 	    }
 	}
-      else if (Is_Atomic_Or_VFA (gnat_entity) && !gnu_size
+      else if (Is_Full_Access (gnat_entity) && !gnu_size
 	       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
 	       && integer_pow2p (TYPE_SIZE (gnu_type)))
 	align = MIN (BIGGEST_ALIGNMENT,
 		     tree_to_uhwi (TYPE_SIZE (gnu_type)));
-      else if (Is_Atomic_Or_VFA (gnat_entity) && gnu_size
+      else if (Is_Full_Access (gnat_entity) && gnu_size
 	       && tree_fits_uhwi_p (gnu_size)
 	       && integer_pow2p (gnu_size))
 	align = MIN (BIGGEST_ALIGNMENT, tree_to_uhwi (gnu_size));
@@ -4603,7 +4603,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    }
 
       /* Now check if the type allows atomic access.  */
-      if (Is_Atomic_Or_VFA (gnat_entity))
+      if (Is_Full_Access (gnat_entity))
 	check_ok_for_atomic_type (gnu_type, gnat_entity, false);
 
       /* If this is not an unconstrained array type, set some flags.  */
@@ -4721,7 +4721,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	{
 	  const int quals
 	    = TYPE_QUAL_VOLATILE
-	      | (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+	      | (Is_Full_Access (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
 	  gnu_type = change_qualified_type (gnu_type, quals);
 	}
 
@@ -5250,7 +5250,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
     }
 
   /* Now check if the type of the component allows atomic access.  */
-  if (Has_Atomic_Components (gnat_array) || Is_Atomic_Or_VFA (gnat_type))
+  if (Has_Atomic_Components (gnat_array) || Is_Full_Access (gnat_type))
     check_ok_for_atomic_type (gnu_type, gnat_array, true);
 
   /* If the component type is a padded type made for a non-bit-packed array
@@ -7105,9 +7105,9 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   const Entity_Id gnat_field_type = Etype (gnat_field);
   tree gnu_field_type = gnat_to_gnu_type (gnat_field_type);
   tree gnu_field_id = get_entity_name (gnat_field);
-  const bool is_atomic
-    = (Is_Atomic_Or_VFA (gnat_field) || Is_Atomic_Or_VFA (gnat_field_type));
   const bool is_aliased = Is_Aliased (gnat_field);
+  const bool is_full_access
+    = (Is_Full_Access (gnat_field) || Is_Full_Access (gnat_field_type));
   const bool is_independent
     = (Is_Independent (gnat_field) || Is_Independent (gnat_field_type));
   const bool is_volatile
@@ -7122,7 +7122,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
      only constraint is the implementation advice whereby only the bits of
      the components should be accessed if they both start and end on byte
      boundaries, but that should be guaranteed by the GCC memory model.
-     Note that we have some redundancies (is_atomic => is_independent,
+     Note that we have some redundancies (is_full_access => is_independent,
      is_aliased => is_independent and is_by_ref => is_strict_alignment)
      so the following formula is sufficient.  */
   const bool needs_strict_alignment = (is_independent || is_strict_alignment);
@@ -7131,10 +7131,16 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   bool is_bitfield;
 
   /* The qualifier to be used in messages.  */
-  if (is_atomic)
-    field_s = "atomic&";
-  else if (is_aliased)
+  if (is_aliased)
     field_s = "aliased&";
+  else if (is_full_access)
+    {
+      if (Is_Volatile_Full_Access (gnat_field)
+	  || Is_Volatile_Full_Access (gnat_field_type))
+	field_s = "volatile full access&";
+      else
+	field_s = "atomic&";
+    }
   else if (is_independent)
     field_s = "independent&";
   else if (is_by_ref)
@@ -7145,7 +7151,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     field_s = "&";
 
   /* The message to be used for incompatible size.  */
-  if (is_atomic || is_aliased)
+  if (is_aliased || is_full_access)
     size_s = "size for %s must be ^";
   else if (field_s)
     size_s = "size for %s too small{, minimum allowed is ^}";
@@ -7237,7 +7243,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     }
 
   /* Now check if the type of the field allows atomic access.  */
-  if (Is_Atomic_Or_VFA (gnat_field))
+  if (Is_Full_Access (gnat_field))
     {
       const unsigned int align
 	= promote_object_alignment (gnu_field_type, gnat_field);
@@ -7333,7 +7339,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	      /* If the size is lower than that of the type, or greater for
 		 atomic and aliased, then error out and reset the size.  */
 	      else if ((cmp = tree_int_cst_compare (gnu_size, type_size)) < 0
-		       || (cmp > 0 && (is_atomic || is_aliased)))
+		       || (cmp > 0 && (is_aliased || is_full_access)))
 		{
 		  char s[128];
 		  snprintf (s, sizeof (s), size_s, field_s);
@@ -9278,8 +9284,8 @@ promote_object_alignment (tree gnu_type, Entity_Id gnat_entity)
      the NRV optimization for it.  No point in jumping through all the hoops
      needed in order to support BIGGEST_ALIGNMENT if we don't really have to.
      So we cap to the smallest alignment that corresponds to a known efficient
-     memory access pattern, except for Atomic and Volatile_Full_Access.  */
-  if (Is_Atomic_Or_VFA (gnat_entity))
+     memory access pattern, except for a full access entity.  */
+  if (Is_Full_Access (gnat_entity))
     {
       size_cap = UINT_MAX;
       align_cap = BIGGEST_ALIGNMENT;

@@ -32,15 +32,15 @@
 --  Fixed point I/O
 --  ---------------
 
---  The following documents implementation details of the fixed point
---  input/output routines in the GNAT run time. The first part describes
---  general properties of fixed point types as defined by the Ada 95 standard,
+--  The following text documents implementation details of the fixed point
+--  input/output routines in the GNAT runtime. The first part describes the
+--  general properties of fixed point types as defined by the Ada standard,
 --  including the Information Systems Annex.
 
 --  Subsequently these are reduced to implementation constraints and the impact
---  of these constraints on a few possible approaches to I/O are given.
+--  of these constraints on a few possible approaches to input/output is given.
 --  Based on this analysis, a specific implementation is selected for use in
---  the GNAT run time. Finally, the chosen algorithm is analyzed numerically in
+--  the GNAT runtime. Finally, the chosen algorithm is analyzed numerically in
 --  order to provide user-level documentation on limits for range and precision
 --  of fixed point types as well as accuracy of input/output conversions.
 
@@ -48,24 +48,22 @@
 --  - General Properties of Fixed Point Types -
 --  -------------------------------------------
 
---  Operations on fixed point values, other than input and output, are not
---  important for the purposes of this document. Only the set of values that a
---  fixed point type can represent and the input and output operations are
---  significant.
+--  Operations on fixed point types, other than input/output, are not important
+--  for the purpose of this document. Only the set of values that a fixed point
+--  type can represent and the input/output operations are significant.
 
 --  Values
 --  ------
 
---  Set set of values of a fixed point type comprise the integral
---  multiples of a number called the small of the type. The small can
---  either be a power of ten, a power of two or (if the implementation
---  allows) an arbitrary strictly positive real value.
+--  The set of values of a fixed point type comprise the integral multiples of
+--  a number called the small of the type. The small can be either a power of
+--  two, a power of ten or (if the implementation allows) an arbitrary strictly
+--  positive real value.
 
---  Implementations need to support fixed-point types with a precision
---  of at least 24 bits, and (in order to comply with the Information
---  Systems Annex) decimal types need to support at least digits 18.
---  For the rest, however, no requirements exist for the minimal small
---  and range that need to be supported.
+--  Implementations need to support ordinary fixed point types with a precision
+--  of at least 24 bits, and (in order to comply with the Information Systems
+--  Annex) decimal fixed point types with at least 18 digits. For the rest, no
+--  requirements exist for the minimal small and range that must be supported.
 
 --  Operations
 --  ----------
@@ -112,27 +110,27 @@
 --  Implementation Strategies
 --  -------------------------
 
---  * Float arithmetic
+--  * Floating point arithmetic
 --  * Arbitrary-precision integer arithmetic
 --  * Fixed-precision integer arithmetic
 
---  Although it seems convenient to convert fixed point numbers to floating-
+--  Although it seems convenient to convert fixed point numbers to floating
 --  point and then print them, this leads to a number of restrictions.
 --  The first one is precision. The widest floating-point type generally
 --  available has 53 bits of mantissa. This means that Fine_Delta cannot
 --  be less than 2.0**(-53).
 
---  In GNAT, Fine_Delta is 2.0**(-63), and Duration for example is a
---  64-bit type. It would still be possible to use multi-precision
---  floating-point to perform calculations using longer mantissas,
---  but this is a much harder approach.
+--  In GNAT, Fine_Delta is 2.0**(-63), and Duration for example is a 64-bit
+--  type. This means that a floating-point type with 63 bits of mantissa needs
+--  to be used, which is only generally available on the x86 architecture. It
+--  would still be possible to use multi-precision floating point to perform
+--  calculations using longer mantissas, but this is a much harder approach.
 
---  The base conversions needed for input and output of (non-decimal)
---  fixed point types can be seen as pairs of integer multiplications
---  and divisions.
+--  The base conversions needed for input/output of (non-decimal) fixed point
+--  types can be seen as pairs of integer multiplications and divisions.
 
---  Arbitrary-precision integer arithmetic would be suitable for the job
---  at hand, but has the draw-back that it is very heavy implementation-wise.
+--  Arbitrary-precision integer arithmetic would be suitable for the job at
+--  hand, but has the drawback that it is very heavy implementation-wise.
 --  Especially in embedded systems, where fixed point types are often used,
 --  it may not be desirable to require large amounts of storage and time
 --  for fixed I/O operations.
@@ -141,21 +139,6 @@
 --  speed. For the most common fixed point types this would be a perfect
 --  solution. The downside however may be a too limited set of acceptable
 --  fixed point types.
-
---  Extra Precision
---  ---------------
-
---  Using a scaled divide which truncates and returns a remainder R,
---  another E trailing digits can be calculated by computing the value
---  (R * (10.0**E)) / Z using another scaled divide. This procedure
---  can be repeated to compute an arbitrary number of digits in linear
---  time and storage. The last scaled divide should be rounded, with
---  a possible carry propagating to the more significant digits, to
---  ensure correct rounding of the unit in the last place.
-
---  An extension of this technique is to limit the value of Q to 9 decimal
---  digits, since 32-bit integers can be much more efficient than 64-bit
---  integers to output.
 
 with Interfaces;                        use Interfaces;
 with System.Arith_64;                   use System.Arith_64;
@@ -181,7 +164,7 @@ package body Ada.Text_IO.Fixed_IO is
 
    --    Fore + Aft + Exp + Extra_Layout_Space
 
-   --  is always long enough for formatting any fixed point number
+   --  is always long enough for formatting any fixed point number.
 
    --  Implementation of Put routines
 
@@ -205,15 +188,15 @@ package body Ada.Text_IO.Fixed_IO is
    --  factor 10**E can be trivially handled during final output, by adjusting
    --  the decimal point or exponent.
 
-   --  Convert a value X * S of type T to a 64-bit integer value Q equal
-   --  to 10.0**D * (X * S) rounded to the nearest integer.
-   --  This conversion is a scaled integer divide of the form
+   --  The idea is to convert a value X * S of type T to a 64-bit integer value
+   --  Q equal to 10.0**D * (X * S) rounded to the nearest integer, using only
+   --  a scaled integer divide of the form
 
    --     Q := (X * Y) / Z,
 
-   --  where all variables are 64-bit signed integers using 2's complement,
-   --  and both the multiplication and division are done using full
-   --  intermediate precision. The final decimal value to be output is
+   --  where the variables X, Y, Z are 64-bit integers, and both multiplication
+   --  and division are done using full intermediate precision. Then the final
+   --  decimal value to be output is
 
    --     Q * 10**(E-D)
 
@@ -221,13 +204,12 @@ package body Ada.Text_IO.Fixed_IO is
    --  according to the format described in RM A.3.10. The details of this
    --  operation are omitted here.
 
-   --  A 64-bit value can contain all integers with 18 decimal digits, but
-   --  not all with 19 decimal digits. If the total number of requested output
-   --  digits (Fore - 1) + Aft is greater than 18, for purposes of the
-   --  conversion Aft is adjusted to 18 - (Fore - 1). In that case, or
-   --  when Fore > 19, trailing zeros can complete the output after writing
-   --  the first 18 significant digits, or the technique described in the
-   --  next section can be used.
+   --  A 64-bit value can represent all integers with 18 decimal digits, but
+   --  not all with 19 decimal digits. If the total number of requested ouput
+   --  digits (Fore - 1) + Aft is greater than 18 then, for purposes of the
+   --  conversion, Aft is adjusted to 18 - (Fore - 1). In that case, trailing
+   --  zeros can complete the output after writing the first 18 significant
+   --  digits, or the technique described in the next section can be used.
 
    --  The final expression for D is
 
@@ -235,15 +217,13 @@ package body Ada.Text_IO.Fixed_IO is
 
    --  For Y and Z the following expressions can be derived:
 
-   --     Q / (10.0**D) = X * S
-
    --     Q = X * S * (10.0**D) = (X * Y) / Z
 
    --     S * 10.0**D = Y / Z;
 
    --  If S is an integer greater than or equal to one, then Fore must be at
-   --  least 20 in order to print T'First, which is at most -2.0**63.
-   --  This means D < 0, so use
+   --  least 20 in order to print T'First, which is at most -2.0**63. This
+   --  means that D < 0, so use
 
    --    (1)   Y = -S and Z = -10**(-D)
 
@@ -253,7 +233,7 @@ package body Ada.Text_IO.Fixed_IO is
 
    --  or
 
-   --    (3)   Y = 1 and Z = (1.0 / S) * 10**(-D), for D < 0
+   --    (3)   Y = -1 and Z = -(1.0 / S) * 10**(-D), for D < 0
 
    --  Negative values are used for nominator Y and denominator Z, so that S
    --  can have a maximum value of 2.0**63 and a minimum of 2.0**(-63).
@@ -262,11 +242,23 @@ package body Ada.Text_IO.Fixed_IO is
    --  in the denominator for the extra decimal scaling required, so case (3)
    --  will not overflow.
 
+   --  Extra Precision
+
+   --  Using a scaled divide which truncates and returns a remainder R,
+   --  another K trailing digits can be calculated by computing the value
+   --  (R * (10.0**K)) / Z using another scaled divide. This procedure
+   --  can be repeated to compute an arbitrary number of digits in linear
+   --  time and storage. The last scaled divide should be rounded, with
+   --  a possible carry propagating to the more significant digits, to
+   --  ensure correct rounding of the unit in the last place.
+
+   --  A variant of this technique is to limit the value of Q to 9 decimal
+   --  digits, since 32-bit integers can be much more efficient than 64-bit
+   --  integers to output.
+
    pragma Assert (System.Fine_Delta >= 2.0**(-63));
-   pragma Assert (Num'Small in 2.0**(-63) .. 2.0**63);
+   pragma Assert (Num'Small in 2.0**(-80) .. 2.0**80);
    pragma Assert (Num'Fore <= 37);
-   --  These assertions need to be relaxed to allow for a Small of
-   --  2.0**(-64) at least, since there is an ACATS test for this ???
 
    Max_Digits : constant := 18;
    --  Maximum number of decimal digits that can be represented in a
@@ -277,9 +269,9 @@ package body Ada.Text_IO.Fixed_IO is
    --  decimal point.
 
    subtype Int is Integer;
-   E0 : constant Int := -(20 * Boolean'Pos (Num'Small >= 1.0E1));
-   E1 : constant Int := E0 + 10 * Boolean'Pos (Num'Small * 10.0**E0 < 1.0E-10);
-   E2 : constant Int := E1 +  5 * Boolean'Pos (Num'Small * 10.0**E1 < 1.0E-5);
+   E0 : constant Int := -(25 * Boolean'Pos (Num'Small >= 1.0E1));
+   E1 : constant Int := E0 + 13 * Boolean'Pos (Num'Small * 10.0**E0 < 1.0E-13);
+   E2 : constant Int := E1 +  6 * Boolean'Pos (Num'Small * 10.0**E1 < 1.0E-6);
    E3 : constant Int := E2 +  3 * Boolean'Pos (Num'Small * 10.0**E2 < 1.0E-3);
    E4 : constant Int := E3 +  2 * Boolean'Pos (Num'Small * 10.0**E3 < 1.0E-1);
    E5 : constant Int := E4 +  1 * Boolean'Pos (Num'Small * 10.0**E4 < 1.0E-0);
@@ -290,10 +282,12 @@ package body Ada.Text_IO.Fixed_IO is
                    and then Num'Small * 10.0**Scale < 10.0);
 
    Exact : constant Boolean :=
-     Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
-       or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
-       or else Num'Small >= 10.0**Max_Digits;
-   --  True iff a numerator and denominator can be calculated such that
+     (Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
+        or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
+        or else Num'Small >= 10.0**Max_Digits)
+     and then Num'Small >= 2.0**(-63)
+     and then Num'Small <= 2.0**63;
+   --  True iff a 64-bit numerator and denominator can be calculated such that
    --  their ratio exactly represents the small of Num.
 
    procedure Put
@@ -565,9 +559,9 @@ package body Ada.Text_IO.Fixed_IO is
 
          Q  : array (0 .. N - 1) of Int64 := (others => 0);
          --  Each element of Q has Max_Digits decimal digits, except the
-         --  last, which has eAA rem Max_Digits. Only Q (Q'First) may have an
+         --  last, which has AA rem Max_Digits. Only Q (Q'First) may have an
          --  absolute value equal to or larger than 10**Max_Digits. Only the
-         --  absolute value of the elements is not significant, not the sign.
+         --  absolute value of the elements is significant, not the sign.
 
          XX : Int64 := X;
          YY : Int64 := Y;
@@ -580,7 +574,7 @@ package body Ada.Text_IO.Fixed_IO is
                YY := 10**(Integer'Min (Max_Digits, AA - (J - 1) * Max_Digits));
             end if;
 
-            Scaled_Divide (XX, YY, Z, Q (J), R => XX, Round => False);
+            Scaled_Divide64 (XX, YY, Z, Q (J), R => XX, Round => False);
          end loop;
 
          if -E > A then

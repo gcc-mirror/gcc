@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimple-fold.h"
 #include "attr-fnspec.h"
+#include "value-query.h"
 
 #include "tree-pretty-print.h"
 
@@ -629,21 +630,32 @@ special_function_p (const_tree fndecl, int flags)
   return flags;
 }
 
+/* Return fnspec for DECL.  */
+
+static attr_fnspec
+decl_fnspec (tree fndecl)
+{
+  tree attr;
+  tree type = TREE_TYPE (fndecl);
+  if (type)
+    {
+      attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
+      if (attr)
+	{
+	  return TREE_VALUE (TREE_VALUE (attr));
+	}
+    }
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    return builtin_fnspec (fndecl);
+  return "";
+}
+
 /* Similar to special_function_p; return a set of ERF_ flags for the
    function FNDECL.  */
 static int
 decl_return_flags (tree fndecl)
 {
-  tree attr;
-  tree type = TREE_TYPE (fndecl);
-  if (!type)
-    return 0;
-
-  attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
-  if (!attr)
-    return 0;
-
-  attr_fnspec fnspec (TREE_VALUE (TREE_VALUE (attr)));
+  attr_fnspec fnspec = decl_fnspec (fndecl);
 
   unsigned int arg;
   if (fnspec.returns_arg (&arg))
@@ -1244,7 +1256,8 @@ alloc_max_size (void)
    in a multi-range, otherwise to the smallest valid subrange.  */
 
 bool
-get_size_range (tree exp, tree range[2], int flags /* = 0 */)
+get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
+		int flags /* = 0 */)
 {
   if (!exp)
     return false;
@@ -1263,7 +1276,19 @@ get_size_range (tree exp, tree range[2], int flags /* = 0 */)
   enum value_range_kind range_type;
 
   if (integral)
-    range_type = determine_value_range (exp, &min, &max);
+    {
+      value_range vr;
+      if (query && query->range_of_expr (vr, exp, stmt))
+	{
+	  if (vr.undefined_p ())
+	    vr.set_varying (TREE_TYPE (exp));
+	  range_type = vr.kind ();
+	  min = wi::to_wide (vr.min ());
+	  max = wi::to_wide (vr.max ());
+	}
+      else
+	range_type = determine_value_range (exp, &min, &max);
+    }
   else
     range_type = VR_VARYING;
 
@@ -1367,6 +1392,12 @@ get_size_range (tree exp, tree range[2], int flags /* = 0 */)
   range[1] = wide_int_to_tree (exptype, max);
 
   return true;
+}
+
+bool
+get_size_range (tree exp, tree range[2], int flags /* = 0 */)
+{
+  return get_size_range (/*query=*/NULL, exp, /*stmt=*/NULL, range, flags);
 }
 
 /* Diagnose a call EXP to function FN decorated with attribute alloc_size
@@ -1517,7 +1548,7 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
     {
       location_t fnloc = DECL_SOURCE_LOCATION (fn);
 
-      if (DECL_IS_BUILTIN (fn))
+      if (DECL_IS_UNDECLARED_BUILTIN (fn))
 	inform (loc,
 		"in a call to built-in allocation function %qD", fn);
       else
@@ -1891,7 +1922,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 /* Issue an error if CALL_EXPR was flagged as requiring
    tall-call optimization.  */
 
-static void
+void
 maybe_complain_about_tail_call (tree call_expr, const char *reason)
 {
   gcc_assert (TREE_CODE (call_expr) == CALL_EXPR);
@@ -3494,7 +3525,6 @@ static bool
 can_implement_as_sibling_call_p (tree exp,
 				 rtx structure_value_addr,
 				 tree funtype,
-				 int reg_parm_stack_space ATTRIBUTE_UNUSED,
 				 tree fndecl,
 				 int flags,
 				 tree addr,
@@ -3518,20 +3548,6 @@ can_implement_as_sibling_call_p (tree exp,
       maybe_complain_about_tail_call (exp, "callee returns a structure");
       return false;
     }
-
-#ifdef REG_PARM_STACK_SPACE
-  /* If outgoing reg parm stack space changes, we cannot do sibcall.  */
-  if (OUTGOING_REG_PARM_STACK_SPACE (funtype)
-      != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl))
-      || (reg_parm_stack_space != REG_PARM_STACK_SPACE (current_function_decl)))
-    {
-      maybe_complain_about_tail_call (exp,
-				      "inconsistent size of stack space"
-				      " allocated for arguments which are"
-				      " passed in registers");
-      return false;
-    }
-#endif
 
   /* Check whether the target is able to optimize the call
      into a sibcall.  */
@@ -4057,7 +4073,6 @@ expand_call (tree exp, rtx target, int ignore)
     try_tail_call = can_implement_as_sibling_call_p (exp,
 						     structure_value_addr,
 						     funtype,
-						     reg_parm_stack_space,
 						     fndecl,
 						     flags, addr, args_size);
 

@@ -374,6 +374,13 @@ static void next_runtime_02_initialize (void)
   objc_selector_type = build_pointer_type (xref_tag (RECORD_TYPE,
 					   get_identifier (TAG_SELECTOR)));
 
+  /* SEL typedef.  */
+  type = lang_hooks.decls.pushdecl (build_decl (input_location,
+						TYPE_DECL,
+						objc_selector_name,
+						objc_selector_type));
+  TREE_NO_WARNING (type) = 1;
+
   /* IMP : id (*) (id, _message_ref_t*, ...)
      SUPER_IMP : id (*) ( super_t*, _super_message_ref_t*, ...)
      objc_v2_selector_type.  */

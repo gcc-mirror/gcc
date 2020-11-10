@@ -58,9 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-reachable_regions::reachable_regions (store *store,
+reachable_regions::reachable_regions (region_model *model,
 				      region_model_manager *mgr)
-: m_store (store), m_mgr (mgr),
+: m_model (model), m_store (model->get_store ()), m_mgr (mgr),
   m_reachable_base_regs (), m_mutable_base_regs ()
 {
 }
@@ -135,7 +135,7 @@ reachable_regions::add (const region *reg, bool is_mutable)
   if (binding_cluster *bind_cluster = m_store->get_cluster (base_reg))
     bind_cluster->for_each_value (handle_sval_cb, this);
   else
-    handle_sval (m_mgr->get_or_create_initial_value (base_reg));
+    handle_sval (m_model->get_store_value (reg));
 }
 
 void
@@ -181,6 +181,40 @@ reachable_regions::handle_sval (const svalue *sval)
     }
   if (const svalue *cast = sval->maybe_undo_cast ())
     handle_sval (cast);
+
+  /* If SVAL is the result of a reversible operation, then the operands
+     are reachable.  */
+  switch (sval->get_kind ())
+    {
+    default:
+      break;
+    case SK_UNARYOP:
+      {
+	const unaryop_svalue *unaryop_sval = (const unaryop_svalue *)sval;
+	switch (unaryop_sval->get_op ())
+	  {
+	  default:
+	    break;
+	  case NEGATE_EXPR:
+	    handle_sval (unaryop_sval->get_arg ());
+	    break;
+	  }
+      }
+      break;
+    case SK_BINOP:
+      {
+	const binop_svalue *binop_sval = (const binop_svalue *)sval;
+	switch (binop_sval->get_op ())
+	  {
+	  default:
+	    break;
+	  case POINTER_PLUS_EXPR:
+	    handle_sval (binop_sval->get_arg0 ());
+	    handle_sval (binop_sval->get_arg1 ());
+	    break;
+	  }
+      }
+    }
 }
 
 /* Add SVAL.  If it is a pointer, add the pointed-to region.
@@ -206,17 +240,55 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
     }
 }
 
-/* Update m_store to mark the clusters that were found to be mutable
-   as having escaped.  */
+/* Update the store to mark the clusters that were found to be mutable
+   as having escaped.
+   Notify CTXT about escaping function_decls.  */
 
 void
-reachable_regions::mark_escaped_clusters ()
+reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
 {
+  gcc_assert (ctxt);
+  auto_vec<const function_region *> escaped_fn_regs
+    (m_mutable_base_regs.elements ());
   for (hash_set<const region *>::iterator iter = m_mutable_base_regs.begin ();
        iter != m_mutable_base_regs.end (); ++iter)
     {
       const region *base_reg = *iter;
       m_store->mark_as_escaped (base_reg);
+
+      /* If we have a function that's escaped, potentially add
+	 it to the worklist.  */
+      if (const function_region *fn_reg = base_reg->dyn_cast_function_region ())
+	escaped_fn_regs.quick_push (fn_reg);
+    }
+  /* Sort to ensure deterministic results.  */
+  escaped_fn_regs.qsort (region::cmp_ptr_ptr);
+  unsigned i;
+  const function_region *fn_reg;
+  FOR_EACH_VEC_ELT (escaped_fn_regs, i, fn_reg)
+    ctxt->on_escaped_function (fn_reg->get_fndecl ());
+}
+
+/* Dump SET to PP, sorting it to avoid churn when comparing dumps.  */
+
+template <typename T>
+static void
+dump_set (const hash_set<const T *> &set, pretty_printer *pp)
+{
+  auto_vec<const T *> elements (set.elements ());
+  for (typename hash_set<const T *>::iterator iter = set.begin ();
+       iter != set.end (); ++iter)
+    elements.quick_push (*iter);
+
+  elements.qsort (T::cmp_ptr_ptr);
+
+  unsigned i;
+  const T *element;
+  FOR_EACH_VEC_ELT (elements, i, element)
+    {
+      pp_string (pp, "  ");
+      element->dump_to_pp (pp, true);
+      pp_newline (pp);
     }
 }
 
@@ -227,40 +299,19 @@ reachable_regions::dump_to_pp (pretty_printer *pp) const
 {
   pp_string (pp, "reachable clusters: ");
   pp_newline (pp);
-  for (hash_set<const region *>::iterator iter = m_reachable_base_regs.begin ();
-       iter != m_reachable_base_regs.end (); ++iter)
-    {
-      pp_string (pp, "  ");
-      (*iter)->dump_to_pp (pp, true);
-      pp_newline (pp);
-    }
+  dump_set (m_reachable_base_regs, pp);
+
   pp_string (pp, "mutable clusters: ");
   pp_newline (pp);
-  for (hash_set<const region *>::iterator iter = m_mutable_base_regs.begin ();
-       iter != m_mutable_base_regs.end (); ++iter)
-    {
-      pp_string (pp, "  ");
-      (*iter)->dump_to_pp (pp, true);
-      pp_newline (pp);
-    }
+  dump_set (m_mutable_base_regs, pp);
+
   pp_string (pp, "reachable svals: ");
   pp_newline (pp);
-  for (svalue_set::iterator iter = m_reachable_svals.begin ();
-       iter != m_reachable_svals.end (); ++iter)
-    {
-      pp_string (pp, "  ");
-      (*iter)->dump_to_pp (pp, true);
-      pp_newline (pp);
-    }
+  dump_set (m_reachable_svals, pp);
+
   pp_string (pp, "mutable svals: ");
   pp_newline (pp);
-  for (svalue_set::iterator iter = m_mutable_svals.begin ();
-       iter != m_mutable_svals.end (); ++iter)
-    {
-      pp_string (pp, "  ");
-      (*iter)->dump_to_pp (pp, true);
-      pp_newline (pp);
-    }
+  dump_set (m_mutable_svals, pp);
 }
 
 /* Dump a multiline representation of this object to stderr.  */

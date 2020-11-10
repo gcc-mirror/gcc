@@ -590,7 +590,8 @@ package body ALI is
       --         scope__name__line_column__locations
       --
       --    * The String is converted into a Name_Id
-      --    * The Name_Id is used as the hash
+      --
+      --    * The absolute value of the Name_Id is used as the hash
 
       Append (Buffer, IS_Rec.Scope);
       Append (Buffer, "__");
@@ -606,7 +607,7 @@ package body ALI is
       end if;
 
       IS_Nam := Name_Find (Buffer);
-      return Bucket_Range_Type (IS_Nam);
+      return Bucket_Range_Type (abs IS_Nam);
    end Hash;
 
    --------------------

@@ -1,4 +1,5 @@
-/* { dg-do compile { target { powerpc64le-*-* } } } */
+/* { dg-do compile { target { *-*-aix* || { *-*-linux* && lp64 } } } } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -maltivec -mcmodel=large" } */
 
 /* The expansion for vector character multiply introduces a vperm operation.

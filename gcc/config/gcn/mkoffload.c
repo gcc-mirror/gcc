@@ -737,7 +737,8 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
   obstack_ptr_grow (&argv_obstack, NULL);
 
   const char **new_argv = XOBFINISH (&argv_obstack, const char **);
-  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true);
+  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true,
+		".gccnative_args");
   obstack_free (&argv_obstack, NULL);
 }
 
@@ -1001,7 +1002,7 @@ main (int argc, char **argv)
   unsetenv ("LIBRARY_PATH");
 
   /* Run the compiler pass.  */
-  fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true);
+  fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true,  ".gcc_args");
   obstack_free (&cc_argv_obstack, NULL);
 
   in = fopen (gcn_s1_name, "r");
@@ -1022,7 +1023,7 @@ main (int argc, char **argv)
   fclose (out);
 
   /* Run the assemble/link pass.  */
-  fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true);
+  fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true, ".ld_args");
   obstack_free (&ld_argv_obstack, NULL);
 
   in = fopen (gcn_o_name, "r");

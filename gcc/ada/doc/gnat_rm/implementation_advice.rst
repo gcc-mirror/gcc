@@ -199,11 +199,11 @@ former provides improved compatibility with other implementations
 supporting this type.  The latter corresponds to the highest precision
 floating-point type supported by the hardware.  On most machines, this
 will be the same as ``Long_Float``, but on some machines, it will
-correspond to the IEEE extended form.  The notable case is all ia32
-(x86) implementations, where ``Long_Long_Float`` corresponds to
-the 80-bit extended precision format supported in hardware on this
-processor.  Note that the 128-bit format on SPARC is not supported,
-since this is a software rather than a hardware format.
+correspond to the IEEE extended form.  The notable case is all x86
+implementations, where ``Long_Long_Float`` corresponds to the 80-bit
+extended precision format supported in hardware on this processor.
+Note that the 128-bit format on SPARC is not supported, since this
+is a software rather than a hardware format.
 
 .. index:: Multidimensional arrays
 

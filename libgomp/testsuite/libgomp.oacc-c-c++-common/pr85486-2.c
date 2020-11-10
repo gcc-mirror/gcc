@@ -1,52 +1,11 @@
 /* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* { dg-additional-options "-DVECTOR_LENGTH=" } */
 /* { dg-additional-options "-fopenacc-dim=::128" } */
 
-/* Minimized from ref-1.C.  */
+/* { dg-additional-options "-foffload=-fdump-tree-oaccdevlow" } */
+/* { dg-set-target-env-var "GOMP_DEBUG" "1" } */
 
-#include <stdio.h>
+#include "pr85486.c"
 
-#pragma acc routine vector
-void __attribute__((noinline, noclone))
-Vector (int *ptr, int n, const int inc)
-{
-  #pragma acc loop vector
-  for (unsigned ix = 0; ix < n; ix++)
-    ptr[ix] += inc;
-}
-
-int
-main (void)
-{
-  const int n = 32, m=32;
-
-  int ary[m][n];
-  unsigned ix,  iy;
-
-  for (ix = m; ix--;)
-    for (iy = n; iy--;)
-      ary[ix][iy] = (1 << 16) + (ix << 8) + iy;
-
-  int err = 0;
-
-#pragma acc parallel copy (ary)
-  {
-    Vector (&ary[0][0], m * n, (1 << 24) - (1 << 16));
-  }
-
-  for (ix = m; ix--;)
-    for (iy = n; iy--;)
-      if (ary[ix][iy] != ((1 << 24) + (ix << 8) + iy))
-	{
-	  printf ("ary[%u][%u] = %x expected %x\n",
-		  ix, iy, ary[ix][iy], ((1 << 24) + (ix << 8) + iy));
-	  err++;
-	}
-
-  if (err)
-    {
-      printf ("%d failed\n", err);
-      return 1;
-    }
-
-  return 0;
-}
+/* { dg-final { scan-offload-tree-dump "__attribute__\\(\\(oacc function \\(1, 1, 32\\)" "oaccdevlow" } } */
+/* { dg-output "nvptx_exec: kernel main\\\$_omp_fn\\\$0: launch gangs=1, workers=1, vectors=32" } */

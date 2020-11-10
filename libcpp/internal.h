@@ -512,14 +512,13 @@ struct cpp_reader
   const unsigned char *date;
   const unsigned char *time;
 
-  /* Externally set timestamp to replace current date and time useful for
-     reproducibility.  It should be initialized to -2 (not yet set) and
-     set to -1 to disable it or to a non-negative value to enable it.  */
-  time_t source_date_epoch;
+  /* Time stamp, set idempotently lazily.  */
+  time_t time_stamp;
+  int time_stamp_kind; /* Or errno.  */
 
-  /* EOF token, and a token forcing paste avoidance.  */
+  /* A token forcing paste avoidance, and one demarking macro arguments.  */
   cpp_token avoid_paste;
-  cpp_token eof;
+  cpp_token endarg;
 
   /* Opaque handle to the dependencies of mkdeps.c.  */
   class mkdeps *deps;
@@ -649,11 +648,13 @@ inline bool _cpp_defined_macro_p (cpp_hashnode *node)
 }
 
 /* In macro.c */
-extern void _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node);
-inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+extern void _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+				   location_t loc);
+inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+					 location_t loc)
 {
   if (!(node->flags & NODE_USED))
-    _cpp_notify_macro_use (pfile, node);
+    _cpp_notify_macro_use (pfile, node, loc);
 }
 extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);

@@ -49,8 +49,11 @@ package body System.Img_Enum_New is
       pragma Assert (S'First = 1);
 
       type Natural_8 is range 0 .. 2 ** 7 - 1;
+      subtype Names_Index is
+        Natural_8 range Natural_8 (Names'First)
+                          .. Natural_8 (Names'Last) + 1;
       subtype Index is Natural range Natural'First .. Names'Length;
-      type Index_Table is array (Index) of Natural_8;
+      type Index_Table is array (Index) of Names_Index;
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
@@ -58,9 +61,19 @@ package body System.Img_Enum_New is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
+      pragma Assert (Pos in IndexesT'Range);
+      pragma Assert (Pos + 1 in IndexesT'Range);
+
       Start : constant Natural := Natural (IndexesT (Pos));
       Next  : constant Natural := Natural (IndexesT (Pos + 1));
 
+      pragma Assert (Next - 1 >= Start);
+      pragma Assert (Start >= Names'First);
+      pragma Assert (Next - 1 <= Names'Last);
+
+      pragma Assert (Next - Start <= S'Last);
+      --  The caller should guarantee that S is large enough to contain the
+      --  enumeration image.
    begin
       S (1 .. Next - Start) := Names (Start .. Next - 1);
       P := Next - Start;
@@ -80,8 +93,11 @@ package body System.Img_Enum_New is
       pragma Assert (S'First = 1);
 
       type Natural_16 is range 0 .. 2 ** 15 - 1;
+      subtype Names_Index is
+        Natural_16 range Natural_16 (Names'First)
+                           .. Natural_16 (Names'Last) + 1;
       subtype Index is Natural range Natural'First .. Names'Length;
-      type Index_Table is array (Index) of Natural_16;
+      type Index_Table is array (Index) of Names_Index;
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
@@ -89,9 +105,19 @@ package body System.Img_Enum_New is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
+      pragma Assert (Pos in IndexesT'Range);
+      pragma Assert (Pos + 1 in IndexesT'Range);
+
       Start : constant Natural := Natural (IndexesT (Pos));
       Next  : constant Natural := Natural (IndexesT (Pos + 1));
 
+      pragma Assert (Next - 1 >= Start);
+      pragma Assert (Start >= Names'First);
+      pragma Assert (Next - 1 <= Names'Last);
+
+      pragma Assert (Next - Start <= S'Last);
+      --  The caller should guarantee that S is large enough to contain the
+      --  enumeration image.
    begin
       S (1 .. Next - Start) := Names (Start .. Next - 1);
       P := Next - Start;
@@ -111,8 +137,11 @@ package body System.Img_Enum_New is
       pragma Assert (S'First = 1);
 
       type Natural_32 is range 0 .. 2 ** 31 - 1;
+      subtype Names_Index is
+        Natural_32 range Natural_32 (Names'First)
+                           .. Natural_32 (Names'Last) + 1;
       subtype Index is Natural range Natural'First .. Names'Length;
-      type Index_Table is array (Index) of Natural_32;
+      type Index_Table is array (Index) of Names_Index;
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
@@ -120,9 +149,19 @@ package body System.Img_Enum_New is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
+      pragma Assert (Pos in IndexesT'Range);
+      pragma Assert (Pos + 1 in IndexesT'Range);
+
       Start : constant Natural := Natural (IndexesT (Pos));
       Next  : constant Natural := Natural (IndexesT (Pos + 1));
 
+      pragma Assert (Next - 1 >= Start);
+      pragma Assert (Start >= Names'First);
+      pragma Assert (Next - 1 <= Names'Last);
+
+      pragma Assert (Next - Start <= S'Last);
+      --  The caller should guarantee that S is large enough to contain the
+      --  enumeration image.
    begin
       S (1 .. Next - Start) := Names (Start .. Next - 1);
       P := Next - Start;

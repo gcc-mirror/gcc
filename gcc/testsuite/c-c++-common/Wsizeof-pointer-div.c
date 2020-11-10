@@ -29,7 +29,7 @@ f2 (void)
   i += sizeof(array) / sizeof(array[0]);
   i += (sizeof(array)) / (sizeof(array[0]));
   i += sizeof(array) / sizeof(int);
-  i += sizeof(array) / sizeof(char);
+  i += sizeof(array) / sizeof(char);		/* { dg-warning "expression does not compute" } */
   i += sizeof(*array) / sizeof(char);
   i += sizeof(array[0]) / sizeof(char);
   return i;

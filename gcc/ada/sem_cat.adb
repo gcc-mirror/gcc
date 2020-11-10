@@ -2121,6 +2121,7 @@ package body Sem_Cat is
                | N_Index_Or_Discriminant_Constraint
                | N_Membership_Test
                | N_Op
+               | N_Range
             =>
                return True;
 

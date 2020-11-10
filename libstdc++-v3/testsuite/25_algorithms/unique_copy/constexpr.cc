@@ -29,10 +29,11 @@ test()
 
   const auto out55 = std::unique_copy(ar3.begin(), ar3.end(), out0.begin());
 
-  const auto out66 = std::unique_copy(ar3.begin(), ar3.end(), out0.begin(),
+  const auto out66 = std::unique_copy(ar3.begin(), ar3.end(), out55,
 				      std::equal_to<int>());
 
-  return true;
+  return out55 == (out0.begin() + 10) && out0[7] == 8
+    && out66 == (out55 + 10) ; // && out0[19] == 11;
 }
 
 static_assert(test());

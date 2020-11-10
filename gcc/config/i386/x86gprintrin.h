@@ -76,6 +76,8 @@
 
 #include <tsxldtrkintrin.h>
 
+#include <uintrintrin.h>
+
 #include <waitpkgintrin.h>
 
 #include <wbnoinvdintrin.h>
@@ -89,6 +91,8 @@
 #include <xsavesintrin.h>
 
 #include <xtestintrin.h>
+
+#include <hresetintrin.h>
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

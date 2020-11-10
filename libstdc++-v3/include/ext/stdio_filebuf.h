@@ -75,7 +75,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  closed when the stdio_filebuf is closed/destroyed.
       */
       stdio_filebuf(int __fd, std::ios_base::openmode __mode,
-		    size_t __size = static_cast<size_t>(BUFSIZ));
+		    size_t __size = static_cast<size_t>(_GLIBCXX_BUFSIZ));
 
       /**
        *  @param  __f  An open @c FILE*.
@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  stdio_filebuf is closed/destroyed.
       */
       stdio_filebuf(std::__c_file* __f, std::ios_base::openmode __mode,
-		    size_t __size = static_cast<size_t>(BUFSIZ));
+		    size_t __size = static_cast<size_t>(_GLIBCXX_BUFSIZ));
 
       /**
        *  Closes the external data stream if the file descriptor constructor

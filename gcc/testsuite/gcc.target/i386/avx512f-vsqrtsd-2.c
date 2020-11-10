@@ -18,7 +18,7 @@ compute_sqrtsd (double *s1, double *s2, double *r)
 void static
 avx512f_test (void)
 {
-  union128d res1, res2, res3;
+  union128d res1, res2, res3, res4, res5;
   union128d s1, s2;
   double res_ref[SIZE];
   MASK_TYPE mask = MASK_VALUE;
@@ -32,6 +32,8 @@ avx512f_test (void)
       res1.a[i] = DEFAULT_VALUE;
       res2.a[i] = DEFAULT_VALUE;
       res3.a[i] = DEFAULT_VALUE;
+      res4.a[i] = DEFAULT_VALUE;
+      res5.a[i] = DEFAULT_VALUE;
     }
 
   res1.x = _mm_sqrt_round_sd (s1.x, s2.x, 
@@ -40,6 +42,8 @@ avx512f_test (void)
 		_MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
   res3.x = _mm_maskz_sqrt_round_sd (mask, s1.x, s2.x,
 		_MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+  res4.x = _mm_mask_sqrt_sd (s1.x, mask, s1.x, s2.x);
+  res5.x = _mm_maskz_sqrt_sd (mask, s1.x, s2.x);
 
   compute_sqrtsd (s1.a, s2.a, res_ref);
 
@@ -51,9 +55,15 @@ avx512f_test (void)
   if (check_union128d (res2, res_ref))
     abort ();
 
+  if (check_union128d (res4, res_ref))
+    abort ();
+
   MASK_ZERO (d) (res_ref, mask, 1);
 
   if (check_union128d (res3, res_ref))
+    abort ();
+
+  if (check_union128d (res5, res_ref))
     abort ();
 }
 

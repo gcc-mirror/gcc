@@ -24,6 +24,10 @@
 #include <exception>
 #include <stdlib.h>
 
+#ifndef _GLIBCXX_HAVE_LINUX_FUTEX
+# error "This test requries futex support in the library"
+#endif
+
 int init()
 {
 #if __has_include(<sys/single_threaded.h>)
@@ -38,7 +42,7 @@ int init()
 void clean_terminate() { _Exit(0); }
 
 int
-main (int argc, char **argv)
+main ()
 {
   std::set_terminate(clean_terminate);
   init();

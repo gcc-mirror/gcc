@@ -31,7 +31,10 @@ test()
   const auto outy = std::is_sorted_until(aus.begin(), aus.end(),
 					 std::less<int>());
 
-  return true;
+  const auto outz = std::is_sorted_until(outx - 1, aus.end(),
+					 std::greater<int>());
+
+  return outx == aus.begin() + 7 && outy == outx && outz == (outx + 1);
 }
 
 static_assert(test());

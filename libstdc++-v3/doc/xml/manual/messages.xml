@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.localization.facet.messages" xreflabel="Messages">
 <?dbhtml filename="messages.html"?>
 
@@ -116,7 +116,7 @@ A couple of notes on the standard.
 First, why is <code>messages_base::catalog</code> specified as a typedef
 to int? This makes sense for implementations that use
 <code>catopen</code> and define <code>nl_catd</code> as int, but not for
-others. Fortunately, it's not heavily used and so only a minor irritant. 
+others. Fortunately, it's not heavily used and so only a minor irritant.
 This has been reported as a possible defect in the standard (LWG 2028).
 </para>
 
@@ -159,7 +159,7 @@ other, explicitly named locales.
 
 
   <section xml:id="messages.impl.models"><info><title>Models</title></info>
-  
+
   <para>
     This is a relatively simple class, on the face of it. The standard
     specifies very little in concrete terms, so generic
@@ -227,7 +227,7 @@ model.
   </section>
 
   <section xml:id="messages.impl.gnu"><info><title>The GNU Model</title></info>
-  
+
 
   <para>
     The messages facet, because it is retrieving and converting

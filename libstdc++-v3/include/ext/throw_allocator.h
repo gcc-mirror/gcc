@@ -922,6 +922,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_USE_NOEXCEPT { }
 
       ~throw_allocator_limit() _GLIBCXX_USE_NOEXCEPT { }
+
+#if __cplusplus >= 201103L
+      throw_allocator_limit&
+      operator=(const throw_allocator_limit&) = default;
+#endif
     };
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
@@ -944,6 +949,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_USE_NOEXCEPT { }
 
       ~throw_allocator_random() _GLIBCXX_USE_NOEXCEPT { }
+
+#if __cplusplus >= 201103L
+      throw_allocator_random&
+      operator=(const throw_allocator_random&) = default;
+#endif
     };
 #endif // _GLIBCXX_USE_C99_STDINT_TR1
 

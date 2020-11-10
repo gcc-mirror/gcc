@@ -1084,6 +1084,33 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop,
   exit = single_exit (loop);
   basic_block new_preheader = new_bbs[0];
 
+  /* Before installing PHI arguments make sure that the edges
+     into them match that of the scalar loop we analyzed.  This
+     makes sure the SLP tree matches up between the main vectorized
+     loop and the epilogue vectorized copies.  */
+  if (single_succ_edge (preheader)->dest_idx
+      != single_succ_edge (new_bbs[0])->dest_idx)
+    {
+      basic_block swap_bb = new_bbs[1];
+      gcc_assert (EDGE_COUNT (swap_bb->preds) == 2);
+      std::swap (EDGE_PRED (swap_bb, 0), EDGE_PRED (swap_bb, 1));
+      EDGE_PRED (swap_bb, 0)->dest_idx = 0;
+      EDGE_PRED (swap_bb, 1)->dest_idx = 1;
+    }
+  if (duplicate_outer_loop)
+    {
+      class loop *new_inner_loop = get_loop_copy (scalar_loop->inner);
+      if (loop_preheader_edge (scalar_loop)->dest_idx
+	  != loop_preheader_edge (new_inner_loop)->dest_idx)
+	{
+	  basic_block swap_bb = new_inner_loop->header;
+	  gcc_assert (EDGE_COUNT (swap_bb->preds) == 2);
+	  std::swap (EDGE_PRED (swap_bb, 0), EDGE_PRED (swap_bb, 1));
+	  EDGE_PRED (swap_bb, 0)->dest_idx = 0;
+	  EDGE_PRED (swap_bb, 1)->dest_idx = 1;
+	}
+    }
+
   add_phi_args_after_copy (new_bbs, scalar_loop->num_nodes + 1, NULL);
 
   /* Skip new preheader since it's deleted if copy loop is added at entry.  */
@@ -2545,6 +2572,45 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   if (!prolog_peeling && !epilog_peeling)
     return NULL;
 
+  /* Before doing any peeling make sure to reset debug binds outside of
+     the loop refering to defs not in LC SSA.  */
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  for (unsigned i = 0; i < loop->num_nodes; ++i)
+    {
+      basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
+      imm_use_iterator ui;
+      gimple *use_stmt;
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, gimple_phi_result (gsi.phi ()))
+	    if (gimple_debug_bind_p (use_stmt)
+		&& loop != gimple_bb (use_stmt)->loop_father
+		&& !flow_loop_nested_p (loop,
+					gimple_bb (use_stmt)->loop_father))
+	      {
+		gimple_debug_bind_reset_value (use_stmt);
+		update_stmt (use_stmt);
+	      }
+	}
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  ssa_op_iter op_iter;
+	  def_operand_p def_p;
+	  FOR_EACH_SSA_DEF_OPERAND (def_p, gsi_stmt (gsi), op_iter, SSA_OP_DEF)
+	    FOR_EACH_IMM_USE_STMT (use_stmt, ui, DEF_FROM_PTR (def_p))
+	      if (gimple_debug_bind_p (use_stmt)
+		  && loop != gimple_bb (use_stmt)->loop_father
+		  && !flow_loop_nested_p (loop,
+					  gimple_bb (use_stmt)->loop_father))
+		{
+		  gimple_debug_bind_reset_value (use_stmt);
+		  update_stmt (use_stmt);
+		}
+	}
+    }
+
   prob_vector = profile_probability::guessed_always ().apply_scale (9, 10);
   estimated_vf = vect_vf_for_cost (loop_vinfo);
   if (estimated_vf == 2)
@@ -2552,7 +2618,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   prob_prolog = prob_epilog = profile_probability::guessed_always ()
 			.apply_scale (estimated_vf - 1, estimated_vf);
 
-  class loop *prolog, *epilog = NULL, *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *prolog, *epilog = NULL;
   class loop *first_loop = loop;
   bool irred_flag = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
 

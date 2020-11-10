@@ -248,8 +248,10 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   /* Set up static tokens.  */
   pfile->avoid_paste.type = CPP_PADDING;
   pfile->avoid_paste.val.source = NULL;
-  pfile->eof.type = CPP_EOF;
-  pfile->eof.flags = 0;
+  pfile->avoid_paste.src_loc = 0;
+  pfile->endarg.type = CPP_EOF;
+  pfile->endarg.flags = 0;
+  pfile->endarg.src_loc = 0;
 
   /* Create a token buffer for the lexer.  */
   _cpp_init_tokenrun (&pfile->base_run, 250);
@@ -271,8 +273,9 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   /* Do not force token locations by default.  */
   pfile->forced_token_location = 0;
 
-  /* Initialize source_date_epoch to -2 (not yet set).  */
-  pfile->source_date_epoch = (time_t) -2;
+  /* Note the timestamp is unset.  */
+  pfile->time_stamp = time_t (-1);
+  pfile->time_stamp_kind = 0;
 
   /* The expression parser stack.  */
   _cpp_expand_op_stack (pfile);
@@ -665,14 +668,9 @@ cpp_post_options (cpp_reader *pfile)
 const char *
 cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 {
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
-    {
-      if (!pfile->deps)
-	pfile->deps = deps_init ();
-
-      /* Set the default target (if there is none already).  */
-      deps_add_default_target (pfile->deps, fname);
-    }
+  if (mkdeps *deps = cpp_get_deps (pfile))
+    /* Set the default target (if there is none already).  */
+    deps_add_default_target (deps, fname);
 
   pfile->main_file
     = _cpp_find_file (pfile, fname, &pfile->no_search_path, /*angle=*/0,
@@ -811,9 +809,8 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   while (pfile->buffer)
     _cpp_pop_buffer (pfile);
 
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE && deps_stream)
-    deps_write (pfile->deps, deps_stream,
-		CPP_OPTION (pfile, deps.phony_targets), 72);
+  if (deps_stream)
+    deps_write (pfile, deps_stream, 72);
 
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))

@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_extract() with long long
    inputs produce the right code with a P8 (LE or BE) target.  */
 
-/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
 
@@ -21,7 +21,7 @@
 /* { dg-final { scan-assembler-times {\mli\M} 3 { target lp64 } } } */
 /* -m32 target with constant test uses (+2)li where the -m64 has an ld */
 /* { dg-final { scan-assembler-times {\mli\M} 5 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M} 6 } } */
+/* { dg-final { scan-assembler-times {\maddi\M} 6 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mrldic\M|\mrlwinm\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mldx\M} 3 { target lp64 } } } */

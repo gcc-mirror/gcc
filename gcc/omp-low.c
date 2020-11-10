@@ -214,6 +214,21 @@ is_oacc_kernels (omp_context *ctx)
 	      == GF_OMP_TARGET_KIND_OACC_KERNELS));
 }
 
+/* Return true if STMT corresponds to an OpenMP target region.  */
+static bool
+is_omp_target (gimple *stmt)
+{
+  if (gimple_code (stmt) == GIMPLE_OMP_TARGET)
+    {
+      int kind = gimple_omp_target_kind (stmt);
+      return (kind == GF_OMP_TARGET_KIND_REGION
+	      || kind == GF_OMP_TARGET_KIND_DATA
+	      || kind == GF_OMP_TARGET_KIND_ENTER_DATA
+	      || kind == GF_OMP_TARGET_KIND_EXIT_DATA);
+    }
+  return false;
+}
+
 /* If DECL is the artificial dummy VAR_DECL created for non-static
    data member privatization, return the underlying "this" parameter,
    otherwise return NULL.  */
@@ -1346,7 +1361,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      && DECL_P (decl)
 	      && ((OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FIRSTPRIVATE_POINTER
 		   && (OMP_CLAUSE_MAP_KIND (c)
-		       != GOMP_MAP_FIRSTPRIVATE_REFERENCE))
+		       != GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
+		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH)
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_TO
 	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_FROM
@@ -1366,6 +1383,40 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		  && !POINTER_TYPE_P (TREE_TYPE (decl))
 		  && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c))
 		break;
+	    }
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	      && DECL_P (decl)
+	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+	      && is_omp_target (ctx->stmt))
+	    {
+	      /* If this is an offloaded region, an attach operation should
+		 only exist when the pointer variable is mapped in a prior
+		 clause.  */
+	      if (is_gimple_omp_offloaded (ctx->stmt))
+		gcc_assert
+		  (maybe_lookup_decl (decl, ctx)
+		   || (is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
+		       && lookup_attribute ("omp declare target",
+					    DECL_ATTRIBUTES (decl))));
+
+	      /* By itself, attach/detach is generated as part of pointer
+		 variable mapping and should not create new variables in the
+		 offloaded region, however sender refs for it must be created
+		 for its address to be passed to the runtime.  */
+	      tree field
+		= build_decl (OMP_CLAUSE_LOCATION (c),
+			      FIELD_DECL, NULL_TREE, ptr_type_node);
+	      SET_DECL_ALIGN (field, TYPE_ALIGN (ptr_type_node));
+	      insert_field_into_struct (ctx->record_type, field);
+	      /* To not clash with a map of the pointer variable itself,
+		 attach/detach maps have their field looked up by the *clause*
+		 tree expression, not the decl.  */
+	      gcc_assert (!splay_tree_lookup (ctx->field_map,
+					      (splay_tree_key) c));
+	      splay_tree_insert (ctx->field_map, (splay_tree_key) c,
+				 (splay_tree_value) field);
+	      break;
 	    }
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
@@ -1486,6 +1537,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_TASK_REDUCTION:
+	case OMP_CLAUSE_ALLOCATE:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -1606,6 +1658,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      && is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
 	      && varpool_node::get_create (decl)->offloadable)
 	    break;
+	  if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+	       || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+	      && is_omp_target (ctx->stmt)
+	      && !is_gimple_omp_offloaded (ctx->stmt))
+	    break;
 	  if (DECL_P (decl))
 	    {
 	      if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
@@ -1653,6 +1710,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_SIMDLEN:
 	case OMP_CLAUSE_ALIGNED:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_ALLOCATE:
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE_TO:
@@ -1919,12 +1977,38 @@ add_taskreg_looptemp_clauses (enum gf_mask msk, gimple *stmt,
 	     GIMPLE_OMP_FOR, add one more temporaries for the total number
 	     of iterations (product of count1 ... countN-1).  */
 	  if (omp_find_clause (gimple_omp_for_clauses (for_stmt),
-			       OMP_CLAUSE_LASTPRIVATE))
-	    count++;
-	  else if (msk == GF_OMP_FOR_KIND_FOR
-		   && omp_find_clause (gimple_omp_parallel_clauses (stmt),
-				       OMP_CLAUSE_LASTPRIVATE))
-	    count++;
+			       OMP_CLAUSE_LASTPRIVATE)
+	      || (msk == GF_OMP_FOR_KIND_FOR
+		  && omp_find_clause (gimple_omp_parallel_clauses (stmt),
+				      OMP_CLAUSE_LASTPRIVATE)))
+	    {
+	      tree temp = create_tmp_var (type);
+	      tree c = build_omp_clause (UNKNOWN_LOCATION,
+					 OMP_CLAUSE__LOOPTEMP_);
+	      insert_decl_map (&outer_ctx->cb, temp, temp);
+	      OMP_CLAUSE_DECL (c) = temp;
+	      OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
+	      gimple_omp_taskreg_set_clauses (stmt, c);
+	    }
+	  if (fd.non_rect
+	      && fd.last_nonrect == fd.first_nonrect + 1)
+	    if (tree v = gimple_omp_for_index (for_stmt, fd.last_nonrect))
+	      if (!TYPE_UNSIGNED (TREE_TYPE (v)))
+		{
+		  v = gimple_omp_for_index (for_stmt, fd.first_nonrect);
+		  tree type2 = TREE_TYPE (v);
+		  count++;
+		  for (i = 0; i < 3; i++)
+		    {
+		      tree temp = create_tmp_var (type2);
+		      tree c = build_omp_clause (UNKNOWN_LOCATION,
+						 OMP_CLAUSE__LOOPTEMP_);
+		      insert_decl_map (&outer_ctx->cb, temp, temp);
+		      OMP_CLAUSE_DECL (c) = temp;
+		      OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
+		      gimple_omp_taskreg_set_clauses (stmt, c);
+		    }
+		}
 	}
       for (i = 0; i < count; i++)
 	{
@@ -2390,50 +2474,43 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
       if (!tgt || is_oacc_parallel_or_serial (tgt))
 	for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
 	  {
-	    char const *check = NULL;
-
+	    tree c_op0;
 	    switch (OMP_CLAUSE_CODE (c))
 	      {
 	      case OMP_CLAUSE_GANG:
-		check = "gang";
+		c_op0 = OMP_CLAUSE_GANG_EXPR (c);
 		break;
 
 	      case OMP_CLAUSE_WORKER:
-		check = "worker";
+		c_op0 = OMP_CLAUSE_WORKER_EXPR (c);
 		break;
 
 	      case OMP_CLAUSE_VECTOR:
-		check = "vector";
+		c_op0 = OMP_CLAUSE_VECTOR_EXPR (c);
 		break;
 
 	      default:
-		break;
+		continue;
 	      }
 
-	    if (check && OMP_CLAUSE_OPERAND (c, 0))
-	      error_at (gimple_location (stmt),
-			"argument not permitted on %qs clause in"
-			" OpenACC %<parallel%> or %<serial%>", check);
+	    if (c_op0)
+	      {
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "argument not permitted on %qs clause",
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		if (tgt)
+		  inform (gimple_location (tgt->stmt),
+			  "enclosing parent compute construct");
+		else if (oacc_get_fn_attrib (current_function_decl))
+		  inform (DECL_SOURCE_LOCATION (current_function_decl),
+			  "enclosing routine");
+		else
+		  gcc_unreachable ();
+	      }
 	  }
 
       if (tgt && is_oacc_kernels (tgt))
-	{
-	  /* Strip out reductions, as they are not handled yet.  */
-	  tree *prev_ptr = &clauses;
-
-	  while (tree probe = *prev_ptr)
-	    {
-	      tree *next_ptr = &OMP_CLAUSE_CHAIN (probe);
-	      
-	      if (OMP_CLAUSE_CODE (probe) == OMP_CLAUSE_REDUCTION)
-		*prev_ptr = *next_ptr;
-	      else
-		prev_ptr = next_ptr;
-	    }
-
-	  gimple_omp_for_set_clauses (stmt, clauses);
-	  check_oacc_kernel_gwv (stmt, ctx);
-	}
+	check_oacc_kernel_gwv (stmt, ctx);
 
       /* Collect all variables named in reductions on this loop.  Ensure
 	 that, if this loop has a reduction on some variable v, and there is
@@ -2516,6 +2593,24 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
       ctx->outer_reduction_clauses
 	= chainon (unshare_expr (ctx->local_reduction_clauses),
 		   ctx->outer_reduction_clauses);
+
+      if (tgt && is_oacc_kernels (tgt))
+	{
+	  /* Strip out reductions, as they are not handled yet.  */
+	  tree *prev_ptr = &clauses;
+
+	  while (tree probe = *prev_ptr)
+	    {
+	      tree *next_ptr = &OMP_CLAUSE_CHAIN (probe);
+
+	      if (OMP_CLAUSE_CODE (probe) == OMP_CLAUSE_REDUCTION)
+		*prev_ptr = *next_ptr;
+	      else
+		prev_ptr = next_ptr;
+	    }
+
+	  gimple_omp_for_set_clauses (stmt, clauses);
+	}
     }
 
   scan_sharing_clauses (clauses, ctx);
@@ -9530,7 +9625,13 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
 	  tree innerc = omp_find_clause (taskreg_clauses,
 					 OMP_CLAUSE__LOOPTEMP_);
 	  gcc_assert (innerc);
-	  for (i = 0; i < fd->collapse; i++)
+	  int count = fd->collapse;
+	  if (fd->non_rect
+	      && fd->last_nonrect == fd->first_nonrect + 1)
+	    if (tree v = gimple_omp_for_index (fd->for_stmt, fd->last_nonrect))
+	      if (!TYPE_UNSIGNED (TREE_TYPE (v)))
+		count += 4;
+	  for (i = 0; i < count; i++)
 	    {
 	      innerc = omp_find_clause (OMP_CLAUSE_CHAIN (innerc),
 					OMP_CLAUSE__LOOPTEMP_);
@@ -10453,12 +10554,26 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       if (fd.collapse > 1
 	  && TREE_CODE (fd.loop.n2) != INTEGER_CST)
 	count += fd.collapse - 1;
+      size_t count2 = 0;
+      tree type2 = NULL_TREE;
       bool taskreg_for
 	= (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_FOR
 	   || gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_TASKLOOP);
       tree outerc = NULL, *pc = gimple_omp_for_clauses_ptr (stmt);
       tree simtc = NULL;
       tree clauses = *pc;
+      if (fd.collapse > 1
+	  && fd.non_rect
+	  && fd.last_nonrect == fd.first_nonrect + 1
+	  && TREE_CODE (fd.loop.n2) != INTEGER_CST)
+	if (tree v = gimple_omp_for_index (stmt, fd.last_nonrect))
+	  if (!TYPE_UNSIGNED (TREE_TYPE (v)))
+	    {
+	      v = gimple_omp_for_index (stmt, fd.first_nonrect);
+	      type2 = TREE_TYPE (v);
+	      count++;
+	      count2 = 3;
+	    }
       if (taskreg_for)
 	outerc
 	  = omp_find_clause (gimple_omp_taskreg_clauses (ctx->outer->stmt),
@@ -10466,7 +10581,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       if (ctx->simt_stmt)
 	simtc = omp_find_clause (gimple_omp_for_clauses (ctx->simt_stmt),
 				 OMP_CLAUSE__LOOPTEMP_);
-      for (i = 0; i < count; i++)
+      for (i = 0; i < count + count2; i++)
 	{
 	  tree temp;
 	  if (taskreg_for)
@@ -10485,7 +10600,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      if (ctx->simt_stmt)
 		temp = OMP_CLAUSE_DECL (simtc);
 	      else
-		temp = create_tmp_var (type);
+		temp = create_tmp_var (i >= count ? type2 : type);
 	      insert_decl_map (&ctx->outer->cb, temp, temp);
 	    }
 	  *pc = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__LOOPTEMP_);
@@ -11412,6 +11527,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_STRUCT:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH:
+	  case GOMP_MAP_DETACH:
 	    break;
 	  case GOMP_MAP_IF_PRESENT:
 	  case GOMP_MAP_FORCE_ALLOC:
@@ -11422,8 +11539,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_FORCE_DEVICEPTR:
 	  case GOMP_MAP_DEVICE_RESIDENT:
 	  case GOMP_MAP_LINK:
-	  case GOMP_MAP_ATTACH:
-	  case GOMP_MAP_DETACH:
 	  case GOMP_MAP_FORCE_DETACH:
 	    gcc_assert (is_gimple_omp_oacc (stmt));
 	    break;
@@ -11475,6 +11590,16 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		SET_DECL_VALUE_EXPR (new_var, x);
 		DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 	      }
+	    continue;
+	  }
+
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	    && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		|| OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+	    && is_omp_target (stmt))
+	  {
+	    gcc_assert (maybe_lookup_field (c, ctx));
+	    map_cnt++;
 	    continue;
 	  }
 
@@ -11710,14 +11835,28 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    gcc_assert (DECL_P (ovar2));
 		    ovar = ovar2;
 		  }
-		if (!maybe_lookup_field (ovar, ctx))
+		if (!maybe_lookup_field (ovar, ctx)
+		    && !(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+			 && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+			     || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)))
 		  continue;
 	      }
 
 	    talign = TYPE_ALIGN_UNIT (TREE_TYPE (ovar));
 	    if (DECL_P (ovar) && DECL_ALIGN_UNIT (ovar) > talign)
 	      talign = DECL_ALIGN_UNIT (ovar);
-	    if (nc)
+
+	    if (nc
+		&& OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		&& (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+		    || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH)
+		&& is_omp_target (stmt))
+	      {
+		var = lookup_decl_in_outer_ctx (ovar, ctx);
+		x = build_sender_ref (c, ctx);
+		gimplify_assign (x, build_fold_addr_expr (var), &ilist);
+	      }
+	    else if (nc)
 	      {
 		var = lookup_decl_in_outer_ctx (ovar, ctx);
 		x = build_sender_ref (ovar, ctx);

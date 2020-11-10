@@ -36,6 +36,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -50,6 +51,16 @@ package body Exp_SPARK is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Expand_SPARK_Array_Aggregate (N : Node_Id; Index : Node_Id);
+   --  Perform array-aggregate-specific expansion of an array sub-aggregate N
+   --  corresponding to the Index of the outer-most aggregate. This routine
+   --  mimics Resolve_Array_Aggregate which only checks the aggregate for being
+   --  well-formed, but doesn't analyze nor apply range checks to
+   --  iterated_component_associations.
+
+   procedure Expand_SPARK_N_Aggregate (N : Node_Id);
+   --  Perform aggregate-specific expansion
 
    procedure Expand_SPARK_N_Attribute_Reference (N : Node_Id);
    --  Perform attribute-reference-specific expansion
@@ -101,6 +112,9 @@ package body Exp_SPARK is
          =>
             Qualify_Entity_Names (N);
 
+         when N_Aggregate =>
+            Expand_SPARK_N_Aggregate (N);
+
          --  Replace occurrences of System'To_Address by calls to
          --  System.Storage_Elements.To_Address.
 
@@ -145,6 +159,107 @@ package body Exp_SPARK is
             null;
       end case;
    end Expand_SPARK;
+
+   ----------------------------------
+   -- Expand_SPARK_Array_Aggregate --
+   ----------------------------------
+
+   procedure Expand_SPARK_Array_Aggregate (N : Node_Id; Index : Node_Id) is
+
+      procedure Expand_Aggr_Expr (Expr : Node_Id);
+      --  If Expr is a subaggregate, then process it recursively; otherwise it
+      --  is an expression for the array components which might not have been
+      --  analyzed and where scalar range checks could be missing.
+
+      ----------------------
+      -- Expand_Aggr_Expr --
+      ----------------------
+
+      procedure Expand_Aggr_Expr (Expr : Node_Id) is
+         Nxt_Ind : constant Node_Id := Next_Index (Index);
+      begin
+         if Present (Nxt_Ind) then
+            Expand_SPARK_Array_Aggregate (Expr, Index => Nxt_Ind);
+         else
+            declare
+               Comp_Type : constant Entity_Id := Component_Type (Etype (N));
+            begin
+               Analyze_And_Resolve (Expr, Comp_Type);
+
+               if Is_Scalar_Type (Comp_Type) then
+                  Apply_Scalar_Range_Check (Expr, Comp_Type);
+               end if;
+            end;
+         end if;
+      end Expand_Aggr_Expr;
+
+      --  Local variables
+
+      Assoc : Node_Id := First (Component_Associations (N));
+
+   --  Start of processing for Expand_SPARK_Array_Aggregate
+
+   begin
+      while Present (Assoc) loop
+         --  For iterated_component_association we must apply range check to
+         --  discrete choices and re-analyze the expression, because frontend
+         --  only checks its legality and then analyzes the expanded loop code.
+
+         if Nkind (Assoc) = N_Iterated_Component_Association then
+            declare
+               Choice : Node_Id;
+            begin
+               --  Analyze discrete choices
+
+               Choice := First (Discrete_Choices (Assoc));
+
+               while Present (Choice) loop
+
+                  --  The index denotes a range of elements where range checks
+                  --  have been already applied.
+
+                  if Nkind (Choice) in N_Others_Choice
+                                     | N_Range
+                                     | N_Subtype_Indication
+                  then
+                     null;
+
+                  --  Otherwise the index denotes a single element (or a
+                  --  subtype name which doesn't require range checks).
+
+                  else pragma Assert (Nkind (Choice) in N_Subexpr);
+                     Apply_Scalar_Range_Check (Choice, Etype (Index));
+                  end if;
+
+                  Next (Choice);
+               end loop;
+
+               --  Keep processing the expression with index parameter in scope
+
+               Push_Scope (Scope (Defining_Identifier (Assoc)));
+               Enter_Name (Defining_Identifier (Assoc));
+               Expand_Aggr_Expr (Expression (Assoc));
+               End_Scope;
+            end;
+
+         --  For ordinary component associations we recurse into subaggregates,
+         --  because there could be nested iterated_component_association (and
+         --  it is harmless to analyze and apply checks if there is none).
+
+         else pragma Assert (Nkind (Assoc) = N_Component_Association);
+            declare
+               Expr : constant Node_Id := Expression (Assoc);
+               pragma Assert (Present (Expr) xor Box_Present (Assoc));
+            begin
+               if Present (Expr) then
+                  Expand_Aggr_Expr (Expr);
+               end if;
+            end;
+         end if;
+
+         Next (Assoc);
+      end loop;
+   end Expand_SPARK_Array_Aggregate;
 
    ----------------------------------
    -- Expand_SPARK_Delta_Or_Update --
@@ -215,25 +330,45 @@ package body Exp_SPARK is
                Expr      := Expression (Assoc);
                Comp_Type := Component_Type (Typ);
 
+               --  Analyze expression of the iterated_component_association
+               --  with its index parameter in scope.
+
+               if Nkind (Assoc) = N_Iterated_Component_Association then
+                  Push_Scope (Scope (Defining_Identifier (Assoc)));
+                  Enter_Name (Defining_Identifier (Assoc));
+                  Analyze_And_Resolve (Expr, Comp_Type);
+               end if;
+
                if Is_Scalar_Type (Comp_Type) then
                   Apply_Scalar_Range_Check (Expr, Comp_Type);
                end if;
 
-               Index     := First (Choices (Assoc));
+               --  Restore scope of the iterated_component_association
+
+               if Nkind (Assoc) = N_Iterated_Component_Association then
+                  End_Scope;
+               end if;
+
+               Index     := First (Choice_List (Assoc));
                Index_Typ := First_Index (Typ);
 
                while Present (Index) loop
-                  --  The index denotes a range of elements
+                  --  If the index denotes a range of elements or a constrained
+                  --  subtype indication, then their low and high bounds
+                  --  already have range checks applied.
 
-                  if Nkind (Index) = N_Range then
-                     Apply_Scalar_Range_Check
-                       (Low_Bound  (Index), Base_Type (Etype (Index_Typ)));
-                     Apply_Scalar_Range_Check
-                       (High_Bound (Index), Base_Type (Etype (Index_Typ)));
+                  if Nkind (Index) in N_Range | N_Subtype_Indication then
+                     null;
 
-                  --  Otherwise the index denotes a single element
+                  --  Otherwise the index denotes a single expression where
+                  --  range checks need to be applied or a subtype name
+                  --  (without range constraints) where applying checks is
+                  --  harmless.
+                  --
+                  --  In delta_aggregate and Update attribute on array the
+                  --  others_choice is not allowed.
 
-                  else
+                  else pragma Assert (Nkind (Index) in N_Subexpr);
                      Apply_Scalar_Range_Check (Index, Etype (Index_Typ));
                   end if;
 
@@ -339,6 +474,18 @@ package body Exp_SPARK is
          Build_DIC_Procedure_Body (E, For_Freeze => True);
       end if;
    end Expand_SPARK_N_Freeze_Type;
+
+   ------------------------------
+   -- Expand_SPARK_N_Aggregate --
+   ------------------------------
+
+   procedure Expand_SPARK_N_Aggregate (N : Node_Id) is
+      Aggr_Typ : constant Entity_Id := Etype (N);
+   begin
+      if Is_Array_Type (Aggr_Typ) then
+         Expand_SPARK_Array_Aggregate (N, Index => First_Index (Aggr_Typ));
+      end if;
+   end Expand_SPARK_N_Aggregate;
 
    ----------------------------------------
    -- Expand_SPARK_N_Attribute_Reference --

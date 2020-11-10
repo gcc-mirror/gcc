@@ -124,6 +124,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "dbgcnt.h"
+#include "symtab-clones.h"
 
 template <typename valtype> class ipcp_value;
 
@@ -595,7 +596,7 @@ determine_versionability (struct cgraph_node *node,
   /* There are a number of generic reasons functions cannot be versioned.  We
      also cannot remove parameters if there are type attributes such as fnspec
      present.  */
-  if (node->alias || node->thunk.thunk_p)
+  if (node->alias || node->thunk)
     reason = "alias or thunk";
   else if (!node->versionable)
     reason = "not a tree_versionable_function";
@@ -646,7 +647,7 @@ determine_versionability (struct cgraph_node *node,
 	    reason = "external function which calls va_arg_pack_len";
         }
 
-  if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
+  if (reason && dump_file && !node->alias && !node->thunk)
     fprintf (dump_file, "Function %s is not versionable, reason: %s.\n",
 	     node->dump_name (), reason);
 
@@ -691,7 +692,7 @@ gather_caller_stats (struct cgraph_node *node, void *data)
   struct cgraph_edge *cs;
 
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (!cs->caller->thunk.thunk_p)
+    if (!cs->caller->thunk)
       {
         if (cs->count.ipa ().initialized_p ())
 	  stats->count_sum += cs->count.ipa ();
@@ -1155,7 +1156,7 @@ count_callers (cgraph_node *node, void *data)
   for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
     /* Local thunks can be handled transparently, but if the thunk cannot
        be optimized out, count it as a real use.  */
-    if (!cs->caller->thunk.thunk_p || !cs->caller->local)
+    if (!cs->caller->thunk || !cs->caller->local)
       ++*caller_count;
   return false;
 }
@@ -1168,7 +1169,7 @@ set_single_call_flag (cgraph_node *node, void *)
 {
   cgraph_edge *cs = node->callers;
   /* Local thunks can be handled transparently, skip them.  */
-  while (cs && cs->caller->thunk.thunk_p && cs->caller->local)
+  while (cs && cs->caller->thunk && cs->caller->local)
     cs = cs->next_caller;
   if (cs && IPA_NODE_REF (cs->caller))
     {
@@ -1215,7 +1216,7 @@ initialize_node_lattices (struct cgraph_node *node)
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS)
-      && !node->alias && !node->thunk.thunk_p)
+      && !node->alias && !node->thunk)
     {
       fprintf (dump_file, "Initializing lattices of %s\n",
 	       node->dump_name ());
@@ -1226,21 +1227,24 @@ initialize_node_lattices (struct cgraph_node *node)
 
   auto_vec<bool, 16> surviving_params;
   bool pre_modified = false;
-  if (!disable && node->clone.param_adjustments)
+
+  clone_info *cinfo = clone_info::get (node);
+
+  if (!disable && cinfo && cinfo->param_adjustments)
     {
       /* At the moment all IPA optimizations should use the number of
 	 parameters of the prevailing decl as the m_always_copy_start.
 	 Handling any other value would complicate the code below, so for the
 	 time bing let's only assert it is so.  */
-      gcc_assert ((node->clone.param_adjustments->m_always_copy_start
+      gcc_assert ((cinfo->param_adjustments->m_always_copy_start
 		   == ipa_get_param_count (info))
-		  || node->clone.param_adjustments->m_always_copy_start < 0);
+		  || cinfo->param_adjustments->m_always_copy_start < 0);
 
       pre_modified = true;
-      node->clone.param_adjustments->get_surviving_params (&surviving_params);
+      cinfo->param_adjustments->get_surviving_params (&surviving_params);
 
       if (dump_file && (dump_flags & TDF_DETAILS)
-	  && !node->alias && !node->thunk.thunk_p)
+	  && !node->alias && !node->thunk)
 	{
 	  bool first = true;
 	  for (int j = 0; j < ipa_get_param_count (info); j++)
@@ -2806,12 +2810,12 @@ propagate_aggs_across_jump_function (struct cgraph_edge *cs,
    non-thunk) destination, the call passes through a thunk.  */
 
 static bool
-call_passes_through_thunk_p (cgraph_edge *cs)
+call_passes_through_thunk (cgraph_edge *cs)
 {
   cgraph_node *alias_or_thunk = cs->callee;
   while (alias_or_thunk->alias)
     alias_or_thunk = alias_or_thunk->get_alias_target ();
-  return alias_or_thunk->thunk.thunk_p;
+  return alias_or_thunk->thunk;
 }
 
 /* Propagate constants from the caller to the callee of CS.  INFO describes the
@@ -2853,7 +2857,7 @@ propagate_constants_across_call (struct cgraph_edge *cs)
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series
      of aliases first.  */
-  if (call_passes_through_thunk_p (cs))
+  if (call_passes_through_thunk (cs))
     {
       ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
 							       0));
@@ -4456,9 +4460,10 @@ want_remove_some_param_p (cgraph_node *node, vec<tree> known_csts)
 
       if (!filled_vec)
        {
-         if (!node->clone.param_adjustments)
+	 clone_info *info = clone_info::get (node);
+	 if (!info || !info->param_adjustments)
            return true;
-         node->clone.param_adjustments->get_surviving_params (&surviving);
+	 info->param_adjustments->get_surviving_params (&surviving);
          filled_vec = true;
        }
       if (surviving.length() < (unsigned) i &&  surviving[i])
@@ -4484,7 +4489,9 @@ create_specialized_node (struct cgraph_node *node,
   struct ipa_agg_replacement_value *av;
   struct cgraph_node *new_node;
   int i, count = ipa_get_param_count (info);
-  ipa_param_adjustments *old_adjustments = node->clone.param_adjustments;
+  clone_info *cinfo = clone_info::get (node);
+  ipa_param_adjustments *old_adjustments = cinfo
+					   ? cinfo->param_adjustments : NULL;
   ipa_param_adjustments *new_adjustments;
   gcc_assert (!info->ipcp_orig_node);
   gcc_assert (node->can_change_signature
@@ -4538,7 +4545,7 @@ create_specialized_node (struct cgraph_node *node,
   else
     new_adjustments = NULL;
 
-  replace_trees = vec_safe_copy (node->clone.tree_map);
+  replace_trees = cinfo ? vec_safe_copy (cinfo->tree_map) : NULL;
   for (i = 0; i < count; i++)
     {
       tree t = known_csts[i];
@@ -4698,7 +4705,7 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	  if (!IPA_EDGE_REF (cs)
 	      || i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      || (i == 0
-		  && call_passes_through_thunk_p (cs)))
+		  && call_passes_through_thunk (cs)))
 	    {
 	      newval = NULL_TREE;
 	      break;
@@ -5462,6 +5469,9 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 					    &caller_count))
     return false;
 
+  if (!dbg_cnt (ipa_cp_values))
+    return false;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, " - considering value ");
@@ -5577,6 +5587,12 @@ decide_whether_version_node (struct cgraph_node *node)
 
   if (info->do_clone_for_all_contexts)
     {
+      if (!dbg_cnt (ipa_cp_values))
+	{
+	  info->do_clone_for_all_contexts = false;
+	  return ret;
+	}
+
       struct cgraph_node *clone;
       vec<cgraph_edge *> callers = node->collect_callers ();
 
@@ -5661,7 +5677,7 @@ has_undead_caller_from_outside_scc_p (struct cgraph_node *node,
   struct cgraph_edge *cs;
 
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (cs->caller->thunk.thunk_p
+    if (cs->caller->thunk
 	&& cs->caller->call_for_symbol_thunks_and_aliases
 	  (has_undead_caller_from_outside_scc_p, NULL, true))
       return true;
@@ -5864,7 +5880,8 @@ ipcp_store_vr_results (void)
 	  ipa_vr vr;
 
 	  if (!plats->m_value_range.bottom_p ()
-	      && !plats->m_value_range.top_p ())
+	      && !plats->m_value_range.top_p ()
+	      && dbg_cnt (ipa_cp_vr))
 	    {
 	      vr.known = true;
 	      vr.type = plats->m_value_range.m_vr.kind ();
@@ -5943,22 +5960,6 @@ ipcp_generate_summary (void)
     ipa_analyze_node (node);
 }
 
-/* Write ipcp summary for nodes in SET.  */
-
-static void
-ipcp_write_summary (void)
-{
-  ipa_prop_write_jump_functions ();
-}
-
-/* Read ipcp summary.  */
-
-static void
-ipcp_read_summary (void)
-{
-  ipa_prop_read_jump_functions ();
-}
-
 namespace {
 
 const pass_data pass_data_ipa_cp =
@@ -5980,8 +5981,8 @@ public:
   pass_ipa_cp (gcc::context *ctxt)
     : ipa_opt_pass_d (pass_data_ipa_cp, ctxt,
 		      ipcp_generate_summary, /* generate_summary */
-		      ipcp_write_summary, /* write_summary */
-		      ipcp_read_summary, /* read_summary */
+		      NULL, /* write_summary */
+		      NULL, /* read_summary */
 		      ipcp_write_transformation_summaries, /*
 		      write_optimization_summary */
 		      ipcp_read_transformation_summaries, /*

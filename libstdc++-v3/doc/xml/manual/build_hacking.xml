@@ -55,7 +55,7 @@ The <filename>configure</filename> file is a script generated (via
 
 
 <para>
-  After the configure process is complete, 
+  After the configure process is complete,
 </para>
 
 <screen>
@@ -92,7 +92,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
   </figure>
 
   <para>
-    Regenerate all generated files by using the command 
+    Regenerate all generated files by using the command
     <command>autoreconf</command> at the top level of the libstdc++ source
     directory.
   </para>

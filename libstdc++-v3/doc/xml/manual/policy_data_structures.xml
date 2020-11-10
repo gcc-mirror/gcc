@@ -3003,7 +3003,7 @@
 		</textobject>
 	      </mediaobject>
 	    </figure>
-	    
+	
 	    <para>Let U be a domain (e.g., the integers, or the
 	    strings of 3 characters). A hash-table algorithm needs to map
 	    elements of U "uniformly" into the range [0,..., m -
@@ -3179,7 +3179,7 @@
 		0</subscript><superscript>t - 1</superscript> s<subscript>i</subscript> a<superscript>i</superscript> mod m
 	      </mathphrase>
 	    </equation>
-	    
+	
 
 	    <para>where a is some non-negative integral value. This is
 	    the standard string-hashing function used in SGI's
@@ -3202,7 +3202,7 @@
 	      </title>
 	      <mathphrase>
 		f<subscript>2</subscript>(s, m) = ∑ <subscript>i
-		= 0</subscript><superscript>k - 1</superscript> s<subscript>i</subscript> a<superscript>i</superscript> mod m 
+		= 0</subscript><superscript>k - 1</superscript> s<subscript>i</subscript> a<superscript>i</superscript> mod m
 	      </mathphrase>
 	    </equation>
 
@@ -3278,7 +3278,7 @@
 		  </textobject>
 		</mediaobject>
 	      </figure>
-	      
+	
 	      <para>If <classname>cc_hash_table</classname>'s
 	      hash-functor, <classname>Hash_Fn</classname> is instantiated by <classname>null_type</classname> , then <classname>Comb_Hash_Fn</classname> is taken to be
 	      a ranged-hash function. The graphic below shows an <function>insert</function> sequence
@@ -3298,7 +3298,7 @@
 		  </textobject>
 		</mediaobject>
 	      </figure>
-	      
+	
 	    </section>
 
 	    <section xml:id="hash_policies.implementation.probe">
@@ -3459,7 +3459,7 @@
 		Probability of Probe Sequence of Length k
 	      </title>
 	      <mathphrase>
-		p<subscript>1</subscript> = 
+		p<subscript>1</subscript> =
 	      </mathphrase>
 	    </equation>
 
@@ -3486,7 +3486,7 @@
 		Probability Probe Sequence in Some Bin
 	      </title>
 	      <mathphrase>
-		P( exists<subscript>i</subscript> l<subscript>i</subscript> ≥ k ) = 
+		P( exists<subscript>i</subscript> l<subscript>i</subscript> ≥ k ) =
 	      </mathphrase>
 	    </equation>
 
@@ -3640,7 +3640,7 @@
 	      <para>The graphic below gives an overall picture of the resize-related
 	      classes. <classname>basic_hash_table</classname>
 	      is parametrized by <classname>Resize_Policy</classname>, which it subclasses
-	      publicly. This class is currently instantiated only by <classname>hash_standard_resize_policy</classname>. 
+	      publicly. This class is currently instantiated only by <classname>hash_standard_resize_policy</classname>.
 	      <classname>hash_standard_resize_policy</classname>
 	      itself is parametrized by <classname>Trigger_Policy</classname> and
 	      <classname>Size_Policy</classname>. Currently, <classname>Trigger_Policy</classname> is
@@ -3917,7 +3917,7 @@
 	      </textobject>
 	    </mediaobject>
 	  </figure>
-	  
+	
 	  <para>Supporting such trees is difficult for a number of
 	  reasons:</para>
 
@@ -3983,7 +3983,7 @@
 	      node_end() const;
 
 	      node_iterator
-	      node_end(); 
+	      node_end();
 	    </programlisting>
 
 	    <para>The first pairs return node iterators corresponding to the
@@ -4026,7 +4026,7 @@
 	    <para><classname>node_update</classname> must also define the following method
 	    for restoring node invariants:</para>
 	    <programlisting>
-	      void 
+	      void
 	      operator()(node_iterator nd_it, const_node_iterator end_nd_it)
 	    </programlisting>
 
@@ -4172,7 +4172,7 @@
 
 	  </section>
 
-	</section> 
+	</section>
 
 	<section xml:id="container.tree.details.split">
 	  <info><title>Split and Join</title></info>
@@ -4247,8 +4247,8 @@
 	currently illegal.</para>
 
 	<para>Following is a description of a (PATRICIA) trie
-	(this implementation follows <xref linkend="biblio.okasaki98mereable"/> and 
-	<xref linkend="biblio.filliatre2000ptset"/>). 
+	(this implementation follows <xref linkend="biblio.okasaki98mereable"/> and
+	<xref linkend="biblio.filliatre2000ptset"/>).
 	</para>
 
 	<para>A (PATRICIA) trie is similar to a tree, but with the
@@ -4615,7 +4615,7 @@
 	  which unconditionally move an accessed element to the front of
 	  the list. The latter type is very useful in this library,
 	  since there is no need to associate metadata with each element.
-	  (See <xref linkend="biblio.andrew04mtf"/> 
+	  (See <xref linkend="biblio.andrew04mtf"/>
 	  </para>
 
 	</section>
@@ -4717,7 +4717,7 @@
 	<classname>binomial_heap_tag</classname>,
 	<classname>rc_binomial_heap_tag</classname>,
 	or <classname>thin_heap_tag</classname>,
-	specifies, respectively, 
+	specifies, respectively,
 	an underlying pairing heap (<xref linkend="biblio.fredman86pairing"/>),
 	binary heap (<xref linkend="biblio.clrs2001"/>),
 	binomial heap (<xref linkend="biblio.clrs2001"/>),
@@ -4819,7 +4819,7 @@
 	    assert(p.top() == 3);
 	  </programlisting>
 
-	  
+	
 	  <para>It should be noted that an alternative design could embed an
 	  associative container in a priority queue. Could, but most
 	  probably should not. To begin with, it should be noted that one
@@ -4944,7 +4944,7 @@
 
 	  <para>Of course, one can use any order-preserving associative
 	  container as a priority queue, as in the graphic above label C, possibly by creating an adapter class
-	  over the associative container (much as 
+	  over the associative container (much as
 	  <classname>std::priority_queue</classname> can adapt <classname>std::vector</classname>).
 	  This has the advantage that no cross-referencing is necessary
 	  at all; the priority queue itself is an associative container.
@@ -4969,7 +4969,7 @@
 	  types. <classname>__gnu_pbds::priority_queue</classname>
 	  publicly defines <classname>container_category</classname> as one of the tags. Given any
 	  container <classname>Cntnr</classname>, the tag of the underlying
-	  data structure can be found via <classname>typename 
+	  data structure can be found via <classname>typename
 	  Cntnr::container_category</classname>; this is one of the possible tags shown in the graphic below.
 	  </para>
 
@@ -4994,7 +4994,7 @@
 	  container.</para>
 
 	  <para>To find if a container might throw if two of its objects are
-	  joined, one can use 
+	  joined, one can use
 	  <programlisting>
 	    container_traits&lt;Cntnr&gt;::split_join_can_throw
 	  </programlisting>

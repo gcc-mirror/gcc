@@ -1180,6 +1180,8 @@ package body Scng is
          end if;
       end Start_Of_Wide_Character;
 
+      Token_Contains_Uppercase : Boolean;
+
    --  Start of processing for Scan
 
    begin
@@ -1240,6 +1242,8 @@ package body Scng is
          --  of the token we will scan, and hence the value of Token_Ptr.
 
          Token_Ptr := Scan_Ptr;
+
+         Token_Contains_Uppercase := False;
 
          --  Here begins the main case statement which transfers control on the
          --  basis of the non-blank character we have encountered.
@@ -1378,13 +1382,18 @@ package body Scng is
          --  Left bracket
 
          when '[' =>
-            if Source (Scan_Ptr + 1) = '"' then
-               goto Scan_Wide_Character;
 
-            elsif Ada_Version >= Ada_2020 then
+            --  [] under -gnatX is an aggregate notation and the special
+            --  wide character notation becomes unsupported since the two
+            --  are ambiguous.
+
+            if Extensions_Allowed then
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Left_Bracket;
                return;
+
+            elsif Source (Scan_Ptr + 1) = '"' then
+               goto Scan_Wide_Character;
 
             else
                Error_Msg_S ("illegal character, replaced by ""(""");
@@ -1994,6 +2003,7 @@ package body Scng is
          --  Upper case letters
 
          when 'A' .. 'Z' =>
+            Token_Contains_Uppercase := True;
             Name_Len := 1;
             Underline_Found := False;
             Name_Buffer (1) :=
@@ -2342,6 +2352,8 @@ package body Scng is
                Accumulate_Checksum (Source (Scan_Ptr));
 
             elsif Source (Scan_Ptr) in 'A' .. 'Z' then
+               Token_Contains_Uppercase := True;
+
                Name_Buffer (Name_Len + 1) :=
                  Character'Val (Character'Pos (Source (Scan_Ptr)) + 32);
                Accumulate_Checksum (Name_Buffer (Name_Len + 1));
@@ -2569,7 +2581,7 @@ package body Scng is
 
          Token := Tok_Identifier;
 
-         --  Here is where we check if it was a keyword
+         --  Check if it is a keyword
 
          if Is_Keyword_Name (Token_Name) then
             Accumulate_Token_Checksum;
@@ -2596,7 +2608,7 @@ package body Scng is
                --  Ada 2005 (AI-340): Do not apply the style check in case of
                --  MOD attribute.
 
-               if Source (Token_Ptr) <= 'Z'
+               if Token_Contains_Uppercase
                  and then (Prev_Token /= Tok_Apostrophe
                            or else
                              (Token /= Tok_Access and then

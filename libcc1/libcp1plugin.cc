@@ -353,7 +353,7 @@ supplement_binding (cxx_binding *binding, tree decl)
 	   /* If TARGET_BVAL is anticipated but has not yet been
 	      declared, pretend it is not there at all.  */
 	   || (TREE_CODE (target_bval) == FUNCTION_DECL
-	       && DECL_UNDECLARED_BUILTIN_P (target_bval)))
+	       && DECL_IS_UNDECLARED_BUILTIN (target_bval)))
     binding->value = decl;
   else if (TREE_CODE (target_bval) == TYPE_DECL
 	   && DECL_ARTIFICIAL (target_bval)
@@ -1649,7 +1649,7 @@ plugin_add_friend (cc1_plugin::connection * /* self */,
     make_friend_class (type, TREE_TYPE (decl), true);
   else
     {
-      DECL_FRIEND_P (decl) = true;
+      DECL_UNIQUE_FRIEND_P (decl) = true;
       add_friend (type, decl, true);
     }
 

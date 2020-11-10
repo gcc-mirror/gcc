@@ -172,7 +172,6 @@ along with GCC; see the file COPYING3.  If not see
      passes are executed after partitioning and thus see just parts of the
      compiled unit.  */
   INSERT_PASSES_AFTER (all_late_ipa_passes)
-  NEXT_PASS (pass_materialize_all_clones);
   NEXT_PASS (pass_ipa_pta);
   NEXT_PASS (pass_omp_simd_clone);
   TERMINATE_PASS_LIST (all_late_ipa_passes)
@@ -290,11 +289,16 @@ along with GCC; see the file COPYING3.  If not see
 	  /* pass_vectorize must immediately follow pass_if_conversion.
 	     Please do not add any other passes in between.  */
 	  NEXT_PASS (pass_vectorize);
-          PUSH_INSERT_PASSES_WITHIN (pass_vectorize)
+	  PUSH_INSERT_PASSES_WITHIN (pass_vectorize)
 	      NEXT_PASS (pass_dce);
-          POP_INSERT_PASSES ()
-          NEXT_PASS (pass_predcom);
+	  POP_INSERT_PASSES ()
+	  NEXT_PASS (pass_predcom);
 	  NEXT_PASS (pass_complete_unroll);
+	  NEXT_PASS (pass_pre_slp_scalar_cleanup);
+	  PUSH_INSERT_PASSES_WITHIN (pass_pre_slp_scalar_cleanup)
+	      NEXT_PASS (pass_fre, false /* may_iterate */);
+	      NEXT_PASS (pass_dse);
+	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_slp_vectorize);
 	  NEXT_PASS (pass_loop_prefetch);
 	  /* Run IVOPTs after the last pass that uses data-reference analysis
@@ -492,6 +496,7 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_late_compilation);
       PUSH_INSERT_PASSES_WITHIN (pass_late_compilation)
+	  NEXT_PASS (pass_zero_call_used_regs);
 	  NEXT_PASS (pass_compute_alignments);
 	  NEXT_PASS (pass_variable_tracking);
 	  NEXT_PASS (pass_free_cfg);

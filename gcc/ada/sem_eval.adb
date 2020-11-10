@@ -445,9 +445,11 @@ package body Sem_Eval is
          --  is folded, and since this is definitely a failure, extra checks
          --  are OK.
 
-         Insert_Action (Expr,
-           Make_Predicate_Check
-             (Typ, Duplicate_Subexpr (Expr)), Suppress => All_Checks);
+         if Predicate_Enabled (Typ) then
+            Insert_Action (Expr,
+              Make_Predicate_Check
+                (Typ, Duplicate_Subexpr (Expr)), Suppress => All_Checks);
+         end if;
       end if;
    end Check_Expression_Against_Static_Predicate;
 
@@ -2941,9 +2943,14 @@ package body Sem_Eval is
       end if;
 
       case Nam is
-         when Name_Shift_Left  => Eval_Shift (N, E, N_Op_Shift_Left);
-         when Name_Shift_Right => Eval_Shift (N, E, N_Op_Shift_Right);
-         when others           => null;
+         when Name_Shift_Left  =>
+            Eval_Shift (N, E, N_Op_Shift_Left);
+         when Name_Shift_Right =>
+            Eval_Shift (N, E, N_Op_Shift_Right);
+         when Name_Shift_Right_Arithmetic =>
+            Eval_Shift (N, E, N_Op_Shift_Right_Arithmetic);
+         when others           =>
+            null;
       end case;
    end Eval_Intrinsic_Call;
 
@@ -3224,7 +3231,7 @@ package body Sem_Eval is
    -- Eval_Op_Not --
    -----------------
 
-   --  The not operation is a static functions, so the result is potentially
+   --  The not operation is a static function, so the result is potentially
    --  static if the operand is potentially static (RM 4.9(7), 4.9(20)).
 
    procedure Eval_Op_Not (N : Node_Id) is
@@ -4800,13 +4807,11 @@ package body Sem_Eval is
       end Check_Elab_Call;
 
    begin
-      --  Evaluate logical shift operators on binary modular types
-
-      if Is_Modular_Integer_Type (Typ)
-        and then not Non_Binary_Modulus (Typ)
-        and then Compile_Time_Known_Value (Left)
+      if Compile_Time_Known_Value (Left)
         and then Compile_Time_Known_Value (Right)
       then
+         pragma Assert (not Non_Binary_Modulus (Typ));
+
          if Op = N_Op_Shift_Left then
             Check_Elab_Call;
 
@@ -4821,12 +4826,73 @@ package body Sem_Eval is
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
 
-            --  Fold Shift_Right (X, Y) by computing X / 2**Y
+            --  Fold Shift_Right (X, Y) by computing abs X / 2**Y
 
             Fold_Uint
               (N,
-               Expr_Value (Left) / (Uint_2 ** Expr_Value (Right)),
+               abs Expr_Value (Left) / (Uint_2 ** Expr_Value (Right)),
                Static => Static);
+
+         elsif Op = N_Op_Shift_Right_Arithmetic then
+            Check_Elab_Call;
+
+            declare
+               Two_Y   : constant Uint := Uint_2 ** Expr_Value (Right);
+               Modulus : Uint;
+            begin
+               if Is_Modular_Integer_Type (Typ) then
+                  Modulus := Einfo.Modulus (Typ);
+               else
+                  Modulus := Uint_2 ** RM_Size (Typ);
+               end if;
+
+               --  X / 2**Y if X if positive or a small enough modular integer
+
+               if (Is_Modular_Integer_Type (Typ)
+                    and then Expr_Value (Left) < Modulus / Uint_2)
+                 or else
+                   (not Is_Modular_Integer_Type (Typ)
+                     and then Expr_Value (Left) >= 0)
+               then
+                  Fold_Uint (N, Expr_Value (Left) / Two_Y, Static => Static);
+
+               --  -1 (aka all 1's) if Y is larger than the number of bits
+               --  available or if X = -1.
+
+               elsif Two_Y > Modulus
+                 or else Expr_Value (Left) = Uint_Minus_1
+               then
+                  if Is_Modular_Integer_Type (Typ) then
+                     Fold_Uint (N, Modulus - Uint_1, Static => Static);
+                  else
+                     Fold_Uint (N, Uint_Minus_1, Static => Static);
+                  end if;
+
+               --  Large modular integer, compute via multiply/divide the
+               --  following: X >> Y + (1 << Y - 1) << (RM_Size - Y)
+
+               elsif Is_Modular_Integer_Type (Typ) then
+                  Fold_Uint
+                    (N,
+                     (Expr_Value (Left)) / Two_Y
+                        + (Two_Y - Uint_1)
+                          * Uint_2 ** (RM_Size (Typ) - Expr_Value (Right)),
+                     Static => Static);
+
+               --  Negative signed integer, compute via multiple/divide the
+               --  following:
+               --  (Modulus + X) >> Y + (1 << Y - 1) << (RM_Size - Y) - Modulus
+
+               else
+                  Fold_Uint
+                    (N,
+                     (Modulus + Expr_Value (Left)) / Two_Y
+                        + (Two_Y - Uint_1)
+                          * Uint_2 ** (RM_Size (Typ) - Expr_Value (Right))
+                        - Modulus,
+                     Static => Static);
+               end if;
+            end;
          end if;
       end if;
    end Fold_Shift;
@@ -6488,8 +6554,65 @@ package body Sem_Eval is
          end if;
 
          declare
-            DL1 : constant Elist_Id := Discriminant_Constraint (T1);
-            DL2 : constant Elist_Id := Discriminant_Constraint (T2);
+
+            function Original_Discriminant_Constraint
+              (Typ : Entity_Id) return Elist_Id;
+            --  Returns Typ's discriminant constraint, or if the constraint
+            --  is inherited from an ancestor type, then climbs the parent
+            --  types to locate and return the constraint farthest up the
+            --  parent chain that Typ's constraint is ultimately inherited
+            --  from (stopping before a parent that doesn't impose a constraint
+            --  or a parent that has new discriminants). This ensures a proper
+            --  result from the equality comparison of Elist_Ids below (as
+            --  otherwise, derived types that inherit constraints may appear
+            --  to be unequal, because each level of derivation can have its
+            --  own copy of the constraint).
+
+            function Original_Discriminant_Constraint
+              (Typ : Entity_Id) return Elist_Id
+            is
+            begin
+               if not Has_Discriminants (Typ) then
+                  return No_Elist;
+
+               --  If Typ is not a derived type, then directly return the
+               --  its constraint.
+
+               elsif not Is_Derived_Type (Typ) then
+                  return Discriminant_Constraint (Typ);
+
+               --  If the parent type doesn't have discriminants, doesn't
+               --  have a constraint, or has new discriminants, then stop
+               --  and return Typ's constraint.
+
+               elsif not Has_Discriminants (Etype (Typ))
+
+                 --  No constraint on the parent type
+
+                 or else not Present (Discriminant_Constraint (Etype (Typ)))
+                 or else Is_Empty_Elmt_List
+                           (Discriminant_Constraint (Etype (Typ)))
+
+                 --  The parent type defines new discriminants
+
+                 or else
+                   (Is_Base_Type (Etype (Typ))
+                     and then Present (Discriminant_Specifications
+                                         (Parent (Etype (Typ)))))
+               then
+                  return Discriminant_Constraint (Typ);
+
+               --  Otherwise, make a recursive call on the parent type
+
+               else
+                  return Original_Discriminant_Constraint (Etype (Typ));
+               end if;
+            end Original_Discriminant_Constraint;
+
+            --  Local variables
+
+            DL1 : constant Elist_Id := Original_Discriminant_Constraint (T1);
+            DL2 : constant Elist_Id := Original_Discriminant_Constraint (T2);
 
             DA1 : Elmt_Id;
             DA2 : Elmt_Id;

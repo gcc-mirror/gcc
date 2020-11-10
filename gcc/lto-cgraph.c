@@ -39,6 +39,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
+#include "symtab-thunks.h"
+#include "symtab-clones.h"
 
 /* True when asm nodes has been output.  */
 bool asm_nodes_output = false;
@@ -261,7 +265,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 			 : gimple_uid (edge->call_stmt) + 1;
   bp_pack_enum (&bp, cgraph_inline_failed_t,
 	        CIF_N_REASONS, edge->inline_failed);
-  gcc_checking_assert (uid || edge->caller->thunk.thunk_p);
+  gcc_checking_assert (uid || edge->caller->thunk);
   bp_pack_var_len_unsigned (&bp, uid);
   bp_pack_value (&bp, edge->speculative_id, 16);
   bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
@@ -393,7 +397,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   boundary_p = !lto_symtab_encoder_in_partition_p (encoder, node);
 
   if (node->analyzed && (!boundary_p || node->alias
-			 || (node->thunk.thunk_p && !node->inlined_to)))
+			 || (node->thunk && !node->inlined_to)))
     tag = LTO_symtab_analyzed_node;
   else
     tag = LTO_symtab_unavail_node;
@@ -533,10 +537,19 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->nonfreeing_fn, 1);
   bp_pack_value (&bp, node->merged_comdat, 1);
   bp_pack_value (&bp, node->merged_extern_inline, 1);
-  bp_pack_value (&bp, node->thunk.thunk_p, 1);
+  bp_pack_value (&bp, node->thunk, 1);
   bp_pack_value (&bp, node->parallelized_function, 1);
   bp_pack_value (&bp, node->declare_variant_alt, 1);
   bp_pack_value (&bp, node->calls_declare_variant_alt, 1);
+
+  /* Stream thunk info always because we use it in
+     ipa_polymorphic_call_context::ipa_polymorphic_call_context
+     to properly interpret THIS pointers for thunks that has been converted
+     to Gimple.  */
+  struct thunk_info *thunk = node->definition ? thunk_info::get (node) : NULL;
+
+  bp_pack_value (&bp, thunk != NULL, 1);
+
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN,
 		/* When doing incremental link, we will get new resolution
@@ -546,26 +559,15 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   streamer_write_bitpack (&bp);
   streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
-  /* Stream thunk info always because we use it in
-     ipa_polymorphic_call_context::ipa_polymorphic_call_context
-     to properly interpret THIS pointers for thunks that has been converted
-     to Gimple.  */
-  if (node->definition)
-    {
-      streamer_write_uhwi_stream
-	 (ob->main_stream,
-	  1 + (node->thunk.this_adjusting != 0) * 2
-	  + (node->thunk.virtual_offset_p != 0) * 4);
-      streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
-      streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
-      streamer_write_uhwi_stream (ob->main_stream, node->thunk.indirect_offset);
-    }
   streamer_write_hwi_stream (ob->main_stream, node->profile_id);
   streamer_write_hwi_stream (ob->main_stream, node->unit_id);
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
     streamer_write_hwi_stream (ob->main_stream, node->get_init_priority ());
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     streamer_write_hwi_stream (ob->main_stream, node->get_fini_priority ());
+
+  if (thunk)
+    thunk_info::get (node)->stream_out (ob);
 }
 
 /* Output the varpool NODE to OB. 
@@ -766,6 +768,9 @@ output_refs (lto_symtab_encoder_t encoder)
 	  for (int i = 0; node->iterate_reference (i, ref); i++)
 	    lto_output_ref (ob, ref, encoder);
 	}
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	if (cnode->declare_variant_alt)
+	  omp_lto_output_declare_variant_alt (ob, cnode, encoder);
     }
 
   streamer_write_uhwi_stream (ob->main_stream, 0);
@@ -931,7 +936,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (node->alias && node->analyzed)
 	create_references (encoder, node);
       if (cnode
-	  && cnode->thunk.thunk_p && !cnode->inlined_to)
+	  && cnode->thunk && !cnode->inlined_to)
 	add_node_to (encoder, cnode->callees->callee, false);
       while (node->transparent_alias && node->analyzed)
 	{
@@ -987,7 +992,7 @@ output_symtab (void)
     {
       node = dyn_cast <cgraph_node *> (lto_symtab_encoder_deref (encoder, i));
       if (node
-	  && ((node->thunk.thunk_p && !node->inlined_to)
+	  && ((node->thunk && !node->inlined_to)
 	      || lto_symtab_encoder_in_partition_p (encoder, node)))
 	{
 	  output_outgoing_cgraph_edges (node->callees, ob, encoder);
@@ -1139,13 +1144,14 @@ verify_node_partition (symtab_node *node)
    NODE or to replace the values in it, for instance because the first
    time we saw it, the function body was not available but now it
    is.  BP is a bitpack with all the bitflags for NODE read from the
-   stream.  */
+   stream.  Initialize HAS_THUNK_INFO to indicate if thunk info should
+   be streamed in.  */
 
 static void
 input_overwrite_node (struct lto_file_decl_data *file_data,
 		      struct cgraph_node *node,
 		      enum LTO_symtab_tags tag,
-		      struct bitpack_d *bp)
+		      struct bitpack_d *bp, bool *has_thunk_info)
 {
   node->aux = (void *) tag;
   node->lto_file_data = file_data;
@@ -1194,10 +1200,11 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->nonfreeing_fn = bp_unpack_value (bp, 1);
   node->merged_comdat = bp_unpack_value (bp, 1);
   node->merged_extern_inline = bp_unpack_value (bp, 1);
-  node->thunk.thunk_p = bp_unpack_value (bp, 1);
+  node->thunk = bp_unpack_value (bp, 1);
   node->parallelized_function = bp_unpack_value (bp, 1);
   node->declare_variant_alt = bp_unpack_value (bp, 1);
   node->calls_declare_variant_alt = bp_unpack_value (bp, 1);
+  *has_thunk_info = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
   node->split_part = bp_unpack_value (bp, 1);
@@ -1235,6 +1242,7 @@ input_node (struct lto_file_decl_data *file_data,
   const char *section;
   order = streamer_read_hwi (ib) + file_data->order_base;
   clone_ref = streamer_read_hwi (ib);
+  bool has_thunk_info;
 
   fn_decl = lto_input_fn_decl_ref (ib, file_data);
 
@@ -1294,7 +1302,7 @@ input_node (struct lto_file_decl_data *file_data,
 
   bp = streamer_read_bitpack (ib);
 
-  input_overwrite_node (file_data, node, tag, &bp);
+  input_overwrite_node (file_data, node, tag, &bp, &has_thunk_info);
 
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->inlined_to = (cgraph_node *) (intptr_t) ref;
@@ -1311,19 +1319,6 @@ input_node (struct lto_file_decl_data *file_data,
   if (section)
     node->set_section_for_node (section);
 
-  if (node->definition)
-    {
-      int type = streamer_read_uhwi (ib);
-      HOST_WIDE_INT fixed_offset = streamer_read_uhwi (ib);
-      HOST_WIDE_INT virtual_value = streamer_read_uhwi (ib);
-      HOST_WIDE_INT indirect_offset = streamer_read_uhwi (ib);
-
-      node->thunk.fixed_offset = fixed_offset;
-      node->thunk.virtual_value = virtual_value;
-      node->thunk.indirect_offset = indirect_offset;
-      node->thunk.this_adjusting = (type & 2);
-      node->thunk.virtual_offset_p = (type & 4);
-    }
   if (node->alias && !node->analyzed && node->weakref)
     node->alias_target = get_alias_symbol (node->decl);
   node->profile_id = streamer_read_hwi (ib);
@@ -1334,6 +1329,9 @@ input_node (struct lto_file_decl_data *file_data,
     node->set_init_priority (streamer_read_hwi (ib));
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     node->set_fini_priority (streamer_read_hwi (ib));
+
+  if (has_thunk_info)
+    thunk_info::get_create (node)->stream_in (ib);
 
   return node;
 }
@@ -1614,6 +1612,9 @@ input_refs (class lto_input_block *ib,
 	  input_ref (ib, node, nodes);
 	  count--;
 	}
+      if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
+	if (cnode->declare_variant_alt)
+	  omp_lto_input_declare_variant_alt (ib, cnode, nodes);
     }
 }
 	    
@@ -1823,9 +1824,10 @@ input_offload_tables (bool do_force_output)
 static int
 output_cgraph_opt_summary_p (struct cgraph_node *node)
 {
-  return ((node->clone_of || node->former_clone_of)
-	  && (node->clone.tree_map
-	      || node->clone.param_adjustments));
+  if (node->clone_of || node->former_clone_of)
+    return true;
+  clone_info *info = clone_info::get (node);
+  return info && (info->tree_map || info->param_adjustments);
 }
 
 /* Output optimization summary for EDGE to OB.  */
@@ -1849,9 +1851,12 @@ output_node_opt_summary (struct output_block *ob,
   /* TODO: Should this code be moved to ipa-param-manipulation?  */
   struct bitpack_d bp;
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, (node->clone.param_adjustments != NULL), 1);
+  clone_info *info = clone_info::get (node);
+  
+  bp_pack_value (&bp, (info && info->param_adjustments != NULL), 1);
   streamer_write_bitpack (&bp);
-  if (ipa_param_adjustments *adjustments = node->clone.param_adjustments)
+  if (ipa_param_adjustments *adjustments
+		 = info ? info->param_adjustments : NULL)
     {
       streamer_write_uhwi (ob, vec_safe_length (adjustments->m_adj_params));
       ipa_adjusted_param *adj;
@@ -1879,17 +1884,18 @@ output_node_opt_summary (struct output_block *ob,
 	}
       streamer_write_hwi (ob, adjustments->m_always_copy_start);
       bp = bitpack_create (ob->main_stream);
-      bp_pack_value (&bp, node->clone.param_adjustments->m_skip_return, 1);
+      bp_pack_value (&bp, info->param_adjustments->m_skip_return, 1);
       streamer_write_bitpack (&bp);
     }
 
-  streamer_write_uhwi (ob, vec_safe_length (node->clone.tree_map));
-  FOR_EACH_VEC_SAFE_ELT (node->clone.tree_map, i, map)
-    {
-      streamer_write_uhwi (ob, map->parm_num);
-      gcc_assert (EXPR_LOCATION (map->new_tree) == UNKNOWN_LOCATION);
-      stream_write_tree (ob, map->new_tree, true);
-    }
+  streamer_write_uhwi (ob, info ? vec_safe_length (info->tree_map) : 0);
+  if (info)
+    FOR_EACH_VEC_SAFE_ELT (info->tree_map, i, map)
+      {
+	streamer_write_uhwi (ob, map->parm_num);
+	gcc_assert (EXPR_LOCATION (map->new_tree) == UNKNOWN_LOCATION);
+	stream_write_tree (ob, map->new_tree, true);
+      }
 
   if (lto_symtab_encoder_in_partition_p (encoder, node))
     {
@@ -1959,6 +1965,8 @@ input_node_opt_summary (struct cgraph_node *node,
   struct bitpack_d bp;
   bp = streamer_read_bitpack (ib_main);
   bool have_adjustments = bp_unpack_value (&bp, 1);
+  clone_info *info = clone_info::get_create (node);
+
   if (have_adjustments)
     {
       count = streamer_read_uhwi (ib_main);
@@ -1991,7 +1999,7 @@ input_node_opt_summary (struct cgraph_node *node,
       int always_copy_start = streamer_read_hwi (ib_main);
       bp = streamer_read_bitpack (ib_main);
       bool skip_return = bp_unpack_value (&bp, 1);
-      node->clone.param_adjustments
+      info->param_adjustments
 	= (new (ggc_alloc <ipa_param_adjustments> ())
 	   ipa_param_adjustments (new_params, always_copy_start, skip_return));
     }
@@ -2001,7 +2009,7 @@ input_node_opt_summary (struct cgraph_node *node,
     {
       struct ipa_replace_map *map = ggc_alloc<ipa_replace_map> ();
 
-      vec_safe_push (node->clone.tree_map, map);
+      vec_safe_push (info->tree_map, map);
       map->parm_num = streamer_read_uhwi (ib_main);
       map->new_tree = stream_read_tree (ib_main, data_in);
     }

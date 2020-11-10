@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_extract() with char
    inputs produce the right code with a power7 (BE) target.  */
 
-/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
 

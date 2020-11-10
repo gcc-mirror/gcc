@@ -125,6 +125,7 @@ enum cp_tree_index
     CPTI_CLASS_TYPE,
     CPTI_UNKNOWN_TYPE,
     CPTI_INIT_LIST_TYPE,
+    CPTI_EXPLICIT_VOID_LIST,
     CPTI_VTBL_TYPE,
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
@@ -178,6 +179,8 @@ enum cp_tree_index
     CPTI_HEAP_UNINIT_IDENTIFIER,
     CPTI_HEAP_IDENTIFIER,
     CPTI_HEAP_DELETED_IDENTIFIER,
+    CPTI_HEAP_VEC_UNINIT_IDENTIFIER,
+    CPTI_HEAP_VEC_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -230,6 +233,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define class_type_node			cp_global_trees[CPTI_CLASS_TYPE]
 #define unknown_type_node		cp_global_trees[CPTI_UNKNOWN_TYPE]
 #define init_list_type_node		cp_global_trees[CPTI_INIT_LIST_TYPE]
+#define explicit_void_list_node		cp_global_trees[CPTI_EXPLICIT_VOID_LIST]
 #define vtbl_type_node			cp_global_trees[CPTI_VTBL_TYPE]
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
@@ -322,6 +326,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define heap_uninit_identifier		cp_global_trees[CPTI_HEAP_UNINIT_IDENTIFIER]
 #define heap_identifier			cp_global_trees[CPTI_HEAP_IDENTIFIER]
 #define heap_deleted_identifier		cp_global_trees[CPTI_HEAP_DELETED_IDENTIFIER]
+#define heap_vec_uninit_identifier	cp_global_trees[CPTI_HEAP_VEC_UNINIT_IDENTIFIER]
+#define heap_vec_identifier		cp_global_trees[CPTI_HEAP_VEC_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
@@ -409,6 +415,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       ATTR_IS_DEPENDENT (in the TREE_LIST for an attribute)
       ABI_TAG_IMPLICIT (in the TREE_LIST for the argument of abi_tag)
       LAMBDA_CAPTURE_EXPLICIT_P (in a TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST)
+      PARENTHESIZED_LIST_P (in the TREE_LIST for a parameter-declaration-list)
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
       LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
@@ -431,6 +438,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       REINTERPRET_CAST_P (in NOP_EXPR)
       ALIGNOF_EXPR_STD_P (in ALIGNOF_EXPR)
       OVL_DEDUP_P (in OVERLOAD)
+      ATOMIC_CONSTR_MAP_INSTANTIATED_P (in ATOMIC_CONSTR)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -480,7 +488,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       OVL_LOOKUP_P (in OVERLOAD)
-      LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, NAMESPACE_DECL)
+      LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
@@ -738,9 +746,10 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && flag_hosted)
 
 /* Lookup walker marking.  */
-#define LOOKUP_SEEN_P(NODE) TREE_VISITED(NODE)
+#define LOOKUP_SEEN_P(NODE) TREE_VISITED (NODE)
 #define LOOKUP_FOUND_P(NODE) \
-  TREE_LANG_FLAG_4 (TREE_CHECK3(NODE,RECORD_TYPE,UNION_TYPE,NAMESPACE_DECL))
+  TREE_LANG_FLAG_4 (TREE_CHECK4 (NODE,RECORD_TYPE,UNION_TYPE,ENUMERAL_TYPE,\
+				 NAMESPACE_DECL))
 
 /* These two accessors should only be used by OVL manipulators.
    Other users should use iterators and convenience functions.  */
@@ -1323,7 +1332,9 @@ enum cp_trait_kind
   CPTK_IS_UNION,
   CPTK_UNDERLYING_TYPE,
   CPTK_IS_ASSIGNABLE,
-  CPTK_IS_CONSTRUCTIBLE
+  CPTK_IS_CONSTRUCTIBLE,
+  CPTK_IS_NOTHROW_ASSIGNABLE,
+  CPTK_IS_NOTHROW_CONSTRUCTIBLE
 };
 
 /* The types that we are processing.  */
@@ -1586,6 +1597,12 @@ check_constraint_info (tree t)
 /* The parameter mapping for an atomic constraint. */
 #define ATOMIC_CONSTR_MAP(NODE) \
   TREE_OPERAND (TREE_CHECK (NODE, ATOMIC_CONSTR), 0)
+
+/* Whether the parameter mapping of this atomic constraint
+   is already instantiated with concrete template arguments.
+   Used only in satisfy_atom and in the satisfaction cache.  */
+#define ATOMIC_CONSTR_MAP_INSTANTIATED_P(NODE) \
+  TREE_LANG_FLAG_0 (ATOMIC_CONSTR_CHECK (NODE))
 
 /* The expression of an atomic constraint. */
 #define ATOMIC_CONSTR_EXPR(NODE) \
@@ -1860,19 +1877,6 @@ public:
 /* Nonzero if we are parsing the operand of a noexcept operator.  */
 
 #define cp_noexcept_operand scope_chain->noexcept_operand
-
-/* A list of private types mentioned, for deferred access checking.  */
-
-struct GTY((for_user)) cxx_int_tree_map {
-  unsigned int uid;
-  tree to;
-};
-
-struct cxx_int_tree_map_hasher : ggc_ptr_hash<cxx_int_tree_map>
-{
-  static hashval_t hash (cxx_int_tree_map *);
-  static bool equal (cxx_int_tree_map *, cxx_int_tree_map *);
-};
 
 struct named_label_entry; /* Defined in decl.c.  */
 
@@ -2217,7 +2221,6 @@ struct GTY(()) lang_type {
   tree vtables;
   tree typeinfo_var;
   vec<tree, va_gc> *vbases;
-  binding_table nested_udts;
   tree as_base;
   vec<tree, va_gc> *pure_virtuals;
   tree friend_classes;
@@ -2369,12 +2372,6 @@ struct GTY(()) lang_type {
    until the destructor is created with lazily_declare_fn.  */
 #define CLASSTYPE_DESTRUCTOR(NODE) \
   (get_class_binding_direct (NODE, dtor_identifier))
-
-/* A dictionary of the nested user-defined-types (class-types, or enums)
-   found within this class.  This table includes nested member class
-   templates.  */
-#define CLASSTYPE_NESTED_UTDS(NODE) \
-   (LANG_TYPE_CLASS_CHECK (NODE)->nested_udts)
 
 /* Nonzero if NODE has a primary base class, i.e., a base class with
    which it shares the virtual function table pointer.  */
@@ -2736,12 +2733,14 @@ struct GTY(()) lang_decl_fn {
      thunked to function decl.  */
   tree befriending_classes;
 
-  /* For a non-virtual FUNCTION_DECL, this is
-     DECL_FRIEND_CONTEXT.  For a virtual FUNCTION_DECL for which
+  /* For a virtual FUNCTION_DECL for which
      DECL_THIS_THUNK_P does not hold, this is DECL_THUNKS. Both
      this pointer and result pointer adjusting thunks are
      chained here.  This pointer thunks to return pointer thunks
-     will be chained on the return pointer thunk.  */
+     will be chained on the return pointer thunk.
+     For a DECL_CONSTUCTOR_P FUNCTION_DECL, this is the base from
+     whence we inherit.  Otherwise, it is the class in which a
+     (namespace-scope) friend is defined (if any).   */
   tree context;
 
   union lang_decl_u5
@@ -3088,10 +3087,14 @@ struct GTY(()) lang_decl {
   (DECL_LANG_SPECIFIC (VAR_OR_FUNCTION_DECL_CHECK (DECL)) \
    ->u.base.odr_used)
 
-/* Nonzero for DECL means that this decl is just a friend declaration,
-   and should not be added to the list of members for this class.  */
-#define DECL_FRIEND_P(NODE) \
-  (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
+/* Nonzero for FUNCTION_DECL means that this is a friend that is
+   either not pushed into a namespace/looked up in a class (because it
+   is a dependent type, in an uninstantiated template), or it has
+   /only/ been subject to hidden friend injection from one or more
+   befriending classes.  Once another decl matches, the flag is
+   cleared.  There are requirements on its default parms.  */
+#define DECL_UNIQUE_FRIEND_P(NODE) \
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE)) \
    ->u.base.friend_or_tls)
 
 /* Nonzero if the thread-local variable was declared with __thread as
@@ -3290,8 +3293,8 @@ struct GTY(()) lang_decl {
 
    the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
 #define DECL_FRIEND_CONTEXT(NODE)				\
-  ((DECL_DECLARES_FUNCTION_P (NODE)				\
-    && DECL_FRIEND_P (NODE) && !DECL_FUNCTION_MEMBER_P (NODE))	\
+  ((DECL_DECLARES_FUNCTION_P (NODE) && !DECL_VIRTUAL_P (NODE)	\
+    && !DECL_CONSTRUCTOR_P (NODE))				\
    ? LANG_DECL_FN_CHECK (NODE)->context				\
    : NULL_TREE)
 
@@ -3389,6 +3392,10 @@ struct GTY(()) lang_decl {
 /* In a TREE_LIST in the argument of attribute abi_tag, indicates that the tag
    was inherited from a template parameter, not explicitly indicated.  */
 #define ABI_TAG_IMPLICIT(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
+
+/* In a TREE_LIST for a parameter-declaration-list, indicates that all the
+   parameters in the list have declarators enclosed in ().  */
+#define PARENTHESIZED_LIST_P(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
 
 /* Non zero if this is a using decl for a dependent scope. */
 #define DECL_DEPENDENT_P(NODE) DECL_LANG_FLAG_0 (USING_DECL_CHECK (NODE))
@@ -4038,11 +4045,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    DECL_SAVED_AUTO_RETURN_TYPE (NODE).   */
 #define FNDECL_USED_AUTO(NODE) \
   TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (NODE))
-
-/* True if NODE is an undeclared builtin decl.  As soon as the user
-   declares it, the location will be updated.  */
-#define DECL_UNDECLARED_BUILTIN_P(NODE) \
-  (DECL_SOURCE_LOCATION(NODE) == BUILTINS_LOCATION)
 
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */
@@ -6046,6 +6048,7 @@ struct cp_declarator {
       tree late_return_type;
       /* The trailing requires-clause, if any. */
       tree requires_clause;
+      location_t parens_loc;
     } function;
     /* For arrays.  */
     struct {
@@ -6746,6 +6749,7 @@ extern void use_thunk				(tree, bool);
 extern bool trivial_fn_p			(tree);
 extern tree forward_parm			(tree);
 extern bool is_trivially_xible			(enum tree_code, tree, tree);
+extern bool is_nothrow_xible			(enum tree_code, tree, tree);
 extern bool is_xible				(enum tree_code, tree, tree);
 extern tree get_defaulted_eh_spec		(tree, tsubst_flags_t = tf_warning_or_error);
 extern bool maybe_explain_implicit_delete	(tree);
@@ -7367,6 +7371,7 @@ extern const char *cxx_printable_name_translate	(tree, int);
 extern tree canonical_eh_spec			(tree);
 extern tree build_cp_fntype_variant		(tree, cp_ref_qualifier, tree, bool);
 extern tree build_exception_variant		(tree, tree);
+extern void fixup_deferred_exception_variants   (tree, tree);
 extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
@@ -7825,15 +7830,14 @@ extern tree evaluate_concept_check              (tree, tsubst_flags_t);
 extern tree satisfy_constraint_expression	(tree);
 extern bool constraints_satisfied_p		(tree);
 extern bool constraints_satisfied_p		(tree, tree);
-extern void clear_satisfaction_cache		();
 extern bool* lookup_subsumption_result          (tree, tree);
 extern bool save_subsumption_result             (tree, tree, bool);
 extern tree find_template_parameters		(tree, tree);
 extern bool equivalent_constraints              (tree, tree);
 extern bool equivalently_constrained            (tree, tree);
 extern bool subsumes_constraints                (tree, tree);
-extern bool strictly_subsumes			(tree, tree, tree);
-extern bool weakly_subsumes			(tree, tree, tree);
+extern bool strictly_subsumes			(tree, tree);
+extern bool weakly_subsumes			(tree, tree);
 extern int more_constrained                     (tree, tree);
 extern bool at_least_as_constrained             (tree, tree);
 extern bool constraints_equivalent_p            (tree, tree);
@@ -7841,6 +7845,21 @@ extern bool atomic_constraints_identical_p	(tree, tree);
 extern hashval_t iterative_hash_constraint      (tree, hashval_t);
 extern hashval_t hash_atomic_constraint         (tree);
 extern void diagnose_constraints                (location_t, tree, tree);
+
+/* A structural hasher for ATOMIC_CONSTRs.  */
+
+struct atom_hasher : default_hash_traits<tree>
+{
+  static hashval_t hash (tree t)
+  {
+    return hash_atomic_constraint (t);
+  }
+
+  static bool equal (tree t1, tree t2)
+  {
+    return atomic_constraints_identical_p (t1, t2);
+  }
+};
 
 /* in logic.cc */
 extern bool subsumes                            (tree, tree);
@@ -7895,7 +7914,7 @@ extern bool var_in_maybe_constexpr_fn           (tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
-extern void clear_cv_and_fold_caches		(bool = true);
+extern void clear_cv_and_fold_caches		(void);
 extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it

@@ -36,6 +36,7 @@ with Ada.Iterator_Interfaces;
 with Ada.Containers.Helpers;
 private with Ada.Streams;
 private with Ada.Finalization;
+private with Ada.Strings.Text_Output;
 
 generic
    type Element_Type is private;
@@ -54,8 +55,9 @@ is
       Constant_Indexing => Constant_Reference,
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
-      Iterator_Element  => Element_Type;
-
+      Iterator_Element  => Element_Type,
+      Aggregate         => (Empty        => Empty,
+                            Add_Unnamed  => Append_One);
    pragma Preelaborable_Initialization (List);
 
    type Cursor is private;
@@ -64,6 +66,8 @@ is
    Empty_List : constant List;
 
    No_Element : constant Cursor;
+
+   function Empty (Capacity : Count_Type := 10) return List;
 
    function Has_Element (Position : Cursor) return Boolean;
 
@@ -148,6 +152,10 @@ is
      (Container : in out List;
       New_Item  : Element_Type;
       Count     : Count_Type := 1);
+
+   procedure Append_One
+     (Container : in out List;
+      New_Item  : Element_Type);
 
    procedure Delete
      (Container : in out List;
@@ -268,13 +276,16 @@ private
    type Node_Array is array (Count_Type range <>) of Node_Type;
 
    type List (Capacity : Count_Type) is tagged record
-      Nodes  : Node_Array (1 .. Capacity) := (others => <>);
+      Nodes  : Node_Array (1 .. Capacity);
       Free   : Count_Type'Base := -1;
       First  : Count_Type := 0;
       Last   : Count_Type := 0;
       Length : Count_Type := 0;
       TC     : aliased Tamper_Counts;
-   end record;
+   end record with Put_Image => Put_Image;
+
+   procedure Put_Image
+     (S : in out Ada.Strings.Text_Output.Sink'Class; V : List);
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;

@@ -673,6 +673,13 @@ package body Switch.C is
                        new String'(Switch_Chars (Ptr .. Max));
                      return;
 
+                  --  -gnaten (memory to allocate for nodes)
+
+                  when 'n' =>
+                     Ptr := Ptr + 1;
+                     Scan_Pos
+                       (Switch_Chars, Max, Ptr, Nodes_Size_In_Meg, C);
+
                   --  -gnateO= (object path file)
 
                   --  This is an internal switch
@@ -723,6 +730,7 @@ package body Switch.C is
 
                   when 'P' =>
                      Treat_Categorization_Errors_As_Warnings := True;
+                     Ptr := Ptr + 1;
 
                   --  -gnates=file (specify extra file switches for gnat2why)
 
@@ -808,8 +816,8 @@ package body Switch.C is
                   --  -gnateu (unrecognized y,V,w switches)
 
                   when 'u' =>
-                     Ptr := Ptr + 1;
                      Ignore_Unrecognized_VWY_Switches := True;
+                     Ptr := Ptr + 1;
 
                   --  -gnateV (validity checks on parameters)
 
@@ -1153,12 +1161,6 @@ package body Switch.C is
                   Suppress_Options.Overflow_Mode_General    := Strict;
                   Suppress_Options.Overflow_Mode_Assertions := Strict;
                end if;
-
-            --  -gnatP (periodic poll)
-
-            when 'P' =>
-               Ptr := Ptr + 1;
-               Polling_Required := True;
 
             --  -gnatq (don't quit)
 

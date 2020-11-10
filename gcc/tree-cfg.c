@@ -2888,35 +2888,6 @@ last_and_only_stmt (basic_block bb)
     return NULL;
 }
 
-/* Reinstall those PHI arguments queued in OLD_EDGE to NEW_EDGE.  */
-
-static void
-reinstall_phi_args (edge new_edge, edge old_edge)
-{
-  edge_var_map *vm;
-  int i;
-  gphi_iterator phis;
-
-  vec<edge_var_map> *v = redirect_edge_var_map_vector (old_edge);
-  if (!v)
-    return;
-
-  for (i = 0, phis = gsi_start_phis (new_edge->dest);
-       v->iterate (i, &vm) && !gsi_end_p (phis);
-       i++, gsi_next (&phis))
-    {
-      gphi *phi = phis.phi ();
-      tree result = redirect_edge_var_map_result (vm);
-      tree arg = redirect_edge_var_map_def (vm);
-
-      gcc_assert (result == gimple_phi_result (phi));
-
-      add_phi_arg (phi, arg, new_edge, redirect_edge_var_map_location (vm));
-    }
-
-  redirect_edge_var_map_clear (old_edge);
-}
-
 /* Returns the basic block after which the new basic block created
    by splitting edge EDGE_IN should be placed.  Tries to keep the new block
    near its "logical" location.  This is of most help to humans looking
@@ -2956,11 +2927,24 @@ gimple_split_edge (edge edge_in)
   new_bb = create_empty_bb (after_bb);
   new_bb->count = edge_in->count ();
 
-  e = redirect_edge_and_branch (edge_in, new_bb);
-  gcc_assert (e == edge_in);
-
+  /* We want to avoid re-allocating PHIs when we first
+     add the fallthru edge from new_bb to dest but we also
+     want to avoid changing PHI argument order when
+     first redirecting edge_in away from dest.  The former
+     avoids changing PHI argument order by adding them
+     last and then the redirection swapping it back into
+     place by means of unordered remove.
+     So hack around things by temporarily removing all PHIs
+     from the destination during the edge redirection and then
+     making sure the edges stay in order.  */
+  gimple_seq saved_phis = phi_nodes (dest);
+  unsigned old_dest_idx = edge_in->dest_idx;
+  set_phi_nodes (dest, NULL);
   new_edge = make_single_succ_edge (new_bb, dest, EDGE_FALLTHRU);
-  reinstall_phi_args (new_edge, e);
+  e = redirect_edge_and_branch (edge_in, new_bb);
+  gcc_assert (e == edge_in && new_edge->dest_idx == old_dest_idx);
+  /* set_phi_nodes sets the BB of the PHI nodes, so do it manually here.  */
+  dest->il.gimple.phi_nodes = saved_phis;
 
   return new_bb;
 }
@@ -3489,14 +3473,9 @@ verify_gimple_comparison (tree type, tree op0, tree op1, enum tree_code code)
   /* For comparisons we do not have the operations type as the
      effective type the comparison is carried out in.  Instead
      we require that either the first operand is trivially
-     convertible into the second, or the other way around.
-     Because we special-case pointers to void we allow
-     comparisons of pointers with the same mode as well.  */
+     convertible into the second, or the other way around.  */
   if (!useless_type_conversion_p (op0_type, op1_type)
-      && !useless_type_conversion_p (op1_type, op0_type)
-      && (!POINTER_TYPE_P (op0_type)
-	  || !POINTER_TYPE_P (op1_type)
-	  || TYPE_MODE (op0_type) != TYPE_MODE (op1_type)))
+      && !useless_type_conversion_p (op1_type, op0_type))
     {
       error ("mismatching comparison operand types");
       debug_generic_expr (op0_type);
@@ -6211,8 +6190,44 @@ gimple_split_block_before_cond_jump (basic_block bb)
 /* Return true if basic_block can be duplicated.  */
 
 static bool
-gimple_can_duplicate_bb_p (const_basic_block bb ATTRIBUTE_UNUSED)
+gimple_can_duplicate_bb_p (const_basic_block bb)
 {
+  gimple *last = last_stmt (CONST_CAST_BB (bb));
+
+  /* Do checks that can only fail for the last stmt, to minimize the work in the
+     stmt loop.  */
+  if (last) {
+    /* A transaction is a single entry multiple exit region.  It
+       must be duplicated in its entirety or not at all.  */
+    if (gimple_code (last) == GIMPLE_TRANSACTION)
+      return false;
+
+    /* An IFN_UNIQUE call must be duplicated as part of its group,
+       or not at all.  */
+    if (is_gimple_call (last)
+	&& gimple_call_internal_p (last)
+	&& gimple_call_internal_unique_p (last))
+      return false;
+  }
+
+  for (gimple_stmt_iterator gsi = gsi_start_bb (CONST_CAST_BB (bb));
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *g = gsi_stmt (gsi);
+
+      /* An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
+	 duplicated as part of its group, or not at all.
+	 The IFN_GOMP_SIMT_VOTE_ANY and IFN_GOMP_SIMT_XCHG_* are part of such a
+	 group, so the same holds there.  */
+      if (is_gimple_call (g)
+	  && (gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_EXIT)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_VOTE_ANY)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_BFLY)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_IDX)))
+	return false;
+    }
+
   return true;
 }
 

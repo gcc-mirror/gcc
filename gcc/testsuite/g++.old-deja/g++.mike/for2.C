@@ -14,7 +14,7 @@ void bar() {
 
 void bee () {
   int i = 0;
-  for (int fun() = 0; i != 2; ++i) {	// { dg-warning "extern" "extern" }
+  for (int fun() = 0; i != 2; ++i) {	// { dg-warning "extern|empty parentheses" "extern" }
   // { dg-error "initialized" "init" { target *-*-* } .-1 }
   }
 }

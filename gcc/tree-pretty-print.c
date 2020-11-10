@@ -712,6 +712,19 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE_ALLOCATE:
+      pp_string (pp, "allocate(");
+      if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
+	{
+	  dump_generic_node (pp, OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause),
+			     spc, flags, false);
+	  pp_colon (pp);
+	}
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
+
     case OMP_CLAUSE_DEPEND:
       pp_string (pp, "depend(");
       switch (OMP_CLAUSE_DEPEND_KIND (clause))
@@ -1542,8 +1555,7 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
       dump_generic_node (pp, op1type, spc, flags | TDF_SLIM, false);
       pp_right_paren (pp);
       dump_generic_node (pp, op0, spc, flags, false);
-      if (TREE_CODE (node) == MEM_REF
-	  && !integer_zerop (op1))
+      if (!integer_zerop (op1))
 	{
 	  pp_string (pp, " + ");
 	  dump_generic_node (pp, op1, spc, flags, false);
@@ -2153,7 +2165,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case TYPE_DECL:
-      if (DECL_IS_BUILTIN (node))
+      if (DECL_IS_UNDECLARED_BUILTIN (node))
 	{
 	  /* Don't print the declaration of built-in types.  */
 	  break;

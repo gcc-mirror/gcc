@@ -1,4 +1,4 @@
-/* { dg-do run { target { powerpc*-*-linux* && lp64 } } } */
+/* { dg-do run { target lp64 } } */
 /* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-O2 -mvsx" } */
 

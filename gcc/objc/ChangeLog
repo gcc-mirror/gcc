@@ -1,3 +1,48 @@
+2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_prop_attr_kind_for_rid): Handle class
+	attribute.
+	(objc_add_property_declaration): Likewise.
+	* objc-act.h (PROPERTY_CLASS): Record class attribute state.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_prop_attr_kind_for_rid): Handle
+	RID_PROPATOMIC.
+
+2020-11-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_compare_types): Handle NSObject type
+	attributes.
+	(objc_type_valid_for_messaging): Likewise.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (start_class): Accept visibility attributes
+	without warning.
+
+2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_prop_attr_kind_for_rid): New.
+	(objc_add_property_declaration): Adjust to consume the
+	parser output using a vector of parsed attributes.
+
+2020-11-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (objc_non_constant_expr_p): New.
+
+2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-act.c (synth_module_prologue): Get the SEL identifier.
+	* objc-act.h (enum objc_tree_index): Add OCTI_SEL_NAME.
+	(objc_selector_name): New.
+	(SEL_TYPEDEF_NAME): New.
+	* objc-gnu-runtime-abi-01.c
+	(gnu_runtime_01_initialize): Initialize SEL typedef.
+	* objc-next-runtime-abi-01.c
+	(next_runtime_01_initialize): Likewise.
+	* objc-next-runtime-abi-02.c
+
 2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-runtime-abi-02.c

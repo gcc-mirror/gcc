@@ -66,6 +66,8 @@ class impl_region_model_context : public region_model_context
   void on_unexpected_tree_code (tree t,
 				const dump_location_t &loc) FINAL OVERRIDE;
 
+  void on_escaped_function (tree fndecl) FINAL OVERRIDE;
+
   exploded_graph *m_eg;
   log_user m_logger;
   const exploded_node *m_enode_for_diag;
@@ -799,6 +801,8 @@ public:
     return m_worklist.get_scc_id (node);
   }
 
+  void on_escaped_function (tree fndecl);
+
 private:
   void print_bar_charts (pretty_printer *pp) const;
 
@@ -845,6 +849,10 @@ private:
   call_string_data_map_t m_per_call_string_data;
 
   auto_vec<int> m_PK_AFTER_SUPERNODE_per_snode;
+
+  /* Functions with a top-level enode, to make add_function_entry
+     be idempotent, for use in handling callbacks.  */
+  hash_set<function *> m_functions_with_enodes;
 };
 
 /* A path within an exploded_graph: a sequence of edges.  */

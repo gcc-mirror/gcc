@@ -689,9 +689,16 @@ package body Erroutc is
          Txt := Text;
       end if;
 
+      --  If -gnatdF is used, continuation messages follow the main message
+      --  with only an indentation of two space characters, without repeating
+      --  any prefix.
+
+      if Debug_Flag_FF and then E_Msg.Msg_Cont then
+         null;
+
       --  For info messages, prefix message with "info: "
 
-      if E_Msg.Info then
+      elsif E_Msg.Info then
          Txt := new String'("info: " & Txt.all);
 
       --  Warning treated as error
@@ -807,37 +814,49 @@ package body Erroutc is
       J : Natural;
 
    begin
-      --  Nothing to do for continuation line
+      --  Nothing to do for continuation line, unless -gnatdF is set
 
-      if Msg (Msg'First) = '\' then
+      if not Debug_Flag_FF and then Msg (Msg'First) = '\' then
          return;
+
+      --  Some global variables are not set for continuation messages, as they
+      --  only make sense for the initial mesage.
+
+      elsif Msg (Msg'First) /= '\' then
+
+         --  Set initial values of globals (may be changed during scan)
+
+         Is_Serious_Error     := True;
+         Is_Unconditional_Msg := False;
+         Is_Warning_Msg       := False;
+
+         --  Check style message
+
+         Is_Style_Msg :=
+           Msg'Length > 7
+             and then Msg (Msg'First .. Msg'First + 6) = "(style)";
+
+         --  Check info message
+
+         Is_Info_Msg :=
+           Msg'Length > 6
+             and then Msg (Msg'First .. Msg'First + 5) = "info: ";
+
+         --  Check check message
+
+         Is_Check_Msg :=
+           (Msg'Length > 8
+             and then Msg (Msg'First .. Msg'First + 7) = "medium: ")
+           or else
+           (Msg'Length > 6
+             and then Msg (Msg'First .. Msg'First + 5) = "high: ")
+           or else
+           (Msg'Length > 5
+             and then Msg (Msg'First .. Msg'First + 4) = "low: ");
       end if;
 
-      --  Set initial values of globals (may be changed during scan)
-
-      Is_Serious_Error     := True;
-      Is_Unconditional_Msg := False;
-      Is_Warning_Msg       := False;
-      Has_Double_Exclam    := False;
-
-      --  Check style message
-
-      Is_Style_Msg :=
-        Msg'Length > 7 and then Msg (Msg'First .. Msg'First + 6) = "(style)";
-
-      --  Check info message
-
-      Is_Info_Msg :=
-        Msg'Length > 6 and then Msg (Msg'First .. Msg'First + 5) = "info: ";
-
-      --  Check check message
-
-      Is_Check_Msg :=
-        (Msg'Length > 8 and then Msg (Msg'First .. Msg'First + 7) = "medium: ")
-        or else
-          (Msg'Length > 6 and then Msg (Msg'First .. Msg'First + 5) = "high: ")
-        or else
-          (Msg'Length > 5 and then Msg (Msg'First .. Msg'First + 4) = "low: ");
+      Has_Double_Exclam  := False;
+      Has_Insertion_Line := False;
 
       --  Loop through message looking for relevant insertion sequences
 
@@ -895,6 +914,12 @@ package body Erroutc is
                Has_Double_Exclam := True;
                J := J + 1;
             end if;
+
+         --  Insertion line (# insertion)
+
+         elsif Msg (J) = '#' then
+            Has_Insertion_Line := True;
+            J := J + 1;
 
          --  Non-serious error (| insertion)
 

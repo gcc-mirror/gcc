@@ -27,8 +27,7 @@ func mpreinit(mp *m) {
 func minit() {
 	minitSignals()
 
-	// FIXME: only works on linux for now.
-	getg().m.procid = uint64(gettid())
+	getg().m.procid = getProcID()
 }
 
 // Called from dropm to undo the effect of an minit.
@@ -53,7 +52,7 @@ func getRandomData(r []byte) {
 }
 
 //go:noescape
-//extern pipe
+//extern-sysinfo pipe
 func libcPipe(*[2]int32) int32
 
 func pipe() (r, w int32, e int32) {
@@ -66,7 +65,7 @@ func pipe() (r, w int32, e int32) {
 }
 
 //go:noescape
-//extern pipe2
+//extern-sysinfo pipe2
 func libcPipe2(*[2]int32, int32) int32
 
 func pipe2(flags int32) (r, w int32, e int32) {

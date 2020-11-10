@@ -43,27 +43,6 @@
 
 
 
-(define_insn "thumb1_movsi_symbol_ref"
-  [(set (match_operand:SI 0 "register_operand" "=l")
-	(match_operand:SI 1 "general_operand" ""))
-   ]
-  "TARGET_THUMB1
-   && arm_disable_literal_pool
-   && GET_CODE (operands[1]) == SYMBOL_REF"
-  "*
-  output_asm_insn (\"movs\\t%0, #:upper8_15:%1\", operands);
-  output_asm_insn (\"lsls\\t%0, #8\", operands);
-  output_asm_insn (\"adds\\t%0, #:upper0_7:%1\", operands);
-  output_asm_insn (\"lsls\\t%0, #8\", operands);
-  output_asm_insn (\"adds\\t%0, #:lower8_15:%1\", operands);
-  output_asm_insn (\"lsls\\t%0, #8\", operands);
-  output_asm_insn (\"adds\\t%0, #:lower0_7:%1\", operands);
-  return \"\";
-  "
-  [(set_attr "length" "14")
-   (set_attr "conds" "clob")]
-)
-
 (define_insn "*thumb1_adddi3"
   [(set (match_operand:DI          0 "register_operand" "=l")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0")
@@ -696,40 +675,25 @@
       case 7:
       /* pure-code alternative: build the constant byte by byte,
 	 instead of loading it from a constant pool.  */
-	{
-	  int i;
-	  HOST_WIDE_INT op1 = INTVAL (operands[1]);
-	  bool mov_done_p = false;
-	  rtx ops[2];
-	  ops[0] = operands[0];
+	if (arm_valid_symbolic_address_p (operands[1]))
+	  {
+	    output_asm_insn (\"movs\\t%0, #:upper8_15:%1\", operands);
+	    output_asm_insn (\"lsls\\t%0, #8\", operands);
+	    output_asm_insn (\"adds\\t%0, #:upper0_7:%1\", operands);
+	    output_asm_insn (\"lsls\\t%0, #8\", operands);
+	    output_asm_insn (\"adds\\t%0, #:lower8_15:%1\", operands);
+	    output_asm_insn (\"lsls\\t%0, #8\", operands);
+	    output_asm_insn (\"adds\\t%0, #:lower0_7:%1\", operands);
+	    return \"\";
+	  }
+	else if (GET_CODE (operands[1]) == CONST_INT)
+	  {
+	    thumb1_gen_const_int_print (operands[0], INTVAL (operands[1]));
+	    return \"\";
+	  }
 
-	  /* Emit upper 3 bytes if needed.  */
-	  for (i = 0; i < 3; i++)
-	    {
-	       int byte = (op1 >> (8 * (3 - i))) & 0xff;
+	gcc_unreachable ();
 
-	      if (byte)
-		{
-		  ops[1] = GEN_INT (byte);
-		  if (mov_done_p)
-		    output_asm_insn ("adds\t%0, %1", ops);
-		  else
-		    output_asm_insn ("movs\t%0, %1", ops);
-		  mov_done_p = true;
-		}
-
-	      if (mov_done_p)
-		output_asm_insn ("lsls\t%0, #8", ops);
-	    }
-
-	  /* Emit lower byte if needed.  */
-	  ops[1] = GEN_INT (op1 & 0xff);
-	  if (!mov_done_p)
-	    output_asm_insn ("movs\t%0, %1", ops);
-	  else if (op1 & 0xff)
-	    output_asm_insn ("adds\t%0, %1", ops);
-	  return "";
-	}
       case 8: return "ldr\t%0, %1";
       case 9: return "str\t%1, %0";
       case 10: return "mov\t%0, %1";
@@ -740,7 +704,7 @@
    (set_attr "pool_range" "*,*,*,*,*,*,*, *,1018,*,*")
    (set_attr "arch" "t1,t1,v8mb,t1,t1,t1,t1,t1,t1,t1,t1")
    (set_attr "required_for_purecode" "no,no,no,no,no,no,no,yes,no,no,no")
-   (set_attr "conds" "set,clob,nocond,*,*,nocond,nocond,nocond,nocond,nocond,nocond")])
+   (set_attr "conds" "set,clob,nocond,*,*,nocond,nocond,clob,nocond,nocond,nocond")])
 
 ; Split the load of 64-bit constant into two loads for high and low 32-bit parts respectively
 ; to see if we can load them in fewer instructions or fewer cycles.
@@ -827,7 +791,7 @@
    && !satisfies_constraint_K (operands[1])"
   [(clobber (const_int 0))]
   "
-    thumb1_gen_const_int (operands[0], INTVAL (operands[1]));
+    thumb1_gen_const_int_rtl (operands[0], INTVAL (operands[1]));
     DONE;
   "
 )

@@ -1,6 +1,8 @@
-/* { dg-do run } */
-/* { dg-options "-mcpu=power10 -O2" } */
-/* { dg-require-effective-target power10_hw } */
+/* { dg-do run { target { power10_hw } } } */
+/* { dg-do link { target { ! power10_hw } } } */
+/* { dg-options "-mdejagnu-cpu=power10 -O2 -save-temps" } */
+/* { dg-require-effective-target power10_ok } */
+/* { dg-require-effective-target int128 } */
 
 /* Check that the expected 128-bit instructions are generated if the processor
    supports the 128-bit integer instructions. */

@@ -33,6 +33,7 @@ package Rep_Clause5 is
 
    type Array_2_Type is array (0 .. 127) of Boolean;
    for  Array_2_Type'size use 128;
+   for Array_2_Type'Alignment use 4;
 
    type Array_3_Type is array (0 .. 31) of Boolean;
    for  Array_3_Type'size use 32;

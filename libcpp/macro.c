@@ -340,6 +340,8 @@ static cpp_macro *create_iso_definition (cpp_reader *);
 static cpp_macro *lex_expansion_token (cpp_reader *, cpp_macro *);
 static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
 				  const cpp_macro *);
+static bool compare_macros (const cpp_macro *, const cpp_macro *);
+
 static bool parse_params (cpp_reader *, unsigned *, bool *);
 static void check_trad_stringification (cpp_reader *, const cpp_macro *,
 					const cpp_string *);
@@ -604,29 +606,21 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	     at init time, because time() and localtime() are very
 	     slow on some systems.  */
 	  time_t tt;
-	  struct tm *tb = NULL;
+	  auto kind = cpp_get_date (pfile, &tt);
 
-	  /* Set a reproducible timestamp for __DATE__ and __TIME__ macro
-	     if SOURCE_DATE_EPOCH is defined.  */
-	  if (pfile->source_date_epoch == (time_t) -2
-	      && pfile->cb.get_source_date_epoch != NULL)
-	    pfile->source_date_epoch = pfile->cb.get_source_date_epoch (pfile);
-
-	  if (pfile->source_date_epoch >= (time_t) 0)
-	    tb = gmtime (&pfile->source_date_epoch);
+	  if (kind == CPP_time_kind::UNKNOWN)
+	    {
+	      cpp_errno (pfile, CPP_DL_WARNING,
+			 "could not determine date and time");
+		
+	      pfile->date = UC"\"??? ?? ????\"";
+	      pfile->time = UC"\"??:??:??\"";
+	    }
 	  else
 	    {
-	      /* (time_t) -1 is a legitimate value for "number of seconds
-		 since the Epoch", so we have to do a little dance to
-		 distinguish that from a genuine error.  */
-	      errno = 0;
-	      tt = time (NULL);
-	      if (tt != (time_t)-1 || errno == 0)
-		tb = localtime (&tt);
-	    }
+	      struct tm *tb = (kind == CPP_time_kind::FIXED
+			       ? gmtime : localtime) (&tt);
 
-	  if (tb)
-	    {
 	      pfile->date = _cpp_unaligned_alloc (pfile,
 						  sizeof ("\"Oct 11 1347\""));
 	      sprintf ((char *) pfile->date, "\"%s %2d %4d\"",
@@ -637,14 +631,6 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 						  sizeof ("\"12:34:56\""));
 	      sprintf ((char *) pfile->time, "\"%02d:%02d:%02d\"",
 		       tb->tm_hour, tb->tm_min, tb->tm_sec);
-	    }
-	  else
-	    {
-	      cpp_errno (pfile, CPP_DL_WARNING,
-			 "could not determine date and time");
-		
-	      pfile->date = UC"\"??? ?? ????\"";
-	      pfile->time = UC"\"??:??:??\"";
 	    }
 	}
 
@@ -684,6 +670,51 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
     }
 
   return result;      
+}
+
+/* Get an idempotent date.  Either the cached value, the value from
+   source epoch, or failing that, the value from time(2).  Use this
+   during compilation so that every time stamp is the same.  */
+CPP_time_kind
+cpp_get_date (cpp_reader *pfile, time_t *result)
+{
+  if (!pfile->time_stamp_kind)
+    {
+      int kind = 0;
+      if (pfile->cb.get_source_date_epoch)
+	{
+	  /* Try reading the fixed epoch.  */
+	  pfile->time_stamp = pfile->cb.get_source_date_epoch (pfile);
+	  if (pfile->time_stamp != time_t (-1))
+	    kind = int (CPP_time_kind::FIXED);
+	}
+
+      if (!kind)
+	{
+	  /* Pedantically time_t (-1) is a legitimate value for
+	     "number of seconds since the Epoch".  It is a silly
+	     time.   */
+	  errno = 0;
+	  pfile->time_stamp = time (nullptr);
+	  /* Annoyingly a library could legally set errno and return a
+	     valid time!  Bad library!  */
+	  if (pfile->time_stamp == time_t (-1) && errno)
+	    kind = errno;
+	  else
+	    kind = int (CPP_time_kind::DYNAMIC);
+	}
+
+      pfile->time_stamp_kind = kind;
+    }
+
+  *result = pfile->time_stamp;
+  if (pfile->time_stamp_kind >= 0)
+    {
+      errno = pfile->time_stamp_kind;
+      return CPP_time_kind::UNKNOWN;
+    }
+
+  return CPP_time_kind (pfile->time_stamp_kind);
 }
 
 /* Convert builtin macros like __FILE__ to a token and push it on the
@@ -1241,7 +1272,8 @@ collect_args (cpp_reader *pfile, const cpp_hashnode *node,
 	ntokens--;
 
       arg->count = ntokens;
-      set_arg_token (arg, &pfile->eof, pfile->eof.src_loc,
+      /* Append an EOF to mark end-of-argument.  */
+      set_arg_token (arg, &pfile->endarg, token->src_loc,
 		     ntokens, MACRO_ARG_TOKEN_NORMAL,
 		     CPP_OPTION (pfile, track_macro_expansion));
 
@@ -1258,13 +1290,10 @@ collect_args (cpp_reader *pfile, const cpp_hashnode *node,
 
   if (token->type == CPP_EOF)
     {
-      /* We still need the CPP_EOF to end directives, to end
-	 pre-expansion of a macro argument, and at the end of the main
-	 file.  We do not want it at the end of a -include'd (forced)
-	 header file.  */
-      if (pfile->state.in_directive
-	  || !pfile->line_table->depth
-	  || pfile->context->prev)
+      /* Unless the EOF is marking the end of an argument, it's a fake
+	 one from the end of a file that _cpp_clean_line will not have
+	 advanced past.  */
+      if (token == &pfile->endarg)
 	_cpp_backup_tokens (pfile, 1);
       cpp_error (pfile, CPP_DL_ERROR,
 		 "unterminated argument list invoking macro \"%s\"",
@@ -1327,14 +1356,15 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node,
       pfile->state.parsing_args = 2;
       return collect_args (pfile, node, pragma_buff, num_args);
     }
-
-  /* CPP_EOF can be the end of macro arguments, or the end of the
-     file.  We mustn't back up over the latter.  Ugh.  */
-  if (token->type != CPP_EOF || token == &pfile->eof)
+  
+  /* Back up.  A CPP_EOF is either an EOF from an argument we're
+     expanding, or a fake one from lex_direct.  We want to backup the
+     former, but not the latter.  We may have skipped padding, in
+     which case backing up more than one token when expanding macros
+     is in general too difficult.  We re-insert it in its own
+     context.  */
+  if (token->type != CPP_EOF || token == &pfile->endarg)
     {
-      /* Back up.  We may have skipped padding, in which case backing
-	 up more than one token when expanding macros is in general
-	 too difficult.  We re-insert it in its own context.  */
       _cpp_backup_tokens (pfile, 1);
       if (padding)
 	_cpp_push_token_context (pfile, NULL, padding, 1);
@@ -1434,7 +1464,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
       /* Laziness can only affect the expansion tokens of the macro,
 	 not its fun-likeness or parameters.  */
-      _cpp_maybe_notify_macro_use (pfile, node);
+      _cpp_maybe_notify_macro_use (pfile, node, location);
       if (pfile->cb.used)
 	pfile->cb.used (pfile, location, node);
 
@@ -2642,8 +2672,7 @@ _cpp_pop_context (cpp_reader *pfile)
   cpp_context *context = pfile->context;
 
   /* We should not be popping the base context.  */
-  if (context == &pfile->base_context)
-    abort ();
+  gcc_assert (context != &pfile->base_context);
 
   if (context->c.macro)
     {
@@ -3113,6 +3142,14 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
       macro1->lazy = 0;
     }
 
+  return compare_macros (macro1, macro2);
+}
+
+/* Return TRUE if MACRO1 and MACRO2 differ.  */
+
+static bool
+compare_macros (const cpp_macro *macro1, const cpp_macro *macro2)
+{
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
 
@@ -3581,6 +3618,10 @@ _cpp_new_macro (cpp_reader *pfile, cpp_macro_kind kind, void *placement)
 {
   cpp_macro *macro = (cpp_macro *) placement;
 
+  /* Zero init all the fields.  This'll tell the compiler know all the
+     following inits are writing a virgin object.  */
+  memset (macro, 0, offsetof (cpp_macro, exp));
+
   macro->line = pfile->directive_line;
   macro->parm.params = 0;
   macro->lazy = 0;
@@ -3667,10 +3708,12 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
 }
 
 /* Notify the use of NODE in a macro-aware context (i.e. expanding it,
-   or testing its existance).  Also applies any lazy definition.  */
+   or testing its existance).  Also applies any lazy definition.
+   Return FALSE if the macro isn't really there.  */
 
 extern void
-_cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+_cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+		       location_t loc)
 {
   node->flags |= NODE_USED;
   switch (node->type)
@@ -3688,12 +3731,12 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
 
     case NT_BUILTIN_MACRO:
       if (pfile->cb.used_define)
-	pfile->cb.used_define (pfile, pfile->directive_line, node);
+	pfile->cb.used_define (pfile, loc, node);
       break;
 
     case NT_VOID:
       if (pfile->cb.used_undef)
-	pfile->cb.used_undef (pfile, pfile->directive_line, node);
+	pfile->cb.used_undef (pfile, loc, node);
       break;
 
     default:

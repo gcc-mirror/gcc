@@ -922,7 +922,23 @@ validate_simplify_insn (rtx_insn *insn)
       }
   return ((num_changes_pending () > 0) && (apply_change_group () > 0));
 }
-
+
+/* Check whether INSN matches a specific alternative of an .md pattern.  */
+
+bool
+valid_insn_p (rtx_insn *insn)
+{
+  recog_memoized (insn);
+  if (INSN_CODE (insn) < 0)
+    return false;
+  extract_insn (insn);
+  /* We don't know whether the insn will be in code that is optimized
+     for size or speed, so consider all enabled alternatives.  */
+  if (!constrain_operands (1, get_enabled_alternatives (insn)))
+    return false;
+  return true;
+}
+
 /* Return 1 if OP is a valid general operand for machine mode MODE.
    This is either a register reference, a memory reference,
    or a constant.  In the case of a memory reference, the address
@@ -1778,6 +1794,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  /* FALLTHRU */
 	default:
 	  cn = lookup_constraint (constraint);
+	  rtx mem = NULL;
 	  switch (get_constraint_type (cn))
 	    {
 	    case CT_REGISTER:
@@ -1796,9 +1813,13 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	      break;
 
 	    case CT_MEMORY:
+	      mem = op;
+	      /* Fall through.  */
 	    case CT_SPECIAL_MEMORY:
 	      /* Every memory operand can be reloaded to fit.  */
-	      result = result || memory_operand (op, VOIDmode);
+	      if (!mem)
+		mem = extract_mem_from_operand (op);
+	      result = result || memory_operand (mem, VOIDmode);
 	      break;
 
 	    case CT_ADDRESS:
@@ -2584,7 +2605,9 @@ constrain_operands (int strict, alternative_mask alternatives)
 
 	  /* A unary operator may be accepted by the predicate, but it
 	     is irrelevant for matching constraints.  */
-	  if (UNARY_P (op))
+	  /* For special_memory_operand, there could be a memory operand inside,
+	     and it would cause a mismatch for constraint_satisfied_p.  */
+	  if (UNARY_P (op) && op == extract_mem_from_operand (op))
 	    op = XEXP (op, 0);
 
 	  if (GET_CODE (op) == SUBREG)

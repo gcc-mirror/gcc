@@ -1,3 +1,110 @@
+2020-11-03  Pat Bernardi  <bernardi@adacore.com>
+	    Olivier Hainque   <hainque@adacore.com>
+
+	* config.host (aarch64-vxworks7*, tmake_file): Add
+	${cpu_type}/t-lse and t-slibgcc-libgcc.
+
+2020-11-03  Martin Storsjö  <martin@martin.st>
+
+	* unwind-seh.c (_Unwind_Backtrace): Set the ra and cfa pointers
+	before calling the callback.
+
+2020-10-30  Olivier Hainque  <hainque@adacore.com>
+	    Douglas Rupp  <rupp@adacore.com>
+	    Pat Bernardi  <bernardi@adacore.com>
+
+	* config.host: Adjust the ix86/x86_64-wrs-vxworks filters
+	to apply to VxWorks 7 as well.
+
+2020-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-tls.c: Fix preprocessor logic
+	controlling the definition of VX_ENTER_TLS_DTOR and
+	VX_LEAVE_TLS_DTOR based on a version major check.
+
+2020-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-thread.c: Fix name of macro used
+	to condition the inclusion of an actual implementation.
+
+2020-10-27  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* libgcov.h (gcov_counter_add): Use first static counters
+	as it should help to have malloc wrappers set up.
+
+2020-10-23  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks-thread.c: #include gthr.h before
+	testing the guard defined there.
+	* config/gthr-vxworks-cond.c: Likewise.
+
+2020-10-21  Douglas Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc*-wrs-vxworks7*): New case.
+	* configure.ac: Handle powerpc*-*-vxworks7* as
+	powerpc*-*-linux* for ppc-fp_type.
+	* configure: Regenerate.
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h: Condition the ___GTHREADS_CXX0X
+	section on VxWorks >= 6.
+	* config/gthr-vxworks-thread.c: Condition the entire
+	implementation on __GTHREAD_CXX0X.
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h: Condition the __GTHREAD_HAS_COND
+	section on VxWorks >= 6.
+	* config/gthr-vxworks-cond.c: Condition the entire
+	implementation on __GTHREAD_HAS_COND.
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.c: #include <taskLib.h>.
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h: Rewrite remaining occurrence
+	of _VXW_PRE_69 as _VXWORKS_PRE(6,9).
+
+2020-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+	     Olivier Hainque   <hainque@adacore.com>
+
+	* config/gthr-vxworks-tls.c (VX_ENTER_TLS_DTOR): Nil
+	except on VxWorks 6.
+
+2020-10-16  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxcrtstuff: Remove the -kernel/-rtp specialization.
+
+2020-10-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/gthr-vxworks-thread.c: Include stdlib.h.
+	(tls_delete_hook): Prototype it.
+	(__gthread_cond_signal): Return early if no waiters.  Consume
+	signal in case the semaphore got full.  Use semInfoGet instead
+	of kernel-mode-only semInfo.
+	(__gthread_cond_timedwait): Use semExchange.  Always take the
+	mutex again before returning.
+	* config/gthr-vxworks-cond.c (__ghtread_cond_wait): Likewise.
+
+2020-10-14  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Append
+	$(MULTISUBDIR) to the -I path for fixed headers, as we
+	arrange to have different sets of such headers for different
+	multilibs when they are activated.
+	* config/t-vxworks7: Likewise.
+
+2020-10-14  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Add include-fixed to include search
+	paths for libgcc on VxWorks.
+	* config/t-vxworks7: Likewise.
+
 2020-10-09  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/97148

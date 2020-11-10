@@ -1731,6 +1731,16 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_ALIGNED_ALIGNMENT(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALIGNED), 1)
 
+#define OMP_CLAUSE_ALLOCATE_ALLOCATOR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE), 1)
+
+/* True if an ALLOCATE clause was present on a combined or composite
+   construct and the code for splitting the clauses has already performed
+   checking if the listed variable has explicit privatization on the
+   construct.  */
+#define OMP_CLAUSE_ALLOCATE_COMBINED(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE)->base.public_flag)
+
 #define OMP_CLAUSE_NUM_TEAMS_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TEAMS), 0)
 
@@ -2446,11 +2456,12 @@ extern tree vector_element_bits_tree (const_tree);
 #define DECL_SOURCE_FILE(NODE) LOCATION_FILE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_LINE(NODE) LOCATION_LINE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_COLUMN(NODE) LOCATION_COLUMN (DECL_SOURCE_LOCATION (NODE))
-/* This accessor returns TRUE if the decl it operates on was created
-   by a front-end or back-end rather than by user code.  In this case
-   builtin-ness is indicated by source location.  */
-#define DECL_IS_BUILTIN(DECL) \
-  (LOCATION_LOCUS (DECL_SOURCE_LOCATION (DECL)) <= BUILTINS_LOCATION)
+/* This decl was created by a front-end or back-end rather than by
+   user code, and has not been explicitly declared by the user -- when
+   that happens the source location is updated to the user's
+   source.  This includes decls with no location (!).  */
+#define DECL_IS_UNDECLARED_BUILTIN(DECL) \
+  (DECL_SOURCE_LOCATION (DECL) <= BUILTINS_LOCATION)
 
 /*  For FIELD_DECLs, this is the RECORD_TYPE, UNION_TYPE, or
     QUAL_UNION_TYPE node that the field is a member of.  For VAR_DECL,
@@ -3849,7 +3860,7 @@ id_equal (const_tree id, const char *str)
 inline bool
 id_equal (const char *str, const_tree id)
 {
-  return !strcmp (str, IDENTIFIER_POINTER (id));
+  return id_equal (id, str);
 }
 
 /* Return the number of elements in the VECTOR_TYPE given by NODE.  */
@@ -4419,6 +4430,7 @@ extern tree build_constructor_from_vec (tree, const vec<tree, va_gc> *);
 extern tree build_constructor_va (tree, int, ...);
 extern tree build_clobber (tree);
 extern tree build_real_from_int_cst (tree, const_tree);
+extern tree build_real_from_wide (tree, const wide_int_ref &, signop);
 extern tree build_complex (tree, tree, tree);
 extern tree build_complex_inf (tree, bool);
 extern tree build_each_one_cst (tree);
@@ -6267,9 +6279,8 @@ type_has_mode_precision_p (const_tree t)
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function.
 
-   Note that it is different from the DECL_IS_BUILTIN accessor.  For
-   instance, user declared prototypes of C library functions are not
-   DECL_IS_BUILTIN but may be fndecl_built_in_p.  */
+   Note that it is different from the DECL_IS_UNDECLARED_BUILTIN
+   accessor, as this is impervious to user declaration.  */
 
 inline bool
 fndecl_built_in_p (const_tree node)

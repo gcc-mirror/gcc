@@ -618,7 +618,7 @@ range_is_either_true_or_false (const irange &r)
   // This is complicated by the fact that Ada has multi-bit booleans,
   // so true can be ~[0, 0] (i.e. [1,MAX]).
   tree type = r.type ();
-  gcc_checking_assert (types_compatible_p (type, boolean_type_node));
+  gcc_checking_assert (range_compatible_p (type, boolean_type_node));
   return (r.singleton_p () || !r.contains_p (build_zero_cst (type)));
 }
 
@@ -730,8 +730,8 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
         if (lhs.zero_p ())
 	  {
 	    // An OR operation will only take the FALSE path if both
-	    // operands are false, so [20, 255] intersect [0, 5] is the
-	    // union: [0,5][20,255].
+	    // operands are false simlulateously, which means they should
+	    // be intersected.  !(x || y) == !x && !y
 	    r = op1.false_range;
 	    r.intersect (op2.false_range);
 	  }
@@ -804,9 +804,12 @@ gori_compute::compute_logical_operands_in_chain (tf_range &range,
 						 tree name,
 						 tree op, bool op_in_chain)
 {
-  if (!op_in_chain)
+  gimple *src_stmt = gimple_range_ssa_p (op) ? SSA_NAME_DEF_STMT (op) : NULL;
+  basic_block bb = gimple_bb (stmt);
+  if (!op_in_chain || (src_stmt != NULL && bb != gimple_bb (src_stmt)))
     {
-      // If op is not in chain, use its known value.
+      // If op is not in the def chain, or defined in this block,
+      // use its known value on entry to the block.
       expr_range_in_bb (range.true_range, name, gimple_bb (stmt));
       range.false_range = range.true_range;
       return;
@@ -814,14 +817,12 @@ gori_compute::compute_logical_operands_in_chain (tf_range &range,
   if (optimize_logical_operands (range, stmt, lhs, name, op))
     return;
 
-  // Calulate ranges for true and false on both sides, since the false
+  // Calculate ranges for true and false on both sides, since the false
   // path is not always a simple inversion of the true side.
-  if (!compute_operand_range (range.true_range, SSA_NAME_DEF_STMT (op),
-			      m_bool_one, name))
-    expr_range_in_bb (range.true_range, name, gimple_bb (stmt));
-  if (!compute_operand_range (range.false_range, SSA_NAME_DEF_STMT (op),
-			      m_bool_zero, name))
-    expr_range_in_bb (range.false_range, name, gimple_bb (stmt));
+  if (!compute_operand_range (range.true_range, src_stmt, m_bool_one, name))
+    expr_range_in_bb (range.true_range, name, bb);
+  if (!compute_operand_range (range.false_range, src_stmt, m_bool_zero, name))
+    expr_range_in_bb (range.false_range, name, bb);
 }
 
 // Given a logical STMT, calculate true and false for each potential
@@ -920,8 +921,9 @@ gori_compute::compute_operand2_range (irange &r, gimple *stmt,
   expr_range_in_bb (op2_range, op2, gimple_bb (stmt));
 
   // Intersect with range for op2 based on lhs and op1.
-  if (gimple_range_calc_op2 (r, stmt, lhs, op1_range))
-    op2_range.intersect (r);
+  if (!gimple_range_calc_op2 (r, stmt, lhs, op1_range))
+    return false;
+  op2_range.intersect (r);
 
   gimple *src_stmt = SSA_NAME_DEF_STMT (op2);
   // If def stmt is outside of this BB, then name must be an import.
@@ -998,11 +1000,20 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name)
 
   // If NAME can be calculated on the edge, use that.
   if (m_gori_map->is_export_p (name, e->src))
-    return compute_operand_range (r, stmt, lhs, name);
-
-  // Otherwise see if NAME is derived from something that can be
-  // calculated.  This performs no dynamic lookups whatsover, so it is
-  // low cost.
+    {
+      if (compute_operand_range (r, stmt, lhs, name))
+	{
+	  // Sometimes compatible types get interchanged. See PR97360.
+	  // Make sure we are returning the type of the thing we asked for.
+	  if (!r.undefined_p () && r.type () != TREE_TYPE (name))
+	    {
+	      gcc_checking_assert (range_compatible_p (r.type (),
+						       TREE_TYPE (name)));
+	      range_cast (r, TREE_TYPE (name));
+	    }
+	  return true;
+	}
+    }
   return false;
 }
 
@@ -1303,13 +1314,15 @@ gori_compute_cache::cache_stmt (gimple *stmt)
   else if (tree cached_name = m_cache->same_cached_name (op1, op2))
     {
       tf_range op1_range, op2_range;
-      gcc_assert (m_cache->get_range (op1_range, op1, cached_name));
-      gcc_assert (m_cache->get_range (op2_range, op2, cached_name));
-      gcc_assert (logical_combine (r_true_side, code, m_bool_one,
-				   op1_range, op2_range));
-      gcc_assert (logical_combine (r_false_side, code, m_bool_zero,
-				   op1_range, op2_range));
-      m_cache->set_range (lhs, cached_name,
-			  tf_range (r_true_side, r_false_side));
+      bool ok = m_cache->get_range (op1_range, op1, cached_name);
+      ok = ok && m_cache->get_range (op2_range, op2, cached_name);
+      ok = ok && logical_combine (r_true_side, code, m_bool_one,
+				  op1_range, op2_range);
+      ok = ok && logical_combine (r_false_side, code, m_bool_zero,
+				  op1_range, op2_range);
+      gcc_checking_assert (ok);
+      if (ok)
+	m_cache->set_range (lhs, cached_name,
+			    tf_range (r_true_side, r_false_side));
     }
 }

@@ -167,6 +167,7 @@ procedure Gnat1drv is
 
       if Debug_Flag_Dot_U then
          Modify_Tree_For_C := True;
+         Transform_Function_Array := True;
       end if;
 
       --  -gnatd_A disables generation of ALI files
@@ -179,6 +180,7 @@ procedure Gnat1drv is
 
       if Generate_C_Code then
          Modify_Tree_For_C := True;
+         Transform_Function_Array := True;
          Unnest_Subprogram_Mode := True;
          Building_Static_Dispatch_Tables := False;
          Minimize_Expression_With_Actions := True;
@@ -246,9 +248,10 @@ procedure Gnat1drv is
          --  this way when we are doing CodePeer tests on existing test suites
          --  that may have -gnateg set, to avoid the need for special casing.
 
-         Modify_Tree_For_C      := False;
-         Generate_C_Code        := False;
-         Unnest_Subprogram_Mode := False;
+         Modify_Tree_For_C        := False;
+         Transform_Function_Array := False;
+         Generate_C_Code          := False;
+         Unnest_Subprogram_Mode   := False;
 
          --  Turn off inlining, confuses CodePeer output and gains nothing
 
@@ -341,10 +344,6 @@ procedure Gnat1drv is
          --  to support source navigation.
 
          Xref_Active := True;
-
-         --  Polling mode forced off, since it generates confusing junk
-
-         Polling_Required := False;
 
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).
@@ -458,9 +457,10 @@ procedure Gnat1drv is
          --  this way when we are doing GNATprove tests on existing test suites
          --  that may have -gnateg set, to avoid the need for special casing.
 
-         Modify_Tree_For_C := False;
-         Generate_C_Code := False;
-         Unnest_Subprogram_Mode := False;
+         Modify_Tree_For_C        := False;
+         Transform_Function_Array := False;
+         Generate_C_Code          := False;
+         Unnest_Subprogram_Mode   := False;
 
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.
@@ -530,10 +530,6 @@ procedure Gnat1drv is
          --  verification backend.
 
          Xref_Active := True;
-
-         --  Polling mode forced off, since it generates confusing junk
-
-         Polling_Required := False;
 
          --  Set operating mode to Check_Semantics, but a light front-end
          --  expansion is still performed.
@@ -807,6 +803,22 @@ procedure Gnat1drv is
          Set_Standard_Output;
       end if;
 
+      --  Enable or disable the support for 128-bit types. It is automatically
+      --  enabled if the back end supports them, unless -gnatd.H is specified.
+
+      Enable_128bit_Types := Ttypes.Standard_Long_Long_Long_Integer_Size = 128;
+
+      if Enable_128bit_Types and then Debug_Flag_Dot_HH then
+         Enable_128bit_Types := False;
+
+         Ttypes.Standard_Long_Long_Long_Integer_Size :=
+           Ttypes.Standard_Long_Long_Integer_Size;
+         Ttypes.System_Max_Integer_Size :=
+           Ttypes.Standard_Long_Long_Integer_Size;
+         Ttypes.System_Max_Binary_Modulus_Power :=
+           Ttypes.Standard_Long_Long_Integer_Size;
+      end if;
+
       --  Finally capture adjusted value of Suppress_Options as the initial
       --  value for Scope_Suppress, which will be modified as we move from
       --  scope to scope (by Suppress/Unsuppress/Overflow_Checks pragmas).
@@ -1075,8 +1087,12 @@ begin
       --  Initialize all packages. For the most part, these initialization
       --  calls can be made in any order. Exceptions are as follows:
 
-      --  Lib.Initialize need to be called before Scan_Compiler_Arguments,
+      --  Lib.Initialize needs to be called before Scan_Compiler_Arguments,
       --  because it initializes a table filled by Scan_Compiler_Arguments.
+
+      --  Atree.Initialize needs to be called after Scan_Compiler_Arguments,
+      --  because the value specified by the -gnaten switch is used by
+      --  Atree.Initialize.
 
       Osint.Initialize;
       Fmap.Reset_Tables;
@@ -1700,7 +1716,10 @@ begin
    end;
 
    <<End_Of_Program>>
-   null;
+
+   if Debug_Flag_Dot_AA then
+      Atree.Print_Statistics;
+   end if;
 
 --  The outer exception handler handles an unrecoverable error
 

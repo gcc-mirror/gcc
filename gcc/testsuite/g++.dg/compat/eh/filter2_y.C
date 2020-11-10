@@ -9,6 +9,12 @@ struct a
   a () { }
 
   ~a ()
+#if __cplusplus >= 201103L
+    // Give this destructor a potentially-throwing exception specification so
+    // that we verify std::terminate gets called due to an exception during
+    // unwinding, not just because the destructor is noexcept.
+    noexcept(false)
+#endif
     {
       try
 	{

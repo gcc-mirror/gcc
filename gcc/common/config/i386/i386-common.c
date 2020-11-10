@@ -163,6 +163,11 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_ENQCMD_SET OPTION_MASK_ISA2_ENQCMD
 #define OPTION_MASK_ISA2_SERIALIZE_SET OPTION_MASK_ISA2_SERIALIZE
 #define OPTION_MASK_ISA2_TSXLDTRK_SET OPTION_MASK_ISA2_TSXLDTRK
+#define OPTION_MASK_ISA2_UINTR_SET OPTION_MASK_ISA2_UINTR
+#define OPTION_MASK_ISA2_HRESET_SET OPTION_MASK_ISA2_HRESET
+#define OPTION_MASK_ISA2_KL_SET OPTION_MASK_ISA2_KL
+#define OPTION_MASK_ISA2_WIDEKL_SET \
+  (OPTION_MASK_ISA2_WIDEKL | OPTION_MASK_ISA2_KL_SET)
 
 /* Define a set of ISAs which aren't available when a given ISA is
    disabled.  MMX and SSE ISAs are handled separately.  */
@@ -254,6 +259,11 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AMX_TILE_UNSET OPTION_MASK_ISA2_AMX_TILE
 #define OPTION_MASK_ISA2_AMX_INT8_UNSET OPTION_MASK_ISA2_AMX_INT8
 #define OPTION_MASK_ISA2_AMX_BF16_UNSET OPTION_MASK_ISA2_AMX_BF16
+#define OPTION_MASK_ISA2_UINTR_UNSET OPTION_MASK_ISA2_UINTR
+#define OPTION_MASK_ISA2_HRESET_UNSET OPTION_MASK_ISA2_HRESET
+#define OPTION_MASK_ISA2_KL_UNSET \
+  (OPTION_MASK_ISA2_KL | OPTION_MASK_ISA2_WIDEKL_UNSET)
+#define OPTION_MASK_ISA2_WIDEKL_UNSET OPTION_MASK_ISA2_WIDEKL
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -300,6 +310,16 @@ along with GCC; see the file COPYING3.  If not see
    | OPTION_MASK_ISA2_AVX512VP2INTERSECT_UNSET)
 #define OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET \
   (OPTION_MASK_ISA2_AVX512F_UNSET)
+#define OPTION_MASK_ISA2_AVX2_UNSET OPTION_MASK_ISA2_AVX512F_UNSET
+#define OPTION_MASK_ISA2_AVX_UNSET OPTION_MASK_ISA2_AVX2_UNSET
+#define OPTION_MASK_ISA2_SSE4_2_UNSET OPTION_MASK_ISA2_AVX_UNSET
+#define OPTION_MASK_ISA2_SSE4_1_UNSET OPTION_MASK_ISA2_SSE4_2_UNSET
+#define OPTION_MASK_ISA2_SSE4_UNSET OPTION_MASK_ISA2_SSE4_1_UNSET
+#define OPTION_MASK_ISA2_SSSE3_UNSET OPTION_MASK_ISA2_SSE4_1_UNSET
+#define OPTION_MASK_ISA2_SSE3_UNSET OPTION_MASK_ISA2_SSSE3_UNSET
+#define OPTION_MASK_ISA2_SSE2_UNSET \
+  (OPTION_MASK_ISA2_SSE3_UNSET | OPTION_MASK_ISA2_KL_UNSET)
+#define OPTION_MASK_ISA2_SSE_UNSET OPTION_MASK_ISA2_SSE2_UNSET
 
 #define OPTION_MASK_ISA2_AVX512BW_UNSET OPTION_MASK_ISA2_AVX512BF16_UNSET
 
@@ -395,8 +415,8 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE_UNSET;
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SSE_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SSE_UNSET;
 	}
       return true;
 
@@ -410,8 +430,8 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE2_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_UNSET;
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SSE2_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SSE2_UNSET;
 	}
       return true;
 
@@ -425,8 +445,8 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE3_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE3_UNSET;
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SSE3_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SSE3_UNSET;
 	}
       return true;
 
@@ -440,8 +460,8 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSSE3_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSSE3_UNSET;
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SSSE3_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SSSE3_UNSET;
 	}
       return true;
 
@@ -455,8 +475,8 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_1_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_1_UNSET;
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SSE4_1_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SSE4_1_UNSET;
 	}
       return true;
 
@@ -470,8 +490,8 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_2_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_2_UNSET;
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SSE4_2_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SSE4_2_UNSET;
 	}
       return true;
 
@@ -485,8 +505,8 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AVX_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_UNSET;
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX_UNSET;
 	}
       return true;
 
@@ -500,8 +520,8 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AVX2_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX2_UNSET;
-	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX2_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX2_UNSET;
 	}
       return true;
 
@@ -687,6 +707,40 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_ENQCMD_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_ENQCMD_UNSET;
 	}
+	return true;
+
+    case OPT_mkl:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_KL_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_KL_SET;
+
+	  /* The Keylocker instructions need XMM registers from SSE2.  */
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE2_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_KL_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_KL_UNSET;
+	}
+      return true;
+
+    case OPT_mwidekl:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_WIDEKL_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_WIDEKL_SET;
+
+	  /* The Widekl instructions need XMM registers from SSE2.  */
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE2_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_WIDEKL_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_WIDEKL_UNSET;
+	}
       return true;
 
     case OPT_mserialize:
@@ -699,6 +753,32 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SERIALIZE_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SERIALIZE_UNSET;
+	}
+      return true;
+
+    case OPT_muintr:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_UINTR_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_UINTR_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_UINTR_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_UINTR_UNSET;
+	}
+      return true;
+    
+    case OPT_mhreset:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_HRESET_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_HRESET_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_HRESET_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_HRESET_UNSET;
 	}
       return true;
 
@@ -1013,8 +1093,8 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mno_sse4:
       opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_UNSET;
       opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_UNSET;
-      opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512F_UNSET;
-      opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512F_UNSET;
+      opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SSE4_UNSET;
+      opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_SSE4_UNSET;
       return true;
 
     case OPT_msse4a:

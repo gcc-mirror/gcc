@@ -18,7 +18,7 @@
 
 namespace __pstl
 {
-namespace __serial
+namespace __serial_backend
 {
 
 template <typename _Tp>
@@ -110,10 +110,10 @@ template <class _ExecutionPolicy, typename _RandomAccessIterator1, typename _Ran
           typename _RandomAccessIterator3, typename _Compare, typename _LeafMerge>
 void
 __parallel_merge(_ExecutionPolicy&&, _RandomAccessIterator1 __first1, _RandomAccessIterator1 __last1,
-                 _RandomAccessIterator2 __first2, _RandomAccessIterator2 __last2, _RandomAccessIterator3 __out,
+                 _RandomAccessIterator2 __first2, _RandomAccessIterator2 __last2, _RandomAccessIterator3 __outit,
                  _Compare __comp, _LeafMerge __leaf_merge)
 {
-    __leaf_merge(__first1, __last1, __first2, __last2, __out, __comp);
+    __leaf_merge(__first1, __last1, __first2, __last2, __outit, __comp);
 }
 
 template <class _ExecutionPolicy, typename _F1, typename _F2>
@@ -124,7 +124,7 @@ __parallel_invoke(_ExecutionPolicy&&, _F1&& __f1, _F2&& __f2)
     std::forward<_F2>(__f2)();
 }
 
-} // namespace __serial
+} // namespace __serial_backend
 } // namespace __pstl
 
 namespace __pstl

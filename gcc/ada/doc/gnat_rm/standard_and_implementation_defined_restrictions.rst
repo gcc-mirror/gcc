@@ -496,7 +496,7 @@ No_Local_Timing_Events
 ----------------------
 .. index:: No_Local_Timing_Events
 
-[RM D.7] All objects of type Ada.Timing_Events.Timing_Event are
+[RM D.7] All objects of type Ada.Real_Time.Timing_Events.Timing_Event are
 declared at the library level.
 
 No_Long_Long_Integers

@@ -42,7 +42,107 @@
 #include "gimple-low.h"
 #include "gomp-constants.h"
 #include "diagnostic.h"
+#include "alloc-pool.h"
+#include "tree-nested.h"
+#include "symbol-summary.h"
+#include "symtab-thunks.h"
 
+/* Summary of nested functions.  */
+static function_summary <nested_function_info *>
+   *nested_function_sum = NULL;
+
+/* Return nested_function_info, if available.  */
+nested_function_info *
+nested_function_info::get (cgraph_node *node)
+{
+  if (!nested_function_sum)
+    return NULL;
+  return nested_function_sum->get (node);
+}
+
+/* Return nested_function_info possibly creating new one.  */
+nested_function_info *
+nested_function_info::get_create (cgraph_node *node)
+{
+  if (!nested_function_sum)
+    {
+      nested_function_sum = new function_summary <nested_function_info *>
+				   (symtab);
+      nested_function_sum->disable_insertion_hook ();
+    }
+  return nested_function_sum->get_create (node);
+}
+
+/* cgraph_node is no longer nested function; update cgraph accordingly.  */
+void
+unnest_function (cgraph_node *node)
+{
+  nested_function_info *info = nested_function_info::get (node);
+  cgraph_node **node2 = &nested_function_info::get
+		(nested_function_origin (node))->nested;
+
+  gcc_checking_assert (info->origin);
+  while (*node2 != node)
+    node2 = &nested_function_info::get (*node2)->next_nested;
+  *node2 = info->next_nested;
+  info->next_nested = NULL;
+  info->origin = NULL;
+  nested_function_sum->remove (node);
+}
+
+/* Destructor: unlink function from nested function lists.  */
+nested_function_info::~nested_function_info ()
+{
+  cgraph_node *next;
+  for (cgraph_node *n = nested; n; n = next)
+    {
+      nested_function_info *info = nested_function_info::get (n);
+      next = info->next_nested;
+      info->origin = NULL;
+      info->next_nested = NULL;
+    }
+  nested = NULL;
+  if (origin)
+    {
+      cgraph_node **node2
+	     = &nested_function_info::get (origin)->nested;
+
+      nested_function_info *info;
+      while ((info = nested_function_info::get (*node2)) != this && info)
+	node2 = &info->next_nested;
+      *node2 = next_nested;
+    }
+}
+
+/* Free nested function info summaries.  */
+void
+nested_function_info::release ()
+{
+  if (nested_function_sum)
+    delete (nested_function_sum);
+  nested_function_sum = NULL;
+}
+
+/* If NODE is nested function, record it.  */
+void
+maybe_record_nested_function (cgraph_node *node)
+{
+  /* All nested functions gets lowered during the construction of symtab.  */
+  if (symtab->state > CONSTRUCTION)
+    return;
+  if (DECL_CONTEXT (node->decl)
+      && TREE_CODE (DECL_CONTEXT (node->decl)) == FUNCTION_DECL)
+    {
+      cgraph_node *origin = cgraph_node::get_create (DECL_CONTEXT (node->decl));
+      nested_function_info *info = nested_function_info::get_create (node);
+      nested_function_info *origin_info
+		 = nested_function_info::get_create (origin);
+
+      info->origin = origin;
+      info->next_nested = origin_info->nested;
+      origin_info->nested = node;
+    }
+}
 
 /* The object of this pass is to lower the representation of a set of nested
    functions in order to expose all of the gory details of the various
@@ -586,7 +686,7 @@ lookup_element_for_decl (struct nesting_info *info, tree decl,
     *slot = build_tree_list (NULL_TREE, NULL_TREE);
 
   return (tree) *slot;
-} 
+}
 
 /* Given DECL, a nested function, create a field in the non-local
    frame structure for this function.  */
@@ -817,7 +917,8 @@ check_for_nested_with_variably_modified (tree fndecl, tree orig_fndecl)
   struct cgraph_node *cgn = cgraph_node::get (fndecl);
   tree arg;
 
-  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
+  for (cgn = first_nested_function (cgn); cgn;
+       cgn = next_nested_function (cgn))
     {
       for (arg = DECL_ARGUMENTS (cgn->decl); arg; arg = DECL_CHAIN (arg))
 	if (variably_modified_type_p (TREE_TYPE (arg), orig_fndecl))
@@ -843,9 +944,10 @@ create_nesting_tree (struct cgraph_node *cgn)
   info->mem_refs = new hash_set<tree *>;
   info->suppress_expansion = BITMAP_ALLOC (&nesting_info_bitmap_obstack);
   info->context = cgn->decl;
-  info->thunk_p = cgn->thunk.thunk_p;
+  info->thunk_p = cgn->thunk;
 
-  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
+  for (cgn = first_nested_function (cgn); cgn;
+       cgn = next_nested_function (cgn))
     {
       struct nesting_info *sub = create_nesting_tree (cgn);
       sub->outer = info;
@@ -1339,6 +1441,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_NONTEMPORAL:
+	do_decl_clause_no_supp:
 	  /* Like do_decl_clause, but don't add any suppression.  */
 	  decl = OMP_CLAUSE_DECL (clause);
 	  if (VAR_P (decl)
@@ -1350,6 +1453,16 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      need_chain = true;
 	    }
 	  break;
+
+	case OMP_CLAUSE_ALLOCATE:
+	  if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_nonlocal_reference_op
+		(&OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause), &dummy, wi);
+	    }
+	  goto do_decl_clause_no_supp;
 
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
@@ -2101,6 +2214,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_NONTEMPORAL:
+	do_decl_clause_no_supp:
 	  /* Like do_decl_clause, but don't add any suppression.  */
 	  decl = OMP_CLAUSE_DECL (clause);
 	  if (VAR_P (decl)
@@ -2118,6 +2232,16 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 		}
 	    }
 	  break;
+
+	case OMP_CLAUSE_ALLOCATE:
+	  if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause))
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_local_reference_op
+		(&OMP_CLAUSE_ALLOCATE_ALLOCATOR (clause), &dummy, wi);
+	    }
+	  goto do_decl_clause_no_supp;
 
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
@@ -2952,7 +3076,7 @@ convert_all_function_calls (struct nesting_info *root)
     if (n->thunk_p)
       {
 	tree decl = n->context;
-	tree alias = cgraph_node::get (decl)->thunk.alias;
+	tree alias = thunk_info::get (cgraph_node::get (decl))->alias;
 	DECL_STATIC_CHAIN (decl) = DECL_STATIC_CHAIN (alias);
       }
 
@@ -2988,7 +3112,7 @@ convert_all_function_calls (struct nesting_info *root)
 	if (n->thunk_p)
 	  {
 	    tree decl = n->context;
-	    tree alias = cgraph_node::get (decl)->thunk.alias;
+	    tree alias = thunk_info::get (cgraph_node::get (decl))->alias;
 	    DECL_STATIC_CHAIN (decl) = DECL_STATIC_CHAIN (alias);
 	  }
     }
@@ -3498,9 +3622,9 @@ unnest_nesting_tree_1 (struct nesting_info *root)
 
   /* For nested functions update the cgraph to reflect unnesting.
      We also delay finalizing of these functions up to this point.  */
-  if (node->origin)
+  if (nested_function_info::get (node)->origin)
     {
-       node->unnest ();
+       unnest_function (node);
        if (!root->thunk_p)
 	 cgraph_node::finalize_function (root->context, true);
     }
@@ -3541,8 +3665,9 @@ gimplify_all_functions (struct cgraph_node *root)
   struct cgraph_node *iter;
   if (!gimple_body (root->decl))
     gimplify_function_tree (root->decl);
-  for (iter = root->nested; iter; iter = iter->next_nested)
-    if (!iter->thunk.thunk_p)
+  for (iter = first_nested_function (root); iter;
+       iter = next_nested_function (iter))
+    if (!iter->thunk)
       gimplify_all_functions (iter);
 }
 
@@ -3557,7 +3682,7 @@ lower_nested_functions (tree fndecl)
 
   /* If there are no nested functions, there's nothing to do.  */
   cgn = cgraph_node::get (fndecl);
-  if (!cgn->nested)
+  if (!first_nested_function (cgn))
     return;
 
   gimplify_all_functions (cgn);

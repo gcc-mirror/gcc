@@ -85,7 +85,7 @@ enum rid
   RID_GETTER, RID_SETTER,
   RID_READONLY, RID_READWRITE,
   RID_ASSIGN, RID_RETAIN, RID_COPY,
-  RID_NONATOMIC,
+  RID_PROPATOMIC, RID_NONATOMIC,
 
   /* C (reserved and imaginary types not implemented, so any use is a
      syntax error) */
@@ -176,6 +176,7 @@ enum rid
   RID_IS_TRIVIALLY_COPYABLE,
   RID_IS_UNION,                RID_UNDERLYING_TYPE,
   RID_IS_ASSIGNABLE,           RID_IS_CONSTRUCTIBLE,
+  RID_IS_NOTHROW_ASSIGNABLE,   RID_IS_NOTHROW_CONSTRUCTIBLE,
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
@@ -274,9 +275,11 @@ enum rid
   ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PQ && \
    (unsigned int) (rid) <= (unsigned int) RID_LAST_PQ)
 
+/* Keywords permitted in an @property attribute context.  */
 #define OBJC_IS_PATTR_KEYWORD(rid) \
-  ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PATTR && \
-   (unsigned int) (rid) <= (unsigned int) RID_LAST_PATTR)
+  ((((unsigned int) (rid) >= (unsigned int) RID_FIRST_PATTR && \
+     (unsigned int) (rid) <= (unsigned int) RID_LAST_PATTR)) \
+   || rid == RID_CLASS)
 
 /* OBJC_IS_CXX_KEYWORD recognizes the 'CXX_OBJC' keywords (such as
    'class') which are shared in a subtle way between Objective-C and
@@ -1221,6 +1224,7 @@ extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern const char *c_omp_map_clause_name (tree, bool);
+extern void c_omp_adjust_map_clauses (tree, bool);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
 static inline tree
@@ -1361,7 +1365,7 @@ extern void warn_tautological_cmp (const op_location_t &, enum tree_code,
 				   tree, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
 					  tree);
-extern bool warn_if_unused_value (const_tree, location_t);
+extern bool warn_if_unused_value (const_tree, location_t, bool = false);
 extern bool strict_aliasing_warning (location_t, tree, tree);
 extern void sizeof_pointer_memaccess_warning (location_t *, tree,
 					      vec<tree, va_gc> *, tree *,
@@ -1373,6 +1377,7 @@ extern void warn_for_omitted_condop (location_t, tree);
 extern bool warn_for_restrict (unsigned, tree *, unsigned);
 extern void warn_for_address_or_pointer_of_packed_member (tree, tree);
 extern void warn_parm_array_mismatch (location_t, tree, tree);
+extern void maybe_warn_sizeof_array_div (location_t, tree, tree, tree, tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and

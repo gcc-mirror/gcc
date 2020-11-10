@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _State __state = {};
       size_t __n;
       return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n)
-	&& (__n == (__last - __first));
+	&& (__n == size_t(__last - __first));
     }
 
 #ifdef _GLIBCXX_USE_CHAR8_T

@@ -994,7 +994,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_M_str() const noexcept
 	{
 	  if (this->matched)
-	    if (auto __len = this->second - this->first)
+	    if (size_t __len = this->second - this->first)
 	      return { std::__addressof(*this->first), __len };
 	  return {};
 	}

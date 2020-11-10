@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="std.localization" xreflabel="Localization">
 <?dbhtml filename="localization.html"?>
 
@@ -17,7 +17,7 @@
 <!-- Section 01 : Locale -->
 <section xml:id="std.localization.locales" xreflabel="Locales"><info><title>Locales</title></info>
 <?dbhtml filename="locales.html"?>
-  
+
 
   <!--  Section 01 : locale -->
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="locale.xml">
@@ -27,7 +27,7 @@
 <!-- Section 02 : Facet -->
 <section xml:id="std.localization.facet" xreflabel="Facets"><info><title>Facets</title></info>
 <?dbhtml filename="facets.html"?>
-  
+
 
   <!--  Section 01 : ctype -->
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="ctype.xml">

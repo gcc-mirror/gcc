@@ -4,7 +4,7 @@ procedure Size_Clause1 is
   for Modular'Size use 64;
 
   subtype Enlarged_Modular is Modular;
-  for Enlarged_Modular'Object_Size use 128; --  { dg-warning "warning: 64 bits of \"Enlarged_Modular\" unused" }
+  for Enlarged_Modular'Object_Size use 128; --  { dg-warning "64 bits of \"Enlarged_Modular\" unused" "" { target { ! lp64 } } }
 
 begin
     null;

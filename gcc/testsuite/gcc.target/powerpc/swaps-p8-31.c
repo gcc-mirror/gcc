@@ -1,4 +1,4 @@
-/* { dg-do run { target { powerpc*-*-* } } } */
+/* { dg-do run } */
 /* { dg-require-effective-target p8vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power8 -O3 " } */
 

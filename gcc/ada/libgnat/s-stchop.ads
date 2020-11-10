@@ -36,10 +36,6 @@ pragma Restrictions (No_Elaboration_Code);
 --  We want to guarantee the absence of elaboration code because the binder
 --  does not handle references to this package.
 
-pragma Polling (Off);
---  Turn off polling, we do not want polling to take place during stack
---  checking operations. It causes infinite loops and other problems.
-
 with System.Storage_Elements;
 
 package System.Stack_Checking.Operations is

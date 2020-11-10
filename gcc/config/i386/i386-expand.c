@@ -1045,7 +1045,8 @@ ix86_binary_operator_ok (enum rtx_code code, machine_mode mode,
   rtx src2 = operands[2];
 
   /* Both source operands cannot be in memory.  */
-  if (MEM_P (src1) && MEM_P (src2))
+  if ((MEM_P (src1) || bcst_mem_operand (src1, mode))
+      && (MEM_P (src2) || bcst_mem_operand (src2, mode)))
     return false;
 
   /* Canonicalize operand order for commutative operators.  */
@@ -3524,6 +3525,13 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 {
   machine_mode mode = GET_MODE (dest);
   machine_mode cmpmode = GET_MODE (cmp);
+
+  /* Simplify trivial VEC_COND_EXPR to avoid ICE in pr97506.  */
+  if (rtx_equal_p (op_true, op_false))
+    {
+      emit_move_insn (dest, op_true);
+      return;
+    }
 
   /* In AVX512F the result of comparison is an integer mask.  */
   bool maskcmp = mode != cmpmode && ix86_valid_mask_cmp_mode (mode);
@@ -7665,6 +7673,85 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   return true;
 }
 
+/* Expand cmpstrn or memcmp.  */
+
+bool
+ix86_expand_cmpstrn_or_cmpmem (rtx result, rtx src1, rtx src2,
+			       rtx length, rtx align, bool is_cmpstrn)
+{
+  /* Expand strncmp and memcmp only with -minline-all-stringops since
+     "repz cmpsb" can be much slower than strncmp and memcmp functions
+     implemented with vector instructions, see
+
+     https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43052
+   */
+  if (!TARGET_INLINE_ALL_STRINGOPS)
+    return false;
+
+  /* Can't use this if the user has appropriated ecx, esi or edi.  */
+  if (fixed_regs[CX_REG] || fixed_regs[SI_REG] || fixed_regs[DI_REG])
+    return false;
+
+  if (is_cmpstrn)
+    {
+      /* For strncmp, length is the maximum length, which can be larger
+	 than actual string lengths.  We can expand the cmpstrn pattern
+	 to "repz cmpsb" only if one of the strings is a constant so
+	 that expand_builtin_strncmp() can write the length argument to
+	 be the minimum of the const string length and the actual length
+	 argument.  Otherwise, "repz cmpsb" may pass the 0 byte.  */
+      tree t1 = MEM_EXPR (src1);
+      tree t2 = MEM_EXPR (src2);
+      if (!((t1 && TREE_CODE (t1) == MEM_REF
+	     && TREE_CODE (TREE_OPERAND (t1, 0)) == ADDR_EXPR
+	     && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (t1, 0), 0))
+		 == STRING_CST))
+	    || (t2 && TREE_CODE (t2) == MEM_REF
+		&& TREE_CODE (TREE_OPERAND (t2, 0)) == ADDR_EXPR
+		&& (TREE_CODE (TREE_OPERAND (TREE_OPERAND (t2, 0), 0))
+		    == STRING_CST))))
+	return false;
+    }
+
+  rtx addr1 = copy_addr_to_reg (XEXP (src1, 0));
+  rtx addr2 = copy_addr_to_reg (XEXP (src2, 0));
+  if (addr1 != XEXP (src1, 0))
+    src1 = replace_equiv_address_nv (src1, addr1);
+  if (addr2 != XEXP (src2, 0))
+    src2 = replace_equiv_address_nv (src2, addr2);
+
+  /* NB: Make a copy of the data length to avoid changing the original
+     data length by cmpstrnqi patterns.  */
+  length = ix86_zero_extend_to_Pmode (length);
+  rtx lengthreg = gen_reg_rtx (Pmode);
+  emit_move_insn (lengthreg, length);
+
+  /* If we are testing strict equality, we can use known alignment to
+     good advantage.  This may be possible with combine, particularly
+     once cc0 is dead.  */
+  if (CONST_INT_P (length))
+    {
+      if (length == const0_rtx)
+	{
+	  emit_move_insn (result, const0_rtx);
+	  return true;
+	}
+      emit_insn (gen_cmpstrnqi_nz_1 (addr1, addr2, lengthreg, align,
+				     src1, src2));
+    }
+  else
+    {
+      emit_insn (gen_cmp_1 (Pmode, lengthreg, lengthreg));
+      emit_insn (gen_cmpstrnqi_1 (addr1, addr2, lengthreg, align,
+				  src1, src2));
+    }
+
+  rtx out = gen_lowpart (QImode, result);
+  emit_insn (gen_cmpintqi (out));
+  emit_move_insn (result, gen_rtx_SIGN_EXTEND (SImode, out));
+
+  return true;
+}
 
 /* Expand the appropriate insns for doing strlen if not just doing
    repnz; scasb
@@ -10225,12 +10312,16 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V4SF_V2DF_QI_INT:
+    case V2DF_FTYPE_V2DF_V4SF_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_QI_INT:
     case V4SF_FTYPE_V4SF_V2DF_V4SF_QI_INT:
+    case V4SF_FTYPE_V4SF_V2DF_V4SF_UQI_INT:
       nargs = 5;
       break;
     case V16SF_FTYPE_V16SF_INT_V16SF_HI_INT:
     case V8DF_FTYPE_V8DF_INT_V8DF_QI_INT:
+    case V8DF_FTYPE_V8DF_INT_V8DF_UQI_INT:
+    case V16SF_FTYPE_V16SF_INT_V16SF_UHI_INT:
       nargs_constant = 4;
       nargs = 5;
       break;
@@ -10413,6 +10504,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case USHORT_FTYPE_VOID:
     case UINT64_FTYPE_VOID:
     case UINT_FTYPE_VOID:
+    case UINT8_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
       nargs = 0;
       klass = load;
@@ -10974,19 +11066,25 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
        == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
       && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A)) != 0)
     isa |= (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A);
+
   if (((bisa & (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32))
        == (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32))
       && (isa & (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32)) != 0)
     isa |= (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32);
+
   if (((bisa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
        == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
       && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
     isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
-  if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE)
+
+  if ((bisa & OPTION_MASK_ISA_MMX) && !TARGET_MMX && TARGET_MMX_WITH_SSE
+      /* __builtin_ia32_maskmovq requires MMX registers.  */
+      && fcode != IX86_BUILTIN_MASKMOVQ)
     {
       bisa &= ~OPTION_MASK_ISA_MMX;
       bisa |= OPTION_MASK_ISA_SSE2;
     }
+
   if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
     {
       bool add_abi_p = bisa & OPTION_MASK_ISA_64BIT;
@@ -11203,6 +11301,19 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
       return target;
 
+    case IX86_BUILTIN_TESTUI:
+      emit_insn (gen_testui ());
+
+      if (target == 0
+	  || !register_operand (target, QImode))
+	target = gen_reg_rtx (QImode);
+
+      pat = gen_rtx_LTU (QImode, gen_rtx_REG (CCCmode, FLAGS_REG),
+			 const0_rtx);
+      emit_insn (gen_rtx_SET (target, pat));
+
+      return target;
+
     case IX86_BUILTIN_CLZERO:
       arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = expand_normal (arg0);
@@ -11220,6 +11331,226 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
       emit_insn (gen_cldemote (op0));
       return 0;
+
+    case IX86_BUILTIN_LOADIWKEY:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	arg1 = CALL_EXPR_ARG (exp, 1);
+	arg2 = CALL_EXPR_ARG (exp, 2);
+	arg3 = CALL_EXPR_ARG (exp, 3);
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+	op3 = expand_normal (arg3);
+
+	if (!REG_P (op0))
+	  op0 = copy_to_mode_reg (V2DImode, op0);
+	if (!REG_P (op1))
+	  op1 = copy_to_mode_reg (V2DImode, op1);
+	if (!REG_P (op2))
+	  op2 = copy_to_mode_reg (V2DImode, op2);
+	if (!REG_P (op3))
+	  op3 = copy_to_mode_reg (SImode, op3);
+
+	emit_insn (gen_loadiwkey (op0, op1, op2, op3));
+
+	return 0;
+      }
+
+    case IX86_BUILTIN_AESDEC128KLU8:
+      icode = CODE_FOR_aesdec128klu8;
+      goto aesdecenc_expand;
+
+    case IX86_BUILTIN_AESDEC256KLU8:
+      icode = CODE_FOR_aesdec256klu8;
+      goto aesdecenc_expand;
+
+    case IX86_BUILTIN_AESENC128KLU8:
+      icode = CODE_FOR_aesenc128klu8;
+      goto aesdecenc_expand;
+
+    case IX86_BUILTIN_AESENC256KLU8:
+      icode = CODE_FOR_aesenc256klu8;
+
+    aesdecenc_expand:
+
+      arg0 = CALL_EXPR_ARG (exp, 0); // __m128i *odata
+      arg1 = CALL_EXPR_ARG (exp, 1); // __m128i idata
+      arg2 = CALL_EXPR_ARG (exp, 2); // const void *p
+
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+
+      if (!address_operand (op0, V2DImode))
+	{
+	  op0 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op0);
+	}
+      op0 = gen_rtx_MEM (V2DImode, op0);
+
+      if (!REG_P (op1))
+	op1 = copy_to_mode_reg (V2DImode, op1);
+
+      if (!address_operand (op2, VOIDmode))
+	{
+	  op2 = convert_memory_address (Pmode, op2);
+	  op2 = copy_addr_to_reg (op2);
+	}
+      op2 = gen_rtx_MEM (BLKmode, op2);
+
+      emit_insn (GEN_FCN (icode) (op1, op1, op2));
+
+      if (target == 0)
+	target = gen_reg_rtx (QImode);
+
+      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCZmode, FLAGS_REG),
+			const0_rtx);
+      emit_insn (gen_rtx_SET (target, pat));
+
+      emit_insn (gen_rtx_SET (op0, op1));
+
+      return target;
+
+    case IX86_BUILTIN_AESDECWIDE128KLU8:
+      icode = CODE_FOR_aesdecwide128klu8;
+      goto wideaesdecenc_expand;
+
+    case IX86_BUILTIN_AESDECWIDE256KLU8:
+      icode = CODE_FOR_aesdecwide256klu8;
+      goto wideaesdecenc_expand;
+
+    case IX86_BUILTIN_AESENCWIDE128KLU8:
+      icode = CODE_FOR_aesencwide128klu8;
+      goto wideaesdecenc_expand;
+
+    case IX86_BUILTIN_AESENCWIDE256KLU8:
+      icode = CODE_FOR_aesencwide256klu8;
+
+    wideaesdecenc_expand:
+
+      rtx xmm_regs[8];
+      rtx op;
+
+      arg0 = CALL_EXPR_ARG (exp, 0); // __m128i * odata
+      arg1 = CALL_EXPR_ARG (exp, 1); // const __m128i * idata
+      arg2 = CALL_EXPR_ARG (exp, 2); // const void *p
+
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+
+      if (!address_operand (op2, VOIDmode))
+	{
+	  op2 = convert_memory_address (Pmode, op2);
+	  op2 = copy_addr_to_reg (op2);
+	}
+      op2 = gen_rtx_MEM (BLKmode, op2);
+
+      for (i = 0; i < 8; i++)
+	{
+	  xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+	  op = gen_rtx_MEM (V2DImode,
+			    plus_constant (Pmode, op1, (i * 16)));
+
+	  emit_move_insn (xmm_regs[i], op);
+	}
+
+      emit_insn (GEN_FCN (icode) (op2));
+
+      if (target == 0)
+	target = gen_reg_rtx (QImode);
+
+      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCZmode, FLAGS_REG),
+			const0_rtx);
+      emit_insn (gen_rtx_SET (target, pat));
+
+      for (i = 0; i < 8; i++)
+	{
+	  op = gen_rtx_MEM (V2DImode,
+			    plus_constant (Pmode, op0, (i * 16)));
+	  emit_move_insn (op, xmm_regs[i]);
+	}
+
+      return target;
+
+    case IX86_BUILTIN_ENCODEKEY128U32:
+      {
+	rtx op, xmm_regs[7];
+
+	arg0 = CALL_EXPR_ARG (exp, 0); // unsigned int htype
+	arg1 = CALL_EXPR_ARG (exp, 1); // __m128i key
+	arg2 = CALL_EXPR_ARG (exp, 2); // void *h
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+
+	if (!REG_P (op0))
+	  op0 = copy_to_mode_reg (SImode, op0);
+
+	op = gen_rtx_REG (V2DImode, GET_SSE_REGNO (0));
+	emit_move_insn (op, op1);
+
+	for (i = 0; i < 3; i++)
+	  xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+	if (target == 0)
+	  target = gen_reg_rtx (SImode);
+
+	emit_insn (gen_encodekey128u32 (target, op0));
+
+	for (i = 0; i < 3; i++)
+	  {
+	    op = gen_rtx_MEM (V2DImode,
+			      plus_constant (Pmode, op2, (i * 16)));
+	    emit_move_insn (op, xmm_regs[i]);
+	  }
+
+	return target;
+      }
+    case IX86_BUILTIN_ENCODEKEY256U32:
+      {
+	rtx op, xmm_regs[7];
+
+	arg0 = CALL_EXPR_ARG (exp, 0); // unsigned int htype
+	arg1 = CALL_EXPR_ARG (exp, 1); // __m128i keylow
+	arg2 = CALL_EXPR_ARG (exp, 2); // __m128i keyhi
+	arg3 = CALL_EXPR_ARG (exp, 3); // void *h
+
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+	op2 = expand_normal (arg2);
+	op3 = expand_normal (arg3);
+
+	if (!REG_P (op0))
+	  op0 = copy_to_mode_reg (SImode, op0);
+
+	/* Force to use xmm0, xmm1 for keylow, keyhi*/
+	op = gen_rtx_REG (V2DImode, GET_SSE_REGNO (0));
+	emit_move_insn (op, op1);
+	op = gen_rtx_REG (V2DImode, GET_SSE_REGNO (1));
+	emit_move_insn (op, op2);
+
+	for (i = 0; i < 4; i++)
+	  xmm_regs[i] = gen_rtx_REG (V2DImode, GET_SSE_REGNO (i));
+
+	if (target == 0)
+	  target = gen_reg_rtx (SImode);
+
+	emit_insn (gen_encodekey256u32 (target, op0));
+
+	for (i = 0; i < 4; i++)
+	  {
+	    op = gen_rtx_MEM (V2DImode,
+			      plus_constant (Pmode, op3, (i * 16)));
+	    emit_move_insn (op, xmm_regs[i]);
+	  }
+
+	return target;
+      }
 
     case IX86_BUILTIN_VEC_INIT_V2SI:
     case IX86_BUILTIN_VEC_INIT_V4HI:
@@ -12805,6 +13136,14 @@ rdseed_step:
       op0 = force_reg (mode, op0);
 
       emit_insn (gen_incssp (mode, op0));
+      return 0;
+
+    case IX86_BUILTIN_HRESET:
+      icode = CODE_FOR_hreset;
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      op0 = force_reg (SImode, op0);
+      emit_insn (gen_hreset (op0));
       return 0;
 
     case IX86_BUILTIN_RSTORSSP:

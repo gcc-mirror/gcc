@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "omp-general.h"
 #include "omp-low.h"
+#include "memmodel.h"  /* For MEMMODEL_ enums.  */
+
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_tdiag__
 #include "diagnostic-core.h"
@@ -3769,34 +3771,38 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
     }
   if (clauses->vector)
     {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_VECTOR);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
       if (clauses->vector_expr)
 	{
 	  tree vector_var
 	    = gfc_convert_expr_to_tree (block, clauses->vector_expr);
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_VECTOR);
 	  OMP_CLAUSE_VECTOR_EXPR (c) = vector_var;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
-	}
-      else
-	{
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_VECTOR);
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
+	  /* TODO: We're not capturing location information for individual
+	     clauses.  However, if we have an expression attached to the
+	     clause, that one provides better location information.  */
+	  OMP_CLAUSE_LOCATION (c)
+	    = gfc_get_location (&clauses->vector_expr->where);
 	}
     }
   if (clauses->worker)
     {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_WORKER);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
       if (clauses->worker_expr)
 	{
 	  tree worker_var
 	    = gfc_convert_expr_to_tree (block, clauses->worker_expr);
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_WORKER);
 	  OMP_CLAUSE_WORKER_EXPR (c) = worker_var;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
-	}
-      else
-	{
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_WORKER);
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
+	  /* TODO: We're not capturing location information for individual
+	     clauses.  However, if we have an expression attached to the
+	     clause, that one provides better location information.  */
+	  OMP_CLAUSE_LOCATION (c)
+	    = gfc_get_location (&clauses->worker_expr->where);
 	}
     }
   if (clauses->gang)
@@ -3804,11 +3810,19 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       tree arg;
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_GANG);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
       if (clauses->gang_num_expr)
 	{
 	  arg = gfc_convert_expr_to_tree (block, clauses->gang_num_expr);
 	  OMP_CLAUSE_GANG_EXPR (c) = arg;
+
+	  /* TODO: We're not capturing location information for individual
+	     clauses.  However, if we have an expression attached to the
+	     clause, that one provides better location information.  */
+	  OMP_CLAUSE_LOCATION (c)
+	    = gfc_get_location (&clauses->gang_num_expr->where);
 	}
+
       if (clauses->gang_static)
 	{
 	  arg = clauses->gang_static_expr
@@ -3965,7 +3979,7 @@ static tree gfc_trans_omp_workshare (gfc_code *, gfc_omp_clauses *);
 static tree
 gfc_trans_omp_atomic (gfc_code *code)
 {
-  gfc_code *atomic_code = code;
+  gfc_code *atomic_code = code->block;
   gfc_se lse;
   gfc_se rse;
   gfc_se vse;
@@ -3977,12 +3991,16 @@ gfc_trans_omp_atomic (gfc_code *code)
   enum tree_code aop = OMP_ATOMIC;
   bool var_on_left = false;
   enum omp_memory_order mo;
-  if (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SEQ_CST)
-    mo = OMP_MEMORY_ORDER_SEQ_CST;
-  else if (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_ACQ_REL)
-    mo = OMP_MEMORY_ORDER_ACQ_REL;
-  else
-    mo = OMP_MEMORY_ORDER_RELAXED;
+  switch (atomic_code->ext.omp_clauses->memorder)
+    {
+    case OMP_MEMORDER_UNSET: mo = OMP_MEMORY_ORDER_UNSPECIFIED; break;
+    case OMP_MEMORDER_ACQ_REL: mo = OMP_MEMORY_ORDER_ACQ_REL; break;
+    case OMP_MEMORDER_ACQUIRE: mo = OMP_MEMORY_ORDER_ACQUIRE; break;
+    case OMP_MEMORDER_RELAXED: mo = OMP_MEMORY_ORDER_RELAXED; break;
+    case OMP_MEMORDER_RELEASE: mo = OMP_MEMORY_ORDER_RELEASE; break;
+    case OMP_MEMORDER_SEQ_CST: mo = OMP_MEMORY_ORDER_SEQ_CST; break;
+    default: gcc_unreachable ();
+    }
 
   code = code->block->next;
   gcc_assert (code->op == EXEC_ASSIGN);
@@ -3994,16 +4012,16 @@ gfc_trans_omp_atomic (gfc_code *code)
   gfc_start_block (&block);
 
   expr2 = code->expr2;
-  if (((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+  if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        != GFC_OMP_ATOMIC_WRITE)
       && expr2->expr_type == EXPR_FUNCTION
       && expr2->value.function.isym
       && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
     expr2 = expr2->value.function.actual->expr;
 
-  switch (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+  if ((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
+      == GFC_OMP_ATOMIC_READ)
     {
-    case GFC_OMP_ATOMIC_READ:
       gfc_conv_expr (&vse, code->expr1);
       gfc_add_block_to_block (&block, &vse.pre);
 
@@ -4021,7 +4039,9 @@ gfc_trans_omp_atomic (gfc_code *code)
       gfc_add_block_to_block (&block, &rse.pre);
 
       return gfc_finish_block (&block);
-    case GFC_OMP_ATOMIC_CAPTURE:
+    }
+  if (atomic_code->ext.omp_clauses->capture)
+    {
       aop = OMP_ATOMIC_CAPTURE_NEW;
       if (expr2->expr_type == EXPR_VARIABLE)
 	{
@@ -4040,9 +4060,6 @@ gfc_trans_omp_atomic (gfc_code *code)
 	      && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
 	    expr2 = expr2->value.function.actual->expr;
 	}
-      break;
-    default:
-      break;
     }
 
   gfc_conv_expr (&lse, code->expr1);
@@ -4050,9 +4067,9 @@ gfc_trans_omp_atomic (gfc_code *code)
   type = TREE_TYPE (lse.expr);
   lhsaddr = gfc_build_addr_expr (NULL, lse.expr);
 
-  if (((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+  if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        == GFC_OMP_ATOMIC_WRITE)
-      || (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SWAP))
+      || (atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_SWAP))
     {
       gfc_conv_expr (&rse, expr2);
       gfc_add_block_to_block (&block, &rse.pre);
@@ -4188,9 +4205,9 @@ gfc_trans_omp_atomic (gfc_code *code)
 
   rhs = gfc_evaluate_now (rse.expr, &block);
 
-  if (((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_MASK)
+  if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        == GFC_OMP_ATOMIC_WRITE)
-      || (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SWAP))
+      || (atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_SWAP))
     x = rhs;
   else
     {
@@ -4785,10 +4802,30 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
 }
 
 static tree
-gfc_trans_omp_flush (void)
+gfc_trans_omp_flush (gfc_code *code)
 {
-  tree decl = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
-  return build_call_expr_loc (input_location, decl, 0);
+  tree call;
+  if (!code->ext.omp_clauses
+      || code->ext.omp_clauses->memorder == OMP_MEMORDER_UNSET)
+    {
+      call = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
+      call = build_call_expr_loc (input_location, call, 0);
+    }
+  else
+    {
+      enum memmodel mo = MEMMODEL_LAST;
+      switch (code->ext.omp_clauses->memorder)
+	{
+	case OMP_MEMORDER_ACQ_REL: mo = MEMMODEL_ACQ_REL; break;
+	case OMP_MEMORDER_RELEASE: mo = MEMMODEL_RELEASE; break;
+	case OMP_MEMORDER_ACQUIRE: mo = MEMMODEL_ACQUIRE; break;
+	default: gcc_unreachable (); break;
+	}
+      call = builtin_decl_explicit (BUILT_IN_ATOMIC_THREAD_FENCE);
+      call = build_call_expr_loc (input_location, call, 1,
+				  build_int_cst (integer_type_node, mo));
+    }
+  return call;
 }
 
 static tree
@@ -6033,7 +6070,7 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_DO_SIMD:
       return gfc_trans_omp_do_simd (code, NULL, NULL, NULL_TREE);
     case EXEC_OMP_FLUSH:
-      return gfc_trans_omp_flush ();
+      return gfc_trans_omp_flush (code);
     case EXEC_OMP_MASTER:
       return gfc_trans_omp_master (code);
     case EXEC_OMP_ORDERED:

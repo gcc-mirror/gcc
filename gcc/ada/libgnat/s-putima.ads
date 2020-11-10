@@ -32,15 +32,16 @@
 with Ada.Strings.Text_Output;
 with System.Unsigned_Types;
 
-package System.Put_Images is
+package System.Put_Images with Pure is
 
    --  This package contains subprograms that are called by the generated code
    --  for the 'Put_Image attribute.
    --
-   --  For an integer type that fits in Integer, the actual parameter is
+   --  For a signed integer type that fits in Integer, the actual parameter is
    --  converted to Integer, and Put_Image_Integer is called. For larger types,
-   --  Put_Image_Long_Long_Integer is used. Other numeric types are treated
-   --  similarly. Access values are unchecked-converted to either Thin_Pointer
+   --  Put_Image_Long_Long_Integer or Put_Image_Long_Long_Long_Integer is used.
+   --  For a modular integer type, this is similar with Integer replaced with
+   --  Unsigned. Access values are unchecked-converted to either Thin_Pointer
    --  or Fat_Pointer, and Put_Image_Thin_Pointer or Put_Image_Fat_Pointer is
    --  called. The Before/Between/After procedures are called before printing
    --  the components of a composite type, between pairs of components, and
@@ -54,18 +55,23 @@ package System.Put_Images is
    procedure Put_Image_Integer (S : in out Sink'Class; X : Integer);
    procedure Put_Image_Long_Long_Integer
      (S : in out Sink'Class; X : Long_Long_Integer);
+   procedure Put_Image_Long_Long_Long_Integer
+     (S : in out Sink'Class; X : Long_Long_Long_Integer);
 
-   subtype Unsigned is System.Unsigned_Types.Unsigned;
-   subtype Long_Long_Unsigned is System.Unsigned_Types.Long_Long_Unsigned;
+   subtype Unsigned is Unsigned_Types.Unsigned;
+   subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
+   subtype Long_Long_Long_Unsigned is Unsigned_Types.Long_Long_Long_Unsigned;
 
    procedure Put_Image_Unsigned (S : in out Sink'Class; X : Unsigned);
    procedure Put_Image_Long_Long_Unsigned
      (S : in out Sink'Class; X : Long_Long_Unsigned);
+   procedure Put_Image_Long_Long_Long_Unsigned
+     (S : in out Sink'Class; X : Long_Long_Long_Unsigned);
 
    type Byte is new Character with Alignment => 1;
    type Byte_String is array (Positive range <>) of Byte with Alignment => 1;
-   type Thin_Pointer is access all Byte;
-   type Fat_Pointer is access all Byte_String;
+   type Thin_Pointer is access all Byte with Storage_Size => 0;
+   type Fat_Pointer is access all Byte_String with Storage_Size => 0;
    procedure Put_Image_Thin_Pointer (S : in out Sink'Class; X : Thin_Pointer);
    procedure Put_Image_Fat_Pointer (S : in out Sink'Class; X : Fat_Pointer);
    --  Print "null", or the address of the designated object as an unsigned
@@ -94,6 +100,8 @@ package System.Put_Images is
    procedure Record_Before (S : in out Sink'Class);
    procedure Record_Between (S : in out Sink'Class);
    procedure Record_After (S : in out Sink'Class);
+
+   procedure Put_Arrow (S : in out Sink'Class);
 
    procedure Put_Image_Unknown (S : in out Sink'Class; Type_Name : String);
    --  For Put_Image of types that don't have the attribute, such as type

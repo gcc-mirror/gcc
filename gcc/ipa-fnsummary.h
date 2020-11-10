@@ -49,7 +49,10 @@ enum ipa_hints_vals {
      Set by simple_edge_hints in ipa-inline-analysis.c.   */
   INLINE_HINT_cross_module = 64,
   /* We know that the callee is hot by profile.  */
-  INLINE_HINT_known_hot = 128
+  INLINE_HINT_known_hot = 128,
+  /* There is builtin_constant_p dependent on parameter which is usually
+     a strong hint to inline.  */
+  INLINE_HINT_builtin_constant_p = 256
 };
 
 typedef int ipa_hints;
@@ -69,7 +72,7 @@ struct agg_position_info
 /* Representation of function body size and time depending on the call
    context.  We keep simple array of record, every containing of predicate
    and time/size to account.  */
-class GTY(()) size_time_entry
+class size_time_entry
 {
 public:
   /* Predicate for code to be executed.  */
@@ -79,7 +82,7 @@ public:
      the executed code paths will simplify.  */
   predicate nonconst_predicate;
   int size;
-  sreal GTY((skip)) time;
+  sreal time;
 };
 
 /* Summary about function and stack frame sizes.  We keep this info 
@@ -123,10 +126,12 @@ public:
   ipa_fn_summary ()
     : min_size (0),
       inlinable (false), single_caller (false),
-      fp_expressions (false), estimated_stack_size (false),
+      fp_expressions (false),
+      estimated_stack_size (false),
       time (0), conds (NULL),
-      size_time_table (NULL), call_size_time_table (NULL),
+      size_time_table (), call_size_time_table (vNULL),
       loop_iterations (NULL), loop_strides (NULL),
+      builtin_constant_p_parms (vNULL),
       growth (0), scc_no (0)
   {
   }
@@ -137,9 +142,10 @@ public:
     inlinable (s.inlinable), single_caller (s.single_caller),
     fp_expressions (s.fp_expressions),
     estimated_stack_size (s.estimated_stack_size),
-    time (s.time), conds (s.conds), size_time_table (s.size_time_table),
-    call_size_time_table (NULL),
+    time (s.time), conds (s.conds), size_time_table (),
+    call_size_time_table (vNULL),
     loop_iterations (s.loop_iterations), loop_strides (s.loop_strides),
+    builtin_constant_p_parms (s.builtin_constant_p_parms),
     growth (s.growth), scc_no (s.scc_no)
   {}
 
@@ -175,13 +181,18 @@ public:
      accounted in call_size_time_table.  This is because calls
      are often adjusted by IPA optimizations and thus this summary
      is generated from call summary information when needed.  */
-  vec<size_time_entry, va_gc> *size_time_table;
-  vec<size_time_entry, va_gc> *call_size_time_table;
+  auto_vec<size_time_entry> GTY((skip)) size_time_table;
+  /* Unlike size_time_table that is initialized for all summaries
+     call_size_time_table is allocated only for functions with
+     many calls.  Use effecient vl_ptr storage.  */
+  vec<size_time_entry, va_heap, vl_ptr> GTY((skip)) call_size_time_table;
 
   /* Predicates on when some loops in the function can have known bounds.  */
   vec<ipa_freqcounting_predicate, va_gc> *loop_iterations;
   /* Predicates on when some loops in the function can have known strides.  */
   vec<ipa_freqcounting_predicate, va_gc> *loop_strides;
+  /* Parameters tested by builtin_constant_p.  */
+  vec<int, va_heap, vl_ptr> GTY((skip)) builtin_constant_p_parms;
   /* Estimated growth for inlining all copies of the function before start
      of small functions inlining.
      This value will get out of date as the callers are duplicated, but

@@ -1,4 +1,4 @@
-<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="manual.ext.allocator.mt" xreflabel="mt allocator">
 <?dbhtml filename="mt_allocator.html"?>
 

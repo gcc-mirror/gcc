@@ -43,6 +43,12 @@ omp_get_default_device (void)
 }
 
 int
+omp_get_initial_device (void)
+{
+  return gomp_get_num_devices ();
+}
+
+int
 omp_get_num_devices (void)
 {
   return gomp_get_num_devices ();
@@ -57,5 +63,6 @@ omp_is_initial_device (void)
 
 ialias (omp_set_default_device)
 ialias (omp_get_default_device)
+ialias (omp_get_initial_device)
 ialias (omp_get_num_devices)
 ialias (omp_is_initial_device)

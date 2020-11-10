@@ -3009,6 +3009,22 @@
   "<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
 )
 
+;; Another way of expressing the REVB, REVH and REVW patterns, with this
+;; form being easier for permutes.  The predicate mode determines the number
+;; of lanes and the data mode decides the granularity of the reversal within
+;; each lane.
+(define_insn "@aarch64_sve_revbhw_<SVE_ALL:mode><PRED_HSD:mode>"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL
+	  [(match_operand:PRED_HSD 1 "register_operand" "Upl")
+	   (unspec:SVE_ALL
+	     [(match_operand:SVE_ALL 2 "register_operand" "w")]
+	     UNSPEC_REVBHW)]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE && <PRED_HSD:elem_bits> > <SVE_ALL:container_bits>"
+  "rev<SVE_ALL:Vcwtype>\t%0.<PRED_HSD:Vetype>, %1/m, %2.<PRED_HSD:Vetype>"
+)
+
 ;; Predicated integer unary operations with merging.
 (define_insn "@cond_<optab><mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w, ?&w")
@@ -8273,14 +8289,14 @@
 
 ;; Duplicate one element of a vector.
 (define_insn "@aarch64_sve_dup_lane<mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
-	(vec_duplicate:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(vec_duplicate:SVE_ALL
 	  (vec_select:<VEL>
-	    (match_operand:SVE_FULL 1 "register_operand" "w")
+	    (match_operand:SVE_ALL 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "const_int_operand")]))))]
   "TARGET_SVE
-   && IN_RANGE (INTVAL (operands[2]) * GET_MODE_SIZE (<VEL>mode), 0, 63)"
-  "dup\t%0.<Vetype>, %1.<Vetype>[%2]"
+   && IN_RANGE (INTVAL (operands[2]) * <container_bits> / 8, 0, 63)"
+  "dup\t%0.<Vctype>, %1.<Vctype>[%2]"
 )
 
 ;; Use DUP.Q to duplicate a 128-bit segment of a register.
@@ -8321,17 +8337,18 @@
 
 ;; Reverse the order of elements within a full vector.
 (define_insn "@aarch64_sve_rev<mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
-	(unspec:SVE_FULL
-	  [(match_operand:SVE_FULL 1 "register_operand" "w")]
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL
+	  [(match_operand:SVE_ALL 1 "register_operand" "w")]
 	  UNSPEC_REV))]
   "TARGET_SVE"
-  "rev\t%0.<Vetype>, %1.<Vetype>")
+  "rev\t%0.<Vctype>, %1.<Vctype>")
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT,FP] Special-purpose binary permutes
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - EXT
 ;; - SPLICE
 ;; - TRN1
 ;; - TRN2
@@ -8359,13 +8376,13 @@
 ;; Permutes that take half the elements from one vector and half the
 ;; elements from the other.
 (define_insn "@aarch64_sve_<perm_insn><mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
-	(unspec:SVE_FULL
-	  [(match_operand:SVE_FULL 1 "register_operand" "w")
-	   (match_operand:SVE_FULL 2 "register_operand" "w")]
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL
+	  [(match_operand:SVE_ALL 1 "register_operand" "w")
+	   (match_operand:SVE_ALL 2 "register_operand" "w")]
 	  PERMUTE))]
   "TARGET_SVE"
-  "<perm_insn>\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
+  "<perm_insn>\t%0.<Vctype>, %1.<Vctype>, %2.<Vctype>"
 )
 
 ;; Apply PERMUTE to 128-bit sequences.  The behavior of these patterns
@@ -8383,16 +8400,16 @@
 ;; Concatenate two vectors and extract a subvector.  Note that the
 ;; immediate (third) operand is the lane index not the byte index.
 (define_insn "@aarch64_sve_ext<mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_FULL
-	  [(match_operand:SVE_FULL 1 "register_operand" "0, w")
-	   (match_operand:SVE_FULL 2 "register_operand" "w, w")
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w, ?&w")
+	(unspec:SVE_ALL
+	  [(match_operand:SVE_ALL 1 "register_operand" "0, w")
+	   (match_operand:SVE_ALL 2 "register_operand" "w, w")
 	   (match_operand:SI 3 "const_int_operand")]
 	  UNSPEC_EXT))]
   "TARGET_SVE
-   && IN_RANGE (INTVAL (operands[3]) * GET_MODE_SIZE (<VEL>mode), 0, 255)"
+   && IN_RANGE (INTVAL (operands[3]) * <container_bits> / 8, 0, 255)"
   {
-    operands[3] = GEN_INT (INTVAL (operands[3]) * GET_MODE_SIZE (<VEL>mode));
+    operands[3] = GEN_INT (INTVAL (operands[3]) * <container_bits> / 8);
     return (which_alternative == 0
 	    ? "ext\\t%0.b, %0.b, %2.b, #%3"
 	    : "movprfx\t%0, %1\;ext\\t%0.b, %0.b, %2.b, #%3");

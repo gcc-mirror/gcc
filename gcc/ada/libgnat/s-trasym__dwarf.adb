@@ -31,10 +31,6 @@
 
 --  Run-time symbolic traceback support for targets using DWARF debug data
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we can get
---  elaboration circularities when polling is turned on.
-
 with Ada.Unchecked_Deallocation;
 
 with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;

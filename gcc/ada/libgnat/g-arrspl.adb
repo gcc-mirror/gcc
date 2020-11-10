@@ -49,7 +49,7 @@ package body GNAT.Array_Split is
    -- Adjust --
    ------------
 
-   procedure Adjust (S : in out Slice_Set) is
+   overriding procedure Adjust (S : in out Slice_Set) is
    begin
       S.D.Ref_Counter := S.D.Ref_Counter + 1;
    end Adjust;
@@ -68,6 +68,16 @@ package body GNAT.Array_Split is
       Create (S, From, To_Set (Separators), Mode);
    end Create;
 
+   function Create
+     (From       : Element_Sequence;
+      Separators : Element_Sequence;
+      Mode       : Separator_Mode := Single) return Slice_Set is
+   begin
+      return Ret : Slice_Set do
+         Create (Ret, From, Separators, Mode);
+      end return;
+   end Create;
+
    ------------
    -- Create --
    ------------
@@ -83,6 +93,16 @@ package body GNAT.Array_Split is
       Result.D.Source := new Element_Sequence'(From);
       Set (Result, Separators, Mode);
       S := Result;
+   end Create;
+
+   function Create
+     (From       : Element_Sequence;
+      Separators : Element_Set;
+      Mode       : Separator_Mode := Single) return Slice_Set is
+   begin
+      return Ret : Slice_Set do
+         Create (Ret, From, Separators, Mode);
+      end return;
    end Create;
 
    -----------
@@ -108,7 +128,7 @@ package body GNAT.Array_Split is
    -- Finalize --
    --------------
 
-   procedure Finalize (S : in out Slice_Set) is
+   overriding procedure Finalize (S : in out Slice_Set) is
 
       procedure Free is
          new Ada.Unchecked_Deallocation (Element_Sequence, Element_Access);
@@ -139,7 +159,7 @@ package body GNAT.Array_Split is
    -- Initialize --
    ----------------
 
-   procedure Initialize (S : in out Slice_Set) is
+   overriding procedure Initialize (S : in out Slice_Set) is
    begin
       S.D := new Data'(1, null, 0, null, null);
    end Initialize;

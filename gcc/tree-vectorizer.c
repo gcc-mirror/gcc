@@ -684,13 +684,13 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
   STMT_VINFO_VEC_STMTS (res) = vNULL;
 
-  if (gimple_code (stmt) == GIMPLE_PHI
+  if (is_a <loop_vec_info> (this)
+      && gimple_code (stmt) == GIMPLE_PHI
       && is_loop_header_bb_p (gimple_bb (stmt)))
     STMT_VINFO_DEF_TYPE (res) = vect_unknown_def_type;
   else
     STMT_VINFO_DEF_TYPE (res) = vect_internal_def;
 
-  STMT_VINFO_SAME_ALIGN_REFS (res).create (0);
   STMT_SLP_TYPE (res) = loop_vect;
 
   /* This is really "uninitialized" until vect_compute_data_ref_alignment.  */
@@ -746,7 +746,6 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 	release_ssa_name (lhs);
     }
 
-  STMT_VINFO_SAME_ALIGN_REFS (stmt_info).release ();
   STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
   STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);
@@ -1172,6 +1171,8 @@ vectorize_loops (void)
   if (vect_loops_num <= 1)
     return 0;
 
+  slp_tree_pool = new object_allocator<_slp_tree> ("SLP nodes for vect");
+
   if (cfun->has_simduid_loops)
     note_simd_array_uses (&simd_array_to_simduid_htab);
 
@@ -1294,6 +1295,8 @@ vectorize_loops (void)
     shrink_simd_arrays (simd_array_to_simduid_htab, simduid_to_vf_htab);
   delete simduid_to_vf_htab;
   cfun->has_simduid_loops = false;
+  delete slp_tree_pool;
+  slp_tree_pool = NULL;
 
   if (num_vectorized_loops > 0)
     {
@@ -1429,7 +1432,12 @@ pass_slp_vectorize::execute (function *fun)
 	}
     }
 
+  slp_tree_pool = new object_allocator<_slp_tree> ("SLP nodes for slp");
+
   vect_slp_function (fun);
+
+  delete slp_tree_pool;
+  slp_tree_pool = NULL;
 
   if (!in_loop_pipeline)
     {

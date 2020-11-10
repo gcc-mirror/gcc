@@ -166,8 +166,9 @@ linkage, and do not throw exceptions.
 * omp_get_cancellation::        Whether cancellation support is enabled
 * omp_get_default_device::      Get the default device for target regions
 * omp_get_dynamic::             Dynamic teams setting
+* omp_get_initial_device::      Device number of host device
 * omp_get_level::               Number of parallel regions
-* omp_get_max_active_levels::   Maximum number of active regions
+* omp_get_max_active_levels::   Current maximum number of active regions
 * omp_get_max_task_priority::   Maximum task priority value that can be set
 * omp_get_max_threads::         Maximum number of threads of parallel region
 * omp_get_nested::              Nested parallel regions
@@ -177,6 +178,7 @@ linkage, and do not throw exceptions.
 * omp_get_num_threads::         Size of the active team
 * omp_get_proc_bind::           Whether theads may be moved between CPUs
 * omp_get_schedule::            Obtain the runtime scheduling method
+* omp_get_supported_active_levels:: Maximum number of active regions supported
 * omp_get_team_num::            Get team number
 * omp_get_team_size::           Number of threads in a team
 * omp_get_thread_limit::        Maximum number of threads
@@ -352,6 +354,33 @@ disabled by default.
 
 
 
+@node omp_get_initial_device
+@section @code{omp_get_initial_device} -- Return device number of initial device
+@table @asis
+@item @emph{Description}:
+This function returns a device number that represents the host device.
+For OpenMP 5.1, this must be equal to the value returned by the
+@code{omp_get_num_devices} function.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_initial_device(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_initial_device()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_num_devices}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.35.
+@end table
+
+
+
 @node omp_get_level
 @section @code{omp_get_level} -- Obtain the current nesting level
 @table @asis
@@ -379,7 +408,7 @@ which enclose the calling call.
 
 
 @node omp_get_max_active_levels
-@section @code{omp_get_max_active_levels} -- Maximum number of active regions
+@section @code{omp_get_max_active_levels} -- Current maximum number of active regions
 @table @asis
 @item @emph{Description}:
 This function obtains the maximum allowed number of nested, active parallel regions.
@@ -638,6 +667,31 @@ set to the value @code{omp_sched_static}, @code{omp_sched_dynamic},
 @end table
 
 
+@node omp_get_supported_active_levels
+@section @code{omp_get_supported_active_levels} -- Maximum number of active regions supported
+@table @asis
+@item @emph{Description}:
+This function returns the maximum number of nested, active parallel regions
+supported by this implementation.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_supported_active_levels(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_supported_active_levels()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_max_active_levels}, @ref{omp_set_max_active_levels}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.15.
+@end table
+
+
 
 @node omp_get_team_num
 @section @code{omp_get_team_num} -- Get team number
@@ -877,7 +931,8 @@ adjustment of team sizes and @code{false} disables it.
 @table @asis
 @item @emph{Description}:
 This function limits the maximum allowed number of nested, active
-parallel regions.
+parallel regions.  @var{max_levels} must be less or equal to
+the value returned by @code{omp_get_supported_active_levels}.
 
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
@@ -891,7 +946,8 @@ parallel regions.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_max_active_levels}, @ref{omp_get_active_level}
+@ref{omp_get_max_active_levels}, @ref{omp_get_active_level},
+@ref{omp_get_supported_active_levels}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.15.
@@ -1353,6 +1409,7 @@ beginning with @env{GOMP_} are GNU extensions.
 * OMP_PLACES::              Specifies on which CPUs the theads should be placed
 * OMP_STACKSIZE::           Set default thread stack size
 * OMP_SCHEDULE::            How threads are scheduled
+* OMP_TARGET_OFFLOAD::      Controls offloading behaviour
 * OMP_THREAD_LIMIT::        Set the maximum number of threads
 * OMP_WAIT_POLICY::         How waiting threads are handled
 * GOMP_CPU_AFFINITY::       Bind threads to specific CPUs
@@ -1622,6 +1679,30 @@ dynamic scheduling and a chunk size of 1 is used.
 
 @item @emph{Reference}: 
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Sections 2.7.1.1 and 4.1
+@end table
+
+
+
+@node OMP_TARGET_OFFLOAD
+@section @env{OMP_TARGET_OFFLOAD} -- Controls offloading behaviour
+@cindex Environment Variable
+@cindex Implementation specific setting
+@table @asis
+@item @emph{Description}:
+Specifies the behaviour with regard to offloading code to a device.  This
+variable can be set to one of three values - @code{MANDATORY}, @code{DISABLED}
+or @code{DEFAULT}.
+
+If set to @code{MANDATORY}, the program will terminate with an error if
+the offload device is not present or is not supported.  If set to
+@code{DISABLED}, then offloading is disabled and all code will run on the
+host. If set to @code{DEFAULT}, the program will try offloading to the
+device first, then fall back to running code on the host if it cannot.
+
+If undefined, then the program will behave as if @code{DEFAULT} was set.
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.17
 @end table
 
 

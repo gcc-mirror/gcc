@@ -1,4 +1,3 @@
-/* { dg-xfail-if "ptxas crashes" { nvptx-*-* } { "*" } { "-O0" "-Os" } } */
 
 
 int a = 1, b, d;

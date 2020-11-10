@@ -60,9 +60,7 @@ package Ada.Containers.Red_Black_Trees is
       --  Note that objects of type Tree_Type are logically initialized (in the
       --  sense that representation invariants of type are satisfied by dint of
       --  default initialization), even without the Nodes component also having
-      --  its own initialization expression. We only initializae the Nodes
-      --  component here in order to prevent spurious compiler warnings about
-      --  the container object not being fully initialized.
+      --  its own initialization expression.
 
       type Tree_Type (Capacity : Count_Type) is tagged record
          First  : Count_Type := 0;
@@ -71,7 +69,7 @@ package Ada.Containers.Red_Black_Trees is
          Length : Count_Type := 0;
          TC     : aliased Helpers.Tamper_Counts;
          Free   : Count_Type'Base := -1;
-         Nodes  : Nodes_Type (1 .. Capacity) := (others => <>);
+         Nodes  : Nodes_Type (1 .. Capacity);
       end record;
 
       package Implementation is new Helpers.Generic_Implementation;

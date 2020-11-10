@@ -30,14 +30,14 @@ struct X
 {
   X() = default;
   X(const X&) { copied = true; }
-  X(X&& x) { moved = true; }
+  X(X&&) { moved = true; }
 };
 
 struct X2
 {
   X2() = default;
   X2(const X2&) { copied = true; }
-  X2(X2&& x) noexcept { moved = true; }
+  X2(X2&&) noexcept { moved = true; }
 };
 
 void test01()

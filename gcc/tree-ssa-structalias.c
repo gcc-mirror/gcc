@@ -7972,7 +7972,7 @@ static bool
 associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
   if ((node->alias
-       || (node->thunk.thunk_p
+       || (node->thunk
 	   && ! node->inlined_to))
       && node->analyzed
       && !node->ifunc_resolver)

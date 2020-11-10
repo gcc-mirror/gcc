@@ -205,12 +205,16 @@ package body Exp_Intr is
          return;
       end if;
 
-      --  Use Unsigned_32 for sizes of 32 or below, else Unsigned_64
+      --  Use the appropriate type for the size
 
-      if Siz > 32 then
-         T3 := RTE (RE_Unsigned_64);
-      else
+      if Siz <= 32 then
          T3 := RTE (RE_Unsigned_32);
+
+      elsif Siz <= 64 then
+         T3 := RTE (RE_Unsigned_64);
+
+      else pragma Assert (Siz <= 128);
+         T3 := RTE (RE_Unsigned_128);
       end if;
 
       --  Copy operator node, and reset type and entity fields, for

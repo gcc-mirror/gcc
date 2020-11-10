@@ -452,7 +452,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef std::size_t _RC_t;
     
     // The data member _M_ref_count
-    volatile _RC_t _M_ref_count;
+    _RC_t _M_ref_count;
 
     // Constructor
 #ifdef __GTHREAD_MUTEX_INIT
@@ -489,7 +489,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_decr()
     {
       __gthread_mutex_lock(&_M_ref_count_lock);
-      volatile _RC_t __tmp = --_M_ref_count;
+      _RC_t __tmp = --_M_ref_count;
       __gthread_mutex_unlock(&_M_ref_count_lock);
       return __tmp;
     }

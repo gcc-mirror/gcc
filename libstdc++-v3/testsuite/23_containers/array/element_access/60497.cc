@@ -20,7 +20,6 @@
 // libstdc++/60497
 
 #include <array>
-#include <debug/array>
 #include <memory>
 
 struct A;
@@ -28,6 +27,3 @@ template<typename T> struct B { T t; };
 
 std::array<B<A>*, 1> a;
 auto b = std::get<0>(std::move(a));
-
-std::__debug::array<B<A>*, 1> c;
-auto d = std::__debug::get<0>(std::move(c));

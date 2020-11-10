@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_extract() with int
    inputs produce the right code with a P9 (LE) target.  */
 
-/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2 " } */
 
@@ -18,7 +18,6 @@
 /* { dg-final { scan-assembler-times {\madd\M} 3 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstxv\M} 6 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlwz\M} 6 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M} 6 { target ilp32 } } } */
 
 
 #include <altivec.h>

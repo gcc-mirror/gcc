@@ -26,6 +26,7 @@
 
 /* %eax */
 #define bit_AVX512BF16	(1 << 5)
+#define bit_HRESET	(1 << 22)
 
 /* %ecx */
 #define bit_SSE3	(1 << 0)
@@ -118,12 +119,14 @@
 #define bit_MOVDIR64B	(1 << 28)
 #define bit_ENQCMD	(1 << 29)
 #define bit_CLDEMOTE	(1 << 25)
+#define bit_KL		(1 << 23)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)
 #define bit_AVX5124FMAPS (1 << 3)
 #define bit_AVX512VP2INTERSECT	(1 << 8)
 #define bit_IBT	(1 << 20)
+#define bit_UINTR (1 << 5)
 #define bit_PCONFIG	(1 << 18)
 #define bit_SERIALIZE	(1 << 14)
 #define bit_TSXLDTRK    (1 << 16)
@@ -143,6 +146,12 @@
 /* PT sub leaf (%eax == 0x14, %ecx == 0) */
 /* %ebx */
 #define bit_PTWRITE	(1 << 4)
+
+/* Keylocker leaf (%eax == 0x19) */
+/* %ebx */
+#define bit_AESKLE	( 1<<0 )
+#define bit_WIDEKL	( 1<<2 )
+
 
 /* Signatures for different CPU implementations as returned in uses
    of cpuid with level 0.  */

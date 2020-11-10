@@ -269,7 +269,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_integral_helper<unsigned char>
     : public true_type { };
 
-#ifdef _GLIBCXX_USE_WCHAR_T
+  // We want is_integral<wchar_t> to be true (and make_signed/unsigned to work)
+  // even when libc doesn't provide working <wchar.h> and related functions,
+  // so check __WCHAR_TYPE__ instead of _GLIBCXX_USE_WCHAR_T.
+#ifdef __WCHAR_TYPE__
   template<>
     struct __is_integral_helper<wchar_t>
     : public true_type { };
@@ -963,47 +966,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  template<bool, typename _Tp, typename... _Args>
-    struct __is_nt_constructible_impl
-    : public false_type
-    { };
-
-  template<typename _Tp, typename... _Args>
-    struct __is_nt_constructible_impl<true, _Tp, _Args...>
-    : public __bool_constant<noexcept(_Tp(std::declval<_Args>()...))>
-    { };
-
-  template<typename _Tp, typename _Arg>
-    struct __is_nt_constructible_impl<true, _Tp, _Arg>
-    : public __bool_constant<noexcept(static_cast<_Tp>(std::declval<_Arg>()))>
-    { };
-
-  template<typename _Tp>
-    struct __is_nt_constructible_impl<true, _Tp>
-    : public __bool_constant<noexcept(_Tp())>
-    { };
-
-  template<typename _Tp, size_t _Num>
-    struct __is_nt_constructible_impl<true, _Tp[_Num]>
-    : public __bool_constant<noexcept(typename remove_all_extents<_Tp>::type())>
-    { };
-
-#if __cpp_aggregate_paren_init
-  template<typename _Tp, size_t _Num, typename _Arg>
-    struct __is_nt_constructible_impl<true, _Tp[_Num], _Arg>
-    : public __is_nt_constructible_impl<true, _Tp, _Arg>
-    { };
-
-  template<typename _Tp, size_t _Num, typename... _Args>
-    struct __is_nt_constructible_impl<true, _Tp[_Num], _Args...>
-    : public __and_<__is_nt_constructible_impl<true, _Tp, _Args>...>
-    { };
-#endif
-
   template<typename _Tp, typename... _Args>
     using __is_nothrow_constructible_impl
-      = __is_nt_constructible_impl<__is_constructible(_Tp, _Args...),
-				   _Tp, _Args...>;
+      = __bool_constant<__is_nothrow_constructible(_Tp, _Args...)>;
 
   /// is_nothrow_constructible
   template<typename _Tp, typename... _Args>
@@ -1017,7 +982,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_nothrow_default_constructible
   template<typename _Tp>
     struct is_nothrow_default_constructible
-    : public __is_nothrow_constructible_impl<_Tp>::type
+    : public __bool_constant<__is_nothrow_constructible(_Tp)>
     {
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
@@ -1118,15 +1083,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp, typename _Up>
-    struct __is_nt_assignable_impl
-    : public integral_constant<bool, noexcept(declval<_Tp>() = declval<_Up>())>
-    { };
-
-  template<typename _Tp, typename _Up>
-    struct __is_nothrow_assignable_impl
-    : public __and_<__bool_constant<__is_assignable(_Tp, _Up)>,
-		    __is_nt_assignable_impl<_Tp, _Up>>
-    { };
+    using __is_nothrow_assignable_impl
+      = __bool_constant<__is_nothrow_assignable(_Tp, _Up)>;
 
   /// is_nothrow_assignable
   template<typename _Tp, typename _Up>
@@ -1787,7 +1745,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // neither signed integer types nor unsigned integer types, so must be
   // transformed to the unsigned integer type with the smallest rank.
   // Use the partial specialization for enumeration types to do that.
-#if defined(_GLIBCXX_USE_WCHAR_T)
+#ifdef __WCHAR_TYPE__
   template<>
     struct __make_unsigned<wchar_t>
     {
@@ -1913,7 +1871,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // signed integer types nor unsigned integer types, so must be
   // transformed to the signed integer type with the smallest rank.
   // Use the partial specialization for enumeration types to do that.
-#if defined(_GLIBCXX_USE_WCHAR_T)
+#if defined(__WCHAR_TYPE__)
   template<>
     struct __make_signed<wchar_t>
     {

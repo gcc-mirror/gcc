@@ -362,6 +362,25 @@ class TestGccChangelog(unittest.TestCase):
         assert '\t2020-06-11  Martin Liska  <mliska@suse.cz>' in entry
         assert '\t\t    Jakub Jelinek  <jakub@redhat.com>' in entry
 
+    def test_backport_double_cherry_pick(self):
+        email = self.from_patch_glob('double-cherry-pick.patch')
+        assert email.errors[0].message.startswith('multiple cherry pick lines')
+
     def test_square_and_lt_gt(self):
         email = self.from_patch_glob('0001-Check-for-more-missing')
         assert not email.errors
+
+    def test_empty_parenthesis(self):
+        email = self.from_patch_glob('0001-tree-optimization-97633-fix')
+        assert len(email.errors) == 1
+        assert email.errors[0].message == 'empty group "()" found'
+
+    def test_emptry_entry_desc(self):
+        email = self.from_patch_glob('0001-c-Set-CALL_FROM_NEW_OR')
+        assert len(email.errors) == 1
+        assert email.errors[0].message == 'missing description of a change'
+
+    def test_emptry_entry_desc_2(self):
+        email = self.from_patch_glob('0001-lto-fix-LTO-debug')
+        assert not email.errors
+        assert len(email.changelog_entries) == 1

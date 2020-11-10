@@ -2,7 +2,7 @@
 /* { dg-do compile { target c++20 } } */
 /* { dg-options "-O -ftrack-macro-expansion=0" } */
 
-[[nodiscard, nodiscard]] int check1 (void); /* { dg-error "nodiscard\[^\n\r]*can appear at most once" } */
+[[nodiscard, nodiscard]] int check1 (void); // { dg-warning "specified multiple times" }
 
 void
 test (void)

@@ -36,10 +36,6 @@ pragma Compiler_Unit_Warning;
 --  of System.Standard_Library, since this would cause order of elaboration
 --  problems (Elaborate_Body would have the same problem).
 
-pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we get
---  elaboration circularities with Ada.Exceptions if polling is on.
-
 pragma Warnings (Off);
 --  Kill warnings from unused withs. These unused with's are here to make
 --  sure the relevant units are loaded and properly elaborated.

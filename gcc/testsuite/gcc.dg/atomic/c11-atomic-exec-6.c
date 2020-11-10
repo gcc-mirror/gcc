@@ -3,6 +3,7 @@
    still occurs.  */
 /* { dg-do run } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
+/* { dg-xfail-run-if "PR97444: stack atomics" { nvptx*-*-* } }*/
 
 #define TEST_POINTER_ADD_SUB(TYPE)			\
   do							\

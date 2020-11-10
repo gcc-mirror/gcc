@@ -56,6 +56,14 @@ POSSIBILITY OF SUCH DAMAGE.  */
 # endif
 #endif
 
+#ifndef ATTRIBUTE_FALLTHROUGH
+# if (GCC_VERSION >= 7000)
+#  define ATTRIBUTE_FALLTHROUGH __attribute__ ((__fallthrough__))
+# else
+#  define ATTRIBUTE_FALLTHROUGH
+# endif
+#endif
+
 #ifndef HAVE_SYNC_FUNCTIONS
 
 /* Define out the sync functions.  These should never be called if

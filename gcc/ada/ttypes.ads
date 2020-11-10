@@ -26,7 +26,6 @@
 --  This package contains constants describing target properties
 
 with Types;    use Types;
-with Get_Targ;
 with Set_Targ;
 
 package Ttypes is
@@ -102,57 +101,33 @@ package Ttypes is
 
    Standard_Short_Short_Integer_Size  : constant Pos :=
                                           Set_Targ.Char_Size;
-   Standard_Short_Short_Integer_Width : constant Pos :=
-                                          Get_Targ.Width_From_Size
-                                           (Standard_Short_Short_Integer_Size);
 
    Standard_Short_Integer_Size        : constant Pos :=
                                           Set_Targ.Short_Size;
-   Standard_Short_Integer_Width       : constant Pos :=
-                                          Get_Targ.Width_From_Size
-                                            (Standard_Short_Integer_Size);
 
    Standard_Integer_Size              : constant Pos :=
                                           Set_Targ.Int_Size;
-   Standard_Integer_Width             : constant Pos :=
-                                          Get_Targ.Width_From_Size
-                                            (Standard_Integer_Size);
 
    Standard_Long_Integer_Size         : constant Pos :=
                                           Set_Targ.Long_Size;
-   Standard_Long_Integer_Width        : constant Pos :=
-                                          Get_Targ.Width_From_Size
-                                            (Standard_Long_Integer_Size);
 
    Standard_Long_Long_Integer_Size    : constant Pos :=
                                           Set_Targ.Long_Long_Size;
-   Standard_Long_Long_Integer_Width   : constant Pos :=
-                                          Get_Targ.Width_From_Size
-                                            (Standard_Long_Long_Integer_Size);
+
+   Standard_Long_Long_Long_Integer_Size : Pos :=
+                                            Set_Targ.Long_Long_Long_Size;
 
    Standard_Short_Float_Size          : constant Pos :=
                                           Set_Targ.Float_Size;
-   Standard_Short_Float_Digits        : constant Pos :=
-                                          Get_Targ.Digits_From_Size
-                                            (Standard_Short_Float_Size);
 
    Standard_Float_Size                : constant Pos :=
                                           Set_Targ.Float_Size;
-   Standard_Float_Digits              : constant Pos :=
-                                          Get_Targ.Digits_From_Size
-                                            (Standard_Float_Size);
 
    Standard_Long_Float_Size           : constant Pos :=
                                           Set_Targ.Double_Size;
-   Standard_Long_Float_Digits         : constant Pos :=
-                                          Get_Targ.Digits_From_Size
-                                            (Standard_Long_Float_Size);
 
    Standard_Long_Long_Float_Size      : constant Pos :=
                                           Set_Targ.Long_Double_Size;
-   Standard_Long_Long_Float_Digits    : constant Pos :=
-                                          Get_Targ.Digits_From_Size
-                                            (Standard_Long_Long_Float_Size);
 
    Standard_Character_Size            : constant Pos := Set_Targ.Char_Size;
 
@@ -176,8 +151,10 @@ package Ttypes is
    System_Address_Size : constant Pos := Set_Targ.Pointer_Size;
    --  System.Address'Size (also size of all thin pointers)
 
-   System_Max_Binary_Modulus_Power : constant Pos :=
-                                       Standard_Long_Long_Integer_Size;
+   System_Max_Integer_Size : Pos := Standard_Long_Long_Long_Integer_Size;
+
+   System_Max_Binary_Modulus_Power : Pos :=
+                                       Standard_Long_Long_Long_Integer_Size;
 
    System_Max_Nonbinary_Modulus_Power : constant Pos := Standard_Integer_Size;
 

@@ -65,6 +65,8 @@ static tree handle_no_sanitize_undefined_attribute (tree *, tree, tree, int,
 static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
+static tree handle_no_stack_protector_function_attribute (tree *, tree,
+							tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocf_check_attribute (tree *, tree, tree, int, bool *);
@@ -138,6 +140,8 @@ static tree handle_target_clones_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
 static tree ignore_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_split_stack_attribute (tree *, tree, tree, int, bool *);
+static tree handle_zero_call_used_regs_attribute (tree *, tree, tree, int,
+						  bool *);
 static tree handle_argspec_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_unused_attribute (tree *, tree, tree, int, bool *);
@@ -153,6 +157,7 @@ static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
 static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
 static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nsobject_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -248,6 +253,14 @@ static const struct attribute_spec::exclusions attr_noinit_exclusions[] =
   ATTR_EXCL (NULL, false, false, false),
 };
 
+static const struct attribute_spec::exclusions attr_stack_protect_exclusions[] =
+{
+  ATTR_EXCL ("stack_protect", true, false, false),
+  ATTR_EXCL ("no_stack_protector", true, false, false),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+
 /* Table of machine-independent attributes common to all C-like languages.
 
    Current list of processed common attributes: nonnull.  */
@@ -275,7 +288,11 @@ const struct attribute_spec c_common_attribute_table[] =
   { "volatile",               0, 0, true,  false, false, false,
 			      handle_noreturn_attribute, NULL },
   { "stack_protect",          0, 0, true,  false, false, false,
-			      handle_stack_protect_attribute, NULL },
+			      handle_stack_protect_attribute,
+			      attr_stack_protect_exclusions },
+  { "no_stack_protector",     0, 0, true, false, false, false,
+			      handle_no_stack_protector_function_attribute,
+			      attr_stack_protect_exclusions },
   { "noinline",               0, 0, true,  false, false, false,
 			      handle_noinline_attribute,
 	                      attr_noinline_exclusions },
@@ -437,6 +454,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      ignore_attribute, NULL },
   { "no_split_stack",	      0, 0, true,  false, false, false,
 			      handle_no_split_stack_attribute, NULL },
+  { "zero_call_used_regs",    1, 1, true, false, false, false,
+			      handle_zero_call_used_regs_attribute, NULL },
   /* For internal use only (marking of function arguments).
      The name contains a space to prevent its usage in source code.  */
   { "arg spec",		      1, -1, true, false, false, false,
@@ -491,6 +510,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_noinit_attribute, attr_noinit_exclusions },
   { "access",		      1, 3, false, true, true, false,
 			      handle_access_attribute, NULL },
+  /* Attributes used by Objective-C.  */
+  { "NSObject",		      0, 0, true, false, false, false,
+			      handle_nsobject_attribute, NULL },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -1146,6 +1168,22 @@ handle_asan_odr_indicator_attribute (tree *, tree, tree, int, bool *)
 static tree
 handle_stack_protect_attribute (tree *node, tree name, tree, int,
 				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_stack_protector" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_no_stack_protector_function_attribute (tree *node, tree name, tree,
+					      int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -4547,10 +4585,11 @@ handle_access_attribute (tree node[3], tree name, tree args,
    result in the following attribute access:
 
      value: "+^2[*],$0$1^3[*],$1$1"
-     chain: <0, x> <1, y>
+     list:  < <0, x> <1, y> >
 
-   where each <node> on the chain corresponds to one VLA bound for each
-   of the two parameters.  */
+   where the list has a single value which itself is is a list each
+   of whose <node>s corresponds to one VLA bound for each of the two
+   parameters.  */
 
 tree
 build_attr_access_from_parms (tree parms, bool skip_voidptr)
@@ -4654,13 +4693,17 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
   if (!spec.length ())
     return NULL_TREE;
 
+  /* Attribute access takes a two or three arguments.  Wrap VBLIST in
+     another list in case it has more nodes than would otherwise fit.  */
+    vblist = build_tree_list (NULL_TREE, vblist);
+
   /* Build a single attribute access with the string describing all
      array arguments and an optional list of any non-parameter VLA
      bounds in order.  */
   tree str = build_string (spec.length (), spec.c_str ());
   tree attrargs = tree_cons (NULL_TREE, str, vblist);
   tree name = get_identifier ("access");
-  return tree_cons (name, attrargs, NULL_TREE);
+  return build_tree_list (name, attrargs);
 }
 
 /* Handle a "nothrow" attribute; arguments as in
@@ -4959,6 +5002,53 @@ handle_no_split_stack_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
+/* Handle a "zero_call_used_regs" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_zero_call_used_regs_attribute (tree *node, tree name, tree args,
+				      int ARG_UNUSED (flags),
+				      bool *no_add_attrs)
+{
+  tree decl = *node;
+  tree id = TREE_VALUE (args);
+
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute applies only to functions", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (id) != STRING_CST)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE argument not a string", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  bool found = false;
+  for (unsigned int i = 0; zero_call_used_regs_opts[i].name != NULL; ++i)
+    if (strcmp (TREE_STRING_POINTER (id),
+		zero_call_used_regs_opts[i].name) == 0)
+      {
+	found = true;
+	break;
+      }
+
+  if (!found)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"unrecognized %qE attribute argument %qs",
+		name, TREE_STRING_POINTER (id));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "returns_nonnull" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -5035,6 +5125,41 @@ handle_patchable_function_entry_attribute (tree *, tree name, tree args,
 	  return NULL_TREE;
 	}
     }
+  return NULL_TREE;
+}
+
+/* Handle a "NSObject" attributes; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nsobject_attribute (tree *node, tree name, tree args,
+			   int /*flags*/, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+
+  /* This attribute only applies to typedefs (or field decls for properties),
+     we drop it otherwise - but warn about this if enabled.  */
+  if (TREE_CODE (*node) != TYPE_DECL && TREE_CODE (*node) != FIELD_DECL)
+    {
+      warning (OPT_WNSObject_attribute, "%qE attribute may be put on a"
+	       " typedef only; attribute is ignored", name);
+      return NULL_TREE;
+    }
+
+  /* The original implementation only allowed pointers to records, however
+     recent implementations also allow void *.  */
+  tree type = TREE_TYPE (*node);
+  if (!type || !POINTER_TYPE_P (type)
+      || (TREE_CODE (TREE_TYPE (type)) != RECORD_TYPE
+          && !VOID_TYPE_P (TREE_TYPE (type))))
+    {
+      error ("%qE attribute is for pointer types only", name);
+      return NULL_TREE;
+    }
+
+  tree t = tree_cons (name, args, TYPE_ATTRIBUTES (type));
+  TREE_TYPE (*node) = build_type_attribute_variant (type, t);
+
   return NULL_TREE;
 }
 

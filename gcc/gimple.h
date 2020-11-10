@@ -3405,7 +3405,7 @@ gimple_call_set_from_new_or_delete (gcall *s, bool from_new_or_delete_p)
    from a new or delete expression.  */
 
 static inline bool
-gimple_call_from_new_or_delete (gcall *s)
+gimple_call_from_new_or_delete (const gcall *s)
 {
   return (s->subcode & GF_CALL_FROM_NEW_OR_DELETE) != 0;
 }
@@ -6598,6 +6598,8 @@ gimple_expr_type (const gimple *stmt)
     }
   else if (code == GIMPLE_COND)
     return boolean_type_node;
+  else if (code == GIMPLE_PHI)
+    return TREE_TYPE (gimple_phi_result (stmt));
   else
     return void_type_node;
 }
