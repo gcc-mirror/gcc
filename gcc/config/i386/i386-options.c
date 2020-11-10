@@ -2226,6 +2226,9 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_PTWRITE) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_PTWRITE))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_PTWRITE;
+	if (((processor_alias_table[i].flags & PTA_CLDEMOTE) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_CLDEMOTE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_CLDEMOTE;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)

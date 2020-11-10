@@ -2435,8 +2435,9 @@ const wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 const wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
 const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 12);
-const wide_int_bitmask PTA_MOVDIRI(0, HOST_WIDE_INT_1U << 13);
-const wide_int_bitmask PTA_MOVDIR64B(0, HOST_WIDE_INT_1U << 14);
+const wide_int_bitmask PTA_MOVDIRI (0, HOST_WIDE_INT_1U << 13);
+const wide_int_bitmask PTA_MOVDIR64B (0, HOST_WIDE_INT_1U << 14);
+const wide_int_bitmask PTA_CLDEMOTE (0, HOST_WIDE_INT_1U << 16);
 
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
