@@ -40364,6 +40364,7 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
 				 "#pragma omp target data", pragma_tok);
+  c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
     {
@@ -40382,6 +40383,7 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -40465,6 +40467,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
 				 "#pragma omp target enter data", pragma_tok);
+  c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
     {
@@ -40479,6 +40482,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -40553,6 +40557,7 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_EXIT_DATA_CLAUSE_MASK,
 				 "#pragma omp target exit data", pragma_tok);
+  c_omp_adjust_map_clauses (clauses, false);
   int map_seen = 0;
   for (tree *pc = &clauses; *pc;)
     {
@@ -40568,6 +40573,7 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
 	    break;
 	  default:
 	    map_seen |= 1;
@@ -40816,6 +40822,8 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
   OMP_TARGET_CLAUSES (stmt)
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_CLAUSE_MASK,
 				 "#pragma omp target", pragma_tok);
+  c_omp_adjust_map_clauses (OMP_TARGET_CLAUSES (stmt), true);
+
   pc = &OMP_TARGET_CLAUSES (stmt);
   keep_next_level (true);
   OMP_TARGET_BODY (stmt) = cp_parser_omp_structured_block (parser, if_p);
@@ -40839,6 +40847,7 @@ check_clauses:
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
 	    break;
 	  default:
 	    error_at (OMP_CLAUSE_LOCATION (*pc),
