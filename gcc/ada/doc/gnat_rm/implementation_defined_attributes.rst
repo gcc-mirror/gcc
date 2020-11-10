@@ -817,8 +817,6 @@ and is static.  For non-scalar types, the result is nonstatic.
 
 Attribute Pool_Address
 ======================
-.. index:: Parameters, when passed by reference
-
 .. index:: Pool_Address
 
 ``X'Pool_Address`` for any object ``X`` returns the address
@@ -1141,6 +1139,26 @@ GNAT also allows this attribute to be applied to floating-point types
 for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute when applied to floating-point types.
+
+Attribute Small_Denominator
+===========================
+.. index:: Small
+
+.. index:: Small_Denominator
+
+``typ'Small_Denominator`` for any fixed-point subtype `typ` yields the
+denominator in the representation of ``typ'Small`` as a rational number
+with coprime factors (i.e. as an irreducible fraction).
+
+Attribute Small_Numerator
+=========================
+.. index:: Small
+
+.. index:: Small_Numerator
+
+``typ'Small_Numerator`` for any fixed-point subtype `typ` yields the
+numerator in the representation of ``typ'Small`` as a rational number
+with coprime factors (i.e. as an irreducible fraction).
 
 Attribute Storage_Unit
 ======================

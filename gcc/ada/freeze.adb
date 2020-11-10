@@ -8513,12 +8513,13 @@ package body Freeze is
             end if;
 
             if Actual_Size > 64
-              and then Norm_Num (Small) /= Uint_1
-              and then Norm_Den (Small) /= Uint_1
+              and then (Norm_Num (Small) > Uint_2 ** 127
+                         or else Norm_Den (Small) > Uint_2 ** 127)
+              and then Small /= Ureal_2_M_128
             then
                Error_Msg_Name_1 := Name_Small;
                Error_Msg_N
-                 ("`&''%` not an integer or reciprocal of an integer", Typ);
+                 ("`&''%` not the ratio of two 128-bit integers", Typ);
             end if;
 
             if Smaller (Expr_Value_R (Lo), Ureal_M_10_76) then

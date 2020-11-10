@@ -3626,8 +3626,9 @@ package body Exp_Attr is
       --    For the most common ordinary fixed-point types
       --      xx   = Fixed{32,64,128}
       --      ftyp = Integer_{32,64,128}
-      --      pm   = Typ'Small
-      --             1.0 / Typ'Small
+      --      pm   = numerator of Typ'Small
+      --             denominator of Typ'Small
+      --             min (scale of Typ'Small, 0)
 
       --    For other ordinary fixed-point types
       --      xx   = Real
@@ -3666,20 +3667,26 @@ package body Exp_Attr is
 
                begin
                   if Siz <= 32
-                    and then Min = Uint_1
                     and then Max <= Uint_2 ** 31
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 8)
                   then
                      Fid  := RE_Fore_Fixed32;
                      Ftyp := RTE (RE_Integer_32);
                   elsif Siz <= 64
-                    and then Min = Uint_1
                     and then Max <= Uint_2 ** 63
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 17)
                   then
                      Fid  := RE_Fore_Fixed64;
                      Ftyp := RTE (RE_Integer_64);
                   elsif System_Max_Integer_Size = 128
-                    and then Min = Uint_1
                     and then Max <= Uint_2 ** 127
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 37)
                   then
                      Fid  := RE_Fore_Fixed128;
                      Ftyp := RTE (RE_Integer_128);
@@ -3711,8 +3718,8 @@ package body Exp_Attr is
                Append_To (Arg_List,
                  Make_Integer_Literal (Loc, Scale_Value (Ptyp)));
 
-            --  For ordinary fixed-point types, append Num, Den parameters
-            --  and also set to do literal conversion
+            --  For ordinary fixed-point types, append Num, Den and Scale
+            --  parameters and also set to do literal conversion
 
             elsif Fid /= RE_Fore_Real then
                Set_Conversion_OK (First (Arg_List));
@@ -3723,6 +3730,20 @@ package body Exp_Attr is
 
                Append_To (Arg_List,
                  Make_Integer_Literal (Loc, -Norm_Den (Small_Value (Ptyp))));
+
+               declare
+                  Val   : Ureal := Small_Value (Ptyp);
+                  Scale : Int   := 0;
+
+               begin
+                  while Val >= Ureal_10 loop
+                     Val := Val / Ureal_10;
+                     Scale := Scale - 1;
+                  end loop;
+
+                  Append_To (Arg_List,
+                     Make_Integer_Literal (Loc, UI_From_Int (Scale)));
+               end;
             end if;
 
             Rewrite (N,
@@ -7813,6 +7834,8 @@ package body Exp_Attr is
          | Attribute_Scale
          | Attribute_Signed_Zeros
          | Attribute_Small
+         | Attribute_Small_Denominator
+         | Attribute_Small_Numerator
          | Attribute_Storage_Unit
          | Attribute_Stub_Type
          | Attribute_System_Allocator_Alignment

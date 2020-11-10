@@ -160,15 +160,16 @@ is permitted that does not result in a mantissa larger than 63 bits.
 On 64-bit platforms, the small must lie in 2.0**(-127) .. 2.0**127 and the
 range in -1.0E+76 .. 1.0E+76; any combination is permitted that does not
 result in a mantissa larger than 63 bits, and any combination is permitted
-that results in a mantissa between 64 and 127 bits if the small is either
-an integer or the reciprocal of an integer.
+that results in a mantissa between 64 and 127 bits if the small is the
+ratio of two integers that lie in 1 .. 2.0**127.
 
-If the small is either an integer or the reciprocal of an integer, which
-is the case if no ``small`` clause is provided, then the operations of the
-fixed point type are entirely implemented by means of integer instructions.
-In the other cases, some operations, in particular input and output, may be
-implemented by means of floating-point instructions and may be affected by
-accuracy issues on architectures other than x86.
+If the small is the ratio of two integers with 64-bit magnitude on 32-bit
+platforms and 128-bit magnitude on 64-bit platforms, which is the case if
+no ``small`` clause is provided, then the operations of the fixed point
+type are entirely implemented by means of integer instructions.  In the
+other cases, some operations, in particular input and output, may be
+implemented by means of floating-point instructions and may be affected
+by accuracy issues on architectures other than x86.
 
 For a decimal fixed point type, on 32-bit platforms, the small must lie in
 1.0E-18 .. 1.0E+18 and the digits in 1 .. 18.  On 64-bit platforms, the

@@ -35,6 +35,14 @@ with System.Value_R;
 
 package body System.Value_F is
 
+   --  The prerequisite of the implementation is that the computation of the
+   --  operands of the scaled divide does not unduly overflow when the small
+   --  is neither an integer nor the reciprocal of an integer, which means
+   --  that its numerator and denominator must be both not larger than the
+   --  smallest divide 2**(Int'Size - 1) / Base where Base ranges over the
+   --  supported values for the base of the literal. Given that the largest
+   --  supported base is 16, this gives a limit of 2**(Int'Size - 5).
+
    package Impl is new Value_R (Uns, Floating => False);
 
    function Integer_To_Fixed
@@ -73,17 +81,54 @@ package body System.Value_F is
 
    --    V = (Val * Base + Extra) * (Base ** (ScaleB - 1)) / (Num / Den)
 
-   --  using two steps of scaled divide if Extra is non-zero
+   --  using two steps of scaled divide if Extra is positive and ScaleB too
 
-   --    (1)  Val * ((Base ** ScaleB) * Den) = Q1 * Num + R1
+   --    (1)  Val * (Den * (Base ** ScaleB)) = Q1 * Num + R1
 
-   --    (2)  Extra * ((Base ** ScaleB) * Den) = Q2 * (-Base) + R2
+   --    (2)  Extra * (Den * (Base ** ScaleB)) = Q2 * -Base + R2
 
    --  which yields after dividing (1) by Num and (2) by Num * Base and summing
 
    --    V = Q1 + (R1 - Q2) / Num + R2 / (Num * Base)
 
    --  but we get rid of the third term by using a rounding divide for (2).
+
+   --  This works only if Den * (Base ** ScaleB) does not overflow for inputs
+   --  corresponding to 'Image. Let S = Num / Den, B = Base and N the scale in
+   --  base B of S, i.e. the smallest integer such that B**N * S >= 1. Then,
+   --  for X a positive of the mantissa, i.e. 1 <= X <= 2**(M-1), we have
+
+   --    1/B <= X * S * B**(N-1) < 2**(M-1)
+
+   --  which means that the inputs corresponding to the output of 'Image have a
+   --  ScaleB equal either to 1 - N or (after multiplying the inequality by B)
+   --  to -N, possibly after renormalizing X, i.e. multiplying it by a suitable
+   --  power of B. Therefore
+
+   --    Den * (Base ** ScaleB) <= Den * (B ** (1 - N)) < Num * B
+
+   --  which means that the product does not overflow if Num <= 2**(M-1) / B.
+
+   --  On the other hand, if Extra is positive and ScaleB negative, the above
+   --  two steps are
+
+   --   (1b)  Val * Den = Q1 * (Num * (Base ** -ScaleB)) + R1
+
+   --   (2b)  Extra * Den = Q2 * -Base + R2
+
+   --  which yields after dividing (1b) by Num * (Base ** -ScaleB) and (2b) by
+   --  Num * (Base ** (1 - ScaleB)) and summing
+
+   --    V = Q1 + (R1 - Q2) / (Num * (Base ** -ScaleB)) + R2 / ...
+
+   --  but we get rid of the third term by using a rounding divide for (2b).
+
+   --  This works only if Num * (Base ** -ScaleB) does not overflow for inputs
+   --  corresponding to 'Image. With the determination of ScaleB above, we have
+
+   --    Num * (Base ** -ScaleB) <= Num * (B ** N) < Den * B
+
+   --  which means that the product does not overflow if Den <= 2**(M-1) / B.
 
    ----------------------
    -- Integer_To_Fixed --
@@ -234,7 +279,7 @@ package body System.Value_F is
       --  third operands are always negative so the sign of the quotient is the
       --  sign of the first operand and the sign of the remainder the opposite.
 
-      if E /= 0 then
+      if E > 0 then
          Scaled_Divide (Unsigned_To_Signed (V), Y, Z, Q1, R1, Round => False);
          Scaled_Divide (Unsigned_To_Signed (E), Y, -B, Q2, R2, Round => True);
 

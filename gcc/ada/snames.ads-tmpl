@@ -1024,6 +1024,8 @@ package Snames is
    Name_Signed_Zeros                   : constant Name_Id := N + $;
    Name_Size                           : constant Name_Id := N + $;
    Name_Small                          : constant Name_Id := N + $; -- Ada 83
+   Name_Small_Denominator              : constant Name_Id := N + $; -- GNAT
+   Name_Small_Numerator                : constant Name_Id := N + $; -- GNAT
    Name_Storage_Size                   : constant Name_Id := N + $;
    Name_Storage_Unit                   : constant Name_Id := N + $; -- GNAT
    Name_Stream_Size                    : constant Name_Id := N + $; -- Ada 05
@@ -1551,6 +1553,8 @@ package Snames is
       Attribute_Signed_Zeros,
       Attribute_Size,
       Attribute_Small,
+      Attribute_Small_Denominator,
+      Attribute_Small_Numerator,
       Attribute_Storage_Size,
       Attribute_Storage_Unit,
       Attribute_Stream_Size,

@@ -1594,6 +1594,10 @@ package body Exp_Fixd is
    --  If the small ratio is the reciprocal of a sufficiently small integer,
    --  then the perfect result set is obtained by a single integer division.
 
+   --  If the numerator and denominator of the small ratio are sufficiently
+   --  small integers, then the perfect result set is obtained by a scaled
+   --  divide operation.
+
    --  In other cases, we obtain the close result set by calculating the
    --  result in floating-point.
 
@@ -1605,7 +1609,8 @@ package body Exp_Fixd is
       Small_Ratio : Ureal;
       Ratio_Num   : Uint;
       Ratio_Den   : Uint;
-      Lit         : Node_Id;
+      Lit_Num     : Node_Id;
+      Lit_Den     : Node_Id;
 
    begin
       if Is_OK_Static_Expression (Expr) then
@@ -1623,26 +1628,36 @@ package body Exp_Fixd is
             return;
 
          else
-            Lit := Integer_Literal (N, Ratio_Num);
+            Lit_Num := Integer_Literal (N, Ratio_Num);
 
-            if Present (Lit) then
-               Set_Result (N, Build_Multiply (N, Expr, Lit));
+            if Present (Lit_Num) then
+               Set_Result (N, Build_Multiply (N, Expr, Lit_Num));
                return;
             end if;
          end if;
 
       elsif Ratio_Num = 1 then
-         Lit := Integer_Literal (N, Ratio_Den);
+         Lit_Den := Integer_Literal (N, Ratio_Den);
 
-         if Present (Lit) then
-            Set_Result (N, Build_Divide (N, Expr, Lit), Rng_Check);
+         if Present (Lit_Den) then
+            Set_Result (N, Build_Divide (N, Expr, Lit_Den), Rng_Check);
+            return;
+         end if;
+
+      else
+         Lit_Num := Integer_Literal (N, Ratio_Num);
+         Lit_Den := Integer_Literal (N, Ratio_Den);
+
+         if Present (Lit_Num) and then Present (Lit_Den) then
+            Set_Result
+              (N, Build_Scaled_Divide (N, Expr, Lit_Num, Lit_Den), Rng_Check);
             return;
          end if;
       end if;
 
-      --  Fall through to use floating-point for the close result set case
-      --  either as a result of the small ratio not being an integer or the
-      --  reciprocal of an integer, or if the integer is out of range.
+      --  Fall through to use floating-point for the close result set case,
+      --  as a result of the numerator or denominator of the small ratio not
+      --  being a sufficiently small integer.
 
       Set_Result (N,
         Build_Multiply (N,
@@ -1698,6 +1713,10 @@ package body Exp_Fixd is
    --  If the small value is the reciprocal of a sufficiently small integer,
    --  then the perfect result set is obtained by a single integer division.
 
+   --  If the numerator and denominator of the small value are sufficiently
+   --  small integers, then the perfect result set is obtained by a scaled
+   --  divide operation.
+
    --  In other cases, we obtain the close result set by calculating the
    --  result in floating-point.
 
@@ -1708,7 +1727,8 @@ package body Exp_Fixd is
       Small       : constant Ureal     := Small_Value (Source_Type);
       Small_Num   : constant Uint      := Norm_Num (Small);
       Small_Den   : constant Uint      := Norm_Den (Small);
-      Lit         : Node_Id;
+      Lit_Num     : Node_Id;
+      Lit_Den     : Node_Id;
 
    begin
       if Is_OK_Static_Expression (Expr) then
@@ -1717,25 +1737,35 @@ package body Exp_Fixd is
       end if;
 
       if Small_Den = 1 then
-         Lit := Integer_Literal (N, Small_Num);
+         Lit_Num := Integer_Literal (N, Small_Num);
 
-         if Present (Lit) then
-            Set_Result (N, Build_Multiply (N, Expr, Lit), Rng_Check);
+         if Present (Lit_Num) then
+            Set_Result (N, Build_Multiply (N, Expr, Lit_Num), Rng_Check);
             return;
          end if;
 
       elsif Small_Num = 1 then
-         Lit := Integer_Literal (N, Small_Den);
+         Lit_Den := Integer_Literal (N, Small_Den);
 
-         if Present (Lit) then
-            Set_Result (N, Build_Divide (N, Expr, Lit), Rng_Check);
+         if Present (Lit_Den) then
+            Set_Result (N, Build_Divide (N, Expr, Lit_Den), Rng_Check);
+            return;
+         end if;
+
+      else
+         Lit_Num := Integer_Literal (N, Small_Num);
+         Lit_Den := Integer_Literal (N, Small_Den);
+
+         if Present (Lit_Num) and then Present (Lit_Den) then
+            Set_Result
+              (N, Build_Scaled_Divide (N, Expr, Lit_Num, Lit_Den), Rng_Check);
             return;
          end if;
       end if;
 
-      --  Fall through to use floating-point for the close result set case
-      --  either as a result of the small value not being an integer or the
-      --  reciprocal of an integer, or if the integer is out of range.
+      --  Fall through to use floating-point for the close result set case,
+      --  as a result of the numerator or denominator of the small value not
+      --  being a sufficiently small integer.
 
       Set_Result (N,
         Build_Multiply (N,
@@ -1817,6 +1847,10 @@ package body Exp_Fixd is
    --  If the small value is the reciprocal of a sufficiently small integer,
    --  the perfect result set is obtained by a single integer multiplication.
 
+   --  If the numerator and denominator of the small value are sufficiently
+   --  small integers, then the perfect result set is obtained by a scaled
+   --  divide operation.
+
    --  In other cases, we obtain the close result set by calculating the
    --  result in floating-point using a multiplication by the reciprocal
    --  of the Result_Small.
@@ -1828,29 +1862,40 @@ package body Exp_Fixd is
       Small       : constant Ureal     := Small_Value (Result_Type);
       Small_Num   : constant Uint      := Norm_Num (Small);
       Small_Den   : constant Uint      := Norm_Den (Small);
-      Lit         : Node_Id;
+      Lit_Num     : Node_Id;
+      Lit_Den     : Node_Id;
 
    begin
       if Small_Den = 1 then
-         Lit := Integer_Literal (N, Small_Num);
+         Lit_Num := Integer_Literal (N, Small_Num);
 
-         if Present (Lit) then
-            Set_Result (N, Build_Divide (N, Expr, Lit), Rng_Check);
+         if Present (Lit_Num) then
+            Set_Result (N, Build_Divide (N, Expr, Lit_Num), Rng_Check);
             return;
          end if;
 
       elsif Small_Num = 1 then
-         Lit := Integer_Literal (N, Small_Den);
+         Lit_Den := Integer_Literal (N, Small_Den);
 
-         if Present (Lit) then
-            Set_Result (N, Build_Multiply (N, Expr, Lit), Rng_Check);
+         if Present (Lit_Den) then
+            Set_Result (N, Build_Multiply (N, Expr, Lit_Den), Rng_Check);
+            return;
+         end if;
+
+      else
+         Lit_Num := Integer_Literal (N, Small_Num);
+         Lit_Den := Integer_Literal (N, Small_Den);
+
+         if Present (Lit_Num) and then Present (Lit_Den) then
+            Set_Result
+              (N, Build_Scaled_Divide (N, Expr, Lit_Den, Lit_Num), Rng_Check);
             return;
          end if;
       end if;
 
-      --  Fall through to use floating-point for the close result set case
-      --  either as a result of the small value not being an integer or the
-      --  reciprocal of an integer, or if the integer is out of range.
+      --  Fall through to use floating-point for the close result set case,
+      --  as a result of the numerator or denominator of the small value not
+      --  being a sufficiently small integer.
 
       Set_Result (N,
         Build_Multiply (N,

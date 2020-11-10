@@ -34,6 +34,26 @@ with System.Img_Util; use System.Img_Util;
 
 package body System.Image_F is
 
+   Maxdigs : constant Natural := Int'Width - 2;
+   --  Maximum number of decimal digits that can be represented in an Int.
+   --  The "-2" accounts for the sign and one extra digit, since we need the
+   --  maximum number of 9's that can be represented, e.g. for the 64-bit case,
+   --  Integer_64'Width is 20 since the maximum value is approximately 9.2E+18
+   --  and has 19 digits, but the maximum number of 9's that can be represented
+   --  in Integer_64 is only 18.
+
+   --  The first prerequisite of the implementation is that the first scaled
+   --  divide does not overflow, which means that the absolute value of the
+   --  input X must always be smaller than 10**Maxdigs * 2**(Int'Size - 1).
+   --  Otherwise Constraint_Error is raised by the scaled divide operation.
+
+   --  The second prerequisite of the implementation is that the computation
+   --  of the operands does not overflow when the small is neither an integer
+   --  nor the reciprocal of an integer, which means that its numerator and
+   --  denominator must be smaller than 10**(2*Maxdigs-1) / 2**(Int'Size - 1)
+   --  if the small is larger than 1, and smaller than 2**(Int'Size - 1) / 10
+   --  if the small is smaller than 1.
+
    package Image_I is new System.Image_I (Int);
 
    procedure Set_Image_Integer
@@ -113,6 +133,61 @@ package body System.Image_F is
    --  in the denominator for the extra decimal scaling required, so case (3)
    --  will not overflow.
 
+   --  In fact this reasoning can be generalized to most S which are the ratio
+   --  of two integers with bounded magnitude. Let S = Num / Den and rewrite
+   --  case (1) above where Den = 1 into
+
+   --    (1b)   Y = -Num and Z = -Den * 10**(-D)
+
+   --  Suppose that Num corresponds to the maximum value of -D, i.e. 18 and
+   --  10**(-D) = 10**18. If you change Den into 10, then S becomes 10 times
+   --  smaller and, therefore, Fore is decremented by 1, which means that -D
+   --  is as well, provided that Fore was initially not larger than 37, so the
+   --  multiplication for Z still does not overflow. But you need to reach 10
+   --  to trigger this effect, which means that a leeway of 10 is required, so
+   --  let's restrict this to a Num for which 10**(-D) <= 10**17. To summarize
+   --  this case, if S is the ratio of two integers with
+
+   --    Den < Num <= B1
+
+   --  where B1 is a fixed limit, then case (1b) does not overflow. B1 can be
+   --  taken as the largest integer Small such that D = -17, i.e. Fore = 36,
+   --  which means that B1 * 2.0**63 must be smaller than 10**35.
+
+   --  Let's continue and rewrite case (2) above when Num = 1 into
+
+   --    (2b)   Y = -Num * 10**D and Z = -Den, for D >= 0
+
+   --  Note that D <= 18 - (Fore - 1) and Fore >= 2 so D <= 17, thus you can
+   --  safely change Num into 10 in the product, but then S becomes 10 times
+   --  larger and, therefore, Fore is incremented by 1, which means that D is
+   --  decremented by 1 so you again have a product lesser or equal to 10**17.
+   --  To sum up, if S is the ratio of two integers with
+
+   --    Num <= Den * S0
+
+   --  where S0 is the largest Small such that D >= 0, then case (2b) does not
+   --  overflow.
+
+   --  Let's conclude and rewrite case (3) above when Num = 1 into
+
+   --    (3b)   Y = -Num and Z = -Den * 10**(-D), for D < 0
+
+   --  As explained above, this occurs only if both S0 < S < 1 and D = -1 and
+   --  is preserved if you scale up Num and Den simultaneously, what you can
+   --  do until Den * 10 tops the upper bound. To sum up, if S is the ratio of
+   --  two integers with
+
+   --    Den * S0 < Num < Den <= B2
+
+   --  where B2 is a fixed limit, then case (3b) does not overflow. B2 can be
+   --  taken as the largest integer such that B2 * 10 is smaller than 2.0**63.
+
+   --  The conclusion is that the algorithm works if the small is the ratio of
+   --  two integers in the range 1 .. 2**63 if either is equal to 1, or of two
+   --  integers in the range 1 .. B1 if the small is larger than 1, or of two
+   --  integers in the range 1 .. B2 if the small is smaller than 1.
+
    --  Using a scaled divide which truncates and returns a remainder R,
    --  another K trailing digits can be calculated by computing the value
    --  (R * (10.0**K)) / Z using another scaled divide. This procedure
@@ -120,19 +195,6 @@ package body System.Image_F is
    --  time and storage. The last scaled divide should be rounded, with
    --  a possible carry propagating to the more significant digits, to
    --  ensure correct rounding of the unit in the last place.
-
-   Maxdigs : constant Natural := Int'Width - 2;
-   --  Maximum number of decimal digits that can be represented in an Int.
-   --  The "-2" accounts for the sign and one extra digit, since we need the
-   --  maximum number of 9's that can be represented, e.g. for the 64-bit case,
-   --  Integer_64'Width is 20 since the maximum value is approximately 9.2E+18
-   --  and has 19 digits, but the maximum number of 9's that can be represented
-   --  in Integer_64 is only 18.
-
-   --  The prerequisite of the implementation is that the first scaled divide
-   --  does not overflow, which means that the absolute value of the input X
-   --  must always be smaller than 10**Maxdigs * 2**(Int'Size - 1). Otherwise
-   --  Constraint_Error is raised by the scaled divide operation.
 
    -----------------
    -- Image_Fixed --
@@ -180,10 +242,6 @@ package body System.Image_F is
    is
       pragma Assert (Num < 0 and then Den < 0);
       --  Accept only negative numbers to allow -2**(Int'Size - 1)
-
-      pragma Assert (Num = -1 or else Den = -1);
-      --  Accept only integer or reciprocal of integer to control the
-      --  magnitude of the arithmetic operations below.
 
       A : constant Natural :=
             Boolean'Pos (Exp > 0) * Aft0 + Natural'Max (Aft, 1) + 1;
