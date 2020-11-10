@@ -19038,7 +19038,7 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 
   size_t len = strlen (path);
   path = canonicalize_header_name (NULL, loc, true, path, len);
-  auto packet = mapper->IncludeTranslate (path, len);
+  auto packet = mapper->IncludeTranslate (path, Cody::Flags::None, len);
   int xlate = false;
   if (packet.GetCode () == Cody::Client::PC_BOOL)
     xlate = packet.GetInteger ();
@@ -19245,7 +19245,9 @@ preprocess_module (module_state *module, location_t from_loc,
 }
 
 /* We've completed phase-4 translation.  Emit any dependency
-   information for the direct imports, and fill in their file names.  */
+   information for the not-yet-loaded direct imports, and fill in
+   their file names.  We'll have already loaded up the direct header
+   unit wavefront.  */
 
 void
 preprocessed_module (cpp_reader *reader)
@@ -19261,39 +19263,50 @@ preprocessed_module (cpp_reader *reader)
   /* using iterator = hash_table<module_state_hash>::iterator;  */
 
   /* Walk the module hash, asking for the names of all unknown
-     direct imports.  */
+     direct imports and informing of an export (if that's what we
+     are).  Notice these are emitted even when preprocessing as they
+     inform the server of dependency edges.  */
   timevar_start (TV_MODULE_MAPPER);
 
   dump.push (NULL);
   dump () && dump ("Resolving direct import names");
 
-  mapper->Cork ();
-  iterator end = modules_hash->end ();
-  for (iterator iter = modules_hash->begin (); iter != end; ++iter)
+  if (!flag_preprocess_only
+      || bool (mapper->get_flags () & Cody::Flags::NameOnly)
+      || cpp_get_deps (reader))
     {
-      module_state *module = *iter;
-      if (module->is_direct () && !module->filename)
+      mapper->Cork ();
+      iterator end = modules_hash->end ();
+      for (iterator iter = modules_hash->begin (); iter != end; ++iter)
 	{
-	  if (module->module_p
-	      && (module->is_partition () || module->exported_p))
-	    mapper->ModuleExport (module->get_flatname ());
-	  else
-	    mapper->ModuleImport (module->get_flatname ());
+	  module_state *module = *iter;
+	  if (module->is_direct () && !module->filename)
+	    {
+	      Cody::Flags flags
+		= (flag_preprocess_only ? Cody::Flags::None
+		   : Cody::Flags::NameOnly);
+
+	      if (module->module_p
+		  && (module->is_partition () || module->exported_p))
+		mapper->ModuleExport (module->get_flatname (), flags);
+	      else
+		mapper->ModuleImport (module->get_flatname (), flags);
+	    }
 	}
-    }
 
-  auto response = mapper->Uncork ();
-  auto r_iter = response.begin ();
-  for (iterator iter = modules_hash->begin (); iter != end; ++iter)
-    {
-      module_state *module = *iter;
-      
-      if (module->is_direct () && !module->filename)
+      auto response = mapper->Uncork ();
+      auto r_iter = response.begin ();
+      for (iterator iter = modules_hash->begin (); iter != end; ++iter)
 	{
-	  Cody::Packet const &p = *r_iter;
-	  ++r_iter;
+	  module_state *module = *iter;
 
-	  module->set_filename (p);
+	  if (module->is_direct () && !module->filename)
+	    {
+	      Cody::Packet const &p = *r_iter;
+	      ++r_iter;
+
+	      module->set_filename (p);
+	    }
 	}
     }
 

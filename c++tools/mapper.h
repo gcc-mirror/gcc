@@ -76,20 +76,26 @@ public:
   }
 
 public:
-  // Virtual overriders, names are controlle by Cody::Resolver
+  // Virtual overriders, names are controlled by Cody::Resolver
+  using parent::ConnectRequest;
   virtual module_resolver *ConnectRequest (Cody::Server *, unsigned version,
 					   std::string &agent,
 					   std::string &ident)
     override;
+  using parent::ModuleRepoRequest;
   virtual int ModuleRepoRequest (Cody::Server *) override;
+  using parent::ModuleExportRequest;
   virtual int ModuleExportRequest (Cody::Server *s, std::string &module)
     override;
+  using parent::ModuleImportRequest;
   virtual int ModuleImportRequest (Cody::Server *s, std::string &module)
     override;
+  using parent::IncludeTranslateRequest;
   virtual int IncludeTranslateRequest (Cody::Server *s, std::string &include)
     override;
 
 private:
+  using parent::GetCMISuffix;
   virtual char const *GetCMISuffix () override;
 
 private:
@@ -105,6 +111,7 @@ class module_client : public Cody::Client
 {
   pex_obj *pex = nullptr;
   sighandler_t sigpipe = SIG_IGN;
+  Cody::Flags flags = Cody::Flags::None;
 
 public:
   module_client (Cody::Server *s)
@@ -116,6 +123,12 @@ public:
   module_client (int fd_from, int fd_to)
     : Client (fd_from, fd_to)
   {
+  }
+
+public:
+  Cody::Flags get_flags () const
+  {
+    return flags;
   }
 
 public:

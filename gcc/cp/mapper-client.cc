@@ -266,7 +266,7 @@ module_client::open_module_client (location_t loc, const char *o,
 
   auto &connect = packets[0];
   if (connect.GetCode () == Cody::Client::PC_CONNECT)
-    ;
+    c->flags = Cody::Flags (connect.GetInteger ());
   else if (connect.GetCode () == Cody::Client::PC_ERROR)
     error_at (loc, "failed mapper handshake %s", connect.GetString ().c_str ());
 

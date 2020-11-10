@@ -1,5 +1,12 @@
 2020-11-10  Nathan Sidwell  <nathan@acm.org>
 
+	c++tools/
+	* mapper.h (class mapper_client): Add flag support.
+	gcc/cp/
+	* mapper-client: Likewise.
+	* module.cc (maybe_translate_include): Likewise.
+	(preprocessed_module): Likewise.
+
 	libcody/
 	Rebase on upstream -- $flag support.
 
