@@ -228,7 +228,7 @@ Classes used:
 #include "attribs.h"
 #include "intl.h"
 #include "langhooks.h"
-#include "mapper.h"
+#include "mapper-client.h"
 
 #if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
 /* mmap, munmap.  */

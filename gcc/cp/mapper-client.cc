@@ -23,8 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "line-map.h"
 #include "diagnostic-core.h"
-#include "mapper.h"
+#include "mapper-client.h"
 #include "intl.h"
+
+#include "../../c++tools/resolver.h"
 
 module_client::module_client (pex_obj *p, int fd_from, int fd_to)
   : Client (fd_from, fd_to), pex (p)

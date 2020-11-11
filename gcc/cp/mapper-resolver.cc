@@ -23,4 +23,5 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #define INCLUDE_ALGORITHM
 #include "system.h"
+
 #include "../../c++tools/resolver.cc"

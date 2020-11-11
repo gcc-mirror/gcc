@@ -62,7 +62,7 @@ esac
 AC_MSG_CHECKING([maintainer-mode])
 AC_MSG_RESULT([$maintainer_mode])
 test "$maintainer_mode" = yes && MAINTAINER=yes
-AC_SUBST(MAINTAINER)]
+AC_SUBST(MAINTAINER)
 
 # Check if O_CLOEXEC is defined by fcntl
 AC_CACHE_CHECK(for O_CLOEXEC, ac_cv_o_cloexec, [

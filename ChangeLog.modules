@@ -1,5 +1,21 @@
 2020-11-10  Nathan Sidwell  <nathan@acm.org>
 
+	Adjust c++tools
+	* Makefile.def (c++tools): Depends on gcc
+	* Makefile.in: Rebuilt
+	c++tools/
+	* mapper.h: Rename to ...
+	* resolver.h: ... here.  Move mapper-client to
+	gcc/cp/mapper-client.h
+	* resolver.cc: Adjust.
+	* configure.ac: Fix extraneous ]
+	* configure: Rebuilt.
+	gcc/cp/
+	* mapper-client.h: New, split from c++tools/mapper.h.
+	* mapper-client.cc: Adjust.
+	* mapper-resolver.cc: Adjust.
+	* module.cc: Adjust.
+
 	c++tools/
 	* mapper.h (class mapper_client): Add flag support.
 	gcc/cp/

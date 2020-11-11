@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#include "mapper.h"
+#include "resolver.h"
 
 // C++
 #include <set>
@@ -82,6 +82,13 @@ along with GCC; see the file COPYING3.  If not see
 
 #if !HOST_HAS_O_CLOEXEC
 #define O_CLOEXEC 0
+#endif
+
+#ifndef IS_DIR_SEPARATOR
+#define IS_DIR_SEPARATOR(C) ((C) == '/')
+#endif
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
 #endif
 
 #ifdef NETWORKING

@@ -18,18 +18,15 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GXX_RESOLVER_H
+#define GXX_RESOLVER_H 1
+
 // Mapper interface for client and server bits
 #include "cody.hh"
 // C++
 #include <string>
 #include <map>
 
-#ifndef IS_DIR_SEPARATOR
-#define IS_DIR_SEPARATOR(C) ((C) == '/')
-#endif
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
 // This is a GCC class, so GCC coding conventions on new bits.  
 class module_resolver : public Cody::Resolver
 {
@@ -100,42 +97,6 @@ private:
 
 private:
   int cmi_response (Cody::Server *s, std::string &module);
-};
-
-#ifdef MAPPER_FOR_GCC
-#ifndef HAVE_SIGHANDLER_T
-typedef void (*sighandler_t) (int);
-#endif
-
-class module_client : public Cody::Client
-{
-  pex_obj *pex = nullptr;
-  sighandler_t sigpipe = SIG_IGN;
-  Cody::Flags flags = Cody::Flags::None;
-
-public:
-  module_client (Cody::Server *s)
-    : Client (s)
-  {
-  }
-  module_client (pex_obj *pex, int fd_from, int fd_to);
-
-  module_client (int fd_from, int fd_to)
-    : Client (fd_from, fd_to)
-  {
-  }
-
-public:
-  Cody::Flags get_flags () const
-  {
-    return flags;
-  }
-
-public:
-  static module_client *open_module_client (location_t loc, const char *option,
-					    void (*set_repo) (const char *),
-					    char const *);
-  static void close_module_client (location_t loc, module_client *);
 };
 
 #endif

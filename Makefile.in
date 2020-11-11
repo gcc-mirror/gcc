@@ -61662,7 +61662,7 @@ configure-m4: stage_last
 all-gnattools: maybe-all-target-libstdc++-v3
 configure-libcc1: maybe-configure-gcc
 all-libcc1: maybe-all-gcc
-all-c++tools: maybe-all-libcody
+all-c++tools: maybe-all-gcc
 all-utils: maybe-all-libiberty
 configure-gdb: maybe-all-intl
 configure-gdb: maybe-all-bfd

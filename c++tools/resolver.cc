@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 
-#include "mapper.h"
+#include "resolver.h"
 // C++
 #include <algorithm>
 // C
@@ -31,6 +31,10 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
 
 module_resolver::module_resolver (bool map, bool xlate)
   : default_map (map), default_translate (xlate)

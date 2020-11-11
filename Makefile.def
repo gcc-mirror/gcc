@@ -392,7 +392,8 @@ dependencies = { module=all-lto-plugin; on=all-libiberty-linker-plugin; };
 dependencies = { module=configure-libcc1; on=configure-gcc; };
 dependencies = { module=all-libcc1; on=all-gcc; };
 
-dependencies = { module=all-c++tools; on=all-libcody; };
+// we want version.o from gcc, and implicitly depend on libcody
+dependencies = { module=all-c++tools; on=all-gcc; };
 dependencies = { module=all-gotools; on=all-target-libgo; };
 
 dependencies = { module=all-utils; on=all-libiberty; };
