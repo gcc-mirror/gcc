@@ -1668,12 +1668,34 @@ symtab_node::set_section_for_node (const char *section)
     }
 }
 
-/* Worker for set_section.  */
+void
+symtab_node::set_section_for_node (const symtab_node &other)
+{
+  if (x_section == other.x_section)
+    return;
+  if (get_section () && other.get_section ())
+    gcc_checking_assert (strcmp (get_section (), other.get_section ()) != 0);
+  release_section_hash_entry (x_section);
+  if (other.x_section)
+    x_section = retain_section_hash_entry (other.x_section);
+  else
+    x_section = NULL;
+}
+
+/* Workers for set_section.  */
 
 bool
-symtab_node::set_section (symtab_node *n, void *s)
+symtab_node::set_section_from_string (symtab_node *n, void *s)
 {
   n->set_section_for_node ((char *)s);
+  return false;
+}
+
+bool
+symtab_node::set_section_from_node (symtab_node *n, void *o)
+{
+  const symtab_node &other = *static_cast<const symtab_node *> (o);
+  n->set_section_for_node (other);
   return false;
 }
 
@@ -1684,15 +1706,14 @@ symtab_node::set_section (const char *section)
 {
   gcc_assert (!this->alias || !this->analyzed);
   call_for_symbol_and_aliases
-    (symtab_node::set_section, const_cast<char *>(section), true);
+    (symtab_node::set_section_from_string, const_cast<char *>(section), true);
 }
 
 void
 symtab_node::set_section (const symtab_node &other)
 {
-  const char *section = other.get_section ();
   call_for_symbol_and_aliases
-    (symtab_node::set_section, const_cast<char *>(section), true);
+    (symtab_node::set_section_from_node, const_cast<symtab_node *>(&other), true);
 }
 
 /* Return the initialization priority.  */
