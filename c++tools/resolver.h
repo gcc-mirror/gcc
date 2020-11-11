@@ -82,13 +82,16 @@ public:
   using parent::ModuleRepoRequest;
   virtual int ModuleRepoRequest (Cody::Server *) override;
   using parent::ModuleExportRequest;
-  virtual int ModuleExportRequest (Cody::Server *s, std::string &module)
+  virtual int ModuleExportRequest (Cody::Server *s, Cody::Flags,
+				   std::string &module)
     override;
   using parent::ModuleImportRequest;
-  virtual int ModuleImportRequest (Cody::Server *s, std::string &module)
+  virtual int ModuleImportRequest (Cody::Server *s, Cody::Flags,
+				   std::string &module)
     override;
   using parent::IncludeTranslateRequest;
-  virtual int IncludeTranslateRequest (Cody::Server *s, std::string &include)
+  virtual int IncludeTranslateRequest (Cody::Server *s, Cody::Flags,
+				       std::string &include)
     override;
 
 private:

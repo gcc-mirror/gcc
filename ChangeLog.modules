@@ -1,3 +1,9 @@
+2020-11-11  Nathan Sidwell  <nathan@acm.org>
+
+	c++tools/
+	* resolver.h (module_resolver): Update to new API.
+	* resolver.cc (module_resolver): Likewise.
+
 2020-11-10  Nathan Sidwell  <nathan@acm.org>
 
 	Adjust c++tools

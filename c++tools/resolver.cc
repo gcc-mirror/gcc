@@ -203,19 +203,22 @@ module_resolver::cmi_response (Cody::Server *s, std::string &module)
 }
 
 int
-module_resolver::ModuleExportRequest (Cody::Server *s, std::string &module)
+module_resolver::ModuleExportRequest (Cody::Server *s, Cody::Flags,
+				      std::string &module)
 {
   return cmi_response (s, module);
 }
 
 int
-module_resolver::ModuleImportRequest (Cody::Server *s, std::string &module)
+module_resolver::ModuleImportRequest (Cody::Server *s, Cody::Flags,
+				      std::string &module)
 {
   return cmi_response (s, module);
 }
 
 int
-module_resolver::IncludeTranslateRequest (Cody::Server *s, std::string &include)
+module_resolver::IncludeTranslateRequest (Cody::Server *s, Cody::Flags,
+					  std::string &include)
 {
   auto iter = map.find (include);
   if (iter == map.end () && default_translate)
