@@ -1,8 +1,8 @@
 ! { dg-do compile }
 ! { dg-options "-O2 -fopenmp -fdump-tree-optimized" }
-! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop(?:_ull)_start \[^\n\r]*, (?:2147483651|-2147483645), 3, " 1 "optimized" } }
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop(?:_ull)?_start \[^\n\r]*, (?:2147483651|-2147483645), 3, " 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop_end " 1 "optimized" } }
-! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop(?:_ull)_guided_next " 1 "optimized" } }
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop(?:_ull)?_guided_next " 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_workshare_task_reduction_unregister \\(0\\)" 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_parallel " 1 "optimized" } }
 
