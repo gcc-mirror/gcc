@@ -6996,6 +6996,18 @@ to compute a value that itself is never used, because such
 computations may be deleted by data flow analysis before the warnings
 are printed.
 
+In C++, this warning also warns about using uninitialized objects in
+member-initializer-lists.  For example, GCC warns about @code{b} being
+uninitialized in the following snippet:
+
+@smallexample
+struct A @{
+  int a;
+  int b;
+  A() : a(b) @{ @}
+@};
+@end smallexample
+
 @item -Wno-invalid-memory-model
 @opindex Winvalid-memory-model
 @opindex Wno-invalid-memory-model

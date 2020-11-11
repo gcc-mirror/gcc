@@ -4781,6 +4781,7 @@ stabilize_reference (tree ref)
   TREE_READONLY (result) = TREE_READONLY (ref);
   TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (ref);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (ref);
+  protected_set_expr_location (result, EXPR_LOCATION (ref));
 
   return result;
 }
