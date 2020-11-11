@@ -1,3 +1,10 @@
+2020-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97764
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): For
+	little-endian stores with negative pd.offset, subtract
+	BITS_PER_UNIT - amnt from size if amnt is non-zero.
+
 2020-11-09  Sudakshina Das  <sudi.das@arm.com>
 
 	Backported from master:
