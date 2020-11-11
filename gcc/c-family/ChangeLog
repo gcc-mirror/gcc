@@ -1,3 +1,18 @@
+2020-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97748
+	* c-common.h (warn_if_unused_value): Add quiet argument defaulted
+	to false.
+	* c-warn.c (warn_if_unused_value): Likewise.  Pass it down
+	recursively and just return true instead of warning if it is true.
+	Handle COMPLEX_EXPR.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-common.h (c_omp_adjust_map_clauses): New declaration.
+	* c-omp.c (struct map_clause): Helper type for c_omp_adjust_map_clauses.
+	(c_omp_adjust_map_clauses): New function.
+
 2020-11-09  Marek Polacek  <polacek@redhat.com>
 
 	DR 1914

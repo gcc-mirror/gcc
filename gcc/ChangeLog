@@ -1,3 +1,317 @@
+2020-11-11  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.h (HAVE_TF): Use opaque value when
+	GENERATOR_FILE is defined.
+
+2020-11-10  Strager Neds  <strager.nds@gmail.com>
+
+	* cgraph.h (symtab_node::get_section): Constify.
+	(symtab_node::set_section): Declare new overload.
+	* symtab.c (symtab_node::set_section): Define new overload.
+	(symtab_node::copy_visibility_from): Use new overload of
+	symtab_node::set_section.
+	(symtab_node::resolve_alias): Same.
+	* tree.h (set_decl_section_name): Declare new overload.
+	* tree.c (set_decl_section_name): Define new overload.
+	* tree-emutls.c (get_emutls_init_templ_addr): Same.
+	* cgraphclones.c (cgraph_node::create_virtual_clone): Use new
+	overload of symtab_node::set_section.
+	(cgraph_node::create_version_clone_with_body): Same.
+	* trans-mem.c (ipa_tm_create_version): Same.
+
+2020-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::set): Early exit for poly ints.
+
+2020-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses, gimplify_omp_loop): Use 'do'
+	instead of 'for' in error messages for Fortran.
+	* omp-low.c (check_omp_nesting_restrictions): Likewise
+
+2020-11-10  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* opts.c (control_options_for_live_patching): Reform 'is incompatible
+	with' error messages to use a standard message with differing format
+	arguments.
+	(finish_options): Likewise.
+
+2020-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97769
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel):
+	Remove assert.
+
+2020-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97780
+	* tree-ssa-pre.c (fini_pre): Deal with added basic blocks
+	when freeing PHI_TRANS_TABLE.
+
+2020-11-10  Zhiheng Xie  <xiezhiheng@huawei.com>
+	    Nannan Zheng  <zhengnannan@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for tbl/tbx intrinsics.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gimplify.c (is_or_contains_p): New static helper function.
+	(omp_target_reorder_clauses): New function.
+	(gimplify_scan_omp_clauses): Add use of omp_target_reorder_clauses to
+	reorder clause list according to OpenMP 5.0 rules. Add handling of
+	GOMP_MAP_ATTACH_DETACH for OpenMP cases.
+	* omp-low.c (is_omp_target): New static helper function.
+	(scan_sharing_clauses): Add scan phase handling of GOMP_MAP_ATTACH/DETACH
+	for OpenMP cases.
+	(lower_omp_target): Add lowering handling of GOMP_MAP_ATTACH/DETACH for
+	OpenMP cases.
+
+2020-11-10  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390-modes.def (FPRX2): New mode.
+	* config/s390/s390-protos.h (s390_fma_allowed_p): New function.
+	* config/s390/s390.c (s390_fma_allowed_p): Likewise.
+	(s390_build_signbit_mask): Support 128-bit masks.
+	(print_operand): Support printing the second word of a TFmode
+	operand as vector register.
+	(constant_modes): Add FPRX2mode.
+	(s390_class_max_nregs): Return 1 for TFmode on z14+.
+	(s390_is_fpr128): New function.
+	(s390_is_vr128): Likewise.
+	(s390_can_change_mode_class): Use s390_is_fpr128 and
+	s390_is_vr128 in order to determine whether mode refers to a FPR
+	pair or to a VR.
+	(s390_emit_compare): Force TFmode operands into registers on
+	z14+.
+	* config/s390/s390.h (HAVE_TF): New macro.
+	(EXPAND_MOVTF): New macro.
+	(EXPAND_TF): Likewise.
+	* config/s390/s390.md (PFPO_OP_TYPE_FPRX2): PFPO_OP_TYPE_TF
+	alias.
+	(ALL): Add FPRX2.
+	(FP_ALL): Add FPRX2 for z14+, restrict TFmode to z13-.
+	(FP): Likewise.
+	(FP_ANYTF): New mode iterator.
+	(BFP): Add FPRX2 for z14+, restrict TFmode to z13-.
+	(TD_TF): Likewise.
+	(xde): Add FPRX2.
+	(nBFP): Likewise.
+	(nDFP): Likewise.
+	(DSF): Likewise.
+	(DFDI): Likewise.
+	(SFSI): Likewise.
+	(DF): Likewise.
+	(SF): Likewise.
+	(fT0): Likewise.
+	(bt): Likewise.
+	(_d): Likewise.
+	(HALF_TMODE): Likewise.
+	(tf_fpr): New mode_attr.
+	(type): New mode_attr.
+	(*cmp<mode>_ccz_0): Use type instead of mode with fsimp.
+	(*cmp<mode>_ccs_0_fastmath): Likewise.
+	(*cmptf_ccs): New pattern for wfcxb.
+	(*cmptf_ccsfps): New pattern for wfkxb.
+	(mov<mode>): Rename to mov<mode><tf_fpr>.
+	(signbit<mode>2): Rename to signbit<mode>2<tf_fpr>.
+	(isinf<mode>2): Renamed to isinf<mode>2<tf_fpr>.
+	(*TDC_insn_<mode>): Use type instead of mode with fsimp.
+	(fixuns_trunc<FP:mode><GPR:mode>2): Rename to
+	fixuns_trunc<FP:mode><GPR:mode>2<FP:tf_fpr>.
+	(fix_trunctf<mode>2): Rename to fix_trunctf<mode>2_fpr.
+	(floatdi<mode>2): Rename to floatdi<mode>2<tf_fpr>, use type
+	instead of mode with itof.
+	(floatsi<mode>2): Rename to floatsi<mode>2<tf_fpr>, use type
+	instead of mode with itof.
+	(*floatuns<GPR:mode><FP:mode>2): Use type instead of mode for
+	itof.
+	(floatuns<GPR:mode><FP:mode>2): Rename to
+	floatuns<GPR:mode><FP:mode>2<tf_fpr>.
+	(trunctf<mode>2): Rename to trunctf<mode>2_fpr, use type instead
+	of mode with fsimp.
+	(extend<DSF:mode><BFP:mode>2): Rename to
+	extend<DSF:mode><BFP:mode>2<BFP:tf_fpr>.
+	(<FPINT:fpint_name><BFP:mode>2): Rename to
+	<FPINT:fpint_name><BFP:mode>2<BFP:tf_fpr>, use type instead of
+	mode with fsimp.
+	(rint<BFP:mode>2): Rename to rint<BFP:mode>2<BFP:tf_fpr>, use
+	type instead of mode with fsimp.
+	(<FPINT:fpint_name><DFP:mode>2): Use type instead of mode for
+	fsimp.
+	(rint<DFP:mode>2): Likewise.
+	(trunc<BFP:mode><DFP_ALL:mode>2): Rename to
+	trunc<BFP:mode><DFP_ALL:mode>2<BFP:tf_fpr>.
+	(trunc<DFP_ALL:mode><BFP:mode>2): Rename to
+	trunc<DFP_ALL:mode><BFP:mode>2<BFP:tf_fpr>.
+	(extend<BFP:mode><DFP_ALL:mode>2): Rename to
+	extend<BFP:mode><DFP_ALL:mode>2<BFP:tf_fpr>.
+	(extend<DFP_ALL:mode><BFP:mode>2): Rename to
+	extend<DFP_ALL:mode><BFP:mode>2<BFP:tf_fpr>.
+	(add<mode>3): Rename to add<mode>3<tf_fpr>, use type instead of
+	mode with fsimp.
+	(*add<mode>3_cc): Use type instead of mode with fsimp.
+	(*add<mode>3_cconly): Likewise.
+	(sub<mode>3): Rename to sub<mode>3<tf_fpr>, use type instead of
+	mode with fsimp.
+	(*sub<mode>3_cc): Use type instead of mode with fsimp.
+	(*sub<mode>3_cconly): Likewise.
+	(mul<mode>3): Rename to mul<mode>3<tf_fpr>, use type instead of
+	mode with fsimp.
+	(fma<mode>4): Restrict using s390_fma_allowed_p.
+	(fms<mode>4): Restrict using s390_fma_allowed_p.
+	(div<mode>3): Rename to div<mode>3<tf_fpr>, use type instead of
+	mode with fdiv.
+	(neg<mode>2): Rename to neg<mode>2<tf_fpr>.
+	(*neg<mode>2_cc): Use type instead of mode with fsimp.
+	(*neg<mode>2_cconly): Likewise.
+	(*neg<mode>2_nocc): Likewise.
+	(*neg<mode>2): Likeiwse.
+	(abs<mode>2): Rename to abs<mode>2<tf_fpr>, use type instead of
+	mode with fdiv.
+	(*abs<mode>2_cc): Use type instead of mode with fsimp.
+	(*abs<mode>2_cconly): Likewise.
+	(*abs<mode>2_nocc): Likewise.
+	(*abs<mode>2): Likewise.
+	(*negabs<mode>2_cc): Likewise.
+	(*negabs<mode>2_cconly): Likewise.
+	(*negabs<mode>2_nocc): Likewise.
+	(*negabs<mode>2): Likewise.
+	(sqrt<mode>2): Rename to sqrt<mode>2<tf_fpr>, use type instead
+	of mode with fsqrt.
+	(cbranch<mode>4): Use FP_ANYTF instead of FP.
+	(copysign<mode>3): Rename to copysign<mode>3<tf_fpr>, use type
+	instead of mode with fsimp.
+	* config/s390/s390.opt (flag_vx_long_double_fma): New
+	undocumented option.
+	* config/s390/vector.md (V_HW): Add TF for z14+.
+	(V_HW2): Likewise.
+	(VFT): Likewise.
+	(VF_HW): Likewise.
+	(V_128): Likewise.
+	(tf_vr): New mode_attr.
+	(tointvec): Add TF.
+	(mov<mode>): Rename to mov<mode><tf_vr>.
+	(movetf): New dispatcher.
+	(*vec_tf_to_v1tf): Rename to *vec_tf_to_v1tf_fpr, restrict to
+	z13-.
+	(*vec_tf_to_v1tf_vr): New pattern for z14+.
+	(*fprx2_to_tf): Likewise.
+	(*mov_tf_to_fprx2_0): Likewise.
+	(*mov_tf_to_fprx2_1): Likewise.
+	(add<mode>3): Rename to add<mode>3<tf_vr>.
+	(addtf3): New dispatcher.
+	(sub<mode>3): Rename to sub<mode>3<tf_vr>.
+	(subtf3): New dispatcher.
+	(mul<mode>3): Rename to mul<mode>3<tf_vr>.
+	(multf3): New dispatcher.
+	(div<mode>3): Rename to div<mode>3<tf_vr>.
+	(divtf3): New dispatcher.
+	(sqrt<mode>2): Rename to sqrt<mode>2<tf_vr>.
+	(sqrttf2): New dispatcher.
+	(fma<mode>4): Restrict using s390_fma_allowed_p.
+	(fms<mode>4): Likewise.
+	(neg_fma<mode>4): Likewise.
+	(neg_fms<mode>4): Likewise.
+	(neg<mode>2): Rename to neg<mode>2<tf_vr>.
+	(negtf2): New dispatcher.
+	(abs<mode>2): Rename to abs<mode>2<tf_vr>.
+	(abstf2): New dispatcher.
+	(float<mode>tf2_vr): New forwarder.
+	(float<mode>tf2): New dispatcher.
+	(floatuns<mode>tf2_vr): New forwarder.
+	(floatuns<mode>tf2): New dispatcher.
+	(fix_trunctf<mode>2_vr): New forwarder.
+	(fix_trunctf<mode>2): New dispatcher.
+	(fixuns_trunctf<mode>2_vr): New forwarder.
+	(fixuns_trunctf<mode>2): New dispatcher.
+	(<FPINT:fpint_name><VF_HW:mode>2<VF_HW:tf_vr>): New pattern.
+	(<FPINT:fpint_name>tf2): New forwarder.
+	(rint<mode>2<tf_vr>): New pattern.
+	(rinttf2): New forwarder.
+	(*trunctfdf2_vr): New pattern.
+	(trunctfdf2_vr): New forwarder.
+	(trunctfdf2): New dispatcher.
+	(trunctfsf2_vr): New forwarder.
+	(trunctfsf2): New dispatcher.
+	(extenddftf2_vr): New pattern.
+	(extenddftf2): New dispatcher.
+	(extendsftf2_vr): New forwarder.
+	(extendsftf2): New dispatcher.
+	(signbittf2_vr): New forwarder.
+	(signbittf2): New dispatchers.
+	(isinftf2_vr): New forwarder.
+	(isinftf2): New dispatcher.
+	* config/s390/vx-builtins.md (*vftci<mode>_cconly): Use VF_HW
+	instead of VECF_HW, add missing constraint, add vw support.
+	(vftci<mode>_intcconly): Use VF_HW instead of VECF_HW.
+	(*vftci<mode>): Rename to vftci<mode>, use VF_HW instead of
+	VECF_HW, and vw support.
+	(vftci<mode>_intcc): Use VF_HW instead of VECF_HW.
+
+2020-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* range-op.cc (operator_logical_not::fold_range): Tidy up.
+	(operator_logical_not::op1_range): Call above method.
+	(operator_bitwise_not::fold_range): If the type is compatible
+	with boolean, call op_logical_not.fold_range.
+	(operator_bitwise_not::op1_range): If the type is compatible
+	with boolean, call op_logical_not.op1_range.
+
+2020-11-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (pre_expr_d::value_id): Add.
+	(constant_value_expressions): Turn into an array of pre_expr.
+	(get_or_alloc_expr_for_nary): New function.
+	(get_or_alloc_expr_for_reference): Likewise.
+	(add_to_value): For constant values only ever add a single
+	CONSTANT.
+	(get_expr_value_id): Return the new value_id member.
+	(vn_valnum_from_value_id): Split out and simplify constant
+	value id handling.
+	(get_or_alloc_expr_for_constant): Set the value_id member.
+	(phi_translate_1): Use get_or_alloc_expr_for_*.
+	(compute_avail): Likewise.
+	(bitmap_find_leader): Simplify constant value id handling.
+
+2020-11-10  Alex Coplan  <alex.coplan@arm.com>
+
+	* doc/md.texi (Modifiers): Fix grammar in description of
+	earlyclobber constraint modifier.
+
+2020-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97764
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): For
+	little-endian stores with negative pd.offset, subtract
+	BITS_PER_UNIT - amnt from size if amnt is non-zero.
+
+2020-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97760
+	* tree-vect-loop.c (check_reduction_path): Reject
+	reduction paths we do not handle in epilogue generation.
+
+2020-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/97767
+	* value-range.cc (dump_bound_with_infinite_markers): Use
+	wi::min_value and wi::max_value.
+	(range_tests_strict_enum): New.
+	(range_tests): Call range_tests_strict_enum.
+	* value-range.h (irange::varying_p): Use wi::min_value
+	and wi::max_value.
+	(irange::set_varying): Same.
+	(irange::normalize_min_max): Remove comment.
+
+2020-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/97567
+	* gimple-range-gori.cc: (gori_compute::logical_combine): False
+	OR operations should intersect the 2 results.
+	(gori_compute::compute_logical_operands_in_chain): If def chains
+	are outside the current basic block, don't follow them.
+
 2020-11-09  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_split_move): Recognize vadd2 instructions.

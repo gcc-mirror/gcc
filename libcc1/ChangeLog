@@ -1,3 +1,9 @@
+2020-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* libcp1plugin.cc (plugin_add_static_assert): Pass false to
+	finish_static_assert.
+
 2020-11-06  Nathan Sidwell  <nathan@acm.org>
 
 	* libcc1plugin.cc (address_rewriter): Rename

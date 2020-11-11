@@ -1,3 +1,66 @@
+2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/generic/c_locale.cc (__set_C_locale()): New function
+	to set the "C" locale and return the name of the previous locale.
+	(__convert_to_v<float>, __convert_to_v<double>)
+	(__convert_to_v<long double>): Use __set_C_locale and set failbit on
+	error.
+
+2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream (basic_stringbug, basic_istringstream)
+	(basic_ostringstream, basic_stringstream): Reorder C++20
+	constructors to be declared next to other constructors.
+
+2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Tighten patterns.
+	(GLIBCXX_3.4.29): Export new symbols.
+	* include/bits/alloc_traits.h (__allocator_like): New concept.
+	* include/std/sstream (basic_stringbuf::swap): Add exception
+	specification.
+	(basic_stringbuf::str() const): Add ref-qualifier. Use new
+	_M_high_mark function.
+	(basic_stringbuf::str(const SAlloc&) const): Define new function.
+	(basic_stringbuf::str() &&): Likewise.
+	(basic_stringbuf::str(const basic_string<C,T,SAlloc>&)):
+	Likewise.
+	(basic_stringbuf::str(basic_string<C,T,Alloc>&&)): Likewise.
+	(basic_stringbuf::view() const): Use _M_high_mark.
+	(basic_istringstream::str, basic_ostringstream::str)
+	(basic_stringstream::str): Define new overloads.
+	* src/c++20/sstream-inst.cc (basic_stringbuf::str)
+	(basic_istringstream::str, basic_ostringstream::str)
+	(basic_stringstream::str): Explicit instantiation definitions
+	for new overloads.
+	* testsuite/27_io/basic_istringstream/view/char/1.cc: Add more
+	checks.
+	* testsuite/27_io/basic_istringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/view/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/view/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_istringstream/str/char/2.cc: New test.
+	* testsuite/27_io/basic_istringstream/str/wchar_t/2.cc: New test.
+	* testsuite/27_io/basic_ostringstream/str/char/3.cc: New test.
+	* testsuite/27_io/basic_ostringstream/str/wchar_t/3.cc: New test.
+	* testsuite/27_io/basic_stringbuf/str/char/4.cc: New test.
+	* testsuite/27_io/basic_stringbuf/str/wchar_t/4.cc: New test.
+	* testsuite/27_io/basic_stringstream/str/char/5.cc: New test.
+	* testsuite/27_io/basic_stringstream/str/wchar_t/5.cc.cc: New test.
+
+2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97415
+	* include/std/sstream (basic_stringbuf::_M_update_egptr)
+	(basic_stringbuf::__xfer_bufptrs::__xfer_bufptrs): Check for
+	null before comparing pointers.
+
 2020-11-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/array: Remove.

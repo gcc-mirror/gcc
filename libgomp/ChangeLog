@@ -1,3 +1,18 @@
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* libgomp.h (enum gomp_map_vars_kind): Adjust enum values to be bit-flag
+	usable.
+	* oacc-mem.c (acc_map_data): Adjust gomp_map_vars argument flags to
+	'GOMP_MAP_VARS_OPENACC | GOMP_MAP_VARS_ENTER_DATA'.
+	(goacc_enter_datum): Likewise for call to gomp_map_vars_async.
+	(goacc_enter_data_internal): Likewise.
+	* target.c (gomp_map_vars_internal):
+	Change checks of GOMP_MAP_VARS_ENTER_DATA to use bit-and (&). Adjust use
+	of gomp_attach_pointer for OpenMP cases.
+	(gomp_exit_data): Add handling of GOMP_MAP_DETACH.
+	(GOMP_target_enter_exit_data): Add handling of GOMP_MAP_ATTACH.
+	* testsuite/libgomp.c-c++-common/ptr-attach-1.c: New testcase.
+
 2020-11-05  Ulrich Drepper  <drepper@redhat.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 
