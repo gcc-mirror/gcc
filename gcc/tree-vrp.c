@@ -3824,10 +3824,10 @@ public:
   void initialize (struct function *);
   void finalize ();
 
+private:
   enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
   enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
 
-private:
   struct function *fun;
   vr_values *m_vr_values;
 };
@@ -4063,23 +4063,16 @@ class vrp_folder : public substitute_and_fold_engine
     : substitute_and_fold_engine (/* Fold all stmts.  */ true),
       m_vr_values (v), simplifier (v)
     {  }
-  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
 
+private:
   tree value_of_expr (tree name, gimple *stmt) OVERRIDE
     {
       return m_vr_values->value_of_expr (name, stmt);
     }
-  class vr_values *m_vr_values;
-
-private:
+  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
   bool fold_predicate_in (gimple_stmt_iterator *);
-  /* Delegators.  */
-  tree vrp_evaluate_conditional (tree_code code, tree op0,
-				 tree op1, gimple *stmt)
-    { return simplifier.vrp_evaluate_conditional (code, op0, op1, stmt); }
-  bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
-    { return simplifier.simplify (gsi); }
 
+  vr_values *m_vr_values;
   simplify_using_ranges simplifier;
 };
 
@@ -4098,16 +4091,16 @@ vrp_folder::fold_predicate_in (gimple_stmt_iterator *si)
       && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
     {
       assignment_p = true;
-      val = vrp_evaluate_conditional (gimple_assign_rhs_code (stmt),
-				      gimple_assign_rhs1 (stmt),
-				      gimple_assign_rhs2 (stmt),
-				      stmt);
+      val = simplifier.vrp_evaluate_conditional (gimple_assign_rhs_code (stmt),
+						 gimple_assign_rhs1 (stmt),
+						 gimple_assign_rhs2 (stmt),
+						 stmt);
     }
   else if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
-    val = vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
-				    gimple_cond_lhs (cond_stmt),
-				    gimple_cond_rhs (cond_stmt),
-				    stmt);
+    val = simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+					       gimple_cond_lhs (cond_stmt),
+					       gimple_cond_rhs (cond_stmt),
+					       stmt);
   else
     return false;
 
@@ -4153,7 +4146,7 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
   if (fold_predicate_in (si))
     return true;
 
-  return simplify_stmt_using_ranges (si);
+  return simplifier.simplify (si);
 }
 
 /* Blocks which have more than one predecessor and more than
