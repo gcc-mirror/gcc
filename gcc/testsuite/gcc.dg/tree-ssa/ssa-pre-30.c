@@ -24,4 +24,4 @@ bar (int b, int x)
 /* We should see the partial redundant loads of f even though they
    are using different types (of the same size).  */
 
-/* { dg-final { scan-tree-dump-times "Replaced MEM" 2 "pre" } } */
+/* { dg-final { scan-tree-dump-times "Replaced MEM" 3 "pre" } } */

@@ -15,4 +15,4 @@ int test (int a, int b, int c, int g)
 /* We should hoist and CSE only the multiplication.  */
 
 /* { dg-final { scan-tree-dump-times " \\* " 1 "pre" } } */
-/* { dg-final { scan-tree-dump "Insertions: 1" "pre" } } */
+/* { dg-final { scan-tree-dump "HOIST inserted: 1" "pre" } } */

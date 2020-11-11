@@ -597,10 +597,6 @@ Maximum depth of sqrt chains to use when synthesizing exponentiation by a real c
 Common Joined UInteger Var(param_max_predicted_iterations) Init(100) IntegerRange(0, 65536) Param Optimization
 The maximum number of loop iterations we predict statically.
 
--param=max-pre-hoist-insert-iterations=
-Common Joined UInteger Var(param_max_pre_hoist_insert_iterations) Init(3) Param Optimization
-The maximum number of insert iterations done for PRE code hoisting.
-
 -param=max-reload-search-insns=
 Common Joined UInteger Var(param_max_reload_search_insns) Init(100) Param Optimization
 The maximum number of instructions to search backward when looking for equivalent reload.

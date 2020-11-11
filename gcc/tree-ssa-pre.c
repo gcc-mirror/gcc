@@ -3695,18 +3695,6 @@ insert (void)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
 
       changed = false;
-      /* Insert expressions for hoisting.  Do a backward walk here since
-	 inserting into BLOCK exposes new opportunities in its predecessors.
-	 Since PRE and hoist insertions can cause back-to-back iteration
-	 limit that on the hoist side.  */
-      if (flag_code_hoisting
-	  && num_iterations <= param_max_pre_hoist_insert_iterations)
-	for (int idx = rpo_num - 1; idx >= 0; --idx)
-	  {
-	    basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
-	    if (EDGE_COUNT (block->succs) >= 2)
-	      changed |= do_hoist_insertion (block);
-	  }
       for (int idx = 0; idx < rpo_num; ++idx)
 	{
 	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
@@ -3753,6 +3741,28 @@ insert (void)
   while (changed);
 
   statistics_histogram_event (cfun, "insert iterations", num_iterations);
+
+  /* AVAIL_OUT is not needed after insertion so we don't have to
+     propagate NEW_SETS from hoist insertion.  */
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      bitmap_set_pool.remove (NEW_SETS (bb));
+      NEW_SETS (bb) = NULL;
+    }
+
+  /* Insert expressions for hoisting.  Do a backward walk here since
+     inserting into BLOCK exposes new opportunities in its predecessors.
+     Since PRE and hoist insertions can cause back-to-back iteration
+     and we are interested in PRE insertion exposed hoisting opportunities
+     but not in hoisting exposed PRE ones do hoist insertion only after
+     PRE insertion iteration finished and do not iterate it.  */
+  if (flag_code_hoisting)
+    for (int idx = rpo_num - 1; idx >= 0; --idx)
+      {
+	basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
+	if (EDGE_COUNT (block->succs) >= 2)
+	  changed |= do_hoist_insertion (block);
+      }
 
   free (rpo);
 }
