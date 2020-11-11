@@ -2807,6 +2807,41 @@ Valid choices are 'yes' and 'no'.]) ;;
   esac],
  [enable_gnu_indirect_function="$default_gnu_indirect_function"])
 
+case "${target}" in
+  riscv*-*-linux*)
+    AC_MSG_CHECKING(linker ifunc IRELATIVE support)
+    cat > conftest.s <<EOF
+	.text
+	.type	foo_resolver, @function
+foo_resolver:
+	ret
+	.size	foo_resolver, .-foo_resolver
+
+	.globl	foo
+	.type	foo, %gnu_indirect_function
+	.set	foo, foo_resolver
+
+	.globl	bar
+	.type	bar, @function
+bar:
+	call	foo
+	ret
+	.size	bar, .-bar
+EOF
+    if test x$gcc_cv_as != x \
+       && test x$gcc_cv_ld != x \
+       && test x$gcc_cv_readelf != x \
+       && $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+       && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+       && $gcc_cv_readelf --relocs --wide conftest \
+	  | grep R_RISCV_IRELATIVE > /dev/null 2>&1; then
+      enable_gnu_indirect_function=yes
+    fi
+    rm -f conftest conftest.o conftest.s
+    AC_MSG_RESULT($enable_gnu_indirect_function)
+    ;;
+esac
+
 gif=`if test x$enable_gnu_indirect_function = xyes; then echo 1; else echo 0; fi`
 AC_DEFINE_UNQUOTED(HAVE_GNU_INDIRECT_FUNCTION, $gif,
 [Define if your system supports gnu indirect functions.])
