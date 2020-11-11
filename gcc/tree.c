@@ -1241,7 +1241,7 @@ copy_node (tree node MEM_STAT_DECL)
 	  SET_DECL_VALUE_EXPR (t, DECL_VALUE_EXPR (node));
 	  DECL_HAS_VALUE_EXPR_P (t) = 1;
 	}
-      /* DECL_DEBUG_EXPR is copied explicitely by callers.  */
+      /* DECL_DEBUG_EXPR is copied explicitly by callers.  */
       if (VAR_P (node))
 	{
 	  DECL_HAS_DEBUG_EXPR_P (t) = 0;
