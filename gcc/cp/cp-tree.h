@@ -7234,7 +7234,7 @@ extern bool cxx_omp_create_clause_info		(tree, tree, bool, bool,
 						 bool, bool);
 extern tree baselink_for_fns                    (tree);
 extern void finish_static_assert                (tree, tree, location_t,
-                                                 bool);
+						 bool, bool);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
 extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
 extern tree build_lambda_expr                   (void);
@@ -7461,7 +7461,7 @@ extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qualification		(int, int);
 extern int comp_cv_qual_signature		(tree, tree);
 extern tree cxx_sizeof_or_alignof_expr		(location_t, tree,
-						 enum tree_code, bool);
+						 enum tree_code, bool, bool);
 extern tree cxx_sizeof_or_alignof_type		(location_t, tree,
 						 enum tree_code, bool, bool);
 extern tree cxx_alignas_expr                    (tree);

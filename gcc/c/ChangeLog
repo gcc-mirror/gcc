@@ -1,3 +1,21 @@
+2020-11-10  Strager Neds  <strager.nds@gmail.com>
+
+	* c-decl.c (merge_decls): Use new overload of
+	set_decl_section_name.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_target_data): Add use of
+	new c_omp_adjust_map_clauses function. Add GOMP_MAP_ATTACH_DETACH as
+	handled map clause kind.
+	(c_parser_omp_target_enter_data): Likewise.
+	(c_parser_omp_target_exit_data): Likewise.
+	(c_parser_omp_target): Likewise.
+	* c-typeck.c (handle_omp_array_sections): Adjust COMPONENT_REF case to
+	use GOMP_MAP_ATTACH_DETACH map kind for C_ORT_OMP region type.
+	(c_finish_omp_clauses): Adjust bitmap checks to allow struct decl and
+	same struct field access to co-exist on OpenMP construct.
+
 2020-11-07  Martin Uecker  <muecker@gwdg.de>
 
 	* c-parser.c (c_parser_label): Implement mixing of labels and code.

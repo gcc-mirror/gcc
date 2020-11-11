@@ -7379,11 +7379,11 @@
 ;; UNSPEC_SEL operand order: mask, true, false (as for VEC_COND_EXPR)
 ;; SEL operand order:        mask, true, false
 (define_expand "@vcond_mask_<mode><vpred>"
-  [(set (match_operand:SVE_FULL 0 "register_operand")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 3 "register_operand")
-	   (match_operand:SVE_FULL 1 "aarch64_sve_reg_or_dup_imm")
-	   (match_operand:SVE_FULL 2 "aarch64_simd_reg_or_zero")]
+	   (match_operand:SVE_ALL 1 "aarch64_sve_reg_or_dup_imm")
+	   (match_operand:SVE_ALL 2 "aarch64_simd_reg_or_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
   {
@@ -7396,12 +7396,25 @@
 ;; - two registers
 ;; - a duplicated immediate and a register
 ;; - a duplicated immediate and zero
+;;
+;; For unpacked vectors, it doesn't really matter whether SEL uses the
+;; the container size or the element size.  If SEL used the container size,
+;; it would ignore undefined bits of the predicate but would copy the
+;; upper (undefined) bits of each container along with the defined bits.
+;; If SEL used the element size, it would use undefined bits of the predicate
+;; to select between undefined elements in each input vector.  Thus the only
+;; difference is whether the undefined bits in a container always come from
+;; the same input as the defined bits, or whether the choice can vary
+;; independently of the defined bits.
+;;
+;; For the other instructions, using the element size is more natural,
+;; so we do that for SEL as well.
 (define_insn "*vcond_mask_<mode><vpred>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=w, w, w, w, ?w, ?&w, ?&w")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w, w, w, ?w, ?&w, ?&w")
+	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 3 "register_operand" "Upa, Upa, Upa, Upa, Upl, Upl, Upl")
-	   (match_operand:SVE_FULL 1 "aarch64_sve_reg_or_dup_imm" "w, vss, vss, Ufc, Ufc, vss, Ufc")
-	   (match_operand:SVE_FULL 2 "aarch64_simd_reg_or_zero" "w, 0, Dz, 0, Dz, w, w")]
+	   (match_operand:SVE_ALL 1 "aarch64_sve_reg_or_dup_imm" "w, vss, vss, Ufc, Ufc, vss, Ufc")
+	   (match_operand:SVE_ALL 2 "aarch64_simd_reg_or_zero" "w, 0, Dz, 0, Dz, w, w")]
 	  UNSPEC_SEL))]
   "TARGET_SVE
    && (!register_operand (operands[1], <MODE>mode)
@@ -7422,12 +7435,12 @@
 ;; of GPRs as being more expensive than duplicates of FPRs, since they
 ;; involve a cross-file move.
 (define_insn "@aarch64_sel_dup<mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand" "=?w, w, ??w, ?&w, ??&w, ?&w")
-	(unspec:SVE_FULL
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=?w, w, ??w, ?&w, ??&w, ?&w")
+	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 3 "register_operand" "Upl, Upl, Upl, Upl, Upl, Upl")
-	   (vec_duplicate:SVE_FULL
+	   (vec_duplicate:SVE_ALL
 	     (match_operand:<VEL> 1 "register_operand" "r, w, r, w, r, w"))
-	   (match_operand:SVE_FULL 2 "aarch64_simd_reg_or_zero" "0, 0, Dz, Dz, w, w")]
+	   (match_operand:SVE_ALL 2 "aarch64_simd_reg_or_zero" "0, 0, Dz, Dz, w, w")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
   "@
@@ -7448,34 +7461,34 @@
 
 ;; Integer (signed) vcond.  Don't enforce an immediate range here, since it
 ;; depends on the comparison; leave it to aarch64_expand_sve_vcond instead.
-(define_expand "vcond<mode><v_int_equiv>"
-  [(set (match_operand:SVE_FULL 0 "register_operand")
-	(if_then_else:SVE_FULL
+(define_expand "vcond<SVE_ALL:mode><SVE_I:mode>"
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(if_then_else:SVE_ALL
 	  (match_operator 3 "comparison_operator"
-	    [(match_operand:<V_INT_EQUIV> 4 "register_operand")
-	     (match_operand:<V_INT_EQUIV> 5 "nonmemory_operand")])
-	  (match_operand:SVE_FULL 1 "nonmemory_operand")
-	  (match_operand:SVE_FULL 2 "nonmemory_operand")))]
-  "TARGET_SVE"
+	    [(match_operand:SVE_I 4 "register_operand")
+	     (match_operand:SVE_I 5 "nonmemory_operand")])
+	  (match_operand:SVE_ALL 1 "nonmemory_operand")
+	  (match_operand:SVE_ALL 2 "nonmemory_operand")))]
+  "TARGET_SVE && <SVE_ALL:container_bits> == <SVE_I:container_bits>"
   {
-    aarch64_expand_sve_vcond (<MODE>mode, <V_INT_EQUIV>mode, operands);
+    aarch64_expand_sve_vcond (<SVE_ALL:MODE>mode, <SVE_I:MODE>mode, operands);
     DONE;
   }
 )
 
 ;; Integer vcondu.  Don't enforce an immediate range here, since it
 ;; depends on the comparison; leave it to aarch64_expand_sve_vcond instead.
-(define_expand "vcondu<mode><v_int_equiv>"
-  [(set (match_operand:SVE_FULL 0 "register_operand")
-	(if_then_else:SVE_FULL
+(define_expand "vcondu<SVE_ALL:mode><SVE_I:mode>"
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(if_then_else:SVE_ALL
 	  (match_operator 3 "comparison_operator"
-	    [(match_operand:<V_INT_EQUIV> 4 "register_operand")
-	     (match_operand:<V_INT_EQUIV> 5 "nonmemory_operand")])
-	  (match_operand:SVE_FULL 1 "nonmemory_operand")
-	  (match_operand:SVE_FULL 2 "nonmemory_operand")))]
-  "TARGET_SVE"
+	    [(match_operand:SVE_I 4 "register_operand")
+	     (match_operand:SVE_I 5 "nonmemory_operand")])
+	  (match_operand:SVE_ALL 1 "nonmemory_operand")
+	  (match_operand:SVE_ALL 2 "nonmemory_operand")))]
+  "TARGET_SVE && <SVE_ALL:container_bits> == <SVE_I:container_bits>"
   {
-    aarch64_expand_sve_vcond (<MODE>mode, <V_INT_EQUIV>mode, operands);
+    aarch64_expand_sve_vcond (<SVE_ALL:MODE>mode, <SVE_I:MODE>mode, operands);
     DONE;
   }
 )
@@ -7520,8 +7533,8 @@
   [(parallel
     [(set (match_operand:<VPRED> 0 "register_operand")
 	  (match_operator:<VPRED> 1 "comparison_operator"
-	    [(match_operand:SVE_FULL_I 2 "register_operand")
-	     (match_operand:SVE_FULL_I 3 "nonmemory_operand")]))
+	    [(match_operand:SVE_I 2 "register_operand")
+	     (match_operand:SVE_I 3 "nonmemory_operand")]))
      (clobber (reg:CC_NZC CC_REGNUM))])]
   "TARGET_SVE"
   {
@@ -7538,8 +7551,8 @@
   [(parallel
     [(set (match_operand:<VPRED> 0 "register_operand")
 	  (match_operator:<VPRED> 1 "comparison_operator"
-	    [(match_operand:SVE_FULL_I 2 "register_operand")
-	     (match_operand:SVE_FULL_I 3 "nonmemory_operand")]))
+	    [(match_operand:SVE_I 2 "register_operand")
+	     (match_operand:SVE_I 3 "nonmemory_operand")]))
      (clobber (reg:CC_NZC CC_REGNUM))])]
   "TARGET_SVE"
   {
@@ -7550,14 +7563,38 @@
 )
 
 ;; Predicated integer comparisons.
+;;
+;; For unpacked vectors, only the lowpart element in each input container
+;; has a defined value, and only the predicate bits associated with
+;; those elements are defined.  For example, when comparing two VNx2SIs:
+;;
+;; - The VNx2SIs can be seem as VNx2DIs in which the low halves of each
+;;   DI container store an SI element.  The upper bits of each DI container
+;;   are undefined.
+;;
+;; - Alternatively, the VNx2SIs can be seen as VNx4SIs in which the
+;;   even elements are defined and the odd elements are undefined.
+;;
+;; - The associated predicate mode is VNx2BI.  This means that only the
+;;   low bit in each predicate byte is defined (on input and on output).
+;;
+;; - We use a .s comparison to compare VNx2SIs, under the control of a
+;;   VNx2BI governing predicate, to produce a VNx2BI result.  If we view
+;;   the .s operation as operating on VNx4SIs then for odd lanes:
+;;
+;;   - the input governing predicate bit is undefined
+;;   - the SI elements being compared are undefined
+;;   - the predicate result bit is therefore undefined, but
+;;   - the predicate result bit is in the undefined part of a VNx2BI,
+;;     so its value doesn't matter anyway.
 (define_insn "@aarch64_pred_cmp<cmp_op><mode>"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
 	(unspec:<VPRED>
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (match_operand:SI 2 "aarch64_sve_ptrue_flag")
 	   (SVE_INT_CMP:<VPRED>
-	     (match_operand:SVE_FULL_I 3 "register_operand" "w, w")
-	     (match_operand:SVE_FULL_I 4 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+	     (match_operand:SVE_I 3 "register_operand" "w, w")
+	     (match_operand:SVE_I 4 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
 	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE"
@@ -7578,8 +7615,8 @@
 	     [(match_operand 6)
 	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
 	      (SVE_INT_CMP:<VPRED>
-		(match_operand:SVE_FULL_I 2 "register_operand" "w, w")
-		(match_operand:SVE_FULL_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+		(match_operand:SVE_I 2 "register_operand" "w, w")
+		(match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
 	     UNSPEC_PRED_Z)]
 	  UNSPEC_PTEST))
    (set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
@@ -7614,8 +7651,8 @@
 	     [(match_operand 6)
 	      (match_operand:SI 7 "aarch64_sve_ptrue_flag")
 	      (SVE_INT_CMP:<VPRED>
-		(match_operand:SVE_FULL_I 2 "register_operand" "w, w")
-		(match_operand:SVE_FULL_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+		(match_operand:SVE_I 2 "register_operand" "w, w")
+		(match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
 	     UNSPEC_PRED_Z)]
 	  UNSPEC_PTEST))
    (clobber (match_scratch:<VPRED> 0 "=Upa, Upa"))]
@@ -7642,8 +7679,8 @@
 	    [(match_operand 4)
 	     (const_int SVE_KNOWN_PTRUE)
 	     (SVE_INT_CMP:<VPRED>
-	       (match_operand:SVE_FULL_I 2 "register_operand" "w, w")
-	       (match_operand:SVE_FULL_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+	       (match_operand:SVE_I 2 "register_operand" "w, w")
+	       (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
 	    UNSPEC_PRED_Z)
 	  (match_operand:<VPRED> 1 "register_operand" "Upl, Upl")))
    (clobber (reg:CC_NZC CC_REGNUM))]

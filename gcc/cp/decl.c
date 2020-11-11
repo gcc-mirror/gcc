@@ -2866,7 +2866,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     done later in decl_attributes since we are called before attributes
 	     are assigned.  */
 	  if (DECL_SECTION_NAME (newdecl) != NULL)
-	    set_decl_section_name (olddecl, DECL_SECTION_NAME (newdecl));
+	    set_decl_section_name (olddecl, newdecl);
 
 	  if (DECL_ONE_ONLY (newdecl))
 	    {
@@ -10335,7 +10335,7 @@ fold_sizeof_expr (tree t)
   else
     r = cxx_sizeof_or_alignof_expr (EXPR_LOCATION (t),
 				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
-				    false);
+				    false, false);
   if (r == error_mark_node)
     r = size_one_node;
   return r;

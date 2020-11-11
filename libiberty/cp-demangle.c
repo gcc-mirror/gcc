@@ -5458,9 +5458,18 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       }
 
     case DEMANGLE_COMPONENT_EXTENDED_OPERATOR:
-      d_append_string (dpi, "operator ");
-      d_print_comp (dpi, options, dc->u.s_extended_operator.name);
-      return;
+      {
+	struct demangle_component *name = dc->u.s_extended_operator.name;
+	if (name->type == DEMANGLE_COMPONENT_NAME
+	    && !strncmp (name->u.s_name.s, "__alignof__", name->u.s_name.len))
+	  d_print_comp (dpi, options, dc->u.s_extended_operator.name);
+	else
+	  {
+	    d_append_string (dpi, "operator ");
+	    d_print_comp (dpi, options, dc->u.s_extended_operator.name);
+	  }
+	return;
+      }
 
     case DEMANGLE_COMPONENT_CONVERSION:
       d_append_string (dpi, "operator ");
@@ -5525,8 +5534,14 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	if (code && !strcmp (code, "gs"))
 	  /* Avoid parens after '::'.  */
 	  d_print_comp (dpi, options, operand);
-	else if (code && !strcmp (code, "st"))
-	  /* Always print parens for sizeof (type).  */
+	else if ((code && !strcmp (code, "st"))
+		 || (op->type == DEMANGLE_COMPONENT_EXTENDED_OPERATOR
+		     && (op->u.s_extended_operator.name->type
+			 == DEMANGLE_COMPONENT_NAME)
+		     && !strncmp (op->u.s_extended_operator.name->u.s_name.s,
+				  "__alignof__",
+				  op->u.s_extended_operator.name->u.s_name.len)))
+	  /* Always print parens for sizeof (type) and __alignof__.  */
 	  {
 	    d_append_char (dpi, '(');
 	    d_print_comp (dpi, options, operand);

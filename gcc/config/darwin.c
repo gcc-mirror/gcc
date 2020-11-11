@@ -2225,6 +2225,17 @@ darwin_emit_except_table_label (FILE *file)
   ASM_OUTPUT_LABEL (file, section_start_label);
 }
 
+rtx
+darwin_make_eh_symbol_indirect (rtx orig, bool ARG_UNUSED (pubvis))
+{
+  if (DARWIN_PPC == 0 && TARGET_64BIT)
+    return orig;
+
+  return gen_rtx_SYMBOL_REF (Pmode,
+			     machopic_indirection_name (orig,
+							/*stub_p=*/false));
+}
+
 /* Return, and mark as used, the name of the stub for the mcount function.
    Currently, this is only called by X86 code in the expansion of the
    FUNCTION_PROFILER macro, when stubs are enabled.  */

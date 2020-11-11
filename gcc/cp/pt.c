@@ -16214,7 +16214,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
   tree name;
   bool is_template;
   tree template_args;
-  location_t loc = UNKNOWN_LOCATION;
+  location_t loc = EXPR_LOCATION (qualified_id);
 
   gcc_assert (TREE_CODE (qualified_id) == SCOPE_REF);
 
@@ -16223,7 +16223,6 @@ tsubst_qualified_id (tree qualified_id, tree args,
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
       is_template = true;
-      loc = EXPR_LOCATION (name);
       template_args = TREE_OPERAND (name, 1);
       if (template_args)
 	template_args = tsubst_template_args (template_args, args,
@@ -16350,6 +16349,8 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
   if (REF_PARENTHESIZED_P (qualified_id))
     expr = force_paren_expr (expr);
+
+  expr = maybe_wrap_with_location (expr, loc);
 
   return expr;
 }
@@ -16789,6 +16790,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      else
 		return cxx_sizeof_or_alignof_expr (input_location,
 						   expanded, SIZEOF_EXPR,
+						   false,
                                                    complain & tf_error);
 	    }
 	  else
@@ -18492,8 +18494,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	tree condition;
 
 	++c_inhibit_evaluation_warnings;
-        condition = 
-          tsubst_expr (STATIC_ASSERT_CONDITION (t), 
+	condition =
+	  tsubst_expr (STATIC_ASSERT_CONDITION (t),
                        args,
                        complain, in_decl,
                        /*integral_constant_expression_p=*/true);
@@ -18502,7 +18504,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
         finish_static_assert (condition,
                               STATIC_ASSERT_MESSAGE (t),
                               STATIC_ASSERT_SOURCE_LOCATION (t),
-                              /*member_p=*/false);
+			      /*member_p=*/false, /*show_expr_p=*/true);
       }
       break;
 
@@ -19731,7 +19733,7 @@ tsubst_copy_and_build (tree t,
 					  complain & tf_error);
 	else
 	  r = cxx_sizeof_or_alignof_expr (input_location,
-					  op1, TREE_CODE (t),
+					  op1, TREE_CODE (t), std_alignof,
 					  complain & tf_error);
 	if (TREE_CODE (t) == SIZEOF_EXPR && r != error_mark_node)
 	  {

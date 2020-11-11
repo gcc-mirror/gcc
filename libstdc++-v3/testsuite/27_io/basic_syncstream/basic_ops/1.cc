@@ -123,12 +123,41 @@ test04() // emitting
     s.emit();
     VERIFY( b.str() == txt );
   }
+
+  {
+    std::stringbuf b;
+    std::osyncstream s(&b);
+
+    s.put('a');
+    s.put('b');
+    s.put('c');
+
+    s.emit();
+    VERIFY( b.str() == "abc" );
+  }
+
+  {
+    std::stringbuf b;
+    std::osyncstream s(&b);
+
+    s << "abc";
+    s.put(' ');
+    s << "def";
+    s.emit();
+    VERIFY( b.str() == "abc def" );
+
+    s << "ghi";
+    s.put(' ');
+    s << "jkl";
+    s.emit();
+    VERIFY( b.str() == "abc defghi jkl" );
+  }
 }
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
-  return 0;
 }

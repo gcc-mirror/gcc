@@ -3049,11 +3049,30 @@ write_expression (tree expr)
       else
 	goto normal_expr;
     }
-  else if (TREE_CODE (expr) == ALIGNOF_EXPR
-	   && TYPE_P (TREE_OPERAND (expr, 0)))
+  else if (TREE_CODE (expr) == ALIGNOF_EXPR)
     {
-      write_string ("at");
-      write_type (TREE_OPERAND (expr, 0));
+      if (!ALIGNOF_EXPR_STD_P (expr))
+	{
+	  if (abi_warn_or_compat_version_crosses (15))
+	    G.need_abi_warning = true;
+	  if (abi_version_at_least (15))
+	    {
+	      /* We used to mangle __alignof__ like alignof.  */
+	      write_string ("v111__alignof__");
+	      if (TYPE_P (TREE_OPERAND (expr, 0)))
+		write_type (TREE_OPERAND (expr, 0));
+	      else
+		write_expression (TREE_OPERAND (expr, 0));
+	      return;
+	    }
+	}
+      if (TYPE_P (TREE_OPERAND (expr, 0)))
+	{
+	  write_string ("at");
+	  write_type (TREE_OPERAND (expr, 0));
+	}
+      else
+	goto normal_expr;
     }
   else if (code == SCOPE_REF
 	   || code == BASELINK)

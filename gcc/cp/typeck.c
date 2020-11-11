@@ -1832,10 +1832,12 @@ cxx_sizeof_expr (location_t loc, tree e, tsubst_flags_t complain)
 /* Implement the __alignof keyword: Return the minimum required
    alignment of E, measured in bytes.  For VAR_DECL's and
    FIELD_DECL's return DECL_ALIGN (which can be set from an
-   "aligned" __attribute__ specification).  */
+   "aligned" __attribute__ specification).  STD_ALIGNOF acts
+   like in cxx_sizeof_or_alignof_type.  */
 
 static tree
-cxx_alignof_expr (location_t loc, tree e, tsubst_flags_t complain)
+cxx_alignof_expr (location_t loc, tree e, bool std_alignof,
+		  tsubst_flags_t complain)
 {
   tree t;
 
@@ -1848,6 +1850,7 @@ cxx_alignof_expr (location_t loc, tree e, tsubst_flags_t complain)
       TREE_SIDE_EFFECTS (e) = 0;
       TREE_READONLY (e) = 1;
       SET_EXPR_LOCATION (e, loc);
+      ALIGNOF_EXPR_STD_P (e) = std_alignof;
 
       return e;
     }
@@ -1900,23 +1903,25 @@ cxx_alignof_expr (location_t loc, tree e, tsubst_flags_t complain)
     }
   else
     return cxx_sizeof_or_alignof_type (loc, TREE_TYPE (e),
-				       ALIGNOF_EXPR, false,
+				       ALIGNOF_EXPR, std_alignof,
                                        complain & tf_error);
 
   return fold_convert_loc (loc, size_type_node, t);
 }
 
 /* Process a sizeof or alignof expression E with code OP where the operand
-   is an expression.  */
+   is an expression. STD_ALIGNOF acts like in cxx_sizeof_or_alignof_type.  */
 
 tree
 cxx_sizeof_or_alignof_expr (location_t loc, tree e, enum tree_code op,
-			    bool complain)
+			    bool std_alignof, bool complain)
 {
+  gcc_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR);
   if (op == SIZEOF_EXPR)
     return cxx_sizeof_expr (loc, e, complain? tf_warning_or_error : tf_none);
   else
-    return cxx_alignof_expr (loc, e, complain? tf_warning_or_error : tf_none);
+    return cxx_alignof_expr (loc, e, std_alignof,
+			     complain? tf_warning_or_error : tf_none);
 }
 
 /*  Build a representation of an expression 'alignas(E).'  Return the

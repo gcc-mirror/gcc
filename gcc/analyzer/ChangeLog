@@ -1,3 +1,18 @@
+2020-11-10  Martin Liska  <mliska@suse.cz>
+
+	* constraint-manager.cc (constraint_manager::merge): Remove
+	unused code.
+	* constraint-manager.h: Likewise.
+	* program-state.cc (sm_state_map::sm_state_map): Likewise.
+	(program_state::program_state): Likewise.
+	(test_sm_state_map): Likewise.
+	* program-state.h: Likewise.
+	* region-model-reachability.cc (reachable_regions::reachable_regions): Likewise.
+	* region-model-reachability.h: Likewise.
+	* region-model.cc (region_model::handle_unrecognized_call): Likewise.
+	(region_model::get_reachable_svalues): Likewise.
+	(region_model::can_merge_with_p): Likewise.
+
 2020-11-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97668

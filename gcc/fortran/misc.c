@@ -224,10 +224,32 @@ gfc_typename (gfc_expr *ex)
 
   if (ex->ts.type == BT_CHARACTER)
     {
-      if (ex->ts.u.cl && ex->ts.u.cl->length)
-	length = gfc_mpz_get_hwi (ex->ts.u.cl->length->value.integer);
-      else
+      if (ex->expr_type == EXPR_CONSTANT)
 	length = ex->value.character.length;
+      else if (ex->ts.deferred)
+	{
+	  if (ex->ts.kind == gfc_default_character_kind)
+	    return "CHARACTER(:)";
+	  sprintf (buffer, "CHARACTER(:,%d)", ex->ts.kind);
+	  return buffer;
+	}
+      else if (ex->ts.u.cl && ex->ts.u.cl->length == NULL)
+	{
+	  if (ex->ts.kind == gfc_default_character_kind)
+	    return "CHARACTER(*)";
+	  sprintf (buffer, "CHARACTER(*,%d)", ex->ts.kind);
+	  return buffer;
+	}
+      else if (ex->ts.u.cl == NULL
+	       || ex->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+	{
+	  if (ex->ts.kind == gfc_default_character_kind)
+	    return "CHARACTER";
+	  sprintf (buffer, "CHARACTER(KIND=%d)", ex->ts.kind);
+	  return buffer;
+	}
+      else
+	length = gfc_mpz_get_hwi (ex->ts.u.cl->length->value.integer);
       if (ex->ts.kind == gfc_default_character_kind)
 	sprintf (buffer, "CHARACTER(" HOST_WIDE_INT_PRINT_DEC ")", length);
       else

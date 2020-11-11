@@ -1,3 +1,48 @@
+2020-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* cp-tree.h (finish_static_assert): Adjust declaration.
+	* parser.c (cp_parser_static_assert): Pass false to
+	finish_static_assert.
+	* pt.c (tsubst_expr): Pass true to finish_static_assert.
+	* semantics.c (find_failing_clause_r): New function.
+	(find_failing_clause): New function.
+	(finish_static_assert): Add a bool parameter.  Use
+	iloc_sentinel.  Call contextual_conv_bool instead of
+	perform_implicit_conversion_flags.  Don't check for INTEGER_CST before
+	calling integer_zerop.  Call find_failing_clause and maybe use its
+	location.  Print the original condition or the failing clause if
+	SHOW_EXPR_P.
+
+2020-11-10  Strager Neds  <strager.nds@gmail.com>
+
+	* decl.c (duplicate_decls): Use new overload of
+	set_decl_section_name.
+	* method.c (use_thunk): Same.
+	* optimize.c (maybe_clone_body): Same.
+	* coroutines.cc (act_des_fn): Same.
+
+2020-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97748
+	* cvt.c (convert_to_void): Check (complain & tf_warning) in the outer
+	if rather than twice times in the inner one.  Use warn_if_unused_value.
+	Formatting fix.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.c (cp_parser_omp_target_data): Add use of
+	new c_omp_adjust_map_clauses function. Add GOMP_MAP_ATTACH_DETACH as
+	handled map clause kind.
+	(cp_parser_omp_target_enter_data): Likewise.
+	(cp_parser_omp_target_exit_data): Likewise.
+	(cp_parser_omp_target): Likewise.
+	* semantics.c (handle_omp_array_sections): Adjust COMPONENT_REF case to
+	use GOMP_MAP_ATTACH_DETACH map kind for C_ORT_OMP region type. Fix
+	interaction between reference case and attach/detach.
+	(finish_omp_clauses): Adjust bitmap checks to allow struct decl and
+	same struct field access to co-exist on OpenMP construct.
+
 2020-11-09  Marek Polacek  <polacek@redhat.com>
 
 	DR 1914

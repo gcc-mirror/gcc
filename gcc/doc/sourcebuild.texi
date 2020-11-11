@@ -2243,6 +2243,9 @@ Target supports compiling @code{avx2} instructions.
 @item avx2_runtime
 Target supports the execution of @code{avx2} instructions.
 
+@item avxvnni
+Target supports the execution of @code{avxvnni} instructions.
+
 @item avx512f
 Target supports compiling @code{avx512f} instructions.
 

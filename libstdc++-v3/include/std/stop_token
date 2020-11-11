@@ -162,9 +162,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::atomic<value_type> _M_owners{1};
       std::atomic<value_type> _M_value{_S_ssrc_counter_inc};
       _Stop_cb* _M_head = nullptr;
+      struct
+      {
 #ifdef _GLIBCXX_HAS_GTHREADS
-      __gthread_t _M_requester;
+	__gthread_t _M_id;
+	void _M_set() { _M_id = __gthread_self(); }
+	bool _M_is_current_thread() const
+	{ return __gthread_equal(_M_id, __gthread_self()); }
+#else
+	void _M_set() { }
+	constexpr bool _M_is_current_thread() const { return true; }
 #endif
+      } _M_requester;
 
       _Stop_state_t() = default;
 
@@ -237,9 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	while (!_M_try_lock_and_stop(__old));
 
-#ifdef _GLIBCXX_HAS_GTHREADS
-	_M_requester = __gthread_self();
-#endif
+	_M_requester._M_set();
 
 	while (_M_head)
 	  {
@@ -343,18 +350,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Callback is not in the list, so must have been removed by a call to
 	// _M_request_stop.
 
-#ifdef _GLIBCXX_HAS_GTHREADS
 	// Despite appearances there is no data race on _M_requester. The only
 	// write to it happens before the callback is removed from the list,
 	// and removing it from the list happens before this read.
-	if (!__gthread_equal(_M_requester, __gthread_self()))
+	if (!_M_requester._M_is_current_thread())
 	  {
 	    // Synchronize with completion of callback.
 	    __cb->_M_done.acquire();
 	    // Safe for ~stop_callback to destroy *__cb now.
 	    return;
 	  }
-#endif
+
 	if (__cb->_M_destroyed)
 	  *__cb->_M_destroyed = true;
       }
