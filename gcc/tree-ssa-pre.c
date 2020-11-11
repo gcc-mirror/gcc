@@ -1762,9 +1762,8 @@ phi_translate (bitmap_set_t dest, pre_expr expr,
 static void
 phi_translate_set (bitmap_set_t dest, bitmap_set_t set, edge e)
 {
-  vec<pre_expr> exprs;
-  pre_expr expr;
-  int i;
+  bitmap_iterator bi;
+  unsigned int i;
 
   if (gimple_seq_empty_p (phi_nodes (e->dest)))
     {
@@ -1772,24 +1771,22 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, edge e)
       return;
     }
 
-  exprs = sorted_array_from_bitmap_set (set);
   /* Allocate the phi-translation cache where we have an idea about
      its size.  hash-table implementation internals tell us that
      allocating the table to fit twice the number of elements will
      make sure we do not usually re-allocate.  */
   if (!PHI_TRANS_TABLE (e->src))
-    PHI_TRANS_TABLE (e->src)
-      = new hash_table<expr_pred_trans_d> (2 * exprs.length ());
-  FOR_EACH_VEC_ELT (exprs, i, expr)
+    PHI_TRANS_TABLE (e->src) = new hash_table<expr_pred_trans_d>
+				   (2 * bitmap_count_bits (&set->expressions));
+  FOR_EACH_EXPR_ID_IN_SET (set, i, bi)
     {
-      pre_expr translated;
-      translated = phi_translate (dest, expr, set, NULL, e);
+      pre_expr expr = expression_for_id (i);
+      pre_expr translated = phi_translate (dest, expr, set, NULL, e);
       if (!translated)
 	continue;
 
       bitmap_insert_into_set (dest, translated);
     }
-  exprs.release ();
 }
 
 /* Find the leader for a value (i.e., the name representing that
