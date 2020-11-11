@@ -9361,6 +9361,11 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
   /* If no operand is a constant, we use the generic implementation.  */
   if (TREE_CODE (lhs) != INTEGER_CST && TREE_CODE (rhs) != INTEGER_CST)
     {
+      /* First convert the operands to the result type like build_binary_op.
+	 This is where the bias is made explicit for biased types.  */
+      lhs = convert (gnu_type, lhs);
+      rhs = convert (gnu_type, rhs);
+
       /* Never inline a 64-bit mult for a 32-bit target, it's way too long.  */
       if (code == MULT_EXPR && precision == 64 && BITS_PER_WORD < 64)
 	{
