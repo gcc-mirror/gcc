@@ -1,10 +1,10 @@
 ! { dg-do compile }
 ! { dg-options "-O2 -fopenmp -fdump-tree-optimized" }
-! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop_doacross_start \[^\n\r]*, (?:2147483649|-2147483647), 0, " 1 "optimized" } }
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop(?:_ull)_doacross_start \[^\n\r]*, (?:2147483649|-2147483647), 0, " 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop_end " 1 "optimized" } }
-! { dg-final { scan-tree-dump-times "__builtin_GOMP_doacross_post " 1 "optimized" } }
-! { dg-final { scan-tree-dump-times "__builtin_GOMP_doacross_wait " 1 "optimized" } }
-! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop_static_next " 1 "optimized" } }
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_doacross(?:_ull)_post " 1 "optimized" } }
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_doacross(?:_ull)_wait " 1 "optimized" } }
+! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop(?:_ull)_static_next " 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_workshare_task_reduction_unregister \\(0\\)" 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_parallel " 1 "optimized" } }
 
