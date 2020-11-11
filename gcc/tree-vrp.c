@@ -4152,31 +4152,86 @@ vrp_prop::finalize ()
     }
 }
 
+/* Blocks which have more than one predecessor and more than
+   one successor present jump threading opportunities, i.e.,
+   when the block is reached from a specific predecessor, we
+   may be able to determine which of the outgoing edges will
+   be traversed.  When this optimization applies, we are able
+   to avoid conditionals at runtime and we may expose secondary
+   optimization opportunities.
+
+   This class is effectively a driver for the generic jump
+   threading code.  It basically just presents the generic code
+   with edges that may be suitable for jump threading.
+
+   Unlike DOM, we do not iterate VRP if jump threading was successful.
+   While iterating may expose new opportunities for VRP, it is expected
+   those opportunities would be very limited and the compile time cost
+   to expose those opportunities would be significant.
+
+   As jump threading opportunities are discovered, they are registered
+   for later realization.  */
+
 class vrp_jump_threader : public dom_walker
 {
 public:
-  vrp_jump_threader (cdi_direction direction,
-		     class const_and_copies *const_and_copies,
-		     class avail_exprs_stack *avail_exprs_stack)
-    : dom_walker (direction, REACHABLE_BLOCKS),
-      m_const_and_copies (const_and_copies),
-      m_avail_exprs_stack (avail_exprs_stack),
-      m_dummy_cond (NULL) {}
+  vrp_jump_threader (struct function *, vr_values *);
+  ~vrp_jump_threader ();
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
-
-  class vr_values *vr_values;
+  void thread_jumps ()
+  {
+    walk (m_fun->cfg->x_entry_block_ptr);
+  }
 
 private:
   static tree simplify_stmt (gimple *stmt, gimple *within_stmt,
 			     avail_exprs_stack *, basic_block);
+  virtual edge before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
 
-  class const_and_copies *m_const_and_copies;
-  class avail_exprs_stack *m_avail_exprs_stack;
-
+  function *m_fun;
+  vr_values *m_vr_values;
+  const_and_copies *m_const_and_copies;
+  avail_exprs_stack *m_avail_exprs_stack;
+  hash_table<expr_elt_hasher> *m_avail_exprs;
   gcond *m_dummy_cond;
 };
+
+vrp_jump_threader::vrp_jump_threader (struct function *fun, vr_values *v)
+  : dom_walker (CDI_DOMINATORS, REACHABLE_BLOCKS)
+{
+  /* Ugh.  When substituting values earlier in this pass we can wipe
+     the dominance information.  So rebuild the dominator information
+     as we need it within the jump threading code.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* We do not allow VRP information to be used for jump threading
+     across a back edge in the CFG.  Otherwise it becomes too
+     difficult to avoid eliminating loop exit tests.  Of course
+     EDGE_DFS_BACK is not accurate at this time so we have to
+     recompute it.  */
+  mark_dfs_back_edges ();
+
+  /* Allocate our unwinder stack to unwind any temporary equivalences
+     that might be recorded.  */
+  m_const_and_copies = new const_and_copies ();
+
+  m_dummy_cond = NULL;
+  m_fun = fun;
+  m_vr_values = v;
+  m_avail_exprs = new hash_table<expr_elt_hasher> (1024);
+  m_avail_exprs_stack = new avail_exprs_stack (m_avail_exprs);
+}
+
+vrp_jump_threader::~vrp_jump_threader ()
+{
+  /* We do not actually update the CFG or SSA graphs at this point as
+     ASSERT_EXPRs are still in the IL and cfg cleanup code does not
+     yet handle ASSERT_EXPRs gracefully.  */
+  delete m_const_and_copies;
+  delete m_avail_exprs;
+  delete m_avail_exprs_stack;
+}
 
 /* Called before processing dominator children of BB.  We want to look
    at ASSERT_EXPRs and record information from them in the appropriate
@@ -4295,7 +4350,7 @@ vrp_jump_threader::after_dom_children (basic_block bb)
 				      integer_zero_node, integer_zero_node,
 				      NULL, NULL);
 
-  x_vr_values = vr_values;
+  x_vr_values = m_vr_values;
   thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
 			 m_avail_exprs_stack, NULL,
 			 simplify_stmt);
@@ -4303,62 +4358,6 @@ vrp_jump_threader::after_dom_children (basic_block bb)
 
   m_avail_exprs_stack->pop_to_marker ();
   m_const_and_copies->pop_to_marker ();
-}
-
-/* Blocks which have more than one predecessor and more than
-   one successor present jump threading opportunities, i.e.,
-   when the block is reached from a specific predecessor, we
-   may be able to determine which of the outgoing edges will
-   be traversed.  When this optimization applies, we are able
-   to avoid conditionals at runtime and we may expose secondary
-   optimization opportunities.
-
-   This routine is effectively a driver for the generic jump
-   threading code.  It basically just presents the generic code
-   with edges that may be suitable for jump threading.
-
-   Unlike DOM, we do not iterate VRP if jump threading was successful.
-   While iterating may expose new opportunities for VRP, it is expected
-   those opportunities would be very limited and the compile time cost
-   to expose those opportunities would be significant.
-
-   As jump threading opportunities are discovered, they are registered
-   for later realization.  */
-
-static void
-identify_jump_threads (struct function *fun, class vr_values *vr_values)
-{
-  /* Ugh.  When substituting values earlier in this pass we can
-     wipe the dominance information.  So rebuild the dominator
-     information as we need it within the jump threading code.  */
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  /* We do not allow VRP information to be used for jump threading
-     across a back edge in the CFG.  Otherwise it becomes too
-     difficult to avoid eliminating loop exit tests.  Of course
-     EDGE_DFS_BACK is not accurate at this time so we have to
-     recompute it.  */
-  mark_dfs_back_edges ();
-
-  /* Allocate our unwinder stack to unwind any temporary equivalences
-     that might be recorded.  */
-  const_and_copies *equiv_stack = new const_and_copies ();
-
-  hash_table<expr_elt_hasher> *avail_exprs
-    = new hash_table<expr_elt_hasher> (1024);
-  avail_exprs_stack *avail_exprs_stack
-    = new class avail_exprs_stack (avail_exprs);
-
-  vrp_jump_threader walker (CDI_DOMINATORS, equiv_stack, avail_exprs_stack);
-  walker.vr_values = vr_values;
-  walker.walk (fun->cfg->x_entry_block_ptr);
-
-  /* We do not actually update the CFG or SSA graphs at this point as
-     ASSERT_EXPRs are still in the IL and cfg cleanup code does not yet
-     handle ASSERT_EXPRs gracefully.  */
-  delete equiv_stack;
-  delete avail_exprs;
-  delete avail_exprs_stack;
 }
 
 /* STMT is a conditional at the end of a basic block.
@@ -4516,7 +4515,8 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
 
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
-  identify_jump_threads (fun, &vrp_prop.vr_values);
+  vrp_jump_threader threader (fun, &vrp_prop.vr_values);
+  threader.thread_jumps ();
 
   /* A comparison of an SSA_NAME against a constant where the SSA_NAME
      was set by a type conversion can often be rewritten to use the
