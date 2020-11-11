@@ -22702,6 +22702,12 @@
     (set_attr ("prefix") ("evex"))
     (set_attr ("mode") ("TI"))])
 
+(define_expand "popcount<mode>2"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand")
+	(popcount:VI48_AVX512VL
+	  (match_operand:VI48_AVX512VL 1 "nonimmediate_operand")))]
+  "TARGET_AVX512VPOPCNTDQ")
+
 (define_insn "vpopcount<mode><mask_name>"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
 	(popcount:VI48_AVX512VL
@@ -22745,6 +22751,12 @@
     ])]
   "TARGET_SSE && TARGET_64BIT"
   "jmp\t%P1")
+
+(define_expand "popcount<mode>2"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
+	(popcount:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 1 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512BITALG")
 
 (define_insn "vpopcount<mode><mask_name>"
   [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
