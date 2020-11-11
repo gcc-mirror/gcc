@@ -16790,6 +16790,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      else
 		return cxx_sizeof_or_alignof_expr (input_location,
 						   expanded, SIZEOF_EXPR,
+						   false,
                                                    complain & tf_error);
 	    }
 	  else
@@ -19732,7 +19733,7 @@ tsubst_copy_and_build (tree t,
 					  complain & tf_error);
 	else
 	  r = cxx_sizeof_or_alignof_expr (input_location,
-					  op1, TREE_CODE (t),
+					  op1, TREE_CODE (t), std_alignof,
 					  complain & tf_error);
 	if (TREE_CODE (t) == SIZEOF_EXPR && r != error_mark_node)
 	  {

@@ -2806,7 +2806,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
       result = cxx_sizeof_or_alignof_expr (input_location,
-					   op0, opcode, true);
+					   op0, opcode, true, true);
       break;
 
     case DELETE_EXPR:

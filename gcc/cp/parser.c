@@ -8335,8 +8335,8 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 			   "ISO C++ does not allow %<alignof%> "
 			   "with a non-type");
 
-		ret = cxx_sizeof_or_alignof_expr (compound_loc,
-						  operand, op, true);
+		ret = cxx_sizeof_or_alignof_expr (compound_loc, operand, op,
+						  std_alignof, true);
 	      }
 	    /* For SIZEOF_EXPR, just issue diagnostics, but keep
 	       SIZEOF_EXPR with the original operand.  */

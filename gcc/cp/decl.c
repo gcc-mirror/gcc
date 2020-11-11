@@ -10335,7 +10335,7 @@ fold_sizeof_expr (tree t)
   else
     r = cxx_sizeof_or_alignof_expr (EXPR_LOCATION (t),
 				    TREE_OPERAND (t, 0), SIZEOF_EXPR,
-				    false);
+				    false, false);
   if (r == error_mark_node)
     r = size_one_node;
   return r;
