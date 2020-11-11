@@ -368,6 +368,36 @@ section_name_hasher::equal (section_hash_entry *n1, const char *name)
   return n1->name == name || !strcmp (n1->name, name);
 }
 
+/* Bump the reference count on ENTRY so that it is retained.  */
+
+static section_hash_entry *
+retain_section_hash_entry (section_hash_entry *entry)
+{
+  entry->ref_count++;
+  return entry;
+}
+
+/* Drop the reference count on ENTRY and remove it if the reference
+   count drops to zero.  */
+
+static void
+release_section_hash_entry (section_hash_entry *entry)
+{
+  if (entry)
+    {
+      entry->ref_count--;
+      if (!entry->ref_count)
+	{
+	  hashval_t hash = htab_hash_string (entry->name);
+	  section_hash_entry **slot
+	    = symtab->section_hash->find_slot_with_hash (entry->name,
+						 hash, INSERT);
+	  ggc_free (entry);
+	  symtab->section_hash->clear_slot (slot);
+	}
+    }
+}
+
 /* Add node into symbol table.  This function is not used directly, but via
    cgraph/varpool node creation routines.  */
 
@@ -1609,46 +1639,33 @@ void
 symtab_node::set_section_for_node (const char *section)
 {
   const char *current = get_section ();
-  section_hash_entry **slot;
 
   if (current == section
       || (current && section
 	  && !strcmp (current, section)))
     return;
 
-  if (current)
-    {
-      x_section->ref_count--;
-      if (!x_section->ref_count)
-	{
-	  hashval_t hash = htab_hash_string (x_section->name);
-	  slot = symtab->section_hash->find_slot_with_hash (x_section->name,
-							    hash, INSERT);
-	  ggc_free (x_section);
-	  symtab->section_hash->clear_slot (slot);
-	}
-      x_section = NULL;
-    }
+  release_section_hash_entry (x_section);
   if (!section)
     {
+      x_section = NULL;
       implicit_section = false;
       return;
     }
   if (!symtab->section_hash)
     symtab->section_hash = hash_table<section_name_hasher>::create_ggc (10);
-  slot = symtab->section_hash->find_slot_with_hash (section,
-						    htab_hash_string (section),
-						    INSERT);
+  section_hash_entry **slot = symtab->section_hash->find_slot_with_hash
+    (section, htab_hash_string (section), INSERT);
   if (*slot)
-    x_section = (section_hash_entry *)*slot;
+    x_section = retain_section_hash_entry (*slot);
   else
     {
       int len = strlen (section);
       *slot = x_section = ggc_cleared_alloc<section_hash_entry> ();
+      x_section->ref_count = 1;
       x_section->name = ggc_vec_alloc<char> (len + 1);
       memcpy (x_section->name, section, len + 1);
     }
-  x_section->ref_count++;
 }
 
 /* Worker for set_section.  */
