@@ -3817,15 +3817,19 @@ vrp_asserts::remove_range_assertions ()
 class vrp_prop : public ssa_propagation_engine
 {
 public:
-  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
-  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
-
-  struct function *fun;
+  vrp_prop (vr_values *v)
+    : ssa_propagation_engine (),
+      m_vr_values (v) { }
 
   void initialize (struct function *);
   void finalize ();
 
-  class vr_values vr_values;
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+
+private:
+  struct function *fun;
+  vr_values *m_vr_values;
 };
 
 /* Initialization required by ssa_propagate engine.  */
@@ -3845,7 +3849,7 @@ vrp_prop::initialize (struct function *fn)
 	  if (!stmt_interesting_for_vrp (phi))
 	    {
 	      tree lhs = PHI_RESULT (phi);
-	      vr_values.set_def_to_varying (lhs);
+	      m_vr_values->set_def_to_varying (lhs);
 	      prop_set_simulate_again (phi, false);
 	    }
 	  else
@@ -3864,7 +3868,7 @@ vrp_prop::initialize (struct function *fn)
 	    prop_set_simulate_again (stmt, true);
 	  else if (!stmt_interesting_for_vrp (stmt))
 	    {
-	      vr_values.set_defs_to_varying (stmt);
+	      m_vr_values->set_defs_to_varying (stmt);
 	      prop_set_simulate_again (stmt, false);
 	    }
 	  else
@@ -3887,11 +3891,11 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 {
   tree lhs = gimple_get_lhs (stmt);
   value_range_equiv vr;
-  vr_values.extract_range_from_stmt (stmt, taken_edge_p, output_p, &vr);
+  m_vr_values->extract_range_from_stmt (stmt, taken_edge_p, output_p, &vr);
 
   if (*output_p)
     {
-      if (vr_values.update_value_range (*output_p, &vr))
+      if (m_vr_values->update_value_range (*output_p, &vr))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -3926,7 +3930,7 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 	    use_operand_p use_p;
 	    enum ssa_prop_result res = SSA_PROP_VARYING;
 
-	    vr_values.set_def_to_varying (lhs);
+	    m_vr_values->set_def_to_varying (lhs);
 
 	    FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
 	      {
@@ -3956,9 +3960,9 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 		   {REAL,IMAG}PART_EXPR uses at all,
 		   return SSA_PROP_VARYING.  */
 		value_range_equiv new_vr;
-		vr_values.extract_range_basic (&new_vr, use_stmt);
+		m_vr_values->extract_range_basic (&new_vr, use_stmt);
 		const value_range_equiv *old_vr
-		  = vr_values.get_value_range (use_lhs);
+		  = m_vr_values->get_value_range (use_lhs);
 		if (!old_vr->equal_p (new_vr, /*ignore_equivs=*/false))
 		  res = SSA_PROP_INTERESTING;
 		else
@@ -3980,7 +3984,7 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 
   /* All other statements produce nothing of interest for VRP, so mark
      their outputs varying and prevent further simulation.  */
-  vr_values.set_defs_to_varying (stmt);
+  m_vr_values->set_defs_to_varying (stmt);
 
   return (*taken_edge_p) ? SSA_PROP_INTERESTING : SSA_PROP_VARYING;
 }
@@ -3994,8 +3998,8 @@ vrp_prop::visit_phi (gphi *phi)
 {
   tree lhs = PHI_RESULT (phi);
   value_range_equiv vr_result;
-  vr_values.extract_range_from_phi_node (phi, &vr_result);
-  if (vr_values.update_value_range (lhs, &vr_result))
+  m_vr_values->extract_range_from_phi_node (phi, &vr_result);
+  if (m_vr_values->update_value_range (lhs, &vr_result))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -4024,12 +4028,12 @@ vrp_prop::finalize ()
   size_t i;
 
   /* We have completed propagating through the lattice.  */
-  vr_values.set_lattice_propagation_complete ();
+  m_vr_values->set_lattice_propagation_complete ();
 
   if (dump_file)
     {
       fprintf (dump_file, "\nValue ranges after VRP:\n\n");
-      vr_values.dump_all_value_ranges (dump_file);
+      m_vr_values->dump_all_value_ranges (dump_file);
       fprintf (dump_file, "\n");
     }
 
@@ -4040,7 +4044,7 @@ vrp_prop::finalize ()
       if (!name)
 	continue;
 
-      const value_range_equiv *vr = vr_values.get_value_range (name);
+      const value_range_equiv *vr = m_vr_values->get_value_range (name);
       if (!name || !vr->constant_p ())
 	continue;
 
@@ -4468,7 +4472,6 @@ vrp_simplify_cond_using_ranges (vr_values *query, gcond *stmt)
 static unsigned int
 execute_vrp (struct function *fun, bool warn_array_bounds_p)
 {
-
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   scev_initialize ();
@@ -4484,13 +4487,15 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
   /* For visiting PHI nodes we need EDGE_DFS_BACK computed.  */
   mark_dfs_back_edges ();
 
-  class vrp_prop vrp_prop;
+  vr_values vrp_vr_values;
+
+  class vrp_prop vrp_prop (&vrp_vr_values);
   vrp_prop.initialize (fun);
   vrp_prop.ssa_propagate ();
 
   /* Instantiate the folder here, so that edge cleanups happen at the
      end of this function.  */
-  vrp_folder folder (&vrp_prop.vr_values);
+  vrp_folder folder (&vrp_vr_values);
   vrp_prop.finalize ();
 
   /* If we're checking array refs, we want to merge information on
@@ -4509,13 +4514,13 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
 
   if (warn_array_bounds && warn_array_bounds_p)
     {
-      array_bounds_checker array_checker (fun, &vrp_prop.vr_values);
+      array_bounds_checker array_checker (fun, &vrp_vr_values);
       array_checker.check ();
     }
 
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
-  vrp_jump_threader threader (fun, &vrp_prop.vr_values);
+  vrp_jump_threader threader (fun, &vrp_vr_values);
   threader.thread_jumps ();
 
   /* A comparison of an SSA_NAME against a constant where the SSA_NAME
@@ -4530,7 +4535,7 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
     {
       gimple *last = last_stmt (bb);
       if (last && gimple_code (last) == GIMPLE_COND)
-	vrp_simplify_cond_using_ranges (&vrp_prop.vr_values,
+	vrp_simplify_cond_using_ranges (&vrp_vr_values,
 					as_a <gcond *> (last));
     }
 
