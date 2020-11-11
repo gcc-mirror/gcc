@@ -806,36 +806,92 @@ bitmap_set_free (bitmap_set_t set)
 }
 
 
+/* DFS walk EXPR to its operands with leaders in SET, collecting
+   expressions in SET in postorder into POST.  */
+
+static void
+pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap visited,
+	      hash_set<int_hash<unsigned int, 0> > &leader_set,
+	      vec<pre_expr> &post)
+{
+  if (!bitmap_set_bit (visited, get_expression_id (expr)))
+    return;
+
+  switch (expr->kind)
+    {
+    case NARY:
+      {
+	vn_nary_op_t nary = PRE_EXPR_NARY (expr);
+	for (unsigned i = 0; i < nary->length; i++)
+	  {
+	    if (TREE_CODE (nary->op[i]) != SSA_NAME)
+	      continue;
+	    unsigned int op_val_id = VN_INFO (nary->op[i])->value_id;
+	    /* If we already found a leader for the value we've
+	       recursed already.  Avoid the costly bitmap_find_leader.  */
+	    if (!leader_set.add (op_val_id))
+	      {
+		pre_expr leader = bitmap_find_leader (set, op_val_id);
+		if (leader)
+		  pre_expr_DFS (leader, set, visited, leader_set, post);
+	      }
+	  }
+	break;
+      }
+    case REFERENCE:
+      {
+	vn_reference_t ref = PRE_EXPR_REFERENCE (expr);
+	vec<vn_reference_op_s> operands = ref->operands;
+	vn_reference_op_t operand;
+	for (unsigned i = 0; operands.iterate (i, &operand); i++)
+	  {
+	    tree op[3];
+	    op[0] = operand->op0;
+	    op[1] = operand->op1;
+	    op[2] = operand->op2;
+	    for (unsigned n = 0; n < 3; ++n)
+	      {
+		if (!op[n] || TREE_CODE (op[n]) != SSA_NAME)
+		  continue;
+		unsigned op_val_id = VN_INFO (op[n])->value_id;
+		if (!leader_set.add (op_val_id))
+		  {
+		    pre_expr leader = bitmap_find_leader (set, op_val_id);
+		    if (leader)
+		      pre_expr_DFS (leader, set, visited, leader_set, post);
+		  }
+	      }
+	  }
+	break;
+      }
+    default:;
+    }
+  post.quick_push (expr);
+}
+
 /* Generate an topological-ordered array of bitmap set SET.  */
 
 static vec<pre_expr> 
 sorted_array_from_bitmap_set (bitmap_set_t set)
 {
-  unsigned int i, j;
-  bitmap_iterator bi, bj;
+  unsigned int i;
+  bitmap_iterator bi;
   vec<pre_expr> result;
 
   /* Pre-allocate enough space for the array.  */
-  result.create (bitmap_count_bits (&set->expressions));
+  size_t len = bitmap_count_bits (&set->expressions);
+  result.create (len);
+  hash_set<int_hash<unsigned int, 0> > leader_set (2*len);
 
-  FOR_EACH_VALUE_ID_IN_SET (set, i, bi)
+  auto_bitmap visited (&grand_bitmap_obstack);
+  bitmap_tree_view (visited);
+  FOR_EACH_EXPR_ID_IN_SET (set, i, bi)
     {
-      /* The number of expressions having a given value is usually
-	 relatively small.  Thus, rather than making a vector of all
-	 the expressions and sorting it by value-id, we walk the values
-	 and check in the reverse mapping that tells us what expressions
-	 have a given value, to filter those in our set.  As a result,
-	 the expressions are inserted in value-id order, which means
-	 topological order.
-
-	 If this is somehow a significant lose for some cases, we can
-	 choose which set to walk based on the set size.  */
-      bitmap exprset = value_expressions[i];
-      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, j, bj)
-	{
-	  if (bitmap_bit_p (&set->expressions, j))
-	    result.quick_push (expression_for_id (j));
-        }
+      pre_expr expr = expression_for_id (i);
+      /* Hoist insertion calls us with a value-set we have to and with,
+	 do so.  */
+      if (bitmap_set_contains_value (set, get_expr_value_id (expr)))
+	pre_expr_DFS (expr, set, visited, leader_set, result);
     }
 
   return result;
@@ -1988,6 +2044,14 @@ clean (bitmap_set_t set1, bitmap_set_t set2 = NULL)
 	}
     }
   exprs.release ();
+
+  if (flag_checking)
+    {
+      unsigned j;
+      bitmap_iterator bi;
+      FOR_EACH_EXPR_ID_IN_SET (set1, j, bi)
+	gcc_assert (valid_in_sets (set1, set2, expression_for_id (j)));
+    }
 }
 
 /* Clean the set of expressions that are no longer valid in SET because
