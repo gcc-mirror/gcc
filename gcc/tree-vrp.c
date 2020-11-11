@@ -3814,106 +3814,6 @@ vrp_asserts::remove_range_assertions ()
       }
 }
 
-class vrp_folder : public substitute_and_fold_engine
-{
- public:
-  vrp_folder (vr_values *v)
-    : substitute_and_fold_engine (/* Fold all stmts.  */ true),
-      m_vr_values (v), simplifier (v)
-    {  }
-  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
-
-  tree value_of_expr (tree name, gimple *stmt) OVERRIDE
-    {
-      return m_vr_values->value_of_expr (name, stmt);
-    }
-  class vr_values *m_vr_values;
-
-private:
-  bool fold_predicate_in (gimple_stmt_iterator *);
-  /* Delegators.  */
-  tree vrp_evaluate_conditional (tree_code code, tree op0,
-				 tree op1, gimple *stmt)
-    { return simplifier.vrp_evaluate_conditional (code, op0, op1, stmt); }
-  bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
-    { return simplifier.simplify (gsi); }
-
-  simplify_using_ranges simplifier;
-};
-
-/* If the statement pointed by SI has a predicate whose value can be
-   computed using the value range information computed by VRP, compute
-   its value and return true.  Otherwise, return false.  */
-
-bool
-vrp_folder::fold_predicate_in (gimple_stmt_iterator *si)
-{
-  bool assignment_p = false;
-  tree val;
-  gimple *stmt = gsi_stmt (*si);
-
-  if (is_gimple_assign (stmt)
-      && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
-    {
-      assignment_p = true;
-      val = vrp_evaluate_conditional (gimple_assign_rhs_code (stmt),
-				      gimple_assign_rhs1 (stmt),
-				      gimple_assign_rhs2 (stmt),
-				      stmt);
-    }
-  else if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
-    val = vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
-				    gimple_cond_lhs (cond_stmt),
-				    gimple_cond_rhs (cond_stmt),
-				    stmt);
-  else
-    return false;
-
-  if (val)
-    {
-      if (assignment_p)
-        val = fold_convert (gimple_expr_type (stmt), val);
-
-      if (dump_file)
-	{
-	  fprintf (dump_file, "Folding predicate ");
-	  print_gimple_expr (dump_file, stmt, 0);
-	  fprintf (dump_file, " to ");
-	  print_generic_expr (dump_file, val);
-	  fprintf (dump_file, "\n");
-	}
-
-      if (is_gimple_assign (stmt))
-	gimple_assign_set_rhs_from_tree (si, val);
-      else
-	{
-	  gcc_assert (gimple_code (stmt) == GIMPLE_COND);
-	  gcond *cond_stmt = as_a <gcond *> (stmt);
-	  if (integer_zerop (val))
-	    gimple_cond_make_false (cond_stmt);
-	  else if (integer_onep (val))
-	    gimple_cond_make_true (cond_stmt);
-	  else
-	    gcc_unreachable ();
-	}
-
-      return true;
-    }
-
-  return false;
-}
-
-/* Callback for substitute_and_fold folding the stmt at *SI.  */
-
-bool
-vrp_folder::fold_stmt (gimple_stmt_iterator *si)
-{
-  if (fold_predicate_in (si))
-    return true;
-
-  return simplify_stmt_using_ranges (si);
-}
-
 class vrp_prop : public ssa_propagation_engine
 {
 public:
@@ -4150,6 +4050,106 @@ vrp_prop::finalize ()
       else if (!POINTER_TYPE_P (TREE_TYPE (name)))
 	set_range_info (name, *vr);
     }
+}
+
+class vrp_folder : public substitute_and_fold_engine
+{
+ public:
+  vrp_folder (vr_values *v)
+    : substitute_and_fold_engine (/* Fold all stmts.  */ true),
+      m_vr_values (v), simplifier (v)
+    {  }
+  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
+
+  tree value_of_expr (tree name, gimple *stmt) OVERRIDE
+    {
+      return m_vr_values->value_of_expr (name, stmt);
+    }
+  class vr_values *m_vr_values;
+
+private:
+  bool fold_predicate_in (gimple_stmt_iterator *);
+  /* Delegators.  */
+  tree vrp_evaluate_conditional (tree_code code, tree op0,
+				 tree op1, gimple *stmt)
+    { return simplifier.vrp_evaluate_conditional (code, op0, op1, stmt); }
+  bool simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
+    { return simplifier.simplify (gsi); }
+
+  simplify_using_ranges simplifier;
+};
+
+/* If the statement pointed by SI has a predicate whose value can be
+   computed using the value range information computed by VRP, compute
+   its value and return true.  Otherwise, return false.  */
+
+bool
+vrp_folder::fold_predicate_in (gimple_stmt_iterator *si)
+{
+  bool assignment_p = false;
+  tree val;
+  gimple *stmt = gsi_stmt (*si);
+
+  if (is_gimple_assign (stmt)
+      && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison)
+    {
+      assignment_p = true;
+      val = vrp_evaluate_conditional (gimple_assign_rhs_code (stmt),
+				      gimple_assign_rhs1 (stmt),
+				      gimple_assign_rhs2 (stmt),
+				      stmt);
+    }
+  else if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+    val = vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+				    gimple_cond_lhs (cond_stmt),
+				    gimple_cond_rhs (cond_stmt),
+				    stmt);
+  else
+    return false;
+
+  if (val)
+    {
+      if (assignment_p)
+        val = fold_convert (gimple_expr_type (stmt), val);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Folding predicate ");
+	  print_gimple_expr (dump_file, stmt, 0);
+	  fprintf (dump_file, " to ");
+	  print_generic_expr (dump_file, val);
+	  fprintf (dump_file, "\n");
+	}
+
+      if (is_gimple_assign (stmt))
+	gimple_assign_set_rhs_from_tree (si, val);
+      else
+	{
+	  gcc_assert (gimple_code (stmt) == GIMPLE_COND);
+	  gcond *cond_stmt = as_a <gcond *> (stmt);
+	  if (integer_zerop (val))
+	    gimple_cond_make_false (cond_stmt);
+	  else if (integer_onep (val))
+	    gimple_cond_make_true (cond_stmt);
+	  else
+	    gcc_unreachable ();
+	}
+
+      return true;
+    }
+
+  return false;
+}
+
+/* Callback for substitute_and_fold folding the stmt at *SI.  */
+
+bool
+vrp_folder::fold_stmt (gimple_stmt_iterator *si)
+{
+  if (fold_predicate_in (si))
+    return true;
+
+  return simplify_stmt_using_ranges (si);
 }
 
 /* Blocks which have more than one predecessor and more than
