@@ -22936,15 +22936,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -30131,15 +30140,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -36054,15 +36072,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -47976,15 +48003,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -48252,15 +48288,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -48719,15 +48764,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -55098,15 +55152,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -61029,15 +61092,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -61230,15 +61302,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
@@ -61450,15 +61531,24 @@ $as_echo "$ac_gcsections" >&6; }
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,-z,relro" >&5
 $as_echo_n "checking for ld that supports -Wl,-z,relro... " >&6; }
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ld_relro" >&5
 $as_echo "$ac_ld_relro" >&6; }
+    esac
   fi
 
   # Set linker optimization flags.
