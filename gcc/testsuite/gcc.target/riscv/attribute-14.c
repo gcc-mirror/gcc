@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mriscv-attribute -march=rv32if -mabi=ilp32" } */
+/* { dg-options "-O -mriscv-attribute -march=rv32if -mabi=ilp32 -misa-spec=20190608" } */
 int foo()
 {
 }
-/* { dg-final { scan-assembler ".attribute arch, \"rv32i2p0_f2p0_zicsr2p0\"" } } */
+/* { dg-final { scan-assembler ".attribute arch, \"rv32i2p1_f2p2_zicsr2p0\"" } } */

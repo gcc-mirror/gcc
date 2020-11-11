@@ -4541,12 +4541,27 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute"
+		supported_defaults="abi arch tune riscv_attribute isa_spec"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
 		riscv64*) xlen=64 ;;
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
+		esac
+
+		case "${with_isa_spec}" in
+		""|default|2.2)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
+			;;
+		20191213 | 201912)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20191213"
+			;;
+		20190608 | 201906)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20190608"
+			;;
+		*)
+			echo "--with-isa-spec only accept 2.2, 20191213, 201912, 20190608 or 201906" 1>&2
+			exit 1
 		esac
 
 		case "${with_riscv_attribute}" in

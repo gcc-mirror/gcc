@@ -39,6 +39,16 @@ enum riscv_code_model {
 };
 extern enum riscv_code_model riscv_cmodel;
 
+enum riscv_isa_spec_class {
+  ISA_SPEC_CLASS_NONE,
+
+  ISA_SPEC_CLASS_2P2,
+  ISA_SPEC_CLASS_20190608,
+  ISA_SPEC_CLASS_20191213
+};
+
+extern enum riscv_isa_spec_class riscv_isa_spec;
+
 /* Keep this list in sync with define_attr "tune" in riscv.md.  */
 enum riscv_microarchitecture_type {
   generic,

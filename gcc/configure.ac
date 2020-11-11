@@ -5111,6 +5111,16 @@ configured with --enable-newlib-nano-formatted-io.])
       [.attribute stack_align,4],,
       [AC_DEFINE(HAVE_AS_RISCV_ATTRIBUTE, 1,
 	  [Define if your assembler supports .attribute.])])
+    gcc_GAS_CHECK_FEATURE([-misa-spec= support],
+      gcc_cv_as_riscv_isa_spec,,
+      [-misa-spec=2.2],,,
+      [AC_DEFINE(HAVE_AS_MISA_SPEC, 1,
+		 [Define if the assembler understands -misa-spec=.])])
+    gcc_GAS_CHECK_FEATURE([-march=rv32i_zifencei support],
+      gcc_cv_as_riscv_march_zifencei,,
+      [-march=rv32i_zifencei],,,
+      [AC_DEFINE(HAVE_AS_MARCH_ZIFENCEI, 1,
+		 [Define if the assembler understands -march=rv*_zifencei.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
