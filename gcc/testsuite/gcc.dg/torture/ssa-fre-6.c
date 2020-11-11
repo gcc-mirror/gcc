@@ -11,14 +11,14 @@ foo ()
   int * p;
   int i;
   int x[4];
-  long unsigned int _1;
-  long unsigned int _2;
+  __SIZETYPE__ _1;
+  __SIZETYPE__ _2;
   int _7;
 
   __BB(2):
   i_3 = 0;
-  _1 = (long unsigned int) i_3;
-  _2 = _1 * 4ul;
+  _1 = (__SIZETYPE__) i_3;
+  _2 = _1 * _Literal (__SIZETYPE__) 4;
   p_4 = _Literal (int *) &x + _2;
   __MEM <v4si> ((v4si *)p_4) = _Literal (v4si) {};
   _7 = x[0];
