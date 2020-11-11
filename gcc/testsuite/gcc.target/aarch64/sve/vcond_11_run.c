@@ -1,5 +1,5 @@
 /* { dg-do run { target aarch64_sve_hw } } */
-/* { dg-options "-O2 -ftree-vectorize -march=armv8-a+sve" } */
+/* { dg-options "-O2 -ftree-vectorize -march=armv8-a+sve --param aarch64-sve-compare-costs=0" } */
 
 #include "vcond_11.c"
 
