@@ -183,3 +183,6 @@ Use the given offset for addressing the stack-protector guard.
 
 TargetVariable
 long riscv_stack_protector_guard_offset = 0
+
+TargetVariable
+int riscv_zi_subext
