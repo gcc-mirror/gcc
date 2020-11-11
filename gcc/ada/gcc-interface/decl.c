@@ -261,7 +261,7 @@ typedef struct {
 } intrin_binding_t;
 
 static bool intrin_profiles_compatible_p (intrin_binding_t *);
-
+
 /* Given GNAT_ENTITY, a GNAT defining identifier node, which denotes some Ada
    entity, return the equivalent GCC tree for that entity (a ..._DECL node)
    and associate the ..._DECL node with the input GNAT defining identifier.
@@ -6578,7 +6578,7 @@ update_n_elem (tree n_elem, tree min, tree max)
 
   return n_elem;
 }
-
+
 /* Given GNAT_ENTITY, elaborate all expressions that are required to
    be elaborated at the point of its definition, but do nothing else.  */
 
@@ -6635,7 +6635,7 @@ elaborate_entity (Entity_Id gnat_entity)
 
     }
 }
-
+
 /* Prepend to ATTR_LIST an entry for an attribute with provided TYPE,
    NAME, ARGS and ERROR_POINT.  */
 
@@ -6750,7 +6750,7 @@ prepend_attributes (struct attrib **attr_list, Entity_Id gnat_entity)
     if (Nkind (gnat_temp) == N_Pragma)
       prepend_one_attribute_pragma (attr_list, gnat_temp);
 }
-
+
 /* Given a GNAT tree GNAT_EXPR, for an expression which is a value within a
    type definition (either a bound or a discriminant value) for GNAT_ENTITY,
    return the GCC tree to use for that expression.  S is the suffix to use
@@ -6957,7 +6957,7 @@ elaborate_reference (tree ref, Entity_Id gnat_entity, bool definition,
   struct er_data er = { gnat_entity, definition, 0 };
   return gnat_rewrite_reference (ref, elaborate_reference_1, &er, init);
 }
-
+
 /* Given a GNU tree and a GNAT list of choices, generate an expression to test
    the value passed against the list of choices.  */
 
@@ -7054,7 +7054,7 @@ choices_to_gnu (tree gnu_operand, Node_Id gnat_choices)
 
   return gnu_result;
 }
-
+
 /* Adjust PACKED setting as passed to gnat_to_gnu_field for a field of
    type FIELD_TYPE to be placed in RECORD_TYPE.  Return the result.  */
 
@@ -7467,7 +7467,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
   return gnu_field;
 }
-
+
 /* Return true if at least one member of COMPONENT_LIST needs strict
    alignment.  */
 
@@ -8433,7 +8433,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 
   return (gnu_rep_list && !p_gnu_rep_list) || variants_have_rep;
 }
-
+
 /* Given GNU_SIZE, a GCC tree representing a size, return a Uint to be
    placed into an Esize, Component_Bit_Offset, or Component_Size value
    in the GNAT tree.  */
@@ -8801,7 +8801,7 @@ annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 	  }
       }
 }
-
+
 /* Scan all fields in GNU_TYPE and return a TREE_LIST where TREE_PURPOSE is
    the FIELD_DECL and TREE_VALUE a TREE_VEC containing the byte position, the
    value to be placed into DECL_OFFSET_ALIGN and the bit position.  The list
@@ -8959,7 +8959,7 @@ build_variant_list (tree gnu_qual_union_type, Node_Id gnat_variant_part,
 
   return gnu_list;
 }
-
+
 /* If SIZE has overflowed, return the maximum valid size, which is the upper
    bound of the signed sizetype in bits, rounded down to ALIGN.  Otherwise
    return SIZE unmodified.  */
@@ -9103,7 +9103,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 
   return size;
 }
-
+
 /* Similarly, but both validate and process a value of RM size.  This routine
    is only called for types.  */
 
@@ -9180,7 +9180,7 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
 	   && !TYPE_FAT_POINTER_P (gnu_type))
     SET_TYPE_ADA_SIZE (gnu_type, size);
 }
-
+
 /* ALIGNMENT is a Uint giving the alignment specified for GNAT_ENTITY,
    a type or object whose present alignment is ALIGN.  If this alignment is
    valid, return it.  Otherwise, give an error and return ALIGN.  */
@@ -9273,7 +9273,7 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
 
   return align;
 }
-
+
 /* Promote the alignment of GNU_TYPE corresponding to GNAT_ENTITY.  Return
    a positive value on success or zero on failure.  */
 
@@ -9320,7 +9320,7 @@ promote_object_alignment (tree gnu_type, Entity_Id gnat_entity)
 
   return align;
 }
-
+
 /* Verify that TYPE is something we can implement atomically.  If not, issue
    an error for GNAT_ENTITY.  COMPONENT_P is true if we are being called to
    process a component type.  */
@@ -9388,7 +9388,7 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
     post_error_ne ("atomic access to & cannot be guaranteed",
 		   gnat_error_point, gnat_entity);
 }
-
+
 
 /* Helper for the intrin compatibility checks family.  Evaluate whether
    two types are definitely incompatible.  */
@@ -9543,7 +9543,7 @@ intrin_profiles_compatible_p (intrin_binding_t * inb)
 
   return return_compatible_p && arglists_compatible_p;
 }
-
+
 /* Return a FIELD_DECL node modeled on OLD_FIELD.  FIELD_TYPE is its type
    and RECORD_TYPE is the type of the parent.  If SIZE is nonzero, it is the
    specified size for this field.  POS_LIST is a position list describing
@@ -10157,7 +10157,7 @@ associate_original_type_to_packed_array (tree gnu_type, Entity_Id gnat_entity)
       return NULL_TREE;
     }
 }
-
+
 /* Given a type T, a FIELD_DECL F, and a replacement value R, return an
    equivalent type with adjusted size expressions where all occurrences
    of references to F in a PLACEHOLDER_EXPR have been replaced by R.
@@ -10318,7 +10318,7 @@ substitute_in_type (tree t, tree f, tree r)
       return t;
     }
 }
-
+
 /* Return the RM size of GNU_TYPE.  This is the actual number of bits
    needed to represent the object.  */
 
@@ -10347,7 +10347,7 @@ rm_size (tree gnu_type)
   /* For other types, this is just the size.  */
   return TYPE_SIZE (gnu_type);
 }
-
+
 /* Return the name to be used for GNAT_ENTITY.  If a type, create a
    fully-qualified name, possibly with type information encoding.
    Otherwise, return the name.  */
