@@ -667,21 +667,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
       /* If we have a constant that we are not defining, get the expression it
 	 was defined to represent.  This is necessary to avoid generating dumb
-	 elaboration code in simple cases, but we may throw it away later if it
+	 elaboration code in simple cases, and we may throw it away later if it
 	 is not a constant.  But do not do it for dispatch tables because they
 	 are only referenced indirectly and we need to have a consistent view
 	 of the exported and of the imported declarations of the tables from
 	 external units for them to be properly merged in LTO mode.  Moreover
-	 simply do not retrieve the expression it if it is an allocator since
+	 simply do not retrieve the expression if it is an allocator because
 	 the designated type might still be dummy at this point.  Note that we
 	 invoke gnat_to_gnu_external and not gnat_to_gnu because the expression
 	 may contain N_Expression_With_Actions nodes and thus declarations of
-	 objects from other units that we need to discard.  */
+	 objects from other units that we need to discard.  Note also that we
+	 need to do it even if we are only annotating types, so as to be able
+	 to validate representation clauses using constants.  */
       if (!definition
 	  && !No_Initialization (gnat_decl)
 	  && !Is_Dispatch_Table_Entity (gnat_entity)
 	  && Present (gnat_temp = Expression (gnat_decl))
-	  && Nkind (gnat_temp) != N_Allocator)
+	  && Nkind (gnat_temp) != N_Allocator
+	  && (Is_Elementary_Type (Etype (gnat_entity)) || !type_annotate_only))
 	gnu_expr = gnat_to_gnu_external (gnat_temp);
 
       /* ... fall through ... */
