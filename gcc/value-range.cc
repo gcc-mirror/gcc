@@ -249,7 +249,9 @@ irange::set (tree min, tree max, value_range_kind kind)
       return;
     }
 
-  if (POLY_INT_CST_P (min) || POLY_INT_CST_P (max))
+  if (kind == VR_VARYING
+      || POLY_INT_CST_P (min)
+      || POLY_INT_CST_P (max))
     {
       set_varying (TREE_TYPE (min));
       return;
