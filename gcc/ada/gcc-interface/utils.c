@@ -5837,7 +5837,7 @@ can_materialize_object_renaming_p (Node_Id expr)
     {
       expr = Original_Node (expr);
 
-      switch Nkind (expr)
+      switch (Nkind (expr))
 	{
 	case N_Identifier:
 	case N_Expanded_Name:

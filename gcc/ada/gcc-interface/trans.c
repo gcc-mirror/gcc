@@ -7085,6 +7085,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    if (TREE_CODE (gnu_lhs) == INTEGER_CST && ignore_lhs_overflow)
 	      TREE_OVERFLOW (gnu_lhs) = TREE_OVERFLOW (gnu_old_lhs);
 	    gnu_rhs = convert (gnu_type, gnu_rhs);
+	    if (gnu_max_shift)
+	      gnu_max_shift = convert (gnu_type, gnu_max_shift);
 	  }
 
 	/* For signed integer addition, subtraction and multiplication, do an
