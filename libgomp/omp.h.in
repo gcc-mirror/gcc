@@ -281,7 +281,7 @@ extern void omp_set_default_allocator (omp_allocator_handle_t) __GOMP_NOTHROW;
 extern omp_allocator_handle_t omp_get_default_allocator (void) __GOMP_NOTHROW;
 extern void *omp_alloc (__SIZE_TYPE__,
 			omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
-  __GOMP_NOTHROW;
+  __GOMP_NOTHROW __attribute__((__malloc__, __alloc_size__ (1)));
 extern void omp_free (void *,
 		      omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
   __GOMP_NOTHROW;

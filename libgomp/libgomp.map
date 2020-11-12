@@ -359,6 +359,12 @@ GOMP_5.0 {
 	GOMP_workshare_task_reduction_unregister;
 } GOMP_4.5;
 
+GOMP_5.0.1 {
+  global:
+	GOMP_alloc;
+	GOMP_free;
+} GOMP_5.0;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

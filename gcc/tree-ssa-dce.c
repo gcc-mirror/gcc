@@ -239,6 +239,7 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    CASE_BUILT_IN_ALLOCA:
 	    case BUILT_IN_STRDUP:
 	    case BUILT_IN_STRNDUP:
+	    case BUILT_IN_GOMP_ALLOC:
 	      return;
 
 	    default:;
@@ -605,6 +606,8 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	  case BUILT_IN_CALLOC:
 	  CASE_BUILT_IN_ALLOCA:
 	  case BUILT_IN_FREE:
+	  case BUILT_IN_GOMP_ALLOC:
+	  case BUILT_IN_GOMP_FREE:
 	    return false;
 
 	  default:;
@@ -879,7 +882,8 @@ propagate_necessity (bool aggressive)
 	       && gimple_call_from_new_or_delete (as_a <gcall *> (stmt))
 	       && gimple_call_operator_delete_p (as_a <gcall *> (stmt)));
 	  if (is_delete_operator
-	      || gimple_call_builtin_p (stmt, BUILT_IN_FREE))
+	      || gimple_call_builtin_p (stmt, BUILT_IN_FREE)
+	      || gimple_call_builtin_p (stmt, BUILT_IN_GOMP_FREE))
 	    {
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      gcall *def_stmt;
@@ -892,27 +896,26 @@ propagate_necessity (bool aggressive)
 		  && ((DECL_BUILT_IN_CLASS (def_callee) == BUILT_IN_NORMAL
 		       && (DECL_FUNCTION_CODE (def_callee) == BUILT_IN_ALIGNED_ALLOC
 			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
-			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
+			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC
+			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_GOMP_ALLOC))
 		      || (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (def_callee)
 			  && gimple_call_from_new_or_delete (def_stmt))))
 		{
-		  if (is_delete_operator)
-		    {
-		      if (!valid_new_delete_pair_p (def_stmt, stmt))
-			mark_operand_necessary (gimple_call_arg (stmt, 0));
+		  if (is_delete_operator
+		      && !valid_new_delete_pair_p (def_stmt, stmt))
+		    mark_operand_necessary (gimple_call_arg (stmt, 0));
 
-		      /* Delete operators can have alignment and (or) size
-			 as next arguments.  When being a SSA_NAME, they
-			 must be marked as necessary.  */
-		      if (gimple_call_num_args (stmt) >= 2)
-			for (unsigned i = 1; i < gimple_call_num_args (stmt);
-			     i++)
-			  {
-			    tree arg = gimple_call_arg (stmt, i);
-			    if (TREE_CODE (arg) == SSA_NAME)
-			      mark_operand_necessary (arg);
-			  }
-		    }
+		  /* Delete operators can have alignment and (or) size
+		     as next arguments.  When being a SSA_NAME, they
+		     must be marked as necessary.  Similarly GOMP_free.  */
+		  if (gimple_call_num_args (stmt) >= 2)
+		    for (unsigned i = 1; i < gimple_call_num_args (stmt);
+			 i++)
+		      {
+			tree arg = gimple_call_arg (stmt, i);
+			if (TREE_CODE (arg) == SSA_NAME)
+			  mark_operand_necessary (arg);
+		      }
 
 		  continue;
 		}

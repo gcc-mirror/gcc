@@ -13023,6 +13023,7 @@ builtin_fnspec (tree callee)
       case BUILT_IN_MALLOC:
       case BUILT_IN_ALIGNED_ALLOC:
       case BUILT_IN_CALLOC:
+      case BUILT_IN_GOMP_ALLOC:
 	return "mC";
       CASE_BUILT_IN_ALLOCA:
 	return "mc";
@@ -13044,6 +13045,7 @@ builtin_fnspec (tree callee)
 	 across it.  */
       case BUILT_IN_STACK_RESTORE:
       case BUILT_IN_FREE:
+      case BUILT_IN_GOMP_FREE:
 	return ".co ";
       case BUILT_IN_VA_END:
 	return ".cO ";
