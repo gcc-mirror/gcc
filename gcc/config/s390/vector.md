@@ -137,7 +137,7 @@
 
 ; Resulting mode of a vector comparison.  For floating point modes an
 ; integer vector mode with the same element size is picked.
-(define_mode_attr tointvec [(V1QI "V1QI") (V2QI "V2QI") (V4QI "V4QI") (V8QI "V8QI") (V16QI "V16QI")
+(define_mode_attr TOINTVEC [(V1QI "V1QI") (V2QI "V2QI") (V4QI "V4QI") (V8QI "V8QI") (V16QI "V16QI")
 			    (V1HI "V1HI") (V2HI "V2HI") (V4HI "V4HI") (V8HI "V8HI")
 			    (V1SI "V1SI") (V2SI "V2SI") (V4SI "V4SI")
 			    (V1DI "V1DI") (V2DI "V2DI")
@@ -697,12 +697,12 @@
 (define_expand "vcond_mask_<mode><mode>"
   [(set (match_operand:V 0 "register_operand" "")
 	(if_then_else:V
-	 (eq (match_operand:<tointvec> 3 "register_operand" "")
+	 (eq (match_operand:<TOINTVEC> 3 "register_operand" "")
 	     (match_dup 4))
 	 (match_operand:V 2 "register_operand" "")
 	 (match_operand:V 1 "register_operand" "")))]
   "TARGET_VX"
-  "operands[4] = CONST0_RTX (<tointvec>mode);")
+  "operands[4] = CONST0_RTX (<TOINTVEC>mode);")
 
 
 ; We only have HW support for byte vectors.  The middle-end is
@@ -1586,8 +1586,8 @@
 
 ; vfcesb, vfcedb, wfcexb: non-signaling "==" comparison (a == b)
 (define_insn "*vec_cmpeq<mode>_quiet_nocc"
-  [(set (match_operand:<tointvec>         0 "register_operand" "=v")
-	(eq:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>         0 "register_operand" "=v")
+	(eq:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
   "TARGET_VX"
   "<vw>fce<sdx>b\t%v0,%v1,%v2"
@@ -1595,45 +1595,45 @@
 
 ; vfchsb, vfchdb, wfchxb: non-signaling > comparison (!(b u>= a))
 (define_insn "vec_cmpgt<mode>_quiet_nocc"
-  [(set (match_operand:<tointvec>            0 "register_operand" "=v")
-	(not:<tointvec>
-	 (unge:<tointvec> (match_operand:VFT 2 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>            0 "register_operand" "=v")
+	(not:<TOINTVEC>
+	 (unge:<TOINTVEC> (match_operand:VFT 2 "register_operand" "v")
 			  (match_operand:VFT 1 "register_operand" "v"))))]
   "TARGET_VX"
   "<vw>fch<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
 (define_expand "vec_cmplt<mode>_quiet_nocc"
-  [(set (match_operand:<tointvec>            0 "register_operand" "=v")
-	(not:<tointvec>
-	 (unge:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>            0 "register_operand" "=v")
+	(not:<TOINTVEC>
+	 (unge:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 			  (match_operand:VFT 2 "register_operand" "v"))))]
   "TARGET_VX")
 
 ; vfchesb, vfchedb, wfchexb: non-signaling >= comparison (!(a u< b))
 (define_insn "vec_cmpge<mode>_quiet_nocc"
-  [(set (match_operand:<tointvec>            0 "register_operand" "=v")
-	(not:<tointvec>
-	 (unlt:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>            0 "register_operand" "=v")
+	(not:<TOINTVEC>
+	 (unlt:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 			  (match_operand:VFT 2 "register_operand" "v"))))]
   "TARGET_VX"
   "<vw>fche<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
 (define_expand "vec_cmple<mode>_quiet_nocc"
-  [(set (match_operand:<tointvec>            0 "register_operand" "=v")
-	(not:<tointvec>
-	 (unlt:<tointvec> (match_operand:VFT 2 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>            0 "register_operand" "=v")
+	(not:<TOINTVEC>
+	 (unlt:<TOINTVEC> (match_operand:VFT 2 "register_operand" "v")
 			  (match_operand:VFT 1 "register_operand" "v"))))]
   "TARGET_VX")
 
 ; vfkesb, vfkedb, wfkexb: signaling == comparison ((a >= b) & (b >= a))
 (define_insn "*vec_cmpeq<mode>_signaling_nocc"
-  [(set (match_operand:<tointvec>          0 "register_operand" "=v")
-	(and:<tointvec>
-	 (ge:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>          0 "register_operand" "=v")
+	(and:<TOINTVEC>
+	 (ge:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 			(match_operand:VFT 2 "register_operand" "v"))
-	 (ge:<tointvec> (match_dup         2)
+	 (ge:<TOINTVEC> (match_dup         2)
 			(match_dup         1))))]
   "TARGET_VXE"
   "<vw>fke<sdx>b\t%v0,%v1,%v2"
@@ -1641,16 +1641,16 @@
 
 ; vfkhsb, vfkhdb, wfkhxb: signaling > comparison (a > b)
 (define_insn "*vec_cmpgt<mode>_signaling_nocc"
-  [(set (match_operand:<tointvec>         0 "register_operand" "=v")
-	(gt:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>         0 "register_operand" "=v")
+	(gt:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
   "TARGET_VXE"
   "<vw>fkh<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
 (define_insn "*vec_cmpgt<mode>_signaling_finite_nocc"
-  [(set (match_operand:<tointvec>         0 "register_operand" "=v")
-	(gt:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>         0 "register_operand" "=v")
+	(gt:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
   "TARGET_NONSIGNALING_VECTOR_COMPARE_OK"
   "<vw>fch<sdx>b\t%v0,%v1,%v2"
@@ -1658,16 +1658,16 @@
 
 ; vfkhesb, vfkhedb, wfkhexb: signaling >= comparison (a >= b)
 (define_insn "*vec_cmpge<mode>_signaling_nocc"
-  [(set (match_operand:<tointvec>         0 "register_operand" "=v")
-	(ge:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>         0 "register_operand" "=v")
+	(ge:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
   "TARGET_VXE"
   "<vw>fkhe<sdx>b\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
 (define_insn "*vec_cmpge<mode>_signaling_finite_nocc"
-  [(set (match_operand:<tointvec>         0 "register_operand" "=v")
-	(ge:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>         0 "register_operand" "=v")
+	(ge:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 		       (match_operand:VFT 2 "register_operand" "v")))]
   "TARGET_NONSIGNALING_VECTOR_COMPARE_OK"
   "<vw>fche<sdx>b\t%v0,%v1,%v2"
@@ -1679,84 +1679,84 @@
 
 ; UNGT a u> b -> !!(b u< a)
 (define_expand "vec_cmpungt<mode>"
-  [(set (match_operand:<tointvec>            0 "register_operand" "=v")
-	(not:<tointvec>
-	 (unlt:<tointvec> (match_operand:VFT 2 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>            0 "register_operand" "=v")
+	(not:<TOINTVEC>
+	 (unlt:<TOINTVEC> (match_operand:VFT 2 "register_operand" "v")
 			  (match_operand:VFT 1 "register_operand" "v"))))
    (set (match_dup                           0)
-	(not:<tointvec> (match_dup           0)))]
+	(not:<TOINTVEC> (match_dup           0)))]
   "TARGET_VX")
 
 ; UNGE a u>= b -> !!(a u>= b)
 (define_expand "vec_cmpunge<mode>"
-  [(set (match_operand:<tointvec>            0 "register_operand" "=v")
-	(not:<tointvec>
-	 (unge:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>            0 "register_operand" "=v")
+	(not:<TOINTVEC>
+	 (unge:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 			  (match_operand:VFT 2 "register_operand" "v"))))
    (set (match_dup                           0)
-	(not:<tointvec> (match_dup           0)))]
+	(not:<TOINTVEC> (match_dup           0)))]
   "TARGET_VX")
 
 ; UNEQ a u== b -> !(!(a u>= b) | !(b u>= a))
 (define_expand "vec_cmpuneq<mode>"
-  [(set (match_operand:<tointvec>            0 "register_operand" "=v")
-	(not:<tointvec>
-	 (unge:<tointvec> (match_operand:VFT 1 "register_operand"  "v")
+  [(set (match_operand:<TOINTVEC>            0 "register_operand" "=v")
+	(not:<TOINTVEC>
+	 (unge:<TOINTVEC> (match_operand:VFT 1 "register_operand"  "v")
 		          (match_operand:VFT 2 "register_operand"  "v"))))
    (set (match_dup                           3)
-	(not:<tointvec>
-	 (unge:<tointvec> (match_dup         2)
+	(not:<TOINTVEC>
+	 (unge:<TOINTVEC> (match_dup         2)
 	                  (match_dup         1))))
    (set (match_dup                           0)
-	(ior:<tointvec> (match_dup           0)
+	(ior:<TOINTVEC> (match_dup           0)
 			(match_dup           3)))
    (set (match_dup                           0)
-	(not:<tointvec> (match_dup           0)))]
+	(not:<TOINTVEC> (match_dup           0)))]
   "TARGET_VX"
 {
-  operands[3] = gen_reg_rtx (<tointvec>mode);
+  operands[3] = gen_reg_rtx (<TOINTVEC>mode);
 })
 
 ; LTGT a <> b -> a > b | b > a
 (define_expand "vec_cmpltgt<mode>"
-  [(set (match_operand:<tointvec>         0 "register_operand" "=v")
-	(gt:<tointvec> (match_operand:VFT 1 "register_operand"  "v")
+  [(set (match_operand:<TOINTVEC>         0 "register_operand" "=v")
+	(gt:<TOINTVEC> (match_operand:VFT 1 "register_operand"  "v")
 		    (match_operand:VFT 2 "register_operand"  "v")))
-   (set (match_dup 3) (gt:<tointvec> (match_dup 2) (match_dup 1)))
-   (set (match_dup 0) (ior:<tointvec> (match_dup 0) (match_dup 3)))]
+   (set (match_dup 3) (gt:<TOINTVEC> (match_dup 2) (match_dup 1)))
+   (set (match_dup 0) (ior:<TOINTVEC> (match_dup 0) (match_dup 3)))]
   "TARGET_VXE"
 {
-  operands[3] = gen_reg_rtx (<tointvec>mode);
+  operands[3] = gen_reg_rtx (<TOINTVEC>mode);
 })
 
 ; ORDERED (a, b): !(a u< b) | !(a u>= b)
 (define_expand "vec_cmpordered<mode>"
-  [(set (match_operand:<tointvec>            0 "register_operand" "=v")
-	(not:<tointvec>
-	 (unlt:<tointvec> (match_operand:VFT 1 "register_operand" "v")
+  [(set (match_operand:<TOINTVEC>            0 "register_operand" "=v")
+	(not:<TOINTVEC>
+	 (unlt:<TOINTVEC> (match_operand:VFT 1 "register_operand" "v")
 		          (match_operand:VFT 2 "register_operand" "v"))))
    (set (match_dup                           3)
-	(not:<tointvec>
-	 (unge:<tointvec> (match_dup         1)
+	(not:<TOINTVEC>
+	 (unge:<TOINTVEC> (match_dup         1)
 			  (match_dup         2))))
    (set (match_dup                           0)
-	(ior:<tointvec> (match_dup           0)
+	(ior:<TOINTVEC> (match_dup           0)
 			(match_dup           3)))]
   "TARGET_VX"
 {
-  operands[3] = gen_reg_rtx (<tointvec>mode);
+  operands[3] = gen_reg_rtx (<TOINTVEC>mode);
 })
 
 ; UNORDERED (a, b): !ORDERED (a, b)
 (define_expand "vec_cmpunordered<mode>"
-  [(match_operand:<tointvec> 0 "register_operand" "=v")
+  [(match_operand:<TOINTVEC> 0 "register_operand" "=v")
    (match_operand:VFT        1 "register_operand" "v")
    (match_operand:VFT        2 "register_operand" "v")]
   "TARGET_VX"
 {
   emit_insn (gen_vec_cmpordered<mode> (operands[0], operands[1], operands[2]));
   emit_insn (gen_rtx_SET (operands[0],
-	     gen_rtx_NOT (<tointvec>mode, operands[0])));
+	     gen_rtx_NOT (<TOINTVEC>mode, operands[0])));
   DONE;
 })
 
@@ -1835,7 +1835,7 @@
 (define_split
   [(set (match_operand:V 0 "register_operand" "")
 	(if_then_else:V
-	 (eq (match_operand:<tointvec> 3 "register_operand" "")
+	 (eq (match_operand:<TOINTVEC> 3 "register_operand" "")
 	     (match_operand:V 4 "const0_operand" ""))
 	 (match_operand:V 1 "const0_operand" "")
 	 (match_operand:V 2 "all_ones_operand" "")))]
@@ -1849,7 +1849,7 @@
 (define_split
   [(set (match_operand:V 0 "register_operand" "")
 	(if_then_else:V
-	 (eq (match_operand:<tointvec> 3 "register_operand" "")
+	 (eq (match_operand:<TOINTVEC> 3 "register_operand" "")
 	     (match_operand:V 4 "const0_operand" ""))
 	 (match_operand:V 1 "all_ones_operand" "")
 	 (match_operand:V 2 "const0_operand" "")))]
@@ -1863,7 +1863,7 @@
 (define_split
   [(set (match_operand:V 0 "register_operand" "")
 	(if_then_else:V
-	 (ne (match_operand:<tointvec> 3 "register_operand" "")
+	 (ne (match_operand:<TOINTVEC> 3 "register_operand" "")
 	     (match_operand:V 4 "const0_operand" ""))
 	 (match_operand:V 1 "all_ones_operand" "")
 	 (match_operand:V 2 "const0_operand" "")))]
@@ -1877,7 +1877,7 @@
 (define_split
   [(set (match_operand:V 0 "register_operand" "")
 	(if_then_else:V
-	 (ne (match_operand:<tointvec> 3 "register_operand" "")
+	 (ne (match_operand:<TOINTVEC> 3 "register_operand" "")
 	     (match_operand:V 4 "const0_operand" ""))
 	 (match_operand:V 1 "const0_operand" "")
 	 (match_operand:V 2 "all_ones_operand" "")))]
@@ -1891,8 +1891,8 @@
 (define_insn "*vec_sel0<mode>"
   [(set (match_operand:V 0 "register_operand" "=v")
 	(if_then_else:V
-	 (eq (match_operand:<tointvec> 3 "register_operand" "v")
-	     (match_operand:<tointvec> 4 "const0_operand" ""))
+	 (eq (match_operand:<TOINTVEC> 3 "register_operand" "v")
+	     (match_operand:<TOINTVEC> 4 "const0_operand" ""))
 	 (match_operand:V 1 "register_operand" "v")
 	 (match_operand:V 2 "register_operand" "v")))]
   "TARGET_VX"
@@ -1903,8 +1903,8 @@
 (define_insn "*vec_sel0<mode>"
   [(set (match_operand:V 0 "register_operand" "=v")
 	(if_then_else:V
-	 (eq (not:<tointvec> (match_operand:<tointvec> 3 "register_operand" "v"))
-	     (match_operand:<tointvec> 4 "const0_operand" ""))
+	 (eq (not:<TOINTVEC> (match_operand:<TOINTVEC> 3 "register_operand" "v"))
+	     (match_operand:<TOINTVEC> 4 "const0_operand" ""))
 	 (match_operand:V 1 "register_operand" "v")
 	 (match_operand:V 2 "register_operand" "v")))]
   "TARGET_VX"
@@ -1915,8 +1915,8 @@
 (define_insn "*vec_sel1<mode>"
   [(set (match_operand:V 0 "register_operand" "=v")
 	(if_then_else:V
-	 (eq (match_operand:<tointvec> 3 "register_operand" "v")
-	     (match_operand:<tointvec> 4 "all_ones_operand" ""))
+	 (eq (match_operand:<TOINTVEC> 3 "register_operand" "v")
+	     (match_operand:<TOINTVEC> 4 "all_ones_operand" ""))
 	 (match_operand:V 1 "register_operand" "v")
 	 (match_operand:V 2 "register_operand" "v")))]
   "TARGET_VX"
@@ -1927,8 +1927,8 @@
 (define_insn "*vec_sel1<mode>"
   [(set (match_operand:V 0 "register_operand" "=v")
 	(if_then_else:V
-	 (eq (not:<tointvec> (match_operand:<tointvec> 3 "register_operand" "v"))
-	     (match_operand:<tointvec> 4 "all_ones_operand" ""))
+	 (eq (not:<TOINTVEC> (match_operand:<TOINTVEC> 3 "register_operand" "v"))
+	     (match_operand:<TOINTVEC> 4 "all_ones_operand" ""))
 	 (match_operand:V 1 "register_operand" "v")
 	 (match_operand:V 2 "register_operand" "v")))]
   "TARGET_VX"
