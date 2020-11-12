@@ -329,6 +329,15 @@ TargetCPP::typeInfoMangle (ClassDeclaration *cd)
   return cppTypeInfoMangleItanium (cd);
 }
 
+/* Get mangle name of a this-adjusting thunk to the function declaration FD
+   at call offset OFFSET for C++ linkage.  */
+
+const char *
+TargetCPP::thunkMangle (FuncDeclaration *fd, int offset)
+{
+  return cppThunkMangleItanium (fd, offset);
+}
+
 /* For a vendor-specific type, return a string containing the C++ mangling.
    In all other cases, return NULL.  */
 

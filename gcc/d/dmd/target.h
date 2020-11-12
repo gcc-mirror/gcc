@@ -19,6 +19,7 @@
 class ClassDeclaration;
 class Dsymbol;
 class Expression;
+class FuncDeclaration;
 class Parameter;
 class Type;
 class TypeTuple;
@@ -38,6 +39,7 @@ struct TargetCPP
 
     const char *toMangle(Dsymbol *s);
     const char *typeInfoMangle(ClassDeclaration *cd);
+    const char *thunkMangle(FuncDeclaration *fd, int offset);
     const char *typeMangle(Type *t);
     Type *parameterType(Parameter *p);
     bool fundamentalType(const Type *t, bool& isFundamental);

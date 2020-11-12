@@ -20,6 +20,7 @@ struct OutBuffer;
 // In cppmangle.c
 const char *toCppMangleItanium(Dsymbol *s);
 const char *cppTypeInfoMangleItanium(Dsymbol *s);
+const char *cppThunkMangleItanium(FuncDeclaration *fd, int offset);
 
 // In cppmanglewin.c
 const char *toCppMangleMSVC(Dsymbol *s);

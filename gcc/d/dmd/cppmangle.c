@@ -582,13 +582,21 @@ class CppMangleVisitor : public Visitor
         //printf("mangle_function(%s)\n", d->toChars());
         /*
          * <mangled-name> ::= _Z <encoding>
+         */
+        buf->writestring("_Z");
+        this->mangle_function_encoding(d);
+    }
+
+    void mangle_function_encoding(FuncDeclaration *d)
+    {
+        //printf("mangle_function_encoding(%s)\n", d->toChars());
+        /*
          * <encoding> ::= <function name> <bare-function-type>
          *            ::= <data name>
          *            ::= <special-name>
          */
         TypeFunction *tf = (TypeFunction *)d->type;
 
-        buf->writestring("_Z");
         if (getFuncTemplateDecl(d))
         {
             /* It's an instance of a function template
@@ -1130,5 +1138,15 @@ const char *cppTypeInfoMangleItanium(Dsymbol *s)
     buf.writestring("_ZTI");    // "TI" means typeinfo structure
     CppMangleVisitor v(&buf, s->loc);
     v.cpp_mangle_name(s, false);
+    return buf.extractChars();
+}
+
+const char *cppThunkMangleItanium(FuncDeclaration *fd, int offset)
+{
+    //printf("cppThunkMangleItanium(%s)\n", fd.toChars());
+    OutBuffer buf;
+    buf.printf("_ZThn%u_", offset);  // "Th" means thunk, "n%u" is the call offset
+    CppMangleVisitor v(&buf, fd->loc);
+    v.mangle_function_encoding(fd);
     return buf.extractChars();
 }
