@@ -458,3 +458,6 @@ Statements
        :start-after: /* Quote from here in docs/topics/functions.rst.  */
        :end-before: /* Quote up to here in docs/topics/functions.rst.  */
        :language: c
+
+See also :type:`gcc_jit_extended_asm` for entrypoints for adding inline
+assembler statements to a function.
