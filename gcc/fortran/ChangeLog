@@ -1,3 +1,12 @@
+2020-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/97768
+	* misc.c (gfc_typename): Use ex->value.character.length only if
+	ex->expr_type == EXPR_CONSTANT.  If ex->ts.deferred, print : instead
+	of length.  If ex->ts.u.cl && ex->ts.u.cl->length == NULL, print *
+	instead of length.  Otherwise if character length is non-constant,
+	print just CHARACTER or CHARACTER(KIND=N).
+
 2020-11-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Handle new reduction enums.

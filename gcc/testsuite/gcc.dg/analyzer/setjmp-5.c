@@ -51,18 +51,25 @@ void outer (void)
            |      |   |
            |      |   (4) 'setjmp' called here
            |
+         'inner': event 5
+           |
+           |   NN | }
+           |      | ^
+           |      | |
+           |      | (5) stack frame is popped here, invalidating saved environment
+           |
     <------+
     |
-  'outer': events 5-6
+  'outer': events 6-7
     |
     |   NN |   inner ();
     |      |   ^~~~~~~~
     |      |   |
-    |      |   (5) returning to 'outer' from 'inner'
+    |      |   (6) returning to 'outer' from 'inner'
     |   NN | 
     |   NN |   longjmp (env, 42);
     |      |   ~~~~~~~~~~~~~~~~~
     |      |   |
-    |      |   (6) here
+    |      |   (7) 'longjmp' called after enclosing function of 'setjmp' returned at (5)
     |
     { dg-end-multiline-output "" } */

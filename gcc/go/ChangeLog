@@ -1,3 +1,8 @@
+2020-11-11  Alan Modra  <amodra@gmail.com>
+
+	* go-gcc.cc (Gcc_backend::global_variable_set_init): Cast NULL to
+	avoid ambiguous overloaded call.
+
 2020-11-06  Nathan Sidwell  <nathan@acm.org>
 
 	* go-gcc.cc (Gcc_backend::call_expression): Rename

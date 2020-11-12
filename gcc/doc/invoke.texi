@@ -425,6 +425,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-null-dereference @gol
 -Wno-analyzer-possible-null-argument @gol
 -Wno-analyzer-possible-null-dereference @gol
+-Wno-analyzer-shift-count-negative @gol
+-Wno-analyzer-shift-count-overflow @gol
 -Wno-analyzer-stale-setjmp-buffer @gol
 -Wno-analyzer-tainted-array-index @gol
 -Wanalyzer-too-complex @gol
@@ -8897,6 +8899,8 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-null-argument @gol
 -Wanalyzer-null-dereference @gol
+-Wanalyzer-shift-count-negative @gol
+-Wanalyzer-shift-count-overflow @gol
 -Wanalyzer-stale-setjmp-buffer @gol
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
@@ -9029,6 +9033,35 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which a
 value known to be NULL is dereferenced.
+
+@item -Wno-analyzer-shift-count-negative
+@opindex Wanalyzer-shift-count-negative
+@opindex Wno-analyzer-shift-count-negative
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-shift-count-negative} to disable it.
+
+This diagnostic warns for paths through the code in which a
+shift is attempted with a negative count.  It is analogous to
+the @option{-Wshift-count-negative} diagnostic implemented in
+the C/C++ front ends, but is implemented based on analyzing
+interprocedural paths, rather than merely parsing the syntax tree.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
+
+@item -Wno-analyzer-shift-count-overflow
+@opindex Wanalyzer-shift-count-overflow
+@opindex Wno-analyzer-shift-count-overflow
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-shift-count-overflow} to disable it.
+
+This diagnostic warns for paths through the code in which a
+shift is attempted with a count greater than or equal to the
+precision of the operand's type.  It is analogous to
+the @option{-Wshift-count-overflow} diagnostic implemented in
+the C/C++ front ends, but is implemented based on analyzing
+interprocedural paths, rather than merely parsing the syntax tree.
+However, the analyzer does not prioritize detection of such paths, so
+false negatives are more likely relative to other warnings.
 
 @item -Wno-analyzer-stale-setjmp-buffer
 @opindex Wanalyzer-stale-setjmp-buffer

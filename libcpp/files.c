@@ -571,7 +571,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 			   "one or more PCH files were found,"
 			   " but they were invalid");
 		if (!cpp_get_options (pfile)->warn_invalid_pch)
-		  cpp_error (pfile, CPP_DL_ERROR,
+		  cpp_error (pfile, CPP_DL_NOTE,
 			     "use -Winvalid-pch for more information");
 	      }
 

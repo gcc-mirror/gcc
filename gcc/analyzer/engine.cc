@@ -1277,8 +1277,10 @@ valid_longjmp_stack_p (const program_point &longjmp_point,
 class stale_jmp_buf : public pending_diagnostic_subclass<dump_path_diagnostic>
 {
 public:
-  stale_jmp_buf (const gcall *setjmp_call, const gcall *longjmp_call)
-  : m_setjmp_call (setjmp_call), m_longjmp_call (longjmp_call)
+  stale_jmp_buf (const gcall *setjmp_call, const gcall *longjmp_call,
+		 const program_point &setjmp_point)
+  : m_setjmp_call (setjmp_call), m_longjmp_call (longjmp_call),
+    m_setjmp_point (setjmp_point), m_stack_pop_event (NULL)
   {}
 
   bool emit (rich_location *richloc) FINAL OVERRIDE
@@ -1299,9 +1301,56 @@ public:
 	    && m_longjmp_call == other.m_longjmp_call);
   }
 
+  bool
+  maybe_add_custom_events_for_superedge (const exploded_edge &eedge,
+					 checker_path *emission_path)
+    FINAL OVERRIDE
+  {
+    /* Detect exactly when the stack first becomes invalid,
+       and issue an event then.  */
+    if (m_stack_pop_event)
+      return false;
+    const exploded_node *src_node = eedge.m_src;
+    const program_point &src_point = src_node->get_point ();
+    const exploded_node *dst_node = eedge.m_dest;
+    const program_point &dst_point = dst_node->get_point ();
+    if (valid_longjmp_stack_p (src_point, m_setjmp_point)
+	&& !valid_longjmp_stack_p (dst_point, m_setjmp_point))
+      {
+	/* Compare with diagnostic_manager::add_events_for_superedge.  */
+	const int src_stack_depth = src_point.get_stack_depth ();
+	m_stack_pop_event = new custom_event
+	  (src_point.get_location (),
+	   src_point.get_fndecl (),
+	   src_stack_depth,
+	   "stack frame is popped here, invalidating saved environment");
+	emission_path->add_event (m_stack_pop_event);
+	return false;
+      }
+    return false;
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev)
+  {
+    if (m_stack_pop_event)
+      return ev.formatted_print
+	("%qs called after enclosing function of %qs returned at %@",
+	 get_user_facing_name (m_longjmp_call),
+	 get_user_facing_name (m_setjmp_call),
+	 m_stack_pop_event->get_id_ptr ());
+    else
+      return ev.formatted_print
+	("%qs called after enclosing function of %qs has returned",
+	 get_user_facing_name (m_longjmp_call),
+	 get_user_facing_name (m_setjmp_call));;
+  }
+
+
 private:
   const gcall *m_setjmp_call;
   const gcall *m_longjmp_call;
+  program_point m_setjmp_point;
+  custom_event *m_stack_pop_event;
 };
 
 /* Handle LONGJMP_CALL, a call to longjmp or siglongjmp.
@@ -1344,7 +1393,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
   /* Verify that the setjmp's call_stack hasn't been popped.  */
   if (!valid_longjmp_stack_p (longjmp_point, setjmp_point))
     {
-      ctxt->warn (new stale_jmp_buf (setjmp_call, longjmp_call));
+      ctxt->warn (new stale_jmp_buf (setjmp_call, longjmp_call, setjmp_point));
       return;
     }
 

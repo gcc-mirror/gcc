@@ -1,3 +1,178 @@
+2020-11-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-protos.h (darwin_make_eh_symbol_indirect): New.
+	* config/darwin.c (darwin_make_eh_symbol_indirect): New. Use
+	Mach-O semantics for personality and ldsa indirections.
+	* config/darwin.h (TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT): New.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT hook.
+	* dwarf2out.c (dwarf2out_do_cfi_startproc): If the target defines
+	a hook for indirecting personality and ldsa references, use that
+	otherwise default to ELF semantics.
+	* target.def (make_eh_symbol_indirect): New target hook.
+
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* common.opt (-fabi-version): Document =15.
+	* doc/invoke.texi (C++ Dialect Options): Likewise.
+
+2020-11-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* tree.c (maybe_wrap_with_location): Don't add a location
+	wrapper around an artificial and ignored decl.
+
+2020-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* tree-ssa-pre.c (create_expression_by_pieces): Guard
+	NEW_SETS access.
+	(insert_into_preds_of_block): Likewise.
+
+2020-11-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (pre_expr_DFS): New function.
+	(sorted_array_from_bitmap_set): Use it to properly
+	topologically sort the expression set.
+	(clean): Verify we've cleaned everything we should.
+
+2020-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* params.opt (-param=max-pre-hoist-insert-iterations): Remove
+	again.
+	* doc/invoke.texi (max-pre-hoist-insert-iterations): Likewise.
+	* tree-ssa-pre.c (insert): Move hoist insertion after PRE
+	insertion iteration and do not iterate it.
+
+2020-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@vcond_mask_<mode><vpred>): Extend
+	from SVE_FULL to SVE_ALL.
+	(*vcond_mask_<mode><vpred>): Likewise.
+	(@aarch64_sel_dup<mode>): Likewise.
+	(vcond<SVE_FULL:mode><v_int_equiv>): Extend to...
+	(vcond<SVE_ALL:mode><SVE_I:mode>): ...this, but requiring the
+	sizes of the container modes to match.
+	(vcondu<SVE_FULL:mode><v_int_equiv>): Extend to...
+	(vcondu<SVE_ALL:mode><SVE_I:mode>): ...this.
+	(vec_cmp<SVE_FULL_I:mode><vpred>): Extend to...
+	(vec_cmp<SVE_I:mode><vpred>): ...this.
+	(vec_cmpu<SVE_FULL_I:mode><vpred>): Extend to...
+	(vec_cmpu<SVE_I:mode><vpred>): ...this.
+	(@aarch64_pred_cmp<cmp_op><SVE_FULL_I:mode>): Extend to...
+	(@aarch64_pred_cmp<cmp_op><SVE_I:mode>): ...this.
+	(*cmp<cmp_op><SVE_FULL_I:mode>_cc): Extend to...
+	(*cmp<cmp_op><SVE_I:mode>_cc): ...this.
+	(*cmp<cmp_op><SVE_FULL_I:mode>_ptest): Extend to...
+	(*cmp<cmp_op><SVE_I:mode>_ptest): ...this.
+	(*cmp<cmp_op><SVE_FULL_I:mode>_and): Extend to...
+	(*cmp<cmp_op><SVE_I:mode>_and): ...this.
+
+2020-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* optabs-tree.c (expand_vec_cond_expr_p): Allow the compared values
+	and the selected values to have different mode sizes.
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Likewise.
+
+2020-11-11  Hongtao Liu  <hongtao.liu@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect AVXVNNI.
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA2_AVXVNNI_SET,
+	OPTION_MASK_ISA2_AVXVNNI_UNSET): New.
+	(OPTION_MASK_ISA2_AVX2_UNSET): Add AVXVNNI.
+	(ix86_hanlde_option): Handle -mavxvnni, unset avxvnni when
+	avx2 is disabled.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AVXVNNI.
+	* common/config/i386/i386-isas.h: Add ISA_NAMES_TABLE_ENTRY
+	for avxvnni.
+	* config.gcc: Add avxvnniintrin.h.
+	* config/i386/avx512vnnivlintrin.h: Reimplement 128/256 bit non-mask
+	intrinsics with macros to support unified interface.
+	* config/i386/avxvnniintrin.h: New header file.
+	* config/i386/cpuid.h (bit_AVXVNNI): New.
+	* config/i386/i386-builtins.c (def_builtin): Handle AVXVNNI mask
+	for unified builtin.
+	* config/i386/i386-builtin.def (BDESC): Adjust AVX512VNNI
+	builtins for AVXVNNI.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AVXVNNI__.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Handle bisa
+	for AVXVNNI to support unified intrinsic name, since there is no
+	dependency between AVX512VNNI and AVXVNNI.
+	* config/i386/i386-options.c (isa2_opts): Add -mavxvnni.
+	(ix86_valid_target_attribute_inner_p): Handle avxnnni.
+	(ix86_option_override_internal): Ditto.
+	* config/i386/i386.h (TARGET_AVXVNNI, TARGET_AVXVNNI_P,
+	TARGET_AVXVNNI_P, PTA_AVXVNNI): New.
+	(PTA_SAPPHIRERAPIDS): Add AVX_VNNI.
+	(PTA_ALDERLAKE): Likewise.
+	* config/i386/i386.md ("isa"): Add avxvnni, avx512vnnivl.
+	("enabled"): Adjust for avxvnni and avx512vnnivl.
+	* config/i386/i386.opt: Add option -mavxvnni.
+	* config/i386/immintrin.h: Include avxvnniintrin.h.
+	* config/i386/sse.md (vpdpbusd_<mode>): Adjust for AVXVNNI.
+	(vpdpbusds_<mode>): Likewise.
+	(vpdpwssd_<mode>): Likewise.
+	(vpdpwssds_<mode>): Likewise.
+	(vpdpbusd_v16si): New.
+	(vpdpbusds_v16si): Likewise.
+	(vpdpwssd_v16si): Likewise.
+	(vpdpwssds_v16si): Likewise.
+	* doc/invoke.texi: Document -mavxvnni.
+	* doc/extend.texi: Document avxvnni.
+	* doc/sourcebuild.texi: Document target avxvnni.
+
+2020-11-11  Martin Liska  <mliska@suse.cz>
+
+	* tree.c (copy_node): Fix spelling.
+
+2020-11-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (phi_translate_set): Do not sort the
+	expression set topologically.
+
+2020-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::set): Early exit on VR_VARYING.
+
+2020-11-11  Zhiheng Xie  <xiezhiheng@huawei.com>
+	    Nannan Zheng  <zhengnannan@huawei.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add proper FLAG
+	for arithmetic operation intrinsics.
+
+2020-11-11  Strager Neds  <strager.nds@gmail.com>
+
+	* cgraph.h (symtab_node::set_section_for_node): Declare new
+	overload.
+	(symtab_node::set_section_from_string): Rename from set_section.
+	(symtab_node::set_section_from_node): Declare.
+	* symtab.c (symtab_node::set_section_for_node): Define new
+	overload.
+	(symtab_node::set_section_from_string): Rename from set_section.
+	(symtab_node::set_section_from_node): Define.
+	(symtab_node::set_section): Call renamed set_section_from_string.
+	(symtab_node::set_section): Call new set_section_from_node.
+
+2020-11-11  Strager Neds  <strager.nds@gmail.com>
+
+	* symtab.c (symtab_node::set_section_for_node): Extract reference
+	counting logic into ...
+	(retain_section_hash_entry): ... here (new function) and ...
+	(release_section_hash_entry): ... here (new function).
+
+2020-11-11  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.h (PTA_MOVDIRI, PTA_MOVDIR64B,
+	PTA_AMX_TILE, PTA_AMX_INT8, PTA_AMX_BF16, PTA_HRESET):
+	Formatting.
+
 2020-11-11  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.h (HAVE_TF): Use opaque value when

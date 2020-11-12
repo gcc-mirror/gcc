@@ -1,3 +1,36 @@
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h: Remove ^L characters throughout.
+	* gcc-interface/decl.c: Likewise.
+	* gcc-interface/utils.c: Likewise.
+	* gcc-interface/utils2.c: Likewise.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Allocator>: Do not explicitly
+	go to the base type for the Has_Constrained_Partial_View flag.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (build_binary_op_trapv): Convert operands
+	to the result type before doing generic overflow checking.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (can_be_lower_p): Remove.
+	(Regular_Loop_to_gnu): Add ENTRY_COND unconditionally if
+	BOTTOM_COND is non-zero.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: In case
+	the constant is not being defined, get the expression in type
+	annotation mode only if its type is elementary.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Op_Shift>: Also convert
+	GNU_MAX_SHIFT if the type of the operation has been changed.
+	* gcc-interface/utils.c (can_materialize_object_renaming_p): Add
+	pair of missing parentheses.
+
 2020-11-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in: Force target_cpu to powerpc if the

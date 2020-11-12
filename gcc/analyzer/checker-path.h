@@ -97,6 +97,12 @@ public:
   virtual bool is_function_entry_p () const  { return false; }
   virtual bool is_return_p () const  { return false; }
 
+  /* For use with %@.  */
+  const diagnostic_event_id_t *get_id_ptr () const
+  {
+    return &m_emission_id;
+  }
+
   void dump (pretty_printer *pp) const;
 
  public:
