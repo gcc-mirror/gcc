@@ -364,6 +364,11 @@ package Opt is
    --  GNAT
    --  Names of configuration pragmas files (given by switches -gnatec)
 
+   Config_Files_Store_Basename : Boolean := False;
+   --  GNAT
+   --  Set True for -gnateb. Tells GNAT that config files should be referred to
+   --  by their basename and their checksums computed in ALI files.
+
    Configurable_Run_Time_Mode : Boolean := False;
    --  GNAT, GNATBIND
    --  Set True if the compiler is operating in configurable run-time mode.

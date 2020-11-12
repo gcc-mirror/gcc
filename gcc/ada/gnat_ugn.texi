@@ -2970,6 +2970,10 @@ temporary files that are immediately deleted; it doesn't make sense to
 depend on a file that no longer exists. Such tools include
 @code{gprbuild}, @code{gnatmake}, and @code{gnatcheck}.
 
+By default, configuration pragma files are stored by their absolute paths in
+ALI files. You can use the @code{-gnateb} switch in order to store them by
+their basename instead.
+
 If you are using project file, a separate mechanism is provided using
 project attributes.
 
@@ -8966,6 +8970,19 @@ In the example above, the first call to @code{Detect_Aliasing} fails with a
 @code{Val_2} denote the same object. The second call executes without raising
 an exception because @code{Self(Obj)} produces an anonymous object which does
 not share the memory location of @code{Obj}.
+@end table
+
+@geindex -gnateb (gcc)
+
+
+@table @asis
+
+@item @code{-gnateb}
+
+Store configuration files by their basename in ALI files. This switch is
+used for instance by gprbuild for distributed builds in order to prevent
+issues where machine-specific absolute paths could end up being stored in
+ALI files.
 @end table
 
 @geindex -gnatec (gcc)

@@ -1546,6 +1546,10 @@ begin
          end loop;
       end;
 
+      if Config_Files_Store_Basename then
+         Complete_Source_File_Entry;
+      end if;
+
    --  Normal case of compilation unit
 
    else

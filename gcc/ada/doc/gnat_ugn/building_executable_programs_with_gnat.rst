@@ -1517,6 +1517,13 @@ Alphabetical List of All Switches
   an exception because ``Self(Obj)`` produces an anonymous object which does
   not share the memory location of ``Obj``.
 
+.. index:: -gnateb  (gcc)
+
+:switch:`-gnateb`
+  Store configuration files by their basename in ALI files. This switch is
+  used for instance by gprbuild for distributed builds in order to prevent
+  issues where machine-specific absolute paths could end up being stored in
+  ALI files.
 
 .. index:: -gnatec  (gcc)
 
