@@ -1,5 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funroll-loops -ftree-vectorize -fdump-tree-dse-details" } */
+/* Disable loop vectorization to avoid that loop vectorizer
+   optimizes those two loops that operate tmp array so that
+   subsequent dse3 won't eliminate expected tmp stores.  */
+/* { dg-options "-O2 -funroll-loops -ftree-slp-vectorize -fno-tree-loop-vectorize -fdump-tree-dse-details" } */
 
 /* Test if scalar cleanup pass takes effects, mainly check
    its secondary pass DSE can remove dead stores on array
