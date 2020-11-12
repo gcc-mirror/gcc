@@ -1,3 +1,11 @@
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bias2.adb: New test.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt89.adb: New test.
+
 2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

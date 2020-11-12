@@ -1,3 +1,10 @@
+2020-11-11  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal):
+	Handle PTA_CLDEMOTE, PTA_MOVDIRI, PTA_MOVDIR64B.
+	* config/i386/i386.h (PTA_CLDEMOTE, PTA_MOVDIRI,
+	PTA_MOVDIR64B.): Define.
+
 2020-11-09  Lili Cui  <lili.cui@intel.com>
 
 	PR target/97685
