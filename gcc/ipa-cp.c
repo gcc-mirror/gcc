@@ -156,16 +156,22 @@ public:
 class ipcp_value_base
 {
 public:
-  /* Time benefit and size cost that specializing the function for this value
-     would bring about in this function alone.  */
-  int local_time_benefit, local_size_cost;
-  /* Time benefit and size cost that specializing the function for this value
-     can bring about in it's callees (transitively).  */
-  int prop_time_benefit, prop_size_cost;
+  /* Time benefit and that specializing the function for this value would bring
+     about in this function alone.  */
+  sreal local_time_benefit;
+  /* Time benefit that specializing the function for this value can bring about
+     in it's callees.  */
+  sreal prop_time_benefit;
+  /* Size cost that specializing the function for this value would bring about
+     in this function alone.  */
+  int local_size_cost;
+  /* Size cost that specializing the function for this value can bring about in
+     it's callees.  */
+  int prop_size_cost;
 
   ipcp_value_base ()
-    : local_time_benefit (0), local_size_cost (0),
-      prop_time_benefit (0), prop_size_cost (0) {}
+    : local_time_benefit (0), prop_time_benefit (0),
+      local_size_cost (0), prop_size_cost (0) {}
 };
 
 /* Describes one particular value stored in struct ipcp_lattice.  */
@@ -499,10 +505,10 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
 	}
 
       if (dump_benefits)
-	fprintf (f, " [loc_time: %i, loc_size: %i, "
-		 "prop_time: %i, prop_size: %i]\n",
-		 val->local_time_benefit, val->local_size_cost,
-		 val->prop_time_benefit, val->prop_size_cost);
+	fprintf (f, " [loc_time: %g, loc_size: %i, "
+		 "prop_time: %g, prop_size: %i]\n",
+		 val->local_time_benefit.to_double (), val->local_size_cost,
+		 val->prop_time_benefit.to_double (), val->prop_size_cost);
     }
   if (!dump_benefits)
     fprintf (f, "\n");
@@ -668,7 +674,8 @@ ipcp_versionable_function_p (struct cgraph_node *node)
 struct caller_statistics
 {
   profile_count count_sum;
-  int n_calls, n_hot_calls, freq_sum;
+  sreal freq_sum;
+  int n_calls, n_hot_calls;
 };
 
 /* Initialize fields of STAT to zeroes.  */
@@ -696,7 +703,7 @@ gather_caller_stats (struct cgraph_node *node, void *data)
       {
         if (cs->count.ipa ().initialized_p ())
 	  stats->count_sum += cs->count.ipa ();
-	stats->freq_sum += cs->frequency ();
+	stats->freq_sum += cs->sreal_frequency ();
 	stats->n_calls++;
 	if (cs->maybe_hot_p ())
 	  stats->n_hot_calls ++;
@@ -3224,9 +3231,9 @@ hint_time_bonus (cgraph_node *node, const ipa_call_estimates &estimates)
 /* If there is a reason to penalize the function described by INFO in the
    cloning goodness evaluation, do so.  */
 
-static inline int64_t
+static inline sreal
 incorporate_penalties (cgraph_node *node, ipa_node_params *info,
-		       int64_t evaluation)
+		       sreal evaluation)
 {
   if (info->node_within_scc && !info->node_is_self_scc)
     evaluation = (evaluation
@@ -3247,8 +3254,9 @@ incorporate_penalties (cgraph_node *node, ipa_node_params *info,
    potential new clone in FREQUENCIES.  */
 
 static bool
-good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
-			    int freq_sum, profile_count count_sum, int size_cost)
+good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
+			    sreal freq_sum, profile_count count_sum,
+			    int size_cost)
 {
   if (time_benefit == 0
       || !opt_for_fn (node->decl, flag_ipa_cp_clone)
@@ -3256,50 +3264,56 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
     return false;
 
   gcc_assert (size_cost > 0);
+  if (size_cost == INT_MAX)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "     good_cloning_opportunity_p returning "
+		 "false because of size overflow.\n");
+      return false;
+    }
 
   class ipa_node_params *info = IPA_NODE_REF (node);
   int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
   if (max_count > profile_count::zero ())
     {
-      int factor = RDIV (count_sum.probability_in
-				 (max_count).to_reg_br_prob_base ()
-		         * 1000, REG_BR_PROB_BASE);
-      int64_t evaluation = (((int64_t) time_benefit * factor)
-				    / size_cost);
+
+      sreal factor = count_sum.probability_in (max_count).to_sreal ();
+      sreal evaluation = (time_benefit * factor) / size_cost;
       evaluation = incorporate_penalties (node, info, evaluation);
+      evaluation *= 1000;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
-		   "size: %i, count_sum: ", time_benefit, size_cost);
+	  fprintf (dump_file, "     good_cloning_opportunity_p (time: %g, "
+		   "size: %i, count_sum: ", time_benefit.to_double (),
+		   size_cost);
 	  count_sum.dump (dump_file);
-	  fprintf (dump_file, "%s%s) -> evaluation: " "%" PRId64
-		 ", threshold: %i\n",
+	  fprintf (dump_file, "%s%s) -> evaluation: %.2f, threshold: %i\n",
 		 info->node_within_scc
 		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation, eval_threshold);
+		   evaluation.to_double (), eval_threshold);
 	}
 
-      return evaluation >= eval_threshold;
+      return evaluation.to_int () >= eval_threshold;
     }
   else
     {
-      int64_t evaluation = (((int64_t) time_benefit * freq_sum)
-				    / size_cost);
+      sreal evaluation = (time_benefit * freq_sum) / size_cost;
       evaluation = incorporate_penalties (node, info, evaluation);
+      evaluation *= 1000;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
-		 "size: %i, freq_sum: %i%s%s) -> evaluation: "
-		 "%" PRId64 ", threshold: %i\n",
-		 time_benefit, size_cost, freq_sum,
+	fprintf (dump_file, "     good_cloning_opportunity_p (time: %g, "
+		 "size: %i, freq_sum: %g%s%s) -> evaluation: %.2f, "
+		 "threshold: %i\n",
+		 time_benefit.to_double (), size_cost, freq_sum.to_double (),
 		 info->node_within_scc
 		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation, eval_threshold);
+		 evaluation.to_double (), eval_threshold);
 
-      return evaluation >= eval_threshold;
+      return evaluation.to_int () >= eval_threshold;
     }
 }
 
@@ -3411,13 +3425,10 @@ perform_estimation_of_a_value (cgraph_node *node,
 			       int removable_params_cost, int est_move_cost,
 			       ipcp_value_base *val)
 {
-  int time_benefit;
+  sreal time_benefit;
   ipa_call_estimates estimates;
 
   estimate_ipcp_clone_size_and_time (node, avals, &estimates);
-  sreal time_delta = estimates.nonspecialized_time - estimates.time;
-  if (time_delta > 65535)
-    time_delta = 65535;
 
   /* Extern inline functions have no cloning local time benefits because they
      will be inlined anyway.  The only reason to clone them is if it enables
@@ -3425,10 +3436,10 @@ perform_estimation_of_a_value (cgraph_node *node,
   if (DECL_EXTERNAL (node->decl) && DECL_DECLARED_INLINE_P (node->decl))
     time_benefit = 0;
   else
-    time_benefit = time_delta.to_int ()
-      + devirtualization_time_bonus (node, avals)
-      + hint_time_bonus (node, estimates)
-      + removable_params_cost + est_move_cost;
+    time_benefit = (estimates.nonspecialized_time - estimates.time)
+      + (devirtualization_time_bonus (node, avals)
+	 + hint_time_bonus (node, estimates)
+	 + removable_params_cost + est_move_cost);
 
   int size = estimates.size;
   gcc_checking_assert (size >=0);
@@ -3509,10 +3520,8 @@ estimate_local_effects (struct cgraph_node *node)
 	    fprintf (dump_file, "     Decided to specialize for all "
 		     "known contexts, code not going to grow.\n");
 	}
-      else if (good_cloning_opportunity_p (node,
-					   MIN ((time).to_int (), 65536),
-					   stats.freq_sum, stats.count_sum,
-					   size))
+      else if (good_cloning_opportunity_p (node, time, stats.freq_sum,
+					   stats.count_sum, size))
 	{
 	  if (size + overall_size <= get_max_overall_size (node))
 	    {
@@ -3561,8 +3570,9 @@ estimate_local_effects (struct cgraph_node *node)
 	      print_ipcp_constant_value (dump_file, val->value);
 	      fprintf (dump_file, " for ");
 	      ipa_dump_param (dump_file, info, i);
-	      fprintf (dump_file, ": time_benefit: %i, size: %i\n",
-		       val->local_time_benefit, val->local_size_cost);
+	      fprintf (dump_file, ": time_benefit: %g, size: %i\n",
+		       val->local_time_benefit.to_double (),
+		       val->local_size_cost);
 	    }
 	}
       avals.m_known_vals[i] = NULL_TREE;
@@ -3595,8 +3605,9 @@ estimate_local_effects (struct cgraph_node *node)
 	      print_ipcp_constant_value (dump_file, val->value);
 	      fprintf (dump_file, " for ");
 	      ipa_dump_param (dump_file, info, i);
-	      fprintf (dump_file, ": time_benefit: %i, size: %i\n",
-		       val->local_time_benefit, val->local_size_cost);
+	      fprintf (dump_file, ": time_benefit: %g, size: %i\n",
+		       val->local_time_benefit.to_double (),
+		       val->local_size_cost);
 	    }
 	}
       avals.m_known_contexts[i] = ipa_polymorphic_call_context ();
@@ -3637,10 +3648,11 @@ estimate_local_effects (struct cgraph_node *node)
 		  fprintf (dump_file, " for ");
 		  ipa_dump_param (dump_file, info, i);
 		  fprintf (dump_file, "[%soffset: " HOST_WIDE_INT_PRINT_DEC
-			   "]: time_benefit: %i, size: %i\n",
+			   "]: time_benefit: %g, size: %i\n",
 			   plats->aggs_by_ref ? "ref " : "",
 			   aglat->offset,
-			   val->local_time_benefit, val->local_size_cost);
+			   val->local_time_benefit.to_double (),
+			   val->local_size_cost);
 		}
 
 	      agg->items.pop ();
@@ -3830,13 +3842,13 @@ propagate_constants_topo (class ipa_topo_info *topo)
 
 
 /* Return the sum of A and B if none of them is bigger than INT_MAX/2, return
-   the bigger one if otherwise.  */
+   INT_MAX.  */
 
 static int
 safe_add (int a, int b)
 {
   if (a > INT_MAX/2 || b > INT_MAX/2)
-    return a > b ? a : b;
+    return INT_MAX;
   else
     return a + b;
 }
@@ -3855,12 +3867,12 @@ value_topo_info<valtype>::propagate_effects ()
     {
       ipcp_value_source<valtype> *src;
       ipcp_value<valtype> *val;
-      int time = 0, size = 0;
+      sreal time = 0;
+      int size = 0;
 
       for (val = base; val; val = val->scc_next)
 	{
-	  time = safe_add (time,
-			   val->local_time_benefit + val->prop_time_benefit);
+	  time = time + val->local_time_benefit + val->prop_time_benefit;
 	  size = safe_add (size, val->local_size_cost + val->prop_size_cost);
 	}
 
@@ -3869,8 +3881,7 @@ value_topo_info<valtype>::propagate_effects ()
 	  if (src->val
 	      && src->cs->maybe_hot_p ())
 	    {
-	      src->val->prop_time_benefit = safe_add (time,
-						src->val->prop_time_benefit);
+	      src->val->prop_time_benefit = time + src->val->prop_time_benefit;
 	      src->val->prop_size_cost = safe_add (size,
 						   src->val->prop_size_cost);
 	    }
@@ -4162,11 +4173,12 @@ get_next_cgraph_edge_clone (struct cgraph_edge *cs)
 template <typename valtype>
 static bool
 get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
-				int *freq_sum,
-				profile_count *count_sum, int *caller_count)
+				sreal *freq_sum, profile_count *count_sum,
+				int *caller_count)
 {
   ipcp_value_source<valtype> *src;
-  int freq = 0, count = 0;
+  sreal freq = 0;
+  int count = 0;
   profile_count cnt = profile_count::zero ();
   bool hot = false;
   bool non_self_recursive = false;
@@ -4179,7 +4191,7 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
 	  if (cgraph_edge_brings_value_p (cs, src, dest, val))
 	    {
 	      count++;
-	      freq += cs->frequency ();
+	      freq += cs->sreal_frequency ();
 	      if (cs->count.ipa ().initialized_p ())
 	        cnt += cs->count.ipa ();
 	      hot |= cs->maybe_hot_p ();
@@ -5448,7 +5460,8 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 		    ipcp_value<valtype> *val, ipa_auto_call_arg_values *avals)
 {
   struct ipa_agg_replacement_value *aggvals;
-  int freq_sum, caller_count;
+  int caller_count;
+  sreal freq_sum;
   profile_count count_sum;
   vec<cgraph_edge *> callers;
 
@@ -5487,8 +5500,8 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 				   freq_sum, count_sum,
 				   val->local_size_cost)
       && !good_cloning_opportunity_p (node,
-				      safe_add (val->local_time_benefit,
-						val->prop_time_benefit),
+				      val->local_time_benefit
+				      + val->prop_time_benefit,
 				      freq_sum, count_sum,
 				      safe_add (val->local_size_cost,
 						val->prop_size_cost)))
