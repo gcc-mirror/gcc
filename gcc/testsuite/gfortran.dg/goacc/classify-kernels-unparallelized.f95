@@ -19,8 +19,8 @@ program main
 
   call setup(a, b)
 
-  !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1))
-  do i = 0, n - 1 ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+  !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+  do i = 0, n - 1
      c(i) = a(f (i)) + b(f (i))
   end do
   !$acc end kernels
