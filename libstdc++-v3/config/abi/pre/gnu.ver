@@ -1776,14 +1776,16 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_ONS4_14__xfer_bufptrsE;
     _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]14__xfer_bufptrs[CD][12]*;
-    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[a1346789]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[a146789]*;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE3strERK*;
 #   _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]*;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOSa*;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKNS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_Openmode;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
-    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a4]*;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strERK*;
 #   _ZNSt7__cxx1119basic_istringstreamI[cw]St11char_traitsI[cw]*;
 #   _ZNSt7__cxx1119basic_ostringstreamI[cw]St11char_traitsI[cw]*;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EOS4_;
@@ -1791,7 +1793,8 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ERKNS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]ESt13_Ios_Openmode;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EED[012]Ev;
-    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a34]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE[a4]*;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strERK*;
     _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
     _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
     _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE5rdbufEv;
@@ -2354,6 +2357,10 @@ GLIBCXX_3.4.29 {
 
     # basic_stringbuf::view()
     _ZNKSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+    # basic_stringbuf::str
+    _ZNOSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
+    _ZNKRSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEONS_12basic_stringI[cw]S2_S3_EE;
 
     # basic_[io]stringstream::basic_[io]stringstream(basic_string&&, ios_base::openmode)
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
@@ -2363,6 +2370,10 @@ GLIBCXX_3.4.29 {
 
     # basic_[io]stringstream::view()
     _ZNKSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+    # basic_[io]stringstream::str
+    _ZNOSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
+    _ZNKRSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
+    _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEONS_12basic_stringI[cw]S2_S3_EE;
 
     # basic_stringstream::basic_stringstream(basic_string&&, ios_base::openmode)
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]EONS_12basic_stringI[cw]S2_S3_EESt13_Ios_Openmode;
@@ -2372,6 +2383,10 @@ GLIBCXX_3.4.29 {
 
     # basic_stringstream::view()
     _ZNKSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE4viewEv;
+    # basic_stringstream::str
+    _ZNOSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
+    _ZNKRSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
+    _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEONS_12basic_stringI[cw]S2_S3_EE;
 
     # std::once_flag::_M_activate()
     _ZNSt9once_flag11_M_activateEv;

@@ -626,7 +626,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   if (tree_map)
     clone_info::get_create (new_node)->tree_map = tree_map;
   if (!implicit_section)
-    new_node->set_section (get_section ());
+    new_node->set_section (*this);
 
   /* Clones of global symbols or symbols with unique names are unique.  */
   if ((TREE_PUBLIC (old_decl)
@@ -1060,7 +1060,7 @@ cgraph_node::create_version_clone_with_body
   new_version_node->local = 1;
   new_version_node->lowered = true;
   if (!implicit_section)
-    new_version_node->set_section (get_section ());
+    new_version_node->set_section (*this);
   /* Clones of global symbols or symbols with unique names are unique.  */
   if ((TREE_PUBLIC (old_decl)
        && !DECL_EXTERNAL (old_decl)

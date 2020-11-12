@@ -1,4 +1,4 @@
-/* Functions related to building classes and their related objects.
+/* Functions related to building -*- C++ -*- classes and their related objects.
    Copyright (C) 1987-2020 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -1321,6 +1321,8 @@ handle_using_decl (tree using_decl, tree t)
 	      "local member %q#D declared here", old_value);
       return;
     }
+
+  iloc_sentinel ils (DECL_SOURCE_LOCATION (using_decl));
 
   /* Make type T see field decl FDECL with access ACCESS.  */
   if (flist)

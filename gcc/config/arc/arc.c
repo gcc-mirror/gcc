@@ -10155,6 +10155,14 @@ arc_split_move (rtx *operands)
     }
 
   if (TARGET_PLUS_QMACW
+      && even_register_operand (operands[0], mode)
+      && even_register_operand (operands[1], mode))
+    {
+      emit_move_insn (operands[0], operands[1]);
+      return;
+    }
+
+  if (TARGET_PLUS_QMACW
       && GET_CODE (operands[1]) == CONST_VECTOR)
     {
       HOST_WIDE_INT intval0, intval1;

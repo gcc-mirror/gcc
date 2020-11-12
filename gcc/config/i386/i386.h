@@ -217,6 +217,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_KL_P(x) TARGET_ISA2_KL_P(x)
 #define TARGET_WIDEKL	TARGET_ISA2_WIDEKL
 #define TARGET_WIDEKL_P(x) TARGET_ISA2_WIDEKL_P(x)
+#define TARGET_AVXVNNI	TARGET_ISA2_AVXVNNI
+#define TARGET_AVXVNNI_P(x)	TARGET_ISA2_AVXVNNI_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -2480,19 +2482,20 @@ const wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
 const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 const wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
 const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 12);
-const wide_int_bitmask PTA_MOVDIRI(0, HOST_WIDE_INT_1U << 13);
-const wide_int_bitmask PTA_MOVDIR64B(0, HOST_WIDE_INT_1U << 14);
+const wide_int_bitmask PTA_MOVDIRI (0, HOST_WIDE_INT_1U << 13);
+const wide_int_bitmask PTA_MOVDIR64B (0, HOST_WIDE_INT_1U << 14);
 const wide_int_bitmask PTA_ENQCMD (0, HOST_WIDE_INT_1U << 15);
 const wide_int_bitmask PTA_CLDEMOTE (0, HOST_WIDE_INT_1U << 16);
 const wide_int_bitmask PTA_SERIALIZE (0, HOST_WIDE_INT_1U << 17);
 const wide_int_bitmask PTA_TSXLDTRK (0, HOST_WIDE_INT_1U << 18);
-const wide_int_bitmask PTA_AMX_TILE(0, HOST_WIDE_INT_1U << 19);
-const wide_int_bitmask PTA_AMX_INT8(0, HOST_WIDE_INT_1U << 20);
-const wide_int_bitmask PTA_AMX_BF16(0, HOST_WIDE_INT_1U << 21);
+const wide_int_bitmask PTA_AMX_TILE (0, HOST_WIDE_INT_1U << 19);
+const wide_int_bitmask PTA_AMX_INT8 (0, HOST_WIDE_INT_1U << 20);
+const wide_int_bitmask PTA_AMX_BF16 (0, HOST_WIDE_INT_1U << 21);
 const wide_int_bitmask PTA_UINTR (0, HOST_WIDE_INT_1U << 22);
-const wide_int_bitmask PTA_HRESET(0, HOST_WIDE_INT_1U << 23);
+const wide_int_bitmask PTA_HRESET (0, HOST_WIDE_INT_1U << 23);
 const wide_int_bitmask PTA_KL (0, HOST_WIDE_INT_1U << 24);
 const wide_int_bitmask PTA_WIDEKL (0, HOST_WIDE_INT_1U << 25);
+const wide_int_bitmask PTA_AVXVNNI (0, HOST_WIDE_INT_1U << 26);
 
 const wide_int_bitmask PTA_X86_64_BASELINE = PTA_64BIT | PTA_MMX | PTA_SSE
   | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR;
@@ -2536,9 +2539,9 @@ const wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
 const wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_COOPERLAKE | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_ENQCMD | PTA_CLDEMOTE
   | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK | PTA_AMX_TILE
-  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR;
+  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI;
 const wide_int_bitmask PTA_ALDERLAKE = PTA_SKYLAKE | PTA_CLDEMOTE | PTA_PTWRITE
-  | PTA_WAITPKG | PTA_SERIALIZE | PTA_HRESET | PTA_KL | PTA_WIDEKL;
+  | PTA_WAITPKG | PTA_SERIALIZE | PTA_HRESET | PTA_KL | PTA_WIDEKL | PTA_AVXVNNI;
 const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
   | PTA_AVX512F | PTA_AVX512CD | PTA_PREFETCHWT1;
 const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;

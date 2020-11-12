@@ -224,6 +224,7 @@ enum processor_features
   FEATURE_KL,
   FEATURE_AESKLE,
   FEATURE_WIDEKL,
+  FEATURE_AVXVNNI,
   CPU_FEATURE_MAX
 };
 

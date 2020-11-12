@@ -2771,3 +2771,93 @@ c_omp_map_clause_name (tree clause, bool oacc)
     }
   return omp_clause_code_name[OMP_CLAUSE_CODE (clause)];
 }
+
+/* Used to merge map clause information in c_omp_adjust_map_clauses.  */
+struct map_clause
+{
+  tree clause;
+  bool firstprivate_ptr_p;
+  bool decl_mapped;
+  bool omp_declare_target;
+  map_clause (void) : clause (NULL_TREE), firstprivate_ptr_p (false),
+    decl_mapped (false), omp_declare_target (false) { }
+};
+
+/* Adjust map clauses after normal clause parsing, mainly to turn specific
+   base-pointer map cases into attach/detach and mark them addressable.  */
+void
+c_omp_adjust_map_clauses (tree clauses, bool is_target)
+{
+  if (!is_target)
+    {
+      /* If this is not a target construct, just turn firstprivate pointers
+	 into attach/detach, the runtime will check and do the rest.  */
+
+      for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	    && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
+	    && DECL_P (OMP_CLAUSE_DECL (c))
+	    && POINTER_TYPE_P (TREE_TYPE (OMP_CLAUSE_DECL (c))))
+	  {
+	    tree ptr = OMP_CLAUSE_DECL (c);
+	    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ATTACH_DETACH);
+	    c_common_mark_addressable_vec (ptr);
+	  }
+      return;
+    }
+
+  hash_map<tree, map_clause> maps;
+
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	&& DECL_P (OMP_CLAUSE_DECL (c)))
+      {
+	/* If this is for a target construct, the firstprivate pointer
+	   is changed to attach/detach if either is true:
+	   (1) the base-pointer is mapped in this same construct, or
+	   (2) the base-pointer is a variable place on the device by
+	       "declare target" directives.
+
+	   Here we iterate through all map clauses collecting these cases,
+	   and merge them with a hash_map to process below.  */
+
+	if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
+	    && POINTER_TYPE_P (TREE_TYPE (OMP_CLAUSE_DECL (c))))
+	  {
+	    tree ptr = OMP_CLAUSE_DECL (c);
+	    map_clause &mc = maps.get_or_insert (ptr);
+	    if (mc.clause == NULL_TREE)
+	      mc.clause = c;
+	    mc.firstprivate_ptr_p = true;
+
+	    if (is_global_var (ptr)
+		&& lookup_attribute ("omp declare target",
+				     DECL_ATTRIBUTES (ptr)))
+	      mc.omp_declare_target = true;
+	  }
+	else if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALLOC
+		 || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO
+		 || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FROM
+		 || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TOFROM
+		 || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_TO
+		 || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_FROM
+		 || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_TOFROM)
+	  {
+	    map_clause &mc = maps.get_or_insert (OMP_CLAUSE_DECL (c));
+	    mc.decl_mapped = true;
+	  }
+      }
+
+  for (hash_map<tree, map_clause>::iterator i = maps.begin ();
+       i != maps.end (); ++i)
+    {
+      map_clause &mc = (*i).second;
+
+      if (mc.firstprivate_ptr_p
+	  && (mc.decl_mapped || mc.omp_declare_target))
+	{
+	  OMP_CLAUSE_SET_MAP_KIND (mc.clause, GOMP_MAP_ATTACH_DETACH);
+	  c_common_mark_addressable_vec (OMP_CLAUSE_DECL (mc.clause));
+	}
+    }
+}

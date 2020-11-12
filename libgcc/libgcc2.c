@@ -75,9 +75,9 @@ __negdi2 (DWtype u)
 Wtype
 __addvSI3 (Wtype a, Wtype b)
 {
-  const Wtype w = (UWtype) a + (UWtype) b;
+  Wtype w;
 
-  if (b >= 0 ? w < a : w > a)
+  if (__builtin_add_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -86,9 +86,9 @@ __addvSI3 (Wtype a, Wtype b)
 SItype
 __addvsi3 (SItype a, SItype b)
 {
-  const SItype w = (USItype) a + (USItype) b;
+  SItype w;
 
-  if (b >= 0 ? w < a : w > a)
+  if (__builtin_add_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -100,9 +100,9 @@ __addvsi3 (SItype a, SItype b)
 DWtype
 __addvDI3 (DWtype a, DWtype b)
 {
-  const DWtype w = (UDWtype) a + (UDWtype) b;
+  DWtype w;
 
-  if (b >= 0 ? w < a : w > a)
+  if (__builtin_add_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -113,9 +113,9 @@ __addvDI3 (DWtype a, DWtype b)
 Wtype
 __subvSI3 (Wtype a, Wtype b)
 {
-  const Wtype w = (UWtype) a - (UWtype) b;
+  Wtype w;
 
-  if (b >= 0 ? w > a : w < a)
+  if (__builtin_sub_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -124,9 +124,9 @@ __subvSI3 (Wtype a, Wtype b)
 SItype
 __subvsi3 (SItype a, SItype b)
 {
-  const SItype w = (USItype) a - (USItype) b;
+  SItype w;
 
-  if (b >= 0 ? w > a : w < a)
+  if (__builtin_sub_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -138,9 +138,9 @@ __subvsi3 (SItype a, SItype b)
 DWtype
 __subvDI3 (DWtype a, DWtype b)
 {
-  const DWtype w = (UDWtype) a - (UDWtype) b;
+  DWtype w;
 
-  if (b >= 0 ? w > a : w < a)
+  if (__builtin_sub_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -151,22 +151,20 @@ __subvDI3 (DWtype a, DWtype b)
 Wtype
 __mulvSI3 (Wtype a, Wtype b)
 {
-  const DWtype w = (DWtype) a * (DWtype) b;
+  Wtype w;
 
-  if ((Wtype) (w >> W_TYPE_SIZE) != (Wtype) w >> (W_TYPE_SIZE - 1))
+  if (__builtin_mul_overflow (a, b, &w))
     abort ();
 
   return w;
 }
 #ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
-#undef WORD_SIZE
-#define WORD_SIZE (sizeof (SItype) * __CHAR_BIT__)
 SItype
 __mulvsi3 (SItype a, SItype b)
 {
-  const DItype w = (DItype) a * (DItype) b;
+  SItype w;
 
-  if ((SItype) (w >> WORD_SIZE) != (SItype) w >> (WORD_SIZE-1))
+  if (__builtin_mul_overflow (a, b, &w))
     abort ();
 
   return w;
@@ -178,23 +176,23 @@ __mulvsi3 (SItype a, SItype b)
 Wtype
 __negvSI2 (Wtype a)
 {
-  const Wtype w = -(UWtype) a;
+  Wtype w;
 
-  if (a >= 0 ? w > 0 : w < 0)
+  if (__builtin_sub_overflow (0, a, &w))
     abort ();
 
-   return w;
+  return w;
 }
 #ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
 SItype
 __negvsi2 (SItype a)
 {
-  const SItype w = -(USItype) a;
+  SItype w;
 
-  if (a >= 0 ? w > 0 : w < 0)
+  if (__builtin_sub_overflow (0, a, &w))
     abort ();
 
-   return w;
+  return w;
 }
 #endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 #endif
@@ -203,9 +201,9 @@ __negvsi2 (SItype a)
 DWtype
 __negvDI2 (DWtype a)
 {
-  const DWtype w = -(UDWtype) a;
+  DWtype w;
 
-  if (a >= 0 ? w > 0 : w < 0)
+  if (__builtin_sub_overflow (0, a, &w))
     abort ();
 
   return w;
@@ -953,7 +951,7 @@ __udivmoddi4 (UDWtype n, UDWtype d, UDWtype *rp)
      aligns the divisor under the dividend and then perform number of
      test-subtract iterations which shift the dividend left. Number of
      iterations is k + 1 where k is the number of bit positions the
-     divisor must be shifted left  to align it under the dividend.
+     divisor must be shifted left to align it under the dividend.
      quotient bits can be saved in the rightmost positions of the dividend
      as it shifts left on each test-subtract iteration. */
 
@@ -965,7 +963,7 @@ __udivmoddi4 (UDWtype n, UDWtype d, UDWtype *rp)
       k = lz1 - lz2;
       y = (y << k);
 
-      /* Dividend can exceed 2 ^ (width − 1) − 1 but still be less than the
+      /* Dividend can exceed 2 ^ (width - 1) - 1 but still be less than the
 	 aligned divisor. Normal iteration can drops the high order bit
 	 of the dividend. Therefore, first test-subtract iteration is a
 	 special case, saving its quotient bit in a separate location and
@@ -1325,37 +1323,15 @@ __udivdi3 (UDWtype n, UDWtype d)
 cmp_return_type
 __cmpdi2 (DWtype a, DWtype b)
 {
-  const DWunion au = {.ll = a};
-  const DWunion bu = {.ll = b};
-
-  if (au.s.high < bu.s.high)
-    return 0;
-  else if (au.s.high > bu.s.high)
-    return 2;
-  if ((UWtype) au.s.low < (UWtype) bu.s.low)
-    return 0;
-  else if ((UWtype) au.s.low > (UWtype) bu.s.low)
-    return 2;
-  return 1;
+  return (a > b) - (a < b) + 1;
 }
 #endif
 
 #ifdef L_ucmpdi2
 cmp_return_type
-__ucmpdi2 (DWtype a, DWtype b)
+__ucmpdi2 (UDWtype a, UDWtype b)
 {
-  const DWunion au = {.ll = a};
-  const DWunion bu = {.ll = b};
-
-  if ((UWtype) au.s.high < (UWtype) bu.s.high)
-    return 0;
-  else if ((UWtype) au.s.high > (UWtype) bu.s.high)
-    return 2;
-  if ((UWtype) au.s.low < (UWtype) bu.s.low)
-    return 0;
-  else if ((UWtype) au.s.low > (UWtype) bu.s.low)
-    return 2;
-  return 1;
+  return (a > b) - (a < b) + 1;
 }
 #endif
 

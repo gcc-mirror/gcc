@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11 } }
-// { dg-require-normal-mode "" }
 
 // Copyright (C) 2012-2020 Free Software Foundation, Inc.
 //

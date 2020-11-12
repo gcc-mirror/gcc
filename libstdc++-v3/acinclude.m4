@@ -273,13 +273,22 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
   # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
-    AC_MSG_CHECKING([for ld that supports -Wl,-z,relro])
-    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
-    if test -n "$cxx_z_relo"; then
-      OPT_LDFLAGS="-Wl,-z,relro"
-      ac_ld_relro=yes
-    fi
-    AC_MSG_RESULT($ac_ld_relro)
+    # cygwin and mingw uses PE, which has no ELF relro support,
+    # multi target ld may confuse configure machinery
+    case "$host" in
+    *-*-cygwin*)
+     ;;
+    *-*-mingw*)
+     ;;
+    *)
+      AC_MSG_CHECKING([for ld that supports -Wl,-z,relro])
+      cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+      if test -n "$cxx_z_relo"; then
+        OPT_LDFLAGS="-Wl,-z,relro"
+        ac_ld_relro=yes
+      fi
+      AC_MSG_RESULT($ac_ld_relro)
+    esac
   fi
 
   # Set linker optimization flags.

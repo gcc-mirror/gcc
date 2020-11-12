@@ -456,7 +456,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator=(const jthread&) = delete;
 
     jthread&
-    operator=(jthread&&) noexcept = default;
+    operator=(jthread&& __other) noexcept
+    {
+      std::jthread(std::move(__other)).swap(*this);
+      return *this;
+    }
 
     void
     swap(jthread& __other) noexcept

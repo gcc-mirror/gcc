@@ -1587,7 +1587,11 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_MAP: type = "MAP"; break;
 	  case OMP_LIST_TO: type = "TO"; break;
 	  case OMP_LIST_FROM: type = "FROM"; break;
-	  case OMP_LIST_REDUCTION: type = "REDUCTION"; break;
+	  case OMP_LIST_REDUCTION:
+	  case OMP_LIST_REDUCTION_INSCAN:
+	  case OMP_LIST_REDUCTION_TASK: type = "REDUCTION"; break;
+	  case OMP_LIST_IN_REDUCTION: type = "IN_REDUCTION"; break;
+	  case OMP_LIST_TASK_REDUCTION: type = "TASK_REDUCTION"; break;
 	  case OMP_LIST_DEVICE_RESIDENT: type = "DEVICE_RESIDENT"; break;
 	  case OMP_LIST_LINK: type = "LINK"; break;
 	  case OMP_LIST_USE_DEVICE: type = "USE_DEVICE"; break;
@@ -1600,6 +1604,10 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	    gcc_unreachable ();
 	  }
 	fprintf (dumpfile, " %s(", type);
+	if (list_type == OMP_LIST_REDUCTION_INSCAN)
+	  fputs ("inscan, ", dumpfile);
+	if (list_type == OMP_LIST_REDUCTION_TASK)
+	  fputs ("task, ", dumpfile);
 	show_omp_namelist (list_type, omp_clauses->lists[list_type]);
 	fputc (')', dumpfile);
       }

@@ -1,7 +1,4 @@
-// { dg-do compile { target c++11 } }
-// { dg-require-debug-mode "" }
-
-// Copyright (C) 2012-2020 Free Software Foundation, Inc.
+// Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,15 +15,21 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <array>
+// { dg-options "-std=gnu++17 -D_GLIBCXX_ASSERTIONS" }
+// { dg-do compile { target c++17 xfail *-*-* } }
 
-std::array<int, 1> a{};
-const std::array<int, 1> ca{};
+#include <string_view>
 
-int n1 = std::get<1>(a);
-int n2 = std::get<1>(std::move(a));
-int n3 = std::get<1>(ca);
+typedef std::wstring_view string_view_type;
 
-// { dg-error "static assertion failed" "" { target *-*-* } 315 }
-// { dg-error "static assertion failed" "" { target *-*-* } 324 }
-// { dg-error "static assertion failed" "" { target *-*-* } 332 }
+constexpr wchar_t
+front()
+{
+  string_view_type s(L"");
+  return s.front();
+}
+
+static_assert(front() != L'a'); // { dg-error "non-constant condition" }
+
+// { dg-prune-output "in 'constexpr' expansion" }
+// { dg-prune-output "failed_assertion" }

@@ -185,6 +185,16 @@ DEFHOOK
  void, (rtx personality),
  NULL)
 
+/* If necessary, modify personality and LSDA references to handle
+   indirection.  This is used when the assembler supports CFI directives.  */
+DEFHOOK
+(make_eh_symbol_indirect,
+ "If necessary, modify personality and LSDA references to handle indirection.\
+  The original symbol is in @code{origsymbol} and if @code{pubvis} is true\
+  the symbol is visible outside the TU.",
+ rtx, (rtx origsymbol, bool pubvis),
+ NULL)
+
 /* Emit any directives required to unwind this instruction.  */
 DEFHOOK
 (unwind_emit,

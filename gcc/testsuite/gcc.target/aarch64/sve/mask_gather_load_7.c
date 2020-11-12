@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -ftree-vectorize -ffast-math --save-temps" } */
+/* { dg-options "-O2 -ftree-vectorize -ffast-math --save-temps --param aarch64-sve-compare-costs=0" } */
 
 #include <stdint.h>
 

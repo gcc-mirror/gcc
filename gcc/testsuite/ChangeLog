@@ -1,3 +1,431 @@
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* g++.dg/abi/macro0.C: Adjust.
+	* g++.dg/cpp0x/alignof7.C: New test.
+	* g++.dg/cpp0x/alignof8.C: New test.
+
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* g++.dg/cpp0x/alignof6.C: New test.
+
+2020-11-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* g++.dg/diagnostic/static_assert3.C: New test.
+
+2020-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/workshare-reduction-3.f90: Use (?:_ull)? instead
+	of (?:_ull) in the scan-tree-dump-times directives.
+	* gfortran.dg/gomp/workshare-reduction-26.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-27.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-28.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-36.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-37.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-38.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-39.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-40.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-41.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-42.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-43.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-44.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-45.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-46.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-47.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-56.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-57.f90: Likewise.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bias2.adb: New test.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt89.adb: New test.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/shift1.adb: New test.
+
+2020-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97797
+	* gcc.dg/torture/ssa-fre-5.c: Use __SIZETYPE__ where
+	appropriate.
+	* gcc.dg/torture/ssa-fre-6.c: Likewise.
+
+2020-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97623
+	* gcc.dg/tree-ssa/ssa-hoist-3.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-hoist-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-30.c: Likewise.
+
+2020-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cmp_1.c: New test.
+	* gcc.target/aarch64/sve/cmp_2.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_1.c: Add --param
+	aarch64-sve-compare-costs=0
+	* gcc.target/aarch64/sve/cond_arith_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_arith_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_7.c: Likewise.
+	* gcc.target/aarch64/sve/mask_load_slp_1.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_11.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_11_run.c: Likewise.
+
+2020-11-11  Hongtao Liu  <hongtao.liu@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512vl-vnni-1.c: Rename..
+	* gcc.target/i386/avx512vl-vnni-1a.c: To This.
+	* gcc.target/i386/avx512vl-vnni-1b.c: New test.
+	* gcc.target/i386/avx512vl-vnni-2.c: Ditto.
+	* gcc.target/i386/avx512vl-vnni-3.c: Ditto.
+	* gcc.target/i386/avx-vnni-1.c: Ditto.
+	* gcc.target/i386/avx-vnni-2.c: Ditto.
+	* gcc.target/i386/avx-vnni-3.c: Ditto.
+	* gcc.target/i386/avx-vnni-4.c: Ditto.
+	* gcc.target/i386/avx-vnni-5.c: Ditto.
+	* gcc.target/i386/avx-vnni-6.c: Ditto.
+	* gcc.target/i386/avx-vpdpbusd-2.c: Ditto.
+	* gcc.target/i386/avx-vpdpbusds-2.c: Ditto.
+	* gcc.target/i386/avx-vpdpwssd-2.c: Ditto.
+	* gcc.target/i386/avx-vpdpwssds-2.c: Ditto.
+	* gcc.target/i386/vnni_inline_error.c: Ditto.
+	* gcc.target/i386/avx512vnnivl-builtin.c: Ditto.
+	* gcc.target/i386/avxvnni-builtin.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mavxvnni.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+	* lib/target-supports.exp (check_effective_target_avxvnni):
+	New proc.
+
+2020-11-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/workshare-reduction-26.f90: Add (?:_ull) to
+	scan-tree-dump-times regex for -m32.
+	* gfortran.dg/gomp/workshare-reduction-27.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-28.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-3.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-36.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-37.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-38.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-39.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-40.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-41.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-42.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-43.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-44.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-45.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-46.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-47.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-56.f90: Likewise.
+	* gfortran.dg/gomp/workshare-reduction-57.f90: Likewise.
+
+2020-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/97768
+	* gfortran.dg/pr97768_1.f90: New test.
+	* gfortran.dg/pr97768_2.f90: New test.
+
+2020-11-11  Nagaraju Mekala  <nmekala@xilinx.com>
+
+	* gcc.target/microblaze/others/strings1.c: Update
+	to include $LC label.
+
+2020-11-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/zero-scratch-regs-10.c: Skip on powerpc*-*-*.
+	* c-c++-common/zero-scratch-regs-11.c: Skip on powerpc*-*-*.
+	* c-c++-common/zero-scratch-regs-5.c: Skip on powerpc*-*-aix*.
+	* c-c++-common/zero-scratch-regs-8.c: Skip on powerpc*-*-*.
+	* c-c++-common/zero-scratch-regs-9.c: Skip on powerpc*-*-*.
+
+2020-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* g++.dg/diagnostic/pr87386.C: Adjust expected output.
+	* g++.dg/diagnostic/static_assert1.C: New test.
+	* g++.dg/diagnostic/static_assert2.C: New test.
+
+2020-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/52830
+	PR c++/88982
+	PR c++/90799
+	PR c++/87765
+	PR c++/89565
+	* g++.dg/cpp0x/constexpr-52830.C: New test.
+	* g++.dg/cpp0x/vt-88982.C: New test.
+	* g++.dg/cpp1z/class-deduction76.C: New test.
+	* g++.dg/cpp1z/constexpr-lambda26.C: New test.
+	* g++.dg/cpp2a/nontype-class39.C: New test.
+
+2020-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/schedule-modifiers-2.f90: Remove some dg-error.
+	* gfortran.dg/gomp/reduction4.f90: New test.
+	* gfortran.dg/gomp/reduction5.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-1.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-2.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-3.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-4.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-5.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-6.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-7.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-8.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-9.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-10.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-11.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-12.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-13.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-14.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-15.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-16.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-17.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-18.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-19.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-20.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-21.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-22.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-23.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-24.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-25.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-26.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-27.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-28.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-29.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-30.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-31.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-32.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-33.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-34.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-35.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-36.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-37.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-38.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-39.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-40.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-41.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-42.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-43.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-44.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-45.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-46.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-47.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-48.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-49.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-50.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-51.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-52.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-53.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-54.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-55.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-56.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-57.f90: New test.
+	* gfortran.dg/gomp/workshare-reduction-58.f90: New test.
+
+2020-11-10  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* c-c++-common/ubsan/sanitize-recover-7.c: Update testcase.
+
+2020-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97748
+	* c-c++-common/Wunused-value-1.c: New test.
+
+2020-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97769
+	* gcc.dg/vect/pr97769.c: New testcase.
+
+2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/gomp/clauses-2.c: Remove dg-error cases now valid.
+	* gfortran.dg/gomp/map-2.f90: Likewise.
+	* c-c++-common/gomp/map-5.c: New testcase.
+
+2020-11-10  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/vector/long-double-callee-abi-scan.c: New test.
+	* gcc.target/s390/vector/long-double-caller-abi-run.c: New test.
+	* gcc.target/s390/vector/long-double-caller-abi-scan.c: New test.
+	* gcc.target/s390/vector/long-double-copysign.c: New test.
+	* gcc.target/s390/vector/long-double-fprx2-constant.c: New test.
+	* gcc.target/s390/vector/long-double-from-double.c: New test.
+	* gcc.target/s390/vector/long-double-from-float.c: New test.
+	* gcc.target/s390/vector/long-double-from-i16.c: New test.
+	* gcc.target/s390/vector/long-double-from-i32.c: New test.
+	* gcc.target/s390/vector/long-double-from-i64.c: New test.
+	* gcc.target/s390/vector/long-double-from-i8.c: New test.
+	* gcc.target/s390/vector/long-double-from-u16.c: New test.
+	* gcc.target/s390/vector/long-double-from-u32.c: New test.
+	* gcc.target/s390/vector/long-double-from-u64.c: New test.
+	* gcc.target/s390/vector/long-double-from-u8.c: New test.
+	* gcc.target/s390/vector/long-double-to-double.c: New test.
+	* gcc.target/s390/vector/long-double-to-float.c: New test.
+	* gcc.target/s390/vector/long-double-to-i16.c: New test.
+	* gcc.target/s390/vector/long-double-to-i32.c: New test.
+	* gcc.target/s390/vector/long-double-to-i64.c: New test.
+	* gcc.target/s390/vector/long-double-to-i8.c: New test.
+	* gcc.target/s390/vector/long-double-to-u16.c: New test.
+	* gcc.target/s390/vector/long-double-to-u32.c: New test.
+	* gcc.target/s390/vector/long-double-to-u64.c: New test.
+	* gcc.target/s390/vector/long-double-to-u8.c: New test.
+	* gcc.target/s390/vector/long-double-vec-duplicate.c: New test.
+	* gcc.target/s390/vector/long-double-wf.h: New test.
+	* gcc.target/s390/vector/long-double-wfaxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfcxb-0001.c: New test.
+	* gcc.target/s390/vector/long-double-wfcxb-0111.c: New test.
+	* gcc.target/s390/vector/long-double-wfcxb-1011.c: New test.
+	* gcc.target/s390/vector/long-double-wfcxb-1101.c: New test.
+	* gcc.target/s390/vector/long-double-wfdxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfixb.c: New test.
+	* gcc.target/s390/vector/long-double-wfkxb-0111.c: New test.
+	* gcc.target/s390/vector/long-double-wfkxb-1011.c: New test.
+	* gcc.target/s390/vector/long-double-wfkxb-1101.c: New test.
+	* gcc.target/s390/vector/long-double-wflcxb.c: New test.
+	* gcc.target/s390/vector/long-double-wflpxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfmaxb-2.c: New test.
+	* gcc.target/s390/vector/long-double-wfmaxb-3.c: New test.
+	* gcc.target/s390/vector/long-double-wfmaxb-disabled.c: New test.
+	* gcc.target/s390/vector/long-double-wfmaxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfmsxb-disabled.c: New test.
+	* gcc.target/s390/vector/long-double-wfmsxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfmxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfnmaxb-disabled.c: New test.
+	* gcc.target/s390/vector/long-double-wfnmaxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfnmsxb-disabled.c: New test.
+	* gcc.target/s390/vector/long-double-wfnmsxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfsqxb.c: New test.
+	* gcc.target/s390/vector/long-double-wfsxb-1.c: New test.
+	* gcc.target/s390/vector/long-double-wfsxb.c: New test.
+	* gcc.target/s390/vector/long-double-wftcixb-1.c: New test.
+	* gcc.target/s390/vector/long-double-wftcixb.c: New test.
+
+2020-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt88.adb: New test.
+
+2020-11-10  David Candler  <david.candler@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqrshrn_high_n.c: Added skip
+	directive.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrshrun_high_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshrn_high_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshrun_high_n.c: Likewise.
+
+2020-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97764
+	* gcc.c-torture/execute/pr97764.c: New test.
+
+2020-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95847
+	* gfortran.dg/coverage.f90: New test.
+
+2020-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97760
+	* gcc.dg/vect/pr97760.c: New testcase.
+
+2020-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/opt/pr97767.C: New test.
+
+2020-11-10  hongyuw1  <hongyuw1@intel.com>
+
+	* gcc.target/i386/keylocker-aesdec128kl.c: Adjust regex patterns.
+	* gcc.target/i386/keylocker-aesdec256kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesdecwide128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesdecwide256kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesenc128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesencwide128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesencwide256kl.c: Likewise.
+	* gcc.target/i386/keylocker-encodekey128.c: Likewise.
+	* gcc.target/i386/keylocker-encodekey256.c: Likewise.
+	* gcc.target/i386/keylocker-aesenc256kl.c: New test.
+
+2020-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97567-2.c: New.
+
+2020-11-09  Marek Polacek  <polacek@redhat.com>
+
+	DR 1914
+	* c-c++-common/attr-fallthrough-2.c: Adjust dg-warning.
+	* g++.dg/cpp0x/fallthrough2.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-60.C: Turn dg-error into dg-warning.
+	* g++.dg/cpp1y/attr-deprecated-2.C: Likewise.
+	* g++.dg/cpp2a/attr-likely2.C: Adjust dg-warning.
+	* g++.dg/cpp2a/nodiscard-once.C: Turn dg-error into dg-warning.
+	* g++.dg/cpp0x/gen-attrs-72.C: New test.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-decltype2.C: New file.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/93907
+	* g++.dg/cpp2a/concepts-using3.C: New test, based off of
+	concepts-using2.C.
+
+2020-11-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/lookup/using26.C: Adjust location.
+	* g++.old-deja/g++.other/using1.C: Adjust location.
+
+2020-11-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97762
+	* g++.dg/warn/Wvexing-parse8.C: New test.
+
+2020-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	* gcc.dg/pragma-diag-6.c: Adjust expected diagnostics
+	accordingly.
+
+2020-11-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/90111
+	* gfortran.dg/goacc/specification-part.f90: New test.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97761
+	* gfortran.dg/vect/pr97761.f90: New testcase.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97753
+	* gcc.dg/vect/pr97753.c: New testcase.
+
+2020-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97746
+	* gcc.dg/vect/bb-slp-pr97746.c: New testcase.
+
+2020-11-09  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* gcc.target/arm/simd/vld1_lane_bf16_1.c: Require target to
+	support and add -mfloat-abi=hard flag.
+	* gcc.target/arm/simd/vld1_lane_bf16_indices_1.c: Likewise.
+	* gcc.target/arm/simd/vld1q_lane_bf16_indices_1.c: Likewise.
+	* gcc.target/arm/simd/vst1_lane_bf16_1.c: Likewise.
+	* gcc.target/arm/simd/vst1_lane_bf16_indices_1.c: Likewise.
+	* gcc.target/arm/simd/vstq1_lane_bf16_indices_1.c: Likewise.
+
 2020-11-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* obj-c++.dg/property/at-property-4.mm: Test handling class

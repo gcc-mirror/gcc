@@ -34,7 +34,7 @@ fn (int i)
     __attribute__((fallthrough ("x"))); /* { dg-warning "specified with a parameter" } */
   case 7:
     bar (1);
-    __attribute__((fallthrough, fallthrough)); /* { dg-warning "attribute specified multiple times" } */
+    __attribute__((fallthrough, fallthrough)); /* { dg-warning "specified multiple times" } */
   case 8:
     bar (1);
     __attribute__((fallthrough));

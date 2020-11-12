@@ -2884,7 +2884,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	       || TREE_PUBLIC (olddecl)
 	       || TREE_STATIC (olddecl))
 	      && DECL_SECTION_NAME (newdecl) != NULL)
-	    set_decl_section_name (olddecl, DECL_SECTION_NAME (newdecl));
+	    set_decl_section_name (olddecl, newdecl);
 
 	  /* This isn't quite correct for something like
 		int __thread x attribute ((tls_model ("local-exec")));

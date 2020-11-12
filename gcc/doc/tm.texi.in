@@ -6456,6 +6456,8 @@ the jump-table.
 
 @hook TARGET_ASM_UNWIND_EMIT
 
+@hook TARGET_ASM_MAKE_EH_SYMBOL_INDIRECT
+
 @hook TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
 
 @node Exception Region Output

@@ -626,6 +626,8 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
     case OMP_CLAUSE_LASTPRIVATE:
     case OMP_CLAUSE_LINEAR:
     case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
       break;
     default:
       gcc_unreachable ();
@@ -699,7 +701,9 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
   then_b = gfc_finish_block (&cond_block);
 
   /* Reduction clause requires allocated ALLOCATABLE.  */
-  if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_REDUCTION)
+  if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_REDUCTION
+      && OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_IN_REDUCTION
+      && OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_TASK_REDUCTION)
     {
       gfc_init_block (&cond_block);
       if (GFC_DESCRIPTOR_TYPE_P (type))
@@ -2029,9 +2033,25 @@ gfc_trans_omp_array_reduction_or_udr (tree c, gfc_omp_namelist *n, locus where)
 }
 
 static tree
-gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
+gfc_trans_omp_reduction_list (int kind, gfc_omp_namelist *namelist, tree list,
 			      locus where, bool mark_addressable)
 {
+  omp_clause_code clause = OMP_CLAUSE_REDUCTION;
+  switch (kind)
+    {
+    case OMP_LIST_REDUCTION:
+    case OMP_LIST_REDUCTION_INSCAN:
+    case OMP_LIST_REDUCTION_TASK:
+      break;
+    case OMP_LIST_IN_REDUCTION:
+      clause = OMP_CLAUSE_IN_REDUCTION;
+      break;
+    case OMP_LIST_TASK_REDUCTION:
+      clause = OMP_CLAUSE_TASK_REDUCTION;
+      break;
+    default:
+      gcc_unreachable ();
+    }
   for (; namelist != NULL; namelist = namelist->next)
     if (namelist->sym->attr.referenced)
       {
@@ -2039,10 +2059,14 @@ gfc_trans_omp_reduction_list (gfc_omp_namelist *namelist, tree list,
 	if (t != error_mark_node)
 	  {
 	    tree node = build_omp_clause (gfc_get_location (&namelist->where),
-					  OMP_CLAUSE_REDUCTION);
+					  clause);
 	    OMP_CLAUSE_DECL (node) = t;
 	    if (mark_addressable)
 	      TREE_ADDRESSABLE (t) = 1;
+	    if (kind == OMP_LIST_REDUCTION_INSCAN)
+	      OMP_CLAUSE_REDUCTION_INSCAN (node) = 1;
+	    if (kind == OMP_LIST_REDUCTION_TASK)
+	      OMP_CLAUSE_REDUCTION_TASK (node) = 1;
 	    switch (namelist->u.reduction_op)
 	      {
 	      case OMP_REDUCTION_PLUS:
@@ -2267,10 +2291,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       switch (list)
 	{
 	case OMP_LIST_REDUCTION:
+	case OMP_LIST_REDUCTION_INSCAN:
+	case OMP_LIST_REDUCTION_TASK:
+	case OMP_LIST_IN_REDUCTION:
+	case OMP_LIST_TASK_REDUCTION:
 	  /* An OpenACC async clause indicates the need to set reduction
 	     arguments addressable, to allow asynchronous copy-out.  */
-	  omp_clauses = gfc_trans_omp_reduction_list (n, omp_clauses, where,
-						      clauses->async);
+	  omp_clauses = gfc_trans_omp_reduction_list (list, n, omp_clauses,
+						      where, clauses->async);
 	  break;
 	case OMP_LIST_PRIVATE:
 	  clause_code = OMP_CLAUSE_PRIVATE;
@@ -5207,18 +5235,27 @@ gfc_split_omp_clauses (gfc_code *code,
       /* Reduction is allowed on simd, do, parallel and teams.
 	 Duplicate it on all of them, but omit on do if
 	 parallel is present.  */
-      if (mask & GFC_OMP_MASK_TEAMS)
-	clausesa[GFC_OMP_SPLIT_TEAMS].lists[OMP_LIST_REDUCTION]
-	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
-      if (mask & GFC_OMP_MASK_PARALLEL)
-	clausesa[GFC_OMP_SPLIT_PARALLEL].lists[OMP_LIST_REDUCTION]
-	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
-      else if (mask & GFC_OMP_MASK_DO)
-	clausesa[GFC_OMP_SPLIT_DO].lists[OMP_LIST_REDUCTION]
-	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
-      if (mask & GFC_OMP_MASK_SIMD)
-	clausesa[GFC_OMP_SPLIT_SIMD].lists[OMP_LIST_REDUCTION]
-	  = code->ext.omp_clauses->lists[OMP_LIST_REDUCTION];
+      for (int i = OMP_LIST_REDUCTION; i <= OMP_LIST_REDUCTION_TASK; i++)
+	{
+	  if (mask & GFC_OMP_MASK_TEAMS)
+	    clausesa[GFC_OMP_SPLIT_TEAMS].lists[i]
+	      = code->ext.omp_clauses->lists[i];
+	  if (mask & GFC_OMP_MASK_PARALLEL)
+	    clausesa[GFC_OMP_SPLIT_PARALLEL].lists[i]
+	      = code->ext.omp_clauses->lists[i];
+	  else if (mask & GFC_OMP_MASK_DO)
+	    clausesa[GFC_OMP_SPLIT_DO].lists[i]
+	      = code->ext.omp_clauses->lists[i];
+	  if (mask & GFC_OMP_MASK_SIMD)
+	    clausesa[GFC_OMP_SPLIT_SIMD].lists[i]
+	      = code->ext.omp_clauses->lists[i];
+	}
+      if (mask & GFC_OMP_MASK_TARGET)
+	clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_IN_REDUCTION]
+	  = code->ext.omp_clauses->lists[OMP_LIST_IN_REDUCTION];
+      if (mask & GFC_OMP_MASK_TASKLOOP)
+	clausesa[GFC_OMP_SPLIT_TASKLOOP].lists[OMP_LIST_IN_REDUCTION]
+	  = code->ext.omp_clauses->lists[OMP_LIST_IN_REDUCTION];
       /* Linear clause is supported on do and simd,
 	 put it on the innermost one.  */
       clausesa[innermost].lists[OMP_LIST_LINEAR]

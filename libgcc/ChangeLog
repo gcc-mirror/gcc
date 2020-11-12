@@ -1,3 +1,17 @@
+2020-11-10  Jeff Law  <law@redhat.com>
+
+	* libgcc2.c: Fix whitespace issues in most recent change.
+
+2020-11-10  Stefan Kanthak  <stefan.kanthak@nexgo.de>
+
+	* libgcc2.c (__addvSI3): Use overflow builtins.
+	(__addvsi3, __addvDI3 ,__subvSI3, __subvsi3): Likewise.
+	(__subvDI3 __mulvSI3, __mulvsi3, __negvSI2): Likewise.
+	(__negvsi2, __negvDI2): Likewise.
+	(__cmpdi2, __ucmpdi2): Adjust implementation to improve
+	generated code.
+	* libgcc2.h (__ucmpdi2): Adjust prototype.
+
 2020-11-03  Pat Bernardi  <bernardi@adacore.com>
 	    Olivier Hainque   <hainque@adacore.com>
 

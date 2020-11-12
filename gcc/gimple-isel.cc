@@ -199,9 +199,8 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
   unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
 
 
-  gcc_assert (known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (cmp_op_mode))
-	      && known_eq (GET_MODE_NUNITS (mode),
-			   GET_MODE_NUNITS (cmp_op_mode)));
+  gcc_assert (known_eq (GET_MODE_NUNITS (mode),
+			GET_MODE_NUNITS (cmp_op_mode)));
 
   icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
   if (icode == CODE_FOR_nothing)

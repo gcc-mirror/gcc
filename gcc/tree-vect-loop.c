@@ -3326,14 +3326,17 @@ pop:
 	  fail = true;
 	  break;
 	}
-      /* Check there's only a single stmt the op is used on inside
-         of the loop.  */
+      /* Check there's only a single stmt the op is used on.  For the
+	 not value-changing tail and the last stmt allow out-of-loop uses.
+	 ???  We could relax this and handle arbitrary live stmts by
+	 forcing a scalar epilogue for example.  */
       imm_use_iterator imm_iter;
       gimple *op_use_stmt;
       unsigned cnt = 0;
       FOR_EACH_IMM_USE_STMT (op_use_stmt, imm_iter, op)
 	if (!is_gimple_debug (op_use_stmt)
-	    && flow_bb_inside_loop_p (loop, gimple_bb (op_use_stmt)))
+	    && (*code != ERROR_MARK
+		|| flow_bb_inside_loop_p (loop, gimple_bb (op_use_stmt))))
 	  {
 	    /* We want to allow x + x but not x < 1 ? x : 2.  */
 	    if (is_gimple_assign (op_use_stmt)
@@ -8068,8 +8071,11 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  nivs = least_common_multiple (group_size,
 					const_nunits) / const_nunits;
 	  for (; ivn < nivs; ++ivn)
-	    SLP_TREE_VEC_STMTS (slp_node)
-	      .quick_push (SLP_TREE_VEC_STMTS (slp_node)[0]);
+	    {
+	      SLP_TREE_VEC_STMTS (slp_node)
+		.quick_push (SLP_TREE_VEC_STMTS (slp_node)[0]);
+	      vec_steps.safe_push (vec_steps[0]);
+	    }
 	}
 
       /* Re-use IVs when we can.  We are generating further vector

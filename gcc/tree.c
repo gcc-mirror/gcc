@@ -773,6 +773,33 @@ set_decl_section_name (tree node, const char *value)
   snode->set_section (value);
 }
 
+/* Set section name of NODE to match the section name of OTHER.
+
+   set_decl_section_name (decl, other) is equivalent to
+   set_decl_section_name (decl, DECL_SECTION_NAME (other)), but possibly more
+   efficient.  */
+void
+set_decl_section_name (tree decl, const_tree other)
+{
+  struct symtab_node *other_node = symtab_node::get (other);
+  if (other_node)
+    {
+      struct symtab_node *decl_node;
+      if (VAR_P (decl))
+    decl_node = varpool_node::get_create (decl);
+      else
+    decl_node = cgraph_node::get_create (decl);
+      decl_node->set_section (*other_node);
+    }
+  else
+    {
+      struct symtab_node *decl_node = symtab_node::get (decl);
+      if (!decl_node)
+    return;
+      decl_node->set_section (NULL);
+    }
+}
+
 /* Return TLS model of a variable NODE.  */
 enum tls_model
 decl_tls_model (const_tree node)
@@ -1214,7 +1241,7 @@ copy_node (tree node MEM_STAT_DECL)
 	  SET_DECL_VALUE_EXPR (t, DECL_VALUE_EXPR (node));
 	  DECL_HAS_VALUE_EXPR_P (t) = 1;
 	}
-      /* DECL_DEBUG_EXPR is copied explicitely by callers.  */
+      /* DECL_DEBUG_EXPR is copied explicitly by callers.  */
       if (VAR_P (node))
 	{
 	  DECL_HAS_DEBUG_EXPR_P (t) = 0;
@@ -15030,6 +15057,10 @@ maybe_wrap_with_location (tree expr, location_t loc)
   /* For now, don't add wrappers to exceptional tree nodes, to minimize
      any impact of the wrapper nodes.  */
   if (EXCEPTIONAL_CLASS_P (expr))
+    return expr;
+
+  /* Compiler-generated temporary variables don't need a wrapper.  */
+  if (DECL_P (expr) && DECL_ARTIFICIAL (expr) && DECL_IGNORED_P (expr))
     return expr;
 
   /* If any auto_suppress_location_wrappers are active, don't create

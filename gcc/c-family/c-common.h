@@ -1233,6 +1233,7 @@ extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern const char *c_omp_map_clause_name (tree, bool);
+extern void c_omp_adjust_map_clauses (tree, bool);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
 static inline tree
@@ -1373,7 +1374,7 @@ extern void warn_tautological_cmp (const op_location_t &, enum tree_code,
 				   tree, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
 					  tree);
-extern bool warn_if_unused_value (const_tree, location_t);
+extern bool warn_if_unused_value (const_tree, location_t, bool = false);
 extern bool strict_aliasing_warning (location_t, tree, tree);
 extern void sizeof_pointer_memaccess_warning (location_t *, tree,
 					      vec<tree, va_gc> *, tree *,

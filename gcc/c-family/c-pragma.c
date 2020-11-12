@@ -809,16 +809,15 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   unsigned int option_index = find_opt (option_string + 1, lang_mask);
   if (option_index == OPT_SPECIAL_unknown)
     {
-      option_proposer op;
-      const char *hint = op.suggest_option (option_string + 1);
-      if (hint)
-	warning_at (loc, OPT_Wpragmas,
-		    "unknown option after %<#pragma GCC diagnostic%> kind;"
-		    " did you mean %<-%s%>?", hint);
-      else
-	warning_at (loc, OPT_Wpragmas,
-		    "unknown option after %<#pragma GCC diagnostic%> kind");
-
+      auto_diagnostic_group d;
+      if (warning_at (loc, OPT_Wpragmas,
+		      "unknown option after %<#pragma GCC diagnostic%> kind"))
+	{
+	  option_proposer op;
+	  const char *hint = op.suggest_option (option_string + 1);
+	  if (hint)
+	    inform (loc, "did you mean %<-%s%>?", hint);
+	}
       return;
     }
   else if (!(cl_options[option_index].flags & CL_WARNING))

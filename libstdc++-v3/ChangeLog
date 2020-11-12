@@ -1,3 +1,189 @@
+2020-11-11  Jonathan Yong  <10walls@gmail.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Exclude
+	cygwin and mingw from relro linker test.
+	* configure: Regenerate.
+
+2020-11-11  Paul Scharnofske  <asynts@gmail.com>
+
+	* include/std/thread (jthread::operator=(jthread&&)): Transfer
+	any existing state to a temporary that will request a stop and
+	then join.
+	* testsuite/30_threads/jthread/jthread.cc: Test move assignment.
+
+2020-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token (_Stop_state_t::_M_requester): Define
+	new struct with members to store and check the thread ID.
+	(_Stop_state_t::_M_request_stop()): Use _M_requester._M_set().
+	(_Stop_state_t::_M_remove_callback(_Stop_cb*)): Use
+	_M_requester._M_is_current_thread().
+
+2020-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (__syncbuf_base): New class template.
+	(emit_on_flush, noemit_on_flush, flush_emit): New manipulators.
+	* include/std/syncstream (basic_syncbuf): Derive from
+	__syncbuf_base instead of basic_streambuf.
+	(basic_syncbuf::operator=): Remove self-assignment check.
+	(basic_syncbuf::swap): Remove self-swap check.
+	(basic_syncbuf::emit): Do not skip pubsync() call if sequence
+	is empty.
+	(basic_syncbuf::sync): Remove no-op pubsync on stringbuf.
+	(basic_syncbuf::overflow): Define override.
+	* testsuite/27_io/basic_syncstream/basic_ops/1.cc: Test
+	basic_osyncstream::put(char_type).
+	* testsuite/27_io/basic_ostream/emit/1.cc: New test.
+
+2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/generic/c_locale.cc (__set_C_locale()): New function
+	to set the "C" locale and return the name of the previous locale.
+	(__convert_to_v<float>, __convert_to_v<double>)
+	(__convert_to_v<long double>): Use __set_C_locale and set failbit on
+	error.
+
+2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/sstream (basic_stringbug, basic_istringstream)
+	(basic_ostringstream, basic_stringstream): Reorder C++20
+	constructors to be declared next to other constructors.
+
+2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Tighten patterns.
+	(GLIBCXX_3.4.29): Export new symbols.
+	* include/bits/alloc_traits.h (__allocator_like): New concept.
+	* include/std/sstream (basic_stringbuf::swap): Add exception
+	specification.
+	(basic_stringbuf::str() const): Add ref-qualifier. Use new
+	_M_high_mark function.
+	(basic_stringbuf::str(const SAlloc&) const): Define new function.
+	(basic_stringbuf::str() &&): Likewise.
+	(basic_stringbuf::str(const basic_string<C,T,SAlloc>&)):
+	Likewise.
+	(basic_stringbuf::str(basic_string<C,T,Alloc>&&)): Likewise.
+	(basic_stringbuf::view() const): Use _M_high_mark.
+	(basic_istringstream::str, basic_ostringstream::str)
+	(basic_stringstream::str): Define new overloads.
+	* src/c++20/sstream-inst.cc (basic_stringbuf::str)
+	(basic_istringstream::str, basic_ostringstream::str)
+	(basic_stringstream::str): Explicit instantiation definitions
+	for new overloads.
+	* testsuite/27_io/basic_istringstream/view/char/1.cc: Add more
+	checks.
+	* testsuite/27_io/basic_istringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/view/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/view/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/view/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_istringstream/str/char/2.cc: New test.
+	* testsuite/27_io/basic_istringstream/str/wchar_t/2.cc: New test.
+	* testsuite/27_io/basic_ostringstream/str/char/3.cc: New test.
+	* testsuite/27_io/basic_ostringstream/str/wchar_t/3.cc: New test.
+	* testsuite/27_io/basic_stringbuf/str/char/4.cc: New test.
+	* testsuite/27_io/basic_stringbuf/str/wchar_t/4.cc: New test.
+	* testsuite/27_io/basic_stringstream/str/char/5.cc: New test.
+	* testsuite/27_io/basic_stringstream/str/wchar_t/5.cc.cc: New test.
+
+2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97415
+	* include/std/sstream (basic_stringbuf::_M_update_egptr)
+	(basic_stringbuf::__xfer_bufptrs::__xfer_bufptrs): Check for
+	null before comparing pointers.
+
+2020-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/array: Remove.
+	* include/Makefile.am: Remove <debug/array>.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/functional: Adapt.
+	* include/std/array: Move to _GLIBCXX_INLINE_VERSION namespace.
+	* include/std/functional: Adapt.
+	* include/std/span: Adapt.
+	* testsuite/23_containers/array/debug/back1_neg.cc:
+	Remove dg-require-debug-mode. Add -D_GLIBCXX_ASSERTIONS option.
+	* testsuite/23_containers/array/debug/back2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/front1_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/front2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/square_brackets_operator1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/debug/square_brackets_operator2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/element_access/60497.cc
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Remove.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc
+	* testsuite/23_containers/array/tuple_interface/tuple_element_debug_neg.cc
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc
+
+2020-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/assertions.h (__glibcxx_requires_non_empty_range):
+	Remove __builtin_expect.
+	(__glibcxx_requires_subscript): Likewise.
+	(__glibcxx_requires_nonempty): Likewise.
+	* include/debug/formatter.h (__check_singular): Add C++11 constexpr
+	qualification.
+	* include/debug/helper_functions.h (__check_singular): Likewise. Skip
+	check if constant evaluated.
+	(__valid_range): Do not skip check if constant evaluated.
+	* include/debug/macros.h (_GLIBCXX_DEBUG_VERIFY_COND_AT): Add
+	__builtin_expect.
+	(_GLIBCXX_DEBUG_VERIFY_AT_F): Use __glibcxx_assert_1.
+	* testsuite/21_strings/basic_string_view/element_access/char/back_constexpr_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/element_access/char/constexpr.cc: New test.
+	* testsuite/21_strings/basic_string_view/element_access/char/constexpr_neg.cc: New test.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_back_constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_constexpr_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/back_constexpr_neg.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/constexpr.cc: New test.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/constexpr_neg.cc: New test.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/front_constexpr_neg.cc:
+	New test.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_neg.cc: New test.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_pred_neg.cc: New test.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_valid_range_neg.cc: New test.
+	* testsuite/25_algorithms/lower_bound/debug/partitioned_neg.cc: New test.
+	* testsuite/25_algorithms/lower_bound/debug/partitioned_pred_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_pred_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_valid_range_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/partitioned_neg.cc: New test.
+	* testsuite/25_algorithms/upper_bound/debug/partitioned_pred_neg.cc: New test.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uniform_int_dist.h (__detail::_Power_of_2):
+	Document that true result for zero is intentional.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__popcount): Remove redundant check for zero.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97729
+	* libsupc++/exception_ptr.h (exception_ptr::exception_ptr())
+	(exception_ptr::exception_ptr(const exception_ptr&))
+	(exception_ptr::~exception_ptr()): Remove 'always_inline'
+	attributes. Use 'inline' unconditionally.
+
+2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97758
+	* include/bits/std_function.h [!__cpp_rtti]: Include <typeinfo>.
+
 2020-11-07  Liu Hao  <lh_mouse@126.com>
 
 	* libsupc++/cxxabi.h: (__cxa_atexit): mark with _GLIBCXX_CDTOR_CALLABI

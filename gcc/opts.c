@@ -688,30 +688,26 @@ control_options_for_live_patching (struct gcc_options *opts,
     {
     case LIVE_PATCHING_INLINE_ONLY_STATIC:
       if (opts_set->x_flag_ipa_cp_clone && opts->x_flag_ipa_cp_clone)
-	error_at (loc,
-		  "%<-fipa-cp-clone%> is incompatible with "
-		  "%<-flive-patching=inline-only-static%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-cp-clone", "-flive-patching=inline-only-static");
       else
 	opts->x_flag_ipa_cp_clone = 0;
 
       if (opts_set->x_flag_ipa_sra && opts->x_flag_ipa_sra)
-	error_at (loc,
-		  "%<-fipa-sra%> is incompatible with "
-		  "%<-flive-patching=inline-only-static%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-sra", "-flive-patching=inline-only-static");
       else
 	opts->x_flag_ipa_sra = 0;
 
       if (opts_set->x_flag_partial_inlining && opts->x_flag_partial_inlining)
-	error_at (loc,
-		  "%<-fpartial-inlining%> is incompatible with "
-		  "%<-flive-patching=inline-only-static%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fpartial-inlining", "-flive-patching=inline-only-static");
       else
 	opts->x_flag_partial_inlining = 0;
 
       if (opts_set->x_flag_ipa_cp && opts->x_flag_ipa_cp)
-	error_at (loc,
-		  "%<-fipa-cp%> is incompatible with "
-		  "%<-flive-patching=inline-only-static%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-cp", "-flive-patching=inline-only-static");
       else
 	opts->x_flag_ipa_cp = 0;
 
@@ -719,9 +715,9 @@ control_options_for_live_patching (struct gcc_options *opts,
     case LIVE_PATCHING_INLINE_CLONE:
       /* live patching should disable whole-program optimization.  */
       if (opts_set->x_flag_whole_program && opts->x_flag_whole_program)
-	error_at (loc,
-		  "%<-fwhole-program%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fwhole-program",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_whole_program = 0;
 
@@ -730,65 +726,65 @@ control_options_for_live_patching (struct gcc_options *opts,
 	 && !flag_partial_inlining.  */
 
       if (opts_set->x_flag_ipa_pta && opts->x_flag_ipa_pta)
-	error_at (loc,
-		  "%<-fipa-pta%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-pta",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_pta = 0;
 
       if (opts_set->x_flag_ipa_reference && opts->x_flag_ipa_reference)
-	error_at (loc,
-		  "%<-fipa-reference%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-reference",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_reference = 0;
 
       if (opts_set->x_flag_ipa_ra && opts->x_flag_ipa_ra)
-	error_at (loc,
-		  "%<-fipa-ra%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-ra",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_ra = 0;
 
       if (opts_set->x_flag_ipa_icf && opts->x_flag_ipa_icf)
-	error_at (loc,
-		  "%<-fipa-icf%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-icf",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_icf = 0;
 
       if (opts_set->x_flag_ipa_icf_functions && opts->x_flag_ipa_icf_functions)
-	error_at (loc,
-		  "%<-fipa-icf-functions%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-icf-functions",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_icf_functions = 0;
 
       if (opts_set->x_flag_ipa_icf_variables && opts->x_flag_ipa_icf_variables)
-	error_at (loc,
-		  "%<-fipa-icf-variables%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-icf-variables",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_icf_variables = 0;
 
       if (opts_set->x_flag_ipa_bit_cp && opts->x_flag_ipa_bit_cp)
-	error_at (loc,
-		  "%<-fipa-bit-cp%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-bit-cp",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_bit_cp = 0;
 
       if (opts_set->x_flag_ipa_vrp && opts->x_flag_ipa_vrp)
-	error_at (loc,
-		  "%<-fipa-vrp%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-vrp",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_vrp = 0;
 
       if (opts_set->x_flag_ipa_pure_const && opts->x_flag_ipa_pure_const)
-	error_at (loc,
-		  "%<-fipa-pure-const%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-pure-const",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_pure_const = 0;
 
@@ -804,18 +800,18 @@ control_options_for_live_patching (struct gcc_options *opts,
       /* discovery of functions/variables with no address taken.  */
       if (opts_set->x_flag_ipa_reference_addressable
 	  && opts->x_flag_ipa_reference_addressable)
-	error_at (loc,
-		  "%<-fipa-reference-addressable%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-reference-addressable",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_reference_addressable = 0;
 
       /* ipa stack alignment propagation.  */
       if (opts_set->x_flag_ipa_stack_alignment
 	  && opts->x_flag_ipa_stack_alignment)
-	error_at (loc,
-		  "%<-fipa-stack-alignment%> is incompatible with "
-		  "%<-flive-patching=inline-only-static|inline-clone%>");
+	error_at (loc, "%qs is incompatible with %qs",
+		  "-fipa-stack-alignment",
+		  "-flive-patching=inline-only-static|inline-clone");
       else
 	opts->x_flag_ipa_stack_alignment = 0;
       break;
@@ -1081,21 +1077,19 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   /* Userspace and kernel ASan conflict with each other.  */
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
-    error_at (loc,
-	      "%<-fsanitize=address%> is incompatible with "
-	      "%<-fsanitize=kernel-address%>");
+    error_at (loc, "%qs is incompatible with %qs",
+	      "-fsanitize=address", "-fsanitize=kernel-address");
 
   /* And with TSan.  */
   if ((opts->x_flag_sanitize & SANITIZE_ADDRESS)
       && (opts->x_flag_sanitize & SANITIZE_THREAD))
-    error_at (loc,
-	      "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> "
-	      "are incompatible with %<-fsanitize=thread%>");
+    error_at (loc, "%qs is incompatible with %qs",
+	      "-fsanitize=thread", "-fsanitize=address|kernel-address");
 
   if ((opts->x_flag_sanitize & SANITIZE_LEAK)
       && (opts->x_flag_sanitize & SANITIZE_THREAD))
-    error_at (loc,
-	      "%<-fsanitize=leak%> is incompatible with %<-fsanitize=thread%>");
+    error_at (loc, "%qs is incompatible with %qs",
+	      "-fsanitize=leak", "-fsanitize=thread");
 
   /* Check error recovery for -fsanitize-recover option.  */
   for (int i = 0; sanitizer_opts[i].name != NULL; ++i)

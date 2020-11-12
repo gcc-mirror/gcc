@@ -31,5 +31,17 @@ main()
   std::wstring s(L"This is a test");
   std::wstringstream stm(s);
   VERIFY( stm.view() == s );
-  return 0;
+  VERIFY( stm.view() == const_cast<const std::wstringstream&>(stm).view() );
+
+  s += L" with a longer string";
+  stm << s;
+  VERIFY( stm.view() == s );
+
+  s = L"This is a shorter string";
+  stm.str(s);
+  VERIFY( stm.view() == s );
+
+  std::wstring s2;
+  stm >> s2;
+  VERIFY( stm.view() == s );
 }

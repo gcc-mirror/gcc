@@ -2803,7 +2803,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
       result = cxx_sizeof_or_alignof_expr (input_location,
-					   op0, opcode, true);
+					   op0, opcode, true, true);
       break;
 
     case DELETE_EXPR:
@@ -3639,7 +3639,7 @@ plugin_add_static_assert (cc1_plugin::connection *self,
 
   bool member_p = at_class_scope_p ();
 
-  finish_static_assert (condition, message, loc, member_p);
+  finish_static_assert (condition, message, loc, member_p, false);
 
   return 1;
 }

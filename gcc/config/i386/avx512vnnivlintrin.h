@@ -34,13 +34,10 @@
 #define __DISABLE_AVX512VNNIVL__
 #endif /* __AVX512VNNIVL__ */
 
-extern __inline __m256i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_dpbusd_epi32 (__m256i __A, __m256i __B, __m256i __C)
-{
-  return (__m256i) __builtin_ia32_vpdpbusd_v8si ((__v8si)__A, (__v8si) __B,
-								(__v8si) __C);
-}
+#define _mm256_dpbusd_epi32(A, B, C)				\
+  ((__m256i) __builtin_ia32_vpdpbusd_v8si ((__v8si) (A),	\
+					   (__v8si) (B),	\
+					   (__v8si) (C)))
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -58,13 +55,10 @@ _mm256_maskz_dpbusd_epi32 (__mmask8 __A, __m256i __B, __m256i __C, __m256i __D)
 				(__v8si) __C, (__v8si) __D, (__mmask8)__A);
 }
 
-extern __inline __m128i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_dpbusd_epi32 (__m128i __A, __m128i __B, __m128i __C)
-{
-  return (__m128i) __builtin_ia32_vpdpbusd_v4si ((__v4si)__A, (__v4si) __B,
-								(__v4si) __C);
-}
+#define _mm_dpbusd_epi32(A, B, C)				\
+  ((__m128i) __builtin_ia32_vpdpbusd_v4si ((__v4si) (A),	\
+					   (__v4si) (B),	\
+					   (__v4si) (C)))
 
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -82,13 +76,10 @@ _mm_maskz_dpbusd_epi32 (__mmask8 __A, __m128i __B, __m128i __C, __m128i __D)
 				(__v4si) __C, (__v4si) __D, (__mmask8)__A);
 }
 
-extern __inline __m256i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_dpbusds_epi32 (__m256i __A, __m256i __B, __m256i __C)
-{
-  return (__m256i) __builtin_ia32_vpdpbusds_v8si ((__v8si)__A, (__v8si) __B,
-								(__v8si) __C);
-}
+#define _mm256_dpbusds_epi32(A, B, C)				\
+  ((__m256i) __builtin_ia32_vpdpbusds_v8si ((__v8si) (A),	\
+					    (__v8si) (B),	\
+					    (__v8si) (C)))
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -107,13 +98,10 @@ _mm256_maskz_dpbusds_epi32 (__mmask8 __A, __m256i __B, __m256i __C,
 				(__v8si) __C, (__v8si) __D, (__mmask8)__A);
 }
 
-extern __inline __m128i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_dpbusds_epi32 (__m128i __A, __m128i __B, __m128i __C)
-{
-  return (__m128i) __builtin_ia32_vpdpbusds_v4si ((__v4si)__A, (__v4si) __B,
-								(__v4si) __C);
-}
+#define _mm_dpbusds_epi32(A, B, C)				\
+  ((__m128i) __builtin_ia32_vpdpbusds_v4si ((__v4si) (A),	\
+					    (__v4si) (B),	\
+					    (__v4si) (C)))
 
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -131,13 +119,10 @@ _mm_maskz_dpbusds_epi32 (__mmask8 __A, __m128i __B, __m128i __C, __m128i __D)
 				(__v4si) __C, (__v4si) __D, (__mmask8)__A);
 }
 
-extern __inline __m256i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_dpwssd_epi32 (__m256i __A, __m256i __B, __m256i __C)
-{
-  return (__m256i) __builtin_ia32_vpdpwssd_v8si ((__v8si)__A, (__v8si) __B,
-								(__v8si) __C);
-}
+#define _mm256_dpwssd_epi32(A, B, C)				\
+  ((__m256i) __builtin_ia32_vpdpwssd_v8si ((__v8si) (A),	\
+					   (__v8si) (B),	\
+					   (__v8si) (C)))
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -155,13 +140,10 @@ _mm256_maskz_dpwssd_epi32 (__mmask8 __A, __m256i __B, __m256i __C, __m256i __D)
 				(__v8si) __C, (__v8si) __D, (__mmask8)__A);
 }
 
-extern __inline __m128i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_dpwssd_epi32 (__m128i __A, __m128i __B, __m128i __C)
-{
-  return (__m128i) __builtin_ia32_vpdpwssd_v4si ((__v4si)__A, (__v4si) __B,
-								(__v4si) __C);
-}
+#define _mm_dpwssd_epi32(A, B, C)				\
+  ((__m128i) __builtin_ia32_vpdpwssd_v4si ((__v4si) (A),	\
+					   (__v4si) (B),	\
+					   (__v4si) (C)))
 
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -179,13 +161,10 @@ _mm_maskz_dpwssd_epi32 (__mmask8 __A, __m128i __B, __m128i __C, __m128i __D)
 				(__v4si) __C, (__v4si) __D, (__mmask8)__A);
 }
 
-extern __inline __m256i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_dpwssds_epi32 (__m256i __A, __m256i __B, __m256i __C)
-{
-  return (__m256i) __builtin_ia32_vpdpwssds_v8si ((__v8si)__A, (__v8si) __B,
-								(__v8si) __C);
-}
+#define _mm256_dpwssds_epi32(A, B, C)				\
+  ((__m256i) __builtin_ia32_vpdpwssds_v8si ((__v8si) (A),	\
+					    (__v8si) (B),	\
+					    (__v8si) (C)))
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -204,13 +183,10 @@ _mm256_maskz_dpwssds_epi32 (__mmask8 __A, __m256i __B, __m256i __C,
 				(__v8si) __C, (__v8si) __D, (__mmask8)__A);
 }
 
-extern __inline __m128i
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_dpwssds_epi32 (__m128i __A, __m128i __B, __m128i __C)
-{
-  return (__m128i) __builtin_ia32_vpdpwssds_v4si ((__v4si)__A, (__v4si) __B,
-								(__v4si) __C);
-}
+#define _mm_dpwssds_epi32(A, B, C)				\
+  ((__m128i) __builtin_ia32_vpdpwssds_v4si ((__v4si) (A),	\
+					    (__v4si) (B),	\
+					    (__v4si) (C)))
 
 extern __inline __m128i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
