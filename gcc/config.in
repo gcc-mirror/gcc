@@ -1187,12 +1187,6 @@
 #endif
 
 
-/* Define to 1 if you have the `execv' function. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_EXECV
-#endif
-
-
 /* Define to 1 if you have the <ext/hash_map> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_EXT_HASH_MAP
@@ -1736,12 +1730,6 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MEMORY_H
-#endif
-
-
-/* Define to 1 if you have the `memrchr' function. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_MEMRCHR
 #endif
 
 

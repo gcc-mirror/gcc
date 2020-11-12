@@ -1,5 +1,13 @@
 2020-11-12  Nathan Sidwell  <nathan@acm.org>
 
+	* Makefile.def: Fix g++ check implications.
+	* Makefile.in: Rebuilt.
+	gcc/
+	* config.in: Rebuilt.
+	* configure: Rebuilt.
+	* configure.ac: Remove unneeded checks
+	gcc/cp/
+
 	Merge trunk 3c3beb1a813
 
 2020-11-11  Nathan Sidwell  <nathan@acm.org>
