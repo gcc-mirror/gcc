@@ -712,7 +712,7 @@
 ;; corresponds to the canonical form the middle-end expects to use for
 ;; immediate bitwise-ANDs.
 
-(define_insn "and<mode>3"
+(define_insn "and<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w,w")
 	(and:VDQ (match_operand:VDQ 1 "s_register_operand" "w,0")
 		 (match_operand:VDQ 2 "neon_inv_logic_op2" "w,DL")))]

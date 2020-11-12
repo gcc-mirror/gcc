@@ -172,3 +172,11 @@
 					       GEN_INT (elem), operands[0]));
   DONE;
 })
+
+(define_expand "and<mode>3"
+  [(set (match_operand:VDQ 0 "s_register_operand" "")
+	(and:VDQ (match_operand:VDQ 1 "s_register_operand" "")
+		 (match_operand:VDQ 2 "neon_inv_logic_op2" "")))]
+  "TARGET_NEON
+   || TARGET_HAVE_MVE"
+)
