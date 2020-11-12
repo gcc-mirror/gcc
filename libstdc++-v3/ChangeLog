@@ -1,3 +1,13 @@
+2020-11-11  Paul Scharnofske  <asynts@gmail.com>
+
+	Backported from master:
+	2020-11-11  Paul Scharnofske  <asynts@gmail.com>
+
+	* include/std/thread (jthread::operator=(jthread&&)): Transfer
+	any existing state to a temporary that will request a stop and
+	then join.
+	* testsuite/30_threads/jthread/jthread.cc: Test move assignment.
+
 2020-11-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

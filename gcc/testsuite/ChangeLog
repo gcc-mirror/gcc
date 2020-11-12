@@ -1,3 +1,34 @@
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bias2.adb: New test.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt89.adb: New test.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/shift1.adb: New test.
+
+2020-11-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97797
+	* gcc.dg/torture/ssa-fre-5.c: Use __SIZETYPE__ where
+	appropriate.
+	* gcc.dg/torture/ssa-fre-6.c: Likewise.
+
+2020-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/97768
+	* gfortran.dg/pr97768_1.f90: New test.
+	* gfortran.dg/pr97768_2.f90: New test.
+
 2020-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/97764

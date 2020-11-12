@@ -1,3 +1,9 @@
+2020-11-11  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Handle PTA_CLDEMOTE.
+	* config/i386/i386.h (PTA_CLDEMOTE): Define.
+
 2020-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/97764

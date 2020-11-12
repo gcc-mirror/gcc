@@ -1,3 +1,21 @@
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (build_binary_op_trapv): Convert operands
+	to the result type before doing generic overflow checking.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (can_be_lower_p): Remove.
+	(Regular_Loop_to_gnu): Add ENTRY_COND unconditionally if
+	BOTTOM_COND is non-zero.
+
+2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Op_Shift>: Also convert
+	GNU_MAX_SHIFT if the type of the operation has been changed.
+	* gcc-interface/utils.c (can_materialize_object_renaming_p): Add
+	pair of missing parentheses.
+
 2020-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (maybe_saturate_size): Add ALIGN parameter
