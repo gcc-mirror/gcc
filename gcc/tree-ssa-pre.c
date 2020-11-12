@@ -805,16 +805,36 @@ bitmap_set_free (bitmap_set_t set)
   bitmap_clear (&set->values);
 }
 
+static void
+pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap expr_visited,
+	      bitmap val_visited, vec<pre_expr> &post);
+
+/* DFS walk leaders of VAL to their operands with leaders in SET, collecting
+   expressions in SET in postorder into POST.  */
+
+static void
+pre_expr_DFS (unsigned val, bitmap_set_t set, bitmap expr_visited,
+	      bitmap val_visited, vec<pre_expr> &post)
+{
+  unsigned int i;
+  bitmap_iterator bi;
+
+  /* Iterate over all leaders and DFS recurse.  Borrowed from
+     bitmap_find_leader.  */
+  bitmap exprset = value_expressions[val];
+  EXECUTE_IF_AND_IN_BITMAP (exprset, &set->expressions, 0, i, bi)
+    pre_expr_DFS (expression_for_id (i),
+		  set, expr_visited, val_visited, post);
+}
 
 /* DFS walk EXPR to its operands with leaders in SET, collecting
    expressions in SET in postorder into POST.  */
 
 static void
-pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap visited,
-	      hash_set<int_hash<unsigned int, 0> > &leader_set,
-	      vec<pre_expr> &post)
+pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap expr_visited,
+	      bitmap val_visited, vec<pre_expr> &post)
 {
-  if (!bitmap_set_bit (visited, get_expression_id (expr)))
+  if (!bitmap_set_bit (expr_visited, get_expression_id (expr)))
     return;
 
   switch (expr->kind)
@@ -829,12 +849,9 @@ pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap visited,
 	    unsigned int op_val_id = VN_INFO (nary->op[i])->value_id;
 	    /* If we already found a leader for the value we've
 	       recursed already.  Avoid the costly bitmap_find_leader.  */
-	    if (!leader_set.add (op_val_id))
-	      {
-		pre_expr leader = bitmap_find_leader (set, op_val_id);
-		if (leader)
-		  pre_expr_DFS (leader, set, visited, leader_set, post);
-	      }
+	    if (bitmap_bit_p (&set->values, op_val_id)
+		&& bitmap_set_bit (val_visited, op_val_id))
+	      pre_expr_DFS (op_val_id, set, expr_visited, val_visited, post);
 	  }
 	break;
       }
@@ -854,12 +871,10 @@ pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap visited,
 		if (!op[n] || TREE_CODE (op[n]) != SSA_NAME)
 		  continue;
 		unsigned op_val_id = VN_INFO (op[n])->value_id;
-		if (!leader_set.add (op_val_id))
-		  {
-		    pre_expr leader = bitmap_find_leader (set, op_val_id);
-		    if (leader)
-		      pre_expr_DFS (leader, set, visited, leader_set, post);
-		  }
+		if (bitmap_bit_p (&set->values, op_val_id)
+		    && bitmap_set_bit (val_visited, op_val_id))
+		  pre_expr_DFS (op_val_id,
+				set, expr_visited, val_visited, post);
 	      }
 	  }
 	break;
@@ -879,20 +894,15 @@ sorted_array_from_bitmap_set (bitmap_set_t set)
   vec<pre_expr> result;
 
   /* Pre-allocate enough space for the array.  */
-  size_t len = bitmap_count_bits (&set->expressions);
-  result.create (len);
-  hash_set<int_hash<unsigned int, 0> > leader_set (2*len);
+  result.create (bitmap_count_bits (&set->expressions));
 
-  auto_bitmap visited (&grand_bitmap_obstack);
-  bitmap_tree_view (visited);
-  FOR_EACH_EXPR_ID_IN_SET (set, i, bi)
-    {
-      pre_expr expr = expression_for_id (i);
-      /* Hoist insertion calls us with a value-set we have to and with,
-	 do so.  */
-      if (bitmap_set_contains_value (set, get_expr_value_id (expr)))
-	pre_expr_DFS (expr, set, visited, leader_set, result);
-    }
+  auto_bitmap expr_visited (&grand_bitmap_obstack);
+  auto_bitmap val_visited (&grand_bitmap_obstack);
+  bitmap_tree_view (expr_visited);
+  bitmap_tree_view (val_visited);
+  FOR_EACH_VALUE_ID_IN_SET (set, i, bi)
+    if (bitmap_set_bit (val_visited, i))
+      pre_expr_DFS (i, set, expr_visited, val_visited, result);
 
   return result;
 }
