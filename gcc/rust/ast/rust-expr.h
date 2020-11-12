@@ -1218,7 +1218,8 @@ class TupleExpr : public ExprWithoutBlock
 public:
   std::string as_string () const override;
 
-  std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   TupleExpr (std::vector<std::unique_ptr<Expr> > tuple_elements,
 	     std::vector<Attribute> inner_attribs,
@@ -1268,6 +1269,10 @@ public:
   // Can't think of any invalid invariants, so store boolean.
   void mark_for_strip () override { marked_for_strip = true; }
   bool is_marked_for_strip () const override { return marked_for_strip; }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<std::unique_ptr<Expr> > &get_tuple_elems () const { return tuple_elems; }
+  std::vector<std::unique_ptr<Expr> > &get_tuple_elems () { return tuple_elems; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1340,6 +1345,12 @@ public:
   void mark_for_strip () override { tuple_expr = nullptr; }
   bool is_marked_for_strip () const override { return tuple_expr == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_tuple_expr () {
+    rust_assert (tuple_expr != nullptr);
+    return tuple_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1382,7 +1393,8 @@ class StructExprStruct : public StructExpr
 public:
   std::string as_string () const override;
 
-  std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   // Constructor has to call protected constructor of base class
   StructExprStruct (PathInExpression struct_path,
@@ -1410,9 +1422,10 @@ protected:
  * struct */
 struct StructBase
 {
-public:
+private:
   std::unique_ptr<Expr> base_struct;
 
+public:
   // TODO: should this store location data?
   StructBase (std::unique_ptr<Expr> base_struct_ptr)
     : base_struct (std::move (base_struct_ptr))
@@ -1453,6 +1466,12 @@ public:
   bool is_invalid () const { return base_struct == nullptr; }
 
   std::string as_string () const;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_base_struct () {
+    rust_assert (base_struct != nullptr);
+    return base_struct;
+  }
 };
 
 /* Base AST node for a single struct expression field (in struct instance
@@ -1480,11 +1499,10 @@ protected:
 // Identifier-only variant of StructExprField AST node
 class StructExprFieldIdentifier : public StructExprField
 {
-public:
   Identifier field_name;
 
   // TODO: should this store location data?
-
+public:
   StructExprFieldIdentifier (Identifier field_identifier)
     : field_name (std::move (field_identifier))
   {}
@@ -1506,7 +1524,6 @@ protected:
  * abstract */
 class StructExprFieldWithVal : public StructExprField
 {
-public:
   std::unique_ptr<Expr> value;
 
 protected:
@@ -1533,16 +1550,21 @@ protected:
 
 public:
   std::string as_string () const override;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_value () {
+    rust_assert (value != nullptr);
+    return value;
+  }
 };
 
 // Identifier and value variant of StructExprField AST node
 class StructExprFieldIdentifierValue : public StructExprFieldWithVal
 {
-public:
   Identifier field_name;
 
   // TODO: should this store location data?
-
+public:
   StructExprFieldIdentifierValue (Identifier field_identifier,
 				  std::unique_ptr<Expr> field_value)
     : StructExprFieldWithVal (std::move (field_value)),
@@ -1552,6 +1574,8 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  std::string get_field_name () const { return field_name; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1565,11 +1589,10 @@ protected:
 // Tuple index and value variant of StructExprField AST node
 class StructExprFieldIndexValue : public StructExprFieldWithVal
 {
-public:
   TupleIndex index;
 
   // TODO: should this store location data?
-
+public:
   StructExprFieldIndexValue (TupleIndex tuple_index,
 			     std::unique_ptr<Expr> field_value)
     : StructExprFieldWithVal (std::move (field_value)), index (tuple_index)
@@ -1578,6 +1601,8 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  TupleIndex get_index () const { return index; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1591,24 +1616,16 @@ protected:
 // AST node of a struct creator with fields
 class StructExprStructFields : public StructExprStruct
 {
-public:
   // std::vector<StructExprField> fields;
   std::vector<std::unique_ptr<StructExprField> > fields;
 
   // bool has_struct_base;
   StructBase struct_base;
 
+public:
   std::string as_string () const override;
 
   bool has_struct_base () const { return !struct_base.is_invalid (); }
-
-  /*inline std::vector<std::unique_ptr<StructExprField>> get_fields()
-  const { return fields;
-  }*/
-
-  /*inline StructBase get_struct_base() const {
-      return has_struct_base ? struct_base : StructBase::error();
-  }*/
 
   // Constructor for StructExprStructFields when no struct base is used
   StructExprStructFields (
@@ -1650,6 +1667,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<std::unique_ptr<StructExprField> > &get_fields () { return fields; }
+  const std::vector<std::unique_ptr<StructExprField> > &get_fields () const { return fields; }
+
+  StructBase &get_struct_base () { return struct_base; }
+  const StructBase &get_struct_base () const { return struct_base; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1660,16 +1684,14 @@ protected:
 };
 
 // AST node of the functional update struct creator
+/* TODO: remove and replace with StructExprStructFields, except with empty 
+ * vector of fields? */
 class StructExprStructBase : public StructExprStruct
 {
   StructBase struct_base;
 
 public:
   std::string as_string () const override;
-
-  /*inline StructBase get_struct_base() const {
-      return struct_base;
-  }*/
 
   StructExprStructBase (PathInExpression struct_path, StructBase base_struct,
 			std::vector<Attribute> inner_attribs,
@@ -1680,6 +1702,9 @@ public:
   {}
 
   void accept_vis (ASTVisitor &vis) override;
+
+  StructBase &get_struct_base () { return struct_base; }
+  const StructBase &get_struct_base () const { return struct_base; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1702,10 +1727,7 @@ public:
   std::string as_string () const override;
 
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
-
-  /*inline std::vector<std::unique_ptr<Expr>> get_exprs() const {
-      return exprs;
-  }*/
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   StructExprTuple (PathInExpression struct_path,
 		   std::vector<std::unique_ptr<Expr> > tuple_exprs,
@@ -1748,6 +1770,9 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  const std::vector<std::unique_ptr<Expr> > &get_elems () const { return exprs; }
+  std::vector<std::unique_ptr<Expr> > &get_elems () { return exprs; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1766,7 +1791,6 @@ public:
   std::string as_string () const override
   {
     return get_struct_name ().as_string ();
-    // return struct_name.as_string();
   }
 
   StructExprUnit (PathInExpression struct_path,
@@ -1989,6 +2013,10 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<std::unique_ptr<EnumExprField> > &get_fields () { return fields; }
+  const std::vector<std::unique_ptr<EnumExprField> > &get_fields () const { return fields; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

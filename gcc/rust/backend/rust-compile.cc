@@ -538,7 +538,7 @@ Compilation::visit (AST::StructExprFieldIdentifierValue &field)
   bool found = false;
   for (auto &df : decl->get_fields ())
     {
-      if (field.field_name.compare (df.field_name) == 0)
+      if (field.get_field_name ().compare (df.field_name) == 0)
 	{
 	  found = true;
 	  break;
@@ -546,16 +546,16 @@ Compilation::visit (AST::StructExprFieldIdentifierValue &field)
     }
   if (!found)
     {
-      rust_fatal_error (field.value->get_locus_slow (),
+      rust_fatal_error (field.get_value ()->get_locus_slow (),
 			"failed to lookup field index");
       return;
     }
 
   Bexpression *value = NULL;
-  VISIT_POP (field.value->get_locus_slow (), field.value.get (), value, exprs);
+  VISIT_POP (field.get_value ()->get_locus_slow (), field.get_value ().get (), value, exprs);
   if (value == NULL)
     {
-      rust_fatal_error (field.value->get_locus_slow (),
+      rust_fatal_error (field.get_value ()->get_locus_slow (),
 			"failed to compile value to struct");
       return;
     }
@@ -566,10 +566,10 @@ void
 Compilation::visit (AST::StructExprFieldIndexValue &field)
 {
   Bexpression *value = NULL;
-  VISIT_POP (field.value->get_locus_slow (), field.value.get (), value, exprs);
+  VISIT_POP (field.get_value ()->get_locus_slow (), field.get_value ().get (), value, exprs);
   if (value == NULL)
     {
-      rust_fatal_error (field.value->get_locus_slow (),
+      rust_fatal_error (field.get_value ()->get_locus_slow (),
 			"failed to compile value to struct");
       return;
     }
@@ -598,7 +598,7 @@ Compilation::visit (AST::StructExprStructFields &expr)
 
   // FIXME type resolution pass should ensures these are in correct order
   // and have defaults if required
-  for (auto &field : expr.fields)
+  for (auto &field : expr.get_fields ())
     {
       Bexpression *value = NULL;
       VISIT_POP (expr.get_locus (), field, value, exprs);
@@ -1332,7 +1332,7 @@ Compilation::visit (AST::LetStmt &stmt)
 void
 Compilation::visit (AST::ExprStmtWithoutBlock &stmt)
 {
-  stmt.expr->accept_vis (*this);
+  stmt.get_expr ()->accept_vis (*this);
 }
 
 void
@@ -1348,7 +1348,7 @@ Compilation::visit (AST::ExprStmtWithBlock &stmt)
 		      start_location, end_location);
 
   scope.PushBlock (code_block);
-  stmt.expr->accept_vis (*this);
+  stmt.get_expr ()->accept_vis (*this);
 
   // get trailing if required
   for (auto &s : stmts)

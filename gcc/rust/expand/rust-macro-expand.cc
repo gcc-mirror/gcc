@@ -345,20 +345,196 @@ namespace Rust {
             expr.get_array_expr()->accept_vis(*this);
             expr.get_index_expr()->accept_vis(*this);
         }
-        void visit(AST::TupleExpr& expr) override {}
-        void visit(AST::TupleIndexExpr& expr) override {}
-        void visit(AST::StructExprStruct& expr) override {}
-        void visit(AST::StructExprFieldIdentifier& field) override {}
-        void visit(AST::StructExprFieldIdentifierValue& field) override {}
-        void visit(AST::StructExprFieldIndexValue& field) override {}
-        void visit(AST::StructExprStructFields& expr) override {}
-        void visit(AST::StructExprStructBase& expr) override {}
-        void visit(AST::StructExprTuple& expr) override {}
-        void visit(AST::StructExprUnit& expr) override {}
-        void visit(AST::EnumExprFieldIdentifier& field) override {}
+        void visit(AST::TupleExpr& expr) override {
+            /* according to spec, outer attributes are allowed on "elements of 
+             * tuple expressions" */
+
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip test based on inner attrs - spec says these are inner 
+             * attributes, not outer attributes of inner expr */
+            expander.expand_cfg_attrs(expr.get_inner_attrs());
+            if (expander.fails_cfg(expr.get_inner_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* apparently outer attributes are allowed in "elements of tuple 
+             * expressions" according to spec */
+            auto& values = expr.get_tuple_elems();
+            for (int i = 0; i < values.size();) {
+                auto& value = values[i];
+
+                // mark for stripping if required
+                value->accept_vis(*this);
+
+                if (value->is_marked_for_strip())
+                    values.erase(values.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::TupleIndexExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* wouldn't strip this directly (as outer attrs should be 
+             * associated with this level), but any sub-expressions would be 
+             * stripped. Thus, no need to erase when strip check called. */
+            expr.get_tuple_expr()->accept_vis(*this);
+        }
+        void visit(AST::StructExprStruct& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip test based on inner attrs - spec says these are inner 
+             * attributes, not outer attributes of inner expr */
+            expander.expand_cfg_attrs(expr.get_inner_attrs());
+            if (expander.fails_cfg(expr.get_inner_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }  
+        }
+        void visit(AST::StructExprFieldIdentifier& field) override {
+            // as no attrs (at moment, at least), no stripping possible
+        }
+        void visit(AST::StructExprFieldIdentifierValue& field) override {
+            /* as no attrs possible (at moment, at least), only sub-expression
+             * stripping is possible */
+            field.get_value()->accept_vis(*this);
+        }
+        void visit(AST::StructExprFieldIndexValue& field) override {
+            /* as no attrs possible (at moment, at least), only sub-expression
+             * stripping is possible */
+            field.get_value()->accept_vis(*this);
+        }
+        void visit(AST::StructExprStructFields& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip test based on inner attrs - spec says these are inner 
+             * attributes, not outer attributes of inner expr */
+            expander.expand_cfg_attrs(expr.get_inner_attrs());
+            if (expander.fails_cfg(expr.get_inner_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }  
+
+            /* spec does not specify whether expressions are allowed to be 
+             * stripped at top level of struct fields, but I wouldn't think 
+             * that they would be, so operating under the assumption that only 
+             * sub-expressions can be stripped. */
+            for (auto& field : expr.get_fields()) {
+                field->accept_vis(*this);
+                // shouldn't strip in this
+            }
+
+            /* struct base presumably can't be stripped, as the '..' is before
+             * the expression. as such, can only strip sub-expressions. */
+            if (expr.has_struct_base())
+                expr.get_struct_base().get_base_struct()->accept_vis(*this);
+        }
+        void visit(AST::StructExprStructBase& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip test based on inner attrs - spec says these are inner 
+             * attributes, not outer attributes of inner expr */
+            expander.expand_cfg_attrs(expr.get_inner_attrs());
+            if (expander.fails_cfg(expr.get_inner_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }  
+
+            /* struct base presumably can't be stripped, as the '..' is before
+             * the expression. as such, can only strip sub-expressions. */
+            rust_assert(!expr.get_struct_base().is_invalid());
+            expr.get_struct_base().get_base_struct()->accept_vis(*this);
+        }
+        void visit(AST::StructExprTuple& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip test based on inner attrs - spec says these are inner 
+             * attributes, not outer attributes of inner expr */
+            expander.expand_cfg_attrs(expr.get_inner_attrs());
+            if (expander.fails_cfg(expr.get_inner_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* spec says outer attributes are specifically allowed for elements 
+             * of tuple-style struct expressions, so full stripping possible */
+            auto& values = expr.get_elems();
+            for (int i = 0; i < values.size();) {
+                auto& value = values[i];
+
+                // mark for stripping if required
+                value->accept_vis(*this);
+
+                if (value->is_marked_for_strip())
+                    values.erase(values.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::StructExprUnit& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::EnumExprFieldIdentifier& field) override {
+            
+        }
         void visit(AST::EnumExprFieldIdentifierValue& field) override {}
         void visit(AST::EnumExprFieldIndexValue& field) override {}
-        void visit(AST::EnumExprStruct& expr) override {}
+        void visit(AST::EnumExprStruct& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            // supposedly spec doesn't allow inner attributes in enum exprs
+
+            /* spec does not specify whether expressions are allowed to be 
+             * stripped at top level of expression fields, but I wouldn't think
+             * that they would be, so operating under the assumption that only 
+             * sub-expressions can be stripped. */
+            for (auto& field : expr.get_fields()) {
+                field->accept_vis(*this);
+                // shouldn't strip in this
+            }
+        }
         void visit(AST::EnumExprTuple& expr) override {}
         void visit(AST::EnumExprFieldless& expr) override {}
         void visit(AST::CallExpr& expr) override {}

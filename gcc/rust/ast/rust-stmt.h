@@ -160,7 +160,6 @@ protected:
  * difficulties, can only be guaranteed to hold an expression). */
 class ExprStmtWithoutBlock : public ExprStmt
 {
-public:
   // TODO: ensure that this works
   std::unique_ptr<ExprWithoutBlock> expr;
   /* HACK: cannot ensure type safety of ExprWithoutBlock due to Pratt parsing,
@@ -168,6 +167,7 @@ public:
    * or redesign AST. */
   // std::unique_ptr<Expr> expr;
 
+public:
   std::string as_string () const override;
 
   ExprStmtWithoutBlock (std::unique_ptr<ExprWithoutBlock> expr, Location locus)
@@ -232,9 +232,9 @@ protected:
 // Statement containing an expression with a block
 class ExprStmtWithBlock : public ExprStmt
 {
-public:
   std::unique_ptr<ExprWithBlock> expr;
 
+public:
   std::string as_string () const override;
 
   std::vector<LetStmt *> locals;

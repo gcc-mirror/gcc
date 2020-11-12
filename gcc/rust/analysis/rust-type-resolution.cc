@@ -427,15 +427,15 @@ TypeResolution::visit (AST::StructExprFieldIdentifier &field)
 void
 TypeResolution::visit (AST::StructExprFieldIdentifierValue &field)
 {
-  identifierBuffer = &field.field_name;
-  field.value->accept_vis (*this);
+  identifierBuffer = std::unique_ptr<std::string> (new std::string (field.get_field_name ()));
+  field.get_value ()->accept_vis (*this);
 }
 
 void
 TypeResolution::visit (AST::StructExprFieldIndexValue &field)
 {
-  tupleIndexBuffer = &field.index;
-  field.value->accept_vis (*this);
+  tupleIndexBuffer = std::unique_ptr<int> (new int (field.get_index ()));
+  field.get_value ()->accept_vis (*this);
 }
 
 void
@@ -448,7 +448,7 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
       return;
     }
 
-  for (auto &field : expr.fields)
+  for (auto &field : expr.get_fields ())
     {
       identifierBuffer = NULL;
       tupleIndexBuffer = NULL;
@@ -1069,14 +1069,14 @@ TypeResolution::visit (AST::LetStmt &stmt)
 void
 TypeResolution::visit (AST::ExprStmtWithoutBlock &stmt)
 {
-  stmt.expr->accept_vis (*this);
+  stmt.get_expr ()->accept_vis (*this);
 }
 
 void
 TypeResolution::visit (AST::ExprStmtWithBlock &stmt)
 {
   scope.Push ();
-  stmt.expr->accept_vis (*this);
+  stmt.get_expr ()->accept_vis (*this);
   auto localMap = scope.PeekLocals ();
   for (auto &[_, value] : localMap)
     {
