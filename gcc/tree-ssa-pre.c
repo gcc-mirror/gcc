@@ -524,7 +524,7 @@ static struct
 static bool do_partial_partial;
 static pre_expr bitmap_find_leader (bitmap_set_t, unsigned int);
 static void bitmap_value_insert_into_set (bitmap_set_t, pre_expr);
-static void bitmap_value_replace_in_set (bitmap_set_t, pre_expr);
+static bool bitmap_value_replace_in_set (bitmap_set_t, pre_expr);
 static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, unsigned int);
 static void bitmap_insert_into_set (bitmap_set_t, pre_expr);
@@ -974,14 +974,14 @@ bitmap_set_equal (bitmap_set_t a, bitmap_set_t b)
 }
 
 /* Replace an instance of EXPR's VALUE with EXPR in SET if it exists,
-   and add it otherwise.  */
+   and add it otherwise.  Return true if any changes were made.  */
 
-static void
+static bool
 bitmap_value_replace_in_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val = get_expr_value_id (expr);
   if (value_id_constant_p (val))
-    return;
+    return false;
 
   if (bitmap_set_contains_value (set, val))
     {
@@ -1002,13 +1002,14 @@ bitmap_value_replace_in_set (bitmap_set_t set, pre_expr expr)
 	  if (bitmap_clear_bit (&set->expressions, i))
 	    {
 	      bitmap_set_bit (&set->expressions, get_expression_id (expr));
-	      return;
+	      return i != get_expression_id (expr);
 	    }
 	}
       gcc_unreachable ();
     }
-  else
-    bitmap_insert_into_set (set, expr);
+
+  bitmap_insert_into_set (set, expr);
+  return true;
 }
 
 /* Insert EXPR into SET if EXPR's value is not already present in
@@ -3158,7 +3159,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  && expr->kind != REFERENCE)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Skipping insertion of phi for partial redundancy: Looks like an induction variable\n");
+	    fprintf (dump_file, "Skipping insertion of phi for partial "
+		     "redundancy: Looks like an induction variable\n");
 	  nophi = true;
 	}
     }
@@ -3166,6 +3168,10 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   /* Make the necessary insertions.  */
   FOR_EACH_EDGE (pred, ei, block->preds)
     {
+      /* When we are not inserting a PHI node do not bother inserting
+	 into places that do not dominate the anticipated computations.  */
+      if (nophi && !dominated_by_p (CDI_DOMINATORS, block, pred->src))
+	continue;
       gimple_seq stmts = NULL;
       tree builtexpr;
       bprime = pred->src;
@@ -3308,15 +3314,14 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 */
 
 static bool
-do_pre_regular_insertion (basic_block block, basic_block dom)
+do_pre_regular_insertion (basic_block block, basic_block dom,
+			  vec<pre_expr> exprs)
 {
   bool new_stuff = false;
-  vec<pre_expr> exprs;
   pre_expr expr;
   auto_vec<pre_expr, 2> avail;
   int i;
 
-  exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
   avail.safe_grow (EDGE_COUNT (block->preds), true);
 
   FOR_EACH_VEC_ELT (exprs, i, expr)
@@ -3464,7 +3469,6 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
 	}
     }
 
-  exprs.release ();
   return new_stuff;
 }
 
@@ -3476,15 +3480,14 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
    remove the later computation.  */
 
 static bool
-do_pre_partial_partial_insertion (basic_block block, basic_block dom)
+do_pre_partial_partial_insertion (basic_block block, basic_block dom,
+				  vec<pre_expr> exprs)
 {
   bool new_stuff = false;
-  vec<pre_expr> exprs;
   pre_expr expr;
   auto_vec<pre_expr, 2> avail;
   int i;
 
-  exprs = sorted_array_from_bitmap_set (PA_IN (block));
   avail.safe_grow (EDGE_COUNT (block->preds), true);
 
   FOR_EACH_VEC_ELT (exprs, i, expr)
@@ -3599,7 +3602,6 @@ do_pre_partial_partial_insertion (basic_block block, basic_block dom)
 	}
     }
 
-  exprs.release ();
   return new_stuff;
 }
 
@@ -3759,7 +3761,10 @@ insert (void)
     NEW_SETS (bb) = bitmap_set_new ();
 
   int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int *bb_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun) + 1);
   int rpo_num = pre_and_rev_post_order_compute (NULL, rpo, false);
+  for (int i = 0; i < rpo_num; ++i)
+    bb_rpo[rpo[i]] = i;
 
   int num_iterations = 0;
   bool changed;
@@ -3783,26 +3788,47 @@ insert (void)
 	      /* First, update the AVAIL_OUT set with anything we may have
 		 inserted higher up in the dominator tree.  */
 	      newset = NEW_SETS (dom);
-	      if (newset)
+
+	      /* Note that we need to value_replace both NEW_SETS, and
+		 AVAIL_OUT. For both the case of NEW_SETS, the value may be
+		 represented by some non-simple expression here that we want
+		 to replace it with.  */
+	      bool avail_out_changed = false;
+	      FOR_EACH_EXPR_ID_IN_SET (newset, i, bi)
 		{
-		  /* Note that we need to value_replace both NEW_SETS, and
-		     AVAIL_OUT. For both the case of NEW_SETS, the value may be
-		     represented by some non-simple expression here that we want
-		     to replace it with.  */
-		  FOR_EACH_EXPR_ID_IN_SET (newset, i, bi)
-		    {
-		      pre_expr expr = expression_for_id (i);
-		      bitmap_value_replace_in_set (NEW_SETS (block), expr);
-		      bitmap_value_replace_in_set (AVAIL_OUT (block), expr);
-		    }
+		  pre_expr expr = expression_for_id (i);
+		  bitmap_value_replace_in_set (NEW_SETS (block), expr);
+		  avail_out_changed
+		    |= bitmap_value_replace_in_set (AVAIL_OUT (block), expr);
+		}
+	      /* We need to iterate if AVAIL_OUT of an already processed
+		 block source.  */
+	      if (avail_out_changed && !changed)
+		{
+		  edge_iterator ei;
+		  edge e;
+		  FOR_EACH_EDGE (e, ei, block->succs)
+		    if (bb_rpo[e->src->index] < idx)
+		      changed = true;
 		}
 
 	      /* Insert expressions for partial redundancies.  */
 	      if (flag_tree_pre && !single_pred_p (block))
 		{
-		  changed |= do_pre_regular_insertion (block, dom);
+		  vec<pre_expr> exprs
+		    = sorted_array_from_bitmap_set (ANTIC_IN (block));
+		  /* Sorting is not perfect, iterate locally.  */
+		  while (do_pre_regular_insertion (block, dom, exprs))
+		    ;
+		  exprs.release ();
 		  if (do_partial_partial)
-		    changed |= do_pre_partial_partial_insertion (block, dom);
+		    {
+		      exprs = sorted_array_from_bitmap_set (PA_IN (block));
+		      while (do_pre_partial_partial_insertion (block, dom,
+							       exprs))
+			;
+		      exprs.release ();
+		    }
 		}
 	    }
 	}
@@ -3821,6 +3847,7 @@ insert (void)
      propagate NEW_SETS from hoist insertion.  */
   FOR_ALL_BB_FN (bb, cfun)
     {
+      bitmap_set_free (NEW_SETS (bb));
       bitmap_set_pool.remove (NEW_SETS (bb));
       NEW_SETS (bb) = NULL;
     }
@@ -3840,6 +3867,7 @@ insert (void)
       }
 
   free (rpo);
+  free (bb_rpo);
 }
 
 
