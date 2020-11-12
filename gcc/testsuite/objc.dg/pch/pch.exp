@@ -41,7 +41,7 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.m]] {
     # unlikely to make any difference to PCH.  However, we do want to
     # add -O0 -g, since users who want PCH usually want debugging and quick
     # compiles.
-    dg-flags-pch $subdir $test "-fgnu-runtime" $mytorture ".h"
+    dg-flags-pch $subdir $test "-fgnu-runtime -Wno-objc-root-class" $mytorture ".h"
 }
 
 if [istarget "*-*-darwin*" ] {
@@ -52,7 +52,7 @@ if [istarget "*-*-darwin*" ] {
     # unlikely to make any difference to PCH.  However, we do want to
     # add -O0 -g, since users who want PCH usually want debugging and quick
     # compiles.
-    dg-flags-pch $subdir $test "-fnext-runtime" $mytorture ".h"
+    dg-flags-pch $subdir $test "-fnext-runtime -Wno-objc-root-class" $mytorture ".h"
   }
 }
 
