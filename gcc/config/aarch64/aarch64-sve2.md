@@ -786,17 +786,42 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated exclusive OR of AND.
-(define_insn "@aarch64_sve2_bcax<mode>"
+(define_expand "@aarch64_sve2_bcax<mode>"
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(xor:SVE_FULL_I
+	  (and:SVE_FULL_I
+	    (unspec:SVE_FULL_I
+	      [(match_dup 4)
+	       (not:SVE_FULL_I
+		 (match_operand:SVE_FULL_I 3 "register_operand"))]
+	      UNSPEC_PRED_X)
+	    (match_operand:SVE_FULL_I 2 "register_operand"))
+	  (match_operand:SVE_FULL_I 1 "register_operand")))]
+  "TARGET_SVE2"
+  {
+    operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
+)
+
+(define_insn_and_rewrite "*aarch64_sve2_bcax<mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w, ?&w")
 	(xor:SVE_FULL_I
 	  (and:SVE_FULL_I
-	    (match_operand:SVE_FULL_I 2 "register_operand" "w, w")
-	    (match_operand:SVE_FULL_I 3 "register_operand" "w, w"))
+	    (unspec:SVE_FULL_I
+	      [(match_operand 4)
+	       (not:SVE_FULL_I
+		 (match_operand:SVE_FULL_I 3 "register_operand" "w, w"))]
+	      UNSPEC_PRED_X)
+	    (match_operand:SVE_FULL_I 2 "register_operand" "w, w"))
 	  (match_operand:SVE_FULL_I 1 "register_operand" "0, w")))]
   "TARGET_SVE2"
   "@
   bcax\t%0.d, %0.d, %2.d, %3.d
   movprfx\t%0, %1\;bcax\t%0.d, %0.d, %2.d, %3.d"
+  "&& !CONSTANT_P (operands[4])"
+  {
+    operands[4] = CONSTM1_RTX (<VPRED>mode);
+  }
   [(set_attr "movprfx" "*,yes")]
 )
 
