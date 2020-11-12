@@ -145,6 +145,16 @@
 			    (V1SF "V1SI") (V2SF "V2SI") (V4SF "V4SI")
 			    (V1DF "V1DI") (V2DF "V2DI")
 			    (V1TF "V1TI") (TF "V1TI")])
+
+(define_mode_attr tointvec [(V1QI "v1qi") (V2QI "v2qi") (V4QI "v4qi") (V8QI "v8qi") (V16QI "v16qi")
+			    (V1HI "v1hi") (V2HI "v2hi") (V4HI "v4hi") (V8HI "v8hi")
+			    (V1SI "v1si") (V2SI "v2si") (V4SI "v4si")
+			    (V1DI "v1di") (V2DI "v2di")
+			    (V1TI "v1ti")
+			    (V1SF "v1si") (V2SF "v2si") (V4SF "v4si")
+			    (V1DF "v1di") (V2DF "v2di")
+			    (V1TF "v1ti") (TF   "v1ti")])
+
 (define_mode_attr vw [(SF "w") (V1SF "w") (V2SF "v") (V4SF "v")
 		      (DF "w") (V1DF "w") (V2DF "v")
 		      (TF "w") (V1TF "w")])
@@ -1546,14 +1556,14 @@
 })
 
 ;;
-;; Integer compares
+;; Compares
 ;;
 
-(define_expand "vec_cmp<VI_HW:mode><VI_HW:mode>"
-  [(set (match_operand:VI_HW    0 "register_operand" "")
-	(match_operator:VI_HW   1 ""
-	  [(match_operand:VI_HW 2 "register_operand" "")
-	   (match_operand:VI_HW 3 "register_operand" "")]))]
+(define_expand "vec_cmp<mode><tointvec>"
+  [(set (match_operand:<TOINTVEC>  0 "register_operand" "")
+	(match_operator:<TOINTVEC> 1 ""
+	  [(match_operand:V_HW     2 "register_operand" "")
+	   (match_operand:V_HW     3 "register_operand" "")]))]
   "TARGET_VX"
 {
   s390_expand_vec_compare (operands[0], GET_CODE(operands[1]), operands[2], operands[3]);
