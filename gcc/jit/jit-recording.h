@@ -74,7 +74,7 @@ public:
   void disassociate_from_playback ();
 
   string *
-  new_string (const char *text);
+  new_string (const char *text, bool escaped = false);
 
   location *
   new_location (const char *filename,
@@ -414,7 +414,7 @@ private:
 class string : public memento
 {
 public:
-  string (context *ctxt, const char *text);
+  string (context *ctxt, const char *text, bool escaped);
   ~string ();
 
   const char *c_str () { return m_buffer; }
@@ -431,6 +431,11 @@ private:
 private:
   size_t m_len;
   char *m_buffer;
+
+  /* Flag to track if this string is the result of string::make_debug_string,
+     to avoid infinite recursion when logging all mementos: don't re-escape
+     such strings.  */
+  bool m_escaped;
 };
 
 class location : public memento

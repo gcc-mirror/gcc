@@ -724,12 +724,12 @@ recording::context::disassociate_from_playback ()
    This creates a fresh copy of the given 0-terminated buffer.  */
 
 recording::string *
-recording::context::new_string (const char *text)
+recording::context::new_string (const char *text, bool escaped)
 {
   if (!text)
     return NULL;
 
-  recording::string *result = new string (this, text);
+  recording::string *result = new string (this, text, escaped);
   record (result);
   return result;
 }
@@ -1954,8 +1954,9 @@ recording::memento::write_to_dump (dump &d)
 /* Constructor for gcc::jit::recording::string::string, allocating a
    copy of the given text using new char[].  */
 
-recording::string::string (context *ctxt, const char *text)
-  : memento (ctxt)
+recording::string::string (context *ctxt, const char *text, bool escaped)
+: memento (ctxt),
+  m_escaped (escaped)
 {
   m_len = strlen (text);
   m_buffer = new char[m_len + 1];
@@ -2005,9 +2006,9 @@ recording::string::from_printf (context *ctxt, const char *fmt, ...)
 recording::string *
 recording::string::make_debug_string ()
 {
-  /* Hack to avoid infinite recursion into strings when logging all
-     mementos: don't re-escape strings:  */
-  if (m_buffer[0] == '"')
+  /* Avoid infinite recursion into strings when logging all mementos:
+     don't re-escape strings:  */
+  if (m_escaped)
     return this;
 
   /* Wrap in quotes and do escaping etc */
@@ -2024,15 +2025,31 @@ recording::string::make_debug_string ()
   for (size_t i = 0; i < m_len ; i++)
     {
       char ch = m_buffer[i];
-      if (ch == '\t' || ch == '\n' || ch == '\\' || ch == '"')
-	APPEND('\\');
-      APPEND(ch);
+      switch (ch)
+	{
+	default:
+	  APPEND(ch);
+	  break;
+	case '\t':
+	  APPEND('\\');
+	  APPEND('t');
+	  break;
+	case '\n':
+	  APPEND('\\');
+	  APPEND('n');
+	  break;
+	case '\\':
+	case '"':
+	  APPEND('\\');
+	  APPEND(ch);
+	  break;
+	}
     }
   APPEND('"'); /* closing quote */
 #undef APPEND
   tmp[len] = '\0'; /* nil termintator */
 
-  string *result = m_ctxt->new_string (tmp);
+  string *result = m_ctxt->new_string (tmp, true);
 
   delete[] tmp;
   return result;
