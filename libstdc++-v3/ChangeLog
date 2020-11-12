@@ -1,3 +1,40 @@
+2020-11-11  Jonathan Yong  <10walls@gmail.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Exclude
+	cygwin and mingw from relro linker test.
+	* configure: Regenerate.
+
+2020-11-11  Paul Scharnofske  <asynts@gmail.com>
+
+	* include/std/thread (jthread::operator=(jthread&&)): Transfer
+	any existing state to a temporary that will request a stop and
+	then join.
+	* testsuite/30_threads/jthread/jthread.cc: Test move assignment.
+
+2020-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token (_Stop_state_t::_M_requester): Define
+	new struct with members to store and check the thread ID.
+	(_Stop_state_t::_M_request_stop()): Use _M_requester._M_set().
+	(_Stop_state_t::_M_remove_callback(_Stop_cb*)): Use
+	_M_requester._M_is_current_thread().
+
+2020-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (__syncbuf_base): New class template.
+	(emit_on_flush, noemit_on_flush, flush_emit): New manipulators.
+	* include/std/syncstream (basic_syncbuf): Derive from
+	__syncbuf_base instead of basic_streambuf.
+	(basic_syncbuf::operator=): Remove self-assignment check.
+	(basic_syncbuf::swap): Remove self-swap check.
+	(basic_syncbuf::emit): Do not skip pubsync() call if sequence
+	is empty.
+	(basic_syncbuf::sync): Remove no-op pubsync on stringbuf.
+	(basic_syncbuf::overflow): Define override.
+	* testsuite/27_io/basic_syncstream/basic_ops/1.cc: Test
+	basic_osyncstream::put(char_type).
+	* testsuite/27_io/basic_ostream/emit/1.cc: New test.
+
 2020-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/locale/generic/c_locale.cc (__set_C_locale()): New function

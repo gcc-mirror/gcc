@@ -1,3 +1,39 @@
+2020-11-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_declaration): Unless we are compiling for
+	Ojective-C++, warn about and discard any attributes that prefix
+	a linkage specification.
+
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* mangle.c (write_expression): Mangle __alignof_ differently
+	from alignof when the ABI version is at least 15.
+
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* cp-tree.h (cxx_sizeof_or_alignof_expr): Add bool parameter.
+	* decl.c (fold_sizeof_expr): Pass false to
+	cxx_sizeof_or_alignof_expr.
+	* parser.c (cp_parser_unary_expression): Pass std_alignof to
+	cxx_sizeof_or_alignof_expr.
+	* pt.c (tsubst_copy): Pass false to cxx_sizeof_or_alignof_expr.
+	(tsubst_copy_and_build): Pass std_alignof to
+	cxx_sizeof_or_alignof_expr.
+	* typeck.c (cxx_alignof_expr): Add std_alignof bool parameter
+	and pass it to cxx_sizeof_or_alignof_type.  Set ALIGNOF_EXPR_STD_P
+	appropriately.
+	(cxx_sizeof_or_alignof_expr): Add std_alignof bool parameter
+	and pass it to cxx_alignof_expr.  Assert op is either
+	SIZEOF_EXPR or ALIGNOF_EXPR.
+
+2020-11-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97518
+	* pt.c (tsubst_qualified_id): Use EXPR_LOCATION of the qualified-id.
+	Use it to maybe_wrap_with_location the final expression.
+
 2020-11-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97518

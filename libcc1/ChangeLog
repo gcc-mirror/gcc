@@ -1,3 +1,9 @@
+2020-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* libcp1plugin.cc (plugin_build_unary_expr): Pass true to
+	cxx_sizeof_or_alignof_expr.
+
 2020-11-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97518
