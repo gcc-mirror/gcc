@@ -3328,6 +3328,7 @@ pointer_table::pointer_table ()
   set (GT_EXPR, op_gt);
   set (GE_EXPR, op_ge);
   set (SSA_NAME, op_identity);
+  set (INTEGER_CST, op_integer_cst);
   set (ADDR_EXPR, op_addr);
   set (NOP_EXPR, op_convert);
   set (CONVERT_EXPR, op_convert);

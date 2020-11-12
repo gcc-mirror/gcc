@@ -62,7 +62,7 @@ protected:
   ranger_cache m_cache;
 private:
   bool range_of_phi (irange &r, gphi *phi);
-  bool range_of_non_trivial_assignment (irange &r, gimple *s);
+  bool range_of_address (irange &r, gimple *s);
   bool range_of_builtin_call (irange &r, gcall *call);
   bool range_with_loop_info (irange &r, tree name);
   void range_of_ssa_name_with_loop_info (irange &, tree, class loop *,
