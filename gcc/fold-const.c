@@ -3312,10 +3312,32 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	case COMPONENT_REF:
 	  /* Handle operand 2 the same as for ARRAY_REF.  Operand 0
 	     may be NULL when we're called to compare MEM_EXPRs.  */
-	  if (!OP_SAME_WITH_NULL (0)
-	      || !OP_SAME (1))
+	  if (!OP_SAME_WITH_NULL (0))
 	    return false;
+	  /* Most of time we only need to compare FIELD_DECLs for equality.
+	     However when determining address look into actual offsets.
+	     These may match for unions and unshared record types.  */
 	  flags &= ~OEP_ADDRESS_OF;
+	  if (!OP_SAME (1))
+	    {
+	      if (flags & OEP_ADDRESS_OF)
+		{
+		  if (TREE_OPERAND (arg0, 2)
+		      || TREE_OPERAND (arg1, 2))
+		    return OP_SAME_WITH_NULL (2);
+		  tree field0 = TREE_OPERAND (arg0, 1);
+		  tree field1 = TREE_OPERAND (arg1, 1);
+
+		  if (!operand_equal_p (DECL_FIELD_OFFSET (field0),
+					DECL_FIELD_OFFSET (field1), flags)
+		      || !operand_equal_p (DECL_FIELD_BIT_OFFSET (field0),
+					   DECL_FIELD_BIT_OFFSET (field1),
+					   flags))
+		    return false;
+		}
+	      else
+		return false;
+	    }
 	  return OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
@@ -3787,9 +3809,26 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	      sflags = flags;
 	      break;
 
+	    case COMPONENT_REF:
+	      if (sflags & OEP_ADDRESS_OF)
+		{
+		  hash_operand (TREE_OPERAND (t, 0), hstate, flags);
+		  if (TREE_OPERAND (t, 2))
+		    hash_operand (TREE_OPERAND (t, 2), hstate,
+				  flags & ~OEP_ADDRESS_OF);
+		  else
+		    {
+		      tree field = TREE_OPERAND (t, 1);
+		      hash_operand (DECL_FIELD_OFFSET (field),
+				    hstate, flags & ~OEP_ADDRESS_OF);
+		      hash_operand (DECL_FIELD_BIT_OFFSET (field),
+				    hstate, flags & ~OEP_ADDRESS_OF);
+		    }
+		  return;
+		}
+	      break;
 	    case ARRAY_REF:
 	    case ARRAY_RANGE_REF:
-	    case COMPONENT_REF:
 	    case BIT_FIELD_REF:
 	      sflags &= ~OEP_ADDRESS_OF;
 	      break;
