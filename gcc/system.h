@@ -789,6 +789,12 @@ extern void fancy_abort (const char *, int, const char *)
 #define ALWAYS_INLINE inline
 #endif
 
+#if GCC_VERSION >= 3004
+#define WARN_UNUSED_RESULT __attribute__ ((__warn_unused_result__))
+#else
+#define WARN_UNUSED_RESULT
+#endif
+
 /* Use gcc_unreachable() to mark unreachable locations (like an
    unreachable default case of a switch.  Do not use gcc_assert(0).  */
 #if (GCC_VERSION >= 4005) && !ENABLE_ASSERT_CHECKING

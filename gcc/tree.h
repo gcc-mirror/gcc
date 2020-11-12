@@ -1214,7 +1214,7 @@ get_expr_source_range (tree expr)
 extern void protected_set_expr_location (tree, location_t);
 extern void protected_set_expr_location_if_unset (tree, location_t);
 
-extern tree maybe_wrap_with_location (tree, location_t);
+WARN_UNUSED_RESULT extern tree maybe_wrap_with_location (tree, location_t);
 
 extern int suppress_location_wrappers;
 
