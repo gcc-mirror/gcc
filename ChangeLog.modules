@@ -1,5 +1,8 @@
 2020-11-12  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 7f851c33411
+	libstdc++: Fix __numeric_traits_integer<__int20> [PR 97798]
+
 	Enum dedup ODR check fix
 	gcc/cp/
 	* tree.c (cp_tree_equal): Allow NON_LVALUE_EXPR &
