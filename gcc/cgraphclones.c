@@ -1107,7 +1107,7 @@ cgraph_node::materialize_clone ()
       fprintf (symtab->dump_file, "cloning %s to %s\n",
 	       clone_of->dump_name (),
 	       dump_name ());
-      if (info->tree_map)
+      if (info && info->tree_map)
         {
 	  fprintf (symtab->dump_file, "    replace map:");
 	  for (unsigned int i = 0;
@@ -1123,7 +1123,7 @@ cgraph_node::materialize_clone ()
 	    }
 	  fprintf (symtab->dump_file, "\n");
 	}
-      if (info->param_adjustments)
+      if (info && info->param_adjustments)
 	info->param_adjustments->dump (symtab->dump_file);
     }
   clear_stmts_in_references ();
