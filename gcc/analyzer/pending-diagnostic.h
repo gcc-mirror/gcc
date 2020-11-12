@@ -246,6 +246,21 @@ class pending_diagnostic
   }
 
   /* End of precision-of-wording vfuncs.  */
+
+  /* Vfunc for extending/overriding creation of the events for an
+     exploded_edge that corresponds to a superedge, allowing for custom
+     events to be created that are pertinent to a particular
+     pending_diagnostic subclass.
+
+     For example, the -Wanalyzer-stale-setjmp-buffer diagnostic adds a
+     custom event showing when the pertinent stack frame is popped
+     (and thus the point at which the jmp_buf becomes invalid).  */
+
+  virtual bool maybe_add_custom_events_for_superedge (const exploded_edge &,
+						      checker_path *)
+  {
+    return false;
+  }
 };
 
 /* A template to make it easier to make subclasses of pending_diagnostic.
