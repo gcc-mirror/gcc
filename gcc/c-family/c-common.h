@@ -1042,7 +1042,7 @@ extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
 			      enum cpp_warning_reason, rich_location *,
 			      const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
-extern int c_common_has_attribute (cpp_reader *);
+extern int c_common_has_attribute (cpp_reader *, bool);
 extern int c_common_has_builtin (cpp_reader *);
 
 extern bool parse_optimize_options (tree, bool);
