@@ -1,5 +1,12 @@
 2020-11-12  Nathan Sidwell  <nathan@acm.org>
 
+	Enum dedup ODR check fix
+	gcc/cp/
+	* tree.c (cp_tree_equal): Allow NON_LVALUE_EXPR &
+	VIEW_CONVERT_EXPR with NULL types.
+	gcc/testsuite/
+	* g++.dg/modules/loc-wrapper-1{.h,_a.H,_b.C}: New.
+
 	* Makefile.def: Fix g++ check implications.
 	* Makefile.in: Rebuilt.
 	gcc/
