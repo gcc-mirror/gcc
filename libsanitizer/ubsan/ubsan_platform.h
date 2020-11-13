@@ -12,6 +12,7 @@
 #ifndef UBSAN_PLATFORM_H
 #define UBSAN_PLATFORM_H
 
+#ifndef CAN_SANITIZE_UB
 // Other platforms should be easy to add, and probably work as-is.
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__) ||        \
     defined(__NetBSD__) || defined(__DragonFly__) || \
@@ -21,5 +22,6 @@
 #else
 # define CAN_SANITIZE_UB 0
 #endif
+#endif //CAN_SANITIZE_UB
 
 #endif

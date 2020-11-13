@@ -732,9 +732,13 @@ u32 GetNumberOfCPUs() {
 #elif SANITIZER_SOLARIS
   return sysconf(_SC_NPROCESSORS_ONLN);
 #else
+#if defined(CPU_COUNT)
   cpu_set_t CPUs;
   CHECK_EQ(sched_getaffinity(0, sizeof(cpu_set_t), &CPUs), 0);
   return CPU_COUNT(&CPUs);
+#else
+  return 1;
+#endif
 #endif
 }
 
