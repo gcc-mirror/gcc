@@ -73,21 +73,23 @@ namespace
 	return rt;
       }
 
-    auto rel_s = abs_s.count() - now_s;
+    const auto rel_s = abs_s.count() - now_s;
 
-    // Avoid overflows
+    // Convert the absolute timeout to a relative timeout, without overflow.
     if (rel_s > __int_traits<time_t>::__max) [[unlikely]]
-      rel_s = __int_traits<time_t>::__max;
-    else if (rel_s < __int_traits<time_t>::__min) [[unlikely]]
-      rel_s = __int_traits<time_t>::__min;
-
-    // Convert the absolute timeout value to a relative timeout
-    rt.tv_sec = rel_s;
-    rt.tv_nsec = abs_ns.count() - now_ns;
-    if (rt.tv_nsec < 0)
       {
-	rt.tv_nsec += 1000000000;
-	--rt.tv_sec;
+	rt.tv_sec = __int_traits<time_t>::__max;
+	rt.tv_nsec = 999999999;
+      }
+    else
+      {
+	rt.tv_sec = rel_s;
+	rt.tv_nsec = abs_ns.count() - now_ns;
+	if (rt.tv_nsec < 0)
+	  {
+	    rt.tv_nsec += 1000000000;
+	    --rt.tv_sec;
+	  }
       }
 
     return rt;
