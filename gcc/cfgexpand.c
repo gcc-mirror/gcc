@@ -103,7 +103,7 @@ tree
 gimple_assign_rhs_to_tree (gimple *stmt)
 {
   tree t;
-  switch (get_gimple_rhs_class (gimple_expr_code (stmt)))
+  switch (gimple_assign_rhs_class (stmt))
     {
     case GIMPLE_TERNARY_RHS:
       t = build3 (gimple_assign_rhs_code (stmt),
@@ -3741,11 +3741,10 @@ expand_gimple_stmt_1 (gimple *stmt)
 	   of binary assigns must be a gimple reg.  */
 
 	if (TREE_CODE (lhs) != SSA_NAME
-	    || get_gimple_rhs_class (gimple_expr_code (stmt))
-	       == GIMPLE_SINGLE_RHS)
+	    || gimple_assign_rhs_class (assign_stmt) == GIMPLE_SINGLE_RHS)
 	  {
 	    tree rhs = gimple_assign_rhs1 (assign_stmt);
-	    gcc_assert (get_gimple_rhs_class (gimple_expr_code (stmt))
+	    gcc_assert (gimple_assign_rhs_class (assign_stmt)
 			== GIMPLE_SINGLE_RHS);
 	    if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (rhs)
 		/* Do not put locations on possibly shared trees.  */

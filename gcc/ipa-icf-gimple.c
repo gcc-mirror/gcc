@@ -610,12 +610,6 @@ func_checker::compare_gimple_assign (gimple *s1, gimple *s2)
   tree_code code1, code2;
   unsigned i;
 
-  code1 = gimple_expr_code (s1);
-  code2 = gimple_expr_code (s2);
-
-  if (code1 != code2)
-    return false;
-
   code1 = gimple_assign_rhs_code (s1);
   code2 = gimple_assign_rhs_code (s2);
 
@@ -652,8 +646,8 @@ func_checker::compare_gimple_cond (gimple *s1, gimple *s2)
   tree t1, t2;
   tree_code code1, code2;
 
-  code1 = gimple_expr_code (s1);
-  code2 = gimple_expr_code (s2);
+  code1 = gimple_cond_code (s1);
+  code2 = gimple_cond_code (s2);
 
   if (code1 != code2)
     return false;
