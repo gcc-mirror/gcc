@@ -2412,6 +2412,15 @@ cpp_define (cpp_reader *pfile, const char *str)
   run_directive (pfile, T_DEFINE, buf, count);
 }
 
+/* Like cpp_define, but does not warn about unused macro.  */
+void
+cpp_define_unused (cpp_reader *pfile, const char *str)
+{
+    unsigned char warn_unused_macros = CPP_OPTION (pfile, warn_unused_macros);
+    CPP_OPTION (pfile, warn_unused_macros) = 0;
+    cpp_define (pfile, str);
+    CPP_OPTION (pfile, warn_unused_macros) = warn_unused_macros;
+}
 
 /* Use to build macros to be run through cpp_define() as
    described above.
@@ -2431,6 +2440,20 @@ cpp_define_formatted (cpp_reader *pfile, const char *fmt, ...)
   free (ptr);
 }
 
+/* Like cpp_define_formatted, but does not warn about unused macro.  */
+void
+cpp_define_formatted_unused (cpp_reader *pfile, const char *fmt, ...)
+{
+  char *ptr;
+
+  va_list ap;
+  va_start (ap, fmt);
+  ptr = xvasprintf (fmt, ap);
+  va_end (ap);
+
+  cpp_define_unused (pfile, ptr);
+  free (ptr);
+}
 
 /* Slight variant of the above for use by initialize_builtins.  */
 void

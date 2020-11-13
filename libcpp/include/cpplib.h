@@ -1076,8 +1076,12 @@ extern cppchar_t cpp_host_to_exec_charset (cpp_reader *, cppchar_t);
 /* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */
 extern void cpp_define (cpp_reader *, const char *);
+extern void cpp_define_unused (cpp_reader *, const char *);
 extern void cpp_define_formatted (cpp_reader *pfile, 
 				  const char *fmt, ...) ATTRIBUTE_PRINTF_2;
+extern void cpp_define_formatted_unused (cpp_reader *pfile,
+					 const char *fmt,
+					 ...) ATTRIBUTE_PRINTF_2;
 extern void cpp_assert (cpp_reader *, const char *);
 extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);
