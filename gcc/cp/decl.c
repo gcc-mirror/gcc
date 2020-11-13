@@ -7926,10 +7926,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       make_rtl_for_nonlocal_decl (decl, init, asmspec);
 
-      /* Check for abstractness of the type. Notice that there is no
-	 need to strip array types here since the check for those types
-	 is already done within create_array_type_for_decl.  */
-      abstract_virtuals_error (decl, type);
+      /* Check for abstractness of the type.  */
+      if (var_definition_p)
+	abstract_virtuals_error (decl, type);
 
       if (TREE_TYPE (decl) == error_mark_node)
 	/* No initialization required.  */
@@ -10701,11 +10700,6 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
     itype = compute_array_index_type_loc (loc, name, size,
 					  tf_warning_or_error);
 
-  /* [dcl.array]
-     T is called the array element type; this type shall not be [...] an
-     abstract class type.  */
-  abstract_virtuals_error (name, type);
-
   return build_cplus_array_type (type, itype);
 }
 
@@ -12096,11 +12090,6 @@ grokdeclarator (const cp_declarator *declarator,
 	    int funcdecl_p;
 
 	    /* Declaring a function type.  */
-
-	    {
-	      iloc_sentinel ils (declspecs->locations[ds_type_spec]);
-	      abstract_virtuals_error (ACU_RETURN, type);
-	    }
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    memfn_quals = declarator->u.function.qualifiers;
@@ -13872,6 +13861,7 @@ require_complete_types_for_parms (tree parms)
 	  relayout_decl (parms);
 	  DECL_ARG_TYPE (parms) = type_passed_as (TREE_TYPE (parms));
 
+	  abstract_virtuals_error (parms, TREE_TYPE (parms));
 	  maybe_warn_parm_abi (TREE_TYPE (parms),
 			       DECL_SOURCE_LOCATION (parms));
 	}
@@ -14109,9 +14099,6 @@ grokparms (tree parmlist, tree *parms)
 	      type = build_pointer_type (type);
 	      TREE_TYPE (decl) = type;
 	    }
-	  else if (abstract_virtuals_error (decl, type))
-	    /* Ignore any default argument.  */
-	    init = NULL_TREE;
 	  else if (cxx_dialect < cxx17 && INDIRECT_TYPE_P (type))
 	    {
 	      /* Before C++17 DR 393:
@@ -17427,9 +17414,6 @@ complete_vars (tree type)
       else
 	ix++;
     }
-
-  /* Check for pending declarations which may have abstract type.  */
-  complete_type_check_abstract (type);
 }
 
 /* If DECL is of a type which needs a cleanup, build and return an

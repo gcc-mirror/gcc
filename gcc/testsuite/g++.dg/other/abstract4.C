@@ -13,6 +13,6 @@ struct Abs
 
 int main()
 {
-  S<Abs(int)> s;     // { dg-error "abstract" }
-  foo<Abs(int)>();   // { dg-error "abstract" }
+  S<Abs(int)> s;
+  foo<Abs(int)>();
 }
