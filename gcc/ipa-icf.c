@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "print-tree.h"
 #include "ipa-utils.h"
+#include "tree-ssa-alias-compare.h"
 #include "ipa-icf-gimple.h"
 #include "fibonacci_heap.h"
 #include "ipa-icf.h"
@@ -843,6 +844,8 @@ sem_function::equals_private (sem_item *item)
 
   m_checker = new func_checker (decl, m_compared_func->decl,
 				false,
+				opt_for_fn (m_compared_func->decl,
+					    flag_strict_aliasing),
 				&refs_set,
 				&m_compared_func->refs_set);
   arg1 = DECL_ARGUMENTS (decl);

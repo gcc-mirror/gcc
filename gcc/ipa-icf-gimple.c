@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "gimple-walk.h"
 
+#include "tree-ssa-alias-compare.h"
 #include "ipa-icf-gimple.h"
 
 namespace ipa_icf_gimple {
@@ -52,13 +53,13 @@ namespace ipa_icf_gimple {
    of declarations that can be skipped.  */
 
 func_checker::func_checker (tree source_func_decl, tree target_func_decl,
-			    bool ignore_labels,
+			    bool ignore_labels, bool tbaa,
 			    hash_set<symtab_node *> *ignored_source_nodes,
 			    hash_set<symtab_node *> *ignored_target_nodes)
   : m_source_func_decl (source_func_decl), m_target_func_decl (target_func_decl),
     m_ignored_source_nodes (ignored_source_nodes),
     m_ignored_target_nodes (ignored_target_nodes),
-    m_ignore_labels (ignore_labels)
+    m_ignore_labels (ignore_labels), m_tbaa (tbaa)
 {
   function *source_func = DECL_STRUCT_FUNCTION (source_func_decl);
   function *target_func = DECL_STRUCT_FUNCTION (target_func_decl);
@@ -252,9 +253,16 @@ func_checker::hash_operand (const_tree arg, inchash::hash &hstate,
 
 void
 func_checker::hash_operand (const_tree arg, inchash::hash &hstate,
-			    unsigned int flags, operand_access_type)
+			    unsigned int flags, operand_access_type access)
 {
-  return hash_operand (arg, hstate, flags);
+  if (access == OP_MEMORY)
+    {
+      ao_ref ref;
+      ao_ref_init (&ref, const_cast <tree> (arg));
+      return hash_ao_ref (&ref, lto_streaming_expected_p (), m_tbaa, hstate);
+    }
+  else
+    return hash_operand (arg, hstate, flags);
 }
 
 bool
@@ -314,18 +322,40 @@ func_checker::compare_operand (tree t1, tree t2, operand_access_type access)
     return true;
   else if (!t1 || !t2)
     return false;
-  if (operand_equal_p (t1, t2, OEP_MATCH_SIDE_EFFECTS))
-    return true;
-  switch (access)
+  if (access == OP_MEMORY)
     {
-    case OP_MEMORY:
-      return return_false_with_msg
-		 ("operand_equal_p failed (access == memory)");
-    case OP_NORMAL:
-      return return_false_with_msg
-		 ("operand_equal_p failed (access == normal)");
+      ao_ref ref1, ref2;
+      ao_ref_init (&ref1, const_cast <tree> (t1));
+      ao_ref_init (&ref2, const_cast <tree> (t2));
+      int flags = compare_ao_refs (&ref1, &ref2,
+				   lto_streaming_expected_p (), m_tbaa);
+
+      if (!flags)
+	return true;
+      if (flags & SEMANTICS)
+	return return_false_with_msg
+		("compare_ao_refs failed (semantic difference)");
+      if (flags & BASE_ALIAS_SET)
+	return return_false_with_msg
+		("compare_ao_refs failed (base alias set difference)");
+      if (flags & REF_ALIAS_SET)
+	return return_false_with_msg
+		 ("compare_ao_refs failed (ref alias set difference)");
+      if (flags & ACCESS_PATH)
+	return return_false_with_msg
+		 ("compare_ao_refs failed (access path difference)");
+      if (flags & DEPENDENCE_CLIQUE)
+	return return_false_with_msg
+		 ("compare_ao_refs failed (dependence clique difference)");
+      gcc_unreachable ();
     }
-  gcc_unreachable ();
+  else
+    {
+      if (operand_equal_p (t1, t2, OEP_MATCH_SIDE_EFFECTS))
+	return true;
+      return return_false_with_msg
+		 ("operand_equal_p failed");
+    }
 }
 
 bool
@@ -593,10 +623,17 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
 
   tree fntype1 = gimple_call_fntype (s1);
   tree fntype2 = gimple_call_fntype (s2);
-  if ((fntype1 && !fntype2)
-      || (!fntype1 && fntype2)
-      || (fntype1 && !types_compatible_p (fntype1, fntype2)))
-    return return_false_with_msg ("call function types are not compatible");
+
+  /* For direct calls we verify that types are comopatible so if we matced
+     callees, callers must match, too.  For indirect calls however verify
+     function type.  */
+  if (!gimple_call_fndecl (s1))
+    {
+      if ((fntype1 && !fntype2)
+	  || (!fntype1 && fntype2)
+	  || (fntype1 && !types_compatible_p (fntype1, fntype2)))
+	return return_false_with_msg ("call function types are not compatible");
+    }
 
   if (fntype1 && fntype2 && comp_type_attributes (fntype1, fntype2) != 1)
     return return_false_with_msg ("different fntype attributes");
@@ -652,10 +689,10 @@ func_checker::compare_gimple_assign (gimple *s1, gimple *s2)
       arg2 = gimple_op (s2, i);
 
       /* Compare types for LHS.  */
-      if (i == 0)
+      if (i == 0 && !gimple_store_p (s1))
 	{
 	  if (!compatible_types_p (TREE_TYPE (arg1), TREE_TYPE (arg2)))
-	    return return_false_with_msg ("GIMPLE NOP LHS type mismatch");
+	    return return_false_with_msg ("GIMPLE LHS type mismatch");
 	}
 
       if (!compare_operand (arg1, arg2, get_operand_access_type (&map, arg1)))

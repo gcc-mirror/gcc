@@ -45,6 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "gimple-pretty-print.h"
 #include "print-tree.h"
+#include "tree-ssa-alias-compare.h"
+#include "builtins.h"
 
 /* Broad overview of how alias analysis on gimple works:
 
@@ -739,6 +741,38 @@ ao_ref_alias_set (ao_ref *ref)
   return ref->ref_alias_set;
 }
 
+/* Returns a type satisfying
+   get_deref_alias_set (type) == ao_ref_base_alias_set (REF).  */
+
+tree
+ao_ref_base_alias_ptr_type (ao_ref *ref)
+{
+  tree base_ref;
+
+  if (!ref->ref)
+    return NULL_TREE;
+  base_ref = ref->ref;
+  while (handled_component_p (base_ref))
+    base_ref = TREE_OPERAND (base_ref, 0);
+  tree ret = reference_alias_ptr_type (base_ref);
+  gcc_checking_assert (get_deref_alias_set (ret) == ao_ref_base_alias_set (ref));
+  return ret;
+}
+
+/* Returns a type satisfying
+   get_deref_alias_set (type) == ao_ref_alias_set (REF).  */
+
+tree
+ao_ref_alias_ptr_type (ao_ref *ref)
+{
+  if (!ref->ref)
+    return NULL_TREE;
+  tree ret = reference_alias_ptr_type (ref->ref);
+  gcc_checking_assert (get_deref_alias_set (ret) == ao_ref_alias_set (ref));
+  return ret;
+}
+
+
 /* Init an alias-oracle reference representation from a gimple pointer
    PTR a range specified by OFFSET, SIZE and MAX_SIZE under the assumption
    that RANGE_KNOWN is set.
@@ -1175,7 +1209,7 @@ aliasing_component_refs_p (tree ref1,
 	   struct a {int array1[0]; int array[];};
 	 Such struct has size 0 but accesses to a.array may have non-zero size.
 	 In this case the size of TREE_TYPE (base1) is smaller than
-	 size of TREE_TYPE (TREE_OPERNAD (base1, 0)).
+	 size of TREE_TYPE (TREE_OPERAND (base1, 0)).
 
 	 Because we compare sizes of arrays just by sizes of their elements,
 	 we only need to care about zero sized array fields here.  */
@@ -1948,6 +1982,20 @@ decl_refs_may_alias_p (tree ref1, tree base1,
     return false;
 
   return true;     
+}
+
+/* Return true if access with BASE is view converted.
+   Base must not be stripped from inner MEM_REF (&decl)
+   which is done by ao_ref_base and thus one extra walk
+   of handled components is needed.  */
+
+static bool
+view_converted_memref_p (tree base)
+{
+  if (TREE_CODE (base) != MEM_REF && TREE_CODE (base) != TARGET_MEM_REF)
+    return false;
+  return same_type_for_tbaa (TREE_TYPE (base),
+			     TREE_TYPE (TREE_OPERAND (base, 1))) != 1;
 }
 
 /* Return true if an indirect reference based on *PTR1 constrained
@@ -3838,5 +3886,331 @@ attr_fnspec::verify ()
 	}
       if (err)
 	internal_error ("invalid fn spec attribute \"%s\" arg %i", str, i);
+    }
+}
+
+/* Return ture if TYPE1 and TYPE2 will always give the same answer
+   when compared wit hother types using same_type_for_tbaa_p.  */
+
+static bool
+types_equal_for_same_type_for_tbaa_p (tree type1, tree type2,
+				      bool lto_streaming_safe)
+{
+  /* We use same_type_for_tbaa_p to match types in the access path.
+     This check is overly conservative.  */
+  type1 = TYPE_MAIN_VARIANT (type1);
+  type2 = TYPE_MAIN_VARIANT (type2);
+
+  if (TYPE_STRUCTURAL_EQUALITY_P (type1)
+      != TYPE_STRUCTURAL_EQUALITY_P (type2))
+    return false;
+  if (TYPE_STRUCTURAL_EQUALITY_P (type1))
+    return true;
+
+  if (lto_streaming_safe)
+    return type1 == type2;
+  else
+    return TYPE_CANONICAL (type1) == TYPE_CANONICAL (type2);
+}
+
+/* Compare REF1 and REF2 and return flags specifying their differences.
+   If LTO_STREAMING_SAFE is true do not use alias sets and canonical
+   types that are going to be recomputed.
+   If TBAA is true also compare TBAA metadata.  */
+
+int
+ao_compare::compare_ao_refs (ao_ref *ref1, ao_ref *ref2,
+			     bool lto_streaming_safe,
+			     bool tbaa)
+{
+  if (TREE_THIS_VOLATILE (ref1->ref) != TREE_THIS_VOLATILE (ref2->ref))
+    return SEMANTICS;
+  tree base1 = ao_ref_base (ref1);
+  tree base2 = ao_ref_base (ref2);
+
+  if (!known_eq (ref1->offset, ref2->offset)
+      || !known_eq (ref1->size, ref2->size)
+      || !known_eq (ref1->max_size, ref2->max_size))
+    return SEMANTICS;
+
+  /* For variable accesses we need to compare actual paths
+     to check that both refs are accessing same address and the access size.  */
+  if (!known_eq (ref1->size, ref1->max_size))
+    {
+      if (!operand_equal_p (TYPE_SIZE (TREE_TYPE (ref1->ref)),
+			    TYPE_SIZE (TREE_TYPE (ref2->ref)), 0))
+	return SEMANTICS;
+      tree r1 = ref1->ref;
+      tree r2 = ref2->ref;
+
+      /* Handle toplevel COMPONENT_REFs of bitfields.
+	 Those are special since they are not allowed in
+	 ADDR_EXPR.  */
+      if (TREE_CODE (r1) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (r1, 1)))
+	{
+	  if (TREE_CODE (r2) != COMPONENT_REF
+	      || !DECL_BIT_FIELD (TREE_OPERAND (r2, 1)))
+	    return SEMANTICS;
+	  tree field1 = TREE_OPERAND (r1, 1);
+	  tree field2 = TREE_OPERAND (r2, 1);
+	  if (!operand_equal_p (DECL_FIELD_OFFSET (field1),
+				DECL_FIELD_OFFSET (field2), 0)
+	      || !operand_equal_p (DECL_FIELD_BIT_OFFSET (field1),
+				   DECL_FIELD_BIT_OFFSET (field2), 0)
+	      || !operand_equal_p (DECL_SIZE (field1), DECL_SIZE (field2), 0)
+	      || !types_compatible_p (TREE_TYPE (r1),
+				      TREE_TYPE (r2)))
+	    return SEMANTICS;
+	  r1 = TREE_OPERAND (r1, 0);
+	  r2 = TREE_OPERAND (r2, 0);
+	}
+      else if (TREE_CODE (r2) == COMPONENT_REF
+	       && DECL_BIT_FIELD (TREE_OPERAND (r2, 1)))
+	return SEMANTICS;
+
+      /* Similarly for bit field refs.  */
+      if (TREE_CODE (r1) == BIT_FIELD_REF)
+	{
+ 	  if (TREE_CODE (r2) != BIT_FIELD_REF
+	      || !operand_equal_p (TREE_OPERAND (r1, 1),
+				   TREE_OPERAND (r2, 1), 0)
+	      || !operand_equal_p (TREE_OPERAND (r1, 2),
+				   TREE_OPERAND (r2, 2), 0)
+	      || !types_compatible_p (TREE_TYPE (r1),
+				      TREE_TYPE (r2)))
+	    return SEMANTICS;
+	  r1 = TREE_OPERAND (r1, 0);
+	  r2 = TREE_OPERAND (r2, 0);
+	}
+      else if (TREE_CODE (r2) == BIT_FIELD_REF)
+	return SEMANTICS;
+
+      /* Now we can compare the address of actual memory access.  */
+      if (!operand_equal_p (r1, r2, OEP_ADDRESS_OF))
+	return SEMANTICS;
+    }
+  /* For constant accesses we get more matches by comparing offset only.  */
+  else if (!operand_equal_p (base1, base2, OEP_ADDRESS_OF))
+    return SEMANTICS;
+
+  /* We can't simply use get_object_alignment_1 on the full
+     reference as for accesses with variable indexes this reports
+     too conservative alignment.  */
+  unsigned int align1, align2;
+  unsigned HOST_WIDE_INT bitpos1, bitpos2;
+  bool known1 = get_object_alignment_1 (base1, &align1, &bitpos1);
+  bool known2 = get_object_alignment_1 (base2, &align2, &bitpos2);
+  /* ??? For MEMREF get_object_alignment_1 determines aligned from
+     TYPE_ALIGN but still returns false.  This seem to contradict
+     its description.  So compare even if alignment is unknown.   */
+  if (known1 != known2
+      || (bitpos1 != bitpos2 || align1 != align2))
+    return SEMANTICS;
+
+  /* Now we know that accesses are semantically same.  */
+  int flags = 0;
+
+  /* ao_ref_base strips inner MEM_REF [&decl], recover from that here.  */
+  tree rbase1 = ref1->ref;
+  if (rbase1)
+    while (handled_component_p (rbase1))
+      rbase1 = TREE_OPERAND (rbase1, 0);
+  tree rbase2 = ref2->ref;
+  while (handled_component_p (rbase2))
+    rbase2 = TREE_OPERAND (rbase2, 0);
+
+  /* MEM_REFs and TARGET_MEM_REFs record dependence cliques which are used to
+     implement restrict pointers.  MR_DEPENDENCE_CLIQUE 0 means no information.
+     Otherwise we need to match bases and cliques.  */
+  if ((((TREE_CODE (rbase1) == MEM_REF || TREE_CODE (rbase1) == TARGET_MEM_REF)
+	&& MR_DEPENDENCE_CLIQUE (rbase1))
+       || ((TREE_CODE (rbase2) == MEM_REF || TREE_CODE (rbase2) == TARGET_MEM_REF)
+	   && MR_DEPENDENCE_CLIQUE (rbase2)))
+      && (TREE_CODE (rbase1) != TREE_CODE (rbase2)
+	  || MR_DEPENDENCE_CLIQUE (rbase1) != MR_DEPENDENCE_CLIQUE (rbase2)
+	  || (MR_DEPENDENCE_BASE (rbase1) != MR_DEPENDENCE_BASE (rbase2))))
+    flags |= DEPENDENCE_CLIQUE;
+
+  if (!tbaa)
+    return flags;
+
+  /* Alias sets are not stable across LTO sreaming; be conservative here
+     and compare types the alias sets are ultimately based on.  */
+  if (lto_streaming_safe)
+    {
+      tree t1 = ao_ref_alias_ptr_type (ref1);
+      tree t2 = ao_ref_alias_ptr_type (ref2);
+      if (!alias_ptr_types_compatible_p (t1, t2))
+	flags |= REF_ALIAS_SET;
+
+      t1 = ao_ref_base_alias_ptr_type (ref1);
+      t2 = ao_ref_base_alias_ptr_type (ref2);
+      if (!alias_ptr_types_compatible_p (t1, t2))
+	flags |= BASE_ALIAS_SET;
+    }
+  else
+    {
+      if (ao_ref_alias_set (ref1) != ao_ref_alias_set (ref2))
+	flags |= REF_ALIAS_SET;
+      if (ao_ref_base_alias_set (ref1) != ao_ref_base_alias_set (ref2))
+	flags |= BASE_ALIAS_SET;
+    }
+
+  /* Access path is used only on non-view-converted references.  */
+  bool view_converted = view_converted_memref_p (rbase1);
+  if (view_converted_memref_p (rbase2) != view_converted)
+    return flags | ACCESS_PATH;
+  else if (view_converted)
+    return flags;
+
+
+  /* Find start of access paths and look for trailing arrays.  */
+  tree c1 = ref1->ref, c2 = ref2->ref;
+  tree end_struct_ref1 = NULL, end_struct_ref2 = NULL;
+  int nskipped1 = 0, nskipped2 = 0;
+  int i = 0;
+
+  for (tree p1 = ref1->ref; handled_component_p (p1); p1 = TREE_OPERAND (p1, 0))
+    {
+      if (component_ref_to_zero_sized_trailing_array_p (p1))
+	end_struct_ref1 = p1;
+      if (ends_tbaa_access_path_p (p1))
+	c1 = p1, nskipped1 = i;
+      i++;
+    }
+  for (tree p2 = ref2->ref; handled_component_p (p2); p2 = TREE_OPERAND (p2, 0))
+    {
+      if (component_ref_to_zero_sized_trailing_array_p (p2))
+	end_struct_ref2 = p2;
+      if (ends_tbaa_access_path_p (p2))
+	c2 = p2, nskipped1 = i;
+      i++;
+    }
+
+  /* For variable accesses we can not rely on offset match bellow.
+     We know that paths are struturally same, so only check that
+     starts of TBAA paths did not diverge.  */
+  if (!known_eq (ref1->size, ref1->max_size)
+      && nskipped1 != nskipped2)
+    return flags | ACCESS_PATH;
+
+  /* Information about trailing refs is used by
+     aliasing_component_refs_p that is applied only if paths
+     has handled components..  */
+  if (!handled_component_p (c1) && !handled_component_p (c2))
+    ;
+  else if ((end_struct_ref1 != NULL) != (end_struct_ref2 != NULL))
+    return flags | ACCESS_PATH;
+  if (end_struct_ref1
+      && TYPE_MAIN_VARIANT (TREE_TYPE (end_struct_ref1))
+	 != TYPE_MAIN_VARIANT (TREE_TYPE (end_struct_ref2)))
+    return flags | ACCESS_PATH;
+
+  /* Now compare all handled components of the access path.
+     We have three oracles that cares about access paths:
+       - aliasing_component_refs_p
+       - nonoverlapping_refs_since_match_p
+       - nonoverlapping_component_refs_p
+     We need to match things these oracles compare.
+
+     It is only necessary to check types for compatibility
+     and offsets.  Rest of what oracles compares are actual
+     addresses.  Those are already known to be same:
+       - for constant accesses we check offsets
+       - for variable accesses we already matched
+	 the path lexically with operand_equal_p.  */
+  while (true)
+    {
+      bool comp1 = handled_component_p (c1);
+      bool comp2 = handled_component_p (c2);
+
+      if (comp1 != comp2)
+	return flags | ACCESS_PATH;
+      if (!comp1)
+	break;
+
+      if (TREE_CODE (c1) != TREE_CODE (c2))
+	return flags | ACCESS_PATH;
+
+      /* aliasing_component_refs_p attempts to find type match within
+	 the paths.  For that reason both types needs to be equal
+	 with respect to same_type_for_tbaa_p.  */
+      if (!types_equal_for_same_type_for_tbaa_p (TREE_TYPE (c1),
+						 TREE_TYPE (c2),
+						 lto_streaming_safe))
+	return flags | ACCESS_PATH;
+      if (component_ref_to_zero_sized_trailing_array_p (c1)
+	  != component_ref_to_zero_sized_trailing_array_p (c2))
+	return flags | ACCESS_PATH;
+
+      /* aliasing_matching_component_refs_p compares
+	 offsets within the path.  Other properties are ignored.
+	 Do not bother to verify offsets in variable accesses.  Here we
+	 already compared them by operand_equal_p so they are
+	 structurally same.  */
+      if (!known_eq (ref1->size, ref1->max_size))
+	{
+	  poly_int64 offadj1, sztmc1, msztmc1;
+	  bool reverse1;
+	  get_ref_base_and_extent (c1, &offadj1, &sztmc1, &msztmc1, &reverse1);
+	  poly_int64 offadj2, sztmc2, msztmc2;
+	  bool reverse2;
+	  get_ref_base_and_extent (c2, &offadj2, &sztmc2, &msztmc2, &reverse2);
+	  if (!known_eq (offadj1, offadj2))
+	    return flags | ACCESS_PATH;
+	}
+      c1 = TREE_OPERAND (c1, 0);
+      c2 = TREE_OPERAND (c2, 0);
+    }
+  /* Finally test the access type.  */
+  if (!types_equal_for_same_type_for_tbaa_p (TREE_TYPE (c1),
+					     TREE_TYPE (c2),
+					     lto_streaming_safe))
+    return flags | ACCESS_PATH;
+  return flags;
+}
+
+/* Hash REF to HSTATE.  If LTO_STREAMING_SAFE do not use alias sets
+   and canonical types.  */
+void
+ao_compare::hash_ao_ref (ao_ref *ref, bool lto_streaming_safe, bool tbaa,
+			 inchash::hash &hstate)
+{
+  tree base = ao_ref_base (ref);
+  tree tbase = base;
+
+  if (!known_eq (ref->size, ref->max_size))
+    {
+      tree r = ref->ref;
+      if (TREE_CODE (r) == COMPONENT_REF
+	  && DECL_BIT_FIELD (TREE_OPERAND (r, 1)))
+	{
+	  tree field = TREE_OPERAND (r, 1);
+	  hash_operand (DECL_FIELD_OFFSET (field), hstate, 0);
+	  hash_operand (DECL_FIELD_BIT_OFFSET (field), hstate, 0);
+	  hash_operand (DECL_SIZE (field), hstate, 0);
+	  r = TREE_OPERAND (r, 0);
+	}
+      if (TREE_CODE (r) == BIT_FIELD_REF)
+	{
+	  hash_operand (TREE_OPERAND (r, 1), hstate, 0);
+	  hash_operand (TREE_OPERAND (r, 2), hstate, 0);
+	  r = TREE_OPERAND (r, 0);
+	}
+      hash_operand (TYPE_SIZE (TREE_TYPE (ref->ref)), hstate, 0);
+      hash_operand (r, hstate, OEP_ADDRESS_OF);
+    }
+  else
+    {
+      hash_operand (tbase, hstate, OEP_ADDRESS_OF);
+      hstate.add_poly_int (ref->offset);
+      hstate.add_poly_int (ref->size);
+      hstate.add_poly_int (ref->max_size);
+    }
+  if (!lto_streaming_safe && tbaa)
+    {
+      hstate.add_int (ao_ref_alias_set (ref));
+      hstate.add_int (ao_ref_base_alias_set (ref));
     }
 }

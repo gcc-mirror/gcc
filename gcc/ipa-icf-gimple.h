@@ -118,14 +118,14 @@ public:
 
 /* A class aggregating all connections and semantic equivalents
    for a given pair of semantic function candidates.  */
-class func_checker : operand_compare
+class func_checker : ao_compare
 {
 public:
   /* Default constructor.  */
   func_checker ():
     m_source_func_decl (NULL_TREE), m_target_func_decl (NULL_TREE),
     m_ignored_source_nodes (NULL), m_ignored_target_nodes (NULL),
-    m_ignore_labels (false)
+    m_ignore_labels (false), m_tbaa (true)
   {
     m_source_ssa_names.create (0);
     m_target_ssa_names.create (0);
@@ -139,6 +139,7 @@ public:
      of declarations that can be skipped.  */
   func_checker (tree source_func_decl, tree target_func_decl,
 		bool ignore_labels = false,
+		bool tbaa = true,
 		hash_set<symtab_node *> *ignored_source_nodes = NULL,
 		hash_set<symtab_node *> *ignored_target_nodes = NULL);
 
@@ -274,6 +275,9 @@ private:
 
   /* Flag if ignore labels in comparison.  */
   bool m_ignore_labels;
+
+  /* Flag if we should compare type based alias analysis info.  */
+  bool m_tbaa;
 
 public:
   /* Return true if two operands are equal.  The flags fields can be used
