@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <ext/numeric_traits.h>
 #include <debug/debug.h>
 
 // Constants for the wait/wake futex syscall operations
@@ -41,10 +42,48 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace
+{
+  // Return the relative duration from (now_s + now_ns) to (abs_s + abs_ns)
+  // as a timespec.
+  struct timespec
+  relative_timespec(chrono::seconds abs_s, chrono::nanoseconds abs_ns,
+		    time_t now_s, long now_ns)
+  {
+    struct timespec rt;
+
+    // Did we already time out?
+    if (now_s > abs_s.count())
+      {
+	rt.tv_sec = -1;
+	return rt;
+      }
+
+    auto rel_s = abs_s.count() - now_s;
+
+    // Avoid overflows
+    if (rel_s > __gnu_cxx::__int_traits<time_t>::__max)
+      rel_s = __gnu_cxx::__int_traits<time_t>::__max;
+    else if (rel_s < __gnu_cxx::__int_traits<time_t>::__min)
+      rel_s = __gnu_cxx::__int_traits<time_t>::__min;
+
+    // Convert the absolute timeout value to a relative timeout
+    rt.tv_sec = rel_s;
+    rt.tv_nsec = abs_ns.count() - now_ns;
+    if (rt.tv_nsec < 0)
+      {
+	rt.tv_nsec += 1000000000;
+	--rt.tv_sec;
+      }
+
+    return rt;
+  }
+} // namespace
+
   bool
-  __atomic_futex_unsigned_base::_M_futex_wait_until(unsigned *__addr,
-      unsigned __val,
-      bool __has_timeout, chrono::seconds __s, chrono::nanoseconds __ns)
+  __atomic_futex_unsigned_base::
+  _M_futex_wait_until(unsigned *__addr, unsigned __val, bool __has_timeout,
+		      chrono::seconds __s, chrono::nanoseconds __ns)
   {
     if (!__has_timeout)
       {
@@ -60,15 +99,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	struct timeval tv;
 	gettimeofday (&tv, NULL);
+
 	// Convert the absolute timeout value to a relative timeout
-	struct timespec rt;
-	rt.tv_sec = __s.count() - tv.tv_sec;
-	rt.tv_nsec = __ns.count() - tv.tv_usec * 1000;
-	if (rt.tv_nsec < 0)
-	  {
-	    rt.tv_nsec += 1000000000;
-	    --rt.tv_sec;
-	  }
+	auto rt = relative_timespec(__s, __ns, tv.tv_sec, tv.tv_usec * 1000);
+
 	// Did we already time out?
 	if (rt.tv_sec < 0)
 	  return false;
