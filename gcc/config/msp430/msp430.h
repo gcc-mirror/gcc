@@ -530,3 +530,13 @@ void msp430_register_pre_includes (const char *sysroot ATTRIBUTE_UNUSED,
 
 
 #define SYMBOL_FLAG_LOW_MEM (SYMBOL_FLAG_MACH_DEP << 0)
+
+#define ADJUST_INSN_LENGTH(insn, length) \
+  do	\
+    {	\
+      if (recog_memoized (insn) >= 0)			\
+	{						\
+	  length += get_attr_extra_length (insn);	\
+	  length *= get_attr_length_multiplier (insn);	\
+	}						\
+    } while (0)

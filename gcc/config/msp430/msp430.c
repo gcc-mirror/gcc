@@ -3520,18 +3520,22 @@ msp430_expand_shift (enum rtx_code code, machine_mode mode, rtx *operands)
    For 430X it is inneficient to do so for any modes except SI and DI, since we
    can make use of R*M insns or RPT with 430X insns, so this function is only
    used for SImode in that case.  */
-const char *
+int
 msp430_output_asm_shift_insns (enum rtx_code code, machine_mode mode,
-			       rtx *operands)
+			       rtx *operands, bool return_length)
 {
   int i;
   int amt;
   int max_shift = GET_MODE_BITSIZE (mode) - 1;
+  int length = 0;
+
   gcc_assert (CONST_INT_P (operands[2]));
   amt = INTVAL (operands[2]);
 
   if (amt == 0 || amt > max_shift)
     {
+      if (return_length)
+	return 0;
       switch (code)
 	{
 	case ASHIFT:
@@ -3549,17 +3553,28 @@ msp430_output_asm_shift_insns (enum rtx_code code, machine_mode mode,
 	default:
 	  gcc_unreachable ();
 	}
-      return "";
+      return 0;
     }
 
   if (code == ASHIFT)
     {
       if (!msp430x && mode == HImode)
-	for (i = 0; i < amt; i++)
-	  output_asm_insn ("RLA.W\t%0", operands);
+	{
+	  if (return_length)
+	    length = 2 + (MEM_P (operands[0]) ? 2 : 0);
+	  else
+	    for (i = 0; i < amt; i++)
+	      output_asm_insn ("RLA.W\t%0", operands);
+	}
       else if (mode == SImode)
-	for (i = 0; i < amt; i++)
-	  output_asm_insn ("RLA%X0.W\t%L0 { RLC%X0.W\t%H0", operands);
+	{
+	  if (return_length)
+	    length = 4 + (MEM_P (operands[0]) ? 4 : 0)
+	      + (4 * msp430x_insn_required (operands[0]));
+	  else
+	    for (i = 0; i < amt; i++)
+	      output_asm_insn ("RLA%X0.W\t%L0 { RLC%X0.W\t%H0", operands);
+	}
       else
 	/* Catch unhandled cases.  */
 	gcc_unreachable ();
@@ -3567,33 +3582,61 @@ msp430_output_asm_shift_insns (enum rtx_code code, machine_mode mode,
   else if (code == ASHIFTRT)
     {
       if (!msp430x && mode == HImode)
-	for (i = 0; i < amt; i++)
-	  output_asm_insn ("RRA.W\t%0", operands);
+	{
+	  if (return_length)
+	    length = 2 + (MEM_P (operands[0]) ? 2 : 0);
+	  else
+	    for (i = 0; i < amt; i++)
+	      output_asm_insn ("RRA.W\t%0", operands);
+	}
       else if (mode == SImode)
-	for (i = 0; i < amt; i++)
-	  output_asm_insn ("RRA%X0.W\t%H0 { RRC%X0.W\t%L0", operands);
+	{
+	  if (return_length)
+	    length = 4 + (MEM_P (operands[0]) ? 4 : 0)
+	      + (4 * msp430x_insn_required (operands[0]));
+	  else
+	    for (i = 0; i < amt; i++)
+	      output_asm_insn ("RRA%X0.W\t%H0 { RRC%X0.W\t%L0", operands);
+	}
       else
 	gcc_unreachable ();
     }
   else if (code == LSHIFTRT)
     {
       if (!msp430x && mode == HImode)
-	for (i = 0; i < amt; i++)
-	  output_asm_insn ("CLRC { RRC.W\t%0", operands);
+	{
+	  if (return_length)
+	    length = 4 + (MEM_P (operands[0]) ? 2 : 0);
+	  else
+	    for (i = 0; i < amt; i++)
+	      output_asm_insn ("CLRC { RRC.W\t%0", operands);
+	}
       else if (mode == SImode)
-	for (i = 0; i < amt; i++)
-	  output_asm_insn ("CLRC { RRC%X0.W\t%H0 { RRC%X0.W\t%L0", operands);
+	{
+	  if (return_length)
+	    length = 6 + (MEM_P (operands[0]) ? 4 : 0)
+	      + (4 * msp430x_insn_required (operands[0]));
+	  else
+	    for (i = 0; i < amt; i++)
+	      output_asm_insn ("CLRC { RRC%X0.W\t%H0 { RRC%X0.W\t%L0",
+			       operands);
+	}
       /* FIXME: Why doesn't "RRUX.W\t%H0 { RRC%X0.W\t%L0" work for msp430x?
 	 It causes execution timeouts e.g. pr41963.c.  */
 #if 0
       else if (msp430x && mode == SImode)
-	for (i = 0; i < amt; i++)
-	  output_asm_insn ("RRUX.W\t%H0 { RRC%X0.W\t%L0", operands);
+	{
+	  if (return_length)
+	    length = 2;
+	  else
+	    for (i = 0; i < amt; i++)
+	      output_asm_insn ("RRUX.W\t%H0 { RRC%X0.W\t%L0", operands);
+	}
 #endif
       else
 	gcc_unreachable ();
     }
-  return "";
+  return length * amt;
 }
 
 /* Called by cbranch<mode>4 to coerce operands into usable forms.  */
@@ -4115,6 +4158,20 @@ msp430_op_not_in_high_mem (rtx op)
   return false;
 }
 
+/* Based on the operand OP, is a 430X insn required to handle it?
+   There are only 3 conditions for which a 430X insn is required:
+   - PSImode operand
+   - memory reference to a symbol which could be in upper memory
+     (so its address is > 0xFFFF)
+   - absolute address which has VOIDmode, i.e. (mem:HI (const_int))
+   Use a 430 insn if none of these conditions are true.  */
+bool
+msp430x_insn_required (rtx op)
+{
+  return (GET_MODE (op) == PSImode
+	  || !msp430_op_not_in_high_mem (op));
+}
+
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND		msp430_print_operand
 
@@ -4455,35 +4512,52 @@ msp430_register_pre_includes (const char *sysroot ATTRIBUTE_UNUSED,
 
 /* Generate a sequence of instructions to sign-extend an HI
    value into an SI value.  Handles the tricky case where
-   we are overwriting the destination.  */
-
-const char *
-msp430x_extendhisi (rtx * operands)
+   we are overwriting the destination.
+   Return the number of bytes used by the emitted instructions.
+   If RETURN_LENGTH is true then do not emit the assembly instruction
+   sequence.  */
+int
+msp430x_extendhisi (rtx * operands, bool return_length)
 {
   if (REGNO (operands[0]) == REGNO (operands[1]))
-    /* Low word of dest == source word.  8-byte sequence.  */
-    return "BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 { INV.W\t%H0, %H0";
+    {
+      /* Low word of dest == source word.  */
+      if (!return_length)
+	output_asm_insn ("BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 { INV.W\t%H0, %H0",
+			 operands);
+      return 8;
+    }
+  else if (! msp430x)
+    {
+      /* Note: This sequence is approximately the same length as invoking a
+	 helper function to perform the sign-extension, as in:
 
-  if (! msp430x)
-    /* Note: This sequence is approximately the same length as invoking a helper
-       function to perform the sign-extension, as in:
+	 MOV.W  %1, %L0
+	 MOV.W  %1, r12
+	 CALL   __mspabi_srai_15
+	 MOV.W  r12, %H0
 
-       MOV.W  %1, %L0
-       MOV.W  %1, r12
-       CALL   __mspabi_srai_15
-       MOV.W  r12, %H0
+	 but this version does not involve any function calls or using argument
+	 registers, so it reduces register pressure.  */
+      if (!return_length)
+	output_asm_insn ("MOV.W\t%1, %L0 { BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 { INV.W\t%H0, %H0",
+			 operands);
+      return 10;
+    }
+  else if (REGNO (operands[0]) + 1 == REGNO (operands[1]))
+    {
+      /* High word of dest == source word.  */
+      if (!return_length)
+	output_asm_insn ("MOV.W\t%1, %L0 { RPT\t#15 { RRAX.W\t%H0",
+			 operands);
+      return 6;
+    }
 
-       but this version does not involve any function calls or using argument
-       registers, so it reduces register pressure.  10-byte sequence.  */
-    return "MOV.W\t%1, %L0 { BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 "
-      "{ INV.W\t%H0, %H0";
-
-  if (REGNO (operands[0]) + 1 == REGNO (operands[1]))
-    /* High word of dest == source word.  6-byte sequence.  */
-    return "MOV.W\t%1, %L0 { RPT\t#15 { RRAX.W\t%H0";
-
-  /* No overlap between dest and source.  8-byte sequence.  */
-  return "MOV.W\t%1, %L0 { MOV.W\t%1, %H0 { RPT\t#15 { RRAX.W\t%H0";
+  /* No overlap between dest and source.  */
+  if (!return_length)
+    output_asm_insn ("MOV.W\t%1, %L0 { MOV.W\t%1, %H0 { RPT\t#15 { RRAX.W\t%H0",
+		     operands);
+  return 8;
 }
 
 /* Stop GCC from thinking that it can eliminate (SUBREG:PSI (SI)).  */
