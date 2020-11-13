@@ -812,14 +812,21 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   if ((result & CPP_N_IMAGINARY) && CPP_PEDANTIC (pfile))
     cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
 			 "imaginary constants are a GCC extension");
-  if (radix == 2
-      && !CPP_OPTION (pfile, binary_constants)
-      && CPP_PEDANTIC (pfile))
-    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-			 CPP_OPTION (pfile, cplusplus)
-			 ? N_("binary constants are a C++14 feature "
-			      "or GCC extension")
-			 : N_("binary constants are a GCC extension"));
+  if (radix == 2)
+    {
+      if (!CPP_OPTION (pfile, binary_constants)
+	  && CPP_PEDANTIC (pfile))
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
+			     CPP_OPTION (pfile, cplusplus)
+			     ? N_("binary constants are a C++14 feature "
+				  "or GCC extension")
+			     : N_("binary constants are a C2X feature "
+				  "or GCC extension"));
+      else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
+	cpp_warning_with_line (pfile, CPP_W_C11_C2X_COMPAT,
+			       virtual_location, 0,
+			       "binary constants are a C2X feature");
+    }
 
   if (radix == 10)
     result |= CPP_N_DECIMAL;
