@@ -1181,11 +1181,6 @@ msp430_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return 2 * cost;
 }
 
-/* BRANCH_COST
-   Changing from the default of 1 doesn't affect code generation, presumably
-   because there are no conditional move insns - when a condition is involved,
-   the only option is to use a cbranch.  */
-
 /* For X, which must be a MEM RTX, return TRUE if it is an indirect memory
    reference, @Rn or @Rn+.  */
 static bool
@@ -1650,6 +1645,26 @@ msp430_rtx_costs (rtx x,
       return false;
     }
 }
+
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST msp430_insn_cost
+
+static int
+msp430_insn_cost (rtx_insn *insn, bool speed ATTRIBUTE_UNUSED)
+{
+  if (recog_memoized (insn) < 0)
+    return 0;
+
+  /* The returned cost must be relative to COSTS_N_INSNS (1). An insn with a
+     length of 2 bytes is the smallest possible size and so must be equivalent
+     to COSTS_N_INSNS (1).  */
+  return COSTS_N_INSNS (get_attr_length (insn) / 2);
+
+  /* FIXME Add more detailed costs when optimizing for speed.
+     For now the length of the instruction is a good approximiation and roughly
+     correlates with cycle cost.  */
+}
+
 
 /* Function Entry and Exit */
 
