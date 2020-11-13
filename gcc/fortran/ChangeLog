@@ -1,3 +1,24 @@
+2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* f95-lang.c (ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LIST):
+	Define.
+	(gfc_init_builtin_functions): Add alloc_size and warn_unused_result
+	attributes to __builtin_GOMP_alloc.
+	* types.def (BT_PTRMODE): New primitive type.
+	(BT_FN_VOID_PTR_PTRMODE, BT_FN_PTR_SIZE_SIZE_PTRMODE): New function
+	types.
+
+2020-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97782
+	* trans-openmp.c (gfc_trans_oacc_construct, gfc_trans_omp_parallel_do,
+	gfc_trans_omp_parallel_do_simd, gfc_trans_omp_parallel_sections,
+	gfc_trans_omp_parallel_workshare, gfc_trans_omp_sections
+	gfc_trans_omp_single, gfc_trans_omp_task, gfc_trans_omp_teams
+	gfc_trans_omp_target, gfc_trans_omp_target_data,
+	gfc_trans_omp_workshare): Use code->loc instead of input_location
+	when building the OMP_/OACC_ construct.
+
 2020-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/97768

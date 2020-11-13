@@ -1,7 +1,7 @@
 /* PR middle-end/91458 - inconsistent warning for writing past the end
    of an array member
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-array-bounds" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds -fno-ipa-icf" } */
 
 void sink (void*);
 

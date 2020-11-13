@@ -37,11 +37,15 @@ load_lib target-libpath.exp
 load_lib gcc.exp
 load_lib g++.exp
 load_lib dejagnu.exp
+load_lib target-supports-dg.exp
 
 # Skip these tests for targets that don't support -lgccjit
 if { ![check_effective_target_lgccjit] } {
     return
 }
+
+# The default do-what keyword.
+set dg-do-what-default compile
 
 # Look for lines of the form:
 #   definitely lost: 11,316 bytes in 235 blocks
@@ -378,6 +382,33 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
     verbose "  prog: $prog"
     verbose "  do_what: $do_what"
     verbose "  extra_tool_flags: $extra_tool_flags"
+
+    global dg-do-what-default
+    set dg-do-what [list ${dg-do-what-default} "" P]
+
+    set tmp [dg-get-options $prog]
+    foreach op $tmp {
+	verbose "Processing option: $op" 3
+	set status [catch "$op" errmsg]
+	if { $status != 0 } {
+	    if { 0 && [info exists errorInfo] } {
+		# This also prints a backtrace which will just confuse
+		# testcase writers, so it's disabled.
+		perror "$name: $errorInfo\n"
+	    } else {
+		perror "$name: $errmsg for \"$op\"\n"
+	    }
+	    perror "$name: $errmsg for \"$op\"" 0
+	    return
+	}
+    }
+
+    # If we're not supposed to try this test on this target, we're done.
+    if { [lindex ${dg-do-what} 1] == "N" } {
+	unsupported "$name"
+	verbose "$name not supported on this target, skipping it" 3
+	return
+    }
 
     # test-threads.c needs to be linked against pthreads
     if {[string match "*test-threads.c" $prog]} {

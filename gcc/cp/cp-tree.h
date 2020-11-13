@@ -529,6 +529,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
       DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
       LABEL_DECL_CDTOR (in LABEL_DECL)
+      USING_DECL_UNRELATED_P (in USING_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
@@ -3408,6 +3409,16 @@ struct GTY(()) lang_decl {
 
 /* Non zero if the using decl refers to a dependent type.  */
 #define USING_DECL_TYPENAME_P(NODE) DECL_LANG_FLAG_1 (USING_DECL_CHECK (NODE))
+
+/* True if member using decl NODE refers to a non-inherited NODE.  */
+#define USING_DECL_UNRELATED_P(NODE) DECL_LANG_FLAG_2 (USING_DECL_CHECK (NODE))
+
+/* True iff the CONST_DECL is a class-scope clone from C++20 using enum,
+   created by handle_using_decl.  */
+#define CONST_DECL_USING_P(NODE)			\
+  (TREE_CODE (NODE) == CONST_DECL			\
+   && TREE_CODE (TREE_TYPE (NODE)) == ENUMERAL_TYPE	\
+   && DECL_CONTEXT (NODE) != TREE_TYPE (NODE))
 
 /* In a FUNCTION_DECL, this is nonzero if this function was defined in
    the class definition.  We have saved away the text of the function,

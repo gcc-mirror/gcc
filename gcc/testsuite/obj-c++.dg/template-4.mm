@@ -4,6 +4,7 @@
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 /* { dg-options "-mno-constant-cfstrings" { target *-*-darwin* } } */
 /* { dg-additional-sources "../objc-obj-c++-shared/nsconstantstring-class-impl.mm" } */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 #include <stdarg.h>
 #include <stdlib.h>

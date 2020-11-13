@@ -1,5 +1,6 @@
 /* Redeclarations of class names.  */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 typedef int foo; /* { dg-line foo_def } */
 
@@ -8,6 +9,9 @@ typedef int foo; /* { dg-line foo_def } */
 
 typedef int bar; /* { dg-line bar_def } */
 
+#if defined(__has_attribute) && __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface bar
 @end  /* { dg-error "redeclared as different kind of symbol" } */
 /* { dg-error "previous declaration of" "" { target *-*-* } bar_def } */

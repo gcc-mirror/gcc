@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdiagnostics-show-caret" } */
 /* { dg-excess-errors "tree range 0:0-0:0" { target { *-*-darwin* } } }  */
+// { dg-additional-options "-Wno-objc-root-class" }
 
 /* This file is similar to diagnostic-test-expressions-1.c
    (see the notes in that file); this file adds test

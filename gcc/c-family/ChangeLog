@@ -1,3 +1,17 @@
+2020-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.c (c_common_has_attribute): Take argument std_syntax.
+	Allow scope for C.  Handle standard attributes for C.  Do not
+	accept unscoped attributes if std_syntax and not handled as
+	standard attributes.
+	* c-common.h (c_common_has_attribute): Update prototype.
+
+2020-11-12  Nicholas Guriev  <guriev-ns@ya.ru>
+
+	PR pch/86674
+	* c-pch.c (c_common_valid_pch): Use cpp_warning with CPP_W_INVALID_PCH
+	reason to fix -Werror=invalid-pch and -Wno-error=invalid-pch switches.
+
 2020-11-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/88115

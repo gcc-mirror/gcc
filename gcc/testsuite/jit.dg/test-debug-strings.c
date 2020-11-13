@@ -178,6 +178,26 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 			       "((struct node *)ptr->next)->next");
   }
 
+  /* Check string literal escaping.  */
+  {
+    CHECK_RVALUE_DEBUG_STRING
+      (gcc_jit_context_new_string_literal (ctxt, ""),
+       "\"\"");
+    CHECK_RVALUE_DEBUG_STRING
+      (gcc_jit_context_new_string_literal (ctxt, "foo"),
+       "\"foo\"");
+    CHECK_RVALUE_DEBUG_STRING
+      (gcc_jit_context_new_string_literal (ctxt, "\""),
+       "\"\\\"\"");
+    CHECK_RVALUE_DEBUG_STRING
+      (gcc_jit_context_new_string_literal (ctxt, "line 1\nline 2\n"),
+       "\"line 1\\nline 2\\n\"");
+    CHECK_RVALUE_DEBUG_STRING
+      (gcc_jit_context_new_string_literal (ctxt, "foo\tbar"),
+       "\"foo\\tbar\"");
+  }
+
+#undef CHECK_RVALUE_DEBUG_STRING
 #undef CHECK_LVALUE_DEBUG_STRING
 }
 

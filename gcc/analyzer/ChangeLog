@@ -1,3 +1,38 @@
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.h (checker_event::get_id_ptr): New.
+	* diagnostic-manager.cc (path_builder::path_builder): Add "sd"
+	param and use it to initialize new field "m_sd".
+	(path_builder::get_pending_diagnostic): New.
+	(path_builder::m_sd): New field.
+	(diagnostic_manager::emit_saved_diagnostic): Pass sd to
+	path_builder ctor.
+	(diagnostic_manager::add_events_for_superedge): Call new
+	maybe_add_custom_events_for_superedge vfunc.
+	* engine.cc (stale_jmp_buf::stale_jmp_buf): Add "setjmp_point"
+	param and use it to initialize new field "m_setjmp_point".
+	Initialize new field "m_stack_pop_event".
+	(stale_jmp_buf::maybe_add_custom_events_for_superedge): New vfunc
+	implementation.
+	(stale_jmp_buf::describe_final_event): New vfunc implementation.
+	(stale_jmp_buf::m_setjmp_point): New field.
+	(stale_jmp_buf::m_stack_pop_event): New field.
+	(exploded_node::on_longjmp): Pass setjmp_point to stale_jmp_buf
+	ctor.
+	* pending-diagnostic.h
+	(pending_diagnostic::maybe_add_custom_events_for_superedge): New
+	vfunc.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/97424
+	* analyzer.opt (Wanalyzer-shift-count-negative): New.
+	(Wanalyzer-shift-count-overflow): New.
+	* region-model.cc (class shift_count_negative_diagnostic): New.
+	(class shift_count_overflow_diagnostic): New.
+	(region_model::get_gassign_result): Complain about shift counts that
+	are negative or are >= the operand's type's width.
+
 2020-11-10  Martin Liska  <mliska@suse.cz>
 
 	* constraint-manager.cc (constraint_manager::merge): Remove

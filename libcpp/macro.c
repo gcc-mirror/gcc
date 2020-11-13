@@ -648,7 +648,11 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
       break;
 
     case BT_HAS_ATTRIBUTE:
-      number = pfile->cb.has_attribute (pfile);
+      number = pfile->cb.has_attribute (pfile, false);
+      break;
+
+    case BT_HAS_STD_ATTRIBUTE:
+      number = pfile->cb.has_attribute (pfile, true);
       break;
 
     case BT_HAS_BUILTIN:

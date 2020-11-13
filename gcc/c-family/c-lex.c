@@ -300,7 +300,7 @@ get_token_no_padding (cpp_reader *pfile)
 
 /* Callback for has_attribute.  */
 int
-c_common_has_attribute (cpp_reader *pfile)
+c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 {
   int result = 0;
   tree attr_name = NULL_TREE;
@@ -319,35 +319,37 @@ c_common_has_attribute (cpp_reader *pfile)
       attr_name = get_identifier ((const char *)
 				  cpp_token_as_text (pfile, token));
       attr_name = canonicalize_attr_name (attr_name);
-      if (c_dialect_cxx ())
+      bool have_scope = false;
+      int idx = 0;
+      const cpp_token *nxt_token;
+      do
+	nxt_token = cpp_peek_token (pfile, idx++);
+      while (nxt_token->type == CPP_PADDING);
+      if (nxt_token->type == CPP_SCOPE)
 	{
-	  int idx = 0;
-	  const cpp_token *nxt_token;
-	  do
-	    nxt_token = cpp_peek_token (pfile, idx++);
-	  while (nxt_token->type == CPP_PADDING);
-	  if (nxt_token->type == CPP_SCOPE)
+	  have_scope = true;
+	  get_token_no_padding (pfile); // Eat scope.
+	  nxt_token = get_token_no_padding (pfile);
+	  if (nxt_token->type == CPP_NAME)
 	    {
-	      get_token_no_padding (pfile); // Eat scope.
-	      nxt_token = get_token_no_padding (pfile);
-	      if (nxt_token->type == CPP_NAME)
-		{
-		  tree attr_ns = attr_name;
-		  tree attr_id
-		    = get_identifier ((const char *)
-				      cpp_token_as_text (pfile, nxt_token));
-		  attr_name = build_tree_list (attr_ns, attr_id);
-		}
-	      else
-		{
-		  cpp_error (pfile, CPP_DL_ERROR,
-			     "attribute identifier required after scope");
-		  attr_name = NULL_TREE;
-		}
+	      tree attr_ns = attr_name;
+	      tree attr_id
+		= get_identifier ((const char *)
+				  cpp_token_as_text (pfile, nxt_token));
+	      attr_name = build_tree_list (attr_ns, attr_id);
 	    }
 	  else
 	    {
-	      /* Some standard attributes need special handling.  */
+	      cpp_error (pfile, CPP_DL_ERROR,
+			 "attribute identifier required after scope");
+	      attr_name = NULL_TREE;
+	    }
+	}
+      else
+	{
+	  /* Some standard attributes need special handling.  */
+	  if (c_dialect_cxx ())
+	    {
 	      if (is_attribute_p ("noreturn", attr_name))
 		result = 200809;
 	      else if (is_attribute_p ("deprecated", attr_name))
@@ -361,11 +363,20 @@ c_common_has_attribute (cpp_reader *pfile)
 		result = 201803;
 	      else if (is_attribute_p ("nodiscard", attr_name))
 		result = 201907;
-	      if (result)
-		attr_name = NULL_TREE;
 	    }
+	  else
+	    {
+	      if (is_attribute_p ("deprecated", attr_name)
+		  || is_attribute_p ("maybe_unused", attr_name)
+		  || is_attribute_p ("fallthrough", attr_name))
+		result = 201904;
+	      else if (is_attribute_p ("nodiscard", attr_name))
+		result = 202003;
+	    }
+	  if (result)
+	    attr_name = NULL_TREE;
 	}
-      if (attr_name)
+      if (attr_name && (have_scope || !std_syntax))
 	{
 	  init_attributes ();
 	  const struct attribute_spec *attr = lookup_attribute_spec (attr_name);

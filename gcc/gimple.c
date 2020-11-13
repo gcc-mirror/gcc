@@ -611,10 +611,6 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
   gasm *p;
   int size = strlen (string);
 
-  /* ASMs with labels cannot have outputs.  This should have been
-     enforced by the front end.  */
-  gcc_assert (nlabels == 0 || noutputs == 0);
-
   p = as_a <gasm *> (
         gimple_build_with_ops (GIMPLE_ASM, ERROR_MARK,
 			       ninputs + noutputs + nclobbers + nlabels));

@@ -3328,6 +3328,7 @@ pointer_table::pointer_table ()
   set (GT_EXPR, op_gt);
   set (GE_EXPR, op_ge);
   set (SSA_NAME, op_identity);
+  set (INTEGER_CST, op_integer_cst);
   set (ADDR_EXPR, op_addr);
   set (NOP_EXPR, op_convert);
   set (CONVERT_EXPR, op_convert);
@@ -3341,10 +3342,12 @@ pointer_table::pointer_table ()
 range_operator *
 range_op_handler (enum tree_code code, tree type)
 {
-  // First check if there is apointer specialization.
+  // First check if there is a pointer specialization.
   if (POINTER_TYPE_P (type))
     return pointer_tree_table[code];
-  return integral_tree_table[code];
+  if (INTEGRAL_TYPE_P (type))
+    return integral_tree_table[code];
+  return NULL;
 }
 
 // Cast the range in R to TYPE.

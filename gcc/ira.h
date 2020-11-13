@@ -213,6 +213,7 @@ extern void ira_register_new_scratch_op (rtx_insn *insn, int nop, int icode);
 extern bool ira_remove_insn_scratches (rtx_insn *insn, bool all_p, FILE *dump_file,
 				       rtx (*get_reg) (rtx original));
 extern void ira_restore_scratches (FILE *dump_file);
+extern void ira_nullify_asm_goto (rtx_insn *insn);
 
 /* ira-costs.c */
 extern void ira_costs_c_finalize (void);

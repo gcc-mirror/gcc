@@ -6,6 +6,9 @@
 enum type1;
 struct type2;
 
+#if defined(__has_attribute) && __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface MyObject
 - (void) method1: (enum type1)argument;
 - (void) method2: (struct type2)argument;

@@ -3,6 +3,7 @@
 
 /* { dg-do compile { target stabs } } */
 /* { dg-options "-gstabs" } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 @interface MyClass
 + newWithArg: arg;

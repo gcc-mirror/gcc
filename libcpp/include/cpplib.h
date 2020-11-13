@@ -672,7 +672,7 @@ struct cpp_callbacks
   void (*used) (cpp_reader *, location_t, cpp_hashnode *);
 
   /* Callback to identify whether an attribute exists.  */
-  int (*has_attribute) (cpp_reader *);
+  int (*has_attribute) (cpp_reader *, bool);
 
   /* Callback to determine whether a built-in function is recognized.  */
   int (*has_builtin) (cpp_reader *);
@@ -857,6 +857,7 @@ enum cpp_builtin_type
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
   BT_HAS_ATTRIBUTE,		/* `__has_attribute(x)' */
+  BT_HAS_STD_ATTRIBUTE,		/* `__has_c_attribute(x)' */
   BT_HAS_BUILTIN,		/* `__has_builtin(x)' */
   BT_HAS_INCLUDE,		/* `__has_include(x)' */
   BT_HAS_INCLUDE_NEXT		/* `__has_include_next(x)' */
@@ -1075,8 +1076,12 @@ extern cppchar_t cpp_host_to_exec_charset (cpp_reader *, cppchar_t);
 /* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */
 extern void cpp_define (cpp_reader *, const char *);
+extern void cpp_define_unused (cpp_reader *, const char *);
 extern void cpp_define_formatted (cpp_reader *pfile, 
 				  const char *fmt, ...) ATTRIBUTE_PRINTF_2;
+extern void cpp_define_formatted_unused (cpp_reader *pfile,
+					 const char *fmt,
+					 ...) ATTRIBUTE_PRINTF_2;
 extern void cpp_assert (cpp_reader *, const char *);
 extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);

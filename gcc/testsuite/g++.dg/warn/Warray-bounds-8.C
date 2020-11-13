@@ -3,7 +3,7 @@
    See Wstringop-overflow-3.C for the same test that exercises the other
    warning.
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-stringop-overflow" }
+   { dg-options "-O2 -Wall -Wno-stringop-overflow -fno-ipa-icf" }
    { dg-skip-if "" { *-*-aix* } } */
 
 void sink (void*);

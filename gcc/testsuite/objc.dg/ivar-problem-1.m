@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <objc/objc.h>
 
+#if defined(__has_attribute) && __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface MyRootClass1
 {
   Class isa;
@@ -36,6 +39,9 @@
 @end
 
 
+#if defined(__has_attribute) && __has_attribute(objc_root_class)
+__attribute__((objc_root_class))
+#endif
 @interface MyRootClass2
 {
   Class isa;

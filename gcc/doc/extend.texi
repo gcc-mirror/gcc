@@ -6161,9 +6161,10 @@ and for static member methods.
 On 32-bit and 64-bit x86 targets, you can use an ABI attribute
 to indicate which calling convention should be used for a function.  The
 @code{ms_abi} attribute tells the compiler to use the Microsoft ABI,
-while the @code{sysv_abi} attribute tells the compiler to use the ABI
-used on GNU/Linux and other systems.  The default is to use the Microsoft ABI
-when targeting Windows.  On all other systems, the default is the x86/AMD ABI.
+while the @code{sysv_abi} attribute tells the compiler to use the System V
+ELF ABI, which is used on GNU/Linux and other systems.  The default is to use
+the Microsoft ABI when targeting Windows.  On all other systems, the default
+is the System V ELF ABI.
 
 Note, the @code{ms_abi} attribute for Microsoft Windows 64-bit targets currently
 requires the @option{-maccumulate-outgoing-args} option.
@@ -7429,6 +7430,32 @@ data in this way can reduce program startup times.  This attribute is
 specific to ELF targets and relies on the linker to place such data in
 the right location
 
+@item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
+@cindex @code{objc_nullability} variable attribute
+This attribute applies to pointer variables only.  It allows marking the
+pointer with one of four possible values describing the conditions under
+which the pointer might have a @code{nil} value. In most cases, the
+attribute is intended to be an internal representation for property and
+method nullability (specified by language keywords); it is not recommended
+to use it directly.
+
+When @var{nullability kind} is @code{"unspecified"} or @code{0}, nothing is
+known about the conditions in which the pointer might be @code{nil}. Making
+this state specific serves to avoid false positives in diagnostics.
+
+When @var{nullability kind} is @code{"nonnull"} or @code{1}, the pointer has
+no meaning if it is @code{nil} and thus the compiler is free to emit
+diagnostics if it can be determined that the value will be @code{nil}.
+
+When @var{nullability kind} is @code{"nullable"} or @code{2}, the pointer might
+be @code{nil} and carry meaning as such.
+
+When @var{nullability kind} is @code{"resettable"} or @code{3} (used only in
+the context of property attribute lists) this describes the case in which a
+property setter may take the value @code{nil} (which perhaps causes the
+property to be reset in some manner to a default) but for which the property
+getter will never validly return @code{nil}.
+
 @end table
 
 @node ARC Variable Attributes
@@ -8518,6 +8545,12 @@ and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
 
+@item objc_root_class @r{(Objective-C and Objective-C++ only)}
+@cindex @code{objc_root_class} type attribute
+This attribute marks a class as being a root class, and thus allows
+the compiler to elide any warnings about a missing superclass and to
+make additional checks for mandatory methods as needed.
+
 @end table
 
 To specify multiple attributes, separate them by commas within the
@@ -9534,7 +9567,7 @@ asm @var{asm-qualifiers} ( @var{AssemblerTemplate}
                  @r{[} : @var{Clobbers} @r{]} @r{]})
 
 asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
-                      : 
+                      : @var{OutputOperands}
                       : @var{InputOperands}
                       : @var{Clobbers}
                       : @var{GotoLabels})
@@ -9641,7 +9674,7 @@ there is no need for the output variables. Also, the optimizers may move
 code out of loops if they believe that the code will always return the same 
 result (i.e.@: none of its input values change between calls). Using the 
 @code{volatile} qualifier disables these optimizations. @code{asm} statements 
-that have no output operands, including @code{asm goto} statements, 
+that have no output operands and @code{asm goto} statements, 
 are implicitly volatile.
 
 This i386 code demonstrates a case that does not use (or require) the 
@@ -10500,9 +10533,6 @@ case, consider using the @code{__builtin_unreachable} intrinsic after the
 using the @code{hot} and @code{cold} label attributes (@pxref{Label 
 Attributes}).
 
-An @code{asm goto} statement cannot have outputs.
-This is due to an internal restriction of 
-the compiler: control transfer instructions cannot have outputs. 
 If the assembler code does modify anything, use the @code{"memory"} clobber 
 to force the 
 optimizers to flush all register values to memory and reload them if 
@@ -10510,6 +10540,13 @@ necessary after the @code{asm} statement.
 
 Also note that an @code{asm goto} statement is always implicitly
 considered volatile.
+
+Be careful when you set output operands inside @code{asm goto} only on
+some possible control flow paths.  If you don't set up the output on
+given path and never use it on this path, it is okay.  Otherwise, you
+should use @samp{+} constraint modifier meaning that the operand is
+input and output one.  With this modifier you will have the correct
+values on all possible paths from the @code{asm goto}.
 
 To reference a label in the assembler template,
 prefix it with @samp{%l} (lowercase @samp{L}) followed 
@@ -10553,6 +10590,41 @@ int frob(int x)
   return y;
 error:
   return -1;
+@}
+@end example
+
+The following example shows an @code{asm goto} that uses an output.
+
+@example
+int foo(int count)
+@{
+  asm goto ("dec %0; jb %l[stop]"
+            : "+r" (count)
+            :
+            :
+            : stop);
+  return count;
+stop:
+  return 0;
+@}
+@end example
+
+The following artificial example shows an @code{asm goto} that sets
+up an output only on one path inside the @code{asm goto}.  Usage of
+constraint modifier @code{=} instead of @code{+} would be wrong as
+@code{factor} is used on all paths from the @code{asm goto}.
+
+@example
+int foo(int inp)
+@{
+  int factor = 0;
+  asm goto ("cmp %1, 10; jb %l[lab]; mov 2, %0"
+            : "+r" (factor)
+            : "r" (inp)
+            :
+            : lab);
+lab:
+  return inp * factor; /* return 2 * inp or 0 if inp < 10 */
 @}
 @end example
 

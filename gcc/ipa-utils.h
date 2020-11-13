@@ -265,4 +265,16 @@ get_odr_name_for_type (tree type)
   return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (type_name));
 }
 
+/* Return true if we are going to do LTO streaming.  */
+
+inline bool
+lto_streaming_expected_p ()
+{
+  /* Compilation before LTO stremaing.  */
+  if (flag_lto && !in_lto_p && symtab->state < IPA_SSA_AFTER_INLINING)
+    return true;
+  /* WPA or incremental link.  */
+  return (flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO);
+}
+
 #endif  /* GCC_IPA_UTILS_H  */

@@ -1852,8 +1852,6 @@ void
 lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 		       const char *title)
 {
-  rtx_insn *last;
-
   if (before == NULL_RTX && after == NULL_RTX)
     return;
   if (lra_dump_file != NULL)
@@ -1864,12 +1862,6 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 	  fprintf (lra_dump_file,"    %s before:\n", title);
 	  dump_rtl_slim (lra_dump_file, before, NULL, -1, 0);
 	}
-      if (after != NULL_RTX)
-	{
-	  fprintf (lra_dump_file, "    %s after:\n", title);
-	  dump_rtl_slim (lra_dump_file, after, NULL, -1, 0);
-	}
-      fprintf (lra_dump_file, "\n");
     }
   if (before != NULL_RTX)
     {
@@ -1883,12 +1875,63 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
     {
       if (cfun->can_throw_non_call_exceptions)
 	copy_reg_eh_region_note_forward (insn, after, NULL);
-      for (last = after; NEXT_INSN (last) != NULL_RTX; last = NEXT_INSN (last))
-	;
-      emit_insn_after (after, insn);
-      push_insns (last, insn);
-      setup_sp_offset (after, last);
+      if (! JUMP_P (insn))
+	{
+	  rtx_insn *last;
+	  
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file, "    %s after:\n", title);
+	      dump_rtl_slim (lra_dump_file, after, NULL, -1, 0);
+	    }
+	  for (last = after;
+	       NEXT_INSN (last) != NULL_RTX;
+	       last = NEXT_INSN (last))
+	    ;
+	  emit_insn_after (after, insn);
+	  push_insns (last, insn);
+	  setup_sp_offset (after, last);
+	}
+      else
+	{
+	  /* Put output reload insns on successor BBs: */
+	  edge_iterator ei;
+	  edge e;
+	  
+	  FOR_EACH_EDGE (e, ei, BLOCK_FOR_INSN (insn)->succs)
+	    if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
+	      {
+		/* We already made the edge no-critical in ira.c::ira */
+		lra_assert (!EDGE_CRITICAL_P (e));
+		rtx_insn *tmp = BB_HEAD (e->dest);
+		if (LABEL_P (tmp))
+		  tmp = NEXT_INSN (tmp);
+		if (NOTE_INSN_BASIC_BLOCK_P (tmp))
+		  tmp = NEXT_INSN (tmp);
+		start_sequence ();
+		for (rtx_insn *curr = after;
+		     curr != NULL_RTX;
+		     curr = NEXT_INSN (curr))
+		  emit_insn (copy_insn (PATTERN (curr)));
+		rtx_insn *copy = get_insns (), *last = get_last_insn ();
+		end_sequence ();
+		if (lra_dump_file != NULL)
+		  {
+		    fprintf (lra_dump_file, "    %s after in bb%d:\n", title,
+			     e->dest->index);
+		    dump_rtl_slim (lra_dump_file, copy, NULL, -1, 0);
+		  }
+		emit_insn_before (copy, tmp);
+		push_insns (last, PREV_INSN (copy));
+		setup_sp_offset (copy, last);
+		/* We can ignore BB live info here as it and reg notes
+		   will be updated before the next assignment
+		   sub-pass. */
+	      }
+	}
     }
+  if (lra_dump_file != NULL)
+    fprintf (lra_dump_file, "\n");
   if (cfun->can_throw_non_call_exceptions)
     {
       rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);

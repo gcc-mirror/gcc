@@ -126,6 +126,10 @@ struct omp_context
      corresponding tracking loop iteration variables.  */
   hash_map<tree, tree> *lastprivate_conditional_map;
 
+  /* And a hash map from the allocate variables to their corresponding
+     allocators.  */
+  hash_map<tree, tree> *allocate_map;
+
   /* A tree_list of the reduction clauses in this context. This is
     only used for checking the consistency of OpenACC reduction
     clauses in scan_omp_for and is not guaranteed to contain a valid
@@ -1043,6 +1047,7 @@ delete_omp_context (splay_tree_value value)
     }
 
   delete ctx->lastprivate_conditional_map;
+  delete ctx->allocate_map;
 
   XDELETE (ctx);
 }
@@ -1115,6 +1120,22 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
   bool scan_array_reductions = false;
 
   for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE
+	&& (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) == NULL_TREE
+	    /* omp_default_mem_alloc is 1 */
+	    || !integer_onep (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))))
+      {
+	if (is_task_ctx (ctx))
+	  continue; /* For now.  */
+	if (ctx->allocate_map == NULL)
+	  ctx->allocate_map = new hash_map<tree, tree>;
+	ctx->allocate_map->put (OMP_CLAUSE_DECL (c),
+				OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+				? OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+				: integer_zero_node);
+      }
+
+  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
       bool by_ref;
 
@@ -1130,6 +1151,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 
 	case OMP_CLAUSE_SHARED:
 	  decl = OMP_CLAUSE_DECL (c);
+	  if (ctx->allocate_map && ctx->allocate_map->get (decl))
+	    ctx->allocate_map->remove (decl);
 	  /* Ignore shared directives in teams construct inside of
 	     target construct.  */
 	  if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
@@ -1174,6 +1197,14 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if (is_oacc_parallel_or_serial (ctx) || is_oacc_kernels (ctx))
 	    ctx->local_reduction_clauses
 	      = tree_cons (NULL, c, ctx->local_reduction_clauses);
+	  if ((OMP_CLAUSE_REDUCTION_INSCAN (c)
+	       || OMP_CLAUSE_REDUCTION_TASK (c)) && ctx->allocate_map)
+	    {
+	      tree decl = OMP_CLAUSE_DECL (c);
+	      /* For now.  */
+	      if (ctx->allocate_map->get (decl))
+		ctx->allocate_map->remove (decl);
+	    }
 	  /* FALLTHRU */
 
 	case OMP_CLAUSE_IN_REDUCTION:
@@ -4358,6 +4389,77 @@ task_reduction_read (gimple_seq *ilist, tree tskred_temp, tree type,
   return v;
 }
 
+/* Lower early initialization of privatized variable NEW_VAR
+   if it needs an allocator (has allocate clause).  */
+
+static bool
+lower_private_allocate (tree var, tree new_var, tree &allocator,
+			tree &allocate_ptr, gimple_seq *ilist,
+			omp_context *ctx, bool is_ref, tree size)
+{
+  if (allocator)
+    return false;
+  gcc_assert (allocate_ptr == NULL_TREE);
+  if (ctx->allocate_map
+      && (DECL_P (new_var) || (TYPE_P (new_var) && size)))
+    if (tree *allocatorp = ctx->allocate_map->get (var))
+      allocator = *allocatorp;
+  if (allocator == NULL_TREE)
+    return false;
+  if (!is_ref && omp_is_reference (var))
+    {
+      allocator = NULL_TREE;
+      return false;
+    }
+
+  if (TREE_CODE (allocator) != INTEGER_CST)
+    allocator = build_outer_var_ref (allocator, ctx);
+  allocator = fold_convert (pointer_sized_int_node, allocator);
+  if (TREE_CODE (allocator) != INTEGER_CST)
+    {
+      tree var = create_tmp_var (TREE_TYPE (allocator));
+      gimplify_assign (var, allocator, ilist);
+      allocator = var;
+    }
+
+  tree ptr_type, align, sz = size;
+  if (TYPE_P (new_var))
+    {
+      ptr_type = build_pointer_type (new_var);
+      align = build_int_cst (size_type_node, TYPE_ALIGN_UNIT (new_var));
+    }
+  else if (is_ref)
+    {
+      ptr_type = build_pointer_type (TREE_TYPE (TREE_TYPE (new_var)));
+      align = build_int_cst (size_type_node,
+			     TYPE_ALIGN_UNIT (TREE_TYPE (ptr_type)));
+    }
+  else
+    {
+      ptr_type = build_pointer_type (TREE_TYPE (new_var));
+      align = build_int_cst (size_type_node, DECL_ALIGN_UNIT (new_var));
+      if (sz == NULL_TREE)
+	sz = fold_convert (size_type_node, DECL_SIZE_UNIT (new_var));
+    }
+  if (TREE_CODE (sz) != INTEGER_CST)
+    {
+      tree szvar = create_tmp_var (size_type_node);
+      gimplify_assign (szvar, sz, ilist);
+      sz = szvar;
+    }
+  allocate_ptr = create_tmp_var (ptr_type);
+  tree a = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
+  gimple *g = gimple_build_call (a, 3, align, sz, allocator);
+  gimple_call_set_lhs (g, allocate_ptr);
+  gimple_seq_add_stmt (ilist, g);
+  if (!is_ref)
+    {
+      SET_DECL_VALUE_EXPR (new_var, build_simple_mem_ref (allocate_ptr));
+      DECL_HAS_VALUE_EXPR_P (new_var) = 1;
+    }
+  return true;
+}
+
 /* Generate code to implement the input clauses, FIRSTPRIVATE and COPYIN,
    from the receiver (aka child) side and initializers for REFERENCE_TYPE
    private variables.  Initialization statements go in ILIST, while calls
@@ -4523,6 +4625,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	  bool task_reduction_p = false;
 	  bool task_reduction_needs_orig_p = false;
 	  tree cond = NULL_TREE;
+	  tree allocator, allocate_ptr;
 
 	  switch (c_kind)
 	    {
@@ -4659,6 +4762,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	  if (task_reduction_p != (pass >= 2))
 	    continue;
 
+	  allocator = NULL_TREE;
+	  allocate_ptr = NULL_TREE;
 	  new_var = var = OMP_CLAUSE_DECL (c);
 	  if ((c_kind == OMP_CLAUSE_REDUCTION
 	       || c_kind == OMP_CLAUSE_IN_REDUCTION)
@@ -4767,7 +4872,23 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      tree type = TREE_TYPE (d);
 	      gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
 	      tree v = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+	      tree sz = v;
 	      const char *name = get_name (orig_var);
+	      if (pass != 3 && !TREE_CONSTANT (v))
+		{
+		  tree t = maybe_lookup_decl (v, ctx);
+		  if (t)
+		    v = t;
+		  else
+		    v = maybe_lookup_decl_in_outer_ctx (v, ctx);
+		  gimplify_expr (&v, ilist, NULL, is_gimple_val, fb_rvalue);
+		  t = fold_build2_loc (clause_loc, PLUS_EXPR,
+				       TREE_TYPE (v), v,
+				       build_int_cst (TREE_TYPE (v), 1));
+		  sz = fold_build2_loc (clause_loc, MULT_EXPR,
+					TREE_TYPE (v), t,
+					TYPE_SIZE_UNIT (TREE_TYPE (type)));
+		}
 	      if (pass == 3)
 		{
 		  tree xv = create_tmp_var (ptr_type_node);
@@ -4825,6 +4946,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  gimplify_assign (cond, x, ilist);
 		  x = xv;
 		}
+	      else if (lower_private_allocate (var, type, allocator,
+					       allocate_ptr, ilist, ctx,
+					       true,
+					       TREE_CONSTANT (v)
+					       ? TYPE_SIZE_UNIT (type)
+					       : sz))
+		x = allocate_ptr;
 	      else if (TREE_CONSTANT (v))
 		{
 		  x = create_tmp_var_raw (type, name);
@@ -4836,20 +4964,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		{
 		  tree atmp
 		    = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
-		  tree t = maybe_lookup_decl (v, ctx);
-		  if (t)
-		    v = t;
-		  else
-		    v = maybe_lookup_decl_in_outer_ctx (v, ctx);
-		  gimplify_expr (&v, ilist, NULL, is_gimple_val, fb_rvalue);
-		  t = fold_build2_loc (clause_loc, PLUS_EXPR,
-				       TREE_TYPE (v), v,
-				       build_int_cst (TREE_TYPE (v), 1));
-		  t = fold_build2_loc (clause_loc, MULT_EXPR,
-				       TREE_TYPE (v), t,
-				       TYPE_SIZE_UNIT (TREE_TYPE (type)));
 		  tree al = size_int (TYPE_ALIGN (TREE_TYPE (type)));
-		  x = build_call_expr_loc (clause_loc, atmp, 2, t, al);
+		  x = build_call_expr_loc (clause_loc, atmp, 2, sz, al);
 		}
 
 	      tree ptype = build_pointer_type (TREE_TYPE (type));
@@ -5111,6 +5227,12 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  gimple_seq_add_stmt (dlist, g);
 		  gimple_seq_add_stmt (dlist, gimple_build_label (end2));
 		}
+	      if (allocator)
+		{
+		  tree f = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+		  g = gimple_build_call (f, 2, allocate_ptr, allocator);
+		  gimple_seq_add_stmt (dlist, g);
+		}
 	      continue;
 	    }
 	  else if (pass == 2)
@@ -5195,8 +5317,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 
 	      if (c_kind != OMP_CLAUSE_FIRSTPRIVATE || !is_task_ctx (ctx))
 		{
-		  gcall *stmt;
-		  tree tmp, atmp;
+		  tree tmp;
 
 		  ptr = DECL_VALUE_EXPR (new_var);
 		  gcc_assert (TREE_CODE (ptr) == INDIRECT_REF);
@@ -5204,16 +5325,25 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  gcc_assert (DECL_P (ptr));
 		  x = TYPE_SIZE_UNIT (TREE_TYPE (new_var));
 
-		  /* void *tmp = __builtin_alloca */
-		  atmp = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
-		  stmt = gimple_build_call (atmp, 2, x,
-					    size_int (DECL_ALIGN (var)));
-		  cfun->calls_alloca = 1;
-		  tmp = create_tmp_var_raw (ptr_type_node);
-		  gimple_add_tmp_var (tmp);
-		  gimple_call_set_lhs (stmt, tmp);
+		  if (lower_private_allocate (var, new_var, allocator,
+					      allocate_ptr, ilist, ctx,
+					      false, x))
+		    tmp = allocate_ptr;
+		  else
+		    {
+		      /* void *tmp = __builtin_alloca */
+		      tree atmp
+			= builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
+		      gcall *stmt
+			= gimple_build_call (atmp, 2, x,
+					     size_int (DECL_ALIGN (var)));
+		      cfun->calls_alloca = 1;
+		      tmp = create_tmp_var_raw (ptr_type_node);
+		      gimple_add_tmp_var (tmp);
+		      gimple_call_set_lhs (stmt, tmp);
 
-		  gimple_seq_add_stmt (ilist, stmt);
+		      gimple_seq_add_stmt (ilist, stmt);
+		    }
 
 		  x = fold_convert_loc (clause_loc, TREE_TYPE (ptr), tmp);
 		  gimplify_assign (ptr, x, ilist);
@@ -5237,6 +5367,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  x = build_receiver_ref (var, false, ctx);
 		  x = build_fold_addr_expr_loc (clause_loc, x);
 		}
+	      else if (lower_private_allocate (var, new_var, allocator,
+					       allocate_ptr,
+					       ilist, ctx, true, x))
+		x = allocate_ptr;
 	      else if (TREE_CONSTANT (x))
 		{
 		  /* For reduction in SIMD loop, defer adding the
@@ -5349,6 +5483,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      tree nx;
 	      bool copy_ctor;
 	      copy_ctor = false;
+	      lower_private_allocate (var, new_var, allocator, allocate_ptr,
+				      ilist, ctx, false, NULL_TREE);
 	      nx = unshare_expr (new_var);
 	      if (is_simd
 		  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
@@ -5494,6 +5630,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      x = lang_hooks.decls.omp_clause_dtor (c, new_var);
 	      if (x)
 		gimplify_and_add (x, dlist);
+	      if (allocator)
+		{
+		  tree f = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+		  gimple *g
+		    = gimple_build_call (f, 2, allocate_ptr, allocator);
+		  gimple_seq_add_stmt (dlist, g);
+		}
 	      break;
 
 	    case OMP_CLAUSE_LINEAR:
@@ -5535,6 +5678,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  goto do_dtor;
 		}
 	    do_firstprivate:
+	      lower_private_allocate (var, new_var, allocator, allocate_ptr,
+				      ilist, ctx, false, NULL_TREE);
 	      x = build_outer_var_ref (var, ctx);
 	      if (is_simd)
 		{
@@ -5722,6 +5867,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		    }
 		  else
 		    {
+		      lower_private_allocate (var, new_var, allocator,
+					      allocate_ptr, ilist, ctx, false,
+					      NULL_TREE);
 		      x = build_outer_var_ref (var, ctx);
 
 		      if (omp_is_reference (var)
@@ -6118,6 +6266,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		    }
 		  else
 		    {
+		      lower_private_allocate (var, new_var, allocator,
+					      allocate_ptr, ilist, ctx,
+					      false, NULL_TREE);
 		      if (omp_is_reference (var) && is_simd)
 			handle_simd_reference (clause_loc, new_vard, ilist);
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
@@ -6132,6 +6283,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			  ref = build_outer_var_ref (var, ctx);
 			  gimplify_assign (ref, x, dlist);
 			}
+		      if (allocator)
+			goto do_dtor;
 		    }
 		}
 	      break;
@@ -7488,7 +7641,10 @@ lower_send_shared_vars (gimple_seq *ilist, gimple_seq *olist, omp_context *ctx)
 	continue;
 
       nvar = maybe_lookup_decl (ovar, ctx);
-      if (!nvar || !DECL_HAS_VALUE_EXPR_P (nvar))
+      if (!nvar
+	  || !DECL_HAS_VALUE_EXPR_P (nvar)
+	  || (ctx->allocate_map
+	      && ctx->allocate_map->get (ovar)))
 	continue;
 
       /* If CTX is a nested parallel directive.  Find the immediately

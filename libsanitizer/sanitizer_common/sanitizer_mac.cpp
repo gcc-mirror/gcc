@@ -1300,7 +1300,7 @@ void FormatUUID(char *out, uptr size, const u8 *uuid) {
                     uuid[12], uuid[13], uuid[14], uuid[15]);
 }
 
-void PrintModuleMap() {
+void DumpProcessMap() {
   Printf("Process module map:\n");
   MemoryMappingLayout memory_mapping(false);
   InternalMmapVector<LoadedModule> modules;
@@ -1332,6 +1332,8 @@ bool GetRandom(void *buffer, uptr length, bool blocking) {
 u32 GetNumberOfCPUs() {
   return (u32)sysconf(_SC_NPROCESSORS_ONLN);
 }
+
+void InitializePlatformCommonFlags(CommonFlags *cf) {}
 
 }  // namespace __sanitizer
 

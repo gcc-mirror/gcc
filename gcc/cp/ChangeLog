@@ -1,3 +1,15 @@
+2020-11-13  Patrick Palka  <ppalka@redhat.com>
+
+	* semantics.c (finish_compound_literal): Don't wrap the original
+	compound literal in a TARGET_EXPR when inside a template.
+
+2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97790
+	* constexpr.c (cxx_eval_constant_expression) <case CLEANUP_POINT_EXPR,
+	case TRY_FINALLY_EXPR, case CLEANUP_STMT>: Don't pass jump_target to
+	cxx_eval_constant_expression when evaluating the cleanups.
+
 2020-11-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* parser.c (cp_parser_declaration): Unless we are compiling for

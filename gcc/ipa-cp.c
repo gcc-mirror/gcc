@@ -3873,7 +3873,8 @@ value_topo_info<valtype>::propagate_effects ()
       for (val = base; val; val = val->scc_next)
 	{
 	  time = time + val->local_time_benefit + val->prop_time_benefit;
-	  size = safe_add (size, val->local_size_cost + val->prop_size_cost);
+	  size = safe_add (size, safe_add (val->local_size_cost,
+					   val->prop_size_cost));
 	}
 
       for (val = base; val; val = val->scc_next)

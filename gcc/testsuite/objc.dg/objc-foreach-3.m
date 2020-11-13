@@ -1,6 +1,7 @@
 /* Syntax check for the new foreach statement. 
    Use of declaration in loop-header without requiring c99 mode. */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 typedef struct objc_class *Class;
 

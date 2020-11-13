@@ -1,5 +1,6 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, December 2010.  */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* Test that you get a warning when an unknown protocol attribute is ignored.  */
 

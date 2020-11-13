@@ -1,5 +1,6 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, February 2011.  */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* Test that the 'objc_exception' attribute is accepted for
    @interfaces, but not for anything else.  */

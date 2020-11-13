@@ -4126,12 +4126,26 @@ vn_nary_op_insert_stmt (gimple *stmt, tree result)
 static inline hashval_t
 vn_phi_compute_hash (vn_phi_t vp1)
 {
-  inchash::hash hstate (EDGE_COUNT (vp1->block->preds) > 2
-			? vp1->block->index : EDGE_COUNT (vp1->block->preds));
+  inchash::hash hstate;
   tree phi1op;
   tree type;
   edge e;
   edge_iterator ei;
+
+  hstate.add_int (EDGE_COUNT (vp1->block->preds));
+  switch (EDGE_COUNT (vp1->block->preds))
+    {
+    case 1:
+      break;
+    case 2:
+      if (vp1->block->loop_father->header == vp1->block)
+	;
+      else
+	break;
+      /* Fallthru.  */
+    default:
+      hstate.add_int (vp1->block->index);
+    }
 
   /* If all PHI arguments are constants we need to distinguish
      the PHI node via its type.  */
@@ -4277,11 +4291,12 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 
   /* Any phi in the same block will have it's arguments in the
      same edge order, because of how we store phi nodes.  */
-  for (unsigned i = 0; i < EDGE_COUNT (vp1->block->preds); ++i)
+  unsigned nargs = EDGE_COUNT (vp1->block->preds);
+  for (unsigned i = 0; i < nargs; ++i)
     {
       tree phi1op = vp1->phiargs[i];
       tree phi2op = vp2->phiargs[i];
-      if (phi1op == VN_TOP || phi2op == VN_TOP)
+      if (phi1op == phi2op)
 	continue;
       if (!expressions_equal_p (phi1op, phi2op))
 	return false;
@@ -5612,8 +5627,8 @@ expressions_equal_p (tree e1, tree e2)
   if (e1 == VN_TOP || e2 == VN_TOP)
     return true;
 
-  /* If only one of them is null, they cannot be equal.  */
-  if (!e1 || !e2)
+  /* SSA_NAME compare pointer equal.  */
+  if (TREE_CODE (e1) == SSA_NAME || TREE_CODE (e2) == SSA_NAME)
     return false;
 
   /* Now perform the actual comparison.  */

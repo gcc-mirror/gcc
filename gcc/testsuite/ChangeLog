@@ -1,3 +1,77 @@
+2020-11-13  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-decltype3.C: New test.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/87291
+	* jit.dg/jit.exp: Load target-supports-dg.exp.
+	Set dg-do-what-default.
+	(jit-dg-test): Set dg-do-what and call dg-get-options, skipping
+	the test if it's not supported on the given target.
+	* jit.dg/test-asm.c: New test.
+	* jit.dg/test-asm.cc: New test.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-debug-strings.c (create_code): Add tests of
+	string literal escaping.
+
+2020-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-has-c-attribute-1.c, gcc.dg/c2x-has-c-attribute-2.c,
+	gcc.dg/c2x-has-c-attribute-3.c, gcc.dg/c2x-has-c-attribute-4.c:
+	New tests.
+
+2020-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97782
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Move dg-message
+	one line up.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+
+2020-11-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/entry_23.f: New test.
+
+2020-11-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/97730
+	* gcc.target/aarch64/sve2/bcax_1.c (OP): Add missing bitwise not
+	to match correct bcax semantics.
+	* gcc.dg/vect/pr97730.c: New test.
+
+2020-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97806
+	* gcc.dg/pr97806.c: New testcase.
+
+2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97790
+	* g++.dg/cpp2a/constexpr-dtor9.C: New test.
+
+2020-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR debug/97060
+	* gcc.dg/debug/dwarf2/pr97060.c: New test.
+
+2020-11-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/pr96789.c: Adjusted by disabling loop
+	vectorization.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/setjmp-5.c: Update expected path output to show
+	an event where the pertinent stack frame is popped.  Update
+	expected message from final event to reference this event.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/97424
+	* gcc.dg/analyzer/invalid-shift-1.c: New test.
+
 2020-11-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/88115

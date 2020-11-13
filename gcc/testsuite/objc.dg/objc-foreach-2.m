@@ -1,5 +1,6 @@
 /* Syntax check for the new foreach statement. */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 typedef struct objc_class *Class;
 
