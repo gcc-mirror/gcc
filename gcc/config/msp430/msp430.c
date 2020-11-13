@@ -1031,6 +1031,135 @@ msp430_legitimate_constant (machine_mode mode, rtx x)
 }
 
 
+/* Describing Relative Costs of Operations
+   To model the cost of an instruction, use the number of cycles when
+   optimizing for speed, and the number of words when optimizing for size.
+   The cheapest instruction will execute in one cycle and cost one word.
+   The cycle and size costs correspond to 430 ISA instructions, not 430X
+   instructions or 430X "address" instructions.  The relative costs of 430X
+   instructions is accurately modeled with the 430 costs.  The relative costs
+   of some "address" instructions can differ, but these are not yet handled.
+   Adding support for this could improve performance/code size.  */
+
+struct single_op_cost
+{
+  const int reg;
+  /* Indirect register (@Rn) or indirect autoincrement (@Rn+).  */
+  const int ind;
+  const int mem;
+};
+
+static const struct single_op_cost cycle_cost_single_op =
+{
+  1, 3, 4
+};
+
+static const struct single_op_cost size_cost_single_op =
+{
+  1, 1, 2
+};
+
+/* When the destination of an insn is memory, the cost is always the same
+   regardless of whether that memory is accessed using indirect register,
+   indexed or absolute addressing.
+   When the source operand is memory, indirect register and post-increment have
+   the same cost, which is lower than indexed and absolute, which also have
+   the same cost.  */
+struct double_op_cost
+{
+  /* Source operand is a register.  */
+  const int r2r;
+  const int r2pc;
+  const int r2m;
+
+  /* Source operand is memory, using indirect register (@Rn) or indirect
+     autoincrement (@Rn+) addressing modes.  */
+  const int ind2r;
+  const int ind2pc;
+  const int ind2m;
+
+  /* Source operand is an immediate.  */
+  const int imm2r;
+  const int imm2pc;
+  const int imm2m;
+
+  /* Source operand is memory, using indexed (x(Rn)) or absolute (&ADDR)
+     addressing modes.  */
+  const int mem2r;
+  const int mem2pc;
+  const int mem2m;
+};
+
+/* These structures describe the cost of MOV, BIT and CMP instructions, in terms
+   of clock cycles or words.  */
+static const struct double_op_cost cycle_cost_double_op_mov =
+{
+  1, 3, 3,
+  2, 4, 4,
+  2, 3, 4,
+  3, 5, 5
+};
+
+/* Cycle count when memory is the destination operand is one larger than above
+   for instructions that aren't MOV, BIT or CMP.  */
+static const struct double_op_cost cycle_cost_double_op =
+{
+  1, 3, 4,
+  2, 4, 5,
+  2, 3, 5,
+  3, 5, 6
+};
+
+static const struct double_op_cost size_cost_double_op =
+{
+  1, 1, 2,
+  1, 1, 2,
+  2, 2, 3,
+  2, 2, 3
+};
+
+/* TARGET_REGISTER_MOVE_COST
+   There is only one class of general-purpose, non-fixed registers, and the
+   relative cost of moving data between them is always the same.
+   Therefore, the default of 2 is optimal.  */
+
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST msp430_memory_move_cost
+
+/* Return the cost of moving data between registers and memory.
+   The returned cost must be relative to the default TARGET_REGISTER_MOVE_COST
+   of 2.
+   IN is false if the value is to be written to memory.  */
+static int
+msp430_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
+			 reg_class_t rclass ATTRIBUTE_UNUSED,
+			 bool in)
+{
+  int cost;
+  const struct double_op_cost *cost_p;
+  /* Optimize with a code size focus by default, unless -O2 or above is
+     specified.  */
+  bool speed = (!optimize_size && optimize >= 2);
+
+  cost_p = (speed ? &cycle_cost_double_op_mov : &size_cost_double_op);
+
+  if (in)
+    /* Reading from memory using indirect addressing is assumed to be the more
+       common case.  */
+    cost = cost_p->ind2r;
+  else
+    cost = cost_p->r2m;
+
+  /* All register to register moves cost 1 cycle or 1 word, so multiply by 2
+     to get the costs relative to TARGET_REGISTER_MOVE_COST of 2.  */
+  return 2 * cost;
+}
+
+/* BRANCH_COST
+   Changing from the default of 1 doesn't affect code generation, presumably
+   because there are no conditional move insns - when a condition is involved,
+   the only option is to use a cbranch.  */
+
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS msp430_rtx_costs
 
