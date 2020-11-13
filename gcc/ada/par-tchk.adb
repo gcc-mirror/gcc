@@ -436,7 +436,6 @@ package body Tchk is
 
    procedure T_Semicolon is
    begin
-
       if Token = Tok_Semicolon then
          Scan;
 
