@@ -1419,33 +1419,32 @@ sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
     {
     case GIMPLE_SWITCH:
       m_checker->hash_operand (gimple_switch_index (as_a <gswitch *> (stmt)),
-			     hstate, 0);
+			       hstate, 0, func_checker::OP_NORMAL);
       break;
     case GIMPLE_ASSIGN:
       hstate.add_int (gimple_assign_rhs_code (stmt));
-      if (commutative_tree_code (gimple_assign_rhs_code (stmt))
-	  || commutative_ternary_tree_code (gimple_assign_rhs_code (stmt)))
-	{
-	  m_checker->hash_operand (gimple_assign_rhs1 (stmt), hstate, 0);
-	  m_checker->hash_operand (gimple_assign_rhs2 (stmt), hstate, 0);
-	  if (commutative_ternary_tree_code (gimple_assign_rhs_code (stmt)))
-	    m_checker->hash_operand (gimple_assign_rhs3 (stmt), hstate, 0);
-	  m_checker->hash_operand (gimple_assign_lhs (stmt), hstate, 0);
-	}
       /* fall through */
     case GIMPLE_CALL:
     case GIMPLE_ASM:
     case GIMPLE_COND:
     case GIMPLE_GOTO:
     case GIMPLE_RETURN:
-      /* All these statements are equivalent if their operands are.  */
-      for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
-	m_checker->hash_operand (gimple_op (stmt, i), hstate, 0);
-      /* Consider nocf_check attribute in hash as it affects code
- 	 generation.  */
-      if (code == GIMPLE_CALL
-	  && flag_cf_protection & CF_BRANCH)
-	hstate.add_flag (gimple_call_nocf_check_p (as_a <gcall *> (stmt)));
+      {
+	func_checker::operand_access_type_map map (5);
+	func_checker::classify_operands (stmt, &map);
+
+	/* All these statements are equivalent if their operands are.  */
+	for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
+	  m_checker->hash_operand (gimple_op (stmt, i), hstate, 0,
+				   func_checker::get_operand_access_type
+					(&map, gimple_op (stmt, i)));
+	/* Consider nocf_check attribute in hash as it affects code
+	   generation.  */
+	if (code == GIMPLE_CALL
+	    && flag_cf_protection & CF_BRANCH)
+	  hstate.add_flag (gimple_call_nocf_check_p (as_a <gcall *> (stmt)));
+      }
+      break;
     default:
       break;
     }
@@ -1534,7 +1533,8 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
       tree phi_result1 = gimple_phi_result (phi1);
       tree phi_result2 = gimple_phi_result (phi2);
 
-      if (!m_checker->compare_operand (phi_result1, phi_result2))
+      if (!m_checker->compare_operand (phi_result1, phi_result2,
+				       func_checker::OP_NORMAL))
 	return return_false_with_msg ("PHI results are different");
 
       size1 = gimple_phi_num_args (phi1);
@@ -1548,7 +1548,7 @@ sem_function::compare_phi_node (basic_block bb1, basic_block bb2)
 	  t1 = gimple_phi_arg (phi1, i)->def;
 	  t2 = gimple_phi_arg (phi2, i)->def;
 
-	  if (!m_checker->compare_operand (t1, t2))
+	  if (!m_checker->compare_operand (t1, t2, func_checker::OP_NORMAL))
 	    return return_false ();
 
 	  e1 = gimple_phi_arg_edge (phi1, i);
