@@ -1,5 +1,8 @@
 2020-11-13  Nathan Sidwell  <nathan@acm.org>
 
+	Fix libiberty linking
+	* g++tools/Makefile.in (LIBIBERTY): New.
+
 	Merge trunk 5fa821bba73
 
 2020-11-12  Nathan Sidwell  <nathan@acm.org>

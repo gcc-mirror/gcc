@@ -29,6 +29,8 @@ CXX := @CXX@
 CXXFLAGS := @CXXFLAGS@
 CXXOPTS := $(CXXFLAGS) -fno-exceptions -fno-rtti
 EXEEXT := @EXEEXT@
+LIBIBERTY := ../libiberty/libiberty.a
+VERSION.O := ../gcc/version.o
 
 all::
 
@@ -78,7 +80,7 @@ MAPPER.O := server.o resolver.o
 CODYLIB = ../libcody/libcody.a
 CXXINC += -I$(srcdir)/../libcody -I$(srcdir)/../include -I$(srcdir)/../gcc -I.
 g++-mapper-server$(exeext): $(MAPPER.O) $(CODYLIB)
-	+$(CXX) $(LDFLAGS) -o $@ $^ ../gcc/version.o -liberty
+	+$(CXX) $(LDFLAGS) -o $@ $^ $(VERSION.O) $(LIBIBERTY)
 
 # copy to gcc dir so tests there can run
 all::../gcc/g++-mapper-server$(exeext)
