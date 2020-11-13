@@ -4701,7 +4701,7 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
 
   /* Attribute access takes a two or three arguments.  Wrap VBLIST in
      another list in case it has more nodes than would otherwise fit.  */
-    vblist = build_tree_list (NULL_TREE, vblist);
+  vblist = build_tree_list (NULL_TREE, vblist);
 
   /* Build a single attribute access with the string describing all
      array arguments and an optional list of any non-parameter VLA
