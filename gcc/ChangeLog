@@ -1,3 +1,13 @@
+2020-11-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2020-11-06  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000.h (BIGGEST_ALIGNMENT): Revert previous commit
+	so as not to break the ABI.
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Set the ABI
+	mandated alignment for __vector_pair and __vector_quad types.
+
 2020-11-11  liuhongt  <hongtao.liu@intel.com>
 
 	* config/i386/i386-options.c (ix86_option_override_internal):
