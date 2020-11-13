@@ -10666,10 +10666,6 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
       TREE_VALUE (tail) = input;
     }
 
-  /* ASMs with labels cannot have outputs.  This should have been
-     enforced by the parser.  */
-  gcc_assert (outputs == NULL || labels == NULL);
-
   args = build_stmt (loc, ASM_EXPR, string, outputs, inputs, clobbers, labels);
 
   /* asm statements without outputs, including simple ones, are treated

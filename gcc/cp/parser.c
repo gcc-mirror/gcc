@@ -20534,8 +20534,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	      && cp_lexer_next_token_is_not (parser->lexer,
 					     CPP_SCOPE)
 	      && cp_lexer_next_token_is_not (parser->lexer,
-					     CPP_CLOSE_PAREN)
-	      && !goto_p)
+					     CPP_CLOSE_PAREN))
             {
               outputs = cp_parser_asm_operand_list (parser);
               if (outputs == error_mark_node)

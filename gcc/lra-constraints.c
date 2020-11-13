@@ -3954,10 +3954,10 @@ curr_insn_transform (bool check_only_p)
   no_input_reloads_p = no_output_reloads_p = false;
   goal_alt_number = -1;
   change_p = sec_mem_p = false;
-  /* JUMP_INSNs and CALL_INSNs are not allowed to have any output
-     reloads; neither are insns that SET cc0.  Insns that use CC0 are
-     not allowed to have any input reloads.  */
-  if (JUMP_P (curr_insn) || CALL_P (curr_insn))
+  /* CALL_INSNs are not allowed to have any output reloads; neither
+     are insns that SET cc0.  Insns that use CC0 are not allowed to
+     have any input reloads.  */
+  if (CALL_P (curr_insn))
     no_output_reloads_p = true;
 
   if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (curr_insn)))

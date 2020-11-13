@@ -4025,7 +4025,7 @@ static inline tree
 gimple_asm_label_op (const gasm *asm_stmt, unsigned index)
 {
   gcc_gimple_checking_assert (index < asm_stmt->nl);
-  return asm_stmt->op[index + asm_stmt->ni + asm_stmt->nc];
+  return asm_stmt->op[index + asm_stmt->no + asm_stmt->ni + asm_stmt->nc];
 }
 
 /* Set LABEL_OP to be label operand INDEX in GIMPLE_ASM ASM_STMT.  */
@@ -4035,7 +4035,7 @@ gimple_asm_set_label_op (gasm *asm_stmt, unsigned index, tree label_op)
 {
   gcc_gimple_checking_assert (index < asm_stmt->nl
 			      && TREE_CODE (label_op) == TREE_LIST);
-  asm_stmt->op[index + asm_stmt->ni + asm_stmt->nc] = label_op;
+  asm_stmt->op[index + asm_stmt->no + asm_stmt->ni + asm_stmt->nc] = label_op;
 }
 
 /* Return the string representing the assembly instruction in
