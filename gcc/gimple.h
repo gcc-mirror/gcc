@@ -2229,26 +2229,6 @@ gimple_set_modified (gimple *s, bool modifiedp)
 }
 
 
-/* Return the tree code for the expression computed by STMT.  This is
-   only valid for GIMPLE_COND, GIMPLE_CALL and GIMPLE_ASSIGN.  For
-   GIMPLE_CALL, return CALL_EXPR as the expression code for
-   consistency.  This is useful when the caller needs to deal with the
-   three kinds of computation that GIMPLE supports.  */
-
-static inline enum tree_code
-gimple_expr_code (const gimple *stmt)
-{
-  enum gimple_code code = gimple_code (stmt);
-  if (code == GIMPLE_ASSIGN || code == GIMPLE_COND)
-    return (enum tree_code) stmt->subcode;
-  else
-    {
-      gcc_gimple_checking_assert (code == GIMPLE_CALL);
-      return CALL_EXPR;
-    }
-}
-
-
 /* Return true if statement STMT contains volatile operands.  */
 
 static inline bool
@@ -3792,6 +3772,28 @@ gimple_cond_set_condition (gcond *stmt, enum tree_code code, tree lhs,
   gimple_cond_set_lhs (stmt, lhs);
   gimple_cond_set_rhs (stmt, rhs);
 }
+
+
+/* Return the tree code for the expression computed by STMT.  This is
+   only valid for GIMPLE_COND, GIMPLE_CALL and GIMPLE_ASSIGN.  For
+   GIMPLE_CALL, return CALL_EXPR as the expression code for
+   consistency.  This is useful when the caller needs to deal with the
+   three kinds of computation that GIMPLE supports.  */
+
+static inline enum tree_code
+gimple_expr_code (const gimple *stmt)
+{
+  if (const gassign *ass = dyn_cast<const gassign *> (stmt))
+    return gimple_assign_rhs_code (ass);
+  if (const gcond *cond = dyn_cast<const gcond *> (stmt))
+    return gimple_cond_code (cond);
+  else
+    {
+      gcc_gimple_checking_assert (gimple_code (stmt) == GIMPLE_CALL);
+      return CALL_EXPR;
+    }
+}
+
 
 /* Return the LABEL_DECL node used by GIMPLE_LABEL statement GS.  */
 
