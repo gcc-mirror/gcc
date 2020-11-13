@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"		/* For dwarf2out_do_cfi_asm.  */
 #include "common/common-target.h"
 #include "cppbuiltin.h"
+#include "configargs.h"
 
 #ifndef TARGET_OS_CPP_BUILTINS
 # define TARGET_OS_CPP_BUILTINS()
@@ -1034,6 +1035,12 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__cpp_threadsafe_static_init=200806L");
       if (flag_char8_t)
         cpp_define (pfile, "__cpp_char8_t=201811L");
+#ifndef THREAD_MODEL_SPEC
+      /* Targets that define THREAD_MODEL_SPEC need to define
+	 __STDCPP_THREADS__ in their config/XXX/XXX-c.c themselves.  */
+      if (cxx_dialect >= cxx11 && strcmp (thread_model, "single") != 0)
+	cpp_define (pfile, "__STDCPP_THREADS__=1");
+#endif
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */
