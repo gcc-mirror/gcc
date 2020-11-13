@@ -1273,7 +1273,8 @@ modref_summaries::insert (struct cgraph_node *node, modref_summary *)
       optimization_summaries->remove (node);
       return;
     }
-  if (!DECL_STRUCT_FUNCTION (node->decl))
+  if (!DECL_STRUCT_FUNCTION (node->decl)
+      || !opt_for_fn (node->decl, flag_ipa_modref))
     {
       summaries->remove (node);
       return;
@@ -1292,6 +1293,7 @@ modref_summaries_lto::insert (struct cgraph_node *node, modref_summary_lto *)
      propagated.  This is done only by SIMD cloning that is not very
      critical.  */
   if (!DECL_STRUCT_FUNCTION (node->decl)
+      || !opt_for_fn (node->decl, flag_ipa_modref)
       || propagated)
     {
       summaries_lto->remove (node);
