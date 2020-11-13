@@ -788,6 +788,14 @@ lra_final_code_change (void)
 	{
 	  rtx pat = PATTERN (insn);
 
+	  if (GET_CODE (pat) == USE && XEXP (pat, 0) == const1_rtx)
+	    {
+	      /* Remove markers to eliminate critical edges for jump insn
+		 output reloads (see code in ira.c::ira).  */
+	      lra_invalidate_insn_data (insn);
+	      delete_insn (insn);
+	      continue;
+	    }
 	  if (GET_CODE (pat) == CLOBBER && LRA_TEMP_CLOBBER_P (pat))
 	    {
 	      /* Remove clobbers temporarily created in LRA.  We don't

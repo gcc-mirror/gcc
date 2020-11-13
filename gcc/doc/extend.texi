@@ -9566,7 +9566,7 @@ asm @var{asm-qualifiers} ( @var{AssemblerTemplate}
                  @r{[} : @var{Clobbers} @r{]} @r{]})
 
 asm @var{asm-qualifiers} ( @var{AssemblerTemplate} 
-                      : 
+                      : @var{OutputOperands}
                       : @var{InputOperands}
                       : @var{Clobbers}
                       : @var{GotoLabels})
@@ -9673,7 +9673,7 @@ there is no need for the output variables. Also, the optimizers may move
 code out of loops if they believe that the code will always return the same 
 result (i.e.@: none of its input values change between calls). Using the 
 @code{volatile} qualifier disables these optimizations. @code{asm} statements 
-that have no output operands, including @code{asm goto} statements, 
+that have no output operands and @code{asm goto} statements, 
 are implicitly volatile.
 
 This i386 code demonstrates a case that does not use (or require) the 
@@ -10532,9 +10532,6 @@ case, consider using the @code{__builtin_unreachable} intrinsic after the
 using the @code{hot} and @code{cold} label attributes (@pxref{Label 
 Attributes}).
 
-An @code{asm goto} statement cannot have outputs.
-This is due to an internal restriction of 
-the compiler: control transfer instructions cannot have outputs. 
 If the assembler code does modify anything, use the @code{"memory"} clobber 
 to force the 
 optimizers to flush all register values to memory and reload them if 
@@ -10542,6 +10539,13 @@ necessary after the @code{asm} statement.
 
 Also note that an @code{asm goto} statement is always implicitly
 considered volatile.
+
+Be careful when you set output operands inside @code{asm goto} only on
+some possible control flow paths.  If you don't set up the output on
+given path and never use it on this path, it is okay.  Otherwise, you
+should use @samp{+} constraint modifier meaning that the operand is
+input and output one.  With this modifier you will have the correct
+values on all possible paths from the @code{asm goto}.
 
 To reference a label in the assembler template,
 prefix it with @samp{%l} (lowercase @samp{L}) followed 
@@ -10585,6 +10589,41 @@ int frob(int x)
   return y;
 error:
   return -1;
+@}
+@end example
+
+The following example shows an @code{asm goto} that uses an output.
+
+@example
+int foo(int count)
+@{
+  asm goto ("dec %0; jb %l[stop]"
+            : "+r" (count)
+            :
+            :
+            : stop);
+  return count;
+stop:
+  return 0;
+@}
+@end example
+
+The following artificial example shows an @code{asm goto} that sets
+up an output only on one path inside the @code{asm goto}.  Usage of
+constraint modifier @code{=} instead of @code{+} would be wrong as
+@code{factor} is used on all paths from the @code{asm goto}.
+
+@example
+int foo(int inp)
+@{
+  int factor = 0;
+  asm goto ("cmp %1, 10; jb %l[lab]; mov 2, %0"
+            : "+r" (factor)
+            : "r" (inp)
+            :
+            : lab);
+lab:
+  return inp * factor; /* return 2 * inp or 0 if inp < 10 */
 @}
 @end example
 

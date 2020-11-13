@@ -7144,10 +7144,7 @@ c_parser_asm_statement (c_parser *parser)
 	switch (section)
 	  {
 	  case 0:
-	    /* For asm goto, we don't allow output operands, but reserve
-	       the slot for a future extension that does allow them.  */
-	    if (!is_goto)
-	      outputs = c_parser_asm_operands (parser);
+	    outputs = c_parser_asm_operands (parser);
 	    break;
 	  case 1:
 	    inputs = c_parser_asm_operands (parser);

@@ -3089,10 +3089,11 @@ tree_ssa_lim_finalize (void)
 }
 
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --
-   i.e. those that are likely to be win regardless of the register pressure.  */
+   i.e. those that are likely to be win regardless of the register pressure.
+   Only perform store motion if STORE_MOTION is true.  */
 
-static unsigned int
-tree_ssa_lim (function *fun)
+unsigned int
+loop_invariant_motion_in_fun (function *fun, bool store_motion)
 {
   unsigned int todo = 0;
 
@@ -3114,7 +3115,8 @@ tree_ssa_lim (function *fun)
 
   /* Execute store motion.  Force the necessary invariants to be moved
      out of the loops as well.  */
-  do_store_motion ();
+  if (store_motion)
+    do_store_motion ();
 
   free (rpo);
   rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
@@ -3175,7 +3177,7 @@ pass_lim::execute (function *fun)
 
   if (number_of_loops (fun) <= 1)
     return 0;
-  unsigned int todo = tree_ssa_lim (fun);
+  unsigned int todo = loop_invariant_motion_in_fun (fun, true);
 
   if (!in_loop_pipeline)
     loop_optimizer_finalize ();

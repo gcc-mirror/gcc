@@ -5401,6 +5401,48 @@ ira (FILE *f)
   int ira_max_point_before_emit;
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+  bool output_jump_reload_p = false;
+  
+  if (ira_use_lra_p)
+    {
+      /* First put potential jump output reloads on the output edges
+	 as USE which will be removed at the end of LRA.  The major
+	 goal is actually to create BBs for critical edges for LRA and
+	 populate them later by live info.  In LRA it will be
+	 difficult to do this. */
+      FOR_EACH_BB_FN (bb, cfun)
+	{
+	  rtx_insn *end = BB_END (bb);
+	  if (!JUMP_P (end))
+	    continue;
+	  extract_insn (end);
+	  for (int i = 0; i < recog_data.n_operands; i++)
+	    if (recog_data.operand_type[i] != OP_IN)
+	      {
+		output_jump_reload_p = true;
+		FOR_EACH_EDGE (e, ei, bb->succs)
+		  if (EDGE_CRITICAL_P (e)
+		      && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
+		    {
+		      ira_assert (!(e->flags & EDGE_ABNORMAL));
+		      start_sequence ();
+		      /* We need to put some no-op insn here.  We can
+			 not put a note as commit_edges insertion will
+			 fail.  */
+		      emit_insn (gen_rtx_USE (VOIDmode, const1_rtx));
+		      rtx_insn *insns = get_insns ();
+		      end_sequence ();
+		      insert_insn_on_edge (insns, e);
+		    }
+		break;
+	      }
+	}
+      if (output_jump_reload_p)
+	commit_edge_insertions ();
+    }
 
   if (flag_ira_verbose < 10)
     {
@@ -5707,6 +5749,21 @@ ira (FILE *f)
       flag_caller_saves = saved_flag_caller_saves;
       flag_ira_region = saved_flag_ira_region;
     }
+}
+
+/* Modify asm goto to avoid further trouble with this insn.  We can
+   not replace the insn by USE as in other asm insns as we still
+   need to keep CFG consistency.  */
+void
+ira_nullify_asm_goto (rtx_insn *insn)
+{
+  ira_assert (JUMP_P (insn) && INSN_CODE (insn) < 0);
+  rtx tmp = extract_asm_operands (PATTERN (insn));
+  PATTERN (insn) = gen_rtx_ASM_OPERANDS (VOIDmode, ggc_strdup (""), "", 0,
+					 rtvec_alloc (0),
+					 rtvec_alloc (0),
+					 ASM_OPERANDS_LABEL_VEC (tmp),
+					 ASM_OPERANDS_SOURCE_LOCATION(tmp));
 }
 
 static void

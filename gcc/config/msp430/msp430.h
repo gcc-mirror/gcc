@@ -243,6 +243,14 @@ extern const char *msp430_get_linker_devices_include_path (int, const char **);
 #define HAS_LONG_COND_BRANCH		0
 #define HAS_LONG_UNCOND_BRANCH		0
 
+/* The cost of a branch sequence is roughly 3 "cheap" instructions.  */
+#define BRANCH_COST(speed_p, predictable_p) 3
+
+/* Override the default BRANCH_COST heuristic to indicate that it is preferable
+   to retain short-circuit operations, this results in significantly better
+   codesize and performance.  */
+#define LOGICAL_OP_NON_SHORT_CIRCUIT 0
+
 #define LOAD_EXTEND_OP(M)		ZERO_EXTEND
 #define WORD_REGISTER_OPERATIONS	1
 
@@ -530,3 +538,13 @@ void msp430_register_pre_includes (const char *sysroot ATTRIBUTE_UNUSED,
 
 
 #define SYMBOL_FLAG_LOW_MEM (SYMBOL_FLAG_MACH_DEP << 0)
+
+#define ADJUST_INSN_LENGTH(insn, length) \
+  do	\
+    {	\
+      if (recog_memoized (insn) >= 0)			\
+	{						\
+	  length += get_attr_extra_length (insn);	\
+	  length *= get_attr_length_multiplier (insn);	\
+	}						\
+    } while (0)

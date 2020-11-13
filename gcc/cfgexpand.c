@@ -3371,20 +3371,21 @@ expand_asm_stmt (gasm *stmt)
 			       ARGVEC CONSTRAINTS OPNAMES))
      If there is more than one, put them inside a PARALLEL.  */
 
-  if (nlabels > 0 && nclobbers == 0)
-    {
-      gcc_assert (noutputs == 0);
-      emit_jump_insn (body);
-    }
-  else if (noutputs == 0 && nclobbers == 0)
+  if (noutputs == 0 && nclobbers == 0)
     {
       /* No output operands: put in a raw ASM_OPERANDS rtx.  */
-      emit_insn (body);
+      if (nlabels > 0)
+	emit_jump_insn (body);
+      else
+	emit_insn (body);
     }
   else if (noutputs == 1 && nclobbers == 0)
     {
       ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = constraints[0];
-      emit_insn (gen_rtx_SET (output_rvec[0], body));
+      if (nlabels > 0)
+	emit_jump_insn (gen_rtx_SET (output_rvec[0], body));
+      else 
+	emit_insn (gen_rtx_SET (output_rvec[0], body));
     }
   else
     {
@@ -3461,7 +3462,27 @@ expand_asm_stmt (gasm *stmt)
   if (after_md_seq)
     emit_insn (after_md_seq);
   if (after_rtl_seq)
-    emit_insn (after_rtl_seq);
+    {
+      if (nlabels == 0)
+	emit_insn (after_rtl_seq);
+      else
+	{
+	  edge e;
+	  edge_iterator ei;
+	  
+	  FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
+	    {
+	      start_sequence ();
+	      for (rtx_insn *curr = after_rtl_seq;
+		   curr != NULL_RTX;
+		   curr = NEXT_INSN (curr))
+		emit_insn (copy_insn (PATTERN (curr)));
+	      rtx_insn *copy = get_insns ();
+	      end_sequence ();
+	      insert_insn_on_edge (copy, e);
+	    }
+	}
+    }
 
   free_temp_slots ();
   crtl->has_asm_statement = 1;

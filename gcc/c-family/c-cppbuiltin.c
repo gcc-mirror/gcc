@@ -581,41 +581,41 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
   /* Other target-independent built-ins determined by command-line
      options.  */
   if (!prev->x_optimize_size && cur->x_optimize_size)
-    cpp_define (pfile, "__OPTIMIZE_SIZE__");
+    cpp_define_unused (pfile, "__OPTIMIZE_SIZE__");
   else if (prev->x_optimize_size && !cur->x_optimize_size)
     cpp_undef (pfile, "__OPTIMIZE_SIZE__");
 
   if (!prev->x_optimize && cur->x_optimize)
-    cpp_define (pfile, "__OPTIMIZE__");
+    cpp_define_unused (pfile, "__OPTIMIZE__");
   else if (prev->x_optimize && !cur->x_optimize)
     cpp_undef (pfile, "__OPTIMIZE__");
 
   prev_fast_math = fast_math_flags_struct_set_p (prev);
   cur_fast_math  = fast_math_flags_struct_set_p (cur);
   if (!prev_fast_math && cur_fast_math)
-    cpp_define (pfile, "__FAST_MATH__");
+    cpp_define_unused (pfile, "__FAST_MATH__");
   else if (prev_fast_math && !cur_fast_math)
     cpp_undef (pfile, "__FAST_MATH__");
 
   if (!prev->x_flag_signaling_nans && cur->x_flag_signaling_nans)
-    cpp_define (pfile, "__SUPPORT_SNAN__");
+    cpp_define_unused (pfile, "__SUPPORT_SNAN__");
   else if (prev->x_flag_signaling_nans && !cur->x_flag_signaling_nans)
     cpp_undef (pfile, "__SUPPORT_SNAN__");
 
   if (!prev->x_flag_errno_math && cur->x_flag_errno_math)
     cpp_undef (pfile, "__NO_MATH_ERRNO__");
   else if (prev->x_flag_errno_math && !cur->x_flag_errno_math)
-    cpp_define (pfile, "__NO_MATH_ERRNO__");
+    cpp_define_unused (pfile, "__NO_MATH_ERRNO__");
 
   if (!prev->x_flag_finite_math_only && cur->x_flag_finite_math_only)
     {
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
-      cpp_define (pfile, "__FINITE_MATH_ONLY__=1");
+      cpp_define_unused (pfile, "__FINITE_MATH_ONLY__=1");
     }
   else if (prev->x_flag_finite_math_only && !cur->x_flag_finite_math_only)
     {
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
-      cpp_define (pfile, "__FINITE_MATH_ONLY__=0");
+      cpp_define_unused (pfile, "__FINITE_MATH_ONLY__=0");
     }
 }
 
