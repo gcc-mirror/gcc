@@ -690,7 +690,7 @@
    (set_attr "predicable" "no")]
 )
 
-(define_insn "ior<mode>3"
+(define_insn "ior<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w,w")
 	(ior:VDQ (match_operand:VDQ 1 "s_register_operand" "w,0")
 		 (match_operand:VDQ 2 "neon_logic_op2" "w,Dl")))]

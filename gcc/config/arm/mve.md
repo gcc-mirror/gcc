@@ -1613,17 +1613,30 @@
 ;;
 ;; [vorrq_s, vorrq_u])
 ;;
-(define_insn "mve_vorrq_<supf><mode>"
+;; signed and unsigned versions are the same: define the unsigned
+;; insn, and use an expander for the signed one as we still reference
+;; both names from arm_mve.h.
+;; We use the same code as in neon.md (TODO: avoid this duplication).
+(define_insn "mve_vorrq_s<mode>"
   [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VORRQ))
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w,w")
+	(ior:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w,0")
+		   (match_operand:MVE_2 2 "neon_logic_op2" "w,Dl")))
   ]
   "TARGET_HAVE_MVE"
-  "vorr %q0, %q1, %q2"
+  "@
+   vorr\t%q0, %q1, %q2
+   * return neon_output_logic_immediate (\"vorr\", &operands[2], <MODE>mode, 0, VALID_NEON_QREG_MODE (<MODE>mode));"
   [(set_attr "type" "mve_move")
 ])
+(define_expand "mve_vorrq_u<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand")
+	(ior:MVE_2 (match_operand:MVE_2 1 "s_register_operand")
+		   (match_operand:MVE_2 2 "neon_logic_op2")))
+  ]
+  "TARGET_HAVE_MVE"
+)
 
 ;;
 ;; [vqaddq_n_s, vqaddq_n_u])
@@ -2658,9 +2671,8 @@
 (define_insn "mve_vorrq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VORRQ_F))
+	(ior:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		   (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vorr %q0, %q1, %q2"
