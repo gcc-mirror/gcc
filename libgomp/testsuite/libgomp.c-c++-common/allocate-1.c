@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 void
-foo (int x, omp_allocator_handle_t h, int fl)
+foo (int x, int *p, int *q, int px, omp_allocator_handle_t h, int fl)
 {
   int y = 0, r = 0, i, i1, l, l2[4], l3, n = 8;
   int i2, j2, n2 = 9, l4;
@@ -11,7 +11,12 @@ foo (int x, omp_allocator_handle_t h, int fl)
   int i4, j4, n4 = 11, l6;
   int i5;
   int v[x], w[x];
+  int r2[4] = { 0, 0, 0, 0 };
   int xo = x;
+  for (i = 0; i < 4; i++)
+    p[i] = 0;
+  for (i = 0; i < 3; i++)
+    q[i] = 0;
   for (i = 0; i < x; i++)
     w[i] = i;
   #pragma omp parallel private (y, v) firstprivate (x) allocate (x, y, v)
@@ -117,6 +122,21 @@ foo (int x, omp_allocator_handle_t h, int fl)
 	if ((fl & 2) && (((uintptr_t) &i5) & 63) != 0)
 	  abort ();
       }
+    #pragma omp for reduction(+:p[2:px], q[:3], r2) allocate(h: p, q, r2)
+    for (i = 0; i < 32; i++)
+      {
+	p[2] += i;
+	p[3] += 2 * i;
+	q[0] += 3 * i;
+	q[2] += 4 * i;
+	r2[0] += 5 * i;
+	r2[3] += 6 * i;
+	/* Can't really rely on alignment of &p[0], the implementation could
+	   allocate the whole array or do what GCC does and allocate only part
+	   of it.  */
+	if ((fl & 1) && (((uintptr_t) &q[0] | (uintptr_t) &r2[0]) & 63) != 0)
+	  abort ();
+      }
   }
   if (r != 64 * 63 / 2 || l != 63 || n != 8 + 16 * 64)
     abort ();
@@ -129,6 +149,10 @@ foo (int x, omp_allocator_handle_t h, int fl)
   if (i4 != 5 || j4 != 23 || n4 != 11 + 6 * 17 || l6 != 4 * 31 + 21)
     abort ();
   if (i5 != 19)
+    abort ();
+  if (p[2] != (32 * 31) / 2 || p[3] != 2 * (32 * 31) / 2
+      || q[0] != 3 * (32 * 31) / 2 || q[2] != 4 * (32 * 31) / 2
+      || r2[0] != 5 * (32 * 31) / 2 || r2[3] != 6 * (32 * 31) / 2)
     abort ();
 }
 
@@ -239,15 +263,16 @@ main ()
 	{ omp_atk_fallback, omp_atv_null_fb } };
   omp_allocator_handle_t a
     = omp_init_allocator (omp_default_mem_space, 2, traits);
+  int p[4], q[3];
   if (a == omp_null_allocator)
     abort ();
   omp_set_default_allocator (omp_default_mem_alloc);
-  foo (42, omp_null_allocator, 0);
-  foo (42, omp_default_mem_alloc, 0);
-  foo (42, a, 1);
+  foo (42, p, q, 2, omp_null_allocator, 0);
+  foo (42, p, q, 2, omp_default_mem_alloc, 0);
+  foo (42, p, q, 2, a, 1);
   omp_set_default_allocator (a);
-  foo (42, omp_null_allocator, 3);
-  foo (42, omp_default_mem_alloc, 2);
+  foo (42, p, q, 2, omp_null_allocator, 3);
+  foo (42, p, q, 2, omp_default_mem_alloc, 2);
   bar (42, a);
   omp_destroy_allocator (a);
   return 0;

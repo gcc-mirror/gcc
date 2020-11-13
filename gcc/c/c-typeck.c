@@ -15199,7 +15199,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      OMP_CLAUSE_LINEAR_STEP (c));
 	    remove = true;
 	  }
-	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		 && reduction_seen == -2)
 	  OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
 
 	if (remove)

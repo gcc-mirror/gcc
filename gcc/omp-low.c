@@ -1197,6 +1197,14 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if (is_oacc_parallel_or_serial (ctx) || is_oacc_kernels (ctx))
 	    ctx->local_reduction_clauses
 	      = tree_cons (NULL, c, ctx->local_reduction_clauses);
+	  if ((OMP_CLAUSE_REDUCTION_INSCAN (c)
+	       || OMP_CLAUSE_REDUCTION_TASK (c)) && ctx->allocate_map)
+	    {
+	      tree decl = OMP_CLAUSE_DECL (c);
+	      /* For now.  */
+	      if (ctx->allocate_map->get (decl))
+		ctx->allocate_map->remove (decl);
+	    }
 	  /* FALLTHRU */
 
 	case OMP_CLAUSE_IN_REDUCTION:
@@ -4392,13 +4400,17 @@ lower_private_allocate (tree var, tree new_var, tree &allocator,
   if (allocator)
     return false;
   gcc_assert (allocate_ptr == NULL_TREE);
-  if (ctx->allocate_map && DECL_P (new_var))
+  if (ctx->allocate_map
+      && (DECL_P (new_var) || (TYPE_P (new_var) && size)))
     if (tree *allocatorp = ctx->allocate_map->get (var))
       allocator = *allocatorp;
   if (allocator == NULL_TREE)
     return false;
   if (!is_ref && omp_is_reference (var))
-    return false;
+    {
+      allocator = NULL_TREE;
+      return false;
+    }
 
   if (TREE_CODE (allocator) != INTEGER_CST)
     allocator = build_outer_var_ref (allocator, ctx);
@@ -4410,19 +4422,24 @@ lower_private_allocate (tree var, tree new_var, tree &allocator,
       allocator = var;
     }
 
-  tree ptr_type, align, sz;
-  if (is_ref)
+  tree ptr_type, align, sz = size;
+  if (TYPE_P (new_var))
+    {
+      ptr_type = build_pointer_type (new_var);
+      align = build_int_cst (size_type_node, TYPE_ALIGN_UNIT (new_var));
+    }
+  else if (is_ref)
     {
       ptr_type = build_pointer_type (TREE_TYPE (TREE_TYPE (new_var)));
       align = build_int_cst (size_type_node,
 			     TYPE_ALIGN_UNIT (TREE_TYPE (ptr_type)));
-      sz = size;
     }
   else
     {
       ptr_type = build_pointer_type (TREE_TYPE (new_var));
       align = build_int_cst (size_type_node, DECL_ALIGN_UNIT (new_var));
-      sz = fold_convert (size_type_node, DECL_SIZE_UNIT (new_var));
+      if (sz == NULL_TREE)
+	sz = fold_convert (size_type_node, DECL_SIZE_UNIT (new_var));
     }
   if (TREE_CODE (sz) != INTEGER_CST)
     {
@@ -4855,7 +4872,23 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      tree type = TREE_TYPE (d);
 	      gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
 	      tree v = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+	      tree sz = v;
 	      const char *name = get_name (orig_var);
+	      if (pass != 3 && !TREE_CONSTANT (v))
+		{
+		  tree t = maybe_lookup_decl (v, ctx);
+		  if (t)
+		    v = t;
+		  else
+		    v = maybe_lookup_decl_in_outer_ctx (v, ctx);
+		  gimplify_expr (&v, ilist, NULL, is_gimple_val, fb_rvalue);
+		  t = fold_build2_loc (clause_loc, PLUS_EXPR,
+				       TREE_TYPE (v), v,
+				       build_int_cst (TREE_TYPE (v), 1));
+		  sz = fold_build2_loc (clause_loc, MULT_EXPR,
+					TREE_TYPE (v), t,
+					TYPE_SIZE_UNIT (TREE_TYPE (type)));
+		}
 	      if (pass == 3)
 		{
 		  tree xv = create_tmp_var (ptr_type_node);
@@ -4913,6 +4946,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  gimplify_assign (cond, x, ilist);
 		  x = xv;
 		}
+	      else if (lower_private_allocate (var, type, allocator,
+					       allocate_ptr, ilist, ctx,
+					       true,
+					       TREE_CONSTANT (v)
+					       ? TYPE_SIZE_UNIT (type)
+					       : sz))
+		x = allocate_ptr;
 	      else if (TREE_CONSTANT (v))
 		{
 		  x = create_tmp_var_raw (type, name);
@@ -4924,20 +4964,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		{
 		  tree atmp
 		    = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
-		  tree t = maybe_lookup_decl (v, ctx);
-		  if (t)
-		    v = t;
-		  else
-		    v = maybe_lookup_decl_in_outer_ctx (v, ctx);
-		  gimplify_expr (&v, ilist, NULL, is_gimple_val, fb_rvalue);
-		  t = fold_build2_loc (clause_loc, PLUS_EXPR,
-				       TREE_TYPE (v), v,
-				       build_int_cst (TREE_TYPE (v), 1));
-		  t = fold_build2_loc (clause_loc, MULT_EXPR,
-				       TREE_TYPE (v), t,
-				       TYPE_SIZE_UNIT (TREE_TYPE (type)));
 		  tree al = size_int (TYPE_ALIGN (TREE_TYPE (type)));
-		  x = build_call_expr_loc (clause_loc, atmp, 2, t, al);
+		  x = build_call_expr_loc (clause_loc, atmp, 2, sz, al);
 		}
 
 	      tree ptype = build_pointer_type (TREE_TYPE (type));
@@ -5198,6 +5226,12 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  g = gimple_build_cond (LE_EXPR, i2, v, body2, end2);
 		  gimple_seq_add_stmt (dlist, g);
 		  gimple_seq_add_stmt (dlist, gimple_build_label (end2));
+		}
+	      if (allocator)
+		{
+		  tree f = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
+		  g = gimple_build_call (f, 2, allocate_ptr, allocator);
+		  gimple_seq_add_stmt (dlist, g);
 		}
 	      continue;
 	    }
