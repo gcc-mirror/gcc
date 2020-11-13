@@ -144,7 +144,7 @@ public:
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
-    return str[idx] == 'r' || str[idx] == 'R';
+    return str[idx] == 'r' || str[idx] == 'R' || (str[idx] >= '1' && str[idx] <= '9');
   }
 
   /* True if memory reached by the argument is read (directly or indirectly)  */
