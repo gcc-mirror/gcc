@@ -2121,8 +2121,14 @@ register_edge_assert_for_2 (tree name, edge e,
 	      && ((TYPE_PRECISION (TREE_TYPE (name))
 		   > TYPE_PRECISION (TREE_TYPE (rhs1)))
 		  || (get_range_info (rhs1, &rmin, &rmax) == VR_RANGE
-		      && wi::fits_to_tree_p (rmin, TREE_TYPE (name))
-		      && wi::fits_to_tree_p (rmax, TREE_TYPE (name)))))
+		      && wi::fits_to_tree_p
+			   (widest_int::from (rmin,
+					      TYPE_SIGN (TREE_TYPE (rhs1))),
+			    TREE_TYPE (name))
+		      && wi::fits_to_tree_p
+			   (widest_int::from (rmax,
+					      TYPE_SIGN (TREE_TYPE (rhs1))),
+			    TREE_TYPE (name)))))
 	    add_assert_info (asserts, rhs1, rhs1,
 		 	     comp_code, fold_convert (TREE_TYPE (rhs1), val));
 	}
