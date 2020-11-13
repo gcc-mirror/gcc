@@ -37,7 +37,7 @@
 extern char **environ;
 #endif
 
-#if defined(__has_include) && __has_include(<os/trace.h>)
+#if defined(__has_include) && __has_include(<os/trace.h>) && defined(__BLOCKS__)
 #define SANITIZER_OS_TRACE 1
 #include <os/trace.h>
 #else
