@@ -22193,6 +22193,9 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	  dw_die_ref enum_die = new_die (DW_TAG_enumerator, type_die, link);
 	  tree value = TREE_VALUE (link);
 
+	  if (DECL_P (value))
+	    equate_decl_number_to_die (value, enum_die);
+
 	  gcc_assert (!ENUM_IS_OPAQUE (type));
 	  add_name_attribute (enum_die,
 			      IDENTIFIER_POINTER (TREE_PURPOSE (link)));
@@ -25247,6 +25250,10 @@ gen_member_die (tree type, dw_die_ref context_die)
 		  splice = false;
 		}
 	    }
+	  else if (child->die_tag == DW_TAG_enumerator)
+	    /* Enumerators remain under their enumeration even if
+	       their names are introduced in the enclosing scope.  */
+	    splice = false;
 
 	  if (splice)
 	    splice_child_die (context_die, child);
@@ -26158,6 +26165,13 @@ force_decl_die (tree decl)
 	    decl_die = comp_unit_die ();
 	  break;
 
+	case CONST_DECL:
+	  /* Enumerators shouldn't need force_decl_die.  */
+	  gcc_assert (DECL_CONTEXT (decl) == NULL_TREE
+		      || TREE_CODE (DECL_CONTEXT (decl)) != ENUMERAL_TYPE);
+	  gen_decl_die (decl, NULL, NULL, context_die);
+	  break;
+
 	case TRANSLATION_UNIT_DECL:
 	  decl_die = comp_unit_die ();
 	  break;
@@ -26743,7 +26757,7 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
   else
     xloc = expand_location (input_location);
 
-  if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == CONST_DECL)
+  if (TREE_CODE (decl) == TYPE_DECL)
     {
       at_import_die = force_type_die (TREE_TYPE (decl));
       /* For namespace N { typedef void T; } using N::T; base_type_die

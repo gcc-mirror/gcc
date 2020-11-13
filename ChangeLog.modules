@@ -1,5 +1,8 @@
 2020-11-13  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk d50310408f5
+	c++: Implement C++20 'using enum'.
+
 	Merge trunk e3b3b59683c
 
 	Fix libiberty linking
