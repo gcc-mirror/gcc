@@ -7030,6 +7030,9 @@ aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
     case E_V4SImode:
       return gen_vec_store_pairv4siv4si (mem1, reg1, mem2, reg2);
 
+    case E_V16QImode:
+      return gen_vec_store_pairv16qiv16qi (mem1, reg1, mem2, reg2);
+
     default:
       gcc_unreachable ();
     }
@@ -21275,6 +21278,135 @@ aarch64_expand_cpymem (rtx *operands)
 
   return true;
 }
+
+/* Like aarch64_copy_one_block_and_progress_pointers, except for memset where
+   SRC is a register we have created with the duplicated value to be set.  */
+static void
+aarch64_set_one_block_and_progress_pointer (rtx src, rtx *dst,
+					    machine_mode mode)
+{
+  /* If we are copying 128bits or 256bits, we can do that straight from
+     the SIMD register we prepared.  */
+  if (known_eq (GET_MODE_BITSIZE (mode), 256))
+    {
+      mode = GET_MODE (src);
+      /* "Cast" the *dst to the correct mode.  */
+      *dst = adjust_address (*dst, mode, 0);
+      /* Emit the memset.  */
+      emit_insn (aarch64_gen_store_pair (mode, *dst, src,
+					 aarch64_progress_pointer (*dst), src));
+
+      /* Move the pointers forward.  */
+      *dst = aarch64_move_pointer (*dst, 32);
+      return;
+    }
+  if (known_eq (GET_MODE_BITSIZE (mode), 128))
+    {
+      /* "Cast" the *dst to the correct mode.  */
+      *dst = adjust_address (*dst, GET_MODE (src), 0);
+      /* Emit the memset.  */
+      emit_move_insn (*dst, src);
+      /* Move the pointers forward.  */
+      *dst = aarch64_move_pointer (*dst, 16);
+      return;
+    }
+  /* For copying less, we have to extract the right amount from src.  */
+  rtx reg = lowpart_subreg (mode, src, GET_MODE (src));
+
+  /* "Cast" the *dst to the correct mode.  */
+  *dst = adjust_address (*dst, mode, 0);
+  /* Emit the memset.  */
+  emit_move_insn (*dst, reg);
+  /* Move the pointer forward.  */
+  *dst = aarch64_progress_pointer (*dst);
+}
+
+/* Expand setmem, as if from a __builtin_memset.  Return true if
+   we succeed, otherwise return false.  */
+
+bool
+aarch64_expand_setmem (rtx *operands)
+{
+  int n, mode_bits;
+  unsigned HOST_WIDE_INT len;
+  rtx dst = operands[0];
+  rtx val = operands[2], src;
+  rtx base;
+  machine_mode cur_mode = BLKmode, next_mode;
+
+  /* We can't do anything smart if the amount to copy is not constant.  */
+  if (!CONST_INT_P (operands[1]))
+    return false;
+
+  bool speed_p = !optimize_function_for_size_p (cfun);
+
+  /* Default the maximum to 256-bytes.  */
+  unsigned max_set_size = 256;
+
+  /* In case we are optimizing for size or if the core does not
+     want to use STP Q regs, lower the max_set_size.  */
+  max_set_size = (!speed_p
+		  || (aarch64_tune_params.extra_tuning_flags
+		      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
+		  ? max_set_size / 2 : max_set_size;
+
+  len = INTVAL (operands[1]);
+
+  /* Upper bound check.  */
+  if (len > max_set_size)
+    return false;
+
+  base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
+  dst = adjust_automodify_address (dst, VOIDmode, base, 0);
+
+  /* Prepare the val using a DUP/MOVI v0.16B, val.  */
+  src = expand_vector_broadcast (V16QImode, val);
+  src = force_reg (V16QImode, src);
+
+  /* Convert len to bits to make the rest of the code simpler.  */
+  n = len * BITS_PER_UNIT;
+
+  /* Maximum amount to copy in one go.  We allow 256-bit chunks based on the
+     AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS tuning parameter.  setmem expand
+     pattern is only turned on for TARGET_SIMD.  */
+  const int copy_limit = (speed_p
+			  && (aarch64_tune_params.extra_tuning_flags
+			      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
+			  ? GET_MODE_BITSIZE (TImode) : 256;
+
+  while (n > 0)
+    {
+      /* Find the largest mode in which to do the copy without
+	 over writing.  */
+      opt_scalar_int_mode mode_iter;
+      FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
+	if (GET_MODE_BITSIZE (mode_iter.require ()) <= MIN (n, copy_limit))
+	  cur_mode = mode_iter.require ();
+
+      gcc_assert (cur_mode != BLKmode);
+
+      mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
+      aarch64_set_one_block_and_progress_pointer (src, &dst, cur_mode);
+
+      n -= mode_bits;
+
+      /* Do certain trailing copies as overlapping if it's going to be
+	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
+	 byte copy it's more efficient to do two overlapping 8 byte copies than
+	 8 + 4 + 2 + 1.  */
+      if (n > 0 && n < copy_limit / 2)
+	{
+	  next_mode = smallest_mode_for_size (n, MODE_INT);
+	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
+	  gcc_assert (n_bits <= mode_bits);
+	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
+	  n = n_bits;
+	}
+    }
+
+  return true;
+}
+
 
 /* Split a DImode store of a CONST_INT SRC to MEM DST as two
    SImode stores.  Handle the case when the constant has identical
