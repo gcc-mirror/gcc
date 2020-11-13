@@ -51,6 +51,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  using __gnu_cxx::__int_traits;
+
 namespace
 {
   std::atomic<bool> futex_clock_realtime_unavailable;
@@ -74,10 +76,10 @@ namespace
     auto rel_s = abs_s.count() - now_s;
 
     // Avoid overflows
-    if (rel_s > __gnu_cxx::__int_traits<time_t>::__max)
-      rel_s = __gnu_cxx::__int_traits<time_t>::__max;
-    else if (rel_s < __gnu_cxx::__int_traits<time_t>::__min)
-      rel_s = __gnu_cxx::__int_traits<time_t>::__min;
+    if (rel_s > __int_traits<time_t>::__max) [[unlikely]]
+      rel_s = __int_traits<time_t>::__max;
+    else if (rel_s < __int_traits<time_t>::__min) [[unlikely]]
+      rel_s = __int_traits<time_t>::__min;
 
     // Convert the absolute timeout value to a relative timeout
     rt.tv_sec = rel_s;
@@ -111,13 +113,16 @@ namespace
       {
 	if (!futex_clock_realtime_unavailable.load(std::memory_order_relaxed))
 	  {
-	    struct timespec rt;
-	    rt.tv_sec = __s.count();
-	    rt.tv_nsec = __ns.count();
-
 	    // futex sets errno=EINVAL for absolute timeouts before the epoch.
-	    if (__builtin_expect(rt.tv_sec < 0, false))
+	    if (__s.count() < 0)
 	      return false;
+
+	    struct timespec rt;
+	    if (__s.count() > __int_traits<time_t>::__max) [[unlikely]]
+	      rt.tv_sec = __int_traits<time_t>::__max;
+	    else
+	      rt.tv_sec = __s.count();
+	    rt.tv_nsec = __ns.count();
 
 	    if (syscall (SYS_futex, __addr,
 			 futex_wait_bitset_op | futex_clock_realtime_flag,
@@ -184,13 +189,16 @@ namespace
       {
 	if (!futex_clock_monotonic_unavailable.load(std::memory_order_relaxed))
 	  {
-	    struct timespec rt;
-	    rt.tv_sec = __s.count();
-	    rt.tv_nsec = __ns.count();
-
 	    // futex sets errno=EINVAL for absolute timeouts before the epoch.
-	    if (__builtin_expect(rt.tv_sec < 0, false))
+	    if (__s.count() < 0) [[unlikely]]
 	      return false;
+
+	    struct timespec rt;
+	    if (__s.count() > __int_traits<time_t>::__max) [[unlikely]]
+	      rt.tv_sec = __int_traits<time_t>::__max;
+	    else
+	      rt.tv_sec = __s.count();
+	    rt.tv_nsec = __ns.count();
 
 	    if (syscall (SYS_futex, __addr,
 			 futex_wait_bitset_op | futex_clock_monotonic_flag,
