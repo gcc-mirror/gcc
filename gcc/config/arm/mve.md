@@ -1207,17 +1207,24 @@
 ;;
 ;; [veorq_u, veorq_s])
 ;;
-(define_insn "mve_veorq_<supf><mode>"
+(define_insn "mve_veorq_u<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VEORQ))
+	(xor:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+		   (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "veor %q0, %q1, %q2"
+  "veor\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
+(define_expand "mve_veorq_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand")
+	(xor:MVE_2 (match_operand:MVE_2 1 "s_register_operand")
+		   (match_operand:MVE_2 2 "s_register_operand")))
+  ]
+  "TARGET_HAVE_MVE"
+)
 
 ;;
 ;; [vhaddq_n_u, vhaddq_n_s])
@@ -2404,9 +2411,8 @@
 (define_insn "mve_veorq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")
-		       (match_operand:MVE_0 2 "s_register_operand" "w")]
-	 VEORQ_F))
+	(xor:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")
+		   (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "veor %q0, %q1, %q2"

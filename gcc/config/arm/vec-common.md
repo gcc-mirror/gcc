@@ -186,3 +186,10 @@
 		 (match_operand:VDQ 2 "neon_logic_op2" "")))]
   "ARM_HAVE_<MODE>_ARITH"
 )
+
+(define_expand "xor<mode>3"
+  [(set (match_operand:VDQ 0 "s_register_operand" "")
+	(xor:VDQ (match_operand:VDQ 1 "s_register_operand" "")
+		 (match_operand:VDQ 2 "s_register_operand" "")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)

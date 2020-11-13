@@ -747,7 +747,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "xor<mode>3"
+(define_insn "xor<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
 	(xor:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
 		 (match_operand:VDQ 2 "s_register_operand" "w")))]
