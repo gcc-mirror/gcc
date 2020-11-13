@@ -1,3 +1,156 @@
+2020-11-12  Nelson Chu  <nelson.chu@sifive.com>
+
+	* configure: Regenerated.
+	* configure.ac: If ifunc was supported in the binutils for
+	linux toolchain, then set enable_gnu_indirect_function to yes.
+
+2020-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/cpp.texi (__has_attribute): Document when scopes are allowed
+	for C.
+	(__has_c_attribute): New.
+
+2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtin-types.def (BT_FN_PTR_SIZE_SIZE_PTRMODE): New function type.
+	* omp-builtins.def (BUILT_IN_GOACC_DECLARE): Move earlier.
+	(BUILT_IN_GOMP_ALLOC, BUILT_IN_GOMP_FREE): New builtins.
+	* gimplify.c (gimplify_scan_omp_clauses): Force allocator into a
+	decl if it is not NULL, INTEGER_CST or decl.
+	(gimplify_adjust_omp_clauses): Clear GOVD_EXPLICIT on explicit clauses
+	which are being removed.  Remove allocate clauses for variables not seen
+	if they are private, firstprivate or linear too.  Call
+	omp_notice_variable on the allocator otherwise.
+	(gimplify_omp_for): Handle iterator vars mentioned in allocate clauses
+	similarly to non-is_gimple_reg iterators.
+	* omp-low.c (struct omp_context): Add allocate_map field.
+	(delete_omp_context): Delete it.
+	(scan_sharing_clauses): Fill it from allocate clauses.  Remove it
+	if mentioned also in shared clause.
+	(lower_private_allocate): New function.
+	(lower_rec_input_clauses): Handle allocate clause for privatized
+	variables, except for task/taskloop, C/C++ array reductions for now
+	and task/inscan variables.
+	(lower_send_shared_vars): Don't consider variables in allocate_map
+	as shared.
+	* omp-expand.c (expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk): Use expand_omp_build_assign instead of
+	gimple_build_assign + gsi_insert_after.
+	* builtins.c (builtin_fnspec): Handle BUILTIN_GOMP_ALLOC and
+	BUILTIN_GOMP_FREE.
+	* tree-ssa-ccp.c (evaluate_stmt): Handle BUILTIN_GOMP_ALLOC.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Handle
+	BUILTIN_GOMP_ALLOC.
+	(mark_all_reaching_defs_necessary_1): Handle BUILTIN_GOMP_ALLOC
+	and BUILTIN_GOMP_FREE.
+	(propagate_necessity): Likewise.
+
+2020-11-12  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphclones.c (cgraph_node::materialize_clone): Check that clone
+	info is not NULL before attempting to dump it.
+
+2020-11-12  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (class ipcp_value_base): Change the type of
+	local_time_benefit and prop_time_benefit to sreal.  Adjust the
+	constructor initializer.
+	(ipcp_lattice::print): Dump sreals.
+	(struct caller_statistics): Change the type of freq_sum to sreal.
+	(gather_caller_stats): Work with sreal freq_sum.
+	(incorporate_penalties): Work with sreal evaluation.
+	(good_cloning_opportunity_p): Adjusted for sreal sreal time_benefit
+	and freq_sum.  Bail out if size_cost is INT_MAX.
+	(perform_estimation_of_a_value): Work with sreal time_benefit.  Avoid
+	unnecessary capping.
+	(estimate_local_effects): Pass sreal time benefit to
+	good_cloning_opportunity_p without capping it.  Adjust dumping.
+	(safe_add): If there can be overflow, return INT_MAX.
+	(propagate_effects): Work with sreal times.
+	(get_info_about_necessary_edges): Work with sreal frequencies.
+	(decide_about_value): Likewise and with sreal time benefits.
+
+2020-11-12  Marek Polacek  <polacek@redhat.com>
+
+	* system.h (WARN_UNUSED_RESULT): Define for GCC >= 3.4.
+	* tree.h (maybe_wrap_with_location): Add WARN_UNUSED_RESULT.
+
+2020-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* fold-const.c (operand_compare::operand_equal_p): Compare field
+	offsets in operand_equal_p and OEP_ADDRESS_OF.
+	(operand_compare::hash_operand): Update.
+
+2020-11-12  Richard Biener  <rguenther@suse.de>
+
+	* bitmap.c (bitmap_list_view): Restore head->current.
+	* tree-ssa-pre.c (pre_expr_DFS): Elide expr_visited bitmap.
+	Special-case value expression bitmaps with one element.
+	(bitmap_find_leader): Likewise.
+	(sorted_array_from_bitmap_set): Elide expr_visited bitmap.
+
+2020-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* attr-fnspec.h: Update topleve comment.
+	(attr_fnspec::arg_direct_p): Accept 1...9.
+	(attr_fnspec::arg_maybe_written_p): Reject 1...9.
+	(attr_fnspec::arg_copied_to_arg_p): New member function.
+	* builtins.c (builtin_fnspec): Update fnspec of block copy.
+	* tree-ssa-alias.c (attr_fnspec::verify): Update.
+
+2020-11-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (bitmap_value_replace_in_set): Return
+	whether we have changed anything.
+	(do_pre_regular_insertion): Get topologically sorted array
+	of expressions from caller.
+	(do_pre_partial_partial_insertion): Likewise.
+	(insert): Compute topologically sorted arrays of expressions
+	here and locally iterate actual insertion.  Iterate only
+	when AVAIL_OUT of an already visited block source changed.
+
+2020-11-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/97730
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_bcax<mode>):
+	Change to define_expand, add missing (trivially-predicated) not
+	rtx to fix wrong code bug.
+	(*aarch64_sve2_bcax<mode>): New.
+
+2020-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97806
+	* tree-ssa-pre.c (pre_expr_DFS): New overload for visiting
+	values, visiting all leaders for a value.  Use a bitmap
+	for visited values.
+	(sorted_array_from_bitmap_set): Walk over values and adjust.
+
+2020-11-12  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/97326
+	* config/s390/vector.md: Support vector floating point modes in
+	vec_cmp.
+
+2020-11-12  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md: Rename tointvec to TOINTVEC.
+	* config/s390/vx-builtins.md: Likewise.
+
+2020-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR debug/97060
+	* dwarf2out.c (gen_subprogram_die): It's a declaration
+	if DECL_INITIAL isn't set.
+
+2020-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/97424
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-Wno-analyzer-shift-count-negative and
+	-Wno-analyzer-shift-count-overflow.
+	(-Wno-analyzer-shift-count-negative): New.
+	(-Wno-analyzer-shift-count-overflow): New.
+
 2020-11-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin-protos.h (darwin_make_eh_symbol_indirect): New.

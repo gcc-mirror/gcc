@@ -1,3 +1,20 @@
+2020-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Add bool argument to
+	has_attribute.
+	(enum cpp_builtin_type): Add BT_HAS_STD_ATTRIBUTE.
+	* init.c (builtin_array): Add __has_c_attribute.
+	(cpp_init_special_builtins): Handle BT_HAS_STD_ATTRIBUTE.
+	* macro.c (_cpp_builtin_macro_text): Handle BT_HAS_STD_ATTRIBUTE.
+	Update call to has_attribute for BT_HAS_ATTRIBUTE.
+	* traditional.c (fun_like_macro): Handle BT_HAS_STD_ATTRIBUTE.
+
+2020-11-12  Nicholas Guriev  <guriev-ns@ya.ru>
+
+	PR pch/86674
+	* files.c (_cpp_find_file): Use CPP_DL_NOTE not CPP_DL_ERROR in call to
+	cpp_error.
+
 2020-11-07  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* generated_cpp_wcwidth.h: Regenerated from Unicode 13.0.0 data.

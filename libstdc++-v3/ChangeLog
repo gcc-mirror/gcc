@@ -1,3 +1,32 @@
+2020-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (future::wait_for): Do not wait for
+	durations less than or equal to zero.
+	* src/c++11/futex.cc (_M_futex_wait_until)
+	(_M_futex_wait_until_steady): Do not wait for timeouts before
+	the epoch.
+	* testsuite/30_threads/future/members/poll.cc: New test.
+
+2020-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/numeric_traits.h (__numeric_traits): Change
+	primary template to always derive from __numeric_traits_integer.
+	(__numeric_traits<float>, __numeric_traits<double>)
+	(__numeric_traits<long double>): Add explicit specializations.
+
+2020-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97798
+	* include/ext/numeric_traits.h (__glibcxx_signed)
+	(__glibcxx_digits, __glibcxx_min, __glibcxx_max): Remove
+	macros.
+	(__is_integer_nonstrict::__width): Define new constant.
+	(__numeric_traits_integer): Define constants in terms of each
+	other and __is_integer_nonstrict::__width, rather than the
+	removed macros.
+	(_GLIBCXX_INT_N_TRAITS): Macro to define explicit
+	specializations for non-standard integer types.
+
 2020-11-11  Jonathan Yong  <10walls@gmail.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Exclude
