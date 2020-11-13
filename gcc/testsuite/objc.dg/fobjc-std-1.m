@@ -1,6 +1,7 @@
 /* Test warnings when using -fobjc-std=objc1.  */
 /* { dg-do compile } */
 /* { dg-options "-fobjc-std=objc1" } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 #include <objc/objc.h>
 
@@ -29,8 +30,8 @@
 @end
 
 __attribute__ ((deprecated))
-@interface MyRootClass2
-{  /* { dg-error "class attributes are not available in Objective.C 1.0" } */
+@interface MyRootClass2 /* { dg-error "class attributes are not available in Objective.C 1.0" } */
+{  
   Class isa;
 }
 @end

@@ -806,15 +806,15 @@ bitmap_set_free (bitmap_set_t set)
 }
 
 static void
-pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap expr_visited,
-	      bitmap val_visited, vec<pre_expr> &post);
+pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap val_visited,
+	      vec<pre_expr> &post);
 
 /* DFS walk leaders of VAL to their operands with leaders in SET, collecting
    expressions in SET in postorder into POST.  */
 
 static void
-pre_expr_DFS (unsigned val, bitmap_set_t set, bitmap expr_visited,
-	      bitmap val_visited, vec<pre_expr> &post)
+pre_expr_DFS (unsigned val, bitmap_set_t set, bitmap val_visited,
+	      vec<pre_expr> &post)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -822,21 +822,25 @@ pre_expr_DFS (unsigned val, bitmap_set_t set, bitmap expr_visited,
   /* Iterate over all leaders and DFS recurse.  Borrowed from
      bitmap_find_leader.  */
   bitmap exprset = value_expressions[val];
+  if (!exprset->first->next)
+    {
+      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
+	if (bitmap_bit_p (&set->expressions, i))
+	  pre_expr_DFS (expression_for_id (i), set, val_visited, post);
+      return;
+    }
+
   EXECUTE_IF_AND_IN_BITMAP (exprset, &set->expressions, 0, i, bi)
-    pre_expr_DFS (expression_for_id (i),
-		  set, expr_visited, val_visited, post);
+    pre_expr_DFS (expression_for_id (i), set, val_visited, post);
 }
 
 /* DFS walk EXPR to its operands with leaders in SET, collecting
    expressions in SET in postorder into POST.  */
 
 static void
-pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap expr_visited,
-	      bitmap val_visited, vec<pre_expr> &post)
+pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap val_visited,
+	      vec<pre_expr> &post)
 {
-  if (!bitmap_set_bit (expr_visited, get_expression_id (expr)))
-    return;
-
   switch (expr->kind)
     {
     case NARY:
@@ -851,7 +855,7 @@ pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap expr_visited,
 	       recursed already.  Avoid the costly bitmap_find_leader.  */
 	    if (bitmap_bit_p (&set->values, op_val_id)
 		&& bitmap_set_bit (val_visited, op_val_id))
-	      pre_expr_DFS (op_val_id, set, expr_visited, val_visited, post);
+	      pre_expr_DFS (op_val_id, set, val_visited, post);
 	  }
 	break;
       }
@@ -873,8 +877,7 @@ pre_expr_DFS (pre_expr expr, bitmap_set_t set, bitmap expr_visited,
 		unsigned op_val_id = VN_INFO (op[n])->value_id;
 		if (bitmap_bit_p (&set->values, op_val_id)
 		    && bitmap_set_bit (val_visited, op_val_id))
-		  pre_expr_DFS (op_val_id,
-				set, expr_visited, val_visited, post);
+		  pre_expr_DFS (op_val_id, set, val_visited, post);
 	      }
 	  }
 	break;
@@ -896,13 +899,11 @@ sorted_array_from_bitmap_set (bitmap_set_t set)
   /* Pre-allocate enough space for the array.  */
   result.create (bitmap_count_bits (&set->expressions));
 
-  auto_bitmap expr_visited (&grand_bitmap_obstack);
   auto_bitmap val_visited (&grand_bitmap_obstack);
-  bitmap_tree_view (expr_visited);
   bitmap_tree_view (val_visited);
   FOR_EACH_VALUE_ID_IN_SET (set, i, bi)
     if (bitmap_set_bit (val_visited, i))
-      pre_expr_DFS (i, set, expr_visited, val_visited, result);
+      pre_expr_DFS (i, set, val_visited, result);
 
   return result;
 }
@@ -1882,6 +1883,11 @@ bitmap_find_leader (bitmap_set_t set, unsigned int val)
       unsigned int i;
       bitmap_iterator bi;
       bitmap exprset = value_expressions[val];
+
+      if (!exprset->first->next)
+	EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
+	  if (bitmap_bit_p (&set->expressions, i))
+	    return expression_for_id (i);
 
       EXECUTE_IF_AND_IN_BITMAP (exprset, &set->expressions, 0, i, bi)
 	return expression_for_id (i);

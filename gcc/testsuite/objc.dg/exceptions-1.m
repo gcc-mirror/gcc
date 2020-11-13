@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, November 2010.  */
 /* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* This test checks the syntax @catch (...) which catches any
    exceptions.  At the moment, @catch (...) is identical to @catch (id

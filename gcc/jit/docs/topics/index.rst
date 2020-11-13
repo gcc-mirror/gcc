@@ -31,3 +31,4 @@ Topic Reference
    compilation.rst
    compatibility.rst
    performance.rst
+   asm.rst

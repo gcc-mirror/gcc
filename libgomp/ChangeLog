@@ -1,3 +1,21 @@
+2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.map (GOMP_alloc, GOMP_free): Export at GOMP_5.0.1.
+	* omp.h.in (omp_alloc): Add malloc and alloc_size attributes.
+	* libgomp_g.h (GOMP_alloc, GOMP_free): Declare.
+	* allocator.c (omp_aligned_alloc): New for now static function,
+	add alignment argument and handle it.
+	(omp_alloc): Reimplement using omp_aligned_alloc.
+	(GOMP_alloc, GOMP_free): New functions.
+	(omp_free): Add ialias.
+	* testsuite/libgomp.c-c++-common/allocate-1.c: New test.
+	* testsuite/libgomp.c++/allocate-1.C: New test.
+
+2020-11-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/97782
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-1.f90: Adjust.
+
 2020-11-10  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* libgomp.h (enum gomp_map_vars_kind): Adjust enum values to be bit-flag

@@ -1571,6 +1571,24 @@
 }
 )
 
+;; 0 is dst
+;; 1 is val
+;; 2 is size of copy in bytes
+;; 3 is alignment
+
+(define_expand "setmemdi"
+  [(set (match_operand:BLK 0 "memory_operand")     ;; Dest
+        (match_operand:QI  2 "nonmemory_operand")) ;; Value
+   (use (match_operand:DI  1 "immediate_operand")) ;; Length
+   (match_operand          3 "immediate_operand")] ;; Align
+  "TARGET_SIMD"
+{
+  if (aarch64_expand_setmem (operands))
+    DONE;
+
+  FAIL;
+})
+
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
 ;; fairly lax checking on the second memory operation.
 (define_insn "load_pair_sw_<SX:mode><SX2:mode>"

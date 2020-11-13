@@ -330,6 +330,7 @@ fun_like_macro (cpp_hashnode *node)
 {
   if (cpp_builtin_macro_p (node))
     return (node->value.builtin == BT_HAS_ATTRIBUTE
+	    || node->value.builtin == BT_HAS_STD_ATTRIBUTE
 	    || node->value.builtin == BT_HAS_BUILTIN
 	    || node->value.builtin == BT_HAS_INCLUDE
 	    || node->value.builtin == BT_HAS_INCLUDE_NEXT);

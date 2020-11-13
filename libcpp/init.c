@@ -407,6 +407,7 @@ static const struct builtin_macro builtin_array[] =
      function-like macros in traditional.c:
      fun_like_macro() when adding more following */
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
+  B("__has_c_attribute", BT_HAS_STD_ATTRIBUTE, true),
   B("__has_cpp_attribute", BT_HAS_ATTRIBUTE, true),
   B("__has_builtin",	 BT_HAS_BUILTIN,   true),
   B("__has_include",	 BT_HAS_INCLUDE,   true),
@@ -492,6 +493,7 @@ cpp_init_special_builtins (cpp_reader *pfile)
   for (b = builtin_array; b < builtin_array + n; b++)
     {
       if ((b->value == BT_HAS_ATTRIBUTE
+	   || b->value == BT_HAS_STD_ATTRIBUTE
 	   || b->value == BT_HAS_BUILTIN)
 	  && (CPP_OPTION (pfile, lang) == CLK_ASM
 	      || pfile->cb.has_attribute == NULL))

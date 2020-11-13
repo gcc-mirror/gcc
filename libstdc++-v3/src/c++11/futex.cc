@@ -78,6 +78,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    struct timespec rt;
 	    rt.tv_sec = __s.count();
 	    rt.tv_nsec = __ns.count();
+
+	    // futex sets errno=EINVAL for absolute timeouts before the epoch.
+	    if (__builtin_expect(rt.tv_sec < 0, false))
+	      return false;
+
 	    if (syscall (SYS_futex, __addr,
 			 futex_wait_bitset_op | futex_clock_realtime_flag,
 			 __val, &rt, nullptr, futex_bitset_match_any) == -1)
@@ -150,6 +155,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    struct timespec rt;
 	    rt.tv_sec = __s.count();
 	    rt.tv_nsec = __ns.count();
+
+	    // futex sets errno=EINVAL for absolute timeouts before the epoch.
+	    if (__builtin_expect(rt.tv_sec < 0, false))
+	      return false;
 
 	    if (syscall (SYS_futex, __addr,
 			 futex_wait_bitset_op | futex_clock_monotonic_flag,

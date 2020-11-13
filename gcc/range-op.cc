@@ -3341,10 +3341,12 @@ pointer_table::pointer_table ()
 range_operator *
 range_op_handler (enum tree_code code, tree type)
 {
-  // First check if there is apointer specialization.
+  // First check if there is a pointer specialization.
   if (POINTER_TYPE_P (type))
     return pointer_tree_table[code];
-  return integral_tree_table[code];
+  if (INTEGRAL_TYPE_P (type))
+    return integral_tree_table[code];
+  return NULL;
 }
 
 // Cast the range in R to TYPE.

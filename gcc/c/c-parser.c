@@ -10801,6 +10801,7 @@ c_parser_objc_class_definition (c_parser *parser, tree attributes)
       return;
     }
   id1 = c_parser_peek_token (parser)->value;
+  location_t loc1 = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
     {
@@ -10860,7 +10861,7 @@ c_parser_objc_class_definition (c_parser *parser, tree attributes)
       tree proto = NULL_TREE;
       if (c_parser_next_token_is (parser, CPP_LESS))
 	proto = c_parser_objc_protocol_refs (parser);
-      objc_start_class_interface (id1, superclass, proto, attributes);
+      objc_start_class_interface (id1, loc1, superclass, proto, attributes);
     }
   else
     objc_start_class_implementation (id1, superclass);

@@ -87,6 +87,11 @@ enum rid
   RID_ASSIGN, RID_RETAIN, RID_COPY,
   RID_PROPATOMIC, RID_NONATOMIC,
 
+  /* ObjC nullability support keywords that also can appear in the
+     property attribute context.  These values should remain contiguous
+     with the other property attributes.  */
+  RID_NULL_UNSPECIFIED, RID_NULLABLE, RID_NONNULL, RID_NULL_RESETTABLE,
+
   /* C (reserved and imaginary types not implemented, so any use is a
      syntax error) */
   RID_IMAGINARY,
@@ -267,7 +272,7 @@ enum rid
   RID_FIRST_PQ = RID_IN,
   RID_LAST_PQ = RID_ONEWAY,
   RID_FIRST_PATTR = RID_GETTER,
-  RID_LAST_PATTR = RID_NONATOMIC
+  RID_LAST_PATTR = RID_NULL_RESETTABLE
 };
 
 #define OBJC_IS_AT_KEYWORD(rid) \
@@ -1051,7 +1056,7 @@ extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
 			      enum cpp_warning_reason, rich_location *,
 			      const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
-extern int c_common_has_attribute (cpp_reader *);
+extern int c_common_has_attribute (cpp_reader *, bool);
 extern int c_common_has_builtin (cpp_reader *);
 
 extern bool parse_optimize_options (tree, bool);

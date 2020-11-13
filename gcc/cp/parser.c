@@ -33953,6 +33953,7 @@ cp_parser_objc_class_interface (cp_parser* parser, tree attributes)
   bool is_class_extension;
 
   cp_lexer_consume_token (parser->lexer);  /* Eat '@interface'.  */
+  location_t nam_loc = cp_lexer_peek_token (parser->lexer)->location;
   name = cp_parser_identifier (parser);
   if (name == error_mark_node)
     {
@@ -33972,7 +33973,7 @@ cp_parser_objc_class_interface (cp_parser* parser, tree attributes)
     objc_start_category_interface (name, categ, protos, attributes);
   else
     {
-      objc_start_class_interface (name, super, protos, attributes);
+      objc_start_class_interface (name, nam_loc, super, protos, attributes);
       /* Handle instance variable declarations, if any.  */
       cp_parser_objc_class_ivars (parser);
       objc_continue_interface ();

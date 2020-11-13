@@ -176,19 +176,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Value>
     const int __numeric_traits_floating<_Value>::__max_exponent10;
 
-  template<typename _Value>
-    struct __numeric_traits
-    : public __conditional_type<__is_integer_nonstrict<_Value>::__value,
-				__numeric_traits_integer<_Value>,
-				__numeric_traits_floating<_Value> >::__type
-    { };
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
 #undef __glibcxx_floating
 #undef __glibcxx_max_digits10
 #undef __glibcxx_digits10
 #undef __glibcxx_max_exponent10
+
+  template<typename _Value>
+    struct __numeric_traits
+    : public __numeric_traits_integer<_Value>
+    { };
+
+  template<>
+    struct __numeric_traits<float>
+    : public __numeric_traits_floating<float>
+    { };
+
+  template<>
+    struct __numeric_traits<double>
+    : public __numeric_traits_floating<double>
+    { };
+
+  template<>
+    struct __numeric_traits<long double>
+    : public __numeric_traits_floating<long double>
+    { };
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

@@ -9904,10 +9904,12 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      remove = true;
 	      break;
 	    }
+	  else if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) == NULL_TREE
+		   || (TREE_CODE (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
+		       == INTEGER_CST))
+	    ;
 	  else if (code == OMP_TASKLOOP
-		   && OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
-		   && (TREE_CODE (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
-		       != INTEGER_CST))
+		   || !DECL_P (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)))
 	    OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
 	      = get_initialized_tmp_var (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c),
 					 pre_p, NULL, false);
@@ -10475,6 +10477,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		       && omp_shared_to_firstprivate_optimizable_decl_p (decl))
 		omp_mark_stores (gimplify_omp_ctxp->outer_context, decl);
 	    }
+	  else
+	    n->value &= ~GOVD_EXPLICIT;
 	  break;
 
 	case OMP_CLAUSE_LASTPRIVATE:
@@ -10774,6 +10778,41 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      && omp_shared_to_firstprivate_optimizable_decl_p (decl))
 	    omp_mark_stores (gimplify_omp_ctxp->outer_context, decl);
 	  break;
+
+	case OMP_CLAUSE_ALLOCATE:
+	  decl = OMP_CLAUSE_DECL (c);
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  if (n != NULL && !(n->value & GOVD_SEEN))
+	    {
+	      if ((n->value & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE | GOVD_LINEAR))
+		  != 0
+		  && (n->value & (GOVD_REDUCTION | GOVD_LASTPRIVATE)) == 0)
+		remove = true;
+	    }
+	  if (!remove
+	      && OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+	      && TREE_CODE (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)) != INTEGER_CST
+	      && ((ctx->region_type & (ORT_PARALLEL | ORT_TARGET)) != 0
+		  || (ctx->region_type & ORT_TASKLOOP) == ORT_TASK
+		  || (ctx->region_type & ORT_HOST_TEAMS) == ORT_HOST_TEAMS))
+	    {
+	      tree allocator = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) allocator);
+	      if (n == NULL)
+		{
+		  enum omp_clause_default_kind default_kind
+		    = ctx->default_kind;
+		  ctx->default_kind = OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
+		  omp_notice_variable (ctx, OMP_CLAUSE_ALLOCATE_ALLOCATOR (c),
+				       true);
+		  ctx->default_kind = default_kind;
+		}
+	      else
+		omp_notice_variable (ctx, OMP_CLAUSE_ALLOCATE_ALLOCATOR (c),
+				     true);
+	    }
+	  break;
+
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COPYPRIVATE:
 	case OMP_CLAUSE_IF:
@@ -10823,7 +10862,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
-	case OMP_CLAUSE_ALLOCATE:
 	  break;
 
 	default:
@@ -11623,6 +11661,15 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_TILE);
   if (c)
     tile = list_length (OMP_CLAUSE_TILE_LIST (c));
+  c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_ALLOCATE);
+  hash_set<tree> *allocate_uids = NULL;
+  if (c)
+    {
+      allocate_uids = new hash_set<tree>;
+      for (; c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE)
+	  allocate_uids->add (OMP_CLAUSE_DECL (c));
+    }
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
     {
       t = TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), i);
@@ -11949,12 +11996,13 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	 as an iteration counter.  This is valid, since DECL cannot be
 	 modified in the body of the loop.  Similarly for any iteration vars
 	 in simd with collapse > 1 where the iterator vars must be
-	 lastprivate.  */
+	 lastprivate.  And similarly for vars mentioned in allocate clauses.  */
       if (orig_for_stmt != for_stmt)
 	var = decl;
       else if (!is_gimple_reg (decl)
 	       || (ort == ORT_SIMD
-		   && TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) > 1))
+		   && TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) > 1)
+	       || (allocate_uids && allocate_uids->contains (decl)))
 	{
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
 	  /* Make sure omp_add_variable is not called on it prematurely.
@@ -12181,6 +12229,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     }
 
   BITMAP_FREE (has_decl_expr);
+  delete allocate_uids;
 
   if (TREE_CODE (orig_for_stmt) == OMP_TASKLOOP
       || (loop_p && orig_for_stmt == for_stmt))

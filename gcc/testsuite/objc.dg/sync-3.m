@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, December 2010.  */
 /* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-objc-root-class" } */
 
 /* Test that the compiler is checking the argument of @synchronized(),
    and produce errors when invalid types are used.  */

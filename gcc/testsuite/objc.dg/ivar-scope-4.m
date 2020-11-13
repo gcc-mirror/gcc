@@ -1,7 +1,8 @@
 /* Test instance variable scope.  */
 /* Author: Dimitris Papavasiliou <dpapavas@gmail.com>.  */
 /* { dg-do run } */
-/* { dg-additional-options "-Wno-shadow-ivar -fno-local-ivars" } */
+/* { dg-additional-options "-Wno-shadow-ivar -fno-local-ivars -Wno-objc-root-class" } */
+
 #include "../objc-obj-c++-shared/runtime.h"
 #include <objc/objc.h>
 

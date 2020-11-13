@@ -1,5 +1,6 @@
 /* Do not lose references to forward-declared protocols.  */
 /* { dg-do compile } */
+// { dg-additional-options "-Wno-objc-root-class" }
 @class MyBaseClass;
 @class MyClassThatFails;
 @protocol _MyProtocol;

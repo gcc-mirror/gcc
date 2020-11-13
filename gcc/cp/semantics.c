@@ -3006,12 +3006,7 @@ finish_compound_literal (tree type, tree compound_literal,
 
   /* If we're in a template, return the original compound literal.  */
   if (orig_cl)
-    {
-      if (!VECTOR_TYPE_P (type))
-	return get_target_expr_sfinae (orig_cl, complain);
-      else
-	return orig_cl;
-    }
+    return orig_cl;
 
   if (TREE_CODE (compound_literal) == CONSTRUCTOR)
     {

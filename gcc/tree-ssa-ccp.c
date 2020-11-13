@@ -1972,6 +1972,7 @@ evaluate_stmt (gimple *stmt)
 	      break;
 
 	    case BUILT_IN_ALIGNED_ALLOC:
+	    case BUILT_IN_GOMP_ALLOC:
 	      {
 		tree align = get_constant_value (gimple_call_arg (stmt, 0));
 		if (align

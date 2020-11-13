@@ -2985,7 +2985,7 @@ tls_symbolic_operand_type (rtx addr)
   enum tls_model tls_kind = TLS_MODEL_NONE;
   poly_int64 offset;
   addr = strip_offset_and_salt (addr, &offset);
-  if (GET_CODE (addr) == SYMBOL_REF)
+  if (SYMBOL_REF_P (addr))
     tls_kind = SYMBOL_REF_TLS_MODEL (addr);
 
   return tls_kind;
@@ -3126,7 +3126,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	/* The operand is expected to be MEM.  Whenever the related insn
 	   pattern changed, above code which calculate mem should be
 	   updated.  */
-	gcc_assert (GET_CODE (mem) == MEM);
+	gcc_assert (MEM_P (mem));
 	MEM_READONLY_P (mem) = 1;
 	MEM_NOTRAP_P (mem) = 1;
 	emit_insn (insn);
@@ -3169,7 +3169,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	    mem = XVECEXP (XEXP (SET_SRC (insn), 0), 0, 0);
 	  }
 
-	gcc_assert (GET_CODE (mem) == MEM);
+	gcc_assert (MEM_P (mem));
 	MEM_READONLY_P (mem) = 1;
 	MEM_NOTRAP_P (mem) = 1;
 	emit_insn (insn);
@@ -4235,7 +4235,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 bool
 aarch64_mov128_immediate (rtx imm)
 {
-  if (GET_CODE (imm) == CONST_INT)
+  if (CONST_INT_P (imm))
     return true;
 
   gcc_assert (CONST_WIDE_INT_NUNITS (imm) == 2);
@@ -5099,8 +5099,8 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 
   /* Check on what type of symbol it is.  */
   scalar_int_mode int_mode;
-  if ((GET_CODE (imm) == SYMBOL_REF
-       || GET_CODE (imm) == LABEL_REF
+  if ((SYMBOL_REF_P (imm)
+       || LABEL_REF_P (imm)
        || GET_CODE (imm) == CONST
        || GET_CODE (imm) == CONST_POLY_INT)
       && is_a <scalar_int_mode> (mode, &int_mode))
@@ -5390,9 +5390,9 @@ bool
 aarch64_maybe_expand_sve_subreg_move (rtx dest, rtx src)
 {
   gcc_assert (BYTES_BIG_ENDIAN);
-  if (GET_CODE (dest) == SUBREG)
+  if (SUBREG_P (dest))
     dest = SUBREG_REG (dest);
-  if (GET_CODE (src) == SUBREG)
+  if (SUBREG_P (src))
     src = SUBREG_REG (src);
 
   /* The optimization handles two single SVE REGs with different element
@@ -7030,6 +7030,9 @@ aarch64_gen_store_pair (machine_mode mode, rtx mem1, rtx reg1, rtx mem2,
     case E_V4SImode:
       return gen_vec_store_pairv4siv4si (mem1, reg1, mem2, reg2);
 
+    case E_V16QImode:
+      return gen_vec_store_pairv16qiv16qi (mem1, reg1, mem2, reg2);
+
     default:
       gcc_unreachable ();
     }
@@ -8533,7 +8536,7 @@ aarch64_tls_referenced_p (rtx x)
   FOR_EACH_SUBRTX (iter, array, x, ALL)
     {
       const_rtx x = *iter;
-      if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x) != 0)
+      if (SYMBOL_REF_P (x) && SYMBOL_REF_TLS_MODEL (x) != 0)
 	return true;
       /* Don't recurse into UNSPEC_TLS looking for TLS symbols; these are
 	 TLS offsets, not real symbol references.  */
@@ -8759,7 +8762,7 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 
   poly_int64 offset;
   rtx base = strip_offset_and_salt (x, &offset);
-  if (GET_CODE (base) == SYMBOL_REF || GET_CODE (base) == LABEL_REF)
+  if (SYMBOL_REF_P (base) || LABEL_REF_P (base))
     {
       /* We checked for POLY_INT_CST offsets above.  */
       if (aarch64_classify_symbol (base, offset.to_constant ())
@@ -8845,7 +8848,7 @@ static bool
 aarch64_base_register_rtx_p (rtx x, bool strict_p)
 {
   if (!strict_p
-      && GET_CODE (x) == SUBREG
+      && SUBREG_P (x)
       && contains_reg_of_mode[GENERAL_REGS][GET_MODE (SUBREG_REG (x))])
     x = SUBREG_REG (x);
 
@@ -8864,7 +8867,7 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
   int shift;
 
   /* (reg:P) */
-  if ((REG_P (x) || GET_CODE (x) == SUBREG)
+  if ((REG_P (x) || SUBREG_P (x))
       && GET_MODE (x) == Pmode)
     {
       type = ADDRESS_REG_REG;
@@ -8962,7 +8965,7 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
     return false;
 
   if (!strict_p
-      && GET_CODE (index) == SUBREG
+      && SUBREG_P (index)
       && contains_reg_of_mode[GENERAL_REGS][GET_MODE (SUBREG_REG (index))])
     index = SUBREG_REG (index);
 
@@ -9258,8 +9261,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	{
 	  poly_int64 offset;
 	  rtx sym = strip_offset_and_salt (x, &offset);
-	  return ((GET_CODE (sym) == LABEL_REF
-		   || (GET_CODE (sym) == SYMBOL_REF
+	  return ((LABEL_REF_P (sym)
+		   || (SYMBOL_REF_P (sym)
 		       && CONSTANT_POOL_ADDRESS_P (sym)
 		       && aarch64_pcrelative_literal_loads)));
 	}
@@ -9275,7 +9278,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  poly_int64 offset;
 	  HOST_WIDE_INT const_offset;
 	  rtx sym = strip_offset_and_salt (info->offset, &offset);
-	  if (GET_CODE (sym) == SYMBOL_REF
+	  if (SYMBOL_REF_P (sym)
 	      && offset.is_constant (&const_offset)
 	      && (aarch64_classify_symbol (sym, const_offset)
 		  == SYMBOL_SMALL_ABSOLUTE))
@@ -9337,7 +9340,7 @@ aarch64_symbolic_address_p (rtx x)
 {
   poly_int64 offset;
   x = strip_offset_and_salt (x, &offset);
-  return GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF;
+  return SYMBOL_REF_P (x) || LABEL_REF_P (x);
 }
 
 /* Classify the base of symbolic expression X.  */
@@ -9462,7 +9465,7 @@ aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *intval)
     }
 
   scalar_float_mode mode;
-  if (GET_CODE (value) != CONST_DOUBLE
+  if (!CONST_DOUBLE_P (value)
       || !is_a <scalar_float_mode> (GET_MODE (value), &mode)
       || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT
       /* Only support up to DF mode.  */
@@ -9502,7 +9505,7 @@ aarch64_float_const_rtx_p (rtx x)
      mov/movk pairs over ldr/adrp pairs.  */
   unsigned HOST_WIDE_INT ival;
 
-  if (GET_CODE (x) == CONST_DOUBLE
+  if (CONST_DOUBLE_P (x)
       && SCALAR_FLOAT_MODE_P (mode)
       && aarch64_reinterpret_float_as_int (x, &ival))
     {
@@ -9541,7 +9544,7 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
   scalar_int_mode imode;
   unsigned HOST_WIDE_INT ival;
 
-  if (GET_CODE (x) == CONST_DOUBLE
+  if (CONST_DOUBLE_P (x)
       && SCALAR_FLOAT_MODE_P (mode))
     {
       if (!aarch64_reinterpret_float_as_int (x, &ival))
@@ -9553,7 +9556,7 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
 
       imode = int_mode_for_mode (mode).require ();
     }
-  else if (GET_CODE (x) == CONST_INT
+  else if (CONST_INT_P (x)
 	   && is_a <scalar_int_mode> (mode, &imode))
     ival = INTVAL (x);
   else
@@ -9704,7 +9707,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
      the comparison will have to be swapped when we emit the assembly
      code.  */
   if ((mode_x == SImode || mode_x == DImode)
-      && (REG_P (y) || GET_CODE (y) == SUBREG || y == const0_rtx)
+      && (REG_P (y) || SUBREG_P (y) || y == const0_rtx)
       && (code_x == ASHIFT || code_x == ASHIFTRT
 	  || code_x == LSHIFTRT
 	  || code_x == ZERO_EXTEND || code_x == SIGN_EXTEND))
@@ -9713,7 +9716,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
   /* Similarly for a negated operand, but we can only do this for
      equalities.  */
   if ((mode_x == SImode || mode_x == DImode)
-      && (REG_P (y) || GET_CODE (y) == SUBREG)
+      && (REG_P (y) || SUBREG_P (y))
       && (code == EQ || code == NE)
       && code_x == NEG)
     return CC_Zmode;
@@ -10507,7 +10510,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       {
 	machine_mode mode = GET_MODE (x);
 
-	if (GET_CODE (x) != MEM
+	if (!MEM_P (x)
 	    || (code == 'y' && maybe_ne (GET_MODE_SIZE (mode), 16)))
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
@@ -10670,7 +10673,7 @@ aarch64_label_mentioned_p (rtx x)
   const char *fmt;
   int i;
 
-  if (GET_CODE (x) == LABEL_REF)
+  if (LABEL_REF_P (x))
     return true;
 
   /* UNSPEC_TLS entries for a symbol include a LABEL_REF for the
@@ -10852,7 +10855,7 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 
   /* If we have to disable direct literal pool loads and stores because the
      function is too big, then we need a scratch register.  */
-  if (MEM_P (x) && GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x)
+  if (MEM_P (x) && SYMBOL_REF_P (x) && CONSTANT_POOL_ADDRESS_P (x)
       && (SCALAR_FLOAT_MODE_P (GET_MODE (x))
 	  || targetm.vector_mode_supported_p (GET_MODE (x)))
       && !aarch64_pcrelative_literal_loads)
@@ -11083,7 +11086,7 @@ aarch64_preferred_reload_class (rtx x, reg_class_t regclass)
       rtx lhs = XEXP (x, 0);
 
       /* Look through a possible SUBREG introduced by ILP32.  */
-      if (GET_CODE (lhs) == SUBREG)
+      if (SUBREG_P (lhs))
 	lhs = SUBREG_REG (lhs);
 
       gcc_assert (REG_P (lhs));
@@ -11543,7 +11546,7 @@ aarch64_address_cost (rtx x,
 
   if (!aarch64_classify_address (&info, x, mode, false))
     {
-      if (GET_CODE (x) == CONST || GET_CODE (x) == SYMBOL_REF)
+      if (GET_CODE (x) == CONST || SYMBOL_REF_P (x))
 	{
 	  /* This is a CONST or SYMBOL ref which will be split
 	     in a different way depending on the code model in use.
@@ -15944,7 +15947,7 @@ aarch64_tls_symbol_p (rtx x)
     return false;
 
   x = strip_salt (x);
-  if (GET_CODE (x) != SYMBOL_REF)
+  if (!SYMBOL_REF_P (x))
     return false;
 
   return SYMBOL_REF_TLS_MODEL (x) != 0;
@@ -16001,7 +16004,7 @@ aarch64_classify_symbol (rtx x, HOST_WIDE_INT offset)
 {
   x = strip_salt (x);
 
-  if (GET_CODE (x) == LABEL_REF)
+  if (LABEL_REF_P (x))
     {
       switch (aarch64_cmodel)
 	{
@@ -16022,7 +16025,7 @@ aarch64_classify_symbol (rtx x, HOST_WIDE_INT offset)
 	}
     }
 
-  if (GET_CODE (x) == SYMBOL_REF)
+  if (SYMBOL_REF_P (x))
     {
       if (aarch64_tls_symbol_p (x))
 	return aarch64_classify_tls_symbol (x);
@@ -16102,7 +16105,7 @@ aarch64_legitimate_pic_operand_p (rtx x)
 {
   poly_int64 offset;
   x = strip_offset_and_salt (x, &offset);
-  if (GET_CODE (x) == SYMBOL_REF)
+  if (SYMBOL_REF_P (x))
     return false;
 
   return true;
@@ -16163,7 +16166,7 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
     return true;
 
   /* Label references are always constant.  */
-  if (GET_CODE (x) == LABEL_REF)
+  if (LABEL_REF_P (x))
     return true;
 
   return false;
@@ -17606,7 +17609,7 @@ aarch64_sve_float_arith_immediate_p (rtx x, bool negate_p)
   REAL_VALUE_TYPE r;
 
   if (!const_vec_duplicate_p (x, &elt)
-      || GET_CODE (elt) != CONST_DOUBLE)
+      || !CONST_DOUBLE_P (elt))
     return false;
 
   r = *CONST_DOUBLE_REAL_VALUE (elt);
@@ -17630,7 +17633,7 @@ aarch64_sve_float_mul_immediate_p (rtx x)
   rtx elt;
 
   return (const_vec_duplicate_p (x, &elt)
-	  && GET_CODE (elt) == CONST_DOUBLE
+	  && CONST_DOUBLE_P (elt)
 	  && (real_equal (CONST_DOUBLE_REAL_VALUE (elt), &dconsthalf)
 	      || real_equal (CONST_DOUBLE_REAL_VALUE (elt), &dconst2)));
 }
@@ -18049,7 +18052,7 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
     }
 
   x = strip_salt (x);
-  if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
+  if (SYMBOL_REF_P (x) && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
   if (TARGET_SVE && aarch64_sve_cnt_immediate_p (x))
@@ -21276,6 +21279,135 @@ aarch64_expand_cpymem (rtx *operands)
   return true;
 }
 
+/* Like aarch64_copy_one_block_and_progress_pointers, except for memset where
+   SRC is a register we have created with the duplicated value to be set.  */
+static void
+aarch64_set_one_block_and_progress_pointer (rtx src, rtx *dst,
+					    machine_mode mode)
+{
+  /* If we are copying 128bits or 256bits, we can do that straight from
+     the SIMD register we prepared.  */
+  if (known_eq (GET_MODE_BITSIZE (mode), 256))
+    {
+      mode = GET_MODE (src);
+      /* "Cast" the *dst to the correct mode.  */
+      *dst = adjust_address (*dst, mode, 0);
+      /* Emit the memset.  */
+      emit_insn (aarch64_gen_store_pair (mode, *dst, src,
+					 aarch64_progress_pointer (*dst), src));
+
+      /* Move the pointers forward.  */
+      *dst = aarch64_move_pointer (*dst, 32);
+      return;
+    }
+  if (known_eq (GET_MODE_BITSIZE (mode), 128))
+    {
+      /* "Cast" the *dst to the correct mode.  */
+      *dst = adjust_address (*dst, GET_MODE (src), 0);
+      /* Emit the memset.  */
+      emit_move_insn (*dst, src);
+      /* Move the pointers forward.  */
+      *dst = aarch64_move_pointer (*dst, 16);
+      return;
+    }
+  /* For copying less, we have to extract the right amount from src.  */
+  rtx reg = lowpart_subreg (mode, src, GET_MODE (src));
+
+  /* "Cast" the *dst to the correct mode.  */
+  *dst = adjust_address (*dst, mode, 0);
+  /* Emit the memset.  */
+  emit_move_insn (*dst, reg);
+  /* Move the pointer forward.  */
+  *dst = aarch64_progress_pointer (*dst);
+}
+
+/* Expand setmem, as if from a __builtin_memset.  Return true if
+   we succeed, otherwise return false.  */
+
+bool
+aarch64_expand_setmem (rtx *operands)
+{
+  int n, mode_bits;
+  unsigned HOST_WIDE_INT len;
+  rtx dst = operands[0];
+  rtx val = operands[2], src;
+  rtx base;
+  machine_mode cur_mode = BLKmode, next_mode;
+
+  /* We can't do anything smart if the amount to copy is not constant.  */
+  if (!CONST_INT_P (operands[1]))
+    return false;
+
+  bool speed_p = !optimize_function_for_size_p (cfun);
+
+  /* Default the maximum to 256-bytes.  */
+  unsigned max_set_size = 256;
+
+  /* In case we are optimizing for size or if the core does not
+     want to use STP Q regs, lower the max_set_size.  */
+  max_set_size = (!speed_p
+		  || (aarch64_tune_params.extra_tuning_flags
+		      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
+		  ? max_set_size / 2 : max_set_size;
+
+  len = INTVAL (operands[1]);
+
+  /* Upper bound check.  */
+  if (len > max_set_size)
+    return false;
+
+  base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
+  dst = adjust_automodify_address (dst, VOIDmode, base, 0);
+
+  /* Prepare the val using a DUP/MOVI v0.16B, val.  */
+  src = expand_vector_broadcast (V16QImode, val);
+  src = force_reg (V16QImode, src);
+
+  /* Convert len to bits to make the rest of the code simpler.  */
+  n = len * BITS_PER_UNIT;
+
+  /* Maximum amount to copy in one go.  We allow 256-bit chunks based on the
+     AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS tuning parameter.  setmem expand
+     pattern is only turned on for TARGET_SIMD.  */
+  const int copy_limit = (speed_p
+			  && (aarch64_tune_params.extra_tuning_flags
+			      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
+			  ? GET_MODE_BITSIZE (TImode) : 256;
+
+  while (n > 0)
+    {
+      /* Find the largest mode in which to do the copy without
+	 over writing.  */
+      opt_scalar_int_mode mode_iter;
+      FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
+	if (GET_MODE_BITSIZE (mode_iter.require ()) <= MIN (n, copy_limit))
+	  cur_mode = mode_iter.require ();
+
+      gcc_assert (cur_mode != BLKmode);
+
+      mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
+      aarch64_set_one_block_and_progress_pointer (src, &dst, cur_mode);
+
+      n -= mode_bits;
+
+      /* Do certain trailing copies as overlapping if it's going to be
+	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
+	 byte copy it's more efficient to do two overlapping 8 byte copies than
+	 8 + 4 + 2 + 1.  */
+      if (n > 0 && n < copy_limit / 2)
+	{
+	  next_mode = smallest_mode_for_size (n, MODE_INT);
+	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
+	  gcc_assert (n_bits <= mode_bits);
+	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
+	  n = n_bits;
+	}
+    }
+
+  return true;
+}
+
+
 /* Split a DImode store of a CONST_INT SRC to MEM DST as two
    SImode stores.  Handle the case when the constant has identical
    bottom and top halves.  This is beneficial when the two stores can be
@@ -21951,20 +22083,20 @@ fusion_load_store (rtx_insn *insn, rtx *base, rtx *offset)
     {
       fusion = SCHED_FUSION_LD_SIGN_EXTEND;
       src = XEXP (src, 0);
-      if (GET_CODE (src) != MEM || GET_MODE (src) != SImode)
+      if (!MEM_P (src) || GET_MODE (src) != SImode)
 	return SCHED_FUSION_NONE;
     }
   else if (GET_CODE (src) == ZERO_EXTEND)
     {
       fusion = SCHED_FUSION_LD_ZERO_EXTEND;
       src = XEXP (src, 0);
-      if (GET_CODE (src) != MEM || GET_MODE (src) != SImode)
+      if (!MEM_P (src) || GET_MODE (src) != SImode)
 	return SCHED_FUSION_NONE;
     }
 
-  if (GET_CODE (src) == MEM && REG_P (dest))
+  if (MEM_P (src) && REG_P (dest))
     extract_base_offset_in_addr (src, base, offset);
-  else if (GET_CODE (dest) == MEM && (REG_P (src) || src == const0_rtx))
+  else if (MEM_P (dest) && (REG_P (src) || src == const0_rtx))
     {
       fusion = SCHED_FUSION_ST;
       extract_base_offset_in_addr (dest, base, offset);
