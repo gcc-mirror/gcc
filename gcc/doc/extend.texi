@@ -7429,8 +7429,7 @@ data in this way can reduce program startup times.  This attribute is
 specific to ELF targets and relies on the linker to place such data in
 the right location
 
-@item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective
--C++ only)}
+@item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
 @cindex @code{objc_nullability} variable attribute
 This attribute applies to pointer variables only.  It allows marking the
 pointer with one of four possible values describing the conditions under
