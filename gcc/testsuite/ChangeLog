@@ -1,3 +1,11 @@
+2020-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2020-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/95847
+	* gfortran.dg/coverage.f90: New test.
+
 2020-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/bias2.adb: New test.
