@@ -430,11 +430,14 @@ expand_intrinsic_copysign (tree callexp)
     from = fold_convert (type, from);
 
   /* Which variant of __builtin_copysign* should we call?  */
-  tree builtin = mathfn_built_in (type, BUILT_IN_COPYSIGN);
-  gcc_assert (builtin != NULL_TREE);
+  built_in_function code = (type == float_type_node) ? BUILT_IN_COPYSIGNF
+    : (type == double_type_node) ? BUILT_IN_COPYSIGN
+    : (type == long_double_type_node) ? BUILT_IN_COPYSIGNL
+    : END_BUILTINS;
 
-  return call_builtin_fn (callexp, DECL_FUNCTION_CODE (builtin), 2,
-			  to, from);
+  gcc_assert (code != END_BUILTINS);
+
+  return call_builtin_fn (callexp, code, 2, to, from);
 }
 
 /* Expand a front-end intrinsic call to pow().  This takes two arguments, the
