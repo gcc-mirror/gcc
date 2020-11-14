@@ -22722,6 +22722,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   tree origin = decl_ultimate_origin (decl);
   dw_die_ref subr_die;
   dw_die_ref old_die = lookup_decl_die (decl);
+  bool old_die_had_no_children = false;
 
   /* This function gets called multiple times for different stages of
      the debug process.  For example, for func() in this code:
@@ -22811,6 +22812,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
      additional information.  */
   if (old_die && declaration)
     return;
+
+  if (in_lto_p && old_die && old_die->die_child == NULL)
+    old_die_had_no_children = true;
 
   /* Now that the C++ front end lazily declares artificial member fns, we
      might need to retrofit the declaration into its class.  */
@@ -23332,6 +23336,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  else if (DECL_INITIAL (decl) == NULL_TREE)
 	    gen_unspecified_parameters_die (decl, subr_die);
 	}
+      else if ((subr_die != old_die || old_die_had_no_children)
+	       && prototype_p (TREE_TYPE (decl))
+	       && stdarg_p (TREE_TYPE (decl)))
+	gen_unspecified_parameters_die (decl, subr_die);
     }
 
   if (subr_die != old_die)
