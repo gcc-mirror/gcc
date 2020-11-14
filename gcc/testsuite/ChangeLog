@@ -1,3 +1,12 @@
+2020-11-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	PR libstdc++/97273
+	* g++.dg/template/alignof3.C: New test.
+
 2020-11-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
