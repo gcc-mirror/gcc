@@ -192,9 +192,7 @@ package body Sem_Ch5 is
                --  directly.
 
                elsif (Is_Prival (Ent) and then Within_Function)
-                   or else
-                     (Ekind (Ent) = E_Component
-                       and then Is_Protected_Type (Scope (Ent)))
+                   or else Is_Protected_Component (Ent)
                then
                   Error_Msg_N
                     ("protected function cannot modify protected object", N);
