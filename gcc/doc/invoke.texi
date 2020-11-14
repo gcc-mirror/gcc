@@ -13008,6 +13008,10 @@ memory locations using the mod/ref information.  This parameter ought to be
 bigger than @option{--param ipa-modref-max-bases} and @option{--param
 ipa-modref-max-refs}.
 
+@item ipa-modref-max-depth
+Specified the maximum depth of DFS walk used by modref escape analysis.
+Setting to 0 disables the analysis completely.
+
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
 database lookup. If the value is 0, the compiler uses an id that

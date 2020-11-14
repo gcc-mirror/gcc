@@ -29,6 +29,7 @@ struct GTY(()) modref_summary
   /* Load and stores in function (transitively closed to all callees)  */
   modref_records *loads;
   modref_records *stores;
+  auto_vec<unsigned char> GTY((skip)) arg_flags;
 
   modref_summary ();
   ~modref_summary ();

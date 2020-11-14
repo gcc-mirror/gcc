@@ -61,6 +61,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "attr-fnspec.h"
 #include "symtab-clones.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
+#include "tree-ssa-operands.h"
+#include "ssa-iterators.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
+
+static int analyze_ssa_name_flags (tree name,
+				   vec<unsigned char> &known_flags, int depth);
 
 /* We record fnspec specifiers for call edges since they depends on actual
    gimple statements.  */
@@ -186,6 +195,8 @@ modref_summary::useful_p (int ecf_flags)
 {
   if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
     return false;
+  if (arg_flags.length ())
+    return true;
   if (loads && !loads->every_base)
     return true;
   if (ecf_flags & ECF_PURE)
@@ -355,6 +366,22 @@ dump_lto_records (modref_records_lto *tt, FILE *out)
     }
 }
 
+/* Dump EAF flags.  */
+
+static void
+dump_eaf_flags (FILE *out, int flags)
+{
+  if (flags & EAF_DIRECT)
+    fprintf (out, " direct");
+  if (flags & EAF_NOCLOBBER)
+    fprintf (out, " noclobber");
+  if (flags & EAF_NOESCAPE)
+    fprintf (out, " noescape");
+  if (flags & EAF_UNUSED)
+    fprintf (out, " unused");
+  fprintf (out, "\n");
+}
+
 /* Dump summary.  */
 
 void
@@ -372,6 +399,15 @@ modref_summary::dump (FILE *out)
     }
   if (writes_errno)
     fprintf (out, "  Writes errno\n");
+  if (arg_flags.length ())
+    {
+      for (unsigned int i = 0; i < arg_flags.length (); i++)
+	if (arg_flags[i])
+	  {
+	    fprintf (out, "  parm %i flags:", i);
+	    dump_eaf_flags (out, arg_flags[i]);
+	  }
+    }
 }
 
 /* Dump summary.  */
@@ -402,7 +438,8 @@ get_modref_function_summary (cgraph_node *func)
      function.  */
   enum availability avail;
   func = func->function_or_virtual_thunk_symbol
-	     (&avail, cgraph_node::get (current_function_decl));
+		 (&avail, current_function_decl ?
+			  cgraph_node::get (current_function_decl) : NULL);
   if (avail <= AVAIL_INTERPOSABLE)
     return NULL;
 
@@ -634,7 +671,7 @@ merge_call_side_effects (modref_summary *cur_summary,
       cur_summary->loads->collapse ();
     }
 
-  parm_map.safe_grow_cleared (gimple_call_num_args (stmt));
+  parm_map.safe_grow_cleared (gimple_call_num_args (stmt), true);
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
       parm_map[i] = parm_map_for_arg (stmt, i);
@@ -1067,6 +1104,326 @@ remove_summary (bool lto, bool nolto, bool ipa)
 	     " - modref done with result: not tracked.\n");
 }
 
+/* Return true if OP accesses memory pointed to by SSA_NAME.  */
+
+bool
+memory_access_to (tree op, tree ssa_name)
+{
+  tree base = get_base_address (op);
+  if (!base)
+    return false;
+  if (TREE_CODE (base) != MEM_REF && TREE_CODE (base) != TARGET_MEM_REF)
+    return false;
+  return TREE_OPERAND (base, 0) == ssa_name;
+}
+
+/* Consider statement val = *arg.
+   return EAF flags of ARG that can be determined from EAF flags of VAL
+   (which are known to be FLAGS).  If IGNORE_STORES is true we can ignore
+   all stores to VAL, i.e. when handling noreturn function.  */
+
+static int
+deref_flags (int flags, bool ignore_stores)
+{
+  int ret = 0;
+  if (flags & EAF_UNUSED)
+    ret |= EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE;
+  else
+    {
+      if ((flags & EAF_NOCLOBBER) || ignore_stores)
+	ret |= EAF_NOCLOBBER;
+      if ((flags & EAF_NOESCAPE) || ignore_stores)
+	ret |= EAF_NOESCAPE;
+    }
+  return ret;
+}
+
+/* Call statements may return their parameters.  Consider argument number
+   ARG of USE_STMT and determine flags that can needs to be cleared
+   in case pointer possibly indirectly references from ARG I is returned.
+   KNOWN_FLAGS and DEPTH are same as in analyze_ssa_name_flags.  */
+
+static int
+call_lhs_flags (gcall *call, int arg,
+		vec<unsigned char> &known_flags, int depth)
+{
+  /* If there is no return value, no flags are affected.  */
+  if (!gimple_call_lhs (call))
+    return EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED;
+
+  /* If we know that function returns given argument and it is not ARG
+     we can still be happy.  */
+  int flags = gimple_call_return_flags (call);
+  if ((flags & ERF_RETURNS_ARG)
+      && (flags & ERF_RETURN_ARG_MASK) != arg)
+    return EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED;
+
+  /* If return value is SSA name determine its flags.  */
+  if (TREE_CODE (gimple_call_lhs (call)) == SSA_NAME)
+    return analyze_ssa_name_flags
+		       (gimple_call_lhs (call), known_flags,
+			depth + 1);
+  /* In the case of memory store we can do nothing.  */
+  else
+    return 0;
+}
+
+/* Analyze EAF flags for SSA name NAME.
+   KNOWN_FLAGS is a cache for flags we already determined.
+   DEPTH is a recursion depth used to make debug output prettier.  */
+
+static int
+analyze_ssa_name_flags (tree name, vec<unsigned char> &known_flags, int depth)
+{
+  imm_use_iterator ui;
+  gimple *use_stmt;
+  int flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED;
+
+  /* See if value is already computed.  */
+  if (known_flags[SSA_NAME_VERSION (name)])
+    {
+      /* Punt on cycles for now, so we do not need dataflow.  */
+      if (known_flags[SSA_NAME_VERSION (name)] == 1)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "%*sGiving up on a cycle in SSA graph\n", depth * 4, "");
+	  return 0;
+	}
+      return known_flags[SSA_NAME_VERSION (name)] - 2;
+    }
+  if (depth == param_modref_max_depth)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "%*sGiving up on max depth\n", depth * 4, "");
+      return 0;
+    }
+  /* Recursion guard.  */
+  known_flags[SSA_NAME_VERSION (name)] = 1;
+
+  if (dump_file)
+    {
+      fprintf (dump_file,
+	       "%*sAnalyzing flags of ssa name: ", depth * 4, "");
+      print_generic_expr (dump_file, name);
+      fprintf (dump_file, "\n");
+    }
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
+    {
+      if (flags == 0)
+	{
+	  BREAK_FROM_IMM_USE_STMT (ui);
+	}
+      if (is_gimple_debug (use_stmt))
+	continue;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "%*s  Analyzing stmt:", depth * 4, "");
+	  print_gimple_stmt (dump_file, use_stmt, 0);
+	}
+
+      /* Gimple return may load the return value.  */
+      if (greturn *ret = dyn_cast <greturn *> (use_stmt))
+	{
+	  if (memory_access_to (gimple_return_retval (ret), name))
+	    flags &= ~EAF_UNUSED;
+	}
+      /* Account for LHS store, arg loads and flags from callee function.  */
+      else if (gcall *call = dyn_cast <gcall *> (use_stmt))
+	{
+	  tree callee = gimple_call_fndecl (call);
+
+	  /* Recursion would require bit of propagation; give up for now.  */
+	  if (callee && recursive_call_p (current_function_decl, callee))
+	    flags = 0;
+	  else
+	    {
+	      int ecf_flags = gimple_call_flags (call);
+	      bool ignore_stores = ignore_stores_p (current_function_decl,
+						    ecf_flags);
+
+	      /* Handle *name = func (...).  */
+	      if (gimple_call_lhs (call)
+		  && memory_access_to (gimple_call_lhs (call), name))
+		flags &= ~(EAF_UNUSED | EAF_NOCLOBBER);
+
+	      /* We do not track accesses to the static chain (we could)
+		 so give up.  */
+	      if (gimple_call_chain (call)
+		  && (gimple_call_chain (call) == name))
+		flags = 0;
+
+	      /* Handle all function parameters.  */
+	      for (unsigned i = 0; i < gimple_call_num_args (call); i++)
+		/* Name is directly passed to the callee.  */
+		if (gimple_call_arg (call, i) == name)
+		  {
+		    if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+		      flags &= ignore_stores
+			       ? 0
+			       : call_lhs_flags (call, i, known_flags, depth);
+		    else
+		      {
+			int call_flags = gimple_call_arg_flags (call, i);
+			if (ignore_stores)
+			  call_flags |= EAF_NOCLOBBER | EAF_NOESCAPE;
+			else
+			  call_flags &= call_lhs_flags (call, i,
+							known_flags, depth);
+
+			flags &= call_flags;
+		      }
+		  }
+		/* Name is dereferenced and passed to a callee.  */
+		else if (memory_access_to (gimple_call_arg (call, i), name))
+		  {
+		    if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+		      flags &= ~EAF_UNUSED;
+		    else
+		      flags &= deref_flags (gimple_call_arg_flags (call, i),
+					    ignore_stores);
+		    if (!ignore_stores)
+		      flags &= call_lhs_flags (call, i, known_flags, depth);
+		  }
+	    }
+	  /* Only NOCLOBBER or DIRECT flags alone are not useful (see comments
+	     in tree-ssa-alias.c).  Give up earlier.  */
+	  if ((flags & ~(EAF_DIRECT | EAF_NOCLOBBER)) == 0)
+	    flags = 0;
+	}
+      else if (gimple_assign_load_p (use_stmt))
+	{
+	  gassign *assign = as_a <gassign *> (use_stmt);
+	  /* Memory to memory copy.  */
+	  if (gimple_store_p (assign))
+	    {
+	      /* Handle *name = *exp.  */
+	      if (memory_access_to (gimple_assign_lhs (assign), name))
+		flags &= ~(EAF_UNUSED | EAF_NOCLOBBER);
+
+	      /* Handle *lhs = *name.
+
+		 We do not track memory locations, so assume that value
+		 is used arbitrarily.  */
+	      if (memory_access_to (gimple_assign_rhs1 (assign), name))
+		flags = 0;
+	    }
+	  /* Handle lhs = *name.  */
+	  else if (memory_access_to (gimple_assign_rhs1 (assign), name))
+	    flags &= deref_flags (analyze_ssa_name_flags
+				      (gimple_assign_lhs (assign),
+				       known_flags, depth + 1), false);
+	}
+      else if (gimple_store_p (use_stmt))
+	{
+	  gassign *assign = dyn_cast <gassign *> (use_stmt);
+
+	  /* Handle *lhs = name.  */
+	  if (assign && gimple_assign_rhs1 (assign) == name)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "%*s  ssa name saved to memory\n",
+			 depth * 4, "");
+	      flags = 0;
+	    }
+	  /* Handle *name = exp.  */
+	  else if (assign
+		   && memory_access_to (gimple_assign_lhs (assign), name))
+	    flags &= ~(EAF_UNUSED | EAF_NOCLOBBER);
+	  /* ASM statements etc.  */
+	  else if (!assign)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "%*s  Unhandled store\n",
+			 depth * 4, "");
+	      flags = 0;
+	    }
+	}
+      else if (gassign *assign = dyn_cast <gassign *> (use_stmt))
+	{
+	  enum tree_code code = gimple_assign_rhs_code (assign);
+
+	  /* See if operation is a merge as considered by
+	     tree-ssa-structalias.c:find_func_aliases.  */
+	  if (!truth_value_p (code)
+	      && code != POINTER_DIFF_EXPR
+	      && (code != POINTER_PLUS_EXPR
+		  || gimple_assign_rhs1 (assign) == name))
+	    flags &= analyze_ssa_name_flags
+			       (gimple_assign_lhs (assign), known_flags,
+				depth + 1);
+	}
+      else if (gphi *phi = dyn_cast <gphi *> (use_stmt))
+	{
+	  flags &= analyze_ssa_name_flags
+			     (gimple_phi_result (phi), known_flags,
+			      depth + 1);
+	}
+      /* Conditions are not considered escape points
+	 by tree-ssa-structalias.  */
+      else if (gimple_code (use_stmt) == GIMPLE_COND)
+	;
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "%*s  Unhandled stmt\n", depth * 4, "");
+	  flags = 0;
+	}
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "%*s  current flags of ", depth * 4, "");
+	  print_generic_expr (dump_file, name);
+	  dump_eaf_flags (dump_file, flags);
+	}
+    }
+  if (dump_file)
+    {
+      fprintf (dump_file, "%*sflags of ssa name ", depth * 4, "");
+      print_generic_expr (dump_file, name);
+      dump_eaf_flags (dump_file, flags);
+    }
+  known_flags[SSA_NAME_VERSION (name)] = flags + 2;
+  return flags;
+}
+
+/* Determine EAF flags for function parameters.  */
+
+static void
+analyze_parms (modref_summary *summary)
+{
+  unsigned int parm_index = 0;
+  unsigned int count = 0;
+
+  for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
+       parm = TREE_CHAIN (parm))
+    count++;
+
+  if (!count)
+    return;
+
+  auto_vec<unsigned char> known_flags;
+  known_flags.safe_grow_cleared (num_ssa_names, true);
+
+  for (tree parm = DECL_ARGUMENTS (current_function_decl); parm; parm_index++,
+       parm = TREE_CHAIN (parm))
+    {
+      tree name = ssa_default_def (cfun, parm);
+      if (!name)
+	continue;
+      int flags = analyze_ssa_name_flags (name, known_flags, 0);
+
+      if (flags)
+	{
+	  if (parm_index >= summary->arg_flags.length ())
+	    summary->arg_flags.safe_grow_cleared (count, true);
+	  summary->arg_flags[parm_index] = flags;
+	}
+    }
+}
+
 /* Analyze function F.  IPA indicates whether we're running in local mode
    (false) or the IPA mode (true).  */
 
@@ -1174,6 +1531,10 @@ analyze_function (function *f, bool ipa)
 				  param_modref_max_accesses);
       summary_lto->writes_errno = false;
     }
+
+  if (!ipa)
+    analyze_parms (summary);
+
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
   auto_vec <gimple *, 32> recursive_calls;
 
@@ -1191,8 +1552,9 @@ analyze_function (function *f, bool ipa)
 	      || ((!summary || !summary->useful_p (ecf_flags))
 		  && (!summary_lto || !summary_lto->useful_p (ecf_flags))))
 	    {
-	      remove_summary (lto, nolto, ipa);
-	      return;
+	      collapse_loads (summary, summary_lto);
+	      collapse_stores (summary, summary_lto);
+	      break;
 	    }
 	}
     }
@@ -1959,7 +2321,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 					: callee_edge->caller);
       callee_pi = IPA_NODE_REF (callee);
 
-      (*parm_map).safe_grow_cleared (count);
+      (*parm_map).safe_grow_cleared (count, true);
 
       for (i = 0; i < count; i++)
 	{
