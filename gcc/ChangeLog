@@ -1,3 +1,21 @@
+2020-11-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_sharing_clauses, scan_omp_for)
+	(lower_oacc_reductions, lower_omp_target): More explicit checking
+	of which OMP constructs we're expecting.
+
+2020-11-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-expand.c (expand_omp_target): Attach an attribute to all
+	outlined OpenACC compute regions.
+	* omp-offload.c (execute_oacc_device_lower): Adjust.
+
 2020-11-12  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
