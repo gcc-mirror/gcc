@@ -12094,7 +12094,8 @@ is zero, which disables this optimization.
 @deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_ASAN_SHADOW_OFFSET (void)
 Return the offset bitwise ored into shifted address to get corresponding
 Address Sanitizer shadow memory address.  NULL if Address Sanitizer is not
-supported by the target.
+supported by the target.  May return 0 if Address Sanitizer is not supported
+by a subtarget.
 @end deftypefn
 
 @deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_MEMMODEL_CHECK (unsigned HOST_WIDE_INT @var{val})

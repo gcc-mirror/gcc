@@ -5299,6 +5299,19 @@ riscv_gpr_save_operation_p (rtx op)
   return true;
 }
 
+/* Implement TARGET_ASAN_SHADOW_OFFSET.  */
+
+static unsigned HOST_WIDE_INT
+riscv_asan_shadow_offset (void)
+{
+  /* We only have libsanitizer support for RV64 at present.
+
+     This number must match kRiscv*_ShadowOffset* in the file
+     libsanitizer/asan/asan_mapping.h which is currently 1<<29 for rv64,
+     even though 1<<36 makes more sense.  */
+  return TARGET_64BIT ? (HOST_WIDE_INT_1 << 29) : 0;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -5481,6 +5494,9 @@ riscv_gpr_save_operation_p (rtx op)
 
 #undef TARGET_NEW_ADDRESS_PROFITABLE_P
 #define TARGET_NEW_ADDRESS_PROFITABLE_P riscv_new_address_profitable_p
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET riscv_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
