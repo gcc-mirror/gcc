@@ -23,6 +23,7 @@ if { ![info exists env(CHECK_TEST_FRAMEWORK)] } {
 }
 
 load_lib gcc-dg.exp
+load_lib scanasm.exp
 
 proc dg-require-true { args } {
     verbose "dg-require-true" 2
@@ -59,7 +60,7 @@ set dg-do-what-default compile
 dg-init
 
 # Run tests from the source directory.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dg-*.c]] "" ""
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dg-*.S $srcdir/$subdir/dg-*.c]] "" ""
 
 # Skip generated tests unless CHECK_TEST_FRAMEWORK is 1.
 if { $env(CHECK_TEST_FRAMEWORK) != 1 } {
