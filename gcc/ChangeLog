@@ -1,3 +1,450 @@
+2020-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (ao_ref_base_alias_ptr_type): Remove accidental
+	commit.
+	(ao_ref_alias_ptr_type): Remove accidental commit.
+
+2020-11-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-oacc-kernels-decompose.cc (maybe_build_inner_data_region):
+	Use langhook instead of accessing language-specific decl
+	information.
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-kernels-decompose.cc: New.
+	* Makefile.in (OBJS): Add it.
+	* passes.def: Instantiate it.
+	* tree-pass.h (make_pass_omp_oacc_kernels_decompose): Declare.
+	* flag-types.h (enum openacc_kernels): Add.
+	* doc/invoke.texi (-fopenacc-kernels): Document.
+	* gimple.h (enum gf_mask): Add
+	'GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED',
+	'GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE',
+	'GF_OMP_TARGET_KIND_OACC_DATA_KERNELS'.
+	(is_gimple_omp_oacc, is_gimple_omp_offloaded): Handle these.
+	* gimple-pretty-print.c (dump_gimple_omp_target): Likewise.
+	* omp-expand.c (expand_omp_target, build_omp_regions_1)
+	(omp_make_gimple_edges): Likewise.
+	* omp-low.c (scan_sharing_clauses, scan_omp_for)
+	(check_omp_nesting_restrictions, lower_oacc_reductions)
+	(lower_oacc_head_mark, lower_omp_target): Likewise.
+	* omp-offload.c (execute_oacc_device_lower): Likewise.
+
+2020-11-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (scan_sharing_clauses, scan_omp_for)
+	(lower_oacc_reductions, lower_omp_target): More explicit checking
+	of which OMP constructs we're expecting.
+
+2020-11-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-expand.c (expand_omp_target): Attach an attribute to all
+	outlined OpenACC compute regions.
+	* omp-offload.c (execute_oacc_device_lower): Adjust.
+
+2020-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_summaries::insert,
+	modref_summaries_lto::insert): Remove summary if ipa-modref is disabled.
+
+2020-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* attr-fnspec.h (attr_fnspec::arg_readonly_p): Accept '1'...'9'.
+
+2020-11-13  Peter Jones  <pjones@redhat.com>
+
+	* doc/extend.texi: Clarify the documentation for the ms_abi
+	function attribute.
+
+2020-11-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.h (gimple_range_handler): Cast to gimple stmt
+	kinds before asking for code and type.
+	* gimple.h (gimple_expr_code): Call gassign and gcond routines
+	to get their expr_code.
+
+2020-11-13  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (gen_enumeration_type_die): Call
+	equate_decl_number_to_die for enumerators.
+	(gen_member_die): Don't move enumerators to their
+	enclosing class.
+	(dwarf2out_imported_module_or_decl_1): Allow importing
+	individual enumerators.
+	(force_decl_die): Handle CONST_DECL.
+
+2020-11-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* cfgexpand.c (expand_asm_stmt): Output asm goto with outputs too.
+	Place insns after asm goto on edges.
+	* doc/extend.texi: Reflect the changes in asm goto documentation.
+	* gimple.c (gimple_build_asm_1): Remove an assert checking output
+	absence for asm goto.
+	* gimple.h (gimple_asm_label_op, gimple_asm_set_label_op): Take
+	possible asm goto outputs into account.
+	* ira.c (ira): Remove critical edges for potential asm goto output
+	reloads.
+	(ira_nullify_asm_goto): New function.
+	* ira.h (ira_nullify_asm_goto): New prototype.
+	* lra-assigns.c (lra_split_hard_reg_for): Use ira_nullify_asm_goto.
+	Check that splitting is done inside a basic block.
+	* lra-constraints.c (curr_insn_transform): Permit output reloads
+	for any jump insn.
+	* lra-spills.c (lra_final_code_change): Remove USEs added in ira
+	for asm gotos.
+	* lra.c (lra_process_new_insns): Place output reload insns after
+	jumps in the beginning of destination BBs.
+	* reload.c (find_reloads): Report error for asm gotos with
+	outputs.  Modify them to keep CFG consistency to avoid crashes.
+	* tree-into-ssa.c (rewrite_stmt): Don't put debug stmt after asm
+	goto.
+
+2020-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (scan_sharing_clauses): For now remove for reduction
+	clauses with inscan or task modifiers decl from allocate_map.
+	(lower_private_allocate): Handle TYPE_P (new_var).
+	(lower_rec_input_clauses): Handle allocate clause for C/C++ array
+	reductions.
+
+2020-11-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/97816
+	* ipa-cp.c (value_topo_info<valtype>::propagate_effects): Use
+	safe_add instead of a simple addition.
+
+2020-11-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (TARGET_INSN_COST): Define.
+	(msp430_insn_cost): New function.
+	* config/msp430/msp430.h (BRANCH_COST): Define.
+	(LOGICAL_OP_NON_SHORT_CIRCUIT): Define.
+
+2020-11-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430-protos.h (msp430x_extendhisi): Return int
+	instead of char *.
+	(msp430_output_asm_shift_insns): Likewise.
+	Add new return_length argument.
+	(msp430x_insn_required): Add prototype.
+	* config/msp430/msp430.c (msp430_output_asm_shift_insns): Return the
+	total length, in bytes, of the emitted instructions.
+	(msp430x_insn_required): New function.
+	(msp430x_extendhisi): Return the total length, in bytes, of the
+	emitted instructions.
+	* config/msp430/msp430.h (ADJUST_INSN_LENGTH): Define.
+	* config/msp430/msp430.md: New define_attr "type".
+	New define_attr "extension".
+	New define_attr "length_multiplier".
+	New define_attr "extra_length".
+	Rewrite define_attr "length".
+	Set type, extension, length, length_multiplier or extra_length insn
+	attributes on all insns, as appropriate.
+	(andneghi3): Rewrite using constraints instead of C code to decide
+	output insns.
+	* config/msp430/predicates.md (msp430_cheap_operand): New predicate.
+	(msp430_high_memory_operand): New predicate.
+
+2020-11-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (use_helper_for_const_shift): Add forward
+	declaration.
+	Remove unused argument.
+	(struct msp430_multlib_costs): New struct.
+	(msp430_is_mem_indirect): New function.
+	(msp430_costs): Likewise.
+	(msp430_shift_costs): Likewise.
+	(msp430_muldiv_costs): Likewise.
+	(msp430_get_inner_dest_code): Likewise.
+	(msp430_single_op_cost): Likewise.
+	(msp430_rtx_costs): Rewrite from scratch.
+	(msp430_expand_shift): Adjust use_helper_for_const_shift call.
+
+2020-11-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (struct single_op_cost): New struct.
+	(struct double_op_cost): Likewise.
+	(TARGET_REGISTER_MOVE_COST): Don't define but add comment.
+	(TARGET_MEMORY_MOVE_COST): Define to...
+	(msp430_memory_move_cost): New function.
+	(BRANCH_COST): Don't define but add comment.
+
+2020-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-icf-gimple.c: Include tree-ssa-alias-compare.h.
+	(find_checker::func_checker): Initialize m_tbaa.
+	(func_checker::hash_operand): Use hash_ao_ref for memory accesses.
+	(func_checker::compare_operand): Use compare_ao_refs for memory
+	accesses.
+	(func_checker::cmopare_gimple_assign): Do not check LHS types
+	of memory stores.
+	* ipa-icf-gimple.h (func_checker): Derive from ao_compare;
+	add m_tbaa.
+	* ipa-icf.c: Include tree-ssa-alias-compare.h.
+	(sem_function::equals_private): Update call of
+	func_checker::func_checker.
+	* ipa-utils.h (lto_streaming_expected_p): New inline
+	predicate.
+	* tree-ssa-alias-compare.h: New file.
+	* tree-ssa-alias.c: Include tree-ssa-alias-compare.h
+	and bultins.h
+	(view_converted_memref_p): New function.
+	(types_equal_for_same_type_for_tbaa_p): New function.
+	(ao_ref_alias_ptr_type, ao_ref_base_alias_ptr_type): New functions.
+	(ao_compare::compare_ao_refs): New member function.
+	(ao_compare::hash_ao_ref): New function
+	* tree-ssa-alias.h (ao_ref_base_alias_ptr_type,
+	ao_ref_alias_ptr_type): Declare.
+
+2020-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-icf-gimple.c: Include gimple-walk.h.
+	(func_checker::compare_ssa_name): Update call of compare_operand.
+	(func_checker::hash_operand): Fix comment and add variant taking
+	operand_access_type parameter.
+	(func_checker::compare_operand): Add operand_access_type parameter.
+	(func_checker::compare_asm_inputs_outputs): Add
+	operand_access_type_map parameter; update use of
+	func_checker::compare_operand.
+	(func_checker::compare_gimple_call): Update use of
+	func_checker::compare_operand.
+	(func_checker::compare_gimple_assign): Likewise.
+	(func_checker::compare_gimple_cond): Likewise.
+	(func_checker::compare_gimple_switch): Likewise.
+	(func_checker::compare_gimple_return): Likewise.
+	(func_checker::compare_gimple_goto): Likewise.
+	(func_checker::compare_gimple_asm): Likewise.
+	(visit_load_store): New static functio.
+	(func_checker::classify_operands): New member function.
+	(func_checker::get_operand_access_type): New member function.
+	* ipa-icf-gimple.h (func_checker::operand_access_type): New enum
+	(func_checker::operand_access_type_map): New typedef.
+	(func_checker::compare_operand): Update prototype.
+	(func_checker::compare_asm_inputs_outputs): Likewise.
+	(func_checker::cleassify_operands): Declare.
+	(func_checker::get_operand_access_type): Declare.
+	(func_checker::hash_operand): New variant with operand_access_type.
+	* ipa-icf.c (sem_function::hash_stmt): Update uses of hash_operand.
+	(sem_function::compare_phi_node): Update use of compare_operand.
+
+2020-11-13  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/aarch-common.c (aarch_accumulator_forwarding): Use
+	RTL predicates where possible.
+	* config/arm/arm.c (legitimate_pic_operand_p)
+	(legitimize_pic_address, arm_is_segment_info_known)
+	(can_avoid_literal_pool_for_label_p)
+	(thumb1_legitimate_address_p, arm_legitimize_address)
+	(arm_tls_referenced_p, thumb_legitimate_constant_p)
+	(REG_OR_SUBREG_REG, thumb1_rtx_costs, thumb1_size_rtx_costs)
+	(arm_adjust_cost, arm_coproc_mem_operand_wb)
+	(neon_vector_mem_operand, neon_struct_mem_operand)
+	(symbol_mentioned_p, label_mentioned_p, )
+	(load_multiple_sequence, store_multiple_sequence)
+	(arm_select_cc_mode, arm_reload_in_hi, arm_reload_out_hi)
+	(mem_ok_for_ldrd_strd, arm_emit_call_insn, output_move_neon)
+	(arm_attr_length_move_neon, arm_assemble_integer)
+	(arm_emit_coreregs_64bit_shift, arm_valid_symbolic_address_p)
+	(extract_base_offset_in_addr, fusion_load_store): Likewise.
+
+2020-11-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc: (gimple_ranger::range_of_range_op): Check for
+	ADDR_EXPR and call range_of_address.
+	(gimple_ranger::range_of_address): Rename from
+	range_of_non_trivial_assignment and match vrp_stmt_computes_nonzero.
+	* gimple-range.h: (range_of_address): Renamed.
+	* range-op.cc: (pointer_table): Add INTEGER_CST handler.
+
+2020-11-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/94406
+	* tree-ssa-loop-im.c (tree_ssa_lim): Renamed to
+	loop_invariant_motion_in_fun, added a parameter to control store
+	motion.
+	(pass_lim::execute): Adjust call to tree_ssa_lim, now
+	loop_invariant_motion_in_fun.
+	* tree-ssa-loop-manip.h (loop_invariant_motion_in_fun): Declare.
+	* gimple-loop-interchange.cc (pass_linterchange::execute): Call
+	loop_invariant_motion_in_fun if any interchange has been done.
+
+2020-11-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_phi_compute_hash): Always hash the
+	number of predecessors.  Hash the block number also for
+	loop header PHIs.
+	(expressions_equal_p): Short-cut SSA name compares, remove
+	test for NULL operands.
+	(vn_phi_eq): Cache number of predecessors, change inlined
+	test from expressions_equal_p.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* doc/extend.texi: Don't try to line-wrap an @r command.
+
+2020-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97812
+	* tree-vrp.c (register_edge_assert_for_2): Extend the range
+	according to its sign before seeing whether it fits.
+
+2020-11-13  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/aarch64/aarch64.c (tls_symbolic_operand_type)
+	(aarch64_load_symref_appropriately, aarch64_mov128_immediate)
+	(aarch64_expand_mov_immediate)
+	(aarch64_maybe_expand_sve_subreg_move)
+	(aarch64_tls_referenced_p, aarch64_cannot_force_const_mem)
+	(aarch64_base_register_rtx_p, aarch64_classify_index)
+	(aarch64_classify_address, aarch64_symbolic_address_p)
+	(aarch64_reinterpret_float_as_int, aarch64_float_const_rtx_p)
+	(aarch64_can_const_movi_rtx_p, aarch64_select_cc_mode)
+	(aarch64_print_operand, aarch64_label_mentioned_p)
+	(aarch64_secondary_reload, aarch64_preferred_reload_class)
+	(aarch64_address_cost, aarch64_tls_symbol_p)
+	(aarch64_classify_symbol, aarch64_legitimate_pic_operand_p)
+	(aarch64_legitimate_constant_p)
+	(aarch64_sve_float_arith_immediate_p)
+	(aarch64_sve_float_mul_immediate_p, aarch64_mov_operand_p)
+	(fusion_load_store): Use RTL operands where possible.
+
+2020-11-13  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_setmem): New
+	declaration.
+	* config/aarch64/aarch64.c (aarch64_gen_store_pair): Add case for
+	E_V16QImode.
+	(aarch64_set_one_block_and_progress_pointer): New helper for
+	aarch64_expand_setmem.
+	(aarch64_expand_setmem): Define the expansion for memset.
+	* config/aarch64/aarch64.h (CLEAR_RATIO): Tweak to favor
+	aarch64_expand_setmem when allowed and profitable.
+	(SET_RATIO): Likewise.
+	* config/aarch64/aarch64.md: Define pattern for setmemdi.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90707
+	* doc/extend.texi: Document the objc_nullability attribute.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* doc/extend.texi: Document the objc_root_class attribute.
+	* doc/invoke.texi: Document -Wobjc-root-class.
+
+2020-11-13  Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.c (gimple_assign_rhs_to_tree): Use
+	gimple_assign_rhs_class.
+	(expand_gimple_stmt_1): Likewise.
+	* gimplify-me.c (gimple_regimplify_operands): Use
+	gimple_assign_single_p.
+	* ipa-icf-gimple.c (func_checker::compare_gimple_assign):
+	Remove redundant compare.
+	(func_checker::compare_gimple_cond): Use gimple_cond_code.
+	* tree-ssa-tail-merge.c (gimple_equal_p): Likewise.
+	* predict.c (predict_loops): Use gimple_assign_rhs_code.
+
+2020-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class vrp_folder): Make visit_stmt, visit_phi,
+	and m_vr_values private.
+	(vrp_folder::vrp_evaluate_conditional): Remove.
+	(vrp_folder::vrp_simplify_stmt_using_ranges): Remove.
+	(vrp_folder::fold_predicate_in): Inline
+	vrp_evaluate_conditional and vrp_simplify_stmt_using_ranges.
+	(vrp_folder::fold_stmt): Same.
+
+2020-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class vrp_prop): Rename vr_values to m_vr_values.
+	(vrp_prop::vrp_prop): New.
+	(vrp_prop::initialize): Rename vr_values to m_vr_values.
+	(vrp_prop::visit_stmt): Same.
+	(vrp_prop::visit_phi): Same.
+	(vrp_prop::finalize): Same.
+	(execute_vrp): Instantiate vrp_vr_values and pass it to folder
+	and propagator.
+
+2020-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (class vrp_prop): Move entire class...
+	(class vrp_folder): ...before here.
+
+2020-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (identify_jump_threads): Refactor to..
+	(vrp_jump_threader::vrp_jump_threader): ...here
+	(vrp_jump_threader::~vrp_jump_threader): ...and here.
+	(vrp_jump_threader::after_dom_children): Rename vr_values to
+	m_vr_values.
+	(execute_vrp): Use vrp_jump_threader.
+
+2020-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (struct assert_locus): Move.
+	(class vrp_insert): Rename to vrp_asserts.
+	(vrp_insert::build_assert_expr_for): Move to vrp_asserts.
+	(fp_predicate): Same.
+	(vrp_insert::dump): Same.
+	(vrp_insert::register_new_assert_for): Same.
+	(extract_code_and_val_from_cond_with_ops): Move.
+	(vrp_insert::finish_register_edge_assert_for): Move to vrp_asserts.
+	(maybe_set_nonzero_bits): Move.
+	(vrp_insert::find_conditional_asserts): Move to vrp_asserts.
+	(stmt_interesting_for_vrp): Move.
+	(struct case_info): Move.
+	(compare_case_labels): Move.
+	(lhs_of_dominating_assert): Move.
+	(find_case_label_index): Move.
+	(find_case_label_range): Move.
+	(class vrp_asserts): New.
+	(vrp_asserts::build_assert_expr_for): Rename from vrp_insert.
+	(vrp_asserts::dump): Same.
+	(vrp_asserts::register_new_assert_for): Same.
+	(vrp_asserts::finish_register_edge_assert_for): Same.
+	(vrp_asserts::find_conditional_asserts): Same.
+	(vrp_asserts::compare_case_labels): Same.
+	(vrp_asserts::find_switch_asserts): Same.
+	(vrp_asserts::find_assert_locations_in_bb): Same.
+	(vrp_asserts::find_assert_locations): Same.
+	(vrp_asserts::process_assert_insertions_for): Same.
+	(vrp_asserts::compare_assert_loc): Same.
+	(vrp_asserts::process_assert_insertions): Same.
+	(vrp_asserts::insert_range_assertions): Same.
+	(vrp_asserts::all_imm_uses_in_stmt_or_feed_cond): Same.
+	(vrp_asserts::remove_range_assertions): Same.
+	(class vrp_prop): Move.
+	(all_imm_uses_in_stmt_or_feed_cond): Move.
+	(vrp_prop::vrp_initialize): Move.
+	(class vrp_folder): Move.
+	(vrp_folder::fold_predicate_in): Move.
+	(vrp_folder::fold_stmt): Move.
+	(vrp_prop::initialize): Move.
+	(vrp_prop::visit_stmt): Move.
+	(enum ssa_prop_result): Move.
+	(vrp_prop::visit_phi): Move.
+	(vrp_prop::finalize): Move.
+	(class vrp_dom_walker): Rename to...
+	(class vrp_jump_threader): ...this.
+	(vrp_jump_threader::before_dom_children): Rename from
+	vrp_dom_walker.
+	(simplify_stmt_for_jump_threading): Rename to...
+	(vrp_jump_threader::simplify_stmt): ...here.
+	(vrp_jump_threader::after_dom_children): Same.
+	(identify_jump_threads): Move.
+	(vrp_prop::vrp_finalize): Move array bounds setup code to...
+	(execute_vrp): ...here.
+
+2020-11-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.h (gimple_range_handler): Use gimple_assign and
+	gimple_cond routines to get type and code.
+	* range-op.cc (range_op_handler): Check for integral types.
+
 2020-11-12  Nelson Chu  <nelson.chu@sifive.com>
 
 	* configure: Regenerated.

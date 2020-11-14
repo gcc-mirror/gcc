@@ -1,3 +1,55 @@
+2020-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/63287
+	* c-cppbuiltin.c: Include configargs.h.
+	(c_cpp_builtins): For C++11 and later if THREAD_MODEL_SPEC is not
+	defined, predefine __STDCPP_THREADS__ to 1 unless thread_model is
+	"single".
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (fopenacc-kernels): Add.
+
+2020-11-13  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_using_enum.
+
+2020-11-13  Piotr H. Dabrowski  <phd@phd.re>
+
+	PR c++/91318
+	* c-cppbuiltin.c: c_cpp_builtins_optimize_pragma(): use cpp_define_unused()
+
+2020-11-13  Martin Liska  <mliska@suse.cz>
+
+	* c-attribs.c (build_attr_access_from_parms): Format properly.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90707
+	* c-common.c (c_common_reswords): null_unspecified, nullable,
+	nonnull, null_resettable: New keywords.
+	* c-common.h (enum rid): RID_NULL_UNSPECIFIED, RID_NULLABLE,
+	RID_NONNULL, RID_NULL_RESETTABLE: New.
+	(OBJC_IS_PATTR_KEYWORD): Include nullability keywords in the
+	ranges accepted for property attributes.
+	* c-attribs.c (handle_objc_nullability_attribute): New.
+	* c-objc.h (enum objc_property_attribute_group): Add
+	OBJC_PROPATTR_GROUP_NULLABLE.
+	(enum objc_property_attribute_kind):Add
+	OBJC_PROPERTY_ATTR_NULL_UNSPECIFIED, OBJC_PROPERTY_ATTR_NULLABLE,
+	OBJC_PROPERTY_ATTR_NONNULL, OBJC_PROPERTY_ATTR_NULL_RESETTABLE.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* c-attribs.c (handle_objc_root_class_attribute): New
+	* c-objc.h (objc_start_class_interface): Add a location
+	value for the position of the class name.
+	* c.opt: Add Wobjc-root-class.
+	* stub-objc.c (objc_start_class_interface): Add a location
+	value for the position of the class name.
+
 2020-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-lex.c (c_common_has_attribute): Take argument std_syntax.

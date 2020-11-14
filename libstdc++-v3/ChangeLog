@@ -1,3 +1,50 @@
+2020-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93421
+	* src/c++11/chrono.cc [_GLIBCXX_USE_CLOCK_GETTIME_SYSCALL]
+	(syscall_timespec): Define a type suitable for SYS_clock_gettime
+	calls.
+	(system_clock::now(), steady_clock::now()): Use syscall_timespec
+	instead of timespec.
+	* src/c++11/futex.cc (syscall_timespec): Define a type suitable
+	for SYS_futex and SYS_clock_gettime calls.
+	(relative_timespec): Use syscall_timespec instead of timespec.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until): Likewise.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until_steady):
+	Likewise.
+
+2020-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93456
+	* src/c++11/futex.cc (relative_timespec): Remove redundant check
+	negative values.
+	* testsuite/30_threads/future/members/wait_until_overflow.cc: Moved to...
+	* testsuite/30_threads/future/members/93456.cc: ...here.
+
+2020-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/futex.cc (relative_timespec): Add [[unlikely]]
+	attributes.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until)
+	(__atomic_futex_unsigned_base::_M_futex_wait_until_steady):
+	Check for overflow.
+	* testsuite/30_threads/future/members/wait_until_overflow.cc:
+	New test.
+
+2020-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/futex.cc (relative_timespec): New function to
+	create relative time from two absolute times.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until)
+	(__atomic_futex_unsigned_base::_M_futex_wait_until_steady):
+	Use relative_timespec.
+
+2020-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/future/members/poll.cc: Require gthreads
+	and add -pthread for targets that require it. Relax required
+	ratio of wait_for calls before/after the future is ready.
+
 2020-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future (future::wait_for): Do not wait for

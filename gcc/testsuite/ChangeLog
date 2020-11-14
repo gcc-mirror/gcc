@@ -1,3 +1,373 @@
+2020-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/binary-constants-2.c, gcc.dg/binary-constants-3.c,
+	gcc.dg/system-binary-constants-1.c: Update expected diagnostics.
+	* gcc.dg/c11-binary-constants-1.c,
+	gcc.dg/c11-binary-constants-2.c, gcc.dg/c2x-binary-constants-1.c,
+	gcc.dg/c2x-binary-constants-2.c, gcc.dg/c2x-binary-constants-3.c:
+	New tests.
+
+2020-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/guality/redeclaration1.C (p): New variable.
+	(S::f): Increment what p points to before storing S::i into l.  Adjust
+	gdb-test line numbers.
+	(main): Initialize p to address of an automatic variable.
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-decompose-1.c: New.
+	* c-c++-common/goacc/kernels-decompose-2.c: New.
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: New.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: New.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: New.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: New.
+	* c-c++-common/goacc/if-clause-2.c: Adjust.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+
+2020-11-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/classify-parallel.c: Adjust.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* c-c++-common/goacc/classify-serial.c: New.
+	* gfortran.dg/goacc/classify-serial.f95: Likewise.
+
+2020-11-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/feat-cxx2a.C: Check it.
+
+2020-11-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/inh-ctor28.C: Adjust expected diagnostic.
+	* g++.dg/cpp0x/inh-ctor33.C: Likewise.
+	* g++.dg/cpp0x/using-enum-1.C: Add comment.
+	* g++.dg/cpp0x/using-enum-2.C: Allowed in C++20.
+	* g++.dg/cpp0x/using-enum-3.C: Likewise.
+	* g++.dg/cpp1z/class-deduction69.C: Adjust diagnostic.
+	* g++.dg/inherit/using5.C: Likewise.
+	* g++.dg/cpp2a/using-enum-1.C: New test.
+	* g++.dg/cpp2a/using-enum-2.C: New test.
+	* g++.dg/cpp2a/using-enum-3.C: New test.
+	* g++.dg/cpp2a/using-enum-4.C: New test.
+	* g++.dg/cpp2a/using-enum-5.C: New test.
+	* g++.dg/cpp2a/using-enum-6.C: New test.
+	* g++.dg/debug/dwarf2/using-enum.C: New test.
+
+2020-11-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* c-c++-common/asmgoto-2.c: Permit output in asm goto.
+	* gcc.c-torture/compile/asmgoto-2.c: New.
+	* gcc.c-torture/compile/asmgoto-3.c: New.
+	* gcc.c-torture/compile/asmgoto-4.c: New.
+	* gcc.c-torture/compile/asmgoto-5.c: New.
+
+2020-11-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp20.c
+	* gcc.dg/tree-ssa/evrp21.c
+	* gcc.dg/tree-ssa/evrp22.c
+
+2020-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/97788
+	* g++.dg/ubsan/pr61272.C: Move expected error location.
+
+2020-11-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.c-torture/execute/index-1.c: Skip for the default MSP430 430X ISA.
+
+2020-11-13  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/rtx-cost-O3-default.c: New test.
+	* gcc.target/msp430/rtx-cost-O3-f5series.c: New test.
+	* gcc.target/msp430/rtx-cost-Os-default.c: New test.
+	* gcc.target/msp430/rtx-cost-Os-f5series.c: New test.
+
+2020-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* c-c++-common/Wstringop-overflow-2.c: Disable ICF.
+	* g++.dg/warn/Warray-bounds-8.C: Disable ICF.
+
+2020-11-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/pr78655.c: New.
+
+2020-11-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/pr92216.d: Update scan-assember.
+
+2020-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97812
+	* gcc.dg/torture/pr97812.c: New testcase.
+
+2020-11-13  Sudakshina Das  <sudi.das@arm.com>
+
+	* g++.dg/tree-ssa/pr90883.C: Remove xfail for aarch64.
+	* gcc.dg/tree-prof/stringop-2.c: Add xfail for aarch64.
+	* gcc.target/aarch64/memset-corner-cases.c: New test.
+	* gcc.target/aarch64/memset-q-reg.c: New test.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90707
+	* obj-c++.dg/property/at-property-4.mm: Add basic nullability
+	tests.
+	* objc.dg/property/at-property-4.m: Likewise.
+	* obj-c++.dg/attributes/nullability-00.mm: New test.
+	* obj-c++.dg/property/nullability-00.mm: New test.
+	* objc.dg/attributes/nullability-00.m: New test.
+	* objc.dg/property/nullability-00.m: New test.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* obj-c++.dg/attributes/class-attribute-1.mm:
+	Add Wno-objc-root-class.
+	* obj-c++.dg/attributes/class-attribute-2.mm: Likewise.
+	* obj-c++.dg/attributes/class-attribute-3.mm: Likewise.
+	* obj-c++.dg/attributes/method-deprecated-1.mm: Likewise.
+	* obj-c++.dg/attributes/method-deprecated-2.mm: Likewise.
+	* obj-c++.dg/attributes/method-deprecated-3.mm: Likewise.
+	* obj-c++.dg/attributes/method-format-1.mm: Likewise.
+	* obj-c++.dg/attributes/method-nonnull-1.mm: Likewise.
+	* obj-c++.dg/attributes/method-noreturn-1.mm: Likewise.
+	* obj-c++.dg/attributes/method-sentinel-1.mm: Likewise.
+	* obj-c++.dg/attributes/nsobject-01.mm: Likewise.
+	* obj-c++.dg/attributes/parameter-attribute-1.mm: Likewise.
+	* obj-c++.dg/attributes/parameter-attribute-2.mm: Likewise.
+	* obj-c++.dg/attributes/proto-attribute-1.mm: Likewise.
+	* obj-c++.dg/attributes/proto-attribute-3.mm: Likewise.
+	* obj-c++.dg/attributes/proto-attribute-4.mm: Likewise.
+	* obj-c++.dg/attributes/unused-parameter-1.mm: Likewise.
+	* obj-c++.dg/bad-receiver-type.mm: Likewise.
+	* obj-c++.dg/bitfield-3.mm: Likewise.
+	* obj-c++.dg/bitfield-5.mm: Likewise.
+	* obj-c++.dg/class-extension-1.mm: Likewise.
+	* obj-c++.dg/class-extension-2.mm: Likewise.
+	* obj-c++.dg/class-extension-3.mm: Likewise.
+	* obj-c++.dg/class-extension-4.mm: Likewise.
+	* obj-c++.dg/class-protocol-1.mm: Likewise.
+	* obj-c++.dg/comp-types-1.mm: Likewise.
+	* obj-c++.dg/comp-types-10.mm: Likewise.
+	* obj-c++.dg/comp-types-2.mm: Likewise.
+	* obj-c++.dg/comp-types-3.mm: Likewise.
+	* obj-c++.dg/comp-types-5.mm: Likewise.
+	* obj-c++.dg/comp-types-6.mm: Likewise.
+	* obj-c++.dg/comp-types-7.mm: Likewise.
+	* obj-c++.dg/comp-types-8.mm: Likewise.
+	* obj-c++.dg/demangle-2.mm: Likewise.
+	* obj-c++.dg/demangle-3.mm: Likewise.
+	* obj-c++.dg/duplicate-class-1.mm: Likewise.
+	* obj-c++.dg/encode-1-next.mm: Likewise.
+	* obj-c++.dg/encode-1.mm: Likewise.
+	* obj-c++.dg/enhanced-proto-2.mm: Likewise.
+	* obj-c++.dg/exceptions-1.mm: Likewise.
+	* obj-c++.dg/exceptions-3.mm: Likewise.
+	* obj-c++.dg/exceptions-4.mm: Likewise.
+	* obj-c++.dg/exceptions-5.mm: Likewise.
+	* obj-c++.dg/extern-c-1.mm: Likewise.
+	* obj-c++.dg/fobjc-std-1.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-class-meta.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-class.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-ivar.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-method.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-objc.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-objc_msg_lookup.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-object.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-property.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-protocol.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-resolve-method.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-sel.mm: Likewise.
+	* obj-c++.dg/invalid-method-2.mm: Likewise.
+	* obj-c++.dg/ivar-invalid-type-1.mm: Likewise.
+	* obj-c++.dg/ivar-problem-1.mm: Likewise.
+	* obj-c++.dg/lto/lto.exp: Likewise.
+	* obj-c++.dg/lto/trivial-1_0.mm: Likewise.
+	* obj-c++.dg/method-1.mm: Likewise.
+	* obj-c++.dg/method-12.mm: Likewise.
+	* obj-c++.dg/method-18.mm: Likewise.
+	* obj-c++.dg/method-19.mm: Likewise.
+	* obj-c++.dg/method-20.mm: Likewise.
+	* obj-c++.dg/method-3.mm: Likewise.
+	* obj-c++.dg/method-4.mm: Likewise.
+	* obj-c++.dg/method-5.mm: Likewise.
+	* obj-c++.dg/method-8.mm: Likewise.
+	* obj-c++.dg/method-9.mm: Likewise.
+	* obj-c++.dg/method-namespace-1.mm: Likewise.
+	* obj-c++.dg/plugin/diagnostic-test-expressions-1.mm:
+	Likewise.
+	* obj-c++.dg/pr23709.mm: Likewise.
+	* obj-c++.dg/pragma-2.mm: Likewise.
+	* obj-c++.dg/private-1.mm: Likewise.
+	* obj-c++.dg/private-2.mm: Likewise.
+	* obj-c++.dg/property/property.exp: Likewise.
+	* obj-c++.dg/proto-lossage-1.mm: Likewise.
+	* obj-c++.dg/proto-lossage-5.mm: Likewise.
+	* obj-c++.dg/proto-qual-1.mm: Likewise.
+	* obj-c++.dg/protocol-inheritance-1.mm: Likewise.
+	* obj-c++.dg/protocol-inheritance-2.mm: Likewise.
+	* obj-c++.dg/protocol-optional-1.mm: Likewise.
+	* obj-c++.dg/selector-1.mm: Likewise.
+	* obj-c++.dg/selector-2.mm: Likewise.
+	* obj-c++.dg/selector-3.mm: Likewise.
+	* obj-c++.dg/selector-4.mm: Likewise.
+	* obj-c++.dg/strings/strings.exp: Likewise.
+	* obj-c++.dg/stubify-1.mm: Likewise.
+	* obj-c++.dg/stubify-2.mm: Likewise.
+	* obj-c++.dg/super-dealloc-1.mm: Likewise.
+	* obj-c++.dg/super-dealloc-2.mm: Likewise.
+	* obj-c++.dg/sync-3.mm: Likewise.
+	* obj-c++.dg/syntax-error-2.mm: Likewise.
+	* obj-c++.dg/syntax-error-4.mm: Likewise.
+	* obj-c++.dg/syntax-error-7.mm: Likewise.
+	* obj-c++.dg/syntax-error-9.mm: Likewise.
+	* obj-c++.dg/template-4.mm: Likewise.
+	* obj-c++.dg/template-7.mm: Likewise.
+	* obj-c++.dg/template-8.mm: Likewise.
+	* obj-c++.dg/threedotthree-abi-1.mm: Likewise.
+	* obj-c++.dg/torture/dg-torture.exp: Likewise.
+	* obj-c++.dg/torture/strings/strings.exp: Likewise.
+	* obj-c++.dg/try-catch-12.mm: Likewise.
+	* obj-c++.dg/try-catch-13.mm: Likewise.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* objc.dg/anon-1.m: Add Wno-objc-root-class.
+	* objc.dg/attributes/class-attribute-1.m: Likewise.
+	* objc.dg/attributes/class-attribute-2.m: Likewise.
+	* objc.dg/attributes/class-attribute-3.m: Likewise.
+	* objc.dg/attributes/method-deprecated-1.m: Likewise.
+	* objc.dg/attributes/method-deprecated-2.m: Likewise.
+	* objc.dg/attributes/method-deprecated-3.m: Likewise.
+	* objc.dg/attributes/method-format-1.m: Likewise.
+	* objc.dg/attributes/method-nonnull-1.m: Likewise.
+	* objc.dg/attributes/method-noreturn-1.m: Likewise.
+	* objc.dg/attributes/method-sentinel-1.m: Likewise.
+	* objc.dg/attributes/nsobject-01.m: Likewise.
+	* objc.dg/attributes/objc-exception-1.m: Likewise.
+	* objc.dg/attributes/parameter-attribute-1.m: Likewise.
+	* objc.dg/attributes/parameter-attribute-2.m: Likewise.
+	* objc.dg/attributes/proto-attribute-1.m: Likewise.
+	* objc.dg/attributes/proto-attribute-2.m: Likewise.
+	* objc.dg/attributes/proto-attribute-3.m: Likewise.
+	* objc.dg/attributes/proto-attribute-4.m: Likewise.
+	* objc.dg/bitfield-2.m: Likewise.
+	* objc.dg/break-in-ifstmt.m: Likewise.
+	* objc.dg/class-1.m: Likewise.
+	* objc.dg/class-extension-1.m: Likewise.
+	* objc.dg/class-extension-2.m: Likewise.
+	* objc.dg/class-extension-3.m: Likewise.
+	* objc.dg/class-extension-4.m: Likewise.
+	* objc.dg/class-protocol-1.m: Likewise.
+	* objc.dg/comp-types-7.m: Likewise.
+	* objc.dg/demangle-1.m: Likewise.
+	* objc.dg/duplicate-class-1.m: Likewise.
+	* objc.dg/encode-6-next.m: Likewise.
+	* objc.dg/encode-6.m: Likewise.
+	* objc.dg/enhanced-proto-2.m: Likewise.
+	* objc.dg/exceptions-1.m: Likewise.
+	* objc.dg/exceptions-3.m: Likewise.
+	* objc.dg/exceptions-4.m: Likewise.
+	* objc.dg/exceptions-5.m: Likewise.
+	* objc.dg/fobjc-std-1.m: Likewise.
+	* objc.dg/foreach-2.m: Likewise.
+	* objc.dg/foreach-4.m: Likewise.
+	* objc.dg/foreach-5.m: Likewise.
+	* objc.dg/fsyntax-only.m: Likewise.
+	* objc.dg/gnu-api-2-class-meta.m: Likewise.
+	* objc.dg/gnu-api-2-class.m: Likewise.
+	* objc.dg/gnu-api-2-ivar.m: Likewise.
+	* objc.dg/gnu-api-2-method.m: Likewise.
+	* objc.dg/gnu-api-2-objc.m: Likewise.
+	* objc.dg/gnu-api-2-objc_msg_lookup.m: Likewise.
+	* objc.dg/gnu-api-2-object.m: Likewise.
+	* objc.dg/gnu-api-2-property.m: Likewise.
+	* objc.dg/gnu-api-2-protocol.m: Likewise.
+	* objc.dg/gnu-api-2-resolve-method.m: Likewise.
+	* objc.dg/gnu-api-2-sel.m: Likewise.
+	* objc.dg/incomplete-type-1.m: Likewise.
+	* objc.dg/instancetype-0.m: Likewise.
+	* objc.dg/invalid-method-2.m: Likewise.
+	* objc.dg/ivar-invalid-type-1.m: Likewise.
+	* objc.dg/ivar-problem-1.m: Likewise.
+	* objc.dg/ivar-scope-1.m: Likewise.
+	* objc.dg/ivar-scope-2.m: Likewise.
+	* objc.dg/ivar-scope-4.m: Likewise.
+	* objc.dg/ivar-visibility-1.m: Likewise.
+	* objc.dg/ivar-visibility-2.m: Likewise.
+	* objc.dg/ivar-visibility-3.m: Likewise.
+	* objc.dg/ivar-visibility-4.m: Likewise.
+	* objc.dg/local-decl-1.m: Likewise.
+	* objc.dg/lto/lto.exp: Likewise.
+	* objc.dg/lto/trivial-1_0.m: Likewise.
+	* objc.dg/method-1.m: Likewise.
+	* objc.dg/method-12.m: Likewise.
+	* objc.dg/method-13.m: Likewise.
+	* objc.dg/method-14.m: Likewise.
+	* objc.dg/missing-proto-3.m: Likewise.
+	* objc.dg/next-runtime-1.m: Likewise.
+	* objc.dg/objc-foreach-1.m: Likewise.
+	* objc.dg/objc-foreach-2.m: Likewise.
+	* objc.dg/objc-foreach-3.m: Likewise.
+	* objc.dg/objc-nofilename-1.m: Likewise.
+	* objc.dg/param-1.m: Likewise.
+	* objc.dg/pch/pch.exp: Likewise.
+	* objc.dg/plugin/diagnostic-test-expressions-1.m: Likewise.
+	* objc.dg/pr23709.m: Likewise.
+	* objc.dg/private-1.m: Likewise.
+	* objc.dg/private-2.m: Likewise.
+	* objc.dg/property/property.exp: Likewise.
+	* objc.dg/proto-hier-1.m: Likewise.
+	* objc.dg/proto-hier-2.m: Likewise.
+	* objc.dg/proto-lossage-1.m: Likewise.
+	* objc.dg/proto-lossage-5.m: Likewise.
+	* objc.dg/proto-qual-1.m: Likewise.
+	* objc.dg/protocol-inheritance-1.m: Likewise.
+	* objc.dg/protocol-inheritance-2.m: Likewise.
+	* objc.dg/protocol-optional-1.m: Likewise.
+	* objc.dg/selector-1.m: Likewise.
+	* objc.dg/selector-2.m: Likewise.
+	* objc.dg/selector-3.m: Likewise.
+	* objc.dg/selector-4.m: Likewise.
+	* objc.dg/shadow-1.m: Likewise.
+	* objc.dg/shadow-2.m: Likewise.
+	* objc.dg/special/load-category-1.m: Likewise.
+	* objc.dg/special/load-category-2.m: Likewise.
+	* objc.dg/special/load-category-3.m: Likewise.
+	* objc.dg/special/special.exp: Likewise.
+	* objc.dg/special/unclaimed-category-1.h: Likewise.
+	* objc.dg/special/unclaimed-category-1.m: Likewise.
+	* objc.dg/stabs-1.m: Likewise.
+	* objc.dg/strings/strings.exp: Likewise.
+	* objc.dg/stubify-1.m: Likewise.
+	* objc.dg/stubify-2.m: Likewise.
+	* objc.dg/super-class-2.m: Likewise.
+	* objc.dg/super-dealloc-1.m: Likewise.
+	* objc.dg/super-dealloc-2.m: Likewise.
+	* objc.dg/sync-3.m: Likewise.
+	* objc.dg/threedotthree-abi-1.m: Likewise.
+	* objc.dg/torture/dg-torture.exp: Likewise.
+	* objc.dg/torture/strings/strings.exp: Likewise.
+	* objc.dg/try-catch-11.m: Likewise.
+	* objc.dg/try-catch-12.m: Likewise.
+	* objc.dg/type-size-2.m: Likewise.
+	* objc.dg/type-size-3.m: Likewise.
+	* objc.dg/type-size-4.m: Likewise.
+	* objc.dg/type-size-5.m: Likewise.
+	* objc.dg/undeclared-selector.m: Likewise.
+	* objc.dg/volatile-1.m: Likewise.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* objc.dg/attributes/root-class-01.m: New test.
+	* objc.dg/root-class-00.m: New test.
+	* obj-c++.dg/attributes/root-class-01.mm: New test.
+	* obj-c++.dg/root-class-00.mm: New test.
+
 2020-11-13  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/cpp2a/concepts-decltype3.C: New test.

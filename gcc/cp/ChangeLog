@@ -1,3 +1,34 @@
+2020-11-13  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (USING_DECL_UNRELATED_P): New.
+	(CONST_DECL_USING_P): New.
+	* class.c (handle_using_decl): If USING_DECL_UNRELATED_P,
+	clone the CONST_DECL.
+	* name-lookup.c (supplement_binding_1): A clone hides its
+	using-declaration.
+	(lookup_using_decl): Rewrite to separate lookup and validation.
+	(do_class_using_decl): Adjust.
+	(finish_nonmember_using_decl): Adjust.
+	* parser.c (make_location): Add cp_token overload.
+	(finish_using_decl): Split out from...
+	(cp_parser_using_declaration): ...here.  Don't look through enums.
+	(cp_parser_using_enum): New.
+	(cp_parser_block_declaration): Call it.
+	(cp_parser_member_declaration): Call it.
+	* semantics.c (finish_id_expression_1): Handle enumerator
+	used from class scope.
+
+2020-11-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* parser.c (cp_parser_asm_definition): Parse outputs for asm
+	goto too.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* parser.c (cp_parser_objc_class_interface): Pass the
+	location of the class name to the interface declaration.
+
 2020-11-13  Patrick Palka  <ppalka@redhat.com>
 
 	* semantics.c (finish_compound_literal): Don't wrap the original
