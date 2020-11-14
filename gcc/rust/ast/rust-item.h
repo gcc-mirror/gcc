@@ -1266,7 +1266,6 @@ class LetStmt;
 // Rust function declaration AST node
 class Function : public VisItem, public InherentImplItem, public TraitImplItem
 {
-public:
   FunctionQualifiers qualifiers;
   Identifier function_name;
 
@@ -1288,6 +1287,7 @@ public:
 
   Location locus;
 
+public:
   std::vector<LetStmt *> locals;
 
   std::string as_string () const override;
@@ -1394,6 +1394,22 @@ public:
   std::unique_ptr<BlockExpr> &get_definition () {
     rust_assert (function_body != nullptr);
     return function_body;
+  }
+
+  FunctionQualifiers get_qualifiers () const { return qualifiers; }
+
+  Identifier get_function_name () const { return function_name; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_return_type () {
+    rust_assert (return_type != nullptr);
+    return return_type;
   }
 
 protected:
@@ -1518,7 +1534,7 @@ protected:
 // Rust base struct declaration AST node - abstract base class
 class Struct : public VisItem
 {
-public:
+protected:
   // protected to enable access by derived classes - allows better as_string
   Identifier struct_name;
 
@@ -1529,8 +1545,10 @@ public:
   // bool has_where_clause;
   WhereClause where_clause;
 
+private:
   Location locus;
 
+public:
   // Returns whether struct has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
 
@@ -1542,6 +1560,8 @@ public:
   // Invalid if name is empty, so base stripping on that.
   void mark_for_strip () override { struct_name = ""; }
   bool is_marked_for_strip () const override { return struct_name.empty (); }
+
+  Identifier get_struct_name () const { return struct_name; }
 
 protected:
   Struct (Identifier struct_name,
@@ -1587,7 +1607,7 @@ protected:
 // A single field in a struct
 struct StructField
 {
-public:
+private:
   // bool has_outer_attributes;
   std::vector<Attribute> outer_attrs;
 
@@ -1599,6 +1619,7 @@ public:
 
   // should this store location info?
 
+public:
   // Returns whether struct field has any outer attributes.
   bool has_outer_attributes () const { return !outer_attrs.empty (); }
 
@@ -1662,6 +1683,16 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  Identifier get_field_name () const { return field_name; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_field_type () {
+    rust_assert (field_type != nullptr);
+    return field_type;
+  }
+
+  Visibility get_visibility () const { return visibility; }
 };
 
 // Rust struct declaration with true struct type AST node

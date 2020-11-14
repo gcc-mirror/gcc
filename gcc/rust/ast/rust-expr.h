@@ -1849,6 +1849,8 @@ public:
     return std::unique_ptr<EnumExprField> (clone_enum_expr_field_impl ());
   }
 
+  virtual std::string as_string () const = 0;
+
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
 protected:
@@ -1869,6 +1871,8 @@ public:
   {}
 
   void accept_vis (ASTVisitor &vis) override;
+
+  std::string as_string () const override { return field_name; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1908,6 +1912,15 @@ protected:
   // move constructors
   EnumExprFieldWithVal (EnumExprFieldWithVal &&other) = default;
   EnumExprFieldWithVal &operator= (EnumExprFieldWithVal &&other) = default;
+
+public:
+  std::string as_string () const override;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_value () {
+    rust_assert (value != nullptr);
+    return value;
+  }
 };
 
 // Identifier and value variant of EnumExprField AST node
@@ -1923,6 +1936,8 @@ public:
     : EnumExprFieldWithVal (std::move (field_value)),
       field_name (std::move (field_name))
   {}
+
+  std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1949,6 +1964,8 @@ public:
     : EnumExprFieldWithVal (std::move (field_value)), index (field_index)
   {}
 
+  std::string as_string () const override;
+
   void accept_vis (ASTVisitor &vis) override;
 
 protected:
@@ -1970,10 +1987,6 @@ class EnumExprStruct : public EnumVariantExpr
 
 public:
   std::string as_string () const override;
-
-  /*inline std::vector<std::unique_ptr<EnumExprField>> get_fields() const
-  { return fields;
-  }*/
 
   EnumExprStruct (PathInExpression enum_variant_path,
 		  std::vector<std::unique_ptr<EnumExprField> > variant_fields,
@@ -2037,10 +2050,6 @@ class EnumExprTuple : public EnumVariantExpr
 public:
   std::string as_string () const override;
 
-  /*inline std::vector<std::unique_ptr<Expr>> get_values() const {
-      return values;
-  }*/
-
   EnumExprTuple (PathInExpression enum_variant_path,
 		 std::vector<std::unique_ptr<Expr> > variant_values,
 		 std::vector<Attribute> outer_attribs, Location locus)
@@ -2079,6 +2088,9 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  const std::vector<std::unique_ptr<Expr> > &get_elems () const { return values; }
+  std::vector<std::unique_ptr<Expr> > &get_elems () { return values; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2128,20 +2140,16 @@ class Function;
 // Function call expression AST node
 class CallExpr : public ExprWithoutBlock
 {
-public:
   std::unique_ptr<Expr> function;
   // inlined form of CallParams
   std::vector<std::unique_ptr<Expr> > params;
 
   Location locus;
 
+public:
   Function *fndeclRef;
 
   std::string as_string () const override;
-
-  /*inline std::vector<std::unique_ptr<Expr>> get_params() const {
-      return params;
-  }*/
 
   CallExpr (std::unique_ptr<Expr> function_expr,
 	    std::vector<std::unique_ptr<Expr> > function_params,
@@ -2199,6 +2207,16 @@ public:
   void mark_for_strip () override { function = nullptr; }
   bool is_marked_for_strip () const override { return function == nullptr; }
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<std::unique_ptr<Expr> > &get_params () const { return params; }
+  std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_function_expr () {
+    rust_assert (function != nullptr);
+    return function;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2220,10 +2238,6 @@ class MethodCallExpr : public ExprWithoutBlock
 
 public:
   std::string as_string () const override;
-
-  /*inline std::vector<std::unique_ptr<Expr>> get_params() const {
-      return params;
-  }*/
 
   MethodCallExpr (std::unique_ptr<Expr> call_receiver,
 		  PathExprSegment method_path,
@@ -2280,6 +2294,18 @@ public:
   // Invalid if receiver expr is null, so base stripping on that.
   void mark_for_strip () override { receiver = nullptr; }
   bool is_marked_for_strip () const override { return receiver == nullptr; }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<std::unique_ptr<Expr> > &get_params () const { return params; }
+  std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_receiver_expr () {
+    rust_assert (receiver != nullptr);
+    return receiver;
+  }
+
+  PathExprSegment get_method_name () const { return method_name; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2349,6 +2375,14 @@ public:
   void mark_for_strip () override { receiver = nullptr; }
   bool is_marked_for_strip () const override { return receiver == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_receiver_expr () {
+    rust_assert (receiver != nullptr);
+    return receiver;
+  }
+
+  Identifier get_field_name () const { return field; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2362,6 +2396,7 @@ protected:
 struct ClosureParam
 {
 private:
+  std::vector<Attribute> outer_attrs;
   std::unique_ptr<Pattern> pattern;
 
   // bool has_type_given;
@@ -2373,15 +2408,18 @@ public:
   // Returns whether the type of the parameter has been given.
   bool has_type_given () const { return type != nullptr; }
 
+  bool has_outer_attrs () const { return !outer_attrs.empty (); }
+
   // Constructor for closure parameter
   ClosureParam (std::unique_ptr<Pattern> param_pattern,
-		std::unique_ptr<Type> param_type = nullptr)
-    : pattern (std::move (param_pattern)), type (std::move (param_type))
+		std::unique_ptr<Type> param_type = nullptr, std::vector<Attribute> outer_attrs = {})
+    : outer_attrs (std::move(outer_attrs)), pattern (std::move (param_pattern)), 
+      type (std::move (param_type))
   {}
 
   // Copy constructor required due to cloning as a result of unique_ptrs
   ClosureParam (ClosureParam const &other)
-    : pattern (other.pattern->clone_pattern ())
+    : outer_attrs (other.outer_attrs)
   {
     // guard to protect from null pointer dereference
     if (other.pattern != nullptr)
@@ -2395,6 +2433,8 @@ public:
   // Assignment operator must be overloaded to clone as well
   ClosureParam &operator= (ClosureParam const &other)
   {
+    outer_attrs = other.outer_attrs;
+
     // guard to protect from null pointer dereference
     if (other.pattern != nullptr)
       pattern = other.pattern->clone_pattern ();
@@ -2419,6 +2459,9 @@ public:
   static ClosureParam create_error () { return ClosureParam (nullptr); }
 
   std::string as_string () const;
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 };
 
 // Base closure definition expression AST node - abstract
@@ -2443,6 +2486,10 @@ public:
 
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<ClosureParam> &get_params () const { return params; }
+  std::vector<ClosureParam> &get_params () { return params; }
 };
 
 // Represents a non-type-specified closure expression AST node
@@ -2499,6 +2546,12 @@ public:
   // Invalid if inner expr is null, so base stripping on that.
   void mark_for_strip () override { closure_inner = nullptr; }
   bool is_marked_for_strip () const override { return closure_inner == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_definition_expr () {
+    rust_assert (closure_inner != nullptr);
+    return closure_inner;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

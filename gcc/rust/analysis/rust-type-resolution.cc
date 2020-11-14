@@ -471,7 +471,7 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
 	  AST::StructField *declField = NULL;
 	  for (auto &df : decl->get_fields ())
 	    {
-	      if (identifierBuffer->compare (df.field_name) == 0)
+	      if (identifierBuffer->compare (df.get_field_name ()) == 0)
 		{
 		  declField = &df;
 		  break;
@@ -485,7 +485,7 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
 	      return;
 	    }
 
-	  if (!typesAreCompatible (declField->field_type.get (), inferedType,
+	  if (!typesAreCompatible (declField->get_field_type ().get (), inferedType,
 				   expr.get_locus_slow ()))
 	    return;
 	}
@@ -505,7 +505,7 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
 	      return;
 	    }
 
-	  if (!typesAreCompatible (declField->field_type.get (), inferedType,
+	  if (!typesAreCompatible (declField->get_field_type ().get (), inferedType,
 				   expr.get_locus_slow ()))
 	    return;
 	}
@@ -561,41 +561,41 @@ void
 TypeResolution::visit (AST::CallExpr &expr)
 {
   // this look up should probably be moved to name resolution
-  auto fndecl = lookupFndecl (expr.function.get ());
+  auto fndecl = lookupFndecl (expr.get_function_expr ().get ());
   if (fndecl == NULL)
     return;
 
   // check num args match
-  if (fndecl->function_params.size () != expr.params.size ())
+  if (fndecl->get_function_params ().size () != expr.get_params ().size ())
     {
       rust_error_at (expr.get_locus_slow (),
 		     "differing number of arguments vs parameters to function");
       return;
     }
 
-  typeBuffer.push_back (fndecl->return_type.get ());
+  typeBuffer.push_back (fndecl->get_return_type ().get ());
   expr.fndeclRef = fndecl;
 
   auto before = typeBuffer.size ();
-  for (auto &item : expr.params)
+  for (auto &item : expr.get_params ())
     item->accept_vis (*this);
 
   auto numInferedParams = typeBuffer.size () - before;
-  if (numInferedParams != expr.params.size ())
+  if (numInferedParams != expr.get_params ().size ())
     {
       rust_error_at (expr.get_locus (), "Failed to infer all parameters");
       return;
     }
 
   auto offs = numInferedParams - 1;
-  for (auto it = fndecl->function_params.rbegin ();
-       it != fndecl->function_params.rend (); ++it)
+  for (auto it = fndecl->get_function_params ().rbegin ();
+       it != fndecl->get_function_params ().rend (); ++it)
     {
       AST::Type *argument = typeBuffer.back ();
       typeBuffer.pop_back ();
 
       if (!typesAreCompatible (it->type.get (), argument,
-			       expr.params[offs]->get_locus_slow ()))
+			       expr.get_params ()[offs]->get_locus_slow ()))
 	return;
       offs--;
     }
@@ -762,11 +762,11 @@ TypeResolution::visit (AST::Function &function)
 {
   // always emit the function with return type in the event of nil return type
   // its  a marker for a void function
-  scope.InsertType (function.function_name, function.return_type.get ());
-  scope.InsertFunction (function.function_name, &function);
+  scope.InsertType (function.get_function_name (), function.get_return_type ().get ());
+  scope.InsertFunction (function.get_function_name (), &function);
   scope.Push ();
 
-  for (auto &param : function.function_params)
+  for (auto &param : function.get_function_params ())
     {
       if (!isTypeInScope (param.type.get (), param.get_locus ()))
 	return;
@@ -787,12 +787,12 @@ TypeResolution::visit (AST::Function &function)
   // ensure the return type is resolved
   if (function.has_function_return_type ())
     {
-      if (!isTypeInScope (function.return_type.get (), function.get_locus ()))
+      if (!isTypeInScope (function.get_return_type ().get (), function.get_locus ()))
 	return;
     }
 
   // walk the expression body
-  for (auto &stmt : function.function_body->statements)
+  for (auto &stmt : function.get_definition ()->statements)
     {
       stmt->accept_vis (*this);
     }
@@ -813,7 +813,7 @@ TypeResolution::visit (AST::StructStruct &struct_item)
 {
   for (auto &field : struct_item.get_fields ())
     {
-      if (!isTypeInScope (field.field_type.get (),
+      if (!isTypeInScope (field.get_field_type ().get (),
 			  Linemap::unknown_location ()))
 	{
 	  rust_fatal_error (Linemap::unknown_location (),
@@ -822,7 +822,7 @@ TypeResolution::visit (AST::StructStruct &struct_item)
 	}
     }
 
-  scope.InsertStruct (struct_item.struct_name, &struct_item);
+  scope.InsertStruct (struct_item.get_struct_name (), &struct_item);
 }
 
 void

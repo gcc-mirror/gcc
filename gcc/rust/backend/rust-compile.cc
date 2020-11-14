@@ -538,7 +538,7 @@ Compilation::visit (AST::StructExprFieldIdentifierValue &field)
   bool found = false;
   for (auto &df : decl->get_fields ())
     {
-      if (field.get_field_name ().compare (df.field_name) == 0)
+      if (field.get_field_name ().compare (df.get_field_name ()) == 0)
 	{
 	  found = true;
 	  break;
@@ -651,15 +651,15 @@ void
 Compilation::visit (AST::CallExpr &expr)
 {
   Bexpression *fn = NULL;
-  VISIT_POP (expr.function->get_locus_slow (), expr.function, fn, exprs);
+  VISIT_POP (expr.get_function_expr ()->get_locus_slow (), expr.get_function_expr (), fn, exprs);
   if (fn == NULL)
     {
-      rust_error_at (expr.function->get_locus_slow (), "failed to resolve");
+      rust_error_at (expr.get_function_expr ()->get_locus_slow (), "failed to resolve");
       return;
     }
 
   std::vector<Bexpression *> args;
-  for (auto &param : expr.params)
+  for (auto &param : expr.get_params ())
     {
       Bexpression *arg = NULL;
       VISIT_POP (param->get_locus_slow (), param, arg, exprs);
@@ -949,7 +949,7 @@ Compilation::visit (AST::Function &function)
   std::vector<Backend::Btyped_identifier> parameters;
   std::vector<Backend::Btyped_identifier> results;
 
-  for (auto &param : function.function_params)
+  for (auto &param : function.get_function_params ())
     {
       // translate the type
       translatedType = NULL;
@@ -983,7 +983,7 @@ Compilation::visit (AST::Function &function)
   if (function.has_function_return_type ())
     {
       translatedType = NULL;
-      function.return_type->accept_vis (*this);
+      function.get_return_type ()->accept_vis (*this);
       if (translatedType == NULL)
 	{
 	  rust_fatal_error (function.get_locus (),
@@ -1000,10 +1000,10 @@ Compilation::visit (AST::Function &function)
   Btype *fntype = backend->function_type (receiver, parameters, results, NULL,
 					  function.get_locus ());
   Bfunction *fndecl
-    = backend->function (fntype, function.function_name, "" /* asm_name */,
+    = backend->function (fntype, function.get_function_name (), "" /* asm_name */,
 			 0 /* flags */, function.get_locus ());
 
-  scope.InsertFunction (function.function_name, fndecl, returnType);
+  scope.InsertFunction (function.get_function_name (), fndecl, returnType);
   scope.Push ();
 
   // setup the params
@@ -1039,10 +1039,10 @@ Compilation::visit (AST::Function &function)
   Bblock *enclosingScope = NULL;
   Location start_location = function.get_locus ();
   Location end_location;
-  if (function.function_body->statements.size () > 0)
+  if (function.get_definition ()->statements.size () > 0)
     {
       end_location
-	= function.function_body->statements.back ()->get_locus_slow ();
+	= function.get_definition ()->statements.back ()->get_locus_slow ();
     }
 
   auto code_block = backend->block (fndecl, enclosingScope, vars,
@@ -1060,10 +1060,10 @@ Compilation::visit (AST::Function &function)
 					     function.get_locus (), &ret_var_stmt);
       scope.AddStatement (ret_var_stmt);
     }
-  scope.PushCurrentFunction (function.function_name, fndecl, returnType,
+  scope.PushCurrentFunction (function.get_function_name (), fndecl, returnType,
 			     retDecl);
 
-  for (auto &stmt : function.function_body->statements)
+  for (auto &stmt : function.get_definition ()->statements)
     stmt->accept_vis (*this);
 
   scope.PopBlock ();
@@ -1092,7 +1092,7 @@ Compilation::visit (AST::StructStruct &struct_item)
   for (auto &field : struct_item.get_fields ())
     {
       translatedType = NULL;
-      field.field_type->accept_vis (*this);
+      field.get_field_type ()->accept_vis (*this);
       if (translatedType == NULL)
 	{
 	  rust_fatal_error (
@@ -1102,12 +1102,12 @@ Compilation::visit (AST::StructStruct &struct_item)
 	}
 
       fields.push_back (Backend::Btyped_identifier (
-	field.field_name, translatedType,
+	field.get_field_name (), translatedType,
 	struct_item.get_locus () /* StructField is mi sing locus */));
     }
 
   auto compiledStruct
-    = backend->placeholder_struct_type (struct_item.struct_name,
+    = backend->placeholder_struct_type (struct_item.get_struct_name (),
 					struct_item.get_locus ());
   bool ok = backend->set_placeholder_struct_type (compiledStruct, fields);
   if (!ok)
@@ -1117,8 +1117,8 @@ Compilation::visit (AST::StructStruct &struct_item)
     }
 
   type_decls.push_back (compiledStruct);
-  scope.InsertType (struct_item.struct_name, compiledStruct);
-  scope.InsertStructDecl (struct_item.struct_name, &struct_item);
+  scope.InsertType (struct_item.get_struct_name (), compiledStruct);
+  scope.InsertStructDecl (struct_item.get_struct_name (), &struct_item);
 }
 
 void

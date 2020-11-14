@@ -8512,6 +8512,8 @@ template <typename ManagedTokenSource>
 AST::ClosureParam
 Parser<ManagedTokenSource>::parse_closure_param ()
 {
+  std::vector<AST::Attribute> outer_attrs = parse_outer_attributes ();
+
   // parse pattern (which is required)
   std::unique_ptr<AST::Pattern> pattern = parse_pattern ();
   if (pattern == nullptr)
@@ -8537,7 +8539,7 @@ Parser<ManagedTokenSource>::parse_closure_param ()
 	}
     }
 
-  return AST::ClosureParam (std::move (pattern), std::move (type));
+  return AST::ClosureParam (std::move (pattern), std::move (type), std::move (outer_attrs));
 }
 
 // Parses a grouped or tuple expression (disambiguates).

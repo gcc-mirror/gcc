@@ -353,7 +353,7 @@ TopLevelScan::visit (AST::UseDeclaration &use_decl)
 void
 TopLevelScan::visit (AST::Function &function)
 {
-  functions[function.function_name] = &function;
+  functions[function.get_function_name ()] = &function;
 }
 
 void

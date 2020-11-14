@@ -3721,9 +3721,7 @@ StructExprTuple::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n" + indent_spaces (stay) + attr.as_string ();
-	}
     }
   indent_spaces (out);
   indent_spaces (out);
@@ -3749,9 +3747,7 @@ StructExprStruct::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   return str;
@@ -3761,13 +3757,9 @@ std::string
 StructBase::as_string () const
 {
   if (base_struct != nullptr)
-    {
       return base_struct->as_string ();
-    }
   else
-    {
       return "ERROR_MARK_STRING - invalid struct base had as string applied";
-    }
 }
 
 std::string
@@ -3802,22 +3794,56 @@ StructExprStructFields::as_string () const
   else
     {
       for (const auto &field : fields)
-	{
 	  str += "\n  " + field->as_string ();
-	}
     }
 
   str += "\n Struct base: ";
   if (!has_struct_base ())
+      str += "none";
+  else
+      str += struct_base.as_string ();
+
+  return str;
+}
+
+std::string
+EnumExprStruct::as_string () const
+{
+  std::string str ("StructExprStruct (or subclass): ");
+
+  str += "\n Path: " + get_enum_variant_path ().as_string ();
+
+  str += "\n Fields: ";
+  if (fields.empty ())
     {
       str += "none";
     }
   else
     {
-      str += struct_base.as_string ();
+      for (const auto &field : fields)
+	  str += "\n  " + field->as_string ();
     }
 
   return str;
+}
+
+std::string
+EnumExprFieldWithVal::as_string () const
+{
+  // used to get value string
+  return value->as_string ();
+}
+
+std::string
+EnumExprFieldIdentifierValue::as_string () const
+{
+  return field_name + " : " + EnumExprFieldWithVal::as_string ();
+}
+
+std::string
+EnumExprFieldIndexValue::as_string () const
+{
+  return std::to_string (index) + " : " + EnumExprFieldWithVal::as_string ();
 }
 
 std::string
@@ -3834,9 +3860,7 @@ EnumItem::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   str += "\n" + variant_name;

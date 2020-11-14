@@ -512,10 +512,18 @@ namespace Rust {
             }
         }
         void visit(AST::EnumExprFieldIdentifier& field) override {
-            
+            // as no attrs (at moment, at least), no stripping possible
         }
-        void visit(AST::EnumExprFieldIdentifierValue& field) override {}
-        void visit(AST::EnumExprFieldIndexValue& field) override {}
+        void visit(AST::EnumExprFieldIdentifierValue& field) override {
+            /* as no attrs possible (at moment, at least), only sub-expression
+             * stripping is possible */
+            field.get_value()->accept_vis(*this);
+        }
+        void visit(AST::EnumExprFieldIndexValue& field) override {
+            /* as no attrs possible (at moment, at least), only sub-expression
+             * stripping is possible */
+            field.get_value()->accept_vis(*this);
+        }
         void visit(AST::EnumExprStruct& expr) override {
             // initial strip test based on outer attrs
             expander.expand_cfg_attrs(expr.get_outer_attrs());
@@ -535,13 +543,128 @@ namespace Rust {
                 // shouldn't strip in this
             }
         }
-        void visit(AST::EnumExprTuple& expr) override {}
-        void visit(AST::EnumExprFieldless& expr) override {}
-        void visit(AST::CallExpr& expr) override {}
-        void visit(AST::MethodCallExpr& expr) override {}
-        void visit(AST::FieldAccessExpr& expr) override {}
-        void visit(AST::ClosureExprInner& expr) override {}
-        void visit(AST::BlockExpr& expr) override {}
+        void visit(AST::EnumExprTuple& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            // supposedly spec doesn't allow inner attributes in enum exprs
+
+            /* spec says outer attributes are specifically allowed for elements 
+             * of tuple-style enum expressions, so full stripping possible */
+            auto& values = expr.get_elems();
+            for (int i = 0; i < values.size();) {
+                auto& value = values[i];
+
+                // mark for stripping if required
+                value->accept_vis(*this);
+
+                if (value->is_marked_for_strip())
+                    values.erase(values.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::EnumExprFieldless& expr) override {
+            // can't be stripped as no attrs
+        }
+        void visit(AST::CallExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* should not be outer attrs on "function" expression - outer attrs 
+             * should be associated with call expr as a whole. only sub-expr 
+             * expansion is possible. */
+            expr.get_function_expr()->accept_vis(*this);
+
+            /* spec says outer attributes are specifically allowed for elements 
+             * of call expressions, so full stripping possible */
+            auto& params = expr.get_params();
+            for (int i = 0; i < params.size();) {
+                auto& param = params[i];
+
+                // mark for stripping if required
+                param->accept_vis(*this);
+
+                if (param->is_marked_for_strip())
+                    params.erase(params.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::MethodCallExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* should not be outer attrs on "receiver" expression - outer attrs 
+             * should be associated with call expr as a whole. only sub-expr 
+             * expansion is possible. */
+            expr.get_receiver_expr()->accept_vis(*this);
+
+            // no outer attrs on paths possible
+
+            /* spec says outer attributes are specifically allowed for elements 
+             * of method call expressions, so full stripping possible */
+            auto& params = expr.get_params();
+            for (int i = 0; i < params.size();) {
+                auto& param = params[i];
+
+                // mark for stripping if required
+                param->accept_vis(*this);
+
+                if (param->is_marked_for_strip())
+                    params.erase(params.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::FieldAccessExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* should not be outer attrs on "receiver" expression - outer attrs 
+             * should be associated with call expr as a whole. only sub-expr 
+             * expansion is possible. */
+            expr.get_receiver_expr()->accept_vis(*this);
+        }
+        void visit(AST::ClosureExprInner& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip closure parameters if required - this is specifically
+             * allowed by spec */
+            auto& params = expr.get_params();
+            for (int i = 0; i < params.size();) {
+                auto& param_attrs = params[i].get_outer_attrs();
+                expander.expand_cfg_attrs(param_attrs);
+                if (expander.fails_cfg(param_attrs))
+                    params.erase(params.begin() + i);
+                else
+                    i++;
+            }
+        }
+        void visit(AST::BlockExpr& expr) override {
+            
+        }
         void visit(AST::ClosureExprInnerTyped& expr) override {}
         void visit(AST::ContinueExpr& expr) override {}
         void visit(AST::BreakExpr& expr) override {}
