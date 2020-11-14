@@ -26,6 +26,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgcov.h"
 #include "gcov-io.h"
 
+#include <stdint.h>
+
+/* Return 1, if all counter values are zero, otherwise 0. */
+
+static inline int
+are_all_counters_zero (const struct gcov_ctr_info *ci_ptr)
+{
+  for (unsigned i = 0; i < ci_ptr->num; i++)
+    if (ci_ptr->values[i] != 0)
+      return 0;
+
+  return 1;
+}
+
 #if defined(inhibit_libc)
 /* If libc and its header files are not available, provide dummy functions.  */
 
@@ -34,8 +48,6 @@ void __gcov_init (struct gcov_info *p __attribute__ ((unused))) {}
 #endif
 
 #else /* inhibit_libc */
-
-#include <string.h>
 
 #if GCOV_LOCKED
 #include <fcntl.h>
@@ -51,8 +63,17 @@ void __gcov_init (struct gcov_info *p __attribute__ ((unused))) {}
 #include <sys/mman.h>
 #endif
 
-#ifdef L_gcov
+#endif /* inhibit_libc */
 
+#if defined(L_gcov) && !defined(inhibit_libc)
+#define NEED_L_GCOV
+#endif
+
+#if defined(L_gcov_info_to_gcda) && !IN_GCOV_TOOL
+#define NEED_L_GCOV_INFO_TO_GCDA
+#endif
+
+#ifdef NEED_L_GCOV
 /* A utility function for outputting errors.  */
 static int gcov_error (const char *, ...);
 
@@ -343,6 +364,51 @@ read_error:
   return -1;
 }
 
+/* Write the DATA of LENGTH characters to the gcov file.  */
+
+static void
+gcov_dump_handler (const void *data,
+		   unsigned length,
+		   void *arg ATTRIBUTE_UNUSED)
+{
+  gcov_write (data, length);
+}
+
+/* Allocate SIZE characters and return the address of the allocated memory.  */
+
+static void *
+gcov_allocate_handler (unsigned size, void *arg ATTRIBUTE_UNUSED)
+{
+  return xmalloc (size);
+}
+#endif /* NEED_L_GCOV */
+
+#if defined(NEED_L_GCOV) || defined(NEED_L_GCOV_INFO_TO_GCDA)
+/* Dump the WORD using the DUMP handler called with ARG.  */
+
+static inline void
+dump_unsigned (gcov_unsigned_t word,
+	       void (*dump_fn) (const void *, unsigned, void *),
+	       void *arg)
+{
+  (*dump_fn) (&word, sizeof (word), arg);
+}
+
+/* Dump the COUNTER using the DUMP handler called with ARG.  */
+
+static inline void
+dump_counter (gcov_type counter,
+	      void (*dump_fn) (const void *, unsigned, void *),
+	      void *arg)
+{
+  dump_unsigned ((gcov_unsigned_t)counter, dump_fn, arg);
+
+  if (sizeof (counter) > sizeof (gcov_unsigned_t))
+    dump_unsigned ((gcov_unsigned_t)(counter >> 32), dump_fn, arg);
+  else
+    dump_unsigned (0, dump_fn, arg);
+}
+
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 /* Store all TOP N counters where each has a dynamic length.  */
@@ -350,7 +416,10 @@ read_error:
 static void
 write_topn_counters (const struct gcov_ctr_info *ci_ptr,
 		     unsigned t_ix,
-		     gcov_unsigned_t n_counts)
+		     gcov_unsigned_t n_counts,
+		     void (*dump_fn) (const void *, unsigned, void *),
+		     void *(*allocate_fn)(unsigned, void *),
+		     void *arg)
 {
   unsigned counters = n_counts / GCOV_TOPN_MEM_COUNTERS;
   gcc_assert (n_counts % GCOV_TOPN_MEM_COUNTERS == 0);
@@ -365,46 +434,49 @@ write_topn_counters (const struct gcov_ctr_info *ci_ptr,
   if (list_sizes == NULL || counters > list_size_length)
     {
       list_size_length = MAX (LIST_SIZE_MIN_LENGTH, 2 * counters);
-#if HAVE_SYS_MMAN_H
+#if !defined(inhibit_libc) && HAVE_SYS_MMAN_H
       list_sizes
 	= (unsigned *)malloc_mmap (list_size_length * sizeof (unsigned));
 #endif
 
       /* Malloc fallback.  */
       if (list_sizes == NULL)
-	list_sizes = (unsigned *)xmalloc (list_size_length * sizeof (unsigned));
+	list_sizes =
+	  (unsigned *)(*allocate_fn) (list_size_length * sizeof (unsigned),
+				      arg);
     }
 
-  memset (list_sizes, 0, counters * sizeof (unsigned));
   unsigned pair_total = 0;
 
   for (unsigned i = 0; i < counters; i++)
     {
       gcov_type start = ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 2];
+      unsigned sizes = 0;
+
       for (struct gcov_kvp *node = (struct gcov_kvp *)(intptr_t)start;
 	   node != NULL; node = node->next)
-	{
-	  ++pair_total;
-	  ++list_sizes[i];
-	}
+	++sizes;
+
+      pair_total += sizes;
+      list_sizes[i] = sizes;
     }
 
   unsigned disk_size = GCOV_TOPN_DISK_COUNTERS * counters + 2 * pair_total;
-  gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
-			 GCOV_TAG_COUNTER_LENGTH (disk_size));
+  dump_unsigned (GCOV_TAG_FOR_COUNTER (t_ix), dump_fn, arg),
+  dump_unsigned (GCOV_TAG_COUNTER_LENGTH (disk_size), dump_fn, arg);
 
   for (unsigned i = 0; i < counters; i++)
     {
-      gcov_write_counter (ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i]);
-      gcov_write_counter (list_sizes[i]);
+      dump_counter (ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i], dump_fn, arg);
+      dump_counter (list_sizes[i], dump_fn, arg);
       gcov_type start = ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 2];
 
       unsigned j = 0;
       for (struct gcov_kvp *node = (struct gcov_kvp *)(intptr_t)start;
 	   j < list_sizes[i]; node = node->next, j++)
 	{
-	  gcov_write_counter (node->value);
-	  gcov_write_counter (node->count);
+	  dump_counter (node->value, dump_fn, arg);
+	  dump_counter (node->count, dump_fn, arg);
 	}
     }
 }
@@ -415,25 +487,34 @@ write_topn_counters (const struct gcov_ctr_info *ci_ptr,
 
 static void
 write_one_data (const struct gcov_info *gi_ptr,
-		const struct gcov_summary *prg_p)
+		const struct gcov_summary *prg_p ATTRIBUTE_UNUSED,
+		void (*dump_fn) (const void *, unsigned, void *),
+		void *(*allocate_fn) (unsigned, void *),
+		void *arg)
 {
   unsigned f_ix;
 
-  gcov_write_tag_length (GCOV_DATA_MAGIC, GCOV_VERSION);
-  gcov_write_unsigned (gi_ptr->stamp);
+  dump_unsigned (GCOV_DATA_MAGIC, dump_fn, arg);
+  dump_unsigned (GCOV_VERSION, dump_fn, arg);
+  dump_unsigned (gi_ptr->stamp, dump_fn, arg);
 
+#ifdef NEED_L_GCOV
   /* Generate whole program statistics.  */
   gcov_write_summary (GCOV_TAG_OBJECT_SUMMARY, prg_p);
+#endif
 
   /* Write execution counts for each function.  */
   for (f_ix = 0; f_ix != gi_ptr->n_functions; f_ix++)
     {
+#ifdef NEED_L_GCOV
       unsigned buffered = 0;
+#endif
       const struct gcov_fn_info *gfi_ptr;
       const struct gcov_ctr_info *ci_ptr;
       gcov_unsigned_t length;
       unsigned t_ix;
 
+#ifdef NEED_L_GCOV
       if (fn_buffer && fn_buffer->fn_ix == f_ix)
         {
           /* Buffered data from another program.  */
@@ -442,6 +523,7 @@ write_one_data (const struct gcov_info *gi_ptr,
           length = GCOV_TAG_FUNCTION_LENGTH;
         }
       else
+#endif
         {
           gfi_ptr = gi_ptr->functions[f_ix];
           if (gfi_ptr && gfi_ptr->key == gi_ptr)
@@ -450,13 +532,14 @@ write_one_data (const struct gcov_info *gi_ptr,
                 length = 0;
         }
 
-      gcov_write_tag_length (GCOV_TAG_FUNCTION, length);
+      dump_unsigned (GCOV_TAG_FUNCTION, dump_fn, arg);
+      dump_unsigned (length, dump_fn, arg);
       if (!length)
         continue;
 
-      gcov_write_unsigned (gfi_ptr->ident);
-      gcov_write_unsigned (gfi_ptr->lineno_checksum);
-      gcov_write_unsigned (gfi_ptr->cfg_checksum);
+      dump_unsigned (gfi_ptr->ident, dump_fn, arg);
+      dump_unsigned (gfi_ptr->lineno_checksum, dump_fn, arg);
+      dump_unsigned (gfi_ptr->cfg_checksum, dump_fn, arg);
 
       ci_ptr = gfi_ptr->ctrs;
       for (t_ix = 0; t_ix < GCOV_COUNTERS; t_ix++)
@@ -469,39 +552,37 @@ write_one_data (const struct gcov_info *gi_ptr,
 	  n_counts = ci_ptr->num;
 
 	  if (t_ix == GCOV_COUNTER_V_TOPN || t_ix == GCOV_COUNTER_V_INDIR)
-	    write_topn_counters (ci_ptr, t_ix, n_counts);
+	    write_topn_counters (ci_ptr, t_ix, n_counts, dump_fn, allocate_fn,
+				 arg);
 	  else
 	    {
-	      /* Do not stream when all counters are zero.  */
-	      int all_zeros = 1;
-	      for (unsigned i = 0; i < n_counts; i++)
-		if (ci_ptr->values[i] != 0)
-		  {
-		    all_zeros = 0;
-		    break;
-		  }
-
-	      if (all_zeros)
-		gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
-				       GCOV_TAG_COUNTER_LENGTH (-n_counts));
+	      dump_unsigned (GCOV_TAG_FOR_COUNTER (t_ix), dump_fn, arg);
+	      if (are_all_counters_zero (ci_ptr))
+		/* Do not stream when all counters are zero.  */
+		dump_unsigned (GCOV_TAG_COUNTER_LENGTH (-n_counts),
+			       dump_fn, arg);
 	      else
 		{
-		  gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
-					 GCOV_TAG_COUNTER_LENGTH (n_counts));
+		  dump_unsigned (GCOV_TAG_COUNTER_LENGTH (n_counts),
+				 dump_fn, arg);
 		  for (unsigned i = 0; i < n_counts; i++)
-		    gcov_write_counter (ci_ptr->values[i]);
+		    dump_counter (ci_ptr->values[i], dump_fn, arg);
 		}
 	    }
 
 	  ci_ptr++;
 	}
+#ifdef NEED_L_GCOV
       if (buffered)
         fn_buffer = free_fn_data (gi_ptr, fn_buffer, GCOV_COUNTERS);
+#endif
     }
 
-  gcov_write_unsigned (0);
+  dump_unsigned (0, dump_fn, arg);
 }
+#endif /* NEED_L_GCOV || NEED_L_GCOV_INFO_TO_GCDA */
 
+#ifdef NEED_L_GCOV
 /* Dump the coverage counts for one gcov_info object. We merge with existing
    counts when possible, to avoid growing the .da files ad infinitum. We use
    this program's checksum to make sure we only accumulate whole program
@@ -550,7 +631,8 @@ dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
   summary = gi_ptr->summary;
 #endif
 
-  write_one_data (gi_ptr, &summary);
+  write_one_data (gi_ptr, &summary, gcov_dump_handler, gcov_allocate_handler,
+		  NULL);
   /* fall through */
 
 read_fatal:;
@@ -680,5 +762,20 @@ __gcov_init (struct gcov_info *info)
     }
 }
 #endif /* !IN_GCOV_TOOL */
-#endif /* L_gcov */
-#endif /* inhibit_libc */
+#endif /* NEED_L_GCOV */
+
+#ifdef NEED_L_GCOV_INFO_TO_GCDA
+/* Convert the gcov info to a gcda data stream.  It is intended for
+   free-standing environments which do not support the C library file I/O.  */
+
+void
+__gcov_info_to_gcda (const struct gcov_info *gi_ptr,
+		     void (*filename_fn) (const char *, void *),
+		     void (*dump_fn) (const void *, unsigned, void *),
+		     void *(*allocate_fn) (unsigned, void *),
+		     void *arg)
+{
+  (*filename_fn) (gi_ptr->filename, arg);
+  write_one_data (gi_ptr, NULL, dump_fn, allocate_fn, arg);
+}
+#endif /* NEED_L_GCOV_INFO_TO_GCDA */
