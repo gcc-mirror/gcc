@@ -905,9 +905,12 @@ package body Contracts is
 
       --  The following checks are relevant only when SPARK_Mode is on, as
       --  they are not standard Ada legality rules. Internally generated
-      --  temporaries are ignored.
+      --  temporaries are ignored, as well as return objects.
 
-      if SPARK_Mode = On and then Comes_From_Source (Type_Or_Obj_Id) then
+      if SPARK_Mode = On
+        and then Comes_From_Source (Type_Or_Obj_Id)
+        and then not Is_Return_Object (Type_Or_Obj_Id)
+      then
          if Is_Effectively_Volatile (Type_Or_Obj_Id) then
 
             --  The declaration of an effectively volatile object or type must
