@@ -803,7 +803,7 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
     }
   else if (by_ref)
     type = build_pointer_type (type);
-  else if ((mask & 3) == 1 && omp_is_reference (var))
+  else if ((mask & (32 | 3)) == 1 && omp_is_reference (var))
     type = TREE_TYPE (type);
 
   field = build_decl (DECL_SOURCE_LOCATION (var),
@@ -1141,8 +1141,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    /* omp_default_mem_alloc is 1 */
 	    || !integer_onep (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))))
       {
-	if (is_task_ctx (ctx))
-	  continue; /* For now.  */
 	if (ctx->allocate_map == NULL)
 	  ctx->allocate_map = new hash_map<tree, tree>;
 	ctx->allocate_map->put (OMP_CLAUSE_DECL (c),
@@ -1222,18 +1220,20 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      ctx->local_reduction_clauses
 		= tree_cons (NULL, c, ctx->local_reduction_clauses);
 	    }
-	  if ((OMP_CLAUSE_REDUCTION_INSCAN (c)
-	       || OMP_CLAUSE_REDUCTION_TASK (c)) && ctx->allocate_map)
-	    {
-	      tree decl = OMP_CLAUSE_DECL (c);
-	      /* For now.  */
-	      if (ctx->allocate_map->get (decl))
-		ctx->allocate_map->remove (decl);
-	    }
 	  /* FALLTHRU */
 
 	case OMP_CLAUSE_IN_REDUCTION:
 	  decl = OMP_CLAUSE_DECL (c);
+	  if (ctx->allocate_map
+	      && ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		   && (OMP_CLAUSE_REDUCTION_INSCAN (c)
+		       || OMP_CLAUSE_REDUCTION_TASK (c)))
+		  || is_task_ctx (ctx)))
+	    {
+	      /* For now.  */
+	      if (ctx->allocate_map->get (decl))
+		ctx->allocate_map->remove (decl);
+	    }
 	  if (TREE_CODE (decl) == MEM_REF)
 	    {
 	      tree t = TREE_OPERAND (decl, 0);
@@ -1317,7 +1317,16 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if (is_variable_sized (decl))
 	    {
 	      if (is_task_ctx (ctx))
-		install_var_field (decl, false, 1, ctx);
+		{
+		  if (ctx->allocate_map
+		      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
+		    {
+		      /* For now.  */
+		      if (ctx->allocate_map->get (decl))
+			ctx->allocate_map->remove (decl);
+		    }
+		  install_var_field (decl, false, 1, ctx);
+		}
 	      break;
 	    }
 	  else if (is_taskreg_ctx (ctx))
@@ -1329,7 +1338,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      if (is_task_ctx (ctx)
 		  && (global || by_ref || omp_is_reference (decl)))
 		{
-		  install_var_field (decl, false, 1, ctx);
+		  if (ctx->allocate_map
+		      && ctx->allocate_map->get (decl))
+		    install_var_field (decl, by_ref, 32 | 1, ctx);
+		  else
+		    install_var_field (decl, false, 1, ctx);
 		  if (!global)
 		    install_var_field (decl, by_ref, 2, ctx);
 		}
@@ -4498,7 +4511,9 @@ lower_private_allocate (tree var, tree new_var, tree &allocator,
   gimple_seq_add_stmt (ilist, g);
   if (!is_ref)
     {
-      SET_DECL_VALUE_EXPR (new_var, build_simple_mem_ref (allocate_ptr));
+      tree x = build_simple_mem_ref (allocate_ptr);
+      TREE_THIS_NOTRAP (x) = 1;
+      SET_DECL_VALUE_EXPR (new_var, x);
       DECL_HAS_VALUE_EXPR_P (new_var) = 1;
     }
   return true;
@@ -5409,7 +5424,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      if (c_kind == OMP_CLAUSE_FIRSTPRIVATE && is_task_ctx (ctx))
 		{
 		  x = build_receiver_ref (var, false, ctx);
-		  x = build_fold_addr_expr_loc (clause_loc, x);
+		  if (ctx->allocate_map)
+		    if (tree *allocatep = ctx->allocate_map->get (var))
+		      {
+			allocator = *allocatep;
+			if (TREE_CODE (allocator) != INTEGER_CST)
+			  allocator = build_outer_var_ref (allocator, ctx);
+			allocator = fold_convert (pointer_sized_int_node,
+						  allocator);
+			allocate_ptr = unshare_expr (x);
+		      }
+		  if (allocator == NULL_TREE)
+		    x = build_fold_addr_expr_loc (clause_loc, x);
 		}
 	      else if (lower_private_allocate (var, new_var, allocator,
 					       allocate_ptr,
@@ -5676,6 +5702,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		gimplify_and_add (x, dlist);
 	      if (allocator)
 		{
+		  if (!is_gimple_val (allocator))
+		    {
+		      tree avar = create_tmp_var (TREE_TYPE (allocator));
+		      gimplify_assign (avar, allocator, dlist);
+		      allocator = avar;
+		    }
+		  if (!is_gimple_val (allocate_ptr))
+		    {
+		      tree apvar = create_tmp_var (TREE_TYPE (allocate_ptr));
+		      gimplify_assign (apvar, allocate_ptr, dlist);
+		      allocate_ptr = apvar;
+		    }
 		  tree f = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
 		  gimple *g
 		    = gimple_build_call (f, 2, allocate_ptr, allocator);
@@ -5704,6 +5742,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			   || use_pointer_for_field (var, NULL))
 		    {
 		      x = build_receiver_ref (var, false, ctx);
+		      if (ctx->allocate_map)
+			if (tree *allocatep = ctx->allocate_map->get (var))
+			  {
+			    allocator = *allocatep;
+			    if (TREE_CODE (allocator) != INTEGER_CST)
+			      allocator = build_outer_var_ref (allocator, ctx);
+			    allocator = fold_convert (pointer_sized_int_node,
+						      allocator);
+			    allocate_ptr = unshare_expr (x);
+			    x = build_simple_mem_ref (x);
+			    TREE_THIS_NOTRAP (x) = 1;
+			  }
 		      SET_DECL_VALUE_EXPR (new_var, x);
 		      DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 		      goto do_dtor;
@@ -11290,7 +11340,35 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
 	if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE)
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);
 	else
-	  t = lang_hooks.decls.omp_clause_copy_ctor (c, dst, src);
+	  {
+	    if (ctx->allocate_map)
+	      if (tree *allocatorp = ctx->allocate_map->get (decl))
+		{
+		  tree allocator = *allocatorp;
+		  if (TREE_CODE (allocator) != INTEGER_CST)
+		    {
+		      n = splay_tree_lookup (ctx->sfield_map,
+					     (splay_tree_key) allocator);
+		      allocator = (tree) n->value;
+		      if (tcctx.cb.decl_map)
+			allocator = *tcctx.cb.decl_map->get (allocator);
+		      tree a = build_simple_mem_ref_loc (loc, sarg);
+		      allocator = omp_build_component_ref (a, allocator);
+		    }
+		  allocator = fold_convert (pointer_sized_int_node, allocator);
+		  tree a = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
+		  tree align = build_int_cst (size_type_node,
+					      DECL_ALIGN_UNIT (decl));
+		  tree sz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (dst)));
+		  tree ptr = build_call_expr_loc (loc, a, 3, align, sz,
+						  allocator);
+		  ptr = fold_convert (TREE_TYPE (dst), ptr);
+		  t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, ptr);
+		  append_to_statement_list (t, &list);
+		  dst = build_simple_mem_ref_loc (loc, dst);
+		}
+	    t = lang_hooks.decls.omp_clause_copy_ctor (c, dst, src);
+	  }
 	append_to_statement_list (t, &list);
 	break;
       case OMP_CLAUSE_PRIVATE:

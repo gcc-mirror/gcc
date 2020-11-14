@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+struct S { int a, b; };
+
 void
 foo (int x, int *p, int *q, int px, omp_allocator_handle_t h, int fl)
 {
@@ -13,6 +15,7 @@ foo (int x, int *p, int *q, int px, omp_allocator_handle_t h, int fl)
   int v[x], w[x];
   int r2[4] = { 0, 0, 0, 0 };
   int xo = x;
+  struct S s = { 27, 29 };
   for (i = 0; i < 4; i++)
     p[i] = 0;
   for (i = 0; i < 3; i++)
@@ -72,6 +75,7 @@ foo (int x, int *p, int *q, int px, omp_allocator_handle_t h, int fl)
 			| (uintptr_t) &l | (uintptr_t) &n) & 63) != 0)
 	abort ();
     }
+  x = xo;
   #pragma omp parallel
   {
     #pragma omp for lastprivate (l2) private (i1) allocate (h: l2, l3, i1) lastprivate (conditional: l3)
@@ -137,6 +141,62 @@ foo (int x, int *p, int *q, int px, omp_allocator_handle_t h, int fl)
 	if ((fl & 1) && (((uintptr_t) &q[0] | (uintptr_t) &r2[0]) & 63) != 0)
 	  abort ();
       }
+    #pragma omp task private(y) firstprivate(x) allocate(x, y)
+    {
+      int *volatile p1 = &x;
+      int *volatile p2 = &y;
+      if (x != 42)
+	abort ();
+      p1[0]++;
+      p2[0] = 21;
+      if (x != 43 || y != 21)
+	abort ();
+      if ((fl & 2) && (((uintptr_t) p1 | (uintptr_t) p2) & 63) != 0)
+	abort ();
+    }
+    #pragma omp task private(y) firstprivate(x) allocate(h: x, y)
+    {
+      int *volatile p1 = &x;
+      int *volatile p2 = &y;
+      if (x != 42)
+	abort ();
+      p1[0]++;
+      p2[0] = 21;
+      if (x != 43 || y != 21)
+	abort ();
+      if ((fl & 1) && (((uintptr_t) p1 | (uintptr_t) p2) & 63) != 0)
+	abort ();
+    }
+    #pragma omp task private(y) firstprivate(s) allocate(s, y)
+    {
+      int *volatile p1 = &s.a;
+      int *volatile p2 = &s.b;
+      int *volatile p3 = &y;
+      if (s.a != 27 || s.b != 29)
+	abort ();
+      p1[0]++;
+      p2[0]++;
+      p3[0] = 21;
+      if (s.a != 28 || s.b != 30 || y != 21)
+	abort ();
+      if ((fl & 2) && (((uintptr_t) p1 | (uintptr_t) p3) & 63) != 0)
+	abort ();
+    }
+    #pragma omp task private(y) firstprivate(s) allocate(h: s, y)
+    {
+      int *volatile p1 = &s.a;
+      int *volatile p2 = &s.b;
+      int *volatile p3 = &y;
+      if (s.a != 27 || s.b != 29)
+	abort ();
+      p1[0]++;
+      p2[0]++;
+      p3[0] = 21;
+      if (s.a != 28 || s.b != 30 || y != 21)
+	abort ();
+      if ((fl & 1) && (((uintptr_t) p1 | (uintptr_t) p3) & 63) != 0)
+	abort ();
+    }
   }
   if (r != 64 * 63 / 2 || l != 63 || n != 8 + 16 * 64)
     abort ();
@@ -164,16 +224,15 @@ bar (int x, omp_allocator_handle_t h)
   int i3, j3, n3 = 10, l5;
   int i4, j4, n4 = 11, l6;
   int i5;
+  struct S s = { 27, 29 };
   int xo = x;
   #pragma omp parallel private (y) firstprivate (x) allocate (x, y)
   {
-    int *volatile p1 = &x;
-    int *volatile p2 = &y;
     if (x != 42)
       abort ();
     #pragma omp barrier
-    *p2 = 1;
-    p1[0]++;
+    y = 1;
+    x++;
     #pragma omp barrier
     if (x != 43 || y != 1)
       abort ();
@@ -182,13 +241,11 @@ bar (int x, omp_allocator_handle_t h)
   #pragma omp teams
   #pragma omp parallel private (y) firstprivate (x) allocate (h: x, y)
   {
-    int *volatile p1 = &x;
-    int *volatile p2 = &y;
     if (x != 42)
       abort ();
     #pragma omp barrier
-    *p2 = 1;
-    p1[0]++;
+    y = 1;
+    x++;
     #pragma omp barrier
     if (x != 43 || y != 1)
       abort ();
@@ -204,6 +261,7 @@ bar (int x, omp_allocator_handle_t h)
       n += y + 15;
       r += i;
     }
+  x = xo;
   #pragma omp parallel
   {
     #pragma omp for lastprivate (l2) private (i1) allocate (h: l2, l3, i1) lastprivate (conditional: l3)
@@ -240,6 +298,44 @@ bar (int x, omp_allocator_handle_t h)
     #pragma omp for lastprivate (i5) allocate (i5)
     for (i5 = 1; i5 < 17; i5 += 3)
       ;
+    #pragma omp task private(y) firstprivate(x) allocate(x, y)
+    {
+      if (x != 42)
+	abort ();
+      x++;
+      y = 21;
+      if (x != 43 || y != 21)
+	abort ();
+    }
+    #pragma omp task private(y) firstprivate(x) allocate(h: x, y)
+    {
+      if (x != 42)
+	abort ();
+      x++;
+      y = 21;
+      if (x != 43 || y != 21)
+	abort ();
+    }
+    #pragma omp task private(y) firstprivate(s) allocate(s, y)
+    {
+      if (s.a != 27 || s.b != 29)
+	abort ();
+      s.a++;
+      s.b++;
+      y = 21;
+      if (s.a != 28 || s.b != 30 || y != 21)
+	abort ();
+    }
+    #pragma omp task private(y) firstprivate(s) allocate(h: s, y)
+    {
+      if (s.a != 27 || s.b != 29)
+	abort ();
+      s.a++;
+      s.b++;
+      y = 21;
+      if (s.a != 28 || s.b != 30 || y != 21)
+	abort ();
+    }
   }
   if (r != 64 * 63 / 2 || l != 63 || n != 8 + 16 * 64)
     abort ();
