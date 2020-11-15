@@ -1369,7 +1369,7 @@ vax_output_int_add (rtx_insn *insn, rtx *operands, machine_mode mode)
 	if (TARGET_QMATH)
 	  {
 	    gcc_assert (rtx_equal_p (operands[0], operands[1]));
-#ifdef NO_EXTERNAL_INDIRECT_ADDRESSS
+#ifdef NO_EXTERNAL_INDIRECT_ADDRESS
 	    gcc_assert (!flag_pic || !external_memory_operand (low[2], SImode));
 	    gcc_assert (!flag_pic || !external_memory_operand (low[0], SImode));
 #endif
