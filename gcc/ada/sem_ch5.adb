@@ -1466,8 +1466,7 @@ package body Sem_Ch5 is
          if Is_Entity_Name (Exp) then
             Ent := Entity (Exp);
 
-            if Ekind (Ent) in E_Variable | E_In_Out_Parameter | E_Out_Parameter
-            then
+            if Is_Assignable (Ent) then
                if List_Length (Choices) = 1
                  and then Nkind (First (Choices)) in N_Subexpr
                  and then Compile_Time_Known_Value (First (Choices))
