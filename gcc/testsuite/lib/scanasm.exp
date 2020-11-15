@@ -303,7 +303,7 @@ proc dg-scan-symbol-section { name testcase output_file symbol_pattern expected_
 proc parse_section_of_symbols { filename result } {
     upvar $result up_result
 
-    set section_pattern {^\s*(?:\.section\s+(.*)|(\.const|\.data|\.text)\s*)$}
+    set section_pattern {^\s*(?:(\.section|\.csect)\s+(.*)|(\.const|\.data|\.text)\s*)$}
     set label_pattern {^(\S+):$}
 
     set fd [open $filename r]
