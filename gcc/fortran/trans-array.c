@@ -6099,7 +6099,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			      expr3_elem_size, nelems, expr3, e3_arr_desc,
 			      e3_has_nodescriptor, expr, &element_size);
 
-  if (dimension || (flag_coarray == GFC_FCOARRAY_SHARED && coarray))
+  if (dimension && !(flag_coarray == GFC_FCOARRAY_SHARED && coarray))
     {
       var_overflow = gfc_create_var (integer_type_node, "overflow");
       gfc_add_modify (&se->pre, var_overflow, overflow);
@@ -6176,7 +6176,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   else
     gfc_allocate_using_malloc (&elseblock, pointer, size, status);
 
-  if (dimension)
+  if (dimension && !(flag_coarray == GFC_FCOARRAY_SHARED && coarray))
     {
       cond = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR,
 			   logical_type_node, var_overflow, integer_zero_node),

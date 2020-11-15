@@ -51,7 +51,6 @@ get_collsub_buf (collsub_iface *ci, size_t size)
   return ret;
 }
 
-
 /* This function syncs all images with one another.  It will only return once
    all images have called it.  */
 
@@ -61,19 +60,19 @@ collsub_sync (collsub_iface *ci)
   counter_barrier_wait (&ci->s->barrier);
 }
 
-
 /* assign_function is needed since we only know how to assign the type inside
    the compiler.  It should be implemented as follows:
-   
-     void assign_function (void *a, void *b) 
+
+     void assign_function (void *a, void *b)
      {
        *((t *) a) = reduction_operation ((t *) a, (t *) b);
      }
-   
+
    */
 
 void
-collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image,
+collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc,
+		      int *result_image,
 		      void (*assign_function) (void *, void *))
 {
   void *buffer;
@@ -85,7 +84,7 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image
   index_type this_image_size_bytes;
   char *this_image_buf;
 
-  error_on_missing_images();
+  error_on_missing_images ();
 
   packed = pack_array_prepare (&pi, desc);
   if (pi.num_elem == 0)
@@ -94,7 +93,8 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image
   elem_size = GFC_DESCRIPTOR_SIZE (desc);
   this_image_size_bytes = elem_size * pi.num_elem;
 
-  buffer = get_collsub_buf (ci, this_image_size_bytes * local->total_num_images);
+  buffer
+      = get_collsub_buf (ci, this_image_size_bytes * local->total_num_images);
   this_image_buf = buffer + this_image_size_bytes * this_image.image_num;
 
   if (packed)
@@ -103,31 +103,33 @@ collsub_reduce_array (collsub_iface *ci, gfc_array_char *desc, int *result_image
     pack_array_finish (&pi, desc, this_image_buf);
 
   collsub_sync (ci);
-  
 
-  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->total_num_images >> cbit) != 0; cbit++) 
+  for (; ((this_image.image_num >> cbit) & 1) == 0
+	 && (local->total_num_images >> cbit) != 0;
+       cbit++)
     {
       imoffset = 1 << cbit;
       if (this_image.image_num + imoffset < local->total_num_images)
 	/* Reduce arrays elementwise.  */
-	for (ssize_t i = 0; i < pi.num_elem; i++) 
+	for (ssize_t i = 0; i < pi.num_elem; i++)
 	  assign_function (this_image_buf + elem_size * i,
-			   this_image_buf + this_image_size_bytes * imoffset + elem_size * i);
- 
+			   this_image_buf + this_image_size_bytes * imoffset
+			       + elem_size * i);
+
       collsub_sync (ci);
     }
-  for ( ; (local->total_num_images >> cbit) != 0; cbit++)
+  for (; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
-  
+
   if (!result_image || *result_image == this_image.image_num)
-    { 
+    {
       if (packed)
-        memcpy (GFC_DESCRIPTOR_DATA (desc), buffer, this_image_size_bytes);
+	memcpy (GFC_DESCRIPTOR_DATA (desc), buffer, this_image_size_bytes);
       else
-    	unpack_array_finish(&pi, desc, buffer);
+	unpack_array_finish (&pi, desc, buffer);
     }
 
-  finish_collective_subroutine (ci); 
+  finish_collective_subroutine (ci);
 }
 
 void
@@ -140,32 +142,36 @@ collsub_reduce_scalar (collsub_iface *ci, void *obj, index_type elem_size,
   int imoffset;
   char *this_image_buf;
 
-  error_on_missing_images();
+  error_on_missing_images ();
 
-  buffer = get_collsub_buf (ci, elem_size * master_get_num_active_images(this_image.m));
+  buffer = get_collsub_buf (
+      ci, elem_size * master_get_num_active_images (this_image.m));
   this_image_buf = buffer + elem_size * this_image.image_num;
 
   memcpy (this_image_buf, obj, elem_size);
-  
 
   collsub_sync (ci);
-  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->total_num_images >> cbit) != 0; cbit++) 
+  for (; ((this_image.image_num >> cbit) & 1) == 0
+	 && (local->total_num_images >> cbit) != 0;
+       cbit++)
     {
       imoffset = 1 << cbit;
-       
-      if (this_image.image_num + imoffset < local->total_num_images) {
-	/* Reduce arrays elementwise.  */
-	  assign_function (this_image_buf, this_image_buf + elem_size*imoffset);
-      }
+
+      if (this_image.image_num + imoffset < local->total_num_images)
+	{
+	  /* Reduce arrays elementwise.  */
+	  assign_function (this_image_buf,
+			   this_image_buf + elem_size * imoffset);
+	}
       collsub_sync (ci);
     }
-  for ( ; (master_get_num_active_images(this_image.m) >> cbit) != 0; cbit++)
+  for (; (master_get_num_active_images (this_image.m) >> cbit) != 0; cbit++)
     collsub_sync (ci);
-  
-  if (!result_image || *result_image == this_image.image_num)
-    memcpy(obj, buffer, elem_size);
 
-  finish_collective_subroutine (ci); 
+  if (!result_image || *result_image == this_image.image_num)
+    memcpy (obj, buffer, elem_size);
+
+  finish_collective_subroutine (ci);
 }
 
 /* Do not use sync_all(), because the program should deadlock in the case that
@@ -175,13 +181,13 @@ collsub_reduce_scalar (collsub_iface *ci, void *obj, index_type elem_size,
 void
 collsub_iface_init (collsub_iface *ci, alloc_iface *ai, shared_memory *sm)
 {
-  ci->s = SHARED_MEMORY_RAW_ALLOC_PTR(sm, collsub_iface_shared);
+  ci->s = SHARED_MEMORY_RAW_ALLOC_PTR (sm, collsub_iface_shared);
 
-  ci->s->collsub_buf = shared_malloc(get_allocator(ai),
-				     sizeof(double)*local->total_num_images);
-  ci->s->curr_size = sizeof(double)*local->total_num_images;
+  ci->s->collsub_buf = shared_malloc (
+      get_allocator (ai), sizeof (double) * local->total_num_images);
+  ci->s->curr_size = sizeof (double) * local->total_num_images;
   ci->sm = sm;
-  ci->a = get_allocator(ai);
+  ci->a = get_allocator (ai);
 
   master_bind_active_image_barrier (this_image.m, &ci->s->barrier);
   initialize_shared_mutex (&ci->s->mutex);
@@ -189,7 +195,7 @@ collsub_iface_init (collsub_iface *ci, alloc_iface *ai, shared_memory *sm)
 
 void
 collsub_broadcast_scalar (collsub_iface *ci, void *obj, index_type elem_size,
-		       	  int source_image /* Adjusted in the wrapper.  */)
+			  int source_image /* Adjusted in the wrapper.  */)
 {
   void *buffer;
 
@@ -205,12 +211,12 @@ collsub_broadcast_scalar (collsub_iface *ci, void *obj, index_type elem_size,
       collsub_sync (ci);
       memcpy (obj, buffer, elem_size);
     }
-  
-  finish_collective_subroutine (ci); 
+
+  finish_collective_subroutine (ci);
 }
 
 void
-collsub_broadcast_array (collsub_iface *ci, gfc_array_char *desc, 
+collsub_broadcast_array (collsub_iface *ci, gfc_array_char *desc,
 			 int source_image)
 {
   void *buffer;
@@ -231,19 +237,19 @@ collsub_broadcast_array (collsub_iface *ci, gfc_array_char *desc,
   if (source_image == this_image.image_num)
     {
       if (packed)
-        memcpy (buffer, GFC_DESCRIPTOR_DATA (desc), size_bytes);
+	memcpy (buffer, GFC_DESCRIPTOR_DATA (desc), size_bytes);
       else
-        pack_array_finish (&pi, desc, buffer);
+	pack_array_finish (&pi, desc, buffer);
       collsub_sync (ci);
     }
-  else 
+  else
     {
       collsub_sync (ci);
       if (packed)
 	memcpy (GFC_DESCRIPTOR_DATA (desc), buffer, size_bytes);
       else
-	unpack_array_finish(&pi, desc, buffer);
+	unpack_array_finish (&pi, desc, buffer);
     }
 
-  finish_collective_subroutine (ci); 
+  finish_collective_subroutine (ci);
 }

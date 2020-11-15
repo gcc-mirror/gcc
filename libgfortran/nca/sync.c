@@ -22,7 +22,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-
 #include "libgfortran.h"
 #include "libcoarraynative.h"
 
@@ -31,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static void
 sync_all_init (counter_barrier *b)
 {
-  master_bind_active_image_barrier(this_image.m, b);
+  master_bind_active_image_barrier (this_image.m, b);
 }
 
 static inline void
@@ -49,35 +48,35 @@ unlock_table (sync_iface *si)
 static inline void
 wait_table_cond (sync_iface *si, pthread_cond_t *cond)
 {
-  pthread_cond_wait (cond,&si->cis->table_lock);
+  pthread_cond_wait (cond, &si->cis->table_lock);
 }
 
 static int *
-get_locked_table(sync_iface *si) {  
-  lock_table(si);
+get_locked_table (sync_iface *si)
+{
+  lock_table (si);
   return si->table;
 }
 
 void
 sync_iface_init (sync_iface *si, alloc_iface *ai, shared_memory *sm)
 {
-  si->cis = SHMPTR_AS (sync_iface_shared *,
-		       shared_malloc (get_allocator(ai),
-				      sizeof(collsub_iface_shared)),
-		       sm);
+  si->cis = SHMPTR_AS (
+      sync_iface_shared *,
+      shared_malloc (get_allocator (ai), sizeof (collsub_iface_shared)), sm);
 
   sync_all_init (&si->cis->sync_all);
   initialize_shared_mutex (&si->cis->table_lock);
   si->sm = sm;
-  si->a = get_allocator(ai);
+  si->a = get_allocator (ai);
 
-  si->cis->table = 
-  	shared_malloc(si->a, sizeof(int)*local->total_num_images * local->total_num_images);
-  si->cis->triggers = 
-	shared_malloc(si->a, sizeof(pthread_cond_t)*local->total_num_images);
+  si->cis->table = shared_malloc (si->a, sizeof (int) * local->total_num_images
+					     * local->total_num_images);
+  si->cis->triggers = shared_malloc (si->a, sizeof (pthread_cond_t)
+						* local->total_num_images);
 
-  si->table = SHMPTR_AS(int *, si->cis->table, si->sm);
-  si->triggers = SHMPTR_AS(pthread_cond_t *, si->cis->triggers, si->sm);
+  si->table = SHMPTR_AS (int *, si->cis->table, si->sm);
+  si->triggers = SHMPTR_AS (pthread_cond_t *, si->cis->triggers, si->sm);
 
   for (int i = 0; i < local->total_num_images; i++)
     initialize_shared_condition (&si->triggers[i]);
@@ -88,25 +87,29 @@ void
 sync_table (sync_iface *si, int *images, size_t size)
 {
 #if defined(DEBUG_NATIVE_COARRAY) && DEBUG_NATIVE_COARRAY
-  dprintf (2, "Image %d waiting for these %ld images: ", this_image.image_num + 1, size);
-  for (int d_i = 0; (size_t) d_i < size; d_i++)
+  dprintf (2,
+	   "Image %d waiting for these %ld images: ", this_image.image_num + 1,
+	   size);
+  for (int d_i = 0; (size_t)d_i < size; d_i++)
     dprintf (2, "%d ", images[d_i]);
   dprintf (2, "\n");
 #endif
   size_t i;
   int done;
-  int *table = get_locked_table(si);
+  int *table = get_locked_table (si);
   for (i = 0; i < size; i++)
     {
-      table[images[i] - 1 + local->total_num_images*this_image.image_num]++;
+      table[images[i] - 1 + local->total_num_images * this_image.image_num]++;
       pthread_cond_signal (&si->triggers[images[i] - 1]);
     }
   for (;;)
     {
       done = 1;
       for (i = 0; i < size; i++)
-	done &= si->table[images[i] - 1 + this_image.image_num*local->total_num_images]
-	  == si->table[this_image.image_num + (images[i] - 1)*local->total_num_images];
+	done &= si->table[images[i] - 1
+			  + this_image.image_num * local->total_num_images]
+		== si->table[this_image.image_num
+			     + (images[i] - 1) * local->total_num_images];
       if (done)
 	break;
       wait_table_cond (si, &si->triggers[this_image.image_num]);
@@ -117,5 +120,5 @@ sync_table (sync_iface *si, int *images, size_t size)
 void
 sync_all (sync_iface *si)
 {
-  counter_barrier_wait(&si->cis->sync_all);
+  counter_barrier_wait (&si->cis->sync_all);
 }

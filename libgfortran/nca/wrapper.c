@@ -31,13 +31,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static inline int
 div_ru (int divident, int divisor)
 {
-  return (divident + divisor - 1)/divisor;
+  return (divident + divisor - 1) / divisor;
 }
 
 /* Need to keep this in sync with
    trans-array.h:gfc_coarray_allocation_type.  */
 
-enum gfc_coarray_allocation_type {
+enum gfc_coarray_allocation_type
+{
   GFC_NCA_NORMAL_COARRAY = 1,
   GFC_NCA_LOCK_COARRAY,
   GFC_NCA_EVENT_COARRAY,
@@ -46,8 +47,7 @@ enum gfc_coarray_allocation_type {
 void cas_coarray_alloc (gfc_array_void *, int, int, int);
 export_proto (cas_coarray_alloc);
 
-void
-cas_coarray_free (gfc_array_void *, int);
+void cas_coarray_free (gfc_array_void *, int);
 export_proto (cas_coarray_free);
 
 int cas_coarray_this_image (int);
@@ -59,7 +59,7 @@ export_proto (cas_coarray_num_images);
 void cas_coarray_sync_all (int *);
 export_proto (cas_coarray_sync_all);
 
-void cas_sync_images (size_t, int *, int*, char *, size_t);
+void cas_sync_images (size_t, int *, int *, char *, size_t);
 export_proto (cas_sync_images);
 
 void cas_lock (void *);
@@ -69,20 +69,20 @@ void cas_unlock (void *);
 export_proto (cas_unlock);
 
 void cas_collsub_reduce_array (gfc_array_char *, void (*) (void *, void *),
-			       int *, int*, char *, size_t);
+			       int *, int *, char *, size_t);
 export_proto (cas_collsub_reduce_array);
 
 void cas_collsub_reduce_scalar (void *, index_type, void (*) (void *, void *),
-				int *, int*, char *, size_t);
+				int *, int *, char *, size_t);
 export_proto (cas_collsub_reduce_scalar);
 
-void cas_collsub_broadcast_array (gfc_array_char * restrict, int, int *, char *, 
-			     	  size_t);
+void cas_collsub_broadcast_array (gfc_array_char *restrict, int, int *, char *,
+				  size_t);
 export_proto (cas_collsub_broadcast_array);
 
-void cas_collsub_broadcast_scalar (void * restrict, size_t, int, int *, char *, 
-			      	   size_t);
-export_proto(cas_collsub_broadcast_scalar);
+void cas_collsub_broadcast_scalar (void *restrict, size_t, int, int *, char *,
+				   size_t);
+export_proto (cas_collsub_broadcast_scalar);
 
 void
 cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
@@ -95,32 +95,31 @@ cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
   size_t last_lbound;
   size_t size_in_bytes;
 
-  ensure_initialization(); /* This function might be the first one to be 
-  			      called, if it is called in a constructor.  */
+  ensure_initialization (); /* This function might be the first one to be
+			       called, if it is called in a constructor.  */
 
   if (alloc_type == GFC_NCA_LOCK_COARRAY)
     elem_size = sizeof (pthread_mutex_t);
   else if (alloc_type == GFC_NCA_EVENT_COARRAY)
-    elem_size = sizeof(char); /* replace with proper type. */
+    elem_size = sizeof (char); /* replace with proper type. */
 
-  last_rank_index = GFC_DESCRIPTOR_RANK(desc) + corank -1;
+  last_rank_index = GFC_DESCRIPTOR_RANK (desc) + corank - 1;
 
   num_elems = 1;
   num_coarray_elems = 1;
-  for (i = 0; i < GFC_DESCRIPTOR_RANK(desc); i++)
-    num_elems *= GFC_DESCRIPTOR_EXTENT(desc, i);
-  for (i = GFC_DESCRIPTOR_RANK(desc); i < last_rank_index; i++)
+  for (i = 0; i < GFC_DESCRIPTOR_RANK (desc); i++)
+    num_elems *= GFC_DESCRIPTOR_EXTENT (desc, i);
+  for (i = GFC_DESCRIPTOR_RANK (desc); i < last_rank_index; i++)
     {
-      num_elems *= GFC_DESCRIPTOR_EXTENT(desc, i);
-      num_coarray_elems *= GFC_DESCRIPTOR_EXTENT(desc, i);
+      num_elems *= GFC_DESCRIPTOR_EXTENT (desc, i);
+      num_coarray_elems *= GFC_DESCRIPTOR_EXTENT (desc, i);
     }
 
   extent_last_codimen = div_ru (local->total_num_images, num_coarray_elems);
 
-  last_lbound = GFC_DIMENSION_LBOUND(desc->dim[last_rank_index]);
-  GFC_DIMENSION_SET(desc->dim[last_rank_index], last_lbound,
-		    last_lbound + extent_last_codimen - 1,
-		    num_elems);
+  last_lbound = GFC_DIMENSION_LBOUND (desc->dim[last_rank_index]);
+  GFC_DIMENSION_SET (desc->dim[last_rank_index], last_lbound,
+		     last_lbound + extent_last_codimen - 1, num_elems);
 
   size_in_bytes = elem_size * num_elems * extent_last_codimen;
   if (alloc_type == GFC_NCA_LOCK_COARRAY)
@@ -129,18 +128,17 @@ cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
       int expected = 0;
       /* Allocate enough space for the metadata infront of the lock
 	 array.  */
-      addr = get_memory_by_id_zero (&local->ai, size_in_bytes
-				    + sizeof (lock_array),
-				    (intptr_t) desc);
+      addr = get_memory_by_id_zero (
+	  &local->ai, size_in_bytes + sizeof (lock_array), (intptr_t)desc);
 
       /* Use of a traditional spin lock to avoid race conditions with
 	  the initization of the mutex.  We could alternatively put a
 	  global lock around allocate, but that would probably be
 	  slower.  */
       while (!__atomic_compare_exchange_n (&addr->owner, &expected,
-					   this_image.image_num + 1,
-					   false, __ATOMIC_SEQ_CST,
-					   __ATOMIC_SEQ_CST));
+					   this_image.image_num + 1, false,
+					   __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST))
+	;
       if (!addr->initialized++)
 	{
 	  for (i = 0; i < local->total_num_images; i++)
@@ -150,10 +148,10 @@ cas_coarray_alloc (gfc_array_void *desc, int elem_size, int corank,
       desc->base_addr = &addr->arr;
     }
   else if (alloc_type == GFC_NCA_EVENT_COARRAY)
-    (void) 0; // TODO
+    (void)0; // TODO
   else
-    desc->base_addr = get_memory_by_id (&local->ai, size_in_bytes,
-					(intptr_t) desc);
+    desc->base_addr
+	= get_memory_by_id (&local->ai, size_in_bytes, (intptr_t)desc);
 }
 
 void
@@ -167,33 +165,33 @@ cas_coarray_free (gfc_array_void *desc, int alloc_type)
       la = desc->base_addr - offsetof (lock_array, arr);
       /* TODO: Fix this, replace with some kind of atomic initilization.  */
       while (!__atomic_compare_exchange_n (&la->owner, &expected,
-					   this_image.image_num+1,
-					   false, __ATOMIC_SEQ_CST,
-					   __ATOMIC_SEQ_CST));
+					   this_image.image_num + 1, false,
+					   __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST))
+	;
       if (!--la->initialized)
-	 {
+	{
 	  /* Coarray locks can be removed and just normal
 	     pthread_mutex can be used.	 */
-	   for (i = 0; i < local->total_num_images; i++)
-	     pthread_mutex_destroy (&la->arr[i]);
-	 }
+	  for (i = 0; i < local->total_num_images; i++)
+	    pthread_mutex_destroy (&la->arr[i]);
+	}
       __atomic_store_n (&la->owner, 0, __ATOMIC_SEQ_CST);
     }
   else if (alloc_type == GFC_NCA_EVENT_COARRAY)
-    (void) 0; //TODO
+    (void)0; // TODO
 
-  free_memory_with_id (&local->ai, (intptr_t) desc);
+  free_memory_with_id (&local->ai, (intptr_t)desc);
   desc->base_addr = NULL;
 }
 
 int
-cas_coarray_this_image (int distance __attribute__((unused)))
+cas_coarray_this_image (int distance __attribute__ ((unused)))
 {
   return this_image.image_num + 1;
 }
 
 int
-cas_coarray_num_images (int distance __attribute__((unused)))
+cas_coarray_num_images (int distance __attribute__ ((unused)))
 {
   return local->total_num_images;
 }
@@ -201,14 +199,15 @@ cas_coarray_num_images (int distance __attribute__((unused)))
 void
 cas_coarray_sync_all (int *stat)
 {
-  STAT_ERRMSG_ENTRY_CHECK(stat, NULL, 0);
+  STAT_ERRMSG_ENTRY_CHECK (stat, NULL, 0);
   sync_all (&local->si);
 }
 
 void
-cas_sync_images (size_t s, int *images, int *stat, char *error, size_t err_size)
+cas_sync_images (size_t s, int *images, int *stat, char *error,
+		 size_t err_size)
 {
-  STAT_ERRMSG_ENTRY_CHECK(stat, error, err_size); 
+  STAT_ERRMSG_ENTRY_CHECK (stat, error, err_size);
   sync_table (&local->si, images, s);
 }
 
@@ -225,35 +224,39 @@ cas_unlock (void *lock)
 }
 
 void
-cas_collsub_reduce_array (gfc_array_char *desc, void (*assign_function) (void *, void *),
-			  int *result_image, int *stat, char *errmsg, size_t errmsg_len)
+cas_collsub_reduce_array (gfc_array_char *desc,
+			  void (*assign_function) (void *, void *),
+			  int *result_image, int *stat, char *errmsg,
+			  size_t errmsg_len)
 {
-  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
+  STAT_ERRMSG_ENTRY_CHECK (stat, errmsg, errmsg_len);
   collsub_reduce_array (&local->ci, desc, result_image, assign_function);
 }
 
 void
 cas_collsub_reduce_scalar (void *obj, index_type elem_size,
 			   void (*assign_function) (void *, void *),
-			   int *result_image,
-			   int *stat, char *errmsg, size_t errmsg_len)
+			   int *result_image, int *stat, char *errmsg,
+			   size_t errmsg_len)
 {
-  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
-  collsub_reduce_scalar (&local->ci, obj, elem_size, result_image, assign_function);
+  STAT_ERRMSG_ENTRY_CHECK (stat, errmsg, errmsg_len);
+  collsub_reduce_scalar (&local->ci, obj, elem_size, result_image,
+			 assign_function);
 }
 
 void
-cas_collsub_broadcast_array (gfc_array_char * restrict a, int source_image,
-		  	     int *stat, char *errmsg, size_t errmsg_len)
+cas_collsub_broadcast_array (gfc_array_char *restrict a, int source_image,
+			     int *stat, char *errmsg, size_t errmsg_len)
 {
-  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
+  STAT_ERRMSG_ENTRY_CHECK (stat, errmsg, errmsg_len);
   collsub_broadcast_array (&local->ci, a, source_image - 1);
 }
 
 void
-cas_collsub_broadcast_scalar (void * restrict obj, size_t size, int source_image,
-		    	      int *stat, char *errmsg, size_t errmsg_len)
+cas_collsub_broadcast_scalar (void *restrict obj, size_t size,
+			      int source_image, int *stat, char *errmsg,
+			      size_t errmsg_len)
 {
-  STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len); 
+  STAT_ERRMSG_ENTRY_CHECK (stat, errmsg, errmsg_len);
   collsub_broadcast_scalar (&local->ci, obj, size, source_image - 1);
 }

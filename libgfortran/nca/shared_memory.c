@@ -64,7 +64,8 @@ typedef struct shared_memory_act
 
   size_t num_local_allocs;
 
-  struct local_alloc {
+  struct local_alloc
+  {
     void *base;
     size_t size;
   } allocs[];
@@ -76,11 +77,12 @@ typedef struct shared_memory_act
 static inline void *
 map_memory (int fd, size_t size, off_t offset)
 {
-  void *ret = mmap (NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, offset);
+  void *ret
+      = mmap (NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, offset);
   if (ret == MAP_FAILED)
     {
-      perror("mmap failed");
-      exit(1);
+      perror ("mmap failed");
+      exit (1);
     }
   return ret;
 }
@@ -90,7 +92,7 @@ map_memory (int fd, size_t size, off_t offset)
 static inline size_t
 get_shared_memory_act_size (int nallocs)
 {
-  return sizeof(shared_memory_act) + nallocs*sizeof(struct local_alloc);
+  return sizeof (shared_memory_act) + nallocs * sizeof (struct local_alloc);
 }
 
 /* When the shared memory block is enlarged, we need to map it into
@@ -103,10 +105,9 @@ new_base_mapping (shared_memory_act *mem)
   /* We need another entry in the alloc table.  */
   mem->num_local_allocs++;
   newmem = realloc (mem, get_shared_memory_act_size (mem->num_local_allocs));
-  newmem->allocs[newmem->num_local_allocs - 1]
-    = ((struct local_alloc)
-      {.base = map_memory (newmem->meta->fd, newmem->meta->size, 0),
-          .size = newmem->meta->size});
+  newmem->allocs[newmem->num_local_allocs - 1] = ((struct local_alloc){
+      .base = map_memory (newmem->meta->fd, newmem->meta->size, 0),
+      .size = newmem->meta->size });
   newmem->last_seen_size = newmem->meta->size;
   return newmem;
 }
@@ -124,7 +125,7 @@ last_base (shared_memory_act *mem)
 
 shared_mem_ptr
 shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,
-                                     size_t align)
+				      size_t align)
 {
   shared_memory_act *mem = *pmem;
   size_t new_size;
@@ -135,21 +136,22 @@ shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,
 
   if (used_wa + size <= mem->meta->size)
     {
-      memset(last_base(mem) + mem->meta->used, 0xCA, used_wa - mem->meta->used);
-      memset(last_base(mem) + used_wa, 0x42, size);
+      memset (last_base (mem) + mem->meta->used, 0xCA,
+	      used_wa - mem->meta->used);
+      memset (last_base (mem) + used_wa, 0x42, size);
       mem->meta->used = used_wa + size;
 
-      return (shared_mem_ptr) {.offset = used_wa};
+      return (shared_mem_ptr){ .offset = used_wa };
     }
 
   /* We need to enlarge the memory segment.  Double the size if that
      is big enough, otherwise get what's needed.  */
-  
+
   if (mem->meta->size * 2 > used_wa + size)
     new_size = mem->meta->size * 2;
   else
     new_size = round_to_pagesize (used_wa + size);
-  
+
   orig_used = mem->meta->used;
   mem->meta->size = new_size;
   mem->meta->used = used_wa + size;
@@ -160,23 +162,23 @@ shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,
   mem = new_base_mapping (mem);
 
   *pmem = mem;
-  assert(used_wa != 0);
+  assert (used_wa != 0);
 
-  memset(last_base(mem) + orig_used, 0xCA, used_wa - orig_used);
-  memset(last_base(mem) + used_wa, 0x42, size);
+  memset (last_base (mem) + orig_used, 0xCA, used_wa - orig_used);
+  memset (last_base (mem) + used_wa, 0x42, size);
 
-  return (shared_mem_ptr) {.offset = used_wa};
+  return (shared_mem_ptr){ .offset = used_wa };
 }
 
 /* If another image changed the size, update the size accordingly.  */
 
-void 
+void
 shared_memory_prepare (shared_memory_act **pmem)
 {
   shared_memory_act *mem = *pmem;
   if (mem->meta->size == mem->last_seen_size)
     return;
-  mem = new_base_mapping(mem);
+  mem = new_base_mapping (mem);
   *pmem = mem;
 }
 
@@ -190,19 +192,20 @@ shared_memory_init (shared_memory_act **pmem)
   int fd;
   size_t initial_size = round_to_pagesize (sizeof (global_shared_memory_meta));
 
-  mem = malloc (get_shared_memory_act_size(1));
-  fd = get_shmem_fd();
+  mem = malloc (get_shared_memory_act_size (1));
+  fd = get_shmem_fd ();
 
-  ftruncate(fd, initial_size);
+  ftruncate (fd, initial_size);
   mem->meta = map_memory (fd, initial_size, 0);
-  *mem->meta = ((global_shared_memory_meta) {.size = initial_size, 
-                                  .used = sizeof(global_shared_memory_meta), 
-                                .fd = fd});
+  *mem->meta = ((global_shared_memory_meta){
+      .size = initial_size,
+      .used = sizeof (global_shared_memory_meta),
+      .fd = fd });
   mem->last_seen_size = initial_size;
   mem->num_local_allocs = 1;
-  mem->allocs[0] = ((struct local_alloc) {.base = mem->meta, 
-                                          .size = initial_size});
-  
+  mem->allocs[0]
+      = ((struct local_alloc){ .base = mem->meta, .size = initial_size });
+
   *pmem = mem;
 }
 
@@ -210,8 +213,7 @@ shared_memory_init (shared_memory_act **pmem)
    memory block) to a pointer.  */
 
 void *
-shared_mem_ptr_to_void_ptr(shared_memory_act **pmem, shared_mem_ptr smp)
+shared_mem_ptr_to_void_ptr (shared_memory_act **pmem, shared_mem_ptr smp)
 {
-  return last_base(*pmem) + smp.offset;
+  return last_base (*pmem) + smp.offset;
 }
-

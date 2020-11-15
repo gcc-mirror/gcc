@@ -12,26 +12,29 @@
 #include <assert.h>
 
 /* Shared Memory objects live in their own namspace (usually found under
- * /dev/shm/), so the "/" is needed.  It is for some reason impossible to create
- * a shared memory object without name.  */
+ * /dev/shm/), so the "/" is needed.  It is for some reason impossible to
+ * create a shared memory object without name.  */
 #define MEMOBJ_NAME "/gfortran_coarray_memfd"
 
 size_t
-alignto(size_t size, size_t align) {
-  return align*((size + align - 1)/align);
+alignto (size_t size, size_t align)
+{
+  return align * ((size + align - 1) / align);
 }
 
 size_t pagesize;
 
 size_t
-round_to_pagesize(size_t s) {
-  return alignto(s, pagesize);
+round_to_pagesize (size_t s)
+{
+  return alignto (s, pagesize);
 }
 
 size_t
-next_power_of_two(size_t size) {
-  assert(size);
-  return 1 << (PTR_BITS - __builtin_clzl(size-1));
+next_power_of_two (size_t size)
+{
+  assert (size);
+  return 1 << (PTR_BITS - __builtin_clzl (size - 1));
 }
 
 void
@@ -57,13 +60,13 @@ initialize_shared_condition (pthread_cond_t *cond)
 int
 get_shmem_fd (void)
 {
-  char buffer[1<<10];
+  char buffer[1 << 10];
   int fd, id;
   id = random ();
   do
     {
-      snprintf (buffer, sizeof (buffer),
-                MEMOBJ_NAME "_%u_%d", (unsigned int) getpid (), id++);
+      snprintf (buffer, sizeof (buffer), MEMOBJ_NAME "_%u_%d",
+		(unsigned int)getpid (), id++);
       fd = shm_open (buffer, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
     }
   while (fd == -1);
@@ -72,7 +75,8 @@ get_shmem_fd (void)
 }
 
 bool
-pack_array_prepare (pack_info * restrict pi, const gfc_array_char * restrict source)
+pack_array_prepare (pack_info *restrict pi,
+		    const gfc_array_char *restrict source)
 {
   index_type dim;
   bool packed;
@@ -89,18 +93,18 @@ pack_array_prepare (pack_info * restrict pi, const gfc_array_char * restrict sou
   span = source->span != 0 ? source->span : type_size;
   for (index_type n = 0; n < dim; n++)
     {
-      pi->stride[n] = GFC_DESCRIPTOR_STRIDE (source,n) * span;
-      pi->extent[n] = GFC_DESCRIPTOR_EXTENT (source,n);
+      pi->stride[n] = GFC_DESCRIPTOR_STRIDE (source, n) * span;
+      pi->extent[n] = GFC_DESCRIPTOR_EXTENT (source, n);
       if (pi->extent[n] <= 0)
-        {
-          /* Do nothing.  */
-          packed = 1;
+	{
+	  /* Do nothing.  */
+	  packed = 1;
 	  pi->num_elem = 0;
-          break;
-        }
+	  break;
+	}
 
       if (ssize != pi->stride[n])
-        packed = 0;
+	packed = 0;
 
       pi->num_elem *= pi->extent[n];
       ssize *= pi->extent[n];
@@ -110,8 +114,9 @@ pack_array_prepare (pack_info * restrict pi, const gfc_array_char * restrict sou
 }
 
 void
-pack_array_finish (pack_info * const restrict pi, const gfc_array_char * const restrict source,
-		   char * restrict dest)
+pack_array_finish (pack_info *const restrict pi,
+		   const gfc_array_char *const restrict source,
+		   char *restrict dest)
 {
   index_type dim;
   const char *restrict src;
@@ -129,7 +134,7 @@ pack_array_finish (pack_info * const restrict pi, const gfc_array_char * const r
   while (src)
     {
       /* Copy the data.  */
-      memcpy(dest, src, size);
+      memcpy (dest, src, size);
       /* Advance to the next element.  */
       dest += size;
       src += stride0;
@@ -137,35 +142,35 @@ pack_array_finish (pack_info * const restrict pi, const gfc_array_char * const r
       /* Advance to the next source element.  */
       index_type n = 0;
       while (count[n] == pi->extent[n])
-        {
-          /* When we get to the end of a dimension, reset it and increment
-             the next dimension.  */
-          count[n] = 0;
-          /* We could precalculate these products, but this is a less
-             frequently used path so probably not worth it.  */
-          src -= pi->stride[n] * pi->extent[n];
-          n++;
-          if (n == dim)
-            {
-              src = NULL;
-              break;
-            }
-          else
-            {
-              count[n]++;
-              src += pi->stride[n];
-            }
-        }
+	{
+	  /* When we get to the end of a dimension, reset it and increment
+	     the next dimension.  */
+	  count[n] = 0;
+	  /* We could precalculate these products, but this is a less
+	     frequently used path so probably not worth it.  */
+	  src -= pi->stride[n] * pi->extent[n];
+	  n++;
+	  if (n == dim)
+	    {
+	      src = NULL;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      src += pi->stride[n];
+	    }
+	}
     }
 }
 
 void
-unpack_array_finish (pack_info * const restrict pi,
-		     const gfc_array_char * restrict d,
+unpack_array_finish (pack_info *const restrict pi,
+		     const gfc_array_char *restrict d,
 		     const char *restrict src)
 {
   index_type stride0;
-  char * restrict dest;
+  char *restrict dest;
   index_type size;
   index_type count[GFC_MAX_DIMENSIONS];
   index_type dim;
@@ -175,8 +180,7 @@ unpack_array_finish (pack_info * const restrict pi,
   dest = d->base_addr;
   dim = GFC_DESCRIPTOR_RANK (d);
 
-
-  memset(count, '\0', sizeof(count) * dim);
+  memset (count, '\0', sizeof (count) * dim);
   while (dest)
     {
       memcpy (dest, src, size);
@@ -196,7 +200,7 @@ unpack_array_finish (pack_info * const restrict pi,
 	    }
 	  else
 	    {
-	      count[n] ++;
+	      count[n]++;
 	      dest += pi->stride[n];
 	    }
 	}

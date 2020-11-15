@@ -46,7 +46,7 @@ unlock_counter_barrier (counter_barrier *b)
 
 /* Wait on the barrier.  */
 
-void 
+void
 counter_barrier_wait (counter_barrier *b)
 {
   int initial_count;
@@ -55,7 +55,7 @@ counter_barrier_wait (counter_barrier *b)
   assert (b->count);
 
   lock_counter_barrier (b);
-  
+
   wait_group_beginning = b->curr_wait_group;
 
   if (--b->wait_count <= 0)
@@ -63,7 +63,7 @@ counter_barrier_wait (counter_barrier *b)
   else
     {
       while (b->wait_count > 0 && b->curr_wait_group == wait_group_beginning)
-	pthread_cond_wait(&b->cond, &b->count->m);
+	pthread_cond_wait (&b->cond, &b->count->m);
     }
 
   if (b->wait_count <= 0)
@@ -92,12 +92,12 @@ waitable_counter_add (waitable_counter *c, int val)
 {
   counter_barrier *curr;
   int ret;
-  pthread_mutex_lock(&c->m);
+  pthread_mutex_lock (&c->m);
   ret = (c->val += val);
-  for (curr = c->b; curr; curr = curr->next) 
-    change_internal_barrier_count(curr, val);
+  for (curr = c->b; curr; curr = curr->next)
+    change_internal_barrier_count (curr, val);
 
-  pthread_mutex_unlock(&c->m);
+  pthread_mutex_unlock (&c->m);
   return ret;
 }
 
@@ -107,15 +107,15 @@ int
 waitable_counter_get_val (waitable_counter *c)
 {
   int ret;
-  pthread_mutex_lock(&c->m);
+  pthread_mutex_lock (&c->m);
   ret = c->val;
-  pthread_mutex_unlock(&c->m);
+  pthread_mutex_unlock (&c->m);
   return ret;
 }
 
 /* Initialize waitable counter.  */
 
-void 
+void
 waitable_counter_init (waitable_counter *c, int val)
 {
   initialize_shared_mutex (&c->m);
@@ -125,7 +125,7 @@ waitable_counter_init (waitable_counter *c, int val)
 
 /* Bind a barrier to a counter.  */
 
-void 
+void
 bind_counter_barrier (counter_barrier *b, waitable_counter *c)
 {
   initialize_shared_condition (&b->cond);
@@ -137,5 +137,4 @@ bind_counter_barrier (counter_barrier *b, waitable_counter *c)
   b->wait_count = c->val;
   c->b = b;
   pthread_mutex_unlock (&c->m);
-
 }

@@ -50,7 +50,7 @@ get_memory_by_id_internal (alloc_iface *iface, size_t size, memid id,
   void *ret;
 
   pthread_mutex_lock (&iface->as->lock);
-  shared_memory_prepare(iface->mem);
+  shared_memory_prepare (iface->mem);
 
   res = hashmap_get (&iface->hm, id);
 
@@ -59,12 +59,14 @@ get_memory_by_id_internal (alloc_iface *iface, size_t size, memid id,
       size_t found_size;
       found_size = hm_search_result_size (&res);
       if (found_size != size)
-        {
-	  dprintf (2, "Size mismatch for coarray allocation id %p: "
-		   "found = %lu != size = %lu\n", (void *) id, found_size, size);
-          pthread_mutex_unlock (&iface->as->lock);
+	{
+	  dprintf (2,
+		   "Size mismatch for coarray allocation id %p: found = %lu "
+		   "!= size = %lu\n",
+		   (void *)id, found_size, size);
+	  pthread_mutex_unlock (&iface->as->lock);
 	  exit (1);
-        }
+	}
       shared_ptr = hm_search_result_ptr (&res);
       hashmap_inc (&iface->hm, id, &res);
     }
@@ -98,21 +100,21 @@ get_memory_by_id_zero (alloc_iface *iface, size_t size, memid id)
    holds that memory segment, decrease the reference count otherwise.  */
 
 void
-free_memory_with_id (alloc_iface* iface, memid id)
+free_memory_with_id (alloc_iface *iface, memid id)
 {
   hashmap_search_result res;
   int entries_left;
 
   pthread_mutex_lock (&iface->as->lock);
-  shared_memory_prepare(iface->mem);
+  shared_memory_prepare (iface->mem);
 
   res = hashmap_get (&iface->hm, id);
   if (!hm_search_result_contains (&res))
     {
       pthread_mutex_unlock (&iface->as->lock);
       char buffer[100];
-      snprintf (buffer, sizeof(buffer), "Error in free_memory_with_id: "
-		"%p not found", (void *) id);
+      snprintf (buffer, sizeof (buffer),
+		"Error in free_memory_with_id: %p not found", (void *)id);
       /* FIXME: For some reason, internal_error (NULL, buffer) fails to link,
        * so we use dprintf at the moment.  */
       dprintf (2, buffer);
@@ -120,12 +122,12 @@ free_memory_with_id (alloc_iface* iface, memid id)
     }
 
   entries_left = hashmap_dec (&iface->hm, id, &res);
-  assert (entries_left >=0);
+  assert (entries_left >= 0);
 
   if (entries_left == 0)
     {
       shared_free (&iface->alloc, hm_search_result_ptr (&res),
-                   hm_search_result_size (&res));
+		   hm_search_result_size (&res));
     }
 
   pthread_mutex_unlock (&iface->as->lock);
@@ -138,7 +140,7 @@ free_memory_with_id (alloc_iface* iface, memid id)
 void
 alloc_iface_init (alloc_iface *iface, shared_memory *mem)
 {
-  
+
   iface->as = SHARED_MEMORY_RAW_ALLOC_PTR (mem, alloc_iface_shared);
   iface->mem = mem;
   initialize_shared_mutex (&iface->as->lock);
@@ -147,7 +149,7 @@ alloc_iface_init (alloc_iface *iface, shared_memory *mem)
 }
 
 allocator *
-get_allocator (alloc_iface * iface)
+get_allocator (alloc_iface *iface)
 {
   return &iface->alloc;
 }

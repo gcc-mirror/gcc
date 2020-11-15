@@ -29,13 +29,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "shared_memory.h"
 #include "allocator.h"
 
-typedef struct {
+typedef struct
+{
   shared_mem_ptr next;
 } bucket;
 
 /* Initialize the allocator.  */
 
-void 
+void
 allocator_init (allocator *a, allocator_shared *s, shared_memory *sm)
 {
   a->s = s;
@@ -49,7 +50,7 @@ allocator_init (allocator *a, allocator_shared *s, shared_memory *sm)
 
 #define MAX_ALIGN 16
 
-shared_mem_ptr 
+shared_mem_ptr
 shared_malloc (allocator *a, size_t size)
 {
   shared_mem_ptr ret;
@@ -59,22 +60,23 @@ shared_malloc (allocator *a, size_t size)
 
   sz = next_power_of_two (size);
   act_size = sz > sizeof (bucket) ? sz : sizeof (bucket);
-  bucket_list_index = __builtin_clzl(act_size);
+  bucket_list_index = __builtin_clzl (act_size);
 
   if (SHMPTR_IS_NULL (a->s->free_bucket_head[bucket_list_index]))
     return shared_memory_get_mem_with_alignment (a->shm, act_size, MAX_ALIGN);
 
   ret = a->s->free_bucket_head[bucket_list_index];
   a->s->free_bucket_head[bucket_list_index]
-    = (SHMPTR_AS (bucket *, ret, a->shm)->next);
-  assert(ret.offset != 0);
+      = (SHMPTR_AS (bucket *, ret, a->shm)->next);
+  assert (ret.offset != 0);
   return ret;
 }
 
 /* Free memory.  */
 
 void
-shared_free (allocator *a, shared_mem_ptr p, size_t size) {
+shared_free (allocator *a, shared_mem_ptr p, size_t size)
+{
   bucket *b;
   size_t sz;
   int bucket_list_index;
@@ -82,9 +84,9 @@ shared_free (allocator *a, shared_mem_ptr p, size_t size) {
 
   sz = next_power_of_two (size);
   act_size = sz > sizeof (bucket) ? sz : sizeof (bucket);
-  bucket_list_index = __builtin_clzl(act_size);
+  bucket_list_index = __builtin_clzl (act_size);
 
-  b = SHMPTR_AS(bucket *, p, a->shm);
+  b = SHMPTR_AS (bucket *, p, a->shm);
   b->next = a->s->free_bucket_head[bucket_list_index];
   a->s->free_bucket_head[bucket_list_index] = p;
 }
