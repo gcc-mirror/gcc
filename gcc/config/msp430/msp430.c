@@ -58,7 +58,8 @@
 
 
 static void msp430_compute_frame_info (void);
-static bool use_32bit_hwmult (void);
+static bool msp430_use_16bit_hwmult (void);
+static bool msp430_use_32bit_hwmult (void);
 static bool use_helper_for_const_shift (machine_mode mode, HOST_WIDE_INT amt);
 
 
@@ -1318,9 +1319,7 @@ msp430_muldiv_costs (rtx src, rtx dst, bool speed, rtx outer_rtx,
 {
   enum rtx_code outer_code = GET_CODE (outer_rtx);
   const struct msp430_multlib_costs *cost_p;
-  bool hwmult_16bit = (msp430_has_hwmult () && !(msp430_use_f5_series_hwmult ()
-						 || use_32bit_hwmult ()));
-  cost_p = (hwmult_16bit
+  cost_p = (msp430_use_16bit_hwmult ()
 	    ? &cycle_cost_multlib_32bit
 	    : &cycle_cost_multlib_16bit);
 
@@ -1346,8 +1345,9 @@ msp430_muldiv_costs (rtx src, rtx dst, bool speed, rtx outer_rtx,
       if (outer_code != MULT)
 	/* Division is always expensive.  */
 	factor = 7;
-      else if (((hwmult_16bit && outer_mode != DImode)
-		   || use_32bit_hwmult () || msp430_use_f5_series_hwmult ()))
+      else if (((msp430_use_16bit_hwmult () && outer_mode != DImode)
+		|| msp430_use_32bit_hwmult ()
+		|| msp430_use_f5_series_hwmult ()))
 	/* When the hardware multiplier is available, only disparage
 	   slightly.  */
 	factor = 2;
@@ -1364,7 +1364,7 @@ msp430_muldiv_costs (rtx src, rtx dst, bool speed, rtx outer_rtx,
      The 16-bit hardware multiply library cannot be used to produce 64-bit
      results.  */
   if (outer_code != MULT || !msp430_has_hwmult ()
-      || (outer_mode == DImode && hwmult_16bit))
+      || (outer_mode == DImode && msp430_use_16bit_hwmult ()))
     {
       factor = (outer_code == MULT ? 50 : 70);
       return factor * mode_factor * msp430_costs (src, dst, speed, outer_rtx);
@@ -3379,7 +3379,7 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
       if (msp430_use_f5_series_hwmult ())
 	fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
 						     "_f5hw", NULL));
-      else if (use_32bit_hwmult ())
+      else if (msp430_use_32bit_hwmult ())
 	{
 	  /* When the arguments are 16-bits, the 16-bit hardware multiplier is
 	     used.  */
@@ -3390,8 +3390,7 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
 	    fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
 							 "_hw32", NULL));
 	}
-      /* 16-bit hardware multiply.  */
-      else if (msp430_has_hwmult ())
+      else if (msp430_use_16bit_hwmult ())
 	fsym = gen_rtx_SYMBOL_REF (VOIDmode, concat (helper_name,
 						     "_hw", NULL));
       else
@@ -3932,7 +3931,7 @@ msp430_use_f5_series_hwmult (void)
    32-bit hardware multiplier.  */
 
 static bool
-use_32bit_hwmult (void)
+msp430_use_32bit_hwmult (void)
 {
   static const char * cached_match = NULL;
   static bool cached_result;
@@ -3951,6 +3950,34 @@ use_32bit_hwmult (void)
   msp430_extract_mcu_data (target_mcu);
   if (extracted_mcu_data.name != NULL)
     return cached_result = extracted_mcu_data.hwmpy == 4;
+
+  return cached_result = false;
+}
+
+/* Returns true if the current MCU has a first generation
+   16-bit hardware multiplier.  */
+
+static bool
+msp430_use_16bit_hwmult (void)
+{
+  static const char * cached_match = NULL;
+  static bool	      cached_result;
+
+  if (msp430_hwmult_type == MSP430_HWMULT_SMALL)
+    return true;
+
+  if (target_mcu == NULL || msp430_hwmult_type != MSP430_HWMULT_AUTO)
+    return false;
+
+  if (target_mcu == cached_match)
+    return cached_result;
+
+  cached_match = target_mcu;
+
+  msp430_extract_mcu_data (target_mcu);
+  if (extracted_mcu_data.name != NULL)
+    return cached_result = (extracted_mcu_data.hwmpy == 1
+			    || extracted_mcu_data.hwmpy == 2);
 
   return cached_result = false;
 }
@@ -4019,7 +4046,7 @@ msp430_output_labelref (FILE *file, const char *name)
 	{
 	  if (msp430_use_f5_series_hwmult ())
 	    name = "__mulsi2_f5";
-	  else if (use_32bit_hwmult ())
+	  else if (msp430_use_32bit_hwmult ())
 	    name = "__mulsi2_hw32";
 	  else
 	    name = "__mulsi2";
