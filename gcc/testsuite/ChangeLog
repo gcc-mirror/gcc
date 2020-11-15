@@ -1,3 +1,37 @@
+2020-11-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/pr23214.m: Use Object as the root object before
+	Darwin12 (and NSObject after).
+
+2020-11-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/torture/pta-ptrarith-1.c: Escape parameters.
+
+2020-11-14  Matthew Glazar  <strager.nds@gmail.com>
+
+	* lib/scanasm.exp (dg-scan): Extract file globbing code ...
+	(dg_glob_remote): ... into this new procedure.
+	(scan-assembler-symbol-section): Define.
+	(scan-symbol-section): Define.
+	* g++.dg/gomp/tls-5.C: Add symbol section test.
+	* g++.dg/opt/const4.C: Likewise.
+	* gcc.dg/20021029-1.c: Likewise.
+	* gcc.dg/array-quals-1.c: Likewise.
+	* gcc.dg/darwin-sections.c: Likewise.
+	* gcc.dg/pr25376.c: Likewise.
+	* gcc.test-framework/test-framework.exp: Load scanasm and test .S files.
+	* gcc.test-framework/dg-scan-symbol-section-1-exp-F.S: New test.
+	* gcc.test-framework/dg-scan-symbol-section-2-exp-F.S: New test.
+	* gcc.test-framework/dg-scan-symbol-section-3-exp-F.S: New test.
+	* gcc.test-framework/dg-scan-symbol-section-exp-P.S: New test.
+
+2020-11-14  Monk Chiang  <monk.chiang@sifive.com>
+
+	PR target/97682
+	* g++.target/riscv/pr97682.C: New test.
+	* gcc.target/riscv/interrupt-3.c: Check register for t0.
+	* gcc.target/riscv/interrupt-4.c: Likewise.
+
 2020-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/binary-constants-2.c, gcc.dg/binary-constants-3.c,

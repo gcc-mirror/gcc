@@ -1,3 +1,73 @@
+2020-11-14  Jan Hubicka  <jh@suse.cz>
+
+	* gimple.c: Include ipa-modref-tree.h and ipa-modref.h.
+	(gimple_call_arg_flags): Use modref to determine flags.
+	* ipa-modref.c: Include gimple-ssa.h, tree-phinodes.h,
+	tree-ssa-operands.h, stringpool.h and tree-ssanames.h.
+	(analyze_ssa_name_flags): Declare.
+	(modref_summary::useful_p): Summary is also useful if arg flags are
+	known.
+	(dump_eaf_flags): New function.
+	(modref_summary::dump): Use it.
+	(get_modref_function_summary): Be read for current_function_decl
+	being NULL.
+	(memory_access_to): New function.
+	(deref_flags): New function.
+	(call_lhs_flags): New function.
+	(analyze_parms): New function.
+	(analyze_function): Use it.
+	* ipa-modref.h (struct modref_summary): Add arg_flags.
+	* doc/invoke.texi (ipa-modref-max-depth): Document.
+	* params.opt (ipa-modref-max-depth): New param.
+
+2020-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/97599
+	* dwarf2out.c (gen_subprogram_die): Call
+	gen_unspecified_parameters_die even if not early dwarf, but only
+	if subr_die is a newly created DIE.
+
+2020-11-14  Monk Chiang  <monk.chiang@sifive.com>
+
+	PR target/97682
+	* config/riscv/riscv.h (RISCV_PROLOGUE_TEMP_REGNUM): Change register
+	to t0.
+	(RISCV_CALL_ADDRESS_TEMP_REGNUM): New Marco, define t1 register.
+	(RISCV_CALL_ADDRESS_TEMP): Use it for call instructions.
+	* config/riscv/riscv.c (riscv_legitimize_call_address): Use
+	RISCV_CALL_ADDRESS_TEMP.
+	(riscv_compute_frame_info): Change temporary register to t0 form t1.
+	(riscv_trampoline_init): Adjust comment.
+
+2020-11-14  Jim Wilson  <jimw@sifive.com>
+	    cooper.joshua  <cooper.joshua@linux.alibaba.com>
+
+	* config/riscv/riscv.c (riscv_asan_shadow_offset): New.
+	(TARGET_ASAN_SHADOW_OFFSET): New.
+	* doc/tm.texi: Regenerated.
+	* target.def (asan_shadow_offset); Mention that it can return zero.
+	* toplev.c (process_options): Check for and handle zero return from
+	targetm.asan_shadow_offset call.
+
+2020-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_omp_for): Add OMP_CLAUSE_ALLOCATE_ALLOCATOR
+	decls as firstprivate on task clauses even when allocate clause
+	decl is not lastprivate.
+	* omp-low.c (install_var_field): Don't dereference omp_is_reference
+	types if mask is 33 rather than 1.
+	(scan_sharing_clauses): Populate allocate_map even for task
+	constructs.  For now remove it back for variables mentioned in
+	reduction and in_reduction clauses on task/taskloop constructs
+	or on VLA task firstprivates.  For firstprivate on task construct,
+	install the var field into field_map with by_ref and 33 instead
+	of false and 1 if mentioned in allocate clause.
+	(lower_private_allocate): Set TREE_THIS_NOTRAP on the created
+	MEM_REF.
+	(lower_rec_input_clauses): Handle allocate for task firstprivatized
+	non-VLA variables.
+	(create_task_copyfn): Likewise.
+
 2020-11-13  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-alias.c (ao_ref_base_alias_ptr_type): Remove accidental
