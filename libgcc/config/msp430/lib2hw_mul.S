@@ -353,9 +353,9 @@
 	mult1632 MPY, OP2, RESLO, RESHI
 	end_func   __umulhisi2
 
-	start_func __mulsi2_hw32  __mspabi_mpyl  __mspabi_mpyl_hw32
+	start_func __mulsi2  __mspabi_mpyl  __mspabi_mpyl_hw32
 	mult32_hw MPY32L, MPY32H, OP2L, OP2H, RES0, RES1
-	end_func   __mulsi2_hw32
+	end_func   __mulsi2
 
 	start_func __mulsidi2  __mspabi_mpysll  __mspabi_mpysll_hw32
 	mult3264_hw MPYS32L, MPYS32H, OP2L, OP2H, RES0, RES1, RES2, RES3
@@ -373,9 +373,9 @@
    as the second generation hardware, but they are accessed from different
    memory registers.  */
 
-	start_func __mulhi2_f5 __mspabi_mpyi  __mspabi_mpyi_f5hw
+	start_func __mulhi2 __mspabi_mpyi  __mspabi_mpyi_f5hw
 	mult16 MPY_F5, OP2_F5, RESLO_F5
-	end_func   __mulhi2_f5
+	end_func   __mulhi2
 
 	start_func __mulhisi2  __mspabi_mpysl  __mspabi_mpysl_f5hw
 	mult1632 MPYS_F5, OP2_F5, RESLO_F5, RESHI_F5
@@ -385,9 +385,9 @@
 	mult1632 MPY_F5, OP2_F5, RESLO_F5, RESHI_F5
 	end_func   __umulhisi2
 
-	start_func __mulsi2_f5  __mspabi_mpyl  __mspabi_mpyl_f5hw
+	start_func __mulsi2  __mspabi_mpyl  __mspabi_mpyl_f5hw
 	mult32_hw MPY32L_F5, MPY32H_F5, OP2L_F5, OP2H_F5, RES0_F5, RES1_F5
-	end_func   __mulsi2_f5
+	end_func   __mulsi2
 
 	start_func __mulsidi2  __mspabi_mpysll  __mspabi_mpysll_f5hw
 	mult3264_hw MPYS32L_F5, MPYS32H_F5, OP2L_F5, OP2H_F5, RES0_F5, RES1_F5, RES2_F5, RES3_F5

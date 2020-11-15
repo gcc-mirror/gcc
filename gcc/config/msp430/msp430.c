@@ -4031,28 +4031,6 @@ msp430_output_labelref (FILE *file, const char *name)
 	break;
       }
 
-  /* If we have been given a specific MCU name then we may be
-     able to make use of its hardware multiply capabilities.  */
-  if (msp430_has_hwmult ())
-    {
-      if (strcmp ("__mspabi_mpyi", name) == 0)
-	{
-	  if (msp430_use_f5_series_hwmult ())
-	    name = "__mulhi2_f5";
-	  else
-	    name = "__mulhi2";
-	}
-      else if (strcmp ("__mspabi_mpyl", name) == 0)
-	{
-	  if (msp430_use_f5_series_hwmult ())
-	    name = "__mulsi2_f5";
-	  else if (msp430_use_32bit_hwmult ())
-	    name = "__mulsi2_hw32";
-	  else
-	    name = "__mulsi2";
-	}
-    }
-
   if (user_label_prefix[0] != 0)
     fputs (user_label_prefix, file);
 
