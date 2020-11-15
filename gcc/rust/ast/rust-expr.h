@@ -2565,7 +2565,6 @@ protected:
 // A block AST node
 class BlockExpr : public ExprWithBlock
 {
-public:
   std::vector<Attribute> inner_attrs;
 
   // bool has_statements;
@@ -2575,13 +2574,14 @@ public:
 
   Location locus;
 
+public:
   std::string as_string () const override;
 
   // Returns whether the block contains statements.
   bool has_statements () const { return !statements.empty (); }
 
-  // Returns whether the block contains an expression
-  bool has_expr () const { return expr != nullptr; }
+  // Returns whether the block contains a final expression.
+  bool has_tail_expr () const { return expr != nullptr; }
 
   BlockExpr (std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<ExprWithoutBlock> block_expr,
@@ -2650,6 +2650,22 @@ public:
     statements.shrink_to_fit (); 
   }
   bool is_marked_for_strip () const override { return expr == nullptr && statements.empty (); }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
+
+  const std::vector<std::unique_ptr<Stmt> > &get_statements () const { return statements; }
+  std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<ExprWithoutBlock> &get_tail_expr () {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
+
+  // Removes the tail expression from the block.
+  void strip_tail_expr () { expr = nullptr; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2729,9 +2745,16 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  /* Invalid if inner expr is null, so base stripping on that. Technically, type should also not be null. */
+  /* Invalid if inner expr is null, so base stripping on that. Technically, 
+   * type should also not be null. */
   void mark_for_strip () override { expr = nullptr; }
   bool is_marked_for_strip () const override { return expr == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_definition_block () {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2858,6 +2881,12 @@ public:
   void mark_for_strip () override { marked_for_strip = true; }
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_break_expr () {
+    rust_assert (break_expr != nullptr);
+    return break_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2938,6 +2967,18 @@ public:
   void mark_for_strip () override { from = nullptr; to = nullptr; }
   bool is_marked_for_strip () const override { return from == nullptr && to == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_from_expr () {
+    rust_assert (from != nullptr);
+    return from;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_to_expr () {
+    rust_assert (to != nullptr);
+    return to;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2992,6 +3033,12 @@ public:
   // Invalid if expr is null, so base stripping on that. 
   void mark_for_strip () override { from = nullptr; }
   bool is_marked_for_strip () const override { return from == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_from_expr () {
+    rust_assert (from != nullptr);
+    return from;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3048,6 +3095,12 @@ public:
   // Invalid if expr is null, so base stripping on that. 
   void mark_for_strip () override { to = nullptr; }
   bool is_marked_for_strip () const override { return to == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_to_expr () {
+    rust_assert (to != nullptr);
+    return to;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3142,6 +3195,18 @@ public:
   void mark_for_strip () override { from = nullptr; to = nullptr; }
   bool is_marked_for_strip () const override { return from == nullptr && to == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_from_expr () {
+    rust_assert (from != nullptr);
+    return from;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_to_expr () {
+    rust_assert (to != nullptr);
+    return to;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3197,6 +3262,12 @@ public:
   // Invalid if expr is null, so base stripping on that. 
   void mark_for_strip () override { to = nullptr; }
   bool is_marked_for_strip () const override { return to == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_to_expr () {
+    rust_assert (to != nullptr);
+    return to;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

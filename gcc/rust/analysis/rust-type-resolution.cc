@@ -615,7 +615,7 @@ void
 TypeResolution::visit (AST::BlockExpr &expr)
 {
   scope.Push ();
-  for (auto &stmt : expr.statements)
+  for (auto &stmt : expr.get_statements ())
     {
       stmt->accept_vis (*this);
     }
@@ -792,7 +792,7 @@ TypeResolution::visit (AST::Function &function)
     }
 
   // walk the expression body
-  for (auto &stmt : function.get_definition ()->statements)
+  for (auto &stmt : function.get_definition ()->get_statements ())
     {
       stmt->accept_vis (*this);
     }

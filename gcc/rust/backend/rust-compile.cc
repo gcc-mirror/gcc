@@ -701,7 +701,7 @@ Compilation::visit (AST::BlockExpr &expr)
 		      start_location, end_location);
 
   scope.PushBlock (code_block);
-  for (auto &stmt : expr.statements)
+  for (auto &stmt : expr.get_statements ())
     {
       stmt->accept_vis (*this);
     }
@@ -1039,10 +1039,10 @@ Compilation::visit (AST::Function &function)
   Bblock *enclosingScope = NULL;
   Location start_location = function.get_locus ();
   Location end_location;
-  if (function.get_definition ()->statements.size () > 0)
+  if (function.get_definition ()->get_statements ().size () > 0)
     {
       end_location
-	= function.get_definition ()->statements.back ()->get_locus_slow ();
+	= function.get_definition ()->get_statements ().back ()->get_locus_slow ();
     }
 
   auto code_block = backend->block (fndecl, enclosingScope, vars,
@@ -1063,7 +1063,7 @@ Compilation::visit (AST::Function &function)
   scope.PushCurrentFunction (function.get_function_name (), fndecl, returnType,
 			     retDecl);
 
-  for (auto &stmt : function.get_definition ()->statements)
+  for (auto &stmt : function.get_definition ()->get_statements ())
     stmt->accept_vis (*this);
 
   scope.PopBlock ();

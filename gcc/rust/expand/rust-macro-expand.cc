@@ -2,6 +2,7 @@
 #include "rust-ast-full.h"
 // is full really required?
 #include "rust-ast-visitor.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
     // Visitor used to expand attributes.
@@ -139,7 +140,11 @@ namespace Rust {
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
              * stripped. */
-            expr.get_borrowed_expr()->accept_vis(*this);
+            auto& borrowed_expr = expr.get_borrowed_expr();
+            borrowed_expr->accept_vis(*this);
+            if (borrowed_expr->is_marked_for_strip()) 
+                rust_error_at(borrowed_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::DereferenceExpr& expr) override {
             // initial strip test based on outer attrs
@@ -152,7 +157,11 @@ namespace Rust {
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
              * stripped. */
-            expr.get_dereferenced_expr()->accept_vis(*this);
+            auto& dereferenced_expr = expr.get_dereferenced_expr();
+            dereferenced_expr->accept_vis(*this);
+            if (dereferenced_expr->is_marked_for_strip()) 
+                rust_error_at(dereferenced_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::ErrorPropagationExpr& expr) override {
             // initial strip test based on outer attrs
@@ -165,7 +174,11 @@ namespace Rust {
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
              * stripped. */
-            expr.get_propagating_expr()->accept_vis(*this);
+            auto& propagating_expr = expr.get_propagating_expr();
+            propagating_expr->accept_vis(*this);
+            if (propagating_expr->is_marked_for_strip()) 
+                rust_error_at(propagating_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::NegationExpr& expr) override {
             // initial strip test based on outer attrs
@@ -178,7 +191,11 @@ namespace Rust {
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
              * stripped. */
-            expr.get_negated_expr()->accept_vis(*this);
+            auto& negated_expr = expr.get_negated_expr();
+            negated_expr->accept_vis(*this);
+            if (negated_expr->is_marked_for_strip()) 
+                rust_error_at(negated_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::ArithmeticOrLogicalExpr& expr) override {
             /* outer attributes never allowed before these. while cannot strip 
@@ -192,8 +209,12 @@ namespace Rust {
             expr.get_right_expr()->accept_vis(*this);
 
             // ensure that they are not marked for strip
-            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
-            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+            if (expr.get_left_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_left_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before binary op exprs");
+            if (expr.get_right_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_right_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::ComparisonExpr& expr) override {
             /* outer attributes never allowed before these. while cannot strip 
@@ -207,8 +228,12 @@ namespace Rust {
             expr.get_right_expr()->accept_vis(*this);
 
             // ensure that they are not marked for strip
-            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
-            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+            if (expr.get_left_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_left_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before binary op exprs");
+            if (expr.get_right_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_right_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::LazyBooleanExpr& expr) override {
             /* outer attributes never allowed before these. while cannot strip 
@@ -222,19 +247,25 @@ namespace Rust {
             expr.get_right_expr()->accept_vis(*this);
 
             // ensure that they are not marked for strip
-            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
-            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+            if (expr.get_left_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_left_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before binary op exprs");
+            if (expr.get_right_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_right_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::TypeCastExpr& expr) override {
             /* outer attributes never allowed before these. while cannot strip 
-             * two direct descendant expressions, can strip ones below that */
+             * direct descendant expression, can strip ones below that */
 
             /* should have no possibility for outer attrs as would be parsed 
              * with outer expr */
             expr.get_casted_expr()->accept_vis(*this);
 
             // ensure that they are not marked for strip
-            rust_assert(!expr.get_casted_expr()->is_marked_for_strip());
+            if (expr.get_casted_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_casted_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before cast exprs");
         }
         void visit(AST::AssignmentExpr& expr) override {
             /* outer attributes never allowed before these. while cannot strip 
@@ -248,8 +279,12 @@ namespace Rust {
             expr.get_right_expr()->accept_vis(*this);
 
             // ensure that they are not marked for strip
-            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
-            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+            if (expr.get_left_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_left_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before binary op exprs");
+            if (expr.get_right_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_right_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::CompoundAssignmentExpr& expr) override {
             /* outer attributes never allowed before these. while cannot strip 
@@ -263,8 +298,12 @@ namespace Rust {
             expr.get_right_expr()->accept_vis(*this);
 
             // ensure that they are not marked for strip
-            rust_assert(!expr.get_left_expr()->is_marked_for_strip());
-            rust_assert(!expr.get_right_expr()->is_marked_for_strip());
+            if (expr.get_left_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_left_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before binary op exprs");
+            if (expr.get_right_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_right_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::GroupedExpr& expr) override {
             // initial strip test based on outer attrs
@@ -285,7 +324,11 @@ namespace Rust {
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
              * stripped. */
-            expr.get_expr_in_parens()->accept_vis(*this);
+            auto& inner_expr = expr.get_expr_in_parens();
+            inner_expr->accept_vis(*this);
+            if (inner_expr->is_marked_for_strip()) 
+                rust_error_at(inner_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::ArrayElemsValues& elems) override {
             /* apparently outer attributes are allowed in "elements of array 
@@ -310,8 +353,17 @@ namespace Rust {
              * such, not implementing. TODO clear up the ambiguity here */
 
             // only intend stripping for internal sub-expressions
-            elems.get_elem_to_copy()->accept_vis(*this);
-            elems.get_num_copies()->accept_vis(*this);
+            auto& copied_expr = elems.get_elem_to_copy();
+            copied_expr->accept_vis(*this);
+            if (copied_expr->is_marked_for_strip()) 
+                rust_error_at(copied_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
+
+            auto& copy_count = elems.get_num_copies();
+            copy_count->accept_vis(*this);
+            if (copy_count->is_marked_for_strip()) 
+                rust_error_at(copy_count->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::ArrayExpr& expr) override {
             // initial strip test based on outer attrs
@@ -336,14 +388,29 @@ namespace Rust {
         }
         void visit(AST::ArrayIndexExpr& expr) override {
             /* it is unclear whether outer attributes are supposed to be 
-             * allowed, but conceptually it wouldn't make much sense, so 
-             * assuming no. TODO */
+             * allowed, but conceptually it wouldn't make much sense, but 
+             * having expansion code anyway. TODO */
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
 
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
              * stripped. */
-            expr.get_array_expr()->accept_vis(*this);
-            expr.get_index_expr()->accept_vis(*this);
+            auto& array_expr = expr.get_array_expr();
+            array_expr->accept_vis(*this);
+            if (array_expr->is_marked_for_strip()) 
+                rust_error_at(array_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
+
+            auto& index_expr = expr.get_index_expr();
+            index_expr->accept_vis(*this);
+            if (index_expr->is_marked_for_strip()) 
+                rust_error_at(index_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::TupleExpr& expr) override {
             /* according to spec, outer attributes are allowed on "elements of 
@@ -390,7 +457,11 @@ namespace Rust {
             /* wouldn't strip this directly (as outer attrs should be 
              * associated with this level), but any sub-expressions would be 
              * stripped. Thus, no need to erase when strip check called. */
-            expr.get_tuple_expr()->accept_vis(*this);
+            auto& tuple_expr = expr.get_tuple_expr();
+            tuple_expr->accept_vis(*this);
+            if (tuple_expr->is_marked_for_strip()) 
+                rust_error_at(tuple_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::StructExprStruct& expr) override {
             // initial strip test based on outer attrs
@@ -414,12 +485,20 @@ namespace Rust {
         void visit(AST::StructExprFieldIdentifierValue& field) override {
             /* as no attrs possible (at moment, at least), only sub-expression
              * stripping is possible */
-            field.get_value()->accept_vis(*this);
+            auto& value = field.get_value();
+            value->accept_vis(*this);
+            if (value->is_marked_for_strip()) 
+                rust_error_at(value->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::StructExprFieldIndexValue& field) override {
             /* as no attrs possible (at moment, at least), only sub-expression
              * stripping is possible */
-            field.get_value()->accept_vis(*this);
+            auto& value = field.get_value();
+            value->accept_vis(*this);
+            if (value->is_marked_for_strip()) 
+                rust_error_at(value->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::StructExprStructFields& expr) override {
             // initial strip test based on outer attrs
@@ -448,8 +527,13 @@ namespace Rust {
 
             /* struct base presumably can't be stripped, as the '..' is before
              * the expression. as such, can only strip sub-expressions. */
-            if (expr.has_struct_base())
-                expr.get_struct_base().get_base_struct()->accept_vis(*this);
+            if (expr.has_struct_base()) {
+                auto& base_struct_expr = expr.get_struct_base().get_base_struct();
+                base_struct_expr->accept_vis(*this);
+                if (base_struct_expr->is_marked_for_strip()) 
+                    rust_error_at(base_struct_expr->get_locus_slow(), 
+                      "cannot strip expression in this position - outer attributes not allowed");
+            }
         }
         void visit(AST::StructExprStructBase& expr) override {
             // initial strip test based on outer attrs
@@ -470,7 +554,11 @@ namespace Rust {
             /* struct base presumably can't be stripped, as the '..' is before
              * the expression. as such, can only strip sub-expressions. */
             rust_assert(!expr.get_struct_base().is_invalid());
-            expr.get_struct_base().get_base_struct()->accept_vis(*this);
+            auto& base_struct_expr = expr.get_struct_base().get_base_struct();
+            base_struct_expr->accept_vis(*this);
+            if (base_struct_expr->is_marked_for_strip()) 
+                rust_error_at(base_struct_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::StructExprTuple& expr) override {
             // initial strip test based on outer attrs
@@ -517,12 +605,20 @@ namespace Rust {
         void visit(AST::EnumExprFieldIdentifierValue& field) override {
             /* as no attrs possible (at moment, at least), only sub-expression
              * stripping is possible */
-            field.get_value()->accept_vis(*this);
+            auto& value = field.get_value();
+            value->accept_vis(*this);
+            if (value->is_marked_for_strip()) 
+                rust_error_at(value->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::EnumExprFieldIndexValue& field) override {
             /* as no attrs possible (at moment, at least), only sub-expression
              * stripping is possible */
-            field.get_value()->accept_vis(*this);
+            auto& value = field.get_value();
+            value->accept_vis(*this);
+            if (value->is_marked_for_strip()) 
+                rust_error_at(value->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::EnumExprStruct& expr) override {
             // initial strip test based on outer attrs
@@ -582,7 +678,11 @@ namespace Rust {
             /* should not be outer attrs on "function" expression - outer attrs 
              * should be associated with call expr as a whole. only sub-expr 
              * expansion is possible. */
-            expr.get_function_expr()->accept_vis(*this);
+            auto& function = expr.get_function_expr();
+            function->accept_vis(*this);
+            if (function->is_marked_for_strip()) 
+                rust_error_at(function->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
 
             /* spec says outer attributes are specifically allowed for elements 
              * of call expressions, so full stripping possible */
@@ -610,7 +710,11 @@ namespace Rust {
             /* should not be outer attrs on "receiver" expression - outer attrs 
              * should be associated with call expr as a whole. only sub-expr 
              * expansion is possible. */
-            expr.get_receiver_expr()->accept_vis(*this);
+            auto& receiver = expr.get_receiver_expr();
+            receiver->accept_vis(*this);
+            if (receiver->is_marked_for_strip()) 
+                rust_error_at(receiver->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
 
             // no outer attrs on paths possible
 
@@ -638,9 +742,13 @@ namespace Rust {
             }
 
             /* should not be outer attrs on "receiver" expression - outer attrs 
-             * should be associated with call expr as a whole. only sub-expr 
+             * should be associated with field expr as a whole. only sub-expr 
              * expansion is possible. */
-            expr.get_receiver_expr()->accept_vis(*this);
+            auto& receiver = expr.get_receiver_expr();
+            receiver->accept_vis(*this);
+            if (receiver->is_marked_for_strip()) 
+                rust_error_at(receiver->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::ClosureExprInner& expr) override {
             // initial strip test based on outer attrs
@@ -661,19 +769,193 @@ namespace Rust {
                 else
                     i++;
             }
+
+            // can't strip expression itself, but can strip sub-expressions
+            auto& definition_expr = expr.get_definition_expr();
+            definition_expr->accept_vis(*this);
+            if (definition_expr->is_marked_for_strip()) 
+                rust_error_at(definition_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
         }
         void visit(AST::BlockExpr& expr) override {
-            
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip test based on inner attrs - spec says there are inner 
+             * attributes, not just outer attributes of inner stmts */
+            expander.expand_cfg_attrs(expr.get_inner_attrs());
+            if (expander.fails_cfg(expr.get_inner_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            // strip all statements
+            auto& stmts = expr.get_statements();
+            for (int i = 0; i < stmts.size();) {
+                auto& stmt = stmts[i];
+
+                // mark for stripping if required
+                stmt->accept_vis(*this);
+
+                if (stmt->is_marked_for_strip())
+                    stmts.erase(stmts.begin() + i);
+                else
+                    i++;
+            }
+
+            // strip tail expression if exists - can actually fully remove it
+            if (expr.has_tail_expr()) {
+                auto& tail_expr = expr.get_tail_expr();
+
+                tail_expr->accept_vis(*this);
+
+                if (tail_expr->is_marked_for_strip())
+                    expr.strip_tail_expr();
+            }
         }
-        void visit(AST::ClosureExprInnerTyped& expr) override {}
-        void visit(AST::ContinueExpr& expr) override {}
-        void visit(AST::BreakExpr& expr) override {}
-        void visit(AST::RangeFromToExpr& expr) override {}
-        void visit(AST::RangeFromExpr& expr) override {}
-        void visit(AST::RangeToExpr& expr) override {}
-        void visit(AST::RangeFullExpr& expr) override {}
-        void visit(AST::RangeFromToInclExpr& expr) override {}
-        void visit(AST::RangeToInclExpr& expr) override {}
+        void visit(AST::ClosureExprInnerTyped& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* strip closure parameters if required - this is specifically
+             * allowed by spec */
+            auto& params = expr.get_params();
+            for (int i = 0; i < params.size();) {
+                auto& param_attrs = params[i].get_outer_attrs();
+                expander.expand_cfg_attrs(param_attrs);
+                if (expander.fails_cfg(param_attrs))
+                    params.erase(params.begin() + i);
+                else
+                    i++;
+            }
+
+            // can't strip expression itself, but can strip sub-expressions
+            auto& definition_block = expr.get_definition_block();
+            definition_block->accept_vis(*this);
+            if (definition_block->is_marked_for_strip()) 
+                rust_error_at(definition_block->get_locus_slow(), 
+                  "cannot strip block expression in this position - outer attributes not allowed");
+        }
+        void visit(AST::ContinueExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+        }
+        void visit(AST::BreakExpr& expr) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(expr.get_outer_attrs());
+            if (expander.fails_cfg(expr.get_outer_attrs())) {
+                expr.mark_for_strip();
+                return;
+            }
+
+            /* spec does not say that you can have outer attributes on 
+             * expression, so assuming you can't. stripping for sub-expressions
+             * is the only thing that can be done */
+            if (expr.has_break_expr()) {
+                auto& break_expr = expr.get_break_expr();
+
+                break_expr->accept_vis(*this);
+
+                if (break_expr->is_marked_for_strip()) 
+                    rust_error_at(break_expr->get_locus_slow(), 
+                      "cannot strip expression in this position - outer attributes not allowed");
+            }
+        }
+        void visit(AST::RangeFromToExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * two direct descendant expressions, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            expr.get_from_expr()->accept_vis(*this);
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            expr.get_to_expr()->accept_vis(*this);
+
+            // ensure that they are not marked for strip
+            if (expr.get_from_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_from_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before range exprs");
+            if (expr.get_to_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_to_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
+        }
+        void visit(AST::RangeFromExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * direct descendant expression, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            auto& from_expr = expr.get_from_expr();
+
+            from_expr->accept_vis(*this);
+
+            if (from_expr->is_marked_for_strip())
+                rust_error_at(from_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before range exprs");
+        }
+        void visit(AST::RangeToExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * direct descendant expression, can strip ones below that */
+
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            auto& to_expr = expr.get_to_expr();
+
+            to_expr->accept_vis(*this);
+
+            if (to_expr->is_marked_for_strip())
+                rust_error_at(to_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
+        }
+        void visit(AST::RangeFullExpr& expr) override {
+            // outer attributes never allowed before these, so no stripping 
+        }
+        void visit(AST::RangeFromToInclExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * two direct descendant expressions, can strip ones below that */
+
+            /* should have no possibility for outer attrs as would be parsed 
+             * with outer expr */
+            expr.get_from_expr()->accept_vis(*this);
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            expr.get_to_expr()->accept_vis(*this);
+
+            // ensure that they are not marked for strip
+            if (expr.get_from_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_from_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes are never allowed before range exprs");
+            if (expr.get_to_expr()->is_marked_for_strip())
+                rust_error_at(expr.get_to_expr()->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
+        }
+        void visit(AST::RangeToInclExpr& expr) override {
+            /* outer attributes never allowed before these. while cannot strip 
+             * direct descendant expression, can strip ones below that */
+
+            /* should syntactically not have outer attributes, though this may 
+             * not have worked in practice */
+            auto& to_expr = expr.get_to_expr();
+
+            to_expr->accept_vis(*this);
+
+            if (to_expr->is_marked_for_strip())
+                rust_error_at(to_expr->get_locus_slow(), 
+                  "cannot strip expression in this position - outer attributes not allowed");
+        }
         void visit(AST::ReturnExpr& expr) override {}
         void visit(AST::UnsafeBlockExpr& expr) override {}
         void visit(AST::LoopExpr& expr) override {}
