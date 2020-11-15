@@ -1511,7 +1511,7 @@ vax_output_int_add (rtx_insn *insn, rtx *operands, machine_mode mode)
 
       if (flag_pic
 	  && (symbolic_operand (operands[1], SImode)
-	      || symbolic_operand (operands[1], SImode)))
+	      || symbolic_operand (operands[2], SImode)))
 	debug_rtx (insn);
 
       return "addl3 %1,%2,%0";
