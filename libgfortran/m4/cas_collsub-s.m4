@@ -29,19 +29,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */'
 
 include(iparm.m4)dnl
+define(`compare_fcn',`ifelse(rtype_kind,1,memcmp,memcmp4)')dnl
 define(SCALAR_FUNCTION,`void cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
-			int *stat, char *errmsg, index_type errmsg_len);
+			int *stat, char *errmsg, index_type char_len, index_type errmsg_len);
 export_proto(cas_collsub_'$1`_scalar_'rtype_code`);
 
 void
 cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
-			      	       int *stat, char *errmsg, index_type errmsg_len)
+			   int *stat __attribute__ ((unused)),
+			   char *errmsg __attribute__ ((unused)),
+			   index_type char_len,
+			   index_type errmsg_len __attribute__ ((unused)))
 {
   int cbit = 0;
   int imoffset;
   'rtype_name` *a, *b;
   'rtype_name` *buffer, *this_image_buf;
   collsub_iface *ci;
+  index_type type_size;
 
   STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
 
@@ -49,28 +54,37 @@ cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 
   ci = &local->ci;
 
-  buffer = get_collsub_buf (ci, sizeof('rtype_name`) * local->total_num_images);
-  this_image_buf = buffer + this_image.image_num;
-  *this_image_buf = *obj;
+  type_size = char_len * sizeof ('rtype_name`);
+  buffer = get_collsub_buf (ci, type_size * local->total_num_images);
+  this_image_buf = buffer + this_image.image_num * char_len;
+  memcpy (this_image_buf, obj, type_size);
 
   collsub_sync (ci);
-  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->total_num_images >> cbit) != 0; cbit++)
+  for (; ((this_image.image_num >> cbit) & 1) == 0
+    && (local->total_num_images >> cbit) != 0; cbit++)
     {
       imoffset = 1 << cbit;
       if (this_image.image_num + imoffset < local->total_num_images)
 	{
 	  a = this_image_buf;
-	  b = this_image_buf + imoffset;
-	  '$2`
+	  b = this_image_buf + imoffset * char_len;
+	  if ('compare_fcn` (b, a, char_len) '$2` 0)
+	    memcpy (a, b, type_size);
 	}
       collsub_sync (ci);
     }
+  /* All images have to execute the same number of collsub_sync, otherwise
+     some images will hang.  Here, we execute the missing ones for images
+     that are not needed anymore in the main loop.  */
   for ( ; (local->total_num_images >> cbit) != 0; cbit++)
     collsub_sync (ci);
 
   if (!result_image || (*result_image - 1) == this_image.image_num)
-    *obj = *buffer;
+    memcpy (obj, buffer, type_size);
 
+  /* We need one barrier (it could be either before or after the collsub) that
+     prevents one image from starting a new collsub before the old one has 
+     finished.  */
   finish_collective_subroutine (ci);
 
 }
@@ -78,24 +92,27 @@ cas_collsub_'$1`_scalar_'rtype_code` ('rtype_name` *obj, int *result_image,
 ')dnl
 define(ARRAY_FUNCTION,dnl
 `void cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
-				      int *stat, char *errmsg, index_type errmsg_len);
+				int *stat, char *errmsg, index_type char_len,
+				index_type errmsg_len);
 export_proto (cas_collsub_'$1`_array_'rtype_code`);
 
 void
 cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image,
-			   	      int *stat, char *errmsg, index_type errmsg_len)
+			  	     int *stat, char *errmsg, index_type char_len, 
+				     index_type errmsg_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
-  index_type stride[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];  /* Store byte-based strides here.  */
   index_type extent[GFC_MAX_DIMENSIONS];
-  'rtype_name` *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
-  'rtype_name` *buffer;
+  char *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
+  char *buffer;
   index_type dim;
   bool packed;
   index_type span;
   index_type ssize, num_elems;
   int cbit = 0;
   int imoffset;
+  index_type type_size;
   collsub_iface *ci;
 
   STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
@@ -104,10 +121,11 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
 
   ci = &local->ci;
 
+  type_size = char_len * sizeof ('rtype_name`);
   dim = GFC_DESCRIPTOR_RANK (array);
-  ssize = sizeof ('rtype_name`);
+  num_elems = 1;
   packed = true;
-  span = array->span != 0 ? array->span : (index_type) sizeof ('rtype_name`);
+  span = array->span != 0 ? array->span : type_size;
   for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
@@ -118,29 +136,30 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
       if (extent[n] <= 0)
 	return;
 
-      if (ssize != stride[n])
+      if (num_elems != GFC_DESCRIPTOR_STRIDE (array,n))
 	packed = false;
 
-      ssize *= extent[n];
+      num_elems *= extent[n];
     }
 
-  num_elems = ssize / sizeof ('rtype_name`);
-
+  ssize = num_elems * type_size;
   buffer = get_collsub_buf (ci, ssize * local->total_num_images);
-  this_shared_ptr = buffer + this_image.image_num * num_elems;
-  
+  this_shared_ptr = buffer + this_image.image_num * ssize;
+
   if (packed)
     memcpy (this_shared_ptr, array->base_addr, ssize);
   else
     {
       char *src = (char *) array->base_addr;
-      'rtype_name` *restrict dest = this_shared_ptr;
+      char *restrict dest = this_shared_ptr;
       index_type stride0 = stride[0];
 
       while (src)
 	{
 	  /* Copy the data.  */
-	  *(dest++) = *(('rtype_name` *) src);
+
+	  memcpy (dest, src, type_size);
+	  dest += type_size;
 	  src += stride0;
 	  count[0] ++;
 	  /* Advance to the next source element.  */
@@ -175,22 +194,24 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
       a_______b___
       r___________
   */
-  for (; ((this_image.image_num >> cbit) & 1) == 0 && (local->total_num_images >> cbit) != 0; cbit++)
+  for (; ((this_image.image_num >> cbit) & 1) == 0
+    && (local->total_num_images >> cbit) != 0; cbit++)
     {
       imoffset = 1 << cbit;
       if (this_image.image_num + imoffset < local->total_num_images)
 	{
-	  'rtype_name` * other_shared_ptr;  /* Points to the shared memory
-						allocated to another image.  */
+	  char *other_shared_ptr;  /* Points to the shared memory
+				      allocated to another image.  */
 	  'rtype_name` *a;
 	  'rtype_name` *b;
 
-	  other_shared_ptr = this_shared_ptr + num_elems * imoffset;
+	  other_shared_ptr = this_shared_ptr + imoffset * ssize;
 	  for (index_type i = 0; i < num_elems; i++)
 	    {
-	      a = this_shared_ptr + i;
-	      b = other_shared_ptr + i;
-	      '$2`
+	      a = ('rtype_name` *) (this_shared_ptr + i * type_size);
+	      b = ('rtype_name` *) (other_shared_ptr + i * type_size);
+	      if ('compare_fcn` (b, a, char_len) '$2` 0)
+		memcpy (a, b, type_size);
 	    }
 	}
       collsub_sync (ci);
@@ -204,15 +225,16 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
 	memcpy (array->base_addr, buffer, ssize);
       else
 	{
-	  'rtype_name` *src = buffer;
-	  char * restrict dest = (char *) array->base_addr;
+	  char *src = buffer;
+	  char *restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
-	  memset (count, 0, sizeof(index_type) * dim);
+	  memset (count, 0, sizeof (index_type) * dim);
 
 	  while (dest)
 	    {
-	      *(('rtype_name` * ) dest) =  *src++;
+	      memcpy (dest, src, type_size);
+	      src += span;
 	      dest += stride0;
 	      count[0] ++;
 	      for (index_type n = 0; count[n] == extent[n] ;)
@@ -239,23 +261,38 @@ cas_collsub_'$1`_array_'rtype_code` ('rtype` * restrict array, int *result_image
     finish_collective_subroutine (ci);
 }
 ')
-`#include "libgfortran.h"
+`
+#include "libgfortran.h"
 
-#if defined (HAVE_'rtype_name`)'
+#if defined (HAVE_'rtype_name`)
 #include <string.h>
-#include "../nca/libcoarraynative.h"
-#include "../nca/collective_subroutine.h"
+#include "../caf_shared/libcoarraynative.h"
+#include "../caf_shared/collective_subroutine.h"
 
-SCALAR_FUNCTION(`max',`if (*b > *a)
-	    *a = *b;')dnl
-SCALAR_FUNCTION(`min',`if (*b < *a)
-	    *a = *b;')dnl
-SCALAR_FUNCTION(`sum',`*a += *b;')dnl
-ARRAY_FUNCTION(`max',`if (*b > *a)
-		*a = *b;')dnl
-ARRAY_FUNCTION(`min',`if (*b < *a)
-		*a = *b;')dnl
-ARRAY_FUNCTION(`sum',`*a += *b;')dnl
+#if 'rtype_kind` == 4
+
+/* Compare wide character types, which are handled internally as
+   unsigned 4-byte integers.  */
+static inline int
+memcmp4 (const void *a, const void *b, size_t len)
+{
+  const GFC_UINTEGER_4 *pa = a;
+  const GFC_UINTEGER_4 *pb = b;
+  while (len-- > 0)
+    {
+      if (*pa != *pb)
+	return *pa < *pb ? -1 : 1;
+      pa ++;
+      pb ++;
+    }
+  return 0;
+}
+
+#endif
+'SCALAR_FUNCTION(`max',`>')dnl
+SCALAR_FUNCTION(`min',`<')dnl
+ARRAY_FUNCTION(`max',`>')dnl
+ARRAY_FUNCTION(`min',`<')dnl
 `
 #endif
 '

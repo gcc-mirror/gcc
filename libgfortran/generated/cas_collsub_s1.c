@@ -27,12 +27,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#if defined (HAVE_GFC_UINTEGER_4)
+#if defined (HAVE_GFC_UINTEGER_1)
 #include <string.h>
-#include "../nca/libcoarraynative.h"
-#include "../nca/collective_subroutine.h"
+#include "../caf_shared/libcoarraynative.h"
+#include "../caf_shared/collective_subroutine.h"
 
-#if 4 == 4
+#if 1 == 4
 
 /* Compare wide character types, which are handled internally as
    unsigned 4-byte integers.  */
@@ -52,12 +52,12 @@ memcmp4 (const void *a, const void *b, size_t len)
 }
 
 #endif
-void cas_collsub_max_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
+void cas_collsub_max_scalar_s1 (GFC_UINTEGER_1 *obj, int *result_image,
 			int *stat, char *errmsg, index_type char_len, index_type errmsg_len);
-export_proto(cas_collsub_max_scalar_s4);
+export_proto(cas_collsub_max_scalar_s1);
 
 void
-cas_collsub_max_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
+cas_collsub_max_scalar_s1 (GFC_UINTEGER_1 *obj, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type char_len,
@@ -65,8 +65,8 @@ cas_collsub_max_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
 {
   int cbit = 0;
   int imoffset;
-  GFC_UINTEGER_4 *a, *b;
-  GFC_UINTEGER_4 *buffer, *this_image_buf;
+  GFC_UINTEGER_1 *a, *b;
+  GFC_UINTEGER_1 *buffer, *this_image_buf;
   collsub_iface *ci;
   index_type type_size;
 
@@ -76,7 +76,7 @@ cas_collsub_max_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
 
   ci = &local->ci;
 
-  type_size = char_len * sizeof (GFC_UINTEGER_4);
+  type_size = char_len * sizeof (GFC_UINTEGER_1);
   buffer = get_collsub_buf (ci, type_size * local->total_num_images);
   this_image_buf = buffer + this_image.image_num * char_len;
   memcpy (this_image_buf, obj, type_size);
@@ -90,7 +90,7 @@ cas_collsub_max_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
 	{
 	  a = this_image_buf;
 	  b = this_image_buf + imoffset * char_len;
-	  if (memcmp4 (b, a, char_len) > 0)
+	  if (memcmp (b, a, char_len) > 0)
 	    memcpy (a, b, type_size);
 	}
       collsub_sync (ci);
@@ -111,12 +111,12 @@ cas_collsub_max_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
 
 }
 
-void cas_collsub_min_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
+void cas_collsub_min_scalar_s1 (GFC_UINTEGER_1 *obj, int *result_image,
 			int *stat, char *errmsg, index_type char_len, index_type errmsg_len);
-export_proto(cas_collsub_min_scalar_s4);
+export_proto(cas_collsub_min_scalar_s1);
 
 void
-cas_collsub_min_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
+cas_collsub_min_scalar_s1 (GFC_UINTEGER_1 *obj, int *result_image,
 			   int *stat __attribute__ ((unused)),
 			   char *errmsg __attribute__ ((unused)),
 			   index_type char_len,
@@ -124,8 +124,8 @@ cas_collsub_min_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
 {
   int cbit = 0;
   int imoffset;
-  GFC_UINTEGER_4 *a, *b;
-  GFC_UINTEGER_4 *buffer, *this_image_buf;
+  GFC_UINTEGER_1 *a, *b;
+  GFC_UINTEGER_1 *buffer, *this_image_buf;
   collsub_iface *ci;
   index_type type_size;
 
@@ -135,7 +135,7 @@ cas_collsub_min_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
 
   ci = &local->ci;
 
-  type_size = char_len * sizeof (GFC_UINTEGER_4);
+  type_size = char_len * sizeof (GFC_UINTEGER_1);
   buffer = get_collsub_buf (ci, type_size * local->total_num_images);
   this_image_buf = buffer + this_image.image_num * char_len;
   memcpy (this_image_buf, obj, type_size);
@@ -149,7 +149,7 @@ cas_collsub_min_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
 	{
 	  a = this_image_buf;
 	  b = this_image_buf + imoffset * char_len;
-	  if (memcmp4 (b, a, char_len) < 0)
+	  if (memcmp (b, a, char_len) < 0)
 	    memcpy (a, b, type_size);
 	}
       collsub_sync (ci);
@@ -170,13 +170,13 @@ cas_collsub_min_scalar_s4 (GFC_UINTEGER_4 *obj, int *result_image,
 
 }
 
-void cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
+void cas_collsub_max_array_s1 (gfc_array_s1 * restrict array, int *result_image,
 				int *stat, char *errmsg, index_type char_len,
 				index_type errmsg_len);
-export_proto (cas_collsub_max_array_s4);
+export_proto (cas_collsub_max_array_s1);
 
 void
-cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
+cas_collsub_max_array_s1 (gfc_array_s1 * restrict array, int *result_image,
 			  	     int *stat, char *errmsg, index_type char_len, 
 				     index_type errmsg_len)
 {
@@ -200,7 +200,7 @@ cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
 
   ci = &local->ci;
 
-  type_size = char_len * sizeof (GFC_UINTEGER_4);
+  type_size = char_len * sizeof (GFC_UINTEGER_1);
   dim = GFC_DESCRIPTOR_RANK (array);
   num_elems = 1;
   packed = true;
@@ -281,15 +281,15 @@ cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
 	{
 	  char *other_shared_ptr;  /* Points to the shared memory
 				      allocated to another image.  */
-	  GFC_UINTEGER_4 *a;
-	  GFC_UINTEGER_4 *b;
+	  GFC_UINTEGER_1 *a;
+	  GFC_UINTEGER_1 *b;
 
 	  other_shared_ptr = this_shared_ptr + imoffset * ssize;
 	  for (index_type i = 0; i < num_elems; i++)
 	    {
-	      a = (GFC_UINTEGER_4 *) (this_shared_ptr + i * type_size);
-	      b = (GFC_UINTEGER_4 *) (other_shared_ptr + i * type_size);
-	      if (memcmp4 (b, a, char_len) > 0)
+	      a = (GFC_UINTEGER_1 *) (this_shared_ptr + i * type_size);
+	      b = (GFC_UINTEGER_1 *) (other_shared_ptr + i * type_size);
+	      if (memcmp (b, a, char_len) > 0)
 		memcpy (a, b, type_size);
 	    }
 	}
@@ -339,13 +339,13 @@ cas_collsub_max_array_s4 (gfc_array_s4 * restrict array, int *result_image,
     }
     finish_collective_subroutine (ci);
 }
-void cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
+void cas_collsub_min_array_s1 (gfc_array_s1 * restrict array, int *result_image,
 				int *stat, char *errmsg, index_type char_len,
 				index_type errmsg_len);
-export_proto (cas_collsub_min_array_s4);
+export_proto (cas_collsub_min_array_s1);
 
 void
-cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
+cas_collsub_min_array_s1 (gfc_array_s1 * restrict array, int *result_image,
 			  	     int *stat, char *errmsg, index_type char_len, 
 				     index_type errmsg_len)
 {
@@ -369,7 +369,7 @@ cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
 
   ci = &local->ci;
 
-  type_size = char_len * sizeof (GFC_UINTEGER_4);
+  type_size = char_len * sizeof (GFC_UINTEGER_1);
   dim = GFC_DESCRIPTOR_RANK (array);
   num_elems = 1;
   packed = true;
@@ -450,15 +450,15 @@ cas_collsub_min_array_s4 (gfc_array_s4 * restrict array, int *result_image,
 	{
 	  char *other_shared_ptr;  /* Points to the shared memory
 				      allocated to another image.  */
-	  GFC_UINTEGER_4 *a;
-	  GFC_UINTEGER_4 *b;
+	  GFC_UINTEGER_1 *a;
+	  GFC_UINTEGER_1 *b;
 
 	  other_shared_ptr = this_shared_ptr + imoffset * ssize;
 	  for (index_type i = 0; i < num_elems; i++)
 	    {
-	      a = (GFC_UINTEGER_4 *) (this_shared_ptr + i * type_size);
-	      b = (GFC_UINTEGER_4 *) (other_shared_ptr + i * type_size);
-	      if (memcmp4 (b, a, char_len) < 0)
+	      a = (GFC_UINTEGER_1 *) (this_shared_ptr + i * type_size);
+	      b = (GFC_UINTEGER_1 *) (other_shared_ptr + i * type_size);
+	      if (memcmp (b, a, char_len) < 0)
 		memcpy (a, b, type_size);
 	    }
 	}

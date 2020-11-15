@@ -26,23 +26,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#if defined (HAVE_GFC_INTEGER_4)
+#if defined (HAVE_GFC_INTEGER_8)
 #include <string.h>
-#include "../nca/libcoarraynative.h"
-#include "../nca/collective_subroutine.h"
+#include "../caf_shared/libcoarraynative.h"
+#include "../caf_shared/collective_subroutine.h"
 
-void cas_collsub_max_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
+void cas_collsub_max_scalar_i8 (GFC_INTEGER_8 *obj, int *result_image,
 			int *stat, char *errmsg, index_type errmsg_len);
-export_proto(cas_collsub_max_scalar_i4);
+export_proto(cas_collsub_max_scalar_i8);
 
 void
-cas_collsub_max_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
+cas_collsub_max_scalar_i8 (GFC_INTEGER_8 *obj, int *result_image,
 			      	       int *stat, char *errmsg, index_type errmsg_len)
 {
   int cbit = 0;
   int imoffset;
-  GFC_INTEGER_4 *a, *b;
-  GFC_INTEGER_4 *buffer, *this_image_buf;
+  GFC_INTEGER_8 *a, *b;
+  GFC_INTEGER_8 *buffer, *this_image_buf;
   collsub_iface *ci;
 
   STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
@@ -51,7 +51,7 @@ cas_collsub_max_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
 
   ci = &local->ci;
 
-  buffer = get_collsub_buf (ci, sizeof(GFC_INTEGER_4) * local->total_num_images);
+  buffer = get_collsub_buf (ci, sizeof(GFC_INTEGER_8) * local->total_num_images);
   this_image_buf = buffer + this_image.image_num;
   *this_image_buf = *obj;
 
@@ -78,18 +78,18 @@ cas_collsub_max_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
 
 }
 
-void cas_collsub_min_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
+void cas_collsub_min_scalar_i8 (GFC_INTEGER_8 *obj, int *result_image,
 			int *stat, char *errmsg, index_type errmsg_len);
-export_proto(cas_collsub_min_scalar_i4);
+export_proto(cas_collsub_min_scalar_i8);
 
 void
-cas_collsub_min_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
+cas_collsub_min_scalar_i8 (GFC_INTEGER_8 *obj, int *result_image,
 			      	       int *stat, char *errmsg, index_type errmsg_len)
 {
   int cbit = 0;
   int imoffset;
-  GFC_INTEGER_4 *a, *b;
-  GFC_INTEGER_4 *buffer, *this_image_buf;
+  GFC_INTEGER_8 *a, *b;
+  GFC_INTEGER_8 *buffer, *this_image_buf;
   collsub_iface *ci;
 
   STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
@@ -98,7 +98,7 @@ cas_collsub_min_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
 
   ci = &local->ci;
 
-  buffer = get_collsub_buf (ci, sizeof(GFC_INTEGER_4) * local->total_num_images);
+  buffer = get_collsub_buf (ci, sizeof(GFC_INTEGER_8) * local->total_num_images);
   this_image_buf = buffer + this_image.image_num;
   *this_image_buf = *obj;
 
@@ -125,18 +125,18 @@ cas_collsub_min_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
 
 }
 
-void cas_collsub_sum_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
+void cas_collsub_sum_scalar_i8 (GFC_INTEGER_8 *obj, int *result_image,
 			int *stat, char *errmsg, index_type errmsg_len);
-export_proto(cas_collsub_sum_scalar_i4);
+export_proto(cas_collsub_sum_scalar_i8);
 
 void
-cas_collsub_sum_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
+cas_collsub_sum_scalar_i8 (GFC_INTEGER_8 *obj, int *result_image,
 			      	       int *stat, char *errmsg, index_type errmsg_len)
 {
   int cbit = 0;
   int imoffset;
-  GFC_INTEGER_4 *a, *b;
-  GFC_INTEGER_4 *buffer, *this_image_buf;
+  GFC_INTEGER_8 *a, *b;
+  GFC_INTEGER_8 *buffer, *this_image_buf;
   collsub_iface *ci;
 
   STAT_ERRMSG_ENTRY_CHECK(stat, errmsg, errmsg_len);
@@ -145,7 +145,7 @@ cas_collsub_sum_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
 
   ci = &local->ci;
 
-  buffer = get_collsub_buf (ci, sizeof(GFC_INTEGER_4) * local->total_num_images);
+  buffer = get_collsub_buf (ci, sizeof(GFC_INTEGER_8) * local->total_num_images);
   this_image_buf = buffer + this_image.image_num;
   *this_image_buf = *obj;
 
@@ -171,19 +171,19 @@ cas_collsub_sum_scalar_i4 (GFC_INTEGER_4 *obj, int *result_image,
 
 }
 
-void cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
+void cas_collsub_max_array_i8 (gfc_array_i8 * restrict array, int *result_image,
 				      int *stat, char *errmsg, index_type errmsg_len);
-export_proto (cas_collsub_max_array_i4);
+export_proto (cas_collsub_max_array_i8);
 
 void
-cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
+cas_collsub_max_array_i8 (gfc_array_i8 * restrict array, int *result_image,
 			   	      int *stat, char *errmsg, index_type errmsg_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
-  GFC_INTEGER_4 *buffer;
+  GFC_INTEGER_8 *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
+  GFC_INTEGER_8 *buffer;
   index_type dim;
   bool packed;
   index_type span;
@@ -199,9 +199,9 @@ cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
   ci = &local->ci;
 
   dim = GFC_DESCRIPTOR_RANK (array);
-  ssize = sizeof (GFC_INTEGER_4);
+  ssize = sizeof (GFC_INTEGER_8);
   packed = true;
-  span = array->span != 0 ? array->span : (index_type) sizeof (GFC_INTEGER_4);
+  span = array->span != 0 ? array->span : (index_type) sizeof (GFC_INTEGER_8);
   for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
@@ -218,7 +218,7 @@ cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
       ssize *= extent[n];
     }
 
-  num_elems = ssize / sizeof (GFC_INTEGER_4);
+  num_elems = ssize / sizeof (GFC_INTEGER_8);
 
   buffer = get_collsub_buf (ci, ssize * local->total_num_images);
   this_shared_ptr = buffer + this_image.image_num * num_elems;
@@ -228,13 +228,13 @@ cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
   else
     {
       char *src = (char *) array->base_addr;
-      GFC_INTEGER_4 *restrict dest = this_shared_ptr;
+      GFC_INTEGER_8 *restrict dest = this_shared_ptr;
       index_type stride0 = stride[0];
 
       while (src)
 	{
 	  /* Copy the data.  */
-	  *(dest++) = *((GFC_INTEGER_4 *) src);
+	  *(dest++) = *((GFC_INTEGER_8 *) src);
 	  src += stride0;
 	  count[0] ++;
 	  /* Advance to the next source element.  */
@@ -274,10 +274,10 @@ cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
       imoffset = 1 << cbit;
       if (this_image.image_num + imoffset < local->total_num_images)
 	{
-	  GFC_INTEGER_4 * other_shared_ptr;  /* Points to the shared memory
+	  GFC_INTEGER_8 * other_shared_ptr;  /* Points to the shared memory
 						allocated to another image.  */
-	  GFC_INTEGER_4 *a;
-	  GFC_INTEGER_4 *b;
+	  GFC_INTEGER_8 *a;
+	  GFC_INTEGER_8 *b;
 
 	  other_shared_ptr = this_shared_ptr + num_elems * imoffset;
 	  for (index_type i = 0; i < num_elems; i++)
@@ -299,7 +299,7 @@ cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
 	memcpy (array->base_addr, buffer, ssize);
       else
 	{
-	  GFC_INTEGER_4 *src = buffer;
+	  GFC_INTEGER_8 *src = buffer;
 	  char * restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
@@ -307,7 +307,7 @@ cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
 
 	  while (dest)
 	    {
-	      *((GFC_INTEGER_4 * ) dest) =  *src++;
+	      *((GFC_INTEGER_8 * ) dest) =  *src++;
 	      dest += stride0;
 	      count[0] ++;
 	      for (index_type n = 0; count[n] == extent[n] ;)
@@ -333,19 +333,19 @@ cas_collsub_max_array_i4 (gfc_array_i4 * restrict array, int *result_image,
     }
     finish_collective_subroutine (ci);
 }
-void cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
+void cas_collsub_min_array_i8 (gfc_array_i8 * restrict array, int *result_image,
 				      int *stat, char *errmsg, index_type errmsg_len);
-export_proto (cas_collsub_min_array_i4);
+export_proto (cas_collsub_min_array_i8);
 
 void
-cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
+cas_collsub_min_array_i8 (gfc_array_i8 * restrict array, int *result_image,
 			   	      int *stat, char *errmsg, index_type errmsg_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
-  GFC_INTEGER_4 *buffer;
+  GFC_INTEGER_8 *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
+  GFC_INTEGER_8 *buffer;
   index_type dim;
   bool packed;
   index_type span;
@@ -361,9 +361,9 @@ cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
   ci = &local->ci;
 
   dim = GFC_DESCRIPTOR_RANK (array);
-  ssize = sizeof (GFC_INTEGER_4);
+  ssize = sizeof (GFC_INTEGER_8);
   packed = true;
-  span = array->span != 0 ? array->span : (index_type) sizeof (GFC_INTEGER_4);
+  span = array->span != 0 ? array->span : (index_type) sizeof (GFC_INTEGER_8);
   for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
@@ -380,7 +380,7 @@ cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
       ssize *= extent[n];
     }
 
-  num_elems = ssize / sizeof (GFC_INTEGER_4);
+  num_elems = ssize / sizeof (GFC_INTEGER_8);
 
   buffer = get_collsub_buf (ci, ssize * local->total_num_images);
   this_shared_ptr = buffer + this_image.image_num * num_elems;
@@ -390,13 +390,13 @@ cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
   else
     {
       char *src = (char *) array->base_addr;
-      GFC_INTEGER_4 *restrict dest = this_shared_ptr;
+      GFC_INTEGER_8 *restrict dest = this_shared_ptr;
       index_type stride0 = stride[0];
 
       while (src)
 	{
 	  /* Copy the data.  */
-	  *(dest++) = *((GFC_INTEGER_4 *) src);
+	  *(dest++) = *((GFC_INTEGER_8 *) src);
 	  src += stride0;
 	  count[0] ++;
 	  /* Advance to the next source element.  */
@@ -436,10 +436,10 @@ cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
       imoffset = 1 << cbit;
       if (this_image.image_num + imoffset < local->total_num_images)
 	{
-	  GFC_INTEGER_4 * other_shared_ptr;  /* Points to the shared memory
+	  GFC_INTEGER_8 * other_shared_ptr;  /* Points to the shared memory
 						allocated to another image.  */
-	  GFC_INTEGER_4 *a;
-	  GFC_INTEGER_4 *b;
+	  GFC_INTEGER_8 *a;
+	  GFC_INTEGER_8 *b;
 
 	  other_shared_ptr = this_shared_ptr + num_elems * imoffset;
 	  for (index_type i = 0; i < num_elems; i++)
@@ -461,7 +461,7 @@ cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
 	memcpy (array->base_addr, buffer, ssize);
       else
 	{
-	  GFC_INTEGER_4 *src = buffer;
+	  GFC_INTEGER_8 *src = buffer;
 	  char * restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
@@ -469,7 +469,7 @@ cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
 
 	  while (dest)
 	    {
-	      *((GFC_INTEGER_4 * ) dest) =  *src++;
+	      *((GFC_INTEGER_8 * ) dest) =  *src++;
 	      dest += stride0;
 	      count[0] ++;
 	      for (index_type n = 0; count[n] == extent[n] ;)
@@ -495,19 +495,19 @@ cas_collsub_min_array_i4 (gfc_array_i4 * restrict array, int *result_image,
     }
     finish_collective_subroutine (ci);
 }
-void cas_collsub_sum_array_i4 (gfc_array_i4 * restrict array, int *result_image,
+void cas_collsub_sum_array_i8 (gfc_array_i8 * restrict array, int *result_image,
 				      int *stat, char *errmsg, index_type errmsg_len);
-export_proto (cas_collsub_sum_array_i4);
+export_proto (cas_collsub_sum_array_i8);
 
 void
-cas_collsub_sum_array_i4 (gfc_array_i4 * restrict array, int *result_image,
+cas_collsub_sum_array_i8 (gfc_array_i8 * restrict array, int *result_image,
 			   	      int *stat, char *errmsg, index_type errmsg_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
-  GFC_INTEGER_4 *buffer;
+  GFC_INTEGER_8 *this_shared_ptr;  /* Points to the shared memory allocated to this image.  */
+  GFC_INTEGER_8 *buffer;
   index_type dim;
   bool packed;
   index_type span;
@@ -523,9 +523,9 @@ cas_collsub_sum_array_i4 (gfc_array_i4 * restrict array, int *result_image,
   ci = &local->ci;
 
   dim = GFC_DESCRIPTOR_RANK (array);
-  ssize = sizeof (GFC_INTEGER_4);
+  ssize = sizeof (GFC_INTEGER_8);
   packed = true;
-  span = array->span != 0 ? array->span : (index_type) sizeof (GFC_INTEGER_4);
+  span = array->span != 0 ? array->span : (index_type) sizeof (GFC_INTEGER_8);
   for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
@@ -542,7 +542,7 @@ cas_collsub_sum_array_i4 (gfc_array_i4 * restrict array, int *result_image,
       ssize *= extent[n];
     }
 
-  num_elems = ssize / sizeof (GFC_INTEGER_4);
+  num_elems = ssize / sizeof (GFC_INTEGER_8);
 
   buffer = get_collsub_buf (ci, ssize * local->total_num_images);
   this_shared_ptr = buffer + this_image.image_num * num_elems;
@@ -552,13 +552,13 @@ cas_collsub_sum_array_i4 (gfc_array_i4 * restrict array, int *result_image,
   else
     {
       char *src = (char *) array->base_addr;
-      GFC_INTEGER_4 *restrict dest = this_shared_ptr;
+      GFC_INTEGER_8 *restrict dest = this_shared_ptr;
       index_type stride0 = stride[0];
 
       while (src)
 	{
 	  /* Copy the data.  */
-	  *(dest++) = *((GFC_INTEGER_4 *) src);
+	  *(dest++) = *((GFC_INTEGER_8 *) src);
 	  src += stride0;
 	  count[0] ++;
 	  /* Advance to the next source element.  */
@@ -598,10 +598,10 @@ cas_collsub_sum_array_i4 (gfc_array_i4 * restrict array, int *result_image,
       imoffset = 1 << cbit;
       if (this_image.image_num + imoffset < local->total_num_images)
 	{
-	  GFC_INTEGER_4 * other_shared_ptr;  /* Points to the shared memory
+	  GFC_INTEGER_8 * other_shared_ptr;  /* Points to the shared memory
 						allocated to another image.  */
-	  GFC_INTEGER_4 *a;
-	  GFC_INTEGER_4 *b;
+	  GFC_INTEGER_8 *a;
+	  GFC_INTEGER_8 *b;
 
 	  other_shared_ptr = this_shared_ptr + num_elems * imoffset;
 	  for (index_type i = 0; i < num_elems; i++)
@@ -622,7 +622,7 @@ cas_collsub_sum_array_i4 (gfc_array_i4 * restrict array, int *result_image,
 	memcpy (array->base_addr, buffer, ssize);
       else
 	{
-	  GFC_INTEGER_4 *src = buffer;
+	  GFC_INTEGER_8 *src = buffer;
 	  char * restrict dest = (char *) array->base_addr;
 	  index_type stride0 = stride[0];
 
@@ -630,7 +630,7 @@ cas_collsub_sum_array_i4 (gfc_array_i4 * restrict array, int *result_image,
 
 	  while (dest)
 	    {
-	      *((GFC_INTEGER_4 * ) dest) =  *src++;
+	      *((GFC_INTEGER_8 * ) dest) =  *src++;
 	      dest += stride0;
 	      count[0] ++;
 	      for (index_type n = 0; count[n] == extent[n] ;)

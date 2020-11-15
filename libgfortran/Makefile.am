@@ -60,34 +60,34 @@ libcaf_single_la_LDFLAGS = -static
 libcaf_single_la_DEPENDENCIES = caf/libcaf.h
 libcaf_single_la_LINK = $(LINK) $(libcaf_single_la_LDFLAGS)
 
-i_nca_minmax_c = \
-	$(srcdir)/generated/nca_minmax_i1.c \
-	$(srcdir)/generated/nca_minmax_i2.c \
-	$(srcdir)/generated/nca_minmax_i4.c \
-	$(srcdir)/generated/nca_minmax_i8.c \
-	$(srcdir)/generated/nca_minmax_i16.c \
-	$(srcdir)/generated/nca_minmax_r4.c \
-	$(srcdir)/generated/nca_minmax_r8.c \
-	$(srcdir)/generated/nca_minmax_r10.c \
-	$(srcdir)/generated/nca_minmax_r16.c
+i_cas_collsub_c = \
+	$(srcdir)/generated/cas_collsub_i1.c \
+	$(srcdir)/generated/cas_collsub_i2.c \
+	$(srcdir)/generated/cas_collsub_i4.c \
+	$(srcdir)/generated/cas_collsub_i8.c \
+	$(srcdir)/generated/cas_collsub_i16.c \
+	$(srcdir)/generated/cas_collsub_r4.c \
+	$(srcdir)/generated/cas_collsub_r8.c \
+	$(srcdir)/generated/cas_collsub_r10.c \
+	$(srcdir)/generated/cas_collsub_r16.c
 
-i_nca_minmax_s_c = \
-	$(srcdir)/generated/nca_minmax_s1.c \
-	$(srcdir)/generated/nca_minmax_s4.c
+i_cas_collsub_s_c = \
+	$(srcdir)/generated/cas_collsub_s1.c \
+	$(srcdir)/generated/cas_collsub_s4.c
 
 if LIBGFOR_NATIVE_COARRAY
 
 mylib_LTLIBRARIES = libcaf_shared.la
 mylibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
-libcaf_shared_la_SOURCES = nca/alloc.c nca/allocator.c nca/coarraynative.c \
-	nca/hashmap.c  \
-	nca/sync.c nca/util.c nca/wrapper.c nca/collective_subroutine.c \
-	nca/shared_memory.c nca/counter_barrier.c \
-	$(i_nca_minmax_c) $(i_nca_minmax_s_c)
-libcaf_shared_la_DEPENDENCIES = nca/alloc.h nca/allocator.h nca/hashmap.h
-	nca/libcoarraynative.h nca/sync.h shared_memory.h \
-	nca/util.h nca/lock.h nca/collective_subroutine.h\
-	nca/collective_inline.h nca/counter_barrier.h
+libcaf_shared_la_SOURCES = caf_shared/alloc.c caf_shared/allocator.c caf_shared/coarraynative.c \
+	caf_shared/hashmap.c  \
+	caf_shared/sync.c caf_shared/util.c caf_shared/wrapper.c caf_shared/collective_subroutine.c \
+	caf_shared/shared_memory.c caf_shared/counter_barrier.c \
+	$(i_cas_collsub_c) $(i_cas_collsub_s_c)
+libcaf_shared_la_DEPENDENCIES = caf_shared/alloc.h caf_shared/allocator.h caf_shared/hashmap.h
+	caf_shared/libcoarraynative.h caf_shared/sync.h caf_shared/shared_memory.h \
+	caf_shared/util.h caf_shared/lock.h caf_shared/collective_subroutine.h\
+	caf_shared/collective_inline.h caf_shared/counter_barrier.h
 libcaf_shared_la_LINK = $(LINK) $(libcaf_shared_la_LDFLAGS)
 endif
 
@@ -1276,11 +1276,11 @@ $(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 
 
 if LIBGFOR_NATIVE_COARRAY
-$(i_nca_minmax_c): m4/nca_minmax.m4 $(I_M4_DEPS)
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 nca_minmax.m4 > $@
+$(i_cas_collsub_c): m4/cas_collsub.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 cas_collsub.m4 > $@
 
-$(i_nca_minmax_s_c): m4/nca-minmax-s.m4 $(I_M4_DEPS)
-	$(M4) -Dfile=$@ -I$(srcdir)/m4 nca-minmax-s.m4 > $@
+$(i_cas_collsub_s_c): m4/cas_collsub-s.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 cas_collsub-s.m4 > $@
 endif
 
 ## end of maintainer mode only rules

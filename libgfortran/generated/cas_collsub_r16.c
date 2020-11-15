@@ -28,8 +28,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined (HAVE_GFC_REAL_16)
 #include <string.h>
-#include "../nca/libcoarraynative.h"
-#include "../nca/collective_subroutine.h"
+#include "../caf_shared/libcoarraynative.h"
+#include "../caf_shared/collective_subroutine.h"
 
 void cas_collsub_max_scalar_r16 (GFC_REAL_16 *obj, int *result_image,
 			int *stat, char *errmsg, index_type errmsg_len);
