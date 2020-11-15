@@ -1224,10 +1224,12 @@ analyze_ssa_name_flags (tree name, vec<unsigned char> &known_flags, int depth)
 	  print_gimple_stmt (dump_file, use_stmt, 0);
 	}
 
-      /* Gimple return may load the return value.  */
+      /* Gimple return may load the return value.
+	 Returning name counts as an use by tree-ssa-structalias.c  */
       if (greturn *ret = dyn_cast <greturn *> (use_stmt))
 	{
-	  if (memory_access_to (gimple_return_retval (ret), name))
+	  if (memory_access_to (gimple_return_retval (ret), name)
+	      || name == gimple_return_retval (ret))
 	    flags &= ~EAF_UNUSED;
 	}
       /* Account for LHS store, arg loads and flags from callee function.  */
