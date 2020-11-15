@@ -764,7 +764,7 @@ vax_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	       int opno ATTRIBUTE_UNUSED,
 	       int *total, bool speed ATTRIBUTE_UNUSED)
 {
-  int code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
   int i = 0;				   /* may be modified in switch */
   const char *fmt = GET_RTX_FORMAT (code); /* may be modified in switch */
 
