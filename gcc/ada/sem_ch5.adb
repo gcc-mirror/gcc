@@ -303,9 +303,9 @@ package body Sem_Ch5 is
          --  also have an actual subtype.
 
          if Is_Entity_Name (Opnd)
-           and then (Ekind (Entity (Opnd)) = E_Out_Parameter
-                      or else Ekind (Entity (Opnd)) in
-                                E_In_Out_Parameter | E_Generic_In_Out_Parameter
+           and then (Ekind (Entity (Opnd)) in E_Out_Parameter
+                                            | E_In_Out_Parameter
+                                            | E_Generic_In_Out_Parameter
                       or else
                         (Ekind (Entity (Opnd)) = E_Variable
                           and then Nkind (Parent (Entity (Opnd))) =
@@ -349,8 +349,6 @@ package body Sem_Ch5 is
       function Should_Transform_BIP_Assignment
         (Typ : Entity_Id) return Boolean
       is
-         Result : Boolean;
-
       begin
          if Expander_Active
            and then not Is_Limited_View (Typ)
@@ -364,37 +362,33 @@ package body Sem_Ch5 is
             --  parameterless function call if it denotes a function.
             --  Finally, an attribute reference can be a function call.
 
-            case Nkind (Unqual_Conv (Rhs)) is
-               when N_Function_Call
-                  | N_Op
-               =>
-                  Result := True;
+            declare
+               Unqual_Rhs : constant Node_Id := Unqual_Conv (Rhs);
+            begin
+               case Nkind (Unqual_Rhs) is
+                  when N_Function_Call
+                     | N_Op
+                  =>
+                     return True;
 
-               when N_Expanded_Name
-                  | N_Identifier
-               =>
-                  case Ekind (Entity (Unqual_Conv (Rhs))) is
-                     when E_Function
-                        | E_Operator
-                     =>
-                        Result := True;
+                  when N_Expanded_Name
+                     | N_Identifier
+                  =>
+                     return
+                       Ekind (Entity (Unqual_Rhs)) in E_Function | E_Operator;
 
-                     when others =>
-                        Result := False;
-                  end case;
-
-               when N_Attribute_Reference =>
-                  Result := Attribute_Name (Unqual_Conv (Rhs)) = Name_Input;
                   --  T'Input will turn into a call whose result type is T
 
-               when others =>
-                  Result := False;
-            end case;
-         else
-            Result := False;
-         end if;
+                  when N_Attribute_Reference =>
+                     return Attribute_Name (Unqual_Rhs) = Name_Input;
 
-         return Result;
+                  when others =>
+                     return False;
+               end case;
+            end;
+         else
+            return False;
+         end if;
       end Should_Transform_BIP_Assignment;
 
       ------------------------------
