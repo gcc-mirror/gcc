@@ -3083,11 +3083,14 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
 	 offset for the codimensions.  */
       // TODO: check whether the recipient is a coarray, if it is, disable
       //	all of this
-      if (flag_coarray == GFC_FCOARRAY_SHARED && ref && ref->type == REF_ARRAY
-	  && ref->u.ar.dimen_type[ref->u.ar.dimen + ref->u.ar.codimen - 1]
-		    == DIMEN_THIS_IMAGE)
-	tmp = gfc_add_strides (tmp, se.expr, ref->u.ar.as->rank,
-			      ref->u.ar.as->rank + ref->u.ar.as->corank);
+      if (flag_coarray == GFC_FCOARRAY_SHARED)
+	{
+	  gfc_ref *co_ref = cas_array_ref (ref);
+	  if (co_ref)
+	    tmp = gfc_add_strides (tmp, se.expr, co_ref->u.ar.as->rank,
+				   co_ref->u.ar.as->rank
+				   + co_ref->u.ar.as->corank);
+	}
       info->offset = gfc_evaluate_now (tmp, block);
 
       /* Make absolutely sure that the saved_offset is indeed saved
