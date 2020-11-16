@@ -168,6 +168,8 @@ package Snames is
    Name_uEntry_Bodies                  : constant Name_Id := N + $;
    Name_uExpunge                       : constant Name_Id := N + $;
    Name_uFinalizer                     : constant Name_Id := N + $;
+   Name_uFinalizer_Old                 : constant Name_Id := N + $;
+   Name_uFinalization_Controller       : constant Name_Id := N + $;
    Name_uIdepth                        : constant Name_Id := N + $;
    Name_uInit                          : constant Name_Id := N + $;
    Name_uInit_Level                    : constant Name_Id := N + $;
@@ -176,11 +178,14 @@ package Snames is
    Name_uObject                        : constant Name_Id := N + $;
    Name_uPost                          : constant Name_Id := N + $;
    Name_uPostconditions                : constant Name_Id := N + $;
+   Name_uPostcond_Enabled              : constant Name_Id := N + $;
    Name_uPre                           : constant Name_Id := N + $;
    Name_uPriority                      : constant Name_Id := N + $;
    Name_uProcess_ATSD                  : constant Name_Id := N + $;
    Name_uRelative_Deadline             : constant Name_Id := N + $;
    Name_uResult                        : constant Name_Id := N + $;
+   Name_uResult_Object_For_Postcond    : constant Name_Id := N + $;
+   Name_uReturn_Success_For_Postcond   : constant Name_Id := N + $;
    Name_uSecondary_Stack               : constant Name_Id := N + $;
    Name_uSecondary_Stack_Size          : constant Name_Id := N + $;
    Name_uService                       : constant Name_Id := N + $;

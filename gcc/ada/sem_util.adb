@@ -7931,6 +7931,34 @@ package body Sem_Util is
       return Empty;
    end Enclosing_Generic_Unit;
 
+   -------------------
+   -- Enclosing_HSS --
+   -------------------
+
+   function Enclosing_HSS (Stmt : Node_Id) return Node_Id is
+      Par : Node_Id;
+   begin
+      pragma Assert (Is_Statement (Stmt));
+
+      Par := Parent (Stmt);
+      while Present (Par) loop
+
+         if Nkind (Par) = N_Handled_Sequence_Of_Statements then
+            return Par;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            return Empty;
+
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return Par;
+   end Enclosing_HSS;
+
    -------------------------------
    -- Enclosing_Lib_Unit_Entity --
    -------------------------------
@@ -31180,9 +31208,9 @@ package body Sem_Util is
                --  If the prefix is of an anonymous access type, then returns
                --  the designated type of that type.
 
-            -----------------------------
+               -----------------------------
                -- Designated_Subtype_Mark --
-            -----------------------------
+               -----------------------------
 
                function Designated_Subtype_Mark return Node_Id is
                   Typ : Entity_Id := Prefix_Type;
@@ -31218,6 +31246,16 @@ package body Sem_Util is
                else
                   Append_Item (Access_Type_Decl, Is_Eval_Stmt => False);
                   Append_Item (Temp_Decl, Is_Eval_Stmt => False);
+               end if;
+
+               --  When a type associated with an indirect temporary gets
+               --  created for a 'Old attribute reference we need to mark
+               --  the type as such. This allows, for example, finalization
+               --  masters associated with them to be finalized in the correct
+               --  order after postcondition checks.
+
+               if Attribute_Name (Parent (Attr_Prefix)) = Name_Old then
+                  Set_Stores_Attribute_Old_Prefix (Access_Type_Id);
                end if;
 
                Analyze (Access_Type_Decl);

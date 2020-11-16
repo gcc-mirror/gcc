@@ -2490,13 +2490,11 @@ package body Sem_Ch6 is
          Result : Entity_Id := Empty;
 
       begin
-         --  Loop outward through the Scope_Stack, skipping blocks, loops,
-         --  and postconditions.
+         --  Loop outward through the Scope_Stack, skipping blocks, and loops
 
          for J in reverse 0 .. Scope_Stack.Last loop
             Result := Scope_Stack.Table (J).Entity;
-            exit when Ekind (Result) not in E_Block | E_Loop
-              and then Chars (Result) /= Name_uPostconditions;
+            exit when Ekind (Result) not in E_Block | E_Loop;
          end loop;
 
          pragma Assert (Present (Result));

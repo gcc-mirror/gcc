@@ -6246,9 +6246,24 @@ package body Exp_Ch6 is
             --  Call the _Postconditions procedure if the related subprogram
             --  has contract assertions that need to be verified on exit.
 
+            --  Also, mark the successful return to signal that postconditions
+            --  need to be evaluated when finalization occurs.
+
             if Ekind (Spec_Id) = E_Procedure
               and then Present (Postconditions_Proc (Spec_Id))
             then
+               --  Generate:
+               --
+               --    Return_Success_For_Postcond := True;
+               --    _postconditions;
+
+               Insert_Action (Stmt,
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     New_Occurrence_Of
+                      (Get_Return_Success_For_Postcond (Spec_Id), Loc),
+                   Expression => New_Occurrence_Of (Standard_True, Loc)));
+
                Insert_Action (Stmt,
                  Make_Procedure_Call_Statement (Loc,
                    Name =>
@@ -6676,9 +6691,24 @@ package body Exp_Ch6 is
       --  Call the _Postconditions procedure if the related subprogram has
       --  contract assertions that need to be verified on exit.
 
+      --  Also, mark the successful return to signal that postconditions need
+      --  to be evaluated when finalization occurs.
+
       if Ekind (Scope_Id) in E_Entry | E_Entry_Family | E_Procedure
         and then Present (Postconditions_Proc (Scope_Id))
       then
+         --  Generate:
+         --
+         --    Return_Success_For_Postcond := True;
+         --    _postconditions;
+
+         Insert_Action (N,
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               New_Occurrence_Of
+                (Get_Return_Success_For_Postcond (Scope_Id), Loc),
+             Expression => New_Occurrence_Of (Standard_True, Loc)));
+
          Insert_Action (N,
            Make_Procedure_Call_Statement (Loc,
              Name => New_Occurrence_Of (Postconditions_Proc (Scope_Id), Loc)));
@@ -7564,6 +7594,41 @@ package body Exp_Ch6 is
          --  statement, but we can't have side effects happening twice.
 
          Force_Evaluation (Exp, Mode => Strict);
+
+         --  Save the return value or a pointer to the return value since we
+         --  may need to call postconditions after finalization when cleanup
+         --  actions are present.
+
+         --  Generate:
+         --
+         --    Result_Object_For_Postcond := [Exp]'Unrestricted_Access;
+
+         Insert_Action (Exp,
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               New_Occurrence_Of
+                (Get_Result_Object_For_Postcond (Scope_Id), Loc),
+             Expression =>
+               (if Is_Elementary_Type (Etype (R_Type)) then
+                   New_Copy_Tree (Exp)
+                else
+                   Make_Attribute_Reference (Loc,
+                     Attribute_Name => Name_Unrestricted_Access,
+                     Prefix         => New_Copy_Tree (Exp)))));
+
+         --  Mark the successful return to signal that postconditions need to
+         --  be evaluated when finalization occurs.
+
+         --  Generate:
+         --
+         --    Return_Success_For_Postcond := True;
+
+         Insert_Action (Exp,
+           Make_Assignment_Statement (Loc,
+             Name       =>
+               New_Occurrence_Of
+                (Get_Return_Success_For_Postcond (Scope_Id), Loc),
+             Expression => New_Occurrence_Of (Standard_True, Loc)));
 
          --  Generate call to _Postconditions
 

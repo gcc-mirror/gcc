@@ -30651,8 +30651,10 @@ package body Sem_Prag is
       --  The pragma appears inside the statements of a subprogram body. This
       --  placement is the result of subprogram contract expansion.
 
-      elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
-         return Parent (Context);
+      elsif Is_Statement (Context)
+        and then Present (Enclosing_HSS (Context))
+      then
+         return Parent (Enclosing_HSS (Context));
 
       --  The pragma appears inside the declarative part of a package body
 
