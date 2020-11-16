@@ -10333,9 +10333,19 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       tree_node (entry->args);
       if (streaming_p ())
 	u (get_mergeable_specialization_flags (entry->tmpl, decl));
+      if (mk & MK_tmpl_decl_mask)
+	if (flag_concepts && TREE_CODE (inner) == VAR_DECL)
+	  {
+	    /* Variable template partial specializations might need
+	       constraints (see spec_hasher::equal).  It's simpler to
+	       write NULL when we don't need them.  */
+	    tree constraints = NULL_TREE;
 
-      // FIXME: Do variable templates with concepts need constraints
-      // from the specialization?  See spec_hasher::equal
+	    if (uses_template_parms (entry->args))
+	      constraints = get_constraints (inner);
+	    tree_node (constraints);
+	  }
+
       if (CHECKING_P)
 	{
 	  /* Make sure we can locate the decl.  */
@@ -10674,8 +10684,18 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    return error_mark_node;
 	  insert = inner;
 	}
+      tree constr = NULL_TREE;
       bool is_decl = mk & MK_tmpl_decl_mask;
-      if (!is_decl)
+      if (is_decl)
+	{
+	  if (flag_concepts && TREE_CODE (inner) == VAR_DECL)
+	    {
+	      constr = tree_node ();
+	      if (constr)
+		set_constraints (inner, constr);
+	    }
+	}
+      else
 	{
 	  if (mk == MK_type_spec && inner != decl)
 	    return error_mark_node;
@@ -10683,6 +10703,9 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	}
 
       existing = match_mergeable_specialization (is_decl, tmpl, args, insert);
+      if (constr)
+	/* We'll add these back later, if this is the new decl.  */
+	remove_constraints (inner);
 
       if (!existing)
 	add_mergeable_specialization (tmpl, args, decl, flags);
@@ -19665,7 +19688,13 @@ finish_module_processing (cpp_reader *reader)
 	{
 	  elf_out to (fd, e);
 	  if (to.begin ())
-	    state->write (&to, reader);
+	    {
+	      auto loc = input_location;
+	      /* So crashes finger point the module decl.  */
+	      input_location = state->loc;
+	      state->write (&to, reader);
+	      input_location = loc;
+	    }
 	  if (to.end ())
 	    if (rename (tmp_name, path))
 	      to.set_error (errno);

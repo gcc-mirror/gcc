@@ -1,5 +1,14 @@
 2020-11-16  Nathan Sidwell  <nathan@acm.org>
 
+	Constrained partial variable templates
+	gcc/cp/
+	* module.cc (trees_{in,out}::key_mergeable): Variable templates
+	can be partially specialized and constrained.
+	(finish_module_processing): Point at module decl, so ICEs blame
+	that.
+	gcc/testsuite/
+	* g++.dg/modules/var-tpl-concept-1{.h,_[ab].C}: New.
+
 	Merge trunk 63496cbea58
 
 	using enum support
