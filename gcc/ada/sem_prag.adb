@@ -1975,7 +1975,7 @@ package body Sem_Prag is
          --  clause as this will lead to misleading errors.
 
          if Has_Extra_Parentheses (Deps) then
-            return;
+            goto Leave;
          end if;
 
          if Present (Component_Associations (Deps)) then
@@ -2066,7 +2066,7 @@ package body Sem_Prag is
 
          else
             Error_Msg_N ("malformed dependency relation", Deps);
-            return;
+            goto Leave;
          end if;
 
       --  The top level dependency relation is malformed. This is a syntax
@@ -30226,7 +30226,7 @@ package body Sem_Prag is
          Global  := Get_Pragma (Subp_Id, Pragma_Refined_Global);
 
       --  Subprogram declaration or stand-alone body case, look for pragmas
-      --  Depends and Global
+      --  Depends and Global.
 
       else
          Depends := Get_Pragma (Spec_Id, Pragma_Depends);
