@@ -822,18 +822,7 @@
 
 ;;
 ;; [vshlq_s, vshlq_u])
-;;
-(define_insn "mve_vshlq_<supf><mode>"
-  [
-   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VSHLQ))
-  ]
-  "TARGET_HAVE_MVE"
-  "vshl.<supf>%#<V_sz_elem>\t%q0, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
+;; See vec-common.md
 
 ;;
 ;; [vabdq_s, vabdq_u])
