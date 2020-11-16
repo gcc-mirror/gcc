@@ -1,5 +1,7 @@
 2020-11-16  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 63496cbea58
+
 	using enum support
 	gcc/cp/
 	* module.cc (trees_out::mark_class_def): Mark cloned enum consts

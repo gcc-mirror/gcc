@@ -342,8 +342,12 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
    The epilogue temporary mustn't conflict with the return registers,
    the frame pointer, the EH stack adjustment, or the EH data registers. */
 
-#define RISCV_PROLOGUE_TEMP_REGNUM (GP_TEMP_FIRST + 1)
+#define RISCV_PROLOGUE_TEMP_REGNUM (GP_TEMP_FIRST)
 #define RISCV_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP_REGNUM)
+
+#define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
+#define RISCV_CALL_ADDRESS_TEMP(MODE) \
+  gen_rtx_REG (MODE, RISCV_CALL_ADDRESS_TEMP_REGNUM)
 
 #define MCOUNT_NAME "_mcount"
 

@@ -1484,6 +1484,7 @@ OBJS = \
 	omp-expand.o \
 	omp-general.o \
 	omp-low.o \
+	omp-oacc-kernels-decompose.o \
 	omp-simd-clone.o \
 	opt-problem.o \
 	optabs.o \

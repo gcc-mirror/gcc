@@ -1,3 +1,8 @@
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt (fopenacc-kernels): Add.
+
 2020-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* f95-lang.c (ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LIST):

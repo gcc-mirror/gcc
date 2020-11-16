@@ -1,3 +1,8 @@
+2020-11-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/lib2hw_mul.S: Omit _hw* suffix from GCC names for
+	hwmult library functions.
+
 2020-11-10  Jeff Law  <law@redhat.com>
 
 	* libgcc2.c: Fix whitespace issues in most recent change.

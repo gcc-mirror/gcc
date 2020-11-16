@@ -175,6 +175,15 @@ enum gf_mask {
     GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA = 10,
     GF_OMP_TARGET_KIND_OACC_DECLARE = 11,
     GF_OMP_TARGET_KIND_OACC_HOST_DATA = 12,
+    /* A 'GF_OMP_TARGET_KIND_OACC_PARALLEL' representing an OpenACC 'kernels'
+       decomposed part, parallelized.  */
+    GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED = 13,
+    /* A 'GF_OMP_TARGET_KIND_OACC_PARALLEL' representing an OpenACC 'kernels'
+       decomposed part, "gang-single".  */
+    GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE = 14,
+    /* A 'GF_OMP_TARGET_KIND_OACC_DATA' representing an OpenACC 'kernels'
+       decomposed parts' 'data' construct.  */
+    GF_OMP_TARGET_KIND_OACC_DATA_KERNELS = 15,
     GF_OMP_TEAMS_HOST		= 1 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
@@ -2229,26 +2238,6 @@ gimple_set_modified (gimple *s, bool modifiedp)
 }
 
 
-/* Return the tree code for the expression computed by STMT.  This is
-   only valid for GIMPLE_COND, GIMPLE_CALL and GIMPLE_ASSIGN.  For
-   GIMPLE_CALL, return CALL_EXPR as the expression code for
-   consistency.  This is useful when the caller needs to deal with the
-   three kinds of computation that GIMPLE supports.  */
-
-static inline enum tree_code
-gimple_expr_code (const gimple *stmt)
-{
-  enum gimple_code code = gimple_code (stmt);
-  if (code == GIMPLE_ASSIGN || code == GIMPLE_COND)
-    return (enum tree_code) stmt->subcode;
-  else
-    {
-      gcc_gimple_checking_assert (code == GIMPLE_CALL);
-      return CALL_EXPR;
-    }
-}
-
-
 /* Return true if statement STMT contains volatile operands.  */
 
 static inline bool
@@ -3792,6 +3781,28 @@ gimple_cond_set_condition (gcond *stmt, enum tree_code code, tree lhs,
   gimple_cond_set_lhs (stmt, lhs);
   gimple_cond_set_rhs (stmt, rhs);
 }
+
+
+/* Return the tree code for the expression computed by STMT.  This is
+   only valid for GIMPLE_COND, GIMPLE_CALL and GIMPLE_ASSIGN.  For
+   GIMPLE_CALL, return CALL_EXPR as the expression code for
+   consistency.  This is useful when the caller needs to deal with the
+   three kinds of computation that GIMPLE supports.  */
+
+static inline enum tree_code
+gimple_expr_code (const gimple *stmt)
+{
+  if (const gassign *ass = dyn_cast<const gassign *> (stmt))
+    return gimple_assign_rhs_code (ass);
+  if (const gcond *cond = dyn_cast<const gcond *> (stmt))
+    return gimple_cond_code (cond);
+  else
+    {
+      gcc_gimple_checking_assert (gimple_code (stmt) == GIMPLE_CALL);
+      return CALL_EXPR;
+    }
+}
+
 
 /* Return the LABEL_DECL node used by GIMPLE_LABEL statement GS.  */
 
@@ -6509,6 +6520,9 @@ is_gimple_omp_oacc (const gimple *stmt)
 	case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
 	case GF_OMP_TARGET_KIND_OACC_DECLARE:
 	case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	  return true;
 	default:
 	  return false;
@@ -6534,6 +6548,8 @@ is_gimple_omp_offloaded (const gimple *stmt)
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 	case GF_OMP_TARGET_KIND_OACC_KERNELS:
 	case GF_OMP_TARGET_KIND_OACC_SERIAL:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
 	  return true;
 	default:
 	  return false;

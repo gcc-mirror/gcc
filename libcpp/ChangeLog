@@ -1,3 +1,17 @@
+2020-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* expr.c (cpp_classify_number): Update diagnostic for binary
+	constants for C.  Also diagnose binary constants for
+	-Wc11-c2x-compat.
+	* init.c (lang_defaults): Enable binary constants for GNUC2X and
+	STDC2X.
+
+2020-11-13  Piotr H. Dabrowski  <phd@phd.re>
+
+	PR c++/91318
+	* include/cpplib.h: Added cpp_define_unused(), cpp_define_formatted_unused()
+	* directives.c: Likewise.
+
 2020-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_callbacks): Add bool argument to

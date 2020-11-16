@@ -97,12 +97,12 @@ extern bool gimple_range_calc_op2 (irange &r, const gimple *s,
 static inline range_operator *
 gimple_range_handler (const gimple *s)
 {
-  if (gimple_code (s) == GIMPLE_ASSIGN)
-    return range_op_handler (gimple_assign_rhs_code (s),
-			     TREE_TYPE (gimple_assign_lhs (s)));
-  if (gimple_code (s) == GIMPLE_COND)
-    return range_op_handler (gimple_cond_code (s),
-			     TREE_TYPE (gimple_cond_lhs (s)));
+  if (const gassign *ass = dyn_cast<const gassign *> (s))
+    return range_op_handler (gimple_assign_rhs_code (ass),
+			     TREE_TYPE (gimple_assign_lhs (ass)));
+  if (const gcond *cond = dyn_cast<const gcond *> (s))
+    return range_op_handler (gimple_cond_code (cond),
+			     TREE_TYPE (gimple_cond_lhs (cond)));
   return NULL;
 }
 

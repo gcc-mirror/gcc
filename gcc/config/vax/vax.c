@@ -764,7 +764,7 @@ vax_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	       int opno ATTRIBUTE_UNUSED,
 	       int *total, bool speed ATTRIBUTE_UNUSED)
 {
-  int code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
   int i = 0;				   /* may be modified in switch */
   const char *fmt = GET_RTX_FORMAT (code); /* may be modified in switch */
 
@@ -1369,7 +1369,7 @@ vax_output_int_add (rtx_insn *insn, rtx *operands, machine_mode mode)
 	if (TARGET_QMATH)
 	  {
 	    gcc_assert (rtx_equal_p (operands[0], operands[1]));
-#ifdef NO_EXTERNAL_INDIRECT_ADDRESSS
+#ifdef NO_EXTERNAL_INDIRECT_ADDRESS
 	    gcc_assert (!flag_pic || !external_memory_operand (low[2], SImode));
 	    gcc_assert (!flag_pic || !external_memory_operand (low[0], SImode));
 #endif
@@ -1511,7 +1511,7 @@ vax_output_int_add (rtx_insn *insn, rtx *operands, machine_mode mode)
 
       if (flag_pic
 	  && (symbolic_operand (operands[1], SImode)
-	      || symbolic_operand (operands[1], SImode)))
+	      || symbolic_operand (operands[2], SImode)))
 	debug_rtx (insn);
 
       return "addl3 %1,%2,%0";

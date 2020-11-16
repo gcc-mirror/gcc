@@ -755,7 +755,6 @@ ao_ref_base_alias_ptr_type (ao_ref *ref)
   while (handled_component_p (base_ref))
     base_ref = TREE_OPERAND (base_ref, 0);
   tree ret = reference_alias_ptr_type (base_ref);
-  gcc_checking_assert (get_deref_alias_set (ret) == ao_ref_base_alias_set (ref));
   return ret;
 }
 
@@ -768,7 +767,6 @@ ao_ref_alias_ptr_type (ao_ref *ref)
   if (!ref->ref)
     return NULL_TREE;
   tree ret = reference_alias_ptr_type (ref->ref);
-  gcc_checking_assert (get_deref_alias_set (ret) == ao_ref_alias_set (ref));
   return ret;
 }
 

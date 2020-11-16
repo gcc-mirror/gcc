@@ -38,6 +38,7 @@ TAGS.sub
 .clang-format
 .clang-tidy
 .clangd
+.cache
 compile_commands.json
 
 .gdbinit
