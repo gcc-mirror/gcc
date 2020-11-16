@@ -45,14 +45,17 @@ package System.Img_Util is
       Exp   : Natural);
    --  Sets the image of Digs (1 .. NDigs), which is a string of decimal digits
    --  preceded by either a minus sign or a space, i.e. the integer image of
-   --  the value in units of delta of a decimal fixed point type with the given
-   --  Scale, starting at S (P + 1), updating P to point to the last character
-   --  stored, the caller promises that the buffer is large enough and no check
-   --  is made for this. Constraint_Error will not necessarily be raised if the
-   --  requirement is violated since it is perfectly valid to compile this unit
-   --  with checks off. The Fore, Aft and Exp values can be set to any valid
-   --  values for the case of use by Text_IO.Decimal_IO. Note that there is no
-   --  leading space stored. The call may destroy the value in Digs, which is
-   --  why Digs is in-out (this happens if rounding is required).
+   --  the value in units of delta if this is for a decimal fixed point type
+   --  with the given Scale, or the integer image of the value converted to an
+   --  implicit decimal fixed point type with the given Scale if this is for an
+   --  ordinary fixed point type, starting at S (P + 1), updating P to point to
+   --  the last character stored. The caller promises that the buffer is large
+   --  enough and therefore no check is made for it. Constraint_Error will not
+   --  necessarily be raised if the requirement is violated since it is valid
+   --  to compile this unit with checks off. The Fore, Aft and Exp values can
+   --  be set to any valid values for the case of use by Text_IO.Decimal_IO or
+   --  Text_IO.Fixed_IO. Note that there is no leading space stored. The call
+   --  may destroy the value in Digs, which is why Digs is in-out (this happens
+   --  if rounding is required).
 
 end System.Img_Util;
