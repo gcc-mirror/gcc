@@ -1267,9 +1267,9 @@ package body Sem_Prag is
            (Item_Is_Input  : out Boolean;
             Item_Is_Output : out Boolean)
          is
-            --  A constant or IN parameter of access type should be handled
-            --  like a variable, as the underlying memory pointed-to can be
-            --  modified. Use Adjusted_Kind to do this adjustment.
+            --  A constant or IN parameter of access-to-variable type should be
+            --  handled like a variable, as the underlying memory pointed-to
+            --  can be modified. Use Adjusted_Kind to do this adjustment.
 
             Adjusted_Kind : Entity_Kind := Ekind (Item_Id);
 
@@ -1277,7 +1277,7 @@ package body Sem_Prag is
             if Ekind (Item_Id) in E_Constant
                                 | E_Generic_In_Parameter
                                 | E_In_Parameter
-              and then Is_Access_Type (Etype (Item_Id))
+              and then Is_Access_Variable (Etype (Item_Id))
             then
                Adjusted_Kind := E_Variable;
             end if;
@@ -30175,13 +30175,23 @@ package body Sem_Prag is
          Formal := First_Entity (Spec_Id);
          while Present (Formal) loop
             if Ekind (Formal) in E_In_Out_Parameter | E_In_Parameter then
+
+               --  IN parameters can act as output when the related type is
+               --  access-to-variable.
+
+               if Ekind (Formal) = E_In_Parameter
+                 and then Is_Access_Variable (Etype (Formal))
+               then
+                  Append_New_Elmt (Formal, Subp_Outputs);
+               end if;
+
                Append_New_Elmt (Formal, Subp_Inputs);
             end if;
 
             if Ekind (Formal) in E_In_Out_Parameter | E_Out_Parameter then
                Append_New_Elmt (Formal, Subp_Outputs);
 
-               --  Out parameters can act as inputs when the related type is
+               --  OUT parameters can act as inputs when the related type is
                --  tagged, unconstrained array, unconstrained record, or record
                --  with unconstrained components.
 
