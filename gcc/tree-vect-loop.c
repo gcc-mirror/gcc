@@ -7999,6 +7999,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	    {
 	      /* The scalar steps of the IVs.  */
 	      tree elt = steps[(ivn*const_nunits + eltn) % group_size];
+	      elt = gimple_convert (&init_stmts, TREE_TYPE (step_vectype), elt);
 	      step_elts.quick_push (elt);
 	      if (!init_node)
 		{
@@ -8018,7 +8019,6 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 				   : build_int_cstu (stept, mul_elt));
 	    }
 	  vec_step = gimple_build_vector (&init_stmts, &step_elts);
-	  vec_step = gimple_convert (&init_stmts, step_vectype, vec_step);
 	  vec_steps.safe_push (vec_step);
 	  tree step_mul = gimple_build_vector (&init_stmts, &mul_elts);
 	  if (peel_mul)
