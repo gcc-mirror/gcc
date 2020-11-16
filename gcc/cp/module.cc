@@ -11734,10 +11734,14 @@ trees_out::mark_class_def (tree defn)
 {
   gcc_assert (DECL_P (defn));
   tree type = TREE_TYPE (defn);
+  /* Mark the class members that are not type-decls and cannot have
+     independent definitions.  */
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
-    /* Do not mark enum consts here.  */
     if (TREE_CODE (member) == FIELD_DECL
-	|| TREE_CODE (member) == USING_DECL)
+	|| TREE_CODE (member) == USING_DECL
+	/* A cloned enum-decl from 'using enum unrelated;'   */
+	|| (TREE_CODE (member) == CONST_DECL
+	    && DECL_CONTEXT (member) == type))
       {
 	mark_class_member (member);
 	if (TREE_CODE (member) == FIELD_DECL)
