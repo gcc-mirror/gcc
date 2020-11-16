@@ -883,9 +883,8 @@ package body Exp_Ch6 is
    is
       Loc : constant Source_Ptr := Sloc (Func_Body);
 
-      Proc_Decl : constant Node_Id   :=
-                    Next (Unit_Declaration_Node (Func_Id));
-      --  It is assumed that the next node following the declaration of the
+      Proc_Decl : constant Node_Id := Prev (Unit_Declaration_Node (Func_Id));
+      --  It is assumed that the node before the declaration of the
       --  corresponding subprogram spec is the declaration of the procedure
       --  form.
 
@@ -6571,6 +6570,7 @@ package body Exp_Ch6 is
       Prot_Bod  : Node_Id;
       Prot_Decl : Node_Id;
       Prot_Id   : Entity_Id;
+      Typ       : Entity_Id;
 
    begin
       --  Deal with case of protected subprogram. Do not generate protected
@@ -6645,10 +6645,12 @@ package body Exp_Ch6 is
       --  are not needed by the C generator (and this also produces cleaner
       --  output).
 
+      Typ := Get_Fullest_View (Etype (Subp));
+
       if Transform_Function_Array
         and then Nkind (Specification (N)) = N_Function_Specification
-        and then Is_Array_Type (Etype (Subp))
-        and then Is_Constrained (Etype (Subp))
+        and then Is_Array_Type (Typ)
+        and then Is_Constrained (Typ)
         and then not Is_Unchecked_Conversion_Instance (Subp)
       then
          Build_Procedure_Form (N);

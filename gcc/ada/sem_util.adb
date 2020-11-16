@@ -10589,6 +10589,12 @@ package body Sem_Util is
    function Get_Fullest_View
      (E : Entity_Id; Include_PAT : Boolean := True) return Entity_Id is
    begin
+      --  Prevent cascaded errors
+
+      if No (E) then
+         return E;
+      end if;
+
       --  Strictly speaking, the recursion below isn't necessary, but
       --  it's both simplest and safest.
 
