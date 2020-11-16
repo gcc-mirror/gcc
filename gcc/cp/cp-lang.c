@@ -83,8 +83,6 @@ static tree cxx_enum_underlying_base_type (const_tree);
 #define LANG_HOOKS_PREPROCESS_OPTIONS module_preprocess_options
 #undef LANG_HOOKS_PREPROCESS_UNDEF
 #define LANG_HOOKS_PREPROCESS_UNDEF module_cpp_undef
-#undef LANG_HOOKS_PREPROCESS_DEFERRED_MACRO
-#define LANG_HOOKS_PREPROCESS_DEFERRED_MACRO module_cpp_deferred_macro
 #undef LANG_HOOKS_PREPROCESS_TOKEN
 #define LANG_HOOKS_PREPROCESS_TOKEN module_token_pre
 

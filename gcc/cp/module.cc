@@ -18949,13 +18949,6 @@ module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
     module_state::undef_macro (reader, loc, node);
 }
 
-cpp_macro *
-module_cpp_deferred_macro (cpp_reader *reader, location_t loc,
-			   cpp_hashnode *node)
-{
-  return module_state::deferred_macro (reader, loc, node);
-}
-
 /* NAME & LEN are a preprocessed header name, possibly including the
    surrounding "" or <> characters.  Return the raw string name of the
    module to which it refers.  This will be an absolute path, or begin
@@ -19863,7 +19856,15 @@ module_preprocess_options (cpp_reader *reader)
 {
   if (flag_modules)
     {
-      cpp_get_callbacks (reader)->translate_include = maybe_translate_include;
+      auto *cb = cpp_get_callbacks (reader);
+      
+      cb->translate_include = maybe_translate_include;
+      cb->user_deferred_macro = module_state::deferred_macro;
+      if (!cb->undef)
+	/* If this hook is already in use, that implementation will
+	   call the undef langhook.  */
+	cb->undef = module_cpp_undef;
+
       cpp_get_options (reader)->module_directives = true;
     }
 }

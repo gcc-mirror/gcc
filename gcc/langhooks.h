@@ -366,10 +366,6 @@ struct lang_hooks
   /* Undefining a macro.  */
   void (*preprocess_undef) (cpp_reader *, location_t, cpp_hashnode *);
 
-  /* Define a deferred macro.  */
-  struct cpp_macro *(*preprocess_deferred_macro) (cpp_reader *, location_t,
-						  cpp_hashnode *);
-
   /* Observer for preprocessing stream.  */
   uintptr_t (*preprocess_token) (cpp_reader *, const cpp_token *, uintptr_t);
   /* Various flags it can return about the token.  */

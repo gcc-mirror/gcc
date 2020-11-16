@@ -5,4 +5,4 @@ module;
 export module foo:part1;
 // { dg-module-cmi {foo:part1} }
 
-export void bar (const string &);
+export void bar (string &);

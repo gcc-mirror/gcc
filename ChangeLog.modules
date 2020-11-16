@@ -1,5 +1,19 @@
 2020-11-16  Nathan Sidwell  <nathan@acm.org>
 
+	Adjust lang hooks
+	gcc/c-family/
+	* c-opts.c (c_common_init): Drop preprocess_undef
+	gcc/cp/
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_DEFERRED_MACRO): Delete.
+	* cp-tree.h (module_cpp_deferred_macro): Do not declare.
+	* module.cc (module_cpp_deferred_macro): Delete.
+	(module_preprocess_options): Set deferred macro and undef
+	callbacks here.
+	gcc/
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_UNDEF): Delete.
+	* langhooks.h (struct lang_hooks): Delete
+	preprocess_deferred_macro.
+
 	Constrained partial variable templates
 	gcc/cp/
 	* module.cc (trees_{in,out}::key_mergeable): Variable templates
