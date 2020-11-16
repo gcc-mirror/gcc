@@ -931,6 +931,10 @@ Maximum number of tests performed by modref query.
 Common Joined UInteger Var(param_modref_max_depth) Init(256) Param Optimization
 Maximum depth of DFS walk used by modref escape analysis.
 
+-param=modref-max-escape-points=
+Common Joined UInteger Var(param_modref_max_escape_points) Init(256) Param Optimization
+Maximum number of escape points tracked by modref per SSA-name
+
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
 Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs.

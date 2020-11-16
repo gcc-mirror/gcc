@@ -13010,8 +13010,11 @@ bigger than @option{--param ipa-modref-max-bases} and @option{--param
 ipa-modref-max-refs}.
 
 @item ipa-modref-max-depth
-Specified the maximum depth of DFS walk used by modref escape analysis.
+Specifies the maximum depth of DFS walk used by modref escape analysis.
 Setting to 0 disables the analysis completely.
+
+@item modref-max-escape-points
+Specifies the maximum number of escape points tracked by modref per SSA-name.
 
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
