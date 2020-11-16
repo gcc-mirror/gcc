@@ -1,3 +1,55 @@
+2020-11-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_output_labelref): Don't process mspabi
+	hwmult library function names into GCC-style names.
+
+2020-11-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_use_16bit_hwmult): New.
+	(use_32bit_hwmult): Rename to..
+	(msp430_use_32bit_hwmult): ..this.
+	(msp430_muldiv_costs): Use msp430_use_16bit_hwmult and
+	msp430_use_32bit_hwmult.
+	(msp430_expand_helper): Use msp430_use_16bit_hwmult and
+	msp430_use_32bit_hwmult.
+	(msp430_output_labelref): Use msp430_use_32bit_hwmult.
+
+2020-11-15  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_rtx_costs): Use `rtx_code' rather than
+	`int' for `code'.
+
+2020-11-15  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_output_int_add) <E_DImode>: Fix a typo
+	in NO_EXTERNAL_INDIRECT_ADDRESS.
+
+2020-11-15  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* config/vax/vax.c (vax_output_int_add) <E_SImode>: Also check
+	`operands[2]' for being symbolic with PIC rather than checking
+	`operands[1]' twice.
+
+2020-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (vr_values::extract_range_builtin): Rename to...
+	(vr_values::extract_range_from_ubsan_builtin): ...this.
+	Remove everything but UBSAN code.
+	(vr_values::extract_range_basic): Call ranger version for
+	everything except UBSAN built-ins.
+	* vr-values.h (class vr_values): Rename extract_range_builtin to
+	extract_range_from_ubsan_builtin.
+
+2020-11-15  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra.c (lra_process_new_insns): Don't put reload insns in the
+	last empty BB.
+
+2020-11-15  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (analyze_ssa_name_flags): Make return to clear
+	EAF_UNUSED flag.
+
 2020-11-14  Jan Hubicka  <jh@suse.cz>
 
 	* gimple.c: Include ipa-modref-tree.h and ipa-modref.h.

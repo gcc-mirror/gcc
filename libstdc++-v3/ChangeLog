@@ -1,3 +1,7 @@
+2020-11-15  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/result_of/sfinae_friendly_1.cc: Adjust.
+
 2020-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93421

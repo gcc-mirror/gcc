@@ -1,3 +1,41 @@
+2020-11-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/rtx-cost-Os-f5series.c: Adjust test to use new
+	hwmult library function name.
+
+2020-11-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/ipa/modref-2.c: Add ilp32 expected result.
+
+2020-11-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* lib/scanasm.exp (parse_section_of_symbols): Also look for AIX
+	XCOFF CSECT notation.
+	* g++.dg/opt/const4.C: Also look for AIX XCOFF "[RO]".
+	* gcc.dg/20021029-1.c: Likewise.
+	* gcc.dg/array-quals-1.c: Likewise and "[RW]".
+	* g++.dg/gomp/tls-5.C: Also look for AIX XCOFF "[TL]".
+	* gcc.dg/pr25376.c: Accept AIX decoration around named section
+	and function descriptor.
+
+2020-11-15  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.target/vax/bswapdi-1.c (dg-options): New setting.
+
+2020-11-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/other/abstract1.C: Adjust.
+	* g++.dg/other/abstract2.C: Adjust.
+	* g++.dg/other/abstract4.C: Adjust.
+	* g++.dg/other/abstract5.C: Adjust.
+	* g++.dg/other/abstract8.C: New test.
+	* g++.dg/template/sfinae-dr657.C: Adjust.
+	* g++.old-deja/g++.other/decl3.C: Adjust.
+
+2020-11-15  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/pr97836.c: New test.
+
 2020-11-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc.dg/pr23214.m: Use Object as the root object before

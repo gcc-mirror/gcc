@@ -1,3 +1,21 @@
+2020-11-15  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cp_finish_decl): Only check abstractness on definition.
+	(require_complete_types_for_parms): Check abstractness here.
+	(create_array_type_for_decl): Not here.
+	(grokdeclarator, grokparms, complete_vars): Not here.
+	* pt.c (tsubst, tsubst_arg_types, tsubst_function_type): Not here.
+	* typeck2.c (struct pending_abstract_type): Remove.
+	(struct abstract_type_hasher): Remove.
+	(abstract_pending_vars, complete_type_check_abstract): Remove.
+	(abstract_virtuals_error_sfinae): Handle arrays.
+	* call.c (conv_is_prvalue): Split out from...
+	(conv_binds_ref_to_prvalue): ...here.
+	(implicit_conversion_1): Rename from implicit_conversion.
+	(implicit_conversion): An abstract prvalue is bad.
+	(convert_like_internal): Don't complain if expr is already
+	error_mark_node.
+
 2020-11-13  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (USING_DECL_UNRELATED_P): New.
