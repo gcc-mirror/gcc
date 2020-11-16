@@ -7122,10 +7122,9 @@ package body Sem_Res is
             --  on expression functions.
 
             elsif In_Assertion_Expr /= 0 then
-               if Present (Body_Id) then
-                  Cannot_Inline
-                    ("cannot inline & (in assertion expression)?", N, Nam_UA);
-               end if;
+               Cannot_Inline
+                 ("cannot inline & (in assertion expression)?", N, Nam_UA,
+                  Suppress_Info => No (Body_Id));
 
             --  Calls cannot be inlined inside default expressions
 

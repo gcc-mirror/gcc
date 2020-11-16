@@ -1945,10 +1945,11 @@ package body Inline is
    -------------------
 
    procedure Cannot_Inline
-     (Msg        : String;
-      N          : Node_Id;
-      Subp       : Entity_Id;
-      Is_Serious : Boolean := False)
+     (Msg           : String;
+      N             : Node_Id;
+      Subp          : Entity_Id;
+      Is_Serious    : Boolean := False;
+      Suppress_Info : Boolean := False)
    is
    begin
       --  In GNATprove mode, inlining is the technical means by which the
@@ -1971,7 +1972,7 @@ package body Inline is
             New_Msg (1 .. Len2) := "info: no contextual analysis of";
             New_Msg (Len2 + 1 .. Msg'Length + Len2 - Len1) :=
               Msg (Msg'First + Len1 .. Msg'Last);
-            Cannot_Inline (New_Msg, N, Subp, Is_Serious);
+            Cannot_Inline (New_Msg, N, Subp, Is_Serious, Suppress_Info);
             return;
          end;
       end if;
@@ -1992,14 +1993,14 @@ package body Inline is
          then
             null;
 
-         --  In GNATprove mode, issue a warning when -gnatd_f is set, and
-         --  indicate that the subprogram is not always inlined by setting
-         --  flag Is_Inlined_Always to False.
+         --  In GNATprove mode, issue an info message when -gnatd_f is set and
+         --  Suppress_Info is False, and indicate that the subprogram is not
+         --  always inlined by setting flag Is_Inlined_Always to False.
 
          elsif GNATprove_Mode then
             Set_Is_Inlined_Always (Subp, False);
 
-            if Debug_Flag_Underscore_F then
+            if Debug_Flag_Underscore_F and not Suppress_Info then
                Error_Msg_NE (Msg, N, Subp);
             end if;
 
@@ -2022,14 +2023,14 @@ package body Inline is
 
          Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
-      --  In GNATprove mode, issue a warning when -gnatd_f is set, and
-      --  indicate that the subprogram is not always inlined by setting
-      --  flag Is_Inlined_Always to False.
+      --  In GNATprove mode, issue an info message when -gnatd_f is set and
+      --  Suppress_Info is False, and indicate that the subprogram is not
+      --  always inlined by setting flag Is_Inlined_Always to False.
 
       elsif GNATprove_Mode then
          Set_Is_Inlined_Always (Subp, False);
 
-         if Debug_Flag_Underscore_F then
+         if Debug_Flag_Underscore_F and not Suppress_Info then
             Error_Msg_NE (Msg, N, Subp);
          end if;
 
