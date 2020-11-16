@@ -9257,11 +9257,14 @@ expand_omp_target (struct omp_region *region)
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
       data_region = false;
       break;
     case GF_OMP_TARGET_KIND_DATA:
     case GF_OMP_TARGET_KIND_OACC_DATA:
     case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
       data_region = true;
       break;
     default:
@@ -9284,27 +9287,43 @@ expand_omp_target (struct omp_region *region)
   entry_bb = region->entry;
   exit_bb = region->exit;
 
+  if (target_kind == GF_OMP_TARGET_KIND_OACC_KERNELS)
+    mark_loops_in_oacc_kernels_region (region->entry, region->exit);
+
+  /* Going on, all OpenACC compute constructs are mapped to
+     'BUILT_IN_GOACC_PARALLEL', and get their compute regions outlined.
+     To distinguish between them, we attach attributes.  */
   switch (target_kind)
     {
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL:
+      DECL_ATTRIBUTES (child_fn)
+	= tree_cons (get_identifier ("oacc parallel"),
+		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
+      break;
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
-      mark_loops_in_oacc_kernels_region (region->entry, region->exit);
-
-      /* Further down, all OpenACC compute constructs will be mapped to
-	 BUILT_IN_GOACC_PARALLEL, and to distinguish between them, there
-	 is an "oacc kernels" attribute set for OpenACC kernels.  */
       DECL_ATTRIBUTES (child_fn)
 	= tree_cons (get_identifier ("oacc kernels"),
 		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
       break;
     case GF_OMP_TARGET_KIND_OACC_SERIAL:
-      /* Further down, all OpenACC compute constructs will be mapped to
-	 BUILT_IN_GOACC_PARALLEL, and to distinguish between them, there
-	 is an "oacc serial" attribute set for OpenACC serial.  */
       DECL_ATTRIBUTES (child_fn)
 	= tree_cons (get_identifier ("oacc serial"),
 		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
       break;
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+      DECL_ATTRIBUTES (child_fn)
+	= tree_cons (get_identifier ("oacc parallel_kernels_parallelized"),
+		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
+      break;
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+      DECL_ATTRIBUTES (child_fn)
+	= tree_cons (get_identifier ("oacc parallel_kernels_gang_single"),
+		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
+      break;
     default:
+      /* Make sure we don't miss any.  */
+      gcc_checking_assert (!(is_gimple_omp_oacc (entry_stmt)
+			     && is_gimple_omp_offloaded (entry_stmt)));
       break;
     }
 
@@ -9511,10 +9530,13 @@ expand_omp_target (struct omp_region *region)
     case GF_OMP_TARGET_KIND_OACC_PARALLEL:
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
     case GF_OMP_TARGET_KIND_OACC_SERIAL:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
       start_ix = BUILT_IN_GOACC_PARALLEL;
       break;
     case GF_OMP_TARGET_KIND_OACC_DATA:
     case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
       start_ix = BUILT_IN_GOACC_DATA_START;
       break;
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
@@ -9987,6 +10009,9 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 		case GF_OMP_TARGET_KIND_OACC_SERIAL:
 		case GF_OMP_TARGET_KIND_OACC_DATA:
 		case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+		case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+		case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+		case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 		  break;
 		case GF_OMP_TARGET_KIND_UPDATE:
 		case GF_OMP_TARGET_KIND_ENTER_DATA:
@@ -10241,6 +10266,9 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
 	case GF_OMP_TARGET_KIND_OACC_SERIAL:
 	case GF_OMP_TARGET_KIND_OACC_DATA:
 	case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	  break;
 	case GF_OMP_TARGET_KIND_UPDATE:
 	case GF_OMP_TARGET_KIND_ENTER_DATA:

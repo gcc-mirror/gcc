@@ -533,3 +533,9 @@
 #elif __cpp_concepts != 201907
 #  error "__cpp_concepts != 201907"
 #endif
+
+#ifndef __cpp_using_enum
+#  error "__cpp_using_enum"
+#elif __cpp_using_enum != 201907
+#  error "__cpp_using_enum != 201907"
+#endif

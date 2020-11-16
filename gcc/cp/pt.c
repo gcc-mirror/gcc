@@ -14932,9 +14932,6 @@ tsubst_arg_types (tree arg_types,
           }
         return error_mark_node;
     }
-    /* DR 657. */
-    if (abstract_virtuals_error_sfinae (ACU_PARM, type, complain))
-      return error_mark_node;
 
     /* Do array-to-pointer, function-to-pointer conversion, and ignore
        top-level qualifiers as required.  */
@@ -15052,9 +15049,6 @@ tsubst_function_type (tree t,
 	}
       return error_mark_node;
     }
-  /* And DR 657. */
-  if (abstract_virtuals_error_sfinae (ACU_RETURN, return_type, complain))
-    return error_mark_node;
 
   if (!late_return_type_p)
     {
@@ -15879,9 +15873,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      error ("creating array of %qT", type);
 	    return error_mark_node;
 	  }
-
-	if (abstract_virtuals_error_sfinae (ACU_ARRAY, type, complain))
-	  return error_mark_node;
 
 	r = build_cplus_array_type (type, domain);
 

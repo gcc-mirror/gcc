@@ -4462,7 +4462,8 @@ DEFHOOK
 (asan_shadow_offset,
  "Return the offset bitwise ored into shifted address to get corresponding\n\
 Address Sanitizer shadow memory address.  NULL if Address Sanitizer is not\n\
-supported by the target.",
+supported by the target.  May return 0 if Address Sanitizer is not supported\n\
+by a subtarget.",
  unsigned HOST_WIDE_INT, (void),
  NULL)
 

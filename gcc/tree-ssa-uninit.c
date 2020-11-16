@@ -443,7 +443,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
    access implying read access to those objects.  */
 
 static void
-maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
+maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
 {
   if (!wlims.wmaybe_uninit)
     return;
@@ -455,6 +455,10 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
   tree fndecl = gimple_call_fndecl (stmt);
   tree fntype = gimple_call_fntype (stmt);
   if (!fntype)
+    return;
+
+  /* Const function do not read their arguments.  */
+  if (gimple_call_flags (stmt) & ECF_CONST)
     return;
 
   const built_in_function fncode
@@ -522,6 +526,10 @@ maybe_warn_pass_by_reference (gimple *stmt, wlimits &wlims)
 	/* Const-qualified arguments to ordinary functions imply a likely
 	   (but not definitive) read access.  */
 	wlims.always_executed = false;
+
+      /* Ignore args we are not going to read from.  */
+      if (gimple_call_arg_flags (stmt, argno - 1) & EAF_UNUSED)
+	continue;
 
       tree arg = gimple_call_arg (stmt, argno - 1);
 
@@ -639,8 +647,8 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 	  if (gimple_vdef (stmt))
 	    wlims.vdef_cnt++;
 
-	  if (is_gimple_call (stmt))
-	    maybe_warn_pass_by_reference (stmt, wlims);
+	  if (gcall *call = dyn_cast <gcall *> (stmt))
+	    maybe_warn_pass_by_reference (call, wlims);
 	  else if (gimple_assign_load_p (stmt)
 		   && gimple_has_location (stmt))
 	    {

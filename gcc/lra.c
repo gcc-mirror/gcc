@@ -1903,15 +1903,23 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 	      {
 		/* We already made the edge no-critical in ira.c::ira */
 		lra_assert (!EDGE_CRITICAL_P (e));
-		rtx_insn *tmp = BB_HEAD (e->dest);
+		rtx_insn *curr, *tmp = BB_HEAD (e->dest);
 		if (LABEL_P (tmp))
 		  tmp = NEXT_INSN (tmp);
 		if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 		  tmp = NEXT_INSN (tmp);
-		start_sequence ();
-		for (rtx_insn *curr = after;
-		     curr != NULL_RTX;
+		for (curr = tmp;
+		     curr != NULL
+		       && (!INSN_P (curr) || BLOCK_FOR_INSN (curr) == e->dest);
 		     curr = NEXT_INSN (curr))
+		  ;
+		/* Do not put reload insns if it is the last BB
+		   without actual insns.  In this case the reload insns
+		   can get null BB after emitting.  */
+		if (curr == NULL)
+		  continue;
+		start_sequence ();
+		for (curr = after; curr != NULL_RTX; curr = NEXT_INSN (curr))
 		  emit_insn (copy_insn (PATTERN (curr)));
 		rtx_insn *copy = get_insns (), *last = get_last_insn ();
 		end_sequence ();

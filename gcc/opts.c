@@ -2596,6 +2596,10 @@ common_handle_option (struct gcc_options *opts,
       SET_OPTION_IF_UNSET (opts, opts_set, flag_ipa_bit_cp, value);
       break;
 
+    case OPT_fprofile_info_section:
+      opts->x_profile_info_section = ".gcov_info";
+      break;
+
     case OPT_fpatchable_function_entry_:
       {
 	char *patch_area_arg = xstrdup (arg);

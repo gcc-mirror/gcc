@@ -7,7 +7,7 @@
 
 #if defined (__NEXT_RUNTIME__) && defined(__OBJC2__) \
     && defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) \
-    && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1070
+    && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1080
 #include <objc/Protocol.h>
 #define OBJECT NSObject
 #else

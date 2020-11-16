@@ -2272,6 +2272,14 @@ fprofile-generate=
 Common Joined RejectNegative
 Enable common options for generating profile info for profile feedback directed optimizations, and set -fprofile-dir=.
 
+fprofile-info-section
+Common RejectNegative
+Register the profile information in the .gcov_info section instead of using a constructor/destructor.
+
+fprofile-info-section=
+Common Joined RejectNegative Var(profile_info_section)
+Register the profile information in the specified section instead of using a constructor/destructor.
+
 fprofile-partial-training
 Common Report Var(flag_profile_partial_training) Optimization
 Do not assume that functions never executed during the train run are cold.

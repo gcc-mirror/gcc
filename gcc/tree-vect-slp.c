@@ -2071,13 +2071,6 @@ vect_gather_slp_loads (vec<slp_tree> &loads, slp_tree node,
     }
 }
 
-static void
-vect_gather_slp_loads (slp_instance inst, slp_tree node)
-{
-  hash_set<slp_tree> visited;
-  vect_gather_slp_loads (SLP_INSTANCE_LOADS (inst), node, visited);
-}
-
 
 /* Find the last store in SLP INSTANCE.  */
 
@@ -2252,7 +2245,6 @@ vect_build_slp_instance (vec_info *vinfo,
 	  new_instance->cost_vec = vNULL;
 	  new_instance->subgraph_entries = vNULL;
 
-	  vect_gather_slp_loads (new_instance, node);
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "SLP size %u vs. limit %u.\n",
@@ -2629,8 +2621,18 @@ vect_slp_build_vertices (vec_info *info, vec<slp_tree> &vertices,
   unsigned i;
   slp_instance instance;
   FOR_EACH_VEC_ELT (info->slp_instances, i, instance)
-    vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
-			     leafs);
+    {
+      unsigned n_v = vertices.length ();
+      unsigned n_l = leafs.length ();
+      vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
+			       leafs);
+      /* If we added vertices but no entries to the reverse graph we've
+	 added a cycle that is not backwards-reachable.   Push the entry
+	 to mimic as leaf then.  */
+      if (vertices.length () > n_v
+	  && leafs.length () == n_l)
+	leafs.safe_push (SLP_INSTANCE_TREE (instance)->vertex);
+    }
 }
 
 /* Apply (reverse) bijectite PERM to VEC.  */
@@ -2724,9 +2726,11 @@ vect_optimize_slp (vec_info *vinfo)
 	  || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
 	continue;
 
-      /* Loads are the only thing generating permutes and leafs do not
-	 change across iterations.  */
-      bitmap_set_bit (n_visited, idx);
+      /* Leafs do not change across iterations.  Note leafs also double
+	 as entries to the reverse graph.  */
+      if (!slpg->vertices[idx].succ)
+	bitmap_set_bit (n_visited, idx);
+      /* Loads are the only thing generating permutes.  */
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
 
@@ -3056,6 +3060,21 @@ vect_optimize_slp (vec_info *vinfo)
 	      continue;
 	    }
 	}
+    }
+}
+
+/* Gather loads reachable from the individual SLP graph entries.  */
+
+void
+vect_gather_slp_loads (vec_info *vinfo)
+{
+  unsigned i;
+  slp_instance instance;
+  FOR_EACH_VEC_ELT (vinfo->slp_instances, i, instance)
+    {
+      hash_set<slp_tree> visited;
+      vect_gather_slp_loads (SLP_INSTANCE_LOADS (instance),
+			     SLP_INSTANCE_TREE (instance), visited);
     }
 }
 
@@ -4139,6 +4158,9 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
 
   /* Optimize permutations.  */
   vect_optimize_slp (bb_vinfo);
+
+  /* Gather the loads reachable from the SLP graph entries.  */
+  vect_gather_slp_loads (bb_vinfo);
 
   vect_record_base_alignments (bb_vinfo);
 

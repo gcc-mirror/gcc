@@ -1,3 +1,52 @@
+2020-11-15  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cp_finish_decl): Only check abstractness on definition.
+	(require_complete_types_for_parms): Check abstractness here.
+	(create_array_type_for_decl): Not here.
+	(grokdeclarator, grokparms, complete_vars): Not here.
+	* pt.c (tsubst, tsubst_arg_types, tsubst_function_type): Not here.
+	* typeck2.c (struct pending_abstract_type): Remove.
+	(struct abstract_type_hasher): Remove.
+	(abstract_pending_vars, complete_type_check_abstract): Remove.
+	(abstract_virtuals_error_sfinae): Handle arrays.
+	* call.c (conv_is_prvalue): Split out from...
+	(conv_binds_ref_to_prvalue): ...here.
+	(implicit_conversion_1): Rename from implicit_conversion.
+	(implicit_conversion): An abstract prvalue is bad.
+	(convert_like_internal): Don't complain if expr is already
+	error_mark_node.
+
+2020-11-13  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (USING_DECL_UNRELATED_P): New.
+	(CONST_DECL_USING_P): New.
+	* class.c (handle_using_decl): If USING_DECL_UNRELATED_P,
+	clone the CONST_DECL.
+	* name-lookup.c (supplement_binding_1): A clone hides its
+	using-declaration.
+	(lookup_using_decl): Rewrite to separate lookup and validation.
+	(do_class_using_decl): Adjust.
+	(finish_nonmember_using_decl): Adjust.
+	* parser.c (make_location): Add cp_token overload.
+	(finish_using_decl): Split out from...
+	(cp_parser_using_declaration): ...here.  Don't look through enums.
+	(cp_parser_using_enum): New.
+	(cp_parser_block_declaration): Call it.
+	(cp_parser_member_declaration): Call it.
+	* semantics.c (finish_id_expression_1): Handle enumerator
+	used from class scope.
+
+2020-11-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* parser.c (cp_parser_asm_definition): Parse outputs for asm
+	goto too.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* parser.c (cp_parser_objc_class_interface): Pass the
+	location of the class name to the interface declaration.
+
 2020-11-13  Patrick Palka  <ppalka@redhat.com>
 
 	* semantics.c (finish_compound_literal): Don't wrap the original

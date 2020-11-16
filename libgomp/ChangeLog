@@ -1,3 +1,40 @@
+2020-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/allocate-1.c (struct S): New type.
+	(foo): Add tests for non-VLA private and firstprivate clauses on
+	omp task.
+	(bar): Likewise.  Remove taking of address from private/firstprivate
+	variables.
+	* testsuite/libgomp.c++/allocate-1.C (struct S): New type.
+	(foo): Add p, q, px and s arguments.  Add tests for array reductions
+	and for non-VLA private and firstprivate clauses on omp task.
+	(bar): Removed.
+	(main): Adjust foo caller.  Don't call bar.
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	New.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Adjust.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Likewise.
+
+2020-11-13  Gergö Barany  <gergo@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/94358
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: New.
+
+2020-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/allocate-1.c (foo): Add tests
+	for array reductions.
+	(main): Adjust foo callers.
+
 2020-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.map (GOMP_alloc, GOMP_free): Export at GOMP_5.0.1.

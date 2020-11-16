@@ -1,3 +1,35 @@
+2020-11-13  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* rust-demangle.c (struct rust_demangler): Add
+	skipping_printing and bound_lifetime_depth fields.
+	(eat): Add (v0-only).
+	(parse_integer_62): Add (v0-only).
+	(parse_opt_integer_62): Add (v0-only).
+	(parse_disambiguator): Add (v0-only).
+	(struct rust_mangled_ident): Add punycode{,_len} fields.
+	(parse_ident): Support v0 identifiers.
+	(print_str): Respect skipping_printing.
+	(print_uint64): Add (v0-only).
+	(print_uint64_hex): Add (v0-only).
+	(print_ident): Respect skipping_printing,
+	Support v0 identifiers.
+	(print_lifetime_from_index): Add (v0-only).
+	(demangle_binder): Add (v0-only).
+	(demangle_path): Add (v0-only).
+	(demangle_generic_arg): Add (v0-only).
+	(demangle_type): Add (v0-only).
+	(demangle_path_maybe_open_generics): Add (v0-only).
+	(demangle_dyn_trait): Add (v0-only).
+	(demangle_const): Add (v0-only).
+	(demangle_const_uint): Add (v0-only).
+	(basic_type): Add (v0-only).
+	(rust_demangle_callback): Support v0 symbols.
+	* testsuite/rust-demangle-expected: Add v0 testcases.
+
+2020-11-13  Seija Kijin  <doremylover456@gmail.com>
+
+	* strstr.c (strstr): Make implementation ANSI/POSIX compliant.
+
 2020-11-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/88115

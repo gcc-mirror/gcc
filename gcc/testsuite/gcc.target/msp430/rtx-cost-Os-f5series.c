@@ -24,7 +24,7 @@ unsigned long res3;
 **	MOV.B	#100, R14
 **	MOV.B	#0, R15
 ** ...
-**	CALL.*	#__mulsi2_f5
+**	CALL.*	#__mspabi_mpyl_f5hw
 ** ...
 */
 void foo (void)

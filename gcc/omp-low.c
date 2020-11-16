@@ -193,8 +193,8 @@ static tree scan_omp_1_op (tree *, int *, void *);
       *handled_ops_p = false; \
       break;
 
-/* Return true if CTX corresponds to an OpenACC 'parallel' or 'serial'
-   region.  */
+/* Return whether CTX represents an OpenACC 'parallel' or 'serial' construct.
+   (This doesn't include OpenACC 'kernels' decomposed parts.)  */
 
 static bool
 is_oacc_parallel_or_serial (omp_context *ctx)
@@ -207,7 +207,8 @@ is_oacc_parallel_or_serial (omp_context *ctx)
 		  == GF_OMP_TARGET_KIND_OACC_SERIAL)));
 }
 
-/* Return true if CTX corresponds to an oacc kernels region.  */
+/* Return whether CTX represents an OpenACC 'kernels' construct.
+   (This doesn't include OpenACC 'kernels' decomposed parts.)  */
 
 static bool
 is_oacc_kernels (omp_context *ctx)
@@ -216,6 +217,21 @@ is_oacc_kernels (omp_context *ctx)
   return ((outer_type == GIMPLE_OMP_TARGET)
 	  && (gimple_omp_target_kind (ctx->stmt)
 	      == GF_OMP_TARGET_KIND_OACC_KERNELS));
+}
+
+/* Return whether CTX represents an OpenACC 'kernels' decomposed part.  */
+
+static bool
+is_oacc_kernels_decomposed_part (omp_context *ctx)
+{
+  enum gimple_code outer_type = gimple_code (ctx->stmt);
+  return ((outer_type == GIMPLE_OMP_TARGET)
+	  && ((gimple_omp_target_kind (ctx->stmt)
+	       == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_DATA_KERNELS)));
 }
 
 /* Return true if STMT corresponds to an OpenMP target region.  */
@@ -787,7 +803,7 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx)
     }
   else if (by_ref)
     type = build_pointer_type (type);
-  else if ((mask & 3) == 1 && omp_is_reference (var))
+  else if ((mask & (32 | 3)) == 1 && omp_is_reference (var))
     type = TREE_TYPE (type);
 
   field = build_decl (DECL_SOURCE_LOCATION (var),
@@ -1125,8 +1141,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    /* omp_default_mem_alloc is 1 */
 	    || !integer_onep (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))))
       {
-	if (is_task_ctx (ctx))
-	  continue; /* For now.  */
 	if (ctx->allocate_map == NULL)
 	  ctx->allocate_map = new hash_map<tree, tree>;
 	ctx->allocate_map->put (OMP_CLAUSE_DECL (c),
@@ -1194,21 +1208,32 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  goto do_private;
 
 	case OMP_CLAUSE_REDUCTION:
-	  if (is_oacc_parallel_or_serial (ctx) || is_oacc_kernels (ctx))
-	    ctx->local_reduction_clauses
-	      = tree_cons (NULL, c, ctx->local_reduction_clauses);
-	  if ((OMP_CLAUSE_REDUCTION_INSCAN (c)
-	       || OMP_CLAUSE_REDUCTION_TASK (c)) && ctx->allocate_map)
+	  /* Collect 'reduction' clauses on OpenACC compute construct.  */
+	  if (is_gimple_omp_oacc (ctx->stmt)
+	      && is_gimple_omp_offloaded (ctx->stmt))
 	    {
-	      tree decl = OMP_CLAUSE_DECL (c);
-	      /* For now.  */
-	      if (ctx->allocate_map->get (decl))
-		ctx->allocate_map->remove (decl);
+	      /* No 'reduction' clauses on OpenACC 'kernels'.  */
+	      gcc_checking_assert (!is_oacc_kernels (ctx));
+	      /* Likewise, on OpenACC 'kernels' decomposed parts.  */
+	      gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
+
+	      ctx->local_reduction_clauses
+		= tree_cons (NULL, c, ctx->local_reduction_clauses);
 	    }
 	  /* FALLTHRU */
 
 	case OMP_CLAUSE_IN_REDUCTION:
 	  decl = OMP_CLAUSE_DECL (c);
+	  if (ctx->allocate_map
+	      && ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		   && (OMP_CLAUSE_REDUCTION_INSCAN (c)
+		       || OMP_CLAUSE_REDUCTION_TASK (c)))
+		  || is_task_ctx (ctx)))
+	    {
+	      /* For now.  */
+	      if (ctx->allocate_map->get (decl))
+		ctx->allocate_map->remove (decl);
+	    }
 	  if (TREE_CODE (decl) == MEM_REF)
 	    {
 	      tree t = TREE_OPERAND (decl, 0);
@@ -1292,7 +1317,16 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if (is_variable_sized (decl))
 	    {
 	      if (is_task_ctx (ctx))
-		install_var_field (decl, false, 1, ctx);
+		{
+		  if (ctx->allocate_map
+		      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
+		    {
+		      /* For now.  */
+		      if (ctx->allocate_map->get (decl))
+			ctx->allocate_map->remove (decl);
+		    }
+		  install_var_field (decl, false, 1, ctx);
+		}
 	      break;
 	    }
 	  else if (is_taskreg_ctx (ctx))
@@ -1304,7 +1338,11 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      if (is_task_ctx (ctx)
 		  && (global || by_ref || omp_is_reference (decl)))
 		{
-		  install_var_field (decl, false, 1, ctx);
+		  if (ctx->allocate_map
+		      && ctx->allocate_map->get (decl))
+		    install_var_field (decl, by_ref, 32 | 1, ctx);
+		  else
+		    install_var_field (decl, false, 1, ctx);
 		  if (!global)
 		    install_var_field (decl, by_ref, 2, ctx);
 		}
@@ -2408,7 +2446,9 @@ enclosing_target_ctx (omp_context *ctx)
   return ctx;
 }
 
-/* Return true if ctx is part of an oacc kernels region.  */
+/* Return whether CTX's parent compute construct is an OpenACC 'kernels'
+   construct.
+   (This doesn't include OpenACC 'kernels' decomposed parts.)  */
 
 static bool
 ctx_in_oacc_kernels_region (omp_context *ctx)
@@ -2424,7 +2464,8 @@ ctx_in_oacc_kernels_region (omp_context *ctx)
   return false;
 }
 
-/* Check the parallelism clauses inside a kernels regions.
+/* Check the parallelism clauses inside a OpenACC 'kernels' region.
+   (This doesn't include OpenACC 'kernels' decomposed parts.)
    Until kernels handling moves to use the same loop indirection
    scheme as parallel, we need to do this checking early.  */
 
@@ -2502,7 +2543,7 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
     {
       omp_context *tgt = enclosing_target_ctx (outer_ctx);
 
-      if (!tgt || is_oacc_parallel_or_serial (tgt))
+      if (!(tgt && is_oacc_kernels (tgt)))
 	for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
 	  {
 	    tree c_op0;
@@ -2526,6 +2567,10 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
 
 	    if (c_op0)
 	      {
+		/* By construction, this is impossible for OpenACC 'kernels'
+		   decomposed parts.  */
+		gcc_assert (!(tgt && is_oacc_kernels_decomposed_part (tgt)));
+
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "argument not permitted on %qs clause",
 			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
@@ -3063,6 +3108,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		  case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 		  case GF_OMP_TARGET_KIND_OACC_KERNELS:
 		  case GF_OMP_TARGET_KIND_OACC_SERIAL:
+		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
 		    ok = true;
 		    break;
 
@@ -3519,6 +3566,11 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    case GF_OMP_TARGET_KIND_OACC_DECLARE: stmt_name = "declare"; break;
 	    case GF_OMP_TARGET_KIND_OACC_HOST_DATA: stmt_name = "host_data";
 	      break;
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
+	      /* OpenACC 'kernels' decomposed parts.  */
+	      stmt_name = "kernels"; break;
 	    default: gcc_unreachable ();
 	    }
 	  switch (gimple_omp_target_kind (ctx->stmt))
@@ -3534,6 +3586,11 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    case GF_OMP_TARGET_KIND_OACC_DATA: ctx_stmt_name = "data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 	      ctx_stmt_name = "host_data"; break;
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
+	      /* OpenACC 'kernels' decomposed parts.  */
+	      ctx_stmt_name = "kernels"; break;
 	    default: gcc_unreachable ();
 	    }
 
@@ -4454,7 +4511,9 @@ lower_private_allocate (tree var, tree new_var, tree &allocator,
   gimple_seq_add_stmt (ilist, g);
   if (!is_ref)
     {
-      SET_DECL_VALUE_EXPR (new_var, build_simple_mem_ref (allocate_ptr));
+      tree x = build_simple_mem_ref (allocate_ptr);
+      TREE_THIS_NOTRAP (x) = 1;
+      SET_DECL_VALUE_EXPR (new_var, x);
       DECL_HAS_VALUE_EXPR_P (new_var) = 1;
     }
   return true;
@@ -5365,7 +5424,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	      if (c_kind == OMP_CLAUSE_FIRSTPRIVATE && is_task_ctx (ctx))
 		{
 		  x = build_receiver_ref (var, false, ctx);
-		  x = build_fold_addr_expr_loc (clause_loc, x);
+		  if (ctx->allocate_map)
+		    if (tree *allocatep = ctx->allocate_map->get (var))
+		      {
+			allocator = *allocatep;
+			if (TREE_CODE (allocator) != INTEGER_CST)
+			  allocator = build_outer_var_ref (allocator, ctx);
+			allocator = fold_convert (pointer_sized_int_node,
+						  allocator);
+			allocate_ptr = unshare_expr (x);
+		      }
+		  if (allocator == NULL_TREE)
+		    x = build_fold_addr_expr_loc (clause_loc, x);
 		}
 	      else if (lower_private_allocate (var, new_var, allocator,
 					       allocate_ptr,
@@ -5632,6 +5702,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		gimplify_and_add (x, dlist);
 	      if (allocator)
 		{
+		  if (!is_gimple_val (allocator))
+		    {
+		      tree avar = create_tmp_var (TREE_TYPE (allocator));
+		      gimplify_assign (avar, allocator, dlist);
+		      allocator = avar;
+		    }
+		  if (!is_gimple_val (allocate_ptr))
+		    {
+		      tree apvar = create_tmp_var (TREE_TYPE (allocate_ptr));
+		      gimplify_assign (apvar, allocate_ptr, dlist);
+		      allocate_ptr = apvar;
+		    }
 		  tree f = builtin_decl_explicit (BUILT_IN_GOMP_FREE);
 		  gimple *g
 		    = gimple_build_call (f, 2, allocate_ptr, allocator);
@@ -5660,6 +5742,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			   || use_pointer_for_field (var, NULL))
 		    {
 		      x = build_receiver_ref (var, false, ctx);
+		      if (ctx->allocate_map)
+			if (tree *allocatep = ctx->allocate_map->get (var))
+			  {
+			    allocator = *allocatep;
+			    if (TREE_CODE (allocator) != INTEGER_CST)
+			      allocator = build_outer_var_ref (allocator, ctx);
+			    allocator = fold_convert (pointer_sized_int_node,
+						      allocator);
+			    allocate_ptr = unshare_expr (x);
+			    x = build_simple_mem_ref (x);
+			    TREE_THIS_NOTRAP (x) = 1;
+			  }
 		      SET_DECL_VALUE_EXPR (new_var, x);
 		      DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 		      goto do_dtor;
@@ -6921,6 +7015,11 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
       {
+	/* No 'reduction' clauses on OpenACC 'kernels'.  */
+	gcc_checking_assert (!is_oacc_kernels (ctx));
+	/* Likewise, on OpenACC 'kernels' decomposed parts.  */
+	gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
+
 	tree orig = OMP_CLAUSE_DECL (c);
 	tree var = maybe_lookup_decl (orig, ctx);
 	tree ref_to_res = NULL_TREE;
@@ -6958,10 +7057,11 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		    break;
 
 		  case GIMPLE_OMP_TARGET:
-		    if ((gimple_omp_target_kind (probe->stmt)
-			 != GF_OMP_TARGET_KIND_OACC_PARALLEL)
-			&& (gimple_omp_target_kind (probe->stmt)
-			    != GF_OMP_TARGET_KIND_OACC_SERIAL))
+		    /* No 'reduction' clauses inside OpenACC 'kernels'
+		       regions.  */
+		    gcc_checking_assert (!is_oacc_kernels (probe));
+
+		    if (!is_gimple_omp_offloaded (probe->stmt))
 		      goto do_lookup;
 
 		    cls = gimple_omp_target_clauses (probe->stmt);
@@ -7768,10 +7868,28 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
       tag |= OLF_GANG_STATIC;
     }
 
-  /* In a parallel region, loops are implicitly INDEPENDENT.  */
   omp_context *tgt = enclosing_target_ctx (ctx);
   if (!tgt || is_oacc_parallel_or_serial (tgt))
+    ;
+  else if (is_oacc_kernels (tgt))
+    /* Not using this loops handling inside OpenACC 'kernels' regions.  */
+    gcc_unreachable ();
+  else if (is_oacc_kernels_decomposed_part (tgt))
+    ;
+  else
+    gcc_unreachable ();
+
+  /* In a parallel region, loops are implicitly INDEPENDENT.  */
+  if (!tgt || is_oacc_parallel_or_serial (tgt))
     tag |= OLF_INDEPENDENT;
+
+  /* Loops inside OpenACC 'kernels' decomposed parts' regions are expected to
+     have an explicit 'seq' or 'independent' clause, and no 'auto' clause.  */
+  if (tgt && is_oacc_kernels_decomposed_part (tgt))
+    {
+      gcc_assert (tag & (OLF_SEQ | OLF_INDEPENDENT));
+      gcc_assert (!(tag & OLF_AUTO));
+    }
 
   if (tag & OLF_TILE)
     /* Tiling could use all 3 levels.  */ 
@@ -11222,7 +11340,35 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
 	if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE)
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);
 	else
-	  t = lang_hooks.decls.omp_clause_copy_ctor (c, dst, src);
+	  {
+	    if (ctx->allocate_map)
+	      if (tree *allocatorp = ctx->allocate_map->get (decl))
+		{
+		  tree allocator = *allocatorp;
+		  if (TREE_CODE (allocator) != INTEGER_CST)
+		    {
+		      n = splay_tree_lookup (ctx->sfield_map,
+					     (splay_tree_key) allocator);
+		      allocator = (tree) n->value;
+		      if (tcctx.cb.decl_map)
+			allocator = *tcctx.cb.decl_map->get (allocator);
+		      tree a = build_simple_mem_ref_loc (loc, sarg);
+		      allocator = omp_build_component_ref (a, allocator);
+		    }
+		  allocator = fold_convert (pointer_sized_int_node, allocator);
+		  tree a = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
+		  tree align = build_int_cst (size_type_node,
+					      DECL_ALIGN_UNIT (decl));
+		  tree sz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (dst)));
+		  tree ptr = build_call_expr_loc (loc, a, 3, align, sz,
+						  allocator);
+		  ptr = fold_convert (TREE_TYPE (dst), ptr);
+		  t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, ptr);
+		  append_to_statement_list (t, &list);
+		  dst = build_simple_mem_ref_loc (loc, dst);
+		}
+	    t = lang_hooks.decls.omp_clause_copy_ctor (c, dst, src);
+	  }
 	append_to_statement_list (t, &list);
 	break;
       case OMP_CLAUSE_PRIVATE:
@@ -11620,11 +11766,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
     case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
       data_region = false;
       break;
     case GF_OMP_TARGET_KIND_DATA:
     case GF_OMP_TARGET_KIND_OACC_DATA:
     case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
       data_region = true;
       break;
     default:
@@ -11805,8 +11954,16 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	break;
 
       case OMP_CLAUSE_FIRSTPRIVATE:
-	if (is_oacc_parallel_or_serial (ctx))
-	  goto oacc_firstprivate;
+	gcc_checking_assert (offloaded);
+	if (is_gimple_omp_oacc (ctx->stmt))
+	  {
+	    /* No 'firstprivate' clauses on OpenACC 'kernels'.  */
+	    gcc_checking_assert (!is_oacc_kernels (ctx));
+	    /* Likewise, on OpenACC 'kernels' decomposed parts.  */
+	    gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
+
+	    goto oacc_firstprivate;
+	  }
 	map_cnt++;
 	var = OMP_CLAUSE_DECL (c);
 	if (!omp_is_reference (var)
@@ -11831,8 +11988,16 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	break;
 
       case OMP_CLAUSE_PRIVATE:
+	gcc_checking_assert (offloaded);
 	if (is_gimple_omp_oacc (ctx->stmt))
-	  break;
+	  {
+	    /* No 'private' clauses on OpenACC 'kernels'.  */
+	    gcc_checking_assert (!is_oacc_kernels (ctx));
+	    /* Likewise, on OpenACC 'kernels' decomposed parts.  */
+	    gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
+
+	    break;
+	  }
 	var = OMP_CLAUSE_DECL (c);
 	if (is_variable_sized (var))
 	  {
@@ -12195,7 +12360,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    break;
 
 	  case OMP_CLAUSE_FIRSTPRIVATE:
-	    if (is_oacc_parallel_or_serial (ctx))
+	    if (is_gimple_omp_oacc (ctx->stmt))
 	      goto oacc_firstprivate_map;
 	    ovar = OMP_CLAUSE_DECL (c);
 	    if (omp_is_reference (ovar))
@@ -12799,7 +12964,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gimple_seq fork_seq = NULL;
       gimple_seq join_seq = NULL;
 
-      if (is_oacc_parallel_or_serial (ctx))
+      if (offloaded && is_gimple_omp_oacc (ctx->stmt))
 	{
 	  /* If there are reductions on the offloaded region itself, treat
 	     them as a dummy GANG loop.  */

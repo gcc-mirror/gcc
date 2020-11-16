@@ -9,8 +9,8 @@
 int
 foo (void)
 {
-#if FOO /* { dg-error "binary constants are a GCC extension" } */
+#if FOO /* { dg-error "binary constants are a C2X feature or GCC extension" } */
   return 23;
 #endif
-  return 0b1101; /* { dg-error "binary constants are a GCC extension" } */
+  return 0b1101; /* { dg-error "binary constants are a C2X feature or GCC extension" } */
 }

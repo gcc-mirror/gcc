@@ -1,3 +1,18 @@
+2020-11-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (expand_intrinsic_copysign): Explicitly determine
+	which built-in copysign function to call.
+
+2020-11-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97644
+	* dmd/MERGE: Merge upstream dmd 95044d8e4.
+	* d-target.cc (TargetCPP::thunkMangle): New function.
+	* decl.cc (finish_thunk): Don't force expand thunks for external
+	functions.
+	(make_thunk): Emit thunks only if the function has a definition.
+	Generate correct mangling for thunks to C++ classes.
+
 2020-11-10  Strager Neds  <strager.nds@gmail.com>
 
 	* decl.cc (finish_thunk): Use new overload of

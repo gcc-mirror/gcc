@@ -1,3 +1,21 @@
+2020-11-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* c-parser.c (c_parser_asm_statement): Parse outputs for asm
+	goto too.
+	* c-typeck.c (build_asm_expr): Remove an assert checking output
+	absence for asm goto.
+
+2020-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Don't clear
+	OMP_CLAUSE_REDUCTION_INSCAN unless reduction_seen == -2.
+
+2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/77404
+	* c-parser.c (c_parser_objc_class_definition): Pass the
+	location of the class name to the interface declaration.
+
 2020-11-10  Strager Neds  <strager.nds@gmail.com>
 
 	* c-decl.c (merge_decls): Use new overload of

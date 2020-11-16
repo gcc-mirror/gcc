@@ -12463,22 +12463,22 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  /* Allocate clause we duplicate on task and inner taskloop
 	     if the decl is lastprivate, otherwise just put on task.  */
 	  case OMP_CLAUSE_ALLOCATE:
+	    if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+		&& DECL_P (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)))
+	      {
+		/* Additionally, put firstprivate clause on task
+		   for the allocator if it is not constant.  */
+		*gtask_clauses_ptr
+		  = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+				      OMP_CLAUSE_FIRSTPRIVATE);
+		OMP_CLAUSE_DECL (*gtask_clauses_ptr)
+		  = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+		gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (*gtask_clauses_ptr);
+	      }
 	    if (lastprivate_uids
 		&& bitmap_bit_p (lastprivate_uids,
 				 DECL_UID (OMP_CLAUSE_DECL (c))))
 	      {
-		if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
-		    && DECL_P (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)))
-		  {
-		    /* Additionally, put firstprivate clause on task
-		       for the allocator if it is not constant.  */
-		    *gtask_clauses_ptr
-		      = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-					  OMP_CLAUSE_FIRSTPRIVATE);
-		    OMP_CLAUSE_DECL (*gtask_clauses_ptr)
-		      = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
-		    gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (*gtask_clauses_ptr);
-		  }
 		*gfor_clauses_ptr = c;
 		gfor_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
 		*gtask_clauses_ptr = copy_node (c);
