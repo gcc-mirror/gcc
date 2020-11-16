@@ -196,6 +196,17 @@ ix86_expand_move (machine_mode mode, rtx operands[])
   op0 = operands[0];
   op1 = operands[1];
 
+  /* Avoid complex sets of likely spilled hard registers before reload.  */
+  if (!ix86_hardreg_mov_ok (op0, op1))
+    {
+      tmp = gen_reg_rtx (mode);
+      operands[0] = tmp;
+      ix86_expand_move (mode, operands);
+      operands[0] = op0;
+      operands[1] = tmp;
+      op1 = tmp;
+    }
+
   switch (GET_CODE (op1))
     {
     case CONST:
