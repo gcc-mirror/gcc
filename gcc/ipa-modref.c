@@ -1333,7 +1333,14 @@ analyze_ssa_name_flags (tree name, vec<unsigned char> &known_flags, int depth)
 	  /* Handle *name = exp.  */
 	  else if (assign
 		   && memory_access_to (gimple_assign_lhs (assign), name))
-	    flags &= ~(EAF_UNUSED | EAF_NOCLOBBER);
+	    {
+	      /* In general we can not ignore clobbers because they are
+		 barriers for code motion, however after inlining it is safe to
+		 do because local optimization passes do not consider clobbers
+		 from other functions.  Similar logic is in ipa-pure-const.c.  */
+	      if (!cfun->after_inlining || !gimple_clobber_p (assign))
+		flags &= ~(EAF_UNUSED | EAF_NOCLOBBER);
+	    }
 	  /* ASM statements etc.  */
 	  else if (!assign)
 	    {
