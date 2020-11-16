@@ -929,7 +929,7 @@ Maximum number of tests performed by modref query.
 
 -param=modref-max-depth=
 Common Joined UInteger Var(param_modref_max_depth) Init(256)
-Maximum depth of DFS walk used by modref escape analysis
+Maximum depth of DFS walk used by modref escape analysis.
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
