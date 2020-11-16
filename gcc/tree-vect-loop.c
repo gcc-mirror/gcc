@@ -2298,6 +2298,9 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
 
       /* Optimize the SLP graph with the vectorization factor fixed.  */
       vect_optimize_slp (loop_vinfo);
+
+      /* Gather the loads reachable from the SLP graph entries.  */
+      vect_gather_slp_loads (loop_vinfo);
     }
 
   bool saved_can_use_partial_vectors_p
