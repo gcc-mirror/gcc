@@ -702,7 +702,10 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
   if (vr1->operands == vr2->operands)
     return true;
 
-  if (!expressions_equal_p (TYPE_SIZE (vr1->type), TYPE_SIZE (vr2->type)))
+  if (COMPLETE_TYPE_P (vr1->type) != COMPLETE_TYPE_P (vr2->type)
+      || (COMPLETE_TYPE_P (vr1->type)
+	  && !expressions_equal_p (TYPE_SIZE (vr1->type),
+				   TYPE_SIZE (vr2->type))))
     return false;
 
   if (INTEGRAL_TYPE_P (vr1->type)
