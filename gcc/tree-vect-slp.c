@@ -2629,8 +2629,18 @@ vect_slp_build_vertices (vec_info *info, vec<slp_tree> &vertices,
   unsigned i;
   slp_instance instance;
   FOR_EACH_VEC_ELT (info->slp_instances, i, instance)
-    vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
-			     leafs);
+    {
+      unsigned n_v = vertices.length ();
+      unsigned n_l = leafs.length ();
+      vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
+			       leafs);
+      /* If we added vertices but no entries to the reverse graph we've
+	 added a cycle that is not backwards-reachable.   Push the entry
+	 to mimic as leaf then.  */
+      if (vertices.length () > n_v
+	  && leafs.length () == n_l)
+	leafs.safe_push (SLP_INSTANCE_TREE (instance)->vertex);
+    }
 }
 
 /* Apply (reverse) bijectite PERM to VEC.  */
@@ -2724,9 +2734,11 @@ vect_optimize_slp (vec_info *vinfo)
 	  || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
 	continue;
 
-      /* Loads are the only thing generating permutes and leafs do not
-	 change across iterations.  */
-      bitmap_set_bit (n_visited, idx);
+      /* Leafs do not change across iterations.  Note leafs also double
+	 as entries to the reverse graph.  */
+      if (!slpg->vertices[idx].succ)
+	bitmap_set_bit (n_visited, idx);
+      /* Loads are the only thing generating permutes.  */
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
 
