@@ -1,3 +1,8 @@
+2020-11-16  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/i386.h: Add PREFETCHW to march=broadwell.
+	* doc/invoke.texi: Put PREFETCHW back to relation arch.
+
 2020-11-11  liuhongt  <hongtao.liu@intel.com>
 
 	* config/i386/i386.c (ix86_option_override_internal):
