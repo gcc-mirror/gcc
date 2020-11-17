@@ -559,16 +559,18 @@ Whatever the actual target object format, this is often good enough.",
  void, (tree decl, int reloc),
  default_unique_section)
 
-/* Return the readonly data section associated with function DECL.  */
+/* Return the readonly data or relocated readonly data section
+   associated with function DECL.  */
 DEFHOOK
 (function_rodata_section,
- "Return the readonly data section associated with\n\
-@samp{DECL_SECTION_NAME (@var{decl})}.\n\
+ "Return the readonly data or reloc readonly data section associated with\n\
+@samp{DECL_SECTION_NAME (@var{decl})}. @var{relocatable} selects the latter\n\
+over the former.\n\
 The default version of this function selects @code{.gnu.linkonce.r.name} if\n\
 the function's section is @code{.gnu.linkonce.t.name}, @code{.rodata.name}\n\
-if function is in @code{.text.name}, and the normal readonly-data section\n\
-otherwise.",
- section *, (tree decl),
+or @code{.data.rel.ro.name} if function is in @code{.text.name}, and\n\
+the normal readonly-data or reloc readonly data section otherwise.",
+ section *, (tree decl, bool relocatable),
  default_function_rodata_section)
 
 /* Nonnull if the target wants to override the default ".rodata" prefix

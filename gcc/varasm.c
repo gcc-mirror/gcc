@@ -732,12 +732,26 @@ switch_to_other_text_partition (void)
   switch_to_section (current_function_section ());
 }
 
-/* Return the read-only data section associated with function DECL.  */
+/* Return the read-only or relocated read-only data section
+   associated with function DECL.  */
 
 section *
-default_function_rodata_section (tree decl)
+default_function_rodata_section (tree decl, bool relocatable)
 {
-  if (decl != NULL_TREE && DECL_SECTION_NAME (decl))
+  const char* sname;
+  unsigned int flags;
+
+  flags = 0;
+
+  if (relocatable)
+    {
+      sname = ".data.rel.ro.local";
+      flags = (SECTION_WRITE | SECTION_RELRO);
+    }
+  else
+    sname = ".rodata";
+
+  if (decl && DECL_SECTION_NAME (decl))
     {
       const char *name = DECL_SECTION_NAME (decl);
 
@@ -750,38 +764,56 @@ default_function_rodata_section (tree decl)
 	  dot = strchr (name + 1, '.');
 	  if (!dot)
 	    dot = name;
-	  len = strlen (dot) + 8;
+	  len = strlen (dot) + strlen (sname) + 1;
 	  rname = (char *) alloca (len);
 
-	  strcpy (rname, ".rodata");
+	  strcpy (rname, sname);
 	  strcat (rname, dot);
-	  return get_section (rname, SECTION_LINKONCE, decl);
+	  return get_section (rname, (SECTION_LINKONCE | flags), decl);
 	}
-      /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo.  */
+      /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo or
+	 .gnu.linkonce.d.rel.ro.local.foo if the jump table is relocatable.  */
       else if (DECL_COMDAT_GROUP (decl)
 	       && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
 	{
-	  size_t len = strlen (name) + 1;
-	  char *rname = (char *) alloca (len);
+	  size_t len;
+	  char *rname;
 
-	  memcpy (rname, name, len);
-	  rname[14] = 'r';
-	  return get_section (rname, SECTION_LINKONCE, decl);
+	  if (relocatable)
+	    {
+	      len = strlen (name) + strlen (".rel.ro.local") + 1;
+	      rname = (char *) alloca (len);
+
+	      strcpy (rname, ".gnu.linkonce.d.rel.ro.local");
+	      strcat (rname, name + 15);
+	    }
+	  else
+	    {
+	      len = strlen (name) + 1;
+	      rname = (char *) alloca (len);
+
+	      memcpy (rname, name, len);
+	      rname[14] = 'r';
+	    }
+	  return get_section (rname, (SECTION_LINKONCE | flags), decl);
 	}
       /* For .text.foo we want to use .rodata.foo.  */
       else if (flag_function_sections && flag_data_sections
 	       && strncmp (name, ".text.", 6) == 0)
 	{
 	  size_t len = strlen (name) + 1;
-	  char *rname = (char *) alloca (len + 2);
+	  char *rname = (char *) alloca (len + strlen (sname) - 5);
 
-	  memcpy (rname, ".rodata", 7);
-	  memcpy (rname + 7, name + 5, len - 5);
-	  return get_section (rname, 0, decl);
+	  memcpy (rname, sname, strlen (sname));
+	  memcpy (rname + strlen (sname), name + 5, len - 5);
+	  return get_section (rname, flags, decl);
 	}
     }
 
-  return readonly_data_section;
+  if (relocatable)
+    return get_section (sname, flags, decl);
+  else
+    return readonly_data_section;
 }
 
 /* Return the read-only data section associated with function DECL
@@ -789,7 +821,7 @@ default_function_rodata_section (tree decl)
    readonly data section.  */
 
 section *
-default_no_function_rodata_section (tree decl ATTRIBUTE_UNUSED)
+default_no_function_rodata_section (tree, bool)
 {
   return readonly_data_section;
 }
@@ -799,7 +831,8 @@ default_no_function_rodata_section (tree decl ATTRIBUTE_UNUSED)
 static const char *
 function_mergeable_rodata_prefix (void)
 {
-  section *s = targetm.asm_out.function_rodata_section (current_function_decl);
+  section *s = targetm.asm_out.function_rodata_section (current_function_decl,
+							false);
   if (SECTION_STYLE (s) == SECTION_NAMED)
     return s->named.name;
   else
