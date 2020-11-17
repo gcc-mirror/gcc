@@ -1263,7 +1263,7 @@ Specify which cpu variant the compiler should generate code for by default.
 This option is only supported on some targets, including ARC, ARM, i386, M68k,
 PowerPC, and SPARC@.  It is mandatory for ARC@.  The @option{--with-cpu-32} and
 @option{--with-cpu-64} options specify separate default CPUs for
-32-bit and 64-bit modes; these options are only supported for i386,
+32-bit and 64-bit modes; these options are only supported for aarch64, i386,
 x86-64, PowerPC, and SPARC@.
 
 @item --with-schedule=@var{cpu}
