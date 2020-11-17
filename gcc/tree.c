@@ -1755,8 +1755,15 @@ wide_int_to_tree (tree type, const poly_wide_int_ref &value)
   return build_poly_int_cst (type, value);
 }
 
-void
-cache_integer_cst (tree t)
+/* Insert INTEGER_CST T into a cache of integer constants.  And return
+   the cached constant (which may or may not be T).  If MIGHT_DUPLICATE
+   is false, and T falls into the type's 'smaller values' range, there
+   cannot be an existing entry.  Otherwise, if MIGHT_DUPLICATE is true,
+   or the value is large, should an existing entry exist, it is
+   returned (rather than inserting T).  */
+
+tree
+cache_integer_cst (tree t, bool might_duplicate ATTRIBUTE_UNUSED)
 {
   tree type = TREE_TYPE (t);
   int ix = -1;
@@ -1770,7 +1777,7 @@ cache_integer_cst (tree t)
   switch (TREE_CODE (type))
     {
     case NULLPTR_TYPE:
-      gcc_assert (integer_zerop (t));
+      gcc_checking_assert (integer_zerop (t));
       /* Fallthru.  */
 
     case POINTER_TYPE:
@@ -1850,21 +1857,32 @@ cache_integer_cst (tree t)
 	  TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
 	}
 
-      gcc_assert (TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) == NULL_TREE);
-      TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+      if (tree r = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix))
+	{
+	  gcc_checking_assert (might_duplicate);
+	  t = r;
+	}
+      else
+	TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
     }
   else
     {
       /* Use the cache of larger shared ints.  */
       tree *slot = int_cst_hash_table->find_slot (t, INSERT);
-      /* If there is already an entry for the number verify it's the
-         same.  */
-      if (*slot)
-	gcc_assert (wi::to_wide (tree (*slot)) == wi::to_wide (t));
+      if (tree r = *slot)
+	{
+	  /* If there is already an entry for the number verify it's the
+	     same value.  */
+	  gcc_checking_assert (wi::to_wide (tree (r)) == wi::to_wide (t));
+	  /* And return the cached value.  */
+	  t = r;
+	}
       else
 	/* Otherwise insert this one into the hash table.  */
 	*slot = t;
     }
+
+  return t;
 }
 
 
