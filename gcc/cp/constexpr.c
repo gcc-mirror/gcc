@@ -7502,7 +7502,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OVERLOAD:
     case TEMPLATE_ID_EXPR:
     case LABEL_DECL:
-    case LABEL_EXPR:
     case CASE_LABEL_EXPR:
     case PREDICT_EXPR:
     case CONST_DECL:
@@ -8410,6 +8409,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  error_at (loc, "%<goto%> is not a constant expression");
 	return false;
       }
+
+    case LABEL_EXPR:
+      t = LABEL_EXPR_LABEL (t);
+      if (DECL_ARTIFICIAL (t))
+	return true;
+      else if (flags & tf_error)
+	error_at (loc, "label definition is not a constant expression");
+      return false;
 
     case ANNOTATE_EXPR:
       return RECUR (TREE_OPERAND (t, 0), rval);
