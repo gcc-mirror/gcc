@@ -740,10 +740,10 @@ void
 Compilation::visit (AST::ReturnExpr &expr)
 {
   Bexpression *ret = NULL;
-  VISIT_POP (expr.return_expr->get_locus_slow (), expr.return_expr, ret, exprs);
+  VISIT_POP (expr.get_returned_expr ()->get_locus_slow (), expr.get_returned_expr ().get (), ret, exprs);
   if (ret == NULL)
     {
-      rust_fatal_error (expr.return_expr->get_locus_slow (),
+      rust_fatal_error (expr.get_returned_expr ()->get_locus_slow (),
 			"failed to compile");
       return;
     }
@@ -778,11 +778,11 @@ void
 Compilation::visit (AST::IfExpr &expr)
 {
   Bexpression *cond = NULL;
-  VISIT_POP (expr.get_if_condition ()->get_locus_slow (),
-	     expr.get_if_condition (), cond, exprs);
+  VISIT_POP (expr.get_condition_expr ()->get_locus_slow (),
+	     expr.get_condition_expr ().get (), cond, exprs);
   if (cond == NULL)
     {
-      rust_error_at (expr.get_if_condition ()->get_locus_slow (),
+      rust_error_at (expr.get_condition_expr ()->get_locus_slow (),
 		     "failed to compile");
       return;
     }
@@ -799,11 +799,11 @@ void
 Compilation::visit (AST::IfExprConseqElse &expr)
 {
   Bexpression *cond = NULL;
-  VISIT_POP (expr.get_if_condition ()->get_locus_slow (),
-	     expr.get_if_condition (), cond, exprs);
+  VISIT_POP (expr.get_condition_expr ()->get_locus_slow (),
+	     expr.get_condition_expr ().get (), cond, exprs);
   if (cond == NULL)
     {
-      rust_error_at (expr.get_if_condition ()->get_locus_slow (),
+      rust_error_at (expr.get_condition_expr ()->get_locus_slow (),
 		     "failed to compile");
       return;
     }
@@ -824,11 +824,11 @@ void
 Compilation::visit (AST::IfExprConseqIf &expr)
 {
   Bexpression *cond = NULL;
-  VISIT_POP (expr.get_if_condition ()->get_locus_slow (),
-	     expr.get_if_condition (), cond, exprs);
+  VISIT_POP (expr.get_condition_expr ()->get_locus_slow (),
+	     expr.get_condition_expr ().get (), cond, exprs);
   if (cond == NULL)
     {
-      rust_error_at (expr.get_if_condition ()->get_locus_slow (),
+      rust_error_at (expr.get_condition_expr ()->get_locus_slow (),
 		     "failed to compile");
       return;
     }

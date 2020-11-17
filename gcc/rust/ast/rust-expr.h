@@ -3281,7 +3281,6 @@ protected:
 // Return expression AST node representation
 class ReturnExpr : public ExprWithoutBlock
 {
-public:
   std::unique_ptr<Expr> return_expr;
 
   Location locus;
@@ -3289,11 +3288,12 @@ public:
   // TODO: find another way to store this to save memory?
   bool marked_for_strip = false;
 
+public:
   std::string as_string () const override;
 
   /* Returns whether the object has an expression returned (i.e. not void return
    * type). */
-  bool has_return_expr () const { return return_expr != nullptr; }
+  bool has_returned_expr () const { return return_expr != nullptr; }
 
   // Constructor for ReturnExpr.
   ReturnExpr (Location locus, std::unique_ptr<Expr> returned_expr = nullptr,
@@ -3341,6 +3341,12 @@ public:
   void mark_for_strip () override { marked_for_strip = true; }
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_returned_expr () {
+    rust_assert (return_expr != nullptr);
+    return return_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3358,7 +3364,6 @@ class UnsafeBlockExpr : public ExprWithBlock
 {
   // Or just have it extend BlockExpr
   std::unique_ptr<BlockExpr> expr;
-
   Location locus;
 
 public:
@@ -3408,6 +3413,12 @@ public:
   void mark_for_strip () override { expr = nullptr; }
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_block_expr () {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3422,7 +3433,6 @@ protected:
 class LoopLabel /*: public Node*/
 {
   Lifetime label; // or type LIFETIME_OR_LABEL
-
   Location locus;
 
 public:
@@ -3504,6 +3514,12 @@ public:
   // Invalid if loop block is null, so base stripping on that. 
   void mark_for_strip () override { loop_block = nullptr; }
   bool is_marked_for_strip () const override { return loop_block == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_loop_block () {
+    rust_assert (loop_block != nullptr);
+    return loop_block;
+  }
 };
 
 // 'Loop' expression (i.e. the infinite loop) AST node
@@ -3573,6 +3589,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_predicate_expr () {
+    rust_assert (condition != nullptr);
+    return condition;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3587,14 +3609,14 @@ class WhileLetLoopExpr : public BaseLoopExpr
 {
   // MatchArmPatterns patterns;
   std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
-  std::unique_ptr<Expr> condition;
+  std::unique_ptr<Expr> scrutinee;
 
 public:
   std::string as_string () const override;
 
   // Constructor with a loop label
   WhileLetLoopExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
-		    std::unique_ptr<Expr> condition,
+		    std::unique_ptr<Expr> scrutinee,
 		    std::unique_ptr<BlockExpr> loop_block, Location locus,
 		    LoopLabel loop_label = LoopLabel::error (),
 		    std::vector<Attribute> outer_attribs
@@ -3602,14 +3624,14 @@ public:
     : BaseLoopExpr (std::move (loop_block), locus, std::move (loop_label),
 		    std::move (outer_attribs)),
       match_arm_patterns (std::move (match_arm_patterns)),
-      condition (std::move (condition))
+      scrutinee (std::move (scrutinee))
   {}
 
   // Copy constructor with clone
   WhileLetLoopExpr (WhileLetLoopExpr const &other)
     : BaseLoopExpr (other),
-      /*match_arm_patterns(other.match_arm_patterns),*/ condition (
-	other.condition->clone_expr ())
+      /*match_arm_patterns(other.match_arm_patterns),*/ scrutinee (
+	other.scrutinee->clone_expr ())
   {
     match_arm_patterns.reserve (other.match_arm_patterns.size ());
     for (const auto &e : other.match_arm_patterns)
@@ -3621,7 +3643,7 @@ public:
   {
     BaseLoopExpr::operator= (other);
     // match_arm_patterns = other.match_arm_patterns;
-    condition = other.condition->clone_expr ();
+    scrutinee = other.scrutinee->clone_expr ();
     // loop_block = other.loop_block->clone_block_expr();
     // loop_label = other.loop_label;
     // outer_attrs = other.outer_attrs;
@@ -3638,6 +3660,12 @@ public:
   WhileLetLoopExpr &operator= (WhileLetLoopExpr &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_scrutinee_expr () {
+    rust_assert (scrutinee != nullptr);
+    return scrutinee;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3693,6 +3721,12 @@ public:
   ForLoopExpr &operator= (ForLoopExpr &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_iterator_expr () {
+    rust_assert (iterator_expr != nullptr);
+    return iterator_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3777,8 +3811,17 @@ public:
   void vis_if_condition (ASTVisitor &vis) { condition->accept_vis (vis); }
   void vis_if_block (ASTVisitor &vis) { if_block->accept_vis (vis); }
 
-  Expr *get_if_condition () { return condition.get (); }
-  BlockExpr *get_if_block () { return if_block.get (); }
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_condition_expr () {
+    rust_assert (condition != nullptr);
+    return condition;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_if_block () {
+    rust_assert (if_block != nullptr);
+    return if_block;
+  }
 
   // Invalid if if block or condition is null, so base stripping on that. 
   void mark_for_strip () override { if_block = nullptr; condition = nullptr; }
@@ -3836,6 +3879,12 @@ public:
 
   void vis_else_block (ASTVisitor &vis) { else_block->accept_vis (vis); }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_else_block () {
+    rust_assert (else_block != nullptr);
+    return else_block;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3886,6 +3935,12 @@ public:
   void vis_conseq_if_expr (ASTVisitor &vis)
   {
     conseq_if_expr->accept_vis (vis);
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<IfExpr> &get_conseq_if_expr () {
+    rust_assert (conseq_if_expr != nullptr);
+    return conseq_if_expr;
   }
 
 protected:
@@ -3976,6 +4031,18 @@ public:
   void mark_for_strip () override { if_block = nullptr; value = nullptr; }
   bool is_marked_for_strip () const override { return if_block == nullptr && value == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_value_expr () {
+    rust_assert (value != nullptr);
+    return value;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_if_block () {
+    rust_assert (if_block != nullptr);
+    return if_block;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base (or rather this or any derived object) */
@@ -4030,6 +4097,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<IfLetExpr> &get_conseq_if_let_expr () {
+    rust_assert (if_let_expr != nullptr);
+    return if_let_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4082,6 +4155,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_else_block () {
+    rust_assert (else_block != nullptr);
+    return else_block;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4133,6 +4212,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<IfExpr> &get_conseq_if_expr () {
+    rust_assert (if_expr != nullptr);
+    return if_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4183,6 +4268,12 @@ public:
   IfLetExprConseqIfLet &operator= (IfLetExprConseqIfLet &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<IfLetExpr> &get_conseq_if_let_expr () {
+    rust_assert (if_let_expr != nullptr);
+    return if_let_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4265,6 +4356,16 @@ public:
   }
 
   std::string as_string () const;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_guard_expr () {
+    rust_assert (has_match_arm_guard ());
+    return guard_expr;
+  }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 };
 
 /*
@@ -4330,6 +4431,18 @@ public:
   ~MatchCase () = default;
 
   std::string as_string () const;
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_expr () {
+    rust_assert (expr != nullptr);
+    return expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  MatchArm &get_arm () {
+    rust_assert (!arm.is_error ());
+    return arm;
+  }
 };
 
 #if 0
@@ -4502,6 +4615,19 @@ public:
   void mark_for_strip () override { branch_value = nullptr; }
   bool is_marked_for_strip () const override { return branch_value == nullptr; }
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_scrutinee_expr () {
+    rust_assert (branch_value != nullptr);
+    return branch_value;
+  }
+
+  const std::vector<MatchCase> &get_match_cases () const { return match_arms; }
+  std::vector<MatchCase> &get_match_cases () { return match_arms; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4515,7 +4641,6 @@ protected:
 class AwaitExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> awaited_expr;
-
   Location locus;
 
 public:
@@ -4565,6 +4690,12 @@ public:
   void mark_for_strip () override { awaited_expr = nullptr; }
   bool is_marked_for_strip () const override { return awaited_expr == nullptr; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Expr> &get_awaited_expr () {
+    rust_assert (awaited_expr != nullptr);
+    return awaited_expr;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -4580,7 +4711,6 @@ class AsyncBlockExpr : public ExprWithBlock
   // TODO: should this extend BlockExpr rather than be a composite of it?
   bool has_move;
   std::unique_ptr<BlockExpr> block_expr;
-
   Location locus;
 
 public:
@@ -4629,6 +4759,12 @@ public:
   // Invalid if block is null, so base stripping on that. 
   void mark_for_strip () override { block_expr = nullptr; }
   bool is_marked_for_strip () const override { return block_expr == nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_block_expr () {
+    rust_assert (block_expr != nullptr);
+    return block_expr;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -1700,10 +1700,8 @@ ReturnExpr::as_string () const
 {
   std::string str ("return ");
 
-  if (has_return_expr ())
-    {
+  if (has_returned_expr ())
       str += return_expr->as_string ();
-    }
 
   return str;
 }
@@ -2255,13 +2253,9 @@ WhileLetLoopExpr::as_string () const
 
   str += "\n Label: ";
   if (!has_loop_label ())
-    {
       str += "none";
-    }
   else
-    {
       str += loop_label.as_string ();
-    }
 
   str += "\n Match arm patterns: ";
   if (match_arm_patterns.empty ())
@@ -2271,12 +2265,10 @@ WhileLetLoopExpr::as_string () const
   else
     {
       for (const auto &pattern : match_arm_patterns)
-	{
 	  str += "\n  " + pattern->as_string ();
-	}
     }
 
-  str += "\n Scrutinee expr: " + condition->as_string ();
+  str += "\n Scrutinee expr: " + scrutinee->as_string ();
 
   str += "\n Loop block: " + loop_block->as_string ();
 
