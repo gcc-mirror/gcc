@@ -12,3 +12,15 @@
 #ifdef DEC_NAN
 # error "DEC_NAN defined"
 #endif
+
+#ifdef DEC32_SNAN
+# error "DEC32_SNAN defined"
+#endif
+
+#ifdef DEC64_SNAN
+# error "DEC64_SNAN defined"
+#endif
+
+#ifdef DEC128_SNAN
+# error "DEC128_SNAN defined"
+#endif

@@ -601,6 +601,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef DEC_NAN
 #define DEC_NAN		(__builtin_nand32 (""))
 
+/* Signaling NaN in each decimal floating-point type.  */
+#undef DEC32_SNAN
+#define DEC32_SNAN	(__builtin_nansd32 (""))
+#undef DEC64_SNAN
+#define DEC64_SNAN	(__builtin_nansd64 (""))
+#undef DEC128_SNAN
+#define DEC128_SNAN	(__builtin_nansd128 (""))
+
 #endif /* C2X */
 
 #endif /* __DEC32_MANT_DIG__ */
