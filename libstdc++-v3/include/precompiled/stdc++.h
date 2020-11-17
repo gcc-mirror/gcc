@@ -137,6 +137,9 @@
 #include <bit>
 #include <compare>
 #include <concepts>
+#if __cpp_impl_coroutine
+# include <coroutine>
+#endif
 #include <numbers>
 #include <ranges>
 #include <span>
