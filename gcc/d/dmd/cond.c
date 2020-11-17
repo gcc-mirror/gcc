@@ -705,6 +705,10 @@ int StaticIfCondition::include(Scope *sc)
         sc = sc->push(sc->scopesym);
 
         bool errors = false;
+
+        if (!exp)
+            goto Lerror;
+
         bool result = evalStaticCondition(sc, exp, exp, errors);
         sc->pop();
 
