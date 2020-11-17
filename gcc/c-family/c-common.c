@@ -6133,9 +6133,16 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	    }
 	  else if (TYPE_READONLY (TREE_TYPE (TREE_TYPE (args[2]))))
 	    {
-	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
-			"has pointer to %<const%> type (%qT)", fndecl,
+	      error_at (ARG_LOCATION (2), "argument %u in call to function %qE "
+			"has pointer to %qs type (%qT)", 3, fndecl, "const",
 			TREE_TYPE (args[2]));
+	      return false;
+	    }
+	  else if (TYPE_ATOMIC (TREE_TYPE (TREE_TYPE (args[2]))))
+	    {
+	      error_at (ARG_LOCATION (2), "argument %u in call to function %qE "
+			"has pointer to %qs type (%qT)", 3, fndecl,
+			"_Atomic", TREE_TYPE (args[2]));
 	      return false;
 	    }
 	  return true;
