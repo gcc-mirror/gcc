@@ -10604,6 +10604,8 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 
    lambda-expression:
      lambda-introducer lambda-declarator [opt] compound-statement
+     lambda-introducer < template-parameter-list > requires-clause [opt]
+       lambda-declarator [opt] compound-statement
 
    Returns a representation of the expression.  */
 
@@ -11061,13 +11063,11 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 /* Parse the (optional) middle of a lambda expression.
 
    lambda-declarator:
-     < template-parameter-list [opt] >
-       requires-clause [opt]
-     ( parameter-declaration-clause [opt] )
-       attribute-specifier [opt]
+     ( parameter-declaration-clause )
        decl-specifier-seq [opt]
-       exception-specification [opt]
-       lambda-return-type-clause [opt]
+       noexcept-specifier [opt]
+       attribute-specifier-seq [opt]
+       trailing-return-type [opt]
        requires-clause [opt]
 
    LAMBDA_EXPR is the current representation of the lambda expression.  */
@@ -11217,8 +11217,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
          trailing-return-type in case of decltype.  */
       pop_bindings_and_leave_scope ();
     }
-  else if (template_param_list != NULL_TREE) // generate diagnostic
-    cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 
   /* Create the function call operator.
 
