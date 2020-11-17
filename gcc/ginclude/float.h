@@ -248,6 +248,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DBL_NORM_MAX	__DBL_NORM_MAX__
 #define LDBL_NORM_MAX	__LDBL_NORM_MAX__
 
+/* Whether each type matches an IEC 60559 format (1 for format, 2 for
+   format and operations).  */
+#undef FLT_IS_IEC_60559
+#undef DBL_IS_IEC_60559
+#undef LDBL_IS_IEC_60559
+#define FLT_IS_IEC_60559	__FLT_IS_IEC_60559__
+#define DBL_IS_IEC_60559	__DBL_IS_IEC_60559__
+#define LDBL_IS_IEC_60559	__LDBL_IS_IEC_60559__
+
 /* Infinity in type float, or overflow if infinity not supported.  */
 #undef INFINITY
 #define INFINITY	(__builtin_inff ())
