@@ -3703,9 +3703,8 @@ fi
 supported_defaults=
 case "${target}" in
 	aarch64*-*-*)
-		supported_defaults="abi cpu arch"
-		for which in cpu arch; do
-
+		supported_defaults="abi cpu arch tune"
+		for which in cpu arch tune; do
 			eval "val=\$with_$which"
 			base_val=`echo $val | sed -e 's/\+.*//'`
 			ext_val=`echo $val | sed -e 's/[a-z0-9.-]\+//'`
