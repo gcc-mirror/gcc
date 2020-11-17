@@ -3659,7 +3659,7 @@ convert_filename (const char *name, int do_exe ATTRIBUTE_UNUSED,
 #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
   /* If there is no filetype, make it the executable suffix (which includes
      the ".").  But don't get confused if we have just "-o".  */
-  if (! do_exe || TARGET_EXECUTABLE_SUFFIX[0] == 0 || (len == 2 && name[0] == '-'))
+  if (! do_exe || TARGET_EXECUTABLE_SUFFIX[0] == 0 || not_actual_file_p (name))
     return name;
 
   for (i = len - 1; i >= 0; i--)
@@ -10550,7 +10550,7 @@ static bool
 not_actual_file_p (const char *name)
 {
   return (strcmp (name, "-") == 0
-	  || strcmp (output_file, HOST_BIT_BUCKET) == 0);
+	  || strcmp (name, HOST_BIT_BUCKET) == 0);
 }
 
 /* %:dumps spec function.  Take an optional argument that overrides
