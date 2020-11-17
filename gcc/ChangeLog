@@ -1,3 +1,164 @@
+2020-11-17  Armin Brauns via Gcc-patches  <gcc-patches@gcc.gnu.org>
+
+	* gcc.c: Document %T spec file directive.
+	* doc/invoke.texi: Remove %p, %P spec file directives.
+	Add %M, %R, %V, %nSTR, %>S, %<S*, %{%:function(args):X}, %@{...} spec
+	file directives add sanitize, version-compare, include, gt and
+	debug-level-gt spec functions.
+
+2020-11-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/92180
+	* config/i386/i386.c (ix86_hardreg_mov_ok): New function to
+	determine whether (set DST SRC) should be allowed at this point.
+	* config/i386/i386-protos.h (ix86_hardreg_mov_ok): Prototype here.
+	* config/i386/i386-expand.c (ix86_expand_move): Check whether
+	this is a complex set of a likely spilled hard register, and if
+	so place the value in a pseudo, and load the hard reg from it.
+	* config/i386/i386.md (*movdi_internal, *movsi_internal)
+	(*movhi_internal, *movqi_internal): Make these instructions
+	conditional on ix86_hardreg_mov_ok.
+	(*lea<mode>): Make this define_insn_and_split conditional on
+	ix86_hardreg_mov_ok.
+
+2020-11-16  Martin Liska  <mliska@suse.cz>
+
+	* params.opt: Add missing dot.
+
+2020-11-16  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (escape_point): New type.
+	(modref_lattice): New type.
+	(escape_entry): New type.
+	(escape_summary): New type.
+	(escape_summaries_t): New type.
+	(escape_summaries): New static variable.
+	(eaf_flags_useful_p): New function.
+	(modref_summary::useful_p): Add new check_flags
+	attribute; check eaf_flags for usefulness.
+	(modref_summary_lto): Add arg_flags.
+	(modref_summary_lto::useful_p): Add new check_flags
+	attribute; check eaf_flags for usefulness.
+	(dump_modref_edge_summaries): New function.
+	(remove_modref_edge_summaries): New function.
+	(ignore_retval_p): New predicate.
+	(ignore_stores_p): Also ignore for const.
+	(remove_summary): Call remove_modref_edge_summaries.
+	(modref_lattice::init): New member function.
+	(modref_lattice::release): New member unction.
+	(modref_lattice::dump): New member function.
+	(modref_lattice::add_escape_point): New member function.
+	(modref_lattice::merge): Two new member functions.
+	(modref_lattice::merge_deref): New member functions.
+	(modref_lattice::merge_direct_load): New member function.
+	(modref_lattice::merge_direct_store): New member function.
+	(call_lhs_flags): Rename to ...
+	(merge_call_lhs_flags): ... this one; reimplement using
+	modreflattice.
+	(analyze_ssa_name_flags): Replace KNOWN_FLAGS param by LATTICE;
+	add IPA parametr; use modref_lattice.
+	(analyze_parms): New parameter IPA and SUMMARY_LTO; update for
+	modref_lattice; initialize escape_summary.
+	(analyze_function): Allocate escape_summaries; update uses of useful_p.
+	(modref_write_escape_summary): New function.
+	(modref_read_escape_summary): New function.
+	(modref_write): Write escape summary.
+	(read_section): Read escape summary.
+	(modref_read): Initialie escape_summaries.
+	(remap_arg_flags): New function.
+	(update_signature): Use it.
+	(escape_map): New structure.
+	(update_escape_summary_1, update_escape_summary): New functions.
+	(ipa_merge_modref_summary_after_inlining): Merge escape summaries.
+	(propagate_unknown_call): Do not remove useless summaries.
+	(remove_useless_summaries): Remove them here.
+	(modref_propagate_in_scc): Update; do not dump scc.
+	(modref_propagate_dump_scc): New function.
+	(modref_merge_call_site_flags): New function.
+	(modref_propagate_flags_in_scc): New function.
+	(pass_ipa_modref::execute): Use modref_propagate_flags_in_scc
+	and modref_propagate_dump_scc; delete escape_summaries.
+	(ipa_modref_c_finalize):  Remove escape_summaries.
+	* ipa-modref.h (modref_summary): Update prototype of useful_p.
+	* params.opt (param=modref-max-escape-points): New param.
+	* doc/invoke.texi (modref-max-escape-points): Document.
+
+2020-11-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/97840
+	* ipa-modref.c (analyze_ssa_name_flags): Skip clobbers if inlining
+	is done.
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Make stmt gcall;
+	skip const calls and unused arguments.
+	(warn_uninitialized_vars): Update prototype.
+
+2020-11-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_gather_slp_loads): Declare.
+	* tree-vect-loop.c (vect_analyze_loop_2): Call
+	vect_gather_slp_loads.
+	* tree-vect-slp.c (vect_build_slp_instance): Do not gather
+	SLP loads here.
+	(vect_gather_slp_loads): Remove wrapper, new function.
+	(vect_slp_analyze_bb_1): Call it.
+
+2020-11-16   Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (analyze_memory_references): Add
+	store_motion parameter and elide unnecessary work.
+	(tree_ssa_lim_initialize): Likewise.
+	(loop_invariant_motion_in_fun): Pass down store_motion.
+
+2020-11-16  Martin Liska  <mliska@suse.cz>
+
+	* params.opt: All modref parameters miss Optimization and Param
+	keyword as seen in testsuite failure.
+
+2020-11-16  Jan Hubicka  <jh@suse.cz>
+
+	* params.opt (-param=modref-max-depth=): Add missing full stop.
+
+2020-11-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* common.opt (fprofile-info-section): New.
+	* coverage.c (build_gcov_info_var_registration): New.
+	(coverage_obj_init): Evaluate profile_info_section and use
+	build_gcov_info_var_registration().
+	* doc/invoke.texi (fprofile-info-section): Document.
+	* opts.c (common_handle_option): Process fprofile-info-section
+	option.
+
+2020-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97838
+	* tree-vect-slp.c (vect_slp_build_vertices): Properly handle
+	not backwards reachable cycles.
+	(vect_optimize_slp): Check a node is leaf before marking it
+	visited.
+
+2020-11-16  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/97736
+	* tree-switch-conversion.c (switch_decision_tree::analyze_switch_statement):
+	Prefer bit tests.
+
+2020-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97835
+	* tree-vect-loop.c (vectorizable_induction): Convert step
+	scalars rather than step vector.
+
+2020-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97830
+	* tree-ssa-sccvn.c (vn_reference_eq): Check for incomplete
+	types before comparing TYPE_SIZE.
+
+2020-11-16  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/i386.h: Add PREFETCHW to march=broadwell.
+	* doc/invoke.texi: Put PREFETCHW back to relation arch.
+
 2020-11-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_output_labelref): Don't process mspabi

@@ -317,6 +317,16 @@ builtin_define_float_constants (const char *name_prefix,
       sprintf (name, "__FP_FAST_FMA%s", fma_suffix);
       builtin_define_with_int_value (name, 1);
     }
+
+  /* For C2x *_IS_IEC_60559.  0 means the type does not match an IEC
+     60559 format, 1 that it matches a format but not operations and 2
+     that it matches a format and operations (but may not conform to
+     Annex F; we take this as meaning exceptions and rounding modes
+     need not be supported).  */
+  sprintf (name, "__%s_IS_IEC_60559__", name_prefix);
+  builtin_define_with_int_value (name,
+				 (fmt->ieee_bits == 0
+				  ? 0 : (fmt->round_towards_zero ? 1 : 2)));
 }
 
 /* Define __DECx__ constants for TYPE using NAME_PREFIX and SUFFIX. */

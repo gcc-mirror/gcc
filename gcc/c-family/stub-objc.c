@@ -25,10 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "vec.h"
 
-/* Provide a dummy type for the RID enum used as an argument to
-   objc_prop_attr_kind_for_rid () */
-enum rid { DUMMY };
-
+#include "c-common.h" /* for enum rid.  */
 #include "c-objc.h"
 
 tree

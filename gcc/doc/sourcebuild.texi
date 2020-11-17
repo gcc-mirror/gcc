@@ -1443,6 +1443,10 @@ Target has runtime support for any options added with
 @item inf
 Target supports floating point infinite (@code{inf}) for type
 @code{double}.
+
+@item inff
+Target supports floating point infinite (@code{inf}) for type
+@code{float}.
 @end table
 @subsubsection Fortran-specific attributes
 

@@ -542,6 +542,12 @@ or with constant text in a single argument.
  %s     current argument is the name of a library or startup file of some sort.
         Search for that file in a standard list of directories
 	and substitute the full name found.
+ %T	current argument is the name of a linker script.
+	Search for that file in the current list of directories to scan for
+	libraries.  If the file is located, insert a --script option into the
+	command line followed by the full path name found.  If the file is
+	not found then generate an error message.
+	Note: the current working directory is not searched.
  %eSTR  Print STR as an error message.  STR is terminated by a newline.
         Use this when inconsistent options are detected.
  %nSTR  Print STR as a notice.  STR is terminated by a newline.
@@ -3653,7 +3659,7 @@ convert_filename (const char *name, int do_exe ATTRIBUTE_UNUSED,
 #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
   /* If there is no filetype, make it the executable suffix (which includes
      the ".").  But don't get confused if we have just "-o".  */
-  if (! do_exe || TARGET_EXECUTABLE_SUFFIX[0] == 0 || (len == 2 && name[0] == '-'))
+  if (! do_exe || TARGET_EXECUTABLE_SUFFIX[0] == 0 || not_actual_file_p (name))
     return name;
 
   for (i = len - 1; i >= 0; i--)
@@ -10544,7 +10550,7 @@ static bool
 not_actual_file_p (const char *name)
 {
   return (strcmp (name, "-") == 0
-	  || strcmp (output_file, HOST_BIT_BUCKET) == 0);
+	  || strcmp (name, HOST_BIT_BUCKET) == 0);
 }
 
 /* %:dumps spec function.  Take an optional argument that overrides

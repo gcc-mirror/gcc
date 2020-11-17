@@ -211,8 +211,6 @@ type_with_linkage_p (const_tree t)
   if (!TYPE_CONTEXT (t))
     return false;
 
-  gcc_checking_assert (TREE_CODE (t) == ENUMERAL_TYPE || TYPE_CXX_ODR_P (t));
-
   return true;
 }
 

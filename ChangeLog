@@ -1,3 +1,7 @@
+2020-11-16  Martin Liska  <mliska@suse.cz>
+
+	* .gitignore: Add cache as clangd uses it now.
+
 2020-11-13  Haochen Gui  <guihaoc@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): add myself

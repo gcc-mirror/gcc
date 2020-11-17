@@ -1,3 +1,81 @@
+2020-11-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/92180
+	* gcc.target/i386/pr92180.c: New test.
+
+2020-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pr48958.f90: New test.
+
+2020-11-16  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/warn/uninit-1.C: New test.
+
+2020-11-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp (check_effective_target_s390_z14_hw):
+	New predicate.
+	* gcc.target/s390/vector/long-double-caller-abi-run.c: Use the
+	new predicate.
+	* gcc.target/s390/vector/long-double-copysign.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-double.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-float.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-i16.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-i32.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-i64.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-i8.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-u16.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-u32.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-u64.c: Likewise.
+	* gcc.target/s390/vector/long-double-from-u8.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-double.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-float.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-i16.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-i32.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-i64.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-i8.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-u16.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-u32.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-u64.c: Likewise.
+	* gcc.target/s390/vector/long-double-to-u8.c: Likewise.
+	* gcc.target/s390/vector/long-double-wfaxb.c: Likewise.
+	* gcc.target/s390/vector/long-double-wfdxb.c: Likewise.
+	* gcc.target/s390/vector/long-double-wfsxb-1.c: Likewise.
+
+2020-11-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/97803
+	* c-c++-common/asan/pointer-compare-1.c (global1): Add
+	__attribute__((used))
+	(global2): Likewise.
+	(small_global): Likewise.
+	(large_global): Likewise.
+
+2020-11-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.dg/profile-info-section.c: New test.
+
+2020-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97838
+	* gcc.dg/vect/pr97838.c: New testcase.
+
+2020-11-16  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/97736
+	* gcc.dg/tree-ssa/switch-1.c: Prefer bit tests.
+	* g++.dg/tree-ssa/pr97736.C: New test.
+
+2020-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97835
+	* gcc.dg/vect/pr97835.c: New testcase.
+
+2020-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97830
+	* gcc.dg/pr97830.c: New testcase.
+
 2020-11-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/rtx-cost-Os-f5series.c: Adjust test to use new

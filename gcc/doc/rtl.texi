@@ -1406,6 +1406,12 @@ Pointer bounds modes.  Used to represent values of pointer bounds type.
 Operations in these modes may be executed as NOPs depending on hardware
 features and environment setup.
 
+@findex MODE_OPAQUE
+@item MODE_OPAQUE
+This is a mode class for modes that don't want to provide operations
+other than register moves, memory moves, loads, stores, and
+@code{unspec}s. They have a size and precision and that's all.
+
 @findex MODE_RANDOM
 @item MODE_RANDOM
 This is a catchall mode class for modes which don't fit into the above

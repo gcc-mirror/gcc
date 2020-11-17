@@ -625,6 +625,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define FUNC_OR_METHOD_TYPE_P(NODE) \
   (TREE_CODE (NODE) == FUNCTION_TYPE || TREE_CODE (NODE) == METHOD_TYPE)
 
+#define OPAQUE_TYPE_P(NODE) \
+    (TREE_CODE (NODE) == OPAQUE_TYPE)
+
 /* Define many boolean fields that all tree nodes have.  */
 
 /* In VAR_DECL, PARM_DECL and RESULT_DECL nodes, nonzero means address
@@ -6233,6 +6236,7 @@ extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
 
 extern bool nonnull_arg_p (const_tree);
+extern bool is_empty_type (const_tree);
 extern bool default_is_empty_record (const_tree);
 extern bool flexible_array_type_p (const_tree);
 extern HOST_WIDE_INT arg_int_size_in_bytes (const_tree);

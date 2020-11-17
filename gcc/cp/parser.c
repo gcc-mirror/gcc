@@ -13536,7 +13536,6 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
     {
       cp_lexer_save_tokens (parser->lexer);
       attributes = cp_parser_attributes_opt (parser);
-      gcc_checking_assert (attributes);
       cp_token *t1 = cp_lexer_peek_token (parser->lexer);
       cp_token *t2 = (t1->type == CPP_EOF
 		      ? t1 : cp_lexer_peek_nth_token (parser->lexer, 2));

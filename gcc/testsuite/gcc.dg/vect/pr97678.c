@@ -26,4 +26,5 @@ main ()
 }
 
 /* The init loop should be vectorized with SLP.  */
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
+/* We don't yet support SLP inductions for variable length vectors.  */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { xfail vect_variable_length } } } */

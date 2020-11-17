@@ -59,4 +59,5 @@ int main ()
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" } } */
+/* We don't yet support SLP inductions for variable length vectors.  */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail vect_variable_length } } } */
