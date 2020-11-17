@@ -38,6 +38,7 @@
 
 with Ada.Unchecked_Conversion;
 with System;
+
 package body System.Fat_Gen is
 
    Float_Radix        : constant T := T (T'Machine_Radix);
@@ -807,130 +808,110 @@ package body System.Fat_Gen is
    function Valid (X : not null access T) return Boolean is
       IEEE_Emin : constant Integer := T'Machine_Emin - 1;
       IEEE_Emax : constant Integer := T'Machine_Emax - 1;
+      --  The mantissa is a fraction with first digit set in Ada whereas it is
+      --  shifted by 1 digit to the left in the IEEE floating-point format.
 
-      IEEE_Bias : constant Integer := -(IEEE_Emin - 1);
+      subtype IEEE_Erange is Integer range IEEE_Emin - 1 .. IEEE_Emax + 1;
+      --  The IEEE floating-point format extends the machine range by 1 to the
+      --  left for denormalized numbers and 1 to the right for infinities/NaNs.
 
-      subtype IEEE_Exponent_Range is
-        Integer range IEEE_Emin - 1 .. IEEE_Emax + 1;
+      IEEE_Ebias : constant Integer := -(IEEE_Emin - 1);
+      --  The exponent is biased such that denormalized numbers have it zero
 
-      --  The implementation of this floating point attribute uses a
-      --  representation type Float_Rep that allows direct access to the
-      --  exponent and mantissa parts of a floating point number.
+      --  The implementation uses a representation type Float_Rep that allows
+      --  direct access to exponent and mantissa of the floating point number.
 
-      --  The Float_Rep type is an array of Float_Word elements. This
+      --  The Float_Rep type is a simple array of Float_Word elements. This
       --  representation is chosen to make it possible to size the type based
       --  on a generic parameter. Since the array size is known at compile
       --  time, efficient code can still be generated. The size of Float_Word
       --  elements should be large enough to allow accessing the exponent in
-      --  one read, but small enough so that all floating point object sizes
-      --  are a multiple of the Float_Word'Size.
+      --  one read, but small enough so that all floating-point object sizes
+      --  are a multiple of Float_Word'Size.
 
       --  The following conditions must be met for all possible instantiations
-      --  of the attributes package:
+      --  of the attribute package:
 
       --    - T'Size is an integral multiple of Float_Word'Size
 
       --    - The exponent and sign are completely contained in a single
-      --      component of Float_Rep, named Most_Significant_Word (MSW).
+      --      component of Float_Rep, named Most Significant Word (MSW).
 
       --    - The sign occupies the most significant bit of the MSW and the
-      --      exponent is in the following bits. Unused bits (if any) are in
-      --      the least significant part.
+      --      exponent is in the following bits. The exception is 80-bit
+      --      double extended, where they occupy the low 16-bit halfword.
 
-      type Float_Word is mod 2**Positive'Min (System.Word_Size, 32);
-      type Rep_Index is range 0 .. 7;
+      Siz : constant :=
+              (if System.Word_Size > 32 then 32 else System.Word_Size);
+      type Float_Word is mod 2**Siz;
 
-      Rep_Words : constant Positive :=
-                    (T'Size + Float_Word'Size - 1) / Float_Word'Size;
-      Rep_Last  : constant Rep_Index :=
-                    Rep_Index'Min
-                      (Rep_Index (Rep_Words - 1),
-                       (T'Mantissa + 16) / Float_Word'Size);
+      N : constant Natural := (T'Size + Siz - 1) / Siz;
+      Rep_Last : constant Natural :=
+                   Natural'Min (N - 1, (T'Machine_Mantissa + 16) / Siz);
       --  Determine the number of Float_Words needed for representing the
       --  entire floating-point value. Do not take into account excessive
       --  padding, as occurs on IA-64 where 80 bits floats get padded to 128
       --  bits. In general, the exponent field cannot be larger than 15 bits,
       --  even for 128-bit floating-point types, so the final format size
-      --  won't be larger than T'Mantissa + 16.
+      --  won't be larger than T'Machine_Mantissa + 16.
 
-      type Float_Rep is
-         array (Rep_Index range 0 .. Rep_Index (Rep_Words - 1)) of Float_Word;
-
+      type Float_Rep is array (Natural range 0 .. N - 1) of Float_Word;
       pragma Suppress_Initialization (Float_Rep);
       --  This pragma suppresses the generation of an initialization procedure
       --  for type Float_Rep when operating in Initialize/Normalize_Scalars
-      --  mode. This is not just a matter of efficiency, but of functionality,
-      --  since Valid has a pragma Inline_Always, which is not permitted if
-      --  there are nested subprograms present.
+      --  mode, which would be annoying since Valid has got a pragma Inline.
 
-      Most_Significant_Word : constant Rep_Index :=
-                                Rep_Last * Standard'Default_Bit_Order;
+      MSW : constant Natural := Rep_Last * Standard'Default_Bit_Order;
       --  Finding the location of the Exponent_Word is a bit tricky. In general
       --  we assume Word_Order = Bit_Order.
 
-      Exponent_Factor : constant Float_Word :=
-                          2**(Float_Word'Size - 1) /
-                            Float_Word (IEEE_Emax - IEEE_Emin + 3) *
-                              Boolean'Pos (Most_Significant_Word /= 2) +
-                                Boolean'Pos (Most_Significant_Word = 2);
+      Exp_Factor : constant Float_Word :=
+                     (if T'Machine_Mantissa = 64
+                       then 1
+                       else 2**(Siz - 1) /
+                              Float_Word (IEEE_Emax - IEEE_Emin + 3));
       --  Factor that the extracted exponent needs to be divided by to be in
-      --  range 0 .. IEEE_Emax - IEEE_Emin + 2. Special case: Exponent_Factor
-      --  is 1 for x86/IA64 double extended (GCC adds unused bits to the type).
+      --  range 0 .. IEEE_Emax - IEEE_Emin + 2. The special case is 80-bit
+      --  double extended, where the exponent starts the 3rd float word.
 
-      Exponent_Mask : constant Float_Word :=
-                        Float_Word (IEEE_Emax - IEEE_Emin + 2) *
-                          Exponent_Factor;
+      Exp_Mask : constant Float_Word :=
+                   Float_Word (IEEE_Emax - IEEE_Emin + 2) * Exp_Factor;
       --  Value needed to mask out the exponent field. This assumes that the
-      --  range IEEE_Emin - 1 .. IEEE_Emax + contains 2**N values, for some N
-      --  in Natural.
+      --  range 0 .. IEEE_Emax - IEEE_Emin + 2 contains 2**N values, for some
+      --  N in Natural.
 
-      function To_Float is new Ada.Unchecked_Conversion (Float_Rep, T);
-
-      type Float_Access is access all T;
+      type Access_T is access all T;
       function To_Address is
-         new Ada.Unchecked_Conversion (Float_Access, System.Address);
+        new Ada.Unchecked_Conversion (Access_T, System.Address);
 
-      XA : constant System.Address := To_Address (Float_Access (X));
+      Rep : Float_Rep;
+      pragma Import (Ada, Rep);
+      for Rep'Address use To_Address (Access_T (X));
+      --  Rep is a view of the input floating-point parameter. Note that we
+      --  must avoid reading the actual bits of this parameter in float form
+      --  since it may be a signalling NaN.
 
-      R : Float_Rep;
-      pragma Import (Ada, R);
-      for R'Address use XA;
-      --  R is a view of the input floating-point parameter. Note that we
-      --  must avoid copying the actual bits of this parameter in float
-      --  form (since it may be a signalling NaN).
-
-      E  : constant IEEE_Exponent_Range :=
-             Integer ((R (Most_Significant_Word) and Exponent_Mask) /
-                                                        Exponent_Factor)
-               - IEEE_Bias;
-      --  Mask/Shift T to only get bits from the exponent. Then convert biased
-      --  value to integer value.
-
-      SR : Float_Rep;
-      --  Float_Rep representation of significant of X.all
+      Exp : constant IEEE_Erange :=
+              Integer ((Rep (MSW) and Exp_Mask) / Exp_Factor) - IEEE_Ebias;
+      --  Mask/Shift X to only get bits from the exponent. Then convert biased
+      --  value to final value.
 
    begin
-      if T'Denorm then
+      if Exp = IEEE_Emax + 1 then
+         --  This is an infinity or a NaN, i.e. always invalid
 
-         --  All denormalized numbers are valid, so the only invalid numbers
-         --  are overflows and NaNs, both with exponent = Emax + 1.
+         return False;
 
-         return E /= IEEE_Emax + 1;
+      elsif Exp in IEEE_Emin .. IEEE_Emax then
+         --  This is a normalized number, i.e. always valid
 
+         return True;
+
+      else pragma Assert (Exp = IEEE_Emin - 1);
+         --  This is a denormalized number, valid if T'Denorm is True or 0.0
+
+         return T'Denorm or else X.all = 0.0;
       end if;
-
-      --  All denormalized numbers except 0.0 are invalid
-
-      --  Set exponent of X to zero, so we end up with the significand, which
-      --  definitely is a valid number and can be converted back to a float.
-
-      SR := R;
-      SR (Most_Significant_Word) :=
-           (SR (Most_Significant_Word)
-             and not Exponent_Mask) + Float_Word (IEEE_Bias) * Exponent_Factor;
-
-      return (E in IEEE_Emin .. IEEE_Emax) or else
-         ((E = IEEE_Emin - 1) and then abs To_Float (SR) = 1.0);
    end Valid;
 
 end System.Fat_Gen;

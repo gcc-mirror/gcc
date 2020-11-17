@@ -109,10 +109,6 @@ package System.Fat_Gen is
 private
    pragma Inline (Machine);
    pragma Inline (Model);
-
-   --  Note: previously the validity checking subprograms (Unaligned_Valid and
-   --  Valid) were also inlined, but this was changed since there were some
-   --  problems with this inlining in optimized mode, and in any case it seems
-   --  better to avoid this inlining (space and robustness considerations).
+   pragma Inline (Valid);
 
 end System.Fat_Gen;
