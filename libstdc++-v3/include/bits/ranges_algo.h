@@ -578,7 +578,8 @@ namespace ranges
 	      }
 	  }
 
-	if constexpr (sized_sentinel_for<_Sent, _Iter>)
+	if constexpr (sized_sentinel_for<_Sent, _Iter>
+		      && random_access_iterator<_Iter>)
 	  {
 	    auto __tail_size = __last - __first;
 	    auto __remainder = __count;
@@ -593,6 +594,7 @@ namespace ranges
 		    if (--__remainder == 0)
 		      return {__first - __count, __first};
 		  }
+		__remainder = __count + 1 - (__first - __backtrack);
 	      }
 	    auto __i = __first + __tail_size;
 	    return {__i, __i};
