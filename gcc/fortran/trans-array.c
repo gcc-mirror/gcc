@@ -5805,10 +5805,10 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 	    {
 	      size = gfc_conv_array_extent_dim (conv_lbound, conv_ubound,
 						&or_expr);
-	      size = gfc_evaluate_now (size, descriptor_block);
+	      size = gfc_evaluate_now (size, pblock);
 	      stride = fold_build2_loc (input_location, MULT_EXPR,
 				       gfc_array_index_type, stride, size);
-	      stride = gfc_evaluate_now (stride, descriptor_block);
+	      stride = gfc_evaluate_now (stride, pblock);
 	    }
 	}
     }
