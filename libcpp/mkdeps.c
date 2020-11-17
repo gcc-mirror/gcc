@@ -105,23 +105,20 @@ public:
   unsigned short quote_lwm;
 };
 
-/* Apply Make quoting to STR, TRAIL etc.  Note that it's not possible
-   to quote all such characters - e.g. \n, %, *, ?, [, \ (in some
+/* Apply Make quoting to STR, TRAIL.  Note that it's not possible to
+   quote all such characters - e.g. \n, %, *, ?, [, \ (in some
    contexts), and ~ are not properly handled.  It isn't possible to
    get this right in any current version of Make.  (??? Still true?
    Old comment referred to 3.76.1.)  */
 
 static const char *
-munge (const char *str, const char *trail = NULL, ...)
+munge (const char *str, const char *trail = nullptr)
 {
   static unsigned alloc;
   static char *buf;
   unsigned dst = 0;
-  va_list args;
-  if (trail)
-    va_start (args, trail);
 
-  for (bool first = true; str; first = false)
+  for (; str; str = trail, trail = nullptr)
     {
       unsigned slashes = 0;
       char c;
@@ -169,14 +166,7 @@ munge (const char *str, const char *trail = NULL, ...)
 
 	  buf[dst++] = c;
 	}
-
-      if (first)
-	str = trail;
-      else
-	str = va_arg (args, const char *);
     }
-  if (trail)
-    va_end (args);
 
   buf[dst] = 0;
   return buf;
@@ -332,7 +322,7 @@ make_write_name (const char *name, FILE *fp, unsigned col, unsigned colmax,
 		 bool quote = true, const char *trail = NULL)
 {
   if (quote)
-    name = munge (name, trail, NULL);
+    name = munge (name, trail);
   unsigned size = strlen (name);
 
   if (col)
