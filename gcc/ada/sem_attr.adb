@@ -227,9 +227,11 @@ package body Sem_Attr is
    procedure Analyze_Attribute (N : Node_Id) is
       Loc     : constant Source_Ptr   := Sloc (N);
       Aname   : constant Name_Id      := Attribute_Name (N);
-      P       : constant Node_Id      := Prefix (N);
       Exprs   : constant List_Id      := Expressions (N);
       Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
+      P_Old   : constant Node_Id      := Prefix (N);
+
+      P       : Node_Id := P_Old;
       E1      : Node_Id;
       E2      : Node_Id;
 
@@ -1836,7 +1838,7 @@ package body Sem_Attr is
 
          --  Case of an expression
 
-         Resolve (P);
+         Resolve (P_Old);
 
          if Is_Access_Type (P_Type) then
 
@@ -1852,12 +1854,12 @@ package body Sem_Attr is
                Freeze_Before (N, Designated_Type (P_Type));
             end if;
 
-            Rewrite (P,
-              Make_Explicit_Dereference (Sloc (P),
-                Prefix => Relocate_Node (P)));
+            Rewrite (P_Old,
+              Make_Explicit_Dereference (Sloc (P_Old),
+                Prefix => Relocate_Node (P_Old)));
 
-            Analyze_And_Resolve (P);
-            P_Type := Etype (P);
+            Analyze_And_Resolve (P_Old);
+            P_Type := Etype (P_Old);
 
             if P_Type = Any_Type then
                raise Bad_Attribute;
@@ -3100,6 +3102,15 @@ package body Sem_Attr is
                Error_Attr ("ambiguous prefix for % attribute", P);
             end if;
          end if;
+      end if;
+
+      --  If the prefix was rewritten as a raise node, then rewrite N as a
+      --  raise node, to avoid creating inconsistent trees. We still need to
+      --  perform legality checks on the original tree.
+
+      if Nkind (P) in N_Raise_xxx_Error then
+         Rewrite (N, Relocate_Node (P));
+         P := Original_Node (P_Old);
       end if;
 
       --  Remaining processing depends on attribute

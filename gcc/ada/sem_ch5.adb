@@ -3097,7 +3097,10 @@ package body Sem_Ch5 is
          Check_Predicate_Use (Entity (Subtype_Mark (DS)));
       end if;
 
-      Make_Index (DS, N);
+      if Nkind (DS) not in N_Raise_xxx_Error then
+         Make_Index (DS, N);
+      end if;
+
       Set_Ekind (Id, E_Loop_Parameter);
 
       --  A quantified expression which appears in a pre- or post-condition may

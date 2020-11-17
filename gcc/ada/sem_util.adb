@@ -9896,11 +9896,13 @@ package body Sem_Util is
    -----------------------
 
    procedure Gather_Components
-     (Typ           : Entity_Id;
-      Comp_List     : Node_Id;
-      Governed_By   : List_Id;
-      Into          : Elist_Id;
-      Report_Errors : out Boolean)
+     (Typ                   : Entity_Id;
+      Comp_List             : Node_Id;
+      Governed_By           : List_Id;
+      Into                  : Elist_Id;
+      Report_Errors         : out Boolean;
+      Allow_Compile_Time    : Boolean := False;
+      Include_Interface_Tag : Boolean := False)
    is
       Assoc           : Node_Id;
       Variant         : Node_Id;
@@ -9932,15 +9934,20 @@ package body Sem_Util is
 
       while Present (Comp_Item) loop
 
-         --  Skip the tag of a tagged record, the interface tags, as well
-         --  as all items that are not user components (anonymous types,
-         --  rep clauses, Parent field, controller field).
+         --  Skip the tag of a tagged record, as well as all items that are not
+         --  user components (anonymous types, rep clauses, Parent field,
+         --  controller field).
 
          if Nkind (Comp_Item) = N_Component_Declaration then
             declare
                Comp : constant Entity_Id := Defining_Identifier (Comp_Item);
             begin
-               if not Is_Tag (Comp) and then Chars (Comp) /= Name_uParent then
+               if not (Is_Tag (Comp)
+                        and then not
+                          (Include_Interface_Tag
+                            and then Etype (Comp) = RTE (RE_Interface_Tag)))
+                 and then Chars (Comp) /= Name_uParent
+               then
                   Append_Elmt (Comp, Into);
                end if;
             end;
@@ -10049,7 +10056,11 @@ package body Sem_Util is
       end loop Find_Constraint;
 
       Discrim_Value := Expression (Assoc);
-      if Is_OK_Static_Expression (Discrim_Value) then
+
+      if Is_OK_Static_Expression (Discrim_Value)
+        or else (Allow_Compile_Time
+                 and then Compile_Time_Known_Value (Discrim_Value))
+      then
          Discrim_Value_Status := Static_Expr;
       else
          if Ada_Version >= Ada_2020 then
@@ -10228,7 +10239,8 @@ package body Sem_Util is
          end if;
 
          Gather_Components
-           (Typ, Component_List (Variant), Governed_By, Into, Report_Errors);
+           (Typ, Component_List (Variant), Governed_By, Into,
+            Report_Errors, Allow_Compile_Time);
       end if;
    end Gather_Components;
 
@@ -13861,6 +13873,24 @@ package body Sem_Util is
           and then Assertion_Expression_Pragma (Get_Pragma_Id (Prag));
    end In_Assertion_Expression_Pragma;
 
+   -------------------
+   -- In_Check_Node --
+   -------------------
+
+   function In_Check_Node (N : Node_Id) return Boolean is
+      Node : Node_Id := Parent (N);
+   begin
+      while Present (Node) loop
+         if Nkind (Node) in N_Raise_xxx_Error then
+            return True;
+         end if;
+
+         Node := Parent (Node);
+      end loop;
+
+      return False;
+   end In_Check_Node;
+
    -------------------------------
    -- In_Generic_Formal_Package --
    -------------------------------
@@ -15210,6 +15240,19 @@ package body Sem_Util is
       return Present (Formal) and then Ekind (Formal) = E_In_Out_Parameter;
    end Is_Actual_In_Out_Parameter;
 
+   ---------------------------------------
+   -- Is_Actual_Out_Or_In_Out_Parameter --
+   ---------------------------------------
+
+   function Is_Actual_Out_Or_In_Out_Parameter (N : Node_Id) return Boolean is
+      Formal : Entity_Id;
+      Call   : Node_Id;
+   begin
+      Find_Actual (N, Formal, Call);
+      return Present (Formal)
+        and then Ekind (Formal) in E_Out_Parameter | E_In_Out_Parameter;
+   end Is_Actual_Out_Or_In_Out_Parameter;
+
    -------------------------
    -- Is_Actual_Parameter --
    -------------------------
@@ -16312,7 +16355,7 @@ package body Sem_Util is
       P_Aliased   : Boolean := False;
       Comp        : Entity_Id;
 
-      Deref : Node_Id := Object;
+      Deref : Node_Id := Original_Node (Object);
       --  Dereference node, in something like X.all.Y(2)
 
    --  Start of processing for Is_Dependent_Component_Of_Mutable_Object
@@ -16323,10 +16366,8 @@ package body Sem_Util is
       while Nkind (Deref) in
               N_Indexed_Component | N_Selected_Component | N_Slice
       loop
-         Deref := Prefix (Deref);
+         Deref := Original_Node (Prefix (Deref));
       end loop;
-
-      Deref := Original_Node (Deref);
 
       --  If the prefix is a qualified expression of a variable, then function
       --  Is_Variable will return False for that because a qualified expression
@@ -16503,14 +16544,16 @@ package body Sem_Util is
          elsif Nkind (Object) = N_Indexed_Component
            or else Nkind (Object) = N_Slice
          then
-            return Is_Dependent_Component_Of_Mutable_Object (Prefix (Object));
+            return Is_Dependent_Component_Of_Mutable_Object
+                     (Original_Node (Prefix (Object)));
 
          --  A type conversion that Is_Variable is a view conversion:
          --  go back to the denoted object.
 
          elsif Nkind (Object) = N_Type_Conversion then
             return
-              Is_Dependent_Component_Of_Mutable_Object (Expression (Object));
+              Is_Dependent_Component_Of_Mutable_Object
+                (Original_Node (Expression (Object)));
          end if;
       end if;
 
@@ -18296,6 +18339,23 @@ package body Sem_Util is
    -------------------------
 
    function Is_Object_Reference (N : Node_Id) return Boolean is
+      function Safe_Prefix (N : Node_Id) return Node_Id;
+      --  Return Prefix (N) unless it has been rewritten as an
+      --  N_Raise_xxx_Error node, in which case return its original node.
+
+      -----------------
+      -- Safe_Prefix --
+      -----------------
+
+      function Safe_Prefix (N : Node_Id) return Node_Id is
+      begin
+         if Nkind (Prefix (N)) in N_Raise_xxx_Error then
+            return Original_Node (Prefix (N));
+         else
+            return Prefix (N);
+         end if;
+      end Safe_Prefix;
+
    begin
       --  AI12-0068: Note that a current instance reference in a type or
       --  subtype's aspect_specification is considered a value, not an object
@@ -18311,8 +18371,8 @@ package body Sem_Util is
                | N_Slice
             =>
                return
-                 Is_Object_Reference (Prefix (N))
-                   or else Is_Access_Type (Etype (Prefix (N)));
+                 Is_Object_Reference (Safe_Prefix (N))
+                   or else Is_Access_Type (Etype (Safe_Prefix (N)));
 
             --  In Ada 95, a function call is a constant object; a procedure
             --  call is not.
@@ -18340,8 +18400,8 @@ package body Sem_Util is
                return
                  Is_Object_Reference (Selector_Name (N))
                    and then
-                     (Is_Object_Reference (Prefix (N))
-                       or else Is_Access_Type (Etype (Prefix (N))));
+                     (Is_Object_Reference (Safe_Prefix (N))
+                       or else Is_Access_Type (Etype (Safe_Prefix (N))));
 
             --  An explicit dereference denotes an object, except that a
             --  conditional expression gets turned into an explicit dereference
@@ -19953,6 +20013,22 @@ package body Sem_Util is
         Nkind (N) in N_Statement_Other_Than_Procedure_Call
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
+
+   --------------------------------------
+   -- Is_Static_Discriminant_Component --
+   --------------------------------------
+
+   function Is_Static_Discriminant_Component (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Selected_Component
+        and then not Is_In_Discriminant_Check (N)
+        and then Present (Etype (Prefix (N)))
+        and then Ekind (Etype (Prefix (N))) = E_Record_Subtype
+        and then Has_Static_Discriminants (Etype (Prefix (N)))
+        and then Present (Entity (Selector_Name (N)))
+        and then Ekind (Entity (Selector_Name (N))) = E_Discriminant
+        and then not In_Check_Node (N);
+   end Is_Static_Discriminant_Component;
 
    ------------------------
    -- Is_Static_Function --

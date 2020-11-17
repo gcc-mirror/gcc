@@ -43,6 +43,7 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
+with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Elab; use Sem_Elab;
@@ -1854,6 +1855,12 @@ package body Sem_Eval is
          elsif K in
            N_Character_Literal | N_Real_Literal | N_String_Literal | N_Null
          then
+            return True;
+
+         --  Evaluate static discriminants, to eliminate dead paths and
+         --  redundant discriminant checks.
+
+         elsif Is_Static_Discriminant_Component (Op) then
             return True;
          end if;
       end if;
@@ -3818,6 +3825,24 @@ package body Sem_Eval is
       Warn_On_Known_Condition (N);
    end Eval_Relational_Op;
 
+   -----------------------------
+   -- Eval_Selected_Component --
+   -----------------------------
+
+   procedure Eval_Selected_Component (N : Node_Id) is
+   begin
+      --  If an attribute reference or a LHS, nothing to do.
+      --  Also do not fold if N is an [in] out subprogram parameter.
+      --  Fold will perform the other relevant tests.
+
+      if Nkind (Parent (N)) /= N_Attribute_Reference
+        and then Is_LHS (N) = No
+        and then not Is_Actual_Out_Or_In_Out_Parameter (N)
+      then
+         Fold (N);
+      end if;
+   end Eval_Selected_Component;
+
    ----------------
    -- Eval_Shift --
    ----------------
@@ -4487,6 +4512,15 @@ package body Sem_Eval is
       elsif Kind = N_Unchecked_Type_Conversion then
          return Expr_Rep_Value (Expression (N));
 
+      --  Static discriminant value
+
+      elsif Is_Static_Discriminant_Component (N) then
+         return Expr_Rep_Value
+                  (Get_Discriminant_Value
+                     (Entity (Selector_Name (N)),
+                      Etype (Prefix (N)),
+                      Discriminant_Constraint (Etype (Prefix (N)))));
+
       else
          raise Program_Error;
       end if;
@@ -4573,6 +4607,15 @@ package body Sem_Eval is
 
       elsif Kind = N_Unchecked_Type_Conversion then
          Val := Expr_Value (Expression (N));
+
+      --  Static discriminant value
+
+      elsif Is_Static_Discriminant_Component (N) then
+         Val := Expr_Value
+                  (Get_Discriminant_Value
+                     (Entity (Selector_Name (N)),
+                      Etype (Prefix (N)),
+                      Discriminant_Constraint (Etype (Prefix (N)))));
 
       else
          raise Program_Error;
@@ -4800,6 +4843,32 @@ package body Sem_Eval is
          Why_Not_Static (Expr);
       end if;
    end Flag_Non_Static_Expr;
+
+   ----------
+   -- Fold --
+   ----------
+
+   procedure Fold (N : Node_Id) is
+      Typ : constant Entity_Id := Etype (N);
+   begin
+      --  If not known at compile time or if already a literal, nothing to do
+
+      if Nkind (N) in N_Numeric_Or_String_Literal
+        or else not Compile_Time_Known_Value (N)
+      then
+         null;
+
+      elsif Is_Discrete_Type (Typ) then
+         Fold_Uint (N, Expr_Value (N), Static => Is_Static_Expression (N));
+
+      elsif Is_Real_Type (Typ) then
+         Fold_Ureal (N, Expr_Value_R (N), Static => Is_Static_Expression (N));
+
+      elsif Is_String_Type (Typ) then
+         Fold_Str
+           (N, Strval (Expr_Value_S (N)), Static => Is_Static_Expression (N));
+      end if;
+   end Fold;
 
    ----------------
    -- Fold_Dummy --

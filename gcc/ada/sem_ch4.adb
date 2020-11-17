@@ -5455,7 +5455,7 @@ package body Sem_Ch4 is
                      Apply_Compile_Time_Constraint_Error
                        (N, "component not present in }??",
                         CE_Discriminant_Check_Failed,
-                        Ent => Prefix_Type, Rep => False);
+                        Ent => Prefix_Type);
 
                      Set_Raises_Constraint_Error (N);
                      return;

@@ -14619,11 +14619,13 @@ package body Sem_Ch3 is
       Comp_List   : constant Elist_Id   := New_Elmt_List;
       Parent_Type : constant Entity_Id  := Etype (Typ);
       Assoc_List  : constant List_Id    := New_List;
-      Discr_Val   : Elmt_Id;
-      Errors      : Boolean;
-      New_C       : Entity_Id;
-      Old_C       : Entity_Id;
-      Is_Static   : Boolean := True;
+
+      Discr_Val             : Elmt_Id;
+      Errors                : Boolean;
+      New_C                 : Entity_Id;
+      Old_C                 : Entity_Id;
+      Is_Static             : Boolean := True;
+      Is_Compile_Time_Known : Boolean := True;
 
       procedure Collect_Fixed_Components (Typ : Entity_Id);
       --  Collect parent type components that do not appear in a variant part
@@ -14773,7 +14775,11 @@ package body Sem_Ch3 is
       while Present (Discr_Val) loop
          if not Is_OK_Static_Expression (Node (Discr_Val)) then
             Is_Static := False;
-            exit;
+
+            if not Compile_Time_Known_Value (Node (Discr_Val)) then
+               Is_Compile_Time_Known := False;
+               exit;
+            end if;
          end if;
 
          Next_Elmt (Discr_Val);
@@ -14871,19 +14877,18 @@ package body Sem_Ch3 is
          end if;
       end Add_Discriminants;
 
-      if Is_Static
+      if Is_Compile_Time_Known
         and then Is_Variant_Record (Typ)
       then
          Collect_Fixed_Components (Typ);
-
-         Gather_Components (
-           Typ,
-           Component_List (Type_Definition (Parent (Typ))),
-           Governed_By   => Assoc_List,
-           Into          => Comp_List,
-           Report_Errors => Errors);
-         pragma Assert (not Errors
-           or else Serious_Errors_Detected > 0);
+         Gather_Components
+           (Typ,
+            Component_List (Type_Definition (Parent (Typ))),
+            Governed_By          => Assoc_List,
+            Into                 => Comp_List,
+            Report_Errors        => Errors,
+            Allow_Compile_Time   => True);
+         pragma Assert (not Errors or else Serious_Errors_Detected > 0);
 
          Create_All_Components;
 
@@ -14891,7 +14896,7 @@ package body Sem_Ch3 is
       --  with constraints, we retrieve the record definition of the parent
       --  type to select the components of the proper variant.
 
-      elsif Is_Static
+      elsif Is_Compile_Time_Known
         and then Is_Tagged_Type (Typ)
         and then Nkind (Parent (Typ)) = N_Full_Type_Declaration
         and then
@@ -14899,13 +14904,13 @@ package body Sem_Ch3 is
         and then Is_Variant_Record (Parent_Type)
       then
          Collect_Fixed_Components (Typ);
-
          Gather_Components
            (Typ,
             Component_List (Type_Definition (Parent (Parent_Type))),
-            Governed_By   => Assoc_List,
-            Into          => Comp_List,
-            Report_Errors => Errors);
+            Governed_By          => Assoc_List,
+            Into                 => Comp_List,
+            Report_Errors        => Errors,
+            Allow_Compile_Time   => True);
 
          --  Note: previously there was a check at this point that no errors
          --  were detected. As a consequence of AI05-220 there may be an error
@@ -14913,21 +14918,19 @@ package body Sem_Ch3 is
          --  static constraint.
 
          --  If the tagged derivation has a type extension, collect all the
-         --  new components therein.
+         --  new relevant components therein via Gather_Components.
 
          if Present (Record_Extension_Part (Type_Definition (Parent (Typ))))
          then
-            Old_C := First_Component (Typ);
-            while Present (Old_C) loop
-               if Original_Record_Component (Old_C) = Old_C
-                 and then Chars (Old_C) /= Name_uTag
-                 and then Chars (Old_C) /= Name_uParent
-               then
-                  Append_Elmt (Old_C, Comp_List);
-               end if;
-
-               Next_Component (Old_C);
-            end loop;
+            Gather_Components
+              (Typ,
+               Component_List
+                 (Record_Extension_Part (Type_Definition (Parent (Typ)))),
+               Governed_By           => Assoc_List,
+               Into                  => Comp_List,
+               Report_Errors         => Errors,
+               Allow_Compile_Time    => True,
+               Include_Interface_Tag => True);
          end if;
 
          Create_All_Components;

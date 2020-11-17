@@ -10891,30 +10891,34 @@ package body Sem_Res is
          Set_Etype (N, Base_Type (Typ));
       end if;
 
-      --  Note: No Eval processing is required, because the prefix is of a
-      --  record type, or protected type, and neither can possibly be static.
+      --  Eval_Selected_Component may e.g. fold statically known discriminants.
 
-      --  If the record type is atomic and the component is not, then this is
-      --  worth a warning before Ada 2020, since we have a situation where the
-      --  access to the component may cause extra read/writes of the atomic
-      --  object, or partial word accesses, both of which may be unexpected.
+      Eval_Selected_Component (N);
 
-      if Nkind (N) = N_Selected_Component
-        and then Is_Atomic_Ref_With_Address (N)
-        and then not Is_Atomic (Entity (S))
-        and then not Is_Atomic (Etype (Entity (S)))
-        and then Ada_Version < Ada_2020
-      then
-         Error_Msg_N
-           ("??access to non-atomic component of atomic record",
-            Prefix (N));
-         Error_Msg_N
-           ("\??may cause unexpected accesses to atomic object",
-            Prefix (N));
+      if Nkind (N) = N_Selected_Component then
+
+         --  If the record type is atomic and the component is not, then this
+         --  is worth a warning before Ada 2020, since we have a situation
+         --  where the access to the component may cause extra read/writes of
+         --  the atomic object, or partial word accesses, both of which may be
+         --  unexpected.
+
+         if Is_Atomic_Ref_With_Address (N)
+           and then not Is_Atomic (Entity (S))
+           and then not Is_Atomic (Etype (Entity (S)))
+           and then Ada_Version < Ada_2020
+         then
+            Error_Msg_N
+              ("??access to non-atomic component of atomic record",
+               Prefix (N));
+            Error_Msg_N
+              ("\??may cause unexpected accesses to atomic object",
+               Prefix (N));
+         end if;
+
+         Resolve_Implicit_Dereference (Prefix (N));
+         Analyze_Dimension (N);
       end if;
-
-      Resolve_Implicit_Dereference (Prefix (N));
-      Analyze_Dimension (N);
    end Resolve_Selected_Component;
 
    -------------------

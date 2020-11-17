@@ -11162,7 +11162,7 @@ package body Exp_Ch4 is
                   --  because the selected component may be a reference to the
                   --  object being initialized, whose discriminant is not yet
                   --  set. This only happens in complex cases involving changes
-                  --  or representation.
+                  --  of representation.
 
                   if Disc = Entity (Selector_Name (N))
                     and then (Is_Entity_Name (Dval)
@@ -11174,15 +11174,7 @@ package body Exp_Ch4 is
                      --  constrained by an outer discriminant, which cannot
                      --  be optimized away.
 
-                     if Denotes_Discriminant
-                          (Dval, Check_Concurrent => True)
-                     then
-                        exit Discr_Loop;
-
-                     elsif Nkind (Original_Node (Dval)) = N_Selected_Component
-                       and then
-                         Denotes_Discriminant
-                           (Selector_Name (Original_Node (Dval)), True)
+                     if Denotes_Discriminant (Dval, Check_Concurrent => True)
                      then
                         exit Discr_Loop;
 
