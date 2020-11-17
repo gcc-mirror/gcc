@@ -21,6 +21,7 @@
 #include "coretypes.h"
 #include "c-common.h"		/* For flags.  */
 #include "../libcpp/internal.h"
+#include "langhooks.h"
 #include "c-pragma.h"		/* For parse_in.  */
 #include "file-prefix-map.h"    /* remap_macro_filename()  */
 
@@ -301,10 +302,15 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
 
 /* Writes out the preprocessed file, handling spacing and paste
    avoidance issues.  */
+
 static void
 scan_translation_unit (cpp_reader *pfile)
 {
   token_streamer streamer (pfile);
+  uintptr_t filter = 0;
+
+  if (lang_hooks.preprocess_token)
+    filter = lang_hooks.preprocess_token (pfile, NULL, filter);
 
   print.source = NULL;
   for (;;)
@@ -314,10 +320,30 @@ scan_translation_unit (cpp_reader *pfile)
 	= cpp_get_token_with_location (pfile, &spelling_loc);
 
       streamer.stream (pfile, token, spelling_loc);
+      if (filter)
+	{
+	  unsigned flags = lang_hooks.preprocess_token (pfile, token, filter);
+	  if (flags & lang_hooks::PT_begin_pragma)
+	    streamer.begin_pragma ();
+	}
       if (token->type == CPP_EOF)
 	break;
     }
+
+  if (filter)
+    lang_hooks.preprocess_token (pfile, NULL, filter);
 }
+
+class do_streamer : public token_streamer
+{
+ public:
+  uintptr_t filter;
+
+  do_streamer (cpp_reader *pfile, uintptr_t filter)
+    :token_streamer (pfile), filter (filter)
+    {
+    }
+};
 
 static void
 directives_only_cb (cpp_reader *pfile, CPP_DO_task task, void *data_, ...)
@@ -325,7 +351,7 @@ directives_only_cb (cpp_reader *pfile, CPP_DO_task task, void *data_, ...)
   va_list args;
   va_start (args, data_);
 
-  token_streamer *streamer = reinterpret_cast <token_streamer *> (data_);
+  do_streamer *streamer = reinterpret_cast <do_streamer *> (data_);
   switch (task)
     {
     default:
@@ -350,6 +376,13 @@ directives_only_cb (cpp_reader *pfile, CPP_DO_task task, void *data_, ...)
 	const cpp_token *token = va_arg (args, const cpp_token *);
 	location_t spelling_loc = va_arg (args, location_t);
 	streamer->stream (pfile, token, spelling_loc);
+	if (streamer->filter)
+	  {
+	    unsigned flags = lang_hooks.preprocess_token
+	      (pfile, token, streamer->filter);
+	    if (flags & lang_hooks::PT_begin_pragma)
+	      streamer->begin_pragma ();
+	  }
       }
       break;
     }
@@ -362,8 +395,13 @@ directives_only_cb (cpp_reader *pfile, CPP_DO_task task, void *data_, ...)
 static void
 scan_translation_unit_directives_only (cpp_reader *pfile)
 {
-  token_streamer streamer (pfile);
+  uintptr_t filter = 0;
+  if (lang_hooks.preprocess_token)
+    filter = lang_hooks.preprocess_token (pfile, NULL, filter);
+  do_streamer streamer (pfile, filter);
   cpp_directive_only_process (pfile, &streamer, directives_only_cb);
+  if (streamer.filter)
+    lang_hooks.preprocess_token (pfile, NULL, streamer.filter);
 }
 
 /* Adjust print.src_line for newlines embedded in output.  */
@@ -462,15 +500,16 @@ print_line_1 (location_t src_loc, const char *special_flags, FILE *stream)
       unsigned char *to_file_quoted =
          (unsigned char *) alloca (to_file_len * 4 + 1);
 
-      print.src_line = LOCATION_LINE (src_loc);
-      print.src_file = file_path;
-
       /* cpp_quote_string does not nul-terminate, so we have to do it
 	 ourselves.  */
       unsigned char *p = cpp_quote_string (to_file_quoted,
 					   (const unsigned char *) file_path,
 					   to_file_len);
       *p = '\0';
+
+      print.src_line = LOCATION_LINE (src_loc);
+      print.src_file = file_path;
+
       fprintf (stream, "# %u \"%s\"%s",
 	       print.src_line, to_file_quoted, special_flags);
 
@@ -576,9 +615,10 @@ cb_define (cpp_reader *pfile, location_t line, cpp_hashnode *node)
 }
 
 static void
-cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, location_t line,
-	  cpp_hashnode *node)
+cb_undef (cpp_reader *pfile, location_t line, cpp_hashnode *node)
 {
+  if (lang_hooks.preprocess_undef)
+    lang_hooks.preprocess_undef (pfile, line, node);
   maybe_print_line (line);
   fprintf (print.outf, "#undef %s\n", NODE_NAME (node));
   print.src_line++;

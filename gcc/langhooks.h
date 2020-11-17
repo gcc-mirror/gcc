@@ -356,6 +356,24 @@ struct lang_hooks
      global diagnostic context structure.  */
   void (*initialize_diagnostics) (diagnostic_context *);
 
+  /* Beginning the main source file.  */
+  void (*preprocess_main_file) (cpp_reader *, line_maps *,
+				const line_map_ordinary *);
+
+  /* Adjust libcpp options and callbacks.  */
+  void (*preprocess_options) (cpp_reader *);
+
+  /* Undefining a macro.  */
+  void (*preprocess_undef) (cpp_reader *, location_t, cpp_hashnode *);
+
+  /* Observer for preprocessing stream.  */
+  uintptr_t (*preprocess_token) (cpp_reader *, const cpp_token *, uintptr_t);
+  /* Various flags it can return about the token.  */
+  enum PT_flags
+    {
+     PT_begin_pragma = 1 << 0
+    };
+
   /* Register language-specific dumps.  */
   void (*register_dumps) (gcc::dump_manager *);
 
