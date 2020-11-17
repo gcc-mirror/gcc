@@ -1,3 +1,32 @@
+2020-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93456
+	* src/c++11/futex.cc (relative_timespec): Remove redundant check
+	negative values.
+	* testsuite/30_threads/future/members/93456.cc: New.
+
+2020-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/futex.cc (relative_timespec): New function to
+	create relative time from two absolute times.
+	(__atomic_futex_unsigned_base::_M_futex_wait_until): Use
+	relative_timespec.
+
+2020-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (future::wait_for): Do not wait for
+	durations less than or equal to zero.
+	* testsuite/30_threads/future/members/poll.cc: New test.
+
 2020-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
