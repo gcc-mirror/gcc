@@ -542,6 +542,12 @@ or with constant text in a single argument.
  %s     current argument is the name of a library or startup file of some sort.
         Search for that file in a standard list of directories
 	and substitute the full name found.
+ %T	current argument is the name of a linker script.
+	Search for that file in the current list of directories to scan for
+	libraries.  If the file is located, insert a --script option into the
+	command line followed by the full path name found.  If the file is
+	not found then generate an error message.
+	Note: the current working directory is not searched.
  %eSTR  Print STR as an error message.  STR is terminated by a newline.
         Use this when inconsistent options are detected.
  %nSTR  Print STR as a notice.  STR is terminated by a newline.

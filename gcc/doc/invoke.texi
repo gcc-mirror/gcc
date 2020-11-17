@@ -31727,6 +31727,9 @@ Marks the argument containing or following the @samp{%w} as the
 designated output file of this compilation.  This puts the argument
 into the sequence of arguments that @samp{%o} substitutes.
 
+@item %V
+Indicates that this compilation produces no output file.
+
 @item %o
 Substitutes the names of all the output files, with spaces
 automatically placed around them.  You should write spaces
@@ -31744,16 +31747,6 @@ handling is such that @samp{%O} is treated exactly as if it had already
 been substituted, except that @samp{%g, %u, and %U} do not currently
 support additional @var{suffix} characters following @samp{%O} as they do
 following, for example, @samp{.o}.
-
-@item %p
-Substitutes the standard macro predefinitions for the
-current target machine.  Use this when running @command{cpp}.
-
-@item %P
-Like @samp{%p}, but puts @samp{__} before and after the name of each
-predefined macro, except for macros that start with @samp{__} or with
-@samp{_@var{L}}, where @var{L} is an uppercase letter.  This is for ISO
-C@.
 
 @item %I
 Substitute any of @option{-iprefix} (made from @env{GCC_EXEC_PREFIX}),
@@ -31779,6 +31772,9 @@ searched.
 Print @var{str} as an error message.  @var{str} is terminated by a newline.
 Use this when inconsistent options are detected.
 
+@item %n@var{str}
+Print @var{str} as a notice.  @var{str} is terminated by a newline.
+
 @item %(@var{name})
 Substitute the contents of spec string @var{name} at this point.
 
@@ -31794,6 +31790,12 @@ Output the accumulated assembler options specified by @option{-Wa}.
 
 @item %Z
 Output the accumulated preprocessor options specified by @option{-Wp}.
+
+@item %M
+Output @code{multilib_os_dir}.
+
+@item %R
+Output the concatenation of @code{target_system_root} and @code{target_sysroot_suffix}.
 
 @item %a
 Process the @code{asm} spec.  This is used to compute the
@@ -31853,6 +31855,12 @@ Remove all occurrences of @code{-S} from the command line.  Note---this
 command is position dependent.  @samp{%} commands in the spec string
 before this one see @code{-S}, @samp{%} commands in the spec string
 after this one do not.
+
+@item %<S*
+Similar to @samp{%<S}, but match all switches beginning with @code{-S}.
+
+@item %>S
+Similar to @samp{%<S}, but keep @code{-S} in the GCC command line.
 
 @item %:@var{function}(@var{args})
 Call the named function @var{function}, passing it @var{args}.
@@ -31914,6 +31922,14 @@ usage:
 -l%:if-exists-then-else(%:getenv(VSB_DIR rtnet.h) rtnet net)
 @end smallexample
 
+@item @code{sanitize}
+The @code{sanitize} spec function takes no arguments.  It returns non-NULL if
+any address, thread or undefined behaviour sanitizers are active.
+
+@smallexample
+%@{%:sanitize(address):-funwind-tables@}
+@end smallexample
+
 @item @code{replace-outfile}
 The @code{replace-outfile} spec function takes two arguments.  It looks for the
 first argument in the outfiles array and replaces it with the second argument.  Here
@@ -31930,6 +31946,56 @@ its usage:
 
 @smallexample
 %:remove-outfile(-lm)
+@end smallexample
+
+@item @code{version-compare}
+The @code{version-compare} spec function takes four or five arguments of the following
+form:
+
+@smallexample
+<comparison-op> <arg1> [<arg2>] <switch> <result>
+@end smallexample
+
+It returns @code{result} if the comparison evaluates to true, and NULL if it doesn't.
+The supported @code{comparison-op} values are:
+
+@table @code
+@item >=
+True if @code{switch} is a later (or same) version than @code{arg1}
+
+@item !>
+Opposite of @code{>=}
+
+@item <
+True if @code{switch} is an earlier version than @code{arg1}
+
+@item !<
+Opposite of @code{<}
+
+@item ><
+True if @code{switch} is @code{arg1} or later, and earlier than @code{arg2}
+
+@item <>
+True if @code{switch} is earlier than @code{arg1}, or is @code{arg2} or later
+@end table
+
+If the @code{switch} is not present at all, the condition is false unless the first character
+of the @code{comparison-op} is @code{!}.
+
+@smallexample
+%:version-compare(>= 10.3 mmacosx-version-min= -lmx)
+@end smallexample
+
+The above example would add @option{-lmx} if @option{-mmacosx-version-min=10.3.9} was
+passed.
+
+@item @code{include}
+The @code{include} spec function behaves much like @code{%include}, with the advantage
+that it can be nested inside a spec and thus be conditionalized.  It takes one argument,
+the filename, and looks for it in the startfile path.  It always returns NULL.
+
+@smallexample
+%@{static-libasan|static:%:include(libsanitizer.spec)%(link_libasan)@}
 @end smallexample
 
 @item @code{pass-through-libs}
@@ -31957,6 +32023,25 @@ Use "-Wa,OPTION" to pass "OPTION" to the assembler.
 
 It is used to separate compiler options from assembler options
 in the @option{--target-help} output.
+
+@item @code{gt}
+The @code{gt} spec function takes two or more arguments.  It returns @code{""} (the
+empty string) if the second-to-last argument is greater than the last argument, and NULL
+otherwise.  The following example inserts the @code{link_gomp} spec if the last
+@option{-ftree-parallelize-loops=} option given on the command line is greater than 1:
+
+@smallexample
+%@{%:gt(%@{ftree-parallelize-loops=*:%*@} 1):%:include(libgomp.spec)%(link_gomp)@}
+@end smallexample
+
+@item @code{debug-level-gt}
+The @code{debug-level-gt} spec function takes one argument and returns @code{""} (the
+empty string) if @code{debug_info_level} is greater than the specified number, and NULL
+otherwise.
+
+@smallexample
+%@{%:debug-level-gt(0):%@{gdwarf*:--gdwarf2@}@}
+@end smallexample
 @end table
 
 @item %@{S@}
@@ -31970,6 +32055,10 @@ and outputs the command-line option @option{-foo}.
 @item %W@{S@}
 Like %@{@code{S}@} but mark last argument supplied within as a file to be
 deleted on failure.
+
+@item %@@@{S@}
+Like %@{@code{S}@} but puts the result into a @code{FILE} and substitutes
+@code{@@FILE} if an @code{@@file} argument has been supplied.
 
 @item %@{S*@}
 Substitutes all the switches specified to GCC whose names start
@@ -32052,6 +32141,12 @@ jim.d         -bar -boggle
 -d fred.c     -foo -baz -boggle
 -d jim.d      -bar -baz -boggle
 @end smallexample
+
+@item %@{%:@var{function}(@var{args}):X@}
+
+Call function named @var{function} with args @var{args}.  If the
+function returns non-NULL, then @code{X} is substituted, if it returns
+NULL, it isn't substituted.
 
 @item %@{S:X; T:Y; :D@}
 
