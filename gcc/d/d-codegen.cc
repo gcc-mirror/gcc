@@ -1290,7 +1290,10 @@ build_assign (tree_code code, tree lhs, tree rhs)
 	 since that would cause the LHS to be constructed twice.
 	 So we force the TARGET_EXPR to be expanded without a target.  */
       if (code != INIT_EXPR)
-	rhs = compound_expr (rhs, TARGET_EXPR_SLOT (rhs));
+	{
+	  init = compound_expr (init, rhs);
+	  rhs = TARGET_EXPR_SLOT (rhs);
+	}
       else
 	{
 	  d_mark_addressable (lhs);

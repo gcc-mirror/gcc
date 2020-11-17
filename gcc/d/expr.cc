@@ -884,6 +884,9 @@ public:
 	    tree t2 = build_expr (e->e2);
 	    tree expr = stabilize_expr (&t2);
 
+	    if (TREE_CODE (t2) == CALL_EXPR)
+	      t2 = force_target_expr (t2);
+
 	    result = modify_expr (build_deref (ptrexp), t2);
 
 	    this->result_ = compound_expr (expr, result);
