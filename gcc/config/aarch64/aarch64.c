@@ -15968,7 +15968,7 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 bool
 aarch64_expand_movmem (rtx *operands)
 {
-  unsigned int n;
+  unsigned HOST_WIDE_INT n;
   rtx dst = operands[0];
   rtx src = operands[1];
   rtx base;
