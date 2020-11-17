@@ -285,7 +285,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif /* C2X */
 
-#ifdef __STDC_WANT_IEC_60559_BFP_EXT__
+#if (defined __STDC_WANT_IEC_60559_BFP_EXT__ \
+     || defined __STDC_WANT_IEC_60559_EXT__)
 /* Number of decimal digits for which conversions between decimal
    character strings and binary formats, in both directions, are
    correctly rounded.  */
