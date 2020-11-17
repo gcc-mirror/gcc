@@ -226,7 +226,9 @@
 # define __cpp_lib_ranges 201911L
 #endif
 #define __cpp_lib_shift 201806L
-#define __cpp_lib_span 202002L
+#if __cpp_lib_concepts
+# define __cpp_lib_span 202002L
+#endif
 #define __cpp_lib_ssize 201902L
 #define __cpp_lib_starts_ends_with 201711L
 # if _GLIBCXX_USE_CXX11_ABI
