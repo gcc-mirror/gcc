@@ -717,6 +717,10 @@ int StaticIfCondition::include(Scope *sc, ScopeDsymbol *sds)
         sc->sds = sds;                  // sds gets any addMember()
 
         bool errors = false;
+
+        if (!exp)
+            goto Lerror;
+
         bool result = evalStaticCondition(sc, exp, exp, errors);
         sc->pop();
 
