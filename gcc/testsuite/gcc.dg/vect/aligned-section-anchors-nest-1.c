@@ -30,4 +30,4 @@ int *foo(void)
   return &c[0][0];
 }
 
-/* { dg-final { scan-ipa-dump-times "Increasing alignment of decl" 3 "increase_alignment" } } */
+/* { dg-final { scan-ipa-dump-times "Increasing alignment of decl" 3 "increase_alignment" { xfail vect_element_align_preferred } } } */
