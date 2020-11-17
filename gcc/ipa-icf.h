@@ -371,11 +371,18 @@ public:
   /* GIMPLE codes hash value.  */
   hashval_t gcode_hash;
 
+  /* Vector of subpart of memory access types.  */
+  vec<tree> memory_access_types;
+
   /* Total number of SSA names used in the function.  */
   unsigned ssa_names_size;
 
   /* Array of structures for all basic blocks.  */
   vec <ipa_icf_gimple::sem_bb *> bb_sorted;
+
+  /* Hash of canonical types used for memory references in the
+     function.  */
+  hashval_t m_alias_sets_hash;
 
   /* Return true if parameter I may be used.  */
   bool param_used_p (unsigned int i);
@@ -540,6 +547,9 @@ private:
 
   /* For each semantic item, append hash values of references.  */
   void update_hash_by_addr_refs ();
+
+  /* Update hash by canonical types of memory accesses.  */
+  void update_hash_by_memory_access_type ();
 
   /* Congruence classes are built by hash value.  */
   void build_hash_based_classes (void);
