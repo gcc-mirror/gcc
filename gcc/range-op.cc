@@ -2634,6 +2634,9 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  virtual bool op1_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op2) const;
 } op_trunc_mod;
 
 void
@@ -2678,6 +2681,31 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
   new_ub = wi::min (new_ub, tmp, sign);
 
   value_range_with_overflow (r, type, new_lb, new_ub);
+}
+
+bool
+operator_trunc_mod::op1_range (irange &r, tree type,
+			       const irange &lhs,
+			       const irange &op2) const
+{
+  // PR 91029.  Check for signed truncation with op2 >= 0.
+  if (TYPE_SIGN (type) == SIGNED && wi::ge_p (op2.lower_bound (), 0, SIGNED))
+    {
+      unsigned prec = TYPE_PRECISION (type);
+      // if a & b >=0 , then a >= 0.
+      if (wi::ge_p (lhs.lower_bound (), 0, SIGNED))
+	{
+	  r = value_range (type, wi::zero (prec), wi::max_value (prec, SIGNED));
+	  return true;
+	}
+      // if a & b < 0 , then a <= 0.
+      if (wi::lt_p (lhs.upper_bound (), 0, SIGNED))
+	{
+	  r = value_range (type, wi::min_value (prec, SIGNED), wi::zero (prec));
+	  return true;
+	}
+    }
+  return false;
 }
 
 
