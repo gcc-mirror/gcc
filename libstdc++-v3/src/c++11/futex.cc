@@ -61,8 +61,8 @@ namespace
 #if defined(SYS_futex_time64) && SYS_futex_time64 != SYS_futex
   // Userspace knows about the new time64 syscalls, so it's possible that
   // userspace has also updated timespec to use a 64-bit tv_sec.
-  // The SYS_futex and SYS_clock_gettime syscalls still use the old definition
-  // of timespec where tv_sec is 32 bits, so define a type that matches that.
+  // The SYS_futex syscall still uses the old definition of timespec
+  // where tv_sec is 32 bits, so define a type that matches that.
   struct syscall_timespec { long tv_sec; long tv_nsec; };
 #else
   using syscall_timespec = ::timespec;
@@ -234,11 +234,10 @@ namespace
 
 	// We only get to here if futex_clock_monotonic_unavailable was
 	// true or has just been set to true.
+	struct timespec ts;
 #ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
-	syscall_timespec ts;
 	syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &ts);
 #else
-	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 #endif
 

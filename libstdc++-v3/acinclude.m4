@@ -1561,13 +1561,34 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 	   #endif
 	   syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &tp);
 	   syscall(SYS_clock_gettime, CLOCK_REALTIME, &tp);
-	  ], [ac_has_clock_monotonic_syscall=yes], [ac_has_clock_monotonic_syscall=no])
-	AC_MSG_RESULT($ac_has_clock_monotonic_syscall)
-	if test x"$ac_has_clock_monotonic_syscall" = x"yes"; then
+	  ], [ac_has_clock_gettime_syscall=yes], [ac_has_clock_gettime_syscall=no])
+	AC_MSG_RESULT($ac_has_clock_gettime_syscall)
+	if test x"$ac_has_clock_gettime_syscall" = x"yes"; then
 	  AC_DEFINE(_GLIBCXX_USE_CLOCK_GETTIME_SYSCALL, 1,
-	  [ Defined if clock_gettime syscall has monotonic and realtime clock support. ])
+	  [Defined if clock_gettime syscall has monotonic and realtime clock support. ])
 	  ac_has_clock_monotonic=yes
 	  ac_has_clock_realtime=yes
+	  AC_MSG_CHECKING([for struct timespec that matches syscall])
+	  AC_TRY_COMPILE(
+	    [#include <time.h>
+	     #include <sys/syscall.h>
+	    ],
+	    [#ifdef SYS_clock_gettime64
+	     #if SYS_clock_gettime64 != SYS_clock_gettime
+	     // We need to use SYS_clock_gettime and libc appears to
+	     // also know about the SYS_clock_gettime64 syscall.
+	     // Check that userspace doesn't use time64 version of timespec.
+	     static_assert(sizeof(timespec::tv_sec) == sizeof(long),
+	       "struct timespec must be compatible with SYS_clock_gettime");
+	     #endif
+	     #endif
+	    ],
+	    [ac_timespec_matches_syscall=yes],
+	    [ac_timespec_matches_syscall=no])
+	  AC_MSG_RESULT($ac_timespec_matches_syscall)
+	  if test x"$ac_timespec_matches_syscall" = no; then
+	    AC_MSG_ERROR([struct timespec is not compatible with SYS_clock_gettime, please report a bug to http://gcc.gnu.org/bugzilla])
+	  fi
 	fi;;
     esac
   fi
