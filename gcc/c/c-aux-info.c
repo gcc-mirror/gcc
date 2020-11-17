@@ -409,6 +409,7 @@ gen_type (const char *ret_val, tree t, formals_style style)
 	    data_type = concat ("unsigned ", data_type, NULL);
 	  break;
 
+	case OPAQUE_TYPE:
 	case REAL_TYPE:
 	  data_type = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (t)));
 	  break;
