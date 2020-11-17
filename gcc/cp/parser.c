@@ -20790,13 +20790,12 @@ warn_about_ambiguous_parse (const cp_decl_specifier_seq *decl_specifiers,
       if (same_type_p (type, void_type_node))
 	return;
     }
+  else if (decl_specifiers->any_type_specifiers_p)
+    /* Code like long f(); will have null ->type.  If we have any
+       type-specifiers, pretend we've seen int.  */
+    type = integer_type_node;
   else
-    {
-      /* Code like long f(); will have null ->type.  If we have any
-	 type-specifiers, pretend we've seen int.  */
-      gcc_checking_assert (decl_specifiers->any_type_specifiers_p);
-      type = integer_type_node;
-    }
+    return;
 
   auto_diagnostic_group d;
   location_t loc = declarator->u.function.parens_loc;
