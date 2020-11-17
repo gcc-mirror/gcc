@@ -404,10 +404,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
   tree rhstype = TREE_TYPE (rhs);
   if (POINTER_TYPE_P (rhstype))
     rhstype = TREE_TYPE (rhstype);
-  if (TYPE_EMPTY_P (rhstype)
-      || (RECORD_OR_UNION_TYPE_P (rhstype)
-	  && (!first_field (rhstype)
-	      || default_is_empty_record (rhstype))))
+  if (is_empty_type (rhstype))
     return NULL_TREE;
 
   bool warned = false;
