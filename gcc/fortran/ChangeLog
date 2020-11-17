@@ -1,3 +1,8 @@
+2020-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Generate runtime
+	checking code for status of argument.
+
 2020-11-13  Gergö Barany  <gergo@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

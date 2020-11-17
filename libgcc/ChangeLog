@@ -1,3 +1,9 @@
+2020-11-17  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/t-ppc64-fp (LIB2ADD): Delete.
+	(LIB2_SIDITI_CONV_FUNCS): Define.
+	* config/rs6000/ppc64-fp.c: Delete file.
+
 2020-11-15  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/lib2hw_mul.S: Omit _hw* suffix from GCC names for
