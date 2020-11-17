@@ -14,7 +14,7 @@
 /* Unset an environment variable from Go.  This is called by
    syscall.Unsetenv.  */
 
-void unsetenv_c (String) __asm__ (GOSYM_PREFIX "syscall.unsetenv_c");
+void unsetenv_c (String) __asm__ (GOSYM_PREFIX "syscall.unsetenv__c");
 
 void
 unsetenv_c (String k)

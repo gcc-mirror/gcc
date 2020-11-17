@@ -226,7 +226,11 @@ Ast_dump_context::dump_type(const Type* t)
     // FIXME: write a type pretty printer instead of
     // using mangled names.
     if (this->gogo_ != NULL)
-      this->ostream() << "(" << t->mangled_name(this->gogo_) <<  ")";
+      {
+	Backend_name bname;
+	t->backend_name(this->gogo_, &bname);
+	this->ostream() << "(" << bname.name() << ")";
+      }
 }
 
 // Dump a textual representation of a block to the

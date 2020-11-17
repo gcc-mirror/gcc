@@ -398,7 +398,7 @@ func parsedebugvars() {
 	traceback_env = traceback_cache
 }
 
-//go:linkname setTraceback runtime..z2fdebug.SetTraceback
+//go:linkname setTraceback runtime_1debug.SetTraceback
 func setTraceback(level string) {
 	var t uint32
 	switch level {

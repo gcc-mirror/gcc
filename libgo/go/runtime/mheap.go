@@ -1502,7 +1502,7 @@ func (h *mheap) scavengeAll() {
 	}
 }
 
-//go:linkname runtime_debug_freeOSMemory runtime..z2fdebug.freeOSMemory
+//go:linkname runtime_debug_freeOSMemory runtime_1debug.freeOSMemory
 func runtime_debug_freeOSMemory() {
 	GC()
 	systemstack(func() { mheap_.scavengeAll() })

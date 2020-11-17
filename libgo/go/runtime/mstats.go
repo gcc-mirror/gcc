@@ -468,7 +468,7 @@ func readmemstats_m(stats *MemStats) {
 	stats.StackSys += stats.StackInuse
 }
 
-//go:linkname readGCStats runtime..z2fdebug.readGCStats
+//go:linkname readGCStats runtime_1debug.readGCStats
 func readGCStats(pauses *[]uint64) {
 	systemstack(func() {
 		readGCStats_m(pauses)

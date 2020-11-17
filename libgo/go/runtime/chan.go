@@ -774,7 +774,7 @@ func reflect_chanlen(c *hchan) int {
 	return int(c.qcount)
 }
 
-//go:linkname reflectlite_chanlen internal..z2freflectlite.chanlen
+//go:linkname reflectlite_chanlen internal_1reflectlite.chanlen
 func reflectlite_chanlen(c *hchan) int {
 	if c == nil {
 		return 0

@@ -15,53 +15,68 @@
 // assembly code.  This is not used for names that appear only in the
 // debug info.
 
-// Our external names contain only ASCII alphanumeric characters,
+// Our external names may contain only ASCII alphanumeric characters,
 // underscore, and dot.  (According to the GCC sources, dot is not
 // permitted in assembler symbols on VxWorks and MMIX.  We will not
-// support those systems.)  Go names can not contain dot, so we rely
-// on using dot to encode Unicode characters, and to separate Go
-// symbols by package, and so forth.  We assume that none of the
-// non-Go symbols in the final link will contain a dot, so we don't
-// worry about conflicts.
+// support those systems.)  Go identifiers cannot contain dot, but Go
+// package paths can.  Both Go identifiers and package paths can, of
+// course, contain all sorts of Unicode characters.
+//
+// The gc compiler uses names like "pkg.F", and it seems convenient to
+// emulate that.  Therefore, we will use dot to separate different
+// components of names.
+//
+// Since package paths can contain dot, to avoid ambiguity we must
+// encode package paths such that they do not contain any dot.  The
+// natural way to do this is to encode forbidden characters, including
+// dot, using a notation based on underscore.  We will, of course,
+// have to encode underscore itself.
+//
+// Since we will be using an underscore encoding for the package path,
+// it seems reasonable to use the same encoding for Go identifiers.
+// This has the disadvantage that encoded Go identifiers will appear
+// to be valid Go identifiers with funny spellings, but it seems like
+// the best available approach.
+//
+// Therefore, in the following discussion we may assume that none of
+// the names under discussion contain a dot.  All of the names we
+// generate for Go identifiers (that don't use //export or
+// //go:linkname) will contain at least one dot, as discussed below.
+// We assume that none of the non-Go symbols in the final link will
+// contain a dot, so we don't worry about conflicts.
 //
 // We first describe the basic symbol names, used to represent Go
-// functions and variables.  These never start with a dot, never end
-// with a dot, never contain two consecutive dots, and never contain a
-// dot followed by a digit.
+// functions and variables.
 //
 // The external name for a normal Go symbol NAME, a function or
 // variable, is simply "PKGPATH.NAME".  Note that NAME is not the
 // packed form used for the "hidden" name internally in the compiler;
-// it is the name that appears in the source code.  PKGPATH is the
-// -fgo-pkgpath option as adjusted by Gogo::pkgpath_for_symbol. Note
-// that PKGPATH can not contain a dot and neither can NAME.  Also,
-// NAME may not begin with a digit.  NAME may require further encoding
-// for non-ASCII characters as described below, but until that
-// encoding these symbols contain exactly one dot, and they do not
-// start with a dot.
+// it is the name that appears in the source code.  Both PKGPATH and
+// NAME will be encoded as described below.  The encoding process
+// ensures that neither encoded string can contain a dot, and neither
+// will start with a digit (NAME is a Go identifier that can't contain
+// a dot or start with a digit anyhow).  The encoding process means
+// that these external names contain exactly one dot and do not start
+// with a dot.
 //
 // The external name for a method NAME for a named type TYPE is
-// "PKGPATH.TYPE.NAME".  Unlike the gc compiler, the external name
-// does not indicate whether this is a pointer method or a value
-// method; a named type can not have both a pointer and value method
-// with the same name, so there is no ambiguity.  PKGPATH is the
-// package path of the package in which TYPE is defined.  Here none of
-// PKGPATH, TYPE, or NAME can be empty or contain a dot, and neither
-// TYPE nor NAME may begin with a digit.  Before encoding these names
-// contain exactly two dots, not consecutive, and they do not start
-// with a dot.
+// "PKGPATH.TYPE.NAME".  Both NAME and TYPE are simple Go identifiers.
+// Unlike the gc compiler, the external name does not indicate whether
+// this is a pointer method or a value method; a named type can not
+// have both a pointer and value method with the same name, so there
+// is no ambiguity.  PKGPATH is the package path of the package in
+// which TYPE is defined.  PKGPATH, TYPE, and NAME are encoded, and
+// cannot be empty or contain a dot or start with a digit.  These
+// external names contain exactly two dots, not consecutive, and they
+// do not start with a dot.
 //
 // It's uncommon, but the use of type literals with embedded fields
 // can cause us to have methods on unnamed types.  The external names
-// for these are also PKGPATH.TYPE.NAME, where TYPE is an
+// for these are also PKGPATH.TYPELIT.NAME, where TYPELIT is an
 // approximately readable version of the type literal, described
-// below.  As the type literal encoding always contains multiple dots,
-// these names always contain more than two dots.  Although the type
-// literal encoding contains dots, neither PKGPATH nor NAME can
-// contain a dot, and neither TYPE nor NAME can begin with a digit.
-// The effect is that PKGPATH is always the portion of the name before
-// the first dot and NAME is always the portion after the last dot.
-// There is no ambiguity as long as encoded type literals are
+// below.  A TYPELIT will always contain characters that cannot appear
+// in a Go identifier, so TYPELIT can never be confused with a TYPE
+// name.  There is no ambiguity as long as encoded type literals are
 // unambiguous.
 //
 // Also uncommon is an external name that must refer to a named type
@@ -91,46 +106,51 @@
 // the function with an added suffix "..f".
 //
 // A thunk for a go or defer statement is treated as a function whose
-// name is ".thunkNN" where NN is a sequence of digits (these
-// functions are never globally visible).  Thus the final name of a
-// thunk will be PKGPATH..thunkNN.
+// name is ".thunkNN", unencoded, where NN is a sequence of digits
+// (these functions are never globally visible).  Thus the final name
+// of a thunk will be PKGPATH..thunkNN (PKGPATH is encoded).
 //
-// An init function is treated as a function whose name is ".initNN"
-// where NN is a sequence of digits (these functions are never
-// globally visible).  Thus the final name of an init function will be
-// PKGPATH..initNN.
+// An init function is treated as a function whose name is ".initNN",
+// unencoded, where NN is a sequence of digits (these functions are
+// never globally visible).  Thus the final name of an init function
+// will be PKGPATH..initNN (PKGPATH is encoded).
 //
 // A nested function is given the name of outermost enclosing function
-// or method with an added suffix "..funcNN" where NN is a sequence of
-// digits.  Note that the function descriptor of a nested function, if
-// needed, will end with "..funcNN..f".
+// or method with an added suffix "..funcNN", unencoded, where NN is a
+// sequence of digits.  Note that the function descriptor of a nested
+// function, if needed, will end with "..funcNN..f".
 //
 // A recover thunk is the same as the name of the function with an
 // added suffix "..r".
 //
-// The name of a type descriptor for a named type is PKGPATH.TYPE..d.
+// The name of a type descriptor for a named type is
+// PKGPATH.TYPENAME..d (PKGPATH and TYPENAME are encoded).
 //
-// The name of a type descriptor for an unnamed type is type..TYPE.
-// That is, the string "type.." followed by the type literal encoding.
+// The name of a type descriptor for a pointer to a named type is
+// PKGPATH.TYPENAME..p (PKGPATH and TYPENAME are encoded).
+//
+// The name of a type descriptor for an unnamed type is type..TYPELIT.
+// That is, the string "type.." followed by the encoded type literal.
 // These names are common symbols, in the linker's sense of the word
 // common: in the final executable there is only one instance of the
-// type descriptor for a given unnamed type.  The type literal
-// encoding can never start with a digit or with 'u' or 'U'.
+// type descriptor for a given unnamed type.
 //
-// The name of the GC symbol for a named type is PKGPATH.TYPE..g.
+// The name of the GC symbol for a named type is PKGPATH.TYPE..g
+// (PKGPATH and TYPE are encoded).
 //
-// The name of the GC symbol for an unnamed type is typeg..TYPE.
+// The name of the GC symbol for an unnamed type is type..TYPELIT..g.
 // These are common symbols.
 //
 // The name of a ptrmask symbol is gcbits..B32 where B32 is an
-// encoding of the ptrmask bits using only ASCII letters without 'u'
-// or 'U'.  These are common symbols.
+// encoding of the ptrmask bits using only ASCII letters.  These are
+// common symbols.
 //
 // An interface method table for assigning the non-interface type TYPE
 // to the interface type ITYPE is named imt..ITYPE..TYPE.  If ITYPE or
-// TYPE is a named type, they are written as PKGPATH.TYPE.  Otherwise
-// they are written as a type literal.  An interface method table for
-// a pointer method set uses pimt instead of imt.
+// TYPE is a named type, they are written as PKGPATH.TYPE (where both
+// PKGPATH and TYPE are encoded).  Otherwise they are written as a
+// type literal.  An interface method table for a pointer method set
+// uses pimt instead of imt.
 //
 // The names of composite literal initializers, including the GC root
 // variable, are not referenced.  They must not conflict with any C
@@ -147,7 +167,7 @@
 // PKGPATH..import.  If a package doesn't need an init function, it
 // will have a dummy one, named ~PKGPATH.
 //
-// In each pacakge there is a list of all the type descriptors defined
+// In each package there is a list of all the type descriptors defined
 // in this package.  The name of the list is PKGPATH..types.
 //
 // In the main package it gathers all the type descriptor lists in a
@@ -161,109 +181,109 @@
 // The type literal encoding is not quite valid Go, as some aspects of
 // compiler generated types can not be represented.  For example,
 // incomparable struct types have an extra field "{x}".  Struct tags
-// are quoted inside curly braces, rather than introduce an encoding
-// for quotes.  Struct tags can contain any character, so any single
-// byte Unicode character that is not alphanumeric or underscore is
-// replaced with .xNN where NN is the hex encoding.
+// can contain any character, which will be underscore encoded as
+// usual.  In the unusual case of a curly brace or a backslash in a
+// struct tag, the brace or backslash will be backslash quoted, before
+// underscore encoding.
 //
-// There is a simple encoding for glue characters in type literals:
-//   .0 - ' '
-//   .1 - '*'
-//   .2 - ';'
-//   .3 - ','
-//   .4 - '{'
-//   .5 - '}'
-//   .6 - '['
-//   .7 - ']'
-//   .8 - '('
-//   .9 - ')'
-// This is unambiguous as, although the type literal can contain a dot
-// as shown above, those dots are always followed by a name and names
-// can not begin with a digit.  A dot is always followed by a name or
-// a digit, and a type literal can neither start nor end with a dot,
-// so this never introduces consecutive dots.
+// The underscore encoding is, naturally, an underscore followed by
+// other characters.  As there are various characters that commonly
+// appear in type literals and in package paths, we have a set of
+// short encodings.  Then we have general encodings for other
+// characters.
 //
-// Struct tags can contain any character, so they need special
-// treatment.  Alphanumerics, underscores, and Unicode characters that
-// require more than a single byte are left alone (Unicode characters
-// will be encoded later, as described below).  Other single bytes
-// characters are replace with .xNN where NN is the hex encoding.
+//   __ - '_'
+//   _0 - '.'
+//   _1 - '/'
+//   _2 - '*'
+//   _3 - ','
+//   _4 - '{'
+//   _5 - '}'
+//   _6 - '['
+//   _7 - ']'
+//   _8 - '('
+//   _9 - ')'
+//   _a - '"'
+//   _b - ' '
+//   _c - ';'
 //
-// Since Go identifiers can contain Unicode characters, we must encode
-// them into ASCII.  We do this last, after the name is generated as
-// described above and after type literals are encoded.  To make the
-// encoding unambiguous, we introduce it with two consecutive dots.
-// This is followed by the letter u and four hex digits or the letter
-// U and eight digits, just as in the language only using ..u and ..U
-// instead of \u and \U.  The compiler also produces identifiers that
-// are qualified by package path, which means that there may also be ASCII
-// characters that are not assembler-friendly (ex: '=', '/'). The encoding
-// scheme translates such characters into the "..zNN" where NN is the
-// hex value for the character. Since before this encoding names can never
-// contain consecutive dots followed by 'z', 'u' or 'U', and after this
-// encoding "..z", "..u" and "..U" are followed by a known number of
-// characters, this is unambiguous.
+// Other non-alphanumeric ASCII characters are encoded as _xNN, where
+// NN is the hex value for the character.  If an encoded name would
+// otherwise start with a digit, this encoding is also used for the
+// leading digit.
+//
+// Non-ASCII Unicode characters are encoded as _u and four hex digits
+// or _U and eight digits, just as in the language only using _u and
+// _U instead of \u and \U.
 //
 // Demangling these names is straightforward:
-//  - replace ..zXX with an ASCII character
-//  - replace ..uXXXX with a unicode character
-//  - replace ..UXXXXXXXX with a unicode character
-//  - replace .D, where D is a digit, with the character from the above
+//  - replace _xXX with an ASCII character
+//  - replace _uXXXX with a unicode character
+//  - replace _UXXXXXXXX with a unicode character
+//  - replace _C per the table above
 // That will get you as close as possible to a readable name.
 
-// Return the assembler name to use for an exported function, a
-// method, or a function/method declaration.  This is not called if
-// the function has been given an explicit name via a magic //extern
-// or //go:linkname comment.  GO_NAME is the name that appears in the
-// Go code.  PACKAGE is the package where the function is defined, and
-// is NULL for the package being compiled.  For a method, RTYPE is
+// Set BNAME to the name to use for an exported function, a method, or
+// a function/method declaration.  GO_NAME is the name that appears in
+// the Go code.  PACKAGE is the package where the function is defined,
+// and is NULL for the package being compiled.  For a method, RTYPE is
 // the method's receiver type; for a function, RTYPE is NULL.
 
-std::string
-Gogo::function_asm_name(const std::string& go_name, const Package* package,
-			const Type* rtype)
+void
+Gogo::function_backend_name(const std::string& go_name,
+			    const Package* package, const Type* rtype,
+			    Backend_name* bname)
 {
-  std::string ret;
   if (rtype != NULL)
-    ret = rtype->deref()->mangled_name(this);
+    rtype->deref()->backend_name(this, bname);
   else if (package == NULL)
-    ret = this->pkgpath();
+    bname->add(this->pkgpath());
   else
-    ret = package->pkgpath();
-  ret.push_back('.');
-  // Check for special names that will break if we use
-  // Gogo::unpack_hidden_name.
-  if (Gogo::is_special_name(go_name))
-    ret.append(go_name);
+    bname->add(package->pkgpath());
+
+  size_t pos = Gogo::special_name_pos(go_name);
+  if (pos == std::string::npos)
+    bname->add(Gogo::unpack_hidden_name(go_name));
   else
-    ret.append(Gogo::unpack_hidden_name(go_name));
-  return go_encode_id(ret);
+    {
+      if (pos > 0)
+	bname->add(go_name.substr(0, pos));
+      bname->set_suffix(go_name.substr(pos));
+    }
 }
 
-// Return the name to use for a function descriptor.  These symbols
-// are globally visible.
+// Set BNAME to the name to use for a function descriptor.  These
+// symbols are globally visible.
 
-std::string
-Gogo::function_descriptor_name(Named_object* no)
+void
+Gogo::function_descriptor_backend_name(Named_object* no,
+				       Backend_name* bname)
 {
-  if (no->is_function() && !no->func_value()->asm_name().empty())
-    return no->func_value()->asm_name() + "..f";
-  else if (no->is_function_declaration()
-	   && !no->func_declaration_value()->asm_name().empty())
-    return no->func_declaration_value()->asm_name() + "..f";
-  std::string ret = this->function_asm_name(no->name(), no->package(), NULL);
-  ret.append("..f");
-  return ret;
+  if (no->is_function())
+    no->func_value()->backend_name(this, no, bname);
+  else if (no->is_function_declaration())
+    no->func_declaration_value()->backend_name(this, no, bname);
+  else
+    go_unreachable();
+  bname->append_suffix("..f");
 }
 
-// Return the name to use for a generated stub method.  MNAME is the
-// method name.  PACKAGE is the package where the type that needs this
-// stub method is defined.  These functions are globally visible.
-// Note that this is the function name that corresponds to the name
-// used for the method in Go source code, if this stub method were
-// written in Go.  The assembler name will be generated by
-// Gogo::function_asm_name, and because this is a method that name
-// will include the receiver type.
+// Return the name to use for a generated stub method.  A stub method
+// is used as the method table entry for a promoted method of an
+// embedded type.  MNAME is the method name.  PACKAGE is the package
+// where the type that needs this stub method is defined.  These
+// functions are globally visible.
+//
+// This returns a name that acts like a Go identifier, as though the
+// stub method were written in Go as an explicitly defined method that
+// simply calls the promoted method.  The name we return here will
+// eventually be passed to function_backend_name, which will return a
+// name that includes the receiver type.
+//
+// We construct a unique method name and append "..stub".
+// function_backend_name will look for the "..stub" and turn that into
+// an unencoded suffix.  The rest of the name will be encoded as
+// usual.
 
 std::string
 Gogo::stub_method_name(const Package* package, const std::string& mname)
@@ -279,56 +299,70 @@ Gogo::stub_method_name(const Package* package, const std::string& mname)
     return Gogo::unpack_hidden_name(mname) + "..stub";
 
   // We are creating a stub method for an unexported method of an
-  // imported embedded type.  We need to disambiguate the method name.
-  std::string ret = mpkgpath;
+  // imported embedded type.  A single type can have multiple promoted
+  // methods with the same unexported name, if it embeds types from
+  // different packages.  We need to disambiguate the method name.
+  // This produces an unambiguous name because even though MPKGPATH
+  // can be anything, we know that MNAME does not contain a dot.  The
+  // dot we return here, between MPKGPATH and MNAME, will wind up
+  // being underscore encoded.
+  std::string ret(mpkgpath);
   ret.push_back('.');
   ret.append(Gogo::unpack_hidden_name(mname));
   ret.append("..stub");
   return ret;
 }
 
-// Return the name of the hash function for TYPE.
+// Set BNAME to the name of the hash function for TYPE.
 
-std::string
-Gogo::hash_function_name(const Type* type)
+void
+Gogo::hash_function_name(const Type* type, Backend_name* bname)
 {
-  std::string tname = type->mangled_name(this);
-  return tname + "..hash";
-}
-
-// Return the name of the equal function for TYPE.  If NAME is not
-// NULL it is the name of the type.
-
-std::string
-Gogo::equal_function_name(const Type* type, const Named_type* name)
-{
-  const Type* rtype = type;
-  if (name != NULL)
-    rtype = name;
-  std::string tname = rtype->mangled_name(this);
-  return tname + "..eq";
-}
-
-// Return the assembler name to use for a global variable.  GO_NAME is
-// the name that appears in the Go code.  PACKAGE is the package where
-// the variable is defined, and is NULL for the package being
-// compiled.
-
-std::string
-Gogo::global_var_asm_name(const std::string& go_name, const Package* package)
-{
-  std::string ret;
-  if (package == NULL)
-    ret = this->pkgpath();
+  if (type->named_type() != NULL)
+    type->backend_name(this, bname);
   else
-    ret = package->pkgpath();
-  ret.append(1, '.');
-  ret.append(Gogo::unpack_hidden_name(go_name));
-  return go_encode_id(ret);
+    {
+      bname->add(this->pkgpath());
+      type->backend_name(this, bname);
+    }
+  bname->set_suffix("..hash");
+}
+
+// Set BNAME to the name of the equal function for TYPE.  If NAME is
+// not NULL it is the name of the type.
+
+void
+Gogo::equal_function_name(const Type* type, const Named_type* name,
+			  Backend_name* bname)
+{
+  if (name != NULL)
+    name->backend_name(this, bname);
+  else
+    {
+      bname->add(this->pkgpath());
+      type->backend_name(this, bname);
+    }
+  bname->set_suffix("..eq");
+}
+
+// Set BNAME to the name to use for a global variable.  GO_NAME is the
+// name that appears in the Go code.  PACKAGE is the package where the
+// variable is defined, and is NULL for the package being compiled.
+
+void
+Gogo::global_var_backend_name(const std::string& go_name,
+			      const Package* package,
+			      Backend_name* bname)
+{
+  if (package == NULL)
+    bname->add(this->pkgpath());
+  else
+    bname->add(package->pkgpath());
+  bname->add(Gogo::unpack_hidden_name(go_name));
 }
 
 // Return an erroneous name that indicates that an error has already
-// been reported.
+// been reported.  This name will act like a Go identifier.
 
 std::string
 Gogo::erroneous_name()
@@ -349,7 +383,10 @@ Gogo::is_erroneous_name(const std::string& name)
   return name.compare(0, 10, ".erroneous") == 0;
 }
 
-// Return a name for a thunk object.
+// Return a name for a thunk object.  This name will act like a Go
+// identifier.  The name returned here will eventually be passed to
+// function_backend_name, which will pull off the ..thunk as an
+// unencoded suffix.
 
 std::string
 Gogo::thunk_name()
@@ -358,7 +395,12 @@ Gogo::thunk_name()
   char thunk_name[50];
   snprintf(thunk_name, sizeof thunk_name, "..thunk%d", thunk_count);
   ++thunk_count;
-  std::string ret = this->pkgpath();
+  // We don't want to return a name that starts with a dot, as that
+  // will confuse Gogo::is_hidden_name.  And we don't want to change
+  // ..thunk, which fits our general theme and is used by code like
+  // runtime.Callers.  But the prefix doesn't matter, as the actual
+  // name will include the package path.
+  std::string ret = "go";
   return ret + thunk_name;
 }
 
@@ -368,13 +410,10 @@ bool
 Gogo::is_thunk(const Named_object* no)
 {
   const std::string& name(no->name());
-  size_t i = name.find("..thunk");
+  size_t i = name.rfind("..thunk");
   if (i == std::string::npos)
     return false;
-  for (i += 7; i < name.size(); ++i)
-    if (name[i] < '0' || name[i] > '9')
-      return false;
-  return true;
+  return Gogo::is_digits(name.substr(i + 7));
 }
 
 // Return the name to use for an init function.  There can be multiple
@@ -387,11 +426,12 @@ Gogo::init_function_name()
   char buf[30];
   snprintf(buf, sizeof buf, "..init%d", init_count);
   ++init_count;
-  std::string ret = this->pkgpath();
-  return ret + buf;
+  return this->pkgpath() + buf;
 }
 
-// Return the name to use for a nested function.
+// Return the name to use for a nested function.  This name acts like
+// a Go identifier.  This name will be rewritten by
+// Function::backend_name.
 
 std::string
 Gogo::nested_function_name(Named_object* enclosing)
@@ -420,7 +460,9 @@ Gogo::nested_function_name(Named_object* enclosing)
 	enclosing->func_value()->type()->receiver();
       if (rcvr != NULL)
 	{
-	  prefix = rcvr->type()->mangled_name(this);
+	  Backend_name bname;
+	  rcvr->type()->backend_name(this, &bname);
+	  prefix = bname.name();
 	  prefix.push_back('.');
 	}
       prefix.append(Gogo::unpack_hidden_name(enclosing->name()));
@@ -460,7 +502,8 @@ Gogo::redefined_function_name()
 }
 
 // Return the name to use for a recover thunk for the function NAME.
-// If the function is a method, RTYPE is the receiver type.
+// If the function is a method, RTYPE is the receiver type.  This is a
+// name that acts like a Go identifier.
 
 std::string
 Gogo::recover_thunk_name(const std::string& name, const Type* rtype)
@@ -468,10 +511,12 @@ Gogo::recover_thunk_name(const std::string& name, const Type* rtype)
   std::string ret;
   if (rtype != NULL)
     {
-      ret = rtype->mangled_name(this);
+      Backend_name bname;
+      rtype->backend_name(this, &bname);
+      ret = bname.name();
       ret.append(1, '.');
     }
-  if (Gogo::is_special_name(name))
+  if (Gogo::special_name_pos(name) != std::string::npos)
     ret.append(name);
   else
     ret.append(Gogo::unpack_hidden_name(name));
@@ -504,8 +549,8 @@ Gogo::initializer_name()
   return buf;
 }
 
-// Return the name of the variable used to represent the zero value of
-// a map.  This is a globally visible common symbol.
+// Return the assembler name of the variable used to represent the
+// zero value of a map.  This is a globally visible common symbol.
 
 std::string
 Gogo::map_zero_value_name()
@@ -513,7 +558,9 @@ Gogo::map_zero_value_name()
   return "go..zerovalue";
 }
 
-// Return the name to use for the import control function.
+// Return the name to use for the import control function.  This name
+// is handled specially by Function::backend_name.  It is not encoded
+// further.
 
 const std::string&
 Gogo::get_init_fn_name()
@@ -550,7 +597,7 @@ Gogo::dummy_init_fn_name()
 // can be a real init function or a dummy one.
 
 std::string
-Gogo::pkgpath_from_init_fn_name(std::string name)
+Gogo::pkgpath_symbol_from_init_fn_name(std::string name)
 {
   go_assert(!name.empty());
   if (name[0] == '~')
@@ -561,60 +608,38 @@ Gogo::pkgpath_from_init_fn_name(std::string name)
   go_unreachable();
 }
 
-// Return a mangled name for a type.  These names appear in symbol
-// names in the assembler file for things like type descriptors and
-// methods.
+// Set BNAME to a name for a type to use in a symbol.  Return a name
+// for a type to use in a symbol.  These names appear in symbol names
+// in the assembler file for things like type descriptors and methods.
 
-std::string
-Type::mangled_name(Gogo* gogo) const
+void
+Type::backend_name(Gogo* gogo, Backend_name* bname) const
 {
-  std::string ret;
-
-  // The do_mangled_name virtual function will set RET to the mangled
-  // name before glue character mapping.
-  this->do_mangled_name(gogo, &ret);
-
-  // Type descriptor names and interface method table names use a ".."
-  // before the mangled name of a type, so to avoid ambiguity the
-  // mangled name must not start with 'u' or 'U' or a digit.
-  go_assert((ret[0] < '0' || ret[0] > '9') && ret[0] != ' ');
-  if (ret[0] == 'u' || ret[0] == 'U')
-    ret = " " + ret;
-
-  // Map glue characters as described above.
-
-  // The mapping is only unambiguous if there is no .DIGIT in the
-  // string, so check that.
-  for (size_t i = ret.find('.');
-       i != std::string::npos;
-       i = ret.find('.', i + 1))
+  // Special case top level named types to get nicer name encodings
+  // for this common case.
+  const Named_type* nt = this->unalias()->named_type();
+  if (nt != NULL && !nt->is_builtin())
     {
-      if (i + 1 < ret.size())
+      unsigned int index;
+      if (nt->in_function(&index) == NULL)
 	{
-	  char c = ret[i + 1];
-	  go_assert(c < '0' || c > '9');
+	  const Named_object* no = nt->named_object();
+	  if (no->package() == NULL)
+	    bname->add(gogo->pkgpath());
+	  else
+	    bname->add(no->package()->pkgpath());
+	  bname->add(Gogo::unpack_hidden_name(no->name()));
+	  return;
 	}
     }
 
-  // The order of these characters is the replacement code.
-  const char * const replace = " *;,{}[]()";
+  std::string name;
 
-  const size_t rlen = strlen(replace);
-  char buf[2];
-  buf[0] = '.';
-  for (size_t ri = 0; ri < rlen; ++ri)
-    {
-      buf[1] = '0' + ri;
-      while (true)
-	{
-	  size_t i = ret.find(replace[ri]);
-	  if (i == std::string::npos)
-	    break;
-	  ret.replace(i, 1, buf, 2);
-	}
-    }
+  // The do_symbol_name virtual function will set RET to the mangled
+  // name before encoding.
+  this->do_mangled_name(gogo, &name);
 
-  return ret;
+  bname->add(name);
 }
 
 // The mangled name is implemented as a method on each instance of
@@ -701,12 +726,7 @@ Function_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	  else
 	    ret->push_back(',');
 	  if (this->is_varargs_ && p + 1 == params->end())
-	    {
-	      // We can't use "..." here because the mangled name
-	      // might start with 'u' or 'U', which would be ambiguous
-	      // with the encoding of Unicode characters.
-	      ret->append(",,,");
-	    }
+	    ret->append("...");
 	  this->append_mangled_name(p->type(), gogo, ret);
 	}
     }
@@ -776,15 +796,15 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	  if (p->is_anonymous()
 	      && p->type()->named_type() != NULL
 	      && p->type()->named_type()->is_alias())
-	    p->type()->named_type()->append_mangled_type_name(gogo, true, ret);
+	    p->type()->named_type()->append_symbol_type_name(gogo, true, ret);
 	  else
 	    this->append_mangled_name(p->type(), gogo, ret);
 
 	  if (p->has_tag())
 	    {
 	      // Use curly braces around a struct tag, since they are
-	      // unambiguous here and we have no encoding for
-	      // quotation marks.
+	      // unambiguous here and struct tags rarely contain curly
+	      // braces.
 	      ret->push_back('{');
 	      ret->append(go_mangle_struct_tag(p->tag()));
 	      ret->push_back('}');
@@ -837,10 +857,10 @@ void
 Channel_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 {
   if (!this->may_send_)
-    ret->append("{}");
+    ret->append("<-");
   ret->append("chan");
   if (!this->may_receive_)
-    ret->append("{}");
+    ret->append("<-");
   ret->push_back(' ');
   this->append_mangled_name(this->element_type_, gogo, ret);
 }
@@ -883,7 +903,7 @@ Interface_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 void
 Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 {
-  this->append_mangled_type_name(gogo, false, ret);
+  this->append_symbol_type_name(gogo, false, ret);
 }
 
 void
@@ -903,13 +923,13 @@ Forward_declaration_type::do_mangled_name(Gogo* gogo, std::string* ret) const
     }
 }
 
-// Append the mangled name for a named type to RET.  For an alias we
+// Append the symbol name for a named type to RET.  For an alias we
 // normally use the real name, but if USE_ALIAS is true we use the
 // alias name itself.
 
 void
-Named_type::append_mangled_type_name(Gogo* gogo, bool use_alias,
-				     std::string* ret) const
+Named_type::append_symbol_type_name(Gogo* gogo, bool use_alias,
+				    std::string* ret) const
 {
   if (this->is_error_)
     return;
@@ -933,7 +953,11 @@ Named_type::append_mangled_type_name(Gogo* gogo, bool use_alias,
 	  const Typed_identifier* rcvr =
 	    this->in_function_->func_value()->type()->receiver();
 	  if (rcvr != NULL)
-	    ret->append(rcvr->type()->deref()->mangled_name(gogo));
+	    {
+	      Backend_name bname;
+	      rcvr->type()->deref()->backend_name(gogo, &bname);
+	      ret->append(bname.name());
+	    }
 	  else if (this->in_function_->package() == NULL)
 	    ret->append(gogo->pkgpath());
 	  else
@@ -956,23 +980,46 @@ Named_type::append_mangled_type_name(Gogo* gogo, bool use_alias,
   if (this->in_function_ != NULL && this->in_function_index_ > 0)
     {
       char buf[30];
-      snprintf(buf, sizeof buf, "..i%u", this->in_function_index_);
+      snprintf(buf, sizeof buf, ".i%u", this->in_function_index_);
       ret->append(buf);
     }
 }
 
-// Return the name for the type descriptor symbol for TYPE.  This can
-// be a global, common, or local symbol, depending.  NT is not NULL if
-// it is the name to use.
+// Given a name which may or may not have been hidden, append the
+// appropriate version of the name to the result string.
 
-std::string
-Gogo::type_descriptor_name(const Type* type, Named_type* nt)
+void
+Gogo::append_possibly_hidden_name(std::string *result, const std::string& name)
+{
+  if (!Gogo::is_hidden_name(name))
+    *result += name;
+  else
+    *result += name.substr(1);
+}
+
+// Set BNAME to the name for the type descriptor symbol for TYPE.
+// This can be a global, common, or local symbol, depending.  NT is
+// not NULL if it is the name to use.
+
+void
+Gogo::type_descriptor_backend_name(const Type* type, Named_type* nt,
+				   Backend_name* bname)
 {
   // The type descriptor symbol for the unsafe.Pointer type is defined
   // in libgo/runtime/go-unsafe-pointer.c, so just use a reference to
   // that symbol for all unsafe pointer types.
   if (type->is_unsafe_pointer_type())
-    return "unsafe.Pointer..d";
+    {
+      bname->set_asm_name("unsafe.Pointer..d");
+      return;
+    }
+
+  bool is_pointer = false;
+  if (nt == NULL && type->points_to() != NULL)
+    {
+      nt = type->points_to()->named_type();
+      is_pointer = true;
+    }
 
   if (nt == NULL)
     {
@@ -981,63 +1028,28 @@ Gogo::type_descriptor_name(const Type* type, Named_type* nt)
       // using a named type, like "int".
       go_assert(!type->is_basic_type());
 
-      return "type.." + type->mangled_name(this);
+      type->backend_name(this, bname);
+      bname->set_prefix("type..");
     }
-
-  std::string ret;
-  Named_object* no = nt->named_object();
-  unsigned int index;
-  const Named_object* in_function = nt->in_function(&index);
-  if (nt->is_builtin())
-    go_assert(in_function == NULL);
   else
     {
-      if (in_function != NULL)
-	{
-	  const Typed_identifier* rcvr =
-	    in_function->func_value()->type()->receiver();
-	  if (rcvr != NULL)
-	    ret.append(rcvr->type()->deref()->mangled_name(this));
-	  else if (in_function->package() == NULL)
-	    ret.append(this->pkgpath());
-	  else
-	    ret.append(in_function->package()->pkgpath());
-	  ret.push_back('.');
-	  ret.append(Gogo::unpack_hidden_name(in_function->name()));
-	  ret.push_back('.');
-	}
-
-      if (no->package() == NULL)
-	ret.append(this->pkgpath());
-      else
-	ret.append(no->package()->pkgpath());
-      ret.push_back('.');
+      nt->backend_name(this, bname);
+      bname->set_suffix(is_pointer ? "..p" : "..d");
     }
-
-  Gogo::append_possibly_hidden_name(&ret, no->name());
-
-  if (in_function != NULL && index > 0)
-    {
-      char buf[30];
-      snprintf(buf, sizeof buf, "..i%u", index);
-      ret.append(buf);
-    }
-
-  ret.append("..d");
-
-  return ret;
 }
 
 // Return the name of the type descriptor list symbol of a package.
+// This is passed directly to the backend without further encoding.
 
 std::string
-Gogo::type_descriptor_list_symbol(const std::string& pkgpath)
+Gogo::type_descriptor_list_symbol(const std::string& pkgpath_symbol)
 {
-  return pkgpath + "..types";
+  return pkgpath_symbol + "..types";
 }
 
 // Return the name of the list of all type descriptor lists.  This is
-// only used in the main package.
+// only used in the main package.  This is passed directly to the
+// backend without further encoding.
 
 std::string
 Gogo::typelists_symbol()
@@ -1045,24 +1057,30 @@ Gogo::typelists_symbol()
   return "go..typelists";
 }
 
-// Return the name for the GC symbol for a type.  This is used to
-// initialize the gcdata field of a type descriptor.  This is a local
-// name never referenced outside of this assembly file.  (Note that
-// some type descriptors will initialize the gcdata field with a name
-// generated by ptrmask_symbol_name rather than this method.)
+// Return the assembler name for the GC symbol for a type.  This is
+// used to initialize the gcdata field of a type descriptor.  This is
+// a local name never referenced outside of this assembly file.  (Note
+// that some type descriptors will initialize the gcdata field with a
+// name generated by ptrmask_symbol_name rather than this method.)
+// This is passed directly to the backend without further encoding.
 
 std::string
 Gogo::gc_symbol_name(Type* type)
 {
-  return this->type_descriptor_name(type, type->named_type()) + "..g";
+  Backend_name bname;
+  this->type_descriptor_backend_name(type, type->named_type(), &bname);
+  bname.append_suffix("..g");
+  return bname.asm_name();
 }
 
-// Return the name for a ptrmask variable.  PTRMASK_SYM_NAME is a
-// base32 string encoding the ptrmask (as returned by Ptrmask::symname
-// in types.cc).  This name is used to intialize the gcdata field of a
-// type descriptor.  These names are globally visible.  (Note that
-// some type descriptors will initialize the gcdata field with a name
-// generated by gc_symbol_name rather than this method.)
+// Return the assembler name for a ptrmask variable.  PTRMASK_SYM_NAME
+// is a base32 string encoding the ptrmask (as returned by
+// Ptrmask::symname in types.cc).  This name is used to intialize the
+// gcdata field of a type descriptor.  These names are globally
+// visible.  (Note that some type descriptors will initialize the
+// gcdata field with a name generated by gc_symbol_name rather than
+// this method.)  This is passed directly to the backend without
+// further encoding.
 
 std::string
 Gogo::ptrmask_symbol_name(const std::string& ptrmask_sym_name)
@@ -1070,34 +1088,123 @@ Gogo::ptrmask_symbol_name(const std::string& ptrmask_sym_name)
   return "gcbits.." + ptrmask_sym_name;
 }
 
-// Return the name to use for an interface method table used for the
-// ordinary type TYPE converted to the interface type ITYPE.
+// Return the assembler name to use for an interface method table used
+// for the ordinary type TYPE converted to the interface type ITYPE.
 // IS_POINTER is true if this is for the method set for a pointer
-// receiver.
+// receiver.  This is passed directly to the backend without further
+// encoding.
 
 std::string
 Gogo::interface_method_table_name(Interface_type* itype, Type* type,
 				  bool is_pointer)
 {
+  Backend_name iname;
+  itype->backend_name(this, &iname);
+  Backend_name tname;
+  type->backend_name(this, &tname);
   return ((is_pointer ? "pimt.." : "imt..")
-	  + itype->mangled_name(this)
+	  + iname.asm_name()
 	  + ".."
-	  + type->mangled_name(this));
+	  + tname.asm_name());
 }
 
-// Return whether NAME is a special name that can not be passed to
-// unpack_hidden_name.  This is needed because various special names
-// use "..SUFFIX", but unpack_hidden_name just looks for '.'.
+// If NAME is a special name with a ".." suffix, return the position
+// of that suffix.  This is needed because various special names use
+// "..SUFFIX", but unpack_hidden_name just looks for '.', and because
+// we don't want to encode the suffix.
+
+size_t
+Gogo::special_name_pos(const std::string& name)
+{
+  size_t pos = name.rfind("..");
+  if (pos == std::string::npos)
+    return pos;
+  std::string suffix(name.substr(pos));
+  if (suffix == "..hash"
+      || suffix == "..eq"
+      || suffix == "..stub"
+      || suffix == "..d"
+      || suffix == "..f"
+      || suffix == "..r"
+      || suffix == "..import")
+    return pos;
+  if ((suffix.compare(2, 4, "func") == 0
+       || suffix.compare(2, 4, "init") == 0)
+      && Gogo::is_digits(suffix.substr(6)))
+    return pos;
+  if (suffix.compare(2, 5, "thunk") == 0
+      && Gogo::is_digits(suffix.substr(7)))
+    return pos;
+  return std::string::npos;
+}
+
+// Return whether the string is non-empty and contains only digits.
 
 bool
-Gogo::is_special_name(const std::string& name)
+Gogo::is_digits(const std::string& s)
 {
-  return (name.find("..hash") != std::string::npos
-	  || name.find("..eq") != std::string::npos
-	  || name.find("..stub") != std::string::npos
-	  || name.find("..func") != std::string::npos
-	  || name.find("..r") != std::string::npos
-	  || name.find("..init") != std::string::npos
-	  || name.find("..thunk") != std::string::npos
-	  || name.find("..import") != std::string::npos);
+  if (s.empty())
+    return false;
+  for (size_t i = 0; i < s.size(); ++i)
+    if (s[i] < '0' || s[i] > '9')
+      return false;
+  return true;
+}
+
+// Class Backend_name.
+
+// Get the user visible name.
+
+std::string
+Backend_name::name() const
+{
+  if (this->is_asm_name_)
+    return this->components_[0];
+  std::string ret;
+  if (this->prefix_ != NULL)
+    ret.append(this->prefix_);
+  for (int i = 0; i < this->count_; i++)
+    {
+      if (i > 0)
+	ret.push_back('.');
+      ret.append(this->components_[i]);
+    }
+  if (!this->suffix_.empty())
+    ret.append(this->suffix_);
+  return ret;
+}
+
+// Get the assembler name.
+
+std::string
+Backend_name::asm_name() const
+{
+  if (this->is_asm_name_)
+    return this->components_[0];
+  std::string ret;
+  if (this->prefix_ != NULL)
+    ret.append(this->prefix_);
+  for (int i = 0; i < this->count_; i++)
+    {
+      if (i > 0)
+	ret.push_back('.');
+      ret.append(go_encode_id(this->components_[i]));
+    }
+  if (!this->suffix_.empty())
+    ret.append(this->suffix_);
+  return ret;
+}
+
+// Get the assembler name, or the empty string if it is the same as
+// the user visible name.
+
+std::string
+Backend_name::optional_asm_name() const
+{
+  if (this->is_asm_name_)
+    return "";
+  for (int i = 0; i < this->count_; i++)
+    if (go_id_needs_encoding(this->components_[i]))
+      return this->asm_name();
+  return "";
 }

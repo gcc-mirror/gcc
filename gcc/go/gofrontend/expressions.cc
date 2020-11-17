@@ -1596,7 +1596,8 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
     return context->backend()->var_expression(this->dvar_, loc);
 
   Gogo* gogo = context->gogo();
-  std::string var_name(gogo->function_descriptor_name(no));
+  Backend_name bname;
+  gogo->function_descriptor_backend_name(no, &bname);
   bool is_descriptor = false;
   if (no->is_function_declaration()
       && !no->func_declaration_value()->asm_name().empty()
@@ -1616,10 +1617,11 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
   Btype* btype = this->type()->get_backend(gogo);
 
   Bvariable* bvar;
-  std::string asm_name(go_selectively_encode_id(var_name));
   if (no->package() != NULL || is_descriptor)
-    bvar = context->backend()->immutable_struct_reference(var_name, asm_name,
-                                                          btype, loc);
+    bvar =
+      context->backend()->immutable_struct_reference(bname.name(),
+						     bname.optional_asm_name(),
+						     btype, loc);
   else
     {
       Location bloc = Linemap::predeclared_location();
@@ -1644,7 +1646,8 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
       if (no->is_function() && no->func_value()->is_referenced_by_inline())
 	is_hidden = false;
 
-      bvar = context->backend()->immutable_struct(var_name, asm_name,
+      bvar = context->backend()->immutable_struct(bname.name(),
+						  bname.optional_asm_name(),
                                                   is_hidden, false,
 						  btype, bloc);
       Expression_list* vals = new Expression_list();
@@ -1654,8 +1657,9 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
       Translate_context bcontext(gogo, NULL, NULL, NULL);
       bcontext.set_is_const();
       Bexpression* binit = init->get_backend(&bcontext);
-      context->backend()->immutable_struct_set_init(bvar, var_name, is_hidden,
-						    false, btype, bloc, binit);
+      context->backend()->immutable_struct_set_init(bvar, bname.name(),
+						    is_hidden, false, btype,
+						    bloc, binit);
     }
 
   this->dvar_ = bvar;
@@ -5190,11 +5194,9 @@ Unary_expression::do_get_backend(Translate_context* context)
 	      copy_to_heap = (context->function() != NULL
                               || context->is_const());
 	    }
-	  std::string asm_name(go_selectively_encode_id(var_name));
 	  Bvariable* implicit =
-              gogo->backend()->implicit_variable(var_name, asm_name,
-                                                 btype, true, copy_to_heap,
-                                                 false, 0);
+              gogo->backend()->implicit_variable(var_name, "", btype, true,
+						 copy_to_heap, false, 0);
 	  gogo->backend()->implicit_variable_set_init(implicit, var_name, btype,
 						      true, copy_to_heap, false,
 						      bexpr);
@@ -5219,10 +5221,9 @@ Unary_expression::do_get_backend(Translate_context* context)
 	       && this->expr_->is_static_initializer())
         {
 	  std::string var_name(gogo->initializer_name());
-	  std::string asm_name(go_selectively_encode_id(var_name));
           Bvariable* decl =
-              gogo->backend()->immutable_struct(var_name, asm_name,
-                                                true, false, btype, loc);
+              gogo->backend()->immutable_struct(var_name, "", true, false,
+						btype, loc);
           gogo->backend()->immutable_struct_set_init(decl, var_name, true,
 						     false, btype, loc, bexpr);
           bexpr = gogo->backend()->var_expression(decl, loc);
@@ -5230,9 +5231,8 @@ Unary_expression::do_get_backend(Translate_context* context)
       else if (this->expr_->is_constant())
         {
           std::string var_name(gogo->initializer_name());
-          std::string asm_name(go_selectively_encode_id(var_name));
           Bvariable* decl =
-              gogo->backend()->implicit_variable(var_name, asm_name, btype,
+              gogo->backend()->implicit_variable(var_name, "", btype,
                                                  true, true, false, 0);
           gogo->backend()->implicit_variable_set_init(decl, var_name, btype,
                                                       true, true, false,
@@ -18251,9 +18251,8 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
     {
       // The interface conversion table is defined elsewhere.
       Btype* btype = this->type()->get_backend(gogo);
-      std::string asm_name(go_selectively_encode_id(mangled_name));
       this->bvar_ =
-          gogo->backend()->immutable_struct_reference(mangled_name, asm_name,
+          gogo->backend()->immutable_struct_reference(mangled_name, "",
                                                       btype, loc);
       return gogo->backend()->var_expression(this->bvar_, this->location());
     }
@@ -18323,8 +18322,7 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
   Bexpression* ctor =
       gogo->backend()->constructor_expression(btype, ctor_bexprs, loc);
 
-  std::string asm_name(go_selectively_encode_id(mangled_name));
-  this->bvar_ = gogo->backend()->immutable_struct(mangled_name, asm_name, false,
+  this->bvar_ = gogo->backend()->immutable_struct(mangled_name, "", false,
 						  !is_public, btype, loc);
   gogo->backend()->immutable_struct_set_init(this->bvar_, mangled_name, false,
                                              !is_public, btype, loc, ctor);
