@@ -6325,6 +6325,22 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 bool
 rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
+  /* We do not allow MMA types being used as return values.  Only report
+     the invalid return value usage the first time we encounter it.  */
+  if (cfun
+      && !cfun->machine->mma_return_type_error
+      && TREE_TYPE (cfun->decl) == fntype
+      && (TYPE_MODE (type) == OOmode || TYPE_MODE (type) == XOmode))
+    {
+      /* Record we have now handled function CFUN, so the next time we
+	 are called, we do not re-report the same error.  */
+      cfun->machine->mma_return_type_error = true;
+      if (TYPE_CANONICAL (type) != NULL_TREE)
+	type = TYPE_CANONICAL (type);
+      error ("invalid use of MMA type %qs as a function return value",
+	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+    }
+
   /* For the Darwin64 ABI, test if we can fit the return value in regs.  */
   if (TARGET_MACHO
       && rs6000_darwin64_abi
@@ -6577,30 +6593,8 @@ machine_mode
 rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 			      machine_mode mode,
 			      int *punsignedp ATTRIBUTE_UNUSED,
-			      const_tree, int for_return)
+			      const_tree, int for_return ATTRIBUTE_UNUSED)
 {
-  /* Warning: this is a static local variable and not always NULL!
-     This function is called multiple times for the same function
-     and return value.  PREV_FUNC is used to keep track of the
-     first time we encounter a function's return value in order
-     to not report an error with that return value multiple times.  */
-  static struct function *prev_func = NULL;
-
-  /* We do not allow MMA types being used as return values.  Only report
-     the invalid return value usage the first time we encounter it.  */
-  if (for_return
-      && prev_func != cfun
-      && (mode == POImode || mode == PXImode))
-    {
-      /* Record we have now handled function CFUN, so the next time we
-	 are called, we do not re-report the same error.  */
-      prev_func = cfun;
-      if (TYPE_CANONICAL (type) != NULL_TREE)
-	type = TYPE_CANONICAL (type);
-      error ("invalid use of MMA type %qs as a function return value",
-	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
-    }
-
   PROMOTE_MODE (mode, *punsignedp, type);
 
   return mode;
@@ -7552,7 +7546,7 @@ rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   int n_elts;
 
   /* We do not allow MMA types being used as function arguments.  */
-  if (mode == POImode || mode == PXImode)
+  if (mode == OOmode || mode == XOmode)
     {
       if (TYPE_CANONICAL (type) != NULL_TREE)
 	type = TYPE_CANONICAL (type);
@@ -10073,7 +10067,8 @@ mma_expand_builtin (tree exp, rtx target, bool *expandedp)
     }
 
   unsigned attr_args = attr & RS6000_BTC_OPND_MASK;
-  if (attr & RS6000_BTC_QUAD)
+  if (attr & RS6000_BTC_QUAD
+      || fcode == MMA_BUILTIN_DISASSEMBLE_PAIR_INTERNAL)
     attr_args++;
 
   gcc_assert (nopnds == attr_args);
@@ -11687,23 +11682,24 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
   gimple *new_call;
   tree new_decl;
 
-  if (rs6000_builtin_info[fncode + 1].icode == CODE_FOR_nothing)
+  if (fncode == MMA_BUILTIN_DISASSEMBLE_ACC
+      || fncode == MMA_BUILTIN_DISASSEMBLE_PAIR)
     {
       /* This is an MMA disassemble built-in function.  */
-      gcc_assert (fncode == MMA_BUILTIN_DISASSEMBLE_ACC
-		  || fncode == MMA_BUILTIN_DISASSEMBLE_PAIR);
-
       push_gimplify_context (true);
+      unsigned nvec = (fncode == MMA_BUILTIN_DISASSEMBLE_ACC) ? 4 : 2;
       tree dst_ptr = gimple_call_arg (stmt, 0);
       tree src_ptr = gimple_call_arg (stmt, 1);
       tree src_type = TREE_TYPE (src_ptr);
       tree src = make_ssa_name (TREE_TYPE (src_type));
       gimplify_assign (src, build_simple_mem_ref (src_ptr), &new_seq);
 
-      /* If we are not disassembling an accumulator or our destination is
-	 another accumulator, then just copy the entire thing as is.  */
-      if (fncode != MMA_BUILTIN_DISASSEMBLE_ACC
-	  || TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_quad_type_node)
+      /* If we are not disassembling an accumulator/pair or our destination is
+	 another accumulator/pair, then just copy the entire thing as is.  */
+      if ((fncode == MMA_BUILTIN_DISASSEMBLE_ACC
+	   && TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_quad_type_node)
+	  || (fncode == MMA_BUILTIN_DISASSEMBLE_PAIR
+	      && TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_pair_type_node))
 	{
 	  tree dst = build_simple_mem_ref (build1 (VIEW_CONVERT_EXPR,
 						   src_type, dst_ptr));
@@ -11713,29 +11709,33 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
 	  return true;
 	}
 
-      /* We're disassembling an accumulator into a different type, so we need
+      /* If we're disassembling an accumulator into a different type, we need
 	 to emit a xxmfacc instruction now, since we cannot do it later.  */
-      new_decl = rs6000_builtin_decls[MMA_BUILTIN_XXMFACC_INTERNAL];
-      new_call = gimple_build_call (new_decl, 1, src);
-      src = make_ssa_name (vector_quad_type_node);
-      gimple_call_set_lhs (new_call, src);
-      gimple_seq_add_stmt (&new_seq, new_call);
+      if (fncode == MMA_BUILTIN_DISASSEMBLE_ACC)
+	{
+	  new_decl = rs6000_builtin_decls[MMA_BUILTIN_XXMFACC_INTERNAL];
+	  new_call = gimple_build_call (new_decl, 1, src);
+	  src = make_ssa_name (vector_quad_type_node);
+	  gimple_call_set_lhs (new_call, src);
+	  gimple_seq_add_stmt (&new_seq, new_call);
+	}
 
-      /* Copy the accumulator vector by vector.  */
+      /* Copy the accumulator/pair vector by vector.  */
+      new_decl = rs6000_builtin_decls[fncode + 1];
       tree dst_type = build_pointer_type_for_mode (unsigned_V16QI_type_node,
 						   ptr_mode, true);
       tree dst_base = build1 (VIEW_CONVERT_EXPR, dst_type, dst_ptr);
-      tree array_type = build_array_type_nelts (unsigned_V16QI_type_node, 4);
-      tree src_array = build1 (VIEW_CONVERT_EXPR, array_type, src);
-      for (unsigned i = 0; i < 4; i++)
+      for (unsigned i = 0; i < nvec; i++)
 	{
-	  unsigned index = WORDS_BIG_ENDIAN ? i : 3 - i;
-	  tree ref = build4 (ARRAY_REF, unsigned_V16QI_type_node, src_array,
-			     build_int_cst (size_type_node, i),
-			     NULL_TREE, NULL_TREE);
+	  unsigned index = WORDS_BIG_ENDIAN ? i : nvec - 1 - i;
 	  tree dst = build2 (MEM_REF, unsigned_V16QI_type_node, dst_base,
 			     build_int_cst (dst_type, index * 16));
-	  gimplify_assign (dst, ref, &new_seq);
+	  tree dstssa = make_ssa_name (unsigned_V16QI_type_node);
+	  new_call = gimple_build_call (new_decl, 2, src,
+					build_int_cstu (uint16_type_node, i));
+	  gimple_call_set_lhs (new_call, dstssa);
+	  gimple_seq_add_stmt (&new_seq, new_call);
+	  gimplify_assign (dst, dstssa, &new_seq);
 	}
       pop_gimplify_context (NULL);
       gsi_replace_with_seq (gsi, new_seq, true);
@@ -13206,17 +13206,23 @@ rs6000_init_builtins (void)
   /* Vector pair and vector quad support.  */
   if (TARGET_EXTRA_BUILTINS)
     {
-      vector_pair_type_node = make_unsigned_type (256);
+      vector_pair_type_node = make_node (OPAQUE_TYPE);
+      SET_TYPE_MODE (vector_pair_type_node, OOmode);
+      TYPE_SIZE (vector_pair_type_node) = bitsize_int (GET_MODE_BITSIZE (OOmode));
+      TYPE_PRECISION (vector_pair_type_node) = GET_MODE_BITSIZE (OOmode);
+      TYPE_SIZE_UNIT (vector_pair_type_node) = size_int (GET_MODE_SIZE (OOmode));
       SET_TYPE_ALIGN (vector_pair_type_node, 256);
-      SET_TYPE_MODE (vector_pair_type_node, POImode);
-      layout_type (vector_pair_type_node);
+      TYPE_USER_ALIGN (vector_pair_type_node) = 0;
       lang_hooks.types.register_builtin_type (vector_pair_type_node,
 					      "__vector_pair");
 
-      vector_quad_type_node = make_unsigned_type (512);
+      vector_quad_type_node = make_node (OPAQUE_TYPE);
+      SET_TYPE_MODE (vector_quad_type_node, XOmode);
+      TYPE_SIZE (vector_quad_type_node) = bitsize_int (GET_MODE_BITSIZE (XOmode));
+      TYPE_PRECISION (vector_quad_type_node) = GET_MODE_BITSIZE (XOmode);
+      TYPE_SIZE_UNIT (vector_quad_type_node) = size_int (GET_MODE_SIZE (XOmode));
       SET_TYPE_ALIGN (vector_quad_type_node, 512);
-      SET_TYPE_MODE (vector_quad_type_node, PXImode);
-      layout_type (vector_quad_type_node);
+      TYPE_USER_ALIGN (vector_quad_type_node) = 0;
       lang_hooks.types.register_builtin_type (vector_quad_type_node,
 					      "__vector_quad");
     }
@@ -13252,8 +13258,8 @@ rs6000_init_builtins (void)
   builtin_mode_to_type[V8HImode][1] = unsigned_V8HI_type_node;
   builtin_mode_to_type[V16QImode][0] = V16QI_type_node;
   builtin_mode_to_type[V16QImode][1] = unsigned_V16QI_type_node;
-  builtin_mode_to_type[POImode][1] = vector_pair_type_node;
-  builtin_mode_to_type[PXImode][1] = vector_quad_type_node;
+  builtin_mode_to_type[OOmode][1] = vector_pair_type_node;
+  builtin_mode_to_type[XOmode][1] = vector_quad_type_node;
 
   tdecl = add_builtin_type ("__bool char", bool_char_type_node);
   TYPE_NAME (bool_char_type_node) = tdecl;
@@ -14065,21 +14071,21 @@ mma_init_builtins (void)
 	}
       else
 	{
-	  if ((attr & RS6000_BTC_QUAD) == 0)
+	  if (!(d->code == MMA_BUILTIN_DISASSEMBLE_ACC_INTERNAL
+		 || d->code == MMA_BUILTIN_DISASSEMBLE_PAIR_INTERNAL)
+	       && (attr & RS6000_BTC_QUAD) == 0)
 	    attr_args--;
 
 	  /* Ensure we have the correct number and type of operands.  */
 	  gcc_assert (attr_args == insn_data[icode].n_operands - 1);
 	}
 
-      if (icode == CODE_FOR_nothing)
+      /* This is a disassemble pair/acc function. */
+      if (d->code == MMA_BUILTIN_DISASSEMBLE_ACC
+	  || d->code == MMA_BUILTIN_DISASSEMBLE_PAIR)
 	{
-	  /* This is a disassemble MMA built-in function.  */
-	  gcc_assert (attr_args == RS6000_BTC_BINARY
-		      && (d->code == MMA_BUILTIN_DISASSEMBLE_ACC
-			  || d->code == MMA_BUILTIN_DISASSEMBLE_PAIR));
 	  op[nopnds++] = build_pointer_type (void_type_node);
-	  if (attr & RS6000_BTC_QUAD)
+	  if (d->code == MMA_BUILTIN_DISASSEMBLE_ACC)
 	    op[nopnds++] = build_pointer_type (vector_quad_type_node);
 	  else
 	    op[nopnds++] = build_pointer_type (vector_pair_type_node);
@@ -14087,13 +14093,17 @@ mma_init_builtins (void)
       else
 	{
 	  /* This is a normal MMA built-in function.  */
-	  unsigned j = (attr & RS6000_BTC_QUAD) ? 1 : 0;
+	  unsigned j = 0;
+	  if (attr & RS6000_BTC_QUAD
+	      && d->code != MMA_BUILTIN_DISASSEMBLE_ACC_INTERNAL
+	      && d->code != MMA_BUILTIN_DISASSEMBLE_PAIR_INTERNAL)
+	    j = 1;
 	  for (; j < (unsigned) insn_data[icode].n_operands; j++)
 	    {
 	      machine_mode mode = insn_data[icode].operand[j].mode;
-	      if (gimple_func && mode == PXImode)
+	      if (gimple_func && mode == XOmode)
 		op[nopnds++] = build_pointer_type (vector_quad_type_node);
-	      else if (gimple_func && mode == POImode
+	      else if (gimple_func && mode == OOmode
 		       && d->code == MMA_BUILTIN_ASSEMBLE_PAIR)
 		op[nopnds++] = build_pointer_type (vector_pair_type_node);
 	      else
@@ -14725,7 +14735,7 @@ rs6000_common_init_builtins (void)
 	      continue;
 	    }
 
-          if (icode == CODE_FOR_nothing)
+	  if (icode == CODE_FOR_nothing)
 	    {
 	      if (TARGET_DEBUG_BUILTIN)
 		fprintf (stderr, "rs6000_builtin, skip ternary %s (no code)\n",
@@ -14791,7 +14801,7 @@ rs6000_common_init_builtins (void)
 	      continue;
 	    }
 
-          if (icode == CODE_FOR_nothing)
+	  if (icode == CODE_FOR_nothing)
 	    {
 	      if (TARGET_DEBUG_BUILTIN)
 		fprintf (stderr, "rs6000_builtin, skip binary %s (no code)\n",
@@ -14800,9 +14810,9 @@ rs6000_common_init_builtins (void)
 	      continue;
 	    }
 
-          mode0 = insn_data[icode].operand[0].mode;
-          mode1 = insn_data[icode].operand[1].mode;
-          mode2 = insn_data[icode].operand[2].mode;
+	  mode0 = insn_data[icode].operand[0].mode;
+	  mode1 = insn_data[icode].operand[1].mode;
+	  mode2 = insn_data[icode].operand[2].mode;
 
 	  type = builtin_function_type (mode0, mode1, mode2, VOIDmode,
 					d->code, d->name);
@@ -14835,7 +14845,7 @@ rs6000_common_init_builtins (void)
 					  NULL_TREE);
 	}
       else
-        {
+	{
 	  enum insn_code icode = d->icode;
 	  if (d->name == 0)
 	    {
@@ -14846,7 +14856,7 @@ rs6000_common_init_builtins (void)
 	      continue;
 	    }
 
-          if (icode == CODE_FOR_nothing)
+	  if (icode == CODE_FOR_nothing)
 	    {
 	      if (TARGET_DEBUG_BUILTIN)
 		fprintf (stderr, "rs6000_builtin, skip unary %s (no code)\n",
@@ -14855,8 +14865,8 @@ rs6000_common_init_builtins (void)
 	      continue;
 	    }
 
-          mode0 = insn_data[icode].operand[0].mode;
-          mode1 = insn_data[icode].operand[1].mode;
+	  mode0 = insn_data[icode].operand[0].mode;
+	  mode1 = insn_data[icode].operand[1].mode;
 
 	  type = builtin_function_type (mode0, mode1, VOIDmode, VOIDmode,
 					d->code, d->name);

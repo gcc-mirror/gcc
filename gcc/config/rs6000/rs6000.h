@@ -1041,7 +1041,7 @@ enum data_align { align_abi, align_opt, align_both };
 /* Modes that are not vectors, but require vector alignment.  Treat these like
    vectors in terms of loads and stores.  */
 #define VECTOR_ALIGNMENT_P(MODE)					\
-  (FLOAT128_VECTOR_P (MODE) || (MODE) == POImode || (MODE) == PXImode)
+  (FLOAT128_VECTOR_P (MODE) || (MODE) == OOmode || (MODE) == XOmode)
 
 #define ALTIVEC_VECTOR_MODE(MODE)					\
   ((MODE) == V16QImode							\
@@ -2556,6 +2556,7 @@ typedef struct GTY(()) machine_function
   bool fpr_is_wrapped_separately[32];
   bool lr_is_wrapped_separately;
   bool toc_is_wrapped_separately;
+  bool mma_return_type_error;
 } machine_function;
 #endif
 
