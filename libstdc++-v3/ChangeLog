@@ -1,3 +1,15 @@
+2020-11-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-11-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/97828
+	* include/bits/ranges_algo.h (__search_n_fn::operator()): Check
+	random_access_iterator before using the backtracking
+	implementation.  When the backwards scan fails prematurely,
+	reset __remainder appropriately.
+	* testsuite/25_algorithms/search_n/97828.cc: New test.
+
 2020-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
