@@ -12556,9 +12556,9 @@ package body Exp_Ch4 is
            and then Nkind (Parent (N)) = N_Attribute_Reference
            and then Attribute_Name (Parent (N)) = Name_Round
          then
-            Set_Rounded_Result (N);
             Set_Etype (N, Etype (Parent (N)));
             Target_Type := Etype (N);
+            Set_Rounded_Result (N);
          end if;
 
          if Is_Fixed_Point_Type (Target_Type) then
@@ -13375,7 +13375,8 @@ package body Exp_Ch4 is
       --  will be to universal real, and our real type comes from the Round
       --  attribute (as well as an indication that we must round the result)
 
-      if Nkind (Parent (Conv)) = N_Attribute_Reference
+      if Etype (Conv) = Universal_Real
+        and then Nkind (Parent (Conv)) = N_Attribute_Reference
         and then Attribute_Name (Parent (Conv)) = Name_Round
       then
          Set_Etype (N, Base_Type (Etype (Parent (Conv))));
