@@ -558,10 +558,8 @@ read_fatal:;
     fn_buffer = free_fn_data (gi_ptr, fn_buffer, GCOV_COUNTERS);
 
   if ((error = gcov_close ()))
-    gcov_error (error  < 0 ?
-		GCOV_PROF_PREFIX "Overflow writing\n" :
-		GCOV_PROF_PREFIX "Error writing\n",
-                gf->filename);
+    gcov_error ((error < 0 ? GCOV_PROF_PREFIX "Overflow writing\n"
+		 : GCOV_PROF_PREFIX "Error writing\n"), gf->filename);
 }
 
 
