@@ -1,3 +1,37 @@
+2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	Backported from master:
+	2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	* config.gcc: add configure flags --with-{cpu,arch,tune}-{32,64}
+	as alias flags for --with-{cpu,arch,tune} on AArch64.
+	* doc/install.texi: Document new flags for aarch64.
+
+2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	Backported from master:
+	2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	* config.gcc: Add --with-tune to AArch64 configure flags.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/96191
+	* config/aarch64/aarch64.md (stack_protect_test_<mode>): Set the
+	CC register directly, instead of a GPR.  Replace the original GPR
+	destination with an extra scratch register.  Zero out operand 3
+	after use.
+	(stack_protect_test): Update accordingly.
+
+2020-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/97535
+	* config/aarch64/aarch64.c (aarch64_expand_movme): Use
+	unsigned HOST_WIDE_INT.
+
 2020-10-22  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backported from master:
