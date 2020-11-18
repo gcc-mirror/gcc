@@ -1,6 +1,14 @@
 2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97862
+	* c-c++-common/gomp/pr97862.c: New test.
+
+2021-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2020-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/loop-7.c: New test.

@@ -2566,7 +2566,8 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      && (TREE_CODE (fd->loop.n2) == INTEGER_CST
 		  || fd->first_inner_iterations)
 	      && (optab_handler (sqrt_optab, TYPE_MODE (double_type_node))
-		  != CODE_FOR_nothing))
+		  != CODE_FOR_nothing)
+	      && !integer_zerop (fd->loop.n2))
 	    {
 	      tree outer_n1 = fd->adjn1 ? fd->adjn1 : fd->loops[i - 1].n1;
 	      tree itype = TREE_TYPE (fd->loops[i].v);
