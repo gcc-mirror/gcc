@@ -57,14 +57,18 @@ void
 omp_set_nested (int val)
 {
   struct gomp_task_icv *icv = gomp_icv (true);
-  icv->nest_var = val;
+  if (val)
+    icv->max_active_levels_var = gomp_supported_active_levels;
+  else if (icv->max_active_levels_var > 1)
+    icv->max_active_levels_var = 1;
 }
 
 int
 omp_get_nested (void)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
-  return icv->nest_var;
+  return (icv->max_active_levels_var > 1
+	  && icv->max_active_levels_var > omp_get_active_level ());
 }
 #pragma GCC diagnostic pop
 
@@ -120,17 +124,20 @@ omp_set_max_active_levels (int max_levels)
 {
   if (max_levels >= 0)
     {
+      struct gomp_task_icv *icv = gomp_icv (true);
+
       if (max_levels <= gomp_supported_active_levels)
-	gomp_max_active_levels_var = max_levels;
+	icv->max_active_levels_var = max_levels;
       else
-	gomp_max_active_levels_var = gomp_supported_active_levels;
+	icv->max_active_levels_var = gomp_supported_active_levels;
     }
 }
 
 int
 omp_get_max_active_levels (void)
 {
-  return gomp_max_active_levels_var;
+  struct gomp_task_icv *icv = gomp_icv (false);
+  return icv->max_active_levels_var;
 }
 
 int
