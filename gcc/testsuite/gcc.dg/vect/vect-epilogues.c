@@ -16,4 +16,4 @@ void pixel_avg( unsigned char *dst, int i_dst_stride,
      }
  }
 
-/* { dg-final { scan-tree-dump "LOOP EPILOGUE VECTORIZED" "vect" { target vect_multiple_sizes xfail { arm32 && be } } } }  */
+/* { dg-final { scan-tree-dump "LOOP EPILOGUE VECTORIZED" "vect" { target vect_multiple_sizes xfail { { arm32 && be } || vect_partial_vectors_usage_2 } } } } */

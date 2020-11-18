@@ -364,13 +364,17 @@ enum c_tree_index
 
     CTI_DEFAULT_FUNCTION_TYPE,
 
+    CTI_NULL,
+
     /* These are not types, but we have to look them up all the time.  */
     CTI_FUNCTION_NAME_DECL,
     CTI_PRETTY_FUNCTION_NAME_DECL,
     CTI_C99_FUNCTION_NAME_DECL,
-    CTI_SAVED_FUNCTION_NAME_DECLS,
 
-    CTI_NULL,
+    CTI_MODULE_HWM,
+    /* Below here entities change during compilation.  */
+
+    CTI_SAVED_FUNCTION_NAME_DECLS,
 
     CTI_MAX
 };

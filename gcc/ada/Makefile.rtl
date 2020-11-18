@@ -2305,7 +2305,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-ppc.ads
 
-  ifeq ($(strip $(filter-out powerpc64,$(target_cpu))),)
+  ifeq ($(strip $(filter-out powerpc64%,$(target_cpu))),)
     ifneq ($(strip $(MULTISUBDIR)),/32)
       LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
       EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)

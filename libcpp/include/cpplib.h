@@ -487,6 +487,9 @@ struct cpp_options
   /* Nonzero for the '::' token.  */
   unsigned char scope;
 
+  /* Nonzero means tokenize C++20 module directives.  */
+  unsigned char module_directives;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
@@ -527,6 +530,9 @@ struct cpp_options
     /* Generate phony targets for each dependency apart from the first
        one.  */
     bool phony_targets;
+
+    /* Generate dependency info for modules.  */
+    bool modules;
 
     /* If true, no dependency is generated on the main file.  */
     bool ignore_main_file;
@@ -839,6 +845,7 @@ struct GTY(()) cpp_macro {
 #define NODE_USED	(1 << 5)	/* Dumped with -dU.  */
 #define NODE_CONDITIONAL (1 << 6)	/* Conditional macro */
 #define NODE_WARN_OPERATOR (1 << 7)	/* Warn about C++ named operator.  */
+#define NODE_MODULE (1 << 8)		/* C++-20 module-related name.  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -897,11 +904,11 @@ struct GTY(()) cpp_hashnode {
   unsigned int directive_index : 7;	/* If is_directive,
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
-  unsigned char rid_code;		/* Rid code - for front ends.  */
+  unsigned int rid_code : 8;		/* Rid code - for front ends.  */
+  unsigned int flags : 9;		/* CPP flags.  */
   ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
-  unsigned int flags : 8;		/* CPP flags.  */
 
-  /* 6 bits spare (plus another 32 on 64-bit hosts).  */
+  /* 5 bits spare (plus another 32 on 64-bit hosts).  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
@@ -979,6 +986,9 @@ extern cpp_options *cpp_get_options (cpp_reader *) ATTRIBUTE_PURE;
 extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
+
+extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
+					 bool angle_p,  location_t);
 
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the

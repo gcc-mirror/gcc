@@ -529,7 +529,7 @@ tree_ssa_loop_done (void)
 {
   free_numbers_of_iterations_estimates (cfun);
   scev_finalize ();
-  loop_optimizer_finalize ();
+  loop_optimizer_finalize (cfun, true);
   return 0;
 }
 

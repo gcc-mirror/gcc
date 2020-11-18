@@ -128,12 +128,8 @@ enum cp_tree_index
     CPTI_EXPLICIT_VOID_LIST,
     CPTI_VTBL_TYPE,
     CPTI_VTBL_PTR_TYPE,
-    CPTI_STD,
-    CPTI_ABI,
     CPTI_GLOBAL,
     CPTI_GLOBAL_TYPE,
-    CPTI_CONST_TYPE_INFO_TYPE,
-    CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_ABORT_FNDECL,
     CPTI_AGGR_TAG,
     CPTI_CONV_OP_MARKER,
@@ -190,8 +186,28 @@ enum cp_tree_index
     CPTI_NOEXCEPT_FALSE_SPEC,
     CPTI_NOEXCEPT_DEFERRED_SPEC,
 
+    CPTI_NULLPTR,
+    CPTI_NULLPTR_TYPE,
+
+    CPTI_ANY_TARG,
+
+    CPTI_MODULE_HWM,
+    /* Nodes after here change during compilation, or should not be in
+       the module's global tree table.  */
+
+    /* We must find these via the global namespace.  */
+    CPTI_STD,
+    CPTI_ABI,
+
+    /* These are created at init time, but the library/headers provide
+       definitions.  */
+    CPTI_ALIGN_TYPE,
+    CPTI_CONST_TYPE_INFO_TYPE,
+    CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_TERMINATE_FN,
     CPTI_CALL_UNEXPECTED_FN,
+
+    /* These are lazily inited.  */
     CPTI_GET_EXCEPTION_PTR_FN,
     CPTI_BEGIN_CATCH_FN,
     CPTI_END_CATCH_FN,
@@ -203,13 +219,6 @@ enum cp_tree_index
     CPTI_ATEXIT,
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
-
-    CPTI_NULLPTR,
-    CPTI_NULLPTR_TYPE,
-
-    CPTI_ALIGN_TYPE,
-
-    CPTI_ANY_TARG,
 
     CPTI_SOURCE_LOCATION_IMPL,
 

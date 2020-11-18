@@ -11,11 +11,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"cmd/go/internal/base"
 	"cmd/go/internal/cfg"
 	"cmd/go/internal/load"
 	"cmd/go/internal/str"
+	"cmd/internal/pkgpath"
 )
 
 // The Gccgo toolchain.
@@ -174,7 +176,7 @@ func (tools gccgoToolchain) asm(b *Builder, a *Action, sfiles []string) ([]strin
 		ofiles = append(ofiles, ofile)
 		sfile = mkAbs(p.Dir, sfile)
 		defs := []string{"-D", "GOOS_" + cfg.Goos, "-D", "GOARCH_" + cfg.Goarch}
-		if pkgpath := gccgoCleanPkgpath(p); pkgpath != "" {
+		if pkgpath := tools.gccgoCleanPkgpath(b, p); pkgpath != "" {
 			defs = append(defs, `-D`, `GOPKGPATH=`+pkgpath)
 		}
 		defs = tools.maybePIC(defs)
@@ -556,7 +558,7 @@ func (tools gccgoToolchain) cc(b *Builder, a *Action, ofile, cfile string) error
 	cfile = mkAbs(p.Dir, cfile)
 	defs := []string{"-D", "GOOS_" + cfg.Goos, "-D", "GOARCH_" + cfg.Goarch}
 	defs = append(defs, b.gccArchArgs()...)
-	if pkgpath := gccgoCleanPkgpath(p); pkgpath != "" {
+	if pkgpath := tools.gccgoCleanPkgpath(b, p); pkgpath != "" {
 		defs = append(defs, `-D`, `GOPKGPATH="`+pkgpath+`"`)
 	}
 	compiler := envList("CC", cfg.DefaultCC(cfg.Goos, cfg.Goarch))
@@ -596,28 +598,23 @@ func gccgoPkgpath(p *load.Package) string {
 	return p.ImportPath
 }
 
-// gccgoCleanPkgpath returns the form of p's pkgpath that gccgo uses
-// for symbol names. This is like gccgoPkgpathToSymbolNew in cmd/cgo/out.go.
-func gccgoCleanPkgpath(p *load.Package) string {
-	ppath := gccgoPkgpath(p)
-	bsl := []byte{}
-	changed := false
-	for _, c := range []byte(ppath) {
-		switch {
-		case 'A' <= c && c <= 'Z', 'a' <= c && c <= 'z',
-			'0' <= c && c <= '9', c == '_':
-			bsl = append(bsl, c)
-		case c == '.':
-			bsl = append(bsl, ".x2e"...)
-			changed = true
-		default:
-			encbytes := []byte(fmt.Sprintf("..z%02x", c))
-			bsl = append(bsl, encbytes...)
-			changed = true
+var gccgoToSymbolFuncOnce sync.Once
+var gccgoToSymbolFunc func(string) string
+
+func (tools gccgoToolchain) gccgoCleanPkgpath(b *Builder, p *load.Package) string {
+	gccgoToSymbolFuncOnce.Do(func() {
+		if cfg.BuildN {
+			gccgoToSymbolFunc = func(s string) string { return s }
+			return
 		}
-	}
-	if !changed {
-		return ppath
-	}
-	return string(bsl)
+		fn, err := pkgpath.ToSymbolFunc(tools.compiler(), b.WorkDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "cmd/go: %v\n", err)
+			base.SetExitStatus(2)
+			base.Exit()
+		}
+		gccgoToSymbolFunc = fn
+	})
+
+	return gccgoToSymbolFunc(gccgoPkgpath(p))
 }

@@ -43,6 +43,7 @@ cmd/internal/buildid
 cmd/internal/diff
 cmd/internal/edit
 cmd/internal/objabi
+cmd/internal/pkgpath
 cmd/internal/sys
 cmd/internal/test2json
 golang.org/x/crypto/ed25519

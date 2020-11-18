@@ -667,8 +667,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       *value = build_int_cst (integer_type_node, tok->val.pragma);
       break;
 
-      /* These tokens should not be visible outside cpplib.  */
     case CPP_HEADER_NAME:
+      *value = build_string (tok->val.str.len, (const char *)tok->val.str.text);
+      break;
+
+      /* This token should not be visible outside cpplib.  */
     case CPP_MACRO_ARG:
       gcc_unreachable ();
 

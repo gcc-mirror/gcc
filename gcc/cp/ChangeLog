@@ -1,3 +1,19 @@
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97877
+	* decl.c (duplicate_decls): Deal with duplicated DECL_LOCAL_DECL_P
+	decls.  Extend decl_lang_specific checking assert.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (enum cp_tree_index): Reorder to place lazy fields
+	after newly-added CPTI_MODULE_HWM.
+
+2020-11-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97871
+	* parser.c (cp_parser_declaration): Remove checking assert.
+
 2020-11-15  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_finish_decl): Only check abstractness on definition.

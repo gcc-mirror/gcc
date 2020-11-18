@@ -1,3 +1,10 @@
+2020-11-17  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/97857
+	* lto-common.c (gimple_register_canonical_type_1): Only
+	register types with TYPE_CXX_ODR_P flag; sanity check that no
+	conflict happens at ltrans time.
+
 2020-11-06  Nathan Sidwell  <nathan@acm.org>
 
 	* lto-symtab.c (lto_symtab_merge_decls_1): Rename

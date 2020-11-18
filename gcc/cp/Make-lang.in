@@ -47,9 +47,10 @@ CP_PLUGIN_HEADERS := cp-tree.h cxx-pretty-print.h name-lookup.h type-utils.h ope
 # into the C++ rule, but that needs a little bit of work
 # to do the right thing within all.cross.
 c++: cc1plus$(exeext)
+c++.serial: c++
 
 # Tell GNU make to ignore these if they exist.
-.PHONY: c++
+.PHONY: c++ c++.serial c++.prev
 
 CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 
@@ -116,9 +117,11 @@ cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	  $(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c; \
 	fi
 
-cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
+cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS) c++.prev
+	@$(call LINK_PROGRESS,$(INDEX.c++),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	@$(call LINK_PROGRESS,$(INDEX.c++),end)
 
 ifeq ($(ENABLE_MAINTAINER_RULES), true)
 # Special build rule.  This is a maintainer rule, that is only

@@ -1459,10 +1459,10 @@ sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
 
 		ao_ref_init (&ref, gimple_op (stmt, i));
 		tree t = ao_ref_alias_ptr_type (&ref);
-		if (variably_modified_type_p (t, NULL_TREE))
+		if (!variably_modified_type_p (t, NULL_TREE))
 		  memory_access_types.safe_push (t);
 		t = ao_ref_base_alias_ptr_type (&ref);
-		if (variably_modified_type_p (t, NULL_TREE))
+		if (!variably_modified_type_p (t, NULL_TREE))
 		  memory_access_types.safe_push (t);
 	      }
 	  }
