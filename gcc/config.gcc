@@ -3372,6 +3372,9 @@ sh-wrs-vxworks)
 sparc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h sparc/sysv4.h sparc/sp-elf.h"
 	case ${target} in
+	    sparc-zephyr*)
+		tmake_file="sparc/t-sparc sparc/t-zephyr"
+		;;
 	    *-leon-*)
 		tmake_file="sparc/t-sparc sparc/t-leon"
 		;;

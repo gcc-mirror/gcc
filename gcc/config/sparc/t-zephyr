@@ -1,0 +1,55 @@
+# Copyright (C) 2012-2014 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Multilibs for Zephyr
+MULTILIB_OPTIONS         =
+MULTILIB_DIRNAMES        =
+
+MULTILIB_OPTIONS        += mcpu=leon/mcpu=leon3/mcpu=leon3v7
+MULTILIB_DIRNAMES       += leon      leon3      leon3v7
+
+MULTILIB_OPTIONS        += msoft-float
+MULTILIB_DIRNAMES       += soft
+
+MULTILIB_OPTIONS        += mflat
+MULTILIB_DIRNAMES       += flat
+
+MULTILIB_MATCHES         = msoft-float=mno-fpu
+
+
+# This is the complete list of multilibs to build
+MULTILIB_REQUIRED       =
+
+
+MULTILIB_REQUIRED += msoft-float
+
+MULTILIB_REQUIRED += mcpu=leon
+MULTILIB_REQUIRED += mcpu=leon/msoft-float
+MULTILIB_REQUIRED += mcpu=leon/mflat
+MULTILIB_REQUIRED += mcpu=leon/msoft-float/mflat
+
+
+MULTILIB_REQUIRED += mcpu=leon3
+MULTILIB_REQUIRED += mcpu=leon3/msoft-float
+MULTILIB_REQUIRED += mcpu=leon3/mflat
+MULTILIB_REQUIRED += mcpu=leon3/msoft-float/mflat
+
+MULTILIB_REQUIRED += mcpu=leon3v7
+MULTILIB_REQUIRED += mcpu=leon3v7/msoft-float
+MULTILIB_REQUIRED += mcpu=leon3v7/mflat
+MULTILIB_REQUIRED += mcpu=leon3v7/msoft-float/mflat
