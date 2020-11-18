@@ -983,6 +983,9 @@ extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 
+extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
+					 bool angle_p,  location_t);
+
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the
    input file, except for preprocessed input.  This will generate at
