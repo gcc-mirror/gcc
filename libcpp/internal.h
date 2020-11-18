@@ -637,20 +637,21 @@ typedef unsigned char uchar;
 
 /* Macros.  */
 
-static inline int cpp_in_system_header (cpp_reader *);
-static inline int
-cpp_in_system_header (cpp_reader *pfile)
+inline int
+_cpp_in_system_header (cpp_reader *pfile)
 {
   return pfile->buffer ? pfile->buffer->sysp : 0;
 }
 #define CPP_PEDANTIC(PF) CPP_OPTION (PF, cpp_pedantic)
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, cpp_warn_traditional)
 
-static inline int cpp_in_primary_file (cpp_reader *);
-static inline int
-cpp_in_primary_file (cpp_reader *pfile)
+/* Return true if we're in the main file (unless it's considered to be
+   an include file in its own right.  */
+inline int
+_cpp_in_main_source_file (cpp_reader *pfile)
 {
-  return pfile->buffer->main_file;
+  return (!CPP_OPTION (pfile, main_search)
+	  && pfile->buffer->file == pfile->main_file);
 }
 
 /* True if NODE is a macro for the purposes of ifdef, defined etc.  */

@@ -1,5 +1,27 @@
 2020-11-18  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* include/cpplib.h (enum cpp_main_search): Add CMS_header value.
+	* internal.h (cpp_in_system_header): Rename to ...
+	(_cpp_in_system_header): ... here.
+	(cpp_in_primary_file): Rename to ...
+	(_cpp_in_main_source_file): ... here.  Compare main_file equality
+	and check main_search value.
+	* lex.c (maybe_va_opt_error, _cpp_lex_direct): Adjust.
+	* macro.c (_cpp_builtin_macro_text): Adjust.
+	(replace_args): Likewise.
+	* directives.c (do_include_next): Adjust.
+	(do_pragma_once, do_pragma_system_header): Likewise.
+	* files.c (struct _cpp_file): Delete main_file field.
+	(pch_open): Check pfile->main_file equality.
+	(make_cpp_file): Drop cpp_reader parm, don't set main_file.
+	(_cpp_find_file): Adjust.
+	(_cpp_stack_file): Check pfile->main_file equality.  Drop
+	main_file clearing.
+	(struct report_missing_guard_data): Add cpp_reader field.
+	(report_missing_guard): Check pfile->main_file equality.
+	(_cpp_report_missing_guards): Adjust.
+
 	Merge trunk 92648faa1cb
 	08-cpp-mkdeps.diff
 	05-cpp-files.diff

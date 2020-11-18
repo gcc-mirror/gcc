@@ -310,9 +310,11 @@ enum cpp_normalize_level {
 
 enum cpp_main_search 
 {
-  CMS_none,
-  CMS_user,
-  CMS_system
+  CMS_none,    /* A regular source file.  */
+  CMS_header,  /* Is a directly-specified header file (eg PCH or
+		  header-unit).  */
+  CMS_user,    /* Search the user INCLUDE path.  */
+  CMS_system,  /* Search the system INCLUDE path.  */
 };
 
 /* This structure is nested inside struct cpp_reader, and
