@@ -1316,6 +1316,7 @@ package body Ch9 is
 
    --  ENTRY_INDEX_SPECIFICATION ::=
    --    for DEFINING_IDENTIFIER in DISCRETE_SUBTYPE_DEFINITION
+   --                                                    [ASPECT_SPECIFICATION]
 
    --  Error recovery: can raise Error_Resync
 
@@ -1329,6 +1330,11 @@ package body Ch9 is
       T_In;
       Set_Discrete_Subtype_Definition
         (Iterator_Node, P_Discrete_Subtype_Definition);
+
+      if Token = Tok_With then
+         P_Aspect_Specifications (Iterator_Node, False);
+      end if;
+
       return Iterator_Node;
    end P_Entry_Index_Specification;
 
