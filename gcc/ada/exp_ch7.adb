@@ -6848,22 +6848,49 @@ package body Exp_Ch7 is
 
          Init_Call := Build_Initialization_Call;
 
-         --  Only create finalization block if there is a non-trivial
-         --  call to initialization.
+         --  Only create finalization block if there is a nontrivial call
+         --  to initialization or a Default_Initial_Condition check to be
+         --  performed.
 
-         if Present (Init_Call)
-           and then Nkind (Init_Call) /= N_Null_Statement
+         if (Present (Init_Call)
+              and then Nkind (Init_Call) /= N_Null_Statement)
+           or else
+             (Has_DIC (Comp_Typ)
+               and then not GNATprove_Mode
+               and then Present (DIC_Procedure (Comp_Typ))
+               and then not Has_Null_Body (DIC_Procedure (Comp_Typ)))
          then
-            Init_Loop :=
-              Make_Block_Statement (Loc,
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements         => New_List (Init_Call),
-                    Exception_Handlers => New_List (
-                      Make_Exception_Handler (Loc,
-                        Exception_Choices => New_List (
-                          Make_Others_Choice (Loc)),
-                        Statements        => New_List (Final_Block)))));
+            declare
+               Init_Stmts : constant List_Id := New_List;
+
+            begin
+               if Present (Init_Call) then
+                  Append_To (Init_Stmts, Init_Call);
+               end if;
+
+               if Has_DIC (Comp_Typ)
+                 and then Present (DIC_Procedure (Comp_Typ))
+               then
+                  Append_To
+                    (Init_Stmts,
+                     Build_DIC_Call (Loc,
+                         Make_Indexed_Component (Loc,
+                           Prefix      => Make_Identifier (Loc, Name_V),
+                           Expressions => New_References_To (Index_List, Loc)),
+                         Comp_Typ));
+               end if;
+
+               Init_Loop :=
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements         => Init_Stmts,
+                       Exception_Handlers => New_List (
+                         Make_Exception_Handler (Loc,
+                           Exception_Choices => New_List (
+                             Make_Others_Choice (Loc)),
+                           Statements        => New_List (Final_Block)))));
+            end;
 
             Append_To (Statements (Handled_Statement_Sequence (Init_Loop)),
               Make_Assignment_Statement (Loc,
