@@ -28978,24 +28978,19 @@ package body Sem_Prag is
 
          Report_Unused_Constituents (Part_Of_Constits);
 
-         --  Avoid a cascading error reporting a missing refinement by adding
-         --  State_Id as dummy constituent of itself.
+         --  Avoid a cascading error reporting a missing refinement by adding a
+         --  dummy constituent.
 
-         if Non_Null_Seen
-           and then not Has_Non_Null_Refinement (State_Id)
-         then
-            declare
-               Constits : Elist_Id := Refinement_Constituents (State_Id);
-            begin
-               if No (Constits) then
-                  Constits := New_Elmt_List;
-                  Set_Refinement_Constituents (State_Id, Constits);
-               end if;
-
-               Append_Elmt (State_Id, Constits);
-               Set_Encapsulating_State (State_Id, State_Id);
-            end;
+         if No (Refinement_Constituents (State_Id)) then
+            Set_Refinement_Constituents (State_Id, New_Elmt_List (Any_Id));
          end if;
+
+         --  At this point the refinement might be dummy, but must be
+         --  well-formed, to prevent cascaded errors.
+
+         pragma Assert (Has_Null_Refinement (State_Id)
+                          xor
+                        Has_Non_Null_Refinement (State_Id));
       end Analyze_Refinement_Clause;
 
       -----------------------------
