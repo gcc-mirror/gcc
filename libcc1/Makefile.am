@@ -25,6 +25,9 @@ CPPFLAGS_FOR_C_FAMILY = -I $(srcdir)/../gcc/c-family \
 CPPFLAGS_FOR_C = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/c
 CPPFLAGS_FOR_CXX = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/cp
 AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility)
+if DARWIN_DYNAMIC_LOOKUP
+AM_CXXFLAGS += -Wl,-undefined,dynamic_lookup
+endif
 override CXXFLAGS := $(filter-out -fsanitize=address,$(CXXFLAGS))
 override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 # Can be simplified when libiberty becomes a normal convenience library.
