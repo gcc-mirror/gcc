@@ -3427,7 +3427,8 @@ vectorizable_call (vec_info *vinfo,
 		{
 		  vec_defs.quick_push (vNULL);
 		  vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies,
-						 op, &vec_defs[i]);
+						 op, &vec_defs[i],
+						 vectypes[i]);
 		}
 	      orig_vargs[i] = vargs[i] = vec_defs[i][j];
 	    }

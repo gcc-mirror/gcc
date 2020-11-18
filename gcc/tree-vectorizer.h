@@ -1974,6 +1974,7 @@ extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_optimize_slp (vec_info *);
+extern void vect_gather_slp_loads (vec_info *);
 extern void vect_get_slp_defs (slp_tree, vec<tree> *);
 extern void vect_get_slp_defs (vec_info *, slp_tree, vec<vec<tree> > *,
 			       unsigned n = -1U);

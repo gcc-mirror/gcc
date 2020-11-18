@@ -2489,6 +2489,20 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
   if (! DECL_COMDAT (olddecl))
     DECL_COMDAT (newdecl) = 0;
 
+  if (VAR_OR_FUNCTION_DECL_P (newdecl) && DECL_LOCAL_DECL_P (newdecl))
+    {
+      if (!DECL_LOCAL_DECL_P (olddecl))
+	/* This can happen if olddecl was brought in from the
+	   enclosing namespace via a using-decl.  The new decl is
+	   then not a block-scope extern at all.  */
+	DECL_LOCAL_DECL_P (newdecl) = false;
+      else
+	{
+	  retrofit_lang_decl (newdecl);
+	  DECL_LOCAL_DECL_ALIAS (newdecl) = DECL_LOCAL_DECL_ALIAS (olddecl);
+	}
+    }
+
   new_template_info = NULL_TREE;
   if (DECL_LANG_SPECIFIC (newdecl) && DECL_LANG_SPECIFIC (olddecl))
     {
@@ -2772,8 +2786,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
      with that from NEWDECL below.  */
   if (DECL_LANG_SPECIFIC (olddecl))
     {
-      gcc_assert (DECL_LANG_SPECIFIC (olddecl)
-		  != DECL_LANG_SPECIFIC (newdecl));
+      gcc_checking_assert (DECL_LANG_SPECIFIC (newdecl)
+			   && (DECL_LANG_SPECIFIC (olddecl)
+			       != DECL_LANG_SPECIFIC (newdecl)));
       ggc_free (DECL_LANG_SPECIFIC (olddecl));
     }
 

@@ -2032,6 +2032,8 @@ odr_based_tbaa_p (const_tree type)
 {
   if (!RECORD_OR_UNION_TYPE_P (type))
     return false;
+  if (!odr_hash)
+    return false;
   odr_type t = get_odr_type (const_cast <tree> (type), false);
   if (!t || !t->tbaa_enabled)
     return false;

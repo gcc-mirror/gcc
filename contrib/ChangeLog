@@ -1,3 +1,8 @@
+2020-11-16  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Do not call read on an input stream.
+	Fix some flake8 issues.
+
 2020-11-07  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* unicode/EastAsianWidth.txt: Update to Unicode 13.0.0.

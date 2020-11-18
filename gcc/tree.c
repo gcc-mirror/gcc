@@ -864,6 +864,7 @@ tree_code_size (enum tree_code code)
 	case BOOLEAN_TYPE:
 	case INTEGER_TYPE:
 	case REAL_TYPE:
+	case OPAQUE_TYPE:
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
 	case NULLPTR_TYPE:
@@ -1755,14 +1756,14 @@ wide_int_to_tree (tree type, const poly_wide_int_ref &value)
 }
 
 /* Insert INTEGER_CST T into a cache of integer constants.  And return
-   the cached constant (which may or may not be T).  If MAY_DUPLICATE
+   the cached constant (which may or may not be T).  If MIGHT_DUPLICATE
    is false, and T falls into the type's 'smaller values' range, there
-   cannot be an existing entry.  Otherwise, if MAY_DUPLICATE is true,
+   cannot be an existing entry.  Otherwise, if MIGHT_DUPLICATE is true,
    or the value is large, should an existing entry exist, it is
    returned (rather than inserting T).  */
 
 tree
-cache_integer_cst (tree t, bool may_duplicate ATTRIBUTE_UNUSED)
+cache_integer_cst (tree t, bool might_duplicate ATTRIBUTE_UNUSED)
 {
   tree type = TREE_TYPE (t);
   int ix = -1;
@@ -1858,7 +1859,7 @@ cache_integer_cst (tree t, bool may_duplicate ATTRIBUTE_UNUSED)
 
       if (tree r = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix))
 	{
-	  gcc_checking_assert (may_duplicate);
+	  gcc_checking_assert (might_duplicate);
 	  t = r;
 	}
       else
@@ -15154,22 +15155,22 @@ get_nonnull_args (const_tree fntype)
 /* Returns true if TYPE is a type where it and all of its subobjects
    (recursively) are of structure, union, or array type.  */
 
-static bool
-default_is_empty_type (tree type)
+bool
+is_empty_type (const_tree type)
 {
   if (RECORD_OR_UNION_TYPE_P (type))
     {
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
 	    && !DECL_PADDING_P (field)
-	    && !default_is_empty_type (TREE_TYPE (field)))
+	    && !is_empty_type (TREE_TYPE (field)))
 	  return false;
       return true;
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     return (integer_minus_onep (array_type_nelts (type))
 	    || TYPE_DOMAIN (type) == NULL_TREE
-	    || default_is_empty_type (TREE_TYPE (type)));
+	    || is_empty_type (TREE_TYPE (type)));
   return false;
 }
 
@@ -15188,7 +15189,7 @@ default_is_empty_record (const_tree type)
   if (TREE_ADDRESSABLE (type))
     return false;
 
-  return default_is_empty_type (TYPE_MAIN_VARIANT (type));
+  return is_empty_type (TYPE_MAIN_VARIANT (type));
 }
 
 /* Determine whether TYPE is a structure with a flexible array member,

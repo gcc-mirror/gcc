@@ -250,6 +250,12 @@ DEFTREECODE (METHOD_TYPE, "method_type", tcc_type, 0)
    layout_type does not know how to lay this out,
    so the front-end must do so manually.  */
 DEFTREECODE (LANG_TYPE, "lang_type", tcc_type, 0)
+
+/* This is for types that will use MODE_OPAQUE in the back end.  They are meant
+   to be able to go in a register of some sort but are explicitly not to be
+   converted or operated on like INTEGER_TYPE.  They will have size and
+   alignment information only.  */
+DEFTREECODE (OPAQUE_TYPE, "opaque_type", tcc_type, 0)
 
 /* Expressions */
 

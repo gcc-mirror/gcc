@@ -3989,11 +3989,13 @@ handle_builtin_memset (gimple_stmt_iterator *gsi, bool *zero_write,
   return true;
 }
 
-/* Return a pointer to the first such equality expression if RES is used
-   only in expressions testing its equality to zero, and null otherwise.  */
+/* Return first such statement if RES is used in statements testing its
+   equality to zero, and null otherwise.  If EXCLUSIVE is true, return
+   nonnull if and only RES is used in such expressions exclusively and
+   in none other.  */
 
 static gimple *
-used_only_for_zero_equality (tree res)
+use_in_zero_equality (tree res, bool exclusive = true)
 {
   gimple *first_use = NULL;
 
@@ -4006,6 +4008,7 @@ used_only_for_zero_equality (tree res)
 
       if (is_gimple_debug (use_stmt))
         continue;
+
       if (gimple_code (use_stmt) == GIMPLE_ASSIGN)
 	{
 	  tree_code code = gimple_assign_rhs_code (use_stmt);
@@ -4015,25 +4018,41 @@ used_only_for_zero_equality (tree res)
 	      if ((TREE_CODE (cond_expr) != EQ_EXPR
 		   && (TREE_CODE (cond_expr) != NE_EXPR))
 		  || !integer_zerop (TREE_OPERAND (cond_expr, 1)))
-		return NULL;
+		{
+		  if (exclusive)
+		    return NULL;
+		  continue;
+		}
 	    }
 	  else if (code == EQ_EXPR || code == NE_EXPR)
 	    {
 	      if (!integer_zerop (gimple_assign_rhs2 (use_stmt)))
-		return NULL;
+		{
+		  if (exclusive)
+		    return NULL;
+		  continue;
+		}
             }
-	  else
+	  else if (exclusive)
 	    return NULL;
+	  else
+	    continue;
 	}
       else if (gimple_code (use_stmt) == GIMPLE_COND)
 	{
 	  tree_code code = gimple_cond_code (use_stmt);
 	  if ((code != EQ_EXPR && code != NE_EXPR)
 	      || !integer_zerop (gimple_cond_rhs (use_stmt)))
-	    return NULL;
+	    {
+	      if (exclusive)
+		return NULL;
+	      continue;
+	    }
 	}
+      else if (exclusive)
+	return NULL;
       else
-        return NULL;
+	continue;
 
       if (!first_use)
 	first_use = use_stmt;
@@ -4053,7 +4072,7 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
   gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
   tree res = gimple_call_lhs (stmt);
 
-  if (!res || !used_only_for_zero_equality (res))
+  if (!res || !use_in_zero_equality (res))
     return false;
 
   tree arg1 = gimple_call_arg (stmt, 0);
@@ -4317,7 +4336,7 @@ maybe_warn_pointless_strcmp (gimple *stmt, HOST_WIDE_INT bound,
 			     unsigned HOST_WIDE_INT siz)
 {
   tree lhs = gimple_call_lhs (stmt);
-  gimple *use = used_only_for_zero_equality (lhs);
+  gimple *use = use_in_zero_equality (lhs, /* exclusive = */ false);
   if (!use)
     return;
 
@@ -4367,12 +4386,12 @@ maybe_warn_pointless_strcmp (gimple *stmt, HOST_WIDE_INT bound,
 			     stmt, callee, minlen, siz, bound);
     }
 
-  if (warned)
-    {
-      location_t use_loc = gimple_location (use);
-      if (LOCATION_LINE (stmt_loc) != LOCATION_LINE (use_loc))
-	inform (use_loc, "in this expression");
-    }
+  if (!warned)
+    return;
+
+  location_t use_loc = gimple_location (use);
+  if (LOCATION_LINE (stmt_loc) != LOCATION_LINE (use_loc))
+    inform (use_loc, "in this expression");
 }
 
 
@@ -4507,7 +4526,7 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi, range_query *rvals)
   /* The size of the array in which the unknown string is stored.  */
   HOST_WIDE_INT varsiz = arysiz1 < 0 ? arysiz2 : arysiz1;
 
-  if ((varsiz < 0 || cmpsiz < varsiz) && used_only_for_zero_equality (lhs))
+  if ((varsiz < 0 || cmpsiz < varsiz) && use_in_zero_equality (lhs))
     {
       /* If the known length is less than the size of the other array
 	 and the strcmp result is only used to test equality to zero,

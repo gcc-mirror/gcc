@@ -2163,6 +2163,14 @@ wi_optimize_and_or (irange &r,
   else
     gcc_unreachable ();
   value_range_with_overflow (r, type, res_lb, res_ub);
+
+  // Furthermore, if the mask is non-zero, an IOR cannot contain zero.
+  if (code == BIT_IOR_EXPR && wi::ne_p (mask, 0))
+    {
+      int_range<2> tmp;
+      tmp.set_nonzero (type);
+      r.intersect (tmp);
+    }
   return true;
 }
 

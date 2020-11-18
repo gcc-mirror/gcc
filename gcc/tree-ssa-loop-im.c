@@ -1622,7 +1622,7 @@ sort_locs_in_loop_postorder_cmp (const void *loc1_, const void *loc2_,
 /* Gathers memory references in loops.  */
 
 static void
-analyze_memory_references (void)
+analyze_memory_references (bool store_motion)
 {
   gimple_stmt_iterator bsi;
   basic_block bb, *bbs;
@@ -1664,6 +1664,9 @@ analyze_memory_references (void)
     }
 
   free (bbs);
+
+  if (!store_motion)
+    return;
 
   /* Propagate the information about accessed memory references up
      the loop hierarchy.  */
@@ -3010,7 +3013,7 @@ fill_always_executed_in (void)
 /* Compute the global information needed by the loop invariant motion pass.  */
 
 static void
-tree_ssa_lim_initialize (void)
+tree_ssa_lim_initialize (bool store_motion)
 {
   class loop *loop;
   unsigned i;
@@ -3032,8 +3035,12 @@ tree_ssa_lim_initialize (void)
   memory_accesses.refs_loaded_in_loop.quick_grow (number_of_loops (cfun));
   memory_accesses.refs_stored_in_loop.create (number_of_loops (cfun));
   memory_accesses.refs_stored_in_loop.quick_grow (number_of_loops (cfun));
-  memory_accesses.all_refs_stored_in_loop.create (number_of_loops (cfun));
-  memory_accesses.all_refs_stored_in_loop.quick_grow (number_of_loops (cfun));
+  if (store_motion)
+    {
+      memory_accesses.all_refs_stored_in_loop.create (number_of_loops (cfun));
+      memory_accesses.all_refs_stored_in_loop.quick_grow
+						      (number_of_loops (cfun));
+    }
 
   for (i = 0; i < number_of_loops (cfun); i++)
     {
@@ -3041,8 +3048,9 @@ tree_ssa_lim_initialize (void)
 			 &lim_bitmap_obstack);
       bitmap_initialize (&memory_accesses.refs_stored_in_loop[i],
 			 &lim_bitmap_obstack);
-      bitmap_initialize (&memory_accesses.all_refs_stored_in_loop[i],
-			 &lim_bitmap_obstack);
+      if (store_motion)
+	bitmap_initialize (&memory_accesses.all_refs_stored_in_loop[i],
+			   &lim_bitmap_obstack);
     }
 
   memory_accesses.ttae_cache = NULL;
@@ -3097,10 +3105,10 @@ loop_invariant_motion_in_fun (function *fun, bool store_motion)
 {
   unsigned int todo = 0;
 
-  tree_ssa_lim_initialize ();
+  tree_ssa_lim_initialize (store_motion);
 
   /* Gathers information about memory accesses in the loops.  */
-  analyze_memory_references ();
+  analyze_memory_references (store_motion);
 
   /* Fills ALWAYS_EXECUTED_IN information for basic blocks.  */
   fill_always_executed_in ();

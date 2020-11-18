@@ -1,3 +1,12 @@
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk d3ae802402b
+	01-langhooks.diff
+	02-cpp-line-maps.diff
+	03-cpp-callbacks.diff
+	19-global-trees.diff
+	21a-int-cst.diff
+
 2020-11-16  Nathan Sidwell  <nathan@acm.org>
 
 	Adjust lang hooks

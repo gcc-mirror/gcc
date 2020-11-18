@@ -18889,6 +18889,22 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
+/* Return true if a set of DST by the expression SRC should be allowed.
+   This prevents complex sets of likely_spilled hard regs before reload.  */
+
+bool
+ix86_hardreg_mov_ok (rtx dst, rtx src)
+{
+  /* Avoid complex sets of likely_spilled hard registers before reload.  */
+  if (REG_P (dst) && HARD_REGISTER_P (dst)
+      && !REG_P (src) && !MEM_P (src)
+      && !x86_64_immediate_operand (src, GET_MODE (dst))
+      && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dst)))
+      && !reload_completed)
+    return false;
+  return true;
+}
+
 /* If we are copying between registers from different register sets
    (e.g. FP and integer), we may need a memory location.
 

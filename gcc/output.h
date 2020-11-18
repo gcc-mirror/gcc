@@ -572,8 +572,8 @@ extern void default_ctor_section_asm_out_constructor (rtx, int);
 extern section *default_select_section (tree, int, unsigned HOST_WIDE_INT);
 extern section *default_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
 extern void default_unique_section (tree, int);
-extern section *default_function_rodata_section (tree);
-extern section *default_no_function_rodata_section (tree);
+extern section *default_function_rodata_section (tree, bool);
+extern section *default_no_function_rodata_section (tree, bool);
 extern section *default_clone_table_section (void);
 extern section *default_select_rtx_section (machine_mode, rtx,
 					    unsigned HOST_WIDE_INT);

@@ -11,5 +11,5 @@ foo (int n)
 }
 
 /* Make sure the induction IV uses an unsigned increment.  */
-/* { dg-final { scan-tree-dump "vector\\\(\[0-9\]*\\\) unsigned int" "vect" } } */
+/* { dg-final { scan-tree-dump {vector\([][0-9,]*\) unsigned int} "vect" } } */
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */

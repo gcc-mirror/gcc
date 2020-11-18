@@ -41,6 +41,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! amdgcn*-*-* } } } } */
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target amdgcn*-*-* } } } */
-/* { dg-final { scan-tree-dump "multiple types in double reduction or condition reduction" "vect" { target { ! amdgcn*-*-* } } } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! { amdgcn*-*-* || aarch64_sve } } } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { amdgcn*-*-* || aarch64_sve } } } } */
+/* { dg-final { scan-tree-dump "multiple types in double reduction or condition reduction" "vect" { target { ! { amdgcn*-*-* || aarch64_sve } } } } } */

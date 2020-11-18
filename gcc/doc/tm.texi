@@ -7711,13 +7711,14 @@ example, the function @code{foo} would be placed in @code{.text.foo}.
 Whatever the actual target object format, this is often good enough.
 @end deftypefn
 
-@deftypefn {Target Hook} {section *} TARGET_ASM_FUNCTION_RODATA_SECTION (tree @var{decl})
-Return the readonly data section associated with
-@samp{DECL_SECTION_NAME (@var{decl})}.
+@deftypefn {Target Hook} {section *} TARGET_ASM_FUNCTION_RODATA_SECTION (tree @var{decl}, bool @var{relocatable})
+Return the readonly data or reloc readonly data section associated with
+@samp{DECL_SECTION_NAME (@var{decl})}. @var{relocatable} selects the latter
+over the former.
 The default version of this function selects @code{.gnu.linkonce.r.name} if
 the function's section is @code{.gnu.linkonce.t.name}, @code{.rodata.name}
-if function is in @code{.text.name}, and the normal readonly-data section
-otherwise.
+or @code{.data.rel.ro.name} if function is in @code{.text.name}, and
+the normal readonly-data or reloc readonly data section otherwise.
 @end deftypefn
 
 @deftypevr {Target Hook} {const char *} TARGET_ASM_MERGEABLE_RODATA_PREFIX

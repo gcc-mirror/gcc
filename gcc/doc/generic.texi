@@ -302,6 +302,7 @@ The elements are indexed from zero.
 @tindex ARRAY_TYPE
 @tindex RECORD_TYPE
 @tindex UNION_TYPE
+@tindex OPAQUE_TYPE
 @tindex UNKNOWN_TYPE
 @tindex OFFSET_TYPE
 @findex TYPE_UNQUALIFIED
@@ -486,6 +487,13 @@ an @code{IDENTIFIER_NODE} giving the name of the constant; the
 assigned to that constant.  These constants will appear in the order in
 which they were declared.  The @code{TREE_TYPE} of each of these
 constants will be the type of enumeration type itself.
+
+@item OPAQUE_TYPE
+Used for things that have a @code{MODE_OPAQUE} mode class in the
+backend. Opaque types have a size and precision, and can be held in
+memory or registers. They are used when we do not want the compiler to
+make assumptions about the availability of other operations as would
+happen with integer types.
 
 @item BOOLEAN_TYPE
 Used to represent the @code{bool} type.

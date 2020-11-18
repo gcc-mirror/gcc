@@ -373,7 +373,6 @@ struct lang_hooks
     {
      PT_begin_pragma = 1 << 0
     };
-  
 
   /* Register language-specific dumps.  */
   void (*register_dumps) (gcc::dump_manager *);

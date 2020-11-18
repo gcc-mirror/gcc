@@ -1,3 +1,9 @@
+2020-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/Makefile.am (libstdc++-symbols.ver-sun): Remove -lrt from
+	arguments passed to make_sunver.pl script.
+	* src/Makefile.in: Regenerate.
+
 2020-11-15  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/result_of/sfinae_friendly_1.cc: Adjust.

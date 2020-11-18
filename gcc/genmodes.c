@@ -358,6 +358,14 @@ complete_mode (struct mode_data *m)
       m->component = 0;
       break;
 
+    case MODE_OPAQUE:
+      /* Opaque modes have size and precision.  */
+      validate_mode (m, OPTIONAL, SET, UNSET, UNSET, UNSET);
+
+      m->ncomponents = 1;
+      m->component = 0;
+      break;
+
     case MODE_PARTIAL_INT:
       /* A partial integer mode uses ->component to say what the
 	 corresponding full-size integer mode is, and may also
@@ -584,6 +592,20 @@ make_int_mode (const char *name,
 	       const char *file, unsigned int line)
 {
   struct mode_data *m = new_mode (MODE_INT, name, file, line);
+  m->bytesize = bytesize;
+  m->precision = precision;
+}
+
+#define OPAQUE_MODE(N, B)			\
+  make_opaque_mode (#N, -1U, B, __FILE__, __LINE__)
+
+static void ATTRIBUTE_UNUSED
+make_opaque_mode (const char *name,
+		  unsigned int precision,
+		  unsigned int bytesize,
+		  const char *file, unsigned int line)
+{
+  struct mode_data *m = new_mode (MODE_OPAQUE, name, file, line);
   m->bytesize = bytesize;
   m->precision = precision;
 }

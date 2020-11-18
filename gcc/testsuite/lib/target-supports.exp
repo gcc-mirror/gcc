@@ -10351,6 +10351,13 @@ proc check_effective_target_inf { } {
     }]
 }
 
+# Return 1 if target supports floating point "infinite" for float.
+proc check_effective_target_inff { } {
+    return [check_no_compiler_messages supports_inff assembly {
+        const float pinf = __builtin_inff ();
+    }]
+}
+
 # Return 1 if the target supports ARMv8.3 Adv.SIMD Complex instructions
 # instructions, 0 otherwise.  The test is valid for ARM and for AArch64.
 # Record the command line options needed.

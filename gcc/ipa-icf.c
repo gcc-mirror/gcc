@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "gimple-pretty-print.h"
 #include "data-streamer.h"
+#include "tree-streamer.h"
 #include "fold-const.h"
 #include "calls.h"
 #include "varasm.h"
@@ -86,6 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-vector-builder.h"
 #include "symtab-thunks.h"
+#include "alias.h"
 
 using namespace ipa_icf_gimple;
 
@@ -227,14 +229,16 @@ hash_map<const_tree, hashval_t> sem_item::m_type_hash_cache;
 /* Semantic function constructor that uses STACK as bitmap memory stack.  */
 
 sem_function::sem_function (bitmap_obstack *stack)
-: sem_item (FUNC, stack), m_checker (NULL), m_compared_func (NULL)
+  : sem_item (FUNC, stack), memory_access_types (), m_alias_sets_hash (0),
+    m_checker (NULL), m_compared_func (NULL)
 {
   bb_sizes.create (0);
   bb_sorted.create (0);
 }
 
 sem_function::sem_function (cgraph_node *node, bitmap_obstack *stack)
-: sem_item (FUNC, node, stack), m_checker (NULL), m_compared_func (NULL)
+  : sem_item (FUNC, node, stack), memory_access_types (),
+    m_alias_sets_hash (0), m_checker (NULL), m_compared_func (NULL)
 {
   bb_sizes.create (0);
   bb_sorted.create (0);
@@ -1438,9 +1442,30 @@ sem_function::hash_stmt (gimple *stmt, inchash::hash &hstate)
 
 	/* All these statements are equivalent if their operands are.  */
 	for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
-	  m_checker->hash_operand (gimple_op (stmt, i), hstate, 0,
-				   func_checker::get_operand_access_type
-					(&map, gimple_op (stmt, i)));
+	  {
+	    func_checker::operand_access_type
+		access_type = func_checker::get_operand_access_type
+					  (&map, gimple_op (stmt, i));
+	    m_checker->hash_operand (gimple_op (stmt, i), hstate, 0,
+				     access_type);
+	    /* For memory accesses when hasing for LTO stremaing record
+	       base and ref alias ptr types so we can compare them at WPA
+	       time without having to read actual function body.  */
+	    if (access_type == func_checker::OP_MEMORY
+		&& lto_streaming_expected_p ()
+		&& flag_strict_aliasing)
+	      {
+		ao_ref ref;
+
+		ao_ref_init (&ref, gimple_op (stmt, i));
+		tree t = ao_ref_alias_ptr_type (&ref);
+		if (variably_modified_type_p (t, NULL_TREE))
+		  memory_access_types.safe_push (t);
+		t = ao_ref_base_alias_ptr_type (&ref);
+		if (variably_modified_type_p (t, NULL_TREE))
+		  memory_access_types.safe_push (t);
+	      }
+	  }
 	/* Consider nocf_check attribute in hash as it affects code
 	   generation.  */
 	if (code == GIMPLE_CALL
@@ -2129,6 +2154,14 @@ sem_item_optimizer::write_summary (void)
 	  streamer_write_uhwi_stream (ob->main_stream, node_ref);
 
 	  streamer_write_uhwi (ob, (*item)->get_hash ());
+
+	  if ((*item)->type == FUNC)
+	    {
+	      sem_function *fn = static_cast<sem_function *> (*item);
+	      streamer_write_uhwi (ob, fn->memory_access_types.length ());
+	      for (unsigned i = 0; i < fn->memory_access_types.length (); i++)
+		stream_write_tree (ob, fn->memory_access_types[i], true);
+	    }
 	}
     }
 
@@ -2180,6 +2213,18 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
 	  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
 
 	  sem_function *fn = new sem_function (cnode, &m_bmstack);
+	  unsigned count = streamer_read_uhwi (&ib_main);
+	  inchash::hash hstate (0);
+	  if (flag_incremental_link == INCREMENTAL_LINK_LTO)
+	    fn->memory_access_types.reserve_exact (count);
+	  for (unsigned i = 0; i < count; i++)
+	    {
+	      tree type = stream_read_tree (&ib_main, data_in);
+	      hstate.add_int (get_deref_alias_set (type));
+	      if (flag_incremental_link == INCREMENTAL_LINK_LTO)
+		fn->memory_access_types.quick_push (type);
+	    }
+	  fn->m_alias_sets_hash = hstate.end ();
 	  fn->set_hash (hash);
 	  m_items.safe_push (fn);
 	}
@@ -2376,6 +2421,7 @@ sem_item_optimizer::execute (void)
 
   build_graph ();
   update_hash_by_addr_refs ();
+  update_hash_by_memory_access_type ();
   build_hash_based_classes ();
 
   if (dump_file)
@@ -2511,6 +2557,21 @@ sem_item_optimizer::update_hash_by_addr_refs ()
   /* Global hash value replace current hash values.  */
   for (unsigned i = 0; i < m_items.length (); i++)
     m_items[i]->set_hash (m_items[i]->global_hash);
+}
+
+void
+sem_item_optimizer::update_hash_by_memory_access_type ()
+{
+  for (unsigned i = 0; i < m_items.length (); i++)
+    {
+      if (m_items[i]->type == FUNC)
+	{
+	  sem_function *fn = static_cast<sem_function *> (m_items[i]);
+	  inchash::hash hstate (fn->get_hash ());
+	  hstate.add_int (fn->m_alias_sets_hash);
+	  fn->set_hash (hstate.end ());
+	}
+    }
 }
 
 /* Congruence classes are built by hash value.  */

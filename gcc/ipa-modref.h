@@ -30,12 +30,12 @@ struct GTY(()) modref_summary
   modref_records *loads;
   modref_records *stores;
   auto_vec<unsigned char> GTY((skip)) arg_flags;
+  bool writes_errno;
 
   modref_summary ();
   ~modref_summary ();
   void dump (FILE *);
-  bool useful_p (int ecf_flags);
-  bool writes_errno;
+  bool useful_p (int ecf_flags, bool check_flags = true);
 };
 
 modref_summary *get_modref_function_summary (cgraph_node *func);

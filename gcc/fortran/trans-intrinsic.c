@@ -7929,6 +7929,35 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
       && strcmp (e->ref->u.c.component->name, "_data") == 0)
     sym = e->symtree->n.sym;
 
+  if ((gfc_option.rtcheck & GFC_RTCHECK_POINTER)
+      && e
+      && (e->expr_type == EXPR_VARIABLE || e->expr_type == EXPR_FUNCTION))
+    {
+      symbol_attribute attr;
+      char *msg;
+
+      attr = gfc_expr_attr (e);
+      if (attr.allocatable)
+	msg = xasprintf ("Allocatable argument '%s' is not allocated",
+			 e->symtree->n.sym->name);
+      else if (attr.pointer)
+	msg = xasprintf ("Pointer argument '%s' is not associated",
+			 e->symtree->n.sym->name);
+      else
+	goto end_arg_check;
+
+      argse.descriptor_only = 1;
+      gfc_conv_expr_descriptor (&argse, actual->expr);
+      tree temp = gfc_conv_descriptor_data_get (argse.expr);
+      tree cond = fold_build2_loc (input_location, EQ_EXPR,
+				   logical_type_node, temp,
+				   fold_convert (TREE_TYPE (temp),
+						 null_pointer_node));
+      gfc_trans_runtime_check (true, false, cond, &argse.pre, &e->where, msg);
+      free (msg);
+    }
+ end_arg_check:
+
   argse.data_not_needed = 1;
   if (gfc_is_class_array_function (e))
     {

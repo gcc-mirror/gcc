@@ -11746,7 +11746,7 @@ s390_output_split_stack_data (rtx parm_block, rtx call_done,
   rtx ops[] = { parm_block, call_done };
 
   switch_to_section (targetm.asm_out.function_rodata_section
-		     (current_function_decl));
+		     (current_function_decl, false));
 
   if (TARGET_64BIT)
     output_asm_insn (".align\t8", NULL);
