@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 10.1.0\n"
+"Project-Id-Version: gcc 10.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2020-07-20 18:08+0000\n"
-"PO-Revision-Date: 2020-05-08 22:14+0800\n"
+"PO-Revision-Date: 2020-11-19 00:56+0800\n"
 "Last-Translator: Yi-Jyun Pan <pan93412@gmail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@lists.linux.org.tw>\n"
 "Language: zh_TW\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.4.1\n"
 
 #: cfgrtl.c:2748
 msgid "flow control insn inside a basic block"
@@ -134,7 +134,7 @@ msgstr "請參閱 %s 取得指引。\n"
 #: diagnostic.c:602
 #, c-format
 msgid "compilation terminated.\n"
-msgstr "編譯插斷。\n"
+msgstr "編譯終止。\n"
 
 #: diagnostic.c:663
 msgid "In file included from"
