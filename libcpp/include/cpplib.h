@@ -528,6 +528,9 @@ struct cpp_options
        one.  */
     bool phony_targets;
 
+    /* Generate dependency info for modules.  */
+    bool modules;
+
     /* If true, no dependency is generated on the main file.  */
     bool ignore_main_file;
 
