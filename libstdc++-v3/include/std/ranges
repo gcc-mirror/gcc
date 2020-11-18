@@ -2128,9 +2128,9 @@ namespace views
 
 	    for (; _M_outer != ranges::end(_M_parent->_M_base); ++_M_outer)
 	      {
-		auto& inner = __update_inner(*_M_outer);
-		_M_inner = ranges::begin(inner);
-		if (_M_inner != ranges::end(inner))
+		auto& __inner = __update_inner(*_M_outer);
+		_M_inner = ranges::begin(__inner);
+		if (_M_inner != ranges::end(__inner))
 		  return;
 	      }
 
@@ -2211,10 +2211,12 @@ namespace views
 	  operator*() const
 	  { return *_M_inner; }
 
-	  constexpr _Outer_iter
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3500. join_view::iterator::operator->() is bogus
+	  constexpr _Inner_iter
 	  operator->() const
-	    requires __detail::__has_arrow<_Outer_iter>
-	      && copyable<_Outer_iter>
+	    requires __detail::__has_arrow<_Inner_iter>
+	      && copyable<_Inner_iter>
 	  { return _M_inner; }
 
 	  constexpr _Iterator&
