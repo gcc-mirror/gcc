@@ -89,6 +89,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@DARWIN_DYNAMIC_LOOKUP_TRUE@am__append_1 = -Wl,-undefined,dynamic_lookup
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -382,7 +383,7 @@ CPPFLAGS_FOR_C_FAMILY = -I $(srcdir)/../gcc/c-family \
 
 CPPFLAGS_FOR_C = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/c
 CPPFLAGS_FOR_CXX = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/cp
-AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility)
+AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility) $(am__append_1)
 # Can be simplified when libiberty becomes a normal convenience library.
 libiberty_normal = ../libiberty/libiberty.a
 libiberty_noasan = ../libiberty/noasan/libiberty.a

@@ -101,6 +101,12 @@ AC_CACHE_CHECK([for socket libraries], libcc1_cv_lib_sockets,
 ])
 LIBS="$LIBS $libcc1_cv_lib_sockets"
 
+case "$host" in
+  *-*-darwin*) darwin_dynamic_lookup=yes ;;
+  *) darwin_dynamic_lookup=no ;;
+esac
+AM_CONDITIONAL(DARWIN_DYNAMIC_LOOKUP, test $darwin_dynamic_lookup = yes)
+
 # If any of these functions are missing, simply don't bother building
 # this plugin.
 GCC_ENABLE_PLUGINS
