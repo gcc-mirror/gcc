@@ -167,6 +167,11 @@ struct _slp_tree {
 
   int vertex;
 
+  /* If not NULL this is a cached failed SLP discovery attempt with
+     the lanes that failed during SLP discovery as 'false'.  This is
+     a copy of the matches array.  */
+  bool *failed;
+
   /* Allocate from slp_tree_pool.  */
   static void *operator new (size_t);
 
