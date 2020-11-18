@@ -710,6 +710,7 @@ subdirs
 dollar
 gcc_tooldir
 enable_lto
+DO_LINK_SERIALIZATION
 DO_LINK_MUTEX
 MAINT
 zlibinc
@@ -1013,6 +1014,7 @@ with_gc
 with_system_zlib
 enable_maintainer_mode
 enable_link_mutex
+enable_link_serialization
 enable_version_specific_runtime_libs
 enable_plugin
 enable_host_shared
@@ -1768,6 +1770,10 @@ Optional Features:
                           sometimes confusing) to the casual installer
   --enable-link-mutex     avoid linking multiple front-ends at once to avoid
                           thrashing on the build machine
+  --enable-link-serialization
+                          avoid linking multiple GCC front-ends at once using
+                          make dependencies to avoid thrashing on the build
+                          machine
   --enable-version-specific-runtime-libs
                           specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -19030,7 +19036,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19033 "configure"
+#line 19039 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19136,7 +19142,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19139 "configure"
+#line 19145 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -30573,6 +30579,31 @@ else
 fi
 
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to serialize linking of multiple front-ends" >&5
+$as_echo_n "checking whether to serialize linking of multiple front-ends... " >&6; }
+  # Check whether --enable-link-serialization was given.
+if test "${enable_link_serialization+set}" = set; then :
+  enableval=$enable_link_serialization; do_link_serialization=$enableval
+else
+  do_link_serialization=no
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $do_link_serialization" >&5
+$as_echo "$do_link_serialization" >&6; }
+
+case "$do_link_serialization" in
+  yes)
+    DO_LINK_SERIALIZATION=1;;
+  [1-9] | [1-9][0-9] | [1-9][0-9][0-9])
+    DO_LINK_SERIALIZATION=$do_link_serialization;;
+  no)
+    DO_LINK_SERIALIZATION=;;
+  *)
+    as_fn_error $? "bad value ${do_link_serialization} given for --enable-link-serialization" "$LINENO" 5 ;;
+esac
+
+
 # --------------
 # Language hooks
 # --------------
@@ -30731,6 +30762,43 @@ do
 		x="$x $lang.$t"
 	done
 	echo "lang.$t: $x" >> Make-hooks
+done
+
+echo "ifeq (\$(DO_LINK_SERIALIZATION),)" >> Make-hooks
+echo "SERIAL_LIST =" >> Make-hooks
+echo else >> Make-hooks
+lang_cnt=0
+lang_list=
+prev=c.serial
+serialization_languages=c
+for lang in $all_selected_languages
+do
+	test $lang = c && continue
+	if test $lang = lto; then
+		serialization_languages="$serialization_languages lto1 lto2"
+	else
+		serialization_languages="$serialization_languages $lang"
+	fi
+done
+for lang in $serialization_languages
+do
+	test $lang = c && continue
+	lang_cnt=`expr $lang_cnt + 1`
+	lang_list=" $prev$lang_list"
+	prev=${lang}.serial
+done
+echo "SERIAL_LIST = \$(wordlist \$(DO_LINK_SERIALIZATION),$lang_cnt,$lang_list)" >> Make-hooks
+echo endif >> Make-hooks
+echo "SERIAL_COUNT = `expr $lang_cnt + 1`" >> Make-hooks
+echo "INDEX.c = 0" >> Make-hooks
+lang_idx=1
+for lang in $serialization_languages
+do
+	test $lang = c && continue
+	echo "$lang.prev: \$(word $lang_cnt,\$(SERIAL_LIST))" >> Make-hooks
+	echo "INDEX.$lang = $lang_idx" >> Make-hooks
+	lang_cnt=`expr $lang_cnt - 1`
+	lang_idx=`expr $lang_idx + 1`
 done
 
 # --------

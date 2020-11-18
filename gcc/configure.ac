@@ -6676,6 +6676,29 @@ else
 fi
 AC_SUBST(DO_LINK_MUTEX)
 
+dnl Whether to prevent multiple GCC front-ends from linking at the same time
+
+AC_MSG_CHECKING([whether to serialize linking of multiple front-ends])
+  AC_ARG_ENABLE(link-serialization,
+[AS_HELP_STRING([--enable-link-serialization],
+		[avoid linking multiple GCC front-ends at once using make
+		 dependencies to avoid thrashing on the build machine])],
+      do_link_serialization=$enableval,
+      do_link_serialization=no)
+AC_MSG_RESULT($do_link_serialization)
+
+case "$do_link_serialization" in
+  yes)
+    DO_LINK_SERIALIZATION=1;;
+  [[1-9]] | [[1-9]][[0-9]] | [[1-9]][[0-9]][[0-9]])
+    DO_LINK_SERIALIZATION=$do_link_serialization;;
+  no)
+    DO_LINK_SERIALIZATION=;;
+  *)
+    AC_MSG_ERROR(bad value ${do_link_serialization} given for --enable-link-serialization) ;;
+esac
+AC_SUBST(DO_LINK_SERIALIZATION)
+
 # --------------
 # Language hooks
 # --------------
@@ -6834,6 +6857,43 @@ do
 		x="$x $lang.$t"
 	done
 	echo "lang.$t: $x" >> Make-hooks
+done
+
+echo "ifeq (\$(DO_LINK_SERIALIZATION),)" >> Make-hooks
+echo "SERIAL_LIST =" >> Make-hooks
+echo else >> Make-hooks
+lang_cnt=0
+lang_list=
+prev=c.serial
+serialization_languages=c
+for lang in $all_selected_languages
+do
+	test $lang = c && continue
+	if test $lang = lto; then
+		serialization_languages="$serialization_languages lto1 lto2"
+	else
+		serialization_languages="$serialization_languages $lang"
+	fi
+done
+for lang in $serialization_languages
+do
+	test $lang = c && continue
+	lang_cnt=`expr $lang_cnt + 1`
+	lang_list=" $prev$lang_list"
+	prev=${lang}.serial
+done
+echo "SERIAL_LIST = \$(wordlist \$(DO_LINK_SERIALIZATION),$lang_cnt,$lang_list)" >> Make-hooks
+echo endif >> Make-hooks
+echo "SERIAL_COUNT = `expr $lang_cnt + 1`" >> Make-hooks
+echo "INDEX.c = 0" >> Make-hooks
+lang_idx=1
+for lang in $serialization_languages
+do
+	test $lang = c && continue
+	echo "$lang.prev: \$(word $lang_cnt,\$(SERIAL_LIST))" >> Make-hooks
+	echo "INDEX.$lang = $lang_idx" >> Make-hooks
+	lang_cnt=`expr $lang_cnt - 1`
+	lang_idx=`expr $lang_idx + 1`
 done
 
 # --------
