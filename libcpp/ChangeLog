@@ -1,3 +1,32 @@
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_callbacks): Add
+	user_deferred_macro & translate_include.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* include/line-map.h (enum lc_reason): Add LC_MODULE.
+	(MAP_MODULE_P): New.
+	(line_map_new_raw): Declare.
+	(linemap_enter_macro): Move declaration from internal.h
+	(linemap_module_loc, linemap_module_reparent)
+	(linemap_module_restore): Declare.
+	(linemap_lookup_macro_indec): Declare.
+	* internal.h (linemap_enter_macro): Moved to line-map.h.
+	* line-map.c (linemap_new_raw): New, broken out of ...
+	(new_linemap): ... here.  Call it.
+	(LAST_SOURCE_LINE_LOCATION): New.
+	(liemap_module_loc, linemap_module_reparent)
+	(linemap_module_restore): New.
+	(linemap_lookup_macro_index): New, broken out of ...
+	(linemap_macro_map_lookup): ... here.  Call it.
+	(linemap_dump): Add module dump.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/97858
+	* mkdeps.c (munge): Drop varadic args, we only ever use one.
+
 2020-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* expr.c (cpp_classify_number): Update diagnostic for binary

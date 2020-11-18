@@ -1,3 +1,181 @@
+2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	* config.gcc: add configure flags --with-{cpu,arch,tune}-{32,64}
+	as alias flags for --with-{cpu,arch,tune} on AArch64.
+	* doc/install.texi: Document new flags for aarch64.
+
+2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	* config.gcc: Add --with-tune to AArch64 configure flags.
+
+2020-11-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/91029
+	* range-op.cc (operator_trunc_mod::op1_range): New.
+
+2020-11-17  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-icf.c (sem_function::hash_stmt): Fix conditional on
+	variably_modified_type_p.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (cache_integer_cst): Add defaulted might_duplicate parm.
+	* tree.c (cache_integer_cst): Return the integer cst, add
+	might_duplicate parm to permit finding a small duplicate.
+
+2020-11-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/83072
+	* range-op.cc (wi_optimize_and_or): Remove zero from IOR range when
+	mask is non-zero.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/float.h (CR_DECIMAL_DIG): Also define for
+	[__STDC_WANT_IEC_60559_EXT__].
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/float.h [__STDC_VERSION__ > 201710L] (FLT_IS_IEC_60559,
+	DBL_IS_IEC_60559, LDBL_IS_IEC_60559): New macros.
+
+2020-11-17  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/96791
+	* mode-classes.def: Add MODE_OPAQUE.
+	* machmode.def: Add OPAQUE_MODE.
+	* tree.def: Add OPAQUE_TYPE for types that will use
+	MODE_OPAQUE.
+	* doc/generic.texi: Document OPAQUE_TYPE.
+	* doc/rtl.texi: Document MODE_OPAQUE.
+	* machmode.h: Add OPAQUE_MODE_P().
+	* genmodes.c (complete_mode): Add MODE_OPAQUE.
+	(opaque_mode): New function.
+	* tree.c (tree_code_size): Add OPAQUE_TYPE.
+	* tree.h: Add OPAQUE_TYPE_P().
+	* stor-layout.c (int_mode_for_mode): Treat MODE_OPAQUE modes
+	like BLKmode.
+	* ira.c (find_moveable_pseudos): Treat MODE_OPAQUE modes more
+	like integer/float modes here.
+	* dbxout.c (dbxout_type): Treat OPAQUE_TYPE like VOID_TYPE.
+	* tree-pretty-print.c (dump_generic_node): Treat OPAQUE_TYPE
+	like like other types.
+
+2020-11-17  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c: Include data-streamer.h and alias.h.
+	(sem_function::sem_function): Initialize memory_access_types
+	and m_alias_sets_hash.
+	(sem_function::hash_stmt): For memory accesses and when going to
+	do lto streaming add base and ref types into memory_access_types.
+	(sem_item_optimizer::write_summary): Stream memory access types.
+	(sem_item_optimizer::read_section): Likewise and also iniitalize
+	m_alias_sets_hash.
+	(sem_item_optimizer::execute): Call
+	sem_item_optimizer::update_hash_by_memory_access_type.
+	(sem_item_optimizer::update_hash_by_memory_access_type): Updat.
+	* ipa-icf.h (sem_function): Add memory_access_types and
+	m_alias_sets_hash.
+
+2020-11-17  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/97857
+	* ipa-devirt.c (odr_based_tbaa_p): Do not ICE when
+	odr_hash is not initialized
+	* ipa-utils.h (type_with_linkage_p): Do not sanity check
+	CXX_ODR_P.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Set
+	CXX_ODR_P according to the canonical type.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_MAIN_FILE)
+	(LANG_HOOKS_PREPROCESS_OPTIONS, LANG_HOOKS_PREPROCESS_UNDEF)
+	(LANG_HOOKS_PREPROCESS_TOKEN): New.
+	(LANG_HOOKS_INITIALIZER): Add them.
+	* langhooks.h (struct lang_hooks): Add preprocess_main_file,
+	preprocess_options, preprocess_undef, preprocess_token hooks.  Add
+	enum PT_flags.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/97693
+	* tree-vect-stmts.c (vectorizable_call): Pass the required vectype
+	to vect_get_vec_defs_for_operand.
+
+2020-11-17  Liu Hao  <lh_mouse@126.com>
+
+	* config/i386/msformat-c.c: Add more length modifiers.
+
+2020-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR driver/97574
+	* gcc.c (convert_filename): Don't add suffix to things that are
+	not files.
+	(not_actual_file_p): Use supplied argument.
+
+2020-11-17  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* final.c (final_scan_insn_1): Set jump table relocatable as the
+	second argument of targetm.asm_out.function_rodata_section.
+	* output.h (default_function_rodata_section,
+	default_no_function_rodata_section): Add the second argument to the
+	declarations.
+	* target.def (function_rodata_section): Change the doc and add
+	the second argument.
+	* doc/tm.texi: Regenerate.
+	* varasm.c (jumptable_relocatable): Implement.
+	(default_function_rodata_section): Add the second argument
+	and the support for relocatable read only sections.
+	(default_no_function_rodata_section): Add the second argument.
+	(function_mergeable_rodata_prefix): Set the second argument to false.
+	* config/mips/mips.c (mips_function_rodata_section): Add the second
+	arugment and set it to false.
+	* config/s390/s390.c (targetm.asm_out.function_rodata_section): Set
+	the second argument to false.
+	* config/s390/s390.md: Likewise.
+
+2020-11-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/97194
+	* config/i386/i386-expand.c (ix86_expand_vector_set_var): New function.
+	* config/i386/i386-protos.h (ix86_expand_vector_set_var): New Decl.
+	* config/i386/predicates.md (vec_setm_operand): New predicate,
+	true for const_int_operand or register_operand under TARGET_AVX2.
+	* config/i386/sse.md (vec_set<mode>): Support both constant
+	and variable index vec_set.
+
+2020-11-17  Martin Sebor  <msebor@redhat.com>
+
+	* tree-ssa-uninit.c (maybe_warn_operand): Call is_empty_type.
+	* tree.c (default_is_empty_type): Rename...
+	(is_empty_type): ...to this.
+	* tree.h (is_empty_type): Declare.
+
+2020-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95673
+	* tree-ssa-strlen.c (used_only_for_zero_equality): Rename...
+	(use_in_zero_equality): ...to this.  Add a default argument.
+	(handle_builtin_memcmp): Adjust to the name change above.
+	(handle_builtin_string_cmp): Same.
+	(maybe_warn_pointless_strcmp): Same.  Pass in an explicit argument.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/float.h (DEC32_SNAN, DEC64_SNAN, DEC128_SNAN): New C2x
+	macros.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* ginclude/float.h (INFINITY, NAN, FLT_SNAN, DBL_SNAN, LDBL_SNAN)
+	(FLT16_SNAN, FLT32_SNAN, FLT64_SNAN, FLT128_SNAN, FLT32X_SNAN)
+	(FLT64X_SNAN, FLT128X_SNAN, DEC_INFINITY, DEC_NAN): New C2x
+	macros.
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document inff.
+
 2020-11-17  Armin Brauns via Gcc-patches  <gcc-patches@gcc.gnu.org>
 
 	* gcc.c: Document %T spec file directive.
