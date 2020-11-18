@@ -10691,9 +10691,10 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
   switch (builtin_index)
     {
     case BUILT_IN_ISINF:
-      if (!HONOR_INFINITIES (arg))
+      if (tree_expr_infinite_p (arg))
+	return omit_one_operand_loc (loc, type, integer_one_node, arg);
+      if (!tree_expr_maybe_infinite_p (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
-
       return NULL_TREE;
 
     case BUILT_IN_ISINF_SIGN:
@@ -10729,14 +10730,16 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
       }
 
     case BUILT_IN_ISFINITE:
-      if (!HONOR_NANS (arg)
-	  && !HONOR_INFINITIES (arg))
+      if (tree_expr_finite_p (arg))
 	return omit_one_operand_loc (loc, type, integer_one_node, arg);
-
+      if (tree_expr_nan_p (arg) || tree_expr_infinite_p (arg))
+	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
       return NULL_TREE;
 
     case BUILT_IN_ISNAN:
-      if (!HONOR_NANS (arg))
+      if (tree_expr_nan_p (arg))
+	return omit_one_operand_loc (loc, type, integer_one_node, arg);
+      if (!tree_expr_maybe_nan_p (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
 
       {
@@ -10810,7 +10813,7 @@ fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
 		     arg, build_real (type, r));
   res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp, fp_normal, res);
 
-  if (HONOR_INFINITIES (mode))
+  if (tree_expr_maybe_infinite_p (arg))
     {
       real_inf (&r);
       tmp = fold_build2_loc (loc, EQ_EXPR, integer_type_node, arg,
@@ -10819,7 +10822,7 @@ fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
 			 fp_infinite, res);
     }
 
-  if (HONOR_NANS (mode))
+  if (tree_expr_maybe_nan_p (arg))
     {
       tmp = fold_build2_loc (loc, ORDERED_EXPR, integer_type_node, arg, arg);
       res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp, res, fp_nan);
@@ -10867,12 +10870,15 @@ fold_builtin_unordered_cmp (location_t loc, tree fndecl, tree arg0, tree arg1,
 
   if (unordered_code == UNORDERED_EXPR)
     {
-      if (!HONOR_NANS (arg0))
+      if (tree_expr_nan_p (arg0) || tree_expr_nan_p (arg1))
+	return omit_two_operands_loc (loc, type, integer_one_node, arg0, arg1);
+      if (!tree_expr_maybe_nan_p (arg0) && !tree_expr_maybe_nan_p (arg1))
 	return omit_two_operands_loc (loc, type, integer_zero_node, arg0, arg1);
       return fold_build2_loc (loc, UNORDERED_EXPR, type, arg0, arg1);
     }
 
-  code = HONOR_NANS (arg0) ? unordered_code : ordered_code;
+  code = (tree_expr_maybe_nan_p (arg0) || tree_expr_maybe_nan_p (arg1))
+	 ? unordered_code : ordered_code;
   return fold_build1_loc (loc, TRUTH_NOT_EXPR, type,
 		      fold_build2_loc (loc, code, type, arg0, arg1));
 }
