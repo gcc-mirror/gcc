@@ -35,17 +35,6 @@
 #ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
 #include <unistd.h>
 #include <sys/syscall.h>
-
-# if defined(SYS_clock_gettime_time64) \
-  && SYS_clock_gettime_time64 != SYS_clock_gettime
-  // Userspace knows about the new time64 syscalls, so it's possible that
-  // userspace has also updated timespec to use a 64-bit tv_sec.
-  // The SYS_clock_gettime syscall still uses the old definition
-  // of timespec where tv_sec is 32 bits, so define a type that matches that.
-  struct syscall_timespec { long tv_sec; long tv_nsec; };
-# else
-  using syscall_timespec = ::timespec;
-# endif
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -63,12 +52,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     system_clock::now() noexcept
     {
 #ifdef _GLIBCXX_USE_CLOCK_REALTIME
+      timespec tp;
       // -EINVAL, -EFAULT
 #ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
-      syscall_timespec tp;
       syscall(SYS_clock_gettime, CLOCK_REALTIME, &tp);
 #else
-      timespec tp;
       clock_gettime(CLOCK_REALTIME, &tp);
 #endif
       return time_point(duration(chrono::seconds(tp.tv_sec)
@@ -92,12 +80,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     steady_clock::now() noexcept
     {
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
+      timespec tp;
       // -EINVAL, -EFAULT
 #ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
-      syscall_timespec tp;
       syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &tp);
 #else
-      timespec tp;
       clock_gettime(CLOCK_MONOTONIC, &tp);
 #endif
       return time_point(duration(chrono::seconds(tp.tv_sec)

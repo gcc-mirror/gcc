@@ -1,3 +1,138 @@
+2020-11-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr91029.c: New.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97877
+	* g++.dg/lookup/pr97877.C: New.
+
+2020-11-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr83072.c: New.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cr-decimal-dig-3.c: New test.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-float-6.c, gcc.dg/c2x-float-10.c: New tests.
+
+2020-11-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/pr25376.c: Allow .opd section.
+
+2020-11-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/31799
+	* gcc.target/i386/pr31799.c: New test.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cond_cnot_1.c: Remove XFAIL.
+	* gcc.target/aarch64/sve/cond_unary_1.c: Likewise.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/97693
+	* gcc.dg/vect/pr97693.c: New test.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/slp-46.c: XFAIL test for SLP on vect_load_lanes targets.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/aligned-section-anchors-nest-1.c: XFAIL alignment
+	test if vect_element_align_preferred.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-subgroups-3.c: XFAIL for variable-length vectors.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr65947-8.c: Expect the loop to be vectorized for SVE.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr97678.c: XFAIL test for SLP vectorization
+	for variable-length vectors.
+	* gcc.dg/vect/pr97835.c: Likewise.
+	* gcc.dg/vect/slp-49.c: Likewise.
+	* gcc.dg/vect/vect-outer-slp-1.c: Likewise.
+	* gcc.dg/vect/vect-outer-slp-2.c: Likewise.
+	* gcc.dg/vect/vect-outer-slp-3.c: Likewise.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/slp-reduc-4.c: XFAIL test for SLP vectorization
+	for variable-length SVE.
+	* gcc.dg/vect/slp-reduc-7.c: Likewise.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-43.c: Remove XFAIL for vect_variable_length.
+
+2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr91750.c: Allow "[]," inside a vector(...) lane count.
+
+2020-11-17  Liu Hao  <lh_mouse@126.com>
+
+	* gcc.dg/format/ms_c99-printf-3.c: Update tests.
+
+2020-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90628
+	* gcc.dg/builtin-arith-overflow-4.c: New test.
+
+2020-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/pr59776.c (foo): Use noipa attribute instead of
+	noinline, noclone.
+
+2020-11-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx2-vec-set-1.c: New test.
+	* gcc.target/i386/avx2-vec-set-2.c: New test.
+	* gcc.target/i386/avx512bw-vec-set-1.c: New test.
+	* gcc.target/i386/avx512bw-vec-set-2.c: New test.
+	* gcc.target/i386/avx512f-vec-set-2.c: New test.
+	* gcc.target/i386/avx512vl-vec-set-2.c: New test.
+
+2020-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/95673
+	* gcc.dg/Wstring-compare-3.c: New test.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/dfp/c2x-float-dfp-7.c, gcc.dg/dfp/c2x-float-dfp-8.c: New
+	tests.
+	* gcc.dg/c2x-float-no-dfp-3.c: Also check that DEC32_SNAN,
+	DEC64_SNAN and DEC128_SNAN are not defined.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_inff): New.
+	* gcc.dg/c11-float-4.c, gcc.dg/c11-float-5.c,
+	gcc.dg/c11-float-dfp-2.c, gcc.dg/c2x-float-2.c,
+	gcc.dg/c2x-float-3.c, gcc.dg/c2x-float-4.c, gcc.dg/c2x-float-5.c,
+	gcc.dg/c2x-float-6.c, gcc.dg/c2x-float-7.c, gcc.dg/c2x-float-8.c,
+	gcc.dg/c2x-float-9.c, gcc.dg/c2x-float-no-dfp-3.c,
+	gcc.dg/c2x-float-no-dfp-4.c, gcc.dg/dfp/c2x-float-dfp-4.c,
+	gcc.dg/dfp/c2x-float-dfp-5.c, gcc.dg/dfp/c2x-float-dfp-6.c,
+	gcc.dg/torture/float128-nan-floath.c,
+	gcc.dg/torture/float128x-nan-floath.c,
+	gcc.dg/torture/float16-nan-floath.c,
+	gcc.dg/torture/float32-nan-floath.c,
+	gcc.dg/torture/float32x-nan-floath.c,
+	gcc.dg/torture/float64-nan-floath.c,
+	gcc.dg/torture/float64x-nan-floath.c,
+	gcc.dg/torture/floatn-nan-floath.h: New tests.
+
 2020-11-16  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR rtl-optimization/92180

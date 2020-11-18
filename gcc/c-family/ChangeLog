@@ -1,3 +1,44 @@
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.h (enum c_tree_index): Reorder to place lazy fields
+	after newly-added CTI_MODULE_HWM.
+
+2020-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.c (builtin_define_float_constants): Define
+	"*_IS_IEC_60559__" macros.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-lex.c: #include "langhooks.h".
+	(cb_undef): Maybe call preprocess_undef lang hook.
+	* c-opts.c (c_common_post_options): Maybe call preprocess_options
+	lang hook.
+	(push_command_line_include): Maybe call preprocess_main_file lang
+	hook.
+	(cb_file_change): Likewise.
+	* c-ppoutput.c: #include "langhooks.h.
+	(scan_translation_unit): Maybe call preprocess_token lang hook.
+	(class do_streamer): New, derive from token_streamer.
+	(directives_only_cb): Data pointer is do_streamer, call
+	preprocess_token lang hook.
+	(scan_translation_unit_directives_only): Use do_streamer.
+	(print_line_1): Move src_line recording to after string output.
+	(cb_undef): Maybe call preprocess_undef lang hook.
+
+2020-11-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ppoutput.c (scan_translation_unit): Use token_streamer, remove
+	code duplicating that functionality.
+
+2020-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90628
+	* c-common.c (check_builtin_function_arguments)
+	<case BUILT_IN_ADD_OVERFLOW>: Diagnose when last argument is pointer
+	to _Atomic.  For the TYPE_READONLY case, adjust message to be usable
+	for more builtins and argument positions.
+
 2020-11-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR objc/97854

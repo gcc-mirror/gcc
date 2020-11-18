@@ -1,3 +1,30 @@
+2020-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93421
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Fail if struct
+	timespec isn't compatible with SYS_clock_gettime.
+	* configure: Regenerate.
+	* src/c++11/chrono.cc: Revert changes for time64 compatibility.
+	Add static_assert instead.
+	* src/c++11/futex.cc (_M_futex_wait_until_steady): Assume
+	SYS_clock_gettime can use struct timespec.
+
+2020-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97869
+	* include/precompiled/stdc++.h: Include <coroutine>.
+	* include/std/version (__cpp_lib_span): Check __cpp_lib_concepts
+	before defining.
+
+2020-11-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/97828
+	* include/bits/ranges_algo.h (__search_n_fn::operator()): Check
+	random_access_iterator before using the backtracking
+	implementation.  When the backwards scan fails prematurely,
+	reset __remainder appropriately.
+	* testsuite/25_algorithms/search_n/97828.cc: New test.
+
 2020-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/Makefile.am (libstdc++-symbols.ver-sun): Remove -lrt from

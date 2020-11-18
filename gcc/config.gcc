@@ -731,6 +731,9 @@ case ${target} in
   extra_options="$extra_options rpath.opt dragonfly.opt"
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
+  d_target_objs="${d_target_objs} dragonfly-d.o"
+  tmake_file="${tmake_file} t-dragonfly"
+  target_has_targetdm=yes
   ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later
@@ -4083,9 +4086,26 @@ fi
 supported_defaults=
 case "${target}" in
 	aarch64*-*-*)
-		supported_defaults="abi cpu arch"
-		for which in cpu arch; do
-
+		supported_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64"
+		if test x$with_cpu_64 != x && test x$with_cpu = x; then
+			with_cpu=$with_cpu_64
+		fi
+		if test x$with_cpu_32 != x && test x$with_cpu = x; then
+			with_cpu=$with_cpu_32
+		fi
+		if test x$with_arch_64 != x && test x$with_arch = x; then
+			with_arch=$with_arch_64
+		fi
+		if test x$with_arch_32 != x && test x$with_arch = x; then
+			with_arch=$with_arch_32
+		fi
+		if test x$with_tune_64 != x && test x$with_tune = x; then
+			with_tune=$with_tune_64
+		fi
+		if test x$with_tune_32 != x && test x$with_tune = x; then
+			with_tune=$with_tune_32
+		fi
+		for which in cpu arch tune; do
 			eval "val=\$with_$which"
 			base_val=`echo $val | sed -e 's/\+.*//'`
 			ext_val=`echo $val | sed -e 's/[a-z0-9.-]\+//'`
@@ -4524,12 +4544,27 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute"
+		supported_defaults="abi arch tune riscv_attribute isa_spec"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
 		riscv64*) xlen=64 ;;
 		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
+		esac
+
+		case "${with_isa_spec}" in
+		""|default|2.2)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
+			;;
+		20191213 | 201912)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20191213"
+			;;
+		20190608 | 201906)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20190608"
+			;;
+		*)
+			echo "--with-isa-spec only accept 2.2, 20191213, 201912, 20190608 or 201906" 1>&2
+			exit 1
 		esac
 
 		case "${with_riscv_attribute}" in

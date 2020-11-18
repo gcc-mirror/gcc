@@ -112,7 +112,7 @@ struct _cpp_file
   /* If this file is implicitly preincluded.  */
   bool implicit_preinclude : 1;
 
-  /* Is a C++ Module header unit.  */
+  /* > 0: Known C++ Module header unit, <0: known not.  ==0, unknown  */
   int header_unit : 2;
 };
 

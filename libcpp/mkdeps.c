@@ -321,25 +321,26 @@ deps_add_vpath (class mkdeps *d, const char *vpath)
     }
 }
 
-/* Add a new module dependency.  M is the module name, with P being
-   any partition name thereof (might be NULL).  If CMI is NULL, this
-   is an import dependency.  Otherwise, this is an output dependency
-   specifying CMI as the output file, of type IS_HEADER_UNIT.  */
+/* Add a new module target (there can only be one).  M is the module
+   name.   */
 
 void
-deps_add_module (struct mkdeps *d, const char *m,
-		 const char *cmi, bool is_header_unit)
+deps_add_module_target (struct mkdeps *d, const char *m,
+			const char *cmi, bool is_header_unit)
 {
-  m = xstrdup (m);
+  gcc_assert (!d->module_name);
+  
+  d->module_name = xstrdup (m);
+  d->is_header_unit = is_header_unit;
+  d->cmi_name = xstrdup (cmi);
+}
 
-  if (cmi)
-    {
-      d->module_name = m;
-      d->is_header_unit = is_header_unit;
-      d->cmi_name = xstrdup (cmi);
-    }
-  else
-    d->modules.push (m);
+/* Add a new module dependency.  M is the module name.  */
+
+void
+deps_add_module_dep (struct mkdeps *d, const char *m)
+{
+  d->modules.push (xstrdup (m));
 }
 
 /* Write NAME, with a leading space to FP, a Makefile.  Advance COL as

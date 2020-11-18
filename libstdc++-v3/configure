@@ -21661,19 +21661,54 @@ main ()
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_has_clock_monotonic_syscall=yes
+  ac_has_clock_gettime_syscall=yes
 else
-  ac_has_clock_monotonic_syscall=no
+  ac_has_clock_gettime_syscall=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_clock_monotonic_syscall" >&5
-$as_echo "$ac_has_clock_monotonic_syscall" >&6; }
-	if test x"$ac_has_clock_monotonic_syscall" = x"yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_clock_gettime_syscall" >&5
+$as_echo "$ac_has_clock_gettime_syscall" >&6; }
+	if test x"$ac_has_clock_gettime_syscall" = x"yes"; then
 
 $as_echo "#define _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL 1" >>confdefs.h
 
 	  ac_has_clock_monotonic=yes
 	  ac_has_clock_realtime=yes
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct timespec that matches syscall" >&5
+$as_echo_n "checking for struct timespec that matches syscall... " >&6; }
+	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <time.h>
+	     #include <sys/syscall.h>
+
+int
+main ()
+{
+#ifdef SYS_clock_gettime64
+	     #if SYS_clock_gettime64 != SYS_clock_gettime
+	     // We need to use SYS_clock_gettime and libc appears to
+	     // also know about the SYS_clock_gettime64 syscall.
+	     // Check that userspace doesn't use time64 version of timespec.
+	     static_assert(sizeof(timespec::tv_sec) == sizeof(long),
+	       "struct timespec must be compatible with SYS_clock_gettime");
+	     #endif
+	     #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_timespec_matches_syscall=yes
+else
+  ac_timespec_matches_syscall=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_timespec_matches_syscall" >&5
+$as_echo "$ac_timespec_matches_syscall" >&6; }
+	  if test x"$ac_timespec_matches_syscall" = no; then
+	    as_fn_error $? "struct timespec is not compatible with SYS_clock_gettime, please report a bug to http://gcc.gnu.org/bugzilla" "$LINENO" 5
+	  fi
 	fi;;
     esac
   fi

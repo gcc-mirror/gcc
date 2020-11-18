@@ -22,6 +22,7 @@ cmd/go/internal/work
 cmd/internal/buildid
 cmd/internal/edit
 cmd/internal/objabi
+cmd/internal/pkgpath
 cmd/internal/test2json
 compress/bzip2
 compress/flate

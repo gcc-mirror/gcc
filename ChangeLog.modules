@@ -1,5 +1,11 @@
 2020-11-18  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk 92648faa1cb
+	08-cpp-mkdeps.diff
+	05-cpp-files.diff
+	04a-cpp-lexer.diff
+	32-aix-fixincl.diff
+
 	Merge trunk d3ae802402b
 	01-langhooks.diff
 	02-cpp-line-maps.diff

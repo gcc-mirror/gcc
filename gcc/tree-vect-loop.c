@@ -7593,6 +7593,17 @@ vectorizable_lc_phi (loop_vec_info loop_vinfo,
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      /* Deal with copies from externs or constants that disguise as
+	 loop-closed PHI nodes (PR97886).  */
+      if (slp_node
+	  && !vect_maybe_update_slp_op_vectype (SLP_TREE_CHILDREN (slp_node)[0],
+						SLP_TREE_VECTYPE (slp_node)))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "incompatible vector types for invariants\n");
+	  return false;
+	}
       STMT_VINFO_TYPE (stmt_info) = lc_phi_info_type;
       return true;
     }

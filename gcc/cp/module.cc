@@ -19344,12 +19344,13 @@ preprocessed_module (cpp_reader *reader)
 
 	  if (module->is_direct ())
 	    {
-	      const char *path = NULL;
 	      if (module->is_module ()
 		  && (module->is_interface () || module->is_partition ()))
-		path = maybe_add_cmi_prefix (module->filename);
-	      deps_add_module (deps, module->get_flatname (),
-			       path, module->is_header());
+		deps_add_module_target (deps, module->get_flatname (),
+					maybe_add_cmi_prefix (module->filename),
+					module->is_header());
+	      else
+		deps_add_module_dep (deps, module->get_flatname ());
 	    }
 	}
     }
