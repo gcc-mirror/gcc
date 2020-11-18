@@ -7063,8 +7063,6 @@ extern void import_module (module_state *, location_t, bool export_p,
 			   tree attr, cpp_reader *);
 extern void declare_module (module_state *, location_t, bool export_p,
 			    tree attr, cpp_reader *);
-
-extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
 extern void init_modules (cpp_reader *);
 extern void fini_modules ();
 extern void maybe_check_all_macros (cpp_reader *);

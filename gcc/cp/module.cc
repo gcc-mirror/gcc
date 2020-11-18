@@ -18930,25 +18930,6 @@ module_add_import_initializers ()
   gcc_checking_assert (calls == num_init_calls_needed);
 }
 
-/* Track if NODE undefs an imported macro.  */
-
-void
-module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
-{
-  if (!flag_header_unit)
-    {
-      /* Turn us off.  */
-      struct cpp_callbacks *cb = cpp_get_callbacks (reader);
-      if (cb->undef == lang_hooks.preprocess_undef)
-	{
-	  cb->undef = NULL;
-	  lang_hooks.preprocess_undef = NULL;
-	}
-    }
-  if (lang_hooks.preprocess_undef)
-    module_state::undef_macro (reader, loc, node);
-}
-
 /* NAME & LEN are a preprocessed header name, possibly including the
    surrounding "" or <> characters.  Return the raw string name of the
    module to which it refers.  This will be an absolute path, or begin
@@ -19817,6 +19798,8 @@ fini_modules ()
 bool
 handle_module_option (unsigned code, const char *str, int)
 {
+  auto hdr = CMS_header;
+
   switch (opt_code (code))
     {
     case OPT_fmodule_mapper_:
@@ -19825,19 +19808,17 @@ handle_module_option (unsigned code, const char *str, int)
 
     case OPT_fmodule_header_:
       {
-	/* Look away.  Look away now.  */
-	extern cpp_options *cpp_opts;
 	if (!strcmp (str, "user"))
-	  cpp_opts->main_search = CMS_user;
+	  hdr = CMS_user;
 	else if (!strcmp (str, "system"))
-	  cpp_opts->main_search = CMS_system;
+	  hdr = CMS_system;
 	else
 	  error ("unknown header kind %qs", str);
       }
       /* Fallthrough.  */
 
     case OPT_fmodule_header:
-      flag_header_unit = 1;
+      flag_header_unit = hdr;
       flag_modules = 1;
       return true;
 
@@ -19855,18 +19836,25 @@ handle_module_option (unsigned code, const char *str, int)
 void
 module_preprocess_options (cpp_reader *reader)
 {
+  gcc_checking_assert (!lang_hooks.preprocess_undef);
   if (flag_modules)
     {
       auto *cb = cpp_get_callbacks (reader);
       
       cb->translate_include = maybe_translate_include;
       cb->user_deferred_macro = module_state::deferred_macro;
-      if (!cb->undef)
-	/* If this hook is already in use, that implementation will
-	   call the undef langhook.  */
-	cb->undef = module_cpp_undef;
-
-      cpp_get_options (reader)->module_directives = true;
+      if (flag_header_unit)
+	{
+	  /* If the preprocessor hook is already in use, that
+	     implementation will call the undef langhook.  */
+	  if (cb->undef)
+	    lang_hooks.preprocess_undef = module_state::undef_macro;
+	  else
+	    cb->undef = module_state::undef_macro;
+	}
+      auto *opt = cpp_get_options (reader);
+      opt->module_directives = true;
+      opt->main_search = cpp_main_search (flag_header_unit);
     }
 }
 

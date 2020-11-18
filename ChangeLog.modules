@@ -1,5 +1,13 @@
 2020-11-18  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_UNDEF): Do not override here.
+	* cp-tree.h (module_cpp_undef): Do not declare.
+	* module.cc (module_cpp_undef): Delete.
+	(handle_module_option): Store cpp_main_search code in flag_header_unit.
+	(module_preprocess_options): Set main_search option here.
+	Conditionally set preprocess_undef lang hook here.
+
 	libcpp/
 	* include/cpplib.h (enum cpp_main_search): Add CMS_header value.
 	* internal.h (cpp_in_system_header): Rename to ...
