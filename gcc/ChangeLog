@@ -1,3 +1,43 @@
+2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	Backported from master:
+	2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	* config.gcc: add configure flags --with-{cpu,arch,tune}-{32,64}
+	as alias flags for --with-{cpu,arch,tune} on AArch64.
+	* doc/install.texi: Document new flags for aarch64.
+
+2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	Backported from master:
+	2020-11-17  Sebastian Pop  <spop@amazon.com>
+
+	* config.gcc: Add --with-tune to AArch64 configure flags.
+
+2020-11-17  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2020-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/97535
+	* config/aarch64/aarch64.c (aarch64_expand_cpymem): Use unsigned
+	arithmetic in check.
+
+2020-11-17  Monk Chiang  <monk.chiang@sifive.com>
+
+	Backported from master:
+	2020-11-14  Monk Chiang  <monk.chiang@sifive.com>
+
+	PR target/97682
+	* config/riscv/riscv.h (RISCV_PROLOGUE_TEMP_REGNUM): Change register
+	to t0.
+	(RISCV_CALL_ADDRESS_TEMP_REGNUM): New Marco, define t1 register.
+	(RISCV_CALL_ADDRESS_TEMP): Use it for call instructions.
+	* config/riscv/riscv.c (riscv_legitimize_call_address): Use
+	RISCV_CALL_ADDRESS_TEMP.
+	(riscv_compute_frame_info): Change temporary register to t0 form t1.
+	(riscv_trampoline_init): Adjust comment.
+
 2020-11-16  Cui,Lili  <lili.cui@intel.com>
 
 	* config/i386/i386.h: Add PREFETCHW to march=broadwell.
