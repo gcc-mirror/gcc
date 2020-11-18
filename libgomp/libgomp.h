@@ -428,7 +428,7 @@ struct gomp_task_icv
   int default_device_var;
   unsigned int thread_limit_var;
   bool dyn_var;
-  bool nest_var;
+  unsigned char max_active_levels_var;
   char bind_var;
   /* Internal ICV.  */
   struct target_mem_desc *target_data;
@@ -441,13 +441,12 @@ enum gomp_target_offload_t
   GOMP_TARGET_OFFLOAD_DISABLED
 };
 
-#define gomp_supported_active_levels INT_MAX
+#define gomp_supported_active_levels UCHAR_MAX
 
 extern struct gomp_task_icv gomp_global_icv;
 #ifndef HAVE_SYNC_BUILTINS
 extern gomp_mutex_t gomp_managed_threads_lock;
 #endif
-extern unsigned long gomp_max_active_levels_var;
 extern bool gomp_cancel_var;
 extern enum gomp_target_offload_t gomp_target_offload_var;
 extern int gomp_max_task_priority_var;
