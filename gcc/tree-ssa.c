@@ -987,6 +987,12 @@ verify_phi_args (gphi *phi, basic_block bb, basic_block *definition_block)
 	  err = true;
 	}
 
+      if ((e->flags & EDGE_ABNORMAL) && TREE_CODE (op) != SSA_NAME)
+	{
+	  error ("PHI argument on abnormal edge is not SSA_NAME");
+	  err = true;
+	}
+
       if (TREE_CODE (op) == SSA_NAME)
 	{
 	  err = verify_ssa_name (op, virtual_operand_p (gimple_phi_result (phi)));
