@@ -364,15 +364,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline thread::id
     get_id() noexcept
     {
-#ifdef __GLIBC__
-      // For the GNU C library pthread_self() is usable without linking to
-      // libpthread.so but returns 0, so we cannot use it in single-threaded
-      // programs, because this_thread::get_id() != thread::id{} must be true.
-      // We know that pthread_t is an integral type in the GNU C library.
-      if (!__gthread_active_p())
-	return thread::id(1);
-#endif
+#ifdef _GLIBCXX_NATIVE_THREAD_ID
+      return thread::id(_GLIBCXX_NATIVE_THREAD_ID);
+#else
       return thread::id(__gthread_self());
+#endif
     }
 
     /// yield

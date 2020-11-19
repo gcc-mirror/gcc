@@ -238,7 +238,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	while (!_M_try_lock_and_stop(__old));
 
 #if _GLIBCXX_HAS_GTHREADS
+#ifdef _GLIBCXX_NATIVE_THREAD_ID
+	_M_requester = _GLIBCXX_NATIVE_THREAD_ID;
+#else
 	_M_requester = __gthread_self();
+#endif
 #endif
 
 	while (_M_head)
@@ -344,10 +348,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// _M_request_stop.
 
 #if _GLIBCXX_HAS_GTHREADS
+#ifdef _GLIBCXX_NATIVE_THREAD_ID
+	auto __tid = _GLIBCXX_NATIVE_THREAD_ID;
+#else
+	auto __tid = __gthread_self();
+#endif
 	// Despite appearances there is no data race on _M_requester. The only
 	// write to it happens before the callback is removed from the list,
 	// and removing it from the list happens before this read.
-	if (!__gthread_equal(_M_requester, __gthread_self()))
+	if (!__gthread_equal(_M_requester, __tid))
 	  {
 	    // Synchronize with completion of callback.
 	    __cb->_M_done.acquire();
