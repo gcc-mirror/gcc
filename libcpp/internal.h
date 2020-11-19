@@ -591,6 +591,10 @@ struct cpp_reader
   /* If non-zero, the lexer will use this location for the next token
      instead of getting a location from the linemap.  */
   location_t forced_token_location;
+
+  /* Location identifying the main source file -- intended to be line
+     zero of said file.  */
+  location_t main_loc;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -643,7 +647,8 @@ _cpp_in_system_header (cpp_reader *pfile)
 inline int
 _cpp_in_main_source_file (cpp_reader *pfile)
 {
-  return pfile->buffer->file == pfile->main_file;
+  return (!CPP_OPTION (pfile, main_search)
+	  && pfile->buffer->file == pfile->main_file);
 }
 
 /* True if NODE is a macro for the purposes of ifdef, defined etc.  */

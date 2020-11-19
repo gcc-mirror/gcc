@@ -675,8 +675,14 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
     deps_add_default_target (deps, fname);
 
   pfile->main_file
-    = _cpp_find_file (pfile, fname, &pfile->no_search_path, /*angle=*/0,
-		      _cpp_FFK_NORMAL, 0);
+    = _cpp_find_file (pfile, fname,
+		      CPP_OPTION (pfile, preprocessed) ? &pfile->no_search_path
+		      : CPP_OPTION (pfile, main_search) == CMS_user
+		      ? pfile->quote_include
+		      : CPP_OPTION (pfile, main_search) == CMS_system
+		      ? pfile->bracket_include : &pfile->no_search_path,
+		      /*angle=*/0, _cpp_FFK_NORMAL, 0);
+
   if (_cpp_find_failed (pfile->main_file))
     return NULL;
 
@@ -698,7 +704,16 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
 			     LINEMAP_LINE (last), LINEMAP_SYSP (last));
       }
 
-  return ORDINARY_MAP_FILE_NAME (LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table));
+  auto *map = LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table);
+  pfile->main_loc = MAP_START_LOCATION (map);
+
+  return ORDINARY_MAP_FILE_NAME (map);
+}
+
+location_t
+cpp_main_loc (const cpp_reader *pfile)
+{
+  return pfile->main_loc;
 }
 
 /* For preprocessed files, if the very first characters are
