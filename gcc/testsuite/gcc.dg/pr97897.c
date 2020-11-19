@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "" } */
 
 void h ();
 void f () __attribute__ ((returns_twice));
