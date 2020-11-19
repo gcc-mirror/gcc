@@ -3871,7 +3871,7 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 		  c = TYPE_NAME (TYPE_MAIN_VARIANT (c));
 		  /* We compute mangled names only when free_lang_data is run.
 		     In that case we can hash precisely.  */
-		  if (TREE_CODE (c) == TYPE_NAME
+		  if (TREE_CODE (c) == TYPE_DECL
 		      && DECL_ASSEMBLER_NAME_SET_P (c))
 		    hstate.add_object
 			   (IDENTIFIER_HASH_VALUE
