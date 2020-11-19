@@ -101,6 +101,22 @@
    (set (attr "cc")
 	(symbol_ref "compute_a_shift_cc (insn, operands)"))])
 
+(define_insn "*shiftqi_noscratch"
+  [(set (match_operand:QI 0 "register_operand" "=r,r")
+	(match_operator:QI 3 "nshift_operator"
+	 [(match_operand:QI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "R,rn")]))]
+  "(GET_CODE (operands[2]) == CONST_INT
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), QImode,
+				     GET_CODE (operands[3])))"
+{
+  return output_a_shift (operands);
+}
+  [(set (attr "length")
+	(symbol_ref "compute_a_shift_length (insn, operands)"))
+   (set (attr "cc")
+	(symbol_ref "compute_a_shift_cc (insn, operands)"))])
+
 (define_insn "*shifthi"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(match_operator:HI 3 "nshift_operator"
@@ -116,6 +132,22 @@
    (set (attr "cc")
 	(symbol_ref "compute_a_shift_cc (insn, operands)"))])
 
+(define_insn "*shifthi_noscratch"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(match_operator:HI 3 "nshift_operator"
+	 [(match_operand:HI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "S,rn")]))]
+  "(GET_CODE (operands[2]) == CONST_INT
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), HImode,
+				     GET_CODE (operands[3])))"
+{
+  return output_a_shift (operands);
+}
+  [(set (attr "length")
+	(symbol_ref "compute_a_shift_length (insn, operands)"))
+   (set (attr "cc")
+	(symbol_ref "compute_a_shift_cc (insn, operands)"))])
+
 (define_insn "*shiftsi"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(match_operator:SI 3 "nshift_operator"
@@ -123,6 +155,22 @@
 	  (match_operand:QI 2 "nonmemory_operand" "T,rn")]))
    (clobber (match_scratch:QI 4 "=X,&r"))]
   ""
+{
+  return output_a_shift (operands);
+}
+  [(set (attr "length")
+	(symbol_ref "compute_a_shift_length (insn, operands)"))
+   (set (attr "cc")
+	(symbol_ref "compute_a_shift_cc (insn, operands)"))])
+
+(define_insn "*shiftsi_noscratch"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(match_operator:SI 3 "nshift_operator"
+	 [(match_operand:SI 1 "register_operand" "0,0")
+	  (match_operand:QI 2 "nonmemory_operand" "T,rn")]))]
+  "(GET_CODE (operands[2]) == CONST_INT
+    && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), SImode,
+				     GET_CODE (operands[3])))"
 {
   return output_a_shift (operands);
 }

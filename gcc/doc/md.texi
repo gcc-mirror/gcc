@@ -5626,6 +5626,28 @@ with N signed/unsigned elements of size S@.  Operand 2 is a constant.  Shift
 the high/low elements of operand 1, and put the N/2 results of size 2*S in the
 output vector (operand 0).
 
+@cindex @code{vec_widen_saddl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_saddl_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_uaddl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_uaddl_lo_@var{m}} instruction pattern
+@item @samp{vec_widen_uaddl_hi_@var{m}}, @samp{vec_widen_uaddl_lo_@var{m}}
+@itemx @samp{vec_widen_saddl_hi_@var{m}}, @samp{vec_widen_saddl_lo_@var{m}}
+Signed/Unsigned widening add long.  Operands 1 and 2 are vectors with N
+signed/unsigned elements of size S@.  Add the high/low elements of 1 and 2
+together, widen the resulting elements and put the N/2 results of size 2*S in
+the output vector (operand 0).
+
+@cindex @code{vec_widen_ssubl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_ssubl_lo_@var{m}} instruction pattern
+@cindex @code{vec_widen_usubl_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_usubl_lo_@var{m}} instruction pattern
+@item @samp{vec_widen_usubl_hi_@var{m}}, @samp{vec_widen_usubl_lo_@var{m}}
+@itemx @samp{vec_widen_ssubl_hi_@var{m}}, @samp{vec_widen_ssubl_lo_@var{m}}
+Signed/Unsigned widening subtract long.  Operands 1 and 2 are vectors with N
+signed/unsigned elements of size S@.  Subtract the high/low elements of 2 from
+1 and widen the resulting elements. Put the N/2 results of size 2*S in the
+output vector (operand 0).
+
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}
 Multiply operands 1 and 2, which have mode @code{HImode}, and store

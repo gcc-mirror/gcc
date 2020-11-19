@@ -1743,24 +1743,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	gnu_type = make_signed_type (esize);
 
-	/* Try to decode the scale factor and to save it for the fixed-point
-	   types debug hook.  */
-
-	/* There are various ways to describe the scale factor, however there
-	   are cases where back-end internals cannot hold it.  In such cases,
-	   we output invalid scale factor for such cases (i.e. the 0/0
-	   rational constant) but we expect GNAT to output GNAT encodings,
-	   then.  Thus, keep this in sync with
-	   Exp_Dbug.Is_Handled_Scale_Factor.  */
-
 	/* When encoded as 1/2**N or 1/10**N, describe the scale factor as a
 	   binary or decimal scale: it is easier to read for humans.  */
 	if (UI_Eq (Numerator (gnat_small_value), Uint_1)
 	    && (Rbase (gnat_small_value) == 2
 		|| Rbase (gnat_small_value) == 10))
 	  {
-	    /* Given RM restrictions on 'Small values, we assume here that
-	       the denominator fits in an int.  */
 	    tree base
 	      = build_int_cst (integer_type_node, Rbase (gnat_small_value));
 	    tree exponent
@@ -1773,29 +1761,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				base, exponent));
 	  }
 
-	/* Default to arbitrary scale factors descriptions.  */
-	else
+	/* Use the arbitrary scale factor description.  Note that we support
+	   a Small_Value whose magnitude is larger than 64-bit even on 32-bit
+	   platforms, so we unconditionally use a (dummy) 128-bit type.  */
 	  {
-	    const Uint num = Norm_Num (gnat_small_value);
-	    const Uint den = Norm_Den (gnat_small_value);
+	    const Uint gnat_num = Norm_Num (gnat_small_value);
+	    const Uint gnat_den = Norm_Den (gnat_small_value);
+	    tree gnu_small_type = make_unsigned_type (128);
+	    tree gnu_num = UI_To_gnu (gnat_num, gnu_small_type);
+	    tree gnu_den = UI_To_gnu (gnat_den, gnu_small_type);
 
-	    if (UI_Is_In_Int_Range (num) && UI_Is_In_Int_Range (den))
-	      {
-		tree gnu_num
-		  = build_int_cst (integer_type_node,
-				   UI_To_Int (Norm_Num (gnat_small_value)));
-		tree gnu_den
-		  = build_int_cst (integer_type_node,
-				   UI_To_Int (Norm_Den (gnat_small_value)));
-		scale_factor = build2 (RDIV_EXPR, integer_type_node,
-				       gnu_num, gnu_den);
-	      }
-	    else
-	      /* If compiler internals cannot represent arbitrary scale
-		 factors, output an invalid scale factor so that debugger
-		 don't try to handle them but so that we still have a type
-		 in the output.  Note that GNAT  */
-	      scale_factor = integer_zero_node;
+	    scale_factor
+	      = build2 (RDIV_EXPR, gnu_small_type, gnu_num, gnu_den);
 	  }
 
 	TYPE_FIXED_POINT_P (gnu_type) = 1;

@@ -1,3 +1,4 @@
+/* PR tree-optimization/91029 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-evrp" } */
 
@@ -16,7 +17,7 @@ void f1 (int i)
 
 void f2 (int i)
 {
-  if ((i % 7) >= 0)
+  if ((i % 7) > 0)
     {
       xx = (i < 0);
       if (xx)

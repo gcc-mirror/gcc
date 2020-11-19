@@ -5775,6 +5775,8 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	       type = TREE_TYPE (type))
 	    {
 	      tree nelts = array_type_nelts (type);
+	      if (error_operand_p (nelts))
+		return attrs;
 	      if (TREE_CODE (nelts) != INTEGER_CST)
 		{
 		  /* Each variable VLA bound is represented by the dollar

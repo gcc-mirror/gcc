@@ -1569,6 +1569,10 @@ clean_up_loop_closed_phi (function *fun)
   if (!loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     return 0;
 
+  /* replace_uses_by might purge dead EH edges and we want it to also
+     remove dominated blocks.  */
+  calculate_dominance_info  (CDI_DOMINATORS);
+
   /* Walk over loop in function.  */
   FOR_EACH_LOOP_FN (fun, loop, 0)
     {
@@ -1595,23 +1599,7 @@ clean_up_loop_closed_phi (function *fun)
 		      fprintf (dump_file, "'\n");
 		    }
 
-		  use_operand_p use_p;
-		  imm_use_iterator iter;
-		  gimple *use_stmt;
-		  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-		    {
-		      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-			replace_exp (use_p, rhs);
-		      update_stmt (use_stmt);
-
-		      /* Update the invariant flag for ADDR_EXPR if replacing
-			 a variable index with a constant.  */
-		      if (gimple_assign_single_p (use_stmt)
-			  && TREE_CODE (gimple_assign_rhs1 (use_stmt))
-			       == ADDR_EXPR)
-			recompute_tree_invariant_for_addr_expr (
-			  gimple_assign_rhs1 (use_stmt));
-		    }
+		  replace_uses_by (lhs, rhs);
 		  remove_phi_node (&gsi, true);
 		}
 	      else

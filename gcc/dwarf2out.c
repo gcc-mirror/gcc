@@ -12973,18 +12973,19 @@ base_type_die (tree type, bool reverse)
 	  break;
 
 	case fixed_point_scale_factor_arbitrary:
-	  /* Arbitrary scale factors cannot be described in standard DWARF,
-	     yet.  */
+	  /* Arbitrary scale factors cannot be described in standard DWARF.  */
 	  if (!dwarf_strict)
 	    {
 	      /* Describe the scale factor as a rational constant.  */
 	      const dw_die_ref scale_factor
 		= new_die (DW_TAG_constant, comp_unit_die (), type);
 
-	      add_AT_unsigned (scale_factor, DW_AT_GNU_numerator,
-			       fpt_info.scale_factor.arbitrary.numerator);
-	      add_AT_int (scale_factor, DW_AT_GNU_denominator,
-			  fpt_info.scale_factor.arbitrary.denominator);
+	      add_scalar_info (scale_factor, DW_AT_GNU_numerator,
+			       fpt_info.scale_factor.arbitrary.numerator,
+			       dw_scalar_form_constant, NULL);
+	      add_scalar_info (scale_factor, DW_AT_GNU_denominator,
+			       fpt_info.scale_factor.arbitrary.denominator,
+			       dw_scalar_form_constant, NULL);
 
 	      add_AT_die_ref (base_type_result, DW_AT_small, scale_factor);
 	    }

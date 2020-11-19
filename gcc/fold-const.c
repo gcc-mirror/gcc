@@ -3314,30 +3314,34 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	     may be NULL when we're called to compare MEM_EXPRs.  */
 	  if (!OP_SAME_WITH_NULL (0))
 	    return false;
-	  /* Most of time we only need to compare FIELD_DECLs for equality.
-	     However when determining address look into actual offsets.
-	     These may match for unions and unshared record types.  */
-	  flags &= ~OEP_ADDRESS_OF;
-	  if (!OP_SAME (1))
-	    {
-	      if (flags & OEP_ADDRESS_OF)
-		{
-		  if (TREE_OPERAND (arg0, 2)
-		      || TREE_OPERAND (arg1, 2))
-		    return OP_SAME_WITH_NULL (2);
-		  tree field0 = TREE_OPERAND (arg0, 1);
-		  tree field1 = TREE_OPERAND (arg1, 1);
+	  {
+	    bool compare_address = flags & OEP_ADDRESS_OF;
 
-		  if (!operand_equal_p (DECL_FIELD_OFFSET (field0),
-					DECL_FIELD_OFFSET (field1), flags)
-		      || !operand_equal_p (DECL_FIELD_BIT_OFFSET (field0),
-					   DECL_FIELD_BIT_OFFSET (field1),
-					   flags))
-		    return false;
-		}
-	      else
-		return false;
-	    }
+	    /* Most of time we only need to compare FIELD_DECLs for equality.
+	       However when determining address look into actual offsets.
+	       These may match for unions and unshared record types.  */
+	    flags &= ~OEP_ADDRESS_OF;
+	    if (!OP_SAME (1))
+	      {
+		if (compare_address)
+		  {
+		    if (TREE_OPERAND (arg0, 2)
+			|| TREE_OPERAND (arg1, 2))
+		      return OP_SAME_WITH_NULL (2);
+		    tree field0 = TREE_OPERAND (arg0, 1);
+		    tree field1 = TREE_OPERAND (arg1, 1);
+
+		    if (!operand_equal_p (DECL_FIELD_OFFSET (field0),
+					  DECL_FIELD_OFFSET (field1), flags)
+			|| !operand_equal_p (DECL_FIELD_BIT_OFFSET (field0),
+					     DECL_FIELD_BIT_OFFSET (field1),
+					     flags))
+		      return false;
+		  }
+		else
+		  return false;
+	      }
+	  }
 	  return OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
@@ -3345,24 +3349,6 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	    return false;
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (1) && OP_SAME (2);
-
-	/* Virtual table call.  */
-	case OBJ_TYPE_REF:
-	  {
-	    if (!operand_equal_p (OBJ_TYPE_REF_EXPR (arg0),
-				  OBJ_TYPE_REF_EXPR (arg1), flags))
-	      return false;
-	    if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg0))
-		!= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg1)))
-	      return false;
-	    if (!operand_equal_p (OBJ_TYPE_REF_OBJECT (arg0),
-				  OBJ_TYPE_REF_OBJECT (arg1), flags))
-	      return false;
-	    if (!types_same_for_odr (obj_type_ref_class (arg0),
-				     obj_type_ref_class (arg1)))
-	      return false;
-	    return true;
-	  }
 
 	default:
 	  return false;
@@ -3441,6 +3427,27 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME (0);
 	  return false;
+
+	case OBJ_TYPE_REF:
+	/* Virtual table reference.  */
+	if (!operand_equal_p (OBJ_TYPE_REF_EXPR (arg0),
+			      OBJ_TYPE_REF_EXPR (arg1), flags))
+	  return false;
+	flags &= ~OEP_ADDRESS_OF;
+	if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg0))
+	    != tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg1)))
+	  return false;
+	if (!operand_equal_p (OBJ_TYPE_REF_OBJECT (arg0),
+			      OBJ_TYPE_REF_OBJECT (arg1), flags))
+	  return false;
+	if (virtual_method_call_p (arg0))
+	  {
+	    if (!virtual_method_call_p (arg1))
+	      return false;
+	    return types_same_for_odr (obj_type_ref_class (arg0),
+				       obj_type_ref_class (arg1));
+	  }
+	return false;
 
 	default:
 	  return false;
@@ -3861,11 +3868,25 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	      hash_operand (TARGET_EXPR_SLOT (t), hstate, flags);
 	      return;
 
-	    /* Virtual table call.  */
 	    case OBJ_TYPE_REF:
+	    /* Virtual table reference.  */
 	      inchash::add_expr (OBJ_TYPE_REF_EXPR (t), hstate, flags);
+	      flags &= ~OEP_ADDRESS_OF;
 	      inchash::add_expr (OBJ_TYPE_REF_TOKEN (t), hstate, flags);
 	      inchash::add_expr (OBJ_TYPE_REF_OBJECT (t), hstate, flags);
+	      if (!virtual_method_call_p (t))
+		return;
+	      if (tree c = obj_type_ref_class (t))
+		{
+		  c = TYPE_NAME (TYPE_MAIN_VARIANT (c));
+		  /* We compute mangled names only when free_lang_data is run.
+		     In that case we can hash precisely.  */
+		  if (TREE_CODE (c) == TYPE_DECL
+		      && DECL_ASSEMBLER_NAME_SET_P (c))
+		    hstate.add_object
+			   (IDENTIFIER_HASH_VALUE
+				   (DECL_ASSEMBLER_NAME (c)));
+		}
 	      return;
 	    default:
 	      break;
@@ -13701,6 +13722,248 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
     }
 }
 
+/* Return true if expression X cannot be (or contain) a NaN or infinity.
+   This function returns true for integer expressions, and returns
+   false if uncertain.  */
+
+bool
+tree_expr_finite_p (const_tree x)
+{
+  machine_mode mode = element_mode (x);
+  if (!HONOR_NANS (mode) && !HONOR_INFINITIES (mode))
+    return true;
+  switch (TREE_CODE (x))
+    {
+    case REAL_CST:
+      return real_isfinite (TREE_REAL_CST_PTR (x));
+    case COMPLEX_CST:
+      return tree_expr_finite_p (TREE_REALPART (x))
+	     && tree_expr_finite_p (TREE_IMAGPART (x));
+    case FLOAT_EXPR:
+      return true;
+    case ABS_EXPR:
+    case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+    case NEGATE_EXPR:
+    case SAVE_EXPR:
+      return tree_expr_finite_p (TREE_OPERAND (x, 0));
+    case MIN_EXPR:
+    case MAX_EXPR:
+      return tree_expr_finite_p (TREE_OPERAND (x, 0))
+	     && tree_expr_finite_p (TREE_OPERAND (x, 1));
+    case COND_EXPR:
+      return tree_expr_finite_p (TREE_OPERAND (x, 1))
+	     && tree_expr_finite_p (TREE_OPERAND (x, 2));
+    case CALL_EXPR:
+      switch (get_call_combined_fn (x))
+	{
+	CASE_CFN_FABS:
+	  return tree_expr_finite_p (CALL_EXPR_ARG (x, 0));
+	CASE_CFN_FMAX:
+	CASE_CFN_FMIN:
+	  return tree_expr_finite_p (CALL_EXPR_ARG (x, 0))
+		 && tree_expr_finite_p (CALL_EXPR_ARG (x, 1));
+	default:
+	  return false;
+	}
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if expression X evaluates to an infinity.
+   This function returns false for integer expressions.  */
+
+bool
+tree_expr_infinite_p (const_tree x)
+{
+  if (!HONOR_INFINITIES (x))
+    return false;
+  switch (TREE_CODE (x))
+    {
+    case REAL_CST:
+      return real_isinf (TREE_REAL_CST_PTR (x));
+    case ABS_EXPR:
+    case NEGATE_EXPR:
+    case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
+      return tree_expr_infinite_p (TREE_OPERAND (x, 0));
+    case COND_EXPR:
+      return tree_expr_infinite_p (TREE_OPERAND (x, 1))
+	     && tree_expr_infinite_p (TREE_OPERAND (x, 2));
+    default:
+      return false;
+    }
+}
+
+/* Return true if expression X could evaluate to an infinity.
+   This function returns false for integer expressions, and returns
+   true if uncertain.  */
+
+bool
+tree_expr_maybe_infinite_p (const_tree x)
+{
+  if (!HONOR_INFINITIES (x))
+    return false;
+  switch (TREE_CODE (x))
+    {
+    case REAL_CST:
+      return real_isinf (TREE_REAL_CST_PTR (x));
+    case FLOAT_EXPR:
+      return false;
+    case ABS_EXPR:
+    case NEGATE_EXPR:
+      return tree_expr_maybe_infinite_p (TREE_OPERAND (x, 0));
+    case COND_EXPR:
+      return tree_expr_maybe_infinite_p (TREE_OPERAND (x, 1))
+	     || tree_expr_maybe_infinite_p (TREE_OPERAND (x, 2));
+    default:
+      return true;
+    }
+}
+
+/* Return true if expression X evaluates to a signaling NaN.
+   This function returns false for integer expressions.  */
+
+bool
+tree_expr_signaling_nan_p (const_tree x)
+{
+  if (!HONOR_SNANS (x))
+    return false;
+  switch (TREE_CODE (x))
+    {
+    case REAL_CST:
+      return real_issignaling_nan (TREE_REAL_CST_PTR (x));
+    case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
+      return tree_expr_signaling_nan_p (TREE_OPERAND (x, 0));
+    case COND_EXPR:
+      return tree_expr_signaling_nan_p (TREE_OPERAND (x, 1))
+	     && tree_expr_signaling_nan_p (TREE_OPERAND (x, 2));
+    default:
+      return false;
+    }
+}
+
+/* Return true if expression X could evaluate to a signaling NaN.
+   This function returns false for integer expressions, and returns
+   true if uncertain.  */
+
+bool
+tree_expr_maybe_signaling_nan_p (const_tree x)
+{
+  if (!HONOR_SNANS (x))
+    return false;
+  switch (TREE_CODE (x))
+    {
+    case REAL_CST:
+      return real_issignaling_nan (TREE_REAL_CST_PTR (x));
+    case FLOAT_EXPR:
+      return false;
+    case ABS_EXPR:
+    case CONVERT_EXPR:
+    case NEGATE_EXPR:
+    case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
+      return tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 0));
+    case MIN_EXPR:
+    case MAX_EXPR:
+      return tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 0))
+	     || tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 1));
+    case COND_EXPR:
+      return tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 1))
+	     || tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 2));
+    case CALL_EXPR:
+      switch (get_call_combined_fn (x))
+	{
+	CASE_CFN_FABS:
+	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0));
+	CASE_CFN_FMAX:
+	CASE_CFN_FMIN:
+	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0))
+		 || tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 1));
+	default:
+	  return true;
+	}
+    default:
+      return true;
+    }
+}
+
+/* Return true if expression X evaluates to a NaN.
+   This function returns false for integer expressions.  */
+
+bool
+tree_expr_nan_p (const_tree x)
+{
+  if (!HONOR_NANS (x))
+    return false;
+  switch (TREE_CODE (x))
+    {
+    case REAL_CST:
+      return real_isnan (TREE_REAL_CST_PTR (x));
+    case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
+      return tree_expr_nan_p (TREE_OPERAND (x, 0));
+    case COND_EXPR:
+      return tree_expr_nan_p (TREE_OPERAND (x, 1))
+	     && tree_expr_nan_p (TREE_OPERAND (x, 2));
+    default:
+      return false;
+    }
+}
+
+/* Return true if expression X could evaluate to a NaN.
+   This function returns false for integer expressions, and returns
+   true if uncertain.  */
+
+bool
+tree_expr_maybe_nan_p (const_tree x)
+{
+  if (!HONOR_NANS (x))
+    return false;
+  switch (TREE_CODE (x))
+    {
+    case REAL_CST:
+      return real_isnan (TREE_REAL_CST_PTR (x));
+    case FLOAT_EXPR:
+      return false;
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+      return !tree_expr_finite_p (TREE_OPERAND (x, 0))
+	     || !tree_expr_finite_p (TREE_OPERAND (x, 1));
+    case ABS_EXPR:
+    case CONVERT_EXPR:
+    case NEGATE_EXPR:
+    case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
+      return tree_expr_maybe_nan_p (TREE_OPERAND (x, 0));
+    case MIN_EXPR:
+    case MAX_EXPR:
+      return tree_expr_maybe_nan_p (TREE_OPERAND (x, 0))
+	     || tree_expr_maybe_nan_p (TREE_OPERAND (x, 1));
+    case COND_EXPR:
+      return tree_expr_maybe_nan_p (TREE_OPERAND (x, 1))
+	     || tree_expr_maybe_nan_p (TREE_OPERAND (x, 2));
+    case CALL_EXPR:
+      switch (get_call_combined_fn (x))
+	{
+	CASE_CFN_FABS:
+	  return tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 0));
+	CASE_CFN_FMAX:
+	CASE_CFN_FMIN:
+	  return tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 0))
+		 || tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 1));
+	default:
+	  return true;
+	}
+    default:
+      return true;
+    }
+}
+
 #define tree_expr_nonnegative_warnv_p(X, Y) \
   _Pragma ("GCC error \"Use RECURSE for recursive calls\"") 0
 
@@ -13878,7 +14141,13 @@ tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
       return false;
 
     case BIT_AND_EXPR:
+      return RECURSE (op0) || RECURSE (op1);
+
     case MAX_EXPR:
+      /* Usually RECURSE (op0) || RECURSE (op1) but NaNs complicate
+	 things.  */
+      if (tree_expr_maybe_nan_p (op0) || tree_expr_maybe_nan_p (op1))
+	return RECURSE (op0) && RECURSE (op1);
       return RECURSE (op0) || RECURSE (op1);
 
     case BIT_IOR_EXPR:
@@ -14038,8 +14307,18 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
 
     CASE_CFN_FMAX:
     CASE_CFN_FMAX_FN:
-      /* True if the 1st OR 2nd arguments are nonnegative.  */
-      return RECURSE (arg0) || RECURSE (arg1);
+      /* Usually RECURSE (arg0) || RECURSE (arg1) but NaNs complicate
+	 things.  In the presence of sNaNs, we're only guaranteed to be
+	 non-negative if both operands are non-negative.  In the presence
+	 of qNaNs, we're non-negative if either operand is non-negative
+	 and can't be a qNaN, or if both operands are non-negative.  */
+      if (tree_expr_maybe_signaling_nan_p (arg0) ||
+	  tree_expr_maybe_signaling_nan_p (arg1))
+        return RECURSE (arg0) && RECURSE (arg1);
+      return RECURSE (arg0) ? (!tree_expr_maybe_nan_p (arg0)
+			       || RECURSE (arg1))
+			    : (RECURSE (arg1)
+			       && !tree_expr_maybe_nan_p (arg1));
 
     CASE_CFN_FMIN:
     CASE_CFN_FMIN_FN:

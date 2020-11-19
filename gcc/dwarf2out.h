@@ -362,23 +362,18 @@ enum fixed_point_scale_factor
 
 struct fixed_point_type_info
 {
-  /* A scale factor is the value one has to multiply with physical data in
-     order to get the fixed point logical data.  The DWARF standard enables one
-     to encode it in three ways.  */
+  /* The scale factor is the value one has to multiply the actual data with
+     to get the fixed point value.  We support three ways to encode it.  */
   enum fixed_point_scale_factor scale_factor_kind;
   union
     {
-      /* For binary scale factor, the scale factor is: 2 ** binary.  */
+      /* For a binary scale factor, the scale factor is 2 ** binary.  */
       int binary;
-      /* For decimal scale factor, the scale factor is: 10 ** binary.  */
+      /* For a decimal scale factor, the scale factor is 10 ** decimal.  */
       int decimal;
-      /* For arbitrary scale factor, the scale factor is:
+      /* For an arbitrary scale factor, the scale factor is the ratio
 	 numerator / denominator.  */
-      struct
-	{
-	  unsigned HOST_WIDE_INT numerator;
-	  HOST_WIDE_INT denominator;
-	} arbitrary;
+      struct { tree numerator; tree denominator; } arbitrary;
     } scale_factor;
 };
 

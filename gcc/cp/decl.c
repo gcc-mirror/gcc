@@ -2749,9 +2749,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
      with that from NEWDECL below.  */
   if (DECL_LANG_SPECIFIC (olddecl))
     {
-      gcc_checking_assert (DECL_LANG_SPECIFIC (newdecl)
-			   && (DECL_LANG_SPECIFIC (olddecl)
-			       != DECL_LANG_SPECIFIC (newdecl)));
+      gcc_checking_assert (DECL_LANG_SPECIFIC (olddecl)
+			   != DECL_LANG_SPECIFIC (newdecl));
       ggc_free (DECL_LANG_SPECIFIC (olddecl));
     }
 

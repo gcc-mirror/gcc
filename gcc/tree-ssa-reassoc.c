@@ -425,41 +425,43 @@ get_rank (tree e)
       long rank;
       tree op;
 
-      if (SSA_NAME_IS_DEFAULT_DEF (e))
-	return find_operand_rank (e);
-
-      stmt = SSA_NAME_DEF_STMT (e);
-      if (gimple_code (stmt) == GIMPLE_PHI)
-	return phi_rank (stmt);
-
-      if (!is_gimple_assign (stmt))
-	return bb_rank[gimple_bb (stmt)->index];
-
       /* If we already have a rank for this expression, use that.  */
       rank = find_operand_rank (e);
       if (rank != -1)
 	return rank;
 
-      /* Otherwise, find the maximum rank for the operands.  As an
-	 exception, remove the bias from loop-carried phis when propagating
-	 the rank so that dependent operations are not also biased.  */
-      /* Simply walk over all SSA uses - this takes advatage of the
-         fact that non-SSA operands are is_gimple_min_invariant and
-	 thus have rank 0.  */
-      rank = 0;
-      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	rank = propagate_rank (rank, op);
+      stmt = SSA_NAME_DEF_STMT (e);
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	rank = phi_rank (stmt);
+
+      else if (!is_gimple_assign (stmt))
+	rank = bb_rank[gimple_bb (stmt)->index];
+
+      else
+	{
+	  /* Otherwise, find the maximum rank for the operands.  As an
+	     exception, remove the bias from loop-carried phis when propagating
+	     the rank so that dependent operations are not also biased.  */
+	  /* Simply walk over all SSA uses - this takes advatage of the
+	     fact that non-SSA operands are is_gimple_min_invariant and
+	     thus have rank 0.  */
+	  rank = 0;
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+	    rank = propagate_rank (rank, op);
+
+	  rank += 1;
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Rank for ");
 	  print_generic_expr (dump_file, e);
-	  fprintf (dump_file, " is %ld\n", (rank + 1));
+	  fprintf (dump_file, " is %ld\n", rank);
 	}
 
       /* Note the rank in the hashtable so we don't recompute it.  */
-      insert_operand_rank (e, (rank + 1));
-      return (rank + 1);
+      insert_operand_rank (e, rank);
+      return rank;
     }
 
   /* Constants, globals, etc., are rank 0 */

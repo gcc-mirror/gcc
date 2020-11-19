@@ -145,6 +145,13 @@
 #include "version.h"
 #endif
 
+/* limits.h is needed for LLONG_MIN.  */
+#ifdef __cplusplus
+#include <climits>
+#else
+#include <limits.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -2692,13 +2692,13 @@ operator_trunc_mod::op1_range (irange &r, tree type,
   if (TYPE_SIGN (type) == SIGNED && wi::ge_p (op2.lower_bound (), 0, SIGNED))
     {
       unsigned prec = TYPE_PRECISION (type);
-      // if a & b >=0 , then a >= 0.
-      if (wi::ge_p (lhs.lower_bound (), 0, SIGNED))
+      // if a % b > 0 , then a >= 0.
+      if (wi::gt_p (lhs.lower_bound (), 0, SIGNED))
 	{
 	  r = value_range (type, wi::zero (prec), wi::max_value (prec, SIGNED));
 	  return true;
 	}
-      // if a & b < 0 , then a <= 0.
+      // if a % b < 0 , then a <= 0.
       if (wi::lt_p (lhs.upper_bound (), 0, SIGNED))
 	{
 	  r = value_range (type, wi::min_value (prec, SIGNED), wi::zero (prec));

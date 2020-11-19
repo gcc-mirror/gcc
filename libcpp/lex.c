@@ -1370,7 +1370,7 @@ maybe_va_opt_error (cpp_reader *pfile)
     {
       /* __VA_OPT__ should not be accepted at all, but allow it in
 	 system headers.  */
-      if (!cpp_in_system_header (pfile))
+      if (!_cpp_in_system_header (pfile))
 	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "__VA_OPT__ is not available until C++20");
     }
@@ -3093,7 +3093,7 @@ _cpp_lex_direct (cpp_reader *pfile)
       else if (c == '/' && ! CPP_OPTION (pfile, traditional))
 	{
 	  /* Don't warn for system headers.  */
-	  if (cpp_in_system_header (pfile))
+	  if (_cpp_in_system_header (pfile))
 	    ;
 	  /* Warn about comments if pedantically GNUC89, and not
 	     in system headers.  */

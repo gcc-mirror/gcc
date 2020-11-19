@@ -33992,8 +33992,8 @@ cp_parser_objc_valid_prefix_attributes (cp_parser* parser, tree *attrib)
 {
   cp_lexer_save_tokens (parser->lexer);
   tree addon = cp_parser_attributes_opt (parser);
-  gcc_checking_assert (addon);
-  if (OBJC_IS_AT_KEYWORD (cp_lexer_peek_token (parser->lexer)->keyword))
+  if (addon
+      && OBJC_IS_AT_KEYWORD (cp_lexer_peek_token (parser->lexer)->keyword))
     {
       cp_lexer_commit_tokens (parser->lexer);
       if (*attrib)

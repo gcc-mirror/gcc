@@ -1,3 +1,9 @@
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (objc.serial): New goal.
+	(.PHONY): Add objc.serial objc.prev.
+	(cc1obj$(exeext)): Depend on objc.prev.  Call LINK_PROGRESS.
+
 2020-11-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR objc/90707

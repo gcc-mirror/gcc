@@ -1,3 +1,11 @@
+2020-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (join_view::_Iterator::_M_satisfy): Uglify
+	local variable inner.
+	(join_view::_Iterator::operator->): Use _Inner_iter instead of
+	_Outer_iter in the function signature as per LWG 3500.
+	* testsuite/std/ranges/adaptors/join.cc (test08): Test it.
+
 2020-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/93421

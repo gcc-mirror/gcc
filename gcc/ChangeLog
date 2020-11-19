@@ -1,3 +1,185 @@
+2020-11-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/85811
+	* fold-const.c (tree_expr_finite_p): New function to test whether
+	a tree expression must be finite, i.e. not a FP NaN or infinity.
+	(tree_expr_infinite_p):  New function to test whether a tree
+	expression must be infinite, i.e. a FP infinity.
+	(tree_expr_maybe_infinite_p): New function to test whether a tree
+	expression may be infinite, i.e. a FP infinity.
+	(tree_expr_signaling_nan_p): New function to test whether a tree
+	expression must evaluate to a signaling NaN (sNaN).
+	(tree_expr_maybe_signaling_nan_p): New function to test whether a
+	tree expression may be a signaling NaN (sNaN).
+	(tree_expr_nan_p): New function to test whether a tree expression
+	must evaluate to a (quiet or signaling) NaN.
+	(tree_expr_maybe_nan_p): New function to test whether a tree
+	expression me be a (quiet or signaling) NaN.
+	(tree_binary_nonnegative_warnv_p) [MAX_EXPR]: In the presence
+	of NaNs, MAX_EXPR is only guaranteed to be non-negative, if both
+	operands are non-negative.
+	(tree_call_nonnegative_warnv_p) [CASE_CFN_FMAX,CASE_CFN_FMAX_FN]:
+	In the presence of signaling NaNs, fmax is only guaranteed to be
+	non-negative if both operands are negative.  In the presence of
+	quiet NaNs, fmax is non-negative if either operand is non-negative
+	and not a qNaN, or both operands are non-negative.
+	* fold-const.h (tree_expr_finite_p, tree_expr_infinite_p,
+	tree_expr_maybe_infinite_p, tree_expr_signaling_nan_p,
+	tree_expr_maybe_signaling_nan_p, tree_expr_nan_p,
+	tree_expr_maybe_nan_p): Prototype new functions here.
+	* builtins.c (fold_builtin_classify) [BUILT_IN_ISINF]: Fold to
+	a constant if argument is known to be (or not to be) an Infinity.
+	[BUILT_IN_ISFINITE]: Fold to a constant if argument is known to
+	be (or not to be) finite.
+	[BUILT_IN_ISNAN]: Fold to a constant if argument is known to be
+	(or not to be) a NaN.
+	(fold_builtin_fpclassify): Check tree_expr_maybe_infinite_p and
+	tree_expr_maybe_nan_p instead of HONOR_INFINITIES and HONOR_NANS
+	respectively.
+	(fold_builtin_unordered_cmp): Fold UNORDERED_EXPR to a constant
+	when its arguments are known to be (or not be) NaNs.  Check
+	tree_expr_maybe_nan_p instead of HONOR_NANS when choosing between
+	unordered and regular forms of comparison operators.
+	* match.pd (ordered(x,y)->true/false): Constant fold ORDERED_EXPR
+	if its operands are known to be (or not to be) NaNs.
+	(unordered(x,y)->true/false): Constant fold UNORDERED_EXPR if its
+	operands are known to be (or not to be) NaNs.
+	(sqrt(x)*sqrt(x)->x): Check tree_expr_maybe_signaling_nan_p instead
+	of HONOR_SNANS.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91029
+	PR tree-optimization/97888
+	* range-op.cc (operator_trunc_mod::op1_range): Only set op1
+	range to >= 0 if lhs is > 0, rather than >= 0.  Fix up comments.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* opts.h (struct cl_var): New type.
+	(cl_vars): Declare.
+	* optc-gen.awk: Generate cl_vars array.
+
+2020-11-18  Eugene Rozenfeld  <Eugene.Rozenfeld@microsoft.com>
+
+	PR tree-optimization/96671
+	* match.pd (three xor patterns): New patterns.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* optc-save-gen.awk: Initialize var_opt_init.  In
+	cl_optimization_stream_out for params with default values larger than
+	10, xor the default value with the actual parameter value.  In
+	cl_optimization_stream_in repeat the above xor.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Add $lang.prev rules, INDEX.$lang and SERIAL_LIST and
+	SERIAL_COUNT variables to Make-hooks.
+	(--enable-link-serialization): New configure option.
+	* Makefile.in (DO_LINK_SERIALIZATION, LINK_PROGRESS): New variables.
+	* doc/install.texi (--enable-link-serialization): Document.
+	* configure: Regenerated.
+
+2020-11-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/97870
+	* lra-constraints.c (curr_insn_transform): Do not delete asm goto
+	with wrong constraints.  Nullify it saving CFG.
+
+2020-11-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md (mulhi3): New.
+	(mulsi3): New.
+	(mulsidi3): Rename to *mulsidi3_inline.
+	(umulsidi3): Rename to *umulsidi3_inline.
+	(mulsidi3): New define_expand.
+	(umulsidi3): New define_expand.
+
+2020-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97886
+	* tree-vect-loop.c (vectorizable_lc_phi): Properly assign
+	vector types to invariants for SLP.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-dragonfly*): Add dragonfly-d.o and t-dragonfly.
+	* config/dragonfly-d.c: New file.
+	* config/t-dragonfly: New file.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97862
+	* omp-expand.c (expand_omp_for_init_vars): Don't use the sqrt path
+	if number of iterations is constant 0.
+
+2020-11-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_ext_version): New.
+	(riscv_ext_version_table): Ditto.
+	(get_default_version): Ditto.
+	(riscv_subset_t::implied_p): New field.
+	(riscv_subset_t::riscv_subset_t): Init implied_p.
+	(riscv_subset_list::add): New.
+	(riscv_subset_list::handle_implied_ext): Pass riscv_subset_t
+	instead of separated argument.
+	(riscv_subset_list::to_string): Handle zifencei and zicsr, and
+	omit version if version is unknown.
+	(riscv_subset_list::parsing_subset_version): New argument `ext`,
+	remove default_major_version and default_minor_version, get
+	default version info via get_default_version.
+	(riscv_subset_list::parse_std_ext): Update argument for
+	parsing_subset_version calls.
+	Handle 2.2 ISA spec, always enable zicsr and zifencei, they are
+	included in baseline ISA in that time.
+	(riscv_subset_list::parse_multiletter_ext): Update argument for
+	`parsing_subset_version` and `add` calls.
+	(riscv_subset_list::parse): Adjust argument for
+	riscv_subset_list::handle_implied_ext call.
+	* config.gcc (riscv*-*-*): Handle --with-isa-spec=.
+	* config.in (HAVE_AS_MISA_SPEC): New.
+	(HAVE_AS_MARCH_ZIFENCEI): Ditto.
+	* config/riscv/riscv-opts.h (riscv_isa_spec_class): New.
+	(riscv_isa_spec): Ditto.
+	* config/riscv/riscv.h (HAVE_AS_MISA_SPEC): New.
+	(ASM_SPEC): Pass -misa-spec if gas supported.
+	* config/riscv/riscv.opt (riscv_isa_spec_class) New.
+	* configure.ac (HAVE_AS_MARCH_ZIFENCEI): New test.
+	(HAVE_AS_MISA_SPEC): Ditto.
+	* configure: Regen.
+
+2020-11-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_implied_info):
+	d and f implied zicsr.
+	(riscv_ext_flag_table): Handle zicsr and zifencei.
+	* config/riscv/riscv-opts.h (MASK_ZICSR): New.
+	(MASK_ZIFENCEI): Ditto.
+	(TARGET_ZICSR): Ditto.
+	(TARGET_ZIFENCEI): Ditto.
+	* config/riscv/riscv.md (clear_cache): Check TARGET_ZIFENCEI.
+	(fence_i): Ditto.
+	* config/riscv/riscv.opt (riscv_zi_subext): New.
+
+2020-11-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (single_letter_subset_rank): New.
+	(multi_letter_subset_rank): Ditto.
+	(subset_cmp): Ditto.
+	(riscv_subset_list::add): Insert subext in canonical ordering.
+	(riscv_subset_list::parse_std_ext): Move handle_implied_ext to ...
+	(riscv_subset_list::parse): ... here.
+
+2020-11-18  Jiufu Guo   <guojiufu@linux.ibm.com>
+
+	* cfgloop.h (loop_optimizer_finalize): Add flag argument.
+	* loop-init.c (loop_optimizer_finalize): Call clean_up_loop_closed_phi.
+	* tree-cfgcleanup.h (clean_up_loop_closed_phi): New declare.
+	* tree-ssa-loop.c (tree_ssa_loop_done): Call loop_optimizer_finalize
+	with flag argument.
+	* tree-ssa-propagate.c (clean_up_loop_closed_phi): New function.
+
 2020-11-17  Sebastian Pop  <spop@amazon.com>
 
 	* config.gcc: add configure flags --with-{cpu,arch,tune}-{32,64}

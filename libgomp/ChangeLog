@@ -1,3 +1,40 @@
+2020-11-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* env.c (gomp_global_icv): Remove nest_var field.  Add
+	max_active_levels_var field.
+	(gomp_max_active_levels_var): Remove.
+	(parse_boolean): Return true on success.
+	(handle_omp_display_env): Express OMP_NESTED in terms of
+	max_active_levels_var.  Change format specifier for
+	max_active_levels_var.
+	(initialize_env): Set max_active_levels_var from
+	OMP_MAX_ACTIVE_LEVELS, OMP_NESTED, OMP_NUM_THREADS and
+	OMP_PROC_BIND.
+	* icv.c (omp_set_nested): Express in terms of
+	max_active_levels_var.
+	(omp_get_nested): Likewise.
+	(omp_set_max_active_levels): Use max_active_levels_var field instead
+	of gomp_max_active_levels_var.
+	(omp_get_max_active_levels): Likewise.
+	* libgomp.h (struct gomp_task_icv): Remove nest_var field.  Add
+	max_active_levels_var field.
+	(gomp_supported_active_levels): Set to UCHAR_MAX.
+	(gomp_max_active_levels_var): Delete.
+	* libgomp.texi (omp_get_nested): Update documentation.
+	(omp_set_nested): Likewise.
+	(OMP_MAX_ACTIVE_LEVELS): Likewise.
+	(OMP_NESTED): Likewise.
+	(OMP_NUM_THREADS): Likewise.
+	(OMP_PROC_BIND): Likewise.
+	* parallel.c (gomp_resolve_num_threads): Replace reference
+	to nest_var with max_active_levels_var.  Use max_active_levels_var
+	field instead of gomp_max_active_levels_var.
+
+2020-11-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c/usleep.h (fallback_usleep): Renamed from
+	nvptx_usleep; use also for device={arch(gcn)}.
+
 2020-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/allocate-1.c (struct S): New type.

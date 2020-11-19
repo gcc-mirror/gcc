@@ -1,3 +1,22 @@
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (d.serial): New goal.
+	(.PHONY): Add d.serial d.prev.
+	(d21$(exeext)): Depend on d.prev.  Call LINK_PROGRESS.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97843
+	* d-codegen.cc (build_assign): Evaluate TARGET_EXPR before use in
+	the right hand side of an assignment.
+	* expr.cc (ExprVisitor::visit (CatAssignExp *)): Force a TARGET_EXPR
+	on the element to append if it is a CALL_EXPR.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97842
+	* dmd/MERGE: Merge upstream dmd b6a779e49
+
 2020-11-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* intrinsics.cc (expand_intrinsic_copysign): Explicitly determine
