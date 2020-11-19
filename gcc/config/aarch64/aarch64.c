@@ -21200,35 +21200,39 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
 bool
 aarch64_expand_cpymem (rtx *operands)
 {
-  /* These need to be signed as we need to perform arithmetic on n as
-     signed operations.  */
-  int n, mode_bits;
+  int mode_bits;
   rtx dst = operands[0];
   rtx src = operands[1];
   rtx base;
-  machine_mode cur_mode = BLKmode, next_mode;
-  bool speed_p = !optimize_function_for_size_p (cfun);
+  machine_mode cur_mode = BLKmode;
 
-  /* When optimizing for size, give a better estimate of the length of a
-     memcpy call, but use the default otherwise.  Moves larger than 8 bytes
-     will always require an even number of instructions to do now.  And each
-     operation requires both a load+store, so divide the max number by 2.  */
-  unsigned int max_num_moves = (speed_p ? 16 : AARCH64_CALL_RATIO) / 2;
-
-  /* We can't do anything smart if the amount to copy is not constant.  */
+  /* Only expand fixed-size copies.  */
   if (!CONST_INT_P (operands[2]))
     return false;
 
-  unsigned HOST_WIDE_INT tmp = INTVAL (operands[2]);
+  unsigned HOST_WIDE_INT size = INTVAL (operands[2]);
 
-  /* Try to keep the number of instructions low.  For all cases we will do at
-     most two moves for the residual amount, since we'll always overlap the
-     remainder.  */
-  if (((tmp / 16) + (tmp % 16 ? 2 : 0)) > max_num_moves)
+  /* Inline up to 256 bytes when optimizing for speed.  */
+  unsigned HOST_WIDE_INT max_copy_size = 256;
+
+  if (optimize_function_for_size_p (cfun))
+    max_copy_size = 128;
+
+  int copy_bits = 256;
+
+  /* Default to 256-bit LDP/STP on large copies, however small copies, no SIMD
+     support or slow 256-bit LDP/STP fall back to 128-bit chunks.  */
+  if (size <= 24
+      || !TARGET_SIMD
+      || (aarch64_tune_params.extra_tuning_flags
+	  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS))
+    {
+      copy_bits = 128;
+      max_copy_size = max_copy_size / 2;
+    }
+
+  if (size > max_copy_size)
     return false;
-
-  /* At this point tmp is known to have to fit inside an int.  */
-  n = tmp;
 
   base = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   dst = adjust_automodify_address (dst, VOIDmode, base, 0);
@@ -21236,15 +21240,8 @@ aarch64_expand_cpymem (rtx *operands)
   base = copy_to_mode_reg (Pmode, XEXP (src, 0));
   src = adjust_automodify_address (src, VOIDmode, base, 0);
 
-  /* Convert n to bits to make the rest of the code simpler.  */
-  n = n * BITS_PER_UNIT;
-
-  /* Maximum amount to copy in one go.  We allow 256-bit chunks based on the
-     AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS tuning parameter and TARGET_SIMD.  */
-  const int copy_limit = ((aarch64_tune_params.extra_tuning_flags
-			   & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
-			  || !TARGET_SIMD)
-			 ? GET_MODE_BITSIZE (TImode) : 256;
+  /* Convert size to bits to make the rest of the code simpler.  */
+  int n = size * BITS_PER_UNIT;
 
   while (n > 0)
     {
@@ -21252,24 +21249,28 @@ aarch64_expand_cpymem (rtx *operands)
 	 or writing.  */
       opt_scalar_int_mode mode_iter;
       FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
-	if (GET_MODE_BITSIZE (mode_iter.require ()) <= MIN (n, copy_limit))
+	if (GET_MODE_BITSIZE (mode_iter.require ()) <= MIN (n, copy_bits))
 	  cur_mode = mode_iter.require ();
 
       gcc_assert (cur_mode != BLKmode);
 
       mode_bits = GET_MODE_BITSIZE (cur_mode).to_constant ();
+
+      /* Prefer Q-register accesses for the last bytes.  */
+      if (mode_bits == 128 && copy_bits == 256)
+	cur_mode = V4SImode;
+
       aarch64_copy_one_block_and_progress_pointers (&src, &dst, cur_mode);
 
       n -= mode_bits;
 
-      /* Do certain trailing copies as overlapping if it's going to be
-	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
-	 byte copy it's more efficient to do two overlapping 8 byte copies than
-	 8 + 6 + 1.  */
-      if (n > 0 && n <= 8 * BITS_PER_UNIT)
+      /* Emit trailing copies using overlapping unaligned accesses - this is
+	 smaller and faster.  */
+      if (n > 0 && n < copy_bits / 2)
 	{
-	  next_mode = smallest_mode_for_size (n, MODE_INT);
+	  machine_mode next_mode = smallest_mode_for_size (n, MODE_INT);
 	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
+	  gcc_assert (n_bits <= mode_bits);
 	  src = aarch64_move_pointer (src, (n - n_bits) / BITS_PER_UNIT);
 	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
 	  n = n_bits;
