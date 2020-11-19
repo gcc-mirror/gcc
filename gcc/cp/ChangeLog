@@ -1,3 +1,14 @@
+2020-11-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_objc_valid_prefix_attributes): Check
+	for empty attributes.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (c++.serial): New goal.
+	(.PHONY): Add c++.serial c++.prev.
+	(cc1plus$(exeext)): Depend on c++.prev.  Call LINK_PROGRESS.
+
 2020-11-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/97877

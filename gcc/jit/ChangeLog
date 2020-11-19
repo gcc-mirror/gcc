@@ -1,3 +1,9 @@
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (jit.serial): New goal.
+	(.PHONY): Add jit.serial jit.prev.
+	($(LIBGCCJIT_FILENAME)): Depend on jit.prev.  Call LINK_PROGRESS.
+
 2020-11-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/87291

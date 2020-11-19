@@ -1,3 +1,9 @@
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (obj-c++.serial): New goal.
+	(.PHONY): Add obj-c++.serial obj-c++.prev.
+	(cc1objplus$(exeext)): Depend on obj-c++.prev.  Call LINK_PROGRESS.
+
 2020-09-25  Nathan Sidwell  <nathan@acm.org>
 
 	* objcp-decl.c (objcp_start_struct): Use TAG_how not tag_scope.

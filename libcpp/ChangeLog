@@ -1,3 +1,39 @@
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_options): Add module_directives
+	option.
+	(NODE_MODULE): New node flag.
+	(struct cpp_hashnode): Make rid-code a bitfield, increase bits in
+	flags and swap with type field.
+	* init.c (post_options): Create module-directive identifier nodes.
+	* internal.h (struct lexer_state): Add directive_file_token &
+	n_modules fields.  Add module node enumerator.
+	* lex.c (cpp_maybe_module_directive): New.
+	(_cpp_lex_token): Call it.
+	(cpp_output_token): Add '"' around CPP_HEADER_NAME token.
+	(do_peek_ident, do_peek_module): New.
+	(cpp_directives_only): Detect module-directive lines.
+	* macro.c (cpp_get_token_1): Deal with directive_file_token
+	triggering.
+
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* files.c (struct _cpp_file): Add header_unit field.
+	(_cpp_stack_file): Add header unit support.
+	(cpp_find_header_unit): New.
+	* include/cpplib.h (cpp_find_header_unit): Declare.
+
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_options): Add modules to
+	dep-options.
+	* include/mkdeps.h (deps_add_module_target): Declare.
+	(deps_add_module_dep): Declare.
+	* mkdeps.c (class mkdeps): Add modules, module_name, cmi_name,
+	is_header_unit fields.  Adjust cdtors.
+	(deps_add_module_target, deps_add_module_dep): New.
+	(make_write): Write module dependencies, if enabled.
+
 2020-11-17  Nathan Sidwell  <nathan@acm.org>
 
 	* include/cpplib.h (struct cpp_callbacks): Add

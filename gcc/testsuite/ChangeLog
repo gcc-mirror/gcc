@@ -1,3 +1,95 @@
+2020-11-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/85811
+	* gcc.dg/pr85811.c: New test.
+	* gcc.dg/fold-isfinite-1.c: New test.
+	* gcc.dg/fold-isfinite-2.c: New test.
+	* gcc.dg/fold-isinf-1.c: New test.
+	* gcc.dg/fold-isinf-2.c: New test.
+	* gcc.dg/fold-isnan-1.c: New test.
+	* gcc.dg/fold-isnan-2.c: New test.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91029
+	PR tree-optimization/97888
+	* gcc.dg/pr91029.c: Add comment with PR number.
+	(f2): Use > 0 rather than >= 0.
+	* gcc.c-torture/execute/pr97888-1.c: New test.
+	* gcc.c-torture/execute/pr97888-2.c: New test.
+
+2020-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97893
+	* gcc.dg/analyzer/malloc-1.c: Add CWE-690 and CWE-476 codes to
+	expected output.
+
+2020-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/bb-slp-pr68892.c: Don't XFAIL the profitability
+	test for aarch64*-*-*.  Allow the "BB vectorization with gaps"
+	message to be printed more than once.
+
+2020-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/slp-21.c: Expect 4 SLP instances to be vectorized
+	on arm* and aarch64* targets.
+
+2020-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/fast-math-vect-call-1.c: Only expect SLP to be used
+	on vect_perm3_int targets.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.  Only XFAIL the LOAD/STORE_LANES
+	tests on vect_perm3_int targets.
+
+2020-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-epilogues.c: XFAIL test for epilogue loop
+	vectorization if vect_partial_vectors_usage_2.
+
+2020-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-sdiv-pow2-1.c (main): Add an asm to the
+	set-up loop.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97843
+	* gdc.dg/torture/pr97843.d: New test.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97862
+	* c-c++-common/gomp/pr97862.c: New test.
+
+2020-11-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-9.c: New.
+	* gcc.target/riscv/arch-10.c: Ditto.
+	* gcc.target/riscv/arch-11.c: Ditto.
+	* gcc.target/riscv/attribute-6.c: Remove, we don't support G
+	with version anymore.
+	* gcc.target/riscv/attribute-8.c: Reorder arch string to fit canonical
+	ordering.
+	* gcc.target/riscv/attribute-9.c: We don't emit version for
+	unknown extensions now.
+	* gcc.target/riscv/attribute-11.c: Add -misa-spec=2.2 flags.
+	* gcc.target/riscv/attribute-12.c: Ditto.
+	* gcc.target/riscv/attribute-13.c: Ditto.
+	* gcc.target/riscv/attribute-14.c: Ditto.
+	* gcc.target/riscv/attribute-15.c: New.
+	* gcc.target/riscv/attribute-16.c: Ditto.
+	* gcc.target/riscv/attribute-17.c: Ditto.
+
+2020-11-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/arch-8.c: New.
+	* gcc.target/riscv/attribute-14.c: Ditto.
+
+2020-11-18  Jiufu Guo   <guojiufu@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/loopclosedphi.c: New test.
+
 2020-11-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr91029.c: New.

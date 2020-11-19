@@ -1,3 +1,7 @@
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* c-lex.c (c_lex_with_flags): CPP_HEADER_NAMEs can now be seen.
+
 2020-11-17  Nathan Sidwell  <nathan@acm.org>
 
 	* c-common.h (enum c_tree_index): Reorder to place lazy fields

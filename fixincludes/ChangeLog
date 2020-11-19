@@ -1,3 +1,8 @@
+2020-11-18  Nathan Sidwell  <nathan@acm.org>
+
+	* inclhack.def (aix_physaddr_t): New.
+	* fixincl.x: Regenerated.
+
 2020-10-03  Clément Chigot  <clement.chigot@atos.net>
 
 	* inclhack.def (aix_malloc): Add more context to select.
