@@ -1417,8 +1417,8 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   putchar_unlocked putc_unlocked)
 AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
-	gettimeofday mbstowcs wcswidth mmap setlocale \
-	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2)
+	gettimeofday mbstowcs wcswidth mmap posix_fallocate setlocale \
+	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2 fstatat)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
@@ -1440,6 +1440,10 @@ fi
 
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_TYPE(caddr_t, char *)
+AC_CHECK_TYPE(sighander_t,
+  AC_DEFINE(HAVE_SIGHANDLER_T, 1,
+    [Define if <sys/signal.h> defines sighandler_t]),
+    ,signal.h)
 
 GCC_AC_FUNC_MMAP_BLACKLIST
 
@@ -1583,6 +1587,72 @@ return fcntl (1, F_SETLKW, &fl);]])],
 if test $ac_cv_f_setlkw = yes; then
   AC_DEFINE(HOST_HAS_F_SETLKW, 1,
   [Define if F_SETLKW supported by fcntl.])
+fi
+
+# Check if O_CLOEXEC is defined by fcntl
+AC_CACHE_CHECK(for O_CLOEXEC, ac_cv_o_cloexec, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <fcntl.h>]], [[
+return open ("/dev/null", O_RDONLY | O_CLOEXEC);]])],
+[ac_cv_o_cloexec=yes],[ac_cv_o_cloexec=no])])
+if test $ac_cv_o_cloexec = yes; then
+  AC_DEFINE(HOST_HAS_O_CLOEXEC, 1,
+  [Define if O_CLOEXEC supported by fcntl.])
+fi
+
+# C++ Modules would like some networking features to provide the mapping
+# server.  You can still use modules without them though.
+# The following network-related checks could probably do with some
+# Windows and other non-linux defenses and checking.
+
+# Local socket connectivity wants AF_UNIX networking
+# Check for AF_UNIX networking
+AC_CACHE_CHECK(for AF_UNIX, ac_cv_af_unix, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>]],[[
+sockaddr_un un;
+un.sun_family = AF_UNSPEC;
+int fd = socket (AF_UNIX, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&un, sizeof (un));]])],
+[ac_cv_af_unix=yes],
+[ac_cv_af_unix=no])])
+if test $ac_cv_af_unix = yes; then
+  AC_DEFINE(HAVE_AF_UNIX, 1,
+  [Define if AF_UNIX supported.])
+fi
+
+# Remote socket connectivity wants AF_INET6 networking
+# Check for AF_INET6 networking
+AC_CACHE_CHECK(for AF_INET6, ac_cv_af_inet6, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>]],[[
+sockaddr_in6 in6;
+in6.sin6_family = AF_UNSPEC;
+struct addrinfo *addrs = 0;
+struct addrinfo hints;
+hints.ai_flags = 0;
+hints.ai_family = AF_INET6;
+hints.ai_socktype = SOCK_STREAM;
+hints.ai_protocol = 0;
+hints.ai_canonname = 0;
+hints.ai_addr = 0;
+hints.ai_next = 0;
+int e = getaddrinfo ("localhost", 0, &hints, &addrs);
+const char *str = gai_strerror (e);
+freeaddrinfo (addrs);
+int fd = socket (AF_INET6, SOCK_STREAM, 0);
+connect (fd, (sockaddr *)&in6, sizeof (in6));]])],
+[ac_cv_af_inet6=yes],
+[ac_cv_af_inet6=no])])
+if test $ac_cv_af_inet6 = yes; then
+  AC_DEFINE(HAVE_AF_INET6, 1,
+  [Define if AF_INET6 supported.])
 fi
 
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
