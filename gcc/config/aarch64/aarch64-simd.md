@@ -3382,6 +3382,53 @@
   [(set_attr "type" "neon_<ADDSUB:optab>_long")]
 )
 
+(define_expand "vec_widen_<su>addl_lo_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 2 "register_operand"))]
+  "TARGET_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
+  emit_insn (gen_aarch64_<su>addl<mode>_lo_internal (operands[0], operands[1],
+						     operands[2], p));
+  DONE;
+})
+
+(define_expand "vec_widen_<su>addl_hi_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 2 "register_operand"))]
+  "TARGET_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+  emit_insn (gen_aarch64_<su>addl<mode>_hi_internal (operands[0], operands[1],
+						     operands[2], p));
+  DONE;
+})
+
+(define_expand "vec_widen_<su>subl_lo_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 2 "register_operand"))]
+  "TARGET_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
+  emit_insn (gen_aarch64_<su>subl<mode>_lo_internal (operands[0], operands[1],
+						     operands[2], p));
+  DONE;
+})
+
+(define_expand "vec_widen_<su>subl_hi_<mode>"
+  [(match_operand:<VWIDE> 0 "register_operand")
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 2 "register_operand"))]
+  "TARGET_SIMD"
+{
+  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+  emit_insn (gen_aarch64_<su>subl<mode>_hi_internal (operands[0], operands[1],
+						     operands[2], p));
+  DONE;
+})
 
 (define_expand "aarch64_saddl2<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
