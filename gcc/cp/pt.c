@@ -29250,10 +29250,13 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     return error_mark_node;
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
-    /* We don't recurse here because we can't deduce from a nested
-       initializer_list.  */
-    for (constructor_elt &elt : *CONSTRUCTOR_ELTS (init))
-      elt.value = resolve_nondeduced_context (elt.value, complain);
+    {
+      /* We don't recurse here because we can't deduce from a nested
+	 initializer_list.  */
+      if (CONSTRUCTOR_ELTS (init))
+	for (constructor_elt &elt : *CONSTRUCTOR_ELTS (init))
+	  elt.value = resolve_nondeduced_context (elt.value, complain);
+    }
   else
     init = resolve_nondeduced_context (init, complain);
 
