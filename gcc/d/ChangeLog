@@ -1,3 +1,41 @@
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97843
+	* d-codegen.cc (build_assign): Evaluate TARGET_EXPR before use in
+	the right hand side of an assignment.
+	* expr.cc (ExprVisitor::visit (CatAssignExp *)): Force a TARGET_EXPR
+	on the element to append if it is a CALL_EXPR.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97842
+	* dmd/cond.c (StaticIfCondition::include): Return error if condition
+	expression is unset.
+	* dmd/mtype.c (TypeTypeof::resolve): Return error if scope is unset.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-11-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (expand_intrinsic_copysign): Explicitly determine
+	which built-in copysign function to call.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-10-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/dtemplate.c (TemplateInstance::semantic): Propagate the root
+	module where the instantiated template should belong from the instance
+	to all member scopes.
+
 2020-10-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

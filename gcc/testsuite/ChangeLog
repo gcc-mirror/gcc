@@ -1,3 +1,37 @@
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97843
+	* gdc.dg/pr97843.d: New test.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97842
+	* gdc.test/fail_compilation/fail18970.d: New test.
+	* gdc.test/fail_compilation/imports/test21164a.d: New test.
+	* gdc.test/fail_compilation/imports/test21164b.d: New test.
+	* gdc.test/fail_compilation/imports/test21164c.d: New test.
+	* gdc.test/fail_compilation/imports/test21164d.d: New test.
+	* gdc.test/fail_compilation/test21164.d: New test.
+
+2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2020-10-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.test/compilable/imports/test21299/func.d: New test.
+	* gdc.test/compilable/imports/test21299/mtype.d: New test.
+	* gdc.test/compilable/imports/test21299/rootstringtable.d: New test.
+	* gdc.test/compilable/test21299a.d: New test.
+	* gdc.test/compilable/test21299b.d: New test.
+	* gdc.test/compilable/test21299c.d: New test.
+	* gdc.test/compilable/test21299d.d: New test.
+
 2020-11-17  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:
