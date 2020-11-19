@@ -3314,30 +3314,34 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	     may be NULL when we're called to compare MEM_EXPRs.  */
 	  if (!OP_SAME_WITH_NULL (0))
 	    return false;
-	  /* Most of time we only need to compare FIELD_DECLs for equality.
-	     However when determining address look into actual offsets.
-	     These may match for unions and unshared record types.  */
-	  flags &= ~OEP_ADDRESS_OF;
-	  if (!OP_SAME (1))
-	    {
-	      if (flags & OEP_ADDRESS_OF)
-		{
-		  if (TREE_OPERAND (arg0, 2)
-		      || TREE_OPERAND (arg1, 2))
-		    return OP_SAME_WITH_NULL (2);
-		  tree field0 = TREE_OPERAND (arg0, 1);
-		  tree field1 = TREE_OPERAND (arg1, 1);
+	  {
+	    bool compare_address = flags & OEP_ADDRESS_OF;
 
-		  if (!operand_equal_p (DECL_FIELD_OFFSET (field0),
-					DECL_FIELD_OFFSET (field1), flags)
-		      || !operand_equal_p (DECL_FIELD_BIT_OFFSET (field0),
-					   DECL_FIELD_BIT_OFFSET (field1),
-					   flags))
-		    return false;
-		}
-	      else
-		return false;
-	    }
+	    /* Most of time we only need to compare FIELD_DECLs for equality.
+	       However when determining address look into actual offsets.
+	       These may match for unions and unshared record types.  */
+	    flags &= ~OEP_ADDRESS_OF;
+	    if (!OP_SAME (1))
+	      {
+		if (compare_address)
+		  {
+		    if (TREE_OPERAND (arg0, 2)
+			|| TREE_OPERAND (arg1, 2))
+		      return OP_SAME_WITH_NULL (2);
+		    tree field0 = TREE_OPERAND (arg0, 1);
+		    tree field1 = TREE_OPERAND (arg1, 1);
+
+		    if (!operand_equal_p (DECL_FIELD_OFFSET (field0),
+					  DECL_FIELD_OFFSET (field1), flags)
+			|| !operand_equal_p (DECL_FIELD_BIT_OFFSET (field0),
+					     DECL_FIELD_BIT_OFFSET (field1),
+					     flags))
+		      return false;
+		  }
+		else
+		  return false;
+	      }
+	  }
 	  return OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
@@ -3436,10 +3440,14 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	if (!operand_equal_p (OBJ_TYPE_REF_OBJECT (arg0),
 			      OBJ_TYPE_REF_OBJECT (arg1), flags))
 	  return false;
-	if (!types_same_for_odr (obj_type_ref_class (arg0),
-				 obj_type_ref_class (arg1)))
-	  return false;
-	return true;
+	if (virtual_method_call_p (arg0))
+	  {
+	    if (!virtual_method_call_p (arg1))
+	      return false;
+	    return types_same_for_odr (obj_type_ref_class (arg0),
+				       obj_type_ref_class (arg1));
+	  }
+	return false;
 
 	default:
 	  return false;
@@ -3866,6 +3874,8 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	      flags &= ~OEP_ADDRESS_OF;
 	      inchash::add_expr (OBJ_TYPE_REF_TOKEN (t), hstate, flags);
 	      inchash::add_expr (OBJ_TYPE_REF_OBJECT (t), hstate, flags);
+	      if (!virtual_method_call_p (t))
+		return;
 	      if (tree c = obj_type_ref_class (t))
 		{
 		  c = TYPE_NAME (TYPE_MAIN_VARIANT (c));
