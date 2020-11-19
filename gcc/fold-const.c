@@ -3346,24 +3346,6 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (1) && OP_SAME (2);
 
-	/* Virtual table call.  */
-	case OBJ_TYPE_REF:
-	  {
-	    if (!operand_equal_p (OBJ_TYPE_REF_EXPR (arg0),
-				  OBJ_TYPE_REF_EXPR (arg1), flags))
-	      return false;
-	    if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg0))
-		!= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg1)))
-	      return false;
-	    if (!operand_equal_p (OBJ_TYPE_REF_OBJECT (arg0),
-				  OBJ_TYPE_REF_OBJECT (arg1), flags))
-	      return false;
-	    if (!types_same_for_odr (obj_type_ref_class (arg0),
-				     obj_type_ref_class (arg1)))
-	      return false;
-	    return true;
-	  }
-
 	default:
 	  return false;
 	}
@@ -3441,6 +3423,23 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME (0);
 	  return false;
+
+	case OBJ_TYPE_REF:
+	/* Virtual table reference.  */
+	if (!operand_equal_p (OBJ_TYPE_REF_EXPR (arg0),
+			      OBJ_TYPE_REF_EXPR (arg1), flags))
+	  return false;
+	flags &= ~OEP_ADDRESS_OF;
+	if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg0))
+	    != tree_to_uhwi (OBJ_TYPE_REF_TOKEN (arg1)))
+	  return false;
+	if (!operand_equal_p (OBJ_TYPE_REF_OBJECT (arg0),
+			      OBJ_TYPE_REF_OBJECT (arg1), flags))
+	  return false;
+	if (!types_same_for_odr (obj_type_ref_class (arg0),
+				 obj_type_ref_class (arg1)))
+	  return false;
+	return true;
 
 	default:
 	  return false;
@@ -3861,11 +3860,23 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	      hash_operand (TARGET_EXPR_SLOT (t), hstate, flags);
 	      return;
 
-	    /* Virtual table call.  */
 	    case OBJ_TYPE_REF:
+	    /* Virtual table reference.  */
 	      inchash::add_expr (OBJ_TYPE_REF_EXPR (t), hstate, flags);
+	      flags &= ~OEP_ADDRESS_OF;
 	      inchash::add_expr (OBJ_TYPE_REF_TOKEN (t), hstate, flags);
 	      inchash::add_expr (OBJ_TYPE_REF_OBJECT (t), hstate, flags);
+	      if (tree c = obj_type_ref_class (t))
+		{
+		  c = TYPE_NAME (TYPE_MAIN_VARIANT (c));
+		  /* We compute mangled names only when free_lang_data is run.
+		     In that case we can hash precisely.  */
+		  if (TREE_CODE (c) == TYPE_NAME
+		      && DECL_ASSEMBLER_NAME_SET_P (c))
+		    hstate.add_object
+			   (IDENTIFIER_HASH_VALUE
+				   (DECL_ASSEMBLER_NAME (c)));
+		}
 	      return;
 	    default:
 	      break;
