@@ -22,6 +22,7 @@
 
 
 #include <future>
+#include <thread>
 #include <chrono>
 #include <climits>
 #include <testsuite_hooks.h>
