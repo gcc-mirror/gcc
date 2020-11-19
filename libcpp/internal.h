@@ -635,7 +635,7 @@ typedef unsigned char uchar;
 
 #define UC (const uchar *)  /* Intended use: UC"string" */
 
-/* Macros.  */
+/* Accessors.  */
 
 inline int
 _cpp_in_system_header (cpp_reader *pfile)

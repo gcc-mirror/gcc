@@ -1,3 +1,9 @@
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (c.serial): New goal.
+	(.PHONY): Add c.serial c.prev.
+	(cc1$(exeext)): Call LINK_PROGRESS.
+
 2020-11-13  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	* c-parser.c (c_parser_asm_statement): Parse outputs for asm

@@ -1,3 +1,15 @@
+2020-11-18  Jerry Clcanny  <a837940593@gmail.com>
+
+	* lto-symtab.c (lto_symtab_merge_symbols): Fix typos in comment.
+
+2020-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (lto, lto1.serial, lto2.serial): New goals.
+	(.PHONY): Add lto lto1.serial lto1.prev lto2.serial lto2.prev.
+	(lto.all.cross, lto.start.encap): Remove dependencies.
+	($(LTO_EXE)): Depend on lto1.prev.  Call LINK_PROGRESS.
+	($(LTO_DUMP_EXE)): Depend on lto2.prev.  Call LINK_PROGRESS.
+
 2020-11-17  Jan Hubicka  <jh@suse.cz>
 
 	PR bootstrap/97857

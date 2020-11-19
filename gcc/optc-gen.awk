@@ -595,5 +595,29 @@ for (i = 0; i < n_opts; i++) {
 }
 print "}               "
 
+split("", var_seen, ":")
+print "\n#if !defined(GENERATOR_FILE) && defined(ENABLE_PLUGIN)"
+print "DEBUG_VARIABLE const struct cl_var cl_vars[] =\n{"
+
+for (i = 0; i < n_opts; i++) {
+	name = var_name(flags[i]);
+	if (name == "")
+		continue;
+	var_seen[name] = 1;
 }
 
+for (i = 0; i < n_extra_vars; i++) {
+	var = extra_vars[i]
+	sub(" *=.*", "", var)
+	name = var
+	sub("^.*[ *]", "", name)
+	sub("\\[.*\\]$", "", name)
+	if (name in var_seen)
+		continue;
+	print "  { " quote name quote ", offsetof (struct gcc_options, x_" name ") },"
+	var_seen[name] = 1
+}
+
+print "  { NULL, (unsigned short) -1 }\n};\n#endif"
+
+}

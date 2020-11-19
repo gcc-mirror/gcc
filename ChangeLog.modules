@@ -1,3 +1,8 @@
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk bf425849f1d
+	preprocessor: main-file cleanup
+
 2020-11-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

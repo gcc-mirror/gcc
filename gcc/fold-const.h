@@ -186,6 +186,13 @@ extern tree non_lvalue_loc (location_t, tree);
 extern bool tree_expr_nonzero_p (tree);
 extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *, int = 0);
+extern bool tree_expr_finite_p (const_tree);
+extern bool tree_expr_infinite_p (const_tree);
+extern bool tree_expr_maybe_infinite_p (const_tree);
+extern bool tree_expr_signaling_nan_p (const_tree);
+extern bool tree_expr_maybe_signaling_nan_p (const_tree);
+extern bool tree_expr_nan_p (const_tree);
+extern bool tree_expr_maybe_nan_p (const_tree);
 extern tree make_range (tree, int *, tree *, tree *, bool *);
 extern tree make_range_step (location_t, enum tree_code, tree, tree, tree,
 			     tree *, tree *, int *, bool *);

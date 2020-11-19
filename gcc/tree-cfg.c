@@ -3885,6 +3885,8 @@ verify_gimple_assign_binary (gassign *stmt)
         return false;
       }
 
+    case WIDEN_PLUS_EXPR:
+    case WIDEN_MINUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
       {
@@ -4005,6 +4007,10 @@ verify_gimple_assign_binary (gassign *stmt)
         return false;
       }
 
+    case VEC_WIDEN_MINUS_HI_EXPR:
+    case VEC_WIDEN_MINUS_LO_EXPR:
+    case VEC_WIDEN_PLUS_HI_EXPR:
+    case VEC_WIDEN_PLUS_LO_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:

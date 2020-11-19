@@ -3381,19 +3381,25 @@ expand_a_shift (machine_mode mode, enum rtx_code code, rtx operands[])
       break;
     }
 
-  emit_move_insn (copy_rtx (operands[0]), operands[1]);
-
   /* Need a loop to get all the bits we want  - we generate the
      code at emit time, but need to allocate a scratch reg now.  */
-
-  emit_insn (gen_rtx_PARALLEL
-	     (VOIDmode,
-	      gen_rtvec (2,
-			 gen_rtx_SET (copy_rtx (operands[0]),
-				      gen_rtx_fmt_ee (code, mode,
-						      copy_rtx (operands[0]), operands[2])),
-			 gen_rtx_CLOBBER (VOIDmode,
-					  gen_rtx_SCRATCH (QImode)))));
+  emit_move_insn (copy_rtx (operands[0]), operands[1]);
+  if (operands[2] == CONST0_RTX (QImode))
+    ;
+  else if (GET_CODE (operands[2]) == CONST_INT
+      && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), mode, code))
+    emit_insn (gen_rtx_SET (copy_rtx (operands[0]),
+			      gen_rtx_fmt_ee (code, mode,
+					      copy_rtx (operands[1]), operands[2])));
+  else
+    emit_insn (gen_rtx_PARALLEL
+	       (VOIDmode,
+		gen_rtvec (2,
+			   gen_rtx_SET (copy_rtx (operands[0]),
+					gen_rtx_fmt_ee (code, mode,
+							copy_rtx (operands[0]), operands[2])),
+			   gen_rtx_CLOBBER (VOIDmode,
+					    gen_rtx_SCRATCH (QImode)))));
   return true;
 }
 
@@ -3920,7 +3926,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
    needed for some shift with COUNT and MODE.  Return 0 otherwise.  */
 
 int
-h8300_shift_needs_scratch_p (int count, machine_mode mode)
+h8300_shift_needs_scratch_p (int count, machine_mode mode, enum rtx_code type)
 {
   enum h8_cpu cpu;
   int a, lr, ar;
@@ -3960,8 +3966,18 @@ h8300_shift_needs_scratch_p (int count, machine_mode mode)
     }
 
   /* On H8/300H, count == 8 uses a scratch register.  */
-  return (a == SHIFT_LOOP || lr == SHIFT_LOOP || ar == SHIFT_LOOP
-	  || (TARGET_H8300H && mode == SImode && count == 8));
+  if (type == CLOBBER)
+    return (a == SHIFT_LOOP || lr == SHIFT_LOOP || ar == SHIFT_LOOP
+	    || (TARGET_H8300H && mode == SImode && count == 8));
+  else if (type == ASHIFT)
+    return (a == SHIFT_LOOP
+	    || (TARGET_H8300H && mode == SImode && count == 8));
+  else if (type == LSHIFTRT)
+    return (lr == SHIFT_LOOP
+	    || (TARGET_H8300H && mode == SImode && count == 8));
+  else if (type == ASHIFTRT)
+    return (ar == SHIFT_LOOP
+	    || (TARGET_H8300H && mode == SImode && count == 8));
 }
 
 /* Output the assembler code for doing shifts.  */

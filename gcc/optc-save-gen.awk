@@ -1290,6 +1290,7 @@ for (i = 0; i < n_opts; i++) {
 		var_opt_val_type[n_opt_val] = otype;
 		var_opt_val[n_opt_val] = "x_" name;
 		var_opt_hash[n_opt_val] = flag_set_p("Optimization", flags[i]);
+		var_opt_init[n_opt_val] = opt_args("Init", flags[i]);
 		n_opt_val++;
 	}
 }
@@ -1361,10 +1362,21 @@ for (i = 0; i < n_opt_val; i++) {
 	otype = var_opt_val_type[i];
 	if (otype ~ "^const char \\**$")
 		print "  bp_pack_string (ob, bp, ptr->" name", true);";
-	else if (otype ~ "^unsigned")
-		print "  bp_pack_var_len_unsigned (bp, ptr->" name");";
-	else
-		print "  bp_pack_var_len_int (bp, ptr->" name");";
+	else {
+		if (otype ~ "^unsigned") {
+			sgn = "unsigned";
+		} else {
+			sgn = "int";
+		}
+		if (name ~ "^x_param" && !(otype ~ "^enum ") && var_opt_init[i]) {
+			print "  if (" var_opt_init[i] " > (" var_opt_val_type[i] ") 10)";
+			print "    bp_pack_var_len_" sgn " (bp, ptr->" name" ^ " var_opt_init[i] ");";
+			print "  else";
+			print "    bp_pack_var_len_" sgn " (bp, ptr->" name");";
+		} else {
+			print "  bp_pack_var_len_" sgn " (bp, ptr->" name");";
+		}
+	}
 }
 print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
 print "    bp_pack_value (bp, ptr->explicit_mask[i], 64);";
@@ -1385,10 +1397,18 @@ for (i = 0; i < n_opt_val; i++) {
 		print "  if (ptr->" name")";
 		print "    ptr->" name" = xstrdup (ptr->" name");";
 	}
-	else if (otype ~ "^unsigned")
-		print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_var_len_unsigned (bp);";
-	else
-		print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_var_len_int (bp);";
+	else {
+		if (otype ~ "^unsigned") {
+			sgn = "unsigned";
+		} else {
+			sgn = "int";
+		}
+		print "  ptr->" name" = (" var_opt_val_type[i] ") bp_unpack_var_len_" sgn " (bp);";
+		if (name ~ "^x_param" && !(otype ~ "^enum ") && var_opt_init[i]) {
+			print "  if (" var_opt_init[i] " > (" var_opt_val_type[i] ") 10)";
+			print "    ptr->" name" ^= " var_opt_init[i] ";";
+		}
+	}
 }
 print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
 print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";

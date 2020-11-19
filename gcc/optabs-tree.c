@@ -170,6 +170,22 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return (TYPE_UNSIGNED (type)
 	      ? vec_widen_ushiftl_lo_optab : vec_widen_sshiftl_lo_optab);
 
+    case VEC_WIDEN_PLUS_LO_EXPR:
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_uaddl_lo_optab : vec_widen_saddl_lo_optab);
+
+    case VEC_WIDEN_PLUS_HI_EXPR:
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_uaddl_hi_optab : vec_widen_saddl_hi_optab);
+
+    case VEC_WIDEN_MINUS_LO_EXPR:
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_usubl_lo_optab : vec_widen_ssubl_lo_optab);
+
+    case VEC_WIDEN_MINUS_HI_EXPR:
+      return (TYPE_UNSIGNED (type)
+	      ? vec_widen_usubl_hi_optab : vec_widen_ssubl_hi_optab);
+
     case VEC_UNPACK_HI_EXPR:
       return (TYPE_UNSIGNED (type)
 	      ? vec_unpacku_hi_optab : vec_unpacks_hi_optab);
