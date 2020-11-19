@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 20, 2020
+GNAT User's Guide for Native Platforms , Dec 11, 2020
 
 AdaCore
 
@@ -11507,7 +11507,7 @@ not included in this check.
 
 @emph{Suppress warnings on redefinition of names in standard.}
 
-This switch activates warnings for declarations that declare a name that
+This switch disables warnings for declarations that declare a name that
 is defined in package Standard.
 @end table
 
