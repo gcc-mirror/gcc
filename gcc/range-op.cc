@@ -80,30 +80,25 @@ empty_range_varying (irange &r, tree type,
     return false;
 }
 
-// Return TRUE if shifting by OP is undefined behavior, and set R to
-// the appropriate range.
+// Return false if shifting by OP is undefined behavior.  Otherwise, return
+// true and the range it is to be shifted by.  This allows trimming out of
+// undefined ranges, leaving only valid ranges if there are any.
 
 static inline bool
-undefined_shift_range_check (irange &r, tree type, const irange &op)
+get_shift_range (irange &r, tree type, const irange &op)
 {
   if (op.undefined_p ())
-    {
-      r.set_undefined ();
-      return true;
-    }
+    return false;
 
-  // Shifting by any values outside [0..prec-1], gets undefined
-  // behavior from the shift operation.  We cannot even trust
-  // SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
-  // shifts, and the operation at the tree level may be widened.
-  if (wi::lt_p (op.lower_bound (), 0, TYPE_SIGN (op.type ()))
-      || wi::ge_p (op.upper_bound (),
-		   TYPE_PRECISION (type), TYPE_SIGN (op.type ())))
-    {
-      r.set_varying (type);
-      return true;
-    }
-  return false;
+  // Build valid range and intersect it with the shift range.
+  r = value_range (build_int_cst_type (op.type (), 0),
+		   build_int_cst_type (op.type (), TYPE_PRECISION (type) - 1));
+  r.intersect (op);
+
+  // If there are no valid ranges in the shift range, returned false.
+  if (r.undefined_p ())
+    return false;
+  return true;
 }
 
 // Return TRUE if 0 is within [WMIN, WMAX].
@@ -1465,13 +1460,20 @@ operator_lshift::fold_range (irange &r, tree type,
 			     const irange &op1,
 			     const irange &op2) const
 {
-  if (undefined_shift_range_check (r, type, op2))
-    return true;
+  int_range_max shift_range;
+  if (!get_shift_range (shift_range, type, op2))
+    {
+      if (op2.undefined_p ())
+	r.set_undefined ();
+      else
+	r.set_varying (type);
+      return true;
+    }
 
   // Transform left shifts by constants into multiplies.
-  if (op2.singleton_p ())
+  if (shift_range.singleton_p ())
     {
-      unsigned shift = op2.lower_bound ().to_uhwi ();
+      unsigned shift = shift_range.lower_bound ().to_uhwi ();
       wide_int tmp = wi::set_bit_in_zero (shift, TYPE_PRECISION (type));
       int_range<1> mult (type, tmp, tmp);
 
@@ -1487,7 +1489,7 @@ operator_lshift::fold_range (irange &r, tree type,
     }
   else
     // Otherwise, invoke the generic fold routine.
-    return range_operator::fold_range (r, type, op1, op2);
+    return range_operator::fold_range (r, type, op1, shift_range);
 }
 
 void
@@ -1709,11 +1711,17 @@ operator_rshift::fold_range (irange &r, tree type,
 			     const irange &op1,
 			     const irange &op2) const
 {
-  // Invoke the generic fold routine if not undefined..
-  if (undefined_shift_range_check (r, type, op2))
-    return true;
+  int_range_max shift;
+  if (!get_shift_range (shift, type, op2))
+    {
+      if (op2.undefined_p ())
+	r.set_undefined ();
+      else
+	r.set_varying (type);
+      return true;
+    }
 
-  return range_operator::fold_range (r, type, op1, op2);
+  return range_operator::fold_range (r, type, op1, shift);
 }
 
 void
