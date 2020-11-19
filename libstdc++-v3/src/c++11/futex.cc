@@ -64,8 +64,10 @@ namespace
   // The SYS_futex syscall still uses the old definition of timespec
   // where tv_sec is 32 bits, so define a type that matches that.
   struct syscall_timespec { long tv_sec; long tv_nsec; };
+  using syscall_time_t = long;
 #else
   using syscall_timespec = ::timespec;
+  using syscall_time_t = time_t;
 #endif
 
   // Return the relative duration from (now_s + now_ns) to (abs_s + abs_ns)
@@ -86,9 +88,9 @@ namespace
     const auto rel_s = abs_s.count() - now_s;
 
     // Convert the absolute timeout to a relative timeout, without overflow.
-    if (rel_s > __int_traits<time_t>::__max) [[unlikely]]
+    if (rel_s > __int_traits<syscall_time_t>::__max) [[unlikely]]
       {
-	rt.tv_sec = __int_traits<time_t>::__max;
+	rt.tv_sec = __int_traits<syscall_time_t>::__max;
 	rt.tv_nsec = 999999999;
       }
     else
@@ -130,8 +132,8 @@ namespace
 	      return false;
 
 	    syscall_timespec rt;
-	    if (__s.count() > __int_traits<time_t>::__max) [[unlikely]]
-	      rt.tv_sec = __int_traits<time_t>::__max;
+	    if (__s.count() > __int_traits<syscall_time_t>::__max) [[unlikely]]
+	      rt.tv_sec = __int_traits<syscall_time_t>::__max;
 	    else
 	      rt.tv_sec = __s.count();
 	    rt.tv_nsec = __ns.count();
@@ -206,8 +208,8 @@ namespace
 	      return false;
 
 	    syscall_timespec rt;
-	    if (__s.count() > __int_traits<time_t>::__max) [[unlikely]]
-	      rt.tv_sec = __int_traits<time_t>::__max;
+	    if (__s.count() > __int_traits<syscall_time_t>::__max) [[unlikely]]
+	      rt.tv_sec = __int_traits<syscall_time_t>::__max;
 	    else
 	      rt.tv_sec = __s.count();
 	    rt.tv_nsec = __ns.count();
