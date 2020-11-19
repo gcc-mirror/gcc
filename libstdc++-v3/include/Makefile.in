@@ -533,6 +533,7 @@ bits_headers = \
 	${bits_srcdir}/std_abs.h \
 	${bits_srcdir}/std_function.h \
 	${bits_srcdir}/std_mutex.h \
+	${bits_srcdir}/std_thread.h \
 	${bits_srcdir}/stl_algo.h \
 	${bits_srcdir}/stl_algobase.h \
 	${bits_srcdir}/stl_bvector.h \

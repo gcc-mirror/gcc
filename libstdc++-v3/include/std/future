@@ -36,7 +36,6 @@
 #else
 
 #include <mutex>	      // call_once
-#include <thread>
 #include <condition_variable> // __at_thread_exit_elt
 #include <system_error>
 #include <atomic>
@@ -46,6 +45,7 @@
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
 #include <bits/std_function.h>
+#include <bits/std_thread.h>
 #include <bits/uses_allocator.h>
 #include <ext/aligned_buffer.h>
 
