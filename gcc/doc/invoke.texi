@@ -11440,7 +11440,8 @@ and @option{-fauto-profile}.
 @item -fvect-cost-model=@var{model}
 @opindex fvect-cost-model
 Alter the cost model used for vectorization.  The @var{model} argument
-should be one of @samp{unlimited}, @samp{dynamic} or @samp{cheap}.
+should be one of @samp{unlimited}, @samp{dynamic}, @samp{cheap} or
+@samp{very-cheap}.
 With the @samp{unlimited} model the vectorized code-path is assumed
 to be profitable while with the @samp{dynamic} model a runtime check
 guards the vectorized code-path to enable it only for iteration
@@ -11448,7 +11449,14 @@ counts that will likely execute faster than when executing the original
 scalar loop.  The @samp{cheap} model disables vectorization of
 loops where doing so would be cost prohibitive for example due to
 required runtime checks for data dependence or alignment but otherwise
-is equal to the @samp{dynamic} model.
+is equal to the @samp{dynamic} model.  The @samp{very-cheap} model only
+allows vectorization if the vector code would entirely replace the
+scalar code that is being vectorized.  For example, if each iteration
+of a vectorized loop would only be able to handle exactly four iterations
+of the scalar loop, the @samp{very-cheap} model would only allow
+vectorization if the scalar iteration count is known to be a multiple
+of four.
+
 The default cost model depends on other optimization flags and is
 either @samp{dynamic} or @samp{cheap}.
 

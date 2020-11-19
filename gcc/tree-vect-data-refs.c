@@ -2161,7 +2161,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         {
           unsigned max_allowed_peel
 	    = param_vect_max_peeling_for_alignment;
-	  if (flag_vect_cost_model == VECT_COST_MODEL_CHEAP)
+	  if (flag_vect_cost_model <= VECT_COST_MODEL_CHEAP)
 	    max_allowed_peel = 0;
           if (max_allowed_peel != (unsigned)-1)
             {
@@ -2259,7 +2259,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   do_versioning
     = (optimize_loop_nest_for_speed_p (loop)
        && !loop->inner /* FORNOW */
-       && flag_vect_cost_model != VECT_COST_MODEL_CHEAP);
+       && flag_vect_cost_model > VECT_COST_MODEL_CHEAP);
 
   if (do_versioning)
     {
@@ -3681,6 +3681,10 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
   unsigned int count = (comp_alias_ddrs.length ()
 			+ check_unequal_addrs.length ());
+
+  if (count && flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP)
+    return opt_result::failure_at
+      (vect_location, "would need a runtime alias check\n");
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,

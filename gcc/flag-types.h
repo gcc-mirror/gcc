@@ -232,12 +232,14 @@ enum scalar_storage_order_kind {
   SSO_LITTLE_ENDIAN
 };
 
-/* Vectorizer cost-model.  */
+/* Vectorizer cost-model.  Except for DEFAULT, the values are ordered from
+   the most conservative to the least conservative.  */
 enum vect_cost_model {
+  VECT_COST_MODEL_VERY_CHEAP = -3,
+  VECT_COST_MODEL_CHEAP = -2,
+  VECT_COST_MODEL_DYNAMIC = -1,
   VECT_COST_MODEL_UNLIMITED = 0,
-  VECT_COST_MODEL_CHEAP = 1,
-  VECT_COST_MODEL_DYNAMIC = 2,
-  VECT_COST_MODEL_DEFAULT = 3
+  VECT_COST_MODEL_DEFAULT = 1
 };
 
 /* Different instrumentation modes.  */

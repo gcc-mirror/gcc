@@ -3020,11 +3020,11 @@ Enable basic block vectorization (SLP) on trees.
 
 fvect-cost-model=
 Common Joined RejectNegative Enum(vect_cost_model) Var(flag_vect_cost_model) Init(VECT_COST_MODEL_DEFAULT) Optimization
--fvect-cost-model=[unlimited|dynamic|cheap]	Specifies the cost model for vectorization.
+-fvect-cost-model=[unlimited|dynamic|cheap|very-cheap]	Specifies the cost model for vectorization.
 
 fsimd-cost-model=
 Common Joined RejectNegative Enum(vect_cost_model) Var(flag_simd_cost_model) Init(VECT_COST_MODEL_UNLIMITED) Optimization
--fsimd-cost-model=[unlimited|dynamic|cheap]	Specifies the vectorization cost model for code marked with a simd directive.
+-fsimd-cost-model=[unlimited|dynamic|cheap|very-cheap]	Specifies the vectorization cost model for code marked with a simd directive.
 
 Enum
 Name(vect_cost_model) Type(enum vect_cost_model) UnknownError(unknown vectorizer cost model %qs)
@@ -3037,6 +3037,9 @@ Enum(vect_cost_model) String(dynamic) Value(VECT_COST_MODEL_DYNAMIC)
 
 EnumValue
 Enum(vect_cost_model) String(cheap) Value(VECT_COST_MODEL_CHEAP)
+
+EnumValue
+Enum(vect_cost_model) String(very-cheap) Value(VECT_COST_MODEL_VERY_CHEAP)
 
 fvect-cost-model
 Common Alias(fvect-cost-model=,dynamic,unlimited)
