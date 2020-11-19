@@ -2645,6 +2645,9 @@ public:
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_trunc_mod;
 
 void
@@ -2694,24 +2697,58 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
 bool
 operator_trunc_mod::op1_range (irange &r, tree type,
 			       const irange &lhs,
-			       const irange &op2) const
+			       const irange &) const
 {
-  // PR 91029.  Check for signed truncation with op2 >= 0.
-  if (TYPE_SIGN (type) == SIGNED && wi::ge_p (op2.lower_bound (), 0, SIGNED))
+  // PR 91029.
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
+  // (a % b) >= x && x > 0 , then a >= x.
+  if (wi::gt_p (lhs.lower_bound (), 0, sign))
     {
-      unsigned prec = TYPE_PRECISION (type);
-      // if a % b > 0 , then a >= 0.
-      if (wi::gt_p (lhs.lower_bound (), 0, SIGNED))
-	{
-	  r = value_range (type, wi::zero (prec), wi::max_value (prec, SIGNED));
-	  return true;
-	}
-      // if a % b < 0 , then a <= 0.
-      if (wi::lt_p (lhs.upper_bound (), 0, SIGNED))
-	{
-	  r = value_range (type, wi::min_value (prec, SIGNED), wi::zero (prec));
-	  return true;
-	}
+      r = value_range (type, lhs.lower_bound (), wi::max_value (prec, sign));
+      return true;
+    }
+  // (a % b) <= x && x < 0 , then a <= x.
+  if (wi::lt_p (lhs.upper_bound (), 0, sign))
+    {
+      r = value_range (type, wi::min_value (prec, sign), lhs.upper_bound ());
+      return true;
+    }
+  return false;
+}
+
+bool
+operator_trunc_mod::op2_range (irange &r, tree type,
+			       const irange &lhs,
+			       const irange &) const
+{
+  // PR 91029.
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
+  // (a % b) >= x && x > 0 , then b is in ~[-x, x] for signed
+  //			       or b > x for unsigned.
+  if (wi::gt_p (lhs.lower_bound (), 0, sign))
+    {
+      if (sign == SIGNED)
+	r = value_range (type, wi::neg (lhs.lower_bound ()),
+			 lhs.lower_bound (), VR_ANTI_RANGE);
+      else if (wi::lt_p (lhs.lower_bound (), wi::max_value (prec, sign),
+			 sign))
+	r = value_range (type, lhs.lower_bound () + 1,
+			 wi::max_value (prec, sign));
+      else
+	return false;
+      return true;
+    }
+  // (a % b) <= x && x < 0 , then b is in ~[x, -x].
+  if (wi::lt_p (lhs.upper_bound (), 0, sign))
+    {
+      if (wi::gt_p (lhs.upper_bound (), wi::min_value (prec, sign), sign))
+	r = value_range (type, lhs.upper_bound (),
+			 wi::neg (lhs.upper_bound ()), VR_ANTI_RANGE);
+      else
+	return false;
+      return true;
     }
   return false;
 }
