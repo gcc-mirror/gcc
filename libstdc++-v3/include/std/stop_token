@@ -166,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __gthread_t _M_requester;
 #endif
 
-      _Stop_state_t() = default;
+      _Stop_state_t() noexcept { }
 
       bool
       _M_stop_possible() noexcept
