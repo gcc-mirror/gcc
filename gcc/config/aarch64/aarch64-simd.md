@@ -4664,7 +4664,73 @@
   [(set_attr "type" "neon_sat_shift_reg<q>")]
 )
 
+(define_expand "vec_widen_<sur>shiftl_lo_<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(unspec:<VWIDE> [(match_operand:VQW 1 "register_operand" "w")
+			 (match_operand:SI 2
+			   "aarch64_simd_shift_imm_bitsize_<ve_mode>" "i")]
+			 VSHLL))]
+  "TARGET_SIMD"
+  {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
+    emit_insn (gen_aarch64_<sur>shll<mode>_internal (operands[0], operands[1],
+						     p, operands[2]));
+    DONE;
+  }
+)
+
+(define_expand "vec_widen_<sur>shiftl_hi_<mode>"
+   [(set (match_operand:<VWIDE> 0 "register_operand")
+	(unspec:<VWIDE> [(match_operand:VQW 1 "register_operand" "w")
+			 (match_operand:SI 2
+			   "immediate_operand" "i")]
+			  VSHLL))]
+   "TARGET_SIMD"
+   {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+    emit_insn (gen_aarch64_<sur>shll2<mode>_internal (operands[0], operands[1],
+						      p, operands[2]));
+    DONE;
+   }
+)
+
 ;; vshll_n
+
+(define_insn "aarch64_<sur>shll<mode>_internal"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(unspec:<VWIDE> [(vec_select:<VHALF>
+			    (match_operand:VQW 1 "register_operand" "w")
+			    (match_operand:VQW 2 "vect_par_cnst_lo_half" ""))
+			 (match_operand:SI 3
+			   "aarch64_simd_shift_imm_bitsize_<ve_mode>" "i")]
+			 VSHLL))]
+  "TARGET_SIMD"
+  {
+    if (INTVAL (operands[3]) == GET_MODE_UNIT_BITSIZE (<MODE>mode))
+      return "shll\\t%0.<Vwtype>, %1.<Vhalftype>, %3";
+    else
+      return "<sur>shll\\t%0.<Vwtype>, %1.<Vhalftype>, %3";
+  }
+  [(set_attr "type" "neon_shift_imm_long")]
+)
+
+(define_insn "aarch64_<sur>shll2<mode>_internal"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+	(unspec:<VWIDE> [(vec_select:<VHALF>
+			    (match_operand:VQW 1 "register_operand" "w")
+			    (match_operand:VQW 2 "vect_par_cnst_hi_half" ""))
+			 (match_operand:SI 3
+			   "aarch64_simd_shift_imm_bitsize_<ve_mode>" "i")]
+			 VSHLL))]
+  "TARGET_SIMD"
+  {
+    if (INTVAL (operands[3]) == GET_MODE_UNIT_BITSIZE (<MODE>mode))
+      return "shll2\\t%0.<Vwtype>, %1.<Vtype>, %3";
+    else
+      return "<sur>shll2\\t%0.<Vwtype>, %1.<Vtype>, %3";
+  }
+  [(set_attr "type" "neon_shift_imm_long")]
+)
 
 (define_insn "aarch64_<sur>shll_n<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")

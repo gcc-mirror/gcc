@@ -4935,8 +4935,9 @@ vectorizable_conversion (vec_info *vinfo,
 			 &vec_oprnds1);
       if (code == WIDEN_LSHIFT_EXPR)
 	{
-	  vec_oprnds1.create (ncopies * ninputs);
-	  for (i = 0; i < ncopies * ninputs; ++i)
+	  int oprnds_size = vec_oprnds0.length ();
+	  vec_oprnds1.create (oprnds_size);
+	  for (i = 0; i < oprnds_size; ++i)
 	    vec_oprnds1.quick_push (op1);
 	}
       /* Arguments are ready.  Create the new vector stmts.  */
