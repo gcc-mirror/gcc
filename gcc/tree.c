@@ -3483,7 +3483,17 @@ array_type_nelts (const_tree type)
 
   /* TYPE_MAX_VALUE may not be set if the array has unknown length.  */
   if (!max)
-    return error_mark_node;
+    {
+      /* zero sized arrays are represented from C FE as complete types with
+	 NULL TYPE_MAX_VALUE and zero TYPE_SIZE, while C++ FE represents
+	 them as min 0, max -1.  */
+      if (COMPLETE_TYPE_P (type)
+	  && integer_zerop (TYPE_SIZE (type))
+	  && integer_zerop (min))
+	return build_int_cst (TREE_TYPE (min), -1);
+
+      return error_mark_node;
+    }
 
   return (integer_zerop (min)
 	  ? max
