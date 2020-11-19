@@ -1148,7 +1148,7 @@ vect_recog_sad_pattern (vec_info *vinfo,
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
   vect_unpromoted_value unprom[2];
-  if (!vect_widened_op_tree (vinfo, diff_stmt_vinfo, MINUS_EXPR, MINUS_EXPR,
+  if (!vect_widened_op_tree (vinfo, diff_stmt_vinfo, MINUS_EXPR, WIDEN_MINUS_EXPR,
 			     false, 2, unprom, &half_type))
     return NULL;
 
@@ -1260,6 +1260,29 @@ vect_recog_widen_mult_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
   return vect_recog_widen_op_pattern (vinfo, last_stmt_info, type_out,
 				      MULT_EXPR, WIDEN_MULT_EXPR, false,
 				      "vect_recog_widen_mult_pattern");
+}
+
+/* Try to detect addition on widened inputs, converting PLUS_EXPR
+   to WIDEN_PLUS_EXPR.  See vect_recog_widen_op_pattern for details.  */
+
+static gimple *
+vect_recog_widen_plus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
+			       tree *type_out)
+{
+  return vect_recog_widen_op_pattern (vinfo, last_stmt_info, type_out,
+				      PLUS_EXPR, WIDEN_PLUS_EXPR, false,
+				      "vect_recog_widen_plus_pattern");
+}
+
+/* Try to detect subtraction on widened inputs, converting MINUS_EXPR
+   to WIDEN_MINUS_EXPR.  See vect_recog_widen_op_pattern for details.  */
+static gimple *
+vect_recog_widen_minus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
+			       tree *type_out)
+{
+  return vect_recog_widen_op_pattern (vinfo, last_stmt_info, type_out,
+				      MINUS_EXPR, WIDEN_MINUS_EXPR, false,
+				      "vect_recog_widen_minus_pattern");
 }
 
 /* Function vect_recog_pow_pattern
@@ -1978,7 +2001,7 @@ vect_recog_average_pattern (vec_info *vinfo,
   vect_unpromoted_value unprom[3];
   tree new_type;
   unsigned int nops = vect_widened_op_tree (vinfo, plus_stmt_info, PLUS_EXPR,
-					    PLUS_EXPR, false, 3,
+					    WIDEN_PLUS_EXPR, false, 3,
 					    unprom, &new_type);
   if (nops == 0)
     return NULL;
@@ -5249,7 +5272,9 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
      of mask conversion that are needed for gather and scatter
      internal functions.  */
   { vect_recog_gather_scatter_pattern, "gather_scatter" },
-  { vect_recog_mask_conversion_pattern, "mask_conversion" }
+  { vect_recog_mask_conversion_pattern, "mask_conversion" },
+  { vect_recog_widen_plus_pattern, "widen_plus" },
+  { vect_recog_widen_minus_pattern, "widen_minus" },
 };
 
 const unsigned int NUM_PATTERNS = ARRAY_SIZE (vect_vect_recog_func_ptrs);

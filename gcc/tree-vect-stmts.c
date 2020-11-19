@@ -4571,6 +4571,8 @@ vectorizable_conversion (vec_info *vinfo,
   if (!CONVERT_EXPR_CODE_P (code)
       && code != FIX_TRUNC_EXPR
       && code != FLOAT_EXPR
+      && code != WIDEN_PLUS_EXPR
+      && code != WIDEN_MINUS_EXPR
       && code != WIDEN_MULT_EXPR
       && code != WIDEN_LSHIFT_EXPR)
     return false;
@@ -4616,7 +4618,8 @@ vectorizable_conversion (vec_info *vinfo,
 
   if (op_type == binary_op)
     {
-      gcc_assert (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR);
+      gcc_assert (code == WIDEN_MULT_EXPR || code == WIDEN_LSHIFT_EXPR
+		  || code == WIDEN_PLUS_EXPR || code == WIDEN_MINUS_EXPR);
 
       op1 = gimple_assign_rhs2 (stmt);
       tree vectype1_in;
@@ -11533,6 +11536,16 @@ supportable_widening_operation (vec_info *vinfo,
     case WIDEN_LSHIFT_EXPR:
       c1 = VEC_WIDEN_LSHIFT_LO_EXPR;
       c2 = VEC_WIDEN_LSHIFT_HI_EXPR;
+      break;
+
+    case WIDEN_PLUS_EXPR:
+      c1 = VEC_WIDEN_PLUS_LO_EXPR;
+      c2 = VEC_WIDEN_PLUS_HI_EXPR;
+      break;
+
+    case WIDEN_MINUS_EXPR:
+      c1 = VEC_WIDEN_MINUS_LO_EXPR;
+      c2 = VEC_WIDEN_MINUS_HI_EXPR;
       break;
 
     CASE_CONVERT:
