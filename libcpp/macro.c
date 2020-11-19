@@ -588,7 +588,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	 (c) we are not in strictly conforming mode, then it has the
 	 value 0.  (b) and (c) are already checked in cpp_init_builtins.  */
     case BT_STDC:
-      if (cpp_in_system_header (pfile))
+      if (_cpp_in_system_header (pfile))
 	number = 0;
       else
 	number = 1;
@@ -2217,7 +2217,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	      = (const cpp_token **) tokens_buff_last_token_ptr (buff);
 	}
       else if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99)
-	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
+	       && ! macro->syshdr && ! _cpp_in_system_header (pfile))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
 	    cpp_pedwarning (pfile, CPP_W_PEDANTIC,
@@ -2236,7 +2236,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	}
       else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
 	       && ! CPP_OPTION (pfile, cplusplus)
-	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
+	       && ! macro->syshdr && ! _cpp_in_system_header (pfile))
 	cpp_warning (pfile, CPP_W_C90_C99_COMPAT,
 		     "invoking macro %s argument %d: "
 		     "empty macro arguments are undefined"
