@@ -1312,7 +1312,7 @@ static const struct tune_params thunderx3t110_tunings =
 
 static const struct tune_params neoversen1_tunings =
 {
-  &cortexa57_extra_costs,
+  &cortexa76_extra_costs,
   &generic_addrcost_table,
   &generic_regmove_cost,
   &cortexa57_vector_cost,
@@ -1338,7 +1338,7 @@ static const struct tune_params neoversen1_tunings =
 
 static const struct tune_params neoversev1_tunings =
 {
-  &cortexa57_extra_costs,
+  &cortexa76_extra_costs,
   &generic_addrcost_table,
   &generic_regmove_cost,
   &cortexa57_vector_cost,
@@ -1364,7 +1364,7 @@ static const struct tune_params neoversev1_tunings =
 
 static const struct tune_params neoversen2_tunings =
 {
-  &cortexa57_extra_costs,
+  &cortexa76_extra_costs,
   &generic_addrcost_table,
   &generic_regmove_cost,
   &cortexa57_vector_cost,
