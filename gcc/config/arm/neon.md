@@ -899,40 +899,6 @@
   [(set_attr "type" "neon_shift_reg<q>")]
 )
 
-(define_expand "vashr<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
-			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "TARGET_NEON"
-{
-  if (s_register_operand (operands[2], <MODE>mode))
-    {
-      rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neon_neg<mode>2 (neg, operands[2]));
-      emit_insn (gen_ashl<mode>3_signed (operands[0], operands[1], neg));
-    }
-  else
-    emit_insn (gen_vashr<mode>3_imm (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vlshr<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
-			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "TARGET_NEON"
-{
-  if (s_register_operand (operands[2], <MODE>mode))
-    {
-      rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neon_neg<mode>2 (neg, operands[2]));
-      emit_insn (gen_ashl<mode>3_unsigned (operands[0], operands[1], neg));
-    }
-  else
-    emit_insn (gen_vlshr<mode>3_imm (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
 ;; 64-bit shifts
 
 ;; This pattern loads a 32-bit shift count into a 64-bit NEON register,

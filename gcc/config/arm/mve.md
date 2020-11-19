@@ -763,6 +763,7 @@
 ;;
 ;; [vshrq_n_s, vshrq_n_u])
 ;;
+;; Version that takes an immediate as operand 2.
 (define_insn "mve_vshrq_n_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
@@ -772,6 +773,39 @@
   ]
   "TARGET_HAVE_MVE"
   "vshr.<supf><V_sz_elem>\t%q0, %q1, %2"
+  [(set_attr "type" "mve_move")
+])
+
+;; Versions that take constant vectors as operand 2 (with all elements
+;; equal).
+(define_insn "mve_vshrq_n_s<mode>_imm"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(ashiftrt:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+			(match_operand:MVE_2 2 "imm_for_neon_rshift_operand" "i")))
+  ]
+  "TARGET_HAVE_MVE"
+  {
+    return neon_output_shift_immediate ("vshr", 's', &operands[2],
+					<MODE>mode,
+					VALID_NEON_QREG_MODE (<MODE>mode),
+					true);
+  }
+  [(set_attr "type" "mve_move")
+])
+(define_insn "mve_vshrq_n_u<mode>_imm"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand" "=w")
+	(lshiftrt:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")
+			(match_operand:MVE_2 2 "imm_for_neon_rshift_operand" "i")))
+  ]
+  "TARGET_HAVE_MVE"
+  {
+    return neon_output_shift_immediate ("vshr", 'u', &operands[2],
+					<MODE>mode,
+					VALID_NEON_QREG_MODE (<MODE>mode),
+					true);
+  }
   [(set_attr "type" "mve_move")
 ])
 

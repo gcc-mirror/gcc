@@ -260,3 +260,39 @@
   emit_insn (gen_mve_vshlq_u<mode> (operands[0], operands[1], operands[2]));
   DONE;
 })
+
+;; When operand 2 is an immediate, use the normal expansion to match
+;; gen_vashr<mode>3_imm for Neon and gen_mve_vshrq_n_s<mode>_imm for
+;; MVE.
+(define_expand "vashr<mode>3"
+  [(set (match_operand:VDQIW 0 "s_register_operand")
+	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
+			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
+  "ARM_HAVE_<MODE>_ARITH"
+{
+  if (s_register_operand (operands[2], <MODE>mode))
+    {
+      rtx neg = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_mve_vshlq_s<mode> (operands[0], operands[1], neg));
+      DONE;
+    }
+})
+
+;; When operand 2 is an immediate, use the normal expansion to match
+;; gen_vashr<mode>3_imm for Neon and gen_mve_vshrq_n_u<mode>_imm for
+;; MVE.
+(define_expand "vlshr<mode>3"
+  [(set (match_operand:VDQIW 0 "s_register_operand")
+	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
+			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
+  "ARM_HAVE_<MODE>_ARITH"
+{
+  if (s_register_operand (operands[2], <MODE>mode))
+    {
+      rtx neg = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_mve_vshlq_u<mode> (operands[0], operands[1], neg));
+      DONE;
+    }
+})
