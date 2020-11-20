@@ -3070,27 +3070,26 @@ errors if these functions are not inlined everywhere they are called.
 @itemx -fno-modules-ts
 @opindex fmodules-ts
 @opindex fno-modules-ts
-Enable support for C++ 20 modules.  The @option{-fno-modules-ts} is
-usually not needed, as that is the default.  Even though this is a
-C++20 feature, it is not currently implicitly enabled by selecting
-that standard version.
+Enable support for C++20 modules (@xref{C++ Modules}).  The
+@option{-fno-modules-ts} is usually not needed, as that is the
+default.  Even though this is a C++20 feature, it is not currently
+implicitly enabled by selecting that standard version.
 
 @item -fmodule-header
 @itemx -fmodule-header=user
 @itemx -fmodule-header=system
 @opindex fmodule-header
-Compile as a header unit.
+Compile a header file to create an importableheader unit.
 
 @item -fmodule-implicit-inline
 @opindex fmodule-implicit-inline
-Memmber functions defined in their class definitions are not
-implicitly inline for modular code.  This is different to traditional
-C++ behaviour, for good reasons.  However, it may result in a
-difficulty during code porting.  This option will make such function
-definitions implicitly inline.  It does however generate an ABI
-incompatibility, so you must use it everywhere or nowhere.  (Such
-definitions outside of a named module remain implicitly inline,
-regardless.)
+Member functions defined in their class definitions are not implicitly
+inline for modular code.  This is different to traditional C++
+behavior, for good reasons.  However, it may result in a difficulty
+during code porting.  This option will make such function definitions
+implicitly inline.  It does however generate an ABI incompatibility,
+so you must use it everywhere or nowhere.  (Such definitions outside
+of a named module remain implicitly inline, regardless.)
 
 @item -fno-module-lazy
 @opindex fno-module-lazy
@@ -3111,7 +3110,7 @@ and if that is unset, an in-process default is provided.
 
 @item -fmodule-only
 @opindex fmodule-only
-Only emit the module CMI, inhibiting any object file.
+Only emit the Compiled Module Interface, inhibiting any object file.
 
 @item -fms-extensions
 @opindex fms-extensions
@@ -3364,7 +3363,7 @@ is used when building the C++ library.)
 @item -flang-info-include-translate
 @itemx -flang-info-include-translate=@var{header}
 @opindex flang-info-include-translate
-Note include translation events.
+Give notice of include translation events.
 
 @end table
 
@@ -3526,9 +3525,10 @@ the variable declaration statement.
 @item -Winvalid-imported-macros
 @opindex Winvalid-imported-macros
 @opindex Wno-invalid-imported-macros
-Verify all imported macro definitions are valid at end of
+Verify all imported macro definitions are valid at the end of
 compilation.  This is not enabled by default, as it requires
-additional processing to determine.
+additional processing to determine.  It may be useful when preparing
+sets of header-units to ensure consistent macros.
 
 @item -Wno-literal-suffix @r{(C++ and Objective-C++ only)}
 @opindex Wliteral-suffix
@@ -32015,7 +32015,7 @@ usage:
 
 @item @code{sanitize}
 The @code{sanitize} spec function takes no arguments.  It returns non-NULL if
-any address, thread or undefined behaviour sanitizers are active.
+any address, thread or undefined behavior sanitizers are active.
 
 @smallexample
 %@{%:sanitize(address):-funwind-tables@}
@@ -32590,7 +32590,7 @@ changes.  That specification is now part of C++20,
 (there may be defect reports to come).
 
 @emph{G++'s modules support is not complete.}  Other than bugs, the
-missing pieces are:
+known missing pieces are:
 
 @table @emph
 
@@ -32600,10 +32600,10 @@ The Private Module Fragment is recognized, but an error is emitted.
 @item Partition definition visibility rules
 Entities may be defined in implementation partitions, and those
 definitions are not available outside of the module.  This is not
-implemented.
+implemented, and the definitions are available to extra-module use.
 
 @item Textual merging of reachable GM entities
-Entitites may be multiply defined across different header-units.
+Entities may be multiply defined across different header-units.
 These must be de-duplicated, and this is implemented across imports,
 or when an import redefines a textually-defined entity.  However the
 reverse is not implemented -- textually redefining an entity that has
@@ -32612,7 +32612,7 @@ emitted.
 
 @item Translation-Unit local referencing rules
 Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
-(@uref{https://wg21.link/p2003} adds limitations on which entities an
+(@uref{https://wg21.link/p2003} add limitations on which entities an
 exported region may reference (for instance, the entities an exported
 template definition may reference).  These are not fully implemented.
 
@@ -32621,7 +32621,7 @@ template definition may reference).  These are not fully implemented.
 Modular compilation is @emph{not} enabled with just the
 @option{-std=c++20} option.  You must explicitly enable it with the
 @option{-fmodules-ts} option.  It is independent of the language
-version selected, although in pre-c++20 versions, it is of course an
+version selected, although in pre-C++20 versions, it is of course an
 extension.
 
 No new source file suffixes are required or supported.  If you wish to
@@ -32659,7 +32659,7 @@ installed.  Specifying the language as one of these variants also
 inhibits output of the object file, as header files have no associated
 object file.
 
-When creating an output CMI any missing directory components are
+When creating an output CMI, any missing directory components are
 created in a manner that is safe for concurrent builds creating
 multiple, different, CMIs within a common subdirectory tree.
 
@@ -32702,7 +32702,8 @@ to be resolved at the end of compilation.  Without this, imported
 macros are only resolved when expanded or (re)defined.  This option
 will detect conflicting import definitions for all macros.
 
-The @option{-fmodule-mapper} family of options are described below.
+@xref{C++ Module Mapper} for details of the @option{-fmodule-mapper}
+family of options.
 
 @menu
 * C++ Module Mapper::       Module Mapper

@@ -1,7 +1,14 @@
 2020-11-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi: Fixes.
+
 	libcody/
 	Update from upstream.
+
+	gcc/
+	* doc/invoke.texi: Update
+	* doc/cppopts.texi: Update
 
 	gcc/cp/
 	* cp-tree.h (match_mergeable_specialization): Take a spec_entry.
