@@ -5187,7 +5187,8 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   slp_tree child;
   unsigned i;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (!types_compatible_p (SLP_TREE_VECTYPE (child), vectype))
+    if (!vect_maybe_update_slp_op_vectype (child, vectype)
+	|| !types_compatible_p (SLP_TREE_VECTYPE (child), vectype))
       {
 	if (dump_enabled_p ())
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
