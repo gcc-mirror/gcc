@@ -2,16 +2,17 @@
 # Copyright (C) 2019-2020 Nathan Sidwell, nathan@acm.org
 # License: Apache v2.0
 
-ifeq (0,$(MAKELEVEL)$(SERIAL))
-ifneq (,@toolbin@)
-$(info Prepending @toolbin@ to PATH)
-PATH := @toolbin@:$(PATH)
+ifeq (0,$(MAKELEVEL))
+ifneq (,@tools@)
+$(info Prepending @tools@/bin to PATH)
+PATH := @tools@/bin:$(PATH)
 export PATH
 endif
-
+ifeq (,$(SERIAL))
 # Figure out if we should set parallelism
 ifeq (,$(filter clean%,$(MAKECMDGOALS)))
 PARALLELISM := @NUM_CPUS@
+endif
 endif
 endif
 

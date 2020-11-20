@@ -15,6 +15,10 @@
 #include <arpa/inet.h>
 #include <sys/un.h>
 
+#ifndef AI_NUMERICSERV
+#define AI_NUMERICSERV 0
+#endif
+
 // Client-side networking helpers
 
 namespace Cody {

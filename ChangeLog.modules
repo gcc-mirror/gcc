@@ -1,17 +1,18 @@
 2020-11-20  Nathan Sidwell  <nathan@acm.org>
 
-<<<<<<< HEAD
-	gcc/
-	* doc/invoke.texi: Update
-	* doc/cppopts.texi: Update
-=======
+	libcody/
+	Update from upstream.
+
 	gcc/cp/
 	* cp-tree.h (match_mergeable_specialization): Take a spec_entry.
 	* pt.c (match_mergeable_specialization): Likewise.
 	* module.cc (trees_in::decl_value): Adjust.
 	(trees_{in,out}::key_mergeable): Adjust.
 	(specialization_add): Adjust.
->>>>>>> eecc1bc3517... Adjust template spec accessor
+
+	gcc/
+	* doc/invoke.texi: Update
+	* doc/cppopts.texi: Update
 
 	Merge trunk 5bba2215c23
 	c++: Template hash access (
