@@ -29723,15 +29723,13 @@ walk_specializations (bool decls_p,
    nothing).  If INSERT is true, and there was nothing, add the new spec.  */
 
 tree
-match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec,
-				bool insert)
+  match_mergeable_specialization (bool decl_p, spec_entry *elt, bool insert)
 {
-  spec_entry elt = {tmpl, args, spec};
   hash_table<spec_hasher> *specializations
     = decl_p ? decl_specializations : type_specializations;
-  hashval_t hash = spec_hasher::hash (&elt);
+  hashval_t hash = spec_hasher::hash (elt);
   spec_entry **slot
-    = specializations->find_slot_with_hash (&elt, hash,
+    = specializations->find_slot_with_hash (elt, hash,
 					    insert ? INSERT : NO_INSERT);
   if (slot && *slot)
     return (*slot)->spec;
@@ -29739,7 +29737,7 @@ match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec,
   if (insert)
     {
       auto entry = ggc_alloc<spec_entry> ();
-      *entry = elt;
+      *entry = *elt;
       *slot = entry;
     }
 

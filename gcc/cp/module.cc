@@ -8118,8 +8118,9 @@ trees_in::decl_value ()
 	{
 	  /* Insert into type table.  */
 	  tree ti = DECL_TEMPLATE_INFO (inner);
-	  tree texist = match_mergeable_specialization
-	    (false, TI_TEMPLATE (ti), TI_ARGS (ti), TREE_TYPE (inner));
+	  spec_entry elt = 
+	    {TI_TEMPLATE (ti), TI_ARGS (ti), TREE_TYPE (inner)};
+	  tree texist = match_mergeable_specialization (false, &elt);
 	  if (texist)
 	    set_overrun ();
 	}
@@ -10350,16 +10351,14 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	{
 	  /* Make sure we can locate the decl.  */
 	  tree existing = match_mergeable_specialization
-	    (bool (mk & MK_tmpl_decl_mask), entry->tmpl, entry->args,
-	     entry->spec, false);
+	    (bool (mk & MK_tmpl_decl_mask), entry, false);
 
 	  gcc_assert (existing);
 	  if (mk & MK_tmpl_decl_mask)
 	    {
 	      if (mk & MK_tmpl_alias_mask)
 		/* It should be in both tables.  */
-		gcc_assert (match_mergeable_specialization
-			    (false, entry->tmpl, entry->args, entry->spec, false)
+		gcc_assert (match_mergeable_specialization (false, entry, false)
 			    == TREE_TYPE (existing));
 	      else if (mk & MK_tmpl_tmpl_mask)
 		if (tree ti = DECL_TEMPLATE_INFO (existing))
@@ -10670,21 +10669,22 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
   if (mk & MK_template_mask)
     {
-      tree tmpl = tree_node ();
-      tree args = tree_node ();
+      spec_entry spec;
+      spec.tmpl = tree_node ();
+      spec.args = tree_node ();
       unsigned flags = u ();
 
-      DECL_NAME (decl) = DECL_NAME (tmpl);
-      DECL_CONTEXT (decl) = DECL_CONTEXT (tmpl);
+      DECL_NAME (decl) = DECL_NAME (spec.tmpl);
+      DECL_CONTEXT (decl) = DECL_CONTEXT (spec.tmpl);
       DECL_NAME (inner) = DECL_NAME (decl);
       DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
 
-      tree insert = decl;
+      spec.spec = decl;
       if (mk & MK_tmpl_tmpl_mask)
 	{
 	  if (inner == decl)
 	    return error_mark_node;
-	  insert = inner;
+	  spec.spec = inner;
 	}
       tree constr = NULL_TREE;
       bool is_decl = mk & MK_tmpl_decl_mask;
@@ -10701,16 +10701,15 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	{
 	  if (mk == MK_type_spec && inner != decl)
 	    return error_mark_node;
-	  insert = type;
+	  spec.spec = type;
 	}
-
-      existing = match_mergeable_specialization (is_decl, tmpl, args, insert);
+      existing = match_mergeable_specialization (is_decl, &spec);
       if (constr)
 	/* We'll add these back later, if this is the new decl.  */
 	remove_constraints (inner);
 
       if (!existing)
-	add_mergeable_specialization (tmpl, args, decl, flags);
+	add_mergeable_specialization (spec.tmpl, spec.args, decl, flags);
       else if (mk & MK_tmpl_decl_mask)
 	{
 	  /* A declaration specialization.  */
@@ -10966,13 +10965,15 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
       if (mk == MK_friend_spec)
 	{
-	  tree tmpl = tree_node ();
-	  tree args = tree_node ();
+	  spec_entry spec;
+	  spec.tmpl = tree_node ();
+	  spec.args = tree_node ();
+	  spec.spec = decl;
 	  unsigned flags = u ();
 
-	  tree e = match_mergeable_specialization (true, tmpl, args, decl);
+	  tree e = match_mergeable_specialization (true, &spec);
 	  if (!e)
-	    add_mergeable_specialization (tmpl, args,
+	    add_mergeable_specialization (spec.tmpl, spec.args,
 					  existing ? existing : decl, flags);
 	  else if (e != existing)
 	    set_overrun ();
@@ -12871,8 +12872,7 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
        /* Only alias templates can appear in both tables (and
 	  if they're in the type table they must also be in the decl table).  */
        gcc_checking_assert
-	 (!match_mergeable_specialization (true, entry->tmpl, entry->args,
-					   entry->spec, false)
+	 (!match_mergeable_specialization (true, entry, false)
 	  == (decl_p || !DECL_ALIAS_TEMPLATE_P (entry->tmpl)));
     }
   else if (VAR_OR_FUNCTION_DECL_P (entry->spec))
