@@ -245,6 +245,14 @@ func_checker::hash_operand (const_tree arg, inchash::hash &hstate,
       break;
     }
 
+  /* In gimple all clobbers can be considered equal: while comparaing two
+     gimple clobbers we match the left hand memory accesses.  */
+  if (TREE_CLOBBER_P (arg))
+    {
+      hstate.add_int (0xc10bbe5);
+      return;
+    }
+
   return operand_compare::hash_operand (arg, hstate, flags);
 }
 
@@ -306,6 +314,10 @@ func_checker::operand_equal_p (const_tree t1, const_tree t2,
     default:
       break;
     }
+  /* In gimple all clobbers can be considered equal.  We match the right hand
+     memory accesses.  */
+  if (TREE_CLOBBER_P (t1) || TREE_CLOBBER_P (t2))
+    return TREE_CLOBBER_P (t1) == TREE_CLOBBER_P (t2);
 
   return operand_compare::operand_equal_p (t1, t2, flags);
 }
