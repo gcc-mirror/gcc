@@ -11798,8 +11798,8 @@ package body Exp_Util is
       --  If this is a packed array component or a selected component with a
       --  nonstandard representation, we cannot generate a reference because
       --  the component may be unaligned, so we must use a renaming and this
-      --  renaming must be handled by the front end, as the back end may balk
-      --  at the nonstandard representation (see Exp_Ch2.Expand_Renaming).
+      --  renaming is handled by the front end, as the back end may balk at
+      --  the nonstandard representation (see Evaluation_Required in Exp_Ch8).
 
       elsif Nkind (Exp) in N_Indexed_Component | N_Selected_Component
         and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
@@ -11813,8 +11813,7 @@ package body Exp_Util is
              Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
              Name                => Relocate_Node (Exp)));
 
-      --  For an expression that denotes a name, we can use a renaming scheme
-      --  that is handled by the back end, instead of the front end as above.
+      --  For an expression that denotes a name, we can use a renaming scheme.
       --  This is needed for correctness in the case of a volatile object of
       --  a nonvolatile type because the Make_Reference call of the "default"
       --  approach would generate an illegal access value (an access value
@@ -11836,8 +11835,6 @@ package body Exp_Util is
              Defining_Identifier => Def_Id,
              Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
              Name                => Relocate_Node (Exp)));
-
-         Set_Is_Renaming_Of_Object (Def_Id, False);
 
       --  Avoid generating a variable-sized temporary, by generating the
       --  reference just for the function call. The transformation could be
