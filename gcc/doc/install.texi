@@ -2798,6 +2798,10 @@ Arranges for the run time of each program started by the GCC driver,
 built in any stage, to be logged to @file{time.log}, in the top level of
 the build tree.
 
+@item @samp{bootstrap-asan}
+Compiles GCC itself using Address Sanitization in order to catch invalid memory
+accesses within the GCC code.
+
 @end table
 
 @section Building a cross compiler
