@@ -9598,7 +9598,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   current_function_decl = pushdecl (decl1);
 
   if (tree access = build_attr_access_from_parms (parms, false))
-    decl_attributes (&current_function_decl, access, 0, old_decl);
+    decl_attributes (&current_function_decl, access, ATTR_FLAG_INTERNAL,
+		     old_decl);
 
   push_scope ();
   declare_parm_level ();

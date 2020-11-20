@@ -2810,9 +2810,11 @@ handle_copy_attribute (tree *node, tree name, tree args,
   tree attrs = TYPE_ATTRIBUTES (reftype);
 
   /* Copy type attributes from REF to DECL.  Pass in REF if it's a DECL
-     or a type but not if it's an expression.  */
+     or a type but not if it's an expression.  Set ATTR_FLAG_INTERNAL
+     since the attributes' arguments may be in their internal form.  */
   for (tree at = attrs; at; at = TREE_CHAIN (at))
-    decl_attributes (node, at, flags, EXPR_P (ref) ? NULL_TREE : ref);
+    decl_attributes (node, at, flags | ATTR_FLAG_INTERNAL,
+		     EXPR_P (ref) ? NULL_TREE : ref);
 
   return NULL_TREE;
 }
@@ -4289,8 +4291,8 @@ append_access_attr (tree node[3], tree attrs, const char *attrstr,
    the attribute and its arguments into a string.  */
 
 static tree
-handle_access_attribute (tree node[3], tree name, tree args,
-			 int ARG_UNUSED (flags), bool *no_add_attrs)
+handle_access_attribute (tree node[3], tree name, tree args, int flags,
+			 bool *no_add_attrs)
 {
   tree attrs = TYPE_ATTRIBUTES (*node);
   tree type = *node;
@@ -4336,15 +4338,19 @@ handle_access_attribute (tree node[3], tree name, tree args,
 
 	  /* Recursively call self to "replace" the documented/external
 	     form of the attribute with the condensend internal form.  */
-	  decl_attributes (node, axsat, flags);
+	  decl_attributes (node, axsat, flags | ATTR_FLAG_INTERNAL);
 	  return NULL_TREE;
 	}
 
-      /* This is a recursive call to handle the condensed internal form
-	 of the attribute (see below).  Since all validation has been
-	 done simply return here, accepting the attribute as is.  */
-      *no_add_attrs = false;
-      return NULL_TREE;
+      if (flags & ATTR_FLAG_INTERNAL)
+	{
+	  /* This is a recursive call to handle the condensed internal
+	     form of the attribute (see below).  Since all validation
+	     has been done simply return here, accepting the attribute
+	     as is.  */
+	  *no_add_attrs = false;
+	  return NULL_TREE;
+	}
     }
 
   /* Set to true when the access mode has the form of a function call
@@ -4362,6 +4368,13 @@ handle_access_attribute (tree node[3], tree name, tree args,
       access_mode = TREE_OPERAND (access_mode, 0);
       access_mode = DECL_NAME (access_mode);
       funcall = true;
+    }
+  else if (TREE_CODE (access_mode) != IDENTIFIER_NODE)
+    {
+      error ("attribute %qE mode %qE is not an identifier; expected one of "
+	     "%qs, %qs, %qs, or %qs", name, access_mode,
+	     "read_only", "read_write", "write_only", "none");
+      return NULL_TREE;
     }
 
   const char* const access_str = IDENTIFIER_POINTER (access_mode);
@@ -4573,7 +4586,7 @@ handle_access_attribute (tree node[3], tree name, tree args,
 
   /* Recursively call self to "replace" the documented/external form
      of the attribute with the condensed internal form.  */
-  decl_attributes (node, new_attrs, flags);
+  decl_attributes (node, new_attrs, flags | ATTR_FLAG_INTERNAL);
   return NULL_TREE;
 }
 
