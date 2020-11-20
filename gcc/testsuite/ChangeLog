@@ -1,3 +1,18 @@
+2020-11-19  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2020-11-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/97730
+	* gcc.target/aarch64/sve2/bcax_1.c (OP): Add missing bitwise not
+	to match correct bcax semantics.
+	* gcc.dg/vect/pr97730.c: New test.
+
+2020-11-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97887
+	* gcc.target/i386/pr97887.c: New test.
+
 2020-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

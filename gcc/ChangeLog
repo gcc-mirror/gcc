@@ -1,3 +1,20 @@
+2020-11-19  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2020-11-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/97730
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_bcax<mode>):
+	Change to define_expand, add missing (trivially-predicated) not
+	rtx to fix wrong code bug.
+	(*aarch64_sve2_bcax<mode>): New.
+
+2020-11-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97887
+	* config/i386/i386.md (*<absneg:code><mode>2_i387_1):
+	Disable for TARGET_SSE_MATH modes.
+
 2020-11-17  Sebastian Pop  <spop@amazon.com>
 
 	Backported from master:
