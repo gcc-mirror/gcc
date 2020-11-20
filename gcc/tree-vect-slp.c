@@ -1908,6 +1908,14 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 		      : ""), node,
 		   estimated_poly_value (node->max_nunits),
 					 SLP_TREE_REF_COUNT (node));
+  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
+    {
+      if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
+	dump_printf_loc (metadata, user_loc, "op: VEC_PERM_EXPR\n");
+      else
+	dump_printf_loc (metadata, user_loc, "op template: %G",
+			 SLP_TREE_REPRESENTATIVE (node)->stmt);
+    }
   if (SLP_TREE_SCALAR_STMTS (node).exists ())
     FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
       dump_printf_loc (metadata, user_loc, "\tstmt %u %G", i, stmt_info->stmt);
