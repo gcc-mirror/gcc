@@ -242,13 +242,29 @@ func_checker::hash_operand (const_tree arg, inchash::hash &hstate,
 
   switch (TREE_CODE (arg))
     {
+    case PARM_DECL:
+      {
+	unsigned int index = 0;
+	if (DECL_CONTEXT (arg))
+	  for (tree p = DECL_ARGUMENTS (DECL_CONTEXT (arg));
+	       p && index < 32; p = DECL_CHAIN (p), index++)
+	    if (p == arg)
+	      break;
+	hstate.add_int (PARM_DECL);
+	hstate.add_int (index);
+      }
+      return;
     case FUNCTION_DECL:
     case VAR_DECL:
     case LABEL_DECL:
-    case PARM_DECL:
     case RESULT_DECL:
     case CONST_DECL:
+      hstate.add_int (TREE_CODE (arg));
+      return;
     case SSA_NAME:
+      hstate.add_int (SSA_NAME);
+      if (SSA_NAME_IS_DEFAULT_DEF (arg))
+	hash_operand (SSA_NAME_VAR (arg), hstate, flags);
       return;
     case FIELD_DECL:
       inchash::add_expr (DECL_FIELD_OFFSET (arg), hstate, flags);
@@ -265,6 +281,8 @@ func_checker::hash_operand (const_tree arg, inchash::hash &hstate,
       hstate.add_int (0xc10bbe5);
       return;
     }
+  gcc_assert (!DECL_P (arg));
+  gcc_assert (!TYPE_P (arg));
 
   return operand_compare::hash_operand (arg, hstate, flags);
 }
