@@ -562,6 +562,9 @@ do {									\
 
 #define CASE_VECTOR_MODE Pmode
 
+/* See definition of clz pattern for rationale of value -1.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = -1, 2)
+
 /* Jumps are cheap on PRU.  */
 #define LOGICAL_OP_NON_SHORT_CIRCUIT		0
 

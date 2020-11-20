@@ -29328,10 +29328,13 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     return error_mark_node;
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init))
-    /* We don't recurse here because we can't deduce from a nested
-       initializer_list.  */
-    for (constructor_elt &elt : *CONSTRUCTOR_ELTS (init))
-      elt.value = resolve_nondeduced_context (elt.value, complain);
+    {
+      /* We don't recurse here because we can't deduce from a nested
+	 initializer_list.  */
+      if (CONSTRUCTOR_ELTS (init))
+	for (constructor_elt &elt : *CONSTRUCTOR_ELTS (init))
+	  elt.value = resolve_nondeduced_context (elt.value, complain);
+    }
   else
     init = resolve_nondeduced_context (init, complain);
 
@@ -29700,8 +29703,8 @@ declare_integer_pack (void)
 			      CP_BUILT_IN_INTEGER_PACK);
 }
 
-/* Collect the specializations and explicit instantitions generated
-   in this module  */
+/* Walk the decl or type specialization table calling FN on each
+   entry.  */
 
 void
 walk_specializations (bool decls_p,
@@ -29715,38 +29718,30 @@ walk_specializations (bool decls_p,
     fn (decls_p, *iter, data);
 }
 
-tree
-check_mergeable_specialization (bool decl_p, spec_entry *elt)
-{
-  hash_table<spec_hasher> *specializations
-    = decl_p ? decl_specializations : type_specializations;
-  hashval_t hash = spec_hasher::hash (elt);
-  spec_entry **slot = specializations->find_slot_with_hash (elt,
-							    hash, NO_INSERT);
-  return slot ? (*slot)->spec : NULL_TREE;
-}
-
-/* Lookup the specialization of TMPL,ARGS in the decl or type
-   specialization table.  Return what's there, or add SPEC and return
-   NULL.  */
+/* Lookup the specialization of TMPL, ARGS, SPEC, in the decl or type
+   specialization table.  Return what's already there (NULL if
+   nothing).  If INSERT is true, and there was nothing, add the new spec.  */
 
 tree
-match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec)
+match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec,
+				bool insert)
 {
-  gcc_checking_assert (spec);
   spec_entry elt = {tmpl, args, spec};
   hash_table<spec_hasher> *specializations
     = decl_p ? decl_specializations : type_specializations;
   hashval_t hash = spec_hasher::hash (&elt);
-  spec_entry **slot = specializations->find_slot_with_hash (&elt, hash, INSERT);
-  spec_entry *entry = slot ? *slot: NULL;
-  
-  if (entry)
-    return entry->spec;
+  spec_entry **slot
+    = specializations->find_slot_with_hash (&elt, hash,
+					    insert ? INSERT : NO_INSERT);
+  if (slot && *slot)
+    return (*slot)->spec;
 
-  entry = ggc_alloc<spec_entry> ();
-  *entry = elt;
-  *slot = entry;
+  if (insert)
+    {
+      auto entry = ggc_alloc<spec_entry> ();
+      *entry = elt;
+      *slot = entry;
+    }
 
   return NULL_TREE;
 }
@@ -29782,6 +29777,9 @@ get_mergeable_specialization_flags (tree tmpl, tree decl)
   return flags;
 }
 
+/* Add a new specialization of TMPL.  FLAGS is as returned from
+   get_mergeable_specialization_flags.  */
+
 void
 add_mergeable_specialization (tree tmpl, tree args, tree decl, unsigned flags)
 {
@@ -29791,6 +29789,7 @@ add_mergeable_specialization (tree tmpl, tree args, tree decl, unsigned flags)
 
   if (flags & 2)
     {
+      /* A partial specialization.  */
       DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
 	= tree_cons (args, decl, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
       TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (tmpl))

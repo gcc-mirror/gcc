@@ -860,24 +860,28 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 }
 
 /* We are processing the definition of the constexpr function FUN.
-   Check that its BODY fulfills the apropriate requirements and
-   enter it in the constexpr function definition table.
-   For constructor BODY is actually the TREE_LIST of the
-   member-initializer list.  */
+   Check that its body fulfills the apropriate requirements and
+   enter it in the constexpr function definition table.  */
 
-tree
-check_constexpr_fundef (tree fun, tree body)
+void
+maybe_save_constexpr_fundef (tree fun)
 {
-  if (!is_valid_constexpr_fn (fun, !DECL_GENERATED_P (fun)))
-    return NULL;
+  if (processing_template_decl
+      || !DECL_DECLARED_CONSTEXPR_P (fun)
+      || cp_function_chain->invalid_constexpr
+      || DECL_CLONED_FUNCTION_P (fun))
+    return;
 
-  tree massaged = massage_constexpr_body (fun, body);
+  if (!is_valid_constexpr_fn (fun, !DECL_GENERATED_P (fun)))
+    return;
+
+  tree massaged = massage_constexpr_body (fun, DECL_SAVED_TREE (fun));
   if (massaged == NULL_TREE || massaged == error_mark_node)
     {
       if (!DECL_CONSTRUCTOR_P (fun))
 	error ("body of %<constexpr%> function %qD not a return-statement",
 	       fun);
-      return NULL;
+      return;
     }
 
   bool potential = potential_rvalue_constant_expression (massaged);
@@ -890,7 +894,7 @@ check_constexpr_fundef (tree fun, tree body)
     potential = false;
 
   if (!potential && !DECL_GENERATED_P (fun))
-    return NULL;
+    return;
 
   constexpr_fundef entry = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
   bool clear_ctx = false;
@@ -911,13 +915,13 @@ check_constexpr_fundef (tree fun, tree body)
        that it doesn't need to bother trying to expand the function.  */
     entry.result = error_mark_node;
 
-  return register_constexpr_fundef (entry);
+  register_constexpr_fundef (entry);
 }
 
 /* BODY is a validated and massaged definition of a constexpr
    function.  Register it in the hash table.  */
 
-tree
+void
 register_constexpr_fundef (const constexpr_fundef &value)
 {
   /* Create the constexpr function table if necessary.  */
@@ -931,8 +935,6 @@ register_constexpr_fundef (const constexpr_fundef &value)
   gcc_assert (*slot == NULL);
   *slot = ggc_alloc<constexpr_fundef> ();
   **slot = value;
-
-  return value.decl;
 }
 
 /* FUN is a non-constexpr function called in a context that requires a

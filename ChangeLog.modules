@@ -1,4 +1,7 @@
-2020-11-19  Nathan Sidwell  <nathan@acm.org>
+2020-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk 5bba2215c23
+	c++: Template hash access (
 
 	Merge trunk bf425849f1d
 	preprocessor: main-file cleanup

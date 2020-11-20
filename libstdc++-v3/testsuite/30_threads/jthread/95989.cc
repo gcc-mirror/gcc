@@ -1,8 +1,3 @@
-// { dg-do run }
-// { dg-additional-options "-pthread" { target pthread } }
-// { dg-require-effective-target c++11 }
-// { dg-require-gthreads "" }
-
 // Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -20,30 +15,40 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++2a" }
+// { dg-do run { target c++2a } }
+// { dg-require-gthreads {} }
+// { dg-additional-options "-pthread" { target pthread } }
+// { dg-additional-options "-static" { target static } }
 
-#include <future>
 #include <thread>
-#include <chrono>
-#include <climits>
-#include <testsuite_hooks.h>
 
-namespace chrono = std::chrono;
+// PR libstdc++/95989
+// Segfault compiling with static libraries and using jthread::request_stop
 
-void test01()
+void
+test01()
 {
-  std::future<void> fut = std::async(std::launch::async, [] {
-    std::this_thread::sleep_for(chrono::seconds(4));
-  });
-
-  // A time in the distant future, but which overflows 32-bit time_t:
-  auto then = chrono::system_clock::now() + chrono::seconds(UINT_MAX + 2LL);
-  auto status = fut.wait_until(then);
-  // The wait_until call should have waited for the result to be ready.
-  // If converting the time_point to time_t overflows, it will timeout.
-  VERIFY(status == std::future_status::ready);
+  std::jthread t{ [] () {} };
 }
 
-int main()
+void
+test02()
 {
+  std::jthread t{ [] () {} };
+  t.request_stop();
+}
+
+void
+test03()
+{
+  std::jthread t{ [] {} };
+  std::stop_callback cb(t.get_stop_token(), [] () {});
+}
+
+int
+main()
+{
+  test01();
   test01();
 }

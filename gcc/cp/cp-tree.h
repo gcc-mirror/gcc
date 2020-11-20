@@ -7280,9 +7280,9 @@ extern void walk_specializations		(bool,
 						 void (*)(bool, spec_entry *,
 							  void *),
 						 void *);
-extern tree check_mergeable_specialization	(bool, spec_entry *);
 extern tree match_mergeable_specialization	(bool is_decl, tree tmpl,
-						 tree args, tree spec);
+						 tree args, tree spec,
+						 bool insert = true);
 extern unsigned get_mergeable_specialization_flags (tree tmpl, tree spec);
 extern void add_mergeable_specialization        (tree tmpl, tree args,
 						 tree spec, unsigned);
@@ -8205,9 +8205,9 @@ struct GTY((for_user)) constexpr_fundef {
 
 extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);
-extern tree check_constexpr_fundef           	(tree, tree);
-extern tree register_constexpr_fundef           (const constexpr_fundef &);
-extern constexpr_fundef *retrieve_constexpr_fundef		(tree);
+extern void maybe_save_constexpr_fundef		(tree);
+extern void register_constexpr_fundef		(const constexpr_fundef &);
+extern constexpr_fundef *retrieve_constexpr_fundef	(tree);
 extern bool is_valid_constexpr_fn		(tree, bool);
 extern bool check_constexpr_ctor_body           (tree, tree, bool);
 extern tree constexpr_fn_retval		(tree);

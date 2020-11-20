@@ -10349,15 +10349,17 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       if (CHECKING_P)
 	{
 	  /* Make sure we can locate the decl.  */
-	  tree existing = check_mergeable_specialization
-	    (bool (mk & MK_tmpl_decl_mask), entry);
+	  tree existing = match_mergeable_specialization
+	    (bool (mk & MK_tmpl_decl_mask), entry->tmpl, entry->args,
+	     entry->spec, false);
 
 	  gcc_assert (existing);
 	  if (mk & MK_tmpl_decl_mask)
 	    {
 	      if (mk & MK_tmpl_alias_mask)
 		/* It should be in both tables.  */
-		gcc_assert (check_mergeable_specialization (false, entry)
+		gcc_assert (match_mergeable_specialization
+			    (false, entry->tmpl, entry->args, entry->spec, false)
 			    == TREE_TYPE (existing));
 	      else if (mk & MK_tmpl_tmpl_mask)
 		if (tree ti = DECL_TEMPLATE_INFO (existing))
@@ -12868,8 +12870,10 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
 
        /* Only alias templates can appear in both tables (and
 	  if they're in the type table they must also be in the decl table).  */
-       gcc_checking_assert (!check_mergeable_specialization (true, entry)
-			    == (decl_p || !DECL_ALIAS_TEMPLATE_P (entry->tmpl)));
+       gcc_checking_assert
+	 (!match_mergeable_specialization (true, entry->tmpl, entry->args,
+					   entry->spec, false)
+	  == (decl_p || !DECL_ALIAS_TEMPLATE_P (entry->tmpl)));
     }
   else if (VAR_OR_FUNCTION_DECL_P (entry->spec))
     gcc_checking_assert (!DECL_LOCAL_DECL_P (entry->spec));

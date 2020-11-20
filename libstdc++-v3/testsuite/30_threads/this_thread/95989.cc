@@ -1,8 +1,3 @@
-// { dg-do run }
-// { dg-additional-options "-pthread" { target pthread } }
-// { dg-require-effective-target c++11 }
-// { dg-require-gthreads "" }
-
 // Copyright (C) 2020 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -20,30 +15,37 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do run { target c++11 } }
+// { dg-require-gthreads {} }
+// { dg-additional-options "-pthread" { target pthread } }
+// { dg-additional-options "-static" { target static } }
 
-#include <future>
 #include <thread>
-#include <chrono>
-#include <climits>
 #include <testsuite_hooks.h>
 
-namespace chrono = std::chrono;
-
-void test01()
+__attribute__((noinline,noipa))
+void
+join(std::thread& t)
 {
-  std::future<void> fut = std::async(std::launch::async, [] {
-    std::this_thread::sleep_for(chrono::seconds(4));
-  });
+  if (!t.joinable())
+    return;
 
-  // A time in the distant future, but which overflows 32-bit time_t:
-  auto then = chrono::system_clock::now() + chrono::seconds(UINT_MAX + 2LL);
-  auto status = fut.wait_until(then);
-  // The wait_until call should have waited for the result to be ready.
-  // If converting the time_point to time_t overflows, it will timeout.
-  VERIFY(status == std::future_status::ready);
+  // Using thread::join() creates a dependency on libpthread symbols
+  // so that __gthread_active_p is true, and we use pthread_self.
+  t.join();
 }
 
-int main()
+void
+test01()
+{
+  std::thread t;
+  // PR libstdc++/95989
+  auto id = std::this_thread::get_id();
+  VERIFY (t.get_id() != id );
+}
+
+int
+main()
 {
   test01();
 }

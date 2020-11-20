@@ -576,9 +576,21 @@
 #endif
 
 
+/* Define if the assembler understands -march=rv*_zifencei. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MARCH_ZIFENCEI
+#endif
+
+
 /* Define if your assembler supports mfcr field. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MFCRF
+#endif
+
+
+/* Define if the assembler understands -misa-spec=. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MISA_SPEC
 #endif
 
 
@@ -652,18 +664,6 @@
 /* Define if your assembler supports .attribute. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_RISCV_ATTRIBUTE
-#endif
-
-
-/* Define if your assembler supports -misa-spec=. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_MISA_SPEC
-#endif
-
-
-/* Define if your assembler supports -march=rv*_zifencei. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_MARCH_ZIFENCEI
 #endif
 
 

@@ -32,14 +32,13 @@
 #if __cplusplus > 201703L
 
 #include <atomic>
+#include <bits/std_thread.h>
 
-#ifdef _GLIBCXX_HAS_GTHREADS
-# define __cpp_lib_jthread 201911L
-# include <bits/gthr.h>
-# if __has_include(<semaphore>)
-#  include <semaphore>
-# endif
+#if __has_include(<semaphore>)
+# include <semaphore>
 #endif
+
+#define __cpp_lib_jthread 201911L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -105,9 +104,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
 #if defined __i386__ || defined __x86_64__
       __builtin_ia32_pause();
-#elif defined _GLIBCXX_HAS_GTHREADS && defined _GLIBCXX_USE_SCHED_YIELD
-      __gthread_yield();
 #endif
+      this_thread::yield();
     }
 
 #ifndef __cpp_lib_semaphore
@@ -162,18 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::atomic<value_type> _M_owners{1};
       std::atomic<value_type> _M_value{_S_ssrc_counter_inc};
       _Stop_cb* _M_head = nullptr;
-      struct
-      {
-#ifdef _GLIBCXX_HAS_GTHREADS
-	__gthread_t _M_id;
-	void _M_set() { _M_id = __gthread_self(); }
-	bool _M_is_current_thread() const
-	{ return __gthread_equal(_M_id, __gthread_self()); }
-#else
-	void _M_set() { }
-	constexpr bool _M_is_current_thread() const { return true; }
-#endif
-      } _M_requester;
+      std::thread::id _M_requester;
 
       _Stop_state_t() = default;
 
@@ -246,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	while (!_M_try_lock_and_stop(__old));
 
-	_M_requester._M_set();
+	_M_requester = this_thread::get_id();
 
 	while (_M_head)
 	  {
@@ -273,10 +260,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (!__destroyed)
 	      {
 		__cb->_M_destroyed = nullptr;
-#ifdef _GLIBCXX_HAS_GTHREADS
+
 		// synchronize with destructor of stop_callback that owns *__cb
-		__cb->_M_done.release();
-#endif
+		if (!__gnu_cxx::__is_single_threaded())
+		  __cb->_M_done.release();
 	      }
 
 	    // Avoid relocking if we already know there are no more callbacks.
@@ -353,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Despite appearances there is no data race on _M_requester. The only
 	// write to it happens before the callback is removed from the list,
 	// and removing it from the list happens before this read.
-	if (!_M_requester._M_is_current_thread())
+	if (!(_M_requester == this_thread::get_id()))
 	  {
 	    // Synchronize with completion of callback.
 	    __cb->_M_done.acquire();

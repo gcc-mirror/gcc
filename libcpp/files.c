@@ -1151,7 +1151,6 @@ cpp_retrofit_as_include (cpp_reader *pfile)
 	    && !filename_ncmp (name, dir->name, dir->len))
 	  {
 	    pfile->main_file->dir = dir;
-	    pfile->buffer->main_file = false;
 	    if (dir->sysp)
 	      cpp_make_system_header (pfile, 1, 0);
 	    break;

@@ -19182,7 +19182,11 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
+<<<<<<< HEAD
 #line 19185 "configure"
+=======
+#line 19183 "configure"
+>>>>>>> 5bba2215c23
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19288,7 +19292,11 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
+<<<<<<< HEAD
 #line 19291 "configure"
+=======
+#line 19289 "configure"
+>>>>>>> 5bba2215c23
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
