@@ -3384,6 +3384,20 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	cfun->calls_eh_return = true;
 	break;
 
+      case BUILT_IN_CLEAR_PADDING:
+	if (call_expr_nargs (*expr_p) == 1)
+	  {
+	    /* Remember the original type of the argument in an internal
+	       dummy second argument, as in GIMPLE pointer conversions are
+	       useless.  */
+	    p = CALL_EXPR_ARG (*expr_p, 0);
+	    *expr_p
+	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 2, p,
+				     build_zero_cst (TREE_TYPE (p)));
+	    return GS_OK;
+	  }
+	break;
+
       default:
         ;
       }
