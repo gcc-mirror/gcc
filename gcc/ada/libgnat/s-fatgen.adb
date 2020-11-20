@@ -35,7 +35,7 @@
 --  floating-point implementations.
 
 with Ada.Unchecked_Conversion;
-with System.Unsigned_Types; use System.Unsigned_Types;
+with System.Unsigned_Types;
 
 pragma Warnings (Off, "non-static constant in preelaborated unit");
 --  Every constant is static given our instantiation model
@@ -586,6 +586,9 @@ package body System.Fat_Gen is
       pragma Assert (Mantissa <= 64);
       --  This implementation handles only 80-bit IEEE Extended or smaller
 
+      package UST renames System.Unsigned_Types;
+      use type UST.Long_Long_Unsigned;
+
       XX : T := T'Machine (X);
 
       Rep : Float_Rep;
@@ -661,7 +664,7 @@ package body System.Fat_Gen is
                         Float_Word (IEEE_Ebias + Expf) * Exp_Factor;
 
          if Expi < 0 then
-            XX := XX / T (Long_Long_Unsigned (2) ** (-Expi));
+            XX := XX / T (UST.Long_Long_Unsigned (2) ** (-Expi));
          end if;
 
          return XX;
