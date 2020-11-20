@@ -5518,6 +5518,19 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	    return GS_OK;
 	  }
 
+	case NOP_EXPR:
+	  /* Pull out compound literal expressions from a NOP_EXPR.
+	     Those are created in the C FE to drop qualifiers during
+	     lvalue conversion.  */
+	  if ((TREE_CODE (TREE_OPERAND (*from_p, 0)) == COMPOUND_LITERAL_EXPR)
+	      && tree_ssa_useless_type_conversion (*from_p))
+	    {
+	      *from_p = TREE_OPERAND (*from_p, 0);
+	      ret = GS_OK;
+	      changed = true;
+	    }
+	  break;
+
 	case COMPOUND_LITERAL_EXPR:
 	  {
 	    tree complit = TREE_OPERAND (*expr_p, 1);
