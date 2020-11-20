@@ -45,6 +45,7 @@ compilation is specified by a string called a "spec".  */
 #include "filenames.h"
 #include "spellcheck.h"
 #include "opts-jobserver.h"
+#include "common/common-target.h"
 
 
 
@@ -3563,42 +3564,6 @@ execute (void)
   }
 }
 
-/* Find all the switches given to us
-   and make a vector describing them.
-   The elements of the vector are strings, one per switch given.
-   If a switch uses following arguments, then the `part1' field
-   is the switch itself and the `args' field
-   is a null-terminated vector containing the following arguments.
-   Bits in the `live_cond' field are:
-   SWITCH_LIVE to indicate this switch is true in a conditional spec.
-   SWITCH_FALSE to indicate this switch is overridden by a later switch.
-   SWITCH_IGNORE to indicate this switch should be ignored (used in %<S).
-   SWITCH_IGNORE_PERMANENTLY to indicate this switch should be ignored.
-   SWITCH_KEEP_FOR_GCC to indicate that this switch, otherwise ignored,
-   should be included in COLLECT_GCC_OPTIONS.
-   in all do_spec calls afterwards.  Used for %<S from self specs.
-   The `known' field describes whether this is an internal switch.
-   The `validated' field describes whether any spec has looked at this switch;
-   if it remains false at the end of the run, the switch must be meaningless.
-   The `ordering' field is used to temporarily mark switches that have to be
-   kept in a specific order.  */
-
-#define SWITCH_LIVE    			(1 << 0)
-#define SWITCH_FALSE   			(1 << 1)
-#define SWITCH_IGNORE			(1 << 2)
-#define SWITCH_IGNORE_PERMANENTLY	(1 << 3)
-#define SWITCH_KEEP_FOR_GCC		(1 << 4)
-
-struct switchstr
-{
-  const char *part1;
-  const char **args;
-  unsigned int live_cond;
-  bool known;
-  bool validated;
-  bool ordering;
-};
-
 static struct switchstr *switches;
 
 static int n_switches;
@@ -9826,6 +9791,17 @@ set_multilib_dir (void)
 
       ++p;
     }
+
+  multilib_dir =
+    targetm_common.compute_multilib (
+      switches,
+      n_switches,
+      multilib_dir,
+      multilib_defaults,
+      multilib_select,
+      multilib_matches,
+      multilib_exclusions,
+      multilib_reuse);
 
   if (multilib_dir == NULL && multilib_os_dir != NULL
       && strcmp (multilib_os_dir, ".") == 0)

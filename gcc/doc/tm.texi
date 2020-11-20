@@ -778,6 +778,23 @@ options are changed via @code{#pragma GCC optimize} or by using the
 Set target-dependent initial values of fields in @var{opts}.
 @end deftypefn
 
+@deftypefn {Common Target Hook} {const char *} TARGET_COMPUTE_MULTILIB (const struct switchstr *@var{switches}, int @var{n_switches}, const char *@var{multilib_dir}, const char *@var{multilib_defaults}, const char *@var{multilib_select}, const char *@var{multilib_matches}, const char *@var{multilib_exclusions}, const char *@var{multilib_reuse})
+Some targets like RISC-V might have complicated multilib reuse rules which
+are hard to implement with the current multilib scheme.  This hook allows
+targets to override the result from the built-in multilib mechanism.
+@var{switches} is the raw option list with @var{n_switches} items;
+@var{multilib_dir} is the multi-lib result which is computed by the built-in
+multi-lib mechanism;
+@var{multilib_defaults} is the default options list for multi-lib;
+@var{multilib_select} is the string containing the list of supported
+multi-libs, and the option checking list.
+@var{multilib_matches}, @var{multilib_exclusions}, and @var{multilib_reuse}
+are corresponding to @var{MULTILIB_MATCHES}, @var{MULTILIB_EXCLUSIONS},
+and @var{MULTILIB_REUSE}.
+The default definition does nothing but return @var{multilib_dir} directly.
+@end deftypefn
+
+
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for
