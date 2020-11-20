@@ -216,6 +216,7 @@
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_jthread 201911L
 #endif
+#define __cpp_lib_latch 201907L
 #define __cpp_lib_list_remove_return_type 201806L
 #if __cpp_lib_concepts
 # define __cpp_lib_make_obj_using_allocator 201811L
@@ -225,6 +226,7 @@
 #if __cpp_lib_concepts
 # define __cpp_lib_ranges 201911L
 #endif
+#define __cpp_lib_semaphore 201907L
 #define __cpp_lib_shift 201806L
 #if __cpp_lib_concepts
 # define __cpp_lib_span 202002L
