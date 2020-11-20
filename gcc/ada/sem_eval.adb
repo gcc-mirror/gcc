@@ -4785,7 +4785,7 @@ package body Sem_Eval is
       Static     : Boolean := False;
       Check_Elab : Boolean := False)
    is
-      Typ : constant Entity_Id := Etype (Left);
+      Typ : constant Entity_Id := Base_Type (Etype (Left));
 
       procedure Check_Elab_Call;
       --  Add checks related to calls in elaboration code
