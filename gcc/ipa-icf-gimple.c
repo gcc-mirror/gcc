@@ -314,7 +314,7 @@ func_checker::operand_equal_p (const_tree t1, const_tree t2,
     default:
       break;
     }
-  /* In gimple all clobbers can be considered equal.  We match the right hand
+  /* In gimple all clobbers can be considered equal.  We match the left hand
      memory accesses.  */
   if (TREE_CLOBBER_P (t1) || TREE_CLOBBER_P (t2))
     return TREE_CLOBBER_P (t1) == TREE_CLOBBER_P (t2);
