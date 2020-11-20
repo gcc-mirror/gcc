@@ -133,19 +133,10 @@ ensure_literal_type_for_constexpr_object (tree decl)
   return decl;
 }
 
-/* Representation of entries in the constexpr function definition table.  */
-
-struct GTY((for_user)) constexpr_fundef {
-  tree decl;
-  tree body;
-  tree parms;
-  tree result;
-};
-
 struct constexpr_fundef_hasher : ggc_ptr_hash<constexpr_fundef>
 {
-  static hashval_t hash (constexpr_fundef *);
-  static bool equal (constexpr_fundef *, constexpr_fundef *);
+  static hashval_t hash (const constexpr_fundef *);
+  static bool equal (const constexpr_fundef *, const constexpr_fundef *);
 };
 
 /* This table holds all constexpr function definitions seen in
@@ -158,7 +149,8 @@ static GTY (()) hash_table<constexpr_fundef_hasher> *constexpr_fundef_table;
    same constexpr function.  */
 
 inline bool
-constexpr_fundef_hasher::equal (constexpr_fundef *lhs, constexpr_fundef *rhs)
+constexpr_fundef_hasher::equal (const constexpr_fundef *lhs,
+				const constexpr_fundef *rhs)
 {
   return lhs->decl == rhs->decl;
 }
@@ -167,20 +159,20 @@ constexpr_fundef_hasher::equal (constexpr_fundef *lhs, constexpr_fundef *rhs)
    Return a hash value for the entry pointed to by Q.  */
 
 inline hashval_t
-constexpr_fundef_hasher::hash (constexpr_fundef *fundef)
+constexpr_fundef_hasher::hash (const constexpr_fundef *fundef)
 {
   return DECL_UID (fundef->decl);
 }
 
 /* Return a previously saved definition of function FUN.   */
 
-static constexpr_fundef *
+constexpr_fundef *
 retrieve_constexpr_fundef (tree fun)
 {
   if (constexpr_fundef_table == NULL)
     return NULL;
 
-  constexpr_fundef fundef = { fun, NULL, NULL, NULL };
+  constexpr_fundef fundef = { fun, NULL_TREE, NULL_TREE, NULL_TREE };
   return constexpr_fundef_table->find (&fundef);
 }
 
@@ -669,7 +661,7 @@ get_function_named_in_call (tree t)
   return fun;
 }
 
-/* Subroutine of register_constexpr_fundef.  BODY is the body of a function
+/* Subroutine of check_constexpr_fundef.  BODY is the body of a function
    declared to be constexpr, or a sub-statement thereof.  Returns the
    return value if suitable, error_mark_node for a statement not allowed in
    a constexpr function, or NULL_TREE if no return value was found.  */
@@ -738,7 +730,7 @@ constexpr_fn_retval (tree body)
     }
 }
 
-/* Subroutine of register_constexpr_fundef.  BODY is the DECL_SAVED_TREE of
+/* Subroutine of check_constexpr_fundef.  BODY is the DECL_SAVED_TREE of
    FUN; do the necessary transformations to turn it into a single expression
    that we can store in the hash table.  */
 
@@ -868,27 +860,28 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 }
 
 /* We are processing the definition of the constexpr function FUN.
-   Check that its BODY fulfills the propriate requirements and
-   enter it in the constexpr function definition table.
-   For constructor BODY is actually the TREE_LIST of the
-   member-initializer list.  */
+   Check that its body fulfills the apropriate requirements and
+   enter it in the constexpr function definition table.  */
 
-tree
-register_constexpr_fundef (tree fun, tree body)
+void
+maybe_save_constexpr_fundef (tree fun)
 {
-  constexpr_fundef entry;
-  constexpr_fundef **slot;
+  if (processing_template_decl
+      || !DECL_DECLARED_CONSTEXPR_P (fun)
+      || cp_function_chain->invalid_constexpr
+      || DECL_CLONED_FUNCTION_P (fun))
+    return;
 
   if (!is_valid_constexpr_fn (fun, !DECL_GENERATED_P (fun)))
-    return NULL;
+    return;
 
-  tree massaged = massage_constexpr_body (fun, body);
+  tree massaged = massage_constexpr_body (fun, DECL_SAVED_TREE (fun));
   if (massaged == NULL_TREE || massaged == error_mark_node)
     {
       if (!DECL_CONSTRUCTOR_P (fun))
 	error ("body of %<constexpr%> function %qD not a return-statement",
 	       fun);
-      return NULL;
+      return;
     }
 
   bool potential = potential_rvalue_constant_expression (massaged);
@@ -901,39 +894,47 @@ register_constexpr_fundef (tree fun, tree body)
     potential = false;
 
   if (!potential && !DECL_GENERATED_P (fun))
-    return NULL;
+    return;
 
-  /* Create the constexpr function table if necessary.  */
-  if (constexpr_fundef_table == NULL)
-    constexpr_fundef_table
-      = hash_table<constexpr_fundef_hasher>::create_ggc (101);
-
-  entry.decl = fun;
-  tree saved_fn = current_function_decl;
+  constexpr_fundef entry = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
   bool clear_ctx = false;
-  current_function_decl = fun;
   if (DECL_RESULT (fun) && DECL_CONTEXT (DECL_RESULT (fun)) == NULL_TREE)
     {
       clear_ctx = true;
       DECL_CONTEXT (DECL_RESULT (fun)) = fun;
     }
-  entry.body = copy_fn (fun, entry.parms, entry.result);
+  tree saved_fn = current_function_decl;
+  current_function_decl = fun;
+  entry.body = copy_fn (entry.decl, entry.parms, entry.result);
   current_function_decl = saved_fn;
-  slot = constexpr_fundef_table->find_slot (&entry, INSERT);
   if (clear_ctx)
-    DECL_CONTEXT (DECL_RESULT (fun)) = NULL_TREE;
-
+    DECL_CONTEXT (DECL_RESULT (entry.decl)) = NULL_TREE;
   if (!potential)
     /* For a template instantiation, we want to remember the pre-generic body
        for explain_invalid_constexpr_fn, but do tell cxx_eval_call_expression
        that it doesn't need to bother trying to expand the function.  */
     entry.result = error_mark_node;
 
+  register_constexpr_fundef (entry);
+}
+
+/* BODY is a validated and massaged definition of a constexpr
+   function.  Register it in the hash table.  */
+
+void
+register_constexpr_fundef (const constexpr_fundef &value)
+{
+  /* Create the constexpr function table if necessary.  */
+  if (constexpr_fundef_table == NULL)
+    constexpr_fundef_table
+      = hash_table<constexpr_fundef_hasher>::create_ggc (101);
+
+  constexpr_fundef **slot = constexpr_fundef_table->find_slot
+    (const_cast<constexpr_fundef *> (&value), INSERT);
+
   gcc_assert (*slot == NULL);
   *slot = ggc_alloc<constexpr_fundef> ();
-  **slot = entry;
-
-  return fun;
+  **slot = value;
 }
 
 /* FUN is a non-constexpr function called in a context that requires a

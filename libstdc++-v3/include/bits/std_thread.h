@@ -294,26 +294,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline thread::id
     get_id() noexcept
     {
-#ifdef _GLIBCXX_HAS_GTHREADS
-
-#ifdef __GLIBC__
-      // For the GNU C library pthread_self() is usable without linking to
-      // libpthread, but prior to version 2.27 the version in libc returns 0,
-      // which breaks the invariant this_thread::get_id() != thread::id{}.
-      //
-      // We know that pthread_t is a scalar type in the GNU C library,
-      // so just use (__gthread_t)1 as the ID of the main (and only) thread.
-      //
-      // This uses __gthread_active_p not __gnu_cxx::__is_single_threaded
-      // because we don't want the thread::id of the main thread to change
-      // if additional threads are created later.
-      if (!__gthread_active_p())
-	return thread::id((__gthread_t)1);
-#endif
-
-      return thread::id(__gthread_self());
-#else
+#ifndef _GLIBCXX_HAS_GTHREADS
       return thread::id(1);
+#elif defined _GLIBCXX_NATIVE_THREAD_ID
+      return thread::id(_GLIBCXX_NATIVE_THREAD_ID);
+#else
+      return thread::id(__gthread_self());
 #endif
     }
 

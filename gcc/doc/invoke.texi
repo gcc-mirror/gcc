@@ -97,7 +97,7 @@ The usual way to run GCC is to run the executable called @command{gcc}, or
 When you compile C++ programs, you should invoke GCC as @command{g++} 
 instead.  @xref{Invoking G++,,Compiling C++ Programs}, 
 for information about the differences in behavior between @command{gcc} 
-and @code{g++} when compiling C++ programs.
+and @command{g++} when compiling C++ programs.
 
 @cindex grouping options
 @cindex options, grouping
@@ -14352,7 +14352,7 @@ Note that it is quite common that execution counts of some part of
 programs depends, for example, on length of temporary file names or
 memory space randomization (that may affect hash-table collision rate).
 Such non-reproducible part of programs may be annotated by
-@code{no_instrument_function} function attribute. @code{gcov-dump} with
+@code{no_instrument_function} function attribute. @command{gcov-dump} with
 @option{-l} can be used to dump gathered data and verify that they are
 indeed reproducible.
 

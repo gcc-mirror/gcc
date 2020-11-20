@@ -16872,20 +16872,6 @@ record_key_method_defined (tree fndecl)
     }
 }
 
-/* Subroutine of finish_function.
-   Save the body of constexpr functions for possible
-   future compile time evaluation.  */
-
-static void
-maybe_save_function_definition (tree fun)
-{
-  if (!processing_template_decl
-      && DECL_DECLARED_CONSTEXPR_P (fun)
-      && !cp_function_chain->invalid_constexpr
-      && !DECL_CLONED_FUNCTION_P (fun))
-    register_constexpr_fundef (fun, DECL_SAVED_TREE (fun));
-}
-
 /* Attempt to add a fix-it hint to RICHLOC suggesting the insertion
    of "return *this;" immediately before its location, using FNDECL's
    first statement (if any) to give the indentation, if appropriate.  */
@@ -16919,7 +16905,7 @@ emit_coro_helper (tree helper)
   allocate_struct_function (helper, false);
   cfun->language = ggc_cleared_alloc<language_function> ();
   poplevel (1, 0, 1);
-  maybe_save_function_definition (helper);
+  maybe_save_constexpr_fundef (helper);
   /* We must start each function with a clear fold cache.  */
   clear_fold_cache ();
   cp_fold_function (helper);
@@ -17153,7 +17139,7 @@ finish_function (bool inline_p)
 
   /* Save constexpr function body before it gets munged by
      the NRV transformation.   */
-  maybe_save_function_definition (fndecl);
+  maybe_save_constexpr_fundef (fndecl);
 
   /* Invoke the pre-genericize plugin before we start munging things.  */
   if (!processing_template_decl)

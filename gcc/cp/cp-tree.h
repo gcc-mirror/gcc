@@ -5403,6 +5403,14 @@ public:
   hash_map<tree, tree> *saved;
 };
 
+/* Entry in the specialization hash table.  */
+struct GTY((for_user)) spec_entry
+{
+  tree tmpl;  /* The general template this is a specialization of.  */
+  tree args;  /* The args for this (maybe-partial) specialization.  */
+  tree spec;  /* The specialization itself.  */
+};
+
 /* in class.c */
 
 extern int current_class_depth;
@@ -6994,6 +7002,15 @@ extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
 extern bool builtin_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
+extern void walk_specializations		(bool,
+						 void (*)(bool, spec_entry *,
+							  void *),
+						 void *);
+extern tree match_mergeable_specialization	(bool is_decl, tree tmpl,
+						 tree args, tree spec);
+extern unsigned get_mergeable_specialization_flags (tree tmpl, tree spec);
+extern void add_mergeable_specialization        (tree tmpl, tree args,
+						 tree spec, unsigned);
 extern tree add_outermost_template_args		(tree, tree);
 extern tree add_extra_args			(tree, tree);
 extern tree build_extra_args			(tree, tree, tsubst_flags_t);
@@ -7895,9 +7912,20 @@ extern void vtv_recover_class_info              (void);
 extern void vtv_build_vtable_verify_fndecl      (void);
 
 /* In constexpr.c */
+/* Representation of entries in the constexpr function definition table.  */
+
+struct GTY((for_user)) constexpr_fundef {
+  tree decl;
+  tree body;
+  tree parms;
+  tree result;
+};
+
 extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);
-extern tree register_constexpr_fundef           (tree, tree);
+extern void maybe_save_constexpr_fundef		(tree);
+extern void register_constexpr_fundef		(const constexpr_fundef &);
+extern constexpr_fundef *retrieve_constexpr_fundef	(tree);
 extern bool is_valid_constexpr_fn		(tree, bool);
 extern bool check_constexpr_ctor_body           (tree, tree, bool);
 extern tree constexpr_fn_retval		(tree);

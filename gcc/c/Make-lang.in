@@ -37,10 +37,10 @@
 #
 # Define the names for selecting c in LANGUAGES.
 c: cc1$(exeext)
-c.serial: c
+c.serial = cc1$(exeext)
 
 # Tell GNU make to ignore these if they exist.
-.PHONY: c gcc c.serial
+.PHONY: c gcc
 
 # The C front end driver.  This is different from the drivers for other
 # front ends, because there is no C language specific driver (i.e. nothing

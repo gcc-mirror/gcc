@@ -13564,6 +13564,19 @@ initializers of variables usable in constant expressions.   For more details
 refer to the latest revision of the C++ standard.
 @end deftypefn
 
+@deftypefn {Built-in Function} void __builtin_clear_padding (@var{ptr})
+The built-in function @code{__builtin_clear_padding} function clears
+padding bits inside of the object representation of object pointed by
+@var{ptr}, which has to be a pointer.  The value representation of the
+object is not affected.  The type of the object is assumed to be the type
+the pointer points to.  Inside of a union, the only cleared bits are
+bits that are padding bits for all the union members.
+
+This built-in-function is useful if the padding bits of an object might
+have intederminate values and the object representation needs to be
+bitwise compared to some other object, for example for atomic operations.
+@end deftypefn
+
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
 @opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with

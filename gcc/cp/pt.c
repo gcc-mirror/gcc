@@ -103,13 +103,6 @@ local_specialization_stack::~local_specialization_stack ()
 /* True if we've recursed into fn_type_unification too many times.  */
 static bool excessive_deduction_depth;
 
-struct GTY((for_user)) spec_entry
-{
-  tree tmpl;
-  tree args;
-  tree spec;
-};
-
 struct spec_hasher : ggc_ptr_hash<spec_entry>
 {
   static hashval_t hash (spec_entry *);
@@ -29623,6 +29616,101 @@ declare_integer_pack (void)
   DECL_DECLARED_CONSTEXPR_P (ipfn) = true;
   set_decl_built_in_function (ipfn, BUILT_IN_FRONTEND,
 			      CP_BUILT_IN_INTEGER_PACK);
+}
+
+/* Walk the decl or type specialization table calling FN on each
+   entry.  */
+
+void
+walk_specializations (bool decls_p,
+		      void (*fn) (bool decls_p, spec_entry *entry, void *data),
+		      void *data)
+{
+  spec_hash_table *table = decls_p ? decl_specializations
+    : type_specializations;
+  spec_hash_table::iterator end (table->end ());
+  for (spec_hash_table::iterator iter (table->begin ()); iter != end; ++iter)
+    fn (decls_p, *iter, data);
+}
+
+/* Lookup the specialization of TMPL, ARGS in the decl or type
+   specialization table.  Return what's there, or if SPEC is non-null,
+   add it and return NULL.  */
+
+tree
+match_mergeable_specialization (bool decl_p, tree tmpl, tree args, tree spec)
+{
+  spec_entry elt = {tmpl, args, spec};
+  hash_table<spec_hasher> *specializations
+    = decl_p ? decl_specializations : type_specializations;
+  hashval_t hash = spec_hasher::hash (&elt);
+  spec_entry **slot
+    = specializations->find_slot_with_hash (&elt, hash,
+					    spec ? INSERT : NO_INSERT);
+  spec_entry *entry = slot ? *slot: NULL;
+  
+  if (entry)
+    return entry->spec;
+
+  if (spec)
+    {
+      entry = ggc_alloc<spec_entry> ();
+      *entry = elt;
+      *slot = entry;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return flags encoding whether SPEC is on the instantiation and/or
+   specialization lists of TMPL.  */
+
+unsigned
+get_mergeable_specialization_flags (tree tmpl, tree decl)
+{
+  unsigned flags = 0;
+
+  for (tree inst = DECL_TEMPLATE_INSTANTIATIONS (tmpl);
+       inst; inst = TREE_CHAIN (inst))
+    if (TREE_VALUE (inst) == decl)
+      {
+	flags |= 1;
+	break;
+      }
+
+  if (CLASS_TYPE_P (TREE_TYPE (decl))
+      && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl))
+      && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)) == 2)
+    /* Only need to search if DECL is a partial specialization.  */
+    for (tree part = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
+	 part; part = TREE_CHAIN (part))
+      if (TREE_VALUE (part) == decl)
+	{
+	  flags |= 2;
+	  break;
+	}
+
+  return flags;
+}
+
+/* Add a new specialization of TMPL.  FLAGS is as returned from
+   get_mergeable_specialization_flags.  */
+
+void
+add_mergeable_specialization (tree tmpl, tree args, tree decl, unsigned flags)
+{
+  if (flags & 1)
+    DECL_TEMPLATE_INSTANTIATIONS (tmpl)
+      = tree_cons (args, decl, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
+
+  if (flags & 2)
+    {
+      /* A partial specialization.  */
+      DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
+	= tree_cons (args, decl, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
+      TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (tmpl))
+	= TREE_TYPE (DECL_TEMPLATE_RESULT (decl));
+    }
 }
 
 /* Set up the hash tables for template instantiations.  */

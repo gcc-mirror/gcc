@@ -3384,6 +3384,20 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	cfun->calls_eh_return = true;
 	break;
 
+      case BUILT_IN_CLEAR_PADDING:
+	if (call_expr_nargs (*expr_p) == 1)
+	  {
+	    /* Remember the original type of the argument in an internal
+	       dummy second argument, as in GIMPLE pointer conversions are
+	       useless.  */
+	    p = CALL_EXPR_ARG (*expr_p, 0);
+	    *expr_p
+	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 2, p,
+				     build_zero_cst (TREE_TYPE (p)));
+	    return GS_OK;
+	  }
+	break;
+
       default:
         ;
       }
@@ -5517,6 +5531,19 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	      *expr_p = wrap;
 	    return GS_OK;
 	  }
+
+	case NOP_EXPR:
+	  /* Pull out compound literal expressions from a NOP_EXPR.
+	     Those are created in the C FE to drop qualifiers during
+	     lvalue conversion.  */
+	  if ((TREE_CODE (TREE_OPERAND (*from_p, 0)) == COMPOUND_LITERAL_EXPR)
+	      && tree_ssa_useless_type_conversion (*from_p))
+	    {
+	      *from_p = TREE_OPERAND (*from_p, 0);
+	      ret = GS_OK;
+	      changed = true;
+	    }
+	  break;
 
 	case COMPOUND_LITERAL_EXPR:
 	  {

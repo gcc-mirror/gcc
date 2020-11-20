@@ -38,10 +38,10 @@
 #
 # Define the names for selecting Objective-C in LANGUAGES.
 objc: cc1obj$(exeext)
-objc.serial: objc
+objc.serial = cc1obj$(exeext)
 
 # Tell GNU make to ignore these if they exist.
-.PHONY: objc objc.serial objc.prev
+.PHONY: objc
 
 # Use maximal warnings for this front end.
 objc-warn = $(STRICT_WARN)
@@ -64,7 +64,7 @@ cc1obj-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	$(srcdir)/../move-if-change cc1obj-checksum.c.tmp cc1obj-checksum.c
 
 cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o $(BACKEND) \
-		 $(LIBDEPS) objc.prev
+		 $(LIBDEPS) $(objc.prev)
 	@$(call LINK_PROGRESS,$(INDEX.objc),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o \

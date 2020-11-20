@@ -2080,6 +2080,9 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
     exp = default_function_array_conversion (loc, exp);
   if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
     exp.value = require_complete_type (loc, exp.value);
+  if (convert_p && !error_operand_p (exp.value)
+      && (TREE_CODE (TREE_TYPE (exp.value)) != ARRAY_TYPE))
+    exp.value = convert (build_qualified_type (TREE_TYPE (exp.value), TYPE_UNQUALIFIED), exp.value);
   if (really_atomic_lvalue (exp.value))
     {
       vec<tree, va_gc> *params;

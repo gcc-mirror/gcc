@@ -80,30 +80,25 @@ empty_range_varying (irange &r, tree type,
     return false;
 }
 
-// Return TRUE if shifting by OP is undefined behavior, and set R to
-// the appropriate range.
+// Return false if shifting by OP is undefined behavior.  Otherwise, return
+// true and the range it is to be shifted by.  This allows trimming out of
+// undefined ranges, leaving only valid ranges if there are any.
 
 static inline bool
-undefined_shift_range_check (irange &r, tree type, const irange &op)
+get_shift_range (irange &r, tree type, const irange &op)
 {
   if (op.undefined_p ())
-    {
-      r.set_undefined ();
-      return true;
-    }
+    return false;
 
-  // Shifting by any values outside [0..prec-1], gets undefined
-  // behavior from the shift operation.  We cannot even trust
-  // SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
-  // shifts, and the operation at the tree level may be widened.
-  if (wi::lt_p (op.lower_bound (), 0, TYPE_SIGN (op.type ()))
-      || wi::ge_p (op.upper_bound (),
-		   TYPE_PRECISION (type), TYPE_SIGN (op.type ())))
-    {
-      r.set_varying (type);
-      return true;
-    }
-  return false;
+  // Build valid range and intersect it with the shift range.
+  r = value_range (build_int_cst_type (op.type (), 0),
+		   build_int_cst_type (op.type (), TYPE_PRECISION (type) - 1));
+  r.intersect (op);
+
+  // If there are no valid ranges in the shift range, returned false.
+  if (r.undefined_p ())
+    return false;
+  return true;
 }
 
 // Return TRUE if 0 is within [WMIN, WMAX].
@@ -1465,13 +1460,20 @@ operator_lshift::fold_range (irange &r, tree type,
 			     const irange &op1,
 			     const irange &op2) const
 {
-  if (undefined_shift_range_check (r, type, op2))
-    return true;
+  int_range_max shift_range;
+  if (!get_shift_range (shift_range, type, op2))
+    {
+      if (op2.undefined_p ())
+	r.set_undefined ();
+      else
+	r.set_varying (type);
+      return true;
+    }
 
   // Transform left shifts by constants into multiplies.
-  if (op2.singleton_p ())
+  if (shift_range.singleton_p ())
     {
-      unsigned shift = op2.lower_bound ().to_uhwi ();
+      unsigned shift = shift_range.lower_bound ().to_uhwi ();
       wide_int tmp = wi::set_bit_in_zero (shift, TYPE_PRECISION (type));
       int_range<1> mult (type, tmp, tmp);
 
@@ -1487,7 +1489,7 @@ operator_lshift::fold_range (irange &r, tree type,
     }
   else
     // Otherwise, invoke the generic fold routine.
-    return range_operator::fold_range (r, type, op1, op2);
+    return range_operator::fold_range (r, type, op1, shift_range);
 }
 
 void
@@ -1709,11 +1711,17 @@ operator_rshift::fold_range (irange &r, tree type,
 			     const irange &op1,
 			     const irange &op2) const
 {
-  // Invoke the generic fold routine if not undefined..
-  if (undefined_shift_range_check (r, type, op2))
-    return true;
+  int_range_max shift;
+  if (!get_shift_range (shift, type, op2))
+    {
+      if (op2.undefined_p ())
+	r.set_undefined ();
+      else
+	r.set_varying (type);
+      return true;
+    }
 
-  return range_operator::fold_range (r, type, op1, op2);
+  return range_operator::fold_range (r, type, op1, shift);
 }
 
 void
@@ -2637,6 +2645,9 @@ public:
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2) const;
+  virtual bool op2_range (irange &r, tree type,
+			  const irange &lhs,
+			  const irange &op1) const;
 } op_trunc_mod;
 
 void
@@ -2686,24 +2697,58 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
 bool
 operator_trunc_mod::op1_range (irange &r, tree type,
 			       const irange &lhs,
-			       const irange &op2) const
+			       const irange &) const
 {
-  // PR 91029.  Check for signed truncation with op2 >= 0.
-  if (TYPE_SIGN (type) == SIGNED && wi::ge_p (op2.lower_bound (), 0, SIGNED))
+  // PR 91029.
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
+  // (a % b) >= x && x > 0 , then a >= x.
+  if (wi::gt_p (lhs.lower_bound (), 0, sign))
     {
-      unsigned prec = TYPE_PRECISION (type);
-      // if a % b > 0 , then a >= 0.
-      if (wi::gt_p (lhs.lower_bound (), 0, SIGNED))
-	{
-	  r = value_range (type, wi::zero (prec), wi::max_value (prec, SIGNED));
-	  return true;
-	}
-      // if a % b < 0 , then a <= 0.
-      if (wi::lt_p (lhs.upper_bound (), 0, SIGNED))
-	{
-	  r = value_range (type, wi::min_value (prec, SIGNED), wi::zero (prec));
-	  return true;
-	}
+      r = value_range (type, lhs.lower_bound (), wi::max_value (prec, sign));
+      return true;
+    }
+  // (a % b) <= x && x < 0 , then a <= x.
+  if (wi::lt_p (lhs.upper_bound (), 0, sign))
+    {
+      r = value_range (type, wi::min_value (prec, sign), lhs.upper_bound ());
+      return true;
+    }
+  return false;
+}
+
+bool
+operator_trunc_mod::op2_range (irange &r, tree type,
+			       const irange &lhs,
+			       const irange &) const
+{
+  // PR 91029.
+  signop sign = TYPE_SIGN (type);
+  unsigned prec = TYPE_PRECISION (type);
+  // (a % b) >= x && x > 0 , then b is in ~[-x, x] for signed
+  //			       or b > x for unsigned.
+  if (wi::gt_p (lhs.lower_bound (), 0, sign))
+    {
+      if (sign == SIGNED)
+	r = value_range (type, wi::neg (lhs.lower_bound ()),
+			 lhs.lower_bound (), VR_ANTI_RANGE);
+      else if (wi::lt_p (lhs.lower_bound (), wi::max_value (prec, sign),
+			 sign))
+	r = value_range (type, lhs.lower_bound () + 1,
+			 wi::max_value (prec, sign));
+      else
+	return false;
+      return true;
+    }
+  // (a % b) <= x && x < 0 , then b is in ~[x, -x].
+  if (wi::lt_p (lhs.upper_bound (), 0, sign))
+    {
+      if (wi::gt_p (lhs.upper_bound (), wi::min_value (prec, sign), sign))
+	r = value_range (type, lhs.upper_bound (),
+			 wi::neg (lhs.upper_bound ()), VR_ANTI_RANGE);
+      else
+	return false;
+      return true;
     }
   return false;
 }
