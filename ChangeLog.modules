@@ -1,5 +1,9 @@
 2020-11-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi: Update
+	* doc/cppopts.texi: Update
+
 	Merge trunk 5bba2215c23
 	c++: Template hash access (
 

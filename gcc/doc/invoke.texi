@@ -215,14 +215,21 @@ in the following sections.
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n} @gol
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n} @gol
+-fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules-ts @gol
+-fmodule-implicit-inline @gol
+-fmodule-mapper=@var{specification} @gol
+-fmodule-version-ignore @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -fno-gnu-keywords @gol
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
--fno-implement-inlines  -fms-extensions @gol
+-fno-implement-inlines  @gol
+-fno-module-lazy @gol
+-fms-extensions @gol
 -fnew-inheriting-ctors @gol
 -fnew-ttp-matching @gol
+-fno-module-lazy @gol
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
@@ -234,12 +241,14 @@ in the following sections.
 -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
+-flang-info-include-translate@r{[}=@var{name}@r{]} @gol
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
--Wdelete-non-virtual-dtor  -Wdeprecated-copy  -Wdeprecated-copy-dtor @gol
+-Wdelete-non-virtual-dtor  -Wdeprecated-copy -Wdeprecated-copy-dtor @gol
+-Winvalid-imported-macros @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
@@ -3066,11 +3075,6 @@ usually not needed, as that is the default.  Even though this is a
 C++20 feature, it is not currently implicitly enabled by selecting
 that standard version.
 
-@item -fno-module-lazy
-@opindex fno-module-lazy
-@opindex fmodule-lazy
-Disable lazy module importing and module mapper creation.
-
 @item -fmodule-header
 @itemx -fmodule-header=user
 @itemx -fmodule-header=system
@@ -3088,31 +3092,26 @@ incompatibility, so you must use it everywhere or nowhere.  (Such
 definitions outside of a named module remain implicitly inline,
 regardless.)
 
-@item -fmodule-only
-@opindex fmodule-only
-Only emit the module CMI, inhibiting any object file.
-
-@item -flang-info-include-translate
-@itemx -flang-info-include-translate=@var{header}
-@opindex flang-info-include-translate
-Note include translation events.
-
-@item -Winvalid-imported-macros
-@opindex Winvalid-imported-macros
-@opindex Wno-invalid-imported-macros
-Verify all imported macro definitions are valid at end of
-compilation.  This is not enabled by default, as it requires
-additional processing to determine.
+@item -fno-module-lazy
+@opindex fno-module-lazy
+@opindex fmodule-lazy
+Disable lazy module importing and module mapper creation.
 
 @item -fmodule-mapper=@r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=|@var{program}@r{[}?@var{ident}@r{]} @var{args...}
 @itemx -fmodule-mapper==@var{socket}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=<>@r{[}@var{fdinout}@r{]}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=<@var{fdin}>@var{fdout}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=@var{file}@r{[}?@var{ident}@r{]}
 @vindex CXX_MODULE_MAPPER @r{environment variable}
 @opindex fmodule-mapper
 An oracle to query for module name to filename mappings.  If
 unspecified the @env{CXX_MODULE_MAPPER} environment variable is used,
-and if that is unset, a default is provided.
+and if that is unset, an in-process default is provided.
+
+@item -fmodule-only
+@opindex fmodule-only
+Only emit the module CMI, inhibiting any object file.
 
 @item -fms-extensions
 @opindex fms-extensions
@@ -3361,6 +3360,12 @@ for ISO C++11 onwards (@option{-std=c++11}, ...).
 Do not search for header files in the standard directories specific to
 C++, but do still search the other standard directories.  (This option
 is used when building the C++ library.)
+
+@item -flang-info-include-translate
+@itemx -flang-info-include-translate=@var{header}
+@opindex flang-info-include-translate
+Note include translation events.
+
 @end table
 
 In addition, these warning options have meanings only for C++ programs:
@@ -3517,6 +3522,13 @@ the array, so if a class variable is constructed from a temporary
 the variable declaration statement.
 
 @end itemize
+
+@item -Winvalid-imported-macros
+@opindex Winvalid-imported-macros
+@opindex Wno-invalid-imported-macros
+Verify all imported macro definitions are valid at end of
+compilation.  This is not enabled by default, as it requires
+additional processing to determine.
 
 @item -Wno-literal-suffix @r{(C++ and Objective-C++ only)}
 @opindex Wliteral-suffix
@@ -32571,18 +32583,46 @@ not get debugging information for routines in the precompiled header.
 Modules are a C++ 20 language feature.  As the name suggests, it
 provides a modular compilation system, intending to provide both
 faster builds and better library isolation.  The ``Merging Modules''
-paper @uref{http//wg21.link/p1103}, provides the easiest to read set
+paper @uref{https://wg21.link/p1103}, provides the easiest to read set
 of changes to the standard, although it does not capture later
-changes.  That specification is now in the C++ Working Draft,
-@uref{git@@github.com:cplusplus/draft.git}, as of 2020-03-14, it is
-considered complete (there may be defect reports to come).
-@emph{Modules support is a work in progress.  The implementation is
-not complete.  Command-line options are not stable.}
+changes.  That specification is now part of C++20,
+@uref{git@@github.com:cplusplus/draft.git}, it is considered complete
+(there may be defect reports to come).
+
+@emph{G++'s modules support is not complete.}  Other than bugs, the
+missing pieces are:
+
+@table @emph
+
+@item Private Module Fragment
+The Private Module Fragment is recognized, but an error is emitted.
+
+@item Partition definition visibility rules
+Entities may be defined in implementation partitions, and those
+definitions are not available outside of the module.  This is not
+implemented.
+
+@item Textual merging of reachable GM entities
+Entitites may be multiply defined across different header-units.
+These must be de-duplicated, and this is implemented across imports,
+or when an import redefines a textually-defined entity.  However the
+reverse is not implemented -- textually redefining an entity that has
+been defined in an imported header-unit.  A redefinition error will be
+emitted.
+
+@item Translation-Unit local referencing rules
+Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
+(@uref{https://wg21.link/p2003} adds limitations on which entities an
+exported region may reference (for instance, the entities an exported
+template definition may reference).  These are not fully implemented.
+
+@end table
 
 Modular compilation is @emph{not} enabled with just the
 @option{-std=c++20} option.  You must explicitly enable it with the
 @option{-fmodules-ts} option.  It is independent of the language
-version selected.
+version selected, although in pre-c++20 versions, it is of course an
+extension.
 
 No new source file suffixes are required or supported.  If you wish to
 use a non-standard suffix (@xref{Overall Options}), you will also need
@@ -32629,9 +32669,10 @@ existing file), or complete new contents.  They will not observe the
 CMI during its creation.  This is unlike object file writing, which
 may be observed by an external process.
 
-CMIs are read in lazily.  Generally blocks are read when name lookup
-or template instantiation occurs.  To inhibit this, the
-@option{-fno-module-lazy} option may be used.
+CMIs are read in lazily, if the host OS provides @code{mmap}
+functionality.  Generally blocks are read when name lookup or template
+instantiation occurs.  To inhibit this, the @option{-fno-module-lazy}
+option may be used.
 
 The @option{-fmodule-only} option disables generation of the
 associated object file for compiling a module interface.  Only the CMI
@@ -32648,10 +32689,13 @@ descriptors.  By default, the limit is a few less than the per-process
 file descriptor hard limit, if that is determinable.@footnote{Where
 applicable the soft limit is incremented as needed towards the hard limit.}
 
-The @option{-flang-info-include-translate} options note whether
+The @option{-flang-info-include-translate} option notes whether
 include translation occurs.  With no argument, all include translation
 is noted.  Otherwise, queries about include translation of a specific
-header file is noted.  The latter form may be repeated.
+header file is noted.  The latter form may be repeated.  This option
+may be helpful in determining whether include translation is
+happenning -- if it is working correctly, it'll behave as if it wasn't
+there at all.
 
 The @option{-Winvalid-imported-macros} option causes all imported macros
 to be resolved at the end of compilation.  Without this, imported
@@ -32671,9 +32715,13 @@ The @option{-fmodule-mapper} family of options are described below.
 
 A module mapper provides a server or file that the compiler queries to
 determine the mapping between module names and CMI files.  It is also
-used to build CMIs on demand.  A mapper may be specified with the
-@option{-fmodule-mapper=@var{val}} option or @env{CXX_MODULE_MAPPER}
-environment variable.  The value may have one of the following forms:
+used to build CMIs on demand.  @emph{Mapper functionality is in its
+infancy and is intended for experimentation with build system
+interactions.}
+
+A mapper may be specified with the @option{-fmodule-mapper=@var{val}}
+option or @env{CXX_MODULE_MAPPER} environment variable.  The value may
+have one of the following forms:
 
 @table @gcctabopt
 
@@ -32681,10 +32729,9 @@ environment variable.  The value may have one of the following forms:
 An optional hostname and a numeric port number to connect to.  If the
 hostname is omitted, the loopback address is used.  If the hostname
 corresponds to multiple IPV6 addresses, these are tried in turn, until
-one is successful.  If your host lacks ipv6, this form is
-non-functional.  If you must use ipv4 @emph{get with the 21st century},
-or failing that use @option{-fmodule-mapper='|ncat @var{ipv4host}
-@var{port}'}.
+one is successful.  If your host lacks IPv6, this form is
+non-functional.  If you must use IPv4 use
+@option{-fmodule-mapper='|ncat @var{ipv4host} @var{port}'}.
 
 @item =@var{socket}@r{[}?@var{ident}@r{]}
 A local domain socket.  If your host lacks local domain sockets, this
@@ -32697,8 +32744,8 @@ Arguments are separated by space characters, (it is not possible for
 one of the arguments delivered to the program to contain a space).  An
 exception is if @var{program} begins with @@.  In that case
 @var{program} (sans @@) is looked for in the compiler's internal
-binary directory.  Thus the default mapper-server can be specified
-with @code{@@mapper-server}.
+binary directory.  Thus the sample mapper-server can be specified
+with @code{@@g++-mapper-server}.
 
 @item <>@r{[}?@var{ident}@r{]}
 @item <>@var{fdinout}@r{[}?@var{ident}@r{]}
@@ -32727,7 +32774,7 @@ used if no @var{ident} is specified.  In the file case, all non-blank
 lines are significant, unless a value is specified, in which case only
 lines beginning with @var{ident} are significant.  The @var{ident}
 must be separated by whitespace from the module name.  Be aware that
-@samp{<}, @samp{>}, @samp{?}  and @samp{|} characters are often
+@samp{<}, @samp{>}, @samp{?}, and @samp{|} characters are often
 significant to the shell, and therefore may need quoting.
 
 The mapper is connected to or loaded lazily, when the first module
@@ -32772,12 +32819,12 @@ Header units import macros.  These macros can affect later conditional
 inclusion, which therefore can cascade to differing import sets.  When
 preprocessing, it is necessary to load the CMI.  If a header unit is
 unavailable, the preprocessor will issue a warning and continue (when
-no just preprocessing, an error is emitted).  Detecting such imports
+not just preprocessing, an error is emitted).  Detecting such imports
 requires preprocessor tokenization of the input stream to phase 4
 (macro expansion).
 
-Include translation converts @code{#include}, @code{include_next} and
-@code{import} directives to internal @code{import} declarations.
+Include translation converts @code{#include}, @code{#include_next} and
+@code{#import} directives to internal @code{import} declarations.
 Whether a particular directive is translated is controlled by the
 module mapper.  Header unit names are canonicalized during
 preprocessing.
@@ -32787,5 +32834,16 @@ functionality of @option{-MD} and @option{-MMD} options.  Detection of
 import declarations also requires phase 4 preprocessing, and thus
 requires full preprocessing (or compilation).
 
-The @option{-M}, @option{-MM} and @option{-fdirectives-only} options halt
+The @option{-M}, @option{-MM} and @option{-E -fdirectives-only} options halt
 preprocessing before phase 4.
+
+The @option{-save-temps} option will use @option{-fdirectives-only}
+for preprocessing, and preserve the macro definitions in the
+preprocessed output.  Usually you will also want to use this option
+when explicitly preprocessing a header-unit, or consuming such
+preprocessed output:
+
+@smallexample
+g++ -fmodules-ts -E -fdirectives-only my-header.hh -o my-header.ii
+g++ -x c++-header -fmodules-ts -fpreprocessed -fdirectives-only my-header.ii
+@end smallexample
