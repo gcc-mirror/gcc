@@ -50,11 +50,13 @@ along with GCC; see the file COPYING3.  If not see
 extern const char *riscv_expand_arch (int argc, const char **argv);
 extern const char *riscv_expand_arch_from_cpu (int argc, const char **argv);
 extern const char *riscv_default_mtune (int argc, const char **argv);
+extern const char *riscv_multi_lib_check (int argc, const char **argv);
 
 # define EXTRA_SPEC_FUNCTIONS						\
   { "riscv_expand_arch", riscv_expand_arch },				\
   { "riscv_expand_arch_from_cpu", riscv_expand_arch_from_cpu },		\
-  { "riscv_default_mtune", riscv_default_mtune },
+  { "riscv_default_mtune", riscv_default_mtune },			\
+  { "riscv_multi_lib_check", riscv_multi_lib_check },
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu is specified.
