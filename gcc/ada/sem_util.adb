@@ -13827,6 +13827,28 @@ package body Sem_Util is
           and then Assertion_Expression_Pragma (Get_Pragma_Id (Prag));
    end In_Assertion_Expression_Pragma;
 
+   -------------------------------
+   -- In_Generic_Formal_Package --
+   -------------------------------
+
+   function In_Generic_Formal_Package (E : Entity_Id) return Boolean is
+      Par : Node_Id;
+
+   begin
+      Par := Parent (E);
+      while Present (Par) loop
+         if Nkind (Par) = N_Formal_Package_Declaration
+           or else Nkind (Original_Node (Par)) = N_Formal_Package_Declaration
+         then
+            return True;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return False;
+   end In_Generic_Formal_Package;
+
    ----------------------
    -- In_Generic_Scope --
    ----------------------

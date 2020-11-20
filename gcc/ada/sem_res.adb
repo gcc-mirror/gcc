@@ -5451,9 +5451,12 @@ package body Sem_Res is
 
                --  Do not apply Ada 2005 accessibility checks on a class-wide
                --  allocator if the type given in the allocator is a formal
-               --  type. A run-time check will be performed in the instance.
+               --  type or within a formal package. A run-time check will be
+               --  performed in the instance.
 
-               elsif not Is_Generic_Type (Exp_Typ) then
+               elsif not Is_Generic_Type (Exp_Typ)
+                 and then not In_Generic_Formal_Package (Exp_Typ)
+               then
                   Error_Msg_N
                     ("type in allocator has deeper level than designated "
                      & "class-wide type", E);
