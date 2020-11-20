@@ -1,3 +1,48 @@
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct spec_entry): Moved from pt.c.
+	(walk_specializations, match_mergeable_specialization)
+	(get_mergeable_specialization_flags)
+	(add_mergeable_specialization): Declare.
+	* pt.c (struct spec_entry): Moved to cp-tree.h.
+	(walk_specializations, match_mergeable_specialization)
+	(get_mergeable_specialization_flags)
+	(add_mergeable_specialization): New.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct constexpr_fundef): Moved from constexpr.c.
+	(maybe_save_constexpr_fundef): Declare.
+	(register_constexpr_fundef): Take constexpr_fundef object, return
+	void.
+	* decl.c (mabe_save_function_definition): Delete, functionality
+	moved to maybe_save_constexpr_fundef.
+	(emit_coro_helper, finish_function): Adjust.
+	* constexpr.c (struct constexpr_fundef): Moved to cp-tree.h.
+	(constexpr_fundef_hasher::equal): Constify.
+	(constexpr_fundef_hasher::hash): Constify.
+	(retrieve_constexpr_fundef): Make non-static.
+	(maybe_save_constexpr_fundef): Break out checking and duplication
+	from ...
+	(register_constexpr_fundef): ... here.  Just register the constexpr.
+
+2020-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97523
+	* init.c (build_new): When value-initializing an array new,
+	leave the INIT as an empty vector.
+
+2020-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97895
+	* pt.c (do_auto_deduction): Don't crash when the constructor has
+	zero elements.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97905
+	* decl.c (duplicate_decls): Relax new assert.
+
 2020-11-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* parser.c (cp_parser_objc_valid_prefix_attributes): Check

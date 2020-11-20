@@ -1,3 +1,77 @@
+2020-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91029
+	* gcc.dg/tree-ssa/pr91029-1.c: New test.
+	* gcc.dg/tree-ssa/pr91029-2.c: New test.
+
+2020-11-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/pr93781-1.c: New.
+	* gcc.dg/tree-ssa/pr93781-2.c: New.
+	* gcc.dg/tree-ssa/pr93781-3.c: New.
+
+2020-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97860
+	* gcc.dg/pr97860.c: New test.
+
+2020-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97523
+	* g++.dg/expr/anew5.C: New test.
+	* g++.dg/expr/anew6.C: New test.
+
+2020-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97895
+	* g++.dg/cpp0x/auto54.C: New test.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/97905
+	* g++.dg/lookup/pr97905.C: New.
+
+2020-11-19  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/halt.c: New test.
+	* gcc.target/pru/lmbd.c: New test.
+
+2020-11-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-cost-model-1.c: New test.
+	* gcc.dg/vect/vect-cost-model-2.c: Likewise.
+	* gcc.dg/vect/vect-cost-model-3.c: Likewise.
+	* gcc.dg/vect/vect-cost-model-4.c: Likewise.
+	* gcc.dg/vect/vect-cost-model-5.c: Likewise.
+	* gcc.dg/vect/vect-cost-model-6.c: Likewise.
+
+2020-11-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/pr97897.c: Add dg-options.
+
+2020-11-19  Joel Hutton  <joel.hutton@arm.com>
+
+	* gcc.target/aarch64/vect-widen-lshift.c: New test.
+
+2020-11-19  Joel Hutton  <joel.hutton@arm.com>
+
+	* gcc.target/aarch64/vect-widen-add.c: New test.
+	* gcc.target/aarch64/vect-widen-sub.c: New test.
+
+2020-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97901
+	* gcc.dg/torture/pr97901.c: New testcase.
+
+2020-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97897
+	* gcc.dg/pr97897.c: New testcase.
+
+2020-11-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr97887.c: New test.
+
 2020-11-18  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR middle-end/85811

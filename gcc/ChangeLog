@@ -1,3 +1,180 @@
+2020-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91029
+	* range-op.cc (operator_trunc_mod::op1_range): Don't require signed
+	types, nor require that op2 >= 0.  Implement (a % b) >= x && x > 0
+	implies a >= x and (a % b) <= x && x < 0 implies a <= x.
+	(operator_trunc_mod::op2_range): New method.
+
+2020-11-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/93781
+	* range-op.cc (get_shift_range): Rename from
+	undefined_shift_range_check and now return valid shift ranges.
+	(operator_lshift::fold_range): Use result from get_shift_range.
+	(operator_rshift::fold_range): Ditto.
+
+2020-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* fold-const.c (operand_compare::operand_equal_p): Fix thinko in
+	COMPONENT_REF handling and guard types_same_for_odr by
+	virtual_method_call_p.
+	(operand_compare::hash_operand): Likewise.
+
+2020-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97860
+	* tree.c (array_type_nelts): For complete arrays with zero min
+	and NULL max and zero size return -1.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: Add tests for fstatat, sighandler_t, O_CLOEXEC,
+	unix-domain and ipv6 sockets.
+	* config.in: Rebuilt.
+	* configure: Rebuilt.
+
+2020-11-19  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/alu-zext.md: Add lmbd patterns for zero_extend
+	variants.
+	* config/pru/pru.c (enum pru_builtin): Add HALT and LMBD.
+	(pru_init_builtins): Ditto.
+	(pru_builtin_decl): Ditto.
+	(pru_expand_builtin): Ditto.
+	* config/pru/pru.h (CLZ_DEFINED_VALUE_AT_ZERO): Define PRU
+	value for CLZ with zero value parameter.
+	* config/pru/pru.md: Add halt, lmbd and clz patterns.
+	* doc/extend.texi: Document PRU builtins.
+
+2020-11-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi (-fvect-cost-model): Add a very-cheap model.
+	* common.opt (fvect-cost-model=): Add very-cheap as a possible option.
+	(fsimd-cost-model=): Likewise.
+	(vect_cost_model): Add very-cheap.
+	* flag-types.h (vect_cost_model): Add VECT_COST_MODEL_VERY_CHEAP.
+	Put the values in order of increasing aggressiveness.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Use
+	range checks when comparing against VECT_COST_MODEL_CHEAP.
+	(vect_prune_runtime_alias_test_list): Do not allow any alias
+	checks for the very-cheap cost model.
+	* tree-vect-loop.c (vect_analyze_loop_costing): Do not allow
+	any peeling for the very-cheap cost model.  Also require one
+	iteration of the vector loop to pay for itself.
+
+2020-11-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (neoversen1_tunings): Use new
+	cortexa76_extra_costs.
+	(neoversev1_tunings): Likewise.
+	(neoversen2_tunines): Likewise.
+	* config/arm/aarch-cost-tables.h (cortexa76_extra_costs):
+	add new costs.
+
+2020-11-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_cpymem): Cleanup code and
+	comments, tweak expansion decisions and improve tail expansion.
+
+2020-11-19  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (operand_compare::hash_operand): Fix typo.
+
+2020-11-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-reassoc.c (get_rank): Refactor to consistently
+	use the cache and dump ranks assigned.
+
+2020-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* fold-const.c (operand_compare::operand_equal_p): More OBJ_TYPE_REF
+	matching to correct place; drop OEP_ADDRESS_OF for TOKEN, OBJECT and
+	class.
+	(operand_compare::hash_operand): Hash ODR type for OBJ_TYPE_REF.
+
+2020-11-19  Joel Hutton  <joel.hutton@arm.com>
+
+	* config/aarch64/aarch64-simd.md: Add vec_widen_lshift_hi/lo<mode>
+	patterns.
+	* tree-vect-stmts.c (vectorizable_conversion): Fix for widen_lshift
+	case.
+
+2020-11-19  Joel Hutton  <joel.hutton@arm.com>
+
+	* doc/generic.texi: Document new widen_plus/minus_lo/hi tree codes.
+	* doc/md.texi: Document new widenening add/subtract hi/lo optabs.
+	* expr.c (expand_expr_real_2): Add widen_add, widen_subtract cases.
+	* optabs-tree.c (optab_for_tree_code): Add case for widening optabs.
+	* optabs.def (OPTAB_D): Define vectorized widen add, subtracts.
+	* tree-cfg.c (verify_gimple_assign_binary): Add case for widening adds,
+	subtracts.
+	* tree-inline.c (estimate_operator_cost): Add case for widening adds,
+	subtracts.
+	* tree-vect-generic.c (expand_vector_operations_1): Add case for
+	widening adds, subtracts
+	* tree-vect-patterns.c (vect_recog_widen_add_pattern): New recog
+	pattern.
+	(vect_recog_widen_sub_pattern): New recog pattern.
+	(vect_recog_average_pattern): Update widened add code.
+	(vect_recog_average_pattern): Update widened add code.
+	* tree-vect-stmts.c (vectorizable_conversion): Add case for widened add,
+	subtract.
+	(supportable_widening_operation): Add case for widened add, subtract.
+	* tree.def
+	(WIDEN_PLUS_EXPR): New tree code.
+	(WIDEN_MINUS_EXPR): New tree code.
+	(VEC_WIDEN_ADD_HI_EXPR): New tree code.
+	(VEC_WIDEN_PLUS_LO_EXPR): New tree code.
+	(VEC_WIDEN_MINUS_HI_EXPR): New tree code.
+	(VEC_WIDEN_MINUS_LO_EXPR): New tree code.
+
+2020-11-19  Joel Hutton  <joel.hutton@arm.com>
+
+	* config/aarch64/aarch64-simd.md: New patterns
+	vec_widen_saddl_lo/hi_<mode>.
+
+2020-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97901
+	* tree-ssa-propagate.c (clean_up_loop_closed_phi): Compute
+	dominators and use replace_uses_by.
+
+2020-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.h (struct fixed_point_type_info) <scale_factor>: Turn
+	numerator and denominator into a tree.
+	* dwarf2out.c (base_type_die): In the case of a fixed-point type
+	with arbitrary scale factor, call add_scalar_info on numerator and
+	denominator to emit the appropriate attributes.
+
+2020-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97897
+	* tree-complex.c (complex_propagate::visit_stmt): Make sure
+	abnormally used SSA names are VARYING.
+	(complex_propagate::visit_phi): Likewise.
+	* tree-ssa.c (verify_phi_args): Verify PHI arguments on abnormal
+	edges are SSA names.
+
+2020-11-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<absneg:code><mode>2_i387_1):
+	Disable for TARGET_SSE_MATH modes.
+
+2020-11-19  Jeff Law  <law@redhat.com>
+
+	* config/h8300/constraints.md (R constraint): Add argument to call
+	to h8300_shift_needs_scratch_p.
+	(S and T constraints): Similary.
+	* config/h8300/h8300-protos.h: Update h8300_shift_needs_scratch_p
+	prototype.
+	* config/h8300/h8300.c (expand_a_shift): Emit a different pattern
+	if the shift does not require a scratch register.
+	(h8300_shift_needs_scratch_p): Refine to be more accurate.
+	* config/h8300/shiftrotate.md (shiftqi_noscratch): New pattern.
+	(shifthi_noscratch, shiftsi_noscratch): Similarly.
+
 2020-11-18  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR middle-end/85811

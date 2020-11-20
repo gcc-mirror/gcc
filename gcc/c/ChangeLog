@@ -1,3 +1,9 @@
+2020-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97860
+	* c-decl.c (get_parm_array_spec): Bail out of nelts is
+	error_operand_p.
+
 2020-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (c.serial): New goal.
