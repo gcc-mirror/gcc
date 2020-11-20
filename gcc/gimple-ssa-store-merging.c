@@ -1450,6 +1450,7 @@ public:
   bool bit_insertion;
   bool string_concatenation;
   bool only_constants;
+  bool consecutive;
   unsigned int first_nonmergeable_order;
   int lp_nr;
 
@@ -1822,6 +1823,7 @@ merged_store_group::merged_store_group (store_immediate_info *info)
   bit_insertion = info->rhs_code == BIT_INSERT_EXPR;
   string_concatenation = info->rhs_code == STRING_CST;
   only_constants = info->rhs_code == INTEGER_CST;
+  consecutive = true;
   first_nonmergeable_order = ~0U;
   lp_nr = info->lp_nr;
   unsigned HOST_WIDE_INT align_bitpos = 0;
@@ -1957,6 +1959,9 @@ merged_store_group::do_merge (store_immediate_info *info)
       first_stmt = stmt;
     }
 
+  if (info->bitpos != start + width)
+    consecutive = false;
+
   /* We need to use extraction if there is any bit-field.  */
   if (info->rhs_code == BIT_INSERT_EXPR)
     {
@@ -1964,12 +1969,16 @@ merged_store_group::do_merge (store_immediate_info *info)
       gcc_assert (!string_concatenation);
     }
 
-  /* We need to use concatenation if there is any string.  */
+  /* We want to use concatenation if there is any string.  */
   if (info->rhs_code == STRING_CST)
     {
       string_concatenation = true;
       gcc_assert (!bit_insertion);
     }
+
+  /* But we cannot use it if we don't have consecutive stores.  */
+  if (!consecutive)
+    string_concatenation = false;
 
   if (info->rhs_code != INTEGER_CST)
     only_constants = false;
@@ -1982,12 +1991,13 @@ merged_store_group::do_merge (store_immediate_info *info)
 void
 merged_store_group::merge_into (store_immediate_info *info)
 {
+  do_merge (info);
+
   /* Make sure we're inserting in the position we think we're inserting.  */
   gcc_assert (info->bitpos >= start + width
 	      && info->bitregion_start <= bitregion_end);
 
   width = info->bitpos + info->bitsize - start;
-  do_merge (info);
 }
 
 /* Merge a store described by INFO into this merged store.
@@ -1997,11 +2007,11 @@ merged_store_group::merge_into (store_immediate_info *info)
 void
 merged_store_group::merge_overlapping (store_immediate_info *info)
 {
+  do_merge (info);
+
   /* If the store extends the size of the group, extend the width.  */
   if (info->bitpos + info->bitsize > start + width)
     width = info->bitpos + info->bitsize - start;
-
-  do_merge (info);
 }
 
 /* Go through all the recorded stores in this group in program order and
