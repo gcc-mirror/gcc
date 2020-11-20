@@ -146,10 +146,10 @@ endif
 
 # Define the names for selecting Ada in LANGUAGES.
 ada: gnat1$(exeext) gnatbind$(exeext)
-ada.serial: gnat1$(exeext)
+ada.serial = gnat1$(exeext)
 
 # Tell GNU Make to ignore these, if they exist.
-.PHONY: ada ada.serial ada.prev
+.PHONY: ada
 
 # Compute the FLAGS to pass for gnattools, now linked with a C++ driver as
 # we're linking against at least libcommon which contains C++ compiled code.
@@ -669,7 +669,7 @@ ada/libgnat/s-excmac.adb: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).adb
 # Since the RTL should be built with the latest compiler, remove the
 #  stamp target in the parent directory whenever gnat1 is rebuilt
 gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a \
-		$(LIBDEPS) ada.prev
+		$(LIBDEPS) $(ada.prev)
 	@$(call LINK_PROGRESS,$(INDEX.ada),start)
 	+$(GCC_LLINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) \
 	  libcommon-target.a $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(CFLAGS)

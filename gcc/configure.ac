@@ -6934,7 +6934,7 @@ echo "SERIAL_LIST =" >> Make-hooks
 echo else >> Make-hooks
 lang_cnt=0
 lang_list=
-prev=c.serial
+prev=c
 serialization_languages=c
 for lang in $all_selected_languages
 do
@@ -6950,7 +6950,7 @@ do
 	test $lang = c && continue
 	lang_cnt=`expr $lang_cnt + 1`
 	lang_list=" $prev$lang_list"
-	prev=${lang}.serial
+	prev=${lang}
 done
 echo "SERIAL_LIST = \$(wordlist \$(DO_LINK_SERIALIZATION),$lang_cnt,$lang_list)" >> Make-hooks
 echo endif >> Make-hooks
@@ -6960,7 +6960,7 @@ lang_idx=1
 for lang in $serialization_languages
 do
 	test $lang = c && continue
-	echo "$lang.prev: \$(word $lang_cnt,\$(SERIAL_LIST))" >> Make-hooks
+	echo "$lang.prev = \$(if \$(word $lang_cnt,\$(SERIAL_LIST)),\$(\$(word $lang_cnt,\$(SERIAL_LIST)).serial))" >> Make-hooks
 	echo "INDEX.$lang = $lang_idx" >> Make-hooks
 	lang_cnt=`expr $lang_cnt - 1`
 	lang_idx=`expr $lang_idx + 1`

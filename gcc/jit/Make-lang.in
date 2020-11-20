@@ -81,10 +81,10 @@ jit: $(LIBGCCJIT_FILENAME) \
 	$(FULL_DRIVER_NAME)
 endif
 
-jit.serial: $(LIBGCCJIT_FILENAME)
+jit.serial = $(LIBGCCJIT_FILENAME)
 
 # Tell GNU make to ignore these if they exist.
-.PHONY: jit jit.serial jit.prev
+.PHONY: jit
 
 jit_OBJS = attribs.o \
 	jit/dummy-frontend.o \
@@ -119,7 +119,7 @@ $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	libbackend.a libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER) \
 	$(LIBDEPS) $(srcdir)/jit/libgccjit.map \
-	$(EXTRA_GCC_OBJS) jit.prev
+	$(EXTRA_GCC_OBJS) $(jit.prev)
 	@$(call LINK_PROGRESS,$(INDEX.jit),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
