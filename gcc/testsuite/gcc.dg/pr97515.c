@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp" } */
+/* { dg-options "-O2 -fdump-tree-ccp2" } */
 
 int
 e7 (int gg)
@@ -20,6 +20,8 @@ e7 (int gg)
   return xe;
 }
 
-/* EVRP should be able to reduce this to a single goto.  */
+/* EVRP should be able to reduce this to a single goto when we can
+ * revisit statements to try folding again based on changed inputs.
+ * Until then, make sure its gone by ccp2.  */
  
-/* { dg-final { scan-tree-dump-times "goto" 1 "evrp" } } */
+/* { dg-final { scan-tree-dump-times "goto" 1 "ccp2" } } */
