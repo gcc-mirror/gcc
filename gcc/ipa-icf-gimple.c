@@ -153,8 +153,21 @@ func_checker::compare_decl (const_tree t1, const_tree t2)
       && DECL_BY_REFERENCE (t1) != DECL_BY_REFERENCE (t2))
     return return_false_with_msg ("DECL_BY_REFERENCE flags are different");
 
-  if (!compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
-    return return_false ();
+  /* We do not really need to check types of variables, since they are just
+     blocks of memory and we verify types of the accesses to them.
+     However do compare types of other kinds of decls
+     (parm decls and result decl types may affect ABI convetions).  */
+  if (t != VAR_DECL)
+    {
+      if (!compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return return_false ();
+    }
+  else
+    {
+      if (!operand_equal_p (DECL_SIZE (t1), DECL_SIZE (t2),
+			    OEP_MATCH_SIDE_EFFECTS))
+	return return_false_with_msg ("DECL_SIZEs are different");
+    }
 
   bool existed_p;
   const_tree &slot = m_decl_map.get_or_insert (t1, &existed_p);
