@@ -1,3 +1,34 @@
+2020-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92546
+	* include/std/regex (pmr::smatch, pmr::wsmatch): Declare using
+	underlying __normal_iterator type, not nested typedef
+	basic_string::const_iterator.
+
+2020-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97876
+	* include/std/stop_token (_Stop_state_t): Define default
+	constructor as user-provided not defaulted.
+
+2020-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95989
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_NATIVE_THREAD_ID):
+	Define new macro to get reliable thread ID.
+	* include/std/stop_token (_Stop_state_t::_M_request_stop):
+	Use new macro if it's defined.
+	(_Stop_state_t::_M_remove_callback): Likewise.
+	* include/std/thread (this_thread::get_id): Likewise.
+	* testsuite/30_threads/jthread/95989.cc: New test.
+	* testsuite/30_threads/this_thread/95989.cc: New test.
+
 2020-11-18  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
