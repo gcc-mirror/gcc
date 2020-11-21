@@ -34,7 +34,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #ifdef HAVE_POSIX_SPAWN
 #include <spawn.h>
+# ifdef __APPLE__
+#  include <crt_externs.h>
+#  define environ (*_NSGetEnviron ())
+# else
 extern char **environ;
+# endif
 #endif
 #if defined(HAVE_POSIX_SPAWN) || defined(HAVE_FORK)
 #include <signal.h>
