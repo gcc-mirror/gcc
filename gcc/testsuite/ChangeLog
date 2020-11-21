@@ -1,3 +1,82 @@
+2020-11-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.dg/nextafter-2.c: Include math.h.
+
+2020-11-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97918
+	* g++.dg/debug/localclass2.C: New test.
+
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/attr-access-4.c: New test.
+
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97879
+	* gcc.dg/attr-access-3.c: New test.
+
+2020-11-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97515.c: Check in ccp2, not evrp.
+
+2020-11-20  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/97727
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstN_lane_2.c: Relax
+	regexps.
+
+2020-11-20  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/97726
+	* gcc.target/arm/simd/bf16_vldn_1.c: Relax regexps not to fail on
+	big endian.
+	* gcc.target/arm/simd/vldn_lane_bf16_1.c: Likewise
+	* gcc.target/arm/simd/vmmla_1.c: Add -mfloat-abi=hard flag.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88101
+	* c-c++-common/builtin-clear-padding-1.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-1.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-2.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-3.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-4.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-5.c: New test.
+	* g++.dg/torture/builtin-clear-padding-1.C: New test.
+	* g++.dg/torture/builtin-clear-padding-2.C: New test.
+	* gcc.dg/builtin-clear-padding-1.c: New test.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97528
+	* gcc.target/arm/pr97528.c: New test.
+
+2020-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt90a.adb: New test.
+	* gnat.dg/opt90b.adb: Likewise.
+	* gnat.dg/opt90c.adb: Likewise.
+	* gnat.dg/opt90d.adb: Likewise.
+	* gnat.dg/opt90e.adb: Likewise.
+	* gnat.dg/opt90a_pkg.ads: New helper.
+	* gnat.dg/opt90b_pkg.ads: Likewise.
+	* gnat.dg/opt90c_pkg.ads: Likewise.
+	* gnat.dg/opt90d_pkg.ads: Likewise.
+	* gnat.dg/opt90e_pkg.ads: Likewise.
+
+2020-11-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* gcc.target/i386/pr97873.c: New test.
+	* gcc.target/i386/pr97873-1.c: New test.
+
+2020-11-20  Martin Uecker  <muecker@gwdg.de>
+
+	* gcc.dg/cond-constqual-1.c: Adapt test.
+	* gcc.dg/lvalue-11.c: New test.
+	* gcc.dg/pr60195.c: Add warning.
+
 2020-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91029

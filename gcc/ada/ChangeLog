@@ -1,3 +1,17 @@
+2020-11-20  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* adaint.c (__gnat_number_of_cpus): Check for the presence of
+	_SC_NPROCESSORS_ONLN rather than a list of OS-specific macros
+	to decide whether to use `sysconf'.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* gcc-interface/Make-lang.in (ada.serial): Change from goal to a
+	variable.
+	(.PHONY): Drop ada.serial and ada.prev.
+	(gnat1$(exeext)): Depend on $(ada.serial) rather than ada.serial.
+
 2020-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/97805

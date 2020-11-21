@@ -1,3 +1,18 @@
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97879
+	* c-decl.c (start_function): Set ATTR_FLAG_INTERNAL in flags.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (c.serial): Change from goal to a variable.
+	(.PHONY): Drop c.serial.
+
+2020-11-20  Martin Uecker  <muecker@gwdg.de>
+
+	* c-typeck.c (convert_lvalue_to_rvalue): Drop qualifiers.
+
 2020-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/97860

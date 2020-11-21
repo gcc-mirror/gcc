@@ -1,3 +1,97 @@
+2020-11-20  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/Makefile.am (bits_headers): Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/atomic_base.h (__atomic_flag::wait): Define.
+	(__atomic_flag::notify_one): Likewise.
+	(__atomic_flag::notify_all): Likewise.
+	(__atomic_base<_Itp>::wait): Likewise.
+	(__atomic_base<_Itp>::notify_one): Likewise.
+	(__atomic_base<_Itp>::notify_all): Likewise.
+	(__atomic_base<_Ptp*>::wait): Likewise.
+	(__atomic_base<_Ptp*>::notify_one): Likewise.
+	(__atomic_base<_Ptp*>::notify_all): Likewise.
+	(__atomic_impl::wait): Likewise.
+	(__atomic_impl::notify_one): Likewise.
+	(__atomic_impl::notify_all): Likewise.
+	(__atomic_float<_Fp>::wait): Likewise.
+	(__atomic_float<_Fp>::notify_one): Likewise.
+	(__atomic_float<_Fp>::notify_all): Likewise.
+	(__atomic_ref<_Tp>::wait): Likewise.
+	(__atomic_ref<_Tp>::notify_one): Likewise.
+	(__atomic_ref<_Tp>::notify_all): Likewise.
+	(atomic_wait<_Tp>): Likewise.
+	(atomic_wait_explicit<_Tp>): Likewise.
+	(atomic_notify_one<_Tp>): Likewise.
+	(atomic_notify_all<_Tp>): Likewise.
+	* include/bits/atomic_wait.h: New file.
+	* include/bits/atomic_timed_wait.h: New file.
+	* include/bits/semaphore_base.h: New file.
+	* include/std/atomic (atomic<bool>::wait): Define.
+	(atomic<bool>::wait_one): Likewise.
+	(atomic<bool>::wait_all): Likewise.
+	(atomic<_Tp>::wait): Likewise.
+	(atomic<_Tp>::wait_one): Likewise.
+	(atomic<_Tp>::wait_all): Likewise.
+	(atomic<_Tp*>::wait): Likewise.
+	(atomic<_Tp*>::wait_one): Likewise.
+	(atomic<_Tp*>::wait_all): Likewise.
+	* include/std/latch: New file.
+	* include/std/semaphore: New file.
+	* include/std/version: Add __cpp_lib_semaphore and
+	__cpp_lib_latch defines.
+	* testsuite/29_atomics/atomic/wait_notify/bool.cc: New test.
+	* testsuite/29_atomics/atomic/wait_notify/pointers.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/generic.cc: Liekwise.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc: Likewise.
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Likewise.
+	* testsuite/30_threads/semaphore/1.cc: New test.
+	* testsuite/30_threads/semaphore/2.cc: Likewise.
+	* testsuite/30_threads/semaphore/least_max_value_neg.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire_for.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire_posix.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc: Likewise.
+	* testsuite/30_threads/latch/1.cc: New test.
+	* testsuite/30_threads/latch/2.cc: New test.
+	* testsuite/30_threads/latch/3.cc: New test.
+	* testsuite/util/atomic/wait_notify_util.h: New File.
+
+2020-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/83938
+	* include/bits/stl_tempbuf.h (get_temporary_buffer): Change __len
+	computation in the loop to avoid truncation.
+	* include/bits/stl_algo.h:
+	(__inplace_merge): Take temporary buffer length from smallest range.
+	(__stable_sort): Limit temporary buffer length.
+	* testsuite/25_algorithms/inplace_merge/1.cc (test4): New.
+	* testsuite/performance/25_algorithms/stable_sort.cc: Test stable_sort
+	under different heap memory conditions.
+	* testsuite/performance/25_algorithms/inplace_merge.cc: New test.
+
+2020-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/move.h (_GLIBCXX_FWDREF): New.
+	* include/bits/stl_tree.h: Adapt to use latter.
+	(_Rb_tree<>::_M_clone_node): Add _MoveValue template parameter.
+	(_Rb_tree<>::_M_mbegin): New.
+	(_Rb_tree<>::_M_begin): Use latter.
+	(_Rb_tree<>::_M_copy): Add _MoveValues template parameter.
+	* testsuite/23_containers/map/allocator/move_cons.cc: New test.
+	* testsuite/23_containers/multimap/allocator/move_cons.cc: New test.
+	* testsuite/23_containers/multiset/allocator/move_cons.cc: New test.
+	* testsuite/23_containers/set/allocator/move_cons.cc: New test.
+
+2020-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92546
+	* include/std/regex (pmr::smatch, pmr::wsmatch): Declare using
+	underlying __normal_iterator type, not nested typedef
+	basic_string::const_iterator.
+
 2020-11-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/95989

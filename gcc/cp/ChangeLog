@@ -1,3 +1,10 @@
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (c++.serial): Change from goal to a variable.
+	(.PHONY): Drop c++.serial and c++.prev.
+	(cc1plus$(exeext)): Depend on $(c++.serial) rather than c++.serial.
+
 2020-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (struct spec_entry): Moved from pt.c.

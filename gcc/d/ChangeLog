@@ -1,3 +1,10 @@
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (d.serial): Change from goal to a variable.
+	(.PHONY): Drop d.serial and d.prev.
+	(d21$(exeext)): Depend on $(d.serial) rather than d.serial.
+
 2020-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (d.serial): New goal.

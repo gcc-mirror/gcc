@@ -1,3 +1,10 @@
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (objc.serial): Change from goal to a variable.
+	(.PHONY): Drop objc.serial and objc.prev.
+	(cc1obj$(exeext)): Depend on $(objc.serial) rather than objc.serial.
+
 2020-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (objc.serial): New goal.

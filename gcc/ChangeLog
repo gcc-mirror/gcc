@@ -1,3 +1,130 @@
+2020-11-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_expand_builtin): Add missing
+	XSCMP* cases for IEEE 128-bit long double.
+
+2020-11-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97918
+	* dwarf2out.c (dwarf2out_early_finish): flush_limbo_die_list
+	after gen_scheduled_generic_parms_dies.
+
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97879
+	* tree-core.h (enum attribute_flags): Add ATTR_FLAG_INTERNAL.
+
+2020-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::hash_operand): Improve hashing of
+	decls.
+
+2020-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::compare_decl): Do not compare types
+	of local variables.
+
+2020-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi: Replace a couple of @code with @command
+
+2020-11-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp.c (vectorizable_slp_permutation): Update types on nodes
+	when needed.
+
+2020-11-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (maybe_push_to_hybrid_worklist): New function.
+	(vect_detect_hybrid_slp): Use it.  Perform a backward walk
+	over the IL.
+
+2020-11-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_print_slp_tree): Also dump
+	SLP_TREE_REPRESENTATIVE.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88101
+	* builtins.def (BUILT_IN_CLEAR_PADDING): New built-in function.
+	* gimplify.c (gimplify_call_expr): Rewrite single argument
+	BUILT_IN_CLEAR_PADDING into two-argument variant.
+	* gimple-fold.c (clear_padding_unit, clear_padding_buf_size): New
+	const variables.
+	(struct clear_padding_struct): New type.
+	(clear_padding_flush, clear_padding_add_padding,
+	clear_padding_emit_loop, clear_padding_type,
+	clear_padding_union, clear_padding_real_needs_padding_p,
+	clear_padding_type_may_have_padding_p,
+	gimple_fold_builtin_clear_padding): New functions.
+	(gimple_fold_builtin): Handle BUILT_IN_CLEAR_PADDING.
+	* doc/extend.texi (__builtin_clear_padding): Document.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97528
+	* config/arm/arm.c (neon_vector_mem_operand): For POST_MODIFY, require
+	first POST_MODIFY operand is a REG and is equal to the first operand
+	of PLUS.
+
+2020-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-store-merging.c (struct merged_store_group): Add
+	new 'consecutive' field.
+	(merged_store_group): Set it to true.
+	(do_merge): Set it to false if the store is not consecutive and
+	set string_concatenation to false in this case.
+	(merge_into): Call do_merge on entry.
+	(merge_overlapping): Likewise.
+
+2020-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::operand_equal_p): Fix comment.
+
+2020-11-20  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::hash_operand): Hash gimple clobber.
+	(func_checker::operand_equal_p): Special case gimple clobber.
+
+2020-11-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* config/i386/i386.md (*neg<mode>2_2): Rename from
+	"*neg<mode>2_cmpz".  Use CCGOCmode instead of CCZmode.
+	(*negsi2_zext): Rename from *negsi2_cmpz_zext.
+	Use CCGOCmode instead of CCZmode.
+	(*neg<mode>_ccc_1): New insn pattern.
+	(*neg<dwi>2_doubleword): Use *neg<mode>_ccc_1.
+	(abs<mode>2): Add FLAGS_REG clobber.
+	Use TARGET_CMOVE insn predicate.
+	(*abs<mode>2_1): New insn_and_split pattern.
+	(*absdi2_doubleword): Ditto.
+	(<maxmin:code><mode>3): Use SWI48x mode iterator.
+	(*<maxmin:code><mode>3): Use SWI48 mode iterator.
+	* config/i386/i386-features.c
+	(general_scalar_chain::compute_convert_gain): Handle ABS code.
+	(general_scalar_chain::convert_insn): Ditto.
+	(general_scalar_to_vector_candidate_p): Ditto.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* configure.ac: In SERIAL_LIST use lang words without .serial
+	suffix.  Change $lang.prev from a target to variable and instead
+	of depending on *.serial expand to the *.serial variable if
+	the word is in the SERIAL_LIST at all, otherwise to nothing.
+	* configure: Regenerated.
+
+2020-11-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (p8_mtvsrd_df): Fix insn type.
+
+2020-11-20  Martin Uecker  <muecker@gwdg.de>
+
+	* gimplify.c (gimplify_modify_expr_rhs): Optimizie
+	NOP_EXPRs that contain compound literals.
+
 2020-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91029
