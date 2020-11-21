@@ -292,11 +292,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (!__w._M_waiting())
 	return;
 
+#ifdef _GLIBCXX_HAVE_LINUX_FUTEX
       if constexpr (__platform_wait_uses_type<_Tp>)
 	{
 	  __platform_notify((__platform_wait_t*)(void*) __addr, __all);
 	}
       else
+#endif
 	{
 	  __w._M_notify(__all);
 	}

@@ -39,8 +39,10 @@
 #include <ext/numeric_traits.h>
 
 #if __has_include(<semaphore.h>)
-#define _GLIBCXX_HAVE_POSIX_SEMAPHORE 1
-#include <semaphore.h>
+# include <semaphore.h>
+# if defined SEM_VALUE_MAX || _POSIX_SEM_VALUE_MAX
+#  define _GLIBCXX_HAVE_POSIX_SEMAPHORE 1
+# endif
 #endif
 
 #include <chrono>
@@ -54,7 +56,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __platform_semaphore
   {
     using __clock_t = chrono::system_clock;
+#ifdef SEM_VALUE_MAX
     static constexpr ptrdiff_t _S_max = SEM_VALUE_MAX;
+#else
+    static constexpr ptrdiff_t _S_max = _POSIX_SEM_VALUE_MAX;
+#endif
 
     explicit __platform_semaphore(ptrdiff_t __count) noexcept
     {

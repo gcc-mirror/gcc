@@ -240,12 +240,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       do
 	{
 	  __atomic_wait_status __res;
+#ifdef _GLIBCXX_HAVE_LINUX_FUTEX
 	  if constexpr (__platform_wait_uses_type<_Tp>)
 	    {
 	      __res = __detail::__platform_wait_until((__platform_wait_t*)(void*) __addr,
 						      __old, __atime);
 	    }
 	  else
+#endif
 	    {
 	      __res = __w._M_do_wait_until(__version, __atime);
 	    }

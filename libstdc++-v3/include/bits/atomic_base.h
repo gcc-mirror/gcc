@@ -234,7 +234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     wait(bool __old,
 	memory_order __m = memory_order_seq_cst) const noexcept
     {
-      std::__atomic_wait(&_M_i, __old,
+      std::__atomic_wait(&_M_i, static_cast<__atomic_flag_data_type>(__old),
 			 [__m, this, __old]()
 			 { return this->test(__m) != __old; });
     }
