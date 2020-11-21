@@ -35,12 +35,15 @@
 --  floating-point implementations.
 
 with Ada.Unchecked_Conversion;
+with Interfaces;
 with System.Unsigned_Types;
 
 pragma Warnings (Off, "non-static constant in preelaborated unit");
 --  Every constant is static given our instantiation model
 
 package body System.Fat_Gen is
+   use type Interfaces.Unsigned_64;
+
    pragma Assert (T'Machine_Radix = 2);
    --  This version does not handle radix 16
 
@@ -53,12 +56,21 @@ package body System.Fat_Gen is
    Invrad : constant T := 1.0 / Rad;
    --  Smallest positive mantissa in the canonical form (RM A.5.3(4))
 
-   Small : constant T := Rad ** (T'Machine_Emin - 1);
-   pragma Unreferenced (Small);
+   --  Small : constant T := Rad ** (T'Machine_Emin - 1);
    --  Smallest positive normalized number
 
-   Tiny : constant T := Rad ** (T'Machine_Emin - Mantissa);
+   --  Tiny : constant T := Rad ** (T'Machine_Emin - Mantissa);
    --  Smallest positive denormalized number
+
+   Tiny16 : constant Interfaces.Unsigned_16 := 1;
+   Tiny32 : constant Interfaces.Unsigned_32 := 1;
+   Tiny64 : constant Interfaces.Unsigned_64 := 1;
+   Tiny80 : constant array (1 .. 2) of Interfaces.Unsigned_64 :=
+              (1 * Standard'Default_Bit_Order,
+               2**48 * (1 - Standard'Default_Bit_Order));
+   --  We cannot use the direct declaration because it cannot be translated
+   --  into C90, as the hexadecimal floating constants were introduced in C99.
+   --  So we work around this by using an overlay of the integer constant.
 
    RM1 : constant T := Rad ** (Mantissa - 1);
    --  Smallest positive member of the large consecutive integers. It is equal
@@ -411,6 +423,13 @@ package body System.Fat_Gen is
    ----------
 
    function Pred (X : T) return T is
+      Tiny : constant T;
+      pragma Import (Ada, Tiny);
+      for Tiny'Address use (if     T'Size   = 16 then Tiny16'Address
+                             elsif T'Size   = 32 then Tiny32'Address
+                             elsif T'Size   = 64 then Tiny64'Address
+                             elsif Mantissa = 64 then Tiny80'Address
+                             else raise Program_Error);
       X_Frac : T;
       X_Exp  : UI;
 
@@ -676,6 +695,13 @@ package body System.Fat_Gen is
    ----------
 
    function Succ (X : T) return T is
+      Tiny : constant T;
+      pragma Import (Ada, Tiny);
+      for Tiny'Address use (if     T'Size   = 16 then Tiny16'Address
+                             elsif T'Size   = 32 then Tiny32'Address
+                             elsif T'Size   = 64 then Tiny64'Address
+                             elsif Mantissa = 64 then Tiny80'Address
+                             else raise Program_Error);
       X_Frac : T;
       X_Exp  : UI;
 
