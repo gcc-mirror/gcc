@@ -1,6 +1,7 @@
 // PR c++/97918
-// { dg-additional-options "-g -O -flto" }
 // { dg-do compile { target c++11 } }
+// { dg-require-effective-target lto }
+// { dg-additional-options "-g -O -flto" }
 
 namespace { class A {}; }
 class B {};
