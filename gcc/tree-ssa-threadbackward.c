@@ -39,9 +39,11 @@ along with GCC; see the file COPYING3.  If not see
 
 class thread_jumps
 {
- public:
+public:
   void find_jump_threads_backwards (basic_block bb, bool speed_p);
- private:
+  bool thread_through_all_blocks ();
+
+private:
   edge profitable_jump_thread_path (basic_block bbi, tree name, tree arg,
 				    bool *creates_irreducible_loop);
   void convert_and_register_current_path (edge taken_edge);
@@ -65,7 +67,15 @@ class thread_jumps
   /* Indicate that we could increase code size to improve the
      code path.  */
   bool m_speed_p;
+
+  jump_thread_path_registry m_registry;
 };
+
+bool
+thread_jumps::thread_through_all_blocks ()
+{
+  return m_registry.thread_through_all_blocks (true);
+}
 
 /* Simple helper to get the last statement from BB, which is assumed
    to be a control statement.   Return NULL if the last statement is
@@ -459,7 +469,7 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
 void
 thread_jumps::convert_and_register_current_path (edge taken_edge)
 {
-  vec<jump_thread_edge *> *jump_thread_path = new vec<jump_thread_edge *> ();
+  vec<jump_thread_edge *> *path = m_registry.allocate_thread_path ();
 
   /* Record the edges between the blocks in PATH.  */
   for (unsigned int j = 0; j + 1 < m_path.length (); j++)
@@ -469,16 +479,17 @@ thread_jumps::convert_and_register_current_path (edge taken_edge)
 
       edge e = find_edge (bb1, bb2);
       gcc_assert (e);
-      jump_thread_edge *x = new jump_thread_edge (e, EDGE_FSM_THREAD);
-      jump_thread_path->safe_push (x);
+      jump_thread_edge *x
+	= m_registry.allocate_thread_edge (e, EDGE_FSM_THREAD);
+      path->safe_push (x);
     }
 
   /* Add the edge taken when the control variable has value ARG.  */
   jump_thread_edge *x
-    = new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-  jump_thread_path->safe_push (x);
+    = m_registry.allocate_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
+  path->safe_push (x);
 
-  register_jump_thread (jump_thread_path);
+  m_registry.register_jump_thread (path);
   --m_max_threaded_paths;
 }
 
@@ -827,7 +838,7 @@ pass_thread_jumps::execute (function *fun)
       if (EDGE_COUNT (bb->succs) > 1)
 	threader.find_jump_threads_backwards (bb, true);
     }
-  bool changed = thread_through_all_blocks (true);
+  bool changed = threader.thread_through_all_blocks ();
 
   loop_optimizer_finalize ();
   return changed ? TODO_cleanup_cfg : 0;
@@ -888,7 +899,7 @@ pass_early_thread_jumps::execute (function *fun)
       if (EDGE_COUNT (bb->succs) > 1)
 	threader.find_jump_threads_backwards (bb, false);
     }
-  thread_through_all_blocks (true);
+  threader.thread_through_all_blocks ();
 
   loop_optimizer_finalize ();
   return 0;

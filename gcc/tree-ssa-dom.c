@@ -585,19 +585,48 @@ record_edge_info (basic_block bb)
     }
 }
 
+class dom_jump_threader_simplifier : public jump_threader_simplifier
+{
+public:
+  dom_jump_threader_simplifier (vr_values *v,
+				avail_exprs_stack *avails)
+    : jump_threader_simplifier (v, avails) {}
+
+private:
+  tree simplify (gimple *, gimple *, basic_block);
+};
+
+tree
+dom_jump_threader_simplifier::simplify (gimple *stmt,
+					gimple *within_stmt,
+					basic_block bb)
+{
+  /* First see if the conditional is in the hash table.  */
+  tree cached_lhs =  m_avail_exprs_stack->lookup_avail_expr (stmt,
+							     false, true);
+  if (cached_lhs)
+    return cached_lhs;
+
+  return jump_threader_simplifier::simplify (stmt, within_stmt, bb);
+}
 
 class dom_opt_dom_walker : public dom_walker
 {
 public:
   dom_opt_dom_walker (cdi_direction direction,
-		      class const_and_copies *const_and_copies,
-		      class avail_exprs_stack *avail_exprs_stack,
-		      gcond *dummy_cond)
-    : dom_walker (direction, REACHABLE_BLOCKS),
-      m_const_and_copies (const_and_copies),
-      m_avail_exprs_stack (avail_exprs_stack),
-      evrp_range_analyzer (true),
-      m_dummy_cond (dummy_cond) { }
+		      jump_threader *threader,
+		      evrp_range_analyzer *analyzer,
+		      const_and_copies *const_and_copies,
+		      avail_exprs_stack *avail_exprs_stack)
+    : dom_walker (direction, REACHABLE_BLOCKS)
+    {
+      m_evrp_range_analyzer = analyzer;
+      m_dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
+					integer_zero_node, NULL, NULL);
+      m_const_and_copies = const_and_copies;
+      m_avail_exprs_stack = avail_exprs_stack;
+      m_threader = threader;
+    }
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -608,9 +637,6 @@ private:
   class const_and_copies *m_const_and_copies;
   class avail_exprs_stack *m_avail_exprs_stack;
 
-  /* VRP data.  */
-  class evrp_range_analyzer evrp_range_analyzer;
-
   /* Dummy condition to avoid creating lots of throw away statements.  */
   gcond *m_dummy_cond;
 
@@ -619,6 +645,13 @@ private:
      the statement is a conditional with a statically determined
      value.  */
   edge optimize_stmt (basic_block, gimple_stmt_iterator *, bool *);
+
+
+  void test_for_singularity (gimple *, avail_exprs_stack *);
+
+  dom_jump_threader_simplifier *m_simplifier;
+  jump_threader *m_threader;
+  evrp_range_analyzer *m_evrp_range_analyzer;
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -697,9 +730,6 @@ pass_dominator::execute (function *fun)
      LOOPS_HAVE_PREHEADERS won't be needed here.  */
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
 
-  /* Initialize the value-handle array.  */
-  threadedge_initialize_values ();
-
   /* We need accurate information regarding back edges in the CFG
      for jump threading; this may include back edges that are not part of
      a single loop.  */
@@ -715,12 +745,16 @@ pass_dominator::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     record_edge_info (bb);
 
-  gcond *dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
-					 integer_zero_node, NULL, NULL);
-
   /* Recursively walk the dominator tree optimizing statements.  */
-  dom_opt_dom_walker walker (CDI_DOMINATORS, const_and_copies,
-			     avail_exprs_stack, dummy_cond);
+  evrp_range_analyzer analyzer (true);
+  dom_jump_threader_simplifier simplifier (&analyzer, avail_exprs_stack);
+  jump_threader threader (const_and_copies, avail_exprs_stack,
+			  &simplifier, &analyzer);
+  dom_opt_dom_walker walker (CDI_DOMINATORS,
+			     &threader,
+			     &analyzer,
+			     const_and_copies,
+			     avail_exprs_stack);
   walker.walk (fun->cfg->x_entry_block_ptr);
 
   /* Look for blocks where we cleared EDGE_EXECUTABLE on an outgoing
@@ -749,7 +783,7 @@ pass_dominator::execute (function *fun)
 	     containing any edge leaving BB.  */
 	  if (found)
 	    FOR_EACH_EDGE (e, ei, bb->succs)
-	      remove_jump_threads_including (e);
+	      threader.remove_jump_threads_including (e);
 	}
     }
 
@@ -773,7 +807,7 @@ pass_dominator::execute (function *fun)
   free_all_edge_infos ();
 
   /* Thread jumps, creating duplicate blocks as needed.  */
-  cfg_altered |= thread_through_all_blocks (may_peel_loop_headers_p);
+  cfg_altered |= threader.thread_through_all_blocks (may_peel_loop_headers_p);
 
   if (cfg_altered)
     free_dominance_info (CDI_DOMINATORS);
@@ -849,9 +883,6 @@ pass_dominator::execute (function *fun)
   delete avail_exprs_stack;
   delete const_and_copies;
 
-  /* Free the value-handle array.  */
-  threadedge_finalize_values ();
-
   return 0;
 }
 
@@ -861,72 +892,6 @@ gimple_opt_pass *
 make_pass_dominator (gcc::context *ctxt)
 {
   return new pass_dominator (ctxt);
-}
-
-/* A hack until we remove threading from tree-vrp.c and bring the
-   simplification routine into the dom_opt_dom_walker class.  */
-static class vr_values *x_vr_values;
-
-/* A trivial wrapper so that we can present the generic jump
-   threading code with a simple API for simplifying statements.
-
-   ?? This should be cleaned up.  There's a virtually identical copy
-   of this function in tree-vrp.c.  */
-
-static tree
-simplify_stmt_for_jump_threading (gimple *stmt,
-				  gimple *within_stmt ATTRIBUTE_UNUSED,
-				  class avail_exprs_stack *avail_exprs_stack,
-				  basic_block bb ATTRIBUTE_UNUSED)
-{
-  /* First query our hash table to see if the expression is available
-     there.  A non-NULL return value will be either a constant or another
-     SSA_NAME.  */
-  tree cached_lhs =  avail_exprs_stack->lookup_avail_expr (stmt, false, true);
-  if (cached_lhs)
-    return cached_lhs;
-
-  /* If the hash table query failed, query VRP information.  This is
-     essentially the same as tree-vrp's simplification routine.  The
-     copy in tree-vrp is scheduled for removal in gcc-9.  */
-  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
-    {
-      simplify_using_ranges simplifier (x_vr_values);
-      return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
-						  gimple_cond_lhs (cond_stmt),
-						  gimple_cond_rhs (cond_stmt),
-						  within_stmt);
-    }
-
-  if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
-    {
-      tree op = gimple_switch_index (switch_stmt);
-      if (TREE_CODE (op) != SSA_NAME)
-	return NULL_TREE;
-
-      const value_range_equiv *vr = x_vr_values->get_value_range (op);
-      return find_case_label_range (switch_stmt, vr);
-    }
-
-  if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
-    {
-      tree lhs = gimple_assign_lhs (assign_stmt);
-      if (TREE_CODE (lhs) == SSA_NAME
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
-	  && stmt_interesting_for_vrp (stmt))
-	{
-	  edge dummy_e;
-	  tree dummy_tree;
-	  value_range_equiv new_vr;
-	  x_vr_values->extract_range_from_stmt (stmt, &dummy_e,
-						&dummy_tree, &new_vr);
-	  tree singleton;
-	  if (new_vr.singleton_p (&singleton))
-	    return singleton;
-	}
-    }
-  return NULL;
 }
 
 /* Valueize hook for gimple_fold_stmt_to_constant_1.  */
@@ -1417,7 +1382,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n\nOptimizing block #%d\n\n", bb->index);
 
-  evrp_range_analyzer.enter (bb);
+  m_evrp_range_analyzer->enter (bb);
 
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
@@ -1455,7 +1420,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 	}
 
       /* Compute range information and optimize the stmt.  */
-      evrp_range_analyzer.record_ranges_from_stmt (gsi_stmt (gsi), false);
+      m_evrp_range_analyzer->record_ranges_from_stmt (gsi_stmt (gsi), false);
       bool removed_p = false;
       taken_edge = this->optimize_stmt (bb, &gsi, &removed_p);
       if (!removed_p)
@@ -1500,17 +1465,10 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
-  x_vr_values = &evrp_range_analyzer;
-  thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
-			 m_avail_exprs_stack,
-			 &evrp_range_analyzer,
-			 simplify_stmt_for_jump_threading);
-  x_vr_values = NULL;
-
-  /* These remove expressions local to BB from the tables.  */
+  m_threader->thread_outgoing_edges (bb);
   m_avail_exprs_stack->pop_to_marker ();
   m_const_and_copies->pop_to_marker ();
-  evrp_range_analyzer.leave (bb);
+  m_evrp_range_analyzer->leave (bb);
 }
 
 /* Search for redundant computations in STMT.  If any are found, then
@@ -1849,9 +1807,9 @@ cprop_into_stmt (gimple *stmt, vr_values *vr_values)
 
    This is similar to code in VRP.  */
 
-static void
-test_for_singularity (gimple *stmt, gcond *dummy_cond,
-		      avail_exprs_stack *avail_exprs_stack)
+void
+dom_opt_dom_walker::test_for_singularity (gimple *stmt,
+					  avail_exprs_stack *avail_exprs_stack)
 {
   /* We want to support gimple conditionals as well as assignments
      where the RHS contains a conditional.  */
@@ -1897,11 +1855,12 @@ test_for_singularity (gimple *stmt, gcond *dummy_cond,
 	    test_code = GE_EXPR;
 
 	  /* Update the dummy statement so we can query the hash tables.  */
-	  gimple_cond_set_code (dummy_cond, test_code);
-	  gimple_cond_set_lhs (dummy_cond, lhs);
-	  gimple_cond_set_rhs (dummy_cond, rhs);
+	  gimple_cond_set_code (m_dummy_cond, test_code);
+	  gimple_cond_set_lhs (m_dummy_cond, lhs);
+	  gimple_cond_set_rhs (m_dummy_cond, rhs);
 	  tree cached_lhs
-	    = avail_exprs_stack->lookup_avail_expr (dummy_cond, false, false);
+	    = avail_exprs_stack->lookup_avail_expr (m_dummy_cond,
+						    false, false);
 
 	  /* If the lookup returned 1 (true), then the expression we
 	     queried was in the hash table.  As a result there is only
@@ -1970,7 +1929,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
   opt_stats.num_stmts++;
 
   /* Const/copy propagate into USES, VUSES and the RHS of VDEFs.  */
-  cprop_into_stmt (stmt, &evrp_range_analyzer);
+  cprop_into_stmt (stmt, m_evrp_range_analyzer);
 
   /* If the statement has been modified with constant replacements,
      fold its RHS before checking for redundant computations.  */
@@ -2068,8 +2027,8 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 		 SSA_NAMES.  */
 	      update_stmt_if_modified (stmt);
 	      edge taken_edge = NULL;
-	      evrp_range_analyzer.vrp_visit_cond_stmt (as_a <gcond *> (stmt),
-						       &taken_edge);
+	      m_evrp_range_analyzer->vrp_visit_cond_stmt
+		(as_a <gcond *> (stmt), &taken_edge);
 	      if (taken_edge)
 		{
 		  if (taken_edge->flags & EDGE_TRUE_VALUE)
@@ -2136,7 +2095,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
       /* If this statement was not redundant, we may still be able to simplify
 	 it, which may in turn allow other part of DOM or other passes to do
 	 a better job.  */
-      test_for_singularity (stmt, m_dummy_cond, m_avail_exprs_stack);
+      test_for_singularity (stmt, m_avail_exprs_stack);
     }
 
   /* Record any additional equivalences created by this statement.  */

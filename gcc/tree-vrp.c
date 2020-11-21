@@ -2373,9 +2373,6 @@ lhs_of_dominating_assert (tree op, basic_block bb, gimple *stmt)
   return op;
 }
 
-/* A hack.  */
-static class vr_values *x_vr_values;
-
 /* Searches the case label vector VEC for the index *IDX of the CASE_LABEL
    that includes the value VAL.  The search is restricted to the range
    [START_IDX, n - 1] where n is the size of VEC.
@@ -4163,6 +4160,54 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
   return simplifier.simplify (si);
 }
 
+class vrp_jump_threader_simplifier : public jump_threader_simplifier
+{
+public:
+  vrp_jump_threader_simplifier (vr_values *v, avail_exprs_stack *avails)
+    : jump_threader_simplifier (v, avails) {}
+
+private:
+  tree simplify (gimple *, gimple *, basic_block) OVERRIDE;
+};
+
+tree
+vrp_jump_threader_simplifier::simplify (gimple *stmt,
+					gimple *within_stmt,
+					basic_block bb)
+{
+  /* First see if the conditional is in the hash table.  */
+  tree cached_lhs = m_avail_exprs_stack->lookup_avail_expr (stmt, false, true);
+  if (cached_lhs && is_gimple_min_invariant (cached_lhs))
+    return cached_lhs;
+
+  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
+    {
+      tree op0 = gimple_cond_lhs (cond_stmt);
+      op0 = lhs_of_dominating_assert (op0, bb, stmt);
+
+      tree op1 = gimple_cond_rhs (cond_stmt);
+      op1 = lhs_of_dominating_assert (op1, bb, stmt);
+
+      simplify_using_ranges simplifier (m_vr_values);
+      return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+						  op0, op1, within_stmt);
+    }
+
+  if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
+    {
+      tree op = gimple_switch_index (switch_stmt);
+      if (TREE_CODE (op) != SSA_NAME)
+	return NULL_TREE;
+
+      op = lhs_of_dominating_assert (op, bb, stmt);
+
+      const value_range_equiv *vr = m_vr_values->get_value_range (op);
+      return find_case_label_range (switch_stmt, vr);
+    }
+
+  return jump_threader_simplifier::simplify (stmt, within_stmt, bb);
+}
+
 /* Blocks which have more than one predecessor and more than
    one successor present jump threading opportunities, i.e.,
    when the block is reached from a specific predecessor, we
@@ -4186,7 +4231,7 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
 class vrp_jump_threader : public dom_walker
 {
 public:
-  vrp_jump_threader (struct function *, vr_values *);
+  vrp_jump_threader (function *, vr_values *);
   ~vrp_jump_threader ();
 
   void thread_jumps ()
@@ -4194,9 +4239,13 @@ public:
     walk (m_fun->cfg->x_entry_block_ptr);
   }
 
+  void thread_through_all_blocks ()
+  {
+    // FIXME: Put this in the destructor?
+    m_threader->thread_through_all_blocks (false);
+  }
+
 private:
-  static tree simplify_stmt (gimple *stmt, gimple *within_stmt,
-			     avail_exprs_stack *, basic_block);
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
@@ -4205,7 +4254,8 @@ private:
   const_and_copies *m_const_and_copies;
   avail_exprs_stack *m_avail_exprs_stack;
   hash_table<expr_elt_hasher> *m_avail_exprs;
-  gcond *m_dummy_cond;
+  vrp_jump_threader_simplifier *m_simplifier;
+  jump_threader *m_threader;
 };
 
 vrp_jump_threader::vrp_jump_threader (struct function *fun, vr_values *v)
@@ -4227,11 +4277,15 @@ vrp_jump_threader::vrp_jump_threader (struct function *fun, vr_values *v)
      that might be recorded.  */
   m_const_and_copies = new const_and_copies ();
 
-  m_dummy_cond = NULL;
   m_fun = fun;
   m_vr_values = v;
   m_avail_exprs = new hash_table<expr_elt_hasher> (1024);
   m_avail_exprs_stack = new avail_exprs_stack (m_avail_exprs);
+
+  m_simplifier = new vrp_jump_threader_simplifier (m_vr_values,
+						   m_avail_exprs_stack);
+  m_threader = new jump_threader (m_const_and_copies, m_avail_exprs_stack,
+				  m_simplifier);
 }
 
 vrp_jump_threader::~vrp_jump_threader ()
@@ -4242,6 +4296,8 @@ vrp_jump_threader::~vrp_jump_threader ()
   delete m_const_and_copies;
   delete m_avail_exprs;
   delete m_avail_exprs_stack;
+  delete m_simplifier;
+  delete m_threader;
 }
 
 /* Called before processing dominator children of BB.  We want to look
@@ -4284,89 +4340,12 @@ vrp_jump_threader::before_dom_children (basic_block bb)
   return NULL;
 }
 
-/* A trivial wrapper so that we can present the generic jump threading
-   code with a simple API for simplifying statements.  STMT is the
-   statement we want to simplify, WITHIN_STMT provides the location
-   for any overflow warnings.
-
-   ?? This should be cleaned up.  There's a virtually identical copy
-   of this function in tree-ssa-dom.c.  */
-
-tree
-vrp_jump_threader::simplify_stmt (gimple *stmt,
-				  gimple *within_stmt,
-				  avail_exprs_stack *avail_exprs_stack,
-				  basic_block bb)
-{
-  /* First see if the conditional is in the hash table.  */
-  tree cached_lhs = avail_exprs_stack->lookup_avail_expr (stmt, false, true);
-  if (cached_lhs && is_gimple_min_invariant (cached_lhs))
-    return cached_lhs;
-
-  class vr_values *vr_values = x_vr_values;
-  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
-    {
-      tree op0 = gimple_cond_lhs (cond_stmt);
-      op0 = lhs_of_dominating_assert (op0, bb, stmt);
-
-      tree op1 = gimple_cond_rhs (cond_stmt);
-      op1 = lhs_of_dominating_assert (op1, bb, stmt);
-
-      simplify_using_ranges simplifier (vr_values);
-      return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
-						  op0, op1, within_stmt);
-    }
-
-  if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
-    {
-      tree op = gimple_switch_index (switch_stmt);
-      if (TREE_CODE (op) != SSA_NAME)
-	return NULL_TREE;
-
-      op = lhs_of_dominating_assert (op, bb, stmt);
-
-      const value_range_equiv *vr = vr_values->get_value_range (op);
-      return find_case_label_range (switch_stmt, vr);
-    }
-
-  if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
-    {
-      tree lhs = gimple_assign_lhs (assign_stmt);
-      if (TREE_CODE (lhs) == SSA_NAME
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
-	  && stmt_interesting_for_vrp (stmt))
-	{
-	  edge dummy_e;
-	  tree dummy_tree;
-	  value_range_equiv new_vr;
-	  vr_values->extract_range_from_stmt (stmt, &dummy_e,
-					      &dummy_tree, &new_vr);
-	  tree singleton;
-	  if (new_vr.singleton_p (&singleton))
-	    return singleton;
-	}
-    }
-
-  return NULL_TREE;
-}
-
 /* Called after processing dominator children of BB.  This is where we
    actually call into the threader.  */
 void
 vrp_jump_threader::after_dom_children (basic_block bb)
 {
-  if (!m_dummy_cond)
-    m_dummy_cond = gimple_build_cond (NE_EXPR,
-				      integer_zero_node, integer_zero_node,
-				      NULL, NULL);
-
-  x_vr_values = m_vr_values;
-  thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
-			 m_avail_exprs_stack, NULL,
-			 simplify_stmt);
-  x_vr_values = NULL;
-
+  m_threader->thread_outgoing_edges (bb);
   m_avail_exprs_stack->pop_to_marker ();
   m_const_and_copies->pop_to_marker ();
 }
@@ -4500,8 +4479,6 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
   vrp_asserts assert_engine (fun);
   assert_engine.insert_range_assertions ();
 
-  threadedge_initialize_values ();
-
   /* For visiting PHI nodes we need EDGE_DFS_BACK computed.  */
   mark_dfs_back_edges ();
 
@@ -4577,9 +4554,7 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
 
      Note the SSA graph update will occur during the normal TODO
      processing by the pass manager.  */
-  thread_through_all_blocks (false);
-
-  threadedge_finalize_values ();
+  threader.thread_through_all_blocks ();
 
   scev_finalize ();
   loop_optimizer_finalize ();
