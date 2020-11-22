@@ -6477,9 +6477,7 @@ package body Exp_Util is
       Loc : constant Source_Ptr := Sloc (Var);
       Ent : constant Entity_Id  := Entity (Var);
 
-      procedure Process_Current_Value_Condition
-        (N : Node_Id;
-         S : Boolean);
+      procedure Process_Current_Value_Condition (N : Node_Id; S : Boolean);
       --  N is an expression which holds either True (S = True) or False (S =
       --  False) in the condition. This procedure digs out the expression and
       --  if it refers to Ent, sets Op and Val appropriately.
@@ -6540,6 +6538,7 @@ package body Exp_Util is
             --  Recursively process AND and AND THEN branches
 
             Process_Current_Value_Condition (Left_Opnd (Cond), True);
+            pragma Assert (Op'Valid);
 
             if Op /= N_Empty then
                return;

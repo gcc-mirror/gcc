@@ -653,6 +653,8 @@ package body System.Fat_Gen is
          if Adjustment > IEEE_Emax - Exp then
             XX := 0.0;
             return (if Minus then -1.0 / XX else 1.0 / XX);
+            pragma Annotate
+              (CodePeer, Intentional, "divide by zero", "Infinity produced");
 
          --  Check for underflow
 
