@@ -68,6 +68,7 @@ package body System.Fat_Gen is
    Tiny80 : constant array (1 .. 2) of Interfaces.Unsigned_64 :=
               (1 * Standard'Default_Bit_Order,
                2**48 * (1 - Standard'Default_Bit_Order));
+   for Tiny80'Alignment use Standard'Maximum_Alignment;
    --  We cannot use the direct declaration because it cannot be translated
    --  into C90, as the hexadecimal floating constants were introduced in C99.
    --  So we work around this by using an overlay of the integer constant.
