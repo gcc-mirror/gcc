@@ -1,3 +1,105 @@
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* doc/invoke.texi: Update the -Wrange-loop-construct description.
+
+2020-11-21  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (ao_compare::compare_ao_refs,
+	ao_compare::hash_ao_ref): Use OEP_MATCH_SIDE_EFFECTS.
+
+2020-11-21  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-icf.c (sem_function::equals_wpa): Do not compare ODR type with
+	-fno-devirtualize.
+	(sem_item_optimizer::update_hash_by_addr_refs): Hash anonymous ODR
+	types by TYPE_UID of their main variant.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Enable vector pair memcpy/memmove expansion.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/mma.md (unspec): Add assemble/extract UNSPECs.
+	(movoi): Change to movoo.
+	(*movpoi): Change to *movoo.
+	(movxi): Change to movxo.
+	(*movpxi): Change to *movxo.
+	(mma_assemble_pair): Change to OO mode.
+	(*mma_assemble_pair): New define_insn_and_split.
+	(mma_disassemble_pair): New define_expand.
+	(*mma_disassemble_pair): New define_insn_and_split.
+	(mma_assemble_acc): Change to XO mode.
+	(*mma_assemble_acc): Change to XO mode.
+	(mma_disassemble_acc): New define_expand.
+	(*mma_disassemble_acc): New define_insn_and_split.
+	(mma_<acc>): Change to XO mode.
+	(mma_<vv>): Change to XO mode.
+	(mma_<avv>): Change to XO mode.
+	(mma_<pv>): Change to OO mode.
+	(mma_<apv>): Change to XO/OO mode.
+	(mma_<vvi4i4i8>): Change to XO mode.
+	(mma_<avvi4i4i8>): Change to XO mode.
+	(mma_<vvi4i4i2>): Change to XO mode.
+	(mma_<avvi4i4i2>): Change to XO mode.
+	(mma_<vvi4i4>): Change to XO mode.
+	(mma_<avvi4i4>): Change to XO mode.
+	(mma_<pvi4i2>): Change to XO/OO mode.
+	(mma_<apvi4i2>): Change to XO/OO mode.
+	(mma_<vvi4i4i4>): Change to XO mode.
+	(mma_<avvi4i4i4>): Change to XO mode.
+	* config/rs6000/predicates.md (input_operand): Allow opaque.
+	(mma_disassemble_output_operand): New predicate.
+	* config/rs6000/rs6000-builtin.def:
+	Changes to disassemble builtins.
+	* config/rs6000/rs6000-call.c (rs6000_return_in_memory):
+	Disallow __vector_pair/__vector_quad as return types.
+	(rs6000_promote_function_mode): Remove function return type
+	check because we can't test it here any more.
+	(rs6000_function_arg): Do not allow __vector_pair/__vector_quad
+	as as function arguments.
+	(rs6000_gimple_fold_mma_builtin):
+	Handle mma_disassemble_* builtins.
+	(rs6000_init_builtins): Create types for XO/OO modes.
+	* config/rs6000/rs6000-modes.def: DElete OI, XI,
+	POI, and PXI modes, and create XO and OO modes.
+	* config/rs6000/rs6000-string.c (expand_block_move):
+	Update to OO mode.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok_uncached):
+	Update for XO/OO modes.
+	(rs6000_rtx_costs): Make UNSPEC_MMA_XXSETACCZ cost 0.
+	(rs6000_modes_tieable_p): Update for XO/OO modes.
+	(rs6000_debug_reg_global): Update for XO/OO modes.
+	(rs6000_setup_reg_addr_masks): Update for XO/OO modes.
+	(rs6000_init_hard_regno_mode_ok): Update for XO/OO modes.
+	(reg_offset_addressing_ok_p): Update for XO/OO modes.
+	(rs6000_emit_move): Update for XO/OO modes.
+	(rs6000_preferred_reload_class): Update for XO/OO modes.
+	(rs6000_split_multireg_move): Update for XO/OO modes.
+	(rs6000_mangle_type): Update for opaque types.
+	(rs6000_invalid_conversion): Update for XO/OO modes.
+	* config/rs6000/rs6000.h (VECTOR_ALIGNMENT_P):
+	Update for XO/OO modes.
+	* config/rs6000/rs6000.md (RELOAD): Update for XO/OO modes.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* typeclass.h: Add opaque_type_class.
+	* builtins.c (type_to_class): Identify opaque type class.
+	* dwarf2out.c (is_base_type): Handle opaque types.
+	(gen_type_die_with_usage): Handle opaque types.
+	* expr.c (count_type_elements): Opaque types should
+	never have initializers.
+	* ipa-devirt.c (odr_types_equivalent_p): No type-specific handling
+	for opaque types is needed as it eventually checks the underlying
+	mode which is what is important.
+	* tree-streamer.c (record_common_node): Handle opaque types.
+	* tree.c (type_contains_placeholder_1): Handle opaque types.
+	(type_cache_hasher::equal): No additional comparison needed for
+	opaque types.
+
 2020-11-20  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000-call.c (rs6000_expand_builtin): Add missing

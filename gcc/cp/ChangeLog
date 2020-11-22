@@ -1,3 +1,45 @@
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* parser.c (warn_for_range_copy): Warn when the loop variable is
+	initialized with a value of a different type resulting in a copy.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97846
+	* constexpr.c (potential_constant_expression_1): Reject
+	LABEL_EXPRs that use non-artifical LABEL_DECLs.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97881
+	* parser.c (warn_about_ambiguous_parse): Only assume "int" if we
+	actually saw any type-specifiers.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97839
+	* parser.c (cp_parser_lambda_declarator_opt): Don't require ().
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97427
+	* constexpr.c (cxx_set_object_constness): New function.
+	(cxx_eval_call_expression): Set new_obj for destructors too.
+	Call cxx_set_object_constness to set/unset TREE_READONLY of
+	the object under construction/destruction.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* error.c (dump_type): Handle opaque types.
+	(dump_type_prefix): Handle opaque types.
+	(dump_type_suffix): Handle opaque types.
+	(dump_expr): Handle opaque types.
+	* pt.c (tsubst): Allow opaque types in templates.
+	(unify): Allow opaque types in templates.
+	* typeck.c (structural_comptypes): Handle comparison
+	of opaque types.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911

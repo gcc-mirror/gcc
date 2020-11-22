@@ -1,3 +1,45 @@
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* g++.dg/warn/Wrange-loop-construct2.C: New test.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97846
+	* g++.dg/cpp1y/constexpr-label.C: New test.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97881
+	* g++.dg/warn/Wvexing-parse9.C: New test.
+
+2020-11-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/localclass2.C: Require LTO.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97839
+	* g++.dg/cpp2a/lambda-generic8.C: New test.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97427
+	* g++.dg/cpp2a/constexpr-dtor10.C: New test.
+
+2020-11-21  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/vect/vect-35-big-array.c: Excpect 2 loops to be vectorized.
+	* gcc.dg/vect/vect-35.c: Excpect 2 loops to be vectorized.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-double-test.c (main): Call abort for failure.
+	* gcc.target/powerpc/mma-single-test.c (main): Call abort for failure.
+	* gcc.target/powerpc/pr96506.c: Rename to pr96506-1.c.
+	* gcc.target/powerpc/pr96506-2.c: New test.
+	* gcc.target/powerpc/pr96506-1.c: New file.
+
 2020-11-20  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.dg/nextafter-2.c: Include math.h.

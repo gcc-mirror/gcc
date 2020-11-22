@@ -1,3 +1,7 @@
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* c-aux-info.c (gen_type): Support opaque types.
+
 2020-11-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/97879
