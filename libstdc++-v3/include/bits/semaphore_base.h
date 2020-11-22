@@ -33,6 +33,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
 #include <bits/atomic_base.h>
 #include <bits/atomic_timed_wait.h>
 
@@ -161,30 +162,68 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept
       { return _M_try_acquire_until(__clock_t::now() + __rtime); }
 
-    private:
-      sem_t _M_semaphore;
-    };
+  private:
+    sem_t _M_semaphore;
+  };
 #endif // _GLIBCXX_HAVE_POSIX_SEMAPHORE
 
-    template<typename _Tp>
-      struct __atomic_semaphore
+  template<typename _Tp>
+    struct __atomic_semaphore
+    {
+      static_assert(std::is_integral_v<_Tp>);
+      static_assert(__gnu_cxx::__int_traits<_Tp>::__max
+		      <= __gnu_cxx::__int_traits<ptrdiff_t>::__max);
+      static constexpr ptrdiff_t _S_max = __gnu_cxx::__int_traits<_Tp>::__max;
+
+      explicit __atomic_semaphore(_Tp __count) noexcept
+	: _M_counter(__count)
       {
-	static_assert(std::is_integral_v<_Tp>);
-	static_assert(__gnu_cxx::__int_traits<_Tp>::__max
-			<= __gnu_cxx::__int_traits<ptrdiff_t>::__max);
-	static constexpr ptrdiff_t _S_max = __gnu_cxx::__int_traits<_Tp>::__max;
+	__glibcxx_assert(__count >= 0 && __count <= _S_max);
+      }
 
-	explicit __atomic_semaphore(_Tp __count) noexcept
-	  : _M_counter(__count)
-	{
-	  __glibcxx_assert(__count >= 0 && __count <= _S_max);
-	}
+      __atomic_semaphore(const __atomic_semaphore&) = delete;
+      __atomic_semaphore& operator=(const __atomic_semaphore&) = delete;
 
-	__atomic_semaphore(const __atomic_semaphore&) = delete;
-	__atomic_semaphore& operator=(const __atomic_semaphore&) = delete;
+      _GLIBCXX_ALWAYS_INLINE void
+      _M_acquire() noexcept
+      {
+	auto const __pred = [this]
+	  {
+	    auto __old = __atomic_impl::load(&this->_M_counter,
+			    memory_order::acquire);
+	    if (__old == 0)
+	      return false;
+	    return __atomic_impl::compare_exchange_strong(&this->_M_counter,
+		      __old, __old - 1,
+		      memory_order::acquire,
+		      memory_order::release);
+	  };
+	auto __old = __atomic_impl::load(&_M_counter, memory_order_relaxed);
+	std::__atomic_wait(&_M_counter, __old, __pred);
+      }
 
-	_GLIBCXX_ALWAYS_INLINE void
-	_M_acquire() noexcept
+      bool
+      _M_try_acquire() noexcept
+      {
+	auto __old = __atomic_impl::load(&_M_counter, memory_order::acquire);
+	auto const __pred = [this, __old]
+	  {
+	    if (__old == 0)
+	      return false;
+
+	    auto __prev = __old;
+	    return __atomic_impl::compare_exchange_weak(&this->_M_counter,
+		      __prev, __prev - 1,
+		      memory_order::acquire,
+		      memory_order::release);
+	  };
+	return std::__atomic_spin(__pred);
+      }
+
+      template<typename _Clock, typename _Duration>
+	_GLIBCXX_ALWAYS_INLINE bool
+	_M_try_acquire_until(const chrono::time_point<_Clock,
+			     _Duration>& __atime) noexcept
 	{
 	  auto const __pred = [this]
 	    {
@@ -193,51 +232,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (__old == 0)
 		return false;
 	      return __atomic_impl::compare_exchange_strong(&this->_M_counter,
-			__old, __old - 1,
-			memory_order::acquire,
-			memory_order::release);
+			      __old, __old - 1,
+			      memory_order::acquire,
+			      memory_order::release);
 	    };
+
 	  auto __old = __atomic_impl::load(&_M_counter, memory_order_relaxed);
-	  std::__atomic_wait(&_M_counter, __old, __pred);
-	}
-
-	bool
-	_M_try_acquire() noexcept
-	{
-	  auto __old = __atomic_impl::load(&_M_counter, memory_order::acquire);
-	  auto const __pred = [this, __old]
-	    {
-	      if (__old == 0)
-		return false;
-
-	      auto __prev = __old;
-	      return __atomic_impl::compare_exchange_weak(&this->_M_counter,
-			__prev, __prev - 1,
-			memory_order::acquire,
-			memory_order::release);
-	    };
-	  return std::__atomic_spin(__pred);
-	}
-
-	template<typename _Clock, typename _Duration>
-	  _GLIBCXX_ALWAYS_INLINE bool
-	  _M_try_acquire_until(const chrono::time_point<_Clock,
-			       _Duration>& __atime) noexcept
-	  {
-	    auto const __pred = [this]
-	      {
-		auto __old = __atomic_impl::load(&this->_M_counter,
-				memory_order::acquire);
-		if (__old == 0)
-		  return false;
-		return __atomic_impl::compare_exchange_strong(&this->_M_counter,
-				__old, __old - 1,
-				memory_order::acquire,
-				memory_order::release);
-	      };
-
-	    auto __old = __atomic_impl::load(&_M_counter, memory_order_relaxed);
-	    return __atomic_wait_until(&_M_counter, __old, __pred, __atime);
+	  return __atomic_wait_until(&_M_counter, __old, __pred, __atime);
 	}
 
       template<typename _Rep, typename _Period>
@@ -299,4 +300,5 @@ template<ptrdiff_t __least_max_value>
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif
+#endif // GTHREADS || LINUX_FUTEX
+#endif // _GLIBCXX_SEMAPHORE_BASE_H

@@ -33,6 +33,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
 #include <bits/std_mutex.h>
@@ -106,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-      template<typename _Tp>
+    template<typename _Tp>
       void
       __platform_notify(const _Tp* __addr, bool __all) noexcept
       {
@@ -175,11 +176,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       _M_waiting() const noexcept
-	{
-	  __platform_wait_t __res;
-	  __atomic_load(&_M_wait, &__res, __ATOMIC_ACQUIRE);
-	  return __res;
-	}
+      {
+	__platform_wait_t __res;
+	__atomic_load(&_M_wait, &__res, __ATOMIC_ACQUIRE);
+	return __res;
+      }
 
       void
       _M_notify(bool __all) noexcept
@@ -305,4 +306,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif
+#endif // GTHREADS || LINUX_FUTEX
+#endif // _GLIBCXX_ATOMIC_WAIT_H

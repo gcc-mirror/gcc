@@ -33,6 +33,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
 #include <bits/functional_hash.h>
 #include <bits/atomic_wait.h>
 
@@ -286,4 +287,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif
+#endif // GTHREADS || LINUX_FUTEX
+#endif // _GLIBCXX_ATOMIC_TIMED_WAIT_H
