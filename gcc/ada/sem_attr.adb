@@ -1656,7 +1656,7 @@ package body Sem_Attr is
       ----------------------
 
       procedure Check_Array_Type is
-         D : Int;
+         D : Pos;
          --  Dimension number for array attributes
 
       begin
@@ -1741,9 +1741,7 @@ package body Sem_Attr is
                  ("expression for dimension must be static!", E1);
                Error_Attr;
 
-            elsif UI_To_Int (Expr_Value (E1)) > D
-              or else UI_To_Int (Expr_Value (E1)) < 1
-            then
+            elsif Expr_Value (E1) > D or else Expr_Value (E1) < 1 then
                Error_Attr ("invalid dimension number for array type", E1);
             end if;
          end if;
@@ -4838,7 +4836,7 @@ package body Sem_Attr is
                Error_Attr;
 
             elsif UI_To_Int (Intval (E1)) > Number_Formals (Entity (P))
-              or else UI_To_Int (Intval (E1)) < 0
+              or else Intval (E1) < 0
             then
                Error_Attr ("invalid parameter number for % attribute", E1);
             end if;

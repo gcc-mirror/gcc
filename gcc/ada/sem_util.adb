@@ -10553,7 +10553,7 @@ package body Sem_Util is
 
          --  Position in the enumeration type starts at 0
 
-         if UI_To_Int (Pos) < 0 then
+         if Pos < 0 then
             raise Constraint_Error;
          end if;
 
