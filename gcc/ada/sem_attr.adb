@@ -3496,7 +3496,10 @@ package body Sem_Attr is
       -- Compose --
       -------------
 
-      when Attribute_Compose =>
+      when Attribute_Compose
+         | Attribute_Leading_Part
+         | Attribute_Scaling
+      =>
          Check_Floating_Point_Type_2;
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
@@ -4319,11 +4322,7 @@ package body Sem_Attr is
       -- Leading_Part --
       ------------------
 
-      when Attribute_Leading_Part =>
-         Check_Floating_Point_Type_2;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, Any_Integer);
+      --  Shares processing with Compose attribute
 
       ------------
       -- Length --
@@ -5949,11 +5948,7 @@ package body Sem_Attr is
       -- Scaling --
       -------------
 
-      when Attribute_Scaling =>
-         Check_Floating_Point_Type_2;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, Any_Integer);
+      --  Shares processing with Compose attribute
 
       ------------------
       -- Signed_Zeros --
