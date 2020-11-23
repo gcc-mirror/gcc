@@ -329,7 +329,7 @@ Packet Client::IncludeTranslate (char const *include, Flags flags, size_t ilen)
   return MaybeRequest (Detail::RC_INCLUDE_TRANSLATE);
 }
 
-// BOOL $truthiness
+// BOOL $knowntextualness
 // PATHNAME $cmifile
 Packet IncludeTranslateResponse (std::vector<std::string> &words)
 {

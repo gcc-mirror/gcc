@@ -273,11 +273,12 @@ Include translation can be determined with:
 `INCLUDE-TRANSLATE $header [$flags]`
 
 The header name, `$header`, is the fully resolved header name, in the
-above-mentioned unambiguous filename form.  The response will either be
-a BOOL response indicating translation (TRUE) or textual inclusion
-(FALSE).  Alternatively a PATHNAME response can directly name the CMI,
-and implies translation, this possibly elides a subsequent
-`MODULE-IMPORT` request.
+above-mentioned unambiguous filename form.  The response will either
+be a BOOL response indicating textual inclusion, or a PATHNAME
+response naming the CMI for such translation.  The BOOL value is TRUE,
+if the header is known to be a textual header, and FALSE if nothing is
+known about it -- the latter might cause diagnostics about incomplete
+knowledge.
 
 ### GCC LTO Messages
 

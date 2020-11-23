@@ -1,3 +1,8 @@
+2020-11-23  Nathan Sidwell  <nathan@acm.org>
+
+	libcody/
+	Update from upstream, INCLUDE_TRANSLATE response meaning change
+
 2020-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
