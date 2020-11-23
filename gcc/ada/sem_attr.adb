@@ -4308,7 +4308,11 @@ package body Sem_Attr is
       -- Large --
       -----------
 
-      when Attribute_Large =>
+      when Attribute_Large
+         | Attribute_Small
+         | Attribute_Safe_Large
+         | Attribute_Safe_Small
+      =>
          Check_E0;
          Check_Real_Type;
          Set_Etype (N, Universal_Real);
@@ -5850,10 +5854,7 @@ package body Sem_Attr is
       -- Safe_Large --
       ----------------
 
-      when Attribute_Safe_Large =>
-         Check_E0;
-         Check_Real_Type;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Large attribute
 
       ---------------
       -- Safe_Last --
@@ -5865,10 +5866,7 @@ package body Sem_Attr is
       -- Safe_Small --
       ----------------
 
-      when Attribute_Safe_Small =>
-         Check_E0;
-         Check_Real_Type;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Large attribute
 
       --------------------------
       -- Scalar_Storage_Order --
@@ -6033,10 +6031,7 @@ package body Sem_Attr is
       -- Small --
       -----------
 
-      when Attribute_Small =>
-         Check_E0;
-         Check_Real_Type;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Large attribute
 
       ---------------------------------------
       -- Small_Denominator/Small_Numerator --
