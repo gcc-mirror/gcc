@@ -3819,7 +3819,9 @@ package body Sem_Attr is
       -- Denorm --
       ------------
 
-      when Attribute_Denorm =>
+      when Attribute_Denorm
+         | Attribute_Signed_Zeros
+      =>
          Check_Floating_Point_Type_0;
          Set_Etype (N, Standard_Boolean);
 
@@ -5949,9 +5951,7 @@ package body Sem_Attr is
       -- Signed_Zeros --
       ------------------
 
-      when Attribute_Signed_Zeros =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Standard_Boolean);
+      --  Shares processing with Denorm attribute
 
       ----------
       -- Size --
