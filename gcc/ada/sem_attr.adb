@@ -4112,8 +4112,8 @@ package body Sem_Attr is
       -----------------
 
       when Attribute_Fixed_Value =>
-         Check_E1;
          Check_Fixed_Point_Type;
+         Check_E1;
          Resolve (E1, Any_Integer);
          Set_Etype (N, P_Base_Type);
 
@@ -6035,8 +6035,7 @@ package body Sem_Attr is
       when Attribute_Small_Denominator
          | Attribute_Small_Numerator
       =>
-         Check_E0;
-         Check_Fixed_Point_Type;
+         Check_Fixed_Point_Type_0;
          Set_Etype (N, Universal_Integer);
 
       ------------------
