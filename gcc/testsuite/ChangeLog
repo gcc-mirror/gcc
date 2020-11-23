@@ -1,3 +1,18 @@
+2020-11-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* gcc.target/i386/pr97873-2.c: New test.
+
+2020-11-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97889
+	* gdc.dg/torture/pr97889.d: New test.
+
+2020-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95853
+	* gcc.dg/pr95853.c: New test.
+
 2020-11-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94695

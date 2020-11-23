@@ -1,3 +1,9 @@
+2020-11-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97889
+	* expr.cc (ExprVisitor::visit (CatAssignExp *)): Enforce LTR order of
+	evaluation on left and right hand side expressions.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911

@@ -1,3 +1,142 @@
+2020-11-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* config/i386/i386.md (abs<mode>2): Use SWI48DWI mode iterator.
+	(*abs<dwi>2_doubleword): Use DWIH mode iterator.
+	(<maxmin:code><mode>3): Use SWI48DWI mode iterator.
+	(*<maxmin:code><dwi>3_doubleword): Use DWIH mode iterator.
+
+2020-11-22  Austin Law  <austinklaw@gmail.com>
+
+	* config/h8300/addsub.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.
+	(add<mod>3_incdec): Remove pattern
+	(adds/subs splitter): Only run before reload.
+	* config/h8300/bitfield.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output
+	of the splitters.
+	(cstoreqi4, cstorehi4, cstoresi4): Comment out
+	(*bstzhireg, *cmpstz, *bstz, *bistz, *cmpcondset): Likewise
+	(*condbset, *cmpcondbclr, *condbclr): Likewise.
+	(*cmpcondbsetreg, *condbsetreg, *cmpcondbclrreg): Likewise.
+	(*condbclrreg): Likewise.
+	* config/h8300/combiner.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.  Add appropriate CC register clobbers to
+	existing splitters.
+	(*addsi3_and_r_1): Disable for now.
+	(*addsi3_and_not_r_1, bit-test branches): Likewise.
+	* config/h8300/divmod.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.
+	* config/h8300/extensions.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.
+	* config/h8300/genmova.sh: Drop "cc" attribute from patterns.
+	* config/h8300/mova.md: Drop "cc" attribute from patterns.
+	* config/h8300/h8300-modes.def: Add CCZN and CCZNV modes.
+	* config/h8300/h8300-protos.h (output_plussi): Update prototype.
+	(compute_plussi_length): Likewise.
+	(h8300_select_cc_mode): Add prototype.
+	(compute_a_shift_cc): Remove prototype
+	(cmpute_logical_op_cc): Likewise.
+	* config/h8300/h8300.c (names_big): Add "cc" register.
+	(names_extended, names_upper_extended): Likewise.
+	(h8300_emit_stack_adjustment): Be more selective about setting
+	RTX_FRAME_RELATED_P.
+	(h8300_print_operand): Handle CCZN mode
+	(h8300_select_cc_mode): New function.
+	(notice_update_cc): if-0 out.  Only kept for reference purposes.
+	(h8300_expand_store): Likewise.
+	(h8300_binary_length): Handle new insn forms.
+	(output_plussi): Add argument for NEED_FLAGS and handle that case.
+	(compute_plussi_length): Likewise.
+	(compute_logical_op_cc): Return integer.
+	(TARGET_FLAGS_REGNUM): Define.
+	* config/h8300/h8300.h (FIRST_PSEUDO_REGISTER): Bump for cc register.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Handle cc register.
+	(REG_ALLOC_ORDER, REGISTER_NAMES): Likewise.
+	(SELECT_CC_MODE): Define.
+	* config/h8300/h8300.md: Add CC_REG.
+	Do not include peepholes.md for now.
+	* config/h8300/jumpcall.md (cbranchqi4): Consolidate into
+	cbranch<mode>4.
+	(cbranchhi4, cbranchsi4): Likewise.
+	(cbranch<mode>4): New expander.
+	(branch): New define_insn_and_split for use before reload.
+	(branch_1, branch_1_false): New patterns to match splitter output.
+	Remove code to manage cc_status.flags.
+	* config/h8300/logical.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.  Move various peepholes into this file.
+	* config/h8300/movepush.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.
+	* config/h8300/multiply.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.
+	* config/h8300/other.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.
+	* config/h8300/peepholes.md: Remove peepholes that were moved
+	elsewhere.
+	* config/h8300/predicates.md (simple_memory_operand): New.
+	* config/h8300/proepi.md: Drop "cc" attribute setting.
+	* config/h8300/shiftrotate.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.
+	* config/h8300/testcompare.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add _clobber_flags patterns to match output of
+	the splitters.  Disable various patterns for now.
+	Move some peepholes that were previously in peepholes.md here.
+	* config/h8300/save.md: New file.
+
+2020-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95853
+	* tree-ssa-math-opts.c (uaddsub_overflow_check_p): Add maxval
+	argument, if non-NULL, instead look for r > maxval or r <= maxval
+	comparisons.
+	(match_uaddsub_overflow): Pattern recognize even other forms of
+	__builtin_add_overflow, in particular when addition is performed
+	in a wider type and result compared to maximum of the narrower
+	type.
+
+2020-11-22  Jeff Law  <law@redhat.com>
+
+	* config/h8300/jumpcall.md (branch_true, branch_false): Revert
+	recent change.  Ensure operand[0] is always the target label.
+
+2020-11-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c (struct f_align_stack): Rename
+	to type from align_stack to f_align_stack.
+	(push_field_alignment): Likewise.
+	(pop_field_alignment): Likewise.
+
 2020-11-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94695
