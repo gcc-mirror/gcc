@@ -620,6 +620,7 @@ inline
 ipa_node_params::~ipa_node_params ()
 {
   free (lattices);
+  vec_free (descriptors);
   known_csts.release ();
   known_contexts.release ();
 }
@@ -895,6 +896,10 @@ class GTY((for_user)) ipa_edge_args
   /* Destructor.  */
   ~ipa_edge_args ()
     {
+      unsigned int i;
+      ipa_jump_func *jf;
+      FOR_EACH_VEC_SAFE_ELT (jump_functions, i, jf)
+	vec_free (jf->agg.items);
       vec_free (jump_functions);
       vec_free (polymorphic_call_contexts);
     }
