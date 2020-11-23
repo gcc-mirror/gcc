@@ -4733,7 +4733,9 @@ package body Sem_Attr is
       -- Machine_Overflows --
       -----------------------
 
-      when Attribute_Machine_Overflows =>
+      when Attribute_Machine_Overflows
+         | Attribute_Machine_Rounds
+      =>
          Check_Real_Type;
          Check_E0;
          Set_Etype (N, Standard_Boolean);
@@ -4757,10 +4759,7 @@ package body Sem_Attr is
       -- Machine_Rounds --
       --------------------
 
-      when Attribute_Machine_Rounds =>
-         Check_Real_Type;
-         Check_E0;
-         Set_Etype (N, Standard_Boolean);
+      --  Shares processing with Machine_Overflows attribute
 
       ------------------
       -- Machine_Size --
