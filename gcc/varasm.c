@@ -1241,6 +1241,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 
   if (ADDR_SPACE_GENERIC_P (as)
       && !DECL_THREAD_LOCAL_P (decl)
+      && !DECL_NOINIT_P (decl)
       && !(prefer_noswitch_p && targetm.have_switchable_bss_sections)
       && bss_initializer_p (decl))
     {
@@ -7042,13 +7043,11 @@ default_elf_select_section (tree decl, int reloc,
       sname = ".tdata";
       break;
     case SECCAT_BSS:
-      if (DECL_P (decl)
-	  && lookup_attribute ("noinit", DECL_ATTRIBUTES (decl)) != NULL_TREE)
+      if (DECL_P (decl) && DECL_NOINIT_P (decl))
 	{
 	  sname = ".noinit";
 	  break;
 	}
-
       if (bss_section)
 	return bss_section;
       sname = ".bss";
@@ -7111,6 +7110,11 @@ default_unique_section (tree decl, int reloc)
       prefix = one_only ? ".s" : ".sdata";
       break;
     case SECCAT_BSS:
+      if (DECL_P (decl) && DECL_NOINIT_P (decl))
+	{
+	  prefix = one_only ? ".n" : ".noinit";
+	  break;
+	}
       prefix = one_only ? ".b" : ".bss";
       break;
     case SECCAT_SBSS:

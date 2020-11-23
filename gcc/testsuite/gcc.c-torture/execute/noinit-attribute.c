@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target noinit } */
-/* { dg-options "-O2" } */
+/* { dg-options "-Wattributes" } */
 /* { dg-skip-if "data LMA != VMA" { msp430-*-* } { "-mlarge" } } */
 
 /* This test checks that noinit data is handled correctly.
