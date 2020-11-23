@@ -12266,8 +12266,8 @@ build_binary_op (location_t location, enum tree_code code,
 	      result_type = common_pointer_type (type0, type1);
 	      if (!COMPLETE_TYPE_P (TREE_TYPE (type0))
 		  != !COMPLETE_TYPE_P (TREE_TYPE (type1)))
-		pedwarn (location, 0,
-			 "comparison of complete and incomplete pointers");
+		pedwarn_c99 (location, OPT_Wpedantic,
+			     "comparison of complete and incomplete pointers");
 	      else if (TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
 		pedwarn (location, OPT_Wpedantic, "ISO C forbids "
 			 "ordered comparisons of pointers to functions");
