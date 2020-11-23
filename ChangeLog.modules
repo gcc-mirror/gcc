@@ -1,5 +1,9 @@
 2020-11-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* Make-lang.in: Don't depend VERSION on src dir.
+	* module.cc: Note some potential issues.
+
 	gcc/
 	* doc/invoke.texi (-flang-include-translate-not): Document.
 	gcc/cp/

@@ -5870,6 +5870,7 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
+      /* The only types we write also have TYPE_NON_COMMON.  */
       gcc_checking_assert (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON));
 
       /* We only stream the main variant.  */
@@ -5932,7 +5933,9 @@ trees_out::core_vals (tree t)
       WT (t->decl_common.attributes);
       // FIXME: Does this introduce cross-decl links?  For instance
       // from instantiation to the template.  If so, we'll need more
-      // deduplication logic
+      // deduplication logic.  I think we'll need to walk the blocks
+      // of the owning function_decl's abstract origin in tandem, to
+      // generate the locating data needed?
       WT (t->decl_common.abstract_origin);
     }
 
@@ -5949,8 +5952,13 @@ trees_out::core_vals (tree t)
 	 things.  */
       if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
 	{
-	  /* Don't write the cached values vector.  */
-	  WT (TYPE_CACHED_VALUES_P (t) ? NULL_TREE : t->type_non_common.values);
+	  // FIXME: These are from tpl_parm_value's 'type' writing.
+	  // Perhaps it should just be doing them directly?
+	  gcc_checking_assert (code == TEMPLATE_TYPE_PARM
+			       || code == TEMPLATE_TEMPLATE_PARM
+			       || code == BOUND_TEMPLATE_TEMPLATE_PARM);
+	  gcc_checking_assert (!TYPE_CACHED_VALUES_P (t));
+	  WT (t->type_non_common.values);
 	  WT (t->type_non_common.maxval);
 	  WT (t->type_non_common.minval);
 	}
@@ -6448,7 +6456,7 @@ trees_in::core_vals (tree t)
       if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
 	{
 	  /* This is not clobbering TYPE_CACHED_VALUES, because this
-	     is a new type being read in, so there aren't any.  */
+	     is a type that doesn't have any.  */
 	  gcc_checking_assert (!TYPE_CACHED_VALUES_P (t));
 	  RT (t->type_non_common.values);
 	  RT (t->type_non_common.maxval);
