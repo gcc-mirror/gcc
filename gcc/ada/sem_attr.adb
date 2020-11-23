@@ -5953,6 +5953,7 @@ package body Sem_Attr is
          Check_Floating_Point_Type_2;
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
+         Resolve (E2, Any_Integer);
 
       ------------------
       -- Signed_Zeros --
