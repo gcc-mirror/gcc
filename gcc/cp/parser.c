@@ -10604,6 +10604,8 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 
    lambda-expression:
      lambda-introducer lambda-declarator [opt] compound-statement
+     lambda-introducer < template-parameter-list > requires-clause [opt]
+       lambda-declarator [opt] compound-statement
 
    Returns a representation of the expression.  */
 
@@ -11061,13 +11063,11 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 /* Parse the (optional) middle of a lambda expression.
 
    lambda-declarator:
-     < template-parameter-list [opt] >
-       requires-clause [opt]
-     ( parameter-declaration-clause [opt] )
-       attribute-specifier [opt]
+     ( parameter-declaration-clause )
        decl-specifier-seq [opt]
-       exception-specification [opt]
-       lambda-return-type-clause [opt]
+       noexcept-specifier [opt]
+       attribute-specifier-seq [opt]
+       trailing-return-type [opt]
        requires-clause [opt]
 
    LAMBDA_EXPR is the current representation of the lambda expression.  */
@@ -11217,8 +11217,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
          trailing-return-type in case of decltype.  */
       pop_bindings_and_leave_scope ();
     }
-  else if (template_param_list != NULL_TREE) // generate diagnostic
-    cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 
   /* Create the function call operator.
 
@@ -12681,8 +12679,15 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
 
      for (const auto &x : range)
 
-   if this version doesn't make a copy.  DECL is the RANGE_DECL; EXPR is the
-   *__for_begin expression.
+   if this version doesn't make a copy.
+
+  This function also warns when the loop variable is initialized with
+  a value of a different type resulting in a copy:
+
+     int arr[10];
+     for (const double &x : arr)
+
+   DECL is the RANGE_DECL; EXPR is the *__for_begin expression.
    This function is never called when processing_template_decl is on.  */
 
 static void
@@ -12700,7 +12705,22 @@ warn_for_range_copy (tree decl, tree expr)
 
   if (TYPE_REF_P (type))
     {
-      /* TODO: Implement reference warnings.  */
+      if (glvalue_p (expr) && !ref_conv_binds_directly_p (type, expr))
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (loc, OPT_Wrange_loop_construct,
+			  "loop variable %qD of type %qT binds to a temporary "
+			  "constructed from type %qT", decl, type,
+			  TREE_TYPE (expr)))
+	    {
+	      tree ref = cp_build_qualified_type (TREE_TYPE (expr),
+						  TYPE_QUAL_CONST);
+	      ref = cp_build_reference_type (ref, /*rval*/false);
+	      inform (loc, "use non-reference type %qT to make the copy "
+		      "explicit or %qT to prevent copying",
+		      non_reference (type), ref);
+	    }
+	}
       return;
     }
   else if (!CP_TYPE_CONST_P (type))
@@ -20792,13 +20812,12 @@ warn_about_ambiguous_parse (const cp_decl_specifier_seq *decl_specifiers,
       if (same_type_p (type, void_type_node))
 	return;
     }
+  else if (decl_specifiers->any_type_specifiers_p)
+    /* Code like long f(); will have null ->type.  If we have any
+       type-specifiers, pretend we've seen int.  */
+    type = integer_type_node;
   else
-    {
-      /* Code like long f(); will have null ->type.  If we have any
-	 type-specifiers, pretend we've seen int.  */
-      gcc_checking_assert (decl_specifiers->any_type_specifiers_p);
-      type = integer_type_node;
-    }
+    return;
 
   auto_diagnostic_group d;
   location_t loc = declarator->u.function.parens_loc;

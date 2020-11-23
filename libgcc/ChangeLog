@@ -1,3 +1,8 @@
+2020-11-20  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* unwind-dw2-fde-dip.c [__OpenBSD__ || __NetBSD__]
+	(USE_PT_GNU_EH_FRAME): Do not define if !TARGET_DL_ITERATE_PHDR.
+
 2020-11-18  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/lib2hw_mul.S (mult64_hw): New.

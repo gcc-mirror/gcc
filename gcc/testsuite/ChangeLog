@@ -1,3 +1,139 @@
+2020-11-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* gcc.target/i386/pr97873-2.c: New test.
+
+2020-11-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/97889
+	* gdc.dg/torture/pr97889.d: New test.
+
+2020-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95853
+	* gcc.dg/pr95853.c: New test.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94695
+	* g++.dg/warn/Wrange-loop-construct2.C: New test.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97846
+	* g++.dg/cpp1y/constexpr-label.C: New test.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97881
+	* g++.dg/warn/Wvexing-parse9.C: New test.
+
+2020-11-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/debug/localclass2.C: Require LTO.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97839
+	* g++.dg/cpp2a/lambda-generic8.C: New test.
+
+2020-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97427
+	* g++.dg/cpp2a/constexpr-dtor10.C: New test.
+
+2020-11-21  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/vect/vect-35-big-array.c: Excpect 2 loops to be vectorized.
+	* gcc.dg/vect/vect-35.c: Excpect 2 loops to be vectorized.
+
+2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-double-test.c (main): Call abort for failure.
+	* gcc.target/powerpc/mma-single-test.c (main): Call abort for failure.
+	* gcc.target/powerpc/pr96506.c: Rename to pr96506-1.c.
+	* gcc.target/powerpc/pr96506-2.c: New test.
+	* gcc.target/powerpc/pr96506-1.c: New file.
+
+2020-11-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.dg/nextafter-2.c: Include math.h.
+
+2020-11-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97918
+	* g++.dg/debug/localclass2.C: New test.
+
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/attr-access-4.c: New test.
+
+2020-11-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97879
+	* gcc.dg/attr-access-3.c: New test.
+
+2020-11-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr97515.c: Check in ccp2, not evrp.
+
+2020-11-20  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/97727
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vstN_lane_2.c: Relax
+	regexps.
+
+2020-11-20  Andrea Corallo  <andrea.corallo@arm.com>
+
+	PR target/97726
+	* gcc.target/arm/simd/bf16_vldn_1.c: Relax regexps not to fail on
+	big endian.
+	* gcc.target/arm/simd/vldn_lane_bf16_1.c: Likewise
+	* gcc.target/arm/simd/vmmla_1.c: Add -mfloat-abi=hard flag.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88101
+	* c-c++-common/builtin-clear-padding-1.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-1.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-2.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-3.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-4.c: New test.
+	* c-c++-common/torture/builtin-clear-padding-5.c: New test.
+	* g++.dg/torture/builtin-clear-padding-1.C: New test.
+	* g++.dg/torture/builtin-clear-padding-2.C: New test.
+	* gcc.dg/builtin-clear-padding-1.c: New test.
+
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97528
+	* gcc.target/arm/pr97528.c: New test.
+
+2020-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt90a.adb: New test.
+	* gnat.dg/opt90b.adb: Likewise.
+	* gnat.dg/opt90c.adb: Likewise.
+	* gnat.dg/opt90d.adb: Likewise.
+	* gnat.dg/opt90e.adb: Likewise.
+	* gnat.dg/opt90a_pkg.ads: New helper.
+	* gnat.dg/opt90b_pkg.ads: Likewise.
+	* gnat.dg/opt90c_pkg.ads: Likewise.
+	* gnat.dg/opt90d_pkg.ads: Likewise.
+	* gnat.dg/opt90e_pkg.ads: Likewise.
+
+2020-11-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* gcc.target/i386/pr97873.c: New test.
+	* gcc.target/i386/pr97873-1.c: New test.
+
+2020-11-20  Martin Uecker  <muecker@gwdg.de>
+
+	* gcc.dg/cond-constqual-1.c: Adapt test.
+	* gcc.dg/lvalue-11.c: New test.
+	* gcc.dg/pr60195.c: Add warning.
+
 2020-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91029

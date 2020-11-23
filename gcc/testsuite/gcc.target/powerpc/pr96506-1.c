@@ -40,27 +40,3 @@ foo3 (void)
   vquad_t v;
   bar3 (v); /* { dg-error "invalid use of MMA operand of type .__vector_quad. as a function parameter" } */
 }
-
-__vector_pair
-foo4 (__vector_pair *src) /* { dg-error "invalid use of MMA type .__vector_pair. as a function return value" } */
-{
-  return *src;
-}
-
-vpair_t
-foo5 (vpair_t *src) /* { dg-error "invalid use of MMA type .__vector_pair. as a function return value" } */
-{
-  return *src;
-}
-
-__vector_quad
-foo6 (__vector_quad *src) /* { dg-error "invalid use of MMA type .__vector_quad. as a function return value" } */
-{
-  return *src;
-}
-
-vquad_t
-foo7 (vquad_t *src) /* { dg-error "invalid use of MMA type .__vector_quad. as a function return value" } */
-{
-  return *src;
-}

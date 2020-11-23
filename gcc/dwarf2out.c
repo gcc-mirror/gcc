@@ -13038,6 +13038,7 @@ is_base_type (tree type)
       return 1;
 
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case ARRAY_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -25776,6 +25777,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       return;
 
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
@@ -32169,12 +32171,12 @@ dwarf2out_early_finish (const char *filename)
      emit full debugging info for them.  */
   retry_incomplete_types ();
 
+  gen_scheduled_generic_parms_dies ();
+  gen_remaining_tmpl_value_param_die_attribute ();
+
   /* The point here is to flush out the limbo list so that it is empty
      and we don't need to stream it for LTO.  */
   flush_limbo_die_list ();
-
-  gen_scheduled_generic_parms_dies ();
-  gen_remaining_tmpl_value_param_die_attribute ();
 
   /* Add DW_AT_linkage_name for all deferred DIEs.  */
   for (limbo_die_node *node = deferred_asm_name; node; node = node->next)

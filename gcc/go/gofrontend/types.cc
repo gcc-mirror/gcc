@@ -1342,19 +1342,21 @@ Type::make_type_descriptor_var(Gogo* gogo)
 
       Type* td_type = Type::make_type_descriptor_type();
       Btype* td_btype = td_type->get_backend(gogo);
-      std::string name = gogo->type_descriptor_name(this, nt);
-      std::string asm_name(go_selectively_encode_id(name));
+      Backend_name bname;
+      gogo->type_descriptor_backend_name(this, nt, &bname);
       this->type_descriptor_var_ =
-	  gogo->backend()->immutable_struct_reference(name, asm_name,
-						      td_btype,
-						      bloc);
+	gogo->backend()->immutable_struct_reference(bname.name(),
+						    bname.optional_asm_name(),
+						    td_btype,
+						    bloc);
 
       if (phash != NULL)
 	*phash = this->type_descriptor_var_;
       return;
     }
 
-  std::string var_name = gogo->type_descriptor_name(this, nt);
+  Backend_name bname;
+  gogo->type_descriptor_backend_name(this, nt, &bname);
 
   // Build the contents of the type descriptor.
   Expression* initializer = this->do_type_descriptor(gogo, NULL);
@@ -1366,11 +1368,11 @@ Type::make_type_descriptor_var(Gogo* gogo)
   const Package* dummy;
   if (this->type_descriptor_defined_elsewhere(nt, &dummy))
     {
-      std::string asm_name(go_selectively_encode_id(var_name));
       this->type_descriptor_var_ =
-	  gogo->backend()->immutable_struct_reference(var_name, asm_name,
-						      initializer_btype,
-						      loc);
+	gogo->backend()->immutable_struct_reference(bname.name(),
+						    bname.optional_asm_name(),
+						    initializer_btype,
+						    loc);
       if (phash != NULL)
 	*phash = this->type_descriptor_var_;
       return;
@@ -1399,10 +1401,10 @@ Type::make_type_descriptor_var(Gogo* gogo)
   // ensure that type_descriptor_pointer will work if called while
   // converting INITIALIZER.
 
-  std::string asm_name(go_selectively_encode_id(var_name));
   this->type_descriptor_var_ =
-      gogo->backend()->immutable_struct(var_name, asm_name, false, is_common,
-				      initializer_btype, loc);
+    gogo->backend()->immutable_struct(bname.name(), bname.optional_asm_name(),
+				      false, is_common, initializer_btype,
+				      loc);
   if (phash != NULL)
     *phash = this->type_descriptor_var_;
 
@@ -1411,7 +1413,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
   Bexpression* binitializer = initializer->get_backend(&context);
 
   gogo->backend()->immutable_struct_set_init(this->type_descriptor_var_,
-					     var_name, false, is_common,
+					     bname.name(), false, is_common,
 					     initializer_btype, loc,
 					     binitializer);
 
@@ -1924,19 +1926,20 @@ Type::build_hash_function(Gogo* gogo, int64_t size, Function_type* hash_fntype)
       return ins.first->second;
     }
 
-  std::string hash_name = gogo->hash_function_name(type);
+  Backend_name bname;
+  gogo->hash_function_name(type, &bname);
 
   Location bloc = Linemap::predeclared_location();
 
-  Named_object* hash_fn = gogo->declare_package_function(hash_name,
+  Named_object* hash_fn = gogo->declare_package_function(bname.name(),
 							 hash_fntype, bloc);
 
   ins.first->second = hash_fn;
 
   if (gogo->in_global_scope())
-    type->write_hash_function(gogo, size, hash_name, hash_fntype);
+    type->write_hash_function(gogo, size, &bname, hash_fntype);
   else
-    gogo->queue_hash_function(type, size, hash_name, hash_fntype);
+    gogo->queue_hash_function(type, size, &bname, hash_fntype);
 
   return hash_fn;
 }
@@ -1944,8 +1947,7 @@ Type::build_hash_function(Gogo* gogo, int64_t size, Function_type* hash_fntype)
 // Write the hash function for a type that needs it written specially.
 
 void
-Type::write_hash_function(Gogo* gogo, int64_t size,
-			  const std::string& hash_name,
+Type::write_hash_function(Gogo* gogo, int64_t size, const Backend_name* bname,
 			  Function_type* hash_fntype)
 {
   Location bloc = Linemap::predeclared_location();
@@ -1958,8 +1960,9 @@ Type::write_hash_function(Gogo* gogo, int64_t size,
 
   go_assert(this->is_comparable());
 
-  Named_object* hash_fn = gogo->start_function(hash_name, hash_fntype, false,
-					       bloc);
+  Named_object* hash_fn = gogo->start_function(bname->name(), hash_fntype,
+					       false, bloc);
+  hash_fn->func_value()->set_asm_name(bname->asm_name());
   hash_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
@@ -2245,7 +2248,8 @@ Type::build_equal_function(Gogo* gogo, Named_type* name, int64_t size,
       return ins.first->second;
     }
 
-  std::string equal_name = gogo->equal_function_name(this, name);
+  Backend_name bname;
+  gogo->equal_function_name(this, name, &bname);
 
   Location bloc = Linemap::predeclared_location();
 
@@ -2255,19 +2259,21 @@ Type::build_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 
   Named_object* equal_fn;
   if (is_defined_elsewhere)
-    equal_fn = Named_object::make_function_declaration(equal_name, package,
+    equal_fn = Named_object::make_function_declaration(bname.name(), package,
 						       equal_fntype, bloc);
   else
-    equal_fn = gogo->declare_package_function(equal_name, equal_fntype, bloc);
+    equal_fn = gogo->declare_package_function(bname.name(), equal_fntype, bloc);
 
   ins.first->second = equal_fn;
 
-  if (!is_defined_elsewhere)
+  if (is_defined_elsewhere)
+    equal_fn->func_declaration_value()->set_asm_name(bname.asm_name());
+  else
     {
       if (gogo->in_global_scope())
-	this->write_equal_function(gogo, name, size, equal_name, equal_fntype);
+	this->write_equal_function(gogo, name, size, &bname, equal_fntype);
       else
-	gogo->queue_equal_function(this, name, size, equal_name, equal_fntype);
+	gogo->queue_equal_function(this, name, size, &bname, equal_fntype);
     }
 
   return equal_fn;
@@ -2278,7 +2284,7 @@ Type::build_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 
 void
 Type::write_equal_function(Gogo* gogo, Named_type* name, int64_t size,
-			   const std::string& equal_name,
+			   const Backend_name* bname,
 			   Function_type* equal_fntype)
 {
   Location bloc = Linemap::predeclared_location();
@@ -2291,8 +2297,9 @@ Type::write_equal_function(Gogo* gogo, Named_type* name, int64_t size,
 
   go_assert(this->is_comparable());
 
-  Named_object* equal_fn = gogo->start_function(equal_name, equal_fntype,
+  Named_object* equal_fn = gogo->start_function(bname->name(), equal_fntype,
 						false, bloc);
+  equal_fn->func_value()->set_asm_name(bname->asm_name());
   equal_fn->func_value()->set_is_type_specific_function();
   gogo->start_block(bloc);
 
@@ -2671,9 +2678,8 @@ Type::make_gc_symbol_var(Gogo* gogo)
   const Package* dummy;
   if (this->type_descriptor_defined_elsewhere(nt, &dummy))
     {
-      std::string asm_name(go_selectively_encode_id(sym_name));
       this->gc_symbol_var_ =
-          gogo->backend()->implicit_variable_reference(sym_name, asm_name,
+          gogo->backend()->implicit_variable_reference(sym_name, "",
                                                        sym_btype);
       if (phash != NULL)
 	*phash = this->gc_symbol_var_;
@@ -2699,10 +2705,9 @@ Type::make_gc_symbol_var(Gogo* gogo)
   // Since we are building the GC symbol in this package, we must create the
   // variable before converting the initializer to its backend representation
   // because the initializer may refer to the GC symbol for this type.
-  std::string asm_name(go_selectively_encode_id(sym_name));
   this->gc_symbol_var_ =
-      gogo->backend()->implicit_variable(sym_name, asm_name,
-					 sym_btype, false, true, is_common, 0);
+      gogo->backend()->implicit_variable(sym_name, "", sym_btype, false, true,
+					 is_common, 0);
   if (phash != NULL)
     *phash = this->gc_symbol_var_;
 
@@ -2876,14 +2881,17 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
     }
 }
 
-// Return a symbol name for this ptrmask. This is used to coalesce identical
-// ptrmasks, which are common. The symbol name must use only characters that are
-// valid in symbols. It's nice if it's short. For smaller ptrmasks, we convert
-// it to a string that uses only 32 characters, avoiding digits and u and U. For
-// longer pointer masks, apply the same process to the SHA1 digest of the bits,
-// so as to avoid pathologically long symbol names (see related Go issues #32083
-// and #11583 for more on this). To avoid collisions between the two encoding
-// schemes, use a prefix ("X") for the SHA form to disambiguate.
+// Return a symbol name for this ptrmask. This is used to coalesce
+// identical ptrmasks, which are common.  The symbol name must use
+// only characters that are valid in symbols.  It's nice if it's
+// short.  For smaller ptrmasks, we convert it to a string that uses
+// only 32 characters.  For longer pointer masks, apply the same
+// process to the SHA1 digest of the bits, so as to avoid
+// pathologically long symbol names (see related Go issues #32083 and
+// #11583 for more on this).  To avoid collisions between the two
+// encoding schemes, use a prefix ("X") for the SHA form to
+// disambiguate.
+
 std::string
 Ptrmask::symname() const
 {
@@ -2911,7 +2919,7 @@ Ptrmask::symname() const
       bits = &shabits;
     }
 
-  const char chars[33] = "abcdefghijklmnopqrstvwxyzABCDEFG";
+  const char chars[33] = "abcdefghijklmnopqrstuvwxyzABCDEF";
   go_assert(chars[32] == '\0');
   std::string ret(prefix);
   unsigned int b = 0;
@@ -2995,9 +3003,8 @@ Type::gc_ptrmask_var(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
   context.set_is_const();
   Bexpression* bval = val->get_backend(&context);
 
-  std::string asm_name(go_selectively_encode_id(sym_name));
   Btype *btype = val->type()->get_backend(gogo);
-  Bvariable* ret = gogo->backend()->implicit_variable(sym_name, asm_name,
+  Bvariable* ret = gogo->backend()->implicit_variable(sym_name, "",
 						      btype, false, true,
 						      true, 0);
   gogo->backend()->implicit_variable_set_init(ret, sym_name, btype, false,
@@ -8092,11 +8099,9 @@ Map_type::backend_zero_value(Gogo* gogo)
   Btype* barray_type = gogo->backend()->array_type(buint8_type, blength);
 
   std::string zname = Map_type::zero_value->name();
-  std::string asm_name(go_selectively_encode_id(zname));
   Bvariable* zvar =
-      gogo->backend()->implicit_variable(zname, asm_name,
-                                         barray_type, false, false, true,
-					 Map_type::zero_value_align);
+      gogo->backend()->implicit_variable(zname, "", barray_type, false, false,
+					 true, Map_type::zero_value_align);
   gogo->backend()->implicit_variable_set_init(zvar, zname, barray_type,
 					      false, false, true, NULL);
   return zvar;

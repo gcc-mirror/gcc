@@ -94,10 +94,10 @@ static tree handle_constructor_attribute (tree *, tree, tree, int, bool *);
 static tree handle_destructor_attribute (tree *, tree, tree, int, bool *);
 static tree handle_mode_attribute (tree *, tree, tree, int, bool *);
 static tree handle_section_attribute (tree *, tree, tree, int, bool *);
+static tree handle_special_var_sec_attribute (tree *, tree, tree, int, bool *);
 static tree handle_aligned_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_if_not_aligned_attribute (tree *, tree, tree,
 						  int, bool *);
-static tree handle_noinit_attribute (tree *, tree, tree, int, bool *);
 static tree handle_weak_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_noplt_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_alias_ifunc_attribute (bool, tree *, tree, tree, bool *);
@@ -248,9 +248,12 @@ static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
   ATTR_EXCL (NULL, false, false, false)
 };
 
-static const struct attribute_spec::exclusions attr_noinit_exclusions[] =
+/* Exclusions that apply to attributes that put declarations in specific
+   sections.  */
+static const struct attribute_spec::exclusions attr_section_exclusions[] =
 {
   ATTR_EXCL ("noinit", true, true, true),
+  ATTR_EXCL ("persistent", true, true, true),
   ATTR_EXCL ("section", true, true, true),
   ATTR_EXCL (NULL, false, false, false),
 };
@@ -339,7 +342,7 @@ const struct attribute_spec c_common_attribute_table[] =
   { "mode",                   1, 1, false,  true, false, false,
 			      handle_mode_attribute, NULL },
   { "section",                1, 1, true,  false, false, false,
-			      handle_section_attribute, attr_noinit_exclusions },
+			      handle_section_attribute, attr_section_exclusions },
   { "aligned",                0, 1, false, false, false, false,
 			      handle_aligned_attribute,
 	                      attr_aligned_exclusions },
@@ -509,7 +512,9 @@ const struct attribute_spec c_common_attribute_table[] =
   { "copy",                   1, 1, false, false, false, false,
 			      handle_copy_attribute, NULL },
   { "noinit",		      0, 0, true,  false, false, false,
-			      handle_noinit_attribute, attr_noinit_exclusions },
+			      handle_special_var_sec_attribute, attr_section_exclusions },
+  { "persistent",	      0, 0, true,  false, false, false,
+			      handle_special_var_sec_attribute, attr_section_exclusions },
   { "access",		      1, 3, false, true, true, false,
 			      handle_access_attribute, NULL },
   /* Attributes used by Objective-C.  */
@@ -2387,63 +2392,111 @@ handle_weak_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
-/* Handle a "noinit" attribute; arguments as in struct
-   attribute_spec.handler.  Check whether the attribute is allowed
-   here and add the attribute to the variable decl tree or otherwise
-   issue a diagnostic.  This function checks NODE is of the expected
-   type and issues diagnostics otherwise using NAME.  If it is not of
-   the expected type *NO_ADD_ATTRS will be set to true.  */
-
+/* Handle a "noinit" or "persistent" attribute; arguments as in
+   struct attribute_spec.handler.
+   This generic handler is used for "special variable sections" that allow the
+   section name to be set using a dedicated attribute.  Additional validation
+   is performed for the specific properties of the section corresponding to the
+   attribute.
+   The ".noinit" section *is not* loaded by the program loader, and is not
+   initialized by the runtime startup code.
+   The ".persistent" section *is* loaded by the program loader, but is not
+   initialized by the runtime startup code.  */
 static tree
-handle_noinit_attribute (tree * node,
-		  tree   name,
-		  tree   args,
-		  int    flags ATTRIBUTE_UNUSED,
-		  bool *no_add_attrs)
+handle_special_var_sec_attribute (tree *node, tree name, tree args,
+				  int flags, bool *no_add_attrs)
 {
-  const char *message = NULL;
+  tree decl = *node;
   tree res = NULL_TREE;
 
-  gcc_assert (DECL_P (*node));
-  gcc_assert (args == NULL);
-
-  if (TREE_CODE (*node) != VAR_DECL)
-    message = G_("%qE attribute only applies to variables");
-
-  /* Check that it's possible for the variable to have a section.  */
-  else if ((TREE_STATIC (*node) || DECL_EXTERNAL (*node) || in_lto_p)
-	   && DECL_SECTION_NAME (*node))
-    message = G_("%qE attribute cannot be applied to variables "
-		 "with specific sections");
-
-  else if (!targetm.have_switchable_bss_sections)
-    message = G_("%qE attribute is specific to ELF targets");
-
-  if (message)
+  /* First perform generic validation common to "noinit" and "persistent"
+     attributes.  */
+  if (!targetm_common.have_named_sections)
     {
-      warning (OPT_Wattributes, message, name);
-      *no_add_attrs = true;
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"section attributes are not supported for this target");
+      goto fail;
     }
-  else
+
+  if (!VAR_P (decl))
     {
-      res = targetm.handle_generic_attribute (node, name, args, flags,
-					      no_add_attrs);
-      /* If the back end confirms the attribute can be added then continue onto
-	 final processing.  */
-      if (!(*no_add_attrs))
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "ignoring %qE attribute not set on a variable",
+		  name);
+      goto fail;
+    }
+
+  if (VAR_P (decl)
+      && current_function_decl != NULL_TREE
+      && !TREE_STATIC (decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute cannot be specified for local variables",
+		name);
+      goto fail;
+    }
+
+  if (VAR_P (decl)
+      && !targetm.have_tls && targetm.emutls.tmpl_section
+      && DECL_THREAD_LOCAL_P (decl))
+    {
+      error ("section of %q+D cannot be overridden", decl);
+      goto fail;
+    }
+
+  if (!targetm.have_switchable_bss_sections)
+    {
+      error ("%qE attribute is specific to ELF targets", name);
+      goto fail;
+    }
+
+  if (TREE_READONLY (decl))
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "ignoring %qE attribute set on const variable",
+		  name);
+      goto fail;
+    }
+
+  /* Now validate noinit/persistent individually.  */
+  if (strcmp (IDENTIFIER_POINTER (name), "noinit") == 0)
+    {
+      if (DECL_INITIAL (decl))
 	{
-	  /* If this var is thought to be common, then change this.  Common
-	     variables are assigned to sections before the backend has a
-	     chance to process them.  Do this only if the attribute is
-	     valid.  */
-	  if (DECL_COMMON (*node))
-	    DECL_COMMON (*node) = 0;
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		      "ignoring %qE attribute set on initialized variable",
+		      name);
+	  goto fail;
+	}
+      /* If this var is thought to be common, then change this.  "noinit"
+	 variables must be placed in an explicit ".noinit" section.  */
+      DECL_COMMON (decl) = 0;
+    }
+  else if (strcmp (IDENTIFIER_POINTER (name), "persistent") == 0)
+    {
+      if (DECL_COMMON (decl) || DECL_INITIAL (decl) == NULL_TREE)
+	{
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		      "ignoring %qE attribute set on uninitialized variable",
+		      name);
+	  goto fail;
 	}
     }
+  else
+    gcc_unreachable ();
 
+  res = targetm.handle_generic_attribute (node, name, args, flags,
+					  no_add_attrs);
+
+  /* If the back end confirms the attribute can be added then continue onto
+     final processing.  */
+  if (!(*no_add_attrs))
+    return res;
+
+fail:
+  *no_add_attrs = true;
   return res;
 }
-
 
 /* Handle a "noplt" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -2810,9 +2863,11 @@ handle_copy_attribute (tree *node, tree name, tree args,
   tree attrs = TYPE_ATTRIBUTES (reftype);
 
   /* Copy type attributes from REF to DECL.  Pass in REF if it's a DECL
-     or a type but not if it's an expression.  */
+     or a type but not if it's an expression.  Set ATTR_FLAG_INTERNAL
+     since the attributes' arguments may be in their internal form.  */
   for (tree at = attrs; at; at = TREE_CHAIN (at))
-    decl_attributes (node, at, flags, EXPR_P (ref) ? NULL_TREE : ref);
+    decl_attributes (node, at, flags | ATTR_FLAG_INTERNAL,
+		     EXPR_P (ref) ? NULL_TREE : ref);
 
   return NULL_TREE;
 }
@@ -4289,8 +4344,8 @@ append_access_attr (tree node[3], tree attrs, const char *attrstr,
    the attribute and its arguments into a string.  */
 
 static tree
-handle_access_attribute (tree node[3], tree name, tree args,
-			 int ARG_UNUSED (flags), bool *no_add_attrs)
+handle_access_attribute (tree node[3], tree name, tree args, int flags,
+			 bool *no_add_attrs)
 {
   tree attrs = TYPE_ATTRIBUTES (*node);
   tree type = *node;
@@ -4336,15 +4391,19 @@ handle_access_attribute (tree node[3], tree name, tree args,
 
 	  /* Recursively call self to "replace" the documented/external
 	     form of the attribute with the condensend internal form.  */
-	  decl_attributes (node, axsat, flags);
+	  decl_attributes (node, axsat, flags | ATTR_FLAG_INTERNAL);
 	  return NULL_TREE;
 	}
 
-      /* This is a recursive call to handle the condensed internal form
-	 of the attribute (see below).  Since all validation has been
-	 done simply return here, accepting the attribute as is.  */
-      *no_add_attrs = false;
-      return NULL_TREE;
+      if (flags & ATTR_FLAG_INTERNAL)
+	{
+	  /* This is a recursive call to handle the condensed internal
+	     form of the attribute (see below).  Since all validation
+	     has been done simply return here, accepting the attribute
+	     as is.  */
+	  *no_add_attrs = false;
+	  return NULL_TREE;
+	}
     }
 
   /* Set to true when the access mode has the form of a function call
@@ -4362,6 +4421,13 @@ handle_access_attribute (tree node[3], tree name, tree args,
       access_mode = TREE_OPERAND (access_mode, 0);
       access_mode = DECL_NAME (access_mode);
       funcall = true;
+    }
+  else if (TREE_CODE (access_mode) != IDENTIFIER_NODE)
+    {
+      error ("attribute %qE mode %qE is not an identifier; expected one of "
+	     "%qs, %qs, %qs, or %qs", name, access_mode,
+	     "read_only", "read_write", "write_only", "none");
+      return NULL_TREE;
     }
 
   const char* const access_str = IDENTIFIER_POINTER (access_mode);
@@ -4573,7 +4639,7 @@ handle_access_attribute (tree node[3], tree name, tree args,
 
   /* Recursively call self to "replace" the documented/external form
      of the attribute with the condensed internal form.  */
-  decl_attributes (node, new_attrs, flags);
+  decl_attributes (node, new_attrs, flags | ATTR_FLAG_INTERNAL);
   return NULL_TREE;
 }
 

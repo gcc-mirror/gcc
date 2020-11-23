@@ -3681,7 +3681,23 @@ void fn () @{
 @end smallexample
 
 It does not warn when the type being copied is a trivially-copyable type whose
-size is less than 64 bytes.  This warning is enabled by @option{-Wall}.
+size is less than 64 bytes.
+
+This warning also warns when a loop variable in a range-based for-loop is
+initialized with a value of a different type resulting in a copy.  For example:
+
+@smallexample
+void fn() @{
+  int arr[10];
+  for (const double &x : arr) @{ @dots{} @}
+@}
+@end smallexample
+
+In the example above, in every iteration of the loop a temporary value of
+type @code{double} is created and destroyed, to which the reference
+@code{const double &} is bound.
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wredundant-tags @r{(C++ and Objective-C++ only)}
 @opindex Wredundant-tags

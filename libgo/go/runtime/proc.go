@@ -263,7 +263,7 @@ func main(unsafe.Pointer) {
 }
 
 // os_beforeExit is called from os.Exit(0).
-//go:linkname os_beforeExit os.runtime_beforeExit
+//go:linkname os_beforeExit os.runtime__beforeExit
 func os_beforeExit() {
 	if raceenabled {
 		racefini()
@@ -3305,7 +3305,7 @@ func beforefork() {
 }
 
 // Called from syscall package before fork.
-//go:linkname syscall_runtime_BeforeFork syscall.runtime_BeforeFork
+//go:linkname syscall_runtime_BeforeFork syscall.runtime__BeforeFork
 //go:nosplit
 func syscall_runtime_BeforeFork() {
 	systemstack(beforefork)
@@ -3320,7 +3320,7 @@ func afterfork() {
 }
 
 // Called from syscall package after fork in parent.
-//go:linkname syscall_runtime_AfterFork syscall.runtime_AfterFork
+//go:linkname syscall_runtime_AfterFork syscall.runtime__AfterFork
 //go:nosplit
 func syscall_runtime_AfterFork() {
 	systemstack(afterfork)
@@ -3338,7 +3338,7 @@ var inForkedChild bool
 // temporarily sharing address space with the parent process, this must
 // not change any global variables or calling into C code that may do so.
 //
-//go:linkname syscall_runtime_AfterForkInChild syscall.runtime_AfterForkInChild
+//go:linkname syscall_runtime_AfterForkInChild syscall.runtime__AfterForkInChild
 //go:nosplit
 //go:nowritebarrierrec
 func syscall_runtime_AfterForkInChild() {
@@ -3363,7 +3363,7 @@ func syscall_runtime_AfterForkInChild() {
 var pendingPreemptSignals uint32
 
 // Called from syscall package before Exec.
-//go:linkname syscall_runtime_BeforeExec syscall.runtime_BeforeExec
+//go:linkname syscall_runtime_BeforeExec syscall.runtime__BeforeExec
 func syscall_runtime_BeforeExec() {
 	// Prevent thread creation during exec.
 	execLock.lock()
@@ -3378,7 +3378,7 @@ func syscall_runtime_BeforeExec() {
 }
 
 // Called from syscall package after Exec.
-//go:linkname syscall_runtime_AfterExec syscall.runtime_AfterExec
+//go:linkname syscall_runtime_AfterExec syscall.runtime__AfterExec
 func syscall_runtime_AfterExec() {
 	execLock.unlock()
 }
@@ -5165,7 +5165,7 @@ func (l *gList) pop() *g {
 	return gp
 }
 
-//go:linkname setMaxThreads runtime..z2fdebug.setMaxThreads
+//go:linkname setMaxThreads runtime_1debug.setMaxThreads
 func setMaxThreads(in int) (out int) {
 	lock(&sched.lock)
 	out = int(sched.maxmcount)
@@ -5199,32 +5199,32 @@ func procUnpin() {
 	_g_.m.locks--
 }
 
-//go:linkname sync_runtime_procPin sync.runtime_procPin
+//go:linkname sync_runtime_procPin sync.runtime__procPin
 //go:nosplit
 func sync_runtime_procPin() int {
 	return procPin()
 }
 
-//go:linkname sync_runtime_procUnpin sync.runtime_procUnpin
+//go:linkname sync_runtime_procUnpin sync.runtime__procUnpin
 //go:nosplit
 func sync_runtime_procUnpin() {
 	procUnpin()
 }
 
-//go:linkname sync_atomic_runtime_procPin sync..z2fatomic.runtime_procPin
+//go:linkname sync_atomic_runtime_procPin sync_1atomic.runtime__procPin
 //go:nosplit
 func sync_atomic_runtime_procPin() int {
 	return procPin()
 }
 
-//go:linkname sync_atomic_runtime_procUnpin sync..z2fatomic.runtime_procUnpin
+//go:linkname sync_atomic_runtime_procUnpin sync_1atomic.runtime__procUnpin
 //go:nosplit
 func sync_atomic_runtime_procUnpin() {
 	procUnpin()
 }
 
 // Active spinning for sync.Mutex.
-//go:linkname sync_runtime_canSpin sync.runtime_canSpin
+//go:linkname sync_runtime_canSpin sync.runtime__canSpin
 //go:nosplit
 func sync_runtime_canSpin(i int) bool {
 	// sync.Mutex is cooperative, so we are conservative with spinning.
@@ -5241,7 +5241,7 @@ func sync_runtime_canSpin(i int) bool {
 	return true
 }
 
-//go:linkname sync_runtime_doSpin sync.runtime_doSpin
+//go:linkname sync_runtime_doSpin sync.runtime__doSpin
 //go:nosplit
 func sync_runtime_doSpin() {
 	procyield(active_spin_cnt)

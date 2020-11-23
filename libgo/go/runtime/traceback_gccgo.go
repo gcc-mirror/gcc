@@ -184,10 +184,10 @@ func showfuncinfo(name string, firstFrame bool) bool {
 // isExportedRuntime reports whether name is an exported runtime function.
 // It is only for runtime functions, so ASCII A-Z is fine. Here also check
 // for mangled functions from runtime/<...>, which will be prefixed with
-// "runtime..z2f".
+// "runtime_1".
 func isExportedRuntime(name string) bool {
 	const n = len("runtime.")
-	if hasPrefix(name, "runtime..z2f") {
+	if hasPrefix(name, "runtime_1") {
 		return true
 	}
 	return len(name) > n && name[:n] == "runtime." && 'A' <= name[n] && name[n] <= 'Z'

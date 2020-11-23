@@ -36,8 +36,7 @@
 				   XVECLEN (operands[0], 0) - 2));
   return "ldm.l\t@er7+,%S1-%S3";
 }
-  [(set_attr "cc" "none")
-   (set_attr "length" "4")])
+  [(set_attr "length" "4")])
 
 (define_insn "stm_h8300sx"
   [(match_parallel           0 "h8300_stm_parallel"
@@ -49,8 +48,7 @@
 				  XVECLEN (operands[0], 0) - 2));
   return "stm.l\t%S2-%S3,@-er7";
 }
-  [(set_attr "cc" "none")
-   (set_attr "length" "4")])
+  [(set_attr "length" "4")])
 
 (define_insn "return_h8sx"
   [(match_parallel           0 "h8300_return_parallel"
@@ -67,8 +65,7 @@
   else
     return "rts/l\t%S1-%S3";
 }
-  [(set_attr "cc" "none")
-   (set_attr "can_delay" "no")
+  [(set_attr "can_delay" "no")
    (set_attr "length" "2")])
 
 (define_expand "return"
@@ -86,8 +83,7 @@
   else
     return "rts";
 }
-  [(set_attr "cc" "none")
-   (set_attr "can_delay" "no")
+  [(set_attr "can_delay" "no")
    (set_attr "length" "2")])
 
 (define_expand "prologue"

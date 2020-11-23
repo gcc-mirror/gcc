@@ -1314,6 +1314,7 @@ structural_comptypes (tree t1, tree t2, int strict)
       /* All void and bool types are the same.  */
       break;
 
+    case OPAQUE_TYPE:
     case INTEGER_TYPE:
     case FIXED_POINT_TYPE:
     case REAL_TYPE:

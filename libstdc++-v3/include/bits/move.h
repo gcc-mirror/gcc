@@ -158,9 +158,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @} group utilities
 
+#define _GLIBCXX_FWDREF(_Tp) _Tp&&
 #define _GLIBCXX_MOVE(__val) std::move(__val)
 #define _GLIBCXX_FORWARD(_Tp, __val) std::forward<_Tp>(__val)
 #else
+#define _GLIBCXX_FWDREF(_Tp) const _Tp&
 #define _GLIBCXX_MOVE(__val) (__val)
 #define _GLIBCXX_FORWARD(_Tp, __val) (__val)
 #endif

@@ -51,27 +51,27 @@ var semtable [semTabSize]struct {
 	pad  [cpu.CacheLinePadSize - unsafe.Sizeof(semaRoot{})]byte
 }
 
-//go:linkname sync_runtime_Semacquire sync.runtime_Semacquire
+//go:linkname sync_runtime_Semacquire sync.runtime__Semacquire
 func sync_runtime_Semacquire(addr *uint32) {
 	semacquire1(addr, false, semaBlockProfile, 0)
 }
 
-//go:linkname poll_runtime_Semacquire internal..z2fpoll.runtime_Semacquire
+//go:linkname poll_runtime_Semacquire internal_1poll.runtime__Semacquire
 func poll_runtime_Semacquire(addr *uint32) {
 	semacquire1(addr, false, semaBlockProfile, 0)
 }
 
-//go:linkname sync_runtime_Semrelease sync.runtime_Semrelease
+//go:linkname sync_runtime_Semrelease sync.runtime__Semrelease
 func sync_runtime_Semrelease(addr *uint32, handoff bool, skipframes int) {
 	semrelease1(addr, handoff, skipframes)
 }
 
-//go:linkname sync_runtime_SemacquireMutex sync.runtime_SemacquireMutex
+//go:linkname sync_runtime_SemacquireMutex sync.runtime__SemacquireMutex
 func sync_runtime_SemacquireMutex(addr *uint32, lifo bool, skipframes int) {
 	semacquire1(addr, lifo, semaBlockProfile|semaMutexProfile, skipframes)
 }
 
-//go:linkname poll_runtime_Semrelease internal..z2fpoll.runtime_Semrelease
+//go:linkname poll_runtime_Semrelease internal_1poll.runtime__Semrelease
 func poll_runtime_Semrelease(addr *uint32) {
 	semrelease(addr)
 }
@@ -475,7 +475,7 @@ func less(a, b uint32) bool {
 // notifyListAdd adds the caller to a notify list such that it can receive
 // notifications. The caller must eventually call notifyListWait to wait for
 // such a notification, passing the returned ticket number.
-//go:linkname notifyListAdd sync.runtime_notifyListAdd
+//go:linkname notifyListAdd sync.runtime__notifyListAdd
 func notifyListAdd(l *notifyList) uint32 {
 	// This may be called concurrently, for example, when called from
 	// sync.Cond.Wait while holding a RWMutex in read mode.
@@ -484,7 +484,7 @@ func notifyListAdd(l *notifyList) uint32 {
 
 // notifyListWait waits for a notification. If one has been sent since
 // notifyListAdd was called, it returns immediately. Otherwise, it blocks.
-//go:linkname notifyListWait sync.runtime_notifyListWait
+//go:linkname notifyListWait sync.runtime__notifyListWait
 func notifyListWait(l *notifyList, t uint32) {
 	lockWithRank(&l.lock, lockRankNotifyList)
 
@@ -518,7 +518,7 @@ func notifyListWait(l *notifyList, t uint32) {
 }
 
 // notifyListNotifyAll notifies all entries in the list.
-//go:linkname notifyListNotifyAll sync.runtime_notifyListNotifyAll
+//go:linkname notifyListNotifyAll sync.runtime__notifyListNotifyAll
 func notifyListNotifyAll(l *notifyList) {
 	// Fast-path: if there are no new waiters since the last notification
 	// we don't need to acquire the lock.
@@ -550,7 +550,7 @@ func notifyListNotifyAll(l *notifyList) {
 }
 
 // notifyListNotifyOne notifies one entry in the list.
-//go:linkname notifyListNotifyOne sync.runtime_notifyListNotifyOne
+//go:linkname notifyListNotifyOne sync.runtime__notifyListNotifyOne
 func notifyListNotifyOne(l *notifyList) {
 	// Fast-path: if there are no new waiters since the last notification
 	// we don't need to acquire the lock at all.
@@ -603,7 +603,7 @@ func notifyListNotifyOne(l *notifyList) {
 	unlock(&l.lock)
 }
 
-//go:linkname notifyListCheck sync.runtime_notifyListCheck
+//go:linkname notifyListCheck sync.runtime__notifyListCheck
 func notifyListCheck(sz uintptr) {
 	if sz != unsafe.Sizeof(notifyList{}) {
 		print("runtime: bad notifyList size - sync=", sz, " runtime=", unsafe.Sizeof(notifyList{}), "\n")
@@ -611,7 +611,7 @@ func notifyListCheck(sz uintptr) {
 	}
 }
 
-//go:linkname sync_nanotime sync.runtime_nanotime
+//go:linkname sync_nanotime sync.runtime__nanotime
 func sync_nanotime() int64 {
 	return nanotime()
 }

@@ -1521,6 +1521,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	break;
       }
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case NULLPTR_TYPE:
       break;
 

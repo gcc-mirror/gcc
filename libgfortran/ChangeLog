@@ -1,3 +1,8 @@
+2020-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* intrinsics/execute_command_line.c (environ): Use
+	_NSGetEnviron to get the environment pointer on Darwin.
+
 2020-10-30  Harald Anlauf  <anlauf@gmx.de>
 
 	* intrinsics/random.c (SZ_IN_INT_4): Define size of state in int32_t.

@@ -2228,6 +2228,7 @@ type_to_class (tree type)
     case ARRAY_TYPE:	   return (TYPE_STRING_FLAG (type)
 				   ? string_type_class : array_type_class);
     case LANG_TYPE:	   return lang_type_class;
+    case OPAQUE_TYPE:      return opaque_type_class;
     default:		   return no_type_class;
     }
 }

@@ -76363,6 +76363,64 @@ fi
     fi
   fi
 
+  ac_fn_cxx_check_header_mongrel "$LINENO" "semaphore.h" "ac_cv_header_semaphore_h" "$ac_includes_default"
+if test "x$ac_cv_header_semaphore_h" = xyes; then :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for POSIX Semaphores and sem_timedwait" >&5
+$as_echo_n "checking for POSIX Semaphores and sem_timedwait... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+	#include <unistd.h>
+	#include <semaphore.h>
+	#include <limits.h>
+
+int
+main ()
+{
+
+	#if !defined _POSIX_TIMEOUTS || _POSIX_TIMEOUTS <= 0
+	# error "POSIX Timeouts option not supported"
+	#elif !defined _POSIX_SEMAPHORES || _POSIX_SEMAPHORES <= 0
+	# error "POSIX Semaphores option not supported"
+	#else
+	#if defined SEM_VALUE_MAX
+	constexpr int sem_value_max = SEM_VALUE_MAX;
+	#elif defined _POSIX_SEM_VALUE_MAX
+	constexpr int sem_value_max = _POSIX_SEM_VALUE_MAX;
+	#else
+	# error "SEM_VALUE_MAX not available"
+	#endif
+	sem_t sem;
+	sem_init(&sem, 0, sem_value_max);
+	struct timespec ts = { 0 };
+	sem_timedwait(&sem, &ts);
+	#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_have_posix_semaphore=yes
+else
+  ac_have_posix_semaphore=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  ac_have_posix_semaphore=no
+fi
+
+
+
+  if test $ac_have_posix_semaphore = yes ; then
+
+$as_echo "#define _GLIBCXX_HAVE_POSIX_SEMAPHORE 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_have_posix_semaphore" >&5
+$as_echo "$ac_have_posix_semaphore" >&6; }
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'

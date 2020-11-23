@@ -223,7 +223,7 @@ func gcenable() {
 	memstats.enablegc = true // now that runtime is initialized, GC is okay
 }
 
-//go:linkname setGCPercent runtime..z2fdebug.setGCPercent
+//go:linkname setGCPercent runtime_1debug.setGCPercent
 func setGCPercent(in int32) (out int32) {
 	// Run on the system stack since we grab the heap lock.
 	systemstack(func() {
@@ -2238,7 +2238,7 @@ func gcResetMarkState() {
 
 var poolcleanup func()
 
-//go:linkname sync_runtime_registerPoolCleanup sync.runtime_registerPoolCleanup
+//go:linkname sync_runtime_registerPoolCleanup sync.runtime__registerPoolCleanup
 func sync_runtime_registerPoolCleanup(f func()) {
 	poolcleanup = f
 }

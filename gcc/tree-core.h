@@ -859,7 +859,10 @@ enum attribute_flags {
      are not in fact compatible with the function type.  */
   ATTR_FLAG_BUILT_IN = 16,
   /* A given attribute has been parsed as a C++-11 attribute.  */
-  ATTR_FLAG_CXX11 = 32
+  ATTR_FLAG_CXX11 = 32,
+  /* The attribute handler is being invoked with an internal argument
+     that may not otherwise be valid when specified in source code.  */
+  ATTR_FLAG_INTERNAL = 64
 };
 
 /* Types used to represent sizes.  */

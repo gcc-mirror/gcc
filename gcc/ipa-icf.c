@@ -575,6 +575,7 @@ sem_function::equals_wpa (sem_item *item,
      type memory location for ipa-polymorphic-call and we do not want
      it to get confused by wrong type.  */
   if (DECL_CXX_CONSTRUCTOR_P (decl)
+      && opt_for_fn (decl, flag_devirtualize)
       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
     {
       if (TREE_CODE (TREE_TYPE (item->decl)) != METHOD_TYPE)
@@ -2536,11 +2537,24 @@ sem_item_optimizer::update_hash_by_addr_refs ()
 		  = TYPE_METHOD_BASETYPE (TREE_TYPE (m_items[i]->decl));
 		inchash::hash hstate (m_items[i]->get_hash ());
 
+		/* Hash ODR types by mangled name if it is defined.
+		   If not we know that type is anonymous of free_lang_data
+		   was not run and in that case type main variants are
+		   unique.  */
 		if (TYPE_NAME (class_type)
-		     && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (class_type)))
+		     && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (class_type))
+		     && !type_in_anonymous_namespace_p
+				 (class_type))
 		  hstate.add_hwi
 		    (IDENTIFIER_HASH_VALUE
 		       (DECL_ASSEMBLER_NAME (TYPE_NAME (class_type))));
+		else
+		  {
+		    gcc_checking_assert
+			 (!in_lto_p
+			  || type_in_anonymous_namespace_p (class_type));
+		    hstate.add_hwi (TYPE_UID (TYPE_MAIN_VARIANT (class_type)));
+		  }
 
 		m_items[i]->set_hash (hstate.end ());
 	     }

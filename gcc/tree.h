@@ -2662,6 +2662,20 @@ extern tree vector_element_bits_tree (const_tree);
 #define DECL_PRESERVE_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.preserve_flag
 
+/* Nonzero for a decl that is decorated with the "noinit" attribute.
+   decls with this attribute are placed into the ".noinit" section, so they are
+   not initialized by the target's startup code.  */
+#define DECL_NOINIT_P(DECL)	\
+  (DECL_P (DECL)		\
+   && (lookup_attribute ("noinit", DECL_ATTRIBUTES (DECL)) != NULL_TREE))
+
+/* Nonzero for a decl that is decorated with the "persistent" attribute.
+   decls with this attribute are placed into the ".persistent" section, so they
+   are not initialized by the target's startup code.  */
+#define DECL_PERSISTENT_P(DECL)	\
+  (DECL_P (DECL)		\
+   && (lookup_attribute ("persistent", DECL_ATTRIBUTES (DECL)) != NULL_TREE))
+
 /* For function local variables of COMPLEX and VECTOR types,
    indicates that the variable is not aliased, and that all
    modifications to the variable have been adjusted so that

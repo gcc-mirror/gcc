@@ -1417,7 +1417,7 @@ func reflect_maplen(h *hmap) int {
 	return h.count
 }
 
-//go:linkname reflectlite_maplen internal..z2freflectlite.maplen
+//go:linkname reflectlite_maplen internal_1reflectlite.maplen
 func reflectlite_maplen(h *hmap) int {
 	if h == nil {
 		return 0

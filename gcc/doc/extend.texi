@@ -7426,9 +7426,23 @@ The @code{weak} attribute is described in
 @cindex @code{noinit} variable attribute
 Any data with the @code{noinit} attribute will not be initialized by
 the C runtime startup code, or the program loader.  Not initializing
-data in this way can reduce program startup times.  This attribute is
-specific to ELF targets and relies on the linker to place such data in
-the right location
+data in this way can reduce program startup times.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place sections with the @code{.noinit} prefix in the right
+location.
+
+@item persistent
+@cindex @code{persistent} variable attribute
+Any data with the @code{persistent} attribute will not be initialized by
+the C runtime startup code, but will be initialized by the program
+loader.  This enables the value of the variable to @samp{persist}
+between processor resets.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place the sections with the @code{.persistent} prefix in the
+right location.  Specifically, some type of non-volatile, writeable
+memory is required.
 
 @item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
 @cindex @code{objc_nullability} variable attribute
@@ -7849,23 +7863,6 @@ The @code{shared} attribute is only available on Microsoft Windows@.
 @subsection MSP430 Variable Attributes
 
 @table @code
-@item noinit
-@cindex @code{noinit} variable attribute, MSP430 
-Any data with the @code{noinit} attribute will not be initialised by
-the C runtime startup code, or the program loader.  Not initialising
-data in this way can reduce program startup times.
-
-@item persistent
-@cindex @code{persistent} variable attribute, MSP430 
-Any variable with the @code{persistent} attribute will not be
-initialised by the C runtime startup code.  Instead its value will be
-set once, when the application is loaded, and then never initialised
-again, even if the processor is reset or the program restarts.
-Persistent data is intended to be placed into FLASH RAM, where its
-value will be retained across resets.  The linker script being used to
-create the application should ensure that persistent data is correctly
-placed.
-
 @item upper
 @itemx either
 @cindex @code{upper} variable attribute, MSP430 

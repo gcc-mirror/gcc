@@ -3191,6 +3191,8 @@ maybe_push_to_hybrid_worklist (vec_info *vinfo,
       any_def = true;
       FOR_EACH_IMM_USE_FAST (use_p, iter2, DEF_FROM_PTR (def_p))
 	{
+	  if (is_gimple_debug (USE_STMT (use_p)))
+	    continue;
 	  stmt_vec_info use_info = vinfo->lookup_stmt (USE_STMT (use_p));
 	  /* An out-of loop use means this is a loop_vect sink.  */
 	  if (!use_info)

@@ -433,96 +433,6 @@
 		   : gen_rtx_LT (VOIDmode, cc0_rtx, const0_rtx));
   })
 
-;; The next three peephole2's will try to transform
-;;
-;;   mov.b A,r0l    (or mov.l A,er0)
-;;   and.l #CST,er0
-;;
-;; into
-;;
-;;   sub.l er0
-;;   mov.b A,r0l
-;;   and.b #CST,r0l (if CST is not 255)
-
-(define_peephole2
-  [(set (match_operand:QI 0 "register_operand" "")
-	(match_operand:QI 1 "general_operand" ""))
-   (set (match_operand:SI 2 "register_operand" "")
-	(and:SI (match_dup 2)
-		(const_int 255)))]
-  "!reg_overlap_mentioned_p (operands[2], operands[1])
-   && REGNO (operands[0]) == REGNO (operands[2])"
-  [(set (match_dup 2)
-	(const_int 0))
-   (set (strict_low_part (match_dup 0))
-	(match_dup 1))]
-  "")
-
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_operand:SI 1 "nonimmediate_operand" ""))
-   (set (match_dup 0)
-	(and:SI (match_dup 0)
-		(const_int 255)))]
-  "!reg_overlap_mentioned_p (operands[0], operands[1])
-   && !(GET_CODE (operands[1]) == MEM && !offsettable_memref_p (operands[1]))
-   && !(GET_CODE (operands[1]) == MEM && MEM_VOLATILE_P (operands[1]))"
-  [(set (match_dup 0)
-	(const_int 0))
-   (set (strict_low_part (match_dup 2))
-	(match_dup 3))]
-  {
-    operands[2] = gen_lowpart (QImode, operands[0]);
-    operands[3] = gen_lowpart (QImode, operands[1]);
-  })
-
-(define_peephole2
-  [(set (match_operand 0 "register_operand" "")
-	(match_operand 1 "nonimmediate_operand" ""))
-   (set (match_operand:SI 2 "register_operand" "")
-	(and:SI (match_dup 2)
-		(match_operand:SI 3 "const_int_qi_operand" "")))]
-  "(GET_MODE (operands[0]) == QImode
-    || GET_MODE (operands[0]) == HImode
-    || GET_MODE (operands[0]) == SImode)
-   && GET_MODE (operands[0]) == GET_MODE (operands[1])
-   && REGNO (operands[0]) == REGNO (operands[2])
-   && !reg_overlap_mentioned_p (operands[2], operands[1])
-   && !(GET_MODE (operands[1]) != QImode
-	&& GET_CODE (operands[1]) == MEM
-	&& !offsettable_memref_p (operands[1]))
-   && !(GET_MODE (operands[1]) != QImode
-	&& GET_CODE (operands[1]) == MEM
-	&& MEM_VOLATILE_P (operands[1]))"
-  [(set (match_dup 2)
-	(const_int 0))
-   (set (strict_low_part (match_dup 4))
-	(match_dup 5))
-   (set (match_dup 2)
-	(and:SI (match_dup 2)
-		(match_dup 6)))]
-  {
-    operands[4] = gen_lowpart (QImode, operands[0]);
-    operands[5] = gen_lowpart (QImode, operands[1]);
-    operands[6] = GEN_INT (~0xff | INTVAL (operands[3]));
-  })
-
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_operand:SI 1 "register_operand" ""))
-   (set (match_dup 0)
-	(and:SI (match_dup 0)
-		(const_int 65280)))]
-  "!reg_overlap_mentioned_p (operands[0], operands[1])"
-  [(set (match_dup 0)
-	(const_int 0))
-   (set (zero_extract:SI (match_dup 0)
-			 (const_int 8)
-			 (const_int 8))
-	(lshiftrt:SI (match_dup 1)
-		     (const_int 8)))]
-  "")
-
 ;; If a load of mem:SI is followed by an AND that turns off the upper
 ;; half, then we can load mem:HI instead.
 
@@ -545,20 +455,6 @@
     operands[3] = gen_lowpart (HImode, operands[0]);
     operands[4] = gen_lowpart (HImode, operands[1]);
   })
-
-;; Convert a memory comparison to a move if there is a scratch register.
-
-(define_peephole2
-  [(match_scratch:QHSI 1 "r")
-   (set (cc0)
-	(compare (match_operand:QHSI 0 "memory_operand" "")
-		 (const_int 0)))]
-  ""
-  [(set (match_dup 1)
-	(match_dup 0))
-   (set (cc0) (compare (match_dup 1)
-		       (const_int 0)))]
-  "")
 
 ;; (compare (reg:HI) (const_int)) takes 4 bytes, so we try to achieve
 ;; the equivalent with shorter sequences.  Here is the summary.  Cases

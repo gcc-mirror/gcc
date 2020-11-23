@@ -1057,7 +1057,11 @@ bss_initializer_p (const_tree decl, bool named)
 	      || (DECL_INITIAL (decl) == error_mark_node
 	          && !in_lto_p)
 	      || (flag_zero_initialized_in_bss
-	          && initializer_zerop (DECL_INITIAL (decl)))));
+		  && initializer_zerop (DECL_INITIAL (decl))
+		  /* A decl with the "persistent" attribute applied and
+		     explicitly initialized to 0 should not be treated as a BSS
+		     variable.  */
+		  && !DECL_PERSISTENT_P (decl))));
 }
 
 /* Compute the alignment of variable specified by DECL.
@@ -1241,6 +1245,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 
   if (ADDR_SPACE_GENERIC_P (as)
       && !DECL_THREAD_LOCAL_P (decl)
+      && !DECL_NOINIT_P (decl)
       && !(prefer_noswitch_p && targetm.have_switchable_bss_sections)
       && bss_initializer_p (decl))
     {
@@ -6679,6 +6684,9 @@ default_section_type_flags (tree decl, const char *name, int reloc)
   if (strcmp (name, ".noinit") == 0)
     flags |= SECTION_WRITE | SECTION_BSS | SECTION_NOTYPE;
 
+  if (strcmp (name, ".persistent") == 0)
+    flags |= SECTION_WRITE | SECTION_NOTYPE;
+
   /* Various sections have special ELF types that the assembler will
      assign by default based on the name.  They are neither SHT_PROGBITS
      nor SHT_NOBITS, so when changing sections we don't want to print a
@@ -7022,6 +7030,11 @@ default_elf_select_section (tree decl, int reloc,
       sname = ".sdata2";
       break;
     case SECCAT_DATA:
+      if (DECL_P (decl) && DECL_PERSISTENT_P (decl))
+	{
+	  sname = ".persistent";
+	  break;
+	}
       return data_section;
     case SECCAT_DATA_REL:
       sname = ".data.rel";
@@ -7042,13 +7055,11 @@ default_elf_select_section (tree decl, int reloc,
       sname = ".tdata";
       break;
     case SECCAT_BSS:
-      if (DECL_P (decl)
-	  && lookup_attribute ("noinit", DECL_ATTRIBUTES (decl)) != NULL_TREE)
+      if (DECL_P (decl) && DECL_NOINIT_P (decl))
 	{
 	  sname = ".noinit";
 	  break;
 	}
-
       if (bss_section)
 	return bss_section;
       sname = ".bss";
@@ -7094,6 +7105,11 @@ default_unique_section (tree decl, int reloc)
       break;
     case SECCAT_DATA:
       prefix = one_only ? ".d" : ".data";
+      if (DECL_P (decl) && DECL_PERSISTENT_P (decl))
+	{
+	  prefix = one_only ? ".p" : ".persistent";
+	  break;
+	}
       break;
     case SECCAT_DATA_REL:
       prefix = one_only ? ".d.rel" : ".data.rel";
@@ -7111,6 +7127,11 @@ default_unique_section (tree decl, int reloc)
       prefix = one_only ? ".s" : ".sdata";
       break;
     case SECCAT_BSS:
+      if (DECL_P (decl) && DECL_NOINIT_P (decl))
+	{
+	  prefix = one_only ? ".n" : ".noinit";
+	  break;
+	}
       prefix = one_only ? ".b" : ".bss";
       break;
     case SECCAT_SBSS:

@@ -189,6 +189,9 @@ main (int argc, char *argv[])
     printf ("MMA single test fail: %d errors\n",ret);
   else
     printf ("MMA single test success: 0 MMA errors\n");
+#else
+  if (ret)
+    abort();
 #endif
       
   return ret;

@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 							std::nothrow));
 	  if (__tmp != 0)
 	    return std::pair<_Tp*, ptrdiff_t>(__tmp, __len);
-	  __len /= 2;
+	  __len = __len == 1 ? 0 : ((__len + 1) / 2);
 	}
       return std::pair<_Tp*, ptrdiff_t>(static_cast<_Tp*>(0), 0);
     }

@@ -192,7 +192,7 @@ func reflect_typedmemmove(typ *_type, dst, src unsafe.Pointer) {
 	typedmemmove(typ, dst, src)
 }
 
-//go:linkname reflectlite_typedmemmove internal..z2freflectlite.typedmemmove
+//go:linkname reflectlite_typedmemmove internal_1reflectlite.typedmemmove
 func reflectlite_typedmemmove(typ *_type, dst, src unsafe.Pointer) {
 	reflect_typedmemmove(typ, dst, src)
 }
