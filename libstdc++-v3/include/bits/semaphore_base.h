@@ -141,7 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	else
 	  {
 	    const typename _Clock::time_point __c_entry = _Clock::now();
-	    const __clock_t __s_entry = __clock_t::now();
+	    const auto __s_entry = __clock_t::now();
 	    const auto __delta = __atime - __c_entry;
 	    const auto __s_atime = __s_entry + __delta;
 	    if (_M_try_acquire_until_impl(__s_atime))
