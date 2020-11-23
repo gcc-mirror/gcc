@@ -5309,15 +5309,17 @@ package body Sem_Attr is
       -- Pred --
       ----------
 
-      when Attribute_Pred =>
+      when Attribute_Pred
+         | Attribute_Succ
+      =>
          Check_Scalar_Type;
          Check_E1;
          Resolve (E1, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
-         --  Since Pred works on the base type, we normally do no check for the
-         --  floating-point case, since the base type is unconstrained. But we
-         --  make an exception in Check_Float_Overflow mode.
+         --  Since Pred/Succ work on the base type, we normally do no check for
+         --  the floating-point case, since the base type is unconstrained. But
+         --  we make an exception in Check_Float_Overflow mode.
 
          if Is_Floating_Point_Type (P_Type) then
             if not Range_Checks_Suppressed (P_Base_Type) then
@@ -6211,30 +6213,7 @@ package body Sem_Attr is
       -- Succ --
       ----------
 
-      when Attribute_Succ =>
-         Check_Scalar_Type;
-         Check_E1;
-         Resolve (E1, P_Base_Type);
-         Set_Etype (N, P_Base_Type);
-
-         --  Since Pred works on the base type, we normally do no check for the
-         --  floating-point case, since the base type is unconstrained. But we
-         --  make an exception in Check_Float_Overflow mode.
-
-         if Is_Floating_Point_Type (P_Type) then
-            if not Range_Checks_Suppressed (P_Base_Type) then
-               Set_Do_Range_Check (E1);
-            end if;
-
-         --  If not modular type, test for overflow check required
-
-         else
-            if not Is_Modular_Integer_Type (P_Type)
-              and then not Range_Checks_Suppressed (P_Base_Type)
-            then
-               Enable_Range_Check (E1);
-            end if;
-         end if;
+      --  Shares processing with Pred attribute
 
       --------------------------------
       -- System_Allocator_Alignment --
