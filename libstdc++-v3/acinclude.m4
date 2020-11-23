@@ -4089,6 +4089,43 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
     fi
   fi
 
+  AC_CHECK_HEADER(semaphore.h, [
+    AC_MSG_CHECKING([for POSIX Semaphores and sem_timedwait])
+    AC_TRY_COMPILE([
+	#include <unistd.h>
+	#include <semaphore.h>
+	#include <limits.h>
+      ],
+      [
+	#if !defined _POSIX_TIMEOUTS || _POSIX_TIMEOUTS <= 0
+	# error "POSIX Timeouts option not supported"
+	#elif !defined _POSIX_SEMAPHORES || _POSIX_SEMAPHORES <= 0
+	# error "POSIX Semaphores option not supported"
+	#else
+	#if defined SEM_VALUE_MAX
+	constexpr int sem_value_max = SEM_VALUE_MAX;
+	#elif defined _POSIX_SEM_VALUE_MAX
+	constexpr int sem_value_max = _POSIX_SEM_VALUE_MAX;
+	#else
+	# error "SEM_VALUE_MAX not available"
+	#endif
+	sem_t sem;
+	sem_init(&sem, 0, sem_value_max);
+	struct timespec ts = { 0 };
+	sem_timedwait(&sem, &ts);
+	#endif
+      ],
+      [ac_have_posix_semaphore=yes],
+      [ac_have_posix_semaphore=no])],
+      [ac_have_posix_semaphore=no])
+
+  if test $ac_have_posix_semaphore = yes ; then
+    AC_DEFINE(_GLIBCXX_HAVE_POSIX_SEMAPHORE,
+	      1,
+	      [Define to 1 if POSIX Semaphores with sem_timedwait are available in <semaphore.h>.])
+  fi
+  AC_MSG_RESULT([$ac_have_posix_semaphore])
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])

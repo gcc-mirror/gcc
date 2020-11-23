@@ -39,11 +39,9 @@
 
 #include <ext/numeric_traits.h>
 
-#if __has_include(<semaphore.h>)
+#ifdef _GLIBCXX_HAVE_POSIX_SEMAPHORE
+# include <limits.h>
 # include <semaphore.h>
-# if defined SEM_VALUE_MAX || _POSIX_SEM_VALUE_MAX
-#  define _GLIBCXX_HAVE_POSIX_SEMAPHORE 1
-# endif
 #endif
 
 #include <chrono>
