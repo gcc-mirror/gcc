@@ -4094,6 +4094,7 @@ package body Sem_Attr is
 
       when Attribute_First_Bit
          | Attribute_Last_Bit
+         | Attribute_Position
       =>
          Check_Component;
          Set_Etype (N, Universal_Integer);
@@ -5305,9 +5306,7 @@ package body Sem_Attr is
       -- Position --
       --------------
 
-      when Attribute_Position =>
-         Check_Component;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with First_Bit attribute
 
       ----------
       -- Pred --
