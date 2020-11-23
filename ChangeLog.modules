@@ -1,5 +1,12 @@
 2020-11-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (-flang-include-translate-not): Document.
+	gcc/cp/
+	* module.cc (maybe_translate_include): Add not-translate noting.
+	gcc/c-family/
+	* c.opt (flang-include-translate-not): New.
+
 	libcody/
 	Update from upstream, INCLUDE_TRANSLATE response meaning change
 

@@ -242,6 +242,7 @@ in the following sections.
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
 -flang-info-include-translate@r{[}=@var{name}@r{]} @gol
+-flang-info-include-translate-not @gol
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
 -Wcomma-subscript  -Wconditionally-supported @gol
@@ -3361,8 +3362,10 @@ C++, but do still search the other standard directories.  (This option
 is used when building the C++ library.)
 
 @item -flang-info-include-translate
+@itemx -flang-info-include-translate-not
 @itemx -flang-info-include-translate=@var{header}
 @opindex flang-info-include-translate
+@opindex flang-info-include-translate-not
 Give notice of include translation events.
 
 @end table
@@ -32689,11 +32692,15 @@ descriptors.  By default, the limit is a few less than the per-process
 file descriptor hard limit, if that is determinable.@footnote{Where
 applicable the soft limit is incremented as needed towards the hard limit.}
 
-The @option{-flang-info-include-translate} option notes whether
-include translation occurs.  With no argument, all include translation
-is noted.  Otherwise, queries about include translation of a specific
-header file is noted.  The latter form may be repeated.  This option
-may be helpful in determining whether include translation is
+The @option{-flang-info-include-translate} and
+@option{-flang-info-include-translate-not} options notes whether
+include translation occurs or not.  With no argument, the first will
+note all include translation.  The second will note all
+non-translations of include files not known to intentionally be
+textual.  With an argument, queries about include translation of a
+header files with that particular trailing pathname are noted.  You
+may repeat this form to cover several different header files.  This
+option may be helpful in determining whether include translation is
 happenning -- if it is working correctly, it'll behave as if it wasn't
 there at all.
 

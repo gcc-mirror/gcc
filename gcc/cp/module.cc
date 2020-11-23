@@ -19046,13 +19046,13 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   auto packet = mapper->IncludeTranslate (path, Cody::Flags::None, len);
   int xlate = false;
   if (packet.GetCode () == Cody::Client::PC_BOOL)
-    xlate = packet.GetInteger ();
+    xlate = -int (packet.GetInteger ());
   else if (packet.GetCode () == Cody::Client::PC_PATHNAME)
     {
       /* Record the CMI name for when we do the import.  */
       module_state *import = get_module (build_string (len, path));
       import->set_filename (packet);
-      xlate = true;
+      xlate = +1;
     }
   else
     {
@@ -19062,7 +19062,9 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     }
 
   bool note = false;
-  if (note_include_translate && xlate)
+  if (note_include_translate_yes && xlate > 1)
+    note = true;
+  else if (note_include_translate_no && xlate == 0)
     note = true;
   else if (note_includes)
     {
@@ -19088,7 +19090,7 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 		   : "Keeping include as include");
   dump.pop (0);
 
-  if (!xlate)
+  if (!(xlate > 0))
     return nullptr;
   
   /* Create the translation text.  */

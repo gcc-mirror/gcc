@@ -1731,8 +1731,12 @@ C++ ObjC++ Var(warn_imported_macros)
 Warn about macros that have conflicting header units definitions.
 
 flang-info-include-translate
-C++ Var(note_include_translate)
+C++ Var(note_include_translate_yes)
 Note #include directives translated to import declarations.
+
+flang-info-include-translate-not
+C++ Var(note_include_translate_no)
+Note #include directives not translated to import declarations, and not known to be textual
 
 flang-info-include-translate=
 C++ Joined RejectNegative MissingArgError(missing header name)
