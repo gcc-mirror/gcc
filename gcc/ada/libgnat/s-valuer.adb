@@ -33,11 +33,7 @@ with System.Val_Util; use System.Val_Util;
 
 package body System.Value_R is
 
-   F_Limit : constant Uns := 2 ** (Long_Long_Float'Machine_Mantissa - 1);
-   I_Limit : constant Uns := 2 ** (Uns'Size - 1);
-   --  Absolute value of largest representable signed integer
-
-   Precision_Limit : constant Uns := (if Floating then F_Limit else I_Limit);
+   Precision_Limit : constant Uns := 2 ** (Uns'Size - 1);
    --  Limit beyond which additional digits are dropped
 
    subtype Char_As_Digit is Unsigned range 0 .. 17;
@@ -133,6 +129,8 @@ package body System.Value_R is
 
    is
       pragma Assert (Base in 2 .. 16);
+      pragma Assert (Index in Str'Range);
+      pragma Assert (Max <= Str'Last);
 
       Umax : constant Uns := (Precision_Limit - Uns (Base) + 1) / Uns (Base);
       --  Max value which cannot overflow on accumulating next digit
@@ -144,8 +142,9 @@ package body System.Value_R is
       --  Set to True if addition of a digit will cause Value to be superior
       --  to Precision_Limit.
 
-      Precision_Limit_Just_Reached : Boolean := False;
+      Precision_Limit_Just_Reached : Boolean;
       --  Set to True if Precision_Limit_Reached was just set to True
+      --  Only used when Floating = False.
 
       Digit : Char_As_Digit;
       --  The current digit
@@ -164,6 +163,10 @@ package body System.Value_R is
          Precision_Limit_Reached := True;
       else
          Extra := 0;
+      end if;
+
+      if not Floating then
+         Precision_Limit_Just_Reached := False;
       end if;
 
       --  The function precondition is that the first character is a valid
@@ -194,7 +197,7 @@ package body System.Value_R is
          --  continue only to assess the validity of the string.
 
          if Precision_Limit_Reached then
-            if Precision_Limit_Just_Reached and then not Floating then
+            if not Floating and then Precision_Limit_Just_Reached then
                if Digit >= Base / 2 then
                   if Extra = Base - 1 then
                      Extra := 0;
@@ -244,7 +247,10 @@ package body System.Value_R is
                else
                   Extra := Digit;
                   Precision_Limit_Reached := True;
-                  Precision_Limit_Just_Reached := True;
+
+                  if not Floating then
+                     Precision_Limit_Just_Reached := True;
+                  end if;
                end if;
             end if;
          end if;
@@ -308,8 +314,9 @@ package body System.Value_R is
       --  Set to True if addition of a digit will cause Value to be superior
       --  to Precision_Limit.
 
-      Precision_Limit_Just_Reached : Boolean := False;
-      --  Set to True if Precision_Limit_Reached was just set to True
+      Precision_Limit_Just_Reached : Boolean;
+      --  Set to True if Precision_Limit_Reached was just set to True.
+      --  Only used when Floating = False.
 
       Digit : Char_As_Digit;
       --  The current digit
@@ -323,6 +330,12 @@ package body System.Value_R is
       Value := 0;
       Scale := 0;
       Extra := 0;
+
+      if not Floating then
+         Precision_Limit_Just_Reached := False;
+      end if;
+
+      pragma Assert (Max <= Str'Last);
 
       --  The function precondition is that the first character is a valid
       --  digit.
@@ -354,7 +367,7 @@ package body System.Value_R is
          if Precision_Limit_Reached then
             Scale := Scale + 1;
 
-            if Precision_Limit_Just_Reached and then not Floating then
+            if not Floating and then Precision_Limit_Just_Reached then
                if Digit >= Base / 2 then
                   if Extra = Base - 1 then
                      Extra := 0;
@@ -378,7 +391,11 @@ package body System.Value_R is
             else
                Extra := Digit;
                Precision_Limit_Reached := True;
-               Precision_Limit_Just_Reached := True;
+
+               if not Floating then
+                  Precision_Limit_Just_Reached := True;
+               end if;
+
                Scale := Scale + 1;
             end if;
          end if;
@@ -409,7 +426,6 @@ package body System.Value_R is
             end if;
          end if;
       end loop;
-
    end Scan_Integral_Digits;
 
    -------------------
@@ -425,6 +441,8 @@ package body System.Value_R is
       Extra : out Unsigned;
       Minus : out Boolean) return Uns
    is
+      pragma Assert (Max <= Str'Last);
+
       After_Point : Boolean;
       --  True if a decimal should be parsed
 
@@ -440,7 +458,7 @@ package body System.Value_R is
       --  Local copy of string pointer
 
       Start : Positive;
-      --  Position of starting non-blank character
+      pragma Unreferenced (Start);
 
       Value : Uns;
       --  Mantissa as an Integer
@@ -461,14 +479,15 @@ package body System.Value_R is
 
       Scan_Sign (Str, Ptr, Max, Minus, Start);
       Index := Ptr.all;
-      Ptr.all := Start;
 
-      --  First character can be either a decimal digit or a dot
+      pragma Assert (Index >= Str'First);
+
+      pragma Annotate (CodePeer, Modified, Str (Index));
+
+      --  First character can be either a decimal digit or a dot and for some
+      --  reason CodePeer incorrectly thinks it is always a digit.
 
       if Str (Index) in '0' .. '9' then
-         pragma Annotate
-           (CodePeer, False_Positive, "test always true", "defensive code");
-
          After_Point := False;
 
          --  If this is a digit it can indicates either the float decimal
@@ -496,13 +515,16 @@ package body System.Value_R is
 
       --  Check if the first number encountered is a base
 
+      pragma Assert (Index >= Str'First);
+
       if Index < Max
         and then (Str (Index) = '#' or else Str (Index) = ':')
       then
          Base_Char := Str (Index);
-         Base := Unsigned (Value);
 
-         if Base < 2 or else Base > 16 then
+         if Value in 2 .. 16 then
+            Base := Unsigned (Value);
+         else
             Base_Violation := True;
             Base := 16;
          end if;
@@ -533,6 +555,8 @@ package body System.Value_R is
 
       --  Do we have a dot?
 
+      pragma Assert (Index >= Str'First);
+
       if not After_Point and then Index <= Max and then Str (Index) = '.' then
 
          --  At this stage if After_Point was not set, this means that an
@@ -549,6 +573,8 @@ package body System.Value_R is
       --  Scan the decimal part
 
       if After_Point then
+         pragma Assert (Index <= Max);
+
          Scan_Decimal_Digits
            (Str, Index, Max, Value, Scale, Char_As_Digit (Extra),
             Base_Violation, Base, Base_Specified => Base_Char /= ASCII.NUL);
@@ -557,6 +583,8 @@ package body System.Value_R is
       --  If an explicit base was specified ensure that the delimiter is found
 
       if Base_Char /= ASCII.NUL then
+         pragma Assert (Index > Max or else Index in Str'Range);
+
          if Index > Max or else Str (Index) /= Base_Char then
             Bad_Value (Str);
          else

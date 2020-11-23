@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---              A D A . T E X T _ I O . C O M P L E X _ A U X               --
+--                      S Y S T E M . V A L _ L F L T                       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,48 +29,24 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for Ada.Text_IO.Complex_IO that are
---  shared among separate instantiations of this package. The routines in this
---  package are identical semantically to those in Complex_IO, except that the
---  generic parameter Complex has been replaced by separate real and imaginary
---  parameters, and default parameters have been removed because they are
---  supplied explicitly by the calls from within the generic template.
+--  This package contains routines for scanning real values for floating point
+--  type Long_Float, for use in Text_IO.Float_IO and the Value attribute.
 
-with Ada.Text_IO.Float_Aux;
+with Interfaces;
+with System.Val_Real;
 
-private generic
+package System.Val_LFlt is
+   pragma Preelaborate;
 
-   type Num is digits <>;
+   package Impl is new Val_Real (Long_Float, Interfaces.Unsigned_64);
 
-   with package Aux is new Ada.Text_IO.Float_Aux (Num, <>);
+   function Scan_Long_Float
+     (Str : String;
+      Ptr : not null access Integer;
+      Max : Integer) return Long_Float
+     renames Impl.Scan_Real;
 
-package Ada.Text_IO.Complex_Aux is
+   function Value_Long_Float (Str : String) return Long_Float
+     renames Impl.Value_Real;
 
-   procedure Get
-     (File  : File_Type;
-      ItemR : out Num;
-      ItemI : out Num;
-      Width : Field);
-
-   procedure Put
-     (File  : File_Type;
-      ItemR : Num;
-      ItemI : Num;
-      Fore  : Field;
-      Aft   : Field;
-      Exp   : Field);
-
-   procedure Gets
-     (From  : String;
-      ItemR : out Num;
-      ItemI : out Num;
-      Last  : out Positive);
-
-   procedure Puts
-     (To    : out String;
-      ItemR : Num;
-      ItemI : Num;
-      Aft   : Field;
-      Exp   : Field);
-
-end Ada.Text_IO.Complex_Aux;
+end System.Val_LFlt;

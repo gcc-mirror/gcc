@@ -155,6 +155,12 @@ package Ada.Wide_Text_IO.Generic_Aux is
       Ptr  : in out Natural);
    --  Loads a possibly signed integer literal value
 
+   procedure Load_Real
+     (File : File_Type;
+      Buf  : out String;
+      Ptr  : in out Natural);
+   --  Loads a possibly signed real literal value
+
    procedure Put_Item (File : File_Type; Str : String);
    --  This routine is like Wide_Text_IO.Put, except that it checks for
    --  overflow of bounded lines, as described in (RM A.10.6(8)). It is used

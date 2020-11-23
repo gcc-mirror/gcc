@@ -160,6 +160,7 @@ with System.Img_Fixed_32; use System.Img_Fixed_32;
 with System.Img_Fixed_64; use System.Img_Fixed_64;
 with System.Val_Fixed_32; use System.Val_Fixed_32;
 with System.Val_Fixed_64; use System.Val_Fixed_64;
+with System.Val_LLF;      use System.Val_LLF;
 
 package body Ada.Text_IO.Fixed_IO is
 
@@ -176,6 +177,9 @@ package body Ada.Text_IO.Fixed_IO is
 
    package Aux64 is new
      Ada.Text_IO.Fixed_Aux (Int64, Scan_Fixed64, Set_Image_Fixed64);
+
+   package Aux_Long_Long_Float is new
+     Ada.Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
 
    --  Throughout this generic body, we distinguish between the case where type
    --  Int32 is OK and where type Int64 is OK. These boolean constants are used
@@ -279,7 +283,7 @@ package body Ada.Text_IO.Fixed_IO is
                                -Num'Small_Numerator,
                                -Num'Small_Denominator));
       else
-         Float_Aux.Get (File, Long_Long_Float (Item), Width);
+         Aux_Long_Long_Float.Get (File, Long_Long_Float (Item), Width);
       end if;
 
    exception
@@ -313,7 +317,7 @@ package body Ada.Text_IO.Fixed_IO is
                                 -Num'Small_Numerator,
                                 -Num'Small_Denominator));
       else
-         Float_Aux.Gets (From, Long_Long_Float (Item), Last);
+         Aux_Long_Long_Float.Gets (From, Long_Long_Float (Item), Last);
       end if;
 
    exception
@@ -341,7 +345,8 @@ package body Ada.Text_IO.Fixed_IO is
                     -Num'Small_Numerator, -Num'Small_Denominator,
                     For0, Num'Aft);
       else
-         Float_Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
+         Aux_Long_Long_Float.Put
+           (File, Long_Long_Float (Item), Fore, Aft, Exp);
       end if;
    end Put;
 
@@ -371,7 +376,7 @@ package body Ada.Text_IO.Fixed_IO is
                      -Num'Small_Numerator, -Num'Small_Denominator,
                      For0, Num'Aft);
       else
-         Float_Aux.Puts (To, Long_Long_Float (Item), Aft, Exp);
+         Aux_Long_Long_Float.Puts (To, Long_Long_Float (Item), Aft, Exp);
       end if;
    end Put;
 
