@@ -77,10 +77,10 @@ unsigned int ssa_name_nodes_created;
 void
 init_ssanames (struct function *fn, int size)
 {
-  if (size < 50)
-    size = 50;
-
-  vec_alloc (SSANAMES (fn), size);
+  if (!size)
+    vec_alloc (SSANAMES (fn), 50);
+  else
+    vec_safe_reserve (SSANAMES (fn), size, true);
 
   /* Version 0 is special, so reserve the first slot in the table.  Though
      currently unused, we may use version 0 in alias analysis as part of
