@@ -7219,7 +7219,10 @@ package body Sem_Attr is
       -- Wide_Wide_Width --
       ---------------------
 
-      when Attribute_Wide_Wide_Width =>
+      when Attribute_Wide_Wide_Width
+         | Attribute_Wide_Width
+         | Attribute_Width
+      =>
          Check_E0;
          Check_Scalar_Type;
          Set_Etype (N, Universal_Integer);
@@ -7228,19 +7231,13 @@ package body Sem_Attr is
       -- Wide_Width --
       ----------------
 
-      when Attribute_Wide_Width =>
-         Check_E0;
-         Check_Scalar_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Wide_Wide_Width attribute
 
       -----------
       -- Width --
       -----------
 
-      when Attribute_Width =>
-         Check_E0;
-         Check_Scalar_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Wide_Wide_Width attribute
 
       ---------------
       -- Word_Size --
