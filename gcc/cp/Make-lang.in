@@ -54,6 +54,9 @@ c++.serial = cc1plus$(exeext)
 
 CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 
+CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
+	-DTARGET_MACHINE=\"$(target)\"
+
 # Create the compiler driver for g++.
 GXX_OBJS = $(GCC_OBJS) cp/g++spec.o
 xg++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
@@ -81,7 +84,7 @@ CXX_AND_OBJCXX_OBJS = \
 	cp/error.o cp/except.o cp/expr.o \
 	cp/friend.o cp/init.o \
 	cp/lambda.o cp/lex.o cp/logic.o \
-	cp/mangle.o cp/method.o \
+	cp/mangle.o cp/method.o cp/module.o \
 	cp/name-lookup.o cp/optimize.o \
 	cp/parser.o cp/pt.o cp/ptree.o \
 	cp/rtti.o \
