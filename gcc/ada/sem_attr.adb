@@ -4066,7 +4066,9 @@ package body Sem_Attr is
       -- First --
       -----------
 
-      when Attribute_First =>
+      when Attribute_First
+         | Attribute_Last
+      =>
          Check_Array_Or_Scalar_Type;
          Bad_Attribute_For_Predicate;
 
@@ -4074,7 +4076,9 @@ package body Sem_Attr is
       -- First_Bit --
       ---------------
 
-      when Attribute_First_Bit =>
+      when Attribute_First_Bit
+         | Attribute_Last_Bit
+      =>
          Check_Component;
          Set_Etype (N, Universal_Integer);
 
@@ -4082,7 +4086,9 @@ package body Sem_Attr is
       -- First_Valid --
       -----------------
 
-      when Attribute_First_Valid =>
+      when Attribute_First_Valid
+         | Attribute_Last_Valid
+      =>
          Check_First_Last_Valid;
          Set_Etype (N, P_Type);
 
@@ -4295,25 +4301,19 @@ package body Sem_Attr is
       -- Last --
       ----------
 
-      when Attribute_Last =>
-         Check_Array_Or_Scalar_Type;
-         Bad_Attribute_For_Predicate;
+      --  Shares processing with First attribute
 
       --------------
       -- Last_Bit --
       --------------
 
-      when Attribute_Last_Bit =>
-         Check_Component;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with First_Bit attribute
 
       ----------------
       -- Last_Valid --
       ----------------
 
-      when Attribute_Last_Valid =>
-         Check_First_Last_Valid;
-         Set_Etype (N, P_Type);
+      --  Shares processing with First_Valid attribute
 
       ------------------
       -- Leading_Part --
