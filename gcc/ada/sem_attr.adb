@@ -348,7 +348,7 @@ package body Sem_Attr is
 
       procedure Check_Floating_Point_Type_2;
       --  Verify that prefix of attribute N is a float type and that
-      --  two attribute expressions are present
+      --  two attribute expressions are present.
 
       procedure Check_Integer_Type;
       --  Verify that prefix of attribute N is an integer type
@@ -3159,7 +3159,10 @@ package body Sem_Attr is
       -- Adjacent --
       --------------
 
-      when Attribute_Adjacent =>
+      when Attribute_Adjacent
+         | Attribute_Copy_Sign
+         | Attribute_Remainder
+      =>
          Check_Floating_Point_Type_2;
          Set_Etype (N, P_Base_Type);
          Resolve (E1, P_Base_Type);
@@ -3617,11 +3620,7 @@ package body Sem_Attr is
       -- Copy_Sign --
       ---------------
 
-      when Attribute_Copy_Sign =>
-         Check_Floating_Point_Type_2;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, P_Base_Type);
+      --  Shares processing with Adjacent attribute
 
       -----------
       -- Count --
@@ -5710,11 +5709,7 @@ package body Sem_Attr is
       -- Remainder --
       ---------------
 
-      when Attribute_Remainder =>
-         Check_Floating_Point_Type_2;
-         Set_Etype (N, P_Base_Type);
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, P_Base_Type);
+      --  Shares processing with Adjacent attribute
 
       ---------------------
       -- Restriction_Set --
