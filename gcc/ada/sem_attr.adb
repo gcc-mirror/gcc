@@ -3402,6 +3402,7 @@ package body Sem_Attr is
          | Attribute_Machine_Rounding
          | Attribute_Model
          | Attribute_Rounding
+         | Attribute_Truncation
          | Attribute_Unbiased_Rounding
       =>
          Check_Floating_Point_Type_1;
@@ -6409,10 +6410,7 @@ package body Sem_Attr is
       -- Truncation --
       ----------------
 
-      when Attribute_Truncation =>
-         Check_Floating_Point_Type_1;
-         Resolve (E1, P_Base_Type);
-         Set_Etype (N, P_Base_Type);
+      --  Shares processing with Ceiling attribute
 
       ----------------
       -- Type_Class --
