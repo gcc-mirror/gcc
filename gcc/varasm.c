@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "varasm.h"
+#include "version.h"
 #include "flags.h"
 #include "stmt.h"
 #include "expr.h"
@@ -58,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "file-prefix-map.h" /* remap_debug_filename()  */
 #include "alloc-pool.h"
+#include "toplev.h"
+#include "opts.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data declarations.  */
@@ -8053,45 +8056,14 @@ output_object_blocks (void)
    we want to emit NUL strings terminators into the object file we have to use
    ASM_OUTPUT_SKIP.  */
 
-int
-elf_record_gcc_switches (print_switch_type type, const char * name)
+void
+elf_record_gcc_switches (const char *options)
 {
-  switch (type)
-    {
-    case SWITCH_TYPE_PASSED:
-      ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name));
-      ASM_OUTPUT_SKIP (asm_out_file, HOST_WIDE_INT_1U);
-      break;
-
-    case SWITCH_TYPE_DESCRIPTIVE:
-      if (name == NULL)
-	{
-	  /* Distinguish between invocations where name is NULL.  */
-	  static bool started = false;
-
-	  if (!started)
-	    {
-	      section * sec;
-
-	      sec = get_section (targetm.asm_out.record_gcc_switches_section,
-				 SECTION_DEBUG
-				 | SECTION_MERGE
-				 | SECTION_STRINGS
-				 | (SECTION_ENTSIZE & 1),
-				 NULL);
-	      switch_to_section (sec);
-	      started = true;
-	    }
-	}
-
-    default:
-      break;
-    }
-
-  /* The return value is currently ignored by the caller, but must be 0.
-     For -fverbose-asm the return value would be the number of characters
-     emitted into the assembler file.  */
-  return 0;
+  section *sec = get_section (targetm.asm_out.record_gcc_switches_section,
+			      SECTION_DEBUG | SECTION_MERGE
+			      | SECTION_STRINGS | (SECTION_ENTSIZE & 1), NULL);
+  switch_to_section (sec);
+  ASM_OUTPUT_ASCII (asm_out_file, options, strlen (options) + 1);
 }
 
 /* Emit text to declare externally defined symbols. It is needed to

@@ -24438,115 +24438,6 @@ gen_ptr_to_mbr_type_die (tree type, dw_die_ref context_die)
 
 static char *producer_string;
 
-/* Return a heap allocated producer string including command line options
-   if -grecord-gcc-switches.  */
-
-static char *
-gen_producer_string (void)
-{
-  size_t j;
-  auto_vec<const char *> switches;
-  const char *language_string = lang_hooks.name;
-  char *producer, *tail;
-  const char *p;
-  size_t len = dwarf_record_gcc_switches ? 0 : 3;
-  size_t plen = strlen (language_string) + 1 + strlen (version_string);
-
-  for (j = 1; dwarf_record_gcc_switches && j < save_decoded_options_count; j++)
-    switch (save_decoded_options[j].opt_index)
-      {
-      case OPT_o:
-      case OPT_d:
-      case OPT_dumpbase:
-      case OPT_dumpbase_ext:
-      case OPT_dumpdir:
-      case OPT_quiet:
-      case OPT_version:
-      case OPT_v:
-      case OPT_w:
-      case OPT_L:
-      case OPT_D:
-      case OPT_I:
-      case OPT_U:
-      case OPT_SPECIAL_unknown:
-      case OPT_SPECIAL_ignore:
-      case OPT_SPECIAL_warn_removed:
-      case OPT_SPECIAL_program_name:
-      case OPT_SPECIAL_input_file:
-      case OPT_grecord_gcc_switches:
-      case OPT__output_pch_:
-      case OPT_fdiagnostics_show_location_:
-      case OPT_fdiagnostics_show_option:
-      case OPT_fdiagnostics_show_caret:
-      case OPT_fdiagnostics_show_labels:
-      case OPT_fdiagnostics_show_line_numbers:
-      case OPT_fdiagnostics_color_:
-      case OPT_fdiagnostics_format_:
-      case OPT_fverbose_asm:
-      case OPT____:
-      case OPT__sysroot_:
-      case OPT_nostdinc:
-      case OPT_nostdinc__:
-      case OPT_fpreprocessed:
-      case OPT_fltrans_output_list_:
-      case OPT_fresolution_:
-      case OPT_fdebug_prefix_map_:
-      case OPT_fmacro_prefix_map_:
-      case OPT_ffile_prefix_map_:
-      case OPT_fcompare_debug:
-      case OPT_fchecking:
-      case OPT_fchecking_:
-	/* Ignore these.  */
-	continue;
-      case OPT_flto_:
-	{
-	  const char *lto_canonical = "-flto";
-	  switches.safe_push (lto_canonical);
-	  len += strlen (lto_canonical) + 1;
-	  break;
-	}
-      default:
-        if (cl_options[save_decoded_options[j].opt_index].flags
-	    & CL_NO_DWARF_RECORD)
-	  continue;
-        gcc_checking_assert (save_decoded_options[j].canonical_option[0][0]
-			     == '-');
-        switch (save_decoded_options[j].canonical_option[0][1])
-	  {
-	  case 'M':
-	  case 'i':
-	  case 'W':
-	    continue;
-	  case 'f':
-	    if (strncmp (save_decoded_options[j].canonical_option[0] + 2,
-			 "dump", 4) == 0)
-	      continue;
-	    break;
-	  default:
-	    break;
-	  }
-	switches.safe_push (save_decoded_options[j].orig_option_with_args_text);
-	len += strlen (save_decoded_options[j].orig_option_with_args_text) + 1;
-	break;
-      }
-
-  producer = XNEWVEC (char, plen + 1 + len + 1);
-  tail = producer;
-  sprintf (tail, "%s %s", language_string, version_string);
-  tail += plen;
-
-  FOR_EACH_VEC_ELT (switches, j, p)
-    {
-      len = strlen (p);
-      *tail = ' ';
-      memcpy (tail + 1, p, len);
-      tail += len + 1;
-    }
-
-  *tail = '\0';
-  return producer;
-}
-
 /* Given a C and/or C++ language/version string return the "highest".
    C++ is assumed to be "higher" than C in this case.  Used for merging
    LTO translation unit languages.  */
@@ -32157,7 +32048,14 @@ dwarf2out_early_finish (const char *filename)
      header compilation, so always fill it with empty string initially
      and overwrite only here.  */
   dw_attr_node *producer = get_AT (comp_unit_die (), DW_AT_producer);
-  producer_string = gen_producer_string ();
+
+  if (dwarf_record_gcc_switches)
+    producer_string = gen_producer_string (lang_hooks.name,
+					   save_decoded_options,
+					   save_decoded_options_count);
+  else
+    producer_string = concat (lang_hooks.name, " ", version_string, NULL);
+
   producer->dw_attr_val.v.val_str->refcount--;
   producer->dw_attr_val.v.val_str = find_AT_string (producer_string);
 
