@@ -3904,7 +3904,14 @@ package body Sem_Attr is
       -- Emax --
       ----------
 
-      when Attribute_Emax =>
+      when Attribute_Emax
+         | Attribute_Machine_Emax
+         | Attribute_Machine_Emin
+         | Attribute_Machine_Mantissa
+         | Attribute_Model_Emin
+         | Attribute_Model_Mantissa
+         | Attribute_Safe_Emax
+      =>
          Check_Floating_Point_Type_0;
          Set_Etype (N, Universal_Integer);
 
@@ -4699,25 +4706,19 @@ package body Sem_Attr is
       -- Machine_Emax --
       ------------------
 
-      when Attribute_Machine_Emax =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       ------------------
       -- Machine_Emin --
       ------------------
 
-      when Attribute_Machine_Emin =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       ----------------------
       -- Machine_Mantissa --
       ----------------------
 
-      when Attribute_Machine_Mantissa =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       -----------------------
       -- Machine_Overflows --
@@ -4869,9 +4870,7 @@ package body Sem_Attr is
       -- Model_Emin --
       ----------------
 
-      when Attribute_Model_Emin =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       -------------------
       -- Model_Epsilon --
@@ -4885,9 +4884,7 @@ package body Sem_Attr is
       -- Model_Mantissa --
       --------------------
 
-      when Attribute_Model_Mantissa =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       -----------------
       -- Model_Small --
@@ -5840,9 +5837,7 @@ package body Sem_Attr is
       -- Safe_Emax --
       ---------------
 
-      when Attribute_Safe_Emax =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Emax attribute
 
       ----------------
       -- Safe_First --
