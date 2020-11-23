@@ -1199,6 +1199,16 @@ h8300_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
       return true;
 
     case COMPARE:
+    case NE:
+    case EQ:
+    case GE:
+    case GT:
+    case LE:
+    case LT:
+    case GEU:
+    case GTU:
+    case LEU:
+    case LTU:
       if (XEXP (x, 1) == const0_rtx)
 	*total = 0;
       return false;
