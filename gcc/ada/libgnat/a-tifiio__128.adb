@@ -318,7 +318,7 @@ package body Ada.Text_IO.Fixed_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get

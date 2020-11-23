@@ -169,7 +169,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -236,7 +236,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Put (Current_Output, Item, Fore, Aft, Exp);
+      Put (Current_Out, Item, Fore, Aft, Exp);
    end Put;
 
    procedure Put
