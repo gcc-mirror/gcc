@@ -15868,6 +15868,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    return error_mark_node;
 	  }
 
+	if (!verify_type_context (input_location, TCTX_ARRAY_ELEMENT, type,
+				  !(complain & tf_error)))
+	  return error_mark_node;
+
 	r = build_cplus_array_type (type, domain);
 
 	if (!valid_array_size_p (input_location, r, in_decl,

@@ -72,10 +72,37 @@ template class templated_struct4<svint8_t>;
 template<typename T> struct templated_struct5 : T {}; // { dg-error {base type '[^']*' fails to be a struct or class type} }
 template class templated_struct5<svint8_t>;
 
+template<typename T, unsigned N> struct templated_struct6 { T x[N]; }; // { dg-error {array elements cannot have SVE type '(__SVInt8_t|svint8_t)'} }
+template class templated_struct6<svint8_t, 2>;
+
+template<typename T>
+struct templated_struct7 {
+  static const int size = sizeof (T); // { dg-error {SVE type '(__SVInt8_t|svint8_t)' does not have a fixed size} }
+#if __cplusplus >= 201103L
+  static const int align = alignof (T); // { dg-error {SVE type '(__SVInt8_t|svint8_t)' does not have a defined alignment} "" { target c++11 } }
+#endif
+
+  void f1 (T (&)[2]); // { dg-error {array elements cannot have SVE type '(__SVInt8_t|svint8_t)'} }
+#if __cplusplus >= 201103L
+  auto f2 () -> decltype (new T); // { dg-error {cannot allocate objects with SVE type '(__SVInt8_t|svint8_t)'} "" { target c++11 } }
+  auto f3 (T *a) -> decltype (delete a); // { dg-error {cannot delete objects with SVE type '(__SVInt8_t|svint8_t)'} "" { target c++11 } }
+#else
+  void f2 () throw (T); // { dg-error {cannot throw or catch SVE type '(__SVInt8_t|svint8_t)'} "" { target c++98_only } }
+#endif
+};
+template class templated_struct7<svint8_t>;
+
+template<typename T> struct templated_struct8 { typedef int type; };
+
+template<typename T>
+void sfinae_f1 (typename templated_struct8<T[2]>::type);
+template<typename T>
+void sfinae_f1 (T &);
+
 #if __cplusplus >= 201103L
 template<int N> using typedef_sizeless1 = svint8_t;
 template<int N> using typedef_sizeless1 = svint8_t;
-template<typename T> using array = T[2];
+template<typename T> using array = T[2]; // { dg-error {array elements cannot have SVE type '(svint8_t|__SVInt8_t)'} "" { target c++11 } }
 #endif
 
 // Pointers to sizeless types.
@@ -119,7 +146,7 @@ statements (int n)
   __alignof (ext_produce_sve_sc ()); // { dg-error {SVE type 'svint8_t' does not have a defined alignment} }
 
 #if __cplusplus >= 201103L
-  array<svint8_t> foo = {}; // { dg-error {array elements cannot have SVE type '(svint8_t|__SVInt8_t)'} "" { target c++11 } }
+  array<svint8_t> foo = {}; // { dg-message {required from here} "" { target c++11 } }
 #endif
 
   // Initialization.
@@ -297,6 +324,8 @@ statements (int n)
 #if __cplusplus < 201103L
   thrower2 ();
 #endif
+
+  sfinae_f1<svint8_t> (sve_sc1);
 
   // Use in traits.  Doesn't use static_assert so that tests work with
   // earlier -std=s.
