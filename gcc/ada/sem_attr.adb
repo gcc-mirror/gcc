@@ -3351,7 +3351,9 @@ package body Sem_Attr is
       -- Callable --
       --------------
 
-      when Attribute_Callable =>
+      when Attribute_Callable
+         | Attribute_Terminated
+      =>
          Check_E0;
          Set_Etype (N, Standard_Boolean);
          Check_Task_Prefix;
@@ -6121,6 +6123,8 @@ package body Sem_Attr is
             Check_Restriction (No_Obsolescent_Features, P);
 
          elsif Is_Access_Type (P_Type) then
+            Set_Etype (N, Universal_Integer);
+
             if Ekind (P_Type) = E_Access_Subprogram_Type then
                Error_Attr_P
                  ("cannot use % attribute for access-to-subprogram type");
@@ -6130,7 +6134,6 @@ package body Sem_Attr is
               and then Is_Type (Entity (P))
             then
                Check_Type;
-               Set_Etype (N, Universal_Integer);
 
                --  Validate_Remote_Access_To_Class_Wide_Type for attribute
                --  Storage_Size since this attribute is not defined for
@@ -6143,7 +6146,6 @@ package body Sem_Attr is
 
             else
                Check_Task_Prefix;
-               Set_Etype (N, Universal_Integer);
             end if;
 
          else
@@ -6294,10 +6296,7 @@ package body Sem_Attr is
       -- Terminated --
       ----------------
 
-      when Attribute_Terminated =>
-         Check_E0;
-         Set_Etype (N, Standard_Boolean);
-         Check_Task_Prefix;
+      --  Shares processing with Callable attribute
 
       ----------------
       -- To_Address --
