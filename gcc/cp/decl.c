@@ -5248,6 +5248,7 @@ start_decl (const cp_declarator *declarator,
   bool was_public;
   int flags;
   bool alias;
+  tree initial;
 
   *pushed_scope_p = NULL_TREE;
 
@@ -5272,6 +5273,10 @@ start_decl (const cp_declarator *declarator,
       return error_mark_node;
     }
 
+  /* Save the DECL_INITIAL value in case it gets clobbered to assist
+     with attribute validation.  */
+  initial = DECL_INITIAL (decl);
+
   if (initialized)
     {
       if (! toplevel_bindings_p ()
@@ -5281,6 +5286,10 @@ start_decl (const cp_declarator *declarator,
       DECL_EXTERNAL (decl) = 0;
       if (toplevel_bindings_p ())
 	TREE_STATIC (decl) = 1;
+      /* Tell 'cplus_decl_attributes' this is an initialized decl,
+	 even though we might not yet have the initializer expression.  */
+      if (!DECL_INITIAL (decl))
+	DECL_INITIAL (decl) = error_mark_node;
     }
   alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) != 0;
   
@@ -5298,6 +5307,10 @@ start_decl (const cp_declarator *declarator,
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   cplus_decl_attributes (&decl, attributes, flags);
+
+  /* Restore the original DECL_INITIAL that we may have clobbered earlier to
+     assist with attribute validation.  */
+  DECL_INITIAL (decl) = initial;
 
   /* Dllimported symbols cannot be defined.  Static data members (which
      can be initialized in-class and dllimported) go through grokfield,
