@@ -4766,7 +4766,10 @@ package body Sem_Attr is
       -- Machine_Size --
       ------------------
 
-      when Attribute_Machine_Size =>
+      when Attribute_Machine_Size
+         | Attribute_Object_Size
+         | Attribute_Value_Size
+      =>
          Check_E0;
          Check_Type;
          Check_Not_Incomplete_Type;
@@ -4993,11 +4996,7 @@ package body Sem_Attr is
       -- Object_Size --
       -----------------
 
-      when Attribute_Object_Size =>
-         Check_E0;
-         Check_Type;
-         Check_Not_Incomplete_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Machine_Size attribute
 
       ---------
       -- Old --
@@ -7161,11 +7160,7 @@ package body Sem_Attr is
       -- Value_Size --
       ----------------
 
-      when Attribute_Value_Size =>
-         Check_E0;
-         Check_Type;
-         Check_Not_Incomplete_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Machine_Size attribute
 
       -------------
       -- Version --
