@@ -2548,6 +2548,9 @@ Target does not generate PIC by default.
 @item offload_gcn
 Target has been configured for OpenACC/OpenMP offloading on AMD GCN.
 
+@item persistent
+Target supports the @code{persistent} variable attribute.
+
 @item pie_enabled
 Target generates PIE by default.
 

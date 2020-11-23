@@ -7426,9 +7426,23 @@ The @code{weak} attribute is described in
 @cindex @code{noinit} variable attribute
 Any data with the @code{noinit} attribute will not be initialized by
 the C runtime startup code, or the program loader.  Not initializing
-data in this way can reduce program startup times.  This attribute is
-specific to ELF targets and relies on the linker to place such data in
-the right location
+data in this way can reduce program startup times.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place sections with the @code{.noinit} prefix in the right
+location.
+
+@item persistent
+@cindex @code{persistent} variable attribute
+Any data with the @code{persistent} attribute will not be initialized by
+the C runtime startup code, but will be initialized by the program
+loader.  This enables the value of the variable to @samp{persist}
+between processor resets.
+
+This attribute is specific to ELF targets and relies on the linker
+script to place the sections with the @code{.persistent} prefix in the
+right location.  Specifically, some type of non-volatile, writeable
+memory is required.
 
 @item objc_nullability (@var{nullability kind}) @r{(Objective-C and Objective-C++ only)}
 @cindex @code{objc_nullability} variable attribute
