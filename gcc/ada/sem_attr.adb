@@ -4002,7 +4002,12 @@ package body Sem_Attr is
       -- Epsilon --
       -------------
 
-      when Attribute_Epsilon =>
+      when Attribute_Epsilon
+         | Attribute_Model_Epsilon
+         | Attribute_Model_Small
+         | Attribute_Safe_First
+         | Attribute_Safe_Last
+      =>
          Check_Floating_Point_Type_0;
          Set_Etype (N, Universal_Real);
 
@@ -4876,9 +4881,7 @@ package body Sem_Attr is
       -- Model_Epsilon --
       -------------------
 
-      when Attribute_Model_Epsilon =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Epsilon attribute
 
       --------------------
       -- Model_Mantissa --
@@ -4890,9 +4893,7 @@ package body Sem_Attr is
       -- Model_Small --
       -----------------
 
-      when Attribute_Model_Small =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Epsilon attribute
 
       -------------
       -- Modulus --
@@ -5843,9 +5844,7 @@ package body Sem_Attr is
       -- Safe_First --
       ----------------
 
-      when Attribute_Safe_First =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Epsilon attribute
 
       ----------------
       -- Safe_Large --
@@ -5860,9 +5859,7 @@ package body Sem_Attr is
       -- Safe_Last --
       ---------------
 
-      when Attribute_Safe_Last =>
-         Check_Floating_Point_Type_0;
-         Set_Etype (N, Universal_Real);
+      --  Shares processing with Epsilon attribute
 
       ----------------
       -- Safe_Small --
