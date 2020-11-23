@@ -4744,7 +4744,9 @@ package body Sem_Attr is
       -- Machine_Radix --
       -------------------
 
-      when Attribute_Machine_Radix =>
+      when Attribute_Machine_Radix
+         | Attribute_Mantissa
+      =>
          Check_Real_Type;
          Check_E0;
          Set_Etype (N, Universal_Integer);
@@ -4775,10 +4777,7 @@ package body Sem_Attr is
       -- Mantissa --
       --------------
 
-      when Attribute_Mantissa =>
-         Check_E0;
-         Check_Real_Type;
-         Set_Etype (N, Universal_Integer);
+      --  Shares processing with Machine_Radix attribute
 
       ---------
       -- Max --
