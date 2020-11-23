@@ -69,7 +69,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    --  in the RM sense).
 
    OK_Get_32 : constant Boolean :=
-     Num'Object_Size <= 32
+     Num'Base'Object_Size <= 32
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
            or else
@@ -80,7 +80,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_32 : constant Boolean :=
-     Num'Object_Size <= 32
+     Num'Base'Object_Size <= 32
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
            or else
@@ -94,7 +94,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Image_F
 
    OK_Get_64 : constant Boolean :=
-     Num'Object_Size <= 64
+     Num'Base'Object_Size <= 64
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
            or else
@@ -105,7 +105,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_64 : constant Boolean :=
-     Num'Object_Size <= 64
+     Num'Base'Object_Size <= 64
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
            or else
@@ -119,7 +119,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Image_F
 
    OK_Get_128 : constant Boolean :=
-     Num'Object_Size <= 128
+     Num'Base'Object_Size <= 128
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**127)
            or else
@@ -130,7 +130,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    --  These conditions are derived from the prerequisites of System.Value_F
 
    OK_Put_128 : constant Boolean :=
-     Num'Object_Size <= 128
+     Num'Base'Object_Size <= 128
        and then
          ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**127)
            or else
