@@ -132,6 +132,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   thread::_M_start_thread(_State_ptr state, void (*)())
   {
+    if (!__gthread_active_p())
+      {
+#if __cpp_exceptions
+	throw system_error(make_error_code(errc::operation_not_permitted),
+			   "Enable multithreading to use std::thread");
+#else
+	__builtin_abort();
+#endif
+      }
+
     const int err = __gthread_create(&_M_id._M_thread,
 				     &execute_native_thread_routine,
 				     state.get());
