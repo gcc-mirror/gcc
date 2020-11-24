@@ -464,6 +464,9 @@ Necessary when modifying @command{gperf} input files, e.g.@:
 @item DejaGnu 1.4.4
 @itemx Expect
 @itemx Tcl
+@c Once Tcl 8.5 or higher is required, remove any obsolete
+@c compatibility workarounds:
+@c     git grep 'compatibility with earlier Tcl releases'
 
 Necessary to run the GCC testsuite; see the section on testing for
 details.

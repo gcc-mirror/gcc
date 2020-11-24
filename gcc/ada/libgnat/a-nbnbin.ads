@@ -113,7 +113,7 @@ is
      Post   => To_String'Result'First = 1,
      Global => null;
 
-   function From_String (Arg : String) return Big_Integer
+   function From_String (Arg : String) return Valid_Big_Integer
      with Global => null;
 
    procedure Put_Image (S : in out Sink'Class; V : Big_Integer);

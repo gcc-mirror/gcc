@@ -551,7 +551,7 @@ package body Lib.Load is
       --  Note: Unit_Name (Main_Unit) is not set if we are parsing gnat.adc.
 
       if Present (Error_Node)
-        and then Unit_Name (Main_Unit) /= No_Unit_Name
+        and then Present (Unit_Name (Main_Unit))
       then
          --  It seems like In_Extended_Main_Source_Unit (Error_Node) would
          --  do the trick here, but that's wrong, it is much too early to

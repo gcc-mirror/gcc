@@ -4033,7 +4033,9 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
     {
       size_t nonzero_first = wordsize;
       size_t nonzero_last = 0;
-      bool all_ones = true;
+      size_t zero_first = wordsize;
+      size_t zero_last = 0;
+      bool all_ones = true, bytes_only = true;
       if ((unsigned HOST_WIDE_INT) (buf->off + i + wordsize)
 	  > (unsigned HOST_WIDE_INT) buf->sz)
 	{
@@ -4055,9 +4057,19 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
 		all_ones = false;
 	      nonzero_last = j + 1 - i;
 	    }
+	  else
+	    {
+	      if (zero_first == wordsize)
+		zero_first = j - i;
+	      zero_last = j + 1 - i;
+	    }
 	  if (buf->buf[j] != 0 && buf->buf[j] != (unsigned char) ~0)
-	    all_ones = false;
+	    {
+	      all_ones = false;
+	      bytes_only = false;
+	    }
 	}
+      size_t padding_end = i;
       if (padding_bytes)
 	{
 	  if (nonzero_first == 0
@@ -4069,7 +4081,6 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
 	      padding_bytes += wordsize;
 	      continue;
 	    }
-	  size_t padding_end = i;
 	  if (all_ones && nonzero_first == 0)
 	    {
 	      padding_bytes += nonzero_last;
@@ -4077,12 +4088,27 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
 	      nonzero_first = wordsize;
 	      nonzero_last = 0;
 	    }
-	  tree atype = build_array_type_nelts (char_type_node, padding_bytes);
+	  else if (bytes_only && nonzero_first == 0)
+	    {
+	      gcc_assert (zero_first && zero_first != wordsize);
+	      padding_bytes += zero_first;
+	      padding_end += zero_first;
+	    }
+	  tree atype, src;
+	  if (padding_bytes == 1)
+	    {
+	      atype = char_type_node;
+	      src = build_zero_cst (char_type_node);
+	    }
+	  else
+	    {
+	      atype = build_array_type_nelts (char_type_node, padding_bytes);
+	      src = build_constructor (atype, NULL);
+	    }
 	  tree dst = build2_loc (buf->loc, MEM_REF, atype, buf->base,
 				 build_int_cst (buf->alias_type,
 						buf->off + padding_end
 						- padding_bytes));
-	  tree src = build_constructor (atype, NULL);
 	  gimple *g = gimple_build_assign (dst, src);
 	  gimple_set_location (g, buf->loc);
 	  gsi_insert_before (buf->gsi, g, GSI_SAME_STMT);
@@ -4097,6 +4123,45 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
 	  /* All bits between nonzero_first and end of word are padding
 	     bits, start counting padding_bytes.  */
 	  padding_bytes = nonzero_last - nonzero_first;
+	  continue;
+	}
+      if (bytes_only)
+	{
+	  /* If bitfields aren't involved in this word, prefer storing
+	     individual bytes or groups of them over performing a RMW
+	     operation on the whole word.  */
+	  gcc_assert (i + zero_last <= end);
+	  for (size_t j = padding_end; j < i + zero_last; j++)
+	    {
+	      if (buf->buf[j])
+		{
+		  size_t k;
+		  for (k = j; k < i + zero_last; k++)
+		    if (buf->buf[k] == 0)
+		      break;
+		  HOST_WIDE_INT off = buf->off + j;
+		  tree atype, src;
+		  if (k - j == 1)
+		    {
+		      atype = char_type_node;
+		      src = build_zero_cst (char_type_node);
+		    }
+		  else
+		    {
+		      atype = build_array_type_nelts (char_type_node, k - j);
+		      src = build_constructor (atype, NULL);
+		    }
+		  tree dst = build2_loc (buf->loc, MEM_REF, atype,
+					 buf->base,
+					 build_int_cst (buf->alias_type, off));
+		  gimple *g = gimple_build_assign (dst, src);
+		  gimple_set_location (g, buf->loc);
+		  gsi_insert_before (buf->gsi, g, GSI_SAME_STMT);
+		  j = k;
+		}
+	    }
+	  if (nonzero_last == wordsize)
+	    padding_bytes = nonzero_last - zero_last;
 	  continue;
 	}
       for (size_t eltsz = 1; eltsz <= wordsize; eltsz <<= 1)
@@ -4153,12 +4218,21 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
     {
       if (padding_bytes)
 	{
-	  tree atype = build_array_type_nelts (char_type_node, padding_bytes);
+	  tree atype, src;
+	  if (padding_bytes == 1)
+	    {
+	      atype = char_type_node;
+	      src = build_zero_cst (char_type_node);
+	    }
+	  else
+	    {
+	      atype = build_array_type_nelts (char_type_node, padding_bytes);
+	      src = build_constructor (atype, NULL);
+	    }
 	  tree dst = build2_loc (buf->loc, MEM_REF, atype, buf->base,
 				 build_int_cst (buf->alias_type,
 						buf->off + end
 						- padding_bytes));
-	  tree src = build_constructor (atype, NULL);
 	  gimple *g = gimple_build_assign (dst, src);
 	  gimple_set_location (g, buf->loc);
 	  gsi_insert_before (buf->gsi, g, GSI_SAME_STMT);

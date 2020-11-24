@@ -5659,8 +5659,7 @@ package body Sem_Ch8 is
                --  happens for trees generated from Exp_Pakd, where expressions
                --  can be deliberately "mis-typed" to the packed array type.
 
-               if Is_Array_Type (Entyp)
-                 and then Is_Packed (Entyp)
+               if Is_Packed_Array (Entyp)
                  and then Present (Etype (N))
                  and then Etype (N) = Packed_Array_Impl_Type (Entyp)
                then

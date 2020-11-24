@@ -839,6 +839,8 @@ package Snames is
    Name_No_Use_Of_Entity               : constant Name_Id := N + $;
    Name_No_Use_Of_Pragma               : constant Name_Id := N + $;
    Name_No_Unroll                      : constant Name_Id := N + $;
+   Name_No_Unrecognized_Aspects        : constant Name_Id := N + $;
+   Name_No_Unrecognized_Pragmas        : constant Name_Id := N + $;
    Name_No_Vector                      : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;
    Name_Non_Volatile                   : constant Name_Id := N + $;

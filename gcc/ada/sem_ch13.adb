@@ -16177,12 +16177,31 @@ package body Sem_Ch13 is
       Func_Name   : constant Node_Id := Expression (ASN);
       Overloaded  : Boolean := Is_Overloaded (Func_Name);
 
-      I           : Interp_Index;
-      It          : Interp;
-      Param_Type  : Entity_Id;
-      Match_Found : Boolean := False;
-      Is_Match    : Boolean;
-      Match       : Interp;
+      I            : Interp_Index;
+      It           : Interp;
+      Param_Type   : Entity_Id;
+      Match_Found  : Boolean := False;
+      Match2_Found : Boolean := False;
+      Is_Match     : Boolean;
+      Match        : Interp;
+      Match2       : Entity_Id := Empty;
+
+      function Matching
+        (Param_Id : Entity_Id; Param_Type : Entity_Id) return Boolean;
+      --  Return True if Param_Id is a non aliased in parameter whose base type
+      --  is Param_Type.
+
+      --------------
+      -- Matching --
+      --------------
+
+      function Matching
+        (Param_Id : Entity_Id; Param_Type : Entity_Id) return Boolean is
+      begin
+         return Base_Type (Etype (Param_Id)) = Param_Type
+           and then Ekind (Param_Id) = E_In_Parameter
+           and then not Is_Aliased (Param_Id);
+      end Matching;
 
    begin
       if not Is_Type (Typ) then
@@ -16228,26 +16247,45 @@ package body Sem_Ch13 is
          Is_Match := False;
 
          if Ekind (It.Nam) = E_Function
-           and then Base_Type (Etype (It.Nam)) = Typ
+           and then Base_Type (Etype (It.Nam)) = Base_Type (Typ)
          then
             declare
                Params     : constant List_Id :=
                  Parameter_Specifications (Parent (It.Nam));
                Param_Spec : Node_Id;
-               Param_Id   : Entity_Id;
 
             begin
                if List_Length (Params) = 1 then
                   Param_Spec := First (Params);
+                  Is_Match :=
+                    Matching (Defining_Identifier (Param_Spec), Param_Type);
 
-                  if not More_Ids (Param_Spec) then
-                     Param_Id := Defining_Identifier (Param_Spec);
+               --  Look for the optional overloaded 2-param Real_Literal
 
-                     if Base_Type (Etype (Param_Id)) = Param_Type
-                       and then Ekind (Param_Id) = E_In_Parameter
-                       and then not Is_Aliased (Param_Id)
+               elsif List_Length (Params) = 2
+                 and then A_Id = Aspect_Real_Literal
+               then
+                  Param_Spec := First (Params);
+
+                  if Matching (Defining_Identifier (Param_Spec), Param_Type)
+                  then
+                     Param_Spec := Next (Param_Spec);
+
+                     if Matching (Defining_Identifier (Param_Spec), Param_Type)
                      then
-                        Is_Match := True;
+                        if No (Match2) then
+                           Match2 := It.Nam;
+                           Match2_Found := True;
+                        else
+                           --  If we find more than one possible match then
+                           --  do not take any into account here: since the
+                           --  2-parameter version of Real_Literal is optional
+                           --  we cannot generate an error here, so let
+                           --  standard resolution fail later if we do need to
+                           --  call this variant.
+
+                           Match2_Found := False;
+                        end if;
                      end if;
                   end if;
                end if;
@@ -16282,6 +16320,12 @@ package body Sem_Ch13 is
       Set_Entity (Func_Name, Match.Nam);
       Set_Etype (Func_Name, Etype (Match.Nam));
       Set_Is_Overloaded (Func_Name, False);
+
+      --  Record the match for 2-parameter function if found
+
+      if Match2_Found then
+         Set_Related_Expression (Match.Nam, Match2);
+      end if;
    end Validate_Literal_Aspect;
 
    -----------------------------------

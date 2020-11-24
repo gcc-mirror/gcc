@@ -7413,6 +7413,21 @@ expand_omp_taskloop_for_inner (struct omp_region *region,
 static void
 expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 {
+  bool is_oacc_kernels_parallelized
+    = (lookup_attribute ("oacc kernels parallelized",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  {
+    bool is_oacc_kernels
+      = (lookup_attribute ("oacc kernels",
+			   DECL_ATTRIBUTES (current_function_decl)) != NULL);
+    if (is_oacc_kernels_parallelized)
+      gcc_checking_assert (is_oacc_kernels);
+  }
+  gcc_assert (gimple_in_ssa_p (cfun) == is_oacc_kernels_parallelized);
+  /* In the following, some of the 'gimple_in_ssa_p (cfun)' conditionals are
+     for SSA specifics, and some are for 'parloops' OpenACC
+     'kernels'-parallelized specifics.  */
+
   tree v = fd->loop.v;
   enum tree_code cond_code = fd->loop.cond_code;
   enum tree_code plus_code = PLUS_EXPR;

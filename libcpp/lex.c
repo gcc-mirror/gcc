@@ -1577,13 +1577,20 @@ static void
 create_literal (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		unsigned int len, enum cpp_ttype type)
 {
-  uchar *dest = _cpp_unaligned_alloc (pfile, len + 1);
-
-  memcpy (dest, base, len);
-  dest[len] = '\0';
   token->type = type;
   token->val.str.len = len;
-  token->val.str.text = dest;
+  token->val.str.text = cpp_alloc_token_string (pfile, base, len);
+}
+
+const uchar *
+cpp_alloc_token_string (cpp_reader *pfile,
+			const unsigned char *ptr, unsigned len)
+{
+  uchar *dest = _cpp_unaligned_alloc (pfile, len + 1);
+
+  dest[len] = 0;
+  memcpy (dest, ptr, len);
+  return dest;
 }
 
 /* A pair of raw buffer pointers.  The currently open one is [1], the
@@ -2712,6 +2719,7 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 	  /* Don't attempt to expand the token.  */
 	  tok->flags |= NO_EXPAND;
 	  if (_cpp_defined_macro_p (node)
+	      && _cpp_maybe_notify_macro_use (pfile, node, tok->src_loc)
 	      && !cpp_fun_like_macro_p (node))
 	    cpp_error_with_line (pfile, CPP_DL_ERROR, tok->src_loc, 0, 
 				 "module control-line \"%s\" cannot be"

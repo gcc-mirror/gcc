@@ -268,6 +268,8 @@ class vaopt_state {
 
 /* Macro expansion.  */
 
+static cpp_macro *get_deferred_or_lazy_macro (cpp_reader *, cpp_hashnode *,
+					      location_t);
 static int enter_macro_context (cpp_reader *, cpp_hashnode *,
 				const cpp_token *, location_t);
 static int builtin_macro (cpp_reader *, cpp_hashnode *,
@@ -338,10 +340,6 @@ static cpp_macro *create_iso_definition (cpp_reader *);
 /* #define directive parsing and handling.  */
 
 static cpp_macro *lex_expansion_token (cpp_reader *, cpp_macro *);
-static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
-				  const cpp_macro *);
-static bool compare_macros (const cpp_macro *, const cpp_macro *);
-
 static bool parse_params (cpp_reader *, unsigned *, bool *);
 static void check_trad_stringification (cpp_reader *, const cpp_macro *,
 					const cpp_string *);
@@ -352,8 +350,6 @@ static void consume_next_token_from_context (cpp_reader *pfile,
 static const cpp_token* cpp_get_token_1 (cpp_reader *, location_t *);
 
 static cpp_hashnode* macro_of_context (cpp_context *context);
-
-static bool in_macro_expansion_p (cpp_reader *pfile);
 
 /* Statistical counter tracking the number of macros that got
    expanded.  */
@@ -2878,6 +2874,12 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
       if (node->type == NT_VOID || (result->flags & NO_EXPAND))
 	break;
 
+      if (!(node->flags & NODE_USED)
+	  && node->type == NT_USER_MACRO
+	  && !node->value.macro
+	  && !cpp_get_deferred_macro (pfile, node, result->src_loc))
+	break;
+
       if (!(node->flags & NODE_DISABLED))
 	{
 	  int ret = 0;
@@ -3216,22 +3218,15 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   if (node->flags & NODE_CONDITIONAL)
     return false;
 
-  cpp_macro *macro1 = node->value.macro;
-  if (macro1->lazy)
-    {
-      /* We don't want to mark MACRO as used, but do need to finalize
-	 its laziness.  */
-      pfile->cb.user_lazy_macro (pfile, macro1, macro1->lazy - 1);
-      macro1->lazy = 0;
-    }
-
-  return compare_macros (macro1, macro2);
+  if (cpp_macro *macro1 = get_deferred_or_lazy_macro (pfile, node, macro2->line))
+    return cpp_compare_macros (macro1, macro2);
+  return false;
 }
 
 /* Return TRUE if MACRO1 and MACRO2 differ.  */
 
-static bool
-compare_macros (const cpp_macro *macro1, const cpp_macro *macro2)
+bool
+cpp_compare_macros (const cpp_macro *macro1, const cpp_macro *macro2)
 {
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2).  */
@@ -3790,11 +3785,46 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
   macro->lazy = num + 1;
 }
 
+/* NODE is a deferred macro, resolve it, returning the definition
+   (which may be NULL).  */
+cpp_macro *
+cpp_get_deferred_macro (cpp_reader *pfile, cpp_hashnode *node,
+			location_t loc)
+{
+  node->value.macro = pfile->cb.user_deferred_macro (pfile, loc, node);
+
+  if (!node->value.macro)
+    node->type = NT_VOID;
+
+  return node->value.macro;
+}
+
+static cpp_macro *
+get_deferred_or_lazy_macro (cpp_reader *pfile, cpp_hashnode *node,
+			    location_t loc)
+{
+  cpp_macro *macro = node->value.macro;
+  if (!macro)
+    {
+      macro = cpp_get_deferred_macro (pfile, node, loc);
+      if (!macro)
+	return NULL;
+    }
+
+  if (macro->lazy)
+    {
+      pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
+      macro->lazy = 0;
+    }
+
+  return macro;
+}
+
 /* Notify the use of NODE in a macro-aware context (i.e. expanding it,
    or testing its existance).  Also applies any lazy definition.
    Return FALSE if the macro isn't really there.  */
 
-extern void
+extern bool
 _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
 		       location_t loc)
 {
@@ -3802,14 +3832,8 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
   switch (node->type)
     {
     case NT_USER_MACRO:
-      {
-	cpp_macro *macro = node->value.macro;
-	if (macro->lazy)
-	  {
-	    pfile->cb.user_lazy_macro (pfile, macro, macro->lazy - 1);
-	    macro->lazy = 0;
-	  }
-      }
+      if (!get_deferred_or_lazy_macro (pfile, node, loc))
+	return false;
       /* FALLTHROUGH.  */
 
     case NT_BUILTIN_MACRO:
@@ -3825,6 +3849,8 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
     default:
       abort ();
     }
+
+  return true;
 }
 
 /* Warn if a token in STRING matches one of a function-like MACRO's
@@ -3877,12 +3903,19 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
 const unsigned char *
 cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
 {
-  unsigned int i, len;
-  unsigned char *buffer;
-
   gcc_checking_assert (cpp_user_macro_p (node));
 
-  const cpp_macro *macro = node->value.macro;
+  if (const cpp_macro *macro = get_deferred_or_lazy_macro (pfile, node, 0))
+    return cpp_macro_definition (pfile, node, macro);
+  return NULL;
+}
+
+const unsigned char *
+cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node,
+		      const cpp_macro *macro)
+{
+  unsigned int i, len;
+  unsigned char *buffer;
 
   /* Calculate length.  */
   len = NODE_LEN (node) * 10 + 2;		/* ' ' and NUL.  */

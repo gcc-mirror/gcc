@@ -4375,7 +4375,8 @@ package body Sem_Attr is
             --  within the related loop.
 
             function Declared_Within (Nod : Node_Id) return Boolean;
-            --  Determine whether Nod appears in the subtree of Loop_Decl
+            --  Determine whether Nod appears in the subtree of Loop_Decl but
+            --  not within the subtree of the prefix P itself.
 
             ---------------------
             -- Check_Reference --
@@ -4410,6 +4411,9 @@ package body Sem_Attr is
                while Present (Stmt) loop
                   if Stmt = Loop_Decl then
                      return True;
+
+                  elsif Stmt = P then
+                     return False;
 
                   --  Prevent the search from going too far
 

@@ -1,3 +1,93 @@
+2020-11-23  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_pass_through_data): Expand comment describing
+	operation.
+	* ipa-prop.c (analyze_agg_content_value): Detect new special case and
+	encode it as ASSERT_EXPR.
+	* ipa-cp.c (values_equal_for_ipcp_p): Move before
+	ipa_get_jf_arith_result.
+	(ipa_get_jf_arith_result): Special case ASSERT_EXPR.
+
+2020-11-23  Jeff Law  <law@redhat.com>
+
+	* config/h8300/h8300.c (h8300_rtx_costs): Handle the various
+	comparison rtx codes too.
+
+2020-11-23  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-prop.c (build_agg_jump_func_from_list,
+	ipa_read_jump_function): Reserve agg.items precisely.
+	* ipa-prop.h (ipa_node_params::~ipa_node_params): Release descriptors
+	(ipa_edge_args::~ipa_edge_args): Release agg.items.
+
+2020-11-23  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-in.c (input_cfg): Do not init ssa operands.
+	(input_function): Do not init tree_ssa and set in_ssa_p.
+	(input_ssa_names): Do it here.
+	* tree-ssa.c (init_tree_ssa): Add additional SIZE parameter, default
+	to 0
+	* tree-ssanames.c (init_ssanames): Do not round size up to 50, allocate
+	precisely.
+	* tree-ssa.h (init_tree_ssa): Update prototype.
+
+2020-11-23  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostic.c (diagnostic_report_current_module): Adjust for C++
+	module importation.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_section_attr): Don't warn for "lower"
+	attribute used with "noinit" or "persistent" attributes.
+	(msp430_persist_attr): Remove.
+	(attr_lower_exclusions): Remove ATTR_PERSIST exclusion.
+	(attr_upper_exclusions): Likewise.
+	(attr_either_exclusions): Likewise.
+	(attr_persist_exclusions): Remove.
+	(msp430_attribute_table): Remove ATTR_PERSIST handling.
+	(msp430_handle_generic_attribute): Remove ATTR_PERSIST section conflict
+	handling.
+	(TARGET_ASM_INIT_SECTIONS): Remove.
+	(msp430_init_sections): Remove.
+	(msp430_select_section): Use default_elf_select_section for decls with
+	the "persistent" attribute.
+	(msp430_section_type_flags): Remove ".persistent" section handling.
+	* doc/extend.texi (MSP430 Variable Attributes): Remove "noinit" and
+	"persistent" documentation.
+
+2020-11-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (maybe_push_to_hybrid_worklist): Skip
+	debug stmts.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* doc/extend.texi (Common Variable Attributes): Document the
+	"persistent" variable attribute.
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	the "persistent" effective target keyword.
+	* tree.h (DECL_PERSISTENT_P): Define.
+	* varasm.c (bss_initializer_p): Return false for a
+	DECL_PERSISTENT_P decl initialized to zero.
+	(default_section_type_flags): Handle the ".persistent" section.
+	(default_elf_select_section): Likewise.
+	(default_unique_section): Likewise.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* tree.h (DECL_NOINIT_P): Define.
+	* varasm.c (DECL_NOINIT_P): Check DECL_NOINIT_P before using
+	unnamed bss/lcomm sections for bss_initializer variables.
+	(default_elf_select_section): Use DECL_NOINIT_P instead of
+	looking up attribute for .noinit section selection.
+	(default_unique_section): Check DECL_NOINIT_P for .noinit
+	section selection.
+
+2020-11-23  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* doc/install.texi: Document bootstrap-asan option.
+
 2020-11-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/97873

@@ -7,6 +7,14 @@
 
 /* See also '../../gfortran.dg/goacc/kernels-decompose-1.f95'.  */
 
+/* It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'
+   passed to 'incr' may be unset, and in that case, it will be set to [...]",
+   so to maintain compatibility with earlier Tcl releases, we manually
+   initialize counter variables:
+   { dg-line l_dummy[variable c_loop_i 0] }
+   { dg-message "dummy" "" { target iN-VAl-Id } l_dummy } to avoid
+   "WARNING: dg-line var l_dummy defined, but not used".  */
+
 #define N 1024
 
 unsigned int a[N];

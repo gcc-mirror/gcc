@@ -1561,7 +1561,7 @@
 
 (define_expand "vec_cmp<mode><tointvec>"
   [(set (match_operand:<TOINTVEC>  0 "register_operand" "")
-	(match_operator:<TOINTVEC> 1 ""
+	(match_operator:<TOINTVEC> 1 "vcond_comparison_operator"
 	  [(match_operand:V_HW     2 "register_operand" "")
 	   (match_operand:V_HW     3 "register_operand" "")]))]
   "TARGET_VX"

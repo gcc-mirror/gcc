@@ -4807,7 +4807,8 @@ checks to be performed. The following checks are defined:
 
   All keywords must be in lower case (with the exception of keywords
   such as ``digits`` used as attribute names to which this check
-  does not apply).
+  does not apply). A single error is reported for each line breaking
+  this rule even if multiple casing issues exist on a same line.
 
 
 .. index:: -gnatyl (gcc)

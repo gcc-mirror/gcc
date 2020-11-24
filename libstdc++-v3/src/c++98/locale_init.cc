@@ -320,7 +320,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   locale::_S_initialize()
   {
 #ifdef __GTHREADS
-    if (__gthread_active_p())
+    if (!__gnu_cxx::__is_single_threaded())
       __gthread_once(&_S_once, _S_initialize_once);
 #endif
     if (!_S_classic)

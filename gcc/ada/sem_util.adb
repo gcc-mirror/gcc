@@ -16582,7 +16582,9 @@ package body Sem_Util is
    -- Is_Effectively_Volatile --
    -----------------------------
 
-   function Is_Effectively_Volatile (Id : Entity_Id) return Boolean is
+   function Is_Effectively_Volatile
+     (Id               : Entity_Id;
+      Ignore_Protected : Boolean := False) return Boolean is
    begin
       if Is_Type (Id) then
 
@@ -16610,15 +16612,16 @@ package body Sem_Util is
                   --  Test for presence of ancestor, as the full view of a
                   --  private type may be missing in case of error.
 
-                  return
-                    Present (Anc)
-                      and then Is_Effectively_Volatile (Component_Type (Anc));
+                  return Present (Anc)
+                    and then Is_Effectively_Volatile
+                      (Component_Type (Anc), Ignore_Protected);
                end;
             end if;
 
-         --  A protected type is always volatile
+         --  A protected type is always volatile unless Ignore_Protected is
+         --  True.
 
-         elsif Is_Protected_Type (Id) then
+         elsif Is_Protected_Type (Id) and then not Ignore_Protected then
             return True;
 
          --  A descendant of Ada.Synchronous_Task_Control.Suspension_Object is
@@ -16644,7 +16647,7 @@ package body Sem_Util is
             and then not
               (Ekind (Id) = E_Variable and then No_Caching_Enabled (Id)))
              or else Has_Volatile_Components (Id)
-             or else Is_Effectively_Volatile (Etype (Id));
+             or else Is_Effectively_Volatile (Etype (Id), Ignore_Protected);
       end if;
    end Is_Effectively_Volatile;
 
@@ -16653,15 +16656,19 @@ package body Sem_Util is
    -----------------------------------------
 
    function Is_Effectively_Volatile_For_Reading
-     (Id : Entity_Id) return Boolean
+     (Id               : Entity_Id;
+      Ignore_Protected : Boolean := False) return Boolean
    is
    begin
-      --  A concurrent type is effectively volatile for reading
+      --  A concurrent type is effectively volatile for reading, except for a
+      --  protected type when Ignore_Protected is True.
 
-      if Is_Concurrent_Type (Id) then
+      if Is_Task_Type (Id)
+        or else (Is_Protected_Type (Id) and then not Ignore_Protected)
+      then
          return True;
 
-      elsif Is_Effectively_Volatile (Id) then
+      elsif Is_Effectively_Volatile (Id, Ignore_Protected) then
 
         --  Other volatile types and objects are effectively volatile for
         --  reading when they have property Async_Writers or Effective_Reads
@@ -16689,10 +16696,9 @@ package body Sem_Util is
                --  Test for presence of ancestor, as the full view of a
                --  private type may be missing in case of error.
 
-               return
-                 Present (Anc)
-                   and then Is_Effectively_Volatile_For_Reading
-                     (Component_Type (Anc));
+               return Present (Anc)
+                 and then Is_Effectively_Volatile_For_Reading
+                   (Component_Type (Anc), Ignore_Protected);
             end;
          end if;
       end if;
@@ -16706,6 +16712,9 @@ package body Sem_Util is
    ------------------------------------
 
    function Is_Effectively_Volatile_Object (N : Node_Id) return Boolean is
+      function Is_Effectively_Volatile (E : Entity_Id) return Boolean is
+         (Is_Effectively_Volatile (E, Ignore_Protected => False));
+
       function Is_Effectively_Volatile_Object_Inst
       is new Is_Effectively_Volatile_Object_Shared (Is_Effectively_Volatile);
    begin
@@ -16719,6 +16728,10 @@ package body Sem_Util is
    function Is_Effectively_Volatile_Object_For_Reading
      (N : Node_Id) return Boolean
    is
+      function Is_Effectively_Volatile_For_Reading
+        (E : Entity_Id) return Boolean
+      is (Is_Effectively_Volatile_For_Reading (E, Ignore_Protected => False));
+
       function Is_Effectively_Volatile_Object_For_Reading_Inst
       is new Is_Effectively_Volatile_Object_Shared
         (Is_Effectively_Volatile_For_Reading);
@@ -18311,7 +18324,10 @@ package body Sem_Util is
 
             --  In Ada 95 an aggregate is an object reference
 
-            when N_Aggregate =>
+            when N_Aggregate
+               | N_Delta_Aggregate
+               | N_Extension_Aggregate
+            =>
                return Ada_Version >= Ada_95;
 
             --  A string literal is not an object reference, but it might come
@@ -20434,8 +20450,7 @@ package body Sem_Util is
 
          elsif Nkind (P) = N_Type_Conversion
            and then not Comes_From_Source (P)
-           and then Is_Array_Type (Etype (P))
-           and then Is_Packed (Etype (P))
+           and then Is_Packed_Array (Etype (P))
          then
             return Is_Variable (Expression (P));
 
@@ -25678,7 +25693,7 @@ package body Sem_Util is
          end if;
       end if;
 
-      return (Empty);
+      return Empty;
    end Param_Entity;
 
    ----------------------

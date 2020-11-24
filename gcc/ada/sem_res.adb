@@ -2155,6 +2155,10 @@ package body Sem_Res is
            N_Real_Literal    => Aspect_Real_Literal,
            N_String_Literal  => Aspect_String_Literal);
 
+      Named_Number_Aspect_Map : constant array (Named_Kind) of Aspect_Id :=
+        (E_Named_Integer => Aspect_Integer_Literal,
+         E_Named_Real    => Aspect_Real_Literal);
+
    --  Start of processing for Resolve
 
    begin
@@ -2880,58 +2884,102 @@ package body Sem_Res is
             --  Rewrite Literal as a call if the corresponding literal aspect
             --  is set.
 
-            if Nkind (N) in N_Numeric_Or_String_Literal
-              and then Present
-                         (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N))))
+            if (Nkind (N) in N_Numeric_Or_String_Literal
+                 and then
+                   Present
+                     (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N)))))
+              or else
+                (Nkind (N) = N_Identifier
+                  and then Is_Named_Number (Entity (N))
+                  and then
+                    Present
+                      (Find_Aspect
+                        (Typ, Named_Number_Aspect_Map (Ekind (Entity (N))))))
             then
                declare
-                  function Literal_Text (N : Node_Id) return String_Id;
-                  --  Returns the text of a literal node
-
-                  -------------------
-                  --  Literal_Text --
-                  -------------------
-
-                  function Literal_Text (N : Node_Id) return String_Id is
-                  begin
-                     pragma Assert (Nkind (N) in N_Numeric_Or_String_Literal);
-
-                     if Nkind (N) = N_String_Literal then
-                        return Strval (N);
-                     else
-                        return String_From_Numeric_Literal (N);
-                     end if;
-                  end Literal_Text;
-
                   Lit_Aspect : constant Aspect_Id :=
-                    Literal_Aspect_Map (Nkind (N));
-
-                  Callee : constant Entity_Id :=
-                    Entity (Expression (Find_Aspect (Typ, Lit_Aspect)));
+                    (if Nkind (N) = N_Identifier
+                     then Named_Number_Aspect_Map (Ekind (Entity (N)))
+                     else Literal_Aspect_Map (Nkind (N)));
 
                   Loc  : constant Source_Ptr := Sloc (N);
+
+                  Callee : Entity_Id :=
+                    Entity (Expression (Find_Aspect (Typ, Lit_Aspect)));
 
                   Name : constant Node_Id :=
                     Make_Identifier (Loc, Chars (Callee));
 
-                  Param : constant Node_Id :=
-                    Make_String_Literal (Loc, Literal_Text (N));
+                  Param1 : Node_Id;
+                  Param2 : Node_Id;
+                  Params : List_Id;
+                  Call   : Node_Id;
+                  Expr   : Node_Id;
 
-                  Params : constant List_Id := New_List (Param);
+               begin
+                  if Nkind (N) = N_Identifier then
+                     Expr := Expression (Declaration_Node (Entity (N)));
 
-                  Call : Node_Id :=
+                     if Ekind (Entity (N)) = E_Named_Integer then
+                        UI_Image (Expr_Value (Expr), Decimal);
+                        Start_String;
+                        Store_String_Chars
+                          (UI_Image_Buffer (1 .. UI_Image_Length));
+                        Param1 := Make_String_Literal (Loc, End_String);
+                        Params := New_List (Param1);
+
+                     else
+                        UI_Image (Norm_Num (Expr_Value_R (Expr)), Decimal);
+                        Start_String;
+                        Store_String_Chars
+                          (UI_Image_Buffer (1 .. UI_Image_Length));
+                        Param1 := Make_String_Literal (Loc, End_String);
+
+                        --  Note: Set_Etype is called below on Param1
+
+                        UI_Image (Norm_Den (Expr_Value_R (Expr)), Decimal);
+                        Start_String;
+                        Store_String_Chars
+                          (UI_Image_Buffer (1 .. UI_Image_Length));
+                        Param2 := Make_String_Literal (Loc, End_String);
+                        Set_Etype (Param2, Standard_String);
+
+                        Params := New_List (Param1, Param2);
+
+                        if Present (Related_Expression (Callee)) then
+                           Callee := Related_Expression (Callee);
+                        else
+                           Error_Msg_NE
+                             ("cannot resolve & for a named real", N, Callee);
+                           return;
+                        end if;
+                     end if;
+
+                  elsif Nkind (N) = N_String_Literal then
+                     Param1 := Make_String_Literal (Loc, Strval (N));
+                     Params := New_List (Param1);
+                  else
+                     Param1 :=
+                       Make_String_Literal
+                         (Loc, String_From_Numeric_Literal (N));
+                     Params := New_List (Param1);
+                  end if;
+
+                  Call :=
                     Make_Function_Call
                       (Sloc                   => Loc,
                        Name                   => Name,
                        Parameter_Associations => Params);
-               begin
+
                   Set_Entity (Name, Callee);
                   Set_Is_Overloaded (Name, False);
+
                   if Lit_Aspect = Aspect_String_Literal then
-                     Set_Etype (Param, Standard_Wide_Wide_String);
+                     Set_Etype (Param1, Standard_Wide_Wide_String);
                   else
-                     Set_Etype (Param, Standard_String);
+                     Set_Etype (Param1, Standard_String);
                   end if;
+
                   Set_Etype (Call, Etype (Callee));
 
                   --  Conversion needed in case of an inherited aspect
@@ -2947,6 +2995,7 @@ package body Sem_Res is
 
                   Rewrite (N, Call);
                end;
+
                Analyze_And_Resolve (N, Typ);
                return;
             end if;
@@ -8800,8 +8849,7 @@ package body Sem_Res is
       --  actual subtype. We also exclude generated code (which builds actual
       --  subtypes directly if they are needed).
 
-      if Is_Array_Type (Etype (N))
-        and then Is_Packed (Etype (N))
+      if Is_Packed_Array (Etype (N))
         and then not Is_Constrained (Etype (N))
         and then Nkind (Parent (N)) /= N_Attribute_Reference
         and then Comes_From_Source (N)

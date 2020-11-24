@@ -1680,18 +1680,21 @@ package body Sem_Aggr is
          Set_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
 
-         --  Analyze the expression without expansion, to verify legality.
-         --  After analysis we remove references to the index variable because
-         --  the expression will be analyzed anew when the enclosing aggregate
-         --  is expanded, and the construct is rewritten as a loop with a new
-         --  index variable.
+         --  Analyze  expression without expansion, to verify legality.
+         --  When generating code, we then remove references to the index
+         --  variable, because the expression will be analyzed anew after
+         --  rewritting as a loop with a new index variable; when not
+         --  generating code we leave the analyzed expression as it is.
 
          Expr := Expression (N);
 
          Expander_Mode_Save_And_Set (False);
          Dummy := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
          Expander_Mode_Restore;
-         Remove_References (Expr);
+
+         if Operating_Mode /= Check_Semantics then
+            Remove_References (Expr);
+         end if;
 
          --  An iterated_component_association may appear in a nested
          --  aggregate for a multidimensional structure: preserve the bounds
@@ -3069,6 +3072,10 @@ package body Sem_Aggr is
                   Error_Msg_N
                     ("others not allowed in delta aggregate", Choice);
 
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Resolve_Discrete_Subtype_Indication
+                    (Choice, Base_Type (Index_Type));
+
                else
                   Analyze_And_Resolve (Choice, Index_Type);
                end if;
@@ -3106,28 +3113,31 @@ package body Sem_Aggr is
          else
             Choice := First (Choice_List (Assoc));
             while Present (Choice) loop
+               Analyze (Choice);
+
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
                     ("others not allowed in delta aggregate", Choice);
 
-               else
-                  Analyze (Choice);
+               elsif Is_Entity_Name (Choice)
+                 and then Is_Type (Entity (Choice))
+               then
+                  --  Choice covers a range of values
 
-                  if Is_Entity_Name (Choice)
-                    and then Is_Type (Entity (Choice))
+                  if Base_Type (Entity (Choice)) /=
+                     Base_Type (Index_Type)
                   then
-                     --  Choice covers a range of values
-
-                     if Base_Type (Entity (Choice)) /=
-                        Base_Type (Index_Type)
-                     then
-                        Error_Msg_NE
-                          ("choice does not match index type of &",
-                           Choice, Typ);
-                     end if;
-                  else
-                     Resolve (Choice, Index_Type);
+                     Error_Msg_NE
+                       ("choice does not match index type of &",
+                        Choice, Typ);
                   end if;
+
+               elsif Nkind (Choice) = N_Subtype_Indication then
+                  Resolve_Discrete_Subtype_Indication
+                    (Choice, Base_Type (Index_Type));
+
+               else
+                  Resolve (Choice, Index_Type);
                end if;
 
                Next (Choice);

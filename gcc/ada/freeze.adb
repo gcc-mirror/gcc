@@ -2007,7 +2007,7 @@ package body Freeze is
                                           | N_Task_Body
                                           | N_Body_Stub
                     and then
-                      List_Containing (After) = List_Containing (Parent (E))
+                      In_Same_List (After, Parent (E))
                   then
                      Error_Msg_Sloc := Sloc (Next (After));
                      Error_Msg_NE

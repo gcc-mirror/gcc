@@ -73,7 +73,7 @@ MYFUNCTYPE myfunc(
 
 /* Dummy function to help reset parameter passing registers, i.e. X0-X7
    and V0-V7 (by being passed 0 in W0-W7 and 0.f in S0-S7).  */
-__attribute__ ((noinline)) void
+__attribute__ ((noipa)) void
 dummy_func (int w0, int w1, int w2, int w3, int w4, int w5, int w6, int w7,
 	    float s0, float s1, float s2, float s3, float s4, float s5,
 	    float s6, float s7)

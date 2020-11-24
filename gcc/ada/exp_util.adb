@@ -7854,6 +7854,10 @@ package body Exp_Util is
       --  is in the process of being iterated in the statement list starting
       --  from First_Stmt.
 
+      function Is_Part_Of_BIP_Return_Statement (N : Node_Id) return Boolean;
+      --  Return True if N is directly part of a build-in-place return
+      --  statement.
+
       ---------------------------
       -- Initialized_By_Access --
       ---------------------------
@@ -8183,6 +8187,35 @@ package body Exp_Util is
          return False;
       end Is_Iterated_Container;
 
+      -------------------------------------
+      -- Is_Part_Of_BIP_Return_Statement --
+      -------------------------------------
+
+      function Is_Part_Of_BIP_Return_Statement (N : Node_Id) return Boolean is
+         Subp    : constant Entity_Id := Current_Subprogram;
+         Context : Node_Id;
+      begin
+         --  First check if N is part of a BIP function
+
+         if No (Subp)
+           or else not Is_Build_In_Place_Function (Subp)
+         then
+            return False;
+         end if;
+
+         --  Then check whether N is a complete part of a return statement
+         --  Should we consider other node kinds to go up the tree???
+
+         Context := N;
+         loop
+            case Nkind (Context) is
+               when N_Expression_With_Actions => Context := Parent (Context);
+               when N_Simple_Return_Statement => return True;
+               when others                    => return False;
+            end case;
+         end loop;
+      end Is_Part_Of_BIP_Return_Statement;
+
       --  Local variables
 
       Desig : Entity_Id := Obj_Typ;
@@ -8201,6 +8234,7 @@ package body Exp_Util is
           and then Needs_Finalization (Desig)
           and then Requires_Transient_Scope (Desig)
           and then Nkind (Rel_Node) /= N_Simple_Return_Statement
+          and then not Is_Part_Of_BIP_Return_Statement (Rel_Node)
 
           --  Do not consider a transient object that was already processed
 
@@ -8220,9 +8254,8 @@ package body Exp_Util is
           --  initialized by a function that returns a pointer or acts as a
           --  renaming of another pointer.
 
-          and then
-            (not Is_Access_Type (Obj_Typ)
-               or else not Initialized_By_Access (Obj_Id))
+          and then not
+            (Is_Access_Type (Obj_Typ) and then Initialized_By_Access (Obj_Id))
 
           --  Do not consider transient objects which act as indirect aliases
           --  of build-in-place function results.

@@ -2385,7 +2385,7 @@ package body Sem_Prag is
 
                   if Ekind (Item_Id) in Named_Kind then
                      SPARK_Msg_NE
-                       ("\named number & is not an object", Item, Item);
+                       ("\named number & is not an object", Item, Item_Id);
                   end if;
 
                   return;
@@ -2476,11 +2476,22 @@ package body Sem_Prag is
                  and then Ekind (Item_Id) = E_Variable
                  and then Is_Effectively_Volatile_For_Reading (Item_Id)
                then
+                  --  The current instance of a protected unit is not an
+                  --  effectively volatile object, unless the protected unit
+                  --  is already volatile for another reason (SPARK RM 7.1.2).
+
+                  if Is_Single_Protected_Object (Item_Id)
+                    and then Is_CCT_Instance (Etype (Item_Id), Spec_Id)
+                    and then not Is_Effectively_Volatile_For_Reading
+                      (Item_Id, Ignore_Protected => True)
+                  then
+                     null;
+
                   --  An effectively volatile object for reading cannot appear
                   --  as a global item of a nonvolatile function (SPARK RM
                   --  7.1.3(8)).
 
-                  if Ekind (Spec_Id) in E_Function | E_Generic_Function
+                  elsif Ekind (Spec_Id) in E_Function | E_Generic_Function
                     and then not Is_Volatile_Function (Spec_Id)
                   then
                      Error_Msg_NE
@@ -4437,7 +4448,17 @@ package body Sem_Prag is
          --  Subprogram declaration
 
          elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
-            null;
+
+            --  Pragmas Global and Depends are forbidden on null procedures
+            --  (SPARK RM 6.1.2(2)).
+
+            if Nkind (Specification (Subp_Decl)) = N_Procedure_Specification
+              and then Null_Present (Specification (Subp_Decl))
+            then
+               Error_Msg_N (Fix_Error
+                 ("pragma % cannot apply to null procedure"), N);
+               return;
+            end if;
 
          --  Task type
 
@@ -6069,7 +6090,7 @@ package body Sem_Prag is
                      --  The group and the current pragma are not in the same
                      --  declarative or statement list.
 
-                     if List_Containing (Stmt) /= List_Containing (N) then
+                     if not In_Same_List (Stmt, N) then
                         Grouping_Error (Stmt);
 
                      --  Try to reach the current pragma from the first pragma
@@ -6173,17 +6194,15 @@ package body Sem_Prag is
          --------------------
 
          function Is_Loop_Pragma (Stmt : Node_Id) return Boolean is
+            Original_Stmt : constant Node_Id := Original_Node (Stmt);
+
          begin
             --  Inspect the original node as Loop_Invariant and Loop_Variant
             --  pragmas are rewritten to null when assertions are disabled.
 
-            if Nkind (Original_Node (Stmt)) = N_Pragma then
-               return
-                 Pragma_Name_Unmapped (Original_Node (Stmt))
+            return Nkind (Original_Stmt) = N_Pragma
+             and then Pragma_Name_Unmapped (Original_Stmt)
                    in Name_Loop_Invariant | Name_Loop_Variant;
-            else
-               return False;
-            end if;
          end Is_Loop_Pragma;
 
          ---------------------
@@ -9866,7 +9885,7 @@ package body Sem_Prag is
                   --  the test will have been applied to the original generic.
 
                   elsif Nkind (Decl) in N_Formal_Subprogram_Declaration
-                    and then List_Containing (Decl) = List_Containing (N)
+                    and then In_Same_List (Decl, N)
                     and then not In_Instance
                   then
                      Error_Msg_N
@@ -11343,19 +11362,26 @@ package body Sem_Prag is
       --  Deal with unrecognized pragma
 
       if not Is_Pragma_Name (Pname) then
-         if Warn_On_Unrecognized_Pragma then
-            Error_Msg_Name_1 := Pname;
-            Error_Msg_N ("?g?unrecognized pragma%!", Pragma_Identifier (N));
+         declare
+            Msg_Issued : Boolean := False;
+         begin
+            Check_Restriction
+              (Msg_Issued, No_Unrecognized_Pragmas, Pragma_Identifier (N));
+            if not Msg_Issued and then Warn_On_Unrecognized_Pragma then
+               Error_Msg_Name_1 := Pname;
+               Error_Msg_N ("?g?unrecognized pragma%!", Pragma_Identifier (N));
 
-            for PN in First_Pragma_Name .. Last_Pragma_Name loop
-               if Is_Bad_Spelling_Of (Pname, PN) then
-                  Error_Msg_Name_1 := PN;
-                  Error_Msg_N -- CODEFIX
-                    ("\?g?possible misspelling of %!", Pragma_Identifier (N));
-                  exit;
-               end if;
-            end loop;
-         end if;
+               for PN in First_Pragma_Name .. Last_Pragma_Name loop
+                  if Is_Bad_Spelling_Of (Pname, PN) then
+                     Error_Msg_Name_1 := PN;
+                     Error_Msg_N -- CODEFIX
+                       ("\?g?possible misspelling of %!",
+                        Pragma_Identifier (N));
+                     exit;
+                  end if;
+               end loop;
+            end if;
+         end;
 
          return;
       end if;
@@ -11409,6 +11435,12 @@ package body Sem_Prag is
             Analyze (N);
             raise Pragma_Exit;
          end if;
+      end if;
+
+      --  Mark assertion pragmas as Ghost depending on their enclosing context
+
+      if Assertion_Expression_Pragma (Prag_Id) then
+         Mark_Ghost_Pragma (N, Current_Scope);
       end if;
 
       --  Preset arguments

@@ -1,3 +1,81 @@
+2020-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/95630
+	* gcc.dg/c11-compare-incomplete-1.c,
+	gcc.dg/c11-compare-incomplete-2.c,
+	gcc.dg/c99-compare-incomplete-1.c,
+	gcc.dg/c99-compare-incomplete-2.c: New tests.
+
+2020-11-23  Martin Jambor  <mjambor@suse.cz>
+
+	* gfortran.dg/ipcp-array-2.f90: New test.
+
+2020-11-23  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/prune.exp (prune_gcc_output): Adjust include stack pruning
+	for modules.
+	(print_ices): Relax regexp.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* g++.target/msp430/data-attributes.C: Remove expected warnings for
+	"lower" attribute conflicts.
+	Adjust expected wording for "persistent" attribute misuse.
+	* gcc.target/msp430/data-attributes-2.c: Likewise.
+	* gcc.target/msp430/pr78818-auto-warn.c: Likewise.
+
+2020-11-23  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/simd-12.cc: New testcase.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.c-torture/execute/noinit-attribute.c: Moved to...
+	* c-c++-common/torture/attr-noinit-main.inc: ...here.
+	* lib/target-supports.exp (check_effective_target_persistent): New.
+	* c-c++-common/torture/attr-noinit-1.c: New test.
+	* c-c++-common/torture/attr-noinit-2.c: New test.
+	* c-c++-common/torture/attr-noinit-3.c: New test.
+	* c-c++-common/torture/attr-noinit-invalid.c: New test.
+	* c-c++-common/torture/attr-persistent-1.c: New test.
+	* c-c++-common/torture/attr-persistent-2.c: New test.
+	* c-c++-common/torture/attr-persistent-3.c: New test.
+	* c-c++-common/torture/attr-persistent-invalid.c: New test.
+	* c-c++-common/torture/attr-persistent-main.inc: New test.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/data-attributes-2.c: Adjust test.
+	* g++.target/msp430/data-attributes.C: New test.
+	* g++.target/msp430/msp430.exp: New test.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.c-torture/execute/noinit-attribute.c: Don't override
+	optimization options set by torture test harness.
+	* lib/target-supports.exp (check_effective_target_noinit): Adjust
+	comment formatting.
+
+2020-11-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cortex-m55-nodsp-flag-hard.c: Add -mthumb.
+	* gcc.target/arm/cortex-m55-nodsp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nodsp-nofp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-nomve-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-softfp.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/pr97327.c: Likewise.
+
+2020-11-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/97904
+	* g++.dg/ext/sve-sizeless-1.C: Add more template tests.
+	* g++.dg/ext/sve-sizeless-2.C: Likewise.
+
 2020-11-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/97873

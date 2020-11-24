@@ -2879,17 +2879,10 @@ package body Exp_Ch6 is
         (Formal : Entity_Id)
       is
          Decl : Node_Id;
-
-         --  Suppress warning for the final removal loop
-         pragma Warnings (Off, Decl);
-
          Lvl  : Entity_Id;
-         Res  : Entity_Id;
-         Temp : Node_Id;
-         Typ  : Node_Id;
 
          procedure Insert_Level_Assign (Branch : Node_Id);
-         --  Recursivly add assignment of the level temporary on each branch
+         --  Recursively add assignment of the level temporary on each branch
          --  while moving through nested conditional expressions.
 
          -------------------------
@@ -2917,12 +2910,10 @@ package body Exp_Ch6 is
                --  There are more nested conditional expressions so we must go
                --  deeper.
 
-               if Nkind (Expression (Res_Assn)) =
-                    N_Expression_With_Actions
+               if Nkind (Expression (Res_Assn)) = N_Expression_With_Actions
                  and then
-                   Nkind
-                     (Original_Node (Expression (Res_Assn)))
-                       in N_Case_Expression | N_If_Expression
+                   Nkind (Original_Node (Expression (Res_Assn)))
+                     in N_Case_Expression | N_If_Expression
                then
                   Insert_Level_Assign
                     (Expression (Res_Assn));
@@ -2932,9 +2923,7 @@ package body Exp_Ch6 is
                else
                   Insert_Before_And_Analyze (Res_Assn,
                     Make_Assignment_Statement (Loc,
-                      Name       =>
-                        New_Occurrence_Of
-                          (Lvl, Loc),
+                      Name       => New_Occurrence_Of (Lvl, Loc),
                       Expression =>
                         Accessibility_Level
                           (Expression (Res_Assn), Dynamic_Level)));
@@ -2956,9 +2945,7 @@ package body Exp_Ch6 is
 
             Cond := First (Actions (Branch));
             while Present (Cond) loop
-               exit when Nkind (Cond) in
-                           N_Case_Statement | N_If_Statement;
-
+               exit when Nkind (Cond) in N_Case_Statement | N_If_Statement;
                Next (Cond);
             end loop;
 
@@ -2981,7 +2968,6 @@ package body Exp_Ch6 is
                Alt := First (Alternatives (Cond));
                while Present (Alt) loop
                   Expand_Branch (Last (Statements (Alt)));
-
                   Next (Alt);
                end loop;
             end if;
@@ -3000,7 +2986,7 @@ package body Exp_Ch6 is
                      New_Occurrence_Of (Standard_Natural, Loc));
 
          --  Install the declaration and perform necessary expansion if we
-         --  are dealing with a function call.
+         --  are dealing with a procedure call.
 
          if Nkind (Call_Node) = N_Procedure_Call_Statement then
             --  Generate:
@@ -3019,57 +3005,27 @@ package body Exp_Ch6 is
 
             Insert_Before_And_Analyze (Call_Node, Decl);
 
-         --  A function call must be transformed into an expression with
-         --  actions.
+         --  Ditto for a function call. Note that we do not wrap the function
+         --  call into an expression with action to avoid bad interactions with
+         --  Exp_Ch4.Process_Transient_In_Expression.
 
          else
             --  Generate:
-            --    do
-            --      Lvl : Natural;
-            --    in Call (do{
-            --               If_Exp_Res : Typ
-            --               if Cond then
-            --                 Lvl := 0; --  Access level
-            --                 If_Exp_Res := Exp;
-            --               in If_Exp_Res end;},
-            --             Lvl,
-            --             ...
-            --             )
-            --    end;
+            --    Lvl : Natural;  --  placed above the function call
+            --    ...
+            --    Func_Call (
+            --     {do
+            --        If_Exp_Res : Typ
+            --        if Cond then
+            --           Lvl := 0; --  Access level
+            --           If_Exp_Res := Exp;
+            --      in If_Exp_Res end;},
+            --      Lvl,
+            --      ...
+            --    )
 
-            Res  := Make_Temporary (Loc, 'R');
-            Typ  := Etype (Call_Node);
-            Temp := Relocate_Node (Call_Node);
-
-            --  Perform the rewrite with the dummy
-
-            Rewrite (Call_Node,
-
-              Make_Expression_With_Actions (Loc,
-                Expression => New_Occurrence_Of (Res, Loc),
-                Actions    => New_List (
-                  Decl,
-
-                  Make_Object_Declaration (Loc,
-                    Defining_Identifier => Res,
-                    Object_Definition   =>
-                      New_Occurrence_Of (Typ, Loc)))));
-
-            --  Analyze the expression with the dummy
-
-            Analyze_And_Resolve (Call_Node, Typ);
-
-            --  Properly set the expression and move our view of the call node
-
-            Set_Expression (Call_Node, Relocate_Node (Temp));
-            Call_Node := Expression (Call_Node);
-
-            --  Remove the declaration of the dummy and the subsequent actions
-            --  its analysis has created.
-
-            while Present (Remove_Next (Decl)) loop
-               null;
-            end loop;
+            Insert_Action (Call_Node, Decl);
+            Analyze (Call_Node);
          end if;
 
          --  Decorate the conditional expression with assignments to our level
@@ -5543,7 +5499,7 @@ package body Exp_Ch6 is
                      (Expression (Original_Node (Ret_Obj_Decl)))
 
                   --  It is a BIP object declaration that displaces the pointer
-                  --  to the object to reference a convered interface type.
+                  --  to the object to reference a converted interface type.
 
                   or else
                     Present (Unqual_BIP_Iface_Function_Call

@@ -19,5 +19,5 @@ int ffff(int i)
 
 /* We should not use extra temporaries apart from for i1 + i2.  */
 
-/* { dg-final { scan-tree-dump-times "int" 5 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "int" 6 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "int D\\\." 1 "gimple" } } */

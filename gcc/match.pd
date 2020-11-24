@@ -2900,8 +2900,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Optimize -1 >> x for arithmetic right shifts.  */
 (simplify
  (rshift integer_all_onesp@0 @1)
- (if (!TYPE_UNSIGNED (type)
-      && tree_expr_nonnegative_p (@1))
+ (if (!TYPE_UNSIGNED (type))
   @0))
 
 /* Optimize (x >> c) << c into x & (-1<<c).  */
