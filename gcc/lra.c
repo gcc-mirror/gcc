@@ -1908,11 +1908,9 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 		  tmp = NEXT_INSN (tmp);
 		if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 		  tmp = NEXT_INSN (tmp);
-		for (curr = tmp;
-		     curr != NULL
-		       && (!INSN_P (curr) || BLOCK_FOR_INSN (curr) == e->dest);
-		     curr = NEXT_INSN (curr))
-		  ;
+		for (curr = tmp; curr != NULL; curr = NEXT_INSN (curr))
+		  if (INSN_P (curr))
+		    break;
 		/* Do not put reload insns if it is the last BB
 		   without actual insns.  In this case the reload insns
 		   can get null BB after emitting.  */
