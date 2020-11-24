@@ -15,11 +15,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++2a -pthread" }
+// { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
-// { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
-//
+// { dg-additional-options "-pthread" { target pthread } }
+// { dg-skip-if "broken" { *-*-* } }
+
 #include <latch>
 #include <atomic>
 #include <thread>
