@@ -7088,7 +7088,10 @@ package body Sem_Attr is
       -- Value --
       -----------
 
-      when Attribute_Value =>
+      when Attribute_Value
+         | Attribute_Wide_Value
+         | Attribute_Wide_Wide_Value
+      =>
          Check_E1;
          Check_Scalar_Type;
 
@@ -7174,45 +7177,13 @@ package body Sem_Attr is
       -- Wide_Value --
       ----------------
 
-      when Attribute_Wide_Value =>
-         Check_E1;
-         Check_Scalar_Type;
-
-         --  Set Etype before resolving expression because expansion
-         --  of expression may require enclosing type.
-
-         Set_Etype (N, P_Type);
-         Validate_Non_Static_Attribute_Function_Call;
-
-         --  Check restriction No_Fixed_IO
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
+      --  Shares processing with Value attribute
 
       ---------------------
       -- Wide_Wide_Value --
       ---------------------
 
-      when Attribute_Wide_Wide_Value =>
-         Check_E1;
-         Check_Scalar_Type;
-
-         --  Set Etype before resolving expression because expansion
-         --  of expression may require enclosing type.
-
-         Set_Etype (N, P_Type);
-         Validate_Non_Static_Attribute_Function_Call;
-
-         --  Check restriction No_Fixed_IO
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
+      --  Shares processing with Value attribute
 
       ---------------------
       -- Wide_Wide_Width --
