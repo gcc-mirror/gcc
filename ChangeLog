@@ -1,3 +1,8 @@
+2020-11-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.guess: Import latest upstream.
+	* config.sub: Import latest upstream.
+
 2020-11-16  Martin Liska  <mliska@suse.cz>
 
 	* .gitignore: Add cache as clangd uses it now.

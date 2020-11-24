@@ -1,3 +1,12 @@
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-attribs.c (handle_special_var_sec_attribute): New.
+	(handle_noinit_attribute): Remove.
+	(attr_noinit_exclusions): Rename to...
+	(attr_section_exclusions): ...this, and add "persistent" attribute
+	exclusion.
+	(c_common_attribute_table): Add "persistent" attribute.
+
 2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* c-pretty-print.c (c_pretty_printer::simple_type_specifier):

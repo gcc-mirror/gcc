@@ -1,3 +1,53 @@
+2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/semaphore_base.h
+	(__platform_semaphore::_M_try_acquire_until): Fix type of
+	variable.
+
+2020-11-23  Stephan Bergmann  <sbergman@redhat.com>
+
+	* include/bits/atomic_wait.h (__thread_relax, __thread_yield):
+	Add 'inline'.
+
+2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_GTHREADS): Check for
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/semaphore_base.h (_GLIBCXX_HAVE_POSIX_SEMAPHORE):
+	Check autoconf macro instead of defining it here.
+
+2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h: Do not define anything unless
+	gthreads or futexes are available.
+	* include/bits/atomic_timed_wait.h: Likewise.
+	* include/bits/semaphore_base.h: Likewise.
+	* include/std/semaphore: Likewise.
+	* include/bits/atomic_base.h (atomic_flag::wait)
+	(atomic_flag::notify_one, atomic_flag::notify_all)
+	(__atomic_base<I>::wait, __atomic_base<I>::notify_one)
+	(__atomic_base<I>::notify_all, __atomic_base<P*>::wait)
+	(__atomic_base<P*>::notify_one, __atomic_base<P*>::notify_all)
+	(__atomic_impl::wait, __atomic_impl::notify_one)
+	(__atomic_impl::notify_all, __atomic_float::wait)
+	(__atomic_float::notify_one, __atomic_float::notify_all)
+	(__atomic_ref::wait, __atomic_ref::notify_one)
+	(__atomic_ref::notify_all): Only define if gthreads or futexes
+	are available.
+	* include/std/atomic (atomic::wait, atomic::notify_one)
+	(atomic::notify_all): Likewise.
+	* include/std/version (__cpp_lib_semaphore): Define
+	conditionally.
+
+2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97948
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Add options
+	for libatomic.
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Likewise.
+
 2020-11-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_base.h (atomic_flag::wait): Use correct

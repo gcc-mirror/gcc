@@ -1,3 +1,19 @@
+2020-11-23  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc: New dummy file.
+	* Make-lang.in: Add rules to build module.o
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* decl.c (start_decl): Set DECL_INITIAL for initialized decls
+	before attribute processing.
+
+2020-11-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/97904
+	* pt.c (tsubst): Use verify_type_context to check the type
+	of an array element.
+
 2020-11-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94695

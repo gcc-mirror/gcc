@@ -1,3 +1,9 @@
+2020-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/95630
+	* c-typeck.c (build_binary_op): Use pedwarn_c99 with OPT_Wpedantic
+	for comparisons of complete and incomplete pointers.
+
 2020-11-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* c-aux-info.c (gen_type): Support opaque types.
