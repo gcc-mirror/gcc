@@ -3408,15 +3408,11 @@ package body Sem_Ch13 is
                      --  System.Tasking, but this package does not trigger the
                      --  required initialization of the run-time library.
 
-                     declare
-                        Discard : Entity_Id;
-                     begin
-                        if Restricted_Profile then
-                           Discard := RTE (RE_Activate_Restricted_Tasks);
-                        else
-                           Discard := RTE (RE_Activate_Tasks);
-                        end if;
-                     end;
+                     if Restricted_Profile then
+                        Discard_Node (RTE (RE_Activate_Restricted_Tasks));
+                     else
+                        Discard_Node (RTE (RE_Activate_Tasks));
+                     end if;
 
                      --  Handling for these aspects in subprograms is complete
 
