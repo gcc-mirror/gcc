@@ -66,7 +66,7 @@ MYFUNCTYPE myfunc () PCSATTR;
    of bugs like a short vector being returned in X0 after copied from V0.  */
 #undef FUNC_VAL_CHECK
 #define FUNC_VAL_CHECK(id, type, var, offset, layout)			  \
-__attribute__ ((noinline)) type FUNC_NAME (id) (int i, double d, type t)  \
+__attribute__ ((noipa)) type FUNC_NAME (id) (int i, double d, type t)	  \
   {									  \
     asm (""::"r" (i),"r" (d)); /* asm prevents function from getting      \
 				  optimized away.  Using i and d prevents \
