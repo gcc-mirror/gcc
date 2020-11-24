@@ -193,10 +193,12 @@ static void set_debug_level (enum debug_info_type type, int extended,
 			     const char *arg, struct gcc_options *opts,
 			     struct gcc_options *opts_set,
 			     location_t loc);
-static void set_fast_math_flags (struct gcc_options *opts, int set);
+static void set_fast_math_flags (struct gcc_options *opts,
+				 struct gcc_options *opts_set, int set);
 static void decode_d_option (const char *arg, struct gcc_options *opts,
 			     location_t loc, diagnostic_context *dc);
 static void set_unsafe_math_optimizations_flags (struct gcc_options *opts,
+						 struct gcc_options *opts_set,
 						 int set);
 static void enable_warning_as_error (const char *arg, int value,
 				     unsigned int lang_mask,
@@ -2491,11 +2493,11 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_ffast_math:
-      set_fast_math_flags (opts, value);
+      set_fast_math_flags (opts, opts_set, value);
       break;
 
     case OPT_funsafe_math_optimizations:
-      set_unsafe_math_optimizations_flags (opts, value);
+      set_unsafe_math_optimizations_flags (opts, opts_set, value);
       break;
 
     case OPT_ffixed_:
@@ -2876,44 +2878,44 @@ set_Wstrict_aliasing (struct gcc_options *opts, int onoff)
 /* The following routines are useful in setting all the flags that
    -ffast-math and -fno-fast-math imply.  */
 static void
-set_fast_math_flags (struct gcc_options *opts, int set)
+set_fast_math_flags (struct gcc_options *opts,
+		     struct gcc_options *opts_set, int set)
 {
-  if (!opts->frontend_set_flag_unsafe_math_optimizations)
+  if (!opts->frontend_set_flag_unsafe_math_optimizations
+      && !opts_set->x_flag_unsafe_math_optimizations)
     {
       opts->x_flag_unsafe_math_optimizations = set;
-      set_unsafe_math_optimizations_flags (opts, set);
+      set_unsafe_math_optimizations_flags (opts, opts_set, set);
     }
   if (!opts->frontend_set_flag_finite_math_only)
-    opts->x_flag_finite_math_only = set;
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_finite_math_only, set);
   if (!opts->frontend_set_flag_errno_math)
-    opts->x_flag_errno_math = !set;
-  if (set)
-    {
-      if (opts->frontend_set_flag_excess_precision == EXCESS_PRECISION_DEFAULT)
-	opts->x_flag_excess_precision
-	  = set ? EXCESS_PRECISION_FAST : EXCESS_PRECISION_DEFAULT;
-      if (!opts->frontend_set_flag_signaling_nans)
-	opts->x_flag_signaling_nans = 0;
-      if (!opts->frontend_set_flag_rounding_math)
-	opts->x_flag_rounding_math = 0;
-      if (!opts->frontend_set_flag_cx_limited_range)
-	opts->x_flag_cx_limited_range = 1;
-    }
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_errno_math, !set);
+  if (!opts->frontend_set_flag_cx_limited_range)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_cx_limited_range, set);
+  if (!opts->frontend_set_flag_excess_precision)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_excess_precision,
+			 set ? EXCESS_PRECISION_FAST
+			     : EXCESS_PRECISION_DEFAULT);
+
+  // -ffast-math should also reset -frounding-math, but since this
+  // is off by default, there's nothing to do for now.
 }
 
 /* When -funsafe-math-optimizations is set the following
    flags are set as well.  */
 static void
-set_unsafe_math_optimizations_flags (struct gcc_options *opts, int set)
+set_unsafe_math_optimizations_flags (struct gcc_options *opts,
+				     struct gcc_options *opts_set, int set)
 {
   if (!opts->frontend_set_flag_trapping_math)
-    opts->x_flag_trapping_math = !set;
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_trapping_math, !set);
   if (!opts->frontend_set_flag_signed_zeros)
-    opts->x_flag_signed_zeros = !set;
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_signed_zeros, !set);
   if (!opts->frontend_set_flag_associative_math)
-    opts->x_flag_associative_math = set;
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_associative_math, set);
   if (!opts->frontend_set_flag_reciprocal_math)
-    opts->x_flag_reciprocal_math = set;
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_reciprocal_math, set);
 }
 
 /* Return true iff flags in OPTS are set as if -ffast-math.  */
@@ -2921,10 +2923,14 @@ bool
 fast_math_flags_set_p (const struct gcc_options *opts)
 {
   return (!opts->x_flag_trapping_math
+	  && !opts->x_flag_signed_zeros
+	  && opts->x_flag_associative_math
+	  && opts->x_flag_reciprocal_math
 	  && opts->x_flag_unsafe_math_optimizations
 	  && opts->x_flag_finite_math_only
-	  && !opts->x_flag_signed_zeros
 	  && !opts->x_flag_errno_math
+	  && !opts->x_flag_rounding_math
+	  && opts->x_flag_cx_limited_range
 	  && opts->x_flag_excess_precision == EXCESS_PRECISION_FAST);
 }
 
