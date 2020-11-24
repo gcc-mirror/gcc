@@ -662,13 +662,14 @@ inline bool _cpp_defined_macro_p (cpp_hashnode *node)
 }
 
 /* In macro.c */
-extern void _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
-				   location_t loc);
-inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+extern bool _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+				   location_t);
+inline bool _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
 					 location_t loc)
 {
   if (!(node->flags & NODE_USED))
-    _cpp_notify_macro_use (pfile, node, loc);
+    return _cpp_notify_macro_use (pfile, node, loc);
+  return true;
 }
 extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);
