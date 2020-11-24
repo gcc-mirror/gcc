@@ -30824,7 +30824,7 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
     case MINUS:
       if (CONST_INT_P (value))
 	{
-	  value = GEN_INT (-INTVAL (value));
+	  value = gen_int_mode (-INTVAL (value), wmode);
 	  code = PLUS;
 	}
       /* FALLTHRU */
