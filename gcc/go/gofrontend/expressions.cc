@@ -4024,8 +4024,16 @@ Type_conversion_expression::do_string_constant_value(std::string* val) const
 	  unsigned long ival;
 	  if (nc.to_unsigned_long(&ival) == Numeric_constant::NC_UL_VALID)
 	    {
+	      unsigned int cval = static_cast<unsigned int>(ival);
+	      if (static_cast<unsigned long>(cval) != ival)
+		{
+		  go_warning_at(this->location(), 0,
+				"unicode code point 0x%lx out of range",
+				ival);
+		  cval = 0xfffd; // Unicode "replacement character."
+		}
 	      val->clear();
-	      Lex::append_char(ival, true, val, this->location());
+	      Lex::append_char(cval, true, val, this->location());
 	      return true;
 	    }
 	}
