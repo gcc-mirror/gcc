@@ -1,3 +1,36 @@
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (enum cpp_main_search): New.
+	(struct cpp_options): Add main_search field.
+	(cpp_main_loc): Declare.
+	(cpp_retrofit_as_include): Declare.
+	* internal.h (struct cpp_reader): Add main_loc field.
+	(_cpp_in_main_source_file): Not main if main is a header.
+	* init.c (cpp_read_main_file): Use main_search option to locate
+	main file.  Set main_loc
+	* files.c (cpp_retrofit_as_include): New.
+
+2020-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (cpp_in_system_header): Rename to ...
+	(_cpp_in_system_header): ... here.
+	(cpp_in_primary_file): Rename to ...
+	(_cpp_in_main_source_file): ... here.  Compare main_file equality
+	and check main_search value.
+	* lex.c (maybe_va_opt_error, _cpp_lex_direct): Adjust for rename.
+	* macro.c (_cpp_builtin_macro_text): Likewise.
+	(replace_args): Likewise.
+	* directives.c (do_include_next): Likewise.
+	(do_pragma_once, do_pragma_system_header): Likewise.
+	* files.c (struct _cpp_file): Delete main_file field.
+	(pch_open): Check pfile->main_file equality.
+	(make_cpp_file): Drop cpp_reader parm, don't set main_file.
+	(_cpp_find_file): Adjust.
+	(_cpp_stack_file): Check pfile->main_file equality.
+	(struct report_missing_guard_data): Add cpp_reader field.
+	(report_missing_guard): Check pfile->main_file equality.
+	(_cpp_report_missing_guards): Adjust.
+
 2020-11-18  Nathan Sidwell  <nathan@acm.org>
 
 	* include/cpplib.h (struct cpp_options): Add module_directives

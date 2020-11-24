@@ -49,6 +49,7 @@ class Function;
 class Translate_context;
 class Export;
 class Import;
+class Backend_name;
 class Btype;
 class Bexpression;
 class Bvariable;
@@ -1008,11 +1009,11 @@ class Type
   std::string
   reflection(Gogo*) const;
 
-  // Return a mangled name for the type.  This is a name which can be
-  // used in assembler code.  Identical types should have the same
-  // manged name.
-  std::string
-  mangled_name(Gogo*) const;
+  // Add the backend name for the type to BNAME.  This will add one or
+  // two name components.  Identical types should have the same
+  // backend name.
+  void
+  backend_name(Gogo*, Backend_name* bname) const;
 
   // If the size of the type can be determined, set *PSIZE to the size
   // in bytes and return true.  Otherwise, return false.  This queries
@@ -1066,12 +1067,11 @@ class Type
   // Write the equal function for a type.
   void
   write_equal_function(Gogo*, Named_type*, int64_t size,
-		       const std::string& equal_name,
-		       Function_type* equal_fntype);
+		       const Backend_name*, Function_type* equal_fntype);
 
   // Write the hash function for a type.
   void
-  write_hash_function(Gogo*, int64_t size, const std::string& hash_name,
+  write_hash_function(Gogo*, int64_t size, const Backend_name*,
 		      Function_type* hash_fntype);
 
   // Return the alignment required by the memequalN function.
@@ -3557,10 +3557,10 @@ class Named_type : public Type
   void
   append_reflection_type_name(Gogo*, bool use_alias, std::string*) const;
 
-  // Append the mangled type name as for Type::append_mangled_name,
+  // Append the symbol type name as for Type::append_mangled_name,
   // but if USE_ALIAS use the alias name rather than the alias target.
   void
-  append_mangled_type_name(Gogo*, bool use_alias, std::string*) const;
+  append_symbol_type_name(Gogo*, bool use_alias, std::string*) const;
 
   // Import a named type.
   static void

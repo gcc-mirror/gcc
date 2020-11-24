@@ -29,9 +29,9 @@ GCCBRIG_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gccbrig|sed \
 
 # The name for selecting brig in LANGUAGES.
 brig: brig1$(exeext)
-brig.serial: brig
+brig.serial = brig1$(exeext)
 
-.PHONY: brig brig.serial brig.prev
+.PHONY: brig
 
 CFLAGS-brig/brigspec.o += $(DRIVER_DEFINES)
 
@@ -82,7 +82,7 @@ BRIG_OBJS = \
 
 brig_OBJS = $(BRIG_OBJS) brig/brigspec.o
 
-brig1$(exeext): $(BRIG_OBJS) attribs.o $(BACKEND) $(LIBDEPS) brig.prev
+brig1$(exeext): $(BRIG_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(brig.prev)
 	@$(call LINK_PROGRESS,$(INDEX.brig),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(BRIG_OBJS) attribs.o $(BACKEND) $(LIBS) \

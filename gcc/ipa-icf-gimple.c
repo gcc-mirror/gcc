@@ -153,8 +153,21 @@ func_checker::compare_decl (const_tree t1, const_tree t2)
       && DECL_BY_REFERENCE (t1) != DECL_BY_REFERENCE (t2))
     return return_false_with_msg ("DECL_BY_REFERENCE flags are different");
 
-  if (!compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
-    return return_false ();
+  /* We do not really need to check types of variables, since they are just
+     blocks of memory and we verify types of the accesses to them.
+     However do compare types of other kinds of decls
+     (parm decls and result decl types may affect ABI convetions).  */
+  if (t != VAR_DECL)
+    {
+      if (!compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return return_false ();
+    }
+  else
+    {
+      if (!operand_equal_p (DECL_SIZE (t1), DECL_SIZE (t2),
+			    OEP_MATCH_SIDE_EFFECTS))
+	return return_false_with_msg ("DECL_SIZEs are different");
+    }
 
   bool existed_p;
   const_tree &slot = m_decl_map.get_or_insert (t1, &existed_p);
@@ -229,13 +242,29 @@ func_checker::hash_operand (const_tree arg, inchash::hash &hstate,
 
   switch (TREE_CODE (arg))
     {
+    case PARM_DECL:
+      {
+	unsigned int index = 0;
+	if (DECL_CONTEXT (arg))
+	  for (tree p = DECL_ARGUMENTS (DECL_CONTEXT (arg));
+	       p && index < 32; p = DECL_CHAIN (p), index++)
+	    if (p == arg)
+	      break;
+	hstate.add_int (PARM_DECL);
+	hstate.add_int (index);
+      }
+      return;
     case FUNCTION_DECL:
     case VAR_DECL:
     case LABEL_DECL:
-    case PARM_DECL:
     case RESULT_DECL:
     case CONST_DECL:
+      hstate.add_int (TREE_CODE (arg));
+      return;
     case SSA_NAME:
+      hstate.add_int (SSA_NAME);
+      if (SSA_NAME_IS_DEFAULT_DEF (arg))
+	hash_operand (SSA_NAME_VAR (arg), hstate, flags);
       return;
     case FIELD_DECL:
       inchash::add_expr (DECL_FIELD_OFFSET (arg), hstate, flags);
@@ -244,6 +273,16 @@ func_checker::hash_operand (const_tree arg, inchash::hash &hstate,
     default:
       break;
     }
+
+  /* In gimple all clobbers can be considered equal: while comparaing two
+     gimple clobbers we match the left hand memory accesses.  */
+  if (TREE_CLOBBER_P (arg))
+    {
+      hstate.add_int (0xc10bbe5);
+      return;
+    }
+  gcc_assert (!DECL_P (arg));
+  gcc_assert (!TYPE_P (arg));
 
   return operand_compare::hash_operand (arg, hstate, flags);
 }
@@ -306,6 +345,10 @@ func_checker::operand_equal_p (const_tree t1, const_tree t2,
     default:
       break;
     }
+  /* In gimple all clobbers can be considered equal.  We match the left hand
+     memory accesses.  */
+  if (TREE_CLOBBER_P (t1) || TREE_CLOBBER_P (t2))
+    return TREE_CLOBBER_P (t1) == TREE_CLOBBER_P (t2);
 
   return operand_compare::operand_equal_p (t1, t2, flags);
 }

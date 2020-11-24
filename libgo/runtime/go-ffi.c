@@ -16,36 +16,36 @@
    the libffi type values.  */
 
 ffi_type *go_ffi_type_pointer(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_pointer(void) __asm__ ("runtime.ffi_type_pointer");
+ffi_type *go_ffi_type_pointer(void) __asm__ ("runtime.ffi__type__pointer");
 ffi_type *go_ffi_type_sint8(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_sint8(void) __asm__ ("runtime.ffi_type_sint8");
+ffi_type *go_ffi_type_sint8(void) __asm__ ("runtime.ffi__type__sint8");
 ffi_type *go_ffi_type_sint16(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_sint16(void) __asm__ ("runtime.ffi_type_sint16");
+ffi_type *go_ffi_type_sint16(void) __asm__ ("runtime.ffi__type__sint16");
 ffi_type *go_ffi_type_sint32(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_sint32(void) __asm__ ("runtime.ffi_type_sint32");
+ffi_type *go_ffi_type_sint32(void) __asm__ ("runtime.ffi__type__sint32");
 ffi_type *go_ffi_type_sint64(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_sint64(void) __asm__ ("runtime.ffi_type_sint64");
+ffi_type *go_ffi_type_sint64(void) __asm__ ("runtime.ffi__type__sint64");
 ffi_type *go_ffi_type_uint8(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_uint8(void) __asm__ ("runtime.ffi_type_uint8");
+ffi_type *go_ffi_type_uint8(void) __asm__ ("runtime.ffi__type__uint8");
 ffi_type *go_ffi_type_uint16(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_uint16(void) __asm__ ("runtime.ffi_type_uint16");
+ffi_type *go_ffi_type_uint16(void) __asm__ ("runtime.ffi__type__uint16");
 ffi_type *go_ffi_type_uint32(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_uint32(void) __asm__ ("runtime.ffi_type_uint32");
+ffi_type *go_ffi_type_uint32(void) __asm__ ("runtime.ffi__type__uint32");
 ffi_type *go_ffi_type_uint64(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_uint64(void) __asm__ ("runtime.ffi_type_uint64");
+ffi_type *go_ffi_type_uint64(void) __asm__ ("runtime.ffi__type__uint64");
 ffi_type *go_ffi_type_float(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_float(void) __asm__ ("runtime.ffi_type_float");
+ffi_type *go_ffi_type_float(void) __asm__ ("runtime.ffi__type__float");
 ffi_type *go_ffi_type_double(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_double(void) __asm__ ("runtime.ffi_type_double");
+ffi_type *go_ffi_type_double(void) __asm__ ("runtime.ffi__type__double");
 ffi_type *go_ffi_type_complex_float(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_complex_float(void) __asm__ ("runtime.ffi_type_complex_float");
+ffi_type *go_ffi_type_complex_float(void) __asm__ ("runtime.ffi__type__complex__float");
 ffi_type *go_ffi_type_complex_double(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_complex_double(void) __asm__ ("runtime.ffi_type_complex_double");
+ffi_type *go_ffi_type_complex_double(void) __asm__ ("runtime.ffi__type__complex__double");
 ffi_type *go_ffi_type_void(void) __attribute__ ((no_split_stack));
-ffi_type *go_ffi_type_void(void) __asm__ ("runtime.ffi_type_void");
+ffi_type *go_ffi_type_void(void) __asm__ ("runtime.ffi__type__void");
 
 _Bool go_ffi_supports_complex(void) __attribute__ ((no_split_stack));
-_Bool go_ffi_supports_complex(void) __asm__ ("runtime.ffi_supports_complex");
+_Bool go_ffi_supports_complex(void) __asm__ ("runtime.ffi__supports__complex");
 
 ffi_type *
 go_ffi_type_pointer(void)

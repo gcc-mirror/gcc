@@ -496,7 +496,8 @@ testname() {
 localname() {
 	# The package main has been renamed to __main__ when imported.
 	# Adjust its uses.
-	echo $1 | sed 's/^main\./__main__./'
+	# Also demangle underscores.
+	echo $1 | sed 's/^main\./__main__./' | sed 's/__/_/'
 }
 
 # Takes a list of tests derived from 'nm' output (whose symbols are mangled)
@@ -504,7 +505,7 @@ localname() {
 # Example:
 #
 #    Original symbol:   foo/bar/leaf.Mumble
-#    Mangled symbol:    foo..z2fbar..z2fleaf.Mumble
+#    Mangled symbol:    foo_1fbar_1leaf.Mumble
 #    Returned:          leaf.Mumble
 #
 symtogo() {
@@ -522,7 +523,7 @@ symtogo() {
     if expr "$tp" : '^type\.\.' >/dev/null 2>&1; then
       continue
     fi
-    s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
+    s=$(echo "$tp" | sed -e 's/_1/%/g' | sed -e 's/.*%//')
     # Screen out methods (X.Y.Z).
     if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then
       continue

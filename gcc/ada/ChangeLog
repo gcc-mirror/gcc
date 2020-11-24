@@ -1,3 +1,18 @@
+2020-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/97805
+	* adaint.c: Include climits in C++ and limits.h otherwise.
+
+2020-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.adb (Is_Handled_Scale_Factor): Delete.
+	(Get_Encoded_Name): Do not call it.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <Fixed_Point_Type>:
+	Tidy up and always use a meaningful description for arbitrary
+	scale factors.
+	* gcc-interface/misc.c (gnat_get_fixed_point_type_info): Remove
+	obsolete block and adjust the description of the scale factor.
+
 2020-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/Make-lang.in (ada.serial): New goal.

@@ -66,7 +66,7 @@ func NumGoroutine() int {
 // added.
 func Fieldtrack(map[string]bool)
 
-//go:linkname debug_modinfo runtime..z2fdebug.modinfo
+//go:linkname debug_modinfo runtime_1debug.modinfo
 func debug_modinfo() string {
 	return modinfo
 }

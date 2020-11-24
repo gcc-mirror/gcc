@@ -11,5 +11,5 @@ test (void)
   __typeof__ (1 ? foo (0) : 0) texpr;
   __typeof__ (1 ? i : 0) texpr2;
   texpr = 0;  /* { dg-bogus "read-only variable" "conditional expression with call to const function" } */
-  texpr2 = 0; /* { dg-error "read-only variable" "conditional expression with const variable" } */
+  texpr2 = 0; /* { dg-bogus "read-only variable" "conditional expression with const variable" } */
 }

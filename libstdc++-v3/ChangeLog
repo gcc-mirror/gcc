@@ -1,3 +1,53 @@
+2020-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95989
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_NATIVE_THREAD_ID):
+	Define new macro to get reliable thread ID.
+	* include/bits/std_thread.h: (this_thread::get_id): Use new
+	macro if it's defined.
+	* testsuite/30_threads/jthread/95989.cc: New test.
+	* testsuite/30_threads/this_thread/95989.cc: New test.
+
+2020-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/async/async.cc: Include <thread>.
+	* testsuite/30_threads/future/members/93456.cc: Likewise.
+
+2020-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92546
+	* include/Makefile.am: Add new <bits/std_thread.h> header.
+	* include/Makefile.in: Regenerate.
+	* include/std/future: Include new header instead of <thread>.
+	* include/std/stop_token: Include new header instead of
+	<bits/gthr.h>.
+	(stop_token::_S_yield()): Use this_thread::yield().
+	(_Stop_state_t::_M_requester): Change type to std::thread::id.
+	(_Stop_state_t::_M_request_stop()): Use this_thread::get_id().
+	(_Stop_state_t::_M_remove_callback(_Stop_cb*)): Likewise.
+	Use __is_single_threaded() to decide whether to synchronize.
+	* include/std/thread (thread, operator==, this_thread::get_id)
+	(this_thread::yield): Move to new header.
+	(operator<=>, operator!=, operator<, operator<=, operator>)
+	(operator>=, hash<thread::id>, operator<<): Define even when
+	gthreads not available.
+	* src/c++11/thread.cc: Include <memory>.
+	* include/bits/std_thread.h: New file.
+	(thread, operator==, this_thread::get_id, this_thread::yield):
+	Define even when gthreads not available.
+	[!_GLIBCXX_HAS_GTHREADS] (thread::join, thread::detach)
+	(thread::hardware_concurrency): Define inline.
+
+2020-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93421
+	PR libstdc++/93456
+	* src/c++11/futex.cc (syscall_time_t): New typedef for
+	the type of the syscall_timespec::tv_sec member.
+	(relative_timespec, _M_futex_wait_until)
+	(_M_futex_wait_until_steady): Use syscall_time_t in overflow
+	checks, not time_t.
+
 2020-11-18  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (join_view::_Iterator::_M_satisfy): Uglify
