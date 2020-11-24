@@ -3162,6 +3162,21 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   if (r == NULL_TREE)
     r = fold_binary_loc (loc, code, type, lhs, rhs);
 
+  if (r == NULL_TREE
+      && (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
+      && TREE_CODE (lhs) == INTEGER_CST
+      && TREE_CODE (rhs) == INTEGER_CST
+      && wi::neg_p (wi::to_wide (rhs)))
+    {
+      /* For diagnostics and -fpermissive emulate previous behavior of
+	 handling shifts by negative amount.  */
+      tree nrhs = const_unop (NEGATE_EXPR, TREE_TYPE (rhs), rhs);
+      if (nrhs)
+	r = fold_binary_loc (loc,
+			     code == LSHIFT_EXPR ? RSHIFT_EXPR : LSHIFT_EXPR,
+			     type, lhs, nrhs);
+    }
+
   if (r == NULL_TREE)
     {
       if (lhs == orig_lhs && rhs == orig_rhs)

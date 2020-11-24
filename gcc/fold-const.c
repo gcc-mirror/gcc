@@ -992,26 +992,19 @@ wide_int_binop (wide_int &res,
       res = wi::bit_and (arg1, arg2);
       break;
 
-    case RSHIFT_EXPR:
     case LSHIFT_EXPR:
       if (wi::neg_p (arg2))
-	{
-	  tmp = -arg2;
-	  if (code == RSHIFT_EXPR)
-	    code = LSHIFT_EXPR;
-	  else
-	    code = RSHIFT_EXPR;
-	}
-      else
-        tmp = arg2;
+	return false;
+      res = wi::lshift (arg1, arg2);
+      break;
 
-      if (code == RSHIFT_EXPR)
-	/* It's unclear from the C standard whether shifts can overflow.
-	   The following code ignores overflow; perhaps a C standard
-	   interpretation ruling is needed.  */
-	res = wi::rshift (arg1, tmp, sign);
-      else
-	res = wi::lshift (arg1, tmp);
+    case RSHIFT_EXPR:
+      if (wi::neg_p (arg2))
+	return false;
+      /* It's unclear from the C standard whether shifts can overflow.
+	 The following code ignores overflow; perhaps a C standard
+	 interpretation ruling is needed.  */
+      res = wi::rshift (arg1, arg2, sign);
       break;
 
     case RROTATE_EXPR:
