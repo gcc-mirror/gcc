@@ -7903,9 +7903,13 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
 	&& stack[1].expr.value != error_mark_node			      \
 	&& (c_tree_equal (stack[0].expr.value, omp_atomic_lhs)		      \
 	    || c_tree_equal (stack[1].expr.value, omp_atomic_lhs)))	      \
-      stack[0].expr.value						      \
-	= build2 (stack[1].op, TREE_TYPE (stack[0].expr.value),		      \
-		  stack[0].expr.value, stack[1].expr.value);		      \
+      {									      \
+	tree t = make_node (stack[1].op);				      \
+	TREE_TYPE (t) = TREE_TYPE (stack[0].expr.value);		      \
+	TREE_OPERAND (t, 0) = stack[0].expr.value;			      \
+	TREE_OPERAND (t, 1) = stack[1].expr.value;			      \
+	stack[0].expr.value = t;					      \
+      }									      \
     else								      \
       stack[sp - 1].expr = parser_build_binary_op (stack[sp].loc,	      \
 						   stack[sp].op,	      \
