@@ -12342,10 +12342,10 @@ is unpredictable.
 @opindex ffast-math
 Sets the options @option{-fno-math-errno}, @option{-funsafe-math-optimizations},
 @option{-ffinite-math-only}, @option{-fno-rounding-math},
-@option{-fcx-limited-range} and @option{-fexcess-precision=fast}.
+@option{-fno-signaling-nans}, @option{-fcx-limited-range} and
+@option{-fexcess-precision=fast}.
 
-Whenever all these options listed above are set to those values,
-the preprocessor macro @code{__FAST_MATH__} will be defined.
+This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
 This option is not turned on by any @option{-O} option besides
 @option{-Ofast} since it can result in incorrect output for programs
