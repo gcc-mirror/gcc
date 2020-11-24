@@ -3015,7 +3015,7 @@ cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar,
 static gfc_ref *
 cas_array_ref (gfc_ref *ref)
 {
-  gcc_assert (flag_coarray = GFC_FCOARRAY_SHARED);
+  gcc_assert (flag_coarray == GFC_FCOARRAY_SHARED);
 
   for (; ref; ref = ref->next)
     {

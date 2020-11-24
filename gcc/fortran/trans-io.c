@@ -1636,6 +1636,41 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
   return tmp;
 }
 
+/* Add the address expression of a shared coarray.  It is easiest to
+   use gfc_conv_expr which already does the right thing in this
+   case.  */
+
+static tree
+cas_nml_addr_expr (gfc_symbol *sym)
+{
+  gfc_se se;
+  gfc_expr *e = gfc_lval_expr_from_sym (sym);
+  int rank, corank;
+
+  e->ref = gfc_get_ref ();
+  e->ref->type = REF_ARRAY;
+  e->ref->u.ar.type = AR_ELEMENT;
+  rank = sym->as->rank;
+  corank = sym->as->corank;
+  e->ref->u.ar.dimen = rank;
+  e->ref->u.ar.codimen = corank;
+  e->ref->u.ar.as = sym->as;
+  e->ts = sym->ts;
+  for (int i = 0; i < rank; i++)
+    {
+      e->ref->u.ar.dimen_type[i] = DIMEN_ELEMENT;
+      e->ref->u.ar.start[i] = gfc_copy_expr (sym->as->lower[i]);
+    }
+
+  for (int i = rank; i < rank + corank; i++)
+    e->ref->u.ar.dimen_type[i] = DIMEN_THIS_IMAGE;
+
+  gfc_init_se (&se, NULL);
+  se.want_pointer = 1;
+  gfc_conv_expr (&se, e);
+  gfc_free_expr (e);
+  return se.expr;
+}
 
 /* For an object VAR_NAME whose base address is BASE_ADDR, generate a
    call to iocall[IOCALL_SET_NML_VAL].  For derived type variable, recursively
@@ -1679,7 +1714,10 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   else
     as = sym ? CLASS_DATA (sym)->as : CLASS_DATA (c)->as;
 
-  addr_expr = nml_get_addr_expr (sym, c, base_addr);
+  if (flag_coarray == GFC_FCOARRAY_SHARED && sym->attr.codimension)
+    addr_expr = cas_nml_addr_expr (sym);
+  else
+    addr_expr = nml_get_addr_expr (sym, c, base_addr);
 
   if (as)
     rank = as->rank;
