@@ -4132,20 +4132,23 @@ package body Exp_Ch7 is
       procedure Reset_Scopes_To_Block_Elab_Proc (L : List_Id) is
          Id   : Entity_Id;
          Stat : Node_Id;
+         Node : Node_Id;
 
       begin
          Stat := First (L);
          while Present (Stat) loop
             case Nkind (Stat) is
                when N_Block_Statement =>
-                  Id := Entity (Identifier (Stat));
+                  if Present (Identifier (Stat)) then
+                     Id := Entity (Identifier (Stat));
 
-                  --  The Scope of this block needs to be reset to the new
-                  --  procedure if the block contains nested subprograms.
+                     --  The Scope of this block needs to be reset to the new
+                     --  procedure if the block contains nested subprograms.
 
-                  if Present (Id) and then Contains_Subprogram (Id) then
-                     Set_Block_Elab_Proc;
-                     Set_Scope (Id, Block_Elab_Proc);
+                     if Present (Id) and then Contains_Subprogram (Id) then
+                        Set_Block_Elab_Proc;
+                        Set_Scope (Id, Block_Elab_Proc);
+                     end if;
                   end if;
 
                when N_Loop_Statement =>
@@ -4168,34 +4171,20 @@ package body Exp_Ch7 is
 
                when N_If_Statement =>
                   Reset_Scopes_To_Block_Elab_Proc (Then_Statements (Stat));
-
                   Reset_Scopes_To_Block_Elab_Proc (Else_Statements (Stat));
 
-                  declare
-                     Elif : Node_Id;
-
-                  begin
-                     Elif := First (Elsif_Parts (Stat));
-                     while Present (Elif) loop
-                        Reset_Scopes_To_Block_Elab_Proc
-                          (Then_Statements (Elif));
-
-                        Next (Elif);
-                     end loop;
-                  end;
+                  Node := First (Elsif_Parts (Stat));
+                  while Present (Node) loop
+                     Reset_Scopes_To_Block_Elab_Proc (Then_Statements (Node));
+                     Next (Node);
+                  end loop;
 
                when N_Case_Statement =>
-                  declare
-                     Alt : Node_Id;
-
-                  begin
-                     Alt := First (Alternatives (Stat));
-                     while Present (Alt) loop
-                        Reset_Scopes_To_Block_Elab_Proc (Statements (Alt));
-
-                        Next (Alt);
-                     end loop;
-                  end;
+                  Node := First (Alternatives (Stat));
+                  while Present (Node) loop
+                     Reset_Scopes_To_Block_Elab_Proc (Statements (Node));
+                     Next (Node);
+                  end loop;
 
                --  Reset the Scope of a subprogram occurring at the top level
 
