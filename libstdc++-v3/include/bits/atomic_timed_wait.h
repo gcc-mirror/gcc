@@ -166,24 +166,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __cond_wait_until(__condvar& __cv, mutex& __mx,
 	  const chrono::time_point<_Clock, _Duration>& __atime)
       {
-#ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
-	using __clock_t = chrono::steady_clock;
-#else
+#ifndef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
 	using __clock_t = chrono::system_clock;
+#else
+	using __clock_t = chrono::steady_clock;
+	if constexpr (is_same_v<_Clock, chrono::steady_clock>)
+	  return __detail::__cond_wait_until_impl(__cv, __mx, __atime);
+	else
 #endif
-	const typename _Clock::time_point __c_entry = _Clock::now();
-	const __clock_t::time_point __s_entry = __clock_t::now();
-	const auto __delta = __atime - __c_entry;
-	const auto __s_atime = __s_entry + __delta;
-	if (__detail::__cond_wait_until_impl(__cv, __mx, __s_atime)
-	    == __atomic_wait_status::no_timeout)
-	  return __atomic_wait_status::no_timeout;
-	// We got a timeout when measured against __clock_t but
-	// we need to check against the caller-supplied clock
-	// to tell whether we should return a timeout.
-	if (_Clock::now() < __atime)
-	  return __atomic_wait_status::no_timeout;
-	return __atomic_wait_status::timeout;
+	if constexpr (is_same_v<_Clock, chrono::system_clock>)
+	  return __detail::__cond_wait_until_impl(__cv, __mx, __atime);
+	else
+	  {
+	    const typename _Clock::time_point __c_entry = _Clock::now();
+	    const __clock_t::time_point __s_entry = __clock_t::now();
+	    const auto __delta = __atime - __c_entry;
+	    const auto __s_atime = __s_entry + __delta;
+	    if (__detail::__cond_wait_until_impl(__cv, __mx, __s_atime)
+		== __atomic_wait_status::no_timeout)
+	      return __atomic_wait_status::no_timeout;
+	    // We got a timeout when measured against __clock_t but
+	    // we need to check against the caller-supplied clock
+	    // to tell whether we should return a timeout.
+	    if (_Clock::now() < __atime)
+	      return __atomic_wait_status::no_timeout;
+	    return __atomic_wait_status::timeout;
+	  }
       }
 #endif // FUTEX
 
