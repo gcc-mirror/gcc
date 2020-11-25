@@ -37,6 +37,7 @@
 #if DEBUG
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 void print_i128(__int128_t val)
@@ -57,6 +58,13 @@ int main ()
 
   __int128_t arg1, result;
   __uint128_t uarg2;
+
+  _Decimal128 arg1_dfp128, result_dfp128, expected_result_dfp128;
+
+  struct conv_t {
+    __uint128_t u128;
+    _Decimal128 d128;
+  } conv, conv2;
 
   vector signed long long int vec_arg1_di, vec_arg2_di;
   vector signed long long int vec_result_di, vec_expected_result_di;
@@ -2258,6 +2266,59 @@ int main ()
     abort();
 #endif
   }
+  
+  /* DFP to __int128 and __int128 to DFP conversions */
+  /* Print the DFP value as an unsigned int so we can see the bit patterns.  */
+  conv.u128 = 0x2208000000000000ULL;
+  conv.u128 = (conv.u128 << 64) | 0x4ULL;   //DFP bit pattern for integer 4
+  expected_result_dfp128 = conv.d128;
 
+  arg1 = 4;
+
+  conv.d128 = (_Decimal128) arg1;
+
+  result_dfp128 = (_Decimal128) arg1;
+  if (((conv.u128 >>64) != 0x2208000000000000ULL) &&
+      ((conv.u128 & 0xFFFFFFFFFFFFFFFF) != 0x4ULL)) {
+#if DEBUG
+    printf("ERROR:  convert int128 value ");
+    print_i128 (arg1);
+    conv.d128 = result_dfp128;
+    printf("\nto DFP value 0x%llx %llx (printed as hex bit string) ",
+	   (unsigned long long)((conv.u128) >>64),
+	   (unsigned long long)((conv.u128) & 0xFFFFFFFFFFFFFFFF));
+
+    conv.d128 = expected_result_dfp128;
+    printf("\ndoes not match expected_result = 0x%llx %llx\n\n",
+	   (unsigned long long) (conv.u128>>64),
+	   (unsigned long long) (conv.u128 & 0xFFFFFFFFFFFFFFFF));
+#else
+    abort();
+#endif
+  }
+
+  expected_result = 4;
+
+  conv.u128 = 0x2208000000000000ULL;
+  conv.u128 = (conv.u128 << 64) | 0x4ULL;  // 4 as DFP
+  arg1_dfp128 = conv.d128;
+
+  result = (__int128_t) arg1_dfp128;
+
+  if (result != expected_result) {
+#if DEBUG
+    printf("ERROR:  convert DFP value ");
+    printf("0x%llx %llx (printed as hex bit string) ",
+	   (unsigned long long)(conv.u128>>64),
+	   (unsigned long long)(conv.u128 & 0xFFFFFFFFFFFFFFFF));
+    printf("to __int128 value = ");
+    print_i128 (result);
+    printf("\ndoes not match expected_result = ");
+    print_i128 (expected_result);
+    printf("\n");
+#else
+    abort();
+#endif
+  }
   return 0;
 }
