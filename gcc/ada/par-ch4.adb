@@ -1360,9 +1360,7 @@ package body Ch4 is
 
       procedure Box_Error is
       begin
-         if Ada_Version < Ada_2005 then
-            Error_Msg_SC ("box in aggregate is an Ada 2005 extension");
-         end if;
+         Error_Msg_Ada_2005_Extension ("'<'> in aggregate");
 
          --  Ada 2005 (AI-287): The box notation is allowed only with named
          --  notation because positional notation might be error prone. For
@@ -1755,11 +1753,7 @@ package body Ch4 is
          --  Ada 2005(AI-287): The box notation is used to indicate the
          --  default initialization of aggregate components
 
-         if Ada_Version < Ada_2005 then
-            Error_Msg_SP
-              ("component association with '<'> is an Ada 2005 extension");
-            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-         end if;
+         Error_Msg_Ada_2005_Extension ("component association with '<'>");
 
          Set_Box_Present (Assoc_Node);
          Scan; -- Past box

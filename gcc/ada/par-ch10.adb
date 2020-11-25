@@ -861,11 +861,7 @@ package body Ch10 is
                  ("unexpected LIMITED ignored");
             end if;
 
-            if Ada_Version < Ada_2005 then
-               Error_Msg_SP ("LIMITED WITH is an Ada 2005 extension");
-               Error_Msg_SP
-                 ("\unit must be compiled with -gnat05 switch");
-            end if;
+            Error_Msg_Ada_2005_Extension ("`LIMITED WITH`");
 
          elsif Token = Tok_Private then
             Has_Limited := False;
@@ -879,12 +875,9 @@ package body Ch10 is
 
                Restore_Scan_State (Scan_State); -- to PRIVATE
                return Item_List;
-
-            elsif Ada_Version < Ada_2005 then
-               Error_Msg_SP ("`PRIVATE WITH` is an Ada 2005 extension");
-               Error_Msg_SP
-                 ("\unit must be compiled with -gnat05 switch");
             end if;
+
+            Error_Msg_Ada_2005_Extension ("`PRIVATE WITH`");
 
          else
             Has_Limited := False;

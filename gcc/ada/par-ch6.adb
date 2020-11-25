@@ -426,11 +426,7 @@ package body Ch6 is
          --  Ada 2005 (AI-318-02)
 
          if Token = Tok_Access then
-            if Ada_Version < Ada_2005 then
-               Error_Msg_SC
-                 ("anonymous access result type is an Ada 2005 extension");
-               Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
-            end if;
+            Error_Msg_Ada_2005_Extension ("anonymous access result type");
 
             Result_Node := P_Access_Definition (Result_Not_Null);
 
@@ -598,10 +594,7 @@ package body Ch6 is
             --  Ada 2005 (AI-248): Parse a null procedure declaration
 
             elsif Token = Tok_Null then
-               if Ada_Version < Ada_2005 then
-                  Error_Msg_SP ("null procedures are an Ada 2005 extension");
-                  Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-               end if;
+               Error_Msg_Ada_2005_Extension ("null procedure");
 
                Scan; -- past NULL
 
@@ -1064,11 +1057,7 @@ package body Ch6 is
          --  Ada 2005 (AI-318-02)
 
          if Token = Tok_Access then
-            if Ada_Version < Ada_2005 then
-               Error_Msg_SC
-                 ("anonymous access result type is an Ada 2005 extension");
-               Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
-            end if;
+            Error_Msg_Ada_2005_Extension ("anonymous access result type");
 
             Result_Node := P_Access_Definition (Result_Not_Null);
 
@@ -1950,11 +1939,7 @@ package body Ch6 is
          --  Extended_return_statement (Ada 2005 only -- AI-318):
 
          else
-            if Ada_Version < Ada_2005 then
-               Error_Msg_SP
-                 (" extended_return_statement is an Ada 2005 extension");
-               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-            end if;
+            Error_Msg_Ada_2005_Extension ("extended return statement");
 
             Ret_Node := New_Node (N_Extended_Return_Statement, Ret_Sloc);
             Decl := P_Return_Object_Declaration;
