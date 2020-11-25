@@ -1,7 +1,8 @@
 /* OpenACC 'cache' directive: invalid usage.  */
 
-/* See also corresponding C++ variant: '../../g++.dg/goacc/cache-2.C'.  */
+/* See also corresponding C/C++ variant '../../c-c++-common/goacc/cache-2.c'.  */
 
+template <int N>
 static void
 test ()
 {
@@ -54,4 +55,10 @@ test ()
         if (a[i] != b[i])
             __builtin_abort ();
     }
+}
+
+static void
+instantiate ()
+{
+  &test<0>;
 }
