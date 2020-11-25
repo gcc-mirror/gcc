@@ -40,6 +40,7 @@
 #include <chrono>
 
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
+#include <exception> // std::terminate
 #include <sys/time.h>
 #endif
 
@@ -113,13 +114,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __atomic_wait_status::timeout;
 	  }
       }
-#endif
+#else // ! FUTEX
 
 #ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
     template<typename _Duration>
       __atomic_wait_status
-      __cond_wait_until_impl(__gthread_cond_t* __cv,
-	  unique_lock<mutex>& __lock,
+      __cond_wait_until_impl(__condvar& __cv, mutex& __mx,
 	  const chrono::time_point<chrono::steady_clock, _Duration>& __atime)
       {
 	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
@@ -131,62 +131,61 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    static_cast<long>(__ns.count())
 	  };
 
-	pthread_cond_clockwait(__cv, __lock.mutex()->native_handle(),
-			       CLOCK_MONOTONIC,
-			       &__ts);
+	__cv.wait_until(__mx, CLOCK_MONOTONIC, __ts);
+
 	return (chrono::steady_clock::now() < __atime)
 	       ? __atomic_wait_status::no_timeout
 	       : __atomic_wait_status::timeout;
       }
 #endif
 
-      template<typename _Duration>
-	__atomic_wait_status
-	__cond_wait_until_impl(__gthread_cond_t* __cv,
-	    unique_lock<std::mutex>& __lock,
-	    const chrono::time_point<chrono::system_clock, _Duration>& __atime)
+    template<typename _Duration>
+      __atomic_wait_status
+      __cond_wait_until_impl(__condvar& __cv, mutex& __mx,
+	  const chrono::time_point<chrono::system_clock, _Duration>& __atime)
+      {
+	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+
+	__gthread_time_t __ts =
 	{
-	  auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-	  auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+	  static_cast<std::time_t>(__s.time_since_epoch().count()),
+	  static_cast<long>(__ns.count())
+	};
 
-	  __gthread_time_t __ts =
-	  {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
+	__cv.wait_until(__mx, __ts);
 
-	  __gthread_cond_timedwait(__cv, __lock.mutex()->native_handle(),
-				   &__ts);
-	  return (chrono::system_clock::now() < __atime)
-		 ? __atomic_wait_status::no_timeout
-		 : __atomic_wait_status::timeout;
-	}
+	return (chrono::system_clock::now() < __atime)
+	       ? __atomic_wait_status::no_timeout
+	       : __atomic_wait_status::timeout;
+      }
 
-      // return true if timeout
-      template<typename _Clock, typename _Duration>
-	__atomic_wait_status
-	__cond_wait_until(__gthread_cond_t* __cv,
-	    unique_lock<std::mutex>& __lock,
-	    const chrono::time_point<_Clock, _Duration>& __atime)
-	{
+    // return true if timeout
+    template<typename _Clock, typename _Duration>
+      __atomic_wait_status
+      __cond_wait_until(__condvar& __cv, mutex& __mx,
+	  const chrono::time_point<_Clock, _Duration>& __atime)
+      {
 #ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
-	  using __clock_t = chrono::steady_clock;
+	using __clock_t = chrono::steady_clock;
 #else
-	  using __clock_t = chrono::system_clock;
+	using __clock_t = chrono::system_clock;
 #endif
-	  const typename _Clock::time_point __c_entry = _Clock::now();
-	  const __clock_t::time_point __s_entry = __clock_t::now();
-	  const auto __delta = __atime - __c_entry;
-	  const auto __s_atime = __s_entry + __delta;
-	  if (std::__detail::__cond_wait_until_impl(__cv, __lock, __s_atime))
-	    return __atomic_wait_status::no_timeout;
-	  // We got a timeout when measured against __clock_t but
-	  // we need to check against the caller-supplied clock
-	  // to tell whether we should return a timeout.
-	  if (_Clock::now() < __atime)
-	    return __atomic_wait_status::no_timeout;
-	  return __atomic_wait_status::timeout;
-	}
+	const typename _Clock::time_point __c_entry = _Clock::now();
+	const __clock_t::time_point __s_entry = __clock_t::now();
+	const auto __delta = __atime - __c_entry;
+	const auto __s_atime = __s_entry + __delta;
+	if (__detail::__cond_wait_until_impl(__cv, __mx, __s_atime)
+	    == __atomic_wait_status::no_timeout)
+	  return __atomic_wait_status::no_timeout;
+	// We got a timeout when measured against __clock_t but
+	// we need to check against the caller-supplied clock
+	// to tell whether we should return a timeout.
+	if (_Clock::now() < __atime)
+	  return __atomic_wait_status::no_timeout;
+	return __atomic_wait_status::timeout;
+      }
+#endif // FUTEX
 
     struct __timed_waiters : __waiters
     {
@@ -202,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __waiters::__lock_t __l(_M_mtx);
 	  while (__cur <= __version)
 	    {
-	      if (__detail::__cond_wait_until(&_M_cv, __l, __atime)
+	      if (__detail::__cond_wait_until(_M_cv, _M_mtx, __atime)
 		    == __atomic_wait_status::timeout)
 		return __atomic_wait_status::timeout;
 
@@ -280,7 +279,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __reltime = chrono::duration_cast<__dur>(__rtime);
       if (__reltime < __rtime)
 	++__reltime;
-
 
       return __atomic_wait_until(__addr, __old, std::move(__pred),
 				 chrono::steady_clock::now() + __reltime);

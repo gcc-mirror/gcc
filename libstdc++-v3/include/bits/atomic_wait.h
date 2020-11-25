@@ -36,19 +36,20 @@
 #if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
-#include <bits/std_mutex.h>
-#include <bits/unique_lock.h>
 #include <ext/numeric_traits.h>
 
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
-#include <climits>
-#include <unistd.h>
-#include <syscall.h>
+# include <cerrno>
+# include <climits>
+# include <unistd.h>
+# include <syscall.h>
+# include <bits/functexcept.h>
+// TODO get this from Autoconf
+# define _GLIBCXX_HAVE_LINUX_FUTEX_PRIVATE 1
+#else
+# include <bits/std_mutex.h>  // std::mutex, std::__condvar
 #endif
 
-
-// TODO get this from Autoconf
-#define _GLIBCXX_HAVE_LINUX_FUTEX_PRIVATE 1
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -59,10 +60,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     constexpr auto __atomic_spin_count_1 = 16;
     constexpr auto __atomic_spin_count_2 = 12;
-
-    inline constexpr
-    auto __platform_wait_max_value =
-		__gnu_cxx::__int_traits<__platform_wait_t>::__max;
 
     template<typename _Tp>
       inline constexpr bool __platform_wait_uses_type
@@ -119,23 +116,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     struct __waiters
     {
-       alignas(64) __platform_wait_t _M_ver = 0;
-       alignas(64) __platform_wait_t _M_wait = 0;
+      alignas(64) __platform_wait_t _M_ver = 0;
+      alignas(64) __platform_wait_t _M_wait = 0;
 
 #ifndef _GLIBCXX_HAVE_LINUX_FUTEX
-      using __lock_t = std::unique_lock<std::mutex>;
-      mutable __lock_t::mutex_type _M_mtx;
+      using __lock_t = lock_guard<mutex>;
+      mutex _M_mtx;
+      __condvar _M_cv;
 
-#  ifdef __GTHREAD_COND_INIT
-      mutable __gthread_cond_t _M_cv = __GTHREAD_COND_INIT;
       __waiters() noexcept = default;
-#  else
-      mutable __gthread_cond_t _M_cv;
-      __waiters() noexcept
-      {
-	__GTHREAD_COND_INIT_FUNCTION(&_M_cv);
-      }
-#  endif
 #endif
 
       __platform_wait_t
@@ -163,9 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	while (__cur <= __version)
 	  {
 	    __waiters::__lock_t __l(_M_mtx);
-	    auto __e = __gthread_cond_wait(&_M_cv, __l.mutex()->native_handle());
-	    if (__e)
-	      __throw_system_error(__e);
+	    _M_cv.wait(_M_mtx);
 	    __platform_wait_t __last = __cur;
 	    __atomic_load(&_M_ver, &__cur, __ATOMIC_ACQUIRE);
 	    if (__cur < __last)
@@ -189,9 +176,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
 	__platform_notify(&_M_ver, __all);
 #else
-	auto __e = __gthread_cond_broadcast(&_M_cv);
-	if (__e)
-	  __throw_system_error(__e);
+	if (__all)
+	  _M_cv.notify_all();
+	else
+	  _M_cv.notify_one();
 #endif
       }
 
