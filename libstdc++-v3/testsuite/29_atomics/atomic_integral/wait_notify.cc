@@ -3,7 +3,6 @@
 // { dg-require-gthreads "" }
 // { dg-add-options libatomic }
 // { dg-additional-options "-pthread" { target pthread } }
-// { dg-skip-if "broken" { *-*-* } }
 
 // Copyright (C) 2020 Free Software Foundation, Inc.
 //
