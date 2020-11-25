@@ -1482,10 +1482,8 @@ package body Sem_Ch8 is
       --  AI12-0383: Names that denote values can be renamed.
       --  Ignore (accept) N_Raise_xxx_Error nodes in this context.
 
-      elsif Ada_Version < Ada_2020
-        and then No_Raise_xxx_Error (Nam) = OK
-      then
-         Error_Msg_N ("value in renaming requires -gnat2020", Nam);
+      elsif No_Raise_xxx_Error (Nam) = OK then
+         Error_Msg_Ada_2020_Feature ("value in renaming", Sloc (Nam));
       end if;
 
       Set_Etype (Id, T2);

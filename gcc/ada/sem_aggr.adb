@@ -3035,10 +3035,7 @@ package body Sem_Aggr is
       Base : constant Node_Id := Expression (N);
 
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg_N ("delta_aggregate is an Ada 202x feature", N);
-         Error_Msg_N ("\compile with -gnat2020", N);
-      end if;
+      Error_Msg_Ada_2020_Feature ("delta aggregate", Sloc (N));
 
       if not Is_Composite_Type (Typ) then
          Error_Msg_N ("not a composite type", N);

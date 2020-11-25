@@ -1486,11 +1486,8 @@ package body Ch3 is
       --  access_definition
 
       elsif Token = Tok_Renames then
-         if Ada_Version < Ada_2020 then
-            Error_Msg_SC
-              ("object renaming without subtype is an Ada 202x feature");
-            Error_Msg_SC ("\compile with -gnat2020");
-         end if;
+         Error_Msg_Ada_2020_Feature
+           ("object renaming without subtype", Token_Ptr);
 
          Scan; -- past renames
 

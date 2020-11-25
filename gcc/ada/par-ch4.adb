@@ -2928,10 +2928,7 @@ package body Ch4 is
                Scan; -- past minus
 
             when Tok_At_Sign =>  --  AI12-0125 : target_name
-               if Ada_Version < Ada_2020 then
-                  Error_Msg_SC ("target name is an Ada 202x feature");
-                  Error_Msg_SC ("\compile with -gnat2020");
-               end if;
+               Error_Msg_Ada_2020_Feature ("target name", Token_Ptr);
 
                Node1 := P_Name;
                return Node1;
@@ -3507,10 +3504,7 @@ package body Ch4 is
          Set_Expression (Assoc_Node, P_Expression);
       end if;
 
-      if Ada_Version < Ada_2020 then
-         Error_Msg_SC ("iterated component is an Ada 202x feature");
-         Error_Msg_SC ("\compile with -gnat2020");
-      end if;
+      Error_Msg_Ada_2020_Feature ("iterated component", Token_Ptr);
 
       return Assoc_Node;
    end P_Iterated_Component_Association;
@@ -3695,9 +3689,7 @@ package body Ch4 is
             Result : constant Node_Id :=
               Make_Expression_With_Actions (Loc, Actions, Expression);
          begin
-            if Ada_Version < Ada_2020 then
-               Error_Msg ("declare_expression is an Ada 2020 feature", Loc);
-            end if;
+            Error_Msg_Ada_2020_Feature ("declare expression", Loc);
 
             return Result;
          end;

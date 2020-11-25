@@ -15166,14 +15166,13 @@ package body Sem_Ch13 is
       Assign_Indexed_Subp : Node_Id := Empty;
 
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg_N ("Aspect Aggregate is an Ada_2020 feature", N);
+      Error_Msg_Ada_2020_Feature ("aspect Aggregate", Sloc (N));
 
-      elsif Nkind (N) /= N_Aggregate
+      if Nkind (N) /= N_Aggregate
         or else Present (Expressions (N))
         or else No (Component_Associations (N))
       then
-         Error_Msg_N ("Aspect Aggregate requires an aggregate "
+         Error_Msg_N ("aspect Aggregate requires an aggregate "
                         & "with component associations", N);
          return;
       end if;
@@ -15251,7 +15250,8 @@ package body Sem_Ch13 is
 
          PF_Name : Node_Id := PF_Arg;
 
-         --  Start of processing for Check_Property_Function_Arg
+      --  Start of processing for Check_Property_Function_Arg
+
       begin
          if Nkind (PF_Arg) = N_Op_Not then
             PF_Name := Right_Opnd (PF_Arg);
@@ -15282,10 +15282,10 @@ package body Sem_Ch13 is
          end if;
       end Check_Property_Function_Arg;
 
+   --  Start of processing for Validate_Aspect_Stable_Properties
+
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg_N ("Aspect Stable_Properties is an Ada_2020 feature", N);
-      end if;
+      Error_Msg_Ada_2020_Feature ("aspect Stable_Properties", Sloc (N));
 
       if (not Is_Aspect_Of_Type) and then (not Is_Subprogram (E)) then
          Error_Msg_N ("Stable_Properties aspect can only be specified for "
