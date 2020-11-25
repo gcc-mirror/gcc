@@ -1580,11 +1580,7 @@ package body Ch4 is
          --  Deal with others association first. This is a named association
 
          if No (Expr_Node) then
-            if No (Assoc_List) then
-               Assoc_List := New_List;
-            end if;
-
-            Append (P_Record_Or_Array_Component_Association, Assoc_List);
+            Append_New (P_Record_Or_Array_Component_Association, Assoc_List);
 
          --  Improper use of WITH
 
@@ -1612,11 +1608,7 @@ package body Ch4 is
          elsif Nkind (Expr_Node) in
            N_Iterated_Component_Association | N_Iterated_Element_Association
          then
-            if No (Assoc_List) then
-               Assoc_List := New_List (Expr_Node);
-            else
-               Append_To (Assoc_List, Expr_Node);
-            end if;
+            Append_New (Expr_Node, Assoc_List);
 
          elsif Token = Tok_Comma
            or else Token = Tok_Right_Paren
@@ -1630,11 +1622,7 @@ package body Ch4 is
                   & "named association)");
             end if;
 
-            if No (Expr_List) then
-               Expr_List := New_List;
-            end if;
-
-            Append (Expr_Node, Expr_List);
+            Append_New (Expr_Node, Expr_List);
 
          --  Check for aggregate followed by left parent, maybe missing comma
 
@@ -1643,18 +1631,10 @@ package body Ch4 is
          then
             T_Comma;
 
-            if No (Expr_List) then
-               Expr_List := New_List;
-            end if;
-
-            Append (Expr_Node, Expr_List);
+            Append_New (Expr_Node, Expr_List);
 
          elsif Token = Tok_Right_Bracket then
-            if No (Expr_List) then
-               Expr_List := New_List;
-            end if;
-
-            Append (Expr_Node, Expr_List);
+            Append_New (Expr_Node, Expr_List);
             exit;
 
          --  Anything else is assumed to be a named association
@@ -1662,11 +1642,7 @@ package body Ch4 is
          else
             Restore_Scan_State (Scan_State); -- to start of expression
 
-            if No (Assoc_List) then
-               Assoc_List := New_List;
-            end if;
-
-            Append (P_Record_Or_Array_Component_Association, Assoc_List);
+            Append_New (P_Record_Or_Array_Component_Association, Assoc_List);
          end if;
 
          exit when not Comma_Present;
