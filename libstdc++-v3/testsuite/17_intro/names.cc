@@ -185,6 +185,8 @@
 #undef r
 #undef x
 #undef y
+// <sys/var.h> defines vario::v
+#undef v
 #endif
 
 #ifdef __hpux__
