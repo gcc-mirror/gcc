@@ -14,7 +14,7 @@ endif
 if LIBBACKTRACE_SUPPORTED
 SUBDIRS += libbacktrace
 endif
-SUBDIRS += lsan asan ubsan hwasan
+SUBDIRS += lsan asan ubsan
 nodist_saninclude_HEADERS += \
   include/sanitizer/lsan_interface.h \
   include/sanitizer/asan_interface.h \
@@ -22,6 +22,9 @@ nodist_saninclude_HEADERS += \
   include/sanitizer/hwasan_interface.h
 if TSAN_SUPPORTED
 SUBDIRS += tsan
+endif
+if HWASAN_SUPPORTED
+SUBDIRS += hwasan
 endif
 endif
 
