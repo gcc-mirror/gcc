@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (neg_s16_x_tied1, svint16_t,
 
 /*
 ** neg_s16_x_untied:
+**	movprfx	z0, z1
 **	neg	z0\.h, p0/m, z1\.h
 **	ret
 */

@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (rintp_f32_x_tied1, svfloat32_t,
 
 /*
 ** rintp_f32_x_untied:
+**	movprfx	z0, z1
 **	frintp	z0\.s, p0/m, z1\.s
 **	ret
 */

@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (qneg_s64_x_tied1, svint64_t,
 
 /*
 ** qneg_s64_x_untied:
+**	movprfx	z0, z1
 **	sqneg	z0\.d, p0/m, z1\.d
 **	ret
 */
