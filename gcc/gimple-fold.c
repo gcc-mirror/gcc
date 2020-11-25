@@ -8479,6 +8479,32 @@ gimple_build (gimple_seq *seq, location_t loc,
   return res;
 }
 
+/* Build the call FN () with a result of type TYPE (or no result if TYPE is
+   void) with a location LOC.  Returns the built expression value (or NULL_TREE
+   if TYPE is void) and appends statements possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc, combined_fn fn, tree type)
+{
+  tree res = NULL_TREE;
+  gcall *stmt;
+  if (internal_fn_p (fn))
+    stmt = gimple_build_call_internal (as_internal_fn (fn), 0);
+  else
+    {
+      tree decl = builtin_decl_implicit (as_builtin_fn (fn));
+      stmt = gimple_build_call (decl, 0);
+    }
+  if (!VOID_TYPE_P (type))
+    {
+      res = create_tmp_reg_or_ssa_name (type);
+      gimple_call_set_lhs (stmt, res);
+    }
+  gimple_set_location (stmt, loc);
+  gimple_seq_add_stmt_without_update (seq, stmt);
+  return res;
+}
+
 /* Build the call FN (ARG0) with a result of type TYPE
    (or no result if TYPE is void) with location LOC,
    simplifying it first if possible.  Returns the built
@@ -8666,6 +8692,26 @@ gimple_build_vector (gimple_seq *seq, location_t loc,
 	return res;
       }
   return builder->build ();
+}
+
+/* Emit gimple statements into &stmts that take a value given in OLD_SIZE
+   and generate a value guaranteed to be rounded upwards to ALIGN.
+
+   Return the tree node representing this size, it is of TREE_TYPE TYPE.  */
+
+tree
+gimple_build_round_up (gimple_seq *seq, location_t loc, tree type,
+		       tree old_size, unsigned HOST_WIDE_INT align)
+{
+  unsigned HOST_WIDE_INT tg_mask = align - 1;
+  /* tree new_size = (old_size + tg_mask) & ~tg_mask;  */
+  gcc_assert (INTEGRAL_TYPE_P (type));
+  tree tree_mask = build_int_cst (type, tg_mask);
+  tree oversize = gimple_build (seq, loc, PLUS_EXPR, type, old_size,
+				tree_mask);
+
+  tree mask = build_int_cst (type, -align);
+  return gimple_build (seq, loc, BIT_AND_EXPR, type, oversize, mask);
 }
 
 /* Return true if the result of assignment STMT is known to be non-negative.

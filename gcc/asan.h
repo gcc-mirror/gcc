@@ -49,6 +49,9 @@ extern void hwasan_finish_file (void);
 extern bool hwasan_sanitize_p (void);
 extern bool hwasan_sanitize_stack_p (void);
 extern bool hwasan_sanitize_allocas_p (void);
+extern bool hwasan_expand_check_ifn (gimple_stmt_iterator *, bool);
+extern bool hwasan_expand_mark_ifn (gimple_stmt_iterator *);
+extern bool gate_hwasan (void);
 
 extern gimple_stmt_iterator create_cond_insert_point
      (gimple_stmt_iterator *, bool, bool, bool, basic_block *, basic_block *);
@@ -181,6 +184,9 @@ extern hash_set<tree> *asan_handled_variables;
 static inline bool
 asan_intercepted_p (enum built_in_function fcode)
 {
+  if (hwasan_sanitize_p ())
+    return false;
+
   return fcode == BUILT_IN_INDEX
 	 || fcode == BUILT_IN_MEMCHR
 	 || fcode == BUILT_IN_MEMCMP
@@ -209,7 +215,8 @@ asan_intercepted_p (enum built_in_function fcode)
 static inline bool
 asan_sanitize_use_after_scope (void)
 {
-  return (flag_sanitize_address_use_after_scope && asan_sanitize_stack_p ());
+  return (flag_sanitize_address_use_after_scope
+	  && (asan_sanitize_stack_p () || hwasan_sanitize_stack_p ()));
 }
 
 /* Return true if DECL should be guarded on the stack.  */

@@ -469,6 +469,111 @@ expand_UBSAN_OBJECT_SIZE (internal_fn, gcall *)
 /* This should get expanded in the sanopt pass.  */
 
 static void
+expand_HWASAN_CHECK (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* For hwasan stack tagging:
+   Clear tags on the dynamically allocated space.
+   For use after an object dynamically allocated on the stack goes out of
+   scope.  */
+static void
+expand_HWASAN_ALLOCA_UNPOISON (internal_fn, gcall *gc)
+{
+  gcc_assert (Pmode == ptr_mode);
+  tree restored_position = gimple_call_arg (gc, 0);
+  rtx restored_rtx = expand_expr (restored_position, NULL_RTX, VOIDmode,
+				  EXPAND_NORMAL);
+  rtx func = init_one_libfunc ("__hwasan_tag_memory");
+  rtx off = expand_simple_binop (Pmode, MINUS, restored_rtx,
+				 stack_pointer_rtx, NULL_RTX, 0,
+				 OPTAB_WIDEN);
+  emit_library_call_value (func, NULL_RTX, LCT_NORMAL, VOIDmode,
+			   virtual_stack_dynamic_rtx, Pmode,
+			   HWASAN_STACK_BACKGROUND, QImode,
+			   off, Pmode);
+}
+
+/* For hwasan stack tagging:
+   Return a tag to be used for a dynamic allocation.  */
+static void
+expand_HWASAN_CHOOSE_TAG (internal_fn, gcall *gc)
+{
+  tree tag = gimple_call_lhs (gc);
+  rtx target = expand_expr (tag, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  machine_mode mode = GET_MODE (target);
+  gcc_assert (mode == QImode);
+
+  rtx base_tag = targetm.memtag.extract_tag (hwasan_frame_base (), NULL_RTX);
+  gcc_assert (base_tag);
+  rtx tag_offset = gen_int_mode (hwasan_current_frame_tag (), QImode);
+  rtx chosen_tag = expand_simple_binop (QImode, PLUS, base_tag, tag_offset,
+					target, /* unsignedp = */1,
+					OPTAB_WIDEN);
+  chosen_tag = hwasan_truncate_to_tag_size (chosen_tag, target);
+
+  /* Really need to put the tag into the `target` RTX.  */
+  if (chosen_tag != target)
+    {
+      rtx temp = chosen_tag;
+      gcc_assert (GET_MODE (chosen_tag) == mode);
+      emit_move_insn (target, temp);
+    }
+
+  hwasan_increment_frame_tag ();
+}
+
+/* For hwasan stack tagging:
+   Tag a region of space in the shadow stack according to the base pointer of
+   an object on the stack.  N.b. the length provided in the internal call is
+   required to be aligned to HWASAN_TAG_GRANULE_SIZE.  */
+static void
+expand_HWASAN_MARK (internal_fn, gcall *gc)
+{
+  gcc_assert (ptr_mode == Pmode);
+  HOST_WIDE_INT flag = tree_to_shwi (gimple_call_arg (gc, 0));
+  bool is_poison = ((asan_mark_flags)flag) == ASAN_MARK_POISON;
+
+  tree base = gimple_call_arg (gc, 1);
+  gcc_checking_assert (TREE_CODE (base) == ADDR_EXPR);
+  rtx base_rtx = expand_normal (base);
+
+  rtx tag = is_poison ? HWASAN_STACK_BACKGROUND
+    : targetm.memtag.extract_tag (base_rtx, NULL_RTX);
+  rtx address = targetm.memtag.untagged_pointer (base_rtx, NULL_RTX);
+
+  tree len = gimple_call_arg (gc, 2);
+  rtx r_len = expand_normal (len);
+
+  rtx func = init_one_libfunc ("__hwasan_tag_memory");
+  emit_library_call (func, LCT_NORMAL, VOIDmode, address, Pmode,
+		     tag, QImode, r_len, Pmode);
+}
+
+/* For hwasan stack tagging:
+   Store a tag into a pointer.  */
+static void
+expand_HWASAN_SET_TAG (internal_fn, gcall *gc)
+{
+  gcc_assert (ptr_mode == Pmode);
+  tree g_target = gimple_call_lhs (gc);
+  tree g_ptr = gimple_call_arg (gc, 0);
+  tree g_tag = gimple_call_arg (gc, 1);
+
+  rtx ptr = expand_normal (g_ptr);
+  rtx tag = expand_expr (g_tag, NULL_RTX, QImode, EXPAND_NORMAL);
+  rtx target = expand_normal (g_target);
+
+  rtx untagged = targetm.memtag.untagged_pointer (ptr, target);
+  rtx tagged_value = targetm.memtag.set_tag (untagged, tag, target);
+  if (tagged_value != target)
+    emit_move_insn (target, tagged_value);
+}
+
+/* This should get expanded in the sanopt pass.  */
+
+static void
 expand_ASAN_CHECK (internal_fn, gcall *)
 {
   gcc_unreachable ();

@@ -753,6 +753,7 @@ dump_gimple_call_args (pretty_printer *buffer, const gcall *gs,
 	  limit = ARRAY_SIZE (reduction_args);
 	  break;
 
+	case IFN_HWASAN_MARK:
 	case IFN_ASAN_MARK:
 #define DEF(X) #X
 	  static const char *const asan_mark_args[] = {IFN_ASAN_MARK_FLAGS};

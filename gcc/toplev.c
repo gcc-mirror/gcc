@@ -512,7 +512,7 @@ compile_file (void)
       if (flag_sanitize & SANITIZE_THREAD)
 	tsan_finish_file ();
 
-      if (flag_sanitize & SANITIZE_HWADDRESS)
+      if (gate_hwasan ())
 	hwasan_finish_file ();
 
       omp_finish_file ();
