@@ -2143,10 +2143,6 @@ gcn_conditional_register_usage (void)
     fixed_regs[cfun->machine->args.reg[WORK_ITEM_ID_Y_ARG]] = 1;
   if (cfun->machine->args.reg[WORK_ITEM_ID_Z_ARG] >= 0)
     fixed_regs[cfun->machine->args.reg[WORK_ITEM_ID_Z_ARG]] = 1;
-
-  if (TARGET_GCN5_PLUS)
-    /* v0 is always zero, for global nul-offsets.  */
-    fixed_regs[VGPR_REGNO (0)] = 1;
 }
 
 /* Determine if a load or store is valid, according to the register classes
