@@ -4329,6 +4329,17 @@ clear_padding_union (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)
       {
+	if (DECL_SIZE_UNIT (field) == NULL_TREE)
+	  {
+	    if (TREE_TYPE (field) == error_mark_node)
+	      continue;
+	    gcc_assert (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+			&& !COMPLETE_TYPE_P (TREE_TYPE (field)));
+	    error_at (buf->loc, "flexible array member %qD does not have "
+				"well defined padding bits for %qs",
+		      field, "__builtin_clear_padding");
+	    continue;
+	  }
 	HOST_WIDE_INT fldsz = tree_to_shwi (DECL_SIZE_UNIT (field));
 	gcc_assert (union_buf->size == 0);
 	union_buf->off = start_off;
@@ -4446,11 +4457,12 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
+	    tree ftype = TREE_TYPE (field);
 	    if (DECL_BIT_FIELD (field))
 	      {
 		if (DECL_NAME (field) == NULL_TREE)
 		  continue;
-		HOST_WIDE_INT fldsz = TYPE_PRECISION (TREE_TYPE (field));
+		HOST_WIDE_INT fldsz = TYPE_PRECISION (ftype);
 		if (fldsz == 0)
 		  continue;
 		HOST_WIDE_INT pos = int_byte_position (field);
@@ -4512,6 +4524,16 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 			  *p &= ~((1 << fldsz) - 1);
 		      }
 		  }
+	      }
+	    else if (DECL_SIZE_UNIT (field) == NULL_TREE)
+	      {
+		if (ftype == error_mark_node)
+		  continue;
+		gcc_assert (TREE_CODE (ftype) == ARRAY_TYPE
+			    && !COMPLETE_TYPE_P (ftype));
+		error_at (buf->loc, "flexible array member %qD does not have "
+				    "well defined padding bits for %qs",
+			  field, "__builtin_clear_padding");
 	      }
 	    else
 	      {
