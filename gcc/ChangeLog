@@ -1,3 +1,29 @@
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97918
+	* dwarf2out.c (dwarf2out_early_finish): flush_limbo_die_list
+	after gen_scheduled_generic_parms_dies.
+
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR debug/97060
+	* dwarf2out.c (gen_subprogram_die): It's a declaration
+	if DECL_INITIAL isn't set.
+
+2020-11-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/97534
+	* config/arm/arm.c (arm_split_atomic_op): Use gen_int_mode when
+	negating a const_int.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-expand.c (expand_oacc_for): More explicit checking of which
+	OMP constructs we're expecting.
+
 2020-11-23  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* doc/install.texi: Document bootstrap-asan option.

@@ -1,3 +1,11 @@
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_float/value_init.cc: Use float
+	instead of double so that __atomic_load_8 isn't needed.
+
 2020-11-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
