@@ -1,5 +1,16 @@
 2021-01-13  Julian Brown  <julian@codesourcery.com>
 
+	* doc/tm.texi.in (TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Add
+	documentation hook.
+	* doc/tm.texi: Regenerate.
+	* target.def (prefer_gather_scatter): Add target hook under vectorizer.
+	* tree-vect-stmts.cc (get_group_load_store_type): Optionally prefer
+	gather/scatter instructions to scalar/elementwise fallback.
+	* config/gcn/gcn.cc (TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Define
+	hook.
+
+2021-01-13  Julian Brown  <julian@codesourcery.com>
+
 	* omp-offload.cc (oacc_thread_numbers): Add VF_BY_VECTORIZER parameter.
 	Add overloaded wrapper for previous arguments & behaviour.
 	(oacc_xform_loop): Lower vector loops to iterate a multiple of
