@@ -1712,9 +1712,9 @@ package body Ch5 is
       Set_Discrete_Subtype_Definition
         (Loop_Param_Specification_Node, P_Discrete_Subtype_Definition);
 
-      if Ada_Version >= Ada_2020
-         and then Token = Tok_When
-      then
+      if Token = Tok_When then
+         Error_Msg_Ada_2020_Feature ("iterator filter", Token_Ptr);
+
          Scan; -- past WHEN
          Set_Iterator_Filter
            (Loop_Param_Specification_Node, P_Condition);
@@ -1773,9 +1773,9 @@ package body Ch5 is
 
       Set_Name (Node1, P_Name);
 
-      if Ada_Version >= Ada_2020
-         and then Token = Tok_When
-      then
+      if Token = Tok_When then
+         Error_Msg_Ada_2020_Feature ("iterator filter", Token_Ptr);
+
          Scan; -- past WHEN
          Set_Iterator_Filter
            (Node1, P_Condition);
