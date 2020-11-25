@@ -100,9 +100,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    auto __e = syscall (SYS_futex, static_cast<const void*>(__addr),
 				  static_cast<int>(__futex_wait_flags::__wait_private),
 				    __val, nullptr);
-	    if (!__e)
+	    if (!__e || EAGAIN)
 	      break;
-	    else if (!(errno == EINTR || errno == EAGAIN))
+	    else if (errno != EINTR)
 	      __throw_system_error(__e);
 	  }
       }
