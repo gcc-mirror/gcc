@@ -1,6 +1,8 @@
 /* Test 'map' clause diagnostics.  */
 
-/* See also corresponding C/C++ variant: '../../c-c++-common/gomp/map-1.c'.  */
+/* See also corresponding OpenMP C/C++ variant: '../../c-c++-common/gomp/map-1.c'.  */
+
+/* See also corresponding OpenACC variant: '../goacc/data-clause-1.C'.  */
 
 extern int a[][10], a2[][10];
 int b[10], c[10][2], d[10], e[10], f[10];
@@ -41,7 +43,7 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
   #pragma omp target map(alloc: s2) /* { dg-error "'s2' does not have a mappable type in 'map' clause" } */
     ;
   #pragma omp target map(to: a[:][:]) /* { dg-error "array type length expression must be specified" } */
-    bar (&a[0][0]); /* { dg-error "referenced in target region does not have a mappable type" "TODO" { xfail *-*-* } } */
+    bar (&a[0][0]); /* { dg-error "referenced in target region does not have a mappable type" "PR97996" { xfail *-*-* } } */
   #pragma omp target map(tofrom: b[-1:]) /* { dg-error "negative low bound in array section" } */
     bar (b);
   #pragma omp target map(tofrom: c[:-3][:]) /* { dg-error "negative length in array section" } */
