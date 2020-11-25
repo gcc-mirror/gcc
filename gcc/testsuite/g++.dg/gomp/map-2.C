@@ -1,6 +1,8 @@
 /* Test 'map' clause diagnostics.  */
 
-/* See also corresponding C/C++ variant: '../../c-c++-common/gomp/map-2.c'.  */
+/* See also corresponding OpenMP C/C++ variant: '../../c-c++-common/gomp/map-2.c'.  */
+
+/* See also corresponding OpenACC variant: '../goacc/data-clause-2.C'.  */
 
 template <int N>
 void
