@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    auto __e = syscall (SYS_futex, static_cast<const void*>(__addr),
 				  static_cast<int>(__futex_wait_flags::__wait_private),
 				    __val, nullptr);
-	    if (!__e || EAGAIN)
+	    if (!__e || errno == EAGAIN)
 	      break;
 	    else if (errno != EINTR)
 	      __throw_system_error(__e);
@@ -133,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       mutable __gthread_cond_t _M_cv;
       __waiters() noexcept
       {
-	__GTHREAD_COND_INIT_FUNCTION(&_M_cond);
+	__GTHREAD_COND_INIT_FUNCTION(&_M_cv);
       }
 #  endif
 #endif
