@@ -31,7 +31,7 @@
 
 with Ada.Text_IO.Float_Aux;
 
-package body Ada.Text_IO.Float_IO is
+package body Ada.Text_IO.Float_IO with SPARK_Mode => Off is
 
    package Aux renames Ada.Text_IO.Float_Aux;
 
