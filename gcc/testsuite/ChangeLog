@@ -1,3 +1,99 @@
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/pr97955.c: New test.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-47.c: Add a note.
+
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97899
+	* g++.dg/cpp0x/initlist-template3.C: New test.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* gfortran.dg/gomp/declare-target-4.f90: Adjust pattern to expect
+	an additional attribute and function return type.
+
+2020-11-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/pr97534.c: New test.
+
+2020-11-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/aapcs64/abitest.h (FUNC_VAL_CHECK): Use
+	noipa rather than noinline.
+	* gcc.target/aarch64/aapcs64/abitest-2.h (FUNC_VAL_CHECK): Likewise.
+
+2020-11-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/zvector/autovec-double-quiet-uneq.c: Expect
+	that "vx" is not emitted.
+	* gcc.target/s390/zvector/autovec-float-quiet-uneq.c: Likewise.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97950
+	* gcc.target/i386/pr97950.c: New test.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97964
+	* gcc.dg/tree-ssa/pr97964.c: New test.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-decompose-1.c: Avoid Tcl 8.5-specific
+	behavior.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/gcc-dg.exp (dg-optimized, dg-missed): Use 'saved-dg-warning'
+	instead of 'saved-dg-error'.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/gcc-dg.exp (dg-optimized, dg-missed): Fix 'process-message'
+	call.
+	* gcc.dg/vect/nodump-vect-opt-info-1.c: Demonstrate.
+	* gcc.dg/vect/nodump-vect-opt-info-2.c: Likewise.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97958
+	* c-c++-common/gomp/pr97958.c: New test.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96929
+	* gcc.dg/tree-ssa/pr96929.c: New test.
+
+2020-11-24  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/pr23401.c: Update expected output.
+	* gcc.dg/tree-ssa/pr27810.c: Update expected output.
+	* gcc.dg/tree-ssa/slsr-8.c: Update expected output.
+
+2020-11-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/vect/slp-perm-1.c: Adjust for partial vectors.
+	* gcc.dg/vect/slp-perm-5.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-perm-7.c: Likewise.
+
+2020-11-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/97849
+	* gcc.dg/tree-ssa/pr97849.c: New test.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/attr-access-5.c: New test.
+
 2020-11-23  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/95630

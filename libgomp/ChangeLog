@@ -1,3 +1,14 @@
+2020-11-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c: Don't redefine relocations if elf.h has them.
+	(reserved): Delete unused define.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Avoid
+	Tcl 8.5-specific behavior.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Likewise.
+
 2020-11-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* env.c (gomp_global_icv): Remove nest_var field.  Add
