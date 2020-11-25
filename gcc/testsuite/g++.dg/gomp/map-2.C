@@ -1,7 +1,8 @@
 /* Test 'map' clause diagnostics.  */
 
-/* See also corresponding C++ variant: '../../g++.dg/gomp/map-2.C'.  */
+/* See also corresponding C/C++ variant: '../../c-c++-common/gomp/map-2.c'.  */
 
+template <int N>
 void
 foo (int *p, int (*q)[10], int r[10], int s[10][10])
 {
@@ -42,4 +43,10 @@ foo (int *p, int (*q)[10], int r[10], int s[10][10])
   ;
   #pragma omp target map (tofrom: b[2:5][0:-4]) /* { dg-error "negative length in array section in" } */
   ;
+}
+
+static void
+instantiate ()
+{
+  &foo<0>;
 }
