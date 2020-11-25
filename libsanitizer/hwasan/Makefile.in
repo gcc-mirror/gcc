@@ -14,7 +14,6 @@
 
 @SET_MAKE@
 
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -90,10 +89,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@USING_MAC_INTERPOSE_TRUE@am__append_1 = -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT
-@USING_MAC_INTERPOSE_FALSE@am__append_2 = $(top_builddir)/interception/libinterception.la
-@LIBBACKTRACE_SUPPORTED_TRUE@am__append_3 = $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
-subdir = asan
+@USING_MAC_INTERPOSE_FALSE@am__append_1 = $(top_builddir)/interception/libinterception.la
+@LIBBACKTRACE_SUPPORTED_TRUE@am__append_2 = $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
+subdir = hwasan
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
@@ -142,34 +140,28 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
-	"$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libasan_la_DEPENDENCIES =  \
+libhwasan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_2) \
-	$(am__append_3) $(am__DEPENDENCIES_1)
-am__objects_1 = asan_activation.lo asan_allocator.lo asan_debugging.lo \
-	asan_descriptions.lo asan_errors.lo asan_fake_stack.lo \
-	asan_flags.lo asan_globals.lo asan_interceptors.lo \
-	asan_interceptors_memintrinsics.lo asan_linux.lo asan_mac.lo \
-	asan_malloc_linux.lo asan_malloc_mac.lo asan_malloc_win.lo \
-	asan_memory_profile.lo asan_new_delete.lo asan_poisoning.lo \
-	asan_posix.lo asan_premap_shadow.lo asan_report.lo \
-	asan_rtems.lo asan_rtl.lo asan_shadow_setup.lo asan_stack.lo \
-	asan_stats.lo asan_suppressions.lo asan_thread.lo asan_win.lo \
-	asan_win_dll_thunk.lo asan_win_dynamic_runtime_thunk.lo \
-	asan_interceptors_vfork.lo
-am_libasan_la_OBJECTS = $(am__objects_1)
-libasan_la_OBJECTS = $(am_libasan_la_OBJECTS)
+	$(am__append_1) $(am__append_2) $(am__DEPENDENCIES_1)
+am__objects_1 = hwasan_allocator.lo hwasan.lo hwasan_dynamic_shadow.lo \
+	hwasan_exceptions.lo hwasan_globals.lo hwasan_interceptors.lo \
+	hwasan_interceptors_vfork.lo hwasan_linux.lo \
+	hwasan_memintrinsics.lo hwasan_new_delete.lo \
+	hwasan_poisoning.lo hwasan_report.lo hwasan_setjmp.lo \
+	hwasan_tag_mismatch_aarch64.lo hwasan_thread.lo \
+	hwasan_thread_list.lo hwasan_type_test.lo
+am_libhwasan_la_OBJECTS = $(am__objects_1)
+libhwasan_la_OBJECTS = $(am_libhwasan_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libasan_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+libhwasan_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(libasan_la_LDFLAGS) $(LDFLAGS) -o $@
+	$(CXXFLAGS) $(libhwasan_la_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -232,13 +224,12 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libasan_la_SOURCES)
+SOURCES = $(libhwasan_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-HEADERS = $(nodist_toolexeclib_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -283,11 +274,7 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS \
-	-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS \
-	-DASAN_HAS_EXCEPTIONS=1 -DASAN_NEEDS_SEGV=1 \
-	-DCAN_SANITIZE_UB=0 -DASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION=0 \
-	$(am__append_1)
+DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DCAN_SANITIZE_UB=0 -DHWASAN_WITH_INTERCEPTORS=1
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -418,52 +405,36 @@ AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir)
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti \
-	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
-	-Wno-variadic-macros -fno-ipa-icf \
-	$(LIBSTDCXX_RAW_CXX_CXXFLAGS) -std=gnu++14 $(EXTRA_CXXFLAGS)
+	-funwind-tables -fvisibility=hidden -Wno-variadic-macros \
+	-fno-ipa-icf $(LIBSTDCXX_RAW_CXX_CXXFLAGS) -std=gnu++14 \
+	$(EXTRA_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
-toolexeclib_LTLIBRARIES = libasan.la
-nodist_toolexeclib_HEADERS = libasan_preinit.o
-asan_files = \
-	asan_activation.cpp \
-	asan_allocator.cpp \
-	asan_debugging.cpp \
-	asan_descriptions.cpp \
-	asan_errors.cpp \
-	asan_fake_stack.cpp \
-	asan_flags.cpp \
-	asan_globals.cpp \
-	asan_interceptors.cpp \
-	asan_interceptors_memintrinsics.cpp \
-	asan_linux.cpp \
-	asan_mac.cpp \
-	asan_malloc_linux.cpp \
-	asan_malloc_mac.cpp \
-	asan_malloc_win.cpp \
-	asan_memory_profile.cpp \
-	asan_new_delete.cpp \
-	asan_poisoning.cpp \
-	asan_posix.cpp \
-	asan_premap_shadow.cpp \
-	asan_report.cpp \
-	asan_rtems.cpp \
-	asan_rtl.cpp \
-	asan_shadow_setup.cpp \
-	asan_stack.cpp \
-	asan_stats.cpp \
-	asan_suppressions.cpp \
-	asan_thread.cpp \
-	asan_win.cpp \
-	asan_win_dll_thunk.cpp \
-	asan_win_dynamic_runtime_thunk.cpp \
-  asan_interceptors_vfork.S
+toolexeclib_LTLIBRARIES = libhwasan.la
+hwasan_files = \
+	hwasan_allocator.cpp \
+	hwasan.cpp \
+	hwasan_dynamic_shadow.cpp \
+	hwasan_exceptions.cpp \
+	hwasan_flags.inc \
+	hwasan_globals.cpp \
+	hwasan_interceptors.cpp \
+	hwasan_interceptors_vfork.S \
+	hwasan_linux.cpp \
+	hwasan_memintrinsics.cpp \
+	hwasan_new_delete.cpp \
+	hwasan_poisoning.cpp \
+	hwasan_report.cpp \
+	hwasan_setjmp.S \
+	hwasan_tag_mismatch_aarch64.S \
+	hwasan_thread.cpp \
+	hwasan_thread_list.cpp \
+	hwasan_type_test.cpp
 
-libasan_la_SOURCES = $(asan_files)
-libasan_la_LIBADD =  \
+libhwasan_la_SOURCES = $(hwasan_files)
+libhwasan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_2) \
-	$(am__append_3) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libasan)
+	$(am__append_1) $(am__append_2) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
+libhwasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libhwasan)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -517,9 +488,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign asan/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign hwasan/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign asan/Makefile
+	  $(AUTOMAKE) --foreign hwasan/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -573,8 +544,8 @@ clean-toolexeclibLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libasan.la: $(libasan_la_OBJECTS) $(libasan_la_DEPENDENCIES) $(EXTRA_libasan_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(libasan_la_LINK) -rpath $(toolexeclibdir) $(libasan_la_OBJECTS) $(libasan_la_LIBADD) $(LIBS)
+libhwasan.la: $(libhwasan_la_OBJECTS) $(libhwasan_la_DEPENDENCIES) $(EXTRA_libhwasan_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(libhwasan_la_LINK) -rpath $(toolexeclibdir) $(libhwasan_la_OBJECTS) $(libhwasan_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -582,38 +553,23 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_activation.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_allocator.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_debugging.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_descriptions.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_errors.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_fake_stack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_flags.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_globals.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors_memintrinsics.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors_vfork.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_linux.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_mac.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_linux.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_mac.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_win.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_memory_profile.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_new_delete.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_poisoning.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_posix.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_premap_shadow.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_report.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_rtems.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_rtl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_shadow_setup.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_stack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_stats.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_suppressions.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_thread.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_win.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_win_dll_thunk.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_win_dynamic_runtime_thunk.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_allocator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_dynamic_shadow.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_exceptions.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_globals.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_interceptors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_interceptors_vfork.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_linux.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_memintrinsics.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_new_delete.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_poisoning.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_report.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_setjmp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_tag_mismatch_aarch64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_thread.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_thread_list.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_type_test.Plo@am__quote@
 
 .S.o:
 @am__fastdepCCAS_TRUE@	$(AM_V_CPPAS)$(CPPASCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -662,27 +618,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-nodist_toolexeclibHEADERS: $(nodist_toolexeclib_HEADERS)
-	@$(NORMAL_INSTALL)
-	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
-	done
-
-uninstall-nodist_toolexeclibHEADERS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -737,9 +672,9 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -801,8 +736,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-nodist_toolexeclibHEADERS \
-	install-toolexeclibLTLIBRARIES
+install-exec-am: install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -842,8 +776,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-nodist_toolexeclibHEADERS \
-	uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -854,20 +787,16 @@ uninstall-am: uninstall-nodist_toolexeclibHEADERS \
 	info-am install install-am install-data install-data-am \
 	install-dvi install-dvi-am install-exec install-exec-am \
 	install-html install-html-am install-info install-info-am \
-	install-man install-nodist_toolexeclibHEADERS install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-nodist_toolexeclibHEADERS \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip install-toolexeclibLTLIBRARIES \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am \
 	uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
-
-libasan_preinit.o: asan_preinit.o
-	cp $< $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

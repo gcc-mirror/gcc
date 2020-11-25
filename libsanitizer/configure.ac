@@ -120,6 +120,10 @@ AC_CHECK_LIB(dl, dlsym,
 link_libasan=$link_sanitizer_common
 AC_SUBST(link_libasan)
 
+# Set up the set of additional libraries that we need to link against for libhwasan.
+link_libhwasan=$link_sanitizer_common
+AC_SUBST(link_libhwasan)
+
 # Set up the set of additional libraries that we need to link against for libtsan.
 link_libtsan=$link_sanitizer_common
 AC_SUBST(link_libtsan)
@@ -348,7 +352,7 @@ AH_BOTTOM([#include "libbacktrace/backtrace-rename.h"])
 AC_CONFIG_FILES([Makefile libsanitizer.spec libbacktrace/backtrace-supported.h])
 AC_CONFIG_HEADER(config.h)
 
-AC_CONFIG_FILES(AC_FOREACH([DIR], [interception sanitizer_common libbacktrace lsan asan ubsan], [DIR/Makefile ]),
+AC_CONFIG_FILES(AC_FOREACH([DIR], [interception sanitizer_common libbacktrace lsan asan hwasan ubsan], [DIR/Makefile ]),
   [cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
