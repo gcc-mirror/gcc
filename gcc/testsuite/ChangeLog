@@ -1,3 +1,13 @@
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97918
+	* g++.dg/debug/localclass2.C: New test.
+
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95158
+	* g++.dg/template/virtual5.C: New test.
+
 2020-11-17  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

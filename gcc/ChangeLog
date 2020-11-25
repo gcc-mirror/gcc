@@ -1,3 +1,9 @@
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97918
+	* dwarf2out.c (dwarf2out_early_finish): flush_limbo_die_list
+	after gen_scheduled_generic_parms_dies.
+
 2020-11-17  Sebastian Pop  <spop@amazon.com>
 
 	Backported from master:
