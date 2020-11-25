@@ -7859,6 +7859,8 @@ package body Sem_Util is
                         or else
                       Nkind (Decl) in N_Later_Decl_Item
                         or else
+                      Nkind (Decl) in N_Renaming_Declaration
+                        or else
                       Nkind (Decl) = N_Number_Declaration)
       loop
          Decl := Parent (Decl);
@@ -11394,7 +11396,7 @@ package body Sem_Util is
             Comp : Entity_Id;
 
          begin
-            --  Loop to Check components
+            --  Loop to check components
 
             Comp := First_Component_Or_Discriminant (Typ);
             while Present (Comp) loop

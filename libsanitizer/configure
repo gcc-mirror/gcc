@@ -657,7 +657,10 @@ USING_MAC_INTERPOSE_TRUE
 link_liblsan
 link_libubsan
 link_libtsan
+link_libhwasan
 link_libasan
+HWASAN_SUPPORTED_FALSE
+HWASAN_SUPPORTED_TRUE
 LSAN_SUPPORTED_FALSE
 LSAN_SUPPORTED_TRUE
 TSAN_SUPPORTED_FALSE
@@ -12361,7 +12364,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12364 "configure"
+#line 12367 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12467,7 +12470,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12470 "configure"
+#line 12473 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15818,6 +15821,7 @@ fi
 # Get target configury.
 unset TSAN_SUPPORTED
 unset LSAN_SUPPORTED
+unset HWASAN_SUPPORTED
 . ${srcdir}/configure.tgt
  if test "x$TSAN_SUPPORTED" = "xyes"; then
   TSAN_SUPPORTED_TRUE=
@@ -15833,6 +15837,14 @@ fi
 else
   LSAN_SUPPORTED_TRUE='#'
   LSAN_SUPPORTED_FALSE=
+fi
+
+ if test "x$HWASAN_SUPPORTED" = "xyes"; then
+  HWASAN_SUPPORTED_TRUE=
+  HWASAN_SUPPORTED_FALSE='#'
+else
+  HWASAN_SUPPORTED_TRUE='#'
+  HWASAN_SUPPORTED_FALSE=
 fi
 
 
@@ -15941,6 +15953,10 @@ fi
 
 # Set up the set of additional libraries that we need to link against for libasan.
 link_libasan=$link_sanitizer_common
+
+
+# Set up the set of additional libraries that we need to link against for libhwasan.
+link_libhwasan=$link_sanitizer_common
 
 
 # Set up the set of additional libraries that we need to link against for libtsan.
@@ -16821,6 +16837,11 @@ if test "x$TSAN_SUPPORTED" = "xyes"; then
 
 fi
 
+if test "x$HWASAN_SUPPORTED" = "xyes"; then
+  ac_config_files="$ac_config_files hwasan/Makefile"
+
+fi
+
 
 
 
@@ -16862,7 +16883,7 @@ case "$host" in
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
-	# and if assembler supports CET insn.
+	# and if compiler and assembler support CET insn.
 	cet_save_CFLAGS="$CFLAGS"
 	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -17083,6 +17104,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LSAN_SUPPORTED_TRUE}" && test -z "${LSAN_SUPPORTED_FALSE}"; then
   as_fn_error $? "conditional \"LSAN_SUPPORTED\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HWASAN_SUPPORTED_TRUE}" && test -z "${HWASAN_SUPPORTED_FALSE}"; then
+  as_fn_error $? "conditional \"HWASAN_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_MAC_INTERPOSE_TRUE}" && test -z "${USING_MAC_INTERPOSE_FALSE}"; then
@@ -18096,6 +18121,7 @@ do
     "asan/Makefile") CONFIG_FILES="$CONFIG_FILES asan/Makefile" ;;
     "ubsan/Makefile") CONFIG_FILES="$CONFIG_FILES ubsan/Makefile" ;;
     "tsan/Makefile") CONFIG_FILES="$CONFIG_FILES tsan/Makefile" ;;
+    "hwasan/Makefile") CONFIG_FILES="$CONFIG_FILES hwasan/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -20041,6 +20067,17 @@ _EOF
    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "tsan/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+    sed -f vpsed$$ $ac_file > tmp$$
+    mv tmp$$ $ac_file
+    rm vpsed$$
+    echo 'MULTISUBDIR =' >> $ac_file
+    ml_norecursion=yes
+    . ${multi_basedir}/config-ml.in
+    { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "hwasan/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
     sed -f vpsed$$ $ac_file > tmp$$

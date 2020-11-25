@@ -12645,10 +12645,10 @@ package body Sem_Ch12 is
       Analyzed_Formal : Node_Id;
       Actual_Decls    : List_Id) return List_Id
    is
-      A_Gen_T    : constant Entity_Id  :=
+      A_Gen_T    : constant Entity_Id :=
                      Defining_Identifier (Analyzed_Formal);
-      Def        : constant Node_Id    := Formal_Type_Definition (Formal);
-      Gen_T      : constant Entity_Id  := Defining_Identifier (Formal);
+      Def        : constant Node_Id   := Formal_Type_Definition (Formal);
+      Gen_T      : constant Entity_Id := Defining_Identifier (Formal);
       Act_T      : Entity_Id;
       Ancestor   : Entity_Id := Empty;
       Decl_Node  : Node_Id;
@@ -12949,21 +12949,6 @@ package body Sem_Ch12 is
          end if;
 
          if not Subtypes_Match (Desig_Type, Desig_Act) then
-            Error_Msg_NE
-              ("designated type of actual does not match that of formal &",
-               Actual, Gen_T);
-
-            if not Predicates_Match (Desig_Type, Desig_Act) then
-               Error_Msg_N ("\predicates do not match", Actual);
-            end if;
-
-            Abandon_Instantiation (Actual);
-
-         elsif Is_Access_Type (Designated_Type (Act_T))
-           and then Is_Constrained (Designated_Type (Designated_Type (Act_T)))
-                      /=
-                    Is_Constrained (Designated_Type (Desig_Type))
-         then
             Error_Msg_NE
               ("designated type of actual does not match that of formal &",
                Actual, Gen_T);

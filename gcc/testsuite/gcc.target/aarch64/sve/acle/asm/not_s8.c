@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (not_s8_x_tied1, svint8_t,
 
 /*
 ** not_s8_x_untied:
+**	movprfx	z0, z1
 **	not	z0\.b, p0/m, z1\.b
 **	ret
 */

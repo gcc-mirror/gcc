@@ -62,6 +62,30 @@ Enable asan stack protection.
 Common Joined UInteger Var(param_asan_use_after_return) Init(1) IntegerRange(0, 1) Param Optimization
 Enable asan detection of use-after-return bugs.
 
+-param=hwasan-instrument-stack=
+Common Joined UInteger Var(param_hwasan_instrument_stack) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of statically sized stack-allocated variables.
+
+-param=hwasan-random-frame-tag=
+Common Joined UInteger Var(param_hwasan_random_frame_tag) Init(1) IntegerRange(0, 1) Param Optimization
+Use random base tag for each frame, as opposed to base always zero.
+
+-param=hwasan-instrument-allocas=
+Common Joined UInteger Var(param_hwasan_instrument_allocas) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of allocas/VLAs.
+
+-param=hwasan-instrument-reads=
+Common Joined UInteger Var(param_hwasan_instrument_reads) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of load operations.
+
+-param=hwasan-instrument-writes=
+Common Joined UInteger Var(param_hwasan_instrument_writes) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of store operations.
+
+-param=hwasan-instrument-mem-intrinsics=
+Common Joined UInteger Var(param_hwasan_instrument_mem_intrinsics) Init(1) IntegerRange(0, 1) Param Optimization
+Enable hwasan instrumentation of builtin functions.
+
 -param=avg-loop-niter=
 Common Joined UInteger Var(param_avg_loop_niter) Init(10) IntegerRange(1, 65536) Param Optimization
 Average number of iterations of a loop.

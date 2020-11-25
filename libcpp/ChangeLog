@@ -1,3 +1,29 @@
+2020-11-24  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_hashnode): Add deferred field.
+	(cpp_set_deferred_macro): Define.
+	(cpp_get_deferred_macro): Declare.
+	(cpp_macro_definition): Reformat, add overload.
+	(cpp_macro_definition_location): Deal with deferred macro.
+	(cpp_alloc_token_string, cpp_compare_macro): Declare.
+	* internal.h (_cpp_notify_macro_use): Return bool
+	(_cpp_maybe_notify_macro_use): Likewise.
+	* directives.c (do_undef): Check macro is not undef before
+	warning.
+	(do_ifdef, do_ifndef): Deal with deferred macro.
+	* expr.c (parse_defined): Likewise.
+	* lex.c (cpp_allocate_token_string): Break out of ...
+	(create_literal): ... here.  Call it.
+	(cpp_maybe_module_directive): Deal with deferred macro.
+	* macro.c (cpp_get_token_1): Deal with deferred macro.
+	(warn_of_redefinition): Deal with deferred macro.
+	(compare_macros): Rename to ...
+	(cpp_compare_macro): ... here.  Make extern.
+	(cpp_get_deferred_macro): New.
+	(_cpp_notify_macro_use): Deal with deferred macro, return bool
+	indicating definedness.
+	(cpp_macro_definition): Deal with deferred macro.
+
 2020-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	* include/cpplib.h (enum cpp_main_search): New.

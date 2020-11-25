@@ -3,4 +3,4 @@
 
 int i;
 
-/* { dg-error ".-fsanitize=thread. is incompatible with .-fsanitize=address|kernel-address." "" { target *-*-* } 0 } */
+/* { dg-error ".-fsanitize=thread. is incompatible with .-fsanitize=address." "" { target *-*-* } 0 } */

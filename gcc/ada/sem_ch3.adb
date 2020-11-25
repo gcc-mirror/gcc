@@ -1411,6 +1411,8 @@ package body Sem_Ch3 is
          Set_Is_Tagged_Type (T, False);
       end if;
 
+      Set_Etype (T, T);
+
       --  For SPARK, check that the designated type is compatible with
       --  respect to volatility with the access type.
 
@@ -1430,8 +1432,6 @@ package body Sem_Ch3 is
            (Full_Desig, T, "designated type", "access type",
             Srcpos_Bearer => T);
       end if;
-
-      Set_Etype (T, T);
 
       --  If the type has appeared already in a with_type clause, it is frozen
       --  and the pointer size is already set. Else, initialize.

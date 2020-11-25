@@ -675,8 +675,8 @@ uninstall-am: uninstall-libexecsubLTLIBRARIES
 
 .PRECIOUS: Makefile
 
-override CFLAGS := $(filter-out -fsanitize=address,$(CFLAGS))
-override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
+override CFLAGS := $(filter-out -fsanitize=address -fsanitize=hwaddress,$(CFLAGS))
+override LDFLAGS := $(filter-out -fsanitize=address -fsanitize=hwaddress,$(LDFLAGS))
 
 all-local: $(in_gcc_libs)
 

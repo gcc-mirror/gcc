@@ -823,6 +823,57 @@ control_options_for_live_patching (struct gcc_options *opts,
 /* --help option argument if set.  */
 vec<const char *> help_option_arguments;
 
+/* Return the string name describing a sanitizer argument which has been
+   provided on the command line and has set this particular flag.  */
+const char *
+find_sanitizer_argument (struct gcc_options *opts, unsigned int flags)
+{
+  for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
+    {
+      /* Need to find the sanitizer_opts element which:
+	 a) Could have set the flags requested.
+	 b) Has been set on the command line.
+
+	 Can have (a) without (b) if the flag requested is e.g.
+	 SANITIZE_ADDRESS, since both -fsanitize=address and
+	 -fsanitize=kernel-address set this flag.
+
+	 Can have (b) without (a) by requesting more than one sanitizer on the
+	 command line.  */
+      if ((sanitizer_opts[i].flag & opts->x_flag_sanitize)
+	  != sanitizer_opts[i].flag)
+	continue;
+      if ((sanitizer_opts[i].flag & flags) != flags)
+	continue;
+      return sanitizer_opts[i].name;
+    }
+  return NULL;
+}
+
+
+/* Report an error to the user about sanitizer options they have requested
+   which have set conflicting flags.
+
+   LEFT and RIGHT indicate sanitizer flags which conflict with each other, this
+   function reports an error if both have been set in OPTS->x_flag_sanitize and
+   ensures the error identifies the requested command line options that have
+   set these flags.  */
+static void
+report_conflicting_sanitizer_options (struct gcc_options *opts, location_t loc,
+				      unsigned int left, unsigned int right)
+{
+  unsigned int left_seen = (opts->x_flag_sanitize & left);
+  unsigned int right_seen = (opts->x_flag_sanitize & right);
+  if (left_seen && right_seen)
+    {
+      const char* left_arg = find_sanitizer_argument (opts, left_seen);
+      const char* right_arg = find_sanitizer_argument (opts, right_seen);
+      gcc_assert (left_arg && right_arg);
+      error_at (loc,
+		"%<-fsanitize=%s%> is incompatible with %<-fsanitize=%s%>",
+		left_arg, right_arg);
+    }
+}
 
 /* After all options at LOC have been read into OPTS and OPTS_SET,
    finalize settings of those options and diagnose incompatible
@@ -1074,22 +1125,22 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		  "%<-fsanitize=address%> or %<-fsanitize=kernel-address%>");
     }
 
-  /* Userspace and kernel ASan conflict with each other.  */
-  if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
-      && (opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS))
-    error_at (loc, "%qs is incompatible with %qs",
-	      "-fsanitize=address", "-fsanitize=kernel-address");
+  /* Address sanitizers conflict with the thread sanitizer.  */
+  report_conflicting_sanitizer_options (opts, loc, SANITIZE_THREAD,
+					SANITIZE_ADDRESS | SANITIZE_HWADDRESS);
+  /* The leak sanitizer conflicts with the thread sanitizer.  */
+  report_conflicting_sanitizer_options (opts, loc, SANITIZE_LEAK,
+					SANITIZE_THREAD);
 
-  /* And with TSan.  */
-  if ((opts->x_flag_sanitize & SANITIZE_ADDRESS)
-      && (opts->x_flag_sanitize & SANITIZE_THREAD))
-    error_at (loc, "%qs is incompatible with %qs",
-	      "-fsanitize=thread", "-fsanitize=address|kernel-address");
+  /* No combination of HWASAN and ASAN work together.  */
+  report_conflicting_sanitizer_options (opts, loc,
+					SANITIZE_HWADDRESS, SANITIZE_ADDRESS);
 
-  if ((opts->x_flag_sanitize & SANITIZE_LEAK)
-      && (opts->x_flag_sanitize & SANITIZE_THREAD))
-    error_at (loc, "%qs is incompatible with %qs",
-	      "-fsanitize=leak", "-fsanitize=thread");
+  /* The userspace and kernel address sanitizers conflict with each other.  */
+  report_conflicting_sanitizer_options (opts, loc, SANITIZE_USER_HWADDRESS,
+					SANITIZE_KERNEL_HWADDRESS);
+  report_conflicting_sanitizer_options (opts, loc, SANITIZE_USER_ADDRESS,
+					SANITIZE_KERNEL_ADDRESS);
 
   /* Check error recovery for -fsanitize-recover option.  */
   for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
@@ -1108,9 +1159,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_flag_sanitize & ~(SANITIZE_LEAK | SANITIZE_UNREACHABLE))
     opts->x_flag_aggressive_loop_optimizations = 0;
 
-  /* Enable -fsanitize-address-use-after-scope if address sanitizer is
+  /* Enable -fsanitize-address-use-after-scope if either address sanitizer is
      enabled.  */
-  if (opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
+  if (opts->x_flag_sanitize
+      & (SANITIZE_USER_ADDRESS | SANITIZE_USER_HWADDRESS))
     SET_OPTION_IF_UNSET (opts, opts_set, flag_sanitize_address_use_after_scope,
 			 true);
 
@@ -1724,7 +1776,12 @@ const struct sanitizer_opts_s sanitizer_opts[] =
 #define SANITIZER_OPT(name, flags, recover) \
     { #name, flags, sizeof #name - 1, recover }
   SANITIZER_OPT (address, (SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS), true),
+  SANITIZER_OPT (hwaddress, (SANITIZE_HWADDRESS | SANITIZE_USER_HWADDRESS),
+		 true),
   SANITIZER_OPT (kernel-address, (SANITIZE_ADDRESS | SANITIZE_KERNEL_ADDRESS),
+		 true),
+  SANITIZER_OPT (kernel-hwaddress,
+		 (SANITIZE_HWADDRESS | SANITIZE_KERNEL_HWADDRESS),
 		 true),
   SANITIZER_OPT (pointer-compare, SANITIZE_POINTER_COMPARE, true),
   SANITIZER_OPT (pointer-subtract, SANITIZE_POINTER_SUBTRACT, true),
@@ -2303,6 +2360,15 @@ common_handle_option (struct gcc_options *opts,
 	  SET_OPTION_IF_UNSET (opts, opts_set, param_asan_stack, 0);
 	  SET_OPTION_IF_UNSET (opts, opts_set, param_asan_protect_allocas, 0);
 	  SET_OPTION_IF_UNSET (opts, opts_set, param_asan_use_after_return, 0);
+	}
+      if (opts->x_flag_sanitize & SANITIZE_KERNEL_HWADDRESS)
+	{
+	  SET_OPTION_IF_UNSET (opts, opts_set,
+			       param_hwasan_instrument_stack, 0);
+	  SET_OPTION_IF_UNSET (opts, opts_set,
+			       param_hwasan_random_frame_tag, 0);
+	  SET_OPTION_IF_UNSET (opts, opts_set,
+			       param_hwasan_instrument_allocas, 0);
 	}
       break;
 

@@ -1,3 +1,16 @@
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97899
+	* typeck2.c (store_init_value): Don't split_nonconstant_init in a
+	template.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96929
+	* constexpr.c (cxx_eval_binary_expression): For shifts by constant
+	with MSB set, emulate older wide_int_binop behavior to preserve
+	diagnostics and -fpermissive behavior.
+
 2020-11-23  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc: New dummy file.

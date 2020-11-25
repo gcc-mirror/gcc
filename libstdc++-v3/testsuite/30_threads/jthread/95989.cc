@@ -20,6 +20,7 @@
 // { dg-require-gthreads {} }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-additional-options "-static" { target static } }
+// { dg-skip-if "broken" { *-*-* } }
 
 #include <thread>
 

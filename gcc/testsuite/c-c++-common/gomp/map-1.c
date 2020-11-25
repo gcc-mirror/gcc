@@ -1,5 +1,6 @@
-/* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
+/* Test 'map' clause diagnostics.  */
+
+/* See also corresponding C++ variant: '../../g++.dg/gomp/map-1.C'.  */
 
 extern int a[][10], a2[][10];
 int b[10], c[10][2], d[10], e[10], f[10];

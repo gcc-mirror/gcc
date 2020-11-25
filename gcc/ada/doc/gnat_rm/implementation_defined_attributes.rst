@@ -483,6 +483,19 @@ otherwise.  The intended use of this attribute is in conjunction with generic
 definitions.  If the attribute is applied to a generic private type, it
 indicates whether or not the corresponding actual type has discriminants.
 
+Attribute Has_Tagged_Values
+===========================
+.. index:: Tagged values, testing for
+
+.. index:: Has_Tagged_Values
+
+The prefix of the ``Has_Tagged_Values`` attribute is a type. The result is a
+Boolean value which is True if the type is a composite type (array or record)
+that is either a tagged type or has a subcomponent that is tagged, and is False
+otherwise. The intended use of this attribute is in conjunction with generic
+definitions. If the attribute is applied to a generic private type, it
+indicates whether or not the corresponding actual type has access values.
+
 Attribute Img
 =============
 .. index:: Img

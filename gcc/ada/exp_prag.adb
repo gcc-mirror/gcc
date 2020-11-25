@@ -425,7 +425,12 @@ package body Exp_Prag is
 
       --  Generate the appropriate if statement. Note that we consider this to
       --  be an explicit conditional in the source, not an implicit if, so we
-      --  do not call Make_Implicit_If_Statement.
+      --  do not call Make_Implicit_If_Statement. Note also that we wrap the
+      --  raise statement in a block statement so that, if the condition is
+      --  evaluated at compile time to False, then the rewriting of the if
+      --  statement will not involve the raise but the block statement, and
+      --  thus not leave a dangling reference to the raise statement in the
+      --  Local_Raise_Statements list of the handler.
 
       --  Case where we generate a direct raise
 
@@ -438,8 +443,14 @@ package body Exp_Prag is
            Make_If_Statement (Loc,
              Condition       => Make_Op_Not (Loc, Right_Opnd => Cond),
              Then_Statements => New_List (
-               Make_Raise_Statement (Loc,
-                 Name => New_Occurrence_Of (RTE (RE_Assert_Failure), Loc)))));
+               Make_Block_Statement (Loc,
+                 Handled_Statement_Sequence =>
+                   Make_Handled_Sequence_Of_Statements (Loc,
+                     Statements => New_List (
+                       Make_Raise_Statement (Loc,
+                         Name =>
+                           New_Occurrence_Of (RTE (RE_Assert_Failure),
+                                                                   Loc))))))));
 
       --  Case where we call the procedure
 

@@ -1,3 +1,8 @@
+2020-11-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Use revert_regex instead
+	of string prefix.  Convert sets to literals.
+
 2020-11-16  Martin Liska  <mliska@suse.cz>
 
 	* mklog.py: Do not call read on an input stream.

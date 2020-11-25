@@ -4815,13 +4815,23 @@ package body Sem_Eval is
          if Op = N_Op_Shift_Left then
             Check_Elab_Call;
 
-            --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+            declare
+               Modulus : Uint;
+            begin
+               if Is_Modular_Integer_Type (Typ) then
+                  Modulus := Einfo.Modulus (Typ);
+               else
+                  Modulus := Uint_2 ** RM_Size (Typ);
+               end if;
 
-            Fold_Uint
-              (N,
-               (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
-                 rem Modulus (Typ),
-               Static => Static);
+               --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+
+               Fold_Uint
+                 (N,
+                  (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
+                    rem Modulus,
+                  Static => Static);
+            end;
 
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
@@ -6301,11 +6311,13 @@ package body Sem_Eval is
          if Subtypes_Statically_Match (T1, T2) then
             return True;
 
-         --  If either subtype is nonstatic then they're not compatible
+         --  A scalar subtype S1 is compatible with S2 if their bounds
+         --  are static and compatible, even if S1 has dynamic predicates
+         --  and is thus non-static. Predicate compatibility has been
+         --  checked above.
 
-         elsif not Is_OK_Static_Subtype (T1)
-                 or else
-               not Is_OK_Static_Subtype (T2)
+         elsif not Is_Static_Range (Scalar_Range (T1))
+                 or else not Is_Static_Range (Scalar_Range (T2))
          then
             return False;
 
@@ -6352,6 +6364,14 @@ package body Sem_Eval is
                        (Designated_Type (T1), Designated_Type (T2)))
            and then not (Can_Never_Be_Null (T2)
                           and then not Can_Never_Be_Null (T1));
+
+      --  Private types without discriminants can be handled specially.
+      --  Predicate matching has been checked above.
+
+      elsif Is_Private_Type (T1)
+        and then not Has_Discriminants (T1)
+      then
+         return not Has_Discriminants (T2);
 
       --  All other cases
 

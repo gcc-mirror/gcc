@@ -3040,7 +3040,7 @@ package body Einfo is
 
    function Overridden_Operation (Id : E) return E is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      pragma Assert (Is_Subprogram_Or_Generic_Subprogram (Id));
       return Node26 (Id);
    end Overridden_Operation;
 
@@ -3133,7 +3133,7 @@ package body Einfo is
 
    function Protected_Body_Subprogram (Id : E) return E is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Entry (Id));
+      pragma Assert (Is_Subprogram_Or_Entry (Id));
       return Node11 (Id);
    end Protected_Body_Subprogram;
 
@@ -4915,7 +4915,7 @@ package body Einfo is
    procedure Set_Has_Out_Or_In_Out_Parameter (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind (Id) in E_Entry | E_Entry_Family
+        (Is_Entry (Id)
           or else Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Flag110 (Id, V);
    end Set_Has_Out_Or_In_Out_Parameter;
@@ -6202,7 +6202,7 @@ package body Einfo is
 
    procedure Set_No_Return (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      pragma Assert (Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Flag113 (Id, V);
    end Set_No_Return;
 
@@ -6309,7 +6309,7 @@ package body Einfo is
 
    procedure Set_Overridden_Operation (Id : E; V : E) is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Generic_Subprogram (Id));
+      pragma Assert (Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Node26 (Id, V);
    end Set_Overridden_Operation;
 
@@ -6407,7 +6407,7 @@ package body Einfo is
 
    procedure Set_Protected_Body_Subprogram (Id : E; V : E) is
    begin
-      pragma Assert (Is_Subprogram (Id) or else Is_Entry (Id));
+      pragma Assert (Is_Subprogram_Or_Entry (Id));
       Set_Node11 (Id, V);
    end Set_Protected_Body_Subprogram;
 
@@ -7360,7 +7360,7 @@ package body Einfo is
    ---------------------
 
    function Designated_Type (Id : E) return E is
-      Desig_Type : E;
+      Desig_Type : Entity_Id;
 
    begin
       Desig_Type := Directly_Designated_Type (Id);
@@ -7427,7 +7427,7 @@ package body Einfo is
    ---------------------
 
    function First_Component (Id : E) return E is
-      Comp_Id : E;
+      Comp_Id : Entity_Id;
 
    begin
       pragma Assert
@@ -7449,7 +7449,7 @@ package body Einfo is
    -------------------------------------
 
    function First_Component_Or_Discriminant (Id : E) return E is
-      Comp_Id : E;
+      Comp_Id : Entity_Id;
 
    begin
       pragma Assert
@@ -7472,7 +7472,7 @@ package body Einfo is
    ------------------
 
    function First_Formal (Id : E) return E is
-      Formal : E;
+      Formal : Entity_Id;
 
    begin
       pragma Assert
@@ -7513,7 +7513,7 @@ package body Einfo is
    ------------------------------
 
    function First_Formal_With_Extras (Id : E) return E is
-      Formal : E;
+      Formal : Entity_Id;
 
    begin
       pragma Assert
@@ -8154,9 +8154,7 @@ package body Einfo is
    begin
       --  Identifiers, operator symbols, expanded names are entity names
 
-      return Kind = N_Identifier
-        or else Kind = N_Operator_Symbol
-        or else Kind = N_Expanded_Name
+      return Kind in N_Identifier | N_Operator_Symbol | N_Expanded_Name
 
       --  Attribute references are entity names if they refer to an entity.
       --  Note that we don't do this by testing for the presence of the
@@ -8175,10 +8173,9 @@ package body Einfo is
    begin
       return
         Ekind (Id) in E_Constant | E_Package | E_Variable
-          or else Is_Entry        (Id)
-          or else Is_Generic_Unit (Id)
-          or else Is_Subprogram   (Id)
-          or else Is_Task_Type    (Id);
+          or else Is_Generic_Unit        (Id)
+          or else Is_Subprogram_Or_Entry (Id)
+          or else Is_Task_Type           (Id);
    end Is_Elaboration_Target;
 
    -----------------------
@@ -8309,21 +8306,10 @@ package body Einfo is
 
    function Is_Standard_Character_Type (Id : E) return B is
    begin
-      if Is_Type (Id) then
-         declare
-            R : constant Entity_Id := Root_Type (Id);
-         begin
-            return
-              R = Standard_Character
-                or else
-              R = Standard_Wide_Character
-                or else
-              R = Standard_Wide_Wide_Character;
-         end;
-
-      else
-         return False;
-      end if;
+      return Is_Type (Id)
+        and then Root_Type (Id) in Standard_Character
+                                 | Standard_Wide_Character
+                                 | Standard_Wide_Wide_Character;
    end Is_Standard_Character_Type;
 
    -----------------------------
@@ -8332,21 +8318,10 @@ package body Einfo is
 
    function Is_Standard_String_Type (Id : E) return B is
    begin
-      if Is_Type (Id) then
-         declare
-            R : constant Entity_Id := Root_Type (Id);
-         begin
-            return
-              R = Standard_String
-                or else
-              R = Standard_Wide_String
-                or else
-              R = Standard_Wide_Wide_String;
-         end;
-
-      else
-         return False;
-      end if;
+      return Is_Type (Id)
+        and then Root_Type (Id) in Standard_String
+                                 | Standard_Wide_String
+                                 | Standard_Wide_Wide_String;
    end Is_Standard_String_Type;
 
    --------------------
@@ -8437,7 +8412,7 @@ package body Einfo is
    -----------------
 
    function Last_Formal (Id : E) return E is
-      Formal : E;
+      Formal : Entity_Id;
 
    begin
       pragma Assert
@@ -8454,7 +8429,7 @@ package body Einfo is
 
          if Present (Formal) then
             while Present (Next_Formal (Formal)) loop
-               Formal := Next_Formal (Formal);
+               Next_Formal (Formal);
             end loop;
          end if;
 
@@ -8593,7 +8568,7 @@ package body Einfo is
    --------------------
 
    function Next_Component (Id : E) return E is
-      Comp_Id : E;
+      Comp_Id : Entity_Id;
 
    begin
       Comp_Id := Next_Entity (Id);
@@ -8610,7 +8585,7 @@ package body Einfo is
    ------------------------------------
 
    function Next_Component_Or_Discriminant (Id : E) return E is
-      Comp_Id : E;
+      Comp_Id : Entity_Id;
 
    begin
       Comp_Id := Next_Entity (Id);
@@ -8669,7 +8644,7 @@ package body Einfo is
    -----------------
 
    function Next_Formal (Id : E) return E is
-      P : E;
+      P : Entity_Id;
 
    begin
       --  Follow the chain of declared entities as long as the kind of the
@@ -9133,7 +9108,7 @@ package body Einfo is
    ---------------
 
    function Root_Type (Id : E) return E is
-      T, Etyp : E;
+      T, Etyp : Entity_Id;
 
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -10124,7 +10099,7 @@ package body Einfo is
 
          when Array_Kind =>
             declare
-               Index : E;
+               Index : Entity_Id;
 
             begin
                Write_Attribute

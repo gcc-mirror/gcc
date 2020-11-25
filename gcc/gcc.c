@@ -749,6 +749,24 @@ proper position among the other output files.  */
 #define LIBASAN_EARLY_SPEC ""
 #endif
 
+#ifndef LIBHWASAN_SPEC
+#define STATIC_LIBHWASAN_LIBS \
+  " %{static-libhwasan|static:%:include(libsanitizer.spec)%(link_libhwasan)}"
+#ifdef LIBHWASAN_EARLY_SPEC
+#define LIBHWASAN_SPEC STATIC_LIBHWASAN_LIBS
+#elif defined(HAVE_LD_STATIC_DYNAMIC)
+#define LIBHWASAN_SPEC "%{static-libhwasan:" LD_STATIC_OPTION \
+		     "} -lhwasan %{static-libhwasan:" LD_DYNAMIC_OPTION "}" \
+		     STATIC_LIBHWASAN_LIBS
+#else
+#define LIBHWASAN_SPEC "-lhwasan" STATIC_LIBHWASAN_LIBS
+#endif
+#endif
+
+#ifndef LIBHWASAN_EARLY_SPEC
+#define LIBHWASAN_EARLY_SPEC ""
+#endif
+
 #ifndef LIBTSAN_SPEC
 #define STATIC_LIBTSAN_LIBS \
   " %{static-libtsan|static:%:include(libsanitizer.spec)%(link_libtsan)}"
@@ -1071,6 +1089,7 @@ proper position among the other output files.  */
 #ifndef SANITIZER_EARLY_SPEC
 #define SANITIZER_EARLY_SPEC "\
 %{!nostdlib:%{!r:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_EARLY_SPEC "} \
+    %{%:sanitize(hwaddress):" LIBHWASAN_EARLY_SPEC "} \
     %{%:sanitize(thread):" LIBTSAN_EARLY_SPEC "} \
     %{%:sanitize(leak):" LIBLSAN_EARLY_SPEC "}}}}"
 #endif
@@ -1080,6 +1099,8 @@ proper position among the other output files.  */
 #define SANITIZER_SPEC "\
 %{!nostdlib:%{!r:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=address}}\
+    %{%:sanitize(hwaddress):" LIBHWASAN_SPEC "\
+	%{static:%ecannot specify -static with -fsanitize=hwaddress}}\
     %{%:sanitize(thread):" LIBTSAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=thread}}\
     %{%:sanitize(undefined):" LIBUBSAN_SPEC "}\
@@ -10131,8 +10152,12 @@ sanitize_spec_function (int argc, const char **argv)
 
   if (strcmp (argv[0], "address") == 0)
     return (flag_sanitize & SANITIZE_USER_ADDRESS) ? "" : NULL;
+  if (strcmp (argv[0], "hwaddress") == 0)
+    return (flag_sanitize & SANITIZE_USER_HWADDRESS) ? "" : NULL;
   if (strcmp (argv[0], "kernel-address") == 0)
     return (flag_sanitize & SANITIZE_KERNEL_ADDRESS) ? "" : NULL;
+  if (strcmp (argv[0], "kernel-hwaddress") == 0)
+    return (flag_sanitize & SANITIZE_KERNEL_HWADDRESS) ? "" : NULL;
   if (strcmp (argv[0], "thread") == 0)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)

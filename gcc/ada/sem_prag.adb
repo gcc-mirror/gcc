@@ -2383,7 +2383,7 @@ package body Sem_Prag is
                     ("global item must denote object, state or current "
                      & "instance of concurrent type", Item);
 
-                  if Ekind (Item_Id) in Named_Kind then
+                  if Is_Named_Number (Item_Id) then
                      SPARK_Msg_NE
                        ("\named number & is not an object", Item, Item_Id);
                   end if;
@@ -8119,7 +8119,7 @@ package body Sem_Prag is
 
          --  Check that we are not applying this to a named constant
 
-         if Ekind (E) in E_Named_Integer | E_Named_Real then
+         if Is_Named_Number (E) then
             Error_Msg_Name_1 := Pname;
             Error_Msg_N
               ("cannot apply pragma% to named constant!",
@@ -21494,7 +21494,11 @@ package body Sem_Prag is
                Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
 
             begin
-               if Chars (Argx) = Name_Ravenscar then
+               if Nkind (Argx) /= N_Identifier then
+                  Error_Msg_N
+                    ("argument of pragma Profile must be an identifier", N);
+
+               elsif Chars (Argx) = Name_Ravenscar then
                   Set_Ravenscar_Profile (Ravenscar, N);
 
                elsif Chars (Argx) = Name_Jorvik then

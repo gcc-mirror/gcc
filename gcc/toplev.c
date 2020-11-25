@@ -512,6 +512,9 @@ compile_file (void)
       if (flag_sanitize & SANITIZE_THREAD)
 	tsan_finish_file ();
 
+      if (gate_hwasan ())
+	hwasan_finish_file ();
+
       omp_finish_file ();
 
       output_shared_constant_pool ();
@@ -1851,6 +1854,15 @@ process_options (void)
 		  "is not supported without %<-fasan-shadow-offset=%> "
 		  "for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;
+    }
+
+  /* HWAsan requires top byte ignore feature in the backend.  */
+  if (flag_sanitize & SANITIZE_HWADDRESS
+      && ! targetm.memtag.can_tag_addresses ())
+    {
+      warning_at (UNKNOWN_LOCATION, 0, "%qs is not supported for this target",
+		  "-fsanitize=hwaddress");
+      flag_sanitize &= ~SANITIZE_HWADDRESS;
     }
 
  /* Do not use IPA optimizations for register allocation if profiler is active

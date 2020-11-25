@@ -4697,19 +4697,9 @@ package body Make is
             pragma Assert (Argv'Last = 2);
             Minimal_Recompilation := True;
 
-         --  -u
+         --  -u and -U (they are differentiated elsewhere)
 
-         elsif Argv (2) = 'u' and then Argv'Last = 2 then
-            Unique_Compile := True;
-            Compile_Only   := True;
-            Do_Bind_Step   := False;
-            Do_Link_Step   := False;
-
-         --  -U
-
-         elsif Argv (2) = 'U'
-           and then Argv'Last = 2
-         then
+         elsif Argv (2) in 'u' | 'U' and then Argv'Last = 2 then
             Unique_Compile := True;
             Compile_Only   := True;
             Do_Bind_Step   := False;

@@ -1,3 +1,7 @@
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* c-warn.c (warn_parm_array_mismatch): Avoid invalid redeclarations.
+
 2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* c-attribs.c (handle_special_var_sec_attribute): New.

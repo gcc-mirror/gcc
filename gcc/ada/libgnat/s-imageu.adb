@@ -56,24 +56,31 @@ package body System.Image_U is
       S : in out String;
       P : in out Natural)
    is
+      Nb_Digits : Natural := 0;
+      Value     : Uns := V;
    begin
-      if V >= 10 then
-         Set_Image_Unsigned (V / 10, S, P);
-         pragma Assert (P >= (S'First - 1) and P < S'Last and
-                        P < Natural'Last);
-         --  No check is done since, as documented in the specification,
-         --  the caller guarantees that S is long enough to hold the result.
-         P := P + 1;
-         S (P) := Character'Val (48 + (V rem 10));
+      pragma Assert (P >= S'First - 1 and then P < S'Last and then
+                     P < Natural'Last);
+      --  No check is done since, as documented in the specification, the
+      --  caller guarantees that S is long enough to hold the result.
 
-      else
-         pragma Assert (P >= (S'First - 1) and P < S'Last and
-                        P < Natural'Last);
-         --  No check is done since, as documented in the specification,
-         --  the caller guarantees that S is long enough to hold the result.
-         P := P + 1;
-         S (P) := Character'Val (48 + V);
-      end if;
+      --  First we compute the number of characters needed for representing
+      --  the number.
+      loop
+         Value := Value / 10;
+         Nb_Digits := Nb_Digits + 1;
+         exit when Value = 0;
+      end loop;
+
+      Value := V;
+
+      --  We now populate digits from the end of the string to the beginning
+      for J in reverse  1 .. Nb_Digits loop
+         S (P + J) := Character'Val (48 + (Value rem 10));
+         Value := Value / 10;
+      end loop;
+
+      P := P + Nb_Digits;
    end Set_Image_Unsigned;
 
 end System.Image_U;

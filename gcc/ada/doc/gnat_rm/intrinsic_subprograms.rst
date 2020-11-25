@@ -217,7 +217,9 @@ The formal parameter names can be anything.
 
 A more convenient way of providing these shift operators is to use
 the Provide_Shift_Operators pragma, which provides the function declarations
-and corresponding pragma Import's for all five shift functions.
+and corresponding pragma Import's for all five shift functions. Note that in
+using these provided shift operations, shifts performed on negative numbers
+will result in modification of the sign bit.
 
 .. _Source_Location:
 

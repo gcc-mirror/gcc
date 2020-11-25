@@ -5390,9 +5390,35 @@ bool
 aarch64_maybe_expand_sve_subreg_move (rtx dest, rtx src)
 {
   gcc_assert (BYTES_BIG_ENDIAN);
-  if (SUBREG_P (dest))
+
+  /* Do not try to optimize subregs that LRA has created for matched
+     reloads.  These subregs only exist as a temporary measure to make
+     the RTL well-formed, but they are exempt from the usual
+     TARGET_CAN_CHANGE_MODE_CLASS rules.
+
+     For example, if we have:
+
+       (set (reg:VNx8HI R1) (foo:VNx8HI (reg:VNx4SI R2)))
+
+     and the constraints require R1 and R2 to be in the same register,
+     LRA may need to create RTL such as:
+
+       (set (subreg:VNx4SI (reg:VNx8HI TMP) 0) (reg:VNx4SI R2))
+       (set (reg:VNx8HI TMP) (foo:VNx8HI (subreg:VNx4SI (reg:VNx8HI TMP) 0)))
+       (set (reg:VNx8HI R1) (reg:VNx8HI TMP))
+
+     which forces both the input and output of the original instruction
+     to use the same hard register.  But for this to work, the normal
+     rules have to be suppressed on the subreg input, otherwise LRA
+     would need to reload that input too, meaning that the process
+     would never terminate.  To compensate for this, the normal rules
+     are also suppressed for the subreg output of the first move.
+     Ignoring the special case and handling the first move normally
+     would therefore generate wrong code: we would reverse the elements
+     for the first subreg but not reverse them back for the second subreg.  */
+  if (SUBREG_P (dest) && !LRA_SUBREG_P (dest))
     dest = SUBREG_REG (dest);
-  if (SUBREG_P (src))
+  if (SUBREG_P (src) && !LRA_SUBREG_P (src))
     src = SUBREG_REG (src);
 
   /* The optimization handles two single SVE REGs with different element
@@ -23295,6 +23321,15 @@ aarch64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
   return NULL;
 }
 
+/* Implement TARGET_MEMTAG_CAN_TAG_ADDRESSES.  Here we tell the rest of the
+   compiler that we automatically ignore the top byte of our pointers, which
+   allows using -fsanitize=hwaddress.  */
+bool
+aarch64_can_tag_addresses ()
+{
+  return !TARGET_ILP32;
+}
+
 /* Implement TARGET_ASM_FILE_END for AArch64.  This adds the AArch64 GNU NOTE
    section at the end if needed.  */
 #define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
@@ -24113,6 +24148,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_FNTYPE_ABI
 #define TARGET_FNTYPE_ABI aarch64_fntype_abi
+
+#undef TARGET_MEMTAG_CAN_TAG_ADDRESSES
+#define TARGET_MEMTAG_CAN_TAG_ADDRESSES aarch64_can_tag_addresses
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

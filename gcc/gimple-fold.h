@@ -90,6 +90,12 @@ gimple_build (gimple_seq *seq,
 {
   return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1, op2);
 }
+extern tree gimple_build (gimple_seq *, location_t, combined_fn, tree);
+inline tree
+gimple_build (gimple_seq *seq, combined_fn fn, tree type)
+{
+  return gimple_build (seq, UNKNOWN_LOCATION, fn, type);
+}
 extern tree gimple_build (gimple_seq *, location_t, combined_fn, tree, tree);
 inline tree
 gimple_build (gimple_seq *seq, combined_fn fn, tree type, tree arg0)
@@ -142,6 +148,15 @@ inline tree
 gimple_build_vector (gimple_seq *seq, tree_vector_builder *builder)
 {
   return gimple_build_vector (seq, UNKNOWN_LOCATION, builder);
+}
+
+extern tree gimple_build_round_up (gimple_seq *, location_t, tree, tree,
+				   unsigned HOST_WIDE_INT);
+inline tree
+gimple_build_round_up (gimple_seq *seq, tree type, tree old_size,
+		       unsigned HOST_WIDE_INT align)
+{
+  return gimple_build_round_up (seq, UNKNOWN_LOCATION, type, old_size, align);
 }
 
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);

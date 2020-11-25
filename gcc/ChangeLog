@@ -1,3 +1,105 @@
+2020-11-24  Ulrich Weigand  <ulrich.weigand@de.ibm.com>
+
+	Revert:
+	2020-11-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* doc/invoke.texi (-ffast-math): Remove mention of -fno-signaling-nans.
+	Clarify conditions when __FAST_MATH__ preprocessor macro is defined.
+	* opts.c (common_handle_option): Pass OPTS_SET to set_fast_math_flags
+	and set_unsafe_math_optimizations_flags.
+	(set_fast_math_flags): Add OPTS_SET argument, and use it to avoid
+	setting flags already explicitly set on the command line.  In the !set
+	case, also reset x_flag_cx_limited_range and x_flag_excess_precision.
+	Never reset x_flag_signaling_nans or x_flag_rounding_math.
+	(set_unsafe_math_optimizations_flags): Add OPTS_SET argument, and use
+	it to avoid setting flags already explicitly set on the command line.
+	(fast_math_flags_set_p): Also test x_flag_cx_limited_range,
+	x_flag_associative_math, x_flag_reciprocal_math, and
+	x_flag_rounding_math.
+
+2020-11-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/97933
+	* lra.c (lra_process_new_insns): Stop on the first real insn after
+	head of e->dest.
+
+2020-11-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/97534
+	* config/arm/arm.c (arm_split_atomic_op): Use gen_int_mode when
+	negating a const_int.
+
+2020-11-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/vector.md: Use vcond_comparison_operator
+	predicate.
+
+2020-11-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* doc/invoke.texi (-ffast-math): Remove mention of -fno-signaling-nans.
+	Clarify conditions when __FAST_MATH__ preprocessor macro is defined.
+	* opts.c (common_handle_option): Pass OPTS_SET to set_fast_math_flags
+	and set_unsafe_math_optimizations_flags.
+	(set_fast_math_flags): Add OPTS_SET argument, and use it to avoid
+	setting flags already explicitly set on the command line.  In the !set
+	case, also reset x_flag_cx_limited_range and x_flag_excess_precision.
+	Never reset x_flag_signaling_nans or x_flag_rounding_math.
+	(set_unsafe_math_optimizations_flags): Add OPTS_SET argument, and use
+	it to avoid setting flags already explicitly set on the command line.
+	(fast_math_flags_set_p): Also test x_flag_cx_limited_range,
+	x_flag_associative_math, x_flag_reciprocal_math, and
+	x_flag_rounding_math.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97950
+	* config/i386/i386.md (*setcc_si_1_and): Macroize into...
+	(*setcc_<mode>_1_and): New define_insn_and_split with SWI24 iterator.
+	(*setcc_si_1_movzbl): Macroize into...
+	(*setcc_<mode>_1_movzbl): New define_insn_and_split with SWI24
+	iterator.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.c (clear_padding_flush): If a word contains only 0
+	or 0xff bytes of padding other than all set, all clear, all set
+	followed by all clear or all clear followed by all set, don't emit
+	a RMW operation on the whole word or parts of it, but instead
+	clear the individual bytes of padding.  For paddings of one byte
+	size, don't use char[1] and {}, but instead just char and 0.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-expand.c (expand_oacc_for): More explicit checking of which
+	OMP constructs we're expecting.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/install.texi (Prerequisites) <Tcl>: Add comment.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96929
+	* fold-const.c (wide_int_binop) <case LSHIFT_EXPR, case RSHIFT_EXPR>:
+	Return false on negative second argument rather than trying to handle
+	it as shift in the other direction.
+	* tree-ssa-ccp.c (bit_value_binop) <case LSHIFT_EXPR,
+	case RSHIFT_EXPR>: Punt on negative shift count rather than trying
+	to handle it as shift in the other direction.
+	* match.pd (-1 >> x to -1): Remove tree_expr_nonnegative_p check.
+
+2020-11-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/97849
+	* tree-if-conv.c (tree_if_conversion): Move ssa_name
+	replacement code from ifcvt_local_dce to this function
+	before calling do_rpo_vn.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* tree-cfg.c (dump_function_to_file): Print type attributes
+	and return type.
+
 2020-11-23  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (ipa_pass_through_data): Expand comment describing

@@ -66,6 +66,7 @@ TEST_DUAL_Z_REV (cvt_bf16_f32_x_tied1, svbfloat16_t, svfloat32_t,
 
 /*
 ** cvt_bf16_f32_x_untied:
+**	movprfx	z0, z4
 **	bfcvt	z0\.h, p0/m, z4\.s
 **	ret
 */

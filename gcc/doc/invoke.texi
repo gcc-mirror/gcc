@@ -13829,6 +13829,53 @@ is greater or equal to this number, use callbacks instead of inline checks.
 E.g. to disable inline code use
 @option{--param asan-instrumentation-with-call-threshold=0}.
 
+@item hwasan-instrument-stack
+Enable hwasan instrumentation of statically sized stack-allocated variables.
+This kind of instrumentation is enabled by default when using
+@option{-fsanitize=hwaddress} and disabled by default when using
+@option{-fsanitize=kernel-hwaddress}.
+To disable stack instrumentation use
+@option{--param hwasan-instrument-stack=0}, and to enable it use
+@option{--param hwasan-instrument-stack=1}.
+
+@item hwasan-random-frame-tag
+When using stack instrumentation, decide tags for stack variables using a
+deterministic sequence beginning at a random tag for each frame.  With this
+parameter unset tags are chosen using the same sequence but beginning from 1.
+This is enabled by default for @option{-fsanitize=hwaddress} and unavailable
+for @option{-fsanitize=kernel-hwaddress}.
+To disable it use @option{--param hwasan-random-frame-tag=0}.
+
+@item hwasan-instrument-allocas
+Enable hwasan instrumentation of dynamically sized stack-allocated variables.
+This kind of instrumentation is enabled by default when using
+@option{-fsanitize=hwaddress} and disabled by default when using
+@option{-fsanitize=kernel-hwaddress}.
+To disable instrumentation of such variables use
+@option{--param hwasan-instrument-allocas=0}, and to enable it use
+@option{--param hwasan-instrument-allocas=1}.
+
+@item hwasan-instrument-reads
+Enable hwasan checks on memory reads.  Instrumentation of reads is enabled by
+default for both @option{-fsanitize=hwaddress} and
+@option{-fsanitize=kernel-hwaddress}.
+To disable checking memory reads use
+@option{--param hwasan-instrument-reads=0}.
+
+@item hwasan-instrument-writes
+Enable hwasan checks on memory writes.  Instrumentation of writes is enabled by
+default for both @option{-fsanitize=hwaddress} and
+@option{-fsanitize=kernel-hwaddress}.
+To disable checking memory writes use
+@option{--param hwasan-instrument-writes=0}.
+
+@item hwasan-instrument-mem-intrinsics
+Enable hwasan instrumentation of builtin functions.  Instrumentation of these
+builtin functions is enabled by default for both @option{-fsanitize=hwaddress}
+and @option{-fsanitize=kernel-hwaddress}.
+To disable instrumentation of builtin functions use
+@option{--param hwasan-instrument-mem-intrinsics=0}.
+
 @item use-after-scope-direct-emission-threshold
 If the size of a local variable in bytes is smaller or equal to this
 number, directly poison (or unpoison) shadow memory instead of using
@@ -14391,12 +14438,46 @@ more details.  The run-time behavior can be influenced using the
 the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
-The option cannot be combined with @option{-fsanitize=thread}.
+The option cannot be combined with @option{-fsanitize=thread} or
+@option{-fsanitize=hwaddress}.  Note that the only target this option is
+currently supported on is AArch64.
 
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
 See @uref{https://github.com/google/kasan/wiki} for more details.
+
+@item -fsanitize=hwaddress
+@opindex fsanitize=hwaddress
+Enable Hardware-assisted AddressSanitizer, which uses a hardware ability to
+ignore the top byte of a pointer to allow the detection of memory errors with
+a low memory overhead.
+Memory access instructions are instrumented to detect out-of-bounds and
+use-after-free bugs.
+The option enables @option{-fsanitize-address-use-after-scope}.
+See
+@uref{https://clang.llvm.org/docs/HardwareAssistedAddressSanitizerDesign.html}
+for more details.  The run-time behavior can be influenced using the
+@env{HWASAN_OPTIONS} environment variable.  When set to @code{help=1},
+the available options are shown at startup of the instrumented program.
+The option cannot be combined with @option{-fsanitize=thread} or
+@option{-fsanitize=address}, and is currently only available on AArch64.
+
+@item -fsanitize=kernel-hwaddress
+@opindex fsanitize=kernel-hwaddress
+Enable Hardware-assisted AddressSanitizer for compilation of the Linux kernel.
+Similar to @option{-fsanitize=kernel-address} but using an alternate
+instrumentation method, and similar to @option{-fsanitize=hwaddress} but with
+instrumentation differences necessary for compiling the Linux kernel.
+These differences are to avoid hwasan library initialization calls and to
+account for the stack pointer having a different value in its top byte.
+
+@emph{Note:} This option has different defaults to the @option{-fsanitize=hwaddress}.
+Instrumenting the stack and alloca calls are not on by default but are still
+possible by specifying the command-line options
+@option{--param hwasan-instrument-stack=1} and
+@option{--param hwasan-instrument-allocas=1} respectively. Using a random frame
+tag is not implemented for kernel instrumentation.
 
 @item -fsanitize=pointer-compare
 @opindex fsanitize=pointer-compare

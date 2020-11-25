@@ -2,7 +2,6 @@
 // { dg-do run { target c++2a } }
 // { dg-require-gthreads "" }
 // { dg-additional-options "-pthread" { target pthread } }
-// { dg-skip-if "broken" { ! *-*-*linux } }
 
 // Copyright (C) 2020 Free Software Foundation, Inc.
 //

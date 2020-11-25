@@ -2814,7 +2814,7 @@ fi
 # or bootstrap-ubsan, bootstrap it.
 if echo " ${target_configdirs} " | grep " libsanitizer " > /dev/null 2>&1; then
   case "$BUILD_CONFIG" in
-    *bootstrap-asan* | *bootstrap-ubsan* )
+    *bootstrap-hwasan* | *bootstrap-asan* | *bootstrap-ubsan* )
       bootstrap_target_libs=${bootstrap_target_libs}target-libsanitizer,
       bootstrap_fixincludes=yes
       ;;

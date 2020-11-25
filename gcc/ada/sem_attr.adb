@@ -3868,7 +3868,7 @@ package body Sem_Attr is
       -- Elab_Spec --
       ---------------
 
-      --  Shares processing with Elab_Body
+      --  Shares processing with Elab_Body attribute
 
       ----------------
       -- Elaborated --
@@ -4118,7 +4118,9 @@ package body Sem_Attr is
       -- Has_Access_Values --
       -----------------------
 
-      when Attribute_Has_Access_Values =>
+      when Attribute_Has_Access_Values
+         | Attribute_Has_Tagged_Values
+      =>
          Check_Type;
          Check_E0;
          Set_Etype (N, Standard_Boolean);
@@ -4142,10 +4144,7 @@ package body Sem_Attr is
       -- Has_Tagged_Values --
       -----------------------
 
-      when Attribute_Has_Tagged_Values =>
-         Check_Type;
-         Check_E0;
-         Set_Etype (N, Standard_Boolean);
+      --  Shares processing with Has_Access_Values attribute
 
       -----------------------
       -- Has_Discriminants --
@@ -6636,7 +6635,7 @@ package body Sem_Attr is
          Check_E0;
 
          if not Is_Entity_Name (P)
-           or else Ekind (Entity (P)) not in Named_Kind
+           or else not Is_Named_Number (Entity (P))
          then
             Error_Attr_P ("prefix for % attribute must be named number");
 
@@ -7793,7 +7792,7 @@ package body Sem_Attr is
       --  we will do the folding right here (things get confused if we let this
       --  case go through the normal circuitry).
 
-      if Attribute_Name (N) = Name_Img
+      if Id = Attribute_Img
         and then Is_Entity_Name (P)
         and then Is_Enumeration_Type (Etype (Entity (P)))
         and then Is_OK_Static_Expression (P)
@@ -8127,7 +8126,7 @@ package body Sem_Attr is
       --  T'Descriptor_Size is never static, even if T is static.
 
       if Is_Scalar_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Is_Static_Subtype (P_Entity)
         and then Is_Scalar_Type (Etype (N))
         and then
@@ -8151,7 +8150,7 @@ package body Sem_Attr is
 
       if Is_Type (P_Entity)
         and then (Is_Scalar_Type (P_Entity) or Is_Array_Type (P_Entity))
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
       then
          P_Type := P_Entity;
 
@@ -8159,7 +8158,7 @@ package body Sem_Attr is
 
       elsif Ekind (P_Entity) in E_Variable | E_Constant
         and then Is_Array_Type (Etype (P_Entity))
-        and then (not Is_Generic_Type (Etype (P_Entity)))
+        and then not Is_Generic_Type (Etype (P_Entity))
       then
          P_Type := Etype (P_Entity);
 
@@ -8208,7 +8207,7 @@ package body Sem_Attr is
       elsif (Id = Attribute_Size or
              Id = Attribute_Max_Size_In_Storage_Elements)
         and then Is_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Known_Static_RM_Size (P_Entity)
       then
          declare
@@ -8230,7 +8229,7 @@ package body Sem_Attr is
 
       elsif Id = Attribute_Alignment
         and then Is_Type (P_Entity)
-        and then (not Is_Generic_Type (P_Entity))
+        and then not Is_Generic_Type (P_Entity)
         and then Known_Alignment (P_Entity)
       then
          Compile_Time_Known_Attribute (N, Alignment (P_Entity));
@@ -8239,7 +8238,7 @@ package body Sem_Attr is
       --  If this is an access attribute that is known to fail accessibility
       --  check, rewrite accordingly.
 
-      elsif Attribute_Name (N) = Name_Access
+      elsif Id = Attribute_Address
         and then Raises_Constraint_Error (N)
       then
          Rewrite (N,

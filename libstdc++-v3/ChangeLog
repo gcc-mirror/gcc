@@ -1,3 +1,31 @@
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	PR libstdc++/97944
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Disable.
+	Do not require pthreads, but add -pthread when appropriate.
+	* testsuite/30_threads/jthread/95989.cc: Likewise.
+	* testsuite/30_threads/latch/3.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc: Likewise.
+
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/jthread/95989.cc: Run all three test
+	functions, not just the first one twice.
+
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67791
+	* src/c++11/thread.cc (thread::_M_start_thread(_State_ptr, void (*)())):
+	Check that gthreads is available before calling __gthread_create.
+
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale.cc (locale::facet::_S_get_c_locale())
+	(locale::id::_M_id() const): Use __is_single_threaded.
+	* src/c++98/locale_init.cc (locale::_S_initialize()):
+	Likewise.
+
 2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/semaphore_base.h

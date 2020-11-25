@@ -74,16 +74,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
     using __clock_t = system_clock;
 #endif
-    typedef __gthread_cond_t		__native_type;
 
-#ifdef __GTHREAD_COND_INIT
-    __native_type			_M_cond = __GTHREAD_COND_INIT;
-#else
-    __native_type			_M_cond;
-#endif
+    __condvar _M_cond;
 
   public:
-    typedef __native_type* 		native_handle_type;
+    typedef __gthread_cond_t* 		native_handle_type;
 
     condition_variable() noexcept;
     ~condition_variable() noexcept;
@@ -185,7 +180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     native_handle_type
     native_handle()
-    { return &_M_cond; }
+    { return _M_cond.native_handle(); }
 
   private:
 #ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
@@ -203,9 +198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    static_cast<long>(__ns.count())
 	  };
 
-	pthread_cond_clockwait(&_M_cond, __lock.mutex()->native_handle(),
-					 CLOCK_MONOTONIC,
-					 &__ts);
+	_M_cond.wait_until(*__lock.mutex(), CLOCK_MONOTONIC, __ts);
 
 	return (steady_clock::now() < __atime
 		? cv_status::no_timeout : cv_status::timeout);
@@ -226,8 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    static_cast<long>(__ns.count())
 	  };
 
-	__gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
-				 &__ts);
+	_M_cond.wait_until(*__lock.mutex(), __ts);
 
 	return (system_clock::now() < __atime
 		? cv_status::no_timeout : cv_status::timeout);

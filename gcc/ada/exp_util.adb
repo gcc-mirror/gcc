@@ -169,6 +169,16 @@ package body Exp_Util is
    --  Determine whether pragma Default_Initial_Condition denoted by Prag has
    --  an assertion expression that should be verified at run time.
 
+   function Is_Uninitialized_Aggregate
+     (Exp : Node_Id;
+      T   : Entity_Id) return Boolean;
+   --  Determine whether an array aggregate used in an object declaration
+   --  is uninitialized, when the aggregate is declared with a box and
+   --  the component type has no default value. Such an aggregate can be
+   --  optimized away to prevent the copying of uninitialized data, and
+   --  the bounds of the aggregate can be propagated directly to the
+   --  object declaration.
+
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
       E : Node_Id) return Entity_Id;
@@ -471,9 +481,9 @@ package body Exp_Util is
       end if;
    end Append_Freeze_Actions;
 
-   --------------------------------------
-   -- Attr_Constrained_Statically_True --
-   --------------------------------------
+   ----------------------------------------
+   -- Attribute_Constrained_Static_Value --
+   ----------------------------------------
 
    function Attribute_Constrained_Static_Value (Pref : Node_Id) return Boolean
    is
@@ -535,7 +545,7 @@ package body Exp_Util is
 
       if Is_Entity_Name (Pref) then
          declare
-            Ent : constant Entity_Id   := Entity (Pref);
+            Ent : constant Entity_Id := Entity (Pref);
             Res : Boolean;
 
          begin
@@ -5346,6 +5356,17 @@ package body Exp_Util is
       elsif Is_Build_In_Place_Function_Call (Exp) then
          null;
 
+     --  If the exprewsion is an uninitialized aggregate, no need to build
+     --  a subtype from the expression. because this may require the use
+     --  of dynamic memory to create the object.
+
+      elsif Is_Uninitialized_Aggregate (Exp, Exp_Typ) then
+         Rewrite (Subtype_Indic, New_Occurrence_Of (Etype (Exp), Sloc (N)));
+         if Nkind (N) = N_Object_Declaration then
+            Set_Expression (N, Empty);
+            Set_No_Initialization (N);
+         end if;
+
       else
          Remove_Side_Effects (Exp);
          Rewrite (Subtype_Indic,
@@ -6567,7 +6588,7 @@ package body Exp_Util is
       if Has_Stream_Size_Clause (E) then
          return Static_Integer (Expression (Stream_Size_Clause (E)));
 
-      --  Otherwise the Stream_Size if the size of the type
+      --  Otherwise the Stream_Size is the size of the type
 
       else
          return Esize (E);
@@ -8793,6 +8814,47 @@ package body Exp_Util is
           and then Nkind (Expr) = N_Unchecked_Type_Conversion
           and then Etype (Expression (Expr)) = RTE (RE_Tag);
    end Is_Tag_To_Class_Wide_Conversion;
+
+   --------------------------------
+   -- Is_Uninitialized_Aggregate --
+   --------------------------------
+
+   function Is_Uninitialized_Aggregate
+     (Exp : Node_Id;
+      T   : Entity_Id) return Boolean
+   is
+      Comp      : Node_Id;
+      Comp_Type : Entity_Id;
+      Typ       : Entity_Id;
+
+   begin
+      if Nkind (Exp) /= N_Aggregate then
+         return False;
+      end if;
+
+      Preanalyze_And_Resolve (Exp, T);
+      Typ  := Etype (Exp);
+
+      if No (Typ)
+        or else Ekind (Typ) /= E_Array_Subtype
+        or else Present (Expressions (Exp))
+        or else No (Component_Associations (Exp))
+      then
+         return False;
+      else
+         Comp_Type := Component_Type (Typ);
+         Comp := First (Component_Associations (Exp));
+
+         if not Box_Present (Comp)
+           or else Present (Next (Comp))
+         then
+            return False;
+         end if;
+
+         return Is_Scalar_Type (Comp_Type)
+           and then No (Default_Aspect_Component_Value (Typ));
+      end if;
+   end Is_Uninitialized_Aggregate;
 
    ----------------------------
    -- Is_Untagged_Derivation --
@@ -11124,6 +11186,12 @@ package body Exp_Util is
       --  otherwise it generates an internal temporary. The created temporary
       --  entity is marked as internal.
 
+      function Possible_Side_Effect_In_SPARK (Exp : Node_Id) return Boolean;
+      --  Computes whether a side effect is possible in SPARK, which should
+      --  be handled by removing it from the expression for GNATprove. Note
+      --  that other side effects related to volatile variables are handled
+      --  separately.
+
       ---------------------
       -- Build_Temporary --
       ---------------------
@@ -11159,6 +11227,26 @@ package body Exp_Util is
          return Temp_Id;
       end Build_Temporary;
 
+      -----------------------------------
+      -- Possible_Side_Effect_In_SPARK --
+      -----------------------------------
+
+      function Possible_Side_Effect_In_SPARK (Exp : Node_Id) return Boolean is
+      begin
+        --  Side-effect removal in SPARK should only occur when not inside a
+        --  generic and not doing a preanalysis, inside an object renaming or
+        --  a type declaration or a for-loop iteration scheme.
+
+         return not Inside_A_Generic
+           and then Full_Analysis
+           and then Nkind (Enclosing_Declaration (Exp)) in
+                      N_Full_Type_Declaration
+                    | N_Iterator_Specification
+                    | N_Loop_Parameter_Specification
+                    | N_Object_Renaming_Declaration
+                    | N_Subtype_Declaration;
+      end Possible_Side_Effect_In_SPARK;
+
       --  Local variables
 
       Loc          : constant Source_Ptr      := Sloc (Exp);
@@ -11176,11 +11264,11 @@ package body Exp_Util is
    begin
       --  Handle cases in which there is nothing to do. In GNATprove mode,
       --  removal of side effects is useful for the light expansion of
-      --  renamings. This removal should only occur when not inside a
-      --  generic and not doing a preanalysis.
+      --  renamings.
 
       if not Expander_Active
-        and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
+        and then not
+          (GNATprove_Mode and then Possible_Side_Effect_In_SPARK (Exp))
       then
          return;
 
@@ -11216,14 +11304,6 @@ package body Exp_Util is
       elsif Modify_Tree_For_C
         and then Nkind (Exp) = N_Function_Call
         and then Is_Class_Wide_Type (Etype (Exp))
-      then
-         return;
-
-      --  An expression which is in SPARK mode is considered side effect free
-      --  if the resulting value is captured by a variable or a constant.
-
-      elsif GNATprove_Mode
-        and then Nkind (Parent (Exp)) = N_Object_Declaration
       then
          return;
       end if;

@@ -286,4 +286,13 @@ extern bool default_have_speculation_safe_value (bool);
 extern bool speculation_safe_value_not_needed (bool);
 extern rtx default_speculation_safe_value (machine_mode, rtx, rtx, rtx);
 
+extern bool default_memtag_can_tag_addresses ();
+extern uint8_t default_memtag_tag_size ();
+extern uint8_t default_memtag_granule_size ();
+extern rtx default_memtag_insert_random_tag (rtx, rtx);
+extern rtx default_memtag_add_tag (rtx, poly_int64, uint8_t);
+extern rtx default_memtag_set_tag (rtx, rtx, rtx);
+extern rtx default_memtag_extract_tag (rtx, rtx);
+extern rtx default_memtag_untagged_pointer (rtx, rtx);
+
 #endif /* GCC_TARGHOOKS_H */

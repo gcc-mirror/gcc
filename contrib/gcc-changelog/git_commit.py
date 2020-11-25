@@ -19,7 +19,7 @@
 import os
 import re
 
-changelog_locations = set([
+changelog_locations = {
     'config',
     'contrib',
     'contrib/header-tools',
@@ -72,9 +72,9 @@ changelog_locations = set([
     'libvtv',
     'lto-plugin',
     'maintainer-scripts',
-    'zlib'])
+    'zlib'}
 
-bug_components = set([
+bug_components = {
     'ada',
     'analyzer',
     'boehm-gc',
@@ -123,9 +123,9 @@ bug_components = set([
     'testsuite',
     'translation',
     'tree-optimization',
-    'web'])
+    'web'}
 
-ignored_prefixes = [
+ignored_prefixes = {
     'gcc/d/dmd/',
     'gcc/go/gofrontend/',
     'gcc/testsuite/gdc.test/',
@@ -134,18 +134,18 @@ ignored_prefixes = [
     'libphobos/libdruntime/',
     'libphobos/src/',
     'libsanitizer/',
-    ]
+    }
 
-wildcard_prefixes = [
+wildcard_prefixes = {
     'gcc/testsuite/',
     'libstdc++-v3/doc/html/'
-    ]
+    }
 
-misc_files = [
+misc_files = {
     'gcc/DATESTAMP',
     'gcc/BASE-VER',
     'gcc/DEV-PHASE'
-    ]
+    }
 
 author_line_regex = \
         re.compile(r'^(?P<datetime>\d{4}-\d{2}-\d{2})\ {2}(?P<name>.*  <.*>)')
@@ -157,12 +157,12 @@ star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 end_of_location_regex = re.compile(r'[\[<(:]')
 item_empty_regex = re.compile(r'\t(\* \S+ )?\(\S+\):\s*$')
 item_parenthesis_regex = re.compile(r'\t(\*|\(\S+\):)')
+revert_regex = re.compile(r'This reverts commit (?P<hash>\w+).$')
 
 LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
 CHERRY_PICK_PREFIX = '(cherry picked from commit '
-REVERT_PREFIX = 'This reverts commit '
 
 REVIEW_PREFIXES = ('reviewed-by: ', 'reviewed-on: ', 'signed-off-by: ',
                    'acked-by: ', 'tested-by: ', 'reported-by: ',
@@ -274,8 +274,9 @@ class GitCommit:
 
         # Identify first if the commit is a Revert commit
         for line in self.info.lines:
-            if line.startswith(REVERT_PREFIX):
-                self.revert_commit = line[len(REVERT_PREFIX):].rstrip('.')
+            m = revert_regex.match(line)
+            if m:
+                self.revert_commit = m.group('hash')
                 break
         if self.revert_commit:
             self.info = self.commit_to_info_hook(self.revert_commit)

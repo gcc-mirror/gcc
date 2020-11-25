@@ -12222,3 +12222,69 @@ This target hook can be used to generate a target-specific code
 @deftypefn {Target Hook} void TARGET_RUN_TARGET_SELFTESTS (void)
 If selftests are enabled, run any selftests for this target.
 @end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_MEMTAG_CAN_TAG_ADDRESSES ()
+True if the backend architecture naturally supports ignoring some region
+of pointers.  This feature means that @option{-fsanitize=hwaddress} can
+work.
+
+At preset, this feature does not support address spaces.  It also requires
+@code{Pmode} to be the same as @code{ptr_mode}.
+@end deftypefn
+
+@deftypefn {Target Hook} uint8_t TARGET_MEMTAG_TAG_SIZE ()
+Return the size of a tag (in bits) for this platform.
+
+The default returns 8.
+@end deftypefn
+
+@deftypefn {Target Hook} uint8_t TARGET_MEMTAG_GRANULE_SIZE ()
+Return the size in real memory that each byte in shadow memory refers to.
+I.e. if a variable is @var{X} bytes long in memory, then this hook should
+return the value @var{Y} such that the tag in shadow memory spans
+@var{X}/@var{Y} bytes.
+
+Most variables will need to be aligned to this amount since two variables
+that are neighbors in memory and share a tag granule would need to share
+the same tag.
+
+The default returns 16.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_INSERT_RANDOM_TAG (rtx @var{untagged}, rtx @var{target})
+Return an RTX representing the value of @var{untagged} but with a
+(possibly) random tag in it.
+Put that value into @var{target} if it is convenient to do so.
+This function is used to generate a tagged base for the current stack frame.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_ADD_TAG (rtx @var{base}, poly_int64 @var{addr_offset}, uint8_t @var{tag_offset})
+Return an RTX that represents the result of adding @var{addr_offset} to
+the address in pointer @var{base} and @var{tag_offset} to the tag in pointer
+@var{base}.
+The resulting RTX must either be a valid memory address or be able to get
+put into an operand with @code{force_operand}.
+
+Unlike other memtag hooks, this must return an expression and not emit any
+RTL.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_SET_TAG (rtx @var{untagged_base}, rtx @var{tag}, rtx @var{target})
+Return an RTX representing @var{untagged_base} but with the tag @var{tag}.
+Try and store this in @var{target} if convenient.
+@var{untagged_base} is required to have a zero tag when this hook is called.
+The default of this hook is to set the top byte of @var{untagged_base} to
+@var{tag}.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_EXTRACT_TAG (rtx @var{tagged_pointer}, rtx @var{target})
+Return an RTX representing the tag stored in @var{tagged_pointer}.
+Store the result in @var{target} if it is convenient.
+The default represents the top byte of the original pointer.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_MEMTAG_UNTAGGED_POINTER (rtx @var{tagged_pointer}, rtx @var{target})
+Return an RTX representing @var{tagged_pointer} with its tag set to zero.
+Store the result in @var{target} if convenient.
+The default clears the top byte of the original pointer.
+@end deftypefn
