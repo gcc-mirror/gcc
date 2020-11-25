@@ -553,6 +553,16 @@ get_min_precision (tree arg, signop sign)
       if (++cnt > 30)
 	return prec + (orig_sign != sign);
     }
+  if (CONVERT_EXPR_P (arg)
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
+      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg, 0))) > prec)
+    {
+      /* We have e.g. (unsigned short) y_2 where int y_2 = (int) x_1(D);
+	 If y_2's min precision is smaller than prec, return that.  */
+      int oprec = get_min_precision (TREE_OPERAND (arg, 0), sign);
+      if (oprec < prec)
+	return oprec + (orig_sign != sign);
+    }
   if (TREE_CODE (arg) != SSA_NAME)
     return prec + (orig_sign != sign);
   wide_int arg_min, arg_max;
@@ -1357,6 +1367,37 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 				   NULL, done_label, profile_probability::very_likely ());
 	  goto do_error_label;
 	case 3:
+	  if (get_min_precision (arg1, UNSIGNED)
+	      + get_min_precision (arg0, SIGNED) <= GET_MODE_PRECISION (mode))
+	    {
+	      /* If the first operand is sign extended from narrower type, the
+		 second operand is zero extended from narrower type and
+		 the sum of the two precisions is smaller or equal to the
+		 result precision: if the first argument is at runtime
+		 non-negative, maximum result will be 0x7e81 or 0x7f..fe80..01
+		 and there will be no overflow, if the first argument is
+		 negative and the second argument zero, the result will be
+		 0 and there will be no overflow, if the first argument is
+		 negative and the second argument positive, the result when
+		 treated as signed will be negative (minimum -0x7f80 or
+		 -0x7f..f80..0) there there will be always overflow.  So, do
+		 res = (U) (s1 * u2)
+		 ovf = (S) res < 0  */
+	      struct separate_ops ops;
+	      ops.code = MULT_EXPR;
+	      ops.type
+		= build_nonstandard_integer_type (GET_MODE_PRECISION (mode),
+						  1);
+	      ops.op0 = make_tree (ops.type, op0);
+	      ops.op1 = make_tree (ops.type, op1);
+	      ops.op2 = NULL_TREE;
+	      ops.location = loc;
+	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	      do_compare_rtx_and_jump (res, const0_rtx, GE, false,
+				       mode, NULL_RTX, NULL, done_label,
+				       profile_probability::very_likely ());
+	      goto do_error_label;
+	    }
 	  rtx_code_label *do_main_label;
 	  do_main_label = gen_label_rtx ();
 	  do_compare_rtx_and_jump (op0, const0_rtx, GE, false, mode, NULL_RTX,
@@ -1374,7 +1415,16 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   /* u1 * u2 -> sr  */
   if (uns0_p && uns1_p && !unsr_p)
     {
-      uns = true;
+      if ((pos_neg0 | pos_neg1) == 1)
+	{
+	  /* If both arguments are zero extended from narrower types,
+	     the MSB will be clear on both and so we can pretend it is
+	     a normal s1 * s2 -> sr multiplication.  */
+	  uns0_p = false;
+	  uns1_p = false;
+	}
+      else
+	uns = true;
       /* Rest of handling of this case after res is computed.  */
       goto do_main;
     }
@@ -1452,6 +1502,37 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
 	      do_compare_rtx_and_jump (pos_neg0 == 1 ? op0 : op1, const0_rtx, EQ,
 				       true, mode, NULL_RTX, NULL, done_label,
+				       profile_probability::very_likely ());
+	      goto do_error_label;
+	    }
+	  if (get_min_precision (arg0, SIGNED)
+	      + get_min_precision (arg1, SIGNED) <= GET_MODE_PRECISION (mode))
+	    {
+	      /* If both operands are sign extended from narrower types and
+		 the sum of the two precisions is smaller or equal to the
+		 result precision: if both arguments are at runtime
+		 non-negative, maximum result will be 0x3f01 or 0x3f..f0..01
+		 and there will be no overflow, if both arguments are negative,
+		 maximum result will be 0x40..00 and there will be no overflow
+		 either, if one argument is positive and the other argument
+		 negative, the result when treated as signed will be negative
+		 and there will be always overflow, and if one argument is
+		 zero and the other negative the result will be zero and no
+		 overflow.  So, do
+		 res = (U) (s1 * s2)
+		 ovf = (S) res < 0  */
+	      struct separate_ops ops;
+	      ops.code = MULT_EXPR;
+	      ops.type
+		= build_nonstandard_integer_type (GET_MODE_PRECISION (mode),
+						  1);
+	      ops.op0 = make_tree (ops.type, op0);
+	      ops.op1 = make_tree (ops.type, op1);
+	      ops.op2 = NULL_TREE;
+	      ops.location = loc;
+	      res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	      do_compare_rtx_and_jump (res, const0_rtx, GE, false,
+				       mode, NULL_RTX, NULL, done_label,
 				       profile_probability::very_likely ());
 	      goto do_error_label;
 	    }
