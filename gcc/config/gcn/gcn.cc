@@ -7570,6 +7570,8 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_vector_alignment_reachable
 #undef  TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P gcn_vector_mode_supported_p
+#undef  TARGET_VECTORIZE_PREFER_GATHER_SCATTER
+#define TARGET_VECTORIZE_PREFER_GATHER_SCATTER true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

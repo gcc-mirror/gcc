@@ -2044,6 +2044,14 @@ all zeros.  GCC can then try to branch around the instruction instead.",
  (unsigned ifn),
  default_empty_mask_is_expensive)
 
+/* Prefer gather/scatter loads/stores to e.g. elementwise accesses if\n\
+we cannot use a contiguous access.  */
+DEFHOOKPOD
+(prefer_gather_scatter,
+ "This hook is set to TRUE if gather loads or scatter stores are cheaper on\n\
+this target than a sequence of elementwise loads or stores.",
+ bool, false)
+
 /* Target builtin that implements vector gather operation.  */
 DEFHOOK
 (builtin_gather,

@@ -2384,9 +2384,14 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	 it probably isn't a win to use separate strided accesses based
 	 on nearby locations.  Or, even if it's a win over scalar code,
 	 it might not be a win over vectorizing at a lower VF, if that
-	 allows us to use contiguous accesses.  */
+	 allows us to use contiguous accesses.
+
+	 On some targets (e.g. AMD GCN), always use gather/scatter accesses
+	 here since those are the only types of vector loads/stores available,
+	 and the fallback case of using elementwise accesses is very
+	 inefficient.  */
       if (*memory_access_type == VMAT_ELEMENTWISE
-	  && single_element_p
+	  && (targetm.vectorize.prefer_gather_scatter || single_element_p)
 	  && loop_vinfo
 	  && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
 						 masked_p, gs_info))
