@@ -1,6 +1,6 @@
 /* Test 'map' clause diagnostics.  */
 
-/* See also corresponding C++ variant: '../../g++.dg/gomp/map-1.C'.  */
+/* See also corresponding C/C++ variant: '../../c-c++-common/gomp/map-1.c'.  */
 
 extern int a[][10], a2[][10];
 int b[10], c[10][2], d[10], e[10], f[10];
@@ -17,6 +17,7 @@ int t[10];
 void bar (int *);
 #pragma omp end declare target
 
+template <int N>
 void
 foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
      int g2[3][10], int h2[4][8], int i2[2][10], int j2[][9])
@@ -40,7 +41,7 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
   #pragma omp target map(alloc: s2) /* { dg-error "'s2' does not have a mappable type in 'map' clause" } */
     ;
   #pragma omp target map(to: a[:][:]) /* { dg-error "array type length expression must be specified" } */
-    bar (&a[0][0]); /* { dg-error "referenced in target region does not have a mappable type" } */
+    bar (&a[0][0]); /* { dg-error "referenced in target region does not have a mappable type" "TODO" { xfail *-*-* } } */
   #pragma omp target map(tofrom: b[-1:]) /* { dg-error "negative low bound in array section" } */
     bar (b);
   #pragma omp target map(tofrom: c[:-3][:]) /* { dg-error "negative length in array section" } */
@@ -107,4 +108,10 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
     ;
   #pragma omp target map(r[3:][2:1][1:2][:][:3]) /* { dg-error "array section is not contiguous" } */
     ;
+}
+
+static void
+instantiate ()
+{
+  &foo<0>;
 }
