@@ -33,9 +33,6 @@ with System.Val_Util; use System.Val_Util;
 
 package body System.Value_R is
 
-   Precision_Limit : constant Uns := 2 ** (Uns'Size - 1);
-   --  Limit beyond which additional digits are dropped
-
    subtype Char_As_Digit is Unsigned range 0 .. 17;
    subtype Valid_Digit is Char_As_Digit range 0 .. 15;
    E_Digit     : constant Char_As_Digit := 14;
@@ -238,8 +235,13 @@ package body System.Value_R is
 
                Temp := Value * Uns (Base) + Uns (Digit);
 
+               --  Check if Temp is larger than Precision_Limit, taking into
+               --  account that Temp may have wrapped around.
+
                if Value <= Umax
-                 or else (Value <= UmaxB and then Temp <= Precision_Limit)
+                 or else (Value <= UmaxB
+                           and then Temp <= Precision_Limit
+                           and then Temp >= Uns (Base))
                then
                   Value := Temp;
                   Scale := Scale - 1;
@@ -383,8 +385,13 @@ package body System.Value_R is
          else
             Temp := Value * Uns (Base) + Uns (Digit);
 
+            --  Check if Temp is larger than Precision_Limit, taking into
+            --  account that Temp may have wrapped around.
+
             if Value <= Umax
-              or else (Value <= UmaxB and then Temp <= Precision_Limit)
+              or else (Value <= UmaxB
+                        and then Temp <= Precision_Limit
+                        and then Temp >= Uns (Base))
             then
                Value := Temp;
 

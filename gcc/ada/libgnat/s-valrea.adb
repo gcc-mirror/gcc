@@ -36,13 +36,20 @@ with System.Value_R;
 
 package body System.Val_Real is
 
-   package Impl is new Value_R (Uns, Floating => True);
+   pragma Assert (Num'Machine_Mantissa <= Uns'Size);
+   --  We need an unsigned type large enough to represent the mantissa
+
+   Precision_Limit : constant Uns := 2**Num'Machine_Mantissa - 1;
+   --  We use the precision of the floating-point type
+
+   package Impl is new Value_R (Uns, Precision_Limit, Floating => True);
 
    function Integer_to_Real
      (Str   : String;
       Val   : Uns;
       Base  : Unsigned;
       Scale : Integer;
+      Extra : Unsigned;
       Minus : Boolean) return Num;
    --  Convert the real value from integer to real representation
 
@@ -55,6 +62,7 @@ package body System.Val_Real is
       Val   : Uns;
       Base  : Unsigned;
       Scale : Integer;
+      Extra : Unsigned;
       Minus : Boolean) return Num
    is
       pragma Assert (Base in 2 .. 16);
@@ -62,6 +70,7 @@ package body System.Val_Real is
       pragma Unsuppress (Range_Check);
 
       R_Val : Num;
+      S     : Integer := Scale;
 
    begin
       --  We call the floating-point processor reset routine so we can be sure
@@ -73,12 +82,21 @@ package body System.Val_Real is
          System.Float_Control.Reset;
       end if;
 
-      --  Compute the final value with a single rounding if possible
+      --  Take into account the extra digit near the limit to avoid anomalies
 
-      if Scale < 0 then
-         R_Val := Num (Val) / Num (Base) ** (-Scale);
+      if Extra > 0 and then Val <= Precision_Limit / Uns (Base) then
+         R_Val := Num (Val * Uns (Base)) + Num (Extra);
+         S := S - 1;
       else
-         R_Val := Num (Val) * Num (Base) ** Scale;
+         R_Val := Num (Val);
+      end if;
+
+      --  Compute the final value
+
+      if S < 0 then
+         R_Val := R_Val / Num (Base) ** (-S);
+      else
+         R_Val := R_Val * Num (Base) ** S;
       end if;
 
       --  Finally deal with initial minus sign, note that this processing is
@@ -102,14 +120,13 @@ package body System.Val_Real is
       Base  : Unsigned;
       Scale : Integer;
       Extra : Unsigned;
-      pragma Unreferenced (Extra);
       Minus : Boolean;
       Val   : Uns;
 
    begin
       Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scale, Extra, Minus);
 
-      return Integer_to_Real (Str, Val, Base, Scale, Minus);
+      return Integer_to_Real (Str, Val, Base, Scale, Extra, Minus);
    end Scan_Real;
 
    ----------------
@@ -120,14 +137,13 @@ package body System.Val_Real is
       Base  : Unsigned;
       Scale : Integer;
       Extra : Unsigned;
-      pragma Unreferenced (Extra);
       Minus : Boolean;
       Val   : Uns;
 
    begin
       Val := Impl.Value_Raw_Real (Str, Base, Scale, Extra, Minus);
 
-      return Integer_to_Real (Str, Val, Base, Scale, Minus);
+      return Integer_to_Real (Str, Val, Base, Scale, Extra, Minus);
    end Value_Real;
 
 end System.Val_Real;
