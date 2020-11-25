@@ -1233,7 +1233,7 @@ package body Ch4 is
       Attr_Node := New_Node (N_Attribute_Reference, Token_Ptr);
       Set_Attribute_Name (Attr_Node, Attr_Name);
       if Attr_Name /= Name_Reduce then
-         Error_Msg ("reduce attribute expected", Prev_Token_Ptr);
+         Error_Msg ("Reduce attribute expected", Prev_Token_Ptr);
       end if;
 
       Set_Prefix (Attr_Node, S);
@@ -1584,7 +1584,7 @@ package body Ch4 is
 
          elsif Token = Tok_With then
             Error_Msg_SC ("WITH must be preceded by single expression in " &
-                             "extension aggregate");
+                          "extension aggregate");
             raise Error_Resync;
 
          --  Range attribute can only appear as part of a discrete choice list

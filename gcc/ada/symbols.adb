@@ -49,7 +49,7 @@ package body Symbols is
       pragma Unreferenced (Version);
    begin
       Put_Line
-        ("creation of symbol files are not supported on this platform");
+        ("creation of symbol files is not supported on this platform");
       Success := False;
    end Initialize;
 

@@ -4386,7 +4386,7 @@ package body Checks is
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
                      Msg    =>
-                       "(Ada 2005) null not allowed in null-excluding "
+                       "(Ada 2005) NULL not allowed in null-excluding "
                        & "components??",
                      Reason => CE_Null_Not_Allowed);
 
@@ -4394,7 +4394,7 @@ package body Checks is
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
                      Msg    =>
-                       "(Ada 2005) null not allowed in null-excluding "
+                       "(Ada 2005) NULL not allowed in null-excluding "
                        & "objects??",
                      Reason => CE_Null_Not_Allowed);
 
@@ -4402,7 +4402,7 @@ package body Checks is
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
                      Msg    =>
-                       "(Ada 2005) null not allowed in null-excluding "
+                       "(Ada 2005) NULL not allowed in null-excluding "
                        & "formals??",
                      Reason => CE_Null_Not_Allowed);
 

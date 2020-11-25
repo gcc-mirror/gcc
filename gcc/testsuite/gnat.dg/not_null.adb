@@ -10,9 +10,9 @@ procedure not_null is
 
 begin
    declare
-      pragma Warnings (Off, "*null not allowed in null-excluding objects");
+      pragma Warnings (Off, "*""null"" not allowed in null-excluding objects");
       package Inst_2 is new GPack (null);
-      pragma Warnings (On, "*null not allowed in null-excluding objects");
+      pragma Warnings (On, "*""null"" not allowed in null-excluding objects");
    begin
       null;
    end;

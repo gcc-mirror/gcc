@@ -355,13 +355,13 @@ package body Ch12 is
          Scan;  --  past OTHERS
 
          if Token /= Tok_Arrow then
-            Error_Msg_BC  ("expect arrow after others");
+            Error_Msg_BC  ("expect `='>` after OTHERS");
          else
             Scan;  --  past arrow
          end if;
 
          if Token /= Tok_Box then
-            Error_Msg_BC ("expect Box after arrow");
+            Error_Msg_BC ("expect `'<'>` after `='>`");
          else
             Scan;  --  past box
          end if;

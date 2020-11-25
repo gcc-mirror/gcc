@@ -2012,9 +2012,9 @@ package body Sem_Ch13 is
                   Error_Msg_N
                     ("incompatible interfacing aspects given for &", E);
                   Error_Msg_Sloc := Sloc (Expo);
-                  Error_Msg_N ("\aspect `Export` #", E);
+                  Error_Msg_N ("\aspect Export #", E);
                   Error_Msg_Sloc := Sloc (Imp);
-                  Error_Msg_N ("\aspect `Import` #", E);
+                  Error_Msg_N ("\aspect Import #", E);
                end if;
 
                --  A variable is most likely modified from the outside. Take
@@ -2096,8 +2096,8 @@ package body Sem_Ch13 is
                if A_Id = Aspect_External_Name then
                   if No (Expo) and then No (Imp) then
                      Error_Msg_N
-                       ("aspect `External_Name` requires aspect `Import` or "
-                        & "`Export`", Aspect);
+                       ("aspect External_Name requires aspect Import or "
+                        & "Export", Aspect);
                   end if;
 
                --  Otherwise ensure that aspect Link_Name applies to aspect
@@ -2107,8 +2107,8 @@ package body Sem_Ch13 is
                   pragma Assert (A_Id = Aspect_Link_Name);
                   if No (Expo) and then No (Imp) then
                      Error_Msg_N
-                       ("aspect `Link_Name` requires aspect `Import` or "
-                        & "`Export`", Aspect);
+                       ("aspect Link_Name requires aspect Import or Export",
+                        Aspect);
                   end if;
                end if;
             end Analyze_Aspect_External_Link_Name;
@@ -2594,8 +2594,9 @@ package body Sem_Ch13 is
                   for Asp in Pre_Post_Aspects loop
                      if Has_Aspect (E, Asp) then
                         Error_Msg_N
-                          ("this aspect not allowed for static expression "
-                             & "functions", Find_Aspect (E, Asp));
+                          ("this aspect is not allowed for a static "
+                           & "expression function",
+                           Find_Aspect (E, Asp));
 
                         return;
                      end if;
@@ -2659,7 +2660,7 @@ package body Sem_Ch13 is
 
                elsif Within_Protected_Type (E) then
                   Error_Msg_N
-                    ("aspect% not applicable to protected operations", Id);
+                    ("aspect% not applicable to protected operation", Id);
                   return;
 
                else
@@ -3375,7 +3376,7 @@ package body Sem_Ch13 is
 
                         else
                            Error_Msg_N
-                             ("main subprogram CPU is out of range", Expr);
+                             ("main subprogram 'C'P'U is out of range", Expr);
                         end if;
 
                      --  For the Priority aspect
@@ -4201,14 +4202,14 @@ package body Sem_Ch13 is
                   elsif A_Id = Aspect_Default_Value
                     and then not Is_Scalar_Type (E)
                   then
-                     Error_Msg_N ("aspect% can only be applied to scalar type",
-                                  Id);
+                     Error_Msg_N
+                       ("aspect% can only be applied to scalar type", Id);
                      goto Continue;
 
                   elsif A_Id = Aspect_Default_Component_Value then
                      if not Is_Array_Type (E) then
-                        Error_Msg_N ("aspect% can only be applied to array " &
-                                     "type", Id);
+                        Error_Msg_N
+                          ("aspect% can only be applied to array type", Id);
                         goto Continue;
 
                      elsif not Is_Scalar_Type (Component_Type (E)) then
@@ -4423,7 +4424,7 @@ package body Sem_Ch13 is
 
                   if Nkind (Parent (N)) = N_Compilation_Unit then
                      Error_Msg_Name_1 := Nam;
-                     Error_Msg_N ("incorrect placement of aspect `%`", E);
+                     Error_Msg_N ("incorrect placement of aspect %", E);
                      goto Continue;
                   end if;
 
@@ -4432,7 +4433,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_Name_1 := Nam;
                      Error_Msg_NE
-                       ("wrong syntax for aspect `%` for &", Id, E);
+                       ("wrong syntax for aspect % for &", Id, E);
                      goto Continue;
                   end if;
 
@@ -4464,7 +4465,7 @@ package body Sem_Ch13 is
                      then
                         Error_Msg_Name_1 := Nam;
                         Error_Msg_NE
-                          ("wrong syntax for aspect `%` for &", Id, E);
+                          ("wrong syntax for aspect % for &", Id, E);
                         goto Continue;
                      end if;
 
@@ -6627,7 +6628,7 @@ package body Sem_Ch13 is
             --  come from an aspect specification.
 
             if not Is_Task_Type (U_Ent) then
-               Error_Msg_N ("CPU can only be defined for task", Nam);
+               Error_Msg_N ("'C'P'U can only be defined for task", Nam);
 
             elsif Duplicate_Clause then
                null;
@@ -6718,7 +6719,7 @@ package body Sem_Ch13 is
 
             else
                Error_Msg_NE
-                 ("Default Iterator must be a primitive of&", Func, U_Ent);
+                 ("Default_Iterator must be a primitive of&", Func, U_Ent);
             end if;
          end Default_Iterator;
 
@@ -7772,7 +7773,7 @@ package body Sem_Ch13 is
                                      | N_Implicit_Label_Declaration
             then
                Error_Msg_N
-                 ("this declaration not allowed in machine code subprogram",
+                 ("this declaration is not allowed in machine code subprogram",
                   DeclO);
             end if;
 
@@ -7971,7 +7972,7 @@ package body Sem_Ch13 is
             end if;
 
             if Nkind (Choice) = N_Others_Choice then
-               Error_Msg_N ("others choice not allowed here", Choice);
+               Error_Msg_N ("OTHERS choice not allowed here", Choice);
                Err := True;
 
             elsif Nkind (Choice) = N_Range then
@@ -9149,7 +9150,7 @@ package body Sem_Ch13 is
                     or else Etype (Expression (Expr)) /= Typ
                   then
                      Error_Msg_N
-                       ("expression must denaote subtype", Expression (Expr));
+                       ("expression must denote subtype", Expression (Expr));
                      return False_Range;
                   end if;
 
@@ -15244,7 +15245,7 @@ package body Sem_Ch13 is
                  ("NOT modifier not allowed for Stable_Properties aspect"
                   & " of a type", PF_Arg);
             else
-               Error_Msg_N ("Mixed use of NOT modifiers", PF_Arg);
+               Error_Msg_N ("mixed use of NOT modifiers", PF_Arg);
             end if;
          end Modifier_Error;
 
@@ -15277,7 +15278,7 @@ package body Sem_Ch13 is
          if Nkind (PF_Name) not in
            N_Identifier | N_Operator_Symbol | N_Selected_Component
          then
-            Error_Msg_N ("Bad property function name", PF_Name);
+            Error_Msg_N ("bad property function name", PF_Name);
          end if;
       end Check_Property_Function_Arg;
 
@@ -15293,13 +15294,13 @@ package body Sem_Ch13 is
          if Is_Aspect_Of_Type then
             if not Is_Tagged_Type (E) then
                Error_Msg_N
-                 ("Stable_Properties'Class aspect cannot be specified for "
+                 ("Stable_Properties''Class aspect cannot be specified for "
                   & "an untagged type", N);
             end if;
          else
             if not Is_Dispatching_Operation (E) then
                Error_Msg_N
-                 ("Stable_Properties'Class aspect cannot be specified for "
+                 ("Stable_Properties''Class aspect cannot be specified for "
                   & "a subprogram that is not a primitive subprogram "
                   & "of a tagged type", N);
             end if;
@@ -15311,7 +15312,7 @@ package body Sem_Ch13 is
             or else Null_Record_Present (N)
             or else not Present (Expressions (N))
          then
-            Error_Msg_N ("Bad Stable_Properties aspect specification", N);
+            Error_Msg_N ("bad Stable_Properties aspect specification", N);
             return;
          end if;
 
@@ -15364,7 +15365,7 @@ package body Sem_Ch13 is
             --  First or Last (Container) => Cursor
 
             if Etype (Ent) /= Cursor then
-               Error_Msg_N ("primitive for First must yield a curosr", N);
+               Error_Msg_N ("primitive for First must yield a cursor", N);
             end if;
 
          elsif Nam = Name_Next then

@@ -7867,7 +7867,7 @@ package body Sem_Ch8 is
 
                      elsif Warn_On_Obsolescent_Feature and then False then
                         Error_Msg_N
-                          ("applying 'Class to an untagged incomplete type"
+                          ("applying ''Class to an untagged incomplete type"
                            & " is an obsolescent feature (RM J.11)?r?", N);
                      end if;
                   end if;

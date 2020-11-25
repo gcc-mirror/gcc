@@ -10463,7 +10463,7 @@ package body Sem_Util is
          then
             if Cursor /= Any_Type then
                Error_Msg_N
-                 ("Operation First for iterable type must be unique", Aspect);
+                 ("operation First for iterable type must be unique", Aspect);
                return Any_Type;
             else
                Cursor := Etype (Func);
@@ -29703,10 +29703,10 @@ package body Sem_Util is
         and then Covers
           (Designated_Type (Expec_Type), Designated_Type (Found_Type))
       then
-         Error_Msg_N -- CODEFIX
+         Error_Msg_N
            ("result must be general access type!", Expr);
          Error_Msg_NE -- CODEFIX
-           ("add ALL to }!", Expr, Expec_Type);
+           ("\add ALL to }!", Expr, Expec_Type);
 
       --  Another special check, if the expected type is an integer type,
       --  but the expression is of type System.Address, and the parent is

@@ -4683,7 +4683,7 @@ package body Sem_Res is
                   elsif Ada_Version >= Ada_2005 then
                      Apply_Compile_Time_Constraint_Error
                        (N      => A,
-                        Msg    => "(Ada 2005) null not allowed in "
+                        Msg    => "(Ada 2005) NULL not allowed in "
                                   & "null-excluding formal??",
                         Reason => CE_Null_Not_Allowed);
                   end if;
@@ -9824,13 +9824,13 @@ package body Sem_Res is
 
          if Nkind (Parent (N)) in N_Subprogram_Call then
             Error_Msg_N
-              ("null is not allowed as argument for an access parameter", N);
+              ("NULL is not allowed as argument for an access parameter", N);
 
          --  Standard message for all other cases (are there any?)
 
          else
             Error_Msg_N
-              ("null cannot be of an anonymous access type", N);
+              ("NULL cannot be of an anonymous access type", N);
          end if;
       end if;
 
@@ -9877,7 +9877,7 @@ package body Sem_Res is
          else
             Insert_Action
               (Compile_Time_Constraint_Error (N,
-                 "(Ada 2005) null not allowed in null-excluding objects??"),
+                 "(Ada 2005) NULL not allowed in null-excluding objects??"),
                Make_Raise_Constraint_Error (Loc,
                  Reason => CE_Access_Check_Failed));
          end if;
@@ -10278,7 +10278,7 @@ package body Sem_Res is
       elsif Typ = Universal_Integer or else Typ = Any_Modular then
          if Parent_Is_Boolean then
             Error_Msg_N
-              ("operand of not must be enclosed in parentheses",
+              ("operand of NOT must be enclosed in parentheses",
                Right_Opnd (N));
          else
             Error_Msg_N

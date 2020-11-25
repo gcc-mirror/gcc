@@ -3287,7 +3287,7 @@ package body Sem_Attr is
          Check_E0;
 
          if not Is_Object_Reference (P) then
-            Error_Attr_P ("prefix for % attribute must be object");
+            Error_Attr_P ("prefix of % attribute must be object");
 
          --  What about the access object cases ???
 
@@ -3698,7 +3698,7 @@ package body Sem_Attr is
                      null;
                   else
                      Error_Attr
-                       ("Attribute % must apply to entry of current task", N);
+                       ("attribute % must apply to entry of current task", N);
                   end if;
                end if;
 
@@ -3710,7 +3710,7 @@ package body Sem_Attr is
                                       | E_Entry_Family
                                       | E_Loop
             then
-               Error_Attr ("Attribute % cannot appear in inner unit", N);
+               Error_Attr ("attribute % cannot appear in inner unit", N);
 
             elsif Ekind (Scope (Ent)) = E_Protected_Type
               and then not Has_Completion (Scope (Ent))
@@ -5667,7 +5667,7 @@ package body Sem_Attr is
                   null;
                else
                   Error_Msg_NE
-                    ("cannot apply reduce to object of type$", N, Typ);
+                    ("cannot apply Reduce to object of type$", N, Typ);
                end if;
 
             elsif Present (Expressions (Stream))
@@ -5676,7 +5676,7 @@ package body Sem_Attr is
                 N_Iterated_Component_Association
             then
                Error_Msg_N
-                 ("Prefix of reduce must be an iterated component", N);
+                 ("prefix of Reduce must be an iterated component", N);
             end if;
 
             Analyze (E1);
@@ -6249,7 +6249,7 @@ package body Sem_Attr is
          then
             Error_Attr_P
               ("% attribute can only be applied to objects " &
-               "of class - wide type");
+               "of class-wide type");
          end if;
 
          --  The prefix cannot be an incomplete type. However, references to
@@ -6734,7 +6734,7 @@ package body Sem_Attr is
 
                   if Nkind (Expr) = N_Others_Choice then
                      Error_Attr
-                       ("others choice not allowed in attribute %", Expr);
+                       ("OTHERS choice not allowed in attribute %", Expr);
 
                   --  Otherwise analyze and resolve all indexes
 
@@ -6781,7 +6781,7 @@ package body Sem_Attr is
 
                   if Nkind (Index) = N_Others_Choice then
                      Error_Attr
-                       ("others choice not allowed in attribute %", Index);
+                       ("OTHERS choice not allowed in attribute %", Index);
 
                   --  The index denotes a range of elements
 
@@ -6956,7 +6956,7 @@ package body Sem_Attr is
 
                      elsif Nkind (Comp) = N_Others_Choice then
                         Error_Attr
-                          ("others choice not allowed in attribute %", Comp);
+                          ("OTHERS choice not allowed in attribute %", Comp);
 
                      --  The name of a record component cannot appear in any
                      --  other form.

@@ -195,7 +195,8 @@ package body Sem_Ch5 is
                    or else Is_Protected_Component (Ent)
                then
                   Error_Msg_N
-                    ("protected function cannot modify protected object", N);
+                    ("protected function cannot modify its protected object",
+                     N);
                   return;
                end if;
             end;
@@ -705,7 +706,8 @@ package body Sem_Ch5 is
                     and then Convention (S) = Convention_Protected
                   then
                      Error_Msg_N
-                       ("protected function cannot modify protected object",
+                       ("protected function cannot modify its protected " &
+                        "object",
                         Lhs);
                   end if;
 
@@ -771,7 +773,7 @@ package body Sem_Ch5 is
 
       if Is_Protected_Part_Of_Constituent (Lhs) and then Within_Function then
          Error_Msg_N
-           ("protected function cannot modify protected object", Lhs);
+           ("protected function cannot modify its protected object", Lhs);
       end if;
 
       --  Resolution may have updated the subtype, in case the left-hand side
@@ -954,7 +956,7 @@ package body Sem_Ch5 is
             Apply_Compile_Time_Constraint_Error
               (N      => Rhs,
                Msg    =>
-                 "(Ada 2005) null not allowed in null-excluding objects??",
+                 "(Ada 2005) NULL not allowed in null-excluding objects??",
                Reason => CE_Null_Not_Allowed);
 
             --  We still mark this as a possible modification, that's necessary

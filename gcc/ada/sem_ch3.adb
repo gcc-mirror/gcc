@@ -833,7 +833,7 @@ package body Sem_Ch3 is
       if All_Present (N)
         and then Ada_Version >= Ada_2005
       then
-         Error_Msg_N ("ALL is not permitted for anonymous access types", N);
+         Error_Msg_N ("ALL not permitted for anonymous access types", N);
       end if;
 
       --  Ada 2005 (AI-254): In case of anonymous access to subprograms call
@@ -1026,7 +1026,8 @@ package body Sem_Ch3 is
          if Nkind (Def) in N_Has_Etype then
             if Etype (Def) = T_Name then
                Error_Msg_N
-                 ("type& cannot be used before end of its declaration", Def);
+                 ("type& cannot be used before the end of its declaration",
+                  Def);
             end if;
 
          --  If this is not a subtype, then this is an access_definition
@@ -12992,7 +12993,7 @@ package body Sem_Ch3 is
          then
             Error_Msg_N
               ("deferred constant must be declared in visible part",
-                 Parent (Prev));
+               Parent (Prev));
          end if;
 
          if Is_Access_Type (T)

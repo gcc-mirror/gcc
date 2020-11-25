@@ -9024,13 +9024,13 @@ package body Exp_Ch3 is
 
                if Warning_Needed then
                   Error_Msg_N
-                    ("Objects of the type cannot be initialized statically "
+                    ("objects of the type cannot be initialized statically "
                      & "by default??", Parent (E));
                end if;
             end if;
 
          else
-            Error_Msg_N ("Object cannot be initialized statically??", E);
+            Error_Msg_N ("object cannot be initialized statically??", E);
          end if;
       end if;
    end Initialization_Warning;

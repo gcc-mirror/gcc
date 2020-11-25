@@ -904,7 +904,7 @@ package body Ch9 is
             Resync_Past_Semicolon;
 
          elsif Token in Token_Class_Declk then
-            Error_Msg_SC ("this declaration not allowed in protected body");
+            Error_Msg_SC ("declaration not allowed in protected body");
             Resync_Past_Semicolon;
 
          else
