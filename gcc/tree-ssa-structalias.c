@@ -3851,6 +3851,23 @@ make_escape_constraint (tree op)
   make_constraint_to (escaped_id, op);
 }
 
+/* Make constraint necessary to make all indirect references
+   from VI escape.  */
+
+static void
+make_indirect_escape_constraint (varinfo_t vi)
+{
+  struct constraint_expr lhs, rhs;
+  /* escaped = *(VAR + UNKNOWN);  */
+  lhs.type = SCALAR;
+  lhs.var = escaped_id;
+  lhs.offset = 0;
+  rhs.type = DEREF;
+  rhs.var = vi->id;
+  rhs.offset = UNKNOWN_OFFSET;
+  process_constraint (new_constraint (lhs, rhs));
+}
+
 /* Add constraints to that the solution of VI is transitively closed.  */
 
 static void
@@ -4026,7 +4043,7 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	 set.  The argument would still get clobbered through the
 	 escape solution.  */
       if ((flags & EAF_NOCLOBBER)
-	   && (flags & EAF_NOESCAPE))
+	   && (flags & (EAF_NOESCAPE | EAF_NODIRECTESCAPE)))
 	{
 	  varinfo_t uses = get_call_use_vi (stmt);
 	  varinfo_t tem = new_var_info (NULL_TREE, "callarg", true);
@@ -4036,9 +4053,11 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  if (!(flags & EAF_DIRECT))
 	    make_transitive_closure_constraints (tem);
 	  make_copy_constraint (uses, tem->id);
+	  if (!(flags & (EAF_NOESCAPE | EAF_DIRECT)))
+	    make_indirect_escape_constraint (tem);
 	  returns_uses = true;
 	}
-      else if (flags & EAF_NOESCAPE)
+      else if (flags & (EAF_NOESCAPE | EAF_NODIRECTESCAPE))
 	{
 	  struct constraint_expr lhs, rhs;
 	  varinfo_t uses = get_call_use_vi (stmt);
@@ -4061,6 +4080,8 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  rhs.var = nonlocal_id;
 	  rhs.offset = 0;
 	  process_constraint (new_constraint (lhs, rhs));
+	  if (!(flags & (EAF_NOESCAPE | EAF_DIRECT)))
+	    make_indirect_escape_constraint (tem);
 	  returns_uses = true;
 	}
       else
