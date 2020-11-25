@@ -1583,10 +1583,14 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
    OFFSET is the offset of the area into the virtual stack vars area.
 
    REQUIRED_ALIGN is the alignment (in bits) required for the region
-   of memory.  */
+   of memory.
+
+   BASE is the rtx of the base of this virtual stack vars area.
+   The only time this is not `virtual_stack_vars_rtx` is when tagging pointers
+   on the stack.  */
 
 rtx
-get_dynamic_stack_base (poly_int64 offset, unsigned required_align)
+get_dynamic_stack_base (poly_int64 offset, unsigned required_align, rtx base)
 {
   rtx target;
 
@@ -1594,7 +1598,7 @@ get_dynamic_stack_base (poly_int64 offset, unsigned required_align)
     crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
 
   target = gen_reg_rtx (Pmode);
-  emit_move_insn (target, virtual_stack_vars_rtx);
+  emit_move_insn (target, base);
   target = expand_binop (Pmode, add_optab, target,
 			 gen_int_mode (offset, Pmode),
 			 NULL_RTX, 1, OPTAB_LIB_WIDEN);

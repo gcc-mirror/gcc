@@ -257,6 +257,58 @@ hash_set<tree> *asan_handled_variables = NULL;
 
 hash_set <tree> *asan_used_labels = NULL;
 
+/* Global variables for HWASAN stack tagging.  */
+/* hwasan_frame_tag_offset records the offset from the frame base tag that the
+   next object should have.  */
+static uint8_t hwasan_frame_tag_offset = 0;
+/* hwasan_frame_base_ptr is a pointer with the same address as
+   `virtual_stack_vars_rtx` for the current frame, and with the frame base tag
+   stored in it.  N.b. this global RTX does not need to be marked GTY, but is
+   done so anyway.  The need is not there since all uses are in just one pass
+   (cfgexpand) and there are no calls to ggc_collect between the uses.  We mark
+   it GTY(()) anyway to allow the use of the variable later on if needed by
+   future features.  */
+static GTY(()) rtx hwasan_frame_base_ptr = NULL_RTX;
+/* hwasan_frame_base_init_seq is the sequence of RTL insns that will initialize
+   the hwasan_frame_base_ptr.  When the hwasan_frame_base_ptr is requested, we
+   generate this sequence but do not emit it.  If the sequence was created it
+   is emitted once the function body has been expanded.
+
+   This delay is because the frame base pointer may be needed anywhere in the
+   function body, or needed by the expand_used_vars function.  Emitting once in
+   a known place is simpler than requiring the emission of the instructions to
+   be know where it should go depending on the first place the hwasan frame
+   base is needed.  */
+static GTY(()) rtx_insn *hwasan_frame_base_init_seq = NULL;
+
+/* Structure defining the extent of one object on the stack that HWASAN needs
+   to tag in the corresponding shadow stack space.
+
+   The range this object spans on the stack is between `untagged_base +
+   nearest_offset` and `untagged_base + farthest_offset`.
+   `tagged_base` is an rtx containing the same value as `untagged_base` but
+   with a random tag stored in the top byte.  We record both `untagged_base`
+   and `tagged_base` so that `hwasan_emit_prologue` can use both without having
+   to emit RTL into the instruction stream to re-calculate one from the other.
+   (`hwasan_emit_prologue` needs to use both bases since the
+   __hwasan_tag_memory call it emits uses an untagged value, and it calculates
+   the tag to store in shadow memory based on the tag_offset plus the tag in
+   tagged_base).  */
+struct hwasan_stack_var
+{
+  rtx untagged_base;
+  rtx tagged_base;
+  poly_int64 nearest_offset;
+  poly_int64 farthest_offset;
+  uint8_t tag_offset;
+};
+
+/* Variable recording all stack variables that HWASAN needs to tag.
+   Does not need to be marked as GTY(()) since every use is in the cfgexpand
+   pass and gcc_collect is not called in the middle of that pass.  */
+static vec<hwasan_stack_var> hwasan_tagged_stack_vars;
+
+
 /* Sets shadow offset to value in string VAL.  */
 
 bool
@@ -1357,6 +1409,28 @@ asan_redzone_buffer::flush_if_full (void)
 {
   if (m_shadow_bytes.length () == RZ_BUFFER_SIZE)
     flush_redzone_payload ();
+}
+
+/* Returns whether we are tagging pointers and checking those tags on memory
+   access.  */
+bool
+hwasan_sanitize_p ()
+{
+  return sanitize_flags_p (SANITIZE_HWADDRESS);
+}
+
+/* Are we tagging the stack?  */
+bool
+hwasan_sanitize_stack_p ()
+{
+  return (hwasan_sanitize_p () && param_hwasan_instrument_stack);
+}
+
+/* Are we tagging alloca objects?  */
+bool
+hwasan_sanitize_allocas_p (void)
+{
+  return (hwasan_sanitize_stack_p () && param_hwasan_instrument_allocas);
 }
 
 /* Insert code to protect stack vars.  The prologue sequence should be emitted
@@ -2908,6 +2982,11 @@ initialize_sanitizer_builtins (void)
     = build_function_type_list (void_type_node, uint64_type_node,
 				ptr_type_node, NULL_TREE);
 
+  tree BT_FN_VOID_PTR_UINT8_PTRMODE
+    = build_function_type_list (void_type_node, ptr_type_node,
+				unsigned_char_type_node,
+				pointer_sized_int_node, NULL_TREE);
+
   tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
   tree BT_FN_IX_CONST_VPTR_INT[5];
   tree BT_FN_IX_VPTR_IX_INT[5];
@@ -2958,6 +3037,8 @@ initialize_sanitizer_builtins (void)
 #define BT_FN_I16_CONST_VPTR_INT BT_FN_IX_CONST_VPTR_INT[4]
 #define BT_FN_I16_VPTR_I16_INT BT_FN_IX_VPTR_IX_INT[4]
 #define BT_FN_VOID_VPTR_I16_INT BT_FN_VOID_VPTR_IX_INT[4]
+#undef ATTR_NOTHROW_LIST
+#define ATTR_NOTHROW_LIST ECF_NOTHROW
 #undef ATTR_NOTHROW_LEAF_LIST
 #define ATTR_NOTHROW_LEAF_LIST ECF_NOTHROW | ECF_LEAF
 #undef ATTR_TMPURE_NOTHROW_LEAF_LIST
@@ -3707,6 +3788,349 @@ gimple_opt_pass *
 make_pass_asan_O0 (gcc::context *ctxt)
 {
   return new pass_asan_O0 (ctxt);
+}
+
+/* For stack tagging:
+
+   Return the offset from the frame base tag that the "next" expanded object
+   should have.  */
+uint8_t
+hwasan_current_frame_tag ()
+{
+  return hwasan_frame_tag_offset;
+}
+
+/* For stack tagging:
+
+   Return the 'base pointer' for this function.  If that base pointer has not
+   yet been created then we create a register to hold it and record the insns
+   to initialize the register in `hwasan_frame_base_init_seq` for later
+   emission.  */
+rtx
+hwasan_frame_base ()
+{
+  if (! hwasan_frame_base_ptr)
+    {
+      start_sequence ();
+      hwasan_frame_base_ptr
+	= force_reg (Pmode,
+		     targetm.memtag.insert_random_tag (virtual_stack_vars_rtx,
+						       NULL_RTX));
+      hwasan_frame_base_init_seq = get_insns ();
+      end_sequence ();
+    }
+
+  return hwasan_frame_base_ptr;
+}
+
+/* For stack tagging:
+
+   Check whether this RTX is a standard pointer addressing the base of the
+   stack variables for this frame.  Returns true if the RTX is either
+   virtual_stack_vars_rtx or hwasan_frame_base_ptr.  */
+bool
+stack_vars_base_reg_p (rtx base)
+{
+  return base == virtual_stack_vars_rtx || base == hwasan_frame_base_ptr;
+}
+
+/* For stack tagging:
+
+   Emit frame base initialisation.
+   If hwasan_frame_base has been used before here then
+   hwasan_frame_base_init_seq contains the sequence of instructions to
+   initialize it.  This must be put just before the hwasan prologue, so we emit
+   the insns before parm_birth_insn (which will point to the first instruction
+   of the hwasan prologue if it exists).
+
+   We update `parm_birth_insn` to point to the start of this initialisation
+   since that represents the end of the initialisation done by
+   expand_function_{start,end} functions and we want to maintain that.  */
+void
+hwasan_maybe_emit_frame_base_init ()
+{
+  if (! hwasan_frame_base_init_seq)
+    return;
+  emit_insn_before (hwasan_frame_base_init_seq, parm_birth_insn);
+  parm_birth_insn = hwasan_frame_base_init_seq;
+}
+
+/* Record a compile-time constant size stack variable that HWASAN will need to
+   tag.  This record of the range of a stack variable will be used by
+   `hwasan_emit_prologue` to emit the RTL at the start of each frame which will
+   set tags in the shadow memory according to the assigned tag for each object.
+
+   The range that the object spans in stack space should be described by the
+   bounds `untagged_base + nearest_offset` and
+   `untagged_base + farthest_offset`.
+   `tagged_base` is the base address which contains the "base frame tag" for
+   this frame, and from which the value to address this object with will be
+   calculated.
+
+   We record the `untagged_base` since the functions in the hwasan library we
+   use to tag memory take pointers without a tag.  */
+void
+hwasan_record_stack_var (rtx untagged_base, rtx tagged_base,
+			 poly_int64 nearest_offset, poly_int64 farthest_offset)
+{
+  hwasan_stack_var cur_var;
+  cur_var.untagged_base = untagged_base;
+  cur_var.tagged_base = tagged_base;
+  cur_var.nearest_offset = nearest_offset;
+  cur_var.farthest_offset = farthest_offset;
+  cur_var.tag_offset = hwasan_current_frame_tag ();
+
+  hwasan_tagged_stack_vars.safe_push (cur_var);
+}
+
+/* Return the RTX representing the farthest extent of the statically allocated
+   stack objects for this frame.  If hwasan_frame_base_ptr has not been
+   initialized then we are not storing any static variables on the stack in
+   this frame.  In this case we return NULL_RTX to represent that.
+
+   Otherwise simply return virtual_stack_vars_rtx + frame_offset.  */
+rtx
+hwasan_get_frame_extent ()
+{
+  return (hwasan_frame_base_ptr
+	  ? plus_constant (Pmode, virtual_stack_vars_rtx, frame_offset)
+	  : NULL_RTX);
+}
+
+/* For stack tagging:
+
+   Increment the frame tag offset modulo the size a tag can represent.  */
+void
+hwasan_increment_frame_tag ()
+{
+  uint8_t tag_bits = HWASAN_TAG_SIZE;
+  gcc_assert (HWASAN_TAG_SIZE
+	      <= sizeof (hwasan_frame_tag_offset) * CHAR_BIT);
+  hwasan_frame_tag_offset = (hwasan_frame_tag_offset + 1) % (1 << tag_bits);
+  /* The "background tag" of the stack is zero by definition.
+     This is the tag that objects like parameters passed on the stack and
+     spilled registers are given.  It is handy to avoid this tag for objects
+     whose tags we decide ourselves, partly to ensure that buffer overruns
+     can't affect these important variables (e.g. saved link register, saved
+     stack pointer etc) and partly to make debugging easier (everything with a
+     tag of zero is space allocated automatically by the compiler).
+
+     This is not feasible when using random frame tags (the default
+     configuration for hwasan) since the tag for the given frame is randomly
+     chosen at runtime.  In order to avoid any tags matching the stack
+     background we would need to decide tag offsets at runtime instead of
+     compile time (and pay the resulting performance cost).
+
+     When not using random base tags for each frame (i.e. when compiled with
+     `--param hwasan-random-frame-tag=0`) the base tag for each frame is zero.
+     This means the tag that each object gets is equal to the
+     hwasan_frame_tag_offset used in determining it.
+     When this is the case we *can* ensure no object gets the tag of zero by
+     simply ensuring no object has the hwasan_frame_tag_offset of zero.
+
+     There is the extra complication that we only record the
+     hwasan_frame_tag_offset here (which is the offset from the tag stored in
+     the stack pointer).  In the kernel, the tag in the stack pointer is 0xff
+     rather than zero.  This does not cause problems since tags of 0xff are
+     never checked in the kernel.  As mentioned at the beginning of this
+     comment the background tag of the stack is zero by definition, which means
+     that for the kernel we should skip offsets of both 0 and 1 from the stack
+     pointer.  Avoiding the offset of 0 ensures we use a tag which will be
+     checked, avoiding the offset of 1 ensures we use a tag that is not the
+     same as the background.  */
+  if (hwasan_frame_tag_offset == 0 && ! param_hwasan_random_frame_tag)
+    hwasan_frame_tag_offset += 1;
+  if (hwasan_frame_tag_offset == 1 && ! param_hwasan_random_frame_tag
+      && sanitize_flags_p (SANITIZE_KERNEL_HWADDRESS))
+    hwasan_frame_tag_offset += 1;
+}
+
+/* Clear internal state for the next function.
+   This function is called before variables on the stack get expanded, in
+   `init_vars_expansion`.  */
+void
+hwasan_record_frame_init ()
+{
+  delete asan_used_labels;
+  asan_used_labels = NULL;
+
+  /* If this isn't the case then some stack variable was recorded *before*
+     hwasan_record_frame_init is called, yet *after* the hwasan prologue for
+     the previous frame was emitted.  Such stack variables would not have
+     their shadow stack filled in.  */
+  gcc_assert (hwasan_tagged_stack_vars.is_empty ());
+  hwasan_frame_base_ptr = NULL_RTX;
+  hwasan_frame_base_init_seq = NULL;
+
+  /* When not using a random frame tag we can avoid the background stack
+     color which gives the user a little better debug output upon a crash.
+     Meanwhile, when using a random frame tag it will be nice to avoid adding
+     tags for the first object since that is unnecessary extra work.
+     Hence set the initial hwasan_frame_tag_offset to be 0 if using a random
+     frame tag and 1 otherwise.
+
+     As described in hwasan_increment_frame_tag, in the kernel the stack
+     pointer has the tag 0xff.  That means that to avoid 0xff and 0 (the tag
+     which the kernel does not check and the background tag respectively) we
+     start with a tag offset of 2.  */
+  hwasan_frame_tag_offset = param_hwasan_random_frame_tag
+    ? 0
+    : sanitize_flags_p (SANITIZE_KERNEL_HWADDRESS) ? 2 : 1;
+}
+
+/* For stack tagging:
+   (Emits HWASAN equivalent of what is emitted by
+   `asan_emit_stack_protection`).
+
+   Emits the extra prologue code to set the shadow stack as required for HWASAN
+   stack instrumentation.
+
+   Uses the vector of recorded stack variables hwasan_tagged_stack_vars.  When
+   this function has completed hwasan_tagged_stack_vars is empty and all
+   objects it had pointed to are deallocated.  */
+void
+hwasan_emit_prologue ()
+{
+  /* We need untagged base pointers since libhwasan only accepts untagged
+    pointers in __hwasan_tag_memory.  We need the tagged base pointer to obtain
+    the base tag for an offset.  */
+
+  if (hwasan_tagged_stack_vars.is_empty ())
+    return;
+
+  poly_int64 bot = 0, top = 0;
+  for (hwasan_stack_var &cur : hwasan_tagged_stack_vars)
+    {
+      poly_int64 nearest = cur.nearest_offset;
+      poly_int64 farthest = cur.farthest_offset;
+
+      if (known_ge (nearest, farthest))
+	{
+	  top = nearest;
+	  bot = farthest;
+	}
+      else
+	{
+	  /* Given how these values are calculated, one must be known greater
+	     than the other.  */
+	  gcc_assert (known_le (nearest, farthest));
+	  top = farthest;
+	  bot = nearest;
+	}
+      poly_int64 size = (top - bot);
+
+      /* Assert the edge of each variable is aligned to the HWASAN tag granule
+	 size.  */
+      gcc_assert (multiple_p (top, HWASAN_TAG_GRANULE_SIZE));
+      gcc_assert (multiple_p (bot, HWASAN_TAG_GRANULE_SIZE));
+      gcc_assert (multiple_p (size, HWASAN_TAG_GRANULE_SIZE));
+
+      rtx fn = init_one_libfunc ("__hwasan_tag_memory");
+      rtx base_tag = targetm.memtag.extract_tag (cur.tagged_base, NULL_RTX);
+      rtx tag = plus_constant (QImode, base_tag, cur.tag_offset);
+      tag = hwasan_truncate_to_tag_size (tag, NULL_RTX);
+
+      rtx bottom = convert_memory_address (ptr_mode,
+					   plus_constant (Pmode,
+							  cur.untagged_base,
+							  bot));
+      emit_library_call (fn, LCT_NORMAL, VOIDmode,
+			 bottom, ptr_mode,
+			 tag, QImode,
+			 gen_int_mode (size, ptr_mode), ptr_mode);
+    }
+  /* Clear the stack vars, we've emitted the prologue for them all now.  */
+  hwasan_tagged_stack_vars.truncate (0);
+}
+
+/* For stack tagging:
+
+   Return RTL insns to clear the tags between DYNAMIC and VARS pointers
+   into the stack.  These instructions should be emitted at the end of
+   every function.
+
+   If `dynamic` is NULL_RTX then no insns are returned.  */
+rtx_insn *
+hwasan_emit_untag_frame (rtx dynamic, rtx vars)
+{
+  if (! dynamic)
+    return NULL;
+
+  start_sequence ();
+
+  dynamic = convert_memory_address (ptr_mode, dynamic);
+  vars = convert_memory_address (ptr_mode, vars);
+
+  rtx top_rtx;
+  rtx bot_rtx;
+  if (FRAME_GROWS_DOWNWARD)
+    {
+      top_rtx = vars;
+      bot_rtx = dynamic;
+    }
+  else
+    {
+      top_rtx = dynamic;
+      bot_rtx = vars;
+    }
+
+  rtx size_rtx = expand_simple_binop (ptr_mode, MINUS, top_rtx, bot_rtx,
+				      NULL_RTX, /* unsignedp = */0,
+				      OPTAB_DIRECT);
+
+  rtx fn = init_one_libfunc ("__hwasan_tag_memory");
+  emit_library_call (fn, LCT_NORMAL, VOIDmode,
+		     bot_rtx, ptr_mode,
+		     HWASAN_STACK_BACKGROUND, QImode,
+		     size_rtx, ptr_mode);
+
+  do_pending_stack_adjust ();
+  rtx_insn *insns = get_insns ();
+  end_sequence ();
+  return insns;
+}
+
+/* Needs to be GTY(()), because cgraph_build_static_cdtor may
+   invoke ggc_collect.  */
+static GTY(()) tree hwasan_ctor_statements;
+
+/* Insert module initialization into this TU.  This initialization calls the
+   initialization code for libhwasan.  */
+void
+hwasan_finish_file (void)
+{
+  /* Do not emit constructor initialization for the kernel.
+     (the kernel has its own initialization already).  */
+  if (flag_sanitize & SANITIZE_KERNEL_HWADDRESS)
+    return;
+
+  /* Avoid instrumenting code in the hwasan constructors/destructors.  */
+  flag_sanitize &= ~SANITIZE_HWADDRESS;
+  int priority = MAX_RESERVED_INIT_PRIORITY - 1;
+  tree fn = builtin_decl_implicit (BUILT_IN_HWASAN_INIT);
+  append_to_statement_list (build_call_expr (fn, 0), &hwasan_ctor_statements);
+  cgraph_build_static_cdtor ('I', hwasan_ctor_statements, priority);
+  flag_sanitize |= SANITIZE_HWADDRESS;
+}
+
+/* For stack tagging:
+
+   Truncate `tag` to the number of bits that a tag uses (i.e. to
+   HWASAN_TAG_SIZE).  Store the result in `target` if it's convenient.  */
+rtx
+hwasan_truncate_to_tag_size (rtx tag, rtx target)
+{
+  gcc_assert (GET_MODE (tag) == QImode);
+  if (HWASAN_TAG_SIZE != GET_MODE_PRECISION (QImode))
+    {
+      gcc_assert (GET_MODE_PRECISION (QImode) > HWASAN_TAG_SIZE);
+      rtx mask = gen_int_mode ((HOST_WIDE_INT_1U << HWASAN_TAG_SIZE) - 1,
+			       QImode);
+      tag = expand_simple_binop (QImode, AND, tag, mask, target,
+				 /* unsignedp = */1, OPTAB_WIDEN);
+      gcc_assert (tag);
+    }
+  return tag;
 }
 
 #include "gt-asan.h"

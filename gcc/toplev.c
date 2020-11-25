@@ -512,6 +512,9 @@ compile_file (void)
       if (flag_sanitize & SANITIZE_THREAD)
 	tsan_finish_file ();
 
+      if (flag_sanitize & SANITIZE_HWADDRESS)
+	hwasan_finish_file ();
+
       omp_finish_file ();
 
       output_shared_constant_pool ();
