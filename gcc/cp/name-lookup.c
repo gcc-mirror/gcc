@@ -4613,7 +4613,8 @@ lookup_using_decl (tree scope, name_lookup &lookup)
 	{
 	  if (!TYPE_P (current))
 	    {
-	      error ("non-member using-decl names constructor of %qT", scope);
+	      error ("non-member using-declaration names constructor of %qT",
+		     scope);
 	      return NULL_TREE;
 	    }
 	  maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);

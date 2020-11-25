@@ -405,10 +405,12 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
     /* We weren't able to determine the type name.  */
     tname = "<unknown>";
 
+  pp_quote (&pretty_name);
+
   tree eltype = type;
   if (pstyle == UBSAN_PRINT_POINTER)
     {
-      pp_printf (&pretty_name, "'%s%s%s%s%s%s%s",
+      pp_printf (&pretty_name, "%s%s%s%s%s%s%s",
 		 TYPE_VOLATILE (type2) ? "volatile " : "",
 		 TYPE_READONLY (type2) ? "const " : "",
 		 TYPE_RESTRICT (type2) ? "restrict " : "",
@@ -420,14 +422,14 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
 		 deref_depth == 0 ? "" : " ");
       while (deref_depth-- > 0)
 	pp_star (&pretty_name);
-      pp_quote (&pretty_name);
     }
   else if (pstyle == UBSAN_PRINT_ARRAY)
     {
       /* Pretty print the array dimensions.  */
       gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
       tree t = type;
-      pp_printf (&pretty_name, "'%s ", tname);
+      pp_string (&pretty_name, tname);
+      pp_space (&pretty_name);
       while (deref_depth-- > 0)
 	pp_star (&pretty_name);
       while (TREE_CODE (t) == ARRAY_TYPE)
@@ -453,13 +455,14 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
 	  pp_right_bracket (&pretty_name);
 	  t = TREE_TYPE (t);
 	}
-      pp_quote (&pretty_name);
 
       /* Save the tree with stripped types.  */
       eltype = t;
     }
   else
-    pp_printf (&pretty_name, "'%s'", tname);
+    pp_string (&pretty_name, tname);
+
+  pp_quote (&pretty_name);
 
   switch (TREE_CODE (eltype))
     {

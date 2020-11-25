@@ -3553,6 +3553,14 @@ function_category (tree fn)
     return _("In function %qs");
 }
 
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the pp_verbatim calls.  Their format strings deliberately don't
+   follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Report the full context of a current template instantiation,
    onto BUFFER.  */
 static void
@@ -4053,6 +4061,10 @@ print_template_differences (pretty_printer *pp, tree type_a, tree type_b,
   pp_printf (pp, ">");
 }
 
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
+
 /* As type_to_string, but for a template, potentially colorizing/eliding
    in comparison with PEER.
    For example, if TYPE is map<int,double> and PEER is map<int,int>,
@@ -4152,9 +4164,12 @@ add_quotes (const char *content, bool show_color)
   pretty_printer tmp_pp;
   pp_show_color (&tmp_pp) = show_color;
 
-  /* We have to use "%<%s%>" rather than "%qs" here in order to avoid
-     quoting colorization bytes within the results.  */
-  pp_printf (&tmp_pp, "%<%s%>", content);
+  /* We use pp_quote & pp_string rather than pp_printf with "%<%s%>"
+     or "%qs" here in order to avoid quoting colorization bytes within
+     the results, and to avoid -Wformat-diag.  */
+  pp_quote (&tmp_pp);
+  pp_string (&tmp_pp, content);
+  pp_quote (&tmp_pp);
 
   return pp_ggc_formatted_text (&tmp_pp);
 }

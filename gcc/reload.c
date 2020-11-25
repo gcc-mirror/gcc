@@ -2665,7 +2665,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
       if (i < recog_data.n_operands)
 	{
 	  error_for_asm (insn,
-			 "the target does not support asm goto "
+			 "the target does not support %<asm goto%> "
 			 "with outputs in %<asm%>");
 	  ira_nullify_asm_goto (insn);
 	  return 0;

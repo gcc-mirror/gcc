@@ -9382,7 +9382,8 @@ maybe_add_cast_fixit (rich_location *rich_loc, location_t open_paren_loc,
 
   /* Replace the open paren with "CAST_SUGGESTION<".  */
   pretty_printer pp;
-  pp_printf (&pp, "%s<", cast_suggestion);
+  pp_string (&pp, cast_suggestion);
+  pp_less (&pp);
   rich_loc->add_fixit_replace (open_paren_loc, pp_formatted_text (&pp));
 
   /* Replace the close paren with "> (".  */
@@ -29750,7 +29751,8 @@ cp_parser_template_introduction (cp_parser* parser, bool member_p)
     {
       if (!flag_concepts_ts)
 	pedwarn (introduction_loc, 0, "template-introductions"
-		 " are not part of C++20 concepts [-fconcepts-ts]");
+		 " are not part of C++20 concepts; use %qs to enable",
+		 "-fconcepts-ts");
 
       cp_parser_template_declaration_after_parameters (parser, parms,
 						       member_p);
