@@ -2142,6 +2142,8 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
   dst_data->writes_errno = src_data->writes_errno;
+  if (src_data->arg_flags.length ())
+    dst_data->arg_flags = src_data->arg_flags.copy ();
 }
 
 /* Called when new clone is inserted to callgraph late.  */
@@ -2165,6 +2167,8 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
   dst_data->writes_errno = src_data->writes_errno;
+  if (src_data->arg_flags.length ())
+    dst_data->arg_flags = src_data->arg_flags.copy ();
 }
 
 namespace
@@ -2690,7 +2694,7 @@ remap_arg_flags (auto_vec <unsigned char> &arg_flags, clone_info *info)
       if (o >= 0 && (int)old.length () > o && old[o])
 	max = i;
     }
-  if (max > 0)
+  if (max >= 0)
     arg_flags.safe_grow_cleared (max + 1, true);
   FOR_EACH_VEC_SAFE_ELT (info->param_adjustments->m_adj_params, i, p)
     {
