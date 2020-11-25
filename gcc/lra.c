@@ -1908,13 +1908,9 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 		  tmp = NEXT_INSN (tmp);
 		if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 		  tmp = NEXT_INSN (tmp);
-		for (curr = tmp; curr != NULL; curr = NEXT_INSN (curr))
-		  if (INSN_P (curr))
-		    break;
 		/* Do not put reload insns if it is the last BB
-		   without actual insns.  In this case the reload insns
-		   can get null BB after emitting.  */
-		if (curr == NULL)
+		   without actual insns.  */
+		if (tmp == NULL)
 		  continue;
 		start_sequence ();
 		for (curr = after; curr != NULL_RTX; curr = NEXT_INSN (curr))
@@ -1927,7 +1923,11 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 			     e->dest->index);
 		    dump_rtl_slim (lra_dump_file, copy, NULL, -1, 0);
 		  }
-		emit_insn_before (copy, tmp);
+		/* Use the right emit func for setting up BB_END/BB_HEAD: */
+		if (BB_END (e->dest) == PREV_INSN (tmp))
+		  emit_insn_after_noloc (copy, PREV_INSN (tmp), e->dest);
+		else
+		  emit_insn_before_noloc (copy, tmp, e->dest);
 		push_insns (last, PREV_INSN (copy));
 		setup_sp_offset (copy, last);
 		/* We can ignore BB live info here as it and reg notes
