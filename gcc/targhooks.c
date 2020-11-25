@@ -2415,4 +2415,10 @@ default_speculation_safe_value (machine_mode mode ATTRIBUTE_UNUSED,
   return result;
 }
 
+bool
+default_memtag_can_tag_addresses ()
+{
+  return false;
+}
+
 #include "gt-targhooks.h"

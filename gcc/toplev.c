@@ -1853,6 +1853,15 @@ process_options (void)
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
+  /* HWAsan requires top byte ignore feature in the backend.  */
+  if (flag_sanitize & SANITIZE_HWADDRESS
+      && ! targetm.memtag.can_tag_addresses ())
+    {
+      warning_at (UNKNOWN_LOCATION, 0, "%qs is not supported for this target",
+		  "-fsanitize=hwaddress");
+      flag_sanitize &= ~SANITIZE_HWADDRESS;
+    }
+
  /* Do not use IPA optimizations for register allocation if profiler is active
     or patchable function entries are inserted for run-time instrumentation
     or port does not emit prologue and epilogue as RTL.  */

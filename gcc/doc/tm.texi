@@ -12222,3 +12222,12 @@ This target hook can be used to generate a target-specific code
 @deftypefn {Target Hook} void TARGET_RUN_TARGET_SELFTESTS (void)
 If selftests are enabled, run any selftests for this target.
 @end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_MEMTAG_CAN_TAG_ADDRESSES ()
+True if the backend architecture naturally supports ignoring some region
+of pointers.  This feature means that @option{-fsanitize=hwaddress} can
+work.
+
+At preset, this feature does not support address spaces.  It also requires
+@code{Pmode} to be the same as @code{ptr_mode}.
+@end deftypefn

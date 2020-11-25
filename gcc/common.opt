@@ -218,7 +218,7 @@ unsigned int flag_sanitize
 
 ; What sanitizers should recover from errors
 Variable
-unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
+unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS | SANITIZE_KERNEL_HWADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
 ; What the coverage sanitizers should instrument
 Variable
@@ -3446,6 +3446,9 @@ Driver
 ; Documented for Go, but always accepted by driver.
 
 static-libasan
+Driver
+
+static-libhwasan
 Driver
 
 static-libtsan

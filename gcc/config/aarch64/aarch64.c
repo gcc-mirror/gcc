@@ -23321,6 +23321,15 @@ aarch64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
   return NULL;
 }
 
+/* Implement TARGET_MEMTAG_CAN_TAG_ADDRESSES.  Here we tell the rest of the
+   compiler that we automatically ignore the top byte of our pointers, which
+   allows using -fsanitize=hwaddress.  */
+bool
+aarch64_can_tag_addresses ()
+{
+  return !TARGET_ILP32;
+}
+
 /* Implement TARGET_ASM_FILE_END for AArch64.  This adds the AArch64 GNU NOTE
    section at the end if needed.  */
 #define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
@@ -24139,6 +24148,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_FNTYPE_ABI
 #define TARGET_FNTYPE_ABI aarch64_fntype_abi
+
+#undef TARGET_MEMTAG_CAN_TAG_ADDRESSES
+#define TARGET_MEMTAG_CAN_TAG_ADDRESSES aarch64_can_tag_addresses
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS
