@@ -357,6 +357,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Iter>
       concept __iter_without_nested_types = !__iter_with_nested_types<_Iter>;
+
+    template<typename _Iter>
+      concept __iter_without_category
+	= !requires { typename _Iter::iterator_category; };
+
   } // namespace __detail
 
   template<typename _Iterator>
@@ -396,20 +401,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ using type = typename _Iter::iterator_category; };
 
       template<typename _Iter>
-	requires (!requires { typename _Iter::iterator_category; }
-		  && __detail::__cpp17_randacc_iterator<_Iter>)
+	requires __detail::__iter_without_category<_Iter>
+		  && __detail::__cpp17_randacc_iterator<_Iter>
 	struct __cat<_Iter>
 	{ using type = random_access_iterator_tag; };
 
       template<typename _Iter>
-	requires (!requires { typename _Iter::iterator_category; }
-		  && __detail::__cpp17_bidi_iterator<_Iter>)
+	requires __detail::__iter_without_category<_Iter>
+		  && __detail::__cpp17_bidi_iterator<_Iter>
 	struct __cat<_Iter>
 	{ using type = bidirectional_iterator_tag; };
 
       template<typename _Iter>
-	requires (!requires { typename _Iter::iterator_category; }
-		  && __detail::__cpp17_fwd_iterator<_Iter>)
+	requires __detail::__iter_without_category<_Iter>
+		  && __detail::__cpp17_fwd_iterator<_Iter>
 	struct __cat<_Iter>
 	{ using type = forward_iterator_tag; };
 
