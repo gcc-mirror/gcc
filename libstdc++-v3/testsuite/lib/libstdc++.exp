@@ -1613,6 +1613,38 @@ proc check_effective_target_tbb-backend { } {
     }]
 }
 
+# Return 1 if futex syscall is available
+proc check_effective_target_futex { } {
+    return [check_v3_target_prop_cached et_futex {
+	# Set up and compile a C++ test program that depends on tbb
+	set src futex[pid].cc
+	set exe futex[pid].x
+
+	set f [open $src "w"]
+	puts $f "#include <bits/c++config.h>"
+	puts $f "#if ! _GLIBCXX_HAVE_LINUX_FUTEX"
+	puts $f "#  error No futex syscall available"
+	puts $f "#endif"
+	close $f
+
+	set lines [v3_target_compile $src /dev/null preprocess ""]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, preprocessing succeeded.
+	    verbose "check_v3_futex: `1'" 2
+	    return 1
+	}
+	verbose "check_v3_futex: `0'" 2
+	return 0
+    }]
+}
+
+# Return 1 if futex syscall is available
+proc check_effective_target_gthreads { } {
+    return [check_v3_target_gthreads_timed]
+}
+
 set additional_prunes ""
 
 if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \

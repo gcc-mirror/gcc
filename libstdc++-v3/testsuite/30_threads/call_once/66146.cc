@@ -16,8 +16,10 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
-// { dg-skip-if "" { pthread && { ! *-*-*linux* } } }
 // { dg-additional-options "-pthread" { target pthread } }
+
+// Currently std::call_once is broken for gthreads targets without futexes:
+// { dg-skip-if "see PR 66146" { gthreads && { ! futex } } }
 
 #include <mutex>
 #include <cstdlib>
