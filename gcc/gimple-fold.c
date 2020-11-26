@@ -4327,7 +4327,7 @@ clear_padding_union (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
     }
 
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-    if (TREE_CODE (field) == FIELD_DECL)
+    if (TREE_CODE (field) == FIELD_DECL && !DECL_PADDING_P (field))
       {
 	if (DECL_SIZE_UNIT (field) == NULL_TREE)
 	  {
@@ -4455,13 +4455,11 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
       HOST_WIDE_INT cur_pos;
       cur_pos = 0;
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-	if (TREE_CODE (field) == FIELD_DECL)
+	if (TREE_CODE (field) == FIELD_DECL && !DECL_PADDING_P (field))
 	  {
 	    tree ftype = TREE_TYPE (field);
 	    if (DECL_BIT_FIELD (field))
 	      {
-		if (DECL_NAME (field) == NULL_TREE)
-		  continue;
 		HOST_WIDE_INT fldsz = TYPE_PRECISION (ftype);
 		if (fldsz == 0)
 		  continue;
