@@ -1619,7 +1619,8 @@ proc check_effective_target_tbb-backend { } {
 # Return 1 if futex syscall is available
 proc check_effective_target_futex { } {
     return [check_v3_target_prop_cached et_futex {
-	# Set up and compile a C++ test program that depends on tbb
+	# Set up and compile a C++ test program that depends on futex
+	# being supported.
 	set src futex[pid].cc
 	set exe futex[pid].x
 
@@ -1643,9 +1644,10 @@ proc check_effective_target_futex { } {
     }]
 }
 
-# Return 1 if futex syscall is available
+# Return 1 if C++11 [threads] facilities are available via gthreads,
+# 0 otherwise.
 proc check_effective_target_gthreads { } {
-    return [check_v3_target_gthreads_timed]
+    return [check_v3_target_gthreads]
 }
 
 set additional_prunes ""
