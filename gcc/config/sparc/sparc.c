@@ -3949,41 +3949,6 @@ emit_cbcond_nop (rtx_insn *insn)
   return 1;
 }
 
-/* Return nonzero if TRIAL can go into the call delay slot.  */
-
-int
-eligible_for_call_delay (rtx_insn *trial)
-{
-  rtx pat;
-
-  if (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_FALSE)
-    return 0;
-
-  /* The only problematic cases are TLS sequences with Sun as/ld.  */
-  if ((TARGET_GNU_TLS && HAVE_GNU_LD) || !TARGET_TLS)
-    return 1;
-
-  pat = PATTERN (trial);
-
-  /* We must reject tgd_add{32|64}, i.e.
-       (set (reg) (plus (reg) (unspec [(reg) (symbol_ref)] UNSPEC_TLSGD)))
-     and tldm_add{32|64}, i.e.
-       (set (reg) (plus (reg) (unspec [(reg) (symbol_ref)] UNSPEC_TLSLDM)))
-     for Sun as/ld.  */
-  if (GET_CODE (pat) == SET
-      && GET_CODE (SET_SRC (pat)) == PLUS)
-    {
-      rtx unspec = XEXP (SET_SRC (pat), 1);
-
-      if (GET_CODE (unspec) == UNSPEC
-	  && (XINT (unspec, 1) == UNSPEC_TLSGD
-	      || XINT (unspec, 1) == UNSPEC_TLSLDM))
-	return 0;
-    }
-
-  return 1;
-}
-
 /* Return nonzero if TRIAL, an insn, can be combined with a 'restore'
    instruction.  RETURN_P is true if the v9 variant 'return' is to be
    considered in the test too.

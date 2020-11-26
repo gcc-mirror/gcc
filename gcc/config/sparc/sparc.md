@@ -561,9 +561,9 @@
    (set_attr "type" "multi")])
 
 ;; Attributes for branch scheduling
-(define_attr "in_call_delay" "false,true"
-  (symbol_ref "(eligible_for_call_delay (insn)
-		? IN_CALL_DELAY_TRUE : IN_CALL_DELAY_FALSE)"))
+(define_attr "tls_delay_slot" "false,true"
+  (symbol_ref "((TARGET_GNU_TLS && HAVE_GNU_LD) != 0
+		? TLS_DELAY_SLOT_TRUE : TLS_DELAY_SLOT_FALSE)"))
 
 (define_attr "in_sibcall_delay" "false,true"
   (symbol_ref "(eligible_for_sibcall_delay (insn)
@@ -613,27 +613,24 @@
 	   (const_string "true")
 	] (const_string "false")))
 
-(define_delay (eq_attr "type" "call")
-  [(eq_attr "in_call_delay" "true") (nil) (nil)])
-
 (define_delay (eq_attr "type" "sibcall")
   [(eq_attr "in_sibcall_delay" "true") (nil) (nil)])
 
 (define_delay (eq_attr "type" "return")
   [(eq_attr "in_return_delay" "true") (nil) (nil)])
 
-(define_delay (and (eq_attr "type" "branch")
-	      (not (eq_attr "branch_type" "icc")))
-  [(eq_attr "in_branch_delay" "true") (nil) (eq_attr "in_branch_delay" "true")])
-
-(define_delay (and (eq_attr "type" "branch")
-	      (eq_attr "branch_type" "icc"))
-  [(eq_attr "in_branch_delay" "true") (nil)
-  (eq_attr "in_integer_branch_annul_delay" "true")])
-
-(define_delay (eq_attr "type" "uncond_branch")
+(define_delay (ior (eq_attr "type" "call") (eq_attr "type" "uncond_branch"))
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
+(define_delay (and (eq_attr "type" "branch") (not (eq_attr "branch_type" "icc")))
+  [(eq_attr "in_branch_delay" "true")
+   (nil)
+   (eq_attr "in_branch_delay" "true")])
+
+(define_delay (and (eq_attr "type" "branch") (eq_attr "branch_type" "icc"))
+  [(eq_attr "in_branch_delay" "true")
+   (nil)
+   (eq_attr "in_integer_branch_annul_delay" "true")])
 
 ;; Include SPARC DFA schedulers
 
@@ -7935,7 +7932,9 @@ visl")
    (clobber (reg:P O7_REG))]
   "TARGET_TLS"
   "call\t%a1, %%tgd_call(%a2)%#"
-  [(set_attr "type" "call")])
+  [(set (attr "type") (if_then_else (eq_attr "tls_delay_slot" "true")
+                                    (const_string "call")
+                                    (const_string "call_no_delay_slot")))])
 
 (define_insn "tldm_hi22<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
@@ -7966,7 +7965,9 @@ visl")
    (clobber (reg:P O7_REG))]
   "TARGET_TLS"
   "call\t%a1, %%tldm_call(%&)%#"
-  [(set_attr "type" "call")])
+  [(set (attr "type") (if_then_else (eq_attr "tls_delay_slot" "true")
+                                    (const_string "call")
+                                    (const_string "call_no_delay_slot")))])
 
 (define_insn "tldo_hix22<P:mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
