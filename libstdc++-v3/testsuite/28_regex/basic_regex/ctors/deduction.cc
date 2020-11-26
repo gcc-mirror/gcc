@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
+// { dg-timeout-factor 3 }
 
 #include <regex>
 #include <testsuite_iterators.h>

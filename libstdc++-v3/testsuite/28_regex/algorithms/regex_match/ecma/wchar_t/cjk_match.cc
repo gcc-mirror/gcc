@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-timeout-factor 3 }
 
 //
 // 2013-10-18  Tim Shen <timshen91@gmail.com>
