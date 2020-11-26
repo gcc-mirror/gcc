@@ -1,3 +1,40 @@
+2020-11-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add
+	__ARM_FEATURE_PAC_DEFAULT support.
+
+2020-11-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* doc/extend.texi: Update the text for  __builtin_return_address.
+
+2020-11-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* config/aarch64/aarch64.c (aarch64_return_address_signing_enabled):
+	Disable return address signing if __builtin_eh_return is used.
+
+2020-11-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	PR target/94791
+	* config/aarch64/aarch64-protos.h (aarch64_return_addr_rtx): Declare.
+	* config/aarch64/aarch64.c (aarch64_return_addr_rtx): New.
+	(aarch64_return_addr): Use aarch64_return_addr_rtx.
+	* config/aarch64/aarch64.h (PROFILE_HOOK): Likewise.
+
 2020-11-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97918

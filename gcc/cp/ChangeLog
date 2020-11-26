@@ -1,3 +1,11 @@
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* pt.c (tsubst_omp_clauses): Handle 'OMP_CLAUSE__CACHE_'.
+	(tsubst_expr): Handle 'OACC_CACHE'.
+
 2020-11-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/95158

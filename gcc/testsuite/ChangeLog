@@ -1,3 +1,31 @@
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/gomp/map-1.C: New.
+	* g++.dg/gomp/map-2.C: Likewise.
+	* c-c++-common/gomp/map-1.c: Adjust.
+	* c-c++-common/gomp/map-2.c: Likewise.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/cache-1.c: Update.
+	* c-c++-common/goacc/cache-2.c: Likewise.
+	* g++.dg/goacc/cache-1.C: New.
+	* g++.dg/goacc/cache-2.C: Likewise.
+
+2020-11-25  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backported from master:
+	2020-07-13  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/94891
+	* gcc.target/aarch64/return_address_sign_1.c: Update test.
+
 2020-11-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97918
