@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . V A L _ D E C                        --
+--                       S Y S T E M . V A L U E _ R                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2020, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,37 +29,51 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains routines for scanning decimal values where the size
---  of the type is no greater than Standard.Integer'Size, for use in Text_IO.
---  Decimal_IO, and the Value attribute for such decimal types.
+--  This package contains routines for scanning real values for use in
+--  Text_IO.Decimal_IO, Fixed_IO, Float_IO and the Value attribute.
 
-package System.Val_Dec is
+with System.Unsigned_Types; use System.Unsigned_Types;
+
+generic
+
+   type Uns is mod <>;
+
+   Floating : Boolean;
+
+package System.Value_R is
    pragma Preelaborate;
 
-   function Scan_Decimal
+   function Scan_Raw_Real
      (Str   : String;
       Ptr   : not null access Integer;
       Max   : Integer;
-      Scale : Integer) return Integer;
+      Base  : out Unsigned;
+      Scale : out Integer;
+      Extra : out Unsigned;
+      Minus : out Boolean) return Uns;
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  real literal according to the syntax described in (RM 3.5(43)). The
    --  substring scanned extends no further than Str (Max). There are three
    --  cases for the return:
    --
-   --  If a valid real literal is found after scanning past any initial spaces,
-   --  then Ptr.all is updated past the last character of the literal (but
-   --  trailing spaces are not scanned out). The value returned is the value
-   --  Integer'Integer_Value (decimal-literal-value), using the given Scale
-   --  to determine this value.
+   --  If a valid real is found after scanning past any initial spaces, then
+   --  Ptr.all is updated past the last character of the real (but trailing
+   --  spaces are not scanned out) and the Base, Scale, Extra and Minus out
+   --  parameters are set; if Val is the result of the call, then the real
+   --  represented by the literal is equal to
    --
-   --  If no valid real literal is found, then Ptr.all points either to an
-   --  initial non-digit character, or to Max + 1 if the field is all spaces
-   --  and the exception Constraint_Error is raised.
+   --    (Val * Base + Extra) * (Base ** (Scale - 1))
    --
-   --  If a syntactically valid integer is scanned, but the value is out of
+   --  with the negative sign if Minus is true.
+   --
+   --  If no valid real is found, then Ptr.all points either to an initial
+   --  non-blank character, or to Max + 1 if the field is all spaces and the
+   --  exception Constraint_Error is raised.
+   --
+   --  If a syntactically valid real is scanned, but the value is out of
    --  range, or, in the based case, the base value is out of range or there
-   --  is an out of range digit, then Ptr.all points past the integer, and
-   --  Constraint_Error is raised.
+   --  is an out of range digit, then Ptr.all points past the real literal,
+   --  and Constraint_Error is raised.
    --
    --  Note: these rules correspond to the requirements for leaving the
    --  pointer positioned in Text_Io.Get
@@ -67,14 +81,19 @@ package System.Val_Dec is
    --  Note: if Str is null, i.e. if Max is less than Ptr, then this is a
    --  special case of an all-blank string, and Ptr is unchanged, and hence
    --  is greater than Max as required in this case.
+   --
+   --  Note: this routine should not be called with Str'Last = Positive'Last.
+   --  If this occurs Program_Error is raised with a message noting that this
+   --  case is not supported. Most such cases are eliminated by the caller.
 
-   function Value_Decimal (Str : String; Scale : Integer) return Integer;
-   --  Used in computing X'Value (Str) where X is a decimal fixed-point type
-   --  whose size does not exceed Standard.Integer'Size. Str is the string
-   --  argument of the attribute. Constraint_Error is raised if the string
-   --  is malformed or if the value is out of range of Integer (not the
-   --  range of the fixed-point type, that check must be done by the caller.
-   --  Otherwise the value returned is the value Integer'Integer_Value
-   --  (decimal-literal-value), using Scale to determine this value.
+   function Value_Raw_Real
+     (Str   : String;
+      Base  : out Unsigned;
+      Scale : out Integer;
+      Extra : out Unsigned;
+      Minus : out Boolean) return Uns;
+   --  Used in computing X'Value (Str) where X is a real type. Str is the
+   --  string argument of the attribute. Constraint_Error is raised if the
+   --  string is malformed.
 
-end System.Val_Dec;
+end System.Value_R;

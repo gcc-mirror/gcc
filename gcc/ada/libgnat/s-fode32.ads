@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                          S Y S T E M . F O R E                           --
+--               S Y S T E M . F O R E _ D E C I M A L _ 3 2                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,13 +29,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for the 'Fore attribute
+--  This package contains the routine used for the 'Fore attribute for decimal
+--  fixed point types up to 32-bit mantissa.
 
-package System.Fore is
+with Interfaces;
+with System.Fore_D;
+
+package System.Fore_Decimal_32 is
    pragma Pure;
 
-   function Fore (Lo, Hi : Long_Long_Float) return Natural;
-   --  Compute Fore attribute value for a fixed-point type. The parameters
-   --  are the low and high bounds values, converted to Long_Long_Float.
+   subtype Int32 is Interfaces.Integer_32;
 
-end System.Fore;
+   package Impl is new Fore_D (Int32);
+
+   function Fore_Decimal32 (Lo, Hi : Int32; Scale : Integer) return Natural
+     renames Impl.Fore_Decimal;
+
+end System.Fore_Decimal_32;

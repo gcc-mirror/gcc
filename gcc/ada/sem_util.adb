@@ -25472,7 +25472,7 @@ package body Sem_Util is
       --  All other cases do not require a transient scope
 
       else
-         pragma Assert (Is_Protected_Type (Typ) or else Is_Task_Type (Typ));
+         pragma Assert (Is_Concurrent_Type (Typ));
          return False;
       end if;
    end Old_Requires_Transient_Scope;
@@ -26262,7 +26262,7 @@ package body Sem_Util is
          end if;
 
          if Has_Own_Invariants (From_Typ) then
-            Set_Has_Own_Invariants (Typ);
+            Set_Has_Own_Invariants (Base_Type (Typ));
          end if;
 
          if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then
@@ -27600,8 +27600,6 @@ package body Sem_Util is
             Style.Check_Identifier (Nod, Val_Actual);
          end if;
       end if;
-
-      Set_Entity (N, Val);
    end Set_Entity_With_Checks;
 
    ------------------------------

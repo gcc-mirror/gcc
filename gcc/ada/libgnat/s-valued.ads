@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . V A L _ L L D                        --
+--                       S Y S T E M . V A L U E _ D                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,18 +29,29 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains routines for scanning decimal values where the size
---  of the type is greater than Standard.Integer'Size, for use in Text_IO.
---  Decimal_IO, and the Value attribute for such decimal types.
+--  This package contains the routines for supporting the Value attribute for
+--  decimal fixed point types, and also for conversion operations required in
+--  Text_IO.Decimal_IO for such types.
 
-package System.Val_LLD is
+generic
+
+   type Int is range <>;
+
+   type Uns is mod <>;
+
+   with procedure Scaled_Divide
+          (X, Y, Z : Int;
+           Q, R : out Int;
+           Round : Boolean);
+
+package System.Value_D is
    pragma Preelaborate;
 
-   function Scan_Long_Long_Decimal
+   function Scan_Decimal
      (Str   : String;
       Ptr   : not null access Integer;
       Max   : Integer;
-      Scale : Integer) return Long_Long_Integer;
+      Scale : Integer) return Int;
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  real literal according to the syntax described in (RM 3.5(43)). The
    --  substring scanned extends no further than Str (Max). There are three
@@ -49,8 +60,8 @@ package System.Val_LLD is
    --  If a valid real literal is found after scanning past any initial spaces,
    --  then Ptr.all is updated past the last character of the literal (but
    --  trailing spaces are not scanned out). The value returned is the value
-   --  Long_Long_Integer'Integer_Value (decimal-literal-value), using the given
-   --  Scale to determine this value.
+   --  Int'Integer_Value (decimal-literal-value), using the given Scale to
+   --  determine this value.
    --
    --  If no valid real literal is found, then Ptr.all points either to an
    --  initial non-digit character, or to Max + 1 if the field is all spaces
@@ -68,14 +79,12 @@ package System.Val_LLD is
    --  special case of an all-blank string, and Ptr is unchanged, and hence
    --  is greater than Max as required in this case.
 
-   function Value_Long_Long_Decimal
-     (Str   : String;
-      Scale : Integer) return Long_Long_Integer;
-   --  Used in computing X'Value (Str) where X is a decimal types whose size
-   --  exceeds Standard.Integer'Size. Str is the string argument of the
-   --  attribute. Constraint_Error is raised if the string is malformed
-   --  or if the value is out of range, otherwise the value returned is the
-   --  value Long_Long_Integer'Integer_Value (decimal-literal-value), using
-   --  the given Scale to determine this value.
+   function Value_Decimal (Str : String; Scale : Integer) return Int;
+   --  Used in computing X'Value (Str) where X is a decimal fixed-point type.
+   --  Str is the string argument of the attribute. Constraint_Error is raised
+   --  if the string is malformed or if the value is out of range of Int (not
+   --  the range of the fixed-point type, which must be done by the caller).
+   --  Otherwise the value returned is the value Int'Integer_Value
+   --  (decimal-literal-value), using Scale to determine this value.
 
-end System.Val_LLD;
+end System.Value_D;

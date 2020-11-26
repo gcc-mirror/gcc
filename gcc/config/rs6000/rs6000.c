@@ -4781,10 +4781,13 @@ rs6000_option_override_internal (bool global_init_p)
       SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 			   param_max_completely_peeled_insns, 400);
 
-      /* Temporarily disable it for now since lxvl/stxvl on the default
-	 supported hardware Power9 has unexpected performance behaviors.  */
-      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
-			   param_vect_partial_vector_usage, 0);
+      /* The lxvl/stxvl instructions don't perform well before Power10.  */
+      if (TARGET_POWER10)
+	SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			     param_vect_partial_vector_usage, 1);
+      else
+	SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			     param_vect_partial_vector_usage, 0);
 
       /* Use the 'model' -fsched-pressure algorithm by default.  */
       SET_OPTION_IF_UNSET (&global_options, &global_options_set,

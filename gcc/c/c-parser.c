@@ -2224,10 +2224,6 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			      " initializer");
 		  init = convert_lvalue_to_rvalue (init_loc, init, true, true);
 		  tree init_type = TREE_TYPE (init.value);
-		  /* As with typeof, remove all qualifiers from atomic types.  */
-		  if (init_type != error_mark_node && TYPE_ATOMIC (init_type))
-		    init_type
-		      = c_build_qualified_type (init_type, TYPE_UNQUALIFIED);
 		  bool vm_type = variably_modified_type_p (init_type,
 							   NULL_TREE);
 		  if (vm_type)
@@ -3743,11 +3739,6 @@ c_parser_typeof_specifier (c_parser *parser)
       if (was_vm)
 	ret.expr = c_fully_fold (expr.value, false, &ret.expr_const_operands);
       pop_maybe_used (was_vm);
-      /* For use in macros such as those in <stdatomic.h>, remove all
-	 qualifiers from atomic types.  (const can be an issue for more macros
-	 using typeof than just the <stdatomic.h> ones.)  */
-      if (ret.spec != error_mark_node && TYPE_ATOMIC (ret.spec))
-	ret.spec = c_build_qualified_type (ret.spec, TYPE_UNQUALIFIED);
     }
   parens.skip_until_found_close (parser);
   return ret;

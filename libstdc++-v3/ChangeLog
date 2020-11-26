@@ -1,3 +1,77 @@
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__cond_wait_until): Do not
+	perform redundant conversions to the same clock.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__cond_wait_until_impl):
+	Do not define when _GLIBCXX_HAVE_LINUX_FUTEX is defined. Use
+	__condvar and mutex instead of __gthread_cond_t and
+	unique_lock<mutex>.
+	(__cond_wait_until): Likewise. Fix test for return value of
+	__cond_wait_until_impl.
+	(__timed_waiters::_M_do_wait_until): Use __condvar instead
+	of __gthread_cond_t.
+	* include/bits/atomic_wait.h: Remove <bits/unique_lock.h>
+	include. Only include <bits/std_mutex.h> if not using futexes.
+	(__platform_wait_max_value): Remove unused variable.
+	(__waiters::lock_t): Use lock_guard instead of unique_lock.
+	(__waiters::_M_cv): Use __condvar instead of __gthread_cond_t.
+	(__waiters::_M_do_wait(__platform_wait_t)): Likewise.
+	(__waiters::_M_notify()): Likewise. Use notify_one() if not
+	asked to notify all.
+	* include/bits/std_mutex.h (__condvar): New type.
+	* include/std/condition_variable (condition_variable::_M_cond)
+	(condition_variable::wait_until): Use __condvar instead of
+	__gthread_cond_t.
+	* src/c++11/condition_variable.cc (condition_variable): Define
+	default constructor and destructor as defaulted.
+	(condition_variable::wait, condition_variable::notify_one)
+	(condition_variable::notify_all): Forward to corresponding
+	member function of __condvar.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	* testsuite/29_atomics/atomic/wait_notify/bool.cc: Re-eneable
+	test.
+	* testsuite/29_atomics/atomic/wait_notify/generic.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/pointers.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc: Likewise.
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Likewise.
+	* testsuite/util/atomic/wait_notify_util.h: Fix missed
+	notifications by making the new thread wait until the parent
+	thread is waiting on the condition variable.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97935
+	* include/bits/iterator_concepts.h (__detail::__iter_without_category):
+	New helper concept.
+	(__iterator_traits::__cat): Use __detail::__iter_without_category.
+	* testsuite/24_iterators/associated_types/iterator.traits.cc: New test.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Do not test 'v' on AIX.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	* include/bits/atomic_wait.h (__platform_wait): Check errno,
+	not just the value of EAGAIN.
+	(__waiters::__waiters()): Fix name of data member.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	* include/bits/atomic_wait.h (__platform_wait): Return if futex
+	sets EAGAIN.
+	* testsuite/30_threads/latch/3.cc: Re-enable test.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc: Likewise.
+
 2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/97936

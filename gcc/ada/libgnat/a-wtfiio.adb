@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---     A D A . T E X T _ I O . W I D E _ T E X T _ I O . F I X E D _ I O    --
+--             A D A . W I D E _ T E X T _ I O . F I X E D _ I O            --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,13 +29,72 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Interfaces;
+with Ada.Wide_Text_IO.Fixed_Aux;
 with Ada.Wide_Text_IO.Float_Aux;
-with System.WCh_Con; use System.WCh_Con;
-with System.WCh_WtS; use System.WCh_WtS;
+with System.Img_Fixed_32; use System.Img_Fixed_32;
+with System.Img_Fixed_64; use System.Img_Fixed_64;
+with System.Val_Fixed_32; use System.Val_Fixed_32;
+with System.Val_Fixed_64; use System.Val_Fixed_64;
+with System.WCh_Con;      use System.WCh_Con;
+with System.WCh_WtS;      use System.WCh_WtS;
 
 package body Ada.Wide_Text_IO.Fixed_IO is
 
-   package Aux renames Ada.Wide_Text_IO.Float_Aux;
+   --  Note: we still use the floating-point I/O routines for types whose small
+   --  is not a sufficiently small integer or the reciprocal thereof. This will
+   --  result in inaccuracies for fixed point types that require more precision
+   --  than is available in Long_Long_Float.
+
+   subtype Int32 is Interfaces.Integer_32;
+   subtype Int64 is Interfaces.Integer_64;
+
+   package Aux32 is new
+     Ada.Wide_Text_IO.Fixed_Aux (Int32, Scan_Fixed32, Set_Image_Fixed32);
+
+   package Aux64 is new
+     Ada.Wide_Text_IO.Fixed_Aux (Int64, Scan_Fixed64, Set_Image_Fixed64);
+
+   Exact : constant Boolean :=
+     (Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
+       or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small))
+     and then Num'Small >= 2.0**(-63)
+     and then Num'Small <= 2.0**63;
+   --  True if the exact algorithm implemented in Fixed_Aux can be used. The
+   --  condition is a Small which is either an integer or the reciprocal of an
+   --  integer with the appropriate magnitude.
+
+   Need_64 : constant Boolean :=
+     Num'Object_Size > 32
+       or else Num'Small > 2.0**31
+       or else Num'Small < 2.0**(-31);
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Int32 is acceptable and where type Int64 is needed. This Boolean is used
+   --  to test for these cases and since it is a constant, only code for the
+   --  relevant case will be included in the instance.
+
+   E : constant Natural := 31 + 32 * Boolean'Pos (Need_64);
+   --  T'Size - 1 for the selected Int{32,64}
+
+   F0 : constant Natural := 0;
+   F1 : constant Natural :=
+          F0 + 18 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F0) >= 1.0E+18);
+   F2 : constant Natural :=
+          F1 +  9 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F1) >= 1.0E+9);
+   F3 : constant Natural :=
+          F2 +  5 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F2) >= 1.0E+5);
+   F4 : constant Natural :=
+          F3 +  3 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F3) >= 1.0E+3);
+   F5 : constant Natural :=
+          F4 +  2 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F4) >= 1.0E+2);
+   F6 : constant Natural :=
+          F5 +  1 * Boolean'Pos (2.0**E * Num'Small * 10.0**(-F5) >= 1.0E+1);
+   --  Binary search for the number of digits - 1 before the decimal point of
+   --  the product 2.0**E * Num'Small.
+
+   For0 : constant Natural := 2 + F6;
+   --  Fore value for the fixed point type whose mantissa is Int{32,64} and
+   --  whose small is Num'Small.
 
    ---------
    -- Get --
@@ -46,8 +105,22 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       Item  : out Num;
       Width : Field := 0)
    is
+      pragma Unsuppress (Range_Check);
+
    begin
-      Aux.Get (File, Long_Long_Float (Item), Width);
+      if not Exact then
+         Float_Aux.Get (File, Long_Long_Float (Item), Width);
+      elsif Need_64 then
+         Item := Num'Fixed_Value
+                   (Aux64.Get (File, Width,
+                               Int64 (-Float'Ceiling (Num'Small)),
+                               Int64 (-Float'Ceiling (1.0 / Num'Small))));
+      else
+         Item := Num'Fixed_Value
+                   (Aux32.Get (File, Width,
+                               Int32 (-Float'Ceiling (Num'Small)),
+                               Int32 (-Float'Ceiling (1.0 / Num'Small))));
+      end if;
 
    exception
       when Constraint_Error => raise Data_Error;
@@ -66,6 +139,8 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       Item : out Num;
       Last : out Positive)
    is
+      pragma Unsuppress (Range_Check);
+
       S : constant String := Wide_String_To_String (From, WCEM_Upper);
       --  String on which we do the actual conversion. Note that the method
       --  used for wide character encoding is irrelevant, since if there is
@@ -73,7 +148,19 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       --  Aux.Gets will raise Data_Error in any case.
 
    begin
-      Aux.Gets (S, Long_Long_Float (Item), Last);
+      if not Exact then
+         Float_Aux.Gets (S, Long_Long_Float (Item), Last);
+      elsif Need_64 then
+         Item := Num'Fixed_Value
+                   (Aux64.Gets (S, Last,
+                                Int64 (-Float'Ceiling (Num'Small)),
+                                Int64 (-Float'Ceiling (1.0 / Num'Small))));
+      else
+         Item := Num'Fixed_Value
+                   (Aux32.Gets (S, Last,
+                                Int32 (-Float'Ceiling (Num'Small)),
+                                Int32 (-Float'Ceiling (1.0 / Num'Small))));
+      end if;
 
    exception
       when Constraint_Error => raise Data_Error;
@@ -91,7 +178,19 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
+      if not Exact then
+         Float_Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
+      elsif Need_64 then
+         Aux64.Put (File, Int64'Integer_Value (Item), Fore, Aft, Exp,
+                    Int64 (-Float'Ceiling (Num'Small)),
+                    Int64 (-Float'Ceiling (1.0 / Num'Small)),
+                    For0, Num'Aft);
+      else
+         Aux32.Put (File, Int32'Integer_Value (Item), Fore, Aft, Exp,
+                    Int32 (-Float'Ceiling (Num'Small)),
+                    Int32 (-Float'Ceiling (1.0 / Num'Small)),
+                    For0, Num'Aft);
+      end if;
    end Put;
 
    procedure Put
@@ -113,7 +212,19 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       S : String (To'First .. To'Last);
 
    begin
-      Aux.Puts (S, Long_Long_Float (Item), Aft, Exp);
+      if not Exact then
+         Float_Aux.Puts (S, Long_Long_Float (Item), Aft, Exp);
+      elsif Need_64 then
+         Aux64.Puts (S, Int64'Integer_Value (Item), Aft, Exp,
+                     Int64 (-Float'Ceiling (Num'Small)),
+                     Int64 (-Float'Ceiling (1.0 / Num'Small)),
+                     For0, Num'Aft);
+      else
+         Aux32.Puts (S, Int32'Integer_Value (Item), Aft, Exp,
+                     Int32 (-Float'Ceiling (Num'Small)),
+                     Int32 (-Float'Ceiling (1.0 / Num'Small)),
+                     For0, Num'Aft);
+      end if;
 
       for J in S'Range loop
          To (J) := Wide_Character'Val (Character'Pos (S (J)));

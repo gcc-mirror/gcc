@@ -2520,6 +2520,76 @@ rm -f conftest.val
 
 } # ac_fn_c_compute_int
 
+# ac_fn_cxx_check_func LINENO FUNC VAR
+# ------------------------------------
+# Tests whether FUNC exists, setting the cache variable VAR accordingly
+ac_fn_cxx_check_func ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+/* Define $2 to an innocuous variant, in case <limits.h> declares $2.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define $2 innocuous_$2
+
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $2 (); below.
+    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
+# include <limits.h>
+#else
+# include <assert.h>
+#endif
+
+#undef $2
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char $2 ();
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined __stub_$2 || defined __stub___$2
+choke me
+#endif
+
+int
+main ()
+{
+return $2 ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_cxx_check_func
+
 # ac_fn_c_check_type LINENO TYPE VAR INCLUDES
 # -------------------------------------------
 # Tests whether TYPE exists after having included INCLUDES, setting cache
@@ -12064,7 +12134,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12067 "configure"
+#line 12137 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12170,7 +12240,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12173 "configure"
+#line 12243 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15862,7 +15932,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15865 "configure"
+#line 15935 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15897,7 +15967,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15900 "configure"
+#line 15970 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15932,7 +16002,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15935 "configure"
+#line 16005 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15968,7 +16038,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15971 "configure"
+#line 16041 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16121,7 +16191,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16124 "configure"
+#line 16194 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16163,7 +16233,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16166 "configure"
+#line 16236 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16197,7 +16267,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16200 "configure"
+#line 16270 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -21181,7 +21251,6 @@ fi
         ac_has_nanosleep=yes
         ;;
       solaris*)
-        GLIBCXX_LIBS="$GLIBCXX_LIBS -lrt"
         ac_has_clock_monotonic=yes
         ac_has_clock_realtime=yes
         ac_has_nanosleep=yes
@@ -21219,7 +21288,7 @@ return clock_gettime ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' rt posix4; do
+for ac_lib in '' rt; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -21278,7 +21347,7 @@ return nanosleep ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' rt posix4; do
+for ac_lib in '' rt; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -21314,121 +21383,13 @@ if test "$ac_res" != no; then :
 fi
 
     else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing clock_gettime" >&5
-$as_echo_n "checking for library containing clock_gettime... " >&6; }
-if ${ac_cv_search_clock_gettime+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char clock_gettime ();
-int
-main ()
-{
-return clock_gettime ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' posix4; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_search_clock_gettime=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_clock_gettime+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_clock_gettime+:} false; then :
-
-else
-  ac_cv_search_clock_gettime=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_clock_gettime" >&5
-$as_echo "$ac_cv_search_clock_gettime" >&6; }
-ac_res=$ac_cv_search_clock_gettime
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+      ac_fn_cxx_check_func "$LINENO" "clock_gettime" "ac_cv_func_clock_gettime"
+if test "x$ac_cv_func_clock_gettime" = xyes; then :
 
 fi
 
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing nanosleep" >&5
-$as_echo_n "checking for library containing nanosleep... " >&6; }
-if ${ac_cv_search_nanosleep+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char nanosleep ();
-int
-main ()
-{
-return nanosleep ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' posix4; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_search_nanosleep=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_nanosleep+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_nanosleep+:} false; then :
-
-else
-  ac_cv_search_nanosleep=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_nanosleep" >&5
-$as_echo "$ac_cv_search_nanosleep" >&6; }
-ac_res=$ac_cv_search_nanosleep
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+      ac_fn_cxx_check_func "$LINENO" "nanosleep" "ac_cv_func_nanosleep"
+if test "x$ac_cv_func_nanosleep" = xyes; then :
 
 fi
 
@@ -21467,7 +21428,7 @@ return sched_yield ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' rt posix4; do
+for ac_lib in '' rt; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -21504,10 +21465,6 @@ fi
 
 
     case "$ac_cv_search_sched_yield" in
-      -lposix4*)
-      GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_sched_yield"
-      ac_has_sched_yield=yes
-      ;;
       -lrt*)
       if test x"$enable_libstdcxx_time" = x"rt"; then
 	GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_sched_yield"

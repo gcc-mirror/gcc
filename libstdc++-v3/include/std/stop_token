@@ -34,9 +34,7 @@
 #include <atomic>
 #include <bits/std_thread.h>
 
-#if __has_include(<semaphore>)
-# include <semaphore>
-#endif
+#include <semaphore>
 
 #define __cpp_lib_jthread 201911L
 

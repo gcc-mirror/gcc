@@ -533,9 +533,9 @@ debug_argument_list (tree args)
     {
       tree arg = TREE_VEC_ELT (args, i);
       if (TYPE_P (arg))
-	verbatim ("ARG %qT", arg);
+	verbatim ("argument %qT", arg);
       else
-	verbatim ("ARG %qE", arg);
+	verbatim ("argument %qE", arg);
     }
 }
 

@@ -3944,6 +3944,7 @@ package body Sem_Eval is
 
    procedure Eval_Slice (N : Node_Id) is
       Drange : constant Node_Id := Discrete_Range (N);
+      Name   : constant Node_Id := Prefix (N);
 
    begin
       if Nkind (Drange) = N_Range then
@@ -3955,13 +3956,13 @@ package body Sem_Eval is
       --  the type of A, is redundant, the slice can be replaced with A, and
       --  this is worth a warning.
 
-      if Is_Entity_Name (Prefix (N)) then
+      if Is_Entity_Name (Name) then
          declare
-            E : constant Entity_Id := Entity (Prefix (N));
+            E : constant Entity_Id := Entity (Name);
             T : constant Entity_Id := Etype (E);
 
          begin
-            if Ekind (E) = E_Constant
+            if Is_Object (E)
               and then Is_Array_Type (T)
               and then Is_Entity_Name (Drange)
             then

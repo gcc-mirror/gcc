@@ -1,3 +1,9 @@
+2020-11-25  Stefan Kanthak  <stefan.kanthak@nexgo.de>
+
+	* libgcc2.c (absvSI2): Simplify/improve implementation by using
+	builtin_add_overflow.
+	(absvsi2, absvDI2): Likewise.
+
 2020-11-20  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* unwind-dw2-fde-dip.c [__OpenBSD__ || __NetBSD__]

@@ -3505,8 +3505,17 @@ package body Exp_Ch4 is
             Alloc :=
               Make_Allocator (Loc,
                 Expression => New_Occurrence_Of (ConstrT, Loc));
+
+            --  Allocate on the secondary stack. This is currently done
+            --  only for type String, which normally doesn't have default
+            --  initialization, but we need to Set_No_Initialization in case
+            --  of Initialize_Scalars or Normalize_Scalars; otherwise, the
+            --  allocator will get transformed and will not use the secondary
+            --  stack.
+
             Set_Storage_Pool (Alloc, RTE (RE_SS_Pool));
             Set_Procedure_To_Call (Alloc, RTE (RE_SS_Allocate));
+            Set_No_Initialization (Alloc);
 
             Temp := Make_Temporary (Loc, 'R', Alloc);
             Insert_Action (Cnode,
@@ -11870,33 +11879,20 @@ package body Exp_Ch4 is
          --  which used to fail when Fix_Val was a bound of the type and
          --  the 'Small was not a representable number.
          --  This transformation requires an integer type large enough to
-         --  accommodate a fixed-point value. This will not be the case
-         --  in systems where Duration is larger than Long_Integer.
+         --  accommodate a fixed-point value.
 
          if Is_Ordinary_Fixed_Point_Type (Target_Type)
            and then Is_Floating_Point_Type (Etype (Expr))
-           and then RM_Size (Btyp) <= RM_Size (Standard_Long_Integer)
+           and then RM_Size (Btyp) <= System_Max_Integer_Size
            and then Nkind (Lo) = N_Real_Literal
            and then Nkind (Hi) = N_Real_Literal
          then
             declare
                Expr_Id : constant Entity_Id := Make_Temporary (Loc, 'T', Conv);
-               Int_Type : Entity_Id;
+               Int_Typ : constant Entity_Id :=
+                           Small_Integer_Type_For (RM_Size (Btyp), False);
 
             begin
-               --  Find an integer type of the appropriate size to perform an
-               --  unchecked conversion to the target fixed-point type.
-
-               if RM_Size (Btyp) > RM_Size (Standard_Integer) then
-                  Int_Type := Standard_Long_Integer;
-
-               elsif RM_Size (Btyp) > RM_Size (Standard_Short_Integer) then
-                  Int_Type := Standard_Integer;
-
-               else
-                  Int_Type := Standard_Short_Integer;
-               end if;
-
                --  Generate a temporary with the integer value. Required in the
                --  CCG compiler to ensure that run-time checks reference this
                --  integer expression (instead of the resulting fixed-point
@@ -11906,23 +11902,23 @@ package body Exp_Ch4 is
                Insert_Action (N,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Expr_Id,
-                   Object_Definition   => New_Occurrence_Of (Int_Type, Loc),
+                   Object_Definition   => New_Occurrence_Of (Int_Typ, Loc),
                    Constant_Present    => True,
                    Expression          =>
-                     Convert_To (Int_Type, Expression (Conv))));
+                     Convert_To (Int_Typ, Expression (Conv))));
 
                --  Create integer objects for range checking of result.
 
                Lo_Arg :=
                  Unchecked_Convert_To
-                   (Int_Type, New_Occurrence_Of (Expr_Id, Loc));
+                   (Int_Typ, New_Occurrence_Of (Expr_Id, Loc));
 
                Lo_Val :=
                  Make_Integer_Literal (Loc, Corresponding_Integer_Value (Lo));
 
                Hi_Arg :=
                  Unchecked_Convert_To
-                   (Int_Type, New_Occurrence_Of (Expr_Id, Loc));
+                   (Int_Typ, New_Occurrence_Of (Expr_Id, Loc));
 
                Hi_Val :=
                  Make_Integer_Literal (Loc, Corresponding_Integer_Value (Hi));
@@ -12258,7 +12254,7 @@ package body Exp_Ch4 is
 
             else
                Apply_Accessibility_Check
-                 (Operand_Acc, Target_Type, Insert_Node => Operand);
+                 (Operand, Target_Type, Insert_Node => Operand);
             end if;
 
          --  If the level of the operand type is statically deeper than the

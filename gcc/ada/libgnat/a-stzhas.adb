@@ -29,8 +29,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package does not require a body, since it is an instantiation. We
---  provide a dummy file containing a No_Body pragma so that previous versions
---  of the body (which did exist) will not interfere.
+with System.String_Hash;
 
-pragma No_Body;
+function Ada.Strings.Wide_Wide_Hash
+  (Key : Wide_Wide_String) return Containers.Hash_Type
+is
+   use Ada.Containers;
+   function Hash_Fun is new System.String_Hash.Hash
+     (Wide_Wide_Character, Wide_Wide_String, Hash_Type);
+begin
+   return Hash_Fun (Key);
+end Ada.Strings.Wide_Wide_Hash;

@@ -10579,13 +10579,12 @@ package body Exp_Ch9 is
       Extract_Entry (N, Concval, Ename, Index);
       Conc_Typ := Etype (Concval);
 
-      --  Examine the scope stack in order to find nearest enclosing protected
-      --  or task type. This will constitute our invocation source.
+      --  Examine the scope stack in order to find nearest enclosing concurrent
+      --  type. This will constitute our invocation source.
 
       Old_Typ := Current_Scope;
       while Present (Old_Typ)
-        and then not Is_Protected_Type (Old_Typ)
-        and then not Is_Task_Type (Old_Typ)
+        and then not Is_Concurrent_Type (Old_Typ)
       loop
          Old_Typ := Scope (Old_Typ);
       end loop;

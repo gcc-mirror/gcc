@@ -40,6 +40,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
+with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
 
@@ -116,9 +117,8 @@ package body Exp_Fixd is
    --  case the types need not be the same, and Build_Multiply chooses a type
    --  long enough to hold the product (i.e. twice the size of the longer of
    --  the two operand types), and both operands are converted to this type.
-   --  The Etype of the result is also set to this value. However, the result
-   --  can never overflow Integer_64, so this is the largest type that is ever
-   --  generated. On return, the resulting node is analyzed and has Etype set.
+   --  The Etype of the result is also set to this value. On return, the
+   --  resulting node is analyzed and has Etype set.
 
    function Build_Rem (N : Node_Id; L, R : Node_Id) return Node_Id;
    --  Builds an N_Op_Rem node from the given left and right operand
@@ -194,12 +194,13 @@ package body Exp_Fixd is
       V        : Uint;
       Negative : Boolean := False) return Node_Id;
    --  Given a non-negative universal integer value, build a typed integer
-   --  literal node, using the smallest applicable standard integer type. If
-   --  and only if Negative is true a negative literal is built. If V exceeds
-   --  2**63-1, the largest value allowed for perfect result set scaling
-   --  factors (see RM G.2.3(22)), then Empty is returned. The node N provides
-   --  the Sloc value for the constructed literal. The Etype of the resulting
-   --  literal is correctly set, and it is marked as analyzed.
+   --  literal node, using the smallest applicable standard integer type.
+   --  If Negative is true, then a negative literal is built. If V exceeds
+   --  2**(System_Max_Integer_Size - 1) - 1, the largest value allowed for
+   --  perfect result set scaling factors (see RM G.2.3(22)), then Empty is
+   --  returned. The node N provides the Sloc value for the constructed
+   --  literal. The Etype of the resulting literal is correctly set, and it
+   --  is marked as analyzed.
 
    function Real_Literal (N : Node_Id; V : Ureal) return Node_Id;
    --  Build a real literal node from the given value, the Etype of the
@@ -347,11 +348,12 @@ package body Exp_Fixd is
             return L;
          end if;
 
+         --  Otherwise we need to figure out the correct result type size
          --  First figure out the effective sizes of the operands. Normally
          --  the effective size of an operand is the RM_Size of the operand.
          --  But a special case arises with operands whose size is known at
          --  compile time. In this case, we can use the actual value of the
-         --  operand to get its size if it would fit signed in 8 or 16 bits.
+         --  operand to get its size if it would fit in signed 8/16/32 bits.
 
          Left_Size := UI_To_Int (RM_Size (Left_Type));
 
@@ -359,10 +361,12 @@ package body Exp_Fixd is
             declare
                Val : constant Uint := Expr_Value (L);
             begin
-               if Val < Int'(2 ** 7) then
+               if Val < Uint_2 ** 7 then
                   Left_Size := 8;
-               elsif Val < Int'(2 ** 15) then
+               elsif Val < Uint_2 ** 15 then
                   Left_Size := 16;
+               elsif Val < Uint_2 ** 31 then
+                  Left_Size := 32;
                end if;
             end;
          end if;
@@ -394,8 +398,11 @@ package body Exp_Fixd is
          elsif Rsize <= 32 then
             Result_Type := Standard_Integer_32;
 
-         else
+         elsif Rsize <= 64 or else System_Max_Integer_Size < 128 then
             Result_Type := Standard_Integer_64;
+
+         else
+            Result_Type := Standard_Integer_128;
          end if;
 
          Rnode :=
@@ -446,18 +453,17 @@ package body Exp_Fixd is
       Expr   : Node_Id;
 
    begin
-      --  If denominator fits in 64 bits, we can build the operations directly
-      --  without causing any intermediate overflow, so that's what we do.
+      --  If the denominator fits in Max_Integer_Size bits, we can build the
+      --  operations directly without causing any intermediate overflow.
 
-      if Nat'Max (Y_Size, Z_Size) <= 32 then
-         return
-           Build_Divide (N, X, Build_Multiply (N, Y, Z));
+      if 2 * Nat'Max (Y_Size, Z_Size) <= System_Max_Integer_Size then
+         return Build_Divide (N, X, Build_Multiply (N, Y, Z));
 
       --  Otherwise we use the runtime routine
 
-      --    [Qnn : Interfaces.Integer_64,
-      --     Rnn : Interfaces.Integer_64;
-      --     Double_Divide (X, Y, Z, Qnn, Rnn, Round);
+      --    [Qnn : Interfaces.Integer_{64|128};
+      --     Rnn : Interfaces.Integer_{64|128};
+      --     Double_Divide{64|128} (X, Y, Z, Qnn, Rnn, Round);
       --     Qnn]
 
       else
@@ -489,18 +495,18 @@ package body Exp_Fixd is
    -- Build_Double_Divide_Code --
    ------------------------------
 
-   --  If the denominator can be computed in 64-bits, we build
+   --  If the denominator can be computed in Max_Integer_Size bits, we build
 
    --    [Nnn : constant typ := typ (X);
    --     Dnn : constant typ := typ (Y) * typ (Z)
    --     Qnn : constant typ := Nnn / Dnn;
-   --     Rnn : constant typ := Nnn / Dnn;
+   --     Rnn : constant typ := Nnn rem Dnn;
 
-   --  If the numerator cannot be computed in 64 bits, we build
+   --  If the denominator cannot be computed in Max_Integer_Size bits, we build
 
-   --    [Qnn : typ;
-   --     Rnn : typ;
-   --     Double_Divide (X, Y, Z, Qnn, Rnn, Round);]
+   --    [Qnn : Interfaces.Integer_{64|128};
+   --     Rnn : Interfaces.Integer_{64|128};
+   --     Double_Divide{64|128} (X, Y, Z, Qnn, Rnn, Round);]
 
    procedure Build_Double_Divide_Code
      (N        : Node_Id;
@@ -514,6 +520,7 @@ package body Exp_Fixd is
       Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
       Z_Size : constant Nat := UI_To_Int (Esize (Etype (Z)));
 
+      QR_Id  : RE_Id;
       QR_Siz : Nat;
       QR_Typ : Entity_Id;
 
@@ -524,22 +531,36 @@ package body Exp_Fixd is
       Rnd : Entity_Id;
 
    begin
-      --  Find type that will allow computation of numerator
+      --  Find type that will allow computation of denominator
 
       QR_Siz := Nat'Max (X_Size, 2 * Nat'Max (Y_Size, Z_Size));
 
       if QR_Siz <= 16 then
          QR_Typ := Standard_Integer_16;
+         QR_Id  := RE_Null;
+
       elsif QR_Siz <= 32 then
          QR_Typ := Standard_Integer_32;
+         QR_Id  := RE_Null;
+
       elsif QR_Siz <= 64 then
          QR_Typ := Standard_Integer_64;
+         QR_Id  := RE_Null;
 
-      --  For more than 64, bits, we use the 64-bit integer defined in
+      elsif QR_Siz <= 128 and then System_Max_Integer_Size = 128 then
+         QR_Typ := Standard_Integer_128;
+         QR_Id  := RE_Null;
+
+      --  For more than Max_Integer_Size bits, we use the integer defined in
       --  Interfaces, so that it can be handled by the runtime routine.
 
-      else
+      elsif System_Max_Integer_Size < 128 then
          QR_Typ := RTE (RE_Integer_64);
+         QR_Id  := RE_Double_Divide64;
+
+      else
+         QR_Typ := RTE (RE_Integer_128);
+         QR_Id  := RE_Double_Divide128;
       end if;
 
       --  Define quotient and remainder, and set their Etypes, so
@@ -551,9 +572,9 @@ package body Exp_Fixd is
       Set_Etype (Qnn, QR_Typ);
       Set_Etype (Rnn, QR_Typ);
 
-      --  Case that we can compute the denominator in 64 bits
+      --  Case that we can compute the denominator in Max_Integer_Size bits
 
-      if QR_Siz <= 64 then
+      if QR_Siz <= System_Max_Integer_Size then
 
          --  Create temporaries for numerator and denominator and set Etypes,
          --  so that New_Occurrence_Of picks them up for Build_xxx calls.
@@ -569,16 +590,13 @@ package body Exp_Fixd is
              Defining_Identifier => Nnn,
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc),
              Constant_Present    => True,
-             Expression => Build_Conversion (N, QR_Typ, X)),
+             Expression          => Build_Conversion (N, QR_Typ, X)),
 
            Make_Object_Declaration (Loc,
              Defining_Identifier => Dnn,
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc),
              Constant_Present    => True,
-             Expression =>
-               Build_Multiply (N,
-                 Build_Conversion (N, QR_Typ, Y),
-                 Build_Conversion (N, QR_Typ, Z))));
+             Expression          => Build_Multiply (N, Y, Z)));
 
          Quo :=
            Build_Divide (N,
@@ -604,8 +622,8 @@ package body Exp_Fixd is
                  New_Occurrence_Of (Nnn, Loc),
                  New_Occurrence_Of (Dnn, Loc))));
 
-      --  Case where denominator does not fit in 64 bits, so we have to
-      --  call the runtime routine to compute the quotient and remainder
+      --  Case where denominator does not fit in Max_Integer_Size bits, we have
+      --  to call the runtime routine to compute the quotient and remainder.
 
       else
          Rnd := Boolean_Literals (Rounded_Result_Set (N));
@@ -620,7 +638,7 @@ package body Exp_Fixd is
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc)),
 
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Double_Divide64), Loc),
+             Name => New_Occurrence_Of (RTE (QR_Id), Loc),
              Parameter_Associations => New_List (
                Build_Conversion (N, QR_Typ, X),
                Build_Conversion (N, QR_Typ, Y),
@@ -674,7 +692,7 @@ package body Exp_Fixd is
          --  the effective size of an operand is the RM_Size of the operand.
          --  But a special case arises with operands whose size is known at
          --  compile time. In this case, we can use the actual value of the
-         --  operand to get its size if it would fit signed in 8 or 16 bits.
+         --  operand to get its size if it would fit in signed 8/16/32 bits.
 
          Left_Size := UI_To_Int (RM_Size (Left_Type));
 
@@ -682,10 +700,12 @@ package body Exp_Fixd is
             declare
                Val : constant Uint := Expr_Value (L);
             begin
-               if Val < Int'(2 ** 7) then
+               if Val < Uint_2 ** 7 then
                   Left_Size := 8;
-               elsif Val < Int'(2 ** 15) then
+               elsif Val < Uint_2 ** 15 then
                   Left_Size := 16;
+               elsif Val < Uint_2 ** 31 then
+                  Left_Size := 32;
                end if;
             end;
          end if;
@@ -718,8 +738,11 @@ package body Exp_Fixd is
          elsif Rsize <= 32 then
             Result_Type := Standard_Integer_32;
 
-         else
+         elsif Rsize <= 64 or else System_Max_Integer_Size < 128 then
             Result_Type := Standard_Integer_64;
+
+         else
+            Result_Type := Standard_Integer_128;
          end if;
 
          Rnode :=
@@ -810,18 +833,17 @@ package body Exp_Fixd is
       Expr   : Node_Id;
 
    begin
-      --  If numerator fits in 64 bits, we can build the operations directly
-      --  without causing any intermediate overflow, so that's what we do.
+      --  If the numerator fits in Max_Integer_Size bits, we can build the
+      --  operations directly without causing any intermediate overflow.
 
-      if Nat'Max (X_Size, Y_Size) <= 32 then
-         return
-           Build_Divide (N, Build_Multiply (N, X, Y), Z);
+      if 2 * Nat'Max (X_Size, Y_Size) <= System_Max_Integer_Size then
+         return Build_Divide (N, Build_Multiply (N, X, Y), Z);
 
       --  Otherwise we use the runtime routine
 
-      --    [Qnn : Integer_64,
-      --     Rnn : Integer_64;
-      --     Scaled_Divide (X, Y, Z, Qnn, Rnn, Round);
+      --    [Qnn : Integer_{64|128},
+      --     Rnn : Integer_{64|128};
+      --     Scaled_Divide{64|128} (X, Y, Z, Qnn, Rnn, Round);
       --     Qnn]
 
       else
@@ -850,18 +872,18 @@ package body Exp_Fixd is
    -- Build_Scaled_Divide_Code --
    ------------------------------
 
-   --  If the numerator can be computed in 64-bits, we build
+   --  If the numerator can be computed in Max_Integer_Size bits, we build
 
    --    [Nnn : constant typ := typ (X) * typ (Y);
    --     Dnn : constant typ := typ (Z)
    --     Qnn : constant typ := Nnn / Dnn;
-   --     Rnn : constant typ := Nnn / Dnn;
+   --     Rnn : constant typ := Nnn rem Dnn;
 
-   --  If the numerator cannot be computed in 64 bits, we build
+   --  If the numerator cannot be computed in Max_Integer_Size bits, we build
 
-   --    [Qnn : Interfaces.Integer_64;
-   --     Rnn : Interfaces.Integer_64;
-   --     Scaled_Divide (X, Y, Z, Qnn, Rnn, Round);]
+   --    [Qnn : Interfaces.Integer_{64|128};
+   --     Rnn : Interfaces.Integer_{64|128};
+   --     Scaled_Divide_{64|128} (X, Y, Z, Qnn, Rnn, Round);]
 
    procedure Build_Scaled_Divide_Code
      (N        : Node_Id;
@@ -875,6 +897,7 @@ package body Exp_Fixd is
       Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
       Z_Size : constant Nat := UI_To_Int (Esize (Etype (Z)));
 
+      QR_Id  : RE_Id;
       QR_Siz : Nat;
       QR_Typ : Entity_Id;
 
@@ -887,20 +910,34 @@ package body Exp_Fixd is
    begin
       --  Find type that will allow computation of numerator
 
-      QR_Siz := Nat'Max (X_Size, 2 * Nat'Max (Y_Size, Z_Size));
+      QR_Siz := Nat'Max (2 * Nat'Max (X_Size, Y_Size), Z_Size);
 
       if QR_Siz <= 16 then
          QR_Typ := Standard_Integer_16;
+         QR_Id  := RE_Null;
+
       elsif QR_Siz <= 32 then
          QR_Typ := Standard_Integer_32;
+         QR_Id  := RE_Null;
+
       elsif QR_Siz <= 64 then
          QR_Typ := Standard_Integer_64;
+         QR_Id  := RE_Null;
 
-      --  For more than 64, bits, we use the 64-bit integer defined in
+      elsif QR_Siz <= 128 and then System_Max_Integer_Size = 128 then
+         QR_Typ := Standard_Integer_128;
+         QR_Id  := RE_Null;
+
+      --  For more than Max_Integer_Size bits, we use the integer defined in
       --  Interfaces, so that it can be handled by the runtime routine.
 
-      else
+      elsif System_Max_Integer_Size < 128 then
          QR_Typ := RTE (RE_Integer_64);
+         QR_Id  := RE_Scaled_Divide64;
+
+      else
+         QR_Typ := RTE (RE_Integer_128);
+         QR_Id  := RE_Scaled_Divide128;
       end if;
 
       --  Define quotient and remainder, and set their Etypes, so
@@ -912,9 +949,9 @@ package body Exp_Fixd is
       Set_Etype (Qnn, QR_Typ);
       Set_Etype (Rnn, QR_Typ);
 
-      --  Case that we can compute the numerator in 64 bits
+      --  Case that we can compute the numerator in Max_Integer_Size bits
 
-      if QR_Siz <= 64 then
+      if QR_Siz <= System_Max_Integer_Size then
          Nnn := Make_Temporary (Loc, 'N');
          Dnn := Make_Temporary (Loc, 'D');
 
@@ -928,16 +965,13 @@ package body Exp_Fixd is
              Defining_Identifier => Nnn,
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc),
              Constant_Present    => True,
-             Expression =>
-               Build_Multiply (N,
-                 Build_Conversion (N, QR_Typ, X),
-                 Build_Conversion (N, QR_Typ, Y))),
+             Expression          => Build_Multiply (N, X, Y)),
 
            Make_Object_Declaration (Loc,
              Defining_Identifier => Dnn,
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc),
              Constant_Present    => True,
-             Expression => Build_Conversion (N, QR_Typ, Z)));
+             Expression          => Build_Conversion (N, QR_Typ, Z)));
 
          Quo :=
            Build_Divide (N,
@@ -961,8 +995,8 @@ package body Exp_Fixd is
                  New_Occurrence_Of (Nnn, Loc),
                  New_Occurrence_Of (Dnn, Loc))));
 
-      --  Case where numerator does not fit in 64 bits, so we have to
-      --  call the runtime routine to compute the quotient and remainder
+      --  Case where numerator does not fit in Max_Integer_Size bits, we have
+      --  to call the runtime routine to compute the quotient and remainder.
 
       else
          Rnd := Boolean_Literals (Rounded_Result_Set (N));
@@ -977,7 +1011,7 @@ package body Exp_Fixd is
              Object_Definition   => New_Occurrence_Of (QR_Typ, Loc)),
 
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Scaled_Divide64), Loc),
+             Name => New_Occurrence_Of (RTE (QR_Id), Loc),
              Parameter_Associations => New_List (
                Build_Conversion (N, QR_Typ, X),
                Build_Conversion (N, QR_Typ, Y),
@@ -1374,8 +1408,7 @@ package body Exp_Fixd is
 
          if Present (Lit_Int) then
             Set_Result (N,
-              Build_Multiply (N, Build_Multiply (N, Left, Right),
-                Lit_Int));
+              Build_Multiply (N, Build_Multiply (N, Left, Right), Lit_Int));
             return;
          end if;
 
@@ -2379,6 +2412,9 @@ package body Exp_Fixd is
 
       elsif V < Uint_2 ** 63 then
          T := Standard_Integer_64;
+
+      elsif V < Uint_2 ** 127 and then System_Max_Integer_Size = 128 then
+         T := Standard_Integer_128;
 
       else
          return Empty;

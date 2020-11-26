@@ -908,7 +908,7 @@ is
       -- Read --
       ----------
 
-      procedure  Read
+      procedure Read
         (Stream : not null access Root_Stream_Type'Class;
          Item   : out Reference_Type)
       is

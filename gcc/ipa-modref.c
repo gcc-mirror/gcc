@@ -151,6 +151,8 @@ dump_eaf_flags (FILE *out, int flags, bool newline = true)
     fprintf (out, " noclobber");
   if (flags & EAF_NOESCAPE)
     fprintf (out, " noescape");
+  if (flags & EAF_NODIRECTESCAPE)
+    fprintf (out, " nodirectescape");
   if (flags & EAF_UNUSED)
     fprintf (out, " unused");
   if (newline)
@@ -1303,7 +1305,7 @@ memory_access_to (tree op, tree ssa_name)
 static int
 deref_flags (int flags, bool ignore_stores)
 {
-  int ret = 0;
+  int ret = EAF_NODIRECTESCAPE;
   if (flags & EAF_UNUSED)
     ret |= EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE;
   else
@@ -1361,7 +1363,8 @@ public:
 void
 modref_lattice::init ()
 {
-  flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED;
+  flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED
+	  | EAF_NODIRECTESCAPE;
   open = true;
   known = false;
 }
@@ -1653,7 +1656,8 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		      {
 			int call_flags = gimple_call_arg_flags (call, i);
 			if (ignore_stores)
-			  call_flags |= EAF_NOCLOBBER | EAF_NOESCAPE;
+			  call_flags |= EAF_NOCLOBBER | EAF_NOESCAPE
+					| EAF_NODIRECTESCAPE;
 
 			if (!record_ipa)
 			  lattice[index].merge (call_flags);
@@ -1829,7 +1833,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
       /* For pure functions we have implicit NOCLOBBER
 	 and NOESCAPE.  */
       if (ecf_flags & ECF_PURE)
-	flags &= ~(EAF_NOCLOBBER | EAF_NOESCAPE);
+	flags &= ~(EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NODIRECTESCAPE);
 
       if (flags)
 	{
@@ -3102,7 +3106,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	    if (!ee->direct)
 	      flags = deref_flags (flags, ignore_stores);
 	    else if (ignore_stores)
-	      flags |= EAF_NOCLOBBER | EAF_NOESCAPE;
+	      flags |= EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NODIRECTESCAPE;
 	    flags |= ee->min_flags;
 	    to_info->arg_flags[ee->parm_index] &= flags;
 	    if (to_info->arg_flags[ee->parm_index])
@@ -3116,7 +3120,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	    if (!ee->direct)
 	      flags = deref_flags (flags, ignore_stores);
 	    else if (ignore_stores)
-	      flags |= EAF_NOCLOBBER | EAF_NOESCAPE;
+	      flags |= EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NODIRECTESCAPE;
 	    flags |= ee->min_flags;
 	    to_info_lto->arg_flags[ee->parm_index] &= flags;
 	    if (to_info_lto->arg_flags[ee->parm_index])
@@ -3627,8 +3631,8 @@ modref_merge_call_site_flags (escape_summary *sum,
 	}
       else if (ignore_stores)
 	{
-	  flags |= EAF_NOESCAPE | EAF_NOCLOBBER;
-	  flags_lto |= EAF_NOESCAPE | EAF_NOCLOBBER;
+	  flags |= EAF_NOESCAPE | EAF_NOCLOBBER | EAF_NODIRECTESCAPE;
+	  flags_lto |= EAF_NOESCAPE | EAF_NOCLOBBER | EAF_NODIRECTESCAPE;
 	}
       flags |= ee->min_flags;
       flags_lto |= ee->min_flags;

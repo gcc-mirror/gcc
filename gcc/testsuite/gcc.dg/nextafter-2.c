@@ -25,4 +25,7 @@
 #  define NO_LONG_DOUBLE 1
 # endif
 #endif
+
+#define _NEXT_AFTER_2
+
 #include "nextafter-1.c"

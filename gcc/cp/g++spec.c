@@ -27,22 +27,16 @@ along with GCC; see the file COPYING3.  If not see
 #define LANGSPEC	(1<<1)
 /* This bit is set if they did `-lm' or `-lmath'.  */
 #define MATHLIB		(1<<2)
-/* This bit is set if they did `-lrt' or equivalent.  */
-#define TIMELIB		(1<<3)
 /* This bit is set if they did `-lc'.  */
-#define WITHLIBC	(1<<4)
+#define WITHLIBC	(1<<3)
 /* Skip this option.  */
-#define SKIPOPT		(1<<5)
+#define SKIPOPT		(1<<4)
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
 #endif
 #ifndef MATH_LIBRARY_PROFILE
 #define MATH_LIBRARY_PROFILE MATH_LIBRARY
-#endif
-
-#ifndef TIME_LIBRARY
-#define TIME_LIBRARY ""
 #endif
 
 #ifndef LIBSTDCXX
@@ -95,14 +89,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   const struct cl_decoded_option *saw_libc = NULL;
 
   /* An array used to flag each argument that needs a bit set for
-     LANGSPEC, MATHLIB, TIMELIB, or WITHLIBC.  */
+     LANGSPEC, MATHLIB, or WITHLIBC.  */
   int *args;
 
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
-
-  /* By default, we throw on the time library if we have one.  */
-  int need_time = (TIME_LIBRARY[0] != '\0');
 
   /* True if we saw -static.  */
   int static_link = 0;
@@ -146,11 +137,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    {
 	      args[i] |= MATHLIB;
 	      need_math = 0;
-	    }
-	  else if (strcmp (arg, TIME_LIBRARY) == 0)
-	    {
-	      args[i] |= TIMELIB;
-	      need_time = 0;
 	    }
 	  else if (strcmp (arg, "c") == 0)
 	    args[i] |= WITHLIBC;
@@ -285,12 +271,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  saw_math = &decoded_options[i];
 	}
 
-      if (!saw_time && (args[i] & TIMELIB) && library > 0)
-	{
-	  --j;
-	  saw_time = &decoded_options[i];
-	}
-
       if (!saw_libc && (args[i] & WITHLIBC) && library > 0)
 	{
 	  --j;
@@ -377,13 +357,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     }
   if (saw_time)
     new_decoded_options[j++] = *saw_time;
-  else if (library > 0 && need_time)
-    {
-      generate_option (OPT_l, TIME_LIBRARY, 1, CL_DRIVER,
-		       &new_decoded_options[j]);
-      added_libraries++;
-      j++;
-    }
   if (saw_libc)
     new_decoded_options[j++] = *saw_libc;
   if (shared_libgcc && !static_link)

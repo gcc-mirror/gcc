@@ -1,3 +1,9 @@
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* c-attribs.c (handle_patchable_function_entry_attribute): Avoid
+	-Wformat-diag.
+
 2020-11-24  Martin Sebor  <msebor@redhat.com>
 
 	* c-warn.c (warn_parm_array_mismatch): Avoid invalid redeclarations.

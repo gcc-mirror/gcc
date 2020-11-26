@@ -67,6 +67,7 @@ with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Uname;    use Uname;
+with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
 package body Exp_Attr is
@@ -3615,31 +3616,124 @@ package body Exp_Attr is
 
       --  expands into
 
-      --    Result_Type (System.Fore (Universal_Real (Type'First)),
-      --                              Universal_Real (Type'Last))
+      --    System.Fore_xx (ftyp (Typ'First), ftyp (Typ'Last) [,pm])
+
+      --    For decimal fixed-point types
+      --      xx   = Decimal{32,64,128}
+      --      ftyp = Integer_{32,64,128}
+      --      pm   = Typ'Scale
+
+      --    For the most common ordinary fixed-point types
+      --      xx   = Fixed{32,64,128}
+      --      ftyp = Integer_{32,64,128}
+      --      pm   = Typ'Small
+      --             1.0 / Typ'Small
+
+      --    For other ordinary fixed-point types
+      --      xx   = Real
+      --      ftyp = Universal_Real
+      --      pm   = none
 
       --  Note that we know that the type is a nonstatic subtype, or Fore would
-      --  have itself been computed dynamically in Eval_Attribute.
+      --  have been computed statically in Eval_Attribute.
 
       when Attribute_Fore =>
-         Rewrite (N,
-           Convert_To (Typ,
-             Make_Function_Call (Loc,
-               Name                   =>
-                 New_Occurrence_Of (RTE (RE_Fore), Loc),
+         declare
+            Arg_List : List_Id;
+            Fid      : RE_Id;
+            Ftyp     : Entity_Id;
 
-               Parameter_Associations => New_List (
-                 Convert_To (Universal_Real,
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                     Attribute_Name => Name_First)),
+         begin
+            if Is_Decimal_Fixed_Point_Type (Ptyp) then
+               if Esize (Ptyp) <= 32 then
+                  Fid  := RE_Fore_Decimal32;
+                  Ftyp := RTE (RE_Integer_32);
+               elsif Esize (Ptyp) <= 64 then
+                  Fid  := RE_Fore_Decimal64;
+                  Ftyp := RTE (RE_Integer_64);
+               else
+                  Fid  := RE_Fore_Decimal128;
+                  Ftyp := RTE (RE_Integer_128);
+               end if;
 
-                 Convert_To (Universal_Real,
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                     Attribute_Name => Name_Last))))));
+            else
+               declare
+                  Num : constant Uint := Norm_Num (Small_Value (Ptyp));
+                  Den : constant Uint := Norm_Den (Small_Value (Ptyp));
+                  Max : constant Uint := UI_Max (Num, Den);
+                  Min : constant Uint := UI_Min (Num, Den);
+                  Siz : constant Uint := Esize (Ptyp);
 
-         Analyze_And_Resolve (N, Typ);
+               begin
+                  if Siz <= 32
+                    and then Min = Uint_1
+                    and then Max <= Uint_2 ** 31
+                  then
+                     Fid  := RE_Fore_Fixed32;
+                     Ftyp := RTE (RE_Integer_32);
+                  elsif Siz <= 64
+                    and then Min = Uint_1
+                    and then Max <= Uint_2 ** 63
+                  then
+                     Fid  := RE_Fore_Fixed64;
+                     Ftyp := RTE (RE_Integer_64);
+                  elsif System_Max_Integer_Size = 128
+                    and then Min = Uint_1
+                    and then Max <= Uint_2 ** 127
+                  then
+                     Fid  := RE_Fore_Fixed128;
+                     Ftyp := RTE (RE_Integer_128);
+                  else
+                     Fid  := RE_Fore_Real;
+                     Ftyp := Universal_Real;
+                  end if;
+               end;
+            end if;
+
+            Arg_List := New_List (
+              Convert_To (Ftyp,
+                Make_Attribute_Reference (Loc,
+                  Prefix         => New_Occurrence_Of (Ptyp, Loc),
+                  Attribute_Name => Name_First)));
+
+            Append_To (Arg_List,
+              Convert_To (Ftyp,
+                Make_Attribute_Reference (Loc,
+                  Prefix         => New_Occurrence_Of (Ptyp, Loc),
+                  Attribute_Name => Name_Last)));
+
+            --  For decimal, append Scale and also set to do literal conversion
+
+            if Is_Decimal_Fixed_Point_Type (Ptyp) then
+               Set_Conversion_OK (First (Arg_List));
+               Set_Conversion_OK (Next (First (Arg_List)));
+
+               Append_To (Arg_List,
+                 Make_Integer_Literal (Loc, Scale_Value (Ptyp)));
+
+            --  For ordinary fixed-point types, append Num, Den parameters
+            --  and also set to do literal conversion
+
+            elsif Fid /= RE_Fore_Real then
+               Set_Conversion_OK (First (Arg_List));
+               Set_Conversion_OK (Next (First (Arg_List)));
+
+               Append_To (Arg_List,
+                 Make_Integer_Literal (Loc, -Norm_Num (Small_Value (Ptyp))));
+
+               Append_To (Arg_List,
+                 Make_Integer_Literal (Loc, -Norm_Den (Small_Value (Ptyp))));
+            end if;
+
+            Rewrite (N,
+              Convert_To (Typ,
+                Make_Function_Call (Loc,
+                  Name                   =>
+                    New_Occurrence_Of (RTE (Fid), Loc),
+                  Parameter_Associations => Arg_List)));
+
+            Analyze_And_Resolve (N, Typ);
+         end;
 
       --------------
       -- Fraction --

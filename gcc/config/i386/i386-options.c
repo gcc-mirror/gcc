@@ -1209,7 +1209,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 	    {
 	      if (!opt_set_p)
 		{
-		  error_at (loc, "pragma or attribute %<target(\"%s\")%>  "
+		  error_at (loc, "pragma or attribute %<target(\"%s\")%> "
 			    "does not allow a negated form", p);
 		  return false;
 		}
@@ -2077,7 +2077,7 @@ ix86_option_override_internal (bool main_args_p,
 	    && (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
 		|| opts->x_ix86_abi != SYSV_ABI))
 	  {
-	    error (G_("%<%s%> architecture level is only defined"
+	    error (G_("%qs architecture level is only defined"
 		      " for the x86-64 psABI"), opts->x_ix86_arch_string);
 	    return false;
 	  }

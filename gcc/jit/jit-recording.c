@@ -4038,8 +4038,8 @@ recording::function::dump_to_dot (const char *path)
 
   pretty_printer *pp = &the_pp;
 
-  pp_printf (pp,
-	     "digraph %s {\n", get_debug_string ());
+  pp_printf (pp, "digraph %s", get_debug_string ());
+  pp_string (pp, " {\n");
 
   /* Blocks: */
   {
@@ -4057,7 +4057,7 @@ recording::function::dump_to_dot (const char *path)
       b->dump_edges_to_dot (pp);
   }
 
-  pp_printf (pp, "}\n");
+  pp_string (pp, "}\n");
   pp_flush (pp);
   fclose (fp);
 }
@@ -4479,6 +4479,14 @@ recording::block::write_reproducer (reproducer &r)
 	   m_name ? m_name->get_debug_string () : "NULL");
 }
 
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the pp_printf calls.  Their format strings deliberately don't
+   follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Dump a block in graphviz form into PP, capturing the block name (if
    any) and the statements.  */
 
@@ -4507,7 +4515,7 @@ recording::block::dump_to_dot (pretty_printer *pp)
       pp_write_text_as_dot_label_to_stream (pp, true /*for_record*/);
     }
 
-  pp_printf (pp,
+  pp_string (pp,
 	     "}\"];\n\n");
   pp_flush (pp);
 }
@@ -4526,6 +4534,10 @@ recording::block::dump_edges_to_dot (pretty_printer *pp)
 	       m_index, succ->m_index);
   successors.release ();
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* The implementation of class gcc::jit::recording::global.  */
 

@@ -784,12 +784,48 @@ package body Sem_Ch6 is
       ------------------------------------------
 
       procedure Check_Return_Construct_Accessibility (Return_Stmt : Node_Id) is
-         Return_Con : Node_Id;
-         Assoc      : Node_Id := Empty;
-         Assoc_Expr : Node_Id;
-         Disc       : Entity_Id;
+
+         function First_Selector (Assoc : Node_Id) return Node_Id;
+         --  Obtain the first selector or choice from a given association
+
+         --------------------
+         -- First_Selector --
+         --------------------
+
+         function First_Selector (Assoc : Node_Id) return Node_Id is
+         begin
+            if Nkind (Assoc) = N_Component_Association then
+               return First (Choices (Assoc));
+
+            elsif Nkind (Assoc) = N_Discriminant_Association then
+               return (First (Selector_Names (Assoc)));
+
+            else
+               raise Program_Error;
+            end if;
+         end First_Selector;
+
+         --  Local declarations
+
+         Assoc : Node_Id := Empty;
+         --  Assoc should perhaps be renamed and declared as a
+         --  Node_Or_Entity_Id since it encompasses not only component and
+         --  discriminant associations, but also discriminant components within
+         --  a type declaration or subtype indication ???
+
+         Assoc_Expr    : Node_Id;
+         Assoc_Present : Boolean := False;
+
+         Unseen_Disc_Count : Nat := 0;
+         Seen_Discs        : Elist_Id;
+         Disc              : Entity_Id;
+         First_Disc        : Entity_Id;
+
          Obj_Decl   : Node_Id;
+         Return_Con : Node_Id;
          Unqual     : Node_Id;
+
+      --  Start of processing for Check_Return_Construct_Accessibility
 
       begin
          --  Only perform checks on record types with access discriminants and
@@ -845,7 +881,7 @@ package body Sem_Ch6 is
 
          Unqual := Unqualify (Original_Node (Return_Con));
 
-         --  Obtain the corresponding declaration based on the return object's
+         --  Get the corresponding declaration based on the return object's
          --  identifier.
 
          if Nkind (Unqual) = N_Identifier
@@ -982,30 +1018,175 @@ package body Sem_Ch6 is
                       (Etype (Defining_Identifier (Obj_Decl)));
          end if;
 
+         --  Preserve the first discriminant for checking named associations
+
+         First_Disc := Disc;
+
+         --  Count the number of discriminants for processing an aggregate
+         --  which includes an others.
+
+         Disc := First_Disc;
+         while Present (Disc) loop
+            Unseen_Disc_Count := Unseen_Disc_Count + 1;
+
+            Next_Discriminant (Disc);
+         end loop;
+
+         Seen_Discs := New_Elmt_List;
+
          --  Loop through each of the discriminants and check each expression
          --  associated with an anonymous access discriminant.
 
-         while Present (Assoc) and then Present (Disc) loop
-            --  Unwrap the associated expression
+         --  When named associations occur in the return aggregate then
+         --  discriminants can be in any order, so we need to ensure we do
+         --  not continue to loop when all discriminants have been seen.
+
+         Disc := First_Disc;
+         while Present (Assoc)
+           and then (Present (Disc) or else Assoc_Present)
+           and then Unseen_Disc_Count > 0
+         loop
+            --  Handle named associations by searching through the names of
+            --  the relevant discriminant components.
 
             if Nkind (Assoc)
                  in N_Component_Association | N_Discriminant_Association
             then
-               Assoc_Expr := Expression (Assoc);
+               Assoc_Expr    := Expression (Assoc);
+               Assoc_Present := True;
+
+               --  We currently don't handle box initialized discriminants,
+               --  however, since default initialized anonymous access
+               --  discriminants are a corner case, this is ok for now ???
+
+               if Nkind (Assoc) = N_Component_Association
+                 and then Box_Present (Assoc)
+               then
+                  Assoc_Present := False;
+
+                  if Nkind (First_Selector (Assoc)) = N_Others_Choice then
+                     Unseen_Disc_Count := 0;
+                  end if;
+
+               --  When others is present we must identify a discriminant we
+               --  haven't already seen so as to get the appropriate type for
+               --  the static accessibility check.
+
+               --  This works because all components within an others clause
+               --  must have the same type.
+
+               elsif Nkind (First_Selector (Assoc)) = N_Others_Choice then
+
+                  Disc := First_Disc;
+                  Outer : while Present (Disc) loop
+                     declare
+                        Current_Seen_Disc : Elmt_Id;
+                     begin
+                        --  Move through the list of identified discriminants
+
+                        Current_Seen_Disc := First_Elmt (Seen_Discs);
+                        while Present (Current_Seen_Disc) loop
+                           --  Exit the loop when we found a match
+
+                           exit when
+                             Chars (Node (Current_Seen_Disc)) = Chars (Disc);
+
+                           Next_Elmt (Current_Seen_Disc);
+                        end loop;
+
+                        --  When we have exited the above loop without finding
+                        --  a match then we know that Disc has not been seen.
+
+                        exit Outer when No (Current_Seen_Disc);
+                     end;
+
+                     Next_Discriminant (Disc);
+                  end loop Outer;
+
+                  --  If we got to an others clause with a non-zero
+                  --  discriminant count there must be a discriminant left to
+                  --  check.
+
+                  pragma Assert (Present (Disc));
+
+                  --  Set the unseen discriminant count to zero because we know
+                  --  an others clause sets all remaining components of an
+                  --  aggregate.
+
+                  Unseen_Disc_Count := 0;
+
+               --  Move through each of the selectors in the named association
+               --  and obtain a discriminant for accessibility checking if one
+               --  is referenced in the list. Also track which discriminants
+               --  are referenced for the purpose of handling an others clause.
+
+               else
+                  declare
+                     Assoc_Choice : Node_Id;
+                     Curr_Disc    : Node_Id;
+                  begin
+
+                     Disc      := Empty;
+                     Curr_Disc := First_Disc;
+                     while Present (Curr_Disc) loop
+                        --  Check each of the choices in the associations for a
+                        --  match to the name of the current discriminant.
+
+                        Assoc_Choice := First_Selector (Assoc);
+                        while Present (Assoc_Choice) loop
+                           --  When the name matches we track that we have seen
+                           --  the discriminant, but instead of exiting the
+                           --  loop we continue iterating to make sure all the
+                           --  discriminants within the named association get
+                           --  tracked.
+
+                           if Chars (Assoc_Choice) = Chars (Curr_Disc) then
+                              Append_Elmt (Curr_Disc, Seen_Discs);
+
+                              Disc              := Curr_Disc;
+                              Unseen_Disc_Count := Unseen_Disc_Count - 1;
+                           end if;
+
+                           Next (Assoc_Choice);
+                        end loop;
+
+                        Next_Discriminant (Curr_Disc);
+                     end loop;
+                  end;
+               end if;
+
+            --  Unwrap the associated expression if we are looking at a default
+            --  initialized type declaration. In this case Assoc is not really
+            --  an association, but a component declaration. Should Assoc be
+            --  renamed in some way to be more clear ???
+
+            --  This occurs when the return object does not initialize
+            --  discriminant and instead relies on the type declaration for
+            --  their supplied values.
 
             elsif Nkind (Assoc) in N_Entity
               and then Ekind (Assoc) = E_Discriminant
             then
-               Assoc_Expr := Discriminant_Default_Value (Assoc);
+               Append_Elmt (Disc, Seen_Discs);
+
+               Assoc_Expr        := Discriminant_Default_Value (Assoc);
+               Unseen_Disc_Count := Unseen_Disc_Count - 1;
+
+            --  Otherwise, there is nothing to do because Assoc is an
+            --  expression within the return aggregate itself.
 
             else
-               Assoc_Expr := Assoc;
+               Append_Elmt (Disc, Seen_Discs);
+
+               Assoc_Expr        := Assoc;
+               Unseen_Disc_Count := Unseen_Disc_Count - 1;
             end if;
 
             --  Check the accessibility level of the expression when the
             --  discriminant is of an anonymous access type.
 
             if Present (Assoc_Expr)
+              and then Present (Disc)
               and then Ekind (Etype (Disc)) = E_Anonymous_Access_Type
             then
                --  Perform a static check first, if possible
@@ -1019,8 +1200,8 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("access discriminant in return object would be a dangling"
                      & " reference", Return_Stmt);
-                  exit;
 
+                  exit;
                end if;
 
                --  Otherwise, generate a dynamic check based on the extra
@@ -1041,9 +1222,16 @@ package body Sem_Ch6 is
                end if;
             end if;
 
-            --  Iterate over the discriminants
+            --  Iterate over the discriminants, except when we have encountered
+            --  a named association since the discriminant order becomes
+            --  irrelevant in that case.
 
-            Disc := Next_Discriminant (Disc);
+            if not Assoc_Present then
+               Next_Discriminant (Disc);
+            end if;
+
+            --  Iterate over associations
+
             if not Is_List_Member (Assoc) then
                exit;
             else
@@ -2232,6 +2420,26 @@ package body Sem_Ch6 is
 
       else
          Error_Msg_N ("invalid procedure or entry call", N);
+
+         --  Specialize the error message in the case where both a primitive
+         --  operation and a record component are visible at the same time.
+
+         if Nkind (P) = N_Selected_Component
+           and then Is_Entity_Name (Selector_Name (P))
+         then
+            declare
+               Sel : constant Entity_Id := Entity (Selector_Name (P));
+            begin
+               if Ekind (Sel) = E_Component
+                 and then Present (Homonym (Sel))
+                 and then Ekind (Homonym (Sel)) = E_Procedure
+               then
+                  Error_Msg_NE ("\component & conflicts with"
+                    & " homonym procedure (RM 4.1.3 (9.2/3))",
+                    Selector_Name (P), Sel);
+               end if;
+            end;
+         end if;
       end if;
 
    <<Leave>>

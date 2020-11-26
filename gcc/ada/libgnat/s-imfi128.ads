@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ L L D                        --
+--                 S Y S T E M . I M G _ F I X E D _ 1 2 8                  --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2020, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,39 +29,41 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Image for decimal fixed types where the size of the corresponding integer
---  type does exceeds Integer'Size (also used for Text_IO.Decimal_IO output)
+--  This package contains the routines for supporting the Image attribute for
+--  ordinary fixed point types up to 128-bit small and mantissa.
 
-package System.Img_LLD is
+with Interfaces;
+with System.Arith_128;
+with System.Image_F;
+
+package System.Img_Fixed_128 is
    pragma Pure;
 
-   procedure Image_Long_Long_Decimal
-     (V     : Long_Long_Integer;
-      S     : in out String;
-      P     : out Natural;
-      Scale : Integer);
-   --  Computes fixed_type'Image (V), where V is the integer value (in units of
-   --  delta) of a decimal type whose Scale is as given and store the result in
-   --  S (P + 1 .. L), updating P to the value of L. The image is given by the
-   --  rules in RM 3.5(34) for fixed-point type image functions. The caller
-   --  guarantees that S is long enough to hold the result. S need not have a
-   --  lower bound of 1.
+   subtype Int128 is Interfaces.Integer_128;
 
-   procedure Set_Image_Long_Long_Decimal
-     (V     : Long_Long_Integer;
-      S     : in out String;
-      P     : in out Natural;
-      Scale : Integer;
-      Fore  : Natural;
-      Aft   : Natural;
-      Exp   : Natural);
-   --  Sets the image of V, where V is the integer value (in units of delta)
-   --  of a decimal type with the given Scale, starting at S (P + 1), updating
-   --  P to point to the last character stored, the caller promises that the
-   --  buffer is large enough and no check is made for this. Constraint_Error
-   --  will not necessarily be raised if this requirement is violated, since
-   --  it is perfectly valid to compile this unit with checks off. The Fore,
-   --  Aft and Exp values can be set to any valid values for the case of use
-   --  by Text_IO.Decimal_IO. Note that there is no leading space stored.
+   package Impl is new Image_F (Int128, Arith_128.Scaled_Divide128);
 
-end System.Img_LLD;
+   procedure Image_Fixed128
+     (V    : Int128;
+      S    : in out String;
+      P    : out Natural;
+      Num  : Int128;
+      Den  : Int128;
+      For0 : Natural;
+      Aft0 : Natural)
+     renames Impl.Image_Fixed;
+
+   procedure Set_Image_Fixed128
+     (V    : Int128;
+      S    : in out String;
+      P    : in out Natural;
+      Num  : Int128;
+      Den  : Int128;
+      For0 : Natural;
+      Aft0 : Natural;
+      Fore : Natural;
+      Aft  : Natural;
+      Exp  : Natural)
+     renames Impl.Set_Image_Fixed;
+
+end System.Img_Fixed_128;

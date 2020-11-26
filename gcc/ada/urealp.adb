@@ -73,20 +73,28 @@ package body Urealp is
    --  The following universal reals are the values returned by the constant
    --  functions. They are initialized by the initialization procedure.
 
-   UR_0       : Ureal;
-   UR_M_0     : Ureal;
-   UR_Tenth   : Ureal;
-   UR_Half    : Ureal;
-   UR_1       : Ureal;
-   UR_2       : Ureal;
-   UR_10      : Ureal;
-   UR_10_36   : Ureal;
-   UR_M_10_36 : Ureal;
-   UR_100     : Ureal;
-   UR_2_128   : Ureal;
-   UR_2_80    : Ureal;
-   UR_2_M_128 : Ureal;
-   UR_2_M_80  : Ureal;
+   UR_0         : Ureal;
+   UR_M_0       : Ureal;
+   UR_Tenth     : Ureal;
+   UR_Half      : Ureal;
+   UR_1         : Ureal;
+   UR_2         : Ureal;
+   UR_10        : Ureal;
+   UR_2_10_18   : Ureal;
+   UR_9_10_36   : Ureal;
+   UR_10_76     : Ureal;
+   UR_M_2_10_18 : Ureal;
+   UR_M_9_10_36 : Ureal;
+   UR_M_10_76   : Ureal;
+   UR_100       : Ureal;
+   UR_2_127     : Ureal;
+   UR_2_128     : Ureal;
+   UR_2_31      : Ureal;
+   UR_2_63      : Ureal;
+   UR_2_80      : Ureal;
+   UR_2_M_127   : Ureal;
+   UR_2_M_128   : Ureal;
+   UR_2_M_80    : Ureal;
 
    Normalized_Real : Ureal := No_Ureal;
    --  Used to memoize Norm_Num and Norm_Den, if either of these functions
@@ -288,20 +296,28 @@ package body Urealp is
    procedure Initialize is
    begin
       Ureals.Init;
-      UR_0       := UR_From_Components (Uint_0, Uint_1,         0, False);
-      UR_M_0     := UR_From_Components (Uint_0, Uint_1,         0, True);
-      UR_Half    := UR_From_Components (Uint_1, Uint_1,         2, False);
-      UR_Tenth   := UR_From_Components (Uint_1, Uint_1,        10, False);
-      UR_1       := UR_From_Components (Uint_1, Uint_1,         0, False);
-      UR_2       := UR_From_Components (Uint_1, Uint_Minus_1,   2, False);
-      UR_10      := UR_From_Components (Uint_1, Uint_Minus_1,  10, False);
-      UR_10_36   := UR_From_Components (Uint_1, Uint_Minus_36, 10, False);
-      UR_M_10_36 := UR_From_Components (Uint_1, Uint_Minus_36, 10, True);
-      UR_100     := UR_From_Components (Uint_1, Uint_Minus_2,  10, False);
-      UR_2_128   := UR_From_Components (Uint_1, Uint_Minus_128, 2, False);
-      UR_2_M_128 := UR_From_Components (Uint_1, Uint_128,       2, False);
-      UR_2_80    := UR_From_Components (Uint_1, Uint_Minus_80,  2, False);
-      UR_2_M_80  := UR_From_Components (Uint_1, Uint_80,        2, False);
+      UR_0         := UR_From_Components (Uint_0, Uint_1,         0, False);
+      UR_M_0       := UR_From_Components (Uint_0, Uint_1,         0, True);
+      UR_Half      := UR_From_Components (Uint_1, Uint_1,         2, False);
+      UR_Tenth     := UR_From_Components (Uint_1, Uint_1,        10, False);
+      UR_1         := UR_From_Components (Uint_1, Uint_1,         0, False);
+      UR_2         := UR_From_Components (Uint_1, Uint_Minus_1,   2, False);
+      UR_10        := UR_From_Components (Uint_1, Uint_Minus_1,  10, False);
+      UR_2_10_18   := UR_From_Components (Uint_2, Uint_Minus_18, 10, False);
+      UR_9_10_36   := UR_From_Components (Uint_9, Uint_Minus_36, 10, False);
+      UR_10_76     := UR_From_Components (Uint_1, Uint_Minus_76, 10, False);
+      UR_M_2_10_18 := UR_From_Components (Uint_2, Uint_Minus_18, 10, True);
+      UR_M_9_10_36 := UR_From_Components (Uint_9, Uint_Minus_36, 10, True);
+      UR_M_10_76   := UR_From_Components (Uint_1, Uint_Minus_76, 10, True);
+      UR_100       := UR_From_Components (Uint_1, Uint_Minus_2,  10, False);
+      UR_2_127     := UR_From_Components (Uint_1, Uint_Minus_127, 2, False);
+      UR_2_M_127   := UR_From_Components (Uint_1, Uint_127,       2, False);
+      UR_2_128     := UR_From_Components (Uint_1, Uint_Minus_128, 2, False);
+      UR_2_M_128   := UR_From_Components (Uint_1, Uint_128,       2, False);
+      UR_2_31      := UR_From_Components (Uint_1, Uint_Minus_31,  2, False);
+      UR_2_63      := UR_From_Components (Uint_1, Uint_Minus_63,  2, False);
+      UR_2_80      := UR_From_Components (Uint_1, Uint_Minus_80,  2, False);
+      UR_2_M_80    := UR_From_Components (Uint_1, Uint_80,        2, False);
    end Initialize;
 
    ----------------
@@ -1408,14 +1424,6 @@ package body Urealp is
             UI_Write (Int (UI_Image_Length - 1) - Val.Den, Decimal);
          end if;
 
-      --  Constants in a base other than 10 can still be easily written in
-      --  normal Ada literal style if the numerator is one.
-
-      elsif Val.Rbase /= 0 and then Val.Num = 1 then
-         Write_Int (Val.Rbase);
-         Write_Str ("#1.0#E");
-         UI_Write (-Val.Den);
-
       --  Other constants with a base other than 10 are written using one of
       --  the following forms, depending on the sign of the number and the
       --  sign of the exponent (= minus denominator value). See that we are
@@ -1525,14 +1533,50 @@ package body Urealp is
       return UR_100;
    end Ureal_100;
 
+   -------------------
+   -- Ureal_2_10_18 --
+   -------------------
+
+   function Ureal_2_10_18 return Ureal is
+   begin
+      return UR_2_10_18;
+   end Ureal_2_10_18;
+
+   -------------------
+   -- Ureal_9_10_36 --
+   -------------------
+
+   function Ureal_9_10_36 return Ureal is
+   begin
+      return UR_9_10_36;
+   end Ureal_9_10_36;
+
    -----------------
-   -- Ureal_10_36 --
+   -- Ureal_10_76 --
    -----------------
 
-   function Ureal_10_36 return Ureal is
+   function Ureal_10_76 return Ureal is
    begin
-      return UR_10_36;
-   end Ureal_10_36;
+      return UR_10_76;
+   end Ureal_10_76;
+
+   ----------------
+   -- Ureal_2_31 --
+   ----------------
+
+   function Ureal_2_31 return Ureal is
+   begin
+      return UR_2_31;
+   end Ureal_2_31;
+
+   ----------------
+   -- Ureal_2_63 --
+   ----------------
+
+   function Ureal_2_63 return Ureal is
+   begin
+      return UR_2_63;
+   end Ureal_2_63;
 
    ----------------
    -- Ureal_2_80 --
@@ -1542,6 +1586,15 @@ package body Urealp is
    begin
       return UR_2_80;
    end Ureal_2_80;
+
+   -----------------
+   -- Ureal_2_127 --
+   -----------------
+
+   function Ureal_2_127 return Ureal is
+   begin
+      return UR_2_127;
+   end Ureal_2_127;
 
    -----------------
    -- Ureal_2_128 --
@@ -1560,6 +1613,15 @@ package body Urealp is
    begin
       return UR_2_M_80;
    end Ureal_2_M_80;
+
+   -------------------
+   -- Ureal_2_M_127 --
+   -------------------
+
+   function Ureal_2_M_127 return Ureal is
+   begin
+      return UR_2_M_127;
+   end Ureal_2_M_127;
 
    -------------------
    -- Ureal_2_M_128 --
@@ -1588,14 +1650,32 @@ package body Urealp is
       return UR_M_0;
    end Ureal_M_0;
 
+   ---------------------
+   -- Ureal_M_2_10_18 --
+   ---------------------
+
+   function Ureal_M_2_10_18 return Ureal is
+   begin
+      return UR_M_2_10_18;
+   end Ureal_M_2_10_18;
+
+   ---------------------
+   -- Ureal_M_9_10_36 --
+   ---------------------
+
+   function Ureal_M_9_10_36 return Ureal is
+   begin
+      return UR_M_9_10_36;
+   end Ureal_M_9_10_36;
+
    -------------------
-   -- Ureal_M_10_36 --
+   -- Ureal_M_10_76 --
    -------------------
 
-   function Ureal_M_10_36 return Ureal is
+   function Ureal_M_10_76 return Ureal is
    begin
-      return UR_M_10_36;
-   end Ureal_M_10_36;
+      return UR_M_10_76;
+   end Ureal_M_10_76;
 
    -----------------
    -- Ureal_Tenth --

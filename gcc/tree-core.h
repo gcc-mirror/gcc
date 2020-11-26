@@ -110,6 +110,10 @@ struct die_struct;
 /* Nonzero if the argument is not used by the function.  */
 #define EAF_UNUSED		(1 << 3)
 
+/* Nonzero if the argument itself does not escape but memory
+   referenced by it can escape.  */
+#define EAF_NODIRECTESCAPE	(1 << 4)
+
 /* Call return flags.  */
 /* Mask for the argument number that is returned.  Lower two bits of
    the return flags, encodes argument slots zero to three.  */

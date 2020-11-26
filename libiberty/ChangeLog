@@ -1,3 +1,8 @@
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* configure: Regenerate.
+	* configure.ac: Avoid using sanitizer.
+
 2020-11-13  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
 
 	* rust-demangle.c (struct rust_demangler): Add

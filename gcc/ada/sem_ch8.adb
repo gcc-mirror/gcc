@@ -1038,6 +1038,22 @@ package body Sem_Ch8 is
             Mark_Ghost_Renaming (N, Entity (Nam));
          end if;
 
+         --  Check against AI12-0401 here before Resolve may rewrite Nam and
+         --  potentially generate spurious warnings.
+
+         if Nkind (Nam) = N_Qualified_Expression
+           and then Is_Variable (Expression (Nam))
+           and then not
+             (Subtypes_Statically_Match (T, Etype (Expression (Nam)))
+                or else
+              Subtypes_Statically_Match (Base_Type (T), Etype (Nam)))
+         then
+            Error_Msg_N
+              ("subtype of renamed qualified expression does not " &
+               "statically match", N);
+            return;
+         end if;
+
          Resolve (Nam, T);
 
          --  If the renamed object is a function call of a limited type,
@@ -7519,7 +7535,7 @@ package body Sem_Ch8 is
 
          --  Reference to type name in predicate/invariant expression
 
-         elsif (Is_Task_Type (P_Type) or else Is_Protected_Type (P_Type))
+         elsif Is_Concurrent_Type (P_Type)
            and then not In_Open_Scopes (P_Name)
            and then (not Is_Concurrent_Type (Etype (P_Name))
                       or else not In_Open_Scopes (Etype (P_Name)))
@@ -8750,9 +8766,8 @@ package body Sem_Ch8 is
 
          --  Mark primitives
 
-         elsif (Ekind (Id) in Overloadable_Kind
-                 or else Ekind (Id) in
-                           E_Generic_Function | E_Generic_Procedure)
+         elsif (Is_Overloadable (Id)
+                 or else Is_Generic_Subprogram (Id))
            and then (Is_Potentially_Use_Visible (Id)
                       or else Is_Intrinsic_Subprogram (Id)
                       or else (Ekind (Id) in E_Function | E_Procedure

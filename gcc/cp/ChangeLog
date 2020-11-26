@@ -1,3 +1,20 @@
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* constraint.cc (debug_argument_list): Avoid -Wformat-diag.
+	* error.c (function_category): Same.
+	(print_template_differences): Same.
+	* logic.cc (debug): Same.
+	* name-lookup.c (lookup_using_decl): Same.
+	* parser.c (maybe_add_cast_fixit): Same.
+	(cp_parser_template_introduction): Same.
+	* typeck.c (access_failure_info::add_fixit_hint): Same.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* pt.c (tsubst_omp_clauses): Handle 'OMP_CLAUSE__CACHE_'.
+	(tsubst_expr): Handle 'OACC_CACHE'.
+
 2020-11-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97899

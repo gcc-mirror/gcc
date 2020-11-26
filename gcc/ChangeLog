@@ -1,3 +1,330 @@
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/97622
+	PR bootstrap/94982
+	* config/i386/i386-options.c (ix86_valid_target_attribute_inner_p):
+	Avoid -Wformat-diag.
+	* digraph.cc (struct test_edge): Same.
+	* dumpfile.c (dump_loc): Same.
+	(dump_context::begin_scope): Same.
+	* edit-context.c (edited_file::print_diff): Same.
+	(edited_file::print_diff_hunk): Same.
+	* json.cc (object::print): Same.
+	* lto-wrapper.c (merge_and_complain): Same.
+	* reload.c (find_reloads): Same.
+	* tree-diagnostic-path.cc (print_path_summary_as_text): Same.
+	* ubsan.c (ubsan_type_descriptor): Same.
+
+2020-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* gimple.c (gimple_call_arg_flags): Also imply EAF_NODIRECTESCAPE.
+	* tree-core.h (EAF_NODRECTESCAPE): New flag.
+	* tree-ssa-structalias.c (make_indirect_escape_constraint): New
+	function.
+	(handle_rhs_call): Hanlde EAF_NODIRECTESCAPE.
+	* ipa-modref.c (dump_eaf_flags): Print EAF_NODIRECTESCAPE.
+	(deref_flags): Dereference is always EAF_NODIRECTESCAPE.
+	(modref_lattice::init): Also set EAF_NODIRECTESCAPE.
+	(analyze_ssa_name_flags): Pure functions do not affect
+	EAF_NODIRECTESCAPE.
+	(analyze_params): Likewise.
+	(ipa_merge_modref_summary_after_inlining): Likewise.
+	(modref_merge_call_site_flags): Likewise.
+
+2020-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_summaries::duplicate,
+	modref_summaries_lto::duplicate): Copy arg_flags.
+	(remap_arg_flags): Fix remapping of arg_flags.
+
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97956
+	* gimple-fold.c (gimple_fold_builtin_memchr): Use sizetype for pointer
+	offsets.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* asan.c (asan_instrument_reads): New.
+	(asan_instrument_writes): New.
+	(asan_memintrin): New.
+	(handle_builtin_stack_restore): Account for HWASAN.
+	(handle_builtin_alloca): Account for HWASAN.
+	(get_mem_refs_of_builtin_call): Special case strlen for HWASAN.
+	(hwasan_instrument_reads): New.
+	(hwasan_instrument_writes): New.
+	(hwasan_memintrin): New.
+	(report_error_func): Assert not HWASAN.
+	(build_check_stmt): Make HWASAN_CHECK instead of ASAN_CHECK.
+	(instrument_derefs): HWASAN does not tag globals.
+	(instrument_builtin_call): Use new helper functions.
+	(maybe_instrument_call): Don't instrument `noreturn` functions.
+	(initialize_sanitizer_builtins): Add new type.
+	(asan_expand_mark_ifn): Account for HWASAN.
+	(asan_expand_check_ifn): Assert never called by HWASAN.
+	(asan_expand_poison_ifn): Account for HWASAN.
+	(asan_instrument): Branch based on whether using HWASAN or ASAN.
+	(pass_asan::gate): Return true if sanitizing HWASAN.
+	(pass_asan_O0::gate): Return true if sanitizing HWASAN.
+	(hwasan_check_func): New.
+	(hwasan_expand_check_ifn): New.
+	(hwasan_expand_mark_ifn): New.
+	(gate_hwasan): New.
+	* asan.h (hwasan_expand_check_ifn): New decl.
+	(hwasan_expand_mark_ifn): New decl.
+	(gate_hwasan): New decl.
+	(asan_intercepted_p): Always false for hwasan.
+	(asan_sanitize_use_after_scope): Account for HWASAN.
+	* builtin-types.def (BT_FN_PTR_CONST_PTR_UINT8): New.
+	* gimple-fold.c (gimple_build): New overload for building function
+	calls without arguments.
+	(gimple_build_round_up): New.
+	* gimple-fold.h (gimple_build): New decl.
+	(gimple_build): New inline function.
+	(gimple_build_round_up): New decl.
+	(gimple_build_round_up): New inline function.
+	* gimple-pretty-print.c (dump_gimple_call_args): Account for
+	HWASAN.
+	* gimplify.c (asan_poison_variable): Account for HWASAN.
+	(gimplify_function_tree): Remove requirement of
+	SANITIZE_ADDRESS, requiring asan or hwasan is accounted for in
+	`asan_sanitize_use_after_scope`.
+	* internal-fn.c (expand_HWASAN_CHECK): New.
+	(expand_HWASAN_ALLOCA_UNPOISON): New.
+	(expand_HWASAN_CHOOSE_TAG): New.
+	(expand_HWASAN_MARK): New.
+	(expand_HWASAN_SET_TAG): New.
+	* internal-fn.def (HWASAN_ALLOCA_UNPOISON): New.
+	(HWASAN_CHOOSE_TAG): New.
+	(HWASAN_CHECK): New.
+	(HWASAN_MARK): New.
+	(HWASAN_SET_TAG): New.
+	* sanitizer.def (BUILT_IN_HWASAN_LOAD1): New.
+	(BUILT_IN_HWASAN_LOAD2): New.
+	(BUILT_IN_HWASAN_LOAD4): New.
+	(BUILT_IN_HWASAN_LOAD8): New.
+	(BUILT_IN_HWASAN_LOAD16): New.
+	(BUILT_IN_HWASAN_LOADN): New.
+	(BUILT_IN_HWASAN_STORE1): New.
+	(BUILT_IN_HWASAN_STORE2): New.
+	(BUILT_IN_HWASAN_STORE4): New.
+	(BUILT_IN_HWASAN_STORE8): New.
+	(BUILT_IN_HWASAN_STORE16): New.
+	(BUILT_IN_HWASAN_STOREN): New.
+	(BUILT_IN_HWASAN_LOAD1_NOABORT): New.
+	(BUILT_IN_HWASAN_LOAD2_NOABORT): New.
+	(BUILT_IN_HWASAN_LOAD4_NOABORT): New.
+	(BUILT_IN_HWASAN_LOAD8_NOABORT): New.
+	(BUILT_IN_HWASAN_LOAD16_NOABORT): New.
+	(BUILT_IN_HWASAN_LOADN_NOABORT): New.
+	(BUILT_IN_HWASAN_STORE1_NOABORT): New.
+	(BUILT_IN_HWASAN_STORE2_NOABORT): New.
+	(BUILT_IN_HWASAN_STORE4_NOABORT): New.
+	(BUILT_IN_HWASAN_STORE8_NOABORT): New.
+	(BUILT_IN_HWASAN_STORE16_NOABORT): New.
+	(BUILT_IN_HWASAN_STOREN_NOABORT): New.
+	(BUILT_IN_HWASAN_TAG_MISMATCH4): New.
+	(BUILT_IN_HWASAN_HANDLE_LONGJMP): New.
+	(BUILT_IN_HWASAN_TAG_PTR): New.
+	* sanopt.c (sanopt_optimize_walker): Act for hwasan.
+	(pass_sanopt::execute): Act for hwasan.
+	* toplev.c (compile_file): Use `gate_hwasan` function.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* asan.c (struct hwasan_stack_var): New.
+	(hwasan_sanitize_p): New.
+	(hwasan_sanitize_stack_p): New.
+	(hwasan_sanitize_allocas_p): New.
+	(initialize_sanitizer_builtins): Define new builtins.
+	(ATTR_NOTHROW_LIST): New macro.
+	(hwasan_current_frame_tag): New.
+	(hwasan_frame_base): New.
+	(stack_vars_base_reg_p): New.
+	(hwasan_maybe_init_frame_base_init): New.
+	(hwasan_record_stack_var): New.
+	(hwasan_get_frame_extent): New.
+	(hwasan_increment_frame_tag): New.
+	(hwasan_record_frame_init): New.
+	(hwasan_emit_prologue): New.
+	(hwasan_emit_untag_frame): New.
+	(hwasan_finish_file): New.
+	(hwasan_truncate_to_tag_size): New.
+	* asan.h (hwasan_record_frame_init): New declaration.
+	(hwasan_record_stack_var): New declaration.
+	(hwasan_emit_prologue): New declaration.
+	(hwasan_emit_untag_frame): New declaration.
+	(hwasan_get_frame_extent): New declaration.
+	(hwasan_maybe_enit_frame_base_init): New declaration.
+	(hwasan_frame_base): New declaration.
+	(stack_vars_base_reg_p): New declaration.
+	(hwasan_current_frame_tag): New declaration.
+	(hwasan_increment_frame_tag): New declaration.
+	(hwasan_truncate_to_tag_size): New declaration.
+	(hwasan_finish_file): New declaration.
+	(hwasan_sanitize_p): New declaration.
+	(hwasan_sanitize_stack_p): New declaration.
+	(hwasan_sanitize_allocas_p): New declaration.
+	(HWASAN_TAG_SIZE): New macro.
+	(HWASAN_TAG_GRANULE_SIZE): New macro.
+	(HWASAN_STACK_BACKGROUND): New macro.
+	* builtin-types.def (BT_FN_VOID_PTR_UINT8_PTRMODE): New.
+	* builtins.def (DEF_SANITIZER_BUILTIN): Enable for HWASAN.
+	* cfgexpand.c (align_local_variable): When using hwasan ensure
+	alignment to tag granule.
+	(align_frame_offset): New.
+	(expand_one_stack_var_at): For hwasan use tag offset.
+	(expand_stack_vars): Record stack objects for hwasan.
+	(expand_one_stack_var_1): Record stack objects for hwasan.
+	(init_vars_expansion): Initialise hwasan state.
+	(expand_used_vars): Emit hwasan prologue and generate hwasan epilogue.
+	(pass_expand::execute): Emit hwasan base initialization if needed.
+	* doc/tm.texi (TARGET_MEMTAG_TAG_SIZE,TARGET_MEMTAG_GRANULE_SIZE,
+	TARGET_MEMTAG_INSERT_RANDOM_TAG,TARGET_MEMTAG_ADD_TAG,
+	TARGET_MEMTAG_SET_TAG,TARGET_MEMTAG_EXTRACT_TAG,
+	TARGET_MEMTAG_UNTAGGED_POINTER): Document new hooks.
+	* doc/tm.texi.in (TARGET_MEMTAG_TAG_SIZE,TARGET_MEMTAG_GRANULE_SIZE,
+	TARGET_MEMTAG_INSERT_RANDOM_TAG,TARGET_MEMTAG_ADD_TAG,
+	TARGET_MEMTAG_SET_TAG,TARGET_MEMTAG_EXTRACT_TAG,
+	TARGET_MEMTAG_UNTAGGED_POINTER): Document new hooks.
+	* explow.c (get_dynamic_stack_base): Take new `base` argument.
+	* explow.h (get_dynamic_stack_base): Take new `base` argument.
+	* sanitizer.def (BUILT_IN_HWASAN_INIT): New.
+	(BUILT_IN_HWASAN_TAG_MEM): New.
+	* target.def (target_memtag_tag_size,target_memtag_granule_size,
+	target_memtag_insert_random_tag,target_memtag_add_tag,
+	target_memtag_set_tag,target_memtag_extract_tag,
+	target_memtag_untagged_pointer): New hooks.
+	* targhooks.c (HWASAN_SHIFT): New.
+	(HWASAN_SHIFT_RTX): New.
+	(default_memtag_tag_size): New default hook.
+	(default_memtag_granule_size): New default hook.
+	(default_memtag_insert_random_tag): New default hook.
+	(default_memtag_add_tag): New default hook.
+	(default_memtag_set_tag): New default hook.
+	(default_memtag_extract_tag): New default hook.
+	(default_memtag_untagged_pointer): New default hook.
+	* targhooks.h (default_memtag_tag_size): New default hook.
+	(default_memtag_granule_size): New default hook.
+	(default_memtag_insert_random_tag): New default hook.
+	(default_memtag_add_tag): New default hook.
+	(default_memtag_set_tag): New default hook.
+	(default_memtag_extract_tag): New default hook.
+	(default_memtag_untagged_pointer): New default hook.
+	* toplev.c (compile_file): Call hwasan_finish_file when finished.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* common.opt (flag_sanitize_recover): Default for kernel
+	hwaddress.
+	(static-libhwasan): New cli option.
+	* config/aarch64/aarch64.c (aarch64_can_tag_addresses): New.
+	(TARGET_MEMTAG_CAN_TAG_ADDRESSES): New.
+	* config/gnu-user.h (LIBHWASAN_EARLY_SPEC): hwasan equivalent of
+	asan command line flags.
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+	Add hwasan equivalent of __SANITIZE_ADDRESS__.
+	* doc/invoke.texi: Document hwasan command line flags.
+	* doc/tm.texi: Document new hook.
+	* doc/tm.texi.in: Document new hook.
+	* flag-types.h (enum sanitize_code): New sanitizer values.
+	* gcc.c (STATIC_LIBHWASAN_LIBS): New macro.
+	(LIBHWASAN_SPEC): New macro.
+	(LIBHWASAN_EARLY_SPEC): New macro.
+	(SANITIZER_EARLY_SPEC): Update to include hwasan.
+	(SANITIZER_SPEC): Update to include hwasan.
+	(sanitize_spec_function): Use hwasan options.
+	* opts.c (finish_options): Describe conflicts between address
+	sanitizers.
+	(find_sanitizer_argument): New.
+	(report_conflicting_sanitizer_options): New.
+	(sanitizer_opts): Introduce new sanitizer flags.
+	(common_handle_option): Add defaults for kernel sanitizer.
+	* params.opt (hwasan--instrument-stack): New
+	(hwasan-random-frame-tag): New
+	(hwasan-instrument-allocas): New
+	(hwasan-instrument-reads): New
+	(hwasan-instrument-writes): New
+	(hwasan-instrument-mem-intrinsics): New
+	* target.def (HOOK_PREFIX): Add new hook.
+	(can_tag_addresses): Add new hook under memtag prefix.
+	* targhooks.c (default_memtag_can_tag_addresses): New.
+	* targhooks.h (default_memtag_can_tag_addresses): New decl.
+	* toplev.c (process_options): Ensure hwasan only on
+	architectures that advertise the possibility.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* doc/install.texi: Document new option.
+
+2020-11-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_maybe_expand_sve_subreg_move):
+	Do not optimize LRA subregs.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_pred_<SVE_INT_UNARY:optab><mode>): Tie the input to the
+	output.
+	(@aarch64_sve_revbhw_<SVE_ALL:mode><PRED_HSD:mode>): Likewise.
+	(*<ANY_EXTEND:optab><SVE_PARTIAL_I:mode><SVE_HSDI:mode>2): Likewise.
+	(@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>): Likewise.
+	(*cnot<mode>): Likewise.
+	(@aarch64_pred_<SVE_COND_FP_UNARY:optab><mode>): Likewise.
+	(@aarch64_sve_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_trunc<SVE_FULL_SDF:mode><SVE_FULL_HSF:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_nontrunc<SVE_FULL_HSF:mode><SVE_FULL_SDF:mode>):
+	Likewise.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_pred_<SVE2_COND_FP_UNARY_LONG:sve_fp_op><mode>): Likewise.
+	(@aarch64_pred_<SVE2_COND_FP_UNARY_NARROWB:sve_fp_op><mode>): Likewise.
+	(@aarch64_pred_<SVE2_U32_UNARY:sve_int_op><mode>): Likewise.
+	(@aarch64_pred_<SVE2_COND_INT_UNARY_FP:sve_fp_op><mode>): Likewise.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/95862
+	* internal-fn.c (get_min_precision): For narrowing conversion, recurse
+	on the operand and if the operand precision is smaller than the
+	current one, return that smaller precision.
+	(expand_mul_overflow): For s1 * u2 -> ur and s1 * s2 -> ur cases
+	if the sum of minimum precisions of both operands is smaller or equal
+	to the result precision, just perform normal multiplication and
+	set overflow to the sign bit of the multiplication result.  For
+	u1 * u2 -> sr if both arguments have the MSB known zero, use
+	normal s1 * s2 -> sr expansion.
+
+2020-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.c (free_block): New function.
+	(clear_edges): Rename to ....
+	(free_cfg): ... this one; also free BBs and vectors.
+	(expunge_block): Update comment.
+	* cfg.h (clear_edges): Rename to ...
+	(free_cfg): ... this one.
+	* cgraph.c (release_function_body): Use free_cfg.
+
+2020-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97579
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Lower
+	VECTOR_BOOLEAN_TYPE_P, non-vector mode VEC_COND_EXPRs.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97943
+	* gimple-fold.c (clear_padding_union, clear_padding_type): Error on and
+	ignore flexible array member fields.  Ignore fields with
+	error_mark_node type.
+
 2020-11-24  Ulrich Weigand  <ulrich.weigand@de.ibm.com>
 
 	Revert:

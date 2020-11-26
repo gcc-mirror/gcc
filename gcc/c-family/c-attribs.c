@@ -5191,8 +5191,8 @@ handle_patchable_function_entry_attribute (tree *, tree name, tree args,
       if (tree_to_uhwi (val) > USHRT_MAX)
 	{
 	  warning (OPT_Wattributes,
-		   "%qE attribute argument %qE is out of range (> 65535)",
-		   name, val);
+		   "%qE attribute argument %qE exceeds %u",
+		   name, val, USHRT_MAX);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}

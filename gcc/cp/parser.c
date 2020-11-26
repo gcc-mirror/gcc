@@ -9382,7 +9382,8 @@ maybe_add_cast_fixit (rich_location *rich_loc, location_t open_paren_loc,
 
   /* Replace the open paren with "CAST_SUGGESTION<".  */
   pretty_printer pp;
-  pp_printf (&pp, "%s<", cast_suggestion);
+  pp_string (&pp, cast_suggestion);
+  pp_less (&pp);
   rich_loc->add_fixit_replace (open_paren_loc, pp_formatted_text (&pp));
 
   /* Replace the close paren with "> (".  */
@@ -29750,7 +29751,8 @@ cp_parser_template_introduction (cp_parser* parser, bool member_p)
     {
       if (!flag_concepts_ts)
 	pedwarn (introduction_loc, 0, "template-introductions"
-		 " are not part of C++20 concepts [-fconcepts-ts]");
+		 " are not part of C++20 concepts; use %qs to enable",
+		 "-fconcepts-ts");
 
       cp_parser_template_declaration_after_parameters (parser, parms,
 						       member_p);
@@ -34835,7 +34837,11 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		  parser->colon_corrects_to_scope_p = false;
 		  cp_lexer_consume_token (parser->lexer);
 		  if (!cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-		    low_bound = cp_parser_expression (parser);
+		    {
+		      low_bound = cp_parser_expression (parser);
+		      /* Later handling is not prepared to see through these.  */
+		      gcc_checking_assert (!location_wrapper_p (low_bound));
+		    }
 		  if (!colon)
 		    parser->colon_corrects_to_scope_p
 		      = saved_colon_corrects_to_scope_p;
@@ -34855,7 +34861,11 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 			cp_parser_commit_to_tentative_parse (parser);
 		      if (!cp_lexer_next_token_is (parser->lexer,
 						   CPP_CLOSE_SQUARE))
-			length = cp_parser_expression (parser);
+			{
+			  length = cp_parser_expression (parser);
+			  /* Later handling is not prepared to see through these.  */
+			  gcc_checking_assert (!location_wrapper_p (length));
+			}
 		    }
 		  /* Look for the closing `]'.  */
 		  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
@@ -37518,6 +37528,9 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 {
   tree clauses = NULL;
   bool first = true;
+
+  /* Don't create location wrapper nodes within OpenACC clauses.  */
+  auto_suppress_location_wrappers sentinel;
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
@@ -41442,6 +41455,10 @@ check_clauses:
 static tree
 cp_parser_oacc_cache (cp_parser *parser, cp_token *pragma_tok)
 {
+  /* Don't create location wrapper nodes within 'OMP_CLAUSE__CACHE_'
+     clauses.  */
+  auto_suppress_location_wrappers sentinel;
+
   tree stmt, clauses;
 
   clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE__CACHE_, NULL_TREE);

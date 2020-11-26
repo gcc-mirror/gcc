@@ -1,3 +1,10 @@
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* jit-recording.c (recording::function::dump_to_dot): Avoid
+	-Wformat-diag.
+	(recording::block::dump_to_dot): Same.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911

@@ -323,8 +323,9 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 		  if (cf_protection_option
 		      && cf_protection_option->value == CF_CHECK)
 		    fatal_error (input_location,
-				 "option -fcf-protection with mismatching values"
+				 "option %qs with mismatching values"
 				 " (%s, %s)",
+				 "-fcf-protection",
 				 (*decoded_options)[j].arg, foption->arg);
 		  else
 		    {

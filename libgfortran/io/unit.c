@@ -114,7 +114,7 @@ static char stdout_name[] = "stdout";
 static char stderr_name[] = "stderr";
 
 
-#ifdef HAVE_NEWLOCALE
+#ifdef HAVE_POSIX_2008_LOCALE
 locale_t c_locale;
 #else
 /* If we don't have POSIX 2008 per-thread locales, we need to use the
@@ -586,7 +586,7 @@ init_units (void)
 {
   gfc_unit *u;
 
-#ifdef HAVE_NEWLOCALE
+#ifdef HAVE_POSIX_2008_LOCALE
   c_locale = newlocale (0, "C", 0);
 #else
 #ifndef __GTHREAD_MUTEX_INIT
@@ -803,7 +803,7 @@ close_units (void)
 
   free (newunits);
 
-#ifdef HAVE_FREELOCALE
+#ifdef HAVE_POSIX_2008_LOCALE
   freelocale (c_locale);
 #endif
 }

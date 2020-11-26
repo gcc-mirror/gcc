@@ -1,3 +1,13 @@
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/cache-1.C: New.
+	* testsuite/libgomp.oacc-c-c++-common/cache-1.c: Update.
+
+2020-11-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90 (main): Adjust
+	expected results.
+
 2020-11-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c: Don't redefine relocations if elf.h has them.

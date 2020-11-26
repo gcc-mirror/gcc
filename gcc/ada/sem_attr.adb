@@ -420,9 +420,11 @@ package body Sem_Attr is
       --  no arguments is used when the caller has already generated the
       --  required error messages.
 
-      procedure Error_Attr_P (Msg : String);
+      procedure Error_Attr_P (Msg : String; Msg_Cont : String := "");
       pragma No_Return (Error_Attr_P);
-      --  Like Error_Attr, but error is posted at the start of the prefix
+      --  Like Error_Attr, but error is posted at the start of the prefix. The
+      --  second message Msg_Cont is useful to issue a continuation message
+      --  before raising Bad_Attribute.
 
       procedure Legal_Formal_Attribute;
       --  Common processing for attributes Definite and Has_Discriminants.
@@ -2690,10 +2692,13 @@ package body Sem_Attr is
       -- Error_Attr_P --
       ------------------
 
-      procedure Error_Attr_P (Msg : String) is
+      procedure Error_Attr_P (Msg : String; Msg_Cont : String := "") is
       begin
          Error_Msg_Name_1 := Aname;
          Error_Msg_F (Msg, P);
+         if Msg_Cont /= "" then
+            Error_Msg_F (Msg_Cont, P);
+         end if;
          Error_Attr;
       end Error_Attr_P;
 
@@ -2842,7 +2847,10 @@ package body Sem_Attr is
                        and then Attr_Id = Attribute_Old
                      then " or be eligible for conditional evaluation"
                           & " (RM 6.1.1 (27))"
-                     else ""));
+                     else ""),
+                  Msg_Cont =>
+                    "\using pragma Unevaluated_Use_Of_Old (Allow) will make "
+                    & "this legal");
 
             when 'W' =>
                Error_Msg_Name_1 := Aname;

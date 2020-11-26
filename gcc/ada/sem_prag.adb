@@ -4073,7 +4073,8 @@ package body Sem_Prag is
       --  than library level instantiations these can appear in contexts which
       --  would normally be invalid (they only apply to the original template
       --  and to library level instantiations), and they are simply ignored,
-      --  which is implemented by rewriting them as null statements.
+      --  which is implemented by rewriting them as null statements and raising
+      --  exception to terminate analysis.
 
       procedure Check_Variant (Variant : Node_Id; UU_Typ : Entity_Id);
       --  Check an Unchecked_Union variant for lack of nested variants and
@@ -6586,7 +6587,7 @@ package body Sem_Prag is
 
                if Loc not in Source_First (Sindex) .. Source_Last (Sindex) then
                   Rewrite (N, Make_Null_Statement (Loc));
-                  return;
+                  raise Pragma_Exit;
 
                --  If before first declaration, the pragma applies to the
                --  enclosing unit, and the name if present must be this name.
@@ -10437,10 +10438,13 @@ package body Sem_Prag is
                      Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
                   end if;
 
-               --  Special processing for No_Tasking restriction placed in
-               --  a configuration pragmas file.
+               --  Special processing for No_Tasking restriction (not just a
+               --  warning) when it appears as a configuration pragma.
 
-               elsif R_Id = No_Tasking and then No (Cunit (Main_Unit)) then
+               elsif R_Id = No_Tasking
+                 and then No (Cunit (Main_Unit))
+                 and then not Warn
+               then
                   Set_Global_No_Tasking;
                end if;
 
@@ -12550,10 +12554,6 @@ package body Sem_Prag is
          begin
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
 
             Lib_Entity := Find_Lib_Unit_Name;
 
@@ -15745,10 +15745,6 @@ package body Sem_Prag is
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
 
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
 
@@ -18540,7 +18536,7 @@ package body Sem_Prag is
             --  The pragma defines a type-specific invariant, the type is said
             --  to have invariants of its "own".
 
-            Set_Has_Own_Invariants (Typ);
+            Set_Has_Own_Invariants (Base_Type (Typ));
 
             --  If the invariant is class-wide, then it can be inherited by
             --  derived or interface implementing types. The type is said to
@@ -19452,10 +19448,6 @@ package body Sem_Prag is
          when Pragma_No_Elaboration_Code_All =>
             GNAT_Pragma;
             Check_Valid_Library_Unit_Pragma;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
 
             --  Must appear for a spec or generic spec
 
@@ -21190,10 +21182,6 @@ package body Sem_Prag is
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
 
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
             Ent := Find_Lib_Unit_Name;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
@@ -21839,10 +21827,6 @@ package body Sem_Prag is
                Check_Valid_Library_Unit_Pragma;
             end if;
 
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
             Ent := Find_Lib_Unit_Name;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
@@ -22379,10 +22363,6 @@ package body Sem_Prag is
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
 
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
-
             Cunit_Node := Cunit (Current_Sem_Unit);
             K          := Nkind (Unit (Cunit_Node));
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
@@ -22421,10 +22401,6 @@ package body Sem_Prag is
          begin
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
 
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
@@ -22621,10 +22597,6 @@ package body Sem_Prag is
          begin
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
-
-            if Nkind (N) = N_Null_Statement then
-               return;
-            end if;
 
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
@@ -24809,18 +24781,15 @@ package body Sem_Prag is
          --  body, not in the spec).
 
          when Pragma_Unimplemented_Unit => Unimplemented_Unit : declare
-            Cunitent : constant Entity_Id   :=
+            Cunitent : constant Entity_Id :=
                          Cunit_Entity (Get_Source_Unit (Loc));
-            Ent_Kind : constant Entity_Kind := Ekind (Cunitent);
 
          begin
             GNAT_Pragma;
             Check_Arg_Count (0);
 
             if Operating_Mode = Generate_Code
-              or else Ent_Kind = E_Generic_Function
-              or else Ent_Kind = E_Generic_Procedure
-              or else Ent_Kind = E_Generic_Package
+              or else Is_Generic_Unit (Cunitent)
             then
                Get_Name_String (Chars (Cunitent));
                Set_Casing (Mixed_Case);

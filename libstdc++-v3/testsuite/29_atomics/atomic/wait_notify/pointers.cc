@@ -36,6 +36,7 @@ main ()
 
   std::mutex m;
   std::condition_variable cv;
+  std::unique_lock<std::mutex> l(m);
 
   long aa;
   long bb;
@@ -43,12 +44,15 @@ main ()
   std::atomic<long*> a(nullptr);
   std::thread t([&]
 		{
+		  {
+		    // This ensures we block until cv.wait(l) starts.
+		    std::lock_guard<std::mutex> ll(m);
+		  }
 		  cv.notify_one();
 		  a.wait(nullptr);
 		  if (a.load() == &aa)
 		    a.store(&bb);
 		});
-  std::unique_lock<std::mutex> l(m);
   cv.wait(l);
   std::this_thread::sleep_for(100ms);
   a.store(&aa);
