@@ -1306,14 +1306,16 @@ package body Ch5 is
       --  syntax rule.
 
       else
-         if Style_Check and then Paren_Count (Cond) > 0 then
-            if Nkind (Cond) not in N_If_Expression
-                                 | N_Case_Expression
+         if Style_Check
+           and then
+             Paren_Count (Cond) >
+               (if Nkind (Cond) in N_Case_Expression
+                                 | N_If_Expression
                                  | N_Quantified_Expression
-              or else Paren_Count (Cond) > 1
-            then
-               Style.Check_Xtra_Parens (First_Sloc (Cond));
-            end if;
+                then 1
+                else 0)
+         then
+            Style.Check_Xtra_Parens (First_Sloc (Cond));
          end if;
 
          --  And return the result
