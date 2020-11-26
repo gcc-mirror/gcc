@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-timeout-factor 2 }
 
 //
 // 2010-06-16  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -55,7 +56,7 @@ test01()
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }

@@ -1,5 +1,6 @@
 // { dg-do run { target c++11 } }
 // { dg-require-namedlocale "de_DE.UTF-8" }
+// { dg-timeout-factor 3 }
 
 //
 // 2013-08-29  Tim Shen <timshen91@gmail.com>
