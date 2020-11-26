@@ -1367,6 +1367,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA rs6000_output_addr_const_extra
 
+#undef  TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC
+#define TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC rs6000_gen_pic_addr_diff_vec
+
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS rs6000_legitimize_address
 
@@ -27277,6 +27280,26 @@ rs6000_emit_xxspltidp_v2df (rtx dst, long value)
 	    "the result for the xxspltidp instruction "
 	    "is undefined for subnormal input values");
   emit_insn( gen_xxspltidp_v2df_inst (dst, GEN_INT (value)));
+}
+
+/* Implement TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC.  */
+
+static bool
+rs6000_gen_pic_addr_diff_vec (void)
+{
+  return rs6000_relative_jumptables;
+}
+
+void
+rs6000_output_addr_vec_elt (FILE *file, int value)
+{
+  const char *directive = TARGET_64BIT ? DOUBLE_INT_ASM_OP : "\t.long\t";
+  char buf[100];
+
+  fprintf (file, "%s", directive);
+  ASM_GENERATE_INTERNAL_LABEL (buf, "L", value);
+  assemble_name (file, buf);
+  fprintf (file, "\n");
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -155,6 +155,7 @@ extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
 extern bool rs6000_function_pcrel_p (struct function *);
 extern bool rs6000_pcrel_p (void);
 extern bool rs6000_fndecl_pcrel_p (const_tree);
+extern void rs6000_output_addr_vec_elt (FILE *, int);
 
 /* Different PowerPC instruction formats that are used by GCC.  There are
    various other instruction formats used by the PowerPC hardware, but these
