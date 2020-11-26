@@ -2165,8 +2165,12 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 		  id = this->gogo_->pack_hidden_name(id, is_id_exported);
 		  ins = uniq_idents.insert(id);
 		  if (!ins.second && !Gogo::is_sink_name(id))
-		    go_error_at(id_location, "multiple assignments to %s",
-				Gogo::message_name(id).c_str());
+		    {
+		      // Use %s to print := to avoid -Wformat-diag warning.
+		      go_error_at(id_location,
+				  "%qs repeated on left side of %s",
+				  Gogo::message_name(id).c_str(), ":=");
+		    }
 		  til.push_back(Typed_identifier(id, NULL, location));
 		}
 	      else
@@ -2219,7 +2223,11 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
   const Token* token = this->advance_token();
 
   if (!dup_name.empty())
-    go_error_at(dup_loc, "multiple assignments to %s", dup_name.c_str());
+    {
+      // Use %s to print := to avoid -Wformat-diag warning.
+      go_error_at(dup_loc, "%qs repeated on left side of %s",
+		  dup_name.c_str(), ":=");
+    }
 
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
