@@ -37,17 +37,21 @@ Tp check_wait_notify(Tp val1, Tp val2)
 
   std::mutex m;
   std::condition_variable cv;
+  std::unique_lock<std::mutex> l(m);
 
   Tp aa = val1;
   std::atomic_ref<Tp> a(aa);
   std::thread t([&]
 		{
+		  {
+		    // This ensures we block until cv.wait(l) starts.
+		    std::lock_guard<std::mutex> ll(m);
+		  }
 		  cv.notify_one();
 		  a.wait(val1);
 		  if (a.load() != val2)
 		    a = val1;
 		});
-  std::unique_lock<std::mutex> l(m);
   cv.wait(l);
   std::this_thread::sleep_for(100ms);
   a.store(val2);
