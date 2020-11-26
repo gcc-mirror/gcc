@@ -246,7 +246,10 @@ proc libstdc++_init { testfile } {
     }
 
     # Set the default timeout for v3 tests.
-    set tool_timeout 600
+    # You can override this in ~/.dejagnurc or a .exp file named by $DEJAGNU.
+    if {![info exists tool_timeout]} {
+      set tool_timeout 600
+    }
 
     # Default settings.
     set cxx [transform "g++"]
