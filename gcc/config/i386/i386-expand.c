@@ -10494,7 +10494,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       machine_mode mode;
     } args[3];
   enum insn_code icode = d->icode;
-  bool last_arg_constant = false;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
   enum { load, store } klass;
@@ -10818,54 +10817,41 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   for (i = 0; i < nargs; i++)
     {
       machine_mode mode = insn_p->operand[i + 1].mode;
-      bool match;
 
       arg = CALL_EXPR_ARG (exp, i + arg_adjust);
       op = expand_normal (arg);
-      match = insn_p->operand[i + 1].predicate (op, mode);
 
-      if (last_arg_constant && (i + 1) == nargs)
+      if (i == memory)
 	{
-	  if (!match)
-	    {
-	      error ("the last argument must be an 8-bit immediate");
-	      return const0_rtx;
-	    }
+	  /* This must be the memory operand.  */
+	  op = ix86_zero_extend_to_Pmode (op);
+	  op = gen_rtx_MEM (mode, op);
+	  /* op at this point has just BITS_PER_UNIT MEM_ALIGN
+	     on it.  Try to improve it using get_pointer_alignment,
+	     and if the special builtin is one that requires strict
+	     mode alignment, also from it's GET_MODE_ALIGNMENT.
+	     Failure to do so could lead to ix86_legitimate_combined_insn
+	     rejecting all changes to such insns.  */
+	  unsigned int align = get_pointer_alignment (arg);
+	  if (aligned_mem && align < GET_MODE_ALIGNMENT (mode))
+	    align = GET_MODE_ALIGNMENT (mode);
+	  if (MEM_ALIGN (op) < align)
+	    set_mem_align (op, align);
 	}
       else
 	{
-	  if (i == memory)
-	    {
-	      /* This must be the memory operand.  */
-	      op = ix86_zero_extend_to_Pmode (op);
-	      op = gen_rtx_MEM (mode, op);
-	      /* op at this point has just BITS_PER_UNIT MEM_ALIGN
-		 on it.  Try to improve it using get_pointer_alignment,
-		 and if the special builtin is one that requires strict
-		 mode alignment, also from it's GET_MODE_ALIGNMENT.
-		 Failure to do so could lead to ix86_legitimate_combined_insn
-		 rejecting all changes to such insns.  */
-	      unsigned int align = get_pointer_alignment (arg);
-	      if (aligned_mem && align < GET_MODE_ALIGNMENT (mode))
-		align = GET_MODE_ALIGNMENT (mode);
-	      if (MEM_ALIGN (op) < align)
-		set_mem_align (op, align);
-	    }
+	  /* This must be register.  */
+	  if (VECTOR_MODE_P (mode))
+	    op = safe_vector_operand (op, mode);
+
+	  op = fixup_modeless_constant (op, mode);
+
+	  if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
+	    op = copy_to_mode_reg (mode, op);
 	  else
 	    {
-	      /* This must be register.  */
-	      if (VECTOR_MODE_P (mode))
-		op = safe_vector_operand (op, mode);
-
-	      op = fixup_modeless_constant (op, mode);
-
-	      if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
-		op = copy_to_mode_reg (mode, op);
-	      else
-	        {
-	          op = copy_to_reg (op);
-	          op = lowpart_subreg (mode, op, GET_MODE (op));
-	        }
+	      op = copy_to_reg (op);
+	      op = lowpart_subreg (mode, op, GET_MODE (op));
 	    }
 	}
 
