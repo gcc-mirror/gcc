@@ -1,3 +1,13 @@
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97958
+	* c-parser.c (c_parser_binary_expression): For omp atomic binary
+	expressions, use make_node instead of build2 to avoid checking build2
+	performs.
+
 2020-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,23 @@
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97528
+	* config/arm/arm.c (neon_vector_mem_operand): For POST_MODIFY, require
+	first POST_MODIFY operand is a REG and is equal to the first operand
+	of PLUS.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/97599
+	* dwarf2out.c (gen_subprogram_die): Call
+	gen_unspecified_parameters_die even if not early dwarf, but only
+	if subr_die is a newly created DIE.
+
 2020-11-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97918

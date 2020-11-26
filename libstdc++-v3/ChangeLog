@@ -1,3 +1,29 @@
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97935
+	* include/bits/iterator_concepts.h (__detail::__iter_without_category):
+	New helper concept.
+	(__iterator_traits::__cat): Use __detail::__iter_without_category.
+	* testsuite/24_iterators/associated_types/iterator.traits.cc: New test.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__detail::__ptr, __detail::__ref)
+	(__detail::__cat, __detail::__diff): Move to class scope in the
+	relevant __iterator_traits specializations.
+	(__iterator_traits<>): Use nested class templates instead of ones from
+	namespace __detail.
+	* include/bits/stl_iterator.h (__detail::__common_iter_ptr): Move to
+	class scope in iterator_traits<common_iterator<I, S>>.
+	(iterator_traits<common_iterator<I, S>>): Use nested class template
+	instead of __detail::__common_iter_ptr.
+
 2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

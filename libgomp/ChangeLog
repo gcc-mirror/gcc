@@ -1,3 +1,11 @@
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/cache-1.C: New.
+	* testsuite/libgomp.oacc-c-c++-common/cache-1.c: Update.
+
 2020-11-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
