@@ -8299,16 +8299,12 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
 			       enum rtx_code sub_code)
 {
   rtx pat;
-  int i;
-  int nargs;
+  unsigned int i, nargs;
   bool comparison_p = false;
   bool tf_p = false;
   bool last_arg_constant = false;
   int num_memory = 0;
-  struct {
-    rtx op;
-    machine_mode mode;
-  } args[4];
+  rtx xops[4];
 
   machine_mode tmode = insn_data[icode].operand[0].mode;
 
@@ -8402,7 +8398,7 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
   else if (memory_operand (target, tmode))
     num_memory++;
 
-  gcc_assert (nargs <= 4);
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
 
   for (i = 0; i < nargs; i++)
     {
@@ -8482,38 +8478,36 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
 	    op = force_reg (mode, op);
 	}
 
-      args[i].op = op;
-      args[i].mode = mode;
+      xops[i] = op;
     }
 
   switch (nargs)
     {
     case 1:
-      pat = GEN_FCN (icode) (target, args[0].op);
+      pat = GEN_FCN (icode) (target, xops[0]);
       break;
 
     case 2:
       if (tf_p)
-	pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
+	pat = GEN_FCN (icode) (target, xops[0], xops[1],
 			       GEN_INT ((int)sub_code));
       else if (! comparison_p)
-	pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+	pat = GEN_FCN (icode) (target, xops[0], xops[1]);
       else
 	{
 	  rtx cmp_op = gen_rtx_fmt_ee (sub_code, GET_MODE (target),
-				       args[0].op,
-				       args[1].op);
+				       xops[0], xops[1]);
 
-	  pat = GEN_FCN (icode) (target, cmp_op, args[0].op, args[1].op);
+	  pat = GEN_FCN (icode) (target, cmp_op, xops[0], xops[1]);
 	}
       break;
 
     case 3:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op, args[2].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
       break;
 
     case 4:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op, args[2].op, args[3].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2], xops[3]);
       break;
 
     default:
@@ -8993,11 +8987,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
   unsigned int nargs_constant = 0;
   unsigned int mask_pos = 0;
   int num_memory = 0;
-  struct
-    {
-      rtx op;
-      machine_mode mode;
-    } args[6];
+  rtx xops[6];
   bool second_arg_count = false;
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
@@ -9757,7 +9747,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       gcc_unreachable ();
     }
 
-  gcc_assert (nargs <= ARRAY_SIZE (args));
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
 
   if (comparison != UNKNOWN)
     {
@@ -9964,34 +9954,31 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	    }
 	}
 
-      args[i].op = op;
-      args[i].mode = mode;
+      xops[i] = op;
     }
 
   switch (nargs)
     {
     case 1:
-      pat = GEN_FCN (icode) (real_target, args[0].op);
+      pat = GEN_FCN (icode) (real_target, xops[0]);
       break;
     case 2:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1]);
       break;
     case 3:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
-			     args[2].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1], xops[2]);
       break;
     case 4:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
-			     args[2].op, args[3].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1],
+			     xops[2], xops[3]);
       break;
     case 5:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
-			     args[2].op, args[3].op, args[4].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1],
+			     xops[2], xops[3], xops[4]);
       break;
     case 6:
-      pat = GEN_FCN (icode) (real_target, args[0].op, args[1].op,
-			     args[2].op, args[3].op, args[4].op,
-			     args[5].op);
+      pat = GEN_FCN (icode) (real_target, xops[0], xops[1],
+			     xops[2], xops[3], xops[4], xops[5]);
       break;
     default:
       gcc_unreachable ();
@@ -10258,11 +10245,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 {
   rtx pat;
   unsigned int i, nargs;
-  struct
-    {
-      rtx op;
-      machine_mode mode;
-    } args[6];
+  rtx xops[6];
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
@@ -10362,7 +10345,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     default:
       gcc_unreachable ();
     }
-  gcc_assert (nargs <= ARRAY_SIZE (args));
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
 
   if (optimize
       || target == 0
@@ -10434,34 +10417,31 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 	    }
 	}
 
-      args[i].op = op;
-      args[i].mode = mode;
+      xops[i] = op;
     }
 
   switch (nargs)
     {
     case 1:
-      pat = GEN_FCN (icode) (target, args[0].op);
+      pat = GEN_FCN (icode) (target, xops[0]);
       break;
     case 2:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1]);
       break;
     case 3:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
       break;
     case 4:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op, args[3].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1],
+			     xops[2], xops[3]);
       break;
     case 5:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op, args[3].op, args[4].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1],
+			     xops[2], xops[3], xops[4]);
       break;
     case 6:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
-			     args[2].op, args[3].op, args[4].op,
-			     args[5].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1],
+			     xops[2], xops[3], xops[4], xops[5]);
       break;
     default:
       gcc_unreachable ();
@@ -10488,11 +10468,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   rtx pat, op;
   unsigned int i, nargs, arg_adjust, memory;
   bool aligned_mem = false;
-  struct
-    {
-      rtx op;
-      machine_mode mode;
-    } args[3];
+  rtx xops[3];
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
@@ -10566,7 +10542,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       nargs = 1;
       klass = store;
       /* Reserve memory operand for target.  */
-      memory = ARRAY_SIZE (args);
+      memory = ARRAY_SIZE (xops);
       switch (icode)
 	{
 	/* These builtins and instructions require the memory
@@ -10703,7 +10679,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       nargs = 2;
       klass = store;
       /* Reserve memory operand for target.  */
-      memory = ARRAY_SIZE (args);
+      memory = ARRAY_SIZE (xops);
       break;
     case V4SF_FTYPE_PCV4SF_V4SF_UQI:
     case V8SF_FTYPE_PCV8SF_V8SF_UQI:
@@ -10777,7 +10753,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       gcc_unreachable ();
     }
 
-  gcc_assert (nargs <= ARRAY_SIZE (args));
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
 
   if (klass == store)
     {
@@ -10855,8 +10831,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	    }
 	}
 
-      args[i].op = op;
-      args[i].mode = mode;
+      xops[i]= op;
     }
 
   switch (nargs)
@@ -10865,13 +10840,13 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       pat = GEN_FCN (icode) (target);
       break;
     case 1:
-      pat = GEN_FCN (icode) (target, args[0].op);
+      pat = GEN_FCN (icode) (target, xops[0]);
       break;
     case 2:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1]);
       break;
     case 3:
-      pat = GEN_FCN (icode) (target, args[0].op, args[1].op, args[2].op);
+      pat = GEN_FCN (icode) (target, xops[0], xops[1], xops[2]);
       break;
     default:
       gcc_unreachable ();
@@ -10879,6 +10854,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 
   if (! pat)
     return 0;
+
   emit_insn (pat);
   return klass == store ? 0 : target;
 }
