@@ -1,7 +1,7 @@
 /* Check that GCC does not generate Armv8.1-M low over head loop instructions
    if LR is modified within the loop.  */
 /* { dg-do compile } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
+/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" "-mfloat-abi=hard" } } */
 /* { dg-options "-march=armv8.1-m.main -mthumb -O3 --save-temps -mfloat-abi=soft" } */
 /* { dg-require-effective-target arm_softfloat } */
 #include <stdlib.h>
