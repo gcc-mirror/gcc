@@ -82,13 +82,12 @@ package body System.Val_Real is
          System.Float_Control.Reset;
       end if;
 
-      --  Take into account the extra digit near the limit to avoid anomalies
+      --  Take into account the extra digit
 
-      if Extra > 0 and then Val <= Precision_Limit / Uns (Base) then
-         R_Val := Num (Val * Uns (Base)) + Num (Extra);
+      R_Val := Num (Val);
+      if Extra > 0 then
+         R_Val := R_Val * Num (Base) + Num (Extra);
          S := S - 1;
-      else
-         R_Val := Num (Val);
       end if;
 
       --  Compute the final value
