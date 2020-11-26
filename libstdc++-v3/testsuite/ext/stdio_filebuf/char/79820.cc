@@ -26,10 +26,11 @@ void
 test01()
 {
   FILE* f = std::fopen("79820.txt", "w");
-  std::fclose(f);
   errno = 127;
   __gnu_cxx::stdio_filebuf<char> b(f, std::ios::out, BUFSIZ);
   VERIFY(errno == 127); // PR libstdc++/79820
+  b.close();
+  std::fclose(f);
 }
 
 int
