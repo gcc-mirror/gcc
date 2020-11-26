@@ -310,7 +310,6 @@ enum LINK
     LINKc,
     LINKcpp,
     LINKwindows,
-    LINKpascal,
     LINKobjc,
     LINKsystem
 };
