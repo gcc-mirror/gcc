@@ -288,13 +288,13 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
 
 /* M{IN,AX}{LOC,VAL} need also infinities and NaNs if supported.  */
 
-#ifdef __FLT_HAS_INFINITY__
+#if __FLT_HAS_INFINITY__
 # define GFC_REAL_4_INFINITY __builtin_inff ()
 #endif
-#ifdef __DBL_HAS_INFINITY__
+#if __DBL_HAS_INFINITY__
 # define GFC_REAL_8_INFINITY __builtin_inf ()
 #endif
-#ifdef __LDBL_HAS_INFINITY__
+#if __LDBL_HAS_INFINITY__
 # ifdef HAVE_GFC_REAL_10
 #  define GFC_REAL_10_INFINITY __builtin_infl ()
 # endif
@@ -306,13 +306,13 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
 #  endif
 # endif
 #endif
-#ifdef __FLT_HAS_QUIET_NAN__
+#if __FLT_HAS_QUIET_NAN__
 # define GFC_REAL_4_QUIET_NAN __builtin_nanf ("")
 #endif
-#ifdef __DBL_HAS_QUIET_NAN__
+#if __DBL_HAS_QUIET_NAN__
 # define GFC_REAL_8_QUIET_NAN __builtin_nan ("")
 #endif
-#ifdef __LDBL_HAS_QUIET_NAN__
+#if __LDBL_HAS_QUIET_NAN__
 # ifdef HAVE_GFC_REAL_10
 #  define GFC_REAL_10_QUIET_NAN __builtin_nanl ("")
 # endif
