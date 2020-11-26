@@ -36,7 +36,7 @@
 #include <bits/atomic_base.h>
 #include <ext/numeric_traits.h>
 
-#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
+#ifdef _GLIBCXX_HAVE_ATOMIC_WAIT
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -89,6 +89,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // GTHREADS || LINUX_FUTEX
+#endif // HAVE_ATOMIC_WAIT
 #endif // __cplusplus > 201703L
 #endif // _GLIBCXX_LATCH

@@ -33,7 +33,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
+#if defined _GLIBCXX_HAS_GTHREADS || defined _GLIBCXX_HAVE_LINUX_FUTEX
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
 #include <ext/numeric_traits.h>
@@ -50,6 +50,8 @@
 # include <bits/std_mutex.h>  // std::mutex, std::__condvar
 #endif
 
+// Other headers use this to check for the facilities defined in this header.
+#define _GLIBCXX_HAVE_ATOMIC_WAIT 1
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

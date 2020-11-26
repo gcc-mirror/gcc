@@ -32,9 +32,8 @@
 
 #pragma GCC system_header
 
-#include <bits/c++config.h>
-#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
 #include <bits/atomic_base.h>
+#ifdef _GLIBCXX_HAVE_ATOMIC_WAIT
 #include <bits/atomic_timed_wait.h>
 
 #include <ext/numeric_traits.h>
@@ -298,5 +297,5 @@ template<ptrdiff_t __least_max_value>
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // GTHREADS || LINUX_FUTEX
+#endif // HAVE_ATOMIC_WAIT
 #endif // _GLIBCXX_SEMAPHORE_BASE_H
