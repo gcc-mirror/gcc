@@ -13145,6 +13145,16 @@ grokdeclarator (const cp_declarator *declarator,
 	      if (decl_context == PARM && AUTO_IS_DECLTYPE (auto_node))
 		error_at (typespec_loc,
 			  "cannot declare a parameter with %<decltype(auto)%>");
+	      else if (tree c = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+		{
+		  auto_diagnostic_group g;
+		  error_at (typespec_loc,
+			    "class template placeholder %qE not permitted "
+			    "in this context", c);
+		  if (decl_context == PARM && cxx_dialect >= cxx20)
+		    inform (typespec_loc, "use %<auto%> for an "
+			    "abbreviated function template");
+		}
 	      else
 		error_at (typespec_loc,
 			  "%<auto%> parameter not permitted in this context");
