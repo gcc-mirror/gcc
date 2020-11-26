@@ -1,3 +1,9 @@
+2020-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85796
+	* resolve.c (traverse_data_list): Fix copy&paste errors; catch
+	step=0 in implied do loop.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911

@@ -1,3 +1,8 @@
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* configure: Regenerate.
+	* configure.ac: Add --bootstrap-hwasan option.
+
 2020-11-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.guess: Import latest upstream.

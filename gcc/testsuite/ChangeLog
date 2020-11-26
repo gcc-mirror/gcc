@@ -1,3 +1,368 @@
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* c-c++-common/patchable_function_entry-error-3.c: Adjust text
+	of expected warning.
+
+2020-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/modref-3_0.c: New test.
+	* gcc.dg/lto/modref-3_1.c: New test.
+	* gcc.dg/lto/modref-4_0.c: New test.
+	* gcc.dg/lto/modref-4_1.c: New test.
+	* gcc.dg/tree-ssa/modref-5.c: New test.
+
+2020-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85796
+	* gfortran.dg/pr85796.f90: New test.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/gomp/map-1.C: New.
+	* g++.dg/gomp/map-2.C: Likewise.
+	* c-c++-common/gomp/map-1.c: Adjust.
+	* c-c++-common/gomp/map-2.c: Likewise.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/cache-1.c: Update.
+	* c-c++-common/goacc/cache-2.c: Likewise.
+	* g++.dg/goacc/cache-1.C: New.
+	* g++.dg/goacc/cache-2.C: Likewise.
+
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97956
+	* gcc.dg/memchr-3.c: New test.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* c-c++-common/ubsan/sanitize-recover-7.c: Update error message format.
+	* lib/asan-dg.exp (asan_link_flags): Implement as a helper
+	function asan_link_flags_1 which asan_link_flags and
+	hwasan_link_flags use.
+	(asan_link_flags_1): Parametrised version of asan_link_flags.
+	* c-c++-common/hwasan/aligned-alloc.c: New test.
+	* c-c++-common/hwasan/alloca-array-accessible.c: New test.
+	* c-c++-common/hwasan/alloca-base-init.c: New test.
+	* c-c++-common/hwasan/alloca-gets-different-tag.c: New test.
+	* c-c++-common/hwasan/alloca-outside-caught.c: New test.
+	* c-c++-common/hwasan/arguments-1.c: New test.
+	* c-c++-common/hwasan/arguments-2.c: New test.
+	* c-c++-common/hwasan/arguments-3.c: New test.
+	* c-c++-common/hwasan/arguments.c: New test.
+	* c-c++-common/hwasan/asan-pr63316.c: New test.
+	* c-c++-common/hwasan/asan-pr70541.c: New test.
+	* c-c++-common/hwasan/asan-pr78106.c: New test.
+	* c-c++-common/hwasan/asan-pr79944.c: New test.
+	* c-c++-common/hwasan/asan-rlimit-mmap-test-1.c: New test.
+	* c-c++-common/hwasan/bitfield-1.c: New test.
+	* c-c++-common/hwasan/bitfield-2.c: New test.
+	* c-c++-common/hwasan/builtin-special-handling.c: New test.
+	* c-c++-common/hwasan/check-interface.c: New test.
+	* c-c++-common/hwasan/halt_on_error-1.c: New test.
+	* c-c++-common/hwasan/handles-poly_int-marked-vars.c: New test.
+	* c-c++-common/hwasan/heap-overflow.c: New test.
+	* c-c++-common/hwasan/hwasan-poison-optimisation.c: New test.
+	* c-c++-common/hwasan/hwasan-thread-access-parent.c: New test.
+	* c-c++-common/hwasan/hwasan-thread-basic-failure.c: New test.
+	* c-c++-common/hwasan/hwasan-thread-clears-stack.c: New test.
+	* c-c++-common/hwasan/hwasan-thread-success.c: New test.
+	* c-c++-common/hwasan/kernel-defaults.c: New test.
+	* c-c++-common/hwasan/large-aligned-0.c: New test.
+	* c-c++-common/hwasan/large-aligned-1.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-0.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-1.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-2.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-3.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-4.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-5.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-6.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-7.c: New test.
+	* c-c++-common/hwasan/macro-definition.c: New test.
+	* c-c++-common/hwasan/no-sanitize-attribute.c: New test.
+	* c-c++-common/hwasan/param-instrument-mem-intrinsics.c: New test.
+	* c-c++-common/hwasan/param-instrument-reads-and-writes.c: New test.
+	* c-c++-common/hwasan/param-instrument-reads.c: New test.
+	* c-c++-common/hwasan/param-instrument-writes.c: New test.
+	* c-c++-common/hwasan/random-frame-tag.c: New test.
+	* c-c++-common/hwasan/sanity-check-pure-c.c: New test.
+	* c-c++-common/hwasan/setjmp-longjmp-0.c: New test.
+	* c-c++-common/hwasan/setjmp-longjmp-1.c: New test.
+	* c-c++-common/hwasan/stack-tagging-basic-0.c: New test.
+	* c-c++-common/hwasan/stack-tagging-basic-1.c: New test.
+	* c-c++-common/hwasan/stack-tagging-disable.c: New test.
+	* c-c++-common/hwasan/unprotected-allocas-0.c: New test.
+	* c-c++-common/hwasan/unprotected-allocas-1.c: New test.
+	* c-c++-common/hwasan/use-after-free.c: New test.
+	* c-c++-common/hwasan/vararray-outside-caught.c: New test.
+	* c-c++-common/hwasan/vararray-stack-restore-correct.c: New test.
+	* c-c++-common/hwasan/very-large-objects.c: New test.
+	* g++.dg/hwasan/hwasan.exp: New test.
+	* g++.dg/hwasan/rvo-handled.C: New test.
+	* gcc.dg/hwasan/hwasan.exp: New test.
+	* gcc.dg/hwasan/nested-functions-0.c: New test.
+	* gcc.dg/hwasan/nested-functions-1.c: New test.
+	* gcc.dg/hwasan/nested-functions-2.c: New test.
+	* lib/hwasan-dg.exp: New file.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/95862
+	* gcc.dg/builtin-artih-overflow-5.c: Renamed to ...
+	* gcc.dg/builtin-arith-overflow-5.c: ... this.
+
+2020-11-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/abs_f16.c (abs_f16_x_untied): Expect
+	a MOVPRFX instruction.
+	* gcc.target/aarch64/sve/acle/asm/abs_f32.c (abs_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_f64.c (abs_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s16.c (abs_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s32.c (abs_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s64.c (abs_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s8.c (abs_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s16.c (cls_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s32.c (cls_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s64.c (cls_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s8.c (cls_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s16.c (clz_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s32.c (clz_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s64.c (clz_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s8.c (clz_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u16.c (clz_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u32.c (clz_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u64.c (clz_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u8.c (clz_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s16.c (cnot_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s32.c (cnot_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s64.c (cnot_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s8.c (cnot_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u16.c (cnot_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u32.c (cnot_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u64.c (cnot_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u8.c (cnot_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_bf16.c (cnt_bf16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f16.c (cnt_f16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f32.c (cnt_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f64.c (cnt_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s16.c (cnt_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s32.c (cnt_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s64.c (cnt_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s8.c (cnt_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u16.c (cnt_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u32.c (cnt_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u64.c (cnt_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u8.c (cnt_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_bf16.c (cvt_bf16_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f16.c (cvt_f16_f32_x_untied)
+	(cvt_f16_f64_x_untied, cvt_f16_s16_x_untied, cvt_f16_s32_x_untied)
+	(cvt_f16_s64_x_untied, cvt_f16_u16_x_untied, cvt_f16_u32_x_untied)
+	(cvt_f16_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f32.c (cvt_f32_f16_x_untied)
+	(cvt_f32_f64_x_untied, cvt_f32_s16_x_untied, cvt_f32_s32_x_untied)
+	(cvt_f32_s64_x_untied, cvt_f32_u16_x_untied, cvt_f32_u32_x_untied)
+	(cvt_f32_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f64.c (cvt_f64_f16_x_untied)
+	(cvt_f64_f32_x_untied, cvt_f64_s16_x_untied, cvt_f64_s32_x_untied)
+	(cvt_f64_s64_x_untied, cvt_f64_u16_x_untied, cvt_f64_u32_x_untied)
+	(cvt_f64_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s16.c (cvt_s16_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s32.c (cvt_s32_f16_x_untied)
+	(cvt_s32_f32_x_untied, cvt_s32_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s64.c (cvt_s64_f16_x_untied)
+	(cvt_s64_f32_x_untied, cvt_s64_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u16.c (cvt_u16_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u32.c (cvt_u32_f16_x_untied)
+	(cvt_u32_f32_x_untied, cvt_u32_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u64.c (cvt_u64_f16_x_untied)
+	(cvt_u64_f32_x_untied, cvt_u64_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s16.c (extb_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s32.c (extb_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s64.c (extb_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/exth_s32.c (exth_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/exth_s64.c (exth_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extw_s64.c (extw_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f16.c (neg_f16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f32.c (neg_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f64.c (neg_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s16.c (neg_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s32.c (neg_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s64.c (neg_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s8.c (neg_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s16.c (not_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s32.c (not_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s64.c (not_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s8.c (not_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u16.c (not_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u32.c (not_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u64.c (not_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u8.c (not_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s16.c (rbit_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s32.c (rbit_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s64.c (rbit_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s8.c (rbit_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u16.c (rbit_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u32.c (rbit_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u64.c (rbit_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u8.c (rbit_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f16.c (recpx_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f32.c (recpx_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f64.c (recpx_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s16.c (revb_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s32.c (revb_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s64.c (revb_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u16.c (revb_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u32.c (revb_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u64.c (revb_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_s32.c (revh_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_s64.c (revh_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_u32.c (revh_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_u64.c (revh_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revw_s64.c (revw_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revw_u64.c (revw_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f16.c (rinta_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f32.c (rinta_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f64.c (rinta_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f16.c (rinti_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f32.c (rinti_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f64.c (rinti_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f16.c (rintm_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f32.c (rintm_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f64.c (rintm_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f16.c (rintn_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f32.c (rintn_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f64.c (rintn_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f16.c (rintp_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f32.c (rintp_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f64.c (rintp_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f16.c (rintx_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f32.c (rintx_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f64.c (rintx_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f16.c (rintz_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f32.c (rintz_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f64.c (rintz_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f16.c (sqrt_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f32.c (sqrt_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f64.c (sqrt_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/cvtx_f32.c (cvtx_f32_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f16.c (logb_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f32.c (logb_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f64.c (logb_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s16.c (qabs_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s32.c (qabs_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s64.c (qabs_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s8.c (qabs_s8_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s16.c (qneg_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s32.c (qneg_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s64.c (qneg_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s8.c (qneg_s8_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/recpe_u32.c (recpe_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/rsqrte_u32.c (rsqrte_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/cvtlt_f32.c
+	(cvtlt_f32_f16_x_untied): Expect a MOV instruction.
+	* gcc.target/aarch64/sve2/acle/asm/cvtlt_f64.c
+	(cvtlt_f64_f32_x_untied): Likewise.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/95862
+	* gcc.dg/builtin-artih-overflow-5.c: New test.
+
+2020-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97579
+	* gcc.dg/pr97579.c: New testcase.
+
+2020-11-25  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/91816
+	* gcc.target/arm/pr91816.c: New test.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97943
+	* c-c++-common/builtin-clear-padding-2.c: New test.
+	* c-c++-common/builtin-clear-padding-3.c: New test.
+	* g++.dg/ext/builtin-clear-padding-1.C: New test.
+	* gcc.dg/builtin-clear-padding-2.c: New test.
+
 2020-11-24  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/pr97955.c: New test.
