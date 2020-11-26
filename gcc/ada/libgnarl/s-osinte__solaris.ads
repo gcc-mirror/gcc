@@ -45,9 +45,6 @@ with Ada.Unchecked_Conversion;
 package System.OS_Interface is
    pragma Preelaborate;
 
-   pragma Linker_Options ("-lposix4");
-   pragma Linker_Options ("-lthread");
-
    subtype int            is Interfaces.C.int;
    subtype short          is Interfaces.C.short;
    subtype long           is Interfaces.C.long;

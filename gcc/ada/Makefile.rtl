@@ -1674,8 +1674,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   endif
 
   EH_MECHANISM=-gcc
-  THREADSLIB = -lposix4 -lthread
-  MISCLIB = -lposix4 -lnsl -lsocket
+  MISCLIB = -lnsl -lsocket
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
@@ -1728,8 +1727,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   EH_MECHANISM=-gcc
-  THREADSLIB = -lposix4 -lthread
-  MISCLIB = -lposix4 -lnsl -lsocket
+  MISCLIB = -lnsl -lsocket
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
