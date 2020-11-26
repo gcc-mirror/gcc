@@ -220,7 +220,11 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru
 		  && m_update_global_ranges
-		  && all_uses_feed_or_dominated_by_stmt (vrs[i].first, stmt))
+		  && all_uses_feed_or_dominated_by_stmt (vrs[i].first, stmt)
+		  /* The condition must post-dominate the definition point.  */
+		  && (SSA_NAME_IS_DEFAULT_DEF (vrs[i].first)
+		      || (gimple_bb (SSA_NAME_DEF_STMT (vrs[i].first))
+			  == pred_e->src)))
 		{
 		  set_ssa_range_info (vrs[i].first, vrs[i].second);
 		  maybe_set_nonzero_bits (pred_e, vrs[i].first);
