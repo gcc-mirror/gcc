@@ -650,9 +650,48 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  (simplify
   (div (mult:c @0 @1) @1)
-  (if (ANY_INTEGRAL_TYPE_P (type)
-       && TYPE_OVERFLOW_UNDEFINED (type))
-   @0)))
+  (if (ANY_INTEGRAL_TYPE_P (type))
+   (if (TYPE_OVERFLOW_UNDEFINED (type))
+    @0
+#if GIMPLE
+    (if (TREE_CODE (@0) == SSA_NAME
+	 && (TREE_CODE (@1) == SSA_NAME || TREE_CODE (@1) == INTEGER_CST))
+     (with
+      {
+	bool overflowed = true;
+	wide_int wmin0, wmax0;
+	if (get_range_info (@0, &wmin0, &wmax0) == VR_RANGE)
+	  {
+	    /* If the multiplication can't overflow/wrap around, then
+	       it can be optimized too.  */
+	    wide_int wmin1, wmax1;
+	    wi::overflow_type min_ovf, max_ovf;
+	    if (TREE_CODE (@1) == INTEGER_CST)
+	      {
+		wmin1 = wi::to_wide (@1);
+		wi::mul (wmin0, wmin1, TYPE_SIGN (type), &min_ovf);
+		wi::mul (wmax0, wmin1, TYPE_SIGN (type), &max_ovf);
+		if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
+		  overflowed = false;
+	      }
+	    else if (get_range_info (@1, &wmin1, &wmax1) == VR_RANGE)
+	      {
+		wi::mul (wmin0, wmin1, TYPE_SIGN (type), &min_ovf);
+		wi::mul (wmax0, wmax1, TYPE_SIGN (type), &max_ovf);
+		if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
+		  {
+		    wi::mul (wmin0, wmax1, TYPE_SIGN (type), &min_ovf);
+		    wi::mul (wmax0, wmin1, TYPE_SIGN (type), &max_ovf);
+		    if (min_ovf == wi::OVF_NONE && max_ovf == wi::OVF_NONE)
+		      overflowed = false;
+		  }
+	      }
+	  }
+      }
+     (if (!overflowed)
+      @0)))
+#endif
+   ))))
 
 (for op (negate abs)
  /* Simplify cos(-x) and cos(|x|) -> cos(x).  Similarly for cosh.  */
