@@ -158,11 +158,11 @@ end_of_location_regex = re.compile(r'[\[<(:]')
 item_empty_regex = re.compile(r'\t(\* \S+ )?\(\S+\):\s*$')
 item_parenthesis_regex = re.compile(r'\t(\*|\(\S+\):)')
 revert_regex = re.compile(r'This reverts commit (?P<hash>\w+).$')
+cherry_pick_regex = re.compile(r'cherry picked from commit (?P<hash>\w+)')
 
 LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
-CHERRY_PICK_PREFIX = '(cherry picked from commit '
 
 REVIEW_PREFIXES = ('reviewed-by: ', 'reviewed-on: ', 'signed-off-by: ',
                    'acked-by: ', 'tested-by: ', 'reported-by: ',
@@ -422,14 +422,16 @@ class GitCommit:
                     continue
                 elif lowered_line.startswith(REVIEW_PREFIXES):
                     continue
-                elif line.startswith(CHERRY_PICK_PREFIX):
-                    commit = line[len(CHERRY_PICK_PREFIX):].rstrip(')')
-                    if self.cherry_pick_commit:
-                        self.errors.append(Error('multiple cherry pick lines',
-                                                 line))
-                    else:
-                        self.cherry_pick_commit = commit
-                    continue
+                else:
+                    m = cherry_pick_regex.search(line)
+                    if m:
+                        commit = m.group('hash')
+                        if self.cherry_pick_commit:
+                            msg = 'multiple cherry pick lines'
+                            self.errors.append(Error(msg, line))
+                        else:
+                            self.cherry_pick_commit = commit
+                        continue
 
                 # ChangeLog name will be deduced later
                 if not last_entry:

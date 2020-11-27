@@ -3145,7 +3145,7 @@ gcc/ChangeLog:
 	by using Pmode instead of ptr_mode.
 
 Co-Authored-By: Jakub Jelinek <jakub@redhat.com>
-(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80)
+(cherry picked from commit 8cff672cb9a132d3d3158c2edfc9a64b55292b80 (only part))
 ---
  gcc/asan.c | 1 +
  1 file changed, 1 insertion(+)
