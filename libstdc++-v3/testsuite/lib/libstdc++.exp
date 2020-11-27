@@ -945,85 +945,97 @@ proc check_v3_target_namedlocale { args } {
     }]
 }
 
+# Returns 1 if the tokens in CODE can be preprocessed successfully using FLAGS,
+# returns 0 otherwise.
+proc v3_try_preprocess { name code flags } {
+    global tool
+    global cxxflags
+
+    # Set up and preprocess a C++ translation unit.
+    set src $name[pid].cc
+
+    set f [open $src "w"]
+    puts $f $code
+    close $f
+
+    set cxxflags_saved $cxxflags
+    set cxxflags "$flags"
+
+    set lines [v3_target_compile $src /dev/null preprocess ""]
+    set cxxflags $cxxflags_saved
+    file delete $src
+
+    if [string match "" $lines] {
+	verbose "v3_try_preprocess $name: preprocessing passed" 3
+	# No error message, preprocessing succeeded.
+	return 1
+    }
+    verbose "v3_try_preprocess $name: preprocessing failed" 2
+    return 0
+}
+
+# Return 1 if COND evaluates to true in the preprocessor, 0 otherwise.
+# The <bits/c++config.h> config header is included.
+proc v3_check_preprocessor_condition { name cond } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+
+    set code "
+	#include <bits/c++config.h>
+	#if ! ($cond)
+	#error '$cond' is false
+	#endif
+	"
+    set flags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+    return [v3_try_preprocess name $code $flags]
+}
+
+# Return 1 if Debug Mode is active, 0 otherwise.
 proc check_v3_target_debug_mode { } {
+    global cxxflags
     return [check_v3_target_prop_cached et_debug_mode {
-	global tool
-	# Set up and preprocess a C++ test program that depends
-	# on debug mode activated.
-	set src debug_mode[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#ifndef _GLIBCXX_DEBUG"
-	puts $f "#  error No debug mode"
-	puts $f "#endif"
-	close $f
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	}
-	return 0
+	set code "
+	#if ! defined _GLIBCXX_DEBUG
+	# error no debug mode
+	#endif
+	"
+	return [v3_try_preprocess debug_mode $code $cxxflags]
     }]
 }
 
+# Return 1 if normal mode is active, 0 otherwise.
+# i.e. neither Debug Mode nor Parallel Mode is active.
 proc check_v3_target_normal_mode { } {
+    global cxxflags
     return [check_v3_target_prop_cached et_normal_mode {
-	global tool
-	# Set up and compile a C++ test program that depends
-	# on normal mode activated.
-	set src normal_mode[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL)"
-	puts $f "#  error No normal mode"
-	puts $f "#endif"
-	close $f
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
-	    return 1
-	}
-	return 0
+	set code "
+	#if defined _GLIBCXX_DEBUG
+	# error debug mode
+	#endif
+	#if defined _GLIBCXX_PARALLEL
+	# error parallel mode
+	#endif
+	"
+	return [v3_try_preprocess normal_mode $code $cxxflags]
     }]
 }
 
+# Return 1 if unversioned namespace is in use, 0 otherwise.
+# i.e. the library uses namespace std:: not std::__8:: or similar.
 proc check_v3_target_normal_namespace { } {
     return [check_v3_target_prop_cached et_normal_namespace {
-	global tool
-	# Set up and compile a C++ test program that depends
-	# on normal std namespace.
-	set src normal_namespace[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#if _GLIBCXX_INLINE_VERSION"
-	puts $f "#  error No normal namespace"
-	puts $f "#endif"
-	close $f
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
-	    return 1
-	}
-	return 0
+	set cond "!_GLIBCXX_INLINE_VERSION"
+	return [v3_check_preprocessor_condition normal_namespace $cond]
     }]
 }
 
+# Return 1 if the libgomp is being used, 0 otherwise.
 proc check_v3_target_parallel_mode { } {
     return [check_v3_target_prop_cached et_parallel_mode {
 	global cxxflags
 	global v3-libgomp
-	# If 'make check-parallel' is running the test succeeds.
+	# If 'make check-parallel' is running then the test succeeds.
 	if { ${v3-libgomp} == 1 && [regexp "libgomp" $cxxflags] } {
 	    return 1
 	}
@@ -1031,67 +1043,19 @@ proc check_v3_target_parallel_mode { } {
     }]
 }
 
+# Return 1 if the C99 stdint facilities are available, 0 otherwise.
 proc check_v3_target_cstdint { } {
     return [check_v3_target_prop_cached et_cstdint {
-	global DEFAULT_CXXFLAGS
-	global cxxflags
-	# Set up and preprocess a C++0x test program that depends
-	# on the C99 stdint facilities to be available.
-	set src cstdint[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <tr1/cstdint>"
-	puts $f "#ifndef _GLIBCXX_USE_C99_STDINT_TR1"
-	puts $f "#  error No C99 stdint"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocess succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_cstdint: compilation failed" 2
-	    return 0
-	}
+	set cond "defined _GLIBCXX_USE_C99_STDINT_TR1"
+	return [v3_check_preprocessor_condition cstdint $cond]
     }]
 }
 
+# Return 1 if the C99 math facilities are available, 0 otherwise.
 proc check_v3_target_cmath { } {
     return [check_v3_target_prop_cached et_c99_math {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-	# Set up and preprocess a C++0x test program that depends
-	# on the C99 math facilities to be available.
-	set src c99_math[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <tr1/cmath>"
-	puts $f "#ifndef _GLIBCXX_USE_C99_MATH_TR1"
-	puts $f "#  error No C99 math"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocess succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_c99_math: compilation failed" 2
-	    return 0
-	}
+	set cond "defined _GLIBCXX_USE_C99_MATH_TR1"
+	return [v3_check_preprocessor_condition cmath $cond]
     }]
 }
 
@@ -1100,15 +1064,16 @@ proc check_v3_target_thread_fence { } {
 	global cxxflags
 	global DEFAULT_CXXFLAGS
 
-	# Set up and preprocess a C++11 test program that depends
+	# Set up and link a C++11 test program that depends
 	# on the thread fence to be available.
 	set src thread_fence[pid].cc
 
 	set f [open $src "w"]
-	puts $f "int main() {"
-	puts $f "__atomic_thread_fence (__ATOMIC_SEQ_CST);"
-	puts $f "return 0;"
-	puts $f "}"
+	puts $f "
+	int main() {
+	__atomic_thread_fence (__ATOMIC_SEQ_CST);
+	return 0;
+	}"
 	close $f
 
 	set cxxflags_saved $cxxflags
@@ -1128,309 +1093,106 @@ proc check_v3_target_thread_fence { } {
     }]
 }
 
+# Return 1 if atomics_bool and atomic_int are always lock-free, 0 otherwise.
 proc check_v3_target_atomic_builtins { } {
     return [check_v3_target_prop_cached et_atomic_builtins {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-
-	# Set up and preprocess a C++11 test program that depends
-	# on the atomic builtin facilities to be available.
-	set src atomic_builtins[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#if __GCC_ATOMIC_BOOL_LOCK_FREE < 2"
-	puts $f "#  error No atomic bool"
-	puts $f "#endif"
-	puts $f "#if __GCC_ATOMIC_INT_LOCK_FREE < 2"
-	puts $f "#  error No atomic int"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocess succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_atomic_builtins: compilation failed" 2
-	    return 0
-	}
+	set cond "__GCC_ATOMIC_BOOL_LOCK_FREE > 1 && __GCC_ATOMIC_INT_LOCK_FREE > 1"
+	return [v3_check_preprocessor_condition atomic_builtins $cond]
     }]
 }
 
+# Define "atomic-builtins" as an effective-target keyword.
+proc check_effective_target_atomic-builtins { } {
+    return [check_v3_target_atomic_builtins]
+}
+
+# Return 1 if C++11 [threads] facilities are available via gthreads,
+# 0 otherwise.
 proc check_v3_target_gthreads { } {
     return [check_v3_target_prop_cached et_gthreads {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-
-	# Set up and preprocess a C++0x test program that depends
-	# on the gthreads facilities to be available.
-	set src gthreads[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#ifndef _GLIBCXX_HAS_GTHREADS"
-	puts $f "#  error No gthread"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_gthreads: compilation failed" 2
-	    return 0
-	}
+	set cond "defined _GLIBCXX_HAS_GTHREADS"
+	return [v3_check_preprocessor_condition gthreads $cond]
     }]
 }
 
+# Define "gthreads" as an effective-target keyword.
+proc check_effective_target_gthreads { } {
+    return [check_v3_target_gthreads]
+}
+
+# Return 1 if C++11 timed mutexes are available via gthreads, 0 otherwise.
 proc check_v3_target_gthreads_timed { } {
     return [check_v3_target_prop_cached et_gthreads_timed {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-	# Set up and preprocess a C++0x test program that depends
-	# on the gthreads timed mutex facilities to be available.
-	set src gthreads_timed[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#ifndef _GLIBCXX_HAS_GTHREADS"
-	puts $f "#  error No gthread"
-	puts $f "#endif"
-	puts $f "#if !_GTHREAD_USE_MUTEX_TIMEDLOCK"
-	puts $f "#  error No gthread timed mutexes"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
+	if [check_v3_target_gthreads] {
+	    set cond "defined _GTHREAD_USE_MUTEX_TIMEDLOCK"
+	    return [v3_check_preprocessor_condition gthreads_timed $cond]
 	} else {
-	    verbose "check_v3_target_gthreads_timed: compilation failed" 2
 	    return 0
 	}
     }]
 }
 
+# Define "gthreads-timed" as an effective-target keyword.
+proc check_effective_target_gthreads-timed { } {
+    return [check_v3_target_gthreads_timed]
+}
+
+# Return 1 if either nanosleep or sleep is available, 0 otherwise.
 proc check_v3_target_sleep { } {
     return [check_v3_target_prop_cached et_sleep {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-	# Set up and preprocess a C++11 test program that depends
-	# on the sleep facilities to be available.
-	set src sleep[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#ifndef _GLIBCXX_USE_NANOSLEEP"
-	puts $f "# ifndef _GLIBCXX_HAVE_SLEEP"
-	puts $f "#  error No nanosleep or sleep"
-	puts $f "# endif"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_sleep: compilation failed" 2
-	    return 0
-	}
+	set cond "defined _GLIBCXX_USE_NANOSLEEP || defined _GLIBCXX_HAVE_SLEEP"
+	return [v3_check_preprocessor_condition sleep $cond]
     }]
 }
 
+# Return 1 if __gthread_yield is available, 0 otherwise.
 proc check_v3_target_sched_yield { } {
     return [check_v3_target_prop_cached et_sched_yield {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-
-	# Set up and preprocess a C++0x test program that depends
-	# on the sched_yield facility to be available.
-	set src sched_yield[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#ifndef _GLIBCXX_USE_SCHED_YIELD"
-	puts $f "#  error No sched yield"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_sched_yield: compilation failed" 2
-	    return 0
-	}
+	set cond "defined _GLIBCXX_USE_SCHED_YIELD"
+	return [v3_check_preprocessor_condition sched_yield $cond]
     }]
 }
 
+# Return 1 if the [string.conversions] facilities are available, 0 otherwise.
 proc check_v3_target_string_conversions { } {
     return [check_v3_target_prop_cached et_string_conversions {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-	# Set up and preprocess a C++0x test program that depends
-	# on the string_conversions facilities to be available.
-	set src string_conversions[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#if !(_GLIBCXX_USE_C99_STDIO && _GLIBCXX_USE_C99_STDLIB && _GLIBCXX_USE_C99_WCHAR) || defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
-	puts $f "#  error No string conversions"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_string_conversions: compilation failed" 2
-	    return 0
-	}
+	set cond "_GLIBCXX_USE_C99_STDIO && _GLIBCXX_USE_C99_STDLIB"
+	set cond "$cond && _GLIBCXX_USE_C99_WCHAR"
+	set cond "$cond && !defined _GLIBCXX_HAVE_BROKEN_VSWPRINTF"
+	return [v3_check_preprocessor_condition string_conversions $cond]
     }]
 }
 
+# Return 1 if a standard-conforming swprintf is available, 0 otherwise.
 proc check_v3_target_swprintf { } {
     return [check_v3_target_prop_cached et_swprintf {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-	# Set up and preprocess a C++0x test program that depends
-	# on a standard swprintf function to be available.
-	set src swprintf[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#if defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF)"
-	puts $f "#  error No swprintf"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_swprintf: compilation failed" 2
-	    return 0
-	}
+	set cond "! defined _GLIBCXX_HAVE_BROKEN_VSWPRINTF"
+	return [v3_check_preprocessor_condition swprintf $cond]
     }]
 }
 
+# Return 1 if text and binary I/O are the same, 0 otherwise.
 proc check_v3_target_binary_io { } {
     return [check_v3_target_prop_cached et_binary_io {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-	# Set up and preprocess a C++0x test program that depends
-	# on text and binary I/O being the same.
-	set src binary_io[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#if defined(_GLIBCXX_HAVE_DOS_BASED_FILESYSTEM)"
-	puts $f "#  error No binary io"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_binary_io: compilation failed" 2
-	    return 0
-	}
+	set cond "! defined _GLIBCXX_HAVE_DOS_BASED_FILESYSTEM"
+	return [v3_check_preprocessor_condition binary_io $cond]
     }]
 }
 
+# Return 1 if get_nprocs or pthreads_num_processors_np or a suitable sysconf
+# is available, 0 otherwise.
 proc check_v3_target_nprocs { } {
     return [check_v3_target_prop_cached et_nprocs {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-	# Set up and preprocess a C++0x test program that depends
-	# on either get_nprocs or sysconf to be available.
-	set src nprocs[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#if defined(_GLIBCXX_USE_GET_NPROCS)"
-	puts $f "#elif defined(_GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP)"
-	puts $f "#elif defined(_GLIBCXX_USE_SYSCTL_HW_NCPU)"
-	puts $f "#elif defined(_GLIBCXX_USE_SC_NPROCESSORS_ONLN)"
-	puts $f "#elif defined(_GLIBCXX_USE_SC_NPROC_ONLN)"
-	puts $f "#else"
-	puts $f "#  error hardware_concurrency not implemented"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocess succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_nprocs: compilation failed" 2
-	    return 0
-	}
+	set cond "defined _GLIBCXX_USE_GET_NPROCS"
+	set cond "$cond || defined _GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP"
+	set cond "$cond || defined _GLIBCXX_USE_SYSCTL_HW_NCPU"
+	set cond "$cond || defined _GLIBCXX_USE_SC_NPROCESSORS_ONLN"
+	set cond "$cond || defined _GLIBCXX_USE_SC_NPROC_ONLN"
+	return [v3_check_preprocessor_condition nprocs $cond]
     }]
 }
 
+# Return 1 if linking with -static-libstdc++ works, 0 otherwise.
 proc check_v3_target_static_libstdcxx { } {
     return [check_v3_target_prop_cached et_static_libstdcxx {
 	global cxxflags
@@ -1466,32 +1228,7 @@ proc check_v3_target_static_libstdcxx { } {
 }
 
 proc check_v3_target_little_endian { } {
-    return [check_v3_target_prop_cached et_little_endian {
-	global cxxflags
-	global DEFAULT_CXXFLAGS
-	set src little_endian[pid].cc
-
-	set f [open $src "w"]
-	puts $f "#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__"
-	puts $f "#  error Not little endian"
-	puts $f "#endif"
-	close $f
-
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	set cxxflags $cxxflags_saved
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    return 1
-	} else {
-	    verbose "check_v3_target_little_endian: compilation failed" 2
-	    return 0
-	}
-    }]
+    return [check_effective_target_le]
 }
 
 # Return 1 if the Filesystem TS is supported, 0 otherwise.
@@ -1530,61 +1267,18 @@ proc check_v3_target_filesystem_ts { } {
 # Any flags provided by RUNTESTFLAGS or a target board will be used here.
 # Flags added in the test by dg-options or dg-add-options will not be used.
 proc check_effective_target_cxx11-abi { } {
-    global cxxflags
-
-    # Set up and preprocess a C++ test program that depends
-    # on the new ABI being enabled.
-    set src cxx11_abi[pid].cc
-
-    set f [open $src "w"]
-    puts $f "#include <bits/c++config.h>"
-    puts $f "#if ! _GLIBCXX_USE_CXX11_ABI"
-    puts $f "#  error old ABI in use"
-    puts $f "#endif"
-    close $f
-
-    set lines [v3_target_compile $src /dev/null preprocess ""]
-    file delete $src
-
-    if [string match "" $lines] {
-	# No error message, preprocessing succeeded.
-	verbose "check_v3_cxx11_abi: `1'" 2
-	return 1
-    }
-
-    verbose "check_v3_cxx11_abi: `0'" 2
-    return 0
+    set cond "_GLIBCXX_USE_CXX11_ABI"
+    return [v3_check_preprocessor_condition cxx11_abi $cond]
 }
 
-# Return 1 if std::random_device should be usable using the current flags, 0 otherwise.
+# Return 1 if std::random_device should be usable using the current flags,
+# 0 otherwise.
 proc check_effective_target_random_device { } {
-    global cxxflags
-
-    # Set up and preprocess a C++ test program that depends
-    # on std::random_device being usable.
-    set src random_device[pid].cc
-
-    set f [open $src "w"]
-    puts $f "#include <bits/c++config.h>"
-    puts $f "#if ! _GLIBCXX_USE_RANDOM_TR1"
-    puts $f "#  error No working std::random_device available"
-    puts $f "#endif"
-    close $f
-
-    set lines [v3_target_compile $src /dev/null preprocess ""]
-    file delete $src
-
-    if [string match "" $lines] {
-	# No error message, preprocessing succeeded.
-	verbose "check_v3_random_device: `1'" 2
-	return 1
-    }
-
-    verbose "check_v3_random_device: `0'" 2
-    return 0
+    set cond "_GLIBCXX_USE_RANDOM_TR1"
+    return [v3_check_preprocessor_condition random_device $cond]
 }
 
-# Return 1 if tbb parallel backend is available
+# Return 1 if tbb parallel backend is available, 0 otherwise.
 proc check_effective_target_tbb-backend { } {
     return [check_v3_target_prop_cached et_tbb {
         # Set up and compile a C++ test program that depends on tbb
@@ -1619,35 +1313,9 @@ proc check_effective_target_tbb-backend { } {
 # Return 1 if futex syscall is available
 proc check_effective_target_futex { } {
     return [check_v3_target_prop_cached et_futex {
-	# Set up and compile a C++ test program that depends on futex
-	# being supported.
-	set src futex[pid].cc
-	set exe futex[pid].x
-
-	set f [open $src "w"]
-	puts $f "#include <bits/c++config.h>"
-	puts $f "#if ! _GLIBCXX_HAVE_LINUX_FUTEX"
-	puts $f "#  error No futex syscall available"
-	puts $f "#endif"
-	close $f
-
-	set lines [v3_target_compile $src /dev/null preprocess ""]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, preprocessing succeeded.
-	    verbose "check_v3_futex: `1'" 2
-	    return 1
-	}
-	verbose "check_v3_futex: `0'" 2
-	return 0
+	set cond "_GLIBCXX_HAVE_LINUX_FUTEX"
+	return [v3_check_preprocessor_condition futex $cond]
     }]
-}
-
-# Return 1 if C++11 [threads] facilities are available via gthreads,
-# 0 otherwise.
-proc check_effective_target_gthreads { } {
-    return [check_v3_target_gthreads]
 }
 
 set additional_prunes ""
