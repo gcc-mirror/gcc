@@ -1,0 +1,227 @@
+# Make-lang.in -- Top level -*- makefile -*- fragment for gcc Go frontend.
+
+# Copyright (C) 2009-2019 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file provides the language dependent support in the main Makefile.
+
+# Installation name.
+
+GCCRUST_INSTALL_NAME := $(shell echo gccrust|sed '$(program_transform_name)')
+GCCRUST_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gccrust|sed '$(program_transform_name)')
+
+# The name for selecting rust in LANGUAGES.
+rust: rust1$(exeext)
+
+.PHONY: rust
+
+CFLAGS-rust/rustspec.o += $(DRIVER_DEFINES)
+
+GCCRUST_OBJS = $(GCC_OBJS) rust/rustspec.o
+gccrust$(exeext): $(GCCRUST_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(GCCRUST_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
+
+# The cross-compiler version.  This is built mainly as a signal to the
+# rust.install-common target.  If this executable exists, it means that
+# rust.all.cross was run.
+gccrust-cross$(exeext): gccrust$(exeext)
+	-rm -f gccrust-cross$(exeext)
+	cp gccrust$(exeext) gccrust-cross$(exeext)
+
+# Use strict warnings.
+rust-warn = $(STRICT_WARN)
+
+RUST_OBJS = \
+	rust/rust-lang.o \
+	rust/rust-backend.o \
+	rust/rust-linemap.o \
+	rust/rust-gcc-diagnostics.o \
+	rust/main.o
+
+rust_OBJS = $(RUST_OBJS) rust/rustspec.o
+
+rust1$(exeext): $(RUST_OBJS) attribs.o $(BACKEND) $(LIBDEPS)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	      $(RUST_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+# Documentation.
+
+RUST_TEXI_FILES = \
+	rust/gccrust.texi \
+	$(gcc_docdir)/include/fdl.texi \
+	$(gcc_docdir)/include/gpl_v3.texi \
+	$(gcc_docdir)/include/gcc-common.texi \
+	gcc-vers.texi
+
+doc/gccrust.info: $(RUST_TEXI_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/gccrust.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
+	else true; fi
+
+doc/gccrust.dvi: $(RUST_TEXI_FILES)
+	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+doc/gccrust.pdf: $(RUST_TEXI_FILES)
+	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+$(build_htmldir)/rust/index.html: $(RUST_TEXI_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir) -I $(gcc_docdir)/include \
+		-I $(srcdir)/rust -o $(@D) $<
+
+.INTERMEDIATE: gccrust.pod
+
+gccrust.pod: rust/gccrust.texi
+	-$(TEXI2POD) -D gccrust < $< > $@
+
+# Build hooks.
+
+rust.all.cross: gccrust-cross$(exeext)
+rust.start.encap: gccrust$(exeext)
+rust.rest.encap:
+rust.info: doc/gccrust.info
+rust.dvi: doc/gccrust.dvi
+rust.pdf: doc/gccrust.pdf
+rust.html: $(build_htmldir)/rust/index.html
+rust.srcinfo: doc/gccrust.info
+	-cp -p $^ $(srcdir)/doc
+rust.srcextra:
+rust.tags: force
+	cd $(srcdir)/rust; \
+	etags -o TAGS.sub *.c *.h rustfrontend/*.h rustfrontend/*.cc; \
+	etags --include TAGS.sub --include ../TAGS.sub
+rust.man: doc/gccrust.1
+rust.srcman: doc/gccrust.1
+	-cp -p $^ $(srcdir)/doc
+
+lang_checks += check-rust
+lang_checks_parallelized += check-rust
+check_rust_parallelize = 10
+
+# No rust-specific selftests
+selftest-rust:
+
+# Install hooks.
+
+# Install hooks.
+
+# Install everything that is part of the front end, apart from the compiler executables listed in 
+# compilers in config-lang.in. 
+rust.install-common: installdirs
+	-rm -f $(DESTDIR)$(bindir)/$(GCCRUST_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) gccrust$(exeext) $(DESTDIR)$(bindir)/$(GCCRUST_INSTALL_NAME)$(exeext)
+	-if test -f rust1$(exeext); then \
+	  if test -f gccrust-cross$(exeext); then \
+	    :; \
+	  else \
+	    rm -f $(DESTDIR)$(bindir)/$(GCCRUST_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GCCRUST_INSTALL_NAME)$(exeext) $(GCCRUST_TARGET_INSTALL_NAME)$(exeext) ); \
+	  fi; \
+	fi
+
+# Install headers needed for plugins. 
+rust.install-plugin:
+
+rust.install-info: $(DESTDIR)$(infodir)/gccrust.info
+
+rust.install-pdf: doc/gccrust.pdf
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
+	@for p in doc/gccrust.pdf; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
+	done
+
+rust.install-html: $(build_htmldir)/rust
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
+	@for p in $(build_htmldir)/rust; do \
+	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
+	  f=$(html__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
+	  else \
+	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
+	  fi; \
+	done
+
+rust.install-man: $(DESTDIR)$(man1dir)/$(GCCRUST_INSTALL_NAME)$(man1ext)
+
+$(DESTDIR)$(man1dir)/$(GCCRUST_INSTALL_NAME)$(man1ext): doc/gccrust.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
+
+rust.uninstall:
+	rm -rf $(DESTDIR)$(bindir)/$(GCCRUST_INSTALL_NAME)$(exeext)
+	rm -rf $(DESTDIR)$(man1dir)/$(GCCRUST_INSTALL_NAME)$(man1ext)
+	rm -rf $(DESTDIR)$(bindir)/$(GCCRUST_TARGET_INSTALL_NAME)$(exeext)
+	rm -rf $(DESTDIR)$(infodir)/gccrust.info*
+
+# Clean hooks.
+
+rust.mostlyclean:
+	-rm -f rust/*$(objext)
+	-rm -f rust/*$(coverageexts)
+	-rm -f gccrust$(exeext) gccrust-cross$(exeext) rust1$(exeext)
+rust.clean:
+rust.distclean:
+rust.maintainer-clean:
+	-rm -f $(docobjdir)/gccrust.1
+
+# Stage hooks.
+
+rust.stage1: stage1-start
+	-mv rust/*$(objext) stage1/rust
+rust.stage2: stage2-start
+	-mv rust/*$(objext) stage2/rust
+rust.stage3: stage3-start
+	-mv rust/*$(objext) stage3/rust
+rust.stage4: stage4-start
+	-mv rust/*$(objext) stage4/rust
+rust.stageprofile: stageprofile-start
+	-mv rust/*$(objext) stageprofile/rust
+rust.stagefeedback: stagefeedback-start
+	-mv rust/*$(objext) stagefeedback/rust
+
+CFLAGS-rust/rust-lang.o += -DDEFAULT_TARGET_VERSION=\"$(version)\" \
+	-DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\"
+
+RUSTINCLUDES = -I $(srcdir)/rust -I $(srcdir)/rust/rustfrontend
+
+CFLAGS-rust/rust-gcc.o += $(RUSTINCLUDES)
+CFLAGS-rust/rust-linemap.o += $(RUSTINCLUDES)
+CFLAGS-rust/rust-sha1.o += $(RUSTINCLUDES)
+CFLAGS-rust/rust-gcc-diagnostics.o += $(RUSTINCLUDES)
+CFLAGS-rust/rust-encode-id.o += $(RUSTINCLUDES)
+
+rust/%.o: rust/rustfrontend/%.cc
+	$(COMPILE) $(RUSTINCLUDES) $<
+	$(POSTCOMPILE)

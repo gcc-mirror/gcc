@@ -1,0 +1,49 @@
+# config-lang.in -- Top level configure fragment for gcc Rust frontend.
+
+# Copyright (C) 2013 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Configure looks for the existence of this file to auto-config each language.
+# We define several parameters used by configure:
+#
+# language	- name of language as it would appear in $(LANGUAGES)
+# compilers	- value to add to $(COMPILERS)
+# diff_excludes	- files to ignore when building diffs between two versions.
+
+language="rust"
+
+# Space-separated list of compiler executables that will be run by the driver. The names here will 
+# each end with ‘\$(exeext)’. 
+compilers="grs1\$(exeext)"
+
+# Do not build by default.
+build_by_default="no"
+
+# Lists (space-separated) language front ends other than C that this front end requires to be
+# enabled (with the names given being their language settings). 
+lang_requires_boot_languages=c++
+
+# Lists (space-separated) targets in the top level Makefile to build the runtime libraries 
+# for this language, such as target-libobjc. 
+target_libs=""
+
+# Space-separated list of files that should be scanned by gengtype.c to generate the garbage 
+# collection tables and routines for this language. This excludes the files that are common to all 
+# front ends. 
+# gtfiles="\$(srcdir)/rust/rs-lang.c \$(srcdir)/rust/rdot-impl.h"
+gtfiles="\$(srcdir)/rust/rust-lang.cc"

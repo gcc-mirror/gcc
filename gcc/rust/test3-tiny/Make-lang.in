@@ -1,0 +1,226 @@
+# Make-lang.in -- Top level -*- makefile -*- fragment for GCC Rust frontend.
+
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file provides the language dependent support in the main Makefile.
+
+#RUST_EXES = rust
+
+# Use strict warnings for this front end.
+rust-warn = $(STRICT_WARN)
+
+# Installation name. Useful for cross compilers and used during install.
+GCCRS_INSTALL_NAME := $(shell echo gccrs|sed '$(program_transform_name)')
+GCCRS_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gccrs|sed '$(program_transform_name)')
+
+# Define the names for selecting rust in LANGUAGES.
+rust: gccrs$(exeext) grs1$(exeext)
+
+# Tell GNU make to ignore files by these names if they exist.
+.PHONY: rust
+
+# removed GRS_CFLAGS from here
+
+# removed object files from here
+#rs-lexer.o: $(srcdir)/rust/rs-lexer.l rs-parser.o
+#	$(FLEX) --outfile=lex.rs.c $(srcdir)/rust/rs-lexer.l
+#	$(COMPILER) $(GRS_CFLAGS) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+#	$(LDFLAGS) -c -o $@ lex.rs.c
+# etc. for parser, etc.
+
+# For compiler driver creation.
+#rsspec.o: $(srcdir)/rust/rsspec.cc $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
+#    $(CONFIG_H) opts.h
+#	(SHLIB='$(SHLIB)'; \
+#	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
+#		$(INCLUDES) $(srcdir)/rust/rsspec.cc)
+
+# Create the compiler driver gccrs.
+# A compiler driver is the program that interprets command argument and can be called from the command
+# line - e.g. gcc or g++, and not cc1, which is the actual compiler
+GCCRS_D_OBJS = \
+   $(GCC_OBJS) \
+   rust/rsspec.o \
+   $(END)
+
+gccrs$(exeext): $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
+
+# List of host object files used by the rust language - files for translation from the parse tree 
+# to GENERIC
+# The compiler proper, not driver
+GRS_OBJS = \
+    rust/rust-lang.o \
+    rust/rust-token.o \
+    rust/rust-lex.o \
+    rust/rust-parse.o \
+    rust/rust-scope.o \
+    rust/rust-misc-convert.o \
+    $(END)
+# removed object files from here 
+
+# The compiler itself is called grs1
+grs1$(exeext): attribs.o $(GRS_OBJS) $(BACKEND) $(LIBDEPS)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	      attribs.o $(GRS_OBJS) $(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+# Build hooks.
+
+# Copies its dependencies into the source directory. This generally should be used for generated files
+# such as Bison output files which are not version-controlled, but should be included in any release 
+# tarballs. This target will be executed during a bootstrap if ‘--enable-generated-files-in-srcdir’ 
+# was specified as a configure option. 
+rust.srcextra: 
+
+rust.all.cross:
+
+# idk what this does but someone used it
+rust.start.encap: gccrs$(exeext)
+rust.rest.encap:
+
+# Build generated man pages for the front end from Texinfo manuals (see Man Page Generation), in the 
+# build directory. This target is only called if the necessary tools are available, but should ignore 
+# errors so as not to stop the build if errors occur; man pages are optional and the tools involved 
+# may be installed in a broken way. 
+rust.man:
+
+# Copies its dependencies into the source directory. These targets will be executed during a bootstrap
+# if ‘--enable-generated-files-in-srcdir’ was specified as a configure option. 
+rust.srcman:
+
+# Clean hooks.
+
+rust.mostlyclean:
+#	cd $(srcdir)/rust; rm -f *.o y.tab.h y.tab.c lex.yy.c
+
+rust.clean: rust.mostlyclean
+
+# Builds an etags TAGS file in the language subdirectory in the source tree. 
+#rust.tags: force
+#	cd $(srcdir)/rust; etags -o TAGS.sub *.y *.l *.cc *.h; \
+#	etags --include TAGS.sub --include ../TAGS.sub
+
+# Build documentation hooks.
+
+# Build info documentation for the front end, in the build directory. This target is only called by 
+# ‘make bootstrap’ if a suitable version of makeinfo is available, so does not need to check for this, 
+# and should fail if an error occurs. 
+rust.info: 
+
+rust.srcinfo: 
+
+# Build DVI documentation for the front end, in the build directory. This should be done using 
+# $(TEXI2DVI), with appropriate -I arguments pointing to directories of included files. 
+rust.dvi: 
+
+# Build PDF documentation for the front end, in the build directory. This should be done using 
+# $(TEXI2PDF), with appropriate -I arguments pointing to directories of included files. 
+rust.pdf: 
+
+doc/rust.info: 
+doc/rust.dvi: 
+doc/rust.pdf: 
+
+# Build HTML documentation for the front end, in the build directory. 
+rust.html: 
+
+# Install hooks.
+
+# Install everything that is part of the front end, apart from the compiler executables listed in 
+# compilers in config-lang.in. 
+rust.install-common: installdirs
+#	-rm -f $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+#	-rm -f $(DESTDIR)$(bindir)/$(GCCRS_TARGET_INSTALL_NAME)$(exeext)
+#	$(INSTALL_PROGRAM) gccrs$(exeext) $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+#	if test -f $(DESTDIR)$(bindir)$(GCCRS_TARGET_INSTALL_NAME)$(exeext); then \
+#	  :; \
+#	else \
+#	  cd $(DESTDIR)$(bindir) && \
+#	   $(LN) $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
+#	fi
+	-rm -f $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) gccrs$(exeext) $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+	rm -f $(DESTDIR)$(bindir)/$(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
+	( cd $(DESTDIR)$(bindir) && \
+      $(LN) $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext) ); \
+
+# Install headers needed for plugins. 
+rust.install-plugin:
+
+# Uninstall files installed by installing the compiler. This is currently documented not to be 
+# supported, so the hook need not do anything. 
+rust.uninstall:
+#	-rm -rf $(DESTDIR)/$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+	-rm -f gccrs$(exeext) grs1$(exeext)
+	-rm -f $(GRS_OBJS)
+# ^those two are a maybe
+
+# No rust-specific selftests
+selftest-rust:
+
+# Install info documentation for the front end, if it is present in the source directory. This target 
+# should have dependencies on info files that should be installed. 
+rust.install-info: 
+
+rust.install-pdf: 
+
+# Install man pages for the front end. This target should ignore errors. 
+rust.install-man:
+
+# Stage hooks:
+# The toplevel makefile has already created stage?/rust at this point.
+# Used for handling bootstrap
+
+rust.stage1: stage1-start
+	-mv rust/*$(objext) stage1/rust
+rust.stage2: stage2-start
+	-mv rust/*$(objext) stage2/rust
+rust.stage3: stage3-start
+	-mv rust/*$(objext) stage3/rust
+rust.stage4: stage4-start
+	-mv rust/*$(objext) stage4/rust
+rust.stageprofile: stageprofile-start
+	-mv rust/*$(objext) stageprofile/rust
+rust.stagefeedback: stagefeedback-start
+	-mv rust/*$(objext) stagefeedback/rust
+
+#config.status: rust/config-lang.in
+
+#CFLAGS-rust/rust-lang.o += -DDEFAULT_TARGET_VERSION=\"$(version)\" \
+#	-DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\"
+
+# cross-folder includes - add new folders later
+RUST_INCLUDES = -I $(srcdir)/rust -I $(srcdir)/rust/lex -I $(srcdir)/rust/parse
+
+# add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
+CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
+CFLAGS-rust/rust-lex.o += $(RUST_INCLUDES)
+CFLAGS-rust/rust-parse.o += $(RUST_INCLUDES)
+
+# build all rust/lex files in rust folder, add cross-folder includes
+rust/%.o: rust/lex/%.cc
+	$(COMPILE) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# build all rust/parse files in rust folder, add cross-folder includes
+rust/%.o: rust/parse/%.cc
+	$(COMPILE) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)

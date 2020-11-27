@@ -1,0 +1,28 @@
+rustc notes:
+
+parser main entry point is "parsing source module as crate" (parse_crate_mod in parser.rs)
+
+this then returns the a crate object with crate "attrs", "module" and "span" returned. 
+attributes (parse_inner_attributes, attr.rs) seem to be the #![trait: whatever] shitty @interface 
+equivalents. However, the loop is broken if there is not an inner attribute or doc comment, and it is 
+only called once from entry point, so maybe the attribute is more specific to something.
+span seems to be the length of the tokens or something to do with that
+
+modules (parse_mod_items, parser.rs) are the rust name spacing system, obviously. parse_mod_items says 
+it "parses all of the items in a module." it calls parse_item while it continues to have a value (main 
+loop, presumably). all items are pushed onto a vector which is returned as the module item list in the 
+returned module object.
+
+parse_item (parser.rs) calls parse_outer_attributes and then calls (and returns) parse_item_ with 
+those attributes passed in.
+parse_outer_attribtues (attr.rs) claims to "parse attributes that appear before an item" and returns a 
+vector of all attributes on the item.
+
+parse_item_ (parser.rs) is goddamn closure heaven and I honestly don't understand exactly what happens 
+for that reason, but... it seems to "collect_tokens" based on parse_item_implementation, and also has 
+something to do with unclosed brackets (these brackets). Then, it returns like the item parsed, I 
+imagine.
+collect_tokens seems to just record all tokens encountered
+
+parse_item_implementation (parser.rs) is actually quite complicated and here we get to actual parsing 
+of top-level stuff, I think.
