@@ -261,6 +261,15 @@ Type::is_error_type() const
     }
 }
 
+// Note that this type is an error.  This is called by children when
+// they discover an error during the verify_types pass.
+
+void
+Type::set_is_error()
+{
+  this->classification_ = TYPE_ERROR;
+}
+
 // If this is a pointer type, return the type to which it points.
 // Otherwise, return NULL.
 
@@ -5871,6 +5880,7 @@ Struct_type::do_verify()
 	    {
 	      go_error_at(p->location(), "embedded type may not be a pointer");
 	      p->set_type(Type::make_error_type());
+	      this->set_is_error();
 	    }
 	  else if (t->points_to() != NULL
 		   && t->points_to()->interface_type() != NULL)
@@ -5878,6 +5888,7 @@ Struct_type::do_verify()
 	      go_error_at(p->location(),
 		       "embedded type may not be pointer to interface");
 	      p->set_type(Type::make_error_type());
+	      this->set_is_error();
 	    }
 	}
     }
@@ -7236,6 +7247,13 @@ Array_type::verify_length()
   Type_context context(Type::lookup_integer_type("int"), false);
   this->length_->determine_type(&context);
 
+  if (this->length_->is_error_expression()
+      || this->length_->type()->is_error())
+    {
+      go_assert(saw_errors());
+      return false;
+    }
+
   if (!this->length_->is_constant())
     {
       go_error_at(this->length_->location(), "array bound is not constant");
@@ -7310,7 +7328,10 @@ Array_type::do_verify()
   if (this->element_type()->is_error_type())
     return false;
   if (!this->verify_length())
-    this->length_ = Expression::make_error(this->length_->location());
+    {
+      this->length_ = Expression::make_error(this->length_->location());
+      this->set_is_error();
+    }
   return true;
 }
 
@@ -8125,11 +8146,20 @@ Map_type::do_verify()
 {
   // The runtime support uses "map[void]void".
   if (!this->key_type_->is_comparable() && !this->key_type_->is_void_type())
-    go_error_at(this->location_, "invalid map key type");
+    {
+      go_error_at(this->location_, "invalid map key type");
+      this->set_is_error();
+    }
   if (!this->key_type_->in_heap())
-    go_error_at(this->location_, "go:notinheap map key not allowed");
+    {
+      go_error_at(this->location_, "go:notinheap map key not allowed");
+      this->set_is_error();
+    }
   if (!this->val_type_->in_heap())
-    go_error_at(this->location_, "go:notinheap map value not allowed");
+    {
+      go_error_at(this->location_, "go:notinheap map value not allowed");
+      this->set_is_error();
+    }
   return true;
 }
 
@@ -8660,8 +8690,11 @@ Channel_type::do_verify()
   // We have no location for this error, but this is not something the
   // ordinary user will see.
   if (!this->element_type_->in_heap())
-    go_error_at(Linemap::unknown_location(),
-		"chan of go:notinheap type not allowed");
+    {
+      go_error_at(Linemap::unknown_location(),
+		  "chan of go:notinheap type not allowed");
+      this->set_is_error();
+    }
   return true;
 }
 

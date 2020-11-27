@@ -15303,9 +15303,22 @@ Array_construction_expression::do_is_static_initializer() const
 void
 Array_construction_expression::do_determine_type(const Type_context*)
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
   if (this->vals() == NULL)
     return;
-  Type_context subcontext(this->type_->array_type()->element_type(), false);
+  Array_type* at = this->type_->array_type();
+  if (at == NULL || at->is_error() || at->element_type()->is_error())
+    {
+      go_assert(saw_errors());
+      this->set_is_error();
+      return;
+    }
+  Type_context subcontext(at->element_type(), false);
   for (Expression_list::const_iterator pv = this->vals()->begin();
        pv != this->vals()->end();
        ++pv)
@@ -15320,10 +15333,22 @@ Array_construction_expression::do_determine_type(const Type_context*)
 void
 Array_construction_expression::do_check_types(Gogo*)
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
   if (this->vals() == NULL)
     return;
 
   Array_type* at = this->type_->array_type();
+  if (at == NULL || at->is_error() || at->element_type()->is_error())
+    {
+      go_assert(saw_errors());
+      this->set_is_error();
+      return;
+    }
   int i = 0;
   Type* element_type = at->element_type();
   for (Expression_list::const_iterator pv = this->vals()->begin();
@@ -15348,6 +15373,12 @@ Expression*
 Array_construction_expression::do_flatten(Gogo*, Named_object*,
 					   Statement_inserter* inserter)
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return this;
+    }
+
   if (this->vals() == NULL)
     return this;
 
@@ -15384,6 +15415,12 @@ Array_construction_expression::do_flatten(Gogo*, Named_object*,
 void
 Array_construction_expression::do_add_conversions()
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
   if (this->vals() == NULL)
     return;
 
