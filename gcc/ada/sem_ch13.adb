@@ -15094,27 +15094,39 @@ package body Sem_Ch13 is
    function Parse_Aspect_Stable_Properties
      (Aspect_Spec : Node_Id; Negated : out Boolean) return Subprogram_List
    is
-      L  : List_Id;
-      Id : Node_Id;
-
       function Extract_Entity (Expr : Node_Id) return Entity_Id;
-      --  Given an element of a Stable_Properties aspect spec,
-      --  return the associated entity.
+      --  Given an element of a Stable_Properties aspect spec, return the
+      --  associated entity.
       --  This function updates the Negated flag as a side-effect.
 
+      --------------------
+      -- Extract_Entity --
+      --------------------
+
       function Extract_Entity (Expr : Node_Id) return Entity_Id is
-         Name : Node_Id := Expr;
+         Name : Node_Id;
       begin
          if Nkind (Expr) = N_Op_Not then
             Negated := True;
             Name := Right_Opnd (Expr);
+         else
+            Name := Expr;
          end if;
+
          if Nkind (Name) in N_Has_Entity then
             return Entity (Name);
          else
             return Empty;
          end if;
       end Extract_Entity;
+
+      --  Local variables
+
+      L  : List_Id;
+      Id : Node_Id;
+
+   --  Start of processing for Parse_Aspect_Stable_Properties
+
    begin
       Negated := False;
 
@@ -15128,7 +15140,7 @@ package body Sem_Ch13 is
             for I in Result'Range loop
                Result (I) := Extract_Entity (Id);
 
-               if not Present (Result (I)) then
+               if No (Result (I)) then
                   pragma Assert (Serious_Errors_Detected > 0);
                   goto Ignore_Aspect;
                end if;
@@ -15308,7 +15320,7 @@ package body Sem_Ch13 is
          begin
             while Present (PF_Arg) loop
                Check_Property_Function_Arg (PF_Arg);
-               PF_Arg := Next (PF_Arg);
+               Next (PF_Arg);
             end loop;
          end;
       else
