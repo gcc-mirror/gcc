@@ -15692,17 +15692,16 @@ package body Sem_Ch13 is
    ------------------------------
 
    procedure Resolve_Aspect_Aggregate
-    (Typ :  Entity_Id;
+    (Typ  : Entity_Id;
      Expr : Node_Id)
    is
+      function Valid_Empty          (E : Entity_Id) return Boolean;
+      function Valid_Add_Named      (E : Entity_Id) return Boolean;
+      function Valid_Add_Unnamed    (E : Entity_Id) return Boolean;
+      function Valid_New_Indexed    (E : Entity_Id) return Boolean;
+      function Valid_Assign_Indexed (E : Entity_Id) return Boolean;
       --  Predicates that establish the legality of each possible operation in
       --  an Aggregate aspect.
-
-      function Valid_Empty             (E : Entity_Id) return Boolean;
-      function Valid_Add_Named         (E : Entity_Id) return Boolean;
-      function Valid_Add_Unnamed       (E : Entity_Id) return Boolean;
-      function Valid_New_Indexed       (E : Entity_Id) return Boolean;
-      function Valid_Assign_Indexed    (E : Entity_Id) return Boolean;
 
       generic
         with function Pred (Id : Node_Id) return Boolean;
@@ -15726,7 +15725,7 @@ package body Sem_Ch13 is
       end Valid_Assign_Indexed;
 
       -----------------
-      -- Valid_Emoty --
+      -- Valid_Empty --
       -----------------
 
       function Valid_Empty (E :  Entity_Id) return Boolean is
@@ -15751,7 +15750,7 @@ package body Sem_Ch13 is
       -- Valid_Add_Named --
       ---------------------
 
-      function Valid_Add_Named  (E : Entity_Id) return Boolean is
+      function Valid_Add_Named (E : Entity_Id) return Boolean is
          F2, F3 : Entity_Id;
       begin
          if Ekind (E) = E_Procedure
@@ -15850,6 +15849,9 @@ package body Sem_Ch13 is
       procedure Resolve_Assign_Indexed
                                 is new Resolve_Operation
                                                       (Valid_Assign_Indexed);
+
+   --  Start of processing for Resolve_Aspect_Aggregate
+
    begin
       Assoc := First (Component_Associations (Expr));
 
