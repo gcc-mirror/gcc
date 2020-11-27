@@ -27,35 +27,35 @@ namespace Rust {
         };
 
         inline MacroFragSpec get_frag_spec_from_str(::std::string str) {
-            if (str == "block") 
-              return BLOCK;
+            if (str == "block")
+                return BLOCK;
             else if (str == "expr")
-              return EXPR;
+                return EXPR;
             else if (str == "ident")
-              return IDENT;
+                return IDENT;
             else if (str == "item")
-              return ITEM;
+                return ITEM;
             else if (str == "lifetime")
-              return LIFETIME;
+                return LIFETIME;
             else if (str == "literal")
-              return LITERAL;
+                return LITERAL;
             else if (str == "meta")
-              return META;
+                return META;
             else if (str == "pat")
-              return PAT;
+                return PAT;
             else if (str == "path")
-              return PATH;
+                return PATH;
             else if (str == "stmt")
-              return STMT;
+                return STMT;
             else if (str == "tt")
-              return TT;
+                return TT;
             else if (str == "ty")
-              return TY;
+                return TY;
             else if (str == "vis")
-              return VIS;
+                return VIS;
             else {
-              //error_at("invalid string '%s' used as fragment specifier", str->c_str());
-              return INVALID;
+                // error_at("invalid string '%s' used as fragment specifier", str->c_str());
+                return INVALID;
             }
         }
 
@@ -63,6 +63,8 @@ namespace Rust {
         class MacroMatchFragment : public MacroMatch {
             Identifier ident;
             MacroFragSpec frag_spec;
+
+            // TODO: should store location information?
 
           public:
             MacroMatchFragment(Identifier ident, MacroFragSpec frag_spec) :
@@ -79,6 +81,8 @@ namespace Rust {
             }
 
             ::std::string as_string() const;
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
 
           protected:
             // Use covariance to implement clone function as returning this object rather than base
@@ -102,16 +106,18 @@ namespace Rust {
             // any token except delimiters and repetition operators
             ::std::unique_ptr<MacroRepSep> sep;
 
+            // TODO: should store location information?
+
           public:
             // Returns whether macro match repetition has separator token.
             inline bool has_sep() const {
                 return sep != NULL;
             }
 
-            MacroMatchRepetition(::std::vector< ::std::unique_ptr<MacroMatch> > matches, MacroRepOp op,
-              MacroRepSep* sep) :
+            MacroMatchRepetition(::std::vector< ::std::unique_ptr<MacroMatch> > matches,
+              MacroRepOp op, ::std::unique_ptr<MacroRepSep> sep) :
               matches(::std::move(matches)),
-              op(op), sep(sep) {}
+              op(op), sep(::std::move(sep)) {}
 
             // Copy constructor with clone
             MacroMatchRepetition(MacroMatchRepetition const& other) :
@@ -148,6 +154,8 @@ namespace Rust {
 
             ::std::string as_string() const;
 
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+
           protected:
             // Use covariance to implement clone function as returning this object rather than base
             virtual MacroMatchRepetition* clone_macro_match_impl() const OVERRIDE {
@@ -163,6 +171,8 @@ namespace Rust {
 
             // TODO: think of way to mark invalid that doesn't take up more space
             bool is_invalid;
+
+            // TODO: should store location information?
 
           public:
             MacroMatcher(
@@ -210,6 +220,8 @@ namespace Rust {
 
             ::std::string as_string() const;
 
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+
           protected:
             // Use covariance to implement clone function as returning this object rather than base
             virtual MacroMatcher* clone_macro_match_impl() const OVERRIDE {
@@ -225,8 +237,14 @@ namespace Rust {
           private:
             DelimTokenTree token_tree;
 
+            // TODO: should store location information?
+
           public:
             MacroTranscriber(DelimTokenTree token_tree) : token_tree(::std::move(token_tree)) {}
+
+            ::std::string as_string() const {
+                return token_tree.as_string();
+            }
         };
 
         // A macro rule? Matcher and transcriber pair?
@@ -234,6 +252,8 @@ namespace Rust {
           private:
             MacroMatcher matcher;
             MacroTranscriber transcriber;
+
+            // TODO: should store location information?
 
           public:
             MacroRule(MacroMatcher matcher, MacroTranscriber transcriber) :
@@ -249,6 +269,8 @@ namespace Rust {
                 return MacroRule(
                   MacroMatcher::create_error(), MacroTranscriber(DelimTokenTree::create_empty()));
             }
+
+            ::std::string as_string() const;
         };
 
         // A macro rules definition item AST node
@@ -260,13 +282,19 @@ namespace Rust {
             // MacroRules rules;
             ::std::vector<MacroRule> rules; // inlined form
 
+            location_t locus;
+
           public:
             ::std::string as_string() const;
 
             MacroRulesDefinition(Identifier rule_name, DelimType delim_type,
-              ::std::vector<MacroRule> rules, ::std::vector<Attribute> outer_attrs) :
-              MacroItem(::std::move(outer_attrs)), rule_name(::std::move(rule_name)),
-              delim_type(delim_type), rules(::std::move(rules)) {}
+              ::std::vector<MacroRule> rules, ::std::vector<Attribute> outer_attrs,
+              location_t locus) :
+              MacroItem(::std::move(outer_attrs)),
+              rule_name(::std::move(rule_name)), delim_type(delim_type), rules(::std::move(rules)),
+              locus(locus) {}
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
 
           protected:
             // Use covariance to implement clone function as returning this object rather than base
@@ -283,13 +311,25 @@ namespace Rust {
             SimplePath path;
             DelimTokenTree token_tree;
 
+            location_t locus;
+
           public:
             ::std::string as_string() const;
 
-            MacroInvocation(
-              SimplePath path, DelimTokenTree token_tree, ::std::vector<Attribute> outer_attrs) :
-              ExprWithoutBlock(::std::move(outer_attrs)), path(::std::move(path)),
-              token_tree(::std::move(token_tree)) {}
+            MacroInvocation(SimplePath path, DelimTokenTree token_tree,
+              ::std::vector<Attribute> outer_attrs, location_t locus) :
+              ExprWithoutBlock(::std::move(outer_attrs)),
+              path(::std::move(path)), token_tree(::std::move(token_tree)), locus(locus) {}
+
+            location_t get_locus() const {
+                return locus;
+            }
+
+            location_t get_locus_slow() const OVERRIDE {
+                return get_locus();
+            }
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
 
           protected:
             // Use covariance to implement clone function as returning this object rather than base
@@ -315,6 +355,231 @@ namespace Rust {
             // Use covariance to implement clone function as returning this object rather than base
             virtual MacroInvocation* clone_type_no_bounds_impl() const OVERRIDE {
                 return new MacroInvocation(*this);
+            }
+        };
+
+        // more generic meta item path-only form
+        class MetaItemPath : public MetaItem {
+            SimplePath path;
+
+          public:
+            MetaItemPath(SimplePath path) : path(::std::move(path)) {}
+
+            ::std::string as_string() const OVERRIDE {
+                return path.as_string();
+            }
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+
+            // HACK: used to simplify parsing - returns non-empty only in this case
+            virtual SimplePath to_path_item() const OVERRIDE {
+                // this should copy construct - TODO ensure it does
+                return path;
+            }
+
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE; 
+
+          protected:
+            // Use covariance to implement clone function as returning this type
+            virtual MetaItemPath* clone_meta_item_inner_impl() const OVERRIDE {
+                return new MetaItemPath(*this);
+            }
+        };
+
+        // more generic meta item sequence form
+        class MetaItemSeq : public MetaItem {
+            SimplePath path;
+            ::std::vector< ::std::unique_ptr<MetaItemInner> > seq;
+
+          public:
+            MetaItemSeq(SimplePath path, ::std::vector< ::std::unique_ptr<MetaItemInner> > seq) :
+              path(::std::move(path)), seq(::std::move(seq)) {}
+
+            // copy constructor with vector clone
+            MetaItemSeq(const MetaItemSeq& other) : path(other.path) {
+                // crappy vector unique pointer clone - TODO is there a better way of doing this?
+                seq.reserve(other.seq.size());
+
+                for (const auto& e : other.seq) {
+                    seq.push_back(e->clone_meta_item_inner());
+                }
+            }
+
+            // destructor definition not required
+
+            // overloaded assignment operator with vector clone
+            MetaItemSeq& operator=(const MetaItemSeq& other) {
+                MetaItem::operator=(other);
+                path = other.path;
+                // crappy vector unique pointer clone - TODO is there a better way of doing this?
+                seq.reserve(other.seq.size());
+
+                for (const auto& e : other.seq) {
+                    seq.push_back(e->clone_meta_item_inner());
+                }
+
+                return *this;
+            }
+
+            // default move constructors
+            MetaItemSeq(MetaItemSeq&& other) = default;
+            MetaItemSeq& operator=(MetaItemSeq&& other) = default;
+
+            ::std::string as_string() const OVERRIDE;
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE;
+
+          protected:
+            // Use covariance to implement clone function as returning this type
+            virtual MetaItemSeq* clone_meta_item_inner_impl() const OVERRIDE {
+                return new MetaItemSeq(*this);
+            }
+        };
+
+        // Preferred specialisation for single-identifier meta items.
+        class MetaWord : public MetaItem {
+            Identifier ident;
+
+          public:
+            MetaWord(Identifier ident) : ident(::std::move(ident)) {}
+
+            ::std::string as_string() const OVERRIDE {
+                return ident;
+            }
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE; 
+
+          protected:
+            // Use covariance to implement clone function as returning this type
+            virtual MetaWord* clone_meta_item_inner_impl() const OVERRIDE {
+                return new MetaWord(*this);
+            }
+        };
+
+        // Preferred specialisation for "identifier '=' string literal" meta items.
+        class MetaNameValueStr : public MetaItem {
+            Identifier ident;
+            ::std::string str;
+
+          public:
+            MetaNameValueStr(Identifier ident, ::std::string str) :
+              ident(::std::move(ident)), str(::std::move(str)) {}
+
+            ::std::string as_string() const OVERRIDE {
+                return ident + " = " + str;
+            }
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+
+            // HACK: used to simplify parsing - creates a copy of this
+            virtual MetaNameValueStr* to_meta_name_value_str() const OVERRIDE {
+                return clone_meta_item_inner_impl();
+            }
+
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE; 
+
+          protected:
+            // Use covariance to implement clone function as returning this type
+            virtual MetaNameValueStr* clone_meta_item_inner_impl() const OVERRIDE {
+                return new MetaNameValueStr(*this);
+            }
+        };
+
+        // doubles up as MetaListIdents - determine via iterating through each path?
+        // Preferred specialisation for "identifier '(' SimplePath, SimplePath, ... ')'"
+        class MetaListPaths : public MetaItem {
+            Identifier ident;
+            ::std::vector<SimplePath> paths;
+
+          public:
+            MetaListPaths(Identifier ident, ::std::vector<SimplePath> paths) :
+              ident(::std::move(ident)), paths(::std::move(paths)) {}
+
+            ::std::string as_string() const OVERRIDE;
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE;
+
+          private:
+            bool check_path_exists_in_cfg(const Session& session, const SimplePath& path) const;
+
+          protected:
+            // Use covariance to implement clone function as returning this type
+            virtual MetaListPaths* clone_meta_item_inner_impl() const OVERRIDE {
+                return new MetaListPaths(*this);
+            }
+        };
+
+        // Preferred specialisation for "identifier '(' MetaNameValueStr, ... ')'"
+        class MetaListNameValueStr : public MetaItem {
+            Identifier ident;
+            ::std::vector<MetaNameValueStr> strs;
+
+          public:
+            MetaListNameValueStr(Identifier ident, ::std::vector<MetaNameValueStr> strs) :
+              ident(::std::move(ident)), strs(::std::move(strs)) {}
+
+            ::std::string as_string() const OVERRIDE;
+
+            virtual void accept_vis(ASTVisitor& vis) OVERRIDE;
+
+            virtual bool check_cfg_predicate(const Session& session) const OVERRIDE;
+
+          protected:
+            // Use covariance to implement clone function as returning this type
+            virtual MetaListNameValueStr* clone_meta_item_inner_impl() const OVERRIDE {
+                return new MetaListNameValueStr(*this);
+            }
+        };
+
+        // Object that parses macros from a token stream.
+        struct MacroParser {
+          private:
+            ::std::vector< ::std::unique_ptr<Token> > token_stream;
+            // probably have to make this mutable (mutable int stream_pos) otherwise const has to be
+            // removed up to DelimTokenTree or further ok since this changing would have an effect on
+            // the results of the methods run (i.e. not logically const), the parsing methods
+            // shouldn't be const
+            int stream_pos;
+
+          public:
+            MacroParser(
+              ::std::vector< ::std::unique_ptr<Token> > token_stream, int stream_start_pos = 0) :
+              token_stream(::std::move(token_stream)),
+              stream_pos(stream_start_pos) {}
+
+            ~MacroParser() = default;
+
+            ::std::vector< ::std::unique_ptr<MetaItemInner> > parse_meta_item_seq();
+
+          private:
+            // Parses a MetaItemInner.
+            ::std::unique_ptr<MetaItemInner> parse_meta_item_inner();
+            // Returns whether token can end a meta item.
+            bool is_end_meta_item_tok(TokenId id) const;
+            // Parses a simple path.
+            SimplePath parse_simple_path();
+            // Parses a segment of a simple path (but not scope resolution operator).
+            SimplePathSegment parse_simple_path_segment();
+            // Parses a MetaItemLitExpr.
+            ::std::unique_ptr<MetaItemLitExpr> parse_meta_item_lit();
+            // Parses a literal.
+            Literal parse_literal();
+            // Parses a meta item that begins with a simple path.
+            ::std::unique_ptr<MetaItem> parse_path_meta_item();
+
+            // TODO: should this be const?
+            ::std::unique_ptr<Token>& peek_token(int i = 0) {
+                return token_stream[stream_pos + i];
+            }
+
+            void skip_token(int i = 0) {
+                stream_pos += 1 + i;
             }
         };
     }

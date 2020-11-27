@@ -22,27 +22,24 @@ along with GCC; see the file COPYING3.  If not see
 
 #define RUST_EXTERN_C
 
-/* Functions defined in the Rust frontend proper called by the GCC
-   interface.  */
-extern void rust_add_search_path (const char*);
+class Linemap;
 
-extern void rust_parse_input_files (const char**, unsigned int,
-                                    bool only_check_syntax);
+extern Linemap* rust_get_linemap();
+
+extern void rust_create_rustly(bool only_check_syntax, Linemap* linemap);
+
+extern void rust_parse_input_files (const char**, unsigned int);
+
+extern unsigned int rust_field_alignment (tree);
+
 extern void rust_write_globals (void);
-
-/* Functions defined in the GCC interface called by the Rust frontend
-   proper.  */
 
 extern void rust_preserve_from_gc (tree);
 
 extern bool saw_errors (void);
 
-extern const char *rust_localize_identifier (const char*);
-
 extern unsigned int rust_field_alignment (tree);
 
-extern void rust_imported_unsafe (void);
-
-extern GTY(()) tree rust_non_zero_struct;
+extern void rust_write_export_data (const char *, unsigned int);
 
 #endif /* !defined(RUST_RUST_C_H) */

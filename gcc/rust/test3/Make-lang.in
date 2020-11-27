@@ -77,6 +77,7 @@ GRS_OBJS = \
     rust/rust-scope.o \
     rust/rust-misc-convert.o \
 	rust/rust-ast-full-test.o \
+	rust/rust-session-manager.o \
     $(END)
 # removed object files from here 
 
@@ -219,6 +220,7 @@ RUST_INCLUDES = -I $(srcdir)/rust -I $(srcdir)/rust/lex -I $(srcdir)/rust/parse 
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-lex.o += $(RUST_INCLUDES)
 CFLAGS-rust/rust-parse.o += $(RUST_INCLUDES)
+CFLAGS-rust/rust-session-manager.o += $(RUST_INCLUDES)
 
 # TODO: possibly find a way to ensure C++11 compilation level here?
 

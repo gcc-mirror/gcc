@@ -137,24 +137,25 @@ for                     {  return FOR; }
 
 %%
 
-bool grs_do_compile(const char * in) {
+bool grs_do_compile (const char * in)
+{
     bool retval = true;
-    FILE * fd = fopen(in, "rb");
-    
-    if (fd) {
-	      yyin = fd;
-        
+    FILE * fd = fopen (in, "rb");
+    if (fd)
+    {
+	yyin = fd;
         // yydebug = 1;
-        linemap_add(line_table, LC_ENTER, 0, in, 0);
-	      retval = yyparse();
-	      fclose (fd);
-        linemap_add(line_table, LC_LEAVE, 0, NULL, 0);
-	      yylex_destroy();
-    } else {
-	      fprintf(stderr, "error opening file %s\n", in);
-	      retval = false;
+        linemap_add (line_table, LC_ENTER, 0, in, 0);
+	retval = yyparse ();
+	fclose (fd);
+        linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
+	yylex_destroy ();
     }
-    
+    else
+    {
+	fprintf (stderr, "error opening file %s\n", in);
+	retval = false;
+    }
     return retval;
 }
 

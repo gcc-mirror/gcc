@@ -60,6 +60,9 @@ namespace Rust {
         // Skips the current token.
         void skip_token();
 
+        // Replaces the current token with a specified token.
+        void replace_current_token(TokenPtr replacement);
+
       private:
         // File for use as input.
         FILE* input;

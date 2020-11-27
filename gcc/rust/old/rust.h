@@ -21,41 +21,41 @@ along with GCC; see the file COPYING3.  If not see
 
 // These must be included before the #poison declarations in system.h.
 #include <algorithm>
+#include <string>
 #include <list>
 #include <map>
 #include <set>
-#include <string>
 #include <vector>
 
-#include "ansidecl.h"
-#include "basic-block.h"
-#include "cgraph.h"
-#include "common/common-target.h"
-#include "convert.h"
-#include "coretypes.h"
-#include "debug.h"
-#include "diagnostic-core.h"
-#include "diagnostic.h"
-#include "flags.h"
-#include "gimple-expr.h"
-#include "gimplify.h"
-#include "input.h"
-#include "langhooks-def.h"
-#include "langhooks.h"
-#include "options.h"
-#include "opts.h"
-#include "print-tree.h"
-#include "stor-layout.h"
-#include "stringpool.h"
 #include "system.h"
-#include "target.h"
-#include "toplev.h"
+#include "ansidecl.h"
+#include "coretypes.h"
+#include "opts.h"
+#include "tree.h"
 #include "tree-iterator.h"
 #include "tree-pass.h"
-#include "tree.h"
+#include "basic-block.h"
+#include "gimple-expr.h"
+#include "gimplify.h"
+#include "stor-layout.h"
+#include "toplev.h"
+#include "debug.h"
+#include "options.h"
+#include "flags.h"
+#include "convert.h"
+#include "diagnostic.h"
+#include "langhooks.h"
+#include "langhooks-def.h"
+#include "target.h"
+#include "common/common-target.h"
+#include "diagnostic-core.h"
+#include "cgraph.h"
 #include "varasm.h"
-#include <hashtab.h>
+#include "stringpool.h"
+#include "print-tree.h"
 #include <vec.h>
+#include <hashtab.h>
+#include "input.h"
 
 #include <gmp.h>
 #include <mpfr.h>
@@ -63,40 +63,37 @@ along with GCC; see the file COPYING3.  If not see
 #include "rdot-impl.h"
 
 #if !defined(YYLTYPE)
-// Location as used in grs - line and column numbers
 typedef struct grs_location {
-    int line;
-    int column;
+  int line;
+  int column;
 } grs_location_t;
-// The location of a type?
 typedef grs_location_t YYLTYPE;
-// The location of a type?
 #define YYLTYPE YYLTYPE
 #endif
 
-extern char* GRS_current_infile;
-extern char* GRS_current_infname;
+extern char * GRS_current_infile;
+extern char * GRS_current_infname;
 
 /* important langhook prototypes */
-extern void grs_set_prefix(const char*);
-extern void grs_preserve_from_gc(tree);
-extern void grs_add_search_path(const char*);
-extern void grs_parse_input_files(const char**, unsigned int);
-extern tree grs_type_for_size(unsigned int, int);
-extern tree grs_type_for_mode(enum machine_mode, int);
+extern void grs_set_prefix (const char *);
+extern void grs_preserve_from_gc (tree);
+extern void grs_add_search_path (const char *);
+extern void grs_parse_input_files (const char **, unsigned int);
+extern tree grs_type_for_size (unsigned int, int);
+extern tree grs_type_for_mode (enum machine_mode, int);
 
-extern bool grs_do_compile(const char*);
+extern bool grs_do_compile (const char *);
 
 /* rdot pass manager */
 extern tree cstring_type_node;
 
-extern vec<rdot, va_gc>* dot_pass_inferTypes(vec<rdot, va_gc>*);
-extern vec<rdot, va_gc>* dot_pass_PrettyPrint(vec<rdot, va_gc>*);
-extern vec<tree, va_gc>* dot_pass_Genericify(vec<rdot, va_gc>*);
-extern void dot_pass_pushDecl(rdot);
-extern void dot_pass_WriteGlobals(void);
+extern vec<rdot,va_gc> * dot_pass_inferTypes (vec<rdot,va_gc> *);
+extern vec<rdot,va_gc> * dot_pass_PrettyPrint (vec<rdot,va_gc> *);
+extern vec<tree,va_gc> * dot_pass_Genericify (vec<rdot,va_gc> *);
+extern void dot_pass_pushDecl (rdot);
+extern void dot_pass_WriteGlobals (void);
 
 /* hooks */
-extern void rs_fill_runtime_decls(std::map<std::string, tree>*);
+extern void rs_fill_runtime_decls (std::map<std::string, tree> *);
 
 #endif //__GCC_RUST_H__

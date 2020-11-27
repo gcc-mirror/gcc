@@ -23,26 +23,12 @@
 #
 # language	- name of language as it would appear in $(LANGUAGES)
 # compilers	- value to add to $(COMPILERS)
-# diff_excludes	- files to ignore when building diffs between two versions.
 
 language="rust"
-
-# Space-separated list of compiler executables that will be run by the driver. The names here will 
-# each end with ‘\$(exeext)’. 
 compilers="rust1\$(exeext)"
 
-# Do not build by default.
 build_by_default="no"
 
-# Lists (space-separated) language front ends other than C that this front end requires to be
-# enabled (with the names given being their language settings). 
-#lang_requires_boot_languages=c++
-
-# Lists (space-separated) targets in the top level Makefile to build the runtime libraries 
-# for this language, such as target-libobjc. 
 target_libs="target-libffi target-libbacktrace"
 
-# Space-separated list of files that should be scanned by gengtype.c to generate the garbage 
-# collection tables and routines for this language. This excludes the files that are common to all 
-# front ends. 
 gtfiles="\$(srcdir)/rust/rust-lang.c \$(srcdir)/rust/rust-c.h"

@@ -44,7 +44,10 @@ along with GCC; see the file COPYING3.  If not see
 #define THREAD_LIBRARY "pthread"
 #define THREAD_LIBRARY_PROFILE THREAD_LIBRARY
 
+<<<<<<< HEAD
 // Refers to compiler driver: handles calling the compiler (i.e. options, libraries to use)
+=======
+>>>>>>> c611d209696bd5983b4b777be0beea80351dee46
 void
 lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 		      unsigned int *in_decoded_options_count,

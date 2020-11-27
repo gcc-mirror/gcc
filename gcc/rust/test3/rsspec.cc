@@ -16,16 +16,18 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* #include "config.h"
-#include "coretypes.h"
-#include "gcc.h"
-#include "opts.h"
+#include "config.h"
 #include "system.h"
+#include "coretypes.h"
+//#include "gcc.h"
+#include "opts.h"
 
-#include "intl.h"
 #include "tm.h"
+//#include "intl.h"
 
-#ifndef MATH_LIBRARY
+// are gcc and intl includes required?
+
+/*#ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
 #endif
 
@@ -117,8 +119,10 @@ static struct cl_decoded_option* grs_new_decoded_options;*/
 // Presumably this is the "compiler driver", which runs the compiler
 // Handle calling the compiler (i.e. options, libraries to use)
 // Used to change flags before passing them to the driver
-void lang_specific_driver(struct cl_decoded_option** /* in_decoded_options*/,
-  unsigned int* /* in_decoded_options_count*/, int* /* in_added_libraries*/) {
+void lang_specific_driver(struct cl_decoded_option** in_decoded_options ATTRIBUTE_UNUSED,
+  unsigned int* in_decoded_options_count ATTRIBUTE_UNUSED, int* in_added_libraries ATTRIBUTE_UNUSED) {
+      // as of now, no options need changing, but they may in the future
+
     /* unsigned int i = 0;
     unsigned int argc = *in_decoded_options_count;                   // argument list count
     struct cl_decoded_option* decoded_options = *in_decoded_options; // argument list

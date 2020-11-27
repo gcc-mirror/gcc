@@ -37,6 +37,11 @@
 #include <set>
 #include <vector>
 #include <sstream>
+<<<<<<< HEAD
+=======
+#include <string>
+#include <deque>
+>>>>>>> c611d209696bd5983b4b777be0beea80351dee46
 
 #if defined(HAVE_UNORDERED_MAP)
 

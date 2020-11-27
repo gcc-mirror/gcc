@@ -16,23 +16,28 @@
 #include "common/common-target.h"
 // note: header files must be in this order or else forward declarations don't work properly. Kinda
 // dumb system, but have to live with it. clang-format seems to mess it up
-/* Order: config, system, coretypes, target, tree, gimple-expr, diagnostic, opts, fold-const, 
+/* Order: config, system, coretypes, target, tree, gimple-expr, diagnostic, opts, fold-const,
  * gimplify, stor-layout, debug, convert, langhooks, langhooks-def, common-target */
+
+// FIXME: test saving intellisense
+#include "options.h"
 
 // version check to stop compiling if c++ isn't c++11 or higher
 #if __cplusplus < 201103
-# error "GCC Rust frontend requires C++11 or higher. You can compile the g++ frontend first and then compile the Rust frontend using that."
+#error \
+  "GCC Rust frontend requires C++11 or higher. You can compile the g++ frontend first and then compile the Rust frontend using that."
 #endif
 // TODO: is this best way to do it? Is it allowed? (should be)
 
 /* General TODOs:
- *  - maybe convert all raw pointer-returning/passing functions that conceptually return a unique 
+ *  - maybe convert all raw pointer-returning/passing functions that conceptually return a unique
  *    pointer actually return a unique pointer. i.e. parse methods and constructors for AST objects.
- *    make_unique should probably be avoided to keep C++11 compatibility. 
+ *    make_unique should probably be avoided to keep C++11 compatibility.
  *  - convert all copies of expensive-to-copy (deep copy) AST objects into moves, if possible. Don't
  *    remove clone functionality - it may be required for e.g. HIR conversion. */
 
 #include "rust-parse.h"
+#include "rust-session-manager.h"
 
 // Language-dependent contents of a type. GTY() mark used for garbage collector.
 struct GTY(()) lang_type {
@@ -63,11 +68,15 @@ struct GTY(()) language_function {
     int dummy;
 };
 
+// Kinda HACK-ish - store parsing session as static variable
+static Rust::Session session;
+
 /* Language hooks.  */
 
 /* Initial lang hook called (possibly), used for initialisation.
  * Must call build_common_tree_nodes, set_sizetype, build_common_tree_nodes_2, and
- * build_common_builtin_nodes, as well as set global variable void_list_node. */
+ * build_common_builtin_nodes, as well as set global variable void_list_node. 
+ * Apparently called after option handling? */
 static bool grs_langhook_init(void) {
     /* Something to do with this:
      This allows the code in d-builtins.cc to not have to worry about
@@ -86,61 +95,24 @@ static bool grs_langhook_init(void) {
     // using_eh_for_cleanups();
 
     // rdot_init();
+
+    // initialise compiler session
+    session.init();
+
+    
+
     return true;
 }
 
-// Parses a single file with filename filename.
-static void grs_parse_file(const char* filename) {
-    FILE* file = fopen(filename, "r");
-
-    if (file == NULL) {
-        fatal_error(UNKNOWN_LOCATION, "cannot open filename %s: %m", filename);
-    }
-
-    // parse file here
-    // create lexer and parser
-    Rust::Lexer lex(filename, file);
-    Rust::Parser parser(lex);
-
-    //parser.parse_program();
-    
-    // lexer debug
-    //parser.debug_dump_lex_output();
-
-    // parser debug
-    parser.debug_dump_ast_output();
-
-    // semantic analyser debug
-
-    /* Rust::const_TokenPtr tok = lex.peek_token();
-    // do shit until EOF
-    while (true) {
-        bool has_text = tok->get_id() == Rust::IDENTIFIER || tok->get_id() == Rust::INT_LITERAL
-                        || tok->get_id() == Rust::FLOAT_LITERAL
-                        || tok->get_id() == Rust::STRING_LITERAL;
-
-        location_t loc = tok->get_locus();
-
-        fprintf(stderr, "<id=%s%s, %s, line=%d, col=%d>\n", tok->token_id_to_str(),
-          has_text ? (std::string(", text=") + tok->get_str()).c_str() : "", LOCATION_FILE(loc),
-          LOCATION_LINE(loc), LOCATION_COLUMN(loc));
-
-        if (tok->get_id() == Rust::END_OF_FILE)
-            break;
-
-        lex.skip_token();
-        tok = lex.peek_token();
-    }*/
-
-    fclose(file);
+/* The option mask (something to do with options for specific frontends or something). */
+static unsigned int grs_langhook_option_lang_mask(void) {
+    return CL_Rust;
 }
 
-/* Actual main entry point for front-end. Called by langhook to parse files.
- * May move to a different compilation unit if frontend gets too big. */
-static void grs_parse_files(int num_files, const char** files) {
-    for (int i = 0; i < num_files; i++) {
-        grs_parse_file(files[i]);
-    }
+/* Initialize the options structure. */
+static void grs_langhook_init_options_struct(struct gcc_options* opts) {
+    // nothing yet - used by frontends to change specific options for the language
+    session.init_options();
 }
 
 /* Main entry point for front-end, apparently. Finds input file names in global vars in_fnames and
@@ -151,26 +123,30 @@ static void grs_parse_files(int num_files, const char** files) {
 static void grs_langhook_parse_file(void) {
     fprintf(stderr, "Preparing to parse files. \n");
 
-    grs_parse_files(num_in_fnames, in_fnames);
+    // grs_parse_files(num_in_fnames, in_fnames);
+    session.parse_files(num_in_fnames, in_fnames);
 }
 
+/* Seems to get the exact type for a specific type - e.g. for scalar float with 32-bit bitsize, it
+ * returns float, and for 64-bit bitsize, it returns double. Used to map RTL nodes to machine modes or
+ * something like that. */
 static tree grs_langhook_type_for_mode(machine_mode mode, int unsignedp) {
+    // TODO: change all this later to match rustc types
     if (mode == TYPE_MODE(float_type_node))
         return float_type_node;
 
     if (mode == TYPE_MODE(double_type_node))
         return double_type_node;
 
-    // don't know what this means but assume it has something to do with weird precisions
-    if (mode == TYPE_MODE(intQI_type_node)) // quarter precision?
+    if (mode == TYPE_MODE(intQI_type_node)) // quarter integer mode - single byte treated as integer
         return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
-    if (mode == TYPE_MODE(intHI_type_node)) // half precision?
+    if (mode == TYPE_MODE(intHI_type_node)) // half integer mode - two-byte integer
         return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
-    if (mode == TYPE_MODE(intSI_type_node)) // single precision?
+    if (mode == TYPE_MODE(intSI_type_node)) // single integer mode - four-byte integer
         return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
-    if (mode == TYPE_MODE(intDI_type_node)) // double precision?
+    if (mode == TYPE_MODE(intDI_type_node)) // double integer mode - eight-byte integer
         return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
-    if (mode == TYPE_MODE(intTI_type_node)) // triple precision?
+    if (mode == TYPE_MODE(intTI_type_node)) // tetra integer mode - 16-byte integer
         return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
 
     if (mode == TYPE_MODE(integer_type_node))
@@ -196,32 +172,103 @@ static tree grs_langhook_type_for_mode(machine_mode mode, int unsignedp) {
     return NULL;
 }
 
+/* This appears to be used for creating different types for different bit sizes (e.g. int and long).
+ * Also, the Go frontend calls this from type_for_mode to determine the type from a specific bitsize
+ * for integer types.
+ * FIXME: change this when working on AST-GENERIC conversion to allow the full range of Rust type
+ * sizes. */
 static tree grs_langhook_type_for_size(
   unsigned int bits ATTRIBUTE_UNUSED, int unsignedp ATTRIBUTE_UNUSED) {
     gcc_unreachable();
     return NULL_TREE;
+    // nothing at the moment, but change later
 }
 
-// Record a builtin function.  We just ignore builtin functions.
+// Record a builtin function. We just ignore builtin functions.
 static tree grs_langhook_builtin_function(tree decl ATTRIBUTE_UNUSED) {
     return decl;
 }
 
+/* Return true if we are in the global binding level (which is never, apparently). */
 static bool grs_langhook_global_bindings_p(void) {
     // return current_function_decl == NULL_TREE;
-    //gcc_unreachable();
-    //return true;
+    // gcc_unreachable();
+    // return true;
     return false;
 }
 
+/* Push a declaration into the current binding level.  We can't
+   usefully implement this since we don't want to convert from tree
+   back to one of our internal data structures.  I think the only way
+   this is used is to record a decl which is to be returned by
+   getdecls, and we could implement it for that purpose if
+   necessary.  */
 static tree grs_langhook_pushdecl(tree decl ATTRIBUTE_UNUSED) {
     gcc_unreachable();
     return NULL;
 }
 
+/* This hook is used to get the current list of declarations as trees.
+   We don't support that; instead we use the write_globals hook.  This
+   can't simply crash because it is called by -gstabs.  */
 static tree grs_langhook_getdecls(void) {
     // gcc_unreachable();
     return NULL;
+}
+
+// Handle Rust-specific options. Return false if nothing happened.
+static bool grs_langhook_handle_option(size_t scode, const char* arg, HOST_WIDE_INT value,
+  int kind ATTRIBUTE_UNUSED, location_t loc ATTRIBUTE_UNUSED,
+  const struct cl_option_handlers* handlers ATTRIBUTE_UNUSED) {
+    // Convert integer code to lang.opt enum codes with names.
+    enum opt_code code = (enum opt_code)scode;
+    // used to store whether results of various stuff are successful
+    // bool ret = true;
+
+    // delegate to session manager
+    return session.handle_option(code, arg, value, kind, loc, handlers);
+
+    // Handles options as listed in lang.opt.
+    /*switch (code) {
+        case OPT_I:
+            // TODO: add search path
+            break;
+        case OPT_L:
+            // TODO: add library link path or something
+            break;
+        case OPT_frust_dump:
+            // enable dump and return whether this was successful
+            ret = rust_enable_dump(arg) ? true : false;
+            break;
+        // no option handling for -o
+        default:
+            // return 1 to indicate option is valid
+            break;
+    }
+
+    return ret;*/
+}
+
+/* Run after parsing options.  */
+static bool grs_langhook_post_options(const char** pfilename ATTRIBUTE_UNUSED) {
+    // can be used to override other options if required
+
+    // satisfies an assert in init_excess_precision in toplev.c
+    if (flag_excess_precision/*_cmdline*/ == EXCESS_PRECISION_DEFAULT)
+        flag_excess_precision/*_cmdline*/ = EXCESS_PRECISION_STANDARD;
+
+    /* Returning false means that the backend should be used.  */
+    return false;
+}
+
+/* Rust-specific gimplification. May need to gimplify e.g. CALL_EXPR_STATIC_CHAIN */
+static int grs_langhook_gimplify_expr(tree* expr_p ATTRIBUTE_UNUSED,
+  gimple_seq* pre_p ATTRIBUTE_UNUSED, gimple_seq* post_p ATTRIBUTE_UNUSED) {
+    /*if (TREE_CODE (*expr_p) == CALL_EXPR
+        && CALL_EXPR_STATIC_CHAIN (*expr_p) != NULL_TREE)
+      gimplify_expr (&CALL_EXPR_STATIC_CHAIN (*expr_p), pre_p, post_p,
+                     is_gimple_val, fb_rvalue);*/
+    return GS_UNHANDLED;
 }
 
 /* Create an expression whose value is that of EXPR,
@@ -240,10 +287,10 @@ static tree grs_langhook_getdecls(void) {
  */
 #undef LANG_HOOKS_NAME
 #undef LANG_HOOKS_INIT
-//#undef LANG_HOOKS_OPTION_LANG_MASK
-//#undef LANG_HOOKS_INIT_OPTIONS_STRUCT
-//#undef LANG_HOOKS_HANDLE_OPTION
-//#undef LANG_HOOKS_POST_OPTIONS
+#undef LANG_HOOKS_OPTION_LANG_MASK
+#undef LANG_HOOKS_INIT_OPTIONS_STRUCT
+#undef LANG_HOOKS_HANDLE_OPTION
+#undef LANG_HOOKS_POST_OPTIONS
 #undef LANG_HOOKS_PARSE_FILE
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #undef LANG_HOOKS_TYPE_FOR_SIZE
@@ -252,15 +299,15 @@ static tree grs_langhook_getdecls(void) {
 #undef LANG_HOOKS_PUSHDECL
 #undef LANG_HOOKS_GETDECLS
 //#undef LANG_HOOKS_WRITE_GLOBALS
-//#undef LANG_HOOKS_GIMPLIFY_EXPR
+#undef LANG_HOOKS_GIMPLIFY_EXPR
 //#undef LANG_HOOKS_EH_PERSONALITY
 
 #define LANG_HOOKS_NAME "GNU Rust"
 #define LANG_HOOKS_INIT grs_langhook_init
-//#define LANG_HOOKS_OPTION_LANG_MASK grs_langhook_option_lang_mask
-//#define LANG_HOOKS_INIT_OPTIONS_STRUCT grs_langhook_init_options_struct
-//#define LANG_HOOKS_HANDLE_OPTION grs_langhook_handle_option
-//#define LANG_HOOKS_POST_OPTIONS grs_langhook_post_options
+#define LANG_HOOKS_OPTION_LANG_MASK grs_langhook_option_lang_mask
+#define LANG_HOOKS_INIT_OPTIONS_STRUCT grs_langhook_init_options_struct
+#define LANG_HOOKS_HANDLE_OPTION grs_langhook_handle_option
+#define LANG_HOOKS_POST_OPTIONS grs_langhook_post_options
 /* Main lang-hook, apparently. Finds input file names in global vars in_fnames and num_in_fnames
  * From this, frontend can take over and do actual parsing and initial compilation.
  * This hook must create a complete parse tree in a global var, and then return. */
@@ -272,7 +319,7 @@ static tree grs_langhook_getdecls(void) {
 #define LANG_HOOKS_PUSHDECL grs_langhook_pushdecl
 #define LANG_HOOKS_GETDECLS grs_langhook_getdecls
 //#define LANG_HOOKS_WRITE_GLOBALS grs_langhook_write_globals
-//#define LANG_HOOKS_GIMPLIFY_EXPR grs_langhook_gimplify_expr
+#define LANG_HOOKS_GIMPLIFY_EXPR grs_langhook_gimplify_expr
 //#define LANG_HOOKS_EH_PERSONALITY grs_langhook_eh_personality
 
 // Expands all LANG_HOOKS_x of GCC

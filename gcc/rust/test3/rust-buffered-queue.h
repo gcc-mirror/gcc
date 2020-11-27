@@ -103,6 +103,16 @@ namespace Rust {
             end++;
         }
 
+        // Replaces the current value in the buffer. Total HACK.
+        void replace_current_value(T replacement) {
+            // call peek to ensure value exists
+            peek(0);
+
+            buffer[start] = replacement;
+
+            // don't move start or end
+        }
+
       private:
         // Source of tokens for queue.
         Source& source;

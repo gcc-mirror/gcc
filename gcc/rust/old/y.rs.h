@@ -1,7 +1,6 @@
 #ifndef __Y_RS_H__
 #define __Y_RS_H__
 
-// Enum containing tokens for lexer
 enum yytokentype {
     IMPL = 258,
     AS = 259,
@@ -46,16 +45,14 @@ enum yytokentype {
     FLOAT = 298
 };
 
-// Maybe type of character or whatever comes out of the lexer?
 union yystype {
   rdot symbol;
   char * string;
   int integer;
   float ffloat;
   bool boolean;
-};
+} ;
 
-// L-val of whatever comes out of lexer?
 extern yystype yylval;
 
 #endif //__Y_RS_H__

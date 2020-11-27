@@ -134,6 +134,10 @@ namespace Rust {
         skip_token(0);
     }
 
+    void Lexer::replace_current_token(TokenPtr replacement) {
+        token_queue.replace_current_value(replacement);
+    }
+
     /* shitty anonymous namespace that can only be accessed inside the compilation unit - used for
      * classify_keyword
      * Binary search in sorted array of keywords created with x-macros. */

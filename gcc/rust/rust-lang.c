@@ -181,47 +181,47 @@ rust_langhook_handle_option (
 
   switch (code)
     {
-    case OPT_I:
+	/*case OPT_I:
       rust_add_search_path (arg);
-      break;
+      break;*/
 
-    case OPT_L:
-      /* A -L option is assumed to come from the compiler driver.
-	 This is a system directory.  We search the following
-	 directories, if they exist, before this one:
-	   dir/go/VERSION
-	   dir/go/VERSION/MACHINE
-	 This is like include/c++.  */
-      {
-	static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
-	size_t len;
-	char *p;
-	struct stat st;
+    /* case OPT_L: */
+    /*   /\* A -L option is assumed to come from the compiler driver. */
+    /* 	 This is a system directory.  We search the following */
+    /* 	 directories, if they exist, before this one: */
+    /* 	   dir/go/VERSION */
+    /* 	   dir/go/VERSION/MACHINE */
+    /* 	 This is like include/c++.  *\/ */
+    /*   { */
+    /* 	static const char dir_separator_str[] = { DIR_SEPARATOR, 0 }; */
+    /* 	size_t len; */
+    /* 	char *p; */
+    /* 	struct stat st; */
 
-	len = strlen (arg);
-	p = XALLOCAVEC (char,
-			(len + sizeof "rust" + sizeof DEFAULT_TARGET_VERSION
-			 + sizeof DEFAULT_TARGET_MACHINE + 3));
-	strcpy (p, arg);
-	if (len > 0 && !IS_DIR_SEPARATOR (p[len - 1]))
-	  strcat (p, dir_separator_str);
-	strcat (p, "rust");
-	strcat (p, dir_separator_str);
-	strcat (p, DEFAULT_TARGET_VERSION);
-	if (stat (p, &st) == 0 && S_ISDIR (st.st_mode))
-	  {
-	    rust_add_search_path (p);
-	    strcat (p, dir_separator_str);
-	    strcat (p, DEFAULT_TARGET_MACHINE);
-	    if (stat (p, &st) == 0 && S_ISDIR (st.st_mode))
-	      rust_add_search_path (p);
-	  }
+    /* 	len = strlen (arg); */
+    /* 	p = XALLOCAVEC (char, */
+    /* 			(len + sizeof "rust" + sizeof DEFAULT_TARGET_VERSION */
+    /* 			 + sizeof DEFAULT_TARGET_MACHINE + 3)); */
+    /* 	strcpy (p, arg); */
+    /* 	if (len > 0 && !IS_DIR_SEPARATOR (p[len - 1])) */
+    /* 	  strcat (p, dir_separator_str); */
+    /* 	strcat (p, "rust"); */
+    /* 	strcat (p, dir_separator_str); */
+    /* 	strcat (p, DEFAULT_TARGET_VERSION); */
+    /* 	if (stat (p, &st) == 0 && S_ISDIR (st.st_mode)) */
+    /* 	  { */
+    /* 	    rust_add_search_path (p); */
+    /* 	    strcat (p, dir_separator_str); */
+    /* 	    strcat (p, DEFAULT_TARGET_MACHINE); */
+    /* 	    if (stat (p, &st) == 0 && S_ISDIR (st.st_mode)) */
+    /* 	      rust_add_search_path (p); */
+    /* 	  } */
 
-	/* Search ARG too, but only after we've searched to Rust
-	   specific directories for all -L arguments.  */
-	rust_search_dirs.safe_push (arg);
-      }
-      break;
+    /* 	/\* Search ARG too, but only after we've searched to Rust */
+    /* 	   specific directories for all -L arguments.  *\/ */
+    /* 	rust_search_dirs.safe_push (arg); */
+    /*   } */
+    /*   break; */
 
     default:
       /* Just return 1 to indicate that the option is valid.  */
@@ -241,12 +241,13 @@ rust_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 
   gcc_assert (num_in_fnames > 0);
 
-  FOR_EACH_VEC_ELT (rust_search_dirs, ix, dir)
-    rust_add_search_path (dir);
-  rust_search_dirs.release ();
+  // FIXME
+  /* FOR_EACH_VEC_ELT (rust_search_dirs, ix, dir) */
+  /*   rust_add_search_path (dir); */
+  /* rust_search_dirs.release (); */
 
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
-    flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
+  /* if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT) */
+  /*   flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD; */
 
   /* Tail call optimizations can confuse uses of runtime.Callers.  */
   if (!global_options_set.x_flag_optimize_sibling_calls)
@@ -279,10 +280,16 @@ rust_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 static void
 rust_langhook_parse_file (void)
 {
-  rust_parse_input_files (in_fnames, num_in_fnames, flag_syntax_only);
+    // RUSTLY MAIN
+    
+    // TODO
+    // rust_parse_input_files (in_fnames, num_in_fnames, flag_syntax_only);
 
-  /* Final processing of globals and early debug info generation.  */
-  // rust_write_globals ();
+    /* Final processing of globals and early debug info generation.  */
+    // rust_write_globals ();
+
+    rust_create_rustly(flag_syntax_only, rust_get_linemap());
+    rust_parse_input_files(in_fnames, num_in_fnames);
 }
 
 static tree
