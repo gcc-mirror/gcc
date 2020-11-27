@@ -4061,10 +4061,6 @@ print_template_differences (pretty_printer *pp, tree type_a, tree type_b,
   pp_printf (pp, ">");
 }
 
-#if __GNUC__ >= 10
-#  pragma GCC diagnostic pop
-#endif
-
 /* As type_to_string, but for a template, potentially colorizing/eliding
    in comparison with PEER.
    For example, if TYPE is map<int,double> and PEER is map<int,int>,
@@ -4164,15 +4160,17 @@ add_quotes (const char *content, bool show_color)
   pretty_printer tmp_pp;
   pp_show_color (&tmp_pp) = show_color;
 
-  /* We use pp_quote & pp_string rather than pp_printf with "%<%s%>"
-     or "%qs" here in order to avoid quoting colorization bytes within
-     the results, and to avoid -Wformat-diag.  */
-  pp_quote (&tmp_pp);
-  pp_string (&tmp_pp, content);
-  pp_quote (&tmp_pp);
+  /* We have to use "%<%s%>" rather than "%qs" here in order to avoid
+     quoting colorization bytes within the results and using either
+     pp_quote or pp_begin_quote doesn't work the same.  */
+  pp_printf (&tmp_pp, "%<%s%>", content);
 
   return pp_ggc_formatted_text (&tmp_pp);
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* If we had %H and %I, and hence deferred printing them,
    print them now, storing the result into the chunk_info
