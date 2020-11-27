@@ -3744,7 +3744,7 @@ Check_types_traverse::variable(Named_object* named_object)
           && !var->type()->is_error()
           && (init == NULL || !init->is_error_expression())
           && !Lex::is_invalid_identifier(named_object->name()))
-	go_error_at(var->location(), "%qs declared and not used",
+	go_error_at(var->location(), "%qs declared but not used",
 		    named_object->message_name().c_str());
     }
   return TRAVERSE_CONTINUE;

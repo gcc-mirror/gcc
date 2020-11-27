@@ -4817,7 +4817,7 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 	    }
 	}
       if (!used)
-	go_error_at(type_switch.location, "%qs declared and not used",
+	go_error_at(type_switch.location, "%qs declared but not used",
 		    Gogo::message_name(var_name).c_str());
     }
   return statement;
