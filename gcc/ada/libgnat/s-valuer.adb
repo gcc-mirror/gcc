@@ -236,12 +236,15 @@ package body System.Value_R is
                Temp := Value * Uns (Base) + Uns (Digit);
 
                --  Check if Temp is larger than Precision_Limit, taking into
-               --  account that Temp may have wrapped around.
+               --  account that Temp may wrap around when Precision_Limit is
+               --  equal to the largest integer.
 
                if Value <= Umax
                  or else (Value <= UmaxB
-                           and then Temp <= Precision_Limit
-                           and then Temp >= Uns (Base))
+                           and then ((Precision_Limit < Uns'Last
+                                       and then Temp <= Precision_Limit)
+                                     or else (Precision_Limit = Uns'Last
+                                               and then Temp >= Uns (Base))))
                then
                   Value := Temp;
                   Scale := Scale - 1;
@@ -386,12 +389,15 @@ package body System.Value_R is
             Temp := Value * Uns (Base) + Uns (Digit);
 
             --  Check if Temp is larger than Precision_Limit, taking into
-            --  account that Temp may have wrapped around.
+            --  account that Temp may wrap around when Precision_Limit is
+            --  equal to the largest integer.
 
             if Value <= Umax
               or else (Value <= UmaxB
-                        and then Temp <= Precision_Limit
-                        and then Temp >= Uns (Base))
+                        and then ((Precision_Limit < Uns'Last
+                                    and then Temp <= Precision_Limit)
+                                  or else (Precision_Limit = Uns'Last
+                                            and then Temp >= Uns (Base))))
             then
                Value := Temp;
 
