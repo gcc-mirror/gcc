@@ -1,3 +1,12 @@
+2020-11-26  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/65455
+	PR c/92935
+	* c-parser.c (c_parser_declaration_or_fndef): Remove
+	redundant code to drop qualifiers of _Atomic types for __auto_type.
+	(c_parser_typeof_specifier): Do not drop qualifiers of _Atomic
+	types for __typeof__.
+
 2020-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/97958

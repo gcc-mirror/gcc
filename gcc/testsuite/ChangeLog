@@ -1,3 +1,66 @@
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97997
+	* gcc.dg/tree-ssa/pr97997-1.c: New test.
+	* gcc.dg/tree-ssa/pr97997-2.c: New test.
+
+2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97953
+	* gcc.dg/pr97953.c: New testcase.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97979
+	* gcc.dg/pr97979.c: New test.
+	* gcc.c-torture/compile/pr97979.c: New test.
+
+2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98002
+	* gcc.dg/strncmp-2.c: Call mprotect again before free.
+
+2020-11-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/cache-3-1.c: New.
+	* c-c++-common/goacc/cache-3-2.c: Likewise.
+	* c-c++-common/goacc/data-clause-1.c: Likewise.
+	* c-c++-common/goacc/data-clause-2.c: Likewise.
+	* c-c++-common/gomp/map-1.c: Adjust.
+	* c-c++-common/gomp/map-2.c: Likewise.
+	* g++.dg/goacc/cache-3-1.C: New.
+	* g++.dg/goacc/cache-3-2.C: Likewise.
+	* g++.dg/goacc/data-clause-1.C: Likewise.
+	* g++.dg/goacc/data-clause-2.C: Likewise.
+	* g++.dg/gomp/map-1.C: Adjust.
+	* g++.dg/gomp/map-2.C: Likewise.
+
+2020-11-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* gcc.target/i386/pr97873-3.c: New test.
+
+2020-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/multfixed.adb: Robustify.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96906
+	* gcc.target/i386/pr96906-1.c: New test.
+
+2020-11-26  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/65455
+	PR c/92935
+	* gcc.dg/typeof-2.c: Adapt test.
+
+2020-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/nextafter-1.c: Omit prototypes if _NEXT_AFTER_2 defined.
+	* gcc.dg/nextafter-2.c: Define _NEXT_AFTER_2.
+	* gcc.dg/profile-info-section.c: Skip on AIX.
+
 2020-11-25  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/94982
