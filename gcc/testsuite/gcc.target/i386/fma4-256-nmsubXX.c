@@ -55,7 +55,7 @@ check_nmsubps ()
 	if (dst.f[i + j] != res.f[i + j]) 
 	  check_fails++;
       }
-  return check_fails++;
+  return check_fails;
 }
 
 static int
@@ -69,7 +69,7 @@ check_nmsubpd ()
 	if (dst.d[i + j] != res.d[i + j]) 
 	  check_fails++;
       }
-  return check_fails++;
+  return check_fails;
 }
 
 static void
@@ -92,5 +92,4 @@ fma4_test (void)
   
   if (check_nmsubpd (&dst.y[i], &src1.d[i * 2], &src2.d[i * 2], &src3.d[i * 2])) 
     abort ();
-
 }
