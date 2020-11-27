@@ -3471,6 +3471,7 @@ do_pre_regular_insertion (basic_block block, basic_block dom,
 	      add_to_value (val, newe);
 	      bitmap_value_replace_in_set (AVAIL_OUT (block), newe);
 	      bitmap_insert_into_set (NEW_SETS (block), newe);
+	      bitmap_insert_into_set (PHI_GEN (block), newe);
 	    }
 	}
     }
@@ -3808,13 +3809,14 @@ insert (void)
 		    |= bitmap_value_replace_in_set (AVAIL_OUT (block), expr);
 		}
 	      /* We need to iterate if AVAIL_OUT of an already processed
-		 block source.  */
+		 block source changed.  */
 	      if (avail_out_changed && !changed)
 		{
 		  edge_iterator ei;
 		  edge e;
 		  FOR_EACH_EDGE (e, ei, block->succs)
-		    if (bb_rpo[e->src->index] < idx)
+		    if (e->dest->index != EXIT_BLOCK
+			&& bb_rpo[e->dest->index] < idx)
 		      changed = true;
 		}
 
