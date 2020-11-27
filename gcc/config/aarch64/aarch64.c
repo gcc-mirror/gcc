@@ -14442,6 +14442,12 @@ aarch64_override_options_internal (struct gcc_options *opts)
   SET_OPTION_IF_UNSET (opts, &global_options_set,
 		       param_sched_autopref_queue_depth, queue_depth);
 
+  /* If using Advanced SIMD only for autovectorization disable SVE vector costs
+     comparison.  */
+  if (aarch64_autovec_preference == 1)
+    SET_OPTION_IF_UNSET (opts, &global_options_set,
+			 aarch64_sve_compare_costs, 0);
+
   /* Set up parameters to be used in prefetching algorithm.  Do not
      override the defaults unless we are tuning for a core we have
      researched values for.  */
@@ -17282,11 +17288,65 @@ aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
   return word_mode;
 }
 
+static HOST_WIDE_INT aarch64_estimated_poly_value (poly_int64);
+
+/* Compare an SVE mode SVE_M and an Advanced SIMD mode ASIMD_M
+   and return whether the SVE mode should be preferred over the
+   Advanced SIMD one in aarch64_autovectorize_vector_modes.  */
+static bool
+aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
+{
+  /* Take into account the aarch64-autovec-preference param if non-zero.  */
+  bool only_asimd_p = aarch64_autovec_preference == 1;
+  bool only_sve_p = aarch64_autovec_preference == 2;
+
+  if (only_asimd_p)
+    return false;
+  if (only_sve_p)
+    return true;
+
+  /* The preference in case of a tie in costs.  */
+  bool prefer_asimd = aarch64_autovec_preference == 3;
+  bool prefer_sve = aarch64_autovec_preference == 4;
+
+  aarch64_sve_vector_bits_enum tune_width = aarch64_tune_params.sve_width;
+
+  poly_int64 nunits_sve = GET_MODE_NUNITS (sve_m);
+  poly_int64 nunits_asimd = GET_MODE_NUNITS (asimd_m);
+  /* If the CPU information does not have an SVE width registered use the
+     generic poly_int comparison that prefers SVE.  If a preference is
+     explicitly requested avoid this path.  */
+  if (tune_width == SVE_SCALABLE
+      && !prefer_asimd
+      && !prefer_sve)
+    return maybe_gt (nunits_sve, nunits_asimd);
+
+  /* Otherwise estimate the runtime width of the modes involved.  */
+  HOST_WIDE_INT est_sve = aarch64_estimated_poly_value (nunits_sve);
+  HOST_WIDE_INT est_asimd = aarch64_estimated_poly_value (nunits_asimd);
+
+  /* Preferring SVE means picking it first unless the Advanced SIMD mode
+     is clearly wider.  */
+  if (prefer_sve)
+    return est_sve >= est_asimd;
+  /* Conversely, preferring Advanced SIMD means picking SVE only if SVE
+     is clearly wider.  */
+  if (prefer_asimd)
+    return est_sve > est_asimd;
+
+  /* In the default case prefer Advanced SIMD over SVE in case of a tie.  */
+  return est_sve > est_asimd;
+}
+
 /* Return 128-bit container as the preferred SIMD mode for MODE.  */
 static machine_mode
 aarch64_preferred_simd_mode (scalar_mode mode)
 {
-  poly_int64 bits = TARGET_SVE ? BITS_PER_SVE_VECTOR : 128;
+  /* Take into account explicit auto-vectorization ISA preferences through
+     aarch64_cmp_autovec_modes.  */
+  poly_int64 bits
+    = (TARGET_SVE && aarch64_cmp_autovec_modes (VNx16QImode, V16QImode))
+       ? BITS_PER_SVE_VECTOR : 128;
   return aarch64_simd_container_mode (mode, bits);
 }
 
@@ -17348,19 +17408,24 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
      - If an Advanced SIMD main loop with N bytes ends up being cheaper
        than an SVE main loop with N bytes then by default we'll try to
        use the SVE loop to vectorize the epilogue instead.  */
-  unsigned int sve_i = TARGET_SVE ? 0 : ARRAY_SIZE (sve_modes);
+
+  bool only_asimd_p = aarch64_autovec_preference == 1;
+  bool only_sve_p = aarch64_autovec_preference == 2;
+
+  unsigned int sve_i = (TARGET_SVE && !only_asimd_p) ? 0 : ARRAY_SIZE (sve_modes);
   unsigned int advsimd_i = 0;
-  while (advsimd_i < ARRAY_SIZE (advsimd_modes))
+
+  while (!only_sve_p && advsimd_i < ARRAY_SIZE (advsimd_modes))
     {
       if (sve_i < ARRAY_SIZE (sve_modes)
-	  && maybe_gt (GET_MODE_NUNITS (sve_modes[sve_i]),
-		       GET_MODE_NUNITS (advsimd_modes[advsimd_i])))
+	  && aarch64_cmp_autovec_modes (sve_modes[sve_i],
+					advsimd_modes[advsimd_i]))
 	modes->safe_push (sve_modes[sve_i++]);
       else
 	modes->safe_push (advsimd_modes[advsimd_i++]);
     }
   while (sve_i < ARRAY_SIZE (sve_modes))
-    modes->safe_push (sve_modes[sve_i++]);
+   modes->safe_push (sve_modes[sve_i++]);
 
   unsigned int flags = 0;
   /* Consider enabling VECT_COMPARE_COSTS for SVE, both so that we

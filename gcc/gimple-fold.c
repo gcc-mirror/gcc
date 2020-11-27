@@ -4533,6 +4533,8 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 				    "well defined padding bits for %qs",
 			  field, "__builtin_clear_padding");
 	      }
+	    else if (is_empty_type (TREE_TYPE (field)))
+	      continue;
 	    else
 	      {
 		HOST_WIDE_INT pos = int_byte_position (field);

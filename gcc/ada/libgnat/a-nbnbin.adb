@@ -177,7 +177,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       function To_Big_Integer (Arg : Int) return Valid_Big_Integer is
          Result : Big_Integer;
       begin
-         Set_Bignum (Result, To_Bignum (Long_Long_Integer (Arg)));
+         Set_Bignum (Result, To_Bignum (Long_Long_Long_Integer (Arg)));
          return Result;
       end To_Big_Integer;
 
@@ -205,7 +205,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       function To_Big_Integer (Arg : Int) return Valid_Big_Integer is
          Result : Big_Integer;
       begin
-         Set_Bignum (Result, To_Bignum (Unsigned_64 (Arg)));
+         Set_Bignum (Result, To_Bignum (Unsigned_128 (Arg)));
          return Result;
       end To_Big_Integer;
 

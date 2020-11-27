@@ -1,3 +1,115 @@
+2020-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/96607
+	* config/sparc/sparc-protos.h (eligible_for_call_delay): Delete.
+	* config/sparc/sparc.c (eligible_for_call_delay): Likewise.
+	* config/sparc/sparc.md (in_call_delay): Likewise.
+	(tls_delay_slot): New attribute.
+	(define_delay [call]): Use in_branch_delay.
+	(tgd_call<P:mode>): Set type to call_no_delay_slot when
+	tls_delay_slot is false.
+	(tldm_call<P:mode>): Likewise.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97997
+	* match.pd ((t * 2) / 2) -> t): Optimize even for defined
+	overflow if ranges prove there is no overflow.
+
+2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97953
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_incoming_edge): Make
+	sure the condition post-dominates the SSA definition before
+	recording into SSA_NAME_RANGE_INFO.
+
+2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Only
+	lower VECTOR_BOOLEAN_TYPE_P VEC_COND_EXPRs.
+
+2020-11-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/mkoffload.c (copy_early_debug_info): Don't wipe
+	relocation symbols.
+
+2020-11-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_multi_arg_builtin):
+	Remove args array of structs, declare rtx xops array instead.
+	Update all uses.
+	(ix86_expand_args_builtin): Ditto.
+	(ix86_expand_round_builtin): Ditto.
+	(ix86_expand_special_args_builtin): Ditto.
+
+2020-11-26  Martin Liska  <mliska@suse.cz>
+
+	* dwarf2out.c (gen_compile_unit_die): Fix missing == 0 in a
+	strcmp.
+
+2020-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (TIME_LIBRARY): Remove.
+
+2020-11-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Set param_vect_partial_vector_usage as 1 for Power10 and up
+	by default.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.c (clear_padding_union): Ignore DECL_PADDING_P
+	fields.
+	(clear_padding_type): Ignore DECL_PADDING_P fields, rather than
+	DECL_BIT_FIELD with NULL DECL_NAME.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97979
+	* match.pd ((X {&,^,|} C2) << C1 into (X << C1) {&,^,|} (C2 << C1)):
+	Only optimize if int_const_binop returned non-NULL.
+
+2020-11-26  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.c
+	(ix86_expand_special_args_builtin): Delete last_arg_constant
+	and match.
+
+2020-11-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* config/i386/i386.md (abs<mode>2): Use SDWIM mode iterator.
+	(*abs<mode>2_1): Use SWI mode iterator.
+	(<maxmin:code><mode>3): Use SDWIM mode iterator.
+	(*<maxmin:code><mode>3_1): Use SWI mode iterator.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96906
+	* config/i386/sse.md (VI12_AVX2): Remove V64QI/V32HI modes.
+	(VI12_AVX2_AVX512BW): New mode iterator.
+	(<sse2_avx2>_<plusminus_insn><mode>3<mask_name>,
+	uavg<mode>3_ceil, <sse2_avx2>_uavg<mode>3<mask_name>): Use
+	VI12_AVX2_AVX512BW iterator instead of VI12_AVX2.
+	(*<sse2_avx2>_<plusminus_insn><mode>3<mask_name>): Likewise.
+	(*<sse2_avx2>_uavg<mode>3<mask_name>): Likewise.
+	(*<sse2_avx2>_<plusminus_insn><mode>3<mask_name>): Add a new
+	define_split after this insn.
+
+2020-11-26  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/65455
+	PR c/92935
+	* ginclude/stdatomic.h: Use comma operator to drop qualifiers.
+
+2020-11-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/97983
+	* lra.c (lra_process_new_insns): Use emit_insn_before_noloc or
+	emit_insn_after_noloc with the destination BB.
+
 2020-11-25  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/97622

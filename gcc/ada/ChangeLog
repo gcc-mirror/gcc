@@ -1,3 +1,399 @@
+2020-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.rtl <sparc*-sun-solaris*> (THREADSLIB): Remove.
+	(MISCLIB): Remove -lposix4.
+	<*86-*-solaris2*>: Likewise.
+	* libgnarl/s-osinte__solaris.ads (System.OS_Interface): Remove
+	-lposix4 -lthread.
+
+2020-11-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nbnbre.adb (To_Big_Real): Do not loose precision.
+
+2020-11-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Check for AI12-0401.
+
+2020-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Likewise.
+	(GNATRTL_128BIT_OBJS): Likewise.
+	(GNATRTL_128BIT_PAIRS): Add new 128-bit variants.
+	* cstand.adb (Create_Standard): Create Standard_Integer_128.
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Document
+	new limits on 64-bit platforms in entry for 3.5.9(10).
+	* gnat_rm.texi: Regenerate.
+	* exp_attr.adb: Add with and use clauses for Urealp.
+	(Expand_N_Attribute_Reference) <Attribute_Fore>: Call new routines
+	for decimal fixed-point types and common ordinary fixed-point types.
+	* exp_ch4.adb (Real_Range_Check): Extend conversion trick to all
+	ordinary fixed-point types and use Small_Integer_Type_For.
+	* exp_fixd.adb: Add with and use clauses for Ttypes.
+	(Build_Divide): Add special case for 32-bit values and deal with
+	128-bit types.
+	(Build_Double_Divide): Deal with 128-bit types.
+	(Build_Double_Divide_Code): Likewise.  Do not apply conversions
+	before calling Build_Multiply.
+	(Build_Multiply): Likewise.  Add special case for 32-bit values.
+	(Build_Scaled_Divide): Deal with 128-bit types.
+	(Build_Scaled_Divide_Code): Likewise.  Fix size computation.  Do not
+	apply conversions before calling Build_Multiply.
+	(Do_Multiply_Fixed_Fixed): Minor tweak.
+	(Integer_Literal): Deal with 128-bit values.
+	* exp_imgv.adb (Has_Decimal_Small): Delete.
+	(Expand_Image_Attribute): Call new routines for common ordinary
+	fixed-point types.
+	(Expand_Value_Attribute): Likewise.
+	(Expand_Width_Attribute): Add new expansion for fixed-point types.
+	* freeze.adb (Freeze_Entity): Move error checks for ordinary
+	fixed-point types to...
+	(Freeze_Fixed_Point_Type): ...here.  Deal with 128-bit types and
+	adjust limitations for 32-bnt and 64-bit types.
+	* rtsfind.ads (RTU_Id): Add entries for new System_Fore, System_Img,
+	and System_Val units and remove them for obsolete units.
+	(RE_Id): Add entries for Double_Divide128, Scaled_Divide128, the new
+	Fore, Image, Value routines and remove them for obsolete units.
+	(RE_Unit_Table): Likewise.
+	* sem_ch3.adb (Decimal_Fixed_Point_Type_Declaration): Deal with
+	128-bit types.
+	* stand.ads (Standard_Entity_Type): Add Standard_Integer_128.
+	* uintp.ads (Uint_31): New deferred constant.
+	(Uint_Minus_18): Likewise.
+	(Uint_Minus_31): Likewise.
+	(Uint_Minus_76): Likewise.
+	(Uint_Minus_127): Likewise.
+	* urealp.ads (Ureal_2_31): New function.
+	(Ureal_2_63): Likewise.
+	(Ureal_2_127): Likewise.
+	(Ureal_2_M_127): Likewise.
+	(Ureal_2_10_18): Likewise.
+	(Ureal_M_2_10_18): Likewise.
+	(Ureal_9_10_36): Likewise.
+	(Ureal_M_9_10_36): Likewise.
+	(Ureal_10_76): Likewise.
+	(Ureal_M_10_76): Likewise.
+	(Ureal_10_36): Delete.
+	(Ureal_M_10_36): Likewise.
+	* urealp.adb (UR_2_10_18): New variable.
+	(UR_9_10_36): Likewise.
+	(UR_10_76): Likewise.
+	(UR_M_2_10_18): Likewise.
+	(UR_M_9_10_36): Likewise.
+	(UR_M_10_76): Likewise.
+	(UR_2_31): Likewise.
+	(UR_2_63): Likewise.
+	(UR_2_127): Likewise.
+	(UR_2_M_127): Likewise.
+	(UR_10_36): Delete.
+	(UR_M_10_36): Likewise.
+	(Initialize): Initialize them.
+	(UR_Write): Do not use awkward Ada literal style.
+	(Ureal_2_10_18): New function.
+	(Ureal_9_10_36): Likewise.
+	(Ureal_10_76): Likewise.
+	(Ureal_2_31): Likewise.
+	(Ureal_2_63): Likewise.
+	(Ureal_2_127): Likewise.
+	(Ureal_2_M_127): Likewise.
+	(Ureal_M_2_10_18): Likewise.
+	(Ureal_M_9_10_36): Likewise.
+	(Ureal_10_76): Likewise.
+	(Ureal_M_10_76): Likewise.
+	(Ureal_10_36): Delete.
+	(Ureal_M_10_36): Likewise.
+	* libgnat/a-decima__128.ads: New file.
+	* libgnat/a-tideau.ads, libgnat/a-tideau.adb: Reimplement as
+	generic unit.
+	* libgnat/a-tideio.adb: Reimplement.
+	* libgnat/a-tideio__128.adb: New file.
+	* libgnat/a-tifiau.ads, libgnat/a-tifiau.adb: New generic unit.
+	* libgnat/a-tifiio.adb: Move bulk of implementation to s-imagef
+	and reimplement.
+	* libgnat/a-tifiio__128.adb: New file.
+	* libgnat/a-tiflau.adb (Get): Minor consistency fix.
+	(Gets): Likewise.
+	* libgnat/a-wtdeau.ads, libgnat/a-wtdeau.adb: Reimplement as
+	generic unit.
+	* libgnat/a-wtdeio.adb: Reimplement.
+	* libgnat/a-wtdeio__128.adb: New file.
+	* libgnat/a-wtfiau.ads, libgnat/a-wtfiau.adb: New generic unit.
+	* libgnat/a-wtfiio.adb: Reimplement.
+	* libgnat/a-wtfiio__128.adb: New file.
+	* libgnat/a-ztdeau.ads, libgnat/a-ztdeau.adb: Reimplement as
+	generic unit.
+	* libgnat/a-ztdeio.adb: Reimplement.
+	* libgnat/a-ztdeio__128.adb: New file.
+	* libgnat/a-ztfiau.ads, libgnat/a-ztfiau.adb: New generic unit.
+	* libgnat/a-ztfiio.adb: Reimplement.
+	* libgnat/a-ztfiio__128.adb: New file.
+	* libgnat/g-rannum.adb (Random_Decimal_Fixed): Use a subtype of the
+	appropiate size for the instantiation.
+	(Random_Ordinary_Fixed): Likewise.
+	* libgnat/s-arit32.ads, libgnat/s-arit32.adb: New support unit.
+	* libgnat/s-fode128.ads: New instantiation.
+	* libgnat/s-fode32.ads: Likewise.
+	* libgnat/s-fode64.ads: Likewise.
+	* libgnat/s-fofi128.ads: Likewise.
+	* libgnat/s-fofi32.ads: Likewise.
+	* libgnat/s-fofi64.ads: Likewise.
+	* libgnat/s-fore_d.ads, libgnat/s-fore_d.adb: New generic unit.
+	* libgnat/s-fore_f.ads, libgnat/s-fore_f.adb: Likewise.
+	* libgnat/s-fore.ads, libgnat/s-fore.adb: Rename into...
+	* libgnat/s-forrea.ads, libgnat/s-forrea.adb: ...this.
+	* libgnat/s-imaged.ads, libgnat/s-imaged.adb: New generic unit.
+	* libgnat/s-imagef.ads, libgnat/s-imagef.adb: Likewise, taken
+	from a-tifiio.adb.
+	* libgnat/s-imde128.ads: New instantiation.
+	* libgnat/s-imde32.ads: Likewise.
+	* libgnat/s-imde64.ads: Likewise.
+	* libgnat/s-imfi128.ads: Likewise.
+	* libgnat/s-imfi32.ads: Likewise.
+	* libgnat/s-imfi64.ads: Likewise.
+	* libgnat/s-imgdec.ads, libgnat/s-imgdec.adb: Delete.
+	* libgnat/s-imglld.ads, libgnat/s-imglld.adb: Likewise.
+	* libgnat/s-imgrea.adb (Set_Image_Real): Replace Sign local variable
+	with Minus local variable for the sake of consistency.
+	* libgnat/s-imguti.ads, libgnat/s-imguti.adb: New support unit.
+	* libgnat/s-vade128.ads: New instantiation.
+	* libgnat/s-vade32.ads: Likewise.
+	* libgnat/s-vade64.ads: Likewise.
+	* libgnat/s-vafi128.ads: Likewise.
+	* libgnat/s-vafi32.ads: Likewise.
+	* libgnat/s-vafi64.ads: Likewise.
+	* libgnat/s-valdec.ads, libgnat/s-valdec.adb: Delete.
+	* libgnat/s-vallld.ads, libgnat/s-vallld.adb: Likewise.
+	* libgnat/s-valued.ads, libgnat/s-valued.adb: New generic unit.
+	* libgnat/s-valuef.ads, libgnat/s-valuef.adb: Likewise.
+	* libgnat/s-valuei.adb: Minor rewording.
+	* libgnat/s-valrea.adb: Move bulk of implementation to...
+	* libgnat/s-valuer.ads, libgnat/s-valuer.adb: ...here.  New
+	generic unit.
+	* libgnat/system-aix.ads (Max_Mantissa): Adjust.
+	* libgnat/system-darwin-arm.ads (Max_Mantissa): Likewise.
+	* libgnat/system-darwin-ppc.ads (Max_Mantissa): Likewise.
+	* libgnat/system-darwin-x86.ads (Max_Mantissa): Likewise.
+	* libgnat/system-djgpp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-dragonfly-x86_64.ads (Max_Mantissa): Likewise.
+	* libgnat/system-freebsd.ads (Max_Mantissa): Likewise.
+	* libgnat/system-hpux-ia64.ads (Max_Mantissa): Likewise.
+	* libgnat/system-hpux.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-alpha.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-arm.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-hppa.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-ia64.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-m68k.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-mips.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-ppc.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-riscv.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-s390.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-sh4.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-sparc.ads (Max_Mantissa): Likewise.
+	* libgnat/system-linux-x86.ads (Max_Mantissa): Likewise.
+	* libgnat/system-lynxos178-ppc.ads (Max_Mantissa): Likewise.
+	* libgnat/system-lynxos178-x86.ads (Max_Mantissa): Likewise.
+	* libgnat/system-mingw.ads (Max_Mantissa): Likewise.
+	* libgnat/system-qnx-aarch64.ads (Max_Mantissa): Likewise.
+	* libgnat/system-rtems.ads (Max_Mantissa): Likewise.
+	* libgnat/system-solaris-sparc.ads (Max_Mantissa): Likewise.
+	* libgnat/system-solaris-x86.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-arm-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-arm-rtp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-arm.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-e500-kernel.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-e500-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-e500-rtp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-e500-vthread.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-ppc-kernel.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-ppc-ravenscar.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-ppc-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-ppc-rtp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-ppc-vthread.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-ppc.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-x86-kernel.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-x86-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-x86-rtp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-x86-vthread.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks-x86.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-aarch64-rtp-smp.ads (Max_Mantissa):
+	Likewise.
+	* libgnat/system-vxworks7-aarch64.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-arm-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-arm.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-e500-kernel.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-e500-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-e500-rtp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-ppc-kernel.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-ppc-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-ppc-rtp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-ppc64-kernel.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-ppc64-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-x86-kernel.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-x86-rtp-smp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-x86-rtp.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-x86_64-kernel.ads (Max_Mantissa): Likewise.
+	* libgnat/system-vxworks7-x86_64-rtp-smp.ads (Max_Mantissa): Likewise.
+
+2020-11-26  Liaiss Merzougue  <merzougue@adacore.com>
+
+	* libgnat/s-imgrea.ads (Image_Ordinary_Fixed_Point): Add a
+	remark concerning the irrelevant use of Inf and -0.0
+
+2020-11-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint-c.adb (Set_Output_Object_File_Name): Add support for
+	.c output file.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-writ.adb, sem_ch8.adb, sem_prag.adb: Use
+	Is_Generic_Subprogram instead of low-level membership tests.
+
+2020-11-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Analyze_Call_And_Resolve): Reformatted a comment.
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Fixed a typo.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Membership_Op): Replace pragma Warnings
+	with pragma Assert.
+
+2020-11-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Call_And_Resolve): Add information to the
+	error message on an illegal procedure call, when the illegality
+	is due to the presence of a component of the full view of the
+	target object, as well as a procedure with the same name (See RM
+	4.1.3 (9.2/3)).
+
+2020-11-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	when the restriction is a configuration pragma and specifies
+	No_Tasking, a global flag is set to reject task declarations,
+	and to prevent the construction of Master entities. The flag
+	must not be set if the pragma is a Restriction_Warning, in which
+	case task declarationns are allowed.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-stzhas.adb (Wide_Wide_Hash): Instantiate inside a
+	wrapper function.
+	* libgnat/a-stzhas.ads (Wide_Wide_Hash): Likewise; remove wrong
+	comment, because this is indeed a RM unit, as described in Ada
+	RM A.4.8 (1/3).
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Eval_Slice): Refactor repeated calls to Prefix
+	with a local constant (named just like in Resolve_Slice).
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Eval_Slice): Emit warning not just for
+	constants, but for any objects.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch4.adb (Indicate_Name_And_Type): Fix whitespace in
+	comment.
+	* sem_res.adb (Resolve_Call): Remove redundant parens.
+	* sem_util.adb (Set_Entity_With_Checks): Remove extra call to
+	Set_Entity.
+
+2020-11-26  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Call Set_No_Initialization
+	on the N_Allocator node that is supposed to allocate on the
+	secondary stack.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch13.adb, exp_ch9.adb, sem_ch8.adb, sem_util.adb: Replace
+	a combination of Is_Protected_Type and Is_Task_Type by
+	Is_Concurrent_Type.
+
+2020-11-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-tassta.adb (Task_Wrapper): Fix computation of
+	Pattern_Size.
+
+2020-11-26  Bob Duff  <duff@adacore.com>
+
+	* freeze.adb (Freeze_Array_Type): Remove propagation of
+	Has_Own_Invariants to the first subtype. This is a no-op,
+	because the current (incorrect) version of Has_Own_Invariants
+	calls Base_Type.
+	* sem_prag.adb, sem_util.adb: Pass the base type to
+	Set_Has_Own_Invariants.
+
+2020-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Aft_Value): Adjust documentation.
+	(Scale_Value): Likewise.
+
+2020-11-26  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Use the unexpanded
+	operand when generating accessibility checks.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-cbhase.adb (Read): Remove extra whitespace.
+	* libgnat/a-cbmutr.ads (Read): Likewise.
+	* libgnat/a-cborse.adb (Read): Likewise.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch7.adb, exp_util.adb, freeze.adb: Rewrite with
+	Is_Access_Object_Type.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_Valid_Library_Unit_Pragma): Raise
+	exception.
+	(Analyze_Pragma): Remove detection of rewritten pragmas.
+
+2020-11-26  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-strmap.ads: Add preconditions and postconditions to
+	all subprograms.
+
+2020-11-26  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Equality_Op): Warn when -gnatwq is used
+	(the default) and the problematic case is encountered.
+
+2020-11-26  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Issue a continuation message
+	to give proper recommendation here.
+
+2020-11-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): A typo correction,
+	plus other minor reformatting.
+
+2020-11-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Formal_Package): If previous matched
+	entity is overloadable, advance in the list of actuals of the
+	actual package, to prevent an erroneous match of two adjacent
+	overloadable homonyms with the same entity.
+
+2020-11-26  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (First_Selector): Utility routine to return the
+	first selector or choice in an association.
+	(Check_Return_Construct_Accessibility): Modify loop to handle
+	named associations when iterating through discriminants.
+
+2020-11-26  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb: Fix casing from "Instantiation" to
+	"instantiation".
+
 2020-11-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Is_Uninitialized_Aggregate): Move...

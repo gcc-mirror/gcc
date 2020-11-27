@@ -1,3 +1,95 @@
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (_GLIBCXX_HAVE_ATOMIC_WAIT):
+	Define.
+	* include/bits/atomic_base.h: Check _GLIBCXX_HAVE_ATOMIC_WAIT.
+	* include/bits/atomic_timed_wait.h: Likewise.
+	* include/bits/semaphore_base.h: Likewise.
+	* include/std/atomic: Likewise.
+	* include/std/latch: Likewise.
+	* include/std/semaphore: Likewise.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/latch: Depend on _GLIBCXX_HAS_GTHREADS and
+	_GLIBCXX_HAVE_LINUX_FUTEX.
+	* include/std/version (__cpp_lib_latch): Define conditionally.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (check_effective_target_gthreads):
+	Call check_v3_target_gthreads not check_v3_target_gthreads_timed.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/algorithms/regex_match/basic/string_range_01_03.cc:
+	Add dg-timeout-factor directive.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/backref.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/63199.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/anymatcher.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/cjk_match.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/hex.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/wstring_locale.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_search/61720.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/assertion.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/basic_regex/ctors/deduction.cc: Likewise.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Only set
+	tool_timeout if it hasn't been set by the user already.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	* testsuite/29_atomics/atomic/wait_notify/bool.cc: Fix missed
+	notifications by making the new thread wait until the parent
+	thread is waiting on the condition variable.
+	* testsuite/29_atomics/atomic/wait_notify/pointers.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Likewise.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/96817.cc: Use new effective-target
+	keywords to select supported targets more effectively.
+	* testsuite/30_threads/call_once/66146.cc: Likewise.
+	* testsuite/lib/libstdc++.exp (check_effective_target_futex):
+	Define new proc.
+	(check_effective_target_gthreads): Define new proc to replace
+	dg-require-gthreads.
+
+2020-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Remove libposix4
+	references.
+	<solaris*>: Don't use -lrt any longer.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml (--enable-libstdcxx-time=OPTION):
+	Remove libposix4 reference.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98001
+	* testsuite/ext/stdio_filebuf/char/79820.cc: Do not pass invalid
+	FILE* to constructor.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/precompiled/stdc++.h: Add new headers.
+	* include/std/stop_token: Include <semaphore> unconditionally.
+
 2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_timed_wait.h (__cond_wait_until): Do not

@@ -3038,31 +3038,24 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 
   wide_int cntrange[2];
 
-  if (TREE_CODE (cnt) == INTEGER_CST)
-    cntrange[0] = cntrange[1] = wi::to_wide (cnt);
-  else if (TREE_CODE (cnt) == SSA_NAME)
+  // FIXME: Use range_query instead of global ranges.
+  enum value_range_kind rng = get_range_info (cnt, cntrange, cntrange + 1);
+  if (rng == VR_RANGE)
+    ;
+  else if (rng == VR_ANTI_RANGE)
     {
-      // FIXME: Use range_query instead of global ranges.
-      enum value_range_kind rng = get_range_info (cnt, cntrange, cntrange + 1);
-      if (rng == VR_RANGE)
-	;
-      else if (rng == VR_ANTI_RANGE)
-	{
-	  wide_int maxobjsize = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
+      wide_int maxobjsize = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
 
-	  if (wi::ltu_p (cntrange[1], maxobjsize))
-	    {
-	      cntrange[0] = cntrange[1] + 1;
-	      cntrange[1] = maxobjsize;
-	    }
-	  else
-	    {
-	      cntrange[1] = cntrange[0] - 1;
-	      cntrange[0] = wi::zero (TYPE_PRECISION (TREE_TYPE (cnt)));
-	    }
+      if (wi::ltu_p (cntrange[1], maxobjsize))
+	{
+	  cntrange[0] = cntrange[1] + 1;
+	  cntrange[1] = maxobjsize;
 	}
       else
-	return false;
+	{
+	  cntrange[1] = cntrange[0] - 1;
+	  cntrange[0] = wi::zero (TYPE_PRECISION (TREE_TYPE (cnt)));
+	}
     }
   else
     return false;

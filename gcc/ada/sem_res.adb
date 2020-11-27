@@ -7458,14 +7458,17 @@ package body Sem_Res is
       Analyze_Dimension (N);
 
       --  Evaluate the relation (note we do this after the above check since
-      --  this Eval call may change N to True/False. Skip this evaluation
+      --  this Eval call may change N to True/False). Skip this evaluation
       --  inside assertions, in order to keep assertions as written by users
       --  for tools that rely on these, e.g. GNATprove for loop invariants.
       --  Except evaluation is still performed even inside assertions for
       --  comparisons between values of universal type, which are useless
       --  for static analysis tools, and not supported even by GNATprove.
+      --  ??? It is suspicious to disable evaluation only for comparison
+      --  operators and not, let's say, for calls to static functions.
 
-      if In_Assertion_Expr = 0
+      if not GNATprove_Mode
+        or else In_Assertion_Expr = 0
         or else (Is_Universal_Numeric_Type (Etype (L))
                    and then
                  Is_Universal_Numeric_Type (Etype (R)))
@@ -10242,8 +10245,6 @@ package body Sem_Res is
    --------------------
 
    procedure Resolve_Op_Not (N : Node_Id; Typ : Entity_Id) is
-      B_Typ : Entity_Id;
-
       function Parent_Is_Boolean return Boolean;
       --  This function determines if the parent node is a boolean operator or
       --  operation (comparison op, membership test, or short circuit form) and
@@ -10256,32 +10257,16 @@ package body Sem_Res is
 
       function Parent_Is_Boolean return Boolean is
       begin
-         if Paren_Count (N) /= 0 then
-            return False;
-
-         else
-            case Nkind (Parent (N)) is
-               when N_And_Then
-                  | N_In
-                  | N_Not_In
-                  | N_Op_And
-                  | N_Op_Eq
-                  | N_Op_Ge
-                  | N_Op_Gt
-                  | N_Op_Le
-                  | N_Op_Lt
-                  | N_Op_Ne
-                  | N_Op_Or
-                  | N_Op_Xor
-                  | N_Or_Else
-               =>
-                  return Left_Opnd (Parent (N)) = N;
-
-               when others =>
-                  return False;
-            end case;
-         end if;
+         return Paren_Count (N) = 0
+           and then Nkind (Parent (N)) in N_Membership_Test
+                                        | N_Op_Boolean
+                                        | N_Short_Circuit
+            and then Left_Opnd (Parent (N)) = N;
       end Parent_Is_Boolean;
+
+      --  Local variables
+
+      B_Typ : Entity_Id;
 
    --  Start of processing for Resolve_Op_Not
 
@@ -11747,16 +11732,14 @@ package body Sem_Res is
       Simplify_Type_Conversion (N);
 
       --  If after evaluation we still have a type conversion, then we may need
-      --  to apply checks required for a subtype conversion.
-
-      --  Skip these type conversion checks if universal fixed operands
-      --  are involved, since range checks are handled separately for
-      --  these cases (in the appropriate Expand routines in unit Exp_Fixd).
+      --  to apply checks required for a subtype conversion. But skip them if
+      --  universal fixed operands are involved, since range checks are handled
+      --  separately for these cases, after the expansion done by Exp_Fixd.
 
       if Nkind (N) = N_Type_Conversion
         and then not Is_Generic_Type (Root_Type (Target_Typ))
         and then Target_Typ /= Universal_Fixed
-        and then Operand_Typ /= Universal_Fixed
+        and then Etype (Operand) /= Universal_Fixed
       then
          Apply_Type_Conversion_Checks (N);
       end if;
@@ -11995,11 +11978,12 @@ package body Sem_Res is
            (N, Target_Typ, Static_Failure_Is_Error => True);
       end if;
 
-      --  If at this stage we have a fixed point to integer conversion, make
-      --  sure that the Do_Range_Check flag is set which is not always done
-      --  by exp_fixd.adb.
+      --  If at this stage we have a fixed to integer conversion, make sure the
+      --  Do_Range_Check flag is set, because such conversions in general need
+      --  a range check. We only need this if expansion is off, see above why.
 
       if Nkind (N) = N_Type_Conversion
+        and then not Expander_Active
         and then Is_Integer_Type (Target_Typ)
         and then Is_Fixed_Point_Type (Operand_Typ)
         and then not Range_Checks_Suppressed (Target_Typ)

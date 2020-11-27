@@ -1367,6 +1367,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA rs6000_output_addr_const_extra
 
+#undef  TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC
+#define TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC rs6000_gen_pic_addr_diff_vec
+
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS rs6000_legitimize_address
 
@@ -6785,7 +6788,8 @@ rs6000_expand_vector_init (rtx target, rtx vals)
       rs6000_expand_vector_init (target, copy);
 
       /* Insert variable.  */
-      rs6000_expand_vector_set (target, XVECEXP (vals, 0, one_var), one_var);
+      rs6000_expand_vector_set (target, XVECEXP (vals, 0, one_var),
+				GEN_INT (one_var));
       return;
     }
 
@@ -6974,10 +6978,10 @@ rs6000_expand_vector_init (rtx target, rtx vals)
   emit_move_insn (target, mem);
 }
 
-/* Set field ELT of TARGET to VAL.  */
+/* Set field ELT_RTX of TARGET to VAL.  */
 
 void
-rs6000_expand_vector_set (rtx target, rtx val, int elt)
+rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
 {
   machine_mode mode = GET_MODE (target);
   machine_mode inner_mode = GET_MODE_INNER (mode);
@@ -6991,7 +6995,6 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
   if (VECTOR_MEM_VSX_P (mode))
     {
       rtx insn = NULL_RTX;
-      rtx elt_rtx = GEN_INT (elt);
 
       if (mode == V2DFmode)
 	insn = gen_vsx_set_v2df (target, target, val, elt_rtx);
@@ -7018,8 +7021,11 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
 	}
     }
 
+  gcc_assert (CONST_INT_P (elt_rtx));
+
   /* Simplify setting single element vectors like V1TImode.  */
-  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (inner_mode) && elt == 0)
+  if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (inner_mode)
+      && INTVAL (elt_rtx) == 0)
     {
       emit_move_insn (target, gen_lowpart (mode, val));
       return;
@@ -7042,8 +7048,7 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
 
   /* Set permute mask to insert element into target.  */
   for (i = 0; i < width; ++i)
-    XVECEXP (mask, 0, elt*width + i)
-      = GEN_INT (i + 0x10);
+    XVECEXP (mask, 0, INTVAL (elt_rtx) * width + i) = GEN_INT (i + 0x10);
   x = gen_rtx_CONST_VECTOR (V16QImode, XVEC (mask, 0));
 
   if (BYTES_BIG_ENDIAN)
@@ -27277,6 +27282,26 @@ rs6000_emit_xxspltidp_v2df (rtx dst, long value)
 	    "the result for the xxspltidp instruction "
 	    "is undefined for subnormal input values");
   emit_insn( gen_xxspltidp_v2df_inst (dst, GEN_INT (value)));
+}
+
+/* Implement TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC.  */
+
+static bool
+rs6000_gen_pic_addr_diff_vec (void)
+{
+  return rs6000_relative_jumptables;
+}
+
+void
+rs6000_output_addr_vec_elt (FILE *file, int value)
+{
+  const char *directive = TARGET_64BIT ? DOUBLE_INT_ASM_OP : "\t.long\t";
+  char buf[100];
+
+  fprintf (file, "%s", directive);
+  ASM_GENERATE_INTERNAL_LABEL (buf, "L", value);
+  assemble_name (file, buf);
+  fprintf (file, "\n");
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

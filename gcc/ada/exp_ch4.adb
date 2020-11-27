@@ -9716,16 +9716,6 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  Try to narrow the operation
-
-      if Typ = Universal_Integer then
-         Narrow_Large_Operation (N);
-
-         if Nkind (N) /= N_Op_Multiply then
-            return;
-         end if;
-      end if;
-
       --  Convert x * 2 ** y to Shift_Left (x, y). Note that the fact that
       --  Is_Power_Of_2_For_Shift is set means that we know that our left
       --  operand is an integer, as required for this to work.
@@ -9800,6 +9790,16 @@ package body Exp_Ch4 is
 
          Analyze_And_Resolve (N, Typ);
          return;
+      end if;
+
+      --  Try to narrow the operation
+
+      if Typ = Universal_Integer then
+         Narrow_Large_Operation (N);
+
+         if Nkind (N) /= N_Op_Multiply then
+            return;
+         end if;
       end if;
 
       --  Do required fixup of universal fixed operation
@@ -11465,11 +11465,6 @@ package body Exp_Ch4 is
       --  Start of processing for Discrete_Range_Check
 
       begin
-         --  Clear the Do_Range_Check flag on N if needed: this can occur when
-         --  e.g. a trivial type conversion is rewritten by its expression.
-
-         Set_Do_Range_Check (N, False);
-
          --  Nothing more to do if conversion was rewritten
 
          if Nkind (N) /= N_Type_Conversion then
@@ -11477,12 +11472,6 @@ package body Exp_Ch4 is
          end if;
 
          Expr := Expression (N);
-
-         --  Nothing to do if no range check flag set
-
-         if not Do_Range_Check (Expr) then
-            return;
-         end if;
 
          --  Clear the Do_Range_Check flag on Expr
 
@@ -11756,11 +11745,6 @@ package body Exp_Ch4 is
          Tnn    : Entity_Id;
 
       begin
-         --  Clear the Do_Range_Check flag on N if needed: this can occur when
-         --  e.g. a trivial type conversion is rewritten by its expression.
-
-         Set_Do_Range_Check (N, False);
-
          --  Nothing more to do if conversion was rewritten
 
          if Nkind (N) /= N_Type_Conversion then
@@ -12032,20 +12016,16 @@ package body Exp_Ch4 is
       --  Nothing at all to do if conversion is to the identical type so remove
       --  the conversion completely, it is useless, except that it may carry
       --  an Assignment_OK attribute, which must be propagated to the operand
-      --  and the Do_Range_Check flag on Operand should be taken into account.
+      --  and the Do_Range_Check flag on the operand must be cleared, if any.
 
       if Operand_Type = Target_Type then
          if Assignment_OK (N) then
             Set_Assignment_OK (Operand);
          end if;
 
+         Set_Do_Range_Check (Operand, False);
+
          Rewrite (N, Relocate_Node (Operand));
-
-         if Do_Range_Check (Operand) then
-            pragma Assert (Is_Discrete_Type (Operand_Type));
-
-            Discrete_Range_Check;
-         end if;
 
          goto Done;
       end if;
@@ -12468,16 +12448,11 @@ package body Exp_Ch4 is
 
          if Is_Fixed_Point_Type (Target_Type) then
             Expand_Convert_Fixed_To_Fixed (N);
-            Real_Range_Check;
-
          elsif Is_Integer_Type (Target_Type) then
             Expand_Convert_Fixed_To_Integer (N);
-            Discrete_Range_Check;
-
          else
             pragma Assert (Is_Floating_Point_Type (Target_Type));
             Expand_Convert_Fixed_To_Float (N);
-            Real_Range_Check;
          end if;
 
       --  Case of conversions to a fixed-point type
@@ -12492,11 +12467,9 @@ package body Exp_Ch4 is
       then
          if Is_Integer_Type (Operand_Type) then
             Expand_Convert_Integer_To_Fixed (N);
-            Real_Range_Check;
          else
             pragma Assert (Is_Floating_Point_Type (Operand_Type));
             Expand_Convert_Float_To_Fixed (N);
-            Real_Range_Check;
          end if;
 
       --  Case of array conversions
@@ -12656,8 +12629,6 @@ package body Exp_Ch4 is
       --  Here at end of processing
 
    <<Done>>
-      pragma Assert (not Do_Range_Check (N));
-
       --  Apply predicate check if required. Note that we can't just call
       --  Apply_Predicate_Check here, because the type looks right after
       --  the conversion and it would omit the check. The Comes_From_Source
@@ -14991,6 +14962,14 @@ package body Exp_Ch4 is
          return;
       end if;
 
+      --  If both operands are static, then the comparison has been already
+      --  folded in evaluation.
+
+      pragma Assert
+        (not Is_Static_Expression (Left_Opnd (N))
+           or else
+         not Is_Static_Expression (Right_Opnd (N)));
+
       --  Determine the potential outcome of the comparison assuming that the
       --  operands are valid and emit a warning when the comparison evaluates
       --  to True or False only in the presence of invalid values.
@@ -15006,7 +14985,8 @@ package body Exp_Ch4 is
          True_Result  => True_Result,
          False_Result => False_Result);
 
-      --  The outcome is a decisive False or True, rewrite the operator
+      --  The outcome is a decisive False or True, rewrite the operator into a
+      --  non-static literal.
 
       if False_Result or True_Result then
          Rewrite (N,
@@ -15014,6 +14994,7 @@ package body Exp_Ch4 is
              New_Occurrence_Of (Boolean_Literals (True_Result), Sloc (N))));
 
          Analyze_And_Resolve (N, Typ);
+         Set_Is_Static_Expression (N, False);
          Warn_On_Known_Condition (N);
       end if;
    end Rewrite_Comparison;

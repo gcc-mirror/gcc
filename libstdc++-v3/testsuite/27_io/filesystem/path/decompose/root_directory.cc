@@ -46,7 +46,7 @@ test01()
 void
 test02()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     path rootdir = p.root_directory();
     VERIFY( !rootdir.has_relative_path() );

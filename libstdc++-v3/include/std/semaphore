@@ -27,13 +27,13 @@
  */
 
 #ifndef _GLIBCXX_SEMAPHORE
-#define _GLIBCXX_SEMAPHORE
+#define _GLIBCXX_SEMAPHORE 1
 
 #pragma GCC system_header
 
 #if __cplusplus > 201703L
 #include <bits/semaphore_base.h>
-#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
+#ifdef _GLIBCXX_HAVE_ATOMIC_WAIT
 #include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -90,6 +90,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  using binary_semaphore = std::counting_semaphore<1>;
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // GTHREADS || LINUX_FUTEX
+#endif // HAVE_ATOMIC_WAIT
 #endif // C++20
 #endif // _GLIBCXX_SEMAPHORE

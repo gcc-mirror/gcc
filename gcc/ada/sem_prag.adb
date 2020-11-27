@@ -19670,7 +19670,53 @@ package body Sem_Prag is
 
          --  pragma No_Return (procedure_LOCAL_NAME {, procedure_Local_Name});
 
-         when Pragma_No_Return => No_Return : declare
+         when Pragma_No_Return => Prag_No_Return : declare
+
+            function Check_No_Return
+               (E : Entity_Id;
+                N : Node_Id) return Boolean;
+            --  Check rule 6.5.1(4/3) of the Ada RM. If the rule is violated,
+            --  emit an error message and return False, otherwise return True.
+            --  6.5.1 Nonreturning procedures:
+            --  4/3 "Aspect No_Return shall not be specified for a null
+            --  procedure nor an instance of a generic unit."
+
+            ---------------------
+            -- Check_No_Return --
+            ---------------------
+
+            function Check_No_Return
+               (E : Entity_Id;
+                N : Node_Id) return Boolean
+            is
+            begin
+               if Ekind (E) = E_Procedure then
+
+                  --  If E is a generic instance, marking it with No_Return
+                  --  is forbidden, but having it inherit the No_Return of
+                  --  the generic is allowed. We check if E is inheriting its
+                  --  No_Return flag from the generic by checking if No_Return
+                  --  is already set.
+
+                  if Is_Generic_Instance (E) and then not No_Return (E) then
+                     Error_Msg_NE
+                       ("generic instance & is marked as No_Return", N, E);
+                     Error_Msg_NE
+                       ("\generic procedure & must be marked No_Return",
+                        N,
+                        Generic_Parent (Parent (E)));
+                     return False;
+
+                  elsif Null_Present (Subprogram_Specification (E)) then
+                     Error_Msg_NE
+                       ("null procedure & cannot be marked No_Return", N, E);
+                     return False;
+                  end if;
+               end if;
+
+               return True;
+            end Check_No_Return;
+
             Arg   : Node_Id;
             E     : Entity_Id;
             Found : Boolean;
@@ -19742,7 +19788,9 @@ package body Sem_Prag is
                         end if;
                      end if;
 
-                     Set_No_Return (E);
+                     if Check_No_Return (E, N) then
+                        Set_No_Return (E);
+                     end if;
 
                      --  A pragma that applies to a Ghost entity becomes Ghost
                      --  for the purposes of legality checks and removal of
@@ -19781,7 +19829,10 @@ package body Sem_Prag is
 
                      --  Set flag on any alias as well
 
-                     if Is_Overloadable (E) and then Present (Alias (E)) then
+                     if Is_Overloadable (E)
+                       and then Present (Alias (E))
+                       and then Check_No_Return (Alias (E), N)
+                     then
                         Set_No_Return (Alias (E));
                      end if;
 
@@ -19798,6 +19849,7 @@ package body Sem_Prag is
                if not Found then
                   if Entity (Id) = Current_Scope
                     and then From_Aspect_Specification (N)
+                    and then Check_No_Return (Entity (Id), N)
                   then
                      Set_No_Return (Entity (Id));
 
@@ -19812,7 +19864,7 @@ package body Sem_Prag is
 
                Next (Arg);
             end loop;
-         end No_Return;
+         end Prag_No_Return;
 
          -----------------
          -- No_Run_Time --
@@ -31422,7 +31474,6 @@ package body Sem_Prag is
             --  RM defined
 
               Name_Assert
-            | Name_Assertion_Policy
             | Name_Static_Predicate
             | Name_Dynamic_Predicate
             | Name_Pre

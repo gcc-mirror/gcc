@@ -355,6 +355,8 @@ class TestGccChangelog(unittest.TestCase):
     def test_backport(self):
         email = self.from_patch_glob('0001-asan-fix-RTX-emission.patch')
         assert not email.errors
+        expected_hash = '8cff672cb9a132d3d3158c2edfc9a64b55292b80'
+        assert email.cherry_pick_commit == expected_hash
         assert len(email.changelog_entries) == 1
         entry = list(email.to_changelog_entries())[0][1]
         assert entry.startswith('2020-06-11  Martin Liska  <mliska@suse.cz>')

@@ -39,7 +39,7 @@ test01()
 void
 test02()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     path rootp = p.root_path();
     path rootn = p.root_name();

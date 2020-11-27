@@ -3656,7 +3656,8 @@ package body Exp_Ch6 is
             --  are passed by pointer in the generated C code, and we cannot
             --  take a pointer from a subprogram call.
 
-            elsif Nkind (Parent (Call_Node)) in N_Subprogram_Call
+            elsif Modify_Tree_For_C
+              and then Nkind (Parent (Call_Node)) in N_Subprogram_Call
               and then Is_Record_Type (Etype (Func_Id))
             then
                declare

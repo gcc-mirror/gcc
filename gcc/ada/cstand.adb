@@ -2074,11 +2074,7 @@ package body CStand is
       Build_Float_Type
         (Ent, Pos (Digs), Float_Rep, Int (Size), Int (Alignment / 8));
 
-      if No (Back_End_Float_Types) then
-         Back_End_Float_Types := New_Elmt_List;
-      end if;
-
-      Append_Elmt (Ent, Back_End_Float_Types);
+      Append_New_Elmt (Ent, Back_End_Float_Types);
    end Register_Float_Type;
 
    ----------------------

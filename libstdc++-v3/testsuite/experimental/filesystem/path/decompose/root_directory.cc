@@ -43,7 +43,7 @@ test01()
 void
 test02()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     path rootdir = p.root_directory();
     // If root-directory is composed of 'slash name',

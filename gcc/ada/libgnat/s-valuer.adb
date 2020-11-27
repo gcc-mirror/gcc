@@ -144,6 +144,9 @@ package body System.Value_R is
       --  Set to True if addition of a digit will cause Value to be superior
       --  to Precision_Limit.
 
+      Precision_Limit_Just_Reached : Boolean := False;
+      --  Set to True if Precision_Limit_Reached was just set to True
+
       Digit : Char_As_Digit;
       --  The current digit
 
@@ -185,11 +188,26 @@ package body System.Value_R is
 
          --  If precision limit has been reached, just ignore any remaining
          --  digits for the computation of Value and Scale, but store the
-         --  first in Extra. The scanning should continue only to assess the
-         --  validity of the string.
+         --  first in Extra and use the second to round Extra if this is for
+         --  a fixed-point type (we skip the rounding for a floating-point
+         --  type to preserve backward compatibility). The scanning should
+         --  continue only to assess the validity of the string.
 
-         if not Precision_Limit_Reached then
+         if Precision_Limit_Reached then
+            if Precision_Limit_Just_Reached and then not Floating then
+               if Digit >= Base / 2 then
+                  if Extra = Base - 1 then
+                     Extra := 0;
+                     Value := Value + 1;
+                  else
+                     Extra := Extra + 1;
+                  end if;
+               end if;
 
+               Precision_Limit_Just_Reached := False;
+            end if;
+
+         else
             --  Trailing '0' digits are ignored until a non-zero digit is found
 
             if Digit = 0 then
@@ -218,7 +236,7 @@ package body System.Value_R is
                Temp := Value * Uns (Base) + Uns (Digit);
 
                if Value <= Umax
-                   or else (Value <= UmaxB and then Temp <= Precision_Limit)
+                 or else (Value <= UmaxB and then Temp <= Precision_Limit)
                then
                   Value := Temp;
                   Scale := Scale - 1;
@@ -226,6 +244,7 @@ package body System.Value_R is
                else
                   Extra := Digit;
                   Precision_Limit_Reached := True;
+                  Precision_Limit_Just_Reached := True;
                end if;
             end if;
          end if;
@@ -289,6 +308,9 @@ package body System.Value_R is
       --  Set to True if addition of a digit will cause Value to be superior
       --  to Precision_Limit.
 
+      Precision_Limit_Just_Reached : Boolean := False;
+      --  Set to True if Precision_Limit_Reached was just set to True
+
       Digit : Char_As_Digit;
       --  The current digit
 
@@ -323,12 +345,27 @@ package body System.Value_R is
          end if;
 
          --  If precision limit has been reached, just ignore any remaining
-         --  digits for the computation of Value, but update Scale and store
-         --  the first in Extra. The scanning should continue only to assess
-         --  the validity of the string.
+         --  digits for the computation of Value and Scale, but store the
+         --  first in Extra and use the second to round Extra if this is for
+         --  a fixed-point type (we skip the rounding for a floating-point
+         --  type to preserve backward compatibility). The scanning should
+         --  continue only to assess the validity of the string.
 
          if Precision_Limit_Reached then
             Scale := Scale + 1;
+
+            if Precision_Limit_Just_Reached and then not Floating then
+               if Digit >= Base / 2 then
+                  if Extra = Base - 1 then
+                     Extra := 0;
+                     Value := Value + 1;
+                  else
+                     Extra := Extra + 1;
+                  end if;
+               end if;
+
+               Precision_Limit_Just_Reached := False;
+            end if;
 
          else
             Temp := Value * Uns (Base) + Uns (Digit);
@@ -341,6 +378,7 @@ package body System.Value_R is
             else
                Extra := Digit;
                Precision_Limit_Reached := True;
+               Precision_Limit_Just_Reached := True;
                Scale := Scale + 1;
             end if;
          end if;
@@ -428,10 +466,10 @@ package body System.Value_R is
       --  First character can be either a decimal digit or a dot
 
       if Str (Index) in '0' .. '9' then
-         After_Point := False;
-
          pragma Annotate
-           (CodePeer, Intentional, "test always true", "defensive code below");
+           (CodePeer, False_Positive, "test always true", "defensive code");
+
+         After_Point := False;
 
          --  If this is a digit it can indicates either the float decimal
          --  part or the base to use.

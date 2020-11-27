@@ -1510,8 +1510,8 @@ struct oacc_collapse
 static tree
 expand_oacc_collapse_init (const struct omp_for_data *fd,
 			   gimple_stmt_iterator *gsi,
-			   oacc_collapse *counts, tree bound_type,
-			   location_t loc)
+			   oacc_collapse *counts, tree diff_type,
+			   tree bound_type, location_t loc)
 {
   tree tiling = fd->tiling;
   tree total = build_int_cst (bound_type, 1);
@@ -1528,17 +1528,12 @@ expand_oacc_collapse_init (const struct omp_for_data *fd,
       const omp_for_data_loop *loop = &fd->loops[ix];
 
       tree iter_type = TREE_TYPE (loop->v);
-      tree diff_type = iter_type;
       tree plus_type = iter_type;
 
       gcc_assert (loop->cond_code == fd->loop.cond_code);
 
       if (POINTER_TYPE_P (iter_type))
 	plus_type = sizetype;
-      if (POINTER_TYPE_P (diff_type) || TYPE_UNSIGNED (diff_type))
-	diff_type = signed_type_for (diff_type);
-      if (TYPE_PRECISION (diff_type) < TYPE_PRECISION (integer_type_node))
-	diff_type = integer_type_node;
 
       if (tiling)
 	{
@@ -1626,7 +1621,8 @@ expand_oacc_collapse_init (const struct omp_for_data *fd,
 static void
 expand_oacc_collapse_vars (const struct omp_for_data *fd, bool inner,
 			   gimple_stmt_iterator *gsi,
-			   const oacc_collapse *counts, tree ivar)
+			   const oacc_collapse *counts, tree ivar,
+			   tree diff_type)
 {
   tree ivar_type = TREE_TYPE (ivar);
 
@@ -1638,7 +1634,6 @@ expand_oacc_collapse_vars (const struct omp_for_data *fd, bool inner,
       const oacc_collapse *collapse = &counts[ix];
       tree v = inner ? loop->v : collapse->outer;
       tree iter_type = TREE_TYPE (v);
-      tree diff_type = TREE_TYPE (collapse->step);
       tree plus_type = iter_type;
       enum tree_code plus_code = PLUS_EXPR;
       tree expr;
@@ -1660,7 +1655,7 @@ expand_oacc_collapse_vars (const struct omp_for_data *fd, bool inner,
 	}
 
       expr = fold_build2 (MULT_EXPR, diff_type, fold_convert (diff_type, expr),
-			  collapse->step);
+			  fold_convert (diff_type, collapse->step));
       expr = fold_build2 (plus_code, iter_type,
 			  inner ? collapse->outer : collapse->base,
 			  fold_convert (plus_type, expr));
@@ -7449,6 +7444,12 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
       plus_code = POINTER_PLUS_EXPR;
       plus_type = sizetype;
     }
+  for (int ix = fd->collapse; ix--;)
+    {
+      tree diff_type2 = TREE_TYPE (fd->loops[ix].step);
+      if (TYPE_PRECISION (diff_type) < TYPE_PRECISION (diff_type2))
+	diff_type = diff_type2;
+    }
   if (POINTER_TYPE_P (diff_type) || TYPE_UNSIGNED (diff_type))
     diff_type = signed_type_for (diff_type);
   if (TYPE_PRECISION (diff_type) < TYPE_PRECISION (integer_type_node))
@@ -7532,7 +7533,7 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
     {
       gcc_assert (!gimple_in_ssa_p (cfun) && up);
       counts = XALLOCAVEC (struct oacc_collapse, fd->collapse);
-      tree total = expand_oacc_collapse_init (fd, &gsi, counts,
+      tree total = expand_oacc_collapse_init (fd, &gsi, counts, diff_type,
 					      TREE_TYPE (fd->loop.n2), loc);
 
       if (SSA_VAR_P (fd->loop.n2))
@@ -7694,7 +7695,7 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
       gsi_insert_before (&gsi, ass, GSI_SAME_STMT);
 
       if (fd->collapse > 1 || fd->tiling)
-	expand_oacc_collapse_vars (fd, false, &gsi, counts, v);
+	expand_oacc_collapse_vars (fd, false, &gsi, counts, v, diff_type);
 
       if (fd->tiling)
 	{
@@ -7764,7 +7765,8 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 
 	  /* Initialize the user's loop vars.  */
 	  gsi = gsi_start_bb (elem_body_bb);
-	  expand_oacc_collapse_vars (fd, true, &gsi, counts, e_offset);
+	  expand_oacc_collapse_vars (fd, true, &gsi, counts, e_offset,
+				     diff_type);
 	}
     }
 

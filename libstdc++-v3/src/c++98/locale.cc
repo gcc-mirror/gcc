@@ -214,7 +214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   locale::facet::_S_get_c_locale()
   {
 #ifdef __GTHREADS
-    if (!__gnu_cxx::__is_single_threaded())
+    if (__gthread_active_p())
       __gthread_once(&_S_once, _S_initialize_once);
     else
 #endif
