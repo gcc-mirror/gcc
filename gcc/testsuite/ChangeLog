@@ -1,3 +1,21 @@
+2020-11-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2020-11-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/cache-3-1.c: New.
+	* c-c++-common/goacc/cache-3-2.c: Likewise.
+	* c-c++-common/goacc/data-clause-1.c: Likewise.
+	* c-c++-common/goacc/data-clause-2.c: Likewise.
+	* c-c++-common/gomp/map-1.c: Adjust.
+	* c-c++-common/gomp/map-2.c: Likewise.
+	* g++.dg/goacc/cache-3-1.C: New.
+	* g++.dg/goacc/cache-3-2.C: Likewise.
+	* g++.dg/goacc/data-clause-1.C: Likewise.
+	* g++.dg/goacc/data-clause-2.C: Likewise.
+	* g++.dg/gomp/map-1.C: Adjust.
+	* g++.dg/gomp/map-2.C: Likewise.
+
 2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
