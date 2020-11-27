@@ -52,6 +52,7 @@ version (Solaris)
 version (GNU)
 {
     import gcc.builtins;
+    import gcc.config;
     version (GNU_StackGrowsDown)
         version = StackGrowsDown;
 }
@@ -5119,6 +5120,15 @@ private:
     {
         // NOTE: The static ucontext instance is used to represent the context
         //       of the executing thread.
+        static ucontext_t       sm_utxt = void;
+        ucontext_t              m_utxt  = void;
+        ucontext_t*             m_ucur  = null;
+    }
+    else static if (GNU_Enable_CET)
+    {
+        // When libphobos was built with --enable-cet, these fields need to
+        // always be present in the Fiber class layout.
+        import core.sys.posix.ucontext;
         static ucontext_t       sm_utxt = void;
         ucontext_t              m_utxt  = void;
         ucontext_t*             m_ucur  = null;
