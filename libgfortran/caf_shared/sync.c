@@ -63,7 +63,7 @@ sync_iface_init (sync_iface *si, alloc_iface *ai, shared_memory *sm)
 {
   si->cis = SHMPTR_AS (
       sync_iface_shared *,
-      shared_malloc (get_allocator (ai), sizeof (collsub_iface_shared)), sm);
+      shared_malloc (get_allocator (ai), sizeof (sync_iface_shared)), sm);
 
   sync_all_init (&si->cis->sync_all);
   initialize_shared_mutex (&si->cis->table_lock);

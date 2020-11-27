@@ -87,6 +87,7 @@ change_internal_barrier_count (counter_barrier *b, int val)
 }
 
 /* Adjust all associated barriers of a counter.  */
+
 int
 waitable_counter_add (waitable_counter *c, int val)
 {
