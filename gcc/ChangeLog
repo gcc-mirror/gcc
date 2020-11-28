@@ -1,3 +1,18 @@
+2020-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2020-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.opt
+	(-param=aarch64-autovec-preference): Define.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Set aarch64_sve_compare_costs to 0 when preferring only Advanced
+	SIMD.
+	(aarch64_cmp_autovec_modes): Define.
+	(aarch64_preferred_simd_mode): Adjust to use the above.
+	(aarch64_autovectorize_vector_modes): Likewise.
+	* doc/invoke.texi: Document aarch64-autovec-preference param.
+
 2020-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
