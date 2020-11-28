@@ -784,6 +784,9 @@ case ${target} in
       default_use_cxa_atexit=yes;;
   esac
   use_gcc_stdint=wrap
+  d_target_objs="${d_target_objs} freebsd-d.o"
+  tmake_file="${tmake_file} t-freebsd"
+  target_has_targetdm=yes
   ;;
 *-*-fuchsia*)
   native_system_header_dir=/include
