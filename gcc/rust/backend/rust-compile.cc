@@ -533,24 +533,6 @@ Compilation::visit (AST::StructExprFieldIdentifier &field)
 void
 Compilation::visit (AST::StructExprFieldIdentifierValue &field)
 {
-  AST::StructStruct *decl = structBuffer.back ();
-  size_t index = 0;
-  bool found = false;
-  for (auto &df : decl->fields)
-    {
-      if (field.field_name.compare (df.field_name) == 0)
-	{
-	  found = true;
-	  break;
-	}
-    }
-  if (!found)
-    {
-      rust_fatal_error (field.value->get_locus_slow (),
-			"failed to lookup field index");
-      return;
-    }
-
   Bexpression *value = NULL;
   VISIT_POP (field.value->get_locus_slow (), field.value.get (), value, exprs);
   if (value == NULL)

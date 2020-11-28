@@ -516,6 +516,10 @@ TypeResolution::visit (AST::StructExprStructFields &expr)
 	}
     }
 
+  // need to correct the ordering with the respect to the struct definition and
+  // ensure we handle missing values and give them defaults
+  // FIXME
+
   // setup a path in type
   AST::PathIdentSegment seg (expr.get_struct_name ().as_string ());
   auto typePath = ::std::unique_ptr<AST::TypePathSegment> (
