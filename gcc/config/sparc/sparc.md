@@ -3768,10 +3768,13 @@ visl")
     }
 })
 
+;; Turning an add/sub instruction into the other changes the Carry flag
+;; so the 4096 trick cannot be used for operations in CCXCmode.
+
 (define_expand "uaddvdi4"
   [(parallel [(set (reg:CCXC CC_REG)
 		   (compare:CCXC (plus:DI (match_operand:DI 1 "register_operand")
-					  (match_operand:DI 2 "arith_add_operand"))
+					  (match_operand:DI 2 "arith_double_operand"))
 			         (match_dup 1)))
 	      (set (match_operand:DI 0 "register_operand")
 		   (plus:DI (match_dup 1) (match_dup 2)))])
@@ -3790,10 +3793,13 @@ visl")
     }
 })
 
+;; Turning an add/sub instruction into the other does not change the Overflow
+;; flag so the 4096 trick can be used for operations in CCXVmode.
+
 (define_expand "addvdi4"
   [(parallel [(set (reg:CCXV CC_REG)
 		   (compare:CCXV (plus:DI (match_operand:DI 1 "register_operand")
-					  (match_operand:DI 2 "arith_add_operand"))
+					  (match_operand:DI 2 "arith_double_add_operand"))
 			         (unspec:DI [(match_dup 1) (match_dup 2)]
 					    UNSPEC_ADDV)))
 	      (set (match_operand:DI 0 "register_operand")
@@ -3966,9 +3972,10 @@ visl")
   ""
   "@
    add\t%1, %2, %0
-   sub\t%1, -%2, %0"
-  [(set_attr "type" "*,*")
-   (set_attr "fptype" "*,*")])
+   sub\t%1, -%2, %0")
+
+;; Turning an add/sub instruction into the other changes the Carry flag
+;; so the 4096 trick cannot be used for operations in CCCmode.
 
 (define_expand "uaddvsi4"
   [(parallel [(set (reg:CCC CC_REG)
@@ -3982,10 +3989,13 @@ visl")
 			   (pc)))]
  "")
 
+;; Turning an add/sub instruction into the other does not change the Overflow
+;; flag so the 4096 trick can be used for operations in CCVmode.
+
 (define_expand "addvsi4"
   [(parallel [(set (reg:CCV CC_REG)
 		   (compare:CCV (plus:SI (match_operand:SI 1 "register_operand")
-					 (match_operand:SI 2 "arith_operand"))
+					 (match_operand:SI 2 "arith_add_operand"))
 			        (unspec:SI [(match_dup 1) (match_dup 2)]
 					   UNSPEC_ADDV)))
 	      (set (match_operand:SI 0 "register_operand")
@@ -4094,42 +4104,50 @@ visl")
 
 (define_insn "*cmp_ccv_plus"
   [(set (reg:CCV CC_REG)
-	(compare:CCV (plus:SI (match_operand:SI 0 "register_operand" "%r")
-			      (match_operand:SI 1 "arith_operand" "rI"))
+	(compare:CCV (plus:SI (match_operand:SI 0 "register_operand" "%r,r")
+			      (match_operand:SI 1 "arith_add_operand" "rI,O"))
 		     (unspec:SI [(match_dup 0) (match_dup 1)] UNSPEC_ADDV)))]
   ""
-  "addcc\t%0, %1, %%g0"
+  "@
+   addcc\t%0, %1, %%g0
+   subcc\t%0, -%1, %%g0"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmp_ccxv_plus"
   [(set (reg:CCXV CC_REG)
-	(compare:CCXV (plus:DI (match_operand:DI 0 "register_operand" "%r")
-			       (match_operand:DI 1 "arith_operand" "rI"))
+	(compare:CCXV (plus:DI (match_operand:DI 0 "register_operand" "%r,r")
+			       (match_operand:DI 1 "arith_add_operand" "rI,O"))
 		      (unspec:DI [(match_dup 0) (match_dup 1)] UNSPEC_ADDV)))]
   "TARGET_ARCH64"
-  "addcc\t%0, %1, %%g0"
+  "@
+   addcc\t%0, %1, %%g0
+   subcc\t%0, -%1, %%g0"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmp_ccv_plus_set"
   [(set (reg:CCV CC_REG)
-	(compare:CCV (plus:SI (match_operand:SI 1 "register_operand" "%r")
-			      (match_operand:SI 2 "arith_operand" "rI"))
+	(compare:CCV (plus:SI (match_operand:SI 1 "register_operand" "%r,r")
+			      (match_operand:SI 2 "arith_add_operand" "rI,O"))
 		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
-   (set (match_operand:SI 0 "register_operand" "=r")
+   (set (match_operand:SI 0 "register_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "addcc\t%1, %2, %0"
+  "@
+   addcc\t%1, %2, %0
+   subcc\t%1, -%2, %0"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmp_ccxv_plus_set"
   [(set (reg:CCXV CC_REG)
-	(compare:CCXV (plus:DI (match_operand:DI 1 "register_operand" "%r")
-			       (match_operand:DI 2 "arith_operand" "rI"))
+	(compare:CCXV (plus:DI (match_operand:DI 1 "register_operand" "%r,r")
+			       (match_operand:DI 2 "arith_add_operand" "rI,O"))
 		      (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_ADDV)))
-   (set (match_operand:DI 0 "register_operand" "=r")
+   (set (match_operand:DI 0 "register_operand" "=r,r")
 	(plus:DI (match_dup 1) (match_dup 2)))]
   "TARGET_ARCH64"
-  "addcc\t%1, %2, %0"
+  "@
+   addcc\t%1, %2, %0
+   subcc\t%1, -%2, %0"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmp_ccv_plus_sltu_set"
@@ -4161,10 +4179,13 @@ visl")
     }
 })
 
+;; Turning an add/sub instruction into the other changes the Carry flag
+;; so the 4096 trick cannot be used for operations in CCXmode.
+
 (define_expand "usubvdi4"
   [(parallel [(set (reg:CCX CC_REG)
 		   (compare:CCX (match_operand:DI 1 "register_or_zero_operand")
-				(match_operand:DI 2 "arith_add_operand")))
+				(match_operand:DI 2 "arith_double_operand")))
 	      (set (match_operand:DI 0 "register_operand")
 		   (minus:DI (match_dup 1) (match_dup 2)))])
    (set (pc) (if_then_else (ltu (reg:CCX CC_REG) (const_int 0))
@@ -4188,10 +4209,13 @@ visl")
     }
 })
 
+;; Turning an add/sub instruction into the other does not change the Overflow
+;; flag so the 4096 trick can be used for operations in CCXVmode.
+
 (define_expand "subvdi4"
   [(parallel [(set (reg:CCXV CC_REG)
 		   (compare:CCXV (minus:DI (match_operand:DI 1 "register_operand")
-					   (match_operand:DI 2 "arith_add_operand"))
+					   (match_operand:DI 2 "arith_double_add_operand"))
 			         (unspec:DI [(match_dup 1) (match_dup 2)]
 					    UNSPEC_SUBV)))
 	      (set (match_operand:DI 0 "register_operand")
@@ -4362,9 +4386,10 @@ visl")
   ""
   "@
    sub\t%1, %2, %0
-   add\t%1, -%2, %0"
-  [(set_attr "type" "*,*")
-   (set_attr "fptype" "*,*")])
+   add\t%1, -%2, %0")
+
+;; Turning an add/sub instruction into the other changes the Carry flag
+;; so the 4096 trick cannot be used for operations in CCmode.
 
 (define_expand "usubvsi4"
   [(parallel [(set (reg:CC CC_REG)
@@ -4384,10 +4409,13 @@ visl")
     }
 })
 
+;; Turning an add/sub instruction into the other does not change the Overflow
+;; flag so the 4096 trick can be used for operations in CCVmode.
+
 (define_expand "subvsi4"
   [(parallel [(set (reg:CCV CC_REG)
 		   (compare:CCV (minus:SI (match_operand:SI 1 "register_operand")
-					  (match_operand:SI 2 "arith_operand"))
+					  (match_operand:SI 2 "arith_add_operand"))
 			        (unspec:SI [(match_dup 1) (match_dup 2)]
 					   UNSPEC_SUBV)))
 	      (set (match_operand:SI 0 "register_operand")
@@ -4480,42 +4508,50 @@ visl")
 
 (define_insn "*cmp_ccv_minus"
   [(set (reg:CCV CC_REG)
-	(compare:CCV (minus:SI (match_operand:SI 0 "register_or_zero_operand" "rJ")
-			       (match_operand:SI 1 "arith_operand" "rI"))
+	(compare:CCV (minus:SI (match_operand:SI 0 "register_or_zero_operand" "rJ,rJ")
+			       (match_operand:SI 1 "arith_add_operand" "rI,O"))
 		     (unspec:SI [(match_dup 0) (match_dup 1)] UNSPEC_SUBV)))]
   ""
-  "subcc\t%r0, %1, %%g0"
+  "@
+   subcc\t%r0, %1, %%g0
+   addcc\t%r0, -%1, %%g0"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmp_ccxv_minus"
   [(set (reg:CCXV CC_REG)
-	(compare:CCXV (minus:DI (match_operand:DI 0 "register_or_zero_operand" "rJ")
-			        (match_operand:DI 1 "arith_operand" "rI"))
+	(compare:CCXV (minus:DI (match_operand:DI 0 "register_or_zero_operand" "rJ,rJ")
+			        (match_operand:DI 1 "arith_add_operand" "rI,O"))
 		      (unspec:DI [(match_dup 0) (match_dup 1)] UNSPEC_SUBV)))]
   "TARGET_ARCH64"
-  "subcc\t%r0, %1, %%g0"
+  "@
+   subcc\t%r0, %1, %%g0
+   addcc\t%r0, -%1, %%g0"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmp_ccv_minus_set"
   [(set (reg:CCV CC_REG)
-	(compare:CCV (minus:SI (match_operand:SI 1 "register_or_zero_operand" "rJ")
-			       (match_operand:SI 2 "arith_operand" "rI"))
+	(compare:CCV (minus:SI (match_operand:SI 1 "register_or_zero_operand" "rJ,rJ")
+			       (match_operand:SI 2 "arith_add_operand" "rI,O"))
 		     (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
-   (set (match_operand:SI 0 "register_operand" "=r")
+   (set (match_operand:SI 0 "register_operand" "=r,r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "subcc\t%r1, %2, %0"
+  "@
+   subcc\t%r1, %2, %0
+   addcc\t%r1, -%2, %0"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmp_ccxv_minus_set"
   [(set (reg:CCXV CC_REG)
-	(compare:CCXV (minus:DI (match_operand:DI 1 "register_or_zero_operand" "rJ")
-			        (match_operand:DI 2 "arith_operand" "rI"))
+	(compare:CCXV (minus:DI (match_operand:DI 1 "register_or_zero_operand" "rJ,rJ")
+			        (match_operand:DI 2 "arith_add_operand" "rI,O"))
 		      (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_SUBV)))
-   (set (match_operand:DI 0 "register_operand" "=r")
+   (set (match_operand:DI 0 "register_operand" "=r,r")
 	(minus:DI (match_dup 1) (match_dup 2)))]
   "TARGET_ARCH64"
-  "subcc\t%r1, %2, %0"
+  "@
+   subcc\t%r1, %2, %0
+   addcc\t%r1, -%2, %0"
   [(set_attr "type" "compare")])
 
 (define_insn "*cmp_ccv_minus_sltu_set"
@@ -5766,13 +5802,13 @@ visl")
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
-        (neg:SI (match_operand:SI 1 "arith_operand" "rI")))]
+        (neg:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "sub\t%%g0, %1, %0")
 
 (define_expand "unegvsi3"
   [(parallel [(set (reg:CCC CC_REG)
-		   (compare:CCC (not:SI (match_operand:SI 1 "arith_operand" ""))
+		   (compare:CCC (not:SI (match_operand:SI 1 "register_operand" ""))
 				(const_int -1)))
 	      (set (match_operand:SI 0 "register_operand" "")
 		   (neg:SI (match_dup 1)))])
@@ -5784,7 +5820,7 @@ visl")
 
 (define_expand "negvsi3"
   [(parallel [(set (reg:CCV CC_REG)
-		   (compare:CCV (neg:SI (match_operand:SI 1 "arith_operand" ""))
+		   (compare:CCV (neg:SI (match_operand:SI 1 "register_operand" ""))
 				(unspec:SI [(match_dup 1)] UNSPEC_NEGV)))
 	      (set (match_operand:SI 0 "register_operand" "")
 		   (neg:SI (match_dup 1)))])
@@ -5796,7 +5832,7 @@ visl")
 
 (define_insn "*cmp_ccnz_neg"
   [(set (reg:CCNZ CC_REG)
-	(compare:CCNZ (neg:SI (match_operand:SI 0 "arith_operand" "rI"))
+	(compare:CCNZ (neg:SI (match_operand:SI 0 "register_operand" "r"))
 		      (const_int 0)))]
   ""
   "subcc\t%%g0, %0, %%g0"
@@ -5804,7 +5840,7 @@ visl")
 
 (define_insn "*cmp_ccxnz_neg"
   [(set (reg:CCXNZ CC_REG)
-	(compare:CCXNZ (neg:DI (match_operand:DI 0 "arith_operand" "rI"))
+	(compare:CCXNZ (neg:DI (match_operand:DI 0 "register_operand" "r"))
 		       (const_int 0)))]
   "TARGET_ARCH64"
   "subcc\t%%g0, %0, %%g0"
@@ -5812,7 +5848,7 @@ visl")
 
 (define_insn "*cmp_ccnz_neg_set"
   [(set (reg:CCNZ CC_REG)
-	(compare:CCNZ (neg:SI (match_operand:SI 1 "arith_operand" "rI"))
+	(compare:CCNZ (neg:SI (match_operand:SI 1 "register_operand" "r"))
 		      (const_int 0)))
    (set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_dup 1)))]
@@ -5822,7 +5858,7 @@ visl")
 
 (define_insn "*cmp_ccxnz_neg_set"
   [(set (reg:CCXNZ CC_REG)
-	(compare:CCXNZ (neg:DI (match_operand:DI 1 "arith_operand" "rI"))
+	(compare:CCXNZ (neg:DI (match_operand:DI 1 "register_operand" "r"))
 		       (const_int 0)))
    (set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_dup 1)))]
@@ -5832,7 +5868,7 @@ visl")
 
 (define_insn "*cmp_ccc_neg_set"
   [(set (reg:CCC CC_REG)
-	(compare:CCC (not:SI (match_operand:SI 1 "arith_operand" "rI"))
+	(compare:CCC (not:SI (match_operand:SI 1 "register_operand" "r"))
 		     (const_int -1)))
    (set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_dup 1)))]
@@ -5842,7 +5878,7 @@ visl")
 
 (define_insn "*cmp_ccxc_neg_set"
   [(set (reg:CCXC CC_REG)
-	(compare:CCXC (not:DI (match_operand:DI 1 "arith_operand" "rI"))
+	(compare:CCXC (not:DI (match_operand:DI 1 "register_operand" "r"))
 		      (const_int -1)))
    (set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_dup 1)))]
@@ -5853,7 +5889,7 @@ visl")
 (define_insn "*cmp_ccc_neg_sltu_set"
   [(set (reg:CCC CC_REG)
 	(compare:CCC (zero_extend:DI
-		       (neg:SI (plus:SI (match_operand:SI 1 "arith_operand" "rI")
+		       (neg:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
 				        (ltu:SI (reg:CCC CC_REG)
 						(const_int 0)))))
 		     (neg:DI (plus:DI (zero_extend:DI (match_dup 1))
@@ -5868,7 +5904,7 @@ visl")
 
 (define_insn "*cmp_ccv_neg"
   [(set (reg:CCV CC_REG)
-	(compare:CCV (neg:SI (match_operand:SI 0 "arith_operand" "rI"))
+	(compare:CCV (neg:SI (match_operand:SI 0 "register_operand" "r"))
 		     (unspec:SI [(match_dup 0)] UNSPEC_NEGV)))]
   ""
   "subcc\t%%g0, %0, %%g0"
@@ -5876,7 +5912,7 @@ visl")
 
 (define_insn "*cmp_ccxv_neg"
   [(set (reg:CCXV CC_REG)
-	(compare:CCXV (neg:DI (match_operand:DI 0 "arith_operand" "rI"))
+	(compare:CCXV (neg:DI (match_operand:DI 0 "register_operand" "r"))
 		      (unspec:DI [(match_dup 0)] UNSPEC_NEGV)))]
   "TARGET_ARCH64"
   "subcc\t%%g0, %0, %%g0"
@@ -5884,7 +5920,7 @@ visl")
 
 (define_insn "*cmp_ccv_neg_set"
   [(set (reg:CCV CC_REG)
-	(compare:CCV (neg:SI (match_operand:SI 1 "arith_operand" "rI"))
+	(compare:CCV (neg:SI (match_operand:SI 1 "register_operand" "r"))
 		     (unspec:SI [(match_dup 1)] UNSPEC_NEGV)))
    (set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_dup 1)))]
@@ -5894,7 +5930,7 @@ visl")
 
 (define_insn "*cmp_ccxv_neg_set"
   [(set (reg:CCXV CC_REG)
-	(compare:CCXV (neg:DI (match_operand:DI 1 "arith_operand" "rI"))
+	(compare:CCXV (neg:DI (match_operand:DI 1 "register_operand" "r"))
 		      (unspec:DI [(match_dup 1)] UNSPEC_NEGV)))
    (set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_dup 1)))]
@@ -5904,7 +5940,7 @@ visl")
 
 (define_insn "*cmp_ccv_neg_sltu_set"
   [(set (reg:CCV CC_REG)
-	(compare:CCV (neg:SI (plus:SI (match_operand:SI 1 "arith_operand" "rI")
+	(compare:CCV (neg:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
 				      (ltu:SI (reg:CCC CC_REG) (const_int 0))))
 		     (unspec:SI [(plus:SI (match_dup 1)
 				          (ltu:SI (reg:CCC CC_REG)
