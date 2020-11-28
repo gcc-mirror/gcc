@@ -12052,6 +12052,15 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 		    ambig2.c_str());
       else if (found_pointer_method)
 	go_error_at(location, "method requires a pointer receiver");
+      else if (it != NULL && it->is_empty())
+	go_error_at(location,
+		    "reference to method %qs in interface with no methods",
+		    Gogo::message_name(name).c_str());
+      else if (it == NULL && type->deref()->interface_type() != NULL)
+	go_error_at(location,
+		    ("reference to method %qs in type that is "
+		     "pointer to interface, not interface"),
+		    Gogo::message_name(name).c_str());
       else if (nt == NULL && st == NULL && it == NULL)
 	go_error_at(location,
 		    ("reference to field %qs in object which "
