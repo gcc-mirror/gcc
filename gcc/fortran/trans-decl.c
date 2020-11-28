@@ -2075,7 +2075,8 @@ get_proc_pointer_decl (gfc_symbol *sym)
 /* Get a basic decl for an external function.  */
 
 tree
-gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args)
+gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args,
+			      const char *fnspec)
 {
   tree type;
   tree fndecl;
@@ -2287,7 +2288,8 @@ module_sym:
       mangled_name = gfc_sym_mangled_function_id (sym);
     }
 
-  type = gfc_get_function_type (sym, actual_args);
+  type = gfc_get_function_type (sym, actual_args, fnspec);
+
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, name, type);
 

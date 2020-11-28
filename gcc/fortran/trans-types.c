@@ -3009,7 +3009,8 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
 }
 
 tree
-gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args)
+gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
+		       const char *fnspec)
 {
   tree type;
   vec<tree, va_gc> *typelist = NULL;
@@ -3193,7 +3194,19 @@ arg_type_list_done:
     type = build_varargs_function_type_vec (type, typelist);
   else
     type = build_function_type_vec (type, typelist);
-  type = create_fn_spec (sym, type);
+
+  /* If we were passed an fn spec, add it here, otherwise determine it from
+     the formal arguments.  */
+  if (fnspec)
+    {
+      tree tmp;
+      int spec_len = strlen (fnspec);
+      tmp = build_tree_list (NULL_TREE, build_string (spec_len, fnspec));
+      tmp = tree_cons (get_identifier ("fn spec"), tmp, TYPE_ATTRIBUTES (type));
+      type = build_type_attribute_variant (type, tmp);
+    }
+  else
+    type = create_fn_spec (sym, type);
 
   return type;
 }
