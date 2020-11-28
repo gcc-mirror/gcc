@@ -724,9 +724,6 @@ case ,${enable_languages}, in
     ;;
   *)
     case "${target}" in
-      *-*-darwin*)
-	unsupported_languages="$unsupported_languages d"
-        ;;
       bpf-*-*)
 	unsupported_languages="$unsupported_languages d"
 	;;
