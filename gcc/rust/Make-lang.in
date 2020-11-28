@@ -30,7 +30,7 @@ GCCRS_INSTALL_NAME := $(shell echo gccrs|sed '$(program_transform_name)')
 GCCRS_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gccrs|sed '$(program_transform_name)')
 
 # Define the names for selecting rust in LANGUAGES.
-rust: gccrs$(exeext) rust1$(exeext)
+rust: rust1$(exeext)
 
 # Tell GNU make to ignore files by these names if they exist.
 .PHONY: rust
@@ -87,6 +87,10 @@ rust1$(exeext): $(RUST_ALL_OBJS) attribs.o  $(BACKEND) $(LIBDEPS)
 	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 # Build hooks.
+
+lang_checks += check-rust
+lang_checks_parallelized += check-rust
+check_rust_parallelize = 10
 
 # Copies its dependencies into the source directory. This generally should be used for generated files
 # such as Bison output files which are not version-controlled, but should be included in any release 
