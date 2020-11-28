@@ -1,3 +1,256 @@
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valuef.adb (Integer_To_Fixed): Take into account the
+	extra digit when scaling up the input.
+	* libgnat/s-valuer.adb (Scan_Decimal_Digits): Restrict previous
+	change to fixed-point types.
+	(Scan_Integral_Digits): Likewise.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Parent_Is_Boolean): Simplify.
+	(Resolve_Op_Not): Reduce scope of a local variable.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* cstand.adb: Simplify with Append_New_Elmt.
+	* sem_util.adb: Likewise.
+
+2020-11-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_eval.adb (Fold_Shift): Fix evaluation of Shift_Right on
+	negative values.
+
+2020-11-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Properly split
+	Transform_Function_Array and Modify_Tree_For_C.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.ads (Compile_Time_Compare): Restore parameter Diff to
+	be of an access type.
+	* sem_eval.adb (Compile_Time_Compare): Adapt body and callers.
+	* sem_attr.adb (Eval_Attribute): Adapt callers.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valuer.adb (Scan_Decimal_Digits): Round Extra.
+	(Scan_Integral_Digits): Likewise.
+
+2020-11-27  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Selected_Range_Checks): Adapt the condition for
+	applying range checks so that it is not done inside generics.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_fixd.adb (Build_Double_Divide): Only use a 128-bit
+	division if one of the operands is larger than 64 bits.
+	(Build_Double_Divide_Code): Likewise.
+	(Build_Scaled_Divide): Likewise.
+	(Build_Scaled_Divide_Code): Likewise.
+
+2020-11-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-os_lib.adb (To_GM_Time): Return valid and consistent
+	values for Invalid_Time.
+
+2020-11-27  Steve Baird  <baird@adacore.com>
+
+	* snames.ads-tmpl: Define new Name_Stable_Properties Name_Id
+	value.
+	* aspects.ads, aspects.adb: Add new Aspect_Stable_Properties
+	enumeration literal to Aspect_Id type. Add Class_Present
+	parameter to Find_Aspect and related
+	functions (Find_Value_Of_Aspect and Has_Aspect).
+	* sem_util.adb (Has_Nontrivial_Precondition): Fix
+	previously-latent bug uncovered by adding Class_Present
+	parameter to Aspect.Find_Aspect. The code was wrong before, but
+	with the change the bug was more likely to make a user-visible
+	difference.
+	* sem_ch6.adb (Analyze_Operator_Symbol): If a string literal
+	like "abs" or "-" occurs in a Stable_Properties aspect
+	specification, then it is to be interpreted as an operator
+	symbol and not as a string literal.
+	* sem_ch13.ads: Export new Parse_Aspect_Stable_Properties
+	function, analogous to the existing Parse_Aspect_Aggregate
+	exported procedure.
+	* sem_ch13.adb: (Parse_Aspect_Stable_Properties): New function;
+	analogous to existing Parse_Aspect_Aggregate.
+	(Validate_Aspect_Stable_Properties): New procedure; analogous to
+	existing Validate_Aspect_Aggregate. Called from the same case
+	statement (casing on an Aspect_Id value) where
+	Validate_Aspect_Aggregate is called.
+	(Resolve_Aspect_Stable_Properties): New procedure; analogous to
+	existing Resolve_Aspect_Aggregate. Called from the same two case
+	statements (each casing on an Aspect_Id value) where
+	Resolve_Aspect_Aggregate is called.
+	(Analyze_Aspect_Specifications): Set Has_Delayed_Aspects and
+	Is_Delayed_Aspect attributes for Aspect_Stable_Properties aspect
+	specifications.
+	(Check_Aspect_At_End_Of_Declarations): The syntactic
+	"expression" for a Stable_Properties aspect specification is not
+	semantically an expression; it doesn't have a type. Thus, force
+	T to be empty in this case.
+	* contracts.adb (Expand_Subprogram_Contract): Add call to new
+	local procedure,
+	Expand_Subprogram_Contract.Add_Stable_Property_Contracts, which
+	generates Postcondition pragmas corresponding to stable property
+	checks.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst:
+	(Assertion_Policy): Move "Default_Initial_Condition" from
+	ID_ASSERTION_KIND to RM_ASSERTION_KIND section.
+	* gnat_rm.texi: Regenerate.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Assertion_Policy): Add "Default_Initial_Condition",
+	"Initial_Condition" and "Subprogram_Variant".
+	* gnat_rm.texi: Regenerate.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Is_Valid_Assertion_Kind): Return False on
+	"Assertion_Policy"
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make.adb (GNAT_Flag): Change to "-gnatg".
+	(Compile): Adjust comments accordingly.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Rewrite_Comparison): Add assertion to confirm
+	that evaluation folds comparisons with static operands; when
+	folding comparison with non-static operands, the resulting
+	literal is non-static.
+	* sem_eval.adb (Eval_Relational_Op): Refactor nested IF
+	statement for the special case in the THEN branch; move code for
+	the "general case" out of the ELSE branch.
+	* sem_res.adb (Resolve_Comparison_Op): Only apply a dubious
+	special-case for GNATprove in the GNATprove_Mode.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.ads (Compile_Time_Compare): Change parameter Diff
+	from access to mode out.
+	* sem_eval.adb (Compile_Time_Compare): Adapt body and callers.
+	* sem_attr.adb (Eval_Attribute): Adapt callers.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Multiply): Move down block calling
+	Narrow_Large_Operation if the type is Universal_Integer.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-nbnbre.adb: Remove clauses for System.Img_Real and
+	add them for System.Unsigned_Types.
+	(Float_Conversions.To_Big_Real): Reimplement.
+	(Float_Conversions.From_Big_Real): Likewise.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.ads (Determine_Range_To_Discrete): New procedure.
+	* checks.adb (Apply_Scalar_Range_Check): Call it to determine
+	a range for the expression when the target type is discrete.
+	And also apply the tests for discrete types to fixed-point
+	types when they are treated as integers.
+	(Apply_Type_Conversion_Checks): Apply checks to conversions
+	involving fixed-point types when they are treated as integers.
+	(Determine_Range) <N_Type_Conversion>: Factor out code into...
+	(Determine_Range_To_Discrete): ...this new procedure and add
+	support for fixed-point types when they are treated as integers.
+	* einfo.ads (Type_High_Bound): Remove obsolete sentence.
+	(Type_Low_Bound): Likewise.
+	* exp_ch4.adb (Discrete_Range_Check): Remove obsolete code.
+	(Real_Range_Check): Likewise.
+	(Expand_N_Type_Conversion): In case of a no-op conversion, clear
+	the Do_Range_Check flag on the operand before substituting it.
+	Remove calls to Real_Range_Check and Discrete_Range_Check that
+	are not guarded by the Do_Range_Check flag, and an assertion.
+	* sem_res.adb (Resolve_Type_Conversion): Always apply range
+	checks in GNATprove mode; in normal mode, use the updated type
+	of the operand in the test against Universal_Fixed.  Remove
+	obsolete code setting the Do_Range_Check flag at the end.
+
+2020-11-27  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Change "Ref Manual" to RM;
+	replace uses of an unnecessary "Ok" variable with RETURN
+	statements; replace nested IF with ELSIF.
+
+2020-11-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-tasren.adb (Local_Complete_Rendezvous): Always call
+	Defer_Abort.
+	* libgnat/a-except.adb: Abort does not need to be deferred.
+	* libgnarl/s-tpobop.adb (Exceptional_Complete_Entry_Body): Abort
+	never needs to be undeferred here.
+	* exp_ch11.adb (Expand_Exception_Handlers): Remove difference
+	between ZCX and SJLJ.
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): Remove different
+	handling for sjlj.
+	* exp_sel.ads, exp_sel.adb (Build_Abort_Block,
+	Build_Abort_Block_Handler): Ditto.
+
+2020-11-27  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): declare new Check_No_Return
+	function and call it.
+
+2020-11-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Object): Consistently use
+	New_Copy_Tree instead of New_Copy.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_fixd.adb (Build_Conversion): Adjust head comment.
+	(Build_Divide): Likewise.
+	(Build_Double_Divide): Likewise.
+	(Build_Multiply): Likewise.
+	(Build_Rem): Likewise.
+	(Build_Scaled_Divide): Likewise.
+
+2020-11-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-genbig.ads, libgnat/s-genbig.adb (To_Bignum): New
+	variant taking an Unsigned_128.
+	* libgnat/a-nbnbin.adb (To_Big_Integer): Add support for 128
+	bits signed and unsigned types.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-imagef.adb (Set_Image_Fixed): Pass the full value
+	of the quotient to Set_Image_Integer during the first round and
+	adjust the handling of the minus sign.
+
+2020-11-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-nbnbre.adb ("=", "<"): Fix.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valuer.adb (Scan_Raw_Real): Move pragma Annotate around
+	and adjust its parameters.
+
+2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_fixd.adb (Build_Double_Divide): Use the RM size of types and
+	a more precise estimate for the size of the denominator.
+	(Build_Double_Divide_Code): Likewise.
+	(Build_Multiply): Use a more precise estimate for the size of the
+	result.
+	(Build_Scaled_Divide):  Use the RM size of types and a more precise
+	estimate for the size of the numerator.
+	(Build_Scaled_Divide_Code): Likewise.
+
 2020-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.rtl <sparc*-sun-solaris*> (THREADSLIB): Remove.

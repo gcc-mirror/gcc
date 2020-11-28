@@ -1,3 +1,132 @@
+2020-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_try_preprocess): Define
+	new proc to preprocess a chunk of code.
+	(v3_check_preprocessor_condition): Define new proc to test
+	a preprocessor condition depending on GCC or libstdc++ macros.
+	(check_v3_target_debug_mode, check_v3_target_normal_mode):
+	Use v3_try_preprocess.
+	(check_v3_target_normal_namespace)
+	(check_v3_target_parallel_mode, check_v3_target_cstdint)
+	(check_v3_target_cmath, check_v3_target_atomic_builtins)
+	(check_v3_target_gthreads, check_v3_target_gthreads_timed)
+	(check_v3_target_sleep, check_v3_target_sched_yield)
+	(check_v3_target_string_conversions, check_v3_target_swprintf)
+	(check_v3_target_binary_io, check_v3_target_nprocs): Use
+	v3_check_preprocessor_condition.
+	(check_effective_target_cxx11): Likewise.
+	(check_effective_target_random_device): Likewise.
+	(check_effective_target_tbb-backend): Likewise.
+	(check_effective_target_futex): Likewise.
+	(check_v3_target_little_endian) Call check_effective_target_le.
+	(check_effective_target_atomic-builtins): New proc to define
+	new effective-target keyword.
+	(check_effective_target_gthreads-timed): Likewise.
+
+2020-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/absolute.cc: Avoid
+	-Wrange-loop-construct warning.
+	* testsuite/27_io/filesystem/path/append/source.cc: Likewise.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/parent_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/relative_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/remove_filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/append.cc: Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/cmp.cc: Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/cmp_c++20.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/hash_value.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_parent_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_relative_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_name.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_stem.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/is_relative.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/absolute.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/assign/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/path/compare/path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/construct/copy.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/remove_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/nonmember/hash_value.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_name.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_stem.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/is_relative.cc:
+	Likewise.
+
+2020-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale.cc (locale::facet::_S_get_c_locale()):
+	Revert change to use __is_single_threaded.
+	* src/c++98/locale_init.cc (locale::_S_initialize()):
+	Likewise.
+
 2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_wait.h (_GLIBCXX_HAVE_ATOMIC_WAIT):
