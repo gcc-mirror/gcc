@@ -211,11 +211,11 @@ ix86_rust_target_cpu_info (void)
     rust_add_target_info("target_feature", "pku");
   if (TARGET_ISA_AVX512VNNI)
     rust_add_target_info("target_feature", "avx512vnni");
-  if (TARGET_ISA_AVX512BF16)
+  if (TARGET_ISA2_AVX512BF16)
     rust_add_target_info("target_feature", "avx512bf16");
   if (TARGET_ISA_AVX512BITALG)
     rust_add_target_info("target_feature", "avx512bitalg");
-  if (TARGET_ISA_AVX512VP2INTERSECT)
+  if (TARGET_ISA2_AVX512VP2INTERSECT)
     rust_add_target_info("target_feature", "avx512vp2intersect");
   if (TARGET_ISA_PCLMUL)
     rust_add_target_info("target_feature", "pclmul");
@@ -229,7 +229,7 @@ ix86_rust_target_cpu_info (void)
   // this is only enabled by choice in llvm, never by default - TODO determine if gcc enables it
   // rust_add_target_info("target_feature", "sse-unaligned-mem");
 
-  if (TARGET_ISA_VAES)
+  if (TARGET_ISA2_VAES)
     rust_add_target_info("target_feature", "vaes");
   if (TARGET_ISA_LWP)
     rust_add_target_info("target_feature", "lwp");
@@ -241,13 +241,13 @@ ix86_rust_target_cpu_info (void)
     rust_add_target_info("target_feature", "prfchw");
   if (TARGET_ISA_SAHF) // would this be better as TARGET_USE_SAHF?
     rust_add_target_info("target_feature", "sahf");
-  if (TARGET_ISA_MWAITX)
+  if (TARGET_ISA2_MWAITX)
     rust_add_target_info("target_feature", "mwaitx");
-  if (TARGET_ISA_CLZERO)
+  if (TARGET_ISA2_CLZERO)
     rust_add_target_info("target_feature", "clzero");
-  if (TARGET_ISA_CLDEMOTE)
+  if (TARGET_ISA2_CLDEMOTE)
     rust_add_target_info("target_feature", "cldemote");
-  if (TARGET_ISA_PTWRITE)
+  if (TARGET_ISA2_PTWRITE)
     rust_add_target_info("target_feature", "ptwrite");
   // TODO: add amx-tile, amx-int8, amx-bf16 features when gcc supports them 
 
@@ -280,19 +280,19 @@ ix86_rust_target_cpu_info (void)
     || ix86_arch == PROCESSOR_COOPERLAKE; 
   if (hasINVPCID)
     rust_add_target_info("target_feature", "invpcid");
-  if (TARGET_ISA_SGX)
+  if (TARGET_ISA2_SGX)
     rust_add_target_info("target_feature", "sgx");
   if (TARGET_ISA_CLFLUSHOPT)
     rust_add_target_info("target_feature", "clflushopt");
   if (TARGET_ISA_CLWB)
     rust_add_target_info("target_feature", "clwb");
-  if (TARGET_ISA_WBNOINVD)
+  if (TARGET_ISA2_WBNOINVD)
     rust_add_target_info("target_feature", "wbnoinvd");
-  if (TARGET_ISA_RDPID)
+  if (TARGET_ISA2_RDPID)
     rust_add_target_info("target_feature", "rdpid");
-  if (TARGET_ISA_WAITPKG)
+  if (TARGET_ISA2_WAITPKG)
     rust_add_target_info("target_feature", "waitpkg");
-  if (TARGET_ISA_ENQCMD)
+  if (TARGET_ISA2_ENQCMD)
     rust_add_target_info("target_feature", "enqcmd");
 
   // these are only enabled by choice in llvm, never by default - TODO determine if gcc supports them
@@ -340,7 +340,7 @@ ix86_rust_target_cpu_info (void)
   if (ix86_arch == PROCESSOR_HASWELL)
     rust_add_target_info("target_feature", "false-deps-lzcnt-tzcnt");
 
-  if (TARGET_ISA_PCONFIG)
+  if (TARGET_ISA2_PCONFIG)
     rust_add_target_info("target_feature", "pconfig");
 
   // TODO: gcc seems to not record if variable-mask shuffles are fast, so basing it on llvm
@@ -453,7 +453,7 @@ ix86_rust_target_cpu_info (void)
 
   if (TARGET_ISA_MOVDIRI)
     rust_add_target_info("target_feature", "movdiri");
-  if (TARGET_ISA_MOVDIR64B)
+  if (TARGET_ISA2_MOVDIR64B)
     rust_add_target_info("target_feature", "movdir64b");
 
   bool hasFastBEXTR = ix86_arch == PROCESSOR_BTVER2 || ix86_arch == PROCESSOR_BDVER2 
