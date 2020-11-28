@@ -5788,7 +5788,7 @@ Parse::import_spec(void*, unsigned int pragmas)
 
   if (!token->is_string())
     {
-      go_error_at(this->location(), "import statement not a string");
+      go_error_at(this->location(), "import path must be a string");
       this->advance_token();
       return;
     }
