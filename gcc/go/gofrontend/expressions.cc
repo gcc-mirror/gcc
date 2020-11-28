@@ -8893,8 +8893,8 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           // We will optimize this to directly zeroing the tail,
           // instead of allocating a new slice then copy.
 
-          // Retrieve the length. Cannot reference s2 as we will remove
-          // the makeslice call.
+          // Retrieve the length and capacity. Cannot reference s2 as
+          // we will remove the makeslice call.
           Expression* len_arg = makecall->args()->at(1);
           len_arg = Expression::make_cast(int_type, len_arg, loc);
           l2tmp = Statement::make_temporary(int_type, len_arg, loc);
@@ -8907,28 +8907,19 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           inserter->insert(c2tmp);
 
           // Check bad len/cap here.
-          // if len2 < 0 { panicmakeslicelen(); }
+	  // checkmakeslice(type, len, cap)
+	  // (Note that if len and cap are constants, we won't see a
+	  // makeslice call here, as it will be rewritten to a stack
+	  // allocated array by Mark_address_taken::expression.)
+	  Expression* elem = Expression::make_type_descriptor(element_type,
+							      loc);
           len2 = Expression::make_temporary_reference(l2tmp, loc);
-          Expression* zero = Expression::make_integer_ul(0, int_type, loc);
-          Expression* cond = Expression::make_binary(OPERATOR_LT, len2,
-                                                     zero, loc);
-	  Expression* call = Runtime::make_call(Runtime::PANIC_MAKE_SLICE_LEN,
-						loc, 0);
-          cond = Expression::make_conditional(cond, call, zero->copy(), loc);
-          gogo->lower_expression(function, inserter, &cond);
-          gogo->flatten_expression(function, inserter, &cond);
-          Statement* s = Statement::make_statement(cond, false);
-          inserter->insert(s);
-
-          // if cap2 < 0 { panicmakeslicecap(); }
           Expression* cap2 = Expression::make_temporary_reference(c2tmp, loc);
-          cond = Expression::make_binary(OPERATOR_LT, cap2,
-                                         zero->copy(), loc);
-	  call = Runtime::make_call(Runtime::PANIC_MAKE_SLICE_CAP, loc, 0);
-          cond = Expression::make_conditional(cond, call, zero->copy(), loc);
-          gogo->lower_expression(function, inserter, &cond);
-          gogo->flatten_expression(function, inserter, &cond);
-          s = Statement::make_statement(cond, false);
+	  Expression* check = Runtime::make_call(Runtime::CHECK_MAKE_SLICE,
+						 loc, 3, elem, len2, cap2);
+          gogo->lower_expression(function, inserter, &check);
+          gogo->flatten_expression(function, inserter, &check);
+          Statement* s = Statement::make_statement(check, false);
           inserter->insert(s);
 
           // Remove the original makeslice call.

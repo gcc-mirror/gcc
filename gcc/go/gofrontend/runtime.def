@@ -265,6 +265,11 @@ DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice",
                P5(TYPE, POINTER, INT, INT, INT), R1(SLICE))
 
 
+// Check the length and cap passed to make, without making a slice.
+// This is used for apend(s, make([]T, len)...).
+DEF_GO_RUNTIME(CHECK_MAKE_SLICE, "runtime.checkMakeSlice", P3(TYPE, INT, INT),
+	       R1(UINTPTR))
+
 // Register roots (global variables) for the garbage collector.
 DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "runtime.registerGCRoots", P1(POINTER), R0())
 
