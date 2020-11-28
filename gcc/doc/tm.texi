@@ -10822,6 +10822,26 @@ Similarly to @code{TARGET_D_CPU_VERSIONS}, but is used for versions
 relating to the target operating system.
 @end deftypefn
 
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION
+Contains the name of the section in which module info references should be
+placed.  This section is expected to be bracketed by two symbols to indicate
+the start and end address of the section, so that the runtime library can
+collect all modules for each loaded shared library and executable.  The
+default value of @code{NULL} disables the use of sections altogether.
+@end deftypevr
+
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_START_NAME
+If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
+as the name of the symbol indicating the start address of the module info
+section
+@end deftypevr
+
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_END_NAME
+If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
+as the name of the symbol indicating the end address of the module info
+section
+@end deftypevr
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces
