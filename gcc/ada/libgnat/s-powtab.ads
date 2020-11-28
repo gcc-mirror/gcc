@@ -36,9 +36,9 @@ package System.Powten_Table is
 
    Maxpow : constant := 22;
    --  The number of entries in this table is chosen to include powers of ten
-   --  that are exactly representable with long_long_float. Assuming that on
-   --  all targets we have 53 bits of mantissa for the type, the upper bound is
-   --  given by 53/(log 5). If the scaling factor for a string is greater than
+   --  that are exactly representable with Long_Long_Float. Assuming that on
+   --  all targets we have 53 bits of mantissa for the type, the upper bound
+   --  is given by 53 * log 2 / log 5. If the scaling factor is greater than
    --  Maxpow, it can be obtained by several multiplications, which is less
    --  efficient than with a bigger table, but avoids anomalies at end points.
 
