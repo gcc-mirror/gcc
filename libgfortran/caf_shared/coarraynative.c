@@ -65,7 +65,7 @@ get_master (void)
       master *,
       shared_memory_get_mem_with_alignment (
 	  &local->sm,
-	  sizeof (master) + sizeof (image_status) * local->total_num_images,
+	  sizeof (master) + sizeof (image_tracker) * local->total_num_images,
 	  __alignof__(master)),
       &local->sm);
   m->has_failed_image = 0;
