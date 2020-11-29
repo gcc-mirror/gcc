@@ -12802,24 +12802,11 @@ Array_index_expression::do_determine_type(const Type_context*)
   this->array_->determine_type_no_context();
 
   Type_context index_context(Type::lookup_integer_type("int"), false);
-  if (this->start_->is_constant())
-    this->start_->determine_type(&index_context);
-  else
-    this->start_->determine_type_no_context();
+  this->start_->determine_type(&index_context);
   if (this->end_ != NULL)
-    {
-      if (this->end_->is_constant())
-        this->end_->determine_type(&index_context);
-      else
-        this->end_->determine_type_no_context();
-    }
+    this->end_->determine_type(&index_context);
   if (this->cap_ != NULL)
-    {
-      if (this->cap_->is_constant())
-        this->cap_->determine_type(&index_context);
-      else
-        this->cap_->determine_type_no_context();
-    }
+    this->cap_->determine_type(&index_context);
 }
 
 // Check types of an array index.
@@ -13488,17 +13475,9 @@ String_index_expression::do_determine_type(const Type_context*)
   this->string_->determine_type_no_context();
 
   Type_context index_context(Type::lookup_integer_type("int"), false);
-  if (this->start_->is_constant())
-    this->start_->determine_type(&index_context);
-  else
-    this->start_->determine_type_no_context();
+  this->start_->determine_type(&index_context);
   if (this->end_ != NULL)
-    {
-      if (this->end_->is_constant())
-        this->end_->determine_type(&index_context);
-      else
-        this->end_->determine_type_no_context();
-    }
+    this->end_->determine_type(&index_context);
 }
 
 // Check types of a string index.
