@@ -2962,17 +2962,23 @@ cas_add_strides (tree expr, tree desc, int beg, int end)
 }
 
 
-/* This function calculates the new offset via
+/* If the full offset is needed, this function calculates the new offset via
 
      new_offset = offset
 	+ (this_image () + lbound[first_codim] - 1)*stride[first_codim]
 	+ sum (stride[i]*lbound[i]) over remaining codim
 
+   If the offset is computed by other means, and we just need to get rid of
+   the coarray part, it is calculated via
+
+     new_offset = offset
+	+ (this_image () - 1)*stride[first_codim]
+
    If offset is a pointer, we also need to multiply it by the size.  */
 
 static tree
 cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar,
-			   int is_pointer)
+			   int is_pointer, bool has_full_offset)
 {
   tree tmp, off;
   /* Calculate the actual offset.  */
@@ -2982,10 +2988,11 @@ cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar,
   tmp = convert (TREE_TYPE (gfc_index_zero_node), tmp);
   /* tmp = _gfortran_cas_coarray_this_image (0) - 1  */
   tmp = fold_build2_loc (input_location, MINUS_EXPR, TREE_TYPE (tmp), tmp,
-			build_int_cst (TREE_TYPE (tmp), 1));
+			 build_int_cst (TREE_TYPE (tmp), 1));
   /* tmp = _gfortran_cas_coarray_this_image (0) - 1 + lbound[first_codim] */
-  tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (tmp), tmp,
-			 gfc_conv_array_lbound(desc, ar->dimen));
+  if (has_full_offset)
+    tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (tmp), tmp,
+			   gfc_conv_array_lbound(desc, ar->dimen));
   /* tmp = (_gfortran_cas_coarray_this_image (0) - 1 + lbound[first_codim])
    * stride(first_codim).  */
   tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (tmp),
@@ -2993,8 +3000,12 @@ cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar,
   /* We also need to add the missing strides once to compensate for the
     offset, that is to large now.  The loop starts at sym->as.rank+1
     because we need to skip the first corank stride.  */
-  off = cas_add_strides (tmp, desc, ar->as->rank + 1,
-			 ar->as->rank + ar->as->corank);
+  if (has_full_offset)
+    off = cas_add_strides (tmp, desc, ar->as->rank + 1,
+			   ar->as->rank + ar->as->corank);
+  else
+    off = tmp;
+
   if (is_pointer)
     {
       /* Remove pointer and array from type in order to get the raw base type.  */
@@ -3081,7 +3092,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
 	{
 	  gfc_ref *co_ref = cas_array_ref (ref);
 	  if (co_ref)
-	    tmp = cas_add_this_image_offset (tmp, se.expr,&co_ref->u.ar, 1);
+	    tmp = cas_add_this_image_offset (tmp, se.expr,&co_ref->u.ar, 1, 1);
 	}
       /* If this is a variable or address of a variable we use it directly.
          Otherwise we must evaluate it now to avoid breaking dependency
@@ -3881,7 +3892,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
     }
 
   if (flag_coarray == GFC_FCOARRAY_SHARED && need_impl_this_image)
-    offset = cas_add_this_image_offset (offset, se->expr, ar, 0);
+    offset = cas_add_this_image_offset (offset, se->expr, ar, 0, 1);
 
   if (!integer_zerop (cst_offset))
     offset = fold_build2_loc (input_location, PLUS_EXPR,
@@ -7114,7 +7125,7 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
     {
       gfc_ref *co_ref = cas_array_ref (expr->ref);
       if (co_ref)
-	offset = cas_add_this_image_offset (offset, desc, &co_ref->u.ar, 0);
+	offset = cas_add_this_image_offset (offset, desc, &co_ref->u.ar, 0, 0);
     }
 
   tmp = build_array_ref (desc, offset, NULL, NULL);
