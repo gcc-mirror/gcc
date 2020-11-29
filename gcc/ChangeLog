@@ -1,3 +1,53 @@
+2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/97939
+	* config/sparc/predicates.md (arith_double_add_operand): Comment.
+	* config/sparc/sparc.md (uaddvdi4): Use arith_double_operand.
+	(addvdi4): Use arith_double_add_operand.
+	(addsi3): Remove useless attributes.
+	(addvsi4): Use arith_add_operand.
+	(*cmp_ccv_plus): Likewise and add second alternative accordingly.
+	(*cmp_ccxv_plus): Likewise.
+	(*cmp_ccv_plus_set): Likewise.
+	(*cmp_ccxv_plus_set): Likewise.
+	(*cmp_ccv_plus_sltu_set): Likewise.
+	(usubvdi4): Use arith_double_operand.
+	(subvdi4): Use arith_double_add_operand.
+	(subsi3): Remove useless attributes.
+	(subvsi4): Use arith_add_operand.
+	(*cmp_ccv_minus): Likewise and add second alternative accordingly.
+	(*cmp_ccxv_minus): Likewise.
+	(*cmp_ccv_minus_set): Likewise.
+	(*cmp_ccxv_minus_set): Likewise.
+	(*cmp_ccv_minus_sltu_set): Likewise.
+	(negsi2): Use register_operand.
+	(unegvsi3): Likewise.
+	(negvsi3) Likewise.
+	(*cmp_ccnz_neg): Likewise.
+	(*cmp_ccxnz_neg): Likewise.
+	(*cmp_ccnz_neg_set): Likewise.
+	(*cmp_ccxnz_neg_set): Likewise.
+	(*cmp_ccc_neg_set): Likewise.
+	(*cmp_ccxc_neg_set): Likewise.
+	(*cmp_ccc_neg_sltu_set): Likewise.
+	(*cmp_ccv_neg): Likewise.
+	(*cmp_ccxv_neg): Likewise.
+	(*cmp_ccv_neg_set): Likewise.
+	(*cmp_ccxv_neg_set): Likewise.
+	(*cmp_ccv_neg_sltu_set): Likewise.
+
+2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/96607
+	* config/sparc/sparc-protos.h (eligible_for_call_delay): Delete.
+	* config/sparc/sparc.c (eligible_for_call_delay): Likewise.
+	* config/sparc/sparc.md (in_call_delay): Likewise.
+	(tls_delay_slot): New attribute.
+	(define_delay [call]): Use in_branch_delay.
+	(tgd_call<P:mode>): Set type to call_no_delay_slot when
+	tls_delay_slot is false.
+	(tldm_call<P:mode>): Likewise.
+
 2020-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
