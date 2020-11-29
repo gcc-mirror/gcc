@@ -2096,6 +2096,9 @@ simplify_parameter_variable (gfc_expr *p, int type)
 	return false;
 
       e->rank = p->rank;
+
+      if (e->ts.type == BT_CHARACTER && p->ts.u.cl)
+	e->ts = p->ts;
     }
 
   if (e->ts.type == BT_CHARACTER && e->ts.u.cl == NULL)
