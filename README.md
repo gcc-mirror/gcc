@@ -1,9 +1,11 @@
 ![C/C++ CI](https://github.com/philberty/gccrs/workflows/C/C++%20CI/badge.svg)
 # GCC Rust
 
-This is an implementation of rust following the gccgo style front-end.
+This is a full alternative implementaion of the Rust language ontop of GCC.
+Please see the accompanying reporting repository: https://github.com/Rust-GCC/Reporting for
+status reports from Philip Herron and tast tracking overviews.
 
-## Compilation for Development
+## Development Enviroment
 
 Fetch dependancies for ubuntu:
 
@@ -11,13 +13,14 @@ Fetch dependancies for ubuntu:
 $ apt install build-essential libgmp3-dev libmpfr-dev libmpc-dev flex bison autogen gcc-multilib
 ```
 
-Clone
+Clone the repository
 
 ```bash
-$ git clone https://github.com/philberty/gccrs
+$ git clone git@github.com:Rust-GCC/gccrs.git
 ```
 
-Dev Build
+Compilation script. It is important to remember that GNU toolchain projects are designed to be built outside of its source directory
+this is why a build directory is created.
 
 ```bash
 $ mkdir gccrs-build
@@ -26,8 +29,60 @@ $ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-m
 $ make
 ```
 
-Running the compiler itself - no need to make install
+Running the compiler itself without make install we can simply imvoke the compiler proper:
 
 ```
 $ gdb --args ./gcc/rust1 test1.rs -frust-dump-parse -dumpbase test.rs -mtune=generic -march=x86-64 -auxbase-strip test.s -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
 ```
+
+Invoking the compiler driver we need to:
+
+```
+$ make install
+```
+
+Then invoke the compiler as expected:
+
+```
+$ gccrs -g -O2 -c test.rs -o test.o
+$ gccrs -o test test.o
+```
+
+## Testsuite
+
+The test suite can be invoked via:
+
+```
+$ make check-rust
+```
+
+Test cases can be found within gcc/testsuite/rust.test please feel free to contriobute your specific
+test cases referencing any issues on github.
+
+## Docker image
+
+There is a docker image hosted over on: 
+
+https://hub.docker.com/repository/docker/philberty/gccrs
+
+Or you can build your own image:
+
+```
+$ docker build . -t gccrs-dev
+$ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
+    gccrs-dev:latest gccrs -g -O2 -c \
+    gcc/testsuite/rust.test/compilable/type_infer1.rs -o type_infer1.o
+```
+
+## Contributing
+
+Please be aware this project is designed to be pushed upstream to GCC when we reach some milestones and this means we require
+contribtions to have copyright assignment in place. Please see: https://gcc.gnu.org/contribute.html
+
+Not all contributions must be code we would love to see new test cases or bugs and issues to be reported. Feel free to add any comments on open PRs
+
+We can be found on:
+
+ * Rust-lang Zulip: https://rust-lang.zulipchat.com/
+ * GNU toolchain discord: 
+ * Mailing list: TODO
