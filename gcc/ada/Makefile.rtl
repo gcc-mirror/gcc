@@ -2037,6 +2037,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux10%,$(target_cpu) $(target_vendor) $(tar
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-interr.adb<libgnarl/s-interr__sigaction.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-osinte.adb<libgnarl/s-osinte__hpux-dce.adb \
   s-osinte.ads<libgnarl/s-osinte__hpux-dce.ads \
   s-parame.ads<libgnat/s-parame__hpux.ads \
@@ -2055,6 +2056,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(target_cpu) $(target_vendor) $(tar
   a-intnam.ads<libgnarl/a-intnam__hpux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-osinte.ads<libgnarl/s-osinte__hpux.ads \
   s-parame.ads<libgnat/s-parame__hpux.ads \
