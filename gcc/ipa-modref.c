@@ -3064,14 +3064,14 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     {
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info->loads->collapse ();
-      if (ignore_stores)
+      if (!ignore_stores)
 	to_info->stores->collapse ();
     }
   if (!callee_info_lto && to_info_lto)
     {
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info_lto->loads->collapse ();
-      if (ignore_stores)
+      if (!ignore_stores)
 	to_info_lto->stores->collapse ();
     }
   if (callee_info || callee_info_lto)
