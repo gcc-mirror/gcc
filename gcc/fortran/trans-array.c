@@ -3021,10 +3021,11 @@ cas_add_this_image_offset (tree offset, tree desc, gfc_array_ref *ar,
 			    offset, off);
 }
 
-/* Return the array ref of the coarray, NULL otherwise.  */
+/* Return the array ref of the coarray if an implied THIS_IMAGE()
+   is needed, NULL otherwise.  */
 
 static gfc_ref *
-cas_array_ref (gfc_ref *ref)
+cas_impl_this_image_ref (gfc_ref *ref)
 {
   gcc_assert (flag_coarray == GFC_FCOARRAY_SHARED);
 
@@ -3090,7 +3091,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
       ref = ss_info->expr->ref;
       if (flag_coarray == GFC_FCOARRAY_SHARED)
 	{
-	  gfc_ref *co_ref = cas_array_ref (ref);
+	  gfc_ref *co_ref = cas_impl_this_image_ref (ref);
 	  if (co_ref)
 	    tmp = cas_add_this_image_offset (tmp, se.expr,&co_ref->u.ar, 1, 0);
 	}
@@ -3112,11 +3113,13 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
       //	all of this
       if (flag_coarray == GFC_FCOARRAY_SHARED)
 	{
-	  gfc_ref *co_ref = cas_array_ref (ref);
-	  if (co_ref)
-	    tmp = cas_add_strides (tmp, se.expr, co_ref->u.ar.as->rank,
-				   co_ref->u.ar.as->rank
-				   + co_ref->u.ar.as->corank);
+	  for (; ref; ref = ref->next)
+	    {
+	      if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+		tmp = cas_add_strides (tmp, se.expr, ref->u.ar.as->rank,
+				       ref->u.ar.as->rank
+				       + ref->u.ar.as->corank);
+	    }
 	}
       info->offset = gfc_evaluate_now (tmp, block);
 
@@ -7123,7 +7126,7 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
   /* If it's a coarray with implicit this_image, add that to the offset.  */
   if (flag_coarray == GFC_FCOARRAY_SHARED)
     {
-      gfc_ref *co_ref = cas_array_ref (expr->ref);
+      gfc_ref *co_ref = cas_impl_this_image_ref (expr->ref);
       if (co_ref)
 	offset = cas_add_this_image_offset (offset, desc, &co_ref->u.ar, 0, 0);
     }
