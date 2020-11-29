@@ -261,8 +261,7 @@ void test_strcpy_warn (const char *s)
        that the conversion from signed int to size_t doesn't prevent
        the detection.  */
     int n = strlen (a);
-    char *t = (char*)calloc (n, 1);     // { dg-message "at offset 0 to an object with size 3 allocated by 'calloc' here" "calloc note 1" { xfail *-*-* } }
-                                        // { dg-message "at offset 0 to an object with size at most 3 allocated by 'calloc' here" "calloc note 2" { target *-*-* } .-1 }
+    char *t = (char*)calloc (n, 1);     // { dg-message "destination object of size 3 allocated by 'calloc'" "note" }
     strcpy (t, a);                      // { dg-warning "writing 4 bytes into a region of size (between 0 and )?3 " }
 
     sink (t);
@@ -271,8 +270,7 @@ void test_strcpy_warn (const char *s)
   {
     const char a[] = "1234";
     size_t n = strlen (a);
-    char *t = (char*)malloc (n);        // { dg-message "at offset 0 to an object with size 4 allocated by 'malloc' here" "malloc note 1" { xfail *-*-* } }
-                                        // { dg-message "at offset 0 to an object with size at most 4 allocated by 'malloc' here" "malloc note 2" { target *-*-* } .-1 }
+    char *t = (char*)malloc (n);        // { dg-message "destination object of size 4 allocated by 'malloc'" "note" }
     strcpy (t, a);                      // { dg-warning "writing 5 bytes into a region of size (between 0 and )?4 " }
     sink (t);
   }
@@ -280,14 +278,14 @@ void test_strcpy_warn (const char *s)
   // Exercise PR middle-end/85484.
   {
     size_t len = strlen (s);
-    char vla[len];                      // { dg-message "at offset 0 to an object declared here" "vla note" }
+    char vla[len];                      // { dg-message "destination object 'vla'" "vla note" }
     strcpy (vla, s);                    // { dg-warning "writing one too many bytes into a region of a size that depends on 'strlen'" }
     sink (vla);
   }
 
   {
     size_t n = strlen (s);
-    char *t = (char*)malloc (n);        // { dg-message "at offset 0 to an object allocated by 'malloc' here" "malloc note" }
+    char *t = (char*)malloc (n);        // { dg-message "allocated by 'malloc'" "malloc note" }
     strcpy (t, s);                      // { dg-warning "writing one too many bytes into a region of a size that depends on 'strlen'" }
     sink (t);
   }

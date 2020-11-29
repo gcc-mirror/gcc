@@ -53,7 +53,7 @@ void nowarn_memchr_anti_range_memset_cst (const void *s, size_t n)
 
 void warn_memchr_cst_memset_cst (const void *s)
 {
-  char *p = malloc (4);                 // { dg-message "at offset \\\[0, 4] into destination object of size 4 " "note" }
+  char *p = malloc (4);                 // { dg-message "destination object of size 4 " "note" }
   sink (p);
 
   p = memchr (p, '1', 4);
@@ -62,7 +62,7 @@ void warn_memchr_cst_memset_cst (const void *s)
 
 void warn_memchr_var_memset_cst (const void *s, unsigned n)
 {
-  char *p = malloc (4);                 // { dg-message "at offset \\\[0, 4] into destination object of size 4 " "note" }
+  char *p = malloc (4);                 // { dg-message "destination object of size 4 " "note" }
   sink (p);
 
   p = memchr (p, '1', n);
@@ -79,9 +79,9 @@ void warn_memchr_var_memset_range (const void *s, unsigned n)
      as in the first two notes.  The exact value probably isn't too
      important. */
   char *p0 = malloc (UR (5, 7));
-  // { dg-message "at offset \\\[0, 7] into destination object of size \\\[5, 7]" "note" { target *-*-* } .-1 }
-  // { dg-message "at offset \\\[1, 7] into destination object of size \\\[5, 7]" "note"  { target *-*-* } .-2 }
-  // { dg-message "at offset \\\[2, 7] into destination object of size \\\[5, 7]" "note"  { target *-*-* } .-3 }
+  // { dg-message ": destination object of size \\\[5, 7]" "note 1" { target *-*-* } .-1 }
+  // { dg-message "at offset \\\[1, 7] into destination object of size \\\[5, 7]" "note 2"  { target *-*-* } .-2 }
+  // { dg-message "at offset \\\[2, 7] into destination object of size \\\[5, 7]" "note 3"  { target *-*-* } .-3 }
 
   sink (p0);
   char *p1 = memchr (p0, '1', n);

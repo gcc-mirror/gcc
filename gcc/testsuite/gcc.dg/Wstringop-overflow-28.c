@@ -40,27 +40,27 @@ void same_size_and_offset_idx_cst (void)
     const size_t n = UR (2, 3);
 
     T (n, n, -4);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[-2, -1] to an object with size between 2 and 3 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset \\\[-2, -1] into destination object of size \\\[2, 3] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
     T (n, n, -3);
     T (n, n, -2);
     T (n, n, -1);
     T (n, n,  0);
     T (n, n,  1);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[3, 4] to an object with size between 2 and 3 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset 3 into destination object of size \\\[2, 3] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
   }
 
   {
     const size_t n = UR (3, 4);
 
     T (n, n, -5);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[-2, -1] to an object with size between 3 and 4 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset \\\[-2, -1] into destination object of size \\\[3, 4] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
     T (n, n, -4);
     T (n, n, -3);
     T (n, n, -2);
     T (n, n, -1);
     T (n, n,  0);
     T (n, n,  1);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[4, 5] to an object with size between 3 and 4 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset 4 into destination object of size \\\[3, 4] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
   }
 
   {
@@ -84,15 +84,15 @@ void different_size_and_offset_idx_cst (void)
     const size_t i = UR (1, 2);
 
     T (n, i, -4);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[-3, -2] to an object with size between 2 and 3 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset \\\[-3, -2] into destination object of size \\\[2, 3] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
     T (n, i, -3);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[-2, -1] to an object with size between 2 and 3 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset \\\[-2, -1] into destination object of size \\\[2, 3] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
     T (n, i, -2);
     T (n, i, -1);
     T (n, i,  0);
     T (n, i,  1);
     T (n, i,  2);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[3, 4] to an object with size between 2 and 3 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset 3 into destination object of size \\\[2, 3] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
   }
 
   {
@@ -100,20 +100,20 @@ void different_size_and_offset_idx_cst (void)
     const size_t i = UR (2, 5);
 
     T (n, i, -6);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[-4, -1] to an object with size between 3 and 4 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset \\\[-4, -2] into destination object of size \\\[3, 4] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
 
-    /* The offsets -5 and -4 are both necessarily invalid even if the sum
-       (i - 5) and (i - 4) are (or could be) in bounds because they imply
-       that the intermediate offset (p + i) is out of bounds.  */
-    T (n, i, -5);   // { dg-warning "" "intermediate offset" { xfail *-*-* } }
-    T (n, i, -4);   // { dg-warning "" "intermediate offset" { xfail *-*-* } }
+    /* The offset -5 is necessarily invalid even if the sum (i - 5) is (or
+       could be) in bounds because it implies that the intermediate offset
+       (p + i) is out of bounds.  */
+    T (n, i, -5);   // { dg-warning "writing 1 byte into a region of size 0 " }
+    T (n, i, -4);
     T (n, i, -3);
     T (n, i, -2);
     T (n, i, -1);
     T (n, i,  0);
     T (n, i,  1);
     T (n, i,  2);   // { dg-warning "writing 1 byte into a region of size 0" }
-                    // { dg-message "at offset \\\[4, 7] to an object with size between 3 and 4 allocated by 'alloc1'" "note" { target *-*-* } .-1 }
+                    // { dg-message "at offset 4 into destination object of size \\\[3, 4] allocated by 'alloc1'" "note" { target *-*-* } .-1 }
   }
 }
 
@@ -133,11 +133,8 @@ void different_size_and_offset_idx_var (void)
     T (n, i, SR (       0, 1));
     T (n, i, SR (       1, 2));
     T (n, i, SR (       2, 3));
-    /* The warning is issued below but the offset and the size in
-       the note are wrong.  See the FIXME in compute_objsize().  */
     T (n, i, SR (       3, 4));    // { dg-warning "\\\[-Wstringop-overflow" }
-                                   // { dg-message "at offset 4 to an object with size between 3 and 4 allocated by 'alloc1'" "pr92940 note: offset addition" { xfail *-*-* } .-1 }
-                                   // { dg-message "at offset . to an object with size . allocated by 'alloc1'" "note: offset addition" { target *-*-* } .-2 }
+                                   // { dg-message "at offset 4 into destination object of size \\\[3, 4] allocated by 'alloc1'" "pr92940 note: offset addition" { target *-*-* } .-1 }
  }
 }
 
