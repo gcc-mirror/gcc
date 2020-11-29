@@ -1,3 +1,21 @@
+2020-11-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/97454
+	* trans-decl.c (gfc_get_extern_function_decl): Add argument
+	fnspec.
+	* trans-intrinsic.c (MAX_SPEC_ARG): Define.
+	(intrinsic_fnspec): New function.
+	(ADD_CHAR): Define.
+	(specific_intrinsic_symbol): Adjust comment. Pass
+	fn spec to gfc_get_extern_function_decl.
+	(gfc_conv_intrinsic_funcall): Add ANY, ALL, NORM2, PRODUCT
+	and SUM intrnisic. Add FIXME for cshift et al.
+	* trans-types.c	(gfc_get_function_type): Add fnspec argument,
+	handle it.
+	* trans-types.h (gfc_get_function_type): Add optinal fnspec
+	argument.
+	* trans.h (gfc_get_extern_function_decl): Likewise.
+
 2020-11-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/85796
