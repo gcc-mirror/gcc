@@ -1103,7 +1103,7 @@ Function::as_string () const
   if ("" != qstr)
     str += qstr + " ";
 
-  if (has_function_return_type ())
+  if (has_return_type ())
     {
       // DEBUG: null pointer check
       if (return_type == nullptr)
@@ -1168,9 +1168,7 @@ Function::as_string () const
     }
 
   if (has_where_clause ())
-    {
       str += " where " + where_clause.as_string ();
-    }
 
   str += "\n";
 
@@ -1201,9 +1199,7 @@ WhereClause::as_string () const
   else
     {
       for (const auto &item : where_clause_items)
-	{
 	  str += "\n  " + item->as_string ();
-	}
     }
 
   return str;
@@ -1228,9 +1224,7 @@ BlockExpr::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n" + indent_spaces (stay) + attr.as_string ();
-	}
     }
 
   // statements
@@ -1260,13 +1254,9 @@ BlockExpr::as_string () const
   // final expression
   str += "\n" + indent_spaces (stay) + "final expression: ";
   if (expr == nullptr)
-    {
       str += "none";
-    }
   else
-    {
       str += "\n" + expr->as_string ();
-    }
 
   str += "\n" + indent_spaces (out) + "}";
   return str;
@@ -1278,9 +1268,7 @@ TraitImpl::as_string () const
   std::string str = VisItem::as_string ();
 
   if (has_unsafe)
-    {
       str += "unsafe ";
-    }
 
   str += "impl ";
 
@@ -1293,20 +1281,14 @@ TraitImpl::as_string () const
   else
     {
       for (const auto &param : generic_params)
-	{
 	  str += "\n  " + param->as_string ();
-	}
     }
 
   str += "\n Has exclam: ";
   if (has_exclam)
-    {
       str += "true";
-    }
   else
-    {
       str += "false";
-    }
 
   str += "\n TypePath (to trait): " + trait_path.as_string ();
 
@@ -1314,13 +1296,9 @@ TraitImpl::as_string () const
 
   str += "\n Where clause: ";
   if (!has_where_clause ())
-    {
       str += "none";
-    }
   else
-    {
       str += where_clause.as_string ();
-    }
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -1333,9 +1311,7 @@ TraitImpl::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   str += "\n trait impl items: ";
@@ -1346,9 +1322,7 @@ TraitImpl::as_string () const
   else
     {
       for (const auto &item : impl_items)
-	{
 	  str += "\n  " + item->as_string ();
-	}
     }
 
   return str;
@@ -1464,9 +1438,7 @@ ExternBlock::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   str += "\n external items: ";
@@ -1477,9 +1449,7 @@ ExternBlock::as_string () const
   else
     {
       for (const auto &item : extern_items)
-	{
 	  str += "\n  " + item->as_string ();
-	}
     }
 
   return str;
@@ -1558,9 +1528,7 @@ PathInExpression::as_string () const
   std::string str;
 
   if (has_opening_scope_resolution)
-    {
       str = "::";
-    }
 
   return str + PathPattern::as_string ();
 }
@@ -1591,9 +1559,7 @@ ClosureParam::as_string () const
   std::string str (pattern->as_string ());
 
   if (has_type_given ())
-    {
       str += " : " + type->as_string ();
-    }
 
   return str;
 }
@@ -1603,13 +1569,9 @@ ClosureExpr::as_string () const
 {
   std::string str ("ClosureExpr:\n Has move: ");
   if (has_move)
-    {
       str += "true";
-    }
   else
-    {
       str += "false";
-    }
 
   str += "\n Params: ";
   if (params.empty ())
@@ -1619,9 +1581,7 @@ ClosureExpr::as_string () const
   else
     {
       for (const auto &param : params)
-	{
 	  str += "\n  " + param.as_string ();
-	}
     }
 
   return str;
@@ -1645,9 +1605,7 @@ PathPattern::as_string () const
   std::string str;
 
   for (const auto &segment : segments)
-    {
       str += segment.as_string () + "::";
-    }
 
   // basically a hack - remove last two characters of string (remove final ::)
   str.erase (str.length () - 2);
@@ -1662,9 +1620,7 @@ QualifiedPathType::as_string () const
   str += type_to_invoke_on->as_string ();
 
   if (has_as_clause ())
-    {
       str += " as " + trait_path.as_string ();
-    }
 
   return str + ">";
 }
@@ -1681,14 +1637,10 @@ BorrowExpr::as_string () const
   std::string str ("&");
 
   if (double_borrow)
-    {
       str += "&";
-    }
 
   if (is_mut)
-    {
       str += "mut ";
-    }
 
   str += main_or_left_expr->as_string ();
 
@@ -1722,9 +1674,7 @@ GroupedExpr::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   str += "\n Expr in parens: " + expr_in_parens->as_string ();
@@ -1744,9 +1694,7 @@ ContinueExpr::as_string () const
   std::string str ("continue ");
 
   if (has_label ())
-    {
       str += label.as_string ();
-    }
 
   return str;
 }
@@ -1881,9 +1829,7 @@ MethodCallExpr::as_string () const
       for (const auto &param : params)
 	{
 	  if (param == nullptr)
-	    {
 	      return "ERROR_MARK_STRING - method call expr param is null";
-	    }
 
 	  str += "\n  " + param->as_string ();
 	}
@@ -2022,9 +1968,7 @@ IfLetExpr::as_string () const
   else
     {
       for (const auto &pattern : match_arm_patterns)
-	{
 	  str += "\n  " + pattern->as_string ();
-	}
     }
 
   str += "\n Scrutinee expr: " + value->as_string ();
@@ -2213,9 +2157,7 @@ CallExpr::as_string () const
       for (const auto &param : params)
 	{
 	  if (param == nullptr)
-	    {
 	      return "ERROR_MARK_STRING - call expr param is null";
-	    }
 
 	  str += "\n  " + param->as_string ();
 	}
@@ -2231,13 +2173,9 @@ WhileLoopExpr::as_string () const
 
   str += "\n Label: ";
   if (!has_loop_label ())
-    {
       str += "none";
-    }
   else
-    {
       str += loop_label.as_string ();
-    }
 
   str += "\n Conditional expr: " + condition->as_string ();
 
@@ -2282,13 +2220,9 @@ LoopExpr::as_string () const
 
   str += "\n Label: ";
   if (!has_loop_label ())
-    {
       str += "none";
-    }
   else
-    {
       str += loop_label.as_string ();
-    }
 
   str += "\n Loop block: " + loop_block->as_string ();
 
@@ -2311,20 +2245,14 @@ ArrayExpr::as_string () const
       /* note that this does not print them with "inner attribute" syntax -
        * just the body */
       for (const auto &attr : inner_attrs)
-	{
 	  str += "\n  " + attr.as_string ();
-	}
     }
 
   str += "\n Array elems: ";
   if (!has_array_elems ())
-    {
       str += "none";
-    }
   else
-    {
       str += internal_elements->as_string ();
-    }
 
   return str;
 }
@@ -2341,14 +2269,10 @@ BreakExpr::as_string () const
   std::string str ("break ");
 
   if (has_label ())
-    {
       str += label.as_string () + " ";
-    }
 
   if (has_break_expr ())
-    {
       str += break_expr->as_string ();
-    }
 
   return str;
 }
@@ -2373,9 +2297,7 @@ MatchArm::as_string () const
       /* note that this does not print them with "outer attribute" syntax -
        * just the body */
       for (const auto &attr : outer_attrs)
-	{
 	  str += "\n " + attr.as_string ();
-	}
     }
 
   str += "\nPatterns: ";
@@ -2386,20 +2308,14 @@ MatchArm::as_string () const
   else
     {
       for (const auto &pattern : match_arm_patterns)
-	{
 	  str += "\n " + pattern->as_string ();
-	}
     }
 
   str += "\nGuard expr: ";
   if (!has_match_arm_guard ())
-    {
       str += "none";
-    }
   else
-    {
       str += guard_expr->as_string ();
-    }
 
   return str;
 }

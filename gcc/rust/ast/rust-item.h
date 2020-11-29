@@ -123,6 +123,16 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (type != nullptr);
+    return type;
+  }
+
+  // TODO: mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
+  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TypeParam *clone_generic_param_impl () const override
@@ -245,6 +255,16 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (bound_type != nullptr);
+    return bound_type;
+  }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
+  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TypeBoundWhereClauseItem *clone_where_clause_item_impl () const override
@@ -299,6 +319,10 @@ public:
   bool is_empty () const { return where_clause_items.empty (); }
 
   std::string as_string () const;
+
+  // TODO: this mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<WhereClauseItem> > &get_items () { return where_clause_items; }
+  const std::vector<std::unique_ptr<WhereClauseItem> > &get_items () const { return where_clause_items; }
 };
 
 // A self parameter in a method
@@ -322,6 +346,8 @@ private:
   {}
   // this is ok as no outside classes can ever call this
 
+  // TODO: self param can have outer attributes
+
 public:
   // Returns whether the self-param has a type field.
   bool has_type () const { return type != nullptr; }
@@ -332,21 +358,15 @@ public:
   // Returns whether the self-param is in an error state.
   bool is_error () const
   {
-    return has_type () && has_lifetime ();
+    return (has_type () && has_lifetime ()) || (has_lifetime () && !has_ref);
     // not having either is not an error
   }
 
   // Creates an error state self-param.
   static SelfParam create_error ()
   {
-    /* HACK: creates a dummy type. Since it's a unique pointer, it should
-     * clean it up, but it still allocates memory, which is not ideal. */
-    return SelfParam (Lifetime (Lifetime::STATIC), false, false,
-		      new QualifiedPathInType (
-			QualifiedPathInType::create_error ()));
-    /* FIXME: is there a reason why I didn't just create a null pointer? Is it
-     * due to error being having both a type and a lifetime? If it is, wouldn't
-     * something like "not has_ref and has lifetime" for error be better? */
+    // cannot have no ref but have a lifetime at the same time
+    return SelfParam (Lifetime (Lifetime::STATIC), false, false, nullptr);
   }
 
   // Type-based self parameter (not ref, no lifetime)
@@ -373,12 +393,15 @@ public:
   // Overload assignment operator to use clone
   SelfParam &operator= (SelfParam const &other)
   {
-    if (other.type != nullptr)
-      type = other.type->clone_type ();
     is_mut = other.is_mut;
     has_ref = other.has_ref;
     lifetime = other.lifetime;
     locus = other.locus;
+
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
 
     return *this;
   }
@@ -390,6 +413,12 @@ public:
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (has_type ());
+    return type;
+  }
 };
 
 // Qualifiers for function, i.e. const, unsafe, extern etc.
@@ -437,11 +466,10 @@ struct FunctionParam
 private:
   std::vector<Attribute> outer_attrs;
   Location locus;
-
-public:
   std::unique_ptr<Pattern> param_name;
   std::unique_ptr<Type> type;
 
+public:
   FunctionParam (std::unique_ptr<Pattern> param_name,
 		 std::unique_ptr<Type> param_type, std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)), locus (locus), 
@@ -496,6 +524,18 @@ public:
   // TODO: seems kinda dodgy. Think of better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Pattern> &get_pattern () {
+    rust_assert (param_name != nullptr);
+    return param_name;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (type != nullptr);
+    return type;
+  }
 };
 
 // Visibility of item - if the item has it, then it is some form of public
@@ -740,10 +780,28 @@ public:
   std::vector<FunctionParam> &get_function_params () { return function_params; }
   const std::vector<FunctionParam> &get_function_params () const { return function_params; }
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<BlockExpr> &get_definition () {
     rust_assert (function_body != nullptr);
     return function_body;
+  }
+
+  SelfParam &get_self_param () { return self_param; }
+  const SelfParam &get_self_param () const { return self_param; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_return_type () {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
   }
 
 protected:
@@ -1299,7 +1357,7 @@ public:
   bool has_function_params () const { return !function_params.empty (); }
 
   // Returns whether function has return type - if not, it is void.
-  bool has_function_return_type () const { return return_type != nullptr; }
+  bool has_return_type () const { return return_type != nullptr; }
 
   // Returns whether function has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
@@ -1390,6 +1448,9 @@ public:
   std::vector<FunctionParam> &get_function_params () { return function_params; }
   const std::vector<FunctionParam> &get_function_params () const { return function_params; }
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<BlockExpr> &get_definition () {
     rust_assert (function_body != nullptr);
@@ -1408,7 +1469,7 @@ public:
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_return_type () {
-    rust_assert (return_type != nullptr);
+    rust_assert (has_return_type ());
     return return_type;
   }
 
@@ -1518,6 +1579,21 @@ public:
   void mark_for_strip () override { existing_type = nullptr; }
   bool is_marked_for_strip () const override { return existing_type == nullptr; }
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type_aliased () {
+    rust_assert (existing_type != nullptr);
+    return existing_type;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1562,6 +1638,15 @@ public:
   bool is_marked_for_strip () const override { return struct_name.empty (); }
 
   Identifier get_struct_name () const { return struct_name; }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
 
 protected:
   Struct (Identifier struct_name,
@@ -1819,6 +1904,12 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_field_type () {
+    rust_assert (field_type != nullptr);
+    return field_type;
+  }
 };
 
 // Rust tuple declared using struct keyword AST node
@@ -2112,6 +2203,15 @@ public:
   std::vector<std::unique_ptr<EnumItem>> &get_variants () { return items; }
   const std::vector<std::unique_ptr<EnumItem>> &get_variants () const { return items; }
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2197,6 +2297,15 @@ public:
   std::vector<StructField> &get_variants () { return variants; }
   const std::vector<StructField> &get_variants () const { return variants; }
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2280,6 +2389,12 @@ public:
   std::unique_ptr<Expr> &get_expr () {
     rust_assert (const_expr != nullptr);
     return const_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (type != nullptr);
+    return type;
   }
 
 protected:
@@ -2375,6 +2490,12 @@ public:
   std::unique_ptr<Expr> &get_expr () {
     rust_assert (expr != nullptr);
     return expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (type != nullptr);
+    return type;
   }
 
 protected:
@@ -2488,6 +2609,21 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<FunctionParam> &get_function_params () { return function_params; }
   const std::vector<FunctionParam> &get_function_params () const { return function_params; }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_return_type () {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
 };
 
 // Actual trait item function declaration within traits
@@ -2552,13 +2688,16 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
-  std::vector<FunctionParam> &get_function_params () { return decl.get_function_params (); }
-  const std::vector<FunctionParam> &get_function_params () const { return decl.get_function_params (); }
-
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<BlockExpr> &get_definition () {
-    rust_assert (has_definition());
+    rust_assert (has_definition ());
     return block_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  TraitFunctionDecl &get_trait_function_decl () {
+    // TODO: maybe only allow access if not marked for strip?
+    return decl;
   }
 
 protected:
@@ -2675,6 +2814,24 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<FunctionParam> &get_function_params () { return function_params; }
   const std::vector<FunctionParam> &get_function_params () const { return function_params; }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_return_type () {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
+  SelfParam &get_self_param () { return self_param; }
+  const SelfParam &get_self_param () const { return self_param; }
 };
 
 // Actual trait item method declaration within traits
@@ -2740,8 +2897,11 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
-  std::vector<FunctionParam> &get_function_params () { return decl.get_function_params (); }
-  const std::vector<FunctionParam> &get_function_params () const { return decl.get_function_params (); }
+  // TODO: is this better? Or is a "vis_block" better?
+  TraitMethodDecl &get_trait_method_decl () {
+    // TODO: maybe only allow access if not marked for strip?
+    return decl;
+  }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<BlockExpr> &get_definition () {
@@ -2840,6 +3000,12 @@ public:
     return expr;
   }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (type != nullptr);
+    return type;
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemConst *clone_trait_item_impl () const override
@@ -2915,6 +3081,10 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  // TODO: mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
+  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -3044,6 +3214,18 @@ public:
   const std::vector<std::unique_ptr<TraitItem>>& get_trait_items () const { return trait_items; }
   std::vector<std::unique_ptr<TraitItem>>& get_trait_items () { return trait_items; }
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () { return type_param_bounds; }
+  const std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds () const { return type_param_bounds; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -3090,6 +3272,21 @@ public:
   // TODO: think of better way to do this
   const std::vector<Attribute>& get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute>& get_inner_attrs () { return inner_attrs; }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (trait_type != nullptr);
+    return trait_type;
+  }
 
 protected:
   // Mega-constructor
@@ -3274,6 +3471,12 @@ public:
   const std::vector<std::unique_ptr<TraitImplItem>>& get_impl_items () const { return impl_items; }
   std::vector<std::unique_ptr<TraitImplItem>>& get_impl_items () { return impl_items; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  TypePath &get_trait_path () {
+    // TODO: assert that trait path is not empty?
+    return trait_path;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -3435,6 +3638,12 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (item_type != nullptr);
+    return item_type;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -3522,6 +3731,12 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (param_type != nullptr);
+    return param_type;
+  }
 };
 
 // A function item used in an extern block
@@ -3651,6 +3866,21 @@ public:
 
   std::vector<NamedFunctionParam> &get_function_params () { return function_params; }
   const std::vector<NamedFunctionParam> &get_function_params () const { return function_params; }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params () { return generic_params; }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const { return generic_params; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_return_type () {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

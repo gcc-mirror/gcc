@@ -15,35 +15,195 @@ namespace Rust {
 
         void expand_struct_fields(std::vector<AST::StructField>& fields) {
             for (int i = 0; i < fields.size();) {
-                auto& field_attrs = fields[i].get_outer_attrs();
+                auto& field = fields[i];
+
+                auto& field_attrs = field.get_outer_attrs();
                 expander.expand_cfg_attrs(field_attrs);
-                if (expander.fails_cfg(field_attrs))
+                if (expander.fails_cfg(field_attrs)) {
                     fields.erase(fields.begin() + i);
-                else
-                    i++;
+                    continue;
+                }
+
+                // expand sub-types of type, but can't strip type itself
+                auto& type = field.get_field_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+
+                // if nothing else happens, increment
+                i++;
             }
         }
 
         void expand_tuple_fields(std::vector<AST::TupleField>& fields) {
             for (int i = 0; i < fields.size();) {
-                auto& field_attrs = fields[i].get_outer_attrs();
+                auto& field = fields[i];
+
+                auto& field_attrs = field.get_outer_attrs();
                 expander.expand_cfg_attrs(field_attrs);
-                if (expander.fails_cfg(field_attrs))
+                if (expander.fails_cfg(field_attrs)) {
                     fields.erase(fields.begin() + i);
-                else
-                    i++;
+                    continue;
+                }
+
+                // expand sub-types of type, but can't strip type itself
+                auto& type = field.get_field_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+
+                // if nothing else happens, increment
+                i++;
             }
         }
 
         void expand_function_params(std::vector<AST::FunctionParam>& params) {
             for (int i = 0; i < params.size();) {
-                auto& param_attrs = params[i].get_outer_attrs();
+                auto& param = params[i];
+
+                auto& param_attrs = param.get_outer_attrs();
                 expander.expand_cfg_attrs(param_attrs);
-                if (expander.fails_cfg(param_attrs))
+                if (expander.fails_cfg(param_attrs)) {
                     params.erase(params.begin() + i);
-                else
-                    i++;
+                    continue;
+                }
+
+                // TODO: should an unwanted strip lead to break out of loop?
+                auto& pattern = param.get_pattern();
+                pattern->accept_vis(*this);
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+                
+                auto& type = param.get_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+                
+                // increment
+                i++;
             }
+        }
+
+        void expand_generic_args(AST::GenericArgs& args) {
+            // lifetime args can't be expanded
+
+            // expand type args - strip sub-types only
+            for (auto& type : args.get_type_args()) {
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            }
+
+            // expand binding args - strip sub-types only
+            for (auto& binding : args.get_binding_args()) {
+                auto& type = binding.get_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            }
+        }
+
+        void expand_qualified_path_type(AST::QualifiedPathType& path_type) {
+            auto& type = path_type.get_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            
+            if (path_type.has_as_clause()) {
+                auto& type_path = path_type.get_as_type_path();
+                visit(type_path);
+                if (type_path.is_marked_for_strip())
+                    rust_error_at(type_path.get_locus(), "cannot strip type path in this position");
+            }
+        }
+
+        void expand_closure_params(std::vector<AST::ClosureParam>& params) {
+            for (int i = 0; i < params.size();) {
+                auto& param = params[i];
+
+                auto& param_attrs = param.get_outer_attrs();
+                expander.expand_cfg_attrs(param_attrs);
+                if (expander.fails_cfg(param_attrs)) {
+                    params.erase(params.begin() + i);
+                    continue;
+                }
+
+                auto& pattern = param.get_pattern();
+                pattern->accept_vis(*this);
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+
+                if (param.has_type_given()) {
+                    auto& type = param.get_type();
+                    type->accept_vis(*this);
+                    if (type->is_marked_for_strip())
+                        rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+                }
+                
+                // increment if found nothing else so far
+                i++;
+            }
+        }
+
+        void expand_self_param(AST::SelfParam& self_param) {
+            if (self_param.has_type()) {
+                auto& type = self_param.get_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            }
+            // TODO: maybe check for invariants being violated - e.g. both type and lifetime?
+        }
+
+        void expand_where_clause(AST::WhereClause& where_clause) {
+            // items cannot be stripped conceptually, so just accept visitor
+            for (auto& item : where_clause.get_items()) 
+                item->accept_vis(*this);
+        }
+
+        void expand_trait_function_decl(AST::TraitFunctionDecl& decl) {
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : decl.get_generic_params()) 
+                param->accept_vis(*this);
+
+            /* strip function parameters if required - this is specifically
+             * allowed by spec */
+            expand_function_params(decl.get_function_params());
+
+            if (decl.has_return_type()) {
+                auto& return_type = decl.get_return_type();
+                return_type->accept_vis(*this);
+                if (return_type->is_marked_for_strip())
+                    rust_error_at(return_type->get_locus_slow(), "cannot strip type in this position");
+            }
+
+            if (decl.has_where_clause())
+                expand_where_clause(decl.get_where_clause());
+        }
+
+        void expand_trait_method_decl(AST::TraitMethodDecl& decl) {
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : decl.get_generic_params()) 
+                param->accept_vis(*this);
+            
+            /* assuming you can't strip self param - wouldn't be a method
+             * anymore. spec allows outer attrs on self param, but doesn't
+             * specify whether cfg is used. */
+            expand_self_param(decl.get_self_param());
+
+            /* strip function parameters if required - this is specifically
+             * allowed by spec */
+            expand_function_params(decl.get_function_params());
+
+            if (decl.has_return_type()) {
+                auto& return_type = decl.get_return_type();
+                return_type->accept_vis(*this);
+                if (return_type->is_marked_for_strip())
+                    rust_error_at(return_type->get_locus_slow(), "cannot strip type in this position");
+            }
+
+            if (decl.has_where_clause())
+                expand_where_clause(decl.get_where_clause());
         }
 
         void visit(AST::Token& tok) override {
@@ -77,7 +237,11 @@ namespace Rust {
                 return;
             }
 
+            // can't strip simple path
+
             // I don't think any macro token trees can be stripped in any way
+
+            // TODO: maybe have cfg! macro stripping behaviour here?
         }
 
         void visit(AST::PathInExpression& path) override {
@@ -87,18 +251,43 @@ namespace Rust {
                 path.mark_for_strip();
                 return;
             }
+
+            for (auto& segment : path.get_segments()) {
+                if (segment.has_generic_args())
+                    expand_generic_args(segment.get_generic_args());
+            }
         }
         void visit(AST::TypePathSegment& segment) override {
-            // shouldn't require?
+            // shouldn't require
         }
         void visit(AST::TypePathSegmentGeneric& segment) override {
-            // shouldn't require?
+            // TODO: strip inside generic args
+
+            if (!segment.has_generic_args()) 
+                return;
+
+            expand_generic_args(segment.get_generic_args());
         }
         void visit(AST::TypePathSegmentFunction& segment) override {
-            // shouldn't require?
+            auto& type_path_function = segment.get_type_path_function();
+            
+            for (auto& type : type_path_function.get_params()) {
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            }
+
+            if (type_path_function.has_return_type()) {
+                auto& return_type = type_path_function.get_return_type();
+                return_type->accept_vis(*this);
+                if (return_type->is_marked_for_strip())
+                    rust_error_at(return_type->get_locus_slow(), "cannot strip type in this position");
+            }
         }
         void visit(AST::TypePath& path) override {
-            // shouldn't require?
+            // this shouldn't strip any segments, but can strip inside them
+            for (auto& segment : path.get_segments()) 
+                segment->accept_vis(*this);
         }
         void visit(AST::QualifiedPathInExpression& path) override {
             // initial strip test based on outer attrs
@@ -107,9 +296,20 @@ namespace Rust {
                 path.mark_for_strip();
                 return;
             }
+
+            expand_qualified_path_type(path.get_qualified_path_type());
+
+            for (auto& segment : path.get_segments()) {
+                if (segment.has_generic_args())
+                    expand_generic_args(segment.get_generic_args());
+            }
         }
         void visit(AST::QualifiedPathInType& path) override {
-            // shouldn't require?
+           expand_qualified_path_type(path.get_qualified_path_type());
+
+           // this shouldn't strip any segments, but can strip inside them
+            for (auto& segment : path.get_segments()) 
+                segment->accept_vis(*this);
         }
 
         void visit(AST::LiteralExpr& expr) override {
@@ -258,14 +458,21 @@ namespace Rust {
             /* outer attributes never allowed before these. while cannot strip 
              * direct descendant expression, can strip ones below that */
 
+            auto& casted_expr = expr.get_casted_expr();
             /* should have no possibility for outer attrs as would be parsed 
              * with outer expr */
-            expr.get_casted_expr()->accept_vis(*this);
+            casted_expr->accept_vis(*this);
 
             // ensure that they are not marked for strip
-            if (expr.get_casted_expr()->is_marked_for_strip())
-                rust_error_at(expr.get_casted_expr()->get_locus_slow(), 
+            if (casted_expr->is_marked_for_strip())
+                rust_error_at(casted_expr->get_locus_slow(), 
                   "cannot strip expression in this position - outer attributes are never allowed before cast exprs");
+            
+            // TODO: strip sub-types of type
+            auto& type = expr.get_type_to_cast_to();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
         }
         void visit(AST::AssignmentExpr& expr) override {
             /* outer attributes never allowed before these. while cannot strip 
@@ -478,6 +685,12 @@ namespace Rust {
                 expr.mark_for_strip();
                 return;
             }  
+
+            // strip sub-exprs of path
+            auto& struct_name = expr.get_struct_name();
+            visit(struct_name);
+            if (struct_name.is_marked_for_strip())
+                rust_error_at(struct_name.get_locus(), "cannot strip path in this position");
         }
         void visit(AST::StructExprFieldIdentifier& field) override {
             // as no attrs (at moment, at least), no stripping possible
@@ -514,7 +727,13 @@ namespace Rust {
             if (expander.fails_cfg(expr.get_inner_attrs())) {
                 expr.mark_for_strip();
                 return;
-            }  
+            } 
+
+            // strip sub-exprs of path
+            auto& struct_name = expr.get_struct_name();
+            visit(struct_name);
+            if (struct_name.is_marked_for_strip())
+                rust_error_at(struct_name.get_locus(), "cannot strip path in this position");
 
             /* spec does not specify whether expressions are allowed to be 
              * stripped at top level of struct fields, but I wouldn't think 
@@ -551,6 +770,12 @@ namespace Rust {
                 return;
             }  
 
+            // strip sub-exprs of path
+            auto& struct_name = expr.get_struct_name();
+            visit(struct_name);
+            if (struct_name.is_marked_for_strip())
+                rust_error_at(struct_name.get_locus(), "cannot strip path in this position");
+
             /* struct base presumably can't be stripped, as the '..' is before
              * the expression. as such, can only strip sub-expressions. */
             rust_assert(!expr.get_struct_base().is_invalid());
@@ -576,6 +801,12 @@ namespace Rust {
                 return;
             }
 
+            // strip sub-exprs of path
+            auto& struct_name = expr.get_struct_name();
+            visit(struct_name);
+            if (struct_name.is_marked_for_strip())
+                rust_error_at(struct_name.get_locus(), "cannot strip path in this position");
+
             /* spec says outer attributes are specifically allowed for elements 
              * of tuple-style struct expressions, so full stripping possible */
             auto& values = expr.get_elems();
@@ -598,6 +829,12 @@ namespace Rust {
                 expr.mark_for_strip();
                 return;
             }
+
+            // strip sub-exprs of path
+            auto& struct_name = expr.get_struct_name();
+            visit(struct_name);
+            if (struct_name.is_marked_for_strip())
+                rust_error_at(struct_name.get_locus(), "cannot strip path in this position");
         }
         void visit(AST::EnumExprFieldIdentifier& field) override {
             // as no attrs (at moment, at least), no stripping possible
@@ -630,6 +867,12 @@ namespace Rust {
 
             // supposedly spec doesn't allow inner attributes in enum exprs
 
+            // strip sub-exprs of path
+            auto& enum_path = expr.get_enum_variant_path();
+            visit(enum_path);
+            if (enum_path.is_marked_for_strip())
+                rust_error_at(enum_path.get_locus(), "cannot strip path in this position");
+
             /* spec does not specify whether expressions are allowed to be 
              * stripped at top level of expression fields, but I wouldn't think
              * that they would be, so operating under the assumption that only 
@@ -649,6 +892,12 @@ namespace Rust {
 
             // supposedly spec doesn't allow inner attributes in enum exprs
 
+            // strip sub-exprs of path
+            auto& enum_path = expr.get_enum_variant_path();
+            visit(enum_path);
+            if (enum_path.is_marked_for_strip())
+                rust_error_at(enum_path.get_locus(), "cannot strip path in this position");
+
             /* spec says outer attributes are specifically allowed for elements 
              * of tuple-style enum expressions, so full stripping possible */
             auto& values = expr.get_elems();
@@ -666,6 +915,12 @@ namespace Rust {
         }
         void visit(AST::EnumExprFieldless& expr) override {
             // can't be stripped as no attrs
+
+            // strip sub-exprs of path
+            auto& enum_path = expr.get_enum_variant_path();
+            visit(enum_path);
+            if (enum_path.is_marked_for_strip())
+                rust_error_at(enum_path.get_locus(), "cannot strip path in this position");
         }
         void visit(AST::CallExpr& expr) override {
             // initial strip test based on outer attrs
@@ -716,7 +971,9 @@ namespace Rust {
                 rust_error_at(receiver->get_locus_slow(), 
                   "cannot strip expression in this position - outer attributes not allowed");
 
-            // no outer attrs on paths possible
+            auto& method_name = expr.get_method_name();
+            if (method_name.has_generic_args())
+                expand_generic_args(method_name.get_generic_args());
 
             /* spec says outer attributes are specifically allowed for elements 
              * of method call expressions, so full stripping possible */
@@ -760,15 +1017,7 @@ namespace Rust {
 
             /* strip closure parameters if required - this is specifically
              * allowed by spec */
-            auto& params = expr.get_params();
-            for (int i = 0; i < params.size();) {
-                auto& param_attrs = params[i].get_outer_attrs();
-                expander.expand_cfg_attrs(param_attrs);
-                if (expander.fails_cfg(param_attrs))
-                    params.erase(params.begin() + i);
-                else
-                    i++;
-            }
+            expand_closure_params(expr.get_params());
 
             // can't strip expression itself, but can strip sub-expressions
             auto& definition_expr = expr.get_definition_expr();
@@ -827,15 +1076,13 @@ namespace Rust {
 
             /* strip closure parameters if required - this is specifically
              * allowed by spec */
-            auto& params = expr.get_params();
-            for (int i = 0; i < params.size();) {
-                auto& param_attrs = params[i].get_outer_attrs();
-                expander.expand_cfg_attrs(param_attrs);
-                if (expander.fails_cfg(param_attrs))
-                    params.erase(params.begin() + i);
-                else
-                    i++;
-            }
+            expand_closure_params(expr.get_params());
+
+            // can't strip return type, but can strip sub-types
+            auto& type = expr.get_return_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
 
             // can't strip expression itself, but can strip sub-expressions
             auto& definition_block = expr.get_definition_block();
@@ -1042,6 +1289,12 @@ namespace Rust {
                 return;
             }
 
+            for (auto& pattern : expr.get_patterns()) {
+                pattern->accept_vis(*this);
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+            }
+
             // can't strip scrutinee expr itself, but can strip sub-expressions
             auto& scrutinee_expr = expr.get_scrutinee_expr();
             scrutinee_expr->accept_vis(*this);
@@ -1063,6 +1316,12 @@ namespace Rust {
                 expr.mark_for_strip();
                 return;
             }
+
+            // TODO: strip sub-patterns of pattern
+            auto& pattern = expr.get_pattern();
+            pattern->accept_vis(*this);
+            if (pattern->is_marked_for_strip())
+                rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
 
             // can't strip scrutinee expr itself, but can strip sub-expressions
             auto& iterator_expr = expr.get_iterator_expr();
@@ -1195,6 +1454,12 @@ namespace Rust {
                 return;
             }
 
+            for (auto& pattern : expr.get_patterns()) {
+                pattern->accept_vis(*this);
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+            }
+
             // can't strip value expr itself, but can strip sub-expressions
             auto& value_expr = expr.get_value_expr();
             value_expr->accept_vis(*this);
@@ -1215,6 +1480,12 @@ namespace Rust {
             if (expander.fails_cfg(expr.get_outer_attrs())) {
                 expr.mark_for_strip();
                 return;
+            }
+
+            for (auto& pattern : expr.get_patterns()) {
+                pattern->accept_vis(*this);
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
             }
 
             // can't strip value expr itself, but can strip sub-expressions
@@ -1246,6 +1517,12 @@ namespace Rust {
                 return;
             }
 
+            for (auto& pattern : expr.get_patterns()) {
+                pattern->accept_vis(*this);
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+            }
+
             // can't strip value expr itself, but can strip sub-expressions
             auto& value_expr = expr.get_value_expr();
             value_expr->accept_vis(*this);
@@ -1273,6 +1550,12 @@ namespace Rust {
             if (expander.fails_cfg(expr.get_outer_attrs())) {
                 expr.mark_for_strip();
                 return;
+            }
+
+            for (auto& pattern : expr.get_patterns()) {
+                pattern->accept_vis(*this);
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
             }
 
             // can't strip value expr itself, but can strip sub-expressions
@@ -1332,6 +1615,12 @@ namespace Rust {
                     continue;
                 } 
 
+                for (auto& pattern : match_arm.get_patterns()) {
+                    pattern->accept_vis(*this);
+                    if (pattern->is_marked_for_strip())
+                        rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+                }  
+
                 /* assuming that guard expression cannot be stripped as 
                  * strictly speaking you would have to strip the whole guard to 
                  * make syntactical sense, which you can't do. as such, only
@@ -1388,13 +1677,35 @@ namespace Rust {
         }
 
         void visit(AST::TypeParam& param) override {
-            // shouldn't require?
+            // outer attributes don't actually do anything, so ignore them
+
+            if (param.has_type_param_bounds()) {
+                // don't strip directly, only components of bounds
+                for (auto& bound : param.get_type_param_bounds()) 
+                    bound->accept_vis(*this);
+            }
+
+            if (param.has_type()) {
+                auto& type = param.get_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            }
         }
         void visit(AST::LifetimeWhereClauseItem& item) override {
-            // shouldn't require?
+            // shouldn't require
         }
         void visit(AST::TypeBoundWhereClauseItem& item) override {
-            // shouldn't require?
+            // for lifetimes shouldn't require
+
+            auto& type = item.get_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            
+            // don't strip directly, only components of bounds
+            for (auto& bound : item.get_type_param_bounds()) 
+                bound->accept_vis(*this);
         }
         void visit(AST::Method& method) override {
             // initial test based on outer attrs
@@ -1404,13 +1715,28 @@ namespace Rust {
                 return;
             }
 
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : method.get_generic_params()) 
+                param->accept_vis(*this);
+
             /* assuming you can't strip self param - wouldn't be a method
              * anymore. spec allows outer attrs on self param, but doesn't
              * specify whether cfg is used. */
+            expand_self_param(method.get_self_param());
 
             /* strip method parameters if required - this is specifically
              * allowed by spec */
             expand_function_params(method.get_function_params());
+
+            if (method.has_return_type()) {
+                auto& return_type = method.get_return_type();
+                return_type->accept_vis(*this);
+                if (return_type->is_marked_for_strip())
+                    rust_error_at(return_type->get_locus_slow(), "cannot strip type in this position");
+            }
+
+            if (method.has_where_clause())
+                expand_where_clause(method.get_where_clause());
 
             /* body should always exist - if error state, should have returned
              * before now */
@@ -1491,9 +1817,23 @@ namespace Rust {
                 return;
             }
 
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : function.get_generic_params()) 
+                param->accept_vis(*this);
+
             /* strip function parameters if required - this is specifically
              * allowed by spec */
             expand_function_params(function.get_function_params());
+
+            if (function.has_return_type()) {
+                auto& return_type = function.get_return_type();
+                return_type->accept_vis(*this);
+                if (return_type->is_marked_for_strip())
+                    rust_error_at(return_type->get_locus_slow(), "cannot strip type in this position");
+            }
+
+            if (function.has_where_clause())
+                expand_where_clause(function.get_where_clause());
 
             /* body should always exist - if error state, should have returned
              * before now */
@@ -1511,6 +1851,18 @@ namespace Rust {
                 type_alias.mark_for_strip();
                 return;
             }
+
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : type_alias.get_generic_params()) 
+                param->accept_vis(*this);
+
+            if (type_alias.has_where_clause())
+                expand_where_clause(type_alias.get_where_clause());
+            
+            auto& type = type_alias.get_type_aliased();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
         }
         void visit(AST::StructStruct& struct_item) override {
             // initial test based on outer attrs
@@ -1519,6 +1871,13 @@ namespace Rust {
                 struct_item.mark_for_strip();
                 return;
             }
+
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : struct_item.get_generic_params()) 
+                param->accept_vis(*this);
+            
+            if (struct_item.has_where_clause())
+                expand_where_clause(struct_item.get_where_clause());
 
             /* strip struct fields if required - this is presumably
              * allowed by spec */
@@ -1532,9 +1891,16 @@ namespace Rust {
                 return;
             }
 
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : tuple_struct.get_generic_params()) 
+                param->accept_vis(*this);
+
             /* strip struct fields if required - this is presumably
              * allowed by spec */
             expand_tuple_fields(tuple_struct.get_fields());
+
+            if (tuple_struct.has_where_clause())
+                expand_where_clause(tuple_struct.get_where_clause());
         }
         void visit(AST::EnumItem& item) override {
             // initial test based on outer attrs
@@ -1593,6 +1959,13 @@ namespace Rust {
                 return;
             }
 
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : enum_item.get_generic_params()) 
+                param->accept_vis(*this);
+            
+            if (enum_item.has_where_clause())
+                expand_where_clause(enum_item.get_where_clause());
+
             /* strip enum fields if required - this is presumably
              * allowed by spec */
             auto& variants = enum_item.get_variants();
@@ -1616,6 +1989,13 @@ namespace Rust {
                 return;
             }
 
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : union_item.get_generic_params()) 
+                param->accept_vis(*this);
+            
+            if (union_item.has_where_clause())
+                expand_where_clause(union_item.get_where_clause());
+
             /* strip union fields if required - this is presumably
              * allowed by spec */
             expand_struct_fields(union_item.get_variants());
@@ -1627,6 +2007,12 @@ namespace Rust {
                 const_item.mark_for_strip();
                 return;
             }
+
+            // strip any sub-types
+            auto& type = const_item.get_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
 
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
@@ -1645,6 +2031,12 @@ namespace Rust {
                 return;
             }
 
+            // strip any sub-types
+            auto& type = static_item.get_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
              * stripped. */
@@ -1662,9 +2054,7 @@ namespace Rust {
                 return;
             }
 
-            /* strip function parameters if required - this is specifically
-             * allowed by spec */
-            expand_function_params(item.get_function_params());
+            expand_trait_function_decl(item.get_trait_function_decl());
 
             if (item.has_definition()) {
                 /* strip any internal sub-expressions - expression itself isn't
@@ -1685,13 +2075,7 @@ namespace Rust {
                 return;
             }
 
-            /* assuming you can't strip self param - wouldn't be a method
-             * anymore. spec allows outer attrs on self param, but doesn't
-             * specify whether cfg is used. */
-
-            /* strip function parameters if required - this is specifically
-             * allowed by spec */
-            expand_function_params(item.get_function_params());
+            expand_trait_method_decl(item.get_trait_method_decl());
 
             if (item.has_definition()) {
                 /* strip any internal sub-expressions - expression itself isn't
@@ -1712,6 +2096,12 @@ namespace Rust {
                 return;
             }
 
+            // strip any sub-types
+            auto& type = item.get_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be
              * stripped */
@@ -1730,6 +2120,12 @@ namespace Rust {
                 item.mark_for_strip();
                 return;
             }
+
+            if (item.has_type_param_bounds()) {
+                // don't strip directly, only components of bounds
+                for (auto& bound : item.get_type_param_bounds()) 
+                    bound->accept_vis(*this);
+            }
         }
         void visit(AST::Trait& trait) override {
             // initial strip test based on outer attrs
@@ -1745,6 +2141,19 @@ namespace Rust {
                 trait.mark_for_strip();
                 return;
             }
+
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : trait.get_generic_params()) 
+                param->accept_vis(*this);
+            
+            if (trait.has_type_param_bounds()) {
+                // don't strip directly, only components of bounds
+                for (auto& bound : trait.get_type_param_bounds()) 
+                    bound->accept_vis(*this);
+            }
+            
+            if (trait.has_where_clause())
+                expand_where_clause(trait.get_where_clause());
 
             // strip trait items if required
             auto& trait_items = trait.get_trait_items();
@@ -1775,6 +2184,18 @@ namespace Rust {
                 return;
             }
 
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : impl.get_generic_params()) 
+                param->accept_vis(*this);
+
+            auto& type = impl.get_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+
+            if (impl.has_where_clause())
+                expand_where_clause(impl.get_where_clause());
+
             // strip inherent impl items if required
             auto& impl_items = impl.get_impl_items();
             for (int i = 0; i < impl_items.size();) {
@@ -1804,6 +2225,23 @@ namespace Rust {
                 return;
             }
 
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : impl.get_generic_params()) 
+                param->accept_vis(*this);
+
+            auto& type = impl.get_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+            
+            auto& trait_path = impl.get_trait_path();
+            visit(trait_path);
+            if (trait_path.is_marked_for_strip())
+                rust_error_at(trait_path.get_locus(), "cannot strip typepath in this position");
+
+            if (impl.has_where_clause())
+                expand_where_clause(impl.get_where_clause());
+
             // strip trait impl items if required
             auto& impl_items = impl.get_impl_items();
             for (int i = 0; i < impl_items.size();) {
@@ -1825,6 +2263,11 @@ namespace Rust {
                 item.mark_for_strip();
                 return;
             }
+
+            auto& type = item.get_type();
+            type->accept_vis(*this);
+            if (type->is_marked_for_strip())
+                rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
         }
         void visit(AST::ExternalFunctionItem& item) override {
             // strip test based on outer attrs
@@ -1834,16 +2277,30 @@ namespace Rust {
                 return;
             }
 
+            // just expand sub-stuff - can't actually strip generic params themselves
+            for (auto& param : item.get_generic_params()) 
+                param->accept_vis(*this);
+
             /* strip function parameters if required - this is specifically
              * allowed by spec */
             auto& params = item.get_function_params();
             for (int i = 0; i < params.size();) {
-                auto& param_attrs = params[i].get_outer_attrs();
+                auto& param = params[i];
+
+                auto& param_attrs = param.get_outer_attrs();
                 expander.expand_cfg_attrs(param_attrs);
-                if (expander.fails_cfg(param_attrs))
+                if (expander.fails_cfg(param_attrs)) {
                     params.erase(params.begin() + i);
-                else
-                    i++;
+                    continue;
+                }
+
+                auto& type = param.get_type();
+                type->accept_vis(*this);
+                if (type->is_marked_for_strip())
+                    rust_error_at(type->get_locus_slow(), "cannot strip type in this position");
+                
+                // increment if nothing else happens
+                i++;
             }
             /* NOTE: these are extern function params, which may have different
              * rules and restrictions to "normal" function params. So expansion
@@ -1851,6 +2308,16 @@ namespace Rust {
 
             /* TODO: assuming that variadic nature cannot be stripped. If this
              * is not true, then have code here to do so. */
+            
+            if (item.has_return_type()) {
+                auto& return_type = item.get_return_type();
+                return_type->accept_vis(*this);
+                if (return_type->is_marked_for_strip())
+                    rust_error_at(return_type->get_locus_slow(), "cannot strip type in this position");
+            }
+            
+            if (item.has_where_clause())
+                expand_where_clause(item.get_where_clause());
         }
         void visit(AST::ExternBlock& block) override {
             // initial strip test based on outer attrs
@@ -1904,6 +2371,8 @@ namespace Rust {
             }
 
             // I don't think any macro token trees can be stripped in any way
+
+            // TODO: maybe have stripping behaviour for the cfg! macro here?
         }
         void visit(AST::MetaItemPath& meta_item) override {}
         void visit(AST::MetaItemSeq& meta_item) override {}
@@ -1912,29 +2381,186 @@ namespace Rust {
         void visit(AST::MetaListPaths& meta_item) override {}
         void visit(AST::MetaListNameValueStr& meta_item) override {}
 
-        // stripping shouldn't be required or possible for patterns
-        void visit(AST::LiteralPattern& pattern) override {}
-        void visit(AST::IdentifierPattern& pattern) override {}
-        void visit(AST::WildcardPattern& pattern) override {}
-        void visit(AST::RangePatternBoundLiteral& bound) override {}
-        void visit(AST::RangePatternBoundPath& bound) override {}
-        void visit(AST::RangePatternBoundQualPath& bound) override {}
-        void visit(AST::RangePattern& pattern) override {}
-        void visit(AST::ReferencePattern& pattern) override {}
-        void visit(AST::StructPatternFieldTuplePat& field) override {}
-        void visit(AST::StructPatternFieldIdentPat& field) override {}
-        void visit(AST::StructPatternFieldIdent& field) override {}
+        void visit(AST::LiteralPattern& pattern) override {
+            // not possible
+        }
+        void visit(AST::IdentifierPattern& pattern) override {
+            // can only strip sub-patterns of the inner pattern to bind
+            if (!pattern.has_pattern_to_bind())
+                return;
+        
+            auto& sub_pattern = pattern.get_pattern_to_bind();
+            sub_pattern->accept_vis(*this);
+            if (sub_pattern->is_marked_for_strip())
+                rust_error_at(sub_pattern->get_locus_slow(), "cannot strip pattern in this position");
+        }
+        void visit(AST::WildcardPattern& pattern) override {
+            // not possible
+        }
+        void visit(AST::RangePatternBoundLiteral& bound) override {
+            // not possible
+        }
+        void visit(AST::RangePatternBoundPath& bound) override {
+            // TODO: maybe possible if path is possible
+        }
+        void visit(AST::RangePatternBoundQualPath& bound) override {
+            // TODO: maybe possible if path is possible
+        }
+        void visit(AST::RangePattern& pattern) override {
+            // TODO: possible if any bounds are possible
+        }
+        void visit(AST::ReferencePattern& pattern) override {
+            auto& sub_pattern = pattern.get_referenced_pattern();
+            sub_pattern->accept_vis(*this);
+            if (sub_pattern->is_marked_for_strip())
+                rust_error_at(sub_pattern->get_locus_slow(), "cannot strip pattern in this position");
+        }
+        void visit(AST::StructPatternFieldTuplePat& field) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(field.get_outer_attrs());
+            if (expander.fails_cfg(field.get_outer_attrs())) {
+                field.mark_for_strip();
+                return;
+            }
+
+            // strip sub-patterns (can't strip top-level pattern)
+            auto& sub_pattern = field.get_index_pattern();
+            sub_pattern->accept_vis(*this);
+            if (sub_pattern->is_marked_for_strip())
+                rust_error_at(sub_pattern->get_locus_slow(), "cannot strip pattern in this position");
+        }
+        void visit(AST::StructPatternFieldIdentPat& field) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(field.get_outer_attrs());
+            if (expander.fails_cfg(field.get_outer_attrs())) {
+                field.mark_for_strip();
+                return;
+            }
+
+            // strip sub-patterns (can't strip top-level pattern)
+            auto& sub_pattern = field.get_ident_pattern();
+            sub_pattern->accept_vis(*this);
+            if (sub_pattern->is_marked_for_strip())
+                rust_error_at(sub_pattern->get_locus_slow(), "cannot strip pattern in this position");
+        }
+        void visit(AST::StructPatternFieldIdent& field) override {
+            // initial strip test based on outer attrs
+            expander.expand_cfg_attrs(field.get_outer_attrs());
+            if (expander.fails_cfg(field.get_outer_attrs())) {
+                field.mark_for_strip();
+                return;
+            }
+        }
         void visit(AST::StructPattern& pattern) override {
             // TODO: apparently struct pattern fields can have outer attrs. so can they be stripped?
+            if (!pattern.has_struct_pattern_elems())
+                return;
+
+            auto& elems = pattern.get_struct_pattern_elems();
+
+            // assuming you can strip struct pattern fields
+            auto& fields = elems.get_struct_pattern_fields();
+            for (int i = 0; i < fields.size();) {
+                auto& field = fields[i];
+
+                field->accept_vis(*this);
+
+                if (field->is_marked_for_strip())
+                    fields.erase(fields.begin() + i);
+                else
+                    i++;
+            }
+
+            // assuming you can strip the ".." part
+            if (elems.has_etc()) {
+                expander.expand_cfg_attrs(elems.get_etc_outer_attrs());
+                if (expander.fails_cfg(elems.get_etc_outer_attrs())) 
+                    elems.strip_etc();
+            }   
         }
-        void visit(AST::TupleStructItemsNoRange& tuple_items) override {}
-        void visit(AST::TupleStructItemsRange& tuple_items) override {}
-        void visit(AST::TupleStructPattern& pattern) override {}
-        void visit(AST::TuplePatternItemsMultiple& tuple_items) override {}
-        void visit(AST::TuplePatternItemsRanged& tuple_items) override {}
-        void visit(AST::TuplePattern& pattern) override {}
-        void visit(AST::GroupedPattern& pattern) override {}
-        void visit(AST::SlicePattern& pattern) override {}
+        void visit(AST::TupleStructItemsNoRange& tuple_items) override {
+            // can't strip individual patterns, only sub-patterns
+            for (auto& pattern : tuple_items.get_patterns()) {
+                pattern->accept_vis(*this);
+
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+                // TODO: quit stripping now? or keep going?
+            }
+        }
+        void visit(AST::TupleStructItemsRange& tuple_items) override {
+            // can't strip individual patterns, only sub-patterns
+            for (auto& lower_pattern : tuple_items.get_lower_patterns()) {
+                lower_pattern->accept_vis(*this);
+
+                if (lower_pattern->is_marked_for_strip())
+                    rust_error_at(lower_pattern->get_locus_slow(), "cannot strip pattern in this position");
+                // TODO: quit stripping now? or keep going?
+            }
+            for (auto& upper_pattern : tuple_items.get_upper_patterns()) {
+                upper_pattern->accept_vis(*this);
+
+                if (upper_pattern->is_marked_for_strip())
+                    rust_error_at(upper_pattern->get_locus_slow(), "cannot strip pattern in this position");
+                // TODO: quit stripping now? or keep going?
+            }
+        }
+        void visit(AST::TupleStructPattern& pattern) override {
+            // TODO: stripping of path?
+
+            if (pattern.has_items()) 
+                pattern.get_items()->accept_vis(*this);
+        }
+        void visit(AST::TuplePatternItemsMultiple& tuple_items) override {
+            // can't strip individual patterns, only sub-patterns
+            for (auto& pattern : tuple_items.get_patterns()) {
+                pattern->accept_vis(*this);
+
+                if (pattern->is_marked_for_strip())
+                    rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
+                // TODO: quit stripping now? or keep going?
+            }
+        }
+        void visit(AST::TuplePatternItemsRanged& tuple_items) override {
+            // can't strip individual patterns, only sub-patterns
+            for (auto& lower_pattern : tuple_items.get_lower_patterns()) {
+                lower_pattern->accept_vis(*this);
+
+                if (lower_pattern->is_marked_for_strip())
+                    rust_error_at(lower_pattern->get_locus_slow(), "cannot strip pattern in this position");
+                // TODO: quit stripping now? or keep going?
+            }
+            for (auto& upper_pattern : tuple_items.get_upper_patterns()) {
+                upper_pattern->accept_vis(*this);
+
+                if (upper_pattern->is_marked_for_strip())
+                    rust_error_at(upper_pattern->get_locus_slow(), "cannot strip pattern in this position");
+                // TODO: quit stripping now? or keep going?
+            }
+        }
+        void visit(AST::TuplePattern& pattern) override {
+            if (pattern.has_tuple_pattern_items()) 
+                pattern.get_items()->accept_vis(*this);
+        }
+        void visit(AST::GroupedPattern& pattern) override {
+            // can't strip inner pattern, only sub-patterns
+            auto& pattern_in_parens = pattern.get_pattern_in_parens();
+
+            pattern_in_parens->accept_vis(*this);
+
+            if (pattern_in_parens->is_marked_for_strip())
+                rust_error_at(pattern_in_parens->get_locus_slow(), "cannot strip pattern in this position");
+        }
+        void visit(AST::SlicePattern& pattern) override {
+            // can't strip individual patterns, only sub-patterns
+            for (auto& item : pattern.get_items()) {
+                item->accept_vis(*this);
+
+                if (item->is_marked_for_strip())
+                    rust_error_at(item->get_locus_slow(), "cannot strip pattern in this position");
+                // TODO: quit stripping now? or keep going?
+            }
+        }
 
         void visit(AST::EmptyStmt& stmt) override {
             // assuming no outer attributes, so nothing can happen
@@ -1946,6 +2572,12 @@ namespace Rust {
                 stmt.mark_for_strip();
                 return;
             }
+
+            // can't strip pattern, but call for sub-patterns
+            auto& pattern = stmt.get_pattern();
+            pattern->accept_vis(*this);
+            if (pattern->is_marked_for_strip())
+                rust_error_at(pattern->get_locus_slow(), "cannot strip pattern in this position");
 
             /* strip any internal sub-expressions - expression itself isn't
              * allowed to have external attributes in this position so can't be

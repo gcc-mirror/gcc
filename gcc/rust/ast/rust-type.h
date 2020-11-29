@@ -106,6 +106,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 };
@@ -164,6 +165,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 };
@@ -212,7 +214,7 @@ public:
   }
 
   // Creates a trait bound (clone of this one's trait bound) - HACK
-  TraitBound *to_trait_bound (bool in_parens ATTRIBUTE_UNUSED) const override
+  TraitBound *to_trait_bound (bool) const override
   {
     /* NOTE: obviously it is unknown whether the internal type is a trait bound
      * due to polymorphism, so just let the internal type handle it. As
@@ -221,6 +223,7 @@ public:
   }
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 };
@@ -229,7 +232,6 @@ public:
 class ImplTraitTypeOneBound : public TypeNoBounds
 {
   TraitBound trait_bound;
-
   Location locus;
 
 protected:
@@ -248,6 +250,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 };
@@ -258,7 +261,6 @@ class TraitObjectTypeOneBound : public TypeNoBounds
 {
   bool has_dyn;
   TraitBound trait_bound;
-
   Location locus;
 
 protected:
@@ -279,14 +281,15 @@ public:
   std::string as_string () const override;
 
   // Creates a trait bound (clone of this one's trait bound) - HACK
-  TraitBound *to_trait_bound (bool in_parens ATTRIBUTE_UNUSED) const override
+  TraitBound *to_trait_bound (bool) const override
   {
     /* NOTE: this assumes there is no dynamic dispatch specified- if there was,
      * this cloning would not be required as parsing is unambiguous. */
-    return new AST::TraitBound (trait_bound);
+    return new TraitBound (trait_bound);
   }
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 };
@@ -335,6 +338,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -368,6 +372,7 @@ public:
   std::string as_string () const override { return "! (never type)"; }
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 };
@@ -420,6 +425,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -480,6 +486,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -528,6 +535,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -574,6 +582,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -607,6 +616,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 };
@@ -755,6 +765,7 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 

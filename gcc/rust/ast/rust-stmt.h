@@ -131,8 +131,13 @@ public:
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Expr> &get_init_expr () {
-    rust_assert (init_expr != nullptr);
+    rust_assert (has_init_expr ());
     return init_expr;
+  }
+
+  std::unique_ptr<Pattern> &get_pattern () {
+    rust_assert (variables_pattern != nullptr);
+    return variables_pattern;
   }
 
 protected:

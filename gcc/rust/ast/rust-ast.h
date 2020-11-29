@@ -968,6 +968,14 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  // as only one kind of pattern can be stripped, have default of nothing
+  virtual void mark_for_strip () {}
+  virtual bool is_marked_for_strip () const { return false; }
+
+  /* HACK: slow way of getting location from base expression through virtual
+   * methods. */
+  virtual Location get_locus_slow () const = 0;
+
 protected:
   // Clone pattern implementation as pure virtual method
   virtual Pattern *clone_pattern_impl () const = 0;
@@ -1001,6 +1009,12 @@ public:
    * declaration. */
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  // as only two kinds of types can be stripped, have default of nothing
+  virtual void mark_for_strip () {}
+  virtual bool is_marked_for_strip () const { return false; }
+
+  virtual Location get_locus_slow () const = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -1081,7 +1095,7 @@ public:
   {}
 
   // Creates an "error" lifetime.
-  static Lifetime error () { return Lifetime (NAMED, std::string ("")); }
+  static Lifetime error () { return Lifetime (NAMED, ""); }
 
   // Returns true if the lifetime is in an error state.
   bool is_error () const

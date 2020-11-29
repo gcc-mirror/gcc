@@ -594,7 +594,7 @@ TypeResolution::visit (AST::CallExpr &expr)
       AST::Type *argument = typeBuffer.back ();
       typeBuffer.pop_back ();
 
-      if (!typesAreCompatible (it->type.get (), argument,
+      if (!typesAreCompatible (it->get_type ().get (), argument,
 			       expr.get_params ()[offs]->get_locus_slow ()))
 	return;
       offs--;
@@ -768,11 +768,11 @@ TypeResolution::visit (AST::Function &function)
 
   for (auto &param : function.get_function_params ())
     {
-      if (!isTypeInScope (param.type.get (), param.get_locus ()))
+      if (!isTypeInScope (param.get_type ().get (), param.get_locus ()))
 	return;
 
       auto before = letPatternBuffer.size ();
-      param.param_name->accept_vis (*this);
+      param.get_pattern ()->accept_vis (*this);
       if (letPatternBuffer.size () <= before)
 	{
 	  rust_error_at (param.get_locus (), "failed to analyse parameter name");
@@ -781,11 +781,11 @@ TypeResolution::visit (AST::Function &function)
 
       auto paramName = letPatternBuffer.back ();
       letPatternBuffer.pop_back ();
-      scope.InsertType (paramName.variable_ident, param.type.get ());
+      scope.InsertType (paramName.get_ident (), param.get_type ().get ());
     }
 
   // ensure the return type is resolved
-  if (function.has_function_return_type ())
+  if (function.has_return_type ())
     {
       if (!isTypeInScope (function.get_return_type ().get (), function.get_locus ()))
 	return;
@@ -1015,12 +1015,12 @@ TypeResolution::visit (AST::LetStmt &stmt)
   if (stmt.has_init_expr ())
     {
       auto before = typeBuffer.size ();
-      stmt.init_expr->accept_vis (*this);
+      stmt.get_init_expr ()->accept_vis (*this);
 
       if (typeBuffer.size () <= before)
 	{
 	  rust_error_at (
-	    stmt.init_expr->get_locus_slow (),
+	    stmt.get_init_expr ()->get_locus_slow (),
 	    "unable to determine type for declaration from init expr");
 	  return;
 	}
@@ -1030,7 +1030,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
 
       if (inferedType == NULL)
 	{
-	  rust_error_at (stmt.init_expr->get_locus_slow (),
+	  rust_error_at (stmt.get_init_expr ()->get_locus_slow (),
 			 "void type found for statement initialisation");
 	  return;
 	}
@@ -1039,7 +1039,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
   if (stmt.has_type () && stmt.has_init_expr ())
     {
       if (!typesAreCompatible (stmt.type.get (), inferedType,
-			       stmt.init_expr->get_locus_slow ()))
+			       stmt.get_init_expr ()->get_locus_slow ()))
 	{
 	  return;
 	}
@@ -1059,9 +1059,9 @@ TypeResolution::visit (AST::LetStmt &stmt)
     }
 
   // get all the names part of this declaration and add the types to the scope
-  stmt.variables_pattern->accept_vis (*this);
+  stmt.get_pattern ()->accept_vis (*this);
   for (auto &pattern : letPatternBuffer)
-    scope.InsertType (pattern.variable_ident, inferedType);
+    scope.InsertType (pattern.get_ident (), inferedType);
 
   letPatternBuffer.clear ();
 }

@@ -100,11 +100,11 @@ Compilation::compileVarDecl (Bfunction *fndecl, AST::LetStmt *stmt,
   stmt->variables_pattern->accept_vis (*this);
   for (auto &pattern : patternBuffer)
     {
-      auto var = backend->local_variable (fndecl, pattern.variable_ident,
+      auto var = backend->local_variable (fndecl, pattern.get_ident (),
 					  translatedType, NULL /*decl_var*/,
 					  false /*address_taken*/, stmt->locus);
       vars.push_back (var);
-      scope.InsertVar (pattern.variable_ident, var);
+      scope.InsertVar (pattern.get_ident (), var);
     }
   patternBuffer.clear ();
   return true;
@@ -219,7 +219,7 @@ Compilation::visit (AST::TypePathSegmentFunction &segment)
 void
 Compilation::visit (AST::TypePath &path)
 {
-  if (path.segments.size () > 1)
+  if (path.get_segments ().size () > 1)
     {
       rust_error_at (path.get_locus (), "unable to compile multi segment types yet");
       return;
@@ -953,7 +953,7 @@ Compilation::visit (AST::Function &function)
     {
       // translate the type
       translatedType = NULL;
-      param.type->accept_vis (*this);
+      param.get_type ()->accept_vis (*this);
       if (translatedType == NULL)
 	{
 	  rust_error_at (param.get_locus (), "failed to generate type for parameter");
@@ -961,7 +961,7 @@ Compilation::visit (AST::Function &function)
 	}
 
       auto before = patternBuffer.size ();
-      param.param_name->accept_vis (*this);
+      param.get_pattern ()->accept_vis (*this);
       if (patternBuffer.size () <= before)
 	{
 	  rust_error_at (param.get_locus (), "failed to analyse parameter name");
@@ -974,13 +974,13 @@ Compilation::visit (AST::Function &function)
 	  auto paramName = patternBuffer.back ();
 	  patternBuffer.pop_back ();
 	  parameters.push_back (
-	    Backend::Btyped_identifier (paramName.variable_ident,
+	    Backend::Btyped_identifier (paramName.get_ident (),
 					translatedType, param.get_locus ()));
 	}
     }
 
   Btype *returnType = NULL;
-  if (function.has_function_return_type ())
+  if (function.has_return_type ())
     {
       translatedType = NULL;
       function.get_return_type ()->accept_vis (*this);
@@ -1051,7 +1051,7 @@ Compilation::visit (AST::Function &function)
   scope.PushBlock (code_block);
 
   Bvariable *retDecl = NULL;
-  if (function.has_function_return_type ())
+  if (function.has_return_type ())
     {
       bool address_is_taken = false;
       Bstatement *ret_var_stmt = NULL;
@@ -1302,21 +1302,21 @@ Compilation::visit (AST::LetStmt &stmt)
   for (auto &pattern : patternBuffer)
     {
       Bvariable *var = NULL;
-      if (!scope.LookupVar (pattern.variable_ident, &var))
+      if (!scope.LookupVar (pattern.get_ident (), &var))
 	{
 	  rust_error_at (stmt.get_locus (), "failed to find var decl for %s",
-			 pattern.variable_ident.c_str ());
+			 pattern.get_ident ().c_str ());
 	  return;
 	}
 
       varBuffer.push_back (var);
 
       Bexpression *init = NULL;
-      VISIT_POP (stmt.init_expr->get_locus_slow (), stmt.init_expr, init,
+      VISIT_POP (stmt.get_init_expr ()->get_locus_slow (), stmt.get_init_expr (), init,
 		 exprs);
       if (init == NULL)
 	{
-	  rust_error_at (stmt.init_expr->get_locus_slow (),
+	  rust_error_at (stmt.get_init_expr ()->get_locus_slow (),
 			 "failed to compile init statement");
 	  return;
 	}

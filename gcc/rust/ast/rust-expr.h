@@ -669,6 +669,12 @@ public:
     return main_or_left_expr;
   }
 
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<TypeNoBounds> &get_type_to_cast_to () {
+    rust_assert (type_to_convert_to != nullptr);
+    return type_to_convert_to;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1375,6 +1381,7 @@ protected:
 
 public:
   const PathInExpression &get_struct_name () const { return struct_name; }
+  PathInExpression &get_struct_name () { return struct_name; }
 
   std::string as_string () const override;
 
@@ -1828,8 +1835,8 @@ protected:
   {}
 
 public:
-  // TODO: maybe remove and have string version gotten here directly
-  PathInExpression get_enum_variant_path () const { return enum_variant_path; }
+  const PathInExpression& get_enum_variant_path () const { return enum_variant_path; }
+  PathInExpression& get_enum_variant_path () { return enum_variant_path; }
 
   // Invalid if path is in error state, so base stripping on that.
   void mark_for_strip () override { enum_variant_path = PathInExpression::create_error (); }
@@ -2305,7 +2312,8 @@ public:
     return receiver;
   }
 
-  PathExprSegment get_method_name () const { return method_name; }
+  const PathExprSegment &get_method_name () const { return method_name; }
+  PathExprSegment &get_method_name () { return method_name; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2462,6 +2470,18 @@ public:
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Pattern> &get_pattern () {
+    rust_assert (pattern != nullptr);
+    return pattern;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (has_type_given ());
+    return type;
+  }
 };
 
 // Base closure definition expression AST node - abstract
@@ -2754,6 +2774,12 @@ public:
   std::unique_ptr<BlockExpr> &get_definition_block () {
     rust_assert (expr != nullptr);
     return expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_return_type () {
+    rust_assert (return_type != nullptr);
+    return return_type;
   }
 
 protected:
@@ -3667,6 +3693,10 @@ public:
     return scrutinee;
   }
 
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const { return match_arm_patterns; }
+  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return match_arm_patterns; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3726,6 +3756,12 @@ public:
   std::unique_ptr<Expr> &get_iterator_expr () {
     rust_assert (iterator_expr != nullptr);
     return iterator_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Pattern> &get_pattern () {
+    rust_assert (pattern != nullptr);
+    return pattern;
   }
 
 protected:
@@ -3959,7 +3995,6 @@ class IfLetExpr : public ExprWithBlock
   std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
   std::unique_ptr<Expr> value;
   std::unique_ptr<BlockExpr> if_block;
-
   Location locus;
 
 public:
@@ -4042,6 +4077,10 @@ public:
     rust_assert (if_block != nullptr);
     return if_block;
   }
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const { return match_arm_patterns; }
+  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return match_arm_patterns; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4366,6 +4405,9 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const { return match_arm_patterns; }
+  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return match_arm_patterns; }
 };
 
 /*

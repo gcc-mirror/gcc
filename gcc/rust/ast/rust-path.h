@@ -45,7 +45,6 @@ struct GenericArgsBinding
 private:
   Identifier identifier;
   std::unique_ptr<Type> type;
-
   Location locus;
 
 public:
@@ -100,6 +99,12 @@ public:
   GenericArgsBinding &operator= (GenericArgsBinding &&other) = default;
 
   std::string as_string () const;
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (type != nullptr);
+    return type;
+  }
 };
 
 // Generic arguments allowed in each path expression segment - inline?
@@ -166,6 +171,16 @@ public:
   }
 
   std::string as_string () const;
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  std::vector<std::unique_ptr<Type>> &get_type_args () {
+    return type_args;
+  }
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  std::vector<GenericArgsBinding> &get_binding_args () {
+    return binding_args;
+  }
 };
 
 /* A segment of a path in expression, including an identifier aspect and maybe
@@ -221,6 +236,12 @@ public:
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  GenericArgs &get_generic_args () {
+    rust_assert (has_generic_args ());
+    return generic_args;
+  }
 };
 
 // AST node representing a pattern that involves a "path" - abstract base class
@@ -249,6 +270,10 @@ public:
   bool is_single_segment () const { return segments.size () == 1; }
 
   std::string as_string () const override;
+
+  // TODO: this seems kinda dodgy
+  std::vector<PathExprSegment> &get_segments () { return segments; }
+  const std::vector<PathExprSegment> &get_segments () const { return segments; }
 };
 
 /* AST node representing a path-in-expression pattern (path that allows generic
@@ -416,6 +441,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_pattern" better?
+  GenericArgs &get_generic_args () {
+    rust_assert (has_generic_args ());
+    return generic_args;
+  }
+
 protected:
   // Use covariance to override base class method
   TypePathSegmentGeneric *clone_type_path_segment_impl () const override
@@ -504,6 +535,16 @@ public:
   TypePathFunction &operator= (TypePathFunction &&other) = default;
 
   std::string as_string () const;
+
+  // TODO: this mutable getter seems really dodgy. Think up better way.
+  const std::vector<std::unique_ptr<Type>> &get_params () const { return inputs; }
+  std::vector<std::unique_ptr<Type>> &get_params () { return inputs; }
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  std::unique_ptr<Type> &get_return_type () {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
 };
 
 // Segment used in type path with a function argument
@@ -536,6 +577,12 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  // TODO: is this better? Or is a "vis_pattern" better?
+  TypePathFunction &get_type_path_function () {
+    rust_assert (!function_path.is_error ());
+    return function_path;
+  }
+
 protected:
   // Use covariance to override base class method
   TypePathSegmentFunction *clone_type_path_segment_impl () const override
@@ -547,7 +594,6 @@ protected:
 // Path used inside types
 class TypePath : public TypeNoBounds
 {
-public:
   bool has_opening_scope_resolution;
   std::vector<std::unique_ptr<TypePathSegment>> segments;
   Location locus;
@@ -622,8 +668,13 @@ public:
   TraitBound *to_trait_bound (bool in_parens) const override;
 
   Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: this seems kinda dodgy
+  std::vector<std::unique_ptr<TypePathSegment>> &get_segments () { return segments; }
+  const std::vector<std::unique_ptr<TypePathSegment>> &get_segments () const { return segments; }
 };
 
 struct QualifiedPathType
@@ -691,6 +742,18 @@ public:
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  std::unique_ptr<Type> &get_type () {
+    rust_assert (type_to_invoke_on != nullptr);
+    return type_to_invoke_on;
+  }
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  TypePath &get_as_type_path () {
+    rust_assert (has_as_clause ());
+    return trait_path;
+  }
 };
 
 /* AST node representing a qualified path-in-expression pattern (path that
@@ -734,6 +797,12 @@ public:
   // Invalid if path_type is error, so base stripping on that.
   void mark_for_strip () override { path_type = QualifiedPathType::create_error (); }
   bool is_marked_for_strip () const override { return is_error (); }
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  QualifiedPathType &get_qualified_path_type () {
+    rust_assert (!path_type.is_error ());
+    return path_type;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -819,6 +888,19 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  // TODO: is this better? Or is a "vis_pattern" better?
+  QualifiedPathType &get_qualified_path_type () {
+    rust_assert (!path_type.is_error ());
+    return path_type;
+  }
+
+  // TODO: this seems kinda dodgy
+  std::vector<std::unique_ptr<TypePathSegment>> &get_segments () { return segments; }
+  const std::vector<std::unique_ptr<TypePathSegment>> &get_segments () const { return segments; }
+
+  Location get_locus () const { return locus; }
+  Location get_locus_slow () const final override { return get_locus (); }
 };
 } // namespace AST
 } // namespace Rust

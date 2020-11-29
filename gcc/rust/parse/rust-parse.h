@@ -575,6 +575,7 @@ private:
   std::unique_ptr<AST::TupleStructItems> parse_tuple_struct_items ();
   AST::StructPatternElements parse_struct_pattern_elems ();
   std::unique_ptr<AST::StructPatternField> parse_struct_pattern_field ();
+  std::unique_ptr<AST::StructPatternField> parse_struct_pattern_field_partial (std::vector<AST::Attribute> outer_attrs);
 
   int left_binding_power (const_TokenPtr token);
 

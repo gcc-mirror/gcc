@@ -10150,6 +10150,14 @@ Parser<ManagedTokenSource>::parse_pattern ()
 	      // tuple struct
 	      lexer.skip_token ();
 
+        // check if empty tuple
+        if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
+          {
+            lexer.skip_token ();
+            return std::unique_ptr<AST::TupleStructPattern> (
+	        new AST::TupleStructPattern (std::move (path), nullptr));
+          }
+
 	      // parse items
 	      std::unique_ptr<AST::TupleStructItems> items
 		= parse_tuple_struct_items ();
@@ -10574,6 +10582,14 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	// DEBUG
 	fprintf (stderr, "parsing tuple struct pattern\n");
 
+  // check if empty tuple
+  if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
+    {
+      lexer.skip_token ();
+      return std::unique_ptr<AST::TupleStructPattern> (
+	  new AST::TupleStructPattern (std::move (path), nullptr));
+    }
+
 	// parse items
 	std::unique_ptr<AST::TupleStructItems> items
 	  = parse_tuple_struct_items ();
@@ -10816,53 +10832,46 @@ Parser<ManagedTokenSource>::parse_struct_pattern_elems ()
 {
   std::vector<std::unique_ptr<AST::StructPatternField> > fields;
 
+  std::vector<AST::Attribute> etc_attrs;
+  bool has_etc = false;
+
   // try parsing struct pattern fields
   const_TokenPtr t = lexer.peek_token ();
-  while (t->get_id () != RIGHT_CURLY && t->get_id () != DOT_DOT)
+  while (t->get_id () != RIGHT_CURLY)
     {
+      std::vector<AST::Attribute> outer_attrs = parse_outer_attributes ();
+
+      // parse etc (must be last in struct pattern, so breaks)
+      if (lexer.peek_token ()->get_id () == DOT_DOT) 
+      {
+        lexer.skip_token ();
+        etc_attrs = std::move (outer_attrs);
+        has_etc = true;
+        break;
+      }
+
       std::unique_ptr<AST::StructPatternField> field
-	= parse_struct_pattern_field ();
+	= parse_struct_pattern_field_partial (std::move (outer_attrs));
       if (field == nullptr)
 	{
-	  // TODO: should this be an error?
-	  // assuming that this means that it is a struct pattern etc instead
-
-	  // DEBUG
-	  fprintf (
-	    stderr,
-	    "failed to parse struct pattern field - breaking from loop\n");
-
-	  break;
+    rust_error_at (lexer.peek_token ()->get_locus (), "failed to parse struct pattern field");
+    // skip after somewhere?
+    return AST::StructPatternElements::create_empty ();
 	}
-
       fields.push_back (std::move (field));
 
-      // DEBUG
-      fprintf (stderr, "successfully pushed back a struct pattern field\n");
-
       if (lexer.peek_token ()->get_id () != COMMA)
-	{
 	  break;
-	}
-      lexer.skip_token ();
 
+      // skip comma
+      lexer.skip_token ();
       t = lexer.peek_token ();
     }
 
-  /* FIXME: this method of parsing prevents parsing any outer attributes on the
-   * .. - also there seems to be no distinction between having etc and not
-   * having etc. */
-  if (lexer.peek_token ()->get_id () == DOT_DOT)
-    {
-      lexer.skip_token ();
-
-      // as no outer attributes
-      AST::StructPatternEtc etc = AST::StructPatternEtc::create_empty ();
-
-      return AST::StructPatternElements (std::move (fields), std::move (etc));
-    }
-
-  return AST::StructPatternElements (std::move (fields));
+  if (has_etc)
+    return AST::StructPatternElements (std::move (fields), std::move (etc_attrs));
+  else
+    return AST::StructPatternElements (std::move (fields));
 }
 
 /* Parses a struct pattern field (tuple index/pattern, identifier/pattern, or
@@ -10874,6 +10883,15 @@ Parser<ManagedTokenSource>::parse_struct_pattern_field ()
   // parse outer attributes (if they exist)
   std::vector<AST::Attribute> outer_attrs = parse_outer_attributes ();
 
+  return parse_struct_pattern_field_partial (std::move (outer_attrs));
+}
+
+/* Parses a struct pattern field (tuple index/pattern, identifier/pattern, or
+ * identifier), with outer attributes passed in. */
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::StructPatternField>
+Parser<ManagedTokenSource>::parse_struct_pattern_field_partial (std::vector<AST::Attribute> outer_attrs)
+{
   // branch based on next token
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
