@@ -3092,7 +3092,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
 	{
 	  gfc_ref *co_ref = cas_array_ref (ref);
 	  if (co_ref)
-	    tmp = cas_add_this_image_offset (tmp, se.expr,&co_ref->u.ar, 1, 1);
+	    tmp = cas_add_this_image_offset (tmp, se.expr,&co_ref->u.ar, 1, 0);
 	}
       /* If this is a variable or address of a variable we use it directly.
          Otherwise we must evaluate it now to avoid breaking dependency
