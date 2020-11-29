@@ -12247,8 +12247,7 @@ package body Exp_Util is
                --  and view swaps, the parent type is taken from the formal
                --  parameter of the subprogram being called.
 
-               if Nkind (Context) in
-                    N_Function_Call | N_Procedure_Call_Statement
+               if Nkind (Context) in N_Subprogram_Call
                  and then No (Type_Map.Get (Entity (Name (Context))))
                then
                   New_Ref :=
