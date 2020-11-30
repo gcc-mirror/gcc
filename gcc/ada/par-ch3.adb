@@ -2430,7 +2430,7 @@ package body Ch3 is
 
    begin
       if Ada_Version = Ada_83 then
-         Error_Msg_SC ("(Ada 83): modular types not allowed");
+         Error_Msg_SC ("(Ada 83) modular types not allowed");
       end if;
 
       Typedef_Node := New_Node (N_Modular_Type_Definition, Token_Ptr);
