@@ -113,7 +113,9 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0096')
         assert email.errors
         err = email.errors[0]
-        assert err.message == 'unchanged file mentioned in a ChangeLog'
+        assert err.message == 'unchanged file mentioned in a ChangeLog (did ' \
+            'you mean "gcc/testsuite/gcc.target/aarch64/' \
+            'advsimd-intrinsics/vdot-3-1.c"?)'
         assert err.line == 'gcc/testsuite/gcc.target/aarch64/' \
                            'advsimd-intrinsics/vdot-compile-3-1.c'
 

@@ -16,6 +16,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.  */
 
+import difflib
 import os
 import re
 
@@ -576,6 +577,9 @@ class GitCommit:
         changed_files = set(cand)
         for file in sorted(mentioned_files - changed_files):
             msg = 'unchanged file mentioned in a ChangeLog'
+            candidates = difflib.get_close_matches(file, changed_files, 1)
+            if candidates:
+                msg += f' (did you mean "{candidates[0]}"?)'
             self.errors.append(Error(msg, file))
         for file in sorted(changed_files - mentioned_files):
             if not self.in_ignored_location(file):
