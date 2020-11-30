@@ -3098,6 +3098,44 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_int_iterator UNSPEC_PCMP_ITER
+  [UNSPEC_PCMP UNSPEC_UNSIGNED_PCMP])
+
+(define_int_attr pcmp_signed_mask
+  [(UNSPEC_PCMP "3") (UNSPEC_UNSIGNED_PCMP "1")])
+
+;; PR96906 - optimize vpsubusw compared to 0 into vpcmpleuw or vpcmpnltuw.
+;; For signed comparison, handle EQ 0: NEQ 4,
+;; for unsigned comparison extra handle LE:2, NLE:6, equivalent to EQ and NEQ.
+
+(define_split
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
+	(unspec:<avx512fmaskmode>
+	  [(us_minus:VI12_AVX512VL
+	     (match_operand:VI12_AVX512VL 1 "vector_operand")
+	     (match_operand:VI12_AVX512VL 2 "vector_operand"))
+	   (match_operand:VI12_AVX512VL 3 "const0_operand")
+	   (match_operand:SI 4 "const_0_to_7_operand")]
+	  UNSPEC_PCMP_ITER))]
+  "TARGET_AVX512BW
+  && ix86_binary_operator_ok (US_MINUS, <MODE>mode, operands)
+  && (INTVAL (operands[4]) & <pcmp_signed_mask>) == 0"
+  [(const_int 0)]
+  {
+    /* LE: 2, NLT: 5, NLE: 6, LT: 1  */
+    int cmp_predicate = 2; /* LE  */
+    if (MEM_P (operands[1]))
+      {
+       std::swap (operands[1], operands[2]);
+       cmp_predicate = 5; /* NLT (GE)  */
+      }
+    if ((INTVAL (operands[4]) & 4) != 0)
+      cmp_predicate ^= 4; /* Invert the comparison to NLE (GT) or LT.  */
+    emit_insn (gen_<avx512>_ucmp<mode>3 (operands[0], operands[1],operands[2],
+					GEN_INT (cmp_predicate)));
+    DONE;
+  })
+
 (define_insn "avx512f_vmcmp<mode>3<round_saeonly_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(and:<avx512fmaskmode>
