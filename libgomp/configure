@@ -15398,19 +15398,28 @@ if test x"$enable_offload_targets" != x; then
 	tgt_name=intelmic
 	;;
       nvptx*)
-        tgt_name=nvptx
-	PLUGIN_NVPTX=$tgt
-	PLUGIN_NVPTX_CPPFLAGS=$CUDA_DRIVER_CPPFLAGS
-	PLUGIN_NVPTX_LDFLAGS=$CUDA_DRIVER_LDFLAGS
-	PLUGIN_NVPTX_LIBS='-lcuda'
+	case "${target}" in
+	  aarch64*-*-* | powerpc64le-*-* | x86_64-*-*)
+	    case " ${CC} ${CFLAGS} " in
+	      *" -m32 "* | *" -mx32 "*)
+		# PR libgomp/65099: Currently, we only support offloading in
+		# 64-bit configurations.
+		PLUGIN_NVPTX=0
+		;;
+	      *)
+		tgt_name=nvptx
+		PLUGIN_NVPTX=$tgt
+		PLUGIN_NVPTX_CPPFLAGS=$CUDA_DRIVER_CPPFLAGS
+		PLUGIN_NVPTX_LDFLAGS=$CUDA_DRIVER_LDFLAGS
+		PLUGIN_NVPTX_LIBS='-lcuda'
 
-	PLUGIN_NVPTX_save_CPPFLAGS=$CPPFLAGS
-	CPPFLAGS="$PLUGIN_NVPTX_CPPFLAGS $CPPFLAGS"
-	PLUGIN_NVPTX_save_LDFLAGS=$LDFLAGS
-	LDFLAGS="$PLUGIN_NVPTX_LDFLAGS $LDFLAGS"
-	PLUGIN_NVPTX_save_LIBS=$LIBS
-	LIBS="$PLUGIN_NVPTX_LIBS $LIBS"
-	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+		PLUGIN_NVPTX_save_CPPFLAGS=$CPPFLAGS
+		CPPFLAGS="$PLUGIN_NVPTX_CPPFLAGS $CPPFLAGS"
+		PLUGIN_NVPTX_save_LDFLAGS=$LDFLAGS
+		LDFLAGS="$PLUGIN_NVPTX_LDFLAGS $LDFLAGS"
+		PLUGIN_NVPTX_save_LIBS=$LIBS
+		LIBS="$PLUGIN_NVPTX_LIBS $LIBS"
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "cuda.h"
 int
@@ -15426,22 +15435,30 @@ if ac_fn_c_try_link "$LINENO"; then :
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-	CPPFLAGS=$PLUGIN_NVPTX_save_CPPFLAGS
-	LDFLAGS=$PLUGIN_NVPTX_save_LDFLAGS
-	LIBS=$PLUGIN_NVPTX_save_LIBS
-	case $PLUGIN_NVPTX in
-	  nvptx*)
-	    if test "x$CUDA_DRIVER_INCLUDE" = x \
-	       && test "x$CUDA_DRIVER_LIB" = x; then
-	      PLUGIN_NVPTX=1
-	      PLUGIN_NVPTX_CPPFLAGS='-I$(srcdir)/plugin/cuda'
-	      PLUGIN_NVPTX_LIBS='-ldl'
-	      PLUGIN_NVPTX_DYNAMIC=1
-	    else
-	      PLUGIN_NVPTX=0
-	      as_fn_error "CUDA driver package required for nvptx support" "$LINENO" 5
-	    fi
-	  ;;
+		CPPFLAGS=$PLUGIN_NVPTX_save_CPPFLAGS
+		LDFLAGS=$PLUGIN_NVPTX_save_LDFLAGS
+		LIBS=$PLUGIN_NVPTX_save_LIBS
+		case $PLUGIN_NVPTX in
+		  nvptx*)
+		    if test "x$CUDA_DRIVER_INCLUDE" = x \
+		       && test "x$CUDA_DRIVER_LIB" = x; then
+		      PLUGIN_NVPTX=1
+		      PLUGIN_NVPTX_CPPFLAGS='-I$(srcdir)/plugin/cuda'
+		      PLUGIN_NVPTX_LIBS='-ldl'
+		      PLUGIN_NVPTX_DYNAMIC=1
+		    else
+		      PLUGIN_NVPTX=0
+		      as_fn_error "CUDA driver package required for nvptx support" "$LINENO" 5
+		    fi
+		    ;;
+		esac
+		;;
+	    esac
+	    ;;
+	  *-*-*)
+	    # Target architecture not supported.
+	    PLUGIN_NVPTX=0
+	    ;;
 	esac
 	;;
       hsa*)
