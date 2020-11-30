@@ -468,10 +468,10 @@ __ashrdi3 (DWtype u, shift_count_type b)
 SItype
 __bswapsi2 (SItype u)
 {
-  return ((((u) & 0xff000000) >> 24)
-	  | (((u) & 0x00ff0000) >>  8)
-	  | (((u) & 0x0000ff00) <<  8)
-	  | (((u) & 0x000000ff) << 24));
+  return ((((u) & 0xff000000u) >> 24)
+	  | (((u) & 0x00ff0000u) >>  8)
+	  | (((u) & 0x0000ff00u) <<  8)
+	  | (((u) & 0x000000ffu) << 24));
 }
 #endif
 #ifdef L_bswapdi2
