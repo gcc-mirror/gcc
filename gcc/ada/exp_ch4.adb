@@ -12815,56 +12815,6 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  If we have a conversion of a compile time known value to a target
-      --  type and the value is in range of the target type, then we can simply
-      --  replace the construct by an integer literal of the correct type. We
-      --  only apply this to discrete types being converted. Possibly it may
-      --  apply in other cases, but it is too much trouble to worry about.
-
-      --  Note that we do not do this transformation if the Kill_Range_Check
-      --  flag is set, since then the value may be outside the expected range.
-      --  This happens in the Normalize_Scalars case.
-
-      --  We also skip this if either the target or operand type is biased
-      --  because in this case, the unchecked conversion is supposed to
-      --  preserve the bit pattern, not the integer value.
-
-      if Is_Integer_Type (Target_Type)
-        and then not Has_Biased_Representation (Target_Type)
-        and then Is_Discrete_Type (Operand_Type)
-        and then not Has_Biased_Representation (Operand_Type)
-        and then Compile_Time_Known_Value (Operand)
-        and then not Kill_Range_Check (N)
-      then
-         declare
-            Val : constant Uint := Expr_Rep_Value (Operand);
-
-         begin
-            if Compile_Time_Known_Value (Type_Low_Bound (Target_Type))
-                 and then
-               Compile_Time_Known_Value (Type_High_Bound (Target_Type))
-                 and then
-               Val >= Expr_Value (Type_Low_Bound (Target_Type))
-                 and then
-               Val <= Expr_Value (Type_High_Bound (Target_Type))
-            then
-               Rewrite (N, Make_Integer_Literal (Sloc (N), Val));
-
-               --  If Address is the target type, just set the type to avoid a
-               --  spurious type error on the literal when Address is a visible
-               --  integer type.
-
-               if Is_Descendant_Of_Address (Target_Type) then
-                  Set_Etype (N, Target_Type);
-               else
-                  Analyze_And_Resolve (N, Target_Type);
-               end if;
-
-               return;
-            end if;
-         end;
-      end if;
-
       --  Generate an extra temporary for cases unsupported by the C backend
 
       if Modify_Tree_For_C then
