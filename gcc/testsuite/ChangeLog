@@ -1,3 +1,51 @@
+2020-11-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/98036
+	* gcc.target/i386/fma4-256-maccXX.c (check_maccps):
+	Remove unnecessary postfix increment on a returned variable.
+	(check_maccpd): Ditto.
+	* gcc.target/i386/fma4-256-msubXX.c (check_msubps): Ditto.
+	(check_msubpd): Ditto.
+	* gcc.target/i386/fma4-256-nmaccXX.c (check_nmaccps): Ditto.
+	(check_nmaccpd): Ditto.
+	* gcc.target/i386/fma4-256-nmsubXX.c (check_nmsubps): Ditto.
+	(check_nmsubpd): Ditto.
+	* gcc.target/i386/fma4-maccXX.c (check_maccps): Ditto.
+	(check_maccpd): Ditto.
+	(check_maccss): Ditto.
+	(check_maccsd): Ditto.
+	* gcc.target/i386/fma4-msubXX.c (check_msubps): Ditto.
+	(check_msubpd): Ditto.
+	(check_msubss): Ditto.
+	(check_msubsd): Ditto.
+	* gcc.target/i386/fma4-nmaccXX.c (check_nmaccps): Ditto.
+	(check_nmaccpd): Ditto.
+	(check_nmaccss): Ditto.
+	(check_nmaccsd): Ditto.
+	* gcc.target/i386/fma4-nmsubXX.c (check_nmsubps): Ditto.
+	(check_nmsubpd): Ditto.
+	(check_nmsubss): Ditto.
+	(check_nmsubsd): Ditto.
+	* gcc.target/i386/xop-haddX.c (check_sbyte2word): Add missing return.
+	(check_sbyte2dword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_sbyte2qword): Ditto.
+	(check_sword2dword): Add missing return.
+	(check_sword2qword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_dword2qword): Add missing return.
+	* gcc.target/i386/xop-hadduX.c (check_byte2word): Add missing return.
+	(check_byte2dword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_byte2qword): Ditto.
+	(check_word2dword): Add missing return.
+	(check_word2qword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_word2qword): Add missing return.
+	* gcc.target/i386/xop-hsubX.c (check_sbyte2word): Add missing return.
+	(check_sword2dword): Ditto.
+	(check_sword2qword): Ditto.
+
 2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/overflow-6.c: New test.
