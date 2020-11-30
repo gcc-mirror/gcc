@@ -782,6 +782,13 @@ package body Sem_Attr is
             Par : Node_Id;
 
          begin
+            --  If N does not come from source, the reference is assumed to be
+            --  valid.
+
+            if not Comes_From_Source (N) then
+               return True;
+            end if;
+
             Par := Parent (N);
             while Present (Par)
               and then
@@ -1032,9 +1039,7 @@ package body Sem_Attr is
                --  expression comes from source, e.g. when a single component
                --  association in an aggregate has a box association.
 
-               elsif Ada_Version >= Ada_2005
-                 and then OK_Self_Reference
-               then
+               elsif Ada_Version >= Ada_2005 and then OK_Self_Reference then
                   null;
 
                --  OK if reference to current instance of a protected object
