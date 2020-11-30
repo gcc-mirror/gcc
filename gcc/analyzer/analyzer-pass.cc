@@ -25,6 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "diagnostic.h"
 #include "options.h"
+#include "tree.h"
+#include "function.h"
+#include "analyzer/analyzer.h"
 #include "analyzer/engine.h"
 
 namespace {
