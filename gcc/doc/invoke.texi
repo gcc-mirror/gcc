@@ -215,21 +215,20 @@ in the following sections.
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
 -fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n} @gol
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n} @gol
--fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules-ts @gol
--fmodule-implicit-inline @gol
--fmodule-mapper=@var{specification} @gol
--fmodule-version-ignore @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -fno-gnu-keywords @gol
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  @gol
+-fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules-ts @gol
+-fmodule-implicit-inline @gol
 -fno-module-lazy @gol
+-fmodule-mapper=@var{specification} @gol
+-fmodule-version-ignore @gol
 -fms-extensions @gol
 -fnew-inheriting-ctors @gol
 -fnew-ttp-matching @gol
--fno-module-lazy @gol
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
@@ -249,10 +248,10 @@ in the following sections.
 -Wno-conversion-null  -Wctad-maybe-unsupported @gol
 -Wctor-dtor-privacy  -Wno-delete-incomplete @gol
 -Wdelete-non-virtual-dtor  -Wdeprecated-copy -Wdeprecated-copy-dtor @gol
--Winvalid-imported-macros @gol
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
+-Winvalid-imported-macros @gol
 -Wno-invalid-offsetof  -Wno-literal-suffix  -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
 -Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor @gol
@@ -610,7 +609,7 @@ Objective-C and Objective-C++ Dialects}.
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
 -H  -imacros @var{file}  -include @var{file} @gol
--M  -MD  -MF  -MG  -MM  -MMD  -MP  -Mno-modules -MQ  -MT @gol
+-M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT -Mno-modules @gol
 -no-integrated-cpp  -P  -pthread  -remap @gol
 -traditional  -traditional-cpp  -trigraphs @gol
 -U@var{macro}  -undef  @gol
@@ -3080,14 +3079,14 @@ implicitly enabled by selecting that standard version.
 @itemx -fmodule-header=user
 @itemx -fmodule-header=system
 @opindex fmodule-header
-Compile a header file to create an importableheader unit.
+Compile a header file to create an importable header unit.
 
 @item -fmodule-implicit-inline
 @opindex fmodule-implicit-inline
 Member functions defined in their class definitions are not implicitly
 inline for modular code.  This is different to traditional C++
 behavior, for good reasons.  However, it may result in a difficulty
-during code porting.  This option will make such function definitions
+during code porting.  This option makes such function definitions
 implicitly inline.  It does however generate an ABI incompatibility,
 so you must use it everywhere or nowhere.  (Such definitions outside
 of a named module remain implicitly inline, regardless.)
@@ -3366,7 +3365,7 @@ is used when building the C++ library.)
 @itemx -flang-info-include-translate=@var{header}
 @opindex flang-info-include-translate
 @opindex flang-info-include-translate-not
-Give notice of include translation events.
+Diagnose include translation events.
 
 @end table
 
@@ -32609,8 +32608,8 @@ implemented, and the definitions are available to extra-module use.
 Entities may be multiply defined across different header-units.
 These must be de-duplicated, and this is implemented across imports,
 or when an import redefines a textually-defined entity.  However the
-reverse is not implemented -- textually redefining an entity that has
-been defined in an imported header-unit.  A redefinition error will be
+reverse is not implemented---textually redefining an entity that has
+been defined in an imported header-unit.  A redefinition error is
 emitted.
 
 @item Translation-Unit local referencing rules
@@ -32628,7 +32627,7 @@ version selected, although in pre-C++20 versions, it is of course an
 extension.
 
 No new source file suffixes are required or supported.  If you wish to
-use a non-standard suffix (@xref{Overall Options}), you will also need
+use a non-standard suffix (@xref{Overall Options}), you also need
 to provide a @option{-x c++} option too.@footnote{Some users like to
 distinguish module interface files with a new suffix, such as naming
 the source @code{module.cppm}, which involves
@@ -32654,7 +32653,7 @@ As header files often have no suffix, you commonly have to specify a
 You may use @option{-x c++-header}, @option{-x c++-user-header} or
 @option{-x c++-system-header}.  When used in conjunction with
 @option{-fmodules-ts}, these all imply an appropriate
-@option{-fmodule-header} option.  The latter two variants will use the
+@option{-fmodule-header} option.  The latter two variants use the
 user or system include path to search for the file specified.  This
 allows you to, for instance, compile standard library header files as
 header units, without needing to know exactly where they are
@@ -32667,8 +32666,8 @@ created in a manner that is safe for concurrent builds creating
 multiple, different, CMIs within a common subdirectory tree.
 
 CMI contents are written to a temporary file, which is then atomically
-renamed.  Observers will either see old contents (if there is an
-existing file), or complete new contents.  They will not observe the
+renamed.  Observers either see old contents (if there is an
+existing file), or complete new contents.  They do not observe the
 CMI during its creation.  This is unlike object file writing, which
 may be observed by an external process.
 
@@ -32685,7 +32684,7 @@ is generated.  This option is implied when using the
 The @option{--param lazy-modules=@var{n}} parameter controls the limit
 on the number of concurrently open module files during lazy loading.
 Should more modules be imported, an LRU algorithm is used to determine
-which files to close -- until that file is needed again.  This limit
+which files to close---until that file is needed again.  This limit
 may be exceeded with deep module dependency hierarchies.  With large
 code bases there may be more imports than the process limit of file
 descriptors.  By default, the limit is a few less than the per-process
@@ -32701,13 +32700,13 @@ textual.  With an argument, queries about include translation of a
 header files with that particular trailing pathname are noted.  You
 may repeat this form to cover several different header files.  This
 option may be helpful in determining whether include translation is
-happenning -- if it is working correctly, it'll behave as if it wasn't
+happening---if it is working correctly, it'll behave as if it wasn't
 there at all.
 
 The @option{-Winvalid-imported-macros} option causes all imported macros
 to be resolved at the end of compilation.  Without this, imported
 macros are only resolved when expanded or (re)defined.  This option
-will detect conflicting import definitions for all macros.
+detects conflicting import definitions for all macros.
 
 @xref{C++ Module Mapper} for details of the @option{-fmodule-mapper}
 family of options.
@@ -32727,7 +32726,7 @@ used to build CMIs on demand.  @emph{Mapper functionality is in its
 infancy and is intended for experimentation with build system
 interactions.}
 
-A mapper may be specified with the @option{-fmodule-mapper=@var{val}}
+You can specify a mapper with the @option{-fmodule-mapper=@var{val}}
 option or @env{CXX_MODULE_MAPPER} environment variable.  The value may
 have one of the following forms:
 
@@ -32820,13 +32819,13 @@ server implementation embedded in @command{make} was described in
 @cindex C++ Module Preprocessing
 
 Modules affect preprocessing because of header units and include
-translation.  Some uses of the preprocessor as a separate step will
-either not produce a correct output, or require CMIs to be available.
+translation.  Some uses of the preprocessor as a separate step either
+do not produce a correct output, or require CMIs to be available.
 
 Header units import macros.  These macros can affect later conditional
 inclusion, which therefore can cascade to differing import sets.  When
 preprocessing, it is necessary to load the CMI.  If a header unit is
-unavailable, the preprocessor will issue a warning and continue (when
+unavailable, the preprocessor issues a warning and continue (when
 not just preprocessing, an error is emitted).  Detecting such imports
 requires preprocessor tokenization of the input stream to phase 4
 (macro expansion).
@@ -32845,11 +32844,10 @@ requires full preprocessing (or compilation).
 The @option{-M}, @option{-MM} and @option{-E -fdirectives-only} options halt
 preprocessing before phase 4.
 
-The @option{-save-temps} option will use @option{-fdirectives-only}
-for preprocessing, and preserve the macro definitions in the
-preprocessed output.  Usually you will also want to use this option
-when explicitly preprocessing a header-unit, or consuming such
-preprocessed output:
+The @option{-save-temps} option uses @option{-fdirectives-only} for
+preprocessing, and preserve the macro definitions in the preprocessed
+output.  Usually you also want to use this option when explicitly
+preprocessing a header-unit, or consuming such preprocessed output:
 
 @smallexample
 g++ -fmodules-ts -E -fdirectives-only my-header.hh -o my-header.ii
