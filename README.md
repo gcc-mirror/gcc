@@ -1,4 +1,6 @@
 ![C/C++ CI](https://github.com/philberty/gccrs/workflows/C/C++%20CI/badge.svg)
+![Docker Build](https://img.shields.io/docker/cloud/build/philberty/gccrs)
+![Docker Pulls](https://img.shields.io/docker/pulls/philberty/gccrs)
 # GCC Rust
 
 This is a full alternative implementaion of the Rust language ontop of GCC.
