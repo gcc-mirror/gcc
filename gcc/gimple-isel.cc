@@ -273,6 +273,8 @@ gimple_expand_vec_exprs (void)
 	    }
 
 	  gimple_expand_vec_set_expr (&gsi);
+	  if (gsi_end_p (gsi))
+	    break;
 	}
     }
 
