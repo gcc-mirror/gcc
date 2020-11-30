@@ -16,7 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
+// { dg-timeout-factor 2 }
 
 #include <regex>
 

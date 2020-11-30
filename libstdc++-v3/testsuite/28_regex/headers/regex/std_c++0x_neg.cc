@@ -1,5 +1,6 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++98" }
+// { dg-do compile { target c++98_only } }
+// { dg-timeout-factor 2 }
 
 // Copyright (C) 2007-2020 Free Software Foundation, Inc.
 //

@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-timeout-factor 2 }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
