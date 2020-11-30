@@ -412,22 +412,24 @@ gfc_post_options (const char **pfilename)
   else if (!flag_automatic && flag_recursive)
     gfc_warning_now (OPT_Woverwrite_recursive, "Flag %<-fno-automatic%> "
 		     "overwrites %<-frecursive%>");
-  else if (!flag_automatic && flag_openmp)
-    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
-		     "%<-fopenmp%>");
+  else if (!flag_automatic && (flag_openmp || flag_openacc))
+    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%> "
+		     "implied by %qs", flag_openmp ? "-fopenmp" : "-fopenacc");
   else if (flag_max_stack_var_size != -2 && flag_recursive)
     gfc_warning_now (0, "Flag %<-frecursive%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
-  else if (flag_max_stack_var_size != -2 && flag_openmp)
-    gfc_warning_now (0, "Flag %<-fmax-stack-var-size=%d%> overwrites %<-frecursive%> "
-		     "implied by %<-fopenmp%>", flag_max_stack_var_size);
+  else if (flag_max_stack_var_size != -2 && (flag_openmp || flag_openacc))
+    gfc_warning_now (0, "Flag %<-fmax-stack-var-size=%d%> overwrites "
+		     "%<-frecursive%> implied by %qs", flag_max_stack_var_size,
+		     flag_openmp ? "-fopenmp" : "-fopenacc");
 
   /* Implement -frecursive as -fmax-stack-var-size=-1.  */
   if (flag_recursive)
     flag_max_stack_var_size = -1;
 
   /* Implied -frecursive; implemented as -fmax-stack-var-size=-1.  */
-  if (flag_max_stack_var_size == -2 && flag_openmp && flag_automatic)
+  if (flag_max_stack_var_size == -2 && flag_automatic
+      && (flag_openmp || flag_openacc))
     {
       flag_recursive = 1;
       flag_max_stack_var_size = -1;

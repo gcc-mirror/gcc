@@ -6967,8 +6967,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   gfc_init_block (&cleanup);
 
   /* Reset recursion-check variable.  */
-  if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION)
-      && !is_recursive && !flag_openmp && recurcheckvar != NULL_TREE)
+  if (recurcheckvar != NULL_TREE)
     {
       gfc_add_modify (&cleanup, recurcheckvar, logical_false_node);
       recurcheckvar = NULL;
