@@ -1683,7 +1683,10 @@ symtab_node::set_section_for_node (const symtab_node &other)
   if (other.x_section)
     x_section = retain_section_hash_entry (other.x_section);
   else
-    x_section = NULL;
+    {
+      x_section = NULL;
+      implicit_section = false;
+    }
 }
 
 /* Workers for set_section.  */
