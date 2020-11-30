@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// { dg-timeout-factor 2 }
 
 #include <regex>
 #include <testsuite_hooks.h>

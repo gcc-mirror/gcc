@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
+// { dg-timeout-factor 2 }
 
 #include <regex>
 #include <testsuite_hooks.h>
