@@ -2495,7 +2495,7 @@ package Sem_Util is
    --  entity E. If no such instance exits, return Empty.
 
    function Needs_Finalization (Typ : Entity_Id) return Boolean;
-   --  Determine whether type Typ is controlled and this requires finalization
+   --  Determine whether type Typ is controlled and thus requires finalization
    --  actions.
 
    function Needs_One_Actual (E : Entity_Id) return Boolean;
