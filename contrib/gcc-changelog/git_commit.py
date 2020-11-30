@@ -138,7 +138,8 @@ ignored_prefixes = {
 
 wildcard_prefixes = {
     'gcc/testsuite/',
-    'libstdc++-v3/doc/html/'
+    'libstdc++-v3/doc/html/',
+    'libstdc++-v3/testsuite/'
     }
 
 misc_files = {
