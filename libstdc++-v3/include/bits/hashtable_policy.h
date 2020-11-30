@@ -1217,6 +1217,15 @@ namespace __detail
 	return _M_hash()(__k);
       }
 
+      template<typename _Kt>
+	__hash_code
+	_M_hash_code_tr(const _Kt& __k) const
+	{
+	  static_assert(__is_invocable<const _Hash&, const _Kt&>{},
+	    "hash function must be invocable with an argument of key type");
+	  return _M_hash()(__k);
+	}
+
       std::size_t
       _M_bucket_index(__hash_code __c, std::size_t __bkt_count) const
       { return _RangeHash{}(__c, __bkt_count); }
@@ -1604,6 +1613,19 @@ namespace __detail
 	  "key type");
 	return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
       }
+
+      template<typename _Kt>
+	bool
+	_M_equals_tr(const _Kt& __k, __hash_code __c,
+		     const _Hash_node_value<_Value,
+					    __hash_cached::value>& __n) const
+	{
+	  static_assert(
+	    __is_invocable<const _Equal&, const _Kt&, const _Key&>{},
+	    "key equality predicate must be invocable with two arguments of "
+	    "key type");
+	  return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
+	}
 
       bool
       _M_node_equals(
