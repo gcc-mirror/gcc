@@ -279,6 +279,12 @@ Session::init ()
 
   // derived values from hook
   options.target_data.init_derived_values ();
+
+  // setup singleton linemap
+  linemap = rust_get_linemap ();
+
+  // setup backend to GCC GIMPLE
+  backend = rust_get_backend ();
 }
 
 /* Initialise default options. Actually called before handle_option, unlike init
@@ -416,12 +422,10 @@ Session::parse_file (const char *filename)
       rust_fatal_error (Location (), "cannot open filename %s: %m", filename);
     }
 
-  Backend *backend = rust_get_backend ();
-
   // parse file here
   /* create lexer and parser - these are file-specific and so aren't instance
    * variables */
-  Lexer lex (filename, std::move (file_wrap), rust_get_linemap ());
+  Lexer lex (filename, std::move (file_wrap), linemap);
   Parser<Lexer> parser (std::move (lex));
 
   // generate crate from parser
