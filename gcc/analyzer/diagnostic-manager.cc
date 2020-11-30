@@ -665,7 +665,14 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 
   emission_path.prepare_for_emission (sd.m_d);
 
-  gcc_rich_location rich_loc (get_stmt_location (stmt, sd.m_snode->m_fun));
+  location_t loc = get_stmt_location (stmt, sd.m_snode->m_fun);
+
+  /* Allow the pending_diagnostic to fix up the primary location
+     and any locations for events.  */
+  loc = sd.m_d->fixup_location (loc);
+  emission_path.fixup_locations (sd.m_d);
+
+  gcc_rich_location rich_loc (loc);
   rich_loc.set_path (&emission_path);
 
   auto_diagnostic_group d;

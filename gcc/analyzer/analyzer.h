@@ -189,6 +189,15 @@ private:
 
 extern location_t get_stmt_location (const gimple *stmt, function *fun);
 
+/* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
+
+class plugin_analyzer_init_iface
+{
+public:
+  virtual void register_state_machine (state_machine *) = 0;
+  virtual logger *get_logger () const = 0;
+};
+
 } // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,
@@ -308,5 +317,9 @@ private:
 #if __GNUC__ >= 10
 #pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
+
+#if !ENABLE_ANALYZER
+extern void sorry_no_analyzer ();
+#endif /* #if !ENABLE_ANALYZER */
 
 #endif /* GCC_ANALYZER_ANALYZER_H */

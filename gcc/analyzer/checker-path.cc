@@ -982,6 +982,15 @@ checker_path::add_final_event (const state_machine *sm,
   add_event (end_of_path);
 }
 
+void
+checker_path::fixup_locations (pending_diagnostic *pd)
+{
+  checker_event *e;
+  int i;
+  FOR_EACH_VEC_ELT (m_events, i, e)
+    e->set_location (pd->fixup_location (e->get_location ()));
+}
+
 } // namespace ana
 
 #endif /* #if ENABLE_ANALYZER */
