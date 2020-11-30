@@ -79,10 +79,11 @@ $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
 Please be aware this project is designed to be pushed upstream to GCC when we reach some milestones and this means we require
 contribtions to have copyright assignment in place. Please see: https://gcc.gnu.org/contribute.html
 
-Not all contributions must be code we would love to see new test cases or bugs and issues to be reported. Feel free to add any comments on open PRs
+Not all contributions must be code, we would love to see new test cases or bugs and issues to be reported. Feel free to add any comments on open PRs
 
-We can be found on:
+## Community
 
- * Rust-lang Zulip: https://rust-lang.zulipchat.com/
- * GNU toolchain discord: 
- * Mailing list: TODO
+We can be found on all usual Rust channels such as Zulip but we also have our own channels:
+
+ * GCC Rust Zulip: https://gcc-rust.zulipchat.com/
+ * Twitter: comming-soon
