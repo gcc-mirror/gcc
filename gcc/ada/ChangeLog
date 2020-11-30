@@ -1,3 +1,9 @@
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR ada/97504
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <hppa*-*-hpux*>: Use wraplf
+	version of Aux_Long_Long_Float.
+
 2020-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/s-valuef.adb (Integer_To_Fixed): Take into account the

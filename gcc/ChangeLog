@@ -1,3 +1,64 @@
+2020-11-29  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (ipa_merge_modref_summary_after_inlining): Fix
+	handling of ignore_stores.
+
+2020-11-29  Jan Hubicka  <jh@suse.cz>
+
+	PR jit/97867
+	* symtab-thunks.h (thunk_info::release): Use ggc_delete.
+
+2020-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92936
+	PR middle-end/92940
+	PR middle-end/89428
+	* builtins.c (access_ref::access_ref): Initialize member.
+	(access_ref::phi): New function.
+	(access_ref::get_ref): New function.
+	(access_ref::add_offset): Remove duplicate assignment.
+	(maybe_warn_for_bound): Add "maybe" kind of warning messages.
+	(warn_for_access): Same.
+	(inform_access): Rename...
+	(access_ref::inform_access): ...to this.  Print PHI arguments.  Format
+	offset the same as size and simplify.  Improve printing of allocation
+	functions and VLAs.
+	(check_access): Adjust to the above.
+	(gimple_parm_array_size): Change argument.
+	(handle_min_max_size): New function.
+	* builtins.h (class ssa_name_limit_t): Move class here from
+	tree-ssa-strlen.c.
+	(struct access_ref): Declare new members.
+	(gimple_parm_array_size): Change argument.
+	* tree-ssa-strlen.c (maybe_warn_overflow): Use access_ref and simplify.
+	(handle_builtin_memcpy): Correct argument passed to maybe_warn_overflow.
+	(handle_builtin_memset): Same.
+	(class ssa_name_limit_t): Move class to builtins.{h,c}.
+
+2020-11-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-darwin*): Set d_target_objs and target_has_targetdm.
+	* config/elfos.h (TARGET_D_MINFO_SECTION): New macro.
+	(TARGET_D_MINFO_START_NAME): New macro.
+	(TARGET_D_MINFO_END_NAME): New macro.
+	* config/t-darwin: Add darwin-d.o.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (D language and ABI): Add @hook for
+	TARGET_D_MINFO_SECTION, TARGET_D_MINFO_START_NAME, and
+	TARGET_D_MINFO_END_NAME.
+	* config/darwin-d.c: New file.
+
+2020-11-29  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-structalias.c (handle_pure_call): Skip EAF_UNUSED
+	 parameters.
+
+2020-11-29  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_lattice::merge): Do nothing if F is EAF_UNUSED.
+	(analyze_parms): Detect unused params.
+	(modref_merge_call_site_flags): Merge correct EAF_UNUSED.
+
 2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/97939

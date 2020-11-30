@@ -1,3 +1,38 @@
+2020-11-29  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pr98017.f90: New test.
+
+2020-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92936
+	PR middle-end/92940
+	PR middle-end/89428
+	* c-c++-common/Wstringop-overflow-2.c: Adjust text of expected
+	informational notes.
+	* g++.dg/warn/Wstringop-overflow-3.C: Same.
+	* g++.dg/warn/Wplacement-new-size.C: Remove a test for a no longer
+	issued warning.
+	* gcc.dg/Warray-bounds-43.c: Removed unused declarations.
+	* gcc.dg/Wstringop-overflow-11.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-12.c: Same.
+	* gcc.dg/Wstringop-overflow-17.c: Adjust text of expected messages.
+	* gcc.dg/Wstringop-overflow-27.c: Same.  Remove xfails.
+	* gcc.dg/Wstringop-overflow-28.c: Adjust text of expected messages.
+	* gcc.dg/Wstringop-overflow-29.c: Same.
+	* gcc.dg/Wstringop-overflow-37.c: Same.
+	* gcc.dg/Wstringop-overflow-46.c: Same.
+	* gcc.dg/Wstringop-overflow-47.c: Same.
+	* gcc.dg/Wstringop-overflow-54.c: Same.
+	* gcc.dg/warn-strnlen-no-nul.c: Add expected warning.
+	* gcc.dg/Wstringop-overflow-7.c: New test.
+	* gcc.dg/Wstringop-overflow-58.c: New test.
+	* gcc.dg/Wstringop-overflow-59.c: New test.
+	* gcc.dg/Wstringop-overflow-60.c: New test.
+	* gcc.dg/Wstringop-overflow-61.c: New test.
+	* gcc.dg/Wstringop-overflow-62.c: New test.
+	* gcc.dg/Wstringop-overflow-63.c: New test.
+	* gcc.dg/Wstringop-overflow-64.c: New test.
+
 2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/overflow-6.c: New test.

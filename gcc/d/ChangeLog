@@ -1,3 +1,16 @@
+2020-11-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.def (d_minfo_section): New hook.
+	(d_minfo_start_name): New hook.
+	(d_minfo_end_name): New hook.
+	* modules.cc: Include d-target.h.
+	(register_moduleinfo): Update to use new targetdm hooks.
+
+2020-11-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87788
+	* dmd/MERGE: Merge upsream dmd 45fa6cfd2.
+
 2020-11-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd db0df3f7e.
