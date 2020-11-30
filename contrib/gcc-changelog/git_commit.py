@@ -560,7 +560,7 @@ class GitCommit:
         mentioned_patterns = []
         used_patterns = set()
         for entry in self.changelog_entries:
-            if not entry.files:
+            if not entry.files and not entry.file_patterns:
                 msg = 'no files mentioned for ChangeLog in directory'
                 self.errors.append(Error(msg, entry.folder))
             assert not entry.folder.endswith('/')
