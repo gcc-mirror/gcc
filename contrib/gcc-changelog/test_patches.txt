@@ -3320,3 +3320,27 @@ index 7c9d492f6a4..37e73348cb7 100644
 -- 
 2.25.1
 
+=== 0001-Wildcard-subdirs.patch ===
+From b798205595426c53eb362065f6ed6c320dcc161d Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 30 Nov 2020 13:27:51 +0100
+Subject: [PATCH] Fix it.
+
+libstdc++-v3/ChangeLog:
+
+	* testsuite/28_regex/*: Fix them all.
+	* testsuite/28_regex_not-existing/*: Fix them all.
+---
+ contrib/gcc-changelog/git_commit.py          | 1 +
+ libstdc++-v3/testsuite/28_regex/init-list.cc | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/libstdc++-v3/testsuite/28_regex/init-list.cc b/libstdc++-v3/testsuite/28_regex/init-list.cc
+index f51453f019a..d10ecf483f4 100644
+--- a/libstdc++-v3/testsuite/28_regex/init-list.cc
++++ b/libstdc++-v3/testsuite/28_regex/init-list.cc
+@@ -1 +1,2 @@
+ 
++
+--
+2.29.2

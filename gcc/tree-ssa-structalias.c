@@ -4274,6 +4274,11 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
     {
       tree arg = gimple_call_arg (stmt, i);
+      int flags = gimple_call_arg_flags (stmt, i);
+
+      /* If the argument is not used we can ignore it.  */
+      if (flags & EAF_UNUSED)
+	continue;
       if (!uses)
 	{
 	  uses = get_call_use_vi (stmt);

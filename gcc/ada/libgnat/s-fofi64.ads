@@ -43,7 +43,8 @@ package System.Fore_Fixed_64 is
 
    package Impl is new Fore_F (Int64, Arith_64.Scaled_Divide64);
 
-   function Fore_Fixed64 (Lo, Hi, Num, Den : Int64) return Natural
+   function Fore_Fixed64
+     (Lo, Hi, Num, Den : Int64; Scale : Integer) return Natural
      renames Impl.Fore_Fixed;
 
 end System.Fore_Fixed_64;

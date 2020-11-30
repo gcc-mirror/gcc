@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 19, 2020
+GNAT User's Guide for Native Platforms , Nov 20, 2020
 
 AdaCore
 
@@ -2969,6 +2969,10 @@ convention because they pass information to @code{gcc} via
 temporary files that are immediately deleted; it doesn't make sense to
 depend on a file that no longer exists. Such tools include
 @code{gprbuild}, @code{gnatmake}, and @code{gnatcheck}.
+
+By default, configuration pragma files are stored by their absolute paths in
+ALI files. You can use the @code{-gnateb} switch in order to store them by
+their basename instead.
 
 If you are using project file, a separate mechanism is provided using
 project attributes.
@@ -8966,6 +8970,19 @@ In the example above, the first call to @code{Detect_Aliasing} fails with a
 @code{Val_2} denote the same object. The second call executes without raising
 an exception because @code{Self(Obj)} produces an anonymous object which does
 not share the memory location of @code{Obj}.
+@end table
+
+@geindex -gnateb (gcc)
+
+
+@table @asis
+
+@item @code{-gnateb}
+
+Store configuration files by their basename in ALI files. This switch is
+used for instance by gprbuild for distributed builds in order to prevent
+issues where machine-specific absolute paths could end up being stored in
+ALI files.
 @end table
 
 @geindex -gnatec (gcc)
@@ -15919,6 +15936,9 @@ Exclude source files (check object consistency only).
 Use the target-independent XDR protocol for stream oriented attributes
 instead of the default implementation which is based on direct binary
 representations and is therefore target-and endianness-dependent.
+However it does not support 128-bit integer types and the exception
+@code{Ada.IO_Exceptions.Device_Error} is raised if any attempt is made
+at streaming 128-bit integer types with it.
 
 @geindex -Xnnn (gnatbind)
 

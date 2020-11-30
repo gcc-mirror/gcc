@@ -1,3 +1,9 @@
+2020-11-27  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/97602
+	* directives.c (strtolinenum): Check for overflow before it
+	occurs.  Correct comment.
+
 2020-11-24  Nathan Sidwell  <nathan@acm.org>
 
 	* include/cpplib.h (struct cpp_hashnode): Add deferred field.

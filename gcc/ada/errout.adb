@@ -337,7 +337,7 @@ package body Errout is
    begin
       --  Return if all errors are to be ignored
 
-      if Errors_Must_Be_Ignored then
+      if Get_Ignore_Errors then
          return;
       end if;
 
@@ -1430,7 +1430,9 @@ package body Errout is
          Last_Killed := True;
       end if;
 
-      Set_Posted (N);
+      if not Get_Ignore_Errors then
+         Set_Posted (N);
+      end if;
    end Error_Msg_NEL;
 
    ------------------

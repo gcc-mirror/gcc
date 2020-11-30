@@ -43,7 +43,8 @@ package System.Fore_Fixed_32 is
 
    package Impl is new Fore_F (Int32, Arith_32.Scaled_Divide32);
 
-   function Fore_Fixed32 (Lo, Hi, Num, Den : Int32) return Natural
+   function Fore_Fixed32
+     (Lo, Hi, Num, Den : Int32; Scale : Integer) return Natural
      renames Impl.Fore_Fixed;
 
 end System.Fore_Fixed_32;

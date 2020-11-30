@@ -1,3 +1,8 @@
+2020-11-27  Martin Sebor  <msebor@redhat.com>
+
+	* error.c (add_quotes): Revert previous change and use pragma to
+	suppress -Wformat-diag.
+
 2020-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++spec.c (TIMELIB, TIME_LIBRARY): Remove.

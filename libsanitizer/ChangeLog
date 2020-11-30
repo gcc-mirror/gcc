@@ -1,3 +1,7 @@
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* LOCAL_PATCHES: Add one commit.

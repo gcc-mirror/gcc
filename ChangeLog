@@ -1,3 +1,14 @@
+2020-11-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87788
+	* configure.ac: Don't disable D for *-*-darwin*.
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* libtool.m4 (archive_cmds): Add +nodefaultrpath ld option on
+	hppa64-*-hpux11*.
+
 2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* configure: Regenerate.

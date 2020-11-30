@@ -10397,7 +10397,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       if test "$GCC" = yes && test "$with_gnu_ld" = no; then
 	case $host_cpu in
 	hppa*64*)
-	  archive_cmds='$CC -shared ${wl}+h ${wl}$soname -o $lib $libobjs $deplibs $compiler_flags'
+	  archive_cmds='$CC -shared ${wl}+h ${wl}$soname ${wl}+nodefaultrpath -o $lib $libobjs $deplibs $compiler_flags'
 	  ;;
 	ia64*)
 	  archive_cmds='$CC -shared -fPIC ${wl}+h ${wl}$soname ${wl}+nodefaultrpath -o $lib $libobjs $deplibs $compiler_flags'
@@ -10409,7 +10409,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       else
 	case $host_cpu in
 	hppa*64*)
-	  archive_cmds='$CC -b ${wl}+h ${wl}$soname -o $lib $libobjs $deplibs $compiler_flags'
+	  archive_cmds='$CC -b ${wl}+h ${wl}$soname ${wl}+nodefaultrpath -o $lib $libobjs $deplibs $compiler_flags'
 	  ;;
 	ia64*)
 	  archive_cmds='$CC -b ${wl}+h ${wl}$soname ${wl}+nodefaultrpath -o $lib $libobjs $deplibs $compiler_flags'
@@ -13268,7 +13268,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
           aCC*)
 	    case $host_cpu in
 	      hppa*64*)
-	        archive_cmds_CXX='$CC -b ${wl}+h ${wl}$soname -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
+	        archive_cmds_CXX='$CC -b ${wl}+h ${wl}$soname ${wl}+nodefaultrpath -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
 	        ;;
 	      ia64*)
 	        archive_cmds_CXX='$CC -b ${wl}+h ${wl}$soname ${wl}+nodefaultrpath -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
@@ -13292,7 +13292,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	      if test $with_gnu_ld = no; then
 	        case $host_cpu in
 	          hppa*64*)
-	            archive_cmds_CXX='$CC -shared -nostdlib -fPIC ${wl}+h ${wl}$soname -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
+	            archive_cmds_CXX='$CC -shared -nostdlib -fPIC ${wl}+h ${wl}$soname ${wl}+nodefaultrpath -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'
 	            ;;
 	          ia64*)
 	            archive_cmds_CXX='$CC -shared -nostdlib -fPIC ${wl}+h ${wl}$soname ${wl}+nodefaultrpath -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags'

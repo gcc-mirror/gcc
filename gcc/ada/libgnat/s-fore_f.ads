@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routine used for the Fore attribute of ordinary
---  fixed point types whose Small is an integer or its reciprocal.
+--  fixed point types whose Small is the ratio of two Int values.
 
 generic
 
@@ -44,8 +44,11 @@ generic
 package System.Fore_F is
    pragma Pure;
 
-   function Fore_Fixed (Lo, Hi, Num, Den : Int) return Natural;
-   --  Compute Fore attribute value for an ordinary fixed point type with small
-   --  Num/Den. The parameters are the low and high bounds (in units of small).
+   function Fore_Fixed
+     (Lo, Hi, Num, Den : Int; Scale : Integer) return Natural;
+   --  Compute Fore attribute value for an ordinary fixed point type. The
+   --  parameters are the low and high bounds (in units of small), the small
+   --  Num/Den and the associated scale, which is the smallest integer N such
+   --  that 10**N * (Num/Den) is greater or equal to 1, if it is nonpositive.
 
 end System.Fore_F;

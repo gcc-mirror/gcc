@@ -13,7 +13,7 @@ void sink (void*);
 
 void call_copy_n (const char *s)
 {
-  char a[7];        // { dg-message "declared here" }
+  char a[7];        // { dg-message "at offset 7 into destination object 'a'" }
   copy_n (a, "1234567", 7);
   sink (a);
 }

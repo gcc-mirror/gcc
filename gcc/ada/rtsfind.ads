@@ -1869,6 +1869,8 @@ package Rtsfind is
      RE_I_LI,                            -- System.Stream_Attributes
      RE_I_LLF,                           -- System.Stream_Attributes
      RE_I_LLI,                           -- System.Stream_Attributes
+     RE_I_LLLI,                          -- System.Stream_Attributes
+     RE_I_LLLU,                          -- System.Stream_Attributes
      RE_I_LLU,                           -- System.Stream_Attributes
      RE_I_LU,                            -- System.Stream_Attributes
      RE_I_SF,                            -- System.Stream_Attributes
@@ -1892,6 +1894,8 @@ package Rtsfind is
      RE_W_LI,                            -- System.Stream_Attributes
      RE_W_LLF,                           -- System.Stream_Attributes
      RE_W_LLI,                           -- System.Stream_Attributes
+     RE_W_LLLI,                          -- System.Stream_Attributes
+     RE_W_LLLU,                          -- System.Stream_Attributes
      RE_W_LLU,                           -- System.Stream_Attributes
      RE_W_LU,                            -- System.Stream_Attributes
      RE_W_SF,                            -- System.Stream_Attributes
@@ -3550,6 +3554,8 @@ package Rtsfind is
      RE_I_LI                             => System_Stream_Attributes,
      RE_I_LLF                            => System_Stream_Attributes,
      RE_I_LLI                            => System_Stream_Attributes,
+     RE_I_LLLI                           => System_Stream_Attributes,
+     RE_I_LLLU                           => System_Stream_Attributes,
      RE_I_LLU                            => System_Stream_Attributes,
      RE_I_LU                             => System_Stream_Attributes,
      RE_I_SF                             => System_Stream_Attributes,
@@ -3573,6 +3579,8 @@ package Rtsfind is
      RE_W_LI                             => System_Stream_Attributes,
      RE_W_LLF                            => System_Stream_Attributes,
      RE_W_LLI                            => System_Stream_Attributes,
+     RE_W_LLLI                           => System_Stream_Attributes,
+     RE_W_LLLU                           => System_Stream_Attributes,
      RE_W_LLU                            => System_Stream_Attributes,
      RE_W_LU                             => System_Stream_Attributes,
      RE_W_SF                             => System_Stream_Attributes,

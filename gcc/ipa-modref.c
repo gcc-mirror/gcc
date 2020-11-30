@@ -1437,6 +1437,8 @@ modref_lattice::add_escape_point (gcall *call, int arg, int min_flags,
 bool
 modref_lattice::merge (int f)
 {
+  if (f & EAF_UNUSED)
+    return false;
   if ((flags & f) != flags)
     {
       flags &= f;
@@ -1825,8 +1827,26 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
        parm = TREE_CHAIN (parm))
     {
       tree name = ssa_default_def (cfun, parm);
-      if (!name)
-	continue;
+      if (!name || has_zero_uses (name))
+	{
+	  /* We do not track non-SSA parameters,
+	     but we want to track unused gimple_regs.  */
+	  if (!is_gimple_reg (parm))
+	    continue;
+	  if (summary)
+	    {
+	      if (parm_index >= summary->arg_flags.length ())
+		summary->arg_flags.safe_grow_cleared (count, true);
+	      summary->arg_flags[parm_index] = EAF_UNUSED;
+	    }
+	  else if (summary_lto)
+	    {
+	      if (parm_index >= summary_lto->arg_flags.length ())
+		summary_lto->arg_flags.safe_grow_cleared (count, true);
+	      summary_lto->arg_flags[parm_index] = EAF_UNUSED;
+	    }
+	  continue;
+	}
       analyze_ssa_name_flags (name, lattice, 0, ipa);
       int flags = lattice[SSA_NAME_VERSION (name)].flags;
 
@@ -3044,14 +3064,14 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     {
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info->loads->collapse ();
-      if (ignore_stores)
+      if (!ignore_stores)
 	to_info->stores->collapse ();
     }
   if (!callee_info_lto && to_info_lto)
     {
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info_lto->loads->collapse ();
-      if (ignore_stores)
+      if (!ignore_stores)
 	to_info_lto->stores->collapse ();
     }
   if (callee_info || callee_info_lto)
@@ -3636,7 +3656,8 @@ modref_merge_call_site_flags (escape_summary *sum,
 	}
       flags |= ee->min_flags;
       flags_lto |= ee->min_flags;
-      if (cur_summary && ee->parm_index < cur_summary->arg_flags.length ())
+      if (!(flags & EAF_UNUSED)
+	  && cur_summary && ee->parm_index < cur_summary->arg_flags.length ())
 	{
 	  int f = cur_summary->arg_flags[ee->parm_index];
 	  if ((f & flags) != f)
@@ -3648,7 +3669,8 @@ modref_merge_call_site_flags (escape_summary *sum,
 	      changed = true;
 	    }
 	}
-      if (cur_summary_lto
+      if (!(flags_lto & EAF_UNUSED)
+	  && cur_summary_lto
 	  && ee->parm_index < cur_summary_lto->arg_flags.length ())
 	{
 	  int f = cur_summary_lto->arg_flags[ee->parm_index];

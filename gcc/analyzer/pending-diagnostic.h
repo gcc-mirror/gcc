@@ -175,6 +175,14 @@ class pending_diagnostic
      diagnostic deduplication.  */
   static bool same_tree_p (tree t1, tree t2);
 
+  /* A vfunc for fixing up locations (both the primary location for the
+     diagnostic, and for events in their paths), e.g. to avoid unwinding
+     inside specific macros.  */
+  virtual location_t fixup_location (location_t loc) const
+  {
+    return loc;
+  }
+
   /* For greatest precision-of-wording, the various following "describe_*"
      virtual functions give the pending diagnostic a way to describe events
      in a diagnostic_path in terms that make sense for that diagnostic.

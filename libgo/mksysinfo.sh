@@ -194,6 +194,7 @@ fi
 
 # Networking constants.
 egrep '^const _(AF|ARPHRD|ETH|IN|SOCK|SOL|SO|IPPROTO|TCP|IP|IPV6)_' gen-sysinfo.go |
+  grep -v '_val =' |
   sed -e 's/^\(const \)_\([^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _SOMAXCONN' gen-sysinfo.go |
   sed -e 's/^\(const \)_\(SOMAXCONN[^= ]*\)\(.*\)$/\1\2 = _\2/' \
@@ -212,6 +213,14 @@ for m in SOCK_CLOEXEC SOCK_NONBLOCK; do
     echo "const $m = -1" >> ${OUT}
   fi
 done
+
+# On 32-bit GNU/Linux the expression for SO_RCVTIMEO is too complicated
+# for -fdump-go-spec.
+if ! grep '^const SO_RCVTIMEO ' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _SO_RCVTIMEO_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const SO_RCVTIMEO = _SO_RCVTIMEO_val' >> ${OUT}
+  fi
+fi
 
 # The syscall package requires AF_LOCAL.
 if ! grep '^const AF_LOCAL ' ${OUT} >/dev/null 2>&1; then

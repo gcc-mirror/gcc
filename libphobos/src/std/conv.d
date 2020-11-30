@@ -1629,6 +1629,8 @@ private void testIntegralToFloating(Integral, Floating)()
 
 private void testFloatingToIntegral(Floating, Integral)()
 {
+    import std.math : floatTraits, RealFormat;
+
     bool convFails(Source, Target, E)(Source src)
     {
         try
@@ -1660,18 +1662,23 @@ private void testFloatingToIntegral(Floating, Integral)()
     {
         a = -a; // -Integral.min not representable as an Integral
         assert(convFails!(Floating, Integral, ConvOverflowException)(a)
-                || Floating.sizeof <= Integral.sizeof);
+                || Floating.sizeof <= Integral.sizeof
+                || floatTraits!Floating.realFormat == RealFormat.ieeeExtended53);
     }
     a = 0.0 + Integral.min;
     assert(to!Integral(a) == Integral.min);
     --a; // no more representable as an Integral
     assert(convFails!(Floating, Integral, ConvOverflowException)(a)
-            || Floating.sizeof <= Integral.sizeof);
+            || Floating.sizeof <= Integral.sizeof
+            || floatTraits!Floating.realFormat == RealFormat.ieeeExtended53);
     a = 0.0 + Integral.max;
-    assert(to!Integral(a) == Integral.max || Floating.sizeof <= Integral.sizeof);
+    assert(to!Integral(a) == Integral.max
+            || Floating.sizeof <= Integral.sizeof
+            || floatTraits!Floating.realFormat == RealFormat.ieeeExtended53);
     ++a; // no more representable as an Integral
     assert(convFails!(Floating, Integral, ConvOverflowException)(a)
-            || Floating.sizeof <= Integral.sizeof);
+            || Floating.sizeof <= Integral.sizeof
+            || floatTraits!Floating.realFormat == RealFormat.ieeeExtended53);
     // convert a value with a fractional part
     a = 3.14;
     assert(to!Integral(a) == 3);
@@ -3016,7 +3023,9 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
 @system unittest
 {
     // @system because strtod is not @safe.
-    static if (real.mant_dig == 53)
+    import std.math : floatTraits, RealFormat;
+
+    static if (floatTraits!real.realFormat == RealFormat.ieeeDouble)
     {
         import core.stdc.stdlib, std.exception, std.math;
 
@@ -3099,7 +3108,8 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         {
             ushort[8] value;
         }
-        else static if (floatTraits!real.realFormat == RealFormat.ieeeExtended)
+        else static if (floatTraits!real.realFormat == RealFormat.ieeeExtended ||
+                        floatTraits!real.realFormat == RealFormat.ieeeExtended53)
         {
             ushort[5] value;
         }
@@ -3122,6 +3132,8 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         enum s = "0x1.FFFFFFFFFFFFFFFEp-16382";
     else static if (floatTraits!real.realFormat == RealFormat.ieeeExtended)
         enum s = "0x1.FFFFFFFFFFFFFFFEp-16382";
+    else static if (floatTraits!real.realFormat == RealFormat.ieeeExtended53)
+        enum s = "0x1.FFFFFFFFFFFFFFFEp-16382";
     else static if (floatTraits!real.realFormat == RealFormat.ieeeDouble)
         enum s = "0x1.FFFFFFFFFFFFFFFEp-1000";
     else
@@ -3141,6 +3153,8 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         else
             ld1 = strtold(s.ptr, null);
     }
+    else static if (floatTraits!real.realFormat == RealFormat.ieeeExtended53)
+        ld1 = 0x1.FFFFFFFFFFFFFFFEp-16382L; // strtold rounds to 53 bits.
     else
         ld1 = strtold(s.ptr, null);
 

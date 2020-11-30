@@ -2183,21 +2183,54 @@ package body Exp_Ch4 is
          then
             return;
          else
-
             Func_Body := Make_Boolean_Array_Op (Etype (L), N);
             Func_Name := Defining_Unit_Name (Specification (Func_Body));
             Insert_Action (N, Func_Body);
 
             --  Now rewrite the expression with a call
 
-            Rewrite (N,
-              Make_Function_Call (Loc,
-                Name                   => New_Occurrence_Of (Func_Name, Loc),
-                Parameter_Associations =>
-                  New_List (
-                    L,
-                    Make_Type_Conversion
-                      (Loc, New_Occurrence_Of (Etype (L), Loc), R))));
+            if Transform_Function_Array then
+               declare
+                  Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'T');
+                  Call    : Node_Id;
+                  Decl    : Node_Id;
+
+               begin
+                  --  Generate:
+                  --    Temp : ...;
+
+                  Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Temp_Id,
+                      Object_Definition   =>
+                        New_Occurrence_Of (Etype (L), Loc));
+
+                  --  Generate:
+                  --    Proc_Call (L, R, Temp);
+
+                  Call :=
+                    Make_Procedure_Call_Statement (Loc,
+                      Name => New_Occurrence_Of (Func_Name, Loc),
+                      Parameter_Associations =>
+                        New_List (
+                          L,
+                          Make_Type_Conversion
+                            (Loc, New_Occurrence_Of (Etype (L), Loc), R),
+                          New_Occurrence_Of (Temp_Id, Loc)));
+
+                  Insert_Actions (Parent (N), New_List (Decl, Call));
+                  Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
+               end;
+            else
+               Rewrite (N,
+                 Make_Function_Call (Loc,
+                   Name => New_Occurrence_Of (Func_Name, Loc),
+                   Parameter_Associations =>
+                     New_List (
+                       L,
+                       Make_Type_Conversion
+                         (Loc, New_Occurrence_Of (Etype (L), Loc), R))));
+            end if;
 
             Analyze_And_Resolve (N, Typ);
          end if;
@@ -5355,6 +5388,24 @@ package body Exp_Ch4 is
 
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
                Analyze_And_Resolve (N, PtrT);
+
+               --  When designated type has Default_Initial_Condition aspects,
+               --  make a call to the type's DIC procedure to perform the
+               --  checks. Theoretically this might also be needed for cases
+               --  where the type doesn't have an init proc, but those should
+               --  be very uncommon, and for now we only support the init proc
+               --  case. ???
+
+               if Has_DIC (Dtyp)
+                 and then Present (DIC_Procedure (Dtyp))
+                 and then not Has_Null_Body (DIC_Procedure (Dtyp))
+               then
+                  Insert_Action (N,
+                                 Build_DIC_Call (Loc,
+                                   Make_Explicit_Dereference (Loc,
+                                     Prefix => New_Occurrence_Of (Temp, Loc)),
+                                 Dtyp));
+               end if;
             end if;
          end if;
       end;
@@ -9998,12 +10049,21 @@ package body Exp_Ch4 is
    --       return B;
    --     end Nnnn;
 
+   --  or in the case of Transform_Function_Array:
+
+   --     procedure Nnnn (A : arr; RESULT : out arr) is
+   --     begin
+   --       for J in a'range loop
+   --          RESULT (J) := not A (J);
+   --       end loop;
+   --     end Nnnn;
+
    --  Here arr is the actual subtype of the parameter (and hence always
-   --  constrained). Then we replace the not with a call to this function.
+   --  constrained). Then we replace the not with a call to this subprogram.
 
    procedure Expand_N_Op_Not (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
-      Typ  : constant Entity_Id  := Etype (N);
+      Typ  : constant Entity_Id  := Etype (Right_Opnd (N));
       Opnd : Node_Id;
       Arr  : Entity_Id;
       A    : Entity_Id;
@@ -10099,7 +10159,13 @@ package body Exp_Ch4 is
       end if;
 
       A := Make_Defining_Identifier (Loc, Name_uA);
-      B := Make_Defining_Identifier (Loc, Name_uB);
+
+      if Transform_Function_Array then
+         B := Make_Defining_Identifier (Loc, Name_UP_RESULT);
+      else
+         B := Make_Defining_Identifier (Loc, Name_uB);
+      end if;
+
       J := Make_Defining_Identifier (Loc, Name_uJ);
 
       A_J :=
@@ -10134,33 +10200,82 @@ package body Exp_Ch4 is
       Func_Name := Make_Temporary (Loc, 'N');
       Set_Is_Inlined (Func_Name);
 
-      Insert_Action (N,
-        Make_Subprogram_Body (Loc,
-          Specification =>
-            Make_Function_Specification (Loc,
-              Defining_Unit_Name => Func_Name,
-              Parameter_Specifications => New_List (
-                Make_Parameter_Specification (Loc,
-                  Defining_Identifier => A,
-                  Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
-              Result_Definition => New_Occurrence_Of (Typ, Loc)),
+      if Transform_Function_Array then
+         Insert_Action (N,
+           Make_Subprogram_Body (Loc,
+             Specification =>
+               Make_Procedure_Specification (Loc,
+                 Defining_Unit_Name => Func_Name,
+                 Parameter_Specifications => New_List (
+                   Make_Parameter_Specification (Loc,
+                     Defining_Identifier => A,
+                     Parameter_Type      => New_Occurrence_Of (Typ, Loc)),
+                   Make_Parameter_Specification (Loc,
+                     Defining_Identifier => B,
+                     Out_Present         => True,
+                     Parameter_Type      => New_Occurrence_Of (Typ, Loc)))),
 
-          Declarations => New_List (
-            Make_Object_Declaration (Loc,
-              Defining_Identifier => B,
-              Object_Definition   => New_Occurrence_Of (Arr, Loc))),
+             Declarations => New_List,
 
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (
-                Loop_Statement,
-                Make_Simple_Return_Statement (Loc,
-                  Expression => Make_Identifier (Loc, Chars (B)))))));
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Loop_Statement))));
 
-      Rewrite (N,
-        Make_Function_Call (Loc,
-          Name                   => New_Occurrence_Of (Func_Name, Loc),
-          Parameter_Associations => New_List (Opnd)));
+         declare
+            Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'T');
+            Call    : Node_Id;
+            Decl    : Node_Id;
+
+         begin
+            --  Generate:
+            --    Temp : ...;
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp_Id,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
+            --  Generate:
+            --    Proc_Call (Opnd, Temp);
+
+            Call :=
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (Func_Name, Loc),
+                Parameter_Associations =>
+                  New_List (Opnd, New_Occurrence_Of (Temp_Id, Loc)));
+
+            Insert_Actions (Parent (N), New_List (Decl, Call));
+            Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
+         end;
+      else
+         Insert_Action (N,
+           Make_Subprogram_Body (Loc,
+             Specification =>
+               Make_Function_Specification (Loc,
+                 Defining_Unit_Name => Func_Name,
+                 Parameter_Specifications => New_List (
+                   Make_Parameter_Specification (Loc,
+                     Defining_Identifier => A,
+                     Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
+                 Result_Definition => New_Occurrence_Of (Typ, Loc)),
+
+             Declarations => New_List (
+               Make_Object_Declaration (Loc,
+                 Defining_Identifier => B,
+                 Object_Definition   => New_Occurrence_Of (Arr, Loc))),
+
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (
+                   Loop_Statement,
+                   Make_Simple_Return_Statement (Loc,
+                     Expression => Make_Identifier (Loc, Chars (B)))))));
+
+         Rewrite (N,
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Func_Name, Loc),
+             Parameter_Associations => New_List (Opnd)));
+      end if;
 
       Analyze_And_Resolve (N, Typ);
    end Expand_N_Op_Not;
@@ -13898,6 +14013,15 @@ package body Exp_Ch4 is
    --       return C;
    --    end Annn;
 
+   --    or in the case of Transform_Function_Array:
+
+   --    procedure Annn (A : typ; B: typ; RESULT: out typ) is
+   --    begin
+   --       for J in A'range loop
+   --          RESULT (J) := A (J) op B (J);
+   --       end loop;
+   --    end Annn;
+
    --  Here typ is the boolean array type
 
    function Make_Boolean_Array_Op
@@ -13908,8 +14032,9 @@ package body Exp_Ch4 is
 
       A : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uA);
       B : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uB);
-      C : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uC);
       J : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uJ);
+
+      C   : Entity_Id;
 
       A_J : Node_Id;
       B_J : Node_Id;
@@ -13922,6 +14047,12 @@ package body Exp_Ch4 is
       Loop_Statement : Node_Id;
 
    begin
+      if Transform_Function_Array then
+         C := Make_Defining_Identifier (Loc, Name_UP_RESULT);
+      else
+         C := Make_Defining_Identifier (Loc, Name_uC);
+      end if;
+
       A_J :=
         Make_Indexed_Component (Loc,
           Prefix      => New_Occurrence_Of (A, Loc),
@@ -13984,28 +14115,52 @@ package body Exp_Ch4 is
           Defining_Identifier => B,
           Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
 
+      if Transform_Function_Array then
+         Append_To (Formals,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier => C,
+             Out_Present         => True,
+             Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
+      end if;
+
       Func_Name := Make_Temporary (Loc, 'A');
       Set_Is_Inlined (Func_Name);
 
-      Func_Body :=
-        Make_Subprogram_Body (Loc,
-          Specification =>
-            Make_Function_Specification (Loc,
-              Defining_Unit_Name       => Func_Name,
-              Parameter_Specifications => Formals,
-              Result_Definition        => New_Occurrence_Of (Typ, Loc)),
+      if Transform_Function_Array then
+         Func_Body :=
+           Make_Subprogram_Body (Loc,
+             Specification =>
+               Make_Procedure_Specification (Loc,
+                 Defining_Unit_Name       => Func_Name,
+                 Parameter_Specifications => Formals),
 
-          Declarations => New_List (
-            Make_Object_Declaration (Loc,
-              Defining_Identifier => C,
-              Object_Definition   => New_Occurrence_Of (Typ, Loc))),
+             Declarations => New_List,
 
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (
-                Loop_Statement,
-                Make_Simple_Return_Statement (Loc,
-                  Expression => New_Occurrence_Of (C, Loc)))));
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Loop_Statement)));
+
+      else
+         Func_Body :=
+           Make_Subprogram_Body (Loc,
+             Specification =>
+               Make_Function_Specification (Loc,
+                 Defining_Unit_Name       => Func_Name,
+                 Parameter_Specifications => Formals,
+                 Result_Definition        => New_Occurrence_Of (Typ, Loc)),
+
+             Declarations => New_List (
+               Make_Object_Declaration (Loc,
+                 Defining_Identifier => C,
+                 Object_Definition   => New_Occurrence_Of (Typ, Loc))),
+
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (
+                   Loop_Statement,
+                   Make_Simple_Return_Statement (Loc,
+                     Expression => New_Occurrence_Of (C, Loc)))));
+      end if;
 
       return Func_Body;
    end Make_Boolean_Array_Op;

@@ -46,8 +46,7 @@
   else
     return "b%k1	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
 }
- [(set_attr "type" "branch")
-   (set_attr "cc" "none")])
+ [(set_attr "type" "branch")])
 
 
 (define_insn "*branch_1_false"
@@ -65,8 +64,7 @@
   else
     return "b%j1	.Lh8BR%=\;jmp	@%l0\\n.Lh8BR%=:";
 }
- [(set_attr "type" "branch")
-   (set_attr "cc" "none")])
+ [(set_attr "type" "branch")])
 
 ;; The brabc/brabs patterns have been disabled because their length computation
 ;; is horribly broken.  When we call out to a function via a SYMBOL_REF we get
@@ -168,8 +166,7 @@
    (set (attr "delay_slot")
 	(if_then_else (match_test "TARGET_H8300SX")
 		      (const_string "jump")
-		      (const_string "none")))
-   (set_attr "cc" "none")])
+		      (const_string "none")))])
 
 ;; This is a define expand, because pointers may be either 16 or 32 bits.
 
@@ -190,8 +187,7 @@
       return "jmp	@%S0";
     abort ();
   }
-  [(set_attr "cc" "none")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 ;; This is a define expand, because pointers may be either 16 or 32 bits.
 
@@ -210,8 +206,7 @@
       return "jmp	@%S0";
     abort ();
   }
-  [(set_attr "cc" "none")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 ;; Call subroutine with no return value.
 

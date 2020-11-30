@@ -357,7 +357,10 @@ package body Exp_SPARK is
       --  procedure for it as done during regular expansion for compilation.
 
       if Has_DIC (E) and then Is_Tagged_Type (E) then
-         Build_DIC_Procedure_Body (E, For_Freeze => True);
+         --  Why is this needed for DIC, but not for other aspects (such as
+         --  Type_Invariant)???
+
+         Build_DIC_Procedure_Body (E);
       end if;
    end Expand_SPARK_N_Freeze_Type;
 
@@ -530,7 +533,7 @@ package body Exp_SPARK is
         and then Present (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
       then
-         Call := Build_DIC_Call (Loc, Obj_Id, Typ);
+         Call := Build_DIC_Call (Loc, New_Occurrence_Of (Obj_Id, Loc), Typ);
 
          --  Partially insert the call into the tree by setting its parent
          --  pointer.

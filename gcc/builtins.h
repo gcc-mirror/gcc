@@ -153,6 +153,42 @@ extern void warn_string_no_nul (location_t, tree, const char *, tree,
 extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
 extern bool builtin_with_linkage_p (tree);
 
+/* Describes recursion limits used by functions that follow use-def
+   chains of SSA_NAMEs.  */
+
+class ssa_name_limit_t
+{
+  bitmap visited;         /* Bitmap of visited SSA_NAMEs.  */
+  unsigned ssa_def_max;   /* Longest chain of SSA_NAMEs to follow.  */
+
+  /* Not copyable or assignable.  */
+  DISABLE_COPY_AND_ASSIGN (ssa_name_limit_t);
+
+public:
+
+  ssa_name_limit_t ()
+    : visited (),
+      ssa_def_max (param_ssa_name_def_chain_limit) { }
+
+  /* Set a bit for the PHI in VISITED and return true if it wasn't
+     already set.  */
+  bool visit_phi (tree);
+  /* Clear a bit for the PHI in VISITED.  */
+  void leave_phi (tree);
+  /* Return false if the SSA_NAME chain length counter has reached
+     the limit, otherwise increment the counter and return true.  */
+  bool next ();
+
+  /* If the SSA_NAME has already been "seen" return a positive value.
+     Otherwise add it to VISITED.  If the SSA_NAME limit has been
+     reached, return a negative value.  Otherwise return zero.  */
+  int next_phi (tree);
+
+  ~ssa_name_limit_t ();
+};
+
+class range_query;
+
 /* Describes a reference to an object used in an access.  */
 struct access_ref
 {
@@ -162,17 +198,12 @@ struct access_ref
      is a constant zero.  */
   access_ref (tree = NULL_TREE, bool = false);
 
-  /* Reference to the accessed object(s).  */
-  tree ref;
+  /* Return the PHI node REF refers to or null if it doesn't.  */
+  gphi *phi () const;
 
-  /* Range of byte offsets into and sizes of the object(s).  */
-  offset_int offrng[2];
-  offset_int sizrng[2];
-  /* Range of the bound of the access: denotes that the access
-     is at least BNDRNG[0] bytes but no more than BNDRNG[1].
-     For string functions the size of the actual access is
-     further constrained by the length of the string.  */
-  offset_int bndrng[2];
+  /* Return the object to which REF refers.  */
+  tree get_ref (vec<access_ref> *, access_ref * = NULL, int = 1,
+		ssa_name_limit_t * = NULL, range_query * = NULL) const;
 
   /* Return true if OFFRNG is the constant zero.  */
   bool offset_zero () const
@@ -211,6 +242,22 @@ struct access_ref
     add_offset (-maxoff - 1, maxoff);
   }
 
+  /* Issue an informational message describing the target of an access
+     with the given mode.  */
+  void inform_access (access_mode) const;
+
+  /* Reference to the accessed object(s).  */
+  tree ref;
+
+  /* Range of byte offsets into and sizes of the object(s).  */
+  offset_int offrng[2];
+  offset_int sizrng[2];
+  /* Range of the bound of the access: denotes that the access
+     is at least BNDRNG[0] bytes but no more than BNDRNG[1].
+     For string functions the size of the actual access is
+     further constrained by the length of the string.  */
+  offset_int bndrng[2];
+
   /* Used to fold integer expressions when called from front ends.  */
   tree (*eval)(tree);
   /* Set if trailing one-element arrays should be treated as flexible
@@ -219,6 +266,9 @@ struct access_ref
   /* Set if valid offsets must start at zero (for declared and allocated
      objects but not for others referenced by pointers).  */
   bool base0;
+  /* Set if REF refers to a function array parameter not declared
+     static.  */
+  bool parmarray;
 };
 
 /* Describes a pair of references used in an access by built-in
@@ -242,10 +292,9 @@ struct access_data
   access_mode mode;
 };
 
-class range_query;
 extern tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
 				    range_query * = NULL);
-extern tree gimple_parm_array_size (tree, wide_int[2], range_query * = NULL);
+extern tree gimple_parm_array_size (tree, wide_int[2], bool * = NULL);
 extern tree compute_objsize (tree, int, access_ref *, range_query * = NULL);
 extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
 			     range_query * = NULL);

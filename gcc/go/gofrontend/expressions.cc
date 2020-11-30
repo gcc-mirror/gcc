@@ -8893,8 +8893,8 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           // We will optimize this to directly zeroing the tail,
           // instead of allocating a new slice then copy.
 
-          // Retrieve the length. Cannot reference s2 as we will remove
-          // the makeslice call.
+          // Retrieve the length and capacity. Cannot reference s2 as
+          // we will remove the makeslice call.
           Expression* len_arg = makecall->args()->at(1);
           len_arg = Expression::make_cast(int_type, len_arg, loc);
           l2tmp = Statement::make_temporary(int_type, len_arg, loc);
@@ -8907,28 +8907,19 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
           inserter->insert(c2tmp);
 
           // Check bad len/cap here.
-          // if len2 < 0 { panicmakeslicelen(); }
+	  // checkmakeslice(type, len, cap)
+	  // (Note that if len and cap are constants, we won't see a
+	  // makeslice call here, as it will be rewritten to a stack
+	  // allocated array by Mark_address_taken::expression.)
+	  Expression* elem = Expression::make_type_descriptor(element_type,
+							      loc);
           len2 = Expression::make_temporary_reference(l2tmp, loc);
-          Expression* zero = Expression::make_integer_ul(0, int_type, loc);
-          Expression* cond = Expression::make_binary(OPERATOR_LT, len2,
-                                                     zero, loc);
-	  Expression* call = Runtime::make_call(Runtime::PANIC_MAKE_SLICE_LEN,
-						loc, 0);
-          cond = Expression::make_conditional(cond, call, zero->copy(), loc);
-          gogo->lower_expression(function, inserter, &cond);
-          gogo->flatten_expression(function, inserter, &cond);
-          Statement* s = Statement::make_statement(cond, false);
-          inserter->insert(s);
-
-          // if cap2 < 0 { panicmakeslicecap(); }
           Expression* cap2 = Expression::make_temporary_reference(c2tmp, loc);
-          cond = Expression::make_binary(OPERATOR_LT, cap2,
-                                         zero->copy(), loc);
-	  call = Runtime::make_call(Runtime::PANIC_MAKE_SLICE_CAP, loc, 0);
-          cond = Expression::make_conditional(cond, call, zero->copy(), loc);
-          gogo->lower_expression(function, inserter, &cond);
-          gogo->flatten_expression(function, inserter, &cond);
-          s = Statement::make_statement(cond, false);
+	  Expression* check = Runtime::make_call(Runtime::CHECK_MAKE_SLICE,
+						 loc, 3, elem, len2, cap2);
+          gogo->lower_expression(function, inserter, &check);
+          gogo->flatten_expression(function, inserter, &check);
+          Statement* s = Statement::make_statement(check, false);
           inserter->insert(s);
 
           // Remove the original makeslice call.
@@ -12802,24 +12793,11 @@ Array_index_expression::do_determine_type(const Type_context*)
   this->array_->determine_type_no_context();
 
   Type_context index_context(Type::lookup_integer_type("int"), false);
-  if (this->start_->is_constant())
-    this->start_->determine_type(&index_context);
-  else
-    this->start_->determine_type_no_context();
+  this->start_->determine_type(&index_context);
   if (this->end_ != NULL)
-    {
-      if (this->end_->is_constant())
-        this->end_->determine_type(&index_context);
-      else
-        this->end_->determine_type_no_context();
-    }
+    this->end_->determine_type(&index_context);
   if (this->cap_ != NULL)
-    {
-      if (this->cap_->is_constant())
-        this->cap_->determine_type(&index_context);
-      else
-        this->cap_->determine_type_no_context();
-    }
+    this->cap_->determine_type(&index_context);
 }
 
 // Check types of an array index.
@@ -13488,17 +13466,9 @@ String_index_expression::do_determine_type(const Type_context*)
   this->string_->determine_type_no_context();
 
   Type_context index_context(Type::lookup_integer_type("int"), false);
-  if (this->start_->is_constant())
-    this->start_->determine_type(&index_context);
-  else
-    this->start_->determine_type_no_context();
+  this->start_->determine_type(&index_context);
   if (this->end_ != NULL)
-    {
-      if (this->end_->is_constant())
-        this->end_->determine_type(&index_context);
-      else
-        this->end_->determine_type_no_context();
-    }
+    this->end_->determine_type(&index_context);
 }
 
 // Check types of a string index.
@@ -15303,9 +15273,22 @@ Array_construction_expression::do_is_static_initializer() const
 void
 Array_construction_expression::do_determine_type(const Type_context*)
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
   if (this->vals() == NULL)
     return;
-  Type_context subcontext(this->type_->array_type()->element_type(), false);
+  Array_type* at = this->type_->array_type();
+  if (at == NULL || at->is_error() || at->element_type()->is_error())
+    {
+      go_assert(saw_errors());
+      this->set_is_error();
+      return;
+    }
+  Type_context subcontext(at->element_type(), false);
   for (Expression_list::const_iterator pv = this->vals()->begin();
        pv != this->vals()->end();
        ++pv)
@@ -15320,10 +15303,22 @@ Array_construction_expression::do_determine_type(const Type_context*)
 void
 Array_construction_expression::do_check_types(Gogo*)
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
   if (this->vals() == NULL)
     return;
 
   Array_type* at = this->type_->array_type();
+  if (at == NULL || at->is_error() || at->element_type()->is_error())
+    {
+      go_assert(saw_errors());
+      this->set_is_error();
+      return;
+    }
   int i = 0;
   Type* element_type = at->element_type();
   for (Expression_list::const_iterator pv = this->vals()->begin();
@@ -15348,6 +15343,12 @@ Expression*
 Array_construction_expression::do_flatten(Gogo*, Named_object*,
 					   Statement_inserter* inserter)
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return this;
+    }
+
   if (this->vals() == NULL)
     return this;
 
@@ -15384,6 +15385,12 @@ Array_construction_expression::do_flatten(Gogo*, Named_object*,
 void
 Array_construction_expression::do_add_conversions()
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return;
+    }
+
   if (this->vals() == NULL)
     return;
 

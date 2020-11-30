@@ -16,6 +16,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.  */
 
+import difflib
 import os
 import re
 
@@ -138,7 +139,8 @@ ignored_prefixes = {
 
 wildcard_prefixes = {
     'gcc/testsuite/',
-    'libstdc++-v3/doc/html/'
+    'libstdc++-v3/doc/html/',
+    'libstdc++-v3/testsuite/'
     }
 
 misc_files = {
@@ -492,7 +494,7 @@ class GitCommit:
         for entry in self.changelog_entries:
             for pattern in entry.file_patterns:
                 name = os.path.join(entry.folder, pattern)
-                if name not in wildcard_prefixes:
+                if not [name.startswith(pr) for pr in wildcard_prefixes]:
                     msg = 'unsupported wildcard prefix'
                     self.errors.append(Error(msg, name))
 
@@ -560,7 +562,7 @@ class GitCommit:
         mentioned_patterns = []
         used_patterns = set()
         for entry in self.changelog_entries:
-            if not entry.files:
+            if not entry.files and not entry.file_patterns:
                 msg = 'no files mentioned for ChangeLog in directory'
                 self.errors.append(Error(msg, entry.folder))
             assert not entry.folder.endswith('/')
@@ -575,6 +577,9 @@ class GitCommit:
         changed_files = set(cand)
         for file in sorted(mentioned_files - changed_files):
             msg = 'unchanged file mentioned in a ChangeLog'
+            candidates = difflib.get_close_matches(file, changed_files, 1)
+            if candidates:
+                msg += f' (did you mean "{candidates[0]}"?)'
             self.errors.append(Error(msg, file))
         for file in sorted(changed_files - mentioned_files):
             if not self.in_ignored_location(file):
@@ -616,7 +621,7 @@ class GitCommit:
 
         for pattern in mentioned_patterns:
             if pattern not in used_patterns:
-                error = 'pattern doesn''t match any changed files'
+                error = "pattern doesn't match any changed files"
                 self.errors.append(Error(error, pattern))
 
     def check_for_correct_changelog(self):

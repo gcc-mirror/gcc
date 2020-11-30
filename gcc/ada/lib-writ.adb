@@ -1476,11 +1476,8 @@ package body Lib.Writ is
             --  Normal case of a unit entry with a source index
 
             if Sind > No_Source_File then
-               --  We never want directory information in ALI files
-               --  ???But back out this change temporarily until
-               --  gprbuild is fixed.
 
-               if False then
+               if Config_Files_Store_Basename then
                   Fname := Strip_Directory (File_Name (Sind));
                else
                   Fname := File_Name (Sind);

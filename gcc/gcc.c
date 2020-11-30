@@ -9775,6 +9775,7 @@ print_multilib_info (void)
   const char *p = multilib_select;
   const char *last_path = 0, *this_path;
   int skip;
+  int not_arg;
   unsigned int last_path_len = 0;
 
   while (*p != '\0')
@@ -9929,9 +9930,13 @@ print_multilib_info (void)
 		goto invalid_select;
 
 	      if (*q == '!')
-		arg = NULL;
+		{
+		  not_arg = 1;
+		  q++;
+		}
 	      else
-		arg = q;
+		not_arg = 0;
+	      arg = q;
 
 	      while (*q != ' ' && *q != ';')
 		{
@@ -9940,11 +9945,17 @@ print_multilib_info (void)
 		  ++q;
 		}
 
-	      if (arg != NULL
-		  && default_arg (arg, q - arg))
+	      if (default_arg (arg, q - arg))
 		{
-		  skip = 1;
-		  break;
+		  /* Stop checking if any default arguments appeared in not
+		     list.  */
+		  if (not_arg)
+		    {
+		      skip = 0;
+		      break;
+		    }
+		  else
+		    skip = 1;
 		}
 
 	      if (*q == ' ')

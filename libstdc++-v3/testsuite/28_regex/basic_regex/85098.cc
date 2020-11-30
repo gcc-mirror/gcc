@@ -17,6 +17,7 @@
 
 // { dg-options "-O0" }
 // { dg-do link { target c++11 } }
+// { dg-timeout-factor 2 }
 
 #include <regex>
 

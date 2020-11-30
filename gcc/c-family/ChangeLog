@@ -1,3 +1,10 @@
+2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_nested_type) <RECORD_TYPE>: Remove obsolete code.
+	(dump_ada_structure): Also deal with convention, unchecked union and
+	bit-field for nested types.  In the latter case, print an Alignment
+	aspect along with the Pack aspect.
+
 2020-11-25  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/94982

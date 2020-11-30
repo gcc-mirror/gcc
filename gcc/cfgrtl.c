@@ -97,6 +97,7 @@ static basic_block rtl_split_block (basic_block, void *);
 static void rtl_dump_bb (FILE *, basic_block, int, dump_flags_t);
 static int rtl_verify_flow_info_1 (void);
 static void rtl_make_forwarder_block (edge);
+static bool rtl_bb_info_initialized_p (basic_block bb);
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
@@ -2149,7 +2150,8 @@ rtl_dump_bb (FILE *outf, basic_block bb, int indent, dump_flags_t flags)
       putc ('\n', outf);
     }
 
-  if (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK)
+  if (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK
+      && rtl_bb_info_initialized_p (bb))
     {
       rtx_insn *last = BB_END (bb);
       if (last)
@@ -5133,6 +5135,12 @@ init_rtl_bb_info (basic_block bb)
   gcc_assert (!bb->il.x.rtl);
   bb->il.x.head_ = NULL;
   bb->il.x.rtl = ggc_cleared_alloc<rtl_bb_info> ();
+}
+
+static bool
+rtl_bb_info_initialized_p (basic_block bb)
+{
+  return bb->il.x.rtl;
 }
 
 /* Returns true if it is possible to remove edge E by redirecting

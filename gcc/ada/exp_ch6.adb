@@ -3637,9 +3637,9 @@ package body Exp_Ch6 is
                --  For internally generated calls ensure that they reference
                --  the entity of the spec of the called function (needed since
                --  the expander may generate calls using the entity of their
-               --  body). See for example Expand_Boolean_Operator().
+               --  body).
 
-               if not (Comes_From_Source (Call_Node))
+               if not Comes_From_Source (Call_Node)
                  and then Nkind (Unit_Declaration_Node (Func_Id)) =
                             N_Subprogram_Body
                then
@@ -5384,13 +5384,15 @@ package body Exp_Ch6 is
       end if;
 
       --  Build a simple_return_statement that returns the return object when
-      --  there is a statement sequence, or no expression, or the result will
-      --  be built in place. Note however that we currently do this for all
-      --  composite cases, even though not all are built in place.
+      --  there is a statement sequence, or no expression, or the analysis of
+      --  the return object declaration generated extra actions, or the result
+      --  will be built in place. Note however that we currently do this for
+      --  all composite cases, even though they are not built in place.
 
       if Present (HSS)
-        or else Is_Composite_Type (Ret_Typ)
         or else No (Exp)
+        or else List_Length (Return_Object_Declarations (N)) > 1
+        or else Is_Composite_Type (Ret_Typ)
       then
          if No (HSS) then
             Stmts := New_List;
@@ -6058,16 +6060,11 @@ package body Exp_Ch6 is
             end;
          end if;
 
-      --  Case where we do not build a block
+      --  Case where we do not need to build a block. But we're about to drop
+      --  Return_Object_Declarations on the floor, so assert that it contains
+      --  only the return object declaration.
 
-      else
-         --  We're about to drop Return_Object_Declarations on the floor, so
-         --  we need to insert it, in case it got expanded into useful code.
-         --  Remove side effects from expression, which may be duplicated in
-         --  subsequent checks (see Expand_Simple_Function_Return).
-
-         Insert_List_Before (N, Return_Object_Declarations (N));
-         Remove_Side_Effects (Exp);
+      else pragma Assert (List_Length (Return_Object_Declarations (N)) = 1);
 
          --  Build simple_return_statement that returns the expression directly
 

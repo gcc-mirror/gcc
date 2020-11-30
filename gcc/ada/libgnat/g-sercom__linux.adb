@@ -31,14 +31,13 @@
 
 --  This is the GNU/Linux implementation of this package
 
-with Ada.Streams;                use Ada.Streams;
-with Ada;                        use Ada;
+with Ada.Streams;          use Ada.Streams;
 
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
+with GNAT.OS_Lib;          use GNAT.OS_Lib;
 
 package body GNAT.Serial_Communications is
 
@@ -52,34 +51,6 @@ package body GNAT.Serial_Communications is
 
    function fcntl (fd : int; cmd : int; value : int) return int;
    pragma Import (C, fcntl, "fcntl");
-
-   C_Data_Rate : constant array (Data_Rate) of unsigned :=
-                   (B75      => OSC.B75,
-                    B110     => OSC.B110,
-                    B150     => OSC.B150,
-                    B300     => OSC.B300,
-                    B600     => OSC.B600,
-                    B1200    => OSC.B1200,
-                    B2400    => OSC.B2400,
-                    B4800    => OSC.B4800,
-                    B9600    => OSC.B9600,
-                    B19200   => OSC.B19200,
-                    B38400   => OSC.B38400,
-                    B57600   => OSC.B57600,
-                    B115200  => OSC.B115200,
-                    B230400  => OSC.B230400,
-                    B460800  => OSC.B460800,
-                    B500000  => OSC.B500000,
-                    B576000  => OSC.B576000,
-                    B921600  => OSC.B921600,
-                    B1000000 => OSC.B1000000,
-                    B1152000 => OSC.B1152000,
-                    B1500000 => OSC.B1500000,
-                    B2000000 => OSC.B2000000,
-                    B2500000 => OSC.B2500000,
-                    B3000000 => OSC.B3000000,
-                    B3500000 => OSC.B3500000,
-                    B4000000 => OSC.B4000000);
 
    C_Bits      : constant array (Data_Bits) of unsigned :=
                    (CS7 => OSC.CS7, CS8 => OSC.CS8);
@@ -230,8 +201,7 @@ package body GNAT.Serial_Communications is
 
       --  Change settings now
 
-      Current.c_cflag := C_Data_Rate (Rate)
-                           or C_Bits (Bits)
+      Current.c_cflag := C_Bits (Bits)
                            or C_Stop_Bits (Stop_Bits)
                            or C_Parity (Parity)
                            or CREAD;

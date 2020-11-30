@@ -7353,6 +7353,12 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_D_OS_VERSIONS
 
+@hook TARGET_D_MINFO_SECTION
+
+@hook TARGET_D_MINFO_START_NAME
+
+@hook TARGET_D_MINFO_END_NAME
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces

@@ -1,3 +1,9 @@
+2020-11-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Use regex for cherry pick prefix.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2020-11-25  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Use revert_regex instead

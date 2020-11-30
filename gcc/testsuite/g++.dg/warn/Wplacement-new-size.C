@@ -332,11 +332,11 @@ void test (void *p, int32_t n)
     new (&uac2.c) int32_t;                  // { dg-warning "placement" }
     new (&uac3.c) int32_t;                  // { dg-warning "placement" }
 
-    // Diagnose the following even though the size of uac4.c could be
-    // expected to extend to the end of the union (as it is by Built-in
-    // Object Size and so isn't diagnosed in calls to functions like
-    // memset(&uac4.c, 0, sizeof(int32_t)) when _FORTIFY_SOURCE is non-zero.  */
-    new (&uac4.c) int32_t;                  // { dg-warning "placement" }
+    /* The following isn't diagnosed (anymore) for consistency with
+       the middle end where members of unions are considered to extend
+       to the end of the enclosing object.
+       See gcc.dg/Wstringop-overflow-60.c for the middle end test.  */
+    new (&uac4.c) int32_t;
 
     new (&uac4.c + 1) int32_t;              // { dg-warning "placement" }
 }

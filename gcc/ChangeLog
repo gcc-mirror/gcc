@@ -1,3 +1,182 @@
+2020-11-29  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (ipa_merge_modref_summary_after_inlining): Fix
+	handling of ignore_stores.
+
+2020-11-29  Jan Hubicka  <jh@suse.cz>
+
+	PR jit/97867
+	* symtab-thunks.h (thunk_info::release): Use ggc_delete.
+
+2020-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92936
+	PR middle-end/92940
+	PR middle-end/89428
+	* builtins.c (access_ref::access_ref): Initialize member.
+	(access_ref::phi): New function.
+	(access_ref::get_ref): New function.
+	(access_ref::add_offset): Remove duplicate assignment.
+	(maybe_warn_for_bound): Add "maybe" kind of warning messages.
+	(warn_for_access): Same.
+	(inform_access): Rename...
+	(access_ref::inform_access): ...to this.  Print PHI arguments.  Format
+	offset the same as size and simplify.  Improve printing of allocation
+	functions and VLAs.
+	(check_access): Adjust to the above.
+	(gimple_parm_array_size): Change argument.
+	(handle_min_max_size): New function.
+	* builtins.h (class ssa_name_limit_t): Move class here from
+	tree-ssa-strlen.c.
+	(struct access_ref): Declare new members.
+	(gimple_parm_array_size): Change argument.
+	* tree-ssa-strlen.c (maybe_warn_overflow): Use access_ref and simplify.
+	(handle_builtin_memcpy): Correct argument passed to maybe_warn_overflow.
+	(handle_builtin_memset): Same.
+	(class ssa_name_limit_t): Move class to builtins.{h,c}.
+
+2020-11-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (*-*-darwin*): Set d_target_objs and target_has_targetdm.
+	* config/elfos.h (TARGET_D_MINFO_SECTION): New macro.
+	(TARGET_D_MINFO_START_NAME): New macro.
+	(TARGET_D_MINFO_END_NAME): New macro.
+	* config/t-darwin: Add darwin-d.o.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (D language and ABI): Add @hook for
+	TARGET_D_MINFO_SECTION, TARGET_D_MINFO_START_NAME, and
+	TARGET_D_MINFO_END_NAME.
+	* config/darwin-d.c: New file.
+
+2020-11-29  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-structalias.c (handle_pure_call): Skip EAF_UNUSED
+	 parameters.
+
+2020-11-29  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_lattice::merge): Do nothing if F is EAF_UNUSED.
+	(analyze_parms): Detect unused params.
+	(modref_merge_call_site_flags): Merge correct EAF_UNUSED.
+
+2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/97939
+	* config/sparc/predicates.md (arith_double_add_operand): Comment.
+	* config/sparc/sparc.md (uaddvdi4): Use arith_double_operand.
+	(addvdi4): Use arith_double_add_operand.
+	(addsi3): Remove useless attributes.
+	(addvsi4): Use arith_add_operand.
+	(*cmp_ccv_plus): Likewise and add second alternative accordingly.
+	(*cmp_ccxv_plus): Likewise.
+	(*cmp_ccv_plus_set): Likewise.
+	(*cmp_ccxv_plus_set): Likewise.
+	(*cmp_ccv_plus_sltu_set): Likewise.
+	(usubvdi4): Use arith_double_operand.
+	(subvdi4): Use arith_double_add_operand.
+	(subsi3): Remove useless attributes.
+	(subvsi4): Use arith_add_operand.
+	(*cmp_ccv_minus): Likewise and add second alternative accordingly.
+	(*cmp_ccxv_minus): Likewise.
+	(*cmp_ccv_minus_set): Likewise.
+	(*cmp_ccxv_minus_set): Likewise.
+	(*cmp_ccv_minus_sltu_set): Likewise.
+	(negsi2): Use register_operand.
+	(unegvsi3): Likewise.
+	(negvsi3) Likewise.
+	(*cmp_ccnz_neg): Likewise.
+	(*cmp_ccxnz_neg): Likewise.
+	(*cmp_ccnz_neg_set): Likewise.
+	(*cmp_ccxnz_neg_set): Likewise.
+	(*cmp_ccc_neg_set): Likewise.
+	(*cmp_ccxc_neg_set): Likewise.
+	(*cmp_ccc_neg_sltu_set): Likewise.
+	(*cmp_ccv_neg): Likewise.
+	(*cmp_ccxv_neg): Likewise.
+	(*cmp_ccv_neg_set): Likewise.
+	(*cmp_ccxv_neg_set): Likewise.
+	(*cmp_ccv_neg_sltu_set): Likewise.
+
+2020-11-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR other/98027
+	* doc/install.texi: Default to --enable-cet=auto.
+
+2020-11-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-kernels-decompose.cc (flatten_binds): Don't choke on
+	empty GIMPLE sequence, and examine all statements contained in
+	inner 'GIMPLE_BIND'.
+
+2020-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98024
+	* tree-ssa-pre.c (insert): Fix successor RPO order check.
+	(do_pre_regular_insertion): When inserting an assignment
+	in place of an all-same-value PHI still record that into
+	PHI_GEN.
+
+2020-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssanames.c (get_range_info): Handle INTEGER_CST by returning
+	VR_RANGE with both *min and *max set to the wide_int value of the
+	INTEGER_CST.  Return VR_VARYING for non-SSA_NAMEs.
+	* match.pd ((t * 2) / 2) -> t): Handle also @0 being INTEGER_CST.
+	Simplify by calling get_range_info on everything.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Simplify by calling
+	get_range_info on everything.
+	* tree-scalar-evolution.c (iv_can_overflow_p): Likewise.
+
+2020-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88101
+	* gimple-fold.c (clear_padding_type): Ignore fields with is_empty_type
+	types.
+
+2020-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/97880
+	* omp-expand.c (expand_oacc_collapse_init, expand_oacc_collapse_vars):
+	Use now passed diff_type.
+	(expand_oacc_for): Take largest type for diff_type, taking tiling
+	and collapsing into account.
+
+2020-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.opt
+	(-param=aarch64-autovec-preference): Define.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Set aarch64_sve_compare_costs to 0 when preferring only Advanced
+	SIMD.
+	(aarch64_cmp_autovec_modes): Define.
+	(aarch64_preferred_simd_mode): Adjust to use the above.
+	(aarch64_autovectorize_vector_modes): Likewise.
+	* doc/invoke.texi: Document aarch64-autovec-preference param.
+
+2020-11-27  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (altivec_expand_vec_set_builtin):
+	Change call param 2 from type int to rtx.
+	* config/rs6000/rs6000-protos.h (rs6000_expand_vector_set):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init):
+	Change call param 2 from type int to rtx.
+	(rs6000_expand_vector_set): Likewise.
+	* config/rs6000/vector.md (vec_set<mode>): Support both constant
+	and variable index vec_set.
+
+2020-11-27  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-protos.h (rs6000_output_addr_vec_elt): Declare.
+	* config/rs6000/rs6000.c (TARGET_ASM_GENERATE_PIC_ADDR_DIFF_VEC):
+	Define.
+	(rs6000_gen_pic_addr_diff_vec, rs6000_output_addr_vec_elt): Implement.
+	* config/rs6000/rs6000.h (CASE_VECTOR_PC_RELATIVE,
+	CASE_VECTOR_MODE, ASM_OUTPUT_ADDR_VEC_ELT): Define.
+	* config/rs6000/rs6000.md (tablejump<mode>_absolute,
+	tablejump<mode>_absolute_nospec): New expanders.
+	* config/rs6000/rs6000.opt (mrelative-jumptables): New.
+
 2020-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/96607

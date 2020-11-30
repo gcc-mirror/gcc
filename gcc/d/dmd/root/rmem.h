@@ -8,18 +8,18 @@
 
 #pragma once
 
-#include "dcompat.h"    // for d_size_t
+#include "dsystem.h"    // for size_t
 
 struct Mem
 {
     Mem() { }
 
     static char *xstrdup(const char *s);
-    static void *xmalloc(d_size_t size);
-    static void *xcalloc(d_size_t size, d_size_t n);
-    static void *xrealloc(void *p, d_size_t size);
+    static void *xmalloc(size_t size);
+    static void *xcalloc(size_t size, size_t n);
+    static void *xrealloc(void *p, size_t size);
     static void xfree(void *p);
-    static void *xmallocdup(void *o, d_size_t size);
+    static void *xmallocdup(void *o, size_t size);
     static void error();
 };
 

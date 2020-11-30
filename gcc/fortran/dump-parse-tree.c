@@ -648,7 +648,7 @@ show_expr (gfc_expr *p)
 	  break;
 	case INTRINSIC_EQ:
 	case INTRINSIC_EQ_OS:
-	  fputs ("= ", dumpfile);
+	  fputs ("== ", dumpfile);
 	  break;
 	case INTRINSIC_NE:
 	case INTRINSIC_NE_OS:

@@ -278,8 +278,7 @@
       return "not.l	%S0";
     gcc_unreachable ();
   }
-  [(set_attr "length_table" "unary")
-   (set_attr "cc" "set_znv")])
+  [(set_attr "length_table" "unary")])
 
 ;; The next four peephole2's will try to transform
 ;;

@@ -218,6 +218,10 @@ enum plugin_event
    as a const char* pointer.  */
   PLUGIN_INCLUDE_FILE,
 
+  /* Called when -fanalyzer starts. The event data is an
+     ana::plugin_analyzer_init_iface *.  */
+  PLUGIN_ANALYZER_INIT,
+
   PLUGIN_EVENT_FIRST_DYNAMIC    /* Dummy event used for indexing callback
                                    array.  */
 @};

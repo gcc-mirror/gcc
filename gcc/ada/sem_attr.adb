@@ -6064,6 +6064,17 @@ package body Sem_Attr is
          Check_Real_Type;
          Set_Etype (N, Universal_Real);
 
+      ---------------------------------------
+      -- Small_Denominator/Small_Numerator --
+      ---------------------------------------
+
+      when Attribute_Small_Denominator
+         | Attribute_Small_Numerator
+      =>
+         Check_E0;
+         Check_Fixed_Point_Type;
+         Set_Etype (N, Universal_Integer);
+
       ------------------
       -- Storage_Pool --
       ------------------
@@ -9904,6 +9915,20 @@ package body Sem_Attr is
          else
             Fold_Ureal (N, Small_Value (P_Type), True);
          end if;
+
+      -----------------------
+      -- Small_Denominator --
+      -----------------------
+
+      when Attribute_Small_Denominator =>
+         Fold_Uint (N, Norm_Den (Small_Value (P_Type)), True);
+
+      ---------------------
+      -- Small_Numerator --
+      ---------------------
+
+      when Attribute_Small_Numerator =>
+         Fold_Uint (N, Norm_Num (Small_Value (P_Type)), True);
 
       -----------------
       -- Stream_Size --

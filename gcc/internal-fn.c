@@ -798,7 +798,7 @@ expand_ubsan_result_store (rtx target, rtx res)
 /* Add sub/add overflow checking to the statement STMT.
    CODE says whether the operation is +, or -.  */
 
-static void
+void
 expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 			tree arg0, tree arg1, bool unsr_p, bool uns0_p,
 			bool uns1_p, bool is_ubsan, tree *datap)

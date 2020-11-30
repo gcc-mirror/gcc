@@ -915,12 +915,11 @@ read_flag (cpp_reader *pfile, unsigned int last)
 /* Subroutine of do_line and do_linemarker.  Convert a number in STR,
    of length LEN, to binary; store it in NUMP, and return false if the
    number was well-formed, true if not. WRAPPED is set to true if the
-   number did not fit into 'unsigned long'.  */
+   number did not fit into 'linenum_type'.  */
 static bool
 strtolinenum (const uchar *str, size_t len, linenum_type *nump, bool *wrapped)
 {
   linenum_type reg = 0;
-  linenum_type reg_prev = 0;
 
   uchar c;
   *wrapped = false;
@@ -929,11 +928,12 @@ strtolinenum (const uchar *str, size_t len, linenum_type *nump, bool *wrapped)
       c = *str++;
       if (!ISDIGIT (c))
 	return true;
-      reg *= 10;
-      reg += c - '0';
-      if (reg < reg_prev) 
+      if (reg > ((linenum_type) -1) / 10)
 	*wrapped = true;
-      reg_prev = reg;
+      reg *= 10;
+      if (reg > ((linenum_type) -1) - (c - '0'))
+	*wrapped = true;
+      reg += c - '0';
     }
   *nump = reg;
   return false;

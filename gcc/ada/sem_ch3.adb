@@ -2312,13 +2312,6 @@ package body Sem_Ch3 is
 
          procedure Build_Assertion_Bodies_For_Type (Typ : Entity_Id) is
          begin
-            --  Preanalyze and resolve the Default_Initial_Condition assertion
-            --  expression at the end of the declarations to catch any errors.
-
-            if Has_DIC (Typ) then
-               Build_DIC_Procedure_Body (Typ);
-            end if;
-
             if Nkind (Context) = N_Package_Specification then
 
                --  Preanalyze and resolve the class-wide invariants of an
@@ -2341,32 +2334,57 @@ package body Sem_Ch3 is
                         Partial_Invariant => True);
                   end if;
 
-               --  Preanalyze and resolve the invariants of a private type
-               --  at the end of the visible declarations to catch potential
-               --  errors. Inherited class-wide invariants are not included
-               --  because they have already been resolved.
+               elsif Decls = Visible_Declarations (Context) then
+                  --  Preanalyze and resolve the invariants of a private type
+                  --  at the end of the visible declarations to catch potential
+                  --  errors. Inherited class-wide invariants are not included
+                  --  because they have already been resolved.
 
-               elsif Decls = Visible_Declarations (Context)
-                 and then Ekind (Typ) in E_Limited_Private_Type
-                                       | E_Private_Type
-                                       | E_Record_Type_With_Private
-                 and then Has_Own_Invariants (Typ)
-               then
-                  Build_Invariant_Procedure_Body
-                    (Typ               => Typ,
-                     Partial_Invariant => True);
+                  if Ekind (Typ) in E_Limited_Private_Type
+                                  | E_Private_Type
+                                  | E_Record_Type_With_Private
+                    and then Has_Own_Invariants (Typ)
+                  then
+                     Build_Invariant_Procedure_Body
+                       (Typ               => Typ,
+                        Partial_Invariant => True);
+                  end if;
 
-               --  Preanalyze and resolve the invariants of a private type's
-               --  full view at the end of the private declarations to catch
-               --  potential errors.
+                  --  Preanalyze and resolve the Default_Initial_Condition
+                  --  assertion expression at the end of the declarations to
+                  --  catch any errors.
 
-               elsif Decls = Private_Declarations (Context)
-                 and then (not Is_Private_Type (Typ)
-                            or else Present (Underlying_Full_View (Typ)))
-                 and then Has_Private_Declaration (Typ)
-                 and then Has_Invariants (Typ)
-               then
-                  Build_Invariant_Procedure_Body (Typ);
+                  if Ekind (Typ) in E_Limited_Private_Type
+                                  | E_Private_Type
+                                  | E_Record_Type_With_Private
+                     and then Has_Own_DIC (Typ)
+                  then
+                     Build_DIC_Procedure_Body
+                       (Typ         => Typ,
+                        Partial_DIC => True);
+                  end if;
+
+               elsif Decls = Private_Declarations (Context) then
+
+                  --  Preanalyze and resolve the invariants of a private type's
+                  --  full view at the end of the private declarations to catch
+                  --  potential errors.
+
+                  if (not Is_Private_Type (Typ)
+                       or else Present (Underlying_Full_View (Typ)))
+                    and then Has_Private_Declaration (Typ)
+                    and then Has_Invariants (Typ)
+                  then
+                     Build_Invariant_Procedure_Body (Typ);
+                  end if;
+
+                  if (not Is_Private_Type (Typ)
+                       or else Present (Underlying_Full_View (Typ)))
+                    and then Has_Private_Declaration (Typ)
+                    and then Has_DIC (Typ)
+                  then
+                     Build_DIC_Procedure_Body (Typ);
+                  end if;
                end if;
             end if;
          end Build_Assertion_Bodies_For_Type;

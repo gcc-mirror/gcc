@@ -702,8 +702,10 @@ case ${target} in
   extra_options="${extra_options} darwin.opt"
   c_target_objs="${c_target_objs} darwin-c.o"
   cxx_target_objs="${cxx_target_objs} darwin-c.o"
+  d_target_objs="${d_target_objs} darwin-d.o"
   fortran_target_objs="darwin-f.o"
   target_has_targetcm=yes
+  target_has_targetdm=yes
   extra_objs="${extra_objs} darwin.o"
   extra_gcc_objs="darwin-driver.o"
   default_use_cxa_atexit=yes
@@ -782,6 +784,9 @@ case ${target} in
       default_use_cxa_atexit=yes;;
   esac
   use_gcc_stdint=wrap
+  d_target_objs="${d_target_objs} freebsd-d.o"
+  tmake_file="${tmake_file} t-freebsd"
+  target_has_targetdm=yes
   ;;
 *-*-fuchsia*)
   native_system_header_dir=/include
@@ -4610,6 +4615,8 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+		with_arch=`${srcdir}/config/riscv/arch-canonicalize ${with_arch}`
+		tm_defines="${tm_defines} TARGET_RISCV_DEFAULT_ARCH=${with_arch}"
 
 		# Make sure --with-abi is valid.  If it was not specified,
 		# pick a default based on the ISA, preferring soft-float
@@ -4631,6 +4638,7 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+		tm_defines="${tm_defines} TARGET_RISCV_DEFAULT_ABI=${with_abi}"
 
 		# Make sure ABI and ISA are compatible.
 		case "${with_abi},${with_arch}" in
@@ -4673,7 +4681,6 @@ case "${target}" in
 
 		# Handle --with-multilib-list.
 		if test "x${with_multilib_list}" != xdefault; then
-			tm_file="${tm_file} riscv/withmultilib.h"
 			tmake_file="${tmake_file} riscv/t-withmultilib"
 
 			case ${with_multilib_list} in
@@ -4683,42 +4690,6 @@ case "${target}" in
 				;;
 			*)
 				echo "--with-multilib-list=${with_multilib_list} not supported."
-				exit 1
-			esac
-
-			# Define macros to select the default multilib.
-			case ${with_arch} in
-			rv32gc)
-				tm_defines="${tm_defines} TARGET_MLIB_ARCH=1"
-				;;
-			rv64gc)
-				tm_defines="${tm_defines} TARGET_MLIB_ARCH=2"
-				;;
-			*)
-				echo "unsupported --with-arch for --with-multilib-list"
-				exit 1
-			esac
-			case ${with_abi} in
-			ilp32)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=1"
-				;;
-			ilp32f)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=2"
-				;;
-			ilp32d)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=3"
-				;;
-			lp64)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=4"
-				;;
-			lp64f)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=5"
-				;;
-			lp64d)
-				tm_defines="${tm_defines} TARGET_MLIB_ABI=6"
-				;;
-			*)
-				echo "unsupported --with-abi for --with-multilib"
 				exit 1
 			esac
 		fi

@@ -83,9 +83,7 @@ pass_analyzer::execute (function *)
 #if ENABLE_ANALYZER
   ana::run_checkers ();
 #else
-  sorry ("%qs was not enabled in this build of GCC"
-	 " (missing configure-time option %qs)",
-	 "-fanalyzer", "--enable-analyzer");
+  sorry_no_analyzer ();
 #endif
 
   return 0;
@@ -100,3 +98,17 @@ make_pass_analyzer (gcc::context *ctxt)
 {
   return new pass_analyzer (ctxt);
 }
+
+#if !ENABLE_ANALYZER
+
+/* Issue a "sorry" diagnostic that the analyzer was not enabled.  */
+
+void
+sorry_no_analyzer ()
+{
+  sorry ("%qs was not enabled in this build of GCC"
+	 " (missing configure-time option %qs)",
+	 "-fanalyzer", "--enable-analyzer");
+}
+
+#endif /* #if !ENABLE_ANALYZER */

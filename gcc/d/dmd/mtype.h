@@ -12,7 +12,6 @@
 
 #include "root/root.h"
 #include "root/stringtable.h"
-#include "root/dcompat.h" // for d_size_t
 
 #include "arraytypes.h"
 #include "ast_node.h"
@@ -635,7 +634,7 @@ public:
 
     static Parameters *arraySyntaxCopy(Parameters *parameters);
     static size_t dim(Parameters *parameters);
-    static Parameter *getNth(Parameters *parameters, d_size_t nth, d_size_t *pn = NULL);
+    static Parameter *getNth(Parameters *parameters, size_t nth, size_t *pn = NULL);
     const char *toChars();
     bool isCovariant(bool returnByRef, const Parameter *p) const;
     static bool isCovariantScope(bool returnByRef, StorageClass from, StorageClass to);

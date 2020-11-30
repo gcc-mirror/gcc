@@ -12,7 +12,7 @@ void sink (void*);
 struct Ax
 {
   char n;
-  char a[];                     // { dg-message "at offset \[0-2\] to object 'Ax::a' declared here" "note: flexarray" }
+  char a[];                     // { dg-message "destination object 'Ax::a' of size 0" "note: flexarray" }
 };
 
 // Verify warning for a definition with no initializer.
@@ -93,7 +93,7 @@ NOIPA void gaxx ()
 struct A0
 {
   char n;
-  char a[0];                    // { dg-message "at offset \[0-2\] to object 'A0::a' with size 0 declared here" "note: trailing zero-length array" }
+  char a[0];                    // { dg-message "destination object 'A0::a' of size 0" "note: trailing zero-length array" }
 };
 
 // Verify warning for a definition with no initializer.
@@ -160,7 +160,7 @@ NOIPA void ga0x ()
 struct A1
 {
   char n;
-  char a[1];                    // { dg-message "at offset \[1-9\] to object 'A1::a' with size 1 declared here" "note: trailing one-element array" }
+  char a[1];                    // { dg-message "at offset \[1-2\] into destination object 'A1::a' of size 1" "note: trailing one-element array" }
 };
 
 // Verify warning for a definition with no initializer.
@@ -234,7 +234,7 @@ NOIPA void ga1x ()
 struct A1i
 {
   char n;
-  char a[1];                    // { dg-message "at offset \[1-9\] to object 'A1i::a' with size 1 declared here" "note: interior one-element array" }
+  char a[1];                    // { dg-message "at offset \[1-2\] into destination object 'A1i::a' of size 1" "note: interior one-element array" }
   char x;
 };
 
@@ -307,7 +307,7 @@ NOIPA void ga1ix ()
 struct Bx
 {
   char n;
-  char a[];                     // { dg-message "at offset 0 to object 'Bx::a' declared here" "note: flexarray class member" }
+  char a[];                     // { dg-message "destination object 'Bx::a' of size 0" "note: flexarray class member" }
 
   // Verify the warning for a constant.
   Bx () { a[0] = 0; }           // { dg-warning "\\\[-Wstringop-overflow" }
@@ -332,7 +332,7 @@ NOIPA void gbxi (int i)
 struct B0
 {
   char n;
-  char a[0];                    // { dg-message "at offset 0 to object 'B0::a' with size 0 declared here" "note: zero-length trailing array class member" }
+  char a[0];                    // { dg-message "destination object 'B0::a' of size 0" "note: zero-length trailing array class member" }
 
   B0 () { a[0] = 0; }           // { dg-warning "\\\[-Wstringop-overflow" }
 };
@@ -348,7 +348,7 @@ NOIPA void gb0 (void)
 struct B1
 {
   char n;
-  char a[1];                    // { dg-message "at offset 1 to object 'B1::a' with size 1 declared here" "note: one-element trailing array class member" }
+  char a[1];                    // { dg-message "at offset 1 into destination object 'B1::a' of size 1" "note: one-element trailing array class member" }
 
   B1 () { a[1] = 0; }           // { dg-warning "\\\[-Wstringop-overflow" }
 };
@@ -362,7 +362,7 @@ NOIPA void gb1 (void)
 
 struct B123
 {
-  char a[123];                  // { dg-message "at offset 123 to object 'B123::a' with size 123 declared here" "note: large trailing array class member" }
+  char a[123];                  // { dg-message "at offset 123 into destination object 'B123::a' of size 123" "note: large trailing array class member" }
 
   B123 () { a[123] = 0; }       // { dg-warning "\\\[-Wstringop-overflow" }
 };
@@ -376,7 +376,7 @@ NOIPA void gb123 (void)
 
 struct B234
 {
-  char a[234];                  // { dg-message "at offset 234 to object 'B234::a' with size 234 declared here" "note: large trailing array class member" }
+  char a[234];                  // { dg-message "at offset 234 into destination object 'B234::a' of size 234" "note: large trailing array class member" }
 
   B234 (int i) { a[i] = 0; }    // { dg-warning "\\\[-Wstringop-overflow" }
 };

@@ -1,3 +1,7 @@
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c++/cache-1.C: New.

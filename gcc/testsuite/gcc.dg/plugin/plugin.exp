@@ -118,6 +118,8 @@ set plugin_test_list [list \
     { dump_plugin.c \
 	  dump-1.c \
 	  dump-2.c } \
+    { analyzer_gil_plugin.c \
+	  gil-1.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

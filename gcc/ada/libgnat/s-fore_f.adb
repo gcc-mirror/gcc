@@ -39,16 +39,22 @@ package body System.Fore_F is
    --  and has 19 digits, but the maximum number of 9's that can be represented
    --  in Integer_64 is only 18.
 
-   --  The prerequisite of the implementation is that the scaled divide does
-   --  not overflow, which means that the absolute value of the bounds of
+   --  The first prerequisite of the implementation is that the scaled divide
+   --  does not overflow, which means that the absolute value of the bounds of
    --  the subtype must be smaller than 10**Maxdigs * 2**(Int'Size - 1).
    --  Otherwise Constraint_Error is raised by the scaled divide operation.
+
+   --  The second prerequisite is that the computation of the operands does not
+   --  overflow, which means that, if the small is larger than 1, it is either
+   --  an integer or its numerator and denominator must be both smaller than
+   --  the power 10**(Maxdigs - 1).
 
    ----------------
    -- Fore_Fixed --
    ----------------
 
-   function Fore_Fixed (Lo, Hi, Num, Den : Int) return Natural is
+   function Fore_Fixed (Lo, Hi, Num, Den : Int; Scale : Integer) return Natural
+   is
       pragma Assert (Num < 0 and then Den < 0);
       --  Accept only negative numbers to allow -2**(Int'Size - 1)
 
@@ -59,39 +65,60 @@ package body System.Fore_F is
       T : Int := Int'Min (Negative_Abs (Lo), Negative_Abs (Hi));
       F : Natural;
 
+      Q, R : Int;
+
    begin
       --  Initial value of 2 allows for sign and mandatory single digit
 
       F := 2;
 
-      --  If the Small is 1, then no scaling is needed
+      --  The easy case is when Num is not larger than Den in magnitude,
+      --  i.e. if S = Num / Den, then S <= 1, in which case we can just
+      --  compute the product Q = T * S.
 
-      if Num = -1 and then Den = -1 then
-         null;
+      if Num >= Den then
+         Scaled_Divide (T, Num, Den, Q, R, Round => False);
+         T := Q;
 
-      --  The easy case is when the Small is the reciprocal of an integer
+      --  Otherwise S > 1 and thus Scale <= 0, compute Q and R such that
 
-      elsif Num = -1 then
-         T := T / Den;
+      --    T * Num = Q * (Den * 10**(-D)) + R
 
-      --  If the Small is an integer, compute Q and R such that
+      --  with
 
-      --    T * Small = Q * 10**Maxdigs - R
+      --    D = Integer'Max (-Maxdigs, Scale - 1)
 
-      --  then reason on Q if it is non-zero or else on R.
+      --  then reason on Q if it is non-zero or else on R / Den.
 
-      else pragma Assert (Den = -1);
+      --  This works only if Den * 10**(-D) does not overflow, which is true
+      --  if Den = 1. Suppose that Num corresponds to the maximum value of -D,
+      --  i.e. Maxdigs and 10**(-D) = 10**Maxdigs. If you change Den into 10,
+      --  then S becomes 10 times smaller and, therefore, Scale is incremented
+      --  by 1, which means that -D is decremented by 1 provided that Scale was
+      --  initially not smaller than 1 - Maxdigs, so the multiplication still
+      --  does not overflow. But you need to reach 10 to trigger this effect,
+      --  which means that a leeway of 10 is required, so let's restrict this
+      --  to a Num for which 10**(-D) <= 10**(Maxdigs - 1). To sum up, if S is
+      --  the ratio of two integers with
+
+      --    1 < Den < Num <= B
+
+      --  where B is a fixed limit, then the multiplication does not overflow.
+      --  B can be taken as the largest integer Small such that D = 1 - Maxdigs
+      --  i.e. such that Scale = 2 - Maxdigs, which is 10**(Maxdigs - 1) - 1.
+
+      else
          declare
-            Q, R : Int;
+            D : constant Integer := Integer'Max (-Maxdigs, Scale - 1);
 
          begin
-            Scaled_Divide (T, Num, -10**Maxdigs, Q, R, Round => False);
+            Scaled_Divide (T, Num, Den * 10**(-D), Q, R, Round => False);
 
             if Q /= 0 then
                T := Q;
-               F := F + Maxdigs;
+               F := F - D;
             else
-               T := R;
+               T := R / Den;
             end if;
          end;
       end if;

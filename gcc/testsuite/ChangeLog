@@ -1,3 +1,122 @@
+2020-11-29  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pr98017.f90: New test.
+
+2020-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92936
+	PR middle-end/92940
+	PR middle-end/89428
+	* c-c++-common/Wstringop-overflow-2.c: Adjust text of expected
+	informational notes.
+	* g++.dg/warn/Wstringop-overflow-3.C: Same.
+	* g++.dg/warn/Wplacement-new-size.C: Remove a test for a no longer
+	issued warning.
+	* gcc.dg/Warray-bounds-43.c: Removed unused declarations.
+	* gcc.dg/Wstringop-overflow-11.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-12.c: Same.
+	* gcc.dg/Wstringop-overflow-17.c: Adjust text of expected messages.
+	* gcc.dg/Wstringop-overflow-27.c: Same.  Remove xfails.
+	* gcc.dg/Wstringop-overflow-28.c: Adjust text of expected messages.
+	* gcc.dg/Wstringop-overflow-29.c: Same.
+	* gcc.dg/Wstringop-overflow-37.c: Same.
+	* gcc.dg/Wstringop-overflow-46.c: Same.
+	* gcc.dg/Wstringop-overflow-47.c: Same.
+	* gcc.dg/Wstringop-overflow-54.c: Same.
+	* gcc.dg/warn-strnlen-no-nul.c: Add expected warning.
+	* gcc.dg/Wstringop-overflow-7.c: New test.
+	* gcc.dg/Wstringop-overflow-58.c: New test.
+	* gcc.dg/Wstringop-overflow-59.c: New test.
+	* gcc.dg/Wstringop-overflow-60.c: New test.
+	* gcc.dg/Wstringop-overflow-61.c: New test.
+	* gcc.dg/Wstringop-overflow-62.c: New test.
+	* gcc.dg/Wstringop-overflow-63.c: New test.
+	* gcc.dg/Wstringop-overflow-64.c: New test.
+
+2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/overflow-6.c: New test.
+
+2020-11-27  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/97602
+	* gcc.dg/cpp/line9.c, gcc.dg/cpp/line10.c: New tests.
+
+2020-11-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/intrinsics.d: Adjust patterns in scan-tree-dump.
+
+2020-11-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/98036
+	* gcc.target/i386/fma4-256-maccXX.c (check_maccps):
+	Remove unnecessary postfix increment on a returned variable.
+	(check_maccpd): Ditto.
+	* gcc.target/i386/fma4-256-msubXX.c (check_msubps): Ditto.
+	(check_msubpd): Ditto.
+	* gcc.target/i386/fma4-256-nmaccXX.c (check_nmaccps): Ditto.
+	(check_nmaccpd): Ditto.
+	* gcc.target/i386/fma4-256-nmsubXX.c (check_nmsubps): Ditto.
+	(check_nmsubpd): Ditto.
+	* gcc.target/i386/fma4-maccXX.c (check_maccps): Ditto.
+	(check_maccpd): Ditto.
+	(check_maccss): Ditto.
+	(check_maccsd): Ditto.
+	* gcc.target/i386/fma4-msubXX.c (check_msubps): Ditto.
+	(check_msubpd): Ditto.
+	(check_msubss): Ditto.
+	(check_msubsd): Ditto.
+	* gcc.target/i386/fma4-nmaccXX.c (check_nmaccps): Ditto.
+	(check_nmaccpd): Ditto.
+	(check_nmaccss): Ditto.
+	(check_nmaccsd): Ditto.
+	* gcc.target/i386/fma4-nmsubXX.c (check_nmsubps): Ditto.
+	(check_nmsubpd): Ditto.
+	(check_nmsubss): Ditto.
+	(check_nmsubsd): Ditto.
+	* gcc.target/i386/xop-haddX.c (check_sbyte2word): Add missing return.
+	(check_sbyte2dword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_sbyte2qword): Ditto.
+	(check_sword2dword): Add missing return.
+	(check_sword2qword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_dword2qword): Add missing return.
+	* gcc.target/i386/xop-hadduX.c (check_byte2word): Add missing return.
+	(check_byte2dword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_byte2qword): Ditto.
+	(check_word2dword): Add missing return.
+	(check_word2qword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_word2qword): Add missing return.
+	* gcc.target/i386/xop-hsubX.c (check_sbyte2word): Add missing return.
+	(check_sword2dword): Ditto.
+	(check_sword2qword): Ditto.
+
+2020-11-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: Likewise.
+
+2020-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-4.f90: Fix typo in '!$omp' clause.
+
+2020-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-4.f90: Fix '!$omp' syntax.
+
+2020-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88101
+	* g++.dg/torture/builtin-clear-padding-3.C: New test.
+
+2020-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/97880
+	* gcc.dg/goacc/tile-1.c: New test.
+
 2020-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/97997

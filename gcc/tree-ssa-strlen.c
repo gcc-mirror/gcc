@@ -1933,6 +1933,8 @@ maybe_warn_overflow (gimple *stmt, tree len,
       dest = gimple_call_arg (stmt, 0);
       writefn = gimple_call_fndecl (stmt);
     }
+  else
+    return;
 
   if (TREE_NO_WARNING (dest))
     return;
@@ -1941,148 +1943,22 @@ maybe_warn_overflow (gimple *stmt, tree len,
      Make sure all operands have the same precision to keep wide_int
      from ICE'ing.  */
 
-  /* Convenience constants.  */
-  const widest_int diff_min
-    = wi::to_widest (TYPE_MIN_VALUE (ptrdiff_type_node));
-  const widest_int diff_max
-    = wi::to_widest (TYPE_MAX_VALUE (ptrdiff_type_node));
-  const widest_int size_max
-    = wi::to_widest (TYPE_MAX_VALUE (size_type_node));
-
-  /* The offset into the destination object computed below and not
-     reflected in DESTSIZE.  */
-  widest_int offrng[2] = { 0, 0 };
-
-  if (!si)
-    {
-      /* If no destination STRINFO was provided try to get it from
-	 the DEST argument.  */
-      tree ref = dest;
-      if (TREE_CODE (ref) == ARRAY_REF)
-	{
-	  /* Handle stores to VLAs (represented as
-	     ARRAY_REF (MEM_REF (vlaptr, 0), N].  */
-	  tree off = TREE_OPERAND (ref, 1);
-	  ref = TREE_OPERAND (ref, 0);
-	  wide_int rng[2];
-	  if (get_range (off, stmt, rng, rvals))
-	    {
-	      /* Convert offsets to the maximum precision.  */
-	      offrng[0] = widest_int::from (rng[0], SIGNED);
-	      offrng[1] = widest_int::from (rng[1], SIGNED);
-	    }
-	  else
-	    {
-	      offrng[0] = diff_min;
-	      offrng[1] = diff_max;
-	    }
-	}
-
-      if (TREE_CODE (ref) == MEM_REF)
-	{
-	  tree mem_off = TREE_OPERAND (ref, 1);
-	  ref = TREE_OPERAND (ref, 0);
-	  wide_int rng[2];
-	  if (get_range (mem_off, stmt, rng, rvals))
-	    {
-	      offrng[0] += widest_int::from (rng[0], SIGNED);
-	      offrng[1] += widest_int::from (rng[1], SIGNED);
-	    }
-	  else
-	    {
-	      offrng[0] = diff_min;
-	      offrng[1] = diff_max;
-	    }
-	}
-
-      wide_int rng[2];
-      if (int idx = get_stridx (ref, rng, rvals))
-	{
-	  si = get_strinfo (idx);
-	  offrng[0] += widest_int::from (rng[0], SIGNED);
-	  offrng[1] += widest_int::from (rng[1], SIGNED);
-	}
-    }
-
-  /* The allocation call if the destination object was allocated
-     by one.  */
-  gimple *alloc_call = NULL;
-  /* The DECL of the destination object if known and not dynamically
-     allocated.  */
-  tree destdecl = NULL_TREE;
-  /* The offset into the destination object set by compute_objsize
-     but already reflected in DESTSIZE.  */
-  tree destoff = NULL_TREE;
+  access_ref aref;
   /* The size of the destination region (which is smaller than
      the destination object for stores at a non-zero offset).  */
-  tree destsize = NULL_TREE;
-
-  /* Compute the range of sizes of the destination object.  The range
-     is constant for declared objects but may be a range for allocated
-     objects.  */
-  widest_int sizrng[2] = { 0, 0 };
-  if (si)
-    {
-      wide_int rng[2];
-      destsize = gimple_call_alloc_size (si->alloc, rng, rvals);
-      if (destsize)
-	{
-	  sizrng[0] = widest_int::from (rng[0], UNSIGNED);
-	  sizrng[1] = widest_int::from (rng[1], UNSIGNED);
-	}
-      alloc_call = si->alloc;
-    }
-  else
-    offrng[0] = offrng[1] = 0;
-
+  tree destsize = compute_objsize (dest, rawmem ? 0 : 1, &aref, rvals);
   if (!destsize)
     {
-      /* If there is no STRINFO for DEST, fall back on compute_objsize.  */
-      tree off = NULL_TREE;
-      destsize = compute_objsize (dest, rawmem ? 0 : 1, &destdecl, &off, rvals);
-      if (destsize)
-	{
-	  /* Remember OFF but clear OFFRNG that may have been set above.  */
-	  destoff = off;
-	  offrng[0] = offrng[1] = 0;
-
-	  if (destdecl && TREE_CODE (destdecl) == SSA_NAME)
-	    {
-	      gimple *stmt = SSA_NAME_DEF_STMT (destdecl);
-	      if (is_gimple_call (stmt))
-		alloc_call = stmt;
-	      destdecl = NULL_TREE;
-	    }
-
-	  wide_int rng[2];
-	  if (get_range (destsize, stmt, rng, rvals))
-	    {
-	      sizrng[0] = widest_int::from (rng[0], UNSIGNED);
-	      sizrng[1] = widest_int::from (rng[1], UNSIGNED);
-	    }
-	  else
-	    {
-	      /* On failure, rather than failing, set the maximum range
-		 so that overflow in allocated objects whose size depends
-		 on the strlen of the source can still be diagnosed
-		 below.  */
-	      sizrng[0] = 0;
-	      sizrng[1] = size_max;
-	    }
-	}
+      aref.sizrng[0] = 0;
+      aref.sizrng[1] = wi::to_offset (max_object_size ());
     }
-
-  if (!destsize)
-    {
-      sizrng[0] = 0;
-      sizrng[1] = size_max;
-    };
 
   /* Return early if the DESTSIZE size expression is the same as LEN
      and the offset into the destination is zero.  This might happen
      in the case of a pair of malloc and memset calls to allocate
      an object and clear it as if by calloc.  */
-  if (destsize == len && !plus_one && offrng[0] == 0 && offrng[0] == offrng[1])
+  if (destsize == len && !plus_one
+      && aref.offrng[0] == 0 && aref.offrng[0] == aref.offrng[1])
     return;
 
   wide_int rng[2];
@@ -2100,38 +1976,13 @@ maybe_warn_overflow (gimple *stmt, tree len,
 
   /* The size of the remaining space in the destination computed
      as the size of the latter minus the offset into it.  */
-  widest_int spcrng[2] = { sizrng[0], sizrng[1] };
-  if (wi::neg_p (offrng[0]) && wi::neg_p (offrng[1]))
-    {
-      /* When the offset is negative and the size of the destination
-	 object unknown there is little to do.
-	 FIXME: Detect offsets that are necessarily invalid regardless
-	 of the size of the object.  */
-      if (!destsize)
-	return;
-
-      /* The remaining space is necessarily zero.  */
-      spcrng[0] = spcrng[1] = 0;
-    }
-  else if (wi::neg_p (offrng[0]))
-    {
-      /* When the lower bound of the offset is negative but the upper
-	 bound is not, reduce the upper bound of the remaining space
-	 by the upper bound of the offset but leave the lower bound
-	 unchanged.  If that makes the upper bound of the space less
-	 than the lower bound swap the two.  */
-      spcrng[1] -= wi::ltu_p (offrng[1], spcrng[1]) ? offrng[1] : spcrng[1];
-      if (wi::ltu_p (spcrng[1], spcrng[0]))
-	std::swap (spcrng[1], spcrng[0]);
-    }
-  else
-    {
-      /* When the offset is positive reduce the remaining space by
-	 the lower bound of the offset or clear it if the offset is
-	 greater.  */
-      spcrng[0] -= wi::ltu_p (offrng[0], spcrng[0]) ? offrng[0] : spcrng[0];
-      spcrng[1] -= wi::ltu_p (offrng[0], spcrng[1]) ? offrng[0] : spcrng[1];
-    }
+  widest_int spcrng[2];
+  {
+    offset_int remrng[2];
+    remrng[1] = aref.size_remaining (remrng);
+    spcrng[0] = remrng[0] == -1 ? 0 : widest_int::from (remrng[0], UNSIGNED);
+    spcrng[1] = widest_int::from (remrng[1], UNSIGNED);
+  }
 
   if (wi::leu_p (lenrng[0], spcrng[0])
       && wi::leu_p (lenrng[1], spcrng[1]))
@@ -2233,112 +2084,7 @@ maybe_warn_overflow (gimple *stmt, tree len,
 
   gimple_set_no_warning (stmt, true);
 
-  /* If DESTOFF is not null, use it to format the offset value/range.  */
-  if (destoff)
-    {
-      wide_int rng[2];
-      if (get_range (destoff, stmt, rng))
-	{
-	  offrng[0] = widest_int::from (rng[0], SIGNED);
-	  offrng[1] = widest_int::from (rng[1], SIGNED);
-	}
-      else
-	offrng[0] = offrng[1] = 0;
-    }
-
-  /* Format the offset to keep the number of inform calls from growing
-     out of control.  */
-  char offstr[64];
-  if (offrng[0] == offrng[1])
-    sprintf (offstr, "%lli", (long long) offrng[0].to_shwi ());
-  else
-    sprintf (offstr, "[%lli, %lli]",
-	     (long long) offrng[0].to_shwi (), (long long) offrng[1].to_shwi ());
-
-  if (destdecl && DECL_P (destdecl))
-    {
-      if (tree size = DECL_SIZE_UNIT (destdecl))
-	inform (DECL_SOURCE_LOCATION (destdecl),
-		"at offset %s to object %qD with size %E declared here",
-		offstr, destdecl, size);
-      else
-	inform (DECL_SOURCE_LOCATION (destdecl),
-		"at offset %s to object %qD declared here",
-		offstr, destdecl);
-      return;
-    }
-
-  if (!alloc_call)
-    return;
-
-  tree allocfn = gimple_call_fndecl (alloc_call);
-  if (!allocfn)
-    {
-      /* For an ALLOC_CALL via a function pointer make a small effort
-	 to determine the destination of the pointer.  */
-      allocfn = gimple_call_fn (alloc_call);
-      if (TREE_CODE (allocfn) == SSA_NAME)
-	{
-	  gimple *def = SSA_NAME_DEF_STMT (allocfn);
-	  if (gimple_assign_single_p (def))
-	    {
-	      tree rhs = gimple_assign_rhs1 (def);
-	      if (DECL_P (rhs))
-		allocfn = rhs;
-	      else if (TREE_CODE (rhs) == COMPONENT_REF)
-		allocfn = TREE_OPERAND (rhs, 1);
-	    }
-	}
-    }
-
-  if (gimple_call_builtin_p (alloc_call, BUILT_IN_ALLOCA_WITH_ALIGN))
-    {
-      if (sizrng[0] == sizrng[1])
-	inform (gimple_location (alloc_call),
-		"at offset %s to an object with size %wu declared here",
-		offstr, sizrng[0].to_uhwi ());
-      else if (sizrng[0] == 0)
-	{
-	  /* Avoid printing impossible sizes.  */
-	  if (wi::ltu_p (sizrng[1], diff_max - 2))
-	    inform (gimple_location (alloc_call),
-		    "at offset %s to an object with size at most %wu "
-		    "declared here",
-		    offstr, sizrng[1].to_uhwi ());
-	  else
-	    inform (gimple_location (alloc_call),
-		    "at offset %s to an object declared here", offstr);
-	}
-      else
-	inform (gimple_location (alloc_call),
-		"at offset %s to an object with size between %wu and %wu "
-		"declared here",
-		offstr, sizrng[0].to_uhwi (), sizrng[1].to_uhwi ());
-      return;
-    }
-
-  if (sizrng[0] == sizrng[1])
-    inform (gimple_location (alloc_call),
-	    "at offset %s to an object with size %wu allocated by %qE here",
-	    offstr, sizrng[0].to_uhwi (), allocfn);
-  else if (sizrng[0] == 0)
-    {
-      /* Avoid printing impossible sizes.  */
-      if (wi::ltu_p (sizrng[1], diff_max - 2))
-	inform (gimple_location (alloc_call),
-		"at offset %s to an object with size at most %wu allocated "
-		"by %qD here",
-		offstr, sizrng[1].to_uhwi (), allocfn);
-      else
-	inform (gimple_location (alloc_call),
-		"at offset %s to an object allocated by %qE here",
-		offstr, allocfn);
-    }
-  else
-    inform (gimple_location (alloc_call),
-	    "at offset %s to an object with size between %wu and %wu "
-	    "allocated by %qE here",
-	    offstr, sizrng[0].to_uhwi (), sizrng[1].to_uhwi (), allocfn);
+  aref.inform_access (access_write_only);
 }
 
 /* Convenience wrapper for the above.  */
@@ -3464,7 +3210,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi,
   if (olddsi != NULL
       && !integer_zerop (len))
     {
-      maybe_warn_overflow (stmt, len, rvals, olddsi, false, true);
+      maybe_warn_overflow (stmt, len, rvals, olddsi, false, false);
       adjust_last_stmt (olddsi, stmt, false);
     }
 
@@ -3931,7 +3677,7 @@ handle_builtin_memset (gimple_stmt_iterator *gsi, bool *zero_write,
   tree memset_size = gimple_call_arg (memset_stmt, 2);
 
   /* Check for overflow.  */
-  maybe_warn_overflow (memset_stmt, memset_size, rvals, NULL, false, true);
+  maybe_warn_overflow (memset_stmt, memset_size, rvals, NULL, false, false);
 
   /* Bail when there is no statement associated with the destination
      (the statement may be null even when SI1->ALLOC is not).  */
@@ -4593,55 +4339,6 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
     }
 }
 
-/* Describes recursion limits used by count_nonzero_bytes.  */
-
-class ssa_name_limit_t
-{
-  bitmap visited;         /* Bitmap of visited SSA_NAMEs.  */
-  unsigned ssa_def_max;   /* Longest chain of SSA_NAMEs to follow.  */
-
-  /* Not copyable or assignable.  */
-  ssa_name_limit_t (ssa_name_limit_t&);
-  void operator= (ssa_name_limit_t&);
-
- public:
-
-  ssa_name_limit_t ()
-    : visited (NULL),
-    ssa_def_max (param_ssa_name_def_chain_limit) { }
-
-  int next_ssa_name (tree);
-
-  ~ssa_name_limit_t ()
-    {
-      if (visited)
-	BITMAP_FREE (visited);
-    }
-};
-
-/* If the SSA_NAME has already been "seen" return a positive value.
-   Otherwise add it to VISITED.  If the SSA_NAME limit has been
-   reached, return a negative value.  Otherwise return zero.  */
-
-int ssa_name_limit_t::next_ssa_name (tree ssa_name)
-{
-  if (!visited)
-    visited = BITMAP_ALLOC (NULL);
-
-  /* Return a positive value if SSA_NAME has already been visited.  */
-  if (!bitmap_set_bit (visited, SSA_NAME_VERSION (ssa_name)))
-    return 1;
-
-  /* Return a negative value to let caller avoid recursing beyond
-     the specified limit.  */
-  if (ssa_def_max == 0)
-    return -1;
-
-  --ssa_def_max;
-
-  return 0;
-}
-
 static bool
 count_nonzero_bytes_addr (tree, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 			  unsigned [3], bool *, bool *, bool *,
@@ -4699,7 +4396,7 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 	  /* Avoid processing an SSA_NAME that has already been visited
 	     or if an SSA_NAME limit has been reached.  Indicate success
 	     if the former and failure if the latter.  */
-	  if (int res = snlim.next_ssa_name (exp))
+	  if (int res = snlim.next_phi (exp))
 	    return res > 0;
 
 	  /* Determine the minimum and maximum from the PHI arguments.  */
@@ -4934,7 +4631,7 @@ count_nonzero_bytes_addr (tree exp, unsigned HOST_WIDE_INT offset,
 	  /* Avoid processing an SSA_NAME that has already been visited
 	     or if an SSA_NAME limit has been reached.  Indicate success
 	     if the former and failure if the latter.  */
-	  if (int res = snlim.next_ssa_name (exp))
+	  if (int res = snlim.next_phi (exp))
 	    return res > 0;
 
 	  /* Determine the minimum and maximum from the PHI arguments.  */
