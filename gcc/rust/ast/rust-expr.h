@@ -928,6 +928,17 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  size_t get_num_values () const { return values.size (); }
+
+  void iterate (std::function<bool (Expr *)> cb)
+  {
+    for (auto it = values.begin (); it != values.end (); it++)
+      {
+	if (!cb ((*it).get ()))
+	  return;
+      }
+  }
+
 protected:
   ArrayElemsValues *clone_array_elems_impl () const override
   {
@@ -1037,6 +1048,8 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  ArrayElems *get_internal_elements () { return internal_elements.get (); };
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1099,6 +1112,9 @@ public:
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Expr *get_array_expr () { return array_expr.get (); }
+  Expr *get_index_expr () { return index_expr.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

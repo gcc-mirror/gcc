@@ -104,7 +104,13 @@ TypeResolution::typesAreCompatible (AST::Type *lhs, AST::Type *rhs,
     }
 
   AST::Type *val = NULL;
-  return scope.LookupType (lhsTypeStr, &val);
+  if (!scope.LookupType (lhsTypeStr, &val))
+    {
+      rust_error_at (locus, "Unknown type: %s", lhsTypeStr.c_str ());
+      return false;
+    }
+
+  return true;
 }
 
 bool
@@ -395,19 +401,112 @@ TypeResolution::visit (AST::CompoundAssignmentExpr &expr)
 void
 TypeResolution::visit (AST::GroupedExpr &expr)
 {}
-// void TypeResolution::visit(ArrayElems& elems) {}
+
 void
 TypeResolution::visit (AST::ArrayElemsValues &elems)
-{}
+{
+  // we need to generate the AST::ArrayType for this array init_expression
+  // we can get the size via get_num_values() but we need to ensure each element
+  // are type compatible
+
+  bool failed = false;
+  AST::Type *last_inferred_type = nullptr;
+  elems.iterate ([&] (AST::Expr *expr) mutable -> bool {
+    size_t before;
+    before = typeBuffer.size ();
+    expr->accept_vis (*this);
+    if (typeBuffer.size () <= before)
+      {
+	rust_error_at (expr->get_locus_slow (),
+		       "unable to determine element type");
+	return false;
+      }
+
+    AST::Type *inferedType = typeBuffer.back ();
+    typeBuffer.pop_back ();
+
+    if (last_inferred_type == nullptr)
+      last_inferred_type = inferedType;
+    else
+      {
+	if (!typesAreCompatible (last_inferred_type, inferedType,
+				 expr->get_locus_slow ()))
+	  {
+	    failed = true;
+	    return false;
+	  }
+      }
+
+    return true;
+  });
+
+  // nothing to do when its failed
+  if (failed)
+    return;
+
+  auto capacity
+    = new AST::LiteralExpr (std::to_string (elems.get_num_values ()),
+			    AST::Literal::INT,
+			    Linemap::predeclared_location ());
+  auto arrayType = new AST::ArrayType (last_inferred_type->clone_type (),
+				       std::unique_ptr<AST::Expr> (capacity),
+				       Linemap::predeclared_location ());
+  typeBuffer.push_back (arrayType);
+}
+
 void
 TypeResolution::visit (AST::ArrayElemsCopied &elems)
-{}
+{
+  printf ("ArrayElemsCopied: %s\n", elems.as_string ().c_str ());
+}
+
 void
 TypeResolution::visit (AST::ArrayExpr &expr)
-{}
+{
+  auto elements = expr.get_internal_elements ();
+  elements->accept_vis (*this);
+}
+
 void
 TypeResolution::visit (AST::ArrayIndexExpr &expr)
-{}
+{
+  printf ("ArrayIndexExpr: %s\n", expr.as_string ().c_str ());
+
+  auto before = typeBuffer.size ();
+  expr.get_array_expr ()->accept_vis (*this);
+  if (typeBuffer.size () <= before)
+    {
+      rust_error_at (expr.get_locus_slow (),
+		     "unable to determine type for array index expression");
+      return;
+    }
+  AST::Type *array_expr_type = typeBuffer.back ();
+  typeBuffer.pop_back ();
+
+  before = typeBuffer.size ();
+  expr.get_index_expr ()->accept_vis (*this);
+  if (typeBuffer.size () <= before)
+    {
+      rust_error_at (expr.get_index_expr ()->get_locus_slow (),
+		     "unable to determine type for index expression");
+      return;
+    }
+
+  AST::Type *array_index_type = typeBuffer.back ();
+  typeBuffer.pop_back ();
+
+  printf ("Array expr type %s array index expr type: [%s]\n",
+	  array_expr_type->as_string ().c_str (),
+	  array_index_type->as_string ().c_str ());
+
+  // the the element type from the array_expr_type and it _must_ be an array
+  // TODO
+
+  // check the index_type should be an i32 which should really be
+  // more permissive
+  // TODO
+}
+
 void
 TypeResolution::visit (AST::TupleExpr &expr)
 {}
@@ -1015,7 +1114,7 @@ TypeResolution::visit (AST::LetStmt &stmt)
       return;
     }
 
-  AST::Type *inferedType = NULL;
+  AST::Type *inferedType = nullptr;
   if (stmt.has_init_expr ())
     {
       auto before = typeBuffer.size ();
@@ -1047,6 +1146,51 @@ TypeResolution::visit (AST::LetStmt &stmt)
 	{
 	  return;
 	}
+    }
+  else if (stmt.has_type ())
+    {
+      auto before = typeComparisonBuffer.size ();
+      stmt.type->accept_vis (*this);
+      if (typeComparisonBuffer.size () <= before)
+	{
+	  rust_error_at (stmt.locus, "failed to understand type for lhs");
+	  return;
+	}
+      auto typeString = typeComparisonBuffer.back ();
+      typeComparisonBuffer.pop_back ();
+
+      AST::Type *val = NULL;
+      if (!scope.LookupType (typeString, &val))
+	{
+	  rust_error_at (stmt.locus, "LetStmt has unknown type: %s",
+			 stmt.type->as_string ().c_str ());
+	  return;
+	}
+    }
+  else if (inferedType != nullptr)
+    {
+      auto before = typeComparisonBuffer.size ();
+      inferedType->accept_vis (*this);
+      if (typeComparisonBuffer.size () <= before)
+	{
+	  rust_error_at (stmt.locus, "failed to understand type for lhs");
+	  return;
+	}
+      auto typeString = typeComparisonBuffer.back ();
+      typeComparisonBuffer.pop_back ();
+
+      AST::Type *val = NULL;
+      if (!scope.LookupType (typeString, &val))
+	{
+	  rust_error_at (stmt.locus, "Inferred unknown type: %s",
+			 inferedType->as_string ().c_str ());
+	  return;
+	}
+    }
+  else
+    {
+      rust_fatal_error (stmt.locus, "Failed to determine any type for LetStmt");
+      return;
     }
 
   // ensure the decl has the type set for compilation later on
@@ -1115,9 +1259,13 @@ TypeResolution::visit (AST::RawPointerType &type)
 void
 TypeResolution::visit (AST::ReferenceType &type)
 {}
+
 void
 TypeResolution::visit (AST::ArrayType &type)
-{}
+{
+  typeComparisonBuffer.push_back (type.get_element_type ()->as_string ());
+}
+
 void
 TypeResolution::visit (AST::SliceType &type)
 {}

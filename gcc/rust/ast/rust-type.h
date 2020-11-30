@@ -60,7 +60,7 @@ class ImplTraitType : public Type
 {
   // TypeParamBounds type_param_bounds;
   // inlined form
-  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
+  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
 
   Location locus;
 
@@ -74,7 +74,7 @@ protected:
 
 public:
   ImplTraitType (
-    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
+    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
     Location locus)
     : type_param_bounds (std::move (type_param_bounds)), locus (locus)
   {}
@@ -115,7 +115,7 @@ class TraitObjectType : public Type
 {
   bool has_dyn;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
+  std::vector<std::unique_ptr<TypeParamBound> >
     type_param_bounds; // inlined form
 
   Location locus;
@@ -130,7 +130,7 @@ protected:
 
 public:
   TraitObjectType (
-    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
+    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
     Location locus, bool is_dyn_dispatch = false)
     : has_dyn (is_dyn_dispatch),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
@@ -318,14 +318,14 @@ class TypePath; // definition moved to "rust-path.h"
  * specific order */
 class TupleType : public TypeNoBounds
 {
-  std::vector<std::unique_ptr<Type>> elems;
+  std::vector<std::unique_ptr<Type> > elems;
   Location locus;
 
 public:
   // Returns whether the tuple type is the unit type, i.e. has no elements.
   bool is_unit_type () const { return elems.empty (); }
 
-  TupleType (std::vector<std::unique_ptr<Type>> elems, Location locus)
+  TupleType (std::vector<std::unique_ptr<Type> > elems, Location locus)
     : elems (std::move (elems)), locus (locus)
   {}
 
@@ -573,6 +573,8 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Type *get_element_type () { return elem_type.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
