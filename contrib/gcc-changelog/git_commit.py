@@ -493,7 +493,7 @@ class GitCommit:
         for entry in self.changelog_entries:
             for pattern in entry.file_patterns:
                 name = os.path.join(entry.folder, pattern)
-                if name not in wildcard_prefixes:
+                if not [name.startswith(pr) for pr in wildcard_prefixes]:
                     msg = 'unsupported wildcard prefix'
                     self.errors.append(Error(msg, name))
 
@@ -617,7 +617,7 @@ class GitCommit:
 
         for pattern in mentioned_patterns:
             if pattern not in used_patterns:
-                error = 'pattern doesn''t match any changed files'
+                error = "pattern doesn't match any changed files"
                 self.errors.append(Error(error, pattern))
 
     def check_for_correct_changelog(self):

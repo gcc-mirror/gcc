@@ -333,7 +333,7 @@ class TestGccChangelog(unittest.TestCase):
         assert not email.errors
         email = self.from_patch_glob('0002-libstdc-Fake-test-change-1.patch')
         assert len(email.errors) == 1
-        msg = 'pattern doesn''t match any changed files'
+        msg = "pattern doesn't match any changed files"
         assert email.errors[0].message == msg
         assert email.errors[0].line == 'libstdc++-v3/doc/html/'
         email = self.from_patch_glob('0003-libstdc-Fake-test-change-2.patch')
@@ -386,3 +386,10 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-lto-fix-LTO-debug')
         assert not email.errors
         assert len(email.changelog_entries) == 1
+
+    def test_wildcard_in_subdir(self):
+        email = self.from_patch_glob('0001-Wildcard-subdirs.patch')
+        assert len(email.changelog_entries) == 1
+        err = email.errors[0]
+        assert err.message == "pattern doesn't match any changed files"
+        assert err.line == 'libstdc++-v3/testsuite/28_regex_not-existing/'
