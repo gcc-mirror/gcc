@@ -2185,7 +2185,7 @@
   [(set_attr "type" "vop3a")
    (set_attr "length" "8,8")])
 
-(define_insn "subdf"
+(define_insn "subdf3"
   [(set (match_operand:DF 0 "register_operand"  "=  v,   v")
 	(minus:DF
 	  (match_operand:DF 1 "gcn_alu_operand" "vSvB,   v")
