@@ -1141,7 +1141,7 @@ but not if @code{-fpic} is also present:
 /* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2 -g" "-O3 -g" @} @{ "-fpic" @} @} */
 @end smallexample
 
-@item @{ dg-require-effective-target @var{keyword} [@{ @var{selector} @}] @}
+@item @{ dg-require-effective-target @var{keyword} [@{ target @var{selector} @}] @}
 Skip the test if the test target, including current multilib flags,
 is not covered by the effective-target keyword.
 If the directive includes the optional @samp{@{ @var{selector} @}}
