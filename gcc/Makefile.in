@@ -1364,6 +1364,7 @@ OBJS = \
 	gimple-array-bounds.o \
 	gimple-builder.o \
 	gimple-expr.o \
+	gimple-if-to-switch.o \
 	gimple-iterator.o \
 	gimple-fold.o \
 	gimple-laddress.o \

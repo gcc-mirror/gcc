@@ -540,6 +540,12 @@ const struct c_common_resword c_common_reswords[] =
   { "concept",		RID_CONCEPT,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
   { "requires", 	RID_REQUIRES,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
 
+  /* Modules-related keywords, these are internal unspellable tokens,
+     created by the preprocessor.  */
+  { "module ",		RID__MODULE,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+  { "import ",		RID__IMPORT,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+  { "export ",		RID__EXPORT,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+
   /* Coroutines-related keywords */
   { "co_await",		RID_CO_AWAIT,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
   { "co_yield",		RID_CO_YIELD,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },

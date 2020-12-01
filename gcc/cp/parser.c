@@ -13567,9 +13567,12 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
 	  /* We might have already been here.  */
 	  if (!c_dialect_objc ())
 	    {
+	      location_t where = get_finish (t2->location);
 	      warning_at (token1->location, OPT_Wattributes, "attributes are"
-			  " only permitted in this position for Objective-C++,"
-			  " ignored");
+			  " not permitted in this position");
+	      where = linemap_position_for_loc_and_offset (line_table,
+							   where, 1);
+	      inform (where, "attributes may be inserted here");
 	      attributes = NULL_TREE;
 	    }
 	  token1 = t1;

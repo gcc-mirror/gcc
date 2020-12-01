@@ -1,3 +1,114 @@
+2020-11-30  Jeff Law  <law@redhat.com>
+
+	* symtab.c (set_section_for_node): Add function comment.
+	(set_section_from_node): Likewise.
+
+2020-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/plugins.texi (Plugin callbacks): Add PLUGIN_ANALYZER_INIT.
+	* plugin.c (register_callback): Likewise.
+	(invoke_plugin_callbacks_full): Likewise.
+	* plugin.def (PLUGIN_ANALYZER_INIT): New event.
+
+2020-11-30  Jeff Law  <law@redhat.com>
+
+	* config/h8300/bitfield.md: Remove "cc" attribute on any
+	insns where it remained.
+	* config/h8300/combiner.md: Likewise.
+	* config/h8300/jumpcall.md: Likewise.
+	* config/h8300/logical.md: Likewise.
+	* config/h8300/testcompare.md: Likewise.
+	* config/h8300/h8300.md (old_cc attr): Renamed from cc attr.
+	* config/h8300/h8300.c (notice_update_cc): Remove.
+	(compute_plussi_cc): Change references to CC_* to OLD_CC_.
+	(compute_logical_op_cc): Likewise.
+	(shift_one, shift_two): Likewise.
+	(compute_a_shift_cc): Likewise.
+	(get_shift_alg): Likewise.
+	(struct shift_insn): Change type of cc_valid field.
+	(struct shift_info): Likewise.
+	* config/h8300/save.md: Remove accidentially created file.
+
+2020-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98037
+	* dse.c (find_shift_sequence): Iterate over all integers and
+	skip modes that are too small.
+
+2020-11-30  Eugene Rozenfeld  <Eugene.Rozenfeld@microsoft.com>
+
+	PR tree-optimization/96679
+	* match.pd (((b | c) & a) | b -> (a & c) | b): New pattern.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* passes.c (emergency_dump_function): Dump symtab when
+	we are in an IPA pass.
+
+2020-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98064
+	* tree-vect-loop.c (vectorizable_live_operation): Avoid
+	breaking LC SSA for BB vectorization.
+
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/sourcebuild.texi (Directives): Fix description of
+	dg-require-effective-target to include "target" in selector.
+
+2020-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98048
+	* tree-vect-generic.c (expand_vector_operations_1): Use the
+	correct type for the scalar LHS replacement.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/98066
+	* gimple-isel.cc (gimple_expand_vec_exprs): Return when
+	gimple_expand_vec_exprs replaces last stmt.
+
+2020-11-30  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* cfgrtl.c (rtl_bb_info_initialized_p): New function.
+	(rtl_dump_bb): Use rtl_bb_info_initialized_p before accessing bb
+	insns.
+
+2020-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87818
+	* config.gcc (*-*-freebsd*): Add freebsd-d.o and t-freebsd.
+	* config/freebsd-d.c: New file.
+	* config/t-freebsd: New file.
+
+2020-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97459
+	* internal-fn.h (expand_addsub_overflow): Declare.
+	* internal-fn.c (expand_addsub_overflow): No longer static.
+	* optabs.c (expand_doubleword_mod): New function.
+	(expand_binop): Optimize double-word mod with constant divisor.
+
+2020-11-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config.gcc (riscv*-*-*): Add TARGET_RISCV_DEFAULT_ABI and
+	TARGET_RISCV_DEFAULT_ARCH to tm_defines.
+	Remove including riscv/withmultilib.h for --with-multilib-list.
+	* config/riscv/riscv.h (STRINGIZING): New.
+	(__STRINGIZING): Ditto.
+	(MULTILIB_DEFAULTS): Ditto.
+	* config/riscv/withmultilib.h: Remove.
+
+2020-11-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.c (print_multilib_info): Check default arguments not
+	appeared in multi-lib option list with '!'
+
+2020-11-30  Jeff Law  <law@redhat.com>
+
+	* config/ft32/ft32.md (umulsidi3): Do not allow constants as
+	arguments.
+
 2020-11-29  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-modref.c (ipa_merge_modref_summary_after_inlining): Fix

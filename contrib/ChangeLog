@@ -1,3 +1,25 @@
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Suggest close file for
+	'unchanged file mentioned in a ChangeLog' error.
+	* gcc-changelog/test_email.py: Test it.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow sub-directory wildcard
+	changelog entry. Fix a typo caused by apostrophe escaping.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (wildcard_prefixes): Add libstdc++
+	testsuite directory.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow wildcard pattern only.
+
 2020-11-27  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Use regex for cherry pick prefix.

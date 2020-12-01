@@ -195,6 +195,9 @@ enum rid
   /* C++ concepts */
   RID_CONCEPT, RID_REQUIRES,
 
+  /* C++ modules.  */
+  RID__MODULE, RID__IMPORT, RID__EXPORT, /* Internal tokens.  */
+
   /* C++ coroutines */
   RID_CO_AWAIT, RID_CO_YIELD, RID_CO_RETURN,
 
@@ -449,9 +452,11 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX_CHAR8_T	0X1000	/* In C++, only with -fchar8_t.  */
 #define D_CXX20		0x2000  /* In C++, C++20 only.  */
 #define D_CXX_COROUTINES 0x4000  /* In C++, only with coroutines.  */
+#define D_CXX_MODULES	0x8000  /* In C++, only with modules.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
+#define D_CXX_MODULES_FLAGS (D_CXXONLY | D_CXX_MODULES)
 #define D_CXX_COROUTINES_FLAGS (D_CXXONLY | D_CXX_COROUTINES)
 
 /* The reserved keyword table.  */

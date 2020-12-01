@@ -1,3 +1,54 @@
+2020-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.c: New test.
+	* gcc.dg/plugin/gil-1.c: New test.
+	* gcc.dg/plugin/gil.h: New header.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new plugin
+	and test.
+
+2020-11-30  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* lib/profopt.exp: Unset testname_with_flags if create_gcov
+	fails.
+
+2020-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98037
+	* gcc.target/aarch64/sve/acle/general/pr98037.c: New test.
+
+2020-11-30  Jeff Law  <law@redhat.com>
+
+	* g++.dg/warn/Wnonnull5.C: Fix non-unique testnames.
+	* g++.dg/warn/Wplacement-new-size-8.C: Likewise.
+
+2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98011
+	* gfortran.dg/goacc/sentinel-free-form.f95:
+	* gfortran.dg/goacc-gomp/fixed-1.f: New test.
+	* gfortran.dg/goacc-gomp/free-1.f90: New test.
+	* gfortran.dg/goacc/fixed-5.f: New test.
+
+2020-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98064
+	* g++.dg/vect/pr98064.cc: New testcase.
+
+2020-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98048
+	* gcc.dg/vect/pr98048.c: New testcase.
+
+2020-11-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/pr91816.c: New test.
+
+2020-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97459
+	* gcc.dg/pr97459-1.c: New test.
+	* gcc.dg/pr97459-2.c: New test.
+
 2020-11-29  Harald Anlauf  <anlauf@gmx.de>
 
 	* gfortran.dg/pr98017.f90: New test.

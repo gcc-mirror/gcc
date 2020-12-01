@@ -949,7 +949,7 @@ expand_doubleword_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
 static rtx
 expand_doubleword_mod (machine_mode mode, rtx op0, rtx op1, bool unsignedp)
 {
-  if (INTVAL (op1) <= 1)
+  if (INTVAL (op1) <= 1 || (INTVAL (op1) & 1) == 0)
     return NULL_RTX;
 
   rtx_insn *last = get_last_insn ();
@@ -2004,7 +2004,6 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && CONST_INT_P (op1)
       && is_int_mode (mode, &int_mode)
       && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
-      && optab_handler (lshr_optab, int_mode) != CODE_FOR_nothing
       && optab_handler (and_optab, word_mode) != CODE_FOR_nothing
       && optab_handler (add_optab, word_mode) != CODE_FOR_nothing
       && optimize_insn_for_speed_p ())
@@ -4057,23 +4056,59 @@ can_compare_p (enum rtx_code code, machine_mode mode,
   return 0;
 }
 
-/* Return whether the backend can emit a vector comparison for code CODE,
-   comparing operands of mode CMP_OP_MODE and producing a result with
-   VALUE_MODE.  */
+/* Return whether RTL code CODE corresponds to an unsigned optab.  */
+
+static bool
+unsigned_optab_p (enum rtx_code code)
+{
+  return code == LTU || code == LEU || code == GTU || code == GEU;
+}
+
+/* Return whether the backend-emitted comparison for code CODE, comparing
+   operands of mode VALUE_MODE and producing a result with MASK_MODE, matches
+   operand OPNO of pattern ICODE.  */
+
+static bool
+insn_predicate_matches_p (enum insn_code icode, unsigned int opno,
+			  enum rtx_code code, machine_mode mask_mode,
+			  machine_mode value_mode)
+{
+  rtx reg1 = alloca_raw_REG (value_mode, LAST_VIRTUAL_REGISTER + 1);
+  rtx reg2 = alloca_raw_REG (value_mode, LAST_VIRTUAL_REGISTER + 2);
+  rtx test = alloca_rtx_fmt_ee (code, mask_mode, reg1, reg2);
+  return insn_operand_matches (icode, opno, test);
+}
+
+/* Return whether the backend can emit a vector comparison (vec_cmp/vec_cmpu)
+   for code CODE, comparing operands of mode VALUE_MODE and producing a result
+   with MASK_MODE.  */
+
+bool
+can_vec_cmp_compare_p (enum rtx_code code, machine_mode value_mode,
+		       machine_mode mask_mode)
+{
+  enum insn_code icode
+      = get_vec_cmp_icode (value_mode, mask_mode, unsigned_optab_p (code));
+  if (icode == CODE_FOR_nothing)
+    return false;
+
+  return insn_predicate_matches_p (icode, 1, code, mask_mode, value_mode);
+}
+
+/* Return whether the backend can emit a vector comparison (vcond/vcondu) for
+   code CODE, comparing operands of mode CMP_OP_MODE and producing a result
+   with VALUE_MODE.  */
 
 bool
 can_vcond_compare_p (enum rtx_code code, machine_mode value_mode,
 		     machine_mode cmp_op_mode)
 {
-  enum insn_code icode;
-  bool unsigned_p = (code == LTU || code == LEU || code == GTU || code == GEU);
-  rtx reg1 = alloca_raw_REG (cmp_op_mode, LAST_VIRTUAL_REGISTER + 1);
-  rtx reg2 = alloca_raw_REG (cmp_op_mode, LAST_VIRTUAL_REGISTER + 2);
-  rtx test = alloca_rtx_fmt_ee (code, value_mode, reg1, reg2);
+  enum insn_code icode
+      = get_vcond_icode (value_mode, cmp_op_mode, unsigned_optab_p (code));
+  if (icode == CODE_FOR_nothing)
+    return false;
 
-  return (icode = get_vcond_icode (value_mode, cmp_op_mode, unsigned_p))
-	 != CODE_FOR_nothing
-	 && insn_operand_matches (icode, 3, test);
+  return insn_predicate_matches_p (icode, 3, code, value_mode, cmp_op_mode);
 }
 
 /* Return whether the backend can emit vector set instructions for inserting
@@ -5626,11 +5661,11 @@ gen_cond_trap (enum rtx_code code, rtx op1, rtx op2, rtx tcode)
   return insn;
 }
 
-/* Return rtx code for TCODE. Use UNSIGNEDP to select signed
+/* Return rtx code for TCODE or UNKNOWN.  Use UNSIGNEDP to select signed
    or unsigned operation code.  */
 
 enum rtx_code
-get_rtx_code (enum tree_code tcode, bool unsignedp)
+get_rtx_code_1 (enum tree_code tcode, bool unsignedp)
 {
   enum rtx_code code;
   switch (tcode)
@@ -5688,8 +5723,20 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
       break;
 
     default:
-      gcc_unreachable ();
+      code = UNKNOWN;
+      break;
     }
+  return code;
+}
+
+/* Return rtx code for TCODE.  Use UNSIGNEDP to select signed
+   or unsigned operation code.  */
+
+enum rtx_code
+get_rtx_code (enum tree_code tcode, bool unsignedp)
+{
+  enum rtx_code code = get_rtx_code_1 (tcode, unsignedp);
+  gcc_assert (code != UNKNOWN);
   return code;
 }
 

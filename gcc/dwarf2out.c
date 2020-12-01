@@ -24646,7 +24646,8 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C_plus_plus_11;
 	  else if (strcmp (language_string, "GNU C++14") == 0)
 	    language = DW_LANG_C_plus_plus_14;
-	  else if (strcmp (language_string, "GNU C++17") == 0)
+	  else if (strcmp (language_string, "GNU C++17") == 0
+		   || strcmp (language_string, "GNU C++20") == 0)
 	    /* For now.  */
 	    language = DW_LANG_C_plus_plus_14;
 	}

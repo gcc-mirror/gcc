@@ -206,6 +206,10 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   /* Perform a quick test of whether this is a valid
      precompiled header for the current language.  */
 
+  /* C++ modules and PCH don't play together.  */
+  if (flag_modules)
+    return 2;
+
   sizeread = read (fd, ident, IDENT_LENGTH + 16);
   if (sizeread == -1)
     fatal_error (input_location, "cannot read %s: %m", name);

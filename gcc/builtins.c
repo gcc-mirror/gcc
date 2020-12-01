@@ -13583,7 +13583,7 @@ builtin_fnspec (tree callee)
 	return ".cO ";
       /* Realloc serves both as allocation point and deallocation point.  */
       case BUILT_IN_REALLOC:
-	return ".cw ";
+	return ".Cw ";
       case BUILT_IN_GAMMA_R:
       case BUILT_IN_GAMMAF_R:
       case BUILT_IN_GAMMAL_R:

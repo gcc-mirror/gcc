@@ -1,3 +1,420 @@
+2020-11-30  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* libgnat/s-trasym.ads: Update the list of supported platforms.
+
+2020-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/trans.c: Remove ^L
+	characters.
+
+2020-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in (GNATLIBFLAGS): Enable checks by
+	default.
+	* libgnat/s-bitfie.ads: Suppress alignment checks.
+	* libgnat/s-bituti.adb: Minor reformatting.
+	* libgnat/s-secsta.adb (SS_Allocate): Support Size = 0.
+
+2020-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch3.adb (Replace_Discr_Ref): Removed, no longer needed.
+
+2020-11-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Process_Statements): Replace low-level membership
+	test with a high-level wrapper.
+
+2020-11-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Set_Assignment_Type): Combine calls to Ekind
+	using membership test.
+	(Should_Transform_BIP_Assignment): Replace assignment to a
+	"Result" variable with simple return statements; avoid repeated
+	calls to Unqual_Conv by declaring a local constant.
+
+2020-11-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Fix reference to
+	Analyze_Assignment.
+	* sem_ch5.adb (Diagnose_Non_Variable_Lhs): Reuse existing
+	utility function.
+
+2020-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* contracts.adb (Check_Type_Or_Object_External_Properties): Make
+	sure to exclude all return objects from the SPARK legality rule
+	on effectively volatile variables.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Use the fast
+	track only when the declaration of the return object can be
+	dropped.
+
+2020-11-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.ads (Is_Partial_DIC_Procedure): New function.
+	(Partial_DIC_Procedure): New procedure.
+	* einfo.adb (Is_Partial_DIC_Procedure): New function to return
+	whether a subprogram is a partial Default_Initial_Condition
+	procedure by checking the name (to avoid adding a new field).
+	(DIC_Procedure): Add a test that excludes partial DIC procedures
+	from being returned.
+	(Partial_DIC_Procedure): New procedure to return the partial DIC
+	procedure of a type, if it has one (otherwise returns Empty).
+	(Set_DIC_Procedure): Remove check for duplicate DIC procedures.
+	* exp_aggr.adb (Gen_Assign): Generate a call to the type's DIC
+	procedure in the case where an array component is default
+	initialized (due to an association with a box).
+	(Build_Record_Aggr_Code): For an extension aggregate, generate a
+	call to the ancestor type's DIC procedure (if any) when the
+	ancestor part is a subtype mark. For a record component
+	association that was specified with a box (tested for by
+	checking the new flag Was_Default_Init_Box_Association),
+	generate a call to the component type's DIC procedure (if it has
+	one).
+	* exp_ch4.adb (Expand_N_Allocator): When the allocated object is
+	default initialized and the designated type has a DIC aspect,
+	generate a call to the DIC procedure.
+	* exp_util.ads (Build_DIC_Call): Change the formal Obj_Id to
+	name Obj_Name, and change its type from Entity_Id to Node_Id
+	(and update comment).
+	(Build_DIC_Procedure_Body): Add formal Partial_DIC, remove
+	formal For_Freeze, and update comment accordingly.
+	(Build_DIC_Procedure_Declaration): Add formal Partial_DIC and
+	update comment.
+	* exp_util.adb
+	(Build_DIC_Call): Revised to use its Obj_Name (formerly Obj_Id)
+	formal directly rather than calling New_Occurrence_Of on it, to
+	allow arbitrary names to be passed rather than being limited to
+	Entity_Ids.
+	(Build_DIC_Procedure_Body): Call Add_Parent_DICs to generate
+	checks for DICs associated with any parent types, implementing
+	the required "additive" semantics for DICs. When building a DIC
+	procedure body for a partial view (when Partial_DIC is True),
+	call Add_Own_DIC when the type has its own DIC.  In the case of
+	"full" DIC procedures, a call is generated to any partial DIC
+	procedure of the type (unless the procedure has a null body),
+	along with checks for any DICs inherited by the full view.
+	(Build_DIC_Procedure_Declaration): Add handling for partial DIC
+	procedures.  For the suffix of a regular DIC procedure's name,
+	use "DIC" (instead of "Default_Initial_Condition"), and for the
+	suffix of a partial DIC procedure's name, use "Partial_DIC".
+	(Add_DIC_Check): Add the DIC pragma to the list of seen pragmas
+	(Pragmas_Seen).
+	(Add_Inherited_Tagged_DIC): Remove the formals Par_Typ,
+	Deriv_Typ, and Obj_Id, and add formal Expr, which denotes DIC's
+	expression. Remove the call to Replace_References (which is now
+	done in Add_Inherited_DICs).
+	(Add_Inherited_DICs): New procedure to locate a DIC pragma
+	associated with a parent type, replace its references
+	appropriately (such as any current instance references), and add
+	a check for the DIC.
+	(Add_Own_DIC): Add an Obj_Id formal to allow caller to pass the
+	_init formal of the generated DIC procedure.
+	(Add_Parent_DICs): New procedure to traverse a type's parents,
+	looking for DICs associated with those and calling
+	Add_Inherited_DICs to apply the appropriate DIC checks.
+	(Is_Verifiable_DIC_Pragma): Treat pragmas that have an Empty
+	first argument the same as a pragma without any arguments
+	(returning False for that case).
+	* exp_ch3.adb (Init_One_Dimension): Generate calls to the
+	component's DIC procedure when needed.
+	(Possible_DIC_Call): New function nested in Init_One_Dimension
+	to build a call to the array component type's DIC-checking
+	function when appropriate.
+	(Build_Array_Init_Proc): The presence of a DIC on the component
+	type is an additional condition for generating an init proc for
+	an array type.
+	(Build_Init_Statements): When the record component's type has a
+	DIC, and the component declaration does not have an
+	initialization expression, generate a call to the component
+	type's DIC procedure.
+	(Expand_N_Object_Declaration): Modify the call to Build_DIC_Call
+	to pass a new occurrence of the object's defining id rather than
+	the id itself.
+	(Freeze_Type): Only build a type's DIC procedure (if it has one)
+	for types that are not interfaces.
+	* exp_spark.adb (Expand_SPARK_N_Freeze_Type): Remove From_Freeze
+	actual and add a ??? comment.
+	(Expand_SPARK_N_Object_Declaration): Modify call to
+	Build_DIC_Call to pass a new occurrence of the object id rather
+	than the object id itself.
+	* sem_aggr.adb (Resolve_Record_Aggregate): Declare local flag
+	Is_Box_Init_By_Default and set it in cases where the component
+	association has a box and the component is being initialized by
+	default (as opposed to initialized by an initialization
+	expression associated with the component's declaration).
+	(Add_Association): If the association has a box for a component
+	initialized by default, the flag
+	Was_Default_Init_Box_Association is set on the new component
+	association (for later testing during expansion).
+	(Get_Value): Reset Is_Box_Init_By_Default to False.
+	* sem_ch3.adb (Build_Assertion_Bodies_For_Type): Rearrange code
+	to build DIC procedure bodies for a (noninterface) type that
+	Has_Own_DIC (for partial type views) or Has_DIC (for full type
+	views) as appropriate.
+	* sem_ch13.adb (Analyze_Aspect_Specifications,
+	Aspect_Default_Initial_Condition): Add an extra argument to the
+	DIC pragma to denote the type associated with the pragma (for
+	use in Build_DIC_Procedure_Body).
+	* sem_prag.adb (Analyze_Pragma): Allow two arguments for pragma
+	Default_Initial_Condition.  If not already present, add an extra
+	argument denoting the type that the pragma is associated with.
+	* sem_util.adb (Propagate_DIC_Attributes): Retrieve any partial
+	DIC procedure associated with the type and add it to the type's
+	list of subprograms (Subprograms_For_Type).
+	* sinfo.ads (Was_Default_Init_Box_Association): New flag on
+	N_Component_Association nodes.  Add subprograms to get and set
+	flag, as well as updating the documentation.
+	* sinfo.adb (Was_Default_Init_Box_Association): New function to
+	retrieve the corresponding flag (Flag14).
+	(Set_Was_Default_Init_Box_Association): New procedure to set the
+	corresponding flag (Flag14).
+
+2020-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch6.adb (P_Formal_Part): Remove extra call to Scan.
+	* par-tchk.adb: Minor reformatting.
+
+2020-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-nbnbre.adb (Float_Conversions): Instantiate Conv
+	package only once in the body.
+	(Fixed_Conversions.Float_Aux): New instance.
+	(Fixed_Conversions.Conv_I): Likewise.
+	(Fixed_Conversions.Conv_U): Likewise.
+	(Fixed_Conversions.LLLI): New subtype.
+	(Fixed_Conversions.LLLU): Likewise.
+	(Fixed_Conversions.Too_Large): New constant.
+	(Fixed_Conversions.To_Big_Real): Reimplement.
+	(Fixed_Conversions.From_Big_Real): Likewise.
+
+2020-11-30  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Avoid crash in case
+	of conditional expression.
+
+2020-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst (Pool_Address):
+	Fix pasto.
+	(Small_Denominator): New entry.
+	(Small_Numerator): Likewise.
+	* doc/gnat_rm/implementation_defined_characteristics.rst (3.5.9):
+	Relax conditions on 128-bit smalls and integer-only implementation.
+	* gnat_rm.texi: Regenerate.
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Fore>:
+	Relax conditions on integer implementation for ordinary fixed-point
+	types and pass a third parameter to the routine.
+	<Attribute_Small_Denominator>: Raise Program_Error.
+	<Attribute_Small_Numerator>: Likewise.
+	* exp_fixd.adb (Expand_Convert_Fixed_To_Fixed): Use a scaled divide
+	if the numerator and denominator of the small ratio are sufficiently
+	small integers.
+	(Expand_Convert_Fixed_To_Integer): Use a scaled divide if numerator
+	and denominator of the small value are sufficiently small integers.
+	(Expand_Convert_Integer_To_Fixed): Likewise.
+	* exp_imgv.adb (Expand_Image_Attribute): Relax the conditions on the
+	integer implementation for ordinary fixed-point types.
+	(Expand_Value_Attribute): Likewise.
+	* freeze.adb (Freeze_Fixed_Point_Type): Relax conditions on 128-bit
+	smalls.
+	* sem_attr.adb (Analyze_Attribute) <Attribute_Small_Denominator>:
+	Check no arguments, fixed-point and set type to Universal_Integer.
+	<Attribute_Small_Numerator>: Likewise.
+	(Eval_Attribute) <Attribute_Small_Denominator>: Fold statically.
+	<Attribute_Small_Numerator>: Likewise.
+	* snames.ads-tmpl (Name_Small_Denominator): New attribute name.
+	(Name_Small_Numerator): Likewise.
+	(Attribute_Id): Add Attribute_Small_{Denominator,Numerator}.
+	* libgnat/a-tifiio.adb (Exact): Delete.
+	(Need_64): Likewise.
+	(OK_Get_32): New boolean constant.
+	(OK_Put_32): Likewise.
+	(OK_Get_64): Likewise.
+	(OK_Put_64): Likewise.
+	(E): Adjust.
+	(Get procedures): Likewise.
+	(Put procedures): Likewise.
+	* libgnat/a-tifiio__128.adb (Exact): Delete.
+	(Need_64): Likewise.
+	(Need_128): Likewise.
+	(OK_Get_32): New boolean constant.
+	(OK_Put_32): Likewise.
+	(OK_Get_64): Likewise.
+	(OK_Put_64): Likewise.
+	(OK_Get_128): Likewise.
+	(OK_Put_128): Likewise.
+	(E): Adjust.
+	(Get procedures): Likewise.
+	(Put procedures): Likewise.
+	* libgnat/a-wtfiio.adb (Exact): Delete.
+	(Need_64): Likewise.
+	(OK_Get_32): New boolean constant.
+	(OK_Put_32): Likewise.
+	(OK_Get_64): Likewise.
+	(OK_Put_64): Likewise.
+	(E): Adjust.
+	(Get procedures): Likewise.
+	(Put procedures): Likewise.
+	* libgnat/a-wtfiio__128.adb (Exact): Delete.
+	(Need_64): Likewise.
+	(Need_128): Likewise.
+	(OK_Get_32): New boolean constant.
+	(OK_Put_32): Likewise.
+	(OK_Get_64): Likewise.
+	(OK_Put_64): Likewise.
+	(OK_Get_128): Likewise.
+	(OK_Put_128): Likewise.
+	(E): Adjust.
+	(Get procedures): Likewise.
+	(Put procedures): Likewise.
+	* libgnat/a-ztfiio.adb (Exact): Delete.
+	(Need_64): Likewise.
+	(OK_Get_32): New boolean constant.
+	(OK_Put_32): Likewise.
+	(OK_Get_64): Likewise.
+	(OK_Put_64): Likewise.
+	(E): Adjust.
+	(Get procedures): Likewise.
+	(Put procedures): Likewise.
+	* libgnat/a-ztfiio__128.adb (Exact): Delete.
+	(Need_64): Likewise.
+	(Need_128): Likewise.
+	(OK_Get_32): New boolean constant.
+	(OK_Put_32): Likewise.
+	(OK_Get_64): Likewise.
+	(OK_Put_64): Likewise.
+	(OK_Get_128): Likewise.
+	(OK_Put_128): Likewise.
+	(E): Adjust.
+	(Get procedures): Likewise.
+	(Put procedures): Likewise.
+	* libgnat/s-fore_f.ads (Fore_Fixed): Adjust signature.
+	* libgnat/s-fore_f.adb (Fore_Fixed): Reimplement.
+	* libgnat/s-fofi32.ads (Fore_Fixed32): Adjust signature.
+	* libgnat/s-fofi64.ads (Fore_Fixed64): Likewise.
+	* libgnat/s-fofi128.ads (Fore_Fixed128): Likewise.
+	* libgnat/s-imagef.ads: Adjust description.
+	* libgnat/s-imagef.adb (Maxdigs): Move around.
+	(Set_Image_Integer): Remove assertion.
+	* libgnat/s-valuef.ads: Adjust description.
+	* libgnat/s-valuef.adb (Integer_To_Fixed): Minor tweak.
+
+2020-11-30  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Describe -gnateb switch.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Mention -gnateb
+	switch in configuration pragma files section.
+	* gnat_ugn.texi: Regenerate.
+	* lib-writ.adb (Write_ALI): Strip directories from configuration
+	files path if needed.
+	* opt.ads: Declare Config_Files_Store_Basename option.
+	* par.adb (Par): Save configuration file checksum.
+	* switch-c.adb (Scan_Front_End_Switches): Set
+	Config_Files_Store_Basename true if -gnateb is present.
+
+2020-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_dist.adb (RCI_Cache): Initialize.
+
+2020-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* terminals.c (allocate_pty_desc): Copy one less byte since the
+	last byte will always be set to 0.
+
+2020-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (-xdr):
+	Document that XDR is not supported for 128-bit integer types.
+	* gnat_ugn.texi: Regenerate.
+	* exp_strm.adb (Build_Elementary_Input_Call): Deal with types
+	larger than Long_Long_Integer.
+	(Build_Elementary_Write_Call): Likewise.
+	* rtsfind.ads (RE_Id): Add RE_I_LLL{I,U] and RE_W_LLL{I,U}.
+	(RE_Unit_Table): Add entries for them.
+	* libgnat/s-stratt.ads (I_LLLI): New inline function.
+	(I_LLLU): Likewise.
+	(W_LLLI): New inline procedure.
+	(W_LLLU): Likewise.
+	* libgnat/s-stratt.adb (S_LLLI): New subtype of SEA.
+	(S_LLLU): Likewise.
+	(From_LLLI): New instance of Unchecked_Conversion.
+	(From_LLLU): Likewise.
+	(To_LLLI): Likewise.
+	(To_LLLU): Likewise.
+	(I_LLLI): Implement.
+	(I_LLLU): Likewise.
+	(W_LLLI): Likewise.
+	(W_LLLU): Likewise.
+
+2020-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Container): Check the
+	signature of the private operation Get_Element_Access to prevent
+	accidental use of a user-defined homonym subprogram.
+
+2020-11-30  Yannick Moy  <moy@adacore.com>
+
+	* spark_xrefs.ads: Add comment for Heap that it may remain
+	Empty.
+
+2020-11-30  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-sercom__linux.adb (Set): Fix control flags of the
+	serial port setting.
+
+2020-11-30  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-sercom__linux.adb: Minor style fixes.
+
+2020-11-30  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Get_Current_Value_Condition): Don't use current
+	value tracking in GNATprove mode.
+	* sem_res.adb (Resolve_Comparison_Op): Remove incomplete
+	special-casing for folding in GNATprove mode.
+
+2020-11-30  Bob Duff  <duff@adacore.com>
+
+	* errout.adb (Error_Msg_NEL): Do not call Set_Posted if errors
+	are being ignored.
+	(Error_Msg): Change Errors_Must_Be_Ignored to use the getter.
+	* sem_ch8.adb (Find_Direct_Name): Do not skip all the error
+	checks when ignoring errors, but instead do not add an entry to
+	the Urefs table if errors are being ignored.
+	* exp_ch5.adb: Minor comment fix.
+
+2020-11-30  Yannick Moy  <moy@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Improve error message.
+
+2020-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valuef.adb (Integer_To_Fixed): Do not modify numerator
+	or denominator in order to reduce the exponent.
+
+2020-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* ali-util.adb (Get_File_Checksum): Remove dead code.
+	* exp_ch4.adb (Expand_Boolean_Operator, Expand_N_Op_Not,
+	Make_Boolean_Array_Op): Take Transform_Function_Array into
+	account.
+	* exp_ch6.adb (Expand_Call_Helper): Update comment. Code
+	cleanup.
+	* exp_util.adb (Build_Procedure_Form): Use new predefined name
+	Name_UP_RESULT.
+	* snames.ads-tmpl (Name_UP_RESULT): New predefined name.  Code
+	cleanup: remove unused names from the project parser, moved to
+	gprbuild sources.
+	* xsnamest.adb: Add support for uppercase names.
+
+2020-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Enter_Name): When an inherited operation for a
+	local derived type is hidden by an explicit declaration of a
+	non-overloadable entity in the same scope, make the inherited
+	operation non-visible to prevent its accidental use elsewhere.
+
 2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR ada/97504

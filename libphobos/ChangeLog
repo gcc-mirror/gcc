@@ -1,3 +1,9 @@
+2020-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87818
+	* configure.tgt: Add x86_64-*-freebsd* and i?86-*-freebsd* as
+	supported targets.
+
 2020-11-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/98025

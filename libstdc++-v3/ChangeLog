@@ -1,3 +1,20 @@
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (INPUT): Add <latch> and <semaphore>.
+
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Reduce
+	default tool_timeout to 360.
+
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/pstl/*: Add
+	dg-timeout-factor.
+	* testsuite/25_algorithms/pstl/*: Likewise.
+	* testsuite/26_numerics/pstl/*: Likewise.
+	* testsuite/28_regex/*: Likewise.
+
 2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
 
 	* configure: Regenerate.

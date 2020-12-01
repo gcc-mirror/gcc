@@ -244,9 +244,14 @@ enum can_compare_purpose
 extern int can_compare_p (enum rtx_code, machine_mode,
 			  enum can_compare_purpose);
 
-/* Return whether the backend can emit a vector comparison for code CODE,
-   comparing operands of mode CMP_OP_MODE and producing a result with
-   VALUE_MODE.  */
+/* Return whether the backend can emit a vector comparison (vec_cmp/vec_cmpu)
+   for code CODE, comparing operands of mode VALUE_MODE and producing a result
+   with MASK_MODE.  */
+extern bool can_vec_cmp_compare_p (enum rtx_code, machine_mode, machine_mode);
+
+/* Return whether the backend can emit a vector comparison (vcond/vcondu) for
+   code CODE, comparing operands of mode CMP_OP_MODE and producing a result
+   with VALUE_MODE.  */
 extern bool can_vcond_compare_p (enum rtx_code, machine_mode, machine_mode);
 
 /* Return whether the backend can emit vector set instructions for inserting
@@ -366,6 +371,7 @@ extern void expand_insn (enum insn_code icode, unsigned int nops,
 extern void expand_jump_insn (enum insn_code icode, unsigned int nops,
 			      class expand_operand *ops);
 
+extern enum rtx_code get_rtx_code_1 (enum tree_code tcode, bool unsignedp);
 extern enum rtx_code get_rtx_code (enum tree_code tcode, bool unsignedp);
 extern rtx vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
 			       tree t_op0, tree t_op1, bool unsignedp,

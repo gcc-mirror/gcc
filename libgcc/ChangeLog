@@ -1,3 +1,7 @@
+2020-11-30  Stefan Kanthak  <stefan.kanthak@nexgo.de>
+
+	* libgcc2.c (bswapsi2): Make constants unsigned.
+
 2020-11-25  Stefan Kanthak  <stefan.kanthak@nexgo.de>
 
 	* libgcc2.c (absvSI2): Simplify/improve implementation by using
