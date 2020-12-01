@@ -5880,6 +5880,10 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 	continue;
       if (only_arg && !FUNCTION_ARG_REGNO_P (regno))
 	continue;
+#ifdef LEAF_REG_REMAP
+      if (crtl->uses_only_leaf_regs && LEAF_REG_REMAP (regno) < 0)
+	continue;
+#endif
 
       /* Now this is a register that we might want to zero.  */
       SET_HARD_REG_BIT (selected_hardregs, regno);
