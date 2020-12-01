@@ -52,6 +52,7 @@ std_headers = \
 	${std_srcdir}/iostream \
 	${std_srcdir}/istream \
 	${std_srcdir}/iterator \
+	${std_srcdir}/latch \
 	${std_srcdir}/limits \
 	${std_srcdir}/list \
 	${std_srcdir}/locale \
@@ -69,6 +70,7 @@ std_headers = \
 	${std_srcdir}/ratio \
 	${std_srcdir}/regex \
 	${std_srcdir}/scoped_allocator \
+	${std_srcdir}/semaphore \
 	${std_srcdir}/set \
 	${std_srcdir}/shared_mutex \
 	${std_srcdir}/span \
@@ -103,6 +105,8 @@ bits_headers = \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
 	${bits_srcdir}/atomic_futex.h \
+	${bits_srcdir}/atomic_timed_wait.h \
+	${bits_srcdir}/atomic_wait.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
@@ -178,6 +182,7 @@ bits_headers = \
 	${bits_srcdir}/regex_compiler.tcc \
 	${bits_srcdir}/regex_executor.h \
 	${bits_srcdir}/regex_executor.tcc \
+	${bits_srcdir}/semaphore_base.h \
 	${bits_srcdir}/shared_ptr.h \
 	${bits_srcdir}/shared_ptr_atomic.h \
 	${bits_srcdir}/shared_ptr_base.h \
