@@ -1,5 +1,8 @@
 2020-12-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk eae68c434f2
+	testsuite: Adjust pruning
+
 	Merge trunk 83a1beee276
 	libstdc++: Add C++2a synchronization support
 

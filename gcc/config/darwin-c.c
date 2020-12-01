@@ -44,13 +44,12 @@ static bool using_frameworks = false;
 static const char *find_subframework_header (cpp_reader *pfile, const char *header,
 					     cpp_dir **dirp);
 
-typedef struct align_stack
-{
-  int alignment;
-  struct align_stack * prev;
-} align_stack;
+struct fld_align_stack {
+  int	alignment;
+  struct fld_align_stack * prev;
+};
 
-static struct align_stack * field_align_stack = NULL;
+static struct fld_align_stack * field_align_stack;
 
 /* Maintain a small stack of alignments.  This is similar to pragma
    pack's stack, but simpler.  */
@@ -58,7 +57,7 @@ static struct align_stack * field_align_stack = NULL;
 static void
 push_field_alignment (int bit_alignment)
 {
-  align_stack *entry = XNEW (align_stack);
+  fld_align_stack *entry = XNEW (fld_align_stack);
 
   entry->alignment = maximum_field_alignment;
   entry->prev = field_align_stack;
@@ -72,7 +71,7 @@ pop_field_alignment (void)
 {
   if (field_align_stack)
     {
-      align_stack *entry = field_align_stack;
+      fld_align_stack *entry = field_align_stack;
 
       maximum_field_alignment = entry->alignment;
       field_align_stack = entry->prev;

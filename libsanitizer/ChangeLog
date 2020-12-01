@@ -1,3 +1,7 @@
+2020-11-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Allow x86_64 Darwin2x.
+
 2020-11-13  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Update to the latest commit.

@@ -1736,7 +1736,7 @@ Note #include directives translated to import declarations.
 
 flang-info-include-translate-not
 C++ Var(note_include_translate_no)
-Note #include directives not translated to import declarations, and not known to be textual
+Note #include directives not translated to import declarations, and not known to be textual.
 
 flang-info-include-translate=
 C++ Joined RejectNegative MissingArgError(missing header name)

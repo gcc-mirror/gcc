@@ -71,8 +71,7 @@ for s in QI HI; do
 		 (match_operand:$d 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
   "mova/b.l @(%o2%C2,$src),%S0"
-  [(set_attr "length_table" "mova")
-   (set_attr "cc" "none")])
+  [(set_attr "length_table" "mova")])
 
 EOF
 	;;
@@ -115,8 +114,7 @@ EOF
 		 (match_operand:$d 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
   "mova/$opsize.l @(%o2%C2,$src),%S0"
-  [(set_attr "length_table" "mova")
-   (set_attr "cc" "none")])
+  [(set_attr "length_table" "mova")])
 
 EOF
 	    ;;
@@ -134,8 +132,7 @@ EOF
 		  (const_int $amount)))]
   "TARGET_H8300SX"
   "mova/$opsize.l @(0,$src),%S0"
-  [(set_attr "length_table" "mova_zero")
-   (set_attr "cc" "none")])
+  [(set_attr "length_table" "mova_zero")])
 
 (define_insn ""
   [(set (match_operand:$d 0 "register_operand" "=r,r")
@@ -144,8 +141,7 @@ EOF
 		 (match_operand:$d 2 "immediate_operand" "i,i")))]
   "TARGET_H8300SX"
   "mova/$opsize.l @(%o2%C2,$src),%S0"
-  [(set_attr "length_table" "mova")
-   (set_attr "cc" "none")])
+  [(set_attr "length_table" "mova")])
 
 EOF
 
@@ -174,8 +170,7 @@ EOF
 		(const_int $mask)))]
   "TARGET_H8300SX"
   "mova/$opsize.l @(0,$src),%S0"
-  [(set_attr "length_table" "mova_zero")
-   (set_attr "cc" "none")])
+  [(set_attr "length_table" "mova_zero")])
 
 (define_insn ""
   [(set (match_operand:$d 0 "register_operand" "=r")
@@ -185,8 +180,7 @@ EOF
 		 (match_operand:$d 2 "immediate_operand" "i")))]
   "TARGET_H8300SX"
   "mova/$opsize.l @(%o2%C2,$src),%S0"
-  [(set_attr "length_table" "mova")
-   (set_attr "cc" "none")])
+  [(set_attr "length_table" "mova")])
 
 EOF
 	      done

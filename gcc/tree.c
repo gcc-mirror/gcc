@@ -3972,6 +3972,7 @@ type_contains_placeholder_1 (const_tree type)
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case COMPLEX_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
@@ -7100,6 +7101,7 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
   switch (TREE_CODE (a->type))
     {
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case COMPLEX_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:

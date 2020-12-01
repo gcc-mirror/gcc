@@ -6171,6 +6171,7 @@ count_type_elements (const_tree type, bool for_ctor_p)
       return 0;
 
     case VOID_TYPE:
+    case OPAQUE_TYPE:
     case METHOD_TYPE:
     case FUNCTION_TYPE:
     case LANG_TYPE:

@@ -32,13 +32,15 @@
 #pragma GCC system_header
 
 #if __cplusplus > 201703L
-#define __cpp_lib_semaphore 201907L
 #include <bits/semaphore_base.h>
+#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
 #include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#define __cpp_lib_semaphore 201907L
 
   template<ptrdiff_t __least_max_value =
 			__gnu_cxx::__int_traits<ptrdiff_t>::__max>
@@ -88,5 +90,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  using binary_semaphore = std::counting_semaphore<1>;
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // __cplusplus > 201703L
+#endif // GTHREADS || LINUX_FUTEX
+#endif // C++20
 #endif // _GLIBCXX_SEMAPHORE

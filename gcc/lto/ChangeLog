@@ -1,3 +1,12 @@
+2020-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/97911
+	* Make-lang.in (lto1.serial, lto2.serial): Change from goals to
+	variables.
+	(.PHONY): Drop lto1.serial, lto2.serial, lto1.prev and lto2.prev.
+	($(LTO_EXE)): Depend on $(lto1.serial) rather than lto1.serial.
+	($(LTO_DUMP_EXE)): Depend on $(lto2.serial) rather than lto2.serial.
+
 2020-11-18  Jerry Clcanny  <a837940593@gmail.com>
 
 	* lto-symtab.c (lto_symtab_merge_symbols): Fix typos in comment.

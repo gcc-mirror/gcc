@@ -1968,15 +1968,18 @@ msp430_section_attr (tree * node,
 
   const char * message = NULL;
 
-  /* The "noinit" and "section" attributes are handled generically, so we
-     cannot set up additional target-specific attribute exclusions using the
-     existing mechanism.  */
-  if (has_attr (ATTR_NOINIT, *node))
+  /* The "noinit", "persistent", and "section" attributes are handled
+     generically, so we cannot set up additional target-specific attribute
+     exclusions using the existing mechanism.  */
+  if (has_attr (ATTR_NOINIT, *node) && !TREE_NAME_EQ (name, "lower"))
     message = G_("ignoring attribute %qE because it conflicts with "
 		 "attribute %<noinit%>");
   else if (has_attr ("section", *node) && !TREE_NAME_EQ (name, "lower"))
     message = G_("ignoring attribute %qE because it conflicts with "
 		 "attribute %<section%>");
+  else if (has_attr (ATTR_PERSIST, *node) && !TREE_NAME_EQ (name, "lower"))
+    message = G_("ignoring attribute %qE because it conflicts with "
+		 "attribute %<persistent%>");
   /* It does not make sense to use upper/lower/either attributes without
      -mlarge.
      Without -mlarge, "lower" is the default and only region, so is redundant.
@@ -1987,56 +1990,6 @@ msp430_section_attr (tree * node,
   else if (!TARGET_LARGE)
     message = G_("%qE attribute ignored.  Large memory model (%<-mlarge%>) "
 		 "is required.");
-
-  if (message)
-    {
-      warning (OPT_Wattributes, message, name);
-      * no_add_attrs = true;
-    }
-
-  return NULL_TREE;
-}
-
-static tree
-msp430_persist_attr (tree *node,
-		  tree   name,
-		  tree   args,
-		  int    flags ATTRIBUTE_UNUSED,
-		  bool * no_add_attrs ATTRIBUTE_UNUSED)
-{
-  const char * message = NULL;
-
-  gcc_assert (DECL_P (* node));
-  gcc_assert (args == NULL);
-  gcc_assert (TREE_NAME_EQ (name, ATTR_PERSIST));
-
-  /* Check for the section attribute separately from DECL_SECTION_NAME so
-     we can provide a clearer warning.  */
-  if (has_attr ("section", *node))
-    message = G_("ignoring attribute %qE because it conflicts with "
-		 "attribute %<section%>");
-  /* Check that it's possible for the variable to have a section.  */
-  else if ((TREE_STATIC (*node) || DECL_EXTERNAL (*node) || in_lto_p)
-	   && (DECL_SECTION_NAME (*node)))
-    message = G_("%qE attribute cannot be applied to variables with specific "
-		 "sections");
-  else if (has_attr (ATTR_NOINIT, *node))
-    message = G_("ignoring attribute %qE because it conflicts with "
-		 "attribute %<noinit%>");
-  else if (TREE_CODE (*node) != VAR_DECL)
-    message = G_("%qE attribute only applies to variables");
-  else if (!TREE_STATIC (*node) && !TREE_PUBLIC (*node)
-	   && !DECL_EXTERNAL (*node))
-    message = G_("%qE attribute has no effect on automatic variables");
-  else if (DECL_COMMON (*node) || DECL_INITIAL (*node) == NULL)
-    message = G_("variables marked with %qE attribute must be initialized");
-  else
-    /* It's not clear if there is anything that can be set here to prevent the
-       front end placing the variable before the back end can handle it, in a
-       similar way to how DECL_COMMON is cleared for .noinit variables in
-       handle_noinit_attribute (gcc/c-family/c-attribs.c).
-       So just place the variable in the .persistent section now.  */
-    set_decl_section_name (* node, ".persistent");
 
   if (message)
     {
@@ -2081,7 +2034,6 @@ static const struct attribute_spec::exclusions attr_lower_exclusions[] =
 {
   ATTR_EXCL (ATTR_UPPER, true, true, true),
   ATTR_EXCL (ATTR_EITHER, true, true, true),
-  ATTR_EXCL (ATTR_PERSIST, true, true, true),
   ATTR_EXCL (NULL, false, false, false)
 };
 
@@ -2089,7 +2041,6 @@ static const struct attribute_spec::exclusions attr_upper_exclusions[] =
 {
   ATTR_EXCL (ATTR_LOWER, true, true, true),
   ATTR_EXCL (ATTR_EITHER, true, true, true),
-  ATTR_EXCL (ATTR_PERSIST, true, true, true),
   ATTR_EXCL (NULL, false, false, false)
 };
 
@@ -2097,15 +2048,6 @@ static const struct attribute_spec::exclusions attr_either_exclusions[] =
 {
   ATTR_EXCL (ATTR_LOWER, true, true, true),
   ATTR_EXCL (ATTR_UPPER, true, true, true),
-  ATTR_EXCL (ATTR_PERSIST, true, true, true),
-  ATTR_EXCL (NULL, false, false, false)
-};
-
-static const struct attribute_spec::exclusions attr_persist_exclusions[] =
-{
-  ATTR_EXCL (ATTR_LOWER, true, true, true),
-  ATTR_EXCL (ATTR_UPPER, true, true, true),
-  ATTR_EXCL (ATTR_EITHER, true, true, true),
   ATTR_EXCL (NULL, false, false, false)
 };
 
@@ -2133,9 +2075,6 @@ const struct attribute_spec msp430_attribute_table[] =
     { ATTR_EITHER,      0, 0, true,  false, false, false, msp430_section_attr,
       attr_either_exclusions },
 
-    { ATTR_PERSIST,     0, 0, true,  false, false, false, msp430_persist_attr,
-      attr_persist_exclusions },
-
     { NULL,		0, 0, false, false, false, false, NULL,  NULL }
   };
 
@@ -2152,14 +2091,13 @@ msp430_handle_generic_attribute (tree *node,
 {
   const char *message = NULL;
 
-  /* The front end has set up an exclusion between the "noinit" and "section"
-     attributes.  */
-  if (!(TREE_NAME_EQ (name, ATTR_NOINIT) || TREE_NAME_EQ (name, "section")))
-    return NULL_TREE;
-
-  /* We allow the "lower" attribute to be used on variables with the "section"
-     attribute.  */
-  if (has_attr (ATTR_LOWER, *node) && !TREE_NAME_EQ (name, "section"))
+  /* Permit the "lower" attribute to be set on variables with the "section",
+     "noinit" and "persistent" attributes.  This is used to indicate that the
+     corresponding output section will be in lower memory, so a 430X
+     instruction is not required to handle it.  */
+  if (has_attr (ATTR_LOWER, *node)
+      && !(TREE_NAME_EQ (name, "section") || TREE_NAME_EQ (name, ATTR_PERSIST)
+	   || TREE_NAME_EQ (name, ATTR_NOINIT)))
     message = G_("ignoring attribute %qE because it conflicts with "
 		 "attribute %<lower%>");
   else if (has_attr (ATTR_UPPER, *node))
@@ -2168,9 +2106,6 @@ msp430_handle_generic_attribute (tree *node,
   else if (has_attr (ATTR_EITHER, *node))
     message = G_("ignoring attribute %qE because it conflicts with "
 		 "attribute %<either%>");
-  else if (has_attr (ATTR_PERSIST, *node))
-    message = G_("ignoring attribute %qE because it conflicts with "
-		 "attribute %<persistent%>");
 
   if (message)
     {
@@ -2428,18 +2363,6 @@ gen_prefix (tree decl)
   return NULL;
 }
 
-static section * persist_section;
-
-#undef  TARGET_ASM_INIT_SECTIONS
-#define TARGET_ASM_INIT_SECTIONS msp430_init_sections
-
-static void
-msp430_init_sections (void)
-{
-  persist_section = get_unnamed_section (0, output_section_asm_op,
-					 ".section .persistent,\"aw\"");
-}
-
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION msp430_select_section
 
@@ -2465,11 +2388,8 @@ msp430_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
       && is_interrupt_func (decl))
     return get_section (".lowtext", SECTION_CODE | SECTION_WRITE , decl);
 
-  if (has_attr (ATTR_PERSIST, decl))
-    return persist_section;
-
-  /* ATTR_NOINIT is handled generically.  */
-  if (has_attr (ATTR_NOINIT, decl))
+  /* The "noinit" and "persistent" attributes are handled generically.  */
+  if (has_attr (ATTR_NOINIT, decl) || has_attr (ATTR_PERSIST, decl))
     return default_elf_select_section (decl, reloc, align);
 
   prefix = gen_prefix (decl);
@@ -2565,8 +2485,6 @@ msp430_section_type_flags (tree decl, const char * name, int reloc)
     name += strlen (upper_prefix);
   else if (strncmp (name, either_prefix, strlen (either_prefix)) == 0)
     name += strlen (either_prefix);
-  else if (strcmp (name, ".persistent") == 0)
-    return SECTION_WRITE | SECTION_NOTYPE;
 
   return default_section_type_flags (decl, name, reloc);
 }

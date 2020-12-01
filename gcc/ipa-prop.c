@@ -1682,7 +1682,7 @@ build_agg_jump_func_from_list (struct ipa_known_agg_contents_list *list,
 			       int value_count, HOST_WIDE_INT arg_offset,
 			       struct ipa_jump_func *jfunc)
 {
-  vec_alloc (jfunc->agg.items, value_count);
+  vec_safe_reserve (jfunc->agg.items, value_count, true);
   for (; list; list = list->next)
     {
       struct ipa_agg_jf_item item;
@@ -4745,7 +4745,10 @@ ipa_read_jump_function (class lto_input_block *ib,
 
   count = streamer_read_uhwi (ib);
   if (prevails)
-    vec_alloc (jump_func->agg.items, count);
+    {
+      jump_func->agg.items = NULL;
+      vec_safe_reserve (jump_func->agg.items, count, true);
+    }
   if (count)
     {
       struct bitpack_d bp = streamer_read_bitpack (ib);

@@ -1,7 +1,9 @@
-// { dg-options "-std=gnu++2a -pthread" }
+// { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
-// { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
+// { dg-additional-options "-pthread" { target pthread } }
+// { dg-add-options libatomic }
+// { dg-skip-if "broken" { ! *-*-*linux } }
 
 // Copyright (C) 2020 Free Software Foundation, Inc.
 //

@@ -352,7 +352,7 @@
 		     | RS6000_BTC_UNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
-#define BU_MMA_V2(ENUM, NAME, ATTR, ICODE)				\
+#define BU_MMA_2(ENUM, NAME, ATTR, ICODE)				\
   RS6000_BUILTIN_M (MMA_BUILTIN_ ## ENUM,		/* ENUM */	\
 		    "__builtin_mma_" NAME,		/* NAME */	\
 		    RS6000_BTM_MMA,			/* MASK */	\
@@ -360,7 +360,13 @@
 		     | RS6000_BTC_BINARY				\
 		     | RS6000_BTC_VOID					\
 		     | RS6000_BTC_GIMPLE),				\
-		    CODE_FOR_nothing)			/* ICODE */
+		    CODE_FOR_nothing)			/* ICODE */	\
+  RS6000_BUILTIN_M (MMA_BUILTIN_ ## ENUM ## _INTERNAL,	/* ENUM */	\
+		    "__builtin_mma_" NAME "_internal",	/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
 
 #define BU_MMA_3(ENUM, NAME, ATTR, ICODE)				\
   RS6000_BUILTIN_M (MMA_BUILTIN_ ## ENUM,		/* ENUM */	\
@@ -3108,8 +3114,8 @@ BU_MMA_1 (XXMFACC,	    "xxmfacc",		QUAD, mma_xxmfacc)
 BU_MMA_1 (XXMTACC,	    "xxmtacc",		QUAD, mma_xxmtacc)
 BU_MMA_1 (XXSETACCZ,	    "xxsetaccz",	MISC, mma_xxsetaccz)
 
-BU_MMA_V2 (DISASSEMBLE_ACC, "disassemble_acc",  QUAD, nothing)
-BU_MMA_V2 (DISASSEMBLE_PAIR,"disassemble_pair", PAIR, nothing)
+BU_MMA_2 (DISASSEMBLE_ACC, "disassemble_acc",	QUAD, mma_disassemble_acc)
+BU_MMA_2 (DISASSEMBLE_PAIR,"disassemble_pair",	PAIR, mma_disassemble_pair)
 
 BU_MMA_3 (ASSEMBLE_PAIR,    "assemble_pair",	MISC, mma_assemble_pair)
 BU_MMA_3 (XVBF16GER2,	    "xvbf16ger2",	MISC, mma_xvbf16ger2)

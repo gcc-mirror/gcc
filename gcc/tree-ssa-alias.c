@@ -3985,11 +3985,12 @@ ao_compare::compare_ao_refs (ao_ref *ref1, ao_ref *ref2,
 	return SEMANTICS;
 
       /* Now we can compare the address of actual memory access.  */
-      if (!operand_equal_p (r1, r2, OEP_ADDRESS_OF))
+      if (!operand_equal_p (r1, r2, OEP_ADDRESS_OF | OEP_MATCH_SIDE_EFFECTS))
 	return SEMANTICS;
     }
   /* For constant accesses we get more matches by comparing offset only.  */
-  else if (!operand_equal_p (base1, base2, OEP_ADDRESS_OF))
+  else if (!operand_equal_p (base1, base2,
+			     OEP_ADDRESS_OF | OEP_MATCH_SIDE_EFFECTS))
     return SEMANTICS;
 
   /* We can't simply use get_object_alignment_1 on the full
@@ -4197,11 +4198,11 @@ ao_compare::hash_ao_ref (ao_ref *ref, bool lto_streaming_safe, bool tbaa,
 	  r = TREE_OPERAND (r, 0);
 	}
       hash_operand (TYPE_SIZE (TREE_TYPE (ref->ref)), hstate, 0);
-      hash_operand (r, hstate, OEP_ADDRESS_OF);
+      hash_operand (r, hstate, OEP_ADDRESS_OF | OEP_MATCH_SIDE_EFFECTS);
     }
   else
     {
-      hash_operand (tbase, hstate, OEP_ADDRESS_OF);
+      hash_operand (tbase, hstate, OEP_ADDRESS_OF | OEP_MATCH_SIDE_EFFECTS);
       hstate.add_poly_int (ref->offset);
       hstate.add_poly_int (ref->size);
       hstate.add_poly_int (ref->max_size);
