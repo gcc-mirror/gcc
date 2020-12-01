@@ -1494,7 +1494,6 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Case_Statement
 
    begin
-      Unblocked_Exit_Count := 0;
       Analyze (Exp);
 
       --  The expression must be of any discrete type. In rare cases, the
@@ -1558,7 +1557,9 @@ package body Sem_Ch5 is
          Exp_Type := Exp_Btype;
       end if;
 
-      --  Call instantiated procedures to analyzwe and check discrete choices
+      --  Call instantiated procedures to analyze and check discrete choices
+
+      Unblocked_Exit_Count := 0;
 
       Analyze_Choices (Alternatives (N), Exp_Type);
       Check_Choices (N, Alternatives (N), Exp_Type, Others_Present);
