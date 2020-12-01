@@ -7976,7 +7976,17 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	    }
 	  else if (!TARGET_PECOFF && !TARGET_MACHO)
 	    {
-	      if (TARGET_64BIT)
+	      if (TARGET_64BIT
+		  && ix86_cmodel == CM_LARGE_PIC
+		  && DEFAULT_ABI != MS_ABI)
+		{
+		  fnaddr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
+					   UNSPEC_GOT);
+		  fnaddr = gen_rtx_CONST (Pmode, fnaddr);
+		  fnaddr = force_reg (Pmode, fnaddr);
+		  fnaddr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, fnaddr);
+		}
+	      else if (TARGET_64BIT)
 		{
 		  fnaddr = gen_rtx_UNSPEC (Pmode,
 					   gen_rtvec (1, addr),
