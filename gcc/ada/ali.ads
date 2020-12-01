@@ -1350,8 +1350,8 @@ package ALI is
    pragma Inline (Name);
    --  Obtain the name of invocation signature IS_Id
 
-   function Scope (IS_Id : Invocation_Signature_Id) return Name_Id;
-   pragma Inline (Scope);
+   function IS_Scope (IS_Id : Invocation_Signature_Id) return Name_Id;
+   pragma Inline (IS_Scope);
    --  Obtain the scope of invocation signature IS_Id
 
    procedure Set_Invocation_Graph_Encoding
