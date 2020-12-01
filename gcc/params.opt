@@ -373,6 +373,10 @@ Maximal stack frame growth due to inlining (in percent).
 Common Joined UInteger Var(param_large_unit_insns) Optimization Init(10000) Param
 The size of translation unit to be considered large.
 
+-param=lazy-modules=
+C++ Joined UInteger Var(param_lazy_modules) Init(32768) Param
+Maximum number of concurrently open C++ module files when lazy loading.
+
 -param=lim-expensive=
 Common Joined UInteger Var(param_lim_expensive) Init(20) Param Optimization
 The minimum cost of an expensive expression in the loop invariant motion.
