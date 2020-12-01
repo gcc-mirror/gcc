@@ -1172,7 +1172,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	return false;
     }
 
-  if (diagnostic->kind != DK_NOTE)
+  if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
     diagnostic_check_max_errors (context);
 
   context->lock++;
