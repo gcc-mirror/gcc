@@ -6532,7 +6532,7 @@ package body Exp_Ch7 is
 
    begin
       --  Nothing to do if the scope does not manage the secondary stack or
-      --  does not contain meaninful actions for insertion.
+      --  does not contain meaningful actions for insertion.
 
       if not Manage_SS
         and then No (Act_Before)

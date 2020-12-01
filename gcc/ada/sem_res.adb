@@ -2298,11 +2298,8 @@ package body Sem_Res is
       --  Declare_Expression and requires scope management.
 
       if Nkind (N) = N_Expression_With_Actions then
-         if Comes_From_Source (N)
-            and then N = Original_Node (N)
-         then
+         if Comes_From_Source (N) and then N = Original_Node (N) then
             Resolve_Declare_Expression (N, Typ);
-
          else
             Resolve (Expression (N), Typ);
          end if;
@@ -7470,7 +7467,8 @@ package body Sem_Res is
      (N   : Node_Id;
       Typ : Entity_Id)
    is
-      Decl : Node_Id;
+      Decl                 : Node_Id;
+      Need_Transient_Scope : Boolean := False;
    begin
       --  Install the scope created for local declarations, if
       --  any. The syntax allows a Declare_Expression with no
@@ -7479,7 +7477,6 @@ package body Sem_Res is
       --  appears as the scope of all entities declared therein.
 
       Decl := First (Actions (N));
-
       while Present (Decl) loop
          exit when Nkind (Decl)
                      in N_Object_Declaration | N_Object_Renaming_Declaration;
@@ -7487,11 +7484,35 @@ package body Sem_Res is
       end loop;
 
       if Present (Decl) then
-         Push_Scope (Scope (Defining_Identifier (Decl)));
+
+         --  Need to establish a transient scope in case Expression (N)
+         --  requires actions to be wrapped.
+
+         declare
+            Node : Node_Id;
+         begin
+            Node := First (Actions (N));
+            while Present (Node) loop
+               if Nkind (Node) = N_Object_Declaration
+                 and then Requires_Transient_Scope
+                            (Etype (Defining_Identifier (Node)))
+               then
+                  Need_Transient_Scope := True;
+                  exit;
+               end if;
+
+               Next (Node);
+            end loop;
+         end;
+
+         if Need_Transient_Scope then
+            Establish_Transient_Scope (Decl, True);
+         else
+            Push_Scope (Scope (Defining_Identifier (Decl)));
+         end if;
 
          declare
             E : Entity_Id := First_Entity (Current_Scope);
-
          begin
             while Present (E) loop
                Set_Current_Entity (E);
