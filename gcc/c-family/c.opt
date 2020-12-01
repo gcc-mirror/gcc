@@ -236,6 +236,14 @@ MMD
 C ObjC C++ ObjC++ NoDriverArg Separate MissingArgError(missing filename after %qs)
 Like -MD but ignore system header files.
 
+Mmodules
+C++
+Generate C++ Module dependency information.
+
+Mno-modules
+C++
+; undocumented
+
 MP
 C ObjC C++ ObjC++
 Generate phony targets for all headers.
@@ -1682,6 +1690,57 @@ C++ ObjC++ WarnRemoved
 flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
+
+fmodules-ts
+C++ ObjC++ Var(flag_modules) Integer Init(0)
+Enable C++ modules-ts (experimental).
+
+fno-modules
+C++ ObjC++ Undocumented RejectNegative Var(flag_modules,0) Integer
+;; undocumented
+
+fmodule-header
+C++ ObjC RejectNegative Var(flag_header_unit,0) Integer
+Enable C++ header module (experimental).
+
+fmodule-header=
+C++ ObjC++ Joined RejectNegative Undocumented
+
+fmodule-implicit-inline
+C++ ObjC++ Var(flag_module_implicit_inline,0) Integer
+Member functions defined within their class are inline in module purview.
+
+fmodule-only
+C++ ObjC RejectNegative Var(flag_module_only) Integer
+Only emit Compiled Module Interface.
+
+fmodule-mapper=
+C++ ObjC++ Joined RejectNegative MissingArgError(missing mapper)
+Mapper for module to CMI files.
+
+fmodule-lazy
+C++ ObjC++ Var(flag_module_lazy) Init(1)
+Enable lazy module importing.
+
+fmodule-version-ignore
+C++ ObjC Var(flag_module_version_ignore) Integer
+; undocumented, Very dangerous, but occasionally useful
+
+Winvalid-imported-macros
+C++ ObjC++ Var(warn_imported_macros)
+Warn about macros that have conflicting header units definitions.
+
+flang-info-include-translate
+C++ Var(note_include_translate_yes)
+Note #include directives translated to import declarations.
+
+flang-info-include-translate-not
+C++ Var(note_include_translate_no)
+Note #include directives not translated to import declarations, and not known to be textual.
+
+flang-info-include-translate=
+C++ Joined RejectNegative MissingArgError(missing header name)
+Note a #include translation of a specific header.
 
 fmax-include-depth=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
