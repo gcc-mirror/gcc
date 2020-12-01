@@ -1799,8 +1799,7 @@ variant of the ABI for the ARM Architecture (as selected with
 @code{-mfloat-abi=hard}).
 
 @item arm_softfloat
-ARM target uses the soft-float ABI with no floating-point instructions
-used whatsoever (as selected with @code{-mfloat-abi=soft}).
+ARM target uses emulated floating point operations.
 
 @item arm_hard_vfp_ok
 ARM target supports @code{-mfpu=vfp -mfloat-abi=hard}.
