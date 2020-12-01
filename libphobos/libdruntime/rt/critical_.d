@@ -43,7 +43,7 @@ extern (C) void _d_criticalenter2(D_CRITICAL_SECTION** pcs)
         lockMutex(cast(Mutex*)&gcs.mtx);
         if (atomicLoad!(MemoryOrder.raw)(*cast(shared) pcs) is null)
         {
-            auto cs = new shared D_CRITICAL_SECTION;
+            auto cs = new shared(D_CRITICAL_SECTION);
             initMutex(cast(Mutex*)&cs.mtx);
             atomicStore!(MemoryOrder.rel)(*cast(shared) pcs, cs);
         }

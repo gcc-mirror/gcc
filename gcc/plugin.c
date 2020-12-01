@@ -497,6 +497,7 @@ register_callback (const char *plugin_name,
       case PLUGIN_EARLY_GIMPLE_PASSES_END:
       case PLUGIN_NEW_PASS:
       case PLUGIN_INCLUDE_FILE:
+      case PLUGIN_ANALYZER_INIT:
         {
           struct callback_info *new_callback;
           if (!callback)
@@ -577,6 +578,7 @@ invoke_plugin_callbacks_full (int event, void *gcc_data)
       case PLUGIN_EARLY_GIMPLE_PASSES_END:
       case PLUGIN_NEW_PASS:
       case PLUGIN_INCLUDE_FILE:
+      case PLUGIN_ANALYZER_INIT:
         {
           /* Iterate over every callback registered with this event and
              call it.  */

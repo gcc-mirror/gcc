@@ -151,6 +151,8 @@ dump_eaf_flags (FILE *out, int flags, bool newline = true)
     fprintf (out, " noclobber");
   if (flags & EAF_NOESCAPE)
     fprintf (out, " noescape");
+  if (flags & EAF_NODIRECTESCAPE)
+    fprintf (out, " nodirectescape");
   if (flags & EAF_UNUSED)
     fprintf (out, " unused");
   if (newline)
@@ -1303,7 +1305,7 @@ memory_access_to (tree op, tree ssa_name)
 static int
 deref_flags (int flags, bool ignore_stores)
 {
-  int ret = 0;
+  int ret = EAF_NODIRECTESCAPE;
   if (flags & EAF_UNUSED)
     ret |= EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE;
   else
@@ -1361,7 +1363,8 @@ public:
 void
 modref_lattice::init ()
 {
-  flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED;
+  flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED
+	  | EAF_NODIRECTESCAPE;
   open = true;
   known = false;
 }
@@ -1434,6 +1437,8 @@ modref_lattice::add_escape_point (gcall *call, int arg, int min_flags,
 bool
 modref_lattice::merge (int f)
 {
+  if (f & EAF_UNUSED)
+    return false;
   if ((flags & f) != flags)
     {
       flags &= f;
@@ -1653,7 +1658,8 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		      {
 			int call_flags = gimple_call_arg_flags (call, i);
 			if (ignore_stores)
-			  call_flags |= EAF_NOCLOBBER | EAF_NOESCAPE;
+			  call_flags |= EAF_NOCLOBBER | EAF_NOESCAPE
+					| EAF_NODIRECTESCAPE;
 
 			if (!record_ipa)
 			  lattice[index].merge (call_flags);
@@ -1821,15 +1827,33 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
        parm = TREE_CHAIN (parm))
     {
       tree name = ssa_default_def (cfun, parm);
-      if (!name)
-	continue;
+      if (!name || has_zero_uses (name))
+	{
+	  /* We do not track non-SSA parameters,
+	     but we want to track unused gimple_regs.  */
+	  if (!is_gimple_reg (parm))
+	    continue;
+	  if (summary)
+	    {
+	      if (parm_index >= summary->arg_flags.length ())
+		summary->arg_flags.safe_grow_cleared (count, true);
+	      summary->arg_flags[parm_index] = EAF_UNUSED;
+	    }
+	  else if (summary_lto)
+	    {
+	      if (parm_index >= summary_lto->arg_flags.length ())
+		summary_lto->arg_flags.safe_grow_cleared (count, true);
+	      summary_lto->arg_flags[parm_index] = EAF_UNUSED;
+	    }
+	  continue;
+	}
       analyze_ssa_name_flags (name, lattice, 0, ipa);
       int flags = lattice[SSA_NAME_VERSION (name)].flags;
 
       /* For pure functions we have implicit NOCLOBBER
 	 and NOESCAPE.  */
       if (ecf_flags & ECF_PURE)
-	flags &= ~(EAF_NOCLOBBER | EAF_NOESCAPE);
+	flags &= ~(EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NODIRECTESCAPE);
 
       if (flags)
 	{
@@ -2142,6 +2166,8 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
   dst_data->writes_errno = src_data->writes_errno;
+  if (src_data->arg_flags.length ())
+    dst_data->arg_flags = src_data->arg_flags.copy ();
 }
 
 /* Called when new clone is inserted to callgraph late.  */
@@ -2165,6 +2191,8 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
   dst_data->writes_errno = src_data->writes_errno;
+  if (src_data->arg_flags.length ())
+    dst_data->arg_flags = src_data->arg_flags.copy ();
 }
 
 namespace
@@ -2690,7 +2718,7 @@ remap_arg_flags (auto_vec <unsigned char> &arg_flags, clone_info *info)
       if (o >= 0 && (int)old.length () > o && old[o])
 	max = i;
     }
-  if (max > 0)
+  if (max >= 0)
     arg_flags.safe_grow_cleared (max + 1, true);
   FOR_EACH_VEC_SAFE_ELT (info->param_adjustments->m_adj_params, i, p)
     {
@@ -3036,14 +3064,14 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     {
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info->loads->collapse ();
-      if (ignore_stores)
+      if (!ignore_stores)
 	to_info->stores->collapse ();
     }
   if (!callee_info_lto && to_info_lto)
     {
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info_lto->loads->collapse ();
-      if (ignore_stores)
+      if (!ignore_stores)
 	to_info_lto->stores->collapse ();
     }
   if (callee_info || callee_info_lto)
@@ -3098,7 +3126,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	    if (!ee->direct)
 	      flags = deref_flags (flags, ignore_stores);
 	    else if (ignore_stores)
-	      flags |= EAF_NOCLOBBER | EAF_NOESCAPE;
+	      flags |= EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NODIRECTESCAPE;
 	    flags |= ee->min_flags;
 	    to_info->arg_flags[ee->parm_index] &= flags;
 	    if (to_info->arg_flags[ee->parm_index])
@@ -3112,7 +3140,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	    if (!ee->direct)
 	      flags = deref_flags (flags, ignore_stores);
 	    else if (ignore_stores)
-	      flags |= EAF_NOCLOBBER | EAF_NOESCAPE;
+	      flags |= EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NODIRECTESCAPE;
 	    flags |= ee->min_flags;
 	    to_info_lto->arg_flags[ee->parm_index] &= flags;
 	    if (to_info_lto->arg_flags[ee->parm_index])
@@ -3623,12 +3651,13 @@ modref_merge_call_site_flags (escape_summary *sum,
 	}
       else if (ignore_stores)
 	{
-	  flags |= EAF_NOESCAPE | EAF_NOCLOBBER;
-	  flags_lto |= EAF_NOESCAPE | EAF_NOCLOBBER;
+	  flags |= EAF_NOESCAPE | EAF_NOCLOBBER | EAF_NODIRECTESCAPE;
+	  flags_lto |= EAF_NOESCAPE | EAF_NOCLOBBER | EAF_NODIRECTESCAPE;
 	}
       flags |= ee->min_flags;
       flags_lto |= ee->min_flags;
-      if (cur_summary && ee->parm_index < cur_summary->arg_flags.length ())
+      if (!(flags & EAF_UNUSED)
+	  && cur_summary && ee->parm_index < cur_summary->arg_flags.length ())
 	{
 	  int f = cur_summary->arg_flags[ee->parm_index];
 	  if ((f & flags) != f)
@@ -3640,7 +3669,8 @@ modref_merge_call_site_flags (escape_summary *sum,
 	      changed = true;
 	    }
 	}
-      if (cur_summary_lto
+      if (!(flags_lto & EAF_UNUSED)
+	  && cur_summary_lto
 	  && ee->parm_index < cur_summary_lto->arg_flags.length ())
 	{
 	  int f = cur_summary_lto->arg_flags[ee->parm_index];

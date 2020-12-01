@@ -6863,6 +6863,86 @@ DEFHOOK
 HOOK_VECTOR_END (mode_switching)
 
 #undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_MEMTAG_"
+HOOK_VECTOR (TARGET_MEMTAG_, memtag)
+
+DEFHOOK
+(can_tag_addresses,
+ "True if the backend architecture naturally supports ignoring some region\n\
+of pointers.  This feature means that @option{-fsanitize=hwaddress} can\n\
+work.\n\
+\n\
+At preset, this feature does not support address spaces.  It also requires\n\
+@code{Pmode} to be the same as @code{ptr_mode}.",
+ bool, (), default_memtag_can_tag_addresses)
+
+DEFHOOK
+(tag_size,
+ "Return the size of a tag (in bits) for this platform.\n\
+\n\
+The default returns 8.",
+  uint8_t, (), default_memtag_tag_size)
+
+DEFHOOK
+(granule_size,
+ "Return the size in real memory that each byte in shadow memory refers to.\n\
+I.e. if a variable is @var{X} bytes long in memory, then this hook should\n\
+return the value @var{Y} such that the tag in shadow memory spans\n\
+@var{X}/@var{Y} bytes.\n\
+\n\
+Most variables will need to be aligned to this amount since two variables\n\
+that are neighbors in memory and share a tag granule would need to share\n\
+the same tag.\n\
+\n\
+The default returns 16.",
+  uint8_t, (), default_memtag_granule_size)
+
+DEFHOOK
+(insert_random_tag,
+ "Return an RTX representing the value of @var{untagged} but with a\n\
+(possibly) random tag in it.\n\
+Put that value into @var{target} if it is convenient to do so.\n\
+This function is used to generate a tagged base for the current stack frame.",
+  rtx, (rtx untagged, rtx target), default_memtag_insert_random_tag)
+
+DEFHOOK
+(add_tag,
+ "Return an RTX that represents the result of adding @var{addr_offset} to\n\
+the address in pointer @var{base} and @var{tag_offset} to the tag in pointer\n\
+@var{base}.\n\
+The resulting RTX must either be a valid memory address or be able to get\n\
+put into an operand with @code{force_operand}.\n\
+\n\
+Unlike other memtag hooks, this must return an expression and not emit any\n\
+RTL.",
+  rtx, (rtx base, poly_int64 addr_offset, uint8_t tag_offset),
+  default_memtag_add_tag)
+
+DEFHOOK
+(set_tag,
+ "Return an RTX representing @var{untagged_base} but with the tag @var{tag}.\n\
+Try and store this in @var{target} if convenient.\n\
+@var{untagged_base} is required to have a zero tag when this hook is called.\n\
+The default of this hook is to set the top byte of @var{untagged_base} to\n\
+@var{tag}.",
+  rtx, (rtx untagged_base, rtx tag, rtx target), default_memtag_set_tag)
+
+DEFHOOK
+(extract_tag,
+ "Return an RTX representing the tag stored in @var{tagged_pointer}.\n\
+Store the result in @var{target} if it is convenient.\n\
+The default represents the top byte of the original pointer.",
+  rtx, (rtx tagged_pointer, rtx target), default_memtag_extract_tag)
+
+DEFHOOK
+(untagged_pointer,
+ "Return an RTX representing @var{tagged_pointer} with its tag set to zero.\n\
+Store the result in @var{target} if convenient.\n\
+The default clears the top byte of the original pointer.",
+  rtx, (rtx tagged_pointer, rtx target), default_memtag_untagged_pointer)
+
+HOOK_VECTOR_END (memtag)
+#undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"
 
 #define DEF_TARGET_INSN(NAME, PROTO) \

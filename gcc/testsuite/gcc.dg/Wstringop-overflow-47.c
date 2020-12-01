@@ -26,7 +26,7 @@ void nowarn_c32 (char c)
 
 void warn_c32 (char c)
 {
-  extern char warn_a32[32];   // { dg-message "at offset 32 to object 'warn_a32' with size 32" }
+  extern char warn_a32[32];   // { dg-message "at offset 32 into destination object 'warn_a32' of size 32" "note" }
 
   void *p = warn_a32 + 1;
   *(C32*)p = (C32){ c };      // { dg-warning "writing 1 byte into a region of size 0" }

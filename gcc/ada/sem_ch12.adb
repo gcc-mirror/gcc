@@ -1998,7 +1998,7 @@ package body Sem_Ch12 is
                         Gen_Par : Entity_Id;
 
                         Needs_Freezing : Boolean;
-                        S              : Entity_Id;
+                        P              : Node_Id;
 
                         procedure Check_Generic_Parent;
                         --  The actual may be an instantiation of a unit
@@ -2102,18 +2102,15 @@ package body Sem_Ch12 is
 
                            Needs_Freezing := True;
 
-                           S := Current_Scope;
-                           while Present (S) loop
-                              if Ekind (S) in E_Block
-                                            | E_Function
-                                            | E_Loop
-                                            | E_Procedure
+                           P := Parent (I_Node);
+                           while Nkind (P) /= N_Compilation_Unit loop
+                              if Nkind (P) = N_Handled_Sequence_Of_Statements
                               then
                                  Needs_Freezing := False;
                                  exit;
                               end if;
 
-                              S := Scope (S);
+                              P := Parent (P);
                            end loop;
 
                            if Needs_Freezing then
@@ -4309,7 +4306,7 @@ package body Sem_Ch12 is
       elsif Contains_Instance_Of (Gen_Unit, Current_Scope, Gen_Id) then
          Error_Msg_Node_2 := Current_Scope;
          Error_Msg_NE
-           ("circular Instantiation: & instantiated in &!", N, Gen_Unit);
+           ("circular instantiation: & instantiated in &!", N, Gen_Unit);
          Circularity_Detected := True;
          Restore_Env;
          goto Leave;
@@ -5685,7 +5682,7 @@ package body Sem_Ch12 is
          if Contains_Instance_Of (Gen_Unit, Current_Scope, Gen_Id) then
             Error_Msg_Node_2 := Current_Scope;
             Error_Msg_NE
-              ("circular Instantiation: & instantiated in &!", N, Gen_Unit);
+              ("circular instantiation: & instantiated in &!", N, Gen_Unit);
             Circularity_Detected := True;
             Restore_Hidden_Primitives (Vis_Prims_List);
             goto Leave;
@@ -7803,7 +7800,7 @@ package body Sem_Ch12 is
                if Node (Elmt) = Scop then
                   Error_Msg_Node_2 := Inner;
                   Error_Msg_NE
-                    ("circular Instantiation: & instantiated within &!",
+                    ("circular instantiation: & instantiated within &!",
                      N, Scop);
                   return True;
 
@@ -7813,7 +7810,7 @@ package body Sem_Ch12 is
                elsif Contains_Instance_Of (Node (Elmt), Scop, N) then
                   Error_Msg_Node_2 := Inner;
                   Error_Msg_NE
-                    ("circular Instantiation: & instantiated within &!",
+                    ("circular instantiation: & instantiated within &!",
                      N, Node (Elmt));
                   return True;
                end if;
@@ -8805,7 +8802,7 @@ package body Sem_Ch12 is
 
       while not Is_List_Member (P1)
         or else not Is_List_Member (P2)
-        or else List_Containing (P1) /= List_Containing (P2)
+        or else not In_Same_List (P1, P2)
       loop
          P1 := True_Parent (P1);
          P2 := True_Parent (P2);
@@ -9084,7 +9081,7 @@ package body Sem_Ch12 is
          --
          --    procedure P ...  --  this body freezes Parent_Inst
          --
-         --    package Inst is new ...
+         --    procedure Inst is new ...
          --
          --  In this particular scenario, the freeze node for Inst must be
          --  inserted in the same manner as that of Parent_Inst - before the
@@ -9095,9 +9092,8 @@ package body Sem_Ch12 is
          --  after that of Parent_Inst. This relation is established by
          --  comparing the Slocs of Parent_Inst freeze node and Inst.
 
-         elsif List_Containing (Get_Unit_Instantiation_Node (Par)) =
-               List_Containing (Inst_Node)
-           and then Sloc (Freeze_Node (Par)) < Sloc (Inst_Node)
+         elsif In_Same_List (Get_Unit_Instantiation_Node (Par), Inst_Node)
+           and then Sloc (Freeze_Node (Par)) <= Sloc (Inst_Node)
          then
             Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
@@ -9938,7 +9934,7 @@ package body Sem_Ch12 is
 
                if Parent (List_Containing (Get_Unit_Instantiation_Node (Par)))
                     = Parent (List_Containing (N))
-                 and then Sloc (Freeze_Node (Par)) < Sloc (N)
+                 and then Sloc (Freeze_Node (Par)) <= Sloc (N)
                then
                   Insert_Freeze_Node_For_Instance (N, F_Node);
                else
@@ -9992,8 +9988,7 @@ package body Sem_Ch12 is
                      --  the enclosing package, insert the freeze node after
                      --  the body.
 
-                     elsif List_Containing (Freeze_Node (Par)) =
-                           List_Containing (Parent (N))
+                     elsif In_Same_List (Freeze_Node (Par), Parent (N))
                        and then Sloc (Freeze_Node (Par)) < Sloc (Parent (N))
                      then
                         Insert_Freeze_Node_For_Instance
@@ -10806,6 +10801,16 @@ package body Sem_Ch12 is
                   Next_Non_Pragma (Formal_Node);
                   Next (Actual_Of_Formal);
 
+                  --  A formal subprogram may be overloaded, so advance in
+                  --  the list of actuals to make sure we do not match two
+                  --  successive formals to the same actual. This is only
+                  --  relevant for overloadable entities, others have
+                  --  distinct names.
+
+                  if Is_Overloadable (Actual_Ent) then
+                     Next_Entity (Actual_Ent);
+                  end if;
+
                else
                   --  No further formals to match, but the generic part may
                   --  contain inherited operation that are not hidden in the
@@ -11562,7 +11567,7 @@ package body Sem_Ch12 is
             --  Use default to construct declaration
 
             if Present (Subt_Mark) then
-               Def := New_Copy (Subt_Mark);
+               Def := New_Copy_Tree (Subt_Mark);
             else
                pragma Assert (Present (Acc_Def));
                Def := New_Copy_Tree (Acc_Def);
@@ -12650,10 +12655,10 @@ package body Sem_Ch12 is
       Analyzed_Formal : Node_Id;
       Actual_Decls    : List_Id) return List_Id
    is
-      A_Gen_T    : constant Entity_Id  :=
+      A_Gen_T    : constant Entity_Id :=
                      Defining_Identifier (Analyzed_Formal);
-      Def        : constant Node_Id    := Formal_Type_Definition (Formal);
-      Gen_T      : constant Entity_Id  := Defining_Identifier (Formal);
+      Def        : constant Node_Id   := Formal_Type_Definition (Formal);
+      Gen_T      : constant Entity_Id := Defining_Identifier (Formal);
       Act_T      : Entity_Id;
       Ancestor   : Entity_Id := Empty;
       Decl_Node  : Node_Id;
@@ -12954,21 +12959,6 @@ package body Sem_Ch12 is
          end if;
 
          if not Subtypes_Match (Desig_Type, Desig_Act) then
-            Error_Msg_NE
-              ("designated type of actual does not match that of formal &",
-               Actual, Gen_T);
-
-            if not Predicates_Match (Desig_Type, Desig_Act) then
-               Error_Msg_N ("\predicates do not match", Actual);
-            end if;
-
-            Abandon_Instantiation (Actual);
-
-         elsif Is_Access_Type (Designated_Type (Act_T))
-           and then Is_Constrained (Designated_Type (Designated_Type (Act_T)))
-                      /=
-                    Is_Constrained (Designated_Type (Desig_Type))
-         then
             Error_Msg_NE
               ("designated type of actual does not match that of formal &",
                Actual, Gen_T);

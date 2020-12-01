@@ -47,7 +47,7 @@ package body Ada.Text_IO.Float_Aux is
    is
       Buf  : String (1 .. Field'Last);
       Stop : Integer := 0;
-      Ptr  : aliased Integer := 1;
+      Ptr  : aliased Integer;
 
    begin
       if Width /= 0 then
@@ -55,10 +55,10 @@ package body Ada.Text_IO.Float_Aux is
          String_Skip (Buf, Ptr);
       else
          Load_Real (File, Buf, Stop);
+         Ptr := 1;
       end if;
 
       Item := Scan_Real (Buf, Ptr'Access, Stop);
-
       Check_End_Of_Field (Buf, Stop, Ptr, Width);
    end Get;
 
@@ -79,8 +79,7 @@ package body Ada.Text_IO.Float_Aux is
       Last := Pos - 1;
 
    exception
-      when Constraint_Error =>
-         raise Data_Error;
+      when Constraint_Error => raise Data_Error;
    end Gets;
 
    ---------------

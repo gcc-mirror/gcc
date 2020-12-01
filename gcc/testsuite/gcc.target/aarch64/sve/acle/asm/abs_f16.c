@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (abs_f16_x_tied1, svfloat16_t,
 
 /*
 ** abs_f16_x_untied:
+**	movprfx	z0, z1
 **	fabs	z0\.h, p0/m, z1\.h
 **	ret
 */

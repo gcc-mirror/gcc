@@ -515,7 +515,7 @@ namespace {
 #endif
 
 #ifdef __GTHREADS
-	if (__gthread_active_p())
+	if (!__gnu_cxx::__is_single_threaded())
 	  {
 	    if (__atomic_always_lock_free(sizeof(_M_index), &_M_index))
 	      {

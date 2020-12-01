@@ -1756,15 +1756,15 @@ typedef struct rs6000_args
 
 /* #define LEGITIMATE_PIC_OPERAND_P (X) */
 
-/* Specify the machine mode that this machine uses
-   for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE SImode
-
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
    Do not define this if the table should contain absolute addresses.  */
-#define CASE_VECTOR_PC_RELATIVE 1
+#define CASE_VECTOR_PC_RELATIVE rs6000_relative_jumptables
+
+/* Specify the machine mode that this machine uses
+   for the index in the tablejump instruction.  */
+#define CASE_VECTOR_MODE (rs6000_relative_jumptables ? SImode : Pmode)
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 0
@@ -2193,6 +2193,11 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
        assemble_name (FILE, buf);			\
        putc ('\n', FILE);				\
      } while (0)
+
+/* This is how to output an element of a case-vector
+   that is non-relative.  */
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
+  rs6000_output_addr_vec_elt ((FILE), (VALUE))
 
 /* This is how to output an assembler line
    that says to advance the location counter

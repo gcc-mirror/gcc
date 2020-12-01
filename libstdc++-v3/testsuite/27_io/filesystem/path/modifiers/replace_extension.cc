@@ -47,7 +47,7 @@ test01()
 void
 test02()
 {
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     path p2 = p;
     compare_paths( p2.replace_extension(p2.extension()), p );

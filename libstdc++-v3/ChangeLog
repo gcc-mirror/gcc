@@ -1,3 +1,397 @@
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (INPUT): Add <latch> and <semaphore>.
+
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Reduce
+	default tool_timeout to 360.
+
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/pstl/*: Add
+	dg-timeout-factor.
+	* testsuite/25_algorithms/pstl/*: Likewise.
+	* testsuite/26_numerics/pstl/*: Likewise.
+	* testsuite/28_regex/*: Likewise.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
+2020-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_try_preprocess): Define
+	new proc to preprocess a chunk of code.
+	(v3_check_preprocessor_condition): Define new proc to test
+	a preprocessor condition depending on GCC or libstdc++ macros.
+	(check_v3_target_debug_mode, check_v3_target_normal_mode):
+	Use v3_try_preprocess.
+	(check_v3_target_normal_namespace)
+	(check_v3_target_parallel_mode, check_v3_target_cstdint)
+	(check_v3_target_cmath, check_v3_target_atomic_builtins)
+	(check_v3_target_gthreads, check_v3_target_gthreads_timed)
+	(check_v3_target_sleep, check_v3_target_sched_yield)
+	(check_v3_target_string_conversions, check_v3_target_swprintf)
+	(check_v3_target_binary_io, check_v3_target_nprocs): Use
+	v3_check_preprocessor_condition.
+	(check_effective_target_cxx11): Likewise.
+	(check_effective_target_random_device): Likewise.
+	(check_effective_target_tbb-backend): Likewise.
+	(check_effective_target_futex): Likewise.
+	(check_v3_target_little_endian) Call check_effective_target_le.
+	(check_effective_target_atomic-builtins): New proc to define
+	new effective-target keyword.
+	(check_effective_target_gthreads-timed): Likewise.
+
+2020-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/absolute.cc: Avoid
+	-Wrange-loop-construct warning.
+	* testsuite/27_io/filesystem/path/append/source.cc: Likewise.
+	* testsuite/27_io/filesystem/path/assign/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/path/compare/path.cc: Likewise.
+	* testsuite/27_io/filesystem/path/construct/copy.cc: Likewise.
+	* testsuite/27_io/filesystem/path/decompose/extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/parent_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/relative_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/decompose/root_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/itr/traversal.cc: Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/remove_filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/append.cc: Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/cmp.cc: Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/cmp_c++20.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/nonmember/hash_value.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_extension.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_filename.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_parent_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_relative_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_name.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_root_path.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/query/has_stem.cc: Likewise.
+	* testsuite/27_io/filesystem/path/query/is_relative.cc: Likewise.
+	* testsuite/experimental/filesystem/operations/absolute.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/assign/copy.cc: Likewise.
+	* testsuite/experimental/filesystem/path/compare/path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/construct/copy.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/decompose/root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/itr/traversal.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/remove_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/replace_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/modifiers/replace_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/nonmember/hash_value.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_extension.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_filename.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_parent_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_relative_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_directory.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_name.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_root_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/has_stem.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/query/is_relative.cc:
+	Likewise.
+
+2020-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale.cc (locale::facet::_S_get_c_locale()):
+	Revert change to use __is_single_threaded.
+	* src/c++98/locale_init.cc (locale::_S_initialize()):
+	Likewise.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (_GLIBCXX_HAVE_ATOMIC_WAIT):
+	Define.
+	* include/bits/atomic_base.h: Check _GLIBCXX_HAVE_ATOMIC_WAIT.
+	* include/bits/atomic_timed_wait.h: Likewise.
+	* include/bits/semaphore_base.h: Likewise.
+	* include/std/atomic: Likewise.
+	* include/std/latch: Likewise.
+	* include/std/semaphore: Likewise.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/latch: Depend on _GLIBCXX_HAS_GTHREADS and
+	_GLIBCXX_HAVE_LINUX_FUTEX.
+	* include/std/version (__cpp_lib_latch): Define conditionally.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (check_effective_target_gthreads):
+	Call check_v3_target_gthreads not check_v3_target_gthreads_timed.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/algorithms/regex_match/basic/string_range_01_03.cc:
+	Add dg-timeout-factor directive.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/backref.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/63199.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/anymatcher.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/cjk_match.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/hex.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/wstring_locale.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_search/61720.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/assertion.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/basic_regex/ctors/deduction.cc: Likewise.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Only set
+	tool_timeout if it hasn't been set by the user already.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	* testsuite/29_atomics/atomic/wait_notify/bool.cc: Fix missed
+	notifications by making the new thread wait until the parent
+	thread is waiting on the condition variable.
+	* testsuite/29_atomics/atomic/wait_notify/pointers.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Likewise.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/96817.cc: Use new effective-target
+	keywords to select supported targets more effectively.
+	* testsuite/30_threads/call_once/66146.cc: Likewise.
+	* testsuite/lib/libstdc++.exp (check_effective_target_futex):
+	Define new proc.
+	(check_effective_target_gthreads): Define new proc to replace
+	dg-require-gthreads.
+
+2020-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Remove libposix4
+	references.
+	<solaris*>: Don't use -lrt any longer.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml (--enable-libstdcxx-time=OPTION):
+	Remove libposix4 reference.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98001
+	* testsuite/ext/stdio_filebuf/char/79820.cc: Do not pass invalid
+	FILE* to constructor.
+
+2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/precompiled/stdc++.h: Add new headers.
+	* include/std/stop_token: Include <semaphore> unconditionally.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__cond_wait_until): Do not
+	perform redundant conversions to the same clock.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__cond_wait_until_impl):
+	Do not define when _GLIBCXX_HAVE_LINUX_FUTEX is defined. Use
+	__condvar and mutex instead of __gthread_cond_t and
+	unique_lock<mutex>.
+	(__cond_wait_until): Likewise. Fix test for return value of
+	__cond_wait_until_impl.
+	(__timed_waiters::_M_do_wait_until): Use __condvar instead
+	of __gthread_cond_t.
+	* include/bits/atomic_wait.h: Remove <bits/unique_lock.h>
+	include. Only include <bits/std_mutex.h> if not using futexes.
+	(__platform_wait_max_value): Remove unused variable.
+	(__waiters::lock_t): Use lock_guard instead of unique_lock.
+	(__waiters::_M_cv): Use __condvar instead of __gthread_cond_t.
+	(__waiters::_M_do_wait(__platform_wait_t)): Likewise.
+	(__waiters::_M_notify()): Likewise. Use notify_one() if not
+	asked to notify all.
+	* include/bits/std_mutex.h (__condvar): New type.
+	* include/std/condition_variable (condition_variable::_M_cond)
+	(condition_variable::wait_until): Use __condvar instead of
+	__gthread_cond_t.
+	* src/c++11/condition_variable.cc (condition_variable): Define
+	default constructor and destructor as defaulted.
+	(condition_variable::wait, condition_variable::notify_one)
+	(condition_variable::notify_all): Forward to corresponding
+	member function of __condvar.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	* testsuite/29_atomics/atomic/wait_notify/bool.cc: Re-eneable
+	test.
+	* testsuite/29_atomics/atomic/wait_notify/generic.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/pointers.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc: Likewise.
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Likewise.
+	* testsuite/util/atomic/wait_notify_util.h: Fix missed
+	notifications by making the new thread wait until the parent
+	thread is waiting on the condition variable.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97935
+	* include/bits/iterator_concepts.h (__detail::__iter_without_category):
+	New helper concept.
+	(__iterator_traits::__cat): Use __detail::__iter_without_category.
+	* testsuite/24_iterators/associated_types/iterator.traits.cc: New test.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Do not test 'v' on AIX.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	* include/bits/atomic_wait.h (__platform_wait): Check errno,
+	not just the value of EAGAIN.
+	(__waiters::__waiters()): Fix name of data member.
+
+2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	* include/bits/atomic_wait.h (__platform_wait): Return if futex
+	sets EAGAIN.
+	* testsuite/30_threads/latch/3.cc: Re-enable test.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc: Likewise.
+
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97936
+	PR libstdc++/97944
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Disable.
+	Do not require pthreads, but add -pthread when appropriate.
+	* testsuite/30_threads/jthread/95989.cc: Likewise.
+	* testsuite/30_threads/latch/3.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc: Likewise.
+
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/jthread/95989.cc: Run all three test
+	functions, not just the first one twice.
+
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67791
+	* src/c++11/thread.cc (thread::_M_start_thread(_State_ptr, void (*)())):
+	Check that gthreads is available before calling __gthread_create.
+
+2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale.cc (locale::facet::_S_get_c_locale())
+	(locale::id::_M_id() const): Use __is_single_threaded.
+	* src/c++98/locale_init.cc (locale::_S_initialize()):
+	Likewise.
+
+2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/semaphore_base.h
+	(__platform_semaphore::_M_try_acquire_until): Fix type of
+	variable.
+
+2020-11-23  Stephan Bergmann  <sbergman@redhat.com>
+
+	* include/bits/atomic_wait.h (__thread_relax, __thread_yield):
+	Add 'inline'.
+
+2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_GTHREADS): Check for
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/semaphore_base.h (_GLIBCXX_HAVE_POSIX_SEMAPHORE):
+	Check autoconf macro instead of defining it here.
+
+2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h: Do not define anything unless
+	gthreads or futexes are available.
+	* include/bits/atomic_timed_wait.h: Likewise.
+	* include/bits/semaphore_base.h: Likewise.
+	* include/std/semaphore: Likewise.
+	* include/bits/atomic_base.h (atomic_flag::wait)
+	(atomic_flag::notify_one, atomic_flag::notify_all)
+	(__atomic_base<I>::wait, __atomic_base<I>::notify_one)
+	(__atomic_base<I>::notify_all, __atomic_base<P*>::wait)
+	(__atomic_base<P*>::notify_one, __atomic_base<P*>::notify_all)
+	(__atomic_impl::wait, __atomic_impl::notify_one)
+	(__atomic_impl::notify_all, __atomic_float::wait)
+	(__atomic_float::notify_one, __atomic_float::notify_all)
+	(__atomic_ref::wait, __atomic_ref::notify_one)
+	(__atomic_ref::notify_all): Only define if gthreads or futexes
+	are available.
+	* include/std/atomic (atomic::wait, atomic::notify_one)
+	(atomic::notify_all): Likewise.
+	* include/std/version (__cpp_lib_semaphore): Define
+	conditionally.
+
+2020-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97948
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Add options
+	for libatomic.
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Likewise.
+
 2020-11-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_base.h (atomic_flag::wait): Use correct

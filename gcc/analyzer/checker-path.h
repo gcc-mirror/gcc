@@ -105,6 +105,8 @@ public:
 
   void dump (pretty_printer *pp) const;
 
+  void set_location (location_t loc) { m_loc = loc; }
+
  public:
   const enum event_kind m_kind;
  protected:
@@ -503,6 +505,8 @@ public:
     FOR_EACH_VEC_ELT (m_events, i, e)
       e->prepare_for_emission (this, pd, diagnostic_event_id_t (i));
   }
+
+  void fixup_locations (pending_diagnostic *pd);
 
   void record_setjmp_event (const exploded_node *enode,
 			    diagnostic_event_id_t setjmp_emission_id)

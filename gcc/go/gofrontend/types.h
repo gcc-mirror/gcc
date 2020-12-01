@@ -1141,6 +1141,10 @@ class Type
   virtual void
   do_export(Export*) const;
 
+  // For children to call when they detect that they are in error.
+  void
+  set_is_error();
+
   // Return whether a method expects a pointer as the receiver.
   static bool
   method_expects_pointer(const Named_object*);

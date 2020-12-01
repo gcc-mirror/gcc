@@ -24,8 +24,7 @@
 ;;				  (const_int 0)))
 ;;	      (clobber (scratch:QI))])]
 ;;  ""
-;;  [(set_attr "length" "2,8,10")
-;;   (set_attr "cc" "set_zn,set_zn,set_zn")])
+;;  [(set_attr "length" "2,8,10")])
 ;;
 ;;(define_insn ""
 ;;  [(set (cc0)
@@ -35,8 +34,7 @@
 ;;		 (const_int 0)))]
 ;;  "INTVAL (operands[1]) <= 15"
 ;;  "btst	%Z1,%Y0"
-;;  [(set_attr "length" "2")
-;;   (set_attr "cc" "set_zn")])
+;;  [(set_attr "length" "2")])
 ;;
 ;;(define_insn_and_split "*tstsi_upper_bit"
 ;;  [(set (cc0)
@@ -71,8 +69,7 @@
 ;;		 (const_int 0)))]
 ;;  ""
 ;;  "btst	%w1,%w0"
-;;  [(set_attr "length" "2")
-;;   (set_attr "cc" "set_zn")])
+;;  [(set_attr "length" "2")])
 ;;
 ;;(define_insn_and_split "*tstsi_variable_bit_qi"
 ;;  [(set (cc0)
@@ -99,8 +96,7 @@
 ;;			    (const_int 0)))
 ;;	      (clobber (scratch:QI))])]
 ;;  ""
-;;  [(set_attr "length" "2,8,10")
-;;   (set_attr "cc" "set_zn,set_zn,set_zn")])
+;;  [(set_attr "length" "2,8,10")])
 
 (define_insn "*tst<mode>"
   [(set (reg:CCZN CC_REG)
@@ -116,8 +112,7 @@
       return "mov.l	%S0,%S0";
     gcc_unreachable ();
   }
-  [(set_attr "length" "2")
-   (set_attr "cc" "set_znv")])
+  [(set_attr "length" "2")])
 
 (define_insn "*tsthi_upper"
   [(set (reg:CCZN CC_REG)
@@ -135,8 +130,7 @@
 		 (const_int 0)))]
   "reload_completed"
   "mov.w	%e0,%e0"
-  [(set_attr "length" "2")
-   (set_attr "cc" "set_znv")])
+  [(set_attr "length" "2")])
 
 (define_insn "*cmpqi"
   [(set (reg:CC CC_REG)

@@ -3074,34 +3074,38 @@ AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
 gcc_AC_INITFINI_ARRAY
 
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
+# Older versions of GAS and some non-GNU assemblers, have a bugs handling
+# these directives, even when they appear to accept them.
 gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
-  [elf,2,11,0],,
+ [elf,2,11,0],,
 [	.data
 	.uleb128 L2 - L1
 L1:
 	.uleb128 1280
 	.sleb128 -1010
-L2:],
-[[# GAS versions before 2.11 do not support uleb128,
-  # despite appearing to.
-  # ??? There exists an elf-specific test that will crash
-  # the assembler.  Perhaps it's better to figure out whether
-  # arbitrary sections are supported and try the test.
-  as_ver=`$gcc_cv_as --version 2>/dev/null | sed 1q`
-  if echo "$as_ver" | grep GNU > /dev/null; then
-    as_vers=`echo $as_ver | sed -n \
-	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
-    as_major=`expr "$as_vers" : '\([0-9]*\)'`
-    as_minor=`expr "$as_vers" : '[0-9]*\.\([0-9]*\)'`
-    if test $as_major -eq 2 && test $as_minor -lt 11
-    then :
-    else gcc_cv_as_leb128=yes
-    fi
-  fi]],
-  [AC_DEFINE(HAVE_AS_LEB128, 1,
-    [Define if your assembler supports .sleb128 and .uleb128.])],
-  [AC_DEFINE(HAVE_AS_LEB128, 0,
-    [Define if your assembler supports .sleb128 and .uleb128.])])
+L2:
+	.uleb128 0x8000000000000000
+],
+[[
+if test "x$gcc_cv_objdump" != x; then
+  if $gcc_cv_objdump -s conftest.o 2>/dev/null \
+     | grep '04800a8e 78808080 80808080 808001' >/dev/null; then
+    gcc_cv_as_leb128=yes
+  fi
+elif test "x$gcc_cv_otool" != x; then
+  if $gcc_cv_otool -d conftest.o 2>/dev/null \
+     | grep '04 80 0a 8e 78 80 80 80 80 80 80 80 80 80 01' >/dev/null; then
+    gcc_cv_as_leb128=yes
+  fi
+else
+  # play safe, assume the assembler is broken.
+  :
+fi
+]],
+ [AC_DEFINE(HAVE_AS_LEB128, 1,
+   [Define if your assembler supports .sleb128 and .uleb128.])],
+ [AC_DEFINE(HAVE_AS_LEB128, 0,
+   [Define if your assembler supports .sleb128 and .uleb128.])])
 
 # Determine if an .eh_frame section is read-only.
 gcc_fn_eh_frame_ro () {
@@ -7319,6 +7323,51 @@ if test x"$ld_pushpopstate_support" = xyes; then
 	[Define if your linker supports --push-state/--pop-state])
 fi
 AC_MSG_RESULT($ld_pushpopstate_support)
+
+# On s390, float_t has historically been statically defined as double for no
+# good reason. To comply with the C standard in the light of this definition,
+# gcc has evaluated float expressions in double precision when in
+# standards-compatible mode or when given -fexcess-precision=standard. To enable
+# a smooth transition towards the new model used by most architectures, where
+# gcc describes its behavior via the macro __FLT_EVAL_METHOD__ and glibc derives
+# float_t from that, this behavior can be configured with
+# --enable-s390-excess-float-precision. When given as enabled, that flag selects
+# the old model. When omitted, native builds will derive the flag from the
+# behavior of glibc. When glibc clamps float_t to double, gcc follows the old
+# model. In any other case, it defaults to the new model.
+AC_ARG_ENABLE(s390-excess-float-precision,
+  [AS_HELP_STRING([--enable-s390-excess-float-precision],
+		  [on s390 targets, evaluate float with double precision
+		   when in standards-conforming mode])],
+  [],[enable_s390_excess_float_precision=auto])
+
+case $target in
+  s390*-linux*)
+  if test "$target" = "$host" -a "$host" = "$build" -a \
+      x"$enable_s390_excess_float_precision" = xauto; then
+    AC_CACHE_CHECK([for glibc clamping float_t to double],
+      gcc_cv_float_t_clamped_to_double,
+      [AC_RUN_IFELSE([AC_LANG_SOURCE([
+#define __FLT_EVAL_METHOD__ 0
+#include <math.h>
+int main() {
+  return !(sizeof(float_t) == sizeof(double));
+}])],
+        [gcc_cv_float_t_clamped_to_double=yes],
+        [gcc_cv_float_t_clamped_to_double=no])])
+    if test x"$gcc_cv_float_t_clamped_to_double" = xyes; then
+      enable_s390_excess_float_precision=yes
+    fi
+  fi
+
+  GCC_TARGET_TEMPLATE(ENABLE_S390_EXCESS_FLOAT_PRECISION)
+  if test x"$enable_s390_excess_float_precision" = xyes; then
+    AC_DEFINE(ENABLE_S390_EXCESS_FLOAT_PRECISION, 1,
+[Define to enable evaluating float expressions with double precision in
+standards-compatible mode on s390 targets.])
+  fi
+  ;;
+esac
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

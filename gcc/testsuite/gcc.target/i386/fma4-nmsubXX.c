@@ -55,7 +55,7 @@ check_nmsubps ()
 	if (dst.f[i + j] != res.f[i + j]) 
 	  check_fails++;
       }
-  return check_fails++;
+  return check_fails;
 }
 
 static int
@@ -69,9 +69,8 @@ check_nmsubpd ()
 	if (dst.d[i + j] != res.d[i + j]) 
 	  check_fails++;
       }
-  return check_fails++;
+  return check_fails;
 }
-
 
 static int
 check_nmsubss ()
@@ -83,7 +82,7 @@ check_nmsubss ()
       if (dst.f[i] != res.f[i]) 
 	check_fails++;
     }	
-  return check_fails++;
+  return check_fails;
 }
 
 static int
@@ -96,7 +95,7 @@ check_nmsubsd ()
       if (dst.d[i] != res.d[i]) 
 	check_fails++;
     }
-  return check_fails++;
+  return check_fails;
 }
 
 static void
@@ -111,7 +110,6 @@ fma4_test (void)
   
   if (check_nmsubps (&dst.x[i], &src1.f[i * 4], &src2.f[i * 4], &src3.f[i * 4])) 
     abort ();
-  
 
   for (i = 0; i < NUM; i++)
     dst.x[i] = _mm_nmsub_ss (src1.x[i], src2.x[i], src3.x[i]);
@@ -126,12 +124,10 @@ fma4_test (void)
   
   if (check_nmsubpd (&dst.y[i], &src1.d[i * 2], &src2.d[i * 2], &src3.d[i * 2])) 
     abort ();
-  
 
   for (i = 0; i < NUM; i++)
     dst.y[i] = _mm_nmsub_sd (src1.y[i], src2.y[i], src3.y[i]);
   
   if (check_nmsubsd (&dst.y[i], &src1.d[i * 2], &src2.d[i * 2], &src3.d[i * 2])) 
     abort ();
-
 }

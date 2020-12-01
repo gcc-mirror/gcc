@@ -1333,7 +1333,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
   return gnu_result;
 }
-
+
 /* Subroutine of gnat_to_gnu to process gnat_node, an N_Pragma.  Return
    any statements we generate.  */
 

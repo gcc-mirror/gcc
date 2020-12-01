@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target { ! lp64 } } }
+// { dg-timeout-factor 2 }
 
 #include <istream>
 #include <streambuf>

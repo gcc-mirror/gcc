@@ -3379,8 +3379,9 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	return;
 
       /* Only check pointers and C++ references.  */
+      tree curptype = TREE_TYPE (curp);
       tree newptype = TREE_TYPE (newp);
-      if (!POINTER_TYPE_P (newptype))
+      if (!POINTER_TYPE_P (curptype) || !POINTER_TYPE_P (newptype))
 	continue;
 
       /* Skip mismatches in __builtin_va_list that is commonly
@@ -3430,7 +3431,6 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
       if (origloc == UNKNOWN_LOCATION)
 	origloc = newloc;
 
-      tree curptype = TREE_TYPE (curp);
       const std::string newparmstr = newa->array_as_string (newptype);
       const std::string curparmstr = cura->array_as_string (curptype);
       if (new_vla_p && !cur_vla_p)

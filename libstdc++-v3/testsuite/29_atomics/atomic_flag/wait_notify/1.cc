@@ -2,7 +2,6 @@
 // { dg-do run { target c++2a } }
 // { dg-require-gthreads "" }
 // { dg-additional-options "-pthread" { target pthread } }
-// { dg-skip-if "broken" { ! *-*-*linux } }
 
 // Copyright (C) 2020 Free Software Foundation, Inc.
 //
@@ -37,18 +36,22 @@ main()
 
   std::mutex m;
   std::condition_variable cv;
+  std::unique_lock<std::mutex> l(m);
 
   std::atomic_flag a;
   std::atomic_flag b;
   std::thread t([&]
 		{
+		  {
+		    // This ensures we block until cv.wait(l) starts.
+		    std::lock_guard<std::mutex> ll(m);
+		  }
 		  cv.notify_one();
 		  a.wait(false);
 		  b.test_and_set();
 		  b.notify_one();
 		});
 
-  std::unique_lock<std::mutex> l(m);
   cv.wait(l);
   std::this_thread::sleep_for(100ms);
   a.test_and_set();

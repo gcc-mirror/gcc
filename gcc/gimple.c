@@ -1543,7 +1543,7 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 	  if (fnspec.arg_direct_p (arg))
 	    flags |= EAF_DIRECT;
 	  if (fnspec.arg_noescape_p (arg))
-	    flags |= EAF_NOESCAPE;
+	    flags |= EAF_NOESCAPE | EAF_NODIRECTESCAPE;
 	  if (fnspec.arg_readonly_p (arg))
 	    flags |= EAF_NOCLOBBER;
 	}

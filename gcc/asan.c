@@ -257,6 +257,58 @@ hash_set<tree> *asan_handled_variables = NULL;
 
 hash_set <tree> *asan_used_labels = NULL;
 
+/* Global variables for HWASAN stack tagging.  */
+/* hwasan_frame_tag_offset records the offset from the frame base tag that the
+   next object should have.  */
+static uint8_t hwasan_frame_tag_offset = 0;
+/* hwasan_frame_base_ptr is a pointer with the same address as
+   `virtual_stack_vars_rtx` for the current frame, and with the frame base tag
+   stored in it.  N.b. this global RTX does not need to be marked GTY, but is
+   done so anyway.  The need is not there since all uses are in just one pass
+   (cfgexpand) and there are no calls to ggc_collect between the uses.  We mark
+   it GTY(()) anyway to allow the use of the variable later on if needed by
+   future features.  */
+static GTY(()) rtx hwasan_frame_base_ptr = NULL_RTX;
+/* hwasan_frame_base_init_seq is the sequence of RTL insns that will initialize
+   the hwasan_frame_base_ptr.  When the hwasan_frame_base_ptr is requested, we
+   generate this sequence but do not emit it.  If the sequence was created it
+   is emitted once the function body has been expanded.
+
+   This delay is because the frame base pointer may be needed anywhere in the
+   function body, or needed by the expand_used_vars function.  Emitting once in
+   a known place is simpler than requiring the emission of the instructions to
+   be know where it should go depending on the first place the hwasan frame
+   base is needed.  */
+static GTY(()) rtx_insn *hwasan_frame_base_init_seq = NULL;
+
+/* Structure defining the extent of one object on the stack that HWASAN needs
+   to tag in the corresponding shadow stack space.
+
+   The range this object spans on the stack is between `untagged_base +
+   nearest_offset` and `untagged_base + farthest_offset`.
+   `tagged_base` is an rtx containing the same value as `untagged_base` but
+   with a random tag stored in the top byte.  We record both `untagged_base`
+   and `tagged_base` so that `hwasan_emit_prologue` can use both without having
+   to emit RTL into the instruction stream to re-calculate one from the other.
+   (`hwasan_emit_prologue` needs to use both bases since the
+   __hwasan_tag_memory call it emits uses an untagged value, and it calculates
+   the tag to store in shadow memory based on the tag_offset plus the tag in
+   tagged_base).  */
+struct hwasan_stack_var
+{
+  rtx untagged_base;
+  rtx tagged_base;
+  poly_int64 nearest_offset;
+  poly_int64 farthest_offset;
+  uint8_t tag_offset;
+};
+
+/* Variable recording all stack variables that HWASAN needs to tag.
+   Does not need to be marked as GTY(()) since every use is in the cfgexpand
+   pass and gcc_collect is not called in the middle of that pass.  */
+static vec<hwasan_stack_var> hwasan_tagged_stack_vars;
+
+
 /* Sets shadow offset to value in string VAL.  */
 
 bool
@@ -317,6 +369,25 @@ asan_sanitize_allocas_p (void)
 {
   return (asan_sanitize_stack_p () && param_asan_protect_allocas);
 }
+
+bool
+asan_instrument_reads (void)
+{
+  return (sanitize_flags_p (SANITIZE_ADDRESS) && param_asan_instrument_reads);
+}
+
+bool
+asan_instrument_writes (void)
+{
+  return (sanitize_flags_p (SANITIZE_ADDRESS) && param_asan_instrument_writes);
+}
+
+bool
+asan_memintrin (void)
+{
+  return (sanitize_flags_p (SANITIZE_ADDRESS) && param_asan_memintrin);
+}
+
 
 /* Checks whether section SEC should be sanitized.  */
 
@@ -578,20 +649,47 @@ get_last_alloca_addr ()
    To overcome the issue we use following trick: pass new_sp as a second
    parameter to __asan_allocas_unpoison and rewrite it during expansion with
    new_sp + (virtual_dynamic_stack_rtx - sp) later in
-   expand_asan_emit_allocas_unpoison function.  */
+   expand_asan_emit_allocas_unpoison function.
+
+   HWASAN needs to do very similar, the eventual pseudocode should be:
+      __hwasan_tag_memory (virtual_stack_dynamic_rtx,
+			   0,
+			   new_sp - sp);
+      __builtin_stack_restore (new_sp)
+
+   Need to use the same trick to handle STACK_DYNAMIC_OFFSET as described
+   above.  */
 
 static void
 handle_builtin_stack_restore (gcall *call, gimple_stmt_iterator *iter)
 {
-  if (!iter || !asan_sanitize_allocas_p ())
+  if (!iter
+      || !(asan_sanitize_allocas_p () || hwasan_sanitize_allocas_p ()))
     return;
 
-  tree last_alloca = get_last_alloca_addr ();
   tree restored_stack = gimple_call_arg (call, 0);
-  tree fn = builtin_decl_implicit (BUILT_IN_ASAN_ALLOCAS_UNPOISON);
-  gimple *g = gimple_build_call (fn, 2, last_alloca, restored_stack);
-  gsi_insert_before (iter, g, GSI_SAME_STMT);
-  g = gimple_build_assign (last_alloca, restored_stack);
+
+  gimple *g;
+
+  if (hwasan_sanitize_allocas_p ())
+    {
+      enum internal_fn fn = IFN_HWASAN_ALLOCA_UNPOISON;
+      /* There is only one piece of information `expand_HWASAN_ALLOCA_UNPOISON`
+	 needs to work.  This is the length of the area that we're
+	 deallocating.  Since the stack pointer is known at expand time, the
+	 position of the new stack pointer after deallocation is enough
+	 information to calculate this length.  */
+      g = gimple_build_call_internal (fn, 1, restored_stack);
+    }
+  else
+    {
+      tree last_alloca = get_last_alloca_addr ();
+      tree fn = builtin_decl_implicit (BUILT_IN_ASAN_ALLOCAS_UNPOISON);
+      g = gimple_build_call (fn, 2, last_alloca, restored_stack);
+      gsi_insert_before (iter, g, GSI_SAME_STMT);
+      g = gimple_build_assign (last_alloca, restored_stack);
+    }
+
   gsi_insert_before (iter, g, GSI_SAME_STMT);
 }
 
@@ -621,14 +719,12 @@ handle_builtin_stack_restore (gcall *call, gimple_stmt_iterator *iter)
 static void
 handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
 {
-  if (!iter || !asan_sanitize_allocas_p ())
+  if (!iter
+      || !(asan_sanitize_allocas_p () || hwasan_sanitize_allocas_p ()))
     return;
 
   gassign *g;
   gcall *gg;
-  const HOST_WIDE_INT redzone_mask = ASAN_RED_ZONE_SIZE - 1;
-
-  tree last_alloca = get_last_alloca_addr ();
   tree callee = gimple_call_fndecl (call);
   tree old_size = gimple_call_arg (call, 0);
   tree ptr_type = gimple_call_lhs (call) ? TREE_TYPE (gimple_call_lhs (call))
@@ -637,6 +733,68 @@ handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
   unsigned int align
     = DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
       ? 0 : tree_to_uhwi (gimple_call_arg (call, 1));
+
+  if (hwasan_sanitize_allocas_p ())
+    {
+      gimple_seq stmts = NULL;
+      location_t loc = gimple_location (gsi_stmt (*iter));
+      /*
+	 HWASAN needs a different expansion.
+
+	 addr = __builtin_alloca (size, align);
+
+	 should be replaced by
+
+	 new_size = size rounded up to HWASAN_TAG_GRANULE_SIZE byte alignment;
+	 untagged_addr = __builtin_alloca (new_size, align);
+	 tag = __hwasan_choose_alloca_tag ();
+	 addr = ifn_HWASAN_SET_TAG (untagged_addr, tag);
+	 __hwasan_tag_memory (untagged_addr, tag, new_size);
+	*/
+      /* Ensure alignment at least HWASAN_TAG_GRANULE_SIZE bytes so we start on
+	 a tag granule.  */
+      align = align > HWASAN_TAG_GRANULE_SIZE ? align : HWASAN_TAG_GRANULE_SIZE;
+
+      tree old_size = gimple_call_arg (call, 0);
+      tree new_size = gimple_build_round_up (&stmts, loc, size_type_node,
+					     old_size,
+					     HWASAN_TAG_GRANULE_SIZE);
+
+      /* Make the alloca call */
+      tree untagged_addr
+	= gimple_build (&stmts, loc,
+			as_combined_fn (BUILT_IN_ALLOCA_WITH_ALIGN), ptr_type,
+			new_size, build_int_cst (size_type_node, align));
+
+      /* Choose the tag.
+	 Here we use an internal function so we can choose the tag at expand
+	 time.  We need the decision to be made after stack variables have been
+	 assigned their tag (i.e. once the hwasan_frame_tag_offset variable has
+	 been set to one after the last stack variables tag).  */
+      tree tag = gimple_build (&stmts, loc, CFN_HWASAN_CHOOSE_TAG,
+			       unsigned_char_type_node);
+
+      /* Add tag to pointer.  */
+      tree addr
+	= gimple_build (&stmts, loc, CFN_HWASAN_SET_TAG, ptr_type,
+			untagged_addr, tag);
+
+      /* Tag shadow memory.
+	 NOTE: require using `untagged_addr` here for libhwasan API.  */
+      gimple_build (&stmts, loc, as_combined_fn (BUILT_IN_HWASAN_TAG_MEM),
+		    void_type_node, untagged_addr, tag, new_size);
+
+      /* Insert the built up code sequence into the original instruction stream
+	 the iterator points to.  */
+      gsi_insert_seq_before (iter, stmts, GSI_SAME_STMT);
+
+      /* Finally, replace old alloca ptr with NEW_ALLOCA.  */
+      replace_call_with_value (iter, addr);
+      return;
+    }
+
+  tree last_alloca = get_last_alloca_addr ();
+  const HOST_WIDE_INT redzone_mask = ASAN_RED_ZONE_SIZE - 1;
 
   /* If ALIGN > ASAN_RED_ZONE_SIZE, we embed left redzone into first ALIGN
      bytes of allocated space.  Otherwise, align alloca to ASAN_RED_ZONE_SIZE
@@ -790,6 +948,31 @@ get_mem_refs_of_builtin_call (gcall *call,
       break;
 
     case BUILT_IN_STRLEN:
+      /* Special case strlen here since its length is taken from its return
+	 value.
+
+	 The approach taken by the sanitizers is to check a memory access
+	 before it's taken.  For ASAN strlen is intercepted by libasan, so no
+	 check is inserted by the compiler.
+
+	 This function still returns `true` and provides a length to the rest
+	 of the ASAN pass in order to record what areas have been checked,
+	 avoiding superfluous checks later on.
+
+	 HWASAN does not intercept any of these internal functions.
+	 This means that checks for memory accesses must be inserted by the
+	 compiler.
+	 strlen is a special case, because we can tell the length from the
+	 return of the function, but that is not known until after the function
+	 has returned.
+
+	 Hence we can't check the memory access before it happens.
+	 We could check the memory access after it has already happened, but
+	 for now we choose to just ignore `strlen` calls.
+	 This decision was simply made because that means the special case is
+	 limited to this one case of this one function.  */
+      if (hwasan_sanitize_p ())
+	return false;
       source0 = gimple_call_arg (call, 0);
       len = gimple_call_lhs (call);
       break;
@@ -1359,6 +1542,199 @@ asan_redzone_buffer::flush_if_full (void)
     flush_redzone_payload ();
 }
 
+
+/* HWAddressSanitizer (hwasan) is a probabilistic method for detecting
+   out-of-bounds and use-after-free bugs.
+   Read more:
+   http://code.google.com/p/address-sanitizer/
+
+   Similar to AddressSanitizer (asan) it consists of two parts: the
+   instrumentation module in this file, and a run-time library.
+
+   The instrumentation module adds a run-time check before every memory insn in
+   the same manner as asan (see the block comment for AddressSanitizer above).
+   Currently, hwasan only adds out-of-line instrumentation, where each check is
+   implemented as a function call to the run-time library.  Hence a check for a
+   load of N bytes from address X would be implemented with a function call to
+   __hwasan_loadN(X), and checking a store of N bytes from address X would be
+   implemented with a function call to __hwasan_storeN(X).
+
+   The main difference between hwasan and asan is in the information stored to
+   help this checking.  Both sanitizers use a shadow memory area which stores
+   data recording the state of main memory at a corresponding address.
+
+   For hwasan, each 16 byte granule in main memory has a corresponding 1 byte
+   in shadow memory.  This shadow address can be calculated with equation:
+     (addr >> log_2(HWASAN_TAG_GRANULE_SIZE))
+	  + __hwasan_shadow_memory_dynamic_address;
+   The conversion between real and shadow memory for asan is given in the block
+   comment at the top of this file.
+   The description of how this shadow memory is laid out for asan is in the
+   block comment at the top of this file, here we describe how this shadow
+   memory is used for hwasan.
+
+   For hwasan, each variable is assigned a byte-sized 'tag'.  The extent of
+   the shadow memory for that variable is filled with the assigned tag, and
+   every pointer referencing that variable has its top byte set to the same
+   tag.  The run-time library redefines malloc so that every allocation returns
+   a tagged pointer and tags the corresponding shadow memory with the same tag.
+
+   On each pointer dereference the tag found in the pointer is compared to the
+   tag found in the shadow memory corresponding to the accessed memory address.
+   If these tags are found to differ then this memory access is judged to be
+   invalid and a report is generated.
+
+   This method of bug detection is not perfect -- it can not catch every bad
+   access -- but catches them probabilistically instead.  There is always the
+   possibility that an invalid memory access will happen to access memory
+   tagged with the same tag as the pointer that this access used.
+   The chances of this are approx. 0.4% for any two uncorrelated objects.
+
+   Random tag generation can mitigate this problem by decreasing the
+   probability that an invalid access will be missed in the same manner over
+   multiple runs.  i.e. if two objects are tagged the same in one run of the
+   binary they are unlikely to be tagged the same in the next run.
+   Both heap and stack allocated objects have random tags by default.
+
+   [16 byte granule implications]
+    Since the shadow memory only has a resolution on real memory of 16 bytes,
+    invalid accesses that are within the same 16 byte granule as a valid
+    address will not be caught.
+
+    There is a "short-granule" feature in the runtime library which does catch
+    such accesses, but this feature is not implemented for stack objects (since
+    stack objects are allocated and tagged by compiler instrumentation, and
+    this feature has not yet been implemented in GCC instrumentation).
+
+    Another outcome of this 16 byte resolution is that each tagged object must
+    be 16 byte aligned.  If two objects were to share any 16 byte granule in
+    memory, then they both would have to be given the same tag, and invalid
+    accesses to one using a pointer to the other would be undetectable.
+
+   [Compiler instrumentation]
+    Compiler instrumentation ensures that two adjacent buffers on the stack are
+    given different tags, this means an access to one buffer using a pointer
+    generated from the other (e.g. through buffer overrun) will have mismatched
+    tags and be caught by hwasan.
+
+    We don't randomly tag every object on the stack, since that would require
+    keeping many registers to record each tag.  Instead we randomly generate a
+    tag for each function frame, and each new stack object uses a tag offset
+    from that frame tag.
+    i.e. each object is tagged as RFT + offset, where RFT is the "random frame
+    tag" generated for this frame.
+    This means that randomisation does not peturb the difference between tags
+    on tagged stack objects within a frame, but this is mitigated by the fact
+    that objects with the same tag within a frame are very far apart
+    (approx. 2^HWASAN_TAG_SIZE objects apart).
+
+    As a demonstration, using the same example program as in the asan block
+    comment above:
+
+     int
+     foo ()
+     {
+       char a[23] = {0};
+       int b[2] = {0};
+
+       a[5] = 1;
+       b[1] = 2;
+
+       return a[5] + b[1];
+     }
+
+    On AArch64 the stack will be ordered as follows for the above function:
+
+    Slot 1/ [24 bytes for variable 'a']
+    Slot 2/ [8 bytes padding for alignment]
+    Slot 3/ [8 bytes for variable 'b']
+    Slot 4/ [8 bytes padding for alignment]
+
+    (The padding is there to ensure 16 byte alignment as described in the 16
+     byte granule implications).
+
+    While the shadow memory will be ordered as follows:
+
+    - 2 bytes (representing 32 bytes in real memory) tagged with RFT + 1.
+    - 1 byte (representing 16 bytes in real memory) tagged with RFT + 2.
+
+    And any pointer to "a" will have the tag RFT + 1, and any pointer to "b"
+    will have the tag RFT + 2.
+
+   [Top Byte Ignore requirements]
+    Hwasan requires the ability to store an 8 bit tag in every pointer.  There
+    is no instrumentation done to remove this tag from pointers before
+    dereferencing, which means the hardware must ignore this tag during memory
+    accesses.
+
+    Architectures where this feature is available should indicate this using
+    the TARGET_MEMTAG_CAN_TAG_ADDRESSES hook.
+
+   [Stack requires cleanup on unwinding]
+    During normal operation of a hwasan sanitized program more space in the
+    shadow memory becomes tagged as the stack grows.  As the stack shrinks this
+    shadow memory space must become untagged.  If it is not untagged then when
+    the stack grows again (during other function calls later on in the program)
+    objects on the stack that are usually not tagged (e.g. parameters passed on
+    the stack) can be placed in memory whose shadow space is tagged with
+    something else, and accesses can cause false positive reports.
+
+    Hence we place untagging code on every epilogue of functions which tag some
+    stack objects.
+
+    Moreover, the run-time library intercepts longjmp & setjmp to untag when
+    the stack is unwound this way.
+
+    C++ exceptions are not yet handled, which means this sanitizer can not
+    handle C++ code that throws exceptions -- it will give false positives
+    after an exception has been thrown.  The implementation that the hwasan
+    library has for handling these relies on the frame pointer being after any
+    local variables.  This is not generally the case for GCC.  */
+
+
+/* Returns whether we are tagging pointers and checking those tags on memory
+   access.  */
+bool
+hwasan_sanitize_p ()
+{
+  return sanitize_flags_p (SANITIZE_HWADDRESS);
+}
+
+/* Are we tagging the stack?  */
+bool
+hwasan_sanitize_stack_p ()
+{
+  return (hwasan_sanitize_p () && param_hwasan_instrument_stack);
+}
+
+/* Are we tagging alloca objects?  */
+bool
+hwasan_sanitize_allocas_p (void)
+{
+  return (hwasan_sanitize_stack_p () && param_hwasan_instrument_allocas);
+}
+
+/* Should we instrument reads?  */
+bool
+hwasan_instrument_reads (void)
+{
+  return (hwasan_sanitize_p () && param_hwasan_instrument_reads);
+}
+
+/* Should we instrument writes?  */
+bool
+hwasan_instrument_writes (void)
+{
+  return (hwasan_sanitize_p () && param_hwasan_instrument_writes);
+}
+
+/* Should we instrument builtin calls?  */
+bool
+hwasan_memintrin (void)
+{
+  return (hwasan_sanitize_p () && param_hwasan_instrument_mem_intrinsics);
+}
+
 /* Insert code to protect stack vars.  The prologue sequence should be emitted
    directly, epilogue sequence returned.  BASE is the register holding the
    stack base, against which OFFSETS array offsets are relative to, OFFSETS
@@ -1854,6 +2230,8 @@ static tree
 report_error_func (bool is_store, bool recover_p, HOST_WIDE_INT size_in_bytes,
 		   int *nargs)
 {
+  gcc_assert (!hwasan_sanitize_p ());
+
   static enum built_in_function report[2][2][6]
     = { { { BUILT_IN_ASAN_REPORT_LOAD1, BUILT_IN_ASAN_REPORT_LOAD2,
 	    BUILT_IN_ASAN_REPORT_LOAD4, BUILT_IN_ASAN_REPORT_LOAD8,
@@ -2146,6 +2524,7 @@ build_check_stmt (location_t loc, tree base, tree len,
   gimple *g;
 
   gcc_assert (!(size_in_bytes > 0 && !is_non_zero_len));
+  gcc_assert (size_in_bytes == -1 || size_in_bytes >= 1);
 
   gsi = *iter;
 
@@ -2190,7 +2569,11 @@ build_check_stmt (location_t loc, tree base, tree len,
   if (is_scalar_access)
     flags |= ASAN_CHECK_SCALAR_ACCESS;
 
-  g = gimple_build_call_internal (IFN_ASAN_CHECK, 4,
+  enum internal_fn fn = hwasan_sanitize_p ()
+    ? IFN_HWASAN_CHECK
+    : IFN_ASAN_CHECK;
+
+  g = gimple_build_call_internal (fn, 4,
 				  build_int_cst (integer_type_node, flags),
 				  base, len,
 				  build_int_cst (integer_type_node,
@@ -2214,9 +2597,9 @@ static void
 instrument_derefs (gimple_stmt_iterator *iter, tree t,
 		   location_t location, bool is_store)
 {
-  if (is_store && !param_asan_instrument_writes)
+  if (is_store && !(asan_instrument_writes () || hwasan_instrument_writes ()))
     return;
-  if (!is_store && !param_asan_instrument_reads)
+  if (!is_store && !(asan_instrument_reads () || hwasan_instrument_reads ()))
     return;
 
   tree type, base;
@@ -2277,7 +2660,12 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     {
       if (DECL_THREAD_LOCAL_P (inner))
 	return;
-      if (!param_asan_globals && is_global_var (inner))
+      /* If we're not sanitizing globals and we can tell statically that this
+	 access is inside a global variable, then there's no point adding
+	 instrumentation to check the access.  N.b. hwasan currently never
+	 sanitizes globals.  */
+      if ((hwasan_sanitize_p () || !param_asan_globals)
+	  && is_global_var (inner))
         return;
       if (!TREE_STATIC (inner))
 	{
@@ -2370,7 +2758,7 @@ instrument_mem_region_access (tree base, tree len,
 static bool
 instrument_builtin_call (gimple_stmt_iterator *iter)
 {
-  if (!param_asan_memintrin)
+  if (!(asan_memintrin () || hwasan_memintrin ()))
     return false;
 
   bool iter_advanced_p = false;
@@ -2506,10 +2894,27 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 	      break;
 	    }
 	}
-      tree decl = builtin_decl_implicit (BUILT_IN_ASAN_HANDLE_NO_RETURN);
-      gimple *g = gimple_build_call (decl, 0);
-      gimple_set_location (g, gimple_location (stmt));
-      gsi_insert_before (iter, g, GSI_SAME_STMT);
+      /* If a function does not return, then we must handle clearing up the
+	 shadow stack accordingly.  For ASAN we can simply set the entire stack
+	 to "valid" for accesses by setting the shadow space to 0 and all
+	 accesses will pass checks.  That means that some bad accesses may be
+	 missed, but we will not report any false positives.
+
+	 This is not possible for HWASAN.  Since there is no "always valid" tag
+	 we can not set any space to "always valid".  If we were to clear the
+	 entire shadow stack then code resuming from `longjmp` or a caught
+	 exception would trigger false positives when correctly accessing
+	 variables on the stack.  Hence we need to handle things like
+	 `longjmp`, thread exit, and exceptions in a different way.  These
+	 problems must be handled externally to the compiler, e.g. in the
+	 language runtime.  */
+      if (! hwasan_sanitize_p ())
+	{
+	  tree decl = builtin_decl_implicit (BUILT_IN_ASAN_HANDLE_NO_RETURN);
+	  gimple *g = gimple_build_call (decl, 0);
+	  gimple_set_location (g, gimple_location (stmt));
+	  gsi_insert_before (iter, g, GSI_SAME_STMT);
+	}
     }
 
   bool instrumented = false;
@@ -2908,6 +3313,14 @@ initialize_sanitizer_builtins (void)
     = build_function_type_list (void_type_node, uint64_type_node,
 				ptr_type_node, NULL_TREE);
 
+  tree BT_FN_PTR_CONST_PTR_UINT8
+    = build_function_type_list (ptr_type_node, const_ptr_type_node,
+				unsigned_char_type_node, NULL_TREE);
+  tree BT_FN_VOID_PTR_UINT8_PTRMODE
+    = build_function_type_list (void_type_node, ptr_type_node,
+				unsigned_char_type_node,
+				pointer_sized_int_node, NULL_TREE);
+
   tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
   tree BT_FN_IX_CONST_VPTR_INT[5];
   tree BT_FN_IX_VPTR_IX_INT[5];
@@ -2958,6 +3371,8 @@ initialize_sanitizer_builtins (void)
 #define BT_FN_I16_CONST_VPTR_INT BT_FN_IX_CONST_VPTR_INT[4]
 #define BT_FN_I16_VPTR_I16_INT BT_FN_IX_VPTR_IX_INT[4]
 #define BT_FN_VOID_VPTR_I16_INT BT_FN_VOID_VPTR_IX_INT[4]
+#undef ATTR_NOTHROW_LIST
+#define ATTR_NOTHROW_LIST ECF_NOTHROW
 #undef ATTR_NOTHROW_LEAF_LIST
 #define ATTR_NOTHROW_LEAF_LIST ECF_NOTHROW | ECF_LEAF
 #undef ATTR_TMPURE_NOTHROW_LEAF_LIST
@@ -3224,6 +3639,31 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
 
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
 
+  if (hwasan_sanitize_p ())
+    {
+      gcc_assert (param_hwasan_instrument_stack);
+      gimple_seq stmts = NULL;
+      /* Here we swap ASAN_MARK calls for HWASAN_MARK.
+	 This is because we are using the approach of using ASAN_MARK as a
+	 synonym until here.
+	 That approach means we don't yet have to duplicate all the special
+	 cases for ASAN_MARK and ASAN_POISON with the exact same handling but
+	 called HWASAN_MARK etc.
+
+	 N.b. __asan_poison_stack_memory (which implements ASAN_MARK for ASAN)
+	 rounds the size up to its shadow memory granularity, while
+	 __hwasan_tag_memory (which implements the same for HWASAN) does not.
+	 Hence we emit HWASAN_MARK with an aligned size unlike ASAN_MARK.  */
+      tree len = gimple_call_arg (g, 2);
+      tree new_len = gimple_build_round_up (&stmts, loc, size_type_node, len,
+					    HWASAN_TAG_GRANULE_SIZE);
+      gimple_build (&stmts, loc, CFN_HWASAN_MARK,
+		    void_type_node, gimple_call_arg (g, 0),
+		    base, new_len);
+      gsi_replace_with_seq (iter, stmts, true);
+      return false;
+    }
+
   if (is_poison)
     {
       if (asan_handled_variables == NULL)
@@ -3298,6 +3738,7 @@ asan_expand_mark_ifn (gimple_stmt_iterator *iter)
 bool
 asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 {
+  gcc_assert (!hwasan_sanitize_p ());
   gimple *g = gsi_stmt (*iter);
   location_t loc = gimple_location (g);
   bool recover_p;
@@ -3571,11 +4012,61 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
 
       int nargs;
       bool store_p = gimple_call_internal_p (use, IFN_ASAN_POISON_USE);
-      tree fun = report_error_func (store_p, recover_p, tree_to_uhwi (size),
-				    &nargs);
+      gcall *call;
+      if (hwasan_sanitize_p ())
+	{
+	  tree fun = builtin_decl_implicit (BUILT_IN_HWASAN_TAG_MISMATCH4);
+	  /* NOTE: hwasan has no __hwasan_report_* functions like asan does.
+		We use __hwasan_tag_mismatch4 with arguments that tell it the
+		size of access and load to report all tag mismatches.
 
-      gcall *call = gimple_build_call (fun, 1,
-				       build_fold_addr_expr (shadow_var));
+		The arguments to this function are:
+		  Address of invalid access.
+		  Bitfield containing information about the access
+		    (access_info)
+		  Pointer to a frame of registers
+		    (for use in printing the contents of registers in a dump)
+		    Not used yet -- to be used by inline instrumentation.
+		  Size of access.
+
+		The access_info bitfield encodes the following pieces of
+		information:
+		  - Is this a store or load?
+		    access_info & 0x10  =>  store
+		  - Should the program continue after reporting the error?
+		    access_info & 0x20  =>  recover
+		  - What size access is this (not used here since we can always
+		    pass the size in the last argument)
+
+		    if (access_info & 0xf == 0xf)
+		      size is taken from last argument.
+		    else
+		      size == 1 << (access_info & 0xf)
+
+		The last argument contains the size of the access iff the
+		access_info size indicator is 0xf (we always use this argument
+		rather than storing the size in the access_info bitfield).
+
+		See the function definition `__hwasan_tag_mismatch4` in
+		libsanitizer/hwasan for the full definition.
+		*/
+	  unsigned access_info = (0x20 * recover_p)
+	    + (0x10 * store_p)
+	    + (0xf);
+	  call = gimple_build_call (fun, 4,
+				    build_fold_addr_expr (shadow_var),
+				    build_int_cst (pointer_sized_int_node,
+						   access_info),
+				    build_int_cst (pointer_sized_int_node, 0),
+				    size);
+	}
+      else
+	{
+	  tree fun = report_error_func (store_p, recover_p, tree_to_uhwi (size),
+					&nargs);
+	  call = gimple_build_call (fun, 1,
+				    build_fold_addr_expr (shadow_var));
+	}
       gimple_set_location (call, gimple_location (use));
       gimple *call_to_insert = call;
 
@@ -3623,6 +4114,12 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
 static unsigned int
 asan_instrument (void)
 {
+  if (hwasan_sanitize_p ())
+    {
+      transform_statements ();
+      return 0;
+    }
+
   if (shadow_ptr_types[0] == NULL_TREE)
     asan_init_shadow_ptr_types ();
   transform_statements ();
@@ -3660,7 +4157,7 @@ public:
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_asan (m_ctxt); }
-  virtual bool gate (function *) { return gate_asan (); }
+  virtual bool gate (function *) { return gate_asan () || gate_hwasan (); }
   virtual unsigned int execute (function *) { return asan_instrument (); }
 
 }; // class pass_asan
@@ -3696,7 +4193,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return !optimize && gate_asan (); }
+  virtual bool gate (function *)
+    {
+      return !optimize && (gate_asan () || gate_hwasan ());
+    }
   virtual unsigned int execute (function *) { return asan_instrument (); }
 
 }; // class pass_asan_O0
@@ -3707,6 +4207,486 @@ gimple_opt_pass *
 make_pass_asan_O0 (gcc::context *ctxt)
 {
   return new pass_asan_O0 (ctxt);
+}
+
+/*  HWASAN  */
+
+/* For stack tagging:
+
+   Return the offset from the frame base tag that the "next" expanded object
+   should have.  */
+uint8_t
+hwasan_current_frame_tag ()
+{
+  return hwasan_frame_tag_offset;
+}
+
+/* For stack tagging:
+
+   Return the 'base pointer' for this function.  If that base pointer has not
+   yet been created then we create a register to hold it and record the insns
+   to initialize the register in `hwasan_frame_base_init_seq` for later
+   emission.  */
+rtx
+hwasan_frame_base ()
+{
+  if (! hwasan_frame_base_ptr)
+    {
+      start_sequence ();
+      hwasan_frame_base_ptr
+	= force_reg (Pmode,
+		     targetm.memtag.insert_random_tag (virtual_stack_vars_rtx,
+						       NULL_RTX));
+      hwasan_frame_base_init_seq = get_insns ();
+      end_sequence ();
+    }
+
+  return hwasan_frame_base_ptr;
+}
+
+/* For stack tagging:
+
+   Check whether this RTX is a standard pointer addressing the base of the
+   stack variables for this frame.  Returns true if the RTX is either
+   virtual_stack_vars_rtx or hwasan_frame_base_ptr.  */
+bool
+stack_vars_base_reg_p (rtx base)
+{
+  return base == virtual_stack_vars_rtx || base == hwasan_frame_base_ptr;
+}
+
+/* For stack tagging:
+
+   Emit frame base initialisation.
+   If hwasan_frame_base has been used before here then
+   hwasan_frame_base_init_seq contains the sequence of instructions to
+   initialize it.  This must be put just before the hwasan prologue, so we emit
+   the insns before parm_birth_insn (which will point to the first instruction
+   of the hwasan prologue if it exists).
+
+   We update `parm_birth_insn` to point to the start of this initialisation
+   since that represents the end of the initialisation done by
+   expand_function_{start,end} functions and we want to maintain that.  */
+void
+hwasan_maybe_emit_frame_base_init ()
+{
+  if (! hwasan_frame_base_init_seq)
+    return;
+  emit_insn_before (hwasan_frame_base_init_seq, parm_birth_insn);
+  parm_birth_insn = hwasan_frame_base_init_seq;
+}
+
+/* Record a compile-time constant size stack variable that HWASAN will need to
+   tag.  This record of the range of a stack variable will be used by
+   `hwasan_emit_prologue` to emit the RTL at the start of each frame which will
+   set tags in the shadow memory according to the assigned tag for each object.
+
+   The range that the object spans in stack space should be described by the
+   bounds `untagged_base + nearest_offset` and
+   `untagged_base + farthest_offset`.
+   `tagged_base` is the base address which contains the "base frame tag" for
+   this frame, and from which the value to address this object with will be
+   calculated.
+
+   We record the `untagged_base` since the functions in the hwasan library we
+   use to tag memory take pointers without a tag.  */
+void
+hwasan_record_stack_var (rtx untagged_base, rtx tagged_base,
+			 poly_int64 nearest_offset, poly_int64 farthest_offset)
+{
+  hwasan_stack_var cur_var;
+  cur_var.untagged_base = untagged_base;
+  cur_var.tagged_base = tagged_base;
+  cur_var.nearest_offset = nearest_offset;
+  cur_var.farthest_offset = farthest_offset;
+  cur_var.tag_offset = hwasan_current_frame_tag ();
+
+  hwasan_tagged_stack_vars.safe_push (cur_var);
+}
+
+/* Return the RTX representing the farthest extent of the statically allocated
+   stack objects for this frame.  If hwasan_frame_base_ptr has not been
+   initialized then we are not storing any static variables on the stack in
+   this frame.  In this case we return NULL_RTX to represent that.
+
+   Otherwise simply return virtual_stack_vars_rtx + frame_offset.  */
+rtx
+hwasan_get_frame_extent ()
+{
+  return (hwasan_frame_base_ptr
+	  ? plus_constant (Pmode, virtual_stack_vars_rtx, frame_offset)
+	  : NULL_RTX);
+}
+
+/* For stack tagging:
+
+   Increment the frame tag offset modulo the size a tag can represent.  */
+void
+hwasan_increment_frame_tag ()
+{
+  uint8_t tag_bits = HWASAN_TAG_SIZE;
+  gcc_assert (HWASAN_TAG_SIZE
+	      <= sizeof (hwasan_frame_tag_offset) * CHAR_BIT);
+  hwasan_frame_tag_offset = (hwasan_frame_tag_offset + 1) % (1 << tag_bits);
+  /* The "background tag" of the stack is zero by definition.
+     This is the tag that objects like parameters passed on the stack and
+     spilled registers are given.  It is handy to avoid this tag for objects
+     whose tags we decide ourselves, partly to ensure that buffer overruns
+     can't affect these important variables (e.g. saved link register, saved
+     stack pointer etc) and partly to make debugging easier (everything with a
+     tag of zero is space allocated automatically by the compiler).
+
+     This is not feasible when using random frame tags (the default
+     configuration for hwasan) since the tag for the given frame is randomly
+     chosen at runtime.  In order to avoid any tags matching the stack
+     background we would need to decide tag offsets at runtime instead of
+     compile time (and pay the resulting performance cost).
+
+     When not using random base tags for each frame (i.e. when compiled with
+     `--param hwasan-random-frame-tag=0`) the base tag for each frame is zero.
+     This means the tag that each object gets is equal to the
+     hwasan_frame_tag_offset used in determining it.
+     When this is the case we *can* ensure no object gets the tag of zero by
+     simply ensuring no object has the hwasan_frame_tag_offset of zero.
+
+     There is the extra complication that we only record the
+     hwasan_frame_tag_offset here (which is the offset from the tag stored in
+     the stack pointer).  In the kernel, the tag in the stack pointer is 0xff
+     rather than zero.  This does not cause problems since tags of 0xff are
+     never checked in the kernel.  As mentioned at the beginning of this
+     comment the background tag of the stack is zero by definition, which means
+     that for the kernel we should skip offsets of both 0 and 1 from the stack
+     pointer.  Avoiding the offset of 0 ensures we use a tag which will be
+     checked, avoiding the offset of 1 ensures we use a tag that is not the
+     same as the background.  */
+  if (hwasan_frame_tag_offset == 0 && ! param_hwasan_random_frame_tag)
+    hwasan_frame_tag_offset += 1;
+  if (hwasan_frame_tag_offset == 1 && ! param_hwasan_random_frame_tag
+      && sanitize_flags_p (SANITIZE_KERNEL_HWADDRESS))
+    hwasan_frame_tag_offset += 1;
+}
+
+/* Clear internal state for the next function.
+   This function is called before variables on the stack get expanded, in
+   `init_vars_expansion`.  */
+void
+hwasan_record_frame_init ()
+{
+  delete asan_used_labels;
+  asan_used_labels = NULL;
+
+  /* If this isn't the case then some stack variable was recorded *before*
+     hwasan_record_frame_init is called, yet *after* the hwasan prologue for
+     the previous frame was emitted.  Such stack variables would not have
+     their shadow stack filled in.  */
+  gcc_assert (hwasan_tagged_stack_vars.is_empty ());
+  hwasan_frame_base_ptr = NULL_RTX;
+  hwasan_frame_base_init_seq = NULL;
+
+  /* When not using a random frame tag we can avoid the background stack
+     color which gives the user a little better debug output upon a crash.
+     Meanwhile, when using a random frame tag it will be nice to avoid adding
+     tags for the first object since that is unnecessary extra work.
+     Hence set the initial hwasan_frame_tag_offset to be 0 if using a random
+     frame tag and 1 otherwise.
+
+     As described in hwasan_increment_frame_tag, in the kernel the stack
+     pointer has the tag 0xff.  That means that to avoid 0xff and 0 (the tag
+     which the kernel does not check and the background tag respectively) we
+     start with a tag offset of 2.  */
+  hwasan_frame_tag_offset = param_hwasan_random_frame_tag
+    ? 0
+    : sanitize_flags_p (SANITIZE_KERNEL_HWADDRESS) ? 2 : 1;
+}
+
+/* For stack tagging:
+   (Emits HWASAN equivalent of what is emitted by
+   `asan_emit_stack_protection`).
+
+   Emits the extra prologue code to set the shadow stack as required for HWASAN
+   stack instrumentation.
+
+   Uses the vector of recorded stack variables hwasan_tagged_stack_vars.  When
+   this function has completed hwasan_tagged_stack_vars is empty and all
+   objects it had pointed to are deallocated.  */
+void
+hwasan_emit_prologue ()
+{
+  /* We need untagged base pointers since libhwasan only accepts untagged
+    pointers in __hwasan_tag_memory.  We need the tagged base pointer to obtain
+    the base tag for an offset.  */
+
+  if (hwasan_tagged_stack_vars.is_empty ())
+    return;
+
+  poly_int64 bot = 0, top = 0;
+  for (hwasan_stack_var &cur : hwasan_tagged_stack_vars)
+    {
+      poly_int64 nearest = cur.nearest_offset;
+      poly_int64 farthest = cur.farthest_offset;
+
+      if (known_ge (nearest, farthest))
+	{
+	  top = nearest;
+	  bot = farthest;
+	}
+      else
+	{
+	  /* Given how these values are calculated, one must be known greater
+	     than the other.  */
+	  gcc_assert (known_le (nearest, farthest));
+	  top = farthest;
+	  bot = nearest;
+	}
+      poly_int64 size = (top - bot);
+
+      /* Assert the edge of each variable is aligned to the HWASAN tag granule
+	 size.  */
+      gcc_assert (multiple_p (top, HWASAN_TAG_GRANULE_SIZE));
+      gcc_assert (multiple_p (bot, HWASAN_TAG_GRANULE_SIZE));
+      gcc_assert (multiple_p (size, HWASAN_TAG_GRANULE_SIZE));
+
+      rtx fn = init_one_libfunc ("__hwasan_tag_memory");
+      rtx base_tag = targetm.memtag.extract_tag (cur.tagged_base, NULL_RTX);
+      rtx tag = plus_constant (QImode, base_tag, cur.tag_offset);
+      tag = hwasan_truncate_to_tag_size (tag, NULL_RTX);
+
+      rtx bottom = convert_memory_address (ptr_mode,
+					   plus_constant (Pmode,
+							  cur.untagged_base,
+							  bot));
+      emit_library_call (fn, LCT_NORMAL, VOIDmode,
+			 bottom, ptr_mode,
+			 tag, QImode,
+			 gen_int_mode (size, ptr_mode), ptr_mode);
+    }
+  /* Clear the stack vars, we've emitted the prologue for them all now.  */
+  hwasan_tagged_stack_vars.truncate (0);
+}
+
+/* For stack tagging:
+
+   Return RTL insns to clear the tags between DYNAMIC and VARS pointers
+   into the stack.  These instructions should be emitted at the end of
+   every function.
+
+   If `dynamic` is NULL_RTX then no insns are returned.  */
+rtx_insn *
+hwasan_emit_untag_frame (rtx dynamic, rtx vars)
+{
+  if (! dynamic)
+    return NULL;
+
+  start_sequence ();
+
+  dynamic = convert_memory_address (ptr_mode, dynamic);
+  vars = convert_memory_address (ptr_mode, vars);
+
+  rtx top_rtx;
+  rtx bot_rtx;
+  if (FRAME_GROWS_DOWNWARD)
+    {
+      top_rtx = vars;
+      bot_rtx = dynamic;
+    }
+  else
+    {
+      top_rtx = dynamic;
+      bot_rtx = vars;
+    }
+
+  rtx size_rtx = expand_simple_binop (ptr_mode, MINUS, top_rtx, bot_rtx,
+				      NULL_RTX, /* unsignedp = */0,
+				      OPTAB_DIRECT);
+
+  rtx fn = init_one_libfunc ("__hwasan_tag_memory");
+  emit_library_call (fn, LCT_NORMAL, VOIDmode,
+		     bot_rtx, ptr_mode,
+		     HWASAN_STACK_BACKGROUND, QImode,
+		     size_rtx, ptr_mode);
+
+  do_pending_stack_adjust ();
+  rtx_insn *insns = get_insns ();
+  end_sequence ();
+  return insns;
+}
+
+/* Needs to be GTY(()), because cgraph_build_static_cdtor may
+   invoke ggc_collect.  */
+static GTY(()) tree hwasan_ctor_statements;
+
+/* Insert module initialization into this TU.  This initialization calls the
+   initialization code for libhwasan.  */
+void
+hwasan_finish_file (void)
+{
+  /* Do not emit constructor initialization for the kernel.
+     (the kernel has its own initialization already).  */
+  if (flag_sanitize & SANITIZE_KERNEL_HWADDRESS)
+    return;
+
+  /* Avoid instrumenting code in the hwasan constructors/destructors.  */
+  flag_sanitize &= ~SANITIZE_HWADDRESS;
+  int priority = MAX_RESERVED_INIT_PRIORITY - 1;
+  tree fn = builtin_decl_implicit (BUILT_IN_HWASAN_INIT);
+  append_to_statement_list (build_call_expr (fn, 0), &hwasan_ctor_statements);
+  cgraph_build_static_cdtor ('I', hwasan_ctor_statements, priority);
+  flag_sanitize |= SANITIZE_HWADDRESS;
+}
+
+/* For stack tagging:
+
+   Truncate `tag` to the number of bits that a tag uses (i.e. to
+   HWASAN_TAG_SIZE).  Store the result in `target` if it's convenient.  */
+rtx
+hwasan_truncate_to_tag_size (rtx tag, rtx target)
+{
+  gcc_assert (GET_MODE (tag) == QImode);
+  if (HWASAN_TAG_SIZE != GET_MODE_PRECISION (QImode))
+    {
+      gcc_assert (GET_MODE_PRECISION (QImode) > HWASAN_TAG_SIZE);
+      rtx mask = gen_int_mode ((HOST_WIDE_INT_1U << HWASAN_TAG_SIZE) - 1,
+			       QImode);
+      tag = expand_simple_binop (QImode, AND, tag, mask, target,
+				 /* unsignedp = */1, OPTAB_WIDEN);
+      gcc_assert (tag);
+    }
+  return tag;
+}
+
+/* Construct a function tree for __hwasan_{load,store}{1,2,4,8,16,_n}.
+   IS_STORE is either 1 (for a store) or 0 (for a load).  */
+static combined_fn
+hwasan_check_func (bool is_store, bool recover_p, HOST_WIDE_INT size_in_bytes,
+		   int *nargs)
+{
+  static enum built_in_function check[2][2][6]
+    = { { { BUILT_IN_HWASAN_LOAD1, BUILT_IN_HWASAN_LOAD2,
+	    BUILT_IN_HWASAN_LOAD4, BUILT_IN_HWASAN_LOAD8,
+	    BUILT_IN_HWASAN_LOAD16, BUILT_IN_HWASAN_LOADN },
+	  { BUILT_IN_HWASAN_STORE1, BUILT_IN_HWASAN_STORE2,
+	    BUILT_IN_HWASAN_STORE4, BUILT_IN_HWASAN_STORE8,
+	    BUILT_IN_HWASAN_STORE16, BUILT_IN_HWASAN_STOREN } },
+	{ { BUILT_IN_HWASAN_LOAD1_NOABORT,
+	    BUILT_IN_HWASAN_LOAD2_NOABORT,
+	    BUILT_IN_HWASAN_LOAD4_NOABORT,
+	    BUILT_IN_HWASAN_LOAD8_NOABORT,
+	    BUILT_IN_HWASAN_LOAD16_NOABORT,
+	    BUILT_IN_HWASAN_LOADN_NOABORT },
+	  { BUILT_IN_HWASAN_STORE1_NOABORT,
+	    BUILT_IN_HWASAN_STORE2_NOABORT,
+	    BUILT_IN_HWASAN_STORE4_NOABORT,
+	    BUILT_IN_HWASAN_STORE8_NOABORT,
+	    BUILT_IN_HWASAN_STORE16_NOABORT,
+	    BUILT_IN_HWASAN_STOREN_NOABORT } } };
+  if (size_in_bytes == -1)
+    {
+      *nargs = 2;
+      return as_combined_fn (check[recover_p][is_store][5]);
+    }
+  *nargs = 1;
+  int size_log2 = exact_log2 (size_in_bytes);
+  gcc_assert (size_log2 >= 0 && size_log2 <= 5);
+  return as_combined_fn (check[recover_p][is_store][size_log2]);
+}
+
+/* Expand the HWASAN_{LOAD,STORE} builtins.  */
+bool
+hwasan_expand_check_ifn (gimple_stmt_iterator *iter, bool)
+{
+  gimple *g = gsi_stmt (*iter);
+  location_t loc = gimple_location (g);
+  bool recover_p;
+  if (flag_sanitize & SANITIZE_USER_HWADDRESS)
+    recover_p = (flag_sanitize_recover & SANITIZE_USER_HWADDRESS) != 0;
+  else
+    recover_p = (flag_sanitize_recover & SANITIZE_KERNEL_HWADDRESS) != 0;
+
+  HOST_WIDE_INT flags = tree_to_shwi (gimple_call_arg (g, 0));
+  gcc_assert (flags < ASAN_CHECK_LAST);
+  bool is_scalar_access = (flags & ASAN_CHECK_SCALAR_ACCESS) != 0;
+  bool is_store = (flags & ASAN_CHECK_STORE) != 0;
+  bool is_non_zero_len = (flags & ASAN_CHECK_NON_ZERO_LEN) != 0;
+
+  tree base = gimple_call_arg (g, 1);
+  tree len = gimple_call_arg (g, 2);
+
+  /* `align` is unused for HWASAN_CHECK, but we pass the argument anyway
+     since that way the arguments match ASAN_CHECK.  */
+  /* HOST_WIDE_INT align = tree_to_shwi (gimple_call_arg (g, 3));  */
+
+  unsigned HOST_WIDE_INT size_in_bytes
+    = is_scalar_access ? tree_to_shwi (len) : -1;
+
+  gimple_stmt_iterator gsi = *iter;
+
+  if (!is_non_zero_len)
+    {
+      /* So, the length of the memory area to hwasan-protect is
+	 non-constant.  Let's guard the generated instrumentation code
+	 like:
+
+	 if (len != 0)
+	   {
+	     // hwasan instrumentation code goes here.
+	   }
+	 // falltrough instructions, starting with *ITER.  */
+
+      g = gimple_build_cond (NE_EXPR,
+			    len,
+			    build_int_cst (TREE_TYPE (len), 0),
+			    NULL_TREE, NULL_TREE);
+      gimple_set_location (g, loc);
+
+      basic_block then_bb, fallthrough_bb;
+      insert_if_then_before_iter (as_a <gcond *> (g), iter,
+				  /*then_more_likely_p=*/true,
+				  &then_bb, &fallthrough_bb);
+      /* Note that fallthrough_bb starts with the statement that was
+	pointed to by ITER.  */
+
+      /* The 'then block' of the 'if (len != 0) condition is where
+	we'll generate the hwasan instrumentation code now.  */
+      gsi = gsi_last_bb (then_bb);
+    }
+
+  gimple_seq stmts = NULL;
+  tree base_addr = gimple_build (&stmts, loc, NOP_EXPR,
+				 pointer_sized_int_node, base);
+
+  int nargs = 0;
+  combined_fn fn
+    = hwasan_check_func (is_store, recover_p, size_in_bytes, &nargs);
+  if (nargs == 1)
+    gimple_build (&stmts, loc, fn, void_type_node, base_addr);
+  else
+    {
+      gcc_assert (nargs == 2);
+      tree sz_arg = gimple_build (&stmts, loc, NOP_EXPR,
+				  pointer_sized_int_node, len);
+      gimple_build (&stmts, loc, fn, void_type_node, base_addr, sz_arg);
+    }
+
+  gsi_insert_seq_after (&gsi, stmts, GSI_NEW_STMT);
+  gsi_remove (iter, true);
+  *iter = gsi;
+  return false;
+}
+
+/* For stack tagging:
+
+   Dummy: the HWASAN_MARK internal function should only ever be in the code
+   after the sanopt pass.  */
+bool
+hwasan_expand_mark_ifn (gimple_stmt_iterator *)
+{
+  gcc_unreachable ();
+}
+
+bool
+gate_hwasan ()
+{
+  return hwasan_sanitize_p ();
 }
 
 #include "gt-asan.h"

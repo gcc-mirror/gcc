@@ -806,6 +806,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      the bits that are constant, and then return an expression that
      will perform the dynamic initialization.  */
   if (value != error_mark_node
+      && !processing_template_decl
       && (TREE_SIDE_EFFECTS (value)
 	  || vla_type_p (type)
 	  || ! reduced_constant_expression_p (value)))

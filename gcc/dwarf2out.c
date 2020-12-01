@@ -24633,7 +24633,7 @@ gen_compile_unit_die (const char *filename)
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
 	    if (strcmp (language_string, "GNU C11") == 0
 		|| strcmp (language_string, "GNU C17") == 0
-		|| strcmp (language_string, "GNU C2X"))
+		|| strcmp (language_string, "GNU C2X") == 0)
 	      language = DW_LANG_C11;
 	}
     }
@@ -24646,7 +24646,8 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C_plus_plus_11;
 	  else if (strcmp (language_string, "GNU C++14") == 0)
 	    language = DW_LANG_C_plus_plus_14;
-	  else if (strcmp (language_string, "GNU C++17") == 0)
+	  else if (strcmp (language_string, "GNU C++17") == 0
+		   || strcmp (language_string, "GNU C++20") == 0)
 	    /* For now.  */
 	    language = DW_LANG_C_plus_plus_14;
 	}

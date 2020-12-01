@@ -2224,10 +2224,6 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			      " initializer");
 		  init = convert_lvalue_to_rvalue (init_loc, init, true, true);
 		  tree init_type = TREE_TYPE (init.value);
-		  /* As with typeof, remove all qualifiers from atomic types.  */
-		  if (init_type != error_mark_node && TYPE_ATOMIC (init_type))
-		    init_type
-		      = c_build_qualified_type (init_type, TYPE_UNQUALIFIED);
 		  bool vm_type = variably_modified_type_p (init_type,
 							   NULL_TREE);
 		  if (vm_type)
@@ -3743,11 +3739,6 @@ c_parser_typeof_specifier (c_parser *parser)
       if (was_vm)
 	ret.expr = c_fully_fold (expr.value, false, &ret.expr_const_operands);
       pop_maybe_used (was_vm);
-      /* For use in macros such as those in <stdatomic.h>, remove all
-	 qualifiers from atomic types.  (const can be an issue for more macros
-	 using typeof than just the <stdatomic.h> ones.)  */
-      if (ret.spec != error_mark_node && TYPE_ATOMIC (ret.spec))
-	ret.spec = c_build_qualified_type (ret.spec, TYPE_UNQUALIFIED);
     }
   parens.skip_until_found_close (parser);
   return ret;
@@ -7865,9 +7856,13 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
 	&& stack[1].expr.value != error_mark_node			      \
 	&& (c_tree_equal (stack[0].expr.value, omp_atomic_lhs)		      \
 	    || c_tree_equal (stack[1].expr.value, omp_atomic_lhs)))	      \
-      stack[0].expr.value						      \
-	= build2 (stack[1].op, TREE_TYPE (stack[0].expr.value),		      \
-		  stack[0].expr.value, stack[1].expr.value);		      \
+      {									      \
+	tree t = make_node (stack[1].op);				      \
+	TREE_TYPE (t) = TREE_TYPE (stack[0].expr.value);		      \
+	TREE_OPERAND (t, 0) = stack[0].expr.value;			      \
+	TREE_OPERAND (t, 1) = stack[1].expr.value;			      \
+	stack[0].expr.value = t;					      \
+      }									      \
     else								      \
       stack[sp - 1].expr = parser_build_binary_op (stack[sp].loc,	      \
 						   stack[sp].op,	      \

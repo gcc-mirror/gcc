@@ -7,6 +7,7 @@
 
 /* Reduced from 'kernels-decompose-2.c'.
    (Hopefully) similar instances:
+     - 'kernels-decompose-ice-2.c'
      - 'libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c'
      - 'libgomp.oacc-c-c++-common/kernels-decompose-1.c'
 */

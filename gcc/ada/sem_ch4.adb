@@ -3414,7 +3414,7 @@ package body Sem_Ch4 is
          Success := True;
 
          --  If the prefix of the call is a name, indicate the entity
-         --  being called. If it is not a name,  it is an expression that
+         --  being called. If it is not a name, it is an expression that
          --  denotes an access to subprogram or else an entry or family. In
          --  the latter case, the name is a selected component, and the entity
          --  being called is noted on the selector.

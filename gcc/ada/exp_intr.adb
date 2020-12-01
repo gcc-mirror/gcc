@@ -1229,9 +1229,8 @@ package body Exp_Intr is
 
          if Is_Class_Wide_Type (Desig_Typ)
            or else
-            (Is_Array_Type (Desig_Typ)
-              and then not Is_Constrained (Desig_Typ)
-              and then Is_Packed (Desig_Typ))
+            (Is_Packed_Array (Desig_Typ)
+              and then not Is_Constrained (Desig_Typ))
          then
             declare
                Deref    : constant Node_Id :=

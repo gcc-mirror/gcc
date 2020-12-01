@@ -72,7 +72,7 @@ void test_memset_array_range_cst_off (void)
 {
   T (SR (-7, 7), 1, 7);
   T (SR (-1, 1), 1, 7);
-  T (SR (-1, 1), 1, 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" { xfail *-*-*} } */
+  T (SR (-1, 1), 1, 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" } */
   T (SR ( 1, 2), 1, 1);
   T (SR ( 1, 2), 1, 5);
 
@@ -147,7 +147,7 @@ void test_memcpy_array_range_cst_off (const void *s)
 {
   T (SR (-7, 7), 1, 7);
   T (SR (-1, 1), 1, 7);
-  T (SR (-1, 1), 1, 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" { xfail *-*-*} } */
+  T (SR (-1, 1), 1, 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" } */
   T (SR ( 1, 2), 1, 1);
   T (SR ( 1, 2), 1, 5);
 
@@ -224,7 +224,7 @@ void test_strcpy_array_range_cst_off (const char *s)
 {
   T (SR (-7, 7), 1, 6);
   T (SR (-1, 1), 1, 6);
-  T (SR (-1, 1), 1, 8);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" { xfail *-*-*} } */
+  T (SR (-1, 1), 1, 8);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" } */
   T (SR ( 1, 2), 1, 0);
   T (SR ( 1, 2), 1, 1);
   T (SR ( 1, 2), 1, 4);
@@ -290,7 +290,7 @@ void test_strncpy_array_range_cst_off (const char *s)
 {
   T (SR (-7, 7), 1, 7);
   T (SR (-1, 1), 1, 7);
-  T (SR (-1, 1), 1, 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" { xfail *-*-*} } */
+  T (SR (-1, 1), 1, 9);       /* { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" "pr89428" } */
   T (SR ( 1, 2), 1, 1);
   T (SR ( 1, 2), 1, 5);
 

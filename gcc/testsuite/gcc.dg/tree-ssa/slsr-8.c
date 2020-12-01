@@ -23,7 +23,7 @@ f (int s, int *c, int *d)
    However, this proves to be a useful test for introducing an
    initializer with a cast, so we'll keep it as is.  */
 
-/* There are 4 ' * ' instances in the decls (since "int * iftmp.0;" is
-   added), 2 parms, 3 in the code.  The second one in the code may
-   be a widening multiply (for example, on AArch64).  */
-/* { dg-final { scan-tree-dump-times " w?\\* " 9 "optimized" } } */
+/* There are 5 ' * ' instances in the decls (since "int * iftmp.0;" is
+   added), 2 parms, 3 in the code, and the return value.  The second one
+   in the code may be a widening multiply (for example, on AArch64).  */
+/* { dg-final { scan-tree-dump-times " w?\\* " 10 "optimized" } } */

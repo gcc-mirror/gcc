@@ -71,6 +71,7 @@ merge lib/tsan/rtl tsan
 merge lib/sanitizer_common sanitizer_common
 merge lib/interception interception
 merge lib/ubsan ubsan
+merge lib/hwasan hwasan
 
 # Need to merge lib/builtins/assembly.h file:
 mkdir -p builtins

@@ -1893,10 +1893,10 @@
 	(unspec:SVE_FULL_SDF
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:<VNARROW> 2 "register_operand" "w")]
+	   (match_operand:<VNARROW> 2 "register_operand" "0")]
 	  SVE2_COND_FP_UNARY_LONG))]
   "TARGET_SVE2"
-  "<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Ventype>"
+  "<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Ventype>"
 )
 
 ;; Predicated convert long top with merging.
@@ -1978,14 +1978,17 @@
 ;; Predicated FCVTX (equivalent to what would be FCVTXNB, except that
 ;; it supports MOVPRFX).
 (define_insn "@aarch64_pred_<sve_fp_op><mode>"
-  [(set (match_operand:VNx4SF_ONLY 0 "register_operand" "=w")
+  [(set (match_operand:VNx4SF_ONLY 0 "register_operand" "=w, ?&w")
 	(unspec:VNx4SF_ONLY
-	  [(match_operand:<VWIDE_PRED> 1 "register_operand" "Upl")
+	  [(match_operand:<VWIDE_PRED> 1 "register_operand" "Upl, Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:<VWIDE> 2 "register_operand" "w")]
+	   (match_operand:<VWIDE> 2 "register_operand" "0, w")]
 	  SVE2_COND_FP_UNARY_NARROWB))]
   "TARGET_SVE2"
-  "<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vewtype>"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vewtype>
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vewtype>"
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; Predicated FCVTX with merging.
@@ -2076,15 +2079,18 @@
 
 ;; Predicated integer unary operations.
 (define_insn "@aarch64_pred_<sve_int_op><mode>"
-  [(set (match_operand:VNx4SI_ONLY 0 "register_operand" "=w")
+  [(set (match_operand:VNx4SI_ONLY 0 "register_operand" "=w, ?&w")
 	(unspec:VNx4SI_ONLY
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:VNx4SI_ONLY
-	     [(match_operand:VNx4SI_ONLY 2 "register_operand" "w")]
+	     [(match_operand:VNx4SI_ONLY 2 "register_operand" "0, w")]
 	     SVE2_U32_UNARY)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
-  "<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  "@
+   <sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0, %2\;<sve_int_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; Predicated integer unary operations with merging.
@@ -2139,14 +2145,17 @@
 
 ;; Predicated FLOGB.
 (define_insn "@aarch64_pred_<sve_fp_op><mode>"
-  [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w")
+  [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w, ?&w")
 	(unspec:<V_INT_EQUIV>
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (match_operand:SI 3 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_FULL_F 2 "register_operand" "w")]
+	   (match_operand:SVE_FULL_F 2 "register_operand" "0, w")]
 	  SVE2_COND_INT_UNARY_FP))]
   "TARGET_SVE2"
-  "<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  "@
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; Predicated FLOGB with merging.

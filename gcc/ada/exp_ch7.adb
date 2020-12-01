@@ -1273,6 +1273,10 @@ package body Exp_Ch7 is
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_Finalization_Master), Loc)));
 
+         if Debug_Generated_Code then
+            Set_Debug_Info_Needed (Fin_Mas_Id);
+         end if;
+
          --  Set the associated pool and primitive Finalize_Address of the new
          --  finalization master.
 
@@ -1616,6 +1620,10 @@ package body Exp_Ch7 is
 
             Set_Etype (Counter_Id, Counter_Typ);
 
+            if Debug_Generated_Code then
+               Set_Debug_Info_Needed (Counter_Id);
+            end if;
+
             --  The counter and its type are inserted before the source
             --  declarations of N.
 
@@ -1778,7 +1786,11 @@ package body Exp_Ch7 is
             --  exactly twice (once on the normal path, and once for
             --  exceptions/abort), so this won't bloat the code too much.
 
-            Set_Is_Inlined  (Fin_Id);
+            Set_Is_Inlined (Fin_Id);
+         end if;
+
+         if Debug_Generated_Code then
+            Set_Debug_Info_Needed (Fin_Id);
          end if;
 
          --  Step 2: Creation of the finalizer specification
@@ -1968,6 +1980,10 @@ package body Exp_Ch7 is
          --  Create the body of the finalizer
 
          Body_Id := Make_Defining_Identifier (Loc, Chars (Fin_Id));
+
+         if Debug_Generated_Code then
+            Set_Debug_Info_Needed (Body_Id);
+         end if;
 
          if For_Package then
             Set_Has_Qualified_Name       (Body_Id);
@@ -2400,8 +2416,7 @@ package body Exp_Ch7 is
                if Is_Ignored_Ghost_Entity (Typ) then
                   null;
 
-               elsif (Is_Access_Type (Typ)
-                        and then not Is_Access_Subprogram_Type (Typ)
+               elsif (Is_Access_Object_Type (Typ)
                         and then Needs_Finalization
                                    (Available_View (Designated_Type (Typ))))
                       or else (Is_Type (Typ) and then Needs_Finalization (Typ))
@@ -2647,6 +2662,10 @@ package body Exp_Ch7 is
             Set_Ekind (Ptr_Typ, E_Access_Type);
             Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
             Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
+
+            if Debug_Generated_Code then
+               Set_Debug_Info_Needed (Pool_Id);
+            end if;
 
             --  Create an explicit free statement. Note that the free uses the
             --  caller's pool expressed as a renaming.
@@ -3741,6 +3760,10 @@ package body Exp_Ch7 is
           Defining_Identifier => Data.Raised_Id,
           Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
           Expression          => New_Occurrence_Of (Standard_False, Loc)));
+
+      if Debug_Generated_Code then
+         Set_Debug_Info_Needed (Data.Raised_Id);
+      end if;
    end Build_Object_Declarations;
 
    ---------------------------
@@ -6906,6 +6929,10 @@ package body Exp_Ch7 is
                  Make_Handled_Sequence_Of_Statements (Loc,
                    Statements => New_List (Init_Loop)));
 
+            if Debug_Generated_Code then
+               Set_Debug_Info_Needed (Counter_Id);
+            end if;
+
          --  Otherwise previous errors or a missing full view may prevent the
          --  proper freezing of the component type. If this is the case, there
          --  is no [Deep_]Initialize primitive to call.
@@ -9680,6 +9707,10 @@ package body Exp_Ch7 is
               Name       => New_Occurrence_Of (Temp, Loc),
               Expression => Expr),
           Par    => Parent (N))));
+
+      if Debug_Generated_Code then
+         Set_Debug_Info_Needed (Temp);
+      end if;
 
       Rewrite (N, New_Occurrence_Of (Temp, Loc));
       Analyze_And_Resolve (N, Typ);

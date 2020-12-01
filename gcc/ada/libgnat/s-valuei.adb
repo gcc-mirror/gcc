@@ -61,7 +61,7 @@ package body System.Value_I is
 
       Uval := Scan_Raw_Unsigned (Str, Ptr, Max);
 
-      --  Deal with overflow cases, and also with maximum negative number
+      --  Deal with overflow cases, and also with largest negative number
 
       if Uval > Uns (Int'Last) then
          if Minus and then Uval = Uns (-(Int'First)) then

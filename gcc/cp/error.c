@@ -3590,6 +3590,14 @@ function_category (tree fn)
     return _("In function %qs");
 }
 
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the pp_verbatim calls.  Their format strings deliberately don't
+   follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Report the full context of a current template instantiation,
    onto BUFFER.  */
 static void
@@ -4190,11 +4198,16 @@ add_quotes (const char *content, bool show_color)
   pp_show_color (&tmp_pp) = show_color;
 
   /* We have to use "%<%s%>" rather than "%qs" here in order to avoid
-     quoting colorization bytes within the results.  */
+     quoting colorization bytes within the results and using either
+     pp_quote or pp_begin_quote doesn't work the same.  */
   pp_printf (&tmp_pp, "%<%s%>", content);
 
   return pp_ggc_formatted_text (&tmp_pp);
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* If we had %H and %I, and hence deferred printing them,
    print them now, storing the result into the chunk_info

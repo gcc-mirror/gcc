@@ -71,11 +71,11 @@ end module m2
 
 ! { dg-final { scan-tree-dump-times "omp declare target" 7 "original" } }
 ! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(" 7 "original" } }
-! { dg-final { scan-tree-dump-times "\[\n\r]\[\n\r]f1" 1 "original" } }
-! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(any\\)\\)\\)\\)\[\n\r]f2" 1 "original" } }
-! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(any\\)\\)\\)\\)\[\n\r]f3" 1 "original" } }
-! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(host\\)\\)\\)\\)\[\n\r]f4" 1 "original" } }
-! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(nohost\\)\\)\\)\\)\[\n\r]f5" 1 "original" } }
-! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(any\\)\\)\\)\\)\[\n\r]s1" 1 "original" } }
-! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(nohost\\)\\)\\)\\)\[\n\r]s2" 1 "original" } }
-! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(host\\)\\)\\)\\)\[\n\r]s3" 1 "original" } }
+! { dg-final { scan-tree-dump-not "__attribute__\\(\\(omp declare target \[^\n\r\]*\[\n\r\]void f1" "original" } }
+! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(any\\)\\)\\)\\)\[\n\r]__attribute__\[^\n\r]+\[\n\r]void f2" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(any\\)\\)\\)\\)\[\n\r]__attribute__\[^\n\r]+\[\n\r\]void f3" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(host\\)\\)\\)\\)\[\n\r]__attribute__\[^\n\r]+\[\n\r\]void f4" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(nohost\\)\\)\\)\\)\[\n\r]__attribute__\[^\n\r]+\[\n\r\]void f5" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(any\\)\\)\\)\\)\[\n\r]__attribute__\[^\n\r]+\[\n\r\]void s1" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(nohost\\)\\)\\)\\)\[\n\r]__attribute__\[^\n\r]+\[\n\r\]void s2" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target \\(device_type\\(host\\)\\)\\)\\)\[\n\r]__attribute__\[^\n\r]+\[\n\r\]void s3" 1 "original" } }

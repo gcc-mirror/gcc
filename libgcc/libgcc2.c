@@ -214,37 +214,25 @@ __negvDI2 (DWtype a)
 Wtype
 __absvSI2 (Wtype a)
 {
-  Wtype w = a;
+  const Wtype v = 0 - (a < 0);
+  Wtype w;
 
-  if (a < 0)
-#ifdef L_negvsi2
-    w = __negvSI2 (a);
-#else
-    w = -(UWtype) a;
-
-  if (w < 0)
+  if (__builtin_add_overflow (a, v, &w))
     abort ();
-#endif
 
-   return w;
+  return v ^ w;
 }
 #ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
 SItype
 __absvsi2 (SItype a)
 {
-  SItype w = a;
+  const SItype v = 0 - (a < 0);
+  SItype w;
 
-  if (a < 0)
-#ifdef L_negvsi2
-    w = __negvsi2 (a);
-#else
-    w = -(USItype) a;
-
-  if (w < 0)
+  if (__builtin_add_overflow (a, v, &w))
     abort ();
-#endif
 
-   return w;
+  return v ^ w;
 }
 #endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 #endif
@@ -253,19 +241,13 @@ __absvsi2 (SItype a)
 DWtype
 __absvDI2 (DWtype a)
 {
-  DWtype w = a;
+  const DWtype v = 0 - (a < 0);
+  DWtype w;
 
-  if (a < 0)
-#ifdef L_negvdi2
-    w = __negvDI2 (a);
-#else
-    w = -(UDWtype) a;
-
-  if (w < 0)
+  if (__builtin_add_overflow (a, v, &w))
     abort ();
-#endif
 
-  return w;
+  return v ^ w;
 }
 #endif
 
@@ -486,10 +468,10 @@ __ashrdi3 (DWtype u, shift_count_type b)
 SItype
 __bswapsi2 (SItype u)
 {
-  return ((((u) & 0xff000000) >> 24)
-	  | (((u) & 0x00ff0000) >>  8)
-	  | (((u) & 0x0000ff00) <<  8)
-	  | (((u) & 0x000000ff) << 24));
+  return ((((u) & 0xff000000u) >> 24)
+	  | (((u) & 0x00ff0000u) >>  8)
+	  | (((u) & 0x0000ff00u) <<  8)
+	  | (((u) & 0x000000ffu) << 24));
 }
 #endif
 #ifdef L_bswapdi2

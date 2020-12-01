@@ -47,7 +47,7 @@ void
 test02()
 {
   const path p0 = "/a/a/b/b";
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     VERIFY( p.compare(p) == 0 );
     int cmp = p.compare(p0);

@@ -1,3 +1,775 @@
+2020-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.c: New test.
+	* gcc.dg/plugin/gil-1.c: New test.
+	* gcc.dg/plugin/gil.h: New header.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new plugin
+	and test.
+
+2020-11-30  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* lib/profopt.exp: Unset testname_with_flags if create_gcov
+	fails.
+
+2020-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98037
+	* gcc.target/aarch64/sve/acle/general/pr98037.c: New test.
+
+2020-11-30  Jeff Law  <law@redhat.com>
+
+	* g++.dg/warn/Wnonnull5.C: Fix non-unique testnames.
+	* g++.dg/warn/Wplacement-new-size-8.C: Likewise.
+
+2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98011
+	* gfortran.dg/goacc/sentinel-free-form.f95:
+	* gfortran.dg/goacc-gomp/fixed-1.f: New test.
+	* gfortran.dg/goacc-gomp/free-1.f90: New test.
+	* gfortran.dg/goacc/fixed-5.f: New test.
+
+2020-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98064
+	* g++.dg/vect/pr98064.cc: New testcase.
+
+2020-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98048
+	* gcc.dg/vect/pr98048.c: New testcase.
+
+2020-11-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/pr91816.c: New test.
+
+2020-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97459
+	* gcc.dg/pr97459-1.c: New test.
+	* gcc.dg/pr97459-2.c: New test.
+
+2020-11-29  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/pr98017.f90: New test.
+
+2020-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/92936
+	PR middle-end/92940
+	PR middle-end/89428
+	* c-c++-common/Wstringop-overflow-2.c: Adjust text of expected
+	informational notes.
+	* g++.dg/warn/Wstringop-overflow-3.C: Same.
+	* g++.dg/warn/Wplacement-new-size.C: Remove a test for a no longer
+	issued warning.
+	* gcc.dg/Warray-bounds-43.c: Removed unused declarations.
+	* gcc.dg/Wstringop-overflow-11.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-12.c: Same.
+	* gcc.dg/Wstringop-overflow-17.c: Adjust text of expected messages.
+	* gcc.dg/Wstringop-overflow-27.c: Same.  Remove xfails.
+	* gcc.dg/Wstringop-overflow-28.c: Adjust text of expected messages.
+	* gcc.dg/Wstringop-overflow-29.c: Same.
+	* gcc.dg/Wstringop-overflow-37.c: Same.
+	* gcc.dg/Wstringop-overflow-46.c: Same.
+	* gcc.dg/Wstringop-overflow-47.c: Same.
+	* gcc.dg/Wstringop-overflow-54.c: Same.
+	* gcc.dg/warn-strnlen-no-nul.c: Add expected warning.
+	* gcc.dg/Wstringop-overflow-7.c: New test.
+	* gcc.dg/Wstringop-overflow-58.c: New test.
+	* gcc.dg/Wstringop-overflow-59.c: New test.
+	* gcc.dg/Wstringop-overflow-60.c: New test.
+	* gcc.dg/Wstringop-overflow-61.c: New test.
+	* gcc.dg/Wstringop-overflow-62.c: New test.
+	* gcc.dg/Wstringop-overflow-63.c: New test.
+	* gcc.dg/Wstringop-overflow-64.c: New test.
+
+2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/overflow-6.c: New test.
+
+2020-11-27  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/97602
+	* gcc.dg/cpp/line9.c, gcc.dg/cpp/line10.c: New tests.
+
+2020-11-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/intrinsics.d: Adjust patterns in scan-tree-dump.
+
+2020-11-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/98036
+	* gcc.target/i386/fma4-256-maccXX.c (check_maccps):
+	Remove unnecessary postfix increment on a returned variable.
+	(check_maccpd): Ditto.
+	* gcc.target/i386/fma4-256-msubXX.c (check_msubps): Ditto.
+	(check_msubpd): Ditto.
+	* gcc.target/i386/fma4-256-nmaccXX.c (check_nmaccps): Ditto.
+	(check_nmaccpd): Ditto.
+	* gcc.target/i386/fma4-256-nmsubXX.c (check_nmsubps): Ditto.
+	(check_nmsubpd): Ditto.
+	* gcc.target/i386/fma4-maccXX.c (check_maccps): Ditto.
+	(check_maccpd): Ditto.
+	(check_maccss): Ditto.
+	(check_maccsd): Ditto.
+	* gcc.target/i386/fma4-msubXX.c (check_msubps): Ditto.
+	(check_msubpd): Ditto.
+	(check_msubss): Ditto.
+	(check_msubsd): Ditto.
+	* gcc.target/i386/fma4-nmaccXX.c (check_nmaccps): Ditto.
+	(check_nmaccpd): Ditto.
+	(check_nmaccss): Ditto.
+	(check_nmaccsd): Ditto.
+	* gcc.target/i386/fma4-nmsubXX.c (check_nmsubps): Ditto.
+	(check_nmsubpd): Ditto.
+	(check_nmsubss): Ditto.
+	(check_nmsubsd): Ditto.
+	* gcc.target/i386/xop-haddX.c (check_sbyte2word): Add missing return.
+	(check_sbyte2dword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_sbyte2qword): Ditto.
+	(check_sword2dword): Add missing return.
+	(check_sword2qword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_dword2qword): Add missing return.
+	* gcc.target/i386/xop-hadduX.c (check_byte2word): Add missing return.
+	(check_byte2dword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_byte2qword): Ditto.
+	(check_word2dword): Add missing return.
+	(check_word2qword):
+	Remove unnecessary postfix increment on a returned value.
+	(check_word2qword): Add missing return.
+	* gcc.target/i386/xop-hsubX.c (check_sbyte2word): Add missing return.
+	(check_sword2dword): Ditto.
+	(check_sword2qword): Ditto.
+
+2020-11-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: Adjust.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: Likewise.
+
+2020-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-4.f90: Fix typo in '!$omp' clause.
+
+2020-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-4.f90: Fix '!$omp' syntax.
+
+2020-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/88101
+	* g++.dg/torture/builtin-clear-padding-3.C: New test.
+
+2020-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/97880
+	* gcc.dg/goacc/tile-1.c: New test.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97997
+	* gcc.dg/tree-ssa/pr97997-1.c: New test.
+	* gcc.dg/tree-ssa/pr97997-2.c: New test.
+
+2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97953
+	* gcc.dg/pr97953.c: New testcase.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97979
+	* gcc.dg/pr97979.c: New test.
+	* gcc.c-torture/compile/pr97979.c: New test.
+
+2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98002
+	* gcc.dg/strncmp-2.c: Call mprotect again before free.
+
+2020-11-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/cache-3-1.c: New.
+	* c-c++-common/goacc/cache-3-2.c: Likewise.
+	* c-c++-common/goacc/data-clause-1.c: Likewise.
+	* c-c++-common/goacc/data-clause-2.c: Likewise.
+	* c-c++-common/gomp/map-1.c: Adjust.
+	* c-c++-common/gomp/map-2.c: Likewise.
+	* g++.dg/goacc/cache-3-1.C: New.
+	* g++.dg/goacc/cache-3-2.C: Likewise.
+	* g++.dg/goacc/data-clause-1.C: Likewise.
+	* g++.dg/goacc/data-clause-2.C: Likewise.
+	* g++.dg/gomp/map-1.C: Adjust.
+	* g++.dg/gomp/map-2.C: Likewise.
+
+2020-11-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97873
+	* gcc.target/i386/pr97873-3.c: New test.
+
+2020-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/multfixed.adb: Robustify.
+
+2020-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96906
+	* gcc.target/i386/pr96906-1.c: New test.
+
+2020-11-26  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/65455
+	PR c/92935
+	* gcc.dg/typeof-2.c: Adapt test.
+
+2020-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/nextafter-1.c: Omit prototypes if _NEXT_AFTER_2 defined.
+	* gcc.dg/nextafter-2.c: Define _NEXT_AFTER_2.
+	* gcc.dg/profile-info-section.c: Skip on AIX.
+
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* c-c++-common/patchable_function_entry-error-3.c: Adjust text
+	of expected warning.
+
+2020-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/modref-3_0.c: New test.
+	* gcc.dg/lto/modref-3_1.c: New test.
+	* gcc.dg/lto/modref-4_0.c: New test.
+	* gcc.dg/lto/modref-4_1.c: New test.
+	* gcc.dg/tree-ssa/modref-5.c: New test.
+
+2020-11-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85796
+	* gfortran.dg/pr85796.f90: New test.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/gomp/map-1.C: New.
+	* g++.dg/gomp/map-2.C: Likewise.
+	* c-c++-common/gomp/map-1.c: Adjust.
+	* c-c++-common/gomp/map-2.c: Likewise.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/cache-1.c: Update.
+	* c-c++-common/goacc/cache-2.c: Likewise.
+	* g++.dg/goacc/cache-1.C: New.
+	* g++.dg/goacc/cache-2.C: Likewise.
+
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97956
+	* gcc.dg/memchr-3.c: New test.
+
+2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* c-c++-common/ubsan/sanitize-recover-7.c: Update error message format.
+	* lib/asan-dg.exp (asan_link_flags): Implement as a helper
+	function asan_link_flags_1 which asan_link_flags and
+	hwasan_link_flags use.
+	(asan_link_flags_1): Parametrised version of asan_link_flags.
+	* c-c++-common/hwasan/aligned-alloc.c: New test.
+	* c-c++-common/hwasan/alloca-array-accessible.c: New test.
+	* c-c++-common/hwasan/alloca-base-init.c: New test.
+	* c-c++-common/hwasan/alloca-gets-different-tag.c: New test.
+	* c-c++-common/hwasan/alloca-outside-caught.c: New test.
+	* c-c++-common/hwasan/arguments-1.c: New test.
+	* c-c++-common/hwasan/arguments-2.c: New test.
+	* c-c++-common/hwasan/arguments-3.c: New test.
+	* c-c++-common/hwasan/arguments.c: New test.
+	* c-c++-common/hwasan/asan-pr63316.c: New test.
+	* c-c++-common/hwasan/asan-pr70541.c: New test.
+	* c-c++-common/hwasan/asan-pr78106.c: New test.
+	* c-c++-common/hwasan/asan-pr79944.c: New test.
+	* c-c++-common/hwasan/asan-rlimit-mmap-test-1.c: New test.
+	* c-c++-common/hwasan/bitfield-1.c: New test.
+	* c-c++-common/hwasan/bitfield-2.c: New test.
+	* c-c++-common/hwasan/builtin-special-handling.c: New test.
+	* c-c++-common/hwasan/check-interface.c: New test.
+	* c-c++-common/hwasan/halt_on_error-1.c: New test.
+	* c-c++-common/hwasan/handles-poly_int-marked-vars.c: New test.
+	* c-c++-common/hwasan/heap-overflow.c: New test.
+	* c-c++-common/hwasan/hwasan-poison-optimisation.c: New test.
+	* c-c++-common/hwasan/hwasan-thread-access-parent.c: New test.
+	* c-c++-common/hwasan/hwasan-thread-basic-failure.c: New test.
+	* c-c++-common/hwasan/hwasan-thread-clears-stack.c: New test.
+	* c-c++-common/hwasan/hwasan-thread-success.c: New test.
+	* c-c++-common/hwasan/kernel-defaults.c: New test.
+	* c-c++-common/hwasan/large-aligned-0.c: New test.
+	* c-c++-common/hwasan/large-aligned-1.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-0.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-1.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-2.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-3.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-4.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-5.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-6.c: New test.
+	* c-c++-common/hwasan/large-aligned-untagging-7.c: New test.
+	* c-c++-common/hwasan/macro-definition.c: New test.
+	* c-c++-common/hwasan/no-sanitize-attribute.c: New test.
+	* c-c++-common/hwasan/param-instrument-mem-intrinsics.c: New test.
+	* c-c++-common/hwasan/param-instrument-reads-and-writes.c: New test.
+	* c-c++-common/hwasan/param-instrument-reads.c: New test.
+	* c-c++-common/hwasan/param-instrument-writes.c: New test.
+	* c-c++-common/hwasan/random-frame-tag.c: New test.
+	* c-c++-common/hwasan/sanity-check-pure-c.c: New test.
+	* c-c++-common/hwasan/setjmp-longjmp-0.c: New test.
+	* c-c++-common/hwasan/setjmp-longjmp-1.c: New test.
+	* c-c++-common/hwasan/stack-tagging-basic-0.c: New test.
+	* c-c++-common/hwasan/stack-tagging-basic-1.c: New test.
+	* c-c++-common/hwasan/stack-tagging-disable.c: New test.
+	* c-c++-common/hwasan/unprotected-allocas-0.c: New test.
+	* c-c++-common/hwasan/unprotected-allocas-1.c: New test.
+	* c-c++-common/hwasan/use-after-free.c: New test.
+	* c-c++-common/hwasan/vararray-outside-caught.c: New test.
+	* c-c++-common/hwasan/vararray-stack-restore-correct.c: New test.
+	* c-c++-common/hwasan/very-large-objects.c: New test.
+	* g++.dg/hwasan/hwasan.exp: New test.
+	* g++.dg/hwasan/rvo-handled.C: New test.
+	* gcc.dg/hwasan/hwasan.exp: New test.
+	* gcc.dg/hwasan/nested-functions-0.c: New test.
+	* gcc.dg/hwasan/nested-functions-1.c: New test.
+	* gcc.dg/hwasan/nested-functions-2.c: New test.
+	* lib/hwasan-dg.exp: New file.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/95862
+	* gcc.dg/builtin-artih-overflow-5.c: Renamed to ...
+	* gcc.dg/builtin-arith-overflow-5.c: ... this.
+
+2020-11-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/abs_f16.c (abs_f16_x_untied): Expect
+	a MOVPRFX instruction.
+	* gcc.target/aarch64/sve/acle/asm/abs_f32.c (abs_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_f64.c (abs_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s16.c (abs_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s32.c (abs_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s64.c (abs_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s8.c (abs_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s16.c (cls_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s32.c (cls_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s64.c (cls_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s8.c (cls_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s16.c (clz_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s32.c (clz_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s64.c (clz_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s8.c (clz_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u16.c (clz_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u32.c (clz_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u64.c (clz_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u8.c (clz_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s16.c (cnot_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s32.c (cnot_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s64.c (cnot_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s8.c (cnot_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u16.c (cnot_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u32.c (cnot_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u64.c (cnot_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u8.c (cnot_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_bf16.c (cnt_bf16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f16.c (cnt_f16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f32.c (cnt_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f64.c (cnt_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s16.c (cnt_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s32.c (cnt_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s64.c (cnt_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s8.c (cnt_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u16.c (cnt_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u32.c (cnt_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u64.c (cnt_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u8.c (cnt_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_bf16.c (cvt_bf16_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f16.c (cvt_f16_f32_x_untied)
+	(cvt_f16_f64_x_untied, cvt_f16_s16_x_untied, cvt_f16_s32_x_untied)
+	(cvt_f16_s64_x_untied, cvt_f16_u16_x_untied, cvt_f16_u32_x_untied)
+	(cvt_f16_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f32.c (cvt_f32_f16_x_untied)
+	(cvt_f32_f64_x_untied, cvt_f32_s16_x_untied, cvt_f32_s32_x_untied)
+	(cvt_f32_s64_x_untied, cvt_f32_u16_x_untied, cvt_f32_u32_x_untied)
+	(cvt_f32_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f64.c (cvt_f64_f16_x_untied)
+	(cvt_f64_f32_x_untied, cvt_f64_s16_x_untied, cvt_f64_s32_x_untied)
+	(cvt_f64_s64_x_untied, cvt_f64_u16_x_untied, cvt_f64_u32_x_untied)
+	(cvt_f64_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s16.c (cvt_s16_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s32.c (cvt_s32_f16_x_untied)
+	(cvt_s32_f32_x_untied, cvt_s32_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s64.c (cvt_s64_f16_x_untied)
+	(cvt_s64_f32_x_untied, cvt_s64_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u16.c (cvt_u16_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u32.c (cvt_u32_f16_x_untied)
+	(cvt_u32_f32_x_untied, cvt_u32_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u64.c (cvt_u64_f16_x_untied)
+	(cvt_u64_f32_x_untied, cvt_u64_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s16.c (extb_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s32.c (extb_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s64.c (extb_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/exth_s32.c (exth_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/exth_s64.c (exth_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extw_s64.c (extw_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f16.c (neg_f16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f32.c (neg_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f64.c (neg_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s16.c (neg_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s32.c (neg_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s64.c (neg_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s8.c (neg_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s16.c (not_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s32.c (not_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s64.c (not_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s8.c (not_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u16.c (not_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u32.c (not_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u64.c (not_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u8.c (not_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s16.c (rbit_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s32.c (rbit_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s64.c (rbit_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s8.c (rbit_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u16.c (rbit_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u32.c (rbit_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u64.c (rbit_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u8.c (rbit_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f16.c (recpx_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f32.c (recpx_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f64.c (recpx_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s16.c (revb_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s32.c (revb_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s64.c (revb_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u16.c (revb_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u32.c (revb_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u64.c (revb_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_s32.c (revh_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_s64.c (revh_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_u32.c (revh_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_u64.c (revh_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revw_s64.c (revw_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revw_u64.c (revw_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f16.c (rinta_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f32.c (rinta_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f64.c (rinta_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f16.c (rinti_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f32.c (rinti_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f64.c (rinti_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f16.c (rintm_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f32.c (rintm_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f64.c (rintm_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f16.c (rintn_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f32.c (rintn_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f64.c (rintn_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f16.c (rintp_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f32.c (rintp_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f64.c (rintp_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f16.c (rintx_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f32.c (rintx_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f64.c (rintx_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f16.c (rintz_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f32.c (rintz_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f64.c (rintz_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f16.c (sqrt_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f32.c (sqrt_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f64.c (sqrt_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/cvtx_f32.c (cvtx_f32_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f16.c (logb_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f32.c (logb_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f64.c (logb_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s16.c (qabs_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s32.c (qabs_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s64.c (qabs_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s8.c (qabs_s8_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s16.c (qneg_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s32.c (qneg_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s64.c (qneg_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s8.c (qneg_s8_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/recpe_u32.c (recpe_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/rsqrte_u32.c (rsqrte_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/cvtlt_f32.c
+	(cvtlt_f32_f16_x_untied): Expect a MOV instruction.
+	* gcc.target/aarch64/sve2/acle/asm/cvtlt_f64.c
+	(cvtlt_f64_f32_x_untied): Likewise.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/95862
+	* gcc.dg/builtin-artih-overflow-5.c: New test.
+
+2020-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97579
+	* gcc.dg/pr97579.c: New testcase.
+
+2020-11-25  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR target/91816
+	* gcc.target/arm/pr91816.c: New test.
+
+2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97943
+	* c-c++-common/builtin-clear-padding-2.c: New test.
+	* c-c++-common/builtin-clear-padding-3.c: New test.
+	* g++.dg/ext/builtin-clear-padding-1.C: New test.
+	* gcc.dg/builtin-clear-padding-2.c: New test.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/pr97955.c: New test.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-47.c: Add a note.
+
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97899
+	* g++.dg/cpp0x/initlist-template3.C: New test.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* gfortran.dg/gomp/declare-target-4.f90: Adjust pattern to expect
+	an additional attribute and function return type.
+
+2020-11-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/pr97534.c: New test.
+
+2020-11-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/aapcs64/abitest.h (FUNC_VAL_CHECK): Use
+	noipa rather than noinline.
+	* gcc.target/aarch64/aapcs64/abitest-2.h (FUNC_VAL_CHECK): Likewise.
+
+2020-11-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/zvector/autovec-double-quiet-uneq.c: Expect
+	that "vx" is not emitted.
+	* gcc.target/s390/zvector/autovec-float-quiet-uneq.c: Likewise.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97950
+	* gcc.target/i386/pr97950.c: New test.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/97964
+	* gcc.dg/tree-ssa/pr97964.c: New test.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-decompose-1.c: Avoid Tcl 8.5-specific
+	behavior.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/gcc-dg.exp (dg-optimized, dg-missed): Use 'saved-dg-warning'
+	instead of 'saved-dg-error'.
+
+2020-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/gcc-dg.exp (dg-optimized, dg-missed): Fix 'process-message'
+	call.
+	* gcc.dg/vect/nodump-vect-opt-info-1.c: Demonstrate.
+	* gcc.dg/vect/nodump-vect-opt-info-2.c: Likewise.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97958
+	* c-c++-common/gomp/pr97958.c: New test.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96929
+	* gcc.dg/tree-ssa/pr96929.c: New test.
+
+2020-11-24  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/pr23401.c: Update expected output.
+	* gcc.dg/tree-ssa/pr27810.c: Update expected output.
+	* gcc.dg/tree-ssa/slsr-8.c: Update expected output.
+
+2020-11-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/vect/slp-perm-1.c: Adjust for partial vectors.
+	* gcc.dg/vect/slp-perm-5.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-perm-7.c: Likewise.
+
+2020-11-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/97849
+	* gcc.dg/tree-ssa/pr97849.c: New test.
+
+2020-11-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/attr-access-5.c: New test.
+
+2020-11-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/95630
+	* gcc.dg/c11-compare-incomplete-1.c,
+	gcc.dg/c11-compare-incomplete-2.c,
+	gcc.dg/c99-compare-incomplete-1.c,
+	gcc.dg/c99-compare-incomplete-2.c: New tests.
+
+2020-11-23  Martin Jambor  <mjambor@suse.cz>
+
+	* gfortran.dg/ipcp-array-2.f90: New test.
+
+2020-11-23  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/prune.exp (prune_gcc_output): Adjust include stack pruning
+	for modules.
+	(print_ices): Relax regexp.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* g++.target/msp430/data-attributes.C: Remove expected warnings for
+	"lower" attribute conflicts.
+	Adjust expected wording for "persistent" attribute misuse.
+	* gcc.target/msp430/data-attributes-2.c: Likewise.
+	* gcc.target/msp430/pr78818-auto-warn.c: Likewise.
+
+2020-11-23  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/simd-12.cc: New testcase.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.c-torture/execute/noinit-attribute.c: Moved to...
+	* c-c++-common/torture/attr-noinit-main.inc: ...here.
+	* lib/target-supports.exp (check_effective_target_persistent): New.
+	* c-c++-common/torture/attr-noinit-1.c: New test.
+	* c-c++-common/torture/attr-noinit-2.c: New test.
+	* c-c++-common/torture/attr-noinit-3.c: New test.
+	* c-c++-common/torture/attr-noinit-invalid.c: New test.
+	* c-c++-common/torture/attr-persistent-1.c: New test.
+	* c-c++-common/torture/attr-persistent-2.c: New test.
+	* c-c++-common/torture/attr-persistent-3.c: New test.
+	* c-c++-common/torture/attr-persistent-invalid.c: New test.
+	* c-c++-common/torture/attr-persistent-main.inc: New test.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/data-attributes-2.c: Adjust test.
+	* g++.target/msp430/data-attributes.C: New test.
+	* g++.target/msp430/msp430.exp: New test.
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.c-torture/execute/noinit-attribute.c: Don't override
+	optimization options set by torture test harness.
+	* lib/target-supports.exp (check_effective_target_noinit): Adjust
+	comment formatting.
+
+2020-11-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cortex-m55-nodsp-flag-hard.c: Add -mthumb.
+	* gcc.target/arm/cortex-m55-nodsp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nodsp-nofp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-nomve-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-hard.c: Likewise.
+	* gcc.target/arm/cortex-m55-nomve.fp-flag-softfp.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/pr97327.c: Likewise.
+
+2020-11-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/97904
+	* g++.dg/ext/sve-sizeless-1.C: Add more template tests.
+	* g++.dg/ext/sve-sizeless-2.C: Likewise.
+
 2020-11-22  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/97873

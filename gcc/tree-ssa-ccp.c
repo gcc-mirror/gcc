@@ -1432,13 +1432,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	  else
 	    {
 	      if (wi::neg_p (shift))
-		{
-		  shift = -shift;
-		  if (code == RSHIFT_EXPR)
-		    code = LSHIFT_EXPR;
-		  else
-		    code = RSHIFT_EXPR;
-		}
+		break;
 	      if (code == RSHIFT_EXPR)
 		{
 		  *mask = wi::rshift (wi::ext (r1mask, width, sgn), shift, sgn);

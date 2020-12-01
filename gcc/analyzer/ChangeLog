@@ -1,3 +1,30 @@
+2020-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-pass.cc: Include "analyzer/analyzer.h" for the
+	declaration of sorry_no_analyzer; include "tree.h" and
+	"function.h" as these are needed by it.
+
+2020-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-pass.cc (pass_analyzer::execute): Move sorry call to...
+	(sorry_no_analyzer): New.
+	* analyzer.h (class state_machine): New forward decl.
+	(class logger): New forward decl.
+	(class plugin_analyzer_init_iface): New.
+	(sorry_no_analyzer): New decl.
+	* checker-path.cc (checker_path::fixup_locations): New.
+	* checker-path.h (checker_event::set_location): New.
+	(checker_path::fixup_locations): New decl.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Call
+	checker_path::fixup_locations, and call fixup_location
+	on the primary location.
+	* engine.cc: Include "plugin.h".
+	(class plugin_analyzer_init_impl): New.
+	(impl_run_checkers): Invoke PLUGIN_ANALYZER_INIT callbacks.
+	* pending-diagnostic.h (pending_diagnostic::fixup_location): New
+	vfunc.
+
 2020-11-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97893

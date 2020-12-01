@@ -52,8 +52,12 @@ struct format_data;
 typedef struct fnode fnode;
 struct gfc_unit;
 
-#ifdef HAVE_NEWLOCALE
-/* We have POSIX 2008 extended locale stuff.  */
+#if defined (HAVE_FREELOCALE) && defined (HAVE_NEWLOCALE) \
+  && defined (HAVE_USELOCALE)
+/* We have POSIX 2008 extended locale stuff.  We only choose to use it
+   if all the functions required are present as some systems, e.g. NetBSD
+   do not have `uselocale'.  */
+#define HAVE_POSIX_2008_LOCALE
 extern locale_t c_locale;
 internal_proto(c_locale);
 #else
@@ -562,7 +566,7 @@ typedef struct st_parameter_dt
 	  char *line_buffer;
 	  struct format_data *fmt;
 	  namelist_info *ionml;
-#ifdef HAVE_NEWLOCALE
+#ifdef HAVE_POSIX_2008_LOCALE
 	  locale_t old_locale;
 #endif
 	  /* Current position within the look-ahead line buffer.  */

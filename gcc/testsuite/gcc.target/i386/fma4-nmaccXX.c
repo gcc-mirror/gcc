@@ -55,7 +55,7 @@ check_nmaccps ()
 	if (dst.f[i + j] != res.f[i + j]) 
 	  check_fails++;
       }
-  return check_fails++;
+  return check_fails;
 }
 
 static int
@@ -69,9 +69,8 @@ check_nmaccpd ()
 	if (dst.d[i + j] != res.d[i + j]) 
 	  check_fails++;
       }
-  return check_fails++;
+  return check_fails;
 }
-
 
 static int
 check_nmaccss ()
@@ -83,7 +82,7 @@ check_nmaccss ()
       if (dst.f[i] != res.f[i]) 
 	check_fails++;
     }	
-  return check_fails++;
+  return check_fails;
 }
 
 static int
@@ -96,7 +95,7 @@ check_nmaccsd ()
       if (dst.d[i] != res.d[i]) 
 	check_fails++;
     }
-  return check_fails++;
+  return check_fails;
 }
 
 static void
@@ -112,7 +111,6 @@ fma4_test (void)
   if (check_nmaccps ()) 
     abort ();
   
-
   for (i = 0; i < NUM; i++)
     dst.x[i] = _mm_nmacc_ss (src1.x[i], src2.x[i], src3.x[i]);
   
@@ -126,12 +124,10 @@ fma4_test (void)
   
   if (check_nmaccpd ()) 
     abort ();
-  
 
   for (i = 0; i < NUM; i++)
     dst.y[i] = _mm_nmacc_sd (src1.y[i], src2.y[i], src3.y[i]);
   
   if (check_nmaccsd ()) 
     abort ();
-
 }

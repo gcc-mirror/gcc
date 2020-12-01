@@ -7353,6 +7353,12 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_D_OS_VERSIONS
 
+@hook TARGET_D_MINFO_SECTION
+
+@hook TARGET_D_MINFO_START_NAME
+
+@hook TARGET_D_MINFO_END_NAME
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces
@@ -8184,3 +8190,19 @@ maintainer is familiar with.
 @hook TARGET_SPECULATION_SAFE_VALUE
 
 @hook TARGET_RUN_TARGET_SELFTESTS
+
+@hook TARGET_MEMTAG_CAN_TAG_ADDRESSES
+
+@hook TARGET_MEMTAG_TAG_SIZE
+
+@hook TARGET_MEMTAG_GRANULE_SIZE
+
+@hook TARGET_MEMTAG_INSERT_RANDOM_TAG
+
+@hook TARGET_MEMTAG_ADD_TAG
+
+@hook TARGET_MEMTAG_SET_TAG
+
+@hook TARGET_MEMTAG_EXTRACT_TAG
+
+@hook TARGET_MEMTAG_UNTAGGED_POINTER

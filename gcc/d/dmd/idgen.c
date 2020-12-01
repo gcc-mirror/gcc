@@ -145,7 +145,6 @@ Msgtable msgtable[] =
     { "C", NULL },
     { "D", NULL },
     { "Windows", NULL },
-    { "Pascal", NULL },
     { "System", NULL },
     { "Objective", NULL },
 

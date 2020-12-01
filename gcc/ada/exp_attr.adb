@@ -67,6 +67,7 @@ with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Uname;    use Uname;
+with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
 package body Exp_Attr is
@@ -1209,7 +1210,7 @@ package body Exp_Attr is
    --  by Expand_Fpt_Attribute
 
    procedure Expand_Fpt_Attribute_R (N : Node_Id) is
-      E1  : constant Node_Id    := First (Expressions (N));
+      E1  : constant Node_Id := First (Expressions (N));
       Ftp : Entity_Id;
       Pkg : RE_Id;
    begin
@@ -1229,10 +1230,10 @@ package body Exp_Attr is
    --  by Expand_Fpt_Attribute
 
    procedure Expand_Fpt_Attribute_RI (N : Node_Id) is
-      E1  : constant Node_Id   := First (Expressions (N));
+      E1  : constant Node_Id := First (Expressions (N));
+      E2  : constant Node_Id := Next (E1);
       Ftp : Entity_Id;
       Pkg : RE_Id;
-      E2  : constant Node_Id   := Next (E1);
    begin
       Find_Fat_Info (Etype (E1), Ftp, Pkg);
       Expand_Fpt_Attribute
@@ -2822,7 +2823,7 @@ package body Exp_Attr is
          Id_Kind    : constant Entity_Id := RTE (RO_AT_Task_Id);
          Ent        : constant Entity_Id := Entity (Pref);
          Conctype   : constant Entity_Id := Scope (Ent);
-         Nest_Depth : Integer := 0;
+         Nest_Depth : Nat := 0;
          Name       : Node_Id;
          S          : Entity_Id;
 
@@ -2885,7 +2886,7 @@ package body Exp_Attr is
                     New_Occurrence_Of (RTE (RE_Task_Entry_Caller), Loc),
                   Parameter_Associations => New_List (
                     Make_Integer_Literal (Loc,
-                      Intval => Int (Nest_Depth))))));
+                      Intval => Nest_Depth)))));
          end if;
 
          Analyze_And_Resolve (N, Id_Kind);
@@ -2923,8 +2924,6 @@ package body Exp_Attr is
       when Attribute_Constrained => Constrained : declare
          Formal_Ent : constant Entity_Id := Param_Entity (Pref);
 
-      --  Start of processing for Constrained
-
       begin
          --  Reference to a parameter where the value is passed as an extra
          --  actual, corresponding to the extra formal referenced by the
@@ -2938,7 +2937,7 @@ package body Exp_Attr is
          then
             Rewrite (N,
               New_Occurrence_Of
-                (Extra_Constrained (Formal_Ent), Sloc (N)));
+                (Extra_Constrained (Formal_Ent), Loc));
 
          --  If the prefix is an access to object, the attribute applies to
          --  the designated object, so rewrite with an explicit dereference.
@@ -2949,8 +2948,6 @@ package body Exp_Attr is
          then
             Rewrite (Pref,
               Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
-            Analyze_And_Resolve (N, Standard_Boolean);
-            return;
 
          --  For variables with a Extra_Constrained field, we use the
          --  corresponding entity.
@@ -2961,7 +2958,7 @@ package body Exp_Attr is
          then
             Rewrite (N,
               New_Occurrence_Of
-                (Extra_Constrained (Entity (Pref)), Sloc (N)));
+                (Extra_Constrained (Entity (Pref)), Loc));
 
          --  For all other cases, we can tell at compile time
 
@@ -2978,8 +2975,7 @@ package body Exp_Attr is
             Rewrite (N,
               New_Occurrence_Of
                 (Boolean_Literals
-                   (Exp_Util.Attribute_Constrained_Static_Value
-                      (Pref)), Sloc (N)));
+                   (Exp_Util.Attribute_Constrained_Static_Value (Pref)), Loc));
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);
@@ -2990,7 +2986,7 @@ package body Exp_Attr is
       ---------------
 
       --  Transforms 'Copy_Sign into a call to the floating-point attribute
-      --  function Copy_Sign in Fat_xxx (where xxx is the root type)
+      --  function Copy_Sign in Fat_xxx (where xxx is the root type).
 
       when Attribute_Copy_Sign =>
          Expand_Fpt_Attribute_RR (N);
@@ -3389,7 +3385,7 @@ package body Exp_Attr is
 
          Size : Entity_Id;
 
-      --  Start of Finalization_Size
+      --  Start of processing for Finalization_Size
 
       begin
          --  An object of a class-wide type first requires a runtime check to
@@ -3620,31 +3616,145 @@ package body Exp_Attr is
 
       --  expands into
 
-      --    Result_Type (System.Fore (Universal_Real (Type'First)),
-      --                              Universal_Real (Type'Last))
+      --    System.Fore_xx (ftyp (Typ'First), ftyp (Typ'Last) [,pm])
+
+      --    For decimal fixed-point types
+      --      xx   = Decimal{32,64,128}
+      --      ftyp = Integer_{32,64,128}
+      --      pm   = Typ'Scale
+
+      --    For the most common ordinary fixed-point types
+      --      xx   = Fixed{32,64,128}
+      --      ftyp = Integer_{32,64,128}
+      --      pm   = numerator of Typ'Small
+      --             denominator of Typ'Small
+      --             min (scale of Typ'Small, 0)
+
+      --    For other ordinary fixed-point types
+      --      xx   = Real
+      --      ftyp = Universal_Real
+      --      pm   = none
 
       --  Note that we know that the type is a nonstatic subtype, or Fore would
-      --  have itself been computed dynamically in Eval_Attribute.
+      --  have been computed statically in Eval_Attribute.
 
       when Attribute_Fore =>
-         Rewrite (N,
-           Convert_To (Typ,
-             Make_Function_Call (Loc,
-               Name                   =>
-                 New_Occurrence_Of (RTE (RE_Fore), Loc),
+         declare
+            Arg_List : List_Id;
+            Fid      : RE_Id;
+            Ftyp     : Entity_Id;
 
-               Parameter_Associations => New_List (
-                 Convert_To (Universal_Real,
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                     Attribute_Name => Name_First)),
+         begin
+            if Is_Decimal_Fixed_Point_Type (Ptyp) then
+               if Esize (Ptyp) <= 32 then
+                  Fid  := RE_Fore_Decimal32;
+                  Ftyp := RTE (RE_Integer_32);
+               elsif Esize (Ptyp) <= 64 then
+                  Fid  := RE_Fore_Decimal64;
+                  Ftyp := RTE (RE_Integer_64);
+               else
+                  Fid  := RE_Fore_Decimal128;
+                  Ftyp := RTE (RE_Integer_128);
+               end if;
 
-                 Convert_To (Universal_Real,
-                   Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                     Attribute_Name => Name_Last))))));
+            else
+               declare
+                  Num : constant Uint := Norm_Num (Small_Value (Ptyp));
+                  Den : constant Uint := Norm_Den (Small_Value (Ptyp));
+                  Max : constant Uint := UI_Max (Num, Den);
+                  Min : constant Uint := UI_Min (Num, Den);
+                  Siz : constant Uint := Esize (Ptyp);
 
-         Analyze_And_Resolve (N, Typ);
+               begin
+                  if Siz <= 32
+                    and then Max <= Uint_2 ** 31
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 8)
+                  then
+                     Fid  := RE_Fore_Fixed32;
+                     Ftyp := RTE (RE_Integer_32);
+                  elsif Siz <= 64
+                    and then Max <= Uint_2 ** 63
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 17)
+                  then
+                     Fid  := RE_Fore_Fixed64;
+                     Ftyp := RTE (RE_Integer_64);
+                  elsif System_Max_Integer_Size = 128
+                    and then Max <= Uint_2 ** 127
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 37)
+                  then
+                     Fid  := RE_Fore_Fixed128;
+                     Ftyp := RTE (RE_Integer_128);
+                  else
+                     Fid  := RE_Fore_Real;
+                     Ftyp := Universal_Real;
+                  end if;
+               end;
+            end if;
+
+            Arg_List := New_List (
+              Convert_To (Ftyp,
+                Make_Attribute_Reference (Loc,
+                  Prefix         => New_Occurrence_Of (Ptyp, Loc),
+                  Attribute_Name => Name_First)));
+
+            Append_To (Arg_List,
+              Convert_To (Ftyp,
+                Make_Attribute_Reference (Loc,
+                  Prefix         => New_Occurrence_Of (Ptyp, Loc),
+                  Attribute_Name => Name_Last)));
+
+            --  For decimal, append Scale and also set to do literal conversion
+
+            if Is_Decimal_Fixed_Point_Type (Ptyp) then
+               Set_Conversion_OK (First (Arg_List));
+               Set_Conversion_OK (Next (First (Arg_List)));
+
+               Append_To (Arg_List,
+                 Make_Integer_Literal (Loc, Scale_Value (Ptyp)));
+
+            --  For ordinary fixed-point types, append Num, Den and Scale
+            --  parameters and also set to do literal conversion
+
+            elsif Fid /= RE_Fore_Real then
+               Set_Conversion_OK (First (Arg_List));
+               Set_Conversion_OK (Next (First (Arg_List)));
+
+               Append_To (Arg_List,
+                 Make_Integer_Literal (Loc, -Norm_Num (Small_Value (Ptyp))));
+
+               Append_To (Arg_List,
+                 Make_Integer_Literal (Loc, -Norm_Den (Small_Value (Ptyp))));
+
+               declare
+                  Val   : Ureal := Small_Value (Ptyp);
+                  Scale : Int   := 0;
+
+               begin
+                  while Val >= Ureal_10 loop
+                     Val := Val / Ureal_10;
+                     Scale := Scale - 1;
+                  end loop;
+
+                  Append_To (Arg_List,
+                     Make_Integer_Literal (Loc, UI_From_Int (Scale)));
+               end;
+            end if;
+
+            Rewrite (N,
+              Convert_To (Typ,
+                Make_Function_Call (Loc,
+                  Name                   =>
+                    New_Occurrence_Of (RTE (Fid), Loc),
+                  Parameter_Associations => Arg_List)));
+
+            Analyze_And_Resolve (N, Typ);
+         end;
 
       --------------
       -- Fraction --
@@ -4240,7 +4350,7 @@ package body Exp_Attr is
       begin
          --  Processing for packed array types
 
-         if Is_Array_Type (Ptyp) and then Is_Packed (Ptyp) then
+         if Is_Packed_Array (Ptyp) then
             Ityp := Get_Index_Subtype (N);
 
             --  If the index type, Ityp, is an enumeration type with holes,
@@ -4338,7 +4448,7 @@ package body Exp_Attr is
                Xtyp : Entity_Id;
 
             begin
-               if Is_Array_Type (Dtyp) and then Is_Packed (Dtyp) then
+               if Is_Packed_Array (Dtyp) then
                   Xtyp := Get_Index_Subtype (N);
 
                   Rewrite (N,
@@ -5717,14 +5827,14 @@ package body Exp_Attr is
 
       when Attribute_Reduce =>
          declare
-            Loc     : constant Source_Ptr := Sloc (N);
-            E1      : constant Node_Id := First (Expressions (N));
-            E2      : constant Node_Id := Next (E1);
-            Bnn     : constant Entity_Id := Make_Temporary (Loc, 'B', N);
-            Typ     : constant Entity_Id := Etype (N);
+            Loc : constant Source_Ptr := Sloc (N);
+            E1  : constant Node_Id := First (Expressions (N));
+            E2  : constant Node_Id := Next (E1);
+            Bnn : constant Entity_Id := Make_Temporary (Loc, 'B', N);
+            Typ : constant Entity_Id := Etype (N);
 
             New_Loop : Node_Id;
-            Stat    : Node_Id;
+            Stat     : Node_Id;
 
             function Build_Stat (Comp : Node_Id) return Node_Id;
             --  The reducer can be a function, a procedure whose first
@@ -5739,14 +5849,14 @@ package body Exp_Attr is
             function Build_Stat (Comp : Node_Id) return Node_Id is
             begin
                if Nkind (E1) = N_Attribute_Reference then
-                  Stat :=  Make_Assignment_Statement (Loc,
-                             Name => New_Occurrence_Of (Bnn, Loc),
-                             Expression => Make_Attribute_Reference (Loc,
-                               Attribute_Name => Attribute_Name (E1),
-                               Prefix => New_Copy (Prefix (E1)),
-                               Expressions => New_List (
-                                 New_Occurrence_Of (Bnn, Loc),
-                                 Comp)));
+                  Stat := Make_Assignment_Statement (Loc,
+                            Name => New_Occurrence_Of (Bnn, Loc),
+                            Expression => Make_Attribute_Reference (Loc,
+                              Attribute_Name => Attribute_Name (E1),
+                              Prefix => New_Copy (Prefix (E1)),
+                              Expressions => New_List (
+                                New_Occurrence_Of (Bnn, Loc),
+                                Comp)));
 
                elsif Ekind (Entity (E1)) = E_Procedure then
                   Stat := Make_Procedure_Call_Statement (Loc,
@@ -5755,13 +5865,13 @@ package body Exp_Attr is
                                  New_Occurrence_Of (Bnn, Loc),
                                  Comp));
                else
-                  Stat :=  Make_Assignment_Statement (Loc,
-                             Name => New_Occurrence_Of (Bnn, Loc),
-                             Expression => Make_Function_Call (Loc,
-                               Name => New_Occurrence_Of (Entity (E1), Loc),
-                               Parameter_Associations => New_List (
-                                 New_Occurrence_Of (Bnn, Loc),
-                                 Comp)));
+                  Stat := Make_Assignment_Statement (Loc,
+                            Name => New_Occurrence_Of (Bnn, Loc),
+                            Expression => Make_Function_Call (Loc,
+                              Name => New_Occurrence_Of (Entity (E1), Loc),
+                              Parameter_Associations => New_List (
+                                New_Occurrence_Of (Bnn, Loc),
+                                Comp)));
                end if;
 
                return Stat;
@@ -5769,9 +5879,8 @@ package body Exp_Attr is
 
          --  If the prefix is an aggregate, its unique component is an
          --  Iterated_Element, and we create a loop out of its iterator.
-         --  The iterated_component_Association is parsed as a loop
-         --  parameter specification with "in" or as a container
-         --  iterator with "of".
+         --  The iterated_component_association is parsed as a loop parameter
+         --  specification with "in" or as a container iterator with "of".
 
          begin
             if Nkind (Prefix (N)) = N_Aggregate then
@@ -6229,7 +6338,7 @@ package body Exp_Attr is
                   then
                      Set_Attribute_Name (N, Name_Object_Size);
 
-                  --  In all other cases, Size and VADS_Size are the sane
+                  --  In all other cases, Size and VADS_Size are the same
 
                   else
                      Set_Attribute_Name (N, Name_Size);
@@ -6293,7 +6402,7 @@ package body Exp_Attr is
       ------------------
 
       when Attribute_Storage_Size => Storage_Size : declare
-         Alloc_Op  : Entity_Id := Empty;
+         Alloc_Op : Entity_Id := Empty;
 
       begin
 
@@ -6714,7 +6823,7 @@ package body Exp_Attr is
       ------------
 
       when Attribute_To_Any => To_Any : declare
-         Decls  : constant List_Id   := New_List;
+         Decls : constant List_Id := New_List;
       begin
          Rewrite (N,
            Build_To_Any_Call
@@ -6743,7 +6852,7 @@ package body Exp_Attr is
       --------------
 
       when Attribute_TypeCode => TypeCode : declare
-         Decls  : constant List_Id   := New_List;
+         Decls : constant List_Id := New_List;
       begin
          Rewrite (N, Build_TypeCode_Call (Loc, Ptyp, Decls));
          Insert_Actions (N, Decls);
@@ -7671,7 +7780,7 @@ package body Exp_Attr is
 
       --  The following attributes should not appear at this stage, since they
       --  have already been handled by the analyzer (and properly rewritten
-      --  with corresponding values or entities to represent the right values)
+      --  with corresponding values or entities to represent the right values).
 
       when Attribute_Abort_Signal
          | Attribute_Address_Size
@@ -7725,6 +7834,8 @@ package body Exp_Attr is
          | Attribute_Scale
          | Attribute_Signed_Zeros
          | Attribute_Small
+         | Attribute_Small_Denominator
+         | Attribute_Small_Numerator
          | Attribute_Storage_Unit
          | Attribute_Stub_Type
          | Attribute_System_Allocator_Alignment
@@ -7802,17 +7913,17 @@ package body Exp_Attr is
    ---------------------------
 
    procedure Expand_Size_Attribute (N : Node_Id) is
-      Loc   : constant Source_Ptr   := Sloc (N);
-      Typ   : constant Entity_Id    := Etype (N);
-      Pref  : constant Node_Id      := Prefix (N);
-      Ptyp  : constant Entity_Id    := Etype (Pref);
-      Id    : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
-      Siz   : Uint;
+      Loc  : constant Source_Ptr   := Sloc (N);
+      Typ  : constant Entity_Id    := Etype (N);
+      Pref : constant Node_Id      := Prefix (N);
+      Ptyp : constant Entity_Id    := Etype (Pref);
+      Id   : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
+      Siz  : Uint;
 
    begin
       --  Case of known RM_Size of a type
 
-      if (Id = Attribute_Size or else Id = Attribute_Value_Size)
+      if Id in Attribute_Size | Attribute_Value_Size
         and then Is_Entity_Name (Pref)
         and then Is_Type (Entity (Pref))
         and then Known_Static_RM_Size (Entity (Pref))
@@ -7874,8 +7985,7 @@ package body Exp_Attr is
 
          if Is_Entity_Name (Pref)
            and then Is_Formal (Entity (Pref))
-           and then Is_Array_Type (Ptyp)
-           and then Is_Packed (Ptyp)
+           and then Is_Packed_Array (Ptyp)
          then
             Rewrite (N,
               Make_Attribute_Reference (Loc,
@@ -7889,9 +7999,8 @@ package body Exp_Attr is
          --  type, but also a hint to the actual constrained type.
 
          elsif Nkind (Pref) = N_Explicit_Dereference
-           and then Is_Array_Type (Ptyp)
+           and then Is_Packed_Array (Ptyp)
            and then not Is_Constrained (Ptyp)
-           and then Is_Packed (Ptyp)
          then
             Set_Actual_Designated_Subtype (Pref, Get_Actual_Subtype (Pref));
 

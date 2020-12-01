@@ -79,9 +79,6 @@ package body Ada.Wide_Text_IO.Modular_IO is
    --  are used to test for these cases and since they are constant, only code
    --  for the relevant case will be included in the instance.
 
-   subtype TFT is Ada.Wide_Text_IO.File_Type;
-   --  File type required for calls to routines in Aux
-
    ---------
    -- Get --
    ---------
@@ -99,9 +96,9 @@ package body Ada.Wide_Text_IO.Modular_IO is
       if Need_LLLU then
          Aux_LLLU.Get (File, Long_Long_Long_Unsigned (Item), Width);
       elsif Need_LLU then
-         Aux_LLU.Get (TFT (File), Long_Long_Unsigned (Item), Width);
+         Aux_LLU.Get (File, Long_Long_Unsigned (Item), Width);
       else
-         Aux_Uns.Get (TFT (File), Unsigned (Item), Width);
+         Aux_Uns.Get (File, Unsigned (Item), Width);
       end if;
 
    exception
@@ -158,9 +155,9 @@ package body Ada.Wide_Text_IO.Modular_IO is
       if Need_LLLU then
          Aux_LLLU.Put (File, Long_Long_Long_Unsigned (Item), Width, Base);
       elsif Need_LLU then
-         Aux_LLU.Put (TFT (File), Long_Long_Unsigned (Item), Width, Base);
+         Aux_LLU.Put (File, Long_Long_Unsigned (Item), Width, Base);
       else
-         Aux_Uns.Put (TFT (File), Unsigned (Item), Width, Base);
+         Aux_Uns.Put (File, Unsigned (Item), Width, Base);
       end if;
    end Put;
 

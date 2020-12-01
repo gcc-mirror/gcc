@@ -82,7 +82,7 @@ struct GTY(()) control_flow_graph {
 
 
 extern void init_flow (function *);
-extern void clear_edges (function *);
+extern void free_cfg (function *);
 extern basic_block alloc_block (void);
 extern void link_block (basic_block, basic_block);
 extern void unlink_block (basic_block);

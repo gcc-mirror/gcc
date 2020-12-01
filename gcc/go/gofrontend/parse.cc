@@ -2165,8 +2165,12 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 		  id = this->gogo_->pack_hidden_name(id, is_id_exported);
 		  ins = uniq_idents.insert(id);
 		  if (!ins.second && !Gogo::is_sink_name(id))
-		    go_error_at(id_location, "multiple assignments to %s",
-				Gogo::message_name(id).c_str());
+		    {
+		      // Use %s to print := to avoid -Wformat-diag warning.
+		      go_error_at(id_location,
+				  "%qs repeated on left side of %s",
+				  Gogo::message_name(id).c_str(), ":=");
+		    }
 		  til.push_back(Typed_identifier(id, NULL, location));
 		}
 	      else
@@ -2219,7 +2223,11 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
   const Token* token = this->advance_token();
 
   if (!dup_name.empty())
-    go_error_at(dup_loc, "multiple assignments to %s", dup_name.c_str());
+    {
+      // Use %s to print := to avoid -Wformat-diag warning.
+      go_error_at(dup_loc, "%qs repeated on left side of %s",
+		  dup_name.c_str(), ":=");
+    }
 
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
@@ -4414,7 +4422,7 @@ Parse::if_stat()
     {
       Location semi_loc = this->location();
       if (this->advance_token()->is_op(OPERATOR_LCURLY))
-	go_error_at(semi_loc, "missing %<{%> after if clause");
+	go_error_at(semi_loc, "unexpected semicolon or newline, expecting %<{%> after if clause");
       // Otherwise we will get an error when we call this->block
       // below.
     }
@@ -5351,7 +5359,7 @@ Parse::for_stat(Label* label)
     {
       Location semi_loc = this->location();
       if (this->advance_token()->is_op(OPERATOR_LCURLY))
-	go_error_at(semi_loc, "missing %<{%> after for clause");
+	go_error_at(semi_loc, "unexpected semicolon or newline, expecting %<{%> after for clause");
       // Otherwise we will get an error when we call this->block
       // below.
     }
@@ -5422,7 +5430,7 @@ Parse::for_clause(Expression** cond, Block** post)
     *cond = NULL;
   else if (this->peek_token()->is_op(OPERATOR_LCURLY))
     {
-      go_error_at(this->location(), "missing %<{%> after for clause");
+      go_error_at(this->location(), "unexpected semicolon or newline, expecting %<{%> after for clause");
       *cond = NULL;
       *post = NULL;
       return;
@@ -5780,7 +5788,7 @@ Parse::import_spec(void*, unsigned int pragmas)
 
   if (!token->is_string())
     {
-      go_error_at(this->location(), "import statement not a string");
+      go_error_at(this->location(), "import path must be a string");
       this->advance_token();
       return;
     }

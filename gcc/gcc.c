@@ -749,6 +749,24 @@ proper position among the other output files.  */
 #define LIBASAN_EARLY_SPEC ""
 #endif
 
+#ifndef LIBHWASAN_SPEC
+#define STATIC_LIBHWASAN_LIBS \
+  " %{static-libhwasan|static:%:include(libsanitizer.spec)%(link_libhwasan)}"
+#ifdef LIBHWASAN_EARLY_SPEC
+#define LIBHWASAN_SPEC STATIC_LIBHWASAN_LIBS
+#elif defined(HAVE_LD_STATIC_DYNAMIC)
+#define LIBHWASAN_SPEC "%{static-libhwasan:" LD_STATIC_OPTION \
+		     "} -lhwasan %{static-libhwasan:" LD_DYNAMIC_OPTION "}" \
+		     STATIC_LIBHWASAN_LIBS
+#else
+#define LIBHWASAN_SPEC "-lhwasan" STATIC_LIBHWASAN_LIBS
+#endif
+#endif
+
+#ifndef LIBHWASAN_EARLY_SPEC
+#define LIBHWASAN_EARLY_SPEC ""
+#endif
+
 #ifndef LIBTSAN_SPEC
 #define STATIC_LIBTSAN_LIBS \
   " %{static-libtsan|static:%:include(libsanitizer.spec)%(link_libtsan)}"
@@ -1071,6 +1089,7 @@ proper position among the other output files.  */
 #ifndef SANITIZER_EARLY_SPEC
 #define SANITIZER_EARLY_SPEC "\
 %{!nostdlib:%{!r:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_EARLY_SPEC "} \
+    %{%:sanitize(hwaddress):" LIBHWASAN_EARLY_SPEC "} \
     %{%:sanitize(thread):" LIBTSAN_EARLY_SPEC "} \
     %{%:sanitize(leak):" LIBLSAN_EARLY_SPEC "}}}}"
 #endif
@@ -1080,6 +1099,8 @@ proper position among the other output files.  */
 #define SANITIZER_SPEC "\
 %{!nostdlib:%{!r:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=address}}\
+    %{%:sanitize(hwaddress):" LIBHWASAN_SPEC "\
+	%{static:%ecannot specify -static with -fsanitize=hwaddress}}\
     %{%:sanitize(thread):" LIBTSAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=thread}}\
     %{%:sanitize(undefined):" LIBUBSAN_SPEC "}\
@@ -1213,7 +1234,7 @@ static const char *cpp_unique_options =
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{Mmodules} %{Mno-modules}\
  %{!E:%{!M:%{!MM:%{!MT:%{!MQ:%{MD|MMD:%{o*:-MQ %*}}}}}}}\
- %{remap} %{g3|ggdb3|gstabs3|gxcoff3|gvms3:-dD}\
+ %{remap} %{%:debug-level-gt(2):-dD}\
  %{!iplugindir*:%{fplugin*:%:find-plugindir()}}\
  %{H} %C %{D*&U*&A*} %{i*} %Z %i\
  %{E|M|MM:%W{o*}}";
@@ -9771,6 +9792,7 @@ print_multilib_info (void)
   const char *p = multilib_select;
   const char *last_path = 0, *this_path;
   int skip;
+  int not_arg;
   unsigned int last_path_len = 0;
 
   while (*p != '\0')
@@ -9925,9 +9947,13 @@ print_multilib_info (void)
 		goto invalid_select;
 
 	      if (*q == '!')
-		arg = NULL;
+		{
+		  not_arg = 1;
+		  q++;
+		}
 	      else
-		arg = q;
+		not_arg = 0;
+	      arg = q;
 
 	      while (*q != ' ' && *q != ';')
 		{
@@ -9936,11 +9962,17 @@ print_multilib_info (void)
 		  ++q;
 		}
 
-	      if (arg != NULL
-		  && default_arg (arg, q - arg))
+	      if (default_arg (arg, q - arg))
 		{
-		  skip = 1;
-		  break;
+		  /* Stop checking if any default arguments appeared in not
+		     list.  */
+		  if (not_arg)
+		    {
+		      skip = 0;
+		      break;
+		    }
+		  else
+		    skip = 1;
 		}
 
 	      if (*q == ' ')
@@ -10148,8 +10180,12 @@ sanitize_spec_function (int argc, const char **argv)
 
   if (strcmp (argv[0], "address") == 0)
     return (flag_sanitize & SANITIZE_USER_ADDRESS) ? "" : NULL;
+  if (strcmp (argv[0], "hwaddress") == 0)
+    return (flag_sanitize & SANITIZE_USER_HWADDRESS) ? "" : NULL;
   if (strcmp (argv[0], "kernel-address") == 0)
     return (flag_sanitize & SANITIZE_KERNEL_ADDRESS) ? "" : NULL;
+  if (strcmp (argv[0], "kernel-hwaddress") == 0)
+    return (flag_sanitize & SANITIZE_KERNEL_HWADDRESS) ? "" : NULL;
   if (strcmp (argv[0], "thread") == 0)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)

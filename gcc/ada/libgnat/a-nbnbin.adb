@@ -177,7 +177,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       function To_Big_Integer (Arg : Int) return Valid_Big_Integer is
          Result : Big_Integer;
       begin
-         Set_Bignum (Result, To_Bignum (Long_Long_Integer (Arg)));
+         Set_Bignum (Result, To_Bignum (Long_Long_Long_Integer (Arg)));
          return Result;
       end To_Big_Integer;
 
@@ -205,7 +205,7 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
       function To_Big_Integer (Arg : Int) return Valid_Big_Integer is
          Result : Big_Integer;
       begin
-         Set_Bignum (Result, To_Bignum (Unsigned_64 (Arg)));
+         Set_Bignum (Result, To_Bignum (Unsigned_128 (Arg)));
          return Result;
       end To_Big_Integer;
 
@@ -235,12 +235,197 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- From_String --
    -----------------
 
-   function From_String (Arg : String) return Big_Integer is
+   function From_String (Arg : String) return Valid_Big_Integer is
+      procedure Scan_Decimal
+        (Arg : String; J : in out Natural; Result : out Big_Integer);
+      --  Scan decimal value starting at Arg (J). Store value in Result if
+      --  successful, raise Constraint_Error if not. On exit, J points to the
+      --  first index past the decimal value.
+
+      ------------------
+      -- Scan_Decimal --
+      ------------------
+
+      procedure Scan_Decimal
+        (Arg : String; J : in out Natural; Result : out Big_Integer)
+      is
+         Initial_J : constant Natural := J;
+         Ten       : constant Big_Integer := To_Big_Integer (10);
+      begin
+         Result := To_Big_Integer (0);
+
+         while J <= Arg'Last loop
+            if Arg (J) in '0' .. '9' then
+               Result :=
+                 Result * Ten + To_Big_Integer (Character'Pos (Arg (J))
+                                                  - Character'Pos ('0'));
+
+            elsif Arg (J) = '_' then
+               if J in Initial_J | Arg'Last
+                 or else Arg (J - 1) not in '0' .. '9'
+                 or else Arg (J + 1) not in '0' .. '9'
+               then
+                  raise Constraint_Error with "invalid integer value: " & Arg;
+               end if;
+            else
+               exit;
+            end if;
+
+            J := J + 1;
+         end loop;
+      end Scan_Decimal;
+
       Result : Big_Integer;
+
    begin
-      --  ??? only support Long_Long_Long_Integer, good enough for now
+      --  First try the fast path via Long_Long_Long_Integer'Value
+
       Set_Bignum (Result, To_Bignum (Long_Long_Long_Integer'Value (Arg)));
       return Result;
+
+   exception
+      when Constraint_Error =>
+         --  Then try the slow path
+
+         declare
+            Neg        : Boolean  := False;
+            Base_Found : Boolean  := False;
+            Base_Int   : Positive := 10;
+            J          : Natural  := Arg'First;
+            Val        : Natural;
+            Base       : Big_Integer;
+            Exp        : Big_Integer;
+
+         begin
+            --  Scan past leading blanks
+
+            while J <= Arg'Last and then Arg (J) = ' ' loop
+               J := J + 1;
+            end loop;
+
+            if J > Arg'Last then
+               raise;
+            end if;
+
+            --  Scan and store negative sign if found
+
+            if Arg (J) = '-' then
+               Neg := True;
+               J   := J + 1;
+            end if;
+
+            --  Scan decimal value: either the result itself, or the base
+            --  value if followed by a '#'.
+
+            Scan_Decimal (Arg, J, Result);
+
+            --  Scan explicit base if requested
+
+            if J <= Arg'Last and then Arg (J) = '#' then
+               Base_Int := To_Integer (Result);
+
+               if Base_Int not in 2 .. 16 then
+                  raise;
+               end if;
+
+               Base_Found := True;
+               Base       := Result;
+               Result     := To_Big_Integer (0);
+               J          := J + 1;
+
+               while J <= Arg'Last loop
+                  case Arg (J) is
+                     when '0' .. '9' =>
+                        Val := Character'Pos (Arg (J)) - Character'Pos ('0');
+
+                        if Val >= Base_Int then
+                           raise;
+                        end if;
+
+                        Result := Result * Base + To_Big_Integer (Val);
+
+                     when 'a' .. 'f' =>
+                        Val :=
+                          10 + Character'Pos (Arg (J)) - Character'Pos ('a');
+
+                        if Val >= Base_Int then
+                           raise;
+                        end if;
+
+                        Result := Result * Base + To_Big_Integer (Val);
+
+                     when 'A' .. 'F' =>
+                        Val :=
+                          10 + Character'Pos (Arg (J)) - Character'Pos ('A');
+
+                        if Val >= Base_Int then
+                           raise;
+                        end if;
+
+                        Result := Result * Base + To_Big_Integer (Val);
+
+                     when '_' =>
+
+                        --  We only allow _ preceded and followed by a valid
+                        --  number and not any other character.
+
+                        if J in Arg'First | Arg'Last
+                          or else Arg (J - 1) in '_' | '#'
+                          or else Arg (J + 1) = '#'
+                        then
+                           raise;
+                        end if;
+
+                     when '#' =>
+                        J := J + 1;
+                        exit;
+
+                     when others =>
+                        raise;
+                  end case;
+
+                  J := J + 1;
+               end loop;
+            else
+               Base := To_Big_Integer (10);
+            end if;
+
+            if Base_Found and then Arg (J - 1) /= '#' then
+               raise;
+            end if;
+
+            if J <= Arg'Last then
+
+               --  Scan exponent
+
+               if Arg (J) in 'e' | 'E' then
+                  J := J + 1;
+
+                  if Arg (J) = '+' then
+                     J := J + 1;
+                  end if;
+
+                  Scan_Decimal (Arg, J, Exp);
+                  Result := Result * (Base ** To_Integer (Exp));
+               end if;
+
+               --  Scan past trailing blanks
+
+               while J <= Arg'Last and then Arg (J) = ' ' loop
+                  J := J + 1;
+               end loop;
+
+               if J <= Arg'Last then
+                  raise;
+               end if;
+            end if;
+
+            if Neg then
+               return -Result;
+            else
+               return Result;
+            end if;
+         end;
    end From_String;
 
    ---------------

@@ -1,3 +1,66 @@
+2020-11-27  Martin Sebor  <msebor@redhat.com>
+
+	* error.c (add_quotes): Revert previous change and use pragma to
+	suppress -Wformat-diag.
+
+2020-11-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++spec.c (TIMELIB, TIME_LIBRARY): Remove.
+	(lang_specific_driver): Remove TIME_LIBRARY handling.
+
+2020-11-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_omp_var_list_no_open): Assert that array
+	section's 'low_bound', 'length' are not location wrapper nodes.
+	(cp_parser_oacc_all_clauses, cp_parser_oacc_cache): Instantiate
+	'auto_suppress_location_wrappers'.
+
+2020-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/94982
+	* constraint.cc (debug_argument_list): Avoid -Wformat-diag.
+	* error.c (function_category): Same.
+	(print_template_differences): Same.
+	* logic.cc (debug): Same.
+	* name-lookup.c (lookup_using_decl): Same.
+	* parser.c (maybe_add_cast_fixit): Same.
+	(cp_parser_template_introduction): Same.
+	* typeck.c (access_failure_info::add_fixit_hint): Same.
+
+2020-11-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* pt.c (tsubst_omp_clauses): Handle 'OMP_CLAUSE__CACHE_'.
+	(tsubst_expr): Handle 'OACC_CACHE'.
+
+2020-11-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97899
+	* typeck2.c (store_init_value): Don't split_nonconstant_init in a
+	template.
+
+2020-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96929
+	* constexpr.c (cxx_eval_binary_expression): For shifts by constant
+	with MSB set, emulate older wide_int_binop behavior to preserve
+	diagnostics and -fpermissive behavior.
+
+2020-11-23  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc: New dummy file.
+	* Make-lang.in: Add rules to build module.o
+
+2020-11-23  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* decl.c (start_decl): Set DECL_INITIAL for initialized decls
+	before attribute processing.
+
+2020-11-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/97904
+	* pt.c (tsubst): Use verify_type_context to check the type
+	of an array element.
+
 2020-11-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/94695

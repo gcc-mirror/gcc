@@ -1837,6 +1837,9 @@ emergency_dump_function ()
   fnotice (stderr, "dump file: %s\n", dump_file_name);
   fprintf (dump_file, "\n\n\nEMERGENCY DUMP:\n\n");
   execute_function_dump (cfun, current_pass);
+
+  if (symtab && current_pass->type == IPA_PASS)
+    symtab->dump (dump_file);
 }
 
 static struct profile_record *profile_record;

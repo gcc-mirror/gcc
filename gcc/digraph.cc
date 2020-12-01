@@ -67,7 +67,7 @@ struct test_edge : public dedge<test_graph_traits>
 
   void dump_dot (graphviz_out *gv, const dump_args_t &) const OVERRIDE
   {
-    gv->println ("%s -> %s;", m_src->m_name, m_dest->m_name);
+    gv->println ("%s %s %s%c", m_src->m_name, "->", m_dest->m_name, ';');
   }
 };
 

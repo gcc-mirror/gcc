@@ -34,7 +34,6 @@ init_word ()
     src1.si[i] = i;
 }
 
-
 static void
 init_dword ()
 {
@@ -58,6 +57,7 @@ check_byte2word ()
 	    check_fails++;	
 	}
     }
+  return check_fails;
 }
 
 static int 
@@ -76,7 +76,7 @@ check_byte2dword ()
 	    check_fails++;
 	}
     }
-  return check_fails++;
+  return check_fails;
 }
 
 static int
@@ -96,14 +96,14 @@ check_byte2qword ()
 	    check_fails++;
 	}
     }
-  return check_fails++;
+  return check_fails;
 }
 
 static int
 check_word2dword ()
 {
   int i, j, s, t, check_fails = 0;
-  for (i = 0; i < (NUM * 8); i = i + 8)
+  for (i = 0; i < NUM * 8; i = i + 8)
     {
       for (j = 0; j < 4; j++)
 	{
@@ -114,6 +114,7 @@ check_word2dword ()
 	    check_fails++;	
 	}
     }
+  return check_fails;
 }
 
 static int 
@@ -132,14 +133,14 @@ check_word2qword ()
 	    check_fails++;
 	}
     }
-  return check_fails++;
+  return check_fails;
 }
 
 static int
 check_dword2qword ()
 {
   int i, j, s, t, check_fails = 0;
-  for (i = 0; i < (NUM * 4); i = i + 4)
+  for (i = 0; i < NUM * 4; i = i + 4)
     {
       for (j = 0; j < 2; j++)
 	{
@@ -150,6 +151,7 @@ check_dword2qword ()
 	    check_fails++;	
 	}
     }
+  return check_fails;
 }
 
 static void
@@ -167,7 +169,7 @@ xop_test (void)
   abort ();
   
   /* Check haddubd */
-  for (i = 0; i < (NUM ); i++)
+  for (i = 0; i < NUM; i++)
     dst.x[i] = _mm_haddd_epu8 (src1.x[i]);
   
   if (check_byte2dword())
@@ -183,14 +185,13 @@ xop_test (void)
   /* Check hadduwd */
   init_word ();
 
-  for (i = 0; i < (NUM ); i++)
+  for (i = 0; i < NUM; i++)
     dst.x[i] = _mm_haddd_epu16 (src1.x[i]);
   
   if (check_word2dword())
     abort (); 
    
   /* Check haddbuwq */
- 
   for (i = 0; i < NUM; i++)
     dst.x[i] = _mm_haddq_epu16 (src1.x[i]);
   
@@ -199,7 +200,8 @@ xop_test (void)
  
   /* Check hadudq */
   init_dword ();
-    for (i = 0; i < NUM; i++)
+  
+  for (i = 0; i < NUM; i++)
     dst.x[i] = _mm_haddq_epu32 (src1.x[i]);
   
   if (check_dword2qword())

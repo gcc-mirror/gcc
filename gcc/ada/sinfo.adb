@@ -3535,6 +3535,14 @@ package body Sinfo is
       return Flag2 (N);
    end Was_Attribute_Reference;
 
+   function Was_Default_Init_Box_Association
+     (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Component_Association);
+      return Flag14 (N);
+   end Was_Default_Init_Box_Association;
+
    function Was_Expression_Function
       (N : Node_Id) return Boolean is
    begin
@@ -7035,6 +7043,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Body);
       Set_Flag2 (N, Val);
    end Set_Was_Attribute_Reference;
+
+   procedure Set_Was_Default_Init_Box_Association
+     (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Component_Association);
+      Set_Flag14 (N, Val);
+   end Set_Was_Default_Init_Box_Association;
 
    procedure Set_Was_Expression_Function
       (N : Node_Id; Val : Boolean := True) is

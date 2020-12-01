@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/state-purge.h"
 #include "analyzer/bar-chart.h"
 #include <zlib.h>
+#include "plugin.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -4638,6 +4639,33 @@ dump_analyzer_json (const supergraph &sg,
   free (filename);
 }
 
+/* Concrete subclass of plugin_analyzer_init_iface, allowing plugins
+   to register new state machines.  */
+
+class plugin_analyzer_init_impl : public plugin_analyzer_init_iface
+{
+public:
+  plugin_analyzer_init_impl (auto_delete_vec <state_machine> *checkers,
+			     logger *logger)
+  : m_checkers (checkers),
+    m_logger (logger)
+  {}
+
+  void register_state_machine (state_machine *sm) FINAL OVERRIDE
+  {
+    m_checkers->safe_push (sm);
+  }
+
+  logger *get_logger () const FINAL OVERRIDE
+  {
+    return m_logger;
+  }
+
+private:
+  auto_delete_vec <state_machine> *m_checkers;
+  logger *m_logger;
+};
+
 /* Run the analysis "engine".  */
 
 void
@@ -4682,6 +4710,9 @@ impl_run_checkers (logger *logger)
 
   auto_delete_vec <state_machine> checkers;
   make_checkers (checkers, logger);
+
+  plugin_analyzer_init_impl data (&checkers, logger);
+  invoke_plugin_callbacks (PLUGIN_ANALYZER_INIT, &data);
 
   if (logger)
     {

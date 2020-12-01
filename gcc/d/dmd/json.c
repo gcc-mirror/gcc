@@ -323,9 +323,6 @@ public:
             case LINKwindows:
                 property(name, "windows");
                 break;
-            case LINKpascal:
-                property(name, "pascal");
-                break;
             default:
                 assert(false);
         }

@@ -1,3 +1,5 @@
+/* { dg-do compile } */
+/* { dg-skip-if "profile-info-section" { powerpc-ibm-aix* } } */
 /* { dg-options "-fprofile-arcs -fprofile-info-section -fdump-tree-optimized" } */
 
 int foo()

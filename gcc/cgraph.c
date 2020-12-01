@@ -1811,7 +1811,7 @@ release_function_body (tree decl)
 	  gcc_assert (!dom_info_available_p (fn, CDI_DOMINATORS));
 	  gcc_assert (!dom_info_available_p (fn, CDI_POST_DOMINATORS));
 	  delete_tree_cfg_annotations (fn);
-	  clear_edges (fn);
+	  free_cfg (fn);
 	  fn->cfg = NULL;
 	}
       if (fn->value_histograms)

@@ -1469,7 +1469,7 @@ package body Exp_Ch5 is
       --  there are volatile or independent components. If the Prefix of the
       --  slice is a component or slice, then it might be a part of an object
       --  with some other volatile or independent components, so we disable the
-      --  optimization in that case as well.  We could complicate this code by
+      --  optimization in that case as well. We could complicate this code by
       --  actually looking for such volatile and independent components.
 
       if Is_Bit_Packed_Array (L_Type)
@@ -4346,10 +4346,21 @@ package body Exp_Ch5 is
             Iter_Pack := Scope (Root_Type (Etype (Iter_Type)));
 
             --  Find declarations needed for "for ... of" optimization
+            --  These declarations come from GNAT sources or sources
+            --  derived from them. User code may include additional
+            --  overloadings with similar names, and we need to perforn
+            --  some reasonable resolution to find the needed primitives.
+            --  It is unclear whether this mechanism is fragile if a user
+            --  makes arbitrary changes to the private part of a package
+            --  that supports iterators.
 
             Ent := First_Entity (Pack);
             while Present (Ent) loop
-               if Chars (Ent) = Name_Get_Element_Access then
+               if Chars (Ent) = Name_Get_Element_Access
+                 and then Present (First_Formal (Ent))
+                 and then Chars (First_Formal (Ent)) = Name_Position
+                 and then No (Next_Formal (First_Formal (Ent)))
+               then
                   Fast_Element_Access_Op := Ent;
 
                elsif Chars (Ent) = Name_Step

@@ -303,9 +303,10 @@ debug (formula& f)
 {
   for (formula::iterator i = f.begin(); i != f.end(); ++i)
     {
-      verbatim ("(((");
+      /* Format punctuators via %s to avoid -Wformat-diag.  */
+      verbatim ("%s", "(((");
       debug (*i);
-      verbatim (")))");
+      verbatim ("%s", ")))");
     }
 }
 

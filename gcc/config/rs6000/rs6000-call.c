@@ -10890,7 +10890,7 @@ altivec_expand_vec_set_builtin (tree exp)
   op0 = force_reg (tmode, op0);
   op1 = force_reg (mode1, op1);
 
-  rs6000_expand_vector_set (op0, op1, elt);
+  rs6000_expand_vector_set (op0, op1, GEN_INT (elt));
 
   return op0;
 }

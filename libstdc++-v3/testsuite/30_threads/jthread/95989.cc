@@ -20,6 +20,7 @@
 // { dg-require-gthreads {} }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-additional-options "-static" { target static } }
+// { dg-skip-if "broken" { *-*-* } }
 
 #include <thread>
 
@@ -50,5 +51,6 @@ int
 main()
 {
   test01();
-  test01();
+  test02();
+  test03();
 }

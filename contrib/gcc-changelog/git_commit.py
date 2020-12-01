@@ -16,10 +16,11 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.  */
 
+import difflib
 import os
 import re
 
-changelog_locations = set([
+changelog_locations = {
     'config',
     'contrib',
     'contrib/header-tools',
@@ -72,9 +73,9 @@ changelog_locations = set([
     'libvtv',
     'lto-plugin',
     'maintainer-scripts',
-    'zlib'])
+    'zlib'}
 
-bug_components = set([
+bug_components = {
     'ada',
     'analyzer',
     'boehm-gc',
@@ -123,9 +124,9 @@ bug_components = set([
     'testsuite',
     'translation',
     'tree-optimization',
-    'web'])
+    'web'}
 
-ignored_prefixes = [
+ignored_prefixes = {
     'gcc/d/dmd/',
     'gcc/go/gofrontend/',
     'gcc/testsuite/gdc.test/',
@@ -134,18 +135,19 @@ ignored_prefixes = [
     'libphobos/libdruntime/',
     'libphobos/src/',
     'libsanitizer/',
-    ]
+    }
 
-wildcard_prefixes = [
+wildcard_prefixes = {
     'gcc/testsuite/',
-    'libstdc++-v3/doc/html/'
-    ]
+    'libstdc++-v3/doc/html/',
+    'libstdc++-v3/testsuite/'
+    }
 
-misc_files = [
+misc_files = {
     'gcc/DATESTAMP',
     'gcc/BASE-VER',
     'gcc/DEV-PHASE'
-    ]
+    }
 
 author_line_regex = \
         re.compile(r'^(?P<datetime>\d{4}-\d{2}-\d{2})\ {2}(?P<name>.*  <.*>)')
@@ -157,12 +159,12 @@ star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 end_of_location_regex = re.compile(r'[\[<(:]')
 item_empty_regex = re.compile(r'\t(\* \S+ )?\(\S+\):\s*$')
 item_parenthesis_regex = re.compile(r'\t(\*|\(\S+\):)')
+revert_regex = re.compile(r'This reverts commit (?P<hash>\w+).$')
+cherry_pick_regex = re.compile(r'cherry picked from commit (?P<hash>\w+)')
 
 LINE_LIMIT = 100
 TAB_WIDTH = 8
 CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
-CHERRY_PICK_PREFIX = '(cherry picked from commit '
-REVERT_PREFIX = 'This reverts commit '
 
 REVIEW_PREFIXES = ('reviewed-by: ', 'reviewed-on: ', 'signed-off-by: ',
                    'acked-by: ', 'tested-by: ', 'reported-by: ',
@@ -274,8 +276,9 @@ class GitCommit:
 
         # Identify first if the commit is a Revert commit
         for line in self.info.lines:
-            if line.startswith(REVERT_PREFIX):
-                self.revert_commit = line[len(REVERT_PREFIX):].rstrip('.')
+            m = revert_regex.match(line)
+            if m:
+                self.revert_commit = m.group('hash')
                 break
         if self.revert_commit:
             self.info = self.commit_to_info_hook(self.revert_commit)
@@ -421,14 +424,16 @@ class GitCommit:
                     continue
                 elif lowered_line.startswith(REVIEW_PREFIXES):
                     continue
-                elif line.startswith(CHERRY_PICK_PREFIX):
-                    commit = line[len(CHERRY_PICK_PREFIX):].rstrip(')')
-                    if self.cherry_pick_commit:
-                        self.errors.append(Error('multiple cherry pick lines',
-                                                 line))
-                    else:
-                        self.cherry_pick_commit = commit
-                    continue
+                else:
+                    m = cherry_pick_regex.search(line)
+                    if m:
+                        commit = m.group('hash')
+                        if self.cherry_pick_commit:
+                            msg = 'multiple cherry pick lines'
+                            self.errors.append(Error(msg, line))
+                        else:
+                            self.cherry_pick_commit = commit
+                        continue
 
                 # ChangeLog name will be deduced later
                 if not last_entry:
@@ -489,7 +494,7 @@ class GitCommit:
         for entry in self.changelog_entries:
             for pattern in entry.file_patterns:
                 name = os.path.join(entry.folder, pattern)
-                if name not in wildcard_prefixes:
+                if not [name.startswith(pr) for pr in wildcard_prefixes]:
                     msg = 'unsupported wildcard prefix'
                     self.errors.append(Error(msg, name))
 
@@ -557,7 +562,7 @@ class GitCommit:
         mentioned_patterns = []
         used_patterns = set()
         for entry in self.changelog_entries:
-            if not entry.files:
+            if not entry.files and not entry.file_patterns:
                 msg = 'no files mentioned for ChangeLog in directory'
                 self.errors.append(Error(msg, entry.folder))
             assert not entry.folder.endswith('/')
@@ -572,6 +577,9 @@ class GitCommit:
         changed_files = set(cand)
         for file in sorted(mentioned_files - changed_files):
             msg = 'unchanged file mentioned in a ChangeLog'
+            candidates = difflib.get_close_matches(file, changed_files, 1)
+            if candidates:
+                msg += f' (did you mean "{candidates[0]}"?)'
             self.errors.append(Error(msg, file))
         for file in sorted(changed_files - mentioned_files):
             if not self.in_ignored_location(file):
@@ -613,7 +621,7 @@ class GitCommit:
 
         for pattern in mentioned_patterns:
             if pattern not in used_patterns:
-                error = 'pattern doesn''t match any changed files'
+                error = "pattern doesn't match any changed files"
                 self.errors.append(Error(error, pattern))
 
     def check_for_correct_changelog(self):

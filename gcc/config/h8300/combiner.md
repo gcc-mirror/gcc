@@ -144,8 +144,7 @@
   "@
    mov.b\\t%x1,%w0\;extu.w\\t%f0\;extu.l\\t%S0
    sub.l\\t%S0,%S0\;mov.b\\t%x1,%w0"
-  [(set_attr "cc" "set_znv,clobber")
-   (set_attr "length" "6,4")])
+  [(set_attr "length" "6,4")])
 
 (define_insn_and_split "*extzv_8_16"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -167,8 +166,7 @@
    (clobber (reg:CC CC_REG))]
   ""
   "mov.w\\t%e1,%f0\;extu.w\\t%f0\;extu.l\\t%S0"
-  [(set_attr "cc" "set_znv")
-   (set_attr "length" "6")])
+  [(set_attr "length" "6")])
 
 (define_insn_and_split "*extzv_16_8"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -192,8 +190,7 @@
    (clobber (reg:CC CC_REG))]
   "TARGET_H8300H"
   "mov.w\\t%e1,%f2\;mov.b\\t%x1,%w0\;mov.b\\t%w2,%x0\;extu.l\\t%S0"
-  [(set_attr "length" "8")
-   (set_attr "cc" "set_znv")])
+  [(set_attr "length" "8")])
 
 ;; Extract the exponent of a float.
 
@@ -775,8 +772,7 @@
    (clobber (reg:CC CC_REG))]
   ""
   "rotxl.l\\t%S0\;bor\\t#0,%w1\;rotxr.l\\t%S0"
-  [(set_attr "length" "6")
-   (set_attr "cc" "set_znv")])
+  [(set_attr "length" "6")])
 
 (define_insn_and_split "*iorsi3_and_ashift"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1163,8 +1159,7 @@
    (clobber (reg:CC CC_REG))]
   ""
   "mov.b\\t%t1,%R0"
-  [(set_attr "cc" "set_znv")
-   (set_attr "length" "8")])
+  [(set_attr "length" "8")])
 
 ;; Storing a part of SImode to QImode.
 
@@ -1186,8 +1181,7 @@
    (clobber (reg:CC CC_REG))]
   ""
   "mov.b\\t%x1,%R0"
-  [(set_attr "cc" "set_znv")
-   (set_attr "length" "8")])
+  [(set_attr "length" "8")])
 
 (define_insn_and_split ""
   [(set (match_operand:QI 0 "general_operand_dst" "=rm<")
@@ -1210,8 +1204,7 @@
    (clobber (reg:CC CC_REG))]
   ""
   "mov.w\\t%e1,%f2\;mov.b\\t%w2,%R0"
-  [(set_attr "cc" "set_znv")
-   (set_attr "length" "10")])
+  [(set_attr "length" "10")])
 
 (define_insn_and_split ""
   [(set (match_operand:QI 0 "general_operand_dst" "=rm<")
@@ -1234,8 +1227,7 @@
    (clobber (reg:CC CC_REG))]
   ""
   "mov.w\\t%e1,%f2\;mov.b\\t%x2,%R0"
-  [(set_attr "cc" "set_znv")
-   (set_attr "length" "10")])
+  [(set_attr "length" "10")])
 
 ;;(define_insn_and_split ""
 ;;  [(set (pc)

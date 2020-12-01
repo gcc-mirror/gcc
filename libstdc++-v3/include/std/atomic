@@ -164,21 +164,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
 
-#if __cplusplus > 201703L
-#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
-    void wait(bool __old, memory_order __m = memory_order_seq_cst) const
-      noexcept
+#if __cplusplus > 201703L && defined _GLIBCXX_HAVE_ATOMIC_WAIT
+    void
+    wait(bool __old, memory_order __m = memory_order_seq_cst) const noexcept
     { _M_base.wait(__old, __m); }
 
     // TODO add const volatile overload
 
-    void notify_one() const noexcept
+    void
+    notify_one() const noexcept
     { _M_base.notify_one(); }
 
-    void notify_all() const noexcept
+    void
+    notify_all() const noexcept
     { _M_base.notify_all(); }
-#endif // GTHREADS || LINUX_FUTEX
-#endif
+#endif // C++20 && HAVE_ATOMIC_WAIT
   };
 
 #if __cplusplus <= 201703L
@@ -380,9 +380,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
 
-#if __cplusplus > 201703L
-#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
-    void wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
+#if __cplusplus > 201703L && defined _GLIBCXX_HAVE_ATOMIC_WAIT
+    void
+    wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
     {
       std::__atomic_wait(&_M_i, __old,
 			 [__m, this, __old]
@@ -397,13 +397,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // TODO add const volatile overload
 
-    void notify_one() const noexcept
+    void
+    notify_one() const noexcept
     { std::__atomic_notify(&_M_i, false); }
 
-    void notify_all() const noexcept
+    void
+    notify_all() const noexcept
     { std::__atomic_notify(&_M_i, true); }
-#endif // GTHREADS || LINUX_FUTEX
-#endif // C++20
+#endif // C++20 && HAVE_ATOMIC_WAIT
 
     };
 #undef _GLIBCXX20_INIT
@@ -643,21 +644,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    __cmpexch_failure_order(__m));
       }
 
-#if __cplusplus > 201703L
-#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
-    void wait(__pointer_type __old,
-	      memory_order __m = memory_order_seq_cst) noexcept
+#if __cplusplus > 201703L && _GLIBCXX_HAVE_ATOMIC_WAIT
+    void
+    wait(__pointer_type __old, memory_order __m = memory_order_seq_cst) noexcept
     { _M_b.wait(__old, __m); }
 
     // TODO add const volatile overload
 
-    void notify_one() const noexcept
+    void
+    notify_one() const noexcept
     { _M_b.notify_one(); }
 
-    void notify_all() const noexcept
+    void
+    notify_all() const noexcept
     { _M_b.notify_all(); }
-#endif // GTHREADS || LINUX_FUTEX
-#endif
+#endif // C++20 && HAVE_ATOMIC_WAIT
       __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
@@ -1411,8 +1412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 
-#if __cplusplus > 201703L
-#if defined _GLIBCXX_HAS_GTHREADS || _GLIBCXX_HAVE_LINUX_FUTEX
+#if __cplusplus > 201703L && _GLIBCXX_HAVE_ATOMIC_WAIT
   template<typename _Tp>
     inline void
     atomic_wait(const atomic<_Tp>* __a,
@@ -1435,9 +1435,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     atomic_notify_all(atomic<_Tp>* __a) noexcept
     { __a->notify_all(); }
-
-#endif // GTHREADS || LINUX_FUTEX
-#endif // C++2a
+#endif // C++20 && HAVE_ATOMIC_WAIT
 
   // Function templates for atomic_integral and atomic_pointer operations only.
   // Some operations (and, or, xor) are only available for atomic integrals,

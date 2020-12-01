@@ -275,7 +275,7 @@ package body Lib is
    begin
       --  First unregister the old name, if any
 
-      if Old_N /= No_Unit_Name and then Unit_Names.Get (Old_N) = U then
+      if Present (Old_N) and then Unit_Names.Get (Old_N) = U then
          Unit_Names.Set (Old_N, No_Unit);
       end if;
 

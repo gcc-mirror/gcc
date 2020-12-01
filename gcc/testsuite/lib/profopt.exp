@@ -456,6 +456,7 @@ proc profopt-execute { src } {
 		set id [remote_spawn "" $cmd]
 		if { $id < 0 } {
 		    unsupported "$testcase -fauto-profile: cannot run create_gcov"
+		    unset testname_with_flags
 		    set status "fail"
 		    return
 		}

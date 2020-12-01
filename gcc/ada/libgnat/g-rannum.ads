@@ -69,6 +69,8 @@ is
    function Random (Gen : Generator) return Interfaces.Unsigned_32;
    function Random (Gen : Generator) return Interfaces.Integer_64;
    function Random (Gen : Generator) return Interfaces.Unsigned_64;
+   function Random (Gen : Generator) return Interfaces.Integer_128;
+   function Random (Gen : Generator) return Interfaces.Unsigned_128;
    function Random (Gen : Generator) return Integer;
    function Random (Gen : Generator) return Long_Integer;
    --  Return pseudo-random numbers uniformly distributed on T'First .. T'Last

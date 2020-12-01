@@ -26,11 +26,11 @@ program main
 !$omp requires reverse_offload
 contains
   subroutine foo
-    !$target
-    !$end target
+    !$omp target
+    !$omp end target
   end subroutine
   subroutine bar
-    !$omp requires unified_addres ! { dg-error "must appear in the specification part of a program unit" }
+    !$omp requires unified_address ! { dg-error "must appear in the specification part of a program unit" }
   end subroutine bar
 end
 ! { dg-prune-output "not yet supported" }
