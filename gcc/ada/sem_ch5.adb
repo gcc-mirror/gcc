@@ -1389,25 +1389,13 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Analyze_Case_Statement (N : Node_Id) is
-      Exp            : Node_Id;
-      Exp_Type       : Entity_Id;
-      Exp_Btype      : Entity_Id;
-      Last_Choice    : Nat;
-
-      Others_Present : Boolean;
-      --  Indicates if Others was present
-
-      pragma Warnings (Off, Last_Choice);
-      --  Don't care about assigned value
+      Exp : constant Node_Id := Expression (N);
 
       Statements_Analyzed : Boolean := False;
       --  Set True if at least some statement sequences get analyzed. If False
       --  on exit, means we had a serious error that prevented full analysis of
       --  the case statement, and as a result it is not a good idea to output
       --  warning messages about unreachable code.
-
-      Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
-      --  Recursively save value of this global, will be restored on exit
 
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when the
@@ -1492,11 +1480,21 @@ package body Sem_Ch5 is
          Analyze_Statements (Statements (Alternative));
       end Process_Statements;
 
+      --  Local variables
+
+      Exp_Type  : Entity_Id;
+      Exp_Btype : Entity_Id;
+
+      Others_Present : Boolean;
+      --  Indicates if Others was present
+
+      Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
+      --  Recursively save value of this global, will be restored on exit
+
    --  Start of processing for Analyze_Case_Statement
 
    begin
       Unblocked_Exit_Count := 0;
-      Exp := Expression (N);
       Analyze (Exp);
 
       --  The expression must be of any discrete type. In rare cases, the
@@ -1775,8 +1773,6 @@ package body Sem_Ch5 is
    --  on which they depend will not be available at the freeze point.
 
    procedure Analyze_If_Statement (N : Node_Id) is
-      E : Node_Id;
-
       Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
       --  Recursively save value of this global, will be restored on exit
 
@@ -1840,6 +1836,11 @@ package body Sem_Ch5 is
             Analyze_Statements (Tstm);
          end if;
       end Analyze_Cond_Then;
+
+      --  Local variables
+
+      E : Node_Id;
+      --  For iterating over elsif parts
 
    --  Start of processing for Analyze_If_Statement
 
