@@ -1,5 +1,8 @@
 2020-12-01  Nathan Sidwell  <nathan@acm.org>
 
+	libcody/
+	Update from upstream, removing deprecated functions.
+
 	Merge trunk 855bb43f6d0
 
 	Merge trunk eae68c434f2

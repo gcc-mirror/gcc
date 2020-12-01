@@ -492,12 +492,6 @@ public:
   {
     return ModuleExport (str, Flags::None, ~size_t (0));
   }
-  Packet ModuleExport
-    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
-    (char const *str, size_t len)
-  {
-    return ModuleExport (str, Flags::None, len);
-  }
   Packet ModuleExport (std::string const &s, Flags flags = Flags::None)
   {
     return ModuleExport (s.c_str (), flags, s.size ());
@@ -513,12 +507,6 @@ public:
   Packet ModuleImport (char const *str)
   {
     return ModuleImport (str, Flags::None, ~size_t (0));
-  }
-  Packet ModuleImport
-    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
-    (char const *str, size_t len)
-  {
-    return ModuleImport (str, Flags::None, len);
   }
   Packet ModuleImport (std::string const &s, Flags flags = Flags::None)
   {
@@ -538,12 +526,6 @@ public:
   {
     return ModuleCompiled (str, Flags::None, ~size_t (0));
   }
-  Packet ModuleCompiled
-    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
-    (char const *str, size_t len)
-  {
-    return ModuleCompiled (str, Flags::None, len);
-  }
   Packet ModuleCompiled (std::string const &s, Flags flags = Flags::None)
   {
     return ModuleCompiled (s.c_str (), flags, s.size ());
@@ -560,12 +542,6 @@ public:
   Packet IncludeTranslate (char const *str)
   {
     return IncludeTranslate (str, Flags::None, ~size_t (0));
-  }
-  Packet IncludeTranslate
-    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
-    (char const *str, size_t len)
-  {
-    return IncludeTranslate (str, Flags::None, len);
   }
   Packet IncludeTranslate (std::string const &s, Flags flags = Flags::None)
   {
@@ -647,18 +623,6 @@ public:
 public:
   // return 0 on ok, ERRNO on failure, -1 on unspecific error
   virtual int ModuleRepoRequest (Server *s);
-  virtual int ModuleExportRequest
-    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
-    (Server *s, std::string &module);
-  virtual int ModuleImportRequest
-    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
-    (Server *s, std::string &module);
-  virtual int ModuleCompiledRequest
-    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
-    (Server *s, std::string &module);
-  virtual int IncludeTranslateRequest
-    [[deprecated ("EOL:20201130, use Cody::Flag variant")]]
-    (Server *s, std::string &include);
 
   virtual int ModuleExportRequest (Server *s, Flags flags,
 				   std::string &module);

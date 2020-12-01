@@ -146,27 +146,27 @@ int Resolver::ModuleRepoRequest (Server *s)
 }
 
 // Deprecated resolver functions
-int Resolver::ModuleExportRequest (Server *s, std::string &module)
+int Resolver::ModuleExportRequest (Server *s, Flags, std::string &module)
 {
   auto cmi = GetCMIName (module);
   s->PathnameResponse (cmi);
   return 0;
 }
 
-int Resolver::ModuleImportRequest (Server *s, std::string &module)
+int Resolver::ModuleImportRequest (Server *s, Flags, std::string &module)
 {
   auto cmi = GetCMIName (module);
   s->PathnameResponse (cmi);
   return 0;
 }
 
-int Resolver::ModuleCompiledRequest (Server *s, std::string &)
+int Resolver::ModuleCompiledRequest (Server *s, Flags, std::string &)
 {
   s->OKResponse ();
   return 0;
 }
 
-int Resolver::IncludeTranslateRequest (Server *s, std::string &include)
+int Resolver::IncludeTranslateRequest (Server *s, Flags, std::string &include)
 {
   bool xlate = false;
 
@@ -199,40 +199,6 @@ int Resolver::IncludeTranslateRequest (Server *s, std::string &include)
     s->BoolResponse (false);
 
   return 0;
-}
-
-// Default behaviour is to call the deprecated entry points and ignore
-// the Flags parameter, until the deprecation becomes removal
-int Resolver::ModuleExportRequest (Server *s, Flags, std::string &module)
-{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  return ModuleExportRequest (s, module);
-#pragma GCC diagnostic pop
-}
-
-int Resolver::ModuleImportRequest (Server *s, Flags, std::string &module)
-{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  return ModuleImportRequest (s, module);
-#pragma GCC diagnostic pop
-}
-
-int Resolver::ModuleCompiledRequest (Server *s, Flags, std::string &module)
-{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  return ModuleCompiledRequest (s, module);
-#pragma GCC diagnostic pop
-}
-
-int Resolver::IncludeTranslateRequest (Server *s, Flags, std::string &include)
-{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  return IncludeTranslateRequest (s, include);
-#pragma GCC diagnostic pop
 }
 
 int Resolver::InvokeSubProcessRequest (Server *s, std::vector<std::string> &)
