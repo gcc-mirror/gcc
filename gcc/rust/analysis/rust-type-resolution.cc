@@ -1,5 +1,6 @@
 #include "rust-type-resolution.h"
 #include "rust-diagnostics.h"
+#include "rust-type-visitor.h"
 
 #define ADD_BUILTIN_TYPE(_X, _S)                                               \
   do                                                                           \
@@ -470,8 +471,6 @@ TypeResolution::visit (AST::ArrayExpr &expr)
 void
 TypeResolution::visit (AST::ArrayIndexExpr &expr)
 {
-  printf ("ArrayIndexExpr: %s\n", expr.as_string ().c_str ());
-
   auto before = typeBuffer.size ();
   expr.get_array_expr ()->accept_vis (*this);
   if (typeBuffer.size () <= before)
@@ -495,16 +494,20 @@ TypeResolution::visit (AST::ArrayIndexExpr &expr)
   AST::Type *array_index_type = typeBuffer.back ();
   typeBuffer.pop_back ();
 
-  printf ("Array expr type %s array index expr type: [%s]\n",
-	  array_expr_type->as_string ().c_str (),
-	  array_index_type->as_string ().c_str ());
-
-  // the the element type from the array_expr_type and it _must_ be an array
-  // TODO
-
   // check the index_type should be an i32 which should really be
   // more permissive
   // TODO
+
+  // the the element type from the array_expr_type and it _must_ be an array
+  AST::ArrayType *resolved = ArrayTypeVisitor::Resolve (array_expr_type);
+  if (resolved == nullptr)
+    {
+      rust_error_at (expr.get_locus_slow (),
+		     "unable to resolve type for array expression");
+      return;
+    }
+
+  typeBuffer.push_back (resolved->get_element_type ());
 }
 
 void
