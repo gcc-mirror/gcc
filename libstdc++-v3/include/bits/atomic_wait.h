@@ -50,8 +50,7 @@
 # include <bits/std_mutex.h>  // std::mutex, std::__condvar
 #endif
 
-// Other headers use this to check for the facilities defined in this header.
-#define _GLIBCXX_HAVE_ATOMIC_WAIT 1
+#define __cpp_lib_atomic_wait 201907L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

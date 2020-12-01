@@ -33,7 +33,7 @@
 
 #if __cplusplus > 201703L
 #include <bits/semaphore_base.h>
-#ifdef _GLIBCXX_HAVE_ATOMIC_WAIT
+#if __cpp_lib_atomic_wait
 #include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -90,6 +90,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  using binary_semaphore = std::counting_semaphore<1>;
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // HAVE_ATOMIC_WAIT
+#endif // __cpp_lib_atomic_wait
 #endif // C++20
 #endif // _GLIBCXX_SEMAPHORE

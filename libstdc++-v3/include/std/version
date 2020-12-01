@@ -197,6 +197,9 @@
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_array_constexpr 201811L
 #define __cpp_lib_assume_aligned 201811L
+#if defined _GLIBCXX_HAS_GTHREADS || defined _GLIBCXX_HAVE_LINUX_FUTEX
+# define __cpp_lib_atomic_wait 201907L
+#endif
 #define __cpp_lib_bind_front 201907L
 // FIXME: #define __cpp_lib_execution 201902L
 #define __cpp_lib_integer_comparison_functions 202002L
@@ -216,7 +219,7 @@
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_jthread 201911L
 #endif
-#if defined _GLIBCXX_HAS_GTHREADS || defined _GLIBCXX_HAVE_LINUX_FUTEX
+#if __cpp_lib_atomic_wait 
 # define __cpp_lib_latch 201907L
 #endif
 #define __cpp_lib_list_remove_return_type 201806L
@@ -228,7 +231,7 @@
 #if __cpp_lib_concepts
 # define __cpp_lib_ranges 201911L
 #endif
-#if defined _GLIBCXX_HAS_GTHREADS || defined _GLIBCXX_HAVE_LINUX_FUTEX
+#if __cpp_lib_atomic_wait 
 # define __cpp_lib_semaphore 201907L
 #endif
 #define __cpp_lib_shift 201806L

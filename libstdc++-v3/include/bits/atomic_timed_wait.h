@@ -33,7 +33,8 @@
 #pragma GCC system_header
 
 #include <bits/atomic_wait.h>
-#ifdef _GLIBCXX_HAVE_ATOMIC_WAIT
+
+#ifdef __cpp_lib_atomic_wait
 #include <bits/functional_hash.h>
 
 #include <chrono>
@@ -292,5 +293,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // HAVE_ATOMIC_WAIT
+#endif // __cpp_lib_atomic_wait
 #endif // _GLIBCXX_ATOMIC_TIMED_WAIT_H
