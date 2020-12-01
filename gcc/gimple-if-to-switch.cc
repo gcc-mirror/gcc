@@ -431,7 +431,9 @@ find_conditions (basic_block bb,
 	if (info.m_ranges[i].exp == NULL_TREE
 	    || !INTEGRAL_TYPE_P (TREE_TYPE (info.m_ranges[i].exp))
 	    || info.m_ranges[i].low == NULL_TREE
-	    || info.m_ranges[i].high == NULL_TREE)
+	    || info.m_ranges[i].high == NULL_TREE
+	    || (TYPE_PRECISION (TREE_TYPE (info.m_ranges[i].low))
+		!= TYPE_PRECISION (TREE_TYPE (info.m_ranges[i].high))))
 	  return;
 
       for (unsigned i = 1; i < info.m_ranges.length (); ++i)
@@ -526,7 +528,7 @@ pass_if_to_switch::execute (function *fun)
 	    }
 
 	  chain->m_entries.reverse ();
-	  if (chain->m_entries.length () >= 3
+	  if (chain->m_entries.length () >= 2
 	      && chain->check_non_overlapping_cases ()
 	      && chain->is_beneficial ())
 	    {
