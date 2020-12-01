@@ -10281,8 +10281,17 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 tree
 trees_out::decl_container (tree decl)
 {
-  tree container = NULL_TREE;
+  int use_tpl;
+  tree tpl = NULL_TREE;
+  if (tree template_info = node_template_info (decl, use_tpl))
+    tpl = TI_TEMPLATE (template_info);
+  if (tpl == decl)
+    tpl = nullptr;
 
+  /* Stream the template we're instantiated from.  */
+  tree_node (tpl);
+
+  tree container = NULL_TREE;
   if (TREE_CODE (decl) == TEMPLATE_DECL
       && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
     container = DECL_CHAIN (decl);
@@ -10292,22 +10301,20 @@ trees_out::decl_container (tree decl)
   if (TYPE_P (container))
     container = TYPE_NAME (container);
 
-  int use_tpl;
-  if (tree template_info = node_template_info (container, use_tpl))
-    if (!use_tpl)
-      container = TI_TEMPLATE (template_info);
-
   tree_node (container);
 
-  return STRIP_TEMPLATE (container);
+  return container;
 }
 
 tree
 trees_in::decl_container ()
 {
+  /* The maybe-template.  */
+  (void)tree_node ();
+
   tree container = tree_node ();
 
-  return STRIP_TEMPLATE (container);
+  return container;
 }
 
 /* Write out key information about a mergeable DEP.  Does not write
