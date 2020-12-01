@@ -445,6 +445,7 @@ TypeResolution::visit (AST::ArrayElemsValues &elems)
   if (failed)
     return;
 
+  // FIXME This will leak
   auto capacity
     = new AST::LiteralExpr (std::to_string (elems.get_num_values ()),
 			    AST::Literal::INT,
