@@ -503,19 +503,102 @@ Compilation::visit (AST::CompoundAssignmentExpr &expr)
 void
 Compilation::visit (AST::GroupedExpr &expr)
 {}
-// void Compilation::visit(ArrayElems& elems) {}
+
 void
 Compilation::visit (AST::ArrayElemsValues &elems)
-{}
+{
+  std::vector< ::Bexpression *> elements;
+
+  bool failed = false;
+  elems.iterate ([&] (AST::Expr *expr) mutable -> bool {
+    Bexpression *value = nullptr;
+    VISIT_POP (expr.get_locus_slow (), expr, value, exprs);
+    if (value == nullptr)
+      {
+	rust_fatal_error (expr->get_locus_slow (),
+			  "failed to compile value to array initialiser");
+	return false;
+      }
+    elements.push_back (value);
+    return true;
+  });
+
+  // nothing to do when its failed
+  if (failed)
+    return;
+
+  arrayConsStack.push_back (elements);
+}
+
 void
 Compilation::visit (AST::ArrayElemsCopied &elems)
 {}
+
 void
 Compilation::visit (AST::ArrayExpr &expr)
-{}
+{
+  translatedType = nullptr;
+  expr.get_inferred_type ()->accept_vis (*this);
+  if (translatedType == nullptr)
+    {
+      rust_error_at (expr.get_locus_slow (),
+		     "failed to compile array type for ArrayExpr");
+      return;
+    }
+
+  ::Btype *compiledType = translatedType;
+  translatedType = nullptr;
+
+  auto before = arrayConsStack.size ();
+  expr.get_internal_elements ()->accept_vis (*this);
+  if (arrayConsStack.size () <= before)
+    {
+      rust_error_at (expr.get_locus_slow (),
+		     "failed to compile the array constructor");
+      return;
+    }
+  std::vector< ::Bexpression *> initializer = arrayConsStack.back ();
+  arrayConsStack.pop_back ();
+
+  std::vector<unsigned long> indexes;
+  for (unsigned long i = 0; i < initializer.size (); ++i)
+    indexes.push_back (i);
+
+  Bexpression *cons
+    = backend->array_constructor_expression (compiledType, indexes, initializer,
+					     expr.get_locus_slow ());
+  exprs.push_back (cons);
+}
+
 void
 Compilation::visit (AST::ArrayIndexExpr &expr)
-{}
+{
+  Bexpression *arrayExpr = nullptr;
+  VISIT_POP (expr.get_array_expr ()->get_locus_slow (), expr.get_array_expr (),
+	     arrayExpr, exprs);
+  if (arrayExpr == nullptr)
+    {
+      rust_error_at (expr.get_locus_slow (),
+		     "failed to compile value to array expression reference");
+      return;
+    }
+
+  Bexpression *indexExpr = nullptr;
+  VISIT_POP (expr.get_index_expr ()->get_locus_slow (), expr.get_index_expr (),
+	     indexExpr, exprs);
+  if (indexExpr == nullptr)
+    {
+      rust_error_at (expr.get_locus_slow (),
+		     "failed to compile value to array index expression");
+      return;
+    }
+
+  Bexpression *indexExpression
+    = backend->array_index_expression (arrayExpr, indexExpr,
+				       expr.get_locus_slow ());
+  exprs.push_back (indexExpression);
+}
+
 void
 Compilation::visit (AST::TupleExpr &expr)
 {}
@@ -1376,9 +1459,34 @@ Compilation::visit (AST::RawPointerType &type)
 void
 Compilation::visit (AST::ReferenceType &type)
 {}
+
 void
 Compilation::visit (AST::ArrayType &type)
-{}
+{
+  Btype *elementType;
+  translatedType = nullptr;
+  type.get_element_type ()->accept_vis (*this);
+  if (translatedType == nullptr)
+    {
+      rust_error_at (type.get_locus (),
+		     "Failed to compile element type for array");
+      return;
+    }
+  elementType = translatedType;
+
+  Bexpression *length = nullptr;
+  VISIT_POP (type.get_size_expr ()->get_locus_slow (), type.get_size_expr (),
+	     length, exprs);
+  if (length == nullptr)
+    {
+      rust_error_at (type.get_size_expr ()->get_locus_slow (),
+		     "failed to size for array type");
+      return;
+    }
+
+  translatedType = backend->array_type (elementType, length);
+}
+
 void
 Compilation::visit (AST::SliceType &type)
 {}

@@ -1000,6 +1000,10 @@ class ArrayExpr : public ExprWithoutBlock
 
   Location locus;
 
+  // this is a reference to what the inferred type is based on
+  // this init expression
+  Type *inferredType;
+
 public:
   std::string as_string () const override;
 
@@ -1049,6 +1053,9 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   ArrayElems *get_internal_elements () { return internal_elements.get (); };
+
+  Type *get_inferred_type () { return inferredType; }
+  void set_inferred_type (Type *type) { inferredType = type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

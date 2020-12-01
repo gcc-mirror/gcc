@@ -466,7 +466,17 @@ void
 TypeResolution::visit (AST::ArrayExpr &expr)
 {
   auto elements = expr.get_internal_elements ();
+
+  auto before = typeBuffer.size ();
   elements->accept_vis (*this);
+  if (typeBuffer.size () <= before)
+    {
+      rust_error_at (expr.get_locus_slow (),
+		     "unable to determine type for ArrayExpr");
+      return;
+    }
+
+  expr.set_inferred_type (typeBuffer.back ());
 }
 
 void

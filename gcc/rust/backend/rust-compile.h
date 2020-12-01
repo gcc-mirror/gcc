@@ -243,7 +243,8 @@ private:
   std::vector< ::Bexpression *> exprs;
   std::vector< ::Bstatement *> stmts;
   std::vector< ::Bvariable *> varBuffer;
-  std::vector<AST::StructStruct*> structBuffer;
+  std::vector<AST::StructStruct *> structBuffer;
+  std::vector<std::vector< ::Bexpression *> > arrayConsStack;
 
   // careful these are the vectors we pass into the GCC middle-end
   std::vector< ::Btype *> type_decls;

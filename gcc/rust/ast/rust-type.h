@@ -576,6 +576,10 @@ public:
 
   Type *get_element_type () { return elem_type.get (); }
 
+  Expr *get_size_expr () { return size.get (); }
+
+  Location &get_locus () { return locus; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
