@@ -496,7 +496,15 @@ TypeResolution::visit (AST::ArrayIndexExpr &expr)
 
   // check the index_type should be an i32 which should really be
   // more permissive
-  // TODO
+  AST::Type *i32 = nullptr;
+  scope.LookupType ("i32", &i32);
+  rust_assert (i32 != nullptr);
+
+  if (!typesAreCompatible (array_index_type, i32,
+			   expr.get_index_expr ()->get_locus_slow ()))
+    {
+      return;
+    }
 
   // the the element type from the array_expr_type and it _must_ be an array
   AST::ArrayType *resolved = ArrayTypeVisitor::Resolve (array_expr_type);
