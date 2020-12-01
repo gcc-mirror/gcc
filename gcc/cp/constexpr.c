@@ -7101,7 +7101,8 @@ maybe_fold_non_dependent_expr (tree expr,
 tree
 fold_non_dependent_init (tree t,
 			 tsubst_flags_t complain /*=tf_warning_or_error*/,
-			 bool manifestly_const_eval /*=false*/)
+			 bool manifestly_const_eval /*=false*/,
+			 tree object /* = NULL_TREE */)
 {
   if (t == NULL_TREE)
     return NULL_TREE;
@@ -7109,7 +7110,7 @@ fold_non_dependent_init (tree t,
   if (processing_template_decl)
     {
       t = fold_non_dependent_expr_template (t, complain,
-					    manifestly_const_eval, NULL_TREE);
+					    manifestly_const_eval, object);
       /* maybe_constant_init does this stripping, so do it here too.  */
       if (TREE_CODE (t) == TARGET_EXPR)
 	{
@@ -7120,7 +7121,7 @@ fold_non_dependent_init (tree t,
       return t;
     }
 
-  return maybe_constant_init (t, NULL_TREE, manifestly_const_eval);
+  return maybe_constant_init (t, object, manifestly_const_eval);
 }
 
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
