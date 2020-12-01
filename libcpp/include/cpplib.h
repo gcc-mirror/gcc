@@ -1005,6 +1005,11 @@ extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
 					 bool angle_p,  location_t);
 
+/* Call these to get name data about the various compile-time
+   charsets.  */
+extern const char *cpp_get_narrow_charset_name (cpp_reader *) ATTRIBUTE_PURE;
+extern const char *cpp_get_wide_charset_name (cpp_reader *) ATTRIBUTE_PURE;
+
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the
    input file, except for preprocessed input.  This will generate at

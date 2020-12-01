@@ -2596,6 +2596,20 @@ cpp_set_callbacks (cpp_reader *pfile, cpp_callbacks *cb)
   pfile->cb = *cb;
 }
 
+/* The narrow character set identifier.  */
+const char *
+cpp_get_narrow_charset_name (cpp_reader *pfile)
+{
+  return pfile->narrow_cset_desc.to;
+}
+
+/* The wide character set identifier.  */
+const char *
+cpp_get_wide_charset_name (cpp_reader *pfile)
+{
+  return pfile->wide_cset_desc.to;
+}
+
 /* The dependencies structure.  (Creates one if it hasn't already been.)  */
 class mkdeps *
 cpp_get_deps (cpp_reader *pfile)

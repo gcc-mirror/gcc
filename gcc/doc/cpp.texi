@@ -2451,6 +2451,15 @@ features are supported by GCC.
 @item __NO_MATH_ERRNO__
 This macro is defined if @option{-fno-math-errno} is used, or enabled
 by another option such as @option{-ffast-math} or by default.
+
+@item __GNUC_EXECUTION_CHARSET_NAME
+@itemx __GNUC_WIDE_EXECUTION_CHARSET_NAME
+These macros are defined to expand to a narrow string literal of
+the name of the narrow and wide compile-time execution character
+set used.  It directly reflects the name passed to the options
+@option{-fexec-charset} and @option{-fwide-exec-charset}, or the defaults
+documented for those options (that is, it can expand to something like
+@code{"UTF-8"}).  @xref{Invocation}.
 @end table
 
 @node System-specific Predefined Macros
