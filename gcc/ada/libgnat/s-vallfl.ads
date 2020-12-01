@@ -33,12 +33,17 @@
 --  type Long_Float, for use in Text_IO.Float_IO and the Value attribute.
 
 with Interfaces;
+with System.Powten_LFlt;
 with System.Val_Real;
 
 package System.Val_LFlt is
    pragma Preelaborate;
 
-   package Impl is new Val_Real (Long_Float, Interfaces.Unsigned_64);
+   package Impl is new Val_Real
+     (Long_Float,
+      Interfaces.Unsigned_64,
+      System.Powten_LFlt.Maxpow,
+      System.Powten_LFlt.Powten'Address);
 
    function Scan_Long_Float
      (Str : String;

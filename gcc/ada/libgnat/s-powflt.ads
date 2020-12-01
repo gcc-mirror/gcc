@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                  S Y S T E M . P O W T E N _ T A B L E                   --
+--                    S Y S T E M . P O W T E N _ F L T                     --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--             Copyright (C) 2020, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,18 +31,17 @@
 
 --  This package provides a powers of ten table used for real conversions
 
-package System.Powten_Table is
+package System.Powten_Flt is
    pragma Pure;
 
-   Maxpow : constant := 22;
-   --  The number of entries in this table is chosen to include powers of ten
-   --  that are exactly representable with Long_Long_Float. Assuming that on
-   --  all targets we have 53 bits of mantissa for the type, the upper bound
-   --  is given by 53 * log 2 / log 5. If the scaling factor is greater than
-   --  Maxpow, it can be obtained by several multiplications, which is less
-   --  efficient than with a bigger table, but avoids anomalies at end points.
+   Maxpow : constant := 38;
+   --  Largest power of ten representable with Float
 
-   Powten : constant array (0 .. Maxpow) of Long_Long_Float :=
+   Maxpow_Exact : constant := 10;
+   --  Largest power of ten exactly representable with Float. It is equal to
+   --  floor (M * log 2 / log 5), when M is the size of the mantissa (24).
+
+   Powten : constant array (0 .. Maxpow) of Float :=
       (00 => 1.0E+00,
        01 => 1.0E+01,
        02 => 1.0E+02,
@@ -65,6 +64,22 @@ package System.Powten_Table is
        19 => 1.0E+19,
        20 => 1.0E+20,
        21 => 1.0E+21,
-       22 => 1.0E+22);
+       22 => 1.0E+22,
+       23 => 1.0E+23,
+       24 => 1.0E+24,
+       25 => 1.0E+25,
+       26 => 1.0E+26,
+       27 => 1.0E+27,
+       28 => 1.0E+28,
+       29 => 1.0E+29,
+       30 => 1.0E+30,
+       31 => 1.0E+31,
+       32 => 1.0E+32,
+       33 => 1.0E+33,
+       34 => 1.0E+34,
+       35 => 1.0E+35,
+       36 => 1.0E+36,
+       37 => 1.0E+37,
+       38 => 1.0E+38);
 
-end System.Powten_Table;
+end System.Powten_Flt;

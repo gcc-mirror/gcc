@@ -42,6 +42,14 @@ package body System.Value_R is
    function As_Digit (C : Character) return Char_As_Digit;
    --  Given a character return the digit it represents
 
+   procedure Round_Extra
+     (Digit : Char_As_Digit;
+      Value : in out Uns;
+      Scale : in out Integer;
+      Extra : in out Char_As_Digit;
+      Base  : Unsigned);
+   --  Round the triplet (Value, Scale, Extra) according to Digit in Base
+
    procedure Scan_Decimal_Digits
       (Str            : String;
        Index          : in out Integer;
@@ -109,6 +117,45 @@ package body System.Value_R is
       end case;
    end As_Digit;
 
+   -----------------
+   -- Round_Extra --
+   -----------------
+
+   procedure Round_Extra
+     (Digit : Char_As_Digit;
+      Value : in out Uns;
+      Scale : in out Integer;
+      Extra : in out Char_As_Digit;
+      Base  : Unsigned)
+   is
+      B : constant Uns := Uns (Base);
+
+   begin
+      if Digit >= Base / 2 then
+
+         --  If Extra is maximum, round Value
+
+         if Extra = Base - 1 then
+
+            --  If Value is maximum, scale it up
+
+            if Value = Precision_Limit then
+               Extra := Char_As_Digit (Value mod B);
+               Value := Value / B;
+               Scale := Scale + 1;
+               Round_Extra (Digit, Value, Scale, Extra, Base);
+
+            else
+               Extra := 0;
+               Value := Value + 1;
+            end if;
+
+         else
+            Extra := Extra + 1;
+         end if;
+      end if;
+   end Round_Extra;
+
    -------------------------
    -- Scan_Decimal_Digits --
    -------------------------
@@ -140,8 +187,8 @@ package body System.Value_R is
       --  to Precision_Limit.
 
       Precision_Limit_Just_Reached : Boolean;
-      --  Set to True if Precision_Limit_Reached was just set to True
-      --  Only used when Floating = False.
+      --  Set to True if Precision_Limit_Reached was just set to True, but only
+      --  used when Round is True.
 
       Digit : Char_As_Digit;
       --  The current digit
@@ -162,7 +209,7 @@ package body System.Value_R is
          Extra := 0;
       end if;
 
-      if not Floating then
+      if Round then
          Precision_Limit_Just_Reached := False;
       end if;
 
@@ -188,22 +235,12 @@ package body System.Value_R is
 
          --  If precision limit has been reached, just ignore any remaining
          --  digits for the computation of Value and Scale, but store the
-         --  first in Extra and use the second to round Extra if this is for
-         --  a fixed-point type (we skip the rounding for a floating-point
-         --  type to preserve backward compatibility). The scanning should
-         --  continue only to assess the validity of the string.
+         --  first in Extra and use the second to round Extra. The scanning
+         --  should continue only to assess the validity of the string.
 
          if Precision_Limit_Reached then
-            if not Floating and then Precision_Limit_Just_Reached then
-               if Digit >= Base / 2 then
-                  if Extra = Base - 1 then
-                     Extra := 0;
-                     Value := Value + 1;
-                  else
-                     Extra := Extra + 1;
-                  end if;
-               end if;
-
+            if Round and then Precision_Limit_Just_Reached then
+               Round_Extra (Digit, Value, Scale, Extra, Base);
                Precision_Limit_Just_Reached := False;
             end if;
 
@@ -252,8 +289,7 @@ package body System.Value_R is
                else
                   Extra := Digit;
                   Precision_Limit_Reached := True;
-
-                  if not Floating then
+                  if Round then
                      Precision_Limit_Just_Reached := True;
                   end if;
                end if;
@@ -320,8 +356,8 @@ package body System.Value_R is
       --  to Precision_Limit.
 
       Precision_Limit_Just_Reached : Boolean;
-      --  Set to True if Precision_Limit_Reached was just set to True.
-      --  Only used when Floating = False.
+      --  Set to True if Precision_Limit_Reached was just set to True, but only
+      --  used when Round is True.
 
       Digit : Char_As_Digit;
       --  The current digit
@@ -336,7 +372,7 @@ package body System.Value_R is
       Scale := 0;
       Extra := 0;
 
-      if not Floating then
+      if Round then
          Precision_Limit_Just_Reached := False;
       end if;
 
@@ -364,24 +400,14 @@ package body System.Value_R is
 
          --  If precision limit has been reached, just ignore any remaining
          --  digits for the computation of Value and Scale, but store the
-         --  first in Extra and use the second to round Extra if this is for
-         --  a fixed-point type (we skip the rounding for a floating-point
-         --  type to preserve backward compatibility). The scanning should
-         --  continue only to assess the validity of the string.
+         --  first in Extra and use the second to round Extra. The scanning
+         --  should continue only to assess the validity of the string.
 
          if Precision_Limit_Reached then
             Scale := Scale + 1;
 
-            if not Floating and then Precision_Limit_Just_Reached then
-               if Digit >= Base / 2 then
-                  if Extra = Base - 1 then
-                     Extra := 0;
-                     Value := Value + 1;
-                  else
-                     Extra := Extra + 1;
-                  end if;
-               end if;
-
+            if Round and then Precision_Limit_Just_Reached then
+               Round_Extra (Digit, Value, Scale, Extra, Base);
                Precision_Limit_Just_Reached := False;
             end if;
 
@@ -404,11 +430,9 @@ package body System.Value_R is
             else
                Extra := Digit;
                Precision_Limit_Reached := True;
-
-               if not Floating then
+               if Round then
                   Precision_Limit_Just_Reached := True;
                end if;
-
                Scale := Scale + 1;
             end if;
          end if;

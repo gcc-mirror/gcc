@@ -712,7 +712,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-pooglo$(objext) \
   s-pooloc$(objext) \
   s-poosiz$(objext) \
-  s-powtab$(objext) \
+  s-powflt$(objext) \
+  s-powlfl$(objext) \
+  s-powllf$(objext) \
   s-purexc$(objext) \
   s-putima$(objext) \
   s-rannum$(objext) \
