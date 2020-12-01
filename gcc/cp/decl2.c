@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "c-family/c-ada-spec.h"
 #include "asan.h"
+#include "optabs-query.h"
 
 /* Id for dumping the raw trees.  */
 int raw_dump_id;
@@ -3297,18 +3298,34 @@ get_guard (tree decl)
   return guard;
 }
 
+/* Returns true if accessing the GUARD atomic is expensive,
+   i.e. involves a call to __sync_synchronize or similar.
+   In this case let __cxa_guard_acquire handle the atomics.  */
+
+static bool
+is_atomic_expensive_p (machine_mode mode)
+{
+  if (!flag_inline_atomics)
+    return true;
+
+  if (!can_compare_and_swap_p (mode, false) || !can_atomic_load_p (mode))
+    return true;
+
+  return false;
+}
+
 /* Return an atomic load of src with the appropriate memory model.  */
 
 static tree
-build_atomic_load_byte (tree src, HOST_WIDE_INT model)
+build_atomic_load_type (tree src, HOST_WIDE_INT model, tree type)
 {
-  tree ptr_type = build_pointer_type (char_type_node);
+  tree ptr_type = build_pointer_type (type);
   tree mem_model = build_int_cst (integer_type_node, model);
   tree t, addr, val;
   unsigned int size;
   int fncode;
 
-  size = tree_to_uhwi (TYPE_SIZE_UNIT (char_type_node));
+  size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
 
   fncode = BUILT_IN_ATOMIC_LOAD_N + exact_log2 (size) + 1;
   t = builtin_decl_implicit ((enum built_in_function) fncode);
@@ -3351,7 +3368,15 @@ get_guard_cond (tree guard, bool thread_safe)
   if (!thread_safe)
     guard = get_guard_bits (guard);
   else
-    guard = build_atomic_load_byte (guard, MEMMODEL_ACQUIRE);
+    {
+      tree type = targetm.cxx.guard_mask_bit ()
+		  ? TREE_TYPE (guard) : char_type_node;
+
+      if (is_atomic_expensive_p (TYPE_MODE (type)))
+	guard = integer_zero_node;
+      else
+	guard = build_atomic_load_type (guard, MEMMODEL_ACQUIRE, type);
+    }
 
   /* Mask off all but the low bit.  */
   if (targetm.cxx.guard_mask_bit ())
