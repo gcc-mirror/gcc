@@ -38206,6 +38206,8 @@ cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
       cp_lexer_consume_token (parser->lexer);
       if (!strcmp ("depend", p))
 	{
+	  /* Don't create location wrapper nodes within the depend clause.  */
+	  auto_suppress_location_wrappers sentinel;
 	  clause = cp_parser_omp_clause_depend (parser, NULL_TREE, c_loc);
 	  if (clause)
 	    clause = finish_omp_clauses (clause, C_ORT_OMP);
