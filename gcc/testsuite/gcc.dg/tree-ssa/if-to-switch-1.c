@@ -32,4 +32,4 @@ int main(int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Condition chain with .* BBs transformed into a switch statement." "iftoswitch" } } */
+/* { dg-final { scan-tree-dump "Condition chain with \[^\n\r]\* BBs transformed into a switch statement." "iftoswitch" } } */
