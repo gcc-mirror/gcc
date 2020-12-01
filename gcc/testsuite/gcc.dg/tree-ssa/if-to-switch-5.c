@@ -9,4 +9,4 @@ int crud (unsigned char c)
 	   || (int) c == 39) != 0);
 }
 
-/* { dg-final { scan-tree-dump "Condition chain with 5 BBs transformed into a switch statement." "iftoswitch" } } */
+/* { dg-final { scan-tree-dump "Condition chain with .* BBs transformed into a switch statement." "iftoswitch" } } */
