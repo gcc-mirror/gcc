@@ -949,7 +949,7 @@ expand_doubleword_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
 static rtx
 expand_doubleword_mod (machine_mode mode, rtx op0, rtx op1, bool unsignedp)
 {
-  if (INTVAL (op1) <= 1)
+  if (INTVAL (op1) <= 1 || (INTVAL (op1) & 1) == 0)
     return NULL_RTX;
 
   rtx_insn *last = get_last_insn ();
@@ -2004,7 +2004,6 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && CONST_INT_P (op1)
       && is_int_mode (mode, &int_mode)
       && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
-      && optab_handler (lshr_optab, int_mode) != CODE_FOR_nothing
       && optab_handler (and_optab, word_mode) != CODE_FOR_nothing
       && optab_handler (add_optab, word_mode) != CODE_FOR_nothing
       && optimize_insn_for_speed_p ())
