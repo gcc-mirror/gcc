@@ -429,6 +429,7 @@ find_conditions (basic_block bb,
 
       for (unsigned i = 0; i < info.m_ranges.length (); ++i)
 	if (info.m_ranges[i].exp == NULL_TREE
+	    || !INTEGRAL_TYPE_P (TREE_TYPE (info.m_ranges[i].exp))
 	    || info.m_ranges[i].low == NULL_TREE
 	    || info.m_ranges[i].high == NULL_TREE)
 	  return;
