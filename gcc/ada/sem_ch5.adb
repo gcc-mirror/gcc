@@ -1509,7 +1509,7 @@ package body Sem_Ch5 is
         and then Present (Full_View (Etype (Exp)))
         and then Is_Discrete_Type (Full_View (Etype (Exp)))
       then
-         Resolve (Exp, Etype (Exp));
+         Resolve (Exp);
          Exp_Type := Full_View (Etype (Exp));
 
       else
@@ -2360,7 +2360,7 @@ package body Sem_Ch5 is
          --  Domain of iteration is not overloaded
 
          else
-            Resolve (Iter_Name, Etype (Iter_Name));
+            Resolve (Iter_Name);
          end if;
 
          if not Of_Present (N) then

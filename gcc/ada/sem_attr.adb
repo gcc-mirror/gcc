@@ -5376,7 +5376,7 @@ package body Sem_Attr is
            or else (Is_Access_Type (Etype (P))
                       and then Is_Protected_Type (Designated_Type (Etype (P))))
          then
-            Resolve (P, Etype (P));
+            Resolve (P);
          else
             Error_Attr_P ("prefix of % attribute must be a protected object");
          end if;
