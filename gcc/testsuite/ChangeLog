@@ -1,3 +1,7 @@
+2020-11-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/pr91816.c: Update test.
+
 2020-11-29  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/98036
