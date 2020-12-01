@@ -1,3 +1,7 @@
+2020-11-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/pr91816.c: New test.
+
 2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/overflow-6.c: New test.
