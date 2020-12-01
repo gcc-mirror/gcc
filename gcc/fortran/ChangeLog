@@ -1,3 +1,22 @@
+2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98011
+	* scanner.c (skip_free_comments, skip_fixed_comments): If only
+	-fopenacc but not -fopenmp is used, ignore OpenMP's conditional
+	compilation sentinels. Fix indentation, use 'else if' for readability.
+
+2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98010
+	PR fortran/98013
+	* options.c (gfc_post_options): Also imply recursive with
+	-fopenacc.
+	* trans-decl.c (gfc_generate_function_code): Simplify condition.
+
+2020-11-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_expr): Use '==' not '=' for '.eq.'.
+
 2020-11-29  Harald Anlauf  <anlauf@gmx.de>
 
 	* expr.c (simplify_parameter_variable): Fix up character length
