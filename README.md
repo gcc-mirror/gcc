@@ -34,7 +34,7 @@ $ make
 Running the compiler itself without make install we can simply imvoke the compiler proper:
 
 ```
-$ gdb --args ./gcc/rust1 test1.rs -frust-dump-parse -dumpbase test.rs -mtune=generic -march=x86-64 -auxbase-strip test.s -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
+$ gdb --args ./gcc/rust1 test.rs -frust-dump-parse -dumpbase test.rs -mtune=generic -march=x86-64 test.s -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
 ```
 
 Invoking the compiler driver we need to:
