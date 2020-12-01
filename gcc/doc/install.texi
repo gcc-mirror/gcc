@@ -2270,6 +2270,16 @@ information in object.
 
 The option is disabled by default. It is enabled on RISC-V/ELF (bare-metal)
 target if target binutils supported.
+
+@item --enable-s390-excess-float-precision
+@itemx --disable-s390-excess-float-precision
+On s390(x) targets, enable treatment of float expressions with double precision
+when in standards-compliant mode (e.g., when @code{--std=c99} or
+@code{-fexcess-precision=standard} are given).
+
+For a native build, the option's default is derived from glibc's behavior. When
+glibc clamps float_t to double, gcc follows and enables the option. In all other
+cases, it defaults to off.
 @end table
 
 @subheading Cross-Compiler-Specific Options

@@ -1024,6 +1024,7 @@ with_diagnostics_color
 with_diagnostics_urls
 enable_default_pie
 enable_cet
+enable_s390_excess_float_precision
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1783,6 +1784,9 @@ Optional Features:
                           disable libquadmath support for Fortran
   --enable-default-pie    enable Position Independent Executable as default
   --enable-cet            enable Intel CET in host libraries [default=auto]
+  --enable-s390-excess-float-precision
+                          on s390 targets, evaluate float with double
+                          precision when in standards-conforming mode
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -19180,7 +19184,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19183 "configure"
+#line 19187 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19286,7 +19290,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19289 "configure"
+#line 19293 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -31730,6 +31734,75 @@ $as_echo "#define HAVE_LD_PUSHPOPSTATE_SUPPORT 1" >>confdefs.h
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_pushpopstate_support" >&5
 $as_echo "$ld_pushpopstate_support" >&6; }
+
+# On s390, float_t has historically been statically defined as double for no
+# good reason. To comply with the C standard in the light of this definition,
+# gcc has evaluated float expressions in double precision when in
+# standards-compatible mode or when given -fexcess-precision=standard. To enable
+# a smooth transition towards the new model used by most architectures, where
+# gcc describes its behavior via the macro __FLT_EVAL_METHOD__ and glibc derives
+# float_t from that, this behavior can be configured with
+# --enable-s390-excess-float-precision. When given as enabled, that flag selects
+# the old model. When omitted, native builds will derive the flag from the
+# behavior of glibc. When glibc clamps float_t to double, gcc follows the old
+# model. In any other case, it defaults to the new model.
+# Check whether --enable-s390-excess-float-precision was given.
+if test "${enable_s390_excess_float_precision+set}" = set; then :
+  enableval=$enable_s390_excess_float_precision;
+else
+  enable_s390_excess_float_precision=auto
+fi
+
+
+case $target in
+  s390*-linux*)
+  if test "$target" = "$host" -a "$host" = "$build" -a \
+      x"$enable_s390_excess_float_precision" = xauto; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for glibc clamping float_t to double" >&5
+$as_echo_n "checking for glibc clamping float_t to double... " >&6; }
+if ${gcc_cv_float_t_clamped_to_double+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define __FLT_EVAL_METHOD__ 0
+#include <math.h>
+int main() {
+  return !(sizeof(float_t) == sizeof(double));
+}
+_ACEOF
+if ac_fn_cxx_try_run "$LINENO"; then :
+  gcc_cv_float_t_clamped_to_double=yes
+else
+  gcc_cv_float_t_clamped_to_double=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_float_t_clamped_to_double" >&5
+$as_echo "$gcc_cv_float_t_clamped_to_double" >&6; }
+    if test x"$gcc_cv_float_t_clamped_to_double" = xyes; then
+      enable_s390_excess_float_precision=yes
+    fi
+  fi
+
+
+  if test x"$enable_s390_excess_float_precision" = xyes; then
+
+$as_echo "#define ENABLE_S390_EXCESS_FLOAT_PRECISION 1" >>confdefs.h
+
+  fi
+  ;;
+esac
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

@@ -7318,6 +7318,51 @@ if test x"$ld_pushpopstate_support" = xyes; then
 fi
 AC_MSG_RESULT($ld_pushpopstate_support)
 
+# On s390, float_t has historically been statically defined as double for no
+# good reason. To comply with the C standard in the light of this definition,
+# gcc has evaluated float expressions in double precision when in
+# standards-compatible mode or when given -fexcess-precision=standard. To enable
+# a smooth transition towards the new model used by most architectures, where
+# gcc describes its behavior via the macro __FLT_EVAL_METHOD__ and glibc derives
+# float_t from that, this behavior can be configured with
+# --enable-s390-excess-float-precision. When given as enabled, that flag selects
+# the old model. When omitted, native builds will derive the flag from the
+# behavior of glibc. When glibc clamps float_t to double, gcc follows the old
+# model. In any other case, it defaults to the new model.
+AC_ARG_ENABLE(s390-excess-float-precision,
+  [AS_HELP_STRING([--enable-s390-excess-float-precision],
+		  [on s390 targets, evaluate float with double precision
+		   when in standards-conforming mode])],
+  [],[enable_s390_excess_float_precision=auto])
+
+case $target in
+  s390*-linux*)
+  if test "$target" = "$host" -a "$host" = "$build" -a \
+      x"$enable_s390_excess_float_precision" = xauto; then
+    AC_CACHE_CHECK([for glibc clamping float_t to double],
+      gcc_cv_float_t_clamped_to_double,
+      [AC_RUN_IFELSE([AC_LANG_SOURCE([
+#define __FLT_EVAL_METHOD__ 0
+#include <math.h>
+int main() {
+  return !(sizeof(float_t) == sizeof(double));
+}])],
+        [gcc_cv_float_t_clamped_to_double=yes],
+        [gcc_cv_float_t_clamped_to_double=no])])
+    if test x"$gcc_cv_float_t_clamped_to_double" = xyes; then
+      enable_s390_excess_float_precision=yes
+    fi
+  fi
+
+  GCC_TARGET_TEMPLATE(ENABLE_S390_EXCESS_FLOAT_PRECISION)
+  if test x"$enable_s390_excess_float_precision" = xyes; then
+    AC_DEFINE(ENABLE_S390_EXCESS_FLOAT_PRECISION, 1,
+[Define to enable evaluating float expressions with double precision in
+standards-compatible mode on s390 targets.])
+  fi
+  ;;
+esac
+
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)
 
