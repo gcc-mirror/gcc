@@ -15799,6 +15799,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    return error_mark_node;
 	  }
 
+	if (!verify_type_context (input_location, TCTX_ARRAY_ELEMENT, type,
+				  !(complain & tf_error)))
+	  return error_mark_node;
+
 	if (abstract_virtuals_error_sfinae (ACU_ARRAY, type, complain))
 	  return error_mark_node;
 
