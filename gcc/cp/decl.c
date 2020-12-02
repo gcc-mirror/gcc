@@ -3645,17 +3645,17 @@ void
 pop_switch (void)
 {
   struct cp_switch *cs = switch_stack;
-  location_t switch_location;
 
   /* Emit warnings as needed.  */
-  switch_location = cp_expr_loc_or_input_loc (cs->switch_stmt);
+  location_t switch_location = cp_expr_loc_or_input_loc (cs->switch_stmt);
+  tree cond = SWITCH_STMT_COND (cs->switch_stmt);
   const bool bool_cond_p
     = (SWITCH_STMT_TYPE (cs->switch_stmt)
        && TREE_CODE (SWITCH_STMT_TYPE (cs->switch_stmt)) == BOOLEAN_TYPE);
   if (!processing_template_decl)
     c_do_switch_warnings (cs->cases, switch_location,
-			  SWITCH_STMT_TYPE (cs->switch_stmt),
-			  SWITCH_STMT_COND (cs->switch_stmt), bool_cond_p);
+			  SWITCH_STMT_TYPE (cs->switch_stmt), cond,
+			  bool_cond_p);
 
   /* For the benefit of block_may_fallthru remember if the switch body
      case labels cover all possible values and if there are break; stmts.  */
@@ -3666,6 +3666,15 @@ pop_switch (void)
     SWITCH_STMT_ALL_CASES_P (cs->switch_stmt) = 1;
   if (!cs->break_stmt_seen_p)
     SWITCH_STMT_NO_BREAK_P (cs->switch_stmt) = 1;
+  /* Now that we're done with the switch warnings, set the switch type
+     to the type of the condition if the index type was of scoped enum type.
+     (Such types don't participate in the integer promotions.)  We do this
+     because of bit-fields whose declared type is a scoped enum type:
+     gimplification will use the lowered index type, but convert the
+     case values to SWITCH_STMT_TYPE, which would have been the declared type
+     and verify_gimple_switch doesn't accept that.  */
+  if (is_bitfield_expr_with_lowered_type (cond))
+    SWITCH_STMT_TYPE (cs->switch_stmt) = TREE_TYPE (cond);
   gcc_assert (!cs->in_loop_body_p);
   splay_tree_delete (cs->cases);
   switch_stack = switch_stack->next;
