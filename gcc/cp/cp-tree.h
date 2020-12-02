@@ -1665,6 +1665,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_TPI,
   TS_CP_PTRMEM,
   TS_CP_OVERLOAD,
+  TS_CP_BINDING_VECTOR,
   TS_CP_BASELINK,
   TS_CP_TEMPLATE_DECL,
   TS_CP_DEFERRED_PARSE,
@@ -1686,6 +1687,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
   struct template_parm_index GTY ((tag ("TS_CP_TPI"))) tpi;
   struct ptrmem_cst GTY ((tag ("TS_CP_PTRMEM"))) ptrmem;
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
+  struct tree_binding_vec GTY ((tag ("TS_CP_BINDING_VECTOR"))) binding_vec;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
   struct tree_template_decl GTY ((tag ("TS_CP_TEMPLATE_DECL"))) template_decl;
   struct tree_deferred_parse GTY ((tag ("TS_CP_DEFERRED_PARSE"))) deferred_parse;
@@ -7386,6 +7388,7 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
+extern tree make_binding_vec			(tree, unsigned clusters);
 inline tree ovl_first				(tree) ATTRIBUTE_PURE;
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
@@ -8020,14 +8023,16 @@ type_unknown_p (const_tree expr)
 inline hashval_t
 named_decl_hash::hash (const value_type decl)
 {
-  tree name = OVL_NAME (decl);
+  tree name = (TREE_CODE (decl) == BINDING_VECTOR
+	       ? BINDING_VECTOR_NAME (decl) : OVL_NAME (decl));
   return name ? IDENTIFIER_HASH_VALUE (name) : 0;
 }
 
 inline bool
 named_decl_hash::equal (const value_type existing, compare_type candidate)
 {
-  tree name = OVL_NAME (existing);
+  tree name = (TREE_CODE (existing) == BINDING_VECTOR
+	       ? BINDING_VECTOR_NAME (existing) : OVL_NAME (existing));
   return candidate == name;
 }
 

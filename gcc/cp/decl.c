@@ -17594,6 +17594,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case DEFERRED_PARSE:	return TS_CP_DEFERRED_PARSE;
     case IDENTIFIER_NODE:	return TS_CP_IDENTIFIER;
     case LAMBDA_EXPR:		return TS_CP_LAMBDA_EXPR;
+    case BINDING_VECTOR:		return TS_CP_BINDING_VECTOR;
     case OVERLOAD:		return TS_CP_OVERLOAD;
     case PTRMEM_CST:		return TS_CP_PTRMEM;
     case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
