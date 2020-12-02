@@ -23,18 +23,18 @@
   ""
   "#"
   "reload_completed"
-  [(set (reg:CC CC_REG)
-	(compare:CC (match_dup 1) (match_dup 2)))
+  [(set (reg:H8cc CC_REG)
+	(compare:H8cc (match_dup 1) (match_dup 2)))
    (set (pc)
 	(if_then_else (match_op_dup 0
-		       [(reg:CC CC_REG) (const_int 0)])
+		       [(reg:H8cc CC_REG) (const_int 0)])
 		      (label_ref (match_dup 3)) (pc)))]
   "")
 
 (define_insn "*branch_1"
   [(set (pc)
 	(if_then_else (match_operator 1 "comparison_operator"
-		       [(reg:CC CC_REG) (const_int 0)])
+		       [(reg:H8cc CC_REG) (const_int 0)])
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "reload_completed"
@@ -52,7 +52,7 @@
 (define_insn "*branch_1_false"
   [(set (pc)
 	(if_then_else (match_operator 1 "comparison_operator"
-		       [(reg:CC CC_REG) (const_int 0)])
+		       [(reg:H8cc CC_REG) (const_int 0)])
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   "reload_completed"
