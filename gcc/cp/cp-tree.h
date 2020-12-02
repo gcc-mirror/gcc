@@ -5399,6 +5399,10 @@ extern int function_depth;
    in structrual_comptypes.  */
 extern int comparing_specializations;
 
+/* Nonzero if we are inside eq_specializations, which affects
+   resolving of typenames in structural_comptypes.  */
+extern int comparing_typenames;
+
 /* In parser.c.  */
 
 /* Nonzero if we are parsing an unevaluated operand: an operand to
