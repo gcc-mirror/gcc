@@ -488,6 +488,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
+      DECL_MODULE_EXPORT_P (in _DECL)
       OVL_NESTED_P (in OVERLOAD)
       LAMBDA_EXPR_INSTANTIATED (in LAMBDA_EXPR)
       Reserved for DECL_MODULE_EXPORT (in DECL_)
@@ -1644,6 +1645,46 @@ check_constraint_info (tree t)
 #define CONSTRAINED_PARM_PROTOTYPE(NODE) \
   DECL_INITIAL (TYPE_DECL_CHECK (NODE))
 
+/* Module defines.  */
+// Too many _DECLS: FUNCTION,VAR,TYPE,TEMPLATE,CONCEPT or NAMESPACE
+#define DECL_MODULE_CHECK(NODE) (NODE)
+
+/* In the purview of a module (including header unit).  */
+#define DECL_MODULE_PURVIEW_P(N) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_purview_p)
+
+/* True if the live version of the decl was imported.  */
+#define DECL_MODULE_IMPORT_P(NODE) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_import_p)
+
+/* True if this decl is in the entity hash & array.  This means that
+   some variant was imported, even if DECL_MODULE_IMPORT_P is false.  */
+#define DECL_MODULE_ENTITY_P(NODE) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_entity_p)
+
+/* True if there are unloaded specializations keyed to this template.  */
+#define DECL_MODULE_PENDING_SPECIALIZATIONS_P(NODE)	\
+  (DECL_LANG_SPECIFIC (TEMPLATE_DECL_CHECK (NODE))	\
+   ->u.base.module_pending_p)
+
+/* True if this class has unloaded members.  These should be loaded
+   before we do member lookups.   */
+#define DECL_MODULE_PENDING_MEMBERS_P(NODE)		\
+  (DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))		\
+   ->u.base.module_pending_p)
+
+/* DECL that has attached decls for ODR-relatedness.  */
+#define DECL_MODULE_ATTACHMENTS_P(NODE)			\
+  (DECL_LANG_SPECIFIC (TREE_CHECK2(NODE,FUNCTION_DECL,VAR_DECL))\
+   ->u.base.module_pending_p)
+
+/* Whether this is an exported DECL.  Held on any decl that can appear
+   at namespace scope (function, var, type, template, const or
+   namespace).  templates copy from their template_result, consts have
+   it for unscoped enums.  */
+#define DECL_MODULE_EXPORT_P(NODE) TREE_LANG_FLAG_3 (NODE)
+
+
 /* The list of local parameters introduced by this requires-expression,
    in the form of a chain of PARM_DECLs.  */
 #define REQUIRES_EXPR_PARMS(NODE) \
@@ -2655,15 +2696,15 @@ enum lang_decl_selector
 /* Flags shared by all forms of DECL_LANG_SPECIFIC.
 
    Some of the flags live here only to make lang_decl_min/fn smaller.  Do
-   not make this struct larger than 32 bits; instead, make sel smaller.  */
+   not make this struct larger than 32 bits.  */
 
 struct GTY(()) lang_decl_base {
-  /* Larger than necessary for faster access.  */
-  ENUM_BITFIELD(lang_decl_selector) selector : 16;
+  ENUM_BITFIELD(lang_decl_selector) selector : 3;
   ENUM_BITFIELD(languages) language : 1;
   unsigned use_template : 2;
   unsigned not_really_extern : 1;	   /* var or fn */
   unsigned initialized_in_class : 1;	   /* var or fn */
+
   unsigned threadprivate_or_deleted_p : 1; /* var or fn */
   /* anticipated_p is no longer used for anticipated_decls (fn, type
      or template).  It is used as DECL_OMP_PRIVATIZED_MEMBER in
@@ -2672,11 +2713,22 @@ struct GTY(()) lang_decl_base {
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
   unsigned unknown_bound_p : 1;		   /* var */
   unsigned odr_used : 1;		   /* var or fn */
-  unsigned spare : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
   unsigned dependent_init_p : 1;	   /* var */
-  /* 2 spare bits */
+
+  /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, TEMPLATE,
+     NAMESPACE decls.  */
+  unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
+  unsigned module_import_p : 1;     	   /* from an import */
+  unsigned module_entity_p : 1;		   /* is in the entitity ary &
+					      hash.  */
+  /* TEMPLATE_DECL has specializations or,
+     TYPE_DECL has class members yet to load, or
+     VAR_DECL or FUNCTION_DECL has attached decls.     */
+  unsigned module_pending_p : 1;
+
+  /* 12 spare bits.  */
 };
 
 /* True for DECL codes which have template info and access.  */
