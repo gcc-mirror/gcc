@@ -11,8 +11,8 @@ typedef long long T;
 typedef unsigned long long U;
 #endif
 
-T __attribute__((noipa)) foo (T x, T n) { return x % n; }
-#define C(n) T __attribute__((noipa)) foo##n (T x) { return x % (n - 10000); }
+T __attribute__((noipa)) foo (T x, T n, T *r) { *r = x % n; return x / n; }
+#define C(n) T __attribute__((noipa)) foo##n (T x, T *r) { *r = x % (n - 10000); return x / (n - 10000); }
 
 #define C1(n) C(n##1) C(n##3) C(n##5) C(n##7) C(n##9)
 #define C2(n) C1(n##0) C1(n##1) C1(n##2) C1(n##3) C1(n##4) \
@@ -30,7 +30,7 @@ T __attribute__((noipa)) foo (T x, T n) { return x % n; }
 
 TESTS
 
-struct S { T x; T (*foo) (T); };
+struct S { T x; T (*foo) (T, T *); };
 
 #undef C
 #define C(n) { n - 10000, foo##n },
@@ -49,8 +49,13 @@ main ()
       for (j = -5; j <= 5; j++)
 	{
 	  U x = ((U) 1 << i) + j;
-	  if (foo ((T) x, tests[k].x) != tests[k].foo ((T) x)
-	      || foo ((T) -x, tests[k].x) != tests[k].foo ((T) -x))
+	  T r1 = 0, r2 = 0;
+	  if (foo ((T) x, tests[k].x, &r1) != tests[k].foo ((T) x, &r2)
+	      || r1 != r2)
+	    __builtin_abort ();
+	  r1 = 0; r2 = 0;
+	  if (foo ((T) -x, tests[k].x, &r1) != tests[k].foo ((T) -x, &r2)
+	      || r1 != r2)
 	    __builtin_abort ();
 	}
   return 0;

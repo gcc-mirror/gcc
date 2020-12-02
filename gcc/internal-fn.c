@@ -3230,27 +3230,68 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
 	 the division and modulo and if it emits any library calls or any
 	 {,U}{DIV,MOD} rtxes throw it away and use a divmod optab or
 	 divmod libcall.  */
-      struct separate_ops ops;
-      ops.code = TRUNC_DIV_EXPR;
-      ops.type = type;
-      ops.op0 = make_tree (ops.type, op0);
-      ops.op1 = arg1;
-      ops.op2 = NULL_TREE;
-      ops.location = gimple_location (call_stmt);
-      start_sequence ();
-      quotient = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-      if (contains_call_div_mod (get_insns ()))
-	quotient = NULL_RTX;
-      else
+      scalar_int_mode int_mode;
+      if (remainder == NULL_RTX
+	  && optimize
+	  && CONST_INT_P (op1)
+	  && !pow2p_hwi (INTVAL (op1))
+	  && is_int_mode (TYPE_MODE (type), &int_mode)
+	  && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+	  && optab_handler (and_optab, word_mode) != CODE_FOR_nothing
+	  && optab_handler (add_optab, word_mode) != CODE_FOR_nothing
+	  && optimize_insn_for_speed_p ())
 	{
-	  ops.code = TRUNC_MOD_EXPR;
-	  remainder = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-	  if (contains_call_div_mod (get_insns ()))
-	    remainder = NULL_RTX;
+	  rtx_insn *last = get_last_insn ();
+	  remainder = NULL_RTX;
+	  quotient = expand_doubleword_divmod (int_mode, op0, op1, &remainder,
+					       TYPE_UNSIGNED (type));
+	  if (quotient != NULL_RTX)
+	    {
+	      if (optab_handler (mov_optab, int_mode) != CODE_FOR_nothing)
+		{
+		  rtx_insn *move = emit_move_insn (quotient, quotient);
+		  set_dst_reg_note (move, REG_EQUAL,
+				    gen_rtx_fmt_ee (TYPE_UNSIGNED (type)
+						    ? UDIV : DIV, int_mode,
+						    copy_rtx (op0), op1),
+				    quotient);
+		  move = emit_move_insn (remainder, remainder);
+		  set_dst_reg_note (move, REG_EQUAL,
+				    gen_rtx_fmt_ee (TYPE_UNSIGNED (type)
+						    ? UMOD : MOD, int_mode,
+						    copy_rtx (op0), op1),
+				    quotient);
+		}
+	    }
+	  else
+	    delete_insns_since (last);
 	}
-      if (remainder)
-	insns = get_insns ();
-      end_sequence ();
+
+      if (remainder == NULL_RTX)
+	{
+	  struct separate_ops ops;
+	  ops.code = TRUNC_DIV_EXPR;
+	  ops.type = type;
+	  ops.op0 = make_tree (ops.type, op0);
+	  ops.op1 = arg1;
+	  ops.op2 = NULL_TREE;
+	  ops.location = gimple_location (call_stmt);
+	  start_sequence ();
+	  quotient = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  if (contains_call_div_mod (get_insns ()))
+	    quotient = NULL_RTX;
+	  else
+	    {
+	      ops.code = TRUNC_MOD_EXPR;
+	      remainder = expand_expr_real_2 (&ops, NULL_RTX, mode,
+					      EXPAND_NORMAL);
+	      if (contains_call_div_mod (get_insns ()))
+		remainder = NULL_RTX;
+	    }
+	  if (remainder)
+	    insns = get_insns ();
+	  end_sequence ();
+	}
     }
 
   if (remainder)

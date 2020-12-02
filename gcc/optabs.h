@@ -183,6 +183,8 @@ extern bool force_expand_binop (machine_mode, optab, rtx, rtx, rtx, int,
 				enum optab_methods);
 extern rtx expand_vector_broadcast (machine_mode, rtx);
 
+extern rtx expand_doubleword_divmod (machine_mode, rtx, rtx, rtx *, bool);
+
 /* Generate code for a simple binary or unary operation.  "Simple" in
    this case means "can be unambiguously described by a (mode, code)
    pair and mapped to a single optab."  */
