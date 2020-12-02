@@ -1612,19 +1612,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _RopeRep* _S_concat_char_iter(_RopeRep* __r,
 					   const _CharT* __iter,
-					   size_type __slen);
-      // Concatenate rope and char ptr, copying __s.
+					   size_type __slen,
+					   allocator_type& __a);
+      // Concatenate rope and char ptr, copying __iter.
       // Should really take an arbitrary iterator.
       // Result is counted in refcount.
       static _RopeRep* _S_destr_concat_char_iter(_RopeRep* __r,
 						 const _CharT* __iter,
-						 size_type __slen)
+						 size_type __slen,
+						 allocator_type& __a)
 	// As above, but one reference to __r is about to be
 	// destroyed.  Thus the pieces may be recycled if all
 	// relevant reference counts are 1.
 #ifdef __GC
 	// We can't really do anything since refcounts are unavailable.
-      { return _S_concat_char_iter(__r, __iter, __slen); }
+      { return _S_concat_char_iter(__r, __iter, __slen, __a); }
 #else
       ;
 #endif
@@ -1913,9 +1915,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       push_back(_CharT __x)
       {
+	allocator_type __a = _M_get_allocator();
 	_RopeRep* __old = this->_M_tree_ptr;
 	this->_M_tree_ptr
-	  = _S_destr_concat_char_iter(this->_M_tree_ptr, &__x, 1);
+	  = _S_destr_concat_char_iter(this->_M_tree_ptr, &__x, 1, __a);
 	_S_unref(__old);
       }
 
@@ -2115,8 +2118,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       rope&
       append(const _CharT* __iter, size_type __n)
       {
+	allocator_type __a = _M_get_allocator();
 	_RopeRep* __result =
-	  _S_destr_concat_char_iter(this->_M_tree_ptr, __iter, __n);
+	  _S_destr_concat_char_iter(this->_M_tree_ptr, __iter, __n, __a);
 	_S_unref(this->_M_tree_ptr);
 	this->_M_tree_ptr = __result;
 	return *this;
@@ -2133,8 +2137,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       rope&
       append(const _CharT* __s, const _CharT* __e)
       {
+	allocator_type __a = _M_get_allocator();
 	_RopeRep* __result =
-	  _S_destr_concat_char_iter(this->_M_tree_ptr, __s, __e - __s);
+	  _S_destr_concat_char_iter(this->_M_tree_ptr, __s, __e - __s, __a);
 	_S_unref(this->_M_tree_ptr);
 	this->_M_tree_ptr = __result;
 	return *this;
@@ -2156,8 +2161,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       rope&
       append(_CharT __c)
       {
+	allocator_type __a = _M_get_allocator();
 	_RopeRep* __result =
-	  _S_destr_concat_char_iter(this->_M_tree_ptr, &__c, 1);
+	  _S_destr_concat_char_iter(this->_M_tree_ptr, &__c, 1, __a);
 	_S_unref(this->_M_tree_ptr);
 	this->_M_tree_ptr = __result;
 	return *this;
@@ -2239,7 +2245,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Self_destruct_ptr __left(_S_substring(this->_M_tree_ptr, 0, __p));
 	_Self_destruct_ptr __right(_S_substring(this->_M_tree_ptr,
 						__p, size()));
-	_Self_destruct_ptr __left_result(_S_concat_char_iter(__left, __i, __n));
+	_Self_destruct_ptr __left_result(_S_concat_char_iter(__left, __i, __n,
+							     _M_get_allocator()));
 	// _S_ destr_concat_char_iter should be safe here.
 	// But as it stands it's probably not a win, since __left
 	// is likely to have additional references.
@@ -2843,8 +2850,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef rope<_CharT, _Alloc> rope_type;
       std::size_t __rlen = rope_type::_S_char_ptr_len(__right);
+      _Alloc __a = __left.get_allocator();
       return rope_type(rope_type::_S_concat_char_iter(__left._M_tree_ptr,
-						      __right, __rlen));
+						      __right, __rlen, __a));
     }
 
   template <class _CharT, class _Alloc>
@@ -2861,8 +2869,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator+(const rope<_CharT, _Alloc>& __left, _CharT __right)
     {
       typedef rope<_CharT, _Alloc> rope_type;
+      _Alloc __a = __left.get_allocator();
       return rope_type(rope_type::_S_concat_char_iter(__left._M_tree_ptr,
-						      &__right, 1));
+						      &__right, 1, __a));
     }
 
   template <class _CharT, class _Alloc>
