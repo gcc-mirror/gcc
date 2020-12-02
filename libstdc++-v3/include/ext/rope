@@ -675,7 +675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static void _S_ref(_Rope_RopeRep*) { }
       static void _S_free_if_unref(_Rope_RopeRep*) { }
 #   endif
-protected:
+    protected:
       _Rope_RopeRep&
       operator=(const _Rope_RopeRep&);
 
@@ -742,7 +742,7 @@ protected:
 	this->__STL_FREE_STRING(_M_data, this->_M_size, this->_M_get_allocator());
       }
 #endif
-protected:
+    protected:
       _Rope_RopeLeaf&
       operator=(const _Rope_RopeLeaf&);
 
@@ -778,7 +778,7 @@ protected:
 	_M_right->_M_unref_nonnil();
       }
 #endif
-protected:
+    protected:
       _Rope_RopeConcatenation&
       operator=(const _Rope_RopeConcatenation&);
       
@@ -1508,7 +1508,7 @@ protected:
       __ROPE_DEFINE_ALLOCS(_Alloc)
 #undef __ROPE_DEFINE_ALLOC
 
-	protected:
+    protected:
       _Rope_base&
       operator=(const _Rope_base&);
       
