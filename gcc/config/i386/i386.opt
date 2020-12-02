@@ -1151,4 +1151,4 @@ AVXVNNI built-in functions and code generation.
 
 mneeded
 Target Report Var(ix86_needed) Save
-Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property
+Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property.
