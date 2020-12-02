@@ -164,7 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
 
-#if __cplusplus > 201703L && defined _GLIBCXX_HAVE_ATOMIC_WAIT
+#if __cpp_lib_atomic_wait
     void
     wait(bool __old, memory_order __m = memory_order_seq_cst) const noexcept
     { _M_base.wait(__old, __m); }
@@ -178,7 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     notify_all() const noexcept
     { _M_base.notify_all(); }
-#endif // C++20 && HAVE_ATOMIC_WAIT
+#endif // __cpp_lib_atomic_wait
   };
 
 #if __cplusplus <= 201703L
@@ -380,7 +380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
 
-#if __cplusplus > 201703L && defined _GLIBCXX_HAVE_ATOMIC_WAIT
+#if __cpp_lib_atomic_wait 
     void
     wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
     {
@@ -404,7 +404,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     notify_all() const noexcept
     { std::__atomic_notify(&_M_i, true); }
-#endif // C++20 && HAVE_ATOMIC_WAIT
+#endif // __cpp_lib_atomic_wait 
 
     };
 #undef _GLIBCXX20_INIT
@@ -644,7 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    __cmpexch_failure_order(__m));
       }
 
-#if __cplusplus > 201703L && _GLIBCXX_HAVE_ATOMIC_WAIT
+#if __cpp_lib_atomic_wait 
     void
     wait(__pointer_type __old, memory_order __m = memory_order_seq_cst) noexcept
     { _M_b.wait(__old, __m); }
@@ -658,7 +658,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     notify_all() const noexcept
     { _M_b.notify_all(); }
-#endif // C++20 && HAVE_ATOMIC_WAIT
+#endif // __cpp_lib_atomic_wait
       __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
@@ -1412,7 +1412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 
-#if __cplusplus > 201703L && _GLIBCXX_HAVE_ATOMIC_WAIT
+#if __cpp_lib_atomic_wait
   template<typename _Tp>
     inline void
     atomic_wait(const atomic<_Tp>* __a,
@@ -1435,7 +1435,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     atomic_notify_all(atomic<_Tp>* __a) noexcept
     { __a->notify_all(); }
-#endif // C++20 && HAVE_ATOMIC_WAIT
+#endif // __cpp_lib_atomic_wait
 
   // Function templates for atomic_integral and atomic_pointer operations only.
   // Some operations (and, or, xor) are only available for atomic integrals,

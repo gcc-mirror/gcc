@@ -185,8 +185,8 @@ static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
 static void maybe_emit_free_warning (tree);
 static tree fold_builtin_object_size (tree, tree);
 static bool check_read_access (tree, tree, tree = NULL_TREE, int = 1);
-static bool compute_objsize (tree, int, access_ref *, ssa_name_limit_t &,
-			     range_query *);
+static bool compute_objsize_r (tree, int, access_ref *, ssa_name_limit_t &,
+			       pointer_query *);
 
 unsigned HOST_WIDE_INT target_newline;
 unsigned HOST_WIDE_INT target_percent;
@@ -250,7 +250,7 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 		     access_ref *pref /* = NULL */,
 		     int ostype /* = 1 */,
 		     ssa_name_limit_t *psnlim /* = NULL */,
-		     range_query *rvals /* = NULL */) const
+		     pointer_query *qry /* = NULL */) const
 {
   gphi *phi_stmt = this->phi ();
   if (!phi_stmt)
@@ -271,6 +271,10 @@ access_ref::get_ref (vec<access_ref> *all_refs,
   /* The conservative result of the PHI reflecting the offset and size
      of the largest PHI argument, regardless of whether or not they all
      refer to the same object.  */
+  pointer_query empty_qry;
+  if (!qry)
+    qry = &empty_qry;
+
   access_ref phi_ref;
   if (pref)
     {
@@ -292,13 +296,15 @@ access_ref::get_ref (vec<access_ref> *all_refs,
     {
       access_ref phi_arg_ref;
       tree arg = gimple_phi_arg_def (phi_stmt, i);
-      if (!compute_objsize (arg, ostype, &phi_arg_ref, *psnlim, rvals)
+      if (!compute_objsize_r (arg, ostype, &phi_arg_ref, *psnlim, qry)
 	  || phi_arg_ref.sizrng[0] < 0)
 	/* A PHI with all null pointer arguments.  */
 	return NULL_TREE;
 
       /* Add PREF's offset to that of the argument.  */
       phi_arg_ref.add_offset (orng[0], orng[1]);
+      if (TREE_CODE (arg) == SSA_NAME)
+	qry->put_ref (arg, phi_arg_ref);
 
       if (all_refs)
 	all_refs->safe_push (phi_arg_ref);
@@ -558,7 +564,6 @@ ssa_name_limit_t::next ()
     return false;
 
   --ssa_def_max;
-
   return true;
 }
 
@@ -591,6 +596,142 @@ ssa_name_limit_t::~ssa_name_limit_t ()
 {
   if (visited)
     BITMAP_FREE (visited);
+}
+
+/* Default ctor.  Initialize object with pointers to the range_query
+   and cache_type instances to use or null.  */
+
+pointer_query::pointer_query (range_query *qry /* = NULL */,
+			      cache_type *cache /* = NULL */)
+: rvals (qry), var_cache (cache), hits (), misses (),
+  failures (), depth (), max_depth ()
+{
+  /* No op.  */
+}
+
+/* Return a pointer to the cached access_ref instance for the SSA_NAME
+   PTR if it's there or null otherwise.  */
+
+const access_ref *
+pointer_query::get_ref (tree ptr, int ostype /* = 1 */) const
+{
+  if (!var_cache)
+    {
+      ++misses;
+      return NULL;
+    }
+
+  unsigned version = SSA_NAME_VERSION (ptr);
+  unsigned idx = version << 1 | (ostype & 1);
+  if (var_cache->indices.length () <= idx)
+    {
+      ++misses;
+      return NULL;
+    }
+
+  unsigned cache_idx = var_cache->indices[idx];
+  if (var_cache->access_refs.length () <= cache_idx)
+    {
+      ++misses;
+      return NULL;
+    }
+
+  access_ref &cache_ref = var_cache->access_refs[cache_idx];
+  if (cache_ref.ref)
+    {
+      ++hits;
+      return &cache_ref;
+    }
+
+  ++misses;
+  return NULL;
+}
+
+/* Retrieve the access_ref instance for a variable from the cache if it's
+   there or compute it and insert it into the cache if it's nonnonull.  */
+
+bool
+pointer_query::get_ref (tree ptr, access_ref *pref, int ostype /* = 1 */)
+{
+  const unsigned version
+    = TREE_CODE (ptr) == SSA_NAME ? SSA_NAME_VERSION (ptr) : 0;
+
+  if (var_cache && version)
+    {
+      unsigned idx = version << 1 | (ostype & 1);
+      if (idx < var_cache->indices.length ())
+	{
+	  unsigned cache_idx = var_cache->indices[idx] - 1;
+	  if (cache_idx < var_cache->access_refs.length ()
+	      && var_cache->access_refs[cache_idx].ref)
+	    {
+	      ++hits;
+	      *pref = var_cache->access_refs[cache_idx];
+	      return true;
+	    }
+	}
+
+      ++misses;
+    }
+
+  if (!compute_objsize (ptr, ostype, pref, this))
+    {
+      ++failures;
+      return false;
+    }
+
+  return true;
+}
+
+/* Add a copy of the access_ref REF for the SSA_NAME to the cache if it's
+   nonnull.  */
+
+void
+pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
+{
+  /* Only add populated/valid entries.  */
+  if (!var_cache || !ref.ref || ref.sizrng[0] < 0)
+    return;
+
+  /* Add REF to the two-level cache.  */
+  unsigned version = SSA_NAME_VERSION (ptr);
+  unsigned idx = version << 1 | (ostype & 1);
+
+  /* Grow INDICES if necessary.  An index is valid if it's nonzero.
+     Its value minus one is the index into ACCESS_REFS.  Not all
+     entries are valid.  */
+  if (var_cache->indices.length () <= idx)
+    var_cache->indices.safe_grow_cleared (idx + 1);
+
+  if (!var_cache->indices[idx])
+    var_cache->indices[idx] = var_cache->access_refs.length () + 1;
+
+  /* Grow ACCESS_REF cache if necessary.  An entry is valid if its
+     REF member is nonnull.  All entries except for the last two
+     are valid.  Once nonnull, the REF value must stay unchanged.  */
+  unsigned cache_idx = var_cache->indices[idx];
+  if (var_cache->access_refs.length () <= cache_idx)
+    var_cache->access_refs.safe_grow_cleared (cache_idx + 1);
+
+  access_ref cache_ref = var_cache->access_refs[cache_idx - 1];
+  if (cache_ref.ref)
+  {
+    gcc_checking_assert (cache_ref.ref == ref.ref);
+    return;
+  }
+
+  cache_ref = ref;
+}
+
+/* Flush the cache if it's nonnull.  */
+
+void
+pointer_query::flush_cache ()
+{
+  if (!var_cache)
+    return;
+  var_cache->indices.release ();
+  var_cache->access_refs.release ();
 }
 
 /* Return true if NAME starts with __builtin_ or __sync_.  */
@@ -5076,7 +5217,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
 
 static bool
 handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
-		     ssa_name_limit_t &snlim, range_query *rvals)
+		     ssa_name_limit_t &snlim, pointer_query *qry)
 {
   tree_code code = gimple_assign_rhs_code (stmt);
 
@@ -5088,7 +5229,7 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
      determined from the other instead, adjusted up or down as appropriate
      for the expression.  */
   access_ref aref[2] = { *pref, *pref };
-  if (!compute_objsize (ptr, ostype, &aref[0], snlim, rvals))
+  if (!compute_objsize_r (ptr, ostype, &aref[0], snlim, qry))
     {
       aref[0].base0 = false;
       aref[0].offrng[0] = aref[0].offrng[1] = 0;
@@ -5097,7 +5238,7 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
     }
 
   ptr = gimple_assign_rhs2 (stmt);
-  if (!compute_objsize (ptr, ostype, &aref[1], snlim, rvals))
+  if (!compute_objsize_r (ptr, ostype, &aref[1], snlim, qry))
     {
       aref[1].base0 = false;
       aref[1].offrng[0] = aref[1].offrng[1] = 0;
@@ -5165,8 +5306,8 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
    to influence code generation or optimization.  */
 
 static bool
-compute_objsize (tree ptr, int ostype, access_ref *pref,
-		 ssa_name_limit_t &snlim, range_query *rvals)
+compute_objsize_r (tree ptr, int ostype, access_ref *pref,
+		   ssa_name_limit_t &snlim, pointer_query *qry)
 {
   STRIP_NOPS (ptr);
 
@@ -5198,11 +5339,12 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
     }
 
   const tree_code code = TREE_CODE (ptr);
+  range_query *const rvals = qry ? qry->rvals : NULL;
 
   if (code == BIT_FIELD_REF)
     {
       tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize (ref, ostype, pref, snlim, rvals))
+      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
 
       offset_int off = wi::to_offset (pref->eval (TREE_OPERAND (ptr, 2)));
@@ -5224,7 +5366,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	  /* In OSTYPE zero (for raw memory functions like memcpy), use
 	     the maximum size instead if the identity of the enclosing
 	     object cannot be determined.  */
-	  if (!compute_objsize (ref, ostype, pref, snlim, rvals))
+	  if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	    return false;
 
 	  /* Otherwise, use the size of the enclosing object and add
@@ -5299,7 +5441,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	    return false;
 	}
 
-      if (!compute_objsize (ref, ostype, pref, snlim, rvals))
+      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
 
       offset_int orng[2];
@@ -5365,7 +5507,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   if (code == TARGET_MEM_REF)
     {
       tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize (ref, ostype, pref, snlim, rvals))
+      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
 
       /* TODO: Handle remaining operands.  Until then, add maximum offset.  */
@@ -5399,7 +5541,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   if (code == POINTER_PLUS_EXPR)
     {
       tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize (ref, ostype, pref, snlim, rvals))
+      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
 	return false;
 
       offset_int orng[2];
@@ -5414,7 +5556,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   if (code == VIEW_CONVERT_EXPR)
     {
       ptr = TREE_OPERAND (ptr, 0);
-      return compute_objsize (ptr, ostype, pref, snlim, rvals);
+      return compute_objsize_r (ptr, ostype, pref, snlim, qry);
     }
 
   if (code == SSA_NAME)
@@ -5424,6 +5566,19 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 
       /* Only process an SSA_NAME if the recursion limit has not yet
 	 been reached.  */
+      if (qry)
+	{
+	  if (++qry->depth)
+	    qry->max_depth = qry->depth;
+	  if (const access_ref *cache_ref = qry->get_ref (ptr))
+	    {
+	      /* If the pointer is in the cache set *PREF to what it refers
+		 to and return success.  */
+	      *pref = *cache_ref;
+	      return true;
+	    }
+	}
+
       gimple *stmt = SSA_NAME_DEF_STMT (ptr);
       if (is_gimple_call (stmt))
 	{
@@ -5452,7 +5607,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	      offset_int offrng[2];
 	      if (tree ret = gimple_call_return_array (stmt, offrng, rvals))
 		{
-		  if (!compute_objsize (ret, ostype, pref, snlim, rvals))
+		  if (!compute_objsize_r (ret, ostype, pref, snlim, qry))
 		    return false;
 
 		  /* Cap OFFRNG[1] to at most the remaining size of
@@ -5474,6 +5629,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 		  pref->ref = ptr;
 		}
 	    }
+	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
@@ -5490,12 +5646,14 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	      pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
 	      pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
 	      pref->ref = ref;
+	      qry->put_ref (ptr, *pref);
 	      return true;
 	    }
 
 	  pref->set_max_size_range ();
 	  pref->base0 = false;
 	  pref->ref = ptr;
+	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
@@ -5503,10 +5661,11 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	{
 	  pref->ref = ptr;
 	  access_ref phi_ref = *pref;
-	  if (!pref->get_ref (NULL, &phi_ref, ostype, &snlim, rvals))
+	  if (!pref->get_ref (NULL, &phi_ref, ostype, &snlim, qry))
 	    return false;
 	  *pref = phi_ref;
 	  pref->ref = ptr;
+	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
@@ -5525,7 +5684,12 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
       tree_code code = gimple_assign_rhs_code (stmt);
 
       if (code == MAX_EXPR || code == MIN_EXPR)
-	return handle_min_max_size (stmt, ostype, pref, snlim, rvals);
+	{
+	  if (!handle_min_max_size (stmt, ostype, pref, snlim, qry))
+	    return false;
+	  qry->put_ref (ptr, *pref);
+	  return true;
+	}
 
       tree rhs = gimple_assign_rhs1 (stmt);
 
@@ -5533,7 +5697,7 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	  && TREE_CODE (TREE_TYPE (rhs)) == POINTER_TYPE)
 	{
 	  /* Compute the size of the object first. */
-	  if (!compute_objsize (rhs, ostype, pref, snlim, rvals))
+	  if (!compute_objsize_r (rhs, ostype, pref, snlim, qry))
 	    return false;
 
 	  offset_int orng[2];
@@ -5542,12 +5706,13 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 	    pref->add_offset (orng[0], orng[1]);
 	  else
 	    pref->add_max_offset ();
+	  qry->put_ref (ptr, *pref);
 	  return true;
 	}
 
       if (code == ADDR_EXPR
 	  || code == SSA_NAME)
-	return compute_objsize (rhs, ostype, pref, snlim, rvals);
+	return compute_objsize_r (rhs, ostype, pref, snlim, qry);
 
       /* (This could also be an assignment from a nonlocal pointer.)  Save
 	 PTR to mention in diagnostics but otherwise treat it as a pointer
@@ -5563,6 +5728,8 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   pref->ref = ptr;
   pref->base0 = false;
   pref->set_max_size_range ();
+  if (TREE_CODE (ptr) == SSA_NAME)
+    qry->put_ref (ptr, *pref);
   return true;
 }
 
@@ -5573,8 +5740,10 @@ tree
 compute_objsize (tree ptr, int ostype, access_ref *pref,
 		 range_query *rvals /* = NULL */)
 {
+  pointer_query qry;
+  qry.rvals = rvals;
   ssa_name_limit_t snlim;
-  if (!compute_objsize (ptr, ostype, pref, snlim, rvals))
+  if (!compute_objsize_r (ptr, ostype, pref, snlim, &qry))
     return NULL_TREE;
 
   offset_int maxsize = pref->size_remaining ();
@@ -5583,7 +5752,29 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
   return wide_int_to_tree (sizetype, maxsize);
 }
 
-/* Transitional wrapper around the above.  The function should be removed
+/* Transitional wrapper.  The function should be removed once callers
+   transition to the pointer_query API.  */
+
+tree
+compute_objsize (tree ptr, int ostype, access_ref *pref, pointer_query *ptr_qry)
+{
+  pointer_query qry;
+  if (ptr_qry)
+    ptr_qry->depth = 0;
+  else
+    ptr_qry = &qry;
+
+  ssa_name_limit_t snlim;
+  if (!compute_objsize_r (ptr, ostype, pref, snlim, ptr_qry))
+    return NULL_TREE;
+
+  offset_int maxsize = pref->size_remaining ();
+  if (pref->base0 && pref->offrng[0] < 0 && pref->offrng[1] >= 0)
+    pref->offrng[0] = 0;
+  return wide_int_to_tree (sizetype, maxsize);
+}
+
+/* Legacy wrapper around the above.  The function should be removed
    once callers transition to one of the two above.  */
 
 tree

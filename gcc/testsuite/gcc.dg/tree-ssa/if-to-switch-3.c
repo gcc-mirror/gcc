@@ -8,4 +8,4 @@ int IsMySuperRandomChar(int aChar)
          aChar == 0x0020 || aChar == 0x0030;
 }
 
-/* { dg-final { scan-tree-dump "Condition chain with .* BBs transformed into a switch statement." "iftoswitch" } } */
+/* { dg-final { scan-tree-dump "Condition chain with \[^\n\r]\* BBs transformed into a switch statement." "iftoswitch" } } */

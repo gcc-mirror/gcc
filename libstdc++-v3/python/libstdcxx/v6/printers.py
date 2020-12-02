@@ -479,7 +479,27 @@ class StdVectorIteratorPrinter:
             return 'non-dereferenceable iterator for std::vector'
         return str(self.val['_M_current'].dereference())
 
-# TODO add printer for vector<bool>'s _Bit_iterator and _Bit_const_iterator
+class StdBitIteratorPrinter:
+    "Print std::vector<bool>'s _Bit_iterator and _Bit_const_iterator"
+
+    def __init__(self, typename, val):
+        self.val = val
+
+    def to_string(self):
+        if not self.val['_M_p']:
+            return 'non-dereferenceable iterator for std::vector<bool>'
+        return bool(self.val['_M_p'].dereference() & (1 << self.val['_M_offset']))
+
+class StdBitReferencePrinter:
+    "Print std::_Bit_reference"
+
+    def __init__(self, typename, val):
+        self.val = val
+
+    def to_string(self):
+        if not self.val['_M_p']:
+            return 'invalid std::_Bit_reference'
+        return bool(self.val['_M_p'].dereference() & (self.val['_M_mask']))
 
 class StdTuplePrinter:
     "Print a std::tuple"
@@ -1274,6 +1294,7 @@ class StdExpPathPrinter:
 
     def __init__ (self, typename, val):
         self.val = val
+        self.typename = typename
         start = self.val['_M_cmpts']['_M_impl']['_M_start']
         finish = self.val['_M_cmpts']['_M_impl']['_M_finish']
         self.num_cmpts = int (finish - start)
@@ -1292,10 +1313,11 @@ class StdExpPathPrinter:
             t = self._path_type()
             if t:
                 path = '%s [%s]' % (path, t)
-        return "filesystem::path %s" % path
+        return "experimental::filesystem::path %s" % path
 
     class _iterator(Iterator):
-        def __init__(self, cmpts):
+        def __init__(self, cmpts, pathtype):
+            self.pathtype = pathtype
             self.item = cmpts['_M_impl']['_M_start']
             self.finish = cmpts['_M_impl']['_M_finish']
             self.count = 0
@@ -1311,13 +1333,13 @@ class StdExpPathPrinter:
             self.count = self.count + 1
             self.item = self.item + 1
             path = item['_M_pathname']
-            t = StdExpPathPrinter(item.type.name, item)._path_type()
+            t = StdExpPathPrinter(self.pathtype, item)._path_type()
             if not t:
                 t = count
             return ('[%s]' % t, path)
 
     def children(self):
-        return self._iterator(self.val['_M_cmpts'])
+        return self._iterator(self.val['_M_cmpts'], self.typename)
 
 class StdPathPrinter:
     "Print a std::filesystem::path"
@@ -1350,6 +1372,7 @@ class StdPathPrinter:
 
     class _iterator(Iterator):
         def __init__(self, impl, pathtype):
+            self.pathtype = pathtype
             if impl:
                 # We can't access _Impl::_M_size because _Impl is incomplete
                 # so cast to int* to access the _M_size member at offset zero,
@@ -1382,7 +1405,7 @@ class StdPathPrinter:
             self.count = self.count + 1
             self.item = self.item + 1
             path = item['_M_pathname']
-            t = StdPathPrinter(item.type.name, item)._path_type()
+            t = StdPathPrinter(self.pathtype, item)._path_type()
             if not t:
                 t = count
             return ('[%s]' % t, path)
@@ -1965,6 +1988,12 @@ def build_libstdcxx_dictionary ():
                                         StdDequeIteratorPrinter)
         libstdcxx_printer.add_version('__gnu_cxx::', '__normal_iterator',
                                       StdVectorIteratorPrinter)
+        libstdcxx_printer.add_version('std::', '_Bit_iterator',
+                                      StdBitIteratorPrinter)
+        libstdcxx_printer.add_version('std::', '_Bit_const_iterator',
+                                      StdBitIteratorPrinter)
+        libstdcxx_printer.add_version('std::', '_Bit_reference',
+                                      StdBitReferencePrinter)
         libstdcxx_printer.add_version('__gnu_cxx::', '_Slist_iterator',
                                       StdSlistIteratorPrinter)
         libstdcxx_printer.add_container('std::', '_Fwd_list_iterator',

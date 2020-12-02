@@ -24,7 +24,7 @@ T __attribute__((noipa)) foo (T x, T n) { return x % n; }
 #define C3(n) C2(n##0) C2(n##4) C2(n##9)
 #define C4(n) C3(n##0) C3(n##3) C3(n##7)
 #endif
-#define TESTS C4(1)
+#define TESTS C4(1) C1(10010) C1(10012) C1(16144)
 
 TESTS
 

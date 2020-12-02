@@ -35,6 +35,10 @@ git config alias.gcc-commit-mklog '!f() { GCC_FORCE_MKLOG=1 git commit "$@"; }; 
 # *.md    diff=md
 git config diff.md.xfuncname '^\(define.*$'
 
+# Tell git send-email where patches go.
+# ??? Maybe also set sendemail.tocmd to guess from MAINTAINERS?
+git config sendemail.to 'gcc-patches@gcc.gnu.org'
+
 set_user=$(git config --get "user.name")
 set_email=$(git config --get "user.email")
 

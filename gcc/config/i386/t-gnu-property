@@ -16,6 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-cet.o: $(srcdir)/config/i386/cet.c
+gnu-property.o: $(srcdir)/config/i386/gnu-property.c
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)

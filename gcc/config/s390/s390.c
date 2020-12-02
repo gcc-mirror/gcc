@@ -9400,6 +9400,37 @@ s390_output_pool_entry (rtx exp, machine_mode mode, unsigned int align)
     }
 }
 
+/* Return true if MEM refers to an integer constant in the literal pool.  If
+   VAL is not nullptr, then also fill it with the constant's value.  */
+
+bool
+s390_const_int_pool_entry_p (rtx mem, HOST_WIDE_INT *val)
+{
+  /* Try to match the following:
+     - (mem (unspec [(symbol_ref) (reg)] UNSPEC_LTREF)).
+     - (mem (symbol_ref)).  */
+
+  if (!MEM_P (mem))
+    return false;
+
+  rtx addr = XEXP (mem, 0);
+  rtx sym;
+  if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_LTREF)
+    sym = XVECEXP (addr, 0, 0);
+  else
+    sym = addr;
+
+  if (!SYMBOL_REF_P (sym) || !CONSTANT_POOL_ADDRESS_P (sym))
+    return false;
+
+  rtx val_rtx = get_pool_constant (sym);
+  if (!CONST_INT_P (val_rtx))
+    return false;
+
+  if (val != nullptr)
+    *val = INTVAL (val_rtx);
+  return true;
+}
 
 /* Return an RTL expression representing the value of the return address
    for the frame COUNT steps up from the current frame.  FRAME is the

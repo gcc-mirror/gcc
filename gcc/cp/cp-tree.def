@@ -233,6 +233,9 @@ DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", tcc_expression, 2)
 /* One of a set of overloaded functions.  */
 DEFTREECODE (OVERLOAD, "overload", tcc_exceptional, 0)
 
+/* A vector of binding slots.  */
+DEFTREECODE (BINDING_VECTOR, "binding_vector", tcc_exceptional, 0)
+
 /* A pseudo-destructor, of the form "OBJECT.~DESTRUCTOR" or
    "OBJECT.SCOPE::~DESTRUCTOR.  The first operand is the OBJECT.  The
    second operand (if non-NULL) is the SCOPE.  The third operand is

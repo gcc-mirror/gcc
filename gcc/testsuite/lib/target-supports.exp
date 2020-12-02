@@ -10662,3 +10662,83 @@ proc check_effective_target_no_fsanitize_address {} {
     }
     return 0;
 }
+
+# Return 1 if this target supports 'R' flag in .section directive, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_R_flag_in_section { } {
+    global tool
+    global GCC_UNDER_TEST
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    return [check_cached_effective_target R_flag_in_section {
+
+	set src pie[pid].c
+	set obj pie[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_GAS_SHF_GNU_RETAIN == 0"
+	puts $f "# error Assembler does not support 'R' flag in .section directive."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_R_flag_in_section compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj assembly ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_R_flag_in_section testfile compilation passed" 2
+	    return 1
+	} else {
+	    verbose "check_effective_target_R_flag_in_section testfile compilation failed" 2
+	    return 0
+	}
+    }]
+}
+
+# Return 1 if this target supports 'o' flag in .section directive, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_o_flag_in_section { } {
+    global tool
+    global GCC_UNDER_TEST
+
+    # Need auto-host.h to check linker support.
+    if { ![file exists ../../auto-host.h ] } {
+	return 0
+    }
+
+    return [check_cached_effective_target o_flag_in_section {
+
+	set src pie[pid].c
+	set obj pie[pid].o
+
+	set f [open $src "w"]
+	puts $f "#include \"../../auto-host.h\""
+	puts $f "#if HAVE_GAS_SECTION_LINK_ORDER == 0"
+	puts $f "# error Assembler does not support 'o' flag in .section directive."
+	puts $f "#endif"
+	close $f
+
+	verbose "check_effective_target_o_flag_in_section compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $obj object ""]
+
+	file delete $src
+	file delete $obj
+
+	if [string match "" $lines] then {
+	    verbose "check_effective_target_o_flag_in_section testfile compilation passed" 2
+	    return 1
+	} else {
+	    verbose "check_effective_target_o_flag_in_section testfile compilation failed" 2
+	    return 0
+	}
+    }]
+}

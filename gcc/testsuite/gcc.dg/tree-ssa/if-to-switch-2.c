@@ -8,4 +8,4 @@ int isMyRandomCharacter(int aChar)
          aChar == 0x0020;
 }
 
-/* { dg-final { scan-tree-dump "Condition chain with .* BBs transformed into a switch statement." "iftoswitch" } } */
+/* { dg-final { scan-tree-dump "Condition chain with \[^\n\r]\* BBs transformed into a switch statement." "iftoswitch" } } */

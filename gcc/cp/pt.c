@@ -19829,6 +19829,8 @@ tsubst_copy_and_build (tree t,
 	   parameter packs are of length zero.  */
 	if (init == NULL_TREE && TREE_OPERAND (t, 3) == NULL_TREE)
 	  init_vec = NULL;
+	else if (init == error_mark_node)
+	  RETURN (error_mark_node);
 	else
 	  {
 	    init_vec = make_tree_vector ();

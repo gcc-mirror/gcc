@@ -2666,6 +2666,12 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_CONSTRUCTIBLE:
       pp_cxx_ws_string (pp, "__is_constructible");
       break;
+    case CPTK_IS_NOTHROW_ASSIGNABLE:
+      pp_cxx_ws_string (pp, "__is_nothrow_assignable");
+      break;
+    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
+      pp_cxx_ws_string (pp, "__is_nothrow_constructible");
+      break;
 
     default:
       gcc_unreachable ();

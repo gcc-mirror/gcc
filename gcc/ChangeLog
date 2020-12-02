@@ -1,3 +1,177 @@
+2020-12-01  Eugene Rozenfeld  <Eugene.Rozenfeld@microsoft.com>
+
+	PR tree-optimization/96708
+	* match.pd: New pattern for comparing X with MAX (X, Y)
+	or MIN (X, y).
+
+2020-12-01  Jeff Law  <law@redhat.com>
+
+	* config/mcore/t-mcore (MULTILIB_EXCEPTIONS): Define.
+
+2020-12-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97595
+	* tree.c (component_ref_size): Fail when DECL_SIZE != TYPE_SIZE.
+	* tree.h (DECL_SIZE, TYPE_SIZE): Update comment.
+
+2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* doc/cpp.texi: Document new macros.
+
+2020-12-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97373
+	* builtins.c (compute_objsize): Rename...
+	(compute_objsize_r): to this.  Change order and types of arguments.
+	Use new argument.  Adjust calls to self.
+	(access_ref::get_ref): New member function.
+	(pointer_query::pointer_query): New member function.
+	(pointer_query::get_ref): Same.
+	(pointer_query::put_ref): Same.
+	(handle_min_max_size): Change order and types of arguments.
+	(maybe_emit_free_warning): Add a test.
+	* builtins.h (class pointer_query): New class.
+	(compute_objsize): Declare an overload.
+	* gimple-ssa-sprintf.c (get_destination_size): Add argument.
+	(handle_printf_call): Change argument type.
+	* tree-ssa-strlen.c (adjust_last_stmt): Add an argument and use it.
+	(maybe_warn_overflow): Same.
+	(handle_builtin_strcpy): Same.
+	(maybe_diag_stxncpy_trunc): Same.
+	(handle_builtin_memcpy): Change argument type.  Adjust calls.
+	(handle_builtin_strcat): Same.
+	(handle_builtin_memset): Same.
+	(handle_store): Same.
+	(strlen_check_and_optimize_call): Same.
+	(check_and_optimize_stmt): Same.
+	(strlen_dom_walker): Add new data members.
+	(strlen_dom_walker::before_dom_children): Use new member.
+	(printf_strlen_execute): Dump cache performance counters.  Remove
+	objsize pass cleanup.
+	* tree-ssa-strlen.h (maybe_diag_stxncpy_trunc): Add argument.
+	(handle_printf_call): Change argument type.
+
+2020-12-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (gen_call_used_regs_seq): In a function subject to the
+	leaf register optimization, skip registers that are not present.
+	* config/sparc/sparc.c (TARGET_ZERO_CALL_USED_REGS): Define to...
+	(sparc_zero_call_used_regs): ...this.  New function.
+
+2020-12-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h: Remove unused 'X' specs in the link spec
+	rather than driver self-specs.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* params.opt (lazy-modules): New.
+	* timevar.def (TV_MODULE_IMPORT, TV_MODULE_EXPORT)
+	(TV_MODULE_MAPPER): New.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97459
+	* optabs.c (expand_doubleword_mod): Punt early for even op1.
+	(expand_binop): Don't require lshr_optab double-word handler.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97954
+	* loop-invariant.c (find_invariant_insn): Punt on JUMP_P insns.
+
+2020-12-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac (check leb128 support): Check that assemblers both
+	accept the LEB128 directives and also give the expected output.
+	Add a test for uleb128 with the MSB set for a 64 bit value.
+	* configure: Regenerated.
+
+2020-12-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regnerated.
+
+2020-12-01  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* optabs-tree.c (vec_cmp_icode_p): New function.
+	(vec_cmp_eq_icode_p): New function.
+	(expand_vec_cmp_expr_p): Use vec_cmp_icode_p and
+	vec_cmp_eq_icode_p.
+	(vcond_icode_p): Use get_rtx_code_1, just to be uniform with
+	vec_cmp_icode_p.
+	* optabs.c (unsigned_optab_p): New function.
+	(insn_predicate_matches_p): New function.
+	(can_vec_cmp_compare_p): New function.
+	(can_vcond_compare_p): Use unsigned_optab_p and
+	insn_predicate_matches_p.
+	(get_rtx_code): Use get_rtx_code_1.
+	(get_rtx_code_1): Version of get_rtx_code that returns UNKNOWN
+	instead of asserting.
+	* optabs.h (can_vec_cmp_compare_p): New function.
+	(get_rtx_code_1): New function.
+
+2020-12-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/14799
+	PR ipa/88702
+	* Makefile.in: Add gimple-if-to-switch.o.
+	* dbgcnt.def (DEBUG_COUNTER): Add new debug counter.
+	* passes.def: Include new pass_if_to_switch pass.
+	* timevar.def (TV_TREE_IF_TO_SWITCH): New timevar.
+	* tree-pass.h (make_pass_if_to_switch): New.
+	* tree-ssa-reassoc.c (struct operand_entry): Move to the header.
+	(dump_range_entry): Move to header file.
+	(debug_range_entry): Likewise.
+	(no_side_effect_bb): Make it global.
+	* tree-switch-conversion.h (simple_cluster::simple_cluster):
+	Add inline for couple of functions in order to prevent error
+	about multiple defined symbols.
+	* gimple-if-to-switch.cc: New file.
+	* tree-ssa-reassoc.h: New file.
+
+2020-12-01  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* configure.ac: Add configure option
+	--enable-s390-excess-float-precision and check to derive default
+	from glibc.
+	* config/s390/s390.c: Guard s390_excess_precision with an ifdef
+	for ENABLE_S390_EXCESS_FLOAT_PRECISION.
+	* doc/install.texi: Document --enable-s390-excess-float-precision.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2020-12-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/98057
+	* symtab.c (symtab_node::set_section_for_node): Drop
+	implicit_section if x_section is NULL.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98063
+	* config/i386/i386-expand.c (ix86_expand_call): Handle non-plt
+	CM_LARGE_PIC calls.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98070
+	* builtins.c (builtin_fnspec): realloc is ".Cw ".
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (gen_compile_unit_die): Treat GNU C++20
+	like C++14 for -gdwarf-5.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/97989
+	* gcc.c (cpp_unique_options): Add -dD if %:debug-level-gt(2)
+	rather than g3|ggdb3|gstabs3|gxcoff3|gvms3.
+
+2020-12-01  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config.gcc (riscv*-*-*): Drop some commited accidentally code.
+
 2020-11-30  Jeff Law  <law@redhat.com>
 
 	* symtab.c (set_section_for_node): Add function comment.

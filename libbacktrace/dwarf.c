@@ -1053,7 +1053,7 @@ resolve_string (const struct dwarf_sections *dwarf_sections, int is_dwarf64,
 
 	offset = val->u.uint * (is_dwarf64 ? 8 : 4) + str_offsets_base;
 	if (offset + (is_dwarf64 ? 8 : 4)
-	    >= dwarf_sections->size[DEBUG_STR_OFFSETS])
+	    > dwarf_sections->size[DEBUG_STR_OFFSETS])
 	  {
 	    error_callback (data, "DW_FORM_strx value out of range", 0);
 	    return 0;
@@ -1097,7 +1097,7 @@ resolve_addr_index (const struct dwarf_sections *dwarf_sections,
   struct dwarf_buf addr_buf;
 
   offset = addr_index * addrsize + addr_base;
-  if (offset + addrsize >= dwarf_sections->size[DEBUG_ADDR])
+  if (offset + addrsize > dwarf_sections->size[DEBUG_ADDR])
     {
       error_callback (data, "DW_FORM_addrx value out of range", 0);
       return 0;

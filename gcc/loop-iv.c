@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
    iv_analyze_result (insn, def, iv):  Stores to IV the description of the iv
      corresponding to DEF, which is a register defined in INSN.
    iv_analyze_expr (insn, mode, expr, iv):  Stores to IV the description of iv
-     corresponding to expression EXPR evaluated at INSN.  All registers used bu
+     corresponding to expression EXPR evaluated at INSN.  All registers used by
      EXPR must also be used in INSN.  MODE is the mode of EXPR.
 */
 

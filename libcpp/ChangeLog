@@ -1,3 +1,12 @@
+2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* charset.c (init_iconv_desc): Initialize "to" and "from" fields.
+	* directives.c (cpp_get_narrow_charset_name): New function.
+	(cpp_get_wide_charset_name): Likewise.
+	* include/cpplib.h (cpp_get_narrow_charset_name): Prototype.
+	(cpp_get_wide_charset_name): Likewise.
+	* internal.h (cset_converter): Add "to" and "from" fields.
+
 2020-11-27  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/97602

@@ -1,3 +1,54 @@
+2020-12-01  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/bits/atomic_base.h: Replace usage of
+	_GLIBCXX_HAVE_ATOMIC_WAIT with __cpp_lib_atomic_wait.
+	* include/bits/atomic_timed_wait.h: Likewise.
+	* include/bits/atomic_wait.h: Define __cpp_lib_atomic_wait
+	feature test macro.
+	* include/bits/semaphore_base.h: Replace usage of
+	_GLIBCXX_HAVE_ATOMIC_WAIT with __cpp_lib_atomic_wait.
+	* include/std/atomic: Likewise.
+	* include/std/latch: Likewise.
+	* include/std/semaphore: Likewise.
+	* include/std/version: Define __cpp_lib_atomic wait
+	feature test macro and replace usage of
+	_GLIBCXX_HAVE_ATOMIC_WAIT.
+	* testsuite/29_atomics/atomic/wait_notify/1.cc: New test.
+	* testsuite/29_atomics/atomic/wait_notify/2.cc: Likewise.
+
+2020-12-01  Michael Weghorn  <m.weghorn@posteo.de>
+
+	* python/libstdcxx/v6/printers.py (StdBitIteratorPrinter)
+	(StdBitReferencePrinter): Add pretty-printers for
+	_Bit_reference, _Bit_iterator and _Bit_const_iterator.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test
+	std::_Bit_reference, std::_Bit_iterator and
+	std::_Bit_const_iterator.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
+2020-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_HAS_BUILTIN): Define macro to
+	work around different implementations of __has_builtin.
+	(_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP)
+	(_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE)
+	(_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED)
+	(_GLIBCXX_HAVE_BUILTIN_IS_SAME, _GLIBCXX_HAVE_BUILTIN_LAUNDER):
+	Define using _GLIBCXX_HAS_BUILTIN.
+
+2020-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_istream/get/char/lwg3464.cc: Add
+	dg-timeout-factor directive.
+	* testsuite/27_io/basic_istream/get/wchar_t/lwg3464.cc:
+	Likewise.
+
+2020-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98003
+	* testsuite/27_io/basic_syncbuf/sync_ops/1.cc: Add options for
+	libatomic.
+
 2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/doxygen/user.cfg.in (INPUT): Add <latch> and <semaphore>.
