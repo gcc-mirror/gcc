@@ -1712,7 +1712,7 @@ Member functions defined within their class are inline in module purview.
 
 fmodule-only
 C++ ObjC RejectNegative Var(flag_module_only) Integer
-Only emit Binary Module Interface.
+Only emit Compiled Module Interface.
 
 fmodule-mapper=
 C++ ObjC++ Joined RejectNegative MissingArgError(missing mapper)
