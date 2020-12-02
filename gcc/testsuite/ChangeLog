@@ -1,3 +1,11 @@
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98002
+	* gcc.dg/strncmp-2.c: Call mprotect again before free.
+
 2020-11-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* gcc.target/arm/pr91816.c: New test.
