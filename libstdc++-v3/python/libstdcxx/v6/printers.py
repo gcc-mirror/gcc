@@ -1294,6 +1294,7 @@ class StdExpPathPrinter:
 
     def __init__ (self, typename, val):
         self.val = val
+        self.typename = typename
         start = self.val['_M_cmpts']['_M_impl']['_M_start']
         finish = self.val['_M_cmpts']['_M_impl']['_M_finish']
         self.num_cmpts = int (finish - start)
@@ -1312,10 +1313,11 @@ class StdExpPathPrinter:
             t = self._path_type()
             if t:
                 path = '%s [%s]' % (path, t)
-        return "filesystem::path %s" % path
+        return "experimental::filesystem::path %s" % path
 
     class _iterator(Iterator):
-        def __init__(self, cmpts):
+        def __init__(self, cmpts, pathtype):
+            self.pathtype = pathtype
             self.item = cmpts['_M_impl']['_M_start']
             self.finish = cmpts['_M_impl']['_M_finish']
             self.count = 0
@@ -1331,13 +1333,13 @@ class StdExpPathPrinter:
             self.count = self.count + 1
             self.item = self.item + 1
             path = item['_M_pathname']
-            t = StdExpPathPrinter(item.type.name, item)._path_type()
+            t = StdExpPathPrinter(self.pathtype, item)._path_type()
             if not t:
                 t = count
             return ('[%s]' % t, path)
 
     def children(self):
-        return self._iterator(self.val['_M_cmpts'])
+        return self._iterator(self.val['_M_cmpts'], self.typename)
 
 class StdPathPrinter:
     "Print a std::filesystem::path"
@@ -1370,6 +1372,7 @@ class StdPathPrinter:
 
     class _iterator(Iterator):
         def __init__(self, impl, pathtype):
+            self.pathtype = pathtype
             if impl:
                 # We can't access _Impl::_M_size because _Impl is incomplete
                 # so cast to int* to access the _M_size member at offset zero,
@@ -1402,7 +1405,7 @@ class StdPathPrinter:
             self.count = self.count + 1
             self.item = self.item + 1
             path = item['_M_pathname']
-            t = StdPathPrinter(item.type.name, item)._path_type()
+            t = StdPathPrinter(self.pathtype, item)._path_type()
             if not t:
                 t = count
             return ('[%s]' % t, path)
