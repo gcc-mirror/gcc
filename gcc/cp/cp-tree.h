@@ -494,7 +494,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
-      DECL_TINFO_P (in VAR_DECL)
+      DECL_TINFO_P (in VAR_DECL, TYPE_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
@@ -3350,7 +3350,8 @@ struct GTY(()) lang_decl {
 
 /* 1 iff VAR_DECL node NODE is a type-info decl.  This flag is set for
    both the primary typeinfo object and the associated NTBS name.  */
-#define DECL_TINFO_P(NODE) TREE_LANG_FLAG_4 (VAR_DECL_CHECK (NODE))
+#define DECL_TINFO_P(NODE)			\
+  TREE_LANG_FLAG_4 (TREE_CHECK2 (NODE,VAR_DECL,TYPE_DECL))
 
 /* 1 iff VAR_DECL node NODE is virtual table or VTT.  We forward to
    DECL_VIRTUAL_P from the common code, as that has the semantics we
@@ -7025,6 +7026,7 @@ extern GTY(()) vec<tree, va_gc> *unemitted_tinfo_decls;
 
 extern void init_rtti_processing		(void);
 extern tree build_typeid			(tree, tsubst_flags_t);
+extern tree get_tinfo_decl_direct	        (tree, tree, int);
 extern tree get_tinfo_decl			(tree);
 extern tree get_typeid				(tree, tsubst_flags_t);
 extern tree build_headof			(tree);
@@ -7032,6 +7034,8 @@ extern tree build_dynamic_cast			(location_t, tree, tree,
 						 tsubst_flags_t);
 extern void emit_support_tinfos			(void);
 extern bool emit_tinfo_decl			(tree);
+extern unsigned get_pseudo_tinfo_index		(tree);
+extern tree get_pseudo_tinfo_type		(unsigned);
 
 /* in search.c */
 extern bool accessible_base_p			(tree, tree, bool);

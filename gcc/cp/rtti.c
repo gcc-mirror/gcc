@@ -123,7 +123,6 @@ static GTY (()) vec<tinfo_s, va_gc> *tinfo_descs;
 
 static tree ifnonnull (tree, tree, tsubst_flags_t);
 static tree tinfo_name (tree, bool);
-static tree get_tinfo_decl_direct (tree type, tree name, int pseudo_ix);
 static tree build_dynamic_cast_1 (location_t, tree, tree, tsubst_flags_t);
 static tree throw_bad_cast (void);
 static tree throw_bad_typeid (void);
@@ -431,7 +430,7 @@ get_tinfo_decl (tree type)
 /* Get or create a tinfo VAR_DECL directly from the provided information.
    The caller must have already checked it is valid to do so.  */
 
-static tree
+tree
 get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
 {
   /* For a class type, the variable is cached in the type node
@@ -1479,6 +1478,7 @@ get_tinfo_desc (unsigned ix)
   finish_builtin_struct (pseudo_type, pseudo_name, fields, NULL_TREE);
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
   DECL_CONTEXT (TYPE_NAME (pseudo_type)) = FROB_CONTEXT (global_namespace);
+  DECL_TINFO_P (TYPE_NAME (pseudo_type)) = true;
   xref_basetypes (pseudo_type, /*bases=*/NULL_TREE);
 
   res->type = cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
@@ -1489,6 +1489,36 @@ get_tinfo_desc (unsigned ix)
   TREE_PUBLIC (TYPE_MAIN_DECL (res->type)) = 1;
 
   return res;
+}
+
+/* Return an identifying index for the pseudo type_info TYPE.
+   We wrote the index at the end of the name, so just scan it from
+   there.  This isn't critical, as it's only on the first use of this
+   type during module stream out.  */
+
+unsigned
+get_pseudo_tinfo_index (tree type)
+{
+  tree name = DECL_NAME (TYPE_NAME (type));
+  unsigned ix = 0, scale = 1;
+  size_t len = IDENTIFIER_LENGTH (name);
+  const char *ptr = IDENTIFIER_POINTER (name) + len;
+
+  for (; *--ptr != '_'; scale *= 10)
+    {
+      len--;
+      gcc_checking_assert (len && ISDIGIT (*ptr));
+      ix += (*ptr - '0') * scale;
+    }
+
+  gcc_assert (len != IDENTIFIER_LENGTH (name));
+  return ix;
+}
+
+tree
+get_pseudo_tinfo_type (unsigned ix)
+{
+  return get_tinfo_desc (ix)->type;
 }
 
 /* We lazily create the type info types.  */
