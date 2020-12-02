@@ -4552,6 +4552,8 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
     case ARRAY_TYPE:
       HOST_WIDE_INT nelts, fldsz;
       fldsz = int_size_in_bytes (TREE_TYPE (type));
+      if (fldsz == 0)
+	break;
       nelts = sz / fldsz;
       if (nelts > 1
 	  && sz > 8 * UNITS_PER_WORD
