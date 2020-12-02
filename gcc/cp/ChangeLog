@@ -1,3 +1,28 @@
+2020-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/98054
+	* cxx-pretty-print.c (pp_cxx_trait_expression):
+	Add support for __is_nothrow_{assignable,constructible}.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98072
+	* parser.c (cp_parser_omp_depobj): Suppress location wrappers when
+	parsing depend clause.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (init_reswords): Maybe enable module keywords.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* lang-specs.h: Add module-related options.
+
+2020-12-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* parser.c (cp_parser_declaration): Add a not about where
+	attributes may be placed.
+
 2020-11-27  Martin Sebor  <msebor@redhat.com>
 
 	* error.c (add_quotes): Revert previous change and use pragma to
