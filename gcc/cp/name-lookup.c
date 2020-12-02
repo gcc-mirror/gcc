@@ -3291,10 +3291,15 @@ begin_scope (scope_kind kind, tree entity)
     case sk_cond:
     case sk_class:
     case sk_scoped_enum:
-    case sk_function_parms:
     case sk_transaction:
     case sk_omp:
       scope->keep = keep_next_level_flag;
+      break;
+
+    case sk_function_parms:
+      scope->keep = keep_next_level_flag;
+      if (entity)
+	scope->immediate_fn_ctx_p = DECL_IMMEDIATE_FUNCTION_P (entity);
       break;
 
     case sk_namespace:

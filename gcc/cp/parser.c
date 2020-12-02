@@ -30566,6 +30566,8 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 
   push_defarg_context (fn);
 
+  begin_scope (sk_function_parms, fn);
+
   for (parm = TYPE_ARG_TYPES (TREE_TYPE (fn)),
 	 parmdecl = DECL_ARGUMENTS (fn);
        parm && parm != void_list_node;
@@ -30597,6 +30599,8 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 	   vec_safe_iterate (insts, ix, &copy); ix++)
 	TREE_PURPOSE (copy) = parsed_arg;
     }
+
+  pop_bindings_and_leave_scope ();
 
   pop_defarg_context ();
 
