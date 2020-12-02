@@ -9081,7 +9081,7 @@ maybe_set_vectorized_backedge_value (loop_vec_info loop_vinfo,
    When vectorizing STMT_INFO as a store, set *SEEN_STORE to its
    stmt_vec_info.  */
 
-static void
+static bool
 vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 			  gimple_stmt_iterator *gsi, stmt_vec_info *seen_store)
 {
@@ -9097,7 +9097,7 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
       && !STMT_VINFO_LIVE_P (stmt_info))
-    return;
+    return false;
 
   if (STMT_VINFO_VECTYPE (stmt_info))
     {
@@ -9114,13 +9114,15 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   /* Pure SLP statements have already been vectorized.  We still need
      to apply loop vectorization to hybrid SLP statements.  */
   if (PURE_SLP_STMT (stmt_info))
-    return;
+    return false;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
 
   if (vect_transform_stmt (loop_vinfo, stmt_info, gsi, NULL, NULL))
     *seen_store = stmt_info;
+
+  return true;
 }
 
 /* Helper function to pass to simplify_replace_tree to enable replacing tree's
@@ -9546,17 +9548,17 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			}
 		      stmt_vec_info pat_stmt_info
 			= STMT_VINFO_RELATED_STMT (stmt_info);
-		      vect_transform_loop_stmt (loop_vinfo, pat_stmt_info, &si,
-						&seen_store);
-		      maybe_set_vectorized_backedge_value (loop_vinfo,
-							   pat_stmt_info);
+		      if (vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
+						    &si, &seen_store))
+			maybe_set_vectorized_backedge_value (loop_vinfo,
+							     pat_stmt_info);
 		    }
 		  else
 		    {
-		      vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
-						&seen_store);
-		      maybe_set_vectorized_backedge_value (loop_vinfo,
-							   stmt_info);
+		      if (vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
+						    &seen_store))
+			maybe_set_vectorized_backedge_value (loop_vinfo,
+							     stmt_info);
 		    }
 		}
 	      gsi_next (&si);
