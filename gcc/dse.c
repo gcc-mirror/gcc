@@ -1728,8 +1728,7 @@ find_shift_sequence (poly_int64 access_size,
      the machine.  */
 
   opt_scalar_int_mode new_mode_iter;
-  FOR_EACH_MODE_FROM (new_mode_iter,
-		      smallest_int_mode_for_size (access_size * BITS_PER_UNIT))
+  FOR_EACH_MODE_IN_CLASS (new_mode_iter, MODE_INT)
     {
       rtx target, new_reg, new_lhs;
       rtx_insn *shift_seq, *insn;
@@ -1738,6 +1737,8 @@ find_shift_sequence (poly_int64 access_size,
       new_mode = new_mode_iter.require ();
       if (GET_MODE_BITSIZE (new_mode) > BITS_PER_WORD)
 	break;
+      if (maybe_lt (GET_MODE_SIZE (new_mode), access_size))
+	continue;
 
       /* If a constant was stored into memory, try to simplify it here,
 	 otherwise the cost of the shift might preclude this optimization
