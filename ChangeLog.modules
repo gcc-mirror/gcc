@@ -1,5 +1,32 @@
 2020-12-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_PURVIEW_P, DECL_MODULE_IMPORT_P)
+	(DECL_MODULE_ENTITY_P): New.
+	(DECL_MODULE_PENDING_SPECIALIZATIONS_P): New.
+	(DECL_MODULE_PENDING_MEMBERS_P): New.
+	(DECL_MODULE_ATTACHMENTS_P): New.
+	(DECL_MODULE_EXPORT_P): New.
+	(struct lang_decl_base): Shrink sel field.  Add new
+	module-specific fields.
+
+	gcc/cp/
+	* cp-tree.h (DECL_MODULE_PENDING_SPECIALIZATIONS_P)
+	(DECL_MODULE_PENDING_MEMBERS_P): Use same module_pending_p field.
+	(DECL_ATTACHED_DECLS_P): Rename to ...
+	(DECL_MODULE_ATTACHEMENTS_P): ... this.  Use module_pending_p
+	field.
+	(struct lang_decl_base): Replace module_pending_specializations_p,
+	module_pending_members_p, attached_decls_p fields with single
+	module_pending_p field.
+	* module.cc (trees_{in,out}::lang_decl_bools): Only stream
+	module_pending_p for vars & fns.
+	(trees_{in,out}::decl_value): Adjust DECL_MODULE_ATTACHMENTS_P
+	changes.
+	(trees_out::get_merge_kind): Likewise.
+	(trees_in::key_mergeable, maybe_attach_decl): Likewise.
+	* lex.c (cxx_dup_lang_specific_decl): Directly clear some module flags.
+
 	Merge trunk 05f7a2afe8f
 	C++ Module Binding Vector
 

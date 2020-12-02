@@ -1005,10 +1005,13 @@ cxx_dup_lang_specific_decl (tree node)
   struct lang_decl *ld = (struct lang_decl *) ggc_internal_alloc (size);
   memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;
-  DECL_MODULE_ENTITY_P (node) = false;
-  DECL_MODULE_IMPORT_P (node) = false;
-  DECL_ATTACHED_DECLS_P (node) = false;
 
+  /* Directly clear some flags that do not apply to the copy
+     (module_purview_p still does).  */
+  ld->u.base.module_entity_p = false;
+  ld->u.base.module_import_p = false;
+  ld->u.base.module_pending_p = false;
+  
   if (GATHER_STATISTICS)
     {
       tree_node_counts[(int)lang_decl] += 1;

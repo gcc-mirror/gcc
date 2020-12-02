@@ -1685,26 +1685,24 @@ check_constraint_info (tree t)
 /* True if there are unloaded specializations keyed to this template.  */
 #define DECL_MODULE_PENDING_SPECIALIZATIONS_P(NODE)	\
   (DECL_LANG_SPECIFIC (TEMPLATE_DECL_CHECK (NODE))	\
-   ->u.base.module_pending_specializations_p)
+   ->u.base.module_pending_p)
 
 /* True if this class has unloaded members.  These should be loaded
-   before we do member lookups.  While this may be better on the
-   classtype, I think we can get this behaviour for enums too.  But
-   perhaps those need to be immediately loaded?  (Particularly if
-   unscoped).  */
+   before we do member lookups.   */
 #define DECL_MODULE_PENDING_MEMBERS_P(NODE)		\
   (DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))		\
-   ->u.base.module_pending_members_p)
+   ->u.base.module_pending_p)
+
+/* DECL that has attached decls for ODR-relatedness.  */
+#define DECL_MODULE_ATTACHMENTS_P(NODE)			\
+  (DECL_LANG_SPECIFIC (TREE_CHECK2(NODE,FUNCTION_DECL,VAR_DECL))\
+   ->u.base.module_pending_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can appear
    at namespace scope (function, var, type, template, const or
    namespace).  templates copy from their template_result, consts have
    it for unscoped enums.  */
 #define DECL_MODULE_EXPORT_P(NODE) TREE_LANG_FLAG_3 (NODE)
-
-/* DECL that has attached decls for ODR-relatedness.  */
-#define DECL_ATTACHED_DECLS_P(NODE)			\
-  (DECL_LANG_SPECIFIC (NODE)->u.base.attached_decls_p)
 
 
 /* The list of local parameters introduced by this requires-expression,
@@ -2739,18 +2737,18 @@ struct GTY(()) lang_decl_base {
   unsigned var_declared_inline_p : 1;	   /* var */
   unsigned dependent_init_p : 1;	   /* var */
 
+  /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, TEMPLATE,
+     NAMESPACE decls.  */
   unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
   unsigned module_import_p : 1;     	   /* from an import */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */
-  /* Has specializations or members yet to load.  */
-  unsigned module_pending_specializations_p : 1;
-  unsigned module_pending_members_p : 1;
+  /* TEMPLATE_DECL has specializations or,
+     TYPE_DECL has class members yet to load, or
+     VAR_DECL or FUNCTION_DECL has attached decls.     */
+  unsigned module_pending_p : 1;
 
-  /* Is in the decl-attached hash table, (with attached decls).  */
-  unsigned attached_decls_p : 1;
-  
-  /* 10 spare bits.  */
+  /* 12 spare bits.  */
 };
 
 /* True for DECL codes which have template info and access.  */

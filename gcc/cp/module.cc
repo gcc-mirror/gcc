@@ -5594,7 +5594,8 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
   WB (lang->u.base.module_purview_p);
-  WB (lang->u.base.attached_decls_p);
+  if (VAR_OR_FUNCTION_DECL_P (t))
+    WB (lang->u.base.module_pending_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -5663,7 +5664,8 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.var_declared_inline_p);
   RB (lang->u.base.dependent_init_p);
   RB (lang->u.base.module_purview_p);
-  RB (lang->u.base.attached_decls_p);
+  if (VAR_OR_FUNCTION_DECL_P (t))
+    RB (lang->u.base.module_pending_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -7764,7 +7766,10 @@ trees_out::decl_value (tree decl, depset *dep)
       install_entity (decl, dep);
     }
 
-  if (inner && DECL_LANG_SPECIFIC (inner) && DECL_ATTACHED_DECLS_P (inner)
+  if (inner
+      && VAR_OR_FUNCTION_DECL_P (inner)
+      && DECL_LANG_SPECIFIC (inner)
+      && DECL_MODULE_ATTACHMENTS_P (inner)
       && !is_key_order ())
     {
       /* Stream the attached entities.  */
@@ -8057,7 +8062,10 @@ trees_in::decl_value ()
   bool installed = install_entity (existing);
   bool is_new = existing == decl;
 
-  if (inner && DECL_LANG_SPECIFIC (inner) && DECL_ATTACHED_DECLS_P (inner))
+  if (inner
+      && VAR_OR_FUNCTION_DECL_P (inner)
+      && DECL_LANG_SPECIFIC (inner)
+      && DECL_MODULE_ATTACHMENTS_P (inner))
     {
       /* Read and maybe install the attached entities.  */
       attachset *set
@@ -10214,7 +10222,7 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 		  = LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR
 					     (TREE_TYPE (decl))))
 		if (TREE_CODE (scope) == VAR_DECL
-		    && DECL_ATTACHED_DECLS_P (scope))
+		    && DECL_MODULE_ATTACHMENTS_P (scope))
 		  {
 		    mk = MK_attached;
 		    break;
@@ -10822,7 +10830,8 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    if (mk == MK_attached)
 	      {
 		if (DECL_LANG_SPECIFIC (name)
-		    && DECL_ATTACHED_DECLS_P (name))
+		    && VAR_OR_FUNCTION_DECL_P (name)
+		    && DECL_MODULE_ATTACHMENTS_P (name))
 		  if (attachset *set = attached_table->get (DECL_UID (name)))
 		    if (key.index < set->num)
 		      {
@@ -18455,7 +18464,7 @@ maybe_attach_decl (tree ctx, tree decl)
   if (attached_table->add (DECL_UID (ctx), decl))
     {
       retrofit_lang_decl (ctx);
-      DECL_ATTACHED_DECLS_P (ctx) = true;
+      DECL_MODULE_ATTACHMENTS_P (ctx) = true;
     }
 }
 
