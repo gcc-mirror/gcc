@@ -20695,12 +20695,23 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	  else
 	    add_AT_int (die, attr, TREE_INT_CST_LOW (value));
 	}
-      else
+      else if (dwarf_version >= 5
+	       && TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (value))) == 128)
 	/* Otherwise represent the bound as an unsigned value with
 	   the precision of its type.  The precision and signedness
 	   of the type will be necessary to re-interpret it
 	   unambiguously.  */
 	add_AT_wide (die, attr, wi::to_wide (value));
+      else
+	{
+	  rtx v = immed_wide_int_const (wi::to_wide (value),
+					TYPE_MODE (TREE_TYPE (value)));
+	  dw_loc_descr_ref loc
+	    = loc_descriptor (v, TYPE_MODE (TREE_TYPE (value)),
+			      VAR_INIT_STATUS_INITIALIZED);
+	  if (loc)
+	    add_AT_loc (die, attr, loc);
+	}
       return;
     }
 
