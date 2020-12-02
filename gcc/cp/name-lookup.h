@@ -73,8 +73,8 @@ struct GTY(()) cxx_saved_binding {
    setting the bottom bit to mark a lazy value.
    GTY doesn't like an array of union, so hve a containing struct.  */
 
-struct GTY(()) mc_slot {
-  union GTY((desc ("%1.is_lazy ()"))) mc_slot_lazy {
+struct GTY(()) binding_slot {
+  union GTY((desc ("%1.is_lazy ()"))) binding_slot_lazy {
     tree GTY((tag ("false"))) binding;
   } u;
 
@@ -83,7 +83,7 @@ struct GTY(()) mc_slot {
     gcc_checking_assert (!is_lazy ());
     return u.binding;
   }
-  mc_slot &operator= (tree t)
+  binding_slot &operator= (tree t)
   {
     u.binding = t;
     return *this;
@@ -117,53 +117,53 @@ struct GTY(()) mc_slot {
 
    The cluster representation packs well on a 64-bit system.  */
 
-#define MODULE_VECTOR_SLOTS_PER_CLUSTER 2
-struct mc_index {
+#define BINDING_VECTOR_SLOTS_PER_CLUSTER 2
+struct binding_index {
   unsigned short base;
   unsigned short span;
 };
 
-struct GTY(()) module_cluster
+struct GTY(()) binding_cluster
 {
-  mc_index GTY((skip)) indices[MODULE_VECTOR_SLOTS_PER_CLUSTER];
-  mc_slot slots[MODULE_VECTOR_SLOTS_PER_CLUSTER];
+  binding_index GTY((skip)) indices[BINDING_VECTOR_SLOTS_PER_CLUSTER];
+  binding_slot slots[BINDING_VECTOR_SLOTS_PER_CLUSTER];
 };
 
 /* These two fields overlay lang flags.  So don't use those.  */
-#define MODULE_VECTOR_ALLOC_CLUSTERS(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.u.dependence_info.clique)
-#define MODULE_VECTOR_NUM_CLUSTERS(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.u.dependence_info.base)
-#define MODULE_VECTOR_CLUSTER_BASE(NODE) \
-  (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec)
-#define MODULE_VECTOR_CLUSTER_LAST(NODE) \
-  (&MODULE_VECTOR_CLUSTER (NODE, MODULE_VECTOR_NUM_CLUSTERS (NODE) - 1))
-#define MODULE_VECTOR_CLUSTER(NODE,IX) \
-  (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec[IX])
+#define BINDING_VECTOR_ALLOC_CLUSTERS(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.u.dependence_info.clique)
+#define BINDING_VECTOR_NUM_CLUSTERS(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.u.dependence_info.base)
+#define BINDING_VECTOR_CLUSTER_BASE(NODE) \
+  (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->vec)
+#define BINDING_VECTOR_CLUSTER_LAST(NODE) \
+  (&BINDING_VECTOR_CLUSTER (NODE, BINDING_VECTOR_NUM_CLUSTERS (NODE) - 1))
+#define BINDING_VECTOR_CLUSTER(NODE,IX) \
+  (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->vec[IX])
 
-struct GTY(()) tree_module_vec {
+struct GTY(()) tree_binding_vec {
   struct tree_base base;
   tree name;
-  module_cluster GTY((length ("%h.base.u.dependence_info.base"))) vec[1];
+  binding_cluster GTY((length ("%h.base.u.dependence_info.base"))) vec[1];
 };
 
 /* The name of a module vector.  */
-#define MODULE_VECTOR_NAME(NODE) \
-  (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->name)
+#define BINDING_VECTOR_NAME(NODE) \
+  (((tree_binding_vec *)BINDING_VECTOR_CHECK (NODE))->name)
 
-/* tree_module_vec does uses  base.u.dependence_info.base field for
+/* tree_binding_vec does uses  base.u.dependence_info.base field for
    length.  It does not have lang_flag etc available!  */
 
 /* These two flags note if a module-vector contains deduplicated
    bindings (i.e. multiple declarations in different imports).  */
 /* This binding contains duplicate references to a global module
    entity.  */
-#define MODULE_VECTOR_GLOBAL_DUPS_P(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.static_flag)
+#define BINDING_VECTOR_GLOBAL_DUPS_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.static_flag)
 /* This binding contains duplicate references to a partioned module
    entity.  */
-#define MODULE_VECTOR_PARTITION_DUPS_P(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.volatile_flag)
+#define BINDING_VECTOR_PARTITION_DUPS_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.volatile_flag)
 
 /* These two flags indicate the provenence of the bindings on this
    particular vector slot.  We can of course determine this from slot
@@ -177,15 +177,15 @@ struct GTY(()) tree_module_vec {
   (OVERLOAD_CHECK (NODE)->base.volatile_flag)
 
 /* There are specializations of a template keyed to this binding.  */
-#define MODULE_VECTOR_PENDING_SPECIALIZATIONS_P(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.public_flag)
+#define BINDING_VECTOR_PENDING_SPECIALIZATIONS_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.public_flag)
 /* The key is in a header unit (not a named module partition or
    primary).  */
-#define MODULE_VECTOR_PENDING_IS_HEADER_P(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.protected_flag)
+#define BINDING_VECTOR_PENDING_IS_HEADER_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.protected_flag)
 /* The key is in a named module (primary or partition).  */
-#define MODULE_VECTOR_PENDING_IS_PARTITION_P(NODE) \
-  (MODULE_VECTOR_CHECK (NODE)->base.private_flag)
+#define BINDING_VECTOR_PENDING_IS_PARTITION_P(NODE) \
+  (BINDING_VECTOR_CHECK (NODE)->base.private_flag)
 
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);

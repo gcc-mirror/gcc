@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    exception is the current TU, which always occupies slot zero (even
    when it is not a module).
 
-   Imported decls occupy an entity_ary, an array of mc_slots, indexed
+   Imported decls occupy an entity_ary, an array of binding_slots, indexed
    by importing module and index within that module.  A flat index is
    used, as each module reserves a contiguous range of indices.
    Initially each slot indicates the CMI section containing the
@@ -3606,9 +3606,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   /* Read a section.  */
-  bool load_section (unsigned snum, mc_slot *mslot);
+  bool load_section (unsigned snum, binding_slot *mslot);
   /* Lazily read a section.  */
-  bool lazy_load (unsigned index, mc_slot *mslot);
+  bool lazy_load (unsigned index, binding_slot *mslot);
 
  public:
   /* Juggle a limited number of file numbers.  */
@@ -3898,7 +3898,7 @@ static entity_map_t *entity_map;
 /* Doesn't need GTYing, because any tree referenced here is also
    findable by, symbol table, specialization table, return type of
    reachable function.  */
-static vec<mc_slot, va_heap, vl_embed> *entity_ary;
+static vec<binding_slot, va_heap, vl_embed> *entity_ary;
 
 /* Members entities of imported classes that are defined in this TU.
    These are where the entity's context is not from the current TU.
@@ -6000,7 +6000,7 @@ trees_out::core_vals (tree t)
     case DEFERRED_PARSE:	/* Expanded upon completion of
 				   outermost class.  */
     case IDENTIFIER_NODE:	/* Streamed specially.  */
-    case MODULE_VECTOR:		/* Only in namespace-scope symbol
+    case BINDING_VECTOR:		/* Only in namespace-scope symbol
 				   table.  */
     case SSA_NAME:
     case TRANSLATION_UNIT_DECL: /* There is only one, it is a
@@ -6487,7 +6487,7 @@ trees_in::core_vals (tree t)
     case ARGUMENT_PACK_SELECT:
     case DEFERRED_PARSE:
     case IDENTIFIER_NODE:
-    case MODULE_VECTOR:
+    case BINDING_VECTOR:
     case SSA_NAME:
     case TRANSLATION_UNIT_DECL:
     case USERDEF_LITERAL:
@@ -7512,7 +7512,7 @@ trees_in::install_entity (tree decl)
 
   /* Insert the real decl into the entity ary.  */
   unsigned ident = state->entity_lwm + entity_index - 1;
-  mc_slot &elt = (*entity_ary)[ident];
+  binding_slot &elt = (*entity_ary)[ident];
 
   /* See module_state::read_pendings for how this got set.  */
   int pending = elt.get_lazy () & 3;
@@ -9692,7 +9692,7 @@ trees_in::tree_node (bool is_use)
 	  set_overrun ();
 	if (!get_overrun ())
 	  {
-	    mc_slot *slot = &(*entity_ary)[from->entity_lwm + ident];
+	    binding_slot *slot = &(*entity_ary)[from->entity_lwm + ident];
 	    if (slot->is_lazy ())
 	      if (!from->lazy_load (ident, slot))
 		set_overrun ();
@@ -10853,9 +10853,9 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		    /* Note that we now have duplicates to deal with in
 		       name lookup.  */
 		    if (is_mod)
-		      MODULE_VECTOR_PARTITION_DUPS_P (mvec) = true;
+		      BINDING_VECTOR_PARTITION_DUPS_P (mvec) = true;
 		    else
-		      MODULE_VECTOR_GLOBAL_DUPS_P (mvec) = true;
+		      BINDING_VECTOR_GLOBAL_DUPS_P (mvec) = true;
 		  }
 	      }
 	    break;
@@ -13603,7 +13603,7 @@ pendset_lazy_load (pendset *pendings, bool specializations_p)
       else
 	{
 	  module_state *module = import_entity_module (index);
-	  mc_slot *slot = &(*entity_ary)[index];
+	  binding_slot *slot = &(*entity_ary)[index];
 	  if (!slot->is_lazy ())
 	    dump () && dump ("Specialiation %M[%u] already loaded",
 			     module, index - module->entity_lwm);
@@ -14948,7 +14948,7 @@ module_state::read_namespace (bytes_in &sec)
 	  module_state *from = (*modules)[origin];
 	  if (ns_num < from->entity_num)
 	    {
-	      mc_slot &slot = (*entity_ary)[from->entity_lwm + ns_num];
+	      binding_slot &slot = (*entity_ary)[from->entity_lwm + ns_num];
 
 	      if (!slot.is_lazy ())
 		ns = slot;
@@ -15225,7 +15225,7 @@ module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
       if (sec.get_overrun ())
 	break;
 
-      mc_slot slot;
+      binding_slot slot;
       slot.u.binding = NULL_TREE;
       if (snum)
 	slot.set_lazy (snum << 2);
@@ -15370,7 +15370,7 @@ module_state::read_pendings (unsigned count)
       if (pending_table->add (ns ? key_ident : ~key_ident,
 			      ent_index + entity_lwm))
 	{
-	  mc_slot &slot = (*entity_ary)[key_ident];
+	  binding_slot &slot = (*entity_ary)[key_ident];
 	  if (slot.is_lazy ())
 	    slot.or_lazy (ns ? 1 : 2);
 	  else
@@ -17481,7 +17481,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  if (CHECKING_P)
 	    for (unsigned jx = 0; jx != imp->entity_num; jx++)
 	      {
-		mc_slot *slot = &(*entity_ary)[imp->entity_lwm + jx];
+		binding_slot *slot = &(*entity_ary)[imp->entity_lwm + jx];
 		gcc_checking_assert (!slot->is_lazy ());
 	      }
 	}
@@ -17965,7 +17965,7 @@ module_state::maybe_defrost ()
    when reading back in.  */
 
 bool
-module_state::load_section (unsigned snum, mc_slot *mslot)
+module_state::load_section (unsigned snum, binding_slot *mslot)
 {
   if (from ()->get_error ())
     return false;
@@ -18617,7 +18617,7 @@ module_state::freeze_an_elf ()
 /* Load the lazy slot *MSLOT, INDEX'th slot of the module.  */
 
 bool
-module_state::lazy_load (unsigned index, mc_slot *mslot)
+module_state::lazy_load (unsigned index, binding_slot *mslot)
 {
   unsigned n = dump.push (this);
 
@@ -18639,7 +18639,7 @@ module_state::lazy_load (unsigned index, mc_slot *mslot)
    for diagnostics).  */
 
 void
-lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot)
+lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 {
   int count = errorcount + warningcount;
 

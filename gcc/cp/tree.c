@@ -2232,13 +2232,13 @@ make_module_vec (tree name, unsigned clusters MEM_STAT_DECL)
   /* Stored in an unsigned short, but we're limited to the number of
      modules anyway.  */
   gcc_checking_assert (clusters <= (unsigned short)(~0));
-  size_t length = (clusters * sizeof (module_cluster)
-		   + sizeof (tree_module_vec) - sizeof (module_cluster));
+  size_t length = (offsetof (tree_binding_vec, vec)
+		   + clusters * sizeof (binding_cluster));
   tree vec = ggc_alloc_cleared_tree_node_stat (length PASS_MEM_STAT);
-  TREE_SET_CODE (vec, MODULE_VECTOR);
-  MODULE_VECTOR_NAME (vec) = name;
-  MODULE_VECTOR_ALLOC_CLUSTERS (vec) = clusters;
-  MODULE_VECTOR_NUM_CLUSTERS (vec) = 0;
+  TREE_SET_CODE (vec, BINDING_VECTOR);
+  BINDING_VECTOR_NAME (vec) = name;
+  BINDING_VECTOR_ALLOC_CLUSTERS (vec) = clusters;
+  BINDING_VECTOR_NUM_CLUSTERS (vec) = 0;
 
   return vec;
 }
