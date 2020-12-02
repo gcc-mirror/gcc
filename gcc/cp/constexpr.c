@@ -1933,11 +1933,20 @@ cxx_eval_dynamic_cast_fn (const constexpr_ctx *ctx, tree call,
      to the object under construction or destruction, this object is
      considered to be a most derived object that has the type of the
      constructor or destructor's class.  */
-  tree vtable = build_vfield_ref (obj, TREE_TYPE (obj));
+  tree vtable = build_vfield_ref (obj, objtype);
   vtable = cxx_eval_constant_expression (ctx, vtable, /*lval*/false,
 					 non_constant_p, overflow_p);
   if (*non_constant_p)
     return call;
+  /* With -fsanitize=vptr, we initialize all vtable pointers to null,
+     so it's possible that we got a null pointer now.  */
+  if (integer_zerop (vtable))
+    {
+      if (!ctx->quiet)
+	error_at (loc, "virtual table pointer is used uninitialized");
+      *non_constant_p = true;
+      return integer_zero_node;
+    }
   /* VTABLE will be &_ZTV1A + 16 or similar, get _ZTV1A.  */
   vtable = extract_obj_from_addr_offset (vtable);
   const tree mdtype = DECL_CONTEXT (vtable);
