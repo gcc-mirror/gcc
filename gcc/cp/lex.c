@@ -384,7 +384,7 @@ interface_strcmp (const char* s)
 /* We've just read a cpp-token, figure out our next state.  Hey, this
    is a hand-coded co-routine!  */
 
-struct token_coro
+struct module_token_filter
 {
   enum state
   {
@@ -405,7 +405,7 @@ struct token_coro
   module_state *module;
   module_state *import;
 
-  token_coro (cpp_reader *reader)
+  module_token_filter (cpp_reader *reader)
     : state (idle), is_import (false),
     got_export (false), got_colon (false), want_dot (false),
     token_loc (UNKNOWN_LOCATION),
@@ -537,14 +537,14 @@ struct token_coro
 uintptr_t
 module_token_cdtor (cpp_reader *pfile, uintptr_t data_)
 {
-  if (token_coro *coro = reinterpret_cast<token_coro *> (data_))
+  if (module_token_filter *filter = reinterpret_cast<module_token_filter *> (data_))
     {
       preprocessed_module (pfile);
-      delete coro;
+      delete filter;
       data_ = 0;
     }
   else if (modules_p ())
-    data_ = reinterpret_cast <uintptr_t > (new token_coro (pfile));
+    data_ = reinterpret_cast<uintptr_t > (new module_token_filter (pfile));
 
   return data_;
 }
@@ -553,8 +553,8 @@ uintptr_t
 module_token_lang (int type, int keyword, tree value, location_t loc,
 		   uintptr_t data_)
 {
-  token_coro *coro = reinterpret_cast <token_coro *> (data_);
-  return coro->resume (type, keyword, value, loc);
+  module_token_filter *filter = reinterpret_cast<module_token_filter *> (data_);
+  return filter->resume (type, keyword, value, loc);
 }
 
 uintptr_t
