@@ -6759,6 +6759,8 @@ extern tree unqualified_fn_lookup_error		(cp_expr);
 extern tree make_conv_op_name			(tree);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
+extern bool maybe_add_lang_decl_raw		(tree, bool decomp_p);
+extern bool maybe_add_lang_type_raw		(tree);
 extern void retrofit_lang_decl			(tree);
 extern void fit_decomposition_lang_decl		(tree, tree);
 extern tree copy_decl				(tree CXX_MEM_STAT_INFO);
