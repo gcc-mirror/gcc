@@ -259,15 +259,15 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	for (unsigned ix = 0; ix != len; ix++)
 	  {
 	    binding_cluster *cluster = &BINDING_VECTOR_CLUSTER (node, ix);
-	    char pfx[20];
+	    char pfx[24];
 	    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      if (cluster->indices[jx].span)
 		{
 		  int len = sprintf (pfx, "module:%u",
 				     cluster->indices[jx].base);
 		  if (cluster->indices[jx].span > 1)
-		    len
-		      += sprintf (&pfx[len], "(+%u)", cluster->indices[jx].span);
+		    len += sprintf (&pfx[len], "(+%u)",
+				    cluster->indices[jx].span);
 		  len += sprintf (&pfx[len], " cluster:%u/%u", ix, jx);
 		  binding_slot &slot = cluster->slots[jx];
 		  if (slot.is_lazy ())
