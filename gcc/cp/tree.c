@@ -2993,6 +2993,32 @@ array_type_nelts_total (tree type)
   return sz;
 }
 
+/* Return true if FNDECL is std::source_location::current () method.  */
+
+bool
+source_location_current_p (tree fndecl)
+{
+  gcc_checking_assert (TREE_CODE (fndecl) == FUNCTION_DECL
+		       && DECL_IMMEDIATE_FUNCTION_P (fndecl));
+  if (DECL_NAME (fndecl) == NULL_TREE
+      || TREE_CODE (TREE_TYPE (fndecl)) != FUNCTION_TYPE
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != RECORD_TYPE
+      || DECL_CONTEXT (fndecl) != TREE_TYPE (TREE_TYPE (fndecl))
+      || !id_equal (DECL_NAME (fndecl), "current"))
+    return false;
+
+  tree source_location = DECL_CONTEXT (fndecl);
+  if (TYPE_NAME (source_location) == NULL_TREE
+      || TREE_CODE (TYPE_NAME (source_location)) != TYPE_DECL
+      || TYPE_IDENTIFIER (source_location) == NULL_TREE
+      || !id_equal (TYPE_IDENTIFIER (source_location),
+		    "source_location")
+      || !decl_in_std_namespace_p (TYPE_NAME (source_location)))
+    return false;
+
+  return true;
+}
+
 struct bot_data
 {
   splay_tree target_remap;

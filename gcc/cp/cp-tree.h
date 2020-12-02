@@ -7478,6 +7478,7 @@ extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
 extern bool array_of_unknown_bound_p		(const_tree);
+extern bool source_location_current_p		(tree);
 extern tree break_out_target_exprs		(tree, bool = false);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
 extern tree replace_placeholders		(tree, tree, bool * = NULL);
