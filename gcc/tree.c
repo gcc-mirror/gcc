@@ -2185,7 +2185,7 @@ build_constructor_from_vec (tree type, const vec<tree, va_gc> *vals)
 {
   vec<constructor_elt, va_gc> *v = NULL;
 
-  for (tree t : *vals)
+  for (tree t : vals)
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, t);
 
   return build_constructor (type, v);
