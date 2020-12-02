@@ -1864,8 +1864,11 @@ default_print_patchable_function_entry (FILE *file,
       patch_area_number++;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
 
+      unsigned int flags = SECTION_WRITE | SECTION_RELRO;
+      if (HAVE_GAS_SECTION_LINK_ORDER)
+	flags |= SECTION_LINK_ORDER;
       switch_to_section (get_section ("__patchable_function_entries",
-				      SECTION_WRITE | SECTION_RELRO, NULL));
+				      flags, current_function_decl));
       assemble_align (POINTER_SIZE);
       fputs (asm_op, file);
       assemble_name_raw (file, buf);

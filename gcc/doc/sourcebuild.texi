@@ -2462,6 +2462,9 @@ Target supports wide characters.
 @subsubsection Other attributes
 
 @table @code
+@item R_flag_in_section
+Target supports the 'R' flag in .section directive in assembly inputs.
+
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 
@@ -2544,6 +2547,9 @@ Target supports the @code{noinit} variable attribute.
 
 @item nonpic
 Target does not generate PIC by default.
+
+@item o_flag_in_section
+Target supports the 'o' flag in .section directive in assembly inputs.
 
 @item offload_gcn
 Target has been configured for OpenACC/OpenMP offloading on AMD GCN.

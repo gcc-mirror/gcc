@@ -13740,9 +13740,9 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 {
   gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
 
-  special_array_member arkbuf;
+  special_array_member sambuf;
   if (!sam)
-    sam = &arkbuf;
+    sam = &sambuf;
   *sam = special_array_member::none;
 
   /* The object/argument referenced by the COMPONENT_REF and its type.  */
@@ -13756,7 +13756,13 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
     {
       tree memtype = TREE_TYPE (member);
       if (TREE_CODE (memtype) != ARRAY_TYPE)
-	return memsize;
+	/* DECL_SIZE may be less than TYPE_SIZE in C++ when referring
+	   to the type of a class with a virtual base which doesn't
+	   reflect the size of the virtual's members (see pr97595).
+	   If that's the case fail for now and implement something
+	   more robust in the future.  */
+	return (tree_int_cst_equal (memsize, TYPE_SIZE_UNIT (memtype))
+		? memsize : NULL_TREE);
 
       bool trailing = array_at_struct_end_p (ref);
       bool zero_length = integer_zerop (memsize);

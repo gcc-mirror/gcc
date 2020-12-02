@@ -1,3 +1,114 @@
+2020-12-01  Eugene Rozenfeld  <Eugene.Rozenfeld@microsoft.com>
+
+	* gcc.dg/pr96708-negative.c: New test.
+	* gcc.dg/pr96708-positive.c: New test.
+
+2020-12-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97595
+	* g++.dg/warn/Warray-bounds-14.C: New test.
+	* g++.dg/warn/Wstringop-overflow-6.C: New test.
+
+2020-12-01  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/pr96480.c: Disable jump table optimization
+
+2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* c-c++-common/cpp/wide-narrow-predef-macros.c: New test.
+
+2020-12-01  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/pr46309-2.c: Add -fno-bit-tests and -fno-jump-tables
+	to avoid compromising the test.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98072
+	* c-c++-common/gomp/depobj-2.c: New test.
+
+2020-12-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97373
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-25.c: New test.
+
+2020-12-01  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/tree-ssa/if-to-switch-1.C: Do not allow newlines
+	in .* pattern.
+	* gcc.dg/tree-ssa/if-to-switch-1.c: Likewise.
+	* gcc.dg/tree-ssa/if-to-switch-2.c: Likewise.
+	* gcc.dg/tree-ssa/if-to-switch-3.c: Likewise.
+	* gcc.dg/tree-ssa/if-to-switch-5.c: Likewise.
+
+2020-12-01  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/98085
+	* g++.dg/tree-ssa/if-to-switch-1.C: Do not expect precise number
+	of BBs.
+	* gcc.dg/tree-ssa/if-to-switch-1.c: Likewise.
+	* gcc.dg/tree-ssa/if-to-switch-2.c: Likewise. Find better name
+	for the function.
+	* gcc.dg/tree-ssa/if-to-switch-3.c: Likewise. Find better name
+	for the function.
+	* gcc.dg/tree-ssa/if-to-switch-5.c: Likewise.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97954
+	* gcc.dg/pr97954.c: New test.
+
+2020-12-01  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* lib/hwasan-dg.exp (check_effective_target_hwaddress_exec): Fix
+	check for correct kernel version.
+
+2020-12-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/14799
+	PR ipa/88702
+	* gcc.dg/tree-ssa/pr96480.c: Disable if-to-switch conversion.
+	* gcc.dg/tree-ssa/reassoc-32.c: Likewise.
+	* g++.dg/tree-ssa/if-to-switch-1.C: New test.
+	* gcc.dg/tree-ssa/if-to-switch-1.c: New test.
+	* gcc.dg/tree-ssa/if-to-switch-2.c: New test.
+	* gcc.dg/tree-ssa/if-to-switch-3.c: New test.
+	* gcc.dg/tree-ssa/if-to-switch-4.c: New test.
+	* gcc.dg/tree-ssa/if-to-switch-5.c: New test.
+	* gcc.dg/tree-ssa/if-to-switch-6.c: New test.
+	* gcc.dg/tree-ssa/if-to-switch-7.c: New test.
+	* gcc.dg/tree-ssa/if-to-switch-8.c: New test.
+
+2020-12-01  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* gcc.target/s390/float_t-1.c: New test.
+	* gcc.target/s390/float_t-2.c: New test.
+
+2020-12-01  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/torture/pr93347.C: Reduce and remove LIT keywords.
+
+2020-12-01  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/98057
+	* g++.dg/ipa/pr98057.C: New test.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98063
+	* gcc.target/i386/pr98063.c: New test.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/debug/dwarf2/lang-cpp17.C: New test.
+	* g++.dg/debug/dwarf2/lang-cpp20.C: New test.
+
+2020-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/97989
+	* gcc.dg/cpp/pr97989-1.c: New test.
+	* gcc.dg/cpp/pr97989-2.c: New test.
+
 2020-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/analyzer_gil_plugin.c: New test.

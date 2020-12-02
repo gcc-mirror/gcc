@@ -2190,6 +2190,8 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " optimize_size");
   if (parallelized_function)
     fprintf (f, " parallelized_function");
+  if (DECL_IS_MALLOC (decl))
+    fprintf (f, " decl_is_malloc");
   if (DECL_IS_OPERATOR_NEW_P (decl))
     fprintf (f, " %soperator_new",
 	     DECL_IS_REPLACEABLE_OPERATOR (decl) ? "replaceable_" : "");

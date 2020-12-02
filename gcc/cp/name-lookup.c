@@ -251,7 +251,7 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
       unsigned want = ((BINDING_SLOTS_FIXED + partition_slot + (create < 0)
 			+ BINDING_VECTOR_SLOTS_PER_CLUSTER - 1)
 		       / BINDING_VECTOR_SLOTS_PER_CLUSTER);
-      tree new_vec = make_module_vec (name, want);
+      tree new_vec = make_binding_vec (name, want);
       BINDING_VECTOR_NUM_CLUSTERS (new_vec) = want;
       binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (new_vec);
 
@@ -347,7 +347,7 @@ append_imported_binding_slot (tree *slot, tree name, unsigned ix)
       if (want > (unsigned short)~0)
 	want = (unsigned short)~0;
 
-      tree new_vec = make_module_vec (name, want);
+      tree new_vec = make_binding_vec (name, want);
       BINDING_VECTOR_NUM_CLUSTERS (new_vec) = have + 1;
       memcpy (BINDING_VECTOR_CLUSTER_BASE (new_vec),
 	      BINDING_VECTOR_CLUSTER_BASE (*slot),

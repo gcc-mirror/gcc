@@ -1987,8 +1987,10 @@ class auto_suppress_location_wrappers
    so they must be checked as well.  */
 
 #define TYPE_UID(NODE) (TYPE_CHECK (NODE)->type_common.uid)
-/* Type size in bits as a tree expression.  Need not be constant
-   and may be null.  */
+/* Type size in bits as a tree expression.  Need not be constant and may
+   be greater than TYPE_SIZE for a C++ FIELD_DECL representing a base
+   class subobject with its own virtual base classes (which are laid out
+   separately).  */
 #define TYPE_SIZE(NODE) (TYPE_CHECK (NODE)->type_common.size)
 /* Likewise, type size in bytes.  */
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type_common.size_unit)
@@ -2521,7 +2523,9 @@ extern tree vector_element_bits_tree (const_tree);
 #define DECL_INITIAL(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.initial)
 
 /* Holds the size of the datum, in bits, as a tree expression.
-   Need not be constant and may be null.  */
+   Need not be constant and may be null.  May be less than TYPE_SIZE
+   for a C++ FIELD_DECL representing a base class subobject with its
+   own virtual base classes (which are laid out separately).  */
 #define DECL_SIZE(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size)
 /* Likewise for the size in bytes.  */
 #define DECL_SIZE_UNIT(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.size_unit)

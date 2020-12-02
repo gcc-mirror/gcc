@@ -51,6 +51,7 @@ alpha port		Richard Henderson	<rth@twiddle.net>
 amdgcn port		Julian Brown		<julian@codesourcery.com>
 amdgcn port		Andrew Stubbs		<ams@codesourcery.com>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
+arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
 arm port		Ramana Radhakrishnan	<ramana.radhakrishnan@arm.com>

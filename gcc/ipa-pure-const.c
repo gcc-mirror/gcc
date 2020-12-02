@@ -1973,7 +1973,8 @@ propagate_malloc (void)
 	funct_state l = funct_state_summaries->get (node);
 	if (!node->alias
 	    && l->malloc_state == STATE_MALLOC
-	    && !node->inlined_to)
+	    && !node->inlined_to
+	    && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (node->decl))))
 	  {
 	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      fprintf (dump_file, "Function %s found to be malloc\n",

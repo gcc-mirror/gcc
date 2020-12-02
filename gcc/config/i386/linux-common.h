@@ -65,7 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #define MPX_LD_AS_NEEDED_GUARD_POP ""
 #endif
 
-extern void file_end_indicate_exec_stack_and_cet (void);
+extern void file_end_indicate_exec_stack_and_gnu_property (void);
 
 #undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END file_end_indicate_exec_stack_and_cet
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack_and_gnu_property

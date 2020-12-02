@@ -187,7 +187,7 @@ public:
   ~ssa_name_limit_t ();
 };
 
-class range_query;
+class pointer_query;
 
 /* Describes a reference to an object used in an access.  */
 struct access_ref
@@ -203,7 +203,7 @@ struct access_ref
 
   /* Return the object to which REF refers.  */
   tree get_ref (vec<access_ref> *, access_ref * = NULL, int = 1,
-		ssa_name_limit_t * = NULL, range_query * = NULL) const;
+		ssa_name_limit_t * = NULL, pointer_query * = NULL) const;
 
   /* Return true if OFFRNG is the constant zero.  */
   bool offset_zero () const
@@ -271,6 +271,52 @@ struct access_ref
   bool parmarray;
 };
 
+class range_query;
+
+/* Queries and caches compute_objsize results.  */
+class pointer_query
+{
+  DISABLE_COPY_AND_ASSIGN (pointer_query);
+
+public:
+  /* Type of the two-level cache object defined by clients of the class
+     to have pointer SSA_NAMEs cached for speedy access.  */
+  struct cache_type
+  {
+    /* 1-based indices into cache.  */
+    vec<unsigned> indices;
+    /* The cache itself.  */
+    vec<access_ref> access_refs;
+  };
+
+  /* Construct an object with the given Ranger instance and cache.  */
+  explicit pointer_query (range_query * = NULL, cache_type * = NULL);
+
+  /* Retrieve the access_ref for a variable from cache if it's there.  */
+  const access_ref* get_ref (tree, int = 1) const;
+
+  /* Retrieve the access_ref for a variable from cache or compute it.  */
+  bool get_ref (tree, access_ref*, int = 1);
+
+  /* Add an access_ref for the SSA_NAME to the cache.  */
+  void put_ref (tree, const access_ref&, int = 1);
+
+  /* Flush the cache.  */
+  void flush_cache ();
+
+  /* A Ranger instance.  May be null to use global ranges.  */
+  range_query *rvals;
+  /* Cache of SSA_NAMEs.  May be null to disable caching.  */
+  cache_type *var_cache;
+
+  /* Cache performance counters.  */
+  mutable unsigned hits;
+  mutable unsigned misses;
+  mutable unsigned failures;
+  mutable unsigned depth;
+  mutable unsigned max_depth;
+};
+
 /* Describes a pair of references used in an access by built-in
    functions like memcpy.  */
 struct access_data
@@ -295,7 +341,10 @@ struct access_data
 extern tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
 				    range_query * = NULL);
 extern tree gimple_parm_array_size (tree, wide_int[2], bool * = NULL);
+
 extern tree compute_objsize (tree, int, access_ref *, range_query * = NULL);
+/* Legacy/transitional API.  Should not be used in new code.  */
+extern tree compute_objsize (tree, int, access_ref *, pointer_query *);
 extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
 			     range_query * = NULL);
 extern bool check_access (tree, tree, tree, tree, tree,

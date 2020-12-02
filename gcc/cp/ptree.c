@@ -294,7 +294,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		 BINDING_VECTOR_ALLOC_CLUSTERS (node));
 	for (unsigned ix = 0; ix != len; ix++)
 	  {
-	    auto *cluster = &BINDING_VECTOR_CLUSTER (node, ix);
+	    binding_cluster *cluster = &BINDING_VECTOR_CLUSTER (node, ix);
 	    char pfx[20];
 	    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      if (cluster->indices[jx].span)

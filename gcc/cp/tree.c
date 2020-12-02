@@ -2227,7 +2227,7 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
 }
 
 tree
-make_module_vec (tree name, unsigned clusters MEM_STAT_DECL)
+make_binding_vec (tree name, unsigned clusters MEM_STAT_DECL)
 {
   /* Stored in an unsigned short, but we're limited to the number of
      modules anyway.  */

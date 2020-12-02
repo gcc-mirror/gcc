@@ -69,9 +69,10 @@ struct GTY(()) cxx_saved_binding {
 };
 
 /* To support lazy module loading, we squirrel away a section number
-   for unloaded bindings.  We rely on pointers being aligned and
-   setting the bottom bit to mark a lazy value.
-   GTY doesn't like an array of union, so hve a containing struct.  */
+   (and a couple of flags) in the binding slot of unloaded bindings.
+   We rely on pointers being aligned and setting the bottom bit to
+   mark a lazy value.  GTY doesn't like an array of union, so we have
+   a containing struct.  */
 
 struct GTY(()) binding_slot {
   union GTY((desc ("%1.is_lazy ()"))) binding_slot_lazy {
