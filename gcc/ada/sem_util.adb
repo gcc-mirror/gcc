@@ -14625,7 +14625,9 @@ package body Sem_Util is
 
    procedure Inherit_Predicate_Flags (Subt, Par : Entity_Id) is
    begin
-      if Present (Predicate_Function (Subt)) then
+      if Ada_Version < Ada_2012
+        or else Present (Predicate_Function (Subt))
+      then
          return;
       end if;
 
