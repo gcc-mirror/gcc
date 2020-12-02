@@ -1,3 +1,28 @@
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/94947
+	* gcc.dg/torture/pr94947-1.c: New testcase.
+	* gcc.dg/torture/pr94947-2.c: Likewise.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95133
+	* gcc.dg/pr95133.c: New testcase.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98002
+	* gcc.dg/strncmp-2.c: Call mprotect again before free.
+
 2020-11-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	PR target/91816
