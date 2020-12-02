@@ -244,7 +244,7 @@ package body Exp_Attr is
    is
       Loc      : constant Source_Ptr := Sloc (Attr);
       Comp_Typ : constant Entity_Id :=
-        Validated_View (Component_Type (Array_Typ));
+        Get_Fullest_View (Component_Type (Array_Typ));
 
       function Validate_Component
         (Obj_Id  : Entity_Id;
@@ -531,7 +531,7 @@ package body Exp_Attr is
       is
          Field_Id  : constant Entity_Id := Defining_Entity (Field);
          Field_Nam : constant Name_Id   := Chars (Field_Id);
-         Field_Typ : constant Entity_Id := Validated_View (Etype (Field_Id));
+         Field_Typ : constant Entity_Id := Get_Fullest_View (Etype (Field_Id));
          Attr_Nam  : Name_Id;
 
       begin
@@ -733,7 +733,7 @@ package body Exp_Attr is
    --  Start of processing for Build_Record_VS_Func
 
    begin
-      Typ := Rec_Typ;
+      Typ := Validated_View (Rec_Typ);
 
       --  Use the root type when dealing with a class-wide type
 
@@ -7329,7 +7329,7 @@ package body Exp_Attr is
          --  of the size of the type, not the range of the values). We write
          --  this as two tests, rather than a range check, so that static
          --  evaluation will easily remove either or both of the checks if
-         --  they can be -statically determined to be true (this happens
+         --  they can be statically determined to be true (this happens
          --  when the type of X is static and the range extends to the full
          --  range of stored values).
 
@@ -7350,12 +7350,39 @@ package body Exp_Attr is
 
          else
             declare
-               Uns : constant Boolean
-                       := Is_Unsigned_Type (Ptyp)
-                            or else (Is_Private_Type (Ptyp)
-                                      and then Is_Unsigned_Type (Btyp));
+               Uns  : constant Boolean :=
+                        Is_Unsigned_Type (Ptyp)
+                          or else (Is_Private_Type (Ptyp)
+                                    and then Is_Unsigned_Type (Btyp));
+               Size : Uint;
+               P    : Node_Id := Pref;
+
             begin
-               PBtyp := Integer_Type_For (Esize (Ptyp), Uns);
+               --  If the prefix has an entity, use the Esize from this entity
+               --  to handle in a more user friendly way the case of objects
+               --  or components with a large Size aspect: if a Size aspect is
+               --  specified, we want to read a scalar value as large as the
+               --  Size, unless the Size is larger than
+               --  System_Max_Integer_Size.
+
+               if Nkind (P) = N_Selected_Component then
+                  P := Selector_Name (P);
+               end if;
+
+               if Nkind (P) in N_Has_Entity
+                 and then Present (Entity (P))
+                 and then Esize (Entity (P)) /= Uint_0
+               then
+                  if Esize (Entity (P)) <= System_Max_Integer_Size then
+                     Size := Esize (Entity (P));
+                  else
+                     Size := UI_From_Int (System_Max_Integer_Size);
+                  end if;
+               else
+                  Size := Esize (Ptyp);
+               end if;
+
+               PBtyp := Small_Integer_Type_For (Size, Uns);
                Rewrite (N, Make_Range_Test);
             end;
          end if;
@@ -7385,7 +7412,7 @@ package body Exp_Attr is
       -------------------
 
       when Attribute_Valid_Scalars => Valid_Scalars : declare
-         Val_Typ : constant Entity_Id := Validated_View (Ptyp);
+         Val_Typ : constant Entity_Id := Get_Fullest_View (Ptyp);
          Expr    : Node_Id;
 
       begin

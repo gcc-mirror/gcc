@@ -2900,6 +2900,32 @@ package body Sem_Util is
    -----------------------------------
 
    function Cannot_Raise_Constraint_Error (Expr : Node_Id) return Boolean is
+
+      function List_Cannot_Raise_CE (L : List_Id) return Boolean;
+      --  Returns True if none of the list members cannot possibly raise
+      --  Constraint_Error.
+
+      --------------------------
+      -- List_Cannot_Raise_CE --
+      --------------------------
+
+      function List_Cannot_Raise_CE (L : List_Id) return Boolean is
+         N : Node_Id;
+      begin
+         N := First (L);
+         while Present (N) loop
+            if Cannot_Raise_Constraint_Error (N) then
+               Next (N);
+            else
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end List_Cannot_Raise_CE;
+
+   --  Start of processing for Cannot_Raise_Constraint_Error
+
    begin
       if Compile_Time_Known_Value (Expr) then
          return True;
@@ -2918,8 +2944,14 @@ package body Sem_Util is
             when N_Expanded_Name =>
                return True;
 
+            when N_Indexed_Component =>
+               return not Do_Range_Check (Expr)
+                 and then Cannot_Raise_Constraint_Error (Prefix (Expr))
+                 and then List_Cannot_Raise_CE (Expressions (Expr));
+
             when N_Selected_Component =>
-               return not Do_Discriminant_Check (Expr);
+               return not Do_Discriminant_Check (Expr)
+                 and then Cannot_Raise_Constraint_Error (Prefix (Expr));
 
             when N_Attribute_Reference =>
                if Do_Overflow_Check (Expr) then
@@ -2929,21 +2961,7 @@ package body Sem_Util is
                   return True;
 
                else
-                  declare
-                     N : Node_Id;
-
-                  begin
-                     N := First (Expressions (Expr));
-                     while Present (N) loop
-                        if Cannot_Raise_Constraint_Error (N) then
-                           Next (N);
-                        else
-                           return False;
-                        end if;
-                     end loop;
-
-                     return True;
-                  end;
+                  return List_Cannot_Raise_CE (Expressions (Expr));
                end if;
 
             when N_Type_Conversion =>

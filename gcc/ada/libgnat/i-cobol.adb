@@ -692,7 +692,7 @@ package body Interfaces.COBOL is
             --  For signed, accept all standard and non-standard signs
 
             else
-               return Item (Item'Last) in 16#A# .. 16#F#;
+               return Item (Item'Last) >= 16#A#;
             end if;
       end case;
    end Valid_Packed;
