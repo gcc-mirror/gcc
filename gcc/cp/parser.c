@@ -5814,8 +5814,11 @@ cp_parser_primary_expression (cp_parser *parser,
 	    if ((parser->local_variables_forbidden_p & LOCAL_VARS_FORBIDDEN)
 		&& local_variable_p (decl))
 	      {
-		error_at (id_expression.get_location (),
-			  "local variable %qD may not appear in this context",
+		const char *msg
+		  = (TREE_CODE (decl) == PARM_DECL
+		     ? _("parameter %qD may not appear in this context")
+		     : _("local variable %qD may not appear in this context"));
+		error_at (id_expression.get_location (), msg,
 			  decl.get_value ());
 		return error_mark_node;
 	      }
@@ -30551,7 +30554,6 @@ static void
 cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 {
   unsigned char saved_local_variables_forbidden_p;
-  tree parm, parmdecl;
 
   /* While we're parsing the default args, we might (due to the
      statement expression extension) encounter more classes.  We want
@@ -30568,17 +30570,27 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 
   begin_scope (sk_function_parms, fn);
 
-  for (parm = TYPE_ARG_TYPES (TREE_TYPE (fn)),
-	 parmdecl = DECL_ARGUMENTS (fn);
+  /* Gather the PARM_DECLs into a vec so we can keep track of them when
+     pushdecl clears DECL_CHAIN.  */
+  releasing_vec parms;
+  for (tree parmdecl = DECL_ARGUMENTS (fn); parmdecl;
+       parmdecl = DECL_CHAIN (parmdecl))
+    vec_safe_push (parms, parmdecl);
+
+  tree parm = TYPE_ARG_TYPES (TREE_TYPE (fn));
+  for (int i = 0;
        parm && parm != void_list_node;
        parm = TREE_CHAIN (parm),
-	 parmdecl = DECL_CHAIN (parmdecl))
+	 ++i)
     {
       tree default_arg = TREE_PURPOSE (parm);
       tree parsed_arg;
       vec<tree, va_gc> *insts;
       tree copy;
       unsigned ix;
+
+      tree parmdecl = parms[i];
+      pushdecl (parmdecl);
 
       if (!default_arg)
 	continue;
@@ -30601,6 +30613,14 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
     }
 
   pop_bindings_and_leave_scope ();
+
+  /* Restore DECL_CHAINs after clobbering by pushdecl.  */
+  parm = NULL_TREE;
+  for (int i = parms->length () - 1; i >= 0; --i)
+    {
+      DECL_CHAIN (parms[i]) = parm;
+      parm = parms[i];
+    }
 
   pop_defarg_context ();
 
