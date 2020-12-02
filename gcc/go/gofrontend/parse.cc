@@ -1567,7 +1567,6 @@ Parse::type_spec(void*, unsigned int pragmas)
       go_error_at(this->location(),
 		  "unexpected semicolon or newline in type declaration");
       type = Type::make_error_type();
-      this->advance_token();
     }
 
   if (type->is_error_type())
