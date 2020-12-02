@@ -53,7 +53,7 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tfneg\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
 
 /* { dg-final { scan-assembler-not {\tmov\tz} } } */
-/* { dg-final { scan-assembler-not {\tmovprfx\t} } } */
+/* { dg-final { scan-assembler-not {\tmovprfx\t} { xfail *-*-* } } } */
 /* XFAILed because the ?: gets canonicalized so that the operation is in
    the false arm.  */
 /* { dg-final { scan-assembler-not {\tsel\t} { xfail *-*-* } } } */

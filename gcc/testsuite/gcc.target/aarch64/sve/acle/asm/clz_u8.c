@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (clz_u8_x_tied1, svuint8_t,
 
 /*
 ** clz_u8_x_untied:
+**	movprfx	z0, z1
 **	clz	z0\.b, p0/m, z1\.b
 **	ret
 */

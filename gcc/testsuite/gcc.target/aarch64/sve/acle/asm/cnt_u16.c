@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (cnt_u16_x_tied1, svuint16_t,
 
 /*
 ** cnt_u16_x_untied:
+**	movprfx	z0, z1
 **	cnt	z0\.h, p0/m, z1\.h
 **	ret
 */

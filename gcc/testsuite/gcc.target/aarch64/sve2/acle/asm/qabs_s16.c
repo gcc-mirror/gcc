@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (qabs_s16_x_tied1, svint16_t,
 
 /*
 ** qabs_s16_x_untied:
+**	movprfx	z0, z1
 **	sqabs	z0\.h, p0/m, z1\.h
 **	ret
 */

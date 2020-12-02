@@ -73,6 +73,7 @@ TEST_UNIFORM_Z (revh_u64_x_tied1, svuint64_t,
 
 /*
 ** revh_u64_x_untied:
+**	movprfx	z0, z1
 **	revh	z0\.d, p0/m, z1\.d
 **	ret
 */
