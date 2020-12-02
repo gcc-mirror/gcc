@@ -1,3 +1,43 @@
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97812
+	* gcc.dg/torture/pr97812.c: New testcase.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97760
+	* gcc.dg/vect/pr97760.c: New testcase.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97539
+	* gcc.dg/pr97539.c: New testcase.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95171
+	* gcc.dg/pr95171.c: New testcase.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98002
+	* gcc.dg/strncmp-2.c: Call mprotect again before free.
+
 2020-11-30  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* gcc.target/arm/pr91816.c: Update test.

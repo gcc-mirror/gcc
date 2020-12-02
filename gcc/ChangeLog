@@ -1,3 +1,48 @@
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97812
+	* tree-vrp.c (register_edge_assert_for_2): Extend the range
+	according to its sign before seeing whether it fits.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97760
+	* tree-vect-loop.c (check_reduction_path): Reject
+	reduction paths we do not handle in epilogue generation.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97539
+	* tree-vect-loop-manip.c (vect_do_peeling): Reset out-of-loop
+	debug uses before peeling.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/95171
+	* tree-inline.c (remap_gimple_stmt): Split out trapping compares
+	when inlining into a non-call EH function.
+
+2020-12-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97554
+	* sbitmap.c (sbitmap_vector_alloc): Use size_t for byte
+	quantities to avoid overflow.
+
 2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/97939
