@@ -33,7 +33,7 @@
 #pragma GCC system_header
 
 #include <bits/atomic_base.h>
-#ifdef __cpp_lib_atomic_wait 
+#if __cpp_lib_atomic_wait
 #include <bits/atomic_timed_wait.h>
 
 #include <ext/numeric_traits.h>
