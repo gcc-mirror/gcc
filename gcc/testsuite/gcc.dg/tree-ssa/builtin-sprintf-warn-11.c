@@ -199,15 +199,21 @@ void test_narrow_string_with_width_and_precision (void)
 
   /* The two directives below combined convert to [INT_MAX, INT_MAX + 1].
      Since the lower end of the range doesn't exceed INT_MAX no warning
-     is expected.  */
+     is expected in LP64.  In ILP32 where the maximum object size is
+     INT_MAX - 1, the call is diagnosed.  */
+  T (-1, "%*.*s%*.*s",
+     IR (imax - 6, imax - 3), IR (1, 2), SR (x, y),
+     IR (       4,        6), IR (3, 4), SR (x, y));
   T (-1, "%*.*s%*.*s",
      IR (imax - 5, imax - 3), IR (1, 2), SR (x, y),
      IR (       5,        6), IR (3, 4), SR (x, y));
+  /* { dg-warning "directive writing between 5 and 6 bytes into a region of size between 2 and 4" "ilp32" { target ilp32 } .-3 } */
 
   /* The three directives below (the two %s plus the space in between)
      combined convert to [INT_MAX + 1, INT_MAX + 2].  Since the lower
      end of the range exceeds INT_MAX a warning is expected.  */
-  T (-1, "%*.*s %*.*s",                                     /* { dg-warning "INT_MAX" } */
+  T (-1, "%*.*s %*.*s",                                     /* { dg-warning "INT_MAX" "lp64" { target lp64 } } */
+     /* { dg-warning "directive writing between 5 and 6 bytes into a region of size between 1 and 3" "ilp32" { target ilp32 } .-1 } */
      IR (imax - 5, imax - 3), IR (1, 2), SR (x, y),
      IR (       5,        6), IR (3, 4), SR (x, y));
 
