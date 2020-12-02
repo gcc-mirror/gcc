@@ -3350,6 +3350,28 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_GNU_RETAIN,
   [`if test $gcc_cv_as_shf_gnu_retain = yes; then echo 1; else echo 0; fi`],
   [Define 0/1 if your assembler supports marking sections with SHF_GNU_RETAIN flag.])
 
+# Test if the assembler supports the section flag 'o' for specifying
+# section with link-order.
+case "${target}" in
+  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # assembler supports the section flag 'o', it doesn't mean that
+  # Solairs ld supports it.
+  *-*-solaris2*)
+    gcc_cv_as_section_link_order=no
+    ;;
+  *)
+    gcc_GAS_CHECK_FEATURE([section 'o' flag], gcc_cv_as_section_link_order,
+      [2,35,0], [--fatal-warnings],
+      [.section .foo,"a"
+.byte 0
+.section __patchable_function_entries,"awo",%progbits,.foo
+.byte 0])
+    ;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_LINK_ORDER,
+  [`if test $gcc_cv_as_section_link_order = yes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your assembler supports 'o' flag in .section directive.])
+
 gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
  [elf,2,12,0], [--fatal-warnings],
  [.section .rodata.str, "aMS", @progbits, 1])

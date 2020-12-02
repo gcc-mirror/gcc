@@ -2548,6 +2548,9 @@ Target supports the @code{noinit} variable attribute.
 @item nonpic
 Target does not generate PIC by default.
 
+@item o_flag_in_section
+Target supports the 'o' flag in .section directive in assembly inputs.
+
 @item offload_gcn
 Target has been configured for OpenACC/OpenMP offloading on AMD GCN.
 
