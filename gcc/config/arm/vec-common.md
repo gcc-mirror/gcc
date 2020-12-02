@@ -193,3 +193,9 @@
 		 (match_operand:VDQ 2 "s_register_operand" "")))]
   "ARM_HAVE_<MODE>_ARITH"
 )
+
+(define_expand "one_cmpl<mode>2"
+  [(set (match_operand:VDQ 0 "s_register_operand")
+	(not:VDQ (match_operand:VDQ 1 "s_register_operand")))]
+  "ARM_HAVE_<MODE>_ARITH"
+)

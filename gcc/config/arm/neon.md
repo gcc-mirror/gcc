@@ -756,7 +756,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "one_cmpl<mode>2"
+(define_insn "one_cmpl<mode>2_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (not:VDQ (match_operand:VDQ 1 "s_register_operand" "w")))]
   "TARGET_NEON"
@@ -3240,7 +3240,7 @@
    (match_operand:VDQIW 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[1]));
+  emit_insn (gen_one_cmpl<mode>2_neon (operands[0], operands[1]));
   DONE;
 })
 

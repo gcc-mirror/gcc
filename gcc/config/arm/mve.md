@@ -433,16 +433,22 @@
 ;;
 ;; [vmvnq_u, vmvnq_s])
 ;;
-(define_insn "mve_vmvnq_<supf><mode>"
+(define_insn "mve_vmvnq_u<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")]
-	 VMVNQ))
+	(not:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vmvn %q0, %q1"
+  "vmvn\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
+(define_expand "mve_vmvnq_s<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand")
+	(not:MVE_2 (match_operand:MVE_2 1 "s_register_operand")))
+  ]
+  "TARGET_HAVE_MVE"
+)
 
 ;;
 ;; [vdupq_n_u, vdupq_n_s])
