@@ -26,7 +26,6 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
 #include "target.h"
-#include "alloc-pool.h"
 
 
 /* Used for naming of new temporaries.  */
@@ -116,8 +115,6 @@ typedef hash_map<tree_operand_hash,
  ************************************************************************/
 typedef struct _slp_tree *slp_tree;
 
-extern object_allocator<_slp_tree> *slp_tree_pool;
-
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
 struct _slp_tree {
@@ -172,6 +169,10 @@ struct _slp_tree {
 
   /* Return memory to slp_tree_pool.  */
   static void operator delete (void *, size_t);
+
+  /* Linked list of nodes to release when we free the slp_tree_pool.  */
+  slp_tree next_node;
+  slp_tree prev_node;
 };
 
 /* The enum describes the type of operations that an SLP instance
@@ -1963,6 +1964,8 @@ extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 
 /* In tree-vect-slp.c.  */
+extern void vect_slp_init (void);
+extern void vect_slp_fini (void);
 extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, vec<tree>,
 					  gimple_stmt_iterator *, poly_uint64,
