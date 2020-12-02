@@ -93,11 +93,12 @@
 --     16 MAR 00   RLB     Changed foundation id to reflect test suite version.
 --     22 MAR 01   RLB     Changed foundation id to reflect test suite version.
 --     29 MAR 02   RLB     Changed foundation id to reflect test suite version.
+--     06 MAR 07   RLB     Changed foundation id to reflect test suite version.
 --
 --!
 
 package TCTouch is
-  Foundation_ID   : constant String := "TCTouch ACATS 2.5";
+  Foundation_ID   : constant String := "TCTouch ACATS 2.6";
   Max_Touch_Count : constant        := 80;
 
   procedure Assert    ( SB_True  : Boolean; Message : String );

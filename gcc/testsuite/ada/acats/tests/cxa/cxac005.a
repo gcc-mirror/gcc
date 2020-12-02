@@ -31,6 +31,7 @@
 --    12 FEB 2001   PHL   Initial version.
 --    14 MAR 2001   RLB   Readied for release; fixed Not_Applicable check
 --                        to terminate test gracefully.
+--    05 MAR 2007   RLB   Updated to avoid problems with return-by-reference.
 --
 --!
 with Ada.Streams.Stream_Io;
@@ -53,7 +54,6 @@ procedure CXAC005 is
     package Checked_Stream_Io is
 
         type File_Type (Max_Size : Stream_Element_Count) is limited private;
-        function Stream_Io_File (File : File_Type) return Stream_Io.File_Type;
 
         procedure Create (File : in out File_Type;
                           Mode : in Stream_Io.File_Mode := Stream_Io.Out_File;
@@ -93,6 +93,8 @@ procedure CXAC005 is
 
         function Index (File : in File_Type) return Stream_Io.Positive_Count;
 
+        function Size (File : in File_Type) return Stream_Io.Count;
+
         procedure Set_Mode (File : in out File_Type;
                             Mode : in Stream_Io.File_Mode);
 
@@ -110,11 +112,6 @@ procedure CXAC005 is
     package body Checked_Stream_Io is
 
         use Stream_Io;
-
-        function Stream_Io_File (File : File_Type) return Stream_Io.File_Type is
-        begin
-            return File.File;
-        end Stream_Io_File;
 
         procedure Create (File : in out File_Type;
                           Mode : in Stream_Io.File_Mode := Stream_Io.Out_File;
@@ -244,6 +241,13 @@ procedure CXAC005 is
             return New_Index;
         end Index;
 
+        function Size (File : in File_Type) return Stream_Io.Count is
+            New_Size : constant Count := Stream_Io.Size (File.File);
+        begin
+            TC_Assert (New_Size <= Count(File.Max_Size), "File too large");
+            return New_Size;
+        end Size;
+
         procedure Set_Mode (File : in out File_Type;
                             Mode : in Stream_Io.File_Mode) is
             Old_Index : constant Count := File.Index;
@@ -268,7 +272,8 @@ procedure CXAC005 is
 
 begin
 
-    Test ("CXAC005", "Check that stream file positioning work as specified");
+    Report.Test ("CXAC005",
+                 "Check that stream file positioning work as specified");
 
     declare
         Name : constant String := Legal_File_Name;
@@ -320,8 +325,7 @@ begin
         -- Check the contents of the entire file.
         declare
             S : Stream_Element_Array
-                   (1 .. Stream_Element_Offset
-                            (Stream_Io.Size (Csio.Stream_Io_File (F))));
+                   (1 .. Stream_Element_Offset (Csio.Size (F)));
         begin
             Csio.Reset (F, Stream_Io.In_File);
             Csio.Read (F, S, Last);
@@ -330,7 +334,7 @@ begin
         Csio.Delete (F);
     end;
 
-    Result;
+    Report.Result;
 exception
    when Incomplete =>
       Report.Result;
