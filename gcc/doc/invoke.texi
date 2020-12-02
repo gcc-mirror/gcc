@@ -32739,6 +32739,13 @@ Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
 exported region may reference (for instance, the entities an exported
 template definition may reference).  These are not fully implemented.
 
+@item Language-linkage module attachment
+Declarations with explicit language linkage (@code{extern "C"} or
+@code{extern "C++"}) are attached to the global module, even when in
+the purview of a named module.  This is not implemented.  Such
+declarations will be attached to the module, if any, in which they are
+declared.
+
 @end table
 
 Modular compilation is @emph{not} enabled with just the
@@ -32782,35 +32789,10 @@ installed.  Specifying the language as one of these variants also
 inhibits output of the object file, as header files have no associated
 object file.
 
-When creating an output CMI, any missing directory components are
-created in a manner that is safe for concurrent builds creating
-multiple, different, CMIs within a common subdirectory tree.
-
-CMI contents are written to a temporary file, which is then atomically
-renamed.  Observers either see old contents (if there is an
-existing file), or complete new contents.  They do not observe the
-CMI during its creation.  This is unlike object file writing, which
-may be observed by an external process.
-
-CMIs are read in lazily, if the host OS provides @code{mmap}
-functionality.  Generally blocks are read when name lookup or template
-instantiation occurs.  To inhibit this, the @option{-fno-module-lazy}
-option may be used.
-
 The @option{-fmodule-only} option disables generation of the
 associated object file for compiling a module interface.  Only the CMI
 is generated.  This option is implied when using the
 @option{-fmodule-header} option.
-
-The @option{--param lazy-modules=@var{n}} parameter controls the limit
-on the number of concurrently open module files during lazy loading.
-Should more modules be imported, an LRU algorithm is used to determine
-which files to close---until that file is needed again.  This limit
-may be exceeded with deep module dependency hierarchies.  With large
-code bases there may be more imports than the process limit of file
-descriptors.  By default, the limit is a few less than the per-process
-file descriptor hard limit, if that is determinable.@footnote{Where
-applicable the soft limit is incremented as needed towards the hard limit.}
 
 The @option{-flang-info-include-translate} and
 @option{-flang-info-include-translate-not} options notes whether
@@ -32835,6 +32817,7 @@ family of options.
 @menu
 * C++ Module Mapper::       Module Mapper
 * C++ Module Preprocessing::  Module Preprocessing
+* C++ Compiled Module Interface:: Compiled Module Interface
 @end menu
 
 @node C++ Module Mapper
@@ -32974,3 +32957,78 @@ preprocessing a header-unit, or consuming such preprocessed output:
 g++ -fmodules-ts -E -fdirectives-only my-header.hh -o my-header.ii
 g++ -x c++-header -fmodules-ts -fpreprocessed -fdirectives-only my-header.ii
 @end smallexample
+
+@node C++ Compiled Module Interface
+@subsection Compiled Module Interface
+@cindex C++ Compiled Module Interface
+
+CMIs are an additional artifact when compiling named module
+interfaces, partitions or header units.  These are read when
+importing.  CMI contents are implementation-specific, and in GCC's
+case tied to the compiler version.  Consider them a rebuildable cache
+artifact, not a distributable object.
+
+When creating an output CMI, any missing directory components are
+created in a manner that is safe for concurrent builds creating
+multiple, different, CMIs within a common subdirectory tree.
+
+CMI contents are written to a temporary file, which is then atomically
+renamed.  Observers either see old contents (if there is an
+existing file), or complete new contents.  They do not observe the
+CMI during its creation.  This is unlike object file writing, which
+may be observed by an external process.
+
+CMIs are read in lazily, if the host OS provides @code{mmap}
+functionality.  Generally blocks are read when name lookup or template
+instantiation occurs.  To inhibit this, the @option{-fno-module-lazy}
+option may be used.
+
+The @option{--param lazy-modules=@var{n}} parameter controls the limit
+on the number of concurrently open module files during lazy loading.
+Should more modules be imported, an LRU algorithm is used to determine
+which files to close---until that file is needed again.  This limit
+may be exceeded with deep module dependency hierarchies.  With large
+code bases there may be more imports than the process limit of file
+descriptors.  By default, the limit is a few less than the per-process
+file descriptor hard limit, if that is determinable.@footnote{Where
+applicable the soft limit is incremented as needed towards the hard limit.}
+
+GCC CMIs use ELF32 as an architecture-neutral encapsulation mechanism.
+You may use @command{readelf} to inspect them, although section
+contents are largely undecipherable.  There is a section named
+@code{.gnu.c++.README}, which contains human-readable text.  Other
+than the first line, each line consists of @code{@var{tag}: @code{value}}
+tuples.
+
+@smallexample
+> @command{readelf -p.gnu.c++.README gcm.cache/foo.gcm}
+
+String dump of section '.gnu.c++.README':
+  [     0]  GNU C++ primary module interface
+  [    21]  compiler: 11.0.0 20201116 (experimental) [c++-modules revision 20201116-0454]
+  [    6f]  version: 2020/11/16-04:54
+  [    89]  module: foo
+  [    95]  source: c_b.ii
+  [    a4]  dialect: C++20/coroutines
+  [    be]  cwd: /data/users/nathans/modules/obj/x86_64/gcc
+  [    ee]  repository: gcm.cache
+  [   104]  buildtime: 2020/11/16 15:03:21 UTC
+  [   127]  localtime: 2020/11/16 07:03:21 PST
+  [   14a]  export: foo:part1 foo-part1.gcm
+@end smallexample
+
+Amongst other things, this lists the source that was built, C++
+dialect used and imports of the module.@footnote{The precise contents
+of this output may change.} The timestamp is the same value as that
+provided by the @code{__DATE__} & @code{__TIME__} macros, and may be
+explicitly specified with the environment variable
+@code{SOURCE_DATE_EPOCH}.  @xref{Environment Variables} for further
+details.
+
+A set of related CMIs may be copied, provided the relative pathnames
+are preserved.
+
+The @code{.gnu.c++.README} contents do not affect CMI integrity, and
+it may be removed or altered.  The section numbering of the sections
+whose names do not begin with @code{.gnu.c++.}, or are not the string
+section is significant and must not be altered.

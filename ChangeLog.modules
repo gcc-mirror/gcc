@@ -1,5 +1,8 @@
 2020-12-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (C++ Modules): Add CMI section.
+
 	gcc/cp/
 	* cp-tree.h (DECL_MODULE_PURVIEW_P, DECL_MODULE_IMPORT_P)
 	(DECL_MODULE_ENTITY_P): New.
