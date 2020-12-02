@@ -1,6 +1,10 @@
 2020-12-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (struct tree_module_vec): Move to ...
+	* name-lookup.h (struct tree_module_vec): ... here.
+
+	gcc/cp/
 	* lex.c (struct token_coro): Rename to ...
 	(struct module_token_filter): ... here.  Adjust through out.
 
