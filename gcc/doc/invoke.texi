@@ -18164,6 +18164,9 @@ Enable brain half-precision floating-point instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
 default for @option{-march=armv8.6-a}.  Use of this option with architectures
 prior to Armv8.2-A is not supported.
+@item flagm
+Enable the Flag Manipulation instructions Extension. This option is enabled by
+default for @option{-march=armv8.4-a}.
 
 @end table
 
