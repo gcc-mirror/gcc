@@ -242,7 +242,8 @@ in the following sections.
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @gol
 -Weffc++  -Wno-exceptions -Wextra-semi  -Wno-inaccessible-base @gol
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
--Wno-invalid-offsetof  -Wno-literal-suffix  -Wmismatched-tags @gol
+-Wno-invalid-offsetof  -Wno-literal-suffix @gol
+-Wno-mismatched-new-delete -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
 -Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor @gol
 -Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n} @gol
@@ -3859,6 +3860,40 @@ The warning is inactive inside a system header file, such as the STL, so
 one can still use the STL.  One may also instantiate or specialize
 templates.
 
+@item -Wno-mismatched-new-delete @r{(C++ and Objective-C++ only)}
+@opindex Wmismatched-new-delete
+@opindex Wno-mismatched-new-delete
+Warn for mismatches between calls to @code{operator new} or @code{operator
+delete} and the corresponding call to the allocation or deallocation function.
+This includes invocations of C++ @code{operator delete} with pointers
+returned from either mismatched forms of @code{operator new}, or from other
+functions that allocate objects for which the @code{operator delete} isn't
+a suitable deallocator, as well as calls to other deallocation functions
+with pointers returned from @code{operator new} for which the deallocation
+function isn't suitable.
+
+For example, the @code{delete} expression in the function below is diagnosed
+because it doesn't match the array form of the @code{new} expression
+the pointer argument was returned from.  Similarly, the call to @code{free}
+is also diagnosed.
+
+@smallexample
+void f ()
+@{
+  int *a = new int[n];
+  delete a;   // warning: mismatch in array forms of expressions
+
+  char *p = new char[n];
+  free (p);   // warning: mismatch between new and free
+@}
+@end smallexample
+
+The related option @option{-Wmismatched-dealloc} diagnoses mismatches
+involving allocation and deallocation functions other than @code{operator
+new} and @code{operator delete}.
+
+@option{-Wmismatched-new-delete} is enabled by default.
+
 @item -Wmismatched-tags @r{(C++ and Objective-C++ only)}
 @opindex Wmismatched-tags
 @opindex Wno-mismatched-tags
@@ -6287,6 +6322,41 @@ Ignoring the warning can result in poorly optimized code.
 disable the warning, but this is not recommended and should be done only
 when non-existent profile data is justified.
 
+@item -Wno-mismatched-dealloc
+@opindex Wmismatched-dealloc
+@opindex Wno-mismatched-dealloc
+
+Warn for calls to deallocation functions with pointer arguments returned
+from from allocations functions for which the former isn't a suitable
+deallocator.  A pair of functions can be associated as matching allocators
+and deallocators by use of attribute @code{malloc}.  Unless disabled by
+the @option{-fno-builtin} option the standard functions @code{calloc},
+@code{malloc}, @code{realloc}, and @code{free}, as well as the corresponding
+forms of C++ @code{operator new} and @code{operator delete} are implicitly
+associated as matching allocators and deallocators.  In the following
+example @code{mydealloc} is the deallocator for pointers returned from
+@code{myalloc}.
+
+@smallexample
+void mydealloc (void*);
+
+__attribute__ ((malloc (mydealloc, 1))) void*
+myalloc (size_t);
+
+void f (void)
+@{
+  void *p = myalloc (32);
+  // @dots{}use p@dots{}
+  free (p);   // warning: not a matching deallocator for myalloc
+  mydealloc (p);   // ok
+@}
+@end smallexample
+
+In C++, the related option @option{-Wmismatched-new-delete} diagnoses
+mismatches involving either @code{operator new} or @code{operator delete}.
+
+Option @option{-Wmismatched-dealloc} is enabled by default.
+
 @item -Wmultistatement-macros
 @opindex Wmultistatement-macros
 @opindex Wno-multistatement-macros
@@ -7778,8 +7848,23 @@ to @option{-Wframe-larger-than=}@samp{SIZE_MAX} or larger.
 @item -Wno-free-nonheap-object
 @opindex Wno-free-nonheap-object
 @opindex Wfree-nonheap-object
-Do not warn when attempting to free an object that was not allocated
-on the heap.
+Warn when attempting to deallocate an object that was either not allocated
+on the heap, or by using a pointer that was not returned from a prior call
+to the corresponding allocation function.  For example, because the call
+to @code{stpcpy} returns a pointer to the terminating nul character and
+not to the begginning of the object, the call to @code{free} below is
+diagnosed.
+
+@smallexample
+void f (char *p)
+@{
+  p = stpcpy (p, "abc");
+  // ...
+  free (p);   // warning
+@}
+@end smallexample
+
+@option{-Wfree-nonheap-object} is enabled by default.
 
 @item -Wstack-usage=@var{byte-size}
 @opindex Wstack-usage

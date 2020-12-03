@@ -20,3 +20,7 @@ struct ext2_icount_el *insert_icount_el() {
     ext2fs_resize_mem(&insert_icount_el_icount_1);
     return 0;
 }
+
+/* Passing the address of a declared object to realloc triggers
+   -Wfree-nonheap-object unless -flto is used.
+   { dg-prune-output "\\\[-Wfree-nonheap-object" } */
