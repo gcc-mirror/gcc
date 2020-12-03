@@ -1,3 +1,122 @@
+2020-12-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c++/97947
+	* typeck2.c (digest_init_r): Handle OPAQUE_TYPE as an aggregate type.
+
+2020-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80780
+	PR c++/93093
+	* cp-tree.h (source_location_current_p): Declare.
+	* tree.c (source_location_current_p): New function.
+	* call.c (immediate_invocation_p): New function.
+	(build_over_call): Use it to resolve LWG3396.
+	* constexpr.c (cxx_eval_builtin_function_call): Temporarily set
+	current_function_decl from ctx->call->fundef->decl if any.
+	* cp-gimplify.c (cp_genericize_r) <case CALL_EXPR>: Fold calls
+	to immediate function std::source_location::current ().
+
+2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Improve diagnostic for
+	disallowed CTAD placeholder.
+
+2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (check_initializer): Also look through STMT_EXPR
+	and BIND_EXPR.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (comparing_typenames): Declare.
+	* pt.c (comparing_typenames): Define.
+	(spec_hasher::equal): Increment it around comparisons.
+	* typeck.c (structural_comptypes): Adjust TYPENAME resolution
+	check.
+
+2020-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97975
+	* constexpr.c (fold_non_dependent_init): Add a tree parameter.
+	Use it.
+	* cp-tree.h (fold_non_dependent_init): Add a tree parameter with
+	a default value.
+	* typeck2.c (store_init_value): Call fold_non_dependent_expr
+	only when checking the initializer for constexpr variables.
+	Call fold_non_dependent_init instead of maybe_constant_init.
+
+2020-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97187
+	PR c++/97993
+	* pt.c (tsubst_copy_and_build) <case NEW_EXPR>: Return error_mark_node
+	if init is erroneous.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_MODULE_PURVIEW_P, DECL_MODULE_IMPORT_P)
+	(DECL_MODULE_ENTITY_P): New.
+	(DECL_MODULE_PENDING_SPECIALIZATIONS_P): New.
+	(DECL_MODULE_PENDING_MEMBERS_P): New.
+	(DECL_MODULE_ATTACHMENTS_P): New.
+	(DECL_MODULE_EXPORT_P): New.
+	(struct lang_decl_base): Shrink sel field.  Add new
+	module-specific fields.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (DECL_TINFO_P): Also for TYPE_DECLs.
+	(get_tinfo_decl_direct): Declare.
+	(get_pseudo_tinfo_index, get_pseudo_tinfo_type): Declare.
+	* rtti.c (get_tinfo_decl_direct): Externalize.
+	(get_tinfo_desc): Set DECL_TINFO_P on the typedef.
+	(get_pseudo_tinfo_index, get_pseudo_tinfo_type): New.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (maybe_add_lang_decl_raw, maybe_add_lang_type_raw):
+	Declare.
+	* lex.c (maybe_add_lang_decl_raw, maybe_add_lang_type_raw):
+	Externalize, reformat.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (build_cplus_array_type): Add defaulted DEP parm.
+	* tree.c (set_array_type_common): Add DEP parm.
+	(build_cplus_array_type): Add DEP parm, determine dependency if
+	needed.
+	(cp_build_qualified_type_real): Adjust array-building call.
+	(strip_typedefs): Likewise.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* ptree.c (cxx_print_xnode): Increase binding-vector prefix size.
+
+2020-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.def (BINDING_VECTOR): New.
+	* name-lookup.h (struct binding_slot): New.
+	(BINDING_VECTOR_SLOTS_PER_CLUSTER): New.
+	(struct binding_index, struct binding_cluster): New.
+	(BINDING_VECTOR_ALLOC_CLUSTERS, BINDING_VECTOR_CLUSTER_BASE)
+	(BINDING_VECTOR_CLUSTER): New.
+	(struct tree_binding_vec): New.
+	(BINDING_VECTOR_NAME, BINDING_VECTOR_GLOBAL_DUPS_P)
+	(BINDING_VECTOR_PARTITION_DUPS_P): New.
+	(BINDING_BINDING_GLOBAL_P, BINDING_BINDING_PARTITION_P): New.
+	(BINDING_VECTOR_PENDING_SPECIALIZATIONS)
+	(BINDING_VECTOR_PENDING_IS_HEADER_P)
+	(BINDING_VECTOR_PENDING_IS_PARTITION_P): New.
+	* cp-tree.h (enum cp_tree_node_structure_enum): Add
+	TS_CP_BINDING_VECTOR.
+	(union lang_tree_node): Add binding_vec field.
+	(make_binding_vec): Declare.
+	(named_decl_hash::hash, named_decl_hash::equal): Check for binding
+	vector.
+	* decl.c (cp_tree_node_structure): Add BINDING_VECTOR case.
+	* ptree.c (cxx_print_xnode): Add BINDING_VECTOR case.
+	* tree.c (make_binding_vec): New.
+
 2020-12-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/98054

@@ -1,3 +1,11 @@
+2020-12-02  Simon Marchi  <simon.marchi@polymtl.ca>
+
+	* .gitignore: Sync with binutils-gdb
+
+2020-12-02  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* MAINTAINERS: Add myself as arc port maintainer.
+
 2020-11-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/87788
