@@ -21,9 +21,9 @@
 #include <bit>
 
 #ifndef __cpp_lib_bit_cast
-# error "Feature-test macro for bit_cast wait missing in <bit>"
+# error "Feature-test macro for bit_cast missing in <bit>"
 #elif __cpp_lib_bit_cast != 201806L
-# error "Feature-test macro for bit_cast wait has wrong value in <bit>"
+# error "Feature-test macro for bit_cast has wrong value in <bit>"
 #endif
 
 #include <cstdint>

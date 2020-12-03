@@ -21,7 +21,7 @@
 #include <version>
 
 #ifndef __cpp_lib_bit_cast
-# error "Feature-test macro for bit_cast wait missing in <version>"
+# error "Feature-test macro for bit_cast missing in <version>"
 #elif __cpp_lib_bit_cast != 201806L
-# error "Feature-test macro for bit_cast wait has wrong value in <version>"
+# error "Feature-test macro for bit_cast has wrong value in <version>"
 #endif
