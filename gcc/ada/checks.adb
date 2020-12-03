@@ -3922,6 +3922,13 @@ package body Checks is
 
       function Aggregate_Discriminant_Val (Disc : Entity_Id) return Node_Id;
 
+      function Replace_Current_Instance
+        (N : Node_Id) return Traverse_Result;
+      --  Replace a reference to the current instance of the type with the
+      --  corresponding _init formal of the initialization procedure. Note:
+      --  this function relies on us currently being within the initialization
+      --  procedure.
+
       --------------------------------
       -- Aggregate_Discriminant_Val --
       --------------------------------
@@ -3948,6 +3955,26 @@ package body Checks is
 
          raise Program_Error;
       end Aggregate_Discriminant_Val;
+
+      ------------------------------
+      -- Replace_Current_Instance --
+      ------------------------------
+
+      function Replace_Current_Instance
+        (N : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (N)
+           and then Etype (N) = Entity (N)
+         then
+            Rewrite (N,
+              New_Occurrence_Of (First_Formal (Current_Subprogram), Loc));
+         end if;
+
+         return OK;
+      end Replace_Current_Instance;
+
+      procedure Search_And_Replace_Current_Instance is new
+        Traverse_Proc (Replace_Current_Instance);
 
    --  Start of processing for Build_Discriminant_Checks
 
@@ -3976,6 +4003,13 @@ package body Checks is
             Dval := New_Occurrence_Of (Discriminal (Entity (Dval)), Loc);
          else
             Dval := Duplicate_Subexpr_No_Checks (Dval);
+         end if;
+
+         --  Replace references to the current instance of the type with the
+         --  corresponding _init formal of the initialization procedure.
+
+         if Within_Init_Proc then
+            Search_And_Replace_Current_Instance (Dval);
          end if;
 
          --  If we have an Unchecked_Union node, we can infer the discriminants
