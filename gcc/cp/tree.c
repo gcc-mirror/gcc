@@ -1076,6 +1076,9 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
     {
       bool typeless_storage = is_byte_access_type (elt_type);
       t = build_array_type (elt_type, index_type, typeless_storage);
+
+      /* Mark as non-dependenty now, this will save time later.  */
+      TYPE_DEPENDENT_P_VALID (t) = true;
     }
 
   /* Now check whether we already have this array variant.  */
@@ -1090,6 +1093,9 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
       if (!t)
 	{
 	  t = build_min_array_type (elt_type, index_type);
+	  /* Mark dependency now, this saves time later.  */
+	  TYPE_DEPENDENT_P_VALID (t) = true;
+	  TYPE_DEPENDENT_P (t) = dependent;
 	  set_array_type_canon (t, elt_type, index_type, dependent);
 	  if (!dependent)
 	    {
@@ -1326,6 +1332,8 @@ cp_build_qualified_type_real (tree type,
 
       if (!t)
 	{
+	  gcc_checking_assert (TYPE_DEPENDENT_P_VALID (type)
+			       || !dependent_type_p (type));
 	  t = build_cplus_array_type (element_type, TYPE_DOMAIN (type),
 				      TYPE_DEPENDENT_P (type));
 
@@ -1563,6 +1571,8 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
     case ARRAY_TYPE:
       type = strip_typedefs (TREE_TYPE (t), remove_attributes, flags);
       t0  = strip_typedefs (TYPE_DOMAIN (t), remove_attributes, flags);
+      gcc_checking_assert (TYPE_DEPENDENT_P_VALID (t)
+			   || !dependent_type_p (t));
       result = build_cplus_array_type (type, t0, TYPE_DEPENDENT_P (t));
       break;
     case FUNCTION_TYPE:
