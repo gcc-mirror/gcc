@@ -27,9 +27,11 @@ extern int folding_initializer;
 /* Convert between trees and native memory representation.  */
 extern int native_encode_expr (const_tree, unsigned char *, int, int off = -1);
 extern int native_encode_initializer (tree, unsigned char *, int,
-				      int off = -1);
+				      int off = -1, unsigned char * = nullptr);
 extern tree native_interpret_expr (tree, const unsigned char *, int);
 extern bool can_native_interpret_type_p (tree);
+extern tree native_interpret_aggregate (tree, const unsigned char *, int, int);
+extern tree find_bitfield_repr_type (int, int);
 extern void shift_bytes_in_array_left (unsigned char *, unsigned int,
 				       unsigned int);
 extern void shift_bytes_in_array_right (unsigned char *, unsigned int,

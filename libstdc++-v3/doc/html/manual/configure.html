@@ -93,8 +93,7 @@
 	<code class="function">sched_yield</code> functions, used in the
 	implementation of [thread.thread.this] of the 2011 ISO C++ standard.
 	The choice OPTION=yes checks for the availability of the facilities
-	in libc and libposix4.  In case it's needed the latter is also linked
-	to libstdc++ as part of the build process.  OPTION=rt also checks in
+	in libc.  OPTION=rt also checks in
 	librt (and, if it's needed, links to it).  Note that linking to librt
 	is not always desirable because for glibc it requires linking to
 	libpthread too, which causes all reference counting to use atomic

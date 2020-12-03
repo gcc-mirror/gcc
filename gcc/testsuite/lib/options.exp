@@ -59,6 +59,11 @@ proc check_for_options_with_filter { language gcc_options exclude \
     set gcc_output [gcc_target_compile $srcfname $filebase.x executable $gcc_options]
     remote_file build delete $srcfname $filebase.x $filebase.gcno
 
+    if {[regexp -- "compiler not installed on this system" $gcc_output]} {
+	unsupported "$test: $language compiler not available"
+	return
+    }
+
     if { $exclude != "" } {
 	set lines [split $gcc_output "\n"]
 	set gcc_output ""

@@ -192,7 +192,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const_reference
       operator[](size_type __n) const noexcept
       {
+#if __cplusplus >= 201402L
 	__glibcxx_requires_subscript(__n);
+#endif
 	return _AT_Type::_S_ref(_M_elems, __n);
       }
 
@@ -228,7 +230,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const_reference
       front() const noexcept
       {
+#if __cplusplus >= 201402L
 	__glibcxx_requires_nonempty();
+#endif
 	return _AT_Type::_S_ref(_M_elems, 0);
       }
 
@@ -242,7 +246,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const_reference
       back() const noexcept
       {
+#if __cplusplus >= 201402L
 	__glibcxx_requires_nonempty();
+#endif
 	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1)
  	           : _AT_Type::_S_ref(_M_elems, 0);
       }

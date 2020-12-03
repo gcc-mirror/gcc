@@ -19,14 +19,13 @@
 
 #include <array>
 
-int main()
+void test01()
 {
   // array
-  typedef std::array<std::size_t, 6> array_type;
-  constexpr array_type a = { { 0, 55, 66, 99, 4115, 2 } };
-  constexpr auto v1 __attribute__((unused)) = a[1];
-  constexpr auto v2 __attribute__((unused)) = a.at(2);
-  constexpr auto v3 __attribute__((unused)) = a.front();
-  constexpr auto v4 __attribute__((unused)) = a.back();
-  return 0;
+  constexpr std::array<std::size_t, 6> a = { { 0, 55, 66, 99, 4115, 2 } };
+  constexpr auto v1 = a[1];
+  constexpr auto v2 = a.at(2);
+  constexpr auto v3 = a.front();
+  constexpr auto v4 = a.back();
+  static_assert( (v1 + v2 + v3 + v4) == (55 + 66 + 0 + 2), "" );
 }

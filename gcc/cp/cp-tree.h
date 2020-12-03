@@ -5399,6 +5399,10 @@ extern int function_depth;
    in structrual_comptypes.  */
 extern int comparing_specializations;
 
+/* Nonzero if we are inside eq_specializations, which affects
+   resolving of typenames in structural_comptypes.  */
+extern int comparing_typenames;
+
 /* In parser.c.  */
 
 /* Nonzero if we are parsing an unevaluated operand: an operand to
@@ -6538,6 +6542,7 @@ extern bool check_omp_return			(void);
 extern tree make_typename_type			(tree, tree, enum tag_types, tsubst_flags_t);
 extern tree build_typename_type			(tree, tree, tree, tag_types);
 extern tree make_unbound_class_template		(tree, tree, tree, tsubst_flags_t);
+extern tree make_unbound_class_template_raw	(tree, tree, tree);
 extern tree build_library_fn_ptr		(const char *, tree, int);
 extern tree build_cp_library_fn_ptr		(const char *, tree, int);
 extern tree push_library_fn			(tree, tree, tree, int);
@@ -6876,6 +6881,7 @@ extern void maybe_show_extern_c_location (void);
 extern bool literal_integer_zerop (const_tree);
 
 /* in pt.c */
+extern tree canonical_type_parameter		(tree);
 extern void push_access_scope			(tree);
 extern void pop_access_scope			(tree);
 extern bool check_template_shadow		(tree);
@@ -7368,6 +7374,8 @@ extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
 extern tree cp_build_vec_convert		(tree, location_t, tree,
 						 tsubst_flags_t);
+extern tree cp_build_bit_cast			(location_t, tree, tree,
+						 tsubst_flags_t);
 extern void start_lambda_scope			(tree);
 extern void record_lambda_scope			(tree);
 extern void record_null_lambda_scope		(tree);
@@ -7474,6 +7482,7 @@ extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
 extern tree array_type_nelts_top		(tree);
 extern bool array_of_unknown_bound_p		(const_tree);
+extern bool source_location_current_p		(tree);
 extern tree break_out_target_exprs		(tree, bool = false);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
 extern tree replace_placeholders		(tree, tree, bool * = NULL);

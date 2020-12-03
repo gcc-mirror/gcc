@@ -1076,6 +1076,9 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
     {
       bool typeless_storage = is_byte_access_type (elt_type);
       t = build_array_type (elt_type, index_type, typeless_storage);
+
+      /* Mark as non-dependenty now, this will save time later.  */
+      TYPE_DEPENDENT_P_VALID (t) = true;
     }
 
   /* Now check whether we already have this array variant.  */
@@ -1090,6 +1093,9 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
       if (!t)
 	{
 	  t = build_min_array_type (elt_type, index_type);
+	  /* Mark dependency now, this saves time later.  */
+	  TYPE_DEPENDENT_P_VALID (t) = true;
+	  TYPE_DEPENDENT_P (t) = dependent;
 	  set_array_type_canon (t, elt_type, index_type, dependent);
 	  if (!dependent)
 	    {
@@ -1326,6 +1332,8 @@ cp_build_qualified_type_real (tree type,
 
       if (!t)
 	{
+	  gcc_checking_assert (TYPE_DEPENDENT_P_VALID (type)
+			       || !dependent_type_p (type));
 	  t = build_cplus_array_type (element_type, TYPE_DOMAIN (type),
 				      TYPE_DEPENDENT_P (type));
 
@@ -1563,6 +1571,8 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
     case ARRAY_TYPE:
       type = strip_typedefs (TREE_TYPE (t), remove_attributes, flags);
       t0  = strip_typedefs (TYPE_DOMAIN (t), remove_attributes, flags);
+      gcc_checking_assert (TYPE_DEPENDENT_P_VALID (t)
+			   || !dependent_type_p (t));
       result = build_cplus_array_type (type, t0, TYPE_DEPENDENT_P (t));
       break;
     case FUNCTION_TYPE:
@@ -2993,6 +3003,32 @@ array_type_nelts_total (tree type)
   return sz;
 }
 
+/* Return true if FNDECL is std::source_location::current () method.  */
+
+bool
+source_location_current_p (tree fndecl)
+{
+  gcc_checking_assert (TREE_CODE (fndecl) == FUNCTION_DECL
+		       && DECL_IMMEDIATE_FUNCTION_P (fndecl));
+  if (DECL_NAME (fndecl) == NULL_TREE
+      || TREE_CODE (TREE_TYPE (fndecl)) != FUNCTION_TYPE
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != RECORD_TYPE
+      || DECL_CONTEXT (fndecl) != TREE_TYPE (TREE_TYPE (fndecl))
+      || !id_equal (DECL_NAME (fndecl), "current"))
+    return false;
+
+  tree source_location = DECL_CONTEXT (fndecl);
+  if (TYPE_NAME (source_location) == NULL_TREE
+      || TREE_CODE (TYPE_NAME (source_location)) != TYPE_DECL
+      || TYPE_IDENTIFIER (source_location) == NULL_TREE
+      || !id_equal (TYPE_IDENTIFIER (source_location),
+		    "source_location")
+      || !decl_in_std_namespace_p (TYPE_NAME (source_location)))
+    return false;
+
+  return true;
+}
+
 struct bot_data
 {
   splay_tree target_remap;
@@ -3943,6 +3979,7 @@ cp_tree_equal (tree t1, tree t2)
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
+    case BIT_CAST_EXPR:
       if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
       /* Now compare operands as usual.  */
@@ -5188,6 +5225,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case CONST_CAST_EXPR:
     case DYNAMIC_CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
+    case BIT_CAST_EXPR:
       if (TREE_TYPE (*tp))
 	WALK_SUBTREE (TREE_TYPE (*tp));
 

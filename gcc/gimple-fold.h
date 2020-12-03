@@ -35,6 +35,7 @@ extern tree maybe_fold_and_comparisons (tree, enum tree_code, tree, tree,
 					enum tree_code, tree, tree);
 extern tree maybe_fold_or_comparisons (tree, enum tree_code, tree, tree,
 				       enum tree_code, tree, tree);
+extern void clear_type_padding_in_mask (tree, unsigned char *);
 extern bool optimize_atomic_compare_exchange_p (gimple *);
 extern void fold_builtin_atomic_compare_exchange (gimple_stmt_iterator *);
 extern bool arith_overflowed_p (enum tree_code, const_tree, const_tree,

@@ -73,6 +73,7 @@ std_headers = \
 	${std_srcdir}/semaphore \
 	${std_srcdir}/set \
 	${std_srcdir}/shared_mutex \
+	${std_srcdir}/source_location \
 	${std_srcdir}/span \
 	${std_srcdir}/sstream \
 	${std_srcdir}/syncstream \

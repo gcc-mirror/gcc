@@ -224,6 +224,9 @@ extern unsigned aarch64_architecture_version;
 /* 64-bit Floating-point Matrix Multiply (F64MM) extensions.  */
 #define AARCH64_FL_F64MM      (1ULL << 38)
 
+/* Flag Manipulation Instructions (FLAGM) extension.  */
+#define AARCH64_FL_FLAGM      (1ULL << 39)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -241,7 +244,7 @@ extern unsigned aarch64_architecture_version;
   (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3)
 #define AARCH64_FL_FOR_ARCH8_4			\
   (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML \
-   | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4)
+   | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4 | AARCH64_FL_FLAGM)
 #define AARCH64_FL_FOR_ARCH8_5			\
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_5	\
    | AARCH64_FL_SB | AARCH64_FL_SSBS | AARCH64_FL_PREDRES)

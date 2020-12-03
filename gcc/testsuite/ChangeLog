@@ -1,3 +1,168 @@
+2020-12-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c++/97947
+	* g++.target/powerpc/pr97947.C: New test.
+
+2020-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80780
+	PR c++/93093
+	* g++.dg/cpp2a/srcloc15.C: New test.
+	* g++.dg/cpp2a/srcloc16.C: New test.
+	* g++.dg/cpp2a/srcloc17.C: New test.
+	* g++.dg/cpp2a/srcloc18.C: New test.
+
+2020-12-02  qing zhao  <qinzhao@gcc.gnu.org>
+
+	PR rtl-optimization/97777
+	PR rtl-optimization/97777
+	* gcc.target/i386/pr97777.c: New test.
+
+2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/other/pr88187.C: Adjust expected error.
+	* g++.dg/cpp2a/class-deduction-abbrev1.C: New test.
+
+2020-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97975
+	* g++.dg/cpp1z/inline-var8.C: New test.
+
+2020-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97187
+	PR c++/97993
+	* g++.dg/eh/crash2.C: New test.
+	* g++.dg/template/crash132.C: New test.
+
+2020-12-02  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust expected warnings
+	to correctly reflect the maximum object size.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-11.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-18.c: Same.
+
+2020-12-02  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/load-imm64-1.c: New test.
+	* gcc.target/s390/load-imm64-2.c: New test.
+
+2020-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/support/acats25.lst: Delete.
+	* ada/acats/support/acats26.lst: New file.
+	* ada/acats/support/fcndecl.ada: Minor tweak.
+	* ada/acats/support/impdef.a: Add commentary.
+	* ada/acats/support/impdefg.a (Negative_Zero return): Simplify.
+	* ada/acats/support/macro.dfs (TASK_STORAGE_SIZE): Bump.
+	* ada/acats/support/repbody.ada: Upgrade to ACATS 2.6.
+	* ada/acats/support/tctouch.ada: Likewise.
+	* ada/acats/tests/c3/c352001.a: New file.
+	* ada/acats/tests/c4/c433001.a: Correct error messages.
+	* ada/acats/tests/c4/c453001.a: New file.
+	* ada/acats/tests/c4/c45622a.ada: Delete.
+	* ada/acats/tests/c4/c45624a.ada: Likewise.
+	* ada/acats/tests/c4/c45624b.ada: Likewise.
+	* ada/acats/tests/c4/c460013.a: New file.
+	* ada/acats/tests/c4/c460014.a: Likewise.
+	* ada/acats/tests/c6/c620001.a: Likewise.
+	* ada/acats/tests/c6/c620002.a: Likewise.
+	* ada/acats/tests/c7/c761006.a: Redo Unchecked_Deallocation case.
+	* ada/acats/tests/c9/c96004a.ada: Adjust for Ada 2005.
+	* ada/acats/tests/c9/c96007a.ada: Likewise.
+	* ada/acats/tests/cb/cb41004.a: Adjust for AI95-0044.
+	* ada/acats/tests/cc/cc3016f.ada: Minor tweak.
+	* ada/acats/tests/cd/cd30011.a: New file.
+	* ada/acats/tests/cd/cd30012.a: Likewise.
+	* ada/acats/tests/cd/cd90001.a: Fix comparison.
+	* ada/acats/tests/cxa/cxa3004.a: New file.
+	* ada/acats/tests/cxa/cxa5013.a: Likewise.
+	* ada/acats/tests/cxa/cxac005.a: Adjust for return-by-reference.
+	* ada/acats/tests/cxb/cxb30061.am: New file.
+	* ada/acats/tests/cxf/cxf2001.a: Fix failure message.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/98075
+	* g++.dg/ipa/pr98075.C: New test.
+
+2020-12-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/93195
+	* g++.dg/pr93195a.C: New test.
+	* g++.dg/pr93195b.C: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_o_flag_in_section): New proc.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/98084
+	* gcc.dg/tree-ssa/pr98094.c: New test.
+
+2020-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/97459
+	* gcc.target/i386/pr97282.c (foo): Use 123456 divisor instead of
+	10.
+	* gcc.dg/pr97459-1.c (TESTS): Add tests for 10, 12 and
+	6144.
+	* gcc.dg/pr97459-2.c (TESTS): Likewise.
+	* gcc.dg/pr97459-3.c: New test.
+	* gcc.dg/pr97459-4.c: New test.
+	* gcc.dg/pr97459-5.c: New test.
+	* gcc.dg/pr97459-6.c: New test.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR c/98087
+	* gcc.c-torture/compile/pr98087.c: New test.
+
+2020-12-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98079
+	* gcc.target/i386/pr98079.c: New test.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/88702
+	* gcc.dg/tree-ssa/if-to-switch-9.c: New test.
+
+2020-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/98084
+	* gcc.dg/tree-ssa/pr98084.c: New test.
+
+2020-12-02  Jeff Law  <law@redhat.com>
+
+	* gcc.target/h8300/add.c: New test.
+	* gcc.target/h8300/add-2.c: New test.
+	* gcc.target/h8300/add-3.c: New test.
+	* gcc.target/h8300/sub.c: New test.
+	* gcc.target/h8300/sub-2.c: New test.
+	* gcc.target/h8300/sub-3.c: New test.
+
+2020-12-02  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/go-test.exp (errchk): Permit trailing */ on ERROR line.
+
+2020-12-02  H.J. Lu  <hjl.tools@gmail.com>
+	    Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-c++-common/attr-used.c: Check the 'R' flag.
+	* c-c++-common/attr-used-2.c: Likewise.
+	* c-c++-common/attr-used-3.c: New test.
+	* c-c++-common/attr-used-4.c: Likewise.
+	* gcc.c-torture/compile/attr-used-retain-1.c: Likewise.
+	* gcc.c-torture/compile/attr-used-retain-2.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_R_flag_in_section): New proc.
+
+2020-12-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/x86-needed-1.c: New test.
+	* gcc.target/i386/x86-needed-2.c: Likewise.
+	* gcc.target/i386/x86-needed-3.c: Likewise.
+
 2020-12-01  Eugene Rozenfeld  <Eugene.Rozenfeld@microsoft.com>
 
 	* gcc.dg/pr96708-negative.c: New test.

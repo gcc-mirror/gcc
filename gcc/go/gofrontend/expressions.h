@@ -2326,8 +2326,8 @@ class Call_expression : public Expression
       fn_(fn), args_(args), type_(NULL), call_(NULL), call_temp_(NULL)
     , expected_result_count_(0), is_varargs_(is_varargs),
       varargs_are_lowered_(false), types_are_determined_(false),
-      is_deferred_(false), is_concurrent_(false), issued_error_(false),
-      is_multi_value_arg_(false), is_flattened_(false)
+      is_deferred_(false), is_concurrent_(false), is_equal_function_(false),
+      issued_error_(false), is_multi_value_arg_(false), is_flattened_(false)
   { }
 
   // The function to call.
@@ -2407,6 +2407,11 @@ class Call_expression : public Expression
   void
   set_is_concurrent()
   { this->is_concurrent_ = true; }
+
+  // Note that this is a call to a generated equality function.
+  void
+  set_is_equal_function()
+  { this->is_equal_function_ = true; }
 
   // We have found an error with this call expression; return true if
   // we should report it.
@@ -2545,6 +2550,8 @@ class Call_expression : public Expression
   bool is_deferred_;
   // True if the call is an argument to a go statement.
   bool is_concurrent_;
+  // True if this is a call to a generated equality function.
+  bool is_equal_function_;
   // True if we reported an error about a mismatch between call
   // results and uses.  This is to avoid producing multiple errors
   // when there are multiple Call_result_expressions.

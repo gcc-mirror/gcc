@@ -13574,6 +13574,21 @@ have intederminate values and the object representation needs to be
 bitwise compared to some other object, for example for atomic operations.
 @end deftypefn
 
+@deftypefn {Built-in Function} @var{type} __builtin_bit_cast (@var{type}, @var{arg})
+The @code{__builtin_bit_cast} function is available only
+in C++.  The built-in is intended to be used by implementations of
+the @code{std::bit_cast} C++ template function.  Programs should make
+use of the latter function rather than invoking the built-in directly.
+
+This built-in function allows reinterpreting the bits of the @var{arg}
+argument as if it had type @var{type}.  @var{type} and the type of the
+@var{arg} argument need to be trivially copyable types with the same size.
+When manifestly constant-evaluated, it performs extra diagnostics required
+for @code{std::bit_cast} and returns a constant expression if @var{arg}
+is a constant expression.  For more details
+refer to the latest revision of the C++ standard.
+@end deftypefn
+
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
 @opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with
