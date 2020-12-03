@@ -7793,7 +7793,8 @@ default_emit_call_builtin___clear_cache (rtx begin, rtx end)
 void
 maybe_emit_call_builtin___clear_cache (rtx begin, rtx end)
 {
-  if (GET_MODE (begin) != ptr_mode || GET_MODE (end) != ptr_mode)
+  if ((GET_MODE (begin) != ptr_mode && GET_MODE (begin) != Pmode)
+      || (GET_MODE (end) != ptr_mode && GET_MODE (end) != Pmode))
     {
       error ("both arguments to %<__builtin___clear_cache%> must be pointers");
       return;
