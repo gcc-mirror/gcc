@@ -1,3 +1,200 @@
+2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-10-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/97457
+	* value-range.cc (irange::set): Don't decay POLY_INT_CST ranges
+	to integer ranges.
+
+2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-10-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_sve_pred_dominates_p):
+	Delete.
+	* config/aarch64/aarch64.c (aarch64_sve_pred_dominates_p): Likewise.
+	* config/aarch64/aarch64-sve.md: Add banner comment describing
+	how merging predicated FP operations are represented.
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_UNARY:optab><mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_any_relaxed): ...this
+	and...
+	(*cond_<SVE_COND_FP_BINARY_INT:optab><mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_2_const): Split into...
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_2_const_relaxed): ...this
+	and...
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_2_const_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_3): Split into...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_3_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_3_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_BINARY:optab><mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_any_const): Split into...
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_any_const_relaxed): ...this
+	and...
+	(*cond_<SVE_COND_FP_BINARY_I1:optab><mode>_any_const_strict): ...this.
+	(*cond_add<mode>_2_const): Split into...
+	(*cond_add<mode>_2_const_relaxed): ...this and...
+	(*cond_add<mode>_2_const_strict): ...this.
+	(*cond_add<mode>_any_const): Split into...
+	(*cond_add<mode>_any_const_relaxed): ...this and...
+	(*cond_add<mode>_any_const_strict): ...this.
+	(*cond_<SVE_COND_FCADD:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FCADD:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FCADD:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FCADD:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FCADD:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FCADD:optab><mode>_any_strict): ...this.
+	(*cond_sub<mode>_3_const): Split into...
+	(*cond_sub<mode>_3_const_relaxed): ...this and...
+	(*cond_sub<mode>_3_const_strict): ...this.
+	(*aarch64_pred_abd<mode>): Split into...
+	(*aarch64_pred_abd<mode>_relaxed): ...this and...
+	(*aarch64_pred_abd<mode>_strict): ...this.
+	(*aarch64_cond_abd<mode>_2): Split into...
+	(*aarch64_cond_abd<mode>_2_relaxed): ...this and...
+	(*aarch64_cond_abd<mode>_2_strict): ...this.
+	(*aarch64_cond_abd<mode>_3): Split into...
+	(*aarch64_cond_abd<mode>_3_relaxed): ...this and...
+	(*aarch64_cond_abd<mode>_3_strict): ...this.
+	(*aarch64_cond_abd<mode>_any): Split into...
+	(*aarch64_cond_abd<mode>_any_relaxed): ...this and...
+	(*aarch64_cond_abd<mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_2): Split into...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_2_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_2_strict): ...this.
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_4): Split into...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_4_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_4_strict): ...this.
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FP_TERNARY:optab><mode>_any_strict): ...this.
+	(*cond_<SVE_COND_FCMLA:optab><mode>_4): Split into...
+	(*cond_<SVE_COND_FCMLA:optab><mode>_4_relaxed): ...this and...
+	(*cond_<SVE_COND_FCMLA:optab><mode>_4_strict): ...this.
+	(*cond_<SVE_COND_FCMLA:optab><mode>_any): Split into...
+	(*cond_<SVE_COND_FCMLA:optab><mode>_any_relaxed): ...this and...
+	(*cond_<SVE_COND_FCMLA:optab><mode>_any_strict): ...this.
+	(*aarch64_pred_fac<cmp_op><mode>): Split into...
+	(*aarch64_pred_fac<cmp_op><mode>_relaxed): ...this and...
+	(*aarch64_pred_fac<cmp_op><mode>_strict): ...this.
+	(*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>): Split
+	into...
+	(*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_relaxed):
+	...this and...
+	(*cond_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>_strict):
+	...this.
+	(*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>): Split
+	into...
+	(*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>_relaxed):
+	...this and...
+	(*cond_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>_strict):
+	...this.
+	* config/aarch64/aarch64-sve2.md
+	(*cond_<SVE2_COND_FP_UNARY_LONG:optab><mode>): Split into...
+	(*cond_<SVE2_COND_FP_UNARY_LONG:optab><mode>_relaxed): ...this and...
+	(*cond_<SVE2_COND_FP_UNARY_LONG:optab><mode>_strict): ...this.
+	(*cond_<SVE2_COND_FP_UNARY_NARROWB:optab><mode>_any): Split into...
+	(*cond_<SVE2_COND_FP_UNARY_NARROWB:optab><mode>_any_relaxed): ...this
+	and...
+	(*cond_<SVE2_COND_FP_UNARY_NARROWB:optab><mode>_any_strict): ...this.
+	(*cond_<SVE2_COND_INT_UNARY_FP:optab><mode>): Split into...
+	(*cond_<SVE2_COND_INT_UNARY_FP:optab><mode>_relaxed): ...this and...
+	(*cond_<SVE2_COND_INT_UNARY_FP:optab><mode>_strict): ...this.
+
+2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-11-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_maybe_expand_sve_subreg_move):
+	Do not optimize LRA subregs.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_pred_<SVE_INT_UNARY:optab><mode>): Tie the input to the
+	output.
+	(@aarch64_sve_revbhw_<SVE_ALL:mode><PRED_HSD:mode>): Likewise.
+	(*<ANY_EXTEND:optab><SVE_PARTIAL_I:mode><SVE_HSDI:mode>2): Likewise.
+	(@aarch64_pred_sxt<SVE_FULL_HSDI:mode><SVE_PARTIAL_I:mode>): Likewise.
+	(*cnot<mode>): Likewise.
+	(@aarch64_pred_<SVE_COND_FP_UNARY:optab><mode>): Likewise.
+	(@aarch64_sve_<optab>_nontrunc<SVE_FULL_F:mode><SVE_FULL_HSDI:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_trunc<VNx2DF_ONLY:mode><VNx4SI_ONLY:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_nonextend<SVE_FULL_HSDI:mode><SVE_FULL_F:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_extend<VNx4SI_ONLY:mode><VNx2DF_ONLY:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_trunc<SVE_FULL_SDF:mode><SVE_FULL_HSF:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_trunc<VNx4SF_ONLY:mode><VNx8BF_ONLY:mode>):
+	Likewise.
+	(@aarch64_sve_<optab>_nontrunc<SVE_FULL_HSF:mode><SVE_FULL_SDF:mode>):
+	Likewise.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_pred_<SVE2_COND_FP_UNARY_LONG:sve_fp_op><mode>): Likewise.
+	(@aarch64_pred_<SVE2_COND_FP_UNARY_NARROWB:sve_fp_op><mode>): Likewise.
+	(@aarch64_pred_<SVE2_U32_UNARY:sve_int_op><mode>): Likewise.
+	(@aarch64_pred_<SVE2_COND_INT_UNARY_FP:sve_fp_op><mode>): Likewise.
+
+2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98037
+	* dse.c (find_shift_sequence): Iterate over all integers and
+	skip modes that are too small.
+
+2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96698
+	PR tree-optimization/96920
+	* tree-vectorizer.h (loop_vec_info::reduc_latch_defs): Remove.
+	(loop_vec_info::reduc_latch_slp_defs): Likewise.
+	* tree-vect-stmts.c (vect_transform_stmt): Remove vectorized
+	cycle PHI latch code.
+	* tree-vect-loop.c (maybe_set_vectorized_backedge_value): New
+	helper to set vectorized cycle PHI latch values.
+	(vect_transform_loop): Walk over all PHIs again after
+	vectorizing them, calling maybe_set_vectorized_backedge_value.
+	Call maybe_set_vectorized_backedge_value for each vectorized
+	stmt.  Remove delayed update code.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Initialize
+	SLP instance reduc_phis member.
+	(vect_schedule_slp): Set vectorized cycle PHI latch values.
+
+2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96698
+	* tree-vectorizer.h (loop_vec_info::reduc_latch_defs): New.
+	(loop_vec_info::reduc_latch_slp_defs): Likewise.
+	* tree-vect-stmts.c (vect_transform_stmt): Only record
+	stmts to update PHI latches from, perform the update ...
+	* tree-vect-loop.c (vect_transform_loop): ... here after
+	vectorizing those PHIs.
+	(info_for_reduction): Properly handle non-reduction PHIs.
+
 2020-12-01  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

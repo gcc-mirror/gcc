@@ -1,3 +1,278 @@
+2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-10-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/97457
+	* gcc.dg/vect/pr97457.c: New test.
+
+2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-11-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/97904
+	* g++.dg/ext/sve-sizeless-1.C: Add more template tests.
+	* g++.dg/ext/sve-sizeless-2.C: Likewise.
+
+2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-11-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cond_cnot_1.c: XFAIL movprfx test.
+	* gcc.target/aarch64/sve/cond_unary_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abs_f16.c (abs_f16_x_untied): Expect
+	a MOVPRFX instruction.
+	* gcc.target/aarch64/sve/acle/asm/abs_f32.c (abs_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_f64.c (abs_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s16.c (abs_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s32.c (abs_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s64.c (abs_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/abs_s8.c (abs_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s16.c (cls_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s32.c (cls_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s64.c (cls_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cls_s8.c (cls_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s16.c (clz_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s32.c (clz_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s64.c (clz_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_s8.c (clz_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u16.c (clz_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u32.c (clz_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u64.c (clz_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/clz_u8.c (clz_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s16.c (cnot_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s32.c (cnot_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s64.c (cnot_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_s8.c (cnot_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u16.c (cnot_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u32.c (cnot_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u64.c (cnot_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnot_u8.c (cnot_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_bf16.c (cnt_bf16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f16.c (cnt_f16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f32.c (cnt_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_f64.c (cnt_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s16.c (cnt_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s32.c (cnt_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s64.c (cnt_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_s8.c (cnt_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u16.c (cnt_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u32.c (cnt_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u64.c (cnt_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cnt_u8.c (cnt_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_bf16.c (cvt_bf16_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f16.c (cvt_f16_f32_x_untied)
+	(cvt_f16_f64_x_untied, cvt_f16_s16_x_untied, cvt_f16_s32_x_untied)
+	(cvt_f16_s64_x_untied, cvt_f16_u16_x_untied, cvt_f16_u32_x_untied)
+	(cvt_f16_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f32.c (cvt_f32_f16_x_untied)
+	(cvt_f32_f64_x_untied, cvt_f32_s16_x_untied, cvt_f32_s32_x_untied)
+	(cvt_f32_s64_x_untied, cvt_f32_u16_x_untied, cvt_f32_u32_x_untied)
+	(cvt_f32_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_f64.c (cvt_f64_f16_x_untied)
+	(cvt_f64_f32_x_untied, cvt_f64_s16_x_untied, cvt_f64_s32_x_untied)
+	(cvt_f64_s64_x_untied, cvt_f64_u16_x_untied, cvt_f64_u32_x_untied)
+	(cvt_f64_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s16.c (cvt_s16_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s32.c (cvt_s32_f16_x_untied)
+	(cvt_s32_f32_x_untied, cvt_s32_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_s64.c (cvt_s64_f16_x_untied)
+	(cvt_s64_f32_x_untied, cvt_s64_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u16.c (cvt_u16_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u32.c (cvt_u32_f16_x_untied)
+	(cvt_u32_f32_x_untied, cvt_u32_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/cvt_u64.c (cvt_u64_f16_x_untied)
+	(cvt_u64_f32_x_untied, cvt_u64_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s16.c (extb_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s32.c (extb_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extb_s64.c (extb_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/exth_s32.c (exth_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/exth_s64.c (exth_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/extw_s64.c (extw_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f16.c (neg_f16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f32.c (neg_f32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_f64.c (neg_f64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s16.c (neg_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s32.c (neg_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s64.c (neg_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/neg_s8.c (neg_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s16.c (not_s16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s32.c (not_s32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s64.c (not_s64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_s8.c (not_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u16.c (not_u16_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u32.c (not_u32_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u64.c (not_u64_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/not_u8.c (not_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s16.c (rbit_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s32.c (rbit_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s64.c (rbit_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_s8.c (rbit_s8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u16.c (rbit_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u32.c (rbit_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u64.c (rbit_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rbit_u8.c (rbit_u8_x_untied): Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f16.c (recpx_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f32.c (recpx_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/recpx_f64.c (recpx_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s16.c (revb_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s32.c (revb_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_s64.c (revb_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u16.c (revb_u16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u32.c (revb_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revb_u64.c (revb_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_s32.c (revh_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_s64.c (revh_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_u32.c (revh_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revh_u64.c (revh_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revw_s64.c (revw_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/revw_u64.c (revw_u64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f16.c (rinta_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f32.c (rinta_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinta_f64.c (rinta_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f16.c (rinti_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f32.c (rinti_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rinti_f64.c (rinti_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f16.c (rintm_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f32.c (rintm_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintm_f64.c (rintm_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f16.c (rintn_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f32.c (rintn_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintn_f64.c (rintn_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f16.c (rintp_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f32.c (rintp_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintp_f64.c (rintp_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f16.c (rintx_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f32.c (rintx_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintx_f64.c (rintx_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f16.c (rintz_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f32.c (rintz_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/rintz_f64.c (rintz_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f16.c (sqrt_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f32.c (sqrt_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve/acle/asm/sqrt_f64.c (sqrt_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/cvtx_f32.c (cvtx_f32_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f16.c (logb_f16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f32.c (logb_f32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/logb_f64.c (logb_f64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s16.c (qabs_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s32.c (qabs_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s64.c (qabs_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qabs_s8.c (qabs_s8_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s16.c (qneg_s16_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s32.c (qneg_s32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s64.c (qneg_s64_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/qneg_s8.c (qneg_s8_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/recpe_u32.c (recpe_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/rsqrte_u32.c (rsqrte_u32_x_untied):
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/cvtlt_f32.c
+	(cvtlt_f32_f16_x_untied): Expect a MOV instruction.
+	* gcc.target/aarch64/sve2/acle/asm/cvtlt_f64.c
+	(cvtlt_f64_f32_x_untied): Likewise.
+
+2020-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98037
+	* gcc.target/aarch64/sve/acle/general/pr98037.c: New test.
+
+2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96698
+	PR tree-optimization/96920
+	* gfortran.dg/vect/pr96920.f90: New testcase.
+	* gcc.dg/vect/pr96920.c: Likewise.
+
+2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96698
+	* gcc.dg/vect/pr96698.c: New testcase.
+
 2020-12-01  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
